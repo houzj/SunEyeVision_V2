@@ -41,7 +41,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     /// </remarks>
     public class RegionCollectionParameter : ParamValueBase
     {
-        private readonly ObservableCollection<RegionData> _regions;
+        private ObservableCollection<RegionData> _regions;
         private RegionParameterMode _mode;
         private ParamSetting? _bindingConfig;
 
@@ -52,10 +52,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         {
             _regions = new ObservableCollection<RegionData>();
             _mode = RegionParameterMode.InspectionRegion;
-
-            VisionLogger.Instance?.Log(LogLevel.Info,
-                $"[RegionCollectionParameter] 默认构造函数 | HashCode={GetHashCode():X8} | Mode={_mode} | _regions.HashCode={_regions.GetHashCode():X8}",
-                "RegionCollectionParameter");
         }
 
         /// <summary>
@@ -65,10 +61,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         {
             _regions = new ObservableCollection<RegionData>();
             _mode = mode;
-
-            VisionLogger.Instance?.Log(LogLevel.Info,
-                $"[RegionCollectionParameter] 构造函数(mode={mode}) | HashCode={GetHashCode():X8} | _regions.HashCode={_regions.GetHashCode():X8}",
-                "RegionCollectionParameter");
         }
 
         /// <summary>
@@ -81,22 +73,17 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// </remarks>
         public ObservableCollection<RegionData> Regions
         {
-            get
+            get => _regions;
+            set
             {
-                VisionLogger.Instance?.Log(LogLevel.Info,
-                    $"[RegionCollectionParameter.Regions.Getter] | HashCode={GetHashCode():X8} | _regions.HashCode={_regions.GetHashCode():X8} | Count={_regions.Count}",
-                    "RegionCollectionParameter");
-
-                // 记录每个区域的详细信息
-                for (int i = 0; i < _regions.Count; i++)
+                if (value != null && value != _regions)
                 {
-                    var region = _regions[i];
-                    VisionLogger.Instance?.Log(LogLevel.Info,
-                        $"[RegionCollectionParameter.Regions.Getter] Region[{i}] | Name={region?.Name ?? "null"} | Type={region?.Parameters?.GetType().Name ?? "null"}",
-                        "RegionCollectionParameter");
+                    _regions.Clear();
+                    foreach (var region in value)
+                    {
+                        _regions.Add(region);
+                    }
                 }
-
-                return _regions;
             }
         }
 

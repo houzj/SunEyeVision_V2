@@ -172,6 +172,8 @@ namespace SunEyeVision.Tool.Threshold.Views
         /// <param name="parameters">节点参数实例（与WorkflowNode.Parameters同一实例）</param>
         public override void SetParameters(ToolParameters parameters)
         {
+            PluginLogger.Info($"[SetParameters] 开始 | ParametersType={parameters?.GetType().Name ?? "null"} | ParametersHashCode={(parameters?.GetHashCode().ToString("X8") ?? "null")}", "ThresholdTool");
+
             // 调用基类方法
             base.SetParameters(parameters);
 
@@ -180,19 +182,30 @@ namespace SunEyeVision.Tool.Threshold.Views
                 // ★ 通过依赖属性设置参数（自动触发属性变更通知）
                 Parameters = thresholdParams;
 
-                // 关键日志：记录 InspectionRegions 状态用于追踪区域序列化问题
+                // ★ 关键日志：记录 InspectionRegions 状态用于追踪区域序列化问题
                 var inspectionRegions = Parameters.InspectionRegions;
                 var inspectionRegionsHashCode = inspectionRegions?.GetHashCode() ?? 0;
                 var inspectionRegionsCount = inspectionRegions?.Regions?.Count ?? 0;
                 var inspectionRegionsCollectionHashCode = inspectionRegions?.Regions?.GetHashCode() ?? 0;
 
-                PluginLogger.Info($"[SetParameters] 参数注入完成 | " +
-                    $"Parameters.HashCode={Parameters.GetHashCode():X8} | " +
-                    $"InspectionRegions={inspectionRegions?.GetType().Name ?? "null"} | " +
-                    $"InspectionRegions.HashCode={inspectionRegionsHashCode:X8} | " +
-                    $"InspectionRegions.Regions.Count={inspectionRegionsCount} | " +
-                    $"InspectionRegions.Regions.HashCode={inspectionRegionsCollectionHashCode:X8}",
-                    "ThresholdTool");
+                // ★ 增强日志：检测区域数量是否为0（可能是反序列化问题）
+                if (inspectionRegionsCount == 0)
+                {
+                    PluginLogger.Warning($"[SetParameters] ⚠️ InspectionRegions.Regions.Count=0！可能是反序列化问题 | " +
+                        $"Parameters.HashCode={Parameters.GetHashCode():X8} | " +
+                        $"InspectionRegions.HashCode={inspectionRegionsHashCode:X8}",
+                        "ThresholdTool");
+                }
+                else
+                {
+                    PluginLogger.Info($"[SetParameters] 参数注入完成 | " +
+                        $"Parameters.HashCode={Parameters.GetHashCode():X8} | " +
+                        $"InspectionRegions={inspectionRegions?.GetType().Name ?? "null"} | " +
+                        $"InspectionRegions.HashCode={inspectionRegionsHashCode:X8} | " +
+                        $"InspectionRegions.Regions.Count={inspectionRegionsCount} | " +
+                        $"InspectionRegions.Regions.HashCode={inspectionRegionsCollectionHashCode:X8}",
+                        "ThresholdTool");
+                }
 
                 // 如果有区域，记录详细信息
                 if (inspectionRegions?.Regions != null && inspectionRegions.Regions.Count > 0)
@@ -231,16 +244,36 @@ namespace SunEyeVision.Tool.Threshold.Views
         /// </remarks>
         private void InitializeInspectionRegionEditor()
         {
+            PluginLogger.Info("[InitializeInspectionRegionEditor] 开始初始化", "ThresholdTool");
+
             if (inspectionRegionEditor == null)
             {
                 PluginLogger.Warning("[InitializeInspectionRegionEditor] inspectionRegionEditor 为空，跳过初始化", "ThresholdTool");
                 return;
             }
 
-            if (Parameters?.InspectionRegions?.Regions == null)
+            // ★ 关键检查：Parameters 是否为 null
+            if (Parameters == null)
             {
-                PluginLogger.Warning("[InitializeInspectionRegionEditor] Parameters.InspectionRegions.Regions 为空，跳过初始化", "ThresholdTool");
+                PluginLogger.Error("[InitializeInspectionRegionEditor] ⚠️ Parameters 为 null，无法初始化区域编辑器！", "ThresholdTool");
                 return;
+            }
+
+            // ★ 关键检查：InspectionRegions 是否为 null
+            if (Parameters.InspectionRegions == null)
+            {
+                PluginLogger.Error("[InitializeInspectionRegionEditor] ⚠️ Parameters.InspectionRegions 为 null，无法初始化区域编辑器！", "ThresholdTool");
+                return;
+            }
+
+            // ★ 关键检查：Regions 集合数量
+            var regionsCount = Parameters.InspectionRegions.Regions?.Count ?? 0;
+            PluginLogger.Info($"[InitializeInspectionRegionEditor] Regions 集合状态 | Count={regionsCount} | RegionsHashCode={(Parameters.InspectionRegions.Regions?.GetHashCode().ToString("X8") ?? "null")}", "ThresholdTool");
+
+            if (regionsCount == 0)
+            {
+                PluginLogger.Warning("[InitializeInspectionRegionEditor] ⚠️ Regions.Count=0！区域数据可能丢失或反序列化失败", "ThresholdTool");
+                // 注意：仍然继续执行，以便用户可以在调试窗口中查看/绘制新区域
             }
 
             // ★ 核心操作：命令式建立共享引用

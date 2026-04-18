@@ -1660,8 +1660,35 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
         private void UpdateRegionOverlay()
         {
+            // ★ 关键日志：追踪渲染调用
+            var rendererStatus = _renderer != null ? "非空" : "null";
+            VisionLogger.Instance?.Log(LogLevel.Info,
+                $"[UpdateRegionOverlay] 开始渲染 | InstanceId={_controlInstanceId} | _viewModel.Regions.Count={_viewModel?.Regions?.Count ?? -1} | OverlayCanvas={(OverlayCanvas != null ? "非空" : "null")} | _renderer={rendererStatus}",
+                "RegionEditorControl");
+
             if (OverlayCanvas == null)
             {
+                VisionLogger.Instance?.Log(LogLevel.Warning,
+                    $"[UpdateRegionOverlay] OverlayCanvas 为空，无法渲染 | InstanceId={_controlInstanceId}",
+                    "RegionEditorControl");
+                return;
+            }
+
+            // 检查 _viewModel.Regions 是否为空
+            if (_viewModel?.Regions == null || _viewModel.Regions.Count == 0)
+            {
+                VisionLogger.Instance?.Log(LogLevel.Warning,
+                    $"[UpdateRegionOverlay] ⚠️ _viewModel.Regions 为空或数量为0！| InstanceId={_controlInstanceId} | Count={_viewModel?.Regions?.Count ?? -1}",
+                    "RegionEditorControl");
+                // 仍然清空画布
+                if (_renderer != null)
+                {
+                    _renderer.Render(new List<RegionRenderContext>(), new RegionRenderOptions { ShowLabels = true, ShowHandles = false });
+                }
+                else
+                {
+                    OverlayCanvas.Children.Clear();
+                }
                 return;
             }
 
@@ -1669,15 +1696,38 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             if (_renderer != null)
             {
                 var contexts = new List<RegionRenderContext>();
+                var skippedCount = 0;
+                var visibleCount = 0;
 
                 // 添加所有可见区域
                 foreach (var region in _viewModel.Regions)
                 {
-                    if (!region.IsVisible || region.Parameters is not ShapeParameters shapeDef)
+                    // ★ 详细日志：检查每个区域
+                    if (!region.IsVisible)
+                    {
+                        skippedCount++;
+                        VisionLogger.Instance?.Log(LogLevel.Info,
+                            $"[UpdateRegionOverlay] 跳过不可见区域 | Name={region.Name} | IsVisible={region.IsVisible}",
+                            "RegionEditorControl");
                         continue;
+                    }
 
+                    if (region.Parameters is not ShapeParameters shapeDef)
+                    {
+                        skippedCount++;
+                        VisionLogger.Instance?.Log(LogLevel.Warning,
+                            $"[UpdateRegionOverlay] 跳过非 ShapeParameters 区域 | Name={region.Name} | Type={region.Parameters?.GetType().Name ?? "null"}",
+                            "RegionEditorControl");
+                        continue;
+                    }
+
+                    visibleCount++;
                     contexts.Add(CreateRenderContext(region, shapeDef, region.IsPreview));
                 }
+
+                VisionLogger.Instance?.Log(LogLevel.Info,
+                    $"[UpdateRegionOverlay] 渲染统计 | InstanceId={_controlInstanceId} | 总数={_viewModel.Regions.Count} | 可见={visibleCount} | 跳过={skippedCount} | contexts.Count={contexts.Count}",
+                    "RegionEditorControl");
 
                 // 添加绘制预览
                 if (_isDrawing && _currentDrawingRegion?.Parameters is ShapeParameters previewShape)

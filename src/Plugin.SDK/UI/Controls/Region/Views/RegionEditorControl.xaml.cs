@@ -50,8 +50,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         private int _previewLogCount = 0;
         private int _renderLogCount = 0;
 
-        // 区域名称索引管理
-        private int _regionIndex = 0;
+        // 区域名称索引管理（空洞池策略）
+        private int _nextRegionIndex = 1;
+        private readonly SortedSet<int> _availableIndices = new();
 
         // 手柄管理
         private HandleManager _handleManager;
@@ -155,6 +156,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 "RegionEditorControl");
 
             _viewModel.SetRegionsSource(externalRegions);
+            InitializeRegionIndexFromExisting();
             UpdateRegionOverlay();
 
             VisionLogger.Instance.Log(LogLevel.Success,
@@ -754,7 +756,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             if (_viewModel.IsDrawing && _currentTool != ShapeType.Point)
             {
                 VisionLogger.Instance.Log(LogLevel.Success,
-                    $"[开始绘制] 进入绘制流程 | InstanceId={_controlInstanceId} | Tool={_currentTool} | Position={position:F1} | _isDrawing={_isDrawing} | _regionIndex={_regionIndex}",
+                    $"[开始绘制] 进入绘制流程 | InstanceId={_controlInstanceId} | Tool={_currentTool} | Position={position:F1} | _isDrawing={_isDrawing} | _nextRegionIndex={_nextRegionIndex} | 空洞池数量={_availableIndices.Count}",
                     "RegionEditorControl");
 
                 // 检查是否已经在绘制中，防止重复触发
@@ -777,7 +779,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 );
 
                 VisionLogger.Instance.Log(LogLevel.Info,
-                    $"[开始绘制] 创建绘制区域 | InstanceId={_controlInstanceId} | RegionName={_currentDrawingRegion?.Name ?? "null"} | IsPreview={_currentDrawingRegion?.IsPreview} | _regionIndex={_regionIndex}",
+                    $"[开始绘制] 创建绘制区域 | InstanceId={_controlInstanceId} | RegionName={_currentDrawingRegion?.Name ?? "null"} | IsPreview={_currentDrawingRegion?.IsPreview} | _nextRegionIndex={_nextRegionIndex}",
                     "RegionEditorControl");
 
                 if (_currentDrawingRegion.Parameters is ShapeParameters shapeDef)
@@ -917,7 +919,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             if (_isDrawing && _currentDrawingRegion != null)
             {
                 VisionLogger.Instance.Log(LogLevel.Info,
-                    $"[FinishInteraction] 完成绘制 | InstanceId={_controlInstanceId} | Region={_currentDrawingRegion.Name} | IsPreview={_currentDrawingRegion.IsPreview} | _regionIndex={_regionIndex}",
+                    $"[FinishInteraction] 完成绘制 | InstanceId={_controlInstanceId} | Region={_currentDrawingRegion.Name} | IsPreview={_currentDrawingRegion.IsPreview} | _nextRegionIndex={_nextRegionIndex}",
                     "RegionEditorControl");
 
                 // 完成绘制，设置预览状态为 false
@@ -2225,6 +2227,18 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
             try
             {
+                // 区域删除时释放索引到空洞池
+                if (e.ChangeType == RegionChangeType.Removed && e.Region != null)
+                {
+                    ReleaseRegionIndex(e.Region.Name);
+                }
+                // 清除所有区域时重置索引管理
+                else if (e.ChangeType == RegionChangeType.Cleared)
+                {
+                    _availableIndices.Clear();
+                    _nextRegionIndex = 1;
+                }
+
                 UpdateRegionOverlay();
                 if (e.Region != null)
                 {
@@ -2242,10 +2256,80 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
         #endregion
 
+        /// <summary>
+        /// 生成区域名称 - 空洞池优先，O(log n)
+        /// </summary>
+        /// <remarks>
+        /// 优先填充被删除区域释放的索引空洞，无空洞时递增。
+        /// 例如：已有 区域_1、区域_3，则新建 区域_2（填充空洞）
+        /// </remarks>
         private string GenerateRegionName()
         {
-            _regionIndex++;
-            return $"区域_{_regionIndex}";
+            int nextIndex;
+            if (_availableIndices.Count > 0)
+            {
+                // 空洞池非空，取最小索引
+                nextIndex = _availableIndices.Min;
+                _availableIndices.Remove(nextIndex);
+            }
+            else
+            {
+                // 无空洞，递增
+                nextIndex = _nextRegionIndex++;
+            }
+            return $"区域_{nextIndex}";
+        }
+
+        /// <summary>
+        /// 释放区域索引到空洞池 - 删除时调用，O(log n)
+        /// </summary>
+        private void ReleaseRegionIndex(string regionName)
+        {
+            if (regionName != null && regionName.StartsWith("区域_"))
+            {
+                var indexPart = regionName.Substring(3);
+                if (int.TryParse(indexPart, out var index) && index > 0)
+                {
+                    _availableIndices.Add(index);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 根据已有区域初始化空洞池 - SetRegionsSource 时调用
+        /// </summary>
+        private void InitializeRegionIndexFromExisting()
+        {
+            _availableIndices.Clear();
+            _nextRegionIndex = 1;
+
+            var usedIndices = new HashSet<int>();
+            foreach (var region in _viewModel.Regions)
+            {
+                if (region.Name != null && region.Name.StartsWith("区域_"))
+                {
+                    var indexPart = region.Name.Substring(3);
+                    if (int.TryParse(indexPart, out var index) && index > 0)
+                    {
+                        usedIndices.Add(index);
+                    }
+                }
+            }
+
+            if (usedIndices.Count == 0)
+                return;
+
+            var maxIndex = usedIndices.Max();
+            _nextRegionIndex = maxIndex + 1;
+
+            // 扫描 1~max 之间的空洞
+            for (int i = 1; i <= maxIndex; i++)
+            {
+                if (!usedIndices.Contains(i))
+                {
+                    _availableIndices.Add(i);
+                }
+            }
         }
 
         #region 形状按钮点击事件

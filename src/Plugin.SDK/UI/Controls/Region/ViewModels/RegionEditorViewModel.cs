@@ -552,7 +552,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.ViewModels
         /// </summary>
         public void AddRegion(ShapeType shapeType)
         {
-            var region = RegionData.CreateDrawingRegion($"区域_{Regions.Count + 1}", shapeType);
+            var region = RegionData.CreateDrawingRegion(GetNextRegionName(), shapeType);
 
             // 设置默认参数
             if (region.Parameters is ShapeParameters shapeDef)
@@ -572,6 +572,37 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.ViewModels
             StatusMessage = $"已添加 {shapeType} 区域";
 
             RegionChanged?.Invoke(this, new RegionChangedEventArgs(region, RegionChangeType.Added));
+        }
+
+
+        /// <summary>
+        /// 获取下一个区域名称，优先填充索引空洞
+        /// </summary>
+        /// <remarks>
+        /// 从1开始查找第一个未被使用的索引，优先填充被删除区域留下的空洞。
+        /// 例如：已有 区域_1、区域_3，则返回 区域_2
+        /// </remarks>
+        private string GetNextRegionName()
+        {
+            var usedIndices = new HashSet<int>();
+            foreach (var region in Regions)
+            {
+                if (region.Name != null && region.Name.StartsWith("区域_"))
+                {
+                    var indexPart = region.Name.Substring(3);
+                    if (int.TryParse(indexPart, out var index) && index > 0)
+                    {
+                        usedIndices.Add(index);
+                    }
+                }
+            }
+
+            var nextIndex = 1;
+            while (usedIndices.Contains(nextIndex))
+            {
+                nextIndex++;
+            }
+            return $"区域_{nextIndex}";
         }
 
         /// <summary>

@@ -183,9 +183,11 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <summary>
         /// 创建绑定路径
         /// </summary>
-        /// <returns>绑定路径字符串</returns>
+        /// <returns>绑定路径字符串，数组类型追加 []</returns>
         public string GetBindingPath()
         {
+            if (PropertyType?.IsArray == true)
+                return $"{SourceNodeId}.{PropertyName}[]";
             return $"{SourceNodeId}.{PropertyName}";
         }
 

@@ -1253,15 +1253,20 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                            <!-- 绑定路径显示 -->
+                            <!-- 绑定路径显示（可编辑，用于修改数组索引） -->
                             <Grid Grid.Column="0">
-                                <TextBlock x:Name="PART_BindingDisplay"
-                                           Padding="8,0"
-                                           FontSize="13"
-                                           VerticalAlignment="Center"
-                                           Text="{Binding BindingDisplayText, RelativeSource={RelativeSource TemplatedParent}}"
-                                           Foreground="{StaticResource LabelSecondaryBrush}"
-                                           Visibility="Visible"/>
+                                <TextBox x:Name="PART_BindingDisplay"
+                                         Padding="8,0"
+                                         FontSize="13"
+                                         VerticalAlignment="Center"
+                                         VerticalContentAlignment="Center"
+                                         Text="{Binding BindingDisplayText, RelativeSource={RelativeSource TemplatedParent}, UpdateSourceTrigger=PropertyChanged}"
+                                         Foreground="{StaticResource LabelSecondaryBrush}"
+                                         Background="Transparent"
+                                         BorderThickness="0"
+                                         CaretBrush="{StaticResource LabelSecondaryBrush}"
+                                         IsReadOnly="False"
+                                         Visibility="Visible"/>
                             </Grid>
 
                             <!-- 绑定图标按钮 -->

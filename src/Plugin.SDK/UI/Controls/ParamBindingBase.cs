@@ -144,7 +144,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// 根据参数类型过滤数据源
         /// </summary>
         /// <param name="dataSources">数据源集合</param>
-        /// <param name="targetType">目标类型（精确类型匹配）</param>
+        /// <param name="targetType">目标类型（精确类型匹配 + 数组元素类型匹配）</param>
         /// <returns>过滤后的数据源</returns>
         public static List<AvailableDataSource> FilterDataSourcesByType(List<AvailableDataSource> dataSources, Type targetType)
         {
@@ -154,8 +154,21 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 return dataSources;
             }
 
-            // 精确类型匹配
-            return dataSources.Where(ds => ds.PropertyType != null && ds.PropertyType == targetType).ToList();
+            return dataSources.Where(ds =>
+            {
+                if (ds.PropertyType == null)
+                    return false;
+
+                // 精确匹配
+                if (ds.PropertyType == targetType)
+                    return true;
+
+                // 数组元素类型匹配：targetType=double 匹配 double[]
+                if (ds.PropertyType.IsArray && ds.PropertyType.GetElementType() == targetType)
+                    return true;
+
+                return false;
+            }).ToList();
         }
 
         #endregion

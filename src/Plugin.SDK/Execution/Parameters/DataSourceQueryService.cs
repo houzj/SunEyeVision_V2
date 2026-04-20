@@ -186,11 +186,12 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 // 获取父节点的输出属性
                 var outputProps = parent.OutputProperties;
                 
-                // 类型过滤（关键优化：精确匹配）
+                // 类型过滤（精确匹配 + 数组元素类型匹配）
                 if (targetType != null)
                 {
                     outputProps = outputProps
-                        .Where(p => p.PropertyType == targetType)  // ← 精确匹配
+                        .Where(p => p.PropertyType == targetType ||
+                                    (p.PropertyType.IsArray && p.PropertyType.GetElementType() == targetType))
                         .ToList();
                 }
 
@@ -299,45 +300,50 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <inheritdoc/>
         public object? GetPropertyValue(string nodeId, string propertyName)
         {
+            // 解析属性名（去掉索引标记）
+            var (pureName, arrayIndex) = PropertyPathParser.ParsePropertyPart(propertyName);
+
             // 从节点输出中获取属性值
             if (_nodeOutputs.TryGetValue(nodeId, out var outputs))
             {
-                if (outputs.TryGetValue(propertyName, out var value))
+                if (outputs.TryGetValue(pureName, out var value))
                 {
+                    // 处理数组索引
+                    if (arrayIndex.HasValue && value is Array array)
+                    {
+                        if (arrayIndex.Value >= 0 && arrayIndex.Value < array.Length)
+                            return array.GetValue(arrayIndex.Value);
+                        return null;  // 索引越界
+                    }
                     return value;
                 }
             }
 
-            // 从节点结果中获取属性值（使用反射，统一使用新机制）
+            // 从节点结果中获取属性值（使用反射）
             var result = GetNodeResultFromCache(nodeId);
             if (result != null)
             {
-                // 使用反射查找属性
-                var property = result.GetType().GetProperty(propertyName);
-                if (property != null && property.CanRead)
-                {
-                    return property.GetValue(result);
-                }
+                return GetNestedPropertyValue(result, propertyName);
             }
 
             return null;
         }
 
         /// <summary>
-        /// 获取嵌套属性值
+        /// 获取嵌套属性值（支持数组索引）
         /// </summary>
         private object? GetNestedPropertyValue(object obj, string propertyPath)
         {
-            var parts = propertyPath.Split('.');
+            var parsedPath = PropertyPathParser.ParsePropertyPath(propertyPath);
             object? current = obj;
 
-            foreach (var part in parts)
+            foreach (var (propName, arrayIndex) in parsedPath)
             {
                 if (current == null)
                     return null;
 
                 var type = current.GetType();
-                var property = type.GetProperty(part, BindingFlags.Public | BindingFlags.Instance);
+                var property = type.GetProperty(propName, BindingFlags.Public | BindingFlags.Instance);
 
                 if (property == null)
                     return null;
@@ -345,6 +351,24 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 try
                 {
                     current = property.GetValue(current);
+
+                    // 如果当前值是数组，根据索引处理
+                    if (current is Array array)
+                    {
+                        if (arrayIndex.HasValue)
+                        {
+                            if (arrayIndex.Value >= 0 && arrayIndex.Value < array.Length)
+                                current = array.GetValue(arrayIndex.Value);
+                            else
+                                return null;  // 索引越界
+                        }
+                        // [] 或无括号 → 返回整个数组（current 不变）
+                    }
+                    else if (arrayIndex.HasValue)
+                    {
+                        // 非数组但有索引 → 类型错误
+                        return null;
+                    }
                 }
                 catch
                 {

@@ -392,23 +392,23 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         }
 
         /// <summary>
-        /// 获取属性值（支持嵌套属性）
+        /// 获取属性值（支持嵌套属性和数组索引）
         /// </summary>
         private object? GetPropertyValue(object obj, string propertyPath)
         {
             if (obj == null || string.IsNullOrEmpty(propertyPath))
                 return null;
 
-            var parts = propertyPath.Split('.');
+            var parsedPath = PropertyPathParser.ParsePropertyPath(propertyPath);
             object? current = obj;
 
-            foreach (var part in parts)
+            foreach (var (propName, arrayIndex) in parsedPath)
             {
                 if (current == null)
                     return null;
 
                 var type = current.GetType();
-                var property = type.GetProperty(part, BindingFlags.Public | BindingFlags.Instance);
+                var property = type.GetProperty(propName, BindingFlags.Public | BindingFlags.Instance);
 
                 if (property == null)
                 {
@@ -424,6 +424,25 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 try
                 {
                     current = property.GetValue(current);
+
+                    // 如果当前值是数组，根据索引处理
+                    if (current is Array array)
+                    {
+                        if (arrayIndex.HasValue)
+                        {
+                            // [0] [1] → 取指定索引的元素
+                            if (arrayIndex.Value >= 0 && arrayIndex.Value < array.Length)
+                                current = array.GetValue(arrayIndex.Value);
+                            else
+                                return null;  // 索引越界
+                        }
+                        // [] 或无括号 → 返回整个数组（current 不变）
+                    }
+                    else if (arrayIndex.HasValue)
+                    {
+                        // 非数组但有索引 → 类型错误，返回 null
+                        return null;
+                    }
                 }
                 catch
                 {

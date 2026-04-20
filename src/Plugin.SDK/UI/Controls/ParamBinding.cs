@@ -200,6 +200,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         private Button? _bindingButton;
         private Popup? _bindingPopup;
         private TreeView? _bindingTreeView;
+        private TextBox? _bindingDisplay;
 
         // 私有字段：保存当前数据源集合的引用
         private System.Collections.ObjectModel.ObservableCollection<AvailableDataSource>? _currentDataSources;
@@ -292,6 +293,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             _bindingButton = GetTemplateChild("PART_BindingButton") as Button;
             _bindingPopup = GetTemplateChild("PART_BindingPopup") as Popup;
             _bindingTreeView = GetTemplateChild("PART_BindingTreeView") as TreeView;
+            _bindingDisplay = GetTemplateChild("PART_BindingDisplay") as TextBox;
 
             // 绑定事件
             if (_bindingButton != null)
@@ -303,6 +305,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             {
                 _bindingTreeView.SelectedItemChanged += OnBindingTreeViewSelectedItemChanged;
                 _bindingTreeView.PreviewMouseLeftButtonDown += OnBindingTreeViewPreviewMouseLeftButtonDown;
+            }
+
+            // 监听显示文本变更（用户编辑数组索引）
+            if (_bindingDisplay != null)
+            {
+                _bindingDisplay.TextChanged += OnBindingDisplayTextChanged;
             }
 
             // 初始化树形结构
@@ -437,7 +445,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// <summary>
         /// 根据绑定源路径查找对应的 TreeNodeData
         /// </summary>
-        /// <param name="bindingPath">绑定源路径（格式：节点ID.属性名）</param>
+        /// <param name="bindingPath">绑定源路径（格式：节点ID.属性名，属性名可含 [N] 索引）</param>
         /// <returns>对应的 TreeNodeData，未找到则返回 null</returns>
         private TreeNodeData? FindNodeByBindingPath(string bindingPath)
         {
@@ -446,7 +454,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
             var parts = bindingPath.Split('.');
             var sourceNodeId = parts[0];
-            var propertyName = parts.Length > 1 ? parts[1] : string.Empty;
+            var propertyFullName = parts.Length > 1 ? parts[1] : string.Empty;
+
+            // 去掉 [N] 或 []，用纯属性名在树中查找
+            var propertyName = PropertyPathParser.ExtractPropertyName(propertyFullName);
 
             // 在树中查找对应的节点
             foreach (var rootNode in TreeNodes)
@@ -486,7 +497,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// <summary>
         /// 根据绑定源路径生成绑定显示文本
         /// </summary>
-        /// <param name="bindingPath">绑定源路径（格式：节点ID.属性名）</param>
+        /// <param name="bindingPath">绑定源路径（格式：节点ID.属性名，属性名可含 [N] 索引）</param>
         /// <returns>绑定显示文本（格式：根节点.叶子节点），未找到则返回绑定路径</returns>
         public string GenerateBindingDisplayText(string bindingPath)
         {
@@ -503,6 +514,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             var rootNode = GetRootNode(node);
             var rootName = rootNode?.Text ?? "";
             var leafName = GetDisplayLeafName(node);
+
+            // 从 bindingPath 中提取索引部分，替换默认的 []
+            var parts = bindingPath.Split('.');
+            var propertyFullName = parts.Length > 1 ? parts[1] : string.Empty;
+            var (_, arrayIndex) = PropertyPathParser.ParsePropertyPart(propertyFullName);
+
+            // 如果有具体索引，替换掉默认的 []
+            if (arrayIndex.HasValue && leafName.EndsWith("[]"))
+            {
+                leafName = leafName.Substring(0, leafName.Length - 2) + $"[{arrayIndex.Value}]";
+            }
 
             VisionLogger.Instance.Log(LogLevel.Info,
                 $"[ParamBinding] 生成显示文本: {rootName}.{leafName}, 绑定路径: {bindingPath}",
@@ -526,6 +548,49 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             if (node.DataSource?.PropertyType?.IsArray == true)
                 name += "[]";
             return name;
+        }
+
+        /// <summary>
+        /// 显示文本变更事件处理 — 同步数组索引到 BindingSource
+        /// </summary>
+        /// <remarks>
+        /// 用户可能将 "直方图数据[]" 编辑为 "直方图数据[0]"
+        /// 需要同步索引到 BindingSource 中的属性路径
+        /// </remarks>
+        private void OnBindingDisplayTextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (_bindingDisplay == null || string.IsNullOrEmpty(BindingSource))
+                return;
+
+            var displayText = _bindingDisplay.Text;
+
+            // 从显示文本提取索引
+            var bracketStart = displayText.LastIndexOf('[');
+            var bracketEnd = displayText.LastIndexOf(']');
+
+            if (bracketStart < 0 || bracketEnd <= bracketStart)
+                return;  // 无括号，不需要同步
+
+            var indexStr = displayText.Substring(bracketStart + 1, bracketEnd - bracketStart - 1);
+
+            // 从当前 BindingSource 提取节点ID和属性名
+            var parts = BindingSource.Split('.');
+            var nodeId = parts[0];
+            var propertyFullName = parts.Length > 1 ? parts[1] : string.Empty;
+            var (propertyName, _) = PropertyPathParser.ParsePropertyPart(propertyFullName);
+
+            // 构建新的 BindingSource
+            if (string.IsNullOrEmpty(indexStr))
+            {
+                // [] 空括号 → 整个数组
+                BindingSource = $"{nodeId}.{propertyName}[]";
+            }
+            else if (int.TryParse(indexStr, out _))
+            {
+                // [0] [1] 等有效索引
+                BindingSource = $"{nodeId}.{propertyName}[{indexStr}]";
+            }
+            // 无效内容 → 不更新
         }
 
         #endregion

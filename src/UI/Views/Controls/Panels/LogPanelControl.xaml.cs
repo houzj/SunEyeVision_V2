@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows;
@@ -111,17 +111,28 @@ namespace SunEyeVision.UI.Views.Controls.Panels
                 DataContext = _logViewModel;
 
                 // 订阅日志变化事件
-                _logViewModel.LogEntries.CollectionChanged += (s, e) => UpdateLogCounts();
+                _logViewModel.LogEntries.CollectionChanged += (s, e) =>
+                {
+                    UpdateLogCounts();
+                    AutoScrollToEnd();
+                };
                 _logViewModel.PropertyChanged += (s, e) =>
                 {
                     if (e.PropertyName == nameof(LogPanelViewModel.TotalEnqueued))
                     {
                         TotalEnqueued = _logViewModel.TotalEnqueued;
                     }
+                    else if (e.PropertyName == nameof(LogPanelViewModel.SearchText))
+                    {
+                        UpdateWatermarkVisibility();
+                    }
                 };
 
                 // 初始化计数
                 UpdateLogCounts();
+
+                // 初始化水印可见性
+                Loaded += (s, e) => UpdateWatermarkVisibility();
             }
             catch (InvalidOperationException ex)
             {
@@ -162,6 +173,33 @@ MessageBox.Show($"日志面板初始化失败: {ex.Message}\n\n请确保在 App.
             catch (Exception ex)
             {
                 _logViewModel?.LogError($"更新日志统计失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 自动滚动到最新日志
+        /// </summary>
+        private void AutoScrollToEnd()
+        {
+            try
+            {
+                if (LogDataGrid == null || !_logViewModel.AutoScroll)
+                    return;
+
+                var entries = _logViewModel.LogEntries;
+                if (entries == null || entries.Count == 0)
+                    return;
+
+                // 滚动到最后一项
+                var lastEntry = entries.LastOrDefault();
+                if (lastEntry != null)
+                {
+                    LogDataGrid.ScrollIntoView(lastEntry);
+                }
+            }
+            catch (Exception ex)
+            {
+                // 静默处理，避免日志刷屏
             }
         }
 
@@ -222,6 +260,55 @@ MessageBox.Show($"日志面板初始化失败: {ex.Message}\n\n请确保在 App.
             {
                 _logViewModel?.LogError($"清空日志失败: {ex.Message}");
             }
+        }
+
+        /// <summary>
+        /// 清除搜索内容
+        /// </summary>
+        private void ClearSearch_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                _logViewModel.SearchText = string.Empty;
+                SearchTextBox?.Focus();
+            }
+            catch (Exception ex)
+            {
+                _logViewModel?.LogError($"清除搜索失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 搜索框获得焦点 - 隐藏水印
+        /// </summary>
+        private void SearchTextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            UpdateWatermarkVisibility();
+        }
+
+        /// <summary>
+        /// 搜索框失去焦点 - 根据文本决定是否显示水印
+        /// </summary>
+        private void SearchTextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            UpdateWatermarkVisibility();
+        }
+
+        /// <summary>
+        /// 更新水印和清除按钮可见性
+        /// </summary>
+        private void UpdateWatermarkVisibility()
+        {
+            if (WatermarkText == null || ClearSearchButton == null) return;
+
+            var hasText = !string.IsNullOrEmpty(SearchTextBox?.Text);
+            var hasFocus = SearchTextBox?.IsFocused ?? false;
+
+            // 有焦点或有文本时隐藏水印
+            WatermarkText.Visibility = (hasFocus || hasText) ? Visibility.Collapsed : Visibility.Visible;
+
+            // 有文本时显示清除按钮
+            ClearSearchButton.Visibility = hasText ? Visibility.Visible : Visibility.Collapsed;
         }
 
         /// <summary>

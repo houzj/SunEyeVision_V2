@@ -180,55 +180,69 @@
                     </StackPanel>
 
                     <!-- 中间：搜索框 -->
-                    <TextBox Grid.Column="1"
-                             Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
-                             Padding="6,3"
-                             FontSize="11"
-                             Margin="8,0,8,0"
-                             VerticalAlignment="Center"
-                             BorderBrush="#DDDDDD"
-                             BorderThickness="1">
-                        <TextBox.Style>
-                            <Style TargetType="TextBox">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="TextBox">
-                                            <Border Background="{TemplateBinding Background}"
-                                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                                    BorderThickness="{TemplateBinding BorderThickness}"
-                                                    CornerRadius="3"
-                                                    Padding="{TemplateBinding Padding}">
-                                                <Grid>
-                                                    <ScrollViewer x:Name="PART_ContentHost"
-                                                                    VerticalAlignment="Center"/>
-                                                    <TextBlock Text="搜索日志..."
-                                                               Foreground="#AAAAAA"
-                                                               FontSize="11"
-                                                               VerticalAlignment="Center">
-                                                        <TextBlock.Style>
-                                                            <Style TargetType="TextBlock">
-                                                                <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource AncestorType=TextBox}}" Value="">
-                                                                        <Setter Property="Visibility" Value="Visible"/>
-                                                                    </DataTrigger>
-                                                                    <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource AncestorType=TextBox}}" Value="{x:Null}">
-                                                                        <Setter Property="Visibility" Value="Visible"/>
-                                                                    </DataTrigger>
-                                                                    <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource AncestorType=TextBox}}" Value="">
-                                                                        <Setter Property="Visibility" Value="Visible"/>
-                                                                    </DataTrigger>
-                                                                </Style.Triggers>
-                                                            </Style>
-                                                        </TextBlock.Style>
-                                                    </TextBlock>
-                                                </Grid>
-                                            </Border>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </TextBox.Style>
-                    </TextBox>
+                    <!-- 中间：搜索框 -->
+                    <Border Grid.Column="1"
+                            Margin="8,0,8,0"
+                            VerticalAlignment="Center"
+                            Background="#FFFFFF"
+                            BorderBrush="#DDDDDD"
+                            BorderThickness="1"
+                            CornerRadius="3"
+                            Height="22">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="20"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="18"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- 搜索图标 -->
+                            <TextBlock Grid.Column="0"
+                                       Text="🔍"
+                                       FontSize="10"
+                                       Foreground="#AAAAAA"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       Margin="4,0,0,0"/>
+
+                            <!-- 输入框 -->
+                            <TextBox Grid.Column="1"
+                                     x:Name="SearchTextBox"
+                                     Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                     FontSize="11"
+                                     VerticalAlignment="Center"
+                                     Background="Transparent"
+                                     BorderThickness="0"
+                                     CaretBrush="#333333"
+                                     Padding="0"
+                                     Margin="2,0,0,0"
+                                     GotFocus="SearchTextBox_GotFocus"
+                                     LostFocus="SearchTextBox_LostFocus"/>
+
+                            <!-- 水印 -->
+                            <TextBlock Grid.Column="1"
+                                       x:Name="WatermarkText"
+                                       Text="搜索日志..."
+                                       Foreground="#AAAAAA"
+                                       FontSize="11"
+                                       VerticalAlignment="Center"
+                                       Margin="2,0,0,0"
+                                       IsHitTestVisible="False"
+                                       Visibility="Visible"/>
+
+                            <!-- 清除按钮 -->
+                            <TextBlock Grid.Column="2"
+                                       x:Name="ClearSearchButton"
+                                       Text="✕"
+                                       FontSize="10"
+                                       Foreground="#AAAAAA"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       Cursor="Hand"
+                                       Visibility="Collapsed"
+                                       MouseLeftButtonDown="ClearSearch_Click"/>
+                        </Grid>
+                    </Border>
 
                     <!-- 右侧：操作按钮 -->
                     <StackPanel Grid.Column="2" Orientation="Horizontal">

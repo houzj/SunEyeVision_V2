@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -127,6 +127,11 @@ namespace SunEyeVision.UI.ViewModels
 
         // 已打开的调试窗口（全局单例）
         private Window? _openDebugWindow;
+
+        /// <summary>
+        /// 调试窗口是否打开（用于锁定画布操作，避免Delete键冲突）
+        /// </summary>
+        public bool IsDebugWindowOpen => _openDebugWindow != null && _openDebugWindow.IsLoaded;
 
         // 数据提供者缓存（用于在节点执行完成后更新前置节点输出）
         private readonly Dictionary<string, IDataSourceQueryService> _nodeDataProviders = new();
@@ -2053,6 +2058,10 @@ SplitterPosition = position;
             if (WorkflowTabViewModel.SelectedTab == null)
                 return false;
 
+            // 调试窗口打开时禁止删除节点（避免Delete键与区域编辑器冲突）
+            if (IsDebugWindowOpen)
+                return false;
+
             return WorkflowTabViewModel.SelectedTab.WorkflowNodes.Any(n => n.IsSelected)
                 || WorkflowTabViewModel.SelectedTab.WorkflowConnections.Any(c => c.IsSelected);
         }
@@ -2210,6 +2219,9 @@ SplitterPosition = position;
 
                                     // 注入数据到调试目标（统一入口）
                                     await InjectDataToDebugTargetAsync(debugWindow, node);
+
+                                    // 赋值到 _openDebugWindow，支持 IsDebugWindowOpen 检测
+                                    _openDebugWindow = debugWindow;
 
                                     // 注册关闭事件，窗口关闭时清理引用
                                     debugWindow.Closed += (s, e) =>

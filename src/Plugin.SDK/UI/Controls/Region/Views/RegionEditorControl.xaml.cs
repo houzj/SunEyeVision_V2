@@ -588,9 +588,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         /// <summary>
         /// 处理键盘按键
         /// </summary>
-        protected override void OnKeyDown(KeyEventArgs e)
+        protected override void OnPreviewKeyDown(KeyEventArgs e)
         {
-            base.OnKeyDown(e);
+            base.OnPreviewKeyDown(e);
 
             // Ctrl+Z: 撤销
             if (e.Key == Key.Z && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
@@ -619,8 +619,27 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             // Delete: 删除选中区域
             if (e.Key == Key.Delete && _selectedRegion != null)
             {
+                // ★ 诊断日志：删除前状态
+                var beforeRegionNames = string.Join(", ", _viewModel.Regions.Select(r => $"{r.Name}(Id={r.Id:B})"));
+                VisionLogger.Instance.Log(LogLevel.Warning,
+                    $"[Delete] 删除前状态 | InstanceId={_controlInstanceId} | 删除目标={_selectedRegion.Name}(Id={_selectedRegion.Id:B}) | Regions.Count={_viewModel.Regions.Count} | Regions=[{beforeRegionNames}] | _selectedRegion={_selectedRegion.Name}",
+                    "RegionEditorControl");
+
                 _viewModel.RemoveSelectedRegion();
+
+                // ★ 诊断日志：删除后状态（ViewModel 内部已触发 RegionChanged → OnRegionChanged → UpdateRegionOverlay）
+                var afterRegionNames = string.Join(", ", _viewModel.Regions.Select(r => $"{r.Name}(Id={r.Id:B})"));
+                VisionLogger.Instance.Log(LogLevel.Warning,
+                    $"[Delete] ViewModel.RemoveSelectedRegion 完成 | Regions.Count={_viewModel.Regions.Count} | Regions=[{afterRegionNames}] | SelectedRegion={_viewModel.SelectedRegion?.Name ?? "null"}",
+                    "RegionEditorControl");
+
                 _selectedRegion = null;
+
+                // ★ 诊断日志：第二次 UpdateRegionOverlay 调用
+                VisionLogger.Instance.Log(LogLevel.Warning,
+                    $"[Delete] 开始第二次 UpdateRegionOverlay | _selectedRegion=null | Regions.Count={_viewModel.Regions.Count}",
+                    "RegionEditorControl");
+
                 UpdateRegionOverlay();
                 e.Handled = true;
                 return;
@@ -954,8 +973,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                         _viewModel.StatusMessage = $"已创建 {_currentTool} 区域";
                         RegionDataChanged?.Invoke(this, _currentDrawingRegion);
 
+                        // ★ 诊断日志：新建区域后的完整状态
+                        var allRegionNames = string.Join(", ", _viewModel.Regions.Select(r => $"{r.Name}(Id={r.Id:B},IsVisible={r.IsVisible})"));
                         VisionLogger.Instance.Log(LogLevel.Success,
-                            $"[FinishInteraction] 区域已添加到集合 | InstanceId={_controlInstanceId} | Region={_currentDrawingRegion.Name} | TotalRegions={_viewModel.Regions.Count}",
+                            $"[FinishInteraction] 区域已添加到集合 | InstanceId={_controlInstanceId} | Region={_currentDrawingRegion.Name}(Id={_currentDrawingRegion.Id:B}) | TotalRegions={_viewModel.Regions.Count} | Regions=[{allRegionNames}]",
                             "RegionEditorControl");
                     }
                     else
@@ -1662,124 +1683,78 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
         private void UpdateRegionOverlay()
         {
-            // ★ 关键日志：追踪渲染调用
-            var rendererStatus = _renderer != null ? "非空" : "null";
-            VisionLogger.Instance?.Log(LogLevel.Info,
-                $"[UpdateRegionOverlay] 开始渲染 | InstanceId={_controlInstanceId} | _viewModel.Regions.Count={_viewModel?.Regions?.Count ?? -1} | OverlayCanvas={(OverlayCanvas != null ? "非空" : "null")} | _renderer={rendererStatus}",
-                "RegionEditorControl");
+            if (OverlayCanvas == null) return;
 
-            if (OverlayCanvas == null)
-            {
-                VisionLogger.Instance?.Log(LogLevel.Warning,
-                    $"[UpdateRegionOverlay] OverlayCanvas 为空，无法渲染 | InstanceId={_controlInstanceId}",
-                    "RegionEditorControl");
-                return;
-            }
+            // ── 第一步：统一清除手柄 ──
+            // 无论后续走哪个渲染分支，先清除旧手柄，避免残留
+            Rendering.HandleRenderer.ClearHandles(OverlayCanvas);
 
-            // 检查 _viewModel.Regions 是否为空
-            if (_viewModel?.Regions == null || _viewModel.Regions.Count == 0)
+            // ── 第二步：渲染区域形状 ──
+            var regions = _viewModel?.Regions;
+            if (regions == null || regions.Count == 0)
             {
-                VisionLogger.Instance?.Log(LogLevel.Warning,
-                    $"[UpdateRegionOverlay] ⚠️ _viewModel.Regions 为空或数量为0！| InstanceId={_controlInstanceId} | Count={_viewModel?.Regions?.Count ?? -1}",
-                    "RegionEditorControl");
-                // 仍然清空画布
+                // 没有区域：清除画布内容，不需要手柄
                 if (_renderer != null)
-                {
                     _renderer.Render(new List<RegionRenderContext>(), new RegionRenderOptions { ShowLabels = true, ShowHandles = false });
-                }
                 else
-                {
                     OverlayCanvas.Children.Clear();
-                }
                 return;
             }
 
-            // 使用 WpfShapeRenderer 渲染区域（对象池 + 增量更新）
             if (_renderer != null)
             {
-                var contexts = new List<RegionRenderContext>();
-                var skippedCount = 0;
-                var visibleCount = 0;
+                // 主渲染路径：WpfShapeRenderer（对象池 + 增量更新）
+                var contexts = BuildRenderContexts(regions);
 
-                // 添加所有可见区域
-                foreach (var region in _viewModel.Regions)
-                {
-                    // ★ 详细日志：检查每个区域
-                    if (!region.IsVisible)
-                    {
-                        skippedCount++;
-                        VisionLogger.Instance?.Log(LogLevel.Info,
-                            $"[UpdateRegionOverlay] 跳过不可见区域 | Name={region.Name} | IsVisible={region.IsVisible}",
-                            "RegionEditorControl");
-                        continue;
-                    }
-
-                    if (region.Parameters is not ShapeParameters shapeDef)
-                    {
-                        skippedCount++;
-                        VisionLogger.Instance?.Log(LogLevel.Warning,
-                            $"[UpdateRegionOverlay] 跳过非 ShapeParameters 区域 | Name={region.Name} | Type={region.Parameters?.GetType().Name ?? "null"}",
-                            "RegionEditorControl");
-                        continue;
-                    }
-
-                    visibleCount++;
-                    contexts.Add(CreateRenderContext(region, shapeDef, region.IsPreview));
-                }
-
-                VisionLogger.Instance?.Log(LogLevel.Info,
-                    $"[UpdateRegionOverlay] 渲染统计 | InstanceId={_controlInstanceId} | 总数={_viewModel.Regions.Count} | 可见={visibleCount} | 跳过={skippedCount} | contexts.Count={contexts.Count}",
-                    "RegionEditorControl");
-
-                // 添加绘制预览
+                // 添加正在绘制的预览区域
                 if (_isDrawing && _currentDrawingRegion?.Parameters is ShapeParameters previewShape)
-                {
                     contexts.Add(CreateRenderContext(_currentDrawingRegion, previewShape, isPreview: true));
-                }
 
-                // 渲染
-                _renderer.Render(contexts, new RegionRenderOptions
-                {
-                    ShowLabels = true,
-                    ShowHandles = false  // 手柄单独处理
-                });
-
-                // 清理手柄（辅助元素由渲染器管理）
-                Rendering.HandleRenderer.ClearHandles(OverlayCanvas);
+                _renderer.Render(contexts, new RegionRenderOptions { ShowLabels = true, ShowHandles = false });
             }
             else
             {
-                // 回退到传统渲染方式（渲染器未初始化时）
+                // 回退路径：传统逐个绘制
                 OverlayCanvas.Children.Clear();
 
-                foreach (var region in _viewModel.Regions)
+                foreach (var region in regions)
                 {
                     if (!region.IsVisible) continue;
-
                     var shape = CreateRegionShape(region);
                     if (shape != null)
-                    {
                         OverlayCanvas.Children.Add(shape);
-                    }
-
                     DrawRegionLabel(region);
                 }
 
                 if (_isDrawing && _currentDrawingRegion != null)
                 {
-                    var parametersShape = CreateRegionShape(_currentDrawingRegion, true);
-                    if (parametersShape != null)
-                    {
-                        OverlayCanvas.Children.Add(parametersShape);
-                    }
+                    var previewShape = CreateRegionShape(_currentDrawingRegion, true);
+                    if (previewShape != null)
+                        OverlayCanvas.Children.Add(previewShape);
                 }
             }
 
-            // 绘制选中区域的编辑手柄（独立于区域渲染）
+            // ── 第三步：绘制选中区域的编辑手柄 ──
             if (_selectedRegion != null && !_isDrawing)
-            {
                 DrawEditHandles(_selectedRegion);
+        }
+
+        /// <summary>
+        /// 从区域列表构建渲染上下文（过滤不可见和非 ShapeParameters 区域）
+        /// </summary>
+        private List<RegionRenderContext> BuildRenderContexts(IList<RegionData> regions)
+        {
+            var contexts = new List<RegionRenderContext>(regions.Count);
+
+            foreach (var region in regions)
+            {
+                if (!region.IsVisible) continue;
+                if (region.Parameters is not ShapeParameters shapeDef) continue;
+
+                contexts.Add(CreateRenderContext(region, shapeDef, region.IsPreview));
             }
+
+            return contexts;
         }
 
         /// <summary>
@@ -1839,8 +1814,18 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         /// </summary>
         private void DrawEditHandles(RegionData region)
         {
+            // ★ 诊断日志：手柄绘制入口
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[DrawEditHandles] 入口 | Region={region.Name}(Id={region.Id:B}) | Parameters={region.Parameters?.GetType().Name ?? "null"} | IsShapeParams={region.Parameters is ShapeParameters} | OverlayCanvas={OverlayCanvas != null}",
+                "RegionEditorControl");
+
             if (region.Parameters is not ShapeParameters shapeDef || OverlayCanvas == null)
+            {
+                VisionLogger.Instance.Log(LogLevel.Warning,
+                    $"[DrawEditHandles] 跳过手柄绘制 | Region={region.Name} | IsShapeParams={region.Parameters is ShapeParameters} | OverlayCanvas={OverlayCanvas != null}",
+                    "RegionEditorControl");
                 return;
+            }
 
             // 使用ROI编辑器的手柄渲染器创建手柄
             CreateHandlesForShape(shapeDef);
@@ -2137,13 +2122,31 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
         private void SelectRegion(RegionData? region)
         {
+            // ★ 诊断日志：选中区域
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[SelectRegion] 选中区域 | Region={region?.Name ?? "null"}(Id={region?.Id:B}) | Regions.Count={_viewModel.Regions.Count}",
+                "RegionEditorControl");
+
             _selectedRegion = region;
             _viewModel.SelectedRegion = region;
             UpdateRegionOverlay();
+
+            // 选中区域后，确保焦点回到区域编辑器，以接收键盘事件（如Delete删除区域）
+            // 因为选择区域是通过主窗口 ImageControl 的鼠标事件触发的，
+            // 点击主窗口会导致焦点离开调试窗口，需要在选中后拉回焦点
+            if (region != null)
+            {
+                Keyboard.Focus(this);
+            }
         }
 
         private void DeselectAll()
         {
+            // ★ 诊断日志：取消选中
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[DeselectAll] 取消所有选中 | _selectedRegion={_selectedRegion?.Name ?? "null"} | Regions.Count={_viewModel.Regions.Count}",
+                "RegionEditorControl");
+
             _selectedRegion = null;
             _viewModel.SelectedRegion = null;
 
@@ -2221,8 +2224,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
         private void OnRegionChanged(object? sender, RegionChangedEventArgs e)
         {
-            VisionLogger.Instance.Log(LogLevel.Info,
-                $"[OnRegionChanged] ViewModel 触发 RegionChanged | InstanceId={_controlInstanceId} | RegionId={e.Region?.Id} | RegionName={e.Region?.Name ?? "null"} | ChangeType={e.ChangeType}",
+            // ★ 诊断日志：RegionChanged 事件详情
+            var currentRegionNames = _viewModel?.Regions != null
+                ? string.Join(", ", _viewModel.Regions.Select(r => $"{r.Name}(Id={r.Id:B},IsVisible={r.IsVisible})"))
+                : "null";
+            VisionLogger.Instance.Log(LogLevel.Warning,
+                $"[OnRegionChanged] ViewModel 触发 RegionChanged | InstanceId={_controlInstanceId} | RegionId={e.Region?.Id:B} | RegionName={e.Region?.Name ?? "null"} | ChangeType={e.ChangeType} | Regions.Count={_viewModel?.Regions?.Count ?? -1} | Regions=[{currentRegionNames}]",
                 "RegionEditorControl");
 
             try

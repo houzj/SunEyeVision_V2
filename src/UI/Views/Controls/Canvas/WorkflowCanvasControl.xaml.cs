@@ -1507,6 +1507,13 @@ namespace SunEyeVision.UI.Views.Controls.Canvas
 
 
 
+            // 调试窗口打开时，禁止切换选中节点
+            if (_viewModel?.IsDebugWindowOpen == true)
+            {
+                e.Handled = true;
+                return;
+            }
+
             // 检查是否按住 Shift 或 Ctrl 键（多选模式）
 
             bool isMultiSelect = (Keyboard.Modifiers & ModifierKeys.Shift) != 0 ||

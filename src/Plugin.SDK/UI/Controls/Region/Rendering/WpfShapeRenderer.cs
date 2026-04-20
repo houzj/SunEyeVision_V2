@@ -218,8 +218,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
 
             if (toRemove.Count > 0)
             {
-                VisionLogger.Instance.Log(LogLevel.Info,
-                    $"[WpfShapeRenderer.RemoveInvisibleRegions] 移除不可见区域 | InstanceId={_rendererInstanceId} | Count={toRemove.Count} | TotalShapes={_shapePool.Count}",
+                // ★ 诊断日志：详细记录被移除的区域
+                var removedNames = toRemove.Select(id => $"{id:B}").ToList();
+                var visibleNames = visibleIds.Select(id => $"{id:B}").ToList();
+                VisionLogger.Instance.Log(LogLevel.Warning,
+                    $"[RemoveInvisibleRegions] 移除不可见区域 | InstanceId={_rendererInstanceId} | RemoveCount={toRemove.Count} | RemoveIds=[{string.Join(", ", removedNames)}] | VisibleIds=[{string.Join(", ", visibleNames)}] | ShapePool={_shapePool.Count} | LabelPool={_labelPool.Count} | HelperPool={_helperPool.Count}",
                     "WpfShapeRenderer");
             }
 
@@ -257,6 +260,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
             if (_shapePool.TryGetValue(region.Id, out var existingShape))
             {
                 // 更新现有Shape
+                VisionLogger.Instance.Log(LogLevel.Info,
+                    $"[UpdateOrCreateRegion] 更新已有Shape | RegionId={region.Id:B} | ShapeType={region.ShapeType} | IsSelected={region.IsSelected}",
+                    "WpfShapeRenderer");
+
                 UpdateShapeFromContext(existingShape, region);
 
                 // 更新ZIndex
@@ -265,6 +272,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
             else
             {
                 // 创建新Shape
+                VisionLogger.Instance.Log(LogLevel.Info,
+                    $"[UpdateOrCreateRegion] 创建新Shape | RegionId={region.Id:B} | ShapeType={region.ShapeType} | IsSelected={region.IsSelected} | IsPreview={region.IsPreview}",
+                    "WpfShapeRenderer");
+
                 CreateShapeFromContext(region, options);
             }
 

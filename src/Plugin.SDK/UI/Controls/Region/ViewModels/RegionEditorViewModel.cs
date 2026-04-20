@@ -614,12 +614,24 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.ViewModels
 
             var region = SelectedRegion;
 
+            // ★ 诊断日志：删除操作开始
+            var beforeRegionNames = string.Join(", ", Regions.Select(r => $"{r.Name}(Id={r.Id:B})"));
+            VisionLogger.Instance.Log(LogLevel.Warning,
+                $"[RemoveSelectedRegion] 删除开始 | 目标={region.Name}(Id={region.Id:B}) | Regions.Count={Regions.Count} | Regions=[{beforeRegionNames}] | SelectedRegion={SelectedRegion.Name}",
+                "RegionEditorViewModel");
+
             // 记录编辑历史
             _editHistory.ExecuteAction(new DeleteRegionAction(region, this));
 
             Regions.Remove(region);
             SelectedRegion = Regions.FirstOrDefault();
             StatusMessage = $"已移除区域 {region.Name}";
+
+            // ★ 诊断日志：删除操作完成
+            var afterRegionNames = string.Join(", ", Regions.Select(r => $"{r.Name}(Id={r.Id:B})"));
+            VisionLogger.Instance.Log(LogLevel.Warning,
+                $"[RemoveSelectedRegion] 删除完成 | Regions.Count={Regions.Count} | Regions=[{afterRegionNames}] | SelectedRegion={SelectedRegion?.Name ?? "null"}",
+                "RegionEditorViewModel");
 
             RegionChanged?.Invoke(this, new RegionChangedEventArgs(region, RegionChangeType.Removed));
         }

@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
@@ -282,6 +283,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                     toRemove.Add(shape);
                 }
             }
+
+            // ★ 诊断日志：手柄清理
+            if (toRemove.Count > 0)
+            {
+                VisionLogger.Instance.Log(LogLevel.Info,
+                    $"[HandleRenderer.ClearHandles] 清理手柄 | HandleCount={toRemove.Count} | CanvasChildren={canvas.Children.Count}",
+                    "HandleRenderer");
+            }
+
             foreach (var item in toRemove)
             {
                 canvas.Children.Remove(item);
@@ -293,6 +303,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
         /// </summary>
         public static void DrawHandles(Canvas canvas, EditHandle[] handles, ShapeType shapeType)
         {
+            // ★ 诊断日志：手柄绘制
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[HandleRenderer.DrawHandles] 绘制手柄 | HandleCount={handles?.Length ?? 0} | ShapeType={shapeType} | CanvasChildren={canvas.Children.Count}",
+                "HandleRenderer");
+
             // 先清理旧手柄
             ClearHandles(canvas);
 

@@ -500,6 +500,7 @@ namespace SunEyeVision.Plugin.SDK.ViewModels
         /// <returns>结果项列表</returns>
         private List<ResultItem> GenerateResultItems(ToolResults result)
         {
+            var propertyMap = result.GetPropertyMap();
             return result.GetType()
                 .GetProperties(BindingFlags.Public | BindingFlags.Instance)
                 .Where(p => !p.IsDefined(typeof(IgnoreBindAttribute)))
@@ -510,7 +511,8 @@ namespace SunEyeVision.Plugin.SDK.ViewModels
                 .Select(p =>
                 {
                     var value = p.GetValue(result);
-                    var displayName = result.GetPropertyTreeName(p.Name) ?? p.Name;
+                    var mapEntry = propertyMap.FirstOrDefault(e => e.PropertyName == p.Name);
+                    var displayName = mapEntry?.DisplayName ?? p.Name;
                     
                     if (value == null) return ResultItem.Text(displayName, "null");
                     if (value is int intVal) return ResultItem.Numeric(displayName, intVal, "");

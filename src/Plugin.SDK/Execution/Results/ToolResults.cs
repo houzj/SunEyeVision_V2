@@ -12,6 +12,14 @@ using SunEyeVision.Plugin.SDK.Validation;
 namespace SunEyeVision.Plugin.SDK.Execution.Results
 {
     /// <summary>
+    /// 属性映射条目（声明式属性元数据）
+    /// </summary>
+    /// <param name="PropertyName">属性英文名（对应代码中的属性名）</param>
+    /// <param name="DisplayName">属性中文显示名（用于UI显示）</param>
+    /// <param name="GroupName">分组名称（用于树形分组，null 表示无分组）</param>
+    public record PropertyMapEntry(string PropertyName, string DisplayName, string? GroupName = null);
+
+    /// <summary>
     /// 执行状态枚举
     /// </summary>
     public enum ExecutionStatus
@@ -517,41 +525,31 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
         }
 
         /// <summary>
-        /// 获取属性的树形显示名称
+        /// 获取属性映射表（声明式属性元数据）
         /// </summary>
         /// <remarks>
-        /// 允许工具自定义属性在树形结构中的显示名称。
-        /// 使用 `.` 分隔符创建多级树结构。
+        /// 返回值说明：
+        /// - PropertyName: 属性英文名（必须与代码中的属性名一致）
+        /// - DisplayName: 属性中文显示名（用于UI显示）
+        /// - GroupName: 分组名称（用于树形分组，null 表示无分组）
         /// 
         /// 使用示例：
         /// <code>
-        /// public class ThresholdResults : ToolResults
+        /// public override List&lt;PropertyMapEntry&gt; GetPropertyMap()
         /// {
-        ///     public double ActualThresholdUsed { get; set; }
-        ///     
-        ///     public override string? GetPropertyTreeName(string propertyName)
-        ///     {
-        ///         if (propertyName == nameof(ActualThresholdUsed))
-        ///         {
-        ///             return "结果.实际使用的阈值";
-        ///         }
-        ///         return null; // 使用默认值
-        ///     }
+        ///     return
+        ///     [
+        ///         new("OutputImage",          "输出图像",              null),
+        ///         new("ThresholdUsed",        "实际使用的阈值",        "结果"),
+        ///         new("MaxValueUsed",         "最大值",               "结果"),
+        ///         new("ProcessedAt",          "处理时间戳",            "执行信息"),
+        ///     ];
         /// }
         /// </code>
-        /// 
-        /// 返回值说明：
-        /// - 返回 null: 使用默认的 DisplayName（PascalCase 或简单转换）
-        /// - 返回空字符串: 不显示该属性
-        /// - 返回 "A.B": 创建树结构 A → B（B 是叶子节点）
-        /// - 返回 "A.B.C": 创建树结构 A → B → C（C 是叶子节点）
         /// </remarks>
-        /// <param name="propertyName">属性名称（使用 nameof 获取）</param>
-        /// <returns>树形显示名称，使用 `.` 分隔多级</returns>
-        public virtual string? GetPropertyTreeName(string propertyName)
+        public virtual List<PropertyMapEntry> GetPropertyMap()
         {
-            // 默认实现：不提供树形名称，使用默认行为
-            return null;
+            return new List<PropertyMapEntry>();
         }
 
         #endregion

@@ -483,6 +483,9 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
                     BindingFlags.Public |
                     BindingFlags.Instance);
                 
+                // 一次性获取属性映射表（性能优化）
+                var propertyMap = tempResult.GetPropertyMap();
+                
                 int validPropertyCount = 0;
                 
                 foreach (var prop in properties)
@@ -499,15 +502,15 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
                     if (IsSpecialProperty(prop.Name))
                         continue;
                     
-                    // 获取 TreeName
-                    var treeName = tempResult.GetPropertyTreeName(prop.Name);
+                    // 从属性映射表获取 DisplayName 和 GroupName
+                    var mapEntry = propertyMap.FirstOrDefault(e => e.PropertyName == prop.Name);
                     
                     // 创建元数据
                     var metadata = new ToolPropertyMetadata
                     {
                         PropertyName = prop.Name,
-                        DisplayName = GetDisplayName(prop.Name),
-                        TreeName = string.IsNullOrEmpty(treeName) ? GetDisplayName(prop.Name) : treeName,
+                        DisplayName = mapEntry?.DisplayName ?? GetDisplayName(prop.Name),
+                        GroupName = mapEntry?.GroupName,
                         PropertyType = prop.PropertyType,
                         Description = GetPropertyDescription(prop)
                     };

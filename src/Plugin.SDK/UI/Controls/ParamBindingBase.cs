@@ -80,12 +80,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// 从数据源列表构建树形结构
         /// </summary>
         /// <remarks>
-        /// 按节点名称分组，每个节点作为根节点，该节点的属性作为子节点
+        /// 按节点名称分组，每个节点作为根节点，该节点的属性按 GroupName 分组
         /// 示例：
         /// - 节点A
         ///   - 结果
-        ///     - 输出图像
         ///     - 实际使用的阈值
+        ///     - 最大值
+        ///   - 执行信息
+        ///     - 处理时间戳
         /// - 节点B
         ///   - 图像
         ///     - 宽度
@@ -96,131 +98,46 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         public static List<TreeNodeData> BuildTreeStructure(List<AvailableDataSource> dataSources)
         {
             var rootNodes = new List<TreeNodeData>();
-            var nodeGroups = new Dictionary<string, List<AvailableDataSource>>();
+            var nodeGroups = dataSources.GroupBy(ds => ds.SourceNodeName);
 
-            // 按节点名称分组
-            foreach (var dataSource in dataSources)
+            foreach (var nodeGroup in nodeGroups)
             {
-                var groupName = dataSource.SourceNodeName;
-                if (!nodeGroups.ContainsKey(groupName))
-                {
-                    nodeGroups[groupName] = new List<AvailableDataSource>();
-                }
-                nodeGroups[groupName].Add(dataSource);
-            }
+                var rootNode = TreeNodeData.CreateGroupNode(nodeGroup.Key);
+                var groupCache = new Dictionary<string, TreeNodeData>();
 
-            // 为每个节点创建一个根节点
-            foreach (var (nodeName, nodeDataSources) in nodeGroups)
-            {
-                var rootNode = TreeNodeData.CreateGroupNode(nodeName);
-                
-                // 处理该节点的所有数据源
-                var propertyCache = new Dictionary<string, TreeNodeData>();
-                
-                foreach (var dataSource in nodeDataSources)
+                foreach (var dataSource in nodeGroup)
                 {
-                    if (string.IsNullOrEmpty(dataSource.FullTreeName))
+                    if (string.IsNullOrEmpty(dataSource.GroupName))
                     {
-                        // 没有 TreeName：直接添加为叶子节点
+                        // 无分组：直接添加为叶子节点
                         var leafNode = TreeNodeData.CreateDataSourceNode(dataSource);
+                        leafNode.Parent = rootNode;
+                        leafNode.BindingPath = dataSource.PropertyName;
                         rootNode.Children.Add(leafNode);
                     }
                     else
                     {
-                        // 有 TreeName：解析并创建多级树结构，添加到根节点
-                        BuildOrMergeTreeNodeFromFullTreeName(dataSource.FullTreeName!, dataSource, rootNode.Children, propertyCache, rootNode);
+                        // 有分组：查找或创建分组节点
+                        if (!groupCache.TryGetValue(dataSource.GroupName, out var groupNode))
+                        {
+                            groupNode = TreeNodeData.CreateGroupNode(dataSource.GroupName);
+                            groupNode.Parent = rootNode;
+                            groupNode.BindingPath = string.Empty;
+                            rootNode.Children.Add(groupNode);
+                            groupCache[dataSource.GroupName] = groupNode;
+                        }
+
+                        var leafNode = TreeNodeData.CreateDataSourceNode(dataSource);
+                        leafNode.Parent = groupNode;
+                        leafNode.BindingPath = dataSource.PropertyName;
+                        groupNode.Children.Add(leafNode);
                     }
                 }
-                
+
                 rootNodes.Add(rootNode);
             }
 
             return rootNodes;
-        }
-
-        /// <summary>
-        /// 从完整树形名称构建或合并树节点（跳过根节点名称）
-        /// </summary>
-        /// <param name="fullTreeName">完整树形名称（例如: "阈值工具.结果.实际使用的阈值"）</param>
-        /// <param name="dataSource">数据源</param>
-        /// <param name="rootNodes">根节点列表（实际上是根节点的 Children）</param>
-        /// <param name="nodeCache">节点缓存字典（key: 路径，value: 节点）</param>
-        /// <param name="actualRootNode">实际的根节点（来自 BuildTreeStructure）</param>
-        private static void BuildOrMergeTreeNodeFromFullTreeName(string fullTreeName, AvailableDataSource dataSource,
-            ObservableCollection<TreeNodeData> rootNodes, Dictionary<string, TreeNodeData> nodeCache, TreeNodeData actualRootNode)
-        {
-            // 将 TreeName 按 `.` 分割
-            var parts = fullTreeName.Split('.');
-
-            TreeNodeData? parentNode = null;
-            string currentPath = string.Empty;
-
-            // 处理每个层级（跳过根节点名称，从索引 1 开始）
-            // 根节点名称（parts[0]）已经在 BuildTreeStructure 中创建
-            for (int i = 1; i < parts.Length; i++)
-            {
-                // 构建当前路径
-                if (string.IsNullOrEmpty(currentPath))
-                {
-                    currentPath = parts[i];
-                }
-                else
-                {
-                    currentPath = currentPath + "." + parts[i];
-                }
-
-                TreeNodeData? node;
-
-                if (i == parts.Length - 1)
-                {
-                    // 最后一个部分是叶子节点
-                    node = TreeNodeData.CreateDataSourceNode(dataSource);
-                    node.Text = parts[i];
-
-                    // 将叶子节点添加到父节点的 Children 中
-                    if (parentNode != null)
-                    {
-                        node.Parent = parentNode;
-                        parentNode.Children.Add(node);
-                    }
-                    else
-                    {
-                        // 特殊情况：叶子节点直接作为根节点（FullTreeName 只有一层）
-                        // 这种情况下，节点应该添加到 actualRootNode
-                        node.Parent = actualRootNode;
-                        rootNodes.Add(node);
-                    }
-                }
-                else
-                {
-                    // 中间部分是分组节点
-                    if (nodeCache.TryGetValue(currentPath, out node))
-                    {
-                        // 已存在相同的父节点，直接复用
-                        parentNode = node;
-                        continue;
-                    }
-
-                    // 创建新的分组节点
-                    node = TreeNodeData.CreateGroupNode(parts[i]);
-                    nodeCache[currentPath] = node;
-
-                    // 添加到父节点或根节点列表
-                    if (parentNode != null)
-                    {
-                        node.Parent = parentNode;
-                        parentNode.Children.Add(node);
-                    }
-                    else
-                    {
-                        // 第一个分组节点，应该添加到 actualRootNode
-                        node.Parent = actualRootNode;
-                        rootNodes.Add(node);
-                    }
-                }
-
-                parentNode = node;
-            }
         }
 
         /// <summary>

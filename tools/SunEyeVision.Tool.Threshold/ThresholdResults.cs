@@ -102,27 +102,24 @@ namespace SunEyeVision.Tool.Threshold
         }
 
         /// <summary>
-        /// 获取属性的树形显示名称
+        /// 获取属性映射表
         /// </summary>
-        /// <param name="propertyName">属性名称</param>
-        /// <returns>树形显示名称（使用 `.` 分隔多级），返回 null 表示使用默认值</returns>
-        public override string? GetPropertyTreeName(string propertyName)
+        public override List<PropertyMapEntry> GetPropertyMap()
         {
-            return propertyName switch
-            {
-                nameof(OutputImage) => "图像",
-                nameof(ThresholdUsed) => "结果.实际使用的阈值",
-                nameof(MaxValueUsed) => "结果.最大值",
-                nameof(ThresholdUsedDouble) => "结果.实际使用的阈值(Double)",
-                nameof(MaxValueUsedDouble) => "结果.最大值(Double)",
-                nameof(TypeUsed) => "结果.阈值类型",
-                nameof(AdaptiveMethodUsed) => "结果.自适应方法",
-                nameof(BlockSizeUsed) => "结果.块大小",
-                nameof(InvertUsed) => "结果.是否反转",
-                nameof(InputSize) => "结果.输入图像尺寸",
-                nameof(ProcessedAt) => "执行信息.处理时间戳",
-                _ => null // 使用默认值
-            };
+            return
+            [
+                new("OutputImage",          "输出图像",               null),
+                new("ThresholdUsed",        "实际使用的阈值",         "结果"),
+                new("MaxValueUsed",         "最大值",                 "结果"),
+                new("ThresholdUsedDouble",  "实际使用的阈值(Double)",  "结果"),
+                new("MaxValueUsedDouble",   "最大值(Double)",          "结果"),
+                new("TypeUsed",             "阈值类型",               "结果"),
+                new("AdaptiveMethodUsed",   "自适应方法",             "结果"),
+                new("BlockSizeUsed",        "块大小",                 "结果"),
+                new("InvertUsed",           "是否反转",               "结果"),
+                new("InputSize",            "输入图像尺寸",           "结果"),
+                new("ProcessedAt",          "处理时间戳",             "执行信息"),
+            ];
         }
 
         /// <summary>

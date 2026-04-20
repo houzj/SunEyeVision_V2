@@ -50,12 +50,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             DependencyProperty.Register(nameof(BindingSource), typeof(string), typeof(ConfigSetting),
                 new FrameworkPropertyMetadata(string.Empty, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
-        // ===== 友好绑定源显示（只读，用于UI显示） =====
-        private static readonly DependencyPropertyKey FriendlyBindingSourcePropertyKey =
-            DependencyProperty.RegisterReadOnly(nameof(FriendlyBindingSource), typeof(string), typeof(ConfigSetting),
+        // ===== 绑定显示文本（只读，用于UI显示） =====
+        private static readonly DependencyPropertyKey BindingDisplayTextPropertyKey =
+            DependencyProperty.RegisterReadOnly(nameof(BindingDisplayText), typeof(string), typeof(ConfigSetting),
                 new PropertyMetadata(string.Empty));
 
-        public static readonly DependencyProperty FriendlyBindingSourceProperty = FriendlyBindingSourcePropertyKey.DependencyProperty;
+        public static readonly DependencyProperty BindingDisplayTextProperty = BindingDisplayTextPropertyKey.DependencyProperty;
 
         // ===== 单一值属性（统一入口） =====
         /// <summary>
@@ -204,12 +204,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         }
 
         /// <summary>
-        /// 友好绑定源显示：用于UI显示的人类可读格式
+        /// 绑定显示文本：用于UI显示的中文格式
         /// </summary>
-        public string FriendlyBindingSource
+        public string BindingDisplayText
         {
-            get => (string)GetValue(FriendlyBindingSourceProperty);
-            private set => SetValue(FriendlyBindingSourcePropertyKey, value);
+            get => (string)GetValue(BindingDisplayTextProperty);
+            private set => SetValue(BindingDisplayTextPropertyKey, value);
         }
 
         /// <summary>
@@ -771,9 +771,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             {
                 _paramBinding.BindingSourceSelected += (s, e) =>
                 {
-                    // 从 ParamBinding 获取绑定源和友好名称
+                    // 从 ParamBinding 获取绑定源和显示文本
                     BindingSource = _paramBinding.BindingSource;
-                    FriendlyBindingSource = _paramBinding.FriendlyBindingSource;
+                    BindingDisplayText = _paramBinding.BindingDisplayText;
                     
                     RaiseEvent(new RoutedEventArgs(BindingSourceSelectedEvent));
                 };
@@ -801,13 +801,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 // 切换到常量模式 - 解除绑定
                 BindingType = BindingType.Constant;
                 BindingSource = string.Empty;
-                FriendlyBindingSource = string.Empty;
+                BindingDisplayText = string.Empty;
 
                 // 清空 ParamBinding 的绑定状态
                 if (_paramBinding != null)
                 {
                     _paramBinding.IsBound = false;
-                    _paramBinding.FriendlyBindingSource = string.Empty;
+                    _paramBinding.BindingDisplayText = string.Empty;
                 }
             }
 
@@ -896,17 +896,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
                 // 设置绑定状态
                 _paramBinding.IsBound = true;
-                // 注意：不要覆盖 ParamBinding 生成的 FriendlyBindingSource
-                // ParamBinding 会通过 TreeView 节点层级动态生成友好名称
-                // 这里只在 FriendlyBindingSource 为空时才设置（从 ParamSetting 加载时）
-                if (string.IsNullOrEmpty(FriendlyBindingSource))
+                // 注意：不要覆盖 ParamBinding 生成的 BindingDisplayText
+                // ParamBinding 会通过 TreeView 节点层级动态生成显示文本
+                // 这里只在 BindingDisplayText 为空时才设置（从 ParamSetting 加载时）
+                if (string.IsNullOrEmpty(BindingDisplayText))
                 {
-                    _paramBinding.FriendlyBindingSource = _paramBinding.GenerateFriendlyBindingSource(BindingSource);
-                    FriendlyBindingSource = _paramBinding.FriendlyBindingSource;
+                    _paramBinding.BindingDisplayText = _paramBinding.GenerateBindingDisplayText(BindingSource);
+                    BindingDisplayText = _paramBinding.BindingDisplayText;
                 }
                 else
                 {
-                    _paramBinding.FriendlyBindingSource = FriendlyBindingSource;
+                    _paramBinding.BindingDisplayText = BindingDisplayText;
                 }
 
                 // 更新按钮图标
@@ -929,7 +929,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 // 禁用ParamBinding
                 _paramBinding.IsEnabled = false;
                 _paramBinding.IsBound = false;
-                _paramBinding.FriendlyBindingSource = string.Empty;
+                _paramBinding.BindingDisplayText = string.Empty;
 
                 // 更新按钮图标
                 _bindingModeButton.Content = "🔗";
@@ -986,7 +986,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             if (setting.BindingType == BindingType.Constant)
             {
                 SetValue(setting.ConstantValue);
-                FriendlyBindingSource = string.Empty;
+                BindingDisplayText = string.Empty;
                 BindingSource = string.Empty;
             }
             else
@@ -997,7 +997,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     : $"{setting.SourceNodeId}.{setting.SourceProperty}";
                 
                 // 使用 ParamBinding 的方法生成友好名称（基于 TreeView 节点层级）
-                FriendlyBindingSource = _paramBinding?.GenerateFriendlyBindingSource(BindingSource) ?? BindingSource;
+                BindingDisplayText = _paramBinding?.GenerateBindingDisplayText(BindingSource) ?? BindingSource;
             }
         }
 

@@ -208,8 +208,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                         CurrentValue = property.CurrentValue,
                         Unit = property.Unit,
                         Description = property.Description,
-                        GroupName = parent.NodeName,
-                        FullTreeName = property.FullTreeName
+                        GroupName = property.GroupName,
                     };
                     allDataSources.Add(dataSource);
                 }
@@ -260,8 +259,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                     CurrentValue = currentValue,
                     Unit = null,
                     Description = metadata.Description,
-                    GroupName = context.NodeName,
-                    FullTreeName = string.IsNullOrEmpty(metadata.TreeName) ? null : $"{context.NodeName}.{metadata.TreeName}"
+                    GroupName = metadata.GroupName,
                 };
 
                 properties.Add(dataSource);
@@ -482,8 +480,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 CurrentValue = currentValue,
                 Unit = null,
                 Description = metadata.Description,
-                GroupName = node.NodeName,
-                FullTreeName = string.IsNullOrEmpty(metadata.TreeName) ? null : $"{node.NodeName}.{metadata.TreeName}"
+                GroupName = metadata.GroupName,
             };
         }
 

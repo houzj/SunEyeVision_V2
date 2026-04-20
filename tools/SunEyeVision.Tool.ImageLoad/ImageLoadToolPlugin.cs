@@ -256,46 +256,41 @@ namespace SunEyeVision.Tool.ImageLoad
         #region 重写方法
 
         /// <summary>
-        /// 获取属性的树形显示名称
+        /// 获取属性映射表
         /// </summary>
         /// <remarks>
-        /// 创建多级树结构，便于在绑定源选择器中展示：
+        /// 创建分组结构，便于在绑定源选择器中展示：
         /// - 图像 → 宽度/高度/通道数...
         /// - 像素值 → 最小值/最大值/平均值...
         /// - 文件 → 路径/大小/格式
         /// - 执行 → 耗时
         /// </remarks>
-        public override string? GetPropertyTreeName(string propertyName)
+        public override List<PropertyMapEntry> GetPropertyMap()
         {
-            return propertyName switch
-            {
-                nameof(OutputImage) => "图像",
-                nameof(Width) => "图像.宽度",
-                nameof(Height) => "图像.高度",
-                nameof(Size) => "图像.尺寸",
-                nameof(Channels) => "图像.通道数",
-                nameof(Depth) => "图像.深度",
-                nameof(TypeName) => "图像.类型名称",
-                nameof(DepthName) => "图像.深度名称",
-                nameof(IsColor) => "图像.是否彩色",
-                nameof(IsGrayscale) => "图像.是否灰度",
-                nameof(ColorType) => "图像.颜色类型",
-                nameof(AspectRatio) => "图像.宽高比",
-                nameof(TotalPixels) => "图像.总像素数",
-
-                nameof(MinPixelValue) => "像素值.最小值",
-                nameof(MaxPixelValue) => "像素值.最大值",
-                nameof(MeanPixelValue) => "像素值.平均值",
-                nameof(PixelValueRange) => "像素值.范围描述",
-
-                nameof(FilePath) => "文件.路径",
-                nameof(FileSize) => "文件.大小",
-                nameof(FileFormat) => "文件.格式",
-
-                nameof(ExecutionTimeMs) => "执行.耗时",
-
-                _ => null // 使用默认名称
-            };
+            return
+            [
+                new("OutputImage",      "输出图像",     null),
+                new("Width",            "宽度",         "图像"),
+                new("Height",           "高度",         "图像"),
+                new("Size",             "尺寸",         "图像"),
+                new("Channels",         "通道数",       "图像"),
+                new("Depth",            "深度",         "图像"),
+                new("TypeName",         "类型名称",     "图像"),
+                new("DepthName",        "深度名称",     "图像"),
+                new("IsColor",          "是否彩色",     "图像"),
+                new("IsGrayscale",      "是否灰度",     "图像"),
+                new("ColorType",        "颜色类型",     "图像"),
+                new("AspectRatio",      "宽高比",       "图像"),
+                new("TotalPixels",      "总像素数",     "图像"),
+                new("MinPixelValue",    "最小值",       "像素值"),
+                new("MaxPixelValue",    "最大值",       "像素值"),
+                new("MeanPixelValue",   "平均值",       "像素值"),
+                new("PixelValueRange",  "范围描述",     "像素值"),
+                new("FilePath",         "路径",         "文件"),
+                new("FileSize",         "大小",         "文件"),
+                new("FileFormat",       "格式",         "文件"),
+                new("ExecutionTimeMs",  "耗时",         "执行"),
+            ];
         }
 
         #endregion

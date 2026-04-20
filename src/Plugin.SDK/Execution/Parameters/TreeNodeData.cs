@@ -11,7 +11,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     /// 
     /// 树结构示例：
     /// - 节点名称（不可选择）
-    ///   - TreeName 部分1（不可选择）
+    ///   - 分组名称（不可选择）
     ///     - 可选择属性（可选择）
     /// </remarks>
     public class TreeNodeData : INotifyPropertyChanged
@@ -29,13 +29,13 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         public string Text { get; set; } = string.Empty;
 
         /// <summary>
-        /// 完整树形名称（用于唯一标识节点）
+        /// 英文绑定路径片段（用于运行时取值）
         /// </summary>
         /// <remarks>
-        /// 格式: 根节点名称.中间节点名称.叶子节点名称
-        /// 示例: "5.图像阈值化4.结果.实际使用的阈值"
+        /// 叶子节点: "ThresholdUsed"（简单属性）或 "CircleFound.Radius"（嵌套属性）
+        /// 分组节点/根节点: string.Empty（无绑定路径，不可选）
         /// </remarks>
-        public string FullTreeName { get; set; } = string.Empty;
+        public string BindingPath { get; set; } = string.Empty;
 
         /// <summary>
         /// 关联的数据源（仅叶子节点有值）

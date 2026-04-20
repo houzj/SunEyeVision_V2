@@ -271,7 +271,7 @@
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Grid.Column="0"
-                                               Text="{Binding SelectedDataSource.FullTreeName, RelativeSource={RelativeSource TemplatedParent}}"
+                                               Text="{Binding SelectedDataSource.DropdownDisplayText, RelativeSource={RelativeSource TemplatedParent}}"
                                                VerticalAlignment="Center"
                                                Foreground="{StaticResource LabelBrush}">
                                         <TextBlock.Style>
@@ -1259,7 +1259,7 @@
                                            Padding="8,0"
                                            FontSize="13"
                                            VerticalAlignment="Center"
-                                           Text="{Binding FriendlyBindingSource, RelativeSource={RelativeSource TemplatedParent}}"
+                                           Text="{Binding BindingDisplayText, RelativeSource={RelativeSource TemplatedParent}}"
                                            Foreground="{StaticResource LabelSecondaryBrush}"
                                            Visibility="Visible"/>
                             </Grid>

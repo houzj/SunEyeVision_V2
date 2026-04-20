@@ -39,9 +39,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 typeof(ParamBinding),
                 new FrameworkPropertyMetadata(false, OnIsBoundChanged));
 
-        public static readonly DependencyProperty FriendlyBindingSourceProperty =
+        public static readonly DependencyProperty BindingDisplayTextProperty =
             DependencyProperty.Register(
-                nameof(FriendlyBindingSource),
+                nameof(BindingDisplayText),
                 typeof(string),
                 typeof(ParamBinding),
                 new PropertyMetadata(string.Empty));
@@ -104,12 +104,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         }
 
         /// <summary>
-        /// 绑定源显示文本
+        /// 绑定显示文本（中文，用于界面显示）
         /// </summary>
-        public string FriendlyBindingSource
+        public string BindingDisplayText
         {
-            get => (string)GetValue(FriendlyBindingSourceProperty);
-            set => SetValue(FriendlyBindingSourceProperty, value);
+            get => (string)GetValue(BindingDisplayTextProperty);
+            set => SetValue(BindingDisplayTextProperty, value);
         }
 
         /// <summary>
@@ -344,9 +344,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 // 设置友好显示名称：根据树形结构动态生成
                 var rootNode = GetRootNode(selectedNode);
                 var rootName = rootNode?.Text ?? "";
-                var leafName = selectedNode.Text;
+                var leafName = GetDisplayLeafName(selectedNode);
 
-                FriendlyBindingSource = $"{rootName}.{leafName}";
+                BindingDisplayText = $"{rootName}.{leafName}";
 
                 // 触发事件
                 RaiseEvent(new RoutedEventArgs(BindingSourceSelectedEvent));
@@ -391,20 +391,19 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 // 设置绑定源路径（格式：节点ID.属性名）
                 BindingSource = selectedNode.DataSource.GetBindingPath();
 
-                // 设置友好显示名称：根据树形结构动态生成
+                // 设置绑定显示文本：根据树形结构动态生成
                 // 格式：根节点名称.叶子节点名称
-                // 例如：5.图像阈值化4.实际使用的阈值
+                // 例如：图像阈值化4.实际使用的阈值
 
-                // 🔍 调试日志：输出节点层级
                 var rootNode = GetRootNode(selectedNode);
                 var rootName = rootNode?.Text ?? "";
-                var leafName = selectedNode.Text;
+                var leafName = GetDisplayLeafName(selectedNode);
 
                 VisionLogger.Instance.Log(LogLevel.Info,
                     $"[ParamBinding] 选中节点: {leafName}, 父节点: {selectedNode.Parent?.Text ?? "null"}, 根节点: {rootName}",
                     "ParamBinding");
 
-                FriendlyBindingSource = $"{rootName}.{leafName}";
+                BindingDisplayText = $"{rootName}.{leafName}";
 
                 // 触发事件
                 RaiseEvent(new RoutedEventArgs(BindingSourceSelectedEvent));
@@ -485,11 +484,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         }
 
         /// <summary>
-        /// 根据绑定源路径生成友好显示名称
+        /// 根据绑定源路径生成绑定显示文本
         /// </summary>
         /// <param name="bindingPath">绑定源路径（格式：节点ID.属性名）</param>
-        /// <returns>友好显示名称（格式：根节点 . 叶子节点），未找到则返回绑定路径</returns>
-        public string GenerateFriendlyBindingSource(string bindingPath)
+        /// <returns>绑定显示文本（格式：根节点.叶子节点），未找到则返回绑定路径</returns>
+        public string GenerateBindingDisplayText(string bindingPath)
         {
             var node = FindNodeByBindingPath(bindingPath);
             if (node == null)
@@ -500,16 +499,33 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 return bindingPath;
             }
 
-            // 生成友好名称：根节点.叶子节点
+            // 生成显示文本：根节点.叶子节点
             var rootNode = GetRootNode(node);
             var rootName = rootNode?.Text ?? "";
-            var leafName = node.Text;
+            var leafName = GetDisplayLeafName(node);
 
             VisionLogger.Instance.Log(LogLevel.Info,
-                $"[ParamBinding] 生成友好名称: {rootName}.{leafName}, 绑定路径: {bindingPath}",
+                $"[ParamBinding] 生成显示文本: {rootName}.{leafName}, 绑定路径: {bindingPath}",
                 "ParamBinding");
 
             return $"{rootName}.{leafName}";
+        }
+
+        #endregion
+
+        #region 辅助方法
+
+        /// <summary>
+        /// 获取叶子节点的显示名称（区分数组类型）
+        /// </summary>
+        /// <param name="node">叶子节点</param>
+        /// <returns>显示名称，数组类型追加 [] 后缀</returns>
+        private static string GetDisplayLeafName(TreeNodeData node)
+        {
+            var name = node.Text;
+            if (node.DataSource?.PropertyType?.IsArray == true)
+                name += "[]";
+            return name;
         }
 
         #endregion

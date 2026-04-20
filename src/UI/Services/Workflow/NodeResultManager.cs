@@ -130,6 +130,7 @@ namespace SunEyeVision.UI.Services.Workflow
 
             // ★ Step 1: 先准备所有新数据（不触发UI更新）
             // 使用反射获取所有输出属性（统一使用新机制）
+            var propertyMap = result.GetPropertyMap();
             var resultItems = result.GetType()
                 .GetProperties(BindingFlags.Public | BindingFlags.Instance)
                 .Where(p => !p.IsDefined(typeof(IgnoreBindAttribute)))
@@ -140,7 +141,8 @@ namespace SunEyeVision.UI.Services.Workflow
                 .Select(p =>
                 {
                     var value = p.GetValue(result);
-                    var displayName = result.GetPropertyTreeName(p.Name) ?? p.Name;
+                    var mapEntry = propertyMap.FirstOrDefault(e => e.PropertyName == p.Name);
+                    var displayName = mapEntry?.DisplayName ?? p.Name;
                     var unit = GetDisplayUnit(p.PropertyType);
                     
                     if (value == null) return ResultItem.Text(displayName, "null");

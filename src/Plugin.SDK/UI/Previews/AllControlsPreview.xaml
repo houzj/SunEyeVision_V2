@@ -257,7 +257,7 @@
 
                     <!-- 模拟绑定状态（使用固定文本模拟） -->
                     <controls:ParamBinding IsBound="True"
-                                          FriendlyBindingSource="节点1: 阈值"
+                                          BindingDisplayText="节点1.阈值"
                                           IconSymbol="🔗"/>
                 </StackPanel>
             </Border>

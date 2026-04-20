@@ -113,15 +113,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         public string? GroupName { get; set; }
 
         /// <summary>
-        /// 完整树形名称（用于树形结构显示）
-        /// </summary>
-        /// <remarks>
-        /// 格式: 节点名称.TreeName（如果存在）
-        /// 示例: "阈值工具.结果.实际使用的阈值"
-        /// </remarks>
-        public string? FullTreeName { get; set; }
-
-        /// <summary>
         /// 树节点（用于支持多层树形结构）
         /// </summary>
         /// <remarks>
@@ -130,36 +121,21 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         public TreeNodeData? TreeNode { get; set; }
 
         /// <summary>
-        /// 下拉显示文本（节点名称.树形路径）
+        /// 下拉显示文本（中文，用于界面显示）
         /// </summary>
         /// <remarks>
-        /// 格式: 节点名称.TreeName
-        /// 示例: "阈值工具.结果.实际使用的阈值"
+        /// 格式: "节点名.属性名"
+        /// 示例: "图像阈值化4.输出图像", "图像载入1.宽度"
         /// </remarks>
-        public string DropdownDisplayText => GetDropdownDisplayText();
-
-        /// <summary>
-        /// 获取下拉显示文本
-        /// </summary>
-        /// <returns>格式化的显示文本</returns>
-        private string GetDropdownDisplayText()
+        public string DropdownDisplayText
         {
-            string displayName = DisplayName;
-            
-            // 如果是数组类型，添加 [] 标记
-            if (PropertyType != null && PropertyType.IsArray)
+            get
             {
-                displayName += "[]";
+                string displayName = DisplayName;
+                if (PropertyType?.IsArray == true)
+                    displayName += "[]";
+                return $"{SourceNodeName}.{displayName}";
             }
-            
-            if (string.IsNullOrEmpty(FullTreeName))
-            {
-                // 如果没有 FullTreeName，使用节点名称+空格+显示名称
-                return $"{SourceNodeName} {displayName}";
-            }
-
-            // FullTreeName 已包含节点名称，将点号替换为空格，使其更友好
-            return FullTreeName.Replace(".", " ");
         }
 
         /// <summary>

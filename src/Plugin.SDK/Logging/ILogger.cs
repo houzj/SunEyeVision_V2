@@ -24,69 +24,70 @@ namespace SunEyeVision.Plugin.SDK.Logging
         /// <param name="message">日志消息</param>
         /// <param name="source">来源标识（节点名称、模块名、组件名等）</param>
         /// <param name="exception">异常信息</param>
-        void Log(LogLevel level, string message, string? source = null, Exception? exception = null);
+        /// <param name="target">日志目标通道（默认只写UI）</param>
+        void Log(LogLevel level, string message, string? source = null, Exception? exception = null, LogTarget target = LogTarget.UI);
 
         #region 日志方法
 
         /// <summary>
         /// 记录信息日志 - 状态变更、过程开始、中间状态
         /// </summary>
-        void Info(string message, string? source = null)
-            => Log(LogLevel.Info, message, source);
+        void Info(string message, string? source = null, LogTarget target = LogTarget.UI)
+            => Log(LogLevel.Info, message, source, null, target);
 
         /// <summary>
-        /// 记录信息日志（别名）- 兼容旧代码
+        /// 记录信息日志（别名）
         /// </summary>
-        void LogInfo(string message, string? source = null)
-            => Log(LogLevel.Info, message, source);
+        void LogInfo(string message, string? source = null, LogTarget target = LogTarget.UI)
+            => Log(LogLevel.Info, message, source, null, target);
 
         /// <summary>
         /// 记录成功日志 - 任务完成、结果达标
         /// </summary>
-        void Success(string message, string? source = null)
-            => Log(LogLevel.Success, message, source);
+        void Success(string message, string? source = null, LogTarget target = LogTarget.UI)
+            => Log(LogLevel.Success, message, source, null, target);
 
         /// <summary>
-        /// 记录成功日志（别名）- 兼容旧代码
+        /// 记录成功日志（别名）
         /// </summary>
-        void LogSuccess(string message, string? source = null)
-            => Log(LogLevel.Success, message, source);
+        void LogSuccess(string message, string? source = null, LogTarget target = LogTarget.UI)
+            => Log(LogLevel.Success, message, source, null, target);
 
         /// <summary>
         /// 记录警告日志 - 有问题但程序能继续运行
         /// </summary>
-        void Warning(string message, string? source = null)
-            => Log(LogLevel.Warning, message, source);
+        void Warning(string message, string? source = null, LogTarget target = LogTarget.UI)
+            => Log(LogLevel.Warning, message, source, null, target);
 
         /// <summary>
-        /// 记录警告日志（别名）- 兼容旧代码
+        /// 记录警告日志（别名）
         /// </summary>
-        void LogWarning(string message, string? source = null)
-            => Log(LogLevel.Warning, message, source);
+        void LogWarning(string message, string? source = null, LogTarget target = LogTarget.UI)
+            => Log(LogLevel.Warning, message, source, null, target);
 
         /// <summary>
         /// 记录错误日志 - 失败/异常，需要处理
         /// </summary>
-        void Error(string message, string? source = null, Exception? exception = null)
-            => Log(LogLevel.Error, message, source, exception);
+        void Error(string message, string? source = null, Exception? exception = null, LogTarget target = LogTarget.UI)
+            => Log(LogLevel.Error, message, source, exception, target);
 
         /// <summary>
         /// 记录错误日志（带异常）- 便捷方法
         /// </summary>
-        void Error(string message, Exception? exception)
-            => Log(LogLevel.Error, message, null, exception);
+        void Error(string message, Exception? exception, LogTarget target = LogTarget.UI)
+            => Log(LogLevel.Error, message, null, exception, target);
 
         /// <summary>
-        /// 记录错误日志（别名）- 兼容旧代码
+        /// 记录错误日志（别名）
         /// </summary>
-        void LogError(string message, string? source = null, Exception? exception = null)
-            => Log(LogLevel.Error, message, source, exception);
+        void LogError(string message, string? source = null, Exception? exception = null, LogTarget target = LogTarget.UI)
+            => Log(LogLevel.Error, message, source, exception, target);
 
         /// <summary>
         /// 记录错误日志（别名，带异常）- 便捷方法
         /// </summary>
-        void LogError(string message, Exception? exception)
-            => Log(LogLevel.Error, message, null, exception);
+        void LogError(string message, Exception? exception, LogTarget target = LogTarget.UI)
+            => Log(LogLevel.Error, message, null, exception, target);
 
         #endregion
 

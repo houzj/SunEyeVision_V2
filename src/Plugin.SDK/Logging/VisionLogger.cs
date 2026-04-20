@@ -186,10 +186,10 @@ namespace SunEyeVision.Plugin.SDK.Logging
         /// <summary>
         /// 记录日志（核心方法）- 高性能非阻塞
         /// </summary>
-        public void Log(LogLevel level, string message, string? source = null, Exception? exception = null)
+        public void Log(LogLevel level, string message, string? source = null, Exception? exception = null, LogTarget target = LogTarget.UI)
         {
 #if DEBUG
-            System.Diagnostics.Debug.WriteLine($"[VisionLogger] Log 调用: level={level}, message={message}, source={source}, isEnabled={IsEnabled}, minLevel={_minLevel}, queueSize={_queue.Count}, writerCount={WriterCount}");
+            System.Diagnostics.Debug.WriteLine($"[VisionLogger] Log 调用: level={level}, message={message}, source={source}, target={target}, isEnabled={IsEnabled}, minLevel={_minLevel}, queueSize={_queue.Count}, writerCount={WriterCount}");
 #endif
 
             if (!IsEnabled || level < _minLevel)
@@ -203,21 +203,21 @@ namespace SunEyeVision.Plugin.SDK.Logging
             // 检查队列容量
             if (_queue.Count >= MaxQueueSize)
             {
-                // 丢弃最旧的日志
                 _queue.TryDequeue(out _);
                 Interlocked.Increment(ref _totalDropped);
             }
 
-            // 创建日志条目
             var entry = LogEntry.Create(
                 Interlocked.Increment(ref _idCounter),
                 level,
                 message,
                 source ?? _defaultSource,
-                exception
+                exception,
+                null,
+                null,
+                target
             );
 
-            // 入队（极快速操作）
             _queue.Enqueue(entry);
             Interlocked.Increment(ref _totalEnqueued);
 
@@ -225,7 +225,6 @@ namespace SunEyeVision.Plugin.SDK.Logging
             System.Diagnostics.Debug.WriteLine($"[VisionLogger] Log 入队成功: id={entry.Id}, totalEnqueued={TotalEnqueued}");
 #endif
 
-            // 队列告警
             if (_queue.Count > QueueWarningThreshold)
             {
 #if DEBUG
@@ -237,26 +236,17 @@ namespace SunEyeVision.Plugin.SDK.Logging
         /// <summary>
         /// 记录信息日志
         /// </summary>
-        public void Info(string message, string? source = null)
-            => Log(LogLevel.Info, message, source);
+        public void Info(string message, string? source = null, LogTarget target = LogTarget.UI)
+            => Log(LogLevel.Info, message, source, null, target);
 
-        /// <summary>
-        /// 记录成功日志
-        /// </summary>
-        public void Success(string message, string? source = null)
-            => Log(LogLevel.Success, message, source);
+        public void Success(string message, string? source = null, LogTarget target = LogTarget.UI)
+            => Log(LogLevel.Success, message, source, null, target);
 
-        /// <summary>
-        /// 记录警告日志
-        /// </summary>
-        public void Warning(string message, string? source = null)
-            => Log(LogLevel.Warning, message, source);
+        public void Warning(string message, string? source = null, LogTarget target = LogTarget.UI)
+            => Log(LogLevel.Warning, message, source, null, target);
 
-        /// <summary>
-        /// 记录错误日志
-        /// </summary>
-        public void Error(string message, string? source = null, Exception? exception = null)
-            => Log(LogLevel.Error, message, source, exception);
+        public void Error(string message, string? source = null, Exception? exception = null, LogTarget target = LogTarget.UI)
+            => Log(LogLevel.Error, message, source, exception, target);
 
         /// <summary>
         /// 创建带预设来源的日志器
@@ -390,21 +380,17 @@ namespace SunEyeVision.Plugin.SDK.Logging
                     {
                         if (writer.IsEnabled)
                         {
-                            // 过滤低于写入器最低级别的日志
-                            var filtered = entries.Where(e => e.Level >= writer.MinLevel).ToList();
+                            var filtered = entries
+                                .Where(e => e.Level >= writer.MinLevel)
+                                .Where(e => writer.Accepts(e.Target))
+                                .ToList();
 #if DEBUG
-                            System.Diagnostics.Debug.WriteLine($"[VisionLogger] 分发到 {writer.Name}: filtered={filtered.Count}/{entries.Count}, MinLevel={writer.MinLevel}");
+                            System.Diagnostics.Debug.WriteLine($"[VisionLogger] 分发到 {writer.Name}: filtered={filtered.Count}/{entries.Count}, MinLevel={writer.MinLevel}, Channel={writer.Channel}");
 #endif
                             if (filtered.Count > 0)
                             {
                                 writer.WriteBatch(filtered);
                             }
-                        }
-                        else
-                        {
-#if DEBUG
-                            System.Diagnostics.Debug.WriteLine($"[VisionLogger] 写入器 {writer.Name} 未启用 (IsEnabled={writer.IsEnabled})");
-#endif
                         }
                     }
                     catch (Exception ex)

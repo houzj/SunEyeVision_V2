@@ -18,6 +18,7 @@ namespace SunEyeVision.Plugin.SDK.Logging
         public string Name => "ConsoleLogger";
         public string Description => "控制台输出写入器";
 
+        public LogTarget Channel => LogTarget.Console;
         public LogLevel MinLevel { get; set; } = LogLevel.Info;
         public bool IsEnabled { get; set; } = true;
 

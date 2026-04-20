@@ -38,44 +38,28 @@ namespace SunEyeVision.UI.ViewModels
         /// </summary>
         /// <param name="message">日志消息</param>
         /// <param name="source">来源标识</param>
-        protected void LogInfo(string message, string? source = null)
+        protected void LogInfo(string message, string? source = null, LogTarget target = LogTarget.UI)
         {
             var logger = VisionLogger.Instance;
-            logger.Info(message, source ?? GetLogSource());
+            logger.Info(message, source ?? GetLogSource(), target);
         }
 
-        /// <summary>
-        /// 记录成功日志
-        /// </summary>
-        /// <param name="message">日志消息</param>
-        /// <param name="source">来源标识</param>
-        protected void LogSuccess(string message, string? source = null)
+        protected void LogSuccess(string message, string? source = null, LogTarget target = LogTarget.UI)
         {
             var logger = VisionLogger.Instance;
-            logger.Success(message, source ?? GetLogSource());
+            logger.Success(message, source ?? GetLogSource(), target);
         }
 
-        /// <summary>
-        /// 记录警告日志
-        /// </summary>
-        /// <param name="message">日志消息</param>
-        /// <param name="source">来源标识</param>
-        public void LogWarning(string message, string? source = null)
+        public void LogWarning(string message, string? source = null, LogTarget target = LogTarget.UI)
         {
             var logger = VisionLogger.Instance;
-            logger.Warning(message, source ?? GetLogSource());
+            logger.Warning(message, source ?? GetLogSource(), target);
         }
 
-        /// <summary>
-        /// 记录错误日志
-        /// </summary>
-        /// <param name="message">日志消息</param>
-        /// <param name="source">来源标识</param>
-        /// <param name="exception">异常信息</param>
-        protected void LogError(string message, string? source = null, Exception? exception = null)
+        protected void LogError(string message, string? source = null, Exception? exception = null, LogTarget target = LogTarget.UI)
         {
             var logger = VisionLogger.Instance;
-            logger.Error(message, source ?? GetLogSource(), exception);
+            logger.Error(message, source ?? GetLogSource(), exception, target);
         }
 
         /// <summary>

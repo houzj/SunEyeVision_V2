@@ -50,26 +50,17 @@
         /// <summary>
         /// 记录信息日志
         /// </summary>
-        public static void Info(string message, string? source = null)
-            => Logger.Info(message, source);
+        public static void Info(string message, string? source = null, LogTarget target = LogTarget.UI)
+            => Logger.Info(message, source, target);
 
-        /// <summary>
-        /// 记录成功日志
-        /// </summary>
-        public static void Success(string message, string? source = null)
-            => Logger.Success(message, source);
+        public static void Success(string message, string? source = null, LogTarget target = LogTarget.UI)
+            => Logger.Success(message, source, target);
 
-        /// <summary>
-        /// 记录警告日志
-        /// </summary>
-        public static void Warning(string message, string? source = null)
-            => Logger.Warning(message, source);
+        public static void Warning(string message, string? source = null, LogTarget target = LogTarget.UI)
+            => Logger.Warning(message, source, target);
 
-        /// <summary>
-        /// 记录错误日志
-        /// </summary>
-        public static void Error(string message, string? source = null, System.Exception? exception = null)
-            => Logger.Error(message, source, exception);
+        public static void Error(string message, string? source = null, System.Exception? exception = null, LogTarget target = LogTarget.UI)
+            => Logger.Error(message, source, exception, target);
 
         /// <summary>
         /// 记录参数变更日志
@@ -157,7 +148,7 @@
     {
         public static readonly NullLogger Instance = new();
 
-        public void Log(LogLevel level, string message, string? source = null, System.Exception? exception = null)
+        public void Log(LogLevel level, string message, string? source = null, System.Exception? exception = null, LogTarget target = LogTarget.UI)
         {
             // 不执行任何操作
         }

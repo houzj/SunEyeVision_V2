@@ -1,7 +1,6 @@
-using System;
+﻿using System;
 using System.Globalization;
 using System.Windows.Data;
-using OpenCvSharp;
 
 namespace SunEyeVision.Tool.Threshold.Converters
 {

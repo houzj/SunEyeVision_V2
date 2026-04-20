@@ -204,12 +204,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
     /// </summary>
     internal class NullLogger : ILogger
     {
-        public void Log(LogLevel level, string message, string? source = null, Exception? exception = null) { }
-        
-        public void LogDebug(string message) { }
-        public void LogInfo(string message) { }
-        public void LogWarning(string message) { }
-        public void LogError(string message, Exception? exception = null) { }
+        public void Log(LogLevel level, string message, string? source = null, Exception? exception = null, LogTarget target = LogTarget.UI) { }
         
         public ILogger ForSource(string source) => this;
     }

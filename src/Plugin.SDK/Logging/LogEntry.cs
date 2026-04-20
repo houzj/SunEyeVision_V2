@@ -48,6 +48,11 @@ namespace SunEyeVision.Plugin.SDK.Logging
         public Exception? Exception { get; init; }
 
         /// <summary>
+        /// 日志目标通道（控制写入哪些写入器）
+        /// </summary>
+        public LogTarget Target { get; init; } = LogTarget.UI;
+
+        /// <summary>
         /// 扩展属性（用于存储额外上下文信息）
         /// </summary>
         public Dictionary<string, object?>? Properties { get; init; }
@@ -185,7 +190,8 @@ namespace SunEyeVision.Plugin.SDK.Logging
             string? source = null,
             Exception? exception = null,
             Dictionary<string, object?>? properties = null,
-            string? traceId = null)
+            string? traceId = null,
+            LogTarget target = LogTarget.UI)
         {
             return new LogEntry
             {
@@ -196,7 +202,8 @@ namespace SunEyeVision.Plugin.SDK.Logging
                 Source = source,
                 Exception = exception,
                 Properties = properties,
-                TraceId = traceId
+                TraceId = traceId,
+                Target = target
             };
         }
 

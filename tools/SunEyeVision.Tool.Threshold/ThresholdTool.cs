@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
-using System.Windows.Media.Animation;
 using OpenCvSharp;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
@@ -197,10 +196,41 @@ namespace SunEyeVision.Tool.Threshold
 
                 // 设置结果
                 result.OutputImage = outputImage;
-                result.ThresholdUsed =(int) actualThreshold;
-                result.MaxValueUsed =(int) maxValue;
+                result.ThresholdUsed = (int)actualThreshold;
+                result.MaxValueUsed = (int)maxValue;
                 result.ThresholdUsedDouble = actualThreshold;
                 result.MaxValueUsedDouble = maxValue;
+
+                // 计算灰度直方图
+                var histogram = new Mat();
+                Cv2.CalcHist(
+                    new[] { grayImage },
+                    new[] { 0 },
+                    null,
+                    histogram,
+                    1,                                          // dims: 直方图维度
+                    new[] { 256 },                             // histSize: 每个维度的直方图大小
+                    new Rangef[] { new Rangef(0f, 256f) },    // ranges: 每个维度的范围
+                    true);                                      // accumulate: 是否累加
+
+                var histData = new double[256];
+                for (int i = 0; i < 256; i++)
+                    histData[i] = histogram.At<float>(i);
+                histogram.Dispose();
+                result.HistogramData = histData;
+
+                // 计算通道均值
+                if (image.Channels() >= 3)
+                {
+                    Cv2.MeanStdDev(image, out var means, out _);
+                    result.ChannelMeans = new double[] { means.Val0, means.Val1, means.Val2 };
+                }
+                else
+                {
+                    var mean = Cv2.Mean(grayImage);
+                    result.ChannelMeans = new double[] { mean.Val0 };
+                }
+
                 result.TypeUsed = type;
                 result.AdaptiveMethodUsed = adaptiveMethod;
                 result.BlockSizeUsed = blockSize;

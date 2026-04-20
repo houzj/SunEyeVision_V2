@@ -25,26 +25,17 @@ namespace SunEyeVision.Plugin.SDK.Logging
         /// <param name="logger">日志器</param>
         /// <param name="nodeName">节点名称</param>
         /// <param name="message">日志消息</param>
-        public static void NodeInfo(this ILogger logger, string nodeName, string message)
-            => logger.Info(message, nodeName);
+        public static void NodeInfo(this ILogger logger, string nodeName, string message, LogTarget target = LogTarget.UI)
+            => logger.Info(message, nodeName, target);
 
-        /// <summary>
-        /// 记录节点成功日志
-        /// </summary>
-        public static void NodeSuccess(this ILogger logger, string nodeName, string message)
-            => logger.Success(message, nodeName);
+        public static void NodeSuccess(this ILogger logger, string nodeName, string message, LogTarget target = LogTarget.UI)
+            => logger.Success(message, nodeName, target);
 
-        /// <summary>
-        /// 记录节点警告日志
-        /// </summary>
-        public static void NodeWarning(this ILogger logger, string nodeName, string message)
-            => logger.Warning(message, nodeName);
+        public static void NodeWarning(this ILogger logger, string nodeName, string message, LogTarget target = LogTarget.UI)
+            => logger.Warning(message, nodeName, target);
 
-        /// <summary>
-        /// 记录节点错误日志
-        /// </summary>
-        public static void NodeError(this ILogger logger, string nodeName, string message, Exception? ex = null)
-            => logger.Error(message, nodeName, ex);
+        public static void NodeError(this ILogger logger, string nodeName, string message, Exception? ex = null, LogTarget target = LogTarget.UI)
+            => logger.Error(message, nodeName, ex, target);
 
         #endregion
 
@@ -53,26 +44,17 @@ namespace SunEyeVision.Plugin.SDK.Logging
         /// <summary>
         /// 记录工作流引擎信息日志
         /// </summary>
-        public static void EngineInfo(this ILogger logger, string message)
-            => logger.Info(message, LogSources.WorkflowEngine);
+        public static void EngineInfo(this ILogger logger, string message, LogTarget target = LogTarget.UI)
+            => logger.Info(message, LogSources.WorkflowEngine, target);
 
-        /// <summary>
-        /// 记录工作流引擎成功日志
-        /// </summary>
-        public static void EngineSuccess(this ILogger logger, string message)
-            => logger.Success(message, LogSources.WorkflowEngine);
+        public static void EngineSuccess(this ILogger logger, string message, LogTarget target = LogTarget.UI)
+            => logger.Success(message, LogSources.WorkflowEngine, target);
 
-        /// <summary>
-        /// 记录工作流引擎警告日志
-        /// </summary>
-        public static void EngineWarning(this ILogger logger, string message)
-            => logger.Warning(message, LogSources.WorkflowEngine);
+        public static void EngineWarning(this ILogger logger, string message, LogTarget target = LogTarget.UI)
+            => logger.Warning(message, LogSources.WorkflowEngine, target);
 
-        /// <summary>
-        /// 记录工作流引擎错误日志
-        /// </summary>
-        public static void EngineError(this ILogger logger, string message, Exception? ex = null)
-            => logger.Error(message, LogSources.WorkflowEngine, ex);
+        public static void EngineError(this ILogger logger, string message, Exception? ex = null, LogTarget target = LogTarget.UI)
+            => logger.Error(message, LogSources.WorkflowEngine, ex, target);
 
         #endregion
 
@@ -81,26 +63,17 @@ namespace SunEyeVision.Plugin.SDK.Logging
         /// <summary>
         /// 记录设备信息日志
         /// </summary>
-        public static void DeviceInfo(this ILogger logger, string deviceName, string message)
-            => logger.Info(message, deviceName);
+        public static void DeviceInfo(this ILogger logger, string deviceName, string message, LogTarget target = LogTarget.UI)
+            => logger.Info(message, deviceName, target);
 
-        /// <summary>
-        /// 记录设备成功日志
-        /// </summary>
-        public static void DeviceSuccess(this ILogger logger, string deviceName, string message)
-            => logger.Success(message, deviceName);
+        public static void DeviceSuccess(this ILogger logger, string deviceName, string message, LogTarget target = LogTarget.UI)
+            => logger.Success(message, deviceName, target);
 
-        /// <summary>
-        /// 记录设备警告日志
-        /// </summary>
-        public static void DeviceWarning(this ILogger logger, string deviceName, string message)
-            => logger.Warning(message, deviceName);
+        public static void DeviceWarning(this ILogger logger, string deviceName, string message, LogTarget target = LogTarget.UI)
+            => logger.Warning(message, deviceName, target);
 
-        /// <summary>
-        /// 记录设备错误日志
-        /// </summary>
-        public static void DeviceError(this ILogger logger, string deviceName, string message, Exception? ex = null)
-            => logger.Error(message, deviceName, ex);
+        public static void DeviceError(this ILogger logger, string deviceName, string message, Exception? ex = null, LogTarget target = LogTarget.UI)
+            => logger.Error(message, deviceName, ex, target);
 
         #endregion
 
@@ -109,26 +82,17 @@ namespace SunEyeVision.Plugin.SDK.Logging
         /// <summary>
         /// 记录系统信息日志
         /// </summary>
-        public static void SystemInfo(this ILogger logger, string message)
-            => logger.Info(message, LogSources.System);
+        public static void SystemInfo(this ILogger logger, string message, LogTarget target = LogTarget.UI)
+            => logger.Info(message, LogSources.System, target);
 
-        /// <summary>
-        /// 记录系统成功日志
-        /// </summary>
-        public static void SystemSuccess(this ILogger logger, string message)
-            => logger.Success(message, LogSources.System);
+        public static void SystemSuccess(this ILogger logger, string message, LogTarget target = LogTarget.UI)
+            => logger.Success(message, LogSources.System, target);
 
-        /// <summary>
-        /// 记录系统警告日志
-        /// </summary>
-        public static void SystemWarning(this ILogger logger, string message)
-            => logger.Warning(message, LogSources.System);
+        public static void SystemWarning(this ILogger logger, string message, LogTarget target = LogTarget.UI)
+            => logger.Warning(message, LogSources.System, target);
 
-        /// <summary>
-        /// 记录系统错误日志
-        /// </summary>
-        public static void SystemError(this ILogger logger, string message, Exception? ex = null)
-            => logger.Error(message, LogSources.System, ex);
+        public static void SystemError(this ILogger logger, string message, Exception? ex = null, LogTarget target = LogTarget.UI)
+            => logger.Error(message, LogSources.System, ex, target);
 
         #endregion
 
@@ -137,26 +101,17 @@ namespace SunEyeVision.Plugin.SDK.Logging
         /// <summary>
         /// 记录UI组件信息日志
         /// </summary>
-        public static void UIInfo(this ILogger logger, string componentName, string message)
-            => logger.Info(message, componentName);
+        public static void UIInfo(this ILogger logger, string componentName, string message, LogTarget target = LogTarget.UI)
+            => logger.Info(message, componentName, target);
 
-        /// <summary>
-        /// 记录UI组件成功日志
-        /// </summary>
-        public static void UISuccess(this ILogger logger, string componentName, string message)
-            => logger.Success(message, componentName);
+        public static void UISuccess(this ILogger logger, string componentName, string message, LogTarget target = LogTarget.UI)
+            => logger.Success(message, componentName, target);
 
-        /// <summary>
-        /// 记录UI组件警告日志
-        /// </summary>
-        public static void UIWarning(this ILogger logger, string componentName, string message)
-            => logger.Warning(message, componentName);
+        public static void UIWarning(this ILogger logger, string componentName, string message, LogTarget target = LogTarget.UI)
+            => logger.Warning(message, componentName, target);
 
-        /// <summary>
-        /// 记录UI组件错误日志
-        /// </summary>
-        public static void UIError(this ILogger logger, string componentName, string message, Exception? ex = null)
-            => logger.Error(message, componentName, ex);
+        public static void UIError(this ILogger logger, string componentName, string message, Exception? ex = null, LogTarget target = LogTarget.UI)
+            => logger.Error(message, componentName, ex, target);
 
         #endregion
 
@@ -165,26 +120,17 @@ namespace SunEyeVision.Plugin.SDK.Logging
         /// <summary>
         /// 记录插件信息日志
         /// </summary>
-        public static void PluginInfo(this ILogger logger, string pluginName, string message)
-            => logger.Info(message, pluginName);
+        public static void PluginInfo(this ILogger logger, string pluginName, string message, LogTarget target = LogTarget.UI)
+            => logger.Info(message, pluginName, target);
 
-        /// <summary>
-        /// 记录插件成功日志
-        /// </summary>
-        public static void PluginSuccess(this ILogger logger, string pluginName, string message)
-            => logger.Success(message, pluginName);
+        public static void PluginSuccess(this ILogger logger, string pluginName, string message, LogTarget target = LogTarget.UI)
+            => logger.Success(message, pluginName, target);
 
-        /// <summary>
-        /// 记录插件警告日志
-        /// </summary>
-        public static void PluginWarning(this ILogger logger, string pluginName, string message)
-            => logger.Warning(message, pluginName);
+        public static void PluginWarning(this ILogger logger, string pluginName, string message, LogTarget target = LogTarget.UI)
+            => logger.Warning(message, pluginName, target);
 
-        /// <summary>
-        /// 记录插件错误日志
-        /// </summary>
-        public static void PluginError(this ILogger logger, string pluginName, string message, Exception? ex = null)
-            => logger.Error(message, pluginName, ex);
+        public static void PluginError(this ILogger logger, string pluginName, string message, Exception? ex = null, LogTarget target = LogTarget.UI)
+            => logger.Error(message, pluginName, ex, target);
 
         #endregion
     }

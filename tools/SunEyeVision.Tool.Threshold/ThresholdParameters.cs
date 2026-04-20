@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Metadata;
 using SunEyeVision.Plugin.SDK.Validation;
-using System.Text.Json.Serialization;
 using SunEyeVision.Tool.Threshold.Models;
 
 namespace SunEyeVision.Tool.Threshold
@@ -82,28 +81,28 @@ namespace SunEyeVision.Tool.Threshold
         /// 框架层使用：parameters.Threshold.BindingConfig
         /// </remarks>
         [JsonPropertyOrder(0)]
-        public ParamValue<int> Threshold { get; set; } = 
+        public ParamValue<int> Threshold { get; set; } =
             ParamValue<int>.CreateConstant(128, "Threshold");
 
         /// <summary>
         /// 超过阈值时使用的最大值(0-255)
         /// </summary>
         [JsonPropertyOrder(1)]
-        public ParamValue<int> MaxValue { get; set; } = 
+        public ParamValue<int> MaxValue { get; set; } =
             ParamValue<int>.CreateConstant(255, "MaxValue");
 
         /// <summary>
         /// 二值化方法
         /// </summary>
         [JsonPropertyOrder(2)]
-        public ParamValue<ThresholdType> Type { get; set; } = 
+        public ParamValue<ThresholdType> Type { get; set; } =
             ParamValue<ThresholdType>.CreateConstant(ThresholdType.Binary, "Type");
 
         /// <summary>
         /// 是否反转二值化结果
         /// </summary>
         [JsonPropertyOrder(3)]
-        public ParamValue<bool> Invert { get; set; } = 
+        public ParamValue<bool> Invert { get; set; } =
             ParamValue<bool>.CreateConstant(false, "Invert");
 
         #endregion
@@ -114,14 +113,14 @@ namespace SunEyeVision.Tool.Threshold
         /// 自适应阈值方法
         /// </summary>
         [JsonPropertyOrder(4)]
-        public ParamValue<AdaptiveMethod> AdaptiveMethod { get; set; } = 
+        public ParamValue<AdaptiveMethod> AdaptiveMethod { get; set; } =
             ParamValue<AdaptiveMethod>.CreateConstant(SunEyeVision.Tool.Threshold.AdaptiveMethod.Mean, "AdaptiveMethod");
 
         /// <summary>
         /// 计算阈值的邻域大小(奇数, 3-31)
         /// </summary>
         [JsonPropertyOrder(5)]
-        public ParamValue<int> BlockSize { get; set; } = 
+        public ParamValue<int> BlockSize { get; set; } =
             ParamValue<int>.CreateConstant(11, "BlockSize");
 
         #endregion

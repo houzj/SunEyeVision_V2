@@ -43,6 +43,7 @@ namespace SunEyeVision.UI.Services.Logging
         public string Name => "UILogger";
         public string Description => "UI界面日志写入器";
 
+        public LogTarget Channel => LogTarget.UI;
         public LogLevel MinLevel { get; set; } = LogLevel.Info;
         public bool IsEnabled { get; set; } = true;
 

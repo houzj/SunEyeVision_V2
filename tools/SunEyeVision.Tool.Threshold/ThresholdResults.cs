@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using OpenCvSharp;
 using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.Metadata;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 
 namespace SunEyeVision.Tool.Threshold
@@ -41,6 +40,16 @@ namespace SunEyeVision.Tool.Threshold
         /// 最大值（Double 类型，用于参数绑定）
         /// </summary>
         public double MaxValueUsedDouble { get; set; }
+
+        /// <summary>
+        /// 灰度直方图数据（256个bin，值域0~1）
+        /// </summary>
+        public double[] HistogramData { get; set; } = Array.Empty<double>();
+
+        /// <summary>
+        /// 通道均值（BGR三通道或灰度单通道）
+        /// </summary>
+        public double[] ChannelMeans { get; set; } = Array.Empty<double>();
 
         /// <summary>
         /// 使用的自适应方法
@@ -113,6 +122,8 @@ namespace SunEyeVision.Tool.Threshold
                 new("MaxValueUsed",         "最大值",                 "结果"),
                 new("ThresholdUsedDouble",  "实际使用的阈值(Double)",  "结果"),
                 new("MaxValueUsedDouble",   "最大值(Double)",          "结果"),
+                new("HistogramData",        "直方图数据",              "统计"),
+                new("ChannelMeans",         "通道均值",                "统计"),
                 new("TypeUsed",             "阈值类型",               "结果"),
                 new("AdaptiveMethodUsed",   "自适应方法",             "结果"),
                 new("BlockSizeUsed",        "块大小",                 "结果"),

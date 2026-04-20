@@ -42,6 +42,7 @@ namespace SunEyeVision.Plugin.SDK.Logging
         public string Name => "FileLogger";
         public string Description => "文件日志写入器";
 
+        public LogTarget Channel => LogTarget.File;
         public LogLevel MinLevel { get; set; } = LogLevel.Info;
         public bool IsEnabled { get; set; } = true;
 

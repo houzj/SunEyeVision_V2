@@ -19,6 +19,7 @@ namespace SunEyeVision.Plugin.SDK.Logging
         public string Name => "DebugLogger";
         public string Description => "调试输出写入器";
 
+        public LogTarget Channel => LogTarget.Debug;
         public LogLevel MinLevel { get; set; } = LogLevel.Info;
         public bool IsEnabled { get; set; } = true;
 

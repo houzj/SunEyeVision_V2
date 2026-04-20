@@ -1,19 +1,11 @@
 ﻿using System;
-using System.Collections.ObjectModel;
-using System.Linq;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
 using OpenCvSharp;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Metadata;
 using SunEyeVision.Plugin.SDK.UI.Controls;
-using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
-using SunEyeVision.Plugin.SDK.UI.Controls.Region.Views;
-using SunEyeVision.Plugin.SDK.UI.Controls.Region.ViewModels;
-using SunEyeVision.Tool.Threshold.Models;
 
 namespace SunEyeVision.Tool.Threshold.Views
 {

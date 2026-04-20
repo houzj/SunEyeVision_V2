@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace SunEyeVision.Plugin.SDK.Logging
 {
@@ -36,6 +36,11 @@ namespace SunEyeVision.Plugin.SDK.Logging
         bool IsEnabled { get; set; }
 
         /// <summary>
+        /// 此写入器处理的日志通道
+        /// </summary>
+        LogTarget Channel { get; }
+
+        /// <summary>
         /// 写入单条日志
         /// </summary>
         /// <param name="entry">日志条目</param>
@@ -65,6 +70,16 @@ namespace SunEyeVision.Plugin.SDK.Logging
         /// 刷新缓冲区（用于文件等需要持久化的写入器）
         /// </summary>
         void Flush() { }
+
+        /// <summary>
+        /// 判断此写入器是否接受指定目标的日志
+        /// </summary>
+        bool Accepts(LogTarget target)
+        {
+            if (target == LogTarget.None) return false;
+            if (target == LogTarget.All) return true;
+            return (Channel & target) != 0;
+        }
 
         /// <summary>
         /// 释放资源

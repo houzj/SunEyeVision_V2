@@ -30,6 +30,18 @@ namespace SunEyeVision.Plugin.SDK.Logging
         #region 日志方法
 
         /// <summary>
+        /// 记录诊断日志 - 实现细节、内部状态（需开启诊断模式）
+        /// </summary>
+        void Debug(string message, string? source = null, LogTarget target = LogTarget.UI)
+            => Log(LogLevel.Debug, message, source, null, target);
+
+        /// <summary>
+        /// 记录诊断日志（别名）
+        /// </summary>
+        void LogDebug(string message, string? source = null, LogTarget target = LogTarget.UI)
+            => Log(LogLevel.Debug, message, source, null, target);
+
+        /// <summary>
         /// 记录信息日志 - 状态变更、过程开始、中间状态
         /// </summary>
         void Info(string message, string? source = null, LogTarget target = LogTarget.UI)

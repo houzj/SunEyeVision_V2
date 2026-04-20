@@ -59,10 +59,7 @@ namespace SunEyeVision.UI.Services.Thumbnail.Caching
             {
                 Directory.CreateDirectory(_cachePath);
             }
-
-            Debug.WriteLine($"[GPUCache] 初始化完成 - 内存缓存:{_maxMemoryCacheSize}张, 磁盘缓存:{_maxDiskCacheSizeMB}MB, 路径:{_cachePath}");
-
-            // 启动时清理过期缓存
+// 启动时清理过期缓存
             Task.Run(() => CleanupOldCache());
         }
 
@@ -189,8 +186,7 @@ namespace SunEyeVision.UI.Services.Thumbnail.Caching
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[GPUCache] 磁盘缓存读取失败: {ex.Message}");
-                // 删除损坏的缓存文件
+// 删除损坏的缓存文件
                 try
                 {
                     File.Delete(cacheFile);
@@ -219,10 +215,7 @@ namespace SunEyeVision.UI.Services.Thumbnail.Caching
                 {
                     _diskCacheKeys.Add(cacheKey);
                 }
-
-                Debug.WriteLine($"[GPUCache] ✓ 已保存到磁盘缓存: {System.IO.Path.GetFileName(cacheFile)}");
-
-                // 随机触发清理（5%概率）
+// 随机触发清理（5%概率）
                 if (new Random().Next(100) < 5)
                 {
                     CleanupOldCache();
@@ -230,8 +223,7 @@ namespace SunEyeVision.UI.Services.Thumbnail.Caching
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[GPUCache] 磁盘缓存保存失败: {ex.Message}");
-            }
+}
         }
 
         /// <summary>
@@ -270,13 +262,11 @@ namespace SunEyeVision.UI.Services.Thumbnail.Caching
 
                 if (removedCount > 0)
                 {
-                    Debug.WriteLine($"[GPUCache] ✓ 已清理磁盘缓存 - 删除了 {removedCount} 个文件");
-                }
+}
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[GPUCache] 磁盘缓存清理失败: {ex.Message}");
-            }
+}
         }
 
         /// <summary>
@@ -303,13 +293,10 @@ namespace SunEyeVision.UI.Services.Thumbnail.Caching
                     }
                     catch { }
                 }
-
-                Debug.WriteLine($"[GPUCache] ✓ 已清除所有缓存 - 删除了 {files.Length} 个磁盘缓存文件");
-            }
+}
             catch (Exception ex)
             {
-                Debug.WriteLine($"[GPUCache] 清除缓存失败: {ex.Message}");
-            }
+}
         }
 
         /// <summary>

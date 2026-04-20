@@ -31,6 +31,7 @@ namespace SunEyeVision.UI.ViewModels
         private readonly UILogWriter _uiLogWriter;
         private readonly VisionLogger _logger;
         private bool _autoScroll = true;
+        private bool _isDiagnosticMode = false;
         private bool _showInfo = true;
         private bool _showSuccess = true;
         private bool _showWarning = true;
@@ -62,6 +63,25 @@ namespace SunEyeVision.UI.ViewModels
         {
             get => _autoScroll;
             set => SetProperty(ref _autoScroll, value);
+        }
+
+        /// <summary>
+        /// 是否开启诊断模式（开启后显示 Debug 级别日志）
+        /// </summary>
+        public bool IsDiagnosticMode
+        {
+            get => _isDiagnosticMode;
+            set
+            {
+                if (SetProperty(ref _isDiagnosticMode, value))
+                {
+                    // 切换 VisionLogger 全局最低级别
+                    _logger.MinLevel = value ? LogLevel.Debug : LogLevel.Info;
+                    // 同步 UILogWriter 的最低级别（UILogWriter.WriteBatch 中会再次过滤）
+                    _uiLogWriter.MinLevel = value ? LogLevel.Debug : LogLevel.Info;
+                    RefreshFilter();
+                }
+            }
         }
 
         /// <summary>
@@ -343,6 +363,7 @@ namespace SunEyeVision.UI.ViewModels
             // 级别过滤
             var levelVisible = entry.Level switch
             {
+                LogLevel.Debug => IsDiagnosticMode,
                 LogLevel.Info => ShowInfo,
                 LogLevel.Success => ShowSuccess,
                 LogLevel.Warning => ShowWarning,

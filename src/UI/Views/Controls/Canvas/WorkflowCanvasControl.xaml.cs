@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 using System.Collections.Generic;
 
@@ -392,21 +392,6 @@ namespace SunEyeVision.UI.Views.Controls.Canvas
             if (DataContext is WorkflowTabViewModel workflowTab)
 
             {
-
-                // System.Diagnostics.Debug.WriteLine("[WorkflowCanvas DataContextChanged] ════════════════════════════════════");
-
-                // System.Diagnostics.Debug.WriteLine($"[WorkflowCanvas DataContextChanged] DataContext已设置为: {workflowTab.Name}");
-
-                // System.Diagnostics.Debug.WriteLine($"[WorkflowCanvas DataContextChanged]   Id: {workflowTab.Id}");
-
-                // System.Diagnostics.Debug.WriteLine($"[WorkflowCanvas DataContextChanged]   节点数: {workflowTab.WorkflowNodes?.Count ?? 0}, 连接数: {workflowTab.WorkflowConnections?.Count ?? 0}");
-
-                // System.Diagnostics.Debug.WriteLine($"[WorkflowCanvas DataContextChanged]   WorkflowNodes Hash: {workflowTab.WorkflowNodes?.GetHashCode() ?? 0}");
-
-                // System.Diagnostics.Debug.WriteLine($"[WorkflowCanvas DataContextChanged]   WorkflowConnections Hash: {workflowTab.WorkflowConnections?.GetHashCode() ?? 0}");
-
-
-
                 // 将WorkflowCanvas的RenderTransform绑定到ViewModel的ScaleTransform
 
                 var binding = new System.Windows.Data.Binding("ScaleTransform")
@@ -420,11 +405,6 @@ namespace SunEyeVision.UI.Views.Controls.Canvas
                 };
 
                 WorkflowCanvas.SetBinding(System.Windows.Controls.Canvas.RenderTransformProperty, binding);
-
-                // System.Diagnostics.Debug.WriteLine("[WorkflowCanvas DataContextChanged] ? 已绑定ScaleTransform到WorkflowCanvas");
-
-
-
                 // 初始化渲染调度器（用于异步节点渲染）
 
                 InitializeRenderScheduler(workflowTab);
@@ -436,43 +416,17 @@ namespace SunEyeVision.UI.Views.Controls.Canvas
                 SmartPathConverter.Nodes = workflowTab.WorkflowNodes;
 
                 SmartPathConverter.Connections = workflowTab.WorkflowConnections;
-
-                // System.Diagnostics.Debug.WriteLine($"[WorkflowCanvas DataContextChanged] ? SmartPathConverter.Nodes/Connections已设置");
-
-                // System.Diagnostics.Debug.WriteLine($"[WorkflowCanvas DataContextChanged]   Nodes Hash: {Converters.SmartPathConverter.Nodes?.GetHashCode() ?? 0}");
-
-                // System.Diagnostics.Debug.WriteLine($"[WorkflowCanvas DataContextChanged]   Connections Hash: {Converters.SmartPathConverter.Connections?.GetHashCode() ?? 0}");
-
-
-
                 // ?? 关键修复：强制刷新所有 ItemsControl 的 ItemsSource 绑定
-
-                // System.Diagnostics.Debug.WriteLine("[WorkflowCanvas DataContextChanged] ?? 强制刷新 ItemsControl 绑定...");
-
                 ForceRefreshItemsControls();
 
 
 
                 // 每次 DataContext 变化时都重新创建 ConnectionPathCache（确保每个工作流独立）
-
-                // System.Diagnostics.Debug.WriteLine("[WorkflowCanvas DataContextChanged] ╔═════════════════════════════════════════════════════╗");
-
-                // System.Diagnostics.Debug.WriteLine("[WorkflowCanvas DataContextChanged] ║      正在创建路径计算器...                        ║");
-
-                // System.Diagnostics.Debug.WriteLine("[WorkflowCanvas DataContextChanged] ╚═════════════════════════════════════════════════════╝");
-
-
-
                 try
 
                 {
 
                     var calculator = Services.PathCalculators.PathCalculatorFactory.CreateCalculator();
-
-                    // System.Diagnostics.Debug.WriteLine("[WorkflowCanvas DataContextChanged] ? 路径计算器实例创建成功");
-
-
-
                     // 每次都创建新的 ConnectionPathCache，确保每个工作流独立
 
                     _connectionPathCache = new ConnectionPathCache(
@@ -482,19 +436,9 @@ namespace SunEyeVision.UI.Views.Controls.Canvas
                         calculator
 
                     );
-
-                    // System.Diagnostics.Debug.WriteLine("[WorkflowCanvas DataContextChanged] ? ConnectionPathCache 创建成功（工作流独立）");
-
-
-
                     // 设置SmartPathConverter的PathCache引用
 
                     SmartPathConverter.PathCache = _connectionPathCache;
-
-                    // System.Diagnostics.Debug.WriteLine("[WorkflowCanvas DataContextChanged] ? SmartPathConverter.PathCache已设置");
-
-
-
                     // 初始化批量延迟更新管理器
 
                     if (_connectionPathCache != null)
@@ -504,9 +448,6 @@ namespace SunEyeVision.UI.Views.Controls.Canvas
                         _batchUpdateManager = new ConnectionBatchUpdateManager(_connectionPathCache);
 
                         _batchUpdateManager.SetCurrentTab(workflowTab);
-
-                        // System.Diagnostics.Debug.WriteLine("[WorkflowCanvas DataContextChanged] ? BatchUpdateManager已初始化");
-
                     }
 
 
@@ -516,11 +457,6 @@ namespace SunEyeVision.UI.Views.Controls.Canvas
                         _connectionPathCache.WarmUp(workflowTab.WorkflowConnections);
 
                         var stats = _connectionPathCache.GetStatistics();
-
-                        // System.Diagnostics.Debug.WriteLine($"[WorkflowCanvas DataContextChanged] 缓存预热完成: {stats.CacheSize}个连接");
-
-
-
                         // 订阅连接集合变化事件
 
                         if (workflowTab.WorkflowConnections != null)
@@ -530,9 +466,6 @@ namespace SunEyeVision.UI.Views.Controls.Canvas
                             workflowTab.WorkflowConnections.CollectionChanged += (s, args) =>
 
                             {
-
-                                // System.Diagnostics.Debug.WriteLine($"[WorkflowCanvas DataContextChanged] 连接集合变化: Added={args.NewItems?.Count ?? 0}, Removed={args.OldItems?.Count ?? 0}");
-
                                 UpdateBoundingRectangle();
 
                                 if (_connectionPathCache != null)
@@ -788,27 +721,11 @@ namespace SunEyeVision.UI.Views.Controls.Canvas
                             };
 
                         }
-
-
-
-                        // System.Diagnostics.Debug.WriteLine("[WorkflowCanvas DataContextChanged] ╔═════════════════════════════════════════════════════╗");
-
-                        // System.Diagnostics.Debug.WriteLine("[WorkflowCanvas DataContextChanged] ║  ? 路径计算器初始化成功！                        ║");
-
-                        // System.Diagnostics.Debug.WriteLine("[WorkflowCanvas DataContextChanged] ╚═════════════════════════════════════════════════════╝");
-
                     }
 
                     catch (Exception ex)
 
                     {
-
-                        // System.Diagnostics.Debug.WriteLine($"[WorkflowCanvas DataContextChanged] ? 路径计算器创建失败: {ex.GetType().Name}");
-
-                        // System.Diagnostics.Debug.WriteLine($"[WorkflowCanvas DataContextChanged] 消息: {ex.Message}");
-
-
-
                         // 备用方案：使用 PathCalculatorFactory 创建（默认贝塞尔曲线）
 
                         _connectionPathCache = new ConnectionPathCache(
@@ -828,9 +745,6 @@ namespace SunEyeVision.UI.Views.Controls.Canvas
             else
 
             {
-
-                // System.Diagnostics.Debug.WriteLine($"[WorkflowCanvas DataContextChanged] ? DataContext 不是 WorkflowTabViewModel: {DataContext?.GetType().Name ?? "null"}");
-
             }
 
         }
@@ -1094,68 +1008,29 @@ namespace SunEyeVision.UI.Views.Controls.Canvas
         private void WorkflowCanvasControl_Loaded(object sender, RoutedEventArgs e)
 
         {
-
-            // System.Diagnostics.Debug.WriteLine("[WorkflowCanvas_Loaded] ════════════════════════════════════");
-
-            // System.Diagnostics.Debug.WriteLine("[WorkflowCanvas_Loaded] ? WorkflowCanvasControl Loaded Event Triggered");
-
             // 获取父级 ScrollViewer（用于视口边界限制）
             _parentScrollViewer = FindVisualParent<ScrollViewer>(this);
-
-            // System.Diagnostics.Debug.WriteLine("[WorkflowCanvas_Loaded] Parent ScrollViewer: " + (_parentScrollViewer != null ? "Found" : "Not Found"));
-
-
-
             // 检查DataContext
 
             var dataContext = DataContext;
-
-            // System.Diagnostics.Debug.WriteLine($"[WorkflowCanvas_Loaded] DataContext: {dataContext?.GetType().Name ?? "null"}");
-
             if (dataContext is WorkflowTabViewModel workflowTab)
 
             {
-
-                // System.Diagnostics.Debug.WriteLine($"[WorkflowCanvas_Loaded]   Tab Name: {workflowTab.Name}");
-
-                // System.Diagnostics.Debug.WriteLine($"[WorkflowCanvas_Loaded]   Tab Id: {workflowTab.Id}");
-
-                // System.Diagnostics.Debug.WriteLine($"[WorkflowCanvas_Loaded]   Nodes Count: {workflowTab.WorkflowNodes?.Count ?? 0}");
-
-                // System.Diagnostics.Debug.WriteLine($"[WorkflowCanvas_Loaded]   Connections Count: {workflowTab.WorkflowConnections?.Count ?? 0}");
-
-                // System.Diagnostics.Debug.WriteLine($"[WorkflowCanvas_Loaded]   CurrentScale: {workflowTab.CurrentScale:P0}");
-
-                // System.Diagnostics.Debug.WriteLine($"[WorkflowCanvas_Loaded]   ScaleTransform Hash: {workflowTab.ScaleTransform?.GetHashCode() ?? 0}");
-
-                // System.Diagnostics.Debug.WriteLine($"[WorkflowCanvas_Loaded]   WorkflowNodes Hash: {workflowTab.WorkflowNodes?.GetHashCode() ?? 0}");
-
-                // System.Diagnostics.Debug.WriteLine($"[WorkflowCanvas_Loaded]   WorkflowConnections Hash: {workflowTab.WorkflowConnections?.GetHashCode() ?? 0}");
-
             }
 
             else
 
             {
-
-                // System.Diagnostics.Debug.WriteLine($"[WorkflowCanvas_Loaded] ? DataContext is not WorkflowTabViewModel!");
-
             }
 
 
 
             // 添加调试：检查 ItemsControl 的绑定
-
-            // System.Diagnostics.Debug.WriteLine("[WorkflowCanvas_Loaded] ?? 检查 UI 元素绑定...");
-
             var nodesItemsControl = this.FindName("WorkflowCanvas") as WpfCanvas;
 
             if (nodesItemsControl != null)
 
             {
-
-                // System.Diagnostics.Debug.WriteLine($"[WorkflowCanvas_Loaded]   WorkflowCanvas 元素存在");
-
             }
 
 
@@ -1171,11 +1046,6 @@ namespace SunEyeVision.UI.Views.Controls.Canvas
                 if (_viewModel != null)
 
                 {
-
-                    // System.Diagnostics.Debug.WriteLine($"[WorkflowCanvas_Loaded] ? MainWindowViewModel 获取成功");
-
-
-
                     // 注入 TabViewModel 引用到 DragDropHandler（优化 GetCurrentWorkflowTab 性能）
                     if (_dragDropHandler != null && _viewModel.WorkflowTabViewModel != null)
                     {
@@ -1189,9 +1059,6 @@ namespace SunEyeVision.UI.Views.Controls.Canvas
                     {
 
                         _connectionCreator = new WorkflowConnectionCreator(_viewModel);
-
-                        // System.Diagnostics.Debug.WriteLine($"[WorkflowCanvas_Loaded] ? ConnectionCreator 初始化成功");
-
                     }
 
 
@@ -1206,9 +1073,6 @@ namespace SunEyeVision.UI.Views.Controls.Canvas
                     {
 
                         _portPositionService = new PortPositionService(WorkflowCanvas, NodeStyles.Standard);
-
-                        // System.Diagnostics.Debug.WriteLine($"[WorkflowCanvas_Loaded] ? PortPositionService 初始化成功");
-
                     }
 
                 }
@@ -1216,9 +1080,6 @@ namespace SunEyeVision.UI.Views.Controls.Canvas
                 else
 
                 {
-
-                    // System.Diagnostics.Debug.WriteLine($"[WorkflowCanvas_Loaded] ? MainWindowViewModel 获取失败");
-
                 }
 
             }
@@ -1228,11 +1089,6 @@ namespace SunEyeVision.UI.Views.Controls.Canvas
             // 注意：ConnectionPathCache 的初始化已移到 OnDataContextChanged 方法中
 
             // 这样可以确保在 DataContext 设置后立即初始化，避免 PathCache 为 null 的问题
-
-
-
-            // System.Diagnostics.Debug.WriteLine("[WorkflowCanvas_Loaded] ════════════════════════════════════");
-
         }
 
 
@@ -1736,11 +1592,6 @@ namespace SunEyeVision.UI.Views.Controls.Canvas
             {
 
                 // ?? 减少日志输出以提高性能
-
-                // System.Diagnostics.Debug.WriteLine($"[Node_LeftButtonUp] ========== 节点释放 [{DateTime.Now:HH:mm:ss.fff}] ==========");
-
-
-
                 // 拖拽结束
 
                 if (_viewModel?.WorkflowTabViewModel.SelectedTab != null)
@@ -1796,9 +1647,6 @@ namespace SunEyeVision.UI.Views.Controls.Canvas
                             {
 
                                 _connectionPathCache.MarkNodeDirty(node.Id);
-
-                                // System.Diagnostics.Debug.WriteLine($"[Node_LeftButtonUp]   已标记节点 {node.Name} 为脏");
-
                             }
 
                         }
@@ -1812,9 +1660,6 @@ namespace SunEyeVision.UI.Views.Controls.Canvas
                         {
 
                             _batchUpdateManager.ForceUpdateAll();
-
-                            // System.Diagnostics.Debug.WriteLine($"[Node_LeftButtonUp] 已强制执行所有待处理的连接更新");
-
                         }
 
 
@@ -1834,11 +1679,6 @@ namespace SunEyeVision.UI.Views.Controls.Canvas
                 _draggedNode = null!;
 
                 (sender as Border)?.ReleaseMouseCapture();
-
-                // System.Diagnostics.Debug.WriteLine($"[Node_LeftButtonUp]   拖拽已结束，_isDragging={_isDragging}");
-
-
-
                 // 清除位置节流记录，准备下次拖拽
 
                 ClearPositionThrottling();
@@ -2433,10 +2273,7 @@ namespace SunEyeVision.UI.Views.Controls.Canvas
                 else
 
                 {
-
-                    System.Diagnostics.Debug.WriteLine($"[Port_MouseLeftButtonUp] ⚠️ 目标Border/Node无效: targetBorder={targetBorder != null}, targetNode={(targetBorder?.Tag as WorkflowNode)?.Name ?? "null"}");
-
-                }
+}
 
             }
 
@@ -2822,38 +2659,20 @@ namespace SunEyeVision.UI.Views.Controls.Canvas
             // 连接创建后，选中目标节点，让图像预览器自动显示上游图像采集节点的图像
 
             // UpdateImagePreviewVisibility 会自动通过 BFS 追溯上游来决定是否显示图像预览器
-
-            System.Diagnostics.Debug.WriteLine($"[CreateConnectionBetweenPorts] 连接创建完成: {sourceNode.Name} → {targetNode.Name}");
-
-            System.Diagnostics.Debug.WriteLine($"[CreateConnectionBetweenPorts] 目标节点信息: IsImageCaptureNode={targetNode.IsImageCaptureNode}");
-
-            System.Diagnostics.Debug.WriteLine($"[CreateConnectionBetweenPorts] _viewModel={(_viewModel == null ? "null" : "已设置")}");
-
-            
-
-            if (_viewModel != null)
+if (_viewModel != null)
 
             {
-
-                System.Diagnostics.Debug.WriteLine($"[CreateConnectionBetweenPorts] 当前 SelectedNode={_viewModel.SelectedNode?.Name ?? "null"}");
-
-                _viewModel.SelectedNode = targetNode;
+_viewModel.SelectedNode = targetNode;
 
                 // ★ 强制刷新图像预览器，确保即使 SelectedNode 值相同也会重新计算
 
                 _viewModel.ForceRefreshImagePreview();
-
-                System.Diagnostics.Debug.WriteLine($"[CreateConnectionBetweenPorts] 设置 SelectedNode={targetNode.Name} 后, ShowImagePreview={_viewModel.ShowImagePreview}");
-
-            }
+}
 
             else
 
             {
-
-                System.Diagnostics.Debug.WriteLine($"[CreateConnectionBetweenPorts] 警告: _viewModel 为 null，无法设置 SelectedNode");
-
-            }
+}
 
 
 

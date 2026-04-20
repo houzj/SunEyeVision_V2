@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -289,8 +289,7 @@ public class DispatcherTimerMonitor
     public void PrintAllTimersInfo()
     {
         var report = GetAllTimersInfo();
-        Debug.WriteLine(report);
-        LogToFile(report);
+LogToFile(report);
     }
 
     /// <summary>

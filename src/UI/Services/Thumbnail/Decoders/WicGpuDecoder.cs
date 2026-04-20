@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -44,32 +44,22 @@ namespace SunEyeVision.UI.Services.Thumbnail.Decoders
 
             try
             {
-                Debug.WriteLine("[WicGpuDecoder] 初始化WIC GPU解码器...");
-
-                int tier = System.Windows.Media.RenderCapability.Tier >> 16;
+int tier = System.Windows.Media.RenderCapability.Tier >> 16;
                 bool hasGPU = tier > 0;
 
                 if (!hasGPU)
                 {
-                    Debug.WriteLine("[WicGpuDecoder] GPU不可用，将使用CPU解码");
-                    _isInitialized = true;
+_isInitialized = true;
                     return false;
                 }
 
                 IsHardwareAccelerated = true;
                 _isInitialized = true;
-
-                Debug.WriteLine("[WicGpuDecoder] WIC GPU硬件解码器初始化完成");
-                Debug.WriteLine($"  渲染层级: Tier {tier}");
-                Debug.WriteLine($"  硬件加载: 启用（WPF内置WIC）");
-                Debug.WriteLine($"  预期性能提升: 3-5倍");
-
                 return true;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[WicGpuDecoder] 初始化失败: {ex.Message}");
-                _isInitialized = true;
+_isInitialized = true;
                 return false;
             }
         }
@@ -87,8 +77,7 @@ namespace SunEyeVision.UI.Services.Thumbnail.Decoders
             {
                 if (!File.Exists(filePath))
                 {
-                    Debug.WriteLine($"[WicGpuDecoder] 文件不存在: {filePath}");
-                    return null;
+return null;
                 }
 
                 var waitSw = Stopwatch.StartNew();
@@ -101,16 +90,14 @@ namespace SunEyeVision.UI.Services.Thumbnail.Decoders
                 
                 if (!gotSlot)
                 {
-                    Debug.WriteLine($"[WicGpuDecoder] 等待GPU槽位超时(5s) | 队列:等待{currentWaiting}个 | file={System.IO.Path.GetFileName(filePath)}");
-                    return null;
+return null;
                 }
                 
                 int currentDecoding = Interlocked.Increment(ref _decodingCount);
                 
                 if (verboseLog || currentWaiting > 1)
                 {
-                    Debug.WriteLine($"[WicGpuDecoder] 排队等待:{waitSw.Elapsed.TotalMilliseconds:F0}ms | 队列:等待{currentWaiting}个 解码{currentDecoding}个 | file={System.IO.Path.GetFileName(filePath)}");
-                }
+}
 
                 try
                 {
@@ -120,16 +107,12 @@ namespace SunEyeVision.UI.Services.Thumbnail.Decoders
                     {
                         imageBytes = prefetchedData;
                         readSw.Stop();
-                        Debug.WriteLine($"[WicGpu] UsePrefetched | {System.IO.Path.GetFileName(filePath)}");
-                    }
+}
                     else
                     {
-                        Debug.WriteLine($"[WicGpu] StartRead wait={waitSw.ElapsedMilliseconds}ms | {System.IO.Path.GetFileName(filePath)}");
-                        
-                        if (!File.Exists(filePath))
+if (!File.Exists(filePath))
                         {
-                            Debug.WriteLine($"[WicGpu] FileDeletedDuringGpuWait | {System.IO.Path.GetFileName(filePath)}");
-                            return null;
+return null;
                         }
                         
                         try
@@ -142,18 +125,14 @@ namespace SunEyeVision.UI.Services.Thumbnail.Decoders
                                 Array.Resize(ref imageBytes, bytesRead);
                             }
                             readSw.Stop();
-                            
-                            Debug.WriteLine($"[WicGpu] ReadOK {readSw.ElapsedMilliseconds}ms | {System.IO.Path.GetFileName(filePath)}");
-                        }
+}
                         catch (FileNotFoundException)
                         {
-                            Debug.WriteLine($"[WicGpu] FileNotFound | {System.IO.Path.GetFileName(filePath)}");
-                            return null;
+return null;
                         }
                         catch (IOException ioEx)
                         {
-                            Debug.WriteLine($"[WicGpu] IOError: {ioEx.Message} | {System.IO.Path.GetFileName(filePath)}");
-                            return null;
+return null;
                         }
                     }
                     
@@ -227,13 +206,10 @@ namespace SunEyeVision.UI.Services.Thumbnail.Decoders
                         // RPC服务器不可用 - 记录失败并降级
                         rpcFailed = true;
                         int failures = System.Threading.Interlocked.Increment(ref _rpcFailureCount);
-                        Debug.WriteLine($"[WicGpu] RPC不可用，降级CPU解码 | 失败次数:{failures} | file={System.IO.Path.GetFileName(filePath)}");
-                        
-                        if (failures >= MAX_RPC_FAILURES)
+if (failures >= MAX_RPC_FAILURES)
                         {
                             _rpcDisabled = true;
-                            Debug.WriteLine($"[WicGpu] ⚠️ RPC连续失败{failures}次，已禁用GPU解码");
-                        }
+}
                         
                         return DecodeWithCpu(filePath, size, prefetchedData, totalSw);
                     }
@@ -241,8 +217,7 @@ namespace SunEyeVision.UI.Services.Thumbnail.Decoders
                     {
                         // 其他可能的RPC相关异常
                         rpcFailed = true;
-                        Debug.WriteLine($"[WicGpu] RPC相关异常: {ex.Message} | 降级CPU解码 | file={System.IO.Path.GetFileName(filePath)}");
-                        return DecodeWithCpu(filePath, size, prefetchedData, totalSw);
+return DecodeWithCpu(filePath, size, prefetchedData, totalSw);
                     }
                     
                     decodeSw.Stop();
@@ -257,8 +232,7 @@ namespace SunEyeVision.UI.Services.Thumbnail.Decoders
                                                       (comEx.ErrorCode & 0xFFFF) == RPC_S_SERVER_UNAVAILABLE)
                     {
                         // Freeze时的RPC异常
-                        Debug.WriteLine($"[WicGpu] Freeze时RPC异常，降级CPU解码 | file={System.IO.Path.GetFileName(filePath)}");
-                        return DecodeWithCpu(filePath, size, prefetchedData, totalSw);
+return DecodeWithCpu(filePath, size, prefetchedData, totalSw);
                     }
                     
                     freezeSw.Stop();
@@ -270,18 +244,14 @@ namespace SunEyeVision.UI.Services.Thumbnail.Decoders
                         string diagnosticInfo = string.IsNullOrEmpty(resolutionInfo) 
                             ? $"文件:{fileSizeMB}" 
                             : $"{resolutionInfo} 文件:{fileSizeMB} {formatInfo}";
-                        Debug.WriteLine($"[WicGpuDecoder] GPU解码 | 等待:{waitSw.Elapsed.TotalMilliseconds:F0}ms 读取:{readSw.Elapsed.TotalMilliseconds:F0}ms 解码={decodeSw.Elapsed.TotalMilliseconds:F0}ms 总计:{totalSw.Elapsed.TotalMilliseconds:F0}ms | {diagnosticInfo} | file={System.IO.Path.GetFileName(filePath)}");
-                        
-                        if (totalPixels > HUGE_IMAGE_THRESHOLD)
+if (totalPixels > HUGE_IMAGE_THRESHOLD)
                         {
-                            Debug.WriteLine($"[WicGpuDecoder] 超大图警告 - {originalWidth}x{originalHeight}({totalPixels / 1000000.0:F1}MP) file={System.IO.Path.GetFileName(filePath)}");
-                        }
+}
                     }
 
                     if (bitmap.Width <= 0 || bitmap.Height <= 0)
                     {
-                        Debug.WriteLine($"[WicGpuDecoder] 解码结果无效 size={bitmap.Width}x{bitmap.Height} file={System.IO.Path.GetFileName(filePath)}");
-                        return null;
+return null;
                     }
 
                     return bitmap;
@@ -295,8 +265,7 @@ namespace SunEyeVision.UI.Services.Thumbnail.Decoders
             catch (Exception ex)
             {
                 totalSw.Stop();
-                Debug.WriteLine($"[WicGpuDecoder] 解码异常: {ex.Message} (耗时:{totalSw.Elapsed.TotalMilliseconds:F2}ms) file={System.IO.Path.GetFileName(filePath)}");
-                return null;
+return null;
             }
         }
 
@@ -337,16 +306,12 @@ namespace SunEyeVision.UI.Services.Thumbnail.Decoders
                 
                 bitmap.Freeze();
                 totalSw.Stop();
-                
-                Debug.WriteLine($"[WicGpuDecoder] CPU降级解码完成 | 耗时:{totalSw.Elapsed.TotalMilliseconds:F0}ms | file={System.IO.Path.GetFileName(filePath)}");
-                
-                return bitmap;
+return bitmap;
             }
             catch (Exception ex)
             {
                 totalSw.Stop();
-                Debug.WriteLine($"[WicGpuDecoder] CPU降级解码失败: {ex.Message} | file={System.IO.Path.GetFileName(filePath)}");
-                return null;
+return null;
             }
         }
 
@@ -359,9 +324,7 @@ namespace SunEyeVision.UI.Services.Thumbnail.Decoders
             bool isHighPriority = false)
         {
             string fileName = System.IO.Path.GetFileName(filePath);
-            
-            Debug.WriteLine($"[WicGpu] SafeStart | {fileName}");
-            CleanupScheduler.MarkFileInUse(filePath);
+CleanupScheduler.MarkFileInUse(filePath);
             
             try
             {
@@ -371,40 +334,32 @@ namespace SunEyeVision.UI.Services.Thumbnail.Decoders
                     
                     if (!scope.IsGranted)
                     {
-                        Debug.WriteLine($"[WicGpu] AccessDenied: {scope.ErrorMessage} | {fileName}");
-                        return null;
+return null;
                     }
 
                     var result = DecodeThumbnail(filePath, size, prefetchedData, verboseLog, isHighPriority);
-                    
-                    Debug.WriteLine($"[WicGpu] SafeEnd OK={(result != null)} | {fileName}");
-                    return result;
+return result;
                 }
                 else
                 {
                     var result = DecodeThumbnail(filePath, size, prefetchedData, verboseLog, isHighPriority);
-                    
-                    Debug.WriteLine($"[WicGpu] SafeEnd OK={(result != null)} | {fileName}");
-                    return result;
+return result;
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[WicGpu] SafeError {ex.GetType().Name} | {fileName}");
-                throw;
+throw;
             }
             finally
             {
                 CleanupScheduler.ReleaseFile(filePath);
-                Debug.WriteLine($"[WicGpu] SafeRelease | {fileName}");
-            }
+}
         }
 
         public void Dispose()
         {
             _isInitialized = false;
             IsHardwareAccelerated = false;
-            Debug.WriteLine("[WicGpuDecoder] 资源已释放");
-        }
+}
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows;
 using System.Windows.Media;
 
@@ -32,9 +32,7 @@ namespace SunEyeVision.UI.Models
                 _resources["PortMargin"] = 10.0;
                 _resources["NodeCornerRadius"] = 20.0;
                 _resources["NodeContentMargin"] = new Thickness(12, 0, 12, 0);
-                
-                System.Diagnostics.Debug.WriteLine($"NodeStyleConfig资源加载失败，使用默认值: {ex.Message}");
-            }
+}
         }
 
         private T GetResource<T>(string key) where T : class

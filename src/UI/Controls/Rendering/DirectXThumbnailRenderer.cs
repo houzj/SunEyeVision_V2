@@ -38,21 +38,17 @@ namespace SunEyeVision.UI.Controls.Rendering
                 if (tier > 0)
                 {
                     _gpuAccelerated = true;
-                    Debug.WriteLine("[DirectXRenderer] GPU硬件加速已启用（WPF内置）");
-                    Debug.WriteLine($"  渲染层级: Tier {tier}");
                 }
                 else
                 {
-                    Debug.WriteLine("[DirectXRenderer] 使用软件渲染模式");
-                }
+}
 
                 _isInitialized = true;
                 return _gpuAccelerated;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[DirectXRenderer] 初始化检测失败: {ex.Message}");
-                _isInitialized = true;
+_isInitialized = true;
                 return false;
             }
         }
@@ -73,8 +69,7 @@ namespace SunEyeVision.UI.Controls.Rendering
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[DirectXRenderer] 加载失败: {ex.Message}");
-                return null;
+return null;
             }
         }
 
@@ -103,8 +98,7 @@ namespace SunEyeVision.UI.Controls.Rendering
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[DirectXRenderer] 加载失败: {ex.Message}");
-                return null;
+return null;
             }
         }
 

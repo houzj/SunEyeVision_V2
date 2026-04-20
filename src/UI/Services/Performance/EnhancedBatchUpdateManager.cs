@@ -259,7 +259,6 @@ namespace SunEyeVision.UI.Services.Performance
             // 性能监控
             if (stopwatch.ElapsedMilliseconds > 20) // 超过20ms的批量操作才记录
             {
-                // System.Diagnostics.Debug.WriteLine(
                 //     $"[EnhancedBatchUpdateManager] 批量更新: " +
                 //     $"{connectionsToRecalculate.Count}条连线, " +
                 //     $"{stopwatch.ElapsedMilliseconds:F2}ms " +

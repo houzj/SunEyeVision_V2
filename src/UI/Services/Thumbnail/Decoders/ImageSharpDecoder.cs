@@ -67,20 +67,13 @@ namespace SunEyeVision.UI.Services.Thumbnail.Decoders
 
             try
             {
-                Debug.WriteLine("[ImageSharpDecoder] 初始?ImageSharp 解码?..");
-                _isInitialized = true;
-                
-                Debug.WriteLine("[ImageSharpDecoder] ✓ ImageSharp 解码器初始化完成");
-                Debug.WriteLine($"  支持格式: JPEG, PNG, BMP, GIF, TIFF, WebP");
-                Debug.WriteLine($"  并发槽位: 4");
-                Debug.WriteLine($"  缩放算法: Lanczos3（高质量）");
+_isInitialized = true;
                 
                 return true;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[ImageSharpDecoder] ✗ 初始化失败: {ex.Message}");
-                return false;
+return false;
             }
         }
 
@@ -106,8 +99,7 @@ namespace SunEyeVision.UI.Services.Thumbnail.Decoders
             {
                 if (!File.Exists(filePath))
                 {
-                    Debug.WriteLine($"[ImageSharpDecoder] ?文件不保存? {filePath}");
-                    return null;
+return null;
                 }
 
                 // 并发限制：等待获取解码槽?
@@ -123,12 +115,10 @@ namespace SunEyeVision.UI.Services.Thumbnail.Decoders
                 {
                     if (isHighPriority)
                     {
-                        Debug.WriteLine($"[ImageSharpDecoder] ?等待超时({waitTimeout}ms)，跳过高优先级任务?| file={System.IO.Path.GetFileName(filePath)}");
-                    }
+}
                     else
                     {
-                        Debug.WriteLine($"[ImageSharpDecoder] ?等待解码槽位超时(5s) file={System.IO.Path.GetFileName(filePath)}");
-                    }
+}
                     return null;
                 }
                 
@@ -137,8 +127,7 @@ namespace SunEyeVision.UI.Services.Thumbnail.Decoders
                 // 输出队列状态（诊断用）
                 if (verboseLog || currentWaiting > 2)
                 {
-                    Debug.WriteLine($"[ImageSharpDecoder] 排队等待:{waitSw.Elapsed.TotalMilliseconds:F0}ms | 队列:等待{currentWaiting}?解码{currentDecoding}?| file={System.IO.Path.GetFileName(filePath)}");
-                }
+}
 
                 try
                 {
@@ -168,8 +157,7 @@ namespace SunEyeVision.UI.Services.Thumbnail.Decoders
                     {
                         if (verboseLog)
                         {
-                            Debug.WriteLine($"[ImageSharpDecoder] ?解码完成 | 等待:{waitSw.Elapsed.TotalMilliseconds:F0}ms 解码:{decodeSw.Elapsed.TotalMilliseconds:F0}ms 总计:{totalSw.Elapsed.TotalMilliseconds:F0}ms | 文件:{fileSizeInfo} | file={System.IO.Path.GetFileName(filePath)}");
-                        }
+}
                     }
 
                     return result;
@@ -183,8 +171,7 @@ namespace SunEyeVision.UI.Services.Thumbnail.Decoders
             catch (Exception ex)
             {
                 totalSw.Stop();
-                Debug.WriteLine($"[ImageSharpDecoder] ?解码异常: {ex.Message} (耗时:{totalSw.Elapsed.TotalMilliseconds:F2}ms) file={System.IO.Path.GetFileName(filePath)}");
-                return null;
+return null;
             }
         }
 
@@ -197,13 +184,10 @@ namespace SunEyeVision.UI.Services.Thumbnail.Decoders
             string fileName = System.IO.Path.GetFileName(filePath);
             
             // ?关键日志：开始读取文件（等待解码槽位后）
-            Debug.WriteLine($"[ImgSharp] 📖 StartRead | {fileName}");
-            
-            // ?核心修复：再次检查文件是否存在（等待解码槽位期间可能被删除）
+// ?核心修复：再次检查文件是否存在（等待解码槽位期间可能被删除）
             if (!File.Exists(filePath))
             {
-                Debug.WriteLine($"[ImgSharp] ?FileDeletedDuringWait | {fileName}");
-                return null;
+return null;
             }
             
             try
@@ -211,26 +195,21 @@ namespace SunEyeVision.UI.Services.Thumbnail.Decoders
                 using var image = Image.Load(filePath);
                 
                 // ?关键日志：读取成?
-                Debug.WriteLine($"[ImgSharp] ?ReadOK | {fileName}");
-                
-                return ConvertToBitmapImage(image, size);
+return ConvertToBitmapImage(image, size);
             }
             catch (FileNotFoundException)
             {
                 // ?关键日志：文件未找到（竞态条件）
-                Debug.WriteLine($"[ImgSharp] ?FileNotFound | {fileName}");
-                return null;
+return null;
             }
             catch (IOException ioEx)
             {
                 // ?关键日志：IO异常（文件被锁定或删除）
-                Debug.WriteLine($"[ImgSharp] ?IOError: {ioEx.Message} | {fileName}");
-                return null;
+return null;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[ImgSharp] ?ReadError {ex.Message} | {fileName}");
-                return null;
+return null;
             }
         }
 
@@ -246,8 +225,7 @@ namespace SunEyeVision.UI.Services.Thumbnail.Decoders
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[ImageSharpDecoder] ?字节解码失败: {ex.Message} | file={System.IO.Path.GetFileName(filePath)}");
-                return null;
+return null;
             }
         }
 
@@ -314,8 +292,7 @@ namespace SunEyeVision.UI.Services.Thumbnail.Decoders
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[ImageSharpDecoder] ?转换失败: {ex.Message}");
-                return null;
+return null;
             }
         }
 
@@ -334,8 +311,7 @@ namespace SunEyeVision.UI.Services.Thumbnail.Decoders
             string fileName = System.IO.Path.GetFileName(filePath);
             
             // ?关键日志：开始保存?
-            Debug.WriteLine($"[ImgSharp] 🔐 SafeStart | {fileName}");
-            CleanupScheduler.MarkFileInUse(filePath);
+CleanupScheduler.MarkFileInUse(filePath);
             
             try
             {
@@ -346,37 +322,32 @@ namespace SunEyeVision.UI.Services.Thumbnail.Decoders
                     
                     if (!scope.IsGranted)
                     {
-                        Debug.WriteLine($"[ImgSharp] ?AccessDenied: {scope.ErrorMessage} | {fileName}");
-                        return null;
+return null;
                     }
 
                     var result = DecodeThumbnail(filePath, size, prefetchedData, verboseLog, isHighPriority);
                     
                     // ?关键日志：解码完成?
-                    Debug.WriteLine($"[ImgSharp] ?SafeEnd OK={(result != null)} | {fileName}");
-                    return result;
+return result;
                 }
                 else
                 {
                     var result = DecodeThumbnail(filePath, size, prefetchedData, verboseLog, isHighPriority);
                     
                     // ?关键日志：解码完成?
-                    Debug.WriteLine($"[ImgSharp] ?SafeEnd OK={(result != null)} | {fileName}");
-                    return result;
+return result;
                 }
             }
             catch (Exception ex)
             {
                 // ?关键日志：解码异步?
-                Debug.WriteLine($"[ImgSharp] ?SafeError {ex.GetType().Name} | {fileName}");
-                throw;
+throw;
             }
             finally
             {
                 // ?确保释放文件引用
                 CleanupScheduler.ReleaseFile(filePath);
-                Debug.WriteLine($"[ImgSharp] 🔓 SafeRelease | {fileName}");
-            }
+}
         }
 
         /// <summary>

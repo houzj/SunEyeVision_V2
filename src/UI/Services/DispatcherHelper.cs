@@ -31,19 +31,14 @@ namespace SunEyeVision.UI.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[DispatcherHelper] BeginInvoke失败: {ex.Message}");
-                Debug.WriteLine($"[DispatcherHelper] 堆栈: {ex.StackTrace}");
-
                 // 尝试不带优先级参数的调用
                 try
                 {
                     dispatcher.BeginInvoke(action);
-                    Debug.WriteLine($"[DispatcherHelper] 使用不带优先级参数的调用成功");
-                }
+}
                 catch (Exception ex2)
                 {
-                    Debug.WriteLine($"[DispatcherHelper] 重试也失败: {ex2.Message}");
-                    throw;
+throw;
                 }
             }
         }
@@ -69,19 +64,14 @@ namespace SunEyeVision.UI.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[DispatcherHelper] Invoke失败: {ex.Message}");
-                Debug.WriteLine($"[DispatcherHelper] 堆栈: {ex.StackTrace}");
-
                 // 尝试不带优先级参数的调用
                 try
                 {
                     dispatcher.Invoke(action);
-                    Debug.WriteLine($"[DispatcherHelper] 使用不带优先级参数的调用成功");
-                }
+}
                 catch (Exception ex2)
                 {
-                    Debug.WriteLine($"[DispatcherHelper] 重试也失败: {ex2.Message}");
-                    throw;
+throw;
                 }
             }
         }
@@ -134,8 +124,6 @@ namespace SunEyeVision.UI.Services
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"[DispatcherHelper] 直接执行失败: {ex.Message}");
-                    Debug.WriteLine($"[DispatcherHelper] 堆栈: {ex.StackTrace}");
                     throw;
                 }
             }

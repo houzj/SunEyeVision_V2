@@ -87,8 +87,7 @@ namespace SunEyeVision.UI.Services.Performance
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"[BatchUIUpdater] 执行更新失败: {ex.Message}");
-                    }
+}
                 }
             });
         }
@@ -130,8 +129,7 @@ namespace SunEyeVision.UI.Services.Performance
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[BatchUIUpdater] 执行更新失败: {ex.Message}");
-                }
+}
             }
 
             // 如果还有待处理的，继续

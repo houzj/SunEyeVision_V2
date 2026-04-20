@@ -62,9 +62,7 @@ namespace SunEyeVision.Core.IO
             _trackingInfo = new ConcurrentDictionary<string, FileTrackingInfo>(StringComparer.OrdinalIgnoreCase);
             _deletedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             _pendingDeletions = new ConcurrentDictionary<string, DateTime>(StringComparer.OrdinalIgnoreCase);
-            
-            Debug.WriteLine("[FileAccessManager] 文件访问管理器已初始化");
-        }
+}
 
         /// <inheritdoc/>
         public int InUseFileCount => _trackingInfo.Count;
@@ -207,8 +205,7 @@ namespace SunEyeVision.Core.IO
                 {
                     info.IsMarkedForDeletion = true;
                     _pendingDeletions.TryAdd(filePath, DateTime.UtcNow);
-                    Debug.WriteLine($"[FileAccessManager] 文件正在使用，标记待删除: {Path.GetFileName(filePath)}");
-                    return FileAccessResult.FileLocked; // 返回锁定状态，表示延迟删除
+return FileAccessResult.FileLocked; // 返回锁定状态，表示延迟删除
                 }
             }
 
@@ -233,9 +230,7 @@ namespace SunEyeVision.Core.IO
             {
                 _deletedFiles.Clear();
             }
-            
-            Debug.WriteLine("[FileAccessManager] 已清除删除记录");
-        }
+}
 
         /// <summary>
         /// 处理延迟删除队列
@@ -268,8 +263,7 @@ namespace SunEyeVision.Core.IO
                 {
                     MarkAsDeleted(filePath);
                     _pendingDeletions.TryRemove(filePath, out _);
-                    Debug.WriteLine($"[FileAccessManager] 强制标记删除（超时）: {Path.GetFileName(filePath)}");
-                }
+}
             }
         }
 
@@ -314,9 +308,7 @@ namespace SunEyeVision.Core.IO
 
                 File.Delete(filePath);
                 MarkAsDeleted(filePath);
-                
-                Debug.WriteLine($"[FileAccessManager] 文件已删除: {Path.GetFileName(filePath)}");
-                return FileAccessResult.Granted;
+return FileAccessResult.Granted;
             }
             catch (FileNotFoundException)
             {
@@ -325,13 +317,11 @@ namespace SunEyeVision.Core.IO
             }
             catch (IOException ex)
             {
-                Debug.WriteLine($"[FileAccessManager] 文件被占用: {Path.GetFileName(filePath)} - {ex.Message}");
-                return FileAccessResult.FileLocked;
+return FileAccessResult.FileLocked;
             }
             catch (UnauthorizedAccessException)
             {
-                Debug.WriteLine($"[FileAccessManager] 无权限删除: {Path.GetFileName(filePath)}");
-                return FileAccessResult.FileLocked;
+return FileAccessResult.FileLocked;
             }
         }
 
@@ -347,12 +337,10 @@ namespace SunEyeVision.Core.IO
                 try
                 {
                     File.Delete(filePath);
-                    Debug.WriteLine($"[FileAccessManager] 延迟删除完成: {Path.GetFileName(filePath)}");
-                }
+}
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"[FileAccessManager] 延迟删除失败: {Path.GetFileName(filePath)} - {ex.Message}");
-                }
+}
             }
             
             MarkAsDeleted(filePath);

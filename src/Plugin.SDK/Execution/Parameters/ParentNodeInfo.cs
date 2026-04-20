@@ -25,12 +25,11 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     /// 
     /// foreach (var parent in parentNodes)
     /// {
-    ///     Console.WriteLine($"父节点: {parent.NodeName} ({parent.NodeType})");
-    ///     Console.WriteLine($"执行状态: {parent.ExecutionStatus}");
-    ///     
+    ///     // 访问父节点信息: parent.NodeName, parent.NodeType, parent.ExecutionStatus
+    ///
     ///     foreach (var prop in parent.OutputProperties)
     ///     {
-    ///         Console.WriteLine($"  - {prop.DisplayName}: {prop.CurrentValue}");
+    ///         // 访问输出属性: prop.DisplayName, prop.CurrentValue
     ///     }
     /// }
     /// </code>

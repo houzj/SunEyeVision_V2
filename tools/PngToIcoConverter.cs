@@ -68,11 +68,7 @@ try
         resizedImage.Save(ms, ImageFormat.Png);
         ms.CopyTo(icoStream);
     }
-
-    Console.WriteLine($"✅ 成功生成ICO文件: {icoPath}");
-    Console.WriteLine($"✅ 包含的尺寸: {string.Join(", ", sizes)}px");
 }
 catch (Exception ex)
 {
-    Console.WriteLine($"❌ 错误: {ex.Message}");
 }

@@ -574,18 +574,12 @@ namespace SunEyeVision.UI.Views.Windows
                 {
 
                     ImagePreviewContent.WorkflowExecutionRequested += OnWorkflowExecutionRequested;
-
-                    System.Diagnostics.Debug.WriteLine("[MainWindow] ✓ 已订阅 ImagePreviewContent.WorkflowExecutionRequested 事件");
-
-                }
+}
 
                 else
 
                 {
-
-                    System.Diagnostics.Debug.WriteLine("[MainWindow] ❌ ImagePreviewContent 为 null，无法订阅事件");
-
-                }
+}
 
                 // ★ 设置 OverlayCanvas 引用到 NodeResultManager
                 if (ImageDisplayContent != null)
@@ -596,17 +590,14 @@ namespace SunEyeVision.UI.Views.Windows
                         // 通过 ViewModel 获取 NodeResultManager 并设置 OverlayCanvas
                         var nodeResultManager = GetNodeResultManager(_viewModel);
                         nodeResultManager?.SetOverlayCanvas(overlayCanvas);
-                        System.Diagnostics.Debug.WriteLine("[MainWindow] ✓ 已设置 OverlayCanvas 引用");
-                    }
+}
                     else
                     {
-                        System.Diagnostics.Debug.WriteLine("[MainWindow] ❌ OverlayCanvas 为 null");
-                    }
+}
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine("[MainWindow] ❌ ImageDisplayContent 为 null");
-                }
+}
 
 
                 // 工具插件现在通过ToolboxViewModel自动加载
@@ -1685,12 +1676,7 @@ namespace SunEyeVision.UI.Views.Windows
         private void OnWorkflowExecutionRequested(object sender, WorkflowExecutionRequestEventArgs e)
 
         {
-
-            System.Diagnostics.Debug.WriteLine($"[MainWindow] ★★★ OnWorkflowExecutionRequested 被调用 - 图像: {e.ImageInfo.Name}");
-
-
-
-            if (_viewModel?.WorkflowTabViewModel?.SelectedTab == null)
+if (_viewModel?.WorkflowTabViewModel?.SelectedTab == null)
 
             {
 
@@ -2620,18 +2606,13 @@ namespace SunEyeVision.UI.Views.Windows
         /// </summary>
         private void ToggleFullscreen_Click(object sender, RoutedEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine($"[MainWindow] ToggleFullscreen_Click 被调用");
-            System.Diagnostics.Debug.WriteLine($"[MainWindow] ImageDisplayContent 是否为 null: {ImageDisplayContent == null}");
-
             if (ImageDisplayContent != null)
             {
-                System.Diagnostics.Debug.WriteLine($"[MainWindow] ImageDisplayContent.IsFullscreen: {ImageDisplayContent.IsFullscreen}");
-                ImageDisplayContent.ToggleFullscreen();
+ImageDisplayContent.ToggleFullscreen();
             }
             else
             {
-                System.Diagnostics.Debug.WriteLine($"[MainWindow] ❌ ImageDisplayContent 为 null");
-            }
+}
         }
 
         #endregion
@@ -2711,10 +2692,7 @@ namespace SunEyeVision.UI.Views.Windows
             // 记录拖动开始前的状态
 
             _previousSplitterPosition = RightPanelGrid.RowDefinitions[0].ActualHeight;
-
-            System.Diagnostics.Debug.WriteLine($"[分隔条拖动] 开始拖动，当前位置: {_previousSplitterPosition}");
-
-        }
+}
 
 
 
@@ -2735,12 +2713,7 @@ namespace SunEyeVision.UI.Views.Windows
 
 
             // 实时记录拖动过程中的位置变化（用于调试）
-
-            System.Diagnostics.Debug.WriteLine($"[分隔条拖动中] 当前位置: {currentImageHeight:F2}");
-
-
-
-            // 注意：由于ShowsPreview="False"，GridSplitter会自动调整相邻Row的高度
+// 注意：由于ShowsPreview="False"，GridSplitter会自动调整相邻Row的高度
 
             // 不需要手动更新Height，只需要记录状态即可
 
@@ -2761,12 +2734,7 @@ namespace SunEyeVision.UI.Views.Windows
             // 保存新的分隔条位置到ViewModel
 
             double newPosition = RightPanelGrid.RowDefinitions[0].ActualHeight;
-
-            System.Diagnostics.Debug.WriteLine($"[分隔条拖动] 完成拖动，新位置: {newPosition}");
-
-
-
-            if (DataContext is MainWindowViewModel viewModel)
+if (DataContext is MainWindowViewModel viewModel)
 
             {
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
@@ -61,8 +61,7 @@ namespace SunEyeVision.UI.Services.Visualization
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[VisualElementRenderer] 渲染元素失败: {element.Type}, 错误: {ex.Message}");
-                }
+}
             }
             
             return result;

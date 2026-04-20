@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -287,8 +287,7 @@ namespace SunEyeVision.UI.Services.Thumbnail
                 if (_useLowQuality != value)
                 {
                     _useLowQuality = value;
-                    Debug.WriteLine($"[PriorityLoader] Quality mode: {(value ? "Low(Fast)" : "High")}");
-                }
+}
             }
         }
 
@@ -340,9 +339,7 @@ namespace SunEyeVision.UI.Services.Thumbnail
         {
             // 简化架构：统一线程池，与 WicGpuDecoder 并发限制(8)匹配
             _loadSemaphore = new SemaphoreSlim(MAX_CONCURRENT_LOADS);
-            
-            Debug.WriteLine($"[PriorityLoader] 简化线程池配置 - 并发限制:{MAX_CONCURRENT_LOADS}");
-        }
+}
 
         #endregion
 
@@ -388,9 +385,6 @@ namespace SunEyeVision.UI.Services.Thumbnail
             // 重置状态?
             _loadedInVisibleArea = 0;
             _visibleAreaCount = 0;
-            
-            Debug.WriteLine($"[Diagnostics] CancelAndReset details: Cancel={cancelMs}ms, Sleep={sleepMs}ms, ClearQueue={clearQueueMs}ms, ClearUiQueue={clearUiQueueMs}ms");
-            Debug.WriteLine("[PriorityLoader] Canceled old tasks and reset state.");
         }
 
         /// <summary>
@@ -433,8 +427,7 @@ namespace SunEyeVision.UI.Services.Thumbnail
             
             if (isMemoryConstrained)
             {
-                Debug.WriteLine($"[PriorityLoader] ?内存紧张 - 可用:{availableMemoryMB}MB 负载:{memoryLoadPercent}% 启用保守策略");
-            }
+}
 
             // ===== ?单一数据源：获取实际可视数量 =====
             stepSw.Restart();
@@ -463,8 +456,7 @@ namespace SunEyeVision.UI.Services.Thumbnail
                 bufferSize = Math.Min(_dynamicPolicy.BufferSize / 2, fileNames.Length - visibleCount);
                 prefetchSize = Math.Min(_dynamicPolicy.PrefetchSize / 3, fileNames.Length - visibleCount - bufferSize);
                 totalEnqueueCount = Math.Min(visibleCount + bufferSize + prefetchSize, fileNames.Length);
-                Debug.WriteLine($"[PriorityLoader] 保守策略 - 入队:{totalEnqueueCount} (可视:{visibleCount} 缓冲:{bufferSize} 预取:{prefetchSize})");
-            }
+}
             else
             {
                 // 正常策略
@@ -485,13 +477,7 @@ namespace SunEyeVision.UI.Services.Thumbnail
 
             // ===== 诊断日志：前置准备阶段 =====
             totalDiagSw.Stop();
-            Debug.WriteLine($"[诊断] CancelAndReset: {cancelAndResetMs}ms");
-            Debug.WriteLine($"[诊断] 内存预判: {memoryCheckMs}ms");
-            Debug.WriteLine($"[诊断] 计算可视数量: {calcVisibleMs}ms, visibleCount={visibleCount}");
-            Debug.WriteLine($"[诊断] 策略计算: {policyCalcMs}ms");
-            Debug.WriteLine($"[诊断] ✅前置准备总计: {totalDiagSw.ElapsedMilliseconds}ms");
-
-            // ===== ?P0优化：Critical任务直接同步执行，消除线程池冷启动开销 =====
+// ===== ?P0优化：Critical任务直接同步执行，消除线程池冷启动开销 =====
             // 首张图片不入队，直接同步解码
             long criticalDecodeMs = 0;
             long uiUpdateMs = 0;
@@ -500,10 +486,7 @@ namespace SunEyeVision.UI.Services.Thumbnail
             if (fileNames.Length > 0 && imageCollection.Count > 0)
             {
                 string firstFileName = System.IO.Path.GetFileName(fileNames[0]);
-                
-                Debug.WriteLine($"[PriorityLoader] ?Critical同步加载开?| file={firstFileName}");
-                
-                // ?P0优化：直接同步执行，无线程池调度开销
+// ?P0优化：直接同步执行，无线程池调度开销
                 // ?优先级感知：Critical任务使用高优先级GPU解码
                 stepSw.Restart();
                 var thumbnail = LoadThumbnailOptimized(fileNames[0], 60, isHighPriority: true);
@@ -524,8 +507,7 @@ namespace SunEyeVision.UI.Services.Thumbnail
                         }
                         else
                         {
-                            Debug.WriteLine($"[PriorityLoader] ⚠️ Critical加载时集合已清空 | file={firstFileName}");
-                        }
+}
                     }, DispatcherPriority.Normal);
                     stepSw.Stop();
                     uiUpdateMs = stepSw.ElapsedMilliseconds;
@@ -543,23 +525,17 @@ namespace SunEyeVision.UI.Services.Thumbnail
                     
                     // ?修复：使用实际解码时间判断加载方法?
                     string loadMethod = criticalDecodeMs < 10 ? "缓存命中" : "GPU解码";
-                    Debug.WriteLine($"[PriorityLoader] ?Critical同步加载完成 | {loadMethod} | 解码耗时:{criticalDecodeMs}ms | file={firstFileName}");
-                    
-                    // 立即回调通知首张图片已加?
+// 立即回调通知首张图片已加?
                     stepSw.Restart();
                     onFirstImageLoaded?.Invoke(0);
                     stepSw.Stop();
                     callbackMs = stepSw.ElapsedMilliseconds;
                     
                     // ===== ?诊断日志：Critical阶段 =====
-                    Debug.WriteLine($"[诊断] Critical解码: {criticalDecodeMs}ms");
-                    Debug.WriteLine($"[诊断] UI更新(InvokeAsync): {uiUpdateMs}ms");
-                    Debug.WriteLine($"[诊断] 回调执行: {callbackMs}ms");
-                }
+}
                 else
                 {
-                    Debug.WriteLine($"[PriorityLoader] ?Critical同步加载失败 | file={firstFileName}");
-                }
+}
             }
 
             // 第一批：可视区域剩余部分（High）从index=1开始
@@ -584,14 +560,6 @@ namespace SunEyeVision.UI.Services.Thumbnail
             {
                 EnqueueLoadTask(i, fileNames[i], LoadPriority.Low);
             }
-
-            Debug.WriteLine($"[PriorityLoader] ?单源数据架构 - 首屏加载:");
-            Debug.WriteLine($"  实际可视数量: {visibleCount}?(来自GetVisibleRange)");
-            Debug.WriteLine($"  可视区域: [0同步] + [1-{visibleCount - 1}] ({visibleCount}?");
-            Debug.WriteLine($"  缓冲区域(Medium): [{visibleCount}-{visibleCount + bufferSize - 1}] ({bufferSize}?");
-            Debug.WriteLine($"  预测区域(Low): [{visibleCount + bufferSize}-{totalEnqueueCount - 1}] ({prefetchSize}?");
-            Debug.WriteLine($"  ?入队总数: {totalEnqueueCount - 1} / {fileNames.Length} (首张已同步加?");
-
             // 启动后台加载任务（处理剩余任务）
             StartLoading();
         }
@@ -854,8 +822,7 @@ namespace SunEyeVision.UI.Services.Thumbnail
 
             if (toRemove.Count > 0)
             {
-                Debug.WriteLine($"[PriorityLoader] State sync completed - cleared invalid indices: {toRemove.Count}");
-            }
+}
         }
 
         /// <summary>
@@ -870,8 +837,7 @@ namespace SunEyeVision.UI.Services.Thumbnail
             if (collection == null)
             {
                 _getVisibleRangeFunc = null;
-                Debug.WriteLine("[SetImageCollection] ❌集合已清空，同时清除_getVisibleRangeFunc委托");
-            }
+}
         }
 
         /// <summary>
@@ -912,9 +878,7 @@ namespace SunEyeVision.UI.Services.Thumbnail
             {
                 _useLowQuality = false;
             }
-            
-            Debug.WriteLine($"[PriorityLoader] 内存压力:{level} ?并发布?{_dynamicConcurrency} 低质?{_useLowQuality}");
-        }
+}
 
         /// <summary>
         /// ?P1优化：取消低优先级任务?
@@ -948,8 +912,7 @@ namespace SunEyeVision.UI.Services.Thumbnail
                 
                 if (toRemove.Count > 0)
                 {
-                    Debug.WriteLine($"[PriorityLoader] Canceled low priority tasks: {toRemove.Count}");
-                }
+}
             }
         }
 
@@ -980,8 +943,7 @@ namespace SunEyeVision.UI.Services.Thumbnail
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"[PriorityLoader] ?GetVisibleRange委托异常: {ex.Message}");
-                }
+}
             }
             
             // 回退：使用当前配置值（可能过时间?
@@ -1120,24 +1082,20 @@ namespace SunEyeVision.UI.Services.Thumbnail
                 {
                     if (_currentScrollType == ScrollType.Fast || _currentScrollType == ScrollType.UltraFast)
                     {
-                        Debug.WriteLine($"[DynamicRange] Scroll type changed: {previousScrollType} -> {_currentScrollType} (Speed:{_scrollVelocity:F1} items/s)");
-                    }
+}
                     else if (_currentScrollType == ScrollType.Stopped && previousScrollType != ScrollType.Stopped)
                     {
-                        Debug.WriteLine("[DynamicRange] Scroll stopped - starting visible area loading");
-                    }
+}
                 }
 
                 // 快速滚动开始/停止处理
                 if (_isFastScrolling && !wasFastScrolling)
                 {
-                    Debug.WriteLine($"[DynamicRange] Fast scroll started - Speed:{_scrollVelocity:F1} items/s");
-                }
+}
                 else if (!_isFastScrolling && wasFastScrolling)
                 {
                     _lastScrollStopTime = now;
-                    Debug.WriteLine($"[DynamicRange] 快速滚动停止 - 启动后备区域激活定时器");
-                    StartReserveActivationTimer(totalCount);
+StartReserveActivationTimer(totalCount);
                 }
 
                 // 静止状态。
@@ -1210,10 +1168,7 @@ namespace SunEyeVision.UI.Services.Thumbnail
             int rightCount = _reserveZoneRight.end - _reserveZoneRight.start + 1;
 
             if (leftCount <= 0 && rightCount <= 0) return;
-
-            Debug.WriteLine($"[BufferZone] 后备区域激?- ?[{_reserveZoneLeft.start}-{_reserveZoneLeft.end}] ?[{_reserveZoneRight.start}-{_reserveZoneRight.end}]");
-
-            // 入队后备区域图片（Idle优先级）
+// 入队后备区域图片（Idle优先级）
             // ?修复：使用实际集合数量进行边界检查
             int actualCount = _imageCollection?.Count ?? 0;
             for (int i = _reserveZoneLeft.start; i <= _reserveZoneLeft.end && i < actualCount; i++)
@@ -1281,8 +1236,7 @@ namespace SunEyeVision.UI.Services.Thumbnail
                         if (thumbnail == null)
                         {
                             // ?状态不一致：_loadedIndices标记已加载，但实际Thumbnail为null
-                            Debug.WriteLine($"[PriorityLoader] ?状态不一?index={index} 在loadedIndices但Thumbnail=null，修复中...");
-                            _loadedIndices.Remove(index);
+_loadedIndices.Remove(index);
                             _decodingIndices.Remove(index);
                             // 继续入队
                         }
@@ -1392,8 +1346,7 @@ namespace SunEyeVision.UI.Services.Thumbnail
                     }
                     catch (Exception ex)
                     {
-                        Debug.WriteLine($"[PriorityLoader] 加载异常 index={task.Index}: {ex.Message}");
-                    }
+}
                     finally
                     {
                         _loadSemaphore.Release();
@@ -1417,8 +1370,7 @@ namespace SunEyeVision.UI.Services.Thumbnail
             var imageCollection = _imageCollection;
             if (imageCollection == null || task.Index < 0 || task.Index >= imageCollection.Count)
             {
-                Debug.WriteLine($"[PriorityLoader] ?跳过加载 - 无效参数 index={task.Index} collection={imageCollection != null} count={imageCollection?.Count ?? 0}");
-                return;
+return;
             }
 
             // ?P2优化 - Idle优先级任务：可随时取消?
@@ -1427,8 +1379,7 @@ namespace SunEyeVision.UI.Services.Thumbnail
                 // 检查是否有更高优先级任务?
                 if (HasHigherPriorityTasks())
                 {
-                    Debug.WriteLine($"[PriorityLoader] ?取消Idle任务 index={task.Index}（有更高优先级任务）");
-                    return; // 直接放弃，不重新入队
+return; // 直接放弃，不重新入队
                 }
 
                 // 检查是否还在缓冲区域内
@@ -1440,16 +1391,14 @@ namespace SunEyeVision.UI.Services.Thumbnail
                 else
                 {
                     // 已移入更高级别区域，让它以更高优先级重新入队
-                    Debug.WriteLine($"[PriorityLoader] ?Idle任务升级 index={task.Index} 移入{zone}区域");
-                    return;
+return;
                 }
             }
 
             // ?P0优化 - 阶段1：开始前检查?- 低优先级任务在高负载时放?
             if (task.Priority >= LoadPriority.Low && _useLowQuality)
             {
-                Debug.WriteLine($"[PriorityLoader] Dropped Low task index={task.Index} (low quality mode)");
-                return;
+return;
             }
 
             var imageInfo = imageCollection[task.Index];
@@ -1480,8 +1429,7 @@ namespace SunEyeVision.UI.Services.Thumbnail
 
             if (imageInfo.Thumbnail != null)
             {
-                Debug.WriteLine($"[PriorityLoader] Skipped - index={task.Index} Thumbnail already exists");
-                lock (_queueLock)
+lock (_queueLock)
                 {
                     _decodingIndices.Remove(task.Index);
                     _loadedIndices.Add(task.Index); // 同步状态?
@@ -1497,8 +1445,7 @@ namespace SunEyeVision.UI.Services.Thumbnail
                 // ?P0优化 - 阶段2：解码前再次检查优先级（Idle任务再次检查）
                 if (task.Priority == LoadPriority.Idle && HasHigherPriorityTasks())
                 {
-                    Debug.WriteLine($"[PriorityLoader] ?中断Idle任务 index={task.Index}（有更高优先级任务）");
-                    lock (_queueLock)
+lock (_queueLock)
                     {
                         _decodingIndices.Remove(task.Index);
                     }
@@ -1508,8 +1455,7 @@ namespace SunEyeVision.UI.Services.Thumbnail
                 // Medium/Low任务检查?
                 if (task.Priority >= LoadPriority.Medium && task.Priority < LoadPriority.Idle && HasHigherPriorityTasks())
                 {
-                    Debug.WriteLine($"[PriorityLoader] ?推迟Medium/Low任务 index={task.Index}（有更高优先级任务）");
-                    lock (_queueLock)
+lock (_queueLock)
                     {
                         _decodingIndices.Remove(task.Index);
                         // 重新入队，等待下次调试?
@@ -1527,8 +1473,7 @@ namespace SunEyeVision.UI.Services.Thumbnail
                 // ?P0优化 - 阶段3：UI更新前检查取消?
                 if (cancellationToken.IsCancellationRequested || thumbnail == null)
                 {
-                    Debug.WriteLine($"[PriorityLoader] ?加载返回null index={task.Index} file={task.FilePath} 耗时:{sw.ElapsedMilliseconds}ms");
-                    lock (_queueLock)
+lock (_queueLock)
                     {
                         _decodingIndices.Remove(task.Index);
                     }
@@ -1538,8 +1483,7 @@ namespace SunEyeVision.UI.Services.Thumbnail
                 // ?关键诊断：检查缩略图有效果?
                 if (thumbnail.Width <= 0 || thumbnail.Height <= 0)
                 {
-                    Debug.WriteLine($"[PriorityLoader] ?无效缩略?index={task.Index} size={thumbnail.Width}x{thumbnail.Height} 耗时:{sw.ElapsedMilliseconds}ms");
-                    lock (_queueLock)
+lock (_queueLock)
                     {
                         _decodingIndices.Remove(task.Index);
                     }
@@ -1560,8 +1504,7 @@ namespace SunEyeVision.UI.Services.Thumbnail
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[PriorityLoader] ?加载异常 index={task.Index}: {ex.Message}");
-            }
+}
         }
 
         /// <summary>
@@ -1604,8 +1547,7 @@ namespace SunEyeVision.UI.Services.Thumbnail
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[PriorityLoader] 缩略图加载失败: {filePath} - {ex.Message}");
-                return null;
+return null;
             }
         }
 
@@ -1639,13 +1581,11 @@ namespace SunEyeVision.UI.Services.Thumbnail
                 if (avgTime < 50 && _dynamicConcurrency < MAX_CONCURRENCY)
                 {
                     _dynamicConcurrency = Math.Min(MAX_CONCURRENCY, _dynamicConcurrency + 1);
-                    Debug.WriteLine($"[PriorityLoader] ?增加并发: {_dynamicConcurrency}");
-                }
+}
                 else if (avgTime > 150 && _dynamicConcurrency > MIN_CONCURRENCY)
                 {
                     _dynamicConcurrency = Math.Max(MIN_CONCURRENCY, _dynamicConcurrency - 1);
-                    Debug.WriteLine($"[PriorityLoader] ?减少并发: {_dynamicConcurrency}");
-                }
+}
             }
         }
 
@@ -1740,8 +1680,7 @@ namespace SunEyeVision.UI.Services.Thumbnail
             {
                 if (imageCollection == null && _uiUpdateQueue.Count > 0)
                 {
-                    Debug.WriteLine($"[ProcessUIUpdates] Skipped update - _imageCollection is null, {_uiUpdateQueue.Count} items in queue");
-                }
+}
                 return;
             }
 
@@ -1761,8 +1700,7 @@ namespace SunEyeVision.UI.Services.Thumbnail
                 try
                 {
                     var (f, l) = _getVisibleRangeFunc();
-                    Debug.WriteLine($"[ProcessUIUpdates] GetVisibleRange返回: ({f}, {l}), imageCollection.Count={imageCollection?.Count ?? -1}");
-                    if (f >= 0 && l >= 0)
+if (f >= 0 && l >= 0)
                     {
                         firstVis = f;
                         lastVis = l;
@@ -1770,22 +1708,19 @@ namespace SunEyeVision.UI.Services.Thumbnail
                     else
                     {
                         // ?新增：如果可视范围无效，跳过本次更新
-                        Debug.WriteLine($"[ProcessUIUpdates] ?可视范围无效({f}, {l})，跳过UI更新");
-                        return;
+return;
                     }
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"[ProcessUIUpdates] ?GetVisibleRange委托异常: {ex.Message}");
-                    return;
+return;
                 }
             }
 
             // ?二次检查：委托调用后集合可能已变化
             if (imageCollection == null || imageCollection.Count == 0)
             {
-                Debug.WriteLine($"[ProcessUIUpdates] ?委托调用后集合已为空，跳过UI更新");
-                return;
+return;
             }
 
             // 分离可视区域和后台更新?
@@ -1845,8 +1780,7 @@ namespace SunEyeVision.UI.Services.Thumbnail
                     // ?关键日志：索引越界
                     if (update.Index >= 0)
                     {
-                        Debug.WriteLine($"[ProcessUIUpdates] ⚠️ 可视区域更新索引越界: index={update.Index}, collection.Count={imageCollection.Count}");
-                    }
+}
                     lock (_queueLock)
                     {
                         _decodingIndices.Remove(update.Index);
@@ -1892,8 +1826,7 @@ namespace SunEyeVision.UI.Services.Thumbnail
                     // ?关键日志：索引越界
                     if (update.Index >= 0)
                     {
-                        Debug.WriteLine($"[ProcessUIUpdates] ⚠️ 后台更新索引越界: index={update.Index}, collection.Count={imageCollection.Count}");
-                    }
+}
                     lock (_queueLock)
                     {
                         _decodingIndices.Remove(update.Index);

@@ -134,8 +134,7 @@ namespace SunEyeVision.UI.Services.Thumbnail.Caching
 
                 if (deadKeys.Count > 0)
                 {
-                    Debug.WriteLine($"[WeakReferenceCache] ✓ 已清理 {deadKeys.Count} 个死引用，剩余: {_cache.Count}");
-                }
+}
             }
         }
 

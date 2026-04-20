@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
@@ -79,11 +79,7 @@ namespace SunEyeVision.UI.Services.Thumbnail
             _decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
             _fileAccessManager = fileAccessManager;
             _prefetchCache = new ConcurrentDictionary<string, byte[]>();
-            
-            Debug.WriteLine("[SmartThumbnailLoader] 单解码器架构初始化完成");
-            Debug.WriteLine($"  Decoder: {_decoder.GetType().Name}");
-            Debug.WriteLine($"  FileAccessManager: {(_fileAccessManager != null ? "Enabled" : "Disabled")}");
-        }
+}
 
         /// <summary>
         /// 预读取文件数据（用于并行优化?
@@ -150,14 +146,12 @@ namespace SunEyeVision.UI.Services.Thumbnail
         {
             if (string.IsNullOrEmpty(filePath))
             {
-                Debug.WriteLine("[SmartLoader] ?文件路径为空");
-                return null;
+return null;
             }
             
             if (!File.Exists(filePath))
             {
-                Debug.WriteLine($"[SmartLoader] ?文件不保存? {filePath}");
-                return null;
+return null;
             }
 
             // ?日志优化：判断是否是前几张图片（输出详细日志?
@@ -196,15 +190,12 @@ namespace SunEyeVision.UI.Services.Thumbnail
                         // ?日志优化：前几张图片输出日志
                         if (isFirstFewImages)
                         {
-                            Debug.WriteLine($"[诊断] LoadThumbnail详情: CacheQuery={cacheQueryMs}ms, Result=缓存命中 | file={System.IO.Path.GetFileName(filePath)}");
-                            Debug.WriteLine($"[SmartLoader] ?缓存命中 | {totalSw.ElapsedMilliseconds}ms | file={System.IO.Path.GetFileName(filePath)}");
                         }
                         return cached;
                     }
                     else
                     {
-                        Debug.WriteLine($"[SmartLoader] ?缓存缩略图无?size={cached.Width}x{cached.Height} file={System.IO.Path.GetFileName(filePath)}");
-                    }
+}
                 }
 
                 // ===== L3: 解码器解决方案?=====
@@ -224,13 +215,11 @@ namespace SunEyeVision.UI.Services.Thumbnail
                         method = "Decoder";
                         Interlocked.Increment(ref _decodeHits);
                         // 单解码器架构日志
-                        Debug.WriteLine($"[Diagnostics] LoadThumbnail details: CacheQuery={cacheQueryMs}ms, Decode={gpuDecodeMs}ms, Decoder={_decoder.GetType().Name}, Priority={isHighPriority} | file={System.IO.Path.GetFileName(filePath)}");
-                        goto SUCCESS;
+goto SUCCESS;
                     }
                     else
                     {
-                        Debug.WriteLine($"[SmartLoader] 解码器结果无效 size={result.Width}x{result.Height} file={System.IO.Path.GetFileName(filePath)}");
-                        result = null;
+result = null;
                     }
                 }
 
@@ -247,25 +236,20 @@ namespace SunEyeVision.UI.Services.Thumbnail
                     {
                         method = "原图解码";
                         Interlocked.Increment(ref _originalHits);
-                        Debug.WriteLine($"[诊断] LoadThumbnail详情: CacheQuery={cacheQueryMs}ms, GpuDecode={gpuDecodeMs}ms, OriginalDecode={originalDecodeMs}ms, Result=原图解码 | file={System.IO.Path.GetFileName(filePath)}");
-                        if (isFirstFewImages)
+if (isFirstFewImages)
                         {
-                            Debug.WriteLine($"[SmartLoader] ?L4原图解码 | {totalSw.ElapsedMilliseconds}ms | file={System.IO.Path.GetFileName(filePath)}");
-                        }
+}
                         goto SUCCESS;
                     }
                     else
                     {
-                        Debug.WriteLine($"[SmartLoader] ?原图解码结果无效 size={result.Width}x{result.Height} file={System.IO.Path.GetFileName(filePath)}");
-                        result = null;
+result = null;
                     }
                 }
 
                 // 所有策略都失败
                 Interlocked.Increment(ref _misses);
                 totalSw.Stop();
-                Debug.WriteLine($"[诊断] LoadThumbnail详情: CacheQuery={cacheQueryMs}ms, GpuDecode={gpuDecodeMs}ms, OriginalDecode={originalDecodeMs}ms, Result=失败 | file={System.IO.Path.GetFileName(filePath)}");
-                Debug.WriteLine($"[SmartLoader] ?所有策略失?file={System.IO.Path.GetFileName(filePath)}");
                 return null;
 
             SUCCESS:
@@ -283,8 +267,7 @@ namespace SunEyeVision.UI.Services.Thumbnail
             catch (Exception ex)
             {
                 totalSw.Stop();
-                Debug.WriteLine($"[SmartLoader] ?加载异常: {ex.Message} file={System.IO.Path.GetFileName(filePath)}");
-                Interlocked.Increment(ref _misses);
+Interlocked.Increment(ref _misses);
                 return null;
             }
         }
@@ -341,8 +324,7 @@ namespace SunEyeVision.UI.Services.Thumbnail
                 using var scope = _fileAccessManager.CreateAccessScope(filePath, FileAccessIntent.Read, FileType.OriginalImage);
                 if (!scope.IsGranted)
                 {
-                    Debug.WriteLine($"[SmartLoader] ?文件访问被拒? {scope.ErrorMessage} file={System.IO.Path.GetFileName(filePath)}");
-                    return null;
+return null;
                 }
                 
                 return DecodeOriginalInternal(filePath, size);
@@ -389,9 +371,7 @@ namespace SunEyeVision.UI.Services.Thumbnail
                 bitmap.Freeze();
                 
                 sw.Stop();
-                Debug.WriteLine($"[SmartLoader] L4原图解码耗时:{sw.ElapsedMilliseconds}ms file={System.IO.Path.GetFileName(filePath)}");
-                
-                // 异步保存到缓存（L4解码较慢，值得缓保存?
+// 异步保存到缓存（L4解码较慢，值得缓保存?
                 if (bitmap.Width > 0 && bitmap.Height > 0)
                 {
                     _cacheManager.SaveToCacheNonBlocking(filePath, bitmap);
@@ -401,8 +381,7 @@ namespace SunEyeVision.UI.Services.Thumbnail
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[SmartLoader] ?L4原图解码失败: {ex.Message} file={System.IO.Path.GetFileName(filePath)}");
-                return null;
+return null;
             }
             finally
             {

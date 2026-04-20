@@ -66,8 +66,7 @@ namespace SunEyeVision.UI.Services.Workflow
         public void SetOverlayCanvas(System.Windows.Controls.Canvas canvas)
         {
             _overlayCanvas = canvas;
-            System.Diagnostics.Debug.WriteLine($"[NodeResultManager] OverlayCanvas 已设置");
-        }
+}
 
         /// <summary>
         /// 更新节点结果并刷新UI
@@ -80,9 +79,7 @@ namespace SunEyeVision.UI.Services.Workflow
                 return;
 
             // 诊断日志已移至Debug输出
-            System.Diagnostics.Debug.WriteLine($"[UpdateNodeResult] 节点: {node.Name}, IsSelected={node.IsSelected}");
-
-            // 1. 缓存结果到 WorkflowContext
+// 1. 缓存结果到 WorkflowContext
             var executionResult = new NodeExecutionResult
             {
                 NodeId = node.Id,
@@ -125,10 +122,7 @@ namespace SunEyeVision.UI.Services.Workflow
                 ClearResultDisplay();
                 return;
             }
-
-            System.Diagnostics.Debug.WriteLine($"[RefreshResultDisplay] 开始刷新显示: {node.Name}");
-
-            // ★ Step 1: 先准备所有新数据（不触发UI更新）
+// ★ Step 1: 先准备所有新数据（不触发UI更新）
             // 使用反射获取所有输出属性（统一使用新机制）
             var propertyMap = result.GetPropertyMap();
             var resultItems = result.GetType()
@@ -170,8 +164,7 @@ namespace SunEyeVision.UI.Services.Workflow
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[RefreshResultDisplay] 图像转换失败: {ex.Message}");
-                }
+}
             }
 
             // ★ Step 2: 批量更新UI（减少刷新次数）
@@ -223,8 +216,7 @@ namespace SunEyeVision.UI.Services.Workflow
         {
             if (_overlayCanvas == null)
             {
-                System.Diagnostics.Debug.WriteLine("[NodeResultManager] OverlayCanvas 未设置，无法显示可视化元素");
-                return;
+return;
             }
             
             // 清除旧元素
@@ -234,15 +226,13 @@ namespace SunEyeVision.UI.Services.Workflow
             var visualElements = result.GetVisualElements();
             if (visualElements == null)
             {
-                System.Diagnostics.Debug.WriteLine("[NodeResultManager] 结果不包含可视化元素");
-                return;
+return;
             }
             
             var elementList = visualElements.ToList();
             if (elementList.Count == 0)
             {
-                System.Diagnostics.Debug.WriteLine("[NodeResultManager] 可视化元素列表为空");
-                return;
+return;
             }
             
             // 渲染并添加到 Canvas
@@ -251,9 +241,7 @@ namespace SunEyeVision.UI.Services.Workflow
             {
                 _overlayCanvas.Children.Add(uiElement);
             }
-            
-            System.Diagnostics.Debug.WriteLine($"[NodeResultManager] 显示 {uiElements.Count} 个可视化元素");
-        }
+}
         
         /// <summary>
         /// 清除可视化元素
@@ -280,8 +268,7 @@ namespace SunEyeVision.UI.Services.Workflow
             if (outputImage == null || outputImage.Empty())
             {
                 // ★ 关键日志：无图像输出
-                System.Diagnostics.Debug.WriteLine($"[NodeResultManager] 节点 {node.Name} 无图像输出");
-                return false;
+return false;
             }
 
             // 获取文件路径（如果有）
@@ -301,17 +288,12 @@ namespace SunEyeVision.UI.Services.Workflow
                     outputImage.Clone(), // 克隆Mat，避免所有权问题
                     imageSourceId
                 );
-
-                System.Diagnostics.Debug.WriteLine($"[NodeResultManager] ★ ImageSource已创建: {imageSourceId}");
-
-                // ★ 关键日志：图像更新成功
-                System.Diagnostics.Debug.WriteLine($"[NodeResultManager] ★ 节点 {node.Name} 图像已更新");
-                return true;
+// ★ 关键日志：图像更新成功
+return true;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[NodeResultManager] 更新节点图像失败: {ex.Message}");
-                return false;
+return false;
             }
         }
 
@@ -372,15 +354,10 @@ namespace SunEyeVision.UI.Services.Workflow
                 }
 
                 _workflowContext.SetNodeResult(node.Id, executionResult);
-
-                System.Diagnostics.Debug.WriteLine(
-                    $"[NodeResultManager] ★ 缓存更新: 节点 {node.Name}, " +
-                    $"执行时间: {cachedResult.ExecutionTimeMs}ms, " +
-                    $"缓存命中");
             }
-            catch (Exception ex)
+            catch
             {
-                System.Diagnostics.Debug.WriteLine($"[NodeResultManager] 缓存更新失败: {ex.Message}");
+                // 静默处理缓存更新错误
             }
         }
 
@@ -417,8 +394,7 @@ namespace SunEyeVision.UI.Services.Workflow
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[NodeResultManager] 图像转换失败: {ex.Message}");
-                return null;
+return null;
             }
         }
 

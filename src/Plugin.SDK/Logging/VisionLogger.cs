@@ -188,15 +188,8 @@ namespace SunEyeVision.Plugin.SDK.Logging
         /// </summary>
         public void Log(LogLevel level, string message, string? source = null, Exception? exception = null, LogTarget target = LogTarget.UI)
         {
-#if DEBUG
-            System.Diagnostics.Debug.WriteLine($"[VisionLogger] Log 调用: level={level}, message={message}, source={source}, target={target}, isEnabled={IsEnabled}, minLevel={_minLevel}, queueSize={_queue.Count}, writerCount={WriterCount}");
-#endif
-
             if (!IsEnabled || level < _minLevel)
             {
-#if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[VisionLogger] Log 跳过: isEnabled={IsEnabled}, level({level}) < minLevel({_minLevel}) = {level < _minLevel}");
-#endif
                 return;
             }
 
@@ -221,15 +214,9 @@ namespace SunEyeVision.Plugin.SDK.Logging
             _queue.Enqueue(entry);
             Interlocked.Increment(ref _totalEnqueued);
 
-#if DEBUG
-            System.Diagnostics.Debug.WriteLine($"[VisionLogger] Log 入队成功: id={entry.Id}, totalEnqueued={TotalEnqueued}");
-#endif
-
             if (_queue.Count > QueueWarningThreshold)
             {
-#if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[VisionLogger] 队列告警: {_queue.Count} 条待处理");
-#endif
+                // 队列即将溢出，记录警告
             }
         }
 
@@ -269,20 +256,13 @@ namespace SunEyeVision.Plugin.SDK.Logging
             _writersLock.EnterWriteLock();
             try
             {
-                // 检查是否已存在同名写入器
                 var existing = _writers.FirstOrDefault(w => w.Name == writer.Name);
                 if (existing != null)
                 {
                     _writers.Remove(existing);
                     existing.Dispose();
-#if DEBUG
-                    System.Diagnostics.Debug.WriteLine($"[VisionLogger] AddWriter 替换已存在的写入器: {writer.Name}");
-#endif
                 }
                 _writers.Add(writer);
-#if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[VisionLogger] AddWriter 添加写入器: {writer.Name} (MinLevel={writer.MinLevel}, IsEnabled={writer.IsEnabled}), 当前写入器数量: {_writers.Count}");
-#endif
             }
             finally
             {
@@ -348,14 +328,11 @@ namespace SunEyeVision.Plugin.SDK.Logging
                 }
                 catch (OperationCanceledException)
                 {
-                    // 取消时处理剩余日志
                     break;
                 }
                 catch (Exception ex)
                 {
-#if DEBUG
-                    System.Diagnostics.Debug.WriteLine($"[VisionLogger] 处理错误: {ex.Message}");
-#endif
+                    // 处理队列处理错误
                 }
             }
 
@@ -371,9 +348,6 @@ namespace SunEyeVision.Plugin.SDK.Logging
             _writersLock.EnterReadLock();
             try
             {
-#if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[VisionLogger] DispatchToWriters: entries={entries.Count}, writers={_writers.Count}");
-#endif
                 foreach (var writer in _writers)
                 {
                     try
@@ -384,9 +358,6 @@ namespace SunEyeVision.Plugin.SDK.Logging
                                 .Where(e => e.Level >= writer.MinLevel)
                                 .Where(e => writer.Accepts(e.Target))
                                 .ToList();
-#if DEBUG
-                            System.Diagnostics.Debug.WriteLine($"[VisionLogger] 分发到 {writer.Name}: filtered={filtered.Count}/{entries.Count}, MinLevel={writer.MinLevel}, Channel={writer.Channel}");
-#endif
                             if (filtered.Count > 0)
                             {
                                 writer.WriteBatch(filtered);
@@ -395,9 +366,7 @@ namespace SunEyeVision.Plugin.SDK.Logging
                     }
                     catch (Exception ex)
                     {
-#if DEBUG
-                        System.Diagnostics.Debug.WriteLine($"[VisionLogger] 写入器 '{writer.Name}' 错误: {ex.Message}");
-#endif
+                        // 写入器错误由写入器自己处理
                     }
                 }
             }

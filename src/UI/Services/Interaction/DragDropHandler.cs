@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using SunEyeVision.UI.Models;
@@ -50,8 +50,7 @@ namespace SunEyeVision.UI.Services.Interaction
             var elapsed = (now - _lastLogTime).TotalMilliseconds;
             _lastLogTime = now;
             var totalElapsed = (now - _dropStartTime).TotalMilliseconds;
-            System.Diagnostics.Debug.WriteLine($"[{now:HH:mm:ss.fff}] [+{elapsed:F0}ms] [累计:{totalElapsed:F0}ms] [{tag}] {message}");
-        }
+}
 #endif
 
         /// <summary>
@@ -87,21 +86,17 @@ namespace SunEyeVision.UI.Services.Interaction
         public void Canvas_DragEnter(object sender, DragEventArgs e)
         {
 #if DEBUG
-            System.Diagnostics.Debug.WriteLine("[DragEnter] ▶ 画布接收拖拽进入事件");
-            System.Diagnostics.Debug.WriteLine($"[DragEnter]   - Data formats: {string.Join(", ", e.Data.GetFormats())}");
 #endif
             if (e.Data.GetDataPresent("ToolItem"))
             {
                 e.Effects = DragDropEffects.Copy;
 #if DEBUG
-                System.Diagnostics.Debug.WriteLine("[DragEnter] ✓ ToolItem 数据存在，允许复制");
 #endif
             }
             else
             {
                 e.Effects = DragDropEffects.None;
 #if DEBUG
-                System.Diagnostics.Debug.WriteLine("[DragEnter] ✗ ToolItem 数据不存在");
 #endif
             }
             e.Handled = true;
@@ -139,8 +134,7 @@ namespace SunEyeVision.UI.Services.Interaction
 #if DEBUG
             _lastLogTime = DateTime.Now; // 重置计时器
             _dropStartTime = DateTime.Now; // 重置累计时间起点
-            System.Diagnostics.Debug.WriteLine("════════════════════════════════════════════════════════════");
-            LogTimestamp("Drop", "▶ Canvas_Drop 开始执行");
+LogTimestamp("Drop", "▶ Canvas_Drop 开始执行");
             LogTimestamp("Drop", $"  Sender: {sender?.GetType().Name ?? "null"}");
 #endif
 

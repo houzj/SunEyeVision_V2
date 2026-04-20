@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -32,8 +32,7 @@ namespace SunEyeVision.UI.Adapters
             var now = DateTime.Now;
             var elapsed = (now - _lastLogTime).TotalMilliseconds;
             _lastLogTime = now;
-            System.Diagnostics.Debug.WriteLine($"[{now:HH:mm:ss.fff}] [+{elapsed:F0}ms] [{tag}] {message}");
-        }
+}
 
         public DiagramAdapter()
         {

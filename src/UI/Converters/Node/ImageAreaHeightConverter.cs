@@ -18,14 +18,12 @@ namespace SunEyeVision.UI.Converters.Node
             {
                 // 如果显示预览模块，增加图像显示区域的高度
                 var height = showPreview ? new GridLength(600, GridUnitType.Pixel) : new GridLength(500, GridUnitType.Pixel);
-                Debug.WriteLine($"[ImageAreaHeightConverter] ShowImagePreview={showPreview}, 返回高度={height.Value}");
-                return height;
+return height;
             }
 
             // 默认高度
             var defaultHeight = new GridLength(500, GridUnitType.Pixel);
-            Debug.WriteLine($"[ImageAreaHeightConverter] value不是bool类型，返回默认高度：{defaultHeight.Value}");
-            return defaultHeight;
+return defaultHeight;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

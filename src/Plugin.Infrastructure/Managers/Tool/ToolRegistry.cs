@@ -102,36 +102,18 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
         /// <param name="paramsType">参数类型</param>
         private static void RegisterParameterTypeToRegistry(Type paramsType)
         {
-            VisionLogger.Instance.Log(LogLevel.Info,
-                $"🔄 [ToolRegistry → ParameterTypeRegistry] 开始注册参数类型: {paramsType.FullName}",
-                "ToolRegistry");
-            
             try
             {
                 // 从 [JsonDerivedType] 特性提取类型鉴别器
                 var jsonDerivedAttr = paramsType.GetCustomAttribute<JsonDerivedTypeAttribute>();
                 string typeDiscriminator = jsonDerivedAttr?.TypeDiscriminator?.ToString() ?? paramsType.Name;
                 
-                VisionLogger.Instance.Log(LogLevel.Info,
-                    $"🔄 [ToolRegistry → ParameterTypeRegistry] 提取鉴别器: '{typeDiscriminator}' " +
-                    $"(来源: {(jsonDerivedAttr != null ? "JsonDerivedType特性" : "类型名称")})",
-                    "ToolRegistry");
-
-                // 调用 ParameterTypeRegistry 进行注册
-                VisionLogger.Instance.Log(LogLevel.Info,
-                    $"🔄 [ToolRegistry → ParameterTypeRegistry] 调用 ParameterTypeRegistry.RegisterParameterType...",
-                    "ToolRegistry");
-                
                 ParameterTypeRegistry.RegisterParameterType(paramsType, typeDiscriminator);
-
-                VisionLogger.Instance.Log(LogLevel.Success,
-                    $"✅ [ToolRegistry → ParameterTypeRegistry] 参数类型注册完成: {paramsType.Name} → '{typeDiscriminator}'",
-                    "ToolRegistry");
             }
             catch (Exception ex)
             {
                 VisionLogger.Instance.Log(LogLevel.Warning,
-                    $"❌ [ToolRegistry → ParameterTypeRegistry] 参数类型注册失败: {paramsType.Name}, 错误: {ex.Message}",
+                    $"参数类型注册失败: {paramsType.Name}, 错误: {ex.Message}",
                     "ToolRegistry");
             }
         }
@@ -444,18 +426,11 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
         {
             if (resultType == null || !typeof(ToolResults).IsAssignableFrom(resultType))
             {
-                VisionLogger.Instance.Log(LogLevel.Info,
-                    $"⏭️ 跳过属性元数据提取: {toolId} (ResultType 为 null 或非 ToolResults 派生类)",
-                    "ToolRegistry");
                 return;
             }
 
             try
             {
-                VisionLogger.Instance.Log(LogLevel.Info, 
-                    $"开始提取属性元数据: {toolId}, 结果类型: {resultType.FullName}", 
-                    "ToolRegistry");
-                
                 // 创建临时空实例（仅用于提取元数据）
                 ToolResults? tempResult;
                 try
@@ -465,16 +440,13 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
                 catch (Exception ex)
                 {
                     VisionLogger.Instance.Log(LogLevel.Warning, 
-                        $"⚠️ 创建临时实例失败: {toolId}, 错误: {ex.Message}", 
+                        $"创建临时实例失败: {toolId}, 错误: {ex.Message}", 
                         "ToolRegistry");
                     return;
                 }
                 
                 if (tempResult == null)
                 {
-                    VisionLogger.Instance.Log(LogLevel.Warning, 
-                        $"⚠️ 临时实例为 null: {toolId}", 
-                        "ToolRegistry");
                     return;
                 }
                 
@@ -519,9 +491,6 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
                     var typeFullName = prop.PropertyType.FullName;
                     if (string.IsNullOrEmpty(typeFullName))
                     {
-                        VisionLogger.Instance.Log(LogLevel.Warning,
-                            $"类型 '{prop.PropertyType.Name}' 没有FullName，跳过缓存",
-                            "ToolRegistry");
                         continue;
                     }
                     
@@ -540,19 +509,19 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
                     
                     validPropertyCount++;
                     
-                    VisionLogger.Instance.Log(LogLevel.Info,
-                        $"  [ToolRegistry] 添加属性到类型缓存 [{typeFullName}]: {metadata.PropertyName} ({prop.PropertyType.Name})",
+                    VisionLogger.Instance.Log(LogLevel.Debug,
+                        $"属性元数据已提取: {toolId}.{metadata.PropertyName} ({prop.PropertyType.Name})",
                         "ToolRegistry");
                 }
                 
                 VisionLogger.Instance.Log(LogLevel.Success,
-                    $"✅ 提取属性元数据完成: {toolId}, 共 {validPropertyCount} 个属性",
+                    $"属性元数据提取完成: {toolId}, 共 {validPropertyCount} 个属性",
                     "ToolRegistry");
             }
             catch (Exception ex)
             {
                 VisionLogger.Instance.Log(LogLevel.Warning,
-                    $"⚠️ 提取属性元数据失败: {toolId}, 错误: {ex.Message}",
+                    $"提取属性元数据失败: {toolId}, 错误: {ex.Message}",
                     "ToolRegistry");
             }
         }

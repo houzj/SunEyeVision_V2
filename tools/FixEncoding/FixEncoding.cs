@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -90,8 +90,5 @@ class FixEncoding
         
         // 写回文件（UTF-8 无 BOM）
         File.WriteAllText(filePath, content, new UTF8Encoding(false));
-        
-        Console.WriteLine($"文件编码修复成功: {filePath}");
-        Console.WriteLine($"已替换 {replacedCount} 处乱码文本");
     }
 }

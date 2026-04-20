@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
@@ -174,8 +174,7 @@ namespace SunEyeVision.UI.Services.Rendering
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[NodeRenderScheduler] 渲染任务失败: {ex.Message}");
-                }
+}
             }
         }
 

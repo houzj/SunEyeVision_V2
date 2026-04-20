@@ -30,10 +30,7 @@ namespace SunEyeVision.Core.IO
         {
             // 注册单例文件访问管理器
             services.AddSingleton<IFileAccessManager, FileAccessManager>();
-            
-            Debug.WriteLine("[FileAccessServiceRegistration] 文件访问服务已注册");
-            
-            return services;
+return services;
         }
         
         /// <summary>
@@ -57,12 +54,10 @@ namespace SunEyeVision.Core.IO
             
             if (options.EnableVerboseLogging)
             {
-                Debug.WriteLine("[FileAccessServiceRegistration] 文件访问服务已注册（详细日志已启用）");
-            }
+}
             else
             {
-                Debug.WriteLine("[FileAccessServiceRegistration] 文件访问服务已注册");
-            }
+}
             
             return services;
         }

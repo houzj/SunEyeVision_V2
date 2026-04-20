@@ -64,22 +64,11 @@ namespace SunEyeVision.UI.Views.Controls.Toolbox
         /// </summary>
         private void ToolItem_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("══════════════════════════════════════════════════════════════");
-            System.Diagnostics.Debug.WriteLine("[拖拽开始] ▶ ToolItem_PreviewMouseLeftButtonDown 触发");
-
             if (sender is Border border)
             {
-                System.Diagnostics.Debug.WriteLine($"[拖拽开始] Border.Tag 类型: {border.Tag?.GetType().Name ?? "null"}");
-
-                if (border.Tag is ToolItem tool)
+if (border.Tag is ToolItem tool)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[拖拽开始] ✓ ToolItem 数据:");
-                    System.Diagnostics.Debug.WriteLine($"[拖拽开始]   - Name: {tool.Name}");
-                    System.Diagnostics.Debug.WriteLine($"[拖拽开始]   - ToolId: {tool.ToolId}");
-                    System.Diagnostics.Debug.WriteLine($"[拖拽开始]   - AlgorithmType: {tool.AlgorithmType}");
-                    System.Diagnostics.Debug.WriteLine($"[拖拽开始]   - Category: {tool.Category}");
-
-                    // 在拖拽开始前关闭Popup，防止拖拽过程中Popup不消失
+// 在拖拽开始前关闭Popup，防止拖拽过程中Popup不消失
                     if (CompactModePopup.IsOpen)
                     {
                         CompactModePopup.IsOpen = false;
@@ -87,20 +76,15 @@ namespace SunEyeVision.UI.Views.Controls.Toolbox
                     }
 
                     var data = new DataObject("ToolItem", tool);
-                    System.Diagnostics.Debug.WriteLine($"[拖拽开始] DataObject 已创建，格式: ToolItem");
-
-                    var result = DragDrop.DoDragDrop(border, data, DragDropEffects.Copy);
-                    System.Diagnostics.Debug.WriteLine($"[拖拽结束] DragDrop 结果: {result}");
-                }
+var result = DragDrop.DoDragDrop(border, data, DragDropEffects.Copy);
+}
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine($"[拖拽开始] ✕ Border.Tag 不是 ToolItem 类型！");
-                }
+}
             }
             else
             {
-                System.Diagnostics.Debug.WriteLine($"[拖拽开始] ✕ Sender 不是 Border 类型: {sender?.GetType().Name ?? "null"}");
-            }
+}
         }
 
         /// <summary>

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -119,33 +119,25 @@ namespace SunEyeVision.UI.Services.Thumbnail.Decoders
 
             try
             {
-                Debug.WriteLine("[AdvancedGpuDecoder] 初始化高级GPU解码?..");
-
-                // 检测硬件渲染层?
+// 检测硬件渲染层?
                 int tier = System.Windows.Media.RenderCapability.Tier >> 16;
-                Debug.WriteLine($"  渲染层级: Tier {tier}");
-
-                // 初始化WIC解码?
+// 初始化WIC解码?
                 bool wicAvailable = _wicDecoder.Initialize();
                 _useHardwareDecoding = wicAvailable;
 
                 if (_useHardwareDecoding)
                 {
-                    Debug.WriteLine("[AdvancedGpuDecoder] ✓ GPU硬件解码已启用");
-                    Debug.WriteLine($"  WIC硬件解码: {(wicAvailable ? "可用" : "不可用")}");
                 }
                 else
                 {
-                    Debug.WriteLine("[AdvancedGpuDecoder] ⚡ 使用优化CPU解码模式");
-                }
+}
 
                 _isInitialized = true;
                 return _useHardwareDecoding;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[AdvancedGpuDecoder] ?初始化失? {ex.Message}");
-                _useHardwareDecoding = false;
+_useHardwareDecoding = false;
                 _isInitialized = true;
                 return false;
             }
@@ -183,8 +175,7 @@ namespace SunEyeVision.UI.Services.Thumbnail.Decoders
             
             if (!scope.IsGranted)
             {
-                Debug.WriteLine($"[AdvancedGpuDecoder] ?文件访问被拒? {scope.ErrorMessage} file={System.IO.Path.GetFileName(filePath)}");
-                return null;
+return null;
             }
 
             // 文件访问已授权，安全解码
@@ -273,13 +264,10 @@ namespace SunEyeVision.UI.Services.Thumbnail.Decoders
             {
                 // RPC服务器不可用 - 记录失败并降级
                 _rpcFailureCount++;
-                Debug.WriteLine($"[AdvancedGpu] RPC不可用，降级CPU解码 | 失败次数:{_rpcFailureCount} | file={System.IO.Path.GetFileName(filePath)}");
-                
-                if (_rpcFailureCount >= MAX_RPC_FAILURES)
+if (_rpcFailureCount >= MAX_RPC_FAILURES)
                 {
                     _useHardwareDecoding = false;
-                    Debug.WriteLine($"[AdvancedGpu] ⚠️ RPC连续失败{_rpcFailureCount}次，已禁用GPU解码");
-                }
+}
                 
                 sw.Stop();
                 return DecodeWithOptimizedCpu(filePath, size);
@@ -287,14 +275,12 @@ namespace SunEyeVision.UI.Services.Thumbnail.Decoders
             catch (Exception ex) when (ex.Message.Contains("RPC") || ex.Message.Contains("服务器不可用"))
             {
                 // 其他可能的RPC相关异常
-                Debug.WriteLine($"[AdvancedGpu] RPC相关异常: {ex.Message} | 降级CPU解码 | file={System.IO.Path.GetFileName(filePath)}");
-                sw.Stop();
+sw.Stop();
                 return DecodeWithOptimizedCpu(filePath, size);
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[AdvancedGpuDecoder] ?解码失败: {ex.Message}");
-                sw.Stop();
+sw.Stop();
                 return null;
             }
         }
@@ -327,8 +313,7 @@ namespace SunEyeVision.UI.Services.Thumbnail.Decoders
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[AdvancedGpuDecoder] ?CPU解码失败: {ex.Message}");
-                sw.Stop();
+sw.Stop();
                 return null;
             }
         }

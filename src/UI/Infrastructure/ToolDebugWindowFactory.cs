@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -48,15 +48,12 @@ namespace SunEyeVision.UI.Factories
                     {
                         // 初始化调试窗口
                         InitializeDebugWindow(window, toolId, toolPlugin, toolMetadata);
-
-                        System.Diagnostics.Debug.WriteLine($"[ToolDebugWindowFactory] 使用 toolMetadata.DebugWindowType 创建: {toolId}");
-                        return window;
+return window;
                     }
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"使用 toolMetadata.DebugWindowType 创建失败: {toolId}, {ex.Message}");
-                }
+}
             }
 
             // ★ 优先级2：通过 ToolRegistry 创建工具实例
@@ -66,8 +63,7 @@ namespace SunEyeVision.UI.Factories
                 // 检查工具是否支持调试窗口
                 if (!tool.HasDebugWindow)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[ToolDebugWindowFactory] 工具 {toolId} 不支持调试窗口 (HasDebugWindow=false)");
-                    return null;
+return null;
                 }
 
                 try
@@ -77,20 +73,16 @@ namespace SunEyeVision.UI.Factories
                     {
                         // ★ 初始化调试窗口（传递 toolId, toolPlugin, toolMetadata）
                         InitializeDebugWindow(window, toolId, toolPlugin, toolMetadata);
-
-                        System.Diagnostics.Debug.WriteLine($"[ToolDebugWindowFactory] 使用 IToolPlugin.CreateDebugWindow() 创建: {toolId}");
-                        return window;
+return window;
                     }
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"IToolPlugin.CreateDebugWindow() 失败: {toolId}, {ex.Message}");
-                }
+}
             }
 
             // ★ 优先级3：返回 null（不再提供通用调试窗口）
-            System.Diagnostics.Debug.WriteLine($"[ToolDebugWindowFactory] 工具 {toolId} 无调试窗口");
-            return null;
+return null;
         }
 
         /// <summary>
@@ -124,12 +116,10 @@ namespace SunEyeVision.UI.Factories
                 try
                 {
                     windowInitMethod.Invoke(window, new object?[] { toolId, toolPlugin, toolMetadata });
-                    System.Diagnostics.Debug.WriteLine($"[ToolDebugWindowFactory] 已初始化窗口: {window.GetType().Name}");
-                }
+}
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[ToolDebugWindowFactory] 初始化窗口失败: {ex.Message}");
-                }
+}
             }
 
             // 尝试初始化 DataContext (ViewModel)
@@ -143,12 +133,10 @@ namespace SunEyeVision.UI.Factories
                     try
                     {
                         vmInitMethod.Invoke(dataContext, new object?[] { toolId, toolPlugin, toolMetadata });
-                        System.Diagnostics.Debug.WriteLine($"[ToolDebugWindowFactory] 已初始化 ViewModel: {dataContext.GetType().Name}");
-                    }
+}
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"[ToolDebugWindowFactory] 初始化 ViewModel 失败: {ex.Message}");
-                    }
+}
                 }
             }
         }

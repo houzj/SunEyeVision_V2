@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -265,8 +265,7 @@ namespace SunEyeVision.UI.Services.Workflow
                 {
                     // 获取图像失败只记录日志
                     InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.Name, $"[WARN] 获取输入图像失败: {ex.Message}")));
-                    Console.WriteLine($"[WorkflowExecutionManager] 获取输入图像失败: {ex.Message}");
-                }
+}
 
                 InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.Name, "[EXEC] 正在创建日志器...")));
                 // 使用全局日志器（自动转发到UILogWriter）
@@ -355,8 +354,6 @@ namespace SunEyeVision.UI.Services.Workflow
             catch (Exception ex)
             {
                 InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.Name, $"[ERROR] ExecuteWorkflowInternal异常: {ex.Message}")));
-                Console.WriteLine($"[WorkflowExecutionManager] ExecuteWorkflowInternal异常: {ex.Message}");
-                Console.WriteLine($"[WorkflowExecutionManager] 堆栈跟踪: {ex.StackTrace}");
                 throw;
             }
         }
@@ -477,13 +474,10 @@ namespace SunEyeVision.UI.Services.Workflow
         private ToolResults CreateToolResultsFromNodeResult(NodeExecutionResult nodeResult)
         {
             // ★ 关键日志：节点执行结果状态
-            Console.WriteLine($"[WorkflowExecutionManager] CreateToolResultsFromNodeResult: Success={nodeResult.Success}, Outputs={nodeResult.Outputs?.Count ?? 0}");
-
-            // 优先使用原始工具结果
+// 优先使用原始工具结果
             if (nodeResult.ToolResult != null)
             {
-                Console.WriteLine($"[WorkflowExecutionManager] 使用原始 ToolResult");
-                return nodeResult.ToolResult;
+return nodeResult.ToolResult;
             }
 
             var results = new GenericToolResults

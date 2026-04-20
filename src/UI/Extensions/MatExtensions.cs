@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -52,8 +52,7 @@ namespace SunEyeVision.UI.Extensions
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[ImageExtensions] ToMat 转换失败: {ex.Message}");
-                return null;
+return null;
             }
         }
 
@@ -98,8 +97,7 @@ namespace SunEyeVision.UI.Extensions
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[ImageExtensions] ConvertViaMemoryStream 失败: {ex.Message}");
-                return null;
+return null;
             }
         }
     }
@@ -146,9 +144,7 @@ namespace SunEyeVision.UI.Extensions
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[MatExtensions] ToBitmapSource 转换失败: {ex.Message}");
-                
-                // 备用方案：通过内存流转换
+// 备用方案：通过内存流转换
                 try
                 {
                     return ConvertViaMemoryStream(mat);

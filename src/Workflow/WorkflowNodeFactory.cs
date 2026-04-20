@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
@@ -61,16 +61,14 @@ namespace SunEyeVision.Workflow
                 var metadata = ToolRegistry.GetToolMetadata(toolId);
                 if (metadata == null)
                 {
-                    Console.WriteLine($"[WorkflowNodeFactory] 工具不存在: {toolId}");
-                    return null;
+return null;
                 }
 
                 // 创建工具实例
                 var tool = ToolRegistry.CreateToolInstance(toolId);
                 if (tool == null)
                 {
-                    Console.WriteLine($"[WorkflowNodeFactory] 无法创建工具实例: {toolId}");
-                    return null;
+return null;
                 }
 
                 // 设置参数
@@ -86,15 +84,11 @@ namespace SunEyeVision.Workflow
                     DebugWindowType = metadata.DebugWindowType,
                     NodeStyleType = metadata.NodeStyleType
                 };
-
-                Console.WriteLine($"[WorkflowNodeFactory] 创建AlgorithmNode: {nodeName} (DispName: {dispName}, ToolId: {toolId}, 缓存: {enableCaching}, 重试: {enableRetry})");
-
-                return algorithmNode;
+return algorithmNode;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[WorkflowNodeFactory] 创建AlgorithmNode失败: {ex.Message}");
-                return null;
+return null;
             }
         }
 

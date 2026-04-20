@@ -70,7 +70,6 @@ namespace SunEyeVision.UI.Controls.Rendering
                 if (decoder.Thumbnail == null)
                 {
                     sw.Stop();
-                    // Debug.WriteLine($"[EXIF] 无缩略图: {Path.GetFileName(filePath)}");
                     return null;
                 }
 
@@ -80,8 +79,7 @@ namespace SunEyeVision.UI.Controls.Rendering
                 if (thumbnail.PixelWidth < targetSize * MinSizeRatio)
                 {
                     sw.Stop();
-                    Debug.WriteLine($"[EXIF] 缩略图太小 {thumbnail.PixelWidth}x{thumbnail.PixelHeight} < {targetSize}: {Path.GetFileName(filePath)}");
-                    return null;
+return null;
                 }
 
                 // 创建可冻结的BitmapSource
@@ -103,16 +101,13 @@ namespace SunEyeVision.UI.Controls.Rendering
                     result.Freeze();
 
                 sw.Stop();
-                Debug.WriteLine($"[EXIF] 成功提取 - {sw.ElapsedMilliseconds}ms - {thumbnail.PixelWidth}x{thumbnail.PixelHeight} - {Path.GetFileName(filePath)}");
-
-                return result;
+return result;
             }
             catch (Exception ex)
             {
                 sw.Stop();
                 // 不是所有图片都有EXIF缩略图，静默失败
-                Debug.WriteLine($"[EXIF] 提取失败: {ex.Message} - {Path.GetFileName(filePath)}");
-                return null;
+return null;
             }
         }
 

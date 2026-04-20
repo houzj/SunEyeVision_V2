@@ -43,24 +43,19 @@ namespace SunEyeVision.UI.Controls.Rendering
                 {
                     _isGpuAvailable = true;
                     _useHardwareScaling = true;
-                    Debug.WriteLine("[DirectXGpuLoader] ✅GPU硬件加速已启用");
-                    Debug.WriteLine($"  渲染层级: Tier {tier}");
-                    Debug.WriteLine($"  硬件缩放: 启用");
-                }
+}
                 else
                 {
                     _isGpuAvailable = false;
                     _useHardwareScaling = false;
-                    Debug.WriteLine("[DirectXGpuLoader] ⚠️使用软件渲染");
-                }
+}
 
                 _isInitialized = true;
                 return _isGpuAvailable;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[DirectXGpuLoader] ❌初始化失败: {ex.Message}");
-                _isInitialized = false;
+_isInitialized = false;
                 _isGpuAvailable = false;
                 return false;
             }
@@ -86,8 +81,7 @@ namespace SunEyeVision.UI.Controls.Rendering
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[DirectXGpuLoader] GPU加载失败: {ex.Message}");
-                return LoadWithBasic(filePath, size);
+return LoadWithBasic(filePath, size);
             }
         }
 
@@ -136,8 +130,7 @@ namespace SunEyeVision.UI.Controls.Rendering
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[DirectXGpuLoader] GPU加载异常: {ex.Message}");
-                throw;
+throw;
             }
         }
 

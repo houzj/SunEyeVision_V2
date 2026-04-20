@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -437,11 +437,9 @@ namespace SunEyeVision.UI.ViewModels
             get => _showImagePreview;
             set
             {
-                System.Diagnostics.Debug.WriteLine($"[ShowImagePreview] Setter: {_showImagePreview} -> {value}");
-                if (SetProperty(ref _showImagePreview, value))
+if (SetProperty(ref _showImagePreview, value))
                 {
-                    System.Diagnostics.Debug.WriteLine($"[ShowImagePreview] PropertyChanged已触发, 当前值: {_showImagePreview}");
-                    OnPropertyChanged(nameof(ImagePreviewHeight));
+OnPropertyChanged(nameof(ImagePreviewHeight));
                 }
             }
         }
@@ -525,8 +523,7 @@ namespace SunEyeVision.UI.ViewModels
         /// </summary>
         public void SaveSplitterPosition(double position)
         {
-            System.Diagnostics.Debug.WriteLine($"[SaveSplitterPosition] 位置: {position}");
-            SplitterPosition = position;
+SplitterPosition = position;
 
             // TODO: 选保存到用户设置
             // Settings.Default.SplitterPosition = position;
@@ -2949,8 +2946,7 @@ namespace SunEyeVision.UI.ViewModels
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[MainWindowViewModel] OnWorkflowExecutionProgress异常: {ex.Message}");
-                AddLog($"⚠️ 日志记录异常: {ex.Message}");
+AddLog($"⚠️ 日志记录异常: {ex.Message}");
             }
         }
 
@@ -2991,8 +2987,7 @@ namespace SunEyeVision.UI.ViewModels
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[MainWindowViewModel] OnNodeExecutionCompleted异常: {ex.Message}");
-                AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
+AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
             }
         }
 
@@ -3040,8 +3035,7 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"[MainWindowViewModel] 更新数据提供者失败: {ex.Message}");
-                    }
+}
                 }
                 if (updatedCount > 0)
                 {
@@ -3050,8 +3044,7 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[MainWindowViewModel] UpdateDataProvidersForNode异常: {ex.Message}");
-            }
+}
         }
 
         /// <summary>

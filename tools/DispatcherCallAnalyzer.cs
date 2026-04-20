@@ -16,16 +16,11 @@ namespace SunEyeVision.Tools
         {
             if (!Directory.Exists(directoryPath))
             {
-                Console.WriteLine($"目录不存在: {directoryPath}");
                 return;
             }
 
             var csFiles = Directory.GetFiles(directoryPath, "*.cs", SearchOption.AllDirectories);
             int issuesFound = 0;
-
-            Console.WriteLine($"开始分析 {csFiles.Length} 个C#文件...");
-            Console.WriteLine();
-
             foreach (var file in csFiles)
             {
                 var content = File.ReadAllText(file);
@@ -34,18 +29,11 @@ namespace SunEyeVision.Tools
                 if (issues.Count > 0)
                 {
                     issuesFound += issues.Count;
-                    Console.WriteLine($"文件: {file}");
                     foreach (var issue in issues)
                     {
-                        Console.WriteLine($"  问题 {issue.LineNumber}: {issue.Message}");
-                        Console.WriteLine($"    代码: {issue.LineContent.Trim()}");
                     }
-                    Console.WriteLine();
                 }
             }
-
-            Console.WriteLine();
-            Console.WriteLine($"分析完成。共发现 {issuesFound} 个问题。");
         }
 
         /// <summary>

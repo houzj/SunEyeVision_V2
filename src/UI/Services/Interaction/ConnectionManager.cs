@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Media;
@@ -69,14 +69,12 @@ namespace SunEyeVision.UI.Services.Interaction
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"刷新连接路径失败: {ex.Message}");
-                    }
+}
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"刷新所有连接路径失败: {ex.Message}");
-            }
+}
         }
 
         /// <summary>

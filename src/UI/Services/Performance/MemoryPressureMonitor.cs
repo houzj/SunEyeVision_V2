@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Threading;
 
@@ -73,9 +73,7 @@ namespace SunEyeVision.UI.Services.Performance
             IsEnabled = true;
             _monitorTimer = new Timer(CheckMemoryPressure, null, 
                 MONITOR_INTERVAL_MS, MONITOR_INTERVAL_MS);
-
-            Debug.WriteLine("[MemoryMonitor] 内存监控已启动");
-        }
+}
 
         /// <summary>
         /// 停止监控
@@ -87,9 +85,7 @@ namespace SunEyeVision.UI.Services.Performance
             IsEnabled = false;
             _monitorTimer?.Dispose();
             _monitorTimer = null;
-
-            Debug.WriteLine("[MemoryMonitor] 内存监控已停止");
-        }
+}
 
         /// <summary>
         /// 检查内存压力
@@ -119,14 +115,11 @@ namespace SunEyeVision.UI.Services.Performance
                     };
 
                     MemoryPressureChanged?.Invoke(this, args);
-
-                    Debug.WriteLine($"[MemoryMonitor] 内存压力变化: {oldLevel} -> {newLevel} " +
-                        $"(可用:{availableMB}MB, {availablePercent:F1}%)");
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[MemoryMonitor] 检查内存压力失败: {ex.Message}");
+                // 静默处理
             }
         }
 
@@ -204,8 +197,7 @@ namespace SunEyeVision.UI.Services.Performance
                     // 高压力：清理弱引用缓存，减少预读取
                     onHigh?.Invoke();
                     GC.Collect(GC.MaxGeneration, GCCollectionMode.Optimized);
-                    Debug.WriteLine("[MemoryMonitor] 高压力响应：执行清理");
-                    break;
+break;
 
                 case PressureLevel.Critical:
                     // 危险：强制GC，清空缓存
@@ -213,8 +205,7 @@ namespace SunEyeVision.UI.Services.Performance
                     GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
                     GC.WaitForPendingFinalizers();
                     GC.Collect();
-                    Debug.WriteLine("[MemoryMonitor] 危险响应：强制GC");
-                    break;
+break;
             }
         }
 

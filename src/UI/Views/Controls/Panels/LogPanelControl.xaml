@@ -6,6 +6,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:logging="clr-namespace:SunEyeVision.Plugin.SDK.Logging;assembly=SunEyeVision.Plugin.SDK"
              xmlns:converters="clr-namespace:SunEyeVision.UI.Converters"
+             xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
              mc:Ignorable="d"
              d:DesignHeight="300" d:DesignWidth="600"
              VerticalAlignment="Stretch"
@@ -231,11 +232,25 @@
 
                     <!-- 右侧：操作按钮 -->
                     <StackPanel Grid.Column="2" Orientation="Horizontal">
-                        <CheckBox Content="自动滚动"
-                                     IsChecked="{Binding AutoScroll, Mode=TwoWay}"
-                                     FontSize="11"
-                                     Margin="0,0,8,0"
-                                     VerticalAlignment="Center"/>
+                        <TextBlock Text="诊断模式"
+                                   FontSize="11"
+                                   Foreground="#666666"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,4,0"/>
+                        <controls:ToggleSwitch IsChecked="{Binding IsDiagnosticMode, Mode=TwoWay}"
+                                               SwitchWidth="36"
+                                               SwitchHeight="18"
+                                               OnBackground="#FF7F00"
+                                               ToolTip="开启后显示内部实现细节日志（用于排查问题）"
+                                               Margin="0,0,12,0"/>
+                        <TextBlock Text="自动滚动"
+                                   FontSize="11"
+                                   Foreground="#666666"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,4,0"/>
+                        <controls:ToggleSwitch IsChecked="{Binding AutoScroll, Mode=TwoWay}"
+                                               SwitchWidth="36"
+                                               SwitchHeight="18"/>
                         <Button Content="清空"
                                 Command="{Binding ClearCommand}"
                                 Padding="8,3"
@@ -280,6 +295,10 @@
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock" BasedOn="{StaticResource LogDataTextBlockStyle}">
                                 <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Level}" Value="{x:Static logging:LogLevel.Debug}">
+                                        <Setter Property="Foreground" Value="#9E9E9E"/>
+                                        <Setter Property="FontWeight" Value="SemiBold"/>
+                                    </DataTrigger>
                                     <DataTrigger Binding="{Binding Level}" Value="{x:Static logging:LogLevel.Info}">
                                         <Setter Property="Foreground" Value="#2196F3"/>
                                         <Setter Property="FontWeight" Value="SemiBold"/>

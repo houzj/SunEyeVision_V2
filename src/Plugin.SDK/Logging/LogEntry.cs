@@ -72,6 +72,9 @@ namespace SunEyeVision.Plugin.SDK.Logging
         /// </summary>
         public string LevelIconPath => Level switch
         {
+            // 放大镜图标 - Debug (灰色)
+            LogLevel.Debug => "M6,0 C2.69,0 0,2.69 0,6 C0,9.31 2.69,12 6,12 C7.38,12 8.63,11.46 9.58,10.58 L12.29,13.29 C12.47,13.47 12.73,13.56 13,13.56 C13.55,13.56 13.95,13.16 13.95,12.61 C13.95,12.34 13.86,12.08 13.68,11.9 L10.97,9.19 C11.85,8.24 12.6,7 12.6,5.61 C12.6,2.13 9.87,-0.6 6.39,-0.6 C2.91,-0.6 0.18,2.13 0.18,5.61 C0.18,9.09 2.91,11.82 6.39,11.82 C7.78,11.82 9.02,11.07 9.97,10.19 L10.53,10.75 L9.97,10.19 Z M6,10.6 C3.51,10.6 1.5,8.59 1.5,6.1 C1.5,3.61 3.51,1.6 6,1.6 C8.49,1.6 10.5,3.61 10.5,6.1 C10.5,8.59 8.49,10.6 6,10.6 Z",
+
             // 信息圆圈图标 - Info (蓝色)
             LogLevel.Info => "M8,0 C3.58,0 0,3.58 0,8 C0,12.42 3.58,16 8,16 C12.42,16 16,12.42 16,8 C16,3.58 12.42,0 8,0 Z M8.8,12 L7.2,12 L7.2,7.2 L8.8,7.2 L8.8,12 Z M8.8,6 L7.2,6 L7.2,4.4 L8.8,4.4 L8.8,6 Z",
 
@@ -92,6 +95,7 @@ namespace SunEyeVision.Plugin.SDK.Logging
         /// </summary>
         public string LevelIconFill => Level switch
         {
+            LogLevel.Debug => "#9E9E9E",     // 灰色
             LogLevel.Info => "#2196F3",      // 蓝色
             LogLevel.Success => "#4CAF50",   // 绿色
             LogLevel.Warning => "#FF9800",   // 橙色
@@ -104,6 +108,7 @@ namespace SunEyeVision.Plugin.SDK.Logging
         /// </summary>
         public string LevelIconBackground => Level switch
         {
+            LogLevel.Debug => "#F5F5F5",     // 浅灰背景
             LogLevel.Info => "#E3F2FD",      // 浅蓝背景
             LogLevel.Success => "#E8F5E9",   // 浅绿背景
             LogLevel.Warning => "#FFF3E0",   // 浅橙背景
@@ -161,6 +166,7 @@ namespace SunEyeVision.Plugin.SDK.Logging
         /// </summary>
         public string LevelColor => Level switch
         {
+            LogLevel.Debug => "#9E9E9E",
             LogLevel.Info => "#2196F3",
             LogLevel.Success => "#4CAF50",
             LogLevel.Warning => "#FF9800",
@@ -173,6 +179,7 @@ namespace SunEyeVision.Plugin.SDK.Logging
         /// </summary>
         public string LevelBackground => Level switch
         {
+            LogLevel.Debug => "#F5F5F5",
             LogLevel.Info => "#E3F2FD",
             LogLevel.Success => "#E8F5E9",
             LogLevel.Warning => "#FFF3E0",

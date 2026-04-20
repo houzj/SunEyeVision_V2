@@ -23,9 +23,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     /// // 显示在UI中
     /// foreach (var source in dataSources)
     /// {
-    ///     Console.WriteLine($"{source.DisplayName} ({source.SourceNodeName})");
-    ///     Console.WriteLine($"  类型: {source.PropertyType.Name}");
-    ///     Console.WriteLine($"  当前值: {source.CurrentValue}");
+    ///     // 绑定到属性面板显示: source.DisplayName, source.PropertyType, source.CurrentValue
     /// }
     /// </code>
     /// </remarks>

@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows;
@@ -126,14 +126,12 @@ namespace SunEyeVision.UI.Views.Controls.Panels
             catch (InvalidOperationException ex)
             {
                 // 如果 UILogWriter 未初始化，记录错误
-                System.Diagnostics.Debug.WriteLine($"[LogPanelControl] 初始化失败: {ex.Message}");
-                MessageBox.Show($"日志面板初始化失败: {ex.Message}\n\n请确保在 App.xaml.cs 中正确调用 ServiceInitializer.InitializeServices()",
+MessageBox.Show($"日志面板初始化失败: {ex.Message}\n\n请确保在 App.xaml.cs 中正确调用 ServiceInitializer.InitializeServices()",
                     "错误", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[LogPanelControl] 初始化异常: {ex.Message}\n{ex.StackTrace}");
-            }
+}
             TotalEnqueued = _logViewModel.TotalEnqueued;
         }
 
@@ -204,13 +202,11 @@ namespace SunEyeVision.UI.Views.Controls.Panels
             catch (NullReferenceException ex)
             {
                 _logViewModel?.LogError($"空引用异常: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"CopySelected_Click 空引用: {ex}");
-            }
+}
             catch (Exception ex)
             {
                 _logViewModel?.LogError($"复制失败: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"CopySelected_Click 异常: {ex}");
-            }
+}
         }
 
         /// <summary>

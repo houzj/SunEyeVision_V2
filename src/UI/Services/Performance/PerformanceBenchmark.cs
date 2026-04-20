@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -97,8 +97,6 @@ namespace SunEyeVision.UI.Services.Performance
                     TargetMs = nodeCount * 0.5, // 目标: 每个节点<0.5ms
                     Passed = elapsedMs < nodeCount * 0.5
                 });
-
-                // Debug.WriteLine($"[节点渲染] {nodeCount}个节点: {elapsedMs:F2}ms");
             }
 
             result.Metrics = metrics;
@@ -148,8 +146,6 @@ namespace SunEyeVision.UI.Services.Performance
                     TargetMs = 20.0,
                     Passed = elapsedMs < 20.0
                 });
-
-                // Debug.WriteLine($"[连线更新] {connectionCount}条连线: {elapsedMs:F2}ms");
             }
 
             result.Metrics = metrics;
@@ -207,8 +203,6 @@ namespace SunEyeVision.UI.Services.Performance
                     TargetMs = 30.0,
                     Passed = elapsedMs < 30.0
                 });
-
-                // Debug.WriteLine($"[拖拽响应] {nodeCount}个节点: {elapsedMs:F2}ms");
             }
 
             result.Metrics = metrics;
@@ -407,22 +401,14 @@ namespace SunEyeVision.UI.Services.Performance
 
             foreach (var result in resultsList)
             {
-                // Debug.WriteLine($"【{result.TestName}】");
-                // Debug.WriteLine($"目标: {result.Target}");
-                // Debug.WriteLine($"结果: {(result.Passed ? "✓ 通过" : "✗ 未通过")}");
-                // Debug.WriteLine($"摘要: {result.Summary}");
-                // Debug.WriteLine(string.Empty);
-
                 if (result.Metrics.Any())
                 {
-                    // Debug.WriteLine("详细指标:");
                     foreach (var metric in result.Metrics)
                     {
                         var status = metric.Passed ? "✓" : "✗";
 
                         if (!string.IsNullOrEmpty(metric.AdditionalInfo))
                         {
-                            // Debug.WriteLine($"     {metric.AdditionalInfo}");
                         }
                     }
                 }

@@ -183,8 +183,7 @@ namespace SunEyeVision.UI.Services.Performance
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[PreExecute] 预执行失败: {ex.Message}");
-                }
+}
             });
         }
 
@@ -224,15 +223,12 @@ namespace SunEyeVision.UI.Services.Performance
                 // 简化实现：直接执行工作流（实际项目中需要根据具体实现调整）
                 // 这里返回null表示功能待实现
                 // TODO: 根据实际的工作流引擎实现此方法
-                System.Diagnostics.Debug.WriteLine($"[ExecuteNode] 执行节点: {node.Name}");
-                
-                // 占位返回
+// 占位返回
                 return null;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[ExecuteNode] 执行失败: {ex.Message}");
-                return null;
+return null;
             }
         }
 
@@ -256,8 +252,7 @@ namespace SunEyeVision.UI.Services.Performance
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[GetOutputMat] 获取输出图像失败: {ex.Message}");
-            }
+}
 
             return null;
         }
@@ -267,23 +262,8 @@ namespace SunEyeVision.UI.Services.Performance
         /// </summary>
         private void DisplayCachedResult(UI.Models.WorkflowNode node, CachedExecutionResult cachedResult)
         {
-            try
-            {
-                // 通过NodeResultManager更新显示
-                _nodeResultManager.UpdateNodeImageFromCache(node, cachedResult);
-
-                // 记录日志
-                System.Diagnostics.Debug.WriteLine(
-                    $"[DisplayCachedResult] 节点 {node.Name} 显示缓存结果, " +
-                    $"执行时间: {cachedResult.ExecutionTimeMs}ms");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[DisplayCachedResult] 显示失败: {ex.Message}");
-            }
+            _nodeResultManager.UpdateNodeImageFromCache(node, cachedResult);
         }
-
-        /// <summary>
         /// 获取缓存统计信息
         /// </summary>
         public (int Count, long MemoryBytes, double MemoryMB) GetCacheStatistics()

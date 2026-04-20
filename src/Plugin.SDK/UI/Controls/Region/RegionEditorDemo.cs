@@ -89,22 +89,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region
             foreach (var region in regions)
             {
                 var resolved = resolver.Resolve(region);
-                Console.WriteLine($"区域: {region.Name}");
-                Console.WriteLine($"  类型: {resolved.ShapeType}");
-                Console.WriteLine($"  有效: {resolved.IsValid}");
-                
-                if (resolved.IsValid)
+if (resolved.IsValid)
                 {
-                    Console.WriteLine($"  中心: ({resolved.CenterX:F1}, {resolved.CenterY:F1})");
-                    Console.WriteLine($"  尺寸: {resolved.Width:F1} x {resolved.Height:F1}");
-                    Console.WriteLine($"  角度: {resolved.Angle:F1}°");
-                }
+}
                 else
                 {
-                    Console.WriteLine($"  错误: {resolved.ErrorMessage}");
-                }
-                Console.WriteLine();
-            }
+}
+}
         }
     }
 }

@@ -70,9 +70,6 @@ namespace SunEyeVision.Core.Services.Serialization
         {
             get
             {
-                VisionLogger.Instance.Log(LogLevel.Info,
-                    "🔍 [SerializationOptions] 首次访问，触发初始化",
-                    "ParameterTypeRegistry");
                 EnsureInitialized();
                 return _serializationOptions!;
             }
@@ -85,9 +82,6 @@ namespace SunEyeVision.Core.Services.Serialization
         {
             if (_isInitialized && _serializationOptions != null)
             {
-                VisionLogger.Instance.Log(LogLevel.Info,
-                    $"✓ [EnsureInitialized] 已初始化，跳过 - 已注册类型数: {_registeredTypes.Count}",
-                    "ParameterTypeRegistry");
                 return;
             }
 
@@ -95,34 +89,24 @@ namespace SunEyeVision.Core.Services.Serialization
             {
                 if (_isInitialized && _serializationOptions != null)
                 {
-                    VisionLogger.Instance.Log(LogLevel.Info,
-                        $"✓ [EnsureInitialized] 已初始化（锁内二次检查），跳过 - 已注册类型数: {_registeredTypes.Count}",
-                        "ParameterTypeRegistry");
                     return;
                 }
 
                 try
                 {
-                    VisionLogger.Instance.Log(LogLevel.Info,
-                        "🔧 [EnsureInitialized] 开始初始化...",
-                        "ParameterTypeRegistry");
-                    
                     InitializeSerializationOptions();
                     _isInitialized = true;
                     
-                    // 输出诊断报告
                     VisionLogger.Instance.Log(LogLevel.Success,
-                        $"✅ [EnsureInitialized] 初始化完成\n{GetDiagnosticInfo()}",
+                        $"参数类型注册系统初始化完成，已注册类型数: {_registeredTypes.Count}",
                         "ParameterTypeRegistry");
                 }
                 catch (Exception ex)
                 {
                     VisionLogger.Instance.Log(LogLevel.Fatal,
-                        $"❌ [EnsureInitialized] 初始化失败: {ex.GetType().Name} - {ex.Message}\n" +
-                        $"堆栈: {ex.StackTrace}",
+                        $"参数类型注册系统初始化失败: {ex.GetType().Name} - {ex.Message}",
                         "ParameterTypeRegistry", ex);
 
-                    // ✅ 直接抛出异常，不回退
                     throw new InvalidOperationException(
                         $"ParameterTypeRegistry 初始化失败，无法继续。原因: {ex.Message}", ex);
                 }
@@ -134,41 +118,23 @@ namespace SunEyeVision.Core.Services.Serialization
         /// </summary>
         private static void InitializeSerializationOptions()
         {
-            VisionLogger.Instance.Log(LogLevel.Info,
-                "📝 [InitializeSerializationOptions] 开始创建序列化选项",
-                "ParameterTypeRegistry");
-            
             // 创建多态配置（初始只包含 GenericToolParameters）
             _polymorphismOptions = new JsonPolymorphismOptions
             {
                 TypeDiscriminatorPropertyName = "$type",
                 IgnoreUnrecognizedTypeDiscriminators = false
             };
-            VisionLogger.Instance.Log(LogLevel.Info,
-                "📝 [InitializeSerializationOptions] JsonPolymorphismOptions 已创建",
-                "ParameterTypeRegistry");
 
             // 注册 GenericToolParameters 作为默认回退类型
             _polymorphismOptions.DerivedTypes.Add(
                 new JsonDerivedType(typeof(GenericToolParameters), "Generic"));
             _registeredTypes.Add(typeof(GenericToolParameters));
-            VisionLogger.Instance.Log(LogLevel.Info,
-                $"📝 [InitializeSerializationOptions] 已注册默认类型: GenericToolParameters → 'Generic'",
-                "ParameterTypeRegistry");
 
             // 创建类型解析器
             var defaultResolver = new DefaultJsonTypeInfoResolver();
-            VisionLogger.Instance.Log(LogLevel.Info,
-                "📝 [InitializeSerializationOptions] DefaultJsonTypeInfoResolver 已创建",
-                "ParameterTypeRegistry");
 
             // 添加类型修饰器，将多态配置应用到 ToolParameters 类型
-            // 关键修复：WithAddedModifier 返回 IJsonTypeInfoResolver，不需要强制转换
             _typeResolver = defaultResolver.WithAddedModifier(ApplyPolymorphismOptions);
-            VisionLogger.Instance.Log(LogLevel.Success,
-                $"✅ [InitializeSerializationOptions] 类型修饰器已添加并应用 | " +
-                $"Resolver类型: {_typeResolver.GetType().Name}",
-                "ParameterTypeRegistry");
 
             _serializationOptions = new JsonSerializerOptions
             {
@@ -180,11 +146,6 @@ namespace SunEyeVision.Core.Services.Serialization
                 IncludeFields = true,
                 TypeInfoResolver = _typeResolver
             };
-            VisionLogger.Instance.Log(LogLevel.Success,
-                $"✅ [InitializeSerializationOptions] JsonSerializerOptions 已创建 | " +
-                $"TypeInfoResolver 已设置: {_serializationOptions.TypeInfoResolver != null} | " +
-                $"等待插件参数类型注册...",
-                "ParameterTypeRegistry");
         }
 
         /// <summary>
@@ -205,14 +166,10 @@ namespace SunEyeVision.Core.Services.Serialization
         /// <param name="typeDiscriminator">类型鉴别器（从 [JsonDerivedType] 特性提取）</param>
         public static void RegisterParameterType(Type parameterType, string typeDiscriminator)
         {
-            VisionLogger.Instance.Log(LogLevel.Info,
-                $"📝 [注册请求] 参数类型: {parameterType.FullName}, 鉴别器: '{typeDiscriminator}'",
-                "ParameterTypeRegistry");
-            
             if (parameterType == null)
             {
                 VisionLogger.Instance.Log(LogLevel.Warning,
-                    "⚠️ [注册失败] 参数类型为 null，跳过注册",
+                    "参数类型注册失败: 类型为 null",
                     "ParameterTypeRegistry");
                 return;
             }
@@ -220,43 +177,26 @@ namespace SunEyeVision.Core.Services.Serialization
             if (!typeof(ToolParameters).IsAssignableFrom(parameterType))
             {
                 VisionLogger.Instance.Log(LogLevel.Warning,
-                    $"⚠️ [注册失败] 类型 {parameterType.Name} 不是 ToolParameters 的派生类，跳过注册",
+                    $"参数类型注册失败: {parameterType.Name} 不是 ToolParameters 的派生类",
                     "ParameterTypeRegistry");
                 return;
             }
 
             if (parameterType == typeof(GenericToolParameters))
             {
-                VisionLogger.Instance.Log(LogLevel.Info,
-                    "✓ [注册跳过] GenericToolParameters 已在初始化时注册",
-                    "ParameterTypeRegistry");
                 // GenericToolParameters 已在初始化时注册
                 return;
             }
 
-            VisionLogger.Instance.Log(LogLevel.Info,
-                $"🔍 [注册前] 调用 EnsureInitialized...",
-                "ParameterTypeRegistry");
             EnsureInitialized();
-            VisionLogger.Instance.Log(LogLevel.Info,
-                $"🔍 [注册前] EnsureInitialized 完成，当前已注册类型数: {_registeredTypes.Count}",
-                "ParameterTypeRegistry");
 
             lock (_lock)
             {
                 // 检查是否已注册
                 if (_registeredTypes.Contains(parameterType))
                 {
-                    VisionLogger.Instance.Log(LogLevel.Info,
-                        $"✓ [注册跳过] 参数类型 {parameterType.Name} 已注册，跳过重复注册",
-                        "ParameterTypeRegistry");
                     return;
                 }
-
-                VisionLogger.Instance.Log(LogLevel.Info,
-                    $"🔍 [注册中] _polymorphismOptions 为 null: {_polymorphismOptions == null}, " +
-                    $"DerivedTypes 数量: {_polymorphismOptions?.DerivedTypes.Count ?? 0}",
-                    "ParameterTypeRegistry");
 
                 // 添加到多态配置
                 _polymorphismOptions!.DerivedTypes.Add(
@@ -265,9 +205,8 @@ namespace SunEyeVision.Core.Services.Serialization
                 // 记录已注册
                 _registeredTypes.Add(parameterType);
 
-                VisionLogger.Instance.Log(LogLevel.Success,
-                    $"✅ [注册成功] {parameterType.FullName} → '{typeDiscriminator}' | " +
-                    $"DerivedTypes 总数: {_polymorphismOptions.DerivedTypes.Count}",
+                VisionLogger.Instance.Log(LogLevel.Debug,
+                    $"参数类型已注册: {parameterType.Name} → '{typeDiscriminator}'",
                     "ParameterTypeRegistry");
             }
         }

@@ -6,6 +6,11 @@ namespace SunEyeVision.Plugin.SDK.Logging
     public enum LogLevel
     {
         /// <summary>
+        /// 诊断 - 实现细节、内部状态（默认被过滤，需开启诊断模式）
+        /// </summary>
+        Debug = -1,
+
+        /// <summary>
         /// 信息 - 状态变更、过程开始、中间状态
         /// </summary>
         Info = 0,

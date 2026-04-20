@@ -30,9 +30,6 @@
         {
             _provider = provider;
             _logger = provider?.GlobalLogger;
-#if DEBUG
-            System.Diagnostics.Debug.WriteLine($"[PluginLogger] SetProvider 调用: provider={provider?.GetType().Name}, logger={_logger?.GetType().Name}");
-#endif
         }
 
         /// <summary>
@@ -72,19 +69,7 @@
         public static void ParameterChanged(string paramName, object? oldValue, object? newValue, string? source = null)
         {
             var message = $"参数 [{paramName}] 值已修改: {FormatValue(oldValue)} → {FormatValue(newValue)}";
-#if DEBUG
-            System.Diagnostics.Debug.WriteLine($"[PluginLogger.ParameterChanged] ===== 开始 =====");
-            System.Diagnostics.Debug.WriteLine($"[PluginLogger.ParameterChanged] message={message}");
-            System.Diagnostics.Debug.WriteLine($"[PluginLogger.ParameterChanged] source={source}");
-            System.Diagnostics.Debug.WriteLine($"[PluginLogger.ParameterChanged] IsConfigured={IsConfigured}");
-            System.Diagnostics.Debug.WriteLine($"[PluginLogger.ParameterChanged] Logger类型={Logger?.GetType().Name ?? "null"}");
-#endif
-
             Info(message, source);
-
-#if DEBUG
-            System.Diagnostics.Debug.WriteLine($"[PluginLogger.ParameterChanged] ===== 结束 =====");
-#endif
         }
 
         /// <summary>

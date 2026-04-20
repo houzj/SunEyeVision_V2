@@ -30,8 +30,7 @@ namespace SunEyeVision.UI.Services.Performance
             {
                 logMsg += $" | {details}";
             }
-            Debug.WriteLine(logMsg);
-        }
+}
 
         /// <summary>
         /// 执行并计时

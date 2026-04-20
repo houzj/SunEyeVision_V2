@@ -27,7 +27,7 @@ namespace SunEyeVision.Plugin.SDK.Core
     /// var result = await runner.RunAsync(tool, parameters, inputImage);
     /// if (result.IsSuccess)
     /// {
-    ///     Console.WriteLine($"执行成功，耗时: {result.ExecutionTimeMs}ms");
+    ///     // 处理执行结果，如 result.ExecutionTimeMs 耗时
     /// }
     /// </code>
     /// </remarks>

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -8,7 +7,6 @@ using OpenCvSharp;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Validation;
-using SunEyeVision.Tool.Threshold.Models;
 using SunEyeVision.Tool.Threshold.Views;
 
 namespace SunEyeVision.Tool.Threshold
@@ -239,18 +237,6 @@ namespace SunEyeVision.Tool.Threshold
                 result.InvertUsed = invert;
                 result.ProcessedAt = DateTime.Now;
 
-                // Blob 连通域分析
-                try
-                {
-                    var blobs = AnalyzeBlobs(outputImage);
-                    result.Blobs = blobs;
-                    parameters.LogInfo($"Blob 分析完成: 检测到 {blobs.Count} 个连通域");
-                }
-                catch (Exception blobEx)
-                {
-                    parameters.LogWarning($"Blob 分析失败: {blobEx.Message}");
-                }
-
                 stopwatch.Stop();
                 result.SetSuccess(stopwatch.ElapsedMilliseconds);
 
@@ -294,14 +280,6 @@ namespace SunEyeVision.Tool.Threshold
             return new ThresholdToolDebugControl();
         }
 
-        /// <summary>
-        /// 创建数据分析控件
-        /// </summary>
-        public FrameworkElement? CreateDataAnalysisControl()
-        {
-            return new BlobDataAnalysisControl();
-        }
-
         #region 私有方法
 
         /// <summary>
@@ -318,84 +296,6 @@ namespace SunEyeVision.Tool.Threshold
                 ThresholdType.ToZeroInv => ThresholdTypes.TozeroInv,
                 _ => ThresholdTypes.Binary
             };
-        }
-
-        /// <summary>
-        /// 分析二值化图像中的连通域高级特征
-        /// </summary>
-        /// <param name="binaryImage">二值化图像</param>
-        /// <returns>Blob 特征列表</returns>
-        private List<BlobInfo> AnalyzeBlobs(Mat binaryImage)
-        {
-            var blobs = new List<BlobInfo>();
-
-            if (binaryImage == null || binaryImage.Empty())
-                return blobs;
-
-            // ConnectedComponentsWithStats 获取基础数据
-            using var labels = new Mat();
-            using var stats = new Mat();
-            using var centroids = new Mat();
-            int numLabels = Cv2.ConnectedComponentsWithStats(
-                binaryImage, labels, stats, centroids,
-                PixelConnectivity.Connectivity8);
-
-            for (int i = 1; i < numLabels; i++) // 跳过背景(0)
-            {
-                double area = stats.At<int>(i, (int)ConnectedComponentsTypes.Area);
-                double centroidX = centroids.At<double>(i, 0);
-                double centroidY = centroids.At<double>(i, 1);
-
-                var bbox = new OpenCvSharp.Rect(
-                    stats.At<int>(i, (int)ConnectedComponentsTypes.Left),
-                    stats.At<int>(i, (int)ConnectedComponentsTypes.Top),
-                    stats.At<int>(i, (int)ConnectedComponentsTypes.Width),
-                    stats.At<int>(i, (int)ConnectedComponentsTypes.Height));
-
-                // 提取轮廓计算周长和圆度
-                double perimeter = 0;
-                double circularity = 0;
-                double rectangularity = 0;
-
-                using var blobMask = new Mat();
-                Cv2.Compare(labels, i, blobMask, CmpType.EQ);
-                Cv2.FindContours(blobMask, out var contours, out _,
-                    RetrievalModes.External,
-                    ContourApproximationModes.ApproxSimple);
-
-                if (contours.Length > 0)
-                {
-                    var contour = contours[0];
-                    perimeter = Cv2.ArcLength(contour, true);
-
-                    // 圆度 = 4π × 面积 / 周长²
-                    circularity = perimeter > 0
-                        ? (4 * Math.PI * area) / (perimeter * perimeter)
-                        : 0;
-                }
-
-                // 矩形度 = 面积 / 外接矩形面积
-                double bboxArea = bbox.Width * bbox.Height;
-                rectangularity = bboxArea > 0 ? area / bboxArea : 0;
-
-                // 裁剪数值误差
-                circularity = Math.Min(circularity, 1.0);
-                rectangularity = Math.Min(rectangularity, 1.0);
-
-                blobs.Add(new BlobInfo
-                {
-                    Label = i,
-                    Area = area,
-                    Perimeter = perimeter,
-                    CentroidX = centroidX,
-                    CentroidY = centroidY,
-                    Circularity = circularity,
-                    Rectangularity = rectangularity,
-                    BoundingBox = bbox
-                });
-            }
-
-            return blobs;
         }
 
         #endregion

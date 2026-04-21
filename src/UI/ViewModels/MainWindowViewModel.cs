@@ -2217,9 +2217,6 @@ SplitterPosition = position;
                                     // 设置标题
                                     debugWindow.Title = node.Name;
 
-                                    // 注入数据到调试目标（统一入口）
-                                    await InjectDataToDebugTargetAsync(debugWindow, node);
-
                                     // 赋值到 _openDebugWindow，支持 IsDebugWindowOpen 检测
                                     _openDebugWindow = debugWindow;
 
@@ -2229,6 +2226,9 @@ SplitterPosition = position;
                                         _openDebugWindow = null;
                                         AddLog($"🔧 关闭调试窗口: {node.Name}");
                                     };
+
+                                    // 初始化调试目标（统一入口：注入参数、数据提供者、显示窗口）
+                                    await InitializeToolControlAsync(debugWindow, node);
                                 }
                                 else
                                 {

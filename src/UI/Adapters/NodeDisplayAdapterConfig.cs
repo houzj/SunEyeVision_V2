@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.UI.Services.Logging;
@@ -66,9 +66,20 @@ namespace SunEyeVision.UI.Adapters
         /// 获取 UI 日志写入器（供 LogPanelViewModel 使用）
         /// </summary>
         /// <remarks>
-        /// 在应用启动时预创建，确保日志从一开始就能显示到UI。
+        /// 支持延迟自动创建：如果尚未通过 InitializeServices() 初始化，
+        /// 首次访问时会自动创建实例并注册到 VisionLogger，确保任何时序访问都安全。
         /// </remarks>
-        public static UILogWriter UILogWriter => _uiLogWriter ?? throw new InvalidOperationException("UILogWriter 未初始化，请先调用 InitializeServices()");
+        public static UILogWriter UILogWriter
+        {
+            get
+            {
+                if (_uiLogWriter == null)
+                {
+                    InitializeUILogWriter();
+                }
+                return _uiLogWriter!;
+            }
+        }
 
         /// <summary>
         /// 获取解决方案管理器
@@ -113,25 +124,52 @@ namespace SunEyeVision.UI.Adapters
         }
 
         /// <summary>
+        /// 初始化 UILogWriter（延迟自动创建入口）
+        /// </summary>
+        /// <remarks>
+        /// 可在两种场景下被调用：
+        /// 1. InitializePluginLogger() 中预先创建（运行时正常路径）
+        /// 2. UILogWriter 属性首次访问时延迟创建（设计时或特殊时序）
+        /// 使用锁确保线程安全，仅创建一次。
+        /// </remarks>
+        private static readonly object _uiLogWriterLock = new();
+        private static void InitializeUILogWriter()
+        {
+            lock (_uiLogWriterLock)
+            {
+                if (_uiLogWriter != null)
+                    return;
+
+                var logger = VisionLogger.Instance;
+                _uiLogWriter = new UILogWriter();
+                logger.AddWriter(_uiLogWriter);
+            }
+        }
+
+        /// <summary>
         /// 初始化插件日志器
         /// </summary>
         private static void InitializePluginLogger()
         {
-var logger = VisionLogger.Instance;
-// 添加默认日志写入器（确保日志从一开始就有输出）
+            var logger = VisionLogger.Instance;
+
+            // 添加默认日志写入器（确保日志从一开始就有输出）
             // 1. Debug写入器 - 输出到VS调试窗口
             var debugWriter = new DebugLogWriter();
             logger.AddWriter(debugWriter);
-// 2. 文件写入器 - 持久化到文件
+
+            // 2. 文件写入器 - 持久化到文件
             var fileWriter = new FileLogWriter();
             logger.AddWriter(fileWriter);
-// 3. UI写入器 - 提前创建，确保日志从启动开始就能显示到UI
-            _uiLogWriter = new UILogWriter();
-            logger.AddWriter(_uiLogWriter);
-// 设置 PluginLogger 的提供者
+
+            // 3. UI写入器 - 通过延迟初始化方法创建，确保全局共享唯一实例
+            InitializeUILogWriter();
+
+            // 设置 PluginLogger 的提供者
             Plugin.SDK.Logging.PluginLogger.SetProvider(logger);
-// 测试日志
+
+            // 测试日志
             logger.Info("日志系统初始化完成", "ServiceInitializer");
-}
+        }
     }
 }

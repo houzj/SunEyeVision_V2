@@ -137,13 +137,18 @@ namespace SunEyeVision.UI.Views.Controls.Panels
             catch (InvalidOperationException ex)
             {
                 // 如果 UILogWriter 未初始化，记录错误
-MessageBox.Show($"日志面板初始化失败: {ex.Message}\n\n请确保在 App.xaml.cs 中正确调用 ServiceInitializer.InitializeServices()",
+                MessageBox.Show($"日志面板初始化失败: {ex.Message}\n\n请确保在 App.xaml.cs 中正确调用 ServiceInitializer.InitializeServices()",
                     "错误", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             catch (Exception ex)
             {
-}
-            TotalEnqueued = _logViewModel.TotalEnqueued;
+            }
+
+            // 安全访问：确保 _logViewModel 已初始化后才更新计数
+            if (_logViewModel != null)
+            {
+                TotalEnqueued = _logViewModel.TotalEnqueued;
+            }
         }
 
         #endregion

@@ -101,6 +101,31 @@ namespace SunEyeVision.Plugin.SDK.Core
         /// </remarks>
         System.Windows.FrameworkElement? CreateDebugControl() => null;
 
+        /// <summary>
+        /// 创建数据分析控件（可选实现）
+        /// </summary>
+        /// <returns>数据分析控件实例，返回 null 表示该工具无数据分析界面</returns>
+        /// <remarks>
+        /// 用于主界面右下角"数据分析"Tab中展示工具执行结果的数据分析。
+        /// 
+        /// 与 CreateDebugControl() 的区别：
+        /// - CreateDebugControl()   → 双击节点弹出的调试窗口内容（用于调参）
+        /// - CreateDataAnalysisControl() → 右下角数据分析Tab内容（用于数据展示）
+        /// 
+        /// 框架行为：
+        /// - 返回非null → 右下角显示"数据分析"Tab，Content 为此控件
+        /// - 返回null  → 右下角隐藏"数据分析"Tab
+        /// 
+        /// 示例：
+        /// <code>
+        /// public FrameworkElement? CreateDataAnalysisControl()
+        /// {
+        ///     return new BlobDataAnalysisControl();
+        /// }
+        /// </code>
+        /// </remarks>
+        System.Windows.FrameworkElement? CreateDataAnalysisControl() => null;
+
         /// <summary>获取默认参数（可选实现）</summary>
         ToolParameters GetDefaultParameters() => (ToolParameters)Activator.CreateInstance(ParamsType)!;
     }

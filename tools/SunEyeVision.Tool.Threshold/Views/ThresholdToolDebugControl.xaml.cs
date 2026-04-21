@@ -573,7 +573,7 @@ namespace SunEyeVision.Tool.Threshold.Views
 
         #endregion
 
-        #region IDebugControlInjectable 实现
+        #region IToolControlInitializer 实现
 
         /// <summary>
         /// 异步初始化 - 在所有 Set 方法完成后调用

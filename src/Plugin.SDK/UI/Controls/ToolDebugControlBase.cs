@@ -119,7 +119,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
     /// - WPF 控件：https://learn.microsoft.com/en-us/dotnet/desktop/wpf/controls/
     /// - 路由事件：https://learn.microsoft.com/en-us/dotnet/desktop/wpf/advanced/routed-events-overview
     /// </remarks>
-    public abstract class ToolDebugControlBase : UserControl, System.ComponentModel.INotifyPropertyChanged, IDebugControlInjectable
+    public abstract class ToolDebugControlBase : UserControl, System.ComponentModel.INotifyPropertyChanged, IToolControlInitializer
     {
         #region INotifyPropertyChanged 实现
 

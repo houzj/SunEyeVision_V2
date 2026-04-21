@@ -4,12 +4,12 @@ using SunEyeVision.Plugin.SDK.Execution.Parameters;
 namespace SunEyeVision.Plugin.SDK.UI.Controls
 {
     /// <summary>
-    /// 调试控件数据注入接口 - 统一注入协议
+    /// 工具控件初始化接口 - 调试控件的标准化初始化协议
     /// </summary>
     /// <remarks>
-    /// 所有需要接收外部数据注入的调试控件必须实现此接口。
+    /// 所有需要接收框架上下文的调试控件必须实现此接口。
     /// 
-    /// 注入顺序（必须严格按此顺序调用）：
+    /// 初始化顺序（必须严格按此顺序调用）：
     /// 1. SetCurrentNode   - 设置节点上下文（节点ID、节点引用）
     /// 2. SetParameters    - 设置节点参数（ToolParameters 实例）
     /// 3. SetDataProvider  - 设置数据查询服务（用于获取上游节点输出）
@@ -22,7 +22,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
     /// - 生命周期明确：InitializeAsync 是初始化终点
     /// - 职责分离：每个方法只负责一类数据
     /// </remarks>
-    public interface IDebugControlInjectable
+    public interface IToolControlInitializer
     {
         /// <summary>
         /// 设置当前节点（第一步）

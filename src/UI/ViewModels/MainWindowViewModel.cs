@@ -2526,10 +2526,10 @@ SplitterPosition = position;
         }
 
         /// <summary>
-        /// 更新数据分析控件
+        /// 更新数据分析控件 - 根据选中节点是否提供数据分析控件来显示/隐藏
         /// </summary>
         /// <param name="selectedNode">当前选中的节点</param>
-        private async System.Threading.Tasks.Task UpdateDataAnalysisControl(Models.WorkflowNode? selectedNode)
+        private System.Threading.Tasks.Task UpdateDataAnalysisControl(Models.WorkflowNode? selectedNode)
         {
             try
             {
@@ -2539,61 +2539,45 @@ SplitterPosition = position;
                 DataAnalysisControlTitle = "数据分析";
 
                 if (selectedNode == null)
-                {
-                    return;
-                }
+                    return System.Threading.Tasks.Task.CompletedTask;
 
                 // 获取工具注册信息
                 var toolType = selectedNode.ToolType;
                 if (string.IsNullOrEmpty(toolType))
-                {
-                    return;
-                }
-
-                var toolMetadata = ToolRegistry.GetToolMetadata(toolType);
-                if (toolMetadata == null)
-                {
-                        return;
-                    }
-
-                // 检查是否有调试控件
-                if (toolMetadata.DebugWindowType == null)
-                {
-                    AddLog($"ℹ️ 工具 '{selectedNode.Name}' 无调试控件");
-                    return;
-                }
+                    return System.Threading.Tasks.Task.CompletedTask;
 
                 // 创建工具实例
                 var tool = ToolRegistry.CreateToolInstance(toolType);
                 if (tool == null)
                 {
                     AddLog($"❌ 无法创建工具实例: {toolType}");
-                    return;
+                    return System.Threading.Tasks.Task.CompletedTask;
                 }
 
-                // 创建调试控件
-                var debugControl = tool.CreateDebugControl();
-                if (debugControl == null)
+                // ★ 创建数据分析控件（独立于调试窗口）
+                var dataAnalysisControl = tool.CreateDataAnalysisControl();
+                if (dataAnalysisControl == null)
                 {
-                    AddLog($"⚠️ 工具 '{selectedNode.Name}' 未实现调试控件");
-                    return;
+                    // 工具未实现数据分析控件，隐藏Tab
+                    HasDataAnalysisControl = false;
+                    return System.Threading.Tasks.Task.CompletedTask;
                 }
 
                 // 设置控件属性
                 DataAnalysisControlTitle = $"{selectedNode.Name} - 数据分析";
-                SelectedNodeDataAnalysisControl = debugControl;
+                SelectedNodeDataAnalysisControl = dataAnalysisControl;
                 HasDataAnalysisControl = true;
 
                 AddLog($"✅ 已加载数据分析控件: {selectedNode.Name}");
 
-                // 注入数据到调试目标（统一入口）
-                await InjectDataToDebugTargetAsync(debugControl, selectedNode);
+                return System.Threading.Tasks.Task.CompletedTask;
             }
             catch (Exception ex)
             {
                 AddLog($"❌ 更新数据分析控件失败: {ex.Message}");
                 SelectedNodeDataAnalysisControl = null;
                 HasDataAnalysisControl = false;
+                return System.Threading.Tasks.Task.CompletedTask;
             }
         }
 
@@ -2645,46 +2629,46 @@ SplitterPosition = position;
         }
 
         /// <summary>
-        /// 注入数据到调试目标（统一入口）
+        /// 初始化调试目标（统一入口）
         /// </summary>
-        /// <param name="target">注入目标（IDebugControlInjectable 或 Window）</param>
+        /// <param name="target">初始化目标（IToolControlInitializer 或 Window）</param>
         /// <param name="node">当前节点</param>
-        private async System.Threading.Tasks.Task InjectDataToDebugTargetAsync(object target, Models.WorkflowNode node)
+        private async System.Threading.Tasks.Task InitializeToolControlAsync(object target, Models.WorkflowNode node)
         {
             try
             {
-                // 获取注入接口
-                var injectable = ResolveInjectable(target);
-                if (injectable == null)
+                // 获取初始化接口
+                var initializer = ResolveInitializer(target);
+                if (initializer == null)
                 {
-                    AddLog($"⚠️ 注入目标不支持 IDebugControlInjectable: {target.GetType().Name}");
+                    AddLog($"⚠️ 初始化目标不支持 IToolControlInitializer: {target.GetType().Name}");
                     return;
                 }
 
                 // ① 设置当前节点
-                injectable.SetCurrentNode(node);
+                initializer.SetCurrentNode(node);
                 AddLog($"✅ 已设置当前节点");
 
                 // ② 设置节点参数
                 if (node.Parameters != null)
                 {
-                    injectable.SetParameters(node.Parameters);
-                    AddLog($"✅ 已注入节点参数");
+                    initializer.SetParameters(node.Parameters);
+                    AddLog($"✅ 已初始化节点参数");
                 }
 
                 // ③ 设置数据提供者
                 var dataProvider = GetDataProviderForNode(node);
                 if (dataProvider != null)
                 {
-                    injectable.SetDataProvider(dataProvider);
-                    AddLog($"✅ 已注入数据提供者");
+                    initializer.SetDataProvider(dataProvider);
+                    AddLog($"✅ 已初始化数据提供者");
                 }
 
                 // ④ 设置主窗口 ImageControl（可选）
                 // 注意：已移到 debugWindow.Show() 之后调用，确保 OverlayCanvas 已准备就绪
 
                 // ⑤ 异步初始化
-                await injectable.InitializeAsync();
+                await initializer.InitializeAsync();
                 AddLog($"✅ 调试控件初始化完成");
 
                 // 窗口路径的额外处理
@@ -2699,7 +2683,7 @@ SplitterPosition = position;
                     // 🔍 日志监控：准备调用 SetMainImageControl
                     AddLog($"🔍 [监控] 准备显示窗口并设置 ImageControl");
 
-                    // 显示窗口（确保数据注入完成后再显示，这样 Loaded 事件触发时所有数据已就绪）
+                    // 显示窗口（确保数据初始化完成后再显示，这样 Loaded 事件触发时所有数据已就绪）
                     debugWindow.Show();
 
                     // 🔍 日志监控：窗口已显示，准备获取 ImageControl
@@ -2710,9 +2694,9 @@ SplitterPosition = position;
                     AddLog($"🔍 [监控] 获取到 ImageControl: {mainImageControl?.GetType().Name ?? "null"}");
 
                     // 🔍 日志监控：准备调用 SetMainImageControl
-                    AddLog($"🔍 [监控] 准备调用 injectable.SetMainImageControl()");
+                    AddLog($"🔍 [监控] 准备调用 initializer.SetMainImageControl()");
 
-                    injectable.SetMainImageControl(mainImageControl);
+                    initializer.SetMainImageControl(mainImageControl);
 
                     AddLog($"✅ 已设置主窗口 ImageControl");
 
@@ -2726,7 +2710,7 @@ SplitterPosition = position;
             catch (Exception ex)
             {
                 var errorDetails = new System.Text.StringBuilder();
-                errorDetails.AppendLine($"❌ 注入数据到调试目标失败: {ex.Message}");
+                errorDetails.AppendLine($"❌ 初始化调试目标失败: {ex.Message}");
                 var innerEx = ex.InnerException;
                 while (innerEx != null)
                 {
@@ -2738,13 +2722,13 @@ SplitterPosition = position;
         }
 
         /// <summary>
-        /// 解析注入接口
+        /// 解析初始化接口
         /// </summary>
-        private Plugin.SDK.UI.Controls.IDebugControlInjectable? ResolveInjectable(object target)
+        private Plugin.SDK.UI.Controls.IToolControlInitializer? ResolveInitializer(object target)
         {
             // 直接实现接口
-            if (target is Plugin.SDK.UI.Controls.IDebugControlInjectable directInjectable)
-                return directInjectable;
+            if (target is Plugin.SDK.UI.Controls.IToolControlInitializer directInitializer)
+                return directInitializer;
 
             // DefaultDebugWindow 实现了接口
             if (target is Plugin.SDK.UI.Windows.DefaultDebugWindow debugWindow)
@@ -2755,8 +2739,8 @@ SplitterPosition = position;
             {
                 var controlField = window.GetType().GetField("_control",
                     System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                if (controlField?.GetValue(window) is Plugin.SDK.UI.Controls.IDebugControlInjectable innerInjectable)
-                    return innerInjectable;
+                if (controlField?.GetValue(window) is Plugin.SDK.UI.Controls.IToolControlInitializer innerInitializer)
+                    return innerInitializer;
             }
 
             return null;
@@ -2994,6 +2978,20 @@ AddLog($"⚠️ 日志记录异常: {ex.Message}");
                         }
                         
                         // 注意：不再刷新 ActiveInputSource，因为输入源不应该被执行结果修改
+
+                        // ★ 更新数据分析控件（如果当前显示的是该节点的数据分析控件）
+                        if (SelectedNodeDataAnalysisControl is Plugin.SDK.UI.Controls.IToolControlDataAnalysis dataAnalysisControl
+                            && e.Result != null && e.Result.IsSuccess)
+                        {
+                            try
+                            {
+                                dataAnalysisControl.OnResultUpdated(e.Result);
+                            }
+                            catch (Exception updateEx)
+                            {
+                                AddLog($"⚠️ 更新数据分析控件失败: {updateEx.Message}");
+                            }
+                        }
                     });
                 }
             }

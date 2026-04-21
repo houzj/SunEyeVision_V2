@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using OpenCvSharp;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
+using SunEyeVision.Tool.Threshold.Models;
 
 namespace SunEyeVision.Tool.Threshold
 {
@@ -77,6 +78,16 @@ namespace SunEyeVision.Tool.Threshold
         public DateTime ProcessedAt { get; set; } = DateTime.Now;
 
         /// <summary>
+        /// Blob 特征列表（连通域分析结果）
+        /// </summary>
+        public List<BlobInfo> Blobs { get; set; } = new();
+
+        /// <summary>
+        /// Blob 数量
+        /// </summary>
+        public int BlobCount => Blobs?.Count ?? 0;
+
+        /// <summary>
         /// 获取可视化元素
         /// </summary>
         public override IEnumerable<VisualElement> GetVisualElements()
@@ -130,6 +141,7 @@ namespace SunEyeVision.Tool.Threshold
                 new("InvertUsed",           "是否反转",               "结果"),
                 new("InputSize",            "输入图像尺寸",           "结果"),
                 new("ProcessedAt",          "处理时间戳",             "执行信息"),
+                new("BlobCount",            "Blob数量",                "统计"),
             ];
         }
 

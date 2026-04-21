@@ -344,7 +344,7 @@ namespace SunEyeVision.UI.ViewModels
 
         public WorkflowConnection? SelectedConnection { get; set; }
         public WorkflowViewModel WorkflowViewModel { get; set; }
-        
+
         // 工作流标签页
         public WorkflowTabControlViewModel WorkflowTabViewModel { get; }
 
@@ -867,10 +867,10 @@ SplitterPosition = position;
             OpenWorkflowCommand = new RelayCommand(ExecuteOpenWorkflow);
             SaveWorkflowCommand = new RelayCommand(ExecuteSaveWorkflow);
             SaveAsWorkflowCommand = new RelayCommand(ExecuteSaveAsWorkflow);
-            
+
             // 解决方案保存命令
             SaveCurrentSolutionCommand = new RelayCommand(ExecuteSaveCurrentSolution);
-            
+
             RunWorkflowCommand = new RelayCommand(async () => await ExecuteRunWorkflow(), () => !IsRunning);
             StopWorkflowCommand = new RelayCommand(ExecuteStopWorkflow, () => IsRunning);
             ShowSettingsCommand = new RelayCommand(ExecuteShowSettings);
@@ -1385,11 +1385,11 @@ SplitterPosition = position;
         private void OnCurrentSolutionChanged(object? sender, SolutionMetadataEventArgs e)
         {
             UpdateCurrentSolutionInfo();
-            
+
             // 加载解决方案到工作流标签页
             var solutionManager = Adapters.ServiceInitializer.SolutionManager;
             var currentSolution = solutionManager?.CurrentSolution;
-            
+
             if (currentSolution != null)
             {
                 LoadSolutionToWorkflowTabs(currentSolution);
@@ -1516,7 +1516,7 @@ SplitterPosition = position;
             {
                 // 检查是否存在同名但不同 ID 的 UI 标签页
                 var existingTab = WorkflowTabViewModel.Tabs.FirstOrDefault(t => t.Name == workflow.Name && t.Id != workflow.Id);
-                
+
                 if (existingTab != null)
                 {
                     // ✅ 存在同名工作流，重命名而不是删除（保留数据）
@@ -1673,7 +1673,7 @@ SplitterPosition = position;
 
                 // 清空现有标签页
                 var oldTabCount = WorkflowTabViewModel.Tabs.Count;
-                
+
                 // 重置所有工作流的节点序号管理器（防止全局索引污染）
                 foreach (var tab in WorkflowTabViewModel.Tabs)
                 {
@@ -1683,7 +1683,7 @@ SplitterPosition = position;
                         tab.SequenceManager.Reset();
                     }
                 }
-                
+
                 WorkflowTabViewModel.Tabs.Clear();
                 LogInfo($"已清空 {oldTabCount} 个现有标签页");
 
@@ -1695,18 +1695,18 @@ SplitterPosition = position;
                 int totalNodes = 0;
                 int totalConnections = 0;
                 int totalParams = 0;
-                
+
                 foreach (var workflow in solution.Workflows)
                 {
                     LogInfo($"\n--- 加载工作流: {workflow.Name} (ID: {workflow.Id}) ---");
                     LogInfo($"节点数量: {workflow.Nodes.Count}");
                     LogInfo($"连接数量: {workflow.Connections.Count}");
-                    
+
                     CreateWorkflowTab(workflow, solution.FilePath);
-                    
+
                     totalNodes += workflow.Nodes.Count;
                     totalConnections += workflow.Connections.Count;
-                    
+
                     // 统计参数数量
                     foreach (var node in workflow.Nodes)
                     {
@@ -1723,7 +1723,7 @@ SplitterPosition = position;
                 LogSuccess($"✓ 连接总数: {totalConnections}");
                 LogSuccess($"✓ 参数总数: {totalParams}");
                 LogSuccess($"✓ 节点参数已自动加载到 WorkflowNode.Parameters 中");
-                
+
                 // 验证加载结果
                 if (WorkflowTabViewModel.Tabs.Count == 0)
                 {
@@ -1734,12 +1734,12 @@ SplitterPosition = position;
                     // 设置第一个标签页为选中标签页
                     WorkflowTabViewModel.SelectedTab = WorkflowTabViewModel.Tabs[0];
                     LogInfo($"已设置选中标签页: {WorkflowTabViewModel.SelectedTab.Name}");
-                    
+
                     // 初始化SmartPathConverter（用于连接线渲染）
                     Converters.Path.SmartPathConverter.Nodes = WorkflowTabViewModel.SelectedTab.WorkflowNodes;
                     Converters.Path.SmartPathConverter.Connections = WorkflowTabViewModel.SelectedTab.WorkflowConnections;
                     LogInfo($"SmartPathConverter已初始化，节点数: {WorkflowTabViewModel.SelectedTab.WorkflowNodes.Count}，连接数: {WorkflowTabViewModel.SelectedTab.WorkflowConnections.Count}");
-                    
+
                     LogSuccess($"标签页创建成功，当前标签页: {WorkflowTabViewModel.SelectedTab?.Name ?? "（无）"}");
                 }
             }
@@ -2196,7 +2196,7 @@ SplitterPosition = position;
                             {
                                 // 创建决策链
                                 var decisionChain = new NodeOpenDecisionChain();
-                                
+
                                 // 创建上下文
                                 var mainImageControl = GetMainImageControl?.Invoke();
                                 var context = new NodeOpenContext(
@@ -2213,7 +2213,7 @@ SplitterPosition = position;
                                 {
                                     // 获取创建的窗口
                                     var debugWindow = context.CreatedWindow;
-                                    
+
                                     // 设置标题
                                     debugWindow.Title = node.Name;
 
@@ -2343,39 +2343,39 @@ SplitterPosition = position;
             var result = new List<(Models.WorkflowNode Node, int Distance)>();
             var visited = new HashSet<string>();
             var queue = new Queue<(string NodeId, int Distance)>();
-            
+
             // 从当前节点开始，查找所有前驱
             queue.Enqueue((nodeId, 0));
             visited.Add(nodeId);
-            
+
             while (queue.Count > 0)
             {
                 var (currentNodeId, distance) = queue.Dequeue();
-                
+
                 // 查找当前节点的所有直接前驱连接
                 var parentConnections = tab.WorkflowConnections
                     .Where(conn => conn.TargetNodeId == currentNodeId)
                     .ToList();
-                
+
                 foreach (var connection in parentConnections)
                 {
                     if (!visited.Contains(connection.SourceNodeId))
                     {
                         visited.Add(connection.SourceNodeId);
-                        
+
                         var parentNode = tab.WorkflowNodes.FirstOrDefault(n => n.Id == connection.SourceNodeId);
                         if (parentNode != null)
                         {
                             // 添加到结果（距离 +1）
                             result.Add((parentNode, distance + 1));
-                            
+
                             // 继续向上游查找
                             queue.Enqueue((connection.SourceNodeId, distance + 1));
                         }
                     }
                 }
             }
-            
+
             // 按距离排序（最近的在前）
             return result.OrderBy(x => x.Distance).ToList();
         }
@@ -2613,10 +2613,10 @@ SplitterPosition = position;
                 // 由于架构分层限制，DataSourceQueryService 不能直接引用 WorkflowEngine 类，
                 // 因此通过接口注入。虽然传入的是同一个对象 _workflowEngine，
                 // 但它被分别用作两个不同的接口角色。
-                
+
                 // 创建属性元数据提供者
                 var metadataProvider = new SunEyeVision.Plugin.Infrastructure.Managers.Tool.PropertyMetadataProviderAdapter();
-                
+
                 var queryService = new DataSourceQueryService(_workflowEngine, _workflowEngine, null, metadataProvider);
                 LogInfo($"✓ 创建数据查询服务成功: 节点 {node.Id}, 工作流 {currentWorkflow.Name}");
                 return queryService;
@@ -2757,11 +2757,11 @@ SplitterPosition = position;
             {
                 // 创建事件处理器（使用 Delegate.CreateDelegate 动态创建）
                 var eventHandlerType = eventInfo.EventHandlerType;
-                
+
                 // 创建委托方法
                 var invokeMethod = eventHandlerType.GetMethod("Invoke");
                 var parameters = invokeMethod?.GetParameters();
-                
+
                 if (parameters != null && parameters.Length == 2)
                 {
                     // 创建通用的处理方法
@@ -2799,7 +2799,7 @@ SplitterPosition = position;
 
                     // 创建委托
                     var handler = Delegate.CreateDelegate(eventHandlerType, handlerAction.Target, handlerAction.Method);
-                    
+
                     // 订阅事件
                     eventInfo.AddEventHandler(debugWindow, handler);
 
@@ -2976,7 +2976,7 @@ AddLog($"⚠️ 日志记录异常: {ex.Message}");
                         {
                             AddLog($"📷 节点 {e.Node.Name} 输出已更新, 输出图像数={outputCache.Count}");
                         }
-                        
+
                         // 注意：不再刷新 ActiveInputSource，因为输入源不应该被执行结果修改
 
                         // ★ 更新数据分析控件（如果当前显示的是该节点的数据分析控件）
@@ -3221,15 +3221,15 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
             }
 
             var imageInfo = ImageCollection[CurrentImageIndex];
-            
+
             // 获取FullImage
             var fullImage = imageInfo.FullImage;
-            
+
             if (fullImage != null)
             {
                 OriginalImage = fullImage;
                 AddLog($"📷 显示图像: {imageInfo.Name}");
-                
+
                 // 确保DisplayImage更新
                 UpdateDisplayImage();
             }
@@ -3344,12 +3344,12 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
         /// 2. 选择其他节点 -> BFS逆向追踪采集节点，找到可显示图像
         ///    (优化: 逆向追踪采集节点与当前显示同源则不更新)
         /// 3. 逆向追踪采集节点图像 -> 显示在图像预览中
-        /// 
+        ///
         /// 重构说明:
         /// - 新架构使用 InputSource（输入源）替代 ImageData
         /// - 输入源存储用户选择的图像，执行流程不会修改
         /// - 向后兼容：同时更新 ImageData
-        /// 
+        ///
         /// 性能优化:
         /// - 只在状态真正变化时才更新属性，避免触发不必要的绑定刷新
         /// - 引用相等检测在 ActiveInputSource setter 中处理
@@ -3399,12 +3399,12 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
 
             // 3.选中处理节点时，检查连接和上游图像载入节点
             // 核心原则：预览器必须绑定到图像载入节点的InputSource
-            
+
             var connections = WorkflowTabViewModel?.SelectedTab?.WorkflowConnections;
-            
+
             // 3.1 检查当前节点是否有输入连接
             bool hasInputConnection = connections?.Any(c => c.TargetNodeId == selectedNode.Id) ?? false;
-            
+
             if (!hasInputConnection)
             {
                 // 没有输入连接，隐藏预览器
@@ -3419,7 +3419,7 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
                 }
                 return;
             }
-            
+
             // 3.2 有输入连接，尝试逆向查找图像载入节点
             var sourceLoadNode = FindUpstreamImageLoadNode(selectedNode);
 
@@ -3427,16 +3427,16 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
             {
                 // 找到上游图像载入节点，显示预览器（绑定到该节点）
                 var sourceInputSource = sourceLoadNode.InputSource ?? sourceLoadNode.EnsureInputSource();
-                
+
                 bool isSameNode = _currentDisplayNodeId == sourceLoadNode.Id;
-                
+
                 if (!isSameNode)
                 {
                     _currentDisplayNodeId = sourceLoadNode.Id;
                     sourceInputSource.PrepareForDisplay();
                     ActiveInputSource = sourceInputSource;
                 }
-                
+
                 if (!ShowImagePreview)
                 {
                     ShowImagePreview = true;
@@ -3546,10 +3546,10 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
                 LogInfo("打开解决方案配置界面");
 
                 var solutionManager = Adapters.ServiceInitializer.SolutionManager;
-                
+
                 // [诊断] 记录打开前的状态
-                var currentMetadata = solutionManager.CurrentSolution != null 
-                    ? solutionManager.GetMetadata(solutionManager.CurrentSolution.Id) 
+                var currentMetadata = solutionManager.CurrentSolution != null
+                    ? solutionManager.GetMetadata(solutionManager.CurrentSolution.Id)
                     : null;
                 LogInfo($"[诊断-打开] 当前解决方案ID: {solutionManager.CurrentSolution?.Id ?? "null"}");
                 LogInfo($"[诊断-打开] 当前解决方案名称: {currentMetadata?.Name ?? "null"}");
@@ -3575,10 +3575,10 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
 
                         // 更新标题
                         Title = $"太阳眼视觉 - {metadata?.Name ?? "未命名"}";
-                        
+
                         // [诊断] 记录加载后的状态
-                        var loadedMetadata = solutionManager.CurrentSolution != null 
-                            ? solutionManager.GetMetadata(solutionManager.CurrentSolution.Id) 
+                        var loadedMetadata = solutionManager.CurrentSolution != null
+                            ? solutionManager.GetMetadata(solutionManager.CurrentSolution.Id)
                             : null;
                         LogInfo($"[诊断-加载后] CurrentSolution: {loadedMetadata?.Name ?? "null"}");
                         LogInfo($"[诊断-加载后] CurrentSolutionId: {solutionManager.Settings.CurrentSolutionId ?? "null"}");

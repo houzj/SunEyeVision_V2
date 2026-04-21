@@ -399,8 +399,11 @@ namespace SunEyeVision.Tool.Threshold.Views
             // 克隆参数用于执行（线程安全）
             var runParams = (ThresholdParameters)Parameters.Clone();
 
+            // 将解析到的图像设置到参数的 ResolvedInputImage
+            runParams.ResolvedInputImage = imageMat;
+
             // 执行工具
-            return thresholdTool.Run(imageMat, runParams);
+            return thresholdTool.Run(runParams);
         }
 
         /// <summary>

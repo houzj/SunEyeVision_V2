@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.Metadata;
 using SunEyeVision.Plugin.SDK.Validation;
 using SunEyeVision.Tool.Threshold.Models;
 
@@ -137,7 +136,7 @@ namespace SunEyeVision.Tool.Threshold
         /// 注意：ImageSource 保持为 AvailableDataSource，不是 ParamValue，
         /// 因为它是特殊的数据源绑定，不需要统一管理。
         /// </remarks>
-        [IgnoreSave]
+        [JsonIgnore]
         public AvailableDataSource? ImageSource
         {
             get => _imageSource;

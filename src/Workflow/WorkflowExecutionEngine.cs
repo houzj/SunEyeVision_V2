@@ -614,18 +614,19 @@ namespace SunEyeVision.Workflow
         /// </summary>
         /// <remarks>
         /// 使用 ToolExecutor 统一执行工具，确保与单工具调试使用相同的执行路径。
+        /// 图像输入通过 ToolParameters.ResolvedInputImage 传递，不再作为独立参数。
         /// </remarks>
         /// <param name="node">算法节点</param>
-        /// <param name="inputImage">输入图像</param>
+        /// <param name="inputImage">输入图像（作为 ResolvedInputImage 的回退值）</param>
         /// <param name="nodeResults">节点执行结果缓存，用于参数绑定解析</param>
-        private NodeExecutionResult ExecuteAlgorithmNode(AlgorithmNode node, Mat inputImage)
+        private NodeExecutionResult ExecuteAlgorithmNode(AlgorithmNode node, Mat? inputImage)
         {
             var result = new NodeExecutionResult { NodeId = node.Id, StartTime = DateTime.Now, EndTime = DateTime.Now };
 
             // 构建工具结果字典用于参数绑定解析
             var toolResultsDict = _executionResults.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToolResult);
 
-            // 直接调用 AlgorithmNode.Execute，传递 toolResultsDict 用于参数绑定解析
+            // 调用 AlgorithmNode.Execute，图像通过 ResolvedInputImage 传递
             var algorithmResult = node.Execute(inputImage, toolResultsDict);
 
             if (algorithmResult.Success && algorithmResult.ResultImage != null)

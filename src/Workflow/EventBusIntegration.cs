@@ -165,7 +165,8 @@ namespace SunEyeVision.Workflow
                 {
                     // 使用反射创建默认参数实例
                     var defaultParams = (ToolParameters)Activator.CreateInstance(tool.ParamsType)!;
-                    var toolResult = tool.Run(inputImage, defaultParams);
+                    defaultParams.ResolvedInputImage = inputImage;
+                    var toolResult = tool.Run(defaultParams);
 
                     // 从结果中获取输出图像（使用反射，统一使用新机制）
                     var outputImageProp = toolResult.GetType().GetProperty("OutputImage");

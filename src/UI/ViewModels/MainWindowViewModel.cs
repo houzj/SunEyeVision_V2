@@ -3709,7 +3709,7 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
             public Type ParamsType => typeof(GenericToolParameters);
             public Type ResultType => typeof(GenericToolResults);
 
-            public ToolResults Run(OpenCvSharp.Mat image, ToolParameters parameters)
+            public ToolResults Run(ToolParameters parameters)
             {
                 return new GenericToolResults();
             }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json.Serialization;
+using OpenCvSharp;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Metadata;
 using SunEyeVision.Plugin.SDK.Models;
@@ -71,9 +72,24 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// parameters.LogError("错误信息", exception);
         /// </code>
         /// </remarks>
-        [IgnoreSave]
-        [IgnoreDisplay]
+        [JsonIgnore]
         public ExecutionContext? Context { get; internal set; }
+
+        /// <summary>
+        /// 运行时解析的输入图像（由执行引擎在运行前设置）
+        /// </summary>
+        /// <remarks>
+        /// 图像输入统一通过参数绑定框架管理。此属性由执行引擎在调用 Tool.Run() 之前设置，
+        /// 工具通过 parameters.ResolvedInputImage 获取输入图像。
+        /// 
+        /// 图像来源优先级：
+        /// 1. 参数绑定中的 ImageSource（AvailableDataSource）— 用户通过 ImageSourceSelector 选择
+        /// 2. 引擎通过拓扑传递的默认图像 — 从父节点输出自动获取
+        /// 
+        /// 对于图像源节点（如 ImageLoad），此属性为 null，工具自行从文件加载图像。
+        /// </remarks>
+        [JsonIgnore]
+        public Mat? ResolvedInputImage { get; set; }
 
         /// <summary>
         /// 验证所有参数
@@ -134,21 +150,12 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         }
 
         /// <summary>
-        /// 获取可保存的参数属性（排除标记IgnoreSave的）
+        /// 获取可序列化的参数属性（排除标记[JsonIgnore]的）
         /// </summary>
         public IEnumerable<PropertyInfo> GetSaveableProperties()
         {
             return GetAllParameterProperties()
-                .Where(p => !p.IsDefined(typeof(IgnoreSaveAttribute)));
-        }
-
-        /// <summary>
-        /// 获取需要在UI中显示的参数属性
-        /// </summary>
-        public IEnumerable<PropertyInfo> GetDisplayableProperties()
-        {
-            return GetAllParameterProperties()
-                .Where(p => !p.IsDefined(typeof(IgnoreDisplayAttribute)));
+                .Where(p => !p.IsDefined(typeof(JsonIgnoreAttribute)));
         }
 
         /// <summary>
@@ -209,7 +216,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         {
             var prop = GetType().GetProperty(propertyName);
             if (prop == null) return false;
-            return !prop.IsDefined(typeof(IgnoreSaveAttribute));
+            return !prop.IsDefined(typeof(JsonIgnoreAttribute));
         }
 
         /// <summary>
@@ -222,16 +229,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 
             // 没有IgnoreBind标记的参数都支持绑定
             return !prop.IsDefined(typeof(IgnoreBindAttribute));
-        }
-
-        /// <summary>
-        /// 判断参数是否需要在UI显示
-        /// </summary>
-        public bool ShouldDisplay(string propertyName)
-        {
-            var prop = GetType().GetProperty(propertyName);
-            if (prop == null) return false;
-            return !prop.IsDefined(typeof(IgnoreDisplayAttribute));
         }
 
         #endregion

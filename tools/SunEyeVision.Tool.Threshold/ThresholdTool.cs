@@ -35,8 +35,10 @@ namespace SunEyeVision.Tool.Threshold
         /// <summary>
         /// 执行工具（同步）
         /// </summary>
-        public ThresholdResults Run(Mat image, ThresholdParameters parameters)
+        public ThresholdResults Run(ThresholdParameters parameters)
         {
+            // 从参数中获取输入图像
+            var image = parameters.ResolvedInputImage;
             var result = new ThresholdResults
             {
                 ToolName = _attribute?.DisplayName ?? "Threshold",

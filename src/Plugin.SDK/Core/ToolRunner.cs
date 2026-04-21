@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using OpenCvSharp;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 
@@ -24,7 +23,8 @@ namespace SunEyeVision.Plugin.SDK.Core
     /// 使用示例：
     /// <code>
     /// var runner = new ToolRunner(executor);
-    /// var result = await runner.RunAsync(tool, parameters, inputImage);
+    /// parameters.ResolvedInputImage = inputImage; // 设置输入图像
+    /// var result = await runner.RunAsync(tool, parameters);
     /// if (result.IsSuccess)
     /// {
     ///     // 处理执行结果，如 result.ExecutionTimeMs 耗时
@@ -60,10 +60,9 @@ namespace SunEyeVision.Plugin.SDK.Core
         /// 同步运行工具
         /// </summary>
         /// <param name="tool">工具实例</param>
-        /// <param name="parameters">参数</param>
-        /// <param name="inputImage">输入图像（可选）</param>
+        /// <param name="parameters">参数（图像通过 ResolvedInputImage 传入）</param>
         /// <returns>运行结果</returns>
-        public RunResult Run(IToolPlugin tool, ToolParameters parameters, Mat? inputImage = null)
+        public RunResult Run(IToolPlugin tool, ToolParameters parameters)
         {
             if (_isRunning)
             {
@@ -76,7 +75,7 @@ namespace SunEyeVision.Plugin.SDK.Core
             try
             {
                 // 使用统一执行器执行工具
-                var toolResult = _executor.Run(tool, parameters, inputImage);
+                var toolResult = _executor.Run(tool, parameters);
                 stopwatch.Stop();
 
                 var result = RunResult.FromToolResults(toolResult);
@@ -100,10 +99,9 @@ namespace SunEyeVision.Plugin.SDK.Core
         /// 异步运行工具
         /// </summary>
         /// <param name="tool">工具实例</param>
-        /// <param name="parameters">参数</param>
-        /// <param name="inputImage">输入图像（可选）</param>
+        /// <param name="parameters">参数（图像通过 ResolvedInputImage 传入）</param>
         /// <returns>运行结果</returns>
-        public async Task<RunResult> RunAsync(IToolPlugin tool, ToolParameters parameters, Mat? inputImage = null)
+        public async Task<RunResult> RunAsync(IToolPlugin tool, ToolParameters parameters)
         {
             if (_isRunning)
             {
@@ -119,7 +117,7 @@ namespace SunEyeVision.Plugin.SDK.Core
                 var result = await Task.Run(() =>
                 {
                     _cancellationTokenSource.Token.ThrowIfCancellationRequested();
-                    return _executor.Run(tool, parameters, inputImage);
+                    return _executor.Run(tool, parameters);
                 }, _cancellationTokenSource.Token);
 
                 stopwatch.Stop();
@@ -154,13 +152,11 @@ namespace SunEyeVision.Plugin.SDK.Core
         /// <typeparam name="TParams">参数类型</typeparam>
         /// <typeparam name="TResult">结果类型</typeparam>
         /// <param name="tool">工具实例</param>
-        /// <param name="parameters">参数</param>
-        /// <param name="inputImage">输入图像（可选）</param>
+        /// <param name="parameters">参数（图像通过 ResolvedInputImage 传入）</param>
         /// <returns>运行结果</returns>
         public RunResult<TResult> Run<TParams, TResult>(
             IToolPlugin<TParams, TResult> tool,
-            TParams parameters,
-            Mat? inputImage = null)
+            TParams parameters)
             where TParams : ToolParameters, new()
             where TResult : ToolResults, new()
         {
@@ -175,7 +171,7 @@ namespace SunEyeVision.Plugin.SDK.Core
             try
             {
                 // 使用统一执行器执行工具
-                var toolResult = _executor.Run(tool, parameters, inputImage);
+                var toolResult = _executor.Run(tool, parameters);
                 stopwatch.Stop();
 
                 return RunResult<TResult>.FromToolResults(toolResult);
@@ -197,13 +193,11 @@ namespace SunEyeVision.Plugin.SDK.Core
         /// <typeparam name="TParams">参数类型</typeparam>
         /// <typeparam name="TResult">结果类型</typeparam>
         /// <param name="tool">工具实例</param>
-        /// <param name="parameters">参数</param>
-        /// <param name="inputImage">输入图像（可选）</param>
+        /// <param name="parameters">参数（图像通过 ResolvedInputImage 传入）</param>
         /// <returns>运行结果</returns>
         public async Task<RunResult<TResult>> RunAsync<TParams, TResult>(
             IToolPlugin<TParams, TResult> tool,
-            TParams parameters,
-            Mat? inputImage = null)
+            TParams parameters)
             where TParams : ToolParameters, new()
             where TResult : ToolResults, new()
         {
@@ -221,7 +215,7 @@ namespace SunEyeVision.Plugin.SDK.Core
                 var result = await Task.Run(() =>
                 {
                     _cancellationTokenSource.Token.ThrowIfCancellationRequested();
-                    return _executor.Run(tool, parameters, inputImage);
+                    return _executor.Run(tool, parameters);
                 }, _cancellationTokenSource.Token);
 
                 stopwatch.Stop();

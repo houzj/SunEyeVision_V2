@@ -19,7 +19,8 @@
     <Project Path="Src/Workflow/SunEyeVision.Workflow.csproj" />
   </Folder>
   <Folder Name="/Tools/">
+    <Project Path="tools/SunEyeVision.BlobAnalysis/SunEyeVision.Tool.BlobAnalysis.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.Threshold/SunEyeVision.Tool.Threshold.csproj" />
     <Project Path="Tools/SunEyeVision.Tool.ImageLoad/SunEyeVision.Tool.ImageLoad.csproj" />
-    <Project Path="Tools/SunEyeVision.Tool.Threshold/SunEyeVision.Tool.Threshold.csproj" />
   </Folder>
 </Solution>

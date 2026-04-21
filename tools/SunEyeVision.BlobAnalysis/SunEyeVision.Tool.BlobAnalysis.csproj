@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+    <OutputType>Library</OutputType>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>SunEyeVision.Tool.BlobAnalysis</RootNamespace>
+    <AssemblyName>SunEyeVision.Tool.BlobAnalysis</AssemblyName>
+    <IsToolPlugin>true</IsToolPlugin>
+
+    <!-- 工具插件输出到 plugins 子目录 -->
+    <OutDir Condition="'$(Configuration)'=='Debug'">$(MSBuildProjectDirectory)\..\..\dev\Debug\plugins\</OutDir>
+    <OutDir Condition="'$(Configuration)'=='Release'">$(MSBuildProjectDirectory)\..\..\Release\SunEyeVision_v1.0.0\SunEyeVision\plugins\</OutDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Plugin.SDK\SunEyeVision.Plugin.SDK.csproj" />
+  </ItemGroup>
+</Project>

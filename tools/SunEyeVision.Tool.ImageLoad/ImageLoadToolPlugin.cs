@@ -309,7 +309,7 @@ namespace SunEyeVision.Tool.ImageLoad
         [Obsolete("使用 CreateDebugControl 替代")]
         public System.Windows.Window? CreateDebugWindow() => null;
 
-        public ImageLoadResults Run(Mat image, ImageLoadParameters parameters)
+        public ImageLoadResults Run(ImageLoadParameters parameters)
         {
             var result = new ImageLoadResults
             {

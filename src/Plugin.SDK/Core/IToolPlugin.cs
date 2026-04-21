@@ -1,5 +1,4 @@
-using System;
-using OpenCvSharp;
+﻿using System;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 
@@ -49,6 +48,9 @@ namespace SunEyeVision.Plugin.SDK.Core
     /// 一个类就是一个完整的工具插件。
     /// 元数据通过 [Tool] 特性定义，框架通过反射自动获取。
     /// 
+    /// 图像输入通过 ToolParameters.ResolvedInputImage 获取，
+    /// 由参数绑定框架统一管理，不再作为 Run() 方法参数传递。
+    /// 
     /// 使用示例：
     /// <code>
     /// [Tool("threshold", "图像阈值化",
@@ -57,8 +59,10 @@ namespace SunEyeVision.Plugin.SDK.Core
     ///     Category = "图像处理")]
     /// public class ThresholdTool : IToolPlugin&lt;ThresholdParameters, ThresholdResults&gt;
     /// {
-    ///     public ThresholdResults Run(Mat image, ThresholdParameters parameters)
+    ///     public ThresholdResults Run(ThresholdParameters parameters)
     ///     {
+    ///         var image = parameters.ResolvedInputImage
+    ///             ?? throw new InvalidOperationException("未设置输入图像");
     ///         var result = new ThresholdResults();
     ///         Cv2.Threshold(image, result.OutputImage, parameters.Threshold, 255, ThresholdTypes.Binary);
     ///         return result;
@@ -75,7 +79,11 @@ namespace SunEyeVision.Plugin.SDK.Core
         Type ResultType { get; }
 
         /// <summary>执行工具</summary>
-        ToolResults Run(Mat image, ToolParameters parameters);
+        /// <remarks>
+        /// 图像输入通过 parameters.ResolvedInputImage 获取，
+        /// 由参数绑定框架统一管理。
+        /// </remarks>
+        ToolResults Run(ToolParameters parameters);
 
         /// <summary>是否支持调试窗口（默认 true）</summary>
         bool HasDebugWindow => true;
@@ -148,7 +156,11 @@ namespace SunEyeVision.Plugin.SDK.Core
         where TResult : ToolResults, new()
     {
         /// <summary>执行工具（类型安全）</summary>
-        TResult Run(Mat image, TParams parameters);
+        /// <remarks>
+        /// 图像输入通过 parameters.ResolvedInputImage 获取，
+        /// 由参数绑定框架统一管理。
+        /// </remarks>
+        TResult Run(TParams parameters);
 
         /// <summary>获取默认参数</summary>
         new TParams GetDefaultParameters() => new();
@@ -158,10 +170,10 @@ namespace SunEyeVision.Plugin.SDK.Core
         Type IToolPlugin.ParamsType => typeof(TParams);
         Type IToolPlugin.ResultType => typeof(TResult);
 
-        ToolResults IToolPlugin.Run(Mat image, ToolParameters parameters)
+        ToolResults IToolPlugin.Run(ToolParameters parameters)
         {
             if (parameters is TParams typedParams)
-                return Run(image, typedParams);
+                return Run(typedParams);
             throw new ArgumentException($"参数类型错误：期望 {typeof(TParams).Name}，实际 {parameters?.GetType().Name ?? "null"}");
         }
 
@@ -178,6 +190,6 @@ namespace SunEyeVision.Plugin.SDK.Core
         where TResult : ToolResults, new()
     {
         /// <summary>执行工具（指定ROI）</summary>
-        TResult Run(Mat image, TParams parameters, Models.Roi.IRoi roi);
+        TResult Run(TParams parameters, Models.Roi.IRoi roi);
     }
 }

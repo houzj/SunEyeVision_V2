@@ -299,8 +299,9 @@ namespace SunEyeVision.Plugin.SDK.ViewModels
                     throw new InvalidOperationException("GetRunParameters() 返回 null");
                 }
 
-                // 异步执行
-                var result = await _runner.RunAsync(_tool, parameters, CurrentImage);
+                // 异步执行（图像通过 ResolvedInputImage 传入）
+                parameters.ResolvedInputImage = CurrentImage;
+                var result = await _runner.RunAsync(_tool, parameters);
 
                 stopwatch.Stop();
 

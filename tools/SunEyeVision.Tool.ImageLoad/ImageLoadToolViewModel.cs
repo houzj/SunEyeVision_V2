@@ -226,7 +226,7 @@ namespace SunEyeVision.Tool.ImageLoad
                 ToolStatus = "运行中";
                 StatusMessage = "正在载入图像...";
 
-                var result = _tool.Run(null, _parameters);
+                var result = _tool.Run(_parameters);
                 LastResult = result;
 
                 if (result.IsSuccess && result.OutputImage != null)

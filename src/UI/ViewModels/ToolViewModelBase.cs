@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -291,8 +291,8 @@ namespace SunEyeVision.UI.ViewModels
                     var paramType = prop.PropertyType;
                     var paramValue = value;
 
-                    // 检查是否标记为不显示
-                    var hasIgnoreDisplayAttr = prop.GetCustomAttribute<IgnoreDisplayAttribute>() != null;
+                    // 检查是否标记为不序列化（运行时属性，无需在参数设置中显示）
+                    var hasJsonIgnoreAttr = prop.GetCustomAttribute<System.Text.Json.Serialization.JsonIgnoreAttribute>() != null;
 
                     // 检查是否为图像类型
                     if (_imageDataSourceService != null && ImageDataSourceService.IsImageType(paramType))
@@ -308,7 +308,7 @@ namespace SunEyeVision.UI.ViewModels
                         settingVm.SettingChanged += OnSettingChanged;
                         ParameterSettings.Add(settingVm);
                     }
-                    else if (!hasIgnoreDisplayAttr)
+                    else if (!hasJsonIgnoreAttr)
                     {
                         // 创建普通参数设置
                         var settingVm = CreateStandardParamSetting(

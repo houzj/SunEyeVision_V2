@@ -1,6 +1,6 @@
-using SunEyeVision.Plugin.SDK.Models;
+﻿using SunEyeVision.Plugin.SDK.Models;
 
-namespace SunEyeVision.Tool.Threshold.Models
+namespace SunEyeVision.Tool.BlobAnalysis.Models
 {
     /// <summary>
     /// Blob 信息 - 单个连通域的高级特征数据
@@ -63,7 +63,18 @@ namespace SunEyeVision.Tool.Threshold.Models
             set => SetProperty(ref _rectangularity, value);
         }
 
-        /// <summary>外接矩形（辅助字段，不显示在DataGrid中）</summary>
+        /// <summary>外接矩形</summary>
         public OpenCvSharp.Rect BoundingBox { get; set; }
+
+        /// <summary>外接矩形文本（用于DataGrid显示）</summary>
+        public string BoundingRectText => $"{BoundingBox.Width}×{BoundingBox.Height}";
+
+        private bool _isFiltered = true;
+        /// <summary>是否通过筛选</summary>
+        public bool IsFiltered
+        {
+            get => _isFiltered;
+            set => SetProperty(ref _isFiltered, value);
+        }
     }
 }

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
-using OpenCvSharp;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Logging;
@@ -29,11 +28,11 @@ namespace SunEyeVision.Plugin.SDK.Core
     /// <code>
     /// var executor = new ToolExecutor(new ParameterResolver(), logger);
     /// 
-    /// // 执行工具
+    /// // 执行工具（图像通过 parameters.ResolvedInputImage 传入）
+    /// parameters.ResolvedInputImage = inputImage;
     /// var result = executor.Run&lt;CircleFindResult&gt;(
     ///     tool, 
     ///     parameters, 
-    ///     inputImage, 
     ///     bindings, 
     ///     context,
     ///     nodeName: "节点1");
@@ -60,8 +59,7 @@ namespace SunEyeVision.Plugin.SDK.Core
         /// </summary>
         /// <typeparam name="TResult">结果类型</typeparam>
         /// <param name="tool">工具实例</param>
-        /// <param name="parameters">参数</param>
-        /// <param name="inputImage">输入图像</param>
+        /// <param name="parameters">参数（图像通过 ResolvedInputImage 传入）</param>
         /// <param name="bindings">参数绑定列表（可选）</param>
         /// <param name="context">执行上下文（可选）</param>
         /// <param name="nodeName">节点名称（可选，用于日志来源）</param>
@@ -71,7 +69,6 @@ namespace SunEyeVision.Plugin.SDK.Core
         public TResult Run<TResult>(
             IToolPlugin tool,
             ToolParameters parameters,
-            Mat inputImage,
             IList<ParamSetting>? bindings = null,
             IDictionary<string, ToolResults>? context = null,
             string? nodeName = null,
@@ -109,9 +106,9 @@ namespace SunEyeVision.Plugin.SDK.Core
                     }
                 }
 
-                // 2. 执行工具
+                // 2. 执行工具（图像通过 parameters.ResolvedInputImage 获取）
                 parameters.LogInfo($"开始执行工具");
-                var result = tool.Run(inputImage, parameters);
+                var result = tool.Run(parameters);
 
                 stopwatch.Stop();
                 result.ExecutionTimeMs = stopwatch.ElapsedMilliseconds;
@@ -145,8 +142,7 @@ namespace SunEyeVision.Plugin.SDK.Core
         /// 执行工具（非泛型版本）
         /// </summary>
         /// <param name="tool">工具实例</param>
-        /// <param name="parameters">参数</param>
-        /// <param name="inputImage">输入图像</param>
+        /// <param name="parameters">参数（图像通过 ResolvedInputImage 传入）</param>
         /// <param name="bindings">参数绑定列表（可选）</param>
         /// <param name="context">执行上下文（可选）</param>
         /// <param name="nodeName">节点名称（可选，用于日志来源）</param>
@@ -156,7 +152,6 @@ namespace SunEyeVision.Plugin.SDK.Core
         public ToolResults Run(
             IToolPlugin tool,
             ToolParameters parameters,
-            Mat inputImage,
             IList<ParamSetting>? bindings = null,
             IDictionary<string, ToolResults>? context = null,
             string? nodeName = null,
@@ -193,9 +188,9 @@ namespace SunEyeVision.Plugin.SDK.Core
                     }
                 }
 
-                // 2. 执行工具
+                // 2. 执行工具（图像通过 parameters.ResolvedInputImage 获取）
                 parameters.LogInfo($"开始执行工具");
-                var result = tool.Run(inputImage, parameters);
+                var result = tool.Run(parameters);
 
                 stopwatch.Stop();
                 result.ExecutionTimeMs = stopwatch.ElapsedMilliseconds;
@@ -231,8 +226,7 @@ namespace SunEyeVision.Plugin.SDK.Core
         /// <typeparam name="TParams">参数类型</typeparam>
         /// <typeparam name="TResult">结果类型</typeparam>
         /// <param name="tool">工具实例</param>
-        /// <param name="parameters">参数</param>
-        /// <param name="inputImage">输入图像</param>
+        /// <param name="parameters">参数（图像通过 ResolvedInputImage 传入）</param>
         /// <param name="bindings">参数绑定列表（可选）</param>
         /// <param name="context">执行上下文（可选）</param>
         /// <param name="nodeName">节点名称（可选，用于日志来源）</param>
@@ -242,7 +236,6 @@ namespace SunEyeVision.Plugin.SDK.Core
         public TResult Run<TParams, TResult>(
             IToolPlugin<TParams, TResult> tool,
             TParams parameters,
-            Mat inputImage,
             IList<ParamSetting>? bindings = null,
             IDictionary<string, ToolResults>? context = null,
             string? nodeName = null,
@@ -281,9 +274,9 @@ namespace SunEyeVision.Plugin.SDK.Core
                     }
                 }
 
-                // 2. 执行工具
+                // 2. 执行工具（图像通过 parameters.ResolvedInputImage 获取）
                 parameters.LogInfo($"开始执行工具");
-                var result = tool.Run(inputImage, parameters);
+                var result = tool.Run(parameters);
 
                 stopwatch.Stop();
                 result.ExecutionTimeMs = stopwatch.ElapsedMilliseconds;

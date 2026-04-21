@@ -79,28 +79,24 @@ namespace SunEyeVision.Tool.Threshold
         /// 算法层使用：parameters.Threshold.Value
         /// 框架层使用：parameters.Threshold.BindingConfig
         /// </remarks>
-        [JsonPropertyOrder(0)]
         public ParamValue<int> Threshold { get; set; } =
             ParamValue<int>.CreateConstant(128, "Threshold");
 
         /// <summary>
         /// 超过阈值时使用的最大值(0-255)
         /// </summary>
-        [JsonPropertyOrder(1)]
         public ParamValue<int> MaxValue { get; set; } =
             ParamValue<int>.CreateConstant(255, "MaxValue");
 
         /// <summary>
         /// 二值化方法
         /// </summary>
-        [JsonPropertyOrder(2)]
         public ParamValue<ThresholdType> Type { get; set; } =
             ParamValue<ThresholdType>.CreateConstant(ThresholdType.Binary, "Type");
 
         /// <summary>
         /// 是否反转二值化结果
         /// </summary>
-        [JsonPropertyOrder(3)]
         public ParamValue<bool> Invert { get; set; } =
             ParamValue<bool>.CreateConstant(false, "Invert");
 
@@ -111,14 +107,12 @@ namespace SunEyeVision.Tool.Threshold
         /// <summary>
         /// 自适应阈值方法
         /// </summary>
-        [JsonPropertyOrder(4)]
         public ParamValue<AdaptiveMethod> AdaptiveMethod { get; set; } =
             ParamValue<AdaptiveMethod>.CreateConstant(SunEyeVision.Tool.Threshold.AdaptiveMethod.Mean, "AdaptiveMethod");
 
         /// <summary>
         /// 计算阈值的邻域大小(奇数, 3-31)
         /// </summary>
-        [JsonPropertyOrder(5)]
         public ParamValue<int> BlockSize { get; set; } =
             ParamValue<int>.CreateConstant(11, "BlockSize");
 
@@ -152,21 +146,18 @@ namespace SunEyeVision.Tool.Threshold
         /// <summary>
         /// 结果判断配置
         /// </summary>
-        [JsonPropertyOrder(20)]
         [JsonPropertyName("resultConfig")]
         public ThresholdResultConfig ResultConfig { get; set; } = new();
 
         /// <summary>
         /// 图像显示配置
         /// </summary>
-        [JsonPropertyOrder(21)]
         [JsonPropertyName("displayConfig")]
         public ThresholdDisplayConfig DisplayConfig { get; set; } = new();
 
         /// <summary>
         /// 文本显示配置
         /// </summary>
-        [JsonPropertyOrder(22)]
         [JsonPropertyName("textConfig")]
         public ThresholdTextConfig TextConfig { get; set; } = new();
 

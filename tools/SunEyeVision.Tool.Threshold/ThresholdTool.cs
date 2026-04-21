@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -196,54 +197,28 @@ namespace SunEyeVision.Tool.Threshold
                     parameters.LogInfo("已反转输出图像");
                 }
 
-                // 设置结果
+                // 设置参数回写
                 result.OutputImage = outputImage;
-                result.ThresholdUsed = (int)actualThreshold;
-                result.MaxValueUsed = (int)maxValue;
-                result.ThresholdUsedDouble = actualThreshold;
-                result.MaxValueUsedDouble = maxValue;
-
-                // 计算灰度直方图
-                var histogram = new Mat();
-                Cv2.CalcHist(
-                    new[] { grayImage },
-                    new[] { 0 },
-                    null,
-                    histogram,
-                    1,                                          // dims: 直方图维度
-                    new[] { 256 },                             // histSize: 每个维度的直方图大小
-                    new Rangef[] { new Rangef(0f, 256f) },    // ranges: 每个维度的范围
-                    true);                                      // accumulate: 是否累加
-
-                var histData = new double[256];
-                for (int i = 0; i < 256; i++)
-                    histData[i] = histogram.At<float>(i);
-                histogram.Dispose();
-                result.HistogramData = histData;
-
-                // 计算通道均值
-                if (image.Channels() >= 3)
-                {
-                    Cv2.MeanStdDev(image, out var means, out _);
-                    result.ChannelMeans = new double[] { means.Val0, means.Val1, means.Val2 };
-                }
-                else
-                {
-                    var mean = Cv2.Mean(grayImage);
-                    result.ChannelMeans = new double[] { mean.Val0 };
-                }
-
+                result.ThresholdUsed = actualThreshold;
+                result.MaxValueUsed = maxValue;
                 result.TypeUsed = type;
                 result.AdaptiveMethodUsed = adaptiveMethod;
                 result.BlockSizeUsed = blockSize;
-                result.InvertUsed = invert;
-                result.ProcessedAt = DateTime.Now;
+
+                // 设置输入图像信息
+                result.InputChannels = image.Channels();
+
+                // 计算统计结果
+                ComputeStatistics(result, outputImage, grayImage, image);
+
+                // 执行结果判断
+                EvaluateResult(result, parameters.ResultConfig);
 
                 stopwatch.Stop();
                 result.SetSuccess(stopwatch.ElapsedMilliseconds);
 
                 parameters.LogInfo($"阈值化处理完成: 使用阈值 {actualThreshold}, " +
-                                  $"类型 {type}, 耗时 {stopwatch.ElapsedMilliseconds}ms");
+                                  $"类型 {type}, 判断 {(result.IsPass ? "OK" : "NG")}, 耗时 {stopwatch.ElapsedMilliseconds}ms");
 
                 // 释放临时灰度图
                 if (grayImage != image)
@@ -298,6 +273,138 @@ namespace SunEyeVision.Tool.Threshold
                 ThresholdType.ToZeroInv => ThresholdTypes.TozeroInv,
                 _ => ThresholdTypes.Binary
             };
+        }
+
+        /// <summary>
+        /// 计算统计结果
+        /// </summary>
+        private void ComputeStatistics(ThresholdResults result, Mat outputImage, Mat grayImage, Mat inputImage)
+        {
+            // 白色像素数和比例
+            if (outputImage != null && !outputImage.Empty())
+            {
+                var whitePixelCount = Cv2.CountNonZero(outputImage);
+                var totalPixels = outputImage.Rows * outputImage.Cols;
+                result.WhitePixelCount = whitePixelCount;
+                result.WhitePixelRatio = totalPixels > 0 ? (double)whitePixelCount / totalPixels * 100 : 0;
+                result.OutputArea = whitePixelCount;
+
+                // 输出图像均值
+                var outputMean = Cv2.Mean(outputImage);
+                result.OutputMean = outputMean.Val0;
+
+                // 质心坐标
+                var moments = Cv2.Moments(outputImage);
+                if (moments.M00 > 0)
+                {
+                    result.CentroidX = moments.M10 / moments.M00;
+                    result.CentroidY = moments.M01 / moments.M00;
+                }
+            }
+
+            // 灰度直方图
+            var histogram = new Mat();
+            Cv2.CalcHist(
+                new[] { grayImage },
+                new[] { 0 },
+                null,
+                histogram,
+                1,
+                new[] { 256 },
+                new Rangef[] { new Rangef(0f, 256f) },
+                true);
+
+            var histData = new double[256];
+            for (int i = 0; i < 256; i++)
+                histData[i] = histogram.At<float>(i);
+            histogram.Dispose();
+            result.HistogramData = histData;
+
+            // 通道均值
+            if (inputImage.Channels() >= 3)
+            {
+                Cv2.MeanStdDev(inputImage, out var means, out _);
+                result.ChannelMeans = new double[] { means.Val0, means.Val1, means.Val2 };
+            }
+            else
+            {
+                var mean = Cv2.Mean(grayImage);
+                result.ChannelMeans = new double[] { mean.Val0 };
+            }
+        }
+
+        /// <summary>
+        /// 执行结果判断
+        /// </summary>
+        private void EvaluateResult(ThresholdResults result, Models.ThresholdResultConfig config)
+        {
+            if (config == null) return;
+
+            var failReasons = new List<string>();
+            var allPassed = true;
+
+            // 输出为空判断
+            if (config.IsEmptyCheckEnabled)
+            {
+                if (result.OutputImage == null || result.OutputImage.Empty())
+                {
+                    allPassed = false;
+                    failReasons.Add("输出图像为空");
+                }
+            }
+
+            // 白色像素比例判断
+            if (config.IsWhitePixelRatioCheckEnabled)
+            {
+                if (result.WhitePixelRatio < config.WhitePixelRatioMin || result.WhitePixelRatio > config.WhitePixelRatioMax)
+                {
+                    allPassed = false;
+                    failReasons.Add($"白色像素比例 {result.WhitePixelRatio:F1}% 不在范围 [{config.WhitePixelRatioMin}-{config.WhitePixelRatioMax}]");
+                }
+            }
+
+            // 输出均值判断
+            if (config.IsMeanCheckEnabled)
+            {
+                if (result.OutputMean < config.MeanMin || result.OutputMean > config.MeanMax)
+                {
+                    allPassed = false;
+                    failReasons.Add($"输出均值 {result.OutputMean:F1} 不在范围 [{config.MeanMin}-{config.MeanMax}]");
+                }
+            }
+
+            // 输出面积判断
+            if (config.IsAreaCheckEnabled)
+            {
+                if (result.OutputArea < config.AreaMin || result.OutputArea > config.AreaMax)
+                {
+                    allPassed = false;
+                    failReasons.Add($"输出面积 {result.OutputArea} 不在范围 [{config.AreaMin}-{config.AreaMax}]");
+                }
+            }
+
+            // 质心X判断
+            if (config.IsCentroidXCheckEnabled)
+            {
+                if (result.CentroidX < config.CentroidXMin || result.CentroidX > config.CentroidXMax)
+                {
+                    allPassed = false;
+                    failReasons.Add($"质心X {result.CentroidX:F1} 不在范围 [{config.CentroidXMin}-{config.CentroidXMax}]");
+                }
+            }
+
+            // 质心Y判断
+            if (config.IsCentroidYCheckEnabled)
+            {
+                if (result.CentroidY < config.CentroidYMin || result.CentroidY > config.CentroidYMax)
+                {
+                    allPassed = false;
+                    failReasons.Add($"质心Y {result.CentroidY:F1} 不在范围 [{config.CentroidYMin}-{config.CentroidYMax}]");
+                }
+            }
+
+            result.IsPass = allPassed;
+            result.FailReasons = failReasons;
         }
 
         #endregion

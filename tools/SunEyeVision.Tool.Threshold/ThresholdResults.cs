@@ -9,62 +9,47 @@ namespace SunEyeVision.Tool.Threshold
     /// <summary>
     /// 图像阈值化工具执行结果
     /// </summary>
-    public class ThresholdResults : ToolResults
+    public class ThresholdResults : ToolResults, IDisposable
     {
+        #region 输出图像
+
         /// <summary>
-        /// 输出图像（二值化后的图像）
+        /// 输出图像（阈值化结果）
         /// </summary>
         public Mat? OutputImage { get; set; }
 
-        /// <summary>
-        /// 实际使用的阈值
-        /// </summary>
-        public int ThresholdUsed { get; set; }
+        #endregion
+
+        #region 参数回写（实际使用的参数值）
 
         /// <summary>
-        /// 最大值
+        /// 实际使用的阈值（Otsu/Triangle 时自动计算得到）
         /// </summary>
-        public int MaxValueUsed { get; set; }
+        public double ThresholdUsed { get; set; }
 
         /// <summary>
-        /// 使用的阈值类型
+        /// 实际使用的最大值
+        /// </summary>
+        public double MaxValueUsed { get; set; }
+
+        /// <summary>
+        /// 实际使用的阈值模式
         /// </summary>
         public ThresholdType TypeUsed { get; set; }
 
         /// <summary>
-        /// 实际使用的阈值（Double 类型，用于参数绑定）
-        /// </summary>
-        public double ThresholdUsedDouble { get; set; }
-
-        /// <summary>
-        /// 最大值（Double 类型，用于参数绑定）
-        /// </summary>
-        public double MaxValueUsedDouble { get; set; }
-
-        /// <summary>
-        /// 灰度直方图数据（256个bin，值域0~1）
-        /// </summary>
-        public double[] HistogramData { get; set; } = Array.Empty<double>();
-
-        /// <summary>
-        /// 通道均值（BGR三通道或灰度单通道）
-        /// </summary>
-        public double[] ChannelMeans { get; set; } = Array.Empty<double>();
-
-        /// <summary>
-        /// 使用的自适应方法
+        /// 实际使用的自适应方法
         /// </summary>
         public AdaptiveMethod AdaptiveMethodUsed { get; set; }
 
         /// <summary>
-        /// 使用的块大小
+        /// 实际使用的块大小
         /// </summary>
         public int BlockSizeUsed { get; set; }
 
-        /// <summary>
-        /// 是否反转
-        /// </summary>
-        public bool InvertUsed { get; set; }
+        #endregion
+
+        #region 输入图像信息
 
         /// <summary>
         /// 输入图像尺寸
@@ -72,16 +57,112 @@ namespace SunEyeVision.Tool.Threshold
         public OpenCvSharp.Size InputSize { get; set; }
 
         /// <summary>
-        /// 处理时间戳
+        /// 输入图像通道数
         /// </summary>
-        public DateTime ProcessedAt { get; set; } = DateTime.Now;
+        public int InputChannels { get; set; }
+
+        #endregion
+
+        #region 统计结果
+
+        /// <summary>
+        /// 白色像素数
+        /// </summary>
+        public long WhitePixelCount { get; set; }
+
+        /// <summary>
+        /// 白色像素比例(0-100%)
+        /// </summary>
+        public double WhitePixelRatio { get; set; }
+
+        /// <summary>
+        /// 输出图像均值
+        /// </summary>
+        public double OutputMean { get; set; }
+
+        /// <summary>
+        /// 输出面积（=白色像素数）
+        /// </summary>
+        public long OutputArea { get; set; }
+
+        /// <summary>
+        /// 质心X坐标
+        /// </summary>
+        public double CentroidX { get; set; }
+
+        /// <summary>
+        /// 质心Y坐标
+        /// </summary>
+        public double CentroidY { get; set; }
+
+        #endregion
+
+        #region 分析数据
+
+        /// <summary>
+        /// 灰度直方图（256个bin，归一化0-1）
+        /// </summary>
+        public double[] HistogramData { get; set; } = Array.Empty<double>();
+
+        /// <summary>
+        /// 输入图像各通道均值
+        /// </summary>
+        public double[] ChannelMeans { get; set; } = Array.Empty<double>();
+
+        #endregion
+
+        #region 判断结果
+
+        /// <summary>
+        /// 是否通过所有判断条件
+        /// </summary>
+        public bool IsPass { get; set; } = true;
+
+        /// <summary>
+        /// 判断失败原因列表
+        /// </summary>
+        public List<string> FailReasons { get; set; } = new();
+
+        #endregion
+
+        #region IDisposable
+
+        private bool _disposed;
+
+        /// <summary>
+        /// 释放资源
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// 释放资源
+        /// </summary>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed) return;
+
+            if (disposing)
+            {
+                OutputImage?.Dispose();
+                OutputImage = null;
+            }
+
+            _disposed = true;
+        }
+
+        #endregion
+
+        #region 可视化与属性映射
 
         /// <summary>
         /// 获取可视化元素
         /// </summary>
         public override IEnumerable<VisualElement> GetVisualElements()
         {
-            // 在图像左上角添加阈值参数信息标注
             if (InputSize.Width > 0 && InputSize.Height > 0)
             {
                 // 背景矩形（半透明黑色）
@@ -94,17 +175,19 @@ namespace SunEyeVision.Tool.Threshold
 
                 // 阈值信息文本（白色）
                 yield return VisualElement.Text(
-                    text: $"阈值: {ThresholdUsed:F0}  最大值: {MaxValueUsed}",
+                    text: $"阈值: {ThresholdUsed:F0}  最大值: {MaxValueUsed:F0}",
                     position: new OpenCvSharp.Point2d(10, 22),
                     color: 0xFFFFFFFF,
                     fontSize: 12.0
                 );
 
-                // 阈值类型（绿色）
+                // 阈值类型与判断结果（绿色/红色）
+                var resultColor = IsPass ? 0xFF00FF00 : 0xFF0000FF;
+                var resultText = IsPass ? "OK" : "NG";
                 yield return VisualElement.Text(
-                    text: $"类型: {TypeUsed}",
+                    text: $"类型: {TypeUsed}  {resultText}",
                     position: new OpenCvSharp.Point2d(10, 42),
-                    color: 0xFF00FF00,
+                    color: resultColor,
                     fontSize: 11.0
                 );
             }
@@ -118,18 +201,23 @@ namespace SunEyeVision.Tool.Threshold
             return
             [
                 new("OutputImage",          "输出图像",               null),
-                new("ThresholdUsed",        "实际使用的阈值",         "结果"),
-                new("MaxValueUsed",         "最大值",                 "结果"),
-                new("ThresholdUsedDouble",  "实际使用的阈值(Double)",  "结果"),
-                new("MaxValueUsedDouble",   "最大值(Double)",          "结果"),
-                new("HistogramData",        "直方图数据",              "统计"),
-                new("ChannelMeans",         "通道均值",                "统计"),
-                new("TypeUsed",             "阈值类型",               "结果"),
-                new("AdaptiveMethodUsed",   "自适应方法",             "结果"),
-                new("BlockSizeUsed",        "块大小",                 "结果"),
-                new("InvertUsed",           "是否反转",               "结果"),
-                new("InputSize",            "输入图像尺寸",           "结果"),
-                new("ProcessedAt",          "处理时间戳",             "执行信息"),
+                new("ThresholdUsed",        "实际使用的阈值",         "参数回写"),
+                new("MaxValueUsed",         "实际使用的最大值",       "参数回写"),
+                new("TypeUsed",             "阈值类型",               "参数回写"),
+                new("AdaptiveMethodUsed",   "自适应方法",             "参数回写"),
+                new("BlockSizeUsed",        "块大小",                 "参数回写"),
+                new("InputSize",            "输入图像尺寸",           "输入信息"),
+                new("InputChannels",        "输入图像通道数",         "输入信息"),
+                new("WhitePixelCount",      "白色像素数",             "统计"),
+                new("WhitePixelRatio",      "白色像素比例(%)",        "统计"),
+                new("OutputMean",           "输出图像均值",           "统计"),
+                new("OutputArea",           "输出面积",               "统计"),
+                new("CentroidX",            "质心X坐标",             "统计"),
+                new("CentroidY",            "质心Y坐标",             "统计"),
+                new("HistogramData",        "直方图数据",             "分析"),
+                new("ChannelMeans",         "通道均值",               "分析"),
+                new("IsPass",               "是否通过",               "判断"),
+                new("FailReasons",          "失败原因",               "判断"),
             ];
         }
 
@@ -144,9 +232,19 @@ namespace SunEyeVision.Tool.Threshold
             dict["TypeUsed"] = TypeUsed.ToString();
             dict["AdaptiveMethodUsed"] = AdaptiveMethodUsed.ToString();
             dict["BlockSizeUsed"] = BlockSizeUsed;
-            dict["InvertUsed"] = InvertUsed;
-            dict["ProcessedAt"] = ProcessedAt;
+            dict["InputChannels"] = InputChannels;
+            dict["WhitePixelCount"] = WhitePixelCount;
+            dict["WhitePixelRatio"] = WhitePixelRatio;
+            dict["OutputMean"] = OutputMean;
+            dict["OutputArea"] = OutputArea;
+            dict["CentroidX"] = CentroidX;
+            dict["CentroidY"] = CentroidY;
+            dict["IsPass"] = IsPass;
+            if (FailReasons.Count > 0)
+                dict["FailReasons"] = string.Join("; ", FailReasons);
             return dict;
         }
+
+        #endregion
     }
 }

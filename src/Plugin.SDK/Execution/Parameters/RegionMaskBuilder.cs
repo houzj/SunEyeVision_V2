@@ -25,11 +25,11 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         }
 
         /// <summary>
-        /// 获取构建的掩码
+        /// 获取构建的掩码（返回克隆副本，调用者负责释放）
         /// </summary>
         public Mat GetMask()
         {
-            return _mask;
+            return _mask.Clone();
         }
 
         /// <summary>

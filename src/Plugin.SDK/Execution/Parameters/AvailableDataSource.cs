@@ -15,6 +15,12 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     /// 2. 支持类型过滤
     /// 3. 支持分组显示
     /// 
+    /// 设计分层：
+    /// - 身份层（SourceNodeId + PropertyName）：构造后不可变，用于唯一标识一个数据源，
+    ///   相等比较基于此二层，确保 WPF 控件能正确匹配选中项
+    /// - 展示层（SourceNodeName, DisplayName 等）：UI 显示辅助
+    /// - 状态层（CurrentValue, HasExecuted 等）：随执行变化
+    /// 
     /// 使用示例：
     /// <code>
     /// // 获取可用数据源列表
@@ -27,12 +33,12 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     /// }
     /// </code>
     /// </remarks>
-    public class AvailableDataSource
+    public class AvailableDataSource : IEquatable<AvailableDataSource>
     {
         /// <summary>
-        /// 源节点ID
+        /// 源节点ID（身份字段，构造后不可变）
         /// </summary>
-        public string SourceNodeId { get; set; } = string.Empty;
+        public string SourceNodeId { get; init; } = string.Empty;
 
         /// <summary>
         /// 源节点名称
@@ -45,13 +51,13 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         public string? SourceNodeType { get; set; }
 
         /// <summary>
-        /// 属性名称
+        /// 属性名称（身份字段，构造后不可变）
         /// </summary>
         /// <remarks>
         /// 结果对象中的属性路径。
         /// 示例: "Radius", "Center.X", "CircleFound.Radius"
         /// </remarks>
-        public string PropertyName { get; set; } = string.Empty;
+        public string PropertyName { get; init; } = string.Empty;
 
         /// <summary>
         /// 显示名称
@@ -245,6 +251,52 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 CurrentValue = currentValue
             };
         }
+
+        #region 值相等（基于身份字段）
+
+        /// <summary>
+        /// 基于身份字段（SourceNodeId + PropertyName）判断值相等
+        /// </summary>
+        /// <remarks>
+        /// 不同创建点产生的 AvailableDataSource 实例可能引用不同，但身份相同（同一个数据源）。
+        /// WPF 控件（如 ListBox.SelectedItem）依赖 Equals 匹配选中项，
+        /// 实现值相等确保跨创建点的实例能被正确匹配。
+        /// </remarks>
+        public bool Equals(AvailableDataSource? other)
+        {
+            if (other is null) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return SourceNodeId == other.SourceNodeId
+                && PropertyName == other.PropertyName;
+        }
+
+        /// <summary>
+        /// 基于身份字段判断值相等
+        /// </summary>
+        public override bool Equals(object? obj) => Equals(obj as AvailableDataSource);
+
+        /// <summary>
+        /// 基于身份字段计算哈希值
+        /// </summary>
+        /// <remarks>
+        /// 身份字段（SourceNodeId、PropertyName）使用 init setter，构造后不可变，
+        /// 因此 GetHashCode 在对象生命周期内保持稳定，可安全用于字典和集合。
+        /// </remarks>
+        public override int GetHashCode() => HashCode.Combine(SourceNodeId, PropertyName);
+
+        /// <summary>
+        /// 相等运算符
+        /// </summary>
+        public static bool operator ==(AvailableDataSource? left, AvailableDataSource? right)
+            => left?.Equals(right) ?? right is null;
+
+        /// <summary>
+        /// 不等运算符
+        /// </summary>
+        public static bool operator !=(AvailableDataSource? left, AvailableDataSource? right)
+            => !(left == right);
+
+        #endregion
     }
 
     /// <summary>

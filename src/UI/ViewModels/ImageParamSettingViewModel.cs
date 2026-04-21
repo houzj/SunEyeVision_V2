@@ -354,9 +354,7 @@ namespace SunEyeVision.UI.ViewModels
                 // 如果当前选中的数据源不在列表中，清除选择
                 if (SelectedImageDataSource != null)
                 {
-                    var stillExists = ImageDataSources.Any(ds =>
-                        ds.SourceNodeId == SelectedImageDataSource.SourceNodeId &&
-                        ds.PropertyName == SelectedImageDataSource.PropertyName);
+                    var stillExists = ImageDataSources.Contains(SelectedImageDataSource);
 
                     if (!stillExists)
                     {

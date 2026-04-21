@@ -1983,6 +1983,9 @@ SplitterPosition = position;
                 var command = new AppCommands.AddConnectionCommand(connections, connection);
                 WorkflowTabViewModel.SelectedTab.CommandManager.Execute(command);
             }
+
+            // 连线建立后自动绑定 ImageSource（所见即所得）
+            AutoBindImageSourceOnConnectionAdded(connection);
         }
 
         /// <summary>
@@ -2000,8 +2003,142 @@ SplitterPosition = position;
             var targetNode = WorkflowTabViewModel.SelectedTab.WorkflowNodes.FirstOrDefault(n => n.Id == connection.TargetNodeId);
             AddLog($"⛓️ 删除连接: {sourceNode?.Name ?? connection.SourceNodeId} → {targetNode?.Name ?? connection.TargetNodeId}");
 
+            // 删除前记录目标节点引用（删除后连接集合会变更）
+            var targetNodeRef = targetNode as WorkflowNodeBase;
+
             var command = new AppCommands.DeleteConnectionCommand(WorkflowTabViewModel.SelectedTab.WorkflowConnections, connection);
             WorkflowTabViewModel.SelectedTab.CommandManager.Execute(command);
+
+            // 连线删除后自动回退 ImageSource
+            AutoBindImageSourceOnConnectionRemoved(connection.SourceNodeId, targetNodeRef);
+        }
+
+        /// <summary>
+        /// 连线建立后自动绑定 ImageSource — 确保所见即所得
+        /// </summary>
+        /// <remarks>
+        /// 核心逻辑：如果目标节点的 ImageSource 为 null（从未手动选过），
+        /// 则自动设置为当前所有上游节点中第一个 Mat 类型的 AvailableDataSource。
+        /// 这样不打开调试窗口时执行路径和打开调试窗口时显示路径始终一致。
+        /// </remarks>
+        private void AutoBindImageSourceOnConnectionAdded(WorkflowConnection connection)
+        {
+            if (WorkflowTabViewModel.SelectedTab == null) return;
+
+            var targetNode = WorkflowTabViewModel.SelectedTab.WorkflowNodes
+                .FirstOrDefault(n => n.Id == connection.TargetNodeId) as WorkflowNodeBase;
+            if (targetNode?.Parameters == null) return;
+
+            // 检查参数是否有 ImageSource 属性
+            var imageSourceProp = targetNode.Parameters.GetType().GetProperty("ImageSource");
+            if (imageSourceProp == null) return;
+
+            // 如果 ImageSource 已有值（用户手动选过），不覆盖
+            var currentImageSource = imageSourceProp.GetValue(targetNode.Parameters) as AvailableDataSource;
+            if (currentImageSource != null) return;
+
+            // 查找第一个 Mat 类型的上游数据源
+            var firstMatSource = FindFirstMatDataSource(
+                connection.TargetNodeId,
+                WorkflowTabViewModel.SelectedTab.WorkflowConnections);
+
+            if (firstMatSource != null)
+            {
+                imageSourceProp.SetValue(targetNode.Parameters, firstMatSource);
+                AddLog($"自动绑定图像源: {targetNode.Name} → {firstMatSource.DropdownDisplayText}");
+            }
+        }
+
+        /// <summary>
+        /// 连线删除后自动回退 ImageSource — 确保所见即所得
+        /// </summary>
+        /// <remarks>
+        /// 核心逻辑：如果当前 ImageSource 指向被删的源节点，
+        /// 则自动回退到剩余上游的第一个 Mat 输出，无上游则清空。
+        /// </remarks>
+        private void AutoBindImageSourceOnConnectionRemoved(
+            string removedSourceNodeId,
+            WorkflowNodeBase? targetNode)
+        {
+            if (targetNode?.Parameters == null) return;
+
+            // 检查参数是否有 ImageSource 属性
+            var imageSourceProp = targetNode.Parameters.GetType().GetProperty("ImageSource");
+            if (imageSourceProp == null) return;
+
+            // 如果当前 ImageSource 不是指向被删的源节点，不需要处理
+            var currentImageSource = imageSourceProp.GetValue(targetNode.Parameters) as AvailableDataSource;
+            if (currentImageSource?.SourceNodeId != removedSourceNodeId) return;
+
+            // 查找剩余上游的第一个 Mat 输出
+            if (WorkflowTabViewModel.SelectedTab == null) return;
+
+            var firstMatSource = FindFirstMatDataSource(
+                targetNode.Id,
+                WorkflowTabViewModel.SelectedTab.WorkflowConnections);
+
+            // 有则回退，无则清空
+            imageSourceProp.SetValue(targetNode.Parameters, firstMatSource);
+
+            if (firstMatSource != null)
+            {
+                AddLog($"图像源自动回退: {targetNode.Name} → {firstMatSource.DropdownDisplayText}");
+            }
+            else
+            {
+                AddLog($"图像源已清空: {targetNode.Name}（无可用上游）");
+            }
+        }
+
+        /// <summary>
+        /// 从所有上游节点中查找第一个 Mat 类型的 AvailableDataSource
+        /// </summary>
+        /// <remarks>
+        /// 与 ImageSourceSelector 的下拉列表过滤逻辑一致：
+        /// 只返回 PropertyType.Name == "Mat" 的数据源。
+        /// </remarks>
+        private AvailableDataSource? FindFirstMatDataSource(
+            string targetNodeId,
+            ObservableCollection<WorkflowConnection> connections)
+        {
+            if (WorkflowTabViewModel.SelectedTab == null) return null;
+
+            var metadataProvider = new PropertyMetadataProviderAdapter();
+            var nodes = WorkflowTabViewModel.SelectedTab.WorkflowNodes;
+
+            // 按连接顺序遍历所有上游节点
+            var parentConnections = connections
+                .Where(c => c.TargetNodeId == targetNodeId)
+                .ToList();
+
+            foreach (var conn in parentConnections)
+            {
+                var sourceNode = nodes.FirstOrDefault(n => n.Id == conn.SourceNodeId) as WorkflowNodeBase;
+                if (sourceNode == null) continue;
+
+                // 通过 PropertyMetadataProvider 获取源节点的所有输出属性元数据
+                var metadataList = metadataProvider.GetAllPropertyMetadata(sourceNode.ToolType);
+                if (metadataList == null) continue;
+
+                // 找第一个 Mat 类型的属性（与 ImageSourceSelector 的过滤逻辑一致）
+                var matMetadata = metadataList.FirstOrDefault(m =>
+                    m.PropertyType?.Name == "Mat");
+
+                if (matMetadata != null)
+                {
+                    return new AvailableDataSource
+                    {
+                        SourceNodeId = sourceNode.Id,
+                        SourceNodeName = sourceNode.Name,
+                        SourceNodeType = sourceNode.ToolType,
+                        PropertyName = matMetadata.PropertyName,
+                        DisplayName = matMetadata.DisplayName,
+                        PropertyType = matMetadata.PropertyType,
+                    };
+                }
+            }
+
+            return null;
         }
 
         /// <summary>

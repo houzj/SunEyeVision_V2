@@ -494,7 +494,7 @@ namespace SunEyeVision.UI.ViewModels
 
                 // 如果当前选中的数据源不在列表中，清除选择
                 if (SelectedDataSource != null &&
-                    !AvailableDataSources.Any(ds => ds.GetBindingPath() == SelectedDataSource.GetBindingPath()))
+                    !AvailableDataSources.Contains(SelectedDataSource))
                 {
                     SelectedDataSource = null;
                 }

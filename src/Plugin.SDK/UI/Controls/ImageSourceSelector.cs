@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -56,6 +59,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             DependencyProperty.Register(nameof(SelectorWidth), typeof(double), typeof(ImageSourceSelector),
                 new PropertyMetadata(200.0));
 
+        public static readonly DependencyProperty FilteredImageSourcesProperty =
+            DependencyProperty.Register(nameof(FilteredImageSources), typeof(ObservableCollection<AvailableDataSource>), typeof(ImageSourceSelector),
+                new PropertyMetadata(null));
+
         #endregion
 
         #region 属性
@@ -96,6 +103,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             set => SetValue(SelectorWidthProperty, value);
         }
 
+        /// <summary>
+        /// 过滤后的图像源集合（仅包含 Mat 类型的数据源，供 ListBox 绑定）
+        /// </summary>
+        public ObservableCollection<AvailableDataSource> FilteredImageSources
+        {
+            get => (ObservableCollection<AvailableDataSource>)GetValue(FilteredImageSourcesProperty);
+            set => SetValue(FilteredImageSourcesProperty, value);
+        }
+
         #endregion
 
         #region 事件
@@ -120,6 +136,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         private Button _selectorButton = null!;
         private Popup _popup = null!;
         private ListBox _imageSourceList = null!;
+        private ObservableCollection<AvailableDataSource>? _currentDataSources;
 
         #endregion
 
@@ -136,6 +153,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
             _selectorButton.Click += OnSelectorButtonClick;
             _imageSourceList.SelectionChanged += OnImageSourceListSelectionChanged;
+
+            // 初始化过滤集合
+            FilteredImageSources = new ObservableCollection<AvailableDataSource>();
+
+            // 监听 AvailableDataSources 集合变化
+            AttachCollectionListener();
+
+            // 立即重建过滤列表（处理 AvailableDataSources 在模板应用前已设置的情况）
+            RebuildFilteredList();
         }
 
         private void OnSelectorButtonClick(object sender, RoutedEventArgs e)
@@ -155,34 +181,118 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         private static void OnSelectedDataSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            // 显示文本更新由Template绑定处理
+            if (d is ImageSourceSelector selector)
+            {
+                selector.SyncSelectionWithFilteredList();
+            }
         }
 
         private static void OnAvailableDataSourcesChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is ImageSourceSelector selector)
             {
-
-                // 如果当前选中的源不在新列表中，清除选择
-                if (selector.SelectedDataSource != null && selector.AvailableDataSources != null)
+                // 取消旧集合的监听
+                if (e.OldValue is ObservableCollection<AvailableDataSource> oldCollection)
                 {
-                    bool found = false;
-                    foreach (var source in selector.AvailableDataSources)
-                    {
-                        // 精确匹配数据源（基于节点ID和属性名称）
-                        if (source.SourceNodeId == selector.SelectedDataSource.SourceNodeId &&
-                            source.PropertyName == selector.SelectedDataSource.PropertyName)
-                        {
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (!found)
-                    {
-                        selector.SelectedDataSource = null;
-                    }
+                    oldCollection.CollectionChanged -= selector.OnAvailableDataSourcesCollectionChanged;
+                    selector._currentDataSources = null;
                 }
+
+                // 保存新集合引用并监听
+                selector.AttachCollectionListener();
+
+                // 重建过滤列表
+                selector.RebuildFilteredList();
             }
+        }
+
+        /// <summary>
+        /// 监听 AvailableDataSources 集合的 CollectionChanged 事件
+        /// </summary>
+        private void AttachCollectionListener()
+        {
+            // 先取消旧监听
+            if (_currentDataSources != null)
+            {
+                _currentDataSources.CollectionChanged -= OnAvailableDataSourcesCollectionChanged;
+            }
+
+            _currentDataSources = AvailableDataSources;
+
+            if (_currentDataSources != null)
+            {
+                _currentDataSources.CollectionChanged += OnAvailableDataSourcesCollectionChanged;
+            }
+        }
+
+        private void OnAvailableDataSourcesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            RebuildFilteredList();
+        }
+
+        /// <summary>
+        /// 从 AvailableDataSources 中筛选 Mat 类型的数据源，重建 FilteredImageSources
+        /// </summary>
+        private void RebuildFilteredList()
+        {
+            if (FilteredImageSources == null)
+                return;
+
+            // 使用名称匹配过滤 Mat 类型的数据源
+            // 与之前 XAML DataTrigger (PropertyType.Name=="Mat") 行为一致，比精确类型匹配更健壮
+            var filtered = AvailableDataSources != null
+                ? AvailableDataSources.Where(ds => ds.PropertyType?.Name == "Mat").ToList()
+                : new List<AvailableDataSource>();
+
+            FilteredImageSources.Clear();
+            foreach (var source in filtered)
+            {
+                FilteredImageSources.Add(source);
+            }
+
+            // 同步选中项引用
+            SyncSelectionWithFilteredList();
+        }
+
+        /// <summary>
+        /// 同步选中项引用：确保 SelectedDataSource 指向 FilteredImageSources 中的实例
+        /// </summary>
+        /// <remarks>
+        /// ViewModel 绑定可能推来一个旧引用（与 FilteredImageSources 中的实例身份相同但引用不同），
+        /// ListBox 无法匹配旧引用，导致选中项为空。此方法将旧引用替换为 FilteredImageSources 中的匹配实例。
+        /// 
+        /// 依赖 AvailableDataSource 实现了基于身份的值相等（IEquatable），
+        /// FilteredImageSources.Contains() 能正确匹配。
+        /// </remarks>
+        private void SyncSelectionWithFilteredList()
+        {
+            if (FilteredImageSources == null || FilteredImageSources.Count == 0)
+                return;
+
+            // 没有选中项，自动选中第一个
+            if (SelectedDataSource == null)
+            {
+                SetCurrentValue(SelectedDataSourceProperty, FilteredImageSources[0]);
+                PluginLogger.Info(
+                    $"图像源自动选中: {FilteredImageSources[0].DropdownDisplayText}",
+                    "ImageSourceSelector");
+                return;
+            }
+
+            // 如果已在列表中（引用相同或值相等），确保引用指向列表中的实例
+            if (FilteredImageSources.Contains(SelectedDataSource))
+            {
+                var match = FilteredImageSources.First(ds => ds.Equals(SelectedDataSource));
+                if (!ReferenceEquals(match, SelectedDataSource))
+                {
+                    SetCurrentValue(SelectedDataSourceProperty, match);
+                }
+                return;
+            }
+
+            // 不在列表中（数据源已移除），回退到第一个或清空
+            SetCurrentValue(SelectedDataSourceProperty,
+                FilteredImageSources.Count > 0 ? FilteredImageSources[0] : null);
         }
     }
 }

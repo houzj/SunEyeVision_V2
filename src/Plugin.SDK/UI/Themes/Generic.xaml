@@ -327,8 +327,8 @@
                                         <!-- 图像源列表 -->
                                         <ListBox x:Name="PART_ImageSourceList"
                                                  Grid.Row="1"
-                                                 ItemsSource="{Binding AvailableDataSources, RelativeSource={RelativeSource TemplatedParent}}"
-                                                 SelectedItem="{Binding SelectedDataSource, RelativeSource={RelativeSource TemplatedParent}, Mode=OneWayToSource}"
+                                                 ItemsSource="{Binding FilteredImageSources, RelativeSource={RelativeSource TemplatedParent}}"
+                                                 SelectedItem="{Binding SelectedDataSource, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                                                  BorderThickness="0"
                                                  MaxHeight="250"
                                                  ScrollViewer.HorizontalScrollBarVisibility="Disabled">
@@ -347,13 +347,7 @@
                                                     <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                                                     <Setter Property="Padding" Value="0"/>
                                                     <Setter Property="BorderThickness" Value="0"/>
-                                                    <!-- 默认隐藏所有项 -->
-                                                    <Setter Property="Visibility" Value="Collapsed"/>
                                                     <Style.Triggers>
-                                                        <!-- 图像类型的数据源显示 -->
-                                                        <DataTrigger Binding="{Binding PropertyType.Name}" Value="Mat">
-                                                            <Setter Property="Visibility" Value="Visible"/>
-                                                        </DataTrigger>
                                                         <Trigger Property="IsMouseOver" Value="True">
                                                             <Setter Property="Background" Value="#F0F7FF"/>
                                                         </Trigger>

@@ -368,7 +368,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                 // 选中状态增加边框宽度
                 if (region.IsSelected)
                 {
-                                strokeThickness += 1;
+                                strokeThickness = RegionEditorSettings.Default.SelectedStrokeThickness;
                 }
 
                 Shape shape = null;

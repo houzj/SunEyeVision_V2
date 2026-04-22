@@ -49,7 +49,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
 
             var strokeColorArgb = isSelected ? 0xFFFF0000 : shape.StrokeColorArgb;
             var strokeColor = new SolidColorBrush(ConvertArgbToColor(strokeColorArgb));
-            var strokeThickness = isSelected ? 3 : shape.StrokeThickness;
+            var strokeThickness = isSelected ? RegionEditorSettings.Default.SelectedStrokeThickness : shape.StrokeThickness;
 
             Shape result = null;
 

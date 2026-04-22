@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Media;
@@ -147,7 +147,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
         /// <summary>
         /// 边框厚度
         /// </summary>
-        public double StrokeThickness { get; set; } = 2;
+        public double StrokeThickness { get; set; } = RegionEditorSettings.Default.DefaultStrokeThickness;
 
         /// <summary>
         /// 透明度 (0-1)
@@ -292,7 +292,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
         /// <summary>
         /// 手柄大小
         /// </summary>
-        public double HandleSize { get; set; } = 12;
+        public double HandleSize { get; set; } = 60;
 
         /// <summary>
         /// 选中区域的高亮颜色

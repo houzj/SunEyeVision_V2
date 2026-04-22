@@ -44,7 +44,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
         public Point Position { get; set; }
         public Rect Bounds { get; set; }
         public Cursor Cursor { get; set; } = Cursors.Arrow;
-        public double HandleSize { get; set; } = 12;
+        public double HandleSize { get; set; } = 60;
     }
 
     /// <summary>
@@ -52,7 +52,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
     /// </summary>
     public class HandleRenderer
     {
-        private const double DefaultHandleSize = 12;
+        private const double DefaultHandleSize = 60;
 
         /// <summary>
         /// 创建矩形手柄（参考ROI编辑器CreateRectangleHandles 1071-1097行）
@@ -322,8 +322,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                     {
                         Width = handle.HandleSize,
                         Height = handle.HandleSize,
-                        Fill = Brushes.LightGreen,
-                        Stroke = Brushes.Green,
+                        Fill = Brushes.Orange,
+                        Stroke = Brushes.DarkOrange,
                         StrokeThickness = 1.5,
                         Tag = HandleTag
                     };
@@ -335,8 +335,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                     {
                         Width = handle.HandleSize,
                         Height = handle.HandleSize,
-                        Fill = Brushes.White,
-                        Stroke = Brushes.Blue,
+                        Fill = Brushes.Orange,
+                        Stroke = Brushes.DarkOrange,
                         StrokeThickness = 1.5,
                         Tag = HandleTag
                     };
@@ -348,8 +348,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                     {
                         Width = handle.HandleSize,
                         Height = handle.HandleSize,
-                        Fill = Brushes.White,
-                        Stroke = Brushes.Blue,
+                        Fill = Brushes.Orange,
+                        Stroke = Brushes.DarkOrange,
                         StrokeThickness = 1.5,
                         Tag = HandleTag
                     };
@@ -423,7 +423,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
         /// <summary>
         /// 命中测试（参考ROI编辑器HitTestHandle 1023-1045行）
         /// </summary>
-        public static HandleType HitTestHandle(Point point, EditHandle[] handles, double tolerance = 8)
+        public static HandleType HitTestHandle(Point point, EditHandle[] handles, double tolerance = 0)
         {
             foreach (var handle in handles)
             {

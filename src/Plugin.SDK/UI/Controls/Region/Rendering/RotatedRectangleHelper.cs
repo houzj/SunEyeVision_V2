@@ -160,7 +160,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                 X2 = topCenter.X,
                 Y2 = topCenter.Y,
                 Stroke = strokeBrush,
-                StrokeThickness = 2,
+                StrokeThickness = 15,
                 Tag = DirectionArrowTag
             };
             canvas.Children.Add(arrowLine);
@@ -199,7 +199,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                 X2 = leftX,
                 Y2 = leftY,
                 Stroke = strokeBrush,
-                StrokeThickness = 2,
+                StrokeThickness = 15,
                 Tag = DirectionArrowTag
             };
             canvas.Children.Add(leftWing);
@@ -211,7 +211,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                 X2 = rightX,
                 Y2 = rightY,
                 Stroke = strokeBrush,
-                StrokeThickness = 2,
+                StrokeThickness = 15,
                 Tag = DirectionArrowTag
             };
             canvas.Children.Add(rightWing);
@@ -224,7 +224,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
         {
             // 先绘制方向箭头
             var arrow = GetDirectionArrow(center, height, rotation);
-            DrawDirectionArrow(canvas, arrow.Start, arrow.End, Brushes.Blue);
+            DrawDirectionArrow(canvas, arrow.Start, arrow.End, new SolidColorBrush(Color.FromRgb(0, 0, 255)));
 
             // 绘制从下边中点到旋转手柄的连接线（虚线）
             var angleRad = rotation * Math.PI / 180;

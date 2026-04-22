@@ -69,8 +69,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
         private double _startAngle = 0;
         private double _endAngle = 0;
         private uint _fillColorArgb = 0x00000000;  // 完全透明
-        private uint _strokeColorArgb = 0xFF0078D7; // 蓝色
-        private double _strokeThickness = 2;
+        private uint _strokeColorArgb = 0xFF0000FF; // 蓝色 RGB(0,0,255)
+        private double _strokeThickness = RegionEditorSettings.Default.DefaultStrokeThickness;
         private double _opacity = 0.3;
 
         #endregion

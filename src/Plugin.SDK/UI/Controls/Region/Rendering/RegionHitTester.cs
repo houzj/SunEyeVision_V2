@@ -20,7 +20,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
         /// <summary>
         /// 默认手柄大小（像素）
         /// </summary>
-        public const double DefaultHandleSize = 12.0;
+        public const double DefaultHandleSize = 60.0;
 
         /// <summary>
         /// 测试点击位置命中的区域

@@ -13,14 +13,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
         private double _labelFontSize = 12;
         private Color _labelForeground = Colors.Blue;
         private Color _labelBackground = Color.FromArgb(180, 255, 255, 255);
-        private double _defaultStrokeThickness = 2;
-        private double _selectedStrokeThickness = 3;
+        private double _defaultStrokeThickness = 15;
+        private double _selectedStrokeThickness = 16;
         private string _labelFontFamily = "Microsoft YaHei";
         private bool _showLabelOnPreview = true;
         private bool _showLabelOnEdit = true;
         private double _labelOffset = 8;
-        private double _handleSize = 12;
-        private double _hitTolerance = 8;
+        private double _handleSize = 60;
+        private double _hitTolerance = 0;
         private Color _selectionColor = Colors.Blue;
         private Color _previewColor = Colors.Red;
         private double _previewOpacity = 0.3;
@@ -201,9 +201,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
             return new RegionEditorSettings
             {
                 LabelFontSize = 14,
-                DefaultStrokeThickness = 3,
-                SelectedStrokeThickness = 4,
-                HandleSize = 14,
+                DefaultStrokeThickness = 15,
+                SelectedStrokeThickness = 16,
+                HandleSize = 70,
                 SelectionColor = Colors.Cyan,
                 PreviewColor = Colors.Magenta
             };
@@ -217,8 +217,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
             return new RegionEditorSettings
             {
                 LabelFontSize = 10,
-                DefaultStrokeThickness = 1,
-                SelectedStrokeThickness = 2,
+                DefaultStrokeThickness = 10,
+                SelectedStrokeThickness = 11,
                 HandleSize = 8,
                 LabelOffset = 4
             };

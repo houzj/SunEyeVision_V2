@@ -93,10 +93,11 @@
             </Button>
 
             <!-- 矩形 -->
-            <Button Style="{StaticResource ShapeButtonStyle}"
+            <Button Style="{StaticResource ShapeButtonStyle }"
                                 ToolTip="矩形 (R)"
                                 Click="OnRectangleButtonClick"
-                                x:Name="RectangleButton">
+                                x:Name="RectangleButton"
+                    Visibility="Collapsed">
               <Grid>
                 <Rectangle Width="22" Height="22"
                                            Stroke="{StaticResource ShapeIconBrush}"
@@ -142,9 +143,9 @@
                                 Click="OnLineButtonClick"
                                 x:Name="LineButton">
               <Grid>
-                <Line X1="4" Y1="22" X2="22" Y2="4"
+                <Line X1="0" Y1="20" X2="20" Y2="0"
                                       Stroke="{StaticResource ShapeIconBrush}"
-                                      StrokeThickness="2"/>
+                                      StrokeThickness="2" Height="20" VerticalAlignment="Top"/>
               </Grid>
             </Button>
           </UniformGrid>

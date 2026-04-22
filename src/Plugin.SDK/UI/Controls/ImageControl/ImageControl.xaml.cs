@@ -9,6 +9,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Logging;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls
 {
@@ -163,12 +164,19 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             get => _zoom;
             set
             {
+                var oldZoom = _zoom;
                 value = Math.Max(_minZoom, Math.Min(_maxZoom, value));
                 if (SetProperty(ref _zoom, value))
                 {
+                    // ★ 关键诊断：仅当缩放值实际变化时记录（低频）
+                    VisionLogger.Instance.Log(LogLevel.Info,
+                        $"[Zoom.Setter] {oldZoom:F3} → {value:F3} | 将触发 OnZoomChanged + OnViewTransformed",
+                        "ImageControl");
+
                     ImageScaleTransform.ScaleX = value;
                     ImageScaleTransform.ScaleY = value;
                     OnZoomChanged();
+                    OnViewTransformed(); // 同步触发视图变换事件（使线宽、手柄等随缩放更新）
                 }
             }
         }

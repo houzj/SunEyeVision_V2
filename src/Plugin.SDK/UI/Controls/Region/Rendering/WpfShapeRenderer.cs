@@ -191,6 +191,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
         /// </summary>
         public void SetViewportTransform(double scale, Point offset)
         {
+            // ★ 关键诊断：仅当缩放值实际变化时记录（低频）
+            if (Math.Abs(_viewportScale - scale) > 0.001)
+            {
+                VisionLogger.Instance.Log(LogLevel.Info,
+                    $"[SetViewportTransform] _viewportScale={_viewportScale:F3} → {scale:F3} | offset=({offset.X},{offset.Y}) | 后续StrokeThickness将除以此值",
+                    "WpfShapeRenderer");
+            }
+
             _viewportScale = scale;
             _viewportOffset = offset;
 
@@ -322,12 +330,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
         {
                 region.CalculateBounds();
 
-                // 日志监控（降频）
+                // ★ 关键诊断：降频日志，输出实际线宽计算值（仅每 LogInterval 次记录一次）
                 if (_logger != null && _logCounter % LogInterval == 0)
                 {
+                    var actualThickness = _viewportScale > 0 ? region.StrokeThickness / _viewportScale : region.StrokeThickness;
                     _logger.Log(LogLevel.Info, 
                         $"[UpdateShape] IsPreview={region.IsPreview}, " +
-                        $"StrokeDashArray={(region.IsPreview ? "4,2" : "empty")}", 
+                        $"rawStroke={region.StrokeThickness:F1}, viewportScale={_viewportScale:F3}, actualStroke={actualThickness:F3}", 
                         "WpfShapeRenderer");
                 }
 
@@ -339,10 +348,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                 // 更新填充和边框
                 shape.Fill = new SolidColorBrush(region.FillColor) { Opacity = region.Opacity };
                 shape.Stroke = new SolidColorBrush(region.StrokeColor);
-                shape.StrokeThickness = region.StrokeThickness;
+                shape.StrokeThickness = region.StrokeThickness / _viewportScale;
 
-                // 更新虚线样式
-                shape.StrokeDashArray = region.IsPreview ? new DoubleCollection { 4, 2 } : new DoubleCollection();
+                // 更新虚线样式（间隔也需要反除缩放，保持视觉恒定）
+                shape.StrokeDashArray = region.IsPreview 
+                    ? new DoubleCollection { 4 / _viewportScale, 2 / _viewportScale } 
+                    : new DoubleCollection();
 
                 // 根据形状类型更新尺寸
                 UpdateShapeDimensions(shape, region);
@@ -370,6 +381,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                 {
                                 strokeThickness = RegionEditorSettings.Default.SelectedStrokeThickness;
                 }
+
+                // 反除缩放：使线宽在屏幕上视觉恒定，不受图像分辨率/Zoom影响
+                strokeThickness = strokeThickness / _viewportScale;
 
                 Shape shape = null;
 
@@ -420,7 +434,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                     Fill = new SolidColorBrush(fillColor) { Opacity = region.Opacity },
                     Stroke = new SolidColorBrush(strokeColor),
                     StrokeThickness = strokeThickness,
-                    StrokeDashArray = region.IsPreview ? new DoubleCollection { 4, 2 } : new DoubleCollection()
+                    StrokeDashArray = region.IsPreview ? new DoubleCollection { 4 / _viewportScale, 2 / _viewportScale } : new DoubleCollection()
                 };
         }
 
@@ -445,7 +459,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                     Fill = new SolidColorBrush(fillColor) { Opacity = region.Opacity },
                     Stroke = new SolidColorBrush(strokeColor),
                     StrokeThickness = strokeThickness,
-                    StrokeDashArray = region.IsPreview ? new DoubleCollection { 4, 2 } : new DoubleCollection()
+                    StrokeDashArray = region.IsPreview ? new DoubleCollection { 4 / _viewportScale, 2 / _viewportScale } : new DoubleCollection()
                 };
         }
 
@@ -470,7 +484,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                     Fill = new SolidColorBrush(fillColor) { Opacity = region.Opacity },
                     Stroke = new SolidColorBrush(strokeColor),
                     StrokeThickness = strokeThickness,
-                    StrokeDashArray = region.IsPreview ? new DoubleCollection { 4, 2 } : new DoubleCollection(),
+                    StrokeDashArray = region.IsPreview ? new DoubleCollection { 4 / _viewportScale, 2 / _viewportScale } : new DoubleCollection(),
                     RenderTransform = new RotateTransform(region.Angle, region.Width / 2, region.Height / 2)
                     {
                         // 使用数学角度系统
@@ -503,7 +517,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                     Y2 = region.LineEnd.Y - region.LineStart.Y,
                     Stroke = new SolidColorBrush(strokeColor),
                     StrokeThickness = strokeThickness,
-                    StrokeDashArray = region.IsPreview ? new DoubleCollection { 4, 2 } : new DoubleCollection()
+                    StrokeDashArray = region.IsPreview ? new DoubleCollection { 4 / _viewportScale, 2 / _viewportScale } : new DoubleCollection()
                 };
         }
         /// <summary>
@@ -528,7 +542,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                     Fill = new SolidColorBrush(fillColor) { Opacity = region.Opacity },
                     Stroke = new SolidColorBrush(strokeColor),
                     StrokeThickness = strokeThickness,
-                    StrokeDashArray = region.IsPreview ? new DoubleCollection { 4, 2 } : new DoubleCollection()
+                    StrokeDashArray = region.IsPreview ? new DoubleCollection { 4 / _viewportScale, 2 / _viewportScale } : new DoubleCollection()
                 };
 
                 // 设置点集
@@ -623,10 +637,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                                 label = new TextBlock
                                 {
                                     Text = region.Label,
-                                    FontSize = 12,
+                                    FontSize = 12 / _viewportScale,
                                     Foreground = Brushes.White,
                                     Background = new SolidColorBrush(Color.FromArgb(180, 0, 0, 0)),
-                                    Padding = new Thickness(4, 2, 4, 2)
+                                    Padding = new Thickness(4 / _viewportScale, 2 / _viewportScale, 4 / _viewportScale, 2 / _viewportScale)
                                 };
                                 _targetCanvas.Children.Add(label);
                                 _labelPool[region.Id] = label;
@@ -636,8 +650,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                 label.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
                 double labelWidth = label.DesiredSize.Width;
                 double labelLeft = region.Bounds.Left + (region.Bounds.Width - labelWidth) / 2 + _viewportOffset.X;
-                double labelTop = region.Bounds.Top - 20 + _viewportOffset.Y;
-                if (labelTop < 0) labelTop = region.Bounds.Bottom + 2 + _viewportOffset.Y;
+                double labelTop = region.Bounds.Top - 20 / _viewportScale + _viewportOffset.Y;
+                if (labelTop < 0) labelTop = region.Bounds.Bottom + 2 / _viewportScale + _viewportOffset.Y;
 
                 Canvas.SetLeft(label, labelLeft);
                 Canvas.SetTop(label, labelTop);
@@ -720,7 +734,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
             var childCountBefore = _targetCanvas.Children.Count;
 
             // 使用 RotatedRectangleHelper 绘制箭头（包含主线和两翼）
-            RotatedRectangleHelper.DrawDirectionArrow(_targetCanvas, arrow.Start, arrow.End, arrowColor);
+            RotatedRectangleHelper.DrawDirectionArrow(_targetCanvas, arrow.Start, arrow.End, arrowColor, _viewportScale);
 
             // 收集新添加的箭头形状
             for (int i = childCountBefore; i < _targetCanvas.Children.Count; i++)

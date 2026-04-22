@@ -336,8 +336,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
             if (_mainImageControl != null)
             {
-                // 启用OverlayCanvas命中测试
-                _mainImageControl.OverlayHitTestVisible = true;
+                // 禁用OverlayCanvas命中测试（手柄/区域命中检测使用手动坐标计算，不需要WPF命中测试）
+                // 设为false可避免OverlayCanvas上的形状拦截鼠标事件，确保MouseUp事件正确传到MainCanvas
+                _mainImageControl.OverlayHitTestVisible = false;
 
                 VisionLogger.Instance.Log(LogLevel.Info,
                     $"[EventSubscribe] 开始订阅 ImageControl 事件 | InstanceId={_controlInstanceId} | ImageControl={_mainImageControl.GetType().Name}",
@@ -385,6 +386,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 {
                     _renderer?.Dispose();
                     _renderer = new WpfShapeRenderer(OverlayCanvas, VisionLogger.Instance);
+
+                    // ★ 关键修复：初始化时立即同步当前缩放值
+                    // 否则 _viewportScale 默认为 1.0（而非当前 zoom），
+                    // 导致首次渲染时线宽 = rawStroke / 1.0 = 太粗
+                    _renderer?.SetViewportTransform(_mainImageControl.Zoom, new Point(0, 0));
                 }
 
                 VisionLogger.Instance.Log(LogLevel.Success,
@@ -838,7 +844,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             {
                 if (_currentHandles != null)
                 {
-                    var hitHandleType = Rendering.HandleRenderer.HitTestHandle(position, _currentHandles, 8);
+                    var hitHandleType = Rendering.HandleRenderer.HitTestHandle(position, _currentHandles);
 
                     if (hitHandleType != Rendering.HandleType.None)
                     {
@@ -911,6 +917,16 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
         private void ImageControl_ViewTransformed(object? sender, ViewTransformEventArgs e)
         {
+            // ★ 关键诊断：仅当缩放值变化时记录（低频）
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[ViewTransformed] zoom={e:F3} | offset=({e.OffsetX:F1},{e.OffsetY:F1}) | 将同步到渲染器",
+                "RegionEditorControl");
+
+            // 同步渲染器缩放参数（仅用于线宽/虚线间距反除缩放）
+            // 注意：不传 offset！OverlayCanvas 在 ImageContainer 内部，
+            // ImageContainer 自身有 TranslateTransform，再叠加 offset 会导致双重偏移
+            _renderer?.SetViewportTransform(e.Zoom, new Point(0, 0));
+
             UpdateRegionOverlay();
         }
 
@@ -1827,13 +1843,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 return;
             }
 
-            // 使用ROI编辑器的手柄渲染器创建手柄
+            // 使用ROI编辑器的手柄渲染器创建手柄（反除缩放，使手柄在屏幕上视觉恒定）
             CreateHandlesForShape(shapeDef);
 
             if (_currentHandles != null && _currentHandles.Length > 0)
             {
-                // 使用ROI编辑器的手柄渲染器绘制手柄
-                Rendering.HandleRenderer.DrawHandles(OverlayCanvas, _currentHandles, shapeDef.ShapeType);
+                // 使用ROI编辑器的手柄渲染器绘制手柄（传入缩放比例）
+                var zoom = _mainImageControl?.Zoom ?? 1.0;
+                Rendering.HandleRenderer.DrawHandles(OverlayCanvas, _currentHandles, shapeDef.ShapeType, zoom);
             }
         }
 
@@ -1842,6 +1859,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         /// </summary>
         private void CreateHandlesForShape(ShapeParameters shape)
         {
+            // 反除缩放：使手柄在屏幕上视觉恒定，不受图像分辨率/Zoom影响
+            var zoom = _mainImageControl?.Zoom ?? 1.0;
+            var handleSize = Rendering.HandleRenderer.GetScaledHandleSize(zoom);
+
+            // ★ 关键诊断：手柄大小计算（低频，仅在绘制时记录）
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[CreateHandlesForShape] zoom={zoom:F3} | handleSize={handleSize:F1} | ShapeType={shape.ShapeType}",
+                "RegionEditorControl");
+
             switch (shape.ShapeType)
             {
                 case ShapeType.Rectangle:
@@ -1851,12 +1877,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                         shape.Width,
                         shape.Height
                     );
-                    _currentHandles = Rendering.HandleRenderer.CreateRectangleHandles(bounds);
+                    _currentHandles = Rendering.HandleRenderer.CreateRectangleHandles(bounds, handleSize);
                     break;
 
                 case ShapeType.Circle:
                     var center = new Point(shape.CenterX, shape.CenterY);
-                    _currentHandles = Rendering.HandleRenderer.CreateCircleHandles(center, shape.Radius);
+                    _currentHandles = Rendering.HandleRenderer.CreateCircleHandles(center, shape.Radius, handleSize);
                     break;
 
                 case ShapeType.RotatedRectangle:
@@ -1867,18 +1893,20 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                         shape.Height,
                         shape.Angle
                     );
-                    var bottomCenter = CalculateRotatedRectBottomCenter(rotatedCenter, shape.Height, shape.Angle);
                     _currentHandles = Rendering.HandleRenderer.CreateRotatedRectangleHandles(
                         corners,
                         shape.Angle,
-                        bottomCenter
+                        rotatedCenter,
+                        handleSize,
+                        zoom,
+                        shape.Height
                     );
                     break;
 
                 case ShapeType.Line:
                     var startPoint = new Point(shape.StartX, shape.StartY);
                     var endPoint = new Point(shape.EndX, shape.EndY);
-                    _currentHandles = Rendering.HandleRenderer.CreateLineHandles(startPoint, endPoint);
+                    _currentHandles = Rendering.HandleRenderer.CreateLineHandles(startPoint, endPoint, handleSize);
                     break;
             }
         }

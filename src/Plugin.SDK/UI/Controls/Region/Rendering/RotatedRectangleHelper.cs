@@ -88,23 +88,19 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
         /// <summary>
         /// 获取旋转手柄位置
         /// 参考ROI.GetRotationHandlePosition 420-446行
-        /// 手柄位于下边中点，然后沿下方方向向外偏移35像素
+        /// 旋转手柄位置 = center + (height/4) * direction
         /// </summary>
-        public static Point GetRotationHandlePosition(Point center, double height, double rotation)
+        public static Point GetRotationHandlePosition(Point center, double height, double rotation, double scale = 1.0)
         {
             // 图像坐标系角度：顺时针为正，0°向下
             var angleRad = rotation * Math.PI / 180;
             var sin = Math.Sin(angleRad);
             var cos = Math.Cos(angleRad);
 
-            // 下边中点坐标（与箭头方向一致）
-            var bottomCenterX = center.X + (height / 2) * sin;
-            var bottomCenterY = center.Y + (height / 2) * cos;
-
-            // 旋转手柄位于下边中点，沿下方方向向外偏移35像素
-            const double handleOffset = 35;
-            var handleX = bottomCenterX + handleOffset * sin;
-            var handleY = bottomCenterY + handleOffset * cos;
+            // 旋转手柄位置 = center + (height/4) * direction（图像坐标系，无需/scale）
+            var handleOffset = height / 4;
+            var handleX = center.X + handleOffset * sin;
+            var handleY = center.Y + handleOffset * cos;
 
             return new Point(handleX, handleY);
         }
@@ -147,10 +143,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
         /// <summary>
         /// 绘制方向箭头（参考ROI编辑器DrawDirectionArrow 1354-1425行）
         /// </summary>
-        public static void DrawDirectionArrow(System.Windows.Controls.Canvas canvas, Point center, Point topCenter, Brush strokeBrush)
+        public static void DrawDirectionArrow(System.Windows.Controls.Canvas canvas, Point center, Point topCenter, Brush strokeBrush, double scale = 1.0)
         {
             // 检查尺寸是否足够绘制箭头
             if (center.X == topCenter.X && center.Y == topCenter.Y) return;
+
+            // 反除缩放：使线宽在屏幕上视觉恒定，不受图像分辨率/Zoom影响
+            var lineThickness = 15 / scale;
 
             // 绘制主箭头线（从中心到顶边中点）
             var arrowLine = new System.Windows.Shapes.Line
@@ -160,7 +159,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                 X2 = topCenter.X,
                 Y2 = topCenter.Y,
                 Stroke = strokeBrush,
-                StrokeThickness = 15,
+                StrokeThickness = lineThickness,
                 Tag = DirectionArrowTag
             };
             canvas.Children.Add(arrowLine);
@@ -175,8 +174,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
             var ux = dx / length;
             var uy = dy / length;
 
-            // 箭头参数
-            var arrowSize = 10;
+            // 箭头参数（反除缩放，保持视觉恒定）
+            var arrowSize = 10 / scale;
             var arrowAngle = 25 * Math.PI / 180; // 箭头夹角25°
 
             // 计算箭头两翼的端点
@@ -199,7 +198,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                 X2 = leftX,
                 Y2 = leftY,
                 Stroke = strokeBrush,
-                StrokeThickness = 15,
+                StrokeThickness = lineThickness,
                 Tag = DirectionArrowTag
             };
             canvas.Children.Add(leftWing);
@@ -211,7 +210,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                 X2 = rightX,
                 Y2 = rightY,
                 Stroke = strokeBrush,
-                StrokeThickness = 15,
+                StrokeThickness = lineThickness,
                 Tag = DirectionArrowTag
             };
             canvas.Children.Add(rightWing);
@@ -220,11 +219,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
         /// <summary>
         /// 绘制旋转手柄连接线（参考ROI编辑器DrawRotateHandleLine 1431-1459行）
         /// </summary>
-        public static void DrawRotateHandleLine(System.Windows.Controls.Canvas canvas, Point center, double height, double rotation, Point rotateHandlePos)
+        public static void DrawRotateHandleLine(System.Windows.Controls.Canvas canvas, Point center, double height, double rotation, Point rotateHandlePos, double scale = 1.0)
         {
             // 先绘制方向箭头
             var arrow = GetDirectionArrow(center, height, rotation);
-            DrawDirectionArrow(canvas, arrow.Start, arrow.End, new SolidColorBrush(Color.FromRgb(0, 0, 255)));
+            DrawDirectionArrow(canvas, arrow.Start, arrow.End, new SolidColorBrush(Color.FromRgb(0, 0, 255)), scale);
 
             // 绘制从下边中点到旋转手柄的连接线（虚线）
             var angleRad = rotation * Math.PI / 180;
@@ -242,8 +241,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                 X2 = rotateHandlePos.X,
                 Y2 = rotateHandlePos.Y,
                 Stroke = Brushes.Blue,
-                StrokeThickness = 1,
-                StrokeDashArray = new DoubleCollection { 3, 2 },
+                StrokeThickness = 1 / scale,
+                StrokeDashArray = new DoubleCollection { 3 / Math.Max(scale, 0.01), 2 / Math.Max(scale, 0.01) },
                 Tag = DirectionArrowTag
             };
             canvas.Children.Add(connectorLine);

@@ -55,6 +55,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
         private const double DefaultHandleSize = 60;
 
         /// <summary>
+        /// 计算缩放后的手柄大小（反除缩放，使手柄在屏幕上视觉恒定）
+        /// </summary>
+        public static double GetScaledHandleSize(double scale)
+        {
+            return DefaultHandleSize / Math.Max(scale, 0.01);
+        }
+
+        /// <summary>
         /// 创建矩形手柄（参考ROI编辑器CreateRectangleHandles 1071-1097行）
         /// </summary>
         public static EditHandle[] CreateRectangleHandles(Rect bounds, double handleSize = DefaultHandleSize)
@@ -183,7 +191,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
         /// <summary>
         /// 创建旋转矩形手柄（参考ROI编辑器CreateRotatedRectangleHandles 1131-1213行）
         /// </summary>
-        public static EditHandle[] CreateRotatedRectangleHandles(Point[] corners, double rotation, Point bottomCenter, double handleSize = DefaultHandleSize)
+        public static EditHandle[] CreateRotatedRectangleHandles(Point[] corners, double rotation, Point bottomCenter, double handleSize = DefaultHandleSize, double scale = 1.0, double height = 0)
         {
             var handles = new System.Collections.Generic.List<EditHandle>();
 
@@ -216,8 +224,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                 });
             }
 
-            // 旋转手柄（在下边中点下方）
-            var rotateHandlePos = CalculateRotationHandlePosition(bottomCenterRect, rotation);
+            // 旋转手柄（位置 = center + (height/4) * direction）
+            var rectCenter = new Point((corners[0].X + corners[2].X) / 2, (corners[0].Y + corners[2].Y) / 2);
+            var rotateHandlePos = CalculateRotationHandlePosition(rectCenter, rotation, scale, height);
             handles.Add(new EditHandle
             {
                 Type = HandleType.Rotate,
@@ -284,14 +293,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                 }
             }
 
-            // ★ 诊断日志：手柄清理
-            if (toRemove.Count > 0)
-            {
-                VisionLogger.Instance.Log(LogLevel.Info,
-                    $"[HandleRenderer.ClearHandles] 清理手柄 | HandleCount={toRemove.Count} | CanvasChildren={canvas.Children.Count}",
-                    "HandleRenderer");
-            }
-
             foreach (var item in toRemove)
             {
                 canvas.Children.Remove(item);
@@ -301,59 +302,26 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
         /// <summary>
         /// 绘制手柄到Canvas（参考ROI编辑器DrawEditHandles 1281-1347行）
         /// </summary>
-        public static void DrawHandles(Canvas canvas, EditHandle[] handles, ShapeType shapeType)
+        public static void DrawHandles(Canvas canvas, EditHandle[] handles, ShapeType shapeType, double scale = 1.0)
         {
-            // ★ 诊断日志：手柄绘制
-            VisionLogger.Instance.Log(LogLevel.Info,
-                $"[HandleRenderer.DrawHandles] 绘制手柄 | HandleCount={handles?.Length ?? 0} | ShapeType={shapeType} | CanvasChildren={canvas.Children.Count}",
-                "HandleRenderer");
-
             // 先清理旧手柄
             ClearHandles(canvas);
 
             foreach (var handle in handles)
             {
-                Shape handleShape;
+                var strokeThickness = 1.5 / Math.Max(scale, 0.01);
 
-                // 旋转手柄使用圆形，其他根据形状类型决定
-                if (handle.Type == HandleType.Rotate)
+                // 所有手柄统一使用圆形，旋转手柄用红色区分
+                var isRotateHandle = handle.Type == HandleType.Rotate;
+                var handleShape = new Ellipse
                 {
-                    handleShape = new Ellipse
-                    {
-                        Width = handle.HandleSize,
-                        Height = handle.HandleSize,
-                        Fill = Brushes.Orange,
-                        Stroke = Brushes.DarkOrange,
-                        StrokeThickness = 1.5,
-                        Tag = HandleTag
-                    };
-                }
-                else if (shapeType == ShapeType.Circle || shapeType == ShapeType.Line)
-                {
-                    // 圆形和直线端点使用圆形形状
-                    handleShape = new Ellipse
-                    {
-                        Width = handle.HandleSize,
-                        Height = handle.HandleSize,
-                        Fill = Brushes.Orange,
-                        Stroke = Brushes.DarkOrange,
-                        StrokeThickness = 1.5,
-                        Tag = HandleTag
-                    };
-                }
-                else
-                {
-                    // 矩形和旋转矩形使用方形手柄
-                    handleShape = new Rectangle
-                    {
-                        Width = handle.HandleSize,
-                        Height = handle.HandleSize,
-                        Fill = Brushes.Orange,
-                        Stroke = Brushes.DarkOrange,
-                        StrokeThickness = 1.5,
-                        Tag = HandleTag
-                    };
-                }
+                    Width = handle.HandleSize,
+                    Height = handle.HandleSize,
+                    Fill = isRotateHandle ? Brushes.Red : Brushes.Orange,
+                    Stroke = isRotateHandle ? Brushes.DarkRed : Brushes.DarkOrange,
+                    StrokeThickness = strokeThickness,
+                    Tag = HandleTag
+                };
 
                 Canvas.SetLeft(handleShape, handle.Position.X - handle.HandleSize / 2);
                 Canvas.SetTop(handleShape, handle.Position.Y - handle.HandleSize / 2);
@@ -363,18 +331,19 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
 
         /// <summary>
         /// 计算旋转手柄位置（参考ROI.GetRotationHandlePosition）
+        /// 旋转手柄位置 = center + (height/4) * direction
         /// </summary>
-        public static Point CalculateRotationHandlePosition(Point bottomCenter, double rotation)
+        public static Point CalculateRotationHandlePosition(Point center, double rotation, double scale = 1.0, double height = 0)
         {
             // 图像坐标系角度：顺时针为正，0°向下
             var angleRad = rotation * Math.PI / 180;
             var sin = Math.Sin(angleRad);
             var cos = Math.Cos(angleRad);
 
-            // 旋转手柄位于下边中点，沿下方方向向外偏移35像素
-            const double handleOffset = 35;
-            var handleX = bottomCenter.X + handleOffset * sin;
-            var handleY = bottomCenter.Y + handleOffset * cos;
+            // 旋转手柄位置 = center + (height/4) * direction（图像坐标系，无需/scale）
+            var handleOffset = height > 0 ? height / 4 : 35;
+            var handleX = center.X + handleOffset * sin;
+            var handleY = center.Y + handleOffset * cos;
 
             return new Point(handleX, handleY);
         }
@@ -421,25 +390,34 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
         }
 
         /// <summary>
-        /// 命中测试（参考ROI编辑器HitTestHandle 1023-1045行）
+        /// 命中测试（圆形距离检测，确保命中范围与手柄视觉大小一致）
         /// </summary>
-        public static HandleType HitTestHandle(Point point, EditHandle[] handles, double tolerance = 0)
+        /// <param name="point">测试点（图像坐标）</param>
+        /// <param name="handles">手柄列表</param>
+        /// <param name="toleranceRatio">容差比例：命中半径 = handleSize * (0.5 + toleranceRatio)，默认0.3表示比手柄视觉半径大30%</param>
+        public static HandleType HitTestHandle(Point point, EditHandle[] handles, double toleranceRatio = 0)
         {
+            EditHandle? closestHandle = null;
+            var closestDistance = double.MaxValue;
+
             foreach (var handle in handles)
             {
-                var expandedBounds = new Rect(
-                    handle.Bounds.X - tolerance,
-                    handle.Bounds.Y - tolerance,
-                    handle.Bounds.Width + tolerance * 2,
-                    handle.Bounds.Height + tolerance * 2);
-
-                if (expandedBounds.Contains(point))
+                // 计算到手柄中心的距离
+                var dx = point.X - handle.Position.X;
+                var dy = point.Y - handle.Position.Y;
+                var distance = Math.Sqrt(dx * dx + dy * dy);
+                
+                // 命中半径 = handleSize * (0.5 + toleranceRatio)，即比视觉半径大 toleranceRatio
+                var hitRadius = handle.HandleSize * (0.5 + toleranceRatio);
+                
+                if (distance <= hitRadius && distance < closestDistance)
                 {
-                    return handle.Type;
+                    closestDistance = distance;
+                    closestHandle = handle;
                 }
             }
 
-            return HandleType.None;
+            return closestHandle?.Type ?? HandleType.None;
         }
     }
 }

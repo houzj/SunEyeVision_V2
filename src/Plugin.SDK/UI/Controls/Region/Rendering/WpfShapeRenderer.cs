@@ -626,32 +626,42 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                                 return;
                 }
 
+                // 自适应标签字体大小（与手柄同策略的幂律缩放）
+                var scaledFontSize = HandleRenderer.GetScaledLabelFontSize(_viewportScale);
+                var scaledPaddingH = 4.0 / _viewportScale;  // 水平内边距
+                var scaledPaddingV = 2.0 / _viewportScale;  // 垂直内边距
+
                 TextBlock label;
                 if (_labelPool.TryGetValue(region.Id, out var existingLabel))
                 {
                                 label = existingLabel;
                                 label.Text = region.Label;
+                                // 同步更新缩放相关属性（视口缩放变化时需要刷新）
+                                label.FontSize = scaledFontSize;
+                                label.Padding = new Thickness(scaledPaddingH, scaledPaddingV, scaledPaddingH, scaledPaddingV);
                 }
                 else
                 {
                                 label = new TextBlock
                                 {
                                     Text = region.Label,
-                                    FontSize = 12 / _viewportScale,
+                                    FontSize = scaledFontSize,
                                     Foreground = Brushes.White,
                                     Background = new SolidColorBrush(Color.FromArgb(180, 0, 0, 0)),
-                                    Padding = new Thickness(4 / _viewportScale, 2 / _viewportScale, 4 / _viewportScale, 2 / _viewportScale)
+                                    Padding = new Thickness(scaledPaddingH, scaledPaddingV, scaledPaddingH, scaledPaddingV)
                                 };
                                 _targetCanvas.Children.Add(label);
                                 _labelPool[region.Id] = label;
                 }
 
-                // 计算标签位置
+                // 计算标签位置（偏移量也使用自适应缩放）
                 label.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
                 double labelWidth = label.DesiredSize.Width;
                 double labelLeft = region.Bounds.Left + (region.Bounds.Width - labelWidth) / 2 + _viewportOffset.X;
-                double labelTop = region.Bounds.Top - 20 / _viewportScale + _viewportOffset.Y;
-                if (labelTop < 0) labelTop = region.Bounds.Bottom + 2 / _viewportScale + _viewportOffset.Y;
+                // 标签偏移使用幂律缩放，保证屏幕上偏移量合理
+                var labelOffset = HandleRenderer.GetScaledLabelFontSize(_viewportScale) * 1.5;
+                double labelTop = region.Bounds.Top - labelOffset + _viewportOffset.Y;
+                if (labelTop < 0) labelTop = region.Bounds.Bottom + scaledPaddingV + _viewportOffset.Y;
 
                 Canvas.SetLeft(label, labelLeft);
                 Canvas.SetTop(label, labelTop);

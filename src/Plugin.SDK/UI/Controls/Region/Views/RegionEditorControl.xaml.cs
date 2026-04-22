@@ -1855,17 +1855,16 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         }
 
         /// <summary>
-        /// 为形状创建ROI编辑器风格的手柄
+        /// 为形状创建ROI编辑器风格的手柄（强自适应 + 差异化）
         /// </summary>
         private void CreateHandlesForShape(ShapeParameters shape)
         {
-            // 反除缩放：使手柄在屏幕上视觉恒定，不受图像分辨率/Zoom影响
+            // 传入zoom，各手柄内部根据类型差异化计算尺寸
             var zoom = _mainImageControl?.Zoom ?? 1.0;
-            var handleSize = Rendering.HandleRenderer.GetScaledHandleSize(zoom);
 
-            // ★ 关键诊断：手柄大小计算（低频，仅在绘制时记录）
+            // ★ 关键诊断：记录缩放信息
             VisionLogger.Instance.Log(LogLevel.Info,
-                $"[CreateHandlesForShape] zoom={zoom:F3} | handleSize={handleSize:F1} | ShapeType={shape.ShapeType}",
+                $"[CreateHandlesForShape] zoom={zoom:F3}, ShapeType={shape.ShapeType}",
                 "RegionEditorControl");
 
             switch (shape.ShapeType)
@@ -1877,12 +1876,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                         shape.Width,
                         shape.Height
                     );
-                    _currentHandles = Rendering.HandleRenderer.CreateRectangleHandles(bounds, handleSize);
+                    _currentHandles = Rendering.HandleRenderer.CreateRectangleHandles(bounds, zoom);
                     break;
 
                 case ShapeType.Circle:
                     var center = new Point(shape.CenterX, shape.CenterY);
-                    _currentHandles = Rendering.HandleRenderer.CreateCircleHandles(center, shape.Radius, handleSize);
+                    _currentHandles = Rendering.HandleRenderer.CreateCircleHandles(center, shape.Radius, zoom);
                     break;
 
                 case ShapeType.RotatedRectangle:
@@ -1897,7 +1896,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                         corners,
                         shape.Angle,
                         rotatedCenter,
-                        handleSize,
                         zoom,
                         shape.Height
                     );
@@ -1906,7 +1904,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 case ShapeType.Line:
                     var startPoint = new Point(shape.StartX, shape.StartY);
                     var endPoint = new Point(shape.EndX, shape.EndY);
-                    _currentHandles = Rendering.HandleRenderer.CreateLineHandles(startPoint, endPoint, handleSize);
+                    _currentHandles = Rendering.HandleRenderer.CreateLineHandles(startPoint, endPoint, zoom);
                     break;
             }
         }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -112,16 +112,16 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
         /// 为指定区域创建编辑手柄
         /// </summary>
         /// <param name="region">区域渲染上下文</param>
-        /// <param name="handleSize">手柄大小</param>
+        /// <param name="scale">当前缩放值</param>
         /// <returns>手柄数组</returns>
-        public static EditHandle[] CreateHandles(RegionRenderContext region, double handleSize = DefaultHandleSize)
+        public static EditHandle[] CreateHandles(RegionRenderContext region, double scale = 1.0)
         {
             return region.ShapeType switch
             {
-                ShapeType.Rectangle => CreateRectangleHandles(region, handleSize),
-                ShapeType.Circle => CreateCircleHandles(region, handleSize),
-                ShapeType.RotatedRectangle => CreateRotatedRectangleHandles(region, handleSize),
-                ShapeType.Line => CreateLineHandles(region, handleSize),
+                ShapeType.Rectangle => CreateRectangleHandles(region, scale),
+                ShapeType.Circle => CreateCircleHandles(region, scale),
+                ShapeType.RotatedRectangle => CreateRotatedRectangleHandles(region, scale),
+                ShapeType.Line => CreateLineHandles(region, scale),
                 _ => Array.Empty<EditHandle>()
             };
         }
@@ -219,34 +219,34 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
 
         #region 手柄创建
 
-        private static EditHandle[] CreateRectangleHandles(RegionRenderContext region, double handleSize)
+        private static EditHandle[] CreateRectangleHandles(RegionRenderContext region, double scale)
         {
             var bounds = new Rect(
                 region.Center.X - region.Width / 2,
                 region.Center.Y - region.Height / 2,
                 region.Width,
                 region.Height);
-            return HandleRenderer.CreateRectangleHandles(bounds, handleSize);
+            return HandleRenderer.CreateRectangleHandles(bounds, scale);
         }
 
-        private static EditHandle[] CreateCircleHandles(RegionRenderContext region, double handleSize)
+        private static EditHandle[] CreateCircleHandles(RegionRenderContext region, double scale)
         {
-            return HandleRenderer.CreateCircleHandles(region.Center, region.Radius, handleSize);
+            return HandleRenderer.CreateCircleHandles(region.Center, region.Radius, scale);
         }
 
-        private static EditHandle[] CreateRotatedRectangleHandles(RegionRenderContext region, double handleSize)
+        private static EditHandle[] CreateRotatedRectangleHandles(RegionRenderContext region, double scale)
         {
             var corners = RegionRenderContext.GetRotatedRectangleCorners(
                 region.Center, region.Width, region.Height, region.Angle);
             var bottomCenter = new Point(
                 (corners[2].X + corners[3].X) / 2,
                 (corners[2].Y + corners[3].Y) / 2);
-            return HandleRenderer.CreateRotatedRectangleHandles(corners, region.Angle, bottomCenter, handleSize);
+            return HandleRenderer.CreateRotatedRectangleHandles(corners, region.Angle, bottomCenter, scale);
         }
 
-        private static EditHandle[] CreateLineHandles(RegionRenderContext region, double handleSize)
+        private static EditHandle[] CreateLineHandles(RegionRenderContext region, double scale)
         {
-            return HandleRenderer.CreateLineHandles(region.LineStart, region.LineEnd, handleSize);
+            return HandleRenderer.CreateLineHandles(region.LineStart, region.LineEnd, scale);
         }
 
         #endregion

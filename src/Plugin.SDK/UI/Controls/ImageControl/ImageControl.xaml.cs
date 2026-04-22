@@ -22,9 +22,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         #region 私有字段
 
         private double _zoom = 1.0;
-        private double _minZoom = 0.1;
+        private double _minZoom = 0.001;   // 支持无极缩放，超大图也能适配
         private double _maxZoom = 10.0;
-        private double _zoomStep = 0.1;
+        private double _zoomStep = 0.15;   // 比例缩放系数（每次放大15%/缩小约13%）
 
         // Canvas平移缩放相关
         private bool _isPanning;
@@ -461,12 +461,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         }
 
         /// <summary>
-        /// 围绕指定点缩放
+        /// 围绕指定点缩放（delta为乘法系数，如1.15放大15%，0.85缩小15%）
         /// </summary>
-        public void ZoomAroundPoint(Point center, double delta)
+        public void ZoomAroundPoint(Point center, double factor)
         {
             var oldZoom = Zoom;
-            var newZoom = Math.Max(_minZoom, Math.Min(_maxZoom, Zoom + delta));
+            var newZoom = Math.Max(_minZoom, Math.Min(_maxZoom, Zoom * factor));
 
             if (Math.Abs(newZoom - oldZoom) < 0.001) return;
 
@@ -670,12 +670,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         private void ZoomIn_Click(object sender, RoutedEventArgs e)
         {
-            Zoom = Math.Min(_maxZoom, Zoom + _zoomStep);
+            Zoom = Math.Min(_maxZoom, Zoom * (1 + _zoomStep));
         }
 
         private void ZoomOut_Click(object sender, RoutedEventArgs e)
         {
-            Zoom = Math.Max(_minZoom, Zoom - _zoomStep);
+            Zoom = Math.Max(_minZoom, Zoom * (1 - _zoomStep));
         }
 
         private void ToggleFullscreen_Click(object sender, RoutedEventArgs e)
@@ -842,9 +842,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         {
             if (!EnableZoom) return;
 
-            // 围绕鼠标位置缩放
+            // 围绕鼠标位置缩放（使用比例步进）
             var mousePos = e.GetPosition(MainCanvas);
-            ZoomAroundPoint(mousePos, e.Delta > 0 ? _zoomStep : -_zoomStep);
+            var step = e.Delta > 0 ? (1 + _zoomStep) : (1 - _zoomStep);
+            ZoomAroundPoint(mousePos, step);
             e.Handled = true;
         }
 

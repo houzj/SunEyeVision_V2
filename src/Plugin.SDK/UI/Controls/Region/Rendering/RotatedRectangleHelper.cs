@@ -149,7 +149,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
             if (center.X == topCenter.X && center.Y == topCenter.Y) return;
 
             // 反除缩放：使线宽在屏幕上视觉恒定，不受图像分辨率/Zoom影响
-            var lineThickness = 15 / scale;
+            var lineThickness = 3 / scale;
 
             // 绘制主箭头线（从中心到顶边中点）
             var arrowLine = new System.Windows.Shapes.Line

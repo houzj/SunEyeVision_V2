@@ -52,20 +52,63 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
     /// </summary>
     public class HandleRenderer
     {
-        private const double DefaultHandleSize = 60;
+        /// <summary>
+        /// 计算自适应标签字体大小（与手柄同策略的幂律缩放）
+        /// 幂律公式：screenSize = 12 / zoom^0.15，Clamp [9, 12] px
+        ///
+        /// 缩放行为：
+        ///   低zoom(看全局) → 字体大(~12px) → 远距离可读
+        ///   标准zoom      → 字体适中(~12px) → 舒适阅读
+        ///   高zoom(看细节) → 字体小(~9px)  → 避免遮挡细节
+        /// </summary>
+        /// <param name="scale">当前视口缩放值(zoom)</param>
+        /// <returns>WPF坐标系中的字体大小（经ScaleTransform放大后达到屏幕目标尺寸）</returns>
+        public static double GetScaledLabelFontSize(double scale)
+        {
+            scale = Math.Max(scale, 0.01);
+            const double A = 12.0;
+            const double p = 0.15;
+            var screenSize = A / Math.Pow(scale, p);
+            screenSize = Math.Clamp(screenSize, 9.0, 12.0);
+            return screenSize / scale;
+        }
 
         /// <summary>
-        /// 计算缩放后的手柄大小（反除缩放，使手柄在屏幕上视觉恒定）
+        /// 计算自适应手柄大小（强自适应，统一尺寸）
+        /// 幂律公式：screenSize = 10 / zoom^0.15，Clamp [8, 12] px
+        ///
+        /// 缩放行为：
+        ///   低zoom(看全局) → 手柄大(~12px) → 易于点击
+        ///   标准zoom      → 手柄适中(~10px) → 舒适操作
+        ///   高zoom(看细节) → 手柄小(~10px) → 避免遮挡
         /// </summary>
+        /// <param name="scale">当前视口缩放值(zoom)</param>
+        /// <returns>WPF坐标系中的手柄尺寸（经ScaleTransform放大后达到屏幕目标尺寸）</returns>
         public static double GetScaledHandleSize(double scale)
         {
-            return DefaultHandleSize / Math.Max(scale, 0.01);
+            // 安全下限，防止除零或负数
+            scale = Math.Max(scale, 0.01);
+
+            // 幂律公式：screenSize = A / scale^p
+            // 锚点：zoom=0.1→10.9px, zoom=1.0→10.0px（基准值）, 最小10px
+            // 解得 A=10, p≈0.15
+            const double A = 10.0;
+            const double p = 0.15;
+
+            var screenSize = A / Math.Pow(scale, p);
+
+            // Clamp [10, 12]
+            screenSize = Math.Clamp(screenSize, 10.0, 12.0);
+
+            // 反除缩放 → WPF坐标（WPF渲染时再乘以 scale 得到屏幕像素）
+            return screenSize / scale;
         }
 
         /// <summary>
         /// 创建矩形手柄（参考ROI编辑器CreateRectangleHandles 1071-1097行）
+        /// 每个手柄根据类型使用不同尺寸
         /// </summary>
-        public static EditHandle[] CreateRectangleHandles(Rect bounds, double handleSize = DefaultHandleSize)
+        public static EditHandle[] CreateRectangleHandles(Rect bounds, double scale = 1.0)
         {
             var handles = new List<EditHandle>
             {
@@ -74,28 +117,28 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                 {
                     Type = HandleType.TopLeft,
                     Position = new Point(bounds.Left, bounds.Top),
-                    Bounds = new Rect(bounds.Left - handleSize / 2, bounds.Top - handleSize / 2, handleSize, handleSize),
+                    HandleSize = GetScaledHandleSize(scale),
                     Cursor = Cursors.SizeNWSE
                 },
                 new EditHandle
                 {
                     Type = HandleType.TopRight,
                     Position = new Point(bounds.Right, bounds.Top),
-                    Bounds = new Rect(bounds.Right - handleSize / 2, bounds.Top - handleSize / 2, handleSize, handleSize),
+                    HandleSize = GetScaledHandleSize(scale),
                     Cursor = Cursors.SizeNESW
                 },
                 new EditHandle
                 {
                     Type = HandleType.BottomLeft,
                     Position = new Point(bounds.Left, bounds.Bottom),
-                    Bounds = new Rect(bounds.Left - handleSize / 2, bounds.Bottom - handleSize / 2, handleSize, handleSize),
+                    HandleSize = GetScaledHandleSize(scale),
                     Cursor = Cursors.SizeNESW
                 },
                 new EditHandle
                 {
                     Type = HandleType.BottomRight,
                     Position = new Point(bounds.Right, bounds.Bottom),
-                    Bounds = new Rect(bounds.Right - handleSize / 2, bounds.Bottom - handleSize / 2, handleSize, handleSize),
+                    HandleSize = GetScaledHandleSize(scale),
                     Cursor = Cursors.SizeNWSE
                 },
                 // 4个边中点手柄
@@ -103,28 +146,28 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                 {
                     Type = HandleType.Top,
                     Position = new Point(bounds.Left + bounds.Width / 2, bounds.Top),
-                    Bounds = new Rect(bounds.Left + bounds.Width / 2 - handleSize / 2, bounds.Top - handleSize / 2, handleSize, handleSize),
+                    HandleSize = GetScaledHandleSize(scale),
                     Cursor = Cursors.SizeNS
                 },
                 new EditHandle
                 {
                     Type = HandleType.Bottom,
                     Position = new Point(bounds.Left + bounds.Width / 2, bounds.Bottom),
-                    Bounds = new Rect(bounds.Left + bounds.Width / 2 - handleSize / 2, bounds.Bottom - handleSize / 2, handleSize, handleSize),
+                    HandleSize = GetScaledHandleSize(scale),
                     Cursor = Cursors.SizeNS
                 },
                 new EditHandle
                 {
                     Type = HandleType.Left,
                     Position = new Point(bounds.Left, bounds.Top + bounds.Height / 2),
-                    Bounds = new Rect(bounds.Left - handleSize / 2, bounds.Top + bounds.Height / 2 - handleSize / 2, handleSize, handleSize),
+                    HandleSize = GetScaledHandleSize(scale),
                     Cursor = Cursors.SizeWE
                 },
                 new EditHandle
                 {
                     Type = HandleType.Right,
                     Position = new Point(bounds.Right, bounds.Top + bounds.Height / 2),
-                    Bounds = new Rect(bounds.Right - handleSize / 2, bounds.Top + bounds.Height / 2 - handleSize / 2, handleSize, handleSize),
+                    HandleSize = GetScaledHandleSize(scale),
                     Cursor = Cursors.SizeWE
                 },
                 // 中心手柄（用于拖动整个矩形）
@@ -132,10 +175,20 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                 {
                     Type = HandleType.Center,
                     Position = new Point(bounds.X + bounds.Width / 2, bounds.Y + bounds.Height / 2),
-                    Bounds = new Rect(bounds.X + bounds.Width / 2 - handleSize / 2, bounds.Y + bounds.Height / 2 - handleSize / 2, handleSize, handleSize),
+                    HandleSize = GetScaledHandleSize(scale),
                     Cursor = Cursors.SizeAll
                 }
             };
+
+            // 统一计算 Bounds
+            foreach (var handle in handles)
+            {
+                var size = handle.HandleSize;
+                handle.Bounds = new Rect(
+                    handle.Position.X - size / 2,
+                    handle.Position.Y - size / 2,
+                    size, size);
+            }
 
             return handles.ToArray();
         }
@@ -143,7 +196,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
         /// <summary>
         /// 创建圆形手柄（参考ROI编辑器CreateCircleHandles 1102-1126行）
         /// </summary>
-        public static EditHandle[] CreateCircleHandles(Point center, double radius, double handleSize = DefaultHandleSize)
+        public static EditHandle[] CreateCircleHandles(Point center, double radius, double scale = 1.0)
         {
             var handles = new List<EditHandle>
             {
@@ -151,28 +204,28 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                 {
                     Type = HandleType.Top,
                     Position = new Point(center.X, center.Y - radius),
-                    Bounds = new Rect(center.X - handleSize / 2, center.Y - radius - handleSize / 2, handleSize, handleSize),
+                    HandleSize = GetScaledHandleSize(scale),
                     Cursor = Cursors.SizeAll
                 },
                 new EditHandle
                 {
                     Type = HandleType.Bottom,
                     Position = new Point(center.X, center.Y + radius),
-                    Bounds = new Rect(center.X - handleSize / 2, center.Y + radius - handleSize / 2, handleSize, handleSize),
+                    HandleSize = GetScaledHandleSize(scale),
                     Cursor = Cursors.SizeAll
                 },
                 new EditHandle
                 {
                     Type = HandleType.Left,
                     Position = new Point(center.X - radius, center.Y),
-                    Bounds = new Rect(center.X - radius - handleSize / 2, center.Y - handleSize / 2, handleSize, handleSize),
+                    HandleSize = GetScaledHandleSize(scale),
                     Cursor = Cursors.SizeAll
                 },
                 new EditHandle
                 {
                     Type = HandleType.Right,
                     Position = new Point(center.X + radius, center.Y),
-                    Bounds = new Rect(center.X + radius - handleSize / 2, center.Y - handleSize / 2, handleSize, handleSize),
+                    HandleSize = GetScaledHandleSize(scale),
                     Cursor = Cursors.SizeAll
                 },
                 // 中心手柄（用于拖动整个圆形）
@@ -180,10 +233,20 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                 {
                     Type = HandleType.Center,
                     Position = center,
-                    Bounds = new Rect(center.X - handleSize / 2, center.Y - handleSize / 2, handleSize, handleSize),
+                    HandleSize = GetScaledHandleSize(scale),
                     Cursor = Cursors.SizeAll
                 }
             };
+
+            // 统一计算 Bounds
+            foreach (var handle in handles)
+            {
+                var size = handle.HandleSize;
+                handle.Bounds = new Rect(
+                    handle.Position.X - size / 2,
+                    handle.Position.Y - size / 2,
+                    size, size);
+            }
 
             return handles.ToArray();
         }
@@ -191,12 +254,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
         /// <summary>
         /// 创建旋转矩形手柄（参考ROI编辑器CreateRotatedRectangleHandles 1131-1213行）
         /// </summary>
-        public static EditHandle[] CreateRotatedRectangleHandles(Point[] corners, double rotation, Point bottomCenter, double handleSize = DefaultHandleSize, double scale = 1.0, double height = 0)
+        public static EditHandle[] CreateRotatedRectangleHandles(Point[] corners, double rotation, Point bottomCenter, double scale = 1.0, double height = 0)
         {
             var handles = new System.Collections.Generic.List<EditHandle>();
 
             // 8个缩放手柄（4个角点 + 4个边中点）
-            // 角点顺序：TopLeft, TopRight, BottomRight, BottomLeft
             var handleTypes = new HandleType[]
             {
                 HandleType.TopLeft, HandleType.Top, HandleType.TopRight,
@@ -210,7 +272,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
             var bottomCenterRect = new Point((corners[2].X + corners[3].X) / 2, (corners[2].Y + corners[3].Y) / 2);
             var leftCenter = new Point((corners[3].X + corners[0].X) / 2, (corners[3].Y + corners[0].Y) / 2);
 
-            // 角点手柄
+            // 角点和边中点位置
             var positions = new[] { corners[0], topCenter, corners[1], rightCenter, corners[2], bottomCenterRect, corners[3], leftCenter };
 
             for (int i = 0; i < 8; i++)
@@ -219,31 +281,45 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                 {
                     Type = handleTypes[i],
                     Position = positions[i],
-                    Bounds = new Rect(positions[i].X - handleSize / 2, positions[i].Y - handleSize / 2, handleSize, handleSize),
+                    HandleSize = GetScaledHandleSize(scale),
                     Cursor = GetRotatedCursor(handleTypes[i], rotation)
                 });
             }
 
-            // 旋转手柄（位置 = center + (height/4) * direction）
+            // 旋转手柄
             var rectCenter = new Point((corners[0].X + corners[2].X) / 2, (corners[0].Y + corners[2].Y) / 2);
             var rotateHandlePos = CalculateRotationHandlePosition(rectCenter, rotation, scale, height);
+            var rotateHandleSize = GetScaledHandleSize(scale);
             handles.Add(new EditHandle
             {
                 Type = HandleType.Rotate,
                 Position = rotateHandlePos,
-                Bounds = new Rect(rotateHandlePos.X - handleSize / 2, rotateHandlePos.Y - handleSize / 2, handleSize, handleSize),
+                HandleSize = rotateHandleSize,
+                Bounds = new Rect(rotateHandlePos.X - rotateHandleSize / 2, rotateHandlePos.Y - rotateHandleSize / 2, rotateHandleSize, rotateHandleSize),
                 Cursor = Cursors.Hand
             });
 
-            // 中心手柄（用于拖动整个旋转矩形）
+            // 中心手柄
             var center = new Point((corners[0].X + corners[2].X) / 2, (corners[0].Y + corners[2].Y) / 2);
+            var centerSize = GetScaledHandleSize(scale);
             handles.Add(new EditHandle
             {
                 Type = HandleType.Center,
                 Position = center,
-                Bounds = new Rect(center.X - handleSize / 2, center.Y - handleSize / 2, handleSize, handleSize),
+                HandleSize = centerSize,
+                Bounds = new Rect(center.X - centerSize / 2, center.Y - centerSize / 2, centerSize, centerSize),
                 Cursor = Cursors.SizeAll
             });
+
+            // 统一计算非特殊手柄的 Bounds（前8个）
+            for (int i = 0; i < 8; i++)
+            {
+                var size = handles[i].HandleSize;
+                handles[i].Bounds = new Rect(
+                    handles[i].Position.X - size / 2,
+                    handles[i].Position.Y - size / 2,
+                    size, size);
+            }
 
             return handles.ToArray();
         }
@@ -251,22 +327,27 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
         /// <summary>
         /// 创建直线手柄（参考ROI编辑器CreateLineHandles 1218-1237行）
         /// </summary>
-        public static EditHandle[] CreateLineHandles(Point startPoint, Point endPoint, double handleSize = DefaultHandleSize)
+        public static EditHandle[] CreateLineHandles(Point startPoint, Point endPoint, double scale = 1.0)
         {
+            var startSize = GetScaledHandleSize(scale);
+            var endSize = GetScaledHandleSize(scale);
+
             var handles = new[]
             {
                 new EditHandle
                 {
                     Type = HandleType.LineStart,
                     Position = startPoint,
-                    Bounds = new Rect(startPoint.X - handleSize / 2, startPoint.Y - handleSize / 2, handleSize, handleSize),
+                    HandleSize = startSize,
+                    Bounds = new Rect(startPoint.X - startSize / 2, startPoint.Y - startSize / 2, startSize, startSize),
                     Cursor = Cursors.SizeAll
                 },
                 new EditHandle
                 {
                     Type = HandleType.LineEnd,
                     Position = endPoint,
-                    Bounds = new Rect(endPoint.X - handleSize / 2, endPoint.Y - handleSize / 2, handleSize, handleSize),
+                    HandleSize = endSize,
+                    Bounds = new Rect(endPoint.X - endSize / 2, endPoint.Y - endSize / 2, endSize, endSize),
                     Cursor = Cursors.SizeAll
                 }
             };

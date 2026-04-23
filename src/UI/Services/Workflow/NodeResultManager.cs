@@ -256,9 +256,8 @@ return;
         /// </summary>
         /// <remarks>
         /// 重构说明：
-        /// - 新架构：更新 OutputCache（输出缓存），不修改 InputSource（输入源）
+        /// - 更新 OutputCache（输出缓存），不修改 InputSource（输入源）
         /// - ImageSource集成：创建MemoryImageSource并注册到ImageSourceManager
-        /// - 向后兼容：同时更新 ImageData（已过时）
         /// - 设计原则：输入和输出分离，执行结果不应修改用户选择的输入数据
         /// </remarks>
         public bool UpdateNodeImage(WorkflowNode node, ToolResults result)

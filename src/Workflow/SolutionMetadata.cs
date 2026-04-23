@@ -209,42 +209,6 @@ public class SolutionMetadata : ObservableObject
     }
 
     /// <summary>
-    /// 从 Solution 对象创建元数据（已废弃：Solution 不再包含元数据）
-    /// </summary>
-    /// <param name="solution">解决方案对象</param>
-    /// <returns>元数据实例</returns>
-    /// <remarks>
-    /// 注意：Solution 已不再包含 Name、Description、times 等元数据属性。
-    /// 此方法仅用于兼容旧代码，从文件路径推断基本元数据。
-    /// 推荐使用 SolutionRepository.LoadMetadata() 方法直接从文件加载元数据。
-    /// </remarks>
-    [Obsolete("Solution 已不再包含元数据，推荐使用 SolutionRepository.LoadMetadata()")]
-    public static SolutionMetadata FromSolution(Solution solution)
-    {
-        if (solution == null)
-            throw new ArgumentNullException(nameof(solution));
-
-        // 从文件路径推断元数据
-        var filePath = solution.FilePath ?? "";
-        var fileName = System.IO.Path.GetFileNameWithoutExtension(filePath);
-
-        return new SolutionMetadata
-        {
-            Id = solution.Id,
-            Name = fileName,
-            Description = "",
-            Version = solution.Version,
-            FilePath = filePath,
-            DirectoryPath = System.IO.Path.GetDirectoryName(filePath) ?? "",
-            CreatedTime = System.IO.File.GetCreationTime(filePath),
-            ModifiedTime = System.IO.File.GetLastWriteTime(filePath),
-            LastAccessTime = DateTime.Now,
-            WorkflowCount = solution.Workflows?.Count ?? 0,
-            GlobalVariableCount = solution.GlobalVariables?.Count ?? 0
-        };
-    }
-
-    /// <summary>
     /// 克隆元数据
     /// </summary>
     /// <returns>元数据副本</returns>

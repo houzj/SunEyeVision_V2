@@ -1,9 +1,0 @@
----
-description: 不能随意的生成本地md文档
-alwaysApply: false
-enabled: true
-updatedAt: 2026-03-10T02:29:40.515Z
-provider: 
----
-
-需要保存文档时需要确认后才能保存到本地

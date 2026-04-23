@@ -157,8 +157,13 @@ build_*.txt
 build_log.txt
 restore_log.txt
 
+# Build temp directory
+build_temp/
+
 # Temporary files (SunEyeVision specific)
 temp_*.txt
+temp_*.ps1
+temp_*.cs
 *_temp.*
 
 # 插件输出目录（由 Directory.Build.props 控制输出位置）

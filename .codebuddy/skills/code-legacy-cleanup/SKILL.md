@@ -1,311 +1,97 @@
 ---
 name: code-legacy-cleanup
-description: This skill provides guidance for cleaning up legacy code and deprecated concepts from codebases, with specific focus on refactoring from legacy architectures to modern solutions. Use this skill when dealing with code cleanup, removal of deprecated patterns, or migration between architectural paradigms.
+description: 遗留代码清理技能。用于清理废弃代码、重命名过时概念、删除孤立类。触发场景：代码清理、架构迁移、概念重命名。
 ---
 
-# Legacy Code Cleanup Skill
+# 遗留代码清理技能
 
-## Purpose
+## 触发场景
 
-This skill guides the systematic cleanup of legacy code, deprecated concepts, and architectural migration artifacts from codebases. It provides a structured approach to safely removing obsolete code while maintaining system integrity.
+- 清理废弃架构模式（如 Recipe → Solution 迁移残留）
+- 重命名错误的命令/方法/属性
+- 删除孤立或无引用的类
+- 移除注释掉的代码块（>20行）
+- 合并重复功能
 
-## When to Use This Skill
+## 清理流程
 
-Use this skill when:
-- Cleaning up deprecated architectural patterns (e.g., Recipe/Project → Solution migration)
-- Removing unused or commented-out code blocks
-- Renaming incorrectly named commands, methods, and properties
-- Deleting isolated or orphaned classes
-- Migrating from old APIs to new architectures
-- Consolidating duplicate or redundant functionality
+### 第1步：全面分析
 
-## Cleanup Workflow
+先搜索再动手，确认影响范围：
 
-### Phase 1: Comprehensive Analysis
-
-Before making any changes, perform a thorough impact analysis:
-
-**Search for all legacy patterns:**
-```bash
-# Search for legacy concept names across codebase
-search_content pattern="Recipe|Project" outputMode="files_with_matches"
-
-# Find class definitions
-search_content pattern="class.*Recipe|class.*Project" outputMode="files_with_matches"
-
-# Identify usage patterns
-search_content pattern="RecipeRef|RecipeGroupName|RecipeId" outputMode="files_with_matches"
+```
+search_content pattern="旧概念名" outputMode="files_with_matches"
+search_content pattern="class.*旧类名" outputMode="files_with_matches"
 ```
 
-**Categorize findings:**
-- **Core classes** - Primary definitions of legacy concepts
-- **Reference classes** - Classes that reference or use legacy concepts
-- **UI layer** - ViewModels, Commands, XAML bindings
-- **Test code** - Unit tests and integration tests
-- **Documentation** - Comments, summaries, and doc files
+分类发现：
+- **核心类** - 旧概念的直接定义
+- **引用类** - 使用旧概念的类
+- **UI层** - ViewModel、Command、XAML绑定
+- **文档** - 注释和说明文件
 
-### Phase 2: Impact Assessment
+### 第2步：安全评估
 
-Analyze dependencies and usage patterns:
+删除前必须确认：
+- 零外部引用
+- 无运行时依赖（序列化、反射）
+- 新架构完全替代了功能
 
-**Check for external references:**
-```bash
-# Verify if a class has external dependencies
-search_content pattern=": Recipe|: RecipeGroup|RecipeJsonConverter" outputMode="files_with_matches"
+高风险场景需谨慎：
+- 有外部引用的类
+- 运行时关键路径依赖
+- 公共API或序列化依赖
 
-# Check instantiation patterns
-search_content pattern="new Recipe\\(|new RecipeGroup\\(" outputMode="files_with_matches"
+### 第3步：按风险等级执行
+
+1. **零风险**：删除无引用的孤立类
+2. **低风险**：重命名语义错误（SaveCurrentRecipeCommand → SaveCurrentSolutionCommand），更新日志消息
+3. **低风险**：删除大块注释代码（>20行）
+4. **中风险**：删除有引用但已废弃的功能
+
+### 第4步：验证
+
 ```
-
-**Safety criteria for deletion:**
-- ✅ Zero external references
-- ✅ No runtime dependencies
-- ✅ Internal migration tools use separate independent classes
-- ✅ New architecture completely replaces functionality
-
-**High-risk scenarios requiring caution:**
-- ⚠️ Classes with external references
-- ⚠️ Runtime dependencies in critical paths
-- ⚠️ Public APIs used by external systems
-- ⚠️ Configuration or serialization dependencies
-
-### Phase 3: Safe Cleanup Execution
-
-Execute cleanup in phases, from lowest to highest risk:
-
-**Phase 3.1: Delete Core Legacy Classes (Zero Risk)**
-```bash
-# Delete when confirmed no external dependencies
-Delete-Files:
-  - src/Workflow/Recipe.cs
-  - src/Workflow/RecipeGroup.cs
-  - src/Workflow/RecipeJsonConverter.cs
-```
-
-**Phase 3.2: Refactor UI Layer (Low Risk)**
-- Rename incorrectly named commands and methods
-- Update XAML bindings
-- Delete disabled functionality
-- Update log messages to match current architecture
-
-**Phase 3.3: Clean Commented Code (Low Risk)**
-- Delete large commented-out blocks (>20 lines)
-- Remove TODOs that reference deleted features
-- Update inline comments to reflect current architecture
-
-**Phase 3.4: Handle Orphaned Classes (Medium Risk)**
-- Verify no external usage before deletion
-- If in doubt, mark with [Obsolete] instead of deleting
-- Consider if functionality might be needed in future
-
-### Phase 4: Validation
-
-After cleanup, validate all changes:
-
-**Lint check:**
-```bash
 read_lints paths="<modified-file>"
+dotnet build SunEyeVision.sln
 ```
 
-**Compilation verification:**
-```bash
-dotnet build <solution-file>
-```
+## 项目特定清理场景
 
-**Functional testing:**
-- Verify renamed commands work correctly
-- Check UI bindings are functional
-- Ensure no runtime errors from deleted classes
+### Recipe → Solution 迁移残留
 
-### Phase 5: Documentation
+搜索关键词：`Recipe`、`RecipeGroup`、`RecipeId`、`RecipeRef`、`RecipeGroupName`、`RecipeJsonConverter`
 
-Update or document the cleanup:
+已知替换映射：
+- `Recipe` → `Solution`
+- `RecipeGroup` → `SolutionGroup`
+- `SaveCurrentRecipeCommand` → `SaveCurrentSolutionCommand`
+- `配方` → `解决方案`（日志消息中）
 
-**Update inline documentation:**
-- Remove references to deleted classes
-- Update architectural summaries
-- Document migration history in code comments
+### 注释代码清理标准
 
-**Create migration guides (if needed):**
-- Document what was removed and why
-- Provide guidance for new developers
-- Reference original documentation if available
+- 删除 >20 行的注释代码块
+- 删除引用已删除功能的 TODO
+- 保留有价值的设计说明注释
 
-## Best Practices
+## 代码锚点 — 架构分层
 
-### 1. Preserve Functional Code
+清理代码时必须判断影响范围，以下锚点标识关键架构边界：
 
-**DO NOT delete:**
-- Working functionality, even if incorrectly named
-- Commands that provide useful features
-- Code that users depend on
+| 层 | 关键入口 | 路径 | 说明 |
+|---|---|---|---|
+| SDK 核心 | `IToolPlugin` | `src/Plugin.SDK/Core/IToolPlugin.cs` | 工具接口，修改影响所有工具 |
+| SDK 核心 | `ToolParameters` | `src/Plugin.SDK/Execution/Parameters/ToolParameters.cs` | 参数基类，修改影响序列化 |
+| SDK 核心 | `ToolResults` | `src/Plugin.SDK/Execution/Results/ToolResults.cs` | 结果基类，修改影响序列化 |
+| SDK 模型 | `ObservableObject` | `src/Plugin.SDK/Models/ObservableObject.cs` | 属性通知基类，修改影响全局 |
+| SDK 控件 | `ToolDebugControlBase` | `src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs` | 调试控件基类，修改影响所有工具 UI |
+| SDK 控件 | `ImageControl` | `src/Plugin.SDK/UI/Controls/ImageControl/ImageControl.xaml.cs` | 图像控件，修改影响画布和调试窗口 |
+| 工作流 | `WorkflowNodeBase` | `src/Workflow/WorkflowNode.cs` | 节点模型，修改影响序列化和画布 |
+| UI 层 | `ViewModelBase` | `src/UI/ViewModels/ViewModelBase.cs` | VM 基类，修改影响所有 ViewModel |
 
-**DO:**
-- Rename incorrectly named features (e.g., "SaveCurrentRecipe" → "SaveCurrentSolution")
-- Update internal implementation while preserving public API
-- Add deprecation warnings before removing features
+## 约束
 
-### 2. Maintain Architectural Consistency
-
-**Naming conventions:**
-- Use consistent terminology throughout codebase
-- Prefer modern architectural terms over legacy ones
-- Update all references: code, comments, XAML, tests
-
-**Example refactoring:**
-```csharp
-// Before (legacy naming)
-public ICommand SaveCurrentRecipeCommand { get; }
-private void ExecuteSaveCurrentRecipe()
-{
-    LogInfo("保存当前配方");
-}
-
-// After (modern naming)
-public ICommand SaveCurrentSolutionCommand { get; }
-private void ExecuteSaveCurrentSolution()
-{
-    LogInfo("保存当前解决方案");
-}
-```
-
-### 3. Progressive Cleanup Strategy
-
-**Order of operations:**
-1. Start with zero-risk deletions (orphaned classes)
-2. Refactor semantic issues (rename, log messages)
-3. Remove disabled functionality
-4. Clean up comments and documentation
-5. Update tests
-
-**Risk mitigation:**
-- Use version control for easy rollback
-- Test after each phase
-- Keep detailed commit messages
-- Maintain backup of deleted code temporarily if needed
-
-### 4. Validation Before Deletion
-
-**Pre-deletion checklist:**
-- [ ] No external file references
-- [ ] No runtime dependencies
-- [ ] Linter reports no errors
-- [ ] Tests pass after related changes
-- [ ] UI functionality verified
-- [ ] Documentation updated
-
-## Common Patterns
-
-### Pattern 1: Complete Concept Migration
-
-**Scenario:** Legacy concept fully replaced by new architecture
-
-**Actions:**
-1. Delete all core classes of legacy concept
-2. Remove all references in other classes
-3. Update UI layer (ViewModels, Commands, XAML)
-4. Clean up commented code
-5. Delete test code for legacy concept
-6. Update documentation
-
-**Example:** Recipe → Solution migration
-
-### Pattern 2: Semantic Refactoring
-
-**Scenario:** Code works but uses incorrect naming
-
-**Actions:**
-1. Identify all occurrences of old naming
-2. Rename classes, methods, properties
-3. Update XAML bindings
-4. Update log messages and user-facing text
-5. Update comments and documentation
-
-**Example:** "SaveCurrentRecipeCommand" → "SaveCurrentSolutionCommand"
-
-### Pattern 3: Orphaned Class Cleanup
-
-**Scenario:** Isolated class with no external references
-
-**Actions:**
-1. Verify no external usage through comprehensive search
-2. Check for serialization/deserialization dependencies
-3. Verify not used by reflection or dynamic loading
-4. Delete class file
-5. Verify compilation succeeds
-
-**Example:** DeviceBinding with RecipeRef/RecipeGroupName properties
-
-### Pattern 4: Commented Code Removal
-
-**Scenario:** Large blocks of commented-out legacy code
-
-**Actions:**
-1. Identify commented code blocks (>20 lines)
-2. Verify functionality is fully removed/replaced
-3. Delete entire comment block including markers
-4. Verify no TODOs depend on commented code
-5. Clean up orphaned TODOs
-
-**Example:** SolutionConfigurationDialogViewModel ~200 lines of commented Recipe code
-
-## Troubleshooting
-
-### Issue: Compilation Errors After Deletion
-
-**Cause:** Undetected external dependencies
-
-**Solution:**
-1. Check compiler error messages for missing references
-2. Search for usages of deleted classes
-3. Restore deleted code if critical
-4. Update dependent code before re-deleting
-
-### Issue: Runtime Errors After Refactoring
-
-**Cause:** XAML bindings not updated or renamed incorrectly
-
-**Solution:**
-1. Check all XAML Command bindings match new names
-2. Verify property paths in bindings
-3. Check DataContext assignments
-4. Use data binding diagnostics if available
-
-### Issue: Lint Errors in Modified Files
-
-**Cause:** Syntax errors or formatting issues
-
-**Solution:**
-1. Read lint diagnostics
-2. Fix syntax errors first
-3. Address formatting warnings
-4. Verify no unintended code was removed
-
-## Metrics
-
-Track cleanup progress with these metrics:
-
-**Code quality metrics:**
-- Lines of code removed
-- Files deleted
-- Renamed entities (classes, methods, properties)
-- Comment blocks removed
-- Linter errors reduced
-
-**Architecture metrics:**
-- Legacy concepts removed
-- New architecture adoption percentage
-- Semantic consistency improved
-- Orphaned code eliminated
-
-## References
-
-**Bundled resources:**
-
-None - This skill provides procedural guidance without requiring additional scripts or references.
-
-**Related documentation:**
-
-- Solution architecture documentation
-- Migration history records
-- Project coding standards
+- **禁止**使用 `[Obsolete]` 标记（原型期直接删除）
+- **禁止**使用条件编译（`#if DEBUG`）
+- 功能代码只重命名不删除
+- 使用 Git 做版本控制，不在代码中保留旧实现

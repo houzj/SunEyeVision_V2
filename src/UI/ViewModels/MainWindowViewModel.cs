@@ -191,28 +191,8 @@ namespace SunEyeVision.UI.ViewModels
         // 确保每个Tab都是独立的
 
         private WorkflowNodeBase? _selectedNode;
-        private Models.NodeImageData? _activeNodeImageData;
-        private Models.ImageInputSource? _activeInputSource; // 新增：活动输入源
+        private Models.ImageInputSource? _activeInputSource; // 活动输入源
         private string? _currentDisplayNodeId = null;  // 记录当前显示的采集节点ID，避免重复切换
-
-        /// <summary>
-        /// 当前活动节点图像数据，用于绑定到图像预览控件
-        /// 每个采集节点维护自己的图像集
-        /// </summary>
-        [Obsolete("请使用 ActiveInputSource 替代。此属性仅为向后兼容保留。")]
-        public Models.NodeImageData? ActiveNodeImageData
-        {
-            get => _activeNodeImageData;
-            private set
-            {
-                // 引用相等时不触发更新，避免不必要的绑定刷新
-                if (ReferenceEquals(_activeNodeImageData, value))
-                {
-                    return;
-                }
-                SetProperty(ref _activeNodeImageData, value);
-            }
-        }
 
         /// <summary>
         /// 当前活动输入源，用于绑定到图像预览控件
@@ -309,7 +289,7 @@ namespace SunEyeVision.UI.ViewModels
                     // 更新图像显示数据源（当前节点 + 父节点）
                     UpdateDisplayImageSources((Models.WorkflowNode?)value);
 
-                    // 节点选中状态变化时更新图像预览（整合了 ActiveNodeImageData 更新逻辑）
+                    // 节点选中状态变化时更新图像预览
                     UpdateImagePreviewVisibility((Models.WorkflowNode?)value);
                 }
             }
@@ -3483,9 +3463,8 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
         /// 3. 逆向追踪采集节点图像 -> 显示在图像预览中
         ///
         /// 重构说明:
-        /// - 新架构使用 InputSource（输入源）替代 ImageData
+        /// - 使用 InputSource（输入源）管理图像数据
         /// - 输入源存储用户选择的图像，执行流程不会修改
-        /// - 向后兼容：同时更新 ImageData
         ///
         /// 性能优化:
         /// - 只在状态真正变化时才更新属性，避免触发不必要的绑定刷新
@@ -3501,9 +3480,6 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
                 {
                     ShowImagePreview = false;
                     ActiveInputSource = null;
-#pragma warning disable CS0618 // 向后兼容
-                    ActiveNodeImageData = null;
-#pragma warning restore CS0618
                     _currentDisplayNodeId = null;
                 }
                 return;
@@ -3549,9 +3525,6 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
                 {
                     ShowImagePreview = false;
                     ActiveInputSource = null;
-#pragma warning disable CS0618 // 向后兼容
-                    ActiveNodeImageData = null;
-#pragma warning restore CS0618
                     _currentDisplayNodeId = null;
                 }
                 return;
@@ -3586,9 +3559,6 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
                 {
                     ShowImagePreview = false;
                     ActiveInputSource = null;
-#pragma warning disable CS0618 // 向后兼容
-                    ActiveNodeImageData = null;
-#pragma warning restore CS0618
                     _currentDisplayNodeId = null;
                 }
             }

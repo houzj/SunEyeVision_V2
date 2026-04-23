@@ -179,7 +179,7 @@ public class SolutionManager
     {
         CloseSolution();
 
-        // 创建新的 Solution 对象（纯数据模型，自动创建默认配方）
+        // 创建新的 Solution 对象（纯数据模型，自动创建默认工作流）
         var solution = Solution.Create();
         solution.Version = metadata.Version;
         // Name 和 Description 由 SolutionMetadata 统一管理，不再同步到 Solution

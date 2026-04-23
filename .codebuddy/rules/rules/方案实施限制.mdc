@@ -1,9 +1,0 @@
----
-description: 实施方案前需要请求确认
-alwaysApply: false
-enabled: true
-updatedAt: 2026-03-10T02:41:09.812Z
-provider: 
----
-
-哪怕是在craft下  提供的方案  在实施前  也需要先发出请求 经过确认后才能实施

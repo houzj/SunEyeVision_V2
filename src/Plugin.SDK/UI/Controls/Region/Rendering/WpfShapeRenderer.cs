@@ -350,11 +350,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                 shape.Stroke = new SolidColorBrush(region.StrokeColor);
                 shape.StrokeThickness = region.StrokeThickness / _viewportScale;
 
-                // 更新虚线样式（间隔也需要反除缩放，保持视觉恒定）
-                shape.StrokeDashArray = region.IsPreview 
-                    ? new DoubleCollection { 4 / _viewportScale, 2 / _viewportScale } 
-                    : new DoubleCollection();
-
                 // 根据形状类型更新尺寸
                 UpdateShapeDimensions(shape, region);
         }
@@ -422,8 +417,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                 if (_logger != null && _logCounter % LogInterval == 0)
                 {
                     _logger.Log(LogLevel.Info, 
-                        $"[CreateRectangle] IsPreview={region.IsPreview}, " +
-                        $"StrokeDashArray={(region.IsPreview ? "4,2" : "empty")}", 
+                        $"[CreateRectangle] IsPreview={region.IsPreview}", 
                         "WpfShapeRenderer");
                 }
 
@@ -433,8 +427,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                     Height = region.Height,
                     Fill = new SolidColorBrush(fillColor) { Opacity = region.Opacity },
                     Stroke = new SolidColorBrush(strokeColor),
-                    StrokeThickness = strokeThickness,
-                    StrokeDashArray = region.IsPreview ? new DoubleCollection { 4 / _viewportScale, 2 / _viewportScale } : new DoubleCollection()
+                    StrokeThickness = strokeThickness
                 };
         }
 
@@ -447,8 +440,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                 if (_logger != null && _logCounter % LogInterval == 0)
                 {
                     _logger.Log(LogLevel.Info, 
-                        $"[CreateCircle] IsPreview={region.IsPreview}, " +
-                        $"StrokeDashArray={(region.IsPreview ? "4,2" : "empty")}", 
+                        $"[CreateCircle] IsPreview={region.IsPreview}", 
                         "WpfShapeRenderer");
                 }
 
@@ -458,8 +450,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                     Height = region.Radius * 2,
                     Fill = new SolidColorBrush(fillColor) { Opacity = region.Opacity },
                     Stroke = new SolidColorBrush(strokeColor),
-                    StrokeThickness = strokeThickness,
-                    StrokeDashArray = region.IsPreview ? new DoubleCollection { 4 / _viewportScale, 2 / _viewportScale } : new DoubleCollection()
+                    StrokeThickness = strokeThickness
                 };
         }
 
@@ -472,8 +463,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                 if (_logger != null && _logCounter % LogInterval == 0)
                 {
                     _logger.Log(LogLevel.Info, 
-                        $"[CreateRotatedRectangle] IsPreview={region.IsPreview}, " +
-                        $"StrokeDashArray={(region.IsPreview ? "4,2" : "empty")}", 
+                        $"[CreateRotatedRectangle] IsPreview={region.IsPreview}", 
                         "WpfShapeRenderer");
                 }
 
@@ -484,7 +474,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                     Fill = new SolidColorBrush(fillColor) { Opacity = region.Opacity },
                     Stroke = new SolidColorBrush(strokeColor),
                     StrokeThickness = strokeThickness,
-                    StrokeDashArray = region.IsPreview ? new DoubleCollection { 4 / _viewportScale, 2 / _viewportScale } : new DoubleCollection(),
                     RenderTransform = new RotateTransform(region.Angle, region.Width / 2, region.Height / 2)
                     {
                         // 使用数学角度系统
@@ -504,8 +493,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                 if (_logger != null && _logCounter % LogInterval == 0)
                 {
                     _logger.Log(LogLevel.Info, 
-                        $"[CreateLine] IsPreview={region.IsPreview}, " +
-                        $"StrokeDashArray={(region.IsPreview ? "4,2" : "empty")}", 
+                        $"[CreateLine] IsPreview={region.IsPreview}", 
                         "WpfShapeRenderer");
                 }
 
@@ -516,8 +504,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                     X2 = region.LineEnd.X - region.LineStart.X,
                     Y2 = region.LineEnd.Y - region.LineStart.Y,
                     Stroke = new SolidColorBrush(strokeColor),
-                    StrokeThickness = strokeThickness,
-                    StrokeDashArray = region.IsPreview ? new DoubleCollection { 4 / _viewportScale, 2 / _viewportScale } : new DoubleCollection()
+                    StrokeThickness = strokeThickness
                 };
         }
         /// <summary>
@@ -532,8 +519,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                 if (_logger != null && _logCounter % LogInterval == 0)
                 {
                     _logger.Log(LogLevel.Info, 
-                        $"[CreatePolygon] IsPreview={region.IsPreview}, Points={region.PolygonPoints.Count}, " +
-                        $"StrokeDashArray={(region.IsPreview ? "4,2" : "empty")}", 
+                        $"[CreatePolygon] IsPreview={region.IsPreview}, Points={region.PolygonPoints.Count}", 
                         "WpfShapeRenderer");
                 }
 
@@ -541,8 +527,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                 {
                     Fill = new SolidColorBrush(fillColor) { Opacity = region.Opacity },
                     Stroke = new SolidColorBrush(strokeColor),
-                    StrokeThickness = strokeThickness,
-                    StrokeDashArray = region.IsPreview ? new DoubleCollection { 4 / _viewportScale, 2 / _viewportScale } : new DoubleCollection()
+                    StrokeThickness = strokeThickness
                 };
 
                 // 设置点集

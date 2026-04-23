@@ -87,7 +87,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                 Fill = fillColor,
                 Stroke = strokeColor,
                 StrokeThickness = strokeThickness,
-                StrokeDashArray = isPreview ? new DoubleCollection { 4, 2 } : new DoubleCollection()
             };
 
             // 中心定位（参考ROI编辑器的定位方式）
@@ -112,7 +111,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                 Fill = fillColor,
                 Stroke = strokeColor,
                 StrokeThickness = strokeThickness,
-                StrokeDashArray = isPreview ? new DoubleCollection { 4, 2 } : new DoubleCollection()
             };
 
             // 中心定位
@@ -137,7 +135,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                 Fill = fillColor,
                 Stroke = strokeColor,
                 StrokeThickness = strokeThickness,
-                StrokeDashArray = isPreview ? new DoubleCollection { 4, 2 } : new DoubleCollection()
             };
 
             // 中心定位
@@ -158,8 +155,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                 X2 = shape.EndX,
                 Y2 = shape.EndY,
                 Stroke = strokeColor,
-                StrokeThickness = strokeThickness,
-                StrokeDashArray = isPreview ? new DoubleCollection { 4, 2 } : new DoubleCollection()
+                StrokeThickness = strokeThickness
             };
 
             return line;

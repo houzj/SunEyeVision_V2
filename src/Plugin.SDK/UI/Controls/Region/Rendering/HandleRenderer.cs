@@ -105,6 +105,27 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
         }
 
         /// <summary>
+        /// 计算自适应虚线间隔（与手柄同策略的幂律缩放）
+        /// 幂律公式：screenSize = baseInterval / zoom^0.15，Clamp [baseInterval, baseInterval * 1.5] px
+        ///
+        /// 缩放行为：
+        ///   低zoom(看全局) → 间隔大(~6px) → 避免虚线密集视觉噪声
+        ///   标准zoom      → 间隔适中(~4px) → 虚线清晰
+        ///   高zoom(看细节) → 间隔小(~4px) → 虚线精细
+        /// </summary>
+        /// <param name="scale">当前视口缩放值(zoom)</param>
+        /// <param name="baseInterval">基准间隔（WPF坐标下zoom=1时的屏幕像素值），默认4.0</param>
+        /// <returns>WPF坐标系中的虚线间隔（经ScaleTransform放大后达到屏幕目标尺寸）</returns>
+        public static double GetScaledDashInterval(double scale, double baseInterval = 4.0)
+        {
+            scale = Math.Max(scale, 0.01);
+            const double p = 0.15;
+            var screenSize = baseInterval / Math.Pow(scale, p);
+            screenSize = Math.Clamp(screenSize, baseInterval, baseInterval * 1.5);
+            return screenSize / scale;
+        }
+
+        /// <summary>
         /// 创建矩形手柄（参考ROI编辑器CreateRectangleHandles 1071-1097行）
         /// 每个手柄根据类型使用不同尺寸
         /// </summary>

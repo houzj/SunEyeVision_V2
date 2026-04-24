@@ -839,7 +839,7 @@
                                                               ShowChessboardBackground="True"
                                                               EnablePanning="True"
                                                               EnableZoom="True"
-                                                              AutoFitOnResize="True"
+                                                              AutoFitMode="FirstOnly"
                                                               ImageSources="{Binding DisplayImageSources}"
                                                               SelectedImageSourceIndex="{Binding SelectedDisplayImageSourceIndex, Mode=TwoWay}"
                                                               ImageLoaded="OnImageLoaded"

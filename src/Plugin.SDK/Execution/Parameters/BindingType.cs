@@ -38,7 +38,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <remarks>
         /// 参数值从其他节点的输出属性动态获取。
         /// 支持运行时自动解析，实现节点间的数据传递。
-        /// 可选地使用 TransformExpression 进行值转换。
         /// </remarks>
         Binding = 1,
 

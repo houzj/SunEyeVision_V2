@@ -69,15 +69,13 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             IDictionary<string, ToolResults> nodeResults);
 
         /// <summary>
-        /// 应用解析结果到工具参数
+        /// 应用参数绑定 — 直接从参数内部的 BindingConfig 读取绑定并解析
         /// </summary>
         /// <param name="parameters">工具参数对象</param>
-        /// <param name="container">参数绑定容器</param>
         /// <param name="nodeResults">节点结果缓存</param>
         /// <returns>应用结果</returns>
-        ParameterApplyResult ApplyToParameters(
+        ParameterApplyResult ApplyBindings(
             ToolParameters parameters,
-            ParamSettingContainer container,
             IDictionary<string, ToolResults> nodeResults);
 
         /// <summary>

@@ -14,6 +14,27 @@ using SunEyeVision.Plugin.SDK.Logging;
 namespace SunEyeVision.Plugin.SDK.UI.Controls
 {
     /// <summary>
+    /// 图像自动适配模式
+    /// </summary>
+    public enum ImageAutoFitMode
+    {
+        /// <summary>
+        /// 图像变化时始终自动适配窗口
+        /// </summary>
+        Always,
+
+        /// <summary>
+        /// 仅首次加载时适配，后续切换保持用户视图状态（缩放+平移）
+        /// </summary>
+        FirstOnly,
+
+        /// <summary>
+        /// 从不自动适配，完全由用户手动控制
+        /// </summary>
+        Never
+    }
+
+    /// <summary>
     /// 图像显示控件 - 提供图像显示、缩放、平移功能
     /// 支持叠加层机制，允许外部添加自定义绘制层
     /// </summary>
@@ -33,7 +54,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         private double _offsetY;
 
         // 窗口自适应相关
-        private bool _autoFitOnResize = true;
         private System.Windows.Threading.DispatcherTimer? _resizeTimer;
 
         // 全屏相关
@@ -46,8 +66,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         private object? _savedDataContext;  // 保存原 DataContext
 
         #endregion
-
-
 
         #region 依赖属性
 
@@ -107,6 +125,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             DependencyProperty.Register(nameof(SelectedImageSourceIndex), typeof(int), typeof(ImageControl),
                 new PropertyMetadata(-1, OnSelectedImageSourceIndexChanged));
 
+        /// <summary>
+        /// 图像自动适配模式
+        /// </summary>
+        public static readonly DependencyProperty AutoFitModeProperty =
+            DependencyProperty.Register(nameof(AutoFitMode), typeof(ImageAutoFitMode), typeof(ImageControl),
+                new PropertyMetadata(ImageAutoFitMode.FirstOnly));
+
         #endregion
 
         #region 属性
@@ -145,6 +170,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         {
             get => (bool)GetValue(EnableZoomProperty);
             set => SetValue(EnableZoomProperty, value);
+        }
+
+        /// <summary>
+        /// 图像自动适配模式
+        /// </summary>
+        public ImageAutoFitMode AutoFitMode
+        {
+            get => (ImageAutoFitMode)GetValue(AutoFitModeProperty);
+            set => SetValue(AutoFitModeProperty, value);
         }
 
         /// <summary>
@@ -226,14 +260,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         }
 
         /// <summary>
-        /// 窗口调整时是否自动适应
-        /// </summary>
-        public bool AutoFitOnResize
-        {
-            get => _autoFitOnResize;
-            set => _autoFitOnResize = value;
-        }
-
         /// <summary>
         /// 图像源集合 - 用于图像显示选择器下拉框
         /// </summary>
@@ -612,6 +638,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         {
             if (d is ImageControl control)
             {
+                var oldImage = e.OldValue as BitmapSource;
                 var newImage = e.NewValue as BitmapSource;
                 control.DisplayImage.Source = newImage;
 
@@ -625,15 +652,25 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     control.ImageContainer.Width = newImage.PixelWidth;
                     control.ImageContainer.Height = newImage.PixelHeight;
                     control.ImageSizeText.Text = $"图像: {newImage.PixelWidth} x {newImage.PixelHeight}";
-                    
-                    // 图像加载后自动适应窗口 - 使用 Loaded 优先级确保布局完成
-                    if (control._autoFitOnResize)
+
+                    // 根据 AutoFitMode 执行适配策略
+                    bool isFirstLoad = oldImage == null;
+                    control.Dispatcher.BeginInvoke(new Action(() =>
                     {
-                        control.Dispatcher.BeginInvoke(new Action(() =>
+                        switch (control.AutoFitMode)
                         {
-                            control.FitToWindow();
-                        }), System.Windows.Threading.DispatcherPriority.Loaded);
-                    }
+                            case ImageAutoFitMode.Always:
+                                control.FitToWindow();
+                                break;
+                            case ImageAutoFitMode.FirstOnly:
+                                if (isFirstLoad)
+                                    control.FitToWindow();
+                                // 非首次：保持用户当前缩放/平移状态
+                                break;
+                            case ImageAutoFitMode.Never:
+                                break;
+                        }
+                    }), System.Windows.Threading.DispatcherPriority.Loaded);
                 }
                 else
                 {
@@ -948,7 +985,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         private void MainCanvas_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            if (_autoFitOnResize && SourceImage != null)
+            if (AutoFitMode != ImageAutoFitMode.Never && SourceImage != null)
             {
                 // 延迟执行，避免频繁调用
                 _resizeTimer?.Stop();

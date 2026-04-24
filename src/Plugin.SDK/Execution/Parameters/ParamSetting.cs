@@ -20,10 +20,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     ///    - 由 System.Type 定义，支持精确类型匹配
     ///    - 支持所有 .NET 基础类型和自定义类型
     /// 
-    /// 3. 值转换（TransformExpression）：可选的表达式转换
-    ///    - 两种绑定模式都可用
-    ///    - 示例: "value * 1.5", "Math.Max(value, 10)"
-    /// 
     /// 使用示例：
     /// <code>
     /// // 创建常量设置
@@ -31,9 +27,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     /// 
     /// // 创建动态绑定设置
     /// var radiusSetting = ParamSetting.CreateBinding("MinRadius", "circle_find_001", "Radius");
-    /// 
-    /// // 创建带转换表达式的设置
-    /// var settingWithTransform = ParamSetting.CreateBinding("Radius", "node_001", "Radius", "value * 0.9");
     /// </code>
     /// </remarks>
     public class ParamSetting
@@ -82,16 +75,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         public string? SourceProperty { get; set; }
 
         /// <summary>
-        /// 转换表达式
-        /// </summary>
-        /// <remarks>
-        /// 可选的值转换表达式，两种绑定模式都可用。
-        /// 示例: "value * 1.5", "Math.Max(value, 10)", "value.ToString()"
-        /// 变量 'value' 代表获取的原始值。
-        /// </remarks>
-        public string? TransformExpression { get; set; }
-
-        /// <summary>
         /// 目标参数类型
         /// </summary>
         /// <remarks>
@@ -129,21 +112,18 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <param name="parameterName">参数名称</param>
         /// <param name="sourceNodeId">源节点ID</param>
         /// <param name="sourceProperty">源属性名称</param>
-        /// <param name="transformExpression">转换表达式（可选）</param>
         /// <returns>参数设置实例</returns>
         public static ParamSetting CreateBinding(
             string parameterName,
             string sourceNodeId,
-            string sourceProperty,
-            string? transformExpression = null)
+            string sourceProperty)
         {
             return new ParamSetting
             {
                 ParameterName = parameterName,
                 BindingType = BindingType.Binding,
                 SourceNodeId = sourceNodeId,
-                SourceProperty = sourceProperty,
-                TransformExpression = transformExpression
+                SourceProperty = sourceProperty
             };
         }
 
@@ -197,7 +177,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 ConstantValue = ConstantValue,
                 SourceNodeId = SourceNodeId,
                 SourceProperty = SourceProperty,
-                TransformExpression = TransformExpression,
                 TargetType = TargetType
             };
         }
@@ -240,9 +219,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 
             if (!string.IsNullOrEmpty(SourceProperty))
                 dict["SourceProperty"] = SourceProperty;
-
-            if (!string.IsNullOrEmpty(TransformExpression))
-                dict["TransformExpression"] = TransformExpression;
 
             if (TargetType != null)
                 dict["TargetType"] = TargetType.AssemblyQualifiedName ?? TargetType.FullName!;
@@ -312,9 +288,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             if (dict.TryGetValue("SourceProperty", out var prop))
                 setting.SourceProperty = prop?.ToString();
 
-            if (dict.TryGetValue("TransformExpression", out var expr))
-                setting.TransformExpression = expr?.ToString();
-
             if (dict.TryGetValue("TargetType", out var targetType))
             {
                 var targetTypeStr = targetType?.ToString();
@@ -334,12 +307,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         {
             return BindingType switch
             {
-                BindingType.Constant => string.IsNullOrEmpty(TransformExpression)
-                    ? $"{ParameterName} = {ConstantValue ?? "null"}"
-                    : $"{ParameterName} = {ConstantValue ?? "null"} ({TransformExpression})",
-                BindingType.Binding => string.IsNullOrEmpty(TransformExpression)
-                    ? $"{ParameterName} <- {SourceNodeId}.{SourceProperty}"
-                    : $"{ParameterName} <- {SourceNodeId}.{SourceProperty} ({TransformExpression})",
+                BindingType.Constant => $"{ParameterName} = {ConstantValue ?? "null"}",
+                BindingType.Binding => $"{ParameterName} <- {SourceNodeId}.{SourceProperty}",
                 _ => $"{ParameterName} ({BindingType})"
             };
         }

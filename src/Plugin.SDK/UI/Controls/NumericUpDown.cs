@@ -526,7 +526,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 $"[OnTextBoxLostFocus] TextBox失去焦点 | 新焦点元素: {focusedElement?.GetType().Name ?? "null"} | IsKeyboardFocusWithin: {IsKeyboardFocusWithin}", 
                 "NumericUpDown");
             
-            // 延迟检查（给焦点转移时间）
+            // 立即解析 TextBox 中的文本（同步执行，确保获取最新输入值）
+            ParseAndApplyText();
+            
+            // 延迟检查焦点状态（给焦点转移时间）
             Dispatcher.BeginInvoke(new Action(() =>
             {
                 var currentFocused = Keyboard.FocusedElement;

@@ -19,8 +19,7 @@ namespace SunEyeVision.UI.ViewModels
     /// 1. 切换绑定类型（常量/动态）
     /// 2. 管理常量值
     /// 3. 选择数据源
-    /// 4. 配置转换表达式
-    /// 5. 验证绑定配置
+    /// 4. 验证绑定配置
     /// </remarks>
     public class ParamSettingViewModel : ParamSettingViewModelBase
     {
@@ -31,7 +30,6 @@ namespace SunEyeVision.UI.ViewModels
         private BindingType _selectedBindingType;
         private object? _constantValue;
         private AvailableDataSource? _selectedDataSource;
-        private string? _transformExpression;
         private bool _isValid = true;
         private string _validationMessage = string.Empty;
 
@@ -272,22 +270,6 @@ namespace SunEyeVision.UI.ViewModels
         public string SelectedDataSourceDisplay => SelectedDataSource?.GetDisplayText() ?? "选择数据源...";
 
         /// <summary>
-        /// 转换表达式
-        /// </summary>
-        public string? TransformExpression
-        {
-            get => _transformExpression;
-            set
-            {
-                if (SetProperty(ref _transformExpression, value))
-                {
-                    _setting.TransformExpression = value;
-                    Validate();
-                }
-            }
-        }
-
-        /// <summary>
         /// 是否有效
         /// </summary>
         public new bool IsValid
@@ -444,7 +426,6 @@ namespace SunEyeVision.UI.ViewModels
             viewModel._setting = binding.Clone();
             viewModel._selectedBindingType = binding.BindingType;
             viewModel._constantValue = binding.ConstantValue;
-            viewModel._transformExpression = binding.TransformExpression;
 
             // 如果是动态绑定，尝试恢复数据源选择
             if (binding.BindingType == BindingType.Binding &&
@@ -586,7 +567,6 @@ namespace SunEyeVision.UI.ViewModels
 
             SelectedBindingType = BindingType.Constant;
             ConstantValue = DefaultValue;
-            TransformExpression = null;
             SelectedDataSource = null;
 
             // 触发重置事件

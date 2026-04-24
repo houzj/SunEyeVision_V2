@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -61,11 +61,11 @@ namespace SunEyeVision.Workflow
                     var inputImage = ResolveInputImage(typedParams, defaultInputImage, nodeResults);
                     typedParams.ResolvedInputImage = inputImage;
 
-                    // 2. 应用参数绑定解析（非图像参数）
-                    if (ParamSettings?.Count > 0 && nodeResults != null)
+                    // 2. 应用参数绑定（从参数内部 BindingConfig 读取并解析）
+                    if (nodeResults != null)
                     {
-                        var resolver = new ParameterResolver();
-                        var applyResult = resolver.ApplyToParameters(typedParams, ParamSettings, nodeResults);
+                        var resolver = new ParameterResolver(VisionLogger.Instance);
+                        var applyResult = resolver.ApplyBindings(typedParams, nodeResults);
 
                         if (!applyResult.IsSuccess && applyResult.Errors.Count > 0)
                         {

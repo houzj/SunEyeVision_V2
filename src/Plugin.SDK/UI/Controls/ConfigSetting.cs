@@ -48,7 +48,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         // ===== 绑定源 =====
         public static readonly DependencyProperty BindingSourceProperty =
             DependencyProperty.Register(nameof(BindingSource), typeof(string), typeof(ConfigSetting),
-                new FrameworkPropertyMetadata(string.Empty, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+                new FrameworkPropertyMetadata(string.Empty, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnBindingSourceChanged));
 
         // ===== 绑定显示文本（只读，用于UI显示） =====
         private static readonly DependencyPropertyKey BindingDisplayTextPropertyKey =
@@ -136,10 +136,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         public static readonly DependencyProperty AvailableBindingsProperty =
             DependencyProperty.Register(nameof(AvailableBindings), typeof(System.Collections.Generic.List<string>), typeof(ConfigSetting),
                 new PropertyMetadata(null));
-
-        public static readonly DependencyProperty TransformExpressionProperty =
-            DependencyProperty.Register(nameof(TransformExpression), typeof(string), typeof(ConfigSetting),
-                new FrameworkPropertyMetadata(string.Empty, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
         // ===== 编辑器可见性控制 =====
         /// <summary>
@@ -310,12 +306,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             set => SetValue(AvailableBindingsProperty, value);
         }
 
-        public string TransformExpression
-        {
-            get => (string)GetValue(TransformExpressionProperty);
-            set => SetValue(TransformExpressionProperty, value);
-        }
-
         public Visibility NumericEditorVisibility
         {
             get => (Visibility)GetValue(NumericEditorVisibilityProperty);
@@ -413,6 +403,18 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             if (d is ConfigSetting control)
             {
                 control.UpdateEditorVisibility();
+                
+                // 方案B：当绑定类型变化时，同步到 ParamValue.BindingConfig
+                control.SyncBindingConfigToParamValue();
+            }
+        }
+
+        private static void OnBindingSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is ConfigSetting control)
+            {
+                // 当绑定源变化时，同步到 ParamValue.BindingConfig
+                control.SyncBindingConfigToParamValue();
             }
         }
 
@@ -967,8 +969,71 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 var parts = BindingSource.Split('.');
                 var nodeId = parts.Length > 0 ? parts[0] : string.Empty;
                 var property = parts.Length > 1 ? parts[1] : BindingSource;
-                return ParamSetting.CreateBinding(ParameterName, nodeId, property, TransformExpression);
+                return ParamSetting.CreateBinding(ParameterName, nodeId, property);
             }
+        }
+
+        /// <summary>
+        /// 将绑定配置同步到绑定的 ParamValue 对象（方案B核心方法）
+        /// </summary>
+        /// <remarks>
+        /// 当用户在 UI 中切换绑定模式或选择绑定源时，将配置写入绑定的 ParamValue.BindingConfig。
+        /// 这样执行引擎在运行时可以直接从 parameters 内部读取绑定信息，无需依赖外部的 ParamSettings。
+        /// </remarks>
+        private void SyncBindingConfigToParamValue()
+        {
+            // 获取当前绑定的 ParamValue<T> 对象
+            var paramValue = GetBoundParamValue();
+            if (paramValue == null)
+                return;
+
+            if (BindingType == BindingType.Constant)
+            {
+                // 清除绑定配置（设为 null 表示常量模式）
+                paramValue.BindingConfig = null;
+            }
+            else if (!string.IsNullOrEmpty(BindingSource))
+            {
+                // 创建绑定配置
+                var parts = BindingSource.Split('.');
+                var nodeId = parts.Length > 0 ? parts[0] : string.Empty;
+                var property = parts.Length > 1 ? parts[1] : BindingSource;
+
+                paramValue.BindingConfig = ParamSetting.CreateBinding(
+                    ParameterName ?? string.Empty,
+                    nodeId,
+                    property);
+            }
+        }
+
+        /// <summary>
+        /// 获取当前绑定的 ParamValue 对象
+        /// </summary>
+        /// <returns>绑定的 ParamValue&lt;T&gt;，如果不是绑定到 ParamValue 则返回 null</returns>
+        private ParamValueBase? GetBoundParamValue()
+        {
+            // 通过 Value 属性的绑定表达式获取绑定的源对象
+            var bindingExpression = BindingOperations.GetBindingExpression(this, ValueProperty);
+            if (bindingExpression?.DataItem == null)
+                return null;
+
+            // DataItem 是 ToolParameters 对象，获取绑定属性的值
+            // 注意：XAML 绑定路径可能是 "Threshold.Value"（嵌套属性），
+            // 需要提取第一段作为属性名来获取 ParamValue<T> 对象
+            var fullPath = bindingExpression.ParentBinding?.Path?.Path;
+            if (string.IsNullOrEmpty(fullPath))
+                return null;
+
+            // 处理嵌套路径："Threshold.Value" → "Threshold"
+            var propertyName = fullPath.Contains('.')
+                ? fullPath.Split('.')[0]
+                : fullPath;
+
+            var paramValueObj = bindingExpression.DataItem.GetType().GetProperty(propertyName)?.GetValue(bindingExpression.DataItem);
+            if (paramValueObj is ParamValueBase paramValue)
+                return paramValue;
+
+            return null;
         }
 
         /// <summary>
@@ -981,7 +1046,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
             ParameterName = setting.ParameterName;
             BindingType = setting.BindingType;
-            TransformExpression = setting.TransformExpression ?? string.Empty;
 
             if (setting.BindingType == BindingType.Constant)
             {

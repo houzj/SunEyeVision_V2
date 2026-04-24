@@ -139,13 +139,11 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <param name="sourceNodeId">源节点ID</param>
         /// <param name="sourceProperty">源属性名称</param>
         /// <param name="defaultValue">默认值</param>
-        /// <param name="transformExpression">转换表达式（可选）</param>
         public static ParamValue<T> CreateBinding(
             string parameterName,
             string sourceNodeId,
             string sourceProperty,
-            T defaultValue,
-            string? transformExpression = null)
+            T defaultValue)
         {
             return new ParamValue<T>
             {
@@ -156,7 +154,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                     BindingType = BindingType.Binding,
                     SourceNodeId = sourceNodeId,
                     SourceProperty = sourceProperty,
-                    TransformExpression = transformExpression,
                     TargetType = typeof(T)
                 }
             };

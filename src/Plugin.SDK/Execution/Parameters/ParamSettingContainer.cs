@@ -112,14 +112,12 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <param name="parameterName">参数名称</param>
         /// <param name="sourceNodeId">源节点ID</param>
         /// <param name="sourceProperty">源属性名称</param>
-        /// <param name="transformExpression">转换表达式（可选）</param>
         public void SetDynamicSetting(
             string parameterName,
             string sourceNodeId,
-            string sourceProperty,
-            string? transformExpression = null)
+            string sourceProperty)
         {
-            SetSetting(ParamSetting.CreateBinding(parameterName, sourceNodeId, sourceProperty, transformExpression));
+            SetSetting(ParamSetting.CreateBinding(parameterName, sourceNodeId, sourceProperty));
         }
 
         /// <summary>

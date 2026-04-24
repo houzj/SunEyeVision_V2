@@ -75,6 +75,25 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         public string? SourceProperty { get; set; }
 
         /// <summary>
+        /// 源节点名称（展示用）
+        /// </summary>
+        /// <remarks>
+        /// 当 BindingType 为 Binding 时，源节点的显示名称。
+        /// 如"图像载入1"、"图像阈值化4"。
+        /// 用于加载后直接重建绑定显示文本，无需依赖 AvailableDataSources。
+        /// </remarks>
+        public string? SourceNodeName { get; set; }
+
+        /// <summary>
+        /// 源属性显示名称（展示用）
+        /// </summary>
+        /// <remarks>
+        /// 当 BindingType 为 Binding 时，源属性的友好显示名称。
+        /// 如"输出图像"、"实际使用的阈值"。
+        /// </remarks>
+        public string? SourceDisplayName { get; set; }
+
+        /// <summary>
         /// 目标参数类型
         /// </summary>
         /// <remarks>
@@ -177,6 +196,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 ConstantValue = ConstantValue,
                 SourceNodeId = SourceNodeId,
                 SourceProperty = SourceProperty,
+                SourceNodeName = SourceNodeName,
+                SourceDisplayName = SourceDisplayName,
                 TargetType = TargetType
             };
         }
@@ -219,6 +240,12 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 
             if (!string.IsNullOrEmpty(SourceProperty))
                 dict["SourceProperty"] = SourceProperty;
+
+            if (!string.IsNullOrEmpty(SourceNodeName))
+                dict["SourceNodeName"] = SourceNodeName;
+
+            if (!string.IsNullOrEmpty(SourceDisplayName))
+                dict["SourceDisplayName"] = SourceDisplayName;
 
             if (TargetType != null)
                 dict["TargetType"] = TargetType.AssemblyQualifiedName ?? TargetType.FullName!;
@@ -287,6 +314,12 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 
             if (dict.TryGetValue("SourceProperty", out var prop))
                 setting.SourceProperty = prop?.ToString();
+
+            if (dict.TryGetValue("SourceNodeName", out var nodeName))
+                setting.SourceNodeName = nodeName?.ToString();
+
+            if (dict.TryGetValue("SourceDisplayName", out var dispName))
+                setting.SourceDisplayName = dispName?.ToString();
 
             if (dict.TryGetValue("TargetType", out var targetType))
             {

@@ -187,6 +187,9 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
             {
                 _dataProvider = queryService;
                 inspectionRegionEditor.AvailableDataSources = AvailableDataSources;
+
+                // 从 ImageSourceRef 恢复 ImageSource（加载后重建运行时数据）
+                Parameters?.RestoreImageSource(AvailableDataSources);
             }
         }
 

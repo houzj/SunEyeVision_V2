@@ -98,11 +98,11 @@
                       Height="32"
                       VerticalContentAlignment="Center" Width="250"
                       SelectedItem="{Binding Type.Value, Mode=TwoWay, Converter={StaticResource ThresholdTypeConverter}}">
-                <ComboBoxItem Content="Binary"/>
-                <ComboBoxItem Content="BinaryInv"/>
-                <ComboBoxItem Content="Trunc"/>
-                <ComboBoxItem Content="ToZero"/>
-                <ComboBoxItem Content="ToZeroInv"/>
+                <sys:String>Binary</sys:String>
+                <sys:String>BinaryInv</sys:String>
+                <sys:String>Trunc</sys:String>
+                <sys:String>ToZero</sys:String>
+                <sys:String>ToZeroInv</sys:String>
               </ComboBox>
             </controls:LabeledControl>
 

@@ -97,8 +97,8 @@
                       Height="32"
                       VerticalContentAlignment="Center" Width="250"
                       SelectedItem="{Binding Type.Value, Mode=TwoWay, Converter={StaticResource ThresholdTypeConverter}}">
-                <ComboBoxItem Content="Binary"/>
-                <ComboBoxItem Content="BinaryInv"/>
+                <sys:String>Binary</sys:String>
+                <sys:String>BinaryInv</sys:String>
               </ComboBox>
             </controls:LabeledControl>
 
@@ -120,8 +120,8 @@
               <ComboBox Height="32"
                       VerticalContentAlignment="Center" Width="250"
                       SelectedItem="{Binding Connectivity.Value, Mode=TwoWay, Converter={StaticResource ConnectivityTypeConverter}}">
-                <ComboBoxItem Content="4连通"/>
-                <ComboBoxItem Content="8连通"/>
+                <sys:String>4连通</sys:String>
+                <sys:String>8连通</sys:String>
               </ComboBox>
             </controls:LabeledControl>
 

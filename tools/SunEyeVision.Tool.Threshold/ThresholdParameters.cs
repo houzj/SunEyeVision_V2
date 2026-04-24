@@ -118,29 +118,6 @@ namespace SunEyeVision.Tool.Threshold
 
         #endregion
 
-        #region 参数绑定
-
-        /// <summary>
-        /// 输入图像源（参数绑定）
-        /// </summary>
-        /// <remarks>
-        /// 用于参数面板和调试窗口选择图像源。
-        /// 支持从上游节点绑定图像输出。
-        /// 
-        /// 注意：ImageSource 保持为 AvailableDataSource，不是 ParamValue，
-        /// 因为它是特殊的数据源绑定，不需要统一管理。
-        /// </remarks>
-        [JsonIgnore]
-        public AvailableDataSource? ImageSource
-        {
-            get => _imageSource;
-            set => SetProperty(ref _imageSource, value, "输入图像");
-        }
-
-        private AvailableDataSource? _imageSource;
-
-        #endregion
-
         #region 结果显示配置
 
         /// <summary>

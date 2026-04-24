@@ -329,6 +329,9 @@ namespace SunEyeVision.Tool.Threshold.Views
                 // 需要为 inspectionRegionEditor 和 maskRegionEditor 分别设置
                 inspectionRegionEditor.AvailableDataSources = AvailableDataSources;
                 PluginLogger.Info("已为检测区域编辑器设置参数数据源，总数: {AvailableDataSources.Count}", "ThresholdTool");
+
+                // 从 ImageSourceRef 恢复 ImageSource（加载后重建运行时数据）
+                Parameters?.RestoreImageSource(AvailableDataSources);
             }
             else
             {

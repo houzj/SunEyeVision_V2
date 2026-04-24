@@ -39,6 +39,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         private RegionCollectionParameter _inspectionRegions;
         private RegionCollectionParameter _maskRegions;
         private ParamValue<bool> _isRegionEnabled;
+        private ImageSourceReference? _imageSourceRef;
+        private AvailableDataSource? _imageSource;
 
         /// <summary>
         /// 构造函数
@@ -89,6 +91,68 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             get => _isRegionEnabled;
             set => _isRegionEnabled = value;
         }
+
+        #region 图像源绑定
+
+        /// <summary>
+        /// 可序列化的图像源引用
+        /// </summary>
+        /// <remarks>
+        /// 存储 ImageSource 的身份+展示信息（4个字符串），用于 JSON 序列化/反序列化。
+        /// 运行时 ImageSource 从此引用通过 RestoreImageSource() 恢复。
+        /// </remarks>
+        [JsonPropertyOrder(5)]
+        [JsonPropertyName("imageSourceRef")]
+        public ImageSourceReference? ImageSourceRef
+        {
+            get => _imageSourceRef;
+            set => _imageSourceRef = value;
+        }
+
+        /// <summary>
+        /// 输入图像源（运行时，不序列化，从 ImageSourceRef 恢复）
+        /// </summary>
+        /// <remarks>
+        /// AvailableDataSource 包含运行时数据（Mat 图像、TreeNode 等）无法序列化，
+        /// 因此标记 [JsonIgnore] 不参与序列化。
+        /// setter 中自动同步更新 ImageSourceRef。
+        /// </remarks>
+        [JsonIgnore]
+        public AvailableDataSource? ImageSource
+        {
+            get => _imageSource;
+            set
+            {
+                if (SetProperty(ref _imageSource, value, "输入图像"))
+                {
+                    // 自动同步到可序列化的引用
+                    _imageSourceRef = ImageSourceReference.FromDataSource(value);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 从 AvailableDataSources 列表恢复 ImageSource
+        /// </summary>
+        /// <param name="dataSources">当前可用的数据源列表</param>
+        /// <returns>是否成功恢复</returns>
+        public bool RestoreImageSource(System.Collections.Generic.IEnumerable<AvailableDataSource>? dataSources)
+        {
+            if (_imageSourceRef == null || dataSources == null)
+                return false;
+
+            var matched = _imageSourceRef.MatchDataSource(dataSources);
+            if (matched != null)
+            {
+                // 直接设置字段，避免触发 setter 中的重复同步
+                _imageSource = matched;
+                OnPropertyChanged(nameof(ImageSource));
+                return true;
+            }
+            return false;
+        }
+
+        #endregion
 
         /// <summary>
         /// 获取有效区域列表（检测区域 - 屏蔽区域）
@@ -252,6 +316,9 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 
                 // 拷贝其他参数
                 regionParams.IsRegionEnabled.Value = _isRegionEnabled.Value;
+
+                // 拷贝图像源引用
+                regionParams._imageSourceRef = _imageSourceRef;
             }
 
             base.OnClone(cloned);

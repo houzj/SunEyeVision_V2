@@ -340,6 +340,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         private CheckBox? _boolCheckBox;
         private ParamBinding? _paramBinding;
 
+        /// <summary>
+        /// 切到绑定模式前保存的常量值，用于切回常量模式时恢复
+        /// </summary>
+        private object? _constantValueBeforeBinding;
+
         #endregion
 
         #region 事件
@@ -402,6 +407,29 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         {
             if (d is ConfigSetting control)
             {
+                var oldType = (BindingType)e.OldValue;
+                var newType = (BindingType)e.NewValue;
+
+                // 切到绑定模式前，保存当前常量值
+                if (oldType == BindingType.Constant && newType == BindingType.Binding)
+                {
+                    control._constantValueBeforeBinding = control.Value;
+                }
+
+                // 切回常量模式时，恢复原始常量值（所见即所得）
+                if (oldType == BindingType.Binding && newType == BindingType.Constant
+                    && control._constantValueBeforeBinding != null)
+                {
+                    control.Value = control._constantValueBeforeBinding;
+
+                    // 同步到 ParamValue.Value，确保执行时使用恢复的常量值
+                    var paramValue = control.GetBoundParamValue();
+                    if (paramValue != null)
+                    {
+                        paramValue.ObjectValue = control.UnwrapParamValue(control._constantValueBeforeBinding);
+                    }
+                }
+
                 control.UpdateEditorVisibility();
                 
                 // 方案B：当绑定类型变化时，同步到 ParamValue.BindingConfig
@@ -999,10 +1027,21 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 var nodeId = parts.Length > 0 ? parts[0] : string.Empty;
                 var property = parts.Length > 1 ? parts[1] : BindingSource;
 
-                paramValue.BindingConfig = ParamSetting.CreateBinding(
+                var setting = ParamSetting.CreateBinding(
                     ParameterName ?? string.Empty,
                     nodeId,
                     property);
+
+                // 从 AvailableDataSources 中提取展示名称
+                var matchedSource = AvailableDataSources?.FirstOrDefault(ds =>
+                    ds.SourceNodeId == nodeId && ds.PropertyName == property);
+                if (matchedSource != null)
+                {
+                    setting.SourceNodeName = matchedSource.SourceNodeName;
+                    setting.SourceDisplayName = matchedSource.DisplayName;
+                }
+
+                paramValue.BindingConfig = setting;
             }
         }
 
@@ -1059,9 +1098,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 BindingSource = string.IsNullOrEmpty(setting.SourceProperty)
                     ? setting.SourceNodeId ?? string.Empty
                     : $"{setting.SourceNodeId}.{setting.SourceProperty}";
-                
-                // 使用 ParamBinding 的方法生成友好名称（基于 TreeView 节点层级）
-                BindingDisplayText = _paramBinding?.GenerateBindingDisplayText(BindingSource) ?? BindingSource;
+
+                // 优先使用 ParamSetting 中保存的展示名称
+                if (!string.IsNullOrEmpty(setting.SourceNodeName) && !string.IsNullOrEmpty(setting.SourceDisplayName))
+                {
+                    BindingDisplayText = $"{setting.SourceNodeName}.{setting.SourceDisplayName}";
+                }
+                else
+                {
+                    // 回退：尝试从 ParamBinding 的方法生成
+                    BindingDisplayText = _paramBinding?.GenerateBindingDisplayText(BindingSource) ?? BindingSource;
+                }
             }
         }
 

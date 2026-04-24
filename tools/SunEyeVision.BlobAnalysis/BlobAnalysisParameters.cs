@@ -136,22 +136,6 @@ namespace SunEyeVision.Tool.BlobAnalysis
 
         #endregion
 
-        #region 参数绑定
-
-        /// <summary>
-        /// 输入图像源（参数绑定）
-        /// </summary>
-        [JsonIgnore]
-        public AvailableDataSource? ImageSource
-        {
-            get => _imageSource;
-            set => SetProperty(ref _imageSource, value, "输入图像");
-        }
-
-        private AvailableDataSource? _imageSource;
-
-        #endregion
-
         #region 结果显示配置
 
         /// <summary>

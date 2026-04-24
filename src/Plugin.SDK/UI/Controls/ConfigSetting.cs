@@ -345,6 +345,16 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// </summary>
         private object? _constantValueBeforeBinding;
 
+        /// <summary>
+        /// 是否已从 ParamValue.BindingConfig 恢复过绑定状态（防止重复恢复）
+        /// </summary>
+        private bool _hasRestoredBindingState;
+
+        /// <summary>
+        /// 是否正在恢复绑定状态（用于阻止 SyncBindingConfigToParamValue 覆盖已加载的配置）
+        /// </summary>
+        private bool _isRestoringBindingState;
+
         #endregion
 
         #region 事件
@@ -449,6 +459,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         private static void OnValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var control = (ConfigSetting)d;
+            
+            // 尝试从 ParamValue.BindingConfig 恢复绑定状态（反序列化后首次触发时）
+            control.TryRestoreBindingFromParamValue();
             
             // 更新内部数值值（类型适配器）
             control.UpdateInternalNumericValue(e.NewValue);
@@ -1010,6 +1023,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// </remarks>
         private void SyncBindingConfigToParamValue()
         {
+            // 恢复绑定状态期间跳过，避免覆盖已从 JSON 加载的配置
+            if (_isRestoringBindingState)
+                return;
+
             // 获取当前绑定的 ParamValue<T> 对象
             var paramValue = GetBoundParamValue();
             if (paramValue == null)
@@ -1110,6 +1127,64 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     BindingDisplayText = _paramBinding?.GenerateBindingDisplayText(BindingSource) ?? BindingSource;
                 }
             }
+        }
+
+        /// <summary>
+        /// 尝试从 ParamValue.BindingConfig 恢复绑定状态（解决反序列化后绑定模式丢失问题）
+        /// </summary>
+        /// <remarks>
+        /// 数据流：
+        /// 1. 保存时：SyncBindingConfigToParamValue() 将绑定配置写入 ParamValue.BindingConfig → JSON序列化
+        /// 2. 加载时：JSON反序列化恢复 ParamValue.BindingConfig，但 ConfigSetting.BindingType 仍为默认值 Constant
+        /// 3. 本方法在 OnValueChanged 首次触发时检测并恢复绑定状态
+        /// 
+        /// 调用时机：OnValueChanged 回调中（Value 属性首次被设置时）
+        /// 防重复：_hasRestoredBindingState 标志位确保只执行一次
+        /// 防覆盖：_isRestoringBindingState 标志位阻止 SyncBindingConfigToParamValue 在恢复期间执行
+        /// </remarks>
+        private void TryRestoreBindingFromParamValue()
+        {
+            // 已恢复过则跳过
+            if (_hasRestoredBindingState)
+                return;
+
+            var paramValue = GetBoundParamValue();
+            if (paramValue?.BindingConfig == null)
+            {
+                // 无绑定配置或未绑定到 ParamValue，标记为已处理
+                _hasRestoredBindingState = true;
+                return;
+            }
+
+            var bindingConfig = paramValue.BindingConfig;
+
+            // 只有绑定类型为 Binding 时才需要恢复
+            if (bindingConfig.BindingType != BindingType.Binding)
+            {
+                _hasRestoredBindingState = true;
+                return;
+            }
+
+            // 当前 UI 显示的是常量模式（默认值），但实际应该是绑定模式 → 需要恢复
+            if (BindingType != BindingType.Binding)
+            {
+                _isRestoringBindingState = true;
+                try
+                {
+                    // 使用 FromParamSetting 从已加载的 BindingConfig 恢复
+                    FromParamSetting(bindingConfig);
+
+                    // 确保编辑器可见性和视觉状态正确更新
+                    UpdateEditorVisibility();
+                    UpdateVisualState();
+                }
+                finally
+                {
+                    _isRestoringBindingState = false;
+                }
+            }
+
+            _hasRestoredBindingState = true;
         }
 
         #region 基类方法实现

@@ -2704,6 +2704,20 @@ SplitterPosition = position;
                 SelectedNodeDataAnalysisControl = dataAnalysisControl;
                 HasDataAnalysisControl = true;
 
+                // ★ 加载缓存结果（节点已执行过时，立即填充数据分析控件）
+                var cachedResult = _workflowContext.GetNodeResult(selectedNode.Id);
+                if (cachedResult?.ToolResult != null && dataAnalysisControl is IToolControlDataAnalysis daControl)
+                {
+                    try
+                    {
+                        daControl.OnResultUpdated(cachedResult.ToolResult);
+                    }
+                    catch (Exception loadEx)
+                    {
+                        AddLog($"⚠️ 加载缓存数据到分析控件失败: {loadEx.Message}");
+                    }
+                }
+
                 AddLog($"✅ 已加载数据分析控件: {selectedNode.Name}");
 
                 return System.Threading.Tasks.Task.CompletedTask;
@@ -2920,29 +2934,39 @@ SplitterPosition = position;
                 {
                     // 创建通用的处理方法
                     Action<object?, object?> handlerAction = (sender, result) =>
-                    {
-                        try
                         {
-                            if (result is SunEyeVision.Plugin.SDK.Execution.Results.ToolResults toolResult)
+                            try
                             {
-                                // 执行结果已通过 NodeResultManager.UpdateNodeResult 存储到 WorkflowContext
-                                // 这里不再需要直接赋值给 node.LastResult
-
-                                // 获取输出图像（通过反射调用 GetOutputValue 方法）
-                                var getOutputMethod = toolResult.GetType().GetMethod("GetOutputValue");
-                                var outputImage = getOutputMethod?.MakeGenericMethod(typeof(OpenCvSharp.Mat))
-                                    .Invoke(toolResult, new object[] { "OutputImage" }) as OpenCvSharp.Mat;
-
-                                // 更新数据提供者中的节点输出
-                                if (outputImage != null)
+                                if (result is SunEyeVision.Plugin.SDK.Execution.Results.ToolResults toolResult)
                                 {
-                                    dataProvider.UpdateNodeOutput(node.Id, "OutputImage", outputImage);
-                                }
+                                    // 执行结果已通过 NodeResultManager.UpdateNodeResult 存储到 WorkflowContext
+                                    // 这里不再需要直接赋值给 node.LastResult
 
-                                // 更新图像显示（内部已存储到 WorkflowContext）
-                                _nodeResultManager?.UpdateNodeResult(node, toolResult);
+                                    // 获取输出图像（通过反射调用 GetOutputValue 方法）
+                                    var getOutputMethod = toolResult.GetType().GetMethod("GetOutputValue");
+                                    var outputImage = getOutputMethod?.MakeGenericMethod(typeof(OpenCvSharp.Mat))
+                                        .Invoke(toolResult, new object[] { "OutputImage" }) as OpenCvSharp.Mat;
 
-                                AddLog($"✅ 调试窗口执行完成: {node.Name}");
+                                    // 更新数据提供者中的节点输出
+                                    if (outputImage != null)
+                                    {
+                                        dataProvider.UpdateNodeOutput(node.Id, "OutputImage", outputImage);
+                                    }
+
+                                    // 更新图像显示（内部已存储到 WorkflowContext）
+                                    _nodeResultManager?.UpdateNodeResult(node, toolResult);
+
+                                    // ★ 更新数据分析控件（调试窗口执行后立即刷新）
+                                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                                    {
+                                        if (SelectedNodeDataAnalysisControl is Plugin.SDK.UI.Controls.IToolControlDataAnalysis daCtrl)
+                                        {
+                                            try { daCtrl.OnResultUpdated(toolResult); }
+                                            catch { /* 忽略 */ }
+                                        }
+                                    });
+
+                                    AddLog($"✅ 调试窗口执行完成: {node.Name}");
                             }
                         }
                         catch (Exception ex)
@@ -3118,35 +3142,31 @@ AddLog($"⚠️ 日志记录异常: {ex.Message}");
                 // ★ 更新所有依赖此节点的数据提供者（修复前置节点未执行问题）
                 UpdateDataProvidersForNode(e.Node, e.Result);
 
-                // 如果节点是当前显示节点，刷新输出缓存绑定（不刷新输入源）
-                // 新架构：OutputCache 存储执行结果，InputSource 保持不变
+                // ★ 更新数据分析控件（任何节点执行完成后刷新）
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    if (SelectedNodeDataAnalysisControl is Plugin.SDK.UI.Controls.IToolControlDataAnalysis dataAnalysisControl
+                        && e.Result != null && e.Result.IsSuccess)
+                    {
+                        try
+                        {
+                            dataAnalysisControl.OnResultUpdated(e.Result);
+                        }
+                        catch (Exception updateEx)
+                        {
+                            AddLog($"⚠️ 更新数据分析控件失败: {updateEx.Message}");
+                        }
+                    }
+                });
+
+                // 如果节点是当前显示节点，刷新输出缓存绑定
                 if (_currentDisplayNodeId == e.Node.Id)
                 {
-                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    var outputCache = e.Node.OutputCache;
+                    if (outputCache != null && outputCache.HasOutput)
                     {
-                        // 新架构：刷新 OutputCache（如果有输出）
-                        var outputCache = e.Node.OutputCache;
-                        if (outputCache != null && outputCache.HasOutput)
-                        {
-                            AddLog($"📷 节点 {e.Node.Name} 输出已更新, 输出图像数={outputCache.Count}");
-                        }
-
-                        // 注意：不再刷新 ActiveInputSource，因为输入源不应该被执行结果修改
-
-                        // ★ 更新数据分析控件（如果当前显示的是该节点的数据分析控件）
-                        if (SelectedNodeDataAnalysisControl is Plugin.SDK.UI.Controls.IToolControlDataAnalysis dataAnalysisControl
-                            && e.Result != null && e.Result.IsSuccess)
-                        {
-                            try
-                            {
-                                dataAnalysisControl.OnResultUpdated(e.Result);
-                            }
-                            catch (Exception updateEx)
-                            {
-                                AddLog($"⚠️ 更新数据分析控件失败: {updateEx.Message}");
-                            }
-                        }
-                    });
+                        AddLog($"📷 节点 {e.Node.Name} 输出已更新, 输出图像数={outputCache.Count}");
+                    }
                 }
             }
             catch (Exception ex)

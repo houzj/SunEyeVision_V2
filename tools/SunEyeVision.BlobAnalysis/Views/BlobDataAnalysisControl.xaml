@@ -4,30 +4,74 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        d:DesignHeight="200" d:DesignWidth="700">
+        d:DesignHeight="350" d:DesignWidth="700">
 
-    <DataGrid ItemsSource="{Binding FilteredBlobs}"
-              AutoGenerateColumns="False"
-              IsReadOnly="True"
-              CanUserAddRows="False"
-              CanUserDeleteRows="False"
-              SelectionMode="Single"
-              SelectionUnit="FullRow"
-              HeadersVisibility="Column"
-              RowHeight="22"
-              FontSize="11"
-              BorderThickness="0"
-              GridLinesVisibility="Horizontal"
-              AlternatingRowBackground="#F8F8F8">
-        <DataGrid.Columns>
-            <DataGridTextColumn Header="序号" Binding="{Binding Label}" Width="40"/>
-            <DataGridTextColumn Header="面积" Binding="{Binding Area, StringFormat='{}{0:F0}'}" Width="60"/>
-            <DataGridTextColumn Header="周长" Binding="{Binding Perimeter, StringFormat='{}{0:F1}'}" Width="55"/>
-            <DataGridTextColumn Header="质心X" Binding="{Binding CentroidX, StringFormat='{}{0:F1}'}" Width="55"/>
-            <DataGridTextColumn Header="质心Y" Binding="{Binding CentroidY, StringFormat='{}{0:F1}'}" Width="55"/>
-            <DataGridTextColumn Header="圆度" Binding="{Binding Circularity, StringFormat='{}{0:F3}'}" Width="50"/>
-            <DataGridTextColumn Header="矩形度" Binding="{Binding Rectangularity, StringFormat='{}{0:F3}'}" Width="55"/>
-            <DataGridTextColumn Header="外接矩形" Binding="{Binding BoundingRectText}" Width="80"/>
-        </DataGrid.Columns>
-    </DataGrid>
+    <DockPanel>
+        <!-- 统计摘要区域（顶部固定） -->
+        <Border DockPanel.Dock="Top" Background="#F0F4F8" BorderBrush="#D0D8E0" BorderThickness="0,0,0,1" Padding="8,6">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" Margin="0,0,12,0" VerticalAlignment="Center">
+                    <Run Text="Blob: " Foreground="#666"/><Run Text="{Binding FilteredBlobCount, Mode=OneWay}" FontWeight="Bold" Foreground="#2196F3"/>
+                    <Run Text="/"/><Run Text="{Binding TotalBlobCount, Mode=OneWay}" Foreground="#999"/>
+                </TextBlock>
+
+                <TextBlock Grid.Column="1" Margin="0,0,12,0" VerticalAlignment="Center">
+                    <Run Text="面积: " Foreground="#666"/><Run Text="{Binding FilteredTotalArea, StringFormat='{}{0:F0}', Mode=OneWay}" FontWeight="Bold" Foreground="#4CAF50"/>
+                    <Run Text=" px²" Foreground="#999" FontSize="10"/>
+                </TextBlock>
+
+                <TextBlock Grid.Column="2" Margin="0,0,12,0" VerticalAlignment="Center">
+                    <Run Text="均值: " Foreground="#666"/><Run Text="{Binding AverageArea, StringFormat='{}{0:F0}', Mode=OneWay}" Foreground="#FF9800"/>
+                </TextBlock>
+
+                <TextBlock Grid.Column="3" Margin="0,0,12,0" VerticalAlignment="Center">
+                    <Run Text="最大: " Foreground="#666"/><Run Text="{Binding MaxArea, StringFormat='{}{0:F0}', Mode=OneWay}" Foreground="#E91E63"/>
+                </TextBlock>
+
+                <TextBlock Grid.Column="4" Margin="0,0,12,0" VerticalAlignment="Center">
+                    <Run Text="阈值: " Foreground="#666"/><Run Text="{Binding ThresholdUsed, Mode=OneWay}" FontWeight="Bold" Foreground="#9C27B0"/>
+                </TextBlock>
+
+                <TextBlock Grid.Column="5" VerticalAlignment="Center">
+                    <Run Text="{Binding ThresholdTypeText, Mode=OneWay}" Foreground="#607D8B" FontSize="11"/>
+                </TextBlock>
+            </Grid>
+        </Border>
+
+        <!-- Blob 详细数据表格 -->
+        <DataGrid ItemsSource="{Binding FilteredBlobs}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  SelectionMode="Single"
+                  SelectionUnit="FullRow"
+                  HeadersVisibility="Column"
+                  RowHeight="22"
+                  FontSize="11"
+                  BorderThickness="0"
+                  GridLinesVisibility="Horizontal"
+                  AlternatingRowBackground="#F8F8F8">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="序号" Binding="{Binding Label}" Width="36"/>
+                <DataGridTextColumn Header="面积" Binding="{Binding Area, StringFormat='{}{0:F0}'}" Width="58"/>
+                <DataGridTextColumn Header="周长" Binding="{Binding Perimeter, StringFormat='{}{0:F1}'}" Width="52"/>
+                <DataGridTextColumn Header="中心X" Binding="{Binding CentroidX, StringFormat='{}{0:F1}'}" Width="52"/>
+                <DataGridTextColumn Header="中心Y" Binding="{Binding CentroidY, StringFormat='{}{0:F1}'}" Width="52"/>
+                <DataGridTextColumn Header="圆度" Binding="{Binding Circularity, StringFormat='{}{0:F3}'}" Width="50"/>
+                <DataGridTextColumn Header="矩形度" Binding="{Binding Rectangularity, StringFormat='{}{0:F3}'}" Width="52"/>
+                <DataGridTextColumn Header="边框" Binding="{Binding BoundingRectText}" Width="80"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
 </UserControl>

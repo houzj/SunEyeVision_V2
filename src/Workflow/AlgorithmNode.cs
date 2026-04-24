@@ -168,15 +168,10 @@ namespace SunEyeVision.Workflow
                 return AlgorithmResult.CreateError(result.ErrorMessage ?? "处理失败");
             }
 
-            // 1. 首先尝试通过反射获取 OutputImage 属性（最直接的方式）
-            Mat? outputImage = null;
-            var outputImageProp = result.GetType().GetProperty("OutputImage");
-            if (outputImageProp != null)
-            {
-                outputImage = outputImageProp.GetValue(result) as Mat;
-            }
+            // 直接调用 GetOutputImage()，子类已正确重写此方法
+            var outputImage = result.GetOutputImage();
 
-            // 如果没有找到输出图像，返回错误
+            // 如果没有输出图像，返回错误
             if (outputImage == null || outputImage.Empty())
             {
                 return AlgorithmResult.CreateError("工具执行成功但没有输出图像");
@@ -184,7 +179,7 @@ namespace SunEyeVision.Workflow
 
             var algorithmResult = AlgorithmResult.CreateSuccess(outputImage, result.ExecutionTimeMs);
 
-            // 保留原始工具结果引用（移除 ResultItems，不再使用 GetResultItems()）
+            // 保留原始工具结果引用
             algorithmResult.ToolResults = result;
 
             return algorithmResult;

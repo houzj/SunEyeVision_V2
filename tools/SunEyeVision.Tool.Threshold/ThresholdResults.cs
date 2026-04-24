@@ -18,6 +18,11 @@ namespace SunEyeVision.Tool.Threshold
         /// </summary>
         public Mat? OutputImage { get; set; }
 
+        /// <summary>
+        /// 获取输出图像（DispImage通道）
+        /// </summary>
+        public override Mat? GetOutputImage() => OutputImage;
+
         #endregion
 
         #region 参数回写（实际使用的参数值）

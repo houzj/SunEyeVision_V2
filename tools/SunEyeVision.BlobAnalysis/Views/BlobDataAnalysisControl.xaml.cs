@@ -1,8 +1,8 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows.Controls;
+using SunEyeVision.CvEngine.Models;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.UI.Controls;
-using SunEyeVision.Tool.BlobAnalysis.Models;
 
 namespace SunEyeVision.Tool.BlobAnalysis.Views
 {

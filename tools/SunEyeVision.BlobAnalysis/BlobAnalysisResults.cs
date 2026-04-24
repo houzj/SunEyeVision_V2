@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using OpenCvSharp;
+using SunEyeVision.CvEngine.Models;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
-using SunEyeVision.Tool.BlobAnalysis.Models;
 
 namespace SunEyeVision.Tool.BlobAnalysis
 {
@@ -17,6 +17,16 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// 二值化图像（预处理输出）
         /// </summary>
         public Mat? BinaryImage { get; set; }
+
+        /// <summary>
+        /// 输出图像（兼容 AlgorithmNode 反射查找）
+        /// </summary>
+        public Mat? OutputImage => BinaryImage;
+
+        /// <summary>
+        /// 获取输出图像（DispImage通道）
+        /// </summary>
+        public override Mat? GetOutputImage() => BinaryImage;
 
         /// <summary>
         /// 实际使用的阈值
@@ -118,30 +128,142 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// </summary>
         public override IEnumerable<VisualElement> GetVisualElements()
         {
-            if (InputSize.Width > 0 && InputSize.Height > 0)
+            if (InputSize.Width <= 0 || InputSize.Height <= 0)
+                yield break;
+
+            // 绘制每个 Blob 的外接矩形和质心
+            foreach (var blob in FilteredBlobs)
             {
-                // 背景矩形
-                yield return VisualElement.Rectangle(
-                    new OpenCvSharp.Rect2d(5, 5, 220, 55),
-                    color: 0x80000000,
-                    lineWidth: 0,
-                    filled: true
-                );
+                var isPass = blob.IsFiltered;
+                var color = isPass ? 0xFF00FF00 : 0xFFFF0000;  // 绿色=通过，红色=未通过
 
-                // Blob统计信息文本
-                yield return VisualElement.Text(
-                    text: $"Blob: {FilteredBlobCount}/{TotalBlobCount}  阈值: {ThresholdUsed}",
-                    position: new OpenCvSharp.Point2d(10, 22),
-                    color: 0xFFFFFFFF,
-                    fontSize: 12.0
-                );
+                // 外接矩形
+                var bbox = blob.BoundingBox;
+                if (bbox.Width > 0 && bbox.Height > 0)
+                {
+                    yield return VisualElement.Rectangle(
+                        new OpenCvSharp.Rect2d(bbox.X, bbox.Y, bbox.Width, bbox.Height),
+                        color: color,
+                        lineWidth: 2,
+                        filled: false
+                    );
+                }
 
-                // 面积信息
-                yield return VisualElement.Text(
-                    text: $"面积: {FilteredTotalArea:F0}  类型: {TypeUsed}",
-                    position: new OpenCvSharp.Point2d(10, 42),
-                    color: 0xFF00FF00,
-                    fontSize: 11.0
+                // 质心十字
+                if (blob.CentroidX > 0 || blob.CentroidY > 0)
+                {
+                    var cx = blob.CentroidX;
+                    var cy = blob.CentroidY;
+                    var crossSize = 8.0;
+
+                    // 水平线
+                    yield return VisualElement.Line(
+                        new OpenCvSharp.Point2d(cx - crossSize, cy),
+                        new OpenCvSharp.Point2d(cx + crossSize, cy),
+                        color: color,
+                        lineWidth: 2
+                    );
+                    // 垂直线
+                    yield return VisualElement.Line(
+                        new OpenCvSharp.Point2d(cx, cy - crossSize),
+                        new OpenCvSharp.Point2d(cx, cy + crossSize),
+                        color: color,
+                        lineWidth: 2
+                    );
+                }
+            }
+
+            // 背景矩形
+            yield return VisualElement.Rectangle(
+                new OpenCvSharp.Rect2d(5, 5, 220, 55),
+                color: 0x80000000,
+                lineWidth: 0,
+                filled: true
+            );
+
+            // Blob统计信息文本
+            yield return VisualElement.Text(
+                text: $"Blob: {FilteredBlobCount}/{TotalBlobCount}  阈值: {ThresholdUsed}",
+                position: new OpenCvSharp.Point2d(10, 22),
+                color: 0xFFFFFFFF,
+                fontSize: 12.0
+            );
+
+            // 面积信息
+            yield return VisualElement.Text(
+                text: $"面积: {FilteredTotalArea:F0}  类型: {TypeUsed}",
+                position: new OpenCvSharp.Point2d(10, 42),
+                color: 0xFF00FF00,
+                fontSize: 11.0
+            );
+        }
+
+        /// <summary>
+        /// 获取结果显示项（用于数据面板显示）
+        /// </summary>
+        public override IReadOnlyList<ResultItem> GetResultItems()
+        {
+            var items = new List<ResultItem>
+            {
+                ResultItem.Numeric("Blob总数", TotalBlobCount),
+                ResultItem.Numeric("筛选后数量", FilteredBlobCount),
+                ResultItem.Numeric("总面积", TotalArea, "像素"),
+                ResultItem.Numeric("筛选后面积", FilteredTotalArea, "像素"),
+                ResultItem.Numeric("最大面积", LargestBlobArea, "像素"),
+                ResultItem.Numeric("最小面积", SmallestBlobArea, "像素"),
+                ResultItem.Numeric("平均面积", TotalArea / Math.Max(1, TotalBlobCount), "像素"),
+                ResultItem.Numeric("实际阈值", ThresholdUsed),
+                ResultItem.Text("阈值类型", TypeUsed.ToString())
+            };
+            return items;
+        }
+
+        /// <summary>
+        /// 获取显示文本（用于图形上的文本标签）
+        /// </summary>
+        public override IEnumerable<DisplayText> GetDisplayTexts()
+        {
+            if (InputSize.Width <= 0 || InputSize.Height <= 0)
+                yield break;
+
+            // 在图像左上角显示统计摘要
+            yield return DisplayText.Create(
+                $"Blob: {FilteredBlobCount}/{TotalBlobCount}",
+                10, 22, 0xFFFFFFFF, 12.0
+            );
+
+            yield return DisplayText.Create(
+                $"Area: {FilteredTotalArea:F0}",
+                10, 42, 0xFF00FF00, 11.0
+            );
+
+            // 为每个 Blob 显示编号和面积
+            int index = 0;
+            foreach (var blob in FilteredBlobs.Take(20))  // 最多显示20个，避免遮挡
+            {
+                if (blob.CentroidX > 0 || blob.CentroidY > 0)
+                {
+                    var cx = blob.CentroidX;
+                    var cy = blob.CentroidY;
+
+                    yield return DisplayText.Create(
+                        $"{index}:{blob.Area:F0}",
+                        cx + 5, cy - 5,
+                        0xFFFFD700,  // 金色
+                        9.0
+                    );
+                }
+                index++;
+            }
+
+            // 如果有更多 Blob，用省略号提示
+            if (FilteredBlobs.Count > 20)
+            {
+                yield return DisplayText.Create(
+                    $"...+{FilteredBlobs.Count - 20} more",
+                    10, InputSize.Height - 20,
+                    0xFFAAAAAA,
+                    10.0
                 );
             }
         }

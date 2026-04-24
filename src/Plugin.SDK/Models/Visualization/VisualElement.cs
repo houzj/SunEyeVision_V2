@@ -128,6 +128,16 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
         public string? Name { get; set; }
 
         /// <summary>
+        /// 分类名称（用于分类控制可见性）
+        /// </summary>
+        public string Category { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 是否OK状态（影响颜色）
+        /// </summary>
+        public bool IsOk { get; set; } = true;
+
+        /// <summary>
         /// 用户自定义数据
         /// </summary>
         public object? Tag { get; set; }

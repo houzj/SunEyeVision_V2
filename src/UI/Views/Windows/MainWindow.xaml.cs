@@ -1,4 +1,4 @@
-
+﻿
 using System;
 using System.IO;
 
@@ -581,23 +581,21 @@ namespace SunEyeVision.UI.Views.Windows
                 {
 }
 
-                // ★ 设置 OverlayCanvas 引用到 NodeResultManager
+                // ★ 设置 ResultRenderLayer 引用到 NodeResultManager
                 if (ImageDisplayContent != null)
                 {
-                    var overlayCanvas = ImageDisplayContent.OverlayCanvas;
-                    if (overlayCanvas != null)
+                    var resultRenderLayer = ImageDisplayContent.ResultRenderLayerControl;
+                    if (resultRenderLayer != null)
                     {
-                        // 通过 ViewModel 获取 NodeResultManager 并设置 OverlayCanvas
+                        // 通过 ViewModel 获取 NodeResultManager 并设置 ResultRenderLayer
                         var nodeResultManager = GetNodeResultManager(_viewModel);
-                        nodeResultManager?.SetOverlayCanvas(overlayCanvas);
-}
-                    else
-                    {
-}
+                        nodeResultManager?.SetResultRenderLayer(resultRenderLayer);
+                        
+                        // ★ 同步视口缩放（幂律公式：线宽 / 缩放 = 视觉恒定）
+                        resultRenderLayer.SetViewportScale(_viewModel.ImageScale);
+                    }
                 }
-                else
-                {
-}
+
 
 
                 // 工具插件现在通过ToolboxViewModel自动加载
@@ -2923,6 +2921,12 @@ if (DataContext is MainWindowViewModel viewModel)
             if (_viewModel != null)
             {
                 _viewModel.ImageScale = e.Zoom;
+            }
+            
+            // ★ 同步视口缩放到结果渲染层（幂律公式：线宽 / 缩放 = 视觉恒定）
+            if (ImageDisplayContent?.ResultRenderLayerControl != null)
+            {
+                ImageDisplayContent.ResultRenderLayerControl.SetViewportScale(e.Zoom);
             }
         }
 

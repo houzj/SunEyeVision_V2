@@ -201,18 +201,28 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         }
 
         /// <summary>
-        /// 叠加层Canvas - 用于添加自定义元素
+        /// 结果渲染层 - 用于显示节点执行结果（检测框、轮廓等）
         /// </summary>
-        public Canvas OverlayCanvas => OverlayCanvasControl;
+        public ResultRenderLayer ResultRenderLayerControl => ResultRenderLayer;
 
         /// <summary>
-        /// OverlayCanvas是否启用命中测试
+        /// ROI交互叠加层Canvas - 用于ROI编辑器绘制/交互
+        /// </summary>
+        public Canvas InteractionOverlayCanvasControl => InteractionOverlayCanvas;
+
+        /// <summary>
+        /// 叠加层Canvas - 向后兼容，返回 InteractionOverlayCanvas
+        /// </summary>
+        public Canvas OverlayCanvas => InteractionOverlayCanvas;
+
+        /// <summary>
+        /// InteractionOverlayCanvas是否启用命中测试
         /// 默认为false，允许ROI编辑器等控件根据需要启用
         /// </summary>
         public bool OverlayHitTestVisible
         {
-            get => OverlayCanvasControl.IsHitTestVisible;
-            set => OverlayCanvasControl.IsHitTestVisible = value;
+            get => InteractionOverlayCanvas.IsHitTestVisible;
+            set => InteractionOverlayCanvas.IsHitTestVisible = value;
         }
 
         /// <summary>
@@ -483,27 +493,27 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         }
 
         /// <summary>
-        /// 添加叠加元素
+        /// 添加叠加元素（操作 InteractionOverlayCanvas）
         /// </summary>
         public void AddOverlay(System.Windows.UIElement element)
         {
-            OverlayCanvasControl.Children.Add(element);
+            InteractionOverlayCanvas.Children.Add(element);
         }
 
         /// <summary>
-        /// 移除叠加元素
+        /// 移除叠加元素（操作 InteractionOverlayCanvas）
         /// </summary>
         public void RemoveOverlay(System.Windows.UIElement element)
         {
-            OverlayCanvasControl.Children.Remove(element);
+            InteractionOverlayCanvas.Children.Remove(element);
         }
 
         /// <summary>
-        /// 清除所有叠加元素
+        /// 清除所有叠加元素（操作 InteractionOverlayCanvas）
         /// </summary>
         public void ClearOverlays()
         {
-            OverlayCanvasControl.Children.Clear();
+            InteractionOverlayCanvas.Children.Clear();
         }
 
         /// <summary>
@@ -608,8 +618,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 // 同步Canvas尺寸和ImageContainer尺寸
                 if (newImage != null)
                 {
-                    control.OverlayCanvasControl.Width = newImage.PixelWidth;
-                    control.OverlayCanvasControl.Height = newImage.PixelHeight;
+                    control.ResultRenderLayer.Width = newImage.PixelWidth;
+                    control.ResultRenderLayer.Height = newImage.PixelHeight;
+                    control.InteractionOverlayCanvas.Width = newImage.PixelWidth;
+                    control.InteractionOverlayCanvas.Height = newImage.PixelHeight;
                     control.ImageContainer.Width = newImage.PixelWidth;
                     control.ImageContainer.Height = newImage.PixelHeight;
                     control.ImageSizeText.Text = $"图像: {newImage.PixelWidth} x {newImage.PixelHeight}";

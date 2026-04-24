@@ -53,6 +53,12 @@ namespace SunEyeVision.Tool.ImageLoad
         #region 核心属性（原有）
 
         public Mat? OutputImage { get; set; }
+
+        /// <summary>
+        /// 获取输出图像（DispImage通道）
+        /// </summary>
+        public override Mat? GetOutputImage() => OutputImage;
+
         public int Width { get; set; }
         public int Height { get; set; }
         public int Channels { get; set; }

@@ -2340,7 +2340,26 @@ SplitterPosition = position;
                                     // 注册关闭事件，窗口关闭时清理引用
                                     debugWindow.Closed += (s, e) =>
                                     {
+                                        // 1. 清除窗口引用
                                         _openDebugWindow = null;
+
+                                        // 2. 恢复主窗口 ImageControl 的只读模式
+                                        var mainImageControl = GetMainImageControl?.Invoke();
+                                        if (mainImageControl != null)
+                                        {
+                                            mainImageControl.OverlayHitTestVisible = false;
+                                        }
+
+                                        // 3. 刷新当前选中节点的结果显示
+                                        if (SelectedNode != null && SelectedNode.IsSelected)
+                                        {
+                                            var executionResult = _workflowContext.GetNodeResult(SelectedNode.Id);
+                                            if (executionResult?.ToolResult != null)
+                                            {
+                                                _nodeResultManager.RefreshResultDisplay(SelectedNode, executionResult.ToolResult);
+                                            }
+                                        }
+
                                         AddLog($"🔧 关闭调试窗口: {node.Name}");
                                     };
 
@@ -2820,7 +2839,25 @@ SplitterPosition = position;
                     // 窗口关闭清理
                     debugWindow.Closed += (s, e) =>
                     {
+                        // 1. 移除数据提供者
                         _nodeDataProviders.Remove(node.Id);
+
+                        // 2. 恢复主窗口 ImageControl 的只读模式
+                        var mainImageControl = GetMainImageControl?.Invoke();
+                        if (mainImageControl != null)
+                        {
+                            mainImageControl.OverlayHitTestVisible = false;
+                        }
+
+                        // 3. 刷新当前选中节点的结果显示（如果有）
+                        if (SelectedNode != null && SelectedNode.IsSelected)
+                        {
+                            var executionResult = _workflowContext.GetNodeResult(SelectedNode.Id);
+                            if (executionResult?.ToolResult != null)
+                            {
+                                _nodeResultManager.RefreshResultDisplay(SelectedNode, executionResult.ToolResult);
+                            }
+                        }
                     };
                 }
             }

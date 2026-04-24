@@ -74,9 +74,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         public RegionEditorViewModel ViewModel => _viewModel;
 
         /// <summary>
-        /// 获取OverlayCanvas
+        /// 获取InteractionOverlayCanvas（ROI交互层）
         /// </summary>
-        private Canvas? OverlayCanvas => _mainImageControl?.OverlayCanvas;
+        private Canvas? OverlayCanvas => _mainImageControl?.InteractionOverlayCanvasControl;
 
         #region 依赖属性
 
@@ -471,7 +471,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 // 清理覆盖层
                 if (_mainImageControl != null)
                 {
-                    _mainImageControl.OverlayCanvas.Children.Clear();
+                    // 恢复只读模式：调试窗口关闭后不允许编辑ROI
+                    _mainImageControl.OverlayHitTestVisible = false;
+                    _mainImageControl.InteractionOverlayCanvasControl.Children.Clear();
                 }
 
                 // 清理渲染器
@@ -935,14 +937,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         /// </summary>
         private void Window_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
+            // 无交互状态时忽略窗口级MouseUp，避免点击窗口其他区域产生无关日志
+            if (!_isDrawing && !_isDragging && !_isDraggingHandle)
+            {
+                return;
+            }
+
             VisionLogger.Instance.Log(LogLevel.Info,
                 $"[Window_MouseLeftButtonUp] MouseUp事件 | InstanceId={_controlInstanceId} | Source=Window | _isDrawing={_isDrawing} | _isDragging={_isDragging} | _isDraggingHandle={_isDraggingHandle}",
                 "RegionEditorControl");
 
-            if (_isDrawing || _isDragging || _isDraggingHandle)
-            {
-                FinishInteraction();
-            }
+            FinishInteraction();
         }
 
         private void FinishInteraction()

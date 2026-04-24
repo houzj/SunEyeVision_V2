@@ -15,6 +15,26 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         private readonly Mat _mask;
 
         /// <summary>
+        /// 从区域列表快速创建掩码（一行代码版本）
+        /// </summary>
+        /// <param name="imageSize">图像尺寸</param>
+        /// <param name="regions">区域列表</param>
+        /// <returns>ROI掩码（调用者负责释放）</returns>
+        public static Mat CreateMask(Size imageSize, IEnumerable<UI.Controls.Region.Models.RegionData> regions)
+        {
+            var regionList = regions?.ToList() ?? new List<UI.Controls.Region.Models.RegionData>();
+
+            if (regionList.Count == 0)
+            {
+                return new Mat(imageSize, MatType.CV_8UC1, Scalar.White);
+            }
+
+            using var builder = new RegionMaskBuilder(imageSize);
+            builder.AddRegions(regionList);
+            return builder.GetMask();
+        }
+
+        /// <summary>
         /// 构造函数
         /// </summary>
         /// <param name="imageSize">图像尺寸</param>

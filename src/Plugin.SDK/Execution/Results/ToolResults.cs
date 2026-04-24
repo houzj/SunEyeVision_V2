@@ -382,6 +382,24 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
         }
 
         /// <summary>
+        /// 获取输出图像（DispImage通道）
+        /// </summary>
+        /// <returns>输出Mat，无图像返回null</returns>
+        public virtual Mat? GetOutputImage() => null;
+
+        /// <summary>
+        /// 获取显示文本（DispText通道）
+        /// </summary>
+        /// <returns>显示文本集合</returns>
+        public virtual IEnumerable<DisplayText> GetDisplayTexts() => Array.Empty<DisplayText>();
+
+        /// <summary>
+        /// 获取结果项（数据面板）
+        /// </summary>
+        /// <returns>结果项只读列表</returns>
+        public virtual IReadOnlyList<ResultItem> GetResultItems() => Array.Empty<ResultItem>();
+
+        /// <summary>
         /// 添加警告
         /// </summary>
         public void AddWarning(string warning)

@@ -1,4 +1,4 @@
-using System.Windows.Media;
+﻿using System.Windows.Media;
 using SunEyeVision.Plugin.SDK.Models;
 
 namespace SunEyeVision.Plugin.SDK.Models.Visualization
@@ -20,6 +20,16 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
         {
             get => _name;
             set => SetProperty(ref _name, value, "名称");
+        }
+
+        private string _category = "";
+        /// <summary>
+        /// 分类名称
+        /// </summary>
+        public string Category
+        {
+            get => _category;
+            set => SetProperty(ref _category, value, "分类");
         }
 
         private bool _isVisible = true;
@@ -80,6 +90,7 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
             return new DisplayItemConfig
             {
                 Name = _name,
+                Category = _category,
                 IsVisible = _isVisible,
                 OkColor = _okColor,
                 NgColor = _ngColor,

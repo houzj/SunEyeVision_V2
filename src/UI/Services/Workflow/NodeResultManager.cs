@@ -1,24 +1,20 @@
 ﻿using System;
-using System.IO;
+using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.Metadata;
+using SunEyeVision.Plugin.SDK.Models.Geometry;
+using SunEyeVision.Plugin.SDK.Models.Visualization;
+using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 using SunEyeVision.UI.Extensions;
-using SunEyeVision.UI.Models;
 using SunEyeVision.UI.Services.Images;
-using SunEyeVision.UI.Services.Visualization;
 using SunEyeVision.UI.Services.Performance;
-using SunEyeVision.UI.Views.Controls.Panels;
 using WorkflowCore = SunEyeVision.Workflow;
 using SunEyeVision.Workflow;
-
-// 别名解决命名冲突
-using IOPath = System.IO.Path;
+using ShapeType = SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeType;
 
 namespace SunEyeVision.UI.Services.Workflow
 {
@@ -26,60 +22,48 @@ namespace SunEyeVision.UI.Services.Workflow
     /// 节点结果管理器 - 负责更新节点结果并刷新UI显示
     /// </summary>
     /// <remarks>
-    /// 核心功能:
-    /// 1. 缓存工具执行结果到 WorkflowContext（来自 WorkflowCore）
-    /// 2. 更新图像数据
-    /// 3. 刷新结果面板显示
-    /// 4. 显示可视化元素（检测框、轮廓等）
-    ///
-    /// 使用示例:
-    /// <code>
-    /// var manager = new NodeResultManager(workflowContext, viewModel);
-    /// manager.SetOverlayCanvas(imageControl.OverlayCanvas);
-    /// manager.UpdateNodeResult(node, results);
-    /// </code>
+    /// 三通道设计（参考Halcon）：
+    /// - DispImage: 图像 → DisplayImage
+    /// - DispObj: 几何图形 → ResultRenderLayer.SetShapes()
+    /// - DispText: 文本标签 → ResultRenderLayer.SetTexts()
+    /// 
+    /// 使用虚方法替代反射，消除运行时类型检查开销。
     /// </remarks>
     public class NodeResultManager
     {
         private readonly WorkflowCore.WorkflowContext _workflowContext;
         private readonly ViewModels.MainWindowViewModel _viewModel;
-        private readonly VisualElementRenderer _renderer;
 
-        // 当前显示可视化元素的 Canvas 引用
-        private System.Windows.Controls.Canvas? _overlayCanvas;
+        // 结果渲染层引用
+        private Plugin.SDK.UI.Controls.ResultRenderLayer? _resultRenderLayer;
 
-        // 图像转换器池（用于优化Mat到BitmapSource的转换）
+        // 图像转换器池
         private readonly ImageConverterPool _imageConverterPool;
 
         public NodeResultManager(WorkflowCore.WorkflowContext workflowContext, ViewModels.MainWindowViewModel viewModel)
         {
             _workflowContext = workflowContext ?? throw new ArgumentNullException(nameof(workflowContext));
             _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
-            _renderer = new VisualElementRenderer();
             _imageConverterPool = new ImageConverterPool(maxCacheSize: 10);
         }
-        
+
         /// <summary>
-        /// 设置叠加层 Canvas（由 View 层调用）
+        /// 设置结果渲染层（由 View 层调用）
         /// </summary>
-        /// <param name="canvas">OverlayCanvas 引用</param>
-        public void SetOverlayCanvas(System.Windows.Controls.Canvas canvas)
+        public void SetResultRenderLayer(Plugin.SDK.UI.Controls.ResultRenderLayer layer)
         {
-            _overlayCanvas = canvas;
-}
+            _resultRenderLayer = layer;
+        }
 
         /// <summary>
         /// 更新节点结果并刷新UI
         /// </summary>
-        /// <param name="node">工作流节点</param>
-        /// <param name="result">执行结果</param>
-        public void UpdateNodeResult(WorkflowNode node, ToolResults result)
+        public void UpdateNodeResult(WorkflowNodeBase node, ToolResults result)
         {
             if (node == null || result == null)
                 return;
 
-            // 诊断日志已移至Debug输出
-// 1. 缓存结果到 WorkflowContext
+            // 1. 缓存结果到 WorkflowContext
             var executionResult = new NodeExecutionResult
             {
                 NodeId = node.Id,
@@ -91,15 +75,15 @@ namespace SunEyeVision.UI.Services.Workflow
             };
 
             // 如果结果包含图像，添加到输出
-            var outputImage = GetOutputImage(result);
-            if (outputImage != null)
+            var outputMat = result.GetOutputImage();
+            if (outputMat != null && !outputMat.Empty())
             {
-                executionResult.Outputs["Output"] = outputImage;
+                executionResult.Outputs["Output"] = outputMat;
             }
 
             _workflowContext.SetNodeResult(node.Id, executionResult);
 
-            // 2. 更新图像数据（如果结果包含图像）
+            // 2. 更新图像数据
             UpdateNodeImage(node, result);
 
             // 3. 如果当前节点被选中，立即刷新UI
@@ -110,231 +94,120 @@ namespace SunEyeVision.UI.Services.Workflow
         }
 
         /// <summary>
-        /// 刷新结果显示（调用时节点已选中）
+        /// 刷新结果显示
         /// </summary>
-        /// <remarks>
-        /// ★ 防闪烁优化：先准备新数据，再更新UI，避免空白间隙
-        /// </remarks>
-        public void RefreshResultDisplay(WorkflowNode node, ToolResults result)
+        public void RefreshResultDisplay(WorkflowNodeBase node, ToolResults result)
         {
             if (result == null)
             {
                 ClearResultDisplay();
                 return;
             }
-// ★ Step 1: 先准备所有新数据（不触发UI更新）
-            // 使用反射获取所有输出属性（统一使用新机制）
-            var propertyMap = result.GetPropertyMap();
-            var resultItems = result.GetType()
-                .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                .Where(p => !p.IsDefined(typeof(IgnoreBindAttribute)))
-                .Where(p => p.CanRead)
-                .Where(p => p.GetMethod?.IsPublic == true)
-                .Where(p => p.PropertyType != typeof(Delegate))
-                .Where(p => p.Name != "EqualityContract" && !p.Name.StartsWith("get_"))
-                .Select(p =>
-                {
-                    var value = p.GetValue(result);
-                    var mapEntry = propertyMap.FirstOrDefault(e => e.PropertyName == p.Name);
-                    var displayName = mapEntry?.DisplayName ?? p.Name;
-                    var unit = GetDisplayUnit(p.PropertyType);
-                    
-                    if (value == null) return ResultItem.Text(displayName, "null");
-                    if (value is int intVal) return ResultItem.Numeric(displayName, intVal, unit);
-                    if (value is double doubleVal) return ResultItem.Numeric(displayName, doubleVal, unit);
-                    if (value is bool boolVal) return ResultItem.Boolean(displayName, boolVal);
-                    if (value is string stringVal) return ResultItem.Text(displayName, stringVal);
-                    if (value is DateTime dateTime) return ResultItem.Text(displayName, dateTime.ToString("yyyy-MM-dd HH:mm:ss"));
-                    if (value is Enum enumVal) return ResultItem.Text(displayName, enumVal.ToString());
-                    return ResultItem.Text(displayName, value.ToString() ?? "null");
-                })
-                .ToList();
+
+            // ★ Step 1: 获取结果项（虚方法，无反射）
+            var resultItems = result.GetResultItems();
+            var itemList = resultItems.ToList();
+
+            // ★ Step 2: 批量更新UI
+            _viewModel.UpdateCalculationResults(itemList);
+
+            // ★ Step 3: 更新图像（DispImage通道）
+            var outputMat = result.GetOutputImage();
+            _viewModel.AddLog($"[诊断] 刷新结果显示: 节点={node.Name}, 结果类型={result.GetType().Name}, 输出图像={(outputMat != null ? $"{outputMat.Width}x{outputMat.Height}" : "null")}");
             
-            // 获取输出图像并转换为 BitmapSource
-            var outputImage = GetOutputImage(result);
-            BitmapSource? newProcessedImage = null;
-            bool hasNewImage = false;
-            
-            if (outputImage != null)
+            if (outputMat != null && !outputMat.Empty())
             {
                 try
                 {
-                    newProcessedImage = outputImage.ToBitmapSource();
-                    hasNewImage = true;
+                    var bitmapSource = outputMat.ToBitmapSource();
+                    _viewModel.ProcessedImage = bitmapSource;
+                    _viewModel.DisplayImage = bitmapSource;
+
+                    // 确保显示类型为 Processed
+                    var processedType = _viewModel.ImageDisplayTypes
+                        .FirstOrDefault(t => t.Type == ViewModels.ImageDisplayType.Processed);
+                    if (processedType != null && _viewModel.SelectedImageType?.Type != ViewModels.ImageDisplayType.Processed)
+                    {
+                        _viewModel.SelectedImageType = processedType;
+                    }
                 }
-                catch (Exception ex)
+                catch
                 {
-}
+                    // 忽略转换错误
+                }
             }
 
-            // ★ Step 2: 批量更新UI（减少刷新次数）
-            _viewModel.UpdateCalculationResults(resultItems);
-            
-            // ★ Step 3: 设置新图像并显式更新 DisplayImage
-            if (hasNewImage && newProcessedImage != null)
+            // ★ Step 4: 更新可视化元素（DispObj通道）
+            var shapes = result.GetVisualElements().ToList();
+
+            // ★ Step 5: 如果节点有检测区域，渲染只读显示
+            if (node.Parameters is RegionParameters regionParams &&
+                regionParams.IsRegionEnabled?.Value == true)
             {
-                // 设置处理后图像
-                _viewModel.ProcessedImage = newProcessedImage;
-                
-                // ★ 关键修复：显式设置 DisplayImage，不依赖 SelectedImageType setter
-                _viewModel.DisplayImage = newProcessedImage;
-                
-                // 确保显示类型为 Processed（如果当前不是）
-                var processedType = _viewModel.ImageDisplayTypes
-                    .FirstOrDefault(t => t.Type == ViewModels.ImageDisplayType.Processed);
-                if (processedType != null && _viewModel.SelectedImageType?.Type != ViewModels.ImageDisplayType.Processed)
+                var enabledRegions = regionParams.InspectionRegions.GetEnabledRegions();
+                foreach (var region in enabledRegions)
                 {
-                    _viewModel.SelectedImageType = processedType;
+                    var regionShapes = CreateRegionVisualElements(region);
+                    shapes.AddRange(regionShapes);
                 }
             }
-            
-            // ★ Step 4: 更新可视化元素
-            UpdateVisualElements(result);
+
+            _resultRenderLayer?.SetShapes(shapes);
+
+            // ★ Step 6: 更新文本标签（DispText通道）
+            var texts = result.GetDisplayTexts();
+            _resultRenderLayer?.SetTexts(texts);
         }
 
         /// <summary>
         /// 清空结果显示
         /// </summary>
-        /// <remarks>
-        /// ★ 防闪烁优化：不再主动清空图像，由调用方控制
-        /// </remarks>
         public void ClearResultDisplay()
         {
             _viewModel.CalculationResults.Clear();
-            ClearVisualElements();
-            
-            // ★ 优化：不再清空图像，保留上一个图像直到新图像到来
-            // 这样可以避免节点切换时的闪烁
-            // 图像清空由 UpdateDisplayImageSources 或特定逻辑控制
-        }
-        
-        /// <summary>
-        /// 更新可视化元素显示
-        /// </summary>
-        /// <param name="result">工具执行结果</param>
-        private void UpdateVisualElements(ToolResults result)
-        {
-            if (_overlayCanvas == null)
-            {
-return;
-            }
-            
-            // 清除旧元素
-            ClearVisualElements();
-            
-            // 获取可视化元素
-            var visualElements = result.GetVisualElements();
-            if (visualElements == null)
-            {
-return;
-            }
-            
-            var elementList = visualElements.ToList();
-            if (elementList.Count == 0)
-            {
-return;
-            }
-            
-            // 渲染并添加到 Canvas
-            var uiElements = _renderer.Render(elementList);
-            foreach (var uiElement in uiElements)
-            {
-                _overlayCanvas.Children.Add(uiElement);
-            }
-}
-        
-        /// <summary>
-        /// 清除可视化元素
-        /// </summary>
-        private void ClearVisualElements()
-        {
-            _overlayCanvas?.Children.Clear();
+            _resultRenderLayer?.Clear();
         }
 
         /// <summary>
         /// 更新节点图像数据
         /// </summary>
-        /// <remarks>
-        /// 重构说明：
-        /// - 更新 OutputCache（输出缓存），不修改 InputSource（输入源）
-        /// - ImageSource集成：创建MemoryImageSource并注册到ImageSourceManager
-        /// - 设计原则：输入和输出分离，执行结果不应修改用户选择的输入数据
-        /// </remarks>
-        public bool UpdateNodeImage(WorkflowNode node, ToolResults result)
+        public bool UpdateNodeImage(WorkflowNodeBase node, ToolResults result)
         {
-            // 尝试从结果中获取输出图像
-            var outputImage = GetOutputImage(result);
-            if (outputImage == null || outputImage.Empty())
+            var outputMat = result.GetOutputImage();
+            if (outputMat == null || outputMat.Empty())
             {
-                // ★ 关键日志：无图像输出
-return false;
+                return false;
             }
-
-            // 获取文件路径（如果有）
-            var filePathProp = result.GetType().GetProperty("FilePath");
-            var filePath = filePathProp?.GetValue(result) as string ?? "";
 
             try
             {
-                // 转换为 BitmapSource
-                var bitmapSource = outputImage.ToBitmapSource();
-
                 // 创建唯一ID
                 var imageSourceId = $"node_{node.Id}_output_{Guid.NewGuid():N}";
 
                 // 通过ImageSourceManager创建内存图像源
                 var imageSource = ImageSourceManager.Instance.CreateFromMemory(
-                    outputImage.Clone(), // 克隆Mat，避免所有权问题
+                    outputMat.Clone(), // 克隆Mat，避免所有权问题
                     imageSourceId
                 );
-// ★ 关键日志：图像更新成功
-return true;
+
+                return true;
             }
-            catch (Exception ex)
+            catch
             {
-return false;
+                return false;
             }
         }
 
         /// <summary>
-        /// 从结果中获取输出图像
+        /// 从缓存更新节点图像
         /// </summary>
-        private Mat? GetOutputImage(ToolResults result)
+        public void UpdateNodeImageFromCache(WorkflowNodeBase node, CachedExecutionResult cachedResult)
         {
-            // 检查结果是否包含图像数据
-            if (result == null)
-                return null;
-
-            // 尝试通过反射获取 OutputImage 属性
-            var outputImageProp = result.GetType().GetProperty("OutputImage");
-            if (outputImageProp != null)
-            {
-                var value = outputImageProp.GetValue(result);
-                if (value is Mat mat)
-                {
-                    return mat;
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// 从缓存更新节点图像（优化版本）
-        /// </summary>
-        /// <param name="node">工作流节点</param>
-        /// <param name="cachedResult">缓存的执行结果</param>
-        public void UpdateNodeImageFromCache(WorkflowNode node, CachedExecutionResult cachedResult)
-        {
-            if (node == null || cachedResult == null || cachedResult.ProcessedImage == null)
+            if (node == null || cachedResult?.ProcessedImage == null)
                 return;
 
             try
             {
-                // 直接使用缓存的BitmapSource，无需重新转换
-                var bitmapSource = cachedResult.ProcessedImage;
-
-                // 将缓存的执行结果存储到 WorkflowContext
                 var executionResult = new NodeExecutionResult
                 {
                     NodeId = node.Id,
@@ -344,10 +217,8 @@ return false;
                     Outputs = new Dictionary<string, object>()
                 };
 
-                // 如果有缓存的图像，添加到执行结果
                 if (cachedResult.ProcessedImage != null)
                 {
-                    // 将 BitmapSource 转换为 Mat
                     var mat = cachedResult.ProcessedImage.ToMat();
                     executionResult.Outputs["Output"] = mat;
                 }
@@ -361,11 +232,9 @@ return false;
         }
 
         /// <summary>
-        /// 获取节点的输出Mat（用于缓存）
+        /// 获取节点的输出Mat
         /// </summary>
-        /// <param name="node">工作流节点</param>
-        /// <returns>输出Mat，如果无输出返回null</returns>
-        public Mat? GetNodeOutputMat(WorkflowNode node)
+        public Mat? GetNodeOutputMat(WorkflowNodeBase node)
         {
             if (node == null)
                 return null;
@@ -374,14 +243,12 @@ return false;
             if (executionResult?.ToolResult == null)
                 return null;
 
-            return GetOutputImage(executionResult.ToolResult);
+            return executionResult.ToolResult.GetOutputImage();
         }
 
         /// <summary>
-        /// 快速转换Mat到BitmapSource（使用图像转换池优化）
+        /// 快速转换Mat到BitmapSource
         /// </summary>
-        /// <param name="mat">OpenCV Mat</param>
-        /// <returns>BitmapSource</returns>
         public BitmapSource? ConvertMatToBitmapSource(Mat? mat)
         {
             if (mat == null || mat.Empty())
@@ -391,24 +258,73 @@ return false;
             {
                 return _imageConverterPool.ConvertToBitmapSource(mat);
             }
-            catch (Exception ex)
+            catch
             {
-return null;
+                return null;
             }
         }
 
         /// <summary>
-        /// 获取属性类型的显示单位
+        /// 根据区域数据创建可视化元素（只读显示）
         /// </summary>
-        /// <param name="propertyType">属性类型</param>
-        /// <returns>显示单位字符串</returns>
-        private static string GetDisplayUnit(Type propertyType)
+        private IEnumerable<VisualElement> CreateRegionVisualElements(RegionData region)
         {
-            if (propertyType == typeof(OpenCvSharp.Size) || 
-                propertyType == typeof(OpenCvSharp.Rect) ||
-                propertyType == typeof(OpenCvSharp.Point))
-                return "像素";
-            return string.Empty;
+            if (region?.Parameters is not ShapeParameters shape)
+                yield break;
+
+            const uint color = 0xFF0000FF;  // 蓝色 RGB(0, 0, 255)
+            const double lineWidth = 1.5;
+
+            switch (shape.ShapeType)
+            {
+                case ShapeType.Rectangle:
+                case ShapeType.RotatedRectangle:
+                    yield return VisualElement.Rectangle(
+                        new OpenCvSharp.Rect2d(shape.CenterX - shape.Width / 2, shape.CenterY - shape.Height / 2, shape.Width, shape.Height),
+                        color: color,
+                        lineWidth: lineWidth,
+                        filled: false
+                    );
+                    break;
+
+                case ShapeType.Circle:
+                    yield return VisualElement.Circle(
+                        new Circle2d(shape.CenterX, shape.CenterY, shape.Radius),
+                        color: color,
+                        lineWidth: lineWidth
+                    );
+                    break;
+
+                case ShapeType.Annulus:
+                    yield return VisualElement.Circle(
+                        new Circle2d(shape.CenterX, shape.CenterY, shape.OuterRadius),
+                        color: color,
+                        lineWidth: lineWidth
+                    );
+                    yield return VisualElement.Circle(
+                        new Circle2d(shape.CenterX, shape.CenterY, shape.Radius),
+                        color: color,
+                        lineWidth: lineWidth
+                    );
+                    break;
+
+                case ShapeType.Polygon:
+                    if (shape.Points != null && shape.Points.Count >= 3)
+                    {
+                        var points = shape.Points.Select(p => new Point2d(p.X, p.Y)).ToArray();
+                        yield return VisualElement.Polygon(points, color: color, lineWidth: lineWidth);
+                    }
+                    break;
+
+                case ShapeType.Line:
+                    yield return VisualElement.Line(
+                        new Point2d(shape.StartX, shape.StartY),
+                        new Point2d(shape.EndX, shape.EndY),
+                        color: color,
+                        lineWidth: lineWidth
+                    );
+                    break;
+            }
         }
     }
 }

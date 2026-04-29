@@ -305,7 +305,7 @@ namespace SunEyeVision.UI.Services.Workflow
                 {
                     if (e.PropertyName == nameof(GraphicsStyle.IsVisible))
                         gi.IsVisible = gi.Style.IsVisible;
-                    gi.OnPropertyChanged(""); // 触发 RenderLayer 重绘
+                    gi.NotifyChanged(); // 触发 RenderLayer 重绘
                 };
                 gi.IsVisible = gi.Style.IsVisible;
             }

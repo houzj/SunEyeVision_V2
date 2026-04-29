@@ -215,7 +215,8 @@
                 </StackPanel>
               </Expander>
 
-              <!-- 图像显示分组 -->
+              <!-- 图像显示分组 - 已迁移至 DisplayItem，待重构 -->
+              <!--
               <Expander Header="图像显示"
                                       IsExpanded="True"
                                       BorderBrush="#E0E0E0"
@@ -223,28 +224,21 @@
                                       Margin="0,0,0,8"
                                       Background="White">
                 <StackPanel Margin="16,8">
-                  <!-- 输出图像 -->
                   <controls:LabeledControl Label="输出图像" ContentHorizontalAlignment="Left">
                     <controls:DispItemColorControl
                         Config="{Binding DisplayConfig.OutputImage, Mode=TwoWay}"
                         ContentHorizontalAlignment="Left"/>
                   </controls:LabeledControl>
-
-                  <!-- 阈值分界线 -->
                   <controls:LabeledControl Label="阈值分界线" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
                     <controls:DispItemColorControl
                         Config="{Binding DisplayConfig.ThresholdLine, Mode=TwoWay}"
                         ContentHorizontalAlignment="Left"/>
                   </controls:LabeledControl>
-
-                  <!-- ROI区域 -->
                   <controls:LabeledControl Label="ROI区域" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
                     <controls:DispItemColorControl
                         Config="{Binding DisplayConfig.Region, Mode=TwoWay}"
                         ContentHorizontalAlignment="Left"/>
                   </controls:LabeledControl>
-
-                  <!-- 直方图 -->
                   <controls:LabeledControl Label="直方图" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
                     <controls:DispItemColorControl
                         Config="{Binding DisplayConfig.Histogram, Mode=TwoWay}"
@@ -252,6 +246,7 @@
                   </controls:LabeledControl>
                 </StackPanel>
               </Expander>
+              -->
 
               <!-- 文本显示分组 -->
               <Expander Header="文本显示"

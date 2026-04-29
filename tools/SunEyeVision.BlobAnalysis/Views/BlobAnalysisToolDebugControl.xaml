@@ -241,122 +241,49 @@
                 </StackPanel>
               </Expander>
 
-              <!-- 图像显示分组 -->
-              <Expander Header="图像显示"
+              <!-- 图形显示分组 -->
+              <Expander Header="图形显示"
                                       IsExpanded="True"
                                       BorderBrush="#E0E0E0"
                                       BorderThickness="1"
                                       Margin="0,0,0,8"
                                       Background="White">
                 <StackPanel Margin="16,8">
-                  <!-- 二值图像 -->
-                  <controls:LabeledControl Label="二值图像" ContentHorizontalAlignment="Left">
+                  <controls:LabeledControl Label="外接矩形" ContentHorizontalAlignment="Left">
                     <controls:DispItemColorControl
-                        Config="{Binding DisplayConfig.BinaryImage, Mode=TwoWay}"
+                        Item="{Binding BlobsStyle, Mode=TwoWay}"
                         ContentHorizontalAlignment="Left"/>
                   </controls:LabeledControl>
-
-                  <!-- Blob轮廓 -->
-                  <controls:LabeledControl Label="Blob轮廓" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
-                    <controls:DispItemColorControl
-                        Config="{Binding DisplayConfig.BlobContour, Mode=TwoWay}"
-                        ContentHorizontalAlignment="Left"/>
-                  </controls:LabeledControl>
-
-                  <!-- 外接矩形 -->
-                  <controls:LabeledControl Label="外接矩形" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
-                    <controls:DispItemColorControl
-                        Config="{Binding DisplayConfig.BlobBoundingBox, Mode=TwoWay}"
-                        ContentHorizontalAlignment="Left"/>
-                  </controls:LabeledControl>
-
-                  <!-- 质心标记 -->
                   <controls:LabeledControl Label="质心标记" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
                     <controls:DispItemColorControl
-                        Config="{Binding DisplayConfig.BlobCentroid, Mode=TwoWay}"
-                        ContentHorizontalAlignment="Left"/>
-                  </controls:LabeledControl>
-
-                  <!-- 检测区域 -->
-                  <controls:LabeledControl Label="检测区域" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
-                    <controls:DispItemColorControl
-                        Config="{Binding DisplayConfig.Region, Mode=TwoWay}"
-                        ContentHorizontalAlignment="Left"/>
-                  </controls:LabeledControl>
-
-                  <!-- 直方图 -->
-                  <controls:LabeledControl Label="直方图" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
-                    <controls:DispItemColorControl
-                        Config="{Binding DisplayConfig.Histogram, Mode=TwoWay}"
+                        Item="{Binding CentroidsStyle, Mode=TwoWay}"
                         ContentHorizontalAlignment="Left"/>
                   </controls:LabeledControl>
                 </StackPanel>
               </Expander>
 
-              <!-- 文本显示分组 -->
+              <!-- 文本显示分组（新增） -->
               <Expander Header="文本显示"
                                       IsExpanded="True"
                                       BorderBrush="#E0E0E0"
                                       BorderThickness="1"
+                                      Margin="0,0,0,8"
                                       Background="White">
                 <StackPanel Margin="16,8">
-                  <controls:LabeledControl Label="内容" Margin="0,0,0,8">
-                    <TextBox Grid.Column="1" Grid.Row="0" Width="230"
-                                             Text="{Binding TextConfig.Content, Mode=TwoWay}"
-                                             HorizontalAlignment="Left"
-                                             Height="28"
-                                             VerticalContentAlignment="Center"/>
+                  <controls:LabeledControl Label="Blob标签" ContentHorizontalAlignment="Left">
+                    <controls:DispTextColorControl
+                        Item="{Binding LabelsStyle, Mode=TwoWay}"
+                        AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                   </controls:LabeledControl>
-
-                  <controls:LabeledControl Label="OK颜色" Margin="0,0,0,8">
-                    <controls:ColorSelector HorizontalAlignment="Left" Width="230" SelectedColor="{Binding TextConfig.OkColor, Mode=TwoWay}"/>
+                  <controls:LabeledControl Label="统计信息" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
+                    <controls:DispTextColorControl
+                        Item="{Binding StatisticsStyle, Mode=TwoWay}"
+                        AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                   </controls:LabeledControl>
-
-                  <controls:LabeledControl Label="NG颜色" Margin="0,0,0,8">
-                    <controls:ColorSelector Width="230" HorizontalAlignment="Left" SelectedColor="{Binding TextConfig.NgColor, Mode=TwoWay}"/>
-                  </controls:LabeledControl>
-
-                  <controls:LabeledControl Label="字号" Margin="0,0,0,8">
-                    <controls:NumericUpDown Value="{Binding TextConfig.FontSize, Mode=TwoWay}"
-                                                Minimum="0"
-                                                Maximum="1"
-                                                DecimalPlaces="2"
-                                                HorizontalAlignment="Left"
-                                                Width="230"/>
-                  </controls:LabeledControl>
-
-                  <controls:LabeledControl Label="透明度" Margin="0,0,0,8">
-                    <controls:NumericUpDown Value="{Binding TextConfig.Opacity, Mode=TwoWay}"
-                                             Minimum="8"
-                                             Maximum="72"
-                                             DecimalPlaces="1"
-                                             HorizontalAlignment="Left"
-                                             Width="230"/>
-                  </controls:LabeledControl>
-
-                  <controls:LabeledControl Label="位置X" Margin="0,0,0,8">
-                    <controls:ConfigSetting
-                                                            ParameterName="TextConfig.PositionX"
-                                                            DataType="{x:Type sys:Double}"
-                                                            Value="{Binding TextConfig.PositionX, Mode=TwoWay}"
-                                                            Minimum="8"
-                                                            Maximum="72"
-                                                            DecimalPlaces="1"
-                                                            HorizontalAlignment="Left"
-                                                            Width="230"
-                                                            AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                  </controls:LabeledControl>
-                  <controls:LabeledControl Label="位置Y" Margin="0,0,0,8">
-                    <controls:ConfigSetting
-                                                            ParameterName="TextConfig.PositionY"
-                                                            DataType="{x:Type sys:Double}"
-                                                            Value="{Binding TextConfig.PositionY, Mode=TwoWay}"
-                                                            Minimum="8"
-                                                            Maximum="72"
-                                                            DecimalPlaces="1"
-                                                            HorizontalAlignment="Left"
-                                                            Width="230"
-                                                            AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                  <controls:LabeledControl Label="更多提示" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
+                    <controls:DispTextColorControl
+                        Item="{Binding MoreHintStyle, Mode=TwoWay}"
+                        AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                   </controls:LabeledControl>
                 </StackPanel>
               </Expander>

@@ -1,15 +1,19 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Controls;
+using System.Windows.Media;
+using OpenCvSharp;
 using SunEyeVision.CvEngine.Models;
 using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 
 namespace SunEyeVision.Tool.BlobAnalysis.Views
 {
     /// <summary>
-    /// Blob 数据分析控件 - 显示连通域特征数据的 DataGrid + 统计摘要
+    /// Blob 数据分析控件 - 显示连通域特征数据的 DataGrid + 统计摘要 + 选中高亮
     /// </summary>
     public partial class BlobDataAnalysisControl : UserControl, IToolControlDataAnalysis
     {
@@ -46,11 +50,94 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
         /// <summary>连通性</summary>
         public string ConnectivityText { get; private set; } = "-";
 
+        #region 选中 Blob 相关
+
+        private BlobInfo? _selectedBlob;
+
+        /// <summary>当前选中的 Blob（由 DataGrid SelectionChanged 驱动）</summary>
+        public BlobInfo? SelectedBlob
+        {
+            get => _selectedBlob;
+            private set
+            {
+                if (_selectedBlob != value)
+                {
+                    _selectedBlob = value;
+                    NotifyPropertyChanged(nameof(SelectedBlob));
+                    NotifyPropertyChanged(nameof(HasSelectedBlob));
+                    NotifyPropertyChanged(nameof(SelectedBlobDetailText));
+
+                    // 触发接口事件：构建高亮元素供图像联动
+                    SelectionHighlightChanged?.Invoke(this, BuildHighlightItems(_selectedBlob));
+                }
+            }
+        }
+
+        /// <summary>是否有选中的 Blob</summary>
+        public bool HasSelectedBlob => _selectedBlob != null;
+
+        /// <summary>选中 Blob 的详情文本（绑定到底部面板）</summary>
+        public string SelectedBlobDetailText
+        {
+            get
+            {
+                if (_selectedBlob == null) return string.Empty;
+                var bb = _selectedBlob.BoundingBox;
+                return $"面积: {_selectedBlob.Area:F0}px²  周长: {_selectedBlob.Perimeter:F1}  圆度: {_selectedBlob.Circularity:F3}  矩形度: {_selectedBlob.Rectangularity:F3}  质心: ({_selectedBlob.CentroidX:F1}, {_selectedBlob.CentroidY:F1})  边框: {bb.Width}×{bb.Height}@({bb.X},{bb.Y})";
+            }
+        }
+
+        #endregion
+
+        /// <inheritdoc/>
+        public event EventHandler<IEnumerable<DisplayItemBase>?>? SelectionHighlightChanged;
+
         public BlobDataAnalysisControl()
         {
             InitializeComponent();
             DataContext = this;
         }
+
+        /// <summary>DataGrid 行选择变化 → 更新 SelectedBlob 属性并触发事件</summary>
+        private void BlobDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (BlobDataGrid.SelectedItem is BlobInfo blob)
+                SelectedBlob = blob;
+            else
+                SelectedBlob = null;
+        }
+
+        /// <summary>构建选中 Blob 的高亮 DisplayItem 列表（黄色外接矩形+标注+质心十字）</summary>
+        private static IEnumerable<DisplayItemBase>? BuildHighlightItems(BlobInfo? blob)
+            {
+                if (blob == null) return null;
+
+                var highlightColor = Color.FromArgb(0xFF, 0xFF, 0xFF, 0x00); // Yellow
+                var bb = blob.BoundingBox;
+
+                return new DisplayItemBase[]
+                {
+                    new GraphicsDisplayItem
+                    {
+                        Name = "HighlightRect", Type = GraphicsType.Rectangle,
+                        Geometries = new object[] { new Rect2d(bb.X, bb.Y, bb.Width, bb.Height) },
+                        Style = new GraphicsStyle { OkColor = highlightColor, LineWidth = 3 }, ZOrder = 100
+                    },
+                    new TextDisplayItem
+                    {
+                        Name = "HighlightLabel",
+                        Texts = new[] { new DisplayTextData { Content =$"#{blob.Label}: {blob.Area:F0}px²", X = bb.X, Y = bb.Y - 5 } },
+                        AnchorX = bb.X, AnchorY = bb.Y - 5,
+                        Style = new TextStyle { OkColor = highlightColor, FontSize = 14.0 }, ZOrder = 101
+                    },
+                    new GraphicsDisplayItem
+                    {
+                        Name = "HighlightPoint", Type = GraphicsType.Point,
+                        Geometries = new object[] { new Point2d(blob.CentroidX, blob.CentroidY) },
+                        Style = new GraphicsStyle { OkColor = highlightColor, LineWidth = 4.0 }, ZOrder = 102
+                    }
+                };
+            }
 
         #region IToolControlDataAnalysis
 

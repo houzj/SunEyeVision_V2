@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Media.Imaging;
@@ -123,7 +123,6 @@ namespace SunEyeVision.UI.Services.Workflow
                     _viewModel.ProcessedImage = bitmapSource;
                     _viewModel.DisplayImage = bitmapSource;
 
-                    // 确保显示类型为 Processed
                     var processedType = _viewModel.ImageDisplayTypes
                         .FirstOrDefault(t => t.Type == ViewModels.ImageDisplayType.Processed);
                     if (processedType != null && _viewModel.SelectedImageType?.Type != ViewModels.ImageDisplayType.Processed)
@@ -137,26 +136,9 @@ namespace SunEyeVision.UI.Services.Workflow
                 }
             }
 
-            // ★ Step 4: 更新可视化元素（DispObj通道）
-            var shapes = result.GetVisualElements().ToList();
-
-            // ★ Step 5: 如果节点有检测区域，渲染只读显示
-            if (node.Parameters is RegionParameters regionParams &&
-                regionParams.IsRegionEnabled?.Value == true)
-            {
-                var enabledRegions = regionParams.InspectionRegions.GetEnabledRegions();
-                foreach (var region in enabledRegions)
-                {
-                    var regionShapes = CreateRegionVisualElements(region);
-                    shapes.AddRange(regionShapes);
-                }
-            }
-
-            _resultRenderLayer?.SetShapes(shapes);
-
-            // ★ Step 6: 更新文本标签（DispText通道）
-            var texts = result.GetDisplayTexts();
-            _resultRenderLayer?.SetTexts(texts);
+            // ★ Step 4-6 合并：统一构建 DisplayItem 列表（工具输出 + 节点检测区域）
+            var displayItems = BuildDisplayItems(result, node);
+            _resultRenderLayer?.SetItems(displayItems);
         }
 
         /// <summary>
@@ -166,6 +148,23 @@ namespace SunEyeVision.UI.Services.Workflow
         {
             _viewModel.CalculationResults.Clear();
             _resultRenderLayer?.Clear();
+            _resultRenderLayer?.ClearHighlight();
+        }
+
+        /// <summary>
+        /// 设置高亮元素（用于选中 Blob 等场景的图像高亮反馈）
+        /// </summary>
+        public void SetHighlightItems(IEnumerable<DisplayItemBase>? items)
+        {
+            _resultRenderLayer?.SetHighlightItems(items);
+        }
+
+        /// <summary>
+        /// 清空高亮元素
+        /// </summary>
+        public void ClearHighlight()
+        {
+            _resultRenderLayer?.ClearHighlight();
         }
 
         /// <summary>
@@ -265,66 +264,115 @@ namespace SunEyeVision.UI.Services.Workflow
         }
 
         /// <summary>
-        /// 根据区域数据创建可视化元素（只读显示）
+        /// 统一构建显示项列表（工具输出 + 节点检测区域）
         /// </summary>
-        private IEnumerable<VisualElement> CreateRegionVisualElements(RegionData region)
-        {
-            if (region?.Parameters is not ShapeParameters shape)
-                yield break;
-
-            const uint color = 0xFF0000FF;  // 蓝色 RGB(0, 0, 255)
-            const double lineWidth = 1.5;
-
-            switch (shape.ShapeType)
+    private IReadOnlyList<DisplayItemBase> BuildDisplayItems(ToolResults result, WorkflowNodeBase node)
             {
-                case ShapeType.Rectangle:
-                case ShapeType.RotatedRectangle:
-                    yield return VisualElement.Rectangle(
-                        new OpenCvSharp.Rect2d(shape.CenterX - shape.Width / 2, shape.CenterY - shape.Height / 2, shape.Width, shape.Height),
-                        color: color,
-                        lineWidth: lineWidth,
-                        filled: false
-                    );
-                    break;
+                var items = new List<DisplayItemBase>();
 
-                case ShapeType.Circle:
-                    yield return VisualElement.Circle(
-                        new Circle2d(shape.CenterX, shape.CenterY, shape.Radius),
-                        color: color,
-                        lineWidth: lineWidth
-                    );
-                    break;
-
-                case ShapeType.Annulus:
-                    yield return VisualElement.Circle(
-                        new Circle2d(shape.CenterX, shape.CenterY, shape.OuterRadius),
-                        color: color,
-                        lineWidth: lineWidth
-                    );
-                    yield return VisualElement.Circle(
-                        new Circle2d(shape.CenterX, shape.CenterY, shape.Radius),
-                        color: color,
-                        lineWidth: lineWidth
-                    );
-                    break;
-
-                case ShapeType.Polygon:
-                    if (shape.Points != null && shape.Points.Count >= 3)
+                // 1. 工具通过 DisplayCollector 输出的 DisplayItemBase（订阅 Style 变更实现实时联动）
+                if (result.Display.HasItems)
+                {
+                    foreach (var item in result.Display.Items)
                     {
-                        var points = shape.Points.Select(p => new Point2d(p.X, p.Y)).ToArray();
-                        yield return VisualElement.Polygon(points, color: color, lineWidth: lineWidth);
+                        // 订阅 Style.PropertyChanged → 联动 IsVisible + 触发重绘
+                        SubscribeStyleChanges(item);
+                        items.Add(item);
                     }
-                    break;
+                }
 
-                case ShapeType.Line:
-                    yield return VisualElement.Line(
-                        new Point2d(shape.StartX, shape.StartY),
-                        new Point2d(shape.EndX, shape.EndY),
-                        color: color,
-                        lineWidth: lineWidth
-                    );
-                    break;
+                // 2. 节点检测区域（只读蓝色显示，使用内部只读 Style）
+                if (node.Parameters is RegionParameters regionParams &&
+                    regionParams.IsRegionEnabled?.Value == true)
+                {
+                    var enabledRegions = regionParams.InspectionRegions.GetEnabledRegions();
+                    foreach (var region in enabledRegions)
+                    {
+                        var regionItem = CreateRegionDisplayItem(region);
+                        if (regionItem != null) items.Add(regionItem);
+                    }
+                }
+
+                return items;
+            }
+
+        /// <summary>订阅 Style 属性变更 → 联动 DisplayItem.IsVisible 并触发重绘</summary>
+        private static void SubscribeStyleChanges(DisplayItemBase item)
+        {
+            if (item is GraphicsDisplayItem gi && gi.Style != null)
+            {
+                gi.Style.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(GraphicsStyle.IsVisible))
+                        gi.IsVisible = gi.Style.IsVisible;
+                    gi.NotifyChanged(); // 触发 RenderLayer 重绘
+                };
+                gi.IsVisible = gi.Style.IsVisible;
+            }
+            else if (item is TextDisplayItem ti && ti.Style != null)
+            {
+                ti.Style.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(TextStyle.IsVisible))
+                        ti.IsVisible = ti.Style.IsVisible;
+                    ti.NotifyChanged(); // 触发 RenderLayer 重绘
+                };
+                ti.IsVisible = ti.Style.IsVisible;
             }
         }
+
+        /// <summary>
+        /// 根据区域数据创建显示项（只读显示，使用内部 RegionStyle）
+        /// </summary>
+        private static readonly GraphicsStyle RegionStyle = new()
+        {
+            Name = "Region",
+            OkColor = System.Windows.Media.Color.FromRgb(0, 0, 255),
+            LineWidth = 1.5
+        };
+
+        private DisplayItemBase? CreateRegionDisplayItem(RegionData region)
+            {
+                if (region?.Parameters is not ShapeParameters shape) return null;
+
+                return shape.ShapeType switch
+                {
+                    ShapeType.Rectangle or ShapeType.RotatedRectangle => new GraphicsDisplayItem
+                    {
+                        Style = RegionStyle, Type = GraphicsType.Rectangle,
+                        Geometries = new object[] { new Rect2d(shape.CenterX - shape.Width / 2, shape.CenterY - shape.Height / 2, shape.Width, shape.Height) },
+                        ZOrder = -10
+                    },
+                    ShapeType.Circle => new GraphicsDisplayItem
+                    {
+                        Style = RegionStyle, Type = GraphicsType.Circle,
+                        Geometries = new object[] { new Circle2d(shape.CenterX, shape.CenterY, shape.Radius) },
+                        ZOrder = -10
+                    },
+                    ShapeType.Annulus => new GraphicsDisplayItem
+                    {
+                        Style = RegionStyle, Type = GraphicsType.Circle,
+                        Geometries = new object[]
+                        {
+                            new Circle2d(shape.CenterX, shape.CenterY, shape.OuterRadius),
+                            new Circle2d(shape.CenterX, shape.CenterY, shape.Radius)
+                        },
+                        IsPassArray = new bool[2], ZOrder = -10
+                    },
+                    ShapeType.Polygon when shape.Points != null && shape.Points.Count >= 3 => new GraphicsDisplayItem
+                    {
+                        Style = RegionStyle, Type = GraphicsType.Polygon,
+                        Geometries = new object[] { shape.Points.Select(p => new Point2d(p.X, p.Y)).ToArray() },
+                        ZOrder = -10
+                    },
+                    ShapeType.Line => new GraphicsDisplayItem
+                    {
+                        Style = RegionStyle, Type = GraphicsType.Line,
+                        Geometries = new object[] { new LineSegment(new Point2d(shape.StartX, shape.StartY), new Point2d(shape.EndX, shape.EndY)) },
+                        ZOrder = -10
+                    },
+                    _ => null
+                };
+            }
     }
 }

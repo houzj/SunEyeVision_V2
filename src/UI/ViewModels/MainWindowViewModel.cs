@@ -2669,6 +2669,13 @@ SplitterPosition = position;
         {
             try
             {
+                // ★ 清理旧的选中高亮订阅（防止内存泄漏和残留高亮）
+                if (SelectedNodeDataAnalysisControl is IToolControlDataAnalysis oldDaControl)
+                {
+                    oldDaControl.SelectionHighlightChanged -= OnSelectionHighlightChanged;
+                }
+                _nodeResultManager.ClearHighlight();
+
                 // 清空当前控件
                 SelectedNodeDataAnalysisControl = null;
                 HasDataAnalysisControl = false;
@@ -2711,6 +2718,9 @@ SplitterPosition = position;
                     try
                     {
                         daControl.OnResultUpdated(cachedResult.ToolResult);
+
+                        // ★ 订阅选中高亮联动事件（图像高亮反馈）
+                        daControl.SelectionHighlightChanged += OnSelectionHighlightChanged;
                     }
                     catch (Exception loadEx)
                     {
@@ -2729,6 +2739,17 @@ SplitterPosition = position;
                 HasDataAnalysisControl = false;
                 return System.Threading.Tasks.Task.CompletedTask;
             }
+        }
+
+        /// <summary>
+        /// 数据分析控件选中高亮联动 → 将高亮元素设置到图像渲染层
+        /// </summary>
+        private void OnSelectionHighlightChanged(object? sender, System.Collections.Generic.IEnumerable<Plugin.SDK.Models.Visualization.DisplayItemBase>? highlightItems)
+        {
+            if (highlightItems == null)
+                _nodeResultManager.ClearHighlight();
+            else
+                _nodeResultManager.SetHighlightItems(highlightItems);
         }
 
 

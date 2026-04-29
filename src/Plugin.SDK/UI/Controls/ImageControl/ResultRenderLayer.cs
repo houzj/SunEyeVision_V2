@@ -18,26 +18,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
     /// <summary>
     /// 结果渲染层 - 基于 DrawingContext 的高性能渲染
     /// </summary>
-    /// <remarks>
-    /// 三通道设计（参考Halcon）：
-    /// - DispImage: 底层Image控件负责
-    /// - DispObj: 几何图形（DrawingContext.Draw*）
-    /// - DispText: 文本标签（DrawingContext.DrawText）
-    /// 
-    /// 性能优化：
-    /// - 输入用 IEnumerable，内部用 List 物化（OnRender 可能被多次调用）
-    /// - Brush/Pen 缓存 + Freeze() 减少 WPF 渲染管线开销
-    /// - 分类可见性用 Dictionary 独立控制
-    /// </remarks>
     public sealed class ResultRenderLayer : FrameworkElement
     {
         #region 私有字段
 
-        private List<VisualElement> _shapes = new();
-        private List<DisplayText> _texts = new();
-        private readonly Dictionary<string, bool> _categoryVisibility = new();
-        private readonly Dictionary<string, DisplayItemConfig> _shapeConfigs = new();
-        private readonly Dictionary<string, TextConfigBase> _textConfigs = new();
+        private IReadOnlyList<DisplayItemBase>? _items;
+        private IReadOnlyList<DisplayItemBase>? _highlightItems;
         private readonly Dictionary<uint, SolidColorBrush> _brushCache = new();
         private readonly Dictionary<uint, Pen> _penCache = new();
 
@@ -45,60 +31,61 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         #region 公共接口
 
-        /// <summary>
-        /// 设置几何图形（DispObj通道）
-        /// </summary>
-        public void SetShapes(IEnumerable<VisualElement>? shapes)
+        /// <summary>设置显示项</summary>
+        public void SetItems(IReadOnlyList<DisplayItemBase>? items)
         {
-            _shapes = shapes?.ToList() ?? new List<VisualElement>();
+            UnsubscribeItems(_items);
+            _items = items;
+            SubscribeItems(items);
             InvalidateVisual();
         }
 
-        /// <summary>
-        /// 设置文本（DispText通道）
-        /// </summary>
-        public void SetTexts(IEnumerable<DisplayText>? texts)
+        /// <summary>设置高亮显示项</summary>
+        public void SetHighlightItems(IEnumerable<DisplayItemBase>? items)
         {
-            _texts = texts?.ToList() ?? new List<DisplayText>();
+            UnsubscribeItems(_highlightItems);
+            _highlightItems = items?.ToList();
+            SubscribeItems(_highlightItems);
             InvalidateVisual();
         }
 
-        /// <summary>
-        /// 设置分类可见性
-        /// </summary>
-        public void SetCategoryVisible(string category, bool visible)
-        {
-            _categoryVisibility[category] = visible;
-            InvalidateVisual();
-        }
-
-        /// <summary>
-        /// 设置形状配置
-        /// </summary>
-        public void SetShapeConfig(string category, DisplayItemConfig config)
-        {
-            _shapeConfigs[category] = config;
-            InvalidateVisual();
-        }
-
-        /// <summary>
-        /// 设置文本配置
-        /// </summary>
-        public void SetTextConfig(string category, TextConfigBase config)
-        {
-            _textConfigs[category] = config;
-            InvalidateVisual();
-        }
-
-        /// <summary>
-        /// 清空所有内容
-        /// </summary>
+        /// <summary>清空所有内容</summary>
         public void Clear()
         {
-            _shapes.Clear();
-            _texts.Clear();
+            UnsubscribeItems(_items);
+            UnsubscribeItems(_highlightItems);
+            _items = null;
+            _highlightItems = null;
             InvalidateVisual();
         }
+
+        /// <summary>清空高亮元素</summary>
+        public void ClearHighlight()
+        {
+            UnsubscribeItems(_highlightItems);
+            _highlightItems = null;
+            InvalidateVisual();
+        }
+
+        #endregion
+
+        #region 属性订阅（UI操作自动触发重绘）
+
+        private void SubscribeItems(IReadOnlyList<DisplayItemBase>? items)
+        {
+            if (items == null) return;
+            foreach (var item in items)
+                item.PropertyChanged += OnItemPropertyChanged;
+        }
+
+        private void UnsubscribeItems(IReadOnlyList<DisplayItemBase>? items)
+        {
+            if (items == null) return;
+            foreach (var item in items)
+                item.PropertyChanged -= OnItemPropertyChanged;
+        }
+
+        private void OnItemPropertyChanged(object? sender, EventArgs e) => InvalidateVisual();
 
         #endregion
 
@@ -106,9 +93,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         private double _viewportScale = 1.0;
 
-        /// <summary>
-        /// 视口缩放比例（用于幂律线宽调整）
-        /// </summary>
         public double ViewportScale
         {
             get => _viewportScale;
@@ -117,26 +101,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 if (Math.Abs(_viewportScale - value) > 0.001)
                 {
                     _viewportScale = value;
-                    InvalidateVisual(); // 缩放变化时需要重绘
+                    InvalidateVisual();
                 }
             }
         }
 
-        /// <summary>
-        /// 设置视口缩放（幂律公式：线宽 / 缩放 = 视觉恒定）
-        /// </summary>
-        public void SetViewportScale(double scale)
-        {
-            ViewportScale = scale;
-        }
+        public void SetViewportScale(double scale) => ViewportScale = scale;
 
-        /// <summary>
-        /// 获取幂律调整后的线宽
-        /// </summary>
-        private double GetScaledLineWidth(double rawWidth)
-        {
-            return _viewportScale > 0.001 ? rawWidth / _viewportScale : rawWidth;
-        }
+        private double GetScaledLineWidth(double rawWidth) =>
+            _viewportScale > 0.001 ? rawWidth / _viewportScale : rawWidth;
 
         #endregion
 
@@ -146,219 +119,302 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         {
             base.OnRender(dc);
 
-            // 清空缓存（尺寸变化时需要重建）
             _brushCache.Clear();
             _penCache.Clear();
 
-            // 渲染图形（按ZOrder排序）
-            foreach (var shape in _shapes.OrderBy(s => s.ZOrder))
+            // 按ZOrder排序渲染正常项
+            if (_items != null)
             {
-                if (!shape.IsVisible) continue;
-                if (!string.IsNullOrEmpty(shape.Category) && 
-                    _categoryVisibility.TryGetValue(shape.Category, out var visible) && !visible) continue;
-
-                RenderShape(dc, shape);
-            }
-
-            // 渲染文本（按ZOrder排序）
-            foreach (var text in _texts.OrderBy(t => t.ZOrder))
-            {
-                if (!string.IsNullOrEmpty(text.Category) && 
-                    _categoryVisibility.TryGetValue(text.Category, out var visible) && !visible) continue;
-
-                RenderText(dc, text);
-            }
-        }
-
-        private void RenderShape(DrawingContext dc, VisualElement shape)
-        {
-            var colorArgb = GetEffectiveColor(shape);
-            var color = ArgbToColor(colorArgb);
-            var brush = GetBrush(colorArgb);
-            var pen = GetPen(colorArgb, GetScaledLineWidth(shape.LineWidth));
-
-            switch (shape.Type)
-            {
-                case VisualElementType.Point:
-                    RenderPoint(dc, shape, brush);
-                    break;
-                case VisualElementType.Line:
-                    RenderLine(dc, shape, pen);
-                    break;
-                case VisualElementType.Rectangle:
-                    RenderRectangle(dc, shape, brush, pen);
-                    break;
-                case VisualElementType.Circle:
-                    RenderCircle(dc, shape, brush, pen);
-                    break;
-                case VisualElementType.Arc:
-                    RenderArc(dc, shape, pen);
-                    break;
-                case VisualElementType.Polygon:
-                    RenderPolygon(dc, shape, brush, pen);
-                    break;
-                case VisualElementType.Text:
-                    RenderLabel(dc, shape, color);
-                    break;
-                case VisualElementType.Arrow:
-                    RenderArrow(dc, shape, pen);
-                    break;
-                case VisualElementType.Contour:
-                    RenderContour(dc, shape, brush, pen);
-                    break;
-            }
-        }
-
-        private void RenderPoint(DrawingContext dc, VisualElement shape, SolidColorBrush brush)
-        {
-            if (shape.Geometry is Point2d point)
-            {
-                var size = GetScaledLineWidth(shape.LineWidth) * 2;
-                dc.DrawEllipse(brush, null, new WpfPoint(point.X, point.Y), size / 2, size / 2);
-            }
-        }
-
-        private void RenderLine(DrawingContext dc, VisualElement shape, Pen pen)
-        {
-            if (shape.Geometry is SdkLineSegment line)
-            {
-                dc.DrawLine(pen, new WpfPoint(line.Start.X, line.Start.Y), new WpfPoint(line.End.X, line.End.Y));
-            }
-        }
-
-        private void RenderRectangle(DrawingContext dc, VisualElement shape, SolidColorBrush brush, Pen pen)
-        {
-            // 处理 Rect2d
-            if (shape.Geometry is Rect2d rect)
-            {
-                var fillBrush = shape.IsFilled ? brush : null;
-                dc.DrawRectangle(fillBrush, pen, new WpfRect(rect.X, rect.Y, rect.Width, rect.Height));
-            }
-            // 处理 RotatedRect
-            else if (shape.Geometry is RotatedRect rotatedRect)
-            {
-                var points = Cv2.BoxPoints(rotatedRect);
-                var points2d = Array.ConvertAll(points, p => new WpfPoint(p.X, p.Y));
-                RenderPolygonFromPoints(dc, points2d, shape.IsFilled ? brush : null, pen);
-            }
-        }
-
-        private void RenderCircle(DrawingContext dc, VisualElement shape, SolidColorBrush brush, Pen pen)
-        {
-            if (shape.Geometry is Circle2d circle)
-            {
-                var fillBrush = shape.IsFilled ? brush : null;
-                dc.DrawEllipse(fillBrush, pen, new WpfPoint(circle.Center.X, circle.Center.Y), circle.Radius, circle.Radius);
-            }
-        }
-
-        private void RenderArc(DrawingContext dc, VisualElement shape, Pen pen)
-        {
-            if (shape.Geometry is ArcGeometry arc)
-            {
-                var geometry = CreateArcGeometry(arc);
-                dc.DrawGeometry(null, pen, geometry);
-            }
-        }
-
-        private void RenderPolygon(DrawingContext dc, VisualElement shape, SolidColorBrush brush, Pen pen)
-        {
-            if (shape.Geometry is Point2d[] points)
-            {
-                var wpfPoints = Array.ConvertAll(points, p => new WpfPoint(p.X, p.Y));
-                RenderPolygonFromPoints(dc, wpfPoints, shape.IsFilled ? brush : null, pen);
-            }
-        }
-
-        private void RenderPolygonFromPoints(DrawingContext dc, WpfPoint[] points, Brush? fill, Pen stroke)
-        {
-            if (points == null || points.Length < 2) return;
-
-            var geometry = new StreamGeometry();
-            using (var ctx = geometry.Open())
-            {
-                ctx.BeginFigure(points[0], fill != null, fill != null);
-                for (int i = 1; i < points.Length; i++)
+                foreach (var item in _items.OrderBy(i => i.ZOrder))
                 {
-                    ctx.LineTo(points[i], true, true);
+                    if (!item.IsVisible) continue;
+                    RenderItem(dc, item);
                 }
             }
-            geometry.Freeze();
-            dc.DrawGeometry(fill, stroke, geometry);
-        }
 
-        private void RenderLabel(DrawingContext dc, VisualElement shape, Color color)
-        {
-            if (shape.Geometry is Point2d position && !string.IsNullOrEmpty(shape.Label))
+            // 高亮项（始终在最上层）
+            if (_highlightItems != null)
             {
-                var formattedText = CreateFormattedText(shape.Label, color, shape.FontSize, false);
-                dc.DrawText(formattedText, new WpfPoint(position.X, position.Y));
-            }
-        }
-
-        private void RenderArrow(DrawingContext dc, VisualElement shape, Pen pen)
-        {
-            if (shape.Geometry is SdkLineSegment line)
-            {
-                var geometry = CreateArrowGeometry(line.Start, line.End, GetScaledLineWidth(shape.LineWidth));
-                dc.DrawGeometry(null, pen, geometry);
-            }
-        }
-
-        private void RenderContour(DrawingContext dc, VisualElement shape, SolidColorBrush brush, Pen pen)
-        {
-            if (shape.Geometry is ContourGeometry contour && contour.Points != null && contour.Points.Length >= 2)
-            {
-                var points = Array.ConvertAll(contour.Points, p => new WpfPoint(p.X, p.Y));
-                if (contour.IsClosed && points.Length >= 3)
+                foreach (var item in _highlightItems.OrderBy(i => i.ZOrder))
                 {
-                    RenderPolygonFromPoints(dc, points, shape.IsFilled ? brush : null, pen);
+                    if (!item.IsVisible) continue;
+                    RenderItem(dc, item);
                 }
-                else
+            }
+        }
+
+        private void RenderItem(DrawingContext dc, DisplayItemBase item)
+        {
+            if (item is GraphicsDisplayItem g)
+                RenderGraphics(dc, g);
+            else if (item is TextDisplayItem t)
+                RenderText(dc, t);
+        }
+
+        #endregion
+
+        #region 图形渲染
+
+        private void RenderGraphics(DrawingContext dc, GraphicsDisplayItem item)
+        {
+            var style = item.Style;
+            if (style == null) return;
+
+            // Opacity 支持：PushOpacity / Pop 包裹整个渲染过程
+            dc.PushOpacity(style.Opacity);
+            try
+            {
+                var defaultColorArgb = style.GetEffectiveColorArgb(true);
+                var brush = GetBrush(defaultColorArgb);
+                var pen = GetPen(defaultColorArgb, GetScaledLineWidth(style.LineWidth));
+
+                switch (item.Type)
                 {
-                    var geometry = new StreamGeometry();
-                    using (var ctx = geometry.Open())
-                    {
-                        ctx.BeginFigure(points[0], false, false);
-                        for (int i = 1; i < points.Length; i++)
-                        {
-                            ctx.LineTo(points[i], true, true);
-                        }
-                    }
-                    geometry.Freeze();
+                    case GraphicsType.Point:
+                        RenderPoints(dc, item, style, brush); break;
+                    case GraphicsType.Line:
+                        RenderLines(dc, item, pen); break;
+                    case GraphicsType.Rectangle:
+                        RenderRectangles(dc, item, style, brush, pen); break;
+                    case GraphicsType.Circle:
+                        RenderCircles(dc, item, style, brush, pen); break;
+                    case GraphicsType.Arc:
+                        RenderArcs(dc, item, pen); break;
+                    case GraphicsType.Polygon:
+                        RenderPolygons(dc, item, style, brush, pen); break;
+                    case GraphicsType.Contour:
+                        RenderContours(dc, item, style, brush, pen); break;
+                    case GraphicsType.Arrow:
+                        RenderArrows(dc, item, pen); break;
+                    case GraphicsType.Cross:
+                        RenderCrosses(dc, item, style, pen); break;
+                    case GraphicsType.CoordinateSystem:
+                        RenderCoordinateSystem(dc, item, style); break;
+                }
+            }
+            finally
+            {
+                dc.Pop(); // 恢复 Opacity 状态
+            }
+        }
+
+        private void RenderPoints(DrawingContext dc, GraphicsDisplayItem item, GraphicsStyle style, SolidColorBrush brush)
+        {
+            foreach (var geom in item.Geometries)
+            {
+                if (geom is Point2d pt)
+                {
+                    var size = GetScaledLineWidth(style.LineWidth) * 2;
+                    dc.DrawEllipse(brush, null, new WpfPoint(pt.X, pt.Y), size / 2, size / 2);
+                }
+            }
+        }
+
+        private void RenderLines(DrawingContext dc, GraphicsDisplayItem item, Pen pen)
+        {
+            foreach (var geom in item.Geometries)
+            {
+                if (geom is SdkLineSegment line)
+                    dc.DrawLine(pen, new WpfPoint(line.Start.X, line.Start.Y), new WpfPoint(line.End.X, line.End.Y));
+            }
+        }
+
+        private void RenderRectangles(DrawingContext dc, GraphicsDisplayItem item, GraphicsStyle style, SolidColorBrush brush, Pen defaultPen)
+        {
+            for (int i = 0; i < item.Geometries.Length; i++)
+            {
+                var geom = item.Geometries[i];
+                // 逐元素 isPass → OkColor / NgColor（不再硬编码 0xFFFF0000）
+                bool isPass = item.IsPassArray.Length > i ? item.IsPassArray[i] : true;
+                var effectiveColorArgb = style.GetEffectiveColorArgb(isPass);
+                var effectivePen = isPass ? defaultPen : GetPen(effectiveColorArgb, GetScaledLineWidth(style.LineWidth));
+                var effectiveBrush = item.IsFilled ? GetBrush(effectiveColorArgb) : null;
+
+                if (geom is Rect2d rect)
+                    dc.DrawRectangle(effectiveBrush, effectivePen, new WpfRect(rect.X, rect.Y, rect.Width, rect.Height));
+                else if (geom is RotatedRect rr)
+                {
+                    var points = Cv2.BoxPoints(rr);
+                    var wpfPoints = Array.ConvertAll(points, p => new WpfPoint(p.X, p.Y));
+                    DrawPolygon(dc, wpfPoints, effectiveBrush, effectivePen);
+                }
+            }
+        }
+
+        private void RenderCircles(DrawingContext dc, GraphicsDisplayItem item, GraphicsStyle style, SolidColorBrush brush, Pen defaultPen)
+        {
+            for (int i = 0; i < item.Geometries.Length; i++)
+            {
+                if (item.Geometries[i] is Circle2d circle)
+                {
+                    bool isPass = item.IsPassArray.Length > i ? item.IsPassArray[i] : true;
+                    var effectiveColorArgb = style.GetEffectiveColorArgb(isPass);
+                    var effectivePen = isPass ? defaultPen : GetPen(effectiveColorArgb, GetScaledLineWidth(style.LineWidth));
+                    dc.DrawEllipse(item.IsFilled ? brush : null, effectivePen,
+                        new WpfPoint(circle.Center.X, circle.Center.Y), circle.Radius, circle.Radius);
+                }
+            }
+        }
+
+        private void RenderArcs(DrawingContext dc, GraphicsDisplayItem item, Pen pen)
+        {
+            foreach (var geom in item.Geometries)
+            {
+                if (geom is ArcGeometry arc)
+                {
+                    var geometry = CreateArcGeometry(arc);
                     dc.DrawGeometry(null, pen, geometry);
                 }
             }
         }
 
-        private void RenderText(DrawingContext dc, DisplayText text)
+        private void RenderPolygons(DrawingContext dc, GraphicsDisplayItem item, GraphicsStyle style, SolidColorBrush brush, Pen pen)
         {
-            var color = GetTextColor(text);
-            var formattedText = CreateFormattedText(text.Content, color, text.FontSize, text.IsBold);
-            dc.DrawText(formattedText, new WpfPoint(text.X, text.Y));
+            foreach (var geom in item.Geometries)
+            {
+                if (geom is Point2d[] points)
+                {
+                    var wpfPoints = Array.ConvertAll(points, p => new WpfPoint(p.X, p.Y));
+                    DrawPolygon(dc, wpfPoints, item.IsFilled ? brush : null, pen);
+                }
+            }
+        }
+
+        private void RenderContours(DrawingContext dc, GraphicsDisplayItem item, GraphicsStyle style, SolidColorBrush brush, Pen pen)
+        {
+            foreach (var geom in item.Geometries)
+            {
+                if (geom is ContourGeometry contour && contour.Points != null && contour.Points.Length >= 2)
+                {
+                    var points = Array.ConvertAll(contour.Points, p => new WpfPoint(p.X, p.Y));
+                    if (contour.IsClosed && points.Length >= 3)
+                        DrawPolygon(dc, points, item.IsFilled ? brush : null, pen);
+                    else
+                        DrawPolyline(dc, points, pen);
+                }
+            }
+        }
+
+        private void RenderArrows(DrawingContext dc, GraphicsDisplayItem item, Pen pen)
+        {
+            foreach (var geom in item.Geometries)
+            {
+                if (geom is SdkLineSegment line)
+                {
+                    var style = item.Style;
+                    var lineWidth = style != null ? style.LineWidth : 1.0;
+                    var geometry = CreateArrowGeometry(line.Start, line.End, GetScaledLineWidth(lineWidth));
+                    dc.DrawGeometry(null, pen, geometry);
+                }
+            }
+        }
+
+        private void RenderCrosses(DrawingContext dc, GraphicsDisplayItem item, GraphicsStyle style, Pen defaultPen)
+        {
+            foreach (var geom in item.Geometries)
+            {
+                if (geom is Point2d center)
+                {
+                    var s = style.CrossSize;
+                    var cx = center.X; var cy = center.Y;
+                    dc.DrawLine(defaultPen, new WpfPoint(cx - s, cy), new WpfPoint(cx + s, cy));
+                    dc.DrawLine(defaultPen, new WpfPoint(cx, cy - s), new WpfPoint(cx, cy + s));
+                }
+            }
+        }
+
+        private void RenderCoordinateSystem(DrawingContext dc, GraphicsDisplayItem item, GraphicsStyle style)
+        {
+            foreach (var geom in item.Geometries)
+            {
+                if (geom is CoordinateSystemGeometry csg)
+                {
+                    var xPen = GetPen(csg.XAxisColor, GetScaledLineWidth(style.LineWidth));
+                    var yPen = GetPen(csg.YAxisColor, GetScaledLineWidth(style.LineWidth));
+                    dc.DrawLine(xPen, new WpfPoint(0, 0), new WpfPoint(csg.AxisLength, 0));
+                    dc.DrawLine(yPen, new WpfPoint(0, 0), new WpfPoint(0, csg.AxisLength));
+                }
+            }
+        }
+
+        #endregion
+
+        #region 文本渲染（含自动换行 + Opacity + isPass 颜色）
+
+        private void RenderText(DrawingContext dc, TextDisplayItem item)
+        {
+            if (item.Texts.Length == 0) return;
+
+            var style = item.Style;
+            if (style == null) return;
+
+            // Opacity 支持
+            dc.PushOpacity(style.Opacity);
+            try
+            {
+                // isPass → OkColor / NgColor（不再硬编码白色）
+                var colorArgb = style.GetEffectiveColorArgb(item.IsPass);
+                var color = ArgbToColor(colorArgb);
+                var lineHeight = style.FontSize * 1.4;
+
+                bool autoLineBreak = item.Texts.Length > 1 &&
+                    item.Texts.All(t => Math.Abs(t.X - item.AnchorX) < 0.01 &&
+                                        Math.Abs(t.Y - item.AnchorY) < 0.01);
+
+                double offsetY = 0;
+
+                for (int i = 0; i < item.Texts.Length; i++)
+                {
+                    var td = item.Texts[i];
+                    double x = td.X;
+                    double y = td.Y;
+
+                    if (autoLineBreak)
+                    {
+                        x = item.AnchorX;
+                        y = item.AnchorY + offsetY;
+                        offsetY += lineHeight;
+                    }
+
+                    var formattedText = CreateFormattedText(td.Content, color, style.FontSize, style.IsBold);
+                    dc.DrawText(formattedText, new WpfPoint(x, y));
+                }
+            }
+            finally
+            {
+                dc.Pop(); // 恢复 Opacity 状态
+            }
         }
 
         #endregion
 
         #region 辅助方法
 
-        private uint GetEffectiveColor(VisualElement shape)
+        private static void DrawPolygon(DrawingContext dc, WpfPoint[] points, Brush? fill, Pen stroke)
         {
-            if (!string.IsNullOrEmpty(shape.Category) && _shapeConfigs.TryGetValue(shape.Category, out var config))
+            if (points == null || points.Length < 2) return;
+            var geometry = new StreamGeometry();
+            using (var ctx = geometry.Open())
             {
-                var color = shape.IsOk ? config.OkColor : config.NgColor;
-                return ColorToArgb(color);
+                ctx.BeginFigure(points[0], fill != null, fill != null);
+                for (int i = 1; i < points.Length; i++)
+                    ctx.LineTo(points[i], true, true);
             }
-            return shape.Color;
+            geometry.Freeze();
+            dc.DrawGeometry(fill, stroke, geometry);
         }
 
-        private Color GetTextColor(DisplayText text)
+        private static void DrawPolyline(DrawingContext dc, WpfPoint[] points, Pen pen)
         {
-            if (!string.IsNullOrEmpty(text.Category) && _textConfigs.TryGetValue(text.Category, out var config))
+            var geometry = new StreamGeometry();
+            using (var ctx = geometry.Open())
             {
-                return config.GetColor(text.IsOk);
+                ctx.BeginFigure(points[0], false, false);
+                for (int i = 1; i < points.Length; i++)
+                    ctx.LineTo(points[i], true, true);
             }
-            return ArgbToColor(text.Color);
+            geometry.Freeze();
+            dc.DrawGeometry(null, pen, geometry);
         }
 
         private SolidColorBrush GetBrush(uint argb)
@@ -381,37 +437,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             return pen;
         }
 
-        private static uint ColorToArgb(Color color)
-        {
-            return (uint)((color.A << 24) | (color.R << 16) | (color.G << 8) | color.B);
-        }
-
-        private static Color ArgbToColor(uint argb)
-        {
-            return Color.FromArgb(
-                (byte)((argb >> 24) & 0xFF),
-                (byte)((argb >> 16) & 0xFF),
-                (byte)((argb >> 8) & 0xFF),
-                (byte)(argb & 0xFF));
-        }
+        private static Color ArgbToColor(uint argb) => Color.FromArgb(
+            (byte)((argb >> 24) & 0xFF), (byte)((argb >> 16) & 0xFF),
+            (byte)((argb >> 8) & 0xFF), (byte)(argb & 0xFF));
 
         private static FormattedText CreateFormattedText(string text, Color color, double fontSize, bool isBold)
         {
-            var typeface = new Typeface(new FontFamily("Segoe UI"), 
-                FontStyles.Normal, 
-                isBold ? FontWeights.Bold : FontWeights.Normal, 
-                FontStretches.Normal);
-                
-            var formattedText = new FormattedText(
-                text,
-                System.Globalization.CultureInfo.CurrentCulture,
-                FlowDirection.LeftToRight,
-                typeface,
-                fontSize,
-                new SolidColorBrush(color),
+            var typeface = new Typeface(new FontFamily("Segoe UI"),
+                FontStyles.Normal, isBold ? FontWeights.Bold : FontWeights.Normal, FontStretches.Normal);
+            return new FormattedText(text, System.Globalization.CultureInfo.CurrentCulture,
+                FlowDirection.LeftToRight, typeface, fontSize, new SolidColorBrush(color),
                 VisualTreeHelper.GetDpi(Application.Current.MainWindow).PixelsPerDip);
-
-            return formattedText;
         }
 
         private static StreamGeometry CreateArcGeometry(ArcGeometry arc)
@@ -419,23 +455,16 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             var geometry = new StreamGeometry();
             using (var ctx = geometry.Open())
             {
-                var startAngleRad = arc.StartAngle * Math.PI / 180;
-                var endAngleRad = arc.EndAngle * Math.PI / 180;
-
-                var startX = arc.Center.X + arc.Radius * Math.Cos(startAngleRad);
-                var startY = arc.Center.Y + arc.Radius * Math.Sin(startAngleRad);
-                var endX = arc.Center.X + arc.Radius * Math.Cos(endAngleRad);
-                var endY = arc.Center.Y + arc.Radius * Math.Sin(endAngleRad);
-
-                ctx.BeginFigure(new WpfPoint(startX, startY), false, false);
+                var startRad = arc.StartAngle * Math.PI / 180;
+                var endRad = arc.EndAngle * Math.PI / 180;
+                ctx.BeginFigure(new WpfPoint(
+                    arc.Center.X + arc.Radius * Math.Cos(startRad),
+                    arc.Center.Y + arc.Radius * Math.Sin(startRad)), false, false);
                 ctx.ArcTo(
-                    new WpfPoint(endX, endY),
-                    new WpfSize(arc.Radius, arc.Radius),
-                    0,
-                    false,
-                    SweepDirection.Clockwise,
-                    true,
-                    true);
+                    new WpfPoint(arc.Center.X + arc.Radius * Math.Cos(endRad),
+                                arc.Center.Y + arc.Radius * Math.Sin(endRad)),
+                    new WpfSize(arc.Radius, arc.Radius), 0, false,
+                    SweepDirection.Clockwise, true, true);
             }
             geometry.Freeze();
             return geometry;
@@ -446,28 +475,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             var geometry = new StreamGeometry();
             using (var ctx = geometry.Open())
             {
-                // 绘制主线
                 ctx.BeginFigure(new WpfPoint(start.X, start.Y), false, false);
                 ctx.LineTo(new WpfPoint(end.X, end.Y), true, true);
-
-                // 添加箭头
                 var angle = Math.Atan2(end.Y - start.Y, end.X - start.X);
                 var arrowSize = thickness * 4;
-
-                var arrowAngle1 = angle + Math.PI * 0.85;
-                var arrowAngle2 = angle - Math.PI * 0.85;
-
-                var arrow1 = new WpfPoint(
-                    end.X + arrowSize * Math.Cos(arrowAngle1),
-                    end.Y + arrowSize * Math.Sin(arrowAngle1));
-                var arrow2 = new WpfPoint(
-                    end.X + arrowSize * Math.Cos(arrowAngle2),
-                    end.Y + arrowSize * Math.Sin(arrowAngle2));
-
+                double a1 = angle + Math.PI * 0.85, a2 = angle - Math.PI * 0.85;
                 ctx.BeginFigure(new WpfPoint(end.X, end.Y), true, false);
-                ctx.LineTo(arrow1, true, true);
+                ctx.LineTo(new WpfPoint(end.X + arrowSize * Math.Cos(a1), end.Y + arrowSize * Math.Sin(a1)), true, true);
                 ctx.BeginFigure(new WpfPoint(end.X, end.Y), true, false);
-                ctx.LineTo(arrow2, true, true);
+                ctx.LineTo(new WpfPoint(end.X + arrowSize * Math.Cos(a2), end.Y + arrowSize * Math.Sin(a2)), true, true);
             }
             geometry.Freeze();
             return geometry;

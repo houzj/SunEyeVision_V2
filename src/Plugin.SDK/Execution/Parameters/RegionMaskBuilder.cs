@@ -15,6 +15,43 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         private readonly Mat _mask;
 
         /// <summary>
+        /// 创建检测区域掩码（Inspection Mask）
+        /// </summary>
+        /// <param name="imageSize">图像尺寸</param>
+        /// <param name="inspectionRegions">检测区域列表</param>
+        /// <returns>
+        /// ROI掩码：
+        /// - 空列表 → 全白（整图有效）
+        /// - 非空 → 黑底+白色区域
+        /// </returns>
+        public static Mat CreateInspectionMask(Size imageSize, IEnumerable<UI.Controls.Region.Models.RegionData> inspectionRegions)
+        {
+            return CreateMask(imageSize, inspectionRegions);
+        }
+
+        /// <summary>
+        /// 创建遮罩区域掩码（Mask Mask）
+        /// </summary>
+        /// <param name="imageSize">图像尺寸</param>
+        /// <param name="maskRegions">遮罩区域列表</param>
+        /// <returns>
+        /// 遮罩掩码：
+        /// - 空列表 → 全黑（无遮罩）
+        /// - 非空 → 黑底+白色遮罩区域
+        /// </returns>
+        public static Mat CreateMaskMask(Size imageSize, IEnumerable<UI.Controls.Region.Models.RegionData> maskRegions)
+        {
+            var regionList = maskRegions?.ToList() ?? new List<UI.Controls.Region.Models.RegionData>();
+
+            if (regionList.Count == 0)
+                return new Mat(imageSize, MatType.CV_8UC1, Scalar.Black);
+
+            using var builder = new RegionMaskBuilder(imageSize);
+            builder.AddRegions(regionList);
+            return builder.GetMask();
+        }
+
+        /// <summary>
         /// 从区域列表快速创建掩码（一行代码版本）
         /// </summary>
         /// <param name="imageSize">图像尺寸</param>

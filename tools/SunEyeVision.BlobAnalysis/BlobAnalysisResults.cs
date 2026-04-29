@@ -124,81 +124,6 @@ namespace SunEyeVision.Tool.BlobAnalysis
         public double SmallestBlobArea => AllBlobs?.Count > 0 ? AllBlobs.Min(b => b.Area) : 0;
 
         /// <summary>
-        /// 获取可视化元素
-        /// </summary>
-        public override IEnumerable<VisualElement> GetVisualElements()
-        {
-            if (InputSize.Width <= 0 || InputSize.Height <= 0)
-                yield break;
-
-            // 绘制每个 Blob 的外接矩形和质心
-            foreach (var blob in FilteredBlobs)
-            {
-                var isPass = blob.IsFiltered;
-                var color = isPass ? 0xFF00FF00 : 0xFFFF0000;  // 绿色=通过，红色=未通过
-
-                // 外接矩形
-                var bbox = blob.BoundingBox;
-                if (bbox.Width > 0 && bbox.Height > 0)
-                {
-                    yield return VisualElement.Rectangle(
-                        new OpenCvSharp.Rect2d(bbox.X, bbox.Y, bbox.Width, bbox.Height),
-                        color: color,
-                        lineWidth: 2,
-                        filled: false
-                    );
-                }
-
-                // 质心十字
-                if (blob.CentroidX > 0 || blob.CentroidY > 0)
-                {
-                    var cx = blob.CentroidX;
-                    var cy = blob.CentroidY;
-                    var crossSize = 8.0;
-
-                    // 水平线
-                    yield return VisualElement.Line(
-                        new OpenCvSharp.Point2d(cx - crossSize, cy),
-                        new OpenCvSharp.Point2d(cx + crossSize, cy),
-                        color: color,
-                        lineWidth: 2
-                    );
-                    // 垂直线
-                    yield return VisualElement.Line(
-                        new OpenCvSharp.Point2d(cx, cy - crossSize),
-                        new OpenCvSharp.Point2d(cx, cy + crossSize),
-                        color: color,
-                        lineWidth: 2
-                    );
-                }
-            }
-
-            // 背景矩形
-            yield return VisualElement.Rectangle(
-                new OpenCvSharp.Rect2d(5, 5, 220, 55),
-                color: 0x80000000,
-                lineWidth: 0,
-                filled: true
-            );
-
-            // Blob统计信息文本
-            yield return VisualElement.Text(
-                text: $"Blob: {FilteredBlobCount}/{TotalBlobCount}  阈值: {ThresholdUsed}",
-                position: new OpenCvSharp.Point2d(10, 22),
-                color: 0xFFFFFFFF,
-                fontSize: 12.0
-            );
-
-            // 面积信息
-            yield return VisualElement.Text(
-                text: $"面积: {FilteredTotalArea:F0}  类型: {TypeUsed}",
-                position: new OpenCvSharp.Point2d(10, 42),
-                color: 0xFF00FF00,
-                fontSize: 11.0
-            );
-        }
-
-        /// <summary>
         /// 获取结果显示项（用于数据面板显示）
         /// </summary>
         public override IReadOnlyList<ResultItem> GetResultItems()
@@ -216,56 +141,6 @@ namespace SunEyeVision.Tool.BlobAnalysis
                 ResultItem.Text("阈值类型", TypeUsed.ToString())
             };
             return items;
-        }
-
-        /// <summary>
-        /// 获取显示文本（用于图形上的文本标签）
-        /// </summary>
-        public override IEnumerable<DisplayText> GetDisplayTexts()
-        {
-            if (InputSize.Width <= 0 || InputSize.Height <= 0)
-                yield break;
-
-            // 在图像左上角显示统计摘要
-            yield return DisplayText.Create(
-                $"Blob: {FilteredBlobCount}/{TotalBlobCount}",
-                10, 22, 0xFFFFFFFF, 12.0
-            );
-
-            yield return DisplayText.Create(
-                $"Area: {FilteredTotalArea:F0}",
-                10, 42, 0xFF00FF00, 11.0
-            );
-
-            // 为每个 Blob 显示编号和面积
-            int index = 0;
-            foreach (var blob in FilteredBlobs.Take(20))  // 最多显示20个，避免遮挡
-            {
-                if (blob.CentroidX > 0 || blob.CentroidY > 0)
-                {
-                    var cx = blob.CentroidX;
-                    var cy = blob.CentroidY;
-
-                    yield return DisplayText.Create(
-                        $"{index}:{blob.Area:F0}",
-                        cx + 5, cy - 5,
-                        0xFFFFD700,  // 金色
-                        9.0
-                    );
-                }
-                index++;
-            }
-
-            // 如果有更多 Blob，用省略号提示
-            if (FilteredBlobs.Count > 20)
-            {
-                yield return DisplayText.Create(
-                    $"...+{FilteredBlobs.Count - 20} more",
-                    10, InputSize.Height - 20,
-                    0xFFAAAAAA,
-                    10.0
-                );
-            }
         }
 
         /// <summary>

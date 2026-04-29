@@ -147,7 +147,6 @@ namespace SunEyeVision.Tool.Threshold.Views
 
             // 初始化默认参数（设计时使用）
             Parameters = new ThresholdParameters();
-            PluginLogger.Info($"默认参数已初始化: TextConfig.OkColor={Parameters.TextConfig.OkColor}, TextConfig.NgColor={Parameters.TextConfig.NgColor}", "ThresholdTool");
 
             PluginLogger.Success("ThresholdToolDebugControl 构造函数完成", "ThresholdTool");
         }
@@ -210,7 +209,6 @@ namespace SunEyeVision.Tool.Threshold.Views
                 }
 
                 PluginLogger.Success($"已加载节点参数: Threshold={Parameters.Threshold}", "ThresholdTool");
-                PluginLogger.Info($"TextConfig.OkColor={Parameters.TextConfig.OkColor}, TextConfig.NgColor={Parameters.TextConfig.NgColor}", "ThresholdTool");
 
                 // ✅ 不再在此调用 InitializeInspectionRegionEditor
                 // 初始化移到 InitializeAsync 统一执行
@@ -523,58 +521,6 @@ namespace SunEyeVision.Tool.Threshold.Views
         private void OnConfirmButtonClick(object sender, RoutedEventArgs e)
         {
             PluginLogger.Success("配置已确认", "ThresholdTool");
-        }
-
-        #endregion
-
-        #region 图像显示事件
-
-        private void OnToggleOutputImageVisibility(object sender, RoutedEventArgs e)
-        {
-            Parameters.DisplayConfig.OutputImage.IsVisible = !Parameters.DisplayConfig.OutputImage.IsVisible;
-            PluginLogger.Info($"输出图像显示: {Parameters.DisplayConfig.OutputImage.IsVisible}", "ThresholdTool");
-        }
-
-        private void OnOpenOutputImageStyle(object sender, RoutedEventArgs e)
-        {
-            PluginLogger.Info("打开输出图像样式设置", "ThresholdTool");
-            // TODO: 打开样式设置弹窗
-        }
-
-        private void OnToggleThresholdLineVisibility(object sender, RoutedEventArgs e)
-        {
-            Parameters.DisplayConfig.ThresholdLine.IsVisible = !Parameters.DisplayConfig.ThresholdLine.IsVisible;
-            PluginLogger.Info($"阈值分界线显示: {Parameters.DisplayConfig.ThresholdLine.IsVisible}", "ThresholdTool");
-        }
-
-        private void OnOpenThresholdLineStyle(object sender, RoutedEventArgs e)
-        {
-            PluginLogger.Info("打开阈值分界线样式设置", "ThresholdTool");
-            // TODO: 打开样式设置弹窗
-        }
-
-        private void OnToggleRegionVisibility(object sender, RoutedEventArgs e)
-        {
-            Parameters.DisplayConfig.Region.IsVisible = !Parameters.DisplayConfig.Region.IsVisible;
-            PluginLogger.Info($"ROI区域显示: {Parameters.DisplayConfig.Region.IsVisible}", "ThresholdTool");
-        }
-
-        private void OnOpenRegionStyle(object sender, RoutedEventArgs e)
-        {
-            PluginLogger.Info("打开ROI区域样式设置", "ThresholdTool");
-            // TODO: 打开样式设置弹窗
-        }
-
-        private void OnToggleHistogramVisibility(object sender, RoutedEventArgs e)
-        {
-            Parameters.DisplayConfig.Histogram.IsVisible = !Parameters.DisplayConfig.Histogram.IsVisible;
-            PluginLogger.Info($"直方图显示: {Parameters.DisplayConfig.Histogram.IsVisible}", "ThresholdTool");
-        }
-
-        private void OnOpenHistogramStyle(object sender, RoutedEventArgs e)
-        {
-            PluginLogger.Info("打开直方图样式设置", "ThresholdTool");
-            // TODO: 打开样式设置弹窗
         }
 
         #endregion

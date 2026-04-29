@@ -39,7 +39,6 @@ namespace SunEyeVision.Tool.Threshold
         /// </summary>
         public ThresholdResults Run(ThresholdParameters parameters)
         {
-            // 从参数中获取输入图像
             var image = parameters.ResolvedInputImage;
             var result = new ThresholdResults
             {
@@ -52,7 +51,6 @@ namespace SunEyeVision.Tool.Threshold
 
             try
             {
-                // 验证参数
                 var validationResult = ValidateParameters(parameters);
                 if (!validationResult.IsValid)
                 {
@@ -61,8 +59,6 @@ namespace SunEyeVision.Tool.Threshold
                     return result;
                 }
 
-
-                // 验证输入图像
                 if (image == null || image.Empty())
                 {
                     parameters.LogWarning("输入图像为空");
@@ -71,12 +67,8 @@ namespace SunEyeVision.Tool.Threshold
                 }
 
                 parameters.LogInfo($"开始阈值化处理: 图像尺寸 {image.Width}x{image.Height}");
-
-                // 记录输入尺寸
                 result.InputSize = image.Size();
 
-                // 获取参数值
-                // 算法层使用 .Value，完全无感参数是常量还是绑定的
                 double threshold = parameters.Threshold.Value;
                 double maxValue = parameters.MaxValue.Value;
                 ThresholdType type = parameters.Type.Value;
@@ -85,68 +77,68 @@ namespace SunEyeVision.Tool.Threshold
                 bool invert = parameters.Invert.Value;
                 bool isRegionEnabled = parameters.IsRegionEnabled.Value;
 
-                // 执行阈值化处理
                 Mat outputImage;
                 double actualThreshold;
 
-                // 使用SDK的CvImage进行灰度转换
-                using var cvImage = image.Channels() == 1
-                    ? new CvImage(image)
-                    : image.Channels() == 3
-                        ? new CvImage(image).ToGrayscale()
-                        : throw new InvalidOperationException("不支持的图像通道数");
-
-                // 构建ROI掩码
-                Mat? mask = null;
-                if (isRegionEnabled)
+                // Step 1: 灰度转换 (rgb1_to_gray)
+                CvOp.Rgb1ToGray(image, out var grayImage);
+                using (grayImage)
                 {
-                    var effectiveRegions = parameters.GetEffectiveRegions().ToList();
-                    if (effectiveRegions.Count > 0)
+                    // Step 2: 构建ROI区域 (CvRegion 替代 Mat? roiMask)
+                    CvRegion? roiRegion = null;
+                    if (isRegionEnabled)
                     {
-                        parameters.LogInfo($"启用区域限制，共 {effectiveRegions.Count} 个有效区域");
-                        mask = RegionMaskBuilder.CreateMask(cvImage.Size, effectiveRegions);
-
-                        var whitePixelCount = Cv2.CountNonZero(mask);
-                        parameters.LogInfo($"掩码创建成功，白色像素数: {whitePixelCount}");
+                        var effectiveRegions = parameters.GetEffectiveRegions().ToList();
+                        if (effectiveRegions.Count > 0)
+                        {
+                            parameters.LogInfo($"启用区域限制，共 {effectiveRegions.Count} 个有效区域");
+                            var roiMaskMat = RegionMaskBuilder.CreateMask(grayImage.Size, effectiveRegions);
+                            roiRegion = CvRegion.FromMask(roiMaskMat, ownsData: true);
+                            parameters.LogInfo($"ROI区域创建成功，白色像素数: {roiRegion.PixelCount}");
+                        }
+                        else
+                        {
+                            parameters.LogWarning("启用区域限制，但没有有效的检测区域");
+                        }
                     }
-                    else
+
+                    try
                     {
-                        parameters.LogWarning("启用区域限制，但没有有效的检测区域");
+                        // Step 3: 阈值分割 (threshold / adaptive_threshold → out CvRegion)
+                        var cvThresholdType = (CvThresholdType)type;
+                        var cvAdaptiveMethod = (CvAdaptiveMethod)adaptiveMethod;
+
+                        if (type == ThresholdType.Binary || type == ThresholdType.BinaryInv)
+                        {
+                            CvOp.Threshold(roiRegion, grayImage,
+                                (int)threshold, (int)maxValue,
+                                out var binaryRegion, out actualThreshold,
+                                cvThresholdType, invert);
+
+                            using (binaryRegion)
+                                CvOp.ComposeDisplay(roiRegion, grayImage, binaryRegion, out outputImage);
+
+                            parameters.LogInfo($"使用固定阈值: {actualThreshold}");
+                        }
+                        else
+                        {
+                            CvOp.AdaptiveThreshold(roiRegion, grayImage,
+                                (int)maxValue, cvAdaptiveMethod, blockSize,
+                                out var binaryRegion, c: 5,
+                                type: cvThresholdType, invert: invert);
+
+                            using (binaryRegion)
+                                CvOp.ComposeDisplay(roiRegion, grayImage, binaryRegion, out outputImage);
+
+                            actualThreshold = threshold;
+                            parameters.LogInfo($"使用自适应阈值，块大小: {blockSize}");
+                        }
+                    }
+                    finally
+                    {
+                        roiRegion?.Dispose();
                     }
                 }
-
-                // 执行阈值化
-                var cvThresholdType = (CvThresholdType)type;
-                var cvAdaptiveMethod = (CvAdaptiveMethod)adaptiveMethod;
-
-                if (type == ThresholdType.Binary || type == ThresholdType.BinaryInv)
-                {
-                    // 普通阈值化
-                    var thresholdResult = cvImage.Threshold(
-                        (int)threshold, (int)maxValue, cvThresholdType, mask, invert);
-
-                    outputImage = cvImage.CreateDisplayImage(thresholdResult.RegionImage, mask);
-                    actualThreshold = thresholdResult.ActualThreshold;
-
-                    parameters.LogInfo($"使用固定阈值: {actualThreshold} (应用掩码)");
-                    thresholdResult.Dispose();
-                }
-                else
-                {
-                    // 自适应阈值化
-                    var thresholdResult = cvImage.AdaptiveThreshold(
-                        (int)maxValue, cvAdaptiveMethod, blockSize, c: 5,
-                        type: cvThresholdType, mask: mask, invert: invert);
-
-                    outputImage = cvImage.CreateDisplayImage(thresholdResult.RegionImage, mask);
-                    actualThreshold = threshold; // 自适应阈值无法直接获取
-
-                    parameters.LogInfo($"使用自适应阈值，块大小: {blockSize}");
-                    thresholdResult.Dispose();
-                }
-
-                // 释放掩码
-                mask?.Dispose();
 
                 // 设置参数回写
                 result.OutputImage = outputImage;
@@ -155,12 +147,10 @@ namespace SunEyeVision.Tool.Threshold
                 result.TypeUsed = type;
                 result.AdaptiveMethodUsed = adaptiveMethod;
                 result.BlockSizeUsed = blockSize;
-
-                // 设置输入图像信息
                 result.InputChannels = image.Channels();
 
                 // 计算统计结果
-                ComputeStatistics(result, outputImage, cvImage.Image, image);
+                ComputeStatistics(result, outputImage, image);
 
                 // 执行结果判断
                 EvaluateResult(result, parameters.ResultConfig);
@@ -168,9 +158,8 @@ namespace SunEyeVision.Tool.Threshold
                 stopwatch.Stop();
                 result.SetSuccess(stopwatch.ElapsedMilliseconds);
 
-                parameters.LogInfo($"阈值化处理完成: 使用阈值 {actualThreshold}, " +
+                parameters.LogInfo($"阈值化处理完成: 阈值 {actualThreshold}, " +
                                   $"类型 {type}, 判断 {(result.IsPass ? "OK" : "NG")}, 耗时 {stopwatch.ElapsedMilliseconds}ms");
-
             }
             catch (Exception ex)
             {
@@ -208,7 +197,7 @@ namespace SunEyeVision.Tool.Threshold
         /// <summary>
         /// 计算统计结果
         /// </summary>
-        private void ComputeStatistics(ThresholdResults result, Mat outputImage, Mat grayImage, Mat inputImage)
+        private void ComputeStatistics(ThresholdResults result, Mat outputImage, Mat inputImage)
         {
             // 白色像素数和比例
             if (outputImage != null && !outputImage.Empty())
@@ -232,10 +221,16 @@ namespace SunEyeVision.Tool.Threshold
                 }
             }
 
-            // 灰度直方图和通道均值
-            var stats = new CvImage(grayImage).GetIntensity();
-            result.HistogramData = stats.Histogram;
-            result.ChannelMeans = stats.ChannelMeans;
+            // 灰度直方图和通道均值 - 使用CvOp直接统计整图灰度信息（null region = 整图）
+            using var tempCvImage = new CvImage(inputImage);
+            CvOp.Intensity(null, tempCvImage,
+                out var histogram, out _, out _);
+
+            result.HistogramData = histogram;
+            double histMean = histogram.Length > 0
+                ? histogram.Zip(Enumerable.Range(0, 256), (h, i) => h * i).Sum() / histogram.Sum()
+                : 0;
+            result.ChannelMeans = new[] { histMean };
         }
 
         /// <summary>

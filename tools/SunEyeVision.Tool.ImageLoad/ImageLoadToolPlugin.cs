@@ -355,8 +355,8 @@ namespace SunEyeVision.Tool.ImageLoad
                 result.FileSize = fileInfo.Length;
                 result.FileFormat = fileInfo.Extension.ToUpperInvariant();
 
-                // 使用 OpenCvSharp 加载图像
-                var loadedImage = Cv2.ImRead(parameters.FilePath, ImreadModes.Color);
+                // 使用 OpenCvSharp 加载图像（Unchanged 保持原始通道格式）
+                var loadedImage = Cv2.ImRead(parameters.FilePath, ImreadModes.Unchanged);
 
                 if (loadedImage == null || loadedImage.Empty())
                 {

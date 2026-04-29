@@ -163,39 +163,30 @@ namespace SunEyeVision.Tool.Threshold
 
         #region 可视化与属性映射
 
-        /// <summary>
-        /// 获取可视化元素
-        /// </summary>
-        public override IEnumerable<VisualElement> GetVisualElements()
+        /// <summary>内部默认文本样式（Threshold 工具不通过 Parameters 注入 Style）</summary>
+        private static readonly TextStyle DefaultTextStyle = new()
         {
-            if (InputSize.Width > 0 && InputSize.Height > 0)
+            Name = "ThresholdInfo",
+            FontSize = 11.0,
+            PositionX = 10,
+            PositionY = 22
+        };
+
+        /// <summary>
+        /// 构建显示项（通过 DisplayCollector Push 输出）
+        /// </summary>
+        public void BuildDisplayItems()
+        {
+            _display.Clear();
+            if (InputSize.Width <= 0 || InputSize.Height <= 0) return;
+
+            var resultText = IsPass ? "OK" : "NG";
+
+            _display.AddText(DefaultTextStyle, DefaultTextStyle.PositionX, DefaultTextStyle.PositionY, new[]
             {
-                // 背景矩形（半透明黑色）
-                yield return VisualElement.Rectangle(
-                    new OpenCvSharp.Rect2d(5, 5, 200, 55),
-                    color: 0x80000000,
-                    lineWidth: 0,
-                    filled: true
-                );
-
-                // 阈值信息文本（白色）
-                yield return VisualElement.Text(
-                    text: $"阈值: {ThresholdUsed:F0}  最大值: {MaxValueUsed:F0}",
-                    position: new OpenCvSharp.Point2d(10, 22),
-                    color: 0xFFFFFFFF,
-                    fontSize: 12.0
-                );
-
-                // 阈值类型与判断结果（绿色/红色）
-                var resultColor = IsPass ? 0xFF00FF00 : 0xFF0000FF;
-                var resultText = IsPass ? "OK" : "NG";
-                yield return VisualElement.Text(
-                    text: $"类型: {TypeUsed}  {resultText}",
-                    position: new OpenCvSharp.Point2d(10, 42),
-                    color: resultColor,
-                    fontSize: 11.0
-                );
-            }
+                $"阈值: {ThresholdUsed:F0}  最大值: {MaxValueUsed:F0}",
+                $"类型: {TypeUsed}  {resultText}"
+            });
         }
 
         /// <summary>

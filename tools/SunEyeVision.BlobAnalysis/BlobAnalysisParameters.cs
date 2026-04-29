@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Plugin.SDK.Validation;
 using SunEyeVision.Tool.BlobAnalysis.Models;
 
@@ -136,7 +137,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
 
         #endregion
 
-        #region 结果显示配置
+        #region 显示样式
 
         /// <summary>
         /// 结果判断配置
@@ -145,19 +146,30 @@ namespace SunEyeVision.Tool.BlobAnalysis
         [JsonPropertyName("resultConfig")]
         public BlobAnalysisResultConfig ResultConfig { get; set; } = new();
 
-        /// <summary>
-        /// 图像显示配置
-        /// </summary>
-        [JsonPropertyOrder(21)]
-        [JsonPropertyName("displayConfig")]
-        public BlobAnalysisDisplayConfig DisplayConfig { get; set; } = new();
-
-        /// <summary>
-        /// 文本显示配置
-        /// </summary>
+        /// <summary>外接矩形样式</summary>
         [JsonPropertyOrder(22)]
-        [JsonPropertyName("textConfig")]
-        public BlobAnalysisTextConfig TextConfig { get; set; } = new();
+        [JsonPropertyName("blobsStyle")]
+        public GraphicsStyle BlobsStyle { get; set; } = new() { Name = "Blobs", LineWidth = 2 };
+
+        /// <summary>质心标记样式</summary>
+        [JsonPropertyOrder(23)]
+        [JsonPropertyName("centroidsStyle")]
+        public GraphicsStyle CentroidsStyle { get; set; } = new() { Name = "Centroids", LineWidth = 2, CrossSize = 8 };
+
+        /// <summary>Blob标签样式</summary>
+        [JsonPropertyOrder(24)]
+        [JsonPropertyName("labelsStyle")]
+        public TextStyle LabelsStyle { get; set; } = new() { Name = "Labels", FontSize = 9.0 };
+
+        /// <summary>统计信息样式</summary>
+        [JsonPropertyOrder(25)]
+        [JsonPropertyName("statisticsStyle")]
+        public TextStyle StatisticsStyle { get; set; } = new() { Name = "Statistics", FontSize = 11.0, PositionX = 10, PositionY = 22 };
+
+        /// <summary>更多提示样式</summary>
+        [JsonPropertyOrder(26)]
+        [JsonPropertyName("moreHintStyle")]
+        public TextStyle MoreHintStyle { get; set; } = new() { Name = "MoreHint", FontSize = 10.0, PositionX = 10, PositionY = 10 };
 
         #endregion
 

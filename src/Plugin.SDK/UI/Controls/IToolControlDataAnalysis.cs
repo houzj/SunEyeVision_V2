@@ -1,4 +1,7 @@
+using System;
+using System.Collections.Generic;
 using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.SDK.Models.Visualization;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls
 {
@@ -15,6 +18,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
     /// 使用方式：
     /// 1. 工具在 CreateDataAnalysisControl() 中返回实现此接口的控件
     /// 2. 框架在工具执行完成后调用 OnResultUpdated() 更新数据
+    /// 3. 框架可订阅 SelectionHighlightChanged 获取图像高亮联动数据
     /// </remarks>
     public interface IToolControlDataAnalysis
     {
@@ -23,5 +27,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// </summary>
         /// <param name="result">工具执行结果</param>
         void OnResultUpdated(ToolResults result);
+
+        /// <summary>
+        /// 选中项变化时触发图像高亮联动（可选实现，默认空事件）
+        /// </summary>
+        /// <remarks>
+        /// 参数为高亮 DisplayItemBase 列表（null=清除高亮）。
+        /// 框架订阅此事件后，用户选中表格行时自动在图像上高亮对应区域。
+        /// </remarks>
+        event EventHandler<IEnumerable<DisplayItemBase>?>? SelectionHighlightChanged;
     }
 }

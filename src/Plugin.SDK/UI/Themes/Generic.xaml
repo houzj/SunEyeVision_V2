@@ -1,5 +1,6 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib"
                     xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls"
                     xmlns:converters="clr-namespace:SunEyeVision.Plugin.SDK.UI.Converters"
                     xmlns:metadata="clr-namespace:SunEyeVision.Plugin.SDK.Metadata"
@@ -1104,7 +1105,7 @@
         </Setter>
     </Style>
 
-    <!-- DispItemColorControl 样式 -->
+    <!-- DispItemColorControl 样式 - 图形显示（OK/NG颜色 + 线宽） -->
     <Style TargetType="{x:Type controls:DispItemColorControl}">
         <Setter Property="Template">
             <Setter.Value>
@@ -1119,12 +1120,10 @@
                                 Cursor="Hand"
                                 ToolTip="切换显示/隐藏"
                                 Margin="0,0,4,0"
-                                Tag="{Binding Config.IsVisible, RelativeSource={RelativeSource TemplatedParent}, FallbackValue=True}">
+                                Tag="{Binding Item.IsVisible, RelativeSource={RelativeSource TemplatedParent}, FallbackValue=True}">
                             <Viewbox Width="18" Height="18" Stretch="Uniform">
                                 <Path x:Name="PART_VisibilityIcon"
-                                      Stroke="Black"
-                                      StrokeThickness="1.2"
-                                      Fill="Transparent"
+                                      Stroke="Black" StrokeThickness="1.2" Fill="Transparent"
                                       Data="M2 10C4 6 7 4 10 4C13 4 16 6 18 10C16 14 13 16 10 16C7 16 4 14 2 10ZM10 13C11.7 13 13 11.7 13 10C13 8.3 11.7 7 10 7C8.3 7 7 8.3 7 10C7 11.7 8.3 13 10 13Z"/>
                             </Viewbox>
                         </Button>
@@ -1132,75 +1131,47 @@
                         <!-- 画笔按钮（样式设置） -->
                         <Button x:Name="PART_StyleSettingsButton"
                                 Width="28" Height="28"
-                                Background="Transparent"
-                                BorderThickness="0"
-                                Cursor="Hand"
-                                ToolTip="样式设置"
-                                Margin="0">
-                            <TextBlock Text="🖌️" 
-                                       FontSize="14"
-                                       VerticalAlignment="Center"
-                                       HorizontalAlignment="Center"/>
+                                Background="Transparent" BorderThickness="0"
+                                Cursor="Hand" ToolTip="样式设置" Margin="0">
+                            <TextBlock Text="🖌️" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                         </Button>
 
-                        <!-- 样式设置Popup -->
+                        <!-- 样式设置Popup：OK/NG 颜色 + 线宽 + 透明度 -->
                         <Popup x:Name="PART_StyleSettingsPopup"
                                PlacementTarget="{Binding ElementName=PART_StyleSettingsButton}"
-                               Placement="Bottom"
-                               StaysOpen="False"
-                               AllowsTransparency="True">
+                               Placement="Bottom" StaysOpen="False" AllowsTransparency="True">
                             <Border Background="White"
-                                    BorderBrush="{StaticResource BorderBrush}"
-                                    BorderThickness="1"
-                                    CornerRadius="4"
-                                    Padding="16"
-                                    Margin="0,2,0,0"
-                                    Width="260">
+                                    BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                                    CornerRadius="4" Padding="16" Margin="0,2,0,0" Width="260">
                                 <StackPanel>
                                     <!-- OK颜色 -->
-                                    <TextBlock Text="OK颜色"
-                                               Style="{StaticResource LabelStyle}"
-                                               Margin="0,0,0,6"/>
-                                    <controls:ColorSelector 
-                                        Width="224"
-                                        Height="28"
-                                        SelectedColor="{Binding Config.OkColor, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                    <TextBlock Text="OK颜色" Style="{StaticResource LabelStyle}" Margin="0,0,0,6"/>
+                                    <controls:ColorSelector
+                                        Width="224" Height="28"
+                                        SelectedColor="{Binding Item.OkColor, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                                         Margin="0,0,0,12"/>
 
                                     <!-- NG颜色 -->
-                                    <TextBlock Text="NG颜色"
-                                               Style="{StaticResource LabelStyle}"
-                                               Margin="0,0,0,6"/>
-                                    <controls:ColorSelector 
+                                    <TextBlock Text="NG颜色" Style="{StaticResource LabelStyle}" Margin="0,0,0,6"/>
+                                    <controls:ColorSelector
+                                        Width="224" Height="28"
+                                        SelectedColor="{Binding Item.NgColor, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                        Margin="0,0,0,12"/>
+
+                                    <!-- 线宽 -->
+                                    <TextBlock Text="线宽" Style="{StaticResource LabelStyle}" Margin="0,0,0,6"/>
+                                    <controls:NumericUpDown
                                         Width="224"
-                                        Height="28"
-                                        SelectedColor="{Binding Config.NgColor, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                        Value="{Binding Item.LineWidth, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                        Minimum="0.5" Maximum="10" DecimalPlaces="1" ShowSlider="True"
                                         Margin="0,0,0,12"/>
 
                                     <!-- 透明度 -->
-                                    <TextBlock Text="透明度"
-                                               Style="{StaticResource LabelStyle}"
-                                               Margin="0,0,0,6"/>
-                                    <controls:NumericUpDown 
+                                    <TextBlock Text="透明度" Style="{StaticResource LabelStyle}" Margin="0,0,0,6"/>
+                                    <controls:NumericUpDown
                                         Width="224"
-                                        Value="{Binding Config.Opacity, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
-                                        Minimum="0"
-                                        Maximum="1"
-                                        DecimalPlaces="2"
-                                        ShowSlider="True"
-                                        Margin="0,0,0,12"/>
-
-                                    <!-- 线条粗细 -->
-                                    <TextBlock Text="线条粗细"
-                                               Style="{StaticResource LabelStyle}"
-                                               Margin="0,0,0,6"/>
-                                    <controls:NumericUpDown 
-                                        Width="224"
-                                        Value="{Binding Config.Thickness, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
-                                        Minimum="0.5"
-                                        Maximum="10"
-                                        DecimalPlaces="1"
-                                        ShowSlider="True"
+                                        Value="{Binding Item.Opacity, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                        Minimum="0.1" Maximum="1.0" DecimalPlaces="1" ShowSlider="True"
                                         Margin="0,0,0,0"/>
                                 </StackPanel>
                             </Border>
@@ -1208,7 +1179,120 @@
                     </StackPanel>
 
                     <ControlTemplate.Triggers>
-                        <!-- 根据IsVisible状态切换眼睛图标 -->
+                        <DataTrigger Binding="{Binding Tag, ElementName=PART_VisibilityButton}" Value="True">
+                            <Setter TargetName="PART_VisibilityIcon" Property="Data"
+                                    Value="M2 10C4 6 7 4 10 4C13 4 16 6 18 10C16 14 13 16 10 16C7 16 4 14 2 10ZM10 13C11.7 13 13 11.7 13 10C13 8.3 11.7 7 10 7C8.3 7 7 8.3 7 10C7 11.7 8.3 13 10 13Z"/>
+                            <Setter TargetName="PART_VisibilityIcon" Property="Opacity" Value="1.0"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Tag, ElementName=PART_VisibilityButton}" Value="False">
+                            <Setter TargetName="PART_VisibilityIcon" Property="Data"
+                                    Value="M2 10C4 6 7 4 10 4C13 4 16 6 18 10C16 14 13 16 10 16C7 16 4 14 2 10ZM10 13C11.7 13 13 11.7 13 10C13 8.3 11.7 7 10 7C8.3 7 7 8.3 7 10C7 11.7 8.3 13 10 13ZM3 17L17 3"/>
+                            <Setter TargetName="PART_VisibilityIcon" Property="Opacity" Value="0.5"/>
+                        </DataTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- DispTextColorControl 样式 - 文本显示（OK/NG颜色 + 字号 + 加粗 + ParamBinding位置） -->
+    <Style TargetType="{x:Type controls:DispTextColorControl}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:DispTextColorControl}">
+                    <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="{Binding ContentHorizontalAlignment, RelativeSource={RelativeSource AncestorType={x:Type controls:LabeledControl}}}">
+                        <!-- 小眼睛按钮（可见性控制） -->
+                        <Button x:Name="PART_VisibilityButton"
+                                Width="28" Height="28"
+                                Background="Transparent" BorderThickness="0"
+                                Cursor="Hand" ToolTip="切换显示/隐藏"
+                                Margin="0,0,4,0"
+                                Tag="{Binding Item.IsVisible, RelativeSource={RelativeSource TemplatedParent}, FallbackValue=True}">
+                            <Viewbox Width="18" Height="18" Stretch="Uniform">
+                                <Path x:Name="PART_VisibilityIcon"
+                                      Stroke="Black" StrokeThickness="1.2" Fill="Transparent"
+                                      Data="M2 10C4 6 7 4 10 4C13 4 16 6 18 10C16 14 13 16 10 16C7 16 4 14 2 10ZM10 13C11.7 13 13 11.7 13 10C13 8.3 11.7 7 10 7C8.3 7 7 8.3 7 10C7 11.7 8.3 13 10 13Z"/>
+                            </Viewbox>
+                        </Button>
+
+                        <!-- 画笔按钮（样式设置） -->
+                        <Button x:Name="PART_StyleSettingsButton"
+                                Width="28" Height="28"
+                                Background="Transparent" BorderThickness="0"
+                                Cursor="Hand" ToolTip="样式设置" Margin="0">
+                            <TextBlock Text="🖌️" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Button>
+
+                        <!-- 样式设置Popup：OK/NG 颜色 + 字号 + 加粗 + 位置X/Y(ParamBinding) -->
+                        <Popup x:Name="PART_StyleSettingsPopup"
+                               PlacementTarget="{Binding ElementName=PART_StyleSettingsButton}"
+                               Placement="Bottom" StaysOpen="False" AllowsTransparency="True">
+                            <Border Background="White"
+                                    BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                                    CornerRadius="4" Padding="16" Margin="0,2,0,0" Width="280">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="350">
+                                <StackPanel>
+                                    <!-- OK颜色 -->
+                                    <TextBlock Text="OK颜色" Style="{StaticResource LabelStyle}" Margin="0,0,0,6"/>
+                                    <controls:ColorSelector
+                                        Width="244" Height="28"
+                                        SelectedColor="{Binding Item.OkColor, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                        Margin="0,0,0,12"/>
+
+                                    <!-- NG颜色 -->
+                                    <TextBlock Text="NG颜色" Style="{StaticResource LabelStyle}" Margin="0,0,0,6"/>
+                                    <controls:ColorSelector
+                                        Width="244" Height="28"
+                                        SelectedColor="{Binding Item.NgColor, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                        Margin="0,0,0,12"/>
+
+                                    <!-- 字号 -->
+                                    <TextBlock Text="字号" Style="{StaticResource LabelStyle}" Margin="0,0,0,6"/>
+                                    <controls:NumericUpDown
+                                        Width="244"
+                                        Value="{Binding Item.FontSize, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                        Minimum="6" Maximum="72" DecimalPlaces="1" ShowSlider="True"
+                                        Margin="0,0,0,12"/>
+
+                                    <!-- 加粗 -->
+                                    <CheckBox IsChecked="{Binding Item.IsBold, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                              Content="加粗" Margin="0,0,0,12"/>
+
+                                    <!-- 位置X (ParamBinding) -->
+                                    <TextBlock Text="位置X" Style="{StaticResource LabelStyle}" Margin="0,0,0,6"/>
+                                    <controls:ParamBinding
+                                        Width="244"
+                                        ParameterName="PositionX"
+                                        DataType="{x:Type sys:Double}"
+                                        BindingSource="{Binding Item.PositionX, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                        AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource TemplatedParent}}"
+                                        Margin="0,0,0,12"/>
+
+                                    <!-- 位置Y (ParamBinding) -->
+                                    <TextBlock Text="位置Y" Style="{StaticResource LabelStyle}" Margin="0,0,0,6"/>
+                                    <controls:ParamBinding
+                                        Width="244"
+                                        ParameterName="PositionY"
+                                        DataType="{x:Type sys:Double}"
+                                        BindingSource="{Binding Item.PositionY, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                        AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource TemplatedParent}}"
+                                        Margin="0,0,0,12"/>
+
+                                    <!-- 透明度 -->
+                                    <TextBlock Text="透明度" Style="{StaticResource LabelStyle}" Margin="0,0,0,6"/>
+                                    <controls:NumericUpDown
+                                        Width="244"
+                                        Value="{Binding Item.Opacity, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                        Minimum="0.1" Maximum="1.0" DecimalPlaces="1" ShowSlider="True"
+                                        Margin="0,0,0,0"/>
+                                </StackPanel>
+                                </ScrollViewer>
+                            </Border>
+                        </Popup>
+                    </StackPanel>
+
+                    <ControlTemplate.Triggers>
                         <DataTrigger Binding="{Binding Tag, ElementName=PART_VisibilityButton}" Value="True">
                             <Setter TargetName="PART_VisibilityIcon" Property="Data"
                                     Value="M2 10C4 6 7 4 10 4C13 4 16 6 18 10C16 14 13 16 10 16C7 16 4 14 2 10ZM10 13C11.7 13 13 11.7 13 10C13 8.3 11.7 7 10 7C8.3 7 7 8.3 7 10C7 11.7 8.3 13 10 13Z"/>

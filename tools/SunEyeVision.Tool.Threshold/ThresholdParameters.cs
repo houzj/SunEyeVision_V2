@@ -126,18 +126,6 @@ namespace SunEyeVision.Tool.Threshold
         [JsonPropertyName("resultConfig")]
         public ThresholdResultConfig ResultConfig { get; set; } = new();
 
-        /// <summary>
-        /// 图像显示配置
-        /// </summary>
-        [JsonPropertyName("displayConfig")]
-        public ThresholdDisplayConfig DisplayConfig { get; set; } = new();
-
-        /// <summary>
-        /// 文本显示配置
-        /// </summary>
-        [JsonPropertyName("textConfig")]
-        public ThresholdTextConfig TextConfig { get; set; } = new();
-
         #endregion
 
         /// <summary>

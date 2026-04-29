@@ -1,55 +1,141 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using OpenCvSharp;
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 
 namespace SunEyeVision.CvEngine
 {
     /// <summary>
-    /// OpenCV区域封装类 - 对应Halcon的HRegion
+    /// 区域数据载体 - 对应 Halcon 的 HRegion/HObject
     /// </summary>
     /// <remarks>
-    /// 算子对照表：
-    /// | Halcon算子           | 本类方法           | 说明                     |
-    /// |----------------------|--------------------|--------------------------|
-    /// | connection           | Connection         | 连通域分析               |
-    /// | select_shape         | SelectShape        | 形状筛选                 |
-    /// | area_center          | (内嵌于Connection) | 面积和中心坐标           |
-    /// | union1               | Union1             | 区域并集                 |
+    /// 纯不可变数据类，不含任何算法逻辑。
+    /// 所有区域操作通过 <see cref="CvOp"/> 静态类执行。
     /// 
     /// 设计原则：
-    /// 1. 每个公开方法对应一个Halcon算子，命名和语义对齐
-    /// 2. 使用using语句管理Mat生命周期，避免资源泄漏
-    /// 3. 不依赖SDK，纯算法封装
+    /// 1. 内部可包含 0~N 个子区域（对应 Halcon 的 CountObj()）
+    /// 2. 不暴露底层 Mat（无 RegionImage 属性）
+    /// 3. 工厂方法以 Gen_ 前缀（对齐 Halcon gen_* 算子命名）
+    /// 
+    /// 工厂方法对照表：
+    /// | Halcon算子      | 本类方法           | 说明           |
+    /// |-----------------|--------------------|----------------|
+    /// | gen_empty_obj   | GenEmptyObj        | 创建空区域     |
+    /// | gen_rectangle1  | GenRectangle1      | 创建矩形区域   |
+    /// | (从二值图创建)  | FromMask           | 从掩码创建区域 |
+    /// | (UI区域列表)    | CreateFromRegions  | 从UI定义创建   |
     /// </remarks>
     public class CvRegion : IDisposable
     {
-        #region 私有字段
+        #region 内部字段（同程序集内 CvOp 访问）
 
-        private Mat _regionImage;
-        private bool _ownsImage;
+        internal Mat? _mask;        // 合并二值掩码 (CV_8UC1)，始终可用
+        internal Mat? _labels;      // 标签图 (CV_32SC1)，0=背景, 1..N=子区域，仅多区域时存在
+        internal Mat? _stats;       // 连通域统计 (ConnectedComponentsWithStats 输出)
+        internal Mat? _centroids;   // 连通域质心 (ConnectedComponentsWithStats 输出)
+        internal int _count;        // 子区域数量 (对应 Halcon CountObj)
+        internal Size _imageSize;   // 图像尺寸
 
         #endregion
 
-        #region 构造函数与初始化
+        #region 构造函数与工厂方法
 
         /// <summary>
-        /// 构造函数
+        /// 私有构造 - 通过工厂方法或 CvOp 内部创建
         /// </summary>
-        /// <param name="regionImage">纯二值区域图（CV_8UC1）</param>
-        /// <param name="ownsImage">是否拥有图像所有权</param>
-        public CvRegion(Mat regionImage, bool ownsImage = false)
+        private CvRegion()
         {
-            _regionImage = regionImage;
-            _ownsImage = ownsImage;
+            _count = 0;
+            _imageSize = new Size(0, 0);
         }
 
         /// <summary>
-        /// 从已有区域创建（克隆副本）
+        /// 内部构造函数 - 供 CvOp 构建单区域计算结果（无标签信息）
         /// </summary>
-        public static CvRegion FromRegion(Mat regionImage)
+        internal CvRegion(Mat? mask, int count, Size imageSize)
         {
-            return new CvRegion(regionImage.Clone(), ownsImage: true);
+            _mask = mask;
+            _count = count;
+            _imageSize = imageSize;
+        }
+
+        /// <summary>
+        /// 内部构造函数 - 供 CvOp 构建多区域计算结果（含完整连通域分析数据）
+        /// </summary>
+        internal CvRegion(Mat? mask, Mat labels, Mat stats, Mat centroids, int count, Size imageSize)
+        {
+            _mask = mask;
+            _labels = labels;
+            _stats = stats;
+            _centroids = centroids;
+            _count = count;
+            _imageSize = imageSize;
+        }
+
+        /// <summary>
+        /// 创建空区域对象 - 对应 Halcon gen_empty_obj()
+        /// </summary>
+        public static CvRegion GenEmptyObj() => new();
+
+        /// <summary>
+        /// 创建轴对齐矩形区域 - 对应 Halcon gen_rectangle1(Region, Row1, Col1, Row2, Col2)
+        /// </summary>
+        public static CvRegion GenRectangle1(int row1, int col1, int row2, int col2)
+        {
+            var region = new CvRegion();
+            int x = Math.Min(col1, col2);
+            int y = Math.Min(row1, row2);
+            int w = Math.Abs(col2 - col1) + 1;
+            int h = Math.Abs(row2 - row1) + 1;
+
+            region._imageSize = new Size(x + w, y + h);
+            region._mask = new Mat(region._imageSize, MatType.CV_8UC1, Scalar.Black);
+            Cv2.Rectangle(region._mask, new Rect(x, y, w, h), Scalar.White, -1);
+            region._count = 1;
+            return region;
+        }
+
+        /// <summary>
+        /// 从已有掩码 Mat 创建区域 - 对应从二值图像生成区域
+        /// </summary>
+        /// <param name="mask">二值掩码（CV_8UC1, 非零=有效像素）</param>
+        /// <param name="ownsData">是否拥有数据所有权</param>
+        public static CvRegion FromMask(Mat mask, bool ownsData = false)
+        {
+            var region = new CvRegion();
+            if (mask == null || mask.Empty())
+                return region;
+
+            region._imageSize = mask.Size();
+            region._mask = ownsData ? mask : mask.Clone();
+            region._count = Cv2.CountNonZero(mask) > 0 ? 1 : 0;
+            return region;
+        }
+
+        /// <summary>
+        /// 从 UI 区域定义列表直接创建 CvRegion（组合 RegionMaskBuilder + FromMask）
+        /// </summary>
+        /// <param name="imageSize">图像尺寸</param>
+        /// <param name="regions">UI 区域定义列表（至少包含一个有效区域）</param>
+        /// <exception cref="ArgumentNullException">regions 为 null</exception>
+        /// <exception cref="ArgumentException">regions 为空或无有效区域</exception>
+        public static CvRegion CreateFromRegions(Size imageSize, IEnumerable<RegionData> regions)
+        {
+            if (regions == null)
+                throw new ArgumentNullException(nameof(regions));
+
+            var regionList = regions.ToList();
+            if (regionList.Count == 0)
+                throw new ArgumentException("区域列表不能为空", nameof(regions));
+
+            var validRegions = regionList.Where(r => r.IsEnabled && r.Parameters != null).ToList();
+            if (validRegions.Count == 0)
+                throw new ArgumentException("区域列表中无有效（启用且参数完整）的区域", nameof(regions));
+
+            var mask = RegionMaskBuilder.CreateMask(imageSize, validRegions);
+            return FromMask(mask, ownsData: true);
         }
 
         #endregion
@@ -57,207 +143,86 @@ namespace SunEyeVision.CvEngine
         #region 属性
 
         /// <summary>
-        /// 获取底层Mat区域图像
+        /// 子区域数量 - 对应 Halcon CountObj()
         /// </summary>
-        public Mat RegionImage => _regionImage;
+        public int Count => _count;
 
         /// <summary>
-        /// 区域尺寸
+        /// 区域尺寸（图像空间范围）
         /// </summary>
-        public Size Size => _regionImage.Size();
+        public Size ImageSize => _imageSize;
 
         /// <summary>
-        /// 是否为空
+        /// 是否为空区域（不含任何子区域）
         /// </summary>
-        public bool Empty => _regionImage == null || _regionImage.Empty();
+        public bool IsEmpty => _count == 0 || _mask == null || _mask.Empty();
+
+        /// <summary>
+        /// 区域有效像素数 - 用于日志和统计，无需暴露底层 Mat
+        /// </summary>
+        public int PixelCount => (_mask != null && !_mask.Empty()) ? Cv2.CountNonZero(_mask) : 0;
 
         #endregion
 
-        #region connection - 连通域分析
+        #region 内部访问（仅 CvEngine 内部使用）
+
+        /// <summary>获取组合掩码</summary>
+        internal Mat? Mask => _mask;
+
+        /// <summary>是否包含子区域标签信息（可按索引访问子区域）</summary>
+        internal bool HasLabels => _labels != null && !_labels.Empty();
+
+        /// <summary>获取标签图 (CV_32SC1)，仅多区域结果有效</summary>
+        internal Mat? Labels => _labels;
+
+        /// <summary>获取连通域统计数据，仅多区域结果有效</summary>
+        internal Mat? Stats => _stats;
+
+        /// <summary>获取连通域质心数据，仅多区域结果有效</summary>
+        internal Mat? Centroids => _centroids;
+
+        #endregion
+
+        #region 生命周期管理 - CopyObj / Dispose
 
         /// <summary>
-        /// 连通域分析 - 等价于Halcon的connection
+        /// 深拷贝 - 对应 Halcon copy_obj(Object, Copy, Index1, Index2)
+        /// 同时拷贝 labels/stats/centroids（如有）
         /// </summary>
-        /// <param name="connectivity">连通性类型</param>
-        /// <returns>所有检测到的Blob列表</returns>
-        /// <remarks>
-        /// Halcon等价:
-        ///   connection (Region, ConnectedRegions)
-        ///   area_center (ConnectedRegions, Area, Row, Column)
-        /// </remarks>
-        public List<Models.BlobInfo> Connection(CvConnectivity connectivity = CvConnectivity.Connect8)
+        public CvRegion CopyObj()
         {
-            var blobs = new List<Models.BlobInfo>();
-
-            if (_regionImage == null || _regionImage.Empty())
-                return blobs;
-
-            var pixelConnectivity = CvConvert.ToOpenCvConnectivity(connectivity);
-
-            using var labels = new Mat();
-            using var stats = new Mat();
-            using var centroids = new Mat();
-
-            int numLabels = Cv2.ConnectedComponentsWithStats(
-                _regionImage, labels, stats, centroids, pixelConnectivity);
-
-            for (int i = 1; i < numLabels; i++) // 跳过背景(0)
-            {
-                double area = stats.At<int>(i, (int)ConnectedComponentsTypes.Area);
-                double centroidX = centroids.At<double>(i, 0);
-                double centroidY = centroids.At<double>(i, 1);
-
-                var bbox = new Rect(
-                    stats.At<int>(i, (int)ConnectedComponentsTypes.Left),
-                    stats.At<int>(i, (int)ConnectedComponentsTypes.Top),
-                    stats.At<int>(i, (int)ConnectedComponentsTypes.Width),
-                    stats.At<int>(i, (int)ConnectedComponentsTypes.Height));
-
-                // 计算形状特征
-                var (perimeter, circularity, rectangularity) = ComputeShapeFeatures(labels, i, area, bbox);
-
-                blobs.Add(Models.BlobInfo.Create(
-                    label: i,
-                    area: area,
-                    perimeter: perimeter,
-                    centroidX: centroidX,
-                    centroidY: centroidY,
-                    boundingBox: bbox,
-                    circularity: circularity,
-                    rectangularity: rectangularity));
-            }
-
-            return blobs;
+            var copy = GenEmptyObj();
+            copy._imageSize = _imageSize;
+            copy._mask = _mask?.Clone();
+            copy._labels = _labels?.Clone();
+            copy._stats = _stats?.Clone();
+            copy._centroids = _centroids?.Clone();
+            copy._count = _count;
+            return copy;
         }
-
-        #endregion
-
-        #region select_shape - 形状筛选
-
-        /// <summary>
-        /// 形状筛选 - 等价于Halcon的select_shape
-        /// </summary>
-        /// <param name="allBlobs">所有检测到的Blob</param>
-        /// <param name="minArea">最小面积</param>
-        /// <param name="maxArea">最大面积</param>
-        /// <param name="minCircularity">最小圆度</param>
-        /// <param name="maxCircularity">最大圆度</param>
-        /// <param name="minRectangularity">最小矩形度</param>
-        /// <param name="maxRectangularity">最大矩形度</param>
-        /// <returns>筛选后的Blob列表</returns>
-        /// <remarks>
-        /// Halcon等价:
-        ///   select_shape (ConnectedRegions, Selected, 'area', 'and', Min, Max)
-        ///   select_shape (Selected, Final, 'circularity', 'and', 0.4, 1.0)
-        /// </remarks>
-        public List<Models.BlobInfo> SelectShape(
-            List<Models.BlobInfo> allBlobs,
-            int minArea,
-            int maxArea,
-            double minCircularity = 0,
-            double maxCircularity = 1,
-            double minRectangularity = 0,
-            double maxRectangularity = 1)
-        {
-            var filtered = allBlobs.Where(b =>
-                b.Area >= minArea && b.Area <= maxArea &&
-                b.Circularity >= minCircularity && b.Circularity <= maxCircularity &&
-                b.Rectangularity >= minRectangularity && b.Rectangularity <= maxRectangularity
-            ).ToList();
-
-            // 标记每个Blob是否通过筛选
-            var allFilteredIds = filtered.Select(b => b.Label).ToHashSet();
-            foreach (var blob in allBlobs)
-            {
-                blob.IsFiltered = allFilteredIds.Contains(blob.Label);
-            }
-
-            return filtered;
-        }
-
-        #endregion
-
-        #region union1 - 区域并集
-
-        /// <summary>
-        /// 区域并集 - 等价于Halcon的union1
-        /// </summary>
-        /// <param name="blobs">Blob列表</param>
-        /// <returns>合并后的区域图像</returns>
-        public Mat Union1(List<Models.BlobInfo> blobs)
-        {
-            if (blobs == null || blobs.Count == 0)
-            {
-                return new Mat(_regionImage.Size(), MatType.CV_8UC1, Scalar.Black);
-            }
-
-            var result = new Mat(_regionImage.Size(), MatType.CV_8UC1, Scalar.Black);
-
-            foreach (var blob in blobs)
-            {
-                var bbox = blob.BoundingBox;
-                if (bbox.Width > 0 && bbox.Height > 0)
-                {
-                    Cv2.Rectangle(result, bbox, Scalar.White, -1);
-                }
-            }
-
-            return result;
-        }
-
-        #endregion
-
-        #region 私有方法
-
-        /// <summary>
-        /// 计算Blob的形状特征
-        /// </summary>
-        private static (double perimeter, double circularity, double rectangularity) ComputeShapeFeatures(
-            Mat labels, int label, double area, Rect bbox)
-        {
-            double perimeter = 0;
-            double circularity = 0;
-            double rectangularity = 0;
-
-            using var blobMask = new Mat();
-            Cv2.Compare(labels, label, blobMask, CmpType.EQ);
-            Cv2.FindContours(blobMask, out var contours, out _,
-                RetrievalModes.External,
-                ContourApproximationModes.ApproxSimple);
-
-            if (contours.Length > 0)
-            {
-                var contour = contours[0];
-                perimeter = Cv2.ArcLength(contour, true);
-
-                // 圆度 = 4π × 面积 / 周长²
-                circularity = perimeter > 0
-                    ? (4 * Math.PI * area) / (perimeter * perimeter)
-                    : 0;
-            }
-
-            // 矩形度 = 面积 / 外接矩形面积
-            double bboxArea = bbox.Width * bbox.Height;
-            rectangularity = bboxArea > 0 ? area / bboxArea : 0;
-
-            return (perimeter, circularity, rectangularity);
-        }
-
-        #endregion
-
-        #region IDisposable
 
         /// <summary>
         /// 释放资源
         /// </summary>
         public void Dispose()
         {
-            if (_ownsImage && _regionImage != null)
-            {
-                _regionImage.Dispose();
-            }
-            _regionImage = null!;
+            _mask?.Dispose(); _mask = null;
+            _labels?.Dispose(); _labels = null;
+            _stats?.Dispose(); _stats = null;
+            _centroids?.Dispose(); _centroids = null;
+            _count = 0;
             GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Finalizer 安全网
+        /// </summary>
+        ~CvRegion()
+        {
+            _mask?.Dispose();
+            _labels?.Dispose();
+            _stats?.Dispose();
+            _centroids?.Dispose();
         }
 
         #endregion

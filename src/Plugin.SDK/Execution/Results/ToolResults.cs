@@ -302,10 +302,20 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
     ///     public PointD Center => FoundCircle.Center;
     ///     public double Radius => FoundCircle.Radius;
     ///     
-    ///     public override IEnumerable&lt;VisualElement&gt; GetVisualElements()
+    ///     public void BuildDisplayItems()
     ///     {
-    ///         yield return VisualElement.Circle(FoundCircle, 0xFF00FF00, 2.0);
-    ///         yield return VisualElement.Point(Center, 0xFFFF0000, 5.0);
+    ///         Display.Add(new DisplayItem
+    ///         {
+    ///             Name = "Circle", Type = DisplayItemType.Circle,
+    ///             Geometries = new object[] { FoundCircle },
+    ///             Color = 0xFF00FF00, LineWidth = 2
+    ///         });
+    ///         Display.Add(new DisplayItem
+    ///         {
+    ///             Name = "Center", Type = DisplayItemType.Point,
+    ///             Geometries = new object[] { Center },
+    ///             Color = 0xFFFF0000, LineWidth = 5
+    ///         });
     ///     }
     ///     
     ///     public override IReadOnlyList&lt;ResultItem&gt; GetResultItems()
@@ -373,25 +383,17 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
         public object? Tag { get; set; }
 
         /// <summary>
-        /// 获取可视化元素
+        /// 显示收集器（Push 模型）
         /// </summary>
-        /// <returns>可视化元素集合</returns>
-        public virtual IEnumerable<VisualElement> GetVisualElements()
-        {
-            return Array.Empty<VisualElement>();
-        }
+        protected readonly DisplayCollector _display = new();
+
+        /// <summary>显示项集合</summary>
+        public DisplayCollector Display => _display;
 
         /// <summary>
         /// 获取输出图像（DispImage通道）
         /// </summary>
-        /// <returns>输出Mat，无图像返回null</returns>
         public virtual Mat? GetOutputImage() => null;
-
-        /// <summary>
-        /// 获取显示文本（DispText通道）
-        /// </summary>
-        /// <returns>显示文本集合</returns>
-        public virtual IEnumerable<DisplayText> GetDisplayTexts() => Array.Empty<DisplayText>();
 
         /// <summary>
         /// 获取结果项（数据面板）

@@ -1,4 +1,4 @@
-using SunEyeVision.Plugin.SDK.Models;
+﻿using SunEyeVision.Plugin.SDK.Models;
 
 namespace SunEyeVision.Plugin.SDK.Models.Visualization
 {
@@ -14,9 +14,6 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
 
         /// <summary>是否可见（UI绑定，变更自动触发重绘）</summary>
         public bool IsVisible { get => _isVisible; set => SetProperty(ref _isVisible, value, "可见性"); }
-
-        /// <summary>Z顺序（渲染排序）</summary>
-        public int ZOrder { get; set; }
 
         /// <summary>通知属性变更（供外部订阅者触发重绘）</summary>
         public void NotifyChanged() => OnPropertyChanged("");

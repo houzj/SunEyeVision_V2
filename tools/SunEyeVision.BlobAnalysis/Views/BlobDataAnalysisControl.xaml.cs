@@ -121,20 +121,20 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
                     {
                         Name = "HighlightRect", Type = GraphicsType.Rectangle,
                         Geometries = new object[] { new Rect2d(bb.X, bb.Y, bb.Width, bb.Height) },
-                        Style = new GraphicsStyle { OkColor = highlightColor, LineWidth = 3 }, ZOrder = 100
+                        Style = new GraphicsStyle { OkColor = highlightColor, LineWidth = 3 }
                     },
                     new TextDisplayItem
                     {
                         Name = "HighlightLabel",
                         Texts = new[] { new DisplayTextData { Content =$"#{blob.Label}: {blob.Area:F0}px²", X = bb.X, Y = bb.Y - 5 } },
                         AnchorX = bb.X, AnchorY = bb.Y - 5,
-                        Style = new TextStyle { OkColor = highlightColor, FontSize = 14.0 }, ZOrder = 101
+                        Style = new TextStyle { OkColor = highlightColor, FontSize = 14.0 }
                     },
                     new GraphicsDisplayItem
                     {
                         Name = "HighlightPoint", Type = GraphicsType.Point,
                         Geometries = new object[] { new Point2d(blob.CentroidX, blob.CentroidY) },
-                        Style = new GraphicsStyle { OkColor = highlightColor, LineWidth = 4.0 }, ZOrder = 102
+                        Style = new GraphicsStyle { OkColor = highlightColor, LineWidth = 4.0 }
                     }
                 };
             }

@@ -237,8 +237,6 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                     if (filteredBlobs.Length > 20)
                                         display.AddText(parameters.MoreHintStyle, 10, result.InputSize.Height - 20, $"...+{filteredBlobs.Length - 20} more");
 
-                                    display.Complete();
-
                                     stopwatch.Stop();
                                     result.SetSuccess(stopwatch.ElapsedMilliseconds);
 

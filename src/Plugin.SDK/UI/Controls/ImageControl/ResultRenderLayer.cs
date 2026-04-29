@@ -22,7 +22,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
     {
         #region 私有字段
 
-        private IReadOnlyList<DisplayItemBase>? _items;
+        private DisplayCollector? _collector;
+        private IReadOnlyList<DisplayItemBase>? _regionItems;
         private IReadOnlyList<DisplayItemBase>? _highlightItems;
         private readonly Dictionary<uint, SolidColorBrush> _brushCache = new();
         private readonly Dictionary<uint, Pen> _penCache = new();
@@ -31,12 +32,32 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         #region 公共接口
 
-        /// <summary>设置显示项</summary>
+        /// <summary>设置显示收集器（工具输出）</summary>
+        public void SetDisplayCollector(DisplayCollector? collector)
+        {
+            UnsubscribeItems(_collector?.Items);
+            _collector = collector;
+            SubscribeItems(_collector?.Items);
+            InvalidateVisual();
+        }
+
+        /// <summary>设置区域显示项（检测区域覆盖）</summary>
+        public void SetRegionItems(IEnumerable<DisplayItemBase>? items)
+        {
+            UnsubscribeItems(_regionItems);
+            _regionItems = items?.ToList();
+            SubscribeItems(_regionItems);
+            InvalidateVisual();
+        }
+
+        /// <summary>设置显示项（兼容旧接口，内部转为 collector 模式）</summary>
         public void SetItems(IReadOnlyList<DisplayItemBase>? items)
         {
-            UnsubscribeItems(_items);
-            _items = items;
-            SubscribeItems(items);
+            UnsubscribeItems(_collector?.Items);
+            _collector = null; // 直接设置 items 时清除 collector 引用
+            UnsubscribeItems(_regionItems);
+            _regionItems = items;
+            SubscribeItems(_regionItems);
             InvalidateVisual();
         }
 
@@ -52,9 +73,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// <summary>清空所有内容</summary>
         public void Clear()
         {
-            UnsubscribeItems(_items);
+            UnsubscribeItems(_collector?.Items);
+            UnsubscribeItems(_regionItems);
             UnsubscribeItems(_highlightItems);
-            _items = null;
+            _collector = null;
+            _regionItems = null;
             _highlightItems = null;
             InvalidateVisual();
         }
@@ -122,20 +145,30 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             _brushCache.Clear();
             _penCache.Clear();
 
-            // 按ZOrder排序渲染正常项
-            if (_items != null)
+            // 渲染顺序：区域(底层) → 工具输出(中层) → 高亮(顶层)
+            // DrawingContext 后画覆盖先画，通道顺序即层次
+
+            if (_regionItems != null)
             {
-                foreach (var item in _items.OrderBy(i => i.ZOrder))
+                foreach (var item in _regionItems)
                 {
                     if (!item.IsVisible) continue;
                     RenderItem(dc, item);
                 }
             }
 
-            // 高亮项（始终在最上层）
+            if (_collector?.Items != null)
+            {
+                foreach (var item in _collector.Items)
+                {
+                    if (!item.IsVisible) continue;
+                    RenderItem(dc, item);
+                }
+            }
+
             if (_highlightItems != null)
             {
-                foreach (var item in _highlightItems.OrderBy(i => i.ZOrder))
+                foreach (var item in _highlightItems)
                 {
                     if (!item.IsVisible) continue;
                     RenderItem(dc, item);

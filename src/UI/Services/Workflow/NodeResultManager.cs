@@ -113,7 +113,6 @@ namespace SunEyeVision.UI.Services.Workflow
 
             // ★ Step 3: 更新图像（DispImage通道）
             var outputMat = result.GetOutputImage();
-            _viewModel.AddLog($"[诊断] 刷新结果显示: 节点={node.Name}, 结果类型={result.GetType().Name}, 输出图像={(outputMat != null ? $"{outputMat.Width}x{outputMat.Height}" : "null")}");
 
             if (outputMat != null && !outputMat.Empty())
             {
@@ -136,9 +135,12 @@ namespace SunEyeVision.UI.Services.Workflow
                 }
             }
 
-            // ★ Step 4-6 合并：统一构建 DisplayItem 列表（工具输出 + 节点检测区域）
-            var displayItems = BuildDisplayItems(result, node);
-            _resultRenderLayer?.SetItems(displayItems);
+            // ★ Step 4: 工具输出 → 直接传 DisplayCollector
+            _resultRenderLayer?.SetDisplayCollector(result.Display);
+
+            // ★ Step 5: 区域显示
+            var regionItems = BuildRegionItems(node);
+            _resultRenderLayer?.SetRegionItems(regionItems);
         }
 
         /// <summary>
@@ -264,65 +266,7 @@ namespace SunEyeVision.UI.Services.Workflow
         }
 
         /// <summary>
-        /// 统一构建显示项列表（工具输出 + 节点检测区域）
-        /// </summary>
-    private IReadOnlyList<DisplayItemBase> BuildDisplayItems(ToolResults result, WorkflowNodeBase node)
-            {
-                var items = new List<DisplayItemBase>();
-
-                // 1. 工具通过 DisplayCollector 输出的 DisplayItemBase（订阅 Style 变更实现实时联动）
-                if (result.Display.HasItems)
-                {
-                    foreach (var item in result.Display.Items)
-                    {
-                        // 订阅 Style.PropertyChanged → 联动 IsVisible + 触发重绘
-                        SubscribeStyleChanges(item);
-                        items.Add(item);
-                    }
-                }
-
-                // 2. 节点检测区域（只读蓝色显示，使用内部只读 Style）
-                if (node.Parameters is RegionParameters regionParams &&
-                    regionParams.IsRegionEnabled?.Value == true)
-                {
-                    var enabledRegions = regionParams.InspectionRegions.GetEnabledRegions();
-                    foreach (var region in enabledRegions)
-                    {
-                        var regionItem = CreateRegionDisplayItem(region);
-                        if (regionItem != null) items.Add(regionItem);
-                    }
-                }
-
-                return items;
-            }
-
-        /// <summary>订阅 Style 属性变更 → 联动 DisplayItem.IsVisible 并触发重绘</summary>
-        private static void SubscribeStyleChanges(DisplayItemBase item)
-        {
-            if (item is GraphicsDisplayItem gi && gi.Style != null)
-            {
-                gi.Style.PropertyChanged += (s, e) =>
-                {
-                    if (e.PropertyName == nameof(GraphicsStyle.IsVisible))
-                        gi.IsVisible = gi.Style.IsVisible;
-                    gi.NotifyChanged(); // 触发 RenderLayer 重绘
-                };
-                gi.IsVisible = gi.Style.IsVisible;
-            }
-            else if (item is TextDisplayItem ti && ti.Style != null)
-            {
-                ti.Style.PropertyChanged += (s, e) =>
-                {
-                    if (e.PropertyName == nameof(TextStyle.IsVisible))
-                        ti.IsVisible = ti.Style.IsVisible;
-                    ti.NotifyChanged(); // 触发 RenderLayer 重绘
-                };
-                ti.IsVisible = ti.Style.IsVisible;
-            }
-        }
-
-        /// <summary>
-        /// 根据区域数据创建显示项（只读显示，使用内部 RegionStyle）
+        /// 构建区域显示项列表（节点检测区域）
         /// </summary>
         private static readonly GraphicsStyle RegionStyle = new()
         {
@@ -331,48 +275,62 @@ namespace SunEyeVision.UI.Services.Workflow
             LineWidth = 1.5
         };
 
-        private DisplayItemBase? CreateRegionDisplayItem(RegionData region)
-            {
-                if (region?.Parameters is not ShapeParameters shape) return null;
+        private IEnumerable<DisplayItemBase>? BuildRegionItems(WorkflowNodeBase node)
+        {
+            if (node.Parameters is not RegionParameters regionParams ||
+                regionParams.IsRegionEnabled?.Value != true)
+                return null;
 
-                return shape.ShapeType switch
-                {
-                    ShapeType.Rectangle or ShapeType.RotatedRectangle => new GraphicsDisplayItem
-                    {
-                        Style = RegionStyle, Type = GraphicsType.Rectangle,
-                        Geometries = new object[] { new Rect2d(shape.CenterX - shape.Width / 2, shape.CenterY - shape.Height / 2, shape.Width, shape.Height) },
-                        ZOrder = -10
-                    },
-                    ShapeType.Circle => new GraphicsDisplayItem
-                    {
-                        Style = RegionStyle, Type = GraphicsType.Circle,
-                        Geometries = new object[] { new Circle2d(shape.CenterX, shape.CenterY, shape.Radius) },
-                        ZOrder = -10
-                    },
-                    ShapeType.Annulus => new GraphicsDisplayItem
-                    {
-                        Style = RegionStyle, Type = GraphicsType.Circle,
-                        Geometries = new object[]
-                        {
-                            new Circle2d(shape.CenterX, shape.CenterY, shape.OuterRadius),
-                            new Circle2d(shape.CenterX, shape.CenterY, shape.Radius)
-                        },
-                        IsPassArray = new bool[2], ZOrder = -10
-                    },
-                    ShapeType.Polygon when shape.Points != null && shape.Points.Count >= 3 => new GraphicsDisplayItem
-                    {
-                        Style = RegionStyle, Type = GraphicsType.Polygon,
-                        Geometries = new object[] { shape.Points.Select(p => new Point2d(p.X, p.Y)).ToArray() },
-                        ZOrder = -10
-                    },
-                    ShapeType.Line => new GraphicsDisplayItem
-                    {
-                        Style = RegionStyle, Type = GraphicsType.Line,
-                        Geometries = new object[] { new LineSegment(new Point2d(shape.StartX, shape.StartY), new Point2d(shape.EndX, shape.EndY)) },
-                        ZOrder = -10
-                    },
-                    _ => null
-                };
+            var enabledRegions = regionParams.InspectionRegions.GetEnabledRegions();
+            var items = new List<DisplayItemBase>();
+
+            foreach (var region in enabledRegions)
+            {
+                var regionItem = CreateRegionDisplayItem(region);
+                if (regionItem != null) items.Add(regionItem);
             }
+
+            return items.Count > 0 ? items : null;
+        }
+
+        private static DisplayItemBase? CreateRegionDisplayItem(RegionData region)
+        {
+            if (region?.Parameters is not ShapeParameters shape) return null;
+
+            return shape.ShapeType switch
+            {
+                ShapeType.Rectangle or ShapeType.RotatedRectangle => new GraphicsDisplayItem
+                {
+                    Style = RegionStyle, Type = GraphicsType.Rectangle,
+                    Geometries = new object[] { new Rect2d(shape.CenterX - shape.Width / 2, shape.CenterY - shape.Height / 2, shape.Width, shape.Height) }
+                },
+                ShapeType.Circle => new GraphicsDisplayItem
+                {
+                    Style = RegionStyle, Type = GraphicsType.Circle,
+                    Geometries = new object[] { new Circle2d(shape.CenterX, shape.CenterY, shape.Radius) }
+                },
+                ShapeType.Annulus => new GraphicsDisplayItem
+                {
+                    Style = RegionStyle, Type = GraphicsType.Circle,
+                    Geometries = new object[]
+                    {
+                        new Circle2d(shape.CenterX, shape.CenterY, shape.OuterRadius),
+                        new Circle2d(shape.CenterX, shape.CenterY, shape.Radius)
+                    },
+                    IsPassArray = new bool[2]
+                },
+                ShapeType.Polygon when shape.Points != null && shape.Points.Count >= 3 => new GraphicsDisplayItem
+                {
+                    Style = RegionStyle, Type = GraphicsType.Polygon,
+                    Geometries = new object[] { shape.Points.Select(p => new Point2d(p.X, p.Y)).ToArray() }
+                },
+                ShapeType.Line => new GraphicsDisplayItem
+                {
+                    Style = RegionStyle, Type = GraphicsType.Line,
+                    Geometries = new object[] { new LineSegment(new Point2d(shape.StartX, shape.StartY), new Point2d(shape.EndX, shape.EndY)) }
+                },
+                _ => null
+            };
+        }
     }
 }

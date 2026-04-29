@@ -21,13 +21,18 @@ namespace SunEyeVision.Tool.BlobAnalysis
     /// Blob分析工具 - 连通域分析与特征提取
     /// </summary>
     /// <remarks>
-    /// 算法流程（v6 - CvOp 统一算子入口）：
-    ///   1. reduce_domain → 构建ROI区域 (CvRegion)
-    ///   2. difference     → ROI差集 (CvOp.Difference)
-    ///   3. threshold      → 阈值分割，输出 CvRegion
-    ///   4. connection     → 连通域分析 (CvOp.Connection)
-    ///   5. area_center    → 特征提取 (CvOp.AreaCenter)
-    ///   6. select_shape   → 形状筛选 (CvOp.SelectShape)
+    /// 算法流程（v7 - ReduceDomain + Stats直读 + C#过滤）：
+    ///   1. rgb1_to_gray   → 灰度转换
+    ///   2. reduce_domain  → 缩小定义域（ROI掩码限制，不改变图像尺寸）
+    ///   3. threshold       → 阈值分割
+    ///   4. connection      → 连通域分析（缓存 labels/stats/centroids）
+    ///   5. area_center     → 从缓存直读面积/质心（零CC开销）
+    ///   6. smallest_rectangle1 → 从缓存直读BBox（零CC开销）
+    ///   7. rectangularity  → 从缓存直读矩形度（零CC开销）
+    ///   8. get_contour     → 一次FindContours获取轮廓
+    ///   9. circularity(XLD) → 从轮廓计算圆度
+    ///  10. cont_length     → 从轮廓计算周长
+    ///  11. C#内存过滤      → 替代 SelectShape 的 OpenCV 调用
     /// </remarks>
     [Tool(
         id: "blob-analysis",
@@ -35,7 +40,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
         Description = "连通域分析与特征提取",
         Icon = "🔬",
         Category = "图像处理",
-        Version = "2.0.0",
+        Version = "3.0.0",
         HasDebugWindow = true
     )]
     public class BlobAnalysisTool : IToolPlugin<BlobAnalysisParameters, BlobAnalysisResults>
@@ -61,11 +66,17 @@ namespace SunEyeVision.Tool.BlobAnalysis
             };
 
             var stopwatch = Stopwatch.StartNew();
+            var stepTimings = new List<(string Step, long Ms)>();
+            var stepSw = new Stopwatch();
 
             try
             {
                 // ===== 参数验证 =====
+                stepSw.Restart();
                 var validationResult = ValidateParameters(parameters);
+                stepSw.Stop();
+                stepTimings.Add(("参数验证", stepSw.ElapsedMilliseconds));
+
                 if (!validationResult.IsValid)
                 {
                     parameters.LogError($"参数验证失败: {string.Join(", ", validationResult.Errors)}");
@@ -85,12 +96,17 @@ namespace SunEyeVision.Tool.BlobAnalysis
                 result.InputSize = image.Size();
 
                 // ===== Step 1: 灰度转换 (rgb1_to_gray) =====
+                stepSw.Restart();
                 CvOp.Rgb1ToGray(image, out var grayImage);
+                stepSw.Stop();
+                stepTimings.Add(("灰度转换", stepSw.ElapsedMilliseconds));
+
                 using (grayImage)
                 {
                     CvRegion? roiRegion = null;
 
-                    // ===== Step 2: 构建ROI区域 + 差集处理 (difference) =====
+                    // ===== Step 2: 构建ROI区域 + 差集处理 =====
+                    stepSw.Restart();
                     if (parameters.IsRegionEnabled.Value)
                     {
                         var inspectionRegions = parameters.InspectionRegions.GetEnabledRegions();
@@ -101,14 +117,12 @@ namespace SunEyeVision.Tool.BlobAnalysis
 
                         if (hasInspection && hasMask)
                         {
-                            // 构造 CvRegion 并执行差集
                             using var inspRegion = CvRegion.CreateFromRegions(grayImage.Size, inspectionRegions);
                             using var maskRegion = CvRegion.CreateFromRegions(grayImage.Size, maskRegions);
 
                             CvOp.Difference(inspRegion, maskRegion, out roiRegion);
 
-                            int whiteCount = roiRegion.PixelCount;
-                            parameters.LogInfo($"差集ROI区域创建成功（检测区-遮罩），白色像素数: {whiteCount}");
+                            parameters.LogInfo($"差集ROI区域创建成功（检测区-遮罩），白色像素数: {roiRegion.PixelCount}");
                         }
                         else if (hasInspection)
                         {
@@ -120,54 +134,141 @@ namespace SunEyeVision.Tool.BlobAnalysis
                             parameters.LogWarning("启用区域限制，但没有有效的检测区域");
                         }
                     }
+                    stepSw.Stop();
+                    stepTimings.Add(("ROI构建", stepSw.ElapsedMilliseconds));
 
                     try
                     {
-                        // ===== Step 3: 阈值分割 (threshold → out CvRegion) =====
-                        var cvThresholdType = (CvThresholdType)parameters.Type.Value;
+                        // ===== Step 3: ReduceDomain（缩小定义域，ROI掩码限制）=====
+                        stepSw.Restart();
+                        CvOp.ReduceDomain(grayImage, roiRegion, out var reducedImage);
+                        stepSw.Stop();
+                        stepTimings.Add(("ReduceDomain", stepSw.ElapsedMilliseconds));
 
-                        CvOp.Threshold(roiRegion, grayImage,
-                            parameters.Threshold.Value, parameters.MaxValue.Value,
-                            out var binaryRegion, out double actualThreshold,
-                            cvThresholdType, parameters.Invert.Value);
-
-                        using (binaryRegion)
+                        using (reducedImage)
                         {
-                            parameters.LogInfo($"阈值分割完成: 实际阈值={actualThreshold}");
+                            // ===== Step 4: 阈值分割 =====
+                            stepSw.Restart();
+                            var cvThresholdType = (CvThresholdType)parameters.Type.Value;
 
-                            // ===== Step 4: 连通域分析 (connection → CvRegion) =====
-                            CvOp.Connection(binaryRegion,
-                                out var connectedRegions,
-                                (CvConnectivity)parameters.Connectivity.Value);
-                            using (connectedRegions)
+                            CvOp.Threshold(reducedImage, null,
+                                parameters.Threshold.Value, parameters.MaxValue.Value,
+                                out var binaryRegion, out double actualThreshold,
+                                cvThresholdType, parameters.Invert.Value);
+                            stepSw.Stop();
+                            stepTimings.Add(("阈值分割", stepSw.ElapsedMilliseconds));
+
+                            using (binaryRegion)
                             {
-                                parameters.LogInfo($"连通域分析完成: 检测到 {connectedRegions.Count} 个子区域");
+                                // ===== Step 5: 连通域分析（缓存 labels/stats/centroids）=====
+                                stepSw.Restart();
+                                CvOp.Connection(binaryRegion,
+                                    out var connectedRegions,
+                                    (CvConnectivity)parameters.Connectivity.Value);
+                                stepSw.Stop();
+                                stepTimings.Add(("连通域分析", stepSw.ElapsedMilliseconds));
 
-                                // ===== Step 5a: 提取全部Blob特征 (area_center → 组装 BlobInfo) =====
-                                CvOp.AreaCenter(connectedRegions, out var rawCenters);
-                                var allBlobs = AssembleBlobInfos(connectedRegions, rawCenters);
-                                parameters.LogInfo($"Blob特征提取完成: {allBlobs.Length} 个");
-
-                                // ===== Step 5b: 形状筛选 (select_shape → CvRegion) =====
-                                CvOp.SelectShape(connectedRegions,
-                                    out var selectedRegions,
-                                    parameters.MinArea.Value, parameters.MaxArea.Value,
-                                    parameters.MinCircularity.Value, parameters.MaxCircularity.Value,
-                                    parameters.MinRectangularity.Value, parameters.MaxRectangularity.Value);
-                                using (selectedRegions)
+                                using (connectedRegions)
                                 {
-                                    CvOp.AreaCenter(selectedRegions, out var filteredRawCenters);
-                                    var filteredBlobs = AssembleBlobInfos(selectedRegions, filteredRawCenters);
+                                    // ===== Step 6: 从缓存直读面积/质心（零CC开销）=====
+                                    stepSw.Restart();
+                                    CvOp.AreaCenter(connectedRegions, out var areaCenters);
+                                    stepSw.Stop();
+                                    stepTimings.Add(("AreaCenter", stepSw.ElapsedMilliseconds));
 
-                                    parameters.LogInfo($"Blob筛选完成: 通过 {filteredBlobs.Length}/{allBlobs.Length} 个");
+                                    // ===== Step 7: 从缓存直读BBox（零CC开销）=====
+                                    stepSw.Restart();
+                                    CvOp.SmallestRectangle1(connectedRegions,
+                                        out var row1, out var col1, out var row2, out var col2);
+                                    stepSw.Stop();
+                                    stepTimings.Add(("SmallestRectangle1", stepSw.ElapsedMilliseconds));
 
-                                    // ===== Step 6: 组合显示图 (compose_display) =====
-                                    CvOp.ComposeDisplay(roiRegion, grayImage, binaryRegion, out var displayImage);
+                                    // ===== Step 8: 从缓存直读矩形度（零CC开销）=====
+                                    stepSw.Restart();
+                                    CvOp.Rectangularity(connectedRegions, out var rectangularities);
+                                    stepSw.Stop();
+                                    stepTimings.Add(("Rectangularity", stepSw.ElapsedMilliseconds));
 
-                                    // ===== 设置结果 =====
-                                    result.BinaryImage = displayImage;
-                                    result.AllBlobs = allBlobs.ToList();
-                                    result.FilteredBlobs = filteredBlobs.ToList();
+                                    // ===== Step 9: 一次FindContours获取轮廓 =====
+                                    stepSw.Restart();
+                                    CvOp.GetContour(connectedRegions, out var contours);
+                                    stepSw.Stop();
+                                    stepTimings.Add(("GetContour", stepSw.ElapsedMilliseconds));
+
+                                    // ===== Step 10: 从轮廓计算圆度 =====
+                                    stepSw.Restart();
+                                    CvOp.Circularity(contours, out var circularities);
+                                    stepSw.Stop();
+                                    stepTimings.Add(("Circularity(XLD)", stepSw.ElapsedMilliseconds));
+
+                                    // ===== Step 11: 从轮廓计算周长 =====
+                                    stepSw.Restart();
+                                    CvOp.ContLength(contours, out var perimeters);
+                                    stepSw.Stop();
+                                    stepTimings.Add(("ContLength", stepSw.ElapsedMilliseconds));
+
+                                    // ===== Step 12: 组装 BlobInfo（坐标已在原图坐标系）=====
+                                    stepSw.Restart();
+                                    int blobCount = areaCenters.Length;
+                                    var allBlobs = new List<BlobInfo>(blobCount);
+
+                                    for (int i = 0; i < blobCount; i++)
+                                    {
+                                        // ReduceDomain 不改变图像尺寸，坐标直接对应原图
+                                        double centroidX = areaCenters[i].Column;
+                                        double centroidY = areaCenters[i].Row;
+
+                                        var bbox = new OpenCvSharp.Rect(
+                                            (int)col1[i],
+                                            (int)row1[i],
+                                            (int)(col2[i] - col1[i] + 1),
+                                            (int)(row2[i] - row1[i] + 1));
+
+                                        // 轮廓坐标已在原图坐标系，无需偏移
+                                        CvContour? offsetContour = contours[i] != null && !contours[i].IsEmpty
+                                            ? contours[i]
+                                            : null;
+
+                                        allBlobs.Add(BlobInfo.Create(
+                                            label: i + 1,
+                                            area: areaCenters[i].Area,
+                                            perimeter: i < perimeters.Length ? perimeters[i] : 0,
+                                            centroidX: centroidX,
+                                            centroidY: centroidY,
+                                            boundingBox: bbox,
+                                            circularity: i < circularities.Length ? circularities[i] : 0,
+                                            rectangularity: i < rectangularities.Length ? rectangularities[i] : 0,
+                                            contour: offsetContour));
+                                    }
+                                    stepSw.Stop();
+                                    stepTimings.Add(("组装BlobInfo", stepSw.ElapsedMilliseconds));
+
+                                    // ===== Step 13: C#内存过滤（替代 SelectShape 的 OpenCV 调用）=====
+                                    stepSw.Restart();
+                                    int minArea = parameters.MinArea.Value;
+                                    int maxArea = parameters.MaxArea.Value;
+                                    double minCircularity = parameters.MinCircularity.Value;
+                                    double maxCircularity = parameters.MaxCircularity.Value;
+                                    double minRectangularity = parameters.MinRectangularity.Value;
+                                    double maxRectangularity = parameters.MaxRectangularity.Value;
+
+                                    var filteredBlobs = allBlobs.Where(b =>
+                                        b.Area >= minArea && b.Area <= maxArea &&
+                                        b.Circularity >= minCircularity && b.Circularity <= maxCircularity &&
+                                        b.Rectangularity >= minRectangularity && b.Rectangularity <= maxRectangularity
+                                    ).ToList();
+
+                                    // 标记过滤结果
+                                    foreach (var blob in allBlobs)
+                                        blob.IsFiltered = filteredBlobs.Contains(blob);
+                                    stepSw.Stop();
+                                    stepTimings.Add(("C#过滤", stepSw.ElapsedMilliseconds));
+
+                                    // ===== Step 14: 设置结果数据 =====
+                                    stepSw.Restart();
+                                    result.BinaryImage = grayImage.Image.Clone();
+                                    result.AllBlobs = allBlobs;
+                                    result.FilteredBlobs = filteredBlobs;
                                     result.ThresholdUsed = (int)actualThreshold;
                                     result.ThresholdUsedDouble = actualThreshold;
                                     result.MaxValueUsed = parameters.MaxValue.Value;
@@ -175,23 +276,36 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                     result.TypeUsed = parameters.Type.Value;
                                     result.InvertUsed = parameters.Invert.Value;
                                     result.ConnectivityUsed = parameters.Connectivity.Value;
+                                    stepSw.Stop();
+                                    stepTimings.Add(("结果赋值", stepSw.ElapsedMilliseconds));
 
-                                    // ===== 统计信息 (intensity) - 使用CvRegion限定范围 =====
-                                    CvOp.Intensity(roiRegion, grayImage,
+                                    // ===== Step 15: 统计信息 =====
+                                    stepSw.Restart();
+                                    CvOp.Intensity(reducedImage, null,
                                         out var histogram, out _, out _);
                                     result.HistogramData = histogram;
-                                    // ChannelMeans 通过 intensity 单值输出，保持兼容
                                     double histMean = histogram.Length > 0 ? histogram.Zip(
                                         Enumerable.Range(0, 256), (h, i) => h * i).Sum() / histogram.Sum() : 0;
                                     result.ChannelMeans = new[] { histMean };
+                                    stepSw.Stop();
+                                    stepTimings.Add(("灰度统计", stepSw.ElapsedMilliseconds));
 
                                     result.ProcessedAt = DateTime.Now;
 
-                                    // ===== 构建显示项（Style 引用驱动按需收集） =====
+                                    // ===== Step 16: 构建显示项 =====
+                                    stepSw.Restart();
                                     var display = result.Display;
                                     display.Clear();
 
-                                    // 图形项: Blob 外接矩形
+                                    // 轮廓显示
+                                    var filteredContours = filteredBlobs
+                                        .Where(b => b.Contour != null && !b.Contour.IsEmpty && b.Contour.Points != null)
+                                        .Select(b => b.Contour.Points!)
+                                        .ToList();
+                                    if (filteredContours.Count > 0)
+                                        display.AddContours(parameters.ContoursStyle, filteredContours);
+
+                                    // 外接矩形
                                     foreach (var blob in filteredBlobs)
                                     {
                                         var bbox = blob.BoundingBox;
@@ -199,14 +313,14 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                             display.AddRect(parameters.BlobsStyle, new Rect2d(bbox.X, bbox.Y, bbox.Width, bbox.Height));
                                     }
 
-                                    // 图形项: 质心十字
+                                    // 质心十字
                                     foreach (var blob in filteredBlobs)
                                     {
                                         if (blob.CentroidX > 0 || blob.CentroidY > 0)
                                             display.AddCross(parameters.CentroidsStyle, new Point2d(blob.CentroidX, blob.CentroidY));
                                     }
 
-                                    // 文本项: Blob 标签（坐标跟随质心，批量独立定位）
+                                    // 标签
                                     var labelBlobs = filteredBlobs
                                         .Where(b => b.CentroidX > 0 || b.CentroidY > 0).ToArray();
                                     if (labelBlobs.Length > 0)
@@ -222,27 +336,47 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                         }
                                         display.AddText(parameters.LabelsStyle, xs, ys, labels);
                                     }
+                                    
 
-                                    // 文本项: 统计信息（锚点自动换行，位置从 Style 读取）
+                                    // 统计文本
                                     var filteredTotalArea = filteredBlobs.Sum(b => b.Area);
                                     display.AddText(parameters.StatisticsStyle,
                                         parameters.StatisticsStyle.PositionX, parameters.StatisticsStyle.PositionY,
                                         new[]
                                         {
-                                            $"Blob: {filteredBlobs.Length}/{allBlobs.Length}  阈值: {actualThreshold}",
+                                            $"Blob: {filteredBlobs.Count}/{allBlobs.Count}  阈值: {actualThreshold}",
                                             $"面积: {filteredTotalArea:F0}  类型: {parameters.Type.Value}"
                                         });
 
-                                    // 文本项: 更多提示（条件性）
-                                    if (filteredBlobs.Length > 20)
-                                        display.AddText(parameters.MoreHintStyle, 10, result.InputSize.Height - 20, $"...+{filteredBlobs.Length - 20} more");
+                                    if (filteredBlobs.Count > 20)
+                                        display.AddText(parameters.MoreHintStyle, 10, result.InputSize.Height - 20, $"...+{filteredBlobs.Count - 20} more");
+                                    stepSw.Stop();
+                                    stepTimings.Add(("显示构建", stepSw.ElapsedMilliseconds));
+
+                                    // 释放轮廓资源（已被 BlobInfo 引用的轮廓不释放，由 BlobInfo 管理生命周期）
 
                                     stopwatch.Stop();
                                     result.SetSuccess(stopwatch.ElapsedMilliseconds);
 
-                                    parameters.LogInfo($"Blob分析处理完成: 阈值 {actualThreshold}, " +
-                                                      $"连通域 {allBlobs.Length}, 筛选后 {filteredBlobs.Length}, " +
-                                                      $"耗时 {stopwatch.ElapsedMilliseconds}ms");
+                                    // ===== 性能报告 =====
+                                    var totalMs = stopwatch.ElapsedMilliseconds;
+                                    var maxStep = stepTimings.MaxBy(t => t.Ms);
+                                    var reportLines = new List<string>
+                                    {
+                                        $"===== Blob分析性能报告 =====",
+                                        $"图像: {image.Width}x{image.Height}  ReduceDomain  总耗时: {totalMs}ms",
+                                        $"步骤  名称              耗时(ms)    占比",
+                                        $"────  ──────────────── ────────  ──────"
+                                    };
+                                    foreach (var (step, ms) in stepTimings)
+                                    {
+                                        var pct = totalMs > 0 ? (double)ms / totalMs * 100 : 0;
+                                        var marker = step == maxStep.Step ? " ◄瓶颈" : "";
+                                        reportLines.Add($"  {stepTimings.IndexOf((step, ms)) + 1,2}.  {step,-18} {ms,8}  {pct,5:F1}%{marker}");
+                                    }
+                                    reportLines.Add($"──────────────────────────────────");
+                                    reportLines.Add($"结果: 连通域 {allBlobs.Count}, 筛选 {filteredBlobs.Count}, 瓶颈 [{maxStep.Step}]={maxStep.Ms}ms");
+                                    parameters.LogInfo(string.Join("\n", reportLines));
                                 }
                             }
                         }
@@ -290,52 +424,6 @@ namespace SunEyeVision.Tool.BlobAnalysis
         public FrameworkElement? CreateDataAnalysisControl()
         {
             return new BlobDataAnalysisControl();
-        }
-
-        /// <summary>
-        /// 将 AreaCenter 基础数据组装为完整 BlobInfo（显示层 DTO）
-        /// </summary>
-        /// <remarks>
-        /// 算法与显示解耦：
-        ///   - CvRegion.AreaCenter 只返回 (Area, Row, Column)
-        ///   - CvOp.Split() 拆分为单区域数组（out）
-        ///   - CvOp.RegionFeatures 按需查询额外特征（out）
-        ///   - Tool 层负责组装为 UI 可消费的 BlobInfo
-        /// </remarks>
-        private static BlobInfo[] AssembleBlobInfos(
-            CvRegion region, (double Area, double Row, double Column)[] areaCenters)
-        {
-            if (areaCenters.Length == 0)
-                return Array.Empty<BlobInfo>();
-
-            var blobs = new List<BlobInfo>(areaCenters.Length);
-            int idx = 0;
-            CvOp.Split(region, out var splitRegions);
-            foreach (var singleRegion in splitRegions)
-            {
-                if (idx >= areaCenters.Length) break;
-                var (area, row, col) = areaCenters[idx];
-
-                CvOp.RegionFeatures(singleRegion, out var features,
-                    RegionFeature.Perimeter,
-                    RegionFeature.Circularity,
-                    RegionFeature.Rectangularity,
-                    RegionFeature.BoundingBoxRow,
-                    RegionFeature.BoundingBoxColumn,
-                    RegionFeature.BoundingBoxWidth,
-                    RegionFeature.BoundingBoxHeight);
-
-                blobs.Add(BlobInfo.Create(
-                    label: idx + 1, area: area, perimeter: features[0],
-                    centroidX: col, centroidY: row,
-                    boundingBox: new OpenCvSharp.Rect(
-                        (int)features[4], (int)features[3],
-                        (int)features[5], (int)features[6]),
-                    circularity: features[1],
-                    rectangularity: features[2]));
-                idx++;
-            }
-            return blobs.ToArray();
         }
     }
 }

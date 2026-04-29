@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json.Serialization;
 using OpenCvSharp;
 
 namespace SunEyeVision.CvEngine.Models
@@ -68,6 +69,12 @@ namespace SunEyeVision.CvEngine.Models
         public bool IsFiltered { get; set; } = true;
 
         /// <summary>
+        /// 轮廓数据 - 对应 Halcon HXLD
+        /// </summary>
+        [JsonIgnore]
+        public CvContour? Contour { get; set; }
+
+        /// <summary>
         /// 创建BlobInfo的便捷工厂方法
         /// </summary>
         public static BlobInfo Create(
@@ -78,7 +85,8 @@ namespace SunEyeVision.CvEngine.Models
             double centroidY,
             Rect boundingBox,
             double circularity = 0,
-            double rectangularity = 0)
+            double rectangularity = 0,
+            CvContour? contour = null)
         {
             return new BlobInfo
             {
@@ -89,7 +97,8 @@ namespace SunEyeVision.CvEngine.Models
                 CentroidY = centroidY,
                 Circularity = Math.Min(circularity, 1.0),
                 Rectangularity = Math.Min(rectangularity, 1.0),
-                BoundingBox = boundingBox
+                BoundingBox = boundingBox,
+                Contour = contour
             };
         }
     }

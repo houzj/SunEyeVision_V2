@@ -76,6 +76,15 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         public ExecutionContext? Context { get; internal set; }
 
         /// <summary>
+        /// 设置执行上下文（供执行引擎调用，注入日志器等运行时服务）
+        /// </summary>
+        /// <param name="context">执行上下文</param>
+        public void SetExecutionContext(ExecutionContext context)
+        {
+            Context = context;
+        }
+
+        /// <summary>
         /// 运行时解析的输入图像（由执行引擎在运行前设置）
         /// </summary>
         /// <remarks>

@@ -110,25 +110,25 @@ namespace SunEyeVision.Tool.Threshold
 
                         if (type == ThresholdType.Binary || type == ThresholdType.BinaryInv)
                         {
-                            CvOp.Threshold(roiRegion, grayImage,
+                            CvOp.Threshold(grayImage, roiRegion,
                                 (int)threshold, (int)maxValue,
                                 out var binaryRegion, out actualThreshold,
                                 cvThresholdType, invert);
 
                             using (binaryRegion)
-                                CvOp.ComposeDisplay(roiRegion, grayImage, binaryRegion, out outputImage);
+                                CvOp.ComposeDisplay(grayImage, roiRegion, binaryRegion, out outputImage);
 
                             parameters.LogInfo($"使用固定阈值: {actualThreshold}");
                         }
                         else
                         {
-                            CvOp.AdaptiveThreshold(roiRegion, grayImage,
+                            CvOp.AdaptiveThreshold(grayImage, roiRegion,
                                 (int)maxValue, cvAdaptiveMethod, blockSize,
                                 out var binaryRegion, c: 5,
                                 type: cvThresholdType, invert: invert);
 
                             using (binaryRegion)
-                                CvOp.ComposeDisplay(roiRegion, grayImage, binaryRegion, out outputImage);
+                                CvOp.ComposeDisplay(grayImage, roiRegion, binaryRegion, out outputImage);
 
                             actualThreshold = threshold;
                             parameters.LogInfo($"使用自适应阈值，块大小: {blockSize}");
@@ -223,7 +223,7 @@ namespace SunEyeVision.Tool.Threshold
 
             // 灰度直方图和通道均值 - 使用CvOp直接统计整图灰度信息（null region = 整图）
             using var tempCvImage = new CvImage(inputImage);
-            CvOp.Intensity(null, tempCvImage,
+            CvOp.Intensity(tempCvImage, null,
                 out var histogram, out _, out _);
 
             result.HistogramData = histogram;

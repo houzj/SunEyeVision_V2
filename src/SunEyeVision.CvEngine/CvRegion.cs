@@ -11,13 +11,14 @@ namespace SunEyeVision.CvEngine
     /// 区域数据载体 - 对应 Halcon 的 HRegion/HObject
     /// </summary>
     /// <remarks>
-    /// 纯不可变数据类，不含任何算法逻辑。
+    /// 纯数据类，不含任何算法逻辑。
     /// 所有区域操作通过 <see cref="CvOp"/> 静态类执行。
     /// 
     /// 设计原则：
-    /// 1. 内部可包含 0~N 个子区域（对应 Halcon 的 CountObj()）
-    /// 2. 不暴露底层 Mat（无 RegionImage 属性）
-    /// 3. 工厂方法以 Gen_ 前缀（对齐 Halcon gen_* 算子命名）
+    /// 1. 内部用 List&lt;RegionItem&gt; 存储（对齐 HObject tuple 语义）
+    /// 2. Count 属性即数组长度（对齐 Halcon CountObj()）
+    /// 3. Mask 属性返回合并掩码（懒加载）
+    /// 4. CC 缓存可选，由 Connection 设置，下游算子零开销复用
     /// 
     /// 工厂方法对照表：
     /// | Halcon算子      | 本类方法           | 说明           |
@@ -29,14 +30,25 @@ namespace SunEyeVision.CvEngine
     /// </remarks>
     public class CvRegion : IDisposable
     {
-        #region 内部字段（同程序集内 CvOp 访问）
+        #region 内部字段
 
-        internal Mat? _mask;        // 合并二值掩码 (CV_8UC1)，始终可用
-        internal Mat? _labels;      // 标签图 (CV_32SC1)，0=背景, 1..N=子区域，仅多区域时存在
-        internal Mat? _stats;       // 连通域统计 (ConnectedComponentsWithStats 输出)
-        internal Mat? _centroids;   // 连通域质心 (ConnectedComponentsWithStats 输出)
-        internal int _count;        // 子区域数量 (对应 Halcon CountObj)
-        internal Size _imageSize;   // 图像尺寸
+        /// <summary>子区域列表（对齐 HObject tuple）</summary>
+        internal List<RegionItem> _items;
+
+        /// <summary>共享图像尺寸（所有 item 在同一坐标空间）</summary>
+        internal Size _imageSize;
+
+        /// <summary>CC 缓存 - 标签图（可选，由 Connection 设置）</summary>
+        internal Mat? _ccLabels;
+
+        /// <summary>CC 缓存 - 连通域统计（可选，由 Connection 设置）</summary>
+        internal Mat? _ccStats;
+
+        /// <summary>CC 缓存 - 连通域质心（可选，由 Connection 设置）</summary>
+        internal Mat? _ccCentroids;
+
+        /// <summary>合并掩码缓存（懒加载）</summary>
+        private Mat? _combinedMaskCache;
 
         #endregion
 
@@ -47,31 +59,36 @@ namespace SunEyeVision.CvEngine
         /// </summary>
         private CvRegion()
         {
-            _count = 0;
+            _items = new List<RegionItem>();
             _imageSize = new Size(0, 0);
         }
 
         /// <summary>
-        /// 内部构造函数 - 供 CvOp 构建单区域计算结果（无标签信息）
+        /// 内部构造 - 供 CvOp 创建单区域结果（1 个 RegionItem，无 CC 缓存）
         /// </summary>
-        internal CvRegion(Mat? mask, int count, Size imageSize)
+        /// <param name="mask">合并掩码（CV_8UC1），null 或全黑则创建空区域</param>
+        /// <param name="imageSize">图像尺寸</param>
+        internal CvRegion(Mat? mask, Size imageSize)
         {
-            _mask = mask;
-            _count = count;
+            _items = new List<RegionItem>();
             _imageSize = imageSize;
+            if (mask != null && !mask.Empty() && Cv2.CountNonZero(mask) > 0)
+            {
+                _items.Add(new RegionItem(mask));
+            }
         }
 
         /// <summary>
-        /// 内部构造函数 - 供 CvOp 构建多区域计算结果（含完整连通域分析数据）
+        /// 内部构造 - 供 CvOp 创建多区域结果（N 个 RegionItem + CC 缓存）
         /// </summary>
-        internal CvRegion(Mat? mask, Mat labels, Mat stats, Mat centroids, int count, Size imageSize)
+        internal CvRegion(List<RegionItem> items, Size imageSize,
+            Mat? ccLabels = null, Mat? ccStats = null, Mat? ccCentroids = null)
         {
-            _mask = mask;
-            _labels = labels;
-            _stats = stats;
-            _centroids = centroids;
-            _count = count;
+            _items = items ?? new List<RegionItem>();
             _imageSize = imageSize;
+            _ccLabels = ccLabels;
+            _ccStats = ccStats;
+            _ccCentroids = ccCentroids;
         }
 
         /// <summary>
@@ -84,43 +101,35 @@ namespace SunEyeVision.CvEngine
         /// </summary>
         public static CvRegion GenRectangle1(int row1, int col1, int row2, int col2)
         {
-            var region = new CvRegion();
             int x = Math.Min(col1, col2);
             int y = Math.Min(row1, row2);
             int w = Math.Abs(col2 - col1) + 1;
             int h = Math.Abs(row2 - row1) + 1;
 
-            region._imageSize = new Size(x + w, y + h);
-            region._mask = new Mat(region._imageSize, MatType.CV_8UC1, Scalar.Black);
-            Cv2.Rectangle(region._mask, new Rect(x, y, w, h), Scalar.White, -1);
-            region._count = 1;
-            return region;
+            var imageSize = new Size(x + w, y + h);
+            var mask = new Mat(imageSize, MatType.CV_8UC1, Scalar.Black);
+            Cv2.Rectangle(mask, new Rect(x, y, w, h), Scalar.White, -1);
+
+            return new CvRegion(mask, imageSize);
         }
 
         /// <summary>
-        /// 从已有掩码 Mat 创建区域 - 对应从二值图像生成区域
+        /// 从已有掩码 Mat 创建区域
         /// </summary>
         /// <param name="mask">二值掩码（CV_8UC1, 非零=有效像素）</param>
         /// <param name="ownsData">是否拥有数据所有权</param>
         public static CvRegion FromMask(Mat mask, bool ownsData = false)
         {
-            var region = new CvRegion();
             if (mask == null || mask.Empty())
-                return region;
+                return GenEmptyObj();
 
-            region._imageSize = mask.Size();
-            region._mask = ownsData ? mask : mask.Clone();
-            region._count = Cv2.CountNonZero(mask) > 0 ? 1 : 0;
-            return region;
+            var m = ownsData ? mask : mask.Clone();
+            return new CvRegion(m, mask.Size());
         }
 
         /// <summary>
-        /// 从 UI 区域定义列表直接创建 CvRegion（组合 RegionMaskBuilder + FromMask）
+        /// 从 UI 区域定义列表直接创建 CvRegion
         /// </summary>
-        /// <param name="imageSize">图像尺寸</param>
-        /// <param name="regions">UI 区域定义列表（至少包含一个有效区域）</param>
-        /// <exception cref="ArgumentNullException">regions 为 null</exception>
-        /// <exception cref="ArgumentException">regions 为空或无有效区域</exception>
         public static CvRegion CreateFromRegions(Size imageSize, IEnumerable<RegionData> regions)
         {
             if (regions == null)
@@ -145,7 +154,7 @@ namespace SunEyeVision.CvEngine
         /// <summary>
         /// 子区域数量 - 对应 Halcon CountObj()
         /// </summary>
-        public int Count => _count;
+        public int Count => _items.Count;
 
         /// <summary>
         /// 区域尺寸（图像空间范围）
@@ -155,50 +164,90 @@ namespace SunEyeVision.CvEngine
         /// <summary>
         /// 是否为空区域（不含任何子区域）
         /// </summary>
-        public bool IsEmpty => _count == 0 || _mask == null || _mask.Empty();
+        public bool IsEmpty => _items.Count == 0;
 
         /// <summary>
-        /// 区域有效像素数 - 用于日志和统计，无需暴露底层 Mat
+        /// 区域有效像素数 - 用于日志和统计
         /// </summary>
-        public int PixelCount => (_mask != null && !_mask.Empty()) ? Cv2.CountNonZero(_mask) : 0;
+        public int PixelCount
+        {
+            get
+            {
+                var combined = GetCombinedMask();
+                return combined != null && !combined.Empty() ? Cv2.CountNonZero(combined) : 0;
+            }
+        }
 
         #endregion
 
         #region 内部访问（仅 CvEngine 内部使用）
 
-        /// <summary>获取组合掩码</summary>
-        internal Mat? Mask => _mask;
+        /// <summary>获取组合掩码（懒加载）</summary>
+        internal Mat? Mask => GetCombinedMask();
 
-        /// <summary>是否包含子区域标签信息（可按索引访问子区域）</summary>
-        internal bool HasLabels => _labels != null && !_labels.Empty();
+        /// <summary>是否包含 CC 缓存</summary>
+        internal bool HasLabels => _ccLabels != null && !_ccLabels.Empty();
 
-        /// <summary>获取标签图 (CV_32SC1)，仅多区域结果有效</summary>
-        internal Mat? Labels => _labels;
+        /// <summary>获取标签图 (CV_32SC1)，仅 Connection 产出时有效</summary>
+        internal Mat? Labels => _ccLabels;
 
-        /// <summary>获取连通域统计数据，仅多区域结果有效</summary>
-        internal Mat? Stats => _stats;
+        /// <summary>获取连通域统计数据</summary>
+        internal Mat? Stats => _ccStats;
 
-        /// <summary>获取连通域质心数据，仅多区域结果有效</summary>
-        internal Mat? Centroids => _centroids;
+        /// <summary>获取连通域质心数据</summary>
+        internal Mat? Centroids => _ccCentroids;
+
+        /// <summary>
+        /// 获取合并掩码（懒加载，缓存）
+        /// </summary>
+        internal Mat? GetCombinedMask()
+        {
+            if (_combinedMaskCache != null) return _combinedMaskCache;
+            if (_items.Count == 0) return null;
+
+            // 快速路径：有 CC 缓存时直接从 labels 派生
+            if (_ccLabels != null && !_ccLabels.Empty())
+            {
+                _combinedMaskCache = new Mat();
+                Cv2.Compare(_ccLabels, 0, _combinedMaskCache, CmpType.GT);
+                return _combinedMaskCache;
+            }
+
+            // 慢速路径：合并所有 item 的 Mask
+            _combinedMaskCache = new Mat(_imageSize, MatType.CV_8UC1, Scalar.Black);
+            foreach (var item in _items)
+            {
+                var mask = item.GetMask();
+                if (mask != null && !mask.Empty())
+                    Cv2.BitwiseOr(_combinedMaskCache, mask, _combinedMaskCache);
+            }
+            return _combinedMaskCache;
+        }
 
         #endregion
 
         #region 生命周期管理 - CopyObj / Dispose
 
         /// <summary>
-        /// 深拷贝 - 对应 Halcon copy_obj(Object, Copy, Index1, Index2)
-        /// 同时拷贝 labels/stats/centroids（如有）
+        /// 深拷贝 - 对应 Halcon copy_obj()
         /// </summary>
         public CvRegion CopyObj()
         {
-            var copy = GenEmptyObj();
-            copy._imageSize = _imageSize;
-            copy._mask = _mask?.Clone();
-            copy._labels = _labels?.Clone();
-            copy._stats = _stats?.Clone();
-            copy._centroids = _centroids?.Clone();
-            copy._count = _count;
-            return copy;
+            // 强制提取所有 Mask（断开懒加载引用）
+            foreach (var item in _items)
+                item.GetMask();
+
+            // 克隆 items 的 Mask
+            var items = new List<RegionItem>(_items.Count);
+            foreach (var item in _items)
+            {
+                var mask = item.Mask;
+                if (mask != null && !mask.Empty())
+                    items.Add(new RegionItem(mask.Clone()));
+            }
+
+            return new CvRegion(items, _imageSize,
+                _ccLabels?.Clone(), _ccStats?.Clone(), _ccCentroids?.Clone());
         }
 
         /// <summary>
@@ -206,11 +255,12 @@ namespace SunEyeVision.CvEngine
         /// </summary>
         public void Dispose()
         {
-            _mask?.Dispose(); _mask = null;
-            _labels?.Dispose(); _labels = null;
-            _stats?.Dispose(); _stats = null;
-            _centroids?.Dispose(); _centroids = null;
-            _count = 0;
+            foreach (var item in _items) item.Dispose();
+            _items.Clear();
+            _combinedMaskCache?.Dispose(); _combinedMaskCache = null;
+            _ccLabels?.Dispose(); _ccLabels = null;
+            _ccStats?.Dispose(); _ccStats = null;
+            _ccCentroids?.Dispose(); _ccCentroids = null;
             GC.SuppressFinalize(this);
         }
 
@@ -219,12 +269,67 @@ namespace SunEyeVision.CvEngine
         /// </summary>
         ~CvRegion()
         {
-            _mask?.Dispose();
-            _labels?.Dispose();
-            _stats?.Dispose();
-            _centroids?.Dispose();
+            foreach (var item in _items) item.Dispose();
+            _combinedMaskCache?.Dispose();
+            _ccLabels?.Dispose();
+            _ccStats?.Dispose();
+            _ccCentroids?.Dispose();
         }
 
         #endregion
+    }
+
+    /// <summary>
+    /// 子区域项 - CvRegion 的内部存储单元，对齐 HObject tuple 中的单个元素
+    /// </summary>
+    /// <remarks>
+    /// Connection 产出时 Mask 懒加载（从 _ccLabels 提取），
+    /// Threshold 等产出时直接设置 Mask。
+    /// </remarks>
+    internal class RegionItem : IDisposable
+    {
+        private Mat? _mask;
+
+        // 懒加载参数（仅 Connection 产出时设置）
+        private readonly Mat? _ccLabelsRef;
+        private readonly int _labelIndex;
+        private readonly Size _imageSize;
+
+        /// <summary>创建带独立 Mask 的 item（Threshold 等产出）</summary>
+        internal RegionItem(Mat mask)
+        {
+            _mask = mask;
+        }
+
+        /// <summary>创建懒加载 Mask 的 item（Connection 产出）</summary>
+        internal RegionItem(Mat ccLabelsRef, int labelIndex, Size imageSize)
+        {
+            _ccLabelsRef = ccLabelsRef;
+            _labelIndex = labelIndex;
+            _imageSize = imageSize;
+        }
+
+        /// <summary>获取独立掩码（不触发懒加载，可能为 null）</summary>
+        internal Mat? Mask => _mask;
+
+        /// <summary>
+        /// 获取或创建独立掩码（懒加载：首次访问时从 _ccLabels 提取）
+        /// </summary>
+        internal Mat? GetMask()
+        {
+            if (_mask != null) return _mask;
+            if (_ccLabelsRef == null || _ccLabelsRef.Empty()) return null;
+
+            _mask = new Mat();
+            Cv2.Compare(_ccLabelsRef, _labelIndex, _mask, CmpType.EQ);
+            return _mask;
+        }
+
+        public void Dispose()
+        {
+            _mask?.Dispose();
+            _mask = null;
+            // 不释放 _ccLabelsRef，由 CvRegion 拥有
+        }
     }
 }

@@ -107,7 +107,7 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
                 SelectedBlob = null;
         }
 
-        /// <summary>构建选中 Blob 的高亮 DisplayItem 列表（黄色外接矩形+标注+质心十字）</summary>
+        /// <summary>构建选中 Blob 的高亮 DisplayItem（黄色外接矩形）</summary>
         private static IEnumerable<DisplayItemBase>? BuildHighlightItems(BlobInfo? blob)
             {
                 if (blob == null) return null;
@@ -122,19 +122,6 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
                         Name = "HighlightRect", Type = GraphicsType.Rectangle,
                         Geometries = new object[] { new Rect2d(bb.X, bb.Y, bb.Width, bb.Height) },
                         Style = new GraphicsStyle { OkColor = highlightColor, LineWidth = 3 }
-                    },
-                    new TextDisplayItem
-                    {
-                        Name = "HighlightLabel",
-                        Texts = new[] { new DisplayTextData { Content =$"#{blob.Label}: {blob.Area:F0}px²", X = bb.X, Y = bb.Y - 5 } },
-                        AnchorX = bb.X, AnchorY = bb.Y - 5,
-                        Style = new TextStyle { OkColor = highlightColor, FontSize = 14.0 }
-                    },
-                    new GraphicsDisplayItem
-                    {
-                        Name = "HighlightPoint", Type = GraphicsType.Point,
-                        Geometries = new object[] { new Point2d(blob.CentroidX, blob.CentroidY) },
-                        Style = new GraphicsStyle { OkColor = highlightColor, LineWidth = 4.0 }
                     }
                 };
             }

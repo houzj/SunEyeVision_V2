@@ -88,11 +88,13 @@ namespace SunEyeVision.CvEngine
     ///   C#:    Connection(region, out var connectedRegions)
     /// 
     /// 算子分组：
-    ///   📦 图像转换  Rgb1ToGray, ReduceDomain
-    ///   ✂️ 阈值分割  Threshold, AdaptiveThreshold
-    ///   📊 统计     Intensity
+        ///   📦 图像转换  Rgb1ToGray, ReduceDomain, CropDomain
+        ///   ✂️ 阈值分割  Threshold, AdaptiveThreshold, ThresholdRange
+        ///   📊 统计     Intensity(单区域), Intensity(多区域)
     ///   🖼️ 显示     ComposeDisplay
     ///   🔬 区域算子  Connection, AreaCenter, SelectShape, Split, SelectObj
+    ///                SmallestRectangle1, Rectangularity, GetContour
+    ///   📐 轮廓算子  Circularity(XLD), ContLength
     ///   🔧 集合运算  Union1, Difference, Intersection, Complement, Concat
     ///   ⭕ 形态学    DilationCircle, ErosionCircle, DilationRectangle1, ErosionRectangle1
     ///               OpeningCircle, ClosingCircle
@@ -126,18 +128,141 @@ namespace SunEyeVision.CvEngine
         }
 
         /// <summary>
+        /// RGB转灰度（图像数组）- 对应 Halcon rgb1_to_gray(Image(-array), GrayImage(-array))
+        /// 逐 item 处理，输出等长 CvImage
+        /// </summary>
+        public static void Rgb1ToGray(CvImage input, out CvImage grayImage)
+        {
+            if (input.Empty)
+            {
+                grayImage = CvImage.GenEmptyObj();
+                return;
+            }
+
+            // 快速路径：单图像
+            if (input.Count == 1)
+            {
+                Rgb1ToGray(input.Image, out grayImage);
+                return;
+            }
+
+            // 多图像路径
+            var items = new List<ImageItem>(input.Count);
+            foreach (var item in input._items)
+            {
+                var src = item.Image;
+                if (src.Channels() == 1 && src.Depth() == MatType.CV_8U)
+                {
+                    items.Add(new ImageItem(src.Clone(), ownsImage: true));
+                }
+                else
+                {
+                    var gray = new Mat();
+                    if (src.Channels() > 1)
+                        Cv2.CvtColor(src, gray, ColorConversionCodes.BGR2GRAY);
+                    else
+                        src.ConvertTo(gray, MatType.CV_8UC1);
+                    items.Add(new ImageItem(gray, ownsImage: true));
+                }
+            }
+            grayImage = new CvImage(items);
+        }
+
+        /// <summary>
         /// 缩小定义域 - 对应 Halcon reduce_domain(Image, Region, ImageReduced)
+        /// 不改变图像尺寸，仅用 Region 掩码限制图像的有效区域（域外像素置零）
+        /// 支持 CvImage 数组：逐 item 处理，输出等长 CvImage
         /// </summary>
         public static void ReduceDomain(CvImage image, CvRegion? region, out CvImage imageReduced)
         {
+            // 快速路径：无 region 或单图像
             if (region == null || region.IsEmpty)
             {
-                imageReduced = new CvImage(image.Image.Clone(), ownsImage: true);
+                var items = new List<ImageItem>(image.Count);
+                foreach (var item in image._items)
+                    items.Add(new ImageItem(item.Image.Clone(), ownsImage: true));
+                imageReduced = items.Count > 0 ? new CvImage(items) : CvImage.GenEmptyObj();
                 return;
             }
-            using var masked = new Mat();
-            image.Image.CopyTo(masked, region.Mask);
-            imageReduced = new CvImage(masked, ownsImage: true);
+
+            var mask = region.Mask;
+
+            // 快速路径：单图像
+            if (image.Count == 1)
+            {
+                var masked = new Mat();
+                image.Image.CopyTo(masked, mask);
+                imageReduced = new CvImage(masked, ownsImage: true);
+                return;
+            }
+
+            // 多图像路径
+            var multiItems = new List<ImageItem>(image.Count);
+            foreach (var item in image._items)
+            {
+                var masked = new Mat();
+                item.Image.CopyTo(masked, mask);
+                multiItems.Add(new ImageItem(masked, ownsImage: true));
+            }
+            imageReduced = new CvImage(multiItems);
+        }
+
+        /// <summary>
+        /// 裁剪定义域 - 对应 Halcon crop_domain(Image, ImageCropped)
+        /// 裁剪到 Region BBox，改变图像尺寸（性能优化：在更小图像上处理）
+        /// 支持 CvImage 数组：逐 item 裁剪到同一 BBox，输出等长 CvImage
+        /// </summary>
+        public static void CropDomain(CvImage image, CvRegion? region, out CvImage imageCropped, out Rect roiBBox)
+        {
+            // 快速路径：无 region
+            if (region == null || region.IsEmpty)
+            {
+                var items = new List<ImageItem>(image.Count);
+                foreach (var item in image._items)
+                    items.Add(new ImageItem(item.Image.Clone(), ownsImage: true));
+                imageCropped = items.Count > 0 ? new CvImage(items) : CvImage.GenEmptyObj();
+                roiBBox = image.Count > 0 ? new Rect(0, 0, image.Size.Width, image.Size.Height) : new Rect();
+                return;
+            }
+
+            var mask = region.Mask;
+            var bbox = Cv2.BoundingRect(mask);
+
+            if (bbox.Width <= 0 || bbox.Height <= 0)
+            {
+                var items = new List<ImageItem>(image.Count);
+                foreach (var item in image._items)
+                    items.Add(new ImageItem(item.Image.Clone(), ownsImage: true));
+                imageCropped = items.Count > 0 ? new CvImage(items) : CvImage.GenEmptyObj();
+                roiBBox = image.Count > 0 ? new Rect(0, 0, image.Size.Width, image.Size.Height) : new Rect();
+                return;
+            }
+
+            // 裁剪掩码到 BBox（所有图像共用同一掩码）
+            using var croppedMask = new Mat(mask, bbox);
+
+            // 快速路径：单图像
+            if (image.Count == 1)
+            {
+                using var croppedImage = new Mat(image.Image, bbox);
+                var masked = new Mat();
+                croppedImage.CopyTo(masked, croppedMask);
+                imageCropped = new CvImage(masked, ownsImage: true);
+                roiBBox = bbox;
+                return;
+            }
+
+            // 多图像路径
+            var multiItems = new List<ImageItem>(image.Count);
+            foreach (var item in image._items)
+            {
+                using var croppedImage = new Mat(item.Image, bbox);
+                var masked = new Mat();
+                croppedImage.CopyTo(masked, croppedMask);
+                multiItems.Add(new ImageItem(masked, ownsImage: true));
+            }
+            imageCropped = new CvImage(multiItems);
+            roiBBox = bbox;
         }
 
         #endregion
@@ -145,10 +270,10 @@ namespace SunEyeVision.CvEngine
         #region ✂️ 阈值分割
 
         /// <summary>
-        /// 阈值分割 - 对应 Halcon threshold(Region, Image, out Region, Min, Max)
+        /// 阈值分割 - 对应 Halcon threshold(Image, Region, Min, Max)
         /// </summary>
         public static void Threshold(
-            CvRegion? region, CvImage image,
+            CvImage image, CvRegion? region,
             int thresh, int maxVal,
             out CvRegion regionResult, out double actualThreshold,
             CvThresholdType type = CvThresholdType.Binary,
@@ -162,10 +287,10 @@ namespace SunEyeVision.CvEngine
         }
 
         /// <summary>
-        /// 自适应阈值分割 - 对应 Halcon adaptive_threshold(Region, Image, ...)
+        /// 自适应阈值分割 - 对应 Halcon adaptive_threshold(Image, Region, ...)
         /// </summary>
         public static void AdaptiveThreshold(
-            CvRegion? region, CvImage image,
+            CvImage image, CvRegion? region,
             int maxValue, CvAdaptiveMethod method, int blockSize,
             out CvRegion regionResult,
             double c = 5,
@@ -203,15 +328,83 @@ namespace SunEyeVision.CvEngine
             }
         }
 
+        /// <summary>
+        /// 灰度范围阈值 - 对应 Halcon threshold(Image, Region, MinGray, MaxGray)
+        /// 选择 [MinGray, MaxGray] 范围内的像素（使用 InRange，对齐 Halcon 语义）
+        /// 输出 CvRegion（Count=1，单区间）
+        /// </summary>
+        public static void ThresholdRange(
+            CvImage image, CvRegion? region,
+            int minGray, int maxGray,
+            out CvRegion regionResult)
+        {
+            ThresholdRange(image, region, new[] { minGray }, new[] { maxGray }, out regionResult);
+        }
+
+        /// <summary>
+        /// 多区间灰度范围阈值 - 对应 Halcon threshold(Image, Region, [MinGray1, MinGray2, ...], [MaxGray1, MaxGray2, ...])
+        /// 每个区间 [minGray[i], maxGray[i]] 独立阈值，输出 N 个 RegionItem（Count = minGray.Length）
+        /// 典型用法：ThresholdRange(image, null, new[]{0, 200}, new[]{100, 255}, out result) → 选择暗区+亮区
+        /// </summary>
+        public static void ThresholdRange(
+            CvImage image, CvRegion? region,
+            int[] minGray, int[] maxGray,
+            out CvRegion regionResult)
+        {
+            if (minGray == null || maxGray == null)
+                throw new ArgumentNullException(minGray == null ? nameof(minGray) : nameof(maxGray));
+            if (minGray.Length != maxGray.Length)
+                throw new ArgumentException("minGray 和 maxGray 长度必须相等");
+            if (minGray.Length == 0)
+            {
+                regionResult = CvRegion.GenEmptyObj();
+                return;
+            }
+
+            var items = new List<RegionItem>();
+            var imageSize = image.Size;
+
+            for (int i = 0; i < minGray.Length; i++)
+            {
+                var binaryMask = new Mat();
+                Cv2.InRange(image.Image,
+                    new Scalar(minGray[i]),
+                    new Scalar(maxGray[i]),
+                    binaryMask);
+
+                // 应用 region 掩码限制
+                if (region != null && !region.IsEmpty)
+                {
+                    var regionMask = region.Mask;
+                    if (regionMask != null && !regionMask.Empty())
+                    {
+                        var masked = new Mat();
+                        Cv2.BitwiseAnd(binaryMask, binaryMask, masked, regionMask);
+                        binaryMask.Dispose();
+                        binaryMask = masked;
+                    }
+                }
+
+                if (Cv2.CountNonZero(binaryMask) > 0)
+                    items.Add(new RegionItem(binaryMask));  // 转移所有权
+                else
+                    binaryMask.Dispose();
+            }
+
+            regionResult = items.Count > 0
+                ? new CvRegion(items, imageSize)
+                : CvRegion.GenEmptyObj();
+        }
+
         #endregion
 
         #region 📊 统计
 
         /// <summary>
-        /// 强度统计 - 对应 Halcon intensity(Regions, Image, Mean, Deviation)
+        /// 强度统计 - 对应 Halcon intensity(Image, Regions, Mean, Deviation)
         /// </summary>
         public static void Intensity(
-            CvRegion? region, CvImage image,
+            CvImage image, CvRegion? region,
             out double[] histogram,
             out double mean, out double stdDev)
         {
@@ -234,6 +427,37 @@ namespace SunEyeVision.CvEngine
             stdDev = stdDevMat.Get<double>(0);
         }
 
+        /// <summary>
+        /// 多区域强度统计 - 对应 Halcon intensity(Images, Regions, Mean, Deviation)
+        /// 逐 item 统计灰度均值和标准差，输出长度 = region.Count 的数组
+        /// </summary>
+        public static void Intensity(
+            CvImage image, CvRegion region,
+            out double[] meanValues, out double[] stdDevValues)
+        {
+            if (region == null || region.IsEmpty)
+            {
+                meanValues = Array.Empty<double>();
+                stdDevValues = Array.Empty<double>();
+                return;
+            }
+
+            int n = region.Count;
+            meanValues = new double[n];
+            stdDevValues = new double[n];
+
+            var mat = image.Image;
+            for (int i = 0; i < n; i++)
+            {
+                var itemMask = region._items[i].GetMask();
+                using var meanMat = new Mat();
+                using var stdDevMat = new Mat();
+                Cv2.MeanStdDev(mat, meanMat, stdDevMat, itemMask);
+                meanValues[i] = meanMat.Get<double>(0);
+                stdDevValues[i] = stdDevMat.Get<double>(0);
+            }
+        }
+
         #endregion
 
         #region 🖼️ 显示
@@ -242,7 +466,7 @@ namespace SunEyeVision.CvEngine
         /// 组合显示图像 - 对应 Halcon dev_display 组合效果
         /// </summary>
         public static void ComposeDisplay(
-            CvRegion? region, CvImage original, CvRegion binaryRegion,
+            CvImage original, CvRegion? region, CvRegion binaryRegion,
             out Mat displayImage)
         {
             if (region == null || region.IsEmpty)
@@ -264,7 +488,7 @@ namespace SunEyeVision.CvEngine
 
         /// <summary>
         /// 连通域分析 - 对应 Halcon connection(Region : : : ConnectedRegions)
-        /// 产出完整 CC 数据（labels + stats + centroids），下游算子可直接复用零开销
+        /// 产出 N 个 RegionItem（Mask 懒加载）+ CC 缓存，下游算子零开销复用
         /// </summary>
         public static void Connection(CvRegion region, out CvRegion connectedRegions, CvConnectivity connectivity = CvConnectivity.Connect8)
         {
@@ -289,20 +513,17 @@ namespace SunEyeVision.CvEngine
                 labels.Dispose();
                 stats.Dispose();
                 centroids.Dispose();
-                connectedRegions = new CvRegion(
-                    new Mat(region.ImageSize, MatType.CV_8UC1, Scalar.Black),
-                    0, region.ImageSize);
+                connectedRegions = CvRegion.GenEmptyObj();
                 return;
             }
 
-            // 从 labels 派生 mask，保证 mask 与 labels 一致性
-            var derivedMask = new Mat();
-            Cv2.Compare(labels, 0, derivedMask, CmpType.GT);
+            // 创建 RegionItem 列表（Mask 懒加载，从 _ccLabels 按需提取）
+            var items = new List<RegionItem>(numLabels - 1);
+            for (int i = 1; i < numLabels; i++)
+                items.Add(new RegionItem(labels, i, region.ImageSize));
 
             // 转移所有权给 CvRegion（不用 using）
-            connectedRegions = new CvRegion(
-                derivedMask, labels, stats, centroids,
-                numLabels - 1, region.ImageSize);
+            connectedRegions = new CvRegion(items, region.ImageSize, labels, stats, centroids);
         }
 
         /// <summary>
@@ -363,7 +584,7 @@ namespace SunEyeVision.CvEngine
 
         /// <summary>
         /// 形状筛选 - 对应 Halcon select_shape(Regions : Selected : Feature, Min, Max)
-        /// 复用已有 labels/stats（零 CC 开销），输出保留 labels（过滤后重编号）
+        /// 复用已有 CC 缓存（零 CC 开销），输出保留 items + CC 缓存（过滤后重编号）
         /// </summary>
         public static void SelectShape(
             CvRegion region, out CvRegion selected,
@@ -384,16 +605,16 @@ namespace SunEyeVision.CvEngine
             Mat labels;
             Mat stats;
             int numLabels;
+            bool ownsTempMats = false;
 
             if (hasCached)
             {
-                labels = region.Labels!;   // 只读引用，不拷贝
+                labels = region.Labels!;
                 stats = region.Stats!;
                 numLabels = stats.Rows;
             }
             else
             {
-                // 慢速路径：重新计算 CC
                 var tmpLabels = new Mat();
                 var tmpStats = new Mat();
                 using var tmpCentroids = new Mat();
@@ -401,15 +622,17 @@ namespace SunEyeVision.CvEngine
                     mask, tmpLabels, tmpStats, tmpCentroids, PixelConnectivity.Connectivity8);
                 labels = tmpLabels;
                 stats = tmpStats;
+                ownsTempMats = true;
 
                 if (numLabels <= 1)
                 {
                     double totalArea = Cv2.CountNonZero(mask);
                     if (totalArea >= minArea && totalArea <= maxArea)
-                        selected = new CvRegion(mask.Clone(), 1, region.ImageSize);
+                        selected = new CvRegion(mask.Clone(), region.ImageSize);
                     else
                         selected = CvRegion.GenEmptyObj();
-                    if (!hasCached) { labels.Dispose(); stats.Dispose(); }
+                    labels.Dispose();
+                    stats.Dispose();
                     return;
                 }
             }
@@ -418,9 +641,10 @@ namespace SunEyeVision.CvEngine
             {
                 double totalArea = Cv2.CountNonZero(mask);
                 if (totalArea >= minArea && totalArea <= maxArea)
-                    selected = new CvRegion(mask.Clone(), 1, region.ImageSize);
+                    selected = new CvRegion(mask.Clone(), region.ImageSize);
                 else
                     selected = CvRegion.GenEmptyObj();
+                if (ownsTempMats) { labels.Dispose(); stats.Dispose(); }
                 return;
             }
 
@@ -431,19 +655,25 @@ namespace SunEyeVision.CvEngine
             var filteredIndices = new List<int>();
             for (int i = 1; i < numLabels; i++)
             {
-                using var blobMask = new Mat();
-                Cv2.Compare(labels, i, blobMask, CmpType.EQ);
-
-                double blobArea = Cv2.CountNonZero(blobMask);
+                int blobArea = stats.At<int>(i, (int)ConnectedComponentsTypes.Area);
                 if (blobArea == 0) continue;
                 if (blobArea < minArea || blobArea > maxArea) continue;
 
                 if (needShapeFilter)
                 {
-                    var bbox = Cv2.BoundingRect(blobMask);
-                    var (_, circ, rect) = ComputeShapeFeaturesFromMask(blobMask, blobArea, bbox);
-                    if (circ < minCircularity || circ > maxCircularity) continue;
+                    // 矩形度直接从 stats 计算（零 FindContours 开销）
+                    double rect = ComputeRectangularityFromStats(stats, i);
                     if (rect < minRectangularity || rect > maxRectangularity) continue;
+
+                    // 圆度需要 FindContours，仅在有圆度筛选时才计算
+                    if (minCircularity > 0 || maxCircularity < 1)
+                    {
+                        using var blobMask = new Mat();
+                        Cv2.Compare(labels, i, blobMask, CmpType.EQ);
+                        var bbox = Cv2.BoundingRect(blobMask);
+                        var (_, circ, _) = ComputeShapeFeaturesFromMask(blobMask, blobArea, bbox);
+                        if (circ < minCircularity || circ > maxCircularity) continue;
+                    }
                 }
 
                 filteredIndices.Add(i);
@@ -451,40 +681,35 @@ namespace SunEyeVision.CvEngine
 
             if (filteredIndices.Count == 0)
             {
-                selected = new CvRegion(
-                    new Mat(region.ImageSize, MatType.CV_8UC1, Scalar.Black),
-                    0, region.ImageSize);
+                selected = CvRegion.GenEmptyObj();
+                if (ownsTempMats) { labels.Dispose(); stats.Dispose(); }
                 return;
             }
 
-            // 构建合并掩码
-            int M = filteredIndices.Count;
-            var resultMask = new Mat(region.ImageSize, MatType.CV_8UC1, Scalar.Black);
-            foreach (var idx in filteredIndices)
-            {
-                using var blobMask = new Mat();
-                Cv2.Compare(labels, idx, blobMask, CmpType.EQ);
-                Cv2.BitwiseOr(resultMask, 255, resultMask, blobMask);
-            }
-
             // 重建 labels（过滤 + 重编号 1..M），使下游继续受益于缓存
+            int M = filteredIndices.Count;
             var resultLabels = BuildFilteredLabels(labels, filteredIndices, region.ImageSize);
             var resultStats = FilterCCRows(stats, filteredIndices, 5, MatType.CV_32SC1);
 
-            // centroids 可能来自缓存或临时变量，统一处理
             Mat resultCentroids;
             if (region.Centroids != null && !region.Centroids.Empty())
                 resultCentroids = FilterCCRows(region.Centroids!, filteredIndices, 2, MatType.CV_64FC1);
             else
-                resultCentroids = new Mat(); // 空占位
+                resultCentroids = new Mat();
 
-            selected = new CvRegion(resultMask, resultLabels, resultStats, resultCentroids,
-                M, region.ImageSize);
+            // 创建过滤后的 RegionItem 列表（懒加载引用新的 resultLabels）
+            var resultItems = new List<RegionItem>(M);
+            for (int i = 0; i < M; i++)
+                resultItems.Add(new RegionItem(resultLabels, i + 1, region.ImageSize));
+
+            selected = new CvRegion(resultItems, region.ImageSize, resultLabels, resultStats, resultCentroids);
+
+            if (ownsTempMats) { labels.Dispose(); stats.Dispose(); }
         }
 
         /// <summary>
         /// 将多区域拆分为单区域数组 - 对应 Halcon connection + 遍历子区域
-        /// 优先复用 labels（零 CC 开销）
+        /// 逐 item 提取 Mask，构造独立 CvRegion
         /// </summary>
         public static void Split(CvRegion region, out CvRegion[] regions)
         {
@@ -494,55 +719,24 @@ namespace SunEyeVision.CvEngine
                 return;
             }
 
-            // 快速路径：复用 labels（零 CC 开销）
-            if (region.HasLabels)
+            int n = region.Count;
+            regions = new CvRegion[n];
+            for (int i = 0; i < n; i++)
             {
-                int n = region.Count;
-                var cachedLabels = region.Labels!;
-                regions = new CvRegion[n];
-                for (int i = 0; i < n; i++)
+                var itemMask = region._items[i].GetMask();
+                if (itemMask == null || itemMask.Empty())
                 {
-                    using var blobMask = new Mat();
-                    // CC 标签值 = i + 1（0 是背景）
-                    Cv2.Compare(cachedLabels, i + 1, blobMask, CmpType.EQ);
-                    regions[i] = CvRegion.FromMask(blobMask);
+                    regions[i] = CvRegion.GenEmptyObj();
+                    continue;
                 }
-                return;
-            }
-
-            // 慢速路径：无缓存时重新跑 ConnectedComponentsWithStats
-            var mask = region.Mask;
-            if (mask == null || mask.Empty())
-            {
-                regions = Array.Empty<CvRegion>();
-                return;
-            }
-
-            using var labels = new Mat();
-            using var stats = new Mat();
-            using var centroids = new Mat();
-            int numLabels = Cv2.ConnectedComponentsWithStats(
-                mask, labels, stats, centroids, PixelConnectivity.Connectivity8);
-
-            if (numLabels <= 1)
-            {
-                regions = Array.Empty<CvRegion>();
-                return;
-            }
-
-            regions = new CvRegion[numLabels - 1];
-            for (int i = 1; i < numLabels; i++)
-            {
-                using var blobMask = new Mat();
-                Cv2.Compare(labels, i, blobMask, CmpType.EQ);
-                regions[i - 1] = CvRegion.FromMask(blobMask);
+                regions[i] = new CvRegion(itemMask.Clone(), region.ImageSize);
             }
         }
 
         /// <summary>
         /// 选取指定索引的子区域 - 对应 Halcon select_obj(Regions, ObjectTrans, Index1, Index2)
         /// </summary>
-        /// <param name="region">多区域对象（需有 labels 缓存）</param>
+        /// <param name="region">多区域对象</param>
         /// <param name="index">子区域索引（0-based，范围 0..Count-1）</param>
         /// <param name="singleRegion">选中的单个子区域</param>
         public static void SelectObj(CvRegion region, int index, out CvRegion singleRegion)
@@ -552,16 +746,14 @@ namespace SunEyeVision.CvEngine
                 singleRegion = CvRegion.GenEmptyObj();
                 return;
             }
-            if (!region.HasLabels)
+
+            var itemMask = region._items[index].GetMask();
+            if (itemMask == null || itemMask.Empty())
             {
                 singleRegion = CvRegion.GenEmptyObj();
                 return;
             }
-
-            // CC 内部标签值 = index + 1
-            using var blobMask = new Mat();
-            Cv2.Compare(region.Labels!, index + 1, blobMask, CmpType.EQ);
-            singleRegion = CvRegion.FromMask(blobMask);
+            singleRegion = new CvRegion(itemMask.Clone(), region.ImageSize);
         }
 
         /// <summary>
@@ -647,6 +839,287 @@ namespace SunEyeVision.CvEngine
             }
         }
 
+        /// <summary>
+        /// 多区域特征查询 - 对应 Halcon region_features(Regions, Features, Values)
+        /// 优先复用已缓存的 stats（零 CC 开销），每个特征输出一维数组
+        /// </summary>
+        /// <param name="region">多区域对象（需有 labels/stats 缓存）</param>
+        /// <param name="features">要查询的特征列表</param>
+        /// <param name="values">输出：N 个一维数组，每个数组对应一个特征，长度 = 子区域数</param>
+        public static void RegionFeatures(CvRegion region, RegionFeature[] features, out double[][] values)
+        {
+            if (features == null || features.Length == 0 || region.IsEmpty)
+            {
+                values = Array.Empty<double[]>();
+                return;
+            }
+
+            int n = region.Count;
+            values = new double[features.Length][];
+
+            // 快速路径：复用已缓存的 stats
+            if (region.HasLabels && region.Stats != null && !region.Stats.Empty())
+            {
+                var stats = region.Stats;
+                var centroids = region.Centroids;
+
+                for (int fi = 0; fi < features.Length; fi++)
+                {
+                    values[fi] = new double[n];
+                    for (int i = 0; i < n; i++)
+                    {
+                        int labelIdx = i + 1; // 0=背景, 1..N=子区域
+                        values[fi][i] = features[fi] switch
+                        {
+                            RegionFeature.Area => stats.At<int>(labelIdx, (int)ConnectedComponentsTypes.Area),
+                            RegionFeature.Row => centroids != null && !centroids.Empty()
+                                ? centroids.At<double>(labelIdx, 1) : 0,
+                            RegionFeature.Column => centroids != null && !centroids.Empty()
+                                ? centroids.At<double>(labelIdx, 0) : 0,
+                            RegionFeature.BoundingBoxRow => stats.At<int>(labelIdx, (int)ConnectedComponentsTypes.Top),
+                            RegionFeature.BoundingBoxColumn => stats.At<int>(labelIdx, (int)ConnectedComponentsTypes.Left),
+                            RegionFeature.BoundingBoxWidth => stats.At<int>(labelIdx, (int)ConnectedComponentsTypes.Width),
+                            RegionFeature.BoundingBoxHeight => stats.At<int>(labelIdx, (int)ConnectedComponentsTypes.Height),
+                            RegionFeature.Rectangularity =>
+                                ComputeRectangularityFromStats(stats, labelIdx),
+                            _ => 0 // 其他特征需要逐区域计算，此处返回0
+                        };
+                    }
+                }
+                return;
+            }
+
+            // 慢速路径：无缓存，Split 后逐区域查询
+            Split(region, out var splitRegions);
+            try
+            {
+                for (int fi = 0; fi < features.Length; fi++)
+                {
+                    values[fi] = new double[n];
+                }
+                for (int i = 0; i < splitRegions.Length && i < n; i++)
+                {
+                    RegionFeatures(splitRegions[i], out var singleValues, features);
+                    for (int fi = 0; fi < features.Length; fi++)
+                    {
+                        values[fi][i] = singleValues[fi];
+                    }
+                }
+            }
+            finally
+            {
+                foreach (var r in splitRegions) r.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// 最小外接矩形1 - 对应 Halcon smallest_rectangle1(Regions, Row1, Col1, Row2, Col2)
+        /// 优先复用已缓存的 stats（零 CC 开销）
+        /// </summary>
+        public static void SmallestRectangle1(
+            CvRegion region,
+            out double[] row1, out double[] col1, out double[] row2, out double[] col2)
+        {
+            if (region.IsEmpty || region.Count == 0)
+            {
+                row1 = col1 = row2 = col2 = Array.Empty<double>();
+                return;
+            }
+
+            // 快速路径：复用已缓存的 stats
+            if (region.HasLabels && region.Stats != null && !region.Stats.Empty())
+            {
+                var stats = region.Stats;
+                int n = region.Count;
+                row1 = new double[n];
+                col1 = new double[n];
+                row2 = new double[n];
+                col2 = new double[n];
+
+                for (int i = 0; i < n; i++)
+                {
+                    int labelIdx = i + 1;
+                    int left = stats.At<int>(labelIdx, (int)ConnectedComponentsTypes.Left);
+                    int top = stats.At<int>(labelIdx, (int)ConnectedComponentsTypes.Top);
+                    int width = stats.At<int>(labelIdx, (int)ConnectedComponentsTypes.Width);
+                    int height = stats.At<int>(labelIdx, (int)ConnectedComponentsTypes.Height);
+
+                    row1[i] = top;
+                    col1[i] = left;
+                    row2[i] = top + height - 1;
+                    col2[i] = left + width - 1;
+                }
+                return;
+            }
+
+            // 慢速路径：无缓存时
+            Split(region, out var splitRegions);
+            try
+            {
+                int n = splitRegions.Length;
+                row1 = new double[n];
+                col1 = new double[n];
+                row2 = new double[n];
+                col2 = new double[n];
+
+                for (int i = 0; i < n; i++)
+                {
+                    var bbox = Cv2.BoundingRect(splitRegions[i].Mask);
+                    row1[i] = bbox.Y;
+                    col1[i] = bbox.X;
+                    row2[i] = bbox.Y + bbox.Height - 1;
+                    col2[i] = bbox.X + bbox.Width - 1;
+                }
+            }
+            finally
+            {
+                foreach (var r in splitRegions) r.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// 矩形度 - 对应 Halcon rectangularity(Regions, Rectangularity)
+        /// 优先复用已缓存的 stats（零 CC 开销）
+        /// </summary>
+        public static void Rectangularity(CvRegion region, out double[] rectangularity)
+        {
+            if (region.IsEmpty || region.Count == 0)
+            {
+                rectangularity = Array.Empty<double>();
+                return;
+            }
+
+            // 快速路径：复用已缓存的 stats
+            if (region.HasLabels && region.Stats != null && !region.Stats.Empty())
+            {
+                var stats = region.Stats;
+                int n = region.Count;
+                rectangularity = new double[n];
+
+                for (int i = 0; i < n; i++)
+                    rectangularity[i] = ComputeRectangularityFromStats(stats, i + 1);
+
+                return;
+            }
+
+            // 慢速路径：无缓存时
+            Split(region, out var splitRegions);
+            try
+            {
+                int n = splitRegions.Length;
+                rectangularity = new double[n];
+                for (int i = 0; i < n; i++)
+                {
+                    var mask = splitRegions[i].Mask;
+                    double area = Cv2.CountNonZero(mask);
+                    var bbox = Cv2.BoundingRect(mask);
+                    rectangularity[i] = ComputeRectangularity(area, bbox);
+                }
+            }
+            finally
+            {
+                foreach (var r in splitRegions) r.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// 获取轮廓 - 对应 Halcon get_contour_xld(Contour, Y, X)
+        /// 逐 item 提取 Mask + BBox 裁剪优化 + FindContours
+        /// </summary>
+        public static void GetContour(CvRegion region, out CvContour[] contours)
+        {
+            if (region.IsEmpty)
+            {
+                contours = Array.Empty<CvContour>();
+                return;
+            }
+
+            int n = region.Count;
+            contours = new CvContour[n];
+            for (int i = 0; i < n; i++)
+            {
+                var itemMask = region._items[i].GetMask();
+                if (itemMask == null || itemMask.Empty())
+                {
+                    contours[i] = CvContour.GenEmptyObj();
+                    continue;
+                }
+
+                // BBox 裁剪优化（在更小区域上 FindContours）
+                var bbox = Cv2.BoundingRect(itemMask);
+                if (bbox.Width <= 0 || bbox.Height <= 0)
+                {
+                    contours[i] = CvContour.GenEmptyObj();
+                    continue;
+                }
+
+                using var cropped = new Mat(itemMask, bbox);
+                Cv2.FindContours(cropped, out var blobContours, out _,
+                    RetrievalModes.External, ContourApproximationModes.ApproxSimple);
+
+                if (blobContours.Length > 0)
+                {
+                    // 偏移回原图坐标
+                    var points = blobContours[0]
+                        .Select(p => new Point(p.X + bbox.X, p.Y + bbox.Y))
+                        .ToArray();
+                    contours[i] = CvContour.Create(points, true, region.ImageSize);
+                }
+                else
+                {
+                    contours[i] = CvContour.GenEmptyObj();
+                }
+            }
+        }
+
+        /// <summary>
+        /// 轮廓圆度 - 对应 Halcon circularity(XLDContours, Circularity)
+        /// 公式: 4πA / P² （0~1, 1=完美圆）
+        /// </summary>
+        public static void Circularity(CvContour[] contours, out double[] circularity)
+        {
+            circularity = new double[contours.Length];
+            for (int i = 0; i < contours.Length; i++)
+            {
+                var c = contours[i];
+                if (c.IsEmpty || c.Points == null || c.Points.Length < 3)
+                {
+                    circularity[i] = 0;
+                    continue;
+                }
+
+                double perimeter = Cv2.ArcLength(c.Points, c.IsClosed);
+                double area = Math.Abs(Cv2.ContourArea(c.Points));
+
+                if (perimeter <= 0 || area <= 0)
+                {
+                    circularity[i] = 0;
+                    continue;
+                }
+
+                // 4πA / P² （0~1, 1=完美圆）
+                circularity[i] = Math.Min(1.0, (4.0 * Math.PI * area) / (perimeter * perimeter));
+            }
+        }
+
+        /// <summary>
+        /// 轮廓长度 - 对应 Halcon cont_length(Contours, Length)
+        /// </summary>
+        public static void ContLength(CvContour[] contours, out double[] length)
+        {
+            length = new double[contours.Length];
+            for (int i = 0; i < contours.Length; i++)
+            {
+                var c = contours[i];
+                if (c.IsEmpty || c.Points == null || c.Points.Length < 2)
+                {
+                    length[i] = 0;
+                    continue;
+                }
+                length[i] = Cv2.ArcLength(c.Points, c.IsClosed);
+            }
+        }
+
         #endregion
 
         #region 🔧 集合运算
@@ -659,7 +1132,8 @@ namespace SunEyeVision.CvEngine
                 unionRegion = CvRegion.GenEmptyObj();
                 return;
             }
-            unionRegion = new CvRegion(region.Mask?.Clone(), 1, region.ImageSize);
+            var combinedMask = region.Mask;
+            unionRegion = new CvRegion(combinedMask?.Clone(), region.ImageSize);
         }
 
         /// <summary>区域差集 - 对应 Halcon difference(Sub, Pattern : : : ResultDifference)</summary>
@@ -672,17 +1146,19 @@ namespace SunEyeVision.CvEngine
             }
             if (pattern.IsEmpty)
             {
-                resultDifference = new CvRegion(sub.Mask?.Clone(), sub._count, sub.ImageSize);
+                resultDifference = new CvRegion(sub.Mask?.Clone(), sub.ImageSize);
                 return;
             }
 
+            var subMask = sub.Mask!;
+            var patternMask = pattern.Mask!;
+
             using var notPattern = new Mat();
-            Cv2.BitwiseNot(pattern._mask!, notPattern);
+            Cv2.BitwiseNot(patternMask, notPattern);
 
             var resultMask = new Mat();
-            Cv2.BitwiseAnd(sub._mask!, notPattern, resultMask);
-            int count = Cv2.CountNonZero(resultMask) > 0 ? 1 : 0;
-            resultDifference = new CvRegion(resultMask, count, sub.ImageSize);
+            Cv2.BitwiseAnd(subMask, notPattern, resultMask);
+            resultDifference = new CvRegion(resultMask, sub.ImageSize);
         }
 
         /// <summary>区域交集 - 对应 Halcon intersection(Region1, Region2 : : : ResultIntersection)</summary>
@@ -695,9 +1171,8 @@ namespace SunEyeVision.CvEngine
             }
 
             var resultMask = new Mat();
-            Cv2.BitwiseAnd(region1._mask!, region2._mask!, resultMask);
-            int count = Cv2.CountNonZero(resultMask) > 0 ? 1 : 0;
-            resultIntersection = new CvRegion(resultMask, count, region1.ImageSize);
+            Cv2.BitwiseAnd(region1.Mask!, region2.Mask!, resultMask);
+            resultIntersection = new CvRegion(resultMask, region1.ImageSize);
         }
 
         /// <summary>区域补集 - 对应 Halcon complement(Region : : : ResultComplement)</summary>
@@ -710,8 +1185,8 @@ namespace SunEyeVision.CvEngine
             }
 
             var resultMask = new Mat();
-            Cv2.BitwiseNot(region._mask!, resultMask);
-            resultComplement = new CvRegion(resultMask, 1, region.ImageSize);
+            Cv2.BitwiseNot(region.Mask!, resultMask);
+            resultComplement = new CvRegion(resultMask, region.ImageSize);
         }
 
         /// <summary>拼接两个区域 - 对应 Halcon concat_obj(Objects1, Objects2 : : : ConcatObjects)</summary>
@@ -724,18 +1199,33 @@ namespace SunEyeVision.CvEngine
             }
             if (other.IsEmpty)
             {
-                concatResult = new CvRegion(region._mask?.Clone(), region._count, region.ImageSize);
+                concatResult = region.CopyObj();
                 return;
             }
             if (region.IsEmpty)
             {
-                concatResult = new CvRegion(other._mask?.Clone(), other._count, other._imageSize);
+                concatResult = other.CopyObj();
                 return;
             }
 
+            // 合并掩码 + 合并 items
             var resultMask = new Mat();
-            Cv2.BitwiseOr(region._mask!, other._mask!, resultMask);
-            concatResult = new CvRegion(resultMask, region._count + other._count, region.ImageSize);
+            Cv2.BitwiseOr(region.Mask!, other.Mask!, resultMask);
+
+            // 拷贝两边的 items（强制提取 Mask 以断开懒加载引用）
+            var items = new List<RegionItem>(region.Count + other.Count);
+            foreach (var item in region._items)
+            {
+                var m = item.GetMask();
+                items.Add(m != null && !m.Empty() ? new RegionItem(m.Clone()) : new RegionItem(new Mat()));
+            }
+            foreach (var item in other._items)
+            {
+                var m = item.GetMask();
+                items.Add(m != null && !m.Empty() ? new RegionItem(m.Clone()) : new RegionItem(new Mat()));
+            }
+
+            concatResult = new CvRegion(items, region.ImageSize);
         }
 
         #endregion
@@ -757,7 +1247,7 @@ namespace SunEyeVision.CvEngine
             {
                 var dilated = new Mat();
                 Cv2.Dilate(mask, dilated, kernel);
-                dilatedRegion = new CvRegion(dilated, region._count, region.ImageSize);
+                dilatedRegion = new CvRegion(dilated, region.ImageSize);
             }
         }
 
@@ -776,7 +1266,7 @@ namespace SunEyeVision.CvEngine
             {
                 var eroded = new Mat();
                 Cv2.Erode(mask, eroded, kernel);
-                erodedRegion = new CvRegion(eroded, region._count, region.ImageSize);
+                erodedRegion = new CvRegion(eroded, region.ImageSize);
             }
         }
 
@@ -795,7 +1285,7 @@ namespace SunEyeVision.CvEngine
             {
                 var dilated = new Mat();
                 Cv2.Dilate(mask, dilated, kernel);
-                dilatedRegion = new CvRegion(dilated, region._count, region.ImageSize);
+                dilatedRegion = new CvRegion(dilated, region.ImageSize);
             }
         }
 
@@ -814,7 +1304,7 @@ namespace SunEyeVision.CvEngine
             {
                 var eroded = new Mat();
                 Cv2.Erode(mask, eroded, kernel);
-                erodedRegion = new CvRegion(eroded, region._count, region.ImageSize);
+                erodedRegion = new CvRegion(eroded, region.ImageSize);
             }
         }
 
@@ -843,6 +1333,18 @@ namespace SunEyeVision.CvEngine
         #endregion
 
         #region 私有辅助 — 形状特征计算
+
+        /// <summary>
+        /// 从 CC stats 直接计算矩形度（零 FindContours 开销）
+        /// </summary>
+        private static double ComputeRectangularityFromStats(Mat stats, int labelIdx)
+        {
+            int area = stats.At<int>(labelIdx, (int)ConnectedComponentsTypes.Area);
+            int width = stats.At<int>(labelIdx, (int)ConnectedComponentsTypes.Width);
+            int height = stats.At<int>(labelIdx, (int)ConnectedComponentsTypes.Height);
+            double bboxArea = width * height;
+            return bboxArea > 0 ? area / bboxArea : 0;
+        }
 
         private static (double perimeter, double circularity, double rectangularity) ComputeShapeFeaturesFromMask(
             Mat blobMask, double area, Rect bbox)

@@ -171,6 +171,11 @@ namespace SunEyeVision.Tool.BlobAnalysis
         [JsonPropertyName("moreHintStyle")]
         public TextStyle MoreHintStyle { get; set; } = new() { Name = "MoreHint", FontSize = 10.0, PositionX = 10, PositionY = 10 };
 
+        /// <summary>轮廓样式</summary>
+        [JsonPropertyOrder(27)]
+        [JsonPropertyName("contoursStyle")]
+        public GraphicsStyle ContoursStyle { get; set; } = new() { Name = "Contours", LineWidth = 1 };
+
         #endregion
 
         /// <summary>

@@ -76,7 +76,14 @@ namespace SunEyeVision.Workflow
                         }
                     }
 
-                    // 3. 执行工具（不再传递 image 参数）
+                    // 3. 注入执行上下文（使 parameters.LogInfo() 等日志方法生效）
+                    typedParams.SetExecutionContext(new ExecutionContext(
+                        logger: VisionLogger.Instance,
+                        toolName: Tool?.ParamsType?.Name?.Replace("Parameters", "") ?? ToolType,
+                        nodeName: Name,
+                        nodeId: Id));
+
+                    // 4. 执行工具（不再传递 image 参数）
                     var toolResult = Tool.Run(typedParams);
                     LastToolResult = toolResult;
                     LastResult = ConvertToAlgorithmResult(toolResult);

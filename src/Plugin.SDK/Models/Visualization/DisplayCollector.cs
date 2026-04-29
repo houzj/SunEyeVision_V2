@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using SunEyeVision.Plugin.SDK.Models.Geometry;
 using OpenCvSharp;
+using SunEyeVision.Plugin.SDK.Models.Geometry;
 
 namespace SunEyeVision.Plugin.SDK.Models.Visualization
 {
@@ -14,7 +14,7 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
     ///   1. AddRect/AddCross/AddText — 算法过程中按需 Push（第一个参数为 Style 引用）
     ///   2. Complete() — 完成收集，合并所有分组项（算法结束后调用一次）
     ///   3. Clear() — 清空收集器（算法开始前调用）
-    /// 
+    ///
     /// 设计要点：Style 对象由 Parameters 持有，全链路共享同一实例。
     /// DisplayItem 通过 Style 引用读取渲染属性，无需属性拷贝。
     /// </remarks>

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Media.Imaging;
@@ -26,7 +26,7 @@ namespace SunEyeVision.UI.Services.Workflow
     /// - DispImage: 图像 → DisplayImage
     /// - DispObj: 几何图形 → ResultRenderLayer.SetShapes()
     /// - DispText: 文本标签 → ResultRenderLayer.SetTexts()
-    /// 
+    ///
     /// 使用虚方法替代反射，消除运行时类型检查开销。
     /// </remarks>
     public class NodeResultManager
@@ -114,7 +114,7 @@ namespace SunEyeVision.UI.Services.Workflow
             // ★ Step 3: 更新图像（DispImage通道）
             var outputMat = result.GetOutputImage();
             _viewModel.AddLog($"[诊断] 刷新结果显示: 节点={node.Name}, 结果类型={result.GetType().Name}, 输出图像={(outputMat != null ? $"{outputMat.Width}x{outputMat.Height}" : "null")}");
-            
+
             if (outputMat != null && !outputMat.Empty())
             {
                 try
@@ -305,7 +305,7 @@ namespace SunEyeVision.UI.Services.Workflow
                 {
                     if (e.PropertyName == nameof(GraphicsStyle.IsVisible))
                         gi.IsVisible = gi.Style.IsVisible;
-                    gi.NotifyChanged(); // 触发 RenderLayer 重绘
+                    gi.OnPropertyChanged(""); // 触发 RenderLayer 重绘
                 };
                 gi.IsVisible = gi.Style.IsVisible;
             }

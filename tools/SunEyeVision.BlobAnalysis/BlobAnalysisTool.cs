@@ -21,7 +21,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
     /// Blob分析工具 - 连通域分析与特征提取
     /// </summary>
     /// <remarks>
-    /// 算法流程（v7 - ReduceDomain + Stats直读 + C#过滤）：
+    /// 算法流程（v8 - ReduceDomain + Stats直读 + C#过滤 + 结果判断）：
     ///   1. rgb1_to_gray   → 灰度转换
     ///   2. reduce_domain  → 缩小定义域（ROI掩码限制，不改变图像尺寸）
     ///   3. threshold       → 阈值分割
@@ -33,6 +33,8 @@ namespace SunEyeVision.Tool.BlobAnalysis
     ///   9. circularity(XLD) → 从轮廓计算圆度
     ///  10. cont_length     → 从轮廓计算周长
     ///  11. C#内存过滤      → 替代 SelectShape 的 OpenCV 调用
+    ///  12. 结果判断         → OK/NG判定（9种条件）
+    ///  13. 构建显示项       → 轮廓/矩形/质心/标签/统计文本
     /// </remarks>
     [Tool(
         id: "blob-analysis",
@@ -292,64 +294,71 @@ namespace SunEyeVision.Tool.BlobAnalysis
 
                                     result.ProcessedAt = DateTime.Now;
 
-                                    // ===== Step 16: 构建显示项 =====
+                                    // ===== Step 16: 结果判断（OK/NG判定）=====
+                                    stepSw.Restart();
+                                    EvaluateJudgments(parameters.ResultConfig, result, binaryRegion, allBlobs, filteredBlobs);
+                                    stepSw.Stop();
+                                    stepTimings.Add(("结果判断", stepSw.ElapsedMilliseconds));
+
+                                    // ===== 统一序号：将Label重设为筛选后序号(1-based)，图像标注与数据分析一致 =====
+                                    for (int fi = 0; fi < filteredBlobs.Count; fi++)
+                                        filteredBlobs[fi].Label = fi + 1;
+
+                                    // ===== Step 17: 构建显示项 =====
                                     stepSw.Restart();
                                     var display = result.Display;
                                     display.Clear();
 
-                                    // 轮廓显示
-                                    var filteredContours = filteredBlobs
-                                        .Where(b => b.Contour != null && !b.Contour.IsEmpty && b.Contour.Points != null)
-                                        .Select(b => b.Contour.Points!)
-                                        .ToList();
-                                    if (filteredContours.Count > 0)
-                                        display.AddContours(parameters.ContoursStyle, filteredContours);
+                                    // Per-blob元素使用 blob.JudgmentPassed（独立blob判断驱动）
+                                    // 聚合元素使用 result.JudgmentPassed（整体判断驱动）
 
-                                    // 外接矩形
+                                    // ===== 轮廓：仅过滤通过的 blob，per-blob判断驱动颜色 =====
+                                    var contourBlobs = filteredBlobs
+                                        .Where(b => b.Contour != null && !b.Contour.IsEmpty && b.Contour.Points != null)
+                                        .ToList();
+                                    if (contourBlobs.Count > 0)
+                                    {
+                                        var contourPoints = contourBlobs.Select(b => b.Contour.Points!).ToList();
+                                        var isPassList = contourBlobs.Select(b => b.JudgmentPassed).ToList();
+                                        display.AddContours(parameters.ContoursStyle, contourPoints, isPassList);
+                                    }
+
+                                    // ===== 外接矩形：仅过滤通过的 blob，per-blob判断驱动颜色 =====
                                     foreach (var blob in filteredBlobs)
                                     {
                                         var bbox = blob.BoundingBox;
                                         if (bbox.Width > 0 && bbox.Height > 0)
-                                            display.AddRect(parameters.BlobsStyle, new Rect2d(bbox.X, bbox.Y, bbox.Width, bbox.Height));
+                                            display.AddRect(parameters.BlobsStyle, new Rect2d(bbox.X, bbox.Y, bbox.Width, bbox.Height), blob.JudgmentPassed);
                                     }
 
-                                    // 质心十字
+                                    // ===== 质心十字：仅过滤通过的 blob，per-blob判断驱动颜色 =====
                                     foreach (var blob in filteredBlobs)
                                     {
                                         if (blob.CentroidX > 0 || blob.CentroidY > 0)
-                                            display.AddCross(parameters.CentroidsStyle, new Point2d(blob.CentroidX, blob.CentroidY));
+                                            display.AddCross(parameters.CentroidsStyle, new Point2d(blob.CentroidX, blob.CentroidY), blob.JudgmentPassed);
                                     }
 
-                                    // 标签
-                                    var labelBlobs = filteredBlobs
-                                        .Where(b => b.CentroidX > 0 || b.CentroidY > 0).ToArray();
-                                    if (labelBlobs.Length > 0)
+                                    // ===== 面积文本列表：仅过滤通过的 blob，per-blob判断驱动颜色 =====
+                                    var areaStyle = parameters.AreaDisplayStyle;
+                                    foreach (var blob in filteredBlobs)
                                     {
-                                        var xs = new double[labelBlobs.Length];
-                                        var ys = new double[labelBlobs.Length];
-                                        var labels = new string[labelBlobs.Length];
-                                        for (int i = 0; i < labelBlobs.Length; i++)
-                                        {
-                                            xs[i] = labelBlobs[i].CentroidX + 5;
-                                            ys[i] = labelBlobs[i].CentroidY - 5;
-                                            labels[i] = $"{i}:{labelBlobs[i].Area:F0}";
-                                        }
-                                        display.AddText(parameters.LabelsStyle, xs, ys, labels);
+                                        if (blob.CentroidX > 0 || blob.CentroidY > 0)
+                                            display.AddText(areaStyle, areaStyle.PositionX, areaStyle.PositionY,
+                                                $"#{blob.Label}: {blob.Area:F0}px", blob.JudgmentPassed);
                                     }
-                                    
 
-                                    // 统计文本
+                                    // ===== 统计文本：整体判断驱动颜色 =====
                                     var filteredTotalArea = filteredBlobs.Sum(b => b.Area);
+                                    var wholePassed = result.JudgmentPassed;
                                     display.AddText(parameters.StatisticsStyle,
                                         parameters.StatisticsStyle.PositionX, parameters.StatisticsStyle.PositionY,
                                         new[]
                                         {
                                             $"Blob: {filteredBlobs.Count}/{allBlobs.Count}  阈值: {actualThreshold}",
-                                            $"面积: {filteredTotalArea:F0}  类型: {parameters.Type.Value}"
-                                        });
+                                            $"Per-Blob通过: {filteredBlobs.Count(b => b.JudgmentPassed)}/{filteredBlobs.Count}  面积: {filteredTotalArea:F0}  类型: {parameters.Type.Value}"
+                                        },
+                                        wholePassed);
 
-                                    if (filteredBlobs.Count > 20)
-                                        display.AddText(parameters.MoreHintStyle, 10, result.InputSize.Height - 20, $"...+{filteredBlobs.Count - 20} more");
                                     stepSw.Stop();
                                     stepTimings.Add(("显示构建", stepSw.ElapsedMilliseconds));
 
@@ -424,6 +433,197 @@ namespace SunEyeVision.Tool.BlobAnalysis
         public FrameworkElement? CreateDataAnalysisControl()
         {
             return new BlobDataAnalysisControl();
+        }
+
+        /// <summary>
+        /// 评估结果判断（OK/NG判定）
+        /// </summary>
+        /// <remarks>
+        /// 两阶段判断：
+        ///   Phase 1 - Per-Blob判断（控制单个blob显示颜色，参与整体判断）：
+        ///     a. 每个Blob面积 (perBlobArea)
+        ///     b. 每个Blob圆度 (perBlobCircularity)
+        ///     c. 每个Blob矩形度 (perBlobRectangularity)
+        ///
+        ///   Phase 2 - 整体判断（仅控制整体JudgmentPassed，不控制blob颜色）：
+        ///     1. 输出为空 (isEmpty)
+        ///     2. 白色像素比例 (whitePixelRatio)
+        ///     3. Blob数量 (blobCount)
+        ///     4. 总面积 (totalArea)
+        ///     5. 平均面积 (averageArea)
+        ///     6. 最大面积 (maxArea)
+        ///     7. 最小面积 (minArea)
+        ///     8. 平均圆度 (averageCircularity)
+        ///     9. 平均矩形度 (averageRectangularity)
+        ///
+        /// 颜色控制规则：
+        ///   - Per-blob元素（轮廓/矩形/十字/标签/面积文本）→ blob.JudgmentPassed
+        ///   - 聚合元素（统计文本/更多提示）→ result.JudgmentPassed
+        ///   - 整体判断条件 NG 不影响已通过 per-blob 判断的 blob 颜色
+        /// </remarks>
+        private static void EvaluateJudgments(
+            BlobAnalysisResultConfig config,
+            BlobAnalysisResults result,
+            CvRegion binaryRegion,
+            List<BlobInfo> allBlobs,
+            List<BlobInfo> filteredBlobs)
+        {
+            if (config == null) return;
+
+            var messages = result.JudgmentMessages;
+            messages.Clear();
+
+            // 统计值
+            int filteredCount = filteredBlobs.Count;
+            double filteredTotalArea = filteredBlobs.Sum(b => b.Area);
+            double averageArea = filteredCount > 0 ? filteredBlobs.Average(b => b.Area) : 0;
+            double maxArea = filteredCount > 0 ? filteredBlobs.Max(b => b.Area) : 0;
+            double minArea = filteredCount > 0 ? filteredBlobs.Min(b => b.Area) : 0;
+            double averageCircularity = filteredCount > 0 ? filteredBlobs.Average(b => b.Circularity) : 0;
+            double averageRectangularity = filteredCount > 0 ? filteredBlobs.Average(b => b.Rectangularity) : 0;
+            double totalPixels = result.InputSize.Width * result.InputSize.Height;
+            double whitePixelRatio = totalPixels > 0 ? (double)binaryRegion.PixelCount / totalPixels * 100 : 0;
+            result.WhitePixelRatio = whitePixelRatio;
+
+            // ===== Phase 1: Per-Blob判断（控制blob颜色）=====
+            if (config.HasPerBlobJudgmentEnabled)
+            {
+                messages.Add("--- Per-Blob判断 ---");
+            }
+
+            foreach (var blob in allBlobs)
+            {
+                // 未通过筛选的blob不参与判断，默认不通过
+                if (!blob.IsFiltered)
+                {
+                    blob.JudgmentPassed = false;
+                    continue;
+                }
+
+                bool blobPassed = true;
+
+                if (config.IsPerBlobAreaCheckEnabled)
+                {
+                    bool pass = blob.Area >= config.PerBlobAreaMin && blob.Area <= config.PerBlobAreaMax;
+                    if (!pass) blobPassed = false;
+                }
+
+                if (config.IsPerBlobCircularityCheckEnabled)
+                {
+                    bool pass = blob.Circularity >= config.PerBlobCircularityMin && blob.Circularity <= config.PerBlobCircularityMax;
+                    if (!pass) blobPassed = false;
+                }
+
+                if (config.IsPerBlobRectangularityCheckEnabled)
+                {
+                    bool pass = blob.Rectangularity >= config.PerBlobRectangularityMin && blob.Rectangularity <= config.PerBlobRectangularityMax;
+                    if (!pass) blobPassed = false;
+                }
+
+                blob.JudgmentPassed = blobPassed;
+            }
+
+            if (config.HasPerBlobJudgmentEnabled)
+            {
+                int perBlobPassedCount = filteredBlobs.Count(b => b.JudgmentPassed);
+                int perBlobFailedCount = filteredBlobs.Count - perBlobPassedCount;
+                messages.Add(perBlobFailedCount == 0
+                    ? $"[OK] Per-Blob判断: {filteredCount}个Blob全部通过"
+                    : $"[NG] Per-Blob判断: {perBlobPassedCount}/{filteredCount}通过, {perBlobFailedCount}未通过");
+            }
+
+            // ===== Phase 2: 整体判断（不控制blob颜色）=====
+            bool wholePassed = true;
+
+            if (config.IsEmptyCheckEnabled)
+            {
+                bool isEmpty = filteredCount == 0;
+                if (isEmpty)
+                {
+                    wholePassed = false;
+                    messages.Add("[NG] 输出为空：未检测到符合条件的Blob");
+                }
+                else
+                {
+                    messages.Add($"[OK] 输出不为空：检测到 {filteredCount} 个Blob");
+                }
+            }
+
+            if (config.IsWhitePixelRatioCheckEnabled)
+            {
+                bool pass = whitePixelRatio >= config.WhitePixelRatioMin && whitePixelRatio <= config.WhitePixelRatioMax;
+                string status = pass ? "OK" : "NG";
+                messages.Add($"[{status}] 白色像素比例：{whitePixelRatio:F1}% (范围 {config.WhitePixelRatioMin:F1}~{config.WhitePixelRatioMax:F1}%)");
+                if (!pass) wholePassed = false;
+            }
+
+            if (config.IsBlobCountCheckEnabled)
+            {
+                bool pass = filteredCount >= config.BlobCountMin && filteredCount <= config.BlobCountMax;
+                string status = pass ? "OK" : "NG";
+                messages.Add($"[{status}] Blob数量：{filteredCount} (范围 {config.BlobCountMin}~{config.BlobCountMax})");
+                if (!pass) wholePassed = false;
+            }
+
+            if (config.IsTotalAreaCheckEnabled)
+            {
+                bool pass = filteredTotalArea >= config.TotalAreaMin && filteredTotalArea <= config.TotalAreaMax;
+                string status = pass ? "OK" : "NG";
+                messages.Add($"[{status}] 总面积：{filteredTotalArea:F0}px² (范围 {config.TotalAreaMin:F0}~{config.TotalAreaMax:F0}px²)");
+                if (!pass) wholePassed = false;
+            }
+
+            if (config.IsAverageAreaCheckEnabled)
+            {
+                bool pass = averageArea >= config.AverageAreaMin && averageArea <= config.AverageAreaMax;
+                string status = pass ? "OK" : "NG";
+                messages.Add($"[{status}] 平均面积：{averageArea:F0}px² (范围 {config.AverageAreaMin:F0}~{config.AverageAreaMax:F0}px²)");
+                if (!pass) wholePassed = false;
+            }
+
+            if (config.IsMaxAreaCheckEnabled)
+            {
+                bool pass = maxArea >= config.MaxAreaMin && maxArea <= config.MaxAreaMax;
+                string status = pass ? "OK" : "NG";
+                messages.Add($"[{status}] 最大面积：{maxArea:F0}px² (范围 {config.MaxAreaMin:F0}~{config.MaxAreaMax:F0}px²)");
+                if (!pass) wholePassed = false;
+            }
+
+            if (config.IsMinAreaCheckEnabled)
+            {
+                bool pass = minArea >= config.MinAreaMin && minArea <= config.MinAreaMax;
+                string status = pass ? "OK" : "NG";
+                messages.Add($"[{status}] 最小面积：{minArea:F0}px² (范围 {config.MinAreaMin:F0}~{config.MinAreaMax:F0}px²)");
+                if (!pass) wholePassed = false;
+            }
+
+            if (config.IsAverageCircularityCheckEnabled)
+            {
+                bool pass = averageCircularity >= config.AverageCircularityMin && averageCircularity <= config.AverageCircularityMax;
+                string status = pass ? "OK" : "NG";
+                messages.Add($"[{status}] 平均圆度：{averageCircularity:F3} (范围 {config.AverageCircularityMin:F3}~{config.AverageCircularityMax:F3})");
+                if (!pass) wholePassed = false;
+            }
+
+            if (config.IsAverageRectangularityCheckEnabled)
+            {
+                bool pass = averageRectangularity >= config.AverageRectangularityMin && averageRectangularity <= config.AverageRectangularityMax;
+                string status = pass ? "OK" : "NG";
+                messages.Add($"[{status}] 平均矩形度：{averageRectangularity:F3} (范围 {config.AverageRectangularityMin:F3}~{config.AverageRectangularityMax:F3})");
+                if (!pass) wholePassed = false;
+            }
+
+            // Phase 2 per-blob判断也计入整体结果
+            bool perBlobAllPassed = !config.HasPerBlobJudgmentEnabled || filteredBlobs.All(b => b.JudgmentPassed);
+            bool allPassed = perBlobAllPassed && wholePassed;
+
+            result.JudgmentPassed = allPassed;
+
+            if (messages.Count > 0)
+            {
+                string summary = allPassed ? "全部通过 ✓" : "存在未通过项 ✗";
+                messages.Insert(0, $"===== 结果判断: {summary} =====");
+            }
         }
     }
 }

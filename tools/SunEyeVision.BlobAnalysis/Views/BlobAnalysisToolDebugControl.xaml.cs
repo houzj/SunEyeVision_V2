@@ -248,43 +248,6 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
 
         #endregion
 
-        #region 结果判断逻辑
-
-        private bool EvaluateResult(Mat binaryImage)
-        {
-            if (binaryImage == null || binaryImage.Empty())
-            {
-                return !Parameters.ResultConfig.IsEmptyCheckEnabled;
-            }
-
-            var allChecksPassed = true;
-
-            // 白色像素比例判断
-            if (Parameters.ResultConfig.IsWhitePixelRatioCheckEnabled)
-            {
-                var whitePixelCount = Cv2.CountNonZero(binaryImage);
-                var totalPixels = binaryImage.Rows * binaryImage.Cols;
-                var ratio = (double)whitePixelCount / totalPixels * 100;
-
-                if (ratio < Parameters.ResultConfig.WhitePixelRatioMin || ratio > Parameters.ResultConfig.WhitePixelRatioMax)
-                {
-                    allChecksPassed = false;
-                    PluginLogger.Warning($"白色像素比例 {ratio:F1}% 不在范围内", "BlobAnalysisTool");
-                }
-            }
-
-            // Blob数量判断
-            if (Parameters.ResultConfig.IsBlobCountCheckEnabled)
-            {
-                // 使用筛选后的Blob数量 - 需要从结果获取
-                // 此处暂时用 AllBlobs 的 Count，后续优化
-            }
-
-            return allChecksPassed;
-        }
-
-        #endregion
-
         #region IToolControlInitializer 实现
 
         public override async System.Threading.Tasks.Task InitializeAsync()

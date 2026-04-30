@@ -69,6 +69,16 @@ namespace SunEyeVision.CvEngine.Models
         public bool IsFiltered { get; set; } = true;
 
         /// <summary>
+        /// 是否通过独立Blob判断（per-blob judgment）
+        /// </summary>
+        /// <remarks>
+        /// 由结果判断中的 per-blob 条件驱动（面积/圆度/矩形度），
+        /// 用于控制该 blob 各显示元素的 OK/NG 颜色。
+        /// 与整体判断 <see cref="BlobAnalysisResults.JudgmentPassed"/> 独立。
+        /// </remarks>
+        public bool JudgmentPassed { get; set; } = true;
+
+        /// <summary>
         /// 轮廓数据 - 对应 Halcon HXLD
         /// </summary>
         [JsonIgnore]

@@ -124,19 +124,56 @@ namespace SunEyeVision.Tool.BlobAnalysis
         public double SmallestBlobArea => AllBlobs?.Count > 0 ? AllBlobs.Min(b => b.Area) : 0;
 
         /// <summary>
+        /// 筛选后平均面积
+        /// </summary>
+        public double AverageArea => FilteredBlobs?.Count > 0 ? FilteredBlobs.Average(b => b.Area) : 0;
+
+        /// <summary>
+        /// 筛选后平均圆度
+        /// </summary>
+        public double AverageCircularity => FilteredBlobs?.Count > 0 ? FilteredBlobs.Average(b => b.Circularity) : 0;
+
+        /// <summary>
+        /// 筛选后平均矩形度
+        /// </summary>
+        public double AverageRectangularity => FilteredBlobs?.Count > 0 ? FilteredBlobs.Average(b => b.Rectangularity) : 0;
+
+        /// <summary>
+        /// 白色像素比例(%)
+        /// </summary>
+        public double WhitePixelRatio { get; set; }
+
+        #region 判断结果
+
+        /// <summary>
+        /// 所有判断是否通过
+        /// </summary>
+        public bool JudgmentPassed { get; set; } = true;
+
+        /// <summary>
+        /// 判断消息列表（每条判断的结果描述）
+        /// </summary>
+        public List<string> JudgmentMessages { get; set; } = new();
+
+        #endregion
+
+        /// <summary>
         /// 获取结果显示项（用于数据面板显示）
         /// </summary>
         public override IReadOnlyList<ResultItem> GetResultItems()
         {
             var items = new List<ResultItem>
             {
+                ResultItem.Boolean("判断通过", JudgmentPassed),
                 ResultItem.Numeric("Blob总数", TotalBlobCount),
                 ResultItem.Numeric("筛选后数量", FilteredBlobCount),
-                ResultItem.Numeric("总面积", TotalArea, "像素"),
-                ResultItem.Numeric("筛选后面积", FilteredTotalArea, "像素"),
+                ResultItem.Numeric("总面积", FilteredTotalArea, "像素"),
                 ResultItem.Numeric("最大面积", LargestBlobArea, "像素"),
                 ResultItem.Numeric("最小面积", SmallestBlobArea, "像素"),
-                ResultItem.Numeric("平均面积", TotalArea / Math.Max(1, TotalBlobCount), "像素"),
+                ResultItem.Numeric("平均面积", AverageArea, "像素"),
+                ResultItem.Numeric("平均圆度", AverageCircularity),
+                ResultItem.Numeric("平均矩形度", AverageRectangularity),
+                ResultItem.Numeric("白色像素比例", WhitePixelRatio, "%"),
                 ResultItem.Numeric("实际阈值", ThresholdUsed),
                 ResultItem.Text("阈值类型", TypeUsed.ToString())
             };
@@ -150,24 +187,29 @@ namespace SunEyeVision.Tool.BlobAnalysis
         {
             return
             [
-                new("BinaryImage",           "二值图像",               null),
-                new("ThresholdUsed",         "实际使用的阈值",         "预处理"),
-                new("MaxValueUsed",          "最大值",                 "预处理"),
-                new("ThresholdUsedDouble",   "实际使用的阈值(Double)",  "预处理"),
-                new("MaxValueUsedDouble",    "最大值(Double)",          "预处理"),
-                new("TypeUsed",              "阈值类型",               "预处理"),
-                new("InvertUsed",            "是否反转",               "预处理"),
-                new("ConnectivityUsed",      "连通性类型",             "筛选"),
-                new("TotalBlobCount",        "Blob总数",               "统计"),
-                new("FilteredBlobCount",     "筛选后数量",             "统计"),
-                new("TotalArea",             "总面积",                 "统计"),
-                new("FilteredTotalArea",     "筛选后总面积",           "统计"),
-                new("LargestBlobArea",       "最大Blob面积",           "统计"),
-                new("SmallestBlobArea",      "最小Blob面积",           "统计"),
-                new("HistogramData",         "直方图数据",             "统计"),
-                new("ChannelMeans",          "通道均值",               "统计"),
-                new("InputSize",             "输入图像尺寸",           "结果"),
-                new("ProcessedAt",           "处理时间戳",             "执行信息"),
+                new("BinaryImage",              "二值图像",               null),
+                new("ThresholdUsed",            "实际使用的阈值",         "预处理"),
+                new("MaxValueUsed",             "最大值",                 "预处理"),
+                new("ThresholdUsedDouble",      "实际使用的阈值(Double)", "预处理"),
+                new("MaxValueUsedDouble",       "最大值(Double)",         "预处理"),
+                new("TypeUsed",                 "阈值类型",               "预处理"),
+                new("InvertUsed",               "是否反转",               "预处理"),
+                new("ConnectivityUsed",         "连通性类型",             "筛选"),
+                new("JudgmentPassed",           "判断通过",               "判断"),
+                new("TotalBlobCount",           "Blob总数",               "统计"),
+                new("FilteredBlobCount",        "筛选后数量",             "统计"),
+                new("TotalArea",                "总面积",                 "统计"),
+                new("FilteredTotalArea",        "筛选后总面积",           "统计"),
+                new("LargestBlobArea",          "最大Blob面积",           "统计"),
+                new("SmallestBlobArea",         "最小Blob面积",           "统计"),
+                new("AverageArea",              "平均面积",               "统计"),
+                new("AverageCircularity",       "平均圆度",               "统计"),
+                new("AverageRectangularity",    "平均矩形度",             "统计"),
+                new("WhitePixelRatio",          "白色像素比例",           "统计"),
+                new("HistogramData",            "直方图数据",             "统计"),
+                new("ChannelMeans",             "通道均值",               "统计"),
+                new("InputSize",                "输入图像尺寸",           "结果"),
+                new("ProcessedAt",              "处理时间戳",             "执行信息"),
             ];
         }
 
@@ -182,12 +224,17 @@ namespace SunEyeVision.Tool.BlobAnalysis
             dict["TypeUsed"] = TypeUsed.ToString();
             dict["InvertUsed"] = InvertUsed;
             dict["ConnectivityUsed"] = ConnectivityUsed.ToString();
+            dict["JudgmentPassed"] = JudgmentPassed;
             dict["TotalBlobCount"] = TotalBlobCount;
             dict["FilteredBlobCount"] = FilteredBlobCount;
             dict["TotalArea"] = TotalArea;
             dict["FilteredTotalArea"] = FilteredTotalArea;
             dict["LargestBlobArea"] = LargestBlobArea;
             dict["SmallestBlobArea"] = SmallestBlobArea;
+            dict["AverageArea"] = AverageArea;
+            dict["AverageCircularity"] = AverageCircularity;
+            dict["AverageRectangularity"] = AverageRectangularity;
+            dict["WhitePixelRatio"] = WhitePixelRatio;
             dict["ProcessedAt"] = ProcessedAt;
             return dict;
         }

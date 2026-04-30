@@ -238,6 +238,140 @@
                                             MaxValue="{Binding ResultConfig.TotalAreaMax, Mode=TwoWay}"
                                             DecimalPlaces="0"  NumericWidth="120"/>
                   </controls:LabeledControl>
+
+                  <!-- 平均面积判断 -->
+                  <controls:LabeledControl Label="平均面积判断" ContentHorizontalAlignment="Left" Margin="0,2,0,0">
+                    <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsAverageAreaCheckEnabled, Mode=TwoWay}"/>
+                  </controls:LabeledControl>
+                  <controls:LabeledControl Label="平均面积范围 (px²):" Margin="0,2,0,0"
+                                                            Visibility="{Binding ResultConfig.IsAverageAreaCheckEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <controls:RangeInputControl
+                                            Unit="px²"
+                                            Minimum="0"
+                                            Maximum="10000000"
+                                            MinValue="{Binding ResultConfig.AverageAreaMin, Mode=TwoWay}"
+                                            MaxValue="{Binding ResultConfig.AverageAreaMax, Mode=TwoWay}"
+                                            DecimalPlaces="0"  NumericWidth="120"/>
+                  </controls:LabeledControl>
+
+                  <!-- 最大面积判断 -->
+                  <controls:LabeledControl Label="最大面积判断" ContentHorizontalAlignment="Left" Margin="0,2,0,0">
+                    <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsMaxAreaCheckEnabled, Mode=TwoWay}"/>
+                  </controls:LabeledControl>
+                  <controls:LabeledControl Label="最大面积范围 (px²):" Margin="0,2,0,0"
+                                                            Visibility="{Binding ResultConfig.IsMaxAreaCheckEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <controls:RangeInputControl
+                                            Unit="px²"
+                                            Minimum="0"
+                                            Maximum="10000000"
+                                            MinValue="{Binding ResultConfig.MaxAreaMin, Mode=TwoWay}"
+                                            MaxValue="{Binding ResultConfig.MaxAreaMax, Mode=TwoWay}"
+                                            DecimalPlaces="0"  NumericWidth="120"/>
+                  </controls:LabeledControl>
+
+                  <!-- 最小面积判断 -->
+                  <controls:LabeledControl Label="最小面积判断" ContentHorizontalAlignment="Left" Margin="0,2,0,0">
+                    <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsMinAreaCheckEnabled, Mode=TwoWay}"/>
+                  </controls:LabeledControl>
+                  <controls:LabeledControl Label="最小面积范围 (px²):" Margin="0,2,0,0"
+                                                            Visibility="{Binding ResultConfig.IsMinAreaCheckEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <controls:RangeInputControl
+                                            Unit="px²"
+                                            Minimum="0"
+                                            Maximum="10000000"
+                                            MinValue="{Binding ResultConfig.MinAreaMin, Mode=TwoWay}"
+                                            MaxValue="{Binding ResultConfig.MinAreaMax, Mode=TwoWay}"
+                                            DecimalPlaces="0"  NumericWidth="120"/>
+                  </controls:LabeledControl>
+
+                  <!-- 平均圆度判断 -->
+                  <controls:LabeledControl Label="平均圆度判断" ContentHorizontalAlignment="Left" Margin="0,2,0,0">
+                    <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsAverageCircularityCheckEnabled, Mode=TwoWay}"/>
+                  </controls:LabeledControl>
+                  <controls:LabeledControl Label="平均圆度范围:" Margin="0,2,0,0"
+                                                            Visibility="{Binding ResultConfig.IsAverageCircularityCheckEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <controls:RangeInputControl
+                                            Unit=""
+                                            Minimum="0"
+                                            Maximum="1"
+                                            MinValue="{Binding ResultConfig.AverageCircularityMin, Mode=TwoWay}"
+                                            MaxValue="{Binding ResultConfig.AverageCircularityMax, Mode=TwoWay}"
+                                            DecimalPlaces="3"
+                      SmallChange="0.01"
+                      NumericWidth="120"/>
+                  </controls:LabeledControl>
+
+                  <!-- 平均矩形度判断 -->
+                  <controls:LabeledControl Label="平均矩形度判断" ContentHorizontalAlignment="Left" Margin="0,2,0,0">
+                    <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsAverageRectangularityCheckEnabled, Mode=TwoWay}"/>
+                  </controls:LabeledControl>
+                  <controls:LabeledControl Label="平均矩形度范围:" Margin="0,2,0,0"
+                                                            Visibility="{Binding ResultConfig.IsAverageRectangularityCheckEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <controls:RangeInputControl
+                                            Unit=""
+                                            Minimum="0"
+                                            Maximum="1"
+                                            MinValue="{Binding ResultConfig.AverageRectangularityMin, Mode=TwoWay}"
+                                            MaxValue="{Binding ResultConfig.AverageRectangularityMax, Mode=TwoWay}"
+                                            DecimalPlaces="3"
+                      SmallChange="0.01"
+                      NumericWidth="120"/>
+                  </controls:LabeledControl>
+
+                  <!-- ===== 独立Blob判断（控制每个Blob显示颜色） ===== -->
+                  <Separator Margin="0,8,0,4" Background="#E0E0E0" Height="1"/>
+                  <TextBlock Text="独立Blob判断（控制每个Blob显示颜色）" FontWeight="SemiBold" Margin="0,4,0,0"/>
+
+                  <!-- 每个Blob面积 -->
+                  <controls:LabeledControl Label="每个Blob面积" ContentHorizontalAlignment="Left" Margin="0,2,0,0">
+                    <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsPerBlobAreaCheckEnabled, Mode=TwoWay}"/>
+                  </controls:LabeledControl>
+                  <controls:LabeledControl Label="每个Blob面积范围 (px²):" Margin="0,2,0,0"
+                    Visibility="{Binding ResultConfig.IsPerBlobAreaCheckEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <controls:RangeInputControl
+                      Unit="px²"
+                      Minimum="0"
+                      Maximum="10000000"
+                      MinValue="{Binding ResultConfig.PerBlobAreaMin, Mode=TwoWay}"
+                      MaxValue="{Binding ResultConfig.PerBlobAreaMax, Mode=TwoWay}"
+                      DecimalPlaces="0"
+                      SmallChange="10"
+                      NumericWidth="120"/>
+                  </controls:LabeledControl>
+
+                  <!-- 每个Blob圆度 -->
+                  <controls:LabeledControl Label="每个Blob圆度" ContentHorizontalAlignment="Left" Margin="0,2,0,0">
+                    <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsPerBlobCircularityCheckEnabled, Mode=TwoWay}"/>
+                  </controls:LabeledControl>
+                  <controls:LabeledControl Label="每个Blob圆度范围:" Margin="0,2,0,0"
+                    Visibility="{Binding ResultConfig.IsPerBlobCircularityCheckEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <controls:RangeInputControl
+                      Unit=""
+                      Minimum="0"
+                      Maximum="1"
+                      MinValue="{Binding ResultConfig.PerBlobCircularityMin, Mode=TwoWay}"
+                      MaxValue="{Binding ResultConfig.PerBlobCircularityMax, Mode=TwoWay}"
+                      DecimalPlaces="3"
+                      SmallChange="0.01"
+                      NumericWidth="120"/>
+                  </controls:LabeledControl>
+
+                  <!-- 每个Blob矩形度 -->
+                  <controls:LabeledControl Label="每个Blob矩形度" ContentHorizontalAlignment="Left" Margin="0,2,0,0">
+                    <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsPerBlobRectangularityCheckEnabled, Mode=TwoWay}"/>
+                  </controls:LabeledControl>
+                  <controls:LabeledControl Label="每个Blob矩形度范围:" Margin="0,2,0,0"
+                    Visibility="{Binding ResultConfig.IsPerBlobRectangularityCheckEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <controls:RangeInputControl
+                      Unit=""
+                      Minimum="0"
+                      Maximum="1"
+                      MinValue="{Binding ResultConfig.PerBlobRectangularityMin, Mode=TwoWay}"
+                      MaxValue="{Binding ResultConfig.PerBlobRectangularityMax, Mode=TwoWay}"
+                      DecimalPlaces="3"
+                      SmallChange="0.01"
+                      NumericWidth="120"/>
+                  </controls:LabeledControl>
                 </StackPanel>
               </Expander>
 
@@ -249,7 +383,12 @@
                                       Margin="0,0,0,8"
                                       Background="White">
                 <StackPanel Margin="16,8">
-                  <controls:LabeledControl Label="外接矩形" ContentHorizontalAlignment="Left">
+                  <controls:LabeledControl Label="轮廓" ContentHorizontalAlignment="Left">
+                    <controls:DispItemColorControl
+                        Item="{Binding ContoursStyle, Mode=TwoWay}"
+                        ContentHorizontalAlignment="Left"/>
+                  </controls:LabeledControl>
+                  <controls:LabeledControl Label="外接矩形" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
                     <controls:DispItemColorControl
                         Item="{Binding BlobsStyle, Mode=TwoWay}"
                         ContentHorizontalAlignment="Left"/>
@@ -262,7 +401,7 @@
                 </StackPanel>
               </Expander>
 
-              <!-- 文本显示分组（新增） -->
+              <!-- 文本显示分组 -->
               <Expander Header="文本显示"
                                       IsExpanded="True"
                                       BorderBrush="#E0E0E0"
@@ -270,19 +409,14 @@
                                       Margin="0,0,0,8"
                                       Background="White">
                 <StackPanel Margin="16,8">
-                  <controls:LabeledControl Label="Blob标签" ContentHorizontalAlignment="Left">
-                    <controls:DispTextColorControl
-                        Item="{Binding LabelsStyle, Mode=TwoWay}"
-                        AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                  </controls:LabeledControl>
-                  <controls:LabeledControl Label="统计信息" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
+                  <controls:LabeledControl Label="统计信息" ContentHorizontalAlignment="Left">
                     <controls:DispTextColorControl
                         Item="{Binding StatisticsStyle, Mode=TwoWay}"
                         AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                   </controls:LabeledControl>
-                  <controls:LabeledControl Label="更多提示" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
+                  <controls:LabeledControl Label="面积列表" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
                     <controls:DispTextColorControl
-                        Item="{Binding MoreHintStyle, Mode=TwoWay}"
+                        Item="{Binding AreaDisplayStyle, Mode=TwoWay}"
                         AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                   </controls:LabeledControl>
                 </StackPanel>

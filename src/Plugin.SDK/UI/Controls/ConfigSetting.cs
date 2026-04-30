@@ -22,14 +22,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
     /// 1. 绑定类型（BindingType）：回答"值从哪里来" - Constant 或 Binding
     /// 2. 数据类型（DataType）：回答"值是什么类型" - Int, Double, String, Bool 等
     /// 3. 绑定类型与数据类型正交，任何数据类型都可以是常量或绑定
-    /// 
+    ///
     /// V2.0 重构要点：
     /// 1. 继承 ParamBindingBase，专注于参数值编辑功能
     /// 2. 单一值属性 Value (object) - 统一入口，支持任意类型
     /// 3. 内部计算属性 InternalNumericValue (只读double) - 用于模板绑定，自动类型转换
     /// 4. 统一范围属性 Minimum/Maximum (object) - 支持任意数值类型
     /// 5. 类型适配器模式 - 自动处理 int ↔ double 转换
-    /// 
+    ///
     /// 注意：此控件只包含核心功能，标签和布局由工具层UI负责。
     /// </remarks>
     public class ConfigSetting : ParamBindingBase
@@ -441,7 +441,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 }
 
                 control.UpdateEditorVisibility();
-                
+
                 // 方案B：当绑定类型变化时，同步到 ParamValue.BindingConfig
                 control.SyncBindingConfigToParamValue();
             }
@@ -459,13 +459,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         private static void OnValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var control = (ConfigSetting)d;
-            
+
             // 尝试从 ParamValue.BindingConfig 恢复绑定状态（反序列化后首次触发时）
             control.TryRestoreBindingFromParamValue();
-            
+
             // 更新内部数值值（类型适配器）
             control.UpdateInternalNumericValue(e.NewValue);
-            
+
             // 更新 UI 控件的显示
             control.UpdateUIFromValue(e.NewValue);
         }
@@ -478,7 +478,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 if (e.NewValue is Type dataType)
                 {
                     var typeCode = Type.GetTypeCode(dataType);
-                    
+
                     if (typeCode == TypeCode.Int32 || typeCode == TypeCode.Int64)
                     {
                         // 整数类型：强制设置为 0 位小数
@@ -733,7 +733,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             var typeCode = Type.GetTypeCode(DataType);
 
             // Numeric 控件通过绑定 InternalNumericValue 自动更新，无需手动处理
-            
+
             // String 控件
             if (_stringTextBox != null && typeCode == TypeCode.String)
             {
@@ -743,7 +743,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     _stringTextBox.Text = text;
                 }
             }
-            
+
             // Bool 控件
             if (_boolCheckBox != null && typeCode == TypeCode.Boolean)
             {
@@ -817,7 +817,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     // 从 ParamBinding 获取绑定源和显示文本
                     BindingSource = _paramBinding.BindingSource;
                     BindingDisplayText = _paramBinding.BindingDisplayText;
-                    
+
                     RaiseEvent(new RoutedEventArgs(BindingSourceSelectedEvent));
                 };
             }
@@ -1015,7 +1015,16 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         }
 
         /// <summary>
-        /// 将绑定配置同步到绑定的 ParamValue 对象（方案B核心方法）
+        /// 绑定配置变更事件 - 当绑定类型或绑定源发生变化时触发
+        /// </summary>
+        /// <remarks>
+        /// 宿主控件（如 DispTextColorControl）可订阅此事件，在非 ParamValue 绑定场景下
+        /// 主动保存 ConfigSetting 的绑定状态到自有持久化存储（如 TextStyle）。
+        /// </remarks>
+        public event EventHandler? BindingConfigChanged;
+
+        /// <summary>
+        /// 同步当前配置到绑定的 ParamValue 对象（方案B核心方法）
         /// </summary>
         /// <remarks>
         /// 当用户在 UI 中切换绑定模式或选择绑定源时，将配置写入绑定的 ParamValue.BindingConfig。
@@ -1029,37 +1038,37 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
             // 获取当前绑定的 ParamValue<T> 对象
             var paramValue = GetBoundParamValue();
-            if (paramValue == null)
-                return;
-
-            if (BindingType == BindingType.Constant)
+            if (paramValue != null)
             {
-                // 清除绑定配置（设为 null 表示常量模式）
-                paramValue.BindingConfig = null;
-            }
-            else if (!string.IsNullOrEmpty(BindingSource))
-            {
-                // 创建绑定配置
-                var parts = BindingSource.Split('.');
-                var nodeId = parts.Length > 0 ? parts[0] : string.Empty;
-                var property = parts.Length > 1 ? parts[1] : BindingSource;
-
-                var setting = ParamSetting.CreateBinding(
-                    ParameterName ?? string.Empty,
-                    nodeId,
-                    property);
-
-                // 从 AvailableDataSources 中提取展示名称
-                var matchedSource = AvailableDataSources?.FirstOrDefault(ds =>
-                    ds.SourceNodeId == nodeId && ds.PropertyName == property);
-                if (matchedSource != null)
+                if (BindingType == BindingType.Constant)
                 {
-                    setting.SourceNodeName = matchedSource.SourceNodeName;
-                    setting.SourceDisplayName = matchedSource.DisplayName;
+                    paramValue.BindingConfig = null;
                 }
+                else if (!string.IsNullOrEmpty(BindingSource))
+                {
+                    var parts = BindingSource.Split('.');
+                    var nodeId = parts.Length > 0 ? parts[0] : string.Empty;
+                    var property = parts.Length > 1 ? parts[1] : BindingSource;
 
-                paramValue.BindingConfig = setting;
+                    var setting = ParamSetting.CreateBinding(
+                        ParameterName ?? string.Empty,
+                        nodeId,
+                        property);
+
+                    var matchedSource = AvailableDataSources?.FirstOrDefault(ds =>
+                        ds.SourceNodeId == nodeId && ds.PropertyName == property);
+                    if (matchedSource != null)
+                    {
+                        setting.SourceNodeName = matchedSource.SourceNodeName;
+                        setting.SourceDisplayName = matchedSource.DisplayName;
+                    }
+
+                    paramValue.BindingConfig = setting;
+                }
             }
+
+            // 通知外部绑定配置已变更（即使没有 ParamValue，宿主控件也可通过此事件主动保存状态）
+            BindingConfigChanged?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -1137,7 +1146,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// 1. 保存时：SyncBindingConfigToParamValue() 将绑定配置写入 ParamValue.BindingConfig → JSON序列化
         /// 2. 加载时：JSON反序列化恢复 ParamValue.BindingConfig，但 ConfigSetting.BindingType 仍为默认值 Constant
         /// 3. 本方法在 OnValueChanged 首次触发时检测并恢复绑定状态
-        /// 
+        ///
         /// 调用时机：OnValueChanged 回调中（Value 属性首次被设置时）
         /// 防重复：_hasRestoredBindingState 标志位确保只执行一次
         /// 防覆盖：_isRestoringBindingState 标志位阻止 SyncBindingConfigToParamValue 在恢复期间执行

@@ -1,5 +1,6 @@
 using System.Windows.Media;
 using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
 
 namespace SunEyeVision.Plugin.SDK.Models.Visualization
 {
@@ -17,6 +18,16 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
         private bool _isBold;
         private double _positionX = 10;
         private double _positionY = 10;
+
+        // PositionX 绑定状态持久化字段（ConfigSetting 关闭再打开后恢复用）
+        private bool _isPositionXBinding;
+        private string _positionXBindingSource = "";
+        private string _positionXBindingDisplayText = "";
+
+        // PositionY 绑定状态持久化字段
+        private bool _isPositionYBinding;
+        private string _positionYBindingSource = "";
+        private string _positionYBindingDisplayText = "";
 
         /// <summary>样式名称</summary>
         public string Name { get => _name; set => SetProperty(ref _name, value, "名称"); }
@@ -44,6 +55,121 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
 
         /// <summary>Y坐标位置（基准位置或ParamBinding动态值）</summary>
         public double PositionY { get => _positionY; set => SetProperty(ref _positionY, value, "Y坐标"); }
+
+        // ===== PositionX 绑定状态持久化（ConfigSetting 关闭再打开后恢复绑定模式用） =====
+
+        /// <summary>PositionX 是否为绑定模式</summary>
+        internal bool IsPositionXBinding { get => _isPositionXBinding; set => SetProperty(ref _isPositionXBinding, value); }
+
+        /// <summary>PositionX 绑定源标识</summary>
+        internal string PositionXBindingSource { get => _positionXBindingSource; set => SetProperty(ref _positionXBindingSource, value); }
+
+        /// <summary>PositionX 绑定显示文本</summary>
+        internal string PositionXBindingDisplayText { get => _positionXBindingDisplayText; set => SetProperty(ref _positionXBindingDisplayText, value); }
+
+        // ===== PositionY 绑定状态持久化 =====
+
+        /// <summary>PositionY 是否为绑定模式</summary>
+        internal bool IsPositionYBinding { get => _isPositionYBinding; set => SetProperty(ref _isPositionYBinding, value); }
+
+        /// <summary>PositionY 绑定源标识</summary>
+        internal string PositionYBindingSource { get => _positionYBindingSource; set => SetProperty(ref _positionYBindingSource, value); }
+
+        /// <summary>PositionY 绑定显示文本</summary>
+        internal string PositionYBindingDisplayText { get => _positionYBindingDisplayText; set => SetProperty(ref _positionYBindingDisplayText, value); }
+
+        // ===== 绑定配置存取方法（由 DispTextColorControl 通过 IBindingConfigProvider 调用） =====
+
+        internal ParamSetting? GetBindingConfig(string parameterName)
+        {
+            if (parameterName == "PositionX")
+            {
+                if (!_isPositionXBinding || string.IsNullOrEmpty(_positionXBindingSource))
+                    return null;
+
+                var parts = _positionXBindingSource.Split('.');
+                var nodeId = parts.Length > 0 ? parts[0] : string.Empty;
+                var property = parts.Length > 1 ? parts[1] : _positionXBindingSource;
+
+                var setting = ParamSetting.CreateBinding(parameterName, nodeId, property);
+                if (!string.IsNullOrEmpty(_positionXBindingDisplayText))
+                {
+                    var displayParts = _positionXBindingDisplayText.Split('.');
+                    if (displayParts.Length == 2)
+                    {
+                        setting.SourceNodeName = displayParts[0];
+                        setting.SourceDisplayName = displayParts[1];
+                    }
+                }
+                return setting;
+            }
+
+            if (parameterName == "PositionY")
+            {
+                if (!_isPositionYBinding || string.IsNullOrEmpty(_positionYBindingSource))
+                    return null;
+
+                var parts = _positionYBindingSource.Split('.');
+                var nodeId = parts.Length > 0 ? parts[0] : string.Empty;
+                var property = parts.Length > 1 ? parts[1] : _positionYBindingSource;
+
+                var setting = ParamSetting.CreateBinding(parameterName, nodeId, property);
+                if (!string.IsNullOrEmpty(_positionYBindingDisplayText))
+                {
+                    var displayParts = _positionYBindingDisplayText.Split('.');
+                    if (displayParts.Length == 2)
+                    {
+                        setting.SourceNodeName = displayParts[0];
+                        setting.SourceDisplayName = displayParts[1];
+                    }
+                }
+                return setting;
+            }
+
+            return null;
+        }
+
+        internal void SetBindingConfig(string parameterName, ParamSetting? config)
+        {
+            if (parameterName == "PositionX")
+            {
+                if (config == null || config.BindingType != BindingType.Binding)
+                {
+                    IsPositionXBinding = false;
+                    PositionXBindingSource = "";
+                    PositionXBindingDisplayText = "";
+                }
+                else
+                {
+                    IsPositionXBinding = true;
+                    PositionXBindingSource = string.IsNullOrEmpty(config.SourceProperty)
+                        ? config.SourceNodeId ?? ""
+                        : $"{config.SourceNodeId}.{config.SourceProperty}";
+                    PositionXBindingDisplayText = !string.IsNullOrEmpty(config.SourceNodeName) && !string.IsNullOrEmpty(config.SourceDisplayName)
+                        ? $"{config.SourceNodeName}.{config.SourceDisplayName}"
+                        : PositionXBindingSource;
+                }
+            }
+            else if (parameterName == "PositionY")
+            {
+                if (config == null || config.BindingType != BindingType.Binding)
+                {
+                    IsPositionYBinding = false;
+                    PositionYBindingSource = "";
+                    PositionYBindingDisplayText = "";
+                }
+                else
+                {
+                    IsPositionYBinding = true;
+                    PositionYBindingSource = string.IsNullOrEmpty(config.SourceProperty)
+                        ? config.SourceNodeId ?? ""
+                        : $"{config.SourceNodeId}.{config.SourceProperty}";
+                    PositionYBindingDisplayText = !string.IsNullOrEmpty(config.SourceNodeName) && !string.IsNullOrEmpty(config.SourceDisplayName)
+                        ? $"{config.SourceNodeName}.{config.SourceDisplayName}"
+                        : PositionYBindingSource;
+                }
+            }
+        }
 
         /// <summary>获取指定状态的有效颜色</summary>
         public Color GetEffectiveColor(bool isOk) => isOk ? OkColor : NgColor;

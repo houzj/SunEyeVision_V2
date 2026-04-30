@@ -1024,7 +1024,8 @@ namespace SunEyeVision.CvEngine
 
         /// <summary>
         /// 获取轮廓 - 对应 Halcon get_contour_xld(Contour, Y, X)
-        /// 逐 item 提取 Mask + BBox 裁剪优化 + FindContours
+        /// 快速路径：有 CC 缓存时从 Stats 读 BBox + 裁剪 Labels ROI + 小区域 Compare
+        /// 慢速路径：逐 item GetMask + BoundingRect + FindContours
         /// </summary>
         public static void GetContour(CvRegion region, out CvContour[] contours)
         {
@@ -1036,6 +1037,51 @@ namespace SunEyeVision.CvEngine
 
             int n = region.Count;
             contours = new CvContour[n];
+
+            // 快速路径：有 CC 缓存 → 从 Stats 读 BBox + 裁剪 Labels ROI + 小区域 Compare
+            if (region.HasLabels && region.Stats != null && !region.Stats.Empty())
+            {
+                var labels = region.Labels!;
+                var stats = region.Stats!;
+
+                for (int i = 0; i < n; i++)
+                {
+                    int labelIdx = i + 1;
+                    int left   = stats.At<int>(labelIdx, (int)ConnectedComponentsTypes.Left);
+                    int top    = stats.At<int>(labelIdx, (int)ConnectedComponentsTypes.Top);
+                    int width  = stats.At<int>(labelIdx, (int)ConnectedComponentsTypes.Width);
+                    int height = stats.At<int>(labelIdx, (int)ConnectedComponentsTypes.Height);
+
+                    if (width <= 0 || height <= 0)
+                    {
+                        contours[i] = CvContour.GenEmptyObj();
+                        continue;
+                    }
+
+                    var bbox = new Rect(left, top, width, height);
+                    using var labelRoi = new Mat(labels, bbox);
+                    using var maskRoi = new Mat();
+                    Cv2.Compare(labelRoi, labelIdx, maskRoi, CmpType.EQ);
+
+                    Cv2.FindContours(maskRoi, out var blobContours, out _,
+                        RetrievalModes.External, ContourApproximationModes.ApproxSimple);
+
+                    if (blobContours.Length > 0)
+                    {
+                        var points = blobContours[0]
+                            .Select(p => new Point(p.X + left, p.Y + top))
+                            .ToArray();
+                        contours[i] = CvContour.Create(points, true, region.ImageSize);
+                    }
+                    else
+                    {
+                        contours[i] = CvContour.GenEmptyObj();
+                    }
+                }
+                return;
+            }
+
+            // 慢速路径：无 CC 缓存（非 Connection 产出的区域），逐 item GetMask
             for (int i = 0; i < n; i++)
             {
                 var itemMask = region._items[i].GetMask();
@@ -1045,7 +1091,6 @@ namespace SunEyeVision.CvEngine
                     continue;
                 }
 
-                // BBox 裁剪优化（在更小区域上 FindContours）
                 var bbox = Cv2.BoundingRect(itemMask);
                 if (bbox.Width <= 0 || bbox.Height <= 0)
                 {
@@ -1059,7 +1104,6 @@ namespace SunEyeVision.CvEngine
 
                 if (blobContours.Length > 0)
                 {
-                    // 偏移回原图坐标
                     var points = blobContours[0]
                         .Select(p => new Point(p.X + bbox.X, p.Y + bbox.Y))
                         .ToArray();

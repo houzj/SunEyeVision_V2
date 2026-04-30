@@ -47,25 +47,30 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
         }
 
         /// <summary>添加十字标记</summary>
-        public void AddCross(GraphicsStyle style, Point2d center)
+        public void AddCross(GraphicsStyle style, Point2d center, bool isPass = true)
         {
             var item = GetOrCreateGraphicsItem(style, GraphicsType.Cross);
-            AppendGeometry(item, center, true);
+            AppendGeometry(item, center, isPass);
         }
 
         /// <summary>批量添加十字标记</summary>
-        public void AddCrosses(GraphicsStyle style, IReadOnlyList<Point2d> centers)
+        public void AddCrosses(GraphicsStyle style, IReadOnlyList<Point2d> centers, IReadOnlyList<bool>? isPassList = null)
         {
             var item = GetOrCreateGraphicsItem(style, GraphicsType.Cross);
-            foreach (var center in centers)
-                AppendGeometry(item, center, true);
+            for (int i = 0; i < centers.Count; i++)
+            {
+                var isPass = isPassList != null && i < isPassList.Count ? isPassList[i] : true;
+                AppendGeometry(item, centers[i], isPass);
+            }
         }
 
         /// <summary>添加轮廓</summary>
         public void AddContour(GraphicsStyle style, Point[] points, bool isPass = true)
         {
             var item = GetOrCreateGraphicsItem(style, GraphicsType.Contour);
-            AppendGeometry(item, points, isPass);
+            var contourGeom = new ContourGeometry(
+                points.Select(p => new Point2d(p.X, p.Y)).ToArray(), true);
+            AppendGeometry(item, contourGeom, isPass);
         }
 
         /// <summary>批量添加轮廓</summary>
@@ -75,7 +80,9 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
             for (int i = 0; i < contoursList.Count; i++)
             {
                 var isPass = isPassList != null && i < isPassList.Count ? isPassList[i] : true;
-                AppendGeometry(item, contoursList[i], isPass);
+                var contourGeom = new ContourGeometry(
+                    contoursList[i].Select(p => new Point2d(p.X, p.Y)).ToArray(), true);
+                AppendGeometry(item, contourGeom, isPass);
             }
         }
 
@@ -86,7 +93,18 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
         {
             var item = GetOrCreateTextItem(style);
             for (int i = 0; i < content.Length; i++)
-                AppendText(item, x[i], y[i], content[i]);
+                AppendText(item, x[i], y[i], content[i], isPass);
+        }
+
+        /// <summary>添加文本数组（每个元素独立定位、独立isPass控制）</summary>
+        public void AddText(TextStyle style, double[] x, double[] y, string[] content, IReadOnlyList<bool> isPassList)
+        {
+            var item = GetOrCreateTextItem(style);
+            for (int i = 0; i < content.Length; i++)
+            {
+                var isPass = i < isPassList.Count ? isPassList[i] : true;
+                AppendText(item, x[i], y[i], content[i], isPass);
+            }
         }
 
         /// <summary>在指定锚点位置自动换行显示多行文本</summary>
@@ -94,14 +112,14 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
         {
             var item = GetOrCreateTextItem(style);
             foreach (var c in content)
-                AppendText(item, x, y, c);
+                AppendText(item, x, y, c, isPass);
         }
 
         /// <summary>在指定位置显示单条文本</summary>
         public void AddText(TextStyle style, double x, double y, string content, bool isPass = true)
         {
             var item = GetOrCreateTextItem(style);
-            AppendText(item, x, y, content);
+            AppendText(item, x, y, content, isPass);
         }
 
         // ===== 生命周期 =====
@@ -162,11 +180,16 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
             return item;
         }
 
-        private void AppendText(TextDisplayItem item, double x, double y, string content)
+        private void AppendText(TextDisplayItem item, double x, double y, string content, bool isPass = true)
         {
             var list = item.Texts.ToList();
             list.Add(new DisplayTextData { Content = content, X = x, Y = y });
             item.Texts = list.ToArray();
+
+            // 始终维护 IsPassArray，与 Texts 一一对应
+            var passList = item.IsPassArray.ToList();
+            passList.Add(isPass);
+            item.IsPassArray = passList.ToArray();
 
             // 更新锚点：首个文本的坐标即为锚点
             if (list.Count == 1)

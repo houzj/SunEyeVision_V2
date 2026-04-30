@@ -231,24 +231,30 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             }
         }
 
-        private void RenderPoints(DrawingContext dc, GraphicsDisplayItem item, GraphicsStyle style, SolidColorBrush brush)
+        private void RenderPoints(DrawingContext dc, GraphicsDisplayItem item, GraphicsStyle style, SolidColorBrush defaultBrush)
         {
-            foreach (var geom in item.Geometries)
+            for (int i = 0; i < item.Geometries.Length; i++)
             {
-                if (geom is Point2d pt)
+                if (item.Geometries[i] is Point2d pt)
                 {
+                    bool isPass = item.IsPassArray.Length > i ? item.IsPassArray[i] : true;
+                    var effectiveBrush = isPass ? defaultBrush : GetBrush(style.GetEffectiveColorArgb(false));
                     var size = GetScaledLineWidth(style.LineWidth) * 2;
-                    dc.DrawEllipse(brush, null, new WpfPoint(pt.X, pt.Y), size / 2, size / 2);
+                    dc.DrawEllipse(effectiveBrush, null, new WpfPoint(pt.X, pt.Y), size / 2, size / 2);
                 }
             }
         }
 
-        private void RenderLines(DrawingContext dc, GraphicsDisplayItem item, Pen pen)
+        private void RenderLines(DrawingContext dc, GraphicsDisplayItem item, Pen defaultPen)
         {
-            foreach (var geom in item.Geometries)
+            for (int i = 0; i < item.Geometries.Length; i++)
             {
-                if (geom is SdkLineSegment line)
-                    dc.DrawLine(pen, new WpfPoint(line.Start.X, line.Start.Y), new WpfPoint(line.End.X, line.End.Y));
+                if (item.Geometries[i] is SdkLineSegment line)
+                {
+                    bool isPass = item.IsPassArray.Length > i ? item.IsPassArray[i] : true;
+                    var effectivePen = isPass ? defaultPen : GetPen(item.Style!.GetEffectiveColorArgb(false), GetScaledLineWidth(item.Style.LineWidth));
+                    dc.DrawLine(effectivePen, new WpfPoint(line.Start.X, line.Start.Y), new WpfPoint(line.End.X, line.End.Y));
+                }
             }
         }
 
@@ -283,75 +289,90 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     bool isPass = item.IsPassArray.Length > i ? item.IsPassArray[i] : true;
                     var effectiveColorArgb = style.GetEffectiveColorArgb(isPass);
                     var effectivePen = isPass ? defaultPen : GetPen(effectiveColorArgb, GetScaledLineWidth(style.LineWidth));
-                    dc.DrawEllipse(item.IsFilled ? brush : null, effectivePen,
+                    var effectiveBrush = item.IsFilled ? (isPass ? brush : GetBrush(effectiveColorArgb)) : null;
+                    dc.DrawEllipse(effectiveBrush, effectivePen,
                         new WpfPoint(circle.Center.X, circle.Center.Y), circle.Radius, circle.Radius);
                 }
             }
         }
 
-        private void RenderArcs(DrawingContext dc, GraphicsDisplayItem item, Pen pen)
+        private void RenderArcs(DrawingContext dc, GraphicsDisplayItem item, Pen defaultPen)
         {
-            foreach (var geom in item.Geometries)
+            for (int i = 0; i < item.Geometries.Length; i++)
             {
-                if (geom is ArcGeometry arc)
+                if (item.Geometries[i] is ArcGeometry arc)
                 {
+                    bool isPass = item.IsPassArray.Length > i ? item.IsPassArray[i] : true;
+                    var effectivePen = isPass ? defaultPen : GetPen(item.Style!.GetEffectiveColorArgb(false), GetScaledLineWidth(item.Style.LineWidth));
                     var geometry = CreateArcGeometry(arc);
-                    dc.DrawGeometry(null, pen, geometry);
+                    dc.DrawGeometry(null, effectivePen, geometry);
                 }
             }
         }
 
-        private void RenderPolygons(DrawingContext dc, GraphicsDisplayItem item, GraphicsStyle style, SolidColorBrush brush, Pen pen)
+        private void RenderPolygons(DrawingContext dc, GraphicsDisplayItem item, GraphicsStyle style, SolidColorBrush defaultBrush, Pen defaultPen)
         {
-            foreach (var geom in item.Geometries)
+            for (int i = 0; i < item.Geometries.Length; i++)
             {
-                if (geom is Point2d[] points)
+                if (item.Geometries[i] is Point2d[] points)
                 {
+                    bool isPass = item.IsPassArray.Length > i ? item.IsPassArray[i] : true;
+                    var effectiveColorArgb = style.GetEffectiveColorArgb(isPass);
+                    var effectivePen = isPass ? defaultPen : GetPen(effectiveColorArgb, GetScaledLineWidth(style.LineWidth));
+                    var effectiveBrush = item.IsFilled ? (isPass ? defaultBrush : GetBrush(effectiveColorArgb)) : null;
                     var wpfPoints = Array.ConvertAll(points, p => new WpfPoint(p.X, p.Y));
-                    DrawPolygon(dc, wpfPoints, item.IsFilled ? brush : null, pen);
+                    DrawPolygon(dc, wpfPoints, effectiveBrush, effectivePen);
                 }
             }
         }
 
-        private void RenderContours(DrawingContext dc, GraphicsDisplayItem item, GraphicsStyle style, SolidColorBrush brush, Pen pen)
+        private void RenderContours(DrawingContext dc, GraphicsDisplayItem item, GraphicsStyle style, SolidColorBrush defaultBrush, Pen defaultPen)
         {
-            foreach (var geom in item.Geometries)
+            for (int i = 0; i < item.Geometries.Length; i++)
             {
-                if (geom is ContourGeometry contour && contour.Points != null && contour.Points.Length >= 2)
+                if (item.Geometries[i] is ContourGeometry contour && contour.Points != null && contour.Points.Length >= 2)
                 {
+                    bool isPass = item.IsPassArray.Length > i ? item.IsPassArray[i] : true;
+                    var effectiveColorArgb = style.GetEffectiveColorArgb(isPass);
+                    var effectivePen = isPass ? defaultPen : GetPen(effectiveColorArgb, GetScaledLineWidth(style.LineWidth));
+                    var effectiveBrush = item.IsFilled ? (isPass ? defaultBrush : GetBrush(effectiveColorArgb)) : null;
                     var points = Array.ConvertAll(contour.Points, p => new WpfPoint(p.X, p.Y));
                     if (contour.IsClosed && points.Length >= 3)
-                        DrawPolygon(dc, points, item.IsFilled ? brush : null, pen);
+                        DrawPolygon(dc, points, effectiveBrush, effectivePen);
                     else
-                        DrawPolyline(dc, points, pen);
+                        DrawPolyline(dc, points, effectivePen);
                 }
             }
         }
 
-        private void RenderArrows(DrawingContext dc, GraphicsDisplayItem item, Pen pen)
+        private void RenderArrows(DrawingContext dc, GraphicsDisplayItem item, Pen defaultPen)
         {
-            foreach (var geom in item.Geometries)
+            for (int i = 0; i < item.Geometries.Length; i++)
             {
-                if (geom is SdkLineSegment line)
+                if (item.Geometries[i] is SdkLineSegment line)
                 {
                     var style = item.Style;
                     var lineWidth = style != null ? style.LineWidth : 1.0;
+                    bool isPass = item.IsPassArray.Length > i ? item.IsPassArray[i] : true;
+                    var effectivePen = isPass ? defaultPen : GetPen(style!.GetEffectiveColorArgb(false), GetScaledLineWidth(lineWidth));
                     var geometry = CreateArrowGeometry(line.Start, line.End, GetScaledLineWidth(lineWidth));
-                    dc.DrawGeometry(null, pen, geometry);
+                    dc.DrawGeometry(null, effectivePen, geometry);
                 }
             }
         }
 
         private void RenderCrosses(DrawingContext dc, GraphicsDisplayItem item, GraphicsStyle style, Pen defaultPen)
         {
-            foreach (var geom in item.Geometries)
+            for (int i = 0; i < item.Geometries.Length; i++)
             {
-                if (geom is Point2d center)
+                if (item.Geometries[i] is Point2d center)
                 {
+                    bool isPass = item.IsPassArray.Length > i ? item.IsPassArray[i] : true;
+                    var effectivePen = isPass ? defaultPen : GetPen(style.GetEffectiveColorArgb(false), GetScaledLineWidth(style.LineWidth));
                     var s = style.CrossSize;
                     var cx = center.X; var cy = center.Y;
-                    dc.DrawLine(defaultPen, new WpfPoint(cx - s, cy), new WpfPoint(cx + s, cy));
-                    dc.DrawLine(defaultPen, new WpfPoint(cx, cy - s), new WpfPoint(cx, cy + s));
+                    dc.DrawLine(effectivePen, new WpfPoint(cx - s, cy), new WpfPoint(cx + s, cy));
+                    dc.DrawLine(effectivePen, new WpfPoint(cx, cy - s), new WpfPoint(cx, cy + s));
                 }
             }
         }
@@ -372,7 +393,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         #endregion
 
-        #region 文本渲染（含自动换行 + Opacity + isPass 颜色）
+        #region 文本渲染（双模式：统一锚点自动换行 / 独立锚点逐位渲染）
 
         private void RenderText(DrawingContext dc, TextDisplayItem item)
         {
@@ -385,32 +406,45 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             dc.PushOpacity(style.Opacity);
             try
             {
-                // isPass → OkColor / NgColor（不再硬编码白色）
-                var colorArgb = style.GetEffectiveColorArgb(item.IsPass);
-                var color = ArgbToColor(colorArgb);
-                var lineHeight = style.FontSize * 1.4;
+                var texts = item.Texts;
+                var isPassArray = item.IsPassArray;
 
-                bool autoLineBreak = item.Texts.Length > 1 &&
-                    item.Texts.All(t => Math.Abs(t.X - item.AnchorX) < 0.01 &&
-                                        Math.Abs(t.Y - item.AnchorY) < 0.01);
+                // 检测是否为独立定位模式：所有文本的 X/Y 是否完全相同
+                bool useIndividualPositions = texts.Any(t =>
+                    Math.Abs(t.X - texts[0].X) > 0.001 ||
+                    Math.Abs(t.Y - texts[0].Y) > 0.001);
 
-                double offsetY = 0;
-
-                for (int i = 0; i < item.Texts.Length; i++)
+                if (useIndividualPositions)
                 {
-                    var td = item.Texts[i];
-                    double x = td.X;
-                    double y = td.Y;
-
-                    if (autoLineBreak)
+                    // ===== 独立锚点模式：每个文本使用自己的 X/Y，不折行 =====
+                    for (int i = 0; i < texts.Length; i++)
                     {
-                        x = item.AnchorX;
-                        y = item.AnchorY + offsetY;
-                        offsetY += lineHeight;
+                        var td = texts[i];
+                        bool isPass = isPassArray.Length > i ? isPassArray[i] : true;
+                        var color = ArgbToColor(style.GetEffectiveColorArgb(isPass));
+                        var formattedText = CreateFormattedText(td.Content, color, style.FontSize, style.IsBold);
+                        dc.DrawText(formattedText, new WpfPoint(td.X, td.Y));
                     }
+                }
+                else
+                {
+                    // ===== 统一锚点 + 自动换行模式：首个文本的坐标即锚点 =====
+                    // 从 style（实时引用）读取位置，确保位置随样式同步更新
+                    double baseX = style.PositionX;
+                    double baseY = style.PositionY;
+                    var lineHeight = style.FontSize * 1.4;
 
-                    var formattedText = CreateFormattedText(td.Content, color, style.FontSize, style.IsBold);
-                    dc.DrawText(formattedText, new WpfPoint(x, y));
+                    for (int i = 0; i < texts.Length; i++)
+                    {
+                        var td = texts[i];
+                        double x = baseX;
+                        double y = baseY + i * lineHeight;
+
+                        bool isPass = isPassArray.Length > i ? isPassArray[i] : true;
+                        var color = ArgbToColor(style.GetEffectiveColorArgb(isPass));
+                        var formattedText = CreateFormattedText(td.Content, color, style.FontSize, style.IsBold);
+                        dc.DrawText(formattedText, new WpfPoint(x, y));
+                    }
                 }
             }
             finally

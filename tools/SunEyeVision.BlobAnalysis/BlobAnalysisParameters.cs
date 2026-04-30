@@ -57,28 +57,24 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// <summary>
         /// 二值化阈值(0-255)
         /// </summary>
-        [JsonPropertyOrder(0)]
         public ParamValue<int> Threshold { get; set; } =
             ParamValue<int>.CreateConstant(128, "Threshold");
 
         /// <summary>
         /// 超过阈值时使用的最大值(0-255)
         /// </summary>
-        [JsonPropertyOrder(1)]
         public ParamValue<int> MaxValue { get; set; } =
             ParamValue<int>.CreateConstant(255, "MaxValue");
 
         /// <summary>
         /// 二值化方法（仅支持 Binary/BinaryInv）
         /// </summary>
-        [JsonPropertyOrder(2)]
         public ParamValue<ThresholdType> Type { get; set; } =
             ParamValue<ThresholdType>.CreateConstant(ThresholdType.Binary, "Type");
 
         /// <summary>
         /// 是否反转二值化结果
         /// </summary>
-        [JsonPropertyOrder(3)]
         public ParamValue<bool> Invert { get; set; } =
             ParamValue<bool>.CreateConstant(false, "Invert");
 
@@ -89,49 +85,42 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// <summary>
         /// 最小面积（像素数）
         /// </summary>
-        [JsonPropertyOrder(10)]
         public ParamValue<int> MinArea { get; set; } =
             ParamValue<int>.CreateConstant(0, "MinArea");
 
         /// <summary>
         /// 最大面积（像素数）
         /// </summary>
-        [JsonPropertyOrder(11)]
         public ParamValue<int> MaxArea { get; set; } =
             ParamValue<int>.CreateConstant(999999, "MaxArea");
 
         /// <summary>
         /// 最小圆度(0~1)
         /// </summary>
-        [JsonPropertyOrder(12)]
         public ParamValue<double> MinCircularity { get; set; } =
             ParamValue<double>.CreateConstant(0.0, "MinCircularity");
 
         /// <summary>
         /// 最大圆度(0~1)
         /// </summary>
-        [JsonPropertyOrder(13)]
         public ParamValue<double> MaxCircularity { get; set; } =
             ParamValue<double>.CreateConstant(1.0, "MaxCircularity");
 
         /// <summary>
         /// 最小矩形度(0~1)
         /// </summary>
-        [JsonPropertyOrder(14)]
         public ParamValue<double> MinRectangularity { get; set; } =
             ParamValue<double>.CreateConstant(0.0, "MinRectangularity");
 
         /// <summary>
         /// 最大矩形度(0~1)
         /// </summary>
-        [JsonPropertyOrder(15)]
         public ParamValue<double> MaxRectangularity { get; set; } =
             ParamValue<double>.CreateConstant(1.0, "MaxRectangularity");
 
         /// <summary>
         /// 连通性类型(4连通/8连通)
         /// </summary>
-        [JsonPropertyOrder(16)]
         public ParamValue<ConnectivityType> Connectivity { get; set; } =
             ParamValue<ConnectivityType>.CreateConstant(ConnectivityType.Connect8, "Connectivity");
 
@@ -142,39 +131,129 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// <summary>
         /// 结果判断配置
         /// </summary>
-        [JsonPropertyOrder(20)]
         [JsonPropertyName("resultConfig")]
         public BlobAnalysisResultConfig ResultConfig { get; set; } = new();
 
         /// <summary>外接矩形样式</summary>
-        [JsonPropertyOrder(22)]
         [JsonPropertyName("blobsStyle")]
         public GraphicsStyle BlobsStyle { get; set; } = new() { Name = "Blobs", LineWidth = 2 };
 
         /// <summary>质心标记样式</summary>
-        [JsonPropertyOrder(23)]
         [JsonPropertyName("centroidsStyle")]
         public GraphicsStyle CentroidsStyle { get; set; } = new() { Name = "Centroids", LineWidth = 2, CrossSize = 8 };
 
-        /// <summary>Blob标签样式</summary>
-        [JsonPropertyOrder(24)]
-        [JsonPropertyName("labelsStyle")]
-        public TextStyle LabelsStyle { get; set; } = new() { Name = "Labels", FontSize = 9.0 };
-
         /// <summary>统计信息样式</summary>
-        [JsonPropertyOrder(25)]
         [JsonPropertyName("statisticsStyle")]
         public TextStyle StatisticsStyle { get; set; } = new() { Name = "Statistics", FontSize = 11.0, PositionX = 10, PositionY = 22 };
 
-        /// <summary>更多提示样式</summary>
-        [JsonPropertyOrder(26)]
-        [JsonPropertyName("moreHintStyle")]
-        public TextStyle MoreHintStyle { get; set; } = new() { Name = "MoreHint", FontSize = 10.0, PositionX = 10, PositionY = 10 };
-
         /// <summary>轮廓样式</summary>
-        [JsonPropertyOrder(27)]
         [JsonPropertyName("contoursStyle")]
         public GraphicsStyle ContoursStyle { get; set; } = new() { Name = "Contours", LineWidth = 1 };
+
+        /// <summary>面积列表样式</summary>
+        [JsonPropertyName("areaDisplayStyle")]
+        public TextStyle AreaDisplayStyle { get; set; } = new() { Name = "AreaDisplay", FontSize = 9.0, PositionX = 10, PositionY = 50 };
+
+        #endregion
+
+        #region 克隆支持
+
+        /// <summary>
+        /// 深拷贝参数（修复浅拷贝问题）
+        /// </summary>
+        protected override void OnClone(ToolParameters cloned)
+        {
+            if (cloned is BlobAnalysisParameters p)
+            {
+                // Deep copy ResultConfig（使用已有的 Clone 方法）
+                p.ResultConfig = ResultConfig.Clone();
+
+                // Deep copy 样式
+                p.StatisticsStyle = new TextStyle
+                {
+                    Name = StatisticsStyle.Name,
+                    IsVisible = StatisticsStyle.IsVisible,
+                    OkColor = StatisticsStyle.OkColor,
+                    NgColor = StatisticsStyle.NgColor,
+                    Opacity = StatisticsStyle.Opacity,
+                    FontSize = StatisticsStyle.FontSize,
+                    IsBold = StatisticsStyle.IsBold,
+                    PositionX = StatisticsStyle.PositionX,
+                    PositionY = StatisticsStyle.PositionY
+                };
+
+                p.AreaDisplayStyle = new TextStyle
+                {
+                    Name = AreaDisplayStyle.Name,
+                    IsVisible = AreaDisplayStyle.IsVisible,
+                    OkColor = AreaDisplayStyle.OkColor,
+                    NgColor = AreaDisplayStyle.NgColor,
+                    Opacity = AreaDisplayStyle.Opacity,
+                    FontSize = AreaDisplayStyle.FontSize,
+                    IsBold = AreaDisplayStyle.IsBold,
+                    PositionX = AreaDisplayStyle.PositionX,
+                    PositionY = AreaDisplayStyle.PositionY
+                };
+
+                p.BlobsStyle = new GraphicsStyle
+                {
+                    Name = BlobsStyle.Name,
+                    IsVisible = BlobsStyle.IsVisible,
+                    OkColor = BlobsStyle.OkColor,
+                    NgColor = BlobsStyle.NgColor,
+                    Opacity = BlobsStyle.Opacity,
+                    LineWidth = BlobsStyle.LineWidth,
+                    CrossSize = BlobsStyle.CrossSize
+                };
+
+                p.CentroidsStyle = new GraphicsStyle
+                {
+                    Name = CentroidsStyle.Name,
+                    IsVisible = CentroidsStyle.IsVisible,
+                    OkColor = CentroidsStyle.OkColor,
+                    NgColor = CentroidsStyle.NgColor,
+                    Opacity = CentroidsStyle.Opacity,
+                    LineWidth = CentroidsStyle.LineWidth,
+                    CrossSize = CentroidsStyle.CrossSize
+                };
+
+                p.ContoursStyle = new GraphicsStyle
+                {
+                    Name = ContoursStyle.Name,
+                    IsVisible = ContoursStyle.IsVisible,
+                    OkColor = ContoursStyle.OkColor,
+                    NgColor = ContoursStyle.NgColor,
+                    Opacity = ContoursStyle.Opacity,
+                    LineWidth = ContoursStyle.LineWidth,
+                    CrossSize = ContoursStyle.CrossSize
+                };
+
+                // Deep copy ParamValues（使用 ParamSetting.Clone 深拷贝绑定配置）
+                p.Threshold = CloneParamValue(Threshold);
+                p.MaxValue = CloneParamValue(MaxValue);
+                p.Type = CloneParamValue(Type);
+                p.Invert = CloneParamValue(Invert);
+                p.MinArea = CloneParamValue(MinArea);
+                p.MaxArea = CloneParamValue(MaxArea);
+                p.MinCircularity = CloneParamValue(MinCircularity);
+                p.MaxCircularity = CloneParamValue(MaxCircularity);
+                p.MinRectangularity = CloneParamValue(MinRectangularity);
+                p.MaxRectangularity = CloneParamValue(MaxRectangularity);
+                p.Connectivity = CloneParamValue(Connectivity);
+            }
+
+            base.OnClone(cloned);
+        }
+
+        private static ParamValue<T> CloneParamValue<T>(ParamValue<T> source)
+        {
+            var clone = new ParamValue<T>
+            {
+                Value = source.Value,
+                BindingConfig = source.BindingConfig?.Clone()
+            };
+            return clone;
+        }
 
         #endregion
 
@@ -279,6 +358,112 @@ namespace SunEyeVision.Tool.BlobAnalysis
                 if (ResultConfig.TotalAreaMin >= ResultConfig.TotalAreaMax)
                 {
                     result.AddError($"总面积最小值({ResultConfig.TotalAreaMin})必须小于最大值({ResultConfig.TotalAreaMax})");
+                }
+            }
+
+            // 平均面积范围验证
+            if (ResultConfig.IsAverageAreaCheckEnabled)
+            {
+                if (ResultConfig.AverageAreaMin >= ResultConfig.AverageAreaMax)
+                {
+                    result.AddError($"平均面积最小值({ResultConfig.AverageAreaMin})必须小于最大值({ResultConfig.AverageAreaMax})");
+                }
+            }
+
+            // 最大面积范围验证
+            if (ResultConfig.IsMaxAreaCheckEnabled)
+            {
+                if (ResultConfig.MaxAreaMin >= ResultConfig.MaxAreaMax)
+                {
+                    result.AddError($"最大面积最小值({ResultConfig.MaxAreaMin})必须小于最大值({ResultConfig.MaxAreaMax})");
+                }
+            }
+
+            // 最小面积范围验证
+            if (ResultConfig.IsMinAreaCheckEnabled)
+            {
+                if (ResultConfig.MinAreaMin >= ResultConfig.MinAreaMax)
+                {
+                    result.AddError($"最小面积最小值({ResultConfig.MinAreaMin})必须小于最大值({ResultConfig.MinAreaMax})");
+                }
+            }
+
+            // 平均圆度范围验证
+            if (ResultConfig.IsAverageCircularityCheckEnabled)
+            {
+                if (ResultConfig.AverageCircularityMin < 0 || ResultConfig.AverageCircularityMin > 1.0)
+                {
+                    result.AddError($"平均圆度最小值({ResultConfig.AverageCircularityMin})必须在 0-1 范围内");
+                }
+                if (ResultConfig.AverageCircularityMax < 0 || ResultConfig.AverageCircularityMax > 1.0)
+                {
+                    result.AddError($"平均圆度最大值({ResultConfig.AverageCircularityMax})必须在 0-1 范围内");
+                }
+                if (ResultConfig.AverageCircularityMin >= ResultConfig.AverageCircularityMax)
+                {
+                    result.AddError($"平均圆度最小值({ResultConfig.AverageCircularityMin})必须小于最大值({ResultConfig.AverageCircularityMax})");
+                }
+            }
+
+            // 平均矩形度范围验证
+            if (ResultConfig.IsAverageRectangularityCheckEnabled)
+            {
+                if (ResultConfig.AverageRectangularityMin < 0 || ResultConfig.AverageRectangularityMin > 1.0)
+                {
+                    result.AddError($"平均矩形度最小值({ResultConfig.AverageRectangularityMin})必须在 0-1 范围内");
+                }
+                if (ResultConfig.AverageRectangularityMax < 0 || ResultConfig.AverageRectangularityMax > 1.0)
+                {
+                    result.AddError($"平均矩形度最大值({ResultConfig.AverageRectangularityMax})必须在 0-1 范围内");
+                }
+                if (ResultConfig.AverageRectangularityMin >= ResultConfig.AverageRectangularityMax)
+                {
+                    result.AddError($"平均矩形度最小值({ResultConfig.AverageRectangularityMin})必须小于最大值({ResultConfig.AverageRectangularityMax})");
+                }
+            }
+
+            // ===== Per-Blob判断验证 =====
+
+            // 每个Blob面积范围验证
+            if (ResultConfig.IsPerBlobAreaCheckEnabled)
+            {
+                if (ResultConfig.PerBlobAreaMin >= ResultConfig.PerBlobAreaMax)
+                {
+                    result.AddError($"每个Blob面积最小值({ResultConfig.PerBlobAreaMin})必须小于最大值({ResultConfig.PerBlobAreaMax})");
+                }
+            }
+
+            // 每个Blob圆度范围验证
+            if (ResultConfig.IsPerBlobCircularityCheckEnabled)
+            {
+                if (ResultConfig.PerBlobCircularityMin < 0 || ResultConfig.PerBlobCircularityMin > 1.0)
+                {
+                    result.AddError($"每个Blob圆度最小值({ResultConfig.PerBlobCircularityMin})必须在 0-1 范围内");
+                }
+                if (ResultConfig.PerBlobCircularityMax < 0 || ResultConfig.PerBlobCircularityMax > 1.0)
+                {
+                    result.AddError($"每个Blob圆度最大值({ResultConfig.PerBlobCircularityMax})必须在 0-1 范围内");
+                }
+                if (ResultConfig.PerBlobCircularityMin >= ResultConfig.PerBlobCircularityMax)
+                {
+                    result.AddError($"每个Blob圆度最小值({ResultConfig.PerBlobCircularityMin})必须小于最大值({ResultConfig.PerBlobCircularityMax})");
+                }
+            }
+
+            // 每个Blob矩形度范围验证
+            if (ResultConfig.IsPerBlobRectangularityCheckEnabled)
+            {
+                if (ResultConfig.PerBlobRectangularityMin < 0 || ResultConfig.PerBlobRectangularityMin > 1.0)
+                {
+                    result.AddError($"每个Blob矩形度最小值({ResultConfig.PerBlobRectangularityMin})必须在 0-1 范围内");
+                }
+                if (ResultConfig.PerBlobRectangularityMax < 0 || ResultConfig.PerBlobRectangularityMax > 1.0)
+                {
+                    result.AddError($"每个Blob矩形度最大值({ResultConfig.PerBlobRectangularityMax})必须在 0-1 范围内");
+                }
+                if (ResultConfig.PerBlobRectangularityMin >= ResultConfig.PerBlobRectangularityMax)
+                {
+                    result.AddError($"每个Blob矩形度最小值({ResultConfig.PerBlobRectangularityMin})必须小于最大值({ResultConfig.PerBlobRectangularityMax})");
                 }
             }
         }

@@ -1230,63 +1230,66 @@
                                Placement="Bottom" StaysOpen="False" AllowsTransparency="True">
                             <Border Background="White"
                                     BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
-                                    CornerRadius="4" Padding="16" Margin="0,2,0,0" Width="280">
-                                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="350">
-                                <StackPanel>
-                                    <!-- OK颜色 -->
-                                    <TextBlock Text="OK颜色" Style="{StaticResource LabelStyle}" Margin="0,0,0,6"/>
-                                    <controls:ColorSelector
-                                        Width="244" Height="28"
-                                        SelectedColor="{Binding Item.OkColor, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
-                                        Margin="0,0,0,12"/>
+                                    CornerRadius="4" Padding="16" Margin="0,2,0,0" Width="300">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="350"
+                                              HorizontalScrollBarVisibility="Disabled">
+                                    <StackPanel>
+                                        <!-- OK颜色 -->
+                                        <TextBlock Text="OK颜色" Style="{StaticResource LabelStyle}" Margin="0,0,0,6"/>
+                                        <controls:ColorSelector
+                                            Height="28"
+                                            SelectedColor="{Binding Item.OkColor, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                            Margin="0,0,0,12"/>
 
-                                    <!-- NG颜色 -->
-                                    <TextBlock Text="NG颜色" Style="{StaticResource LabelStyle}" Margin="0,0,0,6"/>
-                                    <controls:ColorSelector
-                                        Width="244" Height="28"
-                                        SelectedColor="{Binding Item.NgColor, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
-                                        Margin="0,0,0,12"/>
+                                        <!-- NG颜色 -->
+                                        <TextBlock Text="NG颜色" Style="{StaticResource LabelStyle}" Margin="0,0,0,6"/>
+                                        <controls:ColorSelector
+                                            Height="28"
+                                            SelectedColor="{Binding Item.NgColor, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                            Margin="0,0,0,12"/>
 
-                                    <!-- 字号 -->
-                                    <TextBlock Text="字号" Style="{StaticResource LabelStyle}" Margin="0,0,0,6"/>
-                                    <controls:NumericUpDown
-                                        Width="244"
-                                        Value="{Binding Item.FontSize, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
-                                        Minimum="6" Maximum="72" DecimalPlaces="1" ShowSlider="True"
-                                        Margin="0,0,0,12"/>
+                                        <!-- 字号 -->
+                                        <TextBlock Text="字号" Style="{StaticResource LabelStyle}" Margin="0,0,0,6"/>
+                                        <controls:NumericUpDown
+                                            Value="{Binding Item.FontSize, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                            Minimum="6" Maximum="72" DecimalPlaces="1" ShowSlider="True"
+                                            Margin="0,0,0,12"/>
 
-                                    <!-- 加粗 -->
-                                    <CheckBox IsChecked="{Binding Item.IsBold, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
-                                              Content="加粗" Margin="0,0,0,12"/>
+                                        <!-- 加粗 -->
+                                        <CheckBox IsChecked="{Binding Item.IsBold, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                                  Content="加粗" Margin="0,0,0,12"/>
 
-                                    <!-- 位置X (ParamBinding) -->
-                                    <TextBlock Text="位置X" Style="{StaticResource LabelStyle}" Margin="0,0,0,6"/>
-                                    <controls:ParamBinding
-                                        Width="244"
-                                        ParameterName="PositionX"
-                                        DataType="{x:Type sys:Double}"
-                                        BindingSource="{Binding Item.PositionX, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
-                                        AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource TemplatedParent}}"
-                                        Margin="0,0,0,12"/>
+                                        <!-- 位置X -->
+                                        <TextBlock Text="位置X" Style="{StaticResource LabelStyle}" Margin="0,0,0,6"/>
+                                        <controls:ConfigSetting
+                                            Value="{Binding Item.PositionX, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                            DataType="{x:Type sys:Double}"
+                                            Minimum="-99999" Maximum="99999"
+                                            DecimalPlaces="1" ShowSlider="True"
+                                            SmallChange="1" LargeChange="10"
+                                            ParameterName="PositionX"
+                                            AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource TemplatedParent}}"
+                                            Margin="0,0,0,12"/>
 
-                                    <!-- 位置Y (ParamBinding) -->
-                                    <TextBlock Text="位置Y" Style="{StaticResource LabelStyle}" Margin="0,0,0,6"/>
-                                    <controls:ParamBinding
-                                        Width="244"
-                                        ParameterName="PositionY"
-                                        DataType="{x:Type sys:Double}"
-                                        BindingSource="{Binding Item.PositionY, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
-                                        AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource TemplatedParent}}"
-                                        Margin="0,0,0,12"/>
+                                        <!-- 位置Y -->
+                                        <TextBlock Text="位置Y" Style="{StaticResource LabelStyle}" Margin="0,0,0,6"/>
+                                        <controls:ConfigSetting
+                                            Value="{Binding Item.PositionY, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                            DataType="{x:Type sys:Double}"
+                                            Minimum="-99999" Maximum="99999"
+                                            DecimalPlaces="1" ShowSlider="True"
+                                            SmallChange="1" LargeChange="10"
+                                            ParameterName="PositionY"
+                                            AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource TemplatedParent}}"
+                                            Margin="0,0,0,12"/>
 
-                                    <!-- 透明度 -->
-                                    <TextBlock Text="透明度" Style="{StaticResource LabelStyle}" Margin="0,0,0,6"/>
-                                    <controls:NumericUpDown
-                                        Width="244"
-                                        Value="{Binding Item.Opacity, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
-                                        Minimum="0.1" Maximum="1.0" DecimalPlaces="1" ShowSlider="True"
-                                        Margin="0,0,0,0"/>
-                                </StackPanel>
+                                        <!-- 透明度 -->
+                                        <TextBlock Text="透明度" Style="{StaticResource LabelStyle}" Margin="0,0,0,6"/>
+                                        <controls:NumericUpDown
+                                            Value="{Binding Item.Opacity, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                            Minimum="0.1" Maximum="1.0" DecimalPlaces="1" ShowSlider="True"
+                                            Margin="0,0,0,0"/>
+                                    </StackPanel>
                                 </ScrollViewer>
                             </Border>
                         </Popup>

@@ -34,8 +34,9 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
             }
         }
 
-        /// <summary>整体通过/失败状态（控制 OkColor/NgColor 切换）</summary>
-        public bool IsPass { get; set; } = true;
+        /// <summary>逐元素通过标记（与 Texts 一一对应，空数组表示全通过）</summary>
+        [JsonIgnore]
+        public bool[] IsPassArray { get; set; } = Array.Empty<bool>();
 
         /// <summary>文本数据（运行时，不序列化）</summary>
         [JsonIgnore]

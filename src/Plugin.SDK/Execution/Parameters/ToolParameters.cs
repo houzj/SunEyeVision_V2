@@ -112,24 +112,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         }
 
         /// <summary>
-        /// 深拷贝参数
-        /// </summary>
-        public ToolParameters Clone()
-        {
-            var cloned = (ToolParameters)MemberwiseClone();
-            OnClone(cloned);
-            return cloned;
-        }
-
-        /// <summary>
-        /// 派生类可重写此方法执行深拷贝
-        /// </summary>
-        protected virtual void OnClone(ToolParameters cloned)
-        {
-            // 派生类可重写此方法执行深拷贝
-        }
-
-        /// <summary>
         /// 从另一个参数对象复制值
         /// </summary>
         public virtual void CopyFrom(ToolParameters other)

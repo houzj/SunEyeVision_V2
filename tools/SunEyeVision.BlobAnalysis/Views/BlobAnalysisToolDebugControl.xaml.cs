@@ -236,7 +236,7 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
                 throw new InvalidOperationException("工具实例无效");
             }
 
-            var runParams = (BlobAnalysisParameters)Parameters!.Clone();
+            var runParams = (BlobAnalysisParameters)Parameters!;
             runParams.ResolvedInputImage = imageMat;
             return blobTool.Run(runParams);
         }

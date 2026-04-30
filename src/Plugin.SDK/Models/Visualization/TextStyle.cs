@@ -1,6 +1,9 @@
+﻿using System;
+using System.Collections.Generic;
 using System.Windows.Media;
 using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Execution.Results;
 
 namespace SunEyeVision.Plugin.SDK.Models.Visualization
 {
@@ -167,6 +170,38 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
                     PositionYBindingDisplayText = !string.IsNullOrEmpty(config.SourceNodeName) && !string.IsNullOrEmpty(config.SourceDisplayName)
                         ? $"{config.SourceNodeName}.{config.SourceDisplayName}"
                         : PositionYBindingSource;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 解析所有绑定属性的运行时值（在工具执行后调用）
+        /// </summary>
+        /// <param name="nodeResults">节点结果缓存（用于动态绑定解析）</param>
+        /// <param name="resolver">参数解析器（可选，默认新建）</param>
+        public void ResolveBindings(IDictionary<string, ToolResults> nodeResults, IParameterResolver? resolver = null)
+        {
+            resolver ??= new ParameterResolver();
+
+            // 解析 PositionX 绑定
+            var bindingX = GetBindingConfig("PositionX");
+            if (bindingX != null)
+            {
+                var result = resolver.Resolve(bindingX, nodeResults, typeof(double));
+                if (result.IsSuccess && result.Value != null)
+                {
+                    PositionX = Convert.ToDouble(result.Value);
+                }
+            }
+
+            // 解析 PositionY 绑定
+            var bindingY = GetBindingConfig("PositionY");
+            if (bindingY != null)
+            {
+                var result = resolver.Resolve(bindingY, nodeResults, typeof(double));
+                if (result.IsSuccess && result.Value != null)
+                {
+                    PositionY = Convert.ToDouble(result.Value);
                 }
             }
         }

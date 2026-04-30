@@ -58,7 +58,7 @@ public class RunContext
     public ToolParameters? GetNodeParameters(string nodeId)
     {
         var node = Workflow.GetNode(nodeId);
-        return node?.Parameters?.Clone();
+        return node?.Parameters;
     }
 
     /// <summary>

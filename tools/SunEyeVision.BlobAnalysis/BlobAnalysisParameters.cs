@@ -131,129 +131,22 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// <summary>
         /// 结果判断配置
         /// </summary>
-        [JsonPropertyName("resultConfig")]
         public BlobAnalysisResultConfig ResultConfig { get; set; } = new();
 
         /// <summary>外接矩形样式</summary>
-        [JsonPropertyName("blobsStyle")]
         public GraphicsStyle BlobsStyle { get; set; } = new() { Name = "Blobs", LineWidth = 2 };
 
         /// <summary>质心标记样式</summary>
-        [JsonPropertyName("centroidsStyle")]
         public GraphicsStyle CentroidsStyle { get; set; } = new() { Name = "Centroids", LineWidth = 2, CrossSize = 8 };
 
         /// <summary>统计信息样式</summary>
-        [JsonPropertyName("statisticsStyle")]
         public TextStyle StatisticsStyle { get; set; } = new() { Name = "Statistics", FontSize = 11.0, PositionX = 10, PositionY = 22 };
 
         /// <summary>轮廓样式</summary>
-        [JsonPropertyName("contoursStyle")]
         public GraphicsStyle ContoursStyle { get; set; } = new() { Name = "Contours", LineWidth = 1 };
 
         /// <summary>面积列表样式</summary>
-        [JsonPropertyName("areaDisplayStyle")]
         public TextStyle AreaDisplayStyle { get; set; } = new() { Name = "AreaDisplay", FontSize = 9.0, PositionX = 10, PositionY = 50 };
-
-        #endregion
-
-        #region 克隆支持
-
-        /// <summary>
-        /// 深拷贝参数（修复浅拷贝问题）
-        /// </summary>
-        protected override void OnClone(ToolParameters cloned)
-        {
-            if (cloned is BlobAnalysisParameters p)
-            {
-                // Deep copy ResultConfig（使用已有的 Clone 方法）
-                p.ResultConfig = ResultConfig.Clone();
-
-                // Deep copy 样式
-                p.StatisticsStyle = new TextStyle
-                {
-                    Name = StatisticsStyle.Name,
-                    IsVisible = StatisticsStyle.IsVisible,
-                    OkColor = StatisticsStyle.OkColor,
-                    NgColor = StatisticsStyle.NgColor,
-                    Opacity = StatisticsStyle.Opacity,
-                    FontSize = StatisticsStyle.FontSize,
-                    IsBold = StatisticsStyle.IsBold,
-                    PositionX = StatisticsStyle.PositionX,
-                    PositionY = StatisticsStyle.PositionY
-                };
-
-                p.AreaDisplayStyle = new TextStyle
-                {
-                    Name = AreaDisplayStyle.Name,
-                    IsVisible = AreaDisplayStyle.IsVisible,
-                    OkColor = AreaDisplayStyle.OkColor,
-                    NgColor = AreaDisplayStyle.NgColor,
-                    Opacity = AreaDisplayStyle.Opacity,
-                    FontSize = AreaDisplayStyle.FontSize,
-                    IsBold = AreaDisplayStyle.IsBold,
-                    PositionX = AreaDisplayStyle.PositionX,
-                    PositionY = AreaDisplayStyle.PositionY
-                };
-
-                p.BlobsStyle = new GraphicsStyle
-                {
-                    Name = BlobsStyle.Name,
-                    IsVisible = BlobsStyle.IsVisible,
-                    OkColor = BlobsStyle.OkColor,
-                    NgColor = BlobsStyle.NgColor,
-                    Opacity = BlobsStyle.Opacity,
-                    LineWidth = BlobsStyle.LineWidth,
-                    CrossSize = BlobsStyle.CrossSize
-                };
-
-                p.CentroidsStyle = new GraphicsStyle
-                {
-                    Name = CentroidsStyle.Name,
-                    IsVisible = CentroidsStyle.IsVisible,
-                    OkColor = CentroidsStyle.OkColor,
-                    NgColor = CentroidsStyle.NgColor,
-                    Opacity = CentroidsStyle.Opacity,
-                    LineWidth = CentroidsStyle.LineWidth,
-                    CrossSize = CentroidsStyle.CrossSize
-                };
-
-                p.ContoursStyle = new GraphicsStyle
-                {
-                    Name = ContoursStyle.Name,
-                    IsVisible = ContoursStyle.IsVisible,
-                    OkColor = ContoursStyle.OkColor,
-                    NgColor = ContoursStyle.NgColor,
-                    Opacity = ContoursStyle.Opacity,
-                    LineWidth = ContoursStyle.LineWidth,
-                    CrossSize = ContoursStyle.CrossSize
-                };
-
-                // Deep copy ParamValues（使用 ParamSetting.Clone 深拷贝绑定配置）
-                p.Threshold = CloneParamValue(Threshold);
-                p.MaxValue = CloneParamValue(MaxValue);
-                p.Type = CloneParamValue(Type);
-                p.Invert = CloneParamValue(Invert);
-                p.MinArea = CloneParamValue(MinArea);
-                p.MaxArea = CloneParamValue(MaxArea);
-                p.MinCircularity = CloneParamValue(MinCircularity);
-                p.MaxCircularity = CloneParamValue(MaxCircularity);
-                p.MinRectangularity = CloneParamValue(MinRectangularity);
-                p.MaxRectangularity = CloneParamValue(MaxRectangularity);
-                p.Connectivity = CloneParamValue(Connectivity);
-            }
-
-            base.OnClone(cloned);
-        }
-
-        private static ParamValue<T> CloneParamValue<T>(ParamValue<T> source)
-        {
-            var clone = new ParamValue<T>
-            {
-                Value = source.Value,
-                BindingConfig = source.BindingConfig?.Clone()
-            };
-            return clone;
-        }
 
         #endregion
 

@@ -297,31 +297,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                    bounds1.Y + bounds1.Height > bounds2.Y;
         }
 
-        /// <summary>
-        /// 深拷贝参数
-        /// </summary>
-        protected override void OnClone(ToolParameters cloned)
-        {
-            if (cloned is RegionParameters regionParams)
-            {
-                // 拷贝区域集合
-                foreach (var region in _inspectionRegions.Regions)
-                {
-                    regionParams._inspectionRegions.AddRegion((RegionData)region.Clone());
-                }
-                foreach (var region in _maskRegions.Regions)
-                {
-                    regionParams._maskRegions.AddRegion((RegionData)region.Clone());
-                }
 
-                // 拷贝其他参数
-                regionParams.IsRegionEnabled.Value = _isRegionEnabled.Value;
-
-                // 拷贝图像源引用
-                regionParams._imageSourceRef = _imageSourceRef;
-            }
-
-            base.OnClone(cloned);
-        }
     }
 }

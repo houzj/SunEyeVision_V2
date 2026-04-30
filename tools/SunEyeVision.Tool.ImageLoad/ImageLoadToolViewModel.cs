@@ -344,7 +344,7 @@ namespace SunEyeVision.Tool.ImageLoad
         /// </summary>
         public ImageLoadParameters GetTypedParameters()
         {
-            return (ImageLoadParameters)_parameters.Clone();
+            return (ImageLoadParameters)_parameters;
         }
 
         /// <summary>
@@ -352,7 +352,7 @@ namespace SunEyeVision.Tool.ImageLoad
         /// </summary>
         public void SetTypedParameters(ImageLoadParameters parameters)
         {
-            _parameters = (ImageLoadParameters)parameters.Clone();
+            _parameters = (ImageLoadParameters)parameters;
             OnPropertyChanged(nameof(FilePath));
             OnPropertyChanged(nameof(FileName));
         }

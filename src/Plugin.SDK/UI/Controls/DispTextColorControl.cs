@@ -30,6 +30,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// <summary>已订阅事件的 ConfigSetting 列表，用于反订阅</summary>
         private readonly List<ConfigSetting> _subscribedConfigSettings = new List<ConfigSetting>();
 
+        /// <summary>是否已完成 Popup 内 ConfigSetting 的订阅和状态恢复（确保只执行一次）</summary>
+        private bool _isPopupSubscribed;
+
         #endregion
 
         #region 静态构造函数
@@ -84,6 +87,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
             // 清理旧的事件订阅
             UnsubscribeFromConfigSettings();
+            UnsubscribeFromPopupOpened();
 
             if (_visibilityButton != null)
                 _visibilityButton.Click -= OnVisibilityButtonClick;
@@ -100,12 +104,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             if (_styleSettingsButton != null)
                 _styleSettingsButton.Click += OnStyleSettingsButtonClick;
 
-            // 延迟执行：等待模板完全加载和 ConfigSetting 初始化完成后再恢复绑定状态
-            Dispatcher.BeginInvoke(new System.Action(() =>
-            {
-                SubscribeToConfigSettings();
-                RestoreBindingStateFromTextStyle();
-            }), System.Windows.Threading.DispatcherPriority.Loaded);
+            // Popup 首次打开时才订阅 ConfigSetting 事件和恢复绑定状态
+            // （因为 Popup 未打开时 Child 为 null，无法找到 ConfigSetting 控件）
+            if (_styleSettingsPopup != null)
+                _styleSettingsPopup.Opened += OnStyleSettingsPopupOpened;
         }
 
         #endregion
@@ -164,6 +166,34 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         }
 
         /// <summary>
+        /// 取消 Popup.Opened 事件订阅
+        /// </summary>
+        private void UnsubscribeFromPopupOpened()
+        {
+            if (_styleSettingsPopup != null)
+                _styleSettingsPopup.Opened -= OnStyleSettingsPopupOpened;
+            _isPopupSubscribed = false;
+        }
+
+        /// <summary>
+        /// Popup 首次打开时 - 订阅 ConfigSetting 事件并恢复绑定状态
+        /// </summary>
+        private void OnStyleSettingsPopupOpened(object? sender, System.EventArgs e)
+        {
+            // 首次打开 Popup 时执行一次，后续打开不再重复执行
+            if (_isPopupSubscribed)
+                return;
+            _isPopupSubscribed = true;
+
+            // 取消 Opened 事件订阅（只需要第一次）
+            _styleSettingsPopup!.Opened -= OnStyleSettingsPopupOpened;
+
+            // 此时 Popup.Child 已创建，ConfigSetting 控件已实例化
+            SubscribeToConfigSettings();
+            RestoreBindingStateFromTextStyle();
+        }
+
+        /// <summary>
         /// 将 ConfigSetting 的当前绑定状态保存到 TextStyle
         /// </summary>
         private void SaveConfigSettingState(ConfigSetting cs)
@@ -174,7 +204,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             {
                 Item.SetBindingConfig(cs.ParameterName, null);
             }
-            else if (!string.IsNullOrEmpty(cs.BindingSource))
+            else
             {
                 var parts = cs.BindingSource.Split('.');
                 var nodeId = parts.Length > 0 ? parts[0] : string.Empty;

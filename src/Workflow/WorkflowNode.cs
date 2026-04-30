@@ -633,7 +633,7 @@ namespace SunEyeVision.Workflow
             )
             {
                 IsEnabled = IsEnabled,
-                Parameters = Parameters?.Clone(),
+                Parameters = Parameters,
                 ParamSettings = ParamSettings?.Clone(),
                 PositionX = PositionX,
                 PositionY = PositionY,

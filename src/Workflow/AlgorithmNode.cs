@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Windows;
 using OpenCvSharp;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Core.Models;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.SDK.Models.Visualization;
 
 namespace SunEyeVision.Workflow
 {
@@ -62,9 +64,10 @@ namespace SunEyeVision.Workflow
                     typedParams.ResolvedInputImage = inputImage;
 
                     // 2. 应用参数绑定（从参数内部 BindingConfig 读取并解析）
+                    ParameterResolver? resolver = null;
                     if (nodeResults != null)
                     {
-                        var resolver = new ParameterResolver(VisionLogger.Instance);
+                        resolver = new ParameterResolver(VisionLogger.Instance);
                         var applyResult = resolver.ApplyBindings(typedParams, nodeResults);
 
                         if (!applyResult.IsSuccess && applyResult.Errors.Count > 0)
@@ -83,10 +86,18 @@ namespace SunEyeVision.Workflow
                         nodeName: Name,
                         nodeId: Id));
 
+                    // 3a. 解析参数中所有 TextStyle 的运行时绑定（工具执行前解析，使 PositionX/Y 绑定值在工具中可用）
+                    if (nodeResults != null)
+                    {
+                        ResolveTextStyleParameterBindings(typedParams, nodeResults, resolver);
+                    }
+
                     // 4. 执行工具（不再传递 image 参数）
                     var toolResult = Tool.Run(typedParams);
                     LastToolResult = toolResult;
                     LastResult = ConvertToAlgorithmResult(toolResult);
+
+
                 }
                 else
                 {
@@ -191,5 +202,32 @@ namespace SunEyeVision.Workflow
 
             return algorithmResult;
         }
+
+        /// <summary>
+        /// 解析工具结果中所有 TextStyle 的运行时绑定值
+        /// </summary>
+        /// <remarks>
+        /// 遍历 DisplayCollector 中的 TextDisplayItem，对其 TextStyle 调用 ResolveBindings，
+        /// 使 PositionX/PositionY 等绑定属性的来源节点值在渲染时生效。
+        /// </remarks>
+        /// <summary>
+        /// 解析参数对象中所有 TextStyle 属性的运行时绑定值（在工具执行前调用）
+        /// </summary>
+        private static void ResolveTextStyleParameterBindings(ToolParameters parameters, IDictionary<string, ToolResults> nodeResults, ParameterResolver resolver)
+        {
+            foreach (var prop in parameters.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            {
+                if (prop.PropertyType == typeof(TextStyle) && prop.GetValue(parameters) is TextStyle style)
+                {
+                    // TextStyle 继承 ObservableObject，SetProperty 会触发 PropertyChanged 事件，
+                    // WPF 数据绑定监听此事件但必须在 UI 线程上处理，因此需要调度到 UI 线程执行
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        style.ResolveBindings(nodeResults, resolver);
+                    });
+                }
+            }
+        }
+
     }
 }

@@ -282,7 +282,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
                         // 使用内部接口在恢复绑定状态前设置好常量值和恢复标志
                         cs.SetConstantValueBeforeBinding(persistentConstantValue);
-                        cs.BeginRestoreFromTextStyle();
+                        cs.BeginRestoreBindingFromExternal();
                         try
                         {
                             cs.FromParamSetting(config);
@@ -295,7 +295,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                         }
                         finally
                         {
-                            cs.EndRestoreFromTextStyle();
+                            cs.EndRestoreBindingFromExternal();
                         }
                     }
                 }

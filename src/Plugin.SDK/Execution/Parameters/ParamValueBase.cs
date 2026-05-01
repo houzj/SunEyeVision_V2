@@ -34,5 +34,10 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// 是否为绑定模式
         /// </summary>
         public abstract bool IsBinding { get; }
+
+        /// <summary>
+        /// 切换到绑定模式前保存的常量值（切回常量模式时恢复用）
+        /// </summary>
+        public abstract object? BindingConstantValue { get; set; }
     }
 }

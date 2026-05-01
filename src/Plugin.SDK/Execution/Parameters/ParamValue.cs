@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Models;
 
@@ -23,6 +24,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     {
         private T _value = default!;
         private ParamSetting? _bindingConfig;
+        private object? _bindingConstantValue;
 
         /// <summary>
         /// 参数值（算法层直接使用）
@@ -111,6 +113,29 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// </summary>
         [JsonIgnore]
         public override bool IsBinding => BindingConfig != null && BindingConfig.BindingType == BindingType.Binding;
+
+        /// <summary>
+        /// 切换到绑定模式前保存的常量值（切回常量模式时恢复用）
+        /// </summary>
+        /// <remarks>
+        /// 当用户在 UI 中从常量模式切换到绑定模式时，当前常量值保存到此字段。
+        /// 绑定模式恢复时，用户切回常量模式会恢复此值。
+        /// 序列化时一起保存，确保 Popup 关闭再打开后仍能正确恢复。
+        /// </remarks>
+        [JsonInclude]
+        public override object? BindingConstantValue
+        {
+            get => _bindingConstantValue;
+            set
+            {
+                // 修复反序列化后 JsonElement 的问题
+                if (value is JsonElement jsonElement)
+                {
+                    value = JsonElementConverter.ConvertToType(jsonElement, typeof(T));
+                }
+                SetProperty(ref _bindingConstantValue, value);
+            }
+        }
 
         /// <summary>
         /// 创建常量模式

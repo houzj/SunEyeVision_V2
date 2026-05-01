@@ -356,29 +356,34 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         private bool _isRestoringBindingState;
 
         /// <summary>
-        /// 是否正在从 TextStyle 恢复绑定状态（用于阻止 OnBindingTypeChanged 覆盖 _constantValueBeforeBinding）
+        /// 是否正在从外部存储恢复绑定状态（用于阻止 OnBindingTypeChanged 覆盖 _constantValueBeforeBinding）
         /// </summary>
-        private bool _isRestoringFromTextStyle;
+        /// <remarks>
+        /// 覆盖两种恢复路径：
+        /// 1. TextStyle 恢复（DispTextColorControl.PositionX/PositionY）
+        /// 2. ParamValue.BindingConfig 恢复（普通参数的绑定持久化）
+        /// </remarks>
+        private bool _isRestoringBindingFromExternal;
 
         #endregion
 
         #region 内部绑定状态恢复接口
 
         /// <summary>
-        /// 设置正在从 TextStyle 恢复绑定状态的标志
+        /// 设置正在从外部存储恢复绑定状态的标志
         /// </summary>
         /// <remarks>在调用 FromParamSetting 前调用，阻止 OnBindingTypeChanged 覆盖 _constantValueBeforeBinding</remarks>
-        internal void BeginRestoreFromTextStyle()
+        internal void BeginRestoreBindingFromExternal()
         {
-            _isRestoringFromTextStyle = true;
+            _isRestoringBindingFromExternal = true;
         }
 
         /// <summary>
-        /// 结束从 TextStyle 恢复绑定状态
+        /// 结束从外部存储恢复绑定状态
         /// </summary>
-        internal void EndRestoreFromTextStyle()
+        internal void EndRestoreBindingFromExternal()
         {
-            _isRestoringFromTextStyle = false;
+            _isRestoringBindingFromExternal = false;
         }
 
         /// <summary>
@@ -455,9 +460,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 var newType = (BindingType)e.NewValue;
 
                 // 切到绑定模式前，保存当前常量值
-                // （只有用户主动切换时保存，从 TextStyle 恢复绑定模式时不覆盖已设置的原始常量值）
+                // （只有用户主动切换时保存，从外部存储恢复绑定模式时不覆盖已设置的原始常量值）
                 if (oldType == BindingType.Constant && newType == BindingType.Binding
-                    && !control._isRestoringFromTextStyle)
+                    && !control._isRestoringBindingFromExternal)
                 {
                     control._constantValueBeforeBinding = control.Value;
                 }
@@ -1130,6 +1135,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     }
 
                     paramValue.BindingConfig = setting;
+
+                    // 将 _constantValueBeforeBinding 同步到 ParamValue，持久化供下次加载时恢复
+                    if (_constantValueBeforeBinding != null)
+                    {
+                        paramValue.BindingConstantValue = _constantValueBeforeBinding;
+                    }
                 }
             }
 
@@ -1264,6 +1275,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             // 当前 UI 显示的是常量模式（默认值），但实际应该是绑定模式 → 需要恢复
             if (BindingType != BindingType.Binding)
             {
+                // 先从 ParamValue 恢复持久化的常量值，这样 OnBindingTypeChanged 不会用默认值覆盖
+                SetConstantValueBeforeBinding(paramValue.BindingConstantValue);
+                BeginRestoreBindingFromExternal();
                 _isRestoringBindingState = true;
                 try
                 {
@@ -1277,6 +1291,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 finally
                 {
                     _isRestoringBindingState = false;
+                    EndRestoreBindingFromExternal();
                 }
             }
 

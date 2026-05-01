@@ -44,6 +44,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         private ObservableCollection<RegionData> _regions;
         private RegionParameterMode _mode;
         private ParamSetting? _bindingConfig;
+        private object? _bindingConstantValue;
 
         /// <summary>
         /// 构造函数
@@ -143,6 +144,16 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         public override bool IsBinding
         {
             get => _bindingConfig != null;
+        }
+
+        /// <summary>
+        /// 切换到绑定模式前保存的常量值（切回常量模式时恢复用）
+        /// </summary>
+        [JsonIgnore]
+        public override object? BindingConstantValue
+        {
+            get => _bindingConstantValue;
+            set => SetProperty(ref _bindingConstantValue, value);
         }
 
         /// <summary>

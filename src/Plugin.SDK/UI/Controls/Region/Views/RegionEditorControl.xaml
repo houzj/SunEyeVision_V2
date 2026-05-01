@@ -73,7 +73,7 @@
         <!-- 形状选择（绘制模式和按参数订阅模式显示） -->
         <GroupBox Header="形状" Margin="0,0,0,8"
                           Visibility="{Binding ShowShapeTypeSelector, Converter={StaticResource BooleanToVisibilityConverter}}">
-          <UniformGrid Columns="5" HorizontalAlignment="Center">
+          <UniformGrid Columns="6" HorizontalAlignment="Center">
             <!-- 选择按钮 - 退出绘制模式，进入选择/编辑模式 -->
             <Button Style="{StaticResource ShapeButtonStyle}"
                                 ToolTip="选择/编辑模式 (V)&#x0a;点击选中区域进行编辑&#x0a;可缩放平移图像"
@@ -146,6 +146,21 @@
                 <Line X1="0" Y1="20" X2="20" Y2="0"
                                       Stroke="{StaticResource ShapeIconBrush}"
                                       StrokeThickness="2" Height="20" VerticalAlignment="Top"/>
+              </Grid>
+            </Button>
+
+            <!-- 多边形 -->
+            <Button Style="{StaticResource ShapeButtonStyle}"
+                                ToolTip="多边形 (P)&#x0a;点击添加顶点&#x0a;右键撤销上一点&#x0a;双击/Enter完成"
+                                Click="OnPolygonButtonClick"
+                                x:Name="PolygonButton">
+              <Grid>
+                <Polygon Points="10,2 20,8 18,18 4,18 2,8"
+                                         Stroke="{StaticResource ShapeIconBrush}"
+                                         StrokeThickness="1.5"
+                                         Fill="Transparent"
+                                         Width="22" Height="22"
+                                         Stretch="Uniform"/>
               </Grid>
             </Button>
           </UniformGrid>

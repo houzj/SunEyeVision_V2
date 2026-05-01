@@ -463,7 +463,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             var geometry = new StreamGeometry();
             using (var ctx = geometry.Open())
             {
-                ctx.BeginFigure(points[0], fill != null, fill != null);
+                ctx.BeginFigure(points[0], fill != null, true);
                 for (int i = 1; i < points.Length; i++)
                     ctx.LineTo(points[i], true, true);
             }

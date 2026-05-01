@@ -550,7 +550,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                 ShapeType.Rectangle or ShapeType.Circle or ShapeType.RotatedRectangle 
                     => new Point(region.Center.X - region.Width / 2, region.Center.Y - region.Height / 2),
                 ShapeType.Line => new Point(region.LineStart.X, region.LineStart.Y),
-                ShapeType.Polygon => region.PolygonPoints.Count > 0 ? region.PolygonPoints[0] : new Point(0, 0),
+                // Polygon 使用绝对坐标定位，Canvas.Left/Top 设为 (0,0)
+                ShapeType.Polygon => new Point(0, 0),
                 _ => new Point(region.Center.X, region.Center.Y)
             };
         }
@@ -586,6 +587,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                                                     line.Y1 = 0;
                                                     line.X2 = region.LineEnd.X - region.LineStart.X;
                                                     line.Y2 = region.LineEnd.Y - region.LineStart.Y;
+                                                }
+                                                break;
+
+                                case ShapeType.Polygon:
+                                                if (shape is Polygon polygon)
+                                                {
+                                                    polygon.Points.Clear();
+                                                    foreach (var pt in region.PolygonPoints)
+                                                        polygon.Points.Add(pt);
                                                 }
                                                 break;
                 }

@@ -44,6 +44,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         private Point _dragStartPoint;
         private Point _handleDragStartPoint;
 
+        // 多边形绘制状态
+        private bool _isDrawingPolygon;
+        private readonly List<Point> _polygonPoints = new();
+        private int _activeVertexIndex = -1;
+        private const string RubberBandTag = "PolygonRubberBand";
+
         // 日志监控计数器
         private int _mouseMoveLogCounter = 0;
         private int _drawingLogCount = 0;
@@ -370,8 +376,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 if (window != null)
                 {
                     window.AddHandler(Window.MouseLeftButtonUpEvent, new MouseButtonEventHandler(Window_MouseLeftButtonUp));
+                    window.AddHandler(Window.MouseRightButtonDownEvent, new MouseButtonEventHandler(Window_MouseRightButtonDown));
                     VisionLogger.Instance.Log(LogLevel.Success,
-                        $"[EventSubscribe] 已订阅窗口级 MouseUp 事件 | InstanceId={_controlInstanceId} | Window={window.GetType().Name}",
+                        $"[EventSubscribe] 已订阅窗口级 MouseUp + MouseRightButtonDown 事件 | InstanceId={_controlInstanceId} | Window={window.GetType().Name}",
                         "RegionEditorControl");
                 }
                 else
@@ -439,13 +446,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                         $"[EventUnsubscribe] 已取消 CanvasMouseLeftButtonUp 事件订阅 | InstanceId={_controlInstanceId}",
                         "RegionEditorControl");
 
-                    // 取消窗口级 MouseUp 事件订阅
+                    // 取消窗口级事件订阅
                     var window = Window.GetWindow(_mainImageControl);
                     if (window != null)
                     {
                         window.RemoveHandler(Window.MouseLeftButtonUpEvent, new MouseButtonEventHandler(Window_MouseLeftButtonUp));
+                        window.RemoveHandler(Window.MouseRightButtonDownEvent, new MouseButtonEventHandler(Window_MouseRightButtonDown));
                         VisionLogger.Instance.Log(LogLevel.Success,
-                            $"[EventUnsubscribe] 已取消窗口级 MouseUp 事件订阅 | InstanceId={_controlInstanceId} | Window={window.GetType().Name}",
+                            $"[EventUnsubscribe] 已取消窗口级事件订阅 | InstanceId={_controlInstanceId} | Window={window.GetType().Name}",
                             "RegionEditorControl");
                     }
                 }
@@ -656,7 +664,16 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             // Escape: 取消当前操作
             if (e.Key == Key.Escape)
             {
-                if (_isDrawing)
+                if (_isDrawingPolygon)
+                {
+                    _isDrawingPolygon = false;
+                    _polygonPoints.Clear();
+                    _currentDrawingRegion = null;
+                    ClearRubberBand();
+                    UpdateRegionOverlay();
+                    _viewModel.StatusMessage = "已取消多边形绘制";
+                }
+                else if (_isDrawing)
                 {
                     _isDrawing = false;
                     _currentDrawingRegion = null;
@@ -674,6 +691,36 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 {
                     DeselectAll();
                 }
+                e.Handled = true;
+                return;
+            }
+
+            // Enter: 完成多边形
+            if (e.Key == Key.Enter && _isDrawingPolygon
+                && _currentTool == ShapeType.Polygon && _polygonPoints.Count >= 3)
+            {
+                _isDrawingPolygon = false;
+                FinishInteraction();
+                e.Handled = true;
+                return;
+            }
+
+            // Backspace: 撤销多边形最后一个顶点
+            if (e.Key == Key.Back && _isDrawingPolygon
+                && _currentTool == ShapeType.Polygon && _polygonPoints.Count > 0)
+            {
+                _polygonPoints.RemoveAt(_polygonPoints.Count - 1);
+                SyncPolygonToShapeDef();
+                if (_polygonPoints.Count == 0)
+                {
+                    _isDrawingPolygon = false;
+                    _currentDrawingRegion = null;
+                }
+                ClearRubberBand();
+                UpdateRegionOverlay();
+                _viewModel.StatusMessage = _polygonPoints.Count > 0
+                    ? $"多边形顶点: {_polygonPoints.Count}"
+                    : "已取消多边形绘制";
                 e.Handled = true;
                 return;
             }
@@ -701,6 +748,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                         break;
                     case Key.L:
                         SelectShapeTool(ShapeType.Line, null);
+                        e.Handled = true;
+                        break;
+                    case Key.P:
+                        _isDrawingPolygon = false;
+                        SelectShapeTool(ShapeType.Polygon, null);
                         e.Handled = true;
                         break;
                 }
@@ -755,17 +807,34 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             // 绘制预览
             if (_isDrawing && _currentDrawingRegion != null)
             {
-                // 首次更新时记录日志
-                if (_drawingLogCount == 0)
+                // 多边形预览：临时加入鼠标位置做填充预览
+                if (_currentTool == ShapeType.Polygon && _isDrawingPolygon)
                 {
-                    VisionLogger.Instance.Log(LogLevel.Info,
-                        $"[绘制预览] 开始更新预览 | CurrentDrawingRegion={_currentDrawingRegion.Name} | Position={position:F1}",
-                        "RegionEditorControl");
-                    _drawingLogCount++;
+                    if (_polygonPoints.Count >= 2)
+                    {
+                        if (_currentDrawingRegion.Parameters is ShapeParameters shapeDef)
+                        {
+                            shapeDef.Points.Add(new Point2D(position.X, position.Y));
+                            UpdateSingleRegionFast(_currentDrawingRegion);
+                            shapeDef.Points.RemoveAt(shapeDef.Points.Count - 1);
+                        }
+                    }
+                    DrawPolygonRubberBand(position);
                 }
+                else
+                {
+                    // 首次更新时记录日志
+                    if (_drawingLogCount == 0)
+                    {
+                        VisionLogger.Instance.Log(LogLevel.Info,
+                            $"[绘制预览] 开始更新预览 | CurrentDrawingRegion={_currentDrawingRegion.Name} | Position={position:F1}",
+                            "RegionEditorControl");
+                        _drawingLogCount++;
+                    }
 
-                UpdateDrawingPreview(position);
-                UpdateSingleRegionFast(_currentDrawingRegion);
+                    UpdateDrawingPreview(position);
+                    UpdateSingleRegionFast(_currentDrawingRegion);
+                }
             }
         }
 
@@ -778,6 +847,40 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             if (OverlayCanvas == null) return;
 
             var position = e.ImagePosition;
+
+            // ========== 多边形绘制模式 ==========
+            if (_currentTool == ShapeType.Polygon)
+            {
+                // 双击完成（从原始事件中获取 ClickCount）
+                var clickCount = (e.OriginalEventArgs as MouseButtonEventArgs)?.ClickCount ?? 1;
+                if (clickCount >= 2 && _polygonPoints.Count >= 3)
+                {
+                    _isDrawingPolygon = false;
+                    FinishInteraction();
+                    e.Handled = true;
+                    return;
+                }
+
+                // 首次点击：初始化
+                if (!_isDrawingPolygon)
+                {
+                    _isDrawingPolygon = true;
+                    _isDrawing = true;
+                    _polygonPoints.Clear();
+                    _currentDrawingRegion = RegionData.CreateDrawingRegion(
+                        GenerateRegionName(), _currentTool);
+                    _currentDrawingRegion.IsPreview = true;
+                }
+
+                // 添加顶点 + 同步
+                _polygonPoints.Add(position);
+                SyncPolygonToShapeDef();
+                ClearRubberBand();
+                UpdateRegionOverlay();
+                _viewModel.StatusMessage = $"多边形顶点: {_polygonPoints.Count}";
+                e.Handled = true;
+                return;
+            }
 
             // ========== 绘制模式 ==========
             if (_viewModel.IsDrawing && _currentTool != ShapeType.Point)
@@ -856,6 +959,40 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                             _isDragging = true;
                             _dragStartPoint = position;
                             _viewModel.StatusMessage = "正在拖动区域";
+                            e.Handled = true;
+                            return;
+                        }
+
+                        // 多边形顶点手柄
+                        if (hitHandleType == Rendering.HandleType.PolygonVertex)
+                        {
+                            _isDraggingHandle = true;
+                            _activeHandleType = hitHandleType;
+                            _handleDragStartPoint = position;
+
+                            // 找到被命中手柄的顶点索引
+                            _activeVertexIndex = -1;
+                            if (_currentHandles != null)
+                            {
+                                foreach (var h in _currentHandles)
+                                {
+                                    if (h.Type == Rendering.HandleType.PolygonVertex && h.VertexIndex >= 0)
+                                    {
+                                        var dx = position.X - h.Position.X;
+                                        var dy = position.Y - h.Position.Y;
+                                        if (Math.Sqrt(dx * dx + dy * dy) < h.HandleSize)
+                                        {
+                                            _activeVertexIndex = h.VertexIndex;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (_selectedRegion?.Parameters is ShapeParameters polyShape)
+                                _originalShapeDefinition = polyShape.Clone() as ShapeParameters;
+
+                            _viewModel.StatusMessage = "正在拖拽多边形顶点";
                             e.Handled = true;
                             return;
                         }
@@ -950,11 +1087,52 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             FinishInteraction();
         }
 
+        /// <summary>
+        /// 窗口级右键事件处理（多边形撤销顶点）
+        /// </summary>
+        private void Window_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (!_isDrawingPolygon || _currentTool != ShapeType.Polygon
+                || _polygonPoints.Count <= 0)
+                return;
+
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[Window_MouseRightButtonDown] 右键触发多边形撤销 | InstanceId={_controlInstanceId} | 顶点数={_polygonPoints.Count}",
+                "RegionEditorControl");
+
+            _polygonPoints.RemoveAt(_polygonPoints.Count - 1);
+            SyncPolygonToShapeDef();
+            if (_polygonPoints.Count == 0)
+            {
+                _isDrawingPolygon = false;
+                _currentDrawingRegion = null;
+            }
+            ClearRubberBand();
+            UpdateRegionOverlay();
+            _viewModel.StatusMessage = _polygonPoints.Count > 0
+                ? $"多边形顶点: {_polygonPoints.Count}"
+                : "已取消多边形绘制";
+            e.Handled = true;
+        }
+
         private void FinishInteraction()
         {
             VisionLogger.Instance.Log(LogLevel.Info,
-                $"[FinishInteraction] 调用 FinishInteraction | InstanceId={_controlInstanceId} | _isDrawing={_isDrawing} | _currentDrawingRegion={_currentDrawingRegion?.Name ?? "null"}",
+                $"[FinishInteraction] 调用 FinishInteraction | InstanceId={_controlInstanceId} | _isDrawing={_isDrawing} | _currentDrawingRegion={_currentDrawingRegion?.Name ?? "null"} | _isDrawingPolygon={_isDrawingPolygon}",
                 "RegionEditorControl");
+
+            // ★ 多边形仍在绘制中（未完成），不清理状态
+            if (_isDrawingPolygon)
+            {
+                VisionLogger.Instance.Log(LogLevel.Info,
+                    $"[FinishInteraction] 多边形仍在绘制中，跳过清理 | InstanceId={_controlInstanceId} | 顶点数={_polygonPoints.Count}",
+                    "RegionEditorControl");
+
+                // 多边形非最终完成时，清理橡皮筋线但不重置 _isDrawing/_currentDrawingRegion
+                ClearRubberBand();
+                UpdateRegionOverlay();
+                return;
+            }
 
             if (_isDrawing && _currentDrawingRegion != null)
             {
@@ -980,6 +1158,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                             shapeDef.Radius >= 5.64 && // 面积≥100对应的半径
                             Math.PI * shapeDef.Radius * shapeDef.Radius >= 100,
                         ShapeType.Line => shapeDef.GetLineLength() >= 10,
+                        ShapeType.Polygon => shapeDef.Points.Count >= 3,
                         _ => false
                     };
 
@@ -1011,6 +1190,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 }
             }
 
+            ClearRubberBand();
             _isDrawing = false;
             _isDragging = false;
             _isDraggingHandle = false;
@@ -1095,6 +1275,76 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 RegionDataChanged?.Invoke(this, region);
             }
         }
+
+        #region 多边形辅助方法
+
+        /// <summary>
+        /// 将 _polygonPoints 同步到 ShapeParameters.Points
+        /// </summary>
+        private void SyncPolygonToShapeDef()
+        {
+            if (_currentDrawingRegion?.Parameters is ShapeParameters shapeDef)
+            {
+                shapeDef.Points.Clear();
+                foreach (var pt in _polygonPoints)
+                    shapeDef.Points.Add(new Point2D(pt.X, pt.Y));
+            }
+        }
+
+        /// <summary>
+        /// 绘制多边形橡皮筋线（从最后一个顶点到鼠标位置）
+        /// </summary>
+        private void DrawPolygonRubberBand(Point mousePosition)
+        {
+            var canvas = OverlayCanvas;
+            if (canvas == null || _polygonPoints.Count == 0) return;
+
+            ClearRubberBand();
+
+            var zoom = _mainImageControl?.Zoom ?? 1.0;
+            var lastPoint = _polygonPoints[_polygonPoints.Count - 1];
+
+            // 实线：最后一个顶点 -> 鼠标位置
+            var line = new System.Windows.Shapes.Line
+            {
+                X1 = lastPoint.X, Y1 = lastPoint.Y,
+                X2 = mousePosition.X, Y2 = mousePosition.Y,
+                Stroke = Brushes.DodgerBlue,
+                StrokeThickness = 2.0 / zoom,
+                Tag = RubberBandTag
+            };
+            Canvas.SetZIndex(line, 50);
+            canvas.Children.Add(line);
+
+            // 小圆点：鼠标位置
+            var dotSize = 6.0 / zoom;
+            var dot = new Ellipse
+            {
+                Width = dotSize, Height = dotSize,
+                Fill = Brushes.DodgerBlue, Tag = RubberBandTag
+            };
+            Canvas.SetLeft(dot, mousePosition.X - dotSize / 2);
+            Canvas.SetTop(dot, mousePosition.Y - dotSize / 2);
+            Canvas.SetZIndex(dot, 50);
+            canvas.Children.Add(dot);
+        }
+
+        /// <summary>
+        /// 清除多边形橡皮筋线
+        /// </summary>
+        private void ClearRubberBand()
+        {
+            var canvas = OverlayCanvas;
+            if (canvas == null) return;
+            var toRemove = canvas.Children
+                .OfType<FrameworkElement>()
+                .Where(e => e.Tag as string == RubberBandTag)
+                .ToList();
+            foreach (var item in toRemove)
+                canvas.Children.Remove(item);
+        }
+
+        #endregion
 
         /// <summary>
         /// 根据手柄类型更新形状
@@ -1211,6 +1461,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         private void HandleShapeEdit(ShapeParameters shape, Point currentPosition)
         {
             var delta = currentPosition - _handleDragStartPoint;
+
+            // 多边形顶点拖拽
+            if (shape.ShapeType == ShapeType.Polygon && _activeHandleType == Rendering.HandleType.PolygonVertex)
+            {
+                if (_activeVertexIndex >= 0 && _activeVertexIndex < shape.Points.Count)
+                {
+                    shape.Points[_activeVertexIndex] = new Point2D(
+                        currentPosition.X, currentPosition.Y);
+                }
+                return;
+            }
 
             // 直线端点调整
             if (shape.ShapeType == ShapeType.Line)
@@ -1911,6 +2172,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                     var endPoint = new Point(shape.EndX, shape.EndY);
                     _currentHandles = Rendering.HandleRenderer.CreateLineHandles(startPoint, endPoint, zoom);
                     break;
+
+                case ShapeType.Polygon:
+                    _currentHandles = Rendering.HandleRenderer.CreatePolygonHandles(shape.Points, zoom);
+                    break;
             }
         }
 
@@ -2071,6 +2336,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 ShapeType.RotatedRectangle => IsPointInRotatedRectangle(point, shapeDef),
                 ShapeType.Circle => IsPointInCircle(point, shapeDef),
                 ShapeType.Line => IsPointNearLine(point, shapeDef),
+                ShapeType.Polygon => IsPointInPolygon(point, shapeDef),
                 _ => false
             };
         }
@@ -2149,6 +2415,32 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
             var projection = new Point(lineStart.X + t * dx, lineStart.Y + t * dy);
             return Point.Subtract(point, projection).Length;
+        }
+
+        /// <summary>
+        /// 射线法判断点是否在多边形内
+        /// </summary>
+        private bool IsPointInPolygon(Point point, ShapeParameters shapeDef)
+        {
+            var points = shapeDef.Points;
+            if (points.Count < 3) return false;
+
+            bool inside = false;
+            int j = points.Count - 1;
+
+            for (int i = 0; i < points.Count; j = i++)
+            {
+                var pi = new Point(points[i].X, points[i].Y);
+                var pj = new Point(points[j].X, points[j].Y);
+
+                if (((pi.Y > point.Y) != (pj.Y > point.Y)) &&
+                    (point.X < (pj.X - pi.X) * (point.Y - pi.Y) / (pj.Y - pi.Y) + pi.X))
+                {
+                    inside = !inside;
+                }
+            }
+
+            return inside;
         }
 
         private void SelectRegion(RegionData? region)
@@ -2400,6 +2692,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             SelectShapeTool(ShapeType.Line, sender as Button);
         }
 
+        private void OnPolygonButtonClick(object sender, RoutedEventArgs e)
+        {
+            _isDrawingPolygon = false;
+            SelectShapeTool(ShapeType.Polygon, sender as Button);
+        }
+
         /// <summary>
         /// 进入选择/编辑模式
         /// </summary>
@@ -2475,6 +2773,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 ShapeType.Circle => "圆形",
                 ShapeType.RotatedRectangle => "旋转矩形",
                 ShapeType.Line => "直线",
+                ShapeType.Polygon => "多边形",
                 _ => shapeType.ToString()
             };
             _viewModel.StatusMessage = $"已选择 {shapeName} 工具，在图像上拖动绘制";

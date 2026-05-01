@@ -70,6 +70,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                 case ShapeType.Line:
                     result = CreateLine(shape, strokeColor, strokeThickness, isPreview);
                     break;
+
+                case ShapeType.Polygon:
+                    result = CreatePolygon(shape, fillColorBrush, strokeColor, strokeThickness, isPreview);
+                    break;
             }
 
             return result;
@@ -159,6 +163,31 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
             };
 
             return line;
+        }
+
+        private static Polygon CreatePolygon(ShapeParameters shape, Brush fillColor, Brush strokeColor, double strokeThickness, bool isPreview)
+        {
+            if (shape.Points.Count < 3) return null;
+
+            var polygon = new Polygon
+            {
+                Fill = fillColor,
+                Stroke = strokeColor,
+                StrokeThickness = strokeThickness,
+            };
+
+            var pointCollection = new PointCollection();
+            double minX = double.MaxValue, minY = double.MaxValue;
+            foreach (var pt in shape.Points)
+            {
+                pointCollection.Add(new System.Windows.Point(pt.X, pt.Y));
+                if (pt.X < minX) minX = pt.X;
+                if (pt.Y < minY) minY = pt.Y;
+            }
+            polygon.Points = pointCollection;
+            polygon.Tag = new { X = minX, Y = minY };
+
+            return polygon;
         }
     }
 }

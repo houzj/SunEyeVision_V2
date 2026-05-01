@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -32,7 +33,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
         Center,
         // 直线端点手柄
         LineStart,
-        LineEnd
+        LineEnd,
+        // 多边形顶点手柄
+        PolygonVertex
     }
 
     /// <summary>
@@ -45,6 +48,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
         public Rect Bounds { get; set; }
         public Cursor Cursor { get; set; } = Cursors.Arrow;
         public double HandleSize { get; set; } = 60;
+        /// <summary>
+        /// 顶点索引（仅多边形顶点手柄使用）
+        /// </summary>
+        public int VertexIndex { get; set; } = -1;
     }
 
     /// <summary>
@@ -374,6 +381,46 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
             };
 
             return handles;
+        }
+
+        /// <summary>
+        /// 创建多边形手柄（每个顶点一个可拖拽手柄 + 中心手柄）
+        /// </summary>
+        public static EditHandle[] CreatePolygonHandles(List<Point2D> vertices, double scale = 1.0)
+        {
+            var handles = new List<EditHandle>();
+            for (int i = 0; i < vertices.Count; i++)
+            {
+                var v = vertices[i];
+                var size = GetScaledHandleSize(scale);
+                handles.Add(new EditHandle
+                {
+                    Type = HandleType.PolygonVertex,
+                    Position = new Point(v.X, v.Y),
+                    HandleSize = size,
+                    Bounds = new Rect(v.X - size / 2, v.Y - size / 2, size, size),
+                    Cursor = Cursors.SizeAll,
+                    VertexIndex = i
+                });
+            }
+
+            // 中心手柄（各顶点均值）
+            if (vertices.Count > 0)
+            {
+                var centerX = vertices.Average(v => v.X);
+                var centerY = vertices.Average(v => v.Y);
+                var centerSize = GetScaledHandleSize(scale);
+                handles.Add(new EditHandle
+                {
+                    Type = HandleType.Center,
+                    Position = new Point(centerX, centerY),
+                    HandleSize = centerSize,
+                    Bounds = new Rect(centerX - centerSize / 2, centerY - centerSize / 2, centerSize, centerSize),
+                    Cursor = Cursors.SizeAll
+                });
+            }
+
+            return handles.ToArray();
         }
 
         /// <summary>

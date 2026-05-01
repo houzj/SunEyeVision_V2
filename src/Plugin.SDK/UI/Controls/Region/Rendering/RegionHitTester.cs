@@ -122,6 +122,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                 ShapeType.Circle => CreateCircleHandles(region, scale),
                 ShapeType.RotatedRectangle => CreateRotatedRectangleHandles(region, scale),
                 ShapeType.Line => CreateLineHandles(region, scale),
+                ShapeType.Polygon => CreatePolygonHandles(region, scale),
                 _ => Array.Empty<EditHandle>()
             };
         }
@@ -247,6 +248,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
         private static EditHandle[] CreateLineHandles(RegionRenderContext region, double scale)
         {
             return HandleRenderer.CreateLineHandles(region.LineStart, region.LineEnd, scale);
+        }
+
+        private static EditHandle[] CreatePolygonHandles(RegionRenderContext region, double scale)
+        {
+            var points = region.PolygonPoints
+                .Select(p => new Point2D(p.X, p.Y))
+                .ToList();
+            return HandleRenderer.CreatePolygonHandles(points, scale);
         }
 
         #endregion

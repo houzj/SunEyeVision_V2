@@ -26,7 +26,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Logic
         Center,
         // 直线端点手柄
         LineStart,
-        LineEnd
+        LineEnd,
+        // 多边形顶点手柄
+        PolygonVertex
     }
 
     /// <summary>
@@ -149,6 +151,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Logic
                     break;
                 case ShapeType.Line:
                     CreateLineHandles(shape);
+                    break;
+                case ShapeType.Polygon:
+                    CreatePolygonHandles(shape);
                     break;
                 case ShapeType.Rectangle:
                 default:
@@ -312,6 +317,20 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Logic
 
             // 终点手柄
             AddHandle(HandleType.LineEnd, shape.GetEndPoint());
+        }
+
+        /// <summary>
+        /// 创建多边形手柄（每个顶点一个手柄 + 中心手柄）
+        /// </summary>
+        private void CreatePolygonHandles(ShapeParameters shape)
+        {
+            for (int i = 0; i < shape.Points.Count; i++)
+            {
+                var pt = shape.Points[i];
+                AddHandle(HandleType.PolygonVertex, pt);
+            }
+            // 中心手柄用于拖动整个多边形
+            AddHandle(HandleType.Center, shape.GetCenter());
         }
 
         /// <summary>

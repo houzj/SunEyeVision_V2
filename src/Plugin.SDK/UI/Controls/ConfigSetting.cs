@@ -355,6 +355,40 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// </summary>
         private bool _isRestoringBindingState;
 
+        /// <summary>
+        /// 是否正在从 TextStyle 恢复绑定状态（用于阻止 OnBindingTypeChanged 覆盖 _constantValueBeforeBinding）
+        /// </summary>
+        private bool _isRestoringFromTextStyle;
+
+        #endregion
+
+        #region 内部绑定状态恢复接口
+
+        /// <summary>
+        /// 设置正在从 TextStyle 恢复绑定状态的标志
+        /// </summary>
+        /// <remarks>在调用 FromParamSetting 前调用，阻止 OnBindingTypeChanged 覆盖 _constantValueBeforeBinding</remarks>
+        internal void BeginRestoreFromTextStyle()
+        {
+            _isRestoringFromTextStyle = true;
+        }
+
+        /// <summary>
+        /// 结束从 TextStyle 恢复绑定状态
+        /// </summary>
+        internal void EndRestoreFromTextStyle()
+        {
+            _isRestoringFromTextStyle = false;
+        }
+
+        /// <summary>
+        /// 设置切回常量模式时要恢复的原始常量值
+        /// </summary>
+        internal void SetConstantValueBeforeBinding(object? value)
+        {
+            _constantValueBeforeBinding = value;
+        }
+
         #endregion
 
         #region 事件
@@ -421,7 +455,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 var newType = (BindingType)e.NewValue;
 
                 // 切到绑定模式前，保存当前常量值
-                if (oldType == BindingType.Constant && newType == BindingType.Binding)
+                // （只有用户主动切换时保存，从 TextStyle 恢复绑定模式时不覆盖已设置的原始常量值）
+                if (oldType == BindingType.Constant && newType == BindingType.Binding
+                    && !control._isRestoringFromTextStyle)
                 {
                     control._constantValueBeforeBinding = control.Value;
                 }

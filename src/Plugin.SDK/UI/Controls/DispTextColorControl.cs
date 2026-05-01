@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -230,7 +231,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     }
                 }
 
-                Item.SetBindingConfig(cs.ParameterName, setting);
+                // 保存绑定配置时一并保存当前的常量值，用于切回常量模式时恢复
+                var constantValue = Convert.ToDouble(cs.Value ?? 0.0);
+                Item.SetBindingConfig(cs.ParameterName, setting, saveConstantValue: true, constantValue: constantValue);
 
                 PluginLogger.Info(
                     $"[DispText-Diag] SaveBinding | param={cs.ParameterName} type=Binding src='{cs.BindingSource}' disp='{cs.BindingDisplayText}' | " +
@@ -271,12 +274,29 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     // 当前为常量模式却需要恢复为绑定模式
                     if (cs.BindingType != BindingType.Binding)
                     {
-                        cs.FromParamSetting(config);
+                        // 先从 TextStyle 获取持久化的常量值，设置到 ConfigSetting
+                        // 这样 OnBindingTypeChanged 不会用默认值覆盖原始常量值
+                        double persistentConstantValue = cs.ParameterName == "PositionX"
+                            ? Item.PositionXBindingConstantValue
+                            : Item.PositionYBindingConstantValue;
 
-                        PluginLogger.Info(
-                            $"[DispText-Diag] RestoreBinding | APPLIED | param={cs.ParameterName} " +
-                            $"afterRestore: type={cs.BindingType} src='{cs.BindingSource}' disp='{cs.BindingDisplayText}'",
-                            "DispTextColorControl");
+                        // 使用内部接口在恢复绑定状态前设置好常量值和恢复标志
+                        cs.SetConstantValueBeforeBinding(persistentConstantValue);
+                        cs.BeginRestoreFromTextStyle();
+                        try
+                        {
+                            cs.FromParamSetting(config);
+
+                            PluginLogger.Info(
+                                $"[DispText-Diag] RestoreBinding | APPLIED | param={cs.ParameterName} " +
+                                $"afterRestore: type={cs.BindingType} src='{cs.BindingSource}' disp='{cs.BindingDisplayText}' " +
+                                $"restoredConstantValue={persistentConstantValue}",
+                                "DispTextColorControl");
+                        }
+                        finally
+                        {
+                            cs.EndRestoreFromTextStyle();
+                        }
                     }
                 }
             }

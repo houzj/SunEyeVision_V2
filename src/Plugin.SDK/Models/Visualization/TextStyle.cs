@@ -27,11 +27,13 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
         private bool _isPositionXBinding;
         private string _positionXBindingSource = "";
         private string _positionXBindingDisplayText = "";
+        private double _positionXBindingConstantValue;
 
         // PositionY 绑定状态持久化字段
         private bool _isPositionYBinding;
         private string _positionYBindingSource = "";
         private string _positionYBindingDisplayText = "";
+        private double _positionYBindingConstantValue;
 
         /// <summary>样式名称</summary>
         public string Name { get => _name; set => SetProperty(ref _name, value, "名称"); }
@@ -75,6 +77,10 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
         [JsonInclude]
         internal string PositionXBindingDisplayText { get => _positionXBindingDisplayText; set => SetProperty(ref _positionXBindingDisplayText, value); }
 
+        /// <summary>PositionX 绑定模式切换前保存的常量值（切回常量模式时恢复用）</summary>
+        [JsonInclude]
+        internal double PositionXBindingConstantValue { get => _positionXBindingConstantValue; set => SetProperty(ref _positionXBindingConstantValue, value); }
+
         // ===== PositionY 绑定状态持久化 =====
 
         /// <summary>PositionY 是否为绑定模式</summary>
@@ -88,6 +94,10 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
         /// <summary>PositionY 绑定显示文本</summary>
         [JsonInclude]
         internal string PositionYBindingDisplayText { get => _positionYBindingDisplayText; set => SetProperty(ref _positionYBindingDisplayText, value); }
+
+        /// <summary>PositionY 绑定模式切换前保存的常量值（切回常量模式时恢复用）</summary>
+        [JsonInclude]
+        internal double PositionYBindingConstantValue { get => _positionYBindingConstantValue; set => SetProperty(ref _positionYBindingConstantValue, value); }
 
         // ===== 绑定配置存取方法（由 DispTextColorControl 通过 IBindingConfigProvider 调用） =====
 
@@ -140,7 +150,7 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
             return null;
         }
 
-        internal void SetBindingConfig(string parameterName, ParamSetting? config)
+        internal void SetBindingConfig(string parameterName, ParamSetting? config, bool saveConstantValue = false, double constantValue = 0.0)
         {
             if (parameterName == "PositionX")
             {
@@ -159,6 +169,8 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
                     PositionXBindingDisplayText = !string.IsNullOrEmpty(config.SourceNodeName) && !string.IsNullOrEmpty(config.SourceDisplayName)
                         ? $"{config.SourceNodeName}.{config.SourceDisplayName}"
                         : PositionXBindingSource;
+                    if (saveConstantValue)
+                        PositionXBindingConstantValue = constantValue;
                 }
             }
             else if (parameterName == "PositionY")
@@ -178,6 +190,8 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
                     PositionYBindingDisplayText = !string.IsNullOrEmpty(config.SourceNodeName) && !string.IsNullOrEmpty(config.SourceDisplayName)
                         ? $"{config.SourceNodeName}.{config.SourceDisplayName}"
                         : PositionYBindingSource;
+                    if (saveConstantValue)
+                        PositionYBindingConstantValue = constantValue;
                 }
             }
         }

@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls
@@ -190,6 +191,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
             // 此时 Popup.Child 已创建，ConfigSetting 控件已实例化
             SubscribeToConfigSettings();
+
             RestoreBindingStateFromTextStyle();
         }
 
@@ -203,6 +205,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             if (cs.BindingType == BindingType.Constant)
             {
                 Item.SetBindingConfig(cs.ParameterName, null);
+
+                PluginLogger.Info(
+                    $"[DispText-Diag] SaveBinding | param={cs.ParameterName} type=Constant | " +
+                    $"TextStyleState: name={Item.Name} posXBinding={Item.IsPositionXBinding} posXsrc='{Item.PositionXBindingSource}' posXdisp='{Item.PositionXBindingDisplayText}'",
+                    "DispTextColorControl");
             }
             else
             {
@@ -224,6 +231,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 }
 
                 Item.SetBindingConfig(cs.ParameterName, setting);
+
+                PluginLogger.Info(
+                    $"[DispText-Diag] SaveBinding | param={cs.ParameterName} type=Binding src='{cs.BindingSource}' disp='{cs.BindingDisplayText}' | " +
+                    $"TextStyleState: name={Item.Name} posXBinding={Item.IsPositionXBinding} posXsrc='{Item.PositionXBindingSource}' posXdisp='{Item.PositionXBindingDisplayText}'",
+                    "DispTextColorControl");
             }
         }
 
@@ -235,15 +247,36 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             if (Item == null) return;
 
             var configSettings = FindConfigSettingsInTemplate();
+
+            PluginLogger.Info(
+                $"[DispText-Diag] RestoreBinding | BEGIN | TextStyles: name={Item.Name} " +
+                $"posXBinding={Item.IsPositionXBinding} posXsrc='{Item.PositionXBindingSource}' posXdisp='{Item.PositionXBindingDisplayText}' " +
+                $"posYBinding={Item.IsPositionYBinding} posYsrc='{Item.PositionYBindingSource}' posYdisp='{Item.PositionYBindingDisplayText}' " +
+                $"configCount={configSettings.Count}",
+                "DispTextColorControl");
+
             foreach (var cs in configSettings)
             {
                 var config = Item.GetBindingConfig(cs.ParameterName);
+
+                PluginLogger.Info(
+                    $"[DispText-Diag] RestoreBinding | cs={cs.ParameterName} " +
+                    $"curType={cs.BindingType} configFound={(config != null)} " +
+                    $"configType={(config?.BindingType).ToString()} configSrc='{config?.SourceNodeId}.{config?.SourceProperty}' " +
+                    $"configDisplay='{config?.SourceNodeName}.{config?.SourceDisplayName}'",
+                    "DispTextColorControl");
+
                 if (config != null && config.BindingType == BindingType.Binding)
                 {
                     // 当前为常量模式却需要恢复为绑定模式
                     if (cs.BindingType != BindingType.Binding)
                     {
                         cs.FromParamSetting(config);
+
+                        PluginLogger.Info(
+                            $"[DispText-Diag] RestoreBinding | APPLIED | param={cs.ParameterName} " +
+                            $"afterRestore: type={cs.BindingType} src='{cs.BindingSource}' disp='{cs.BindingDisplayText}'",
+                            "DispTextColorControl");
                     }
                 }
             }

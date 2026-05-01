@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using System.Windows.Media;
 using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
@@ -62,23 +63,30 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
         // ===== PositionX 绑定状态持久化（ConfigSetting 关闭再打开后恢复绑定模式用） =====
 
         /// <summary>PositionX 是否为绑定模式</summary>
+        /// <remarks>[JsonInclude] 确保 internal 属性的绑定状态在保存/加载方案时持久化</remarks>
+        [JsonInclude]
         internal bool IsPositionXBinding { get => _isPositionXBinding; set => SetProperty(ref _isPositionXBinding, value); }
 
         /// <summary>PositionX 绑定源标识</summary>
+        [JsonInclude]
         internal string PositionXBindingSource { get => _positionXBindingSource; set => SetProperty(ref _positionXBindingSource, value); }
 
         /// <summary>PositionX 绑定显示文本</summary>
+        [JsonInclude]
         internal string PositionXBindingDisplayText { get => _positionXBindingDisplayText; set => SetProperty(ref _positionXBindingDisplayText, value); }
 
         // ===== PositionY 绑定状态持久化 =====
 
         /// <summary>PositionY 是否为绑定模式</summary>
+        [JsonInclude]
         internal bool IsPositionYBinding { get => _isPositionYBinding; set => SetProperty(ref _isPositionYBinding, value); }
 
         /// <summary>PositionY 绑定源标识</summary>
+        [JsonInclude]
         internal string PositionYBindingSource { get => _positionYBindingSource; set => SetProperty(ref _positionYBindingSource, value); }
 
         /// <summary>PositionY 绑定显示文本</summary>
+        [JsonInclude]
         internal string PositionYBindingDisplayText { get => _positionYBindingDisplayText; set => SetProperty(ref _positionYBindingDisplayText, value); }
 
         // ===== 绑定配置存取方法（由 DispTextColorControl 通过 IBindingConfigProvider 调用） =====

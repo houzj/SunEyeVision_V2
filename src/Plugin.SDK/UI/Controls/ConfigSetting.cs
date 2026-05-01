@@ -823,9 +823,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             {
                 _paramBinding.BindingSourceSelected += (s, e) =>
                 {
-                    // 从 ParamBinding 获取绑定源和显示文本
-                    BindingSource = _paramBinding.BindingSource;
+                    // 【顺序关键】先设置显示文本，再设置绑定源。
+                    // 因为设置 BindingSource 会触发 OnBindingSourceChanged → SyncBindingConfigToParamValue
+                    // → BindingConfigChanged，保存到 TextStyle 时需要 BindingDisplayText 已经就位。
                     BindingDisplayText = _paramBinding.BindingDisplayText;
+                    BindingSource = _paramBinding.BindingSource;
 
                     RaiseEvent(new RoutedEventArgs(BindingSourceSelectedEvent));
                 };
@@ -1135,7 +1137,16 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         public void FromParamSetting(ParamSetting setting)
         {
             if (setting == null)
+            {
+                PluginLogger.Info("[DispText-Diag] FromParamSetting | setting=null", "ConfigSetting");
                 return;
+            }
+
+            PluginLogger.Info(
+                $"[DispText-Diag] FromParamSetting | param={setting.ParameterName} " +
+                $"type={setting.BindingType} srcNode='{setting.SourceNodeId}' srcProp='{setting.SourceProperty}' " +
+                $"dispName='{setting.SourceNodeName}.{setting.SourceDisplayName}'",
+                "ConfigSetting");
 
             ParameterName = setting.ParameterName;
             BindingType = setting.BindingType;
@@ -1148,22 +1159,34 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             }
             else
             {
-                // 设置绑定源路径
-                BindingSource = string.IsNullOrEmpty(setting.SourceProperty)
+                // 【顺序关键】先计算所有值，最后按 BindingDisplayText → BindingSource 顺序赋值。
+                // 因为设置 BindingSource 会触发 OnBindingSourceChanged → SaveConfigSettingState，
+                // 需要 BindingDisplayText 已经就位。
+
+                // 先计算 BindingSource 值（但不触发 DP 回调）
+                var newBindingSource = string.IsNullOrEmpty(setting.SourceProperty)
                     ? setting.SourceNodeId ?? string.Empty
                     : $"{setting.SourceNodeId}.{setting.SourceProperty}";
 
-                // 优先使用 ParamSetting 中保存的展示名称
-                if (!string.IsNullOrEmpty(setting.SourceNodeName) && !string.IsNullOrEmpty(setting.SourceDisplayName))
-                {
-                    BindingDisplayText = $"{setting.SourceNodeName}.{setting.SourceDisplayName}";
-                }
-                else
-                {
-                    // 回退：尝试从 ParamBinding 的方法生成
-                    BindingDisplayText = _paramBinding?.GenerateBindingDisplayText(BindingSource) ?? BindingSource;
-                }
+                // 计算 BindingDisplayText
+                var newBindingDisplayText = (!string.IsNullOrEmpty(setting.SourceNodeName) && !string.IsNullOrEmpty(setting.SourceDisplayName))
+                    ? $"{setting.SourceNodeName}.{setting.SourceDisplayName}"
+                    : _paramBinding?.GenerateBindingDisplayText(newBindingSource) ?? newBindingSource;
+
+                // 先设置显示文本，再设置绑定源
+                BindingDisplayText = newBindingDisplayText;
+                BindingSource = newBindingSource;
             }
+
+            PluginLogger.Info(
+                $"[DispText-Diag] FromParamSetting | AFTER | param={ParameterName} " +
+                $"type={BindingType} src='{BindingSource}' disp='{BindingDisplayText}' " +
+                $"hasParamBinding={(_paramBinding != null)}",
+                "ConfigSetting");
+
+            // 更新 UI 视觉状态（OnBindingTypeChanged 只调了 UpdateEditorVisibility，
+            // 还需要更新 ParamBinding.IsBound、BindingDisplayText 和绑定模式按钮图标）
+            UpdateVisualState();
         }
 
         /// <summary>

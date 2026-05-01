@@ -191,8 +191,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         {
             if (d is ParamBindingBase control)
             {
-                // 子类可以重写此方法进行额外处理
+                control.OnDataTypeChangedCore(e);
             }
+        }
+
+        /// <summary>
+        /// DataType 变更时的虚方法，子类可覆写以响应数据类型变化
+        /// </summary>
+        protected virtual void OnDataTypeChangedCore(DependencyPropertyChangedEventArgs e)
+        {
         }
 
         #endregion

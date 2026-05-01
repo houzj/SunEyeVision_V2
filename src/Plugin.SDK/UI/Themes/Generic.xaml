@@ -549,8 +549,8 @@
                                 <Slider x:Name="PART_Slider"
                                         Style="{StaticResource SliderStyle}"
                                         Value="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
-                                        Minimum="{TemplateBinding Minimum}"
-                                        Maximum="{TemplateBinding Maximum}"
+                                        Minimum="{Binding Minimum, RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}"
+                                        Maximum="{Binding Maximum, RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}"
                                         SmallChange="{TemplateBinding SmallChange}"
                                         LargeChange="{TemplateBinding LargeChange}"
                                         Width="220"/>
@@ -1264,7 +1264,7 @@
                                         <controls:ConfigSetting
                                             Value="{Binding Item.PositionX, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                                             DataType="{x:Type sys:Double}"
-                                            Minimum="-99999" Maximum="99999"
+                                                Minimum="-9999" Maximum="9999"
                                             DecimalPlaces="1" ShowSlider="True"
                                             SmallChange="1" LargeChange="10"
                                             ParameterName="PositionX"
@@ -1276,7 +1276,7 @@
                                         <controls:ConfigSetting
                                             Value="{Binding Item.PositionY, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                                             DataType="{x:Type sys:Double}"
-                                            Minimum="-99999" Maximum="99999"
+                                                Minimum="-9999" Maximum="9999"
                                             DecimalPlaces="1" ShowSlider="True"
                                             SmallChange="1" LargeChange="10"
                                             ParameterName="PositionY"

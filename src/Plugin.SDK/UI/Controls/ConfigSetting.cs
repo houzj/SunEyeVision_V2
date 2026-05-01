@@ -470,30 +470,30 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             control.UpdateUIFromValue(e.NewValue);
         }
 
-        private static void OnDataTypeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        /// <summary>
+        /// DataType 变更时更新 DecimalPlaces、数值范围、编辑器可见性和视觉状态
+        /// </summary>
+        protected override void OnDataTypeChangedCore(DependencyPropertyChangedEventArgs e)
         {
-            if (d is ConfigSetting control)
+            // 根据 Type.Code 自动设置 DecimalPlaces
+            if (e.NewValue is Type dataType)
             {
-                // 根据 Type.Code 自动设置 DecimalPlaces
-                if (e.NewValue is Type dataType)
+                var typeCode = Type.GetTypeCode(dataType);
+
+                if (typeCode == TypeCode.Int32 || typeCode == TypeCode.Int64)
                 {
-                    var typeCode = Type.GetTypeCode(dataType);
-
-                    if (typeCode == TypeCode.Int32 || typeCode == TypeCode.Int64)
-                    {
-                        // 整数类型：强制设置为 0 位小数
-                        control.DecimalPlaces = 0;
-                    }
-                    // 浮点类型：保持用户设置的 DecimalPlaces（默认为 2）
+                    // 整数类型：强制设置为 0 位小数
+                    DecimalPlaces = 0;
                 }
-
-                // 重新计算内部数值值
-                control.UpdateInternalNumericValue(control.Value);
-                control.UpdateInternalNumericRange();
-
-                control.UpdateEditorVisibility();
-                control.UpdateVisualState();
+                // 浮点类型：保持用户设置的 DecimalPlaces（默认为 2）
             }
+
+            // 重新计算内部数值值和范围
+            UpdateInternalNumericValue(Value);
+            UpdateInternalNumericRange();
+
+            UpdateEditorVisibility();
+            UpdateVisualState();
         }
 
         private static void OnRangeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -720,6 +720,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             {
                 InternalNumericMaximum = Convert.ToDouble(Maximum);
             }
+
+            // ===== [Diag] 范围更新摘要 =====
+            PluginLogger.Info(
+                $"[DispText-Diag] 范围更新 | " +
+                $"ParameterName={ParameterName} | " +
+                $"DataSource.Minimum={Minimum} | DataSource.Maximum={Maximum} | " +
+                $"InternalMin={InternalNumericMinimum:F1} | InternalMax={InternalNumericMaximum:F1} | " +
+                $"DataType={DataType?.Name ?? "null"}",
+                "ConfigSetting");
         }
 
         /// <summary>
@@ -825,6 +834,25 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             // 初始化状态
             UpdateEditorVisibility();
             UpdateVisualState();
+
+            // ===== [Diag] 汇总 ConfigSetting 模板初始化状态 =====
+            if (_numericEditor != null)
+            {
+                PluginLogger.Info(
+                    $"[DispText-Diag] ConfigSetting模板初始化 | " +
+                    $"ParameterName={ParameterName} | " +
+                    $"DataType={DataType?.Name ?? "null"} | " +
+                    $"Value={Value} | " +
+                    $"InternalNumericValue={InternalNumericValue:F1} | " +
+                    $"InternalNumericMinimum={InternalNumericMinimum:F1} | " +
+                    $"InternalNumericMaximum={InternalNumericMaximum:F1} | " +
+                    $"Minimum={Minimum} | Maximum={Maximum} | " +
+                    $"NumericEditor.Value={_numericEditor.Value:F1} | " +
+                    $"NumericEditor.Minimum={_numericEditor.Minimum:F1} | " +
+                    $"NumericEditor.Maximum={_numericEditor.Maximum:F1} | " +
+                    $"NumericEditor.ShowSlider={_numericEditor.ShowSlider}",
+                    "ConfigSetting");
+            }
         }
 
         private void RaiseValueChanged()

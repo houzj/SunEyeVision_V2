@@ -275,6 +275,18 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
             // 初始化滑块状态（参考 RangeInputControl 的实现）
             UpdateSliderState();
+
+            // ===== [Diag] 汇总 NumericUpDown 模板初始化状态 =====
+            if (_slider != null)
+            {
+                VisionLogger.Instance.Log(LogLevel.Info,
+                    $"[DispText-Diag] NumericUpDown模板初始化 | " +
+                    $"Value={Value:F1} | Minimum={Minimum:F1} | Maximum={Maximum:F1} | " +
+                    $"SmallChange={SmallChange:F1} | LargeChange={LargeChange:F1} | " +
+                    $"Slider.Value={_slider.Value:F1} | Slider.Minimum={_slider.Minimum:F1} | Slider.Maximum={_slider.Maximum:F1} | " +
+                    $"ShowSlider={ShowSlider} | Popup.IsOpen={_sliderPopup?.IsOpen}",
+                    "NumericUpDown");
+            }
         }
 
         protected override void OnGotFocus(RoutedEventArgs e)
@@ -517,6 +529,16 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     $"[OnTextBoxGotFocus] Popup已打开 | IsOpen: {_sliderPopup.IsOpen}", 
                     "NumericUpDown");
             }
+
+            // ===== [Diag] Slider Popup 打开后汇总 =====
+            if (_slider != null)
+            {
+                VisionLogger.Instance.Log(LogLevel.Info,
+                    $"[DispText-Diag] Slider Popup打开 | " +
+                    $"Value={Value:F1} | Min={Minimum:F1} | Max={Maximum:F1} | " +
+                    $"Slider.Value={_slider.Value:F1} | Slider.Min={_slider.Minimum:F1} | Slider.Max={_slider.Maximum:F1}",
+                    "NumericUpDown");
+            }
         }
 
         private void OnTextBoxLostFocus(object sender, RoutedEventArgs e)
@@ -589,6 +611,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         {
             if (!IsReadOnly)
             {
+                VisionLogger.Instance.Log(LogLevel.Info,
+                    $"[DispText-Diag] 用户点击增加按钮 | " +
+                    $"Value={Value:F1}→{Clamp(Math.Round(Value + SmallChange, DecimalPlaces)):F1} | " +
+                    $"Min={Minimum:F1} | Max={Maximum:F1} | " +
+                    $"SliderValue={_slider?.Value} | SliderMin={_slider?.Minimum} | SliderMax={_slider?.Maximum}",
+                    "NumericUpDown");
                 ChangeValue(SmallChange);
             }
         }
@@ -597,6 +625,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         {
             if (!IsReadOnly)
             {
+                VisionLogger.Instance.Log(LogLevel.Info,
+                    $"[DispText-Diag] 用户点击减少按钮 | " +
+                    $"Value={Value:F1}→{Clamp(Math.Round(Value - SmallChange, DecimalPlaces)):F1} | " +
+                    $"Min={Minimum:F1} | Max={Maximum:F1} | " +
+                    $"SliderValue={_slider?.Value} | SliderMin={_slider?.Minimum} | SliderMax={_slider?.Maximum}",
+                    "NumericUpDown");
                 ChangeValue(-SmallChange);
             }
         }

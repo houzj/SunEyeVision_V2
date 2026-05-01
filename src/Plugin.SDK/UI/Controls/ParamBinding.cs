@@ -248,12 +248,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             }
         }
 
-        private static void OnDataTypeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        /// <summary>
+        /// DataType 变更时重新构建树形结构
+        /// </summary>
+        protected override void OnDataTypeChangedCore(DependencyPropertyChangedEventArgs e)
         {
-            if (d is ParamBinding control)
-            {
-                control.RebuildTreeNodes();
-            }
+            RebuildTreeNodes();
         }
 
         #endregion

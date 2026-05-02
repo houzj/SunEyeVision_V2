@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows;
@@ -580,7 +581,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             {
                 _viewModel.Regions.Remove(region);
                 if (_selectedRegion == region)
+                {
+                    UnsubscribeShapeParameters(_selectedRegion);
                     _selectedRegion = null;
+                }
                 UpdateRegionOverlay();
                 // RegionChanged 事件会通过 OnRegionChanged 自动转发到 RegionDataChanged
                 // 这里不再手动触发，避免重复通知
@@ -652,9 +656,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                     $"[Delete] ViewModel.RemoveSelectedRegion 完成 | Regions.Count={_viewModel.Regions.Count} | Regions=[{afterRegionNames}] | SelectedRegion={_viewModel.SelectedRegion?.Name ?? "null"}",
                     "RegionEditorControl");
 
+                UnsubscribeShapeParameters(_selectedRegion);
                 _selectedRegion = null;
-
-                // ★ 诊断日志：第二次 UpdateRegionOverlay 调用
                 VisionLogger.Instance.Log(LogLevel.Warning,
                     $"[Delete] 开始第二次 UpdateRegionOverlay | _selectedRegion=null | Regions.Count={_viewModel.Regions.Count}",
                     "RegionEditorControl");
@@ -2483,9 +2486,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 $"[SelectRegion] 选中区域 | Region={region?.Name ?? "null"}(Id={region?.Id:B}) | Regions.Count={_viewModel.Regions.Count}",
                 "RegionEditorControl");
 
+            // 取消旧区域的参数变更订阅
+            UnsubscribeShapeParameters(_selectedRegion);
+
             _selectedRegion = region;
             _viewModel.SelectedRegion = region;
             UpdateRegionOverlay();
+
+            // 订阅新区域的参数变更（面板→画布自动同步）
+            SubscribeShapeParameters(region);
 
             // 选中区域后，确保焦点回到区域编辑器，以接收键盘事件（如Delete删除区域）
             // 因为选择区域是通过主窗口 ImageControl 的鼠标事件触发的，
@@ -2503,6 +2512,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 $"[DeselectAll] 取消所有选中 | _selectedRegion={_selectedRegion?.Name ?? "null"} | Regions.Count={_viewModel.Regions.Count}",
                 "RegionEditorControl");
 
+            UnsubscribeShapeParameters(_selectedRegion);
+
             _selectedRegion = null;
             _viewModel.SelectedRegion = null;
 
@@ -2515,6 +2526,86 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
             UpdateRegionOverlay();
         }
+
+        #region 形状参数变更订阅（面板→画布自动同步）
+
+        /// <summary>
+        /// 取消形状参数变更订阅
+        /// </summary>
+        private void UnsubscribeShapeParameters(RegionData? region)
+        {
+            if (region?.Parameters is ShapeParameters shape)
+            {
+                shape.PropertyChanged -= OnShapeParametersChanged;
+                if (shape.ShapeType == ShapeType.Polygon)
+                {
+                    foreach (var pt in shape.Points)
+                        pt.PropertyChanged -= OnPolygonPointPropertyChanged;
+                    shape.Points.CollectionChanged -= OnPolygonPointsCollectionChanged;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 订阅形状参数变更（面板→画布自动同步）
+        /// PropertyChanged 处理 CenterX/Width/Radius 等属性，
+        /// Point2D.PropertyChanged + CollectionChanged 处理多边形顶点
+        /// </summary>
+        private void SubscribeShapeParameters(RegionData? region)
+        {
+            if (region?.Parameters is ShapeParameters shape)
+            {
+                shape.PropertyChanged += OnShapeParametersChanged;
+                if (shape.ShapeType == ShapeType.Polygon)
+                {
+                    foreach (var pt in shape.Points)
+                        pt.PropertyChanged += OnPolygonPointPropertyChanged;
+                    shape.Points.CollectionChanged += OnPolygonPointsCollectionChanged;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 形状参数 PropertyChanged 回调（CenterX, Width, Radius 等 → 画布刷新）
+        /// </summary>
+        private void OnShapeParametersChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (_selectedRegion != null)
+                UpdateSingleRegionFast(_selectedRegion);
+        }
+
+        /// <summary>
+        /// 多边形顶点 Point2D.PropertyChanged 回调（X/Y 绑定变更 → 画布刷新）
+        /// </summary>
+        private void OnPolygonPointPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (_selectedRegion != null)
+                UpdateSingleRegionFast(_selectedRegion);
+        }
+
+        /// <summary>
+        /// 多边形 Points.CollectionChanged 回调（添加/删除/替换顶点后刷新画布 + 重新订阅）
+        /// </summary>
+        private void OnPolygonPointsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            // 新项订阅 PropertyChanged
+            if (e.NewItems != null)
+            {
+                foreach (Point2D pt in e.NewItems)
+                    pt.PropertyChanged += OnPolygonPointPropertyChanged;
+            }
+            // 旧项取消订阅
+            if (e.OldItems != null)
+            {
+                foreach (Point2D pt in e.OldItems)
+                    pt.PropertyChanged -= OnPolygonPointPropertyChanged;
+            }
+
+            if (_selectedRegion != null)
+                UpdateSingleRegionFast(_selectedRegion);
+        }
+
+        #endregion
 
         /// <summary>
         /// 快速更新单个区域（用于拖动时的增量更新）

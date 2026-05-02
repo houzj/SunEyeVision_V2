@@ -1,4 +1,6 @@
 ﻿using System;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
 {
@@ -67,56 +69,88 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
     /// <summary>
     /// 点结构
     /// </summary>
-    public struct Point2D : IEquatable<Point2D>
+    public class Point2D : INotifyPropertyChanged
     {
-        public double X { get; set; }
-        public double Y { get; set; }
+        private double _x;
+        private double _y;
+
+        public double X
+        {
+            get => _x;
+            set
+            {
+                if (Math.Abs(_x - value) < 0.001) return;
+                _x = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public double Y
+        {
+            get => _y;
+            set
+            {
+                if (Math.Abs(_y - value) < 0.001) return;
+                _y = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public Point2D() { }
 
         public Point2D(double x, double y)
         {
-            X = x;
-            Y = y;
+            _x = x;
+            _y = y;
         }
+
+        public Point2D Clone() => new Point2D(_x, _y);
 
         public static Point2D Empty => new Point2D(0, 0);
 
-        public bool IsEmpty => X == 0 && Y == 0;
+        public bool IsEmpty => Math.Abs(_x) < 0.001 && Math.Abs(_y) < 0.001;
 
         public double DistanceTo(Point2D other)
         {
-            var dx = X - other.X;
-            var dy = Y - other.Y;
+            if (other == null) return double.MaxValue;
+            var dx = _x - other._x;
+            var dy = _y - other._y;
             return Math.Sqrt(dx * dx + dy * dy);
-        }
-
-        public bool Equals(Point2D other)
-        {
-            return Math.Abs(X - other.X) < 0.001 && Math.Abs(Y - other.Y) < 0.001;
         }
 
         public override bool Equals(object? obj)
         {
-            return obj is Point2D point && Equals(point);
+            if (obj is not Point2D other) return false;
+            return Math.Abs(_x - other._x) < 0.001 && Math.Abs(_y - other._y) < 0.001;
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(X, Y);
+            return HashCode.Combine(_x, _y);
         }
 
         public override string ToString()
         {
-            return $"({X:F2}, {Y:F2})";
+            return $"({_x:F2}, {_y:F2})";
         }
 
-        public static bool operator ==(Point2D left, Point2D right)
+        public static bool operator ==(Point2D? left, Point2D? right)
         {
+            if (left is null && right is null) return true;
+            if (left is null || right is null) return false;
             return left.Equals(right);
         }
 
-        public static bool operator !=(Point2D left, Point2D right)
+        public static bool operator !=(Point2D? left, Point2D? right)
         {
-            return !left.Equals(right);
+            return !(left == right);
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

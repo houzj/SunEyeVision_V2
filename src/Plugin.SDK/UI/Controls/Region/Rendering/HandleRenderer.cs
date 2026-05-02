@@ -386,7 +386,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
         /// <summary>
         /// 创建多边形手柄（每个顶点一个可拖拽手柄 + 中心手柄）
         /// </summary>
-        public static EditHandle[] CreatePolygonHandles(List<Point2D> vertices, double scale = 1.0)
+        public static EditHandle[] CreatePolygonHandles(IList<Point2D> vertices, double scale = 1.0)
         {
             var handles = new List<EditHandle>();
             for (int i = 0; i < vertices.Count; i++)

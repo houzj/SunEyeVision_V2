@@ -259,7 +259,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <summary>
         /// 获取多边形的边界盒
         /// </summary>
-        private static Rect GetPolygonBounds(System.Collections.Generic.List<UI.Controls.Region.Models.Point2D> points)
+        private static Rect GetPolygonBounds(System.Collections.Generic.IList<UI.Controls.Region.Models.Point2D> points)
         {
             if (points == null || points.Count == 0)
                 return new Rect(0, 0, 0, 0);

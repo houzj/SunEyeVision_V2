@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Models;
@@ -137,7 +138,18 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
         public double Radius
         {
             get => _radius;
-            set => SetProperty(ref _radius, value, "半径");
+            set
+            {
+                SetProperty(ref _radius, value, "半径");
+                if (ShapeType == ShapeType.Circle)
+                {
+                    // 同步 Width/Height，保证 GetShapePosition 定位正确
+                    _width = value * 2;
+                    _height = value * 2;
+                    OnPropertyChanged(nameof(Width));
+                    OnPropertyChanged(nameof(Height));
+                }
+            }
         }
 
         /// <summary>
@@ -194,9 +206,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
         #region 多边形参数
 
         /// <summary>
-        /// 多边形顶点
+        /// 多边形顶点（使用 ObservableCollection 支持 ItemsControl 自动刷新）
         /// </summary>
-        public List<Point2D> Points { get; set; } = new();
+        public ObservableCollection<Point2D> Points { get; set; } = new();
 
         #endregion
 
@@ -361,7 +373,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
             };
             foreach (var point in Points)
             {
-                clone.Points.Add(point);
+                clone.Points.Add(point.Clone());
             }
             return clone;
         }

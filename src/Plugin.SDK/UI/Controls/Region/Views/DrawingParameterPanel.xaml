@@ -266,14 +266,19 @@
                                                 <ColumnDefinition Width="*"/>
                                             </Grid.ColumnDefinitions>
                                             <TextBlock Grid.Column="0" Text="顶点" Foreground="#888" VerticalAlignment="Center"/>
-                                            <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                                <TextBlock Text="X:" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                                                <TextBox Text="{Binding X, UpdateSourceTrigger=PropertyChanged}" Width="70"/>
-                                            </StackPanel>
-                                            <StackPanel Grid.Column="3" Orientation="Horizontal" Margin="8,0,0,0">
-                                                <TextBlock Text="Y:" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                                                <TextBox Text="{Binding Y, UpdateSourceTrigger=PropertyChanged}" Width="70"/>
-                                            </StackPanel>
+                                            <ctrl:NumericUpDown Grid.Column="1"
+                                                                Value="{Binding X, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                                Minimum="0" Maximum="9999"
+                                                                SmallChange="1" LargeChange="10"
+                                                                DecimalPlaces="3"
+                                                                Width="100" Margin="4,2" HorizontalAlignment="Left"/>
+                                            <TextBlock Grid.Column="2" Text="Y:" Style="{StaticResource LabelStyle}" Margin="8,2,4,2"/>
+                                            <ctrl:NumericUpDown Grid.Column="3"
+                                                                Value="{Binding Y, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                                Minimum="0" Maximum="9999"
+                                                                SmallChange="1" LargeChange="10"
+                                                                DecimalPlaces="3"
+                                                                Width="100" Margin="4,2" HorizontalAlignment="Left"/>
                                         </Grid>
                                     </Border>
                                 </DataTemplate>

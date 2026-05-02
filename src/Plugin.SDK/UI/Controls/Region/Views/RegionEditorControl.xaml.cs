@@ -50,6 +50,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         private int _activeVertexIndex = -1;
         private const string RubberBandTag = "PolygonRubberBand";
 
+        // 记录上次鼠标位置（用于多边形删除后临时顶点预览）
+        private Point _lastMouseImagePosition;
+
         // 日志监控计数器
         private int _mouseMoveLogCounter = 0;
         private int _drawingLogCount = 0;
@@ -668,6 +671,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 {
                     _isDrawingPolygon = false;
                     _polygonPoints.Clear();
+                    if (_currentDrawingRegion != null)
+                        ReleaseRegionIndex(_currentDrawingRegion.Name);
                     _currentDrawingRegion = null;
                     ClearRubberBand();
                     UpdateRegionOverlay();
@@ -714,10 +719,23 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 if (_polygonPoints.Count == 0)
                 {
                     _isDrawingPolygon = false;
+                    if (_currentDrawingRegion != null)
+                        ReleaseRegionIndex(_currentDrawingRegion.Name);
                     _currentDrawingRegion = null;
                 }
                 ClearRubberBand();
-                UpdateRegionOverlay();
+                if (_polygonPoints.Count >= 1 && _currentDrawingRegion != null)
+                {
+                    // 插入上次鼠标位置作为临时点，避免预览跳变
+                    if (_currentDrawingRegion.Parameters is ShapeParameters shapeDef)
+                    {
+                        shapeDef.Points.Add(new Point2D(_lastMouseImagePosition.X, _lastMouseImagePosition.Y));
+                        UpdateSingleRegionFast(_currentDrawingRegion);
+                        shapeDef.Points.RemoveAt(shapeDef.Points.Count - 1);
+                    }
+                }
+                else if (_polygonPoints.Count == 0)
+                    UpdateRegionOverlay();  // 全量重建，清除残留名称标签
                 _viewModel.StatusMessage = _polygonPoints.Count > 0
                     ? $"多边形顶点: {_polygonPoints.Count}"
                     : "已取消多边形绘制";
@@ -777,6 +795,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             if (OverlayCanvas == null) return;
 
             var position = e.ImagePosition;
+            _lastMouseImagePosition = position;
 
             // 每100次移动记录一次日志，避免日志过多
             if (_mouseMoveLogCounter++ % 100 == 0)
@@ -810,16 +829,16 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 // 多边形预览：临时加入鼠标位置做填充预览
                 if (_currentTool == ShapeType.Polygon && _isDrawingPolygon)
                 {
-                    if (_polygonPoints.Count >= 2)
+                if (_polygonPoints.Count >= 1)
+                {
+                    if (_currentDrawingRegion.Parameters is ShapeParameters shapeDef)
                     {
-                        if (_currentDrawingRegion.Parameters is ShapeParameters shapeDef)
-                        {
-                            shapeDef.Points.Add(new Point2D(position.X, position.Y));
-                            UpdateSingleRegionFast(_currentDrawingRegion);
-                            shapeDef.Points.RemoveAt(shapeDef.Points.Count - 1);
-                        }
+                        shapeDef.Points.Add(new Point2D(position.X, position.Y));
+                        UpdateSingleRegionFast(_currentDrawingRegion);
+                        shapeDef.Points.RemoveAt(shapeDef.Points.Count - 1);
                     }
-                    DrawPolygonRubberBand(position);
+                }
+                DrawPolygonRubberBand(position);
                 }
                 else
                 {
@@ -876,7 +895,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 _polygonPoints.Add(position);
                 SyncPolygonToShapeDef();
                 ClearRubberBand();
-                UpdateRegionOverlay();
+                // ★ 统一使用增量更新，与右键/Backspace/mouseMove 保持一致
+                UpdateSingleRegionFast(_currentDrawingRegion);
                 _viewModel.StatusMessage = $"多边形顶点: {_polygonPoints.Count}";
                 e.Handled = true;
                 return;
@@ -1105,10 +1125,23 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             if (_polygonPoints.Count == 0)
             {
                 _isDrawingPolygon = false;
+                if (_currentDrawingRegion != null)
+                    ReleaseRegionIndex(_currentDrawingRegion.Name);
                 _currentDrawingRegion = null;
             }
             ClearRubberBand();
-            UpdateRegionOverlay();
+            if (_polygonPoints.Count >= 1 && _currentDrawingRegion != null)
+            {
+                // 插入上次鼠标位置作为临时点，避免预览跳变
+                if (_currentDrawingRegion.Parameters is ShapeParameters shapeDef)
+                {
+                    shapeDef.Points.Add(new Point2D(_lastMouseImagePosition.X, _lastMouseImagePosition.Y));
+                    UpdateSingleRegionFast(_currentDrawingRegion);
+                    shapeDef.Points.RemoveAt(shapeDef.Points.Count - 1);
+                }
+            }
+            else if (_polygonPoints.Count == 0)
+                UpdateRegionOverlay();  // 全量重建，清除残留名称标签
             _viewModel.StatusMessage = _polygonPoints.Count > 0
                 ? $"多边形顶点: {_polygonPoints.Count}"
                 : "已取消多边形绘制";

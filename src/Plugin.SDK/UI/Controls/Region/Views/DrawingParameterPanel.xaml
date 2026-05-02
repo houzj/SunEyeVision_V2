@@ -158,21 +158,14 @@
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="60"/>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0" Text="角度:" Style="{StaticResource LabelStyle}"/>
-                            <Slider Grid.Column="1"
-                                    Value="{Binding Parameters.Angle, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
-                                    Minimum="-180" Maximum="180"
-                                    TickFrequency="15"
-                                    TickPlacement="BottomRight"
-                                    Margin="4,2"/>
-                            <TextBlock Grid.Column="2"
-                                       Text="{Binding Parameters.Angle, StringFormat={}{0:F1}°}"
-                                       VerticalAlignment="Center"
-                                       Margin="4,2"
-                                       Width="50"
-                                       Foreground="#333"/>
+                            <ctrl:NumericUpDown Grid.Column="1"
+                                                Value="{Binding Parameters.Angle, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                Minimum="-180" Maximum="180"
+                                                SmallChange="1" LargeChange="15"
+                                                DecimalPlaces="1"
+                                                Width="100" Margin="4,2" HorizontalAlignment="Left"/>
                         </Grid>
                     </StackPanel>
                 </Border>

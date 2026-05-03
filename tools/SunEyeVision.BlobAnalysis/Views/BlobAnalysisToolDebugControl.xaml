@@ -33,7 +33,7 @@
       <TabItem Header="基本参数" IsSelected="True">
         <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12">
           <StackPanel>
-            <controls:LabeledControl Label="输入图像" ContentHorizontalAlignment="Center" ContentVerticalAlignment="Center" LabelVerticalAlignment="Center" >
+            <controls:LabeledControl Label="输入图像"  HorizontalAlignment="Left">
               <controls:ImageSourceSelector
                                 x:Name="imageSourceSelector"
                                 PlaceholderText="请选择输入图像源"
@@ -55,6 +55,23 @@
                     InspectionRegionsSource="{Binding InspectionRegions.Regions}"
                     MaskRegionsSource="{Binding MaskRegions.Regions}"/>
             </GroupBox>
+
+            <!-- 位置修正 -->
+            <controls:LabeledControl Label="位置修正" Margin="0,8,0,0" HorizontalAlignment="Left">
+              <controls:ToggleSwitch
+                  IsChecked="{Binding IsPositionCorrectionEnabled.Value, Mode=TwoWay}"
+                  SwitchWidth="48" SwitchHeight="24"/>
+            </controls:LabeledControl>
+
+            <controls:LabeledControl Label="修正信息" Margin="0,4,0,0" HorizontalAlignment="Left"
+                Visibility="{Binding IsPositionCorrectionEnabled.Value, Converter={StaticResource BoolToVisibilityConverter}}">
+              <controls:ParamBinding
+                  x:Name="positionCorrectionBinding"
+                  ParameterName="位置修正" Width="200"
+                  BindingSource="{Binding PositionCorrectionBindingSource, Mode=TwoWay}"
+                  BindingDisplayText="{Binding PositionCorrectionBindingDisplayText, Mode=TwoWay}"
+                  AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+            </controls:LabeledControl>
           </StackPanel>
         </ScrollViewer>
       </TabItem>

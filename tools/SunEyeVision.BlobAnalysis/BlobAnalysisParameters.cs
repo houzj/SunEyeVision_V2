@@ -150,6 +150,48 @@ namespace SunEyeVision.Tool.BlobAnalysis
 
         #endregion
 
+        #region 位置修正
+
+        private string? _positionCorrectionBindingSource;
+        private string? _positionCorrectionBindingDisplayText;
+
+        /// <summary>
+        /// 是否启用位置修正
+        /// </summary>
+        public ParamValue<bool> IsPositionCorrectionEnabled { get; set; } =
+            ParamValue<bool>.CreateConstant(false, "IsPositionCorrectionEnabled");
+
+        /// <summary>
+        /// 位置修正绑定源路径（可序列化）
+        /// </summary>
+        /// <remarks>
+        /// 格式：节点ID.属性名，如 "templateMatch1.PositionOffset"
+        /// 用户通过 ParamBinding 控件选择上游节点的位置修正输出自动设置
+        /// </remarks>
+        [JsonPropertyOrder(16)]
+        [JsonPropertyName("positionCorrectionBindingSource")]
+        public string? PositionCorrectionBindingSource
+        {
+            get => _positionCorrectionBindingSource;
+            set => SetProperty(ref _positionCorrectionBindingSource, value);
+        }
+
+        /// <summary>
+        /// 位置修正绑定显示文本（可序列化）
+        /// </summary>
+        /// <remarks>
+        /// 格式：节点名.显示名，如 "模板匹配1.位置偏移"
+        /// </remarks>
+        [JsonPropertyOrder(17)]
+        [JsonPropertyName("positionCorrectionBindingDisplayText")]
+        public string? PositionCorrectionBindingDisplayText
+        {
+            get => _positionCorrectionBindingDisplayText;
+            set => SetProperty(ref _positionCorrectionBindingDisplayText, value);
+        }
+
+        #endregion
+
         /// <summary>
         /// 验证参数
         /// </summary>

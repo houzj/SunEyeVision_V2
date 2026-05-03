@@ -31,13 +31,10 @@
     
     <Grid>
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-            <StackPanel Margin="8">
-                <!-- 提示信息 -->
-                <TextBlock Text="绘制参数"
-                           Style="{StaticResource GroupHeaderStyle}"/>
+            <StackPanel Margin="8,4">
 
                 <!-- 通用位置参数（所有形状显示） -->
-                <Border BorderBrush="#E0E0E0" BorderThickness="0,1" Padding="0,4" Margin="0,0,0,8"
+                <Border BorderBrush="#E0E0E0" BorderThickness="0,1" Padding="0,4" Margin="0,0,0,6"
                         Visibility="{Binding SelectedShapeType, Converter={StaticResource ShapeTypeToVisibilityConverter}, ConverterParameter='Rectangle,Circle,RotatedRectangle', FallbackValue=Collapsed}">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -64,13 +61,13 @@
                 </Border>
 
                 <!-- 矩形参数 -->
-                <Border BorderBrush="#E0E0E0" BorderThickness="0,1" Padding="0,4" Margin="0,0,0,8"
+                <Border BorderBrush="#E0E0E0" BorderThickness="0,1" Padding="0,4" Margin="0,0,0,6"
                         Visibility="{Binding SelectedShapeType, Converter={StaticResource ShapeTypeToVisibilityConverter}, ConverterParameter='Rectangle', FallbackValue=Collapsed}">
                     <StackPanel>
-                        <TextBlock Text="矩形尺寸 - 矩形工具"
+                        <TextBlock Text="矩形尺寸"
                                    FontSize="12"
                                    Foreground="#666"
-                                   Margin="8,4"/>
+                                   Margin="8,2,8,4"/>
                         <Grid Margin="0,4">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="60"/>
@@ -97,13 +94,13 @@
                 </Border>
 
                 <!-- 圆形参数 -->
-                <Border BorderBrush="#E0E0E0" BorderThickness="0,1" Padding="0,4" Margin="0,0,0,8"
+                <Border BorderBrush="#E0E0E0" BorderThickness="0,1" Padding="0,4" Margin="0,0,0,6"
                         Visibility="{Binding SelectedShapeType, Converter={StaticResource ShapeTypeToVisibilityConverter}, ConverterParameter='Circle', FallbackValue=Collapsed}">
                     <StackPanel>
-                        <TextBlock Text="圆形尺寸 - 圆形工具"
+                        <TextBlock Text="圆形半径"
                                    FontSize="12"
                                    Foreground="#666"
-                                   Margin="8,4"/>
+                                   Margin="8,2,8,4"/>
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="60"/>
@@ -121,13 +118,13 @@
                 </Border>
 
                 <!-- 旋转矩形参数 -->
-                <Border BorderBrush="#E0E0E0" BorderThickness="0,1" Padding="0,4" Margin="0,0,0,8"
+                <Border BorderBrush="#E0E0E0" BorderThickness="0,1" Padding="0,4" Margin="0,0,0,6"
                         Visibility="{Binding SelectedShapeType, Converter={StaticResource ShapeTypeToVisibilityConverter}, ConverterParameter='RotatedRectangle', FallbackValue=Collapsed}">
                     <StackPanel>
-                        <TextBlock Text="旋转矩形尺寸 - 旋转矩形工具"
+                        <TextBlock Text="旋转矩形尺寸"
                                    FontSize="12"
                                    Foreground="#666"
-                                   Margin="8,4"/>
+                                   Margin="8,2,8,4"/>
 
                         <!-- 宽高 -->
                         <Grid Margin="0,4">
@@ -171,13 +168,13 @@
                 </Border>
 
                 <!-- 直线参数 -->
-                <Border BorderBrush="#E0E0E0" BorderThickness="0,1" Padding="0,4" Margin="0,0,0,8"
+                <Border BorderBrush="#E0E0E0" BorderThickness="0,1" Padding="0,4" Margin="0,0,0,6"
                         Visibility="{Binding SelectedShapeType, Converter={StaticResource ShapeTypeToVisibilityConverter}, ConverterParameter='Line', FallbackValue=Collapsed}">
                     <StackPanel>
-                        <TextBlock Text="直线端点 - 直线工具"
+                        <TextBlock Text="直线端点"
                                    FontSize="12"
                                    Foreground="#666"
-                                   Margin="8,4"/>
+                                   Margin="8,2,8,4"/>
 
                         <!-- 起点 -->
                         <Grid Margin="0,4">
@@ -243,10 +240,10 @@
                     </StackPanel>
                 </Border>
                 <!-- 多边形参数 -->
-                <Border BorderBrush="#E0E0E0" BorderThickness="0,1" Padding="0,4" Margin="0,0,0,8"
+                <Border BorderBrush="#E0E0E0" BorderThickness="0,1" Padding="0,4" Margin="0,0,0,6"
                         Visibility="{Binding SelectedShapeType, Converter={StaticResource ShapeTypeToVisibilityConverter}, ConverterParameter='Polygon', FallbackValue=Collapsed}">
                     <StackPanel>
-                        <TextBlock Text="多边形顶点" FontSize="12" Foreground="#666" Margin="8,4"/>
+                        <TextBlock Text="多边形顶点" FontSize="12" Foreground="#666" Margin="8,2,8,4"/>
                         <ItemsControl ItemsSource="{Binding Parameters.Points}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>

@@ -17,7 +17,6 @@ using SunEyeVision.Plugin.SDK.UI.Controls.Region.ViewModels;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Logic;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering;
-using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
@@ -2909,18 +2908,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         private void UpdateShapeButtonHighlight(Button? activeButton)
         {
             // 遍历所有形状按钮并重置样式
-            var shapeGroupBox = FindShapeGroupBox();
-            if (shapeGroupBox != null)
+            var shapeContainer = FindShapeContainer();
+            if (shapeContainer != null)
             {
-                var uniformGrid = FindVisualChild<UniformGrid>(shapeGroupBox);
-                if (uniformGrid != null)
+                foreach (var child in shapeContainer.Children)
                 {
-                    foreach (var child in uniformGrid.Children)
+                    if (child is Button button)
                     {
-                        if (child is Button button)
-                        {
-                            ResetShapeButtonStyle(button);
-                        }
+                        ResetShapeButtonStyle(button);
                     }
                 }
             }
@@ -2929,38 +2924,61 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             if (activeButton != null)
             {
                 activeButton.Background = new SolidColorBrush(Color.FromRgb(232, 244, 252));
-                activeButton.BorderBrush = new SolidColorBrush(Color.FromRgb(33, 150, 243));
-                activeButton.BorderThickness = new Thickness(2);
+                activeButton.BorderBrush = new SolidColorBrush(Color.FromRgb(0, 102, 204));
+                activeButton.BorderThickness = new Thickness(1.5);
 
-                // 更新图标颜色 - 支持Grid包含Shape或Path
-                if (activeButton.Content is Grid grid && grid.Children.Count > 0)
-                {
-                    var icon = grid.Children[0];
-                    if (icon is Shape shape)
-                    {
-                        shape.Stroke = new SolidColorBrush(Color.FromRgb(25, 118, 210));
-                        if (shape.Fill != Brushes.Transparent)
-                        {
-                            shape.Fill = new SolidColorBrush(Color.FromRgb(25, 118, 210));
-                        }
-                    }
-                    else if (icon is Path path)
-                    {
-                        path.Stroke = new SolidColorBrush(Color.FromRgb(25, 118, 210));
-                        path.Fill = new SolidColorBrush(Color.FromRgb(25, 118, 210));
-                    }
-                }
+                // 更新图标颜色
+                UpdateIconColor(activeButton, Color.FromRgb(0, 102, 204));
             }
 
             _activeShapeButton = activeButton;
         }
 
         /// <summary>
-        /// 查找形状选择区域
+        /// 更新图标颜色
         /// </summary>
-        private GroupBox? FindShapeGroupBox()
+        private static void UpdateIconColor(Button button, Color color)
         {
-            return FindVisualChild<GroupBox>(this, g => g.Header?.ToString() == "形状");
+            var brush = new SolidColorBrush(color);
+
+            if (button.Content is Shape shape)
+            {
+                shape.Stroke = brush;
+                if (shape.Fill != Brushes.Transparent)
+                {
+                    shape.Fill = brush;
+                }
+            }
+            else if (button.Content is Grid grid)
+            {
+                foreach (var child in grid.Children)
+                {
+                    if (child is Shape s)
+                    {
+                        s.Stroke = brush;
+                        if (s.Fill != Brushes.Transparent)
+                        {
+                            s.Fill = brush;
+                        }
+                    }
+                    else if (child is Path p)
+                    {
+                        p.Stroke = brush;
+                        if (p.Fill != Brushes.Transparent)
+                        {
+                            p.Fill = brush;
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 查找形状选择区域容器
+        /// </summary>
+        private System.Windows.Controls.Panel? FindShapeContainer()
+        {
+            return ShapeButtonPanel;
         }
 
         /// <summary>
@@ -2993,27 +3011,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             if (button == null) return;
 
             button.Background = Brushes.Transparent;
-            button.BorderBrush = new SolidColorBrush(Color.FromRgb(192, 192, 192));
+            button.BorderBrush = new SolidColorBrush(Color.FromRgb(224, 224, 224));
             button.BorderThickness = new Thickness(1);
 
-            // 重置图标颜色 - 支持Grid包含Shape或Path
-            if (button.Content is Grid grid && grid.Children.Count > 0)
-            {
-                var icon = grid.Children[0];
-                if (icon is Shape shape)
-                {
-                    shape.Stroke = new SolidColorBrush(Color.FromRgb(85, 85, 85));
-                    if (shape.Fill != Brushes.Transparent)
-                    {
-                        shape.Fill = new SolidColorBrush(Color.FromRgb(85, 85, 85));
-                    }
-                }
-                else if (icon is Path path)
-                {
-                    path.Stroke = new SolidColorBrush(Color.FromRgb(85, 85, 85));
-                    path.Fill = new SolidColorBrush(Color.FromRgb(85, 85, 85));
-                }
-            }
+            // 重置图标颜色
+            UpdateIconColor(button, Color.FromRgb(85, 85, 85));
         }
 
         #endregion

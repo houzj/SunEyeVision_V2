@@ -571,10 +571,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             Rendering.HandleRenderer.ClearHandles(_mainImageControl.InteractionOverlayCanvasControl);
 
             // ── Draw handles for selected regions ──
-            // 检查每个编辑器，有选中区域画手柄
-            if (inspectionsEditor.GetSelectedRegion() != null && !inspectionsEditor.IsAnyInteractionInProgress)
+            // ★ 只隐藏绘制新形状时的手柄，拖动/编辑手柄时保持可见（恢复上版行为）
+            if (inspectionsEditor.GetSelectedRegion() != null && !inspectionsEditor.IsDrawingInteraction)
                 inspectionsEditor.DrawEditHandles(inspectionsEditor.GetSelectedRegion()!);
-            else if (masksEditor.GetSelectedRegion() != null && !masksEditor.IsAnyInteractionInProgress)
+            if (masksEditor.GetSelectedRegion() != null && !masksEditor.IsDrawingInteraction)
                 masksEditor.DrawEditHandles(masksEditor.GetSelectedRegion()!);
         }
 

@@ -52,6 +52,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         // 记录上次鼠标位置（用于多边形删除后临时顶点预览）
         private Point _lastMouseImagePosition;
 
+        // ★ 多边形双击完成检测（时间阈值 ≤ 系统双击时间）
+        private DateTime _lastPolygonClickTime = DateTime.MinValue;
+        private const int DoubleClickTimeMs = 500;
+
         // 日志监控计数器
         private int _mouseMoveLogCounter = 0;
         private int _drawingLogCount = 0;
@@ -742,14 +746,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             {
                 if (_currentTool == ShapeType.Polygon && _isDrawingPolygon)
                 {
-                    if (_polygonPoints.Count >= 1)
-                    {
-                        if (_currentDrawingRegion.Parameters is ShapeParameters shapeDef)
-                        {
-                            shapeDef.Points.Add(new Point2D(position.X, position.Y));
-                            shapeDef.Points.RemoveAt(shapeDef.Points.Count - 1);
-                        }
-                    }
+                    // 多边形橡皮筋线（从最后一个顶点到鼠标位置）
                     DrawPolygonRubberBand(position);
                 }
                 else
@@ -780,6 +777,20 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
             if (_currentTool == ShapeType.Polygon)
             {
+                // ★ 双击完成检测（时间阈值 ≤ 系统双击时间）
+                if (_isDrawingPolygon && _polygonPoints.Count >= 3)
+                {
+                    var elapsed = (DateTime.Now - _lastPolygonClickTime).TotalMilliseconds;
+                    if (elapsed < DoubleClickTimeMs)
+                    {
+                        _isDrawingPolygon = false;
+                        ClearRubberBand();
+                        FinishInteraction();
+                        return;
+                    }
+                }
+                _lastPolygonClickTime = DateTime.Now;
+
                 if (!_isDrawingPolygon)
                 {
                     _isDrawingPolygon = true;
@@ -1877,7 +1888,18 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         public RegionRenderContext? GetPreviewContext()
         {
             if (_isDrawing && _currentDrawingRegion?.Parameters is ShapeParameters previewShape)
-                return CreateRenderContextInternal(_currentDrawingRegion, previewShape, isPreview: true);
+            {
+                var context = CreateRenderContextInternal(_currentDrawingRegion, previewShape, isPreview: true);
+
+                // ★ 多边形预览：包含临时鼠标位置，让用户看到"点击后会是什么样的"
+                if (_currentTool == ShapeType.Polygon && _isDrawingPolygon && _polygonPoints.Count >= 1)
+                {
+                    context.PolygonPoints.Add(new Point(_lastMouseImagePosition.X, _lastMouseImagePosition.Y));
+                    context.CalculateBounds();
+                }
+
+                return context;
+            }
             return null;
         }
 
@@ -1885,6 +1907,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         /// 是否有交互操作正在进行中
         /// </summary>
         public bool IsAnyInteractionInProgress => _isDrawing || _isDragging || _isDraggingHandle;
+
+        /// <summary>
+        /// ★ 是否正在绘制新形状（拖动/编辑手柄时不视为"绘制"）
+        /// Manager 用于判断是否显示编辑手柄（拖动手柄时保持可见）
+        /// </summary>
+        public bool IsDrawingInteraction => _isDrawing;
 
         /// <summary>
         /// 创建渲染上下文

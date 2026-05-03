@@ -1,2 +1,0 @@
-MSBUILD : error MSB1009: 项目文件不存在。
-开关:src\Plugin.SDK\Plugin.SDK.csproj

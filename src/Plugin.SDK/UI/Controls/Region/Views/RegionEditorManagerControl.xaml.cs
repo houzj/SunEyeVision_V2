@@ -375,9 +375,20 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             }
             else
             {
-                // 两个都没有 active，双方同时取消选择
-                inspectionsEditor.DeselectAll();
-                masksEditor.DeselectAll();
+                // ★ 先路由给有选中区域的编辑器（手柄可能超出区域范围，绕过场景2的HitTestRegion检查）
+                var editorWithSelection = GetEditorWithSelection();
+                if (editorWithSelection != null)
+                {
+                    editorWithSelection.ProcessMouseDown(pos);
+                    if (_activeEditor != editorWithSelection)
+                        _activeEditor = editorWithSelection;
+                }
+                else
+                {
+                    // 都没有选中区域，双方同时取消选择
+                    inspectionsEditor.DeselectAll();
+                    masksEditor.DeselectAll();
+                }
             }
             e.Handled = true;
             RenderAll();

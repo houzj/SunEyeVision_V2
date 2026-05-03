@@ -275,25 +275,41 @@ namespace SunEyeVision.UI.Services.Workflow
             LineWidth = 1.5
         };
 
+        private static readonly GraphicsStyle MaskRegionStyle = new()
+        {
+            Name = "MaskRegion",
+            OkColor = System.Windows.Media.Color.FromRgb(255, 165, 0),  // 橙色
+            LineWidth = 1.5
+        };
+
         private IEnumerable<DisplayItemBase>? BuildRegionItems(WorkflowNodeBase node)
         {
             if (node.Parameters is not RegionParameters regionParams ||
                 regionParams.IsRegionEnabled?.Value != true)
                 return null;
 
-            var enabledRegions = regionParams.InspectionRegions.GetEnabledRegions();
             var items = new List<DisplayItemBase>();
 
+            // 检测区域（蓝色）
+            var enabledRegions = regionParams.InspectionRegions.GetEnabledRegions();
             foreach (var region in enabledRegions)
             {
-                var regionItem = CreateRegionDisplayItem(region);
+                var regionItem = CreateRegionDisplayItem(region, RegionStyle);
+                if (regionItem != null) items.Add(regionItem);
+            }
+
+            // 屏蔽区域（橙色）
+            var enabledMasks = regionParams.MaskRegions.GetEnabledRegions();
+            foreach (var region in enabledMasks)
+            {
+                var regionItem = CreateRegionDisplayItem(region, MaskRegionStyle);
                 if (regionItem != null) items.Add(regionItem);
             }
 
             return items.Count > 0 ? items : null;
         }
 
-        private static DisplayItemBase? CreateRegionDisplayItem(RegionData region)
+        private static DisplayItemBase? CreateRegionDisplayItem(RegionData region, GraphicsStyle style)
         {
             if (region?.Parameters is not ShapeParameters shape) return null;
 
@@ -301,12 +317,12 @@ namespace SunEyeVision.UI.Services.Workflow
             {
                 ShapeType.Rectangle => new GraphicsDisplayItem
                 {
-                    Style = RegionStyle, Type = GraphicsType.Rectangle,
+                    Style = style, Type = GraphicsType.Rectangle,
                     Geometries = new object[] { new Rect2d(shape.CenterX - shape.Width / 2, shape.CenterY - shape.Height / 2, shape.Width, shape.Height) }
                 },
                 ShapeType.RotatedRectangle => new GraphicsDisplayItem
                 {
-                    Style = RegionStyle, Type = GraphicsType.Rectangle,
+                    Style = style, Type = GraphicsType.Rectangle,
                     Geometries = new object[]
                     {
                         new RotatedRect(
@@ -317,12 +333,12 @@ namespace SunEyeVision.UI.Services.Workflow
                 },
                 ShapeType.Circle => new GraphicsDisplayItem
                 {
-                    Style = RegionStyle, Type = GraphicsType.Circle,
+                    Style = style, Type = GraphicsType.Circle,
                     Geometries = new object[] { new Circle2d(shape.CenterX, shape.CenterY, shape.Radius) }
                 },
                 ShapeType.Annulus => new GraphicsDisplayItem
                 {
-                    Style = RegionStyle, Type = GraphicsType.Circle,
+                    Style = style, Type = GraphicsType.Circle,
                     Geometries = new object[]
                     {
                         new Circle2d(shape.CenterX, shape.CenterY, shape.OuterRadius),
@@ -332,12 +348,12 @@ namespace SunEyeVision.UI.Services.Workflow
                 },
                 ShapeType.Polygon when shape.Points != null && shape.Points.Count >= 3 => new GraphicsDisplayItem
                 {
-                    Style = RegionStyle, Type = GraphicsType.Polygon,
+                    Style = style, Type = GraphicsType.Polygon,
                     Geometries = new object[] { shape.Points.Select(p => new Point2d(p.X, p.Y)).ToArray() }
                 },
                 ShapeType.Line => new GraphicsDisplayItem
                 {
-                    Style = RegionStyle, Type = GraphicsType.Line,
+                    Style = style, Type = GraphicsType.Line,
                     Geometries = new object[] { new LineSegment(new Point2d(shape.StartX, shape.StartY), new Point2d(shape.EndX, shape.EndY)) }
                 },
                 _ => null

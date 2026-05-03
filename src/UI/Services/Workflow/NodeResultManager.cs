@@ -104,12 +104,8 @@ namespace SunEyeVision.UI.Services.Workflow
                 return;
             }
 
-            // ★ Step 1: 获取结果项（虚方法，无反射）
-            var resultItems = result.GetResultItems();
-            var itemList = resultItems.ToList();
-
-            // ★ Step 2: 批量更新UI
-            _viewModel.UpdateCalculationResults(itemList);
+            // ★ Step 1-2: 更新模块结果树（分组显示）
+            _viewModel.UpdateModuleResults(result, node.Name);
 
             // ★ Step 3: 更新图像（DispImage通道）
             var outputMat = result.GetOutputImage();
@@ -149,6 +145,8 @@ namespace SunEyeVision.UI.Services.Workflow
         public void ClearResultDisplay()
         {
             _viewModel.CalculationResults.Clear();
+            _viewModel.ModuleResultTree.Clear();
+            _viewModel.HasModuleResults = false;
             _resultRenderLayer?.Clear();
             _resultRenderLayer?.ClearHighlight();
         }

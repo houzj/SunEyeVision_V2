@@ -2901,6 +2901,18 @@ if (DataContext is MainWindowViewModel viewModel)
         #region SDK ImageControl 事件处理
 
         /// <summary>
+        /// 模块结果树展开/折叠点击事件
+        /// </summary>
+        private void TreeRow_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is FrameworkElement element && element.DataContext is ModuleResultNode node && node.IsGroup)
+            {
+                node.IsExpanded = !node.IsExpanded;
+                e.Handled = true;
+            }
+        }
+
+        /// <summary>
         /// 图像加载完成事件
         /// </summary>
         private void OnImageLoaded(object sender, ImageLoadedEventArgs e)

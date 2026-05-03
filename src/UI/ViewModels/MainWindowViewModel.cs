@@ -16,6 +16,7 @@ using SunEyeVision.Plugin.SDK.Validation;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Metadata;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.UI;
 using SunEyeVision.UI.Adapters;
@@ -137,6 +138,7 @@ namespace SunEyeVision.UI.ViewModels
         private readonly Dictionary<string, IDataSourceQueryService> _nodeDataProviders = new();
 
         private string _logText = "[系统] 等待中...\n";
+        private bool _hasModuleResults;
 
         // 折叠状态
         private bool _isToolboxCollapsed = true;
@@ -441,6 +443,20 @@ OnPropertyChanged(nameof(ImagePreviewHeight));
         /// 计算结果
         /// </summary>
         public ObservableCollection<ResultItem> CalculationResults { get; }
+
+        /// <summary>
+        /// 模块结果树（分组可折叠显示）
+        /// </summary>
+        public ObservableCollection<ModuleResultNode> ModuleResultTree { get; } = new();
+
+        /// <summary>
+        /// 是否有模块结果（用于空状态显示）
+        /// </summary>
+        public bool HasModuleResults
+        {
+            get => _hasModuleResults;
+            internal set => SetProperty(ref _hasModuleResults, value);
+        }
 
         public string LogText
         {
@@ -3502,8 +3518,69 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
         }
 
         /// <summary>
-        /// 清空计算结果面板
+        /// 更新模块结果（树形分组结构）
         /// </summary>
+        public void UpdateModuleResults(ToolResults? result, string? nodeName)
+        {
+            ModuleResultTree.Clear();
+            HasModuleResults = false;
+
+            if (result == null)
+                return;
+
+            var resultItems = result.GetResultItems();
+            var propertyMap = result.GetPropertyMap();
+
+            // 过滤：只保留非图形/图像类型
+            var dataItems = resultItems
+                .Where(item => item.Type != ResultItemType.Image &&
+                               item.Type != ResultItemType.Geometry)
+                .ToList();
+
+            if (dataItems.Count == 0)
+                return;
+
+            // 根节点 = 当前选中节点名称
+            var rootNode = new ModuleResultNode
+            {
+                DisplayName = nodeName ?? "结果",
+                IsGroup = true,
+                IsExpanded = true
+            };
+
+            // 按 GroupName 分组
+            var groups = dataItems.GroupBy(item =>
+            {
+                var entry = propertyMap.FirstOrDefault(e =>
+                    e.DisplayName == (item.DisplayName ?? item.Name));
+                return entry?.GroupName ?? "其他";
+            }).OrderBy(g => g.Key);
+
+            foreach (var group in groups)
+            {
+                var groupNode = new ModuleResultNode
+                {
+                    DisplayName = group.Key,
+                    IsGroup = true,
+                    IsExpanded = true
+                };
+
+                foreach (var item in group)
+                {
+                    groupNode.Children.Add(new ModuleResultNode
+                    {
+                        DisplayName = item.DisplayName ?? item.Name,
+                        DisplayValue = FormatResultValue(item),
+                        IsGroup = false
+                    });
+                }
+
+                rootNode.Children.Add(groupNode);
+            }
+
+            ModuleResultTree.Add(rootNode);
+            HasModuleResults = true;
+        }
         public void ClearCalculationResults()
         {
             CalculationResults.Clear();
@@ -3936,5 +4013,50 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
         {
             CanExecuteChanged?.Invoke(this, EventArgs.Empty);
         }
+    }
+
+    /// <summary>
+    /// 模块结果树节点（分组可折叠显示）
+    /// </summary>
+    public class ModuleResultNode : ObservableObject
+    {
+        /// <summary>
+        /// 显示名称
+        /// </summary>
+        public string DisplayName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 显示值（仅叶子节点有值）
+        /// </summary>
+        public string? DisplayValue { get; set; }
+
+        /// <summary>
+        /// 是否为分组节点（可展开/折叠）
+        /// </summary>
+        public bool IsGroup { get; set; }
+
+        /// <summary>
+        /// 是否展开
+        /// </summary>
+        private bool _isExpanded = true;
+        public bool IsExpanded
+        {
+            get => _isExpanded;
+            set
+            {
+                if (SetProperty(ref _isExpanded, value))
+                    OnPropertyChanged(nameof(ExpandIcon));
+            }
+        }
+
+        /// <summary>
+        /// 子节点集合
+        /// </summary>
+        public ObservableCollection<ModuleResultNode> Children { get; } = new();
+
+        /// <summary>
+        /// 展开/折叠图标（仅分组显示）
+        /// </summary>
+        public string ExpandIcon => IsGroup ? (_isExpanded ? "▼ " : "▶ ") : "";
     }
 }

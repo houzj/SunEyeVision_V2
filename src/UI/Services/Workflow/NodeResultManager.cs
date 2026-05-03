@@ -299,10 +299,21 @@ namespace SunEyeVision.UI.Services.Workflow
 
             return shape.ShapeType switch
             {
-                ShapeType.Rectangle or ShapeType.RotatedRectangle => new GraphicsDisplayItem
+                ShapeType.Rectangle => new GraphicsDisplayItem
                 {
                     Style = RegionStyle, Type = GraphicsType.Rectangle,
                     Geometries = new object[] { new Rect2d(shape.CenterX - shape.Width / 2, shape.CenterY - shape.Height / 2, shape.Width, shape.Height) }
+                },
+                ShapeType.RotatedRectangle => new GraphicsDisplayItem
+                {
+                    Style = RegionStyle, Type = GraphicsType.Rectangle,
+                    Geometries = new object[]
+                    {
+                        new RotatedRect(
+                            new Point2f((float)shape.CenterX, (float)shape.CenterY),
+                            new Size2f((float)shape.Width, (float)shape.Height),
+                            (float)(-shape.Angle))  // 数学角度 → OpenCV 顺时针角度
+                    }
                 },
                 ShapeType.Circle => new GraphicsDisplayItem
                 {

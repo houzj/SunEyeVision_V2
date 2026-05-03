@@ -183,9 +183,9 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 
             var center = new Point2f((float)shapeParams.CenterX, (float)shapeParams.CenterY);
             var size = new Size2f((float)shapeParams.Width, (float)shapeParams.Height);
-            var angle = (float)(shapeParams.Angle * 180.0 / Math.PI); // 转换为度数
-
-            var rotatedRect = new RotatedRect(center, size, angle);
+            // ShapeParameters.Angle 使用数学角度系统(逆时针为正, 度数), OpenCV RotatedRect 使用顺时针角度系统
+            var openCvAngle = (float)(-shapeParams.Angle);
+            var rotatedRect = new RotatedRect(center, size, openCvAngle);
 
             var points = rotatedRect.Points();
 

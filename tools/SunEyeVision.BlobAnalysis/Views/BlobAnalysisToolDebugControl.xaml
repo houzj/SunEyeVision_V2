@@ -56,6 +56,15 @@
                                       Height="auto"
                                       Regions="{Binding InspectionRegions.Regions}"/>
             </GroupBox>
+
+            <!-- 屏蔽区域编辑器（新增） -->
+            <GroupBox Header="屏蔽区域" Margin="0,8,0,0"
+                      Visibility="{Binding IsRegionEnabled.Value, Converter={StaticResource BoolToVisibilityConverter}}">
+            <region:RegionEditorControl x:Name="maskRegionEditor"
+                                      VerticalContentAlignment="Stretch"
+                                      Height="auto"
+                                      Regions="{Binding MaskRegions.Regions}"/>
+            </GroupBox>
           </StackPanel>
         </ScrollViewer>
       </TabItem>

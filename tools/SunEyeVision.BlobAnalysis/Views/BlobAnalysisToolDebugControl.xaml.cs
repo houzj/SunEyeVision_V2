@@ -81,6 +81,12 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
                 inspectionRegionEditor.SetMainImageControl(imageControl);
                 PluginLogger.Info("已为检测区域编辑器设置主窗口ImageControl", "BlobAnalysisTool");
             }
+
+            if (maskRegionEditor != null && imageControl != null)
+            {
+                maskRegionEditor.SetMainImageControl(imageControl);
+                PluginLogger.Info("已为屏蔽区域编辑器设置主窗口ImageControl", "BlobAnalysisTool");
+            }
         }
 
         #endregion
@@ -158,6 +164,19 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
             PluginLogger.Success("检测区域编辑器初始化完成", "BlobAnalysisTool");
         }
 
+        private void InitializeMaskRegionEditor()
+        {
+            if (maskRegionEditor == null || Parameters == null || Parameters.MaskRegions == null)
+            {
+                PluginLogger.Warning("[InitializeMaskRegionEditor] 跳过初始化", "BlobAnalysisTool");
+                return;
+            }
+
+            maskRegionEditor.SetRegionsSource(Parameters.MaskRegions.Regions);
+
+            PluginLogger.Success("屏蔽区域编辑器初始化完成", "BlobAnalysisTool");
+        }
+
         #endregion
 
         #region 资源清理
@@ -167,6 +186,11 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
             if (inspectionRegionEditor != null)
             {
                 inspectionRegionEditor.ClearMainOverlay();
+            }
+
+            if (maskRegionEditor != null)
+            {
+                maskRegionEditor.ClearMainOverlay();
             }
         }
 
@@ -187,6 +211,7 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
             {
                 _dataProvider = queryService;
                 inspectionRegionEditor.AvailableDataSources = AvailableDataSources;
+                maskRegionEditor.AvailableDataSources = AvailableDataSources;
 
                 // 从 ImageSourceRef 恢复 ImageSource（加载后重建运行时数据）
                 Parameters?.RestoreImageSource(AvailableDataSources);
@@ -253,6 +278,7 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
         public override async System.Threading.Tasks.Task InitializeAsync()
         {
             InitializeInspectionRegionEditor();
+            InitializeMaskRegionEditor();
             await System.Threading.Tasks.Task.CompletedTask;
         }
 

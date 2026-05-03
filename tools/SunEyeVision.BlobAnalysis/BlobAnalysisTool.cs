@@ -11,6 +11,7 @@ using SunEyeVision.CvEngine.Models;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
+using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 using SunEyeVision.Plugin.SDK.Validation;
 using SunEyeVision.Tool.BlobAnalysis.Models;
 using SunEyeVision.Tool.BlobAnalysis.Views;
@@ -111,8 +112,8 @@ namespace SunEyeVision.Tool.BlobAnalysis
                     stepSw.Restart();
                     if (parameters.IsRegionEnabled.Value)
                     {
-                        var inspectionRegions = parameters.InspectionRegions.GetEnabledRegions();
-                        var maskRegions = parameters.MaskRegions.GetEnabledRegions();
+                        var inspectionRegions = parameters.GetRegionsByType(RegionType.Inspection);
+                        var maskRegions = parameters.GetRegionsByType(RegionType.Mask);
 
                         bool hasInspection = inspectionRegions.Any();
                         bool hasMask = maskRegions.Any();

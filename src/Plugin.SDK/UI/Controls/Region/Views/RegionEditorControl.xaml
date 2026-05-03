@@ -5,45 +5,12 @@
              xmlns:models="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Region.Models"
 >
     <UserControl.Resources>
-        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.SDK;component/UI/Themes/Generic.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
 
-        <!-- 形状按钮样式 -->
-        <Style x:Key="ShapeButtonStyle" TargetType="Button">
-            <Setter Property="Width" Value="42"/>
-            <Setter Property="Height" Value="42"/>
-            <Setter Property="Margin" Value="2"/>
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderBrush" Value="#E0E0E0"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="Border"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="6"
-                                Padding="6">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="#E8F4FC"/>
-                                <Setter TargetName="Border" Property="BorderBrush" Value="#0066CC"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="#CCE4F7"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- 形状图标画笔 -->
-        <SolidColorBrush x:Key="ShapeIconBrush" Color="#555"/>
-        <SolidColorBrush x:Key="ShapeIconActiveBrush" Color="#0066CC"/>
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
         <!-- 卡片区域样式 -->
         <Style x:Key="CardStyle" TargetType="Border">
@@ -53,45 +20,7 @@
             <Setter Property="Background" Value="#FAFAFA"/>
             <Setter Property="Padding" Value="12"/>
         </Style>
-
-        <!-- 分段按钮样式 -->
-        <Style x:Key="SegmentedToggleStyle" TargetType="RadioButton">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="RadioButton">
-                        <Border x:Name="Border"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="4"
-                                Padding="{TemplateBinding Padding}">
-                            <TextBlock x:Name="ContentText"
-                                       Text="{TemplateBinding Content}"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"
-                                       Foreground="#999"
-                                       FontSize="{TemplateBinding FontSize}"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="White"/>
-                                <Setter TargetName="Border" Property="BorderThickness" Value="1"/>
-                                <Setter TargetName="Border" Property="BorderBrush" Value="#D0D0D0"/>
-                                <Setter TargetName="ContentText" Property="Foreground" Value="#0066CC"/>
-                                <Setter TargetName="ContentText" Property="FontWeight" Value="Bold"/>
-                            </Trigger>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="#E0E0E0"/>
-                                <Setter TargetName="ContentText" Property="Foreground" Value="#666"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+        </ResourceDictionary>
     </UserControl.Resources>
 
     <Grid>
@@ -104,32 +33,30 @@
         <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
             <StackPanel Margin="0">
 
-                <!-- 输入类型 - 分段按钮 -->
+                <!-- 模式切换 - 每个编辑器独立，通过 TwoWay 绑定到 ViewModel 实现互斥 -->
                 <Border CornerRadius="6" Background="#F0F0F0" BorderBrush="#DDD"
                         BorderThickness="1" Padding="3" Margin="0,0,0,12">
                     <UniformGrid Columns="2" HorizontalAlignment="Center">
                         <RadioButton Content="绘制"
-                                     GroupName="InputType"
-                                     IsChecked="{Binding IsDrawingMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      ToolTip="手动绘制区域形状"
                                      FontSize="12"
                                      FontWeight="Medium"
                                      HorizontalContentAlignment="Center"
                                      Padding="16,6"
-                                     Style="{StaticResource SegmentedToggleStyle}"/>
+                                     Style="{StaticResource SegmentedToggleStyle}"
+                                     IsChecked="{Binding IsDrawingMode, Mode=TwoWay}"/>
                         <RadioButton Content="订阅"
-                                     GroupName="InputType"
-                                     IsChecked="{Binding IsSubscribeMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      ToolTip="订阅其他节点输出的区域"
                                      FontSize="12"
                                      FontWeight="Medium"
                                      HorizontalContentAlignment="Center"
                                      Padding="16,6"
-                                     Style="{StaticResource SegmentedToggleStyle}"/>
+                                     Style="{StaticResource SegmentedToggleStyle}"
+                                     IsChecked="{Binding IsSubscribeMode, Mode=TwoWay}"/>
                     </UniformGrid>
                 </Border>
 
-                <!-- 形状选择（绘制模式和按参数订阅模式显示） -->
+                <!-- 形状选择（绘制模式显示） -->
                 <Border Margin="0,0,0,12" Padding="0"
                         Background="Transparent"
                         Visibility="{Binding ShowShapeTypeSelector, Converter={StaticResource BooleanToVisibilityConverter}}"
@@ -150,84 +77,71 @@
                                   VerticalAlignment="Center"/>
                         </Button>
 
-                        <!-- 矩形 - 隐藏 -->
-                        <Button Style="{StaticResource ShapeButtonStyle}"
-                                ToolTip="矩形 (R)"
-                                Click="OnRectangleButtonClick"
-                                x:Name="RectangleButton"
-                                Visibility="Collapsed">
-                            <Path Width="18" Height="18"
-                                  Stroke="{StaticResource ShapeIconBrush}"
-                                  StrokeThickness="1.5"
-                                  Fill="Transparent"
-                                  Data="M2,2 L18,2 A2,2 0 0,1 20,4 L20,16 A2,2 0 0,1 18,18 L2,18 A2,2 0 0,1 0,16 L0,4 A2,2 0 0,1 2,2 Z M15,15 L18,15 L18,18 L15,18 Z"
-                                  Stretch="Uniform"
-                                  HorizontalAlignment="Center"
-                                  VerticalAlignment="Center"/>
-                        </Button>
+                        <!-- 形状工具 -->
+                        <WrapPanel x:Name="ShapeToolsPanel" HorizontalAlignment="Center" Orientation="Horizontal">
+                            <!-- 圆形 -->
+                            <Button Style="{StaticResource ShapeButtonStyle}"
+                                    ToolTip="圆形 (C)"
+                                    Click="OnCircleButtonClick"
+                                    x:Name="CircleButton">
+                                <Path Width="18" Height="18"
+                                      Stroke="{StaticResource ShapeIconBrush}"
+                                      StrokeThickness="1.5"
+                                      Fill="Transparent"
+                                      Data="M9,1 A8,8 0 1,0 9,17 A8,8 0 1,0 9,1 Z M9,4 L9,14 M4,9 L14,9"
+                                      Stretch="Uniform"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"/>
+                            </Button>
 
-                        <!-- 圆形 -->
-                        <Button Style="{StaticResource ShapeButtonStyle}"
-                                ToolTip="圆形 (C)"
-                                Click="OnCircleButtonClick"
-                                x:Name="CircleButton">
-                            <Path Width="18" Height="18"
-                                  Stroke="{StaticResource ShapeIconBrush}"
-                                  StrokeThickness="1.5"
-                                  Fill="Transparent"
-                                  Data="M9,1 A8,8 0 1,0 9,17 A8,8 0 1,0 9,1 Z M9,4 L9,14 M4,9 L14,9"
-                                  Stretch="Uniform"
-                                  HorizontalAlignment="Center"
-                                  VerticalAlignment="Center"/>
-                        </Button>
+                            <!-- 旋转矩形 -->
+                            <Button Style="{StaticResource ShapeButtonStyle}"
+                                    ToolTip="旋转矩形 (O)"
+                                    Click="OnRotatedRectangleButtonClick"
+                                    x:Name="RotatedRectangleButton">
+                                <Grid Width="18" Height="18">
+                                    <Rectangle Width="15" Height="15"
+                                               Stroke="{StaticResource ShapeIconBrush}"
+                                               StrokeThickness="1.5"
+                                               Fill="Transparent"
+                                               RadiusX="2" RadiusY="2"
+                                               RenderTransformOrigin="0.5,0.5">
+                                        <Rectangle.RenderTransform>
+                                            <RotateTransform Angle="35"/>
+                                        </Rectangle.RenderTransform>
+                                    </Rectangle>
+                                    <Path Stroke="{StaticResource ShapeIconBrush}" StrokeThickness="1" Fill="Transparent"
+                                          Data="M15,4 A6,6 0 0,1 18,8"/>
+                                </Grid>
+                            </Button>
 
-                        <!-- 旋转矩形 -->
-                        <Button Style="{StaticResource ShapeButtonStyle}"
-                                ToolTip="旋转矩形 (O)"
-                                Click="OnRotatedRectangleButtonClick"
-                                x:Name="RotatedRectangleButton">
-                            <Grid Width="18" Height="18">
-                                <Rectangle Width="15" Height="15"
-                                           Stroke="{StaticResource ShapeIconBrush}"
-                                           StrokeThickness="1.5"
-                                           Fill="Transparent"
-                                           RadiusX="2" RadiusY="2"
-                                           RenderTransformOrigin="0.5,0.5">
-                                    <Rectangle.RenderTransform>
-                                        <RotateTransform Angle="35"/>
-                                    </Rectangle.RenderTransform>
-                                </Rectangle>
-                                <Path Stroke="{StaticResource ShapeIconBrush}" StrokeThickness="1" Fill="Transparent"
-                                      Data="M15,4 A6,6 0 0,1 18,8"/>
-                            </Grid>
-                        </Button>
+                            <!-- 直线 - 隐藏 -->
+                            <Button Style="{StaticResource ShapeButtonStyle}"
+                                    ToolTip="直线 (L)"
+                                    Click="OnLineButtonClick"
+                                    x:Name="LineButton"
+                                    Visibility="Collapsed">
+                                <Line X1="3" Y1="19" X2="19" Y2="3"
+                                      Stroke="{StaticResource ShapeIconBrush}"
+                                      StrokeThickness="1.5"
+                                      Width="18" Height="18"/>
+                            </Button>
 
-                        <!-- 直线 - 隐藏 -->
-                        <Button Style="{StaticResource ShapeButtonStyle}"
-                                ToolTip="直线 (L)"
-                                Click="OnLineButtonClick"
-                                x:Name="LineButton"
-                                Visibility="Collapsed">
-                            <Line X1="3" Y1="19" X2="19" Y2="3"
-                                  Stroke="{StaticResource ShapeIconBrush}"
-                                  StrokeThickness="1.5"
-                                  Width="18" Height="18"/>
-                        </Button>
-
-                        <!-- 多边形 -->
-                        <Button Style="{StaticResource ShapeButtonStyle}"
-                                ToolTip="多边形 (P)&#x0a;点击添加顶点&#x0a;右键撤销上一点&#x0a;双击/Enter完成"
-                                Click="OnPolygonButtonClick"
-                                x:Name="PolygonButton">
-                            <Path Width="18" Height="18"
-                                  Stroke="{StaticResource ShapeIconBrush}"
-                                  StrokeThickness="1.5"
-                                  Fill="Transparent"
-                                  Data="M11,1 L19,6 L18,15 L12,19 L4,16 L2,9 Z"
-                                  Stretch="Uniform"
-                                  HorizontalAlignment="Center"
-                                  VerticalAlignment="Center"/>
-                        </Button>
+                            <!-- 多边形 -->
+                            <Button Style="{StaticResource ShapeButtonStyle}"
+                                    ToolTip="多边形 (P)&#x0a;点击添加顶点&#x0a;右键撤销上一点&#x0a;双击/Enter完成"
+                                    Click="OnPolygonButtonClick"
+                                    x:Name="PolygonButton">
+                                <Path Width="18" Height="18"
+                                      Stroke="{StaticResource ShapeIconBrush}"
+                                      StrokeThickness="1.5"
+                                      Fill="Transparent"
+                                      Data="M11,1 L19,6 L18,15 L12,19 L4,16 L2,9 Z"
+                                      Stretch="Uniform"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"/>
+                            </Button>
+                        </WrapPanel>
                     </WrapPanel>
                 </Border>
 

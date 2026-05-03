@@ -205,71 +205,19 @@
                     </StackPanel>
                 </GroupBox>
 
-                <!-- 显示设置 -->
-                <GroupBox Header="显示设置" Margin="0,0,0,8">
+                <!-- 显示设置（区域编辑：颜色由类型自动决定，无需用户选择） -->
+                <GroupBox Header="区域设置" Margin="0,0,0,8">
                     <StackPanel Margin="4">
                         <Grid Margin="0,4">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="颜色:" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                            
-                            <!-- 颜色选择按钮 -->
-                            <Button x:Name="SelectColorButton"
-                                    Grid.Column="1" 
-                                    IsEnabled="{Binding CanEdit}"
-                                    HorizontalContentAlignment="Left"
-                                    Padding="4">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <!-- 颜色预览 -->
-                                    <Border x:Name="ColorPreview"
-                                            Grid.Column="0"
-                                            Width="24" Height="24"
-                                            CornerRadius="4"
-                                            Margin="0,0,8,0"
-                                            Background="{Binding SelectedRegion.DisplayColor, Converter={StaticResource UIntToBrushConverter}, FallbackValue=Red}"/>
-                                    <!-- 文本 -->
-                                    <TextBlock Grid.Column="1" 
-                                               Text="选择颜色"
-                                               VerticalAlignment="Center"
-                                               Foreground="Gray"/>
-                                </Grid>
-                            </Button>
-                            
-                            <!-- 颜色选择器弹窗 -->
-                            <Popup x:Name="ColorPickerPopup"
-                                   PlacementTarget="{Binding ElementName=SelectColorButton}"
-                                   Placement="Bottom"
-                                   StaysOpen="False"
-                                   AllowsTransparency="True">
-                                <Border Background="White"
-                                        BorderBrush="#D9D9D9"
-                                        BorderThickness="1"
-                                        CornerRadius="4"
-                                        Padding="0"
-                                        Margin="0,2,0,0">
-                                    <controls:ColorPicker 
-                                        xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls"
-                                        SelectedColor="{Binding SelectedRegion.DisplayColor, Mode=TwoWay}"/>
-                                </Border>
-                            </Popup>
-                        </Grid>
-                        <Grid Margin="0,4">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="透明度:" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                            <Slider Grid.Column="1" 
-                                    Value="{Binding SelectedRegion.DisplayOpacity, UpdateSourceTrigger=PropertyChanged, FallbackValue=0.3}"
-                                    Minimum="0" Maximum="1"
-                                    TickFrequency="0.1"
-                                    IsEnabled="{Binding CanEdit}"/>
+                            <TextBlock Grid.Column="0" Text="类型:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <ComboBox Grid.Column="1"
+                                      ItemsSource="{Binding RegionTypeList}"
+                                      SelectedItem="{Binding SelectedRegion.RegionType}"
+                                      IsEnabled="{Binding CanEdit}"/>
                         </Grid>
                         <CheckBox Content="可见" 
                                   IsChecked="{Binding SelectedRegion.IsVisible, FallbackValue=True}"

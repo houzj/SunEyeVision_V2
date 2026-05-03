@@ -1,9 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
-using SunEyeVision.Plugin.SDK.Logging;
+﻿using System.Windows.Controls;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 {
@@ -22,15 +17,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             }
 
             InitializeComponent();
-
-            // 绑定颜色选择按钮点击事件
-            SelectColorButton.Click += SelectColorButton_Click;
-        }
-
-        private void SelectColorButton_Click(object sender, RoutedEventArgs e)
-        {
-            // 打开颜色选择器弹窗
-            ColorPickerPopup.IsOpen = true;
         }
     }
 }

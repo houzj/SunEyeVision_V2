@@ -88,6 +88,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
         /// </summary>
         public bool IsVisible { get; set; } = true;
 
+        /// <summary>
+        /// 区域类型（检测/屏蔽）
+        /// </summary>
+        public RegionType RegionType { get; set; } = RegionType.Inspection;
+
         #region 几何参数
 
         /// <summary>

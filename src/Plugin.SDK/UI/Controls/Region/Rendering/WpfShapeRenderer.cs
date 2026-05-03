@@ -364,11 +364,22 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                 Color strokeColor = region.StrokeColor;
                 double strokeThickness = region.StrokeThickness;
 
-                // 预览状态使用特殊颜色
+                // 预览状态使用类型差异色
                 if (region.IsPreview)
                 {
-                                fillColor = options.PreviewFillColor;
-                                strokeColor = options.PreviewStrokeColor;
+                    // ★ Phase 4: 根据区域类型使用差异色，避免无法区分检测/屏蔽
+                    switch (region.RegionType)
+                    {
+                        case Models.RegionType.Mask:
+                            fillColor = Color.FromArgb(30, 255, 165, 0);   // 半透明橙色
+                            strokeColor = Color.FromArgb(255, 255, 165, 0); // 橙色边框
+                            break;
+                        case Models.RegionType.Inspection:
+                        default:
+                            fillColor = Color.FromArgb(30, 0, 120, 215);   // 半透明蓝
+                            strokeColor = Color.FromArgb(255, 0, 120, 215); // 蓝色边框
+                            break;
+                    }
                 }
 
                 // 选中状态增加边框宽度
@@ -657,6 +668,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                 var labelOffset = HandleRenderer.GetScaledLabelFontSize(_viewportScale) * 1.5;
                 double labelTop = region.Bounds.Top - labelOffset + _viewportOffset.Y;
                 if (labelTop < 0) labelTop = region.Bounds.Bottom + scaledPaddingV + _viewportOffset.Y;
+
+                // ★ Phase 4: 屏蔽区域标签轻微下移，避免与检测区域标签重叠
+                if (region.RegionType == Models.RegionType.Mask)
+                {
+                    labelTop += HandleRenderer.GetScaledLabelFontSize(_viewportScale) * 1.2;
+                }
 
                 Canvas.SetLeft(label, labelLeft);
                 Canvas.SetTop(label, labelTop);

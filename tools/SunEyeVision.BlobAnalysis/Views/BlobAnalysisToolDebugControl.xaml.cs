@@ -6,6 +6,7 @@ using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Metadata;
 using SunEyeVision.Plugin.SDK.UI.Controls;
+using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 
 namespace SunEyeVision.Tool.BlobAnalysis.Views
 {
@@ -76,16 +77,10 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
         {
             _mainImageControl = imageControl;
 
-            if (inspectionRegionEditor != null && imageControl != null)
+            if (regionManager != null && imageControl != null)
             {
-                inspectionRegionEditor.SetMainImageControl(imageControl);
-                PluginLogger.Info("已为检测区域编辑器设置主窗口ImageControl", "BlobAnalysisTool");
-            }
-
-            if (maskRegionEditor != null && imageControl != null)
-            {
-                maskRegionEditor.SetMainImageControl(imageControl);
-                PluginLogger.Info("已为屏蔽区域编辑器设置主窗口ImageControl", "BlobAnalysisTool");
+                regionManager.SetMainImageControl(imageControl);
+                PluginLogger.Info("已为区域管理器设置主窗口ImageControl", "BlobAnalysisTool");
             }
         }
 
@@ -127,16 +122,15 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
             {
                 Parameters = blobParams;
 
-                var inspectionRegions = Parameters.InspectionRegions;
-                var inspectionRegionsCount = inspectionRegions?.Regions?.Count ?? 0;
+                var regionsCount = Parameters.InspectionRegions?.Regions?.Count ?? 0;
 
-                if (inspectionRegionsCount == 0)
+                if (regionsCount == 0)
                 {
                     PluginLogger.Warning($"[SetParameters] InspectionRegions.Regions.Count=0", "BlobAnalysisTool");
                 }
                 else
                 {
-                    PluginLogger.Info($"[SetParameters] 参数注入完成 | Regions.Count={inspectionRegionsCount}", "BlobAnalysisTool");
+                    PluginLogger.Info($"[SetParameters] 参数注入完成 | Regions.Count={regionsCount}", "BlobAnalysisTool");
                 }
 
                 PluginLogger.Success($"已加载节点参数: Threshold={Parameters.Threshold}", "BlobAnalysisTool");
@@ -149,48 +143,13 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
 
         #endregion
 
-        #region RegionEditor
-
-        private void InitializeInspectionRegionEditor()
-        {
-            if (inspectionRegionEditor == null || Parameters == null || Parameters.InspectionRegions == null)
-            {
-                PluginLogger.Warning("[InitializeInspectionRegionEditor] 跳过初始化", "BlobAnalysisTool");
-                return;
-            }
-
-            inspectionRegionEditor.SetRegionsSource(Parameters.InspectionRegions.Regions);
-
-            PluginLogger.Success("检测区域编辑器初始化完成", "BlobAnalysisTool");
-        }
-
-        private void InitializeMaskRegionEditor()
-        {
-            if (maskRegionEditor == null || Parameters == null || Parameters.MaskRegions == null)
-            {
-                PluginLogger.Warning("[InitializeMaskRegionEditor] 跳过初始化", "BlobAnalysisTool");
-                return;
-            }
-
-            maskRegionEditor.SetRegionsSource(Parameters.MaskRegions.Regions);
-
-            PluginLogger.Success("屏蔽区域编辑器初始化完成", "BlobAnalysisTool");
-        }
-
-        #endregion
-
         #region 资源清理
 
         public void Cleanup()
         {
-            if (inspectionRegionEditor != null)
+            if (regionManager != null)
             {
-                inspectionRegionEditor.ClearMainOverlay();
-            }
-
-            if (maskRegionEditor != null)
-            {
-                maskRegionEditor.ClearMainOverlay();
+                regionManager.ClearMainOverlay();
             }
         }
 
@@ -210,8 +169,7 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
             if (dataProvider is DataSourceQueryService queryService)
             {
                 _dataProvider = queryService;
-                inspectionRegionEditor.AvailableDataSources = AvailableDataSources;
-                maskRegionEditor.AvailableDataSources = AvailableDataSources;
+                regionManager.AvailableDataSources = AvailableDataSources;
 
                 // 从 ImageSourceRef 恢复 ImageSource（加载后重建运行时数据）
                 Parameters?.RestoreImageSource(AvailableDataSources);
@@ -277,8 +235,6 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
 
         public override async System.Threading.Tasks.Task InitializeAsync()
         {
-            InitializeInspectionRegionEditor();
-            InitializeMaskRegionEditor();
             await System.Threading.Tasks.Task.CompletedTask;
         }
 

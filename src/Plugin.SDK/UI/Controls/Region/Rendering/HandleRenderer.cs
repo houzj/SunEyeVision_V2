@@ -449,25 +449,39 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
         }
 
         /// <summary>
-        /// 绘制手柄到Canvas（参考ROI编辑器DrawEditHandles 1281-1347行）
+        /// 绘制手柄到Canvas
         /// </summary>
-        public static void DrawHandles(Canvas canvas, EditHandle[] handles, ShapeType shapeType, double scale = 1.0)
+        /// <param name="canvas">目标画布</param>
+        /// <param name="handles">手柄数组</param>
+        /// <param name="shapeType">形状类型</param>
+        /// <param name="scale">缩放比例</param>
+        /// <param name="handleColor">手柄颜色（null=默认橙色，根据区域类型传入差异色）</param>
+        public static void DrawHandles(Canvas canvas, EditHandle[] handles, ShapeType shapeType, double scale = 1.0, Brush? handleColor = null)
         {
             // 先清理旧手柄
             ClearHandles(canvas);
+
+            // ★ Phase 4: 根据区域类型使用差异化手柄颜色
+            Brush defaultFill = handleColor ?? Brushes.Orange;
+            Brush defaultStroke = handleColor != null
+                ? new SolidColorBrush(Color.FromArgb(255,
+                    (byte)(((Color)defaultFill.GetValue(SolidColorBrush.ColorProperty)).R / 2),
+                    (byte)(((Color)defaultFill.GetValue(SolidColorBrush.ColorProperty)).G / 2),
+                    (byte)(((Color)defaultFill.GetValue(SolidColorBrush.ColorProperty)).B / 2)))
+                : Brushes.DarkOrange;
 
             foreach (var handle in handles)
             {
                 var strokeThickness = 1.5 / Math.Max(scale, 0.01);
 
-                // 所有手柄统一使用圆形，旋转手柄用红色区分
+                // 旋转手柄独立颜色
                 var isRotateHandle = handle.Type == HandleType.Rotate;
                 var handleShape = new Ellipse
                 {
                     Width = handle.HandleSize,
                     Height = handle.HandleSize,
-                    Fill = isRotateHandle ? Brushes.Red : Brushes.Orange,
-                    Stroke = isRotateHandle ? Brushes.DarkRed : Brushes.DarkOrange,
+                    Fill = isRotateHandle ? Brushes.Red : defaultFill,
+                    Stroke = isRotateHandle ? Brushes.DarkRed : defaultStroke,
                     StrokeThickness = strokeThickness,
                     Tag = HandleTag
                 };

@@ -408,6 +408,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.ViewModels
         };
 
         /// <summary>
+        /// 可用的区域类型列表（检测/屏蔽）
+        /// </summary>
+        public IReadOnlyList<RegionType> RegionTypeList { get; } = new[]
+        {
+            RegionType.Inspection,
+            RegionType.Mask
+        };
+
+        /// <summary>
         /// 参数面板视图模型
         /// </summary>
         public ParameterPanelViewModel? ParameterPanel

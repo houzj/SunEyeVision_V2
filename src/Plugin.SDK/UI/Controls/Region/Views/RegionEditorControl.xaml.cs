@@ -28,7 +28,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
     {
         private RegionEditorViewModel _viewModel;
         private ShapeType _currentTool = ShapeType.Rectangle;
-        private ImageControl? _mainImageControl;
         private Button? _activeShapeButton;
 
         // 控件实例ID（用于区分不同的 RegionEditorControl 实例）
@@ -57,7 +56,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         private int _mouseMoveLogCounter = 0;
         private int _drawingLogCount = 0;
         private int _previewLogCount = 0;
-        private int _renderLogCount = 0;
 
         // 区域名称索引管理（空洞池策略）
         private int _nextRegionIndex = 1;
@@ -77,15 +75,28 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         private double? _rotateStartAngle = null;
         private double? _rotateStartMouseAngle = null;
 
-        // WPF Shape渲染器（对象池 + 增量更新）
-        private WpfShapeRenderer? _renderer;
-
-        public RegionEditorViewModel ViewModel => _viewModel;
+        /// <summary>
+        /// Overlay Canvas引用（由RegionEditorManagerControl设置，用于手柄/橡皮筋绘制）
+        /// </summary>
+        public Canvas? OverlayCanvas { get; set; }
 
         /// <summary>
-        /// 获取InteractionOverlayCanvas（ROI交互层）
+        /// 当前缩放级别（由Manager设置，用于手柄渲染）
         /// </summary>
-        private Canvas? OverlayCanvas => _mainImageControl?.InteractionOverlayCanvasControl;
+        public double CurrentZoom { get; set; } = 1.0;
+
+        /// <summary>
+        /// 需要重新渲染时触发（Manager订阅）
+        /// </summary>
+        public event Action? RenderRequested;
+
+        /// <summary>
+        /// ★ Phase 4: 工具激活事件（Manager 用于分组互斥控制）
+        /// 当用户点击形状工具或选择模式按钮时触发，通知 Manager 同一时间只有一个编辑器的工具被激活
+        /// </summary>
+        public event Action? ToolActivated;
+
+        public RegionEditorViewModel ViewModel => _viewModel;
 
         #region 依赖属性
 
@@ -111,9 +122,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         {
             if (d is RegionEditorControl control)
             {
-                // 仅更新渲染，不建立共享引用
-                // 共享引用由 SetRegionsSource() 方法显式建立
-                control.UpdateRegionOverlay();
+                control.RenderRequested?.Invoke();
             }
         }
 
@@ -131,6 +140,27 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             get => (System.Collections.ObjectModel.ObservableCollection<AvailableDataSource>?)GetValue(AvailableDataSourcesProperty);
             set => SetValue(AvailableDataSourcesProperty, value);
         }
+
+        /// <summary>
+        /// 新创建区域的默认类型（Inspection/Mask）
+        /// RegionEditorManagerControl 使用此属性区分检测区域和屏蔽区域编辑器
+        /// </summary>
+        public static readonly DependencyProperty DefaultRegionTypeProperty =
+            DependencyProperty.Register(nameof(DefaultRegionType),
+                typeof(RegionType),
+                typeof(RegionEditorControl),
+                new PropertyMetadata(RegionType.Inspection));
+
+        public RegionType DefaultRegionType
+        {
+            get => (RegionType)GetValue(DefaultRegionTypeProperty);
+            set => SetValue(DefaultRegionTypeProperty, value);
+        }
+
+        /// <summary>
+        /// 当前选中的形状工具
+        /// </summary>
+        public ShapeType CurrentShapeTool => _currentTool;
 
         #endregion
 
@@ -166,7 +196,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
             _viewModel.SetRegionsSource(externalRegions);
             InitializeRegionIndexFromExisting();
-            UpdateRegionOverlay();
+            RenderRequested?.Invoke();
 
             VisionLogger.Instance.Log(LogLevel.Success,
                 $"[SetRegionsSource] 共享引用已建立 | ViewModel.Regions={_viewModel.Regions.GetHashCode():X8} | 引用相同={_viewModel.Regions == externalRegions}",
@@ -177,18 +207,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
         public RegionEditorControl()
         {
-            // 设计时跳过初始化
+            // 设计时完全跳过初始化，避免 XAML 解析触发 NullReferenceException
             if (DesignerProperties.GetIsInDesignMode(this))
-            {
-                InitializeComponent();
-                EnsureViewModel();
-                _handleManager = new HandleManager();
-                _settings = RegionEditorSettings.Default;
                 return;
-            }
 
-            InitializeComponent();
+            // ★ 必须在 InitializeComponent 之前创建 ViewModel
+            // 因为 XAML 中 RadioButton IsChecked="True" 会立即触发 Checked 事件
             EnsureViewModel();
+            InitializeComponent();
             _handleManager = new HandleManager();
             _settings = RegionEditorSettings.Default;
 
@@ -213,50 +239,16 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
             Keyboard.Focus(this);
 
-            // 确保 ImageControl 引用和渲染器状态有效
-            if (_mainImageControl != null && OverlayCanvas != null)
-            {
-                // 如果渲染器已被销毁（异常情况），重新创建
-                if (_renderer == null)
-                {
-                    _renderer = new WpfShapeRenderer(OverlayCanvas, VisionLogger.Instance);
-                    VisionLogger.Instance.Log(LogLevel.Info,
-                        $"[RegionEditorControl_Loaded] 重新创建渲染器 | InstanceId={_controlInstanceId}",
-                        "RegionEditorControl");
-                }
-
-                // 更新区域覆盖层（确保区域可见）
-                UpdateRegionOverlay();
-                VisionLogger.Instance.Log(LogLevel.Success,
-                    $"[RegionEditorControl_Loaded] 渲染状态已恢复 | InstanceId={_controlInstanceId} | RegionCount={_viewModel.Regions.Count}",
-                    "RegionEditorControl");
-            }
-            else if (_mainImageControl == null)
-            {
-                VisionLogger.Instance.Log(LogLevel.Warning,
-                    $"[RegionEditorControl_Loaded] ImageControl 引用为空，无法恢复渲染 | InstanceId={_controlInstanceId}",
-                    "RegionEditorControl");
-
-                // ⚠️ 时序问题修复：如果渲染器已存在但 ImageControl 为空，
-                // 说明是时序问题（SetMainImageControl 晚于 Loaded 触发）。
-                // 标记需要恢复渲染，稍后 SetMainImageControl 会处理。
-                if (_renderer != null && _viewModel.Regions.Count > 0)
-                {
-                    VisionLogger.Instance.Log(LogLevel.Info,
-                        $"[RegionEditorControl_Loaded] 检测到时序问题：渲染器已存在但 ImageControl 为空，将在 SetMainImageControl 时恢复渲染 | InstanceId={_controlInstanceId}",
-                        "RegionEditorControl");
-                }
-            }
+            VisionLogger.Instance.Log(LogLevel.Success,
+                $"[RegionEditorControl_Loaded] 加载完成 | InstanceId={_controlInstanceId} | RegionCount={_viewModel.Regions.Count}",
+                "RegionEditorControl");
         }
 
         private void RegionEditorControl_Unloaded(object sender, RoutedEventArgs e)
         {
             VisionLogger.Instance.Log(LogLevel.Info,
-                $"[RegionEditorControl] 控件已卸载（Tab切换）| InstanceId={_controlInstanceId} | _mainImageControl={_mainImageControl?.GetType().Name ?? "null"} | _isDrawing={_isDrawing}",
+                $"[RegionEditorControl] 控件已卸载（Tab切换）| InstanceId={_controlInstanceId} | _isDrawing={_isDrawing}",
                 "RegionEditorControl");
-
-            // ⚠️ 不调用 ClearMainOverlay()，保留 ImageControl 引用和事件订阅
-            // 绘制操作发生在主窗口的 ImageControl 上，不应受 Tab 切换影响
 
             // 如果正在绘制中，取消绘制状态（避免切换 Tab 时绘制状态不一致）
             if (_isDrawing)
@@ -306,216 +298,29 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
 
         /// <summary>
-        /// 设置主界面ImageControl引用
+        /// 设置主界面ImageControl引用（已废弃 - 由RegionEditorManagerControl统一管理）
         /// </summary>
+        [Obsolete("由RegionEditorManagerControl统一管理事件和渲染，不再需要直接调用")]
         public void SetMainImageControl(ImageControl imageControl)
         {
-            VisionLogger.Instance.Log(LogLevel.Info,
-                $"[SetMainImageControl] 设置 ImageControl | InstanceId={_controlInstanceId} | Old={_mainImageControl?.GetType().Name ?? "null"} | New={imageControl?.GetType().Name ?? "null"}",
-                "RegionEditorControl");
-
-            // 如果是同一个实例，不做任何操作
-            if (_mainImageControl == imageControl)
-            {
-                VisionLogger.Instance.Log(LogLevel.Info,
-                    $"[SetMainImageControl] 相同 ImageControl，跳过设置 | InstanceId={_controlInstanceId}",
-                    "RegionEditorControl");
-                return;
-            }
-
-            // 先取消旧的事件订阅
-            if (_mainImageControl != null)
-            {
-                VisionLogger.Instance.Log(LogLevel.Warning,
-                    $"[EventUnsubscribe] 取消旧 ImageControl 的事件订阅 | InstanceId={_controlInstanceId} | ImageControl={_mainImageControl.GetType().Name}",
-                    "RegionEditorControl");
-
-                _mainImageControl.ImageMouseMove -= ImageControl_ImageMouseMove;
-                _mainImageControl.ViewTransformed -= ImageControl_ViewTransformed;
-                _mainImageControl.CanvasMouseLeftButtonDown -= ImageControl_CanvasMouseLeftButtonDown;
-                _mainImageControl.CanvasMouseLeftButtonUp -= ImageControl_CanvasMouseLeftButtonUp;
-
-                VisionLogger.Instance.Log(LogLevel.Success,
-                    $"[EventUnsubscribe] 已取消 ImageControl 事件订阅 | InstanceId={_controlInstanceId}",
-                    "RegionEditorControl");
-            }
-
-            // 设置新的引用
-            _mainImageControl = imageControl;
-
-            if (_mainImageControl != null)
-            {
-                // 禁用OverlayCanvas命中测试（手柄/区域命中检测使用手动坐标计算，不需要WPF命中测试）
-                // 设为false可避免OverlayCanvas上的形状拦截鼠标事件，确保MouseUp事件正确传到MainCanvas
-                _mainImageControl.OverlayHitTestVisible = false;
-
-                VisionLogger.Instance.Log(LogLevel.Info,
-                    $"[EventSubscribe] 开始订阅 ImageControl 事件 | InstanceId={_controlInstanceId} | ImageControl={_mainImageControl.GetType().Name}",
-                    "RegionEditorControl");
-
-                // 订阅ImageControl事件（不依赖视觉树）
-                _mainImageControl.ImageMouseMove += ImageControl_ImageMouseMove;
-                VisionLogger.Instance.Log(LogLevel.Success,
-                    $"[EventSubscribe] 已订阅 ImageMouseMove 事件 | InstanceId={_controlInstanceId}",
-                    "RegionEditorControl");
-
-                _mainImageControl.ViewTransformed += ImageControl_ViewTransformed;
-                VisionLogger.Instance.Log(LogLevel.Success,
-                    $"[EventSubscribe] 已订阅 ViewTransformed 事件 | InstanceId={_controlInstanceId}",
-                    "RegionEditorControl");
-
-                _mainImageControl.CanvasMouseLeftButtonDown += ImageControl_CanvasMouseLeftButtonDown;
-                VisionLogger.Instance.Log(LogLevel.Success,
-                    $"[EventSubscribe] 已订阅 CanvasMouseLeftButtonDown 事件 | InstanceId={_controlInstanceId}",
-                    "RegionEditorControl");
-
-                _mainImageControl.CanvasMouseLeftButtonUp += ImageControl_CanvasMouseLeftButtonUp;
-                VisionLogger.Instance.Log(LogLevel.Success,
-                    $"[EventSubscribe] 已订阅 CanvasMouseLeftButtonUp 事件 | InstanceId={_controlInstanceId}",
-                    "RegionEditorControl");
-
-                // 订阅窗口级 MouseUp 事件（兜底：处理鼠标移出 MainCanvas 后松开的边界情况）
-                var window = Window.GetWindow(_mainImageControl);
-                if (window != null)
-                {
-                    window.AddHandler(Window.MouseLeftButtonUpEvent, new MouseButtonEventHandler(Window_MouseLeftButtonUp));
-                    window.AddHandler(Window.MouseRightButtonDownEvent, new MouseButtonEventHandler(Window_MouseRightButtonDown));
-                    VisionLogger.Instance.Log(LogLevel.Success,
-                        $"[EventSubscribe] 已订阅窗口级 MouseUp + MouseRightButtonDown 事件 | InstanceId={_controlInstanceId} | Window={window.GetType().Name}",
-                        "RegionEditorControl");
-                }
-                else
-                {
-                    VisionLogger.Instance.Log(LogLevel.Warning,
-                        $"[EventSubscribe] 警告：无法获取 Window，跳过订阅窗口级事件 | InstanceId={_controlInstanceId}",
-                        "RegionEditorControl");
-                }
-
-                // 初始化WPF Shape渲染器
-                if (OverlayCanvas != null)
-                {
-                    _renderer?.Dispose();
-                    _renderer = new WpfShapeRenderer(OverlayCanvas, VisionLogger.Instance);
-
-                    // ★ 关键修复：初始化时立即同步当前缩放值
-                    // 否则 _viewportScale 默认为 1.0（而非当前 zoom），
-                    // 导致首次渲染时线宽 = rawStroke / 1.0 = 太粗
-                    _renderer?.SetViewportTransform(_mainImageControl.Zoom, new Point(0, 0));
-                }
-
-                VisionLogger.Instance.Log(LogLevel.Success,
-                    $"[SetMainImageControl] 已设置 ImageControl 并订阅所有事件 | InstanceId={_controlInstanceId} | OverlayCanvas={OverlayCanvas != null} | IsDrawing={_viewModel.IsDrawing} | _isDrawing={_isDrawing}",
-                    "RegionEditorControl");
-            }
-
-            UpdateRegionOverlay();
+            // 空实现，保持向后兼容
         }
 
         /// <summary>
-        /// 清理主界面覆盖层和所有事件订阅
+        /// 清理主界面覆盖层（已废弃 - 由RegionEditorManagerControl统一管理）
         /// </summary>
+        [Obsolete("由RegionEditorManagerControl统一管理事件和渲染")]
         public void ClearMainOverlay()
         {
-            VisionLogger.Instance.Log(LogLevel.Info,
-                $"[ClearMainOverlay] 清理主界面覆盖层和所有事件订阅 | InstanceId={_controlInstanceId}",
-                "RegionEditorControl");
-
-            try
-            {
-                // 取消 ImageControl 事件订阅
-                if (_mainImageControl != null)
-                {
-                    VisionLogger.Instance.Log(LogLevel.Info,
-                        $"[EventUnsubscribe] 取消 ImageControl 事件订阅 | InstanceId={_controlInstanceId} | ImageControl={_mainImageControl.GetType().Name}",
-                        "RegionEditorControl");
-
-                    _mainImageControl.ImageMouseMove -= ImageControl_ImageMouseMove;
-                    VisionLogger.Instance.Log(LogLevel.Success,
-                        $"[EventUnsubscribe] 已取消 ImageMouseMove 事件订阅 | InstanceId={_controlInstanceId}",
-                        "RegionEditorControl");
-
-                    _mainImageControl.ViewTransformed -= ImageControl_ViewTransformed;
-                    VisionLogger.Instance.Log(LogLevel.Success,
-                        $"[EventUnsubscribe] 已取消 ViewTransformed 事件订阅 | InstanceId={_controlInstanceId}",
-                        "RegionEditorControl");
-
-                    _mainImageControl.CanvasMouseLeftButtonDown -= ImageControl_CanvasMouseLeftButtonDown;
-                    VisionLogger.Instance.Log(LogLevel.Success,
-                        $"[EventUnsubscribe] 已取消 CanvasMouseLeftButtonDown 事件订阅 | InstanceId={_controlInstanceId}",
-                        "RegionEditorControl");
-
-                    _mainImageControl.CanvasMouseLeftButtonUp -= ImageControl_CanvasMouseLeftButtonUp;
-                    VisionLogger.Instance.Log(LogLevel.Success,
-                        $"[EventUnsubscribe] 已取消 CanvasMouseLeftButtonUp 事件订阅 | InstanceId={_controlInstanceId}",
-                        "RegionEditorControl");
-
-                    // 取消窗口级事件订阅
-                    var window = Window.GetWindow(_mainImageControl);
-                    if (window != null)
-                    {
-                        window.RemoveHandler(Window.MouseLeftButtonUpEvent, new MouseButtonEventHandler(Window_MouseLeftButtonUp));
-                        window.RemoveHandler(Window.MouseRightButtonDownEvent, new MouseButtonEventHandler(Window_MouseRightButtonDown));
-                        VisionLogger.Instance.Log(LogLevel.Success,
-                            $"[EventUnsubscribe] 已取消窗口级事件订阅 | InstanceId={_controlInstanceId} | Window={window.GetType().Name}",
-                            "RegionEditorControl");
-                    }
-                }
-
-                // 取消 ViewModel 事件订阅
-                if (_viewModel != null)
-                {
-                    VisionLogger.Instance.Log(LogLevel.Info,
-                        $"[EventUnsubscribe] 取消 ViewModel 事件订阅 | InstanceId={_controlInstanceId}",
-                        "RegionEditorControl");
-
-                    _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
-                    _viewModel.RegionChanged -= OnRegionChanged;
-                    // 不再退订 Regions.CollectionChanged，已删除订阅
-
-                    VisionLogger.Instance.Log(LogLevel.Success,
-                        $"[EventUnsubscribe] 已取消 ViewModel 事件订阅 | InstanceId={_controlInstanceId}",
-                        "RegionEditorControl");
-                }
-
-                // 不再调用 UnsubscribeFromExternalRegions，已删除该方法
-
-                // 清理覆盖层
-                if (_mainImageControl != null)
-                {
-                    // 恢复只读模式：调试窗口关闭后不允许编辑ROI
-                    _mainImageControl.OverlayHitTestVisible = false;
-                    _mainImageControl.InteractionOverlayCanvasControl.Children.Clear();
-                }
-
-                // 清理渲染器
-                _renderer?.Dispose();
-                _renderer = null;
-
-                // 清理引用
-                _mainImageControl = null;
-
-                VisionLogger.Instance.Log(LogLevel.Success,
-                    "[ClearMainOverlay] 清理完成",
-                    "RegionEditorControl");
-            }
-            catch (Exception ex)
-            {
-                VisionLogger.Instance.Log(LogLevel.Error,
-                    $"[ClearMainOverlay] 清理失败: {ex.Message}",
-                    "RegionEditorControl",
-                    ex);
-            }
+            // 空实现，保持向后兼容
         }
 
         /// <summary>
-        /// 加载图像
+        /// 加载图像（已废弃）
         /// </summary>
+        [Obsolete("不再由RegionEditorControl管理图像加载")]
         public void LoadImage(BitmapSource image)
         {
-            if (_mainImageControl != null)
-            {
-                _mainImageControl.SourceImage = image;
-            }
         }
 
         /// <summary>
@@ -554,9 +359,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             try
             {
                 _viewModel.Regions.Add(region);
-                UpdateRegionOverlay();
-                // RegionChanged 事件会通过 OnRegionChanged 自动转发到 RegionDataChanged
-                // 这里不再手动触发，避免重复通知
+                RenderRequested?.Invoke();
             }
             catch (Exception ex)
             {
@@ -584,9 +387,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                     UnsubscribeShapeParameters(_selectedRegion);
                     _selectedRegion = null;
                 }
-                UpdateRegionOverlay();
-                // RegionChanged 事件会通过 OnRegionChanged 自动转发到 RegionDataChanged
-                // 这里不再手动触发，避免重复通知
+                RenderRequested?.Invoke();
             }
             catch (Exception ex)
             {
@@ -614,93 +415,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         {
             base.OnPreviewKeyDown(e);
 
-            // Ctrl+Z: 撤销
-            if (e.Key == Key.Z && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
-            {
-                if (_viewModel.CanUndo)
-                {
-                    _viewModel.Undo();
-                    UpdateRegionOverlay();
-                    e.Handled = true;
-                }
+            // ★ Delete/Escape/Ctrl+Z/Ctrl+Y 由 Manager 在 Window 级拦截并路由给 _activeEditor
+            // 编辑器不再自行处理，避免双方独立处理导致的冲突
+            if (e.Key == Key.Delete || e.Key == Key.Escape)
                 return;
-            }
 
-            // Ctrl+Y: 重做
-            if (e.Key == Key.Y && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
-            {
-                if (_viewModel.CanRedo)
-                {
-                    _viewModel.Redo();
-                    UpdateRegionOverlay();
-                    e.Handled = true;
-                }
+            if ((e.Key == Key.Z || e.Key == Key.Y) && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
                 return;
-            }
-
-            // Delete: 删除选中区域
-            if (e.Key == Key.Delete && _selectedRegion != null)
-            {
-                // ★ 诊断日志：删除前状态
-                var beforeRegionNames = string.Join(", ", _viewModel.Regions.Select(r => $"{r.Name}(Id={r.Id:B})"));
-                VisionLogger.Instance.Log(LogLevel.Warning,
-                    $"[Delete] 删除前状态 | InstanceId={_controlInstanceId} | 删除目标={_selectedRegion.Name}(Id={_selectedRegion.Id:B}) | Regions.Count={_viewModel.Regions.Count} | Regions=[{beforeRegionNames}] | _selectedRegion={_selectedRegion.Name}",
-                    "RegionEditorControl");
-
-                _viewModel.RemoveSelectedRegion();
-
-                // ★ 诊断日志：删除后状态（ViewModel 内部已触发 RegionChanged → OnRegionChanged → UpdateRegionOverlay）
-                var afterRegionNames = string.Join(", ", _viewModel.Regions.Select(r => $"{r.Name}(Id={r.Id:B})"));
-                VisionLogger.Instance.Log(LogLevel.Warning,
-                    $"[Delete] ViewModel.RemoveSelectedRegion 完成 | Regions.Count={_viewModel.Regions.Count} | Regions=[{afterRegionNames}] | SelectedRegion={_viewModel.SelectedRegion?.Name ?? "null"}",
-                    "RegionEditorControl");
-
-                UnsubscribeShapeParameters(_selectedRegion);
-                _selectedRegion = null;
-                VisionLogger.Instance.Log(LogLevel.Warning,
-                    $"[Delete] 开始第二次 UpdateRegionOverlay | _selectedRegion=null | Regions.Count={_viewModel.Regions.Count}",
-                    "RegionEditorControl");
-
-                UpdateRegionOverlay();
-                e.Handled = true;
-                return;
-            }
-
-            // Escape: 取消当前操作
-            if (e.Key == Key.Escape)
-            {
-                if (_isDrawingPolygon)
-                {
-                    _isDrawingPolygon = false;
-                    _polygonPoints.Clear();
-                    if (_currentDrawingRegion != null)
-                        ReleaseRegionIndex(_currentDrawingRegion.Name);
-                    _currentDrawingRegion = null;
-                    ClearRubberBand();
-                    UpdateRegionOverlay();
-                    _viewModel.StatusMessage = "已取消多边形绘制";
-                }
-                else if (_isDrawing)
-                {
-                    _isDrawing = false;
-                    _currentDrawingRegion = null;
-                    UpdateRegionOverlay();
-                    _viewModel.StatusMessage = "已取消绘制";
-                }
-                else if (_isDragging || _isDraggingHandle)
-                {
-                    _isDragging = false;
-                    _isDraggingHandle = false;
-                    UpdateRegionOverlay();
-                    _viewModel.StatusMessage = "已取消编辑";
-                }
-                else
-                {
-                    DeselectAll();
-                }
-                e.Handled = true;
-                return;
-            }
 
             // Enter: 完成多边形
             if (e.Key == Key.Enter && _isDrawingPolygon
@@ -728,16 +449,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 ClearRubberBand();
                 if (_polygonPoints.Count >= 1 && _currentDrawingRegion != null)
                 {
-                    // 插入上次鼠标位置作为临时点，避免预览跳变
                     if (_currentDrawingRegion.Parameters is ShapeParameters shapeDef)
                     {
                         shapeDef.Points.Add(new Point2D(_lastMouseImagePosition.X, _lastMouseImagePosition.Y));
-                        UpdateSingleRegionFast(_currentDrawingRegion);
+                        RenderRequested?.Invoke();
                         shapeDef.Points.RemoveAt(shapeDef.Points.Count - 1);
                     }
                 }
                 else if (_polygonPoints.Count == 0)
-                    UpdateRegionOverlay();  // 全量重建，清除残留名称标签
+                    RenderRequested?.Invoke();
                 _viewModel.StatusMessage = _polygonPoints.Count > 0
                     ? $"多边形顶点: {_polygonPoints.Count}"
                     : "已取消多边形绘制";
@@ -745,7 +465,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 return;
             }
 
-            // 快捷键选择形状工具
+            // 快捷键选择形状工具（只处理当前获得键盘焦点的编辑器）
             if (_viewModel.IsDrawingMode)
             {
                 switch (e.Key)
@@ -790,61 +510,250 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
         #endregion
 
+        #region 键盘操作公共方法（由 Manager 路由调用）
+
+        /// <summary>
+        /// 处理删除操作（Phase 1 优化：先清空状态再删除）
+        /// </summary>
+        public void HandleDelete()
+        {
+            if (_selectedRegion == null) return;
+
+            var regionToDelete = _selectedRegion;
+
+            // ★ 诊断日志：删除前状态
+            var beforeRegionNames = string.Join(", ", _viewModel.Regions.Select(r => $"{r.Name}(Id={r.Id:B})"));
+            VisionLogger.Instance.Log(LogLevel.Warning,
+                $"[Delete] 删除前状态 | InstanceId={_controlInstanceId} | 删除目标={regionToDelete.Name}(Id={regionToDelete.Id:B}) | Regions.Count={_viewModel.Regions.Count} | Regions=[{beforeRegionNames}] | _selectedRegion={regionToDelete.Name}",
+                "RegionEditorControl");
+
+            // ★ Phase 1 修复：先取消订阅/清空状态，再触发删除（避免 OnRegionChanged 回调中看到旧状态）
+            UnsubscribeShapeParameters(regionToDelete);
+            _selectedRegion = null;
+
+            _viewModel.RemoveSelectedRegion();
+
+            // RemoveSelectedRegion 内部会触发 RegionChanged → OnRegionChanged → RenderRequested
+            // 此时 _selectedRegion=null, GetSelectedRegion()=null, 渲染正确
+            var afterRegionNames = string.Join(", ", _viewModel.Regions.Select(r => $"{r.Name}(Id={r.Id:B})"));
+            VisionLogger.Instance.Log(LogLevel.Warning,
+                $"[Delete] 删除完成 | Regions.Count={_viewModel.Regions.Count} | Regions=[{afterRegionNames}] | SelectedRegion={_viewModel.SelectedRegion?.Name ?? "null"}",
+                "RegionEditorControl");
+        }
+
+        /// <summary>
+        /// 处理 Escape 键（取消绘制/取消选中）
+        /// </summary>
+        public void HandleEscape()
+        {
+            if (_isDrawingPolygon)
+            {
+                _isDrawingPolygon = false;
+                _polygonPoints.Clear();
+                if (_currentDrawingRegion != null)
+                    ReleaseRegionIndex(_currentDrawingRegion.Name);
+                _currentDrawingRegion = null;
+                ClearRubberBand();
+                RenderRequested?.Invoke();
+                _viewModel.StatusMessage = "已取消多边形绘制";
+            }
+            else if (_isDrawing)
+            {
+                _isDrawing = false;
+                _currentDrawingRegion = null;
+                RenderRequested?.Invoke();
+                _viewModel.StatusMessage = "已取消绘制";
+            }
+            else if (_isDragging || _isDraggingHandle)
+            {
+                _isDragging = false;
+                _isDraggingHandle = false;
+                RenderRequested?.Invoke();
+                _viewModel.StatusMessage = "已取消编辑";
+            }
+            else
+            {
+                DeselectAll();
+            }
+        }
+
+        /// <summary>
+        /// ★ Phase 2: 设置绘制工具（Manager 共享工具栏按钮调用）
+        /// </summary>
+        public void SetDrawingTool(ShapeType tool)
+        {
+            if (tool == ShapeType.Polygon)
+                _isDrawingPolygon = false;
+            SelectShapeTool(tool, null);
+        }
+
+        /// <summary>
+        /// ★ Phase 2: 进入选择模式（Manager 共享工具栏/互斥逻辑调用）
+        /// </summary>
+        public void EnterSelectMode()
+        {
+            EnterSelectMode(null);
+        }
+
+        /// <summary>
+        /// 处理快捷键（由 Manager 在键盘事件中路由给 _activeEditor）
+        /// 仅处理非 Delete/Ctrl+Z/Ctrl+Y/Escape 的快捷键
+        /// </summary>
+        public void HandleShortcutKey(KeyEventArgs e)
+        {
+            if (e.Handled) return;
+
+            // 快捷键仅在绘制模式下生效
+            if (_viewModel.IsDrawing)
+            {
+                switch (e.Key)
+                {
+                    case Key.V:
+                        EnterSelectMode(null);
+                        e.Handled = true;
+                        break;
+                    case Key.R:
+                        SelectShapeTool(ShapeType.Rectangle, null);
+                        e.Handled = true;
+                        break;
+                    case Key.C:
+                        SelectShapeTool(ShapeType.Circle, null);
+                        e.Handled = true;
+                        break;
+                    case Key.O:
+                        SelectShapeTool(ShapeType.RotatedRectangle, null);
+                        e.Handled = true;
+                        break;
+                    case Key.L:
+                        SelectShapeTool(ShapeType.Line, null);
+                        e.Handled = true;
+                        break;
+                    case Key.P:
+                        _isDrawingPolygon = false;
+                        SelectShapeTool(ShapeType.Polygon, null);
+                        e.Handled = true;
+                        break;
+                }
+            }
+            else
+            {
+                // 非绘制模式下，V键也可以切换到选择模式
+                if (e.Key == Key.V)
+                {
+                    EnterSelectMode(null);
+                    e.Handled = true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// ★ Phase 2: 退出绘制模式，切回选择模式（Manager 互斥调用）
+        /// </summary>
+        public void ExitDrawingMode()
+        {
+            if (_viewModel.IsDrawing)
+            {
+                EnterSelectMode(null, notifyManager: false);
+            }
+        }
+
+        /// <summary>
+        /// ★ Phase 4: 进入空闲状态 - 无任何工具选中，无按钮高亮
+        /// 由 Manager 在分组互斥时调用，确保被切出的编辑器处于完全空闲状态
+        /// </summary>
+        public void EnterIdleMode()
+        {
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[EnterIdleMode] 进入空闲状态 | InstanceId={_controlInstanceId}",
+                "RegionEditorControl");
+
+            // 1. 取消进行中的绘制（多边形顶点、橡皮筋等）
+            if (_isDrawing)
+            {
+                if (_currentDrawingRegion != null)
+                    ReleaseRegionIndex(_currentDrawingRegion.Name);
+                _currentDrawingRegion = null;
+                _isDrawing = false;
+                _isDrawingPolygon = false;
+                _polygonPoints.Clear();
+                ClearRubberBand();
+            }
+
+            // 2. 退出绘制状态
+            _viewModel.IsDrawing = false;
+            _currentTool = ShapeType.None;
+
+            // 3. 取消区域选中
+            DeselectAll();
+
+            // 4. 清除所有按钮高亮（形状按钮 + SelectButton）
+            var shapeContainer = FindShapeContainer();
+            if (shapeContainer != null)
+            {
+                ResetAllShapeButtons(shapeContainer);
+            }
+            ResetShapeButtonStyle(SelectButton);
+            _activeShapeButton = null;
+
+            // 5. 更新状态消息
+            _viewModel.StatusMessage = "空闲 - 点击工具栏选择工具";
+
+            // ★ 不触发 ToolActivated（防止连锁反应）
+        }
+
+        #endregion
+
         #region 鼠标事件处理
 
-        private void ImageControl_ImageMouseMove(object? sender, ImageMouseEventArgs e)
+        /// <summary>
+        /// 处理鼠标移动（由Manager路由）
+        /// </summary>
+        public void ProcessMouseMove(Point position)
         {
             if (OverlayCanvas == null) return;
 
-            var position = e.ImagePosition;
             _lastMouseImagePosition = position;
 
-            // 每100次移动记录一次日志，避免日志过多
             if (_mouseMoveLogCounter++ % 100 == 0)
             {
                 VisionLogger.Instance.Log(LogLevel.Info,
-                    $"[MouseMove] Count={_mouseMoveLogCounter} | Position={position:F1} | IsDrawing={_isDrawing} | IsDragging={_isDragging} | IsDraggingHandle={_isDraggingHandle}",
+                    $"[ProcessMouseMove] Count={_mouseMoveLogCounter} | Position={position:F1} | IsDrawing={_isDrawing} | IsDragging={_isDragging} | IsDraggingHandle={_isDraggingHandle}",
                     "RegionEditorControl");
             }
 
-            // 拖动ROI编辑器风格的手柄编辑
+            // ★ 优化: 不再在此触发 RenderRequested，由 Manager 在 OnImageMouseMove 末尾统一调用 RenderAll()
+            // 避免两次渲染 (ProcessMouseMove 内部 + Manager.RenderAll)
+
             if (_isDraggingHandle && _activeHandleType != Rendering.HandleType.None && _selectedRegion?.Parameters is ShapeParameters shape)
             {
                 HandleShapeEdit(shape, position);
-                UpdateSingleRegionFast(_selectedRegion);
                 return;
             }
 
-            // 拖动区域
             if (_isDragging && _selectedRegion != null)
             {
                 var offset = position - _dragStartPoint;
                 MoveRegion(_selectedRegion, offset);
                 _dragStartPoint = position;
-                UpdateSingleRegionFast(_selectedRegion);
                 return;
             }
 
-            // 绘制预览
             if (_isDrawing && _currentDrawingRegion != null)
             {
-                // 多边形预览：临时加入鼠标位置做填充预览
                 if (_currentTool == ShapeType.Polygon && _isDrawingPolygon)
                 {
-                if (_polygonPoints.Count >= 1)
-                {
-                    if (_currentDrawingRegion.Parameters is ShapeParameters shapeDef)
+                    if (_polygonPoints.Count >= 1)
                     {
-                        shapeDef.Points.Add(new Point2D(position.X, position.Y));
-                        UpdateSingleRegionFast(_currentDrawingRegion);
-                        shapeDef.Points.RemoveAt(shapeDef.Points.Count - 1);
+                        if (_currentDrawingRegion.Parameters is ShapeParameters shapeDef)
+                        {
+                            shapeDef.Points.Add(new Point2D(position.X, position.Y));
+                            shapeDef.Points.RemoveAt(shapeDef.Points.Count - 1);
+                        }
                     }
-                }
-                DrawPolygonRubberBand(position);
+                    DrawPolygonRubberBand(position);
                 }
                 else
                 {
-                    // 首次更新时记录日志
                     if (_drawingLogCount == 0)
                     {
                         VisionLogger.Instance.Log(LogLevel.Info,
@@ -854,35 +763,23 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                     }
 
                     UpdateDrawingPreview(position);
-                    UpdateSingleRegionFast(_currentDrawingRegion);
                 }
             }
         }
 
-        private void ImageControl_CanvasMouseLeftButtonDown(object? sender, ImageMouseEventArgs e)
+        /// <summary>
+        /// 处理鼠标按下（由Manager路由）
+        /// </summary>
+        public void ProcessMouseDown(Point position)
         {
             VisionLogger.Instance.Log(LogLevel.Info,
-                $"[CanvasMouseLeftButtonDown] MouseDown事件 | InstanceId={_controlInstanceId} | IsDrawing={_viewModel.IsDrawing} | _isDrawing={_isDrawing} | Tool={_currentTool} | Position={e.ImagePosition:F1} | OverlayCanvas={OverlayCanvas != null}",
+                $"[ProcessMouseDown] MouseDown事件 | InstanceId={_controlInstanceId} | IsDrawing={_viewModel.IsDrawing} | _isDrawing={_isDrawing} | Tool={_currentTool} | Position={position:F1} | OverlayCanvas={OverlayCanvas != null}",
                 "RegionEditorControl");
 
             if (OverlayCanvas == null) return;
 
-            var position = e.ImagePosition;
-
-            // ========== 多边形绘制模式 ==========
             if (_currentTool == ShapeType.Polygon)
             {
-                // 双击完成（从原始事件中获取 ClickCount）
-                var clickCount = (e.OriginalEventArgs as MouseButtonEventArgs)?.ClickCount ?? 1;
-                if (clickCount >= 2 && _polygonPoints.Count >= 3)
-                {
-                    _isDrawingPolygon = false;
-                    FinishInteraction();
-                    e.Handled = true;
-                    return;
-                }
-
-                // 首次点击：初始化
                 if (!_isDrawingPolygon)
                 {
                     _isDrawingPolygon = true;
@@ -890,49 +787,34 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                     _polygonPoints.Clear();
                     _currentDrawingRegion = RegionData.CreateDrawingRegion(
                         GenerateRegionName(), _currentTool);
+                    _currentDrawingRegion.RegionType = DefaultRegionType;
                     _currentDrawingRegion.IsPreview = true;
                 }
 
-                // 添加顶点 + 同步
                 _polygonPoints.Add(position);
                 SyncPolygonToShapeDef();
                 ClearRubberBand();
-                // ★ 统一使用增量更新，与右键/Backspace/mouseMove 保持一致
-                UpdateSingleRegionFast(_currentDrawingRegion);
+                RenderRequested?.Invoke();
                 _viewModel.StatusMessage = $"多边形顶点: {_polygonPoints.Count}";
-                e.Handled = true;
                 return;
             }
 
-            // ========== 绘制模式 ==========
             if (_viewModel.IsDrawing && _currentTool != ShapeType.Point)
             {
-                VisionLogger.Instance.Log(LogLevel.Success,
-                    $"[开始绘制] 进入绘制流程 | InstanceId={_controlInstanceId} | Tool={_currentTool} | Position={position:F1} | _isDrawing={_isDrawing} | _nextRegionIndex={_nextRegionIndex} | 空洞池数量={_availableIndices.Count}",
-                    "RegionEditorControl");
-
-                // 检查是否已经在绘制中，防止重复触发
                 if (_isDrawing)
                 {
                     VisionLogger.Instance.Log(LogLevel.Warning,
-                        $"[开始绘制] 警告：已在绘制中，忽略重复触发 | InstanceId={_controlInstanceId} | CurrentDrawingRegion={_currentDrawingRegion?.Name ?? "null"}",
+                        $"[ProcessMouseDown] 警告：已在绘制中，忽略重复触发 | InstanceId={_controlInstanceId}",
                         "RegionEditorControl");
-                    e.Handled = true;
                     return;
                 }
 
-                // 开始绘制
                 _isDrawing = true;
                 _startPoint = position;
 
                 _currentDrawingRegion = RegionData.CreateDrawingRegion(
-                    GenerateRegionName(),
-                    _currentTool
-                );
-
-                VisionLogger.Instance.Log(LogLevel.Info,
-                    $"[开始绘制] 创建绘制区域 | InstanceId={_controlInstanceId} | RegionName={_currentDrawingRegion?.Name ?? "null"} | IsPreview={_currentDrawingRegion?.IsPreview} | _nextRegionIndex={_nextRegionIndex}",
-                    "RegionEditorControl");
+                    GenerateRegionName(), _currentTool);
+                _currentDrawingRegion.RegionType = DefaultRegionType;
 
                 if (_currentDrawingRegion.Parameters is ShapeParameters shapeDef)
                 {
@@ -960,13 +842,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                             break;
                     }
                 }
-
-                e.Handled = true;
                 return;
             }
 
-            // ========== 非绘制模式（选择/编辑） ==========
-            // 首先检测是否命中手柄（仅当有选中区域时）
             if (_selectedRegion != null)
             {
                 if (_currentHandles != null)
@@ -975,24 +853,19 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
                     if (hitHandleType != Rendering.HandleType.None)
                     {
-                        // 中心手柄：触发拖动
                         if (hitHandleType == Rendering.HandleType.Center)
                         {
                             _isDragging = true;
                             _dragStartPoint = position;
                             _viewModel.StatusMessage = "正在拖动区域";
-                            e.Handled = true;
                             return;
                         }
 
-                        // 多边形顶点手柄
                         if (hitHandleType == Rendering.HandleType.PolygonVertex)
                         {
                             _isDraggingHandle = true;
                             _activeHandleType = hitHandleType;
                             _handleDragStartPoint = position;
-
-                            // 找到被命中手柄的顶点索引
                             _activeVertexIndex = -1;
                             if (_currentHandles != null)
                             {
@@ -1010,21 +883,16 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                                     }
                                 }
                             }
-
                             if (_selectedRegion?.Parameters is ShapeParameters polyShape)
                                 _originalShapeDefinition = polyShape.Clone() as ShapeParameters;
-
                             _viewModel.StatusMessage = "正在拖拽多边形顶点";
-                            e.Handled = true;
                             return;
                         }
 
-                        // 其他手柄：开始编辑
                         _isDraggingHandle = true;
                         _activeHandleType = hitHandleType;
                         _handleDragStartPoint = position;
 
-                        // 保存原始状态
                         if (_selectedRegion.Parameters is ShapeParameters shapeDef)
                         {
                             _originalShapeDefinition = shapeDef.Clone() as ShapeParameters;
@@ -1032,7 +900,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                             _originalSize = new Size(shapeDef.Width, shapeDef.Height);
                             _originalRotation = shapeDef.Angle;
 
-                            // 如果是旋转手柄，记录起始角度
                             if (hitHandleType == Rendering.HandleType.Rotate)
                             {
                                 _rotateStartAngle = shapeDef.Angle;
@@ -1042,20 +909,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                         }
 
                         _viewModel.StatusMessage = $"正在拖动 {hitHandleType} 手柄";
-                        e.Handled = true;
                         return;
                     }
                 }
             }
 
-            // ========== 检测区域命中 ==========
             var hitRegion = HitTestRegion(position);
             if (hitRegion != null)
             {
                 SelectRegion(hitRegion);
                 _isDragging = true;
                 _dragStartPoint = position;
-                e.Handled = true;
             }
             else
             {
@@ -1067,59 +931,32 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
 
 
-        private void ImageControl_CanvasMouseLeftButtonUp(object? sender, ImageMouseEventArgs e)
-        {
-            VisionLogger.Instance.Log(LogLevel.Info,
-                $"[CanvasMouseLeftButtonUp] MouseUp事件 | InstanceId={_controlInstanceId} | Source=ImageControl | Position={e.ImagePosition:F1}",
-                "RegionEditorControl");
-
-            FinishInteraction();
-        }
-
-        private void ImageControl_ViewTransformed(object? sender, ViewTransformEventArgs e)
-        {
-            // ★ 关键诊断：仅当缩放值变化时记录（低频）
-            VisionLogger.Instance.Log(LogLevel.Info,
-                $"[ViewTransformed] zoom={e:F3} | offset=({e.OffsetX:F1},{e.OffsetY:F1}) | 将同步到渲染器",
-                "RegionEditorControl");
-
-            // 同步渲染器缩放参数（仅用于线宽/虚线间距反除缩放）
-            // 注意：不传 offset！OverlayCanvas 在 ImageContainer 内部，
-            // ImageContainer 自身有 TranslateTransform，再叠加 offset 会导致双重偏移
-            _renderer?.SetViewportTransform(e.Zoom, new Point(0, 0));
-
-            UpdateRegionOverlay();
-        }
-
         /// <summary>
-        /// 窗口级 MouseUp 事件处理（兜底：处理鼠标移出 MainCanvas 后松开的边界情况）
+        /// 处理鼠标松开（由Manager路由）
         /// </summary>
-        private void Window_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        public void ProcessMouseUp()
         {
-            // 无交互状态时忽略窗口级MouseUp，避免点击窗口其他区域产生无关日志
             if (!_isDrawing && !_isDragging && !_isDraggingHandle)
-            {
                 return;
-            }
 
             VisionLogger.Instance.Log(LogLevel.Info,
-                $"[Window_MouseLeftButtonUp] MouseUp事件 | InstanceId={_controlInstanceId} | Source=Window | _isDrawing={_isDrawing} | _isDragging={_isDragging} | _isDraggingHandle={_isDraggingHandle}",
+                $"[ProcessMouseUp] MouseUp事件 | InstanceId={_controlInstanceId} | _isDrawing={_isDrawing} | _isDragging={_isDragging} | _isDraggingHandle={_isDraggingHandle}",
                 "RegionEditorControl");
 
             FinishInteraction();
         }
 
         /// <summary>
-        /// 窗口级右键事件处理（多边形撤销顶点）
+        /// 处理鼠标右键（多边形撤销顶点）
         /// </summary>
-        private void Window_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        public void ProcessRightButtonDown()
         {
             if (!_isDrawingPolygon || _currentTool != ShapeType.Polygon
                 || _polygonPoints.Count <= 0)
                 return;
 
             VisionLogger.Instance.Log(LogLevel.Info,
-                $"[Window_MouseRightButtonDown] 右键触发多边形撤销 | InstanceId={_controlInstanceId} | 顶点数={_polygonPoints.Count}",
+                $"[ProcessRightButtonDown] 右键触发多边形撤销 | InstanceId={_controlInstanceId} | 顶点数={_polygonPoints.Count}",
                 "RegionEditorControl");
 
             _polygonPoints.RemoveAt(_polygonPoints.Count - 1);
@@ -1134,23 +971,29 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             ClearRubberBand();
             if (_polygonPoints.Count >= 1 && _currentDrawingRegion != null)
             {
-                // 插入上次鼠标位置作为临时点，避免预览跳变
                 if (_currentDrawingRegion.Parameters is ShapeParameters shapeDef)
                 {
                     shapeDef.Points.Add(new Point2D(_lastMouseImagePosition.X, _lastMouseImagePosition.Y));
-                    UpdateSingleRegionFast(_currentDrawingRegion);
+                    RenderRequested?.Invoke();
                     shapeDef.Points.RemoveAt(shapeDef.Points.Count - 1);
                 }
             }
             else if (_polygonPoints.Count == 0)
-                UpdateRegionOverlay();  // 全量重建，清除残留名称标签
+                RenderRequested?.Invoke();
             _viewModel.StatusMessage = _polygonPoints.Count > 0
                 ? $"多边形顶点: {_polygonPoints.Count}"
                 : "已取消多边形绘制";
-            e.Handled = true;
         }
 
-        private void FinishInteraction()
+        /// <summary>
+        /// 处理视口变换（由Manager调用）
+        /// </summary>
+        public void ProcessViewTransformed(double zoom)
+        {
+            CurrentZoom = zoom;
+        }
+
+        public void FinishInteraction()
         {
             VisionLogger.Instance.Log(LogLevel.Info,
                 $"[FinishInteraction] 调用 FinishInteraction | InstanceId={_controlInstanceId} | _isDrawing={_isDrawing} | _currentDrawingRegion={_currentDrawingRegion?.Name ?? "null"} | _isDrawingPolygon={_isDrawingPolygon}",
@@ -1165,7 +1008,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
                 // 多边形非最终完成时，清理橡皮筋线但不重置 _isDrawing/_currentDrawingRegion
                 ClearRubberBand();
-                UpdateRegionOverlay();
+                RenderRequested?.Invoke();
                 return;
             }
 
@@ -1177,6 +1020,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
                 // 完成绘制，设置预览状态为 false
                 _currentDrawingRegion.IsPreview = false;
+
+                // 应用默认区域类型（检测/屏蔽），颜色由 RegionData.ApplyTypeColors() 自动同步
+                _currentDrawingRegion.RegionType = DefaultRegionType;
 
                 var shapeDef = _currentDrawingRegion.Parameters as ShapeParameters;
                 if (shapeDef != null)
@@ -1237,7 +1083,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             _rotateStartAngle = null;
             _rotateStartMouseAngle = null;
 
-            UpdateRegionOverlay();
+            RenderRequested?.Invoke();
 
             VisionLogger.Instance.Log(LogLevel.Info,
                 $"[FinishInteraction] 清理完成 | InstanceId={_controlInstanceId} | _isDrawing={_isDrawing} | _currentDrawingRegion={_currentDrawingRegion?.Name ?? "null"}",
@@ -1336,7 +1182,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
             ClearRubberBand();
 
-            var zoom = _mainImageControl?.Zoom ?? 1.0;
+            var zoom = CurrentZoom;
             var lastPoint = _polygonPoints[_polygonPoints.Count - 1];
 
             // 实线：最后一个顶点 -> 鼠标位置
@@ -1998,86 +1844,52 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             shape.CenterY = original.CenterY + centerLocal.Y;
         }
 
+        /// <summary>
+        /// 旧渲染入口（已弃用，由Manager统一管理）
+        /// </summary>
         private void UpdateRegionOverlay()
         {
-            if (OverlayCanvas == null) return;
-
-            // ── 第一步：统一清除手柄 ──
-            // 无论后续走哪个渲染分支，先清除旧手柄，避免残留
-            Rendering.HandleRenderer.ClearHandles(OverlayCanvas);
-
-            // ── 第二步：渲染区域形状 ──
-            var regions = _viewModel?.Regions;
-            if (regions == null || regions.Count == 0)
-            {
-                // 没有区域：清除画布内容，不需要手柄
-                if (_renderer != null)
-                    _renderer.Render(new List<RegionRenderContext>(), new RegionRenderOptions { ShowLabels = true, ShowHandles = false });
-                else
-                    OverlayCanvas.Children.Clear();
-                return;
-            }
-
-            if (_renderer != null)
-            {
-                // 主渲染路径：WpfShapeRenderer（对象池 + 增量更新）
-                var contexts = BuildRenderContexts(regions);
-
-                // 添加正在绘制的预览区域
-                if (_isDrawing && _currentDrawingRegion?.Parameters is ShapeParameters previewShape)
-                    contexts.Add(CreateRenderContext(_currentDrawingRegion, previewShape, isPreview: true));
-
-                _renderer.Render(contexts, new RegionRenderOptions { ShowLabels = true, ShowHandles = false });
-            }
-            else
-            {
-                // 回退路径：传统逐个绘制
-                OverlayCanvas.Children.Clear();
-
-                foreach (var region in regions)
-                {
-                    if (!region.IsVisible) continue;
-                    var shape = CreateRegionShape(region);
-                    if (shape != null)
-                        OverlayCanvas.Children.Add(shape);
-                    DrawRegionLabel(region);
-                }
-
-                if (_isDrawing && _currentDrawingRegion != null)
-                {
-                    var previewShape = CreateRegionShape(_currentDrawingRegion, true);
-                    if (previewShape != null)
-                        OverlayCanvas.Children.Add(previewShape);
-                }
-            }
-
-            // ── 第三步：绘制选中区域的编辑手柄 ──
-            if (_selectedRegion != null && !_isDrawing)
-                DrawEditHandles(_selectedRegion);
+            RenderRequested?.Invoke();
         }
 
         /// <summary>
-        /// 从区域列表构建渲染上下文（过滤不可见和非 ShapeParameters 区域）
+        /// 获取所有区域的渲染上下文（供Manager使用）
         /// </summary>
-        private List<RegionRenderContext> BuildRenderContexts(IList<RegionData> regions)
+        public List<RegionRenderContext> GetRenderContexts()
         {
-            var contexts = new List<RegionRenderContext>(regions.Count);
+            var regions = _viewModel?.Regions;
+            if (regions == null || regions.Count == 0)
+                return new List<RegionRenderContext>();
 
+            var contexts = new List<RegionRenderContext>(regions.Count);
             foreach (var region in regions)
             {
                 if (!region.IsVisible) continue;
                 if (region.Parameters is not ShapeParameters shapeDef) continue;
-
-                contexts.Add(CreateRenderContext(region, shapeDef, region.IsPreview));
+                contexts.Add(CreateRenderContextInternal(region, shapeDef, region.IsPreview));
             }
-
             return contexts;
         }
 
         /// <summary>
+        /// 获取当前绘制预览的渲染上下文（供Manager使用）
+        /// </summary>
+        public RegionRenderContext? GetPreviewContext()
+        {
+            if (_isDrawing && _currentDrawingRegion?.Parameters is ShapeParameters previewShape)
+                return CreateRenderContextInternal(_currentDrawingRegion, previewShape, isPreview: true);
+            return null;
+        }
+
+        /// <summary>
+        /// 是否有交互操作正在进行中
+        /// </summary>
+        public bool IsAnyInteractionInProgress => _isDrawing || _isDragging || _isDraggingHandle;
+
+        /// <summary>
         /// 创建渲染上下文
         /// </summary>
-        private RegionRenderContext CreateRenderContext(RegionData region, ShapeParameters shape, bool isPreview = false)
+        private RegionRenderContext CreateRenderContextInternal(RegionData region, ShapeParameters shape, bool isPreview = false)
         {
             // 日志监控（每次调用都记录，因为这个方法调用频率不高）
             VisionLogger.Instance.Log(LogLevel.Info,
@@ -2091,6 +1903,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 IsSelected = region == _selectedRegion,
                 IsPreview = isPreview,
                 IsVisible = true,
+                RegionType = region.RegionType,
 
                 // 几何参数
                 Center = new Point(shape.CenterX, shape.CenterY),
@@ -2118,8 +1931,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 StrokeThickness = shape.StrokeThickness,
                 Opacity = shape.Opacity,
 
-                // 标签
-                Label = region.Name
+                // 标签 - ★ Phase 4: 屏蔽区域加前缀以区分
+                Label = region.RegionType == Models.RegionType.Mask
+                    ? $"■ {region.Name}"
+                    : $"□ {region.Name}"
             };
 
             context.CalculateBounds();
@@ -2129,7 +1944,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         /// <summary>
         /// 绘制编辑手柄（ROI编辑器风格）
         /// </summary>
-        private void DrawEditHandles(RegionData region)
+        public void DrawEditHandles(RegionData region)
         {
             // ★ 诊断日志：手柄绘制入口
             VisionLogger.Instance.Log(LogLevel.Info,
@@ -2149,9 +1964,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
             if (_currentHandles != null && _currentHandles.Length > 0)
             {
-                // 使用ROI编辑器的手柄渲染器绘制手柄（传入缩放比例）
-                var zoom = _mainImageControl?.Zoom ?? 1.0;
-                Rendering.HandleRenderer.DrawHandles(OverlayCanvas, _currentHandles, shapeDef.ShapeType, zoom);
+                // ★ Phase 4: 根据区域类型传入差异色
+                var zoom = CurrentZoom;
+                var handleColor = region.RegionType switch
+                {
+                    Models.RegionType.Mask => new SolidColorBrush(Color.FromArgb(255, 255, 165, 0)),   // 橙色
+                    Models.RegionType.Inspection => new SolidColorBrush(Color.FromArgb(255, 0, 120, 215)), // 蓝色
+                    _ => Brushes.Orange
+                };
+                Rendering.HandleRenderer.DrawHandles(OverlayCanvas, _currentHandles, shapeDef.ShapeType, zoom, handleColor);
             }
         }
 
@@ -2161,7 +1982,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         private void CreateHandlesForShape(ShapeParameters shape)
         {
             // 传入zoom，各手柄内部根据类型差异化计算尺寸
-            var zoom = _mainImageControl?.Zoom ?? 1.0;
+            var zoom = CurrentZoom;
 
             // ★ 关键诊断：记录缩放信息
             VisionLogger.Instance.Log(LogLevel.Info,
@@ -2344,7 +2165,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
         #region 命中测试和选择
 
-        private RegionData? HitTestRegion(Point point)
+        public RegionData? HitTestRegion(Point point)
         {
             // 从后往前测试（后绘制的在上面）
             foreach (var region in _viewModel.Regions.Reverse())
@@ -2480,7 +2301,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
         private void SelectRegion(RegionData? region)
         {
-            // ★ 诊断日志：选中区域
             VisionLogger.Instance.Log(LogLevel.Info,
                 $"[SelectRegion] 选中区域 | Region={region?.Name ?? "null"}(Id={region?.Id:B}) | Regions.Count={_viewModel.Regions.Count}",
                 "RegionEditorControl");
@@ -2490,7 +2310,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
             _selectedRegion = region;
             _viewModel.SelectedRegion = region;
-            UpdateRegionOverlay();
+            RenderRequested?.Invoke();
 
             // 订阅新区域的参数变更（面板→画布自动同步）
             SubscribeShapeParameters(region);
@@ -2504,9 +2324,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             }
         }
 
-        private void DeselectAll()
+        public void DeselectAll()
         {
-            // ★ 诊断日志：取消选中
             VisionLogger.Instance.Log(LogLevel.Info,
                 $"[DeselectAll] 取消所有选中 | _selectedRegion={_selectedRegion?.Name ?? "null"} | Regions.Count={_viewModel.Regions.Count}",
                 "RegionEditorControl");
@@ -2523,7 +2342,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             _rotateStartAngle = null;
             _rotateStartMouseAngle = null;
 
-            UpdateRegionOverlay();
+            RenderRequested?.Invoke();
         }
 
         #region 形状参数变更订阅（面板→画布自动同步）
@@ -2569,8 +2388,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         /// </summary>
         private void OnShapeParametersChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (_selectedRegion != null)
-                UpdateSingleRegionFast(_selectedRegion);
+            RenderRequested?.Invoke();
         }
 
         /// <summary>
@@ -2578,8 +2396,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         /// </summary>
         private void OnPolygonPointPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (_selectedRegion != null)
-                UpdateSingleRegionFast(_selectedRegion);
+            RenderRequested?.Invoke();
         }
 
         /// <summary>
@@ -2600,52 +2417,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                     pt.PropertyChanged -= OnPolygonPointPropertyChanged;
             }
 
-            if (_selectedRegion != null)
-                UpdateSingleRegionFast(_selectedRegion);
+            RenderRequested?.Invoke();
         }
 
         #endregion
-
-        /// <summary>
-        /// 快速更新单个区域（用于拖动时的增量更新）
-        /// </summary>
-        private void UpdateSingleRegionFast(RegionData region)
-        {
-            if (_renderer == null)
-            {
-                VisionLogger.Instance.Log(LogLevel.Warning,
-                    $"[UpdateSingleRegionFast] Renderer is null | Region={region.Name} | OverlayCanvas={OverlayCanvas != null}",
-                    "RegionEditorControl");
-                return;
-            }
-
-            if (region.Parameters is not ShapeParameters shape)
-            {
-                VisionLogger.Instance.Log(LogLevel.Warning,
-                    $"[UpdateSingleRegionFast] Invalid parameter type | Region={region.Name} | ParameterType={region.Parameters?.GetType().Name}",
-                    "RegionEditorControl");
-                return;
-            }
-
-            // Log rendering (every 10 times)
-            if (_renderLogCount++ % 10 == 0)
-            {
-                VisionLogger.Instance.Log(LogLevel.Info,
-                    $"[UpdateSingleRegionFast] Count={_renderLogCount} | Region={region.Name} | IsPreview={region.IsPreview} | Shape={shape.GetType().Name}",
-                    "RegionEditorControl");
-            }
-
-            // 使用 region.IsPreview 自动识别预览状态
-            var context = CreateRenderContext(region, shape, region.IsPreview);
-            _renderer.UpdateRegion(context);
-
-            // 更新手柄位置（手柄独立于区域渲染）
-            if (region == _selectedRegion && OverlayCanvas != null)
-            {
-                Rendering.HandleRenderer.ClearHandles(OverlayCanvas);  // 清理手柄
-                DrawEditHandles(region);  // 绘制新的手柄
-            }
-        }
 
         #endregion
 
@@ -2692,7 +2467,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                     _nextRegionIndex = 1;
                 }
 
-                UpdateRegionOverlay();
+                RenderRequested?.Invoke();
                 if (e.Region != null)
                 {
                     RegionDataChanged?.Invoke(this, e.Region);
@@ -2788,11 +2563,20 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         #region 形状按钮点击事件
 
         /// <summary>
-        /// 选择按钮点击事件 - 进入选择/编辑模式
+        /// 选择按钮点击事件 - 空闲↔选择模式切换（toggle）
+        /// 空闲 → 进入选择模式 | 选择中/绘制中 → 空闲
         /// </summary>
         private void OnSelectButtonClick(object sender, RoutedEventArgs e)
         {
-            EnterSelectMode(sender as Button);
+            // ★ Phase 4: Select 按钮切换逻辑
+            if (_currentTool == ShapeType.Point)
+            {
+                EnterIdleMode();
+            }
+            else
+            {
+                EnterSelectMode(sender as Button);
+            }
         }
 
         private void OnRectangleButtonClick(object sender, RoutedEventArgs e)
@@ -2822,9 +2606,18 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         }
 
         /// <summary>
+        /// 切换模式由 RadioButton 的 TwoWay Binding 自动处理
+        /// </summary>
+        /// <remarks>
+        /// 绘制/订阅 RadioButton 通过 IsChecked="{Binding IsDrawingMode, Mode=TwoWay}"
+        /// 和 IsChecked="{Binding IsSubscribeMode, Mode=TwoWay}" 绑定到 ViewModel，
+        /// ViewModel 的 setter 中已有互斥逻辑，无需手动处理。
+        /// </remarks>
+
+        /// <summary>
         /// 进入选择/编辑模式
         /// </summary>
-        private void EnterSelectMode(Button? clickedButton)
+        private void EnterSelectMode(Button? clickedButton, bool notifyManager = true)
         {
             VisionLogger.Instance.Log(LogLevel.Info,
                 $"[EnterSelectMode] 进入选择模式 | IsLoaded={IsLoaded} | IsVisible={IsVisible}",
@@ -2846,6 +2639,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
             // 更新状态消息
             _viewModel.StatusMessage = "选择/编辑模式 - 点击区域可编辑，滚轮缩放，拖拽平移";
+
+            // ★ Phase 4: 通知 Manager：工具已更改（用于分组互斥）
+            // ExitDrawingMode 调用时 notifyManager=false，避免连锁反应
+            if (notifyManager)
+                ToolActivated?.Invoke();
         }
 
         /// <summary>
@@ -2900,6 +2698,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 _ => shapeType.ToString()
             };
             _viewModel.StatusMessage = $"已选择 {shapeName} 工具，在图像上拖动绘制";
+
+            // ★ Phase 4: 通知 Manager：工具已更改（用于分组互斥）
+            ToolActivated?.Invoke();
         }
 
         /// <summary>
@@ -2907,29 +2708,32 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         /// </summary>
         private void UpdateShapeButtonHighlight(Button? activeButton)
         {
-            // 遍历所有形状按钮并重置样式
+            // 递归遍历所有形状按钮并重置样式（支持嵌套 WrapPanel 结构）
             var shapeContainer = FindShapeContainer();
             if (shapeContainer != null)
             {
-                foreach (var child in shapeContainer.Children)
-                {
-                    if (child is Button button)
-                    {
-                        ResetShapeButtonStyle(button);
-                    }
-                }
+                ResetAllShapeButtons(shapeContainer);
+            }
+
+            // ★ Phase 2: activeButton==null 表示进入选择模式，高亮 Select 按钮
+            if (activeButton == null)
+            {
+                ResetShapeButtonStyle(SelectButton);
+                SelectButton.Background = new SolidColorBrush(Color.FromRgb(232, 244, 252));
+                SelectButton.BorderBrush = new SolidColorBrush(Color.FromRgb(0, 102, 204));
+                SelectButton.BorderThickness = new Thickness(1.5);
+                UpdateIconColor(SelectButton, Color.FromRgb(0, 102, 204));
+                _activeShapeButton = SelectButton;
+                return;
             }
 
             // 高亮选中按钮
-            if (activeButton != null)
-            {
-                activeButton.Background = new SolidColorBrush(Color.FromRgb(232, 244, 252));
-                activeButton.BorderBrush = new SolidColorBrush(Color.FromRgb(0, 102, 204));
-                activeButton.BorderThickness = new Thickness(1.5);
+            activeButton.Background = new SolidColorBrush(Color.FromRgb(232, 244, 252));
+            activeButton.BorderBrush = new SolidColorBrush(Color.FromRgb(0, 102, 204));
+            activeButton.BorderThickness = new Thickness(1.5);
 
-                // 更新图标颜色
-                UpdateIconColor(activeButton, Color.FromRgb(0, 102, 204));
-            }
+            // 更新图标颜色
+            UpdateIconColor(activeButton, Color.FromRgb(0, 102, 204));
 
             _activeShapeButton = activeButton;
         }
@@ -2969,6 +2773,24 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                             p.Fill = brush;
                         }
                     }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 递归重置所有形状按钮样式（支持嵌套 Panel 结构）
+        /// </summary>
+        private void ResetAllShapeButtons(Panel container)
+        {
+            foreach (var child in container.Children)
+            {
+                if (child is Button button)
+                {
+                    ResetShapeButtonStyle(button);
+                }
+                else if (child is Panel childPanel)
+                {
+                    ResetAllShapeButtons(childPanel);
                 }
             }
         }

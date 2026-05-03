@@ -10,6 +10,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
     public enum ShapeType
     {
         /// <summary>
+        /// 无工具（空闲状态）
+        /// </summary>
+        None = 0,
+
+        /// <summary>
         /// 点
         /// </summary>
         Point,

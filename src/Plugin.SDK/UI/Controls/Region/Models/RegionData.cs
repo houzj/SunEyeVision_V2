@@ -20,6 +20,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
         private int _zIndex;
         private uint _displayColor = 0xFFFF0000;
         private double _displayOpacity = 0.3;
+        private RegionType _regionType = RegionType.Inspection;
         private DateTime _createdTime = DateTime.Now;
         private DateTime _modifiedTime = DateTime.Now;
         private Dictionary<string, object> _extendedProperties = new();
@@ -121,6 +122,47 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
         {
             get => _displayOpacity;
             set => SetProperty(ref _displayOpacity, value, "显示透明度");
+        }
+
+        /// <summary>
+        /// 区域类型（检测/屏蔽）
+        /// 修改时自动同步 ShapeParameters 的颜色
+        /// </summary>
+        public RegionType RegionType
+        {
+            get => _regionType;
+            set
+            {
+                if (SetProperty(ref _regionType, value, "区域类型"))
+                {
+                    ApplyTypeColors();
+                    MarkModified();
+                }
+            }
+        }
+
+        /// <summary>
+        /// 根据区域类型自动设置 ShapeParameters 的填充色和边框色
+        /// </summary>
+        private void ApplyTypeColors()
+        {
+            if (Parameters is ShapeParameters shape)
+            {
+                switch (_regionType)
+                {
+                    case RegionType.Mask:
+                        shape.FillColorArgb = 0x55FFA500;   // 半透明橙色 (Alpha=0x55≈33%)
+                        shape.StrokeColorArgb = 0xFFFFA500; // 橙色边框
+                        shape.Opacity = 1.0;
+                        break;
+                    case RegionType.Inspection:
+                    default:
+                        shape.FillColorArgb = 0x00000000;   // 透明填充
+                        shape.StrokeColorArgb = 0xFF4488FF; // 蓝色边框
+                        shape.Opacity = 1.0;
+                        break;
+                }
+            }
         }
 
         /// <summary>
@@ -228,6 +270,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
                 ZIndex = ZIndex,
                 DisplayColor = DisplayColor,
                 DisplayOpacity = DisplayOpacity,
+                RegionType = RegionType,
                 CreatedTime = CreatedTime,
                 ModifiedTime = DateTime.Now
             };

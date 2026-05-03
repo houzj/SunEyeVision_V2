@@ -155,6 +155,18 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         #endregion
 
         /// <summary>
+        /// 按区域类型获取启用的区域列表
+        /// </summary>
+        /// <param name="type">区域类型（Inspection/Mask）</param>
+        /// <returns>指定类型的启用区域集合</returns>
+        public System.Collections.Generic.IEnumerable<RegionData> GetRegionsByType(RegionType type)
+        {
+            return type == RegionType.Inspection
+                ? _inspectionRegions.Regions.Where(r => r.IsEnabled)
+                : _maskRegions.Regions.Where(r => r.IsEnabled);
+        }
+
+        /// <summary>
         /// 获取有效区域列表（检测区域 - 屏蔽区域）
         /// </summary>
         /// <returns>有效区域集合</returns>

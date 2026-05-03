@@ -157,6 +157,45 @@ namespace SunEyeVision.Tool.BlobAnalysis
 
         #endregion
 
+        #region Blob详细数据（数组类型）
+
+        /// <summary>各Blob面积数组</summary>
+        public double[] BlobAreas => FilteredBlobs != null
+            ? FilteredBlobs.Select(b => b.Area).ToArray()
+            : Array.Empty<double>();
+
+        /// <summary>各Blob周长数组</summary>
+        public double[] BlobPerimeters => FilteredBlobs != null
+            ? FilteredBlobs.Select(b => b.Perimeter).ToArray()
+            : Array.Empty<double>();
+
+        /// <summary>各Blob中心X坐标数组</summary>
+        public double[] BlobCentroidXs => FilteredBlobs != null
+            ? FilteredBlobs.Select(b => b.CentroidX).ToArray()
+            : Array.Empty<double>();
+
+        /// <summary>各Blob中心Y坐标数组</summary>
+        public double[] BlobCentroidYs => FilteredBlobs != null
+            ? FilteredBlobs.Select(b => b.CentroidY).ToArray()
+            : Array.Empty<double>();
+
+        /// <summary>各Blob圆度数组</summary>
+        public double[] BlobCircularities => FilteredBlobs != null
+            ? FilteredBlobs.Select(b => b.Circularity).ToArray()
+            : Array.Empty<double>();
+
+        /// <summary>各Blob矩形度数组</summary>
+        public double[] BlobRectangularities => FilteredBlobs != null
+            ? FilteredBlobs.Select(b => b.Rectangularity).ToArray()
+            : Array.Empty<double>();
+
+        /// <summary>各Blob边框数组（宽×高格式）</summary>
+        public string[] BlobBoundingRects => FilteredBlobs != null
+            ? FilteredBlobs.Select(b => b.BoundingRectText).ToArray()
+            : Array.Empty<string>();
+
+        #endregion
+
         /// <summary>
         /// 获取结果显示项（用于数据面板显示）
         /// </summary>
@@ -177,6 +216,20 @@ namespace SunEyeVision.Tool.BlobAnalysis
                 ResultItem.Numeric("实际阈值", ThresholdUsed),
                 ResultItem.Text("阈值类型", TypeUsed.ToString())
             };
+
+            // 每个Blob属性的数组输出
+            if (FilteredBlobs != null && FilteredBlobs.Count > 0)
+            {
+                items.Add(ResultItem.Text("面积", string.Join(", ", FilteredBlobs.Select(b => $"{b.Area:F0}"))));
+                items.Add(ResultItem.Text("周长", string.Join(", ", FilteredBlobs.Select(b => $"{b.Perimeter:F1}"))));
+                items.Add(ResultItem.Text("中心X", string.Join(", ", FilteredBlobs.Select(b => $"{b.CentroidX:F1}"))));
+                items.Add(ResultItem.Text("中心Y", string.Join(", ", FilteredBlobs.Select(b => $"{b.CentroidY:F1}"))));
+                items.Add(ResultItem.Text("圆度", string.Join(", ", FilteredBlobs.Select(b => $"{b.Circularity:F3}"))));
+                items.Add(ResultItem.Text("矩形度", string.Join(", ", FilteredBlobs.Select(b => $"{b.Rectangularity:F3}"))));
+                items.Add(ResultItem.Text("边框", string.Join(", ", FilteredBlobs.Select(b => b.BoundingRectText))));
+                items.Add(ResultItem.Text("判断", string.Join(", ", FilteredBlobs.Select(b => b.JudgmentPassed ? "✓" : "✗"))));
+            }
+
             return items;
         }
 
@@ -209,6 +262,14 @@ namespace SunEyeVision.Tool.BlobAnalysis
                 new("HistogramData",            "直方图数据",             "统计"),
                 new("ChannelMeans",             "通道均值",               "统计"),
                 new("InputSize",                "输入图像尺寸",           "结果"),
+                // Blob详细数据（分号分隔数组）
+                new("BlobAreas",                "面积",                   "Blob详细"),
+                new("BlobPerimeters",           "周长",                   "Blob详细"),
+                new("BlobCentroidXs",           "中心X",                  "Blob详细"),
+                new("BlobCentroidYs",           "中心Y",                  "Blob详细"),
+                new("BlobCircularities",        "圆度",                   "Blob详细"),
+                new("BlobRectangularities",     "矩形度",                 "Blob详细"),
+                new("BlobBoundingRects",        "边框",                   "Blob详细"),
                 new("ProcessedAt",              "处理时间戳",             "执行信息"),
             ];
         }

@@ -105,7 +105,7 @@ namespace SunEyeVision.UI.Services.Workflow
             }
 
             // ★ Step 1-2: 更新模块结果树（分组显示）
-            _viewModel.UpdateModuleResults(result, node.Name);
+            _viewModel.UpdateModuleResults(result, node.Name, node.ToolType);
 
             // ★ Step 3: 更新图像（DispImage通道）
             var outputMat = result.GetOutputImage();

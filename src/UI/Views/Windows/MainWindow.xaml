@@ -952,7 +952,15 @@
                                                                 <Setter Property="VerticalAlignment" Value="Center"/>
                                                                 <Setter Property="Padding" Value="8,4"/>
                                                                 <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
-                                                                <Setter Property="ToolTip" Value="{Binding DisplayValue}"/>
+                                                                <Setter Property="ToolTip">
+                                                                    <Setter.Value>
+                                                                        <TextBlock Text="{Binding DisplayValue}"
+                                                                                   TextWrapping="Wrap"
+                                                                                   MaxWidth="350"
+                                                                                   FontSize="11"
+                                                                                   Foreground="#333333"/>
+                                                                    </Setter.Value>
+                                                                </Setter>
                                                             </Style>
                                                         </DataGridTextColumn.ElementStyle>
                                                     </DataGridTextColumn>

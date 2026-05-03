@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -279,9 +280,16 @@ namespace SunEyeVision.UI.ViewModels
 
                     // 刷新结果显示（如果节点有缓存结果）
                     var executionResult = value != null ? _workflowContext.GetNodeResult(value.Id) : null;
+                    var toolId = (value as WorkflowNodeBase)?.ToolType ?? "";
+
                     if (executionResult?.ToolResult != null)
                     {
                         _nodeResultManager.RefreshResultDisplay((Models.WorkflowNode?)value, executionResult.ToolResult);
+                    }
+                    else if (value != null)
+                    {
+                        // 未运行也从 _typeCache 显示属性表结构
+                        UpdateModuleResults(null, value.Name, toolId);
                     }
                     else
                     {
@@ -3524,26 +3532,22 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
         }
 
         /// <summary>
-        /// 更新模块结果（树形分组结构）
+        /// 更新模块结果（统一入口：有/无结果都用 _typeCache 驱动结构）
         /// </summary>
-        public void UpdateModuleResults(ToolResults? result, string? nodeName)
+        /// <param name="result">运行结果（可为null，此时仅显示表头结构）</param>
+        /// <param name="nodeName">节点显示名称</param>
+        /// <param name="toolId">工具ID，用于从 _typeCache 查询属性元数据</param>
+        public void UpdateModuleResults(ToolResults? result, string? nodeName, string? toolId = null)
         {
             ModuleResultTree.Clear();
             HasModuleResults = false;
 
-            if (result == null)
-                return;
+            // 从 _typeCache 获取该工具的所有输出属性
+            var metadataList = string.IsNullOrEmpty(toolId)
+                ? []
+                : ToolRegistry.GetAllPropertyMetadata(toolId);
 
-            var resultItems = result.GetResultItems();
-            var propertyMap = result.GetPropertyMap();
-
-            // 过滤：只保留非图形/图像类型
-            var dataItems = resultItems
-                .Where(item => item.Type != ResultItemType.Image &&
-                               item.Type != ResultItemType.Geometry)
-                .ToList();
-
-            if (dataItems.Count == 0)
+            if (metadataList.Count == 0)
                 return;
 
             // 根节点 = 当前选中节点名称
@@ -3554,40 +3558,142 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
                 IsExpanded = true
             };
 
-            // 按 GroupName 分组
-            var groups = dataItems.GroupBy(item =>
+            // 有缓存数据：按 GroupName 分组构建树
+            if (metadataList.Count > 0)
             {
-                var entry = propertyMap.FirstOrDefault(e =>
-                    e.DisplayName == (item.DisplayName ?? item.Name));
-                return entry?.GroupName ?? "其他";
-            }).OrderBy(g => g.Key);
+                var groups = metadataList
+                    .GroupBy(m => m.GroupName ?? "其他")
+                    .OrderBy(g => g.Key);
 
-            foreach (var group in groups)
-            {
-                var groupNode = new ModuleResultNode
+                foreach (var group in groups)
                 {
-                    DisplayName = group.Key,
-                    IsGroup = true,
-                    IsExpanded = true
-                };
-
-                foreach (var item in group)
-                {
-                    groupNode.Children.Add(new ModuleResultNode
+                    var groupNode = new ModuleResultNode
                     {
-                        DisplayName = item.DisplayName ?? item.Name,
-                        DisplayValue = FormatResultValue(item),
-                        IsGroup = false
-                    });
-                }
+                        DisplayName = group.Key,
+                        IsGroup = true,
+                        IsExpanded = true
+                    };
 
-                rootNode.Children.Add(groupNode);
+                    foreach (var meta in group.OrderBy(m => m.DisplayName))
+                    {
+                        // 跳过图像和图形类型（由图像显示控件展示）
+                        if (IsVisualResultType(meta.PropertyType))
+                            continue;
+
+                        string displayValue;
+
+                        if (result != null && meta.PropertyName is { Length: > 0 } pn)
+                        {
+                            // 有结果 → 反射取值并格式化
+                            var value = ReflectGetValue(result, pn);
+                            displayValue = FormatTypedValue(value, meta.PropertyType);
+                        }
+                        else
+                        {
+                            // 无结果 → 占位符
+                            displayValue = "--";
+                        }
+
+                        groupNode.Children.Add(new ModuleResultNode
+                        {
+                            DisplayName = meta.DisplayName,
+                            DisplayValue = displayValue,
+                            PropertyName = meta.PropertyName,
+                            IsGroup = false
+                        });
+                    }
+
+                    if (groupNode.Children.Count > 0)
+                        rootNode.Children.Add(groupNode);
+                }
+            }
+            if (rootNode.Children.Count > 0)
+            {
+                ModuleResultTree.Add(rootNode);
+                HasModuleResults = true;
+                BuildFlatRows();
+            }
+        }
+
+        /// <summary>
+        /// 反射获取结果实例的属性值
+        /// </summary>
+        private static object? ReflectGetValue(ToolResults result, string propertyName)
+        {
+            try
+            {
+                var prop = result.GetType().GetProperty(propertyName,
+                    BindingFlags.Public | BindingFlags.Instance);
+                return prop?.GetValue(result);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 按类型格式化反射取出的值
+        /// </summary>
+        private static string FormatTypedValue(object? value, Type propertyType)
+        {
+            return value switch
+            {
+                null => "--",
+                double d  => $"{d:F3}",
+                float f   => $"{f:F3}",
+                int i     => i.ToString(),
+                long l    => l.ToString(),
+                bool b    => b ? "是" : "否",
+                string s  => string.IsNullOrEmpty(s) ? "--" : s,
+                // 数组类型：用分号连接显示实际值（而非 [N个]）
+                double[] dArr => dArr.Length == 0
+                    ? "--" : string.Join(";", dArr.Select(v => v.ToString("0.###"))),
+                int[] iArr    => iArr.Length == 0
+                    ? "--" : string.Join(";", iArr),
+                string[] sArr => sArr.Length == 0
+                    ? "--" : string.Join(";", sArr),
+                Array arr => $"[{arr.Length}个]",
+                System.Collections.IEnumerable e when !(e is string) => $"[{e.Cast<object>().Count()}个]",
+                _         => value.ToString() ?? "--"
+            };
+        }
+
+        /// <summary>
+        /// 判断是否为图像/图形类型（应在图像显示控件展示，不在结果表中展示）
+        /// </summary>
+        private static bool IsVisualResultType(Type? propertyType)
+        {
+            if (propertyType == null)
+                return false;
+
+            var fullName = propertyType.FullName;
+            if (fullName == null)
+                return false;
+
+            // 图像类型：Mat, CvImage 及其派生
+            if (fullName.Contains("OpenCvSharp.Mat") ||
+                fullName.Contains("CvImage"))
+                return true;
+
+            // 区域/图形类型：CvRegion 及其派生
+            if (fullName.Contains("CvRegion"))
+                return true;
+
+            // 检查基类链（处理继承关系）
+            var baseType = propertyType.BaseType;
+            while (baseType != null)
+            {
+                var baseName = baseType.FullName;
+                if (baseName != null &&
+                    (baseName.Contains("OpenCvSharp.Mat") ||
+                     baseName.Contains("CvImage") ||
+                     baseName.Contains("CvRegion")))
+                    return true;
+                baseType = baseType.BaseType;
             }
 
-            ModuleResultTree.Add(rootNode);
-            HasModuleResults = true;
-
-            BuildFlatRows();
+            return false;
         }
 
         /// <summary>
@@ -4084,6 +4190,11 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
         /// 显示值（仅叶子节点有值）
         /// </summary>
         public string? DisplayValue { get; set; }
+
+        /// <summary>
+        /// CLR 属性名（用于运行后反射取值，仅叶子节点有值）
+        /// </summary>
+        public string? PropertyName { get; set; }
 
         /// <summary>
         /// 是否为分组节点（可展开/折叠）

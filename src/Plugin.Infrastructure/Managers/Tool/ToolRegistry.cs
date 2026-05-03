@@ -466,9 +466,19 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
                     if (prop.GetIndexParameters().Length > 0)
                         continue;
                     
-                    // 跳过基类 ToolResults 的属性
+                    // 跳过基类 ToolResults 的属性（执行耗时 ExecutionTimeMs 除外，对所有工具可见）
                     if (prop.DeclaringType == typeof(ToolResults))
-                        continue;
+                    {
+                        if (prop.Name == "ExecutionTimeMs")
+                        {
+                            // 执行耗时所有工具通用，保留用于性能监控
+                            // 因工具可能重写 GetPropertyMap() 而不包含基类属性，此处兜底设置中文显示名
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
                     
                     // 跳过特殊属性
                     if (IsSpecialProperty(prop.Name))
@@ -477,12 +487,20 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
                     // 从属性映射表获取 DisplayName 和 GroupName
                     var mapEntry = propertyMap.FirstOrDefault(e => e.PropertyName == prop.Name);
                     
+                    // 执行耗时统一使用中文显示名（即使工具的 GetPropertyMap() 未包含它也生效）
+                    var displayName = prop.Name == "ExecutionTimeMs"
+                        ? "执行耗时"
+                        : mapEntry?.DisplayName ?? GetDisplayName(prop.Name);
+                    var groupName = prop.Name == "ExecutionTimeMs"
+                        ? "执行信息"
+                        : mapEntry?.GroupName;
+                    
                     // 创建元数据
                     var metadata = new ToolPropertyMetadata
                     {
                         PropertyName = prop.Name,
-                        DisplayName = mapEntry?.DisplayName ?? GetDisplayName(prop.Name),
-                        GroupName = mapEntry?.GroupName,
+                        DisplayName = displayName,
+                        GroupName = groupName,
                         PropertyType = prop.PropertyType,
                         Description = GetPropertyDescription(prop)
                     };
@@ -580,7 +598,6 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
         {
             return propertyName == "Status" ||
                    propertyName == "ErrorMessage" ||
-                   propertyName == "ExecutionTimeMs" ||
                    propertyName == "Timestamp" ||
                    propertyName == "ToolName" ||
                    propertyName == "ToolId";

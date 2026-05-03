@@ -569,7 +569,10 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
         /// </remarks>
         public virtual List<PropertyMapEntry> GetPropertyMap()
         {
-            return new List<PropertyMapEntry>();
+            return new List<PropertyMapEntry>
+            {
+                new("ExecutionTimeMs", "执行耗时", "执行信息")
+            };
         }
 
         #endregion

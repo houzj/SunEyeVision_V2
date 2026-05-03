@@ -419,9 +419,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         {
             base.OnPreviewKeyDown(e);
 
-            // ★ Delete/Escape/Ctrl+Z/Ctrl+Y 由 Manager 在 Window 级拦截并路由给 _activeEditor
-            // 编辑器不再自行处理，避免双方独立处理导致的冲突
-            if (e.Key == Key.Delete || e.Key == Key.Escape)
+            // ★ Delete: 直接在编辑器处理（焦点在 DebugWindow 时 Manager 的 Window 级订阅收不到事件）
+            //   Manager 的备份处理作为 MainWindow 直接操作时的安全保障
+            if (e.Key == Key.Delete)
+            {
+                HandleDelete();
+                e.Handled = true;
+                return;
+            }
+
+            // ★ Escape/Ctrl+Z/Ctrl+Y 由 Manager 在 Window 级拦截并路由给 _activeEditor
+            if (e.Key == Key.Escape)
                 return;
 
             if ((e.Key == Key.Z || e.Key == Key.Y) && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)

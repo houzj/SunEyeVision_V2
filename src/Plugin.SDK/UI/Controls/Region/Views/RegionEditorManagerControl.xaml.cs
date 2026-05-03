@@ -218,7 +218,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             _mainImageControl.CanvasMouseLeftButtonUp += OnCanvasMouseLeftButtonUp;
             _mainImageControl.ViewTransformed += OnViewTransformed;
             // ★ Phase 2: 键盘事件由 Manager 统一拦截路由
-            _mainImageControl.PreviewKeyDown += OnPreviewKeyDown;
+            // 使用 Window 级订阅而非 _mainImageControl.PreviewKeyDown，
+            // 因为 PreviewKeyDown 是隧道事件，焦点在编辑器上时不会传播到 _mainImageControl
+            var window = Window.GetWindow(_mainImageControl);
+            if (window != null)
+            {
+                window.AddHandler(UIElement.PreviewKeyDownEvent, new KeyEventHandler(OnPreviewKeyDown));
+            }
         }
 
         private void UnsubscribeImageControlEvents()
@@ -229,7 +235,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             _mainImageControl.CanvasMouseLeftButtonDown -= OnCanvasMouseLeftButtonDown;
             _mainImageControl.CanvasMouseLeftButtonUp -= OnCanvasMouseLeftButtonUp;
             _mainImageControl.ViewTransformed -= OnViewTransformed;
-            _mainImageControl.PreviewKeyDown -= OnPreviewKeyDown;
         }
 
         private void SubscribeWindowEvents()
@@ -253,6 +258,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             {
                 window.RemoveHandler(Window.MouseLeftButtonUpEvent, new MouseButtonEventHandler(OnWindowMouseLeftButtonUp));
                 window.RemoveHandler(Window.MouseRightButtonDownEvent, new MouseButtonEventHandler(OnWindowMouseRightButtonDown));
+                window.RemoveHandler(UIElement.PreviewKeyDownEvent, new KeyEventHandler(OnPreviewKeyDown));
             }
         }
 

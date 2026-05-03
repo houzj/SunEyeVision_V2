@@ -557,8 +557,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
         /// </summary>
         /// <param name="point">测试点（图像坐标）</param>
         /// <param name="handles">手柄列表</param>
-        /// <param name="toleranceRatio">容差比例：命中半径 = handleSize * (0.5 + toleranceRatio)，默认0.3表示比手柄视觉半径大30%</param>
-        public static HandleType HitTestHandle(Point point, EditHandle[] handles, double toleranceRatio = 0)
+        /// <param name="toleranceRatio">容差比例：命中半径 = handleSize * (0.5 + toleranceRatio)，默认0.5表示命中范围比视觉半径大100%</param>
+        public static HandleType HitTestHandle(Point point, EditHandle[] handles, double toleranceRatio = 0.5)
         {
             EditHandle? closestHandle = null;
             var closestDistance = double.MaxValue;

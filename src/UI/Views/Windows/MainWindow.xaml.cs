@@ -2901,13 +2901,13 @@ if (DataContext is MainWindowViewModel viewModel)
         #region SDK ImageControl 事件处理
 
         /// <summary>
-        /// 模块结果树展开/折叠点击事件
+        /// DataGrid 结果行展开/折叠点击事件
         /// </summary>
-        private void TreeRow_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void ResultExpandIcon_Click(object sender, MouseButtonEventArgs e)
         {
-            if (sender is FrameworkElement element && element.DataContext is ModuleResultNode node && node.IsGroup)
+            if (sender is FrameworkElement element && element.DataContext is FlatResultRow row && row.IsGroup)
             {
-                node.IsExpanded = !node.IsExpanded;
+                row.IsExpanded = !row.IsExpanded;
                 e.Handled = true;
             }
         }

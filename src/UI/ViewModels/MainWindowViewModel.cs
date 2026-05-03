@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Microsoft.Win32;
 using AppCommands = SunEyeVision.UI.Commands;
@@ -448,6 +449,11 @@ OnPropertyChanged(nameof(ImagePreviewHeight));
         /// 模块结果树（分组可折叠显示）
         /// </summary>
         public ObservableCollection<ModuleResultNode> ModuleResultTree { get; } = new();
+
+        /// <summary>
+        /// 扁平化结果行列表（用于 DataGrid 绑定）
+        /// </summary>
+        public ObservableCollection<FlatResultRow> FlatResultRows { get; } = new();
 
         /// <summary>
         /// 是否有模块结果（用于空状态显示）
@@ -3580,6 +3586,55 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
 
             ModuleResultTree.Add(rootNode);
             HasModuleResults = true;
+
+            BuildFlatRows();
+        }
+
+        /// <summary>
+        /// 将 ModuleResultTree 扁平化为一维列表供 DataGrid 绑定
+        /// </summary>
+        public void BuildFlatRows()
+        {
+            FlatResultRows.Clear();
+
+            foreach (var rootNode in ModuleResultTree)
+            {
+                AddFlatRow(rootNode, 0);
+            }
+        }
+
+        private void AddFlatRow(ModuleResultNode node, int level)
+        {
+            var row = new FlatResultRow
+            {
+                DisplayName = node.DisplayName,
+                DisplayValue = node.DisplayValue,
+                Level = level,
+                IsGroup = node.IsGroup,
+                IsExpanded = node.IsExpanded,
+                SourceNode = node
+            };
+
+            // 同步展开状态变化
+            row.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(FlatResultRow.IsExpanded) && node != null)
+                {
+                    node.IsExpanded = row.IsExpanded;
+                    BuildFlatRows();
+                }
+            };
+
+            FlatResultRows.Add(row);
+
+            // 递归展开子节点
+            if (node.IsGroup && node.IsExpanded)
+            {
+                foreach (var child in node.Children)
+                {
+                    AddFlatRow(child, level + 1);
+                }
+            }
         }
         public void ClearCalculationResults()
         {
@@ -4058,5 +4113,66 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
         /// 展开/折叠图标（仅分组显示）
         /// </summary>
         public string ExpandIcon => IsGroup ? (_isExpanded ? "▼ " : "▶ ") : "";
+    }
+
+    /// <summary>
+    /// 扁平化结果行（用于 DataGrid 显示树形结构）
+    /// </summary>
+    public class FlatResultRow : ObservableObject
+    {
+        private bool _isExpanded = true;
+
+        /// <summary>显示名称</summary>
+        public string DisplayName { get; set; } = string.Empty;
+
+        /// <summary>显示值（仅叶子节点有值）</summary>
+        public string? DisplayValue { get; set; }
+
+        /// <summary>层级：0=根节点, 1=分组, 2=叶子</summary>
+        public int Level { get; set; }
+
+        /// <summary>是否为分组节点（可展开/折叠）</summary>
+        public bool IsGroup { get; set; }
+
+        /// <summary>是否展开</summary>
+        public bool IsExpanded
+        {
+            get => _isExpanded;
+            set
+            {
+                if (SetProperty(ref _isExpanded, value))
+                    OnPropertyChanged(nameof(ExpandIcon));
+            }
+        }
+
+        /// <summary>展开/折叠图标</summary>
+        public string ExpandIcon => IsGroup ? (_isExpanded ? "▼ " : "▶ ") : "";
+
+        /// <summary>左侧缩进距离</summary>
+        public Thickness Indent => Level switch
+        {
+            0 => new Thickness(4, 4, 0, 4),
+            1 => new Thickness(28, 3, 0, 3),
+            2 => new Thickness(52, 3, 0, 3),
+            _ => new Thickness(4, 3, 0, 3)
+        };
+
+        /// <summary>行背景色</summary>
+        public Brush RowBackground => Level switch
+        {
+            0 => new SolidColorBrush(Color.FromRgb(0xF0, 0xF0, 0xF0)),
+            1 => new SolidColorBrush(Color.FromRgb(0xF8, 0xF9, 0xFA)),
+            2 => Brushes.White,
+            _ => Brushes.White
+        };
+
+        /// <summary>字体粗细</summary>
+        public FontWeight FontWeight => Level == 0 ? FontWeights.SemiBold : FontWeights.Normal;
+
+        /// <summary>值列字体大小</summary>
+        public double ValueFontSize => Level == 2 ? 11 : 12;
+
+        /// <summary>关联的源树节点（用于展开/折叠时重建扁平列表）</summary>
+        public ModuleResultNode? SourceNode { get; set; }
     }
 }

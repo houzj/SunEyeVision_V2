@@ -847,112 +847,120 @@
                                         </Border>
                                     </TabItem>
 
-                                    <!-- 第二个TabItem: 模块结果 -->
+                                    <!-- 第二个TabItem: 模块结果 - DataGrid 实现 -->
                                     <TabItem Header="模块结果" Padding="12,6">
                                         <Grid Background="White">
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="*"/>
-                                            </Grid.RowDefinitions>
+                                            <!-- 有数据时显示 DataGrid -->
+                                            <DataGrid x:Name="ModuleResultDataGrid"
+                                                      ItemsSource="{Binding FlatResultRows}"
+                                                      AutoGenerateColumns="False"
+                                                      GridLinesVisibility="All"
+                                                      VerticalGridLinesBrush="#E5E5E5"
+                                                      HorizontalGridLinesBrush="#E5E5E5"
+                                                      BorderThickness="1"
+                                                      BorderBrush="#E0E0E0"
+                                                      RowHeaderWidth="0"
+                                                      IsReadOnly="True"
+                                                      SelectionMode="Single"
+                                                      SelectionUnit="FullRow"
+                                                      CanUserAddRows="False"
+                                                      CanUserDeleteRows="False"
+                                                      CanUserResizeRows="False"
+                                                      CanUserReorderColumns="False"
+                                                      CanUserSortColumns="False"
+                                                      Background="White"
+                                                      RowBackground="White"
+                                                      AlternatingRowBackground="White"
+                                                      HeadersVisibility="Column"
+                                                      VerticalScrollBarVisibility="Auto"
+                                                      HorizontalScrollBarVisibility="Disabled"
+                                                      Visibility="{Binding HasModuleResults, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                <DataGrid.Resources>
+                                                    <!-- 行样式：移除默认选中背景 -->
+                                                    <Style TargetType="DataGridRow">
+                                                        <Setter Property="MinHeight" Value="24"/>
+                                                        <Setter Property="Height" Value="Auto"/>
+                                                        <!-- 整行背景色来自数据模型 -->
+                                                        <Setter Property="Background" Value="{Binding RowBackground}"/>
+                                                        <Style.Triggers>
+                                                            <Trigger Property="IsSelected" Value="True">
+                                                                <Setter Property="Background" Value="#E8F4FD"/>
+                                                                <Setter Property="Foreground" Value="#333333"/>
+                                                            </Trigger>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter Property="Background" Value="#F0F7FF"/>
+                                                            </Trigger>
+                                                        </Style.Triggers>
+                                                    </Style>
 
-                                            <!-- 表头 -->
-                                            <Border Grid.Row="0" Background="#F8F9FA" Padding="12,8"
-                                                    BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
-                                                <Grid>
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="120"/>
-                                                    </Grid.ColumnDefinitions>
-                                                    <TextBlock Grid.Column="0" Text="结果名称"
-                                                              FontSize="12" FontWeight="SemiBold"
-                                                              Foreground="#333333"/>
-                                                    <TextBlock Grid.Column="1" Text="当前值"
-                                                              FontSize="12" FontWeight="SemiBold"
-                                                              Foreground="#333333"/>
-                                                </Grid>
-                                            </Border>
+                                                    <!-- 单元格样式：无边框 -->
+                                                    <Style TargetType="DataGridCell">
+                                                        <Setter Property="BorderThickness" Value="0"/>
+                                                        <Setter Property="Padding" Value="0"/>
+                                                        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                                                        <Style.Triggers>
+                                                            <Trigger Property="IsSelected" Value="True">
+                                                                <Setter Property="Background" Value="Transparent"/>
+                                                                <Setter Property="Foreground" Value="#333333"/>
+                                                            </Trigger>
+                                                        </Style.Triggers>
+                                                    </Style>
 
-                                            <!-- 树形结果列表 -->
-                                            <ScrollViewer Grid.Row="1" Background="White"
-                                                          VerticalScrollBarVisibility="Auto"
-                                                          Visibility="{Binding HasModuleResults, Converter={StaticResource BoolToVisibilityConverter}}">
-                                                <ItemsControl ItemsSource="{Binding ModuleResultTree}" Margin="0,4,0,0">
-                                                    <ItemsControl.ItemTemplate>
-                                                        <DataTemplate>
-                                                            <StackPanel>
-                                                                <!-- 根节点行（节点名称） -->
-                                                                <Border Background="#F0F0F0" Padding="12,8"
-                                                                        BorderBrush="#E0E0E0" BorderThickness="0,0,0,1"
-                                                                        MouseLeftButtonDown="TreeRow_MouseLeftButtonDown">
-                                                                    <StackPanel Orientation="Horizontal">
-                                                                        <TextBlock Text="{Binding ExpandIcon}"
-                                                                                   FontSize="10" Foreground="#999999"
-                                                                                   VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                                                        <TextBlock Text="{Binding DisplayName}"
-                                                                                   FontSize="12" Foreground="#333333"
-                                                                                   VerticalAlignment="Center"/>
-                                                                    </StackPanel>
-                                                                </Border>
+                                                    <!-- 列头样式 -->
+                                                    <Style TargetType="DataGridColumnHeader">
+                                                        <Setter Property="Background" Value="#F8F9FA"/>
+                                                        <Setter Property="Foreground" Value="#333333"/>
+                                                        <Setter Property="FontSize" Value="12"/>
+                                                        <Setter Property="FontWeight" Value="SemiBold"/>
+                                                        <Setter Property="Padding" Value="12,6"/>
+                                                        <Setter Property="BorderThickness" Value="0,0,1,1"/>
+                                                        <Setter Property="BorderBrush" Value="#E0E0E0"/>
+                                                        <Setter Property="VerticalContentAlignment" Value="Center"/>
+                                                    </Style>
+                                                </DataGrid.Resources>
 
-                                                                <!-- 分组层 -->
-                                                                <ItemsControl ItemsSource="{Binding Children}"
-                                                                              Visibility="{Binding IsExpanded, Converter={StaticResource BoolToVisibilityConverter}}">
-                                                                    <ItemsControl.ItemTemplate>
-                                                                        <DataTemplate>
-                                                                            <StackPanel>
-                                                                                <!-- 分组行 -->
-                                                                                <Border Background="#F5F5F5" Padding="36,6"
-                                                                                        BorderBrush="#E0E0E0" BorderThickness="0,0,0,1"
-                                                                                        MouseLeftButtonDown="TreeRow_MouseLeftButtonDown">
-                                                                                    <StackPanel Orientation="Horizontal">
-                                                                                        <TextBlock Text="{Binding ExpandIcon}"
-                                                                                                   FontSize="10" Foreground="#999999"
-                                                                                                   VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                                                                        <TextBlock Text="{Binding DisplayName}"
-                                                                                                   FontSize="12" Foreground="#333333"
-                                                                                                   VerticalAlignment="Center"/>
-                                                                                    </StackPanel>
-                                                                                </Border>
+                                                <DataGrid.Columns>
+                                                    <!-- 名称列（带树形缩进） -->
+                                                    <DataGridTemplateColumn Width="Auto" MinWidth="140" Header="结果名称">
+                                                        <DataGridTemplateColumn.CellTemplate>
+                                                            <DataTemplate>
+                                                                <StackPanel Orientation="Horizontal"
+                                                                            Margin="{Binding Indent}"
+                                                                            Cursor="Hand"
+                                                                            MouseLeftButtonDown="ResultExpandIcon_Click">
+                                                                    <TextBlock Text="{Binding ExpandIcon}"
+                                                                               FontSize="10" Foreground="#999999"
+                                                                               VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                                    <TextBlock Text="{Binding DisplayName}"
+                                                                               FontSize="12"
+                                                                               FontWeight="{Binding FontWeight}"
+                                                                               Foreground="#333333"
+                                                                               VerticalAlignment="Center"/>
+                                                                </StackPanel>
+                                                            </DataTemplate>
+                                                        </DataGridTemplateColumn.CellTemplate>
+                                                    </DataGridTemplateColumn>
 
-                                                                                <!-- 叶子层（结果项） -->
-                                                                                <ItemsControl ItemsSource="{Binding Children}"
-                                                                                              Visibility="{Binding IsExpanded, Converter={StaticResource BoolToVisibilityConverter}}">
-                                                                                    <ItemsControl.ItemTemplate>
-                                                                                        <DataTemplate>
-                                                                                            <Border Padding="60,6,12,6"
-                                                                                                    BorderBrush="#F0F0F0"
-                                                                                                    BorderThickness="0,0,0,1">
-                                                                                                <Grid>
-                                                                                                    <Grid.ColumnDefinitions>
-                                                                                                        <ColumnDefinition Width="*"/>
-                                                                                                        <ColumnDefinition Width="120"/>
-                                                                                                    </Grid.ColumnDefinitions>
-                                                                                                    <TextBlock Grid.Column="0"
-                                                                                                               Text="{Binding DisplayName}"
-                                                                                                               FontSize="12" Foreground="#333333"/>
-                                                                                                    <TextBlock Grid.Column="1"
-                                                                                                               Text="{Binding DisplayValue}"
-                                                                                                               FontSize="11" Foreground="#666666"
-                                                                                                               TextTrimming="CharacterEllipsis"
-                                                                                                               ToolTip="{Binding DisplayValue}"/>
-                                                                                                </Grid>
-                                                                                            </Border>
-                                                                                        </DataTemplate>
-                                                                                    </ItemsControl.ItemTemplate>
-                                                                                </ItemsControl>
-                                                                            </StackPanel>
-                                                                        </DataTemplate>
-                                                                    </ItemsControl.ItemTemplate>
-                                                                </ItemsControl>
-                                                            </StackPanel>
-                                                        </DataTemplate>
-                                                    </ItemsControl.ItemTemplate>
-                                                </ItemsControl>
-                                            </ScrollViewer>
+                                                    <!-- 值列 -->
+                                                    <DataGridTextColumn Width="*" MinWidth="100" MaxWidth="300"
+                                                                        Header="当前值"
+                                                                        Binding="{Binding DisplayValue}">
+                                                        <DataGridTextColumn.ElementStyle>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="FontSize" Value="11"/>
+                                                                <Setter Property="Foreground" Value="#666666"/>
+                                                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                                                <Setter Property="Padding" Value="8,4"/>
+                                                                <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                                                                <Setter Property="ToolTip" Value="{Binding DisplayValue}"/>
+                                                            </Style>
+                                                        </DataGridTextColumn.ElementStyle>
+                                                    </DataGridTextColumn>
+                                                </DataGrid.Columns>
+                                            </DataGrid>
 
                                             <!-- 空状态 -->
-                                            <Grid Grid.Row="1"
-                                                  Visibility="{Binding HasModuleResults, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+                                            <Grid Visibility="{Binding HasModuleResults, Converter={StaticResource InverseBoolToVisibilityConverter}}">
                                                 <TextBlock Text="📊"
                                                            FontSize="32"
                                                            HorizontalAlignment="Center"

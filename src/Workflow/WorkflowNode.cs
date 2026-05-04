@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using System.Windows;
@@ -63,6 +63,9 @@ namespace SunEyeVision.Workflow
         /// </remarks>
         public int LocalIndex { get; set; } = -1;
 
+        private string _name = string.Empty;
+        private string _dispName = string.Empty;
+
         /// <summary>
         /// 节点名称 - 格式：{GlobalIndex} {DispName}
         /// </summary>
@@ -70,7 +73,11 @@ namespace SunEyeVision.Workflow
         /// 节点名称由全局序号和显示名称组成,用于序列化。
         /// 示例：1 图像采集1, 2 高斯模糊2
         /// </remarks>
-        public string Name { get; set; }
+        public string Name
+        {
+            get => _name;
+            set => SetProperty(ref _name, value);
+        }
 
         /// <summary>
         /// 节点显示名称 - 格式：{DisplayName}{LocalIndex}
@@ -80,7 +87,11 @@ namespace SunEyeVision.Workflow
         /// 示例：图像采集1, 高斯模糊2
         /// 支持用户重命名。
         /// </remarks>
-        public string DispName { get; set; }
+        public string DispName
+        {
+            get => _dispName;
+            set => SetProperty(ref _dispName, value);
+        }
 
         /// <summary>
         /// 工具类型（算法类型的简化表示，符合视觉软件行业标准）
@@ -392,6 +403,71 @@ namespace SunEyeVision.Workflow
                 var metadata = ToolRegistry.GetToolMetadata(ToolType);
                 return metadata?.Icon ?? "?";
             }
+        }
+
+        #endregion
+
+        #region 行内重命名
+
+        private bool _isEditingName;
+        private string _renameBuffer = string.Empty;
+
+        /// <summary>
+        /// 是否正在编辑节点名称
+        /// </summary>
+        [JsonIgnore]
+        public bool IsEditingName
+        {
+            get => _isEditingName;
+            set => SetProperty(ref _isEditingName, value);
+        }
+
+        /// <summary>
+        /// 编辑中的临时名称缓冲
+        /// </summary>
+        [JsonIgnore]
+        public string RenameBuffer
+        {
+            get => _renameBuffer;
+            set => SetProperty(ref _renameBuffer, value);
+        }
+
+        /// <summary>
+        /// 开始重命名
+        /// </summary>
+        public void BeginRename()
+        {
+            RenameBuffer = DispName;
+            IsEditingName = true;
+        }
+
+        /// <summary>
+        /// 确认重命名
+        /// </summary>
+        public bool ConfirmRename()
+        {
+            var trimmed = RenameBuffer?.Trim();
+            if (string.IsNullOrEmpty(trimmed))
+            {
+                // 名称为空时不关闭编辑框，让用户继续输入
+                return false;
+            }
+
+            if (DispName != trimmed)
+            {
+                DispName = trimmed;
+                Name = $"{GlobalIndex} {trimmed}";
+            }
+            IsEditingName = false;
+            return true;
+        }
+
+        /// <summary>
+        /// 取消重命名
+        /// </summary>
+        public void CancelRename()
+        {
+            IsEditingName = false;
         }
 
         #endregion

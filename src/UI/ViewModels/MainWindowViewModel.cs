@@ -39,7 +39,6 @@ using SunEyeVision.UI.Services.Performance;
 using SunEyeVision.UI.Services.Logging;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Core.Models;
-using WorkflowNodeBase = SunEyeVision.Workflow.WorkflowNodeBase;
 
 namespace SunEyeVision.UI.ViewModels
 {

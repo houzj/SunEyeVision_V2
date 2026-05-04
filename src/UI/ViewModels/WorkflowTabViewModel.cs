@@ -434,6 +434,25 @@ namespace SunEyeVision.UI.ViewModels
         }
 
         /// <summary>
+        /// 释放节点的局部序号到空洞池（节点重命名时使用）
+        /// </summary>
+        public void ReleaseNodeLocalIndex(WorkflowNodeBase node)
+        {
+            if (node == null || node.LocalIndex < 0)
+                return;
+
+            _sequenceManager.ReleaseLocalIndex(Id, node.ToolType ?? string.Empty, node.LocalIndex);
+
+            VisionLogger.Instance.Log(
+                LogLevel.Info,
+                $"节点重命名，释放局部序号: {node.LocalIndex}, 节点ID: {node.Id}",
+                "WorkflowTabViewModel"
+            );
+
+            node.LocalIndex = -1;
+        }
+
+        /// <summary>
         /// 重置节点序号
         /// </summary>
         public void ResetNodeSequences()

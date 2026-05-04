@@ -915,6 +915,13 @@ namespace SunEyeVision.UI.Views.Controls.Canvas
 
         }
 
+        /// <summary>
+        /// 查找指定类型的第一个视觉子级
+        /// </summary>
+        private static T? FindVisualChild<T>(DependencyObject depObj) where T : DependencyObject
+        {
+            return FindVisualChildren<T>(depObj).FirstOrDefault();
+        }
 
 
         public WorkflowCanvasControl()
@@ -5098,6 +5105,86 @@ _viewModel.SelectedNode = targetNode;
 
             return FindVisualParent<T>(parentObject);
         }
+
+        #region 节点重命名
+
+        /// <summary>
+        /// 右键菜单 - 重命名节点
+        /// </summary>
+        private void NodeContextMenu_Rename_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is MenuItem menuItem &&
+                menuItem.Parent is ContextMenu contextMenu &&
+                contextMenu.PlacementTarget is FrameworkElement placementTarget &&
+                placementTarget.DataContext is WorkflowNodeBase node)
+            {
+                node.BeginRename();
+
+                // 延迟到渲染完成后聚焦编辑框
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    var textBox = FindVisualChild<TextBox>(placementTarget);
+                    if (textBox != null)
+                    {
+                        textBox.Focus();
+                        textBox.SelectAll();
+                    }
+                }), System.Windows.Threading.DispatcherPriority.Input);
+            }
+
+            e.Handled = true;
+        }
+
+        /// <summary>
+        /// 节点重命名编辑框键盘事件 - Enter确认 / Esc取消
+        /// </summary>
+        private void NodeRenameTextBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (sender is TextBox textBox && textBox.DataContext is WorkflowNodeBase node)
+            {
+                if (e.Key == Key.Enter)
+                {
+                    if (node.ConfirmRename())
+                    {
+                        ReleaseNodeLocalIndex(node);
+                    }
+                    e.Handled = true;
+                }
+                else if (e.Key == Key.Escape)
+                {
+                    node.CancelRename();
+                    e.Handled = true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 节点重命名编辑框失去焦点 - 确认重命名
+        /// </summary>
+        private void NodeRenameTextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (sender is TextBox textBox && textBox.DataContext is WorkflowNodeBase node)
+            {
+                if (node.IsEditingName && node.ConfirmRename())
+                {
+                    ReleaseNodeLocalIndex(node);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 释放节点的局部序号到空洞池
+        /// </summary>
+        private void ReleaseNodeLocalIndex(WorkflowNodeBase node)
+        {
+            var tab = _viewModel?.WorkflowTabViewModel.SelectedTab;
+            if (tab != null)
+            {
+                tab.ReleaseNodeLocalIndex(node);
+            }
+        }
+
+        #endregion
 
     }
 

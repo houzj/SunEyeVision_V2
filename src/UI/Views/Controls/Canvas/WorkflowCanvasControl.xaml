@@ -226,6 +226,11 @@
                             Background="Transparent"
                             Tag="{Binding}"
                             x:Name="HitAreaBorder">
+                        <Border.ContextMenu>
+                            <ContextMenu Background="#FFFFFF" BorderBrush="#CCCCCC" BorderThickness="1" Padding="4">
+                                <MenuItem Header="重命名" Click="NodeContextMenu_Rename_Click"/>
+                            </ContextMenu>
+                        </Border.ContextMenu>
                         <Grid>
                             <!-- NodeBorder: 视觉显示元素，居中于HitArea -->
                             <Border Width="{DynamicResource NodeWidth}" Height="{DynamicResource NodeHeight}"
@@ -270,10 +275,44 @@
                                            Margin="0,0,8,0"
                                            Visibility="Visible"/>
 
-                                <!-- 节点显示名称 -->
-                                <TextBlock Grid.Column="2"
-                                           Text="{Binding DispName}"
-                                           Style="{DynamicResource NodeTextStyle}"/>
+                                <!-- 节点显示名称（重命名时切换到编辑框） -->
+                                <Grid Grid.Column="2">
+                                    <TextBlock Text="{Binding DispName}"
+                                               x:Name="NodeNameText">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock" BasedOn="{StaticResource NodeTextStyle}">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsEditingName}" Value="True">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                    <TextBox Text="{Binding RenameBuffer, UpdateSourceTrigger=PropertyChanged}"
+                                             Background="White"
+                                             BorderBrush="#FF6600"
+                                             BorderThickness="1"
+                                             Padding="2,0"
+                                             MinWidth="40"
+                                             FontSize="{DynamicResource NodeFontSize}"
+                                             FontWeight="Medium"
+                                             VerticalAlignment="Center"
+                                             x:Name="NodeNameEditor"
+                                             KeyDown="NodeRenameTextBox_KeyDown"
+                                             LostFocus="NodeRenameTextBox_LostFocus">
+                                        <TextBox.Style>
+                                            <Style TargetType="TextBox">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsEditingName}" Value="True">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBox.Style>
+                                    </TextBox>
+                                </Grid>
                             </Grid>
 
                             <!-- 连接点 - 上 -->

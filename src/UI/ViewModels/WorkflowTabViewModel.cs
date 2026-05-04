@@ -108,6 +108,68 @@ namespace SunEyeVision.UI.ViewModels
             set => SetProperty(ref _name, value);
         }
 
+        #region 行内重命名
+
+        private bool _isEditingName;
+        private string _renameBuffer = string.Empty;
+
+        /// <summary>
+        /// 是否正在编辑名称
+        /// </summary>
+        public bool IsEditingName
+        {
+            get => _isEditingName;
+            set => SetProperty(ref _isEditingName, value);
+        }
+
+        /// <summary>
+        /// 编辑中的临时名称缓冲
+        /// </summary>
+        public string RenameBuffer
+        {
+            get => _renameBuffer;
+            set => SetProperty(ref _renameBuffer, value);
+        }
+
+        /// <summary>
+        /// 开始重命名（将当前名称复制到缓冲）
+        /// </summary>
+        public void BeginRename()
+        {
+            RenameBuffer = Name;
+            IsEditingName = true;
+        }
+
+        /// <summary>
+        /// 确认重命名
+        /// </summary>
+        public bool ConfirmRename()
+        {
+            var trimmed = RenameBuffer?.Trim();
+            if (string.IsNullOrEmpty(trimmed))
+            {
+                IsEditingName = false;
+                return false;
+            }
+
+            if (_name != trimmed)
+            {
+                Name = trimmed;
+            }
+            IsEditingName = false;
+            return true;
+        }
+
+        /// <summary>
+        /// 取消重命名
+        /// </summary>
+        public void CancelRename()
+        {
+            IsEditingName = false;
+        }
+
+        #endregion
+
         /// <summary>
         /// 是否正在运行
         /// </summary>

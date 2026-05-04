@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.IO;
 
@@ -1587,6 +1587,12 @@ namespace SunEyeVision.UI.Views.Windows
 
         /// </summary>
 
+                /// <summary>
+
+        /// TabItem 删除点击事件
+
+        /// </summary>
+
         private void TabItem_Delete_Click(object sender, RoutedEventArgs e)
 
         {
@@ -1595,65 +1601,85 @@ namespace SunEyeVision.UI.Views.Windows
 
             {
 
-                if (workflow.IsRunning)
+                DeleteWorkflowWithConfirm(workflow);
+
+            }
+
+        }
+
+        /// <summary>
+
+        /// 右键菜单 - 重命名工作流
+
+        /// </summary>
+
+        private void TabItem_Rename_Click(object sender, RoutedEventArgs e)
+
+        {
+
+            var workflow = GetWorkflowFromContextMenu(sender);
+
+            if (workflow == null) return;
+
+            workflow.BeginRename();
+
+
+
+            Dispatcher.BeginInvoke(new Action(() =>
+
+            {
+
+                var tabItem = FindTabItem(workflow);
+
+                if (tabItem == null) return;
+
+                var textBox = FindVisualChild<TextBox>(tabItem);
+
+                if (textBox?.Name == "TabNameEditor")
 
                 {
 
-                    System.Windows.MessageBox.Show(
+                    textBox.Focus();
 
-                        "请先停止该工作流",
-
-                        "提示",
-
-                        System.Windows.MessageBoxButton.OK,
-
-                        System.Windows.MessageBoxImage.Warning);
-
-                    return;
+                    textBox.SelectAll();
 
                 }
 
+            }), System.Windows.Threading.DispatcherPriority.Input);
 
+        }
 
-                var result = System.Windows.MessageBox.Show(
+        /// <summary>
 
-                    $"确定要删除工作流 '{workflow.Name}' 吗?",
+        /// 重命名TextBox键盘事件 - Enter确认 / Esc取消
 
-                    "确认删除",
+        /// </summary>
 
-                    System.Windows.MessageBoxButton.YesNo,
+        private void TabRenameTextBox_KeyDown(object sender, KeyEventArgs e)
 
-                    System.Windows.MessageBoxImage.Question);
+        {
 
+            if (sender is TextBox textBox && textBox.DataContext is WorkflowTabViewModel workflow)
 
+            {
 
-                if (result == System.Windows.MessageBoxResult.Yes)
+                if (e.Key == Key.Enter)
 
                 {
 
-                    if (_viewModel.WorkflowTabViewModel.DeleteWorkflow(workflow))
+                    workflow.ConfirmRename();
 
-                    {
+                    e.Handled = true;
 
-                        _viewModel.StatusText = $"已删除工作流: {workflow.Name}";
+                }
 
-                    }
+                else if (e.Key == Key.Escape)
 
-                    else
+                {
 
-                    {
+                    workflow.CancelRename();
 
-                        System.Windows.MessageBox.Show(
-
-                            "至少需要保留一个工作流",
-
-                            "提示",
-
-                            System.Windows.MessageBoxButton.OK,
-
-                            System.Windows.MessageBoxImage.Warning);
-
-                    }
+                    e.Handled = true;
 
                 }
 
@@ -1661,17 +1687,145 @@ namespace SunEyeVision.UI.Views.Windows
 
         }
 
-
-
-
-
         /// <summary>
 
-        /// 工作流执行请求事件处理
+        /// 重命名TextBox失去焦点 - 确认重命名
 
         /// </summary>
 
-        private void OnWorkflowExecutionRequested(object sender, WorkflowExecutionRequestEventArgs e)
+        private void TabRenameTextBox_LostFocus(object sender, RoutedEventArgs e)
+
+        {
+
+            if (sender is TextBox textBox && textBox.DataContext is WorkflowTabViewModel workflow)
+
+            {
+
+                if (workflow.IsEditingName)
+
+                {
+
+                    workflow.ConfirmRename();
+
+                }
+
+            }
+
+        }
+
+        /// <summary>
+
+        /// 右键菜单 - 关闭工作流
+
+        /// </summary>
+
+        private void TabItem_ContextMenu_Delete_Click(object sender, RoutedEventArgs e)
+
+        {
+
+            var workflow = GetWorkflowFromContextMenu(sender);
+
+            if (workflow == null) return;
+
+            DeleteWorkflowWithConfirm(workflow);
+
+        }
+
+        /// <summary>
+
+        /// 从右键菜单获取WorkflowTabViewModel
+
+        /// </summary>
+
+        private static WorkflowTabViewModel? GetWorkflowFromContextMenu(object sender)
+
+        {
+
+            if (sender is MenuItem menuItem)
+
+            {
+
+                var contextMenu = menuItem.Parent as ContextMenu;
+
+                return contextMenu?.DataContext as WorkflowTabViewModel;
+
+            }
+
+            return null;
+
+        }
+
+        /// <summary>
+
+        /// 确认并删除工作流
+
+        /// </summary>
+
+        private void DeleteWorkflowWithConfirm(WorkflowTabViewModel workflow)
+
+        {
+
+            if (workflow.IsRunning)
+
+            {
+
+                System.Windows.MessageBox.Show(
+
+                    "请先停止该工作流",
+
+                    "提示",
+
+                    System.Windows.MessageBoxButton.OK,
+
+                    System.Windows.MessageBoxImage.Warning);
+
+                return;
+
+            }
+
+            var result = System.Windows.MessageBox.Show(
+
+                $"确定要删除工作流 '{workflow.Name}' 吗?",
+
+                "确认删除",
+
+                System.Windows.MessageBoxButton.YesNo,
+
+                System.Windows.MessageBoxImage.Question);
+
+            if (result == System.Windows.MessageBoxResult.Yes)
+
+            {
+
+                if (_viewModel.WorkflowTabViewModel.DeleteWorkflow(workflow))
+
+                {
+
+                    _viewModel.StatusText = $"已删除工作流: {workflow.Name}";
+
+                }
+
+                else
+
+                {
+
+                    System.Windows.MessageBox.Show(
+
+                        "至少需要保留一个工作流",
+
+                        "提示",
+
+                        System.Windows.MessageBoxButton.OK,
+
+                        System.Windows.MessageBoxImage.Warning);
+
+                }
+
+            }
+
+        }
+
+private void OnWorkflowExecutionRequested(object sender, WorkflowExecutionRequestEventArgs e)
 
         {
 if (_viewModel?.WorkflowTabViewModel?.SelectedTab == null)

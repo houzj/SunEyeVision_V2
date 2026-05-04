@@ -558,6 +558,13 @@
                                 <Setter.Value>
                                     <ControlTemplate TargetType="TabItem">
                                         <Grid>
+                                            <Grid.ContextMenu>
+                                                <ContextMenu Background="#FFFFFF" BorderBrush="#CCCCCC" BorderThickness="1" Padding="4">
+                                                    <MenuItem Header="重命名" Click="TabItem_Rename_Click"/>
+                                                    <Separator/>
+                                                    <MenuItem Header="关闭" Click="TabItem_ContextMenu_Delete_Click"/>
+                                                </ContextMenu>
+                                            </Grid.ContextMenu>
                                             <Border x:Name="TabBorder"
                                                     Background="#FFFFFF"
                                                     BorderBrush="#E0E0E0"
@@ -574,14 +581,25 @@
                                                         <ColumnDefinition Width="Auto"/>
                                                     </Grid.ColumnDefinitions>
 
-                                                    <!-- 工作流名称 -->
-                                                    <TextBlock Grid.Column="0"
-                                                               Text="{Binding Name}"
-                                                               FontSize="13"
-                                                               FontWeight="SemiBold"
-                                                               Foreground="#333333"
-                                                               VerticalAlignment="Center"
-                                                               Margin="0,0,12,0"/>
+                                                    <!-- 工作流名称（支持行内重命名） -->
+                                                    <Grid Grid.Column="0" Margin="0,0,12,0">
+                                                        <TextBlock x:Name="TabNameText"
+                                                                   Text="{Binding Name}"
+                                                                   FontSize="13"
+                                                                   FontWeight="SemiBold"
+                                                                   Foreground="#333333"
+                                                                   VerticalAlignment="Center"/>
+                                                        <TextBox x:Name="TabNameEditor"
+                                                                 Text="{Binding RenameBuffer, UpdateSourceTrigger=PropertyChanged}"
+                                                                 FontSize="13"
+                                                                 FontWeight="SemiBold"
+                                                                 VerticalAlignment="Center"
+                                                                 MinWidth="60"
+                                                                 Padding="2"
+                                                                 Visibility="Collapsed"
+                                                                 KeyDown="TabRenameTextBox_KeyDown"
+                                                                 LostFocus="TabRenameTextBox_LostFocus"/>
+                                                    </Grid>
 
                                                     <!-- 单次运行按钮 - 仅在选中时显示 -->
                                                     <Button x:Name="SingleRunBtn"
@@ -764,6 +782,10 @@
                                                 <Setter TargetName="TabBorder" Property="Background" Value="#F8F9FA"/>
                                                 <Setter TargetName="TabBorder" Property="BorderBrush" Value="#667EEA"/>
                                             </Trigger>
+                                            <DataTrigger Binding="{Binding IsEditingName}" Value="True">
+                                                <Setter TargetName="TabNameText" Property="Visibility" Value="Collapsed"/>
+                                                <Setter TargetName="TabNameEditor" Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
                                 </Setter.Value>

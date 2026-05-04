@@ -946,17 +946,20 @@ SplitterPosition = position;
             }
 
             // Fix: Set WorkflowEngine.CurrentWorkflow
-            try
+            if (_workflowEngine != null && WorkflowTabViewModel?.SelectedTab != null)
             {
-                if (_workflowEngine != null && WorkflowTabViewModel?.SelectedTab != null)
+                var selectedId = WorkflowTabViewModel.SelectedTab.Id;
+                var selectedName = WorkflowTabViewModel.SelectedTab.Name;
+
+                // 如果引擎中尚未注册该工作流，自动创建（例如新建 Tab 时）
+                if (_workflowEngine.GetWorkflowById(selectedId) == null)
                 {
-                    _workflowEngine.SetCurrentWorkflow(WorkflowTabViewModel.SelectedTab.Id);
-                    _logger?.LogInfo($"OnSelectedTabChanged: Current workflow set to {WorkflowTabViewModel.SelectedTab.Name} (ID: {WorkflowTabViewModel.SelectedTab.Id})");
+                    _workflowEngine.CreateWorkflow(selectedId, selectedName);
+                    _logger?.LogInfo($"OnSelectedTabChanged: Auto-created workflow in engine: {selectedName} (ID: {selectedId})");
                 }
-            }
-            catch (Exception ex)
-            {
-                _logger?.LogError($"OnSelectedTabChanged: Failed to set current workflow - {ex.Message}");
+
+                _workflowEngine.SetCurrentWorkflow(selectedId);
+                _logger?.LogInfo($"OnSelectedTabChanged: Current workflow set to {selectedName} (ID: {selectedId})");
             }
         }
 

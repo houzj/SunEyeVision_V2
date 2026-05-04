@@ -359,9 +359,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             // 让后续的空白点击逻辑取消当前选择
 
             // 场景3 - 空白点击：先检查是否有编辑器选中了绘制工具
+            bool eventConsumed = false;  // ★ 跟踪事件是否被消费
             if (inspectionsEditor.ViewModel.IsDrawing)
             {
-                inspectionsEditor.ProcessMouseDown(pos);
+                eventConsumed = inspectionsEditor.ProcessMouseDown(pos);
                 // ★ Phase 4: 同步更新活跃编辑器引用并互斥
                 if (_activeEditor != inspectionsEditor)
                 {
@@ -371,7 +372,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             }
             else if (masksEditor.ViewModel.IsDrawing)
             {
-                masksEditor.ProcessMouseDown(pos);
+                eventConsumed = masksEditor.ProcessMouseDown(pos);
                 // ★ Phase 4: 同步更新活跃编辑器引用并互斥
                 if (_activeEditor != masksEditor)
                 {
@@ -385,7 +386,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 var editorWithSelection = GetEditorWithSelection();
                 if (editorWithSelection != null)
                 {
-                    editorWithSelection.ProcessMouseDown(pos);
+                    eventConsumed = editorWithSelection.ProcessMouseDown(pos);
                     if (_activeEditor != editorWithSelection)
                         _activeEditor = editorWithSelection;
                 }
@@ -394,9 +395,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                     // 都没有选中区域，双方同时取消选择
                     inspectionsEditor.DeselectAll();
                     masksEditor.DeselectAll();
+                    // eventConsumed 保持 false → 允许平移
                 }
             }
-            e.Handled = true;
+            e.Handled = eventConsumed;  // ★ 仅在事件被消费时拦截，空白处允许平移
             RenderAll();
         }
 

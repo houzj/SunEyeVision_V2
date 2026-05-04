@@ -152,6 +152,15 @@ namespace SunEyeVision.UI.Services.Workflow
         }
 
         /// <summary>
+        /// 仅清空图形覆盖层（不清属性树），用于切换到无结果节点时清除残留旧图形
+        /// </summary>
+        public void ClearResultGraphics()
+        {
+            _resultRenderLayer?.Clear();
+            _resultRenderLayer?.ClearHighlight();
+        }
+
+        /// <summary>
         /// 设置高亮元素（用于选中 Blob 等场景的图像高亮反馈）
         /// </summary>
         public void SetHighlightItems(IEnumerable<DisplayItemBase>? items)

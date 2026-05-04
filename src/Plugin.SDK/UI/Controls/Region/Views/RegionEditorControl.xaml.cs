@@ -775,13 +775,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         /// <summary>
         /// 处理鼠标按下（由Manager路由）
         /// </summary>
-        public void ProcessMouseDown(Point position)
+        /// <returns>true=事件已消费（区域操作），false=空白处点击（允许平移）</returns>
+        public bool ProcessMouseDown(Point position)
         {
             VisionLogger.Instance.Log(LogLevel.Info,
                 $"[ProcessMouseDown] MouseDown事件 | InstanceId={_controlInstanceId} | IsDrawing={_viewModel.IsDrawing} | _isDrawing={_isDrawing} | Tool={_currentTool} | Position={position:F1} | OverlayCanvas={OverlayCanvas != null}",
                 "RegionEditorControl");
 
-            if (OverlayCanvas == null) return;
+            if (OverlayCanvas == null) return false;
 
             if (_currentTool == ShapeType.Polygon)
             {
@@ -794,7 +795,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                         _isDrawingPolygon = false;
                         ClearRubberBand();
                         FinishInteraction();
-                        return;
+                        return true;
                     }
                 }
                 _lastPolygonClickTime = DateTime.Now;
@@ -810,12 +811,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                     _currentDrawingRegion.IsPreview = true;
                 }
 
-                _polygonPoints.Add(position);
-                SyncPolygonToShapeDef();
-                ClearRubberBand();
-                RenderRequested?.Invoke();
-                _viewModel.StatusMessage = $"多边形顶点: {_polygonPoints.Count}";
-                return;
+            _polygonPoints.Add(position);
+            SyncPolygonToShapeDef();
+            ClearRubberBand();
+            RenderRequested?.Invoke();
+            _viewModel.StatusMessage = $"多边形顶点: {_polygonPoints.Count}";
+            return true;
             }
 
             if (_viewModel.IsDrawing && _currentTool != ShapeType.Point)
@@ -825,7 +826,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                     VisionLogger.Instance.Log(LogLevel.Warning,
                         $"[ProcessMouseDown] 警告：已在绘制中，忽略重复触发 | InstanceId={_controlInstanceId}",
                         "RegionEditorControl");
-                    return;
+                    return true;
                 }
 
                 _isDrawing = true;
@@ -861,7 +862,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                             break;
                     }
                 }
-                return;
+                return true;
             }
 
             if (_selectedRegion != null)
@@ -877,7 +878,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                             _isDragging = true;
                             _dragStartPoint = position;
                             _viewModel.StatusMessage = "正在拖动区域";
-                            return;
+                            return true;
                         }
 
                         if (hitHandleType == Rendering.HandleType.PolygonVertex)
@@ -905,7 +906,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                             if (_selectedRegion?.Parameters is ShapeParameters polyShape)
                                 _originalShapeDefinition = polyShape.Clone() as ShapeParameters;
                             _viewModel.StatusMessage = "正在拖拽多边形顶点";
-                            return;
+                            return true;
                         }
 
                         _isDraggingHandle = true;
@@ -928,7 +929,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                         }
 
                         _viewModel.StatusMessage = $"正在拖动 {hitHandleType} 手柄";
-                        return;
+                        return true;
                     }
                 }
             }
@@ -939,10 +940,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 SelectRegion(hitRegion);
                 _isDragging = true;
                 _dragStartPoint = position;
+                return true;  // ★ 命中区域，事件已消费
             }
             else
             {
                 DeselectAll();
+                return false;  // ★ 空白处，允许平移
             }
         }
 

@@ -290,6 +290,8 @@ namespace SunEyeVision.UI.ViewModels
                     {
                         // 未运行也从 _typeCache 显示属性表结构
                         UpdateModuleResults(null, value.Name, toolId);
+                        // 清空旧节点残留在图像上的图形覆盖，防止显示错位
+                        _nodeResultManager.ClearResultGraphics();
                     }
                     else
                     {

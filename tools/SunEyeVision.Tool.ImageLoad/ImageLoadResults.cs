@@ -1,56 +1,17 @@
 using System;
 using System.Collections.Generic;
-using System.Windows;
-using SunEyeVision.Plugin.SDK.Core;
-using SunEyeVision.Plugin.SDK.Validation;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.Metadata;
 using OpenCvSharp;
-using System.Diagnostics;
-using System.IO;
-using System.Text.Json.Serialization;
+using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.SDK.Models.Visualization;
 
 namespace SunEyeVision.Tool.ImageLoad
 {
-    /// <summary>
-    /// 图像载入参数
-    /// </summary>
-    /// <remarks>
-    /// 多态序列化（rule-010: 方案系统实现规范）：
-    /// 使用 [JsonDerivedType] 特性标识参数类型，类型标识符为 "ImageLoad"。
-    /// </remarks>
-    [JsonDerivedType(typeof(ImageLoadParameters), "ImageLoad")]
-    public class ImageLoadParameters : ToolParameters
-    {
-        private string _filePath = string.Empty;
-
-        /// <summary>
-        /// 图像文件路径
-        /// </summary>
-        public string FilePath
-        {
-            get => _filePath;
-            set => SetProperty(ref _filePath, value, "文件路径");
-        }
-
-        public override ValidationResult Validate()
-        {
-            var result = base.Validate();
-            if (string.IsNullOrEmpty(FilePath))
-            {
-                result.AddError("文件路径不能为空");
-            }
-            return result;
-        }
-    }
-
     /// <summary>
     /// 图像载入结果
     /// </summary>
     public class ImageLoadResults : ToolResults
     {
-        #region 核心属性（原有）
+        #region 核心属性
 
         public Mat? OutputImage { get; set; }
 
@@ -69,7 +30,7 @@ namespace SunEyeVision.Tool.ImageLoad
 
         #endregion
 
-        #region 新增：尺寸相关属性
+        #region 尺寸相关属性
 
         /// <summary>
         /// 图像尺寸（OpenCV标准类型）
@@ -88,7 +49,7 @@ namespace SunEyeVision.Tool.ImageLoad
 
         #endregion
 
-        #region 新增：格式相关属性
+        #region 格式相关属性
 
         /// <summary>
         /// OpenCV类型名称（如"CV_8UC3"）
@@ -115,7 +76,6 @@ namespace SunEyeVision.Tool.ImageLoad
                     return "Unknown";
 
                 var depth = OutputImage.Depth();
-                // OpenCvSharp 深度值：0=CV_8U, 1=CV_8S, 2=CV_16U, 3=CV_16S, 4=CV_32S, 5=CV_32F, 6=CV_64F
                 return depth switch
                 {
                     0 => "CV_8U",
@@ -159,7 +119,7 @@ namespace SunEyeVision.Tool.ImageLoad
 
         #endregion
 
-        #region 新增：像素值相关属性（延迟计算）
+        #region 像素值相关属性（延迟计算）
 
         private double? _minPixelValue;
         private double? _maxPixelValue;
@@ -225,7 +185,6 @@ namespace SunEyeVision.Tool.ImageLoad
 
             try
             {
-                // 对于多通道图像，计算所有通道的整体最小/最大值
                 OutputImage.MinMaxLoc(out double minVal, out double maxVal);
                 _minPixelValue = minVal;
                 _maxPixelValue = maxVal;
@@ -247,7 +206,6 @@ namespace SunEyeVision.Tool.ImageLoad
 
             try
             {
-                // 计算所有通道的平均值
                 var mean = OutputImage.Mean();
                 _meanPixelValue = mean.Val0;
             }
@@ -264,13 +222,6 @@ namespace SunEyeVision.Tool.ImageLoad
         /// <summary>
         /// 获取属性映射表
         /// </summary>
-        /// <remarks>
-        /// 创建分组结构，便于在绑定源选择器中展示：
-        /// - 图像 → 宽度/高度/通道数...
-        /// - 像素值 → 最小值/最大值/平均值...
-        /// - 文件 → 路径/大小/格式
-        /// - 执行 → 耗时
-        /// </remarks>
         public override List<PropertyMapEntry> GetPropertyMap()
         {
             return
@@ -300,13 +251,12 @@ namespace SunEyeVision.Tool.ImageLoad
         }
 
         /// <summary>
-        /// 获取结果项列表（用于模块结果面板的树形分组显示）
+        /// 获取结果项列表
         /// </summary>
         public override IReadOnlyList<ResultItem> GetResultItems()
         {
             var items = new List<ResultItem>();
 
-            // 图像属性（匹配 GetPropertyMap 中的 GroupName "图像"）
             items.Add(ResultItem.Numeric("宽度", Width, "像素"));
             items.Add(ResultItem.Numeric("高度", Height, "像素"));
             items.Add(ResultItem.Numeric("通道数", Channels, "通道"));
@@ -319,106 +269,44 @@ namespace SunEyeVision.Tool.ImageLoad
             items.Add(ResultItem.Numeric("宽高比", AspectRatio));
             items.Add(ResultItem.Numeric("总像素数", TotalPixels, "像素"));
 
-            // 像素值信息（匹配 GroupName "像素值"）
             items.Add(ResultItem.Numeric("最小值", MinPixelValue));
             items.Add(ResultItem.Numeric("最大值", MaxPixelValue));
             items.Add(ResultItem.Numeric("平均值", MeanPixelValue));
             items.Add(ResultItem.Text("范围描述", PixelValueRange));
 
-            // 文件信息（匹配 GroupName "文件"）
             items.Add(ResultItem.Text("路径", FilePath));
             items.Add(ResultItem.Numeric("大小", FileSize, "字节"));
             items.Add(ResultItem.Text("格式", FileFormat));
 
-            // 执行信息（匹配 GroupName "执行"）
             items.Add(ResultItem.Numeric("耗时", ExecutionTimeMs, "ms"));
 
             return items;
         }
 
-        #endregion
-    }
-
-    /// <summary>
-    /// 图像载入工具 - 从文件读取图像
-    /// </summary>
-    [Tool("ImageLoad", "图像载入", Description = "从文件载入图像，作为工作流的图像源", Icon = "📁", Category = "采集", Version = "2.0.0", HasDebugWindow = false)]
-    public class ImageLoadTool : IToolPlugin<ImageLoadParameters, ImageLoadResults>
-    {
-        public bool HasDebugWindow => false;
-
-        public FrameworkElement? CreateDebugControl() => null;
-
-        [Obsolete("使用 CreateDebugControl 替代")]
-        public System.Windows.Window? CreateDebugWindow() => null;
-
-        public ImageLoadResults Run(ImageLoadParameters parameters)
+        /// <summary>
+        /// 转换为字典（补充 ToolResults 基类的字典）
+        /// </summary>
+        public override Dictionary<string, object> ToDictionary()
         {
-            var result = new ImageLoadResults
-            {
-                ToolName = "ImageLoad",
-                ToolId = "image_load",
-                Timestamp = DateTime.Now
-            };
-
-            var stopwatch = Stopwatch.StartNew();
-
-            try
-            {
-                // 验证参数
-                var validationResult = parameters.Validate();
-                if (!validationResult.IsValid)
-                {
-                    result.SetError($"参数验证失败: {string.Join(", ", validationResult.Errors)}");
-                    return result;
-                }
-
-                // 验证文件路径
-                if (string.IsNullOrEmpty(parameters.FilePath))
-                {
-                    result.SetError("文件路径为空");
-                    return result;
-                }
-
-                if (!File.Exists(parameters.FilePath))
-                {
-                    result.SetError($"文件不存在: {parameters.FilePath}");
-                    return result;
-                }
-
-                // 获取文件信息
-                var fileInfo = new FileInfo(parameters.FilePath);
-                result.FilePath = parameters.FilePath;
-                result.FileSize = fileInfo.Length;
-                result.FileFormat = fileInfo.Extension.ToUpperInvariant();
-
-                // 使用 OpenCvSharp 加载图像（Unchanged 保持原始通道格式）
-                var loadedImage = Cv2.ImRead(parameters.FilePath, ImreadModes.Unchanged);
-
-                if (loadedImage == null || loadedImage.Empty())
-                {
-                    result.SetError($"无法加载图像: {parameters.FilePath}");
-                    return result;
-                }
-
-                // 设置结果
-                result.OutputImage = loadedImage;
-                result.Width = loadedImage.Width;
-                result.Height = loadedImage.Height;
-                result.Channels = loadedImage.Channels();
-                result.Depth = (int)loadedImage.Depth();
-
-                stopwatch.Stop();
-                result.SetSuccess(stopwatch.ElapsedMilliseconds);
-            }
-            catch (Exception ex)
-            {
-                stopwatch.Stop();
-                result.SetError($"加载图像失败: {ex.Message}", ex);
-                result.ExecutionTimeMs = stopwatch.ElapsedMilliseconds;
-            }
-
-            return result;
+            var dict = base.ToDictionary();
+            dict["Width"] = Width;
+            dict["Height"] = Height;
+            dict["Channels"] = Channels;
+            dict["Depth"] = Depth;
+            dict["FilePath"] = FilePath;
+            dict["FileSize"] = FileSize;
+            dict["FileFormat"] = FileFormat;
+            dict["IsColor"] = IsColor;
+            dict["IsGrayscale"] = IsGrayscale;
+            dict["ColorType"] = ColorType;
+            dict["AspectRatio"] = AspectRatio;
+            dict["TotalPixels"] = TotalPixels;
+            dict["MinPixelValue"] = MinPixelValue;
+            dict["MaxPixelValue"] = MaxPixelValue;
+            dict["MeanPixelValue"] = MeanPixelValue;
+            return dict;
         }
+
+        #endregion
     }
 }

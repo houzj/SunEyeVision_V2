@@ -9,7 +9,7 @@ namespace SunEyeVision.Tool.Threshold
     /// <summary>
     /// 图像阈值化工具执行结果
     /// </summary>
-    public class ThresholdResults : ToolResults, IDisposable
+    public class ThresholdResults : ToolResults
     {
         #region 输出图像
 
@@ -127,37 +127,6 @@ namespace SunEyeVision.Tool.Threshold
         /// 判断失败原因列表
         /// </summary>
         public List<string> FailReasons { get; set; } = new();
-
-        #endregion
-
-        #region IDisposable
-
-        private bool _disposed;
-
-        /// <summary>
-        /// 释放资源
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// 释放资源
-        /// </summary>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (_disposed) return;
-
-            if (disposing)
-            {
-                OutputImage?.Dispose();
-                OutputImage = null;
-            }
-
-            _disposed = true;
-        }
 
         #endregion
 

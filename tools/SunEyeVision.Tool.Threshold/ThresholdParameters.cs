@@ -123,7 +123,6 @@ namespace SunEyeVision.Tool.Threshold
         /// <summary>
         /// 结果判断配置
         /// </summary>
-        [JsonPropertyName("resultConfig")]
         public ThresholdResultConfig ResultConfig { get; set; } = new();
 
         #endregion

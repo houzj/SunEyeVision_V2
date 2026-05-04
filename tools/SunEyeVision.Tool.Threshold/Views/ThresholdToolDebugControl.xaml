@@ -16,26 +16,22 @@
 
     <controls:ToolDebugControlBase.Resources>
         <ResourceDictionary>
-            <!-- ★ 显式加载 SDK 层的资源字典（设计时支持） -->
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.SDK;component/UI/Themes/Generic.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
-            <!-- 其他资源 -->
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
             <localConverters:ThresholdTypeConverter x:Key="ThresholdTypeConverter"/>
         </ResourceDictionary>
     </controls:ToolDebugControlBase.Resources>
 
-    <!-- 主布局：标题栏 + TabControl + 按钮栏 -->
   <Grid>
-    <!-- TabControl -->
-    <TabControl  Margin="5,0,5,0">
+    <TabControl Margin="5,0,5,0">
       <!-- Tab1: 基本参数 -->
       <TabItem Header="基本参数" IsSelected="True">
         <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12">
           <StackPanel>
-            <controls:LabeledControl Label="输入图像" ContentHorizontalAlignment="Center" ContentVerticalAlignment="Center" LabelVerticalAlignment="Center" >
+            <controls:LabeledControl Label="输入图像" ContentHorizontalAlignment="Center" ContentVerticalAlignment="Center" LabelVerticalAlignment="Center">
               <controls:ImageSourceSelector
                                 x:Name="imageSourceSelector"
                                 PlaceholderText="请选择输入图像源"
@@ -43,20 +39,19 @@
                                 AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"
                                 SelectedDataSource="{Binding ImageSource, Mode=TwoWay}"/>
             </controls:LabeledControl>
-            
+
             <!-- 启用区域限制 -->
             <controls:LabeledControl Label="启用区域限制">
               <CheckBox IsChecked="{Binding IsRegionEnabled.Value, Mode=TwoWay}"
                         Content="仅对指定区域进行阈值化处理"/>
             </controls:LabeledControl>
-            
-            <!-- 检测区域编辑器 -->
-            <GroupBox Header="检测区域" Margin="0,8,0,0"
+
+            <!-- 区域管理器（检测区域 + 屏蔽区域） -->
+            <GroupBox Header="区域设置" Margin="0,8,0,0"
                       Visibility="{Binding IsRegionEnabled.Value, Converter={StaticResource BoolToVisibilityConverter}}">
-            <region:RegionEditorControl x:Name="inspectionRegionEditor"
-                                      VerticalContentAlignment="Stretch"
-                                      Height="auto"
-                                      Regions="{Binding InspectionRegions.Regions}"/>
+                <region:RegionEditorManagerControl x:Name="regionManager"
+                    InspectionRegionsSource="{Binding InspectionRegions.Regions}"
+                    MaskRegionsSource="{Binding MaskRegions.Regions}"/>
             </GroupBox>
           </StackPanel>
         </ScrollViewer>
@@ -66,7 +61,7 @@
       <TabItem Header="运行参数">
         <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12">
           <StackPanel>
-            <controls:LabeledControl Label="阈值" >
+            <controls:LabeledControl Label="阈值">
               <controls:ConfigSetting
                                 x:Name="thresholdParam"
                                 ParameterName="Threshold"
@@ -93,19 +88,47 @@
                                 ShowSlider="True" Width="250"
                                 AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
             </controls:LabeledControl>
-            <controls:LabeledControl Label="选择阈值类型" >
+
+            <controls:LabeledControl Label="阈值类型">
               <ComboBox x:Name="thresholdTypeComboBox"
                       Height="32"
                       VerticalContentAlignment="Center" Width="250"
                       SelectedItem="{Binding Type.Value, Mode=TwoWay, Converter={StaticResource ThresholdTypeConverter}}">
                 <sys:String>Binary</sys:String>
                 <sys:String>BinaryInv</sys:String>
-                <sys:String>Trunc</sys:String>
-                <sys:String>ToZero</sys:String>
-                <sys:String>ToZeroInv</sys:String>
               </ComboBox>
             </controls:LabeledControl>
 
+            <controls:LabeledControl Label="反转结果" ContentHorizontalAlignment="Left" Margin="0,4,0,0">
+              <CheckBox IsChecked="{Binding Invert.Value, Mode=TwoWay}"
+                        Content="反转二值化结果"/>
+            </controls:LabeledControl>
+
+            <Separator Margin="0,8,0,4" Background="#E0E0E0" Height="1"/>
+            <TextBlock Text="自适应阈值" FontWeight="SemiBold" Margin="0,4,0,0"/>
+
+            <controls:LabeledControl Label="自适应方法">
+              <ComboBox Height="32"
+                      VerticalContentAlignment="Center" Width="250"
+                      SelectedIndex="{Binding AdaptiveMethod.Value, Mode=TwoWay}">
+                <sys:String>Mean</sys:String>
+                <sys:String>Gaussian</sys:String>
+              </ComboBox>
+            </controls:LabeledControl>
+
+            <controls:LabeledControl Label="块大小">
+              <controls:ConfigSetting
+                                x:Name="blockSizeParam"
+                                ParameterName="BlockSize"
+                                DataType="{x:Type sys:Int32}"
+                                Value="{Binding BlockSize.Value, Mode=TwoWay}"
+                                Minimum="3"
+                                Maximum="31"
+                                SmallChange="2"
+                                LargeChange="4"
+                                Width="250"
+                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+            </controls:LabeledControl>
           </StackPanel>
         </ScrollViewer>
       </TabItem>
@@ -148,9 +171,7 @@
                                             MaxValue="{Binding ResultConfig.WhitePixelRatioMax, Mode=TwoWay}"
                                             DecimalPlaces="1"
                       SmallChange="1"
-                      NumericWidth="120"
-
-                                             />
+                      NumericWidth="120"/>
                   </controls:LabeledControl>
 
                   <!-- 输出均值判断 -->
@@ -165,7 +186,7 @@
                                             Maximum="255"
                                             MinValue="{Binding ResultConfig.MeanMin, Mode=TwoWay}"
                                             MaxValue="{Binding ResultConfig.MeanMax, Mode=TwoWay}"
-                                            DecimalPlaces="1"  NumericWidth="120" Margin="0,2,0,0"/>
+                                            DecimalPlaces="1" NumericWidth="120"/>
                   </controls:LabeledControl>
 
                   <!-- 输出面积判断 -->
@@ -180,7 +201,7 @@
                                             Maximum="1000000"
                                             MinValue="{Binding ResultConfig.AreaMin, Mode=TwoWay}"
                                             MaxValue="{Binding ResultConfig.AreaMax, Mode=TwoWay}"
-                                            DecimalPlaces="0"  NumericWidth="120"/>
+                                            DecimalPlaces="0" NumericWidth="120"/>
                   </controls:LabeledControl>
 
                   <!-- 质心X判断 -->
@@ -195,7 +216,7 @@
                                             Maximum="10000"
                                             MinValue="{Binding ResultConfig.CentroidXMin, Mode=TwoWay}"
                                             MaxValue="{Binding ResultConfig.CentroidXMax, Mode=TwoWay}"
-                                            DecimalPlaces="1"  NumericWidth="120"/>
+                                            DecimalPlaces="1" NumericWidth="120"/>
                   </controls:LabeledControl>
 
                   <!-- 质心Y判断 -->
@@ -210,112 +231,7 @@
                                             Maximum="10000"
                                             MinValue="{Binding ResultConfig.CentroidYMin, Mode=TwoWay}"
                                             MaxValue="{Binding ResultConfig.CentroidYMax, Mode=TwoWay}"
-                                            DecimalPlaces="1"  NumericWidth="120"/>
-                  </controls:LabeledControl>
-                </StackPanel>
-              </Expander>
-
-              <!-- 图像显示分组 - 已迁移至 DisplayItem，待重构 -->
-              <!--
-              <Expander Header="图像显示"
-                                      IsExpanded="True"
-                                      BorderBrush="#E0E0E0"
-                                      BorderThickness="1"
-                                      Margin="0,0,0,8"
-                                      Background="White">
-                <StackPanel Margin="16,8">
-                  <controls:LabeledControl Label="输出图像" ContentHorizontalAlignment="Left">
-                    <controls:DispItemColorControl
-                        Config="{Binding DisplayConfig.OutputImage, Mode=TwoWay}"
-                        ContentHorizontalAlignment="Left"/>
-                  </controls:LabeledControl>
-                  <controls:LabeledControl Label="阈值分界线" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
-                    <controls:DispItemColorControl
-                        Config="{Binding DisplayConfig.ThresholdLine, Mode=TwoWay}"
-                        ContentHorizontalAlignment="Left"/>
-                  </controls:LabeledControl>
-                  <controls:LabeledControl Label="ROI区域" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
-                    <controls:DispItemColorControl
-                        Config="{Binding DisplayConfig.Region, Mode=TwoWay}"
-                        ContentHorizontalAlignment="Left"/>
-                  </controls:LabeledControl>
-                  <controls:LabeledControl Label="直方图" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
-                    <controls:DispItemColorControl
-                        Config="{Binding DisplayConfig.Histogram, Mode=TwoWay}"
-                        ContentHorizontalAlignment="Left"/>
-                  </controls:LabeledControl>
-                </StackPanel>
-              </Expander>
-              -->
-
-              <!-- 文本显示分组 -->
-              <Expander Header="文本显示"
-                                      IsExpanded="True"
-                                      BorderBrush="#E0E0E0"
-                                      BorderThickness="1"
-                                      Background="White">
-
-
-                <StackPanel Margin="16,8">
-                  <controls:LabeledControl Label="内容" Margin="0,0,0,8">
-                    <TextBox Grid.Column="1" Grid.Row="0" Width="230"
-                                             Text="{Binding TextConfig.Content, Mode=TwoWay}"
-                                             HorizontalAlignment="Left"
-                                             Height="28"
-                                             VerticalContentAlignment="Center"/>
-                  </controls:LabeledControl>
-
-                  <!-- OK颜色 -->
-                  <controls:LabeledControl Label="OK颜色" Margin="0,0,0,8">
-                    <controls:ColorSelector HorizontalAlignment="Left" Width="230" SelectedColor="{Binding TextConfig.OkColor, Mode=TwoWay}"/>
-                  </controls:LabeledControl>
-
-                  <!-- NG颜色 -->
-                  <controls:LabeledControl Label="NG颜色" Margin="0,0,0,8">
-                    <controls:ColorSelector Width="230" HorizontalAlignment="Left" SelectedColor="{Binding TextConfig.NgColor, Mode=TwoWay}"/>
-                  </controls:LabeledControl>
-                  <controls:LabeledControl Label="字号" Margin="0,0,0,8">
-                    <controls:NumericUpDown Value="{Binding TextConfig.FontSize, Mode=TwoWay}"
-                                                Minimum="0"
-                                                Maximum="1"
-                                                DecimalPlaces="2"
-                                                HorizontalAlignment="Left"
-                                                Width="230"/>
-                  </controls:LabeledControl>
-
-                  <controls:LabeledControl Label="透明度" Margin="0,0,0,8">
-                    <controls:NumericUpDown Value="{Binding TextConfig.Opacity, Mode=TwoWay}"
-                                             Minimum="8"
-                                             Maximum="72"
-                                             DecimalPlaces="1"
-                                             HorizontalAlignment="Left"
-                                             Width="230"/>
-                  </controls:LabeledControl>
-
-                  <controls:LabeledControl Label="位置X" Margin="0,0,0,8">
-                    <controls:ConfigSetting Grid.Column="1" Grid.Row="3"
-                                                            ParameterName="TextConfig.PositionX"
-                                                            DataType="{x:Type sys:Double}"
-                                                            Value="{Binding TextConfig.PositionX, Mode=TwoWay}"
-                                                            Minimum="8"
-                                                            Maximum="72"
-                                                            DecimalPlaces="1"
-                                                            HorizontalAlignment="Left"
-                                                            Width="230"
-                                                            AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                  </controls:LabeledControl>
-                  <controls:LabeledControl Label="位置Y" Margin="0,0,0,8">
-                    <controls:ConfigSetting Grid.Column="1" Grid.Row="3"
-                                                            ParameterName="TextConfig.PositionY"
-                                                            DataType="{x:Type sys:Double}"
-                                                            Value="{Binding TextConfig.PositionY, Mode=TwoWay}"
-                                                            Minimum="8"
-                                                            Maximum="72"
-                                                            DecimalPlaces="1"
-                                                            HorizontalAlignment="Left"
-                                                            Width="230"
-                                                            AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-
+                                            DecimalPlaces="1" NumericWidth="120"/>
                   </controls:LabeledControl>
                 </StackPanel>
               </Expander>

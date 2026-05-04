@@ -17,8 +17,7 @@ namespace SunEyeVision.UI.ViewModels
     {
         private ObservableCollection<WorkflowTabViewModel> _tabs = new ObservableCollection<WorkflowTabViewModel>();
         private WorkflowTabViewModel? _selectedTab;
-        private int _workflowCounter = 1;
-        private SortedSet<int> _usedWorkflowNumbers = new SortedSet<int>();
+
 
         /// <summary>
         /// 选中画布变化事件
@@ -99,8 +98,6 @@ namespace SunEyeVision.UI.ViewModels
             Tabs.Add(defaultWorkflow);
             // 静默设置 SelectedTab，不触发 SelectionChanged 事件
             SetSelectedTab(defaultWorkflow, suppressEvent: true);
-            _workflowCounter = 1;
-            _usedWorkflowNumbers.Add(1);
         }
 
         /// <summary>
@@ -124,10 +121,6 @@ namespace SunEyeVision.UI.ViewModels
             // 清空现有标签页
             Tabs.Clear();
 
-            // 重置计数器和已使用编号
-            _workflowCounter = 1;
-            _usedWorkflowNumbers.Clear();
-
             // 创建新的默认工作流（新对象，彻底清空节点和连接）
             var defaultWorkflow = new WorkflowTabViewModel
             {
@@ -138,33 +131,6 @@ namespace SunEyeVision.UI.ViewModels
             Tabs.Add(defaultWorkflow);
             // 静默设置 SelectedTab，不触发 SelectionChanged 事件
             SetSelectedTab(defaultWorkflow, suppressEvent: true);
-            _usedWorkflowNumbers.Add(1);
-        }
-
-        /// <summary>
-        /// 重置工作流编号计数器（防止方案切换时的编号污染）
-        /// </summary>
-        /// <remarks>
-        /// 用于加载新方案时重置工作流编号，确保新方案的工作流从1开始编号。
-        /// 与 ResetToDefault() 不同，此方法只重置编号计数器，不创建默认工作流。
-        /// 遍历所有标签页，恢复工作流编号。
-        /// </remarks>
-        public void ResetWorkflowNumberCounter()
-        {
-            // 重置计数器和已使用编号
-            _workflowCounter = 0;
-            _usedWorkflowNumbers.Clear();
-
-            // 从已加载的标签页中恢复编号（在加载方案后调用）
-            foreach (var tab in Tabs)
-            {
-                var match = System.Text.RegularExpressions.Regex.Match(tab.Name, @"工作流(\d+)");
-                if (match.Success && int.TryParse(match.Groups[1].Value, out int number))
-                {
-                    _usedWorkflowNumbers.Add(number);
-                    _workflowCounter = Math.Max(_workflowCounter, number);
-                }
-            }
         }
 
         /// <summary>
@@ -180,8 +146,6 @@ namespace SunEyeVision.UI.ViewModels
             // ✅ 为没有绑定 Solution 的工作流创建独立的连接集合
             newWorkflow.SetConnections(new ObservableCollection<WorkflowConnection>());
             Tabs.Add(newWorkflow);
-            _usedWorkflowNumbers.Add(nextNumber);
-            _workflowCounter = Math.Max(_workflowCounter, nextNumber);
             SelectedTab = newWorkflow;
         }
 
@@ -206,13 +170,6 @@ namespace SunEyeVision.UI.ViewModels
             var index = Tabs.IndexOf(workflow);
             Tabs.Remove(workflow);
 
-            // 从已使用的编号集合中移除
-            var match = System.Text.RegularExpressions.Regex.Match(workflow.Name, @"工作流(\d+)");
-            if (match.Success && int.TryParse(match.Groups[1].Value, out int number))
-            {
-                _usedWorkflowNumbers.Remove(number);
-            }
-
             // 选择其他标签页。
             if (SelectedTab == workflow)
             {
@@ -235,23 +192,19 @@ namespace SunEyeVision.UI.ViewModels
         /// </summary>
         private int GetNextWorkflowNumber()
         {
-            if (_usedWorkflowNumbers.Count == 0)
+            // 直接从 Tabs 中提取已使用编号，无需维护独立跟踪集合
+            var usedNumbers = new System.Collections.Generic.HashSet<int>();
+            foreach (var tab in Tabs)
             {
-                return 1;
+                var match = System.Text.RegularExpressions.Regex.Match(tab.Name, @"工作流(\d+)");
+                if (match.Success && int.TryParse(match.Groups[1].Value, out int number))
+                    usedNumbers.Add(number);
             }
 
-            // 查找第一个未被使用的编号
-            int expectedNumber = 1;
-            foreach (var number in _usedWorkflowNumbers)
-            {
-                if (number != expectedNumber)
-                {
-                    return expectedNumber;
-                }
-                expectedNumber++;
-            }
-
-            return expectedNumber;
+            // 找最小未使用编号（自然实现空洞填充）
+            for (int i = 1; ; i++)
+                if (!usedNumbers.Contains(i))
+                    return i;
         }
 
         #endregion

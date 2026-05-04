@@ -1699,10 +1699,6 @@ SplitterPosition = position;
                 WorkflowTabViewModel.Tabs.Clear();
                 LogInfo($"已清空 {oldTabCount} 个现有标签页");
 
-                // 重置工作流编号计数器（防止工作流序号污染）
-                WorkflowTabViewModel.ResetWorkflowNumberCounter();
-                LogInfo($"已重置工作流编号计数器");
-
                 // 为每个工作流创建标签页
                 int totalNodes = 0;
                 int totalConnections = 0;

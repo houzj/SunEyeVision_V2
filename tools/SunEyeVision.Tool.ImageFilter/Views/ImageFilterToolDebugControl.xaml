@@ -1,0 +1,184 @@
+<controls:ToolDebugControlBase x:Class="SunEyeVision.Tool.ImageFilter.Views.ImageFilterToolDebugControl"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
+        xmlns:region="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Region.Views;assembly=SunEyeVision.Plugin.SDK"
+        xmlns:converters="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Region.Converters;assembly=SunEyeVision.Plugin.SDK"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:local="clr-namespace:SunEyeVision.Tool.ImageFilter"
+        xmlns:models="clr-namespace:SunEyeVision.Tool.ImageFilter.Models"
+        mc:Ignorable="d"
+        d:DesignHeight="550" d:DesignWidth="400"
+        DataContext="{Binding Parameters, RelativeSource={RelativeSource Self}}">
+
+    <controls:ToolDebugControlBase.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.SDK;component/UI/Themes/Generic.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        </ResourceDictionary>
+    </controls:ToolDebugControlBase.Resources>
+
+    <Grid>
+        <TabControl Margin="5,0,5,0">
+            <TabItem Header="基本参数" IsSelected="True">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12">
+                    <StackPanel>
+                        <controls:LabeledControl Label="输入图像" HorizontalAlignment="Left">
+                            <controls:ImageSourceSelector
+                                x:Name="imageSourceSelector"
+                                PlaceholderText="请选择输入图像源"
+                                Width="250"
+                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"
+                                SelectedDataSource="{Binding ImageSource, Mode=TwoWay}"/>
+                        </controls:LabeledControl>
+                        <controls:LabeledControl Label="启用区域限制">
+                            <CheckBox IsChecked="{Binding IsRegionEnabled.Value, Mode=TwoWay}" Content="仅对指定区域进行分析"/>
+                        </controls:LabeledControl>
+                        <GroupBox Header="区域设置" Margin="0,8,0,0"
+                            Visibility="{Binding IsRegionEnabled.Value, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <region:RegionEditorManagerControl x:Name="regionManager"
+                                InspectionRegionsSource="{Binding InspectionRegions.Regions}"
+                                MaskRegionsSource="{Binding MaskRegions.Regions}"/>
+                        </GroupBox>
+                        <controls:LabeledControl Label="位置修正" Margin="0,8,0,0" HorizontalAlignment="Left">
+                            <controls:ToggleSwitch IsChecked="{Binding IsPositionCorrectionEnabled.Value, Mode=TwoWay}" SwitchWidth="48" SwitchHeight="24"/>
+                        </controls:LabeledControl>
+                        <controls:LabeledControl Label="修正信息" Margin="0,4,0,0"
+                            Visibility="{Binding IsPositionCorrectionEnabled.Value, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <controls:ParamBinding
+                                x:Name="positionCorrectionBinding"
+                                ParameterName="位置修正" Width="200"
+                                BindingSource="{Binding PositionCorrectionBindingSource, Mode=TwoWay}"
+                                BindingDisplayText="{Binding PositionCorrectionBindingDisplayText, Mode=TwoWay}"
+                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                        </controls:LabeledControl>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem Header="运行参数">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12">
+                    <StackPanel>
+                        <controls:LabeledControl Label="滤波方法">
+                            <ComboBox x:Name="filterTypeComboBox" Height="32" VerticalContentAlignment="Center" Width="250"
+                                SelectedItem="{Binding FilterType.Value, Mode=TwoWay}"
+                                SelectionChanged="OnFilterTypeChanged">
+                                <models:FilterType>Gaussian</models:FilterType>
+                                <models:FilterType>Median</models:FilterType>
+                                <models:FilterType>Mean</models:FilterType>
+                                <models:FilterType>Bilateral</models:FilterType>
+                                <models:FilterType>Guided</models:FilterType>
+                            </ComboBox>
+                        </controls:LabeledControl>
+                        <controls:LabeledControl Label="卷积核大小">
+                            <controls:ConfigSetting
+                                x:Name="kernelSizeParam" ParameterName="KernelSize" DataType="{x:Type sys:Int32}"
+                                Value="{Binding KernelSize.Value, Mode=TwoWay}" Minimum="1" Maximum="99" SmallChange="2" LargeChange="10" ShowSlider="True" Width="250"
+                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                        </controls:LabeledControl>
+                        <controls:LabeledControl Label="高斯 Sigma"
+                            x:Name="sigmaLabel" Visibility="Visible">
+                            <controls:ConfigSetting
+                                x:Name="sigmaParam" ParameterName="Sigma" DataType="{x:Type sys:Double}"
+                                Value="{Binding Sigma.Value, Mode=TwoWay}" Minimum="0" Maximum="100" SmallChange="0.1" LargeChange="1" ShowSlider="True" Width="250"
+                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                        </controls:LabeledControl>
+                        <controls:LabeledControl Label="空间 Sigma"
+                            x:Name="sigmaSpatialLabel" Visibility="Collapsed">
+                            <controls:ConfigSetting
+                                x:Name="sigmaSpatialParam" ParameterName="SigmaSpatial" DataType="{x:Type sys:Int32}"
+                                Value="{Binding SigmaSpatial.Value, Mode=TwoWay}" Minimum="1" Maximum="200" SmallChange="1" LargeChange="10" ShowSlider="True" Width="250"
+                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                        </controls:LabeledControl>
+                        <controls:LabeledControl Label="范围 Sigma"
+                            x:Name="sigmaRangeLabel" Visibility="Collapsed">
+                            <controls:ConfigSetting
+                                x:Name="sigmaRangeParam" ParameterName="SigmaRange" DataType="{x:Type sys:Int32}"
+                                Value="{Binding SigmaRange.Value, Mode=TwoWay}" Minimum="1" Maximum="255" SmallChange="1" LargeChange="10" ShowSlider="True" Width="250"
+                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                        </controls:LabeledControl>
+                        <controls:LabeledControl Label="导向半径"
+                            x:Name="guidedRadiusLabel" Visibility="Collapsed">
+                            <controls:ConfigSetting
+                                x:Name="guidedRadiusParam" ParameterName="GuidedRadius" DataType="{x:Type sys:Int32}"
+                                Value="{Binding GuidedRadius.Value, Mode=TwoWay}" Minimum="1" Maximum="50" SmallChange="1" LargeChange="5" ShowSlider="True" Width="250"
+                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                        </controls:LabeledControl>
+                        <controls:LabeledControl Label="导向幅度"
+                            x:Name="guidedAmpLabel" Visibility="Collapsed">
+                            <controls:ConfigSetting
+                                x:Name="guidedAmpParam" ParameterName="GuidedAmplitude" DataType="{x:Type sys:Double}"
+                                Value="{Binding GuidedAmplitude.Value, Mode=TwoWay}" Minimum="0.0001" Maximum="10" SmallChange="0.01" LargeChange="0.1" ShowSlider="True" Width="250"
+                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                        </controls:LabeledControl>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem Header="结果显示">
+                <Grid Background="#F5F5F5">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <ScrollViewer Grid.Row="0" Padding="3">
+                        <StackPanel>
+                            <Expander Header="结果判断" IsExpanded="True" BorderBrush="#E0E0E0" BorderThickness="1" Margin="0,0,0,8" Background="White">
+                                <StackPanel Margin="16,8">
+                                    <controls:LabeledControl Label="输出为空判断" ContentHorizontalAlignment="Left">
+                                        <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsEmptyCheckEnabled, Mode=TwoWay}"/>
+                                    </controls:LabeledControl>
+                                    <controls:LabeledControl Label="均值判断" ContentHorizontalAlignment="Left" Margin="0,2,0,0">
+                                        <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsMeanValueCheckEnabled, Mode=TwoWay}"/>
+                                    </controls:LabeledControl>
+                                    <controls:LabeledControl Label="均值范围" Margin="0,2,0,0"
+                                        Visibility="{Binding ResultConfig.IsMeanValueCheckEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
+                                        <controls:RangeInputControl Unit="" Minimum="0" Maximum="255"
+                                            MinValue="{Binding ResultConfig.MeanValueMin, Mode=TwoWay}"
+                                            MaxValue="{Binding ResultConfig.MeanValueMax, Mode=TwoWay}" DecimalPlaces="1" SmallChange="1" NumericWidth="120"/>
+                                    </controls:LabeledControl>
+                                    <controls:LabeledControl Label="标准差判断" ContentHorizontalAlignment="Left" Margin="0,2,0,0">
+                                        <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsStdDevCheckEnabled, Mode=TwoWay}"/>
+                                    </controls:LabeledControl>
+                                    <controls:LabeledControl Label="标准差范围" Margin="0,2,0,0"
+                                        Visibility="{Binding ResultConfig.IsStdDevCheckEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
+                                        <controls:RangeInputControl Unit="" Minimum="0" Maximum="255"
+                                            MinValue="{Binding ResultConfig.StdDevMin, Mode=TwoWay}"
+                                            MaxValue="{Binding ResultConfig.StdDevMax, Mode=TwoWay}" DecimalPlaces="1" SmallChange="1" NumericWidth="120"/>
+                                    </controls:LabeledControl>
+                                    <controls:LabeledControl Label="PSNR 判断" ContentHorizontalAlignment="Left" Margin="0,2,0,0">
+                                        <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsPSNRCheckEnabled, Mode=TwoWay}"/>
+                                    </controls:LabeledControl>
+                                    <controls:LabeledControl Label="PSNR 范围 (dB)" Margin="0,2,0,0"
+                                        Visibility="{Binding ResultConfig.IsPSNRCheckEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
+                                        <controls:RangeInputControl Unit="dB" Minimum="0" Maximum="100"
+                                            MinValue="{Binding ResultConfig.PSNRMin, Mode=TwoWay}"
+                                            MaxValue="{Binding ResultConfig.PSNRMax, Mode=TwoWay}" DecimalPlaces="1" SmallChange="1" NumericWidth="120"/>
+                                    </controls:LabeledControl>
+                                </StackPanel>
+                            </Expander>
+                            <Expander Header="图形显示" IsExpanded="True" BorderBrush="#E0E0E0" BorderThickness="1" Margin="0,0,0,8" Background="White">
+                                <StackPanel Margin="16,8">
+                                    <controls:LabeledControl Label="叠加样式" ContentHorizontalAlignment="Left">
+                                        <controls:DispItemColorControl Item="{Binding OverlayStyle, Mode=TwoWay}" ContentHorizontalAlignment="Left"/>
+                                    </controls:LabeledControl>
+                                </StackPanel>
+                            </Expander>
+                            <Expander Header="文本显示" IsExpanded="True" BorderBrush="#E0E0E0" BorderThickness="1" Margin="0,0,0,8" Background="White">
+                                <StackPanel Margin="16,8">
+                                    <controls:LabeledControl Label="统计信息" ContentHorizontalAlignment="Left">
+                                        <controls:DispTextColorControl
+                                            Item="{Binding StatisticsStyle, Mode=TwoWay}"
+                                            AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                                    </controls:LabeledControl>
+                                </StackPanel>
+                            </Expander>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</controls:ToolDebugControlBase>

@@ -224,13 +224,91 @@ namespace SunEyeVision.UI.ViewModels
         /// </summary>
         private int _selectedDisplayImageSourceIndex = -1;
 
+        // 上次选中的数据源身份（用于列表重建后恢复选中状态）
+        private string? _lastSelectedSourceNodeId;
+        private string? _lastSelectedPropertyName;
+
+        /// <summary>
+        /// 元数据提供者（用于获取属性中文显示名）
+        /// </summary>
+        private readonly PropertyMetadataProviderAdapter _propertyMetadataProvider = new();
+
         /// <summary>
         /// 当前选中的图像显示源索引
         /// </summary>
         public int SelectedDisplayImageSourceIndex
         {
             get => _selectedDisplayImageSourceIndex;
-            set => SetProperty(ref _selectedDisplayImageSourceIndex, value);
+            set
+            {
+                if (SetProperty(ref _selectedDisplayImageSourceIndex, value))
+                {
+                    // 记录当前选中的身份（用于下次重建列表时恢复）
+                    if (value >= 0 && value < DisplayImageSources.Count)
+                    {
+                        var source = DisplayImageSources[value];
+                        _lastSelectedSourceNodeId = source.SourceNodeId;
+                        _lastSelectedPropertyName = source.PropertyName;
+                    }
+                    else
+                    {
+                        _lastSelectedSourceNodeId = null;
+                        _lastSelectedPropertyName = null;
+                    }
+
+                    UpdateDisplayImageFromSelectedSource();
+                }
+            }
+        }
+
+        /// <summary>
+        /// 根据当前选中的数据源更新显示图像
+        /// </summary>
+        private void UpdateDisplayImageFromSelectedSource()
+        {
+            // ★ 诊断：Dump 所有选项及当前选中项
+            var diag = new System.Text.StringBuilder();
+            diag.AppendLine($"=== 图像源切换 ===");
+            for (int i = 0; i < DisplayImageSources.Count; i++)
+            {
+                var ds = DisplayImageSources[i];
+                diag.AppendLine($"  [{i}] DropdownDisplayText='{ds.DropdownDisplayText}', PropertyName='{ds.PropertyName}', DisplayName='{ds.DisplayName}', SourceNodeId='{ds.SourceNodeId}'");
+            }
+            diag.AppendLine($"  当前选中索引: {_selectedDisplayImageSourceIndex}");
+            LogInfo(diag.ToString(), "MainWindowViewModel");
+
+            if (_selectedDisplayImageSourceIndex < 0 ||
+                _selectedDisplayImageSourceIndex >= DisplayImageSources.Count)
+            {
+                LogWarning($"UpdateDisplayImageFromSelectedSource: 索引无效, index={_selectedDisplayImageSourceIndex}, count={DisplayImageSources.Count}", "MainWindowViewModel");
+                return;
+            }
+
+            var source = DisplayImageSources[_selectedDisplayImageSourceIndex];
+            LogInfo($"切换图像源: index={_selectedDisplayImageSourceIndex}, source={source.SourceNodeName}.{source.PropertyName} (DisplayName={source.DisplayName})", "MainWindowViewModel");
+
+            // 从 WorkflowContext 获取选中源的 Mat 值
+            var executionResult = _workflowContext.GetNodeResult(source.SourceNodeId);
+            if (executionResult?.ToolResult == null)
+            {
+                LogWarning($"切换图像源失败: 节点 {source.SourceNodeId} 的 WorkflowContext 执行结果为空", "MainWindowViewModel");
+                return;
+            }
+
+            var imageOutputs = executionResult.ToolResult.GetImageOutputs();
+            if (!imageOutputs.TryGetValue(source.PropertyName, out var mat) || mat == null || mat.Empty())
+                return;
+
+            try
+            {
+                var bitmapSource = mat.ToBitmapSource();
+                DisplayImage = bitmapSource;
+                ProcessedImage = bitmapSource;
+            }
+            catch
+            {
+                // 忽略转换错误
+            }
         }
 
         // ========== 数据分析控件相关 ==========
@@ -2550,12 +2628,13 @@ SplitterPosition = position;
         /// 更新图像显示控件的数据源（当前节点 + 所有父节点）
         /// </summary>
         /// <param name="selectedNode">当前选中的节点</param>
-        private void UpdateDisplayImageSources(Models.WorkflowNode? selectedNode)
+        internal void UpdateDisplayImageSources(Models.WorkflowNode? selectedNode)
         {
             DisplayImageSources.Clear();
 
             if (selectedNode == null)
             {
+                LogWarning("UpdateDisplayImageSources: selectedNode 为空", "MainWindowViewModel");
                 SelectedDisplayImageSourceIndex = -1;
                 return;
             }
@@ -2564,23 +2643,28 @@ SplitterPosition = position;
             var selectedTab = WorkflowTabViewModel?.SelectedTab;
             if (selectedTab == null)
             {
+                LogWarning("UpdateDisplayImageSources: 当前工作流标签为空", "MainWindowViewModel");
                 SelectedDisplayImageSourceIndex = -1;
                 return;
             }
 
+            var logItems = new System.Text.StringBuilder();
+            logItems.AppendLine($"更新图像源列表: 节点={selectedNode.Name}, ToolType={selectedNode.ToolType}");
+
             // 1. 首先添加当前节点（距离=0）
             if (selectedNode.OutputCache != null && selectedNode.OutputCache.HasOutput)
             {
-                // 节点有输出，添加到列表
                 var outputCache = selectedNode.OutputCache;
                 foreach (var imageName in outputCache.GetImageNames())
                 {
+                    var displayName = GetImageDisplayName(selectedNode.ToolType, imageName);
+                    logItems.AppendLine($"  [当前-OutputCache] Property={imageName}, DisplayName={displayName}");
                     DisplayImageSources.Add(new AvailableDataSource
                     {
                         SourceNodeId = selectedNode.Id,
                         SourceNodeName = selectedNode.Name,
                         PropertyName = imageName,
-                        DisplayName = string.IsNullOrEmpty(imageName) ? selectedNode.Name : imageName,
+                        DisplayName = displayName,
                         PropertyType = typeof(OpenCvSharp.Mat),
                         Distance = 0,
                         HasExecuted = true
@@ -2589,21 +2673,22 @@ SplitterPosition = position;
             }
             else
             {
-                // 从 WorkflowContext 获取执行结果
                 var executionResult = _workflowContext.GetNodeResult(selectedNode.Id);
                 if (executionResult?.ToolResult != null && executionResult.Success)
                 {
-                    var outputValues = executionResult.ToolResult.GetOutputValues();
-                    if (outputValues != null)
+                    var imageOutputs = executionResult.ToolResult.GetImageOutputs();
+                    if (imageOutputs != null)
                     {
-                        foreach (var kvp in outputValues.Where(kv => kv.Value is OpenCvSharp.Mat))
+                        foreach (var kvp in imageOutputs)
                         {
+                            var displayName = GetImageDisplayName(selectedNode.ToolType, kvp.Key);
+                            logItems.AppendLine($"  [当前-WorkflowContext] Property={kvp.Key}, DisplayName={displayName}, Mat={kvp.Value?.GetType().Name ?? "null"}");
                             DisplayImageSources.Add(new AvailableDataSource
                             {
                                 SourceNodeId = selectedNode.Id,
                                 SourceNodeName = selectedNode.Name,
                                 PropertyName = kvp.Key,
-                                DisplayName = kvp.Key,
+                                DisplayName = displayName,
                                 PropertyType = typeof(OpenCvSharp.Mat),
                                 Distance = 0,
                                 HasExecuted = true
@@ -2613,18 +2698,19 @@ SplitterPosition = position;
                 }
                 else
                 {
-                    // 节点未执行，清空图像显示并添加占位项
+                    logItems.AppendLine("  [当前] 节点未执行，添加占位项");
                     DisplayImage = null;
                     OriginalImage = null;
                     ProcessedImage = null;
                     ResultImage = null;
 
+                    var displayName = GetImageDisplayName(selectedNode.ToolType, "Output");
                     DisplayImageSources.Add(new AvailableDataSource
                     {
                         SourceNodeId = selectedNode.Id,
                         SourceNodeName = $"{selectedNode.Name} (未执行)",
                         PropertyName = "Output",
-                        DisplayName = "Output",
+                        DisplayName = displayName,
                         PropertyType = typeof(OpenCvSharp.Mat),
                         Distance = 0,
                         HasExecuted = false
@@ -2634,27 +2720,29 @@ SplitterPosition = position;
 
             // 2. 使用 BFS 查找所有父节点
             var allUpstreamNodes = FindAllUpstreamNodes(selectedTab, selectedNode.Id);
+            logItems.AppendLine($"  上游节点数: {allUpstreamNodes.Count}");
 
             // 3. 添加所有父节点
             foreach (var (parentNode, distance) in allUpstreamNodes)
             {
                 bool hasOutput = false;
 
-                // 从 WorkflowContext 获取执行结果
                 var executionResult = _workflowContext.GetNodeResult(parentNode.Id);
                 if (executionResult?.ToolResult != null && executionResult.Success)
                 {
-                    var outputValues = executionResult.ToolResult.GetOutputValues();
-                    if (outputValues != null)
+                    var imageOutputs = executionResult.ToolResult.GetImageOutputs();
+                    if (imageOutputs != null)
                     {
-                        foreach (var kvp in outputValues.Where(kv => kv.Value is OpenCvSharp.Mat))
+                        foreach (var kvp in imageOutputs)
                         {
+                            var displayName = GetImageDisplayName(parentNode.ToolType, kvp.Key);
+                            logItems.AppendLine($"  [父节点-{parentNode.Name}] Property={kvp.Key}, DisplayName={displayName}, Distance={distance}");
                             DisplayImageSources.Add(new AvailableDataSource
                             {
                                 SourceNodeId = parentNode.Id,
                                 SourceNodeName = parentNode.Name,
                                 PropertyName = kvp.Key,
-                                DisplayName = kvp.Key,
+                                DisplayName = displayName,
                                 PropertyType = typeof(OpenCvSharp.Mat),
                                 Distance = distance,
                                 HasExecuted = true
@@ -2664,15 +2752,16 @@ SplitterPosition = position;
                     }
                 }
 
-                // 如果没有输出，添加占位项
                 if (!hasOutput)
                 {
+                    logItems.AppendLine($"  [父节点-{parentNode.Name}] 未执行，添加占位项");
+                    var displayName = GetImageDisplayName(parentNode.ToolType, "Output");
                     DisplayImageSources.Add(new AvailableDataSource
                     {
                         SourceNodeId = parentNode.Id,
                         SourceNodeName = $"{parentNode.Name} (未执行)",
                         PropertyName = "Output",
-                        DisplayName = "Output",
+                        DisplayName = displayName,
                         PropertyType = typeof(OpenCvSharp.Mat),
                         Distance = distance,
                         HasExecuted = false
@@ -2680,15 +2769,90 @@ SplitterPosition = position;
                 }
             }
 
-            // 4. 默认选中第一项（当前节点的第一个输出）
+            // 4. 选中目标
+            logItems.AppendLine($"  DisplayImageSources 总数: {DisplayImageSources.Count}");
+            for (int i = 0; i < DisplayImageSources.Count; i++)
+            {
+                var ds = DisplayImageSources[i];
+                logItems.AppendLine($"    [{i}] DropdownDisplayText={ds.DropdownDisplayText}, PropertyName={ds.PropertyName}");
+            }
+
             if (DisplayImageSources.Count > 0)
             {
-                SelectedDisplayImageSourceIndex = 0;
+                int restoredIndex = -1;
+                if (!string.IsNullOrEmpty(_lastSelectedSourceNodeId))
+                {
+                    restoredIndex = DisplayImageSources.ToList().FindIndex(ds =>
+                        ds.SourceNodeId == _lastSelectedSourceNodeId &&
+                        ds.PropertyName == _lastSelectedPropertyName);
+                    logItems.AppendLine($"  尝试恢复上一次选中: NodeId={_lastSelectedSourceNodeId}, Property={_lastSelectedPropertyName}, 结果索引={restoredIndex}");
+                }
+
+                var finalIndex = restoredIndex >= 0 ? restoredIndex : 0;
+                logItems.AppendLine($"  最终选中索引: {finalIndex}");
+                SelectedDisplayImageSourceIndex = finalIndex;
             }
             else
             {
+                logItems.AppendLine("  列表为空，设置索引=-1");
                 SelectedDisplayImageSourceIndex = -1;
             }
+
+            LogInfo(logItems.ToString(), "MainWindowViewModel");
+        }
+
+        /// <summary>
+        /// 根据工具类型和属性名获取中文显示名称
+        /// </summary>
+        /// <param name="toolType">工具类型</param>
+        /// <param name="propertyName">属性名称</param>
+        /// <returns>中文显示名称，未找到则回退到属性名</returns>
+        private string GetImageDisplayName(string toolType, string propertyName)
+        {
+            if (string.IsNullOrEmpty(toolType))
+            {
+                LogWarning($"GetImageDisplayName: toolType 为空, propertyName={propertyName}", "MainWindowViewModel");
+                return propertyName;
+            }
+
+            var metadataList = _propertyMetadataProvider.GetAllPropertyMetadata(toolType);
+            if (metadataList == null || metadataList.Count == 0)
+            {
+                // 诊断：GetAllPropertyMetadata 未返回任何元数据
+                var toolMetadata = Plugin.Infrastructure.Managers.Tool.ToolRegistry.GetToolMetadata(toolType);
+                var allToolIds = string.Join(", ",
+                    Plugin.Infrastructure.Managers.Tool.ToolRegistry.GetAllToolMetadata().Select(m => m.Id));
+                LogError(
+                    $"GetImageDisplayName: GetAllPropertyMetadata 返回空." +
+                    $" toolType=['{toolType}'], propertyName='{propertyName}'," +
+                    $" 工具元数据={(toolMetadata != null ? $"已注册(Id={toolMetadata.Id}, DisplayName={toolMetadata.DisplayName})" : "未注册")}." +
+                    $" 所有已注册工具ID=[{allToolIds}]",
+                    "MainWindowViewModel");
+                return propertyName;
+            }
+
+            var metadata = metadataList.FirstOrDefault(m => m.PropertyName == propertyName);
+            if (metadata == null)
+            {
+                // 诊断：属性在 metadataList 中未找到
+                LogError(
+                    $"GetImageDisplayName: 属性 '{propertyName}' 未在元数据中找到." +
+                    $" toolType={toolType}, 可用属性: [{string.Join(", ", metadataList.Select(m => m.PropertyName))}]",
+                    "MainWindowViewModel");
+                return propertyName;
+            }
+
+            if (string.IsNullOrEmpty(metadata.DisplayName))
+            {
+                // 诊断：元数据存在但 DisplayName 为空
+                LogError(
+                    $"GetImageDisplayName: 属性 '{propertyName}' 的 DisplayName 为空." +
+                    $" toolType={toolType}, PropertyType={metadata.PropertyType?.Name}",
+                    "MainWindowViewModel");
+                return propertyName;
+            }
+
+            return metadata.DisplayName;
         }
 
         /// <summary>

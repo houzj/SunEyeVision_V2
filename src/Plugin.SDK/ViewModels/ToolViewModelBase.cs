@@ -450,11 +450,12 @@ namespace SunEyeVision.Plugin.SDK.ViewModels
                 ToolStatus = "成功";
                 StatusMessage = "执行完成";
 
-                // 获取输出图像
-                var outputImage = GetOutputImage(result.ToolResult);
-                if (outputImage != null && !outputImage.Empty())
+                // 获取第一张可显示图像
+                var displayImages = result.ToolResult?.GetDisplayImages();
+                var primaryImage = displayImages?.Values.FirstOrDefault(m => m != null && !m.Empty());
+                if (primaryImage != null)
                 {
-                    OutputImage = outputImage.ToBitmapSource();
+                    OutputImage = primaryImage.ToBitmapSource();
                     OnPropertyChanged(nameof(OutputImage));
                 }
 
@@ -471,27 +472,6 @@ namespace SunEyeVision.Plugin.SDK.ViewModels
                 StatusMessage = result.ErrorMessage ?? "执行失败";
                 DebugMessage = result.ErrorStackTrace ?? result.ErrorMessage ?? "未知错误";
             }
-        }
-
-        /// <summary>
-        /// 从工具结果中获取输出图像
-        /// </summary>
-        private Mat? GetOutputImage(ToolResults? toolResult)
-        {
-            if (toolResult == null) return null;
-
-            // 尝试通过反射获取 OutputImage 属性
-            var outputImageProp = toolResult.GetType().GetProperty("OutputImage", BindingFlags.Public | BindingFlags.Instance);
-            if (outputImageProp != null)
-            {
-                var value = outputImageProp.GetValue(toolResult);
-                if (value is Mat mat)
-                {
-                    return mat;
-                }
-            }
-
-            return null;
         }
 
         /// <summary>

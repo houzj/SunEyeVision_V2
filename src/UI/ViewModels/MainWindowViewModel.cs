@@ -225,12 +225,23 @@ namespace SunEyeVision.UI.ViewModels
         private int _selectedDisplayImageSourceIndex = -1;
 
         /// <summary>
+        /// 节点选中图像记忆字典: nodeId → propertyName
+        /// </summary>
+        private readonly Dictionary<string, string> _nodeSelectedImageMap = new();
+
+        /// <summary>
         /// 当前选中的图像显示源索引
         /// </summary>
         public int SelectedDisplayImageSourceIndex
         {
             get => _selectedDisplayImageSourceIndex;
-            set => SetProperty(ref _selectedDisplayImageSourceIndex, value);
+            set
+            {
+                if (SetProperty(ref _selectedDisplayImageSourceIndex, value))
+                {
+                    UpdateDisplayImageFromCurrentSource();
+                }
+            }
         }
 
         // ========== 数据分析控件相关 ==========
@@ -2522,7 +2533,81 @@ SplitterPosition = position;
                     DisplayImageSources.Add(ds);
             }
 
-            SelectedDisplayImageSourceIndex = DisplayImageSources.Count > 0 ? 0 : -1;
+            // 恢复记忆的选中项
+            if (_nodeSelectedImageMap.TryGetValue(selectedNode.Id, out var savedProperty))
+            {
+                int idx = -1;
+                for (int i = 0; i < DisplayImageSources.Count; i++)
+                {
+                    if (DisplayImageSources[i].SourceNodeId == selectedNode.Id &&
+                        DisplayImageSources[i].PropertyName == savedProperty)
+                    {
+                        idx = i;
+                        break;
+                    }
+                }
+                SelectedDisplayImageSourceIndex = idx >= 0 ? idx : 0;
+            }
+            else
+            {
+                SelectedDisplayImageSourceIndex = DisplayImageSources.Count > 0 ? 0 : -1;
+            }
+
+            // 同步更新显示图像
+            UpdateDisplayImageFromCurrentSource();
+        }
+
+        /// <summary>
+        /// 根据当前 ComboBox 选中项更新显示图像
+        /// </summary>
+        private void UpdateDisplayImageFromCurrentSource()
+        {
+            if (_selectedNode == null) return;
+            if (_selectedDisplayImageSourceIndex < 0 ||
+                _selectedDisplayImageSourceIndex >= DisplayImageSources.Count)
+                return;
+
+            var selectedSource = DisplayImageSources[_selectedDisplayImageSourceIndex];
+            _nodeSelectedImageMap[_selectedNode.Id] = selectedSource.PropertyName;
+            SetDisplayImageFromSource(selectedSource);
+        }
+
+        /// <summary>
+        /// 根据选中的数据源从执行结果获取图像并显示
+        /// </summary>
+        private void SetDisplayImageFromSource(AvailableDataSource source)
+        {
+            var executionResult = _workflowContext.GetNodeResult(source.SourceNodeId);
+            if (executionResult?.ToolResult == null) return;
+
+            // 通过 NodeResultManager 获取对应的 Mat 并转换为 BitmapSource
+            var bitmapSource = _nodeResultManager.GetDisplayImageFromSource(
+                executionResult.ToolResult, source.PropertyName);
+            if (bitmapSource != null)
+            {
+                ProcessedImage = bitmapSource;
+                DisplayImage = bitmapSource;
+            }
+        }
+
+        /// <summary>
+        /// 获取当前 ComboBox 选中的数据源（供 NodeResultManager 使用）
+        /// </summary>
+        public AvailableDataSource? GetSelectedImageSource()
+        {
+            if (_selectedDisplayImageSourceIndex < 0 ||
+                _selectedDisplayImageSourceIndex >= DisplayImageSources.Count)
+                return null;
+            return DisplayImageSources[_selectedDisplayImageSourceIndex];
+        }
+
+        /// <summary>
+        /// 从 BitmapSource 设置显示图像（供 NodeResultManager 使用）
+        /// </summary>
+        public void SetDisplayImageFromBitmap(BitmapSource bitmapSource)
+        {
+            ProcessedImage = bitmapSource;
+            DisplayImage = bitmapSource;
         }
 
         /// <summary>

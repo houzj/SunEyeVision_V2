@@ -74,11 +74,12 @@ namespace SunEyeVision.UI.Services.Workflow
                 Outputs = new Dictionary<string, object>()
             };
 
-            // 如果结果包含图像，添加到输出
-            var outputMat = result.GetOutputImage();
-            if (outputMat != null && !outputMat.Empty())
+            // 存储所有显示图像
+            var displayImages = result.GetDisplayImages();
+            foreach (var (name, mat) in displayImages)
             {
-                executionResult.Outputs["Output"] = outputMat;
+                if (mat != null && !mat.Empty())
+                    executionResult.Outputs[name] = mat;
             }
 
             _workflowContext.SetNodeResult(node.Id, executionResult);
@@ -107,27 +108,14 @@ namespace SunEyeVision.UI.Services.Workflow
             // ★ Step 1-2: 更新模块结果树（分组显示）
             _viewModel.UpdateModuleResults(result, node.Name, node.ToolType);
 
-            // ★ Step 3: 更新图像（DispImage通道）
-            var outputMat = result.GetOutputImage();
-
-            if (outputMat != null && !outputMat.Empty())
+            // ★ Step 3: 更新图像 - 基于当前 ComboBox 选中项
+            var selectedSource = _viewModel.GetSelectedImageSource();
+            if (selectedSource != null)
             {
-                try
+                var bitmapSource = GetDisplayImageFromSource(result, selectedSource.PropertyName);
+                if (bitmapSource != null)
                 {
-                    var bitmapSource = outputMat.ToBitmapSource();
-                    _viewModel.ProcessedImage = bitmapSource;
-                    _viewModel.DisplayImage = bitmapSource;
-
-                    var processedType = _viewModel.ImageDisplayTypes
-                        .FirstOrDefault(t => t.Type == ViewModels.ImageDisplayType.Processed);
-                    if (processedType != null && _viewModel.SelectedImageType?.Type != ViewModels.ImageDisplayType.Processed)
-                    {
-                        _viewModel.SelectedImageType = processedType;
-                    }
-                }
-                catch
-                {
-                    // 忽略转换错误
+                    _viewModel.SetDisplayImageFromBitmap(bitmapSource);
                 }
             }
 
@@ -181,8 +169,9 @@ namespace SunEyeVision.UI.Services.Workflow
         /// </summary>
         public bool UpdateNodeImage(WorkflowNodeBase node, ToolResults result)
         {
-            var outputMat = result.GetOutputImage();
-            if (outputMat == null || outputMat.Empty())
+            var images = result.GetDisplayImages();
+            var primaryMat = images.Values.FirstOrDefault(m => m != null && !m.Empty());
+            if (primaryMat == null)
             {
                 return false;
             }
@@ -194,7 +183,7 @@ namespace SunEyeVision.UI.Services.Workflow
 
                 // 通过ImageSourceManager创建内存图像源
                 var imageSource = ImageSourceManager.Instance.CreateFromMemory(
-                    outputMat.Clone(), // 克隆Mat，避免所有权问题
+                    primaryMat.Clone(), // 克隆Mat，避免所有权问题
                     imageSourceId
                 );
 
@@ -251,7 +240,8 @@ namespace SunEyeVision.UI.Services.Workflow
             if (executionResult?.ToolResult == null)
                 return null;
 
-            return executionResult.ToolResult.GetOutputImage();
+            var images = executionResult.ToolResult.GetDisplayImages();
+            return images.Values.FirstOrDefault(m => m != null && !m.Empty());
         }
 
         /// <summary>
@@ -270,6 +260,26 @@ namespace SunEyeVision.UI.Services.Workflow
             {
                 return null;
             }
+        }
+
+        /// <summary>
+        /// 从工具结果中获取指定属性名的图像并转换为 BitmapSource
+        /// </summary>
+        public BitmapSource? GetDisplayImageFromSource(ToolResults result, string propertyName)
+        {
+            var images = result.GetDisplayImages();
+            if (images.TryGetValue(propertyName, out var mat) && mat != null && !mat.Empty())
+            {
+                try
+                {
+                    return mat.ToBitmapSource();
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+            return null;
         }
 
         /// <summary>

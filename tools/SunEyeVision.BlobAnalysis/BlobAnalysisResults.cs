@@ -19,14 +19,15 @@ namespace SunEyeVision.Tool.BlobAnalysis
         public Mat? BinaryImage { get; set; }
 
         /// <summary>
-        /// 输出图像（兼容 AlgorithmNode 反射查找）
+        /// 获取所有可显示的图像
         /// </summary>
-        public Mat? OutputImage => BinaryImage;
-
-        /// <summary>
-        /// 获取输出图像（DispImage通道）
-        /// </summary>
-        public override Mat? GetOutputImage() => BinaryImage;
+        public override Dictionary<string, Mat?> GetDisplayImages()
+        {
+            var images = new Dictionary<string, Mat?>();
+            if (BinaryImage != null && !BinaryImage.Empty())
+                images["BinaryImage"] = BinaryImage;
+            return images;
+        }
 
         /// <summary>
         /// 实际使用的阈值

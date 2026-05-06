@@ -186,16 +186,17 @@ namespace SunEyeVision.Workflow
                 return AlgorithmResult.CreateError(result.ErrorMessage ?? "处理失败");
             }
 
-            // 直接调用 GetOutputImage()，子类已正确重写此方法
-            var outputImage = result.GetOutputImage();
+            // 获取第一张可显示图像作为主输出
+            var displayImages = result.GetDisplayImages();
+            var primaryImage = displayImages.Values.FirstOrDefault(m => m != null && !m.Empty());
 
             // 如果没有输出图像，返回错误
-            if (outputImage == null || outputImage.Empty())
+            if (primaryImage == null)
             {
                 return AlgorithmResult.CreateError("工具执行成功但没有输出图像");
             }
 
-            var algorithmResult = AlgorithmResult.CreateSuccess(outputImage, result.ExecutionTimeMs);
+            var algorithmResult = AlgorithmResult.CreateSuccess(primaryImage, result.ExecutionTimeMs);
 
             // 保留原始工具结果引用
             algorithmResult.ToolResults = result;

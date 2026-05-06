@@ -391,9 +391,14 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
         public DisplayCollector Display => _display;
 
         /// <summary>
-        /// 获取输出图像（DispImage通道）
+        /// 获取所有可显示的图像（含过程图像和最终输出图像）
         /// </summary>
-        public virtual Mat? GetOutputImage() => null;
+        /// <remarks>
+        /// 子类重写此方法暴露所有图像输出，供 ImageControl 的 ComboBox 切换。
+        /// 字典键使用属性名（如 "OutputImage", "BinaryImage", "InputImage"），
+        /// 与 AvailableDataSource.PropertyName 匹配。
+        /// </remarks>
+        public virtual Dictionary<string, Mat?> GetDisplayImages() => new();
 
         /// <summary>
         /// 获取结果项（数据面板）

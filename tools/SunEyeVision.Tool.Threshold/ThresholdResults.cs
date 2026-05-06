@@ -19,9 +19,15 @@ namespace SunEyeVision.Tool.Threshold
         public Mat? OutputImage { get; set; }
 
         /// <summary>
-        /// 获取输出图像（DispImage通道）
+        /// 获取所有可显示的图像
         /// </summary>
-        public override Mat? GetOutputImage() => OutputImage;
+        public override Dictionary<string, Mat?> GetDisplayImages()
+        {
+            var images = new Dictionary<string, Mat?>();
+            if (OutputImage != null && !OutputImage.Empty())
+                images["OutputImage"] = OutputImage;
+            return images;
+        }
 
         #endregion
 

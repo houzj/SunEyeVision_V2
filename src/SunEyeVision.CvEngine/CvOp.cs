@@ -1282,6 +1282,99 @@ namespace SunEyeVision.CvEngine
 
         #endregion
 
+        #region 🎛️ 图像滤波
+
+        /// <summary>
+        /// 均值滤波 - 对应 Halcon mean_image
+        /// </summary>
+        public static void MeanImage(CvImage image, int kernelWidth, int kernelHeight,
+            out CvImage filteredImage, BorderTypes borderType = BorderTypes.Reflect101)
+        {
+            if (image.Empty)
+            {
+                filteredImage = CvImage.GenEmptyObj();
+                return;
+            }
+
+            var result = new Mat();
+            Cv2.Blur(image.Image, result, new Size(kernelWidth, kernelHeight),
+                new Point(-1, -1), borderType);
+            filteredImage = new CvImage(result, ownsImage: true);
+        }
+
+        /// <summary>
+        /// 高斯滤波 - 对应 Halcon gauss_image
+        /// </summary>
+        public static void GaussImage(CvImage image, int kernelWidth, int kernelHeight,
+            double sigmaX, double sigmaY,
+            out CvImage filteredImage, BorderTypes borderType = BorderTypes.Reflect101)
+        {
+            if (image.Empty)
+            {
+                filteredImage = CvImage.GenEmptyObj();
+                return;
+            }
+
+            var result = new Mat();
+            Cv2.GaussianBlur(image.Image, result,
+                new Size(kernelWidth, kernelHeight), sigmaX, sigmaY, borderType);
+            filteredImage = new CvImage(result, ownsImage: true);
+        }
+
+        /// <summary>
+        /// 中值滤波 - 对应 Halcon median_image
+        /// </summary>
+        public static void MedianImage(CvImage image, int kernelSize,
+            out CvImage filteredImage)
+        {
+            if (image.Empty)
+            {
+                filteredImage = CvImage.GenEmptyObj();
+                return;
+            }
+
+            var result = new Mat();
+            Cv2.MedianBlur(image.Image, result, kernelSize);
+            filteredImage = new CvImage(result, ownsImage: true);
+        }
+
+        /// <summary>
+        /// 双边滤波 - 对应 Halcon bilateral_filter
+        /// </summary>
+        public static void BilateralFilterImage(CvImage image, int diameter,
+            double sigmaColor, double sigmaSpace,
+            out CvImage filteredImage, BorderTypes borderType = BorderTypes.Reflect101)
+        {
+            if (image.Empty)
+            {
+                filteredImage = CvImage.GenEmptyObj();
+                return;
+            }
+
+            var result = new Mat();
+            Cv2.BilateralFilter(image.Image, result, diameter, sigmaColor, sigmaSpace, borderType);
+            filteredImage = new CvImage(result, ownsImage: true);
+        }
+
+        /// <summary>
+        /// 自定义卷积滤波 - 对应 Halcon convol_image
+        /// </summary>
+        public static void ConvolImage(CvImage image, Mat kernel,
+            out CvImage filteredImage, BorderTypes borderType = BorderTypes.Reflect101)
+        {
+            if (image.Empty)
+            {
+                filteredImage = CvImage.GenEmptyObj();
+                return;
+            }
+
+            var result = new Mat();
+            Cv2.Filter2D(image.Image, result, -1, kernel, new Point(-1, -1), 0, borderType);
+            filteredImage = new CvImage(result, ownsImage: true);
+        }
+
+        #endregion
+
         #region ⭕ 形态学操作
 
         /// <summary>圆形膨胀 - 对应 Halcon dilation_circle(Region : : : RegionDilation, Radius)</summary>
@@ -1380,6 +1473,70 @@ namespace SunEyeVision.CvEngine
         public static void CopyObj(CvRegion region, out CvRegion copy)
         {
             copy = region.CopyObj();
+        }
+
+        /// <summary>
+        /// 形态学操作（Mat版）- 直接操作二值图像
+        /// 支持所有 MorphTypes: Erode/Dilate/Open/Close/Gradient/TopHat/BlackHat
+        /// 支持所有 MorphShapes: Rect/Cross/Ellipse
+        /// </summary>
+        public static void MorphologyEx(
+            Mat input, out Mat result,
+            MorphTypes op,
+            MorphShapes kernelShape,
+            int kernelWidth, int kernelHeight,
+            int iterations = 1,
+            BorderTypes borderType = BorderTypes.Constant,
+            Scalar? borderValue = null)
+        {
+            var kernel = Cv2.GetStructuringElement(kernelShape,
+                new Size(kernelWidth, kernelHeight));
+            try
+            {
+                result = new Mat();
+                if (op == MorphTypes.Erode || op == MorphTypes.Dilate)
+                {
+                    if (op == MorphTypes.Erode)
+                        Cv2.Erode(input, result, kernel, new Point(-1, -1), iterations, borderType,
+                            borderValue ?? Scalar.All(255));
+                    else
+                        Cv2.Dilate(input, result, kernel, new Point(-1, -1), iterations, borderType,
+                            borderValue ?? Scalar.All(255));
+                }
+                else
+                {
+                    Cv2.MorphologyEx(input, result, op, kernel, new Point(-1, -1), iterations, borderType,
+                        borderValue ?? Scalar.All(255));
+                }
+            }
+            finally
+            {
+                kernel.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// 形态学操作（CvImage版）
+        /// </summary>
+        public static void MorphologyEx(
+            CvImage image, out CvImage resultImage,
+            MorphTypes op,
+            MorphShapes kernelShape,
+            int kernelWidth, int kernelHeight,
+            int iterations = 1,
+            BorderTypes borderType = BorderTypes.Constant,
+            Scalar? borderValue = null)
+        {
+            if (image.Empty)
+            {
+                resultImage = CvImage.GenEmptyObj();
+                return;
+            }
+
+            MorphologyEx(image.Image, out var result,
+                op, kernelShape, kernelWidth, kernelHeight,
+                iterations, borderType, borderValue);
+            resultImage = new CvImage(result, ownsImage: true);
         }
 
         #endregion

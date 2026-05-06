@@ -24,6 +24,9 @@
   <Folder Name="/Tools/">
     <Project Path="tools/SunEyeVision.BlobAnalysis/SunEyeVision.Tool.BlobAnalysis.csproj" />
     <Project Path="tools/SunEyeVision.Tool.Threshold/SunEyeVision.Tool.Threshold.csproj" />
-    <Project Path="Tools/SunEyeVision.Tool.ImageLoad/SunEyeVision.Tool.ImageLoad.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.ImageLoad/SunEyeVision.Tool.ImageLoad.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.ImageThreshold/SunEyeVision.Tool.ImageThreshold.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.ImageFilter/SunEyeVision.Tool.ImageFilter.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.Morphology/SunEyeVision.Tool.Morphology.csproj" />
   </Folder>
 </Solution>

@@ -1,0 +1,521 @@
+<controls:ToolDebugControlBase x:Class="SunEyeVision.Tool.ImageThreshold.Views.ImageThresholdToolDebugControl"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
+        xmlns:region="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Region.Views;assembly=SunEyeVision.Plugin.SDK"
+        xmlns:converters="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Region.Converters;assembly=SunEyeVision.Plugin.SDK"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:localConverters="clr-namespace:SunEyeVision.Tool.ImageThreshold.Converters"
+        mc:Ignorable="d"
+        d:DesignHeight="550" d:DesignWidth="400"
+        DataContext="{Binding Parameters, RelativeSource={RelativeSource Self}}">
+
+    <controls:ToolDebugControlBase.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.SDK;component/UI/Themes/Generic.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+            <localConverters:ThresholdMethodConverter x:Key="ThresholdMethodConverter"/>
+        </ResourceDictionary>
+    </controls:ToolDebugControlBase.Resources>
+
+  <Grid>
+    <TabControl Margin="5,0,5,0">
+      <!-- Tab1: Basic Parameters -->
+      <TabItem Header="基本参数" IsSelected="True">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12">
+          <StackPanel>
+            <controls:LabeledControl Label="输入图像" ContentHorizontalAlignment="Center" ContentVerticalAlignment="Center" LabelVerticalAlignment="Center">
+              <controls:ImageSourceSelector
+                                x:Name="imageSourceSelector"
+                                PlaceholderText="请选择输入图像源"
+                                Width="250"
+                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"
+                                SelectedDataSource="{Binding ImageSource, Mode=TwoWay}"/>
+            </controls:LabeledControl>
+
+            <controls:LabeledControl Label="启用区域限制">
+              <CheckBox IsChecked="{Binding IsRegionEnabled.Value, Mode=TwoWay}"
+                        Content="仅对指定区域进行二值化处理"/>
+            </controls:LabeledControl>
+
+            <GroupBox Header="区域设置" Margin="0,8,0,0"
+                      Visibility="{Binding IsRegionEnabled.Value, Converter={StaticResource BoolToVisibilityConverter}}">
+                <region:RegionEditorManagerControl x:Name="regionManager"
+                    InspectionRegionsSource="{Binding InspectionRegions.Regions}"
+                    MaskRegionsSource="{Binding MaskRegions.Regions}"/>
+            </GroupBox>
+
+            <!-- 位置修正 -->
+            <controls:LabeledControl Label="位置修正" Margin="0,8,0,0" HorizontalAlignment="Left">
+              <controls:ToggleSwitch
+                  IsChecked="{Binding IsPositionCorrectionEnabled.Value, Mode=TwoWay}"
+                  SwitchWidth="48" SwitchHeight="24"/>
+            </controls:LabeledControl>
+
+            <controls:LabeledControl Label="修正信息" Margin="0,4,0,0" HorizontalAlignment="Left"
+                Visibility="{Binding IsPositionCorrectionEnabled.Value, Converter={StaticResource BoolToVisibilityConverter}}">
+              <controls:ParamBinding
+                  x:Name="positionCorrectionBinding"
+                  ParameterName="位置修正" Width="200"
+                  BindingSource="{Binding PositionCorrectionBindingSource, Mode=TwoWay}"
+                  BindingDisplayText="{Binding PositionCorrectionBindingDisplayText, Mode=TwoWay}"
+                  AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+            </controls:LabeledControl>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+
+      <!-- Tab2: Run Parameters -->
+      <TabItem Header="运行参数">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12">
+          <StackPanel>
+            <controls:LabeledControl Label="阈值方法">
+              <ComboBox Height="32"
+                      VerticalContentAlignment="Center" Width="250"
+                      SelectedItem="{Binding Method.Value, Mode=TwoWay, Converter={StaticResource ThresholdMethodConverter}}">
+                <sys:String>固定阈值</sys:String>
+                <sys:String>反二值化</sys:String>
+                <sys:String>截断</sys:String>
+                <sys:String>取零</sys:String>
+                <sys:String>反取零</sys:String>
+                <sys:String>大津法(Otsu)</sys:String>
+                <sys:String>三角形法(Triangle)</sys:String>
+                <sys:String>自适应均值</sys:String>
+                <sys:String>自适应高斯</sys:String>
+                <sys:String>范围阈值</sys:String>
+              </ComboBox>
+            </controls:LabeledControl>
+
+            <!-- ====== 1. 固定阈值(Binary): Threshold + MaxValue + Invert ====== -->
+            <GroupBox Header="固定阈值参数 (Binary)" Margin="0,8,0,0"
+                      Visibility="{Binding IsBinary, Converter={StaticResource BoolToVisibilityConverter}}">
+              <StackPanel Margin="4,4">
+                <controls:LabeledControl Label="阈值" ToolTip="二值化阈值(0-255)：像素值大于此值则设为最大值，否则设为0">
+                  <controls:ConfigSetting
+                      x:Name="thresholdParamBinary"
+                      ParameterName="Threshold" DataType="{x:Type sys:Int32}"
+                      Value="{Binding Threshold.Value, Mode=TwoWay}"
+                      Minimum="0" Maximum="255" SmallChange="1" LargeChange="10"
+                      ShowSlider="True" Width="250"
+                      AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                </controls:LabeledControl>
+                <controls:LabeledControl Label="最大值" ToolTip="最大输出值(0-255)：满足条件的像素被赋予的值">
+                  <controls:ConfigSetting
+                      x:Name="maxValueParamBinary"
+                      ParameterName="MaxValue" DataType="{x:Type sys:Int32}"
+                      Value="{Binding MaxValue.Value, Mode=TwoWay}"
+                      Minimum="0" Maximum="255" SmallChange="1" LargeChange="10"
+                      ShowSlider="True" Width="250"
+                      AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                </controls:LabeledControl>
+                <controls:LabeledControl Label="反转结果" ContentHorizontalAlignment="Left" Margin="0,4,0,0" ToolTip="反转结果：勾选后将黑白颠倒">
+                  <CheckBox IsChecked="{Binding Invert.Value, Mode=TwoWay}" Content="反转二值化结果"/>
+                </controls:LabeledControl>
+                <controls:ParamGroup Header="参数说明" IsExpanded="False">
+                    <StackPanel Margin="8,4">
+                        <TextBlock TextWrapping="Wrap" Foreground="#666666" FontSize="12"
+                                   Text="THRESH_BINARY: 像素值 > 阈值 → 最大值, 否则 → 0"/>
+                        <TextBlock TextWrapping="Wrap" Foreground="#888888" FontSize="11"
+                                   Margin="0,6,0,0"
+                                   Text="阈值决定二值化临界点；最大值通常设为255表示白色"/>
+                    </StackPanel>
+                </controls:ParamGroup>
+              </StackPanel>
+            </GroupBox>
+
+            <!-- ====== 2. 反二值化(BinaryInv): Threshold + MaxValue + Invert ====== -->
+            <GroupBox Header="反二值化参数 (BinaryInv)" Margin="0,8,0,0"
+                      Visibility="{Binding IsBinaryInv, Converter={StaticResource BoolToVisibilityConverter}}">
+              <StackPanel Margin="4,4">
+                <controls:LabeledControl Label="阈值" ToolTip="二值化阈值(0-255)：像素值大于阈值则设为0，否则设为最大值">
+                  <controls:ConfigSetting
+                      x:Name="thresholdParamBinaryInv"
+                      ParameterName="Threshold" DataType="{x:Type sys:Int32}"
+                      Value="{Binding Threshold.Value, Mode=TwoWay}"
+                      Minimum="0" Maximum="255" SmallChange="1" LargeChange="10"
+                      ShowSlider="True" Width="250"
+                      AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                </controls:LabeledControl>
+                <controls:LabeledControl Label="最大值" ToolTip="最大输出值(0-255)">
+                  <controls:ConfigSetting
+                      x:Name="maxValueParamBinaryInv"
+                      ParameterName="MaxValue" DataType="{x:Type sys:Int32}"
+                      Value="{Binding MaxValue.Value, Mode=TwoWay}"
+                      Minimum="0" Maximum="255" SmallChange="1" LargeChange="10"
+                      ShowSlider="True" Width="250"
+                      AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                </controls:LabeledControl>
+                <controls:LabeledControl Label="反转结果" ContentHorizontalAlignment="Left" Margin="0,4,0,0" ToolTip="反转结果">
+                  <CheckBox IsChecked="{Binding Invert.Value, Mode=TwoWay}" Content="反转二值化结果"/>
+                </controls:LabeledControl>
+                <controls:ParamGroup Header="参数说明" IsExpanded="False">
+                    <StackPanel Margin="8,4">
+                        <TextBlock TextWrapping="Wrap" Foreground="#666666" FontSize="12"
+                                   Text="THRESH_BINARY_INV: 像素值 > 阈值 → 0, 否则 → 最大值"/>
+                        <TextBlock TextWrapping="Wrap" Foreground="#888888" FontSize="11"
+                                   Margin="0,6,0,0"
+                                   Text="与Binary相反，亮区变暗、暗区变亮"/>
+                    </StackPanel>
+                </controls:ParamGroup>
+              </StackPanel>
+            </GroupBox>
+
+            <!-- ====== 3. 截断(Trunc): Threshold + MaxValue ====== -->
+            <GroupBox Header="截断参数 (Trunc)" Margin="0,8,0,0"
+                      Visibility="{Binding IsTrunc, Converter={StaticResource BoolToVisibilityConverter}}">
+              <StackPanel Margin="4,4">
+                <controls:LabeledControl Label="阈值" ToolTip="截断阈值(0-255)：像素值大于阈值则被截断">
+                  <controls:ConfigSetting
+                      x:Name="thresholdParamTrunc"
+                      ParameterName="Threshold" DataType="{x:Type sys:Int32}"
+                      Value="{Binding Threshold.Value, Mode=TwoWay}"
+                      Minimum="0" Maximum="255" SmallChange="1" LargeChange="10"
+                      ShowSlider="True" Width="250"
+                      AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                </controls:LabeledControl>
+                <controls:LabeledControl Label="最大值(截断上限)" ToolTip="截断上限值(0-255)">
+                  <controls:ConfigSetting
+                      x:Name="maxValueParamTrunc"
+                      ParameterName="MaxValue" DataType="{x:Type sys:Int32}"
+                      Value="{Binding MaxValue.Value, Mode=TwoWay}"
+                      Minimum="0" Maximum="255" SmallChange="1" LargeChange="10"
+                      ShowSlider="True" Width="250"
+                      AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                </controls:LabeledControl>
+                <controls:ParamGroup Header="参数说明" IsExpanded="False">
+                    <StackPanel Margin="8,4">
+                        <TextBlock TextWrapping="Wrap" Foreground="#666666" FontSize="12"
+                                   Text="THRESH_TRUNC: 像素值 > 阈值 → 截断为最大值, 其余不变"/>
+                        <TextBlock TextWrapping="Wrap" Foreground="#888888" FontSize="11"
+                                   Margin="0,6,0,0"
+                                   Text="只裁剪高亮度区域，低于阈值的保持原值"/>
+                    </StackPanel>
+                </controls:ParamGroup>
+              </StackPanel>
+            </GroupBox>
+
+            <!-- ====== 4. 取零(ToZero): Threshold + MaxValue ====== -->
+            <GroupBox Header="取零参数 (ToZero)" Margin="0,8,0,0"
+                      Visibility="{Binding IsToZero, Converter={StaticResource BoolToVisibilityConverter}}">
+              <StackPanel Margin="4,4">
+                <controls:LabeledControl Label="阈值" ToolTip="取零阈值(0-255)：像素值小于阈值则置零">
+                  <controls:ConfigSetting
+                      x:Name="thresholdParamToZero"
+                      ParameterName="Threshold" DataType="{x:Type sys:Int32}"
+                      Value="{Binding Threshold.Value, Mode=TwoWay}"
+                      Minimum="0" Maximum="255" SmallChange="1" LargeChange="10"
+                      ShowSlider="True" Width="250"
+                      AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                </controls:LabeledControl>
+                <controls:LabeledControl Label="最大值" ToolTip="最大输出值(0-255)">
+                  <controls:ConfigSetting
+                      x:Name="maxValueParamToZero"
+                      ParameterName="MaxValue" DataType="{x:Type sys:Int32}"
+                      Value="{Binding MaxValue.Value, Mode=TwoWay}"
+                      Minimum="0" Maximum="255" SmallChange="1" LargeChange="10"
+                      ShowSlider="True" Width="250"
+                      AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                </controls:LabeledControl>
+                <controls:ParamGroup Header="参数说明" IsExpanded="False">
+                    <StackPanel Margin="8,4">
+                        <TextBlock TextWrapping="Wrap" Foreground="#666666" FontSize="12"
+                                   Text="THRESH_TOZERO: 像素值 &lt; 阈值 → 0, 其余不变"/>
+                        <TextBlock TextWrapping="Wrap" Foreground="#888888" FontSize="11"
+                                   Margin="0,6,0,0"
+                                   Text="将暗区置零，亮区保持原值"/>
+                    </StackPanel>
+                </controls:ParamGroup>
+              </StackPanel>
+            </GroupBox>
+
+            <!-- ====== 5. 反取零(ToZeroInv): Threshold + MaxValue ====== -->
+            <GroupBox Header="反取零参数 (ToZeroInv)" Margin="0,8,0,0"
+                      Visibility="{Binding IsToZeroInv, Converter={StaticResource BoolToVisibilityConverter}}">
+              <StackPanel Margin="4,4">
+                <controls:LabeledControl Label="阈值" ToolTip="反取零阈值(0-255)：像素值大于阈值则置零">
+                  <controls:ConfigSetting
+                      x:Name="thresholdParamToZeroInv"
+                      ParameterName="Threshold" DataType="{x:Type sys:Int32}"
+                      Value="{Binding Threshold.Value, Mode=TwoWay}"
+                      Minimum="0" Maximum="255" SmallChange="1" LargeChange="10"
+                      ShowSlider="True" Width="250"
+                      AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                </controls:LabeledControl>
+                <controls:LabeledControl Label="最大值" ToolTip="截断上限值(0-255)">
+                  <controls:ConfigSetting
+                      x:Name="maxValueParamToZeroInv"
+                      ParameterName="MaxValue" DataType="{x:Type sys:Int32}"
+                      Value="{Binding MaxValue.Value, Mode=TwoWay}"
+                      Minimum="0" Maximum="255" SmallChange="1" LargeChange="10"
+                      ShowSlider="True" Width="250"
+                      AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                </controls:LabeledControl>
+                <controls:ParamGroup Header="参数说明" IsExpanded="False">
+                    <StackPanel Margin="8,4">
+                        <TextBlock TextWrapping="Wrap" Foreground="#666666" FontSize="12"
+                                   Text="THRESH_TOZERO_INV: 像素值 > 阈值 → 0, 其余不变"/>
+                        <TextBlock TextWrapping="Wrap" Foreground="#888888" FontSize="11"
+                                   Margin="0,6,0,0"
+                                   Text="将亮区置零，暗区保持原值"/>
+                    </StackPanel>
+                </controls:ParamGroup>
+              </StackPanel>
+            </GroupBox>
+
+            <!-- ====== 6. 大津法(Otsu): MaxValue + Invert ====== -->
+            <GroupBox Header="大津法参数 (Otsu)" Margin="0,8,0,0"
+                      Visibility="{Binding IsOtsu, Converter={StaticResource BoolToVisibilityConverter}}">
+              <StackPanel Margin="4,4">
+                <controls:LabeledControl Label="最大值" ToolTip="最大输出值(0-255)">
+                  <controls:ConfigSetting
+                      x:Name="maxValueParamOtsu"
+                      ParameterName="MaxValue" DataType="{x:Type sys:Int32}"
+                      Value="{Binding MaxValue.Value, Mode=TwoWay}"
+                      Minimum="0" Maximum="255" SmallChange="1" LargeChange="10"
+                      ShowSlider="True" Width="250"
+                      AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                </controls:LabeledControl>
+                <controls:LabeledControl Label="反转结果" ContentHorizontalAlignment="Left" Margin="0,4,0,0" ToolTip="反转结果">
+                  <CheckBox IsChecked="{Binding Invert.Value, Mode=TwoWay}" Content="反转二值化结果"/>
+                </controls:LabeledControl>
+                <controls:ParamGroup Header="参数说明" IsExpanded="False">
+                    <StackPanel Margin="8,4">
+                        <TextBlock TextWrapping="Wrap" Foreground="#666666" FontSize="12"
+                                   Text="THRESH_OTSU: 自动计算最优阈值(类间方差最大法)"/>
+                        <TextBlock TextWrapping="Wrap" Foreground="#888888" FontSize="11"
+                                   Margin="0,6,0,0"
+                                   Text="无需手动设阈值，适用于双峰直方图图像"/>
+                    </StackPanel>
+                </controls:ParamGroup>
+              </StackPanel>
+            </GroupBox>
+
+            <!-- ====== 7. 三角形法(Triangle): MaxValue + Invert ====== -->
+            <GroupBox Header="三角形法参数 (Triangle)" Margin="0,8,0,0"
+                      Visibility="{Binding IsTriangle, Converter={StaticResource BoolToVisibilityConverter}}">
+              <StackPanel Margin="4,4">
+                <controls:LabeledControl Label="最大值" ToolTip="最大输出值(0-255)">
+                  <controls:ConfigSetting
+                      x:Name="maxValueParamTriangle"
+                      ParameterName="MaxValue" DataType="{x:Type sys:Int32}"
+                      Value="{Binding MaxValue.Value, Mode=TwoWay}"
+                      Minimum="0" Maximum="255" SmallChange="1" LargeChange="10"
+                      ShowSlider="True" Width="250"
+                      AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                </controls:LabeledControl>
+                <controls:LabeledControl Label="反转结果" ContentHorizontalAlignment="Left" Margin="0,4,0,0" ToolTip="反转结果">
+                  <CheckBox IsChecked="{Binding Invert.Value, Mode=TwoWay}" Content="反转二值化结果"/>
+                </controls:LabeledControl>
+                <controls:ParamGroup Header="参数说明" IsExpanded="False">
+                    <StackPanel Margin="8,4">
+                        <TextBlock TextWrapping="Wrap" Foreground="#666666" FontSize="12"
+                                   Text="THRESH_TRIANGLE: 自动计算最优阈值(直方图三角法)"/>
+                        <TextBlock TextWrapping="Wrap" Foreground="#888888" FontSize="11"
+                                   Margin="0,6,0,0"
+                                   Text="适合单峰偏态分布的直方图"/>
+                    </StackPanel>
+                </controls:ParamGroup>
+              </StackPanel>
+            </GroupBox>
+
+            <!-- ====== 8. 自适应均值(AdaptiveMean): MaxValue + BlockSize + C ====== -->
+            <GroupBox Header="自适应均值参数 (AdaptiveMean)" Margin="0,8,0,0"
+                      Visibility="{Binding IsAdaptiveMean, Converter={StaticResource BoolToVisibilityConverter}}">
+              <StackPanel Margin="4,4">
+                <controls:LabeledControl Label="最大值" ToolTip="最大输出值(0-255)">
+                  <controls:ConfigSetting
+                      x:Name="maxValueParamAdaptMean"
+                      ParameterName="MaxValue" DataType="{x:Type sys:Int32}"
+                      Value="{Binding MaxValue.Value, Mode=TwoWay}"
+                      Minimum="0" Maximum="255" SmallChange="1" LargeChange="10"
+                      ShowSlider="True" Width="250"
+                      AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                </controls:LabeledControl>
+                <controls:LabeledControl Label="块大小(奇数)" ToolTip="自适应块大小(奇数, 3-31)：用于计算局部阈值的邻域大小">
+                  <controls:ConfigSetting
+                      x:Name="blockSizeParamMean"
+                      ParameterName="BlockSize" DataType="{x:Type sys:Int32}"
+                      Value="{Binding BlockSize.Value, Mode=TwoWay}"
+                      Minimum="3" Maximum="31" SmallChange="2" LargeChange="4"
+                      Width="250"
+                      AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                </controls:LabeledControl>
+                <controls:LabeledControl Label="C常数" ToolTip="C常数(0-100)：从均值中减去的常量，值越大越敏感">
+                  <controls:ConfigSetting
+                      x:Name="cParamMean"
+                      ParameterName="C" DataType="{x:Type sys:Double}"
+                      Value="{Binding C.Value, Mode=TwoWay}"
+                      Minimum="0" Maximum="100" SmallChange="0.5" LargeChange="5"
+                      Width="250"
+                      AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                </controls:LabeledControl>
+                <controls:ParamGroup Header="参数说明" IsExpanded="False">
+                    <StackPanel Margin="8,4">
+                        <TextBlock TextWrapping="Wrap" Foreground="#666666" FontSize="12"
+                                   Text="ADAPTIVE_THRESH_MEAN_C: 局部邻域均值 - C 作为阈值"/>
+                        <TextBlock TextWrapping="Wrap" Foreground="#888888" FontSize="11"
+                                   Margin="0,6,0,0"
+                                   Text="适应光照不均，BlockSize越大越平滑"/>
+                    </StackPanel>
+                </controls:ParamGroup>
+              </StackPanel>
+            </GroupBox>
+
+            <!-- ====== 9. 自适应高斯(AdaptiveGaussian): MaxValue + BlockSize + C ====== -->
+            <GroupBox Header="自适应高斯参数 (AdaptiveGaussian)" Margin="0,8,0,0"
+                      Visibility="{Binding IsAdaptiveGaussian, Converter={StaticResource BoolToVisibilityConverter}}">
+              <StackPanel Margin="4,4">
+                <controls:LabeledControl Label="最大值" ToolTip="最大输出值(0-255)">
+                  <controls:ConfigSetting
+                      x:Name="maxValueParamAdaptGauss"
+                      ParameterName="MaxValue" DataType="{x:Type sys:Int32}"
+                      Value="{Binding MaxValue.Value, Mode=TwoWay}"
+                      Minimum="0" Maximum="255" SmallChange="1" LargeChange="10"
+                      ShowSlider="True" Width="250"
+                      AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                </controls:LabeledControl>
+                <controls:LabeledControl Label="块大小(奇数)" ToolTip="自适应块大小(奇数, 3-31)：用于计算局部阈值的邻域大小">
+                  <controls:ConfigSetting
+                      x:Name="blockSizeParamGauss"
+                      ParameterName="BlockSize" DataType="{x:Type sys:Int32}"
+                      Value="{Binding BlockSize.Value, Mode=TwoWay}"
+                      Minimum="3" Maximum="31" SmallChange="2" LargeChange="4"
+                      Width="250"
+                      AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                </controls:LabeledControl>
+                <controls:LabeledControl Label="C常数" ToolTip="C常数(0-100)：从均值中减去的常量，值越大越敏感">
+                  <controls:ConfigSetting
+                      x:Name="cParamGauss"
+                      ParameterName="C" DataType="{x:Type sys:Double}"
+                      Value="{Binding C.Value, Mode=TwoWay}"
+                      Minimum="0" Maximum="100" SmallChange="0.5" LargeChange="5"
+                      Width="250"
+                      AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                </controls:LabeledControl>
+                <controls:ParamGroup Header="参数说明" IsExpanded="False">
+                    <StackPanel Margin="8,4">
+                        <TextBlock TextWrapping="Wrap" Foreground="#666666" FontSize="12"
+                                   Text="ADAPTIVE_THRESH_GAUSSIAN_C: 局部高斯加权均值 - C 作为阈值"/>
+                        <TextBlock TextWrapping="Wrap" Foreground="#888888" FontSize="11"
+                                   Margin="0,6,0,0"
+                                   Text="比Mean方法权重更合理，抗噪更好"/>
+                    </StackPanel>
+                </controls:ParamGroup>
+              </StackPanel>
+            </GroupBox>
+
+            <!-- ====== 10. 范围阈值(InRange): MinThreshold + MaxThreshold ====== -->
+            <GroupBox Header="范围阈值参数 (InRange)" Margin="0,8,0,0"
+                      Visibility="{Binding IsInRange, Converter={StaticResource BoolToVisibilityConverter}}">
+              <StackPanel Margin="4,4">
+                <controls:LabeledControl Label="最小阈值" ToolTip="最小阈值(0-255)：保留大于等于此值的像素">
+                  <controls:ConfigSetting
+                      x:Name="minThresholdParam"
+                      ParameterName="MinThreshold" DataType="{x:Type sys:Int32}"
+                      Value="{Binding MinThreshold.Value, Mode=TwoWay}"
+                      Minimum="0" Maximum="255" SmallChange="1" LargeChange="10"
+                      ShowSlider="True" Width="250"
+                      AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                </controls:LabeledControl>
+                <controls:LabeledControl Label="最大阈值" ToolTip="最大阈值(0-255)：保留小于等于此值的像素">
+                  <controls:ConfigSetting
+                      x:Name="maxThresholdParam"
+                      ParameterName="MaxThreshold" DataType="{x:Type sys:Int32}"
+                      Value="{Binding MaxThreshold.Value, Mode=TwoWay}"
+                      Minimum="0" Maximum="255" SmallChange="1" LargeChange="10"
+                      ShowSlider="True" Width="250"
+                      AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                </controls:LabeledControl>
+                <controls:ParamGroup Header="参数说明" IsExpanded="False">
+                    <StackPanel Margin="8,4">
+                        <TextBlock TextWrapping="Wrap" Foreground="#666666" FontSize="12"
+                                   Text="像素值在 [Min, Max] 范围内的保留，其余置0"/>
+                        <TextBlock TextWrapping="Wrap" Foreground="#888888" FontSize="11"
+                                   Margin="0,6,0,0"
+                                   Text="用于HSV颜色空间提取特定颜色范围"/>
+                    </StackPanel>
+                </controls:ParamGroup>
+              </StackPanel>
+            </GroupBox>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+
+      <!-- Tab3: Results Display -->
+      <TabItem Header="结果显示">
+        <Grid Background="#F5F5F5">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+          </Grid.RowDefinitions>
+
+          <ScrollViewer Grid.Row="0" Padding="3">
+            <StackPanel>
+              <Expander Header="结果判断"
+                                      IsExpanded="True"
+                                      BorderBrush="#E0E0E0"
+                                      BorderThickness="1"
+                                      Margin="0,0,0,8"
+                                      Background="White">
+                <StackPanel Margin="16,8">
+                  <controls:LabeledControl Label="输出为空判断" ContentHorizontalAlignment="Left">
+                    <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsEmptyCheckEnabled, Mode=TwoWay}"/>
+                  </controls:LabeledControl>
+
+                  <controls:LabeledControl Label="白色像素比例" ContentHorizontalAlignment="Left" Margin="0,2,0,0">
+                    <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsWhitePixelRatioCheckEnabled, Mode=TwoWay}"/>
+                  </controls:LabeledControl>
+                  <controls:LabeledControl Label="白色像素比例 (%):"  Margin="0,2,0,0" ContentHorizontalAlignment="Left"
+                                           Visibility="{Binding ResultConfig.IsWhitePixelRatioCheckEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <controls:RangeInputControl
+                                            Unit="%"
+                                            Minimum="0"
+                                            Maximum="100"
+                                            MinValue="{Binding ResultConfig.WhitePixelRatioMin, Mode=TwoWay}"
+                                            MaxValue="{Binding ResultConfig.WhitePixelRatioMax, Mode=TwoWay}"
+                                            DecimalPlaces="1"
+                      SmallChange="1"
+                      NumericWidth="120"/>
+                  </controls:LabeledControl>
+
+                  <controls:LabeledControl Label="输出均值判断" ContentHorizontalAlignment="Left" Margin="0,2,0,0">
+                    <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsMeanCheckEnabled, Mode=TwoWay}"/>
+                  </controls:LabeledControl>
+                  <controls:LabeledControl Label="输出均值范围:" Margin="0,2,0,0"
+                                                            Visibility="{Binding ResultConfig.IsMeanCheckEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <controls:RangeInputControl
+                                            Unit=""
+                                            Minimum="0"
+                                            Maximum="255"
+                                            MinValue="{Binding ResultConfig.MeanMin, Mode=TwoWay}"
+                                            MaxValue="{Binding ResultConfig.MeanMax, Mode=TwoWay}"
+                                            DecimalPlaces="1" NumericWidth="120"/>
+                  </controls:LabeledControl>
+
+                  <controls:LabeledControl Label="输出面积判断" ContentHorizontalAlignment="Left" Margin="0,2,0,0">
+                    <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsAreaCheckEnabled, Mode=TwoWay}"/>
+                  </controls:LabeledControl>
+                  <controls:LabeledControl Label="输出面积范围 (px²):" Margin="0,2,0,0"
+                                                            Visibility="{Binding ResultConfig.IsAreaCheckEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <controls:RangeInputControl
+                                            Unit="px²"
+                                            Minimum="0"
+                                            Maximum="1000000"
+                                            MinValue="{Binding ResultConfig.AreaMin, Mode=TwoWay}"
+                                            MaxValue="{Binding ResultConfig.AreaMax, Mode=TwoWay}"
+                                            DecimalPlaces="0" NumericWidth="120"/>
+                  </controls:LabeledControl>
+                </StackPanel>
+              </Expander>
+            </StackPanel>
+          </ScrollViewer>
+        </Grid>
+      </TabItem>
+    </TabControl>
+  </Grid>
+</controls:ToolDebugControlBase>

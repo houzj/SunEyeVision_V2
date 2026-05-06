@@ -1,0 +1,379 @@
+<controls:ToolDebugControlBase x:Class="SunEyeVision.Tool.ImageFilter.Views.ImageFilterToolDebugControl"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
+        xmlns:commands="clr-namespace:SunEyeVision.Plugin.SDK.Commands;assembly=SunEyeVision.Plugin.SDK"
+        xmlns:region="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Region.Views;assembly=SunEyeVision.Plugin.SDK"
+        xmlns:converters="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Region.Converters;assembly=SunEyeVision.Plugin.SDK"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:local="clr-namespace:SunEyeVision.Tool.ImageFilter"
+        xmlns:localConverters="clr-namespace:SunEyeVision.Tool.ImageFilter.Converters"
+        mc:Ignorable="d"
+        d:DesignHeight="550" d:DesignWidth="400"
+        DataContext="{Binding Parameters, RelativeSource={RelativeSource Self}}">
+
+    <controls:ToolDebugControlBase.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.SDK;component/UI/Themes/Generic.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+            <localConverters:FilterTypeConverter x:Key="FilterTypeConverter"/>
+            <localConverters:BorderTypeConverter x:Key="BorderTypeConverter"/>
+        </ResourceDictionary>
+    </controls:ToolDebugControlBase.Resources>
+
+  <Grid>
+    <TabControl Margin="5,0,5,0">
+      <!-- Tab1: 基本参数 -->
+      <TabItem Header="基本参数" IsSelected="True">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12">
+          <StackPanel>
+            <controls:LabeledControl Label="输入图像" ContentHorizontalAlignment="Center" ContentVerticalAlignment="Center" LabelVerticalAlignment="Center">
+              <controls:ImageSourceSelector
+                                x:Name="imageSourceSelector"
+                                PlaceholderText="请选择输入图像源"
+                                Width="250"
+                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"
+                                SelectedDataSource="{Binding ImageSource, Mode=TwoWay}"/>
+            </controls:LabeledControl>
+
+            <!-- 启用区域限制 -->
+            <controls:LabeledControl Label="启用区域限制">
+              <CheckBox IsChecked="{Binding IsRegionEnabled.Value, Mode=TwoWay}"
+                        Content="仅对指定区域进行滤波处理"/>
+            </controls:LabeledControl>
+
+            <!-- 区域管理器（检测区域 + 屏蔽区域） -->
+            <GroupBox Header="区域设置" Margin="0,8,0,0"
+                      Visibility="{Binding IsRegionEnabled.Value, Converter={StaticResource BoolToVisibilityConverter}}">
+                <region:RegionEditorManagerControl x:Name="regionManager"
+                    InspectionRegionsSource="{Binding InspectionRegions.Regions}"
+                    MaskRegionsSource="{Binding MaskRegions.Regions}"/>
+            </GroupBox>
+
+            <!-- 位置修正 -->
+            <controls:LabeledControl Label="位置修正" Margin="0,8,0,0" HorizontalAlignment="Left">
+              <controls:ToggleSwitch
+                  IsChecked="{Binding IsPositionCorrectionEnabled.Value, Mode=TwoWay}"
+                  SwitchWidth="48" SwitchHeight="24"/>
+            </controls:LabeledControl>
+
+            <controls:LabeledControl Label="修正信息" Margin="0,4,0,0" HorizontalAlignment="Left"
+                Visibility="{Binding IsPositionCorrectionEnabled.Value, Converter={StaticResource BoolToVisibilityConverter}}">
+              <controls:ParamBinding
+                  x:Name="positionCorrectionBinding"
+                  ParameterName="位置修正" Width="200"
+                  BindingSource="{Binding PositionCorrectionBindingSource, Mode=TwoWay}"
+                  BindingDisplayText="{Binding PositionCorrectionBindingDisplayText, Mode=TwoWay}"
+                  AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+            </controls:LabeledControl>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+
+      <!-- Tab2: 运行参数 -->
+      <TabItem Header="运行参数">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12">
+          <StackPanel>
+            <controls:LabeledControl Label="滤波类型">
+              <ComboBox x:Name="filterTypeComboBox"
+                      Height="32"
+                      VerticalContentAlignment="Center" Width="250"
+                      SelectedItem="{Binding FilterTypeValue.Value, Mode=TwoWay, Converter={StaticResource FilterTypeConverter}}">
+                <sys:String>均值滤波</sys:String>
+                <sys:String>高斯滤波</sys:String>
+                <sys:String>中值滤波</sys:String>
+                <sys:String>双边滤波</sys:String>
+                <sys:String>自定义卷积</sys:String>
+              </ComboBox>
+            </controls:LabeledControl>
+
+            <!-- ====== 均值滤波(Blur): KernelWidth + KernelHeight + BorderType ====== -->
+            <GroupBox Header="均值滤波参数" Margin="0,8,0,0"
+                      Visibility="{Binding IsBlurMethod, Converter={StaticResource BoolToVisibilityConverter}}">
+              <StackPanel Margin="4,4">
+                <controls:LabeledControl Label="内核宽度" ToolTip="内核宽度(奇数, 1-31)：滤波窗口的水平尺寸，值越大平滑效果越强">
+                  <controls:ConfigSetting
+                                x:Name="kernelWidthParamBlur"
+                                ParameterName="KernelWidth"
+                                DataType="{x:Type sys:Int32}"
+                                Value="{Binding KernelWidth.Value, Mode=TwoWay}"
+                                Minimum="1" Maximum="31"
+                                SmallChange="2" LargeChange="4"
+                                ShowSlider="True" Width="250"
+                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                </controls:LabeledControl>
+                <controls:LabeledControl Label="内核高度" ToolTip="内核高度(奇数, 1-31)：滤波窗口的垂直尺寸">
+                  <controls:ConfigSetting
+                                x:Name="kernelHeightParamBlur"
+                                ParameterName="KernelHeight"
+                                DataType="{x:Type sys:Int32}"
+                                Value="{Binding KernelHeight.Value, Mode=TwoWay}"
+                                Minimum="1" Maximum="31"
+                                SmallChange="2" LargeChange="4"
+                                ShowSlider="True" Width="250"
+                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                </controls:LabeledControl>
+                <controls:LabeledControl Label="边界处理" ToolTip="边界处理方式：图像边缘像素的填充策略">
+                  <ComboBox x:Name="borderTypeComboBoxBlur"
+                          Height="32" VerticalContentAlignment="Center" Width="250"
+                          SelectedItem="{Binding BorderTypeValue.Value, Mode=TwoWay, Converter={StaticResource BorderTypeConverter}}">
+                    <sys:String>镜像反射(Reflect)</sys:String>
+                    <sys:String>边缘复制(Replicate)</sys:String>
+                    <sys:String>常量填充(Constant)</sys:String>
+                    <sys:String>镜像反射101(Reflect101)</sys:String>
+                    <sys:String>环绕(Wrap)</sys:String>
+                    <sys:String>独立(Isolated)</sys:String>
+                  </ComboBox>
+                </controls:LabeledControl>
+            <controls:ParamGroup Header="参数说明" IsExpanded="False">
+                <StackPanel Margin="8,4">
+                    <TextBlock TextWrapping="Wrap" Foreground="#666666" FontSize="12" 
+                               Text="均值滤波(BOX_FILTER)：邻域内所有像素取算术平均值"/>
+                    <TextBlock TextWrapping="Wrap" Foreground="#888888" FontSize="11" 
+                               Margin="0,6,0,0"
+                               Text="内核越大越模糊但速度越慢；边界类型建议Reflect或Default"/>
+                </StackPanel>
+            </controls:ParamGroup>
+              </StackPanel>
+            </GroupBox>
+            <GroupBox Header="高斯滤波参数" Margin="0,8,0,0"
+                      Visibility="{Binding IsGaussianMethod, Converter={StaticResource BoolToVisibilityConverter}}">
+              <StackPanel Margin="4,4">
+                <controls:LabeledControl Label="内核宽度" ToolTip="内核宽度(奇数, 1-31)：高斯核的水平尺寸">
+                  <controls:ConfigSetting
+                                x:Name="kernelWidthParamGaussian"
+                                ParameterName="KernelWidth"
+                                DataType="{x:Type sys:Int32}"
+                                Value="{Binding KernelWidth.Value, Mode=TwoWay}"
+                                Minimum="1" Maximum="31"
+                                SmallChange="2" LargeChange="4"
+                                ShowSlider="True" Width="250"
+                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                </controls:LabeledControl>
+                <controls:LabeledControl Label="内核高度" ToolTip="内核高度(奇数, 1-31)：高斯核的垂直尺寸">
+                  <controls:ConfigSetting
+                                x:Name="kernelHeightParamGaussian"
+                                ParameterName="KernelHeight"
+                                DataType="{x:Type sys:Int32}"
+                                Value="{Binding KernelHeight.Value, Mode=TwoWay}"
+                                Minimum="1" Maximum="31"
+                                SmallChange="2" LargeChange="4"
+                                ShowSlider="True" Width="250"
+                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                </controls:LabeledControl>
+                <controls:LabeledControl Label="SigmaX (水平标准差)" ToolTip="水平标准差(0-100)：X方向的高斯核标准差，0表示自动根据核大小计算">
+                  <controls:ConfigSetting
+                                x:Name="sigmaXParam"
+                                ParameterName="SigmaX"
+                                DataType="{x:Type sys:Double}"
+                                Value="{Binding SigmaX.Value, Mode=TwoWay}"
+                                Minimum="0" Maximum="100"
+                                SmallChange="0.1" LargeChange="1.0"
+                                Width="250"
+                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                </controls:LabeledControl>
+                <controls:LabeledControl Label="SigmaY (垂直标准差)" ToolTip="垂直标准差(0-100)：Y方向的高斯核标准差，0表示自动根据核大小计算">
+                  <controls:ConfigSetting
+                                x:Name="sigmaYParam"
+                                ParameterName="SigmaY"
+                                DataType="{x:Type sys:Double}"
+                                Value="{Binding SigmaY.Value, Mode=TwoWay}"
+                                Minimum="0" Maximum="100"
+                                SmallChange="0.1" LargeChange="1.0"
+                                Width="250"
+                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                </controls:LabeledControl>
+                <controls:LabeledControl Label="边界处理" ToolTip="边界处理方式">
+                  <ComboBox x:Name="borderTypeComboBoxGaussian"
+                          Height="32" VerticalContentAlignment="Center" Width="250"
+                          SelectedItem="{Binding BorderTypeValue.Value, Mode=TwoWay, Converter={StaticResource BorderTypeConverter}}">
+                    <sys:String>镜像反射(Reflect)</sys:String>
+                    <sys:String>边缘复制(Replicate)</sys:String>
+                    <sys:String>常量填充(Constant)</sys:String>
+                    <sys:String>镜像反射101(Reflect101)</sys:String>
+                    <sys:String>环绕(Wrap)</sys:String>
+                    <sys:String>独立(Isolated)</sys:String>
+                  </ComboBox>
+                </controls:LabeledControl>
+            <controls:ParamGroup Header="参数说明" IsExpanded="False">
+                <StackPanel Margin="8,4">
+                    <TextBlock TextWrapping="Wrap" Foreground="#666666" FontSize="12" 
+                               Text="高斯滤波(GAUSSIAN_BLUR)：使用高斯核对图像进行加权平均"/>
+                    <TextBlock TextWrapping="Wrap" Foreground="#888888" FontSize="11" 
+                               Margin="0,6,0,0"
+                               Text="距离中心近的权重大；Sigma=0时自动按内核大小计算；边缘保留优于均值滤波"/>
+                </StackPanel>
+            </controls:ParamGroup>
+              </StackPanel>
+            </GroupBox>
+
+            <!-- ====== 中值滤波(MedianBlur): KernelWidth(diameter) ====== -->
+            <GroupBox Header="中值滤波参数" Margin="0,8,0,0"
+                      Visibility="{Binding IsMedianBlurMethod, Converter={StaticResource BoolToVisibilityConverter}}">
+              <StackPanel Margin="4,4">
+                <controls:LabeledControl Label="直径(核大小)" ToolTip="直径(奇数, 1-15)：中值滤波窗口大小，抗椒盐噪声效果好">
+                  <controls:ConfigSetting
+                                x:Name="kernelWidthParamMedian"
+                                ParameterName="KernelWidth"
+                                DataType="{x:Type sys:Int32}"
+                                Value="{Binding KernelWidth.Value, Mode=TwoWay}"
+                                Minimum="3" Maximum="31"
+                                SmallChange="2" LargeChange="4"
+                                ShowSlider="True" Width="250"
+                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                </controls:LabeledControl>
+            <controls:ParamGroup Header="参数说明" IsExpanded="False">
+                <StackPanel Margin="8,4">
+                    <TextBlock TextWrapping="Wrap" Foreground="#666666" FontSize="12" 
+                               Text="中值滤波(MEDIAN_BLUR)：邻域像素排序后取中值替换中心像素"/>
+                    <TextBlock TextWrapping="Wrap" Foreground="#888888" FontSize="11" 
+                               Margin="0,6,0,0"
+                               Text="对椒盐噪声效果极佳；不会模糊边缘；直径不宜过大以免丢失细节"/>
+                </StackPanel>
+            </controls:ParamGroup>
+              </StackPanel>
+            </GroupBox>
+
+            <!-- ====== 双边滤波(Bilateral): KernelWidth(diameter) + SigmaColor + SigmaSpace + BorderType ====== -->
+            <GroupBox Header="双边滤波参数" Margin="0,8,0,0"
+                      Visibility="{Binding IsBilateralMethod, Converter={StaticResource BoolToVisibilityConverter}}">
+              <StackPanel Margin="4,4">
+                <controls:LabeledControl Label="直径(像素邻域)" ToolTip="直径(奇数, 1-15)：双边滤波的邻域窗口大小">
+                  <controls:ConfigSetting
+                                x:Name="kernelWidthParamBilateral"
+                                ParameterName="KernelWidth"
+                                DataType="{x:Type sys:Int32}"
+                                Value="{Binding KernelWidth.Value, Mode=TwoWay}"
+                                Minimum="1" Maximum="31"
+                                SmallChange="2" LargeChange="4"
+                                ShowSlider="True" Width="250"
+                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                </controls:LabeledControl>
+                <controls:LabeledControl Label="SigmaColor (颜色空间标准差)" ToolTip="颜色标准差(0-200)：颜色空间的标准差，值越大边缘保留越弱">
+                  <controls:ConfigSetting
+                                x:Name="sigmaColorParam"
+                                ParameterName="SigmaColor"
+                                DataType="{x:Type sys:Double}"
+                                Value="{Binding SigmaColor.Value, Mode=TwoWay}"
+                                Minimum="0" Maximum="200"
+                                SmallChange="0.5" LargeChange="5.0"
+                                Width="250"
+                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                </controls:LabeledControl>
+                <controls:LabeledControl Label="SigmaSpace (坐标空间标准差)" ToolTip="空间标准差(0-200)：坐标空间的标准差，值越大远距离影响越大">
+                  <controls:ConfigSetting
+                                x:Name="sigmaSpaceParam"
+                                ParameterName="SigmaSpace"
+                                DataType="{x:Type sys:Double}"
+                                Value="{Binding SigmaSpace.Value, Mode=TwoWay}"
+                                Minimum="0" Maximum="200"
+                                SmallChange="0.5" LargeChange="5.0"
+                                Width="250"
+                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                </controls:LabeledControl>
+                <controls:LabeledControl Label="边界处理" ToolTip="边界处理方式">
+                  <ComboBox x:Name="borderTypeComboBoxBilateral"
+                          Height="32" VerticalContentAlignment="Center" Width="250"
+                          SelectedItem="{Binding BorderTypeValue.Value, Mode=TwoWay, Converter={StaticResource BorderTypeConverter}}">
+                    <sys:String>镜像反射(Reflect)</sys:String>
+                    <sys:String>边缘复制(Replicate)</sys:String>
+                    <sys:String>常量填充(Constant)</sys:String>
+                    <sys:String>镜像反射101(Reflect101)</sys:String>
+                    <sys:String>环绕(Wrap)</sys:String>
+                    <sys:String>独立(Isolated)</sys:String>
+                  </ComboBox>
+                </controls:LabeledControl>
+            <controls:ParamGroup Header="参数说明" IsExpanded="False">
+                <StackPanel Margin="8,4">
+                    <TextBlock TextWrapping="Wrap" Foreground="#666666" FontSize="12" 
+                               Text="双边滤波(BILATERAL_FILTER)：空间距离+像素差异联合加权去噪"/>
+                    <TextBlock TextWrapping="Wrap" Foreground="#888888" FontSize="11" 
+                               Margin="0,6,0,0"
+                               Text="同时考虑几何距离和颜色相似性；SigmaColor控制颜色模糊程度；SigmaSpace控制空间模糊程度"/>
+                </StackPanel>
+            </controls:ParamGroup>
+              </StackPanel>
+            </GroupBox>
+
+            <!-- ====== 自定义卷积(Filter2D): BorderType ====== -->
+            <GroupBox Header="自定义卷积参数" Margin="0,8,0,0"
+                      Visibility="{Binding IsFilter2DMethod, Converter={StaticResource BoolToVisibilityConverter}}">
+              <StackPanel Margin="4,4">
+                <controls:LabeledControl Label="边界处理" ToolTip="边界处理方式">
+                  <ComboBox x:Name="borderTypeComboBoxF2D"
+                          Height="32" VerticalContentAlignment="Center" Width="250"
+                          SelectedItem="{Binding BorderTypeValue.Value, Mode=TwoWay, Converter={StaticResource BorderTypeConverter}}">
+                    <sys:String>镜像反射(Reflect)</sys:String>
+                    <sys:String>边缘复制(Replicate)</sys:String>
+                    <sys:String>常量填充(Constant)</sys:String>
+                    <sys:String>镜像反射101(Reflect101)</sys:String>
+                    <sys:String>环绕(Wrap)</sys:String>
+                    <sys:String>独立(Isolated)</sys:String>
+                  </ComboBox>
+                </controls:LabeledControl>
+            <controls:ParamGroup Header="参数说明" IsExpanded="False">
+                <StackPanel Margin="8,4">
+                    <TextBlock TextWrapping="Wrap" Foreground="#666666" FontSize="12" 
+                               Text="自定义卷积(FILTER_2D)：通过用户自定义卷积核实现任意线性滤波"/>
+                    <TextBlock TextWrapping="Wrap" Foreground="#888888" FontSize="11" 
+                               Margin="0,6,0,0"
+                               Text="卷积核由用户在运行配置中设置；可实现锐化、浮雕等效果"/>
+                </StackPanel>
+            </controls:ParamGroup>
+              </StackPanel>
+            </GroupBox>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+
+      <!-- Tab3: 结果显示 -->
+      <TabItem Header="结果显示">
+        <Grid Background="#F5F5F5">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+          </Grid.RowDefinitions>
+
+          <ScrollViewer Grid.Row="0" Padding="3">
+            <StackPanel>
+              <!-- 结果判断分组 -->
+              <Expander Header="结果判断"
+                                      IsExpanded="True"
+                                      BorderBrush="#E0E0E0"
+                                      BorderThickness="1"
+                                      Margin="0,0,0,8"
+                                      Background="White">
+                <StackPanel Margin="16,8">
+                  <!-- 输出为空判断 -->
+                  <controls:LabeledControl Label="输出为空判断" ContentHorizontalAlignment="Left">
+                    <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsEmptyCheckEnabled, Mode=TwoWay}"/>
+                  </controls:LabeledControl>
+
+                  <!-- 输出均值判断 -->
+                  <controls:LabeledControl Label="输出均值判断" ContentHorizontalAlignment="Left" Margin="0,2,0,0">
+                    <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsMeanCheckEnabled, Mode=TwoWay}"/>
+                  </controls:LabeledControl>
+                  <controls:LabeledControl Label="输出均值范围:" Margin="0,2,0,0"
+                                                            Visibility="{Binding ResultConfig.IsMeanCheckEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <controls:RangeInputControl
+                                            Unit=""
+                                            Minimum="0"
+                                            Maximum="255"
+                                            MinValue="{Binding ResultConfig.MeanMin, Mode=TwoWay}"
+                                            MaxValue="{Binding ResultConfig.MeanMax, Mode=TwoWay}"
+                                            DecimalPlaces="1" NumericWidth="120"/>
+                  </controls:LabeledControl>
+                </StackPanel>
+              </Expander>
+            </StackPanel>
+          </ScrollViewer>
+        </Grid>
+      </TabItem>
+    </TabControl>
+  </Grid>
+</controls:ToolDebugControlBase>

@@ -20,13 +20,6 @@
       "role": "相机管理器开发",
       "workspacePath": "d:/MyWork/SunEyeVision_Dev-camera",
       "branch": "feature/camera-type-support"
-    },
-    {
-      "memberId": "tool-developer@camera-tool-dev",
-      "name": "tool-developer",
-      "role": "工具插件优化",
-      "workspacePath": "d:/MyWork/SunEyeVision_Dev-tool",
-      "branch": "feature/tool-improvement"
     }
   ],
   "isAutoTeam": false

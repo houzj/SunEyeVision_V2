@@ -463,6 +463,14 @@ namespace SunEyeVision.CvEngine
         #region 🖼️ 显示
 
         /// <summary>
+        /// 从区域提取掩码图像 - 对应 Halcon region_to_bin(Region : : : BinaryImage)
+        /// </summary>
+        public static void RegionToMask(CvRegion region, out Mat mask)
+        {
+            mask = region.Mask?.Clone() ?? new Mat(region.ImageSize, MatType.CV_8UC1, Scalar.Black);
+        }
+
+        /// <summary>
         /// 组合显示图像 - 对应 Halcon dev_display 组合效果
         /// </summary>
         public static void ComposeDisplay(

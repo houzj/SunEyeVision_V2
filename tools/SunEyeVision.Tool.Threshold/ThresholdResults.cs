@@ -14,9 +14,24 @@ namespace SunEyeVision.Tool.Threshold
         #region 输出图像
 
         /// <summary>
-        /// 输出图像（阈值化结果）
+        /// 输出图像（阈值化结果 ComposeDisplay 合成图）
         /// </summary>
         public Mat? OutputImage { get; set; }
+
+        /// <summary>
+        /// 灰度图像中间结果（灰度转换后）
+        /// </summary>
+        public Mat? GrayImage { get; set; }
+
+        /// <summary>
+        /// ReduceDomain 中间结果（ROI限制后的灰度图）
+        /// </summary>
+        public Mat? ReducedImage { get; set; }
+
+        /// <summary>
+        /// 二值掩码图像（CV_8UC1, 0/255 纯二值）
+        /// </summary>
+        public Mat? BinaryMask { get; set; }
 
         /// <summary>
         /// 获取所有可显示的图像
@@ -26,6 +41,12 @@ namespace SunEyeVision.Tool.Threshold
             var images = new Dictionary<string, Mat?>();
             if (OutputImage != null && !OutputImage.Empty())
                 images["OutputImage"] = OutputImage;
+            if (GrayImage != null && !GrayImage.Empty())
+                images["GrayImage"] = GrayImage;
+            if (ReducedImage != null && !ReducedImage.Empty())
+                images["ReducedImage"] = ReducedImage;
+            if (BinaryMask != null && !BinaryMask.Empty())
+                images["BinaryMask"] = BinaryMask;
             return images;
         }
 
@@ -172,6 +193,9 @@ namespace SunEyeVision.Tool.Threshold
             return
             [
                 new("OutputImage",          "输出图像",               null),
+                new("GrayImage",            "灰度图像",               null),
+                new("ReducedImage",         "ROI缩减图像",            null),
+                new("BinaryMask",           "二值掩码",               null),
                 new("ThresholdUsed",        "实际使用的阈值",         "参数回写"),
                 new("MaxValueUsed",         "实际使用的最大值",       "参数回写"),
                 new("TypeUsed",             "阈值类型",               "参数回写"),

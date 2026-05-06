@@ -14,9 +14,19 @@ namespace SunEyeVision.Tool.BlobAnalysis
     public class BlobAnalysisResults : ToolResults
     {
         /// <summary>
-        /// 二值化图像（预处理输出）
+        /// 灰度输入图像（预处理后）
         /// </summary>
-        public Mat? BinaryImage { get; set; }
+        public Mat? GrayImage { get; set; }
+
+        /// <summary>
+        /// 二值分割掩码图像（CV_8UC1, 0/255）
+        /// </summary>
+        public Mat? BinaryMask { get; set; }
+
+        /// <summary>
+        /// 合成显示图像（灰度+二值叠加效果）
+        /// </summary>
+        public Mat? OverlayImage { get; set; }
 
         /// <summary>
         /// 获取所有可显示的图像
@@ -24,8 +34,12 @@ namespace SunEyeVision.Tool.BlobAnalysis
         public override Dictionary<string, Mat?> GetDisplayImages()
         {
             var images = new Dictionary<string, Mat?>();
-            if (BinaryImage != null && !BinaryImage.Empty())
-                images["BinaryImage"] = BinaryImage;
+            if (GrayImage != null && !GrayImage.Empty())
+                images["GrayImage"] = GrayImage;
+            if (BinaryMask != null && !BinaryMask.Empty())
+                images["BinaryMask"] = BinaryMask;
+            if (OverlayImage != null && !OverlayImage.Empty())
+                images["OverlayImage"] = OverlayImage;
             return images;
         }
 
@@ -241,7 +255,9 @@ namespace SunEyeVision.Tool.BlobAnalysis
         {
             return
             [
-                new("BinaryImage",              "二值图像",               null),
+                new("GrayImage",                "灰度图像",               null),
+                new("BinaryMask",               "二值掩码",               null),
+                new("OverlayImage",             "合成显示图像",           null),
                 new("ThresholdUsed",            "实际使用的阈值",         "预处理"),
                 new("MaxValueUsed",             "最大值",                 "预处理"),
                 new("ThresholdUsedDouble",      "实际使用的阈值(Double)", "预处理"),

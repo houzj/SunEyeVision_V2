@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using OpenCvSharp;
@@ -67,6 +67,18 @@ namespace SunEyeVision.Tool.ImageLoad
                 result.Height = loadedImage.Height;
                 result.Channels = loadedImage.Channels();
                 result.Depth = (int)loadedImage.Depth();
+
+                // 灰度转换：彩色→灰度，灰度原图直接克隆
+                if (loadedImage.Channels() > 1)
+                {
+                    var grayMat = new Mat();
+                    Cv2.CvtColor(loadedImage, grayMat, ColorConversionCodes.BGR2GRAY);
+                    result.GrayImage = grayMat;
+                }
+                else
+                {
+                    result.GrayImage = loadedImage.Clone();
+                }
 
                 stopwatch.Stop();
                 result.SetSuccess(stopwatch.ElapsedMilliseconds);

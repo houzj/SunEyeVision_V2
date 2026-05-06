@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using OpenCvSharp;
 using SunEyeVision.Plugin.SDK.Execution.Results;
@@ -16,6 +16,11 @@ namespace SunEyeVision.Tool.ImageLoad
         public Mat? OutputImage { get; set; }
 
         /// <summary>
+        /// 灰度图像（彩色输入时转换得到，灰度输入时为原图克隆）
+        /// </summary>
+        public Mat? GrayImage { get; set; }
+
+        /// <summary>
         /// 获取所有可显示的图像
         /// </summary>
         public override Dictionary<string, Mat?> GetDisplayImages()
@@ -23,6 +28,8 @@ namespace SunEyeVision.Tool.ImageLoad
             var images = new Dictionary<string, Mat?>();
             if (OutputImage != null && !OutputImage.Empty())
                 images["OutputImage"] = OutputImage;
+            if (GrayImage != null && !GrayImage.Empty())
+                images["GrayImage"] = GrayImage;
             return images;
         }
 
@@ -233,6 +240,7 @@ namespace SunEyeVision.Tool.ImageLoad
             return
             [
                 new("OutputImage",      "输出图像",     null),
+                new("GrayImage",        "灰度图像",     null),
                 new("Width",            "宽度",         "图像"),
                 new("Height",           "高度",         "图像"),
                 new("Size",             "尺寸",         "图像"),

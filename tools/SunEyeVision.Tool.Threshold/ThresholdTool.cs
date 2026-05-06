@@ -100,6 +100,9 @@ namespace SunEyeVision.Tool.Threshold
 
                 using (grayImage)
                 {
+                    // 保存灰度图像中间结果
+                    result.GrayImage = grayImage.Image.Clone();
+
                     CvRegion? roiRegion = null;
 
                     // ===== Step 2: 构建ROI区域 + 差集处理 =====
@@ -144,6 +147,8 @@ namespace SunEyeVision.Tool.Threshold
 
                         using (reducedImage)
                         {
+                            // 保存 ReduceDomain 中间结果
+                            result.ReducedImage = reducedImage.Image.Clone();
                             // ===== Step 4: 阈值分割 =====
                             stepSw.Restart();
                             var cvThresholdType = (CvThresholdType)type;
@@ -174,6 +179,10 @@ namespace SunEyeVision.Tool.Threshold
                             {
                                 // 输出图像：通过 ComposeDisplay 将二值区域转为输出 Mat
                                 CvOp.ComposeDisplay(reducedImage, null, binaryRegion, out var outputImage);
+
+                                // 保存二值掩码（从 binaryRegion 提取纯二值 Mat）
+                                CvOp.RegionToMask(binaryRegion, out var binaryMask);
+                                result.BinaryMask = binaryMask;
 
                                 result.OutputImage = outputImage;
                                 result.ThresholdUsed = actualThreshold;

@@ -269,7 +269,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
 
                                     // ===== Step 14: 设置结果数据 =====
                                     stepSw.Restart();
-                                    result.BinaryImage = grayImage.Image.Clone();
+                                    result.GrayImage = grayImage.Image.Clone();
                                     result.AllBlobs = allBlobs;
                                     result.FilteredBlobs = filteredBlobs;
                                     result.ThresholdUsed = (int)actualThreshold;
@@ -279,6 +279,12 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                     result.TypeUsed = parameters.Type.Value;
                                     result.InvertUsed = parameters.Invert.Value;
                                     result.ConnectivityUsed = parameters.Connectivity.Value;
+
+                                    // 保存二值掩码和合成显示图像
+                                    CvOp.RegionToMask(binaryRegion, out var binaryMask);
+                                    result.BinaryMask = binaryMask;
+                                    CvOp.ComposeDisplay(reducedImage, null, binaryRegion, out var overlayImage);
+                                    result.OverlayImage = overlayImage;
                                     stepSw.Stop();
                                     stepTimings.Add(("结果赋值", stepSw.ElapsedMilliseconds));
 

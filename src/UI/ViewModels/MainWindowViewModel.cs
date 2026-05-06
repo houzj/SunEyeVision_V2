@@ -2498,58 +2498,10 @@ SplitterPosition = position;
         }
 
         /// <summary>
-        /// 使用 BFS 递归查找所有上游节点
+        /// 更新图像显示控件的数据源（当前节点 + 所有上游节点）
+        /// 统一使用 DataSourceQueryService.GetMatDisplaySources() 获取数据源，
+        /// 与 ImageSourceSelector 共享相同的元数据源
         /// </summary>
-        /// <param name="tab">当前工作流标签页</param>
-        /// <param name="nodeId">起始节点ID</param>
-        /// <returns>上游节点列表，按距离排序（最近的在前）</returns>
-        private List<(Models.WorkflowNode Node, int Distance)> FindAllUpstreamNodes(
-            ViewModels.WorkflowTabViewModel tab, string nodeId)
-        {
-            var result = new List<(Models.WorkflowNode Node, int Distance)>();
-            var visited = new HashSet<string>();
-            var queue = new Queue<(string NodeId, int Distance)>();
-
-            // 从当前节点开始，查找所有前驱
-            queue.Enqueue((nodeId, 0));
-            visited.Add(nodeId);
-
-            while (queue.Count > 0)
-            {
-                var (currentNodeId, distance) = queue.Dequeue();
-
-                // 查找当前节点的所有直接前驱连接
-                var parentConnections = tab.WorkflowConnections
-                    .Where(conn => conn.TargetNodeId == currentNodeId)
-                    .ToList();
-
-                foreach (var connection in parentConnections)
-                {
-                    if (!visited.Contains(connection.SourceNodeId))
-                    {
-                        visited.Add(connection.SourceNodeId);
-
-                        var parentNode = tab.WorkflowNodes.FirstOrDefault(n => n.Id == connection.SourceNodeId);
-                        if (parentNode != null)
-                        {
-                            // 添加到结果（距离 +1）
-                            result.Add((parentNode, distance + 1));
-
-                            // 继续向上游查找
-                            queue.Enqueue((connection.SourceNodeId, distance + 1));
-                        }
-                    }
-                }
-            }
-
-            // 按距离排序（最近的在前）
-            return result.OrderBy(x => x.Distance).ToList();
-        }
-
-        /// <summary>
-        /// 更新图像显示控件的数据源（当前节点 + 所有父节点）
-        /// </summary>
-        /// <param name="selectedNode">当前选中的节点</param>
         private void UpdateDisplayImageSources(Models.WorkflowNode? selectedNode)
         {
             DisplayImageSources.Clear();
@@ -2560,135 +2512,17 @@ SplitterPosition = position;
                 return;
             }
 
-            // 获取当前工作流标签页
-            var selectedTab = WorkflowTabViewModel?.SelectedTab;
-            if (selectedTab == null)
+            // 统一从 DataSourceQueryService 获取 Mat 数据源
+            // （走 IPropertyMetadataProvider，与 ImageSourceSelector 同源）
+            var provider = GetDataProviderForNode(selectedNode);
+            if (provider is DataSourceQueryService queryService)
             {
-                SelectedDisplayImageSourceIndex = -1;
-                return;
+                var sources = queryService.GetMatDisplaySources(selectedNode.Id);
+                foreach (var ds in sources)
+                    DisplayImageSources.Add(ds);
             }
 
-            // 1. 首先添加当前节点（距离=0）
-            if (selectedNode.OutputCache != null && selectedNode.OutputCache.HasOutput)
-            {
-                // 节点有输出，添加到列表
-                var outputCache = selectedNode.OutputCache;
-                foreach (var imageName in outputCache.GetImageNames())
-                {
-                    DisplayImageSources.Add(new AvailableDataSource
-                    {
-                        SourceNodeId = selectedNode.Id,
-                        SourceNodeName = selectedNode.Name,
-                        PropertyName = imageName,
-                        DisplayName = string.IsNullOrEmpty(imageName) ? selectedNode.Name : imageName,
-                        PropertyType = typeof(OpenCvSharp.Mat),
-                        Distance = 0,
-                        HasExecuted = true
-                    });
-                }
-            }
-            else
-            {
-                // 从 WorkflowContext 获取执行结果
-                var executionResult = _workflowContext.GetNodeResult(selectedNode.Id);
-                if (executionResult?.ToolResult != null && executionResult.Success)
-                {
-                    var outputValues = executionResult.ToolResult.GetOutputValues();
-                    if (outputValues != null)
-                    {
-                        foreach (var kvp in outputValues.Where(kv => kv.Value is OpenCvSharp.Mat))
-                        {
-                            DisplayImageSources.Add(new AvailableDataSource
-                            {
-                                SourceNodeId = selectedNode.Id,
-                                SourceNodeName = selectedNode.Name,
-                                PropertyName = kvp.Key,
-                                DisplayName = kvp.Key,
-                                PropertyType = typeof(OpenCvSharp.Mat),
-                                Distance = 0,
-                                HasExecuted = true
-                            });
-                        }
-                    }
-                }
-                else
-                {
-                    // 节点未执行，清空图像显示并添加占位项
-                    DisplayImage = null;
-                    OriginalImage = null;
-                    ProcessedImage = null;
-                    ResultImage = null;
-
-                    DisplayImageSources.Add(new AvailableDataSource
-                    {
-                        SourceNodeId = selectedNode.Id,
-                        SourceNodeName = $"{selectedNode.Name} (未执行)",
-                        PropertyName = "Output",
-                        DisplayName = "Output",
-                        PropertyType = typeof(OpenCvSharp.Mat),
-                        Distance = 0,
-                        HasExecuted = false
-                    });
-                }
-            }
-
-            // 2. 使用 BFS 查找所有父节点
-            var allUpstreamNodes = FindAllUpstreamNodes(selectedTab, selectedNode.Id);
-
-            // 3. 添加所有父节点
-            foreach (var (parentNode, distance) in allUpstreamNodes)
-            {
-                bool hasOutput = false;
-
-                // 从 WorkflowContext 获取执行结果
-                var executionResult = _workflowContext.GetNodeResult(parentNode.Id);
-                if (executionResult?.ToolResult != null && executionResult.Success)
-                {
-                    var outputValues = executionResult.ToolResult.GetOutputValues();
-                    if (outputValues != null)
-                    {
-                        foreach (var kvp in outputValues.Where(kv => kv.Value is OpenCvSharp.Mat))
-                        {
-                            DisplayImageSources.Add(new AvailableDataSource
-                            {
-                                SourceNodeId = parentNode.Id,
-                                SourceNodeName = parentNode.Name,
-                                PropertyName = kvp.Key,
-                                DisplayName = kvp.Key,
-                                PropertyType = typeof(OpenCvSharp.Mat),
-                                Distance = distance,
-                                HasExecuted = true
-                            });
-                            hasOutput = true;
-                        }
-                    }
-                }
-
-                // 如果没有输出，添加占位项
-                if (!hasOutput)
-                {
-                    DisplayImageSources.Add(new AvailableDataSource
-                    {
-                        SourceNodeId = parentNode.Id,
-                        SourceNodeName = $"{parentNode.Name} (未执行)",
-                        PropertyName = "Output",
-                        DisplayName = "Output",
-                        PropertyType = typeof(OpenCvSharp.Mat),
-                        Distance = distance,
-                        HasExecuted = false
-                    });
-                }
-            }
-
-            // 4. 默认选中第一项（当前节点的第一个输出）
-            if (DisplayImageSources.Count > 0)
-            {
-                SelectedDisplayImageSourceIndex = 0;
-            }
-            else
-            {
-                SelectedDisplayImageSourceIndex = -1;
-            }
+            SelectedDisplayImageSourceIndex = DisplayImageSources.Count > 0 ? 0 : -1;
         }
 
         /// <summary>

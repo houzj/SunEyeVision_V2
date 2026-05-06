@@ -218,6 +218,75 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             return allDataSources;
         }
 
+        /// <summary>
+        /// 获取图像显示用的 Mat 数据源集合（当前节点 + 所有上游节点）
+        /// 统一供 ImageControl 使用，与 ImageSourceSelector 共享相同的元数据源
+        /// </summary>
+        /// <param name="currentNodeId">当前选中的节点ID</param>
+        /// <returns>按距离排序的 Mat 数据源列表</returns>
+        public List<AvailableDataSource> GetMatDisplaySources(string currentNodeId)
+        {
+            var result = new List<AvailableDataSource>();
+
+            // 步骤 1: 当前节点自身的 Mat 输出 (Distance=0)
+            var nodeType = _nodeInfoProvider?.GetNodeType(currentNodeId);
+            var nodeName = _nodeInfoProvider?.GetNodeName(currentNodeId) ?? currentNodeId;
+            if (nodeType != null)
+            {
+                var metadataList = _metadataProvider?.GetAllPropertyMetadata(nodeType);
+                if (metadataList != null)
+                {
+                    foreach (var meta in metadataList.Where(m => m.PropertyType?.Name == "Mat"))
+                    {
+                        result.Add(new AvailableDataSource
+                        {
+                            SourceNodeId = currentNodeId,
+                            SourceNodeName = nodeName,
+                            PropertyName = meta.PropertyName,
+                            DisplayName = meta.DisplayName,
+                            PropertyType = meta.PropertyType,
+                            Distance = 0,
+                        });
+                    }
+                }
+            }
+
+            // 步骤 2: BFS 遍历所有上游节点的 Mat 输出 (Distance>=1)
+            if (_connectionProvider != null)
+            {
+                var visited = new HashSet<string> { currentNodeId };
+                var queue = new Queue<(string NodeId, int Distance)>();
+                queue.Enqueue((currentNodeId, 0));
+
+                while (queue.Count > 0)
+                {
+                    var (currentId, currentDistance) = queue.Dequeue();
+                    var parentIds = _connectionProvider.GetParentNodeIds(currentId);
+
+                    foreach (var parentId in parentIds)
+                    {
+                        if (!visited.Contains(parentId))
+                        {
+                            visited.Add(parentId);
+                            int childDistance = currentDistance + 1;
+
+                            // 获取该节点的 Mat 输出属性
+                            foreach (var prop in GetNodeOutputProperties(parentId)
+                                .Where(p => p.PropertyType?.Name == "Mat"))
+                            {
+                                prop.Distance = childDistance;
+                                result.Add(prop);
+                            }
+
+                            queue.Enqueue((parentId, childDistance));
+                        }
+                    }
+                }
+            }
+
+            return result;
+        }
+
         /// <inheritdoc/>
         public List<AvailableDataSource> GetNodeOutputProperties(string parentNodeId)
         {

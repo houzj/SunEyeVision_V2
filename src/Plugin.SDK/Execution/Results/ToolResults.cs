@@ -657,5 +657,21 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
                 Type = type
             });
         }
+
+        /// <summary>
+        /// 从结果项中提取 Mat 图像供 UI 显示
+        /// </summary>
+        public override Dictionary<string, Mat?> GetDisplayImages()
+        {
+            var images = new Dictionary<string, Mat?>();
+            foreach (var item in _resultItems)
+            {
+                if (item.Value is Mat mat && !mat.Empty())
+                {
+                    images[item.Name] = mat;
+                }
+            }
+            return images;
+        }
     }
 }

@@ -163,6 +163,16 @@ namespace SunEyeVision.Workflow
         /// </remarks>
         public ParamSettingContainer ParamSettings { get; set; }
 
+        /// <summary>
+        /// 用户为该节点选择的图像显示源（持久化保存）
+        /// </summary>
+        /// <remarks>
+        /// 保存后重新打开工作流时，图像预览自动恢复到用户上次选择的显示源。
+        /// 使用 ImageSourceReference 可序列化模型，仅存储身份+展示信息。
+        /// 反序列化旧文件时此属性为 null，行为与之前一致（回退到默认）。
+        /// </remarks>
+        public ImageSourceReference? SelectedDisplaySource { get; set; }
+
         #endregion
 
         #region UI 层专有属性（不序列化）
@@ -714,7 +724,8 @@ namespace SunEyeVision.Workflow
                 PositionX = PositionX,
                 PositionY = PositionY,
                 Width = Width,
-                Height = Height
+                Height = Height,
+                SelectedDisplaySource = SelectedDisplaySource
             };
 
             return cloned;

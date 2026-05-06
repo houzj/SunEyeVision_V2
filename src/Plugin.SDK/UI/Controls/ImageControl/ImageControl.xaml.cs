@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -64,6 +66,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         private bool _parentIsPanel;  // 标记父容器是否为 Panel
         private BitmapSource? _savedSourceImage;  // 全屏前保存的图像引用
         private object? _savedDataContext;  // 保存原 DataContext
+
+        // 选中变更抑制 - 防止因 ItemsSource 刷新导致 ComboBox 自动选中 index 0 触发冗余回调
+        private bool _suppressSelectionChanged;
 
         #endregion
 
@@ -617,8 +622,26 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         {
             if (d is ImageControl control)
             {
+                // 取消旧集合的事件监听
+                if (e.OldValue is ObservableCollection<AvailableDataSource> oldCollection)
+                {
+                    oldCollection.CollectionChanged -= control.OnImageSourcesCollectionChanged;
+                }
+
+                var oldCount = (e.OldValue as ObservableCollection<AvailableDataSource>)?.Count ?? -1;
+                var newCount = (e.NewValue as ObservableCollection<AvailableDataSource>)?.Count ?? -1;
+                VisionLogger.Instance.Log(LogLevel.Info,
+                    $"[ImageSource] OnImageSourcesChanged: old={oldCount}, new={newCount}",
+                    "ImageControl");
+
                 // 更新 ComboBox 的 ItemsSource
                 control.ImageSourceSelector.ItemsSource = e.NewValue as ObservableCollection<AvailableDataSource>;
+
+                // 监听新集合的 CollectionChanged（用于抑制 Reset 时 ComboBox 自动选中 index 0）
+                if (e.NewValue is ObservableCollection<AvailableDataSource> newCollection)
+                {
+                    newCollection.CollectionChanged += control.OnImageSourcesCollectionChanged;
+                }
             }
         }
 
@@ -626,11 +649,42 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         {
             if (d is ImageControl control)
             {
+                var oldIndex = (int)e.OldValue;
                 var newIndex = (int)e.NewValue;
-                if (newIndex >= 0 && control.ImageSourceSelector.Items.Count > newIndex)
+                var itemsCount = control.ImageSourceSelector.Items.Count;
+                var conditionMet = newIndex >= 0 && itemsCount > newIndex;
+                VisionLogger.Instance.Log(LogLevel.Info,
+                    $"[ImageSource] DP变更: {oldIndex}→{newIndex}, Items.Count={itemsCount}, 条件满足={conditionMet}",
+                    "ImageControl");
+
+                if (newIndex >= 0 && itemsCount > newIndex)
                 {
+                    var item = control.ImageSourceSelector.Items[newIndex];
+                    VisionLogger.Instance.Log(LogLevel.Info,
+                        $"[ImageSource] DP变更: 设置ComboBox.SelectedIndex={newIndex}, item={item}",
+                        "ImageControl");
+
+                    // 设置 ComboBox 选中项：先清除再选中，确保 ComboBox 内部状态刷新
+                    control.ImageSourceSelector.SelectedIndex = -1;
                     control.ImageSourceSelector.SelectedIndex = newIndex;
+
+                    // 强制更新 ToggleButton 的 Content，绕过 SelectionBoxItem 的自绑定延迟问题
+                    // 集合 Reset 后 WPF 的 SelectionBoxItem 可能无法正确刷新
+                    if (control.ImageSourceSelector.Template.FindName("ToggleButton", control.ImageSourceSelector) is ToggleButton toggleButton)
+                    {
+                        toggleButton.Content = item;
+                        VisionLogger.Instance.Log(LogLevel.Info,
+                            $"[ImageSource] DP变更: 强制更新ToggleButton.Content={item}, DropdownDisplayText={((AvailableDataSource)item).DropdownDisplayText}",
+                            "ImageControl");
+                    }
+                    else
+                    {
+                        VisionLogger.Instance.Log(LogLevel.Warning,
+                            $"[ImageSource] DP变更: 未能找到ToggleButton模板元素",
+                            "ImageControl");
+                    }
                 }
+                // else：newIndex < 0 是 Clear 后的正常中间状态，不记录
             }
         }
 
@@ -877,13 +931,45 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         private void ImageSourceSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            // ★ 抑制因 ItemsSource 刷新导致 ComboBox 自动选中 index 0 的冗余回调
+            if (_suppressSelectionChanged)
+            {
+                _suppressSelectionChanged = false;
+                VisionLogger.Instance.Log(LogLevel.Info,
+                    $"[ImageSource] 抑制自动选中, SelectedIndex={ImageSourceSelector.SelectedIndex}",
+                    "ImageControl");
+                return;
+            }
+
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[ImageSource] ComboBox SelectionChanged: AddedItems.Count={e.AddedItems.Count}, SelectedIndex={ImageSourceSelector.SelectedIndex}, Items.Count={ImageSourceSelector.Items.Count}",
+                "ImageControl");
+
             if (e.AddedItems.Count > 0 && e.AddedItems[0] is AvailableDataSource selectedSource)
             {
                 // 更新选中索引
+                VisionLogger.Instance.Log(LogLevel.Info,
+                    $"[ImageSource] ComboBox SelectionChanged: 选中 source={selectedSource.SourceNodeName}.{selectedSource.DisplayName}, 设置SelectedImageSourceIndex={ImageSourceSelector.SelectedIndex}",
+                    "ImageControl");
                 SelectedImageSourceIndex = ImageSourceSelector.SelectedIndex;
 
                 // 触发事件
                 RaiseEvent(new ImageSourceSelectionChangedEventArgs(selectedSource, ImageSourceSelectionChangedEvent));
+            }
+            // else if (e.AddedItems.Count == 0)：Clear 后 ComboBox 重置引起的正常中间状态，不记录
+        }
+
+        /// <summary>
+        /// 监听 ImageSources 集合变更，在 Reset（Clear）时设置抑制标记
+        /// </summary>
+        private void OnImageSourcesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == NotifyCollectionChangedAction.Reset)
+            {
+                VisionLogger.Instance.Log(LogLevel.Info,
+                    $"[ImageSource] 检测到Collection Reset, 抑制自动选中导致的SelectionChanged回调",
+                    "ImageControl");
+                _suppressSelectionChanged = true;
             }
         }
 

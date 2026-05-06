@@ -174,7 +174,8 @@ namespace SunEyeVision.UI.Models
                 Width = baseNode.Width,
                 Height = baseNode.Height,
                 IsEnabled = baseNode.IsEnabled,
-                Parameters = baseNode.Parameters
+                Parameters = baseNode.Parameters,
+                SelectedDisplaySource = baseNode.SelectedDisplaySource
             };
 
             return node;

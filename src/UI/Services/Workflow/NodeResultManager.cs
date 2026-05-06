@@ -108,11 +108,26 @@ namespace SunEyeVision.UI.Services.Workflow
             // ★ Step 1-2: 更新模块结果树（分组显示）
             _viewModel.UpdateModuleResults(result, node.Name, node.ToolType);
 
-            // ★ Step 3: 更新图像 - 基于当前 ComboBox 选中项
+            // ★ Step 3: 更新图像 - 基于当前 ComboBox 选中项（跨节点支持）
             var selectedSource = _viewModel.GetSelectedImageSource();
             if (selectedSource != null)
             {
-                var bitmapSource = GetDisplayImageFromSource(result, selectedSource.PropertyName);
+                // 根据 SourceNodeId 获取源节点的结果对象，支持显示父节点的图像
+                ToolResults sourceResult;
+                if (selectedSource.SourceNodeId == node.Id)
+                {
+                    sourceResult = result; // 本节点：直接用参数
+                }
+                else
+                {
+                    // 父节点/其他节点：从 WorkflowContext 缓存获取
+                    var sourceExecResult = _workflowContext.GetNodeResult(selectedSource.SourceNodeId);
+                    sourceResult = sourceExecResult?.ToolResult;
+                    if (sourceResult == null)
+                        return; // 尚未执行的节点跳过，不清空当前图像
+                }
+
+                var bitmapSource = GetDisplayImageFromSource(sourceResult, selectedSource.PropertyName);
                 if (bitmapSource != null)
                 {
                     _viewModel.SetDisplayImageFromBitmap(bitmapSource);

@@ -43,26 +43,6 @@ using SunEyeVision.Core.Models;
 namespace SunEyeVision.UI.ViewModels
 {
     /// <summary>
-    /// 图像显示类型枚举
-    /// </summary>
-    public enum ImageDisplayType
-    {
-        Original,    // 原始图
-        Processed,   // 处理图
-        Result       // 结果图
-    }
-
-    /// <summary>
-    /// 图像显示类型项
-    /// </summary>
-    public class ImageDisplayTypeItem
-    {
-        public ImageDisplayType Type { get; set; }
-        public string DisplayName { get; set; } = string.Empty;
-        public string Icon { get; set; } = string.Empty;
-    }
-
-    /// <summary>
     /// 结果项
     /// </summary>
     public class ResultItem
@@ -86,12 +66,7 @@ namespace SunEyeVision.UI.ViewModels
         private BitmapSource? _displayImage;
         private double _imageScale = 1.0;
 
-        // 图像类型
-        private ImageDisplayTypeItem? _selectedImageType;
         private bool _showImagePreview = false;
-        private BitmapSource? _originalImage;
-        private BitmapSource? _processedImage;
-        private BitmapSource? _resultImage;
 
         // 图像预览
         private bool _autoSwitchEnabled = false;
@@ -225,11 +200,6 @@ namespace SunEyeVision.UI.ViewModels
         private int _selectedDisplayImageSourceIndex = -1;
 
         /// <summary>
-        /// 节点选中图像记忆字典: nodeId → propertyName
-        /// </summary>
-        private readonly Dictionary<string, string> _nodeSelectedImageMap = new();
-
-        /// <summary>
         /// 当前选中的图像显示源索引
         /// </summary>
         public int SelectedDisplayImageSourceIndex
@@ -239,6 +209,10 @@ namespace SunEyeVision.UI.ViewModels
             {
                 if (SetProperty(ref _selectedDisplayImageSourceIndex, value))
                 {
+                    var sourceInfo = (value >= 0 && value < DisplayImageSources.Count)
+                        ? DisplayImageSources[value].ToString()
+                        : "无效索引/空集合";
+                    LogInfo($"图像源|SelectedIndex变更: {value} ({sourceInfo}), Count={DisplayImageSources.Count}", "ImageSourceSelector");
                     UpdateDisplayImageFromCurrentSource();
                 }
             }
@@ -281,10 +255,13 @@ namespace SunEyeVision.UI.ViewModels
             get => _selectedNode;
             set
             {
+                var oldNode = _selectedNode;
                 bool changed = SetProperty(ref _selectedNode, value);
 
                 if (changed)
                 {
+                    LogInfo($"图像源|节点切换: {(value != null ? $"{value.Name}({value.Id})" : "null")} ← {(oldNode != null ? $"{oldNode.Name}({oldNode.Id})" : "null")}", "ImageSourceSelector");
+
                     // 更新数据分析控件（同步等待异步操作）
                     UpdateDataAnalysisControl((Models.WorkflowNode?)value).GetAwaiter().GetResult();
 
@@ -328,6 +305,8 @@ namespace SunEyeVision.UI.ViewModels
         /// <param name="node">要选中的节点</param>
         public void ForceSelectNode(WorkflowNodeBase node)
         {
+            LogInfo($"图像源|ForceSelectNode: node={node?.Name}({node?.Id}), _selectedNode={_selectedNode?.Name}({_selectedNode?.Id})", "ImageSourceSelector");
+
             // 更新选中状态
             if (_selectedNode != node)
             {
@@ -417,25 +396,6 @@ namespace SunEyeVision.UI.ViewModels
             }
         }
 
-        /// <summary>
-        /// 图像显示类型集合
-        /// </summary>
-        public ObservableCollection<ImageDisplayTypeItem> ImageDisplayTypes { get; }
-
-        /// <summary>
-        /// 当前选中的图像显示类型
-        /// </summary>
-        public ImageDisplayTypeItem? SelectedImageType
-        {
-            get => _selectedImageType;
-            set
-            {
-                if (SetProperty(ref _selectedImageType, value))
-                {
-                    UpdateDisplayImage();
-                }
-            }
-        }
 
         /// <summary>
         /// 是否显示图像及其预览模块（ImageCaptureTool节点专用）
@@ -573,42 +533,6 @@ SplitterPosition = position;
         {
             get => _allWorkflowsRunButtonText;
             set => SetProperty(ref _allWorkflowsRunButtonText, value);
-        }
-
-        /// <summary>
-        /// 原始图像
-        /// </summary>
-        /// <remarks>
-        /// ★ 防闪烁优化：setter 不再自动更新 DisplayImage，由调用方显式控制
-        /// </remarks>
-        public BitmapSource? OriginalImage
-        {
-            get => _originalImage;
-            set => SetProperty(ref _originalImage, value);
-        }
-
-        /// <summary>
-        /// 处理后图像
-        /// </summary>
-        /// <remarks>
-        /// ★ 防闪烁优化：setter 不再自动更新 DisplayImage，由调用方显式控制
-        /// </remarks>
-        public BitmapSource? ProcessedImage
-        {
-            get => _processedImage;
-            set => SetProperty(ref _processedImage, value);
-        }
-
-        /// <summary>
-        /// 结果图像
-        /// </summary>
-        /// <remarks>
-        /// ★ 防闪烁优化：setter 不再自动更新 DisplayImage，由调用方显式控制
-        /// </remarks>
-        public BitmapSource? ResultImage
-        {
-            get => _resultImage;
-            set => SetProperty(ref _resultImage, value);
         }
 
         /// <summary>
@@ -793,8 +717,6 @@ SplitterPosition = position;
         public ICommand ToggleFullScreenCommand { get; }
 
         // 图像操作
-        public ICommand BrowseImageCommand { get; }
-        public ICommand LoadImageCommand { get; }
         public ICommand ClearImageCommand { get; }
 
         public ICommand ClearLogCommand { get; }
@@ -823,15 +745,6 @@ SplitterPosition = position;
 
             WorkflowViewModel = new WorkflowViewModel();
             WorkflowTabViewModel = new WorkflowTabControlViewModel();
-
-            // 初始化图像显示类型
-            ImageDisplayTypes = new ObservableCollection<ImageDisplayTypeItem>
-            {
-                new ImageDisplayTypeItem { Type = ImageDisplayType.Original, DisplayName = "原始图", Icon = "📷" },
-                new ImageDisplayTypeItem { Type = ImageDisplayType.Processed, DisplayName = "处理图", Icon = "🔧" },
-                new ImageDisplayTypeItem { Type = ImageDisplayType.Result, DisplayName = "结果图", Icon = "✅" }
-            };
-            SelectedImageType = ImageDisplayTypes.FirstOrDefault();
 
             // 初始化计算结果
             CalculationResults = new ObservableCollection<ResultItem>();
@@ -918,8 +831,6 @@ SplitterPosition = position;
             ToggleFullScreenCommand = new RelayCommand(ExecuteToggleFullScreen);
 
             // 图像操作
-            BrowseImageCommand = new RelayCommand(ExecuteBrowseImage);
-            LoadImageCommand = new RelayCommand(ExecuteLoadImage);
             ClearImageCommand = new RelayCommand(ExecuteClearImage);
 
             // 日志操作
@@ -2007,6 +1918,9 @@ SplitterPosition = position;
 
             // 连线建立后自动绑定 ImageSource（所见即所得）
             AutoBindImageSourceOnConnectionAdded(connection);
+
+            // 连接变更后立即刷新当前选中节点的图像显示（无需用户切走再切回）
+            RefreshImageDisplayIfAffected(connection);
         }
 
         /// <summary>
@@ -2032,6 +1946,37 @@ SplitterPosition = position;
 
             // 连线删除后自动回退 ImageSource
             AutoBindImageSourceOnConnectionRemoved(connection.SourceNodeId, targetNodeRef);
+
+            // 连接变更后立即刷新当前选中节点的图像显示（无需用户切走再切回）
+            RefreshImageDisplayIfAffected(connection);
+        }
+
+        /// <summary>
+        /// 检查节点是否受指定连接的影响（作为连接的 Source 或 Target）
+        /// </summary>
+        private bool IsNodeAffectedByConnection(WorkflowNodeBase? node, WorkflowConnection connection)
+        {
+            if (node == null) return false;
+            return node.Id == connection.SourceNodeId || node.Id == connection.TargetNodeId;
+        }
+
+        /// <summary>
+        /// 如果当前选中节点受连接变更影响，强制刷新图像显示
+        /// </summary>
+        /// <remarks>
+        /// 解决问题：连接节点后图像不立即更新，需切换节点再切回才显示最新结果
+        /// </remarks>
+        private void RefreshImageDisplayIfAffected(WorkflowConnection connection)
+        {
+            if (SelectedNode == null) return;
+
+            if (IsNodeAffectedByConnection(SelectedNode, connection))
+            {
+                LogInfo($"连接变更|刷新图像显示: 受影响节点={SelectedNode.Name}({SelectedNode.Id}), 连接={connection.SourceNodeId}→{connection.TargetNodeId}", "ImageSourceSelector");
+
+                // 使用 ForceSelectNode 强制刷新（即使节点引用相同也更新 DisplayImageSources + ImagePreviewVisibility）
+                ForceSelectNode(SelectedNode);
+            }
         }
 
         /// <summary>
@@ -2515,11 +2460,13 @@ SplitterPosition = position;
         /// </summary>
         private void UpdateDisplayImageSources(Models.WorkflowNode? selectedNode)
         {
+            LogInfo($"图像源|UpdateDisplayImageSources 入口: node={(selectedNode != null ? $"{selectedNode.Name}({selectedNode.Id})" : "null")}, Clear前Count={DisplayImageSources.Count}", "ImageSourceSelector");
             DisplayImageSources.Clear();
 
             if (selectedNode == null)
             {
-                SelectedDisplayImageSourceIndex = -1;
+                LogInfo($"图像源|selectedNode==null, 清空数据源", "ImageSourceSelector");
+                SetSelectedDisplayImageSourceIndexDeferred(-1);
                 return;
             }
 
@@ -2531,30 +2478,95 @@ SplitterPosition = position;
                 var sources = queryService.GetMatDisplaySources(selectedNode.Id);
                 foreach (var ds in sources)
                     DisplayImageSources.Add(ds);
+                LogInfo($"图像源|数据源列表 (Count={DisplayImageSources.Count}): {string.Join(" | ", DisplayImageSources.Select((s, i) => $"[{i}]{s.SourceNodeName}.{s.DisplayName}"))}", "ImageSourceSelector");
+            }
+            else
+            {
+                LogWarning($"图像源|DataSourceQueryService 未找到, Provider type={provider?.GetType().Name ?? "null"}", "ImageSourceSelector");
             }
 
-            // 恢复记忆的选中项
-            if (_nodeSelectedImageMap.TryGetValue(selectedNode.Id, out var savedProperty))
+            // 从工作流引擎节点统一读取持久化的选中项（统一数据源）
+            var workflow = _workflowEngine.CurrentWorkflow;
+            var savedSource = workflow?.Nodes
+                .FirstOrDefault(n => n.Id == selectedNode.Id)
+                ?.SelectedDisplaySource;
+            if (savedSource != null)
             {
                 int idx = -1;
                 for (int i = 0; i < DisplayImageSources.Count; i++)
                 {
-                    if (DisplayImageSources[i].SourceNodeId == selectedNode.Id &&
-                        DisplayImageSources[i].PropertyName == savedProperty)
+                    if (DisplayImageSources[i].SourceNodeId == savedSource.SourceNodeId &&
+                        DisplayImageSources[i].PropertyName == savedSource.PropertyName)
                     {
                         idx = i;
                         break;
                     }
                 }
-                SelectedDisplayImageSourceIndex = idx >= 0 ? idx : 0;
+
+                if (idx >= 0)
+                {
+                    LogInfo($"图像源|命中持久化: ({savedSource.SourceNodeId}, {savedSource.PropertyName}), resolvedIdx={idx}", "ImageSourceSelector");
+                    SetSelectedDisplayImageSourceIndexDeferred(idx);
+                    return;
+                }
+
+                LogWarning($"图像源|持久化源未找到: ({savedSource.SourceNodeId}, {savedSource.PropertyName}), 回退到默认", "ImageSourceSelector");
             }
             else
             {
-                SelectedDisplayImageSourceIndex = DisplayImageSources.Count > 0 ? 0 : -1;
+                LogInfo($"图像源|首次访问(无持久化)", "ImageSourceSelector");
             }
 
-            // 同步更新显示图像
-            UpdateDisplayImageFromCurrentSource();
+            // 默认选中当前节点的第一个输出
+            int firstCurrent = -1;
+            for (int i = 0; i < DisplayImageSources.Count; i++)
+            {
+                if (DisplayImageSources[i].SourceNodeId == selectedNode.Id)
+                {
+                    firstCurrent = i;
+                    break;
+                }
+            }
+            int targetIdx = firstCurrent >= 0 ? firstCurrent : (DisplayImageSources.Count > 0 ? 0 : -1);
+            SetSelectedDisplayImageSourceIndexDeferred(targetIdx);
+        }
+
+        /// <summary>
+        /// 延迟设置 SelectedDisplayImageSourceIndex，确保 WPF 先处理完 ItemsSource 的 CollectionChanged 事件
+        /// （Clear + Add × N）后再设置 SelectedIndex，避免 ComboBox 内部因竞态条件选中项丢失
+        /// 
+        /// 使用两阶段策略：
+        ///   阶段1: 先设 Property = -1（确保 WPF 绑定真正传播到 DP）
+        ///   阶段2: 再设 Property = index（让 DP 回调可以执行重置 + 重选）
+        /// 解决连续切换节点时 Property 值相同导致绑定不传播的问题
+        /// </summary>
+        private void SetSelectedDisplayImageSourceIndexDeferred(int index)
+        {
+            LogInfo($"图像源|Deferred排队: index={index}, 当前集合Count={DisplayImageSources.Count}", "ImageSourceSelector");
+            Application.Current.Dispatcher.BeginInvoke(
+                System.Windows.Threading.DispatcherPriority.Loaded,
+                new Action(() =>
+                {
+                    var currentProperty = SelectedDisplayImageSourceIndex;
+                    var currentField = _selectedDisplayImageSourceIndex;
+                    var comboMayAutoSelect = (currentField != -1 || currentProperty != -1);
+                    LogInfo($"图像源|Deferred执行[阶段1]: 清除选中, 当前 Field={currentField}, Property={currentProperty}, " +
+                            $"可能已被ComboBox自动选中={comboMayAutoSelect}", "ImageSourceSelector");
+
+                    // 阶段1: 真正改变属性值为 -1，确保 WPF 绑定传播到 ImageControl 的 DP
+                    // 此时 DP 回调检查 newIndex >= 0 → 不满足，仅记录日志
+                    SelectedDisplayImageSourceIndex = -1;
+                }));
+
+            Application.Current.Dispatcher.BeginInvoke(
+                System.Windows.Threading.DispatcherPriority.Loaded,
+                new Action(() =>
+                {
+                    _selectedDisplayImageSourceIndex = -1;
+                    SelectedDisplayImageSourceIndex = index;
+                    LogInfo($"图像源|Deferred执行[阶段2]: 设置选中 index={index}, " +
+                            $"_selectedField={_selectedDisplayImageSourceIndex}", "ImageSourceSelector");
+                }));
         }
 
         /// <summary>
@@ -2565,10 +2577,25 @@ SplitterPosition = position;
             if (_selectedNode == null) return;
             if (_selectedDisplayImageSourceIndex < 0 ||
                 _selectedDisplayImageSourceIndex >= DisplayImageSources.Count)
+            {
+                // 正常的中间状态（Clear→Deferred 设置期间），最终会被修正
                 return;
+            }
 
             var selectedSource = DisplayImageSources[_selectedDisplayImageSourceIndex];
-            _nodeSelectedImageMap[_selectedNode.Id] = selectedSource.PropertyName;
+            LogInfo($"图像源|应用显示源: index={_selectedDisplayImageSourceIndex}, source={selectedSource.SourceNodeName}.{selectedSource.DisplayName} (SNID={selectedSource.SourceNodeId}, Prop={selectedSource.PropertyName})", "ImageSourceSelector");
+
+            // 持久化：同步到节点的可序列化属性，保存工作流时自动携带
+            var workflow = _workflowEngine.CurrentWorkflow;
+            if (workflow != null)
+            {
+                var workflowNode = workflow.Nodes.FirstOrDefault(n => n.Id == _selectedNode.Id);
+                if (workflowNode != null)
+                {
+                    workflowNode.SelectedDisplaySource = ImageSourceReference.FromDataSource(selectedSource);
+                    LogInfo($"图像源|同步到可序列化属性: nodeId={_selectedNode.Id}, source={selectedSource.SourceNodeName}.{selectedSource.DisplayName}", "ImageSourceSelector");
+                }
+            }
             SetDisplayImageFromSource(selectedSource);
         }
 
@@ -2585,7 +2612,6 @@ SplitterPosition = position;
                 executionResult.ToolResult, source.PropertyName);
             if (bitmapSource != null)
             {
-                ProcessedImage = bitmapSource;
                 DisplayImage = bitmapSource;
             }
         }
@@ -2606,7 +2632,6 @@ SplitterPosition = position;
         /// </summary>
         public void SetDisplayImageFromBitmap(BitmapSource bitmapSource)
         {
-            ProcessedImage = bitmapSource;
             DisplayImage = bitmapSource;
         }
 
@@ -3275,69 +3300,13 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
         #region 图像操作
 
         /// <summary>
-        /// 浏览图像文件
-        /// </summary>
-        private void ExecuteBrowseImage()
-        {
-            try
-            {
-                var openFileDialog = new Microsoft.Win32.OpenFileDialog
-                {
-                    Filter = "图像文件|*.jpg;*.jpeg;*.png;*.bmp;*.tiff|所有文件|*.*",
-                    Title = "选择图像文件"
-                };
-
-                if (openFileDialog.ShowDialog() == true)
-                {
-                    var filePath = openFileDialog.FileName;
-                    AddLog($"📁 选择文件: {filePath}");
-
-                    // TODO: 加载图像到OriginalImage
-                    // OriginalImage = LoadImageFromFile(filePath);
-                }
-            }
-            catch (Exception ex)
-            {
-                AddLog($"❌ 加载图像失败: {ex.Message}");
-                System.Windows.MessageBox.Show($"加载图像失败: {ex.Message}", "错误",
-                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
-            }
-        }
-
-        /// <summary>
-        /// 加载图像
-        /// </summary>
-        private void ExecuteLoadImage()
-        {
-            try
-            {
-                if (OriginalImage == null)
-                {
-                    AddLog("❌ 请先选择图像文件");
-                    return;
-                }
-
-                AddLog("✅ 加载图像成功");
-                // TODO: 处理图像并更新ProcessedImage和ResultImage
-            }
-            catch (Exception ex)
-            {
-                AddLog($"❌ 加载图像失败: {ex.Message}");
-                System.Windows.MessageBox.Show($"加载图像失败: {ex.Message}", "错误",
-                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
-            }
-        }
-
-        /// <summary>
         /// 清除图像
         /// </summary>
         private void ExecuteClearImage()
         {
             try
             {
-                OriginalImage = null;
-                ProcessedImage = null;
-                ResultImage = null;
+                DisplayImage = null;
                 ImageScale = 1.0;
                 AddLog("已清除图像");
             }
@@ -3358,54 +3327,23 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
         {
             if (CurrentImageIndex < 0 || CurrentImageIndex >= ImageCollection.Count)
             {
-                OriginalImage = null;
-                ProcessedImage = null;
-                ResultImage = null;
+                DisplayImage = null;
                 return;
             }
 
             var imageInfo = ImageCollection[CurrentImageIndex];
-
-            // 获取FullImage
             var fullImage = imageInfo.FullImage;
 
             if (fullImage != null)
             {
-                OriginalImage = fullImage;
+                DisplayImage = fullImage;
                 AddLog($"📷 显示图像: {imageInfo.Name}");
-
-                // 确保DisplayImage更新
-                UpdateDisplayImage();
             }
         }
 
         #endregion
 
-        #region 显示
-
-        /// <summary>
-        /// 更新显示图像
-        /// </summary>
-        private void UpdateDisplayImage()
-        {
-            if (SelectedImageType == null)
-            {
-                return;
-            }
-
-            switch (SelectedImageType.Type)
-            {
-                case ImageDisplayType.Original:
-                    DisplayImage = OriginalImage;
-                    break;
-                case ImageDisplayType.Processed:
-                    DisplayImage = ProcessedImage;
-                    break;
-                case ImageDisplayType.Result:
-                    DisplayImage = ResultImage;
-                    break;
-            }
-        }
+        #region 结果更新
 
         /// <summary>
         /// 更新计算结果（支持字典形式）

@@ -1,0 +1,38 @@
+{
+  "name": "main-dev",
+  "leadAgentId": "88b7c495b84e4e27baf52ad3530c360e",
+  "workspacePath": "d:/MyWork/SunEyeVision_Dev",
+  "createdAt": "2026-05-07T03:16:34.467Z",
+  "options": {
+    "workspacePath": "d:/MyWork/SunEyeVision_Dev",
+    "isAutoTeam": false
+  },
+  "members": [
+    {
+      "memberId": "team-lead@main-dev",
+      "name": "team-lead",
+      "role": "Team Lead - coordinates the team and interacts with the user"
+    },
+    {
+      "memberId": "main-developer@main-dev",
+      "name": "main-developer",
+      "role": "主程序开发员启动"
+    },
+    {
+      "memberId": "tool-planner@main-dev",
+      "name": "tool-planner",
+      "role": "工具方案设计师启动"
+    },
+    {
+      "memberId": "finder-designer@main-dev",
+      "name": "finder-designer",
+      "role": "启动查找工具设计师"
+    },
+    {
+      "memberId": "measure-designer@main-dev",
+      "name": "measure-designer",
+      "role": "启动测量工具设计师"
+    }
+  ],
+  "isAutoTeam": false
+}

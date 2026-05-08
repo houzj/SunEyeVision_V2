@@ -1541,6 +1541,145 @@ namespace SunEyeVision.CvEngine
 
         #endregion
 
+        #region 🔍 形状匹配
+
+        /// <summary>
+        /// 基于边缘方向向量的几何形状匹配 - 对应 Halcon create_shape_model + find_shape_model
+        /// </summary>
+        /// <remarks>
+        /// 算法流程：
+        ///   1. 从模板轮廓点提取梯度方向向量
+        ///   2. 构建图像金字塔（多分辨率加速）
+        ///   3. 在目标图像上用梯度方向相似度打分
+        ///   4. 支持旋转不变性（角度步进）和缩放不变性（缩放步进）
+        ///   5. NMS非极大值抑制去除重复匹配
+        /// 
+        /// 参考：基于 Halcon shape-based matching 思路的 OpenCV 实现
+        /// </remarks>
+        public static List<ShapeMatchResult> FindShape(
+            Mat grayImage,
+            List<Point2f> templateContour,
+            double minScore,
+            double angleStart, double angleEnd, double angleStep,
+            double scaleMin, double scaleMax, double scaleStep,
+            int pyramidLevels,
+            int timeoutMs,
+            int speedScale = 0)
+        {
+            if (grayImage == null || grayImage.Empty())
+                return new List<ShapeMatchResult>();
+            if (templateContour == null || templateContour.Count < 3)
+                return new List<ShapeMatchResult>();
+
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            var results = new List<ShapeMatchResult>();
+
+            // ===== Step 1: 计算模板梯度方向向量 =====
+            var templateDirs = ComputeGradientDirections(templateContour);
+            if (templateDirs == null || templateDirs.Length < 3)
+                return new List<ShapeMatchResult>();
+
+            // ===== Step 2: 确定金字塔层数 =====
+            int actualPyramidLevels;
+            int baseStepSize;
+            if (speedScale > 0)
+            {
+                // 速度尺度驱动：值越大→层数越多+步长越大
+                int totalLevels = Math.Min(speedScale + 1, 6);   // 1→2, 10→6
+                actualPyramidLevels = pyramidLevels > 0
+                    ? Math.Min(pyramidLevels, totalLevels)
+                    : totalLevels;
+                baseStepSize = speedScale * 2;                  // 1→2, 10→20
+            }
+            else
+            {
+                // 原有逻辑（speedScale=0 或未指定）
+                actualPyramidLevels = pyramidLevels > 0
+                    ? pyramidLevels
+                    : AutoPyramidLevels(grayImage.Width, grayImage.Height);
+                baseStepSize = 4; // 默认粗层步长
+            }
+
+            // ===== Step 3: 构建目标图像金字塔 + 梯度 =====
+            var pyramid = BuildGradientPyramid(grayImage, actualPyramidLevels);
+
+            // ===== Step 4: 遍历角度/缩放组合，在每个层级上搜索 =====
+            int angleSteps = Math.Max(1, (int)Math.Ceiling((angleEnd - angleStart) / angleStep));
+            int scaleSteps = Math.Max(1, (int)Math.Ceiling((scaleMax - scaleMin) / scaleStep));
+
+            // 从最粗层级到最细层级逐级搜索（由粗到精策略）
+            for (int level = actualPyramidLevels - 1; level >= 0; level--)
+            {
+                if (stopwatch.ElapsedMilliseconds > timeoutMs)
+                    break;
+
+                var levelData = pyramid[level];
+                if (levelData.GradientX == null || levelData.GradientY == null)
+                    continue;
+
+                double levelScale = 1.0 / Math.Pow(2.0, level);
+                int stepSize = level > 0 ? baseStepSize : 2; // 粗层使用更大步长加速
+
+                // 在当前层级上遍历所有位置/角度/缩放组合
+                var candidates = new List<(double Score, int X, int Y, double Angle, double Scale)>();
+
+                for (int si = 0; si < scaleSteps; si++)
+                {
+                    double scale = scaleMin + si * scaleStep;
+                    if (scale < scaleMin - 1e-6) scale = scaleMin;
+                    if (scale > scaleMax + 1e-6) scale = scaleMax;
+
+                    // 缩放模板轮廓到目标尺度
+                    var scaledContour = ScaleContour(templateContour, scale * levelScale);
+                    if (scaledContour == null || scaledContour.Count < 3) continue;
+
+                    var scaledDirs = ComputeGradientDirections(scaledContour);
+                    if (scaledDirs == null) continue;
+
+                    // 角度搜索
+                    for (int ai = 0; ai < angleSteps; ai++)
+                    {
+                        if (stopwatch.ElapsedMilliseconds > timeoutMs) break;
+
+                        double angleDeg = angleStart + ai * angleStep;
+                        double angleRad = angleDeg * Math.PI / 180.0;
+
+                        // 旋转后的模板方向
+                        var rotatedDirs = RotateDirections(scaledDirs, angleRad);
+
+                        // 滑动窗口搜索
+                        SearchAtLevel(levelData, rotatedDirs, scaledContour, minScore, stepSize, candidates);
+                    }
+
+                }
+
+                // 当前层级的候选结果
+                foreach (var (score, x, y, ang, scl) in candidates.OrderByDescending(c => c.Score))
+                {
+                    results.Add(new ShapeMatchResult
+                    {
+                        Score = score,
+                        CenterX = x / levelScale,
+                        CenterY = y / levelScale,
+                        Angle = ang,
+                        Scale = scl
+                    });
+                }
+            }
+
+            // 清理金字塔资源
+            foreach (var p in pyramid)
+            {
+                p.GradientX?.Dispose();
+                p.GradientY?.Dispose();
+            }
+
+            // ===== Step 5: 按分数排序并返回 =====
+            return results.OrderByDescending(r => r.Score).ToList();
+        }
+
+        #endregion
+
         #region 私有辅助 — 形状特征计算
 
         /// <summary>
@@ -1645,6 +1784,346 @@ namespace SunEyeVision.CvEngine
                 RetrievalModes.External, ContourApproximationModes.ApproxSimple);
             if (contours.Length == 0) return null;
             return Cv2.ConvexHull(contours[0]);
+        }
+
+        #endregion
+
+        #region 私有辅助 — 形状匹配
+
+        /// <summary>
+        /// 形状匹配结果
+        /// </summary>
+        public class ShapeMatchResult
+        {
+            public double Score { get; set; }
+            public double CenterX { get; set; }
+            public double CenterY { get; set; }
+            public double Angle { get; set; }
+            public double Scale { get; set; }
+        }
+
+        /// <summary>
+        /// 梯度金字塔层级数据
+        /// </summary>
+        private struct GradientPyramidLevel
+        {
+            public Mat GradientX { get; set; }
+            public Mat GradientY { get; set; }
+            public int Width => GradientX?.Width ?? 0;
+            public int Height => GradientX?.Height ?? 0;
+        }
+
+        /// <summary>
+        /// 计算轮廓点集的梯度方向向量（每个点的切线方向）
+        /// </summary>
+        private static double[]? ComputeGradientDirections(List<Point2f> contour)
+        {
+            if (contour == null || contour.Count < 3) return null;
+
+            int n = contour.Count;
+            var dirs = new double[n];
+
+            for (int i = 0; i < n; i++)
+            {
+                var prev = contour[(i - 1 + n) % n];
+                var next = contour[(i + 1) % n];
+
+                // 切线方向向量
+                double dx = next.X - prev.X;
+                double dy = next.Y - prev.Y;
+
+                if (Math.Abs(dx) < 1e-8 && Math.Abs(dy) < 1e-8)
+                {
+                    dirs[i] = 0;
+                    continue;
+                }
+
+                dirs[i] = Math.Atan2(dy, dx); // [-π, π]
+            }
+
+            return dirs;
+        }
+
+        /// <summary>
+        /// 自动计算合适的金字塔层数
+        /// </summary>
+        private static int AutoPyramidLevels(int width, int height)
+        {
+            int minDim = Math.Min(width, height);
+            int levels = 0;
+            while (minDim > 64 && levels < 4)
+            {
+                minDim /= 2;
+                levels++;
+            }
+            return Math.Max(1, levels);
+        }
+
+        /// <summary>
+        /// 构建图像梯度金字塔
+        /// </summary>
+        private static List<GradientPyramidLevel> BuildGradientPyramid(Mat grayImage, int levels)
+        {
+            var pyramid = new List<GradientPyramidLevel>(levels);
+
+            using var current = grayImage.Clone();
+
+            for (int i = 0; i < levels; i++)
+            {
+                using var gx = new Mat();
+                using var gy = new Mat();
+                Cv2.Sobel(current, gx, MatType.CV_32F, 1, 0, 3);
+                Cv2.Sobel(current, gy, MatType.CV_32F, 0, 1, 3);
+
+                pyramid.Add(new GradientPyramidLevel
+                {
+                    GradientX = gx.Clone(),
+                    GradientY = gy.Clone()
+                });
+
+                if (i < levels - 1)
+                {
+                    using var pyrDown = new Mat();
+                    Cv2.PyrDown(current, pyrDown, new Size(current.Width / 2, current.Height / 2));
+                    pyrDown.CopyTo(current);
+                }
+            }
+
+            return pyramid;
+        }
+
+        /// <summary>
+        /// 缩放轮廓点集
+        /// </summary>
+        private static List<Point2f>? ScaleContour(List<Point2f> contour, double scale)
+        {
+            if (contour == null || Math.Abs(scale) < 1e-6) return null;
+
+            var result = new List<Point2f>(contour.Count);
+            foreach (var p in contour)
+                result.Add(new Point2f((float)(p.X * scale), (float)(p.Y * scale)));
+
+            return result;
+        }
+
+        /// <summary>
+        /// 旋转方向向量数组
+        /// </summary>
+        private static double[] RotateDirections(double[] directions, double angleRad)
+        {
+            var rotated = new double[directions.Length];
+            for (int i = 0; i < directions.Length; i++)
+                rotated[i] = directions[i] + angleRad;
+            return rotated;
+        }
+
+        /// <summary>
+        /// 在单个金字塔层级上执行滑动窗口搜索
+        /// </summary>
+        private static void SearchAtLevel(
+            GradientPyramidLevel level,
+            double[] templateDirs,
+            List<Point2f> scaledContour,
+            double minScore,
+            int stepSize,
+            List<(double Score, int X, int Y, double Angle, double Scale)> candidates)
+        {
+            int imgW = level.Width;
+            int imgH = level.Height;
+            int tmplCount = scaledContour.Count;
+            if (tmplCount < 3 || imgW <= 0 || imgH <= 0) return;
+
+            // 模板的边界框（用于确定搜索范围和快速排除）
+            float minX = scaledContour.Min(p => p.X);
+            float maxX = scaledContour.Max(p => p.X);
+            float minY = scaledContour.Min(p => p.Y);
+            float maxY = scaledContour.Max(p => p.Y);
+            float tmplW = maxX - minX;
+            float tmplH = maxY - minY;
+
+            if (tmplW > imgW || tmplH > imgH) return;
+
+            // 模板中心偏移
+            float cx = (minX + maxX) / 2.0f;
+            float cy = (minY + maxY) / 2.0f;
+
+            int searchStartX = (int)Math.Ceiling(-cx);
+            int searchStartY = (int)Math.Ceiling(-cy);
+            int searchEndX = (int)Math.Floor(imgW - 1 - cx);
+            int searchEndY = (int)Math.Floor(imgH - 1 - cy);
+
+            // 方向相似度匹配阈值
+            double dirThreshold = minScore * 0.7; // 略低于分数阈值作为预筛选
+
+            for (int sy = searchStartY; sy <= searchEndY; sy += stepSize)
+            {
+                for (int sx = searchStartX; sx <= searchEndX; sx += stepSize)
+                {
+                    double totalSim = 0;
+                    int validPoints = 0;
+
+                    // 对每个模板点，计算其位置上的图像梯度方向与模板方向的相似度
+                    for (int ti = 0; ti < tmplCount; ti++)
+                    {
+                        int px = (int)(sx + scaledContour[ti].X);
+                        int py = (int)(sy + scaledContour[ti].Y);
+
+                        if (px < 0 || px >= imgW || py < 0 || py >= imgH)
+                            continue;
+
+                        // 获取该位置图像梯度方向
+                        double gx = level.GradientX.At<float>(py, px);
+                        double gy = level.GradientY.At<float>(py, px);
+
+                        double gradMag = Math.Sqrt(gx * gx + gy * gy);
+                        if (gradMag < 5.0) // 梯度太弱的点跳过
+                            continue;
+
+                        double imgDir = Math.Atan2(gy, gx);
+
+                        // 方向相似度：cos(Δθ)，值域 [-1, 1]，归一化到 [0, 1]
+                        double diff = NormalizeAngle(templateDirs[ti] - imgDir);
+                        double sim = Math.Abs(diff) < 0.52 ? Math.Cos(diff) : -1; // ±30°以外视为不匹配
+
+                        totalSim += sim;
+                        validPoints++;
+                    }
+
+                    if (validPoints == 0) continue;
+
+                    double avgScore = totalSim / validPoints; // 平均方向相似度
+
+                    // 归一化到 [0, 1] 范围
+                    avgScore = (avgScore + 1.0) / 2.0;
+
+                    if (avgScore >= minScore)
+                    {
+                        candidates.Add((avgScore, sx + (int)cx, sy + (int)cy, 0, 1.0));
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 归一化角度到 [-π, π]
+        /// </summary>
+        private static double NormalizeAngle(double angle)
+        {
+            while (angle > Math.PI) angle -= 2 * Math.PI;
+            while (angle < -Math.PI) angle += 2 * Math.PI;
+            return angle;
+        }
+
+        /// <summary>
+        /// 亚像素轮廓细化 — 沿梯度方向抛物线插值修正轮廓点到亚像素精度
+        /// </summary>
+        /// <param name="grayImage">原始灰度图（用于计算梯度）</param>
+        /// <param name="pixelContours">像素级轮廓点集（每个 Point[] 为一组封闭/非封闭轮廓）</param>
+        /// <param name="apertureSize">Sobel 孔径（3/5/7）</param>
+        /// <returns>亚像素级轮廓点集（Point2f 数组）</returns>
+        public static List<Point2f[]> RefineContoursToSubPixel(Mat grayImage, List<Point[]> pixelContours, int apertureSize = 3)
+        {
+            if (grayImage == null || grayImage.Empty() || pixelContours == null || pixelContours.Count == 0)
+                return pixelContours?.Select(c => c.Select(p => new Point2f(p.X, p.Y)).ToArray()).ToList() ?? new List<Point2f[]>();
+
+            // 计算 Sobel 梯度
+            using var gradX = new Mat();
+            using var gradY = new Mat();
+            Cv2.Sobel(grayImage, gradX, MatType.CV_32F, 1, 0, apertureSize);
+            Cv2.Sobel(grayImage, gradY, MatType.CV_32F, 0, 1, apertureSize);
+
+            int imgW = grayImage.Width;
+            int imgH = grayImage.Height;
+
+            var result = new List<Point2f[]>(pixelContours.Count);
+
+            foreach (var contour in pixelContours)
+            {
+                var refined = new Point2f[contour.Length];
+                for (int i = 0; i < contour.Length; i++)
+                {
+                    int px = contour[i].X;
+                    int py = contour[i].Y;
+
+                    // 边界点不修正
+                    if (px < 1 || px >= imgW - 1 || py < 1 || py >= imgH - 1)
+                    {
+                        refined[i] = new Point2f(px, py);
+                        continue;
+                    }
+
+                    // 计算梯度方向（归一化）
+                    float gx = gradX.At<float>(py, px);
+                    float gy = gradY.At<float>(py, px);
+                    float mag = (float)Math.Sqrt(gx * gx + gy * gy);
+                    if (mag < 1e-6f)
+                    {
+                        refined[i] = new Point2f(px, py);
+                        continue;
+                    }
+
+                    float nx = gx / mag;
+                    float ny = gy / mag;
+
+                    // 沿梯度方向 ±1 像素处采样梯度幅值（双线性插值）
+                    float m0 = SampleGradientMag(gradX, gradY, px, py, imgW, imgH);
+                    float m1 = SampleGradientMag(gradX, gradY, px - nx, py - ny, imgW, imgH);
+                    float m2 = SampleGradientMag(gradX, gradY, px + nx, py + ny, imgW, imgH);
+
+                    // 抛物线插值: d = (m2 - m1) / (2 * (2*m0 - m1 - m2))
+                    float denominator = 2 * (2 * m0 - m1 - m2);
+                    float subPixelOffset;
+                    if (Math.Abs(denominator) > 1e-10f)
+                    {
+                        subPixelOffset = (m2 - m1) / denominator;
+                        // 限制偏移量在 ±0.5 像素内，防止发散
+                        subPixelOffset = Math.Clamp(subPixelOffset, -0.5f, 0.5f);
+                    }
+                    else
+                    {
+                        subPixelOffset = 0;
+                    }
+
+                    refined[i] = new Point2f(px + subPixelOffset * nx, py + subPixelOffset * ny);
+                }
+                result.Add(refined);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// 在指定位置采样梯度幅值（双线性插值）
+        /// </summary>
+        private static float SampleGradientMag(Mat gradX, Mat gradY, float x, float y, int imgW, int imgH)
+        {
+            // 边界截断
+            if (x < 0 || x >= imgW || y < 0 || y >= imgH)
+                return 0;
+
+            int ix = (int)x;
+            int iy = (int)y;
+            float fx = x - ix;
+            float fy = y - iy;
+
+            // 限制采样区域不越界
+            int ix1 = Math.Min(ix + 1, imgW - 1);
+            int iy1 = Math.Min(iy + 1, imgH - 1);
+
+            // 4 邻域双线性插值
+            float gx00 = gradX.At<float>(iy, ix);
+            float gy00 = gradY.At<float>(iy, ix);
+            float gx10 = gradX.At<float>(iy, ix1);
+            float gy10 = gradY.At<float>(iy, ix1);
+            float gx01 = gradX.At<float>(iy1, ix);
+            float gy01 = gradY.At<float>(iy1, ix);
+            float gx11 = gradX.At<float>(iy1, ix1);
+            float gy11 = gradY.At<float>(iy1, ix1);
+
+            float gx = gx00 * (1 - fx) * (1 - fy) + gx10 * fx * (1 - fy) + gx01 * (1 - fx) * fy + gx11 * fx * fy;
+            float gy = gy00 * (1 - fx) * (1 - fy) + gy10 * fx * (1 - fy) + gy01 * (1 - fx) * fy + gy11 * fx * fy;
+
+            return (float)Math.Sqrt(gx * gx + gy * gy);
         }
 
         #endregion

@@ -142,8 +142,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         {
             base.OnRender(dc);
 
-            _brushCache.Clear();
-            _penCache.Clear();
+            // ★ 不再清空 _brushCache / _penCache，缓存可跨渲染复用
+            // Pen 键已包含厚度信息，不同线宽自动对应不同缓存项
 
             // 渲染顺序：区域(底层) → 工具输出(中层) → 高亮(顶层)
             // DrawingContext 后画覆盖先画，通道顺序即层次
@@ -233,41 +233,93 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         private void RenderPoints(DrawingContext dc, GraphicsDisplayItem item, GraphicsStyle style, SolidColorBrush defaultBrush)
         {
-            for (int i = 0; i < item.Geometries.Length; i++)
+            bool isUnified = item.RenderMode == DisplayRenderMode.Unified;
+            var size = GetScaledLineWidth(style.LineWidth) * 2;
+            var halfSize = size / 2;
+
+            if (isUnified)
             {
-                if (item.Geometries[i] is Point2d pt)
+                // 统一模式：全部使用 OK 颜色，单次循环
+                for (int i = 0; i < item.Geometries.Length; i++)
                 {
-                    bool isPass = item.IsPassArray.Length > i ? item.IsPassArray[i] : true;
-                    var effectiveBrush = isPass ? defaultBrush : GetBrush(style.GetEffectiveColorArgb(false));
-                    var size = GetScaledLineWidth(style.LineWidth) * 2;
-                    dc.DrawEllipse(effectiveBrush, null, new WpfPoint(pt.X, pt.Y), size / 2, size / 2);
+                    if (item.Geometries[i] is Point2d pt)
+                        dc.DrawEllipse(defaultBrush, null, new WpfPoint(pt.X, pt.Y), halfSize, halfSize);
+                }
+            }
+            else
+            {
+                // 独立模式：先收集 OK 和 NG 的点，逐批渲染
+                var ngColorArgb = style.GetEffectiveColorArgb(false);
+                var ngBrush = GetBrush(ngColorArgb);
+                for (int i = 0; i < item.Geometries.Length; i++)
+                {
+                    if (item.Geometries[i] is Point2d pt)
+                    {
+                        bool isPass = item.IsPassArray.Length > i ? item.IsPassArray[i] : true;
+                        var brush = isPass ? defaultBrush : ngBrush;
+                        dc.DrawEllipse(brush, null, new WpfPoint(pt.X, pt.Y), halfSize, halfSize);
+                    }
                 }
             }
         }
 
         private void RenderLines(DrawingContext dc, GraphicsDisplayItem item, Pen defaultPen)
         {
-            for (int i = 0; i < item.Geometries.Length; i++)
+            bool isUnified = item.RenderMode == DisplayRenderMode.Unified;
+            var scale = GetScaledLineWidth(item.Style?.LineWidth ?? 1.0);
+
+            if (isUnified)
             {
-                if (item.Geometries[i] is SdkLineSegment line)
+                // 统一模式：全部线合并到单个 StreamGeometry
+                var okPoints = new List<WpfPoint[]>();
+                for (int i = 0; i < item.Geometries.Length; i++)
                 {
-                    bool isPass = item.IsPassArray.Length > i ? item.IsPassArray[i] : true;
-                    var effectivePen = isPass ? defaultPen : GetPen(item.Style!.GetEffectiveColorArgb(false), GetScaledLineWidth(item.Style.LineWidth));
-                    dc.DrawLine(effectivePen, new WpfPoint(line.Start.X, line.Start.Y), new WpfPoint(line.End.X, line.End.Y));
+                    if (item.Geometries[i] is SdkLineSegment line)
+                        okPoints.Add(new[] { new WpfPoint(line.Start.X, line.Start.Y), new WpfPoint(line.End.X, line.End.Y) });
                 }
+                DrawMultipleFigures(dc, okPoints, null, defaultPen, false);
+            }
+            else
+            {
+                // 独立模式：分 OK/NG 两批
+                var ngColorArgb = item.Style!.GetEffectiveColorArgb(false);
+                var ngPen = GetPen(ngColorArgb, scale);
+                var okPoints = new List<WpfPoint[]>();
+                var ngPoints = new List<WpfPoint[]>();
+
+                for (int i = 0; i < item.Geometries.Length; i++)
+                {
+                    if (item.Geometries[i] is SdkLineSegment line)
+                    {
+                        var pts = new[] { new WpfPoint(line.Start.X, line.Start.Y), new WpfPoint(line.End.X, line.End.Y) };
+                        bool isPass = item.IsPassArray.Length > i ? item.IsPassArray[i] : true;
+                        if (isPass)
+                            okPoints.Add(pts);
+                        else
+                            ngPoints.Add(pts);
+                    }
+                }
+                DrawMultipleFigures(dc, okPoints, null, defaultPen, false);
+                DrawMultipleFigures(dc, ngPoints, null, ngPen, false);
             }
         }
 
         private void RenderRectangles(DrawingContext dc, GraphicsDisplayItem item, GraphicsStyle style, SolidColorBrush brush, Pen defaultPen)
         {
+            bool isUnified = item.RenderMode == DisplayRenderMode.Unified;
+            var scale = GetScaledLineWidth(style.LineWidth);
+            var ngColorArgb = style.GetEffectiveColorArgb(false);
+            var ngPen = GetPen(ngColorArgb, scale);
+
+            // Rect2d 逐元素 DrawRectangle（WPF 内部批处理高效，不必合并）
             for (int i = 0; i < item.Geometries.Length; i++)
             {
                 var geom = item.Geometries[i];
-                // 逐元素 isPass → OkColor / NgColor（不再硬编码 0xFFFF0000）
-                bool isPass = item.IsPassArray.Length > i ? item.IsPassArray[i] : true;
-                var effectiveColorArgb = style.GetEffectiveColorArgb(isPass);
-                var effectivePen = isPass ? defaultPen : GetPen(effectiveColorArgb, GetScaledLineWidth(style.LineWidth));
-                var effectiveBrush = item.IsFilled ? GetBrush(effectiveColorArgb) : null;
+                bool isPass = isUnified || item.IsPassArray.Length <= i || item.IsPassArray[i];
+                var effectivePen = isPass ? defaultPen : ngPen;
+                var effectiveBrush = item.IsFilled
+                    ? (isPass ? brush : GetBrush(ngColorArgb))
+                    : null;
 
                 if (geom is Rect2d rect)
                     dc.DrawRectangle(effectiveBrush, effectivePen, new WpfRect(rect.X, rect.Y, rect.Width, rect.Height));
@@ -312,36 +364,105 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         private void RenderPolygons(DrawingContext dc, GraphicsDisplayItem item, GraphicsStyle style, SolidColorBrush defaultBrush, Pen defaultPen)
         {
-            for (int i = 0; i < item.Geometries.Length; i++)
+            bool isUnified = item.RenderMode == DisplayRenderMode.Unified;
+            var scale = GetScaledLineWidth(style.LineWidth);
+            var ngColorArgb = style.GetEffectiveColorArgb(false);
+            var ngPen = GetPen(ngColorArgb, scale);
+            var ngBrush = item.IsFilled ? GetBrush(ngColorArgb) : null;
+
+            if (isUnified)
             {
-                if (item.Geometries[i] is Point2d[] points)
+                // 统一模式：所有多边形合并到一个 StreamGeometry
+                var allPoints = new List<WpfPoint[]>();
+                for (int i = 0; i < item.Geometries.Length; i++)
                 {
-                    bool isPass = item.IsPassArray.Length > i ? item.IsPassArray[i] : true;
-                    var effectiveColorArgb = style.GetEffectiveColorArgb(isPass);
-                    var effectivePen = isPass ? defaultPen : GetPen(effectiveColorArgb, GetScaledLineWidth(style.LineWidth));
-                    var effectiveBrush = item.IsFilled ? (isPass ? defaultBrush : GetBrush(effectiveColorArgb)) : null;
-                    var wpfPoints = Array.ConvertAll(points, p => new WpfPoint(p.X, p.Y));
-                    DrawPolygon(dc, wpfPoints, effectiveBrush, effectivePen);
+                    if (item.Geometries[i] is Point2d[] points && points.Length >= 2)
+                        allPoints.Add(Array.ConvertAll(points, p => new WpfPoint(p.X, p.Y)));
                 }
+                DrawMultipleFigures(dc, allPoints, item.IsFilled ? defaultBrush : null, defaultPen, true);
+            }
+            else
+            {
+                // 独立模式：分 OK/NG 两批
+                var okPoints = new List<WpfPoint[]>();
+                var ngPoints = new List<WpfPoint[]>();
+
+                for (int i = 0; i < item.Geometries.Length; i++)
+                {
+                    if (item.Geometries[i] is Point2d[] points && points.Length >= 2)
+                    {
+                        bool isPass = item.IsPassArray.Length > i ? item.IsPassArray[i] : true;
+                        var wpf = Array.ConvertAll(points, p => new WpfPoint(p.X, p.Y));
+                        if (isPass)
+                            okPoints.Add(wpf);
+                        else
+                            ngPoints.Add(wpf);
+                    }
+                }
+                DrawMultipleFigures(dc, okPoints, item.IsFilled ? defaultBrush : null, defaultPen, true);
+                DrawMultipleFigures(dc, ngPoints, ngBrush, ngPen, true);
             }
         }
 
         private void RenderContours(DrawingContext dc, GraphicsDisplayItem item, GraphicsStyle style, SolidColorBrush defaultBrush, Pen defaultPen)
         {
-            for (int i = 0; i < item.Geometries.Length; i++)
+            bool isUnified = item.RenderMode == DisplayRenderMode.Unified;
+            var scale = GetScaledLineWidth(style.LineWidth);
+            var ngColorArgb = style.GetEffectiveColorArgb(false);
+            var ngPen = GetPen(ngColorArgb, scale);
+            var ngBrush = item.IsFilled ? GetBrush(ngColorArgb) : null;
+
+            if (isUnified)
             {
-                if (item.Geometries[i] is ContourGeometry contour && contour.Points != null && contour.Points.Length >= 2)
+                // 统一模式：所有轮廓合并到单个 StreamGeometry
+                var polygonPoints = new List<WpfPoint[]>();
+                var polylinePoints = new List<WpfPoint[]>();
+
+                for (int i = 0; i < item.Geometries.Length; i++)
                 {
-                    bool isPass = item.IsPassArray.Length > i ? item.IsPassArray[i] : true;
-                    var effectiveColorArgb = style.GetEffectiveColorArgb(isPass);
-                    var effectivePen = isPass ? defaultPen : GetPen(effectiveColorArgb, GetScaledLineWidth(style.LineWidth));
-                    var effectiveBrush = item.IsFilled ? (isPass ? defaultBrush : GetBrush(effectiveColorArgb)) : null;
-                    var points = Array.ConvertAll(contour.Points, p => new WpfPoint(p.X, p.Y));
-                    if (contour.IsClosed && points.Length >= 3)
-                        DrawPolygon(dc, points, effectiveBrush, effectivePen);
-                    else
-                        DrawPolyline(dc, points, effectivePen);
+                    if (item.Geometries[i] is ContourGeometry contour && contour.Points != null && contour.Points.Length >= 2)
+                    {
+                        var wpf = Array.ConvertAll(contour.Points, p => new WpfPoint(p.X, p.Y));
+                        if (contour.IsClosed && wpf.Length >= 3)
+                            polygonPoints.Add(wpf);
+                        else
+                            polylinePoints.Add(wpf);
+                    }
                 }
+                DrawMultipleFigures(dc, polygonPoints, item.IsFilled ? defaultBrush : null, defaultPen, true);
+                DrawMultipleFigures(dc, polylinePoints, null, defaultPen, false);
+            }
+            else
+            {
+                // 独立模式：分 OK/NG 两批，每批各自合并
+                var okPolygons = new List<WpfPoint[]>();
+                var ngPolygons = new List<WpfPoint[]>();
+                var okPolylines = new List<WpfPoint[]>();
+                var ngPolylines = new List<WpfPoint[]>();
+
+                for (int i = 0; i < item.Geometries.Length; i++)
+                {
+                    if (item.Geometries[i] is ContourGeometry contour && contour.Points != null && contour.Points.Length >= 2)
+                    {
+                        bool isPass = item.IsPassArray.Length > i ? item.IsPassArray[i] : true;
+                        var wpf = Array.ConvertAll(contour.Points, p => new WpfPoint(p.X, p.Y));
+                        bool isClosed = contour.IsClosed && wpf.Length >= 3;
+
+                        if (isPass)
+                        {
+                            if (isClosed) okPolygons.Add(wpf); else okPolylines.Add(wpf);
+                        }
+                        else
+                        {
+                            if (isClosed) ngPolygons.Add(wpf); else ngPolylines.Add(wpf);
+                        }
+                    }
+                }
+
+                DrawMultipleFigures(dc, okPolygons, item.IsFilled ? defaultBrush : null, defaultPen, true);
+                DrawMultipleFigures(dc, okPolylines, null, defaultPen, false);
+                DrawMultipleFigures(dc, ngPolygons, ngBrush, ngPen, true);
+                DrawMultipleFigures(dc, ngPolylines, null, ngPen, false);
             }
         }
 
@@ -363,17 +484,56 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         private void RenderCrosses(DrawingContext dc, GraphicsDisplayItem item, GraphicsStyle style, Pen defaultPen)
         {
-            for (int i = 0; i < item.Geometries.Length; i++)
+            bool isUnified = item.RenderMode == DisplayRenderMode.Unified;
+            var scale = GetScaledLineWidth(style.LineWidth);
+            var ngColorArgb = style.GetEffectiveColorArgb(false);
+            var ngPen = GetPen(ngColorArgb, scale);
+            var s = style.CrossSize;
+
+            if (isUnified)
             {
-                if (item.Geometries[i] is Point2d center)
+                // 统一模式：所有十字的线段合并到单个 StreamGeometry
+                var allLines = new List<WpfPoint[]>();
+                for (int i = 0; i < item.Geometries.Length; i++)
                 {
-                    bool isPass = item.IsPassArray.Length > i ? item.IsPassArray[i] : true;
-                    var effectivePen = isPass ? defaultPen : GetPen(style.GetEffectiveColorArgb(false), GetScaledLineWidth(style.LineWidth));
-                    var s = style.CrossSize;
-                    var cx = center.X; var cy = center.Y;
-                    dc.DrawLine(effectivePen, new WpfPoint(cx - s, cy), new WpfPoint(cx + s, cy));
-                    dc.DrawLine(effectivePen, new WpfPoint(cx, cy - s), new WpfPoint(cx, cy + s));
+                    if (item.Geometries[i] is Point2d center)
+                    {
+                        double cx = center.X, cy = center.Y;
+                        allLines.Add(new[] { new WpfPoint(cx - s, cy), new WpfPoint(cx + s, cy) });
+                        allLines.Add(new[] { new WpfPoint(cx, cy - s), new WpfPoint(cx, cy + s) });
+                    }
                 }
+                DrawMultipleFigures(dc, allLines, null, defaultPen, false);
+            }
+            else
+            {
+                // 独立模式：分 OK/NG 两批
+                var okLines = new List<WpfPoint[]>();
+                var ngLines = new List<WpfPoint[]>();
+
+                for (int i = 0; i < item.Geometries.Length; i++)
+                {
+                    if (item.Geometries[i] is Point2d center)
+                    {
+                        bool isPass = item.IsPassArray.Length > i ? item.IsPassArray[i] : true;
+                        double cx = center.X, cy = center.Y;
+                        var lines = new[]
+                        {
+                            new[] { new WpfPoint(cx - s, cy), new WpfPoint(cx + s, cy) },
+                            new[] { new WpfPoint(cx, cy - s), new WpfPoint(cx, cy + s) }
+                        };
+                        if (isPass)
+                        {
+                            okLines.Add(lines[0]); okLines.Add(lines[1]);
+                        }
+                        else
+                        {
+                            ngLines.Add(lines[0]); ngLines.Add(lines[1]);
+                        }
+                    }
+                }
+                DrawMultipleFigures(dc, okLines, null, defaultPen, false);
+                DrawMultipleFigures(dc, ngLines, null, ngPen, false);
             }
         }
 
@@ -482,6 +642,29 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             }
             geometry.Freeze();
             dc.DrawGeometry(null, pen, geometry);
+        }
+
+        /// <summary>
+        /// 将多个图形（多边形或折线）合并到单个 StreamGeometry 中渲染，大幅减少 WPF 绘制调用次数
+        /// </summary>
+        private static void DrawMultipleFigures(DrawingContext dc, List<WpfPoint[]> allPoints, Brush? fill, Pen stroke, bool closeFigures)
+        {
+            if (allPoints == null || allPoints.Count == 0) return;
+
+            var geometry = new StreamGeometry();
+            using (var ctx = geometry.Open())
+            {
+                foreach (var points in allPoints)
+                {
+                    if (points.Length < 2) continue;
+                    bool isClosed = closeFigures && fill != null && points.Length >= 3;
+                    ctx.BeginFigure(points[0], isClosed, isClosed);
+                    for (int i = 1; i < points.Length; i++)
+                        ctx.LineTo(points[i], true, true);
+                }
+            }
+            geometry.Freeze();
+            dc.DrawGeometry(fill, stroke, geometry);
         }
 
         private SolidColorBrush GetBrush(uint argb)

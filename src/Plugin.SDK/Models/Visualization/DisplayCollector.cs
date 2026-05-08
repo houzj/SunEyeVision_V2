@@ -16,7 +16,7 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
     ///
     /// 设计要点：Style 对象由 Parameters 持有，全链路共享同一实例。
     /// DisplayItem 通过 Style 引用读取渲染属性，无需属性拷贝。
-    /// Add 时即时构建 DisplayItem 并加入 Items，无需 Complete() 合并。
+    /// Add 时即时构建 DisplayItem 并加入 Items（O(1) 追加，Freeze 时一次数组构建）。
     /// </remarks>
     public sealed class DisplayCollector
     {
@@ -25,6 +25,8 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
         // 按 Style 引用分组（同 Style 的几何数据合并到同一个 GraphicsDisplayItem）
         private readonly Dictionary<GraphicsStyle, GraphicsDisplayItem> _graphicsAccum = new();
         private readonly Dictionary<TextStyle, TextDisplayItem> _textAccum = new();
+
+        private bool _isFinalized;
 
         // ===== 图形按需收集 =====
 
@@ -61,6 +63,24 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
             {
                 var isPass = isPassList != null && i < isPassList.Count ? isPassList[i] : true;
                 AppendGeometry(item, centers[i], isPass);
+            }
+        }
+
+        /// <summary>添加点（实心圆）</summary>
+        public void AddPoint(GraphicsStyle style, Point2d point, bool isPass = true)
+        {
+            var item = GetOrCreateGraphicsItem(style, GraphicsType.Point);
+            AppendGeometry(item, point, isPass);
+        }
+
+        /// <summary>批量添加点（实心圆）</summary>
+        public void AddPoints(GraphicsStyle style, IReadOnlyList<Point2d> points, IReadOnlyList<bool>? isPassList = null)
+        {
+            var item = GetOrCreateGraphicsItem(style, GraphicsType.Point);
+            for (int i = 0; i < points.Count; i++)
+            {
+                var isPass = isPassList != null && i < isPassList.Count ? isPassList[i] : true;
+                AppendGeometry(item, points[i], isPass);
             }
         }
 
@@ -130,14 +150,34 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
             _items.Clear();
             _graphicsAccum.Clear();
             _textAccum.Clear();
+            _isFinalized = false;
         }
 
         // ===== 查询 =====
 
-        public IReadOnlyList<DisplayItemBase> Items => _items;
+        /// <summary>获取所有显示项（自动冻结后返回）</summary>
+        public IReadOnlyList<DisplayItemBase> Items
+        {
+            get
+            {
+                EnsureFinalized();
+                return _items;
+            }
+        }
+
         public bool HasItems => _items.Count > 0;
 
         // ===== 内部辅助 =====
+
+        private void EnsureFinalized()
+        {
+            if (_isFinalized) return;
+            foreach (var item in _graphicsAccum.Values)
+                item.Freeze();
+            foreach (var item in _textAccum.Values)
+                item.Freeze();
+            _isFinalized = true;
+        }
 
         private GraphicsDisplayItem GetOrCreateGraphicsItem(GraphicsStyle style, GraphicsType type)
         {
@@ -156,14 +196,9 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
 
         private void AppendGeometry(GraphicsDisplayItem item, object geom, bool isPass)
         {
-            var list = item.Geometries.ToList();
-            list.Add(geom);
-            item.Geometries = list.ToArray();
-
-            // 始终维护 IsPassArray，与 Geometries 一一对应
-            var passList = item.IsPassArray.ToList();
-            passList.Add(isPass);
-            item.IsPassArray = passList.ToArray();
+            // O(1) 追加到内部列表，Freeze 时一次数组构建
+            item.GeometryList.Add(geom);
+            item.PassList.Add(isPass);
         }
 
         private TextDisplayItem GetOrCreateTextItem(TextStyle style)
@@ -182,17 +217,12 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
 
         private void AppendText(TextDisplayItem item, double x, double y, string content, bool isPass = true)
         {
-            var list = item.Texts.ToList();
-            list.Add(new DisplayTextData { Content = content, X = x, Y = y });
-            item.Texts = list.ToArray();
-
-            // 始终维护 IsPassArray，与 Texts 一一对应
-            var passList = item.IsPassArray.ToList();
-            passList.Add(isPass);
-            item.IsPassArray = passList.ToArray();
+            // O(1) 追加到内部列表，Freeze 时一次数组构建
+            item.TextList.Add(new DisplayTextData { Content = content, X = x, Y = y });
+            item.PassList.Add(isPass);
 
             // 更新锚点：首个文本的坐标即为锚点
-            if (list.Count == 1)
+            if (item.TextList.Count == 1)
             {
                 item.AnchorX = x;
                 item.AnchorY = y;

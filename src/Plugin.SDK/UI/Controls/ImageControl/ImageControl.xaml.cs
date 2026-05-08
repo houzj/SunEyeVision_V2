@@ -4,14 +4,17 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using OpenCvSharp.WpfExtensions;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Logging;
+using CvMat = OpenCvSharp.Mat;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls
 {
@@ -70,6 +73,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         // 选中变更抑制 - 防止因 ItemsSource 刷新导致 ComboBox 自动选中 index 0 触发冗余回调
         private bool _suppressSelectionChanged;
 
+        private int _originalImagePixelWidth;
+        private int _originalImagePixelHeight;
+
         #endregion
 
         #region 依赖属性
@@ -87,6 +93,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         public static readonly DependencyProperty ShowToolBarProperty =
             DependencyProperty.Register(nameof(ShowToolBar), typeof(bool), typeof(ImageControl),
                 new PropertyMetadata(true, OnShowToolBarChanged));
+
+        /// <summary>
+        /// 是否显示图像源选择下拉框（工具栏左侧的ComboBox）
+        /// 工具开发者可设为False，通过外部按钮选择图像
+        /// </summary>
+        public static readonly DependencyProperty ShowImageSourceSelectorProperty =
+            DependencyProperty.Register(nameof(ShowImageSourceSelector), typeof(bool), typeof(ImageControl),
+                new PropertyMetadata(true, OnShowImageSourceSelectorChanged));
 
         /// <summary>
         /// 是否显示状态栏
@@ -148,6 +162,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         {
             get => (bool)GetValue(ShowToolBarProperty);
             set => SetValue(ShowToolBarProperty, value);
+        }
+
+        /// <summary>
+        /// 是否显示图像源选择下拉框
+        /// </summary>
+        public bool ShowImageSourceSelector
+        {
+            get => (bool)GetValue(ShowImageSourceSelectorProperty);
+            set => SetValue(ShowImageSourceSelectorProperty, value);
         }
 
         /// <summary>
@@ -437,6 +460,43 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         }
 
         /// <summary>
+        /// 加载图像，利用 WPF GPU 渲染管线进行硬件缩放
+        /// 始终基于完整原图纹理渲染，任何缩放级别下清晰度无损
+        /// </summary>
+        public void LoadImageDownscaled(CvMat mat)
+        {
+            if (mat == null || mat.Empty()) return;
+
+            _originalImagePixelWidth = mat.Width;
+            _originalImagePixelHeight = mat.Height;
+
+            var bmp = mat.ToBitmapSource();
+            bmp?.Freeze();
+
+            SourceImage = bmp;
+
+            // GPU 硬件缩放：基于完整原图纹理，由 WPF 渲染管线完成
+            DisplayImage.Stretch = Stretch.Uniform;
+            RenderOptions.SetBitmapScalingMode(DisplayImage, BitmapScalingMode.HighQuality);
+
+            ImageContainer.Width = _originalImagePixelWidth;
+            ImageContainer.Height = _originalImagePixelHeight;
+            ResultRenderLayer.Width = _originalImagePixelWidth;
+            ResultRenderLayer.Height = _originalImagePixelHeight;
+            InteractionOverlayCanvas.Width = _originalImagePixelWidth;
+            InteractionOverlayCanvas.Height = _originalImagePixelHeight;
+
+            ImageSizeText.Text = $"图像: {_originalImagePixelWidth} x {_originalImagePixelHeight}";
+
+            // 重置视图状态
+            Zoom = 1.0;
+            _offsetX = 0;
+            _offsetY = 0;
+
+            Dispatcher.BeginInvoke(new Action(FitToWindow), System.Windows.Threading.DispatcherPriority.ContextIdle);
+        }
+
+        /// <summary>
         /// 适应窗口大小
         /// </summary>
         public void FitToWindow()
@@ -454,8 +514,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 return;
             }
 
-            var scaleX = viewWidth / SourceImage.PixelWidth;
-            var scaleY = viewHeight / SourceImage.PixelHeight;
+            double imageWidth = _originalImagePixelWidth > 0 ? _originalImagePixelWidth : SourceImage.PixelWidth;
+            double imageHeight = _originalImagePixelHeight > 0 ? _originalImagePixelHeight : SourceImage.PixelHeight;
+
+            var scaleX = viewWidth / imageWidth;
+            var scaleY = viewHeight / imageHeight;
 
             var newZoom = Math.Min(scaleX, scaleY);
             Zoom = newZoom;
@@ -472,8 +535,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
             var viewWidth = MainCanvas.ActualWidth;
             var viewHeight = MainCanvas.ActualHeight;
-            var imageWidth = SourceImage.PixelWidth * Zoom;
-            var imageHeight = SourceImage.PixelHeight * Zoom;
+            double imageWidth = (_originalImagePixelWidth > 0 ? _originalImagePixelWidth : SourceImage.PixelWidth) * Zoom;
+            double imageHeight = (_originalImagePixelHeight > 0 ? _originalImagePixelHeight : SourceImage.PixelHeight) * Zoom;
 
             _offsetX = (viewWidth - imageWidth) / 2;
             _offsetY = (viewHeight - imageHeight) / 2;
@@ -602,6 +665,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             }
         }
 
+        private static void OnShowImageSourceSelectorChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is ImageControl control && control.ImageSourceSelector != null)
+            {
+                control.ImageSourceSelector.Visibility = (bool)e.NewValue ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+
         private static void OnShowStatusBarChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is ImageControl control)
@@ -699,6 +770,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 // 同步Canvas尺寸和ImageContainer尺寸
                 if (newImage != null)
                 {
+                    control.DisplayImage.Stretch = Stretch.None;
                     control.ResultRenderLayer.Width = newImage.PixelWidth;
                     control.ResultRenderLayer.Height = newImage.PixelHeight;
                     control.InteractionOverlayCanvas.Width = newImage.PixelWidth;

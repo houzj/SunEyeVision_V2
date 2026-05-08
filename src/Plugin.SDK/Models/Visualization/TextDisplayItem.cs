@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Models;
 
@@ -49,6 +51,21 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
         /// <summary>锚点Y坐标（当所有Texts坐标相同时作为起点自动换行，运行时）</summary>
         [JsonIgnore]
         public double AnchorY { get; set; }
+
+        /// <summary>临时文本数据列表（构造期间积累，Freeze 后转为数组）</summary>
+        [JsonIgnore]
+        internal List<DisplayTextData> TextList { get; } = new();
+
+        /// <summary>临时通过标记列表（构造期间积累，Freeze 后转为数组）</summary>
+        [JsonIgnore]
+        internal List<bool> PassList { get; } = new();
+
+        /// <summary>冻结：将内部列表转为数组，释放临时存储</summary>
+        public void Freeze()
+        {
+            Texts = TextList.ToArray();
+            IsPassArray = PassList.ToArray();
+        }
 
         private void OnStylePropertyChanged(object? sender, PropertyChangedEventArgs e)
         {

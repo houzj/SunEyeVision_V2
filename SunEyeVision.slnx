@@ -28,5 +28,6 @@
     <Project Path="tools/SunEyeVision.Tool.ImageThreshold/SunEyeVision.Tool.ImageThreshold.csproj" />
     <Project Path="tools/SunEyeVision.Tool.ImageFilter/SunEyeVision.Tool.ImageFilter.csproj" />
     <Project Path="tools/SunEyeVision.Tool.Morphology/SunEyeVision.Tool.Morphology.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.ShapeMatch/SunEyeVision.Tool.ShapeMatch.csproj" />
   </Folder>
 </Solution>

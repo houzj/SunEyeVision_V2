@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -1088,7 +1088,7 @@ return;
 
                     var cancellationToken = _loadingCancellationTokenSource.Token;
 
-                    await LoadImagesOptimizedAsync(fileNames, cancellationToken);
+                    await LoadImagesOptimizedAsync(fileNames, cancellationToken, append: true);
                 }
             }
             catch (OperationCanceledException)
@@ -1162,9 +1162,11 @@ return cpuConcurrency;
         /// 优化的图像加载方法（简化版：使用优先级加载器）
         /// 优化：统一计时日志、文件预取、等待可视区域完成
         /// </summary>
+        /// <param name="append">true=追加到已有图像，false=替换全部</param>
         public async Task LoadImagesOptimizedAsync(
             string[] fileNames,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            bool append = false)
         {
             // ===== 统一计时：从用户角度记录有意义的时间 =====
             var totalSw = Stopwatch.StartNew();
@@ -1174,9 +1176,12 @@ return cpuConcurrency;
 
             try
             {
-                // 清空优先级加载器的状态
-                _priorityLoader.ClearState();
-                
+                if (!append)
+                {
+                    // 替换模式：清空优先级加载器的状态
+                    _priorityLoader.ClearState();
+                }
+
                 // ◆日志优化：重置首张图片追踪计数器
                 SmartThumbnailLoader.ResetLoadCounter();
 // ===== 步骤1：预创建所有ImageInfo对象 =====
@@ -1198,17 +1203,31 @@ return cpuConcurrency;
                 var step2Sw = Stopwatch.StartNew();
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    // 使用批量替换，只触发一次Reset事件，性能提升30-50倍
-                    ImageCollection.ReplaceRange(allImages);
-
-                    if (ImageCollection.Count > 0)
+                    if (append)
                     {
-                        CurrentImageIndex = 0;
+                        // 追加模式：保留已有图像，新增的添加到末尾
+                        ImageCollection.AddRange(allImages);
+
+                        if (ImageCollection.Count > 0 && allImages.Length > 0)
+                        {
+                            // 跳转到第一张新添加的图像
+                            CurrentImageIndex = ImageCollection.Count - allImages.Length;
+                        }
+                    }
+                    else
+                    {
+                        // 替换模式：使用批量替换，只触发一次Reset事件，性能提升30-50倍
+                        ImageCollection.ReplaceRange(allImages);
+
+                        if (ImageCollection.Count > 0)
+                        {
+                            CurrentImageIndex = 0;
+                        }
                     }
 
                     // 设置图像集合引用
                     _priorityLoader.SetImageCollection(ImageCollection);
-                    
+
                     // 注意：移除UpdateLayout()调用，依赖虚拟化自动处理
                 }, System.Windows.Threading.DispatcherPriority.Normal);
                 step2Sw.Stop();
@@ -1350,7 +1369,7 @@ firstImageTcs.TrySetResult(true);
 
                     var cancellationToken = _loadingCancellationTokenSource.Token;
 
-                    await LoadImagesOptimizedAsync(imageFiles, cancellationToken);
+                    await LoadImagesOptimizedAsync(imageFiles, cancellationToken, append: true);
                 }
             }
             catch (OperationCanceledException)

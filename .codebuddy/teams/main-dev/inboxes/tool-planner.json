@@ -1,0 +1,20 @@
+[
+  {
+    "id": "msg-1778123884756-cy4y3j",
+    "from": "team-lead",
+    "to": "tool-planner",
+    "type": "message",
+    "content": "报告一下你当前的进展，在做什么，遇到了什么。",
+    "timestamp": "2026-05-07T03:18:04.756Z",
+    "read": true
+  },
+  {
+    "id": "msg-1778124471172-ktolat",
+    "from": "team-lead",
+    "to": "tool-planner",
+    "type": "message",
+    "content": "用户确认了你的方向。你的范围聚焦在**圆查找 (CircleFinder)** 工具方案设计（算法+UI）。直线查找已有 finder-designer 负责。请继续推进圆查找方案文档。",
+    "timestamp": "2026-05-07T03:27:51.172Z",
+    "read": true
+  }
+]

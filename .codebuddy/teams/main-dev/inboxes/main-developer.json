@@ -1,0 +1,11 @@
+[
+  {
+    "id": "msg-1778124387848-9f7k9y",
+    "from": "team-lead",
+    "to": "main-developer",
+    "type": "message",
+    "content": "用户已同意你开始编码 ShapeMatchTool。按你计划的顺序推进：csproj → Parameters → Results → Tool → DebugControl。如需帮助或遇到问题请及时沟通。",
+    "timestamp": "2026-05-07T03:26:27.848Z",
+    "read": true
+  }
+]

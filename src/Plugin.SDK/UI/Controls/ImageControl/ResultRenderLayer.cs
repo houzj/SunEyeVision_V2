@@ -657,8 +657,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 foreach (var points in allPoints)
                 {
                     if (points.Length < 2) continue;
-                    bool isClosed = closeFigures && fill != null && points.Length >= 3;
-                    ctx.BeginFigure(points[0], isClosed, isClosed);
+                    bool isFilled = fill != null;
+                    bool isClosed = closeFigures && points.Length >= 3;
+                    ctx.BeginFigure(points[0], isFilled, isClosed);
                     for (int i = 1; i < points.Length; i++)
                         ctx.LineTo(points[i], true, true);
                 }

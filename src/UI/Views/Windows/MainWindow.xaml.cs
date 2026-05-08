@@ -1,4 +1,4 @@
-
+﻿
 using System;
 using System.IO;
 
@@ -1844,7 +1844,8 @@ if (_viewModel?.WorkflowTabViewModel?.SelectedTab == null)
 
 
 
-            // ★ 注入当前图像路径到运行时参数
+            // ★ 注入当前图像路径到运行时参数（不设置 ViewModel.CurrentImageIndex）
+            // 避免 UpdateCurrentImageDisplay() 加载源图后立即被工作流结果替换导致的闪烁
 
             _viewModel.SetRuntimeParameter("CurrentImagePath", e.ImageInfo.FilePath);
 
@@ -1859,13 +1860,7 @@ if (_viewModel?.WorkflowTabViewModel?.SelectedTab == null)
 
 
 
-            // 设置当前图像索引
-
-            _viewModel.CurrentImageIndex = e.Index;
-
-
-
-            // 触发工作流执行
+            // 触发工作流执行（DisplayImage 由工作流结果驱动更新，无需在此预加载源图）
 
             _viewModel.RunWorkflowCommand.Execute(null);
 

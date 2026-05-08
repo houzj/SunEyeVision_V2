@@ -69,7 +69,7 @@ namespace SunEyeVision.UI.ViewModels
         private bool _showImagePreview = false;
 
         // 图像预览
-        private bool _autoSwitchEnabled = false;
+        private bool _autoSwitchEnabled = true;
         private int _currentImageIndex = -1;
 
         // 参数选择状态（用于 TreeView 事件处理）

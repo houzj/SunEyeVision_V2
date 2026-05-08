@@ -27,7 +27,7 @@ namespace SunEyeVision.UI.Models
         private readonly BatchObservableCollection<ImageInfo> _images;
         private int _currentIndex = -1;
         private ImageRunMode _runMode = ImageRunMode.运行全部;
-        private bool _autoSwitchEnabled = false;
+        private bool _autoSwitchEnabled = true;
         private bool _isReadOnly = false;
 
         /// <summary>
@@ -223,7 +223,7 @@ namespace SunEyeVision.UI.Models
         {
             ClearImages();
             RunMode = ImageRunMode.运行全部;
-            AutoSwitchEnabled = false;
+            AutoSwitchEnabled = true;
             IsReadOnly = false;
         }
 

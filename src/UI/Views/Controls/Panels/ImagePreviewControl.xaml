@@ -10,7 +10,6 @@
 
     <UserControl.Resources>
         <!-- 样式转换器 -->
-        <local:ThumbnailStyleConverter x:Key="ThumbnailStyleConverter"/>
         <local:ImageRunModeDisplayConverter x:Key="ImageRunModeDisplayConverter"/>
         <local:BooleanToBrushConverter x:Key="BooleanToBrushConverter"/>
         <local:NullToOpacityConverter x:Key="NullToOpacityConverter"/>
@@ -347,13 +346,11 @@
                      HorizontalContentAlignment="Stretch"
                      ScrollViewer.HorizontalScrollBarVisibility="Auto"
                      ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                     VirtualizingPanel.IsVirtualizing="True"
-                     VirtualizingPanel.VirtualizationMode="Recycling"
-                     ScrollViewer.CanContentScroll="False"
-                     SelectionChanged="OnThumbnailListBoxSelectionChanged">
+                     ScrollViewer.ScrollChanged="OnScrollChanged"
+                    SelectionChanged="OnThumbnailListBoxSelectionChanged">
                 <ListBox.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <StackPanel Orientation="Horizontal"/>
+                        <VirtualizingStackPanel Orientation="Horizontal"/>
                     </ItemsPanelTemplate>
                 </ListBox.ItemsPanel>
                 <ListBox.ItemTemplate>
@@ -435,8 +432,7 @@
                                         HorizontalAlignment="Right" VerticalAlignment="Top"
                                         Margin="0,2,2,0"
                                         Background="Transparent" BorderThickness="0"
-                                        Cursor="Hand" ToolTip="删除此图像"
-                                        PreviewMouseLeftButtonDown="OnDeleteButtonPreview">
+                                        Cursor="Hand" ToolTip="删除此图像">
                                     <Button.Template>
                                         <ControlTemplate TargetType="Button">
                                             <Border x:Name="ButtonBorder" Background="#CC0000" CornerRadius="10" Width="20" Height="20">

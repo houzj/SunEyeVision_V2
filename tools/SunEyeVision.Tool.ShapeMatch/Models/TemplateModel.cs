@@ -63,7 +63,7 @@ namespace SunEyeVision.Tool.ShapeMatch.Models
         private int _retrievalMode = 0; // 0=External(最外层), 1=List(层次结构)
         private bool _useL2Gradient = true;
         private bool _useSubPixel = false;
-        private List<Point2D>? _contourPoints;
+        private List<List<Point2D>>? _contourGroups;
         private double _contourWidth;
         private double _contourHeight;
         private double _centerX;
@@ -162,10 +162,10 @@ namespace SunEyeVision.Tool.ShapeMatch.Models
             set => SetProperty(ref _useSubPixel, value, "亚像素轮廓");
         }
 
-        public List<Point2D>? ContourPoints
+        public List<List<Point2D>>? ContourGroups
         {
-            get => _contourPoints;
-            set => SetProperty(ref _contourPoints, value);
+            get => _contourGroups;
+            set => SetProperty(ref _contourGroups, value);
         }
 
         public double ContourWidth { get => _contourWidth; set => SetProperty(ref _contourWidth, value); }
@@ -180,41 +180,7 @@ namespace SunEyeVision.Tool.ShapeMatch.Models
         }
 
         [JsonIgnore]
-        public int ContourPointCount => _contourPoints?.Count ?? 0;
-
-        /// <summary>
-        /// 按组分割的轮廓点列表（去除NaN分隔符），避免渲染时重复遍历拆分
-        /// </summary>
-        [JsonIgnore]
-        public List<List<Point2D>> ContourPointGroups
-        {
-            get
-            {
-                if (_contourPoints == null || _contourPoints.Count == 0)
-                    return new List<List<Point2D>>();
-
-                var groups = new List<List<Point2D>>();
-                var current = new List<Point2D>();
-                foreach (var pt in _contourPoints)
-                {
-                    if (double.IsNaN(pt.X))
-                    {
-                        if (current.Count > 0)
-                        {
-                            groups.Add(current);
-                            current = new List<Point2D>();
-                        }
-                    }
-                    else
-                    {
-                        current.Add(new Point2D { X = pt.X, Y = pt.Y });
-                    }
-                }
-                if (current.Count > 0)
-                    groups.Add(current);
-                return groups;
-            }
-        }
+        public int ContourPointCount => _contourGroups?.Sum(g => g.Count) ?? 0;
 
         private int _contourGroupCount = 1;
 
@@ -236,15 +202,6 @@ namespace SunEyeVision.Tool.ShapeMatch.Models
         {
             get => _sourceImageBytes;
             set => SetProperty(ref _sourceImageBytes, value);
-        }
-
-        /// <summary>
-        /// 获取所有有效轮廓点（排除 NaN 分隔符），用于匹配算法
-        /// </summary>
-        public static List<Point2D> GetValidPoints(List<Point2D>? flatPoints)
-        {
-            if (flatPoints == null) return new List<Point2D>();
-            return flatPoints.Where(p => !double.IsNaN(p.X) && !double.IsNaN(p.Y)).ToList();
         }
 
         /// <summary>
@@ -306,7 +263,7 @@ namespace SunEyeVision.Tool.ShapeMatch.Models
                 CenterX = _centerX,
                 CenterY = _centerY,
                 ContourGroupCount = _contourGroupCount,
-                ContourPoints = _contourPoints?.Select(p => new Point2D { X = p.X, Y = p.Y }).ToList(),
+                ContourGroups = _contourGroups?.Select(g => g.Select(p => new Point2D { X = p.X, Y = p.Y }).ToList()).ToList(),
                 SourceImageBytes = _sourceImageBytes?.ToArray(),
                 InspectionRegions = _inspectionRegions.Select(r => (RegionData)r.Clone()).ToList(),
                 MaskRegions = _maskRegions.Select(r => (RegionData)r.Clone()).ToList()
@@ -369,6 +326,38 @@ namespace SunEyeVision.Tool.ShapeMatch.Models
             }
 
             return result.ToArray();
+        }
+
+        /// <summary>
+        /// 旧格式兼容：反序列化时自动将 NaN 分隔扁平列表（ContourPoints）转换为 ContourGroups
+        /// </summary>
+        [JsonPropertyName("ContourPoints")]
+        private List<Point2D>? DeprecatedContourPoints
+        {
+            set
+            {
+                if (value == null) return;
+                var groups = new List<List<Point2D>>();
+                var current = new List<Point2D>();
+                foreach (var pt in value)
+                {
+                    if (double.IsNaN(pt.X))
+                    {
+                        if (current.Count > 0)
+                        {
+                            groups.Add(current);
+                            current = new List<Point2D>();
+                        }
+                    }
+                    else
+                    {
+                        current.Add(new Point2D { X = pt.X, Y = pt.Y });
+                    }
+                }
+                if (current.Count > 0)
+                    groups.Add(current);
+                _contourGroups = groups;
+            }
         }
     }
 

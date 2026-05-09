@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -138,7 +138,7 @@ namespace SunEyeVision.Tool.ShapeMatch
                 // ===== Step 2: 获取可用模板 =====
                 stepSw.Restart();
                 var enabledTemplates = parameters.Templates
-                    .Where(t => t.IsEnabled && t.ExtractionStatus == TemplateExtractionStatus.Success && t.ContourPoints != null)
+                    .Where(t => t.IsEnabled && t.ExtractionStatus == TemplateExtractionStatus.Success && t.ContourGroups != null)
                     .ToList();
 
                 if (enabledTemplates.Count == 0)
@@ -239,11 +239,11 @@ namespace SunEyeVision.Tool.ShapeMatch
         private static List<ShapeMatchResultItem> RunSingleTemplateMatch(
             Mat grayImage, TemplateModel template, ShapeMatchParameters parameters)
         {
-            if (template.ContourPoints == null || template.ContourPoints.Count < 3)
+            if (template.ContourGroups == null || template.ContourGroups.Count < 1)
                 return new List<ShapeMatchResultItem>();
 
-            // 过滤掉 NaN 分隔符，只取有效轮廓点用于匹配
-            var validPoints = TemplateModel.GetValidPoints(template.ContourPoints);
+            // 将所有轮廓组拍平为单个点列表用于匹配
+            var validPoints = template.ContourGroups.SelectMany(g => g).ToList();
             if (validPoints.Count < 3)
                 return new List<ShapeMatchResultItem>();
 

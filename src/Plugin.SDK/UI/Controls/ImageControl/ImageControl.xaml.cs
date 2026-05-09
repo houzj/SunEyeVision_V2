@@ -801,6 +801,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 else
                 {
                     control.ImageSizeText.Text = "图像: -";
+                    control.PixelValueText.Text = "灰度: -";
                 }
 
                 control.OnImageLoaded();
@@ -1099,10 +1100,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             var screenPoint = e.GetPosition(MainCanvas);
             var imagePos = ScreenToImage(screenPoint);
 
-            // 更新位置显示（仅在有图像时）
+            // 更新位置显示和像素值（仅在有图像时）
             if (SourceImage != null)
             {
-                PositionText.Text = $"位置: ({(int)imagePos.X}, {(int)imagePos.Y})";
+                int px = (int)imagePos.X;
+                int py = (int)imagePos.Y;
+                PositionText.Text = $"位置: ({px}, {py})";
+                PixelValueText.Text = GetPixelValueString(px, py, SourceImage);
             }
 
             // 触发鼠标移动事件（无论是否有图像）
@@ -1120,6 +1124,53 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 UpdateImageTransform();
                 e.Handled = true;
             }
+        }
+
+        /// <summary>
+        /// 获取指定像素位置的灰度值或RGB值
+        /// 支持 Gray8、Gray16、Bgr24、Bgr32/Bgra32 等常见格式
+        /// </summary>
+        private static string GetPixelValueString(int x, int y, BitmapSource bitmap)
+        {
+            if (bitmap == null) return "灰度: -";
+
+            int pw = bitmap.PixelWidth;
+            int ph = bitmap.PixelHeight;
+            if (x < 0 || x >= pw || y < 0 || y >= ph)
+                return "灰度: -";
+
+            var format = bitmap.Format;
+            int bpp = format.BitsPerPixel;
+
+            // 单像素矩形 + 安全的 destination stride 计算
+            var rect = new Int32Rect(x, y, 1, 1);
+            int stride = ((1 * bpp + 31) / 32) * 4;
+            byte[] buffer = new byte[Math.Max(stride, 16)];
+
+            bitmap.CopyPixels(rect, buffer, stride, 0);
+
+            if (format == PixelFormats.Gray8)
+                return $"灰度: {buffer[0]}";
+            if (format == PixelFormats.Gray16)
+            {
+                ushort val = (ushort)(buffer[0] | (buffer[1] << 8));
+                return $"灰度: {val}";
+            }
+            if (format == PixelFormats.Bgr24 || format == PixelFormats.Rgb24)
+            {
+                // 当 R=G=B 时说明实际为灰度图（灰度图转为BGR格式后三个通道值相等）
+                if (buffer[0] == buffer[1] && buffer[1] == buffer[2])
+                    return $"灰度: {buffer[0]}";
+                return $"RGB: ({buffer[2]}, {buffer[1]}, {buffer[0]})";
+            }
+            if (format == PixelFormats.Bgr32 || format == PixelFormats.Bgra32)
+            {
+                // 当 R=G=B 时说明实际为灰度图（灰度图转为BGR格式后三个通道值相等）
+                if (buffer[0] == buffer[1] && buffer[1] == buffer[2])
+                    return $"灰度: {buffer[0]}";
+                return $"RGB: ({buffer[2]}, {buffer[1]}, {buffer[0]})";
+            }
+            return $"像素: {bpp}bit";
         }
 
         private void MainCanvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)

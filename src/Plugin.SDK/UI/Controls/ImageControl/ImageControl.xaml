@@ -362,6 +362,13 @@
                            Foreground="#909090"
                            FontSize="11"/>
             </StatusBarItem>
+            <Separator Background="#404040"/>
+            <StatusBarItem>
+                <TextBlock x:Name="PixelValueText" 
+                           Text="灰度: -" 
+                           Foreground="#909090"
+                           FontSize="11"/>
+            </StatusBarItem>
         </StatusBar>
     </Grid>
 </UserControl>

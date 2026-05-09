@@ -314,7 +314,7 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
                     if (!ReferenceEquals(result, existing))
                     {
                         existing.Name = result.Name;
-                        existing.ContourPoints = result.ContourPoints;
+                        existing.ContourGroups = result.ContourGroups;
                         existing.SmoothKernelSize = result.SmoothKernelSize;
                         existing.EdgeLowThreshold = result.EdgeLowThreshold;
                         existing.EdgeHighThreshold = result.EdgeHighThreshold;
@@ -606,9 +606,9 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
                     {
                         var cropped = new CroppedBitmap(sourceImg, new Int32Rect(cropX, cropY, cropWidth, cropHeight));
 
-                        if (template.ContourPoints != null && template.ContourPoints.Count > 0)
+                        if (template.ContourGroups != null && template.ContourGroups.Count > 0)
                         {
-                            var preview = BuildContourPreview(cropped, template.ContourPointGroups, cropX, cropY);
+                            var preview = BuildContourPreview(cropped, template.ContourGroups, cropX, cropY);
                             _previewCache[cacheKey] = preview;
                             previewImage.Source = preview;
                         }

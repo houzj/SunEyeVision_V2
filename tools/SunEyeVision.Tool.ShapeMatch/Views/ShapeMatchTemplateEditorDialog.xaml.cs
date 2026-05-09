@@ -34,7 +34,7 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
         private bool _ownsMat; // 是否拥有 Mat 所有权（本地载入的图像需要释放）
         private TemplateModel? _resultTemplate;
         private TemplateModel? _originalTemplate; // 编辑模式时保存原模板引用，用于深拷贝
-        private List<Point2D>? _previewContourPoints;
+        private List<List<Point2D>>? _previewContourGroups;
         private bool _isEditingExisting; // 编辑已有模板（含注册图像）
         private bool _hadManualExtraction; // 用户是否在对话框中手动点击了提取/预览
         private string? _localImagePath; // 本地图像的完整路径
@@ -133,10 +133,10 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
         /// </summary>
         private void TryRestoreContourOverlay()
         {
-            if (_resultTemplate?.ContourPoints == null || _resultTemplate.ContourPoints.Count == 0)
+            if (_resultTemplate?.ContourGroups == null || _resultTemplate.ContourGroups.Count == 0)
                 return;
 
-            DrawContourOverlays(_resultTemplate.ContourPointGroups,
+            DrawContourOverlays(_resultTemplate.ContourGroups,
                 _resultTemplate.ExtractionStatus != TemplateExtractionStatus.Success);
             PluginLogger.Info($"[ShapeMatchTemplateEditor] 恢复已保存的轮廓: {_resultTemplate.ContourPointCount}点",
                 "ShapeMatchTool");
@@ -430,11 +430,11 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
 
         private void OnClearClick(object sender, RoutedEventArgs e)
         {
-            _previewContourPoints = null;
+            _previewContourGroups = null;
 
             if (_resultTemplate != null)
             {
-                _resultTemplate.ContourPoints = null;
+                _resultTemplate.ContourGroups = null;
                 _resultTemplate.ExtractionStatus = TemplateExtractionStatus.NotExtracted;
             }
 
@@ -610,29 +610,23 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
                         .ToList();
                 }
 
-                // ===== 转换为 Point2D + NaN 分隔 + 原图坐标 =====
-                var contourPoints = new List<Point2D>();
+                // ===== 转换为 Point2D 轮廓组（直接分组存储，无需 NaN 分隔符） =====
+                var contourGroups = new List<List<Point2D>>();
                 var allSubPixelRoi = new List<Point2f>(); // 用于整体矩/包围盒
-                int contourGroupCount = 0;
 
                 for (int gi = 0; gi < refinedGroups.Count; gi++)
                 {
-                    var group = refinedGroups[gi];
-
-                    // NaN 分隔符（第一条轮廓前不需要）
-                    if (contourPoints.Count > 0)
+                    var srcGroup = refinedGroups[gi];
+                    var destGroup = new List<Point2D>(srcGroup.Length);
+                    foreach (var pt in srcGroup)
                     {
-                        contourPoints.Add(new Point2D { X = double.NaN, Y = double.NaN });
-                    }
-
-                    foreach (var pt in group)
-                    {
-                        contourPoints.Add(new Point2D { X = pt.X, Y = pt.Y });
+                        destGroup.Add(new Point2D { X = pt.X, Y = pt.Y });
                         allSubPixelRoi.Add(new Point2f(pt.X, pt.Y));
                     }
-
-                    contourGroupCount++;
+                    contourGroups.Add(destGroup);
                 }
+
+                int contourGroupCount = contourGroups.Count;
 
                 // 计算整体包围盒和中心点（原图坐标）
                 var moments = Cv2.Moments(allSubPixelRoi.ToArray());
@@ -644,14 +638,14 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
                 double contourWidth = useSubPixel ? minAreaRect.Size.Width : Math.Round(minAreaRect.Size.Width);
                 double contourHeight = useSubPixel ? minAreaRect.Size.Height : Math.Round(minAreaRect.Size.Height);
 
-                // 有效点数（不含NaN分隔符）
-                int validPointCount = contourPoints.Count(p => !double.IsNaN(p.X));
+                // 有效点数（所有组的点数之和）
+                int validPointCount = contourGroups.Sum(g => g.Count);
 
                 // 更新显示
                 if (saveResult)
                 {
                     _resultTemplate ??= new TemplateModel();
-                    _resultTemplate.ContourPoints = contourPoints;
+                    _resultTemplate.ContourGroups = contourGroups;
                     _resultTemplate.SmoothKernelSize = smoothKernel;
                     _resultTemplate.EdgeLowThreshold = lowThreshold;
                     _resultTemplate.EdgeHighThreshold = highThreshold;
@@ -686,16 +680,16 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
                 }
                 else
                 {
-                    // 预览模式：临时保存点用于绘制
-                    _previewContourPoints = contourPoints;
+                    // 预览模式：临时保存轮廓组用于绘制
+                    _previewContourGroups = contourGroups;
                     UpdateResultDisplay(TemplateExtractionStatus.Success, validPointCount,
                         minAreaRect.Size.Width, minAreaRect.Size.Height, overallCx, overallCy);
                 }
 
-                // 在 ImageControl 上叠加绘制多轮廓组（以分组形式传入，避免重复NaN拆分）
+                // 在 ImageControl 上叠加绘制多轮廓组
                 var groupsToDraw = saveResult && _resultTemplate != null
-                    ? _resultTemplate.ContourPointGroups
-                    : SplitContourGroups(contourPoints);
+                    ? _resultTemplate.ContourGroups
+                    : contourGroups;
                 DrawContourOverlays(groupsToDraw, chkShowPointsOnly.IsChecked ?? false);
             }
             catch (Exception ex)
@@ -760,36 +754,6 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
             }
 
             dialogImageControl.ResultRenderLayerControl.SetDisplayCollector(display);
-        }
-
-        /// <summary>
-        /// 将平铺的轮廓点列表（含NaN分隔符）分割为按组分组的列表
-        /// </summary>
-        private static List<List<Point2D>> SplitContourGroups(List<Point2D>? flatPoints)
-        {
-            if (flatPoints == null || flatPoints.Count == 0)
-                return new List<List<Point2D>>();
-
-            var groups = new List<List<Point2D>>();
-            var current = new List<Point2D>();
-            foreach (var pt in flatPoints)
-            {
-                if (double.IsNaN(pt.X))
-                {
-                    if (current.Count > 0)
-                    {
-                        groups.Add(current);
-                        current = new List<Point2D>();
-                    }
-                }
-                else
-                {
-                    current.Add(new Point2D { X = pt.X, Y = pt.Y });
-                }
-            }
-            if (current.Count > 0)
-                groups.Add(current);
-            return groups;
         }
 
         private void ClearContourOverlay()
@@ -878,7 +842,7 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
             if (DialogInspectionRegions.Count == 0)
                 errors.Add("- 请至少绘制一个检测区域。");
 
-            bool hasContour = _resultTemplate.ContourPoints != null && _resultTemplate.ContourPoints.Count > 0;
+            bool hasContour = _resultTemplate.ContourGroups != null && _resultTemplate.ContourGroups.Count > 0;
             if (!hasContour)
                 errors.Add("- 轮廓数据为空，请先执行轮廓提取。");
 

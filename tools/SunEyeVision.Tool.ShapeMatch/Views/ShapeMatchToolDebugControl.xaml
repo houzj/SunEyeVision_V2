@@ -8,6 +8,7 @@
         xmlns:converters="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Region.Converters;assembly=SunEyeVision.Plugin.SDK"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:local="clr-namespace:SunEyeVision.Tool.ShapeMatch"
+        xmlns:models="clr-namespace:SunEyeVision.Tool.ShapeMatch.Models"
         xmlns:localConverters="clr-namespace:SunEyeVision.Tool.ShapeMatch.Converters"
         mc:Ignorable="d"
         d:DesignHeight="600" d:DesignWidth="420"
@@ -185,6 +186,11 @@
 
       <!-- Tab3: 运行参数 -->
       <TabItem Header="运行参数">
+        <TabItem.Resources>
+          <Style TargetType="{x:Type controls:LabeledControl}" BasedOn="{StaticResource {x:Type controls:LabeledControl}}">
+            <Setter Property="LabelWidth" Value="130"/>
+          </Style>
+        </TabItem.Resources>
         <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12">
           <StackPanel>
             <!-- 目标模板选择（ConfigSetting 双模式） -->
@@ -209,7 +215,7 @@
                                     Value="{Binding MaxMatchCount.Value, Mode=TwoWay}"
                                     Minimum="1" Maximum="100"
                                     SmallChange="1" LargeChange="5"
-                                    Width="150"
+                                    Width="200"
                                     AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                 </controls:LabeledControl>
 
@@ -220,7 +226,7 @@
                                     Value="{Binding MatchTimeoutMs.Value, Mode=TwoWay}"
                                     Minimum="100" Maximum="60000"
                                     SmallChange="500" LargeChange="5000"
-                                    Width="150"
+                                    Width="200"
                                     AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                 </controls:LabeledControl>
 
@@ -231,46 +237,86 @@
                                     Value="{Binding MinMatchDistance.Value, Mode=TwoWay}"
                                     Minimum="0" Maximum="500"
                                     SmallChange="1" LargeChange="10"
-                                    Width="150"
+                                    Width="200"
                                     AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                 </controls:LabeledControl>
 
-                <!-- 角度范围 -->
-                <controls:LabeledControl Label="角度范围 (°)" Margin="0,8,0,0">
-                  <StackPanel Orientation="Horizontal">
-                    <TextBox Text="{Binding AngleMin.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                             Width="70" VerticalContentAlignment="Center"/>
-                    <TextBlock Text=" ~ " VerticalAlignment="Center" Margin="4,0"/>
-                    <TextBox Text="{Binding AngleMax.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                             Width="70" VerticalContentAlignment="Center"/>
-                    <TextBlock Text=" 步长:" VerticalAlignment="Center" Margin="8,0,0,0"/>
-                    <TextBox Text="{Binding AngleStep.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                             Width="55" VerticalContentAlignment="Center"/>
-                  </StackPanel>
+                <!-- 角度起始 -->
+                <controls:LabeledControl Label="角度起始 (°)" Margin="0,8,0,0">
+                  <controls:ConfigSetting
+                                    ParameterName="AngleMin"
+                                    DataType="{x:Type sys:Double}"
+                                    Value="{Binding AngleMin.Value, Mode=TwoWay}"
+                                    Minimum="-360" Maximum="360"
+                                    SmallChange="1" LargeChange="45"
+                                    ShowSlider="False" Width="200" DecimalPlaces="1"
+                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                </controls:LabeledControl>
+                <!-- 角度终止 -->
+                <controls:LabeledControl Label="角度终止 (°)" Margin="0,4,0,0">
+                  <controls:ConfigSetting
+                                    ParameterName="AngleMax"
+                                    DataType="{x:Type sys:Double}"
+                                    Value="{Binding AngleMax.Value, Mode=TwoWay}"
+                                    Minimum="-360" Maximum="360"
+                                    SmallChange="1" LargeChange="45"
+                                    ShowSlider="False" Width="200" DecimalPlaces="1"
+                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                </controls:LabeledControl>
+                <!-- 角度步长 -->
+                <controls:LabeledControl Label="角度步长 (°)" Margin="0,4,0,0">
+                  <controls:ConfigSetting
+                                    ParameterName="AngleStep"
+                                    DataType="{x:Type sys:Double}"
+                                    Value="{Binding AngleStep.Value, Mode=TwoWay}"
+                                    Minimum="0.1" Maximum="90"
+                                    SmallChange="0.1" LargeChange="10"
+                                    ShowSlider="False" Width="200" DecimalPlaces="1"
+                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                 </controls:LabeledControl>
 
-                <!-- 缩放范围 -->
-                <controls:LabeledControl Label="缩放范围">
-                  <StackPanel Orientation="Horizontal">
-                    <TextBox Text="{Binding ScaleMin.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                             Width="65" VerticalContentAlignment="Center"/>
-                    <TextBlock Text=" ~ " VerticalAlignment="Center" Margin="4,0"/>
-                    <TextBox Text="{Binding ScaleMax.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                             Width="65" VerticalContentAlignment="Center"/>
-                    <TextBlock Text=" 步长:" VerticalAlignment="Center" Margin="8,0,0,0"/>
-                    <TextBox Text="{Binding ScaleStep.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                             Width="60" VerticalContentAlignment="Center"/>
-                  </StackPanel>
+                <!-- 缩放起始 -->
+                <controls:LabeledControl Label="缩放起始" Margin="0,8,0,0">
+                  <controls:ConfigSetting
+                                    ParameterName="ScaleMin"
+                                    DataType="{x:Type sys:Double}"
+                                    Value="{Binding ScaleMin.Value, Mode=TwoWay}"
+                                    Minimum="0.1" Maximum="10.0"
+                                    SmallChange="0.01" LargeChange="0.1"
+                                    ShowSlider="False" Width="200" DecimalPlaces="3"
+                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                </controls:LabeledControl>
+                <!-- 缩放终止 -->
+                <controls:LabeledControl Label="缩放终止" Margin="0,4,0,0">
+                  <controls:ConfigSetting
+                                    ParameterName="ScaleMax"
+                                    DataType="{x:Type sys:Double}"
+                                    Value="{Binding ScaleMax.Value, Mode=TwoWay}"
+                                    Minimum="0.1" Maximum="10.0"
+                                    SmallChange="0.01" LargeChange="0.1"
+                                    ShowSlider="False" Width="200" DecimalPlaces="3"
+                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                </controls:LabeledControl>
+                <!-- 缩放步长 -->
+                <controls:LabeledControl Label="缩放步长" Margin="0,4,0,0">
+                  <controls:ConfigSetting
+                                    ParameterName="ScaleStep"
+                                    DataType="{x:Type sys:Double}"
+                                    Value="{Binding ScaleStep.Value, Mode=TwoWay}"
+                                    Minimum="0.001" Maximum="1.0"
+                                    SmallChange="0.001" LargeChange="0.01"
+                                    ShowSlider="False" Width="200" DecimalPlaces="3"
+                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                 </controls:LabeledControl>
 
                 <!-- 金字塔层数 -->
-                <controls:LabeledControl Label="金字塔层数 (0=自动)" Margin="0,8,0,0">
+                <controls:LabeledControl Label="金字塔层数 (0=自动,最多10层)" Margin="0,8,0,0">
                   <controls:ConfigSetting
                                     ParameterName="PyramidLevels"
                                     DataType="{x:Type sys:Int32}"
                                     Value="{Binding PyramidLevels.Value, Mode=TwoWay}"
-                                    Minimum="0" Maximum="5"
-                                    SmallChange="1" Width="120"
+                                    Minimum="0" Maximum="10"
+                                    SmallChange="1" Width="200"
                                     AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                 </controls:LabeledControl>
               </StackPanel>
@@ -290,7 +336,7 @@
                                     Value="{Binding SubPixelRadius.Value, Mode=TwoWay}"
                                     Minimum="0.1" Maximum="10.0"
                                     SmallChange="0.1" LargeChange="1"
-                                    Width="120"
+                                    Width="200"
                                     DecimalPlaces="2"
                                     AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                 </controls:LabeledControl>
@@ -300,23 +346,19 @@
             <!-- 排序方式 -->
             <controls:LabeledControl Label="排序方式">
               <ComboBox Height="32" VerticalContentAlignment="Center" Width="220"
-                      SelectedValue="{Binding SortMode.Value, Mode=TwoWay}">
+                      SelectedItem="{Binding SortMode.Value, Mode=TwoWay}">
                 <ComboBox.ItemTemplate>
                   <DataTemplate>
-                    <TextBlock>
-                        <TextBlock.Text>
-                            <Binding Path="." Converter="{StaticResource SortModeConverter}"/>
-                        </TextBlock.Text>
-                    </TextBlock>
+                    <TextBlock Text="{Binding Converter={StaticResource SortModeConverter}}"/>
                   </DataTemplate>
                 </ComboBox.ItemTemplate>
-                <sys:String>None</sys:String>
-                <sys:String>ScoreDescending</sys:String>
-                <sys:String>AngleDescending</sys:String>
-                <sys:String>XAscending</sys:String>
-                <sys:String>YAscending</sys:String>
-                <sys:String>XThenYAscending</sys:String>
-                <sys:String>YThenXAscending</sys:String>
+                <models:SortMode>None</models:SortMode>
+                <models:SortMode>ScoreDescending</models:SortMode>
+                <models:SortMode>AngleDescending</models:SortMode>
+                <models:SortMode>XAscending</models:SortMode>
+                <models:SortMode>YAscending</models:SortMode>
+                <models:SortMode>XThenYAscending</models:SortMode>
+                <models:SortMode>YThenXAscending</models:SortMode>
               </ComboBox>
             </controls:LabeledControl>
 
@@ -326,20 +368,16 @@
                                       Margin="0,8,0,0" Background="White">
               <StackPanel Margin="16,8">
                 <controls:LabeledControl Label="多模板模式">
-                  <ComboBox Height="32" VerticalContentAlignment="Center" Width="180"
-                          SelectedValue="{Binding MultiMode.Value, Mode=TwoWay}">
+                  <ComboBox Height="32" VerticalContentAlignment="Center" Width="220"
+                          SelectedItem="{Binding MultiMode.Value, Mode=TwoWay}">
                     <ComboBox.ItemTemplate>
                       <DataTemplate>
-                        <TextBlock>
-                            <TextBlock.Text>
-                                <Binding Path="." Converter="{StaticResource MultiTemplateModeConverter}"/>
-                            </TextBlock.Text>
-                        </TextBlock>
+                        <TextBlock Text="{Binding Converter={StaticResource MultiTemplateModeConverter}}"/>
                       </DataTemplate>
                     </ComboBox.ItemTemplate>
-                    <sys:String>Sequential</sys:String>
-                    <sys:String>ParallelIndependent</sys:String>
-                    <sys:String>ParallelShared</sys:String>
+                    <models:MultiTemplateMode>Sequential</models:MultiTemplateMode>
+                    <models:MultiTemplateMode>ParallelIndependent</models:MultiTemplateMode>
+                    <models:MultiTemplateMode>ParallelShared</models:MultiTemplateMode>
                   </ComboBox>
                 </controls:LabeledControl>
 
@@ -349,7 +387,7 @@
                                     DataType="{x:Type sys:Int32}"
                                     Value="{Binding MaxParallelism.Value, Mode=TwoWay}"
                                     Minimum="0" Maximum="16"
-                                    SmallChange="1" Width="100"
+                                    SmallChange="1" Width="200"
                                     AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                 </controls:LabeledControl>
 
@@ -360,7 +398,7 @@
                                     Value="{Binding TargetPointCount.Value, Mode=TwoWay}"
                                     Minimum="10" Maximum="200"
                                     SmallChange="10" LargeChange="20"
-                                    Width="100"
+                                    Width="200"
                                     AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                 </controls:LabeledControl>
               </StackPanel>

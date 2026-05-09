@@ -72,6 +72,7 @@ namespace SunEyeVision.Tool.ShapeMatch.Models
         private TemplateExtractionStatus _extractionStatus = TemplateExtractionStatus.NotExtracted;
         private List<RegionData> _inspectionRegions = new();
         private List<RegionData> _maskRegions = new();
+        private List<List<double>>? _contourDirectionGroups;
 
         public string Id { get => _id; set => SetProperty(ref _id, value); }
         public string Name { get => _name; set => SetProperty(ref _name, value, "名称"); }
@@ -168,6 +169,18 @@ namespace SunEyeVision.Tool.ShapeMatch.Models
             set => SetProperty(ref _contourGroups, value);
         }
 
+        /// <summary>
+        /// 每个轮廓组对应的图像梯度方向（弧度），在模板创建时从模板图像的 Sobel 梯度提取。
+        /// 与 ContourGroups 一一对应，每组长度一致。
+        /// 使用实际图像梯度方向（法线方向）而非轮廓几何反算，消除 90° 偏移.
+        /// 模板创建时若未提取则为 null，运行时必需。
+        /// </summary>
+        public List<List<double>>? ContourDirectionGroups
+        {
+            get => _contourDirectionGroups;
+            set => SetProperty(ref _contourDirectionGroups, value);
+        }
+
         public double ContourWidth { get => _contourWidth; set => SetProperty(ref _contourWidth, value); }
         public double ContourHeight { get => _contourHeight; set => SetProperty(ref _contourHeight, value); }
         public double CenterX { get => _centerX; set => SetProperty(ref _centerX, value); }
@@ -235,6 +248,60 @@ namespace SunEyeVision.Tool.ShapeMatch.Models
         }
 
         /// <summary>
+        /// 等距重采样核心算法 — 沿路径等弧长间隔取点
+        /// </summary>
+        private static Point2f[] ComputeUniformResample(int length, int targetCount, Func<int, (double X, double Y)> getPoint)
+        {
+            double totalLength = 0;
+            var prev = getPoint(0);
+            for (int i = 1; i < length; i++)
+            {
+                var curr = getPoint(i);
+                double dx = curr.X - prev.X;
+                double dy = curr.Y - prev.Y;
+                totalLength += Math.Sqrt(dx * dx + dy * dy);
+                prev = curr;
+            }
+
+            if (totalLength <= 0)
+            {
+                var pts = new Point2f[length];
+                for (int i = 0; i < length; i++)
+                {
+                    var p = getPoint(i);
+                    pts[i] = new Point2f((float)p.X, (float)p.Y);
+                }
+                return pts;
+            }
+
+            double interval = totalLength / targetCount;
+
+            var result = new List<Point2f>(targetCount);
+            var start = getPoint(0);
+            result.Add(new Point2f((float)start.X, (float)start.Y));
+
+            double accumulated = 0;
+            prev = getPoint(0);
+            for (int i = 1; i < length && result.Count < targetCount; i++)
+            {
+                var curr = getPoint(i);
+                double dx = curr.X - prev.X;
+                double dy = curr.Y - prev.Y;
+                double segLen = Math.Sqrt(dx * dx + dy * dy);
+                accumulated += segLen;
+
+                while (accumulated >= interval && result.Count < targetCount)
+                {
+                    result.Add(new Point2f((float)curr.X, (float)curr.Y));
+                    accumulated -= interval;
+                }
+                prev = curr;
+            }
+
+            return result.ToArray();
+        }
+
+        /// <summary>
         /// 深拷贝当前模板（用于编辑模式下的取消回退）
         /// </summary>
         public TemplateModel DeepClone()
@@ -264,6 +331,7 @@ namespace SunEyeVision.Tool.ShapeMatch.Models
                 CenterY = _centerY,
                 ContourGroupCount = _contourGroupCount,
                 ContourGroups = _contourGroups?.Select(g => g.Select(p => new Point2D { X = p.X, Y = p.Y }).ToList()).ToList(),
+                ContourDirectionGroups = _contourDirectionGroups?.Select(g => g.ToList()).ToList(),
                 SourceImageBytes = _sourceImageBytes?.ToArray(),
                 InspectionRegions = _inspectionRegions.Select(r => (RegionData)r.Clone()).ToList(),
                 MaskRegions = _maskRegions.Select(r => (RegionData)r.Clone()).ToList()
@@ -271,94 +339,6 @@ namespace SunEyeVision.Tool.ShapeMatch.Models
             return clone;
         }
 
-        /// <summary>
-        /// 等距重采样核心算法 — 沿路径等弧长间隔取点
-        /// </summary>
-        private static Point2f[] ComputeUniformResample(int length, int targetCount, Func<int, (double X, double Y)> getPoint)
-        {
-            // 1. 计算总弧长
-            double totalLength = 0;
-            var prev = getPoint(0);
-            for (int i = 1; i < length; i++)
-            {
-                var curr = getPoint(i);
-                double dx = curr.X - prev.X;
-                double dy = curr.Y - prev.Y;
-                totalLength += Math.Sqrt(dx * dx + dy * dy);
-                prev = curr;
-            }
-
-            if (totalLength <= 0)
-            {
-                var pts = new Point2f[length];
-                for (int i = 0; i < length; i++)
-                {
-                    var p = getPoint(i);
-                    pts[i] = new Point2f((float)p.X, (float)p.Y);
-                }
-                return pts;
-            }
-
-            // 2. 采样间隔
-            double interval = totalLength / targetCount;
-
-            // 3. 沿路径等距取点
-            var result = new List<Point2f>(targetCount);
-            var start = getPoint(0);
-            result.Add(new Point2f((float)start.X, (float)start.Y));
-
-            double accumulated = 0;
-            prev = getPoint(0);
-            for (int i = 1; i < length && result.Count < targetCount; i++)
-            {
-                var curr = getPoint(i);
-                double dx = curr.X - prev.X;
-                double dy = curr.Y - prev.Y;
-                double segLen = Math.Sqrt(dx * dx + dy * dy);
-                accumulated += segLen;
-
-                while (accumulated >= interval && result.Count < targetCount)
-                {
-                    result.Add(new Point2f((float)curr.X, (float)curr.Y));
-                    accumulated -= interval;
-                }
-                prev = curr;
-            }
-
-            return result.ToArray();
-        }
-
-        /// <summary>
-        /// 旧格式兼容：反序列化时自动将 NaN 分隔扁平列表（ContourPoints）转换为 ContourGroups
-        /// </summary>
-        [JsonPropertyName("ContourPoints")]
-        private List<Point2D>? DeprecatedContourPoints
-        {
-            set
-            {
-                if (value == null) return;
-                var groups = new List<List<Point2D>>();
-                var current = new List<Point2D>();
-                foreach (var pt in value)
-                {
-                    if (double.IsNaN(pt.X))
-                    {
-                        if (current.Count > 0)
-                        {
-                            groups.Add(current);
-                            current = new List<Point2D>();
-                        }
-                    }
-                    else
-                    {
-                        current.Add(new Point2D { X = pt.X, Y = pt.Y });
-                    }
-                }
-                if (current.Count > 0)
-                    groups.Add(current);
-                _contourGroups = groups;
-            }
-        }
     }
 
     /// <summary>

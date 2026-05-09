@@ -626,6 +626,34 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
                     contourGroups.Add(destGroup);
                 }
 
+                // ===== 计算图像梯度方向（从 Sobel 梯度图采样每个轮廓点的方向）=====
+                // 使用高斯模糊后的灰度图，与 Canny 边缘检测使用相同图像源
+                using var gx = new Mat();
+                using var gy = new Mat();
+                int sobelAperture = apertureSize < 3 ? 3 : apertureSize;
+                Cv2.Sobel(blurred, gx, MatType.CV_32F, 1, 0, sobelAperture);
+                Cv2.Sobel(blurred, gy, MatType.CV_32F, 0, 1, sobelAperture);
+
+                var directionGroups = new List<List<double>>(refinedGroups.Count);
+                int imgW = blurred.Width;
+                int imgH = blurred.Height;
+
+                foreach (var group in refinedGroups)
+                {
+                    var dirs = new List<double>(group.Length);
+                    foreach (var pt in group)
+                    {
+                        int px = (int)Math.Round(pt.X);
+                        int py = (int)Math.Round(pt.Y);
+                        px = Math.Clamp(px, 0, imgW - 1);
+                        py = Math.Clamp(py, 0, imgH - 1);
+                        double gxVal = gx.At<float>(py, px);
+                        double gyVal = gy.At<float>(py, px);
+                        dirs.Add(Math.Atan2(gyVal, gxVal));
+                    }
+                    directionGroups.Add(dirs);
+                }
+
                 int contourGroupCount = contourGroups.Count;
 
                 // 计算整体包围盒和中心点（原图坐标）
@@ -646,6 +674,7 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
                 {
                     _resultTemplate ??= new TemplateModel();
                     _resultTemplate.ContourGroups = contourGroups;
+                    _resultTemplate.ContourDirectionGroups = directionGroups;
                     _resultTemplate.SmoothKernelSize = smoothKernel;
                     _resultTemplate.EdgeLowThreshold = lowThreshold;
                     _resultTemplate.EdgeHighThreshold = highThreshold;

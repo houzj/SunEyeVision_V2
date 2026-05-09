@@ -62,9 +62,9 @@ namespace SunEyeVision.Tool.ShapeMatch.Converters
             {
                 return mode switch
                 {
-                    MultiTemplateMode.Sequential => "Sequential",
-                    MultiTemplateMode.ParallelIndependent => "ParallelIndependent",
-                    MultiTemplateMode.ParallelShared => "ParallelShared",
+                    MultiTemplateMode.Sequential => "顺序执行",
+                    MultiTemplateMode.ParallelIndependent => "并行独立",
+                    MultiTemplateMode.ParallelShared => "并行共享",
                     _ => mode.ToString()
                 };
             }

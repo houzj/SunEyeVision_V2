@@ -315,12 +315,20 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
                     {
                         existing.Name = result.Name;
                         existing.ContourGroups = result.ContourGroups;
+                        existing.ContourDirectionGroups = result.ContourDirectionGroups;
                         existing.SmoothKernelSize = result.SmoothKernelSize;
                         existing.EdgeLowThreshold = result.EdgeLowThreshold;
                         existing.EdgeHighThreshold = result.EdgeHighThreshold;
                         existing.EdgeApertureSize = result.EdgeApertureSize;
                         existing.ApproxMethod = result.ApproxMethod;
                         existing.ApproxPrecision = result.ApproxPrecision;
+                        existing.TargetPointCount = result.TargetPointCount;
+                        existing.MinChainLength = result.MinChainLength;
+                        existing.MinArea = result.MinArea;
+                        existing.RetrievalMode = result.RetrievalMode;
+                        existing.UseL2Gradient = result.UseL2Gradient;
+                        existing.UseSubPixel = result.UseSubPixel;
+                        existing.ContourGroupCount = result.ContourGroupCount;
                         existing.ExtractionStatus = result.ExtractionStatus;
                         existing.ContourWidth = result.ContourWidth;
                         existing.ContourHeight = result.ContourHeight;

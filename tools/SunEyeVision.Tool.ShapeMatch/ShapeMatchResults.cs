@@ -159,6 +159,9 @@ namespace SunEyeVision.Tool.ShapeMatch
         /// <summary>匹配位置上的轮廓点（原图坐标系）</summary>
         public List<OpenCvSharp.Point2f>? ContourPoints { get; set; }
 
+        /// <summary>原始模板轮廓点（未变换，用于对比显示）</summary>
+        public List<OpenCvSharp.Point2f>? OriginalTemplateContour { get; set; }
+
         /// <summary>轮廓点数量</summary>
         public int ContourPointCount => ContourPoints?.Count ?? 0;
 

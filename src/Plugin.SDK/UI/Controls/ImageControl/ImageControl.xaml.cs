@@ -49,7 +49,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         private double _zoom = 1.0;
         private double _minZoom = 0.001;   // 支持无极缩放，超大图也能适配
-        private double _maxZoom = 10.0;
+        private double _maxZoom = 50.0;
         private double _zoomStep = 0.15;   // 比例缩放系数（每次放大15%/缩小约13%）
 
         // Canvas平移缩放相关
@@ -477,7 +477,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
             // GPU 硬件缩放：基于完整原图纹理，由 WPF 渲染管线完成
             DisplayImage.Stretch = Stretch.Uniform;
-            RenderOptions.SetBitmapScalingMode(DisplayImage, BitmapScalingMode.HighQuality);
+            RenderOptions.SetBitmapScalingMode(DisplayImage, BitmapScalingMode.NearestNeighbor);
 
             ImageContainer.Width = _originalImagePixelWidth;
             ImageContainer.Height = _originalImagePixelHeight;
@@ -832,6 +832,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         private void OnViewTransformed()
         {
+            // 根据缩放倍率动态切换插值模式
+            // 放大 ≥1x: 最近邻插值(像素方块清晰可见)
+            // 缩小 <1x: 高质量下采样(避免摩尔纹)
+            RenderOptions.SetBitmapScalingMode(DisplayImage,
+                Zoom >= 1.0 ? BitmapScalingMode.NearestNeighbor : BitmapScalingMode.Fant);
+
+            // 同步结果渲染层的视口缩放（使线宽/十字大小随缩放幂律变化）
+            ResultRenderLayer.SetViewportScale(Zoom);
             RaiseEvent(new ViewTransformEventArgs(Zoom, _offsetX, _offsetY, ViewTransformedEvent));
         }
 

@@ -6,10 +6,19 @@ priority: high
 alwaysApply: true
 enabled: true
 version: "3.0"
-updatedAt: 2026-04-23
+updatedAt: 2026-05-09
 ---
 
 # rule-003: 日志系统使用规范
+
+## 触发条件
+
+当用户表达以下意图时，**必须**自动检查日志规范：
+- 添加/增加/补充/补全 **日志**、**日志记录**、**log**
+- 添加/增加/补充/补全 **调试信息**、**调试输出**、**打印**
+- 包含上述意图的变体表达
+
+检查代码确保使用 `LogInfo()/LogSuccess()/LogWarning()/LogError()/LogFatal()` 或 `_logger.Log()`，禁止 `Debug.WriteLine`/`Console.WriteLine` 等。
 
 ## 硬性约束
 

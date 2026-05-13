@@ -26,8 +26,15 @@
         <ComboBox x:Name="imageSourceCombo" Width="100" Height="26" FontSize="11"
                   SelectionChanged="OnImageSourceSelectionChanged"/>
         <Rectangle Width="1" Fill="#D0D0D0" Margin="0,2,8,2"/>
-        <Button x:Name="btnExtractContour" Content="创建模版" Width="70" Height="26" Click="OnExtractClick" FontSize="11" Margin="0,0,6,0"/>
-        <Button x:Name="btnPreviewContour" Content="👁 预览" Width="70" Height="26" Click="OnPreviewClick" FontSize="11" Margin="0,0,6,0"/>
+        <Button x:Name="btnExtractContour" Content="提取轮廓" Width="70" Height="26" Click="OnExtractClick" FontSize="11" Margin="0,0,6,0"/>
+        <ComboBox x:Name="cmbPyramidLevel" Width="120" Height="26" FontSize="11" Margin="0,0,6,0"
+                  SelectionChanged="OnPyramidLevelSelected" IsEnabled="False"/>
+        <ComboBox x:Name="cmbDebugView" Width="90" Height="26" FontSize="10" Margin="0,0,6,0"
+                  SelectionChanged="OnDebugViewChanged" IsEnabled="False">
+          <ComboBoxItem Content="原始" Tag="original" IsSelected="True"/>
+          <ComboBoxItem Content="对比度" Tag="mag"/>
+          <ComboBoxItem Content="NMS" Tag="nms"/>
+        </ComboBox>
         <Button x:Name="btnClearContour" Content="🗑 清除" Width="70" Height="26" Click="OnClearClick" FontSize="11" Foreground="#D32F2F"/>
       </StackPanel>
     </Border>
@@ -75,102 +82,53 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
               </Grid.RowDefinitions>
 
-              <!-- 第0行 -->
-              <TextBlock Text="平滑核大小:" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" FontSize="11" Margin="0,0,6,3"/>
-              <controls:NumericUpDown x:Name="numSmoothKernel" Grid.Row="0" Grid.Column="1" Height="26"
-                                       IntValue="3" Minimum="1" Maximum="9" SmallChange="2" ShowUpDownButtons="True" ShowSlider="False"
-                                       ToolTip="高斯模糊的核大小。值越大，图像越模糊，只保留粗轮廓；值越小，细节越多。"
+              <!-- 第0行 - 尺度模式 -->
+              <TextBlock Text="尺度模式:" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" FontSize="11" FontWeight="SemiBold" Foreground="#1565C0" Margin="0,0,6,3"/>
+              <ComboBox x:Name="cmbScaleMode" Grid.Row="0" Grid.Column="1" Height="26" FontSize="11" Margin="0,0,0,3"
+                        SelectedIndex="0" SelectionChanged="OnScaleModeChanged"
+                        ToolTip="Auto=根据ROI尺寸自动计算金字塔层级，Manual=手动设置速度尺度和特征尺度。"/>
+
+              <!-- 第1行 - 速度尺度 -->
+              <TextBlock Text="  速度尺度:" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" FontSize="11" Foreground="#1565C0" Margin="0,0,6,3"/>
+              <controls:NumericUpDown x:Name="numSpeedScale" Grid.Row="1" Grid.Column="1" Height="26"
+                                       IntValue="4" Minimum="0" Maximum="9" SmallChange="1" ShowUpDownButtons="True" ShowSlider="True"
+                                       ToolTip="金字塔顶层（粗匹配层），0=全分辨率，9=最粗。仅 Manual 模式有效。"
                                        Margin="0,0,0,3"/>
 
-              <!-- 第1行 -->
-              <TextBlock Text="低阈值:" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" FontSize="11" Margin="0,0,6,3"/>
-              <controls:NumericUpDown x:Name="numLowThreshold" Grid.Row="1" Grid.Column="1" Height="26"
-                                       IntValue="50" Minimum="1" Maximum="255" SmallChange="1" ShowUpDownButtons="True" ShowSlider="False"
-                                       ToolTip="边缘判断的下限。强度低于此值的像素不会被判定为边缘。"
+              <!-- 第2行 - 特征尺度 -->
+              <TextBlock Text="  特征尺度:" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" FontSize="11" Foreground="#1565C0" Margin="0,0,6,3"/>
+              <controls:NumericUpDown x:Name="numFeatureScale" Grid.Row="2" Grid.Column="1" Height="26"
+                                       IntValue="0" Minimum="0" Maximum="9" SmallChange="1" ShowUpDownButtons="True" ShowSlider="True"
+                                       ToolTip="金字塔底层（精匹配层），0=全分辨率。仅 Manual 模式有效。"
                                        Margin="0,0,0,3"/>
 
-              <!-- 第2行 -->
-              <TextBlock Text="高阈值:" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" FontSize="11" Margin="0,0,6,3"/>
-              <controls:NumericUpDown x:Name="numHighThreshold" Grid.Row="2" Grid.Column="1" Height="26"
-                                       IntValue="150" Minimum="1" Maximum="255" SmallChange="1" ShowUpDownButtons="True" ShowSlider="False"
-                                       ToolTip="边缘判断的上限。强度高于此值的像素必为边缘。"
+              <!-- 第3行 - 阈值模式 -->
+              <TextBlock Text="阈值模式:" Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" FontSize="11" FontWeight="SemiBold" Foreground="#1565C0" Margin="0,0,6,3"/>
+              <ComboBox x:Name="cmbThresholdMode" Grid.Row="3" Grid.Column="1" Height="26" FontSize="11" Margin="0,0,0,3"
+                        SelectedIndex="0" SelectionChanged="OnThresholdModeChanged"
+                        ToolTip="Auto=从梯度幅值直方图自动计算对比度阈值，Manual=使用下方设定的对比度值。"/>
+
+              <!-- 第4行 - 对比度 -->
+              <TextBlock Text="  对比度:" Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" FontSize="11" Foreground="#1565C0" Margin="0,0,6,3"/>
+              <controls:NumericUpDown x:Name="numContrast" Grid.Row="4" Grid.Column="1" Height="26"
+                                       IntValue="30" Minimum="1" Maximum="255" SmallChange="1" ShowUpDownButtons="True" ShowSlider="True"
+                                       ToolTip="边缘提取对比度阈值。高对比度=保留强边缘，低对比度=保留更弱边缘。典型值：20~100。仅 Manual 模式有效。"
                                        Margin="0,0,0,3"/>
 
-              <!-- 第3行 -->
-              <TextBlock Text="孔径大小:" Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" FontSize="11" Margin="0,0,6,3"/>
-              <controls:NumericUpDown x:Name="numApertureSize" Grid.Row="3" Grid.Column="1" Height="26"
-                                       IntValue="3" Minimum="3" Maximum="7" SmallChange="2" ShowUpDownButtons="True" ShowSlider="False"
-                                       ToolTip="Canny 内部 Sobel 梯度算子的核大小。3=精确但敏感，5/7=平滑但可能丢失细节。"
+              <!-- 第5行 - 链长模式 -->
+              <TextBlock Text="链长模式:" Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" FontSize="11" FontWeight="SemiBold" Foreground="#1565C0" Margin="0,0,6,3"/>
+              <ComboBox x:Name="cmbChainLengthMode" Grid.Row="5" Grid.Column="1" Height="26" FontSize="11" Margin="0,0,0,3"
+                        SelectedIndex="0" SelectionChanged="OnChainLengthModeChanged"
+                        ToolTip="Auto=自动按80%累积能量阈值过滤，Manual=使用下方设定的最小链长。"/>
+
+              <!-- 第6行 - 最小链长 -->
+              <TextBlock Text="  最小链长:" Grid.Row="6" Grid.Column="0" VerticalAlignment="Center" FontSize="11" Foreground="#1565C0" Margin="0,0,6,3"/>
+              <controls:NumericUpDown x:Name="numMinChainLength" Grid.Row="6" Grid.Column="1" Height="26"
+                                       IntValue="10" Minimum="0" Maximum="200" SmallChange="1" ShowUpDownButtons="True" ShowSlider="True"
+                                       ToolTip="最小轮廓链长(像素)。短于此长度的短线段被视为噪声丢弃。仅 Manual 模式有效。典型值：0~30。"
                                        Margin="0,0,0,3"/>
-
-              <!-- 第4行 -->
-              <TextBlock Text="近似方法:" Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" FontSize="11" Margin="0,0,6,3"/>
-              <ComboBox x:Name="cmbApproxMethod" Grid.Row="4" Grid.Column="1" Height="26" FontSize="11" Margin="0,0,0,3"
-                        SelectionChanged="OnApproxMethodChanged"/>
-
-              <!-- 第5行 -->
-              <TextBlock Text="近似精度:" Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" FontSize="11" Margin="0,0,6,3"/>
-              <controls:NumericUpDown x:Name="numApproxPrecision" Grid.Row="5" Grid.Column="1" Height="26"
-                                       Value="2.0" Minimum="0.1" Maximum="10.0" SmallChange="0.1" DecimalPlaces="1"
-                                       ShowUpDownButtons="True" ShowSlider="False"
-                                       ToolTip="控制轮廓点的密度。值越大，轮廓点越少（轮廓越粗）；值越小，轮廓点越多（轮廓越精细）。"
-                                       Margin="0,0,0,3"/>
-
-              <!-- 第6行 - 目标点数 -->
-              <TextBlock Text="目标点数:" Grid.Row="6" Grid.Column="0" VerticalAlignment="Center" FontSize="11" Margin="0,0,6,3"/>
-              <controls:NumericUpDown x:Name="numTargetPointCount" Grid.Row="6" Grid.Column="1" Height="26"
-                                       IntValue="60" Minimum="3" Maximum="500" SmallChange="10" ShowUpDownButtons="True" ShowSlider="False"
-                                       ToolTip="等距重采样的目标点数。值越大，轮廓越精细（匹配越慢）；值越小，轮廓越粗（匹配越快）。"
-                                       Margin="0,0,0,3"/>
-
-              <!-- 分隔线 -->
-              <Rectangle Grid.Row="7" Grid.ColumnSpan="2" Height="1" Fill="#E0E0E0" Margin="0,2,0,4"/>
-
-              <!-- 第8行 -->
-              <TextBlock Text="最小链长:" Grid.Row="8" Grid.Column="0" VerticalAlignment="Center" FontSize="11" Margin="0,0,6,3"/>
-              <controls:NumericUpDown x:Name="numMinChainLength" Grid.Row="8" Grid.Column="1" Height="26"
-                                       IntValue="8" Minimum="1" Maximum="500" SmallChange="1" ShowUpDownButtons="True" ShowSlider="False"
-                                       ToolTip="轮廓的最小长度（点数）。长度低于此值的短边缘段会被过滤掉。"
-                                       Margin="0,0,0,3"/>
-
-              <!-- 第9行 -->
-              <TextBlock Text="最小面积:" Grid.Row="9" Grid.Column="0" VerticalAlignment="Center" FontSize="11" Margin="0,0,6,3"/>
-              <controls:NumericUpDown x:Name="numMinArea" Grid.Row="9" Grid.Column="1" Height="26"
-                                       Value="50.0" Minimum="0.1" Maximum="100000.0" SmallChange="10.0" DecimalPlaces="1"
-                                       ShowUpDownButtons="True" ShowSlider="False"
-                                       ToolTip="轮廓围成区域的最小面积。面积小于此值的孤立小轮廓会被过滤。"
-                                       Margin="0,0,0,3"/>
-
-              <!-- 第10行 -->
-              <TextBlock Text="轮廓检索:" Grid.Row="10" Grid.Column="0" VerticalAlignment="Center" FontSize="11" Margin="0,0,6,3"/>
-              <ComboBox x:Name="cmbRetrievalMode" Grid.Row="10" Grid.Column="1" Height="26" FontSize="11"
-                         ToolTip="External=只提取最外层轮廓；List=提取所有层级的轮廓（含内孔）。"
-                         Margin="0,0,0,3"/>
-
-              <!-- 第11行 -->
-              <CheckBox x:Name="chkL2Gradient" Grid.Row="11" Grid.ColumnSpan="2" Content="使用 L2 梯度（更精确）"
-                        IsChecked="True" FontSize="11"
-                        ToolTip="梯度幅值的计算方式。开启(sqrt)更精确，关闭(|dx|+|dy|)更快但斜边可能偏弱。"
-                        Margin="0,2,0,0"/>
-
-              <!-- 第12行 -->
-              <CheckBox x:Name="chkShowPointsOnly" Grid.Row="12" Grid.ColumnSpan="2" Content="仅显示点（不显示轮廓线）"
-                        IsChecked="False" FontSize="11" Margin="0,2,0,0"/>
-
-              <!-- 第13行 -->
-              <CheckBox x:Name="chkUseSubPixel" Grid.Row="13" Grid.ColumnSpan="2" Content="亚像素轮廓（梯度插值细化）"
-                        IsChecked="False" FontSize="11"
-                        ToolTip="在梯度方向插值，将轮廓点坐标精确到小数位，提升匹配精度。"
-                        Margin="0,2,0,0"/>
             </Grid>
           </GroupBox>
 
@@ -185,6 +143,15 @@
                 <TextBlock Text="状态:" Grid.Column="0" FontSize="11" VerticalAlignment="Center" Foreground="#666"/>
                 <TextBlock x:Name="txtResultStatus" Grid.Column="1" FontSize="11" VerticalAlignment="Center"
                            Foreground="#999" Text="--"/>
+              </Grid>
+              <Grid Margin="0,2">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto"/>
+                  <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="当前层级:" Grid.Column="0" FontSize="11" VerticalAlignment="Center" Foreground="#666"/>
+                <TextBlock x:Name="txtCurrentLevel" Grid.Column="1" FontSize="11" VerticalAlignment="Center"
+                           Foreground="#1976D2" Text="--"/>
               </Grid>
               <Grid Margin="0,2">
                 <Grid.ColumnDefinitions>
@@ -213,6 +180,18 @@
                 <TextBlock x:Name="txtCenterPoint" Grid.Column="1" FontSize="11" VerticalAlignment="Center"
                            Foreground="#999" Text="--"/>
               </Grid>
+              <Grid Margin="0,2">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto"/>
+                  <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="过滤统计:" Grid.Column="0" FontSize="11" VerticalAlignment="Center" Foreground="#666"/>
+                <TextBlock x:Name="txtFilterStats" Grid.Column="1" FontSize="11" VerticalAlignment="Center"
+                           Foreground="#999" Text="--"/>
+              </Grid>
+              <Rectangle Height="1" Fill="#E0E0E0" Margin="0,4,0,2"/>
+              <TextBlock x:Name="txtLevelAdvice" Grid.ColumnSpan="2" FontSize="11" Foreground="#E65100"
+                         TextWrapping="Wrap" Visibility="Collapsed" Margin="0,2,0,0"/>
             </StackPanel>
           </GroupBox>
         </StackPanel>

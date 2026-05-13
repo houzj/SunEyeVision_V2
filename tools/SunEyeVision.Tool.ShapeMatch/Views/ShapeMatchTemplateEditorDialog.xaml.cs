@@ -33,11 +33,13 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
         private Mat? _currentMat;
         private bool _ownsMat; // 是否拥有 Mat 所有权（本地载入的图像需要释放）
         private TemplateModel? _resultTemplate;
-        private TemplateModel? _originalTemplate; // 编辑模式时保存原模板引用，用于深拷贝
-        private List<List<Point2D>>? _previewContourGroups;
         private bool _isEditingExisting; // 编辑已有模板（含注册图像）
         private bool _hadManualExtraction; // 用户是否在对话框中手动点击了提取/预览
         private string? _localImagePath; // 本地图像的完整路径
+
+        // 调试用中间图像
+        private Mat? _debugMag;
+        private Mat? _debugNms;
 
         // 外部传入的当前图像（来自主窗口ImageControl）
         public Func<BitmapSource?>? GetCurrentImage { get; set; }
@@ -129,16 +131,15 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
         }
 
         /// <summary>
-        /// 如果已有保存的轮廓数据，恢复显示轮廓叠加层
+        /// 如果已有保存的边缘点数据，恢复显示叠加层
         /// </summary>
         private void TryRestoreContourOverlay()
         {
-            if (_resultTemplate?.ContourGroups == null || _resultTemplate.ContourGroups.Count == 0)
+            if (_resultTemplate?.EdgePoints == null || _resultTemplate.EdgePoints.Count == 0)
                 return;
 
-            DrawContourOverlays(_resultTemplate.ContourGroups,
-                _resultTemplate.ExtractionStatus != TemplateExtractionStatus.Success);
-            PluginLogger.Info($"[ShapeMatchTemplateEditor] 恢复已保存的轮廓: {_resultTemplate.ContourPointCount}点",
+            DrawEdgePointsOverlay(_resultTemplate.EdgePoints);
+            PluginLogger.Info($"[ShapeMatchTemplateEditor] 恢复已保存的边缘点: {_resultTemplate.EdgePointCount}点",
                 "ShapeMatchTool");
         }
 
@@ -308,101 +309,96 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
                 imageSourceCombo.SelectedIndex = -1;
             }
 
-            // 近似方法 - 使用 Dictionary 显示友好名称
-            var approxItems = new Dictionary<string, ContourApproxMethod>
+            // 尺度模式
+            if (cmbScaleMode != null)
             {
-                ["多边形近似 (ApproxPolyDP)"] = ContourApproxMethod.ApproxPolyDP,
-                ["不简化 (None)"] = ContourApproxMethod.None,
-                ["等距重采样"] = ContourApproxMethod.UniformResample,
-                ["多边形近似 + 重采样"] = ContourApproxMethod.ApproxPolyDPAndResample
-            };
-
-            if (cmbApproxMethod != null)
-            {
-                cmbApproxMethod.ItemsSource = approxItems;
-                cmbApproxMethod.DisplayMemberPath = "Key";
-                cmbApproxMethod.SelectedValuePath = "Value";
-                cmbApproxMethod.SelectedValue = ContourApproxMethod.ApproxPolyDP;
+                cmbScaleMode.Items.Add("自动 (Auto)");
+                cmbScaleMode.Items.Add("手动 (Manual)");
+                cmbScaleMode.SelectedIndex = 0;
             }
 
-            // 轮廓检索模式
-            if (cmbRetrievalMode != null)
+            // 阈值模式
+            if (cmbThresholdMode != null)
             {
-                cmbRetrievalMode.Items.Add("External (仅最外层)");
-                cmbRetrievalMode.Items.Add("List (层次结构)");
-                cmbRetrievalMode.SelectedIndex = 0;
+                cmbThresholdMode.Items.Add("自动 (Auto)");
+                cmbThresholdMode.Items.Add("手动 (Manual)");
+                cmbThresholdMode.SelectedIndex = 0;
             }
 
-            // 初始同步控件可见性
-            UpdateApproxMethodVisibility();
+            // 链长模式
+            if (cmbChainLengthMode != null)
+            {
+                cmbChainLengthMode.Items.Add("自动 (Auto)");
+                cmbChainLengthMode.Items.Add("手动 (Manual)");
+                cmbChainLengthMode.SelectedIndex = 0;
+            }
+
+            // 初始化 Auto/Manual 参数启用状态
+            UpdateParameterEnabledStates();
 
             PluginLogger.Info("[ShapeMatchTemplateEditor] 对话框初始化完成", "ShapeMatchTool");
         }
 
         /// <summary>
-        /// 近似方法切换时更新相关控件的可见性
+        /// 根据当前 ComboBox 选择的模式，启用/禁用对应的数值参数控件
         /// </summary>
-        private void OnApproxMethodChanged(object sender, SelectionChangedEventArgs e)
+        private void UpdateParameterEnabledStates()
         {
-            UpdateApproxMethodVisibility();
+            // 尺度模式：Auto → 禁用速度/特征尺度，Manual → 启用
+            bool scaleManual = cmbScaleMode?.SelectedIndex == 1;
+            if (numSpeedScale != null) numSpeedScale.IsEnabled = scaleManual;
+            if (numFeatureScale != null) numFeatureScale.IsEnabled = scaleManual;
+
+            // 阈值模式：Auto → 禁用对比度，Manual → 启用
+            bool thresholdManual = cmbThresholdMode?.SelectedIndex == 1;
+            if (numContrast != null) numContrast.IsEnabled = thresholdManual;
+
+            // 链长模式：Auto → 禁用最小链长，Manual → 启用
+            bool chainManual = cmbChainLengthMode?.SelectedIndex == 1;
+            if (numMinChainLength != null) numMinChainLength.IsEnabled = chainManual;
         }
 
-        /// <summary>
-        /// 根据当前选中的近似方法，控制"近似精度"和"目标点数"的可见性
-        /// </summary>
-        private void UpdateApproxMethodVisibility()
+        private void OnScaleModeChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (cmbApproxMethod == null || numApproxPrecision == null || numTargetPointCount == null) return;
+            bool scaleManual = cmbScaleMode.SelectedIndex == 1;
+            numSpeedScale.IsEnabled = scaleManual;
+            numFeatureScale.IsEnabled = scaleManual;
+        }
 
-            var selected = cmbApproxMethod.SelectedValue as ContourApproxMethod?;
+        private void OnThresholdModeChanged(object sender, SelectionChangedEventArgs e)
+        {
+            numContrast.IsEnabled = cmbThresholdMode.SelectedIndex == 1;
+        }
 
-            // 近似精度：ApproxPolyDP 或 组合模式下可见
-            bool showPrecision = selected == ContourApproxMethod.ApproxPolyDP
-                              || selected == ContourApproxMethod.ApproxPolyDPAndResample;
-            numApproxPrecision.Visibility = showPrecision ? Visibility.Visible : Visibility.Collapsed;
-
-            // 目标点数：UniformResample 或 组合模式下可见
-            bool showTargetCount = selected == ContourApproxMethod.UniformResample
-                                || selected == ContourApproxMethod.ApproxPolyDPAndResample;
-            numTargetPointCount.Visibility = showTargetCount ? Visibility.Visible : Visibility.Collapsed;
+        private void OnChainLengthModeChanged(object sender, SelectionChangedEventArgs e)
+        {
+            numMinChainLength.IsEnabled = cmbChainLengthMode.SelectedIndex == 1;
         }
 
         /// <summary>
         /// 加载已有模板数据进行编辑模式
-        /// 使用深拷贝保护原始数据，取消编辑时原模板不受影响
+        /// 直接引用原始对象，取消编辑时 OnCancelClick 会设置 DialogResult=false 保护数据
         /// </summary>
         public void LoadExistingTemplate(TemplateModel template)
         {
             if (template == null) return;
 
-            _originalTemplate = template;
-            _resultTemplate = template.DeepClone();
+            _resultTemplate = template; // 直接引用，不做深拷贝
             _isEditingExisting = true;
 
-            // Bind UI to clone's data
+            // Bind UI to data
             if (templateNameTextBox != null)
                 templateNameTextBox.Text = _resultTemplate.Name;
 
-            numSmoothKernel.IntValue = _resultTemplate.SmoothKernelSize;
-            numLowThreshold.IntValue = _resultTemplate.EdgeLowThreshold;
-            numHighThreshold.IntValue = _resultTemplate.EdgeHighThreshold;
-            numApertureSize.IntValue = _resultTemplate.EdgeApertureSize;
-
-            if (cmbApproxMethod != null)
-                cmbApproxMethod.SelectedValue = _resultTemplate.ApproxMethod;
-
-            numApproxPrecision.Value = _resultTemplate.ApproxPrecision;
-            numTargetPointCount.IntValue = _resultTemplate.TargetPointCount;
-            UpdateApproxMethodVisibility();
-
+            cmbScaleMode.SelectedIndex = (int)_resultTemplate.ScaleMode;
+            numSpeedScale.IntValue = _resultTemplate.SpeedScale;
+            numFeatureScale.IntValue = _resultTemplate.FeatureScale;
+            cmbThresholdMode.SelectedIndex = (int)_resultTemplate.ThresholdMode;
+            numContrast.IntValue = (int)_resultTemplate.Contrast;
+            cmbChainLengthMode.SelectedIndex = (int)_resultTemplate.ChainLengthMode;
             numMinChainLength.IntValue = _resultTemplate.MinChainLength;
-            numMinArea.Value = _resultTemplate.MinArea;
-            if (cmbRetrievalMode != null)
-                cmbRetrievalMode.SelectedIndex = _resultTemplate.RetrievalMode;
-            chkL2Gradient.IsChecked = _resultTemplate.UseL2Gradient;
-            chkUseSubPixel.IsChecked = _resultTemplate.UseSubPixel;
 
-            // 加载区域数据（深拷贝版本的区域数据）
+            // 加载区域数据
             foreach (var insp in _resultTemplate.InspectionRegions)
                 DialogInspectionRegions.Add(insp);
 
@@ -410,41 +406,42 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
                 DialogMaskRegions.Add(mask);
 
             // 恢复提取结果状态
-            UpdateResultDisplay(_resultTemplate.ExtractionStatus, _resultTemplate.ContourPointCount,
-                _resultTemplate.ContourWidth, _resultTemplate.ContourHeight, _resultTemplate.CenterX, _resultTemplate.CenterY);
+            int edgePointCount = _resultTemplate.EdgePointCount;
+            UpdateResultDisplay(_resultTemplate.ExtractionStatus, edgePointCount, 0, 0, 0, 0);
 
-            PluginLogger.Info($"[ShapeMatchTemplateEditor] 已加载模板(深拷贝): {template.Name}", "ShapeMatchTool");
+            PluginLogger.Info($"[ShapeMatchTemplateEditor] 已加载模板: {template.Name}, 点数={edgePointCount}", "ShapeMatchTool");
         }
 
         private void OnExtractClick(object sender, RoutedEventArgs e)
         {
             _hadManualExtraction = true;
-            ExecuteContourExtraction(saveResult: true);
-        }
-
-        private void OnPreviewClick(object sender, RoutedEventArgs e)
-        {
-            _hadManualExtraction = true;
-            ExecuteContourExtraction(saveResult: false);
+            ExecuteContourExtraction();
+            if (_resultTemplate?.EdgePoints != null && _resultTemplate.EdgePoints.Count > 0)
+            {
+                PreComputePyramidEdgePoints();
+                PopulatePyramidLevelComboBox();
+            }
         }
 
         private void OnClearClick(object sender, RoutedEventArgs e)
         {
-            _previewContourGroups = null;
-
             if (_resultTemplate != null)
             {
-                _resultTemplate.ContourGroups = null;
+                _resultTemplate.EdgePoints = null;
+                _resultTemplate.PyramidEdgePoints = null;
                 _resultTemplate.ExtractionStatus = TemplateExtractionStatus.NotExtracted;
+                _resultTemplate.SourceImageBytes = null;
             }
 
+            cmbPyramidLevel.Items.Clear();
+            cmbPyramidLevel.IsEnabled = false;
             ClearContourOverlay();
             UpdateResultDisplay(TemplateExtractionStatus.NotExtracted, 0, 0, 0, 0, 0);
 
-            PluginLogger.Info("[ShapeMatchTemplateEditor] 已清除轮廓", "ShapeMatchTool");
+            PluginLogger.Info("[ShapeMatchTemplateEditor] 已清除边缘点", "ShapeMatchTool");
         }
 
-        private void ExecuteContourExtraction(bool saveResult)
+        private void ExecuteContourExtraction()
         {
             if (_currentMat == null || _currentMat.Empty())
             {
@@ -460,271 +457,140 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
 
             try
             {
-                // 读取参数
-                int smoothKernel = numSmoothKernel.IntValue;
-                int lowThreshold = numLowThreshold.IntValue;
-                int highThreshold = numHighThreshold.IntValue;
-                int apertureSize = numApertureSize.IntValue;
-                var approxMethod = cmbApproxMethod?.SelectedValue as ContourApproxMethod? ?? ContourApproxMethod.ApproxPolyDP;
-                double approxPrecision = numApproxPrecision.Value;
-                int targetPointCount = numTargetPointCount.IntValue;
-                int minChainLength = numMinChainLength.IntValue;
-                double minArea = numMinArea.Value;
-                int retrievalMode = cmbRetrievalMode?.SelectedIndex ?? 0;
-                bool useL2Gradient = chkL2Gradient.IsChecked ?? true;
-                bool useSubPixel = chkUseSubPixel.IsChecked ?? false;
+                // ===== 读取 UI 参数 =====
+                var scaleMode = (ScaleMode)(cmbScaleMode?.SelectedIndex ?? 0);
+                var thresholdMode = (ThresholdMode)(cmbThresholdMode?.SelectedIndex ?? 0);
+                var chainLengthMode = (ChainLengthMode)(cmbChainLengthMode?.SelectedIndex ?? 0);
+                int speedScale = numSpeedScale.IntValue;
+                int featureScale = numFeatureScale.IntValue;
+                int minChainLengthValue = numMinChainLength.IntValue;
 
-                // ===== Step 1: 判断图像通道数，转为灰度图（全图） =====
+                // Step 1: 灰度转换
                 using var gray = new Mat();
                 int channels = _currentMat.Channels();
-                if (channels == 1)
-                {
-                    _currentMat.CopyTo(gray);
-                }
-                else if (channels == 3)
-                {
-                    Cv2.CvtColor(_currentMat, gray, ColorConversionCodes.BGR2GRAY);
-                }
-                else if (channels == 4)
-                {
-                    Cv2.CvtColor(_currentMat, gray, ColorConversionCodes.BGRA2GRAY);
-                }
-                else
-                {
-                    Cv2.ExtractChannel(_currentMat, gray, 0);
-                }
+                if (channels == 1) _currentMat.CopyTo(gray);
+                else if (channels == 3) Cv2.CvtColor(_currentMat, gray, ColorConversionCodes.BGR2GRAY);
+                else if (channels == 4) Cv2.CvtColor(_currentMat, gray, ColorConversionCodes.BGRA2GRAY);
+                else Cv2.ExtractChannel(_currentMat, gray, 0);
 
-                // 高斯模糊预处理（降低噪声，改善边缘检测质量）
-                using var blurred = new Mat();
-                if (smoothKernel > 1)
-                    Cv2.GaussianBlur(gray, blurred, new OpenCvSharp.Size(smoothKernel, smoothKernel), 0);
-                else
-                    gray.CopyTo(blurred);
+                // Step 2: Scharr 梯度计算（与运行时 100% 相同）
+                CvOp.ComputeShapeGradient(gray, out var gx, out var gy, out var mag);
 
-                // 边缘检测（Canny）— 全图检测
-                using var edges = new Mat();
-                Cv2.Canny(blurred, edges, lowThreshold, highThreshold, apertureSize, useL2Gradient);
-
-                // ===== Step 2: 构建 ROI 掩码 =====
-                // 多检测区域并集 - 多屏蔽区域差集 → 最终有效区域
+                // Step 3: 构建 ROI 掩码（提前构建，用于限定对比度计算范围）
                 var enabledInspections = DialogInspectionRegions.Where(r => r.IsEnabled).ToList();
                 var enabledMasks = DialogMaskRegions.Where(r => r.IsEnabled).ToList();
-
                 if (enabledInspections.Count == 0)
                 {
                     MessageBox.Show("没有启用的检测区域。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
                 }
+                using var roiMask = BuildRoiMask(mag.Size(), enabledInspections, enabledMasks);
 
-                using var roiMask = BuildRoiMask(edges.Size(), enabledInspections, enabledMasks);
-
-                // ===== Step 3: 应用 ROI 掩码 =====
-                // 仅保留 ROI 内的边缘像素，ROI 外的边缘被清零
-                Cv2.BitwiseAnd(edges, roiMask, edges);
-
-                // ===== Step 4: 查找轮廓 =====
-                var retrievalModes = retrievalMode == 0 ? RetrievalModes.External : RetrievalModes.List;
-                Cv2.FindContours(edges, out OpenCvSharp.Point[][] contours, out _, retrievalModes, ContourApproximationModes.ApproxNone);
-
-                if (contours.Length == 0)
+                // Step 4: 在 ROI 范围内计算对比度（避免背景强边缘拉高阈值）
+                float actualContrast = numContrast.IntValue;
+                if (thresholdMode == ThresholdMode.Auto)
                 {
+                    using var maskedMag = new Mat();
+                    mag.CopyTo(maskedMag, roiMask);
+                    actualContrast = (float)Math.Round(CvOp.AutoComputeContrast(maskedMag));
+                    numContrast.IntValue = (int)actualContrast;
+                }
+
+                // Step 5: NMS 细线化（用原始 mag 保持边界邻域判断正确）
+                using var nms = CvOp.ApplyNms(mag, gx, gy, actualContrast);
+
+                // Step 6: 将 ROI 掩码应用到 NMS 结果，过滤出 ROI 内边缘点
+                // 新建全零矩阵，只在 mask 非零处拷贝 NMS 结果（保留 NMS 细线化，ROI 外清零）
+                using var maskedNms = new Mat(nms.Size(), nms.Type(), Scalar.All(0));
+                nms.CopyTo(maskedNms, roiMask);
+
+                // 保存调试用中间图像（ROI 掩码后，确保与 EdgePoints 一致）
+                _debugMag?.Dispose();
+                _debugNms?.Dispose();
+                _debugMag = mag.Clone();
+                _debugNms = maskedNms.Clone();
+                cmbDebugView.IsEnabled = true;
+                cmbDebugView.SelectedIndex = 0; // 默认切回"原始"
+
+                // Step 7: 确定链长模式
+                bool autoChainLen = chainLengthMode == ChainLengthMode.Auto;
+
+                // Step 8: 收集边缘点（已移除 optimization 参数）
+                var edgePoints = CvOp.CollectEdgePoints(maskedNms, gx, gy, autoChainLen, minChainLengthValue, out int actualChainLength, closingRadius: 1);
+                if (edgePoints.Count == 0)
+                {
+                    gx.Dispose(); gy.Dispose(); mag.Dispose();
                     UpdateResultDisplay(TemplateExtractionStatus.Failed, 0, 0, 0, 0, 0);
-                    PluginLogger.Warning("[ShapeMatchTemplateEditor] 未检测到轮廓", "ShapeMatchTool");
+                    PluginLogger.Warning("[ShapeMatchTemplateEditor] 未检测到边缘点（Contrast 过高或图像过平）", "ShapeMatchTool");
                     return;
                 }
 
-                // 最小链长过滤 + 最小面积过滤
-                var validContours = contours
-                    .Where(c => c.Length >= minChainLength && Cv2.ContourArea(c) >= minArea)
-                    .ToList();
-
-                if (validContours.Count == 0)
+                // Step 9: 确定实际尺度（Auto → 根据 ROI 尺寸自动计算）
+                if (scaleMode == ScaleMode.Auto)
                 {
-                    UpdateResultDisplay(TemplateExtractionStatus.Failed, 0, 0, 0, 0, 0);
-                    PluginLogger.Warning("[ShapeMatchTemplateEditor] 有效轮廓数量为0，全部被过滤（最小链长/最小面积）", "ShapeMatchTool");
-                    return;
+                    // 使用图像尺寸估算金字塔层级
+                    int minDim = Math.Min(gray.Width, gray.Height);
+                    speedScale = Math.Max(0, Math.Min(9, (int)Math.Round(Math.Log(Math.Max(minDim / 64.0, 1), 2))));
+                    featureScale = Math.Max(0, Math.Min(speedScale, speedScale - 3));
+                    numSpeedScale.IntValue = speedScale;
+                    numFeatureScale.IntValue = featureScale;
                 }
 
-                // 多边形近似 / 重采样收集（ROI 坐标系）
-                var approximatedGroups = new List<OpenCvSharp.Point[]>();
-
-                foreach (var contour in validContours)
+                // Step 10: 验证尺度范围
+                if (speedScale < featureScale)
                 {
-                    OpenCvSharp.Point[] approximated;
-
-                    if (approxMethod == ContourApproxMethod.ApproxPolyDP)
-                    {
-                        // 只做 Douglas-Peucker 近似
-                        approximated = Cv2.ApproxPolyDP((IEnumerable<OpenCvSharp.Point>)contour, approxPrecision, true);
-                    }
-                    else if (approxMethod == ContourApproxMethod.UniformResample)
-                    {
-                        // 等距重采样：保留全量轮廓点，不做 Douglas-Peucker，直接重采样到目标点数
-                        approximated = TemplateModel.ResampleContour(contour, targetPointCount)
-                            .Select(p => new OpenCvSharp.Point((int)p.X, (int)p.Y))
-                            .ToArray();
-                    }
-                    else if (approxMethod == ContourApproxMethod.ApproxPolyDPAndResample)
-                    {
-                        // 组合模式：先 ApproxPolyDP 去冗余 → 再等距重采样到目标点数
-                        var afterDP = Cv2.ApproxPolyDP((IEnumerable<OpenCvSharp.Point>)contour, approxPrecision, true);
-                        if (afterDP.Length >= 3)
-                        {
-                            approximated = TemplateModel.ResampleContour(afterDP, targetPointCount)
-                                .Select(p => new OpenCvSharp.Point((int)p.X, (int)p.Y))
-                                .ToArray();
-                        }
-                        else
-                        {
-                            approximated = afterDP; // 点太少，不再重采样
-                        }
-                    }
-                    else // None
-                    {
-                        approximated = contour;
-                    }
-
-                    if (approximated.Length < 3) continue;
-                    approximatedGroups.Add(approximated);
+                    PluginLogger.Warning($"[ShapeMatchTemplateEditor] 速度尺度({speedScale}) < 特征尺度({featureScale})，已自动修正", "ShapeMatchTool");
+                    featureScale = speedScale; // 修正为速度尺度
                 }
 
-                if (approximatedGroups.Count == 0)
+                // Step 11: 保存到模板
+                _resultTemplate ??= new TemplateModel();
+                _resultTemplate.EdgePoints = edgePoints;
+                _resultTemplate.SetReferencePoint();
+                _resultTemplate.ScaleMode = scaleMode;
+                _resultTemplate.SpeedScale = speedScale;
+                _resultTemplate.FeatureScale = featureScale;
+                _resultTemplate.ThresholdMode = thresholdMode;
+                _resultTemplate.Contrast = actualContrast;
+                _resultTemplate.ChainLengthMode = chainLengthMode;
+                if (chainLengthMode == ChainLengthMode.Auto)
                 {
-                    UpdateResultDisplay(TemplateExtractionStatus.Failed, 0, 0, 0, 0, 0);
-                    PluginLogger.Warning("[ShapeMatchTemplateEditor] 多边形近似后无有效轮廓", "ShapeMatchTool");
-                    return;
-                }
-
-                // ===== 亚像素细化 =====
-                // 使用模糊前的灰度图做梯度计算（梯度计算自带平滑，不需要额外模糊）
-                List<Point2f[]> refinedGroups;
-                if (useSubPixel && gray != null && !gray.Empty())
-                {
-                    refinedGroups = CvOp.RefineContoursToSubPixel(gray, approximatedGroups, apertureSize);
-                    PluginLogger.Info($"[ShapeMatchTemplateEditor] 亚像素轮廓细化完成", "ShapeMatchTool");
+                    _resultTemplate.MinChainLength = actualChainLength;
+                    numMinChainLength.IntValue = actualChainLength;
                 }
                 else
                 {
-                    refinedGroups = approximatedGroups
-                        .Select(g => g.Select(p => new Point2f(p.X, p.Y)).ToArray())
-                        .ToList();
+                    _resultTemplate.MinChainLength = minChainLengthValue;
                 }
-
-                // ===== 转换为 Point2D 轮廓组（直接分组存储，无需 NaN 分隔符） =====
-                var contourGroups = new List<List<Point2D>>();
-                var allSubPixelRoi = new List<Point2f>(); // 用于整体矩/包围盒
-
-                for (int gi = 0; gi < refinedGroups.Count; gi++)
+                _resultTemplate.ExtractionStatus = TemplateExtractionStatus.Success;
+                if (_currentMat != null && !_currentMat.Empty())
                 {
-                    var srcGroup = refinedGroups[gi];
-                    var destGroup = new List<Point2D>(srcGroup.Length);
-                    foreach (var pt in srcGroup)
-                    {
-                        destGroup.Add(new Point2D { X = pt.X, Y = pt.Y });
-                        allSubPixelRoi.Add(new Point2f(pt.X, pt.Y));
-                    }
-                    contourGroups.Add(destGroup);
+                    Cv2.ImEncode(".png", _currentMat, out byte[] pngBytes);
+                    _resultTemplate.SourceImageBytes = pngBytes;
                 }
 
-                // ===== 计算图像梯度方向（从 Sobel 梯度图采样每个轮廓点的方向）=====
-                // 使用高斯模糊后的灰度图，与 Canny 边缘检测使用相同图像源
-                using var gx = new Mat();
-                using var gy = new Mat();
-                int sobelAperture = apertureSize < 3 ? 3 : apertureSize;
-                Cv2.Sobel(blurred, gx, MatType.CV_32F, 1, 0, sobelAperture);
-                Cv2.Sobel(blurred, gy, MatType.CV_32F, 0, 1, sobelAperture);
-
-                var directionGroups = new List<List<double>>(refinedGroups.Count);
-                int imgW = blurred.Width;
-                int imgH = blurred.Height;
-
-                foreach (var group in refinedGroups)
+                UpdateResultDisplay(TemplateExtractionStatus.Success, edgePoints.Count, 0, 0, 0, 0);
+                string chainInfo = chainLengthMode == ChainLengthMode.Auto ? $"链长≥{actualChainLength}(自动)" : $"链长≥{minChainLengthValue}";
+                if (txtFilterStats != null)
                 {
-                    var dirs = new List<double>(group.Length);
-                    foreach (var pt in group)
-                    {
-                        int px = (int)Math.Round(pt.X);
-                        int py = (int)Math.Round(pt.Y);
-                        px = Math.Clamp(px, 0, imgW - 1);
-                        py = Math.Clamp(py, 0, imgH - 1);
-                        double gxVal = gx.At<float>(py, px);
-                        double gyVal = gy.At<float>(py, px);
-                        dirs.Add(Math.Atan2(gyVal, gxVal));
-                    }
-                    directionGroups.Add(dirs);
+                    string scaleInfo = scaleMode == ScaleMode.Auto ? $"尺度: auto={speedScale}→{featureScale}" : $"尺度: {speedScale}→{featureScale}";
+                    string contrastInfo = thresholdMode == ThresholdMode.Auto ? $"Contrast={actualContrast}(自动)" : $"Contrast={actualContrast}";
+                    txtFilterStats.Text = $"边缘点: {edgePoints.Count} ({chainInfo}, {scaleInfo}, {contrastInfo})";
                 }
 
-                int contourGroupCount = contourGroups.Count;
+                DrawEdgePointsOverlay(edgePoints);
+                PluginLogger.Info(
+                    $"[ShapeMatchTemplateEditor] 提取成功 | " +
+                    $"Scharr+NMS 边缘点={edgePoints.Count} " +
+                    $"(Contrast={actualContrast}, 尺度={speedScale}→{featureScale}, 链长={chainInfo})",
+                    "ShapeMatchTool");
 
-                // 计算整体包围盒和中心点（原图坐标）
-                var moments = Cv2.Moments(allSubPixelRoi.ToArray());
-                double overallCx = moments.M10 / moments.M00;
-                double overallCy = moments.M01 / moments.M00;
-
-                // 包围盒：用 MinAreaRect 支持浮点坐标
-                var minAreaRect = Cv2.MinAreaRect(allSubPixelRoi.ToArray());
-                double contourWidth = useSubPixel ? minAreaRect.Size.Width : Math.Round(minAreaRect.Size.Width);
-                double contourHeight = useSubPixel ? minAreaRect.Size.Height : Math.Round(minAreaRect.Size.Height);
-
-                // 有效点数（所有组的点数之和）
-                int validPointCount = contourGroups.Sum(g => g.Count);
-
-                // 更新显示
-                if (saveResult)
-                {
-                    _resultTemplate ??= new TemplateModel();
-                    _resultTemplate.ContourGroups = contourGroups;
-                    _resultTemplate.ContourDirectionGroups = directionGroups;
-                    _resultTemplate.SmoothKernelSize = smoothKernel;
-                    _resultTemplate.EdgeLowThreshold = lowThreshold;
-                    _resultTemplate.EdgeHighThreshold = highThreshold;
-                    _resultTemplate.EdgeApertureSize = apertureSize;
-                    _resultTemplate.ApproxMethod = approxMethod;
-                    _resultTemplate.ApproxPrecision = approxPrecision;
-                    _resultTemplate.TargetPointCount = targetPointCount;
-                    _resultTemplate.ExtractionStatus = TemplateExtractionStatus.Success;
-                    _resultTemplate.ContourWidth = minAreaRect.Size.Width;
-                    _resultTemplate.ContourHeight = minAreaRect.Size.Height;
-                    _resultTemplate.CenterX = overallCx;
-                    _resultTemplate.CenterY = overallCy;
-                    _resultTemplate.ContourGroupCount = contourGroupCount;
-                    _resultTemplate.MinChainLength = minChainLength;
-                    _resultTemplate.MinArea = minArea;
-                    _resultTemplate.RetrievalMode = retrievalMode;
-                    _resultTemplate.UseL2Gradient = useL2Gradient;
-                    _resultTemplate.UseSubPixel = useSubPixel;
-
-                    // 保存原始图像（PNG无损），仅当是新创建或覆盖时保存
-                    if (_currentMat != null && !_currentMat.Empty())
-                    {
-                        Cv2.ImEncode(".png", _currentMat, out byte[] pngBytes);
-                        _resultTemplate.SourceImageBytes = pngBytes;
-                    }
-
-                    UpdateResultDisplay(TemplateExtractionStatus.Success, validPointCount,
-                        minAreaRect.Size.Width, minAreaRect.Size.Height,
-                        overallCx, overallCy);
-
-                    PluginLogger.Info($"[ShapeMatchTemplateEditor] 提取成功 | 轮廓组={contourGroupCount} 点数={validPointCount} | 包围盒={minAreaRect.Size.Width:F0}x{minAreaRect.Size.Height:F0}", "ShapeMatchTool");
-                }
-                else
-                {
-                    // 预览模式：临时保存轮廓组用于绘制
-                    _previewContourGroups = contourGroups;
-                    UpdateResultDisplay(TemplateExtractionStatus.Success, validPointCount,
-                        minAreaRect.Size.Width, minAreaRect.Size.Height, overallCx, overallCy);
-                }
-
-                // 在 ImageControl 上叠加绘制多轮廓组
-                var groupsToDraw = saveResult && _resultTemplate != null
-                    ? _resultTemplate.ContourGroups
-                    : contourGroups;
-                DrawContourOverlays(groupsToDraw, chkShowPointsOnly.IsChecked ?? false);
+                gx.Dispose(); gy.Dispose(); mag.Dispose();
             }
             catch (Exception ex)
             {
                 UpdateResultDisplay(TemplateExtractionStatus.Failed, 0, 0, 0, 0, 0);
-                PluginLogger.Error($"[ShapeMatchTemplateEditor] 轮廓提取失败: {ex.Message}", "ShapeMatchTool");
+                PluginLogger.Error($"[ShapeMatchTemplateEditor] 边缘提取失败: {ex.Message}", "ShapeMatchTool");
             }
         }
 
@@ -752,36 +618,30 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
             return result;
         }
 
-        private void DrawContourOverlays(List<List<Point2D>> contourGroups, bool showPointsOnly = false)
+        private void DrawEdgePointsOverlay(List<CvOp.EdgePoint> edgePoints)
         {
-            if (dialogImageControl == null || contourGroups.Count == 0) return;
-
+            if (dialogImageControl == null || edgePoints.Count == 0) return;
             ClearContourOverlay();
-
             var display = new DisplayCollector();
             var style = new GraphicsStyle
             {
-                Name = showPointsOnly ? "ContourPoint" : "Contour",
+                Name = "EdgePoint",
                 OkColor = Colors.LimeGreen,
-                LineWidth = 3.0
+                LineWidth = 1.5
             };
+            var points = edgePoints.Select(p => new Point2d(p.X, p.Y)).ToList();
+            display.AddPoints(style, points);
+            dialogImageControl.ResultRenderLayerControl.SetDisplayCollector(display);
+        }
 
-            if (showPointsOnly)
-            {
-                var allPoints = contourGroups
-                    .SelectMany(g => g)
-                    .Select(p => new Point2d(p.X, p.Y))
-                    .ToList();
-                display.AddPoints(style, allPoints);
-            }
-            else
-            {
-                var groups = contourGroups
-                    .Select(g => g.Select(p => new OpenCvSharp.Point((int)p.X, (int)p.Y)).ToArray())
-                    .ToList();
-                display.AddContours(style, groups);
-            }
-
+        private void DrawEdgePointsOverlay(List<CvOp.EdgePoint> edgePoints, Color color)
+        {
+            if (dialogImageControl == null || edgePoints.Count == 0) return;
+            ClearContourOverlay();
+            var display = new DisplayCollector();
+            var style = new GraphicsStyle { Name = "EdgePoint", OkColor = color, LineWidth = 1.5 };
+            var points = edgePoints.Select(p => new Point2d(p.X, p.Y)).ToList();
+            display.AddPoints(style, points);
             dialogImageControl.ResultRenderLayerControl.SetDisplayCollector(display);
         }
 
@@ -851,11 +711,14 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
             foreach (var mask in DialogMaskRegions)
                 _resultTemplate.MaskRegions.Add(mask);
 
-            // ===== 第3步：重新提取轮廓（确保与当前检测区域匹配） =====
-            if (DialogInspectionRegions.Count > 0 && _currentMat != null && !_currentMat.Empty())
+            // ===== 第3步：校验轮廓数据（不再自动重提取） =====
+            if (_resultTemplate.EdgePoints == null || _resultTemplate.EdgePoints.Count == 0)
             {
-                ExecuteContourExtraction(saveResult: true);
-                PluginLogger.Info("[ShapeMatchTemplateEditor] 确定时重新提取轮廓，区域数: {RegionCount}", "ShapeMatchTool");
+                if (DialogInspectionRegions.Count > 0)
+                {
+                    MessageBox.Show("边缘点数据为空，请先点击「提取轮廓」按钮生成。", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
             }
 
             // ===== 第4步：保存注册图像（如果还没有） =====
@@ -871,12 +734,15 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
             if (DialogInspectionRegions.Count == 0)
                 errors.Add("- 请至少绘制一个检测区域。");
 
-            bool hasContour = _resultTemplate.ContourGroups != null && _resultTemplate.ContourGroups.Count > 0;
+            bool hasContour = _resultTemplate.EdgePoints != null && _resultTemplate.EdgePoints.Count > 0;
             if (!hasContour)
-                errors.Add("- 轮廓数据为空，请先执行轮廓提取。");
+                errors.Add("- 边缘点数据为空，请先执行轮廓提取。");
 
             if (_resultTemplate.SourceImageBytes == null || _resultTemplate.SourceImageBytes.Length == 0)
                 errors.Add("- 注册图像数据为空，请确保已加载图像。");
+
+            if (_resultTemplate.PyramidEdgePoints == null || _resultTemplate.PyramidEdgePoints.Count == 0)
+                errors.Add("- 金字塔预计算数据为空，请重新提取。");
 
             if (errors.Count > 0)
             {
@@ -915,11 +781,269 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
             }
 
             ClearContourOverlay();
+            _debugMag?.Dispose();
+            _debugNms?.Dispose();
             if (_ownsMat)
             {
                 _currentMat?.Dispose();
                 _currentMat = null;
             }
+        }
+
+        #endregion
+
+        #region 金字塔层级预览
+
+        /// <summary>
+        /// ComboBox 选择变更 → 切换预览到指定层级
+        /// </summary>
+        private void OnPyramidLevelSelected(object sender, SelectionChangedEventArgs e)
+        {
+            if (cmbPyramidLevel.SelectedItem is KeyValuePair<int, string> selected)
+            {
+                DrawSingleLevelEdgePoints(selected.Key);
+                UpdatePyramidLevelInfo(selected.Key);
+            }
+        }
+
+        private void DrawSingleLevelEdgePoints(int level)
+        {
+            if (_resultTemplate?.PyramidEdgePoints == null) return;
+            if (!_resultTemplate.PyramidEdgePoints.TryGetValue(level, out var edgePoints)) return;
+
+            // 非 Level 0 的坐标是从降采样图像提取的，需映射回全分辨率空间
+            if (level > 0)
+            {
+                int scale = 1 << level; // 2^level
+                var scaledPoints = edgePoints.Select(p => new CvOp.EdgePoint
+                {
+                    X = p.X * scale,
+                    Y = p.Y * scale,
+                    Direction = p.Direction,
+                    Magnitude = p.Magnitude
+                }).ToList();
+                DrawEdgePointsOverlay(scaledPoints, Colors.LimeGreen);
+            }
+            else
+            {
+                DrawEdgePointsOverlay(edgePoints, Colors.LimeGreen);
+            }
+        }
+
+        private void PopulatePyramidLevelComboBox()
+        {
+            cmbPyramidLevel.Items.Clear();
+            if (_resultTemplate?.PyramidEdgePoints == null)
+            {
+                cmbPyramidLevel.IsEnabled = false;
+                return;
+            }
+
+            foreach (int level in _resultTemplate.PyramidEdgePoints.Keys.OrderBy(k => k))
+            {
+                int pointCount = _resultTemplate.PyramidEdgePoints[level]?.Count ?? 0;
+                string label = level == 0
+                    ? $"Level 0 (全分辨率) - {pointCount}pt"
+                    : $"Level {level} (1/{1 << level}) - {pointCount}pt";
+                cmbPyramidLevel.Items.Add(new KeyValuePair<int, string>(level, label));
+            }
+
+            cmbPyramidLevel.DisplayMemberPath = "Value";
+            cmbPyramidLevel.SelectedValuePath = "Key";
+            cmbPyramidLevel.IsEnabled = true;
+
+            int defaultLevel = _resultTemplate.PyramidEdgePoints.Keys
+                .OrderByDescending(k => k)
+                .FirstOrDefault(k => (_resultTemplate.PyramidEdgePoints[k]?.Count ?? 0) >= 5);
+            cmbPyramidLevel.SelectedIndex = Math.Max(0, defaultLevel);
+        }
+
+        private void PreComputePyramidEdgePoints()
+        {
+            if (_currentMat == null || _currentMat.Empty()) return;
+            if (_resultTemplate?.EdgePoints == null || _resultTemplate.EdgePoints.Count == 0) return;
+
+            // 获取当前尺度设置
+            bool isScaleManual = _resultTemplate.ScaleMode == ScaleMode.Manual;
+            int speedScale = _resultTemplate.SpeedScale;
+            int featureScale = _resultTemplate.FeatureScale;
+
+            // Auto 模式下，preComputation 阶段使用 SpeedScale/FeatureScale（已在 ExecuteContourExtraction 中计算）
+            if (speedScale < featureScale)
+                throw new InvalidOperationException($"速度尺度({speedScale}) < 特征尺度({featureScale}) — 金字塔范围无效");
+
+            using var gray = new Mat();
+            if (_currentMat.Channels() == 1) _currentMat.CopyTo(gray);
+            else if (_currentMat.Channels() == 3) Cv2.CvtColor(_currentMat, gray, ColorConversionCodes.BGR2GRAY);
+            else Cv2.ExtractChannel(_currentMat, gray, 0);
+
+            // 构建全分辨率 ROI 掩码（所有层级共享，逐级缩放）
+            var enabledInspections = DialogInspectionRegions.Where(r => r.IsEnabled).ToList();
+            var enabledMasks = DialogMaskRegions.Where(r => r.IsEnabled).ToList();
+            using Mat? fullRoiMask = enabledInspections.Count > 0
+                ? BuildRoiMask(gray.Size(), enabledInspections, enabledMasks)
+                : null;
+
+            var pyramidPoints = new Dictionary<int, List<CvOp.EdgePoint>>();
+
+            // Level 0: 直接用已有结果
+            pyramidPoints[0] = _resultTemplate.EdgePoints;
+
+            using var currentImage = gray.Clone();
+
+            // 阈值模式决定对比度值（在 ROI 范围内统计）
+            float contrast;
+            if (_resultTemplate.ThresholdMode == ThresholdMode.Auto)
+            {
+                using var initMag = AutoComputeMagAtLevel(currentImage);
+                using var maskedMag = new Mat();
+                if (fullRoiMask != null)
+                    initMag.CopyTo(maskedMag, fullRoiMask);
+                else
+                    initMag.CopyTo(maskedMag);
+                contrast = (float)Math.Round(CvOp.AutoComputeContrast(maskedMag));
+            }
+            else
+            {
+                contrast = _resultTemplate.Contrast;
+            }
+            bool autoChainLen = _resultTemplate.ChainLengthMode == ChainLengthMode.Auto;
+            int manualChainLen = _resultTemplate.MinChainLength;
+
+            // 修改了 endLevel 为 speedScale（原 PyramidStart）
+            for (int level = 1; level <= speedScale; level++)
+            {
+                int newW = gray.Width / (1 << level);
+                int newH = gray.Height / (1 << level);
+                if (newW < 32 || newH < 32) break;
+
+                using var downsampled = new Mat();
+                Cv2.PyrDown(currentImage, downsampled, new OpenCvSharp.Size(newW, newH));
+
+                CvOp.ComputeShapeGradient(downsampled, out var gx, out var gy, out var mag);
+
+                // 所有层级统一使用 Level 0 的基准对比度（避免 PyDown 后动态分布不同导致标准不一致）
+                using var nms = CvOp.ApplyNms(mag, gx, gy, contrast);
+
+                // 将全分辨率 ROI 掩码缩放到当前层级尺寸并应用
+                if (fullRoiMask != null)
+                {
+                    using var levelMask = new Mat();
+                    Cv2.Resize(fullRoiMask, levelMask, downsampled.Size(), interpolation: InterpolationFlags.Nearest);
+                    using var maskedNms = new Mat(nms.Size(), nms.Type(), Scalar.All(0));
+                    nms.CopyTo(maskedNms, levelMask);
+
+                    var levelPoints = CvOp.CollectEdgePoints(maskedNms, gx, gy, autoChainLen, manualChainLen, out _, closingRadius: 1);
+                    if (levelPoints.Count > 0)
+                        pyramidPoints[level] = levelPoints;
+                }
+                else
+                {
+                    var levelPoints = CvOp.CollectEdgePoints(nms, gx, gy, autoChainLen, manualChainLen, out _, closingRadius: 1);
+                    if (levelPoints.Count > 0)
+                        pyramidPoints[level] = levelPoints;
+                }
+
+                gx.Dispose(); gy.Dispose(); mag.Dispose();
+                downsampled.CopyTo(currentImage);
+            }
+
+            _resultTemplate.PyramidEdgePoints = pyramidPoints;
+            PluginLogger.Info($"[ShapeMatchTemplateEditor] 金字塔预计算完成: {pyramidPoints.Count}层 (0~{pyramidPoints.Keys.Max()})", "ShapeMatchTool");
+        }
+
+        /// <summary>
+        /// 计算梯度幅值（用于金字塔预计算的初始 Auto 阈值）
+        /// </summary>
+        private static Mat AutoComputeMagAtLevel(Mat grayImage)
+        {
+            CvOp.ComputeShapeGradient(grayImage, out var gx, out var gy, out var mag);
+            gx.Dispose(); gy.Dispose();
+            return mag;
+        }
+
+        private void UpdatePyramidLevelInfo(int level)
+        {
+            if (_resultTemplate?.PyramidEdgePoints == null) return;
+
+            bool hasLevel = _resultTemplate.PyramidEdgePoints.TryGetValue(level, out var edgePoints);
+            int levelCount = edgePoints?.Count ?? 0;
+            int originalCount = _resultTemplate.PyramidEdgePoints.TryGetValue(0, out var l0)
+                ? l0.Count : 0;
+
+            if (txtCurrentLevel != null)
+                txtCurrentLevel.Text = hasLevel
+                    ? $"Level {level} (1/{1 << level})  {levelCount} / {originalCount}pt"
+                    : "--";
+
+            if (txtLevelAdvice != null)
+            {
+                string advice = levelCount switch
+                {
+                    < 5  => $"\u26a0 该层仅{levelCount}点，几乎无法匹配。请降低层级上限或增大Contrast",
+                    < 20 => $"\u26a0 该层仅{levelCount}点（原始{originalCount}点），适合粗定位",
+                    < 50 => $"\u2139 该层{levelCount}点（原始{originalCount}点），轮廓偏少",
+                    _   => $"\u2713 该层{levelCount}点，轮廓充足"
+                };
+                txtLevelAdvice.Text = advice;
+                txtLevelAdvice.Visibility = Visibility.Visible;
+            }
+        }
+
+        #endregion
+
+        #region 调试视图
+
+        /// <summary>
+        /// 调试视图切换：原始图像 / 对比度图 / NMS 边缘图
+        /// </summary>
+        private void OnDebugViewChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (cmbDebugView.SelectedItem is not ComboBoxItem item) return;
+            string tag = item.Tag?.ToString() ?? "original";
+
+            try
+            {
+                switch (tag)
+                {
+                    case "original":
+                        if (_currentMat != null && !_currentMat.Empty())
+                            dialogImageControl?.LoadImageDownscaled(_currentMat);
+                        break;
+
+                    case "mag":
+                        if (_debugMag != null && !_debugMag.Empty())
+                        {
+                            using var displayable = ConvertFloatMatToDisplayable(_debugMag);
+                            dialogImageControl?.LoadImageDownscaled(displayable);
+                        }
+                        break;
+
+                    case "nms":
+                        if (_debugNms != null && !_debugNms.Empty())
+                        {
+                            using var displayable = ConvertFloatMatToDisplayable(_debugNms);
+                            dialogImageControl?.LoadImageDownscaled(displayable);
+                        }
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                PluginLogger.Warning($"[ShapeMatchTemplateEditor] 切换调试视图失败: {ex.Message}", "ShapeMatchTool");
+            }
+        }
+
+        /// <summary>
+        /// 将 CV_32F 梯度图归一化转换为 CV_8U 可显示图像
+        /// </summary>
+        private static Mat ConvertFloatMatToDisplayable(Mat floatMat)
+        {
+            using var normalized = new Mat();
+            Cv2.Normalize(floatMat, normalized, 0, 255, NormTypes.MinMax);
+            var result = new Mat();
+            normalized.ConvertTo(result, MatType.CV_8UC1);
+            return result;
         }
 
         #endregion

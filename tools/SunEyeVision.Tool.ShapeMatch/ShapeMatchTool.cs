@@ -97,6 +97,8 @@ namespace SunEyeVision.Tool.ShapeMatch
                 using var grayImage = image.Channels() > 1
                     ? image.CvtColor(ColorConversionCodes.BGR2GRAY)
                     : image.Clone();
+                // 保存灰度调试图像
+                result.DebugGrayImage = grayImage.Clone();
                 stepSw.Stop();
                 stepTimings.Add(("灰度转换", stepSw.ElapsedMilliseconds));
 
@@ -112,6 +114,8 @@ namespace SunEyeVision.Tool.ShapeMatch
                     if (inspectionRegions.Count > 0)
                     {
                         using var inspMask = RegionMaskBuilder.CreateMask(grayImage.Size(), inspectionRegions);
+                        // 保存搜索区域掩码调试图像
+                        result.DebugSearchRegionMask = inspMask.Clone();
                         if (maskRegions.Count > 0)
                         {
                             using var maskMask = RegionMaskBuilder.CreateMaskMask(grayImage.Size(), maskRegions);
@@ -138,7 +142,7 @@ namespace SunEyeVision.Tool.ShapeMatch
                 // ===== Step 2: 获取可用模板 =====
                 stepSw.Restart();
                 var enabledTemplates = parameters.Templates
-                    .Where(t => t.IsEnabled && t.ExtractionStatus == TemplateExtractionStatus.Success && t.ContourGroups != null)
+                    .Where(t => t.IsEnabled && t.ExtractionStatus == TemplateExtractionStatus.Success && t.EdgePoints != null)
                     .ToList();
 
                 if (enabledTemplates.Count == 0)
@@ -165,6 +169,22 @@ namespace SunEyeVision.Tool.ShapeMatch
                 }
                 stepSw.Stop();
                 stepTimings.Add(("模板匹配", stepSw.ElapsedMilliseconds));
+
+                // ===== Step 2.5: 生成调试中间图像（仅用于可视化，不影响匹配流程） =====
+                if (grayImage != null && !grayImage.Empty() && enabledTemplates.Count > 0)
+                {
+                    CvOp.ComputeShapeGradient(grayImage, out var dbgGx, out var dbgGy, out var dbgMag);
+
+                    // 取第一个启用模板的对比度参数做 NMS
+                    float debugContrast = enabledTemplates.First().Contrast > 0
+                        ? enabledTemplates.First().Contrast : 30f;
+                    using var dbgNms = CvOp.ApplyNms(dbgMag, dbgGx, dbgGy, debugContrast);
+
+                    result.DebugMagnitude = NormalizeForDisplay(dbgMag);
+                    result.DebugEdgeMap = NormalizeForDisplay(dbgNms);
+
+                    dbgGx.Dispose(); dbgGy.Dispose(); dbgMag.Dispose();
+                }
 
                 // ===== Step 4: NMS合并 =====
                 stepSw.Restart();
@@ -235,39 +255,15 @@ namespace SunEyeVision.Tool.ShapeMatch
 
         /// <summary>
         /// 对单个模板执行匹配 - 调用 CvOp.FindShape 算子进行实际形状匹配
-        /// 轮廓已归一化到质心（align Halcon create_shape_model 语义）
+        /// 使用模板的 EdgePoints（v3.0 梯度引擎统一）
         /// </summary>
         private static List<ShapeMatchResultItem> RunSingleTemplateMatch(
             Mat grayImage, TemplateModel template, ShapeMatchParameters parameters)
         {
-            if (template.ContourGroups == null || template.ContourGroups.Count < 1)
-                return new List<ShapeMatchResultItem>();
-            if (template.ContourDirectionGroups == null || template.ContourDirectionGroups.Count < 1)
+            if (template.EdgePoints == null || template.EdgePoints.Count < 3)
                 return new List<ShapeMatchResultItem>();
 
-            // 将所有轮廓组拍平为单个点列表用于匹配
-            var validPoints = template.ContourGroups.SelectMany(g => g).ToList();
-            if (validPoints.Count < 3)
-                return new List<ShapeMatchResultItem>();
-
-            // 将方向组按同样的顺序拍平
-            var flatDirections = template.ContourDirectionGroups.SelectMany(g => g).ToArray();
-            if (flatDirections.Length != validPoints.Count)
-                return new List<ShapeMatchResultItem>();
-
-            // 将 Point2D 转换为 OpenCV Point2f
-            var contourPoints = validPoints
-                .Select(p => new OpenCvSharp.Point2f((float)p.X, (float)p.Y))
-                .ToList();
-
-            // 计算质心，归一化轮廓（令质心在原点，对齐 Halcon find_shape_model 语义）
-            float centX = contourPoints.Average(p => p.X);
-            float centY = contourPoints.Average(p => p.Y);
-            var normalizedContour = contourPoints
-                .Select(p => new OpenCvSharp.Point2f(p.X - centX, p.Y - centY))
-                .ToList();
-
-            // 解析有效参数（支持每模型覆盖）
+            // ===== 解析有效参数（支持每模型覆盖） =====
             double minScore = parameters.MinMatchScore.Value;
             double angleStart = parameters.AngleMin.Value;
             double angleEnd = parameters.AngleMax.Value;
@@ -275,46 +271,63 @@ namespace SunEyeVision.Tool.ShapeMatch
             double scaleMin = parameters.ScaleMin.Value;
             double scaleMax = parameters.ScaleMax.Value;
             double scaleStep = parameters.ScaleStep.Value;
-            int pyramidLevels = parameters.PyramidLevels.Value;
             int timeoutMs = parameters.MatchTimeoutMs.Value;
-            int speedScale = parameters.SpeedScale.Value;
 
-            // 调用 CvEngine 形状匹配算子（归一化轮廓 + 预计算方向，out 参数模式）
-            var findSw = Stopwatch.StartNew();
+            // ★ 从模板读取金字塔搜索范围（新参数体系：ScaleMode/SpeedScale/FeatureScale）
+            int maxLevel = template.PyramidEdgePoints?.Keys.Max() ?? 0;
+            int speedScale = template.SpeedScale;
+            int featureScale = template.FeatureScale;
+
+            // Auto 模式下速度尺度在模板提取时已自动计算
+            if (speedScale < featureScale)
+                throw new InvalidOperationException(
+                    $"模板 {template.Name}: 速度尺度({speedScale}) < 特征尺度({featureScale}) — 金字塔搜索范围无效");
+
+            int pyramidStart = Math.Min(speedScale, maxLevel);
+            int pyramidEnd = Math.Min(featureScale, pyramidStart);
+
+            if (pyramidStart < pyramidEnd)
+                throw new InvalidOperationException(
+                    $"PyramidStart({pyramidStart}) < PyramidEnd({pyramidEnd}) — 搜索范围无效");
+
+            // 始终使用每层独立边缘点金字塔搜索
+            var pyramidPoints = template.PyramidEdgePoints
+                ?? throw new InvalidOperationException(
+                    $"模板 {template.Name} 无金字塔数据 — 请重新提取模板");
+
+            // 确保所有需要的层级都有数据
+            for (int lvl = pyramidEnd; lvl <= pyramidStart; lvl++)
+                if (!pyramidPoints.ContainsKey(lvl))
+                    throw new InvalidOperationException(
+                        $"金字塔 Level {lvl} 数据缺失 — 请重新提取模板");
+
+            // 调用 CvEngine 形状匹配算子（增强版：每层独立边缘点 + 三维精化 + 提前终止）
+            var findSw = System.Diagnostics.Stopwatch.StartNew();
             CvOp.FindShape(
-                grayImage, normalizedContour, flatDirections,
+                grayImage, pyramidPoints,
                 minScore, angleStart, angleEnd, angleStep,
                 scaleMin, scaleMax, scaleStep,
-                pyramidLevels, timeoutMs,
-                out var matchResults, speedScale);
+                pyramidStart, pyramidEnd, timeoutMs,
+                out var matchResults,
+                out var perfStats);
             findSw.Stop();
 
             // ===== 匹配过程诊断日志 =====
             bool isTimeout = findSw.ElapsedMilliseconds > timeoutMs;
-
-            // 计算实际金字塔层数（pyramidLevels=0 时复用 AutoPyramidLevels 逻辑）
-            int estimatedPyramidLevels = pyramidLevels;
-            if (estimatedPyramidLevels == 0)
-            {
-                int minDim = Math.Min(grayImage.Width, grayImage.Height);
-                int autoLevels = 0;
-                while (minDim > 64 && autoLevels < 4) { minDim /= 2; autoLevels++; }
-                estimatedPyramidLevels = Math.Max(1, autoLevels);
-            }
-
             int angleSteps = (int)((angleEnd - angleStart) / angleStep);
             int scaleSteps = (int)((scaleMax - scaleMin) / scaleStep);
-            int totalCombinations = angleSteps * scaleSteps;
+            int totalCycles = angleSteps * scaleSteps;
 
             var diagnostic = new List<string>
             {
                 $"===== 轮廓匹配诊断 [{template.Name}] =====",
-                $"模板轮廓点数: {contourPoints.Count}, 方向数: {flatDirections.Length}, 方向与点数一致: {flatDirections.Length == contourPoints.Count}",
-                $"         timeoutMs={timeoutMs}, speedScale={speedScale}",
-                $"         pyramidLevels={pyramidLevels}(实际={estimatedPyramidLevels})",
+                $"模板边缘点数: {pyramidPoints[0].Count} (全分辨率, Level 0)",
+                $"         粗层降采样: Level4≤80, L3≤150, L2≤300, L1≤600, L0=全量",
+                $"         timeoutMs={timeoutMs}",
+                $"         金字塔搜索范围: Level {pyramidStart} → Level {pyramidEnd}",
                 $"搜索空间: angle=[{angleStart:F1}~{angleEnd:F1}]/{angleStep:F1}° ({angleSteps}步)",
                 $"         scale=[{scaleMin:F3}~{scaleMax:F3}]/{scaleStep:F3} ({scaleSteps}步)",
-                $"         → 总角度×缩放组合 = {totalCombinations}",
+                $"         → 总角度×缩放组合 = {totalCycles}",
                 $"FindShape 耗时: {findSw.ElapsedMilliseconds}ms, 候选结果数: {matchResults.Count}" +
                 (isTimeout ? " ⚠️ 已超时" : "")
             };
@@ -329,9 +342,8 @@ namespace SunEyeVision.Tool.ShapeMatch
                     diagnostic.Add($"  2. 缩小角度范围 当前={angleEnd - angleStart}° → 根据实际偏差合理缩小");
                     diagnostic.Add($"  3. 增大角度步长 当前={angleStep}° → 建议 2~5°");
                     diagnostic.Add($"  4. 增大缩放步长 当前={scaleStep} → 建议 0.02~0.05");
-                    diagnostic.Add("  5. 设置 SpeedScale=1~3 启用加速模式(当前 0=自动)");
-                    diagnostic.Add($"  6. 减少模板轮廓点数 TargetPointCount 当前={parameters.TargetPointCount.Value}");
-                    diagnostic.Add($"  ─── 估算: {totalCombinations}种组合 × {contourPoints.Count}模板点 × 金字塔 = 极高计算量 ───");
+                    diagnostic.Add($"  5. 检查模板边缘点是否清晰（梯度幅值是否足够）");
+                    diagnostic.Add($"  ─── 估算: {totalCycles}种组合 × {pyramidPoints[0].Count}模板点 × 金字塔 = 极高计算量 ───");
                 }
                 else
                 {
@@ -340,7 +352,6 @@ namespace SunEyeVision.Tool.ShapeMatch
                     diagnostic.Add("  • minScore 阈值过高，所有候选均被过滤");
                     diagnostic.Add("  • 角度范围与目标实际角度不匹配");
                     diagnostic.Add("  • 缩放范围与目标实际尺寸不匹配");
-                    diagnostic.Add("  • 金字塔层数过多导致粗层丢失特征");
                     diagnostic.Add("  • 图像梯度方向与模板方向不一致（检查模板提取时的图像内容）");
                 }
                 parameters.LogWarning(string.Join("\n", diagnostic));
@@ -352,15 +363,38 @@ namespace SunEyeVision.Tool.ShapeMatch
                 diagnostic.Add($"最高分: {maxScore:F3}, 平均分: {avgScore:F3}");
                 parameters.LogInfo(string.Join("\n", diagnostic));
             }
-            // ===== 诊断日志结束 =====
 
-            // 将 CvEngine 结果映射为 ShapeMatchResultItem 列表
+            // ===== 性能统计报告（逐层） =====
+            if (perfStats.Levels.Count > 0)
+            {
+                var perfLines = new List<string>
+                {
+                    $"===== FindShape 逐层性能 [{template.Name}] =====",
+                    $"建图耗时: {perfStats.BuildPyramidMs}ms, 总时间: {perfStats.TotalMs}ms"
+                };
+                perfLines.Add($"  Level  Image尺寸   点数   模式         候选数  搜索(ms)");
+                perfLines.Add($"  ────  ────────  ─────  ──────────  ──────  ────────");
+                foreach (var ls in perfStats.Levels)
+                {
+                    string mode = ls.IsFullSearch ? "FullSearch" : "RefineSearch";
+                    perfLines.Add(
+                        $"  {ls.Level,4}  {ls.ImageW,4}×{ls.ImageH,-4}  {ls.TemplatePointsUsed,5}  {mode,-10}  {ls.Candidates,6}  {ls.SearchMs,8}");
+                }
+                parameters.LogInfo(string.Join("\n", perfLines));
+            }
+
+            // 计算模板轮廓的质心（用于变换，使用模板固化参考点避免截断质心不一致）
+            var level0Points = pyramidPoints[0];
+            float centX = (float)template.ReferencePointX;
+            float centY = (float)template.ReferencePointY;
+            var contourPoints = level0Points
+                .Select(p => new OpenCvSharp.Point2f((float)p.X, (float)p.Y))
+                .ToList();
+
+            // 将 CvEngine 结果映射为 ShapeMatchResultItem
             var resultItems = new List<ShapeMatchResultItem>(matchResults.Count);
             foreach (var match in matchResults)
             {
-                // 根据匹配的质心位置和缩放/旋转变换模板轮廓
-                // 公式: transformed = (templatePoint - centroid) * scale * rotation + matchCenter
-                // 等价于 Halcon affine_trans_contour_xld
                 double cosA = Math.Cos(match.Angle * Math.PI / 180.0);
                 double sinA = Math.Sin(match.Angle * Math.PI / 180.0);
 
@@ -373,7 +407,6 @@ namespace SunEyeVision.Tool.ShapeMatch
                         (float)(rx * sinA + ry * cosA + match.CenterY));
                 }).ToList();
 
-                // 计算变换后的包围矩形
                 float minX = transformedContour.Min(p => p.X);
                 float maxX = transformedContour.Max(p => p.X);
                 float minY = transformedContour.Min(p => p.Y);
@@ -390,7 +423,7 @@ namespace SunEyeVision.Tool.ShapeMatch
                     TemplateId = template.Id,
                     BoundingBox = new OpenCvSharp.Rect2d(minX, minY, maxX - minX, maxY - minY),
                     ContourPoints = transformedContour,
-                    OriginalTemplateContour = contourPoints  // 保存原始模板轮廓
+                    OriginalTemplateContour = contourPoints
                 });
             }
 
@@ -527,18 +560,19 @@ namespace SunEyeVision.Tool.ShapeMatch
                     match.JudgmentPassed);
             }
 
-            // 轮廓叠加（匹配到的轮廓）
+            // 轮廓叠加（匹配到的轮廓 → 显示为点）
             foreach (var match in result.MatchedItems)
             {
                 if (match.ContourPoints != null && match.ContourPoints.Count > 0)
                 {
-                    display.AddContour(config.TemplateContourStyle,
-                        match.ContourPoints.Select(p => new OpenCvSharp.Point((int)p.X, (int)p.Y)).ToArray(),
-                        match.JudgmentPassed);
+                    display.AddPoints(config.TemplateContourStyle,
+                        match.ContourPoints.Select(p => new OpenCvSharp.Point2d(p.X, p.Y)).ToList(),
+                        Enumerable.Range(0, match.ContourPoints.Count)
+                            .Select(_ => match.JudgmentPassed).ToArray());
                 }
             }
 
-            // 模板参考轮廓（原始模板形状，显示在图像左上角用于对比）
+            // 模板参考轮廓（原始模板形状，显示在图像左上角用于对比 → 显示为点）
             bool hasTemplateRef = false;
             foreach (var match in result.MatchedItems)
             {
@@ -554,12 +588,12 @@ namespace SunEyeVision.Tool.ShapeMatch
                     float refY = 30;
 
                     var refPoints = match.OriginalTemplateContour
-                        .Select(p => new OpenCvSharp.Point(
-                            (int)(p.X - minX + refX),
-                            (int)(p.Y - minY + refY)))
-                        .ToArray();
+                        .Select(p => new OpenCvSharp.Point2d(
+                            p.X - minX + refX,
+                            p.Y - minY + refY))
+                        .ToList();
 
-                    display.AddContour(config.TemplateRefContourStyle, refPoints, true);
+                    display.AddPoints(config.TemplateRefContourStyle, refPoints, null);
 
                     // 添加"模板参考"文本标注
                     display.AddText(config.ScoreStyle, refX, refY - 8, "模板参考", true);
@@ -594,6 +628,17 @@ namespace SunEyeVision.Tool.ShapeMatch
             if (parameters == null)
                 return ValidationResult.Failure("参数不能为空");
             return parameters.Validate();
+        }
+
+        /// <summary>
+        /// 将图像归一化到 [0, 255] 范围并转为 CV_8U（用于 WPF 显示）
+        /// </summary>
+        private static Mat NormalizeForDisplay(Mat src)
+        {
+            var dst = new Mat();
+            Cv2.Normalize(src, dst, 0, 255, NormTypes.MinMax);
+            dst.ConvertTo(dst, MatType.CV_8U);
+            return dst;
         }
 
         /// <summary>

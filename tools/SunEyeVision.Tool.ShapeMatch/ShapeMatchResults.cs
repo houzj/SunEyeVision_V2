@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using OpenCvSharp;
@@ -18,6 +18,20 @@ namespace SunEyeVision.Tool.ShapeMatch
 
         /// <summary>合成显示图像（含匹配结果叠加）</summary>
         public Mat? OverlayImage { get; set; }
+
+        // ===== 调试中间图像（运行时生成，仅用于可视化，不参与序列化）=======
+        /// <summary>灰度输入图（ReduceDomain 后）</summary>
+        [System.Text.Json.Serialization.JsonIgnore]
+        public Mat? DebugGrayImage { get; set; }
+        /// <summary>搜索区域掩码（如果有）</summary>
+        [System.Text.Json.Serialization.JsonIgnore]
+        public Mat? DebugSearchRegionMask { get; set; }
+        /// <summary>梯度幅值图（Level 0）</summary>
+        [System.Text.Json.Serialization.JsonIgnore]
+        public Mat? DebugMagnitude { get; set; }
+        /// <summary>NMS 边缘图（Level 0）</summary>
+        [System.Text.Json.Serialization.JsonIgnore]
+        public Mat? DebugEdgeMap { get; set; }
 
         /// <summary>匹配到的结果列表</summary>
         public List<ShapeMatchResultItem> MatchedItems { get; set; } = new();
@@ -60,7 +74,19 @@ namespace SunEyeVision.Tool.ShapeMatch
                 images["InputImage"] = InputImage;
             if (OverlayImage != null && !OverlayImage.Empty())
                 images["OverlayImage"] = OverlayImage;
+
+            // 调试中间图像
+            AddIfValid(images, "DebugGray", DebugGrayImage);
+            AddIfValid(images, "DebugSearchRegionMask", DebugSearchRegionMask);
+            AddIfValid(images, "DebugMagnitude", DebugMagnitude);
+            AddIfValid(images, "DebugEdgeMap", DebugEdgeMap);
+
             return images;
+        }
+
+        private static void AddIfValid(Dictionary<string, Mat?> dict, string key, Mat? mat)
+        {
+            if (mat != null && !mat.Empty()) dict[key] = mat;
         }
 
         /// <summary>

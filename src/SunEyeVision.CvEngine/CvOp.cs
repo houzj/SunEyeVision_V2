@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using OpenCvSharp;
 using SunEyeVision.CvEngine.Models;
+using SunEyeVision.Plugin.SDK.Logging;
 
 namespace SunEyeVision.CvEngine
 {
@@ -1542,116 +1543,504 @@ namespace SunEyeVision.CvEngine
 
         #endregion
 
+        #region 🆕 形状匹配 - 梯度引擎（v3.0 新增）
+
+        /// <summary>形状匹配边缘点 — 对齐 Halcon ModelID 内部结构</summary>
+        public class EdgePoint
+        {
+            public double X { get; set; }
+            public double Y { get; set; }
+            public double Direction { get; set; }  // 弧度 [-π, π], atan2(Gy, Gx)
+            public double Magnitude { get; set; }  // 梯度幅值 sqrt(Gx²+Gy²)
+        }
+
+        // ==================== 共享基础梯度（模板创建 + 运行时 100% 相同）====================
+
+        /// <summary>
+        /// 形状匹配专用梯度提取 — Scharr 3×3 固定算子
+        /// 模板创建和运行时匹配完全相同的调用
+        /// 不使用 GaussianBlur 预处理
+        /// </summary>
+        public static void ComputeShapeGradient(Mat grayImage, out Mat gx, out Mat gy, out Mat mag)
+        {
+            gx = new Mat();
+            gy = new Mat();
+            Cv2.Scharr(grayImage, gx, MatType.CV_32F, 1, 0);
+            Cv2.Scharr(grayImage, gy, MatType.CV_32F, 0, 1);
+            mag = new Mat();
+            Cv2.Magnitude(gx, gy, mag);
+
+            // 归一化到 [0, 255]，对齐 VisionPro/Halcon 的对比度语义
+            // Scharr 系数和=16，8bit 图像最大梯度≈16×255=4080，归一化后：
+            // 微弱边缘~5，中等~50，强边缘~150+，极强~255
+            Cv2.MinMaxLoc(mag, out _, out double maxVal);
+            if (maxVal > 1e-6f)
+            {
+                double scale = 255.0 / maxVal;
+                mag.ConvertTo(mag, MatType.CV_32F, scale);
+            }
+        }
+
+        // ==================== 非极大值抑制（细线化到 1 像素）====================
+
+        /// <summary>
+        /// 非极大值抑制 — 沿梯度方向保留局部极大值，细线化到 1 像素
+        /// 使用双线性插值沿精确梯度方向采样，替代传统 4 方向离散比较
+        /// 等价于 Halcon 的 edges_sub_pix 细线化步骤（不含边缘提取）
+        /// </summary>
+        public static Mat ApplyNms(Mat mag, Mat gx, Mat gy, float contrast)
+        {
+            int w = mag.Width, h = mag.Height;
+            var nms = new Mat(h, w, MatType.CV_32F, Scalar.All(0f));
+            int total = w * h;
+            float[] nmsData = new float[total];
+            float[] magData = new float[total];
+            float[] gxData = new float[total];
+            float[] gyData = new float[total];
+            System.Runtime.InteropServices.Marshal.Copy(mag.Data, magData, 0, total);
+            System.Runtime.InteropServices.Marshal.Copy(gx.Data, gxData, 0, total);
+            System.Runtime.InteropServices.Marshal.Copy(gy.Data, gyData, 0, total);
+
+            for (int y = 1; y < h - 1; y++)
+            {
+                for (int x = 1; x < w - 1; x++)
+                {
+                    int idx = y * w + x;
+                    float m = magData[idx];
+                    float lowThresh = Math.Max(contrast, 1f);
+                    if (m < lowThresh) continue;
+
+                    float gxVal = gxData[idx];
+                    float gyVal = gyData[idx];
+
+                    // ★ 双线性插值 NMS：沿精确梯度方向采样，不量化到 4 个固定方向
+                    double angle = Math.Atan2(gyVal, gxVal);
+                    double dx = Math.Cos(angle);
+                    double dy = Math.Sin(angle);
+
+                    float m1 = BilinearInterpolate(magData, w, h, x + dx, y + dy);
+                    float m2 = BilinearInterpolate(magData, w, h, x - dx, y - dy);
+
+                    if (m >= m1 && m >= m2)
+                        nmsData[idx] = m;
+                }
+            }
+
+            System.Runtime.InteropServices.Marshal.Copy(nmsData, 0, nms.Data, nmsData.Length);
+            return nms;
+        }
+
+        /// <summary>
+        /// 双线性插值 — 在浮点坐标处采样 float 数组值
+        /// 越界时返回 0（等效于零填充）
+        /// </summary>
+        private static float BilinearInterpolate(float[] data, int w, int h, double fx, double fy)
+        {
+            int x0 = (int)Math.Floor(fx);
+            int y0 = (int)Math.Floor(fy);
+            int x1 = x0 + 1;
+            int y1 = y0 + 1;
+
+            // 边界钳位：越界返回 0
+            if (x0 < 0 || x0 >= w || y0 < 0 || y0 >= h) return 0f;
+            if (x1 < 0 || x1 >= w || y1 < 0 || y1 >= h) return 0f;
+
+            double wx = fx - Math.Floor(fx);
+            double wy = fy - Math.Floor(fy);
+
+            return (float)(
+                data[y0 * w + x0] * (1 - wx) * (1 - wy) +
+                data[y0 * w + x1] * wx * (1 - wy) +
+                data[y1 * w + x0] * (1 - wx) * wy +
+                data[y1 * w + x1] * wx * wy
+            );
+        }
+
+
+        // ==================== 收集边缘点（统一 FindContours 提取 + 长度变动率断崖链长过滤）====================
+
+        /// <summary>
+        /// 从 NMS 结果中收集所有边缘点
+        /// 使用 FindContours 统一完成提取和链长过滤，消除双系统语义不一致
+        /// Auto 模式下使用长度变动率断崖算法自适应计算链长阈值
+        /// </summary>
+        public static List<EdgePoint> CollectEdgePoints(Mat nms, Mat gx, Mat gy,
+            bool autoMinChainLength, int manualMinChainLength, out int actualChainLength,
+            int closingRadius = 0)
+        {
+            actualChainLength = 0;
+            int total = (int)nms.Total();
+            int w = nms.Width;
+
+            // 1. NMS → 二值图
+            using var binaryNms = new Mat();
+            Cv2.Threshold(nms, binaryNms, 0.001, 255, ThresholdTypes.Binary);
+            binaryNms.ConvertTo(binaryNms, MatType.CV_8U);
+
+            // ★ 2. 闭运算 — 桥接 NMS 断裂的弱边缘碎片（默认不启用）
+            //     原理：先膨胀（连接相邻碎片）→ 再腐蚀（恢复原细度）
+            //     radius=1 → 3×3 椭圆核，桥接间隔 ≤1 个像素的断裂点
+            if (closingRadius > 0)
+            {
+                using var kernel = Cv2.GetStructuringElement(
+                    MorphShapes.Ellipse, new Size(2 * closingRadius + 1, 2 * closingRadius + 1));
+                Cv2.MorphologyEx(binaryNms, binaryNms, MorphTypes.Close, kernel);
+            }
+
+            // 3. FindContours 获取所有独立轮廓
+            Cv2.FindContours(binaryNms, out Point[][] contours, out _,
+                RetrievalModes.List, ContourApproximationModes.ApproxNone);
+
+            if (contours.Length == 0) return new List<EdgePoint>();
+
+            // 4. 提取各轮廓链长并计算阈值
+            int[] chainLengths = contours.Select(c => c.Length).ToArray();
+            int threshold = autoMinChainLength
+                ? ComputeCliffThreshold(chainLengths)
+                : manualMinChainLength;
+            actualChainLength = threshold;
+
+            // 5. 读取梯度数据用于构造 EdgePoint
+            float[] nmsData = new float[total];
+            float[] gxData = new float[total];
+            float[] gyData = new float[total];
+            System.Runtime.InteropServices.Marshal.Copy(nms.Data, nmsData, 0, total);
+            System.Runtime.InteropServices.Marshal.Copy(gx.Data, gxData, 0, total);
+            System.Runtime.InteropServices.Marshal.Copy(gy.Data, gyData, 0, total);
+
+            // 6. 从满足链长条件的轮廓中构造 EdgePoint
+            var result = new List<EdgePoint>();
+            for (int i = 0; i < contours.Length; i++)
+            {
+                if (chainLengths[i] >= threshold)
+                {
+                    foreach (Point pt in contours[i])
+                    {
+                        int idx = pt.Y * w + pt.X;
+                        result.Add(new EdgePoint
+                        {
+                            X = pt.X,
+                            Y = pt.Y,
+                            Direction = Math.Atan2(gyData[idx], gxData[idx]),
+                            Magnitude = nmsData[idx]
+                        });
+                    }
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 空间均匀散布选取特征点 — 替代 Top25% 幅值截断
+        /// 按幅值降序排列后，逐点检查与已选点是否距离过近，确保特征点在空间上均匀散布
+        /// </summary>
+        /// <param name="candidates">候选边缘点列表</param>
+        /// <param name="maxPoints">最多选取点数</param>
+        /// <param name="minDist">最小间距（像素），默认 3.0</param>
+        public static List<EdgePoint> SelectScatteredFeatures(
+            List<EdgePoint> candidates, int maxPoints, float minDist = 3.0f)
+        {
+            if (candidates.Count <= maxPoints) return candidates;
+
+            var sorted = candidates.OrderByDescending(p => p.Magnitude).ToList();
+            var selected = new List<EdgePoint>(maxPoints) { sorted[0] };
+            float minDistSq = minDist * minDist;
+
+            foreach (var pt in sorted.Skip(1))
+            {
+                if (selected.Count >= maxPoints) break;
+                bool tooClose = false;
+                foreach (var sel in selected)
+                {
+                    float dx = (float)(pt.X - sel.X);
+                    float dy = (float)(pt.Y - sel.Y);
+                    if (dx * dx + dy * dy < minDistSq) { tooClose = true; break; }
+                }
+                if (!tooClose) selected.Add(pt);
+            }
+
+            // 后备：不够则按幅值补满
+            if (selected.Count < maxPoints)
+            {
+                foreach (var pt in sorted)
+                {
+                    if (selected.Count >= maxPoints) break;
+                    if (!selected.Contains(pt)) selected.Add(pt);
+                }
+            }
+            return selected;
+        }
+
+        /// <summary>
+        /// 取唯一链长升序排序后 20% 分位值作为链长阈值
+        ///
+        /// 全部链长参与去重排序，取 20% 分位值过滤最短的噪声轮廓。
+        /// 不需要预过滤碎片噪声，也不需要复杂的断崖检测策略。
+        ///
+        /// 示例：
+        ///   连续分布 [50, 51, ..., 210] (Count=161)
+        ///   → index=32, unique[32]=82 ← 过滤最短 32 种链长
+        /// </summary>
+        private static int ComputeCliffThreshold(int[] chainLengths)
+        {
+            var unique = chainLengths.Distinct().OrderBy(v => v).ToList();
+            if (unique.Count <= 1) return unique[0];
+            int index = (int)(unique.Count * 0.2);
+            return unique[index];
+        }
+
+        /// <summary>
+        /// 从梯度幅值图自动计算对比度阈值（Otsu 最大类间方差法）
+        ///
+        /// 算法：
+        ///   1. 构建梯度幅值直方图 [0, 255]
+        ///   2. 只对非零像素（hist[1..255]）执行 Otsu 二值化
+        ///   3. 寻找使类间方差 σ² = ω₀·ω₁·(μ₀-μ₁)² 最大的阈值
+        ///   4. 下界 3 压制噪声，上界 250 避免全边缘图像过分割
+        ///
+        /// 优势：自适应分割弱纹理与强边缘，不依赖固定百分位参数
+        /// 前提：mag 应先归一化到 [0, 255]（ComputeShapeGradient 已内置归一化）
+        /// </summary>
+        public static float AutoComputeContrast(Mat mag)
+        {
+            int total = (int)mag.Total();
+            if (total == 0) return 30f;
+
+            float[] data = new float[total];
+            System.Runtime.InteropServices.Marshal.Copy(mag.Data, data, 0, total);
+
+            // 构建梯度幅值直方图 [0, 255]，四舍五入分桶
+            int[] hist = new int[256];
+            int nonZeroCount = 0;
+            float dataMin = 255f, dataMax = 0f;
+            for (int i = 0; i < total; i++)
+            {
+                int bin = Math.Min(255, (int)Math.Round(data[i], MidpointRounding.AwayFromZero));
+                if (bin > 0)
+                {
+                    nonZeroCount++;
+                    if (data[i] > dataMax) dataMax = data[i];
+                    if (data[i] < dataMin) dataMin = data[i];
+                }
+                hist[bin]++;
+            }
+
+            if (nonZeroCount < 10)
+            {
+                VisionLogger.Instance.Warning(
+                    $"AutoComputeContrast: 非零像素不足——nonZeroCount={nonZeroCount} < 10，返回 3。 " +
+                    $"total={total}, minNonZero={dataMin:F2}, max={dataMax:F2}",
+                    "CvOp");
+                return 3f;
+            }
+
+            // Otsu 最大类间方差法（仅对非零像素 hist[1..255]）
+            double globalMean = 0;
+            for (int b = 1; b < 256; b++)
+                globalMean += (double)b * hist[b];
+            globalMean /= nonZeroCount;
+
+            double maxVariance = -1;
+            int bestThreshold = 1;
+            int sumB = 0;           // 前 t 个 bin 累计像素数
+            double sumBWeighted = 0; // 前 t 个 bin 累计加权和
+
+            for (int t = 1; t < 255; t++)
+            {
+                sumB += hist[t];
+                if (sumB == 0) continue;           // 空类，跳过
+                sumBWeighted += (double)t * hist[t];
+
+                double w0 = (double)sumB / nonZeroCount;  // 前景占比
+                double w1 = 1.0 - w0;                      // 背景占比
+                double mu0 = sumBWeighted / sumB;           // 前景均值
+                double mu1 = (globalMean - w0 * mu0) / w1;  // 背景均值
+                double variance = w0 * w1 * (mu0 - mu1) * (mu0 - mu1);
+
+                if (variance > maxVariance)
+                {
+                    maxVariance = variance;
+                    bestThreshold = t;
+                }
+            }
+
+            // 钳位到 [3, 250]
+            float result = Math.Max(3f, Math.Min(250f, (float)bestThreshold));
+            VisionLogger.Instance.Info(
+                $"AutoComputeContrast: Otsu——bestThreshold={bestThreshold}, 钳位后={result:F1}。 " +
+                $"total={total}, nonZeroCount={nonZeroCount}, minNonZero={dataMin:F2}, max={dataMax:F2}",
+                "CvOp");
+            return result;
+        }
+
+        #endregion
+
         #region 🔍 形状匹配 - 响应图引擎
 
         /// <summary>
-        /// 形状匹配 - 响应图查表引擎（从 atan2+sqrt+cos 实时计算升级为预计算查表）
+        /// 形状匹配 - 响应图查表引擎（使用每层独立边缘点金字塔）
         /// </summary>
-        /// <remarks>
-        /// 核心优化：
-        ///   1. 预计算 8 张 uint8 响应图（方向量化 0~7，45°/bin）
-        ///   2. 匹配时纯 byte 查表 + int 累加，零浮点/三角运算
-        ///   3. 粗层自动放大角度步长（2x~3x）和缩放步长（2x~4x）
-        ///   4. 粗层搜索步长 8px，细层 2px
-        ///
-        /// 预期加速比 100x~1000x（从 30s+ 降至 ~10ms）
-        /// </remarks>
         public static void FindShape(
             Mat grayImage,
-            List<Point2f> normalizedTemplateContour,
-            double[] templateDirections,
+            Dictionary<int, List<EdgePoint>> pyramidEdgePoints,
             double minScore,
             double angleStart, double angleEnd, double angleStep,
             double scaleMin, double scaleMax, double scaleStep,
-            int pyramidLevels,
+            int pyramidStart,
+            int pyramidEnd,
             int timeoutMs,
             out List<ShapeMatchResult> matchResults,
-            int speedScale = 0)
+            out MatchPerformanceStats perfStats)
         {
             matchResults = new List<ShapeMatchResult>();
+            perfStats = new MatchPerformanceStats
+            {
+                TotalTemplatePoints = pyramidEdgePoints?.GetValueOrDefault(0)?.Count ?? 0
+            };
 
             if (grayImage == null || grayImage.Empty()) return;
-            if (normalizedTemplateContour == null || normalizedTemplateContour.Count < 3) return;
-            if (templateDirections == null || templateDirections.Length != normalizedTemplateContour.Count) return;
+            if (pyramidEdgePoints == null || pyramidEdgePoints.Count == 0) return;
 
-            var stopwatch = Stopwatch.StartNew();
+            var overallSw = Stopwatch.StartNew();
 
-            // ===== Step 1: 量化模板方向到 byte 0~7（8 个 bin，45°/bin）=====
-            byte[] quantizedDirs = QuantizeDirectionsToByte(templateDirections);
-            int tmplCount = normalizedTemplateContour.Count;
+            // ===== Step 1: 确定建造层数 =====
+            int buildLevels = pyramidStart + 1;
 
-            // ===== Step 2: 确定金字塔层数 =====
-            int actualPyramidLevels;
-            if (speedScale > 0)
-            {
-                int totalLevels = Math.Min(speedScale + 1, 6);
-                actualPyramidLevels = pyramidLevels > 0
-                    ? Math.Min(pyramidLevels, totalLevels)
-                    : totalLevels;
-            }
-            else
-            {
-                actualPyramidLevels = pyramidLevels > 0
-                    ? pyramidLevels
-                    : AutoPyramidLevels(grayImage.Width, grayImage.Height);
-            }
+            // ===== Step 2: 构建响应图金字塔（跳过 < pyramidEnd 的层级） =====
+            var buildSw = Stopwatch.StartNew();
+            var pyramid = BuildResponsePyramid(grayImage, buildLevels, pyramidEnd);
+            buildSw.Stop();
+            perfStats.BuildPyramidMs = buildSw.ElapsedMilliseconds;
+            perfStats.PyramidLevelCount = pyramid.Count;
 
-            // ===== Step 3: 构建响应图金字塔 =====
-            var pyramid = BuildResponsePyramid(grayImage, actualPyramidLevels);
+            int actualMaxLevel = Math.Min(pyramidStart, pyramid.Count - 1);
 
-            // ===== Step 4: 由粗到精搜索 =====
+            // ===== Step 3: 由粗到精搜索 =====
             List<(double Score, int X, int Y, double Angle, double Scale)>? prevCandidates = null;
 
-            for (int level = actualPyramidLevels - 1; level >= 0; level--)
+            for (int level = actualMaxLevel; level >= pyramidEnd; level--)
             {
-                if (stopwatch.ElapsedMilliseconds > timeoutMs) break;
+                if (overallSw.ElapsedMilliseconds > timeoutMs) break;
 
                 var levelData = pyramid[level];
                 if (levelData.ResponseMaps == null) continue;
 
-                double levelScale = 1.0 / Math.Pow(2.0, level);
-                bool isCoarsest = (level == actualPyramidLevels - 1);
-                bool isFinest = (level == 0);
+                bool isCoarsest = (level == actualMaxLevel);
+                bool isFinest = (level == pyramidEnd);
+
+                // ★ 每层使用该层独立提取的边缘点（非全分辨率几何缩放）
+                if (!pyramidEdgePoints.TryGetValue(level, out var levelPoints))
+                    throw new InvalidOperationException(
+                        $"FindShape: 金字塔 Level {level} 边缘点数据缺失" +
+                        $" (范围: {pyramidEnd}~{pyramidStart})");
+
+                if (levelPoints.Count < 3)
+                {
+                    prevCandidates = null;
+                    continue;
+                }
+
+                // ★ 粗层边缘点降采样 — 使用空间均匀散布选取替代 Top25% 截断
+                int maxPointsForLevel = level switch
+                {
+                    4 => 80,
+                    3 => 150,
+                    2 => 300,
+                    1 => 600,
+                    _ => 0  // Level 0: 0 = 按百分比自动截断
+                };
+                int autoCap = maxPointsForLevel == 0
+                    ? Math.Max(levelPoints.Count / 4, 400)
+                    : maxPointsForLevel;
+                if (levelPoints.Count > autoCap)
+                {
+                    levelPoints = SelectScatteredFeatures(levelPoints, autoCap);
+                }
+
+                byte[] quantizedDirs = QuantizeEdgePointsDirections(levelPoints);
+                int tmplCount = levelPoints.Count;
+
+                // 从该层点集提取归一化轮廓（质心居中）
+                float centX = (float)levelPoints.Average(p => p.X);
+                float centY = (float)levelPoints.Average(p => p.Y);
+                var normalizedContour = levelPoints
+                    .Select(p => new Point2f((float)(p.X - centX), (float)(p.Y - centY)))
+                    .ToList();
 
                 var candidates = new List<(double Score, int X, int Y, double Angle, double Scale)>();
+                bool isFullSearch = (prevCandidates == null || prevCandidates.Count == 0);
 
-                if (prevCandidates == null || prevCandidates.Count == 0)
+                var searchSw = Stopwatch.StartNew();
+
+                if (isFullSearch)
                 {
-                    // ===== 最粗层：宽松阈值 + 大步长 =====
                     double coarseMinScore = Math.Max(minScore * 0.5, 0.1);
                     double coarseAngleStep = Math.Max(angleStep * (isCoarsest ? 3 : 2), 5.0);
                     double coarseScaleStep = Math.Max(scaleStep * (isCoarsest ? 4 : 2), 0.02);
 
                     FullSearchOnResponseMaps(levelData.ResponseMaps, levelData.Width, levelData.Height,
-                        normalizedTemplateContour, quantizedDirs,
+                        normalizedContour, quantizedDirs,
                         coarseMinScore, angleStart, angleEnd, coarseAngleStep,
                         scaleMin, scaleMax, coarseScaleStep,
-                        levelScale, 8, candidates, stopwatch, timeoutMs);
+                        8, candidates, overallSw, timeoutMs);
+
+                    // ★ P2: Cascade 退化保护 — 当前层无候选时以小步幅重试
+                    if (candidates.Count == 0 && level > pyramidEnd)
+                    {
+                        double fallbackScore = Math.Max(coarseMinScore * 0.5, 0.05);
+                        int finerStep = Math.Max(8 / 2, 4);
+                        candidates.Clear();
+                        FullSearchOnResponseMaps(levelData.ResponseMaps, levelData.Width, levelData.Height,
+                            normalizedContour, quantizedDirs,
+                            fallbackScore, angleStart, angleEnd, coarseAngleStep,
+                            scaleMin, scaleMax, coarseScaleStep,
+                            finerStep, candidates, overallSw, timeoutMs);
+                    }
+
+                    // ★ P3: 级联终止 — 粗层 FullSearch(+Fallback) 仍无候选则无需更细层
+                    if (candidates.Count == 0 && level > pyramidEnd)
+                        break;
                 }
                 else
                 {
                     double levelMinScore = isFinest ? minScore : minScore * 0.7;
 
                     RefineSearchOnResponseMaps(levelData.ResponseMaps, levelData.Width, levelData.Height,
-                        normalizedTemplateContour, quantizedDirs,
+                        normalizedContour, quantizedDirs,
                         levelMinScore, 2, candidates, prevCandidates,
-                        levelScale, stopwatch, timeoutMs);
+                        angleStep, scaleStep, overallSw, timeoutMs);
                 }
 
-                if (level > 0 && candidates.Count > 100)
+                searchSw.Stop();
+
+                if (level > pyramidEnd && candidates.Count > 100)
                 {
                     candidates = candidates.OrderByDescending(c => c.Score).Take(100).ToList();
                 }
 
+                // ★ 记录本层性能统计
+                perfStats.Levels.Add(new MatchPerformanceStats.LevelStats
+                {
+                    Level = level,
+                    ImageW = levelData.Width,
+                    ImageH = levelData.Height,
+                    TemplatePointsUsed = levelPoints.Count,
+                    SearchMs = searchSw.ElapsedMilliseconds,
+                    Candidates = candidates.Count,
+                    IsFullSearch = isFullSearch
+                });
+
                 if (isFinest)
                 {
+                    // 结果坐标在 level 的降采样空间，缩放到 Level 0（全分辨率）坐标
+                    double coordScale = 1 << level; // 2^level
                     foreach (var (score, x, y, ang, scl) in candidates)
                     {
                         matchResults.Add(new ShapeMatchResult
                         {
                             Score = score,
-                            CenterX = x,
-                            CenterY = y,
+                            CenterX = x * coordScale,
+                            CenterY = y * coordScale,
                             Angle = ang,
                             Scale = scl
                         });
@@ -1669,6 +2058,7 @@ namespace SunEyeVision.CvEngine
             }
 
             matchResults = matchResults.OrderByDescending(r => r.Score).ToList();
+            perfStats.TotalMs = overallSw.ElapsedMilliseconds;
         }
 
         #endregion
@@ -1783,11 +2173,11 @@ namespace SunEyeVision.CvEngine
 
         #region 私有辅助 — 形状匹配（响应图引擎）
 
-        private const int DIRECTION_BINS = 8;
-        private const double BIN_ANGLE_DEG = 45.0;
+        private const int DIRECTION_BINS = 16;
+        private const double BIN_ANGLE_DEG = 360.0 / DIRECTION_BINS; // 22.5°
 
         /// <summary>
-        /// 方向相似度 LUT 8x8（byte 0~255，预乘避免 float 运算）
+        /// 方向相似度 LUT（byte 0~255，预乘避免 float 运算）
         /// </summary>
         private static readonly byte[,] DIRECTION_LUT = BuildDirectionLut();
 
@@ -1817,109 +2207,139 @@ namespace SunEyeVision.CvEngine
         }
 
         /// <summary>
+        /// 形状匹配每层性能统计
+        /// </summary>
+        public class MatchPerformanceStats
+        {
+            public int TotalTemplatePoints { get; set; }
+            public int PyramidLevelCount { get; set; }
+            public long BuildPyramidMs { get; set; }
+
+            public class LevelStats
+            {
+                public int Level { get; set; }
+                public int ImageW { get; set; }
+                public int ImageH { get; set; }
+                public int TemplatePointsUsed { get; set; }
+                public long SearchMs { get; set; }
+                public int Candidates { get; set; }
+                public bool IsFullSearch { get; set; }
+            }
+
+            public List<LevelStats> Levels { get; set; } = new();
+            public long TotalMs { get; set; }
+        }
+
+        /// <summary>
         /// 响应图金字塔层级数据
         /// </summary>
         private struct ResponsePyramidLevel
         {
-            public byte[][] ResponseMaps { get; set; } // 8 x [height * width]
+            public ushort[][] ResponseMaps { get; set; } // 8 x [height * width]
             public int Width { get; set; }
             public int Height { get; set; }
         }
 
-        /// <summary>
-        /// 自动计算合适的金字塔层数
-        /// </summary>
-        private static int AutoPyramidLevels(int width, int height)
-        {
-            int minDim = Math.Min(width, height);
-            int levels = 0;
-            while (minDim > 64 && levels < 4)
-            {
-                minDim /= 2;
-                levels++;
-            }
-            return Math.Max(1, levels);
-        }
 
         /// <summary>
-        /// 将 double 弧度方向向量量化为 byte 0~7
+        /// 从 EdgePoint 列表量化方向到 byte 0~(DIRECTION_BINS-1)
         /// </summary>
-        private static byte[] QuantizeDirectionsToByte(double[] directions)
+        private static byte[] QuantizeEdgePointsDirections(List<EdgePoint> edgePoints)
         {
-            byte[] quantized = new byte[directions.Length];
-            for (int i = 0; i < directions.Length; i++)
+            byte[] quantized = new byte[edgePoints.Count];
+            double binRad = 2.0 * Math.PI / DIRECTION_BINS;
+            for (int i = 0; i < edgePoints.Count; i++)
             {
-                double angle = directions[i]; // 弧度 [-π, π]
+                double angle = edgePoints[i].Direction;
                 if (angle < 0) angle += 2 * Math.PI;
-                quantized[i] = (byte)(angle / (Math.PI / 4.0) % DIRECTION_BINS);
+                quantized[i] = (byte)(angle / binRad % DIRECTION_BINS);
             }
             return quantized;
         }
 
         /// <summary>
-        /// 根据 Gx/Gy 量化方向到 0~7（无 atan2）
+        /// 根据 Gx/Gy 量化方向到 0~(DIRECTION_BINS-1)（使用 atan2）
         /// </summary>
-        private static int QuantizeDirectionFast(float gx, float gy)
+        private static int QuantizeDirectionAtan2(float gx, float gy)
         {
-            if (gx >= 0)
-            {
-                if (gy >= 0) return (gy > gx) ? 1 : 0; // NE vs E
-                else return (-gy > gx) ? 7 : 0; // SE vs E
-            }
-            else
-            {
-                if (gy >= 0) return (gy > -gx) ? 3 : 2; // NW vs N
-                else return (-gy > -gx) ? 5 : 4; // SW vs W
-            }
+            double angle = Math.Atan2(gy, gx); // [-π, π]
+            if (angle < 0) angle += 2 * Math.PI;
+            double binRad = 2.0 * Math.PI / DIRECTION_BINS;
+            return (int)(angle / binRad) % DIRECTION_BINS;
         }
 
         /// <summary>
-        /// 构建响应图金字塔（响应图 = 预乘 LUT 的 uint8 梯度幅值图 x 8）
+        /// 构建响应图金字塔（响应图 = 预乘 LUT 的 ushort 梯度幅值图 x 8）
         /// </summary>
-        private static List<ResponsePyramidLevel> BuildResponsePyramid(Mat grayImage, int levels)
+        private static List<ResponsePyramidLevel> BuildResponsePyramid(Mat grayImage, int levels, int minLevel = 0)
         {
             var pyramid = new List<ResponsePyramidLevel>(levels);
             using var current = grayImage.Clone();
 
             for (int i = 0; i < levels; i++)
             {
-                using var gx = new Mat();
-                using var gy = new Mat();
-                Cv2.Sobel(current, gx, MatType.CV_32F, 1, 0, 3);
-                Cv2.Sobel(current, gy, MatType.CV_32F, 0, 1, 3);
-
-                int w = gx.Width;
-                int h = gy.Height;
-                int total = w * h;
-
-                var maps = new byte[DIRECTION_BINS][];
-                for (int b = 0; b < DIRECTION_BINS; b++)
-                    maps[b] = new byte[total];
-
-                for (int y = 0; y < h; y++)
+                if (i >= minLevel)
                 {
-                    for (int x = 0; x < w; x++)
+                    using var gx = new Mat();
+                    using var gy = new Mat();
+                    Cv2.Scharr(current, gx, MatType.CV_32F, 1, 0);
+                    Cv2.Scharr(current, gy, MatType.CV_32F, 0, 1);
+
+                    int w = gx.Width;
+                    int h = gy.Height;
+                    int total = w * h;
+
+                    float[] gxData = new float[total];
+                    float[] gyData = new float[total];
+                    System.Runtime.InteropServices.Marshal.Copy(gx.Data, gxData, 0, total);
+                    System.Runtime.InteropServices.Marshal.Copy(gy.Data, gyData, 0, total);
+
+                    var maps = new ushort[DIRECTION_BINS][];
+                    for (int b = 0; b < DIRECTION_BINS; b++)
+                        maps[b] = new ushort[total];
+
+                    const byte INVALID_DIR = 255;
+                    for (int y = 0; y < h; y++)
                     {
-                        float gxVal = gx.At<float>(y, x);
-                        float gyVal = gy.At<float>(y, x);
-                        float mag = (float)Math.Sqrt(gxVal * gxVal + gyVal * gyVal);
-                        if (mag < 5.0f) continue;
+                        for (int x = 0; x < w; x++)
+                        {
+                            int idx = y * w + x;
+                            float gxVal = gxData[idx];
+                            float gyVal = gyData[idx];
+                            float mag = (float)Math.Sqrt(gxVal * gxVal + gyVal * gyVal);
 
-                        int qdir = QuantizeDirectionFast(gxVal, gyVal);
-                        byte bMag = (byte)Math.Min(mag, 255.0f);
-                        int idx = y * w + x;
+                            // 低梯度像素标记为无效方向，maps[dt][idx] 保持 0
+                            byte qdir = mag >= 1.0f
+                                ? (byte)QuantizeDirectionAtan2(gxVal, gyVal)
+                                : INVALID_DIR;
 
-                        for (int dt = 0; dt < DIRECTION_BINS; dt++)
-                            maps[dt][idx] = (byte)((bMag * DIRECTION_LUT[dt, qdir]) >> 8);
+                            // ★ 仅存储方向相似度(0~255)，不含梯度幅值
+                            //   标准做法: score = (1/N) × Σ cos(θt - θi)，与对比度无关
+                            if (qdir != INVALID_DIR)
+                            {
+                                for (int dt = 0; dt < DIRECTION_BINS; dt++)
+                                    maps[dt][idx] = DIRECTION_LUT[dt, qdir];
+                            }
+                        }
                     }
-                }
 
-                pyramid.Add(new ResponsePyramidLevel
+                    pyramid.Add(new ResponsePyramidLevel
+                    {
+                        ResponseMaps = maps,
+                        Width = w,
+                        Height = h
+                    });
+                }
+                else
                 {
-                    ResponseMaps = maps,
-                    Width = w,
-                    Height = h
-                });
+                    // 跳过响应图建造（仅用于 PyrDown 传播到下一层）
+                    pyramid.Add(new ResponsePyramidLevel
+                    {
+                        ResponseMaps = null,
+                        Width = 0,
+                        Height = 0
+                    });
+                }
 
                 if (i < levels - 1)
                 {
@@ -1932,21 +2352,22 @@ namespace SunEyeVision.CvEngine
         }
 
         /// <summary>
-        /// 全图搜索最粗层 — 纯 byte 查表匹配
+        /// 全图搜索最粗层 — 纯 ushort 查表匹配
         /// </summary>
         private static void FullSearchOnResponseMaps(
-            byte[][] responseMaps, int imgW, int imgH,
+            ushort[][] responseMaps, int imgW, int imgH,
             List<Point2f> normalizedContour, byte[] quantizedTemplateDirs,
             double minScore,
             double angleStart, double angleEnd, double angleStep,
             double scaleMin, double scaleMax, double scaleStep,
-            double levelScale, int stepSize,
+            int stepSize,
             List<(double Score, int X, int Y, double Angle, double Scale)> candidates,
             Stopwatch stopwatch, int timeoutMs)
         {
             int tmplCount = normalizedContour.Count;
             if (tmplCount < 3) return;
 
+            // ★ 归一化分母 = N × 255（LUT 值域上限），确保 score ∈ [0, 1]，与数据位深无关
             double normalizer = 1.0 / (tmplCount * 255.0);
             int angleSteps = Math.Max(1, (int)Math.Ceiling((angleEnd - angleStart) / angleStep));
             int scaleSteps = Math.Max(1, (int)Math.Ceiling((scaleMax - scaleMin) / scaleStep));
@@ -1957,13 +2378,13 @@ namespace SunEyeVision.CvEngine
 
                 double scale = Math.Clamp(scaleMin + si * scaleStep, scaleMin, scaleMax);
 
-                // 预计算缩放后的轮廓坐标（int 精度）
+                // 预计算缩放后的轮廓坐标（int 精度，使用 Math.Round 避免向零截断）
                 int[] sxPos = new int[tmplCount];
                 int[] syPos = new int[tmplCount];
                 for (int ti = 0; ti < tmplCount; ti++)
                 {
-                    sxPos[ti] = (int)(normalizedContour[ti].X * scale * levelScale);
-                    syPos[ti] = (int)(normalizedContour[ti].Y * scale * levelScale);
+                    sxPos[ti] = (int)Math.Round(normalizedContour[ti].X * scale);
+                    syPos[ti] = (int)Math.Round(normalizedContour[ti].Y * scale);
                 }
 
                 for (int ai = 0; ai < angleSteps; ai++)
@@ -1987,8 +2408,8 @@ namespace SunEyeVision.CvEngine
 
                     for (int ti = 0; ti < tmplCount; ti++)
                     {
-                        int rxi = (int)(sxPos[ti] * cosA - syPos[ti] * sinA);
-                        int ryi = (int)(sxPos[ti] * sinA + syPos[ti] * cosA);
+                        int rxi = (int)Math.Round(sxPos[ti] * cosA - syPos[ti] * sinA);
+                        int ryi = (int)Math.Round(sxPos[ti] * sinA + syPos[ti] * cosA);
                         rx[ti] = rxi;
                         ry[ti] = ryi;
                         if (rxi < minTx) minTx = rxi;
@@ -2013,21 +2434,33 @@ namespace SunEyeVision.CvEngine
 
                     for (int sy = searchSY; sy <= searchEY; sy += stepSize)
                     {
-                        int rowBase = sy * imgW;
                         for (int sx = searchSX; sx <= searchEX; sx += stepSize)
                         {
                             int sum = 0;
-                            for (int ti = 0; ti < tmplCount; ti++)
+                            int ti;
+                            for (ti = 0; ti < tmplCount; ti++)
                             {
                                 int px = sx + rx[ti];
                                 int py = sy + ry[ti];
                                 if ((uint)px < (uint)imgW && (uint)py < (uint)imgH)
                                     sum += responseMaps[rotatedMap[ti]][py * imgW + px];
+
+                                // 提前终止: 剩余点全拿满分也达不到阈值
+                                int remaining = tmplCount - ti - 1;
+                                double maxPossible = (sum + remaining * 255) * normalizer;
+                                if (maxPossible < minScore)
+                                {
+                                    sum = -1;
+                                    break;
+                                }
                             }
 
-                            double score = sum * normalizer;
-                            if (score >= minScore)
-                                candidates.Add((score, sx, sy, angleDeg, scale));
+                            if (sum >= 0)
+                            {
+                                double score = sum * normalizer;
+                                if (score >= minScore)
+                                    candidates.Add((score, sx, sy, angleDeg, scale));
+                            }
                         }
                     }
                 }
@@ -2035,204 +2468,118 @@ namespace SunEyeVision.CvEngine
         }
 
         /// <summary>
-        /// 邻域精化搜索 — 在前一粗层候选位置邻域内查表匹配
+        /// 邻域精化搜索 — 在前一粗层候选位置 + 角度 + 缩放 三维邻域内查表匹配
         /// </summary>
         private static void RefineSearchOnResponseMaps(
-            byte[][] responseMaps, int imgW, int imgH,
+            ushort[][] responseMaps, int imgW, int imgH,
             List<Point2f> normalizedContour, byte[] quantizedTemplateDirs,
             double minScore, int stepSize,
             List<(double Score, int X, int Y, double Angle, double Scale)> candidates,
             List<(double Score, int X, int Y, double Angle, double Scale)> prevCandidates,
-            double levelScale,
+            double angleStep, double scaleStep,
             Stopwatch stopwatch, int timeoutMs)
         {
             int tmplCount = normalizedContour.Count;
             if (tmplCount < 3) return;
 
+            // ★ 归一化分母 = N × 255（LUT 值域上限），确保 score ∈ [0, 1]，与数据位深无关
             double normalizer = 1.0 / (tmplCount * 255.0);
             int searchRadius = Math.Max(stepSize * 2, 6);
+            const double ANGLE_MARGIN_FACTOR = 1.5;
+            const double SCALE_MARGIN_FACTOR = 1.5;
 
-            // 按 (Angle, Scale) 分组
-            var groups = prevCandidates
-                .GroupBy(c => ((int)(c.Angle / 0.5), (int)(c.Scale / 0.01)))
-                .Select(g => g.ToList())
-                .ToList();
-
-            foreach (var group in groups)
+            // 不分组, 逐候选搜索, 每个候选在三维邻域内精化
+            foreach (var prev in prevCandidates)
             {
                 if (stopwatch.ElapsedMilliseconds > timeoutMs) break;
 
-                var first = group[0];
-                double angleDeg = first.Angle;
-                double angleRad = angleDeg * Math.PI / 180.0;
-                double cosA = Math.Cos(angleRad);
-                double sinA = Math.Sin(angleRad);
-                double scale = first.Scale;
+                double refAngle = prev.Angle;
+                double refScale = prev.Scale;
 
-                // 旋转方向 bin
-                int angleBinShift = (int)Math.Round(angleDeg / BIN_ANGLE_DEG);
-                angleBinShift = ((angleBinShift % DIRECTION_BINS) + DIRECTION_BINS) % DIRECTION_BINS;
+                // 角度邻域: [refAngle - margin, refAngle + margin]
+                double aStart = refAngle - angleStep * ANGLE_MARGIN_FACTOR;
+                double aEnd = refAngle + angleStep * ANGLE_MARGIN_FACTOR;
+                int aSteps = Math.Max(1, (int)((aEnd - aStart) / angleStep) + 1);
 
-                // 缩放 + 旋转轮廓（同组共享）
-                int[] rx = new int[tmplCount];
-                int[] ry = new int[tmplCount];
-                for (int ti = 0; ti < tmplCount; ti++)
+                // 缩放邻域: [refScale - margin, refScale + margin]
+                double sStart = refScale - scaleStep * SCALE_MARGIN_FACTOR;
+                double sEnd = refScale + scaleStep * SCALE_MARGIN_FACTOR;
+                int sSteps = Math.Max(1, (int)((sEnd - sStart) / scaleStep) + 1);
+
+                for (int si = 0; si < sSteps; si++)
                 {
-                    float sx = (float)(normalizedContour[ti].X * scale * levelScale);
-                    float sy = (float)(normalizedContour[ti].Y * scale * levelScale);
-                    rx[ti] = (int)(sx * cosA - sy * sinA);
-                    ry[ti] = (int)(sx * sinA + sy * cosA);
-                }
+                    double scale = sStart + si * scaleStep;
+                    if (scale <= 0) continue;
 
-                var rotatedMap = new int[tmplCount];
-                for (int ti = 0; ti < tmplCount; ti++)
-                    rotatedMap[ti] = (quantizedTemplateDirs[ti] + angleBinShift) % DIRECTION_BINS;
-
-                foreach (var prev in group)
-                {
-                    if (stopwatch.ElapsedMilliseconds > timeoutMs) break;
-
-                    int centerX = prev.X * 2;
-                    int centerY = prev.Y * 2;
-
-                    int xStart = Math.Max(0, centerX - searchRadius);
-                    int xEnd = Math.Min(imgW - 1, centerX + searchRadius);
-                    int yStart = Math.Max(0, centerY - searchRadius);
-                    int yEnd = Math.Min(imgH - 1, centerY + searchRadius);
-
-                    for (int sy = yStart; sy <= yEnd; sy += stepSize)
+                    for (int ai = 0; ai < aSteps; ai++)
                     {
-                        int rowBase = sy * imgW;
-                        for (int sx = xStart; sx <= xEnd; sx += stepSize)
-                        {
-                            int sum = 0;
-                            for (int ti = 0; ti < tmplCount; ti++)
-                            {
-                                int px = sx + rx[ti];
-                                int py = sy + ry[ti];
-                                if ((uint)px < (uint)imgW && (uint)py < (uint)imgH)
-                                    sum += responseMaps[rotatedMap[ti]][py * imgW + px];
-                            }
+                        if (stopwatch.ElapsedMilliseconds > timeoutMs) break;
 
-                            double score = sum * normalizer;
-                            if (score >= minScore)
-                                candidates.Add((score, sx, sy, angleDeg, scale));
+                        double angleDeg = aStart + ai * angleStep;
+                        double angleRad = angleDeg * Math.PI / 180.0;
+                        double cosA = Math.Cos(angleRad);
+                        double sinA = Math.Sin(angleRad);
+
+                        int angleBinShift = (int)Math.Round(angleDeg / BIN_ANGLE_DEG);
+                        angleBinShift = ((angleBinShift % DIRECTION_BINS) + DIRECTION_BINS) % DIRECTION_BINS;
+
+                        // 缩放 + 旋转轮廓（使用 Math.Round 避免向零截断）
+                        int[] rx = new int[tmplCount];
+                        int[] ry = new int[tmplCount];
+                        for (int ti = 0; ti < tmplCount; ti++)
+                        {
+                            float sx = (float)(normalizedContour[ti].X * scale);
+                            float sy = (float)(normalizedContour[ti].Y * scale);
+                            rx[ti] = (int)Math.Round(sx * cosA - sy * sinA);
+                            ry[ti] = (int)Math.Round(sx * sinA + sy * cosA);
+                        }
+
+                        var rotatedMap = new int[tmplCount];
+                        for (int ti = 0; ti < tmplCount; ti++)
+                            rotatedMap[ti] = (quantizedTemplateDirs[ti] + angleBinShift) % DIRECTION_BINS;
+
+                        int centerX = prev.X * 2;
+                        int centerY = prev.Y * 2;
+
+                        int xStart = Math.Max(0, centerX - searchRadius);
+                        int xEnd = Math.Min(imgW - 1, centerX + searchRadius);
+                        int yStart = Math.Max(0, centerY - searchRadius);
+                        int yEnd = Math.Min(imgH - 1, centerY + searchRadius);
+
+                        for (int sy = yStart; sy <= yEnd; sy += stepSize)
+                        {
+                            for (int sx = xStart; sx <= xEnd; sx += stepSize)
+                            {
+                                int sum = 0;
+                                int ti;
+                                for (ti = 0; ti < tmplCount; ti++)
+                                {
+                                    int px = sx + rx[ti];
+                                    int py = sy + ry[ti];
+                                    if ((uint)px < (uint)imgW && (uint)py < (uint)imgH)
+                                        sum += responseMaps[rotatedMap[ti]][py * imgW + px];
+
+                                    // 提前终止: 剩余点全拿满分也达不到阈值
+                                    int remaining = tmplCount - ti - 1;
+                                    double maxPossible = (sum + remaining * 255) * normalizer;
+                                    if (maxPossible < minScore)
+                                    {
+                                        sum = -1;
+                                        break;
+                                    }
+                                }
+
+                                if (sum >= 0)
+                                {
+                                    double score = sum * normalizer;
+                                    if (score >= minScore)
+                                        candidates.Add((score, sx, sy, angleDeg, scale));
+                                }
+                            }
                         }
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// 亚像素轮廓细化 — 沿梯度方向抛物线插值修正轮廓点到亚像素精度
-        /// </summary>
-        /// <param name="grayImage">原始灰度图（用于计算梯度）</param>
-        /// <param name="pixelContours">像素级轮廓点集（每个 Point[] 为一组封闭/非封闭轮廓）</param>
-        /// <param name="apertureSize">Sobel 孔径（3/5/7）</param>
-        /// <returns>亚像素级轮廓点集（Point2f 数组）</returns>
-        public static List<Point2f[]> RefineContoursToSubPixel(Mat grayImage, List<Point[]> pixelContours, int apertureSize = 3)
-        {
-            if (grayImage == null || grayImage.Empty() || pixelContours == null || pixelContours.Count == 0)
-                return pixelContours?.Select(c => c.Select(p => new Point2f(p.X, p.Y)).ToArray()).ToList() ?? new List<Point2f[]>();
-
-            // 计算 Sobel 梯度
-            using var gradX = new Mat();
-            using var gradY = new Mat();
-            Cv2.Sobel(grayImage, gradX, MatType.CV_32F, 1, 0, apertureSize);
-            Cv2.Sobel(grayImage, gradY, MatType.CV_32F, 0, 1, apertureSize);
-
-            int imgW = grayImage.Width;
-            int imgH = grayImage.Height;
-
-            var result = new List<Point2f[]>(pixelContours.Count);
-
-            foreach (var contour in pixelContours)
-            {
-                var refined = new Point2f[contour.Length];
-                for (int i = 0; i < contour.Length; i++)
-                {
-                    int px = contour[i].X;
-                    int py = contour[i].Y;
-
-                    // 边界点不修正
-                    if (px < 1 || px >= imgW - 1 || py < 1 || py >= imgH - 1)
-                    {
-                        refined[i] = new Point2f(px, py);
-                        continue;
-                    }
-
-                    // 计算梯度方向（归一化）
-                    float gx = gradX.At<float>(py, px);
-                    float gy = gradY.At<float>(py, px);
-                    float mag = (float)Math.Sqrt(gx * gx + gy * gy);
-                    if (mag < 1e-6f)
-                    {
-                        refined[i] = new Point2f(px, py);
-                        continue;
-                    }
-
-                    float nx = gx / mag;
-                    float ny = gy / mag;
-
-                    // 沿梯度方向 ±1 像素处采样梯度幅值（双线性插值）
-                    float m0 = SampleGradientMag(gradX, gradY, px, py, imgW, imgH);
-                    float m1 = SampleGradientMag(gradX, gradY, px - nx, py - ny, imgW, imgH);
-                    float m2 = SampleGradientMag(gradX, gradY, px + nx, py + ny, imgW, imgH);
-
-                    // 抛物线插值: d = (m2 - m1) / (2 * (2*m0 - m1 - m2))
-                    float denominator = 2 * (2 * m0 - m1 - m2);
-                    float subPixelOffset;
-                    if (Math.Abs(denominator) > 1e-10f)
-                    {
-                        subPixelOffset = (m2 - m1) / denominator;
-                        // 限制偏移量在 ±0.5 像素内，防止发散
-                        subPixelOffset = Math.Clamp(subPixelOffset, -0.5f, 0.5f);
-                    }
-                    else
-                    {
-                        subPixelOffset = 0;
-                    }
-
-                    refined[i] = new Point2f(px + subPixelOffset * nx, py + subPixelOffset * ny);
-                }
-                result.Add(refined);
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// 在指定位置采样梯度幅值（双线性插值）
-        /// </summary>
-        private static float SampleGradientMag(Mat gradX, Mat gradY, float x, float y, int imgW, int imgH)
-        {
-            // 边界截断
-            if (x < 0 || x >= imgW || y < 0 || y >= imgH)
-                return 0;
-
-            int ix = (int)x;
-            int iy = (int)y;
-            float fx = x - ix;
-            float fy = y - iy;
-
-            // 限制采样区域不越界
-            int ix1 = Math.Min(ix + 1, imgW - 1);
-            int iy1 = Math.Min(iy + 1, imgH - 1);
-
-            // 4 邻域双线性插值
-            float gx00 = gradX.At<float>(iy, ix);
-            float gy00 = gradY.At<float>(iy, ix);
-            float gx10 = gradX.At<float>(iy, ix1);
-            float gy10 = gradY.At<float>(iy, ix1);
-            float gx01 = gradX.At<float>(iy1, ix);
-            float gy01 = gradY.At<float>(iy1, ix);
-            float gx11 = gradX.At<float>(iy1, ix1);
-            float gy11 = gradY.At<float>(iy1, ix1);
-
-            float gx = gx00 * (1 - fx) * (1 - fy) + gx10 * fx * (1 - fy) + gx01 * (1 - fx) * fy + gx11 * fx * fy;
-            float gy = gy00 * (1 - fx) * (1 - fy) + gy10 * fx * (1 - fy) + gy01 * (1 - fx) * fy + gy11 * fx * fy;
-
-            return (float)Math.Sqrt(gx * gx + gy * gy);
         }
 
         #endregion

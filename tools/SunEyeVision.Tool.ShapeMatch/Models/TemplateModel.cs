@@ -2,20 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
-using OpenCvSharp;
+using SunEyeVision.CvEngine;
 using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 
 namespace SunEyeVision.Tool.ShapeMatch.Models
 {
-    public enum ContourApproxMethod
-    {
-        None = 0,
-        ApproxPolyDP = 1,
-        UniformResample = 2,
-        ApproxPolyDPAndResample = 3
-    }
-
     public enum SortMode
     {
         None = 0,
@@ -42,8 +34,15 @@ namespace SunEyeVision.Tool.ShapeMatch.Models
         Failed = 3
     }
 
+    // ============ 参数模式枚举 ============
+    public enum ScaleMode { Auto, Manual }
+    public enum ThresholdMode { Auto, Manual }
+    public enum ChainLengthMode { Auto, Manual }
+
     /// <summary>
-    /// 模板数据模型
+    /// 模板数据模型（v4.0）
+    /// 使用 Scharr+NMS 梯度引擎，存储扁平 EdgePoint 列表
+    /// 参数对齐 VM 布局：尺度模式/阈值模式/链长模式
     /// </summary>
     [JsonDerivedType(typeof(TemplateModel), "TemplateModel")]
     public class TemplateModel : ObservableObject
@@ -52,32 +51,38 @@ namespace SunEyeVision.Tool.ShapeMatch.Models
         private string _name = string.Empty;
         private bool _isEnabled = true;
         private int _orderIndex;
-        private int _smoothKernelSize = 3;
-        private int _edgeLowThreshold = 50;
-        private int _edgeHighThreshold = 150;
-        private int _edgeApertureSize = 3;
-        private ContourApproxMethod _approxMethod = ContourApproxMethod.ApproxPolyDP;
-        private double _approxPrecision = 2.0;
-        private int _minChainLength = 8;
-        private double _minArea = 50.0;
-        private int _retrievalMode = 0; // 0=External(最外层), 1=List(层次结构)
-        private bool _useL2Gradient = true;
-        private bool _useSubPixel = false;
-        private List<List<Point2D>>? _contourGroups;
-        private double _contourWidth;
-        private double _contourHeight;
-        private double _centerX;
-        private double _centerY;
-        private int _targetPointCount = 60;
+
+        // ============ v4.0 创建参数（7个，对齐VM）============
+        private ScaleMode _scaleMode = ScaleMode.Auto;
+        private int _speedScale = 4;        // 0~9，仅 Manual 有效
+        private int _featureScale = 0;      // 0~9，仅 Manual 有效
+        private ThresholdMode _thresholdMode = ThresholdMode.Auto;
+        private float _contrast = 30f;      // 1~255，仅 Manual 有效
+        private ChainLengthMode _chainLengthMode = ChainLengthMode.Auto;
+        private int _minChainLength = 10;   // 0~200，仅 Manual 有效
+
         private TemplateExtractionStatus _extractionStatus = TemplateExtractionStatus.NotExtracted;
         private List<RegionData> _inspectionRegions = new();
         private List<RegionData> _maskRegions = new();
-        private List<List<double>>? _contourDirectionGroups;
+        private List<CvOp.EdgePoint>? _edgePoints;
+        private Dictionary<int, List<CvOp.EdgePoint>>? _pyramidEdgePoints;
+        private byte[]? _sourceImageBytes;
+        private double _referencePointX;
+        private double _referencePointY;
 
         public string Id { get => _id; set => SetProperty(ref _id, value); }
         public string Name { get => _name; set => SetProperty(ref _name, value, "名称"); }
         public bool IsEnabled { get => _isEnabled; set => SetProperty(ref _isEnabled, value, "启用"); }
         public int OrderIndex { get => _orderIndex; set => SetProperty(ref _orderIndex, value); }
+
+        // ============ 创建参数属性 ============
+        public ScaleMode ScaleMode { get => _scaleMode; set => SetProperty(ref _scaleMode, value); }
+        public int SpeedScale { get => _speedScale; set => SetProperty(ref _speedScale, value, "速度尺度"); }
+        public int FeatureScale { get => _featureScale; set => SetProperty(ref _featureScale, value, "特征尺度"); }
+        public ThresholdMode ThresholdMode { get => _thresholdMode; set => SetProperty(ref _thresholdMode, value); }
+        public float Contrast { get => _contrast; set => SetProperty(ref _contrast, value, "对比度"); }
+        public ChainLengthMode ChainLengthMode { get => _chainLengthMode; set => SetProperty(ref _chainLengthMode, value); }
+        public int MinChainLength { get => _minChainLength; set => SetProperty(ref _minChainLength, value, "最小链长"); }
 
         public List<RegionData> InspectionRegions
         {
@@ -91,218 +96,62 @@ namespace SunEyeVision.Tool.ShapeMatch.Models
             set => SetProperty(ref _maskRegions, value);
         }
 
-        public int SmoothKernelSize
-        {
-            get => _smoothKernelSize;
-            set => SetProperty(ref _smoothKernelSize, value, "平滑核大小");
-        }
-
-        public int EdgeLowThreshold
-        {
-            get => _edgeLowThreshold;
-            set => SetProperty(ref _edgeLowThreshold, value, "低阈值");
-        }
-
-        public int EdgeHighThreshold
-        {
-            get => _edgeHighThreshold;
-            set => SetProperty(ref _edgeHighThreshold, value, "高阈值");
-        }
-
-        public int EdgeApertureSize
-        {
-            get => _edgeApertureSize;
-            set => SetProperty(ref _edgeApertureSize, value, "孔径");
-        }
-
-        public ContourApproxMethod ApproxMethod
-        {
-            get => _approxMethod;
-            set => SetProperty(ref _approxMethod, value, "近似方法");
-        }
-
-        public double ApproxPrecision
-        {
-            get => _approxPrecision;
-            set => SetProperty(ref _approxPrecision, value, "精度");
-        }
-
-        public int TargetPointCount
-        {
-            get => _targetPointCount;
-            set => SetProperty(ref _targetPointCount, value, "目标点数");
-        }
-
-        public int MinChainLength
-        {
-            get => _minChainLength;
-            set => SetProperty(ref _minChainLength, value, "最小链长");
-        }
-
-        public double MinArea
-        {
-            get => _minArea;
-            set => SetProperty(ref _minArea, value, "最小面积");
-        }
-
-        public int RetrievalMode
-        {
-            get => _retrievalMode;
-            set => SetProperty(ref _retrievalMode, value, "轮廓检索模式");
-        }
-
-        public bool UseL2Gradient
-        {
-            get => _useL2Gradient;
-            set => SetProperty(ref _useL2Gradient, value, "L2梯度");
-        }
-
-        public bool UseSubPixel
-        {
-            get => _useSubPixel;
-            set => SetProperty(ref _useSubPixel, value, "亚像素轮廓");
-        }
-
-        public List<List<Point2D>>? ContourGroups
-        {
-            get => _contourGroups;
-            set => SetProperty(ref _contourGroups, value);
-        }
-
-        /// <summary>
-        /// 每个轮廓组对应的图像梯度方向（弧度），在模板创建时从模板图像的 Sobel 梯度提取。
-        /// 与 ContourGroups 一一对应，每组长度一致。
-        /// 使用实际图像梯度方向（法线方向）而非轮廓几何反算，消除 90° 偏移.
-        /// 模板创建时若未提取则为 null，运行时必需。
-        /// </summary>
-        public List<List<double>>? ContourDirectionGroups
-        {
-            get => _contourDirectionGroups;
-            set => SetProperty(ref _contourDirectionGroups, value);
-        }
-
-        public double ContourWidth { get => _contourWidth; set => SetProperty(ref _contourWidth, value); }
-        public double ContourHeight { get => _contourHeight; set => SetProperty(ref _contourHeight, value); }
-        public double CenterX { get => _centerX; set => SetProperty(ref _centerX, value); }
-        public double CenterY { get => _centerY; set => SetProperty(ref _centerY, value); }
-
         public TemplateExtractionStatus ExtractionStatus
         {
             get => _extractionStatus;
             set => SetProperty(ref _extractionStatus, value, "提取状态");
         }
 
-        [JsonIgnore]
-        public int ContourPointCount => _contourGroups?.Sum(g => g.Count) ?? 0;
-
-        private int _contourGroupCount = 1;
-
-        /// <summary>轮廓组数量（多轮廓模式下有效，单轮廓默认为1）</summary>
-        public int ContourGroupCount
+        /// <summary>第 0 层（全分辨率）边缘点列表</summary>
+        public List<CvOp.EdgePoint>? EdgePoints
         {
-            get => _contourGroupCount;
-            set => SetProperty(ref _contourGroupCount, value);
+            get => _edgePoints;
+            set => SetProperty(ref _edgePoints, value);
         }
 
-        private byte[]? _sourceImageBytes;
+        /// <summary>各金字塔层边缘点: key=Level</summary>
+        public Dictionary<int, List<CvOp.EdgePoint>>? PyramidEdgePoints
+        {
+            get => _pyramidEdgePoints;
+            set => SetProperty(ref _pyramidEdgePoints, value);
+        }
 
-        /// <summary>
-        /// 创建模板时的原始图像（PNG无损），用于离线预览和编辑恢复。
-        /// 在 ExecuteContourExtraction(saveResult:true) 中从 _currentMat 提取。
-        /// 序列化为 Base64 存储在 .solution 文件中。
-        /// </summary>
+        /// <summary>创建模板时的原始图像（PNG无损）</summary>
         public byte[]? SourceImageBytes
         {
             get => _sourceImageBytes;
             set => SetProperty(ref _sourceImageBytes, value);
         }
 
-        /// <summary>
-        /// 等距重采样 — 沿轮廓路径等弧长间隔取点，精确控制目标点数
-        /// </summary>
-        public static Point2f[] ResampleContour(OpenCvSharp.Point[] contour, int targetCount)
+        /// <summary>固化参考点 X（模板创建时由 EdgePoints 质心计算）</summary>
+        public double ReferencePointX
         {
-            if (contour.Length <= targetCount || targetCount < 3)
-                return contour.Select(p => new Point2f(p.X, p.Y)).ToArray();
+            get => _referencePointX;
+            set => SetProperty(ref _referencePointX, value);
+        }
 
-            return ComputeUniformResample(contour.Length, targetCount, i =>
-            {
-                int idx = Math.Min(i, contour.Length - 1);
-                return (contour[idx].X, contour[idx].Y);
-            });
+        /// <summary>固化参考点 Y（模板创建时由 EdgePoints 质心计算）</summary>
+        public double ReferencePointY
+        {
+            get => _referencePointY;
+            set => SetProperty(ref _referencePointY, value);
+        }
+
+        [JsonIgnore]
+        public int EdgePointCount => _edgePoints?.Count ?? 0;
+
+        /// <summary>
+        /// 根据当前 EdgePoints 设置参考点（模板创建/编辑后调用一次）
+        /// </summary>
+        public void SetReferencePoint()
+        {
+            if (_edgePoints == null || _edgePoints.Count == 0) return;
+            ReferencePointX = _edgePoints.Average(p => p.X);
+            ReferencePointY = _edgePoints.Average(p => p.Y);
         }
 
         /// <summary>
-        /// 等距重采样（Point2f 重载）— 用于亚像素轮廓
-        /// </summary>
-        public static Point2f[] ResampleContour(Point2f[] contour, int targetCount)
-        {
-            if (contour.Length <= targetCount || targetCount < 3)
-                return contour.ToArray();
-
-            return ComputeUniformResample(contour.Length, targetCount, i =>
-            {
-                int idx = Math.Min(i, contour.Length - 1);
-                return (contour[idx].X, contour[idx].Y);
-            });
-        }
-
-        /// <summary>
-        /// 等距重采样核心算法 — 沿路径等弧长间隔取点
-        /// </summary>
-        private static Point2f[] ComputeUniformResample(int length, int targetCount, Func<int, (double X, double Y)> getPoint)
-        {
-            double totalLength = 0;
-            var prev = getPoint(0);
-            for (int i = 1; i < length; i++)
-            {
-                var curr = getPoint(i);
-                double dx = curr.X - prev.X;
-                double dy = curr.Y - prev.Y;
-                totalLength += Math.Sqrt(dx * dx + dy * dy);
-                prev = curr;
-            }
-
-            if (totalLength <= 0)
-            {
-                var pts = new Point2f[length];
-                for (int i = 0; i < length; i++)
-                {
-                    var p = getPoint(i);
-                    pts[i] = new Point2f((float)p.X, (float)p.Y);
-                }
-                return pts;
-            }
-
-            double interval = totalLength / targetCount;
-
-            var result = new List<Point2f>(targetCount);
-            var start = getPoint(0);
-            result.Add(new Point2f((float)start.X, (float)start.Y));
-
-            double accumulated = 0;
-            prev = getPoint(0);
-            for (int i = 1; i < length && result.Count < targetCount; i++)
-            {
-                var curr = getPoint(i);
-                double dx = curr.X - prev.X;
-                double dy = curr.Y - prev.Y;
-                double segLen = Math.Sqrt(dx * dx + dy * dy);
-                accumulated += segLen;
-
-                while (accumulated >= interval && result.Count < targetCount)
-                {
-                    result.Add(new Point2f((float)curr.X, (float)curr.Y));
-                    accumulated -= interval;
-                }
-                prev = curr;
-            }
-
-            return result.ToArray();
-        }
-
-        /// <summary>
-        /// 深拷贝当前模板（用于编辑模式下的取消回退）
+        /// 深拷贝当前模板
         /// </summary>
         public TemplateModel DeepClone()
         {
@@ -312,33 +161,34 @@ namespace SunEyeVision.Tool.ShapeMatch.Models
                 Name = _name,
                 IsEnabled = _isEnabled,
                 OrderIndex = _orderIndex,
-                SmoothKernelSize = _smoothKernelSize,
-                EdgeLowThreshold = _edgeLowThreshold,
-                EdgeHighThreshold = _edgeHighThreshold,
-                EdgeApertureSize = _edgeApertureSize,
-                ApproxMethod = _approxMethod,
-                ApproxPrecision = _approxPrecision,
-                TargetPointCount = _targetPointCount,
+                ScaleMode = _scaleMode,
+                SpeedScale = _speedScale,
+                FeatureScale = _featureScale,
+                ThresholdMode = _thresholdMode,
+                Contrast = _contrast,
+                ChainLengthMode = _chainLengthMode,
                 MinChainLength = _minChainLength,
-                MinArea = _minArea,
-                RetrievalMode = _retrievalMode,
-                UseL2Gradient = _useL2Gradient,
-                UseSubPixel = _useSubPixel,
                 ExtractionStatus = _extractionStatus,
-                ContourWidth = _contourWidth,
-                ContourHeight = _contourHeight,
-                CenterX = _centerX,
-                CenterY = _centerY,
-                ContourGroupCount = _contourGroupCount,
-                ContourGroups = _contourGroups?.Select(g => g.Select(p => new Point2D { X = p.X, Y = p.Y }).ToList()).ToList(),
-                ContourDirectionGroups = _contourDirectionGroups?.Select(g => g.ToList()).ToList(),
+                EdgePoints = _edgePoints?.Select(p => new CvOp.EdgePoint
+                {
+                    X = p.X, Y = p.Y,
+                    Direction = p.Direction, Magnitude = p.Magnitude
+                }).ToList(),
+                PyramidEdgePoints = _pyramidEdgePoints?.ToDictionary(
+                    kv => kv.Key,
+                    kv => kv.Value.Select(p => new CvOp.EdgePoint
+                    {
+                        X = p.X, Y = p.Y,
+                        Direction = p.Direction, Magnitude = p.Magnitude
+                    }).ToList()),
                 SourceImageBytes = _sourceImageBytes?.ToArray(),
                 InspectionRegions = _inspectionRegions.Select(r => (RegionData)r.Clone()).ToList(),
-                MaskRegions = _maskRegions.Select(r => (RegionData)r.Clone()).ToList()
+                MaskRegions = _maskRegions.Select(r => (RegionData)r.Clone()).ToList(),
+                ReferencePointX = _referencePointX,
+                ReferencePointY = _referencePointY
             };
             return clone;
         }
-
     }
 
     /// <summary>
@@ -347,7 +197,6 @@ namespace SunEyeVision.Tool.ShapeMatch.Models
     public class PerModelParamOverride : ObservableObject
     {
         private string _templateId = string.Empty;
-        private int? _pyramidLevels;
         private double? _minMatchScore;
         private int? _maxMatchCount;
         private int? _matchTimeoutMs;
@@ -362,7 +211,6 @@ namespace SunEyeVision.Tool.ShapeMatch.Models
         private double? _subPixelRadius;
 
         public string TemplateId { get => _templateId; set => SetProperty(ref _templateId, value); }
-        public int? PyramidLevels { get => _pyramidLevels; set => SetProperty(ref _pyramidLevels, value); }
         public double? MinMatchScore { get => _minMatchScore; set => SetProperty(ref _minMatchScore, value); }
         public int? MaxMatchCount { get => _maxMatchCount; set => SetProperty(ref _maxMatchCount, value); }
         public int? MatchTimeoutMs { get => _matchTimeoutMs; set => SetProperty(ref _matchTimeoutMs, value); }

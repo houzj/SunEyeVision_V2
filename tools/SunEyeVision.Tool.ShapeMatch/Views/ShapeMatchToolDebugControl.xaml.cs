@@ -7,6 +7,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using OpenCvSharp;
+using OpenCvSharp.WpfExtensions;
+using SunEyeVision.CvEngine;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Logging;
@@ -214,12 +216,51 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
 
             var runParams = (ShapeMatchParameters)Parameters!;
             runParams.ResolvedInputImage = imageMat;
-            return shapeTool.Run(runParams);
+            var result = shapeTool.Run(runParams);
+
+            // 刷新中间调试图像
+            if (result is ShapeMatchResults shapeResult)
+            {
+                RefreshDebugImages(shapeResult);
+            }
+
+            return result;
         }
 
         protected override bool CanExecuteTool()
         {
             return Parameters?.ImageSource != null && _dataProvider != null;
+        }
+
+        /// <summary>
+        /// 刷新中间调试图像预览
+        /// </summary>
+        private void RefreshDebugImages(ShapeMatchResults result)
+        {
+            SetImageSource(imgDebugGray, result.DebugGrayImage);
+            SetImageSource(imgDebugMagnitude, result.DebugMagnitude);
+            SetImageSource(imgDebugSearchMask, result.DebugSearchRegionMask);
+            SetImageSource(imgDebugEdgeMap, result.DebugEdgeMap);
+        }
+
+        private static void SetImageSource(System.Windows.Controls.Image? image, Mat? mat)
+        {
+            if (image == null) return;
+            if (mat == null || mat.Empty())
+            {
+                image.Source = null;
+                return;
+            }
+            try
+            {
+                var bmp = mat.ToBitmapSource();
+                bmp?.Freeze();
+                image.Source = bmp;
+            }
+            catch
+            {
+                image.Source = null;
+            }
         }
 
         #endregion
@@ -235,7 +276,7 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
                 result.OrderIndex = Parameters?.Templates?.Count ?? 0;
                 Parameters?.Templates?.Add(result);
 
-                PluginLogger.Info($"[创建模板] {result.Name} (ID={result.Id}) | 点数={result.ContourPointCount}", "ShapeMatchTool");
+                PluginLogger.Info($"[创建模板] {result.Name} (ID={result.Id}) | 点数={result.EdgePointCount}", "ShapeMatchTool");
 
                 if (templateListView != null)
                 {
@@ -302,49 +343,12 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
             if (dialog.ShowDialog() == true)
             {
                 var result = dialog.GetResultTemplate();
-                if (result != null && existing == null)
+                // 编辑模式下 _resultTemplate = existing（直接引用，无深拷贝）
+                // 新建模式下 _resultTemplate 是新对象
+                if (result != null)
                 {
+                    PluginLogger.Success($"[编辑模板] 已更新: {result.Name} | 点数={result.EdgePointCount}", "ShapeMatchTool");
                     return result;
-                }
-                else if (result != null && existing != null)
-                {
-                    // LoadExistingTemplate 已将 _resultTemplate 设为 existing，
-                    // OnOkClick 已原地修改了所有属性，result 就是 existing 本身。
-                    // 只有非同一对象时才需要复制回去（保留防御性代码避免未来重构出问题）
-                    if (!ReferenceEquals(result, existing))
-                    {
-                        existing.Name = result.Name;
-                        existing.ContourGroups = result.ContourGroups;
-                        existing.ContourDirectionGroups = result.ContourDirectionGroups;
-                        existing.SmoothKernelSize = result.SmoothKernelSize;
-                        existing.EdgeLowThreshold = result.EdgeLowThreshold;
-                        existing.EdgeHighThreshold = result.EdgeHighThreshold;
-                        existing.EdgeApertureSize = result.EdgeApertureSize;
-                        existing.ApproxMethod = result.ApproxMethod;
-                        existing.ApproxPrecision = result.ApproxPrecision;
-                        existing.TargetPointCount = result.TargetPointCount;
-                        existing.MinChainLength = result.MinChainLength;
-                        existing.MinArea = result.MinArea;
-                        existing.RetrievalMode = result.RetrievalMode;
-                        existing.UseL2Gradient = result.UseL2Gradient;
-                        existing.UseSubPixel = result.UseSubPixel;
-                        existing.ContourGroupCount = result.ContourGroupCount;
-                        existing.ExtractionStatus = result.ExtractionStatus;
-                        existing.ContourWidth = result.ContourWidth;
-                        existing.ContourHeight = result.ContourHeight;
-                        existing.CenterX = result.CenterX;
-                        existing.CenterY = result.CenterY;
-                        existing.InspectionRegions.Clear();
-                        foreach (var insp in result.InspectionRegions)
-                            existing.InspectionRegions.Add(insp);
-                        existing.MaskRegions.Clear();
-                        foreach (var mask in result.MaskRegions)
-                            existing.MaskRegions.Add(mask);
-                        existing.SourceImageBytes = result.SourceImageBytes;
-                    }
-
-                    PluginLogger.Success($"[编辑模板] 已更新: {existing.Name} | 点数={existing.ContourPointCount}", "ShapeMatchTool");
-                    return existing;
                 }
             }
 
@@ -490,11 +494,11 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
                 TemplateExtractionStatus.NotExtracted => "○ 未提取",
                 _ => "--"
             };
-            rightPointCountText.Text = template.ContourPointCount.ToString();
-            rightSizeText.Text = $"{template.ContourWidth:F0} x {template.ContourHeight:F0}";
+            rightPointCountText.Text = template.EdgePointCount.ToString();
+            rightSizeText.Text = $"{template.EdgePointCount}pt";
 
             // 缓存命中直接返回
-            var cacheKey = $"{template.Id}_{template.ContourPointCount}";
+            var cacheKey = $"{template.Id}_{template.EdgePointCount}";
             if (_previewCache.TryGetValue(cacheKey, out var cached))
             {
                 previewImage.Source = cached;
@@ -614,9 +618,9 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
                     {
                         var cropped = new CroppedBitmap(sourceImg, new Int32Rect(cropX, cropY, cropWidth, cropHeight));
 
-                        if (template.ContourGroups != null && template.ContourGroups.Count > 0)
+                        if (template.EdgePoints != null && template.EdgePoints.Count > 0)
                         {
-                            var preview = BuildContourPreview(cropped, template.ContourGroups, cropX, cropY);
+                            var preview = BuildEdgePointPreview(cropped, template.EdgePoints, cropX, cropY);
                             _previewCache[cacheKey] = preview;
                             previewImage.Source = preview;
                         }
@@ -642,11 +646,11 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
         }
 
         /// <summary>
-        /// 将裁切的图像与轮廓点叠加为 DrawingImage，所有轮廓合并到单个 StreamGeometry
+        /// 将裁切的图像与边缘点叠加为 DrawingImage
         /// </summary>
-        private static System.Windows.Media.ImageSource BuildContourPreview(
+        private static System.Windows.Media.ImageSource BuildEdgePointPreview(
             System.Windows.Media.ImageSource background,
-            List<List<Point2D>> contourGroups,
+            List<CvOp.EdgePoint> edgePoints,
             int offsetX, int offsetY)
         {
             var drawing = new System.Windows.Media.DrawingGroup();
@@ -654,23 +658,17 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
             {
                 dc.DrawImage(background, new System.Windows.Rect(0, 0, background.Width, background.Height));
 
-                if (contourGroups.Count > 0)
+                if (edgePoints.Count > 0)
                 {
-                    var pen = new System.Windows.Media.Pen(System.Windows.Media.Brushes.Lime, 2.0);
-                    var geometry = new System.Windows.Media.StreamGeometry();
-                    using (var ctx = geometry.Open())
+                    // 每个边缘点画一个实心圆点，不连接成轮廓线
+                    double dotRadius = 1.5;
+                    var dotBrush = System.Windows.Media.Brushes.Lime;
+                    foreach (var point in edgePoints)
                     {
-                        foreach (var group in contourGroups)
-                        {
-                            if (group.Count < 2) continue;
-                            var first = new System.Windows.Point(group[0].X - offsetX, group[0].Y - offsetY);
-                            ctx.BeginFigure(first, false, false);
-                            for (int i = 1; i < group.Count; i++)
-                                ctx.LineTo(new System.Windows.Point(group[i].X - offsetX, group[i].Y - offsetY), true, true);
-                        }
+                        double x = point.X - offsetX;
+                        double y = point.Y - offsetY;
+                        dc.DrawEllipse(dotBrush, null, new System.Windows.Point(x, y), dotRadius, dotRadius);
                     }
-                    geometry.Freeze();
-                    dc.DrawGeometry(null, pen, geometry);
                 }
             }
             drawing.Freeze();

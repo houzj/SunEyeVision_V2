@@ -99,13 +99,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
         {
             options ??= new RegionRenderOptions();
 
-            var sw = System.Diagnostics.Stopwatch.StartNew();
-
-            // 记录渲染开始
-            VisionLogger.Instance.Log(LogLevel.Info,
-                $"[WpfShapeRenderer.Render] 渲染开始 | InstanceId={_rendererInstanceId} | InputRegions={regions.Count()} | ShapePool={_shapePool.Count} | LabelPool={_labelPool.Count} | HelperPool={_helperPool.Count}",
-                "WpfShapeRenderer");
-
             // 获取当前可见区域的ID集合
             var visibleRegions = new List<RegionRenderContext>();
             foreach (var region in regions)
@@ -127,12 +120,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                 UpdateOrCreateRegion(region, options);
             }
 
-            sw.Stop();
-
-            // 记录渲染完成
-            VisionLogger.Instance.Log(LogLevel.Info,
-                $"[WpfShapeRenderer.Render] 渲染完成 | InstanceId={_rendererInstanceId} | VisibleRegions={visibleRegions.Count} | CanvasChildren={_targetCanvas.Children.Count} | 耗时={sw.ElapsedMilliseconds}ms",
-                "WpfShapeRenderer");
         }
 
         /// <summary>

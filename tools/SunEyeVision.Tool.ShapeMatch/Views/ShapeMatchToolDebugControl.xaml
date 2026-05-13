@@ -309,16 +309,8 @@
                                     AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                 </controls:LabeledControl>
 
-                <!-- 金字塔层数 -->
-                <controls:LabeledControl Label="金字塔层数 (0=自动,最多10层)" Margin="0,8,0,0">
-                  <controls:ConfigSetting
-                                    ParameterName="PyramidLevels"
-                                    DataType="{x:Type sys:Int32}"
-                                    Value="{Binding PyramidLevels.Value, Mode=TwoWay}"
-                                    Minimum="0" Maximum="10"
-                                    SmallChange="1" Width="200"
-                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                </controls:LabeledControl>
+
+                <!-- ★ 金字塔层数已移除 — 由模板属性自动决定，运行时不设独立参数 -->
               </StackPanel>
             </GroupBox>
 
@@ -391,16 +383,6 @@
                                     AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                 </controls:LabeledControl>
 
-                <controls:LabeledControl Label="目标点数 (精度vs速度)" Margin="0,4,0,0">
-                  <controls:ConfigSetting
-                                    ParameterName="TargetPointCount"
-                                    DataType="{x:Type sys:Int32}"
-                                    Value="{Binding TargetPointCount.Value, Mode=TwoWay}"
-                                    Minimum="10" Maximum="200"
-                                    SmallChange="10" LargeChange="20"
-                                    Width="200"
-                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                </controls:LabeledControl>
               </StackPanel>
             </Expander>
           </StackPanel>
@@ -504,6 +486,38 @@
                         Item="{Binding ResultConfig.ScaleStyle, Mode=TwoWay}"
                         AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                   </controls:LabeledControl>
+                </StackPanel>
+              </Expander>
+
+              <!-- 中间调试图像分组 -->
+              <Expander Header="中间调试图像"
+                                      IsExpanded="False"
+                                      BorderBrush="#E0E0E0"
+                                      BorderThickness="1"
+                                      Margin="0,0,0,8"
+                                      Background="White">
+                <StackPanel Margin="16,8">
+                  <!-- 第一行: 灰度图 + 梯度幅值 -->
+                  <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                    <Border Background="#333" CornerRadius="3" BorderBrush="#CCC" BorderThickness="1" Width="180" Height="135" ClipToBounds="True">
+                      <Image x:Name="imgDebugGray" Stretch="Uniform"/>
+                    </Border>
+                    <Border Background="#333" CornerRadius="3" BorderBrush="#CCC" BorderThickness="1" Width="180" Height="135" ClipToBounds="True" Margin="8,0,0,0">
+                      <Image x:Name="imgDebugMagnitude" Stretch="Uniform"/>
+                    </Border>
+                  </StackPanel>
+                  <!-- 第二行: ROI掩码 + NMS边缘 -->
+                  <StackPanel Orientation="Horizontal">
+                    <Border Background="#333" CornerRadius="3" BorderBrush="#CCC" BorderThickness="1" Width="180" Height="135" ClipToBounds="True">
+                      <Image x:Name="imgDebugSearchMask" Stretch="Uniform"/>
+                    </Border>
+                    <Border Background="#333" CornerRadius="3" BorderBrush="#CCC" BorderThickness="1" Width="180" Height="135" ClipToBounds="True" Margin="8,0,0,0">
+                      <Image x:Name="imgDebugEdgeMap" Stretch="Uniform"/>
+                    </Border>
+                  </StackPanel>
+                  <!-- 图像标签 -->
+                  <TextBlock Text="灰度输入 | 梯度幅值(mag)" FontSize="10" Foreground="#888" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                  <TextBlock Text="搜索区域掩码 | NMS 边缘图" FontSize="10" Foreground="#888" HorizontalAlignment="Center" Margin="0,2,0,0"/>
                 </StackPanel>
               </Expander>
             </StackPanel>

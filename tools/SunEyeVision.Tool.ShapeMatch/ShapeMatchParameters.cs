@@ -24,14 +24,6 @@ namespace SunEyeVision.Tool.ShapeMatch
     {
         #region 匹配参数
 
-        /// <summary>金字塔层数（0=自动）</summary>
-        public ParamValue<int> PyramidLevels { get; set; } =
-            ParamValue<int>.CreateConstant(0, "PyramidLevels");
-
-        /// <summary>速度尺度（1~10，值越大越快但精度越低，0=自动）</summary>
-        public ParamValue<int> SpeedScale { get; set; } =
-            ParamValue<int>.CreateConstant(0, "SpeedScale");
-
         /// <summary>最小匹配分数（0~1）</summary>
         public ParamValue<double> MinMatchScore { get; set; } =
             ParamValue<double>.CreateConstant(0.5, "MinMatchScore");
@@ -42,19 +34,19 @@ namespace SunEyeVision.Tool.ShapeMatch
 
         /// <summary>匹配超时（毫秒）</summary>
         public ParamValue<int> MatchTimeoutMs { get; set; } =
-            ParamValue<int>.CreateConstant(5000, "MatchTimeoutMs");
+            ParamValue<int>.CreateConstant(30000, "MatchTimeoutMs");
 
         /// <summary>角度步长（度）</summary>
         public ParamValue<double> AngleStep { get; set; } =
-            ParamValue<double>.CreateConstant(1.0, "AngleStep");
+            ParamValue<double>.CreateConstant(2.0, "AngleStep");
 
         /// <summary>角度范围最小值（度）</summary>
         public ParamValue<double> AngleMin { get; set; } =
-            ParamValue<double>.CreateConstant(-180.0, "AngleMin");
+            ParamValue<double>.CreateConstant(-45.0, "AngleMin");
 
         /// <summary>角度范围最大值（度）</summary>
         public ParamValue<double> AngleMax { get; set; } =
-            ParamValue<double>.CreateConstant(180.0, "AngleMax");
+            ParamValue<double>.CreateConstant(45.0, "AngleMax");
 
         /// <summary>缩放范围最小值</summary>
         public ParamValue<double> ScaleMin { get; set; } =
@@ -66,7 +58,7 @@ namespace SunEyeVision.Tool.ShapeMatch
 
         /// <summary>缩放步长</summary>
         public ParamValue<double> ScaleStep { get; set; } =
-            ParamValue<double>.CreateConstant(0.01, "ScaleStep");
+            ParamValue<double>.CreateConstant(0.02, "ScaleStep");
 
         /// <summary>最小间距/NMS（像素）</summary>
         public ParamValue<int> MinMatchDistance { get; set; } =
@@ -103,10 +95,6 @@ namespace SunEyeVision.Tool.ShapeMatch
         /// <summary>最大并行度（0=自动/CPU核数）</summary>
         public ParamValue<int> MaxParallelism { get; set; } =
             ParamValue<int>.CreateConstant(0, "MaxParallelism");
-
-        /// <summary>模板目标点数（影响模型精度与速度）</summary>
-        public ParamValue<int> TargetPointCount { get; set; } =
-            ParamValue<int>.CreateConstant(60, "TargetPointCount");
 
         #endregion
 
@@ -174,14 +162,11 @@ namespace SunEyeVision.Tool.ShapeMatch
             if (MatchTimeoutMs.Value <= 0)
                 result.AddError($"匹配超时必须大于0，当前值: {MatchTimeoutMs.Value}ms");
 
-            if (SpeedScale.Value < 0 || SpeedScale.Value > 10)
-                result.AddError($"速度尺度必须在 0~10 范围内，当前值: {SpeedScale.Value}");
+            if (AngleMin.Value > AngleMax.Value)
+                result.AddError($"角度范围无效: 最小值({AngleMin.Value})不能大于最大值({AngleMax.Value})");
 
-            if (AngleMin.Value >= AngleMax.Value)
-                result.AddError($"角度范围无效: 最小值({AngleMin.Value})必须小于最大值({AngleMax.Value})");
-
-            if (ScaleMin.Value >= ScaleMax.Value)
-                result.AddError($"缩放范围无效: 最小值({ScaleMin.Value})必须小于最大值({ScaleMax.Value})");
+            if (ScaleMin.Value > ScaleMax.Value)
+                result.AddError($"缩放范围无效: 最小值({ScaleMin.Value})不能大于最大值({ScaleMax.Value})");
 
             if (ScaleStep.Value <= 0)
                 result.AddError($"缩放步长必须大于0，当前值: {ScaleStep.Value}");
@@ -194,9 +179,6 @@ namespace SunEyeVision.Tool.ShapeMatch
 
             if (MaxParallelism.Value < 0)
                 result.AddError($"最大并行度不能为负数，当前值: {MaxParallelism.Value}");
-
-            if (TargetPointCount.Value < 10)
-                result.AddError($"模板目标点数建议不小于10，当前值: {TargetPointCount.Value}");
 
             return result;
         }

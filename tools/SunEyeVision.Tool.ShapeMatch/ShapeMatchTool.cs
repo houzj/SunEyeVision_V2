@@ -207,6 +207,27 @@ namespace SunEyeVision.Tool.ShapeMatch
                 // ===== Step 7: 设置结果 =====
                 result.MatchedItems = finalMatches;
 
+                // ★ 汇总日志：所有模板的最终匹配结果
+                if (finalMatches.Count > 0)
+                {
+                    var resultSummary = new List<string>
+                    {
+                        $">> 最终匹配结果 (NMS后 {finalMatches.Count}/{allMatches.Count} 个)"
+                    };
+                    foreach (var item in finalMatches)
+                    {
+                        var template = enabledTemplates.FirstOrDefault(t => t.Id == item.TemplateId);
+                        double dx = item.CenterX - (template?.ReferencePointX ?? 0);
+                        double dy = item.CenterY - (template?.ReferencePointY ?? 0);
+                        resultSummary.Add(
+                            $"  [{item.TemplateName}] " +
+                            $"Center=({item.CenterX:F4},{item.CenterY:F4}), " +
+                            $"Ang={item.Angle:F2}°, Scale={item.Scale:F4}, " +
+                            $"Score={item.Score:F4}, 偏差=({dx:F4},{dy:F4})px");
+                    }
+                    parameters.LogInfo(string.Join("\n", resultSummary));
+                }
+
                 // ===== Step 8: 结果判断 =====
                 stepSw.Restart();
                 EvaluateJudgments(parameters.ResultConfig, result);
@@ -215,7 +236,7 @@ namespace SunEyeVision.Tool.ShapeMatch
 
                 // ===== Step 9: 构建显示项 =====
                 stepSw.Restart();
-                BuildDisplayItems(result, parameters.ResultConfig);
+                BuildDisplayItems(result, parameters, parameters.ResultConfig);
                 stepSw.Stop();
                 stepTimings.Add(("显示构建", stepSw.ElapsedMilliseconds));
 
@@ -273,18 +294,17 @@ namespace SunEyeVision.Tool.ShapeMatch
             double scaleStep = parameters.ScaleStep.Value;
             int timeoutMs = parameters.MatchTimeoutMs.Value;
 
-            // ★ 从模板读取金字塔搜索范围（新参数体系：ScaleMode/SpeedScale/FeatureScale）
+            // ★ 从模板读取金字塔搜索范围（PyramidStart/PyramidEnd）
             int maxLevel = template.PyramidEdgePoints?.Keys.Max() ?? 0;
-            int speedScale = template.SpeedScale;
-            int featureScale = template.FeatureScale;
+            int finestLevel = template.PyramidStart;   // 起始层（最细）
+            int coarsestLevel = template.PyramidEnd;   // 结束层（最粗）
 
-            // Auto 模式下速度尺度在模板提取时已自动计算
-            if (speedScale < featureScale)
+            if (finestLevel > coarsestLevel)
                 throw new InvalidOperationException(
-                    $"模板 {template.Name}: 速度尺度({speedScale}) < 特征尺度({featureScale}) — 金字塔搜索范围无效");
+                    $"模板 {template.Name}: 起始层({finestLevel}) > 结束层({coarsestLevel}) — 金字塔搜索范围无效");
 
-            int pyramidStart = Math.Min(speedScale, maxLevel);
-            int pyramidEnd = Math.Min(featureScale, pyramidStart);
+            int pyramidStart = Math.Min(coarsestLevel, maxLevel); // FindShape 期望 pyramidStart=最粗层
+            int pyramidEnd = Math.Min(finestLevel, pyramidStart); // FindShape 期望 pyramidEnd=最细层
 
             if (pyramidStart < pyramidEnd)
                 throw new InvalidOperationException(
@@ -312,82 +332,98 @@ namespace SunEyeVision.Tool.ShapeMatch
                 out var perfStats);
             findSw.Stop();
 
-            // ===== 匹配过程诊断日志 =====
+            // ===== ★ 汇总日志：每个模板输出一个完整监控块 ★ =====
             bool isTimeout = findSw.ElapsedMilliseconds > timeoutMs;
             int angleSteps = (int)((angleEnd - angleStart) / angleStep);
             int scaleSteps = (int)((scaleMax - scaleMin) / scaleStep);
             int totalCycles = angleSteps * scaleSteps;
 
-            var diagnostic = new List<string>
+            var summary = new List<string>
             {
-                $"===== 轮廓匹配诊断 [{template.Name}] =====",
-                $"模板边缘点数: {pyramidPoints[0].Count} (全分辨率, Level 0)",
-                $"         粗层降采样: Level4≤80, L3≤150, L2≤300, L1≤600, L0=全量",
-                $"         timeoutMs={timeoutMs}",
-                $"         金字塔搜索范围: Level {pyramidStart} → Level {pyramidEnd}",
-                $"搜索空间: angle=[{angleStart:F1}~{angleEnd:F1}]/{angleStep:F1}° ({angleSteps}步)",
-                $"         scale=[{scaleMin:F3}~{scaleMax:F3}]/{scaleStep:F3} ({scaleSteps}步)",
-                $"         → 总角度×缩放组合 = {totalCycles}",
-                $"FindShape 耗时: {findSw.ElapsedMilliseconds}ms, 候选结果数: {matchResults.Count}" +
-                (isTimeout ? " ⚠️ 已超时" : "")
+                $"========== 轮廓匹配精度监控 [{template.Name}] ==========",
+                $"【模板基准】参考点=({template.ReferencePointX:F4},{template.ReferencePointY:F4}), " +
+                $"L0点数={pyramidPoints[0].Count}, " +
+                $"金字塔={pyramidPoints.Keys.Min()}~{pyramidPoints.Keys.Max()}层",
+                $"【匹配参数】搜索=L{pyramidStart}(粗)~L{pyramidEnd}(细), " +
+                $"角度=[{angleStart:F1}~{angleEnd:F1}]/{angleStep:F1}°, " +
+                $"缩放=[{scaleMin:F3}~{scaleMax:F3}]/{scaleStep:F3}, " +
+                $"timeout={timeoutMs}ms",
+                $"【耗时】FindShape={findSw.ElapsedMilliseconds}ms, " +
+                (isTimeout ? "⚠️超时 " : "") +
+                $"候选数={matchResults.Count}"
             };
 
-            if (matchResults.Count == 0)
+            // —— 坐标链路 ——
+            if (perfStats.CoordinateChainLog.Count > 0)
             {
-                if (isTimeout)
+                summary.Add("【坐标链路】");
+                summary.AddRange(perfStats.CoordinateChainLog);
+            }
+
+            // —— 结果精度 ——
+            if (matchResults.Count > 0)
+            {
+                var bestMatch = matchResults.OrderByDescending(r => r.Score).First();
+                double diffX = bestMatch.CenterX - template.ReferencePointX;
+                double diffY = bestMatch.CenterY - template.ReferencePointY;
+                summary.Add("【结果变换精度】" +
+                    $"bestScore={bestMatch.Score:F4}, " +
+                    $"Center=({bestMatch.CenterX:F4},{bestMatch.CenterY:F4}), " +
+                    $"Angle={bestMatch.Angle:F2}°, Scale={bestMatch.Scale:F4}, " +
+                    $"与模板参考点偏差=({diffX:F4},{diffY:F4})px");
+
+                var finestLvl = perfStats.Levels.FirstOrDefault(l => l.FinalCenterX.HasValue);
+                if (finestLvl != null && finestLvl.ScaleX > 0)
                 {
-                    diagnostic.Add("—— ★ 匹配超时, pipeline 中断未到达最细层 → 结果为 0 ——");
-                    diagnostic.Add("  ─── 优化建议（按优先级）───");
-                    diagnostic.Add($"  1. 增大 MatchTimeoutMs 当前={timeoutMs}ms → 建议至少 30000ms");
-                    diagnostic.Add($"  2. 缩小角度范围 当前={angleEnd - angleStart}° → 根据实际偏差合理缩小");
-                    diagnostic.Add($"  3. 增大角度步长 当前={angleStep}° → 建议 2~5°");
-                    diagnostic.Add($"  4. 增大缩放步长 当前={scaleStep} → 建议 0.02~0.05");
-                    diagnostic.Add($"  5. 检查模板边缘点是否清晰（梯度幅值是否足够）");
-                    diagnostic.Add($"  ─── 估算: {totalCycles}种组合 × {pyramidPoints[0].Count}模板点 × 金字塔 = 极高计算量 ───");
+                    double pixelStepOrig = finestLvl.ScaleX;
+                    summary.Add($"  —— 精度上限: 最终搜索层步长={pixelStepOrig:F4}px(原图), " +
+                        $"整数网格舍入误差上限=±{pixelStepOrig * 0.5:F4}px ——");
                 }
-                else
-                {
-                    diagnostic.Add("—— 匹配结果为 0，可能原因 ——");
-                    diagnostic.Add("  • 图像中不存在与模板相似的轮廓特征");
-                    diagnostic.Add("  • minScore 阈值过高，所有候选均被过滤");
-                    diagnostic.Add("  • 角度范围与目标实际角度不匹配");
-                    diagnostic.Add("  • 缩放范围与目标实际尺寸不匹配");
-                    diagnostic.Add("  • 图像梯度方向与模板方向不一致（检查模板提取时的图像内容）");
-                }
-                parameters.LogWarning(string.Join("\n", diagnostic));
+            }
+            else if (isTimeout)
+            {
+                summary.Add("—— ★ 匹配超时, pipeline 中断未到达最细层 ——");
+                summary.Add($"  — 建议: 增大MatchTimeoutMs(当前={timeoutMs}ms), 缩小角度/缩放范围 —");
             }
             else
             {
-                double maxScore = matchResults.Max(r => r.Score);
-                double avgScore = matchResults.Average(r => r.Score);
-                diagnostic.Add($"最高分: {maxScore:F3}, 平均分: {avgScore:F3}");
-                parameters.LogInfo(string.Join("\n", diagnostic));
+                summary.Add("—— 匹配结果为 0（minScore过高或图像无匹配特征）——");
             }
 
-            // ===== 性能统计报告（逐层） =====
+            // —— 逐层性能 ——
             if (perfStats.Levels.Count > 0)
             {
-                var perfLines = new List<string>
-                {
-                    $"===== FindShape 逐层性能 [{template.Name}] =====",
-                    $"建图耗时: {perfStats.BuildPyramidMs}ms, 总时间: {perfStats.TotalMs}ms"
-                };
-                perfLines.Add($"  Level  Image尺寸   点数   模式         候选数  搜索(ms)");
-                perfLines.Add($"  ────  ────────  ─────  ──────────  ──────  ────────");
+                summary.Add("【逐层性能】" +
+                    $"建图={perfStats.BuildPyramidMs}ms, 总={perfStats.TotalMs}ms");
+                summary.Add($"  Lv  图像   点数  模式        候选  时间ms  角度×缩放   搜索像素    模板检查    提前终止  终止均点");
+                summary.Add($"  ──  ────  ────  ─────────  ───  ─────  ─────────  ─────────  ─────────  ─────────  ───────");
                 foreach (var ls in perfStats.Levels)
                 {
-                    string mode = ls.IsFullSearch ? "FullSearch" : "RefineSearch";
-                    perfLines.Add(
-                        $"  {ls.Level,4}  {ls.ImageW,4}×{ls.ImageH,-4}  {ls.TemplatePointsUsed,5}  {mode,-10}  {ls.Candidates,6}  {ls.SearchMs,8}");
+                    string mode = ls.IsFullSearch ? "FullSearch" : "RefineSrch";
+                    string earlyInfo = ls.EarlyTerminations > 0
+                        ? $"{ls.EarlyTerminations,8}  {ls.EarlyTerminationAvgPoint,5:F1}"
+                        : $"{0,8}  {0,5:F1}";
+                    summary.Add(
+                        $"  {ls.Level,2}  " +
+                        $"{ls.ImageW,4}×{ls.ImageH,-3}  " +
+                        $"{ls.TemplatePointsUsed,4}  " +
+                        $"{mode,-9}  " +
+                        $"{ls.Candidates,3}  " +
+                        $"{ls.SearchMs,5}  " +
+                        $"{ls.AngleCombosTried,4}×{ls.ScaleCombosTried,-3}  " +
+                        $"{ls.SpatialPixelsSearched,9}  " +
+                        $"{ls.TotalTemplateChecks,9}  " +
+                        earlyInfo);
                 }
-                parameters.LogInfo(string.Join("\n", perfLines));
             }
 
-            // 计算模板轮廓的质心（用于变换，使用模板固化参考点避免截断质心不一致）
-            var level0Points = pyramidPoints[0];
-            float centX = (float)template.ReferencePointX;
-            float centY = (float)template.ReferencePointY;
-            var contourPoints = level0Points
+            if (matchResults.Count == 0)
+                parameters.LogWarning(string.Join("\n", summary));
+            else
+                parameters.LogInfo(string.Join("\n", summary));
+
+            // ★ 使用预归一化的模板轮廓点（所有层级已统一归一化到参考点，坐标为相对参考点的偏移）
+            var normalizedContour = pyramidPoints[0]
                 .Select(p => new OpenCvSharp.Point2f((float)p.X, (float)p.Y))
                 .ToList();
 
@@ -398,13 +434,12 @@ namespace SunEyeVision.Tool.ShapeMatch
                 double cosA = Math.Cos(match.Angle * Math.PI / 180.0);
                 double sinA = Math.Sin(match.Angle * Math.PI / 180.0);
 
-                var transformedContour = contourPoints.Select(p =>
+                // Scale 不参与轮廓位置计算 — 仅位置+角度决定匹配轮廓的刚体变换
+                var transformedContour = normalizedContour.Select(p =>
                 {
-                    float rx = (float)((p.X - centX) * match.Scale);
-                    float ry = (float)((p.Y - centY) * match.Scale);
                     return new OpenCvSharp.Point2f(
-                        (float)(rx * cosA - ry * sinA + match.CenterX),
-                        (float)(rx * sinA + ry * cosA + match.CenterY));
+                        (float)(p.X * cosA - p.Y * sinA + match.CenterX),
+                        (float)(p.X * sinA + p.Y * cosA + match.CenterY));
                 }).ToList();
 
                 float minX = transformedContour.Min(p => p.X);
@@ -415,6 +450,7 @@ namespace SunEyeVision.Tool.ShapeMatch
                 resultItems.Add(new ShapeMatchResultItem
                 {
                     Score = match.Score,
+                    MatchRatio = match.MatchRatio,
                     CenterX = match.CenterX,
                     CenterY = match.CenterY,
                     Angle = match.Angle,
@@ -423,7 +459,9 @@ namespace SunEyeVision.Tool.ShapeMatch
                     TemplateId = template.Id,
                     BoundingBox = new OpenCvSharp.Rect2d(minX, minY, maxX - minX, maxY - minY),
                     ContourPoints = transformedContour,
-                    OriginalTemplateContour = contourPoints
+                    OriginalTemplateContour = normalizedContour,
+                    ReferencePointX = template.ReferencePointX,
+                    ReferencePointY = template.ReferencePointY
                 });
             }
 
@@ -521,7 +559,7 @@ namespace SunEyeVision.Tool.ShapeMatch
         /// <summary>
         /// 构建显示项
         /// </summary>
-        private static void BuildDisplayItems(ShapeMatchResults result, Models.ShapeMatchResultConfig config)
+        private static void BuildDisplayItems(ShapeMatchResults result, ShapeMatchParameters parameters, Models.ShapeMatchResultConfig config)
         {
             if (config == null) return;
 
@@ -572,31 +610,31 @@ namespace SunEyeVision.Tool.ShapeMatch
                 }
             }
 
-            // 模板参考轮廓（原始模板形状，显示在图像左上角用于对比 → 显示为点）
-            bool hasTemplateRef = false;
+            // 模板参考轮廓（原始模板轮廓还原到模板创建时的位置，与匹配轮廓叠加对比）
             foreach (var match in result.MatchedItems)
             {
-                if (match.OriginalTemplateContour != null && match.OriginalTemplateContour.Count > 0 && !hasTemplateRef)
+                if (match.OriginalTemplateContour != null && match.OriginalTemplateContour.Count > 0)
                 {
-                    hasTemplateRef = true;
-                    // 计算模板轮廓包围盒，将其平移到图像左上角作为参考
-                    float minX = match.OriginalTemplateContour.Min(p => p.X);
-                    float maxX = match.OriginalTemplateContour.Max(p => p.X);
-                    float minY = match.OriginalTemplateContour.Min(p => p.Y);
-                    float maxY = match.OriginalTemplateContour.Max(p => p.Y);
-                    float refX = 30; // 参考位置：左上角偏移
-                    float refY = 30;
-
                     var refPoints = match.OriginalTemplateContour
                         .Select(p => new OpenCvSharp.Point2d(
-                            p.X - minX + refX,
-                            p.Y - minY + refY))
+                            p.X + match.ReferencePointX,
+                            p.Y + match.ReferencePointY))
                         .ToList();
 
-                    display.AddPoints(config.TemplateRefContourStyle, refPoints, null);
+                    // 诊断：参考轮廓与匹配轮廓的坐标范围对比
+                    double refMinX = refPoints.Min(p => p.X), refMaxX = refPoints.Max(p => p.X);
+                    double refMinY = refPoints.Min(p => p.Y), refMaxY = refPoints.Max(p => p.Y);
+                    double matchMinX = match.ContourPoints?.Min(p => p.X) ?? 0, matchMaxX = match.ContourPoints?.Max(p => p.X) ?? 0;
+                    double matchMinY = match.ContourPoints?.Min(p => p.Y) ?? 0, matchMaxY = match.ContourPoints?.Max(p => p.Y) ?? 0;
+                    parameters.LogInfo(
+                        $"[参考轮廓诊断] RefPoint=({match.ReferencePointX:F2},{match.ReferencePointY:F2}), " +
+                        $"蓝色BBox=({refMinX:F1},{refMinY:F1})~({refMaxX:F1},{refMaxY:F1}), " +
+                        $"绿色BBox=({matchMinX:F1},{matchMinY:F1})~({matchMaxX:F1},{matchMaxY:F1}), " +
+                        $"中心差=({match.CenterX - match.ReferencePointX:F2},{match.CenterY - match.ReferencePointY:F2})px");
 
-                    // 添加"模板参考"文本标注
-                    display.AddText(config.ScoreStyle, refX, refY - 8, "模板参考", true);
+                    display.AddPoints(config.TemplateRefContourStyle, refPoints,
+                        Enumerable.Range(0, match.OriginalTemplateContour.Count)
+                            .Select(_ => match.JudgmentPassed).ToArray());
                 }
             }
 

@@ -35,14 +35,15 @@ namespace SunEyeVision.Tool.ShapeMatch.Models
     }
 
     // ============ 参数模式枚举 ============
-    public enum ScaleMode { Auto, Manual }
+    public enum PyramidMode { Auto, Manual }
+    public enum DensityMode { Auto, Manual }
     public enum ThresholdMode { Auto, Manual }
     public enum ChainLengthMode { Auto, Manual }
 
     /// <summary>
-    /// 模板数据模型（v4.0）
-    /// 使用 Scharr+NMS 梯度引擎，存储扁平 EdgePoint 列表
-    /// 参数对齐 VM 布局：尺度模式/阈值模式/链长模式
+    /// 模板数据模型（v5.0）
+    /// 使用 Scharr+NMS 梯度引擎 + L0 单源金字塔混合模式
+    /// 参数对齐 Halcon：金字塔模式/密度模式/阈值模式/链长模式
     /// </summary>
     [JsonDerivedType(typeof(TemplateModel), "TemplateModel")]
     public class TemplateModel : ObservableObject
@@ -52,10 +53,12 @@ namespace SunEyeVision.Tool.ShapeMatch.Models
         private bool _isEnabled = true;
         private int _orderIndex;
 
-        // ============ v4.0 创建参数（7个，对齐VM）============
-        private ScaleMode _scaleMode = ScaleMode.Auto;
-        private int _speedScale = 4;        // 0~9，仅 Manual 有效
-        private int _featureScale = 0;      // 0~9，仅 Manual 有效
+        // ============ v5.0 创建参数 ============
+        private PyramidMode _pyramidMode = PyramidMode.Auto;
+        private int _pyramidStart = 1;       // 1~10，起始层（最细层），仅 Manual 有效
+        private int _pyramidEnd = 4;         // 1~10，结束层（最粗层），仅 Manual 有效
+        private DensityMode _densityMode = DensityMode.Auto;
+        private float _densityFactor = 1.0f; // 0.1~2.0，密度系数，仅 Manual 有效
         private ThresholdMode _thresholdMode = ThresholdMode.Auto;
         private float _contrast = 30f;      // 1~255，仅 Manual 有效
         private ChainLengthMode _chainLengthMode = ChainLengthMode.Auto;
@@ -69,6 +72,7 @@ namespace SunEyeVision.Tool.ShapeMatch.Models
         private byte[]? _sourceImageBytes;
         private double _referencePointX;
         private double _referencePointY;
+        private Dictionary<int, LevelSizeInfo>? _pyramidLevelSizes;
 
         public string Id { get => _id; set => SetProperty(ref _id, value); }
         public string Name { get => _name; set => SetProperty(ref _name, value, "名称"); }
@@ -76,9 +80,11 @@ namespace SunEyeVision.Tool.ShapeMatch.Models
         public int OrderIndex { get => _orderIndex; set => SetProperty(ref _orderIndex, value); }
 
         // ============ 创建参数属性 ============
-        public ScaleMode ScaleMode { get => _scaleMode; set => SetProperty(ref _scaleMode, value); }
-        public int SpeedScale { get => _speedScale; set => SetProperty(ref _speedScale, value, "速度尺度"); }
-        public int FeatureScale { get => _featureScale; set => SetProperty(ref _featureScale, value, "特征尺度"); }
+        public PyramidMode PyramidMode { get => _pyramidMode; set => SetProperty(ref _pyramidMode, value); }
+        public int PyramidStart { get => _pyramidStart; set => SetProperty(ref _pyramidStart, value, "起始层"); }
+        public int PyramidEnd { get => _pyramidEnd; set => SetProperty(ref _pyramidEnd, value, "结束层"); }
+        public DensityMode DensityMode { get => _densityMode; set => SetProperty(ref _densityMode, value); }
+        public float DensityFactor { get => _densityFactor; set => SetProperty(ref _densityFactor, value, "密度系数"); }
         public ThresholdMode ThresholdMode { get => _thresholdMode; set => SetProperty(ref _thresholdMode, value); }
         public float Contrast { get => _contrast; set => SetProperty(ref _contrast, value, "对比度"); }
         public ChainLengthMode ChainLengthMode { get => _chainLengthMode; set => SetProperty(ref _chainLengthMode, value); }
@@ -137,6 +143,13 @@ namespace SunEyeVision.Tool.ShapeMatch.Models
             set => SetProperty(ref _referencePointY, value);
         }
 
+        /// <summary>各金字塔层实际尺寸: key=Level, value=(Width, Height)</summary>
+        public Dictionary<int, LevelSizeInfo>? PyramidLevelSizes
+        {
+            get => _pyramidLevelSizes;
+            set => SetProperty(ref _pyramidLevelSizes, value);
+        }
+
         [JsonIgnore]
         public int EdgePointCount => _edgePoints?.Count ?? 0;
 
@@ -161,9 +174,11 @@ namespace SunEyeVision.Tool.ShapeMatch.Models
                 Name = _name,
                 IsEnabled = _isEnabled,
                 OrderIndex = _orderIndex,
-                ScaleMode = _scaleMode,
-                SpeedScale = _speedScale,
-                FeatureScale = _featureScale,
+                PyramidMode = _pyramidMode,
+                PyramidStart = _pyramidStart,
+                PyramidEnd = _pyramidEnd,
+                DensityMode = _densityMode,
+                DensityFactor = _densityFactor,
                 ThresholdMode = _thresholdMode,
                 Contrast = _contrast,
                 ChainLengthMode = _chainLengthMode,
@@ -181,6 +196,9 @@ namespace SunEyeVision.Tool.ShapeMatch.Models
                         X = p.X, Y = p.Y,
                         Direction = p.Direction, Magnitude = p.Magnitude
                     }).ToList()),
+                PyramidLevelSizes = _pyramidLevelSizes?.ToDictionary(
+                    kv => kv.Key,
+                    kv => new LevelSizeInfo { Width = kv.Value.Width, Height = kv.Value.Height }),
                 SourceImageBytes = _sourceImageBytes?.ToArray(),
                 InspectionRegions = _inspectionRegions.Select(r => (RegionData)r.Clone()).ToList(),
                 MaskRegions = _maskRegions.Select(r => (RegionData)r.Clone()).ToList(),
@@ -189,6 +207,15 @@ namespace SunEyeVision.Tool.ShapeMatch.Models
             };
             return clone;
         }
+    }
+
+    /// <summary>
+    /// 金字塔层级的实际尺寸信息（用于显示时精确恢复坐标）
+    /// </summary>
+    public class LevelSizeInfo
+    {
+        public int Width { get; set; }
+        public int Height { get; set; }
     }
 
     /// <summary>

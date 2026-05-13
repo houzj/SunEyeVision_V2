@@ -161,6 +161,9 @@ namespace SunEyeVision.Tool.ShapeMatch
         /// <summary>匹配分数（0~1）</summary>
         public double Score { get; set; }
 
+        /// <summary>匹配点比率 = 有效匹配点数 / 总模板点数 [0, 1]</summary>
+        public double MatchRatio { get; set; }
+
         /// <summary>中心X坐标</summary>
         public double CenterX { get; set; }
 
@@ -187,6 +190,12 @@ namespace SunEyeVision.Tool.ShapeMatch
 
         /// <summary>原始模板轮廓点（未变换，用于对比显示）</summary>
         public List<OpenCvSharp.Point2f>? OriginalTemplateContour { get; set; }
+
+        /// <summary>模板参考点X（模板创建时的参考点坐标，用于还原轮廓到原始位置）</summary>
+        public double ReferencePointX { get; set; }
+
+        /// <summary>模板参考点Y（模板创建时的参考点坐标，用于还原轮廓到原始位置）</summary>
+        public double ReferencePointY { get; set; }
 
         /// <summary>轮廓点数量</summary>
         public int ContourPointCount => ContourPoints?.Count ?? 0;

@@ -1913,10 +1913,28 @@ namespace SunEyeVision.CvEngine
             perfStats.BuildPyramidMs = buildSw.ElapsedMilliseconds;
             perfStats.PyramidLevelCount = pyramid.Count;
 
+            // ★ 坐标监控：记录金字塔各层实际尺寸和缩放比
+            foreach (var lvlData in pyramid)
+            {
+                int lvlIdx = pyramid.IndexOf(lvlData);
+                if (lvlData.ResponseMaps != null)
+                {
+                    perfStats.CoordinateChainLog.Add(
+                        $"  [PyramidLv{lvlIdx}] 响应图尺寸={lvlData.Width}x{lvlData.Height}, " +
+                        $"ScaleX={lvlData.ScaleX:F6}, ScaleY={lvlData.ScaleY:F6}");
+                }
+                else
+                {
+                    perfStats.CoordinateChainLog.Add(
+                        $"  [PyramidLv{lvlIdx}](跳过) 尺寸={lvlData.Width}x{lvlData.Height}, " +
+                        $"ScaleX={lvlData.ScaleX:F6}, ScaleY={lvlData.ScaleY:F6}");
+                }
+            }
+
             int actualMaxLevel = Math.Min(pyramidStart, pyramid.Count - 1);
 
             // ===== Step 3: 由粗到精搜索 =====
-            List<(double Score, int X, int Y, double Angle, double Scale)>? prevCandidates = null;
+            List<(double Score, int X, int Y, double Angle, double Scale, int MatchedCount)>? prevCandidates = null;
 
             for (int level = actualMaxLevel; level >= pyramidEnd; level--)
             {
@@ -1960,17 +1978,16 @@ namespace SunEyeVision.CvEngine
                 byte[] quantizedDirs = QuantizeEdgePointsDirections(levelPoints);
                 int tmplCount = levelPoints.Count;
 
-                // 从该层点集提取归一化轮廓（质心居中）
-                float centX = (float)levelPoints.Average(p => p.X);
-                float centY = (float)levelPoints.Average(p => p.Y);
+                // ★ 从该层点集提取归一化轮廓（所有层级已预归一化到统一参考点，坐标为相对参考点的偏移）
                 var normalizedContour = levelPoints
-                    .Select(p => new Point2f((float)(p.X - centX), (float)(p.Y - centY)))
+                    .Select(p => new Point2f((float)p.X, (float)p.Y))
                     .ToList();
 
-                var candidates = new List<(double Score, int X, int Y, double Angle, double Scale)>();
+                var candidates = new List<(double Score, int X, int Y, double Angle, double Scale, int MatchedCount)>();
                 bool isFullSearch = (prevCandidates == null || prevCandidates.Count == 0);
 
                 var searchSw = Stopwatch.StartNew();
+                var searchStats = new SearchStats();
 
                 if (isFullSearch)
                 {
@@ -1982,7 +1999,8 @@ namespace SunEyeVision.CvEngine
                         normalizedContour, quantizedDirs,
                         coarseMinScore, angleStart, angleEnd, coarseAngleStep,
                         scaleMin, scaleMax, coarseScaleStep,
-                        8, candidates, overallSw, timeoutMs);
+                        8, candidates, overallSw, timeoutMs,
+                        ref searchStats);
 
                     // ★ P2: Cascade 退化保护 — 当前层无候选时以小步幅重试
                     if (candidates.Count == 0 && level > pyramidEnd)
@@ -1990,11 +2008,21 @@ namespace SunEyeVision.CvEngine
                         double fallbackScore = Math.Max(coarseMinScore * 0.5, 0.05);
                         int finerStep = Math.Max(8 / 2, 4);
                         candidates.Clear();
+                        var fallbackStats = new SearchStats();
                         FullSearchOnResponseMaps(levelData.ResponseMaps, levelData.Width, levelData.Height,
                             normalizedContour, quantizedDirs,
                             fallbackScore, angleStart, angleEnd, coarseAngleStep,
                             scaleMin, scaleMax, coarseScaleStep,
-                            finerStep, candidates, overallSw, timeoutMs);
+                            finerStep, candidates, overallSw, timeoutMs,
+                            ref fallbackStats);
+                        // 合并 fallback 统计
+                        searchStats.ScaleCombosTried += fallbackStats.ScaleCombosTried;
+                        searchStats.AngleCombosTried += fallbackStats.AngleCombosTried;
+                        searchStats.SpatialPixelsSearched += fallbackStats.SpatialPixelsSearched;
+                        searchStats.TotalTemplateChecks += fallbackStats.TotalTemplateChecks;
+                        searchStats.EarlyTerminations += fallbackStats.EarlyTerminations;
+                        searchStats.EarlyTerminationChecks += fallbackStats.EarlyTerminationChecks;
+                        searchStats.CandidatesOut += fallbackStats.CandidatesOut;
                     }
 
                     // ★ P3: 级联终止 — 粗层 FullSearch(+Fallback) 仍无候选则无需更细层
@@ -2005,10 +2033,13 @@ namespace SunEyeVision.CvEngine
                 {
                     double levelMinScore = isFinest ? minScore : minScore * 0.7;
 
+                    // 取前一层（刚搜索过的粗层）的实际尺寸用于坐标映射
+                    var prevLevelData = pyramid[level + 1];
                     RefineSearchOnResponseMaps(levelData.ResponseMaps, levelData.Width, levelData.Height,
                         normalizedContour, quantizedDirs,
                         levelMinScore, 2, candidates, prevCandidates,
-                        angleStep, scaleStep, overallSw, timeoutMs);
+                        angleStep, scaleStep, prevLevelData.Width, prevLevelData.Height, overallSw, timeoutMs,
+                        ref searchStats);
                 }
 
                 searchSw.Stop();
@@ -2018,34 +2049,116 @@ namespace SunEyeVision.CvEngine
                     candidates = candidates.OrderByDescending(c => c.Score).Take(100).ToList();
                 }
 
-                // ★ 记录本层性能统计
-                perfStats.Levels.Add(new MatchPerformanceStats.LevelStats
+                // ★ 坐标监控：记录本层最优候选信息
+                (double bestScore, int bestX, int bestY, double bestAng, double bestScl, _) =
+                    candidates.Count > 0
+                        ? candidates.OrderByDescending(c => c.Score).First()
+                        : (0.0, 0, 0, 0.0, 0.0, 0);
+
+                double? mappedPrevX = null, mappedPrevY = null;
+                if (!isFullSearch && prevCandidates is { Count: > 0 })
+                {
+                    // 记录粗层最优候选映射到本层的位置（与 RefineSearch 内逻辑一致）
+                    var prevLevelData = pyramid[level + 1];
+                    double rX = (double)levelData.Width / prevLevelData.Width;
+                    double rY = (double)levelData.Height / prevLevelData.Height;
+                    mappedPrevX = prevCandidates.OrderByDescending(c => c.Score).First().X * rX;
+                    mappedPrevY = prevCandidates.OrderByDescending(c => c.Score).First().Y * rY;
+                }
+
+                // ★ 记录本层性能统计 + 坐标信息
+                var lvlStats = new MatchPerformanceStats.LevelStats
                 {
                     Level = level,
                     ImageW = levelData.Width,
                     ImageH = levelData.Height,
+                    ScaleX = levelData.ScaleX,
+                    ScaleY = levelData.ScaleY,
                     TemplatePointsUsed = levelPoints.Count,
                     SearchMs = searchSw.ElapsedMilliseconds,
                     Candidates = candidates.Count,
-                    IsFullSearch = isFullSearch
-                });
+                    IsFullSearch = isFullSearch,
+
+                    // ★ 搜索过程性能明细
+                    AngleCombosTried = searchStats.AngleCombosTried,
+                    ScaleCombosTried = searchStats.ScaleCombosTried,
+                    SpatialPixelsSearched = searchStats.SpatialPixelsSearched,
+                    TotalTemplateChecks = searchStats.TotalTemplateChecks,
+                    EarlyTerminations = searchStats.EarlyTerminations,
+                    EarlyTerminationAvgPoint = searchStats.EarlyTerminationAvgPoint,
+
+                    BestScore = bestScore,
+                    BestX = bestX,
+                    BestY = bestY,
+                    BestAngle = bestAng,
+                    BestScale = bestScl,
+                    MappedFromPrevX = mappedPrevX,
+                    MappedFromPrevY = mappedPrevY
+                };
 
                 if (isFinest)
                 {
-                    // 结果坐标在 level 的降采样空间，缩放到 Level 0（全分辨率）坐标
-                    double coordScale = 1 << level; // 2^level
-                    foreach (var (score, x, y, ang, scl) in candidates)
+                    // 结果坐标在 level 的降采样空间，用实际缩放比缩放到 Level 0（全分辨率）坐标
+                    // 避免硬编码 1 << level 导致的奇偶舍入误差
+                    double scaleX = levelData.ScaleX;
+                    double scaleY = levelData.ScaleY;
+                    int totalPoints = levelPoints.Count;
+                    foreach (var (score, x, y, ang, scl, matchedCount) in candidates)
                     {
                         matchResults.Add(new ShapeMatchResult
                         {
                             Score = score,
-                            CenterX = x * coordScale,
-                            CenterY = y * coordScale,
+                            MatchRatio = totalPoints > 0 ? (double)matchedCount / totalPoints : 0,
+                            CenterX = x * scaleX,
+                            CenterY = y * scaleY,
                             Angle = ang,
                             Scale = scl
                         });
                     }
+
+                    // ★ 坐标监控：记录最优候选映射到原图的最终坐标
+                    if (candidates.Count > 0)
+                    {
+                        var best = candidates.OrderByDescending(c => c.Score).First();
+                        lvlStats.FinalCenterX = best.X * scaleX;
+                        lvlStats.FinalCenterY = best.Y * scaleY;
+                    }
+
+                    // ★ 坐标监控：输出本层坐标链路摘要
+                    string refSrc = isFullSearch ? "FullSearch" : "Refine";
+                    string coordInfo = $"  [Lv{level}]({refSrc}) " +
+                        $"img={levelData.Width}x{levelData.Height}, " +
+                        $"Scale=({scaleX:F6},{scaleY:F6}), " +
+                        $"candidates={candidates.Count}, " +
+                        $"best=({bestX},{bestY})@sc={bestScl:F4}@ang={bestAng:F1}°";
+
+                    if (mappedPrevX.HasValue)
+                    {
+                        coordInfo += $", mappedPrev≈({mappedPrevX.Value:F4},{mappedPrevY.Value:F4})";
+                    }
+
+                    coordInfo += $" → FinalCenter=({lvlStats.FinalCenterX:F4},{lvlStats.FinalCenterY:F4})";
+                    perfStats.CoordinateChainLog.Add(coordInfo);
                 }
+                else
+                {
+                    // ★ 坐标监控：输出非最细层坐标链路摘要
+                    string refSrc = isFullSearch ? "FullSearch" : "Refine";
+                    string coordInfo = $"  [Lv{level}]({refSrc}) " +
+                        $"img={levelData.Width}x{levelData.Height}, " +
+                        $"Scale=({lvlStats.ScaleX:F6},{lvlStats.ScaleY:F6}), " +
+                        $"candidates={candidates.Count}, " +
+                        $"best=({bestX},{bestY})@sc={bestScl:F4}@ang={bestAng:F1}°";
+
+                    if (mappedPrevX.HasValue)
+                    {
+                        coordInfo += $", mappedPrev≈({mappedPrevX.Value:F4},{mappedPrevY.Value:F4})";
+                    }
+
+                    perfStats.CoordinateChainLog.Add(coordInfo);
+                }
+
+                perfStats.Levels.Add(lvlStats);
 
                 prevCandidates = candidates;
             }
@@ -2200,6 +2313,8 @@ namespace SunEyeVision.CvEngine
         public class ShapeMatchResult
         {
             public double Score { get; set; }
+            /// <summary>匹配点比率 = 有效匹配点数 / 总模板点数 [0, 1]</summary>
+            public double MatchRatio { get; set; }
             public double CenterX { get; set; }
             public double CenterY { get; set; }
             public double Angle { get; set; }
@@ -2209,6 +2324,23 @@ namespace SunEyeVision.CvEngine
         /// <summary>
         /// 形状匹配每层性能统计
         /// </summary>
+        /// <summary>
+        /// 搜索内部统计（用于性能分析，由 FullSearch/RefineSearch 内部填充）
+        /// </summary>
+        internal struct SearchStats
+        {
+            public int ScaleCombosTried;            // 实际执行的缩放组合数
+            public int AngleCombosTried;            // 实际执行的角度组合数
+            public long SpatialPixelsSearched;      // 实际搜索的像素位置数
+            public long TotalTemplateChecks;        // 累计模板点检查次数（含提前终止截断）
+            public long EarlyTerminations;          // 提前终止触发次数
+            public long EarlyTerminationChecks;     // 提前终止时累计检查点数（用于计算平均值）
+            public int CandidatesOut;               // 输出候选数
+
+            public readonly double EarlyTerminationAvgPoint =>
+                EarlyTerminations > 0 ? (double)EarlyTerminationChecks / EarlyTerminations : 0;
+        }
+
         public class MatchPerformanceStats
         {
             public int TotalTemplatePoints { get; set; }
@@ -2220,14 +2352,42 @@ namespace SunEyeVision.CvEngine
                 public int Level { get; set; }
                 public int ImageW { get; set; }
                 public int ImageH { get; set; }
+                public double ScaleX { get; set; }  // 该层相对原图的 X 缩放比
+                public double ScaleY { get; set; }  // 该层相对原图的 Y 缩放比
                 public int TemplatePointsUsed { get; set; }
                 public long SearchMs { get; set; }
                 public int Candidates { get; set; }
                 public bool IsFullSearch { get; set; }
+
+                // ★ 搜索过程性能明细
+                public int AngleCombosTried { get; set; }      // 角度组合数
+                public int ScaleCombosTried { get; set; }      // 缩放组合数
+                public long SpatialPixelsSearched { get; set; } // 搜索像素位置数
+                public long TotalTemplateChecks { get; set; }  // 累计模板点检查次数
+                public long EarlyTerminations { get; set; }     // 提前终止次数
+                public double EarlyTerminationAvgPoint { get; set; } // 提前终止时平均检查点数
+
+                // ★ 坐标监控：该层最优候选
+                public double BestScore { get; set; }
+                public int BestX { get; set; }       // 在该层图像空间的整数坐标
+                public int BestY { get; set; }
+                public double BestAngle { get; set; }
+                public double BestScale { get; set; }
+                public double? MappedFromPrevX { get; set; } // Refine 时：粗层候选映射到本层的浮点坐标（Round 前）
+                public double? MappedFromPrevY { get; set; }
+
+                // ★ 最终映射到原图的坐标（仅 finest level 有效）
+                public double? FinalCenterX { get; set; }
+                public double? FinalCenterY { get; set; }
             }
 
             public List<LevelStats> Levels { get; set; } = new();
             public long TotalMs { get; set; }
+
+            /// <summary>
+            /// 坐标链路诊断消息（由 FindShape 内部追加，调用方统一输出）
+            /// </summary>
+            public List<string> CoordinateChainLog { get; set; } = new();
         }
 
         /// <summary>
@@ -2238,6 +2398,8 @@ namespace SunEyeVision.CvEngine
             public ushort[][] ResponseMaps { get; set; } // 8 x [height * width]
             public int Width { get; set; }
             public int Height { get; set; }
+            public double ScaleX { get; set; }  // 相对 Level 0 的实际 X 缩放比 = origW / Width
+            public double ScaleY { get; set; }  // 相对 Level 0 的实际 Y 缩放比 = origH / Height
         }
 
 
@@ -2258,7 +2420,50 @@ namespace SunEyeVision.CvEngine
         }
 
         /// <summary>
-        /// 根据 Gx/Gy 量化方向到 0~(DIRECTION_BINS-1)（使用 atan2）
+        /// 预计算方向量化表（基于量化后的 gx/gy 查表替代 atan2，加速 ~40×）
+        /// Scharr 输出为整数 [-4080, 4080]，量化到 [-255, 255]（除以 16），表大小 511×511
+        /// </summary>
+        private static readonly byte[,] QUANTIZED_DIR_LUT = BuildQuantizedDirLut();
+
+        private const int DIR_LUT_SHIFT = 16;   // 量化步长：大值不影响方向精度，小梯度方向噪声不影响分数
+        private const int DIR_LUT_OFFSET = 255;
+        private const int DIR_LUT_SIZE = 511;   // [-255, +255]
+
+        private static byte[,] BuildQuantizedDirLut()
+        {
+            var lut = new byte[DIR_LUT_SIZE, DIR_LUT_SIZE];
+            double binRad = 2.0 * Math.PI / DIRECTION_BINS;
+
+            for (int i = -255; i <= 255; i++)
+            {
+                for (int j = -255; j <= 255; j++)
+                {
+                    // 量化后的近似梯度值
+                    float gxVal = i * DIR_LUT_SHIFT;
+                    float gyVal = j * DIR_LUT_SHIFT;
+                    double angle = Math.Atan2(gyVal, gxVal);
+                    if (angle < 0) angle += 2 * Math.PI;
+                    lut[i + DIR_LUT_OFFSET, j + DIR_LUT_OFFSET] =
+                        (byte)(angle / binRad % DIRECTION_BINS);
+                }
+            }
+            return lut;
+        }
+
+        /// <summary>
+        /// 根据 Gx/Gy 量化方向到 0~(DIRECTION_BINS-1) — 查表版（替代 atan2）
+        /// </summary>
+        private static int QuantizeDirectionTable(float gx, float gy)
+        {
+            int idx = ((int)gx / DIR_LUT_SHIFT) + DIR_LUT_OFFSET;
+            int idy = ((int)gy / DIR_LUT_SHIFT) + DIR_LUT_OFFSET;
+            if ((uint)idx >= DIR_LUT_SIZE) idx = idx < 0 ? 0 : DIR_LUT_SIZE - 1;
+            if ((uint)idy >= DIR_LUT_SIZE) idy = idy < 0 ? 0 : DIR_LUT_SIZE - 1;
+            return QUANTIZED_DIR_LUT[idx, idy];
+        }
+
+        /// <summary>
+        /// 根据 Gx/Gy 量化方向到 0~(DIRECTION_BINS-1)（使用 atan2，保留以作对比参考）
         /// </summary>
         private static int QuantizeDirectionAtan2(float gx, float gy)
         {
@@ -2275,9 +2480,14 @@ namespace SunEyeVision.CvEngine
         {
             var pyramid = new List<ResponsePyramidLevel>(levels);
             using var current = grayImage.Clone();
+            int origW = grayImage.Width;
+            int origH = grayImage.Height;
 
             for (int i = 0; i < levels; i++)
             {
+                int curW = current.Width;
+                int curH = current.Height;
+
                 if (i >= minLevel)
                 {
                     using var gx = new Mat();
@@ -2289,55 +2499,65 @@ namespace SunEyeVision.CvEngine
                     int h = gy.Height;
                     int total = w * h;
 
-                    float[] gxData = new float[total];
-                    float[] gyData = new float[total];
-                    System.Runtime.InteropServices.Marshal.Copy(gx.Data, gxData, 0, total);
-                    System.Runtime.InteropServices.Marshal.Copy(gy.Data, gyData, 0, total);
-
                     var maps = new ushort[DIRECTION_BINS][];
                     for (int b = 0; b < DIRECTION_BINS; b++)
                         maps[b] = new ushort[total];
 
                     const byte INVALID_DIR = 255;
-                    for (int y = 0; y < h; y++)
+                    unsafe
                     {
-                        for (int x = 0; x < w; x++)
+                        float* gxPtr = (float*)gx.Data.ToPointer();
+                        float* gyPtr = (float*)gy.Data.ToPointer();
+
+                        System.Threading.Tasks.Parallel.ForEach(
+                            System.Collections.Concurrent.Partitioner.Create(0, h),
+                            range =>
                         {
-                            int idx = y * w + x;
-                            float gxVal = gxData[idx];
-                            float gyVal = gyData[idx];
-                            float mag = (float)Math.Sqrt(gxVal * gxVal + gyVal * gyVal);
-
-                            // 低梯度像素标记为无效方向，maps[dt][idx] 保持 0
-                            byte qdir = mag >= 1.0f
-                                ? (byte)QuantizeDirectionAtan2(gxVal, gyVal)
-                                : INVALID_DIR;
-
-                            // ★ 仅存储方向相似度(0~255)，不含梯度幅值
-                            //   标准做法: score = (1/N) × Σ cos(θt - θi)，与对比度无关
-                            if (qdir != INVALID_DIR)
+                            for (int y = range.Item1; y < range.Item2; y++)
                             {
-                                for (int dt = 0; dt < DIRECTION_BINS; dt++)
-                                    maps[dt][idx] = DIRECTION_LUT[dt, qdir];
+                                for (int x = 0; x < w; x++)
+                                {
+                                    int idx = y * w + x;
+                                    float gxVal = gxPtr[idx];
+                                    float gyVal = gyPtr[idx];
+                                    float mag = (float)Math.Sqrt(gxVal * gxVal + gyVal * gyVal);
+
+                                    // 低梯度像素标记为无效方向，maps[dt][idx] 保持 0
+                                    byte qdir = mag >= 1.0f
+                                        ? (byte)QuantizeDirectionTable(gxVal, gyVal)
+                                        : INVALID_DIR;
+
+                                    // ★ 仅存储方向相似度(0~255)，不含梯度幅值
+                                    //   标准做法: score = (1/N) × Σ cos(θt - θi)，与对比度无关
+                                    if (qdir != INVALID_DIR)
+                                    {
+                                        for (int dt = 0; dt < DIRECTION_BINS; dt++)
+                                            maps[dt][idx] = DIRECTION_LUT[dt, qdir];
+                                    }
+                                }
                             }
-                        }
+                        });
                     }
 
                     pyramid.Add(new ResponsePyramidLevel
                     {
                         ResponseMaps = maps,
                         Width = w,
-                        Height = h
+                        Height = h,
+                        ScaleX = (double)origW / w,
+                        ScaleY = (double)origH / h
                     });
                 }
                 else
                 {
-                    // 跳过响应图建造（仅用于 PyrDown 传播到下一层）
+                    // 跳过响应图建造（仅用于 PyrDown 传播到下一层），仍记录实际尺寸和缩放比
                     pyramid.Add(new ResponsePyramidLevel
                     {
                         ResponseMaps = null,
-                        Width = 0,
-                        Height = 0
+                        Width = curW,
+                        Height = curH,
+                        ScaleX = (double)origW / curW,
+                        ScaleY = (double)origH / curH
                     });
                 }
 
@@ -2361,24 +2581,29 @@ namespace SunEyeVision.CvEngine
             double angleStart, double angleEnd, double angleStep,
             double scaleMin, double scaleMax, double scaleStep,
             int stepSize,
-            List<(double Score, int X, int Y, double Angle, double Scale)> candidates,
-            Stopwatch stopwatch, int timeoutMs)
+            List<(double Score, int X, int Y, double Angle, double Scale, int MatchedCount)> candidates,
+            Stopwatch stopwatch, int timeoutMs,
+            ref SearchStats stats)
         {
             int tmplCount = normalizedContour.Count;
             if (tmplCount < 3) return;
 
-            // ★ 归一化分母 = N × 255（LUT 值域上限），确保 score ∈ [0, 1]，与数据位深无关
             double normalizer = 1.0 / (tmplCount * 255.0);
             int angleSteps = Math.Max(1, (int)Math.Ceiling((angleEnd - angleStart) / angleStep));
             int scaleSteps = Math.Max(1, (int)Math.Ceiling((scaleMax - scaleMin) / scaleStep));
 
+            long localChecks = 0;
+            long localEarlyTerm = 0;
+            long localEarlyChecks = 0;
+            long localSpatialPixels = 0;
+
             for (int si = 0; si < scaleSteps; si++)
             {
                 if (stopwatch.ElapsedMilliseconds > timeoutMs) break;
+                stats.ScaleCombosTried++;
 
                 double scale = Math.Clamp(scaleMin + si * scaleStep, scaleMin, scaleMax);
 
-                // 预计算缩放后的轮廓坐标（int 精度，使用 Math.Round 避免向零截断）
                 int[] sxPos = new int[tmplCount];
                 int[] syPos = new int[tmplCount];
                 for (int ti = 0; ti < tmplCount; ti++)
@@ -2390,17 +2615,16 @@ namespace SunEyeVision.CvEngine
                 for (int ai = 0; ai < angleSteps; ai++)
                 {
                     if (stopwatch.ElapsedMilliseconds > timeoutMs) break;
+                    stats.AngleCombosTried++;
 
                     double angleDeg = angleStart + ai * angleStep;
                     double angleRad = angleDeg * Math.PI / 180.0;
                     double cosA = Math.Cos(angleRad);
                     double sinA = Math.Sin(angleRad);
 
-                    // 旋转方向 bin
                     int angleBinShift = (int)Math.Round(angleDeg / BIN_ANGLE_DEG);
                     angleBinShift = ((angleBinShift % DIRECTION_BINS) + DIRECTION_BINS) % DIRECTION_BINS;
 
-                    // 旋转轮廓 + 计算搜索边界
                     int[] rx = new int[tmplCount];
                     int[] ry = new int[tmplCount];
                     int minTx = int.MaxValue, maxTx = int.MinValue;
@@ -2427,7 +2651,11 @@ namespace SunEyeVision.CvEngine
                     int searchEX = Math.Min(imgW - 1 - maxTx, imgW - 1);
                     int searchEY = Math.Min(imgH - 1 - maxTy, imgH - 1);
 
-                    // 方向映射后的响应图索引
+                    int xCount = ((searchEX - searchSX) / stepSize) + 1;
+                    int yCount = ((searchEY - searchSY) / stepSize) + 1;
+                    int spatialCount = xCount * yCount;
+                    localSpatialPixels += spatialCount;
+
                     var rotatedMap = new int[tmplCount];
                     for (int ti = 0; ti < tmplCount; ti++)
                         rotatedMap[ti] = (quantizedTemplateDirs[ti] + angleBinShift) % DIRECTION_BINS;
@@ -2437,20 +2665,28 @@ namespace SunEyeVision.CvEngine
                         for (int sx = searchSX; sx <= searchEX; sx += stepSize)
                         {
                             int sum = 0;
+                            int matchCount = 0;
                             int ti;
                             for (ti = 0; ti < tmplCount; ti++)
                             {
+                                localChecks++;
+
                                 int px = sx + rx[ti];
                                 int py = sy + ry[ti];
                                 if ((uint)px < (uint)imgW && (uint)py < (uint)imgH)
-                                    sum += responseMaps[rotatedMap[ti]][py * imgW + px];
+                                {
+                                    int val = responseMaps[rotatedMap[ti]][py * imgW + px];
+                                    sum += val;
+                                    if (val >= 128) matchCount++;
+                                }
 
-                                // 提前终止: 剩余点全拿满分也达不到阈值
                                 int remaining = tmplCount - ti - 1;
                                 double maxPossible = (sum + remaining * 255) * normalizer;
                                 if (maxPossible < minScore)
                                 {
                                     sum = -1;
+                                    localEarlyTerm++;
+                                    localEarlyChecks += (ti + 1);
                                     break;
                                 }
                             }
@@ -2459,12 +2695,20 @@ namespace SunEyeVision.CvEngine
                             {
                                 double score = sum * normalizer;
                                 if (score >= minScore)
-                                    candidates.Add((score, sx, sy, angleDeg, scale));
+                                {
+                                    candidates.Add((score, sx, sy, angleDeg, scale, matchCount));
+                                    stats.CandidatesOut++;
+                                }
                             }
                         }
                     }
                 }
             }
+
+            stats.TotalTemplateChecks += localChecks;
+            stats.EarlyTerminations += localEarlyTerm;
+            stats.EarlyTerminationChecks += localEarlyChecks;
+            stats.SpatialPixelsSearched += localSpatialPixels;
         }
 
         /// <summary>
@@ -2474,21 +2718,25 @@ namespace SunEyeVision.CvEngine
             ushort[][] responseMaps, int imgW, int imgH,
             List<Point2f> normalizedContour, byte[] quantizedTemplateDirs,
             double minScore, int stepSize,
-            List<(double Score, int X, int Y, double Angle, double Scale)> candidates,
-            List<(double Score, int X, int Y, double Angle, double Scale)> prevCandidates,
-            double angleStep, double scaleStep,
-            Stopwatch stopwatch, int timeoutMs)
+            List<(double Score, int X, int Y, double Angle, double Scale, int MatchedCount)> candidates,
+            List<(double Score, int X, int Y, double Angle, double Scale, int MatchedCount)> prevCandidates,
+            double angleStep, double scaleStep, int prevLevelWidth, int prevLevelHeight,
+            Stopwatch stopwatch, int timeoutMs,
+            ref SearchStats stats)
         {
             int tmplCount = normalizedContour.Count;
             if (tmplCount < 3) return;
 
-            // ★ 归一化分母 = N × 255（LUT 值域上限），确保 score ∈ [0, 1]，与数据位深无关
             double normalizer = 1.0 / (tmplCount * 255.0);
             int searchRadius = Math.Max(stepSize * 2, 6);
             const double ANGLE_MARGIN_FACTOR = 1.5;
             const double SCALE_MARGIN_FACTOR = 1.5;
 
-            // 不分组, 逐候选搜索, 每个候选在三维邻域内精化
+            long localChecks = 0;
+            long localEarlyTerm = 0;
+            long localEarlyChecks = 0;
+            long localSpatialPixels = 0;
+
             foreach (var prev in prevCandidates)
             {
                 if (stopwatch.ElapsedMilliseconds > timeoutMs) break;
@@ -2510,10 +2758,12 @@ namespace SunEyeVision.CvEngine
                 {
                     double scale = sStart + si * scaleStep;
                     if (scale <= 0) continue;
+                    stats.ScaleCombosTried++;
 
                     for (int ai = 0; ai < aSteps; ai++)
                     {
                         if (stopwatch.ElapsedMilliseconds > timeoutMs) break;
+                        stats.AngleCombosTried++;
 
                         double angleDeg = aStart + ai * angleStep;
                         double angleRad = angleDeg * Math.PI / 180.0;
@@ -2523,7 +2773,6 @@ namespace SunEyeVision.CvEngine
                         int angleBinShift = (int)Math.Round(angleDeg / BIN_ANGLE_DEG);
                         angleBinShift = ((angleBinShift % DIRECTION_BINS) + DIRECTION_BINS) % DIRECTION_BINS;
 
-                        // 缩放 + 旋转轮廓（使用 Math.Round 避免向零截断）
                         int[] rx = new int[tmplCount];
                         int[] ry = new int[tmplCount];
                         for (int ti = 0; ti < tmplCount; ti++)
@@ -2538,33 +2787,47 @@ namespace SunEyeVision.CvEngine
                         for (int ti = 0; ti < tmplCount; ti++)
                             rotatedMap[ti] = (quantizedTemplateDirs[ti] + angleBinShift) % DIRECTION_BINS;
 
-                        int centerX = prev.X * 2;
-                        int centerY = prev.Y * 2;
+                        double ratioX = (double)imgW / prevLevelWidth;
+                        double ratioY = (double)imgH / prevLevelHeight;
+                        int centerX = (int)Math.Round(prev.X * ratioX);
+                        int centerY = (int)Math.Round(prev.Y * ratioY);
 
                         int xStart = Math.Max(0, centerX - searchRadius);
                         int xEnd = Math.Min(imgW - 1, centerX + searchRadius);
                         int yStart = Math.Max(0, centerY - searchRadius);
                         int yEnd = Math.Min(imgH - 1, centerY + searchRadius);
 
+                        int xCount = ((xEnd - xStart) / stepSize) + 1;
+                        int yCount = ((yEnd - yStart) / stepSize) + 1;
+                        localSpatialPixels += (long)xCount * yCount;
+
                         for (int sy = yStart; sy <= yEnd; sy += stepSize)
                         {
                             for (int sx = xStart; sx <= xEnd; sx += stepSize)
                             {
                                 int sum = 0;
+                                int matchCount = 0;
                                 int ti;
                                 for (ti = 0; ti < tmplCount; ti++)
                                 {
+                                    localChecks++;
+
                                     int px = sx + rx[ti];
                                     int py = sy + ry[ti];
                                     if ((uint)px < (uint)imgW && (uint)py < (uint)imgH)
-                                        sum += responseMaps[rotatedMap[ti]][py * imgW + px];
+                                    {
+                                        int val = responseMaps[rotatedMap[ti]][py * imgW + px];
+                                        sum += val;
+                                        if (val >= 128) matchCount++;
+                                    }
 
-                                    // 提前终止: 剩余点全拿满分也达不到阈值
                                     int remaining = tmplCount - ti - 1;
                                     double maxPossible = (sum + remaining * 255) * normalizer;
                                     if (maxPossible < minScore)
                                     {
                                         sum = -1;
+                                        localEarlyTerm++;
+                                        localEarlyChecks += (ti + 1);
                                         break;
                                     }
                                 }
@@ -2573,13 +2836,21 @@ namespace SunEyeVision.CvEngine
                                 {
                                     double score = sum * normalizer;
                                     if (score >= minScore)
-                                        candidates.Add((score, sx, sy, angleDeg, scale));
+                                    {
+                                        candidates.Add((score, sx, sy, angleDeg, scale, matchCount));
+                                        stats.CandidatesOut++;
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
+
+            stats.TotalTemplateChecks += localChecks;
+            stats.EarlyTerminations += localEarlyTerm;
+            stats.EarlyTerminationChecks += localEarlyChecks;
+            stats.SpatialPixelsSearched += localSpatialPixels;
         }
 
         #endregion

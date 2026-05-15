@@ -585,6 +585,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.ViewModels
 
 
         /// <summary>
+        /// 获取下一个区域名称（供 RegionEditorControl 调用）
+        /// </summary>
+        public string RequestNextRegionName()
+        {
+            return GetNextRegionName();
+        }
+
+        /// <summary>
         /// 获取下一个区域名称，优先填充索引空洞
         /// </summary>
         /// <remarks>
@@ -834,6 +842,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.ViewModels
             OnPropertyChanged(nameof(HasParametersVisible));
             OnPropertyChanged(nameof(Parameters));
             OnPropertyChanged(nameof(PreviewLength));
+        }
+
+        /// <summary>
+        /// 触发区域变更事件（供 RegionEditorControl 调用）
+        /// </summary>
+        internal void FireRegionChanged(RegionData region, RegionChangeType changeType)
+        {
+            RegionChanged?.Invoke(this, new RegionChangedEventArgs(region, changeType));
         }
 
         /// <summary>

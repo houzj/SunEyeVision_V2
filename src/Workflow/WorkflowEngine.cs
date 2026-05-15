@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using OpenCvSharp;
+using HalconDotNet;
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Core;
@@ -164,7 +164,7 @@ namespace SunEyeVision.Workflow
         /// <summary>
         /// Execute workflow
         /// </summary>
-        public List<AlgorithmResult> ExecuteWorkflow(string workflowId, Mat inputImage)
+        public List<AlgorithmResult> ExecuteWorkflow(string workflowId, HImage inputImage)
         {
             if (!Workflows.ContainsKey(workflowId))
             {
@@ -185,7 +185,7 @@ namespace SunEyeVision.Workflow
         /// <summary>
         /// Execute current workflow
         /// </summary>
-        public List<AlgorithmResult> ExecuteCurrentWorkflow(Mat inputImage)
+        public List<AlgorithmResult> ExecuteCurrentWorkflow(HImage inputImage)
         {
             if (CurrentWorkflow == null)
             {

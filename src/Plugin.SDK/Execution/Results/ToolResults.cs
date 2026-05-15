@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using OpenCvSharp;
+using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
@@ -398,7 +398,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
         /// 字典键使用属性名（如 "OutputImage", "BinaryImage", "InputImage"），
         /// 与 AvailableDataSource.PropertyName 匹配。
         /// </remarks>
-        public virtual Dictionary<string, Mat?> GetDisplayImages() => new();
+        public virtual Dictionary<string, HImage?> GetDisplayImages() => new();
 
         /// <summary>
         /// 获取结果项（数据面板）
@@ -659,16 +659,16 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
         }
 
         /// <summary>
-        /// 从结果项中提取 Mat 图像供 UI 显示
+        /// 从结果项中提取 HImage 图像供 UI 显示
         /// </summary>
-        public override Dictionary<string, Mat?> GetDisplayImages()
+        public override Dictionary<string, HImage?> GetDisplayImages()
         {
-            var images = new Dictionary<string, Mat?>();
+            var images = new Dictionary<string, HImage?>();
             foreach (var item in _resultItems)
             {
-                if (item.Value is Mat mat && !mat.Empty())
+                if (item.Value is HImage image)
                 {
-                    images[item.Name] = mat;
+                    images[item.Name] = image;
                 }
             }
             return images;

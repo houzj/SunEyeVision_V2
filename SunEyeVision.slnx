@@ -9,9 +9,6 @@
   <Folder Name="/Src/Plugin.SDK/">
     <Project Path="Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj" />
   </Folder>
-  <Folder Name="/Src/SunEyeVision.CvEngine/">
-    <Project Path="Src/SunEyeVision.CvEngine/SunEyeVision.CvEngine.csproj" />
-  </Folder>
   <Folder Name="/Src/SunEyeVision.DeviceDriver/">
     <Project Path="Src/DeviceDriver/SunEyeVision.DeviceDriver.csproj" />
   </Folder>

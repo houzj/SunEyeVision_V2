@@ -10,9 +10,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="OpenCvSharp4" Version="4.13.0.20260222" />
-    <PackageReference Include="OpenCvSharp4.Extensions" Version="4.13.0.20260222" />
-    <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.13.0.20260222" />
+    <Reference Include="HalconDotNet">
+      <HintPath>$(SolutionDir)runtime\halcondotnetxl.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>

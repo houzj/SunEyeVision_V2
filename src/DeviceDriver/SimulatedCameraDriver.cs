@@ -1,15 +1,13 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using System.Threading;
-using OpenCvSharp;
+using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Core.Models;
 using Events = SunEyeVision.Core.Events;
 
 namespace SunEyeVision.DeviceDriver
 {
-    /// <summary>
-    /// Simulated camera driver (for testing) with trigger support
-    /// </summary>
     public class SimulatedCameraDriver : BaseDeviceDriver
     {
         private bool _isCapturing;
@@ -27,10 +25,7 @@ namespace SunEyeVision.DeviceDriver
             try
             {
                 Logger.LogInfo($"Connecting to device: {DeviceName} (ID: {DeviceId})");
-
-                // Simulate connection delay
                 Thread.Sleep(100);
-
                 IsConnected = true;
                 Logger.LogInfo($"Device connected successfully: {DeviceName}");
                 return true;
@@ -50,7 +45,6 @@ namespace SunEyeVision.DeviceDriver
                 {
                     StopContinuousCapture();
                 }
-
                 Logger.LogInfo($"Disconnecting device: {DeviceName}");
                 IsConnected = false;
                 Logger.LogInfo($"Device disconnected successfully: {DeviceName}");
@@ -63,7 +57,7 @@ namespace SunEyeVision.DeviceDriver
             }
         }
 
-        public override Mat CaptureImage()
+        public override HImage CaptureImage()
         {
             if (!IsConnected)
             {
@@ -75,18 +69,18 @@ namespace SunEyeVision.DeviceDriver
             {
                 Logger.Info($"Capturing image from device: {DeviceName}");
 
-                // Generate simulated image data
-                var width = 640;
-                var height = 480;
-                var channels = 3;
+                int width = 640, height = 480, channels = 3;
                 var data = new byte[width * height * channels];
-
-                // Generate random noise image
                 _random.NextBytes(data);
 
-                // Create OpenCvSharp.Mat from byte array
-                var image = new Mat(height, width, MatType.CV_8UC(channels));
-                System.Runtime.InteropServices.Marshal.Copy(data, 0, image.Data, data.Length);
+                // Create Halcon image from interleaved RGB byte data
+                IntPtr ptr = Marshal.AllocHGlobal(data.Length);
+                Marshal.Copy(data, 0, ptr, data.Length);
+
+                HOperatorSet.GenImageInterleaved(out var hObj, ptr, "rgb", width, height, 0, "byte", 0, 0, 0, 0, 0, 0);
+                HImage image = new HImage(hObj);
+
+                Marshal.FreeHGlobal(ptr);
                 Logger.Info($"Image captured successfully: {width}x{height}");
                 return image;
             }
@@ -140,31 +134,23 @@ namespace SunEyeVision.DeviceDriver
             {
                 try
                 {
-                    Mat image = null;
+                    HImage image = null;
                     bool shouldPublishEvent = false;
 
-                    // Based on trigger mode, decide whether to capture
                     switch (TriggerMode)
                     {
                         case TriggerMode.None:
-                            // Continuous capture mode
                             image = CaptureImage();
                             shouldPublishEvent = true;
                             break;
-
                         case TriggerMode.Software:
-                            // Software trigger mode - wait for TriggerCapture() call
                             Thread.Sleep(100);
                             continue;
-
                         case TriggerMode.Hardware:
-                            // Simulate hardware trigger - capture every 100ms
                             image = CaptureImage();
                             shouldPublishEvent = true;
                             break;
-
                         case TriggerMode.Timer:
-                            // Timer trigger mode - capture every 100ms
                             image = CaptureImage();
                             shouldPublishEvent = true;
                             break;
@@ -172,16 +158,13 @@ namespace SunEyeVision.DeviceDriver
 
                     if (image != null && shouldPublishEvent)
                     {
-                        // Trigger image captured event
                         OnImageCaptured(image);
                     }
 
-                    // Simulate frame rate (~30 FPS)
                     Thread.Sleep(33);
                 }
                 catch (Exception ex)
                 {
-                    // Ignore exception, continue capturing
                     Logger.LogWarning($"Capture loop error: {ex.Message}");
                 }
             }
@@ -222,11 +205,9 @@ namespace SunEyeVision.DeviceDriver
                 {
                     StopContinuousCapture();
                 }
-
                 _captureThread = null;
                 _random = null;
             }
-
             base.Dispose(disposing);
         }
     }

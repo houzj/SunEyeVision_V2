@@ -1,14 +1,9 @@
-using OpenCvSharp;
-using SunEyeVision.Plugin.SDK.Extensions;
-using System;
+﻿using System;
 
 namespace SunEyeVision.Plugin.SDK.Models.Geometry
 {
     /// <summary>
     /// 圆环结构ROI
-    /// </summary>
-    /// <remarks>
-    /// OpenCvSharp缺少Annulus类型，提供了此类型。
     /// 用于同圆度检测、环形区域分析等。
     /// 支持圆弧和完整圆环。
     /// </remarks>

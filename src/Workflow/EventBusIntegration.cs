@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using OpenCvSharp;
+using HalconDotNet;
 using SunEyeVision.Core.Events;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
@@ -112,7 +112,7 @@ namespace SunEyeVision.Workflow
         /// <summary>
         /// Execute workflow with event publishing
         /// </summary>
-        public List<AlgorithmResult> ExecuteWithEvents(Mat inputImage)
+        public List<AlgorithmResult> ExecuteWithEvents(HImage inputImage)
         {
             var stopwatch = Stopwatch.StartNew();
             int nodesExecuted = 0;
@@ -148,7 +148,7 @@ namespace SunEyeVision.Workflow
         /// <summary>
         /// Execute a single node with event publishing
         /// </summary>
-        public AlgorithmResult ExecuteNode(WorkflowNodeBase node, Mat inputImage)
+        public AlgorithmResult ExecuteNode(WorkflowNodeBase node, HImage inputImage)
         {
             var stopwatch = Stopwatch.StartNew();
             bool success = true;
@@ -159,7 +159,7 @@ namespace SunEyeVision.Workflow
                 _eventPublisher.PublishNodeExecutionStarted(Id, node.Id, node.Name);
 
                 var tool = node.CreateInstance();
-                Mat? resultImage = null;
+                HImage? resultImage = null;
 
                 if (tool != null)
                 {
@@ -172,7 +172,7 @@ namespace SunEyeVision.Workflow
                     var outputImageProp = toolResult.GetType().GetProperty("OutputImage");
                     if (outputImageProp != null)
                     {
-                        resultImage = outputImageProp.GetValue(toolResult) as Mat;
+                        resultImage = outputImageProp.GetValue(toolResult) as HImage;
                     }
                 }
 

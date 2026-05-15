@@ -1,5 +1,6 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using HalconDotNet;
 using OpenCvSharp;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
@@ -31,15 +32,9 @@ namespace SunEyeVision.Tool.ImageThreshold
         /// <summary>
         /// 获取所有可显示的图像
         /// </summary>
-        public override Dictionary<string, Mat?> GetDisplayImages()
+        public override Dictionary<string, HImage?> GetDisplayImages()
         {
-            var images = new Dictionary<string, Mat?>();
-            if (OutputImage != null && !OutputImage.Empty())
-                images["OutputImage"] = OutputImage;
-            if (GrayImage != null && !GrayImage.Empty())
-                images["GrayImage"] = GrayImage;
-            if (BinaryMask != null && !BinaryMask.Empty())
-                images["BinaryMask"] = BinaryMask;
+            var images = new Dictionary<string, HImage?>();
             return images;
         }
 

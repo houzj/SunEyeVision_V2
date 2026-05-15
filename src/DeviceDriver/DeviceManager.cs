@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using OpenCvSharp;
+using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Core.Models;
 using SunEyeVision.Core.Interfaces;
@@ -140,7 +140,7 @@ namespace SunEyeVision.DeviceDriver
             }
         }
 
-        public async Task<Mat> CaptureImageAsync(string deviceId)
+        public async Task<HImage> CaptureImageAsync(string deviceId)
         {
             if (!_registeredDrivers.TryGetValue(deviceId, out var driver))
             {

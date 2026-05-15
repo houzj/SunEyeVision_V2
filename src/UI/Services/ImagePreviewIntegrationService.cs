@@ -1,6 +1,6 @@
-using System;
+﻿using System;
 using System.IO;
-using OpenCvSharp;
+using HalconDotNet;
 using SunEyeVision.UI.Views.Controls.Panels;
 
 namespace SunEyeVision.UI.Services
@@ -54,9 +54,9 @@ namespace SunEyeVision.UI.Services
         /// <summary>
         /// 更新预览器显示的图像
         /// </summary>
-        public void UpdatePreview(Mat? image)
+        public void UpdatePreview(HImage? image)
         {
-            if (image == null || image.Empty())
+            if (image == null || !image.IsInitialized())
             {
                 return;
             }

@@ -1,4 +1,4 @@
-using OpenCvSharp;
+﻿using SunEyeVision.Plugin.SDK.Models.Geometry;
 
 namespace SunEyeVision.Plugin.SDK.Models.Visualization
 {
@@ -37,17 +37,33 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
     /// <summary>坐标系几何</summary>
     public sealed class CoordinateSystemGeometry
     {
-        public Mat TransformMatrix { get; }
+        /// <summary>3x3 变换矩阵（列主序，9 个元素）</summary>
+        public double[] TransformMatrix { get; }
         public double AxisLength { get; }
         public uint XAxisColor { get; }
         public uint YAxisColor { get; }
 
-        public CoordinateSystemGeometry(Mat transformMatrix, double axisLength, uint xAxisColor, uint yAxisColor)
+        public CoordinateSystemGeometry(double[] transformMatrix, double axisLength, uint xAxisColor, uint yAxisColor)
         {
             TransformMatrix = transformMatrix;
             AxisLength = axisLength;
             XAxisColor = xAxisColor;
             YAxisColor = yAxisColor;
+        }
+    }
+
+    /// <summary>箭头几何</summary>
+    public sealed class ArrowGeometry
+    {
+        public Point2d Start { get; }
+        public Point2d End { get; }
+        public double HeadSize { get; }
+
+        public ArrowGeometry(Point2d start, Point2d end, double headSize)
+        {
+            Start = start;
+            End = end;
+            HeadSize = headSize;
         }
     }
 

@@ -5,8 +5,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
-using OpenCvSharp;
+using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Models.Imaging;
+using SunEyeVision.UI.Extensions;
 
 namespace SunEyeVision.UI.Services.Images
 {
@@ -110,12 +111,12 @@ namespace SunEyeVision.UI.Services.Images
         /// <summary>
         /// 创建内存图像源
         /// </summary>
-        public IImageSource CreateFromMemory(Mat mat, string? sourceId = null)
+        public IImageSource CreateFromMemory(HImage image, string? sourceId = null)
         {
             ThrowIfDisposed();
 
-            if (mat == null)
-                throw new ArgumentNullException(nameof(mat));
+            if (image == null)
+                throw new ArgumentNullException(nameof(image));
 
             var id = sourceId ?? $"memory://{Guid.NewGuid():N}";
 
@@ -129,13 +130,13 @@ namespace SunEyeVision.UI.Services.Images
                 }
 
                 // 创建新的图像源
-                var imageSource = new MemoryImageSource(mat, id, ownsMat: true);
+                var imageSource = new MemoryImageSource(image, id, ownsImage: true);
 
                 // 添加到缓存
                 AddToCache(imageSource);
 
                 // 估算内存使用
-                _estimatedMemoryUsage += EstimateMatSize(mat);
+                _estimatedMemoryUsage += EstimateImageSize(image);
 
                 return imageSource;
             }
@@ -439,9 +440,10 @@ namespace SunEyeVision.UI.Services.Images
         /// <summary>
         /// 估算Mat大小
         /// </summary>
-        private static long EstimateMatSize(Mat mat)
+        private static long EstimateImageSize(HImage image)
         {
-            return mat.Width * mat.Height * mat.Channels();
+            var info = image.GetInfo();
+            return info.Width * info.Height * info.Channels;
         }
 
         /// <summary>

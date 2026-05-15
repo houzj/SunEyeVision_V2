@@ -4,204 +4,167 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using OpenCvSharp;
+using HalconDotNet;
 
 namespace SunEyeVision.UI.Services.Performance
 {
-    /// <summary>
-    /// 图像转换器池 - 优化OpenCV Mat到WPF BitmapSource的转换
-    /// 使用WriteableBitmap直接内存写入，避免中间转换
-    /// </summary>
     public class ImageConverterPool : IDisposable
     {
         private readonly ConcurrentDictionary<string, WriteableBitmap> _bitmapCache;
         private readonly int _maxCacheSize;
         private bool _disposed;
 
-        /// <summary>
-        /// 创建图像转换器池
-        /// </summary>
-        /// <param name="maxCacheSize">最大缓存大小（默认10）</param>
         public ImageConverterPool(int maxCacheSize = 10)
         {
             _bitmapCache = new ConcurrentDictionary<string, WriteableBitmap>();
             _maxCacheSize = maxCacheSize;
         }
 
-        /// <summary>
-        /// 将OpenCV Mat转换为WPF BitmapSource（优化版）
-        /// </summary>
-        /// <param name="mat">OpenCV Mat图像</param>
-        /// <returns>WPF BitmapSource</returns>
-        public BitmapSource ConvertToBitmapSource(Mat mat)
+        public BitmapSource ConvertToBitmapSource(HImage image)
         {
-            if (mat == null || mat.Empty())
-                throw new ArgumentNullException(nameof(mat));
+            if (image == null || !image.IsInitialized())
+                throw new ArgumentNullException(nameof(image));
 
-            // 确定像素格式
-            PixelFormat pixelFormat = GetPixelFormat(mat.Type());
+            var info = GetImageInfo(image);
+            PixelFormat pixelFormat = GetPixelFormat(info.C);
 
-            // 生成缓存键
-            string cacheKey = $"{mat.Width}_{mat.Height}_{pixelFormat}";
+            string cacheKey = $"{info.W}_{info.H}_{pixelFormat}";
 
-            // 尝试从缓存获取WriteableBitmap
             if (!_bitmapCache.TryGetValue(cacheKey, out var writeableBitmap) ||
-                writeableBitmap.PixelWidth != mat.Width ||
-                writeableBitmap.PixelHeight != mat.Height)
+                writeableBitmap.PixelWidth != info.W ||
+                writeableBitmap.PixelHeight != info.H)
             {
-                // 创建新的WriteableBitmap
-                writeableBitmap = new WriteableBitmap(mat.Width, mat.Height, 96, 96, pixelFormat, null);
+                writeableBitmap = new WriteableBitmap(info.W, info.H, 96, 96, pixelFormat, null);
 
-                // 缓存（如果未达上限）
                 if (_bitmapCache.Count < _maxCacheSize)
                 {
                     _bitmapCache.TryAdd(cacheKey, writeableBitmap);
                 }
             }
 
-            // 锁定并写入数据
-            writeableBitmap.Lock();
+                writeableBitmap.Lock();
 
             try
             {
-                // 根据通道数进行转换
-                if (mat.Channels() == 1)
+                if (info.C == 1)
                 {
-                    // 灰度图：直接复制
-                    CopyGrayToBitmap(mat, writeableBitmap);
+                    CopyGrayToBitmap(image, writeableBitmap, info);
                 }
-                else if (mat.Channels() == 3)
+                else if (info.C == 3)
                 {
-                    // BGR图：转换为BGR32（或BGRA32）
-                    CopyBgrToBitmap(mat, writeableBitmap);
+                    CopyRgbToBitmap(image, writeableBitmap, info);
                 }
-                else if (mat.Channels() == 4)
+                else if (info.C == 4)
                 {
-                    // BGRA图：直接复制
-                    CopyBgraToBitmap(mat, writeableBitmap);
+                    CopyRgbaToBitmap(image, writeableBitmap, info);
                 }
                 else
                 {
-                    throw new NotSupportedException($"不支持的通道数: {mat.Channels()}");
+                    throw new NotSupportedException($"Unsupported channel count: {info.C}");
                 }
 
-                // 标记脏区域
-                writeableBitmap.AddDirtyRect(new Int32Rect(0, 0, mat.Width, mat.Height));
+                writeableBitmap.AddDirtyRect(new Int32Rect(0, 0, info.W, info.H));
             }
             finally
             {
                 writeableBitmap.Unlock();
             }
 
-            // 冻结以提高性能（允许跨线程访问）
-            // writeableBitmap.Freeze(); // 注意：WriteableBitmap不能冻结
-
             return writeableBitmap;
         }
 
-        /// <summary>
-        /// 获取像素格式
-        /// </summary>
-        private PixelFormat GetPixelFormat(MatType matType)
+        private static (int W, int H, int C, string T) GetImageInfo(HImage image)
         {
-            // 简化处理：统一使用Bgr32格式
-            return PixelFormats.Bgr32;
+            HOperatorSet.GetImageSize(image, out var w, out var h);
+            HOperatorSet.CountChannels(image, out var c);
+            HOperatorSet.GetImageType(image, out var t);
+            return (w.I, h.I, c.I, t.S);
         }
 
-        /// <summary>
-        /// 复制灰度图到WriteableBitmap
-        /// </summary>
-        private void CopyGrayToBitmap(Mat mat, WriteableBitmap bitmap)
+        private static PixelFormat GetPixelFormat(int channels)
         {
-            int width = mat.Width;
-            int height = mat.Height;
-            int stride = bitmap.BackBufferStride;
-            IntPtr srcPtr = mat.Data;
-            IntPtr dstPtr = bitmap.BackBuffer;
-
-            // 使用安全代码方式
-            for (int y = 0; y < height; y++)
+            return channels switch
             {
-                for (int x = 0; x < width; x++)
+                1 => PixelFormats.Gray8,
+                3 => PixelFormats.Rgb24,
+                4 => PixelFormats.Bgra32,
+                _ => PixelFormats.Bgr24
+            };
+        }
+
+        private static void CopyGrayToBitmap(HImage image, WriteableBitmap bitmap, (int W, int H, int C, string T) info)
+        {
+            HOperatorSet.GetImagePointer1(image, out var pointer, out var type, out var width, out var height);
+            int stride = info.W;
+            int bpp = (bitmap.Format.BitsPerPixel + 7) / 8;
+            int dstStride = info.W * bpp;
+
+            unsafe
+            {
+                byte* src = (byte*)pointer.IP;
+                byte* dst = (byte*)bitmap.BackBuffer;
+
+                for (int y = 0; y < info.H; y++)
                 {
-                    byte gray = Marshal.ReadByte(srcPtr, y * width + x);
-                    
-                    // BGR32格式：B, G, R, A
-                    int dstOffset = y * stride + x * 4;
-                    Marshal.WriteByte(dstPtr, dstOffset, gray);     // B
-                    Marshal.WriteByte(dstPtr, dstOffset + 1, gray); // G
-                    Marshal.WriteByte(dstPtr, dstOffset + 2, gray); // R
-                    Marshal.WriteByte(dstPtr, dstOffset + 3, 255);  // A
+                    Buffer.MemoryCopy(src + y * stride, dst + y * dstStride, dstStride, stride);
                 }
             }
         }
 
-        /// <summary>
-        /// 复制BGR图到WriteableBitmap
-        /// </summary>
-        private void CopyBgrToBitmap(Mat mat, WriteableBitmap bitmap)
+        private static unsafe void CopyRgbToBitmap(HImage image, WriteableBitmap bitmap, (int W, int H, int C, string T) info)
         {
-            int width = mat.Width;
-            int height = mat.Height;
-            int stride = bitmap.BackBufferStride;
-            IntPtr srcPtr = mat.Data;
-            IntPtr dstPtr = bitmap.BackBuffer;
+            HOperatorSet.GetImagePointer3(image, out var ptrR, out var ptrG, out var ptrB,
+                out var type, out var width, out var height);
 
-            for (int y = 0; y < height; y++)
+            byte* rPtr = (byte*)ptrR.IP;
+            byte* gPtr = (byte*)ptrG.IP;
+            byte* bPtr = (byte*)ptrB.IP;
+            byte* dst = (byte*)bitmap.BackBuffer;
+            int dstStride = info.W * 3;
+
+            for (int y = 0; y < info.H; y++)
             {
-                for (int x = 0; x < width; x++)
+                for (int x = 0; x < info.W; x++)
                 {
-                    int srcOffset = (y * width + x) * 3;
-                    int dstOffset = y * stride + x * 4;
-                    
-                    // BGR -> BGR32
-                    Marshal.WriteByte(dstPtr, dstOffset, Marshal.ReadByte(srcPtr, srcOffset));       // B
-                    Marshal.WriteByte(dstPtr, dstOffset + 1, Marshal.ReadByte(srcPtr, srcOffset + 1)); // G
-                    Marshal.WriteByte(dstPtr, dstOffset + 2, Marshal.ReadByte(srcPtr, srcOffset + 2)); // R
-                    Marshal.WriteByte(dstPtr, dstOffset + 3, 255); // A
+                    int idx = y * dstStride + x * 3;
+                    dst[idx] = rPtr[y * info.W + x];
+                    dst[idx + 1] = gPtr[y * info.W + x];
+                    dst[idx + 2] = bPtr[y * info.W + x];
                 }
             }
         }
 
-        /// <summary>
-        /// 复制BGRA图到WriteableBitmap
-        /// </summary>
-        private void CopyBgraToBitmap(Mat mat, WriteableBitmap bitmap)
+        private static unsafe void CopyRgbaToBitmap(HImage image, WriteableBitmap bitmap, (int W, int H, int C, string T) info)
         {
-            int width = mat.Width;
-            int height = mat.Height;
-            int stride = bitmap.BackBufferStride;
-            IntPtr srcPtr = mat.Data;
-            IntPtr dstPtr = bitmap.BackBuffer;
+            HOperatorSet.GetImagePointer3(image, out var ptrR, out var ptrG, out var ptrB,
+                out var type, out var width, out var height);
 
-            for (int y = 0; y < height; y++)
+            byte* rPtr = (byte*)ptrR.IP;
+            byte* gPtr = (byte*)ptrG.IP;
+            byte* bPtr = (byte*)ptrB.IP;
+            byte* dst = (byte*)bitmap.BackBuffer;
+            int dstStride = info.W * 4;
+
+            for (int y = 0; y < info.H; y++)
             {
-                // 复制整行（4字节对齐）
-                int srcOffset = y * width * 4;
-                int dstOffset = y * stride;
-                
-                // 使用Marshal.Copy复制整行
-                byte[] rowData = new byte[width * 4];
-                Marshal.Copy(srcPtr + srcOffset, rowData, 0, width * 4);
-                Marshal.Copy(rowData, 0, dstPtr + dstOffset, width * 4);
+                for (int x = 0; x < info.W; x++)
+                {
+                    int idx = y * dstStride + x * 4;
+                    dst[idx] = bPtr[y * info.W + x];
+                    dst[idx + 1] = gPtr[y * info.W + x];
+                    dst[idx + 2] = rPtr[y * info.W + x];
+                    dst[idx + 3] = 255;
+                }
             }
-        }
-
-        /// <summary>
-        /// 清空缓存
-        /// </summary>
-        public void Clear()
-        {
-            _bitmapCache.Clear();
         }
 
         public void Dispose()
         {
-            if (_disposed)
-                return;
-
-            _disposed = true;
-            Clear();
+            if (!_disposed)
+            {
+                _bitmapCache.Clear();
+                _disposed = true;
+            }
         }
     }
 }

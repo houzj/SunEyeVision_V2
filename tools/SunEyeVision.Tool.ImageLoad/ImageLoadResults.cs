@@ -1,34 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
-using OpenCvSharp;
+using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 
 namespace SunEyeVision.Tool.ImageLoad
 {
-    /// <summary>
-    /// 图像载入结果
-    /// </summary>
     public class ImageLoadResults : ToolResults
     {
         #region 核心属性
 
-        public Mat? OutputImage { get; set; }
+        public HImage? OutputImage { get; set; }
 
-        /// <summary>
-        /// 灰度图像（彩色输入时转换得到，灰度输入时为原图克隆）
-        /// </summary>
-        public Mat? GrayImage { get; set; }
+        /// <summary>灰度图像</summary>
+        public HImage? GrayImage { get; set; }
 
-        /// <summary>
-        /// 获取所有可显示的图像
-        /// </summary>
-        public override Dictionary<string, Mat?> GetDisplayImages()
+        public override Dictionary<string, HImage?> GetDisplayImages()
         {
-            var images = new Dictionary<string, Mat?>();
-            if (OutputImage != null && !OutputImage.Empty())
+            var images = new Dictionary<string, HImage?>();
+            if (OutputImage != null && OutputImage.IsInitialized())
                 images["OutputImage"] = OutputImage;
-            if (GrayImage != null && !GrayImage.Empty())
+            if (GrayImage != null && GrayImage.IsInitialized())
                 images["GrayImage"] = GrayImage;
             return images;
         }
@@ -45,77 +37,55 @@ namespace SunEyeVision.Tool.ImageLoad
 
         #region 尺寸相关属性
 
-        /// <summary>
-        /// 图像尺寸（OpenCV标准类型）
-        /// </summary>
-        public OpenCvSharp.Size Size => new OpenCvSharp.Size(Width, Height);
-
-        /// <summary>
-        /// 宽高比（宽度/高度）
-        /// </summary>
+        public string Size => $"{Width}x{Height}";
         public double AspectRatio => Height > 0 ? (double)Width / Height : 0.0;
-
-        /// <summary>
-        /// 总像素数
-        /// </summary>
         public long TotalPixels => (long)Width * Height;
 
         #endregion
 
         #region 格式相关属性
 
-        /// <summary>
-        /// OpenCV类型名称（如"CV_8UC3"）
-        /// </summary>
         public string TypeName
         {
             get
             {
-                if (OutputImage == null || OutputImage.Empty())
+                if (OutputImage == null || !OutputImage.IsInitialized())
                     return "Unknown";
 
-                return OutputImage.Type().ToString();
-            }
-        }
-
-        /// <summary>
-        /// 深度类型名称（如"CV_8U"）
-        /// </summary>
-        public string DepthName
-        {
-            get
-            {
-                if (OutputImage == null || OutputImage.Empty())
-                    return "Unknown";
-
-                var depth = OutputImage.Depth();
-                return depth switch
+                HOperatorSet.GetImageType(OutputImage, out var type);
+                int channels = Channels;
+                return Depth switch
                 {
-                    0 => "CV_8U",
-                    1 => "CV_8S",
-                    2 => "CV_16U",
-                    3 => "CV_16S",
-                    4 => "CV_32S",
-                    5 => "CV_32F",
-                    6 => "CV_64F",
-                    _ => $"Unknown({depth})"
+                    0 => $"byte ({channels} channel(s))",
+                    2 => $"uint2 ({channels} channel(s))",
+                    4 => $"int4 ({channels} channel(s))",
+                    5 => $"real ({channels} channel(s))",
+                    _ => $"{type.S} ({channels} channel(s))"
                 };
             }
         }
 
-        /// <summary>
-        /// 是否为彩色图像
-        /// </summary>
-        public bool IsColor => Channels == 3 || Channels == 4;
+        public string DepthName
+        {
+            get
+            {
+                return Depth switch
+                {
+                    0 => "byte",
+                    1 => "int1",
+                    2 => "uint2",
+                    3 => "int2",
+                    4 => "int4",
+                    5 => "real",
+                    6 => "complex",
+                    _ => "unknown"
+                };
+            }
+        }
 
-        /// <summary>
-        /// 是否为灰度图像
-        /// </summary>
+        public bool IsColor => Channels == 3 || Channels == 4;
         public bool IsGrayscale => Channels == 1;
 
-        /// <summary>
-        /// 颜色类型描述
-        /// </summary>
         public string ColorType
         {
             get
@@ -138,69 +108,48 @@ namespace SunEyeVision.Tool.ImageLoad
         private double? _maxPixelValue;
         private double? _meanPixelValue;
 
-        /// <summary>
-        /// 最小像素值
-        /// </summary>
         public double MinPixelValue
         {
             get
             {
-                if (_minPixelValue == null && OutputImage != null && !OutputImage.Empty())
-                {
+                if (_minPixelValue == null && OutputImage != null && OutputImage.IsInitialized())
                     CalculatePixelValueRange();
-                }
                 return _minPixelValue ?? 0.0;
             }
         }
 
-        /// <summary>
-        /// 最大像素值
-        /// </summary>
         public double MaxPixelValue
         {
             get
             {
-                if (_maxPixelValue == null && OutputImage != null && !OutputImage.Empty())
-                {
+                if (_maxPixelValue == null && OutputImage != null && OutputImage.IsInitialized())
                     CalculatePixelValueRange();
-                }
                 return _maxPixelValue ?? 0.0;
             }
         }
 
-        /// <summary>
-        /// 平均像素值
-        /// </summary>
         public double MeanPixelValue
         {
             get
             {
-                if (_meanPixelValue == null && OutputImage != null && !OutputImage.Empty())
-                {
+                if (_meanPixelValue == null && OutputImage != null && OutputImage.IsInitialized())
                     CalculateMeanPixelValue();
-                }
                 return _meanPixelValue ?? 0.0;
             }
         }
 
-        /// <summary>
-        /// 像素值范围描述
-        /// </summary>
         public string PixelValueRange => $"{MinPixelValue:F1} - {MaxPixelValue:F1}";
 
-        /// <summary>
-        /// 计算像素值范围（延迟计算）
-        /// </summary>
         private void CalculatePixelValueRange()
         {
-            if (OutputImage == null || OutputImage.Empty())
+            if (OutputImage == null || !OutputImage.IsInitialized())
                 return;
 
             try
             {
-                OutputImage.MinMaxLoc(out double minVal, out double maxVal);
-                _minPixelValue = minVal;
-                _maxPixelValue = maxVal;
+                HOperatorSet.MinMaxGray(OutputImage, OutputImage, 0, out var min, out var max, out _);
+                _minPixelValue = min.D;
+                _maxPixelValue = max.D;
             }
             catch
             {
@@ -209,18 +158,15 @@ namespace SunEyeVision.Tool.ImageLoad
             }
         }
 
-        /// <summary>
-        /// 计算平均像素值（延迟计算）
-        /// </summary>
         private void CalculateMeanPixelValue()
         {
-            if (OutputImage == null || OutputImage.Empty())
+            if (OutputImage == null || !OutputImage.IsInitialized())
                 return;
 
             try
             {
-                var mean = OutputImage.Mean();
-                _meanPixelValue = mean.Val0;
+                HOperatorSet.Intensity(OutputImage, OutputImage, out var mean, out _);
+                _meanPixelValue = mean.D;
             }
             catch
             {
@@ -232,9 +178,6 @@ namespace SunEyeVision.Tool.ImageLoad
 
         #region 重写方法
 
-        /// <summary>
-        /// 获取属性映射表
-        /// </summary>
         public override List<PropertyMapEntry> GetPropertyMap()
         {
             return
@@ -264,9 +207,6 @@ namespace SunEyeVision.Tool.ImageLoad
             ];
         }
 
-        /// <summary>
-        /// 获取结果项列表
-        /// </summary>
         public override IReadOnlyList<ResultItem> GetResultItems()
         {
             var items = new List<ResultItem>();
@@ -297,9 +237,6 @@ namespace SunEyeVision.Tool.ImageLoad
             return items;
         }
 
-        /// <summary>
-        /// 转换为字典（补充 ToolResults 基类的字典）
-        /// </summary>
         public override Dictionary<string, object> ToDictionary()
         {
             var dict = base.ToDictionary();

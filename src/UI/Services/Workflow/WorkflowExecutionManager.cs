@@ -1,9 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using OpenCvSharp;
+using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Logging;
@@ -314,9 +314,9 @@ namespace SunEyeVision.UI.Services.Workflow
                 // 执行
                 logger.LogInfo($"开始执行工作流: {workflow.Name}");
                 InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.Name, "[EXEC] 正在创建测试图像...")));
-                var matImage = CreateTestMat();
+                var hImage = CreateTestHImage();
                 InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.Name, "[EXEC] 测试图像已创建，开始执行工作流...")));
-                var result = await executionEngine.ExecuteWorkflowAsync(suneyeWorkflow.Id, matImage);
+                var result = await executionEngine.ExecuteWorkflowAsync(suneyeWorkflow.Id, hImage);
 
                 // 输出结果
                 logger.LogInfo($"工作流执行完成: {workflow.Name}");
@@ -359,12 +359,13 @@ namespace SunEyeVision.UI.Services.Workflow
         }
 
         /// <summary>
-        /// 创建测试用的Mat
+        /// 创建测试用的HImage
         /// </summary>
-        private OpenCvSharp.Mat CreateTestMat()
+        private HalconDotNet.HImage CreateTestHImage()
         {
-            // 创建640x480的3通道图像
-            return new OpenCvSharp.Mat(480, 640, OpenCvSharp.MatType.CV_8UC3, new OpenCvSharp.Scalar(0));
+            // 创建640x480的单通道灰度图像
+            HalconDotNet.HOperatorSet.GenImageConst(out var hObj, "byte", 640, 480);
+            return new HalconDotNet.HImage(hObj);
         }
 
         /// <summary>

@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
+
 using Microsoft.Win32;
 using AppCommands = SunEyeVision.UI.Commands;
 using SunEyeVision.UI.Models;
@@ -62,11 +62,11 @@ namespace SunEyeVision.UI.ViewModels
         private string _status = "";
         private string _currentCanvasTypeText = "原 Diagram (测试)";
 
-        // 图像显示
-        private BitmapSource? _displayImage;
         private double _imageScale = 1.0;
 
         private bool _showImagePreview = false;
+
+        private System.Windows.Media.ImageSource? _displayImage;
 
         // 图像预览
         private bool _autoSwitchEnabled = true;
@@ -272,6 +272,9 @@ namespace SunEyeVision.UI.ViewModels
                     if (executionResult?.ToolResult != null)
                     {
                         _nodeResultManager.RefreshResultDisplay((Models.WorkflowNode?)value, executionResult.ToolResult);
+
+                        // ★ 重建模块结果树（RefreshResultDisplay 清空了但未重建）
+                        UpdateModuleResults(executionResult.ToolResult, value.Name, toolId);
                     }
                     else if (value != null)
                     {
@@ -377,13 +380,6 @@ namespace SunEyeVision.UI.ViewModels
 
         public string CameraStatus => "相机(2台)";
 
-        // 图像显示相关
-        public BitmapSource? DisplayImage
-        {
-            get => _displayImage;
-            set => SetProperty(ref _displayImage, value);
-        }
-
         public double ImageScale
         {
             get => _imageScale;
@@ -391,11 +387,18 @@ namespace SunEyeVision.UI.ViewModels
             {
                 if (SetProperty(ref _imageScale, value))
                 {
-                    OnPropertyChanged(nameof(DisplayImage));
                 }
             }
         }
 
+        /// <summary>
+        /// 当前显示的图像（图像预览画廊用）
+        /// </summary>
+        public System.Windows.Media.ImageSource? DisplayImage
+        {
+            get => _displayImage;
+            set => SetProperty(ref _displayImage, value);
+        }
 
         /// <summary>
         /// 是否显示图像及其预览模块（ImageCaptureTool节点专用）
@@ -729,14 +732,22 @@ SplitterPosition = position;
         public ICommand ShowCameraManagerCommand { get; }
         public ICommand ShowCommunicationManagerCommand { get; }
 
-        // 主窗口 ImageControl 获取委托 - 用于区域编辑器绑定
+        // 主窗口 HalconImageControl 获取委托 - 用于区域编辑器绑定
         /// <summary>
-        /// 获取主窗口 ImageControl 的委托 - 用于区域编辑器绑定
+        /// 获取主窗口 HalconImageControl 的委托 - 用于区域编辑器绑定
         /// </summary>
         /// <remarks>
-        /// 由 MainWindow 在初始化时设置，用于在调试窗口创建时传递 ImageControl 引用
+        /// 由 MainWindow 在初始化时设置，用于在调试窗口创建时传递 HalconImageControl 引用
         /// </remarks>
-        public Func<ImageControl?>? GetMainImageControl { get; set; }
+        public Func<HalconImageControl?>? GetMainImageControl { get; set; }
+
+        /// <summary>
+        /// 设置主窗口 HalconImageControl 到 NodeResultManager - 用于节点执行完成后自动显示图像
+        /// </summary>
+        public void SetMainImageControl(HalconImageControl imageControl)
+        {
+            _nodeResultManager.SetMainImageControl(imageControl);
+        }
 
         public MainWindowViewModel()
         {
@@ -2323,18 +2334,14 @@ SplitterPosition = position;
                                     // 赋值到 _openDebugWindow，支持 IsDebugWindowOpen 检测
                                     _openDebugWindow = debugWindow;
 
-                                    // 注册关闭事件，窗口关闭时清理引用
+                                    // 注册关闭事件，窗口关闭时清理引用并切回 Static 模式
                                     debugWindow.Closed += (s, e) =>
                                     {
                                         // 1. 清除窗口引用
                                         _openDebugWindow = null;
 
-                                        // 2. 恢复主窗口 ImageControl 的只读模式
-                                        var mainImageControl = GetMainImageControl?.Invoke();
-                                        if (mainImageControl != null)
-                                        {
-                                            mainImageControl.OverlayHitTestVisible = false;
-                                        }
+                                        // 2. ★ 切回 Static 模式（清理 HDrawingObject）
+                                        _nodeResultManager.SetRenderMode(RenderMode.Static);
 
                                         // 3. 刷新当前选中节点的结果显示
                                         if (SelectedNode != null && SelectedNode.IsSelected)
@@ -2351,6 +2358,15 @@ SplitterPosition = position;
 
                                     // 初始化调试目标（统一入口：注入参数、数据提供者、显示窗口）
                                     await InitializeToolControlAsync(debugWindow, node);
+
+                                    // ★ 注入完成后，主窗口切为 Interactive 模式（HDrawingObject）
+                                    _nodeResultManager.SetRenderMode(RenderMode.Interactive);
+                                    if (SelectedNode != null)
+                                    {
+                                        var execResult = _workflowContext.GetNodeResult(SelectedNode.Id);
+                                        if (execResult?.ToolResult != null)
+                                            _nodeResultManager.RefreshResultDisplay(SelectedNode, execResult.ToolResult);
+                                    }
                                 }
                                 else
                                 {
@@ -2553,7 +2569,7 @@ SplitterPosition = position;
                     LogInfo($"图像源|Deferred执行[阶段1]: 清除选中, 当前 Field={currentField}, Property={currentProperty}, " +
                             $"可能已被ComboBox自动选中={comboMayAutoSelect}", "ImageSourceSelector");
 
-                    // 阶段1: 真正改变属性值为 -1，确保 WPF 绑定传播到 ImageControl 的 DP
+                    // 阶段1: 真正改变属性值为 -1，确保 WPF 绑定传播到 HalconImageControl 的 DP
                     // 此时 DP 回调检查 newIndex >= 0 → 不满足，仅记录日志
                     SelectedDisplayImageSourceIndex = -1;
                 }));
@@ -2607,12 +2623,11 @@ SplitterPosition = position;
             var executionResult = _workflowContext.GetNodeResult(source.SourceNodeId);
             if (executionResult?.ToolResult == null) return;
 
-            // 通过 NodeResultManager 获取对应的 Mat 并转换为 BitmapSource
-            var bitmapSource = _nodeResultManager.GetDisplayImageFromSource(
-                executionResult.ToolResult, source.PropertyName);
-            if (bitmapSource != null)
+            // ★ 从结果的 GetDisplayImages() 中获取对应的 HImage，直接渲染到 HalconImageControl
+            var images = executionResult.ToolResult.GetDisplayImages();
+            if (images.TryGetValue(source.PropertyName, out var hImage) && hImage != null && hImage.IsInitialized())
             {
-                DisplayImage = bitmapSource;
+                _nodeResultManager.DisplayResultImage(executionResult.ToolResult, source.PropertyName);
             }
         }
 
@@ -2625,14 +2640,6 @@ SplitterPosition = position;
                 _selectedDisplayImageSourceIndex >= DisplayImageSources.Count)
                 return null;
             return DisplayImageSources[_selectedDisplayImageSourceIndex];
-        }
-
-        /// <summary>
-        /// 从 BitmapSource 设置显示图像（供 NodeResultManager 使用）
-        /// </summary>
-        public void SetDisplayImageFromBitmap(BitmapSource bitmapSource)
-        {
-            DisplayImage = bitmapSource;
         }
 
         /// <summary>
@@ -2851,12 +2858,8 @@ SplitterPosition = position;
                         // 1. 移除数据提供者
                         _nodeDataProviders.Remove(node.Id);
 
-                        // 2. 恢复主窗口 ImageControl 的只读模式
-                        var mainImageControl = GetMainImageControl?.Invoke();
-                        if (mainImageControl != null)
-                        {
-                            mainImageControl.OverlayHitTestVisible = false;
-                        }
+                        // 2. 恢复图像控件的交互状态
+                        // HalconImageControl 使用 DrawingObject，自带命中测试，无需手动管理
 
                         // 3. 刷新当前选中节点的结果显示（如果有）
                         if (SelectedNode != null && SelectedNode.IsSelected)
@@ -2939,8 +2942,8 @@ SplitterPosition = position;
 
                                     // 获取输出图像（通过反射调用 GetOutputValue 方法）
                                     var getOutputMethod = toolResult.GetType().GetMethod("GetOutputValue");
-                                    var outputImage = getOutputMethod?.MakeGenericMethod(typeof(OpenCvSharp.Mat))
-                                        .Invoke(toolResult, new object[] { "OutputImage" }) as OpenCvSharp.Mat;
+                            var outputImage = getOutputMethod?.MakeGenericMethod(typeof(HalconDotNet.HImage))
+                                .Invoke(toolResult, new object[] { "OutputImage" }) as HalconDotNet.HImage;
 
                                     // 更新数据提供者中的节点输出
                                     if (outputImage != null)
@@ -3128,11 +3131,18 @@ AddLog($"⚠️ 日志记录异常: {ex.Message}");
             {
                 // ★ 关键日志：节点执行完成
                 var outputValues = e.Result?.GetOutputValues();
-                bool hasImageOutput = outputValues?.Any(kv => kv.Value is OpenCvSharp.Mat) ?? false;
+                bool hasImageOutput = outputValues?.Any(kv => kv.Value is HalconDotNet.HImage) ?? false;
                 AddLog($"✅ 节点执行完成: {e.Node.Name}, 成功={e.Result?.IsSuccess}, 有图像输出={hasImageOutput}");
 
                 // 通过 NodeResultManager 更新节点结果（更新 OutputCache，不修改 InputSource）
                 _nodeResultManager.UpdateNodeResult(e.Node, e.Result);
+
+                // ★ 重建模块结果树（NodeResultManager.UpdateViewModelResults 清空了但未重建）
+                if (_currentDisplayNodeId == e.Node.Id && e.Result != null)
+                {
+                    var toolId = e.Node.ToolType ?? "";
+                    UpdateModuleResults(e.Result, e.Node.Name, toolId);
+                }
 
                 // ★ 更新所有依赖此节点的数据提供者（修复前置节点未执行问题）
                 UpdateDataProvidersForNode(e.Node, e.Result);
@@ -3189,7 +3199,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
 
                 // 尝试找到图像类型的输出
                 var imageOutput = outputValues.FirstOrDefault(kv =>
-                    kv.Value is OpenCvSharp.Mat ||
+                    kv.Value is HalconDotNet.HImage ||
                     kv.Key.Contains("Image", StringComparison.OrdinalIgnoreCase) ||
                     kv.Key.Contains("Output", StringComparison.OrdinalIgnoreCase));
 
@@ -3529,7 +3539,7 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
                 return false;
 
             // 图像类型：Mat, CvImage 及其派生
-            if (fullName.Contains("OpenCvSharp.Mat") ||
+            if (fullName.Contains("HalconDotNet.HImage") || fullName.Contains("OpenCvSharp.Mat") ||
                 fullName.Contains("CvImage"))
                 return true;
 
@@ -3543,7 +3553,7 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
             {
                 var baseName = baseType.FullName;
                 if (baseName != null &&
-                    (baseName.Contains("OpenCvSharp.Mat") ||
+                    (baseName.Contains("HalconDotNet.HImage") || baseName.Contains("OpenCvSharp.Mat") ||
                      baseName.Contains("CvImage") ||
                      baseName.Contains("CvRegion")))
                     return true;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using HalconDotNet;
 using OpenCvSharp;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
@@ -67,13 +68,9 @@ namespace SunEyeVision.Tool.ShapeMatch
         /// <summary>
         /// 获取所有可显示的图像
         /// </summary>
-        public override Dictionary<string, Mat?> GetDisplayImages()
+        public override Dictionary<string, HImage?> GetDisplayImages()
         {
-            var images = new Dictionary<string, Mat?>();
-            if (InputImage != null && !InputImage.Empty())
-                images["InputImage"] = InputImage;
-            if (OverlayImage != null && !OverlayImage.Empty())
-                images["OverlayImage"] = OverlayImage;
+            var images = new Dictionary<string, HImage?>();
 
             // 调试中间图像
             AddIfValid(images, "DebugGray", DebugGrayImage);

@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text.Json.Serialization;
-using OpenCvSharp;
 using SunEyeVision.Plugin.SDK.Metadata;
+using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 
 namespace SunEyeVision.Plugin.SDK.Execution.Parameters
@@ -226,55 +226,55 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <summary>
         /// 获取区域的边界盒
         /// </summary>
-        private static Rect GetRegionBounds(RegionData region)
+        private static RectI GetRegionBounds(RegionData region)
         {
             if (region.Parameters == null)
-                return new Rect(0, 0, 0, 0);
+                return new RectI(0, 0, 0, 0);
 
             var shape = region.Parameters;
             var shapeType = shape.GetShapeType();
 
             if (!shapeType.HasValue || shape is not ShapeParameters shapeParams)
-                return new Rect(0, 0, 0, 0);
+                return new RectI(0, 0, 0, 0);
 
             return shapeType.Value switch
             {
-                ShapeType.Rectangle => new Rect(
+                ShapeType.Rectangle => new RectI(
                     (int)(shapeParams.CenterX - shapeParams.Width / 2),
                     (int)(shapeParams.CenterY - shapeParams.Height / 2),
                     (int)shapeParams.Width,
                     (int)shapeParams.Height
                 ),
-                ShapeType.Circle => new Rect(
+                ShapeType.Circle => new RectI(
                     (int)(shapeParams.CenterX - shapeParams.Radius),
                     (int)(shapeParams.CenterY - shapeParams.Radius),
                     (int)(shapeParams.Radius * 2),
                     (int)(shapeParams.Radius * 2)
                 ),
-                ShapeType.RotatedRectangle => new Rect(
+                ShapeType.RotatedRectangle => new RectI(
                     (int)(shapeParams.CenterX - shapeParams.Width / 2),
                     (int)(shapeParams.CenterY - shapeParams.Height / 2),
                     (int)shapeParams.Width,
                     (int)shapeParams.Height
                 ),
                 ShapeType.Polygon => GetPolygonBounds(shapeParams.Points),
-                ShapeType.Annulus => new Rect(
+                ShapeType.Annulus => new RectI(
                     (int)(shapeParams.CenterX - shapeParams.OuterRadius > 0 ? shapeParams.OuterRadius : shapeParams.Radius + 20),
                     (int)(shapeParams.CenterY - shapeParams.OuterRadius > 0 ? shapeParams.OuterRadius : shapeParams.Radius + 20),
                     (int)(shapeParams.OuterRadius > 0 ? shapeParams.OuterRadius * 2 : (shapeParams.Radius + 20) * 2),
                     (int)(shapeParams.OuterRadius > 0 ? shapeParams.OuterRadius * 2 : (shapeParams.Radius + 20) * 2)
                 ),
-                _ => new Rect(0, 0, 0, 0)
+                _ => new RectI(0, 0, 0, 0)
             };
         }
 
         /// <summary>
         /// 获取多边形的边界盒
         /// </summary>
-        private static Rect GetPolygonBounds(System.Collections.Generic.IList<UI.Controls.Region.Models.Point2D> points)
+        private static RectI GetPolygonBounds(System.Collections.Generic.IList<UI.Controls.Region.Models.Point2D> points)
         {
             if (points == null || points.Count == 0)
-                return new Rect(0, 0, 0, 0);
+                return new RectI(0, 0, 0, 0);
 
             float minX = float.MaxValue, minY = float.MaxValue;
             float maxX = float.MinValue, maxY = float.MinValue;
@@ -287,7 +287,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 if (point.Y > maxY) maxY = (float)point.Y;
             }
 
-            return new Rect(
+            return new RectI(
                 (int)minX,
                 (int)minY,
                 (int)(maxX - minX),
@@ -298,7 +298,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <summary>
         /// 检查两个边界盒是否重叠
         /// </summary>
-        private static bool IsBoundsOverlapped(Rect bounds1, Rect bounds2)
+        private static bool IsBoundsOverlapped(RectI bounds1, RectI bounds2)
         {
             if (bounds1.Width <= 0 || bounds1.Height <= 0 || bounds2.Width <= 0 || bounds2.Height <= 0)
                 return false;

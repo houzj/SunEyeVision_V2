@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
@@ -11,7 +11,7 @@ namespace SunEyeVision.UI.Services.ParameterSetting
     /// </summary>
     /// <remarks>
     /// 专门处理图像类型参数的数据源查询和过滤。
-    /// 支持OpenCvSharp.Mat和其他图像类型的自动识别。
+    /// 支持HalconDotNet.HImage、OpenCvSharp.Mat和其他图像类型的自动识别。
     /// 
     /// 核心功能：
     /// 1. 过滤图像类型数据源
@@ -27,6 +27,7 @@ namespace SunEyeVision.UI.Services.ParameterSetting
         /// </summary>
         private static readonly HashSet<string> SupportedImageTypeNames = new(StringComparer.OrdinalIgnoreCase)
         {
+            "HImage",
             "Mat",
             "Mat`1",
             "Image`2",
@@ -41,6 +42,7 @@ namespace SunEyeVision.UI.Services.ParameterSetting
         /// </summary>
         private static readonly string[] SupportedImageNamespaces = new[]
         {
+            "HalconDotNet.",
             "OpenCvSharp.",
             "System.Drawing.",
             "System.Windows.Media.Imaging.",

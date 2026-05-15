@@ -115,6 +115,8 @@ namespace SunEyeVision.UI.Views.Windows
             // ★ 设置获取主窗口 ImageControl 的委托
             _viewModel.GetMainImageControl = () => ImageDisplayContent;
 
+            // ★ 设置主窗口 ImageControl 到 NodeResultManager（用于工作流执行后自动显示图像）
+            _viewModel.SetMainImageControl(ImageDisplayContent);
 
 
             // 初始化画布引擎管理器 - 设置默认引擎
@@ -581,19 +583,9 @@ namespace SunEyeVision.UI.Views.Windows
                 {
 }
 
-                // ★ 设置 ResultRenderLayer 引用到 NodeResultManager
                 if (ImageDisplayContent != null)
                 {
-                    var resultRenderLayer = ImageDisplayContent.ResultRenderLayerControl;
-                    if (resultRenderLayer != null)
-                    {
-                        // 通过 ViewModel 获取 NodeResultManager 并设置 ResultRenderLayer
-                        var nodeResultManager = GetNodeResultManager(_viewModel);
-                        nodeResultManager?.SetResultRenderLayer(resultRenderLayer);
-                        
-                        // ★ 同步视口缩放（幂律公式：线宽 / 缩放 = 视觉恒定）
-                        resultRenderLayer.SetViewportScale(_viewModel.ImageScale);
-                    }
+                    // HalconImageControl 直接通过 DisplayHImage 和 DisplayOverlay 显示结果
                 }
 
 
@@ -1860,7 +1852,7 @@ if (_viewModel?.WorkflowTabViewModel?.SelectedTab == null)
 
 
 
-            // 触发工作流执行（DisplayImage 由工作流结果驱动更新，无需在此预加载源图）
+            // 触发工作流执行（图像由工作流结果驱动更新，无需在此预加载源图）
 
             _viewModel.RunWorkflowCommand.Execute(null);
 
@@ -3021,8 +3013,8 @@ if (DataContext is MainWindowViewModel viewModel)
 
 
 
-        /// <summary>
 
+        /// <summary>
         /// 更新右侧面板分割器箭头方向
 
         /// </summary>
@@ -3070,24 +3062,6 @@ if (DataContext is MainWindowViewModel viewModel)
             if (_viewModel != null && e.Image != null)
             {
                 _viewModel.StatusText = $"图像加载完成: {e.Width}x{e.Height}";
-            }
-        }
-
-        /// <summary>
-        /// 缩放变化事件
-        /// </summary>
-        private void OnZoomChanged(object sender, ZoomChangedEventArgs e)
-        {
-            // 更新ViewModel中的缩放值
-            if (_viewModel != null)
-            {
-                _viewModel.ImageScale = e.Zoom;
-            }
-            
-            // ★ 同步视口缩放到结果渲染层（幂律公式：线宽 / 缩放 = 视觉恒定）
-            if (ImageDisplayContent?.ResultRenderLayerControl != null)
-            {
-                ImageDisplayContent.ResultRenderLayerControl.SetViewportScale(e.Zoom);
             }
         }
 

@@ -17,6 +17,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Plugin.SDK\SunEyeVision.Plugin.SDK.csproj" />
-    <PackageReference Include="OpenCvSharp4.WpfExtensions" Version="4.13.0.20260222" />
+    <Reference Include="HalconDotNet">
+      <HintPath>$(SolutionDir)runtime\halcondotnetxl.dll</HintPath>
+    </Reference>
   </ItemGroup>
+
 </Project>

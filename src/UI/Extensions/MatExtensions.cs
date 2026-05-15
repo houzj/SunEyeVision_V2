@@ -1,192 +1,152 @@
-using System;
+﻿using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using OpenCvSharp;
-using OpenCvSharp.Extensions;
+using HalconDotNet;
 
 namespace SunEyeVision.UI.Extensions
 {
     /// <summary>
-    /// 图像扩展方法
+    /// Halcon 图像扩展方法
     /// </summary>
-    public static class ImageExtensions
+    public static class HImageExtensions
     {
         /// <summary>
-        /// 将 WPF BitmapSource 转换为 OpenCvSharp.Mat
+        /// 将 Halcon HImage 转换为 WPF BitmapSource
         /// </summary>
-        /// <param name="bitmapSource">WPF BitmapSource 对象</param>
-        /// <returns>OpenCV Mat 对象</returns>
-        public static Mat? ToMat(this BitmapSource bitmapSource)
+        public static BitmapSource? ToBitmapSource(this HImage image)
         {
-            if (bitmapSource == null)
+            if (image == null || !image.IsInitialized())
                 return null;
 
             try
             {
-                // 尝试使用 OpenCvSharp4.WpfExtensions 的扩展方法（如果可用）
-                // 如果不可用，使用备用方案
-                try
+                HTuple width, height, channels, type;
+                HOperatorSet.GetImageSize(image, out width, out height);
+                HOperatorSet.CountChannels(image, out channels);
+                HOperatorSet.GetImageType(image, out type);
+
+                int w = width.I, h = height.I;
+
+                if (channels.I == 1 && type.S == "byte")
                 {
-                    var matType = GetMatTypeFromPixelFormat(bitmapSource.Format);
-                    var width = bitmapSource.PixelWidth;
-                    var height = bitmapSource.PixelHeight;
-
-                    var mat = new Mat(height, width, matType);
-
-                    // 复制像素数据
-                    var stride = width * ((bitmapSource.Format.BitsPerPixel + 7) / 8);
-                    var pixels = new byte[height * stride];
-                    bitmapSource.CopyPixels(pixels, stride, 0);
-
-                    // 将像素数据复制到 Mat
-                    System.Runtime.InteropServices.Marshal.Copy(pixels, 0, mat.Data, pixels.Length);
-
-                    return mat;
+                    HTuple pointer, imgType;
+                    HOperatorSet.GetImagePointer1(image, out pointer, out imgType, out width, out height);
+                    var bs = BitmapSource.Create(w, h, 96, 96, PixelFormats.Gray8, null, pointer, h * w, w);
+                    bs.Freeze();
+                    return bs;
                 }
-                catch
+                else if (channels.I == 3 && type.S == "byte")
                 {
-                    // 备用方案：通过内存流和 Bitmap 转换
-                    return ConvertViaMemoryStream(bitmapSource);
+                    // For RGB, convert via memory
+                    HOperatorSet.GetImagePointer3(image, out var ptrR, out var ptrG, out var ptrB, out var imgType,
+                        out width, out height);
+                    int stride = w * 3;
+                    byte[] pixels = new byte[h * stride];
+
+                    unsafe
+                    {
+                        byte* rPtr = (byte*)ptrR.IP;
+                        byte* gPtr = (byte*)ptrG.IP;
+                        byte* bPtr = (byte*)ptrB.IP;
+                        fixed (byte* dst = pixels)
+                        {
+                            for (int y = 0; y < h; y++)
+                            {
+                                for (int x = 0; x < w; x++)
+                                {
+                                    int idx = y * stride + x * 3;
+                                    dst[idx] = rPtr[y * w + x];     // R
+                                    dst[idx + 1] = gPtr[y * w + x]; // G
+                                    dst[idx + 2] = bPtr[y * w + x]; // B
+                                }
+                            }
+                        }
+                    }
+
+                    var bs = BitmapSource.Create(w, h, 96, 96, PixelFormats.Rgb24, null,
+                        pixels, stride);
+                    bs.Freeze();
+                    return bs;
                 }
-            }
-            catch (Exception ex)
-            {
-return null;
-            }
-        }
 
-        /// <summary>
-        /// 获取对应像素格式的 MatType
-        /// </summary>
-        private static MatType GetMatTypeFromPixelFormat(System.Windows.Media.PixelFormat? format)
-        {
-            if (format == null)
-                return MatType.CV_8UC3;
-
-            if (format == PixelFormats.Bgr24)
-                return MatType.CV_8UC3;
-            if (format == PixelFormats.Bgra32)
-                return MatType.CV_8UC4;
-            if (format == PixelFormats.Gray8)
-                return MatType.CV_8UC1;
-            if (format == PixelFormats.Rgb24)
-                return MatType.CV_8UC3;
-
-            // 默认返回 BGR 格式
-            return MatType.CV_8UC3;
-        }
-
-        /// <summary>
-        /// 通过内存流方式转换 BitmapSource 到 Mat
-        /// </summary>
-        private static Mat? ConvertViaMemoryStream(BitmapSource bitmapSource)
-        {
-            try
-            {
-                // 编码为 PNG 格式
-                var encoder = new PngBitmapEncoder();
-                encoder.Frames.Add(BitmapFrame.Create(bitmapSource));
-
-                using var stream = new MemoryStream();
-                encoder.Save(stream);
-
-                // 使用 OpenCvSharp 从内存流加载图像
-                var mat = Mat.FromImageData(stream.ToArray(), ImreadModes.Color);
-                return mat;
-            }
-            catch (Exception ex)
-            {
-return null;
-            }
-        }
-    }
-
-    /// <summary>
-    /// Mat 图像扩展方法
-    /// </summary>
-    public static class MatExtensions
-    {
-        /// <summary>
-        /// 将 OpenCvSharp.Mat 转换为 WPF BitmapSource
-        /// </summary>
-        /// <param name="mat">OpenCV Mat 对象</param>
-        /// <returns>WPF BitmapSource 对象</returns>
-        public static BitmapSource? ToBitmapSource(this Mat mat)
-        {
-            if (mat == null || mat.Empty())
                 return null;
-
-            try
-            {
-                // 使用 OpenCvSharp.Extensions.BitmapConverter 的 ToBitmap 方法
-                using var bitmap = mat.ToBitmap();
-                if (bitmap == null)
-                    return null;
-
-                // 将 Bitmap 转换为 BitmapSource
-                var hBitmap = bitmap.GetHbitmap();
-                try
-                {
-                    var bitmapSource = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
-                        hBitmap,
-                        IntPtr.Zero,
-                        System.Windows.Int32Rect.Empty,
-                        BitmapSizeOptions.FromEmptyOptions());
-                    bitmapSource.Freeze();
-                    return bitmapSource;
-                }
-                finally
-                {
-                    // 释放 HBitmap 资源
-                    DeleteObject(hBitmap);
-                }
             }
-            catch (Exception ex)
+            catch
             {
-// 备用方案：通过内存流转换
-                try
-                {
-                    return ConvertViaMemoryStream(mat);
-                }
-                catch
-                {
-                    return null;
-                }
+                return null;
             }
         }
 
         /// <summary>
-        /// 通过内存流方式转换 Mat 到 BitmapSource
+        /// 读取图像文件为 HImage
         /// </summary>
-        private static BitmapSource? ConvertViaMemoryStream(Mat mat)
+        public static HImage? ReadImageFile(string filePath)
         {
-            // 确保图像格式正确
-            Mat? convertedMat = null;
-            Mat sourceMat = mat;
-
-            // 如果不是标准格式，转换为 BGR
-            if (mat.Type() != MatType.CV_8UC3 && mat.Type() != MatType.CV_8UC1 && mat.Type() != MatType.CV_8UC4)
+            try
             {
-                convertedMat = new Mat();
-                Cv2.CvtColor(mat, convertedMat, ColorConversionCodes.GRAY2BGR);
-                sourceMat = convertedMat;
+                HOperatorSet.ReadImage(out var hObj, filePath);
+                return new HImage(hObj);
             }
-
-            // 编码为 PNG 格式
-            Cv2.ImEncode(".png", sourceMat, out byte[] bytes);
-
-            convertedMat?.Dispose();
-
-            // 从字节数组创建 BitmapSource
-            using var stream = new MemoryStream(bytes);
-            var decoder = new PngBitmapDecoder(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
-            var bitmapSource = decoder.Frames[0];
-            bitmapSource.Freeze();
-            return bitmapSource;
+            catch
+            {
+                return null;
+            }
         }
 
-        [System.Runtime.InteropServices.DllImport("gdi32.dll")]
-        private static extern bool DeleteObject(IntPtr hObject);
+        /// <summary>
+        /// 缩放 HImage
+        /// </summary>
+        public static HImage? ZoomToSize(this HImage image, int width, int height, string interpolation = "constant")
+        {
+            if (image == null || !image.IsInitialized())
+                return null;
+            try
+            {
+                HOperatorSet.ZoomImageSize(image, out var zoomedHObj, width, height, interpolation);
+                return new HImage(zoomedHObj);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 缩小图像以适应指定尺寸（保持比例）
+        /// </summary>
+        public static HImage? ZoomToFit(this HImage image, int maxSize)
+        {
+            if (image == null || !image.IsInitialized())
+                return null;
+            try
+            {
+                HTuple w, h;
+                HOperatorSet.GetImageSize(image, out w, out h);
+                int maxDim = Math.Max(w.I, h.I);
+                if (maxDim <= maxSize) return image.Clone();
+                double scale = (double)maxSize / maxDim;
+                int newW = (int)(w.I * scale);
+                int newH = (int)(h.I * scale);
+                HOperatorSet.ZoomImageSize(image, out var zoomedHObj, newW, newH, "constant");
+                return new HImage(zoomedHObj);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 获取 HImage 的元数据
+        /// </summary>
+        public static (int Width, int Height, int Channels, string Type) GetInfo(this HImage image)
+        {
+            HOperatorSet.GetImageSize(image, out var w, out var h);
+            HOperatorSet.CountChannels(image, out var c);
+            HOperatorSet.GetImageType(image, out var t);
+            return (w.I, h.I, c.I, t.S);
+        }
     }
 }

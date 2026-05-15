@@ -1,6 +1,6 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using OpenCvSharp;
+using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 
 namespace SunEyeVision.Workflow
@@ -23,7 +23,7 @@ namespace SunEyeVision.Workflow
         /// <summary>
         /// 结果图像
         /// </summary>
-        public Mat? ResultImage { get; set; }
+        public HImage? ResultImage { get; set; }
 
         /// <summary>
         /// 错误消息
@@ -48,7 +48,7 @@ namespace SunEyeVision.Workflow
         /// <summary>
         /// 创建成功结果
         /// </summary>
-        public static AlgorithmResult CreateSuccess(Mat? resultImage, double durationMs, string algorithmName = "")
+        public static AlgorithmResult CreateSuccess(HImage? resultImage, double durationMs, string algorithmName = "")
         {
             return new AlgorithmResult
             {

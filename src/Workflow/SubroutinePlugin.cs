@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using SunEyeVision.Plugin.SDK.Logging;
-using OpenCvSharp;
+using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Metadata;
 using LogLevel = SunEyeVision.Plugin.SDK.Logging.LogLevel;
@@ -592,13 +592,14 @@ namespace SunEyeVision.Workflow
         /// <summary>
         /// 从上下文获取输入图像
         /// </summary>
-        private Mat GetInputImageFromContext(WorkflowContext context)
+        private HImage GetInputImageFromContext(WorkflowContext context)
         {
             if (context.HasVariable("InputImage"))
             {
-                return context.GetVariable<Mat>("InputImage");
+                return context.GetVariable<HImage>("InputImage");
             }
-            return new Mat(480, 640, MatType.CV_8UC3, new Scalar(0));
+            HOperatorSet.GenImageConst(out var image, "byte", 640, 480);
+            return new HImage(image);
         }
 
         #endregion

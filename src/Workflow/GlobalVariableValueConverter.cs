@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using OpenCvSharp;
+using HalconDotNet;
+using Rect = System.Drawing.Rectangle;
 using VisionLogger = SunEyeVision.Plugin.SDK.Logging.VisionLogger;
 using VisionLogLevel = SunEyeVision.Plugin.SDK.Logging.LogLevel;
 
@@ -20,7 +23,7 @@ namespace SunEyeVision.Workflow;
 /// 
 /// 支持的数据类型：
 /// 1. 基础类型：Integer, Float, String, Boolean, Int64, Double, Byte
-/// 2. OpenCvSharp类型：Point, Rectangle, Size
+/// 2. 几何类型：Point, Rectangle, Size
 /// 3. 集合类型：Array, List
 /// 4. 图像类型：Image（Mat序列化）
 /// 
@@ -164,7 +167,7 @@ public class GlobalVariableValueConverter : JsonConverter<object?>
             Size size => (SupportedTypes.Size, SerializeSize(size)),
             Array array => (SupportedTypes.Array, SerializeArray(array)),
             IList list => (SupportedTypes.List, SerializeList(list)),
-            Mat mat => (SupportedTypes.Image, SerializeImage(mat)),
+            HImage hImage => (SupportedTypes.Image, SerializeImage(hImage)),
             _ => (SupportedTypes.String, value.ToString())
         };
     }
@@ -354,11 +357,10 @@ public class GlobalVariableValueConverter : JsonConverter<object?>
 
     #endregion
 
-    #region Image (Mat) 序列化
+    #region Image (HImage) 序列化
 
-    private Mat? ParseImage(JsonElement element)
+    private HImage? ParseImage(JsonElement element)
     {
-        // 图像数据以Base64字符串存储
         if (element.ValueKind != JsonValueKind.String)
             return null;
 
@@ -369,31 +371,50 @@ public class GlobalVariableValueConverter : JsonConverter<object?>
                 return null;
 
             var bytes = Convert.FromBase64String(base64);
-            return Mat.FromImageData(bytes, ImreadModes.Color);
+            string tempPath = Path.GetTempFileName() + ".png";
+            try
+            {
+                File.WriteAllBytes(tempPath, bytes);
+                HOperatorSet.ReadImage(out var image, tempPath);
+                return new HImage(image);
+            }
+            finally
+            {
+                if (File.Exists(tempPath)) File.Delete(tempPath);
+            }
         }
         catch (Exception ex)
         {
-            VisionLogger.Instance.Log(VisionLogLevel.Error, 
-                $"解析图像数据失败: {ex.Message}", 
+            VisionLogger.Instance.Log(VisionLogLevel.Error,
+                $"解析图像数据失败: {ex.Message}",
                 "GlobalVariableValueConverter", ex);
             return null;
         }
     }
 
-    private string? SerializeImage(Mat mat)
+    private string? SerializeImage(HImage image)
     {
-        if (mat == null || mat.Empty())
+        if (image == null || !image.IsInitialized())
             return null;
 
         try
         {
-            var bytes = mat.ToBytes(".png");
-            return Convert.ToBase64String(bytes);
+            string tempPath = Path.GetTempFileName() + ".png";
+            try
+            {
+                image.WriteImage("png", 0, tempPath);
+                var bytes = File.ReadAllBytes(tempPath);
+                return Convert.ToBase64String(bytes);
+            }
+            finally
+            {
+                if (File.Exists(tempPath)) File.Delete(tempPath);
+            }
         }
         catch (Exception ex)
         {
-            VisionLogger.Instance.Log(VisionLogLevel.Error, 
-                $"序列化图像数据失败: {ex.Message}", 
+            VisionLogger.Instance.Log(VisionLogLevel.Error,
+                $"序列化图像数据失败: {ex.Message}",
                 "GlobalVariableValueConverter", ex);
             return null;
         }

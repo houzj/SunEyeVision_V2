@@ -322,7 +322,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
         }
 
         /// <summary>
-        /// 设置主窗口 ImageControl 引用（委托给内部控件）
+        /// 设置主窗口 HalconImageControl 引用（委托给内部控件）
         /// </summary>
         /// <remarks>
         /// 用于区域编辑器在主窗口图像上绘制 ROI。
@@ -330,7 +330,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
         /// 调用链：
         /// MainWindowViewModel → DefaultDebugWindow.SetMainImageControl → ThresholdToolDebugControl.SetMainImageControl
         /// </remarks>
-        public void SetMainImageControl(ImageControl? imageControl)
+        public void SetMainImageControl(HalconImageControl? imageControl)
         {
             PluginLogger.Info(
                 $"[SetMainImageControl] 方法被调用 | ImageControl={imageControl?.GetType().Name ?? "null"} | _control={_control.GetType().Name}",

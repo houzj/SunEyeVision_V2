@@ -428,7 +428,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// 仅用于区域编辑器等需要在主窗口图像上绘制 ROI 的场景。
         /// 不需要此功能的控件无需重写此方法。
         /// </remarks>
-        public virtual void SetMainImageControl(ImageControl? imageControl)
+        public virtual void SetMainImageControl(HalconImageControl? imageControl)
         {
             // 基类默认空实现
         }

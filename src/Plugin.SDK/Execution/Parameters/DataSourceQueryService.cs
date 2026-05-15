@@ -236,7 +236,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 var metadataList = _metadataProvider?.GetAllPropertyMetadata(nodeType);
                 if (metadataList != null)
                 {
-                    foreach (var meta in metadataList.Where(m => m.PropertyType?.Name == "Mat"))
+                    foreach (var meta in metadataList.Where(m => m.PropertyType?.Name == "Mat" || m.PropertyType?.Name == "HImage"))
                     {
                         result.Add(new AvailableDataSource
                         {
@@ -270,9 +270,9 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                             visited.Add(parentId);
                             int childDistance = currentDistance + 1;
 
-                            // 获取该节点的 Mat 输出属性
+                            // 获取该节点的 Mat/HImage 输出属性
                             foreach (var prop in GetNodeOutputProperties(parentId)
-                                .Where(p => p.PropertyType?.Name == "Mat"))
+                                .Where(p => p.PropertyType?.Name == "Mat" || p.PropertyType?.Name == "HImage"))
                             {
                                 prop.Distance = childDistance;
                                 result.Add(prop);

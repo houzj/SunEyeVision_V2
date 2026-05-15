@@ -1,9 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using OpenCvSharp;
+using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Core;
 using Events = SunEyeVision.Core.Events;
@@ -146,7 +146,7 @@ namespace SunEyeVision.Workflow
         /// <summary>
         /// Fire a hardware trigger (called by device driver)
         /// </summary>
-        public void FireHardwareTrigger(string triggerId, Mat image = null, object metadata = null)
+        public void FireHardwareTrigger(string triggerId, HImage image = null, object metadata = null)
         {
             HardwareTriggerConfig config;
             lock (_lock)
@@ -214,7 +214,7 @@ namespace SunEyeVision.Workflow
         /// <summary>
         /// Fire a software trigger
         /// </summary>
-        public void FireSoftwareTrigger(string triggerId, Mat image = null, object metadata = null)
+        public void FireSoftwareTrigger(string triggerId, HImage image = null, object metadata = null)
         {
             SoftwareTriggerConfig config;
             lock (_lock)
@@ -484,7 +484,7 @@ namespace SunEyeVision.Workflow
         public TriggerType TriggerType { get; set; }
         public string TriggerId { get; set; }
         public string TriggerSource { get; set; }
-        public Mat Image { get; set; }
+        public HImage Image { get; set; }
         public object Metadata { get; set; }
     }
 

@@ -827,7 +827,8 @@
                                          ResizeDirection="Columns"
                                          ToggleDirection="Right"
                                          x:Name="RightPanelSplitter"
-                                         ToggleClicked="RightPanelSplitter_ToggleClick"/>
+                                         ToggleClicked="RightPanelSplitter_ToggleClick"
+                                         />
 
             <!-- ========== 右侧面板：图像显示 + 数据分析 + 日志 ========== -->
             <Border Grid.Column="3" Grid.Row="0" Background="#FFFFFF" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0">
@@ -854,18 +855,11 @@
                                     <!-- 第一个TabItem: 图像结果 -->
                                     <TabItem Header="图像结果" Padding="12,6">
                                         <Border Background="Transparent">
-                                            <sdk:ImageControl x:Name="ImageDisplayContent"
-                                                              SourceImage="{Binding DisplayImage}"
-                                                              ShowToolBar="True"
-                                                              ShowStatusBar="True"
-                                                              ShowChessboardBackground="True"
-                                                              EnablePanning="True"
-                                                              EnableZoom="True"
-                                                              AutoFitMode="FirstOnly"
-                                                              ImageSources="{Binding DisplayImageSources}"
-                                                              SelectedImageSourceIndex="{Binding SelectedDisplayImageSourceIndex, Mode=TwoWay}"
-                                                              ImageLoaded="OnImageLoaded"
-                                                              ZoomChanged="OnZoomChanged"/>
+                                            <sdk:HalconImageControl x:Name="ImageDisplayContent"
+                                                                     ShowToolBar="True"
+                                                                     ShowStatusBar="True"
+                                                                     ImageSources="{Binding DisplayImageSources}"
+                                                                     SelectedImageSourceIndex="{Binding SelectedDisplayImageSourceIndex, Mode=TwoWay}"/>
                                         </Border>
                                     </TabItem>
 

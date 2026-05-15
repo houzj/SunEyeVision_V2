@@ -1,5 +1,5 @@
-using System;
-using OpenCvSharp;
+﻿using System;
+using SunEyeVision.Plugin.SDK.Models.Geometry;
 
 namespace SunEyeVision.Plugin.SDK.Models.Imaging
 {
@@ -10,7 +10,7 @@ namespace SunEyeVision.Plugin.SDK.Models.Imaging
     /// 封装图像数据的完整信息，包括像素数据、格式、尺寸等。
     /// 设计为不可变对象，确保线程安全。
     /// </remarks>
-    [Obsolete("ImageData类型已过时，请使用 OpenCvSharp.Mat 类型替代。此类型将在v2.0版本中移除。", false)]
+    [Obsolete("ImageData类型已过时，请使用 HalconDotNet.HImage 类型替代。此类型将在v2.0版本中移除。", false)]
     public sealed class ImageData : IEquatable<ImageData>, IDisposable
     {
         private readonly byte[]? _pixelData;

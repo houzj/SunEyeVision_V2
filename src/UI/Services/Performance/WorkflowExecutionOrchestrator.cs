@@ -4,8 +4,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
-using OpenCvSharp;
+using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.UI.Extensions;
 using SunEyeVision.UI.Models;
 using SunEyeVision.UI.Services.Workflow;
 using SunEyeVision.Workflow;
@@ -49,18 +50,18 @@ namespace SunEyeVision.UI.Services.Performance
         /// </summary>
         /// <param name="node">工作流节点（UI模型）</param>
         /// <param name="imageSourceId">图像源ID</param>
-        /// <param name="inputMat">输入图像（OpenCV Mat）</param>
+        /// <param name="inputImage">输入图像（HImage）</param>
         /// <param name="workflow">工作流实例</param>
         /// <param name="cancellationToken">取消令牌</param>
         /// <returns>执行结果</returns>
         public async Task<CachedExecutionResult?> ExecuteAndDisplayAsync(
             UI.Models.WorkflowNode node,
             string imageSourceId,
-            Mat inputMat,
+            HImage inputImage,
             SunEyeVision.Workflow.Workflow workflow,
             CancellationToken cancellationToken = default)
         {
-            if (node == null || inputMat == null || inputMat.Empty())
+            if (node == null || inputImage == null || !inputImage.IsInitialized())
                 return null;
 
             // 1. 检查缓存
@@ -85,7 +86,7 @@ namespace SunEyeVision.UI.Services.Performance
                 // 执行节点
                 var result = await Task.Run(() =>
                 {
-                    return ExecuteNode(engine, node, inputMat, workflow, cancellationToken);
+                    return ExecuteNode(engine, node, inputImage, workflow, cancellationToken);
                 }, cancellationToken);
 
                 stopwatch.Stop();
@@ -96,15 +97,15 @@ namespace SunEyeVision.UI.Services.Performance
                 }
 
                 // 3. 获取输出图像
-                var outputMat = GetOutputMat(result);
-                if (outputMat == null || outputMat.Empty())
+                var outputMat = GetOutputHImage(result);
+                if (outputMat == null || !outputMat.IsInitialized())
                 {
                     return null;
                 }
 
                 // 4. 转换为BitmapSource
                 var processedImage = _imageConverterPool.ConvertToBitmapSource(outputMat);
-                var originalImage = _imageConverterPool.ConvertToBitmapSource(inputMat);
+                var originalImage = _imageConverterPool.ConvertToBitmapSource(inputImage);
 
                 // 5. 添加到缓存
                 _cache.Add(node.Id, imageSourceId, processedImage, originalImage, stopwatch.ElapsedMilliseconds);
@@ -143,10 +144,10 @@ namespace SunEyeVision.UI.Services.Performance
         public void PreExecute(
             UI.Models.WorkflowNode node,
             string imageSourceId,
-            Mat inputMat,
+            HImage inputMat,
             SunEyeVision.Workflow.Workflow workflow)
         {
-            if (node == null || inputMat == null || inputMat.Empty())
+            if (node == null || inputMat == null || !inputMat.IsInitialized())
                 return;
 
             // 检查缓存是否已存在
@@ -166,8 +167,8 @@ namespace SunEyeVision.UI.Services.Performance
 
                         if (result != null && result.IsSuccess)
                         {
-                            var outputMat = GetOutputMat(result);
-                            if (outputMat != null && !outputMat.Empty())
+                            var outputMat = GetOutputHImage(result);
+                            if (outputMat != null && outputMat.IsInitialized())
                             {
                                 var processedImage = _imageConverterPool.ConvertToBitmapSource(outputMat);
                                 var originalImage = _imageConverterPool.ConvertToBitmapSource(inputMat);
@@ -214,7 +215,7 @@ namespace SunEyeVision.UI.Services.Performance
         private ToolResults? ExecuteNode(
             WorkflowEngine engine,
             UI.Models.WorkflowNode node,
-            Mat inputMat,
+            HImage inputMat,
             SunEyeVision.Workflow.Workflow workflow,
             CancellationToken cancellationToken)
         {
@@ -235,24 +236,23 @@ return null;
         /// <summary>
         /// 从结果中获取输出Mat
         /// </summary>
-        private Mat? GetOutputMat(ToolResults result)
+        private HImage? GetOutputHImage(ToolResults result)
         {
-            // 尝试通过反射获取输出图像
             try
             {
                 var outputImageProp = result.GetType().GetProperty("OutputImage");
                 if (outputImageProp != null)
                 {
                     var value = outputImageProp.GetValue(result);
-                    if (value is Mat mat)
+                    if (value is HImage image)
                     {
-                        return mat;
+                        return image;
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
-}
+            }
 
             return null;
         }

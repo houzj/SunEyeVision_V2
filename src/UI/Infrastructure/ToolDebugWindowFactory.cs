@@ -36,7 +36,7 @@ namespace SunEyeVision.UI.Factories
         /// <param name="toolMetadata">工具元数据</param>
         /// <param name="mainImageControl">主窗口的ImageControl（用于区域编辑器绑定）</param>
         /// <returns>调试窗口实例，无窗口工具返回 null</returns>
-        public static Window? CreateDebugWindow(string toolId, IToolPlugin? toolPlugin, ToolMetadata toolMetadata, ImageControl? mainImageControl = null)
+        public static Window? CreateDebugWindow(string toolId, IToolPlugin? toolPlugin, ToolMetadata toolMetadata, HalconImageControl? mainImageControl = null)
         {
             // ★ 优先级1：使用 toolMetadata.DebugWindowType（新增）
             if (toolMetadata.DebugWindowType != null)

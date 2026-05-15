@@ -1,111 +1,54 @@
-using OpenCvSharp;
-using SunEyeVision.Plugin.SDK.Extensions;
+using SunEyeVision.Plugin.SDK.Models.Geometry;
 using System;
 
 namespace SunEyeVision.Plugin.SDK.Models.Roi
 {
-    /// <summary>
-    /// 矩形ROI
-    /// </summary>
     public sealed class RectangleRoi : RoiBase
     {
         private readonly Rect2d _rect;
         private readonly double _angleRadians;
 
-        /// <summary>
-        /// 创建矩形ROI
-        /// </summary>
         public RectangleRoi(double x, double y, double width, double height)
         {
             _rect = new Rect2d(x, y, width, height);
             _angleRadians = 0;
         }
 
-        /// <summary>
-        /// 创建矩形ROI（带旋转）
-        /// </summary>
         public RectangleRoi(double x, double y, double width, double height, double angleRadians)
         {
             _rect = new Rect2d(x, y, width, height);
             _angleRadians = angleRadians;
         }
 
-        /// <summary>
-        /// 从Rect2d创建
-        /// </summary>
         public RectangleRoi(Rect2d rect, double angleRadians = 0)
         {
             _rect = rect;
             _angleRadians = angleRadians;
         }
 
-        /// <summary>
-        /// 从RotatedRect创建
-        /// </summary>
-        public static RectangleRoi FromRotatedRect(RotatedRect rotatedRect)
+        public static RectangleRoi FromRotatedRect(Geometry.RotatedRect rotatedRect)
         {
             var boundingRect = rotatedRect.BoundingRect();
-            return new RectangleRoi(
-                new Rect2d(boundingRect.X, boundingRect.Y, boundingRect.Width, boundingRect.Height),
-                rotatedRect.AngleRadians()
-            );
+            return new RectangleRoi(boundingRect, rotatedRect.AngleRadians);
         }
 
-        /// <summary>
-        /// 从中心点创建
-        /// </summary>
         public static RectangleRoi FromCenter(Point2d center, double width, double height, double angleRadians = 0)
         {
-            return new RectangleRoi(Rect2dExtensions.FromCenter(center, width, height), angleRadians);
+            return new RectangleRoi(Rect2d.FromCenter(center, width, height), angleRadians);
         }
 
         public override RoiType Type => _angleRadians == 0 ? RoiType.Rectangle : RoiType.RotatedRectangle;
-
-        public override bool IsValid => !_rect.IsEmpty();
-
+        public override bool IsValid => !_rect.IsEmpty;
         public override Rect2d BoundingBox => _rect;
+        public override Point2d Center => _rect.Center;
+        public override double Area => _rect.Area;
 
-        public override Point2d Center => _rect.Center();
-
-        public override double Area => _rect.Area();
-
-        /// <summary>
-        /// 矩形数据
-        /// </summary>
         public Rect2d Rect => _rect;
-
-        /// <summary>
-        /// 获取RotatedRect
-        /// </summary>
-        public RotatedRect RotatedRect => new RotatedRect(
-            new Point2f((float)Center.X, (float)Center.Y),
-            new Size2f((float)_rect.Width, (float)_rect.Height),
-            (float)(_angleRadians * 180 / Math.PI)
-        );
-
-        /// <summary>
-        /// X坐标
-        /// </summary>
+        public Geometry.RotatedRect RotatedRect => new Geometry.RotatedRect(Center, _rect.Width, _rect.Height, _angleRadians * 180 / Math.PI);
         public double X => _rect.X;
-
-        /// <summary>
-        /// Y坐标
-        /// </summary>
         public double Y => _rect.Y;
-
-        /// <summary>
-        /// 宽度
-        /// </summary>
         public double Width => _rect.Width;
-
-        /// <summary>
-        /// 高度
-        /// </summary>
         public double Height => _rect.Height;
-
-        /// <summary>
-        /// 旋转角度（弧度）
-        /// </summary>
         public double Angle => _angleRadians;
 
         public override bool Contains(Point2d point)
@@ -113,7 +56,6 @@ namespace SunEyeVision.Plugin.SDK.Models.Roi
             if (_angleRadians == 0)
                 return _rect.Contains(point);
 
-            // 将点转换到矩形的局部坐标系
             Point2d center = Center;
             Point2d localPoint = point - center;
 
@@ -130,16 +72,9 @@ namespace SunEyeVision.Plugin.SDK.Models.Roi
         {
             if (_angleRadians == 0)
             {
-                return new[]
-                {
-                    _rect.TopLeft(),
-                    _rect.TopRight(),
-                    _rect.BottomRight(),
-                    _rect.BottomLeft()
-                };
+                return new[] { _rect.TopLeft, _rect.TopRight, _rect.BottomRight, _rect.BottomLeft };
             }
 
-            // 计算旋转后的角点
             Point2d center = Center;
             Point2d[] corners = new[]
             {
@@ -169,49 +104,41 @@ namespace SunEyeVision.Plugin.SDK.Models.Roi
 
         public override IRoi Scale(double factor)
         {
-            return new RectangleRoi(
-                _rect.X * factor,
-                _rect.Y * factor,
-                _rect.Width * factor,
-                _rect.Height * factor,
-                _angleRadians
-            );
+            return new RectangleRoi(_rect.X * factor, _rect.Y * factor, _rect.Width * factor, _rect.Height * factor, _angleRadians);
         }
 
-        public override IRoi Transform(Mat transformMatrix)
+        public override IRoi Transform(double[] matrix)
         {
-            if (transformMatrix == null || transformMatrix.Empty())
+            if (matrix == null || matrix.Length < 9)
                 return this;
 
-            // 应用变换到四个角点
             var corners = GetBoundaryPoints();
             Point2d[] transformedCorners = new Point2d[4];
-
             for (int i = 0; i < 4; i++)
-            {
-                transformedCorners[i] = TransformPoint(corners[i], transformMatrix);
-            }
+                transformedCorners[i] = TransformPoint(corners[i], matrix);
 
-            // 计算最小外接矩形
-            var rotatedRect = RotatedRectExtensions.FromPoints(transformedCorners);
-            return FromRotatedRect(rotatedRect);
+            double minX = double.MaxValue, minY = double.MaxValue;
+            double maxX = double.MinValue, maxY = double.MinValue;
+            foreach (var p in transformedCorners)
+            {
+                if (p.X < minX) minX = p.X;
+                if (p.Y < minY) minY = p.Y;
+                if (p.X > maxX) maxX = p.X;
+                if (p.Y > maxY) maxY = p.Y;
+            }
+            return new RectangleRoi(minX, minY, maxX - minX, maxY - minY, _angleRadians);
         }
 
-        private static Point2d TransformPoint(Point2d point, Mat matrix)
+        private static Point2d TransformPoint(Point2d point, double[] matrix)
         {
-            // 假设matrix是3x3齐次变换矩阵
-            double x = point.X * matrix.Get<double>(0, 0) +
-                      point.Y * matrix.Get<double>(0, 1) +
-                      matrix.Get<double>(0, 2);
-            double y = point.X * matrix.Get<double>(1, 0) +
-                      point.Y * matrix.Get<double>(1, 1) +
-                      matrix.Get<double>(1, 2);
+            double x = point.X * matrix[0] + point.Y * matrix[1] + matrix[2];
+            double y = point.X * matrix[3] + point.Y * matrix[4] + matrix[5];
             return new Point2d(x, y);
         }
 
         public override string ToString() =>
             _angleRadians == 0
                 ? $"RectangleROI(X={X:F1}, Y={Y:F1}, W={Width:F1}, H={Height:F1})"
-                : $"RotatedRectROI(X={X:F1}, Y={Y:F1}, W={Width:F1}, H={Height:F1}, θ={_angleRadians:F2})";
+                : $"RotatedRectROI(X={X:F1}, Y={Y:F1}, W={Width:F1}, H={Height:F1}, theta={_angleRadians:F2})";
     }
 }

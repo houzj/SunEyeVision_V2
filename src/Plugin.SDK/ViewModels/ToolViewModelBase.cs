@@ -5,8 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
-using OpenCvSharp;
-using OpenCvSharp.WpfExtensions;
+using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
@@ -48,7 +47,7 @@ namespace SunEyeVision.Plugin.SDK.ViewModels
         // 工具执行相关
         private ToolRunner? _runner;
         private IToolPlugin? _tool;
-        private Mat? _currentImage;
+        private HImage? _currentImage;
         private bool _isExecuting;
 
         #endregion
@@ -126,7 +125,7 @@ namespace SunEyeVision.Plugin.SDK.ViewModels
         /// <summary>
         /// 是否可以执行
         /// </summary>
-        public bool CanExecute => !IsExecuting && CurrentImage != null && !CurrentImage.Empty();
+        public bool CanExecute => !IsExecuting && CurrentImage != null && CurrentImage.IsInitialized();
 
         /// <summary>
         /// 工具实例
@@ -141,7 +140,7 @@ namespace SunEyeVision.Plugin.SDK.ViewModels
         /// <summary>
         /// 当前输入图像
         /// </summary>
-        public Mat? CurrentImage
+        public HImage? CurrentImage
         {
             get => _currentImage;
             set
@@ -277,7 +276,7 @@ namespace SunEyeVision.Plugin.SDK.ViewModels
                 return;
             }
 
-            if (CurrentImage == null || CurrentImage.Empty())
+            if (CurrentImage == null || !CurrentImage.IsInitialized())
             {
                 StatusMessage = "请先加载输入图像";
                 ToolStatus = "错误";
@@ -452,10 +451,10 @@ namespace SunEyeVision.Plugin.SDK.ViewModels
 
                 // 获取第一张可显示图像
                 var displayImages = result.ToolResult?.GetDisplayImages();
-                var primaryImage = displayImages?.Values.FirstOrDefault(m => m != null && !m.Empty());
+                var primaryImage = displayImages?.Values.FirstOrDefault(m => m != null && m.IsInitialized());
                 if (primaryImage != null)
                 {
-                    OutputImage = primaryImage.ToBitmapSource();
+                    OutputImage = HImageToBitmapSource(primaryImage);
                     OnPropertyChanged(nameof(OutputImage));
                 }
 
@@ -537,6 +536,39 @@ namespace SunEyeVision.Plugin.SDK.ViewModels
         protected virtual void OnExecutionCompleted(RunResult result)
         {
             // 子类可重写此方法处理执行结果
+        }
+
+        /// <summary>
+        /// 将 HImage 转换为 BitmapSource（适用于 WPF 显示）
+        /// </summary>
+        private static BitmapSource? HImageToBitmapSource(HImage image)
+        {
+            try
+            {
+                HTuple width, height;
+                HOperatorSet.GetImageSize(image, out width, out height);
+                int w = width.I, h = height.I;
+
+                HTuple channels;
+                HOperatorSet.CountChannels(image, out channels);
+
+                if (channels.I == 1)
+                {
+                    HTuple pointer, type;
+                    HOperatorSet.GetImagePointer1(image, out pointer, out type, out width, out height);
+                    var bs = BitmapSource.Create(w, h, 96, 96,
+                        System.Windows.Media.PixelFormats.Gray8, null,
+                        pointer, h * w, w);
+                    bs.Freeze();
+                    return bs;
+                }
+
+                return null;
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         /// <summary>

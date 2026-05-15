@@ -1,7 +1,7 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using OpenCvSharp;
+using HalconDotNet;
 using SunEyeVision.Core.Models;
 
 namespace SunEyeVision.Core.Interfaces
@@ -36,7 +36,7 @@ namespace SunEyeVision.Core.Interfaces
         /// </summary>
         /// <param name="deviceId">设备ID</param>
         /// <returns>获取的图像</returns>
-        Task<Mat> CaptureImageAsync(string deviceId);
+        Task<HImage> CaptureImageAsync(string deviceId);
 
         /// <summary>
         /// 获取已连接设备列表

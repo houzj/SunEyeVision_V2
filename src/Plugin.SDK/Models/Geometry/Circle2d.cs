@@ -1,15 +1,9 @@
-using OpenCvSharp;
-using SunEyeVision.Plugin.SDK.Extensions;
-using System;
+﻿using System;
 
 namespace SunEyeVision.Plugin.SDK.Models.Geometry
 {
     /// <summary>
     /// 圆形结构（双精度）
-    /// </summary>
-    /// <remarks>
-    /// OpenCvSharp缺少Circle类型，因此提供此补充类型。
-    /// 与OpenCvSharp.Point2d和Rect2d配合使用。
     /// </remarks>
     public readonly struct Circle2d : IEquatable<Circle2d>
     {

@@ -7,7 +7,7 @@
              xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls"
              xmlns:converters="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Region.Converters"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
-             xmlns:cv="clr-namespace:OpenCvSharp;assembly=OpenCvSharp"
+             xmlns:cv="clr-namespace:SunEyeVision.Plugin.SDK.Models.Geometry;assembly=SunEyeVision.Plugin.SDK"
              xmlns:models="clr-namespace:SunEyeVision.Plugin.SDK.Models.Geometry;assembly=SunEyeVision.Plugin.SDK"
              xmlns:vm="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Region.ViewModels"
              mc:Ignorable="d" d:DesignHeight="500" d:DesignWidth="300">
@@ -55,7 +55,7 @@
                         <controls:ParamBinding
                             Width="200"
                             ParameterName="RectRegion"
-                            DataType="{x:Type cv:Rect}"
+                            DataType="{x:Type cv:RectI}"
                             BindingSource="{Binding RectRegionSource, Mode=TwoWay}"
                             AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:RegionSubscribePanel}}}"/>
                     </controls:LabeledControl>

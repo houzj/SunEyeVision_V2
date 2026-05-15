@@ -19,7 +19,7 @@ namespace SunEyeVision.Workflow;
 /// 
 /// 支持的数据类型：
 /// - 基础类型：Integer, Float, String, Boolean, Int64, Double, Byte
-/// - OpenCvSharp类型：Point, Rectangle, Size
+/// - 几何类型：Point, Rectangle, Size
 /// - 集合类型：Array, List
 /// - 图像类型：Image
 /// 

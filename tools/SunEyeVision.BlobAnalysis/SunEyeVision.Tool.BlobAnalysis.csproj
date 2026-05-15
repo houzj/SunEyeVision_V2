@@ -17,6 +17,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Plugin.SDK\SunEyeVision.Plugin.SDK.csproj" />
-    <ProjectReference Include="..\..\src\SunEyeVision.CvEngine\SunEyeVision.CvEngine.csproj" />
+    <Reference Include="HalconDotNet">
+      <HintPath>$(SolutionDir)runtime\halcondotnetxl.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="OpenCvSharp4" Version="4.13.0.20260222" />
+    <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.13.0.20260222" />
   </ItemGroup>
 </Project>

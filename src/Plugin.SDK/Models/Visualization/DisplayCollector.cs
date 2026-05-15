@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using OpenCvSharp;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 
 namespace SunEyeVision.Plugin.SDK.Models.Visualization
@@ -66,42 +64,112 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
             }
         }
 
-        /// <summary>添加点（实心圆）</summary>
-        public void AddPoint(GraphicsStyle style, Point2d point, bool isPass = true)
+        /// <summary>添加旋转矩形</summary>
+        public void AddRotatedRect(GraphicsStyle style, RotatedRect rect, bool isPass = true)
         {
-            var item = GetOrCreateGraphicsItem(style, GraphicsType.Point);
-            AppendGeometry(item, point, isPass);
+            var item = GetOrCreateGraphicsItem(style, GraphicsType.RotatedRectangle);
+            AppendGeometry(item, rect, isPass);
         }
 
-        /// <summary>批量添加点（实心圆）</summary>
-        public void AddPoints(GraphicsStyle style, IReadOnlyList<Point2d> points, IReadOnlyList<bool>? isPassList = null)
+        /// <summary>批量添加旋转矩形</summary>
+        public void AddRotatedRects(GraphicsStyle style, IReadOnlyList<RotatedRect> rects, IReadOnlyList<bool>? isPassList = null)
         {
-            var item = GetOrCreateGraphicsItem(style, GraphicsType.Point);
-            for (int i = 0; i < points.Count; i++)
+            var item = GetOrCreateGraphicsItem(style, GraphicsType.RotatedRectangle);
+            for (int i = 0; i < rects.Count; i++)
             {
                 var isPass = isPassList != null && i < isPassList.Count ? isPassList[i] : true;
-                AppendGeometry(item, points[i], isPass);
+                AppendGeometry(item, rects[i], isPass);
+            }
+        }
+
+        /// <summary>添加椭圆</summary>
+        public void AddEllipse(GraphicsStyle style, Ellipse2d ellipse, bool isPass = true)
+        {
+            var item = GetOrCreateGraphicsItem(style, GraphicsType.Ellipse);
+            AppendGeometry(item, ellipse, isPass);
+        }
+
+        /// <summary>批量添加椭圆</summary>
+        public void AddEllipses(GraphicsStyle style, IReadOnlyList<Ellipse2d> ellipses, IReadOnlyList<bool>? isPassList = null)
+        {
+            var item = GetOrCreateGraphicsItem(style, GraphicsType.Ellipse);
+            for (int i = 0; i < ellipses.Count; i++)
+            {
+                var isPass = isPassList != null && i < isPassList.Count ? isPassList[i] : true;
+                AppendGeometry(item, ellipses[i], isPass);
+            }
+        }
+
+        /// <summary>添加线段</summary>
+        public void AddLine(GraphicsStyle style, LineSegment line, bool isPass = true)
+        {
+            var item = GetOrCreateGraphicsItem(style, GraphicsType.Line);
+            AppendGeometry(item, line, isPass);
+        }
+
+        /// <summary>批量添加线段</summary>
+        public void AddLines(GraphicsStyle style, IReadOnlyList<LineSegment> lines, IReadOnlyList<bool>? isPassList = null)
+        {
+            var item = GetOrCreateGraphicsItem(style, GraphicsType.Line);
+            for (int i = 0; i < lines.Count; i++)
+            {
+                var isPass = isPassList != null && i < isPassList.Count ? isPassList[i] : true;
+                AppendGeometry(item, lines[i], isPass);
+            }
+        }
+
+        /// <summary>添加箭头</summary>
+        public void AddArrow(GraphicsStyle style, ArrowGeometry arrow, bool isPass = true)
+        {
+            var item = GetOrCreateGraphicsItem(style, GraphicsType.Arrow);
+            AppendGeometry(item, arrow, isPass);
+        }
+
+        /// <summary>批量添加箭头</summary>
+        public void AddArrows(GraphicsStyle style, IReadOnlyList<ArrowGeometry> arrows, IReadOnlyList<bool>? isPassList = null)
+        {
+            var item = GetOrCreateGraphicsItem(style, GraphicsType.Arrow);
+            for (int i = 0; i < arrows.Count; i++)
+            {
+                var isPass = isPassList != null && i < isPassList.Count ? isPassList[i] : true;
+                AppendGeometry(item, arrows[i], isPass);
+            }
+        }
+
+        /// <summary>添加圆弧</summary>
+        public void AddArc(GraphicsStyle style, ArcGeometry arc, bool isPass = true)
+        {
+            var item = GetOrCreateGraphicsItem(style, GraphicsType.Arc);
+            AppendGeometry(item, arc, isPass);
+        }
+
+        /// <summary>批量添加圆弧</summary>
+        public void AddArcs(GraphicsStyle style, IReadOnlyList<ArcGeometry> arcs, IReadOnlyList<bool>? isPassList = null)
+        {
+            var item = GetOrCreateGraphicsItem(style, GraphicsType.Arc);
+            for (int i = 0; i < arcs.Count; i++)
+            {
+                var isPass = isPassList != null && i < isPassList.Count ? isPassList[i] : true;
+                AppendGeometry(item, arcs[i], isPass);
             }
         }
 
         /// <summary>添加轮廓</summary>
-        public void AddContour(GraphicsStyle style, Point[] points, bool isPass = true)
+        public void AddContour(GraphicsStyle style, Point2d[] points, bool isPass = true)
         {
             var item = GetOrCreateGraphicsItem(style, GraphicsType.Contour);
-            var contourGeom = new ContourGeometry(
-                points.Select(p => new Point2d(p.X, p.Y)).ToArray(), true);
+            var contourGeom = new ContourGeometry(points, true);
             AppendGeometry(item, contourGeom, isPass);
         }
 
         /// <summary>批量添加轮廓</summary>
-        public void AddContours(GraphicsStyle style, IReadOnlyList<Point[]> contoursList, IReadOnlyList<bool>? isPassList = null)
+        public void AddContours(GraphicsStyle style, IReadOnlyList<Point2d[]> contoursList, IReadOnlyList<bool>? isPassList = null)
         {
             var item = GetOrCreateGraphicsItem(style, GraphicsType.Contour);
             for (int i = 0; i < contoursList.Count; i++)
             {
                 var isPass = isPassList != null && i < isPassList.Count ? isPassList[i] : true;
-                var contourGeom = new ContourGeometry(
-                    contoursList[i].Select(p => new Point2d(p.X, p.Y)).ToArray(), true);
+                var contourGeom = new ContourGeometry(contoursList[i], true);
                 AppendGeometry(item, contourGeom, isPass);
             }
         }

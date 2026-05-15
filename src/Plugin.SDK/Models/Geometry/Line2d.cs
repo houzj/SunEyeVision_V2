@@ -1,6 +1,4 @@
-using OpenCvSharp;
-using SunEyeVision.Plugin.SDK.Extensions;
-using System;
+﻿using System;
 
 namespace SunEyeVision.Plugin.SDK.Models.Geometry
 {
@@ -8,7 +6,7 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
     /// 直线结构（双精度）
     /// </summary>
     /// <remarks>
-    /// OpenCvSharp缺少Line类型，因此提供此补充类型。
+    /// 直线结构（补充几何类型）
     /// 使用点法式表示：过点P，方向为D的直线。
     /// </remarks>
     public readonly struct Line2d : IEquatable<Line2d>

@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using OpenCvSharp;
+using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Validation;
 
 namespace SunEyeVision.Tool.ImageLoad
 {
-    /// <summary>
-    /// 图像载入工具 - 从文件读取图像，作为工作流的图像源
-    /// </summary>
     [Tool("ImageLoad", "图像载入",
         Description = "从文件载入图像，作为工作流的图像源",
         Icon = "📁", Category = "采集",
@@ -54,26 +51,32 @@ namespace SunEyeVision.Tool.ImageLoad
                 result.FileSize = fileInfo.Length;
                 result.FileFormat = fileInfo.Extension.ToUpperInvariant();
 
-                var loadedImage = Cv2.ImRead(parameters.FilePath, ImreadModes.Unchanged);
+                HOperatorSet.ReadImage(out var hObj, parameters.FilePath);
+                var loadedImage = new HImage(hObj);
 
-                if (loadedImage == null || loadedImage.Empty())
+                if (loadedImage == null || !loadedImage.IsInitialized())
                 {
                     result.SetError($"无法加载图像: {parameters.FilePath}");
                     return result;
                 }
 
                 result.OutputImage = loadedImage;
-                result.Width = loadedImage.Width;
-                result.Height = loadedImage.Height;
-                result.Channels = loadedImage.Channels();
-                result.Depth = (int)loadedImage.Depth();
+
+                HOperatorSet.GetImageSize(loadedImage, out var imgWidth, out var imgHeight);
+                result.Width = imgWidth.I;
+                result.Height = imgHeight.I;
+
+                HOperatorSet.CountChannels(loadedImage, out var channels);
+                result.Channels = channels.I;
+
+                HOperatorSet.GetImageType(loadedImage, out var imgType);
+                result.Depth = ImageTypeToDepth(imgType.S);
 
                 // 灰度转换：彩色→灰度，灰度原图直接克隆
-                if (loadedImage.Channels() > 1)
+                if (result.Channels > 1)
                 {
-                    var grayMat = new Mat();
-                    Cv2.CvtColor(loadedImage, grayMat, ColorConversionCodes.BGR2GRAY);
-                    result.GrayImage = grayMat;
+                    HOperatorSet.Rgb1ToGray(loadedImage, out var grayObj);
+                    result.GrayImage = new HImage(grayObj);
                 }
                 else
                 {
@@ -91,6 +94,21 @@ namespace SunEyeVision.Tool.ImageLoad
             }
 
             return result;
+        }
+
+        private static int ImageTypeToDepth(string type)
+        {
+            return type switch
+            {
+                "byte" => 0,
+                "int1" => 1,
+                "uint2" => 2,
+                "int2" => 3,
+                "int4" => 4,
+                "real" => 5,
+                "complex" => 6,
+                _ => 0
+            };
         }
     }
 }

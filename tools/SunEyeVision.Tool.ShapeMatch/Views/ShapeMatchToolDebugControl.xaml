@@ -10,6 +10,7 @@
         xmlns:local="clr-namespace:SunEyeVision.Tool.ShapeMatch"
         xmlns:models="clr-namespace:SunEyeVision.Tool.ShapeMatch.Models"
         xmlns:localConverters="clr-namespace:SunEyeVision.Tool.ShapeMatch.Converters"
+        xmlns:views="clr-namespace:SunEyeVision.Tool.ShapeMatch.Views"
         mc:Ignorable="d"
         d:DesignHeight="600" d:DesignWidth="420"
         DataContext="{Binding Parameters, RelativeSource={RelativeSource Self}}">
@@ -24,6 +25,7 @@
             <localConverters:SortModeConverter x:Key="SortModeConverter"/>
             <localConverters:MultiTemplateModeConverter x:Key="MultiTemplateModeConverter"/>
             <localConverters:ExtractionStatusConverter x:Key="ExtractionStatusConverter"/>
+            <localConverters:MinContrastModeConverter x:Key="MinContrastModeConverter"/>
         </ResourceDictionary>
     </controls:ToolDebugControlBase.Resources>
 
@@ -230,14 +232,51 @@
                                     AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                 </controls:LabeledControl>
 
-                <controls:LabeledControl Label="最小间距 (NMS, px)">
+                <controls:LabeledControl Label="NMS 重叠率 (0~1)">
                   <controls:ConfigSetting
-                                    ParameterName="MinMatchDistance"
-                                    DataType="{x:Type sys:Int32}"
-                                    Value="{Binding MinMatchDistance.Value, Mode=TwoWay}"
-                                    Minimum="0" Maximum="500"
+                                    ParameterName="MaxOverlap"
+                                    DataType="{x:Type sys:Double}"
+                                    Value="{Binding MaxOverlap.Value, Mode=TwoWay}"
+                                    Minimum="0" Maximum="1"
+                                    SmallChange="0.01" LargeChange="0.1"
+                                    Width="200" DecimalPlaces="2"
+                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                </controls:LabeledControl>
+
+                <controls:LabeledControl Label="贪婪度 (0~1)">
+                  <controls:ConfigSetting
+                                    ParameterName="Greediness"
+                                    DataType="{x:Type sys:Double}"
+                                    Value="{Binding Greediness.Value, Mode=TwoWay}"
+                                    Minimum="0" Maximum="1"
+                                    SmallChange="0.01" LargeChange="0.1"
+                                    Width="200" DecimalPlaces="2"
+                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                </controls:LabeledControl>
+
+                <!-- 最小对比度模式 -->
+                <controls:LabeledControl Label="最小对比度模式" Margin="0,8,0,0">
+                  <ComboBox ItemsSource="{Binding MinContrastModeList, RelativeSource={RelativeSource AncestorType={x:Type views:ShapeMatchToolDebugControl}}}"
+                            SelectedItem="{Binding MinContrastMode.Value, Mode=TwoWay}"
+                            Height="32" VerticalContentAlignment="Center" Width="220"
+                            ToolTip="自动：基于图像梯度自动计算|手动：使用下方固定值|模版阈值：使用模板创建时的 Contrast/3">
+                    <ComboBox.ItemTemplate>
+                      <DataTemplate>
+                        <TextBlock Text="{Binding Converter={StaticResource MinContrastModeConverter}}"/>
+                      </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                  </ComboBox>
+                </controls:LabeledControl>
+
+                <!-- 阈值参数（仅手动模式有效） -->
+                <controls:LabeledControl Label="阈值参数" Margin="0,4,0,0">
+                  <controls:ConfigSetting
+                                    ParameterName="MinContrast"
+                                    DataType="{x:Type sys:Single}"
+                                    Value="{Binding MinContrast.Value, Mode=TwoWay}"
+                                    Minimum="1" Maximum="255"
                                     SmallChange="1" LargeChange="10"
-                                    Width="200"
+                                    Width="220" DecimalPlaces="0"
                                     AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                 </controls:LabeledControl>
 
@@ -320,18 +359,7 @@
                 <controls:LabeledControl Label="启用亚像素" ContentHorizontalAlignment="Left">
                   <CheckBox IsChecked="{Binding EnableSubPixel.Value, Mode=TwoWay}"/>
                 </controls:LabeledControl>
-                <controls:LabeledControl Label="搜索半径 (px)" Margin="0,4,0,0"
-                                           Visibility="{Binding EnableSubPixel.Value, Converter={StaticResource BoolToVisibilityConverter}}">
-                  <controls:ConfigSetting
-                                    ParameterName="SubPixelRadius"
-                                    DataType="{x:Type sys:Double}"
-                                    Value="{Binding SubPixelRadius.Value, Mode=TwoWay}"
-                                    Minimum="0.1" Maximum="10.0"
-                                    SmallChange="0.1" LargeChange="1"
-                                    Width="200"
-                                    DecimalPlaces="2"
-                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                </controls:LabeledControl>
+                <!-- 搜索半径固定为 2px，不暴露独立参数 -->
               </StackPanel>
             </GroupBox>
 

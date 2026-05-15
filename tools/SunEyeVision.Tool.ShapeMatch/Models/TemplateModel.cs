@@ -34,16 +34,10 @@ namespace SunEyeVision.Tool.ShapeMatch.Models
         Failed = 3
     }
 
-    // ============ 参数模式枚举 ============
-    public enum PyramidMode { Auto, Manual }
-    public enum DensityMode { Auto, Manual }
-    public enum ThresholdMode { Auto, Manual }
-    public enum ChainLengthMode { Auto, Manual }
-
     /// <summary>
-    /// 模板数据模型（v5.0）
-    /// 使用 Scharr+NMS 梯度引擎 + L0 单源金字塔混合模式
-    /// 参数对齐 Halcon：金字塔模式/密度模式/阈值模式/链长模式
+    /// 模板数据模型
+    /// 使用 Scharr+NMS 梯度引擎 + 每层独立提取
+    /// 创建参数：Contrast, NumLevels, PyramidStart, PyramidEnd, MinChainLength
     /// </summary>
     [JsonDerivedType(typeof(TemplateModel), "TemplateModel")]
     public class TemplateModel : ObservableObject
@@ -53,16 +47,13 @@ namespace SunEyeVision.Tool.ShapeMatch.Models
         private bool _isEnabled = true;
         private int _orderIndex;
 
-        // ============ v5.0 创建参数 ============
-        private PyramidMode _pyramidMode = PyramidMode.Auto;
-        private int _pyramidStart = 1;       // 1~10，起始层（最细层），仅 Manual 有效
-        private int _pyramidEnd = 4;         // 1~10，结束层（最粗层），仅 Manual 有效
-        private DensityMode _densityMode = DensityMode.Auto;
-        private float _densityFactor = 1.0f; // 0.1~2.0，密度系数，仅 Manual 有效
-        private ThresholdMode _thresholdMode = ThresholdMode.Auto;
-        private float _contrast = 30f;      // 1~255，仅 Manual 有效
-        private ChainLengthMode _chainLengthMode = ChainLengthMode.Auto;
-        private int _minChainLength = 10;   // 0~200，仅 Manual 有效
+        // ============ 创建参数 ============
+        private float _contrast = 30f;
+        private int _numLevels = 4;
+        private int _pyramidStart = 3;       // 起始层（最粗层）
+        private int _pyramidEnd = 1;         // 结束层（最细层）
+        private int _minChainLength = 5;     // 最小链长
+        private bool _isChainAuto = true;    // 链长模式（true=自动）
 
         private TemplateExtractionStatus _extractionStatus = TemplateExtractionStatus.NotExtracted;
         private List<RegionData> _inspectionRegions = new();
@@ -80,15 +71,12 @@ namespace SunEyeVision.Tool.ShapeMatch.Models
         public int OrderIndex { get => _orderIndex; set => SetProperty(ref _orderIndex, value); }
 
         // ============ 创建参数属性 ============
-        public PyramidMode PyramidMode { get => _pyramidMode; set => SetProperty(ref _pyramidMode, value); }
+        public float Contrast { get => _contrast; set => SetProperty(ref _contrast, value, "对比度"); }
+        public int NumLevels { get => _numLevels; set => SetProperty(ref _numLevels, value, "金字塔层数"); }
         public int PyramidStart { get => _pyramidStart; set => SetProperty(ref _pyramidStart, value, "起始层"); }
         public int PyramidEnd { get => _pyramidEnd; set => SetProperty(ref _pyramidEnd, value, "结束层"); }
-        public DensityMode DensityMode { get => _densityMode; set => SetProperty(ref _densityMode, value); }
-        public float DensityFactor { get => _densityFactor; set => SetProperty(ref _densityFactor, value, "密度系数"); }
-        public ThresholdMode ThresholdMode { get => _thresholdMode; set => SetProperty(ref _thresholdMode, value); }
-        public float Contrast { get => _contrast; set => SetProperty(ref _contrast, value, "对比度"); }
-        public ChainLengthMode ChainLengthMode { get => _chainLengthMode; set => SetProperty(ref _chainLengthMode, value); }
         public int MinChainLength { get => _minChainLength; set => SetProperty(ref _minChainLength, value, "最小链长"); }
+        public bool IsChainAuto { get => _isChainAuto; set => SetProperty(ref _isChainAuto, value); }
 
         public List<RegionData> InspectionRegions
         {
@@ -108,7 +96,7 @@ namespace SunEyeVision.Tool.ShapeMatch.Models
             set => SetProperty(ref _extractionStatus, value, "提取状态");
         }
 
-        /// <summary>第 0 层（全分辨率）边缘点列表</summary>
+        /// <summary>第 1 层（全分辨率）边缘点列表</summary>
         public List<CvOp.EdgePoint>? EdgePoints
         {
             get => _edgePoints;
@@ -174,15 +162,13 @@ namespace SunEyeVision.Tool.ShapeMatch.Models
                 Name = _name,
                 IsEnabled = _isEnabled,
                 OrderIndex = _orderIndex,
-                PyramidMode = _pyramidMode,
+                Contrast = _contrast,
+                NumLevels = _numLevels,
                 PyramidStart = _pyramidStart,
                 PyramidEnd = _pyramidEnd,
-                DensityMode = _densityMode,
-                DensityFactor = _densityFactor,
-                ThresholdMode = _thresholdMode,
-                Contrast = _contrast,
-                ChainLengthMode = _chainLengthMode,
                 MinChainLength = _minChainLength,
+                IsChainAuto = _isChainAuto,
+
                 ExtractionStatus = _extractionStatus,
                 EdgePoints = _edgePoints?.Select(p => new CvOp.EdgePoint
                 {
@@ -233,9 +219,7 @@ namespace SunEyeVision.Tool.ShapeMatch.Models
         private double? _scaleMin;
         private double? _scaleMax;
         private double? _scaleStep;
-        private int? _minMatchDistance;
         private bool? _enableSubPixel;
-        private double? _subPixelRadius;
 
         public string TemplateId { get => _templateId; set => SetProperty(ref _templateId, value); }
         public double? MinMatchScore { get => _minMatchScore; set => SetProperty(ref _minMatchScore, value); }
@@ -247,8 +231,6 @@ namespace SunEyeVision.Tool.ShapeMatch.Models
         public double? ScaleMin { get => _scaleMin; set => SetProperty(ref _scaleMin, value); }
         public double? ScaleMax { get => _scaleMax; set => SetProperty(ref _scaleMax, value); }
         public double? ScaleStep { get => _scaleStep; set => SetProperty(ref _scaleStep, value); }
-        public int? MinMatchDistance { get => _minMatchDistance; set => SetProperty(ref _minMatchDistance, value); }
         public bool? EnableSubPixel { get => _enableSubPixel; set => SetProperty(ref _enableSubPixel, value); }
-        public double? SubPixelRadius { get => _subPixelRadius; set => SetProperty(ref _subPixelRadius, value); }
     }
 }

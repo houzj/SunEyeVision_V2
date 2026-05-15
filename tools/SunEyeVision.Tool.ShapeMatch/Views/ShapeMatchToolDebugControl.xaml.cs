@@ -36,6 +36,16 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
 
         public IToolPlugin? Tool { get; set; }
 
+        /// <summary>
+        /// 最小对比度模式枚举值列表（用于 ComboBox 绑定）
+        /// </summary>
+        public List<MinContrastMode> MinContrastModeList { get; } = new()
+        {
+            MinContrastMode.Auto,
+            MinContrastMode.Manual,
+            MinContrastMode.FromTemplate
+        };
+
         public static readonly DependencyProperty ParametersProperty =
             DependencyProperty.Register(
                 nameof(Parameters),

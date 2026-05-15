@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text.Json.Serialization;
+using SunEyeVision.CvEngine;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Plugin.SDK.Validation;
@@ -60,9 +61,30 @@ namespace SunEyeVision.Tool.ShapeMatch
         public ParamValue<double> ScaleStep { get; set; } =
             ParamValue<double>.CreateConstant(0.02, "ScaleStep");
 
-        /// <summary>最小间距/NMS（像素）</summary>
-        public ParamValue<int> MinMatchDistance { get; set; } =
-            ParamValue<int>.CreateConstant(10, "MinMatchDistance");
+        /// <summary>最大返回匹配数（Halcon NumMatches）</summary>
+        public ParamValue<int> NumMatches { get; set; } =
+            ParamValue<int>.CreateConstant(1, "NumMatches");
+
+        /// <summary>NMS 最大重叠率 0~1（Halcon MaxOverlap）</summary>
+        public ParamValue<double> MaxOverlap { get; set; } =
+            ParamValue<double>.CreateConstant(0.5, "MaxOverlap");
+
+        /// <summary>贪婪度 0~1（Halcon Greediness）</summary>
+        public ParamValue<double> Greediness { get; set; } =
+            ParamValue<double>.CreateConstant(0.9, "Greediness");
+
+        #endregion
+
+        #region 最小梯度阈值（响应图噪声过滤）
+
+        /// <summary>最小梯度阈值模式</summary>
+        public ParamValue<MinContrastMode> MinContrastMode { get; set; } =
+            ParamValue<MinContrastMode>.CreateConstant(
+                SunEyeVision.CvEngine.MinContrastMode.Auto, "MinContrastMode");
+
+        /// <summary>手动最小对比度值（仅 Manual 模式有效）</summary>
+        public ParamValue<float> MinContrast { get; set; } =
+            ParamValue<float>.CreateConstant(10f, "MinContrast");
 
         #endregion
 
@@ -72,9 +94,7 @@ namespace SunEyeVision.Tool.ShapeMatch
         public ParamValue<bool> EnableSubPixel { get; set; } =
             ParamValue<bool>.CreateConstant(true, "EnableSubPixel");
 
-        /// <summary>亚像素搜索半径（像素）</summary>
-        public ParamValue<double> SubPixelRadius { get; set; } =
-            ParamValue<double>.CreateConstant(2.0, "SubPixelRadius");
+        // 亚像素搜索半径固定为 2px，不再暴露
 
         #endregion
 
@@ -171,14 +191,20 @@ namespace SunEyeVision.Tool.ShapeMatch
             if (ScaleStep.Value <= 0)
                 result.AddError($"缩放步长必须大于0，当前值: {ScaleStep.Value}");
 
-            if (MinMatchDistance.Value < 0)
-                result.AddError($"最小间距(NMS)不能为负数，当前值: {MinMatchDistance.Value}");
+            if (NumMatches.Value < 1)
+                result.AddError($"NumMatches({NumMatches.Value}) 必须 >= 1");
 
-            if (SubPixelRadius.Value <= 0 && EnableSubPixel.Value)
-                result.AddError($"亚像素搜索半径必须大于0，当前值: {SubPixelRadius.Value}");
+            if (MaxOverlap.Value < 0 || MaxOverlap.Value > 1)
+                result.AddError($"MaxOverlap({MaxOverlap.Value}) 必须在 0~1 范围内");
+
+            if (Greediness.Value < 0 || Greediness.Value > 1)
+                result.AddError($"Greediness({Greediness.Value}) 必须在 0~1 范围内");
 
             if (MaxParallelism.Value < 0)
                 result.AddError($"最大并行度不能为负数，当前值: {MaxParallelism.Value}");
+
+            if (MinContrastMode.Value == SunEyeVision.CvEngine.MinContrastMode.Manual && MinContrast.Value <= 0)
+                result.AddError($"手动最小对比度必须大于0，当前值: {MinContrast.Value}");
 
             return result;
         }

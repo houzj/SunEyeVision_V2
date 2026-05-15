@@ -69,82 +69,52 @@
 
           <!-- 轮廓提取参数 -->
           <GroupBox Header="轮廓提取参数" Margin="0,6,0,0" Padding="8" Background="White" BorderBrush="#E0E0E0">
-            <Grid Margin="0,4">
-              <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-              </Grid.ColumnDefinitions>
-              <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-              </Grid.RowDefinitions>
+            <StackPanel Margin="0,4">
+              <controls:LabeledControl Label="金字塔模式:" LabelWidth="80">
+                <ComboBox x:Name="cmbPyramidMode" Height="26" FontSize="11"
+                          ToolTip="自动：根据起始层/结束层自动管理金字塔层级|手动：使用下方设定的起始层/结束层控制"/>
+              </controls:LabeledControl>
 
-              <!-- 第0行 - 金字塔模式 -->
-              <TextBlock Text="金字塔模式:" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" FontSize="11" FontWeight="SemiBold" Foreground="#1565C0" Margin="0,0,6,3"/>
-              <ComboBox x:Name="cmbPyramidMode" Grid.Row="0" Grid.Column="1" Height="26" FontSize="11" Margin="0,0,0,3"
-                        SelectedIndex="0" SelectionChanged="OnPyramidModeChanged"
-                        ToolTip="Auto=根据ROI尺寸自动计算金字塔结束层（短边≤64px），Manual=手动设置起始层和结束层。"/>
+              <controls:LabeledControl Label="起始层:" LabelWidth="80">
+                <controls:NumericUpDown x:Name="numPyramidStart" Height="26"
+                                         IntValue="4" Minimum="1" Maximum="10" SmallChange="1"
+                                         ShowUpDownButtons="True" ShowSlider="True"
+                                         ToolTip="起始层(最粗层)，值越大图像缩得越小，从这开始搜索。"/>
+              </controls:LabeledControl>
 
-              <!-- 第1行 - 起始层 -->
-              <TextBlock Text="  起始层:" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" FontSize="11" Foreground="#1565C0" Margin="0,0,6,3"/>
-              <controls:NumericUpDown x:Name="numPyramidStart" Grid.Row="1" Grid.Column="1" Height="26"
-                                       IntValue="1" Minimum="1" Maximum="10" SmallChange="1" ShowUpDownButtons="True" ShowSlider="True"
-                                       ToolTip="起始层（最细匹配层），1=半分辨率，值越小越精细。仅 Manual 模式有效。"
-                                       Margin="0,0,0,3"/>
+              <controls:LabeledControl Label="结束层:" LabelWidth="80">
+                <controls:NumericUpDown x:Name="numPyramidEnd" Height="26"
+                                         IntValue="1" Minimum="1" Maximum="10" SmallChange="1"
+                                         ShowUpDownButtons="True" ShowSlider="True"
+                                         ToolTip="结束层(最细层)，值越小越精细，到这里结束搜索。1=全分辨率。"/>
+              </controls:LabeledControl>
 
-              <!-- 第2行 - 结束层 -->
-              <TextBlock Text="  结束层:" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" FontSize="11" Foreground="#1565C0" Margin="0,0,6,3"/>
-              <controls:NumericUpDown x:Name="numPyramidEnd" Grid.Row="2" Grid.Column="1" Height="26"
-                                       IntValue="4" Minimum="1" Maximum="10" SmallChange="1" ShowUpDownButtons="True" ShowSlider="True"
-                                       ToolTip="结束层（最粗匹配层），值越大图像缩得越小。仅 Manual 模式有效。"
-                                       Margin="0,0,0,3"/>
+              <controls:LabeledControl Label="对比度模式:" LabelWidth="80">
+                <ComboBox x:Name="cmbContrastMode" Height="26" FontSize="11"
+                          ToolTip="自动：使用 Otsu 自适应阈值计算对比度|手动：使用下方设定的固定对比度值"/>
+              </controls:LabeledControl>
 
-              <!-- 第3行 - 阈值模式 -->
-              <TextBlock Text="阈值模式:" Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" FontSize="11" FontWeight="SemiBold" Foreground="#1565C0" Margin="0,0,6,3"/>
-              <ComboBox x:Name="cmbThresholdMode" Grid.Row="3" Grid.Column="1" Height="26" FontSize="11" Margin="0,0,0,3"
-                        SelectedIndex="0" SelectionChanged="OnThresholdModeChanged"
-                        ToolTip="Auto=从梯度幅值直方图自动计算对比度阈值，Manual=使用下方设定的对比度值。"/>
+              <controls:LabeledControl Label="对比度:" LabelWidth="80">
+                <controls:NumericUpDown x:Name="numContrast" Height="26"
+                                         IntValue="30" Minimum="1" Maximum="255" SmallChange="1"
+                                         ShowUpDownButtons="True" ShowSlider="True"
+                                         ToolTip="边缘提取对比度阈值。高对比度=保留强边缘。典型值：20~100。手动模式有效。"/>
+              </controls:LabeledControl>
 
-              <!-- 第4行 - 对比度 -->
-              <TextBlock Text="  对比度:" Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" FontSize="11" Foreground="#1565C0" Margin="0,0,6,3"/>
-              <controls:NumericUpDown x:Name="numContrast" Grid.Row="4" Grid.Column="1" Height="26"
-                                       IntValue="30" Minimum="1" Maximum="255" SmallChange="1" ShowUpDownButtons="True" ShowSlider="True"
-                                       ToolTip="边缘提取对比度阈值。高对比度=保留强边缘，低对比度=保留更弱边缘。典型值：20~100。仅 Manual 模式有效。"
-                                       Margin="0,0,0,3"/>
+              <controls:LabeledControl Label="链长模式:" LabelWidth="80">
+                <ComboBox x:Name="cmbChainLengthMode" Height="26" FontSize="11"
+                          ToolTip="自动：使用 20% 分位自动计算链长阈值|手动：使用下方设定的固定链长值"/>
+              </controls:LabeledControl>
 
-              <!-- 第5行 - 链长模式 -->
-              <TextBlock Text="链长模式:" Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" FontSize="11" FontWeight="SemiBold" Foreground="#1565C0" Margin="0,0,6,3"/>
-              <ComboBox x:Name="cmbChainLengthMode" Grid.Row="5" Grid.Column="1" Height="26" FontSize="11" Margin="0,0,0,3"
-                        SelectedIndex="0" SelectionChanged="OnChainLengthModeChanged"
-                        ToolTip="Auto=自动按80%累积能量阈值过滤，Manual=使用下方设定的最小链长。"/>
+              <controls:LabeledControl Label="最小链长:" LabelWidth="80">
+                <controls:NumericUpDown x:Name="numMinChainLength" Height="26"
+                                         IntValue="5" Minimum="1" Maximum="1000" SmallChange="1"
+                                         ShowUpDownButtons="True" ShowSlider="True"
+                                         ToolTip="边缘点链的最小长度，低于此值视为噪声丢弃。手动模式有效。"/>
+              </controls:LabeledControl>
 
-              <!-- 第6行 - 最小链长 -->
-              <TextBlock Text="  最小链长:" Grid.Row="6" Grid.Column="0" VerticalAlignment="Center" FontSize="11" Foreground="#1565C0" Margin="0,0,6,3"/>
-              <controls:NumericUpDown x:Name="numMinChainLength" Grid.Row="6" Grid.Column="1" Height="26"
-                                       IntValue="10" Minimum="0" Maximum="200" SmallChange="1" ShowUpDownButtons="True" ShowSlider="True"
-                                       ToolTip="最小轮廓链长(像素)。短于此长度的短线段被视为噪声丢弃。仅 Manual 模式有效。典型值：0~30。"
-                                       Margin="0,0,0,3"/>
 
-              <!-- 第7行 - 密度模式 -->
-              <TextBlock Text="密度模式:" Grid.Row="7" Grid.Column="0" VerticalAlignment="Center" FontSize="11" FontWeight="SemiBold" Foreground="#1565C0" Margin="0,0,6,3"/>
-              <ComboBox x:Name="cmbDensityMode" Grid.Row="7" Grid.Column="1" Height="26" FontSize="11" Margin="0,0,0,3"
-                        SelectedIndex="0" SelectionChanged="OnDensityModeChanged"
-                        ToolTip="Auto=根据L0点数自动选择重采样比例，Manual=使用下方密度系数控制。"/>
-
-              <!-- 第8行 - 密度系数 -->
-              <TextBlock Text="  密度系数:" Grid.Row="8" Grid.Column="0" VerticalAlignment="Center" FontSize="11" Foreground="#1565C0" Margin="0,0,6,3"/>
-              <controls:NumericUpDown x:Name="numDensityFactor" Grid.Row="8" Grid.Column="1" Height="26"
-                                       Value="1.0" Minimum="0.1" Maximum="2.0" SmallChange="0.1" ShowUpDownButtons="True" ShowSlider="True" DecimalPlaces="1"
-                                       ToolTip="密度系数(0.1~2.0)。1.0=中等密度，>1.0=更多点，&lt;1.0=更少点。仅 Manual 模式有效。"
-                                       Margin="0,0,0,3"/>
-            </Grid>
+            </StackPanel>
           </GroupBox>
 
           <!-- 提取结果 -->

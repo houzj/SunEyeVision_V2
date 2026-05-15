@@ -58,6 +58,12 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
             InitializeComponent();
             InitializeComboBoxes();
             DataContext = this;
+
+            // 金字塔起止层校验 — 实时弹窗提醒
+            numPyramidStart.ValueChanged += OnPyramidLevelValueChanged;
+            numPyramidEnd.ValueChanged += OnPyramidLevelValueChanged;
+
+
         }
 
         /// <summary>
@@ -309,87 +315,79 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
                 imageSourceCombo.SelectedIndex = -1;
             }
 
-            // 金字塔模式
+            // 金字塔模式 — 默认自动
             if (cmbPyramidMode != null)
             {
-                cmbPyramidMode.Items.Add("自动 (Auto)");
-                cmbPyramidMode.Items.Add("手动 (Manual)");
-                cmbPyramidMode.SelectedIndex = 0;
+                cmbPyramidMode.Items.Add("手动");
+                cmbPyramidMode.Items.Add("自动");
+                cmbPyramidMode.SelectionChanged += OnPyramidModeChanged;
+                cmbPyramidMode.SelectedIndex = 1;
             }
 
-            // 密度模式
-            if (cmbDensityMode != null)
+            // 对比度模式 — 默认自动
+            if (cmbContrastMode != null)
             {
-                cmbDensityMode.Items.Add("自动 (Auto)");
-                cmbDensityMode.Items.Add("手动 (Manual)");
-                cmbDensityMode.SelectedIndex = 0;
+                cmbContrastMode.Items.Add("手动");
+                cmbContrastMode.Items.Add("自动");
+                cmbContrastMode.SelectionChanged += OnContrastModeChanged;
+                cmbContrastMode.SelectedIndex = 1;
             }
 
-            // 阈值模式
-            if (cmbThresholdMode != null)
-            {
-                cmbThresholdMode.Items.Add("自动 (Auto)");
-                cmbThresholdMode.Items.Add("手动 (Manual)");
-                cmbThresholdMode.SelectedIndex = 0;
-            }
-
-            // 链长模式
+            // 链长模式 — 默认自动
             if (cmbChainLengthMode != null)
             {
-                cmbChainLengthMode.Items.Add("自动 (Auto)");
-                cmbChainLengthMode.Items.Add("手动 (Manual)");
-                cmbChainLengthMode.SelectedIndex = 0;
+                cmbChainLengthMode.Items.Add("手动");
+                cmbChainLengthMode.Items.Add("自动");
+                cmbChainLengthMode.SelectionChanged += OnChainLengthModeChanged;
+                cmbChainLengthMode.SelectedIndex = 1;
             }
-
-            // 初始化 Auto/Manual 参数启用状态
-            UpdateParameterEnabledStates();
 
             PluginLogger.Info("[ShapeMatchTemplateEditor] 对话框初始化完成", "ShapeMatchTool");
         }
 
         /// <summary>
-        /// 根据当前 ComboBox 选择的模式，启用/禁用对应的数值参数控件
+        /// 对比度模式变更 → 同步启用/禁用对比度 NumericUpDown
         /// </summary>
-        private void UpdateParameterEnabledStates()
+        private void OnContrastModeChanged(object sender, SelectionChangedEventArgs e)
         {
-            // 金字塔模式：Auto → 禁用起始/结束层，Manual → 启用
-            bool pyramidManual = cmbPyramidMode?.SelectedIndex == 1;
-            if (numPyramidStart != null) numPyramidStart.IsEnabled = pyramidManual;
-            if (numPyramidEnd != null) numPyramidEnd.IsEnabled = pyramidManual;
-
-            // 密度模式：Auto → 禁用密度系数，Manual → 启用
-            bool densityManual = cmbDensityMode?.SelectedIndex == 1;
-            if (numDensityFactor != null) numDensityFactor.IsEnabled = densityManual;
-
-            // 阈值模式：Auto → 禁用对比度，Manual → 启用
-            bool thresholdManual = cmbThresholdMode?.SelectedIndex == 1;
-            if (numContrast != null) numContrast.IsEnabled = thresholdManual;
-
-            // 链长模式：Auto → 禁用最小链长，Manual → 启用
-            bool chainManual = cmbChainLengthMode?.SelectedIndex == 1;
-            if (numMinChainLength != null) numMinChainLength.IsEnabled = chainManual;
+            if (numContrast != null)
+                numContrast.IsEnabled = cmbContrastMode?.SelectedIndex == 0;
         }
 
-        private void OnPyramidModeChanged(object sender, SelectionChangedEventArgs e)
-        {
-            bool pyramidManual = cmbPyramidMode.SelectedIndex == 1;
-            numPyramidStart.IsEnabled = pyramidManual;
-            numPyramidEnd.IsEnabled = pyramidManual;
-        }
-
-        private void OnDensityModeChanged(object sender, SelectionChangedEventArgs e)
-        {
-            numDensityFactor.IsEnabled = cmbDensityMode.SelectedIndex == 1;
-        }
-
-        private void OnThresholdModeChanged(object sender, SelectionChangedEventArgs e)
-        {
-            numContrast.IsEnabled = cmbThresholdMode.SelectedIndex == 1;
-        }
-
+        /// <summary>
+        /// 链长模式变更 → 同步启用/禁用最小链长 NumericUpDown
+        /// </summary>
         private void OnChainLengthModeChanged(object sender, SelectionChangedEventArgs e)
         {
-            numMinChainLength.IsEnabled = cmbChainLengthMode.SelectedIndex == 1;
+            if (numMinChainLength != null)
+                numMinChainLength.IsEnabled = cmbChainLengthMode?.SelectedIndex == 0;
+        }
+
+        /// <summary>
+        /// 金字塔模式变更 → 同步启用/禁用起始层/结束层 NumericUpDown
+        /// </summary>
+        private void OnPyramidModeChanged(object sender, SelectionChangedEventArgs e)
+        {
+            bool isManual = cmbPyramidMode?.SelectedIndex == 0;
+            if (numPyramidStart != null)
+                numPyramidStart.IsEnabled = isManual;
+            if (numPyramidEnd != null)
+                numPyramidEnd.IsEnabled = isManual;
+        }
+
+        /// <summary>
+        /// 金字塔起止层值变更校验 — 起始层(粗)不能小于结束层(细)
+        /// </summary>
+        private void OnPyramidLevelValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (numPyramidStart.IntValue < numPyramidEnd.IntValue)
+            {
+                MessageBox.Show($"起始层(粗L{numPyramidStart.IntValue})不能小于结束层(细L{numPyramidEnd.IntValue})，请重新设置。",
+                    "参数错误", MessageBoxButton.OK, MessageBoxImage.Warning);
+
+                // 自动将起始层修正为等于结束层
+                numPyramidStart.IntValue = numPyramidEnd.IntValue;
+            }
         }
 
         /// <summary>
@@ -407,15 +405,11 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
             if (templateNameTextBox != null)
                 templateNameTextBox.Text = _resultTemplate.Name;
 
-            cmbPyramidMode.SelectedIndex = (int)_resultTemplate.PyramidMode;
             numPyramidStart.IntValue = _resultTemplate.PyramidStart;
             numPyramidEnd.IntValue = _resultTemplate.PyramidEnd;
-            cmbDensityMode.SelectedIndex = (int)_resultTemplate.DensityMode;
-            numDensityFactor.Value = _resultTemplate.DensityFactor;
-            cmbThresholdMode.SelectedIndex = (int)_resultTemplate.ThresholdMode;
             numContrast.IntValue = (int)_resultTemplate.Contrast;
-            cmbChainLengthMode.SelectedIndex = (int)_resultTemplate.ChainLengthMode;
             numMinChainLength.IntValue = _resultTemplate.MinChainLength;
+            cmbChainLengthMode.SelectedIndex = _resultTemplate.IsChainAuto ? 1 : 0;
 
             // 加载区域数据
             foreach (var insp in _resultTemplate.InspectionRegions)
@@ -441,6 +435,8 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
                 PopulatePyramidLevelComboBox();
             }
         }
+
+
 
         private void OnClearClick(object sender, RoutedEventArgs e)
         {
@@ -478,14 +474,13 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
             try
             {
                 // ===== 读取 UI 参数 =====
-                var pyramidMode = (PyramidMode)(cmbPyramidMode?.SelectedIndex ?? 0);
-                var densityMode = (DensityMode)(cmbDensityMode?.SelectedIndex ?? 0);
-                var thresholdMode = (ThresholdMode)(cmbThresholdMode?.SelectedIndex ?? 0);
-                var chainLengthMode = (ChainLengthMode)(cmbChainLengthMode?.SelectedIndex ?? 0);
-                int pyramidStart = numPyramidStart.IntValue;
-                int pyramidEnd = numPyramidEnd.IntValue;
-                float densityFactor = (float)numDensityFactor.Value;
-                int minChainLengthValue = numMinChainLength.IntValue;
+                bool pyramidAuto = cmbPyramidMode?.SelectedIndex == 1;
+                int pyramidStart = numPyramidStart.IntValue, pyramidEnd = numPyramidEnd.IntValue;
+                bool contrastAuto = cmbContrastMode?.SelectedIndex == 1;
+                int contrastValue = numContrast.IntValue;
+                bool chainAuto = cmbChainLengthMode?.SelectedIndex == 1;
+                int chainLengthValue = numMinChainLength.IntValue;
+
 
                 // Step 1: 灰度转换
                 using var gray = new Mat();
@@ -495,10 +490,10 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
                 else if (channels == 4) Cv2.CvtColor(_currentMat, gray, ColorConversionCodes.BGRA2GRAY);
                 else Cv2.ExtractChannel(_currentMat, gray, 0);
 
-                // Step 2: Scharr 梯度计算（与运行时 100% 相同）
+                // Step 2: Scharr 梯度计算
                 CvOp.ComputeShapeGradient(gray, out var gx, out var gy, out var mag);
 
-                // Step 3: 构建 ROI 掩码（提前构建，用于限定对比度计算范围）
+                // Step 3: 构建 ROI 掩码
                 var enabledInspections = DialogInspectionRegions.Where(r => r.IsEnabled).ToList();
                 var enabledMasks = DialogMaskRegions.Where(r => r.IsEnabled).ToList();
                 if (enabledInspections.Count == 0)
@@ -508,37 +503,41 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
                 }
                 using var roiMask = BuildRoiMask(mag.Size(), enabledInspections, enabledMasks);
 
-                // Step 4: 在 ROI 范围内计算对比度（避免背景强边缘拉高阈值）
-                float actualContrast = numContrast.IntValue;
-                if (thresholdMode == ThresholdMode.Auto)
+                // Step 4: 对比度（自动/手动）
+                float actualContrast;
+                if (contrastAuto)
                 {
-                    using var maskedMag = new Mat();
-                    mag.CopyTo(maskedMag, roiMask);
-                    actualContrast = (float)Math.Round(CvOp.AutoComputeContrast(maskedMag));
-                    numContrast.IntValue = (int)actualContrast;
+                    // 自动模式：Triangle Threshold 自适应阈值计算
+                    actualContrast = CvOp.AutoComputeContrast(mag, roiMask);
+                    PluginLogger.Info($"[ShapeMatchTemplateEditor] 自动对比度: {actualContrast:F1}", "ShapeMatchTool");
+                }
+                else
+                {
+                    actualContrast = contrastValue;
                 }
 
-                // Step 5: NMS 细线化（用原始 mag 保持边界邻域判断正确）
+                // Step 5: NMS 细线化
                 using var nms = CvOp.ApplyNms(mag, gx, gy, actualContrast);
 
-                // Step 6: 将 ROI 掩码应用到 NMS 结果，过滤出 ROI 内边缘点
-                // 新建全零矩阵，只在 mask 非零处拷贝 NMS 结果（保留 NMS 细线化，ROI 外清零）
+                // Step 6: ROI 掩码应用
                 using var maskedNms = new Mat(nms.Size(), nms.Type(), Scalar.All(0));
                 nms.CopyTo(maskedNms, roiMask);
 
-                // 保存调试用中间图像（ROI 掩码后，确保与 EdgePoints 一致）
+                // 保存调试用中间图像
                 _debugMag?.Dispose();
                 _debugNms?.Dispose();
                 _debugMag = mag.Clone();
                 _debugNms = maskedNms.Clone();
                 cmbDebugView.IsEnabled = true;
-                cmbDebugView.SelectedIndex = 0; // 默认切回"原始"
+                cmbDebugView.SelectedIndex = 0;
 
-                // Step 7: 确定链长模式
-                bool autoChainLen = chainLengthMode == ChainLengthMode.Auto;
+                // Step 7: 收集边缘点（自动/手动链长）
+                var edgePoints = CvOp.CollectEdgePoints(maskedNms, gx, gy,
+                    autoMinChainLength: chainAuto,
+                    manualMinChainLength: chainAuto ? 0 : chainLengthValue,
+                    out int actualChainLength,
+                    closingRadius: 1);
 
-                // Step 8: 收集边缘点（已移除 optimization 参数）
-                var edgePoints = CvOp.CollectEdgePoints(maskedNms, gx, gy, autoChainLen, minChainLengthValue, out int actualChainLength, closingRadius: 1);
                 if (edgePoints.Count == 0)
                 {
                     gx.Dispose(); gy.Dispose(); mag.Dispose();
@@ -547,31 +546,22 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
                     return;
                 }
 
-                // Step 9: 确定金字塔范围（Auto → 根据图像尺寸自动计算）
-                if (pyramidMode == PyramidMode.Auto)
+                // ★ 金字塔自动层数计算（基于边缘密度 + 图像尺寸）
+                if (pyramidAuto)
                 {
-                    int minDim = Math.Min(gray.Width, gray.Height);
-                    if (minDim <= 128)
-                    {
-                        pyramidEnd = 1;
-                    }
-                    else
-                    {
-                        pyramidEnd = Math.Max(1, Math.Min(10, (int)Math.Round(Math.Log(Math.Max(minDim / 64.0, 1), 2))));
-                    }
-                    pyramidStart = Math.Max(1, pyramidEnd - 3);
-                    numPyramidStart.IntValue = pyramidStart;
-                    numPyramidEnd.IntValue = pyramidEnd;
+                    CvOp.AutoComputePyramidLevels(_currentMat.Width, _currentMat.Height,
+                        edgePoints.Count, out pyramidStart, out pyramidEnd);
                 }
 
-                // Step 10: 验证金字塔范围
-                if (pyramidStart > pyramidEnd)
+                // Step 8: 验证金字塔范围
+                if (pyramidStart < pyramidEnd)
                 {
-                    PluginLogger.Warning($"[ShapeMatchTemplateEditor] 起始层({pyramidStart}) > 结束层({pyramidEnd})，已自动修正", "ShapeMatchTool");
-                    pyramidEnd = pyramidStart;
+                    MessageBox.Show($"起始层(粗L{pyramidStart})不能小于结束层(细L{pyramidEnd})，请重新设置。",
+                        "参数错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
                 }
 
-                // Step 11: 保存到模板
+                // Step 9: 保存到模板
                 _resultTemplate ??= new TemplateModel();
                 _resultTemplate.EdgePoints = edgePoints;
                 _resultTemplate.SetReferencePoint();
@@ -579,23 +569,13 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
                     $"[ShapeMatchTemplateEditor] 参考点已设置: ({_resultTemplate.ReferencePointX:F4},{_resultTemplate.ReferencePointY:F4}), " +
                     $"基于 {edgePoints.Count} 个边缘点的质心",
                     "ShapeMatchTool");
-                _resultTemplate.PyramidMode = pyramidMode;
                 _resultTemplate.PyramidStart = pyramidStart;
                 _resultTemplate.PyramidEnd = pyramidEnd;
-                _resultTemplate.DensityMode = densityMode;
-                _resultTemplate.DensityFactor = densityFactor;
-                _resultTemplate.ThresholdMode = thresholdMode;
                 _resultTemplate.Contrast = actualContrast;
-                _resultTemplate.ChainLengthMode = chainLengthMode;
-                if (chainLengthMode == ChainLengthMode.Auto)
-                {
-                    _resultTemplate.MinChainLength = actualChainLength;
-                    numMinChainLength.IntValue = actualChainLength;
-                }
-                else
-                {
-                    _resultTemplate.MinChainLength = minChainLengthValue;
-                }
+                _resultTemplate.NumLevels = pyramidStart - pyramidEnd + 1;
+                _resultTemplate.MinChainLength = chainAuto ? actualChainLength : chainLengthValue;
+                _resultTemplate.IsChainAuto = chainAuto;
+
                 _resultTemplate.ExtractionStatus = TemplateExtractionStatus.Success;
                 if (_currentMat != null && !_currentMat.Empty())
                 {
@@ -604,19 +584,27 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
                 }
 
                 UpdateResultDisplay(TemplateExtractionStatus.Success, edgePoints.Count, 0, 0, 0, 0);
-                string chainInfo = chainLengthMode == ChainLengthMode.Auto ? $"链长≥{actualChainLength}(自动)" : $"链长≥{minChainLengthValue}";
                 if (txtFilterStats != null)
                 {
-                    string pyramidInfo = pyramidMode == PyramidMode.Auto ? $"金字塔: auto L{pyramidStart}~L{pyramidEnd}" : $"金字塔: L{pyramidStart}~L{pyramidEnd}";
-                    string contrastInfo = thresholdMode == ThresholdMode.Auto ? $"Contrast={actualContrast}(自动)" : $"Contrast={actualContrast}";
-                    txtFilterStats.Text = $"边缘点: {edgePoints.Count} ({chainInfo}, {pyramidInfo}, {contrastInfo})";
+                    txtFilterStats.Text = $"边缘点: {edgePoints.Count} (Contrast={actualContrast:F1}, 链长={actualChainLength}, 金字塔=L{pyramidStart}~L{pyramidEnd})";
+                }
+
+                // ★ 自动模式 → 将计算出的值回写到 NumericUpDown（控件 disabled 但显示值让用户可见）
+                if (contrastAuto)
+                    numContrast.IntValue = (int)Math.Round(actualContrast);
+                if (chainAuto)
+                    numMinChainLength.IntValue = actualChainLength;
+                if (pyramidAuto)
+                {
+                    numPyramidStart.IntValue = pyramidStart;
+                    numPyramidEnd.IntValue = pyramidEnd;
                 }
 
                 DrawEdgePointsOverlay(edgePoints);
                 PluginLogger.Info(
                     $"[ShapeMatchTemplateEditor] 提取成功 | " +
                     $"Scharr+NMS 边缘点={edgePoints.Count} " +
-                    $"(Contrast={actualContrast}, 金字塔=L{pyramidStart}~L{pyramidEnd}, 链长={chainInfo})",
+                    $"(Contrast={actualContrast:F1}, 金字塔=L{pyramidStart}~L{pyramidEnd})",
                     "ShapeMatchTool");
 
                 gx.Dispose(); gy.Dispose(); mag.Dispose();
@@ -885,12 +873,13 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
                 return;
             }
 
-            foreach (int level in _resultTemplate.PyramidEdgePoints.Keys.OrderBy(k => k))
+            foreach (int level in _resultTemplate.PyramidEdgePoints.Keys
+                         .Where(k => k <= _resultTemplate.PyramidStart && k >= _resultTemplate.PyramidEnd)
+                         .OrderBy(k => k))
             {
                 int pointCount = _resultTemplate.PyramidEdgePoints[level]?.Count ?? 0;
-                string label = level == 0
-                    ? $"Level 0 (全分辨率) - {pointCount}pt"
-                    : $"Level {level} (1/{1 << level}) - {pointCount}pt";
+                string reduction = level == 1 ? "全分辨率" : (level >= 8 ? "极低分辨率" : $"1/{1 << (level - 1)}");
+                string label = $"Level {level} ({reduction}) - {pointCount}pt";
                 cmbPyramidLevel.Items.Add(new KeyValuePair<int, string>(level, label));
             }
 
@@ -898,138 +887,121 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
             cmbPyramidLevel.SelectedValuePath = "Key";
             cmbPyramidLevel.IsEnabled = true;
 
-            int defaultLevel = _resultTemplate.PyramidEdgePoints.Keys
-                .OrderByDescending(k => k)
-                .FirstOrDefault(k => (_resultTemplate.PyramidEdgePoints[k]?.Count ?? 0) >= 5);
-            cmbPyramidLevel.SelectedIndex = Math.Max(0, defaultLevel);
+            cmbPyramidLevel.SelectedIndex = 0;
         }
 
         /// <summary>
-        /// 预计算各金字塔层边缘点 — L0 单源混合模式
-        /// L0 一次 NMS+CollectEdgePoints，各层通过坐标投影 + 方向从该层梯度重读 + 散布抽样
+        /// 预计算各金字塔层边缘点 — 每层独立提取，参数从 L1 等比缩放
+        /// 每层独立运行 PyrDown → Scharr → NMS → CollectEdgePoints → 归一化
+        /// 对比度/链长按 1/2^(level-1) 等比例适配
         /// </summary>
         private void PreComputePyramidEdgePoints()
         {
             if (_currentMat == null || _currentMat.Empty()) return;
             if (_resultTemplate?.EdgePoints == null || _resultTemplate.EdgePoints.Count == 0) return;
 
-            // 获取金字塔范围（已在 ExecuteContourExtraction 中计算）
-            int pyramidStart = _resultTemplate.PyramidStart; // 起始层（最细）
-            int pyramidEnd = _resultTemplate.PyramidEnd;     // 结束层（最粗）
+            int pyramidStart = _resultTemplate.PyramidStart;
+            int pyramidEnd = _resultTemplate.PyramidEnd;
 
-            if (pyramidStart > pyramidEnd)
-                throw new InvalidOperationException($"起始层({pyramidStart}) > 结束层({pyramidEnd}) — 金字塔范围无效");
+            if (pyramidStart < pyramidEnd)
+                throw new InvalidOperationException(
+                    $"模板金字塔范围无效: 起始层(粗L{pyramidStart}) < 结束层(细L{pyramidEnd})");
 
             using var gray = new Mat();
             if (_currentMat.Channels() == 1) _currentMat.CopyTo(gray);
             else if (_currentMat.Channels() == 3) Cv2.CvtColor(_currentMat, gray, ColorConversionCodes.BGR2GRAY);
             else Cv2.ExtractChannel(_currentMat, gray, 0);
 
-            // ★ 获取统一参考点（Level 0 质心，所有层级归一化到同一个原点）
+            // L1 基准参数
             _resultTemplate.SetReferencePoint();
             double refX = _resultTemplate.ReferencePointX;
             double refY = _resultTemplate.ReferencePointY;
+            float baseContrast = _resultTemplate.Contrast;
+            int baseChainLen = _resultTemplate.MinChainLength;
+
+            // L1 ROI 掩码（各层降采样后应用）
+            var enabledInspections = DialogInspectionRegions.Where(r => r.IsEnabled).ToList();
+            var enabledMasks = DialogMaskRegions.Where(r => r.IsEnabled).ToList();
+            using var level1Mask = enabledInspections.Count > 0
+                ? BuildRoiMask(gray.Size(), enabledInspections, enabledMasks)
+                : null;
 
             var pyramidPoints = new Dictionary<int, List<CvOp.EdgePoint>>();
             _resultTemplate.PyramidLevelSizes = new Dictionary<int, LevelSizeInfo>();
 
-            // Level 0: 直接用已有结果，归一化到参考点
-            pyramidPoints[0] = _resultTemplate.EdgePoints
+            // Level 1: 全分辨率，归一化到参考点
+            pyramidPoints[1] = _resultTemplate.EdgePoints
                 .Select(p => new CvOp.EdgePoint
                 {
-                    X = p.X - refX,
-                    Y = p.Y - refY,
-                    Direction = p.Direction,
-                    Magnitude = p.Magnitude
+                    X = p.X - refX, Y = p.Y - refY,
+                    Direction = p.Direction, Magnitude = p.Magnitude
                 }).ToList();
 
-            _resultTemplate.PyramidLevelSizes[0] = new LevelSizeInfo
+            _resultTemplate.PyramidLevelSizes[1] = new LevelSizeInfo
             {
-                Width = gray.Width,
-                Height = gray.Height
+                Width = gray.Width, Height = gray.Height
             };
 
             using var currentImage = gray.Clone();
 
-            // 计算密度比例
-            float densityRatio = ComputeDensityRatio(
-                _resultTemplate.DensityMode, _resultTemplate.DensityFactor,
-                _resultTemplate.EdgePoints.Count);
-
-            // 逐层 PyrDown + 梯度 → 投影 L0 点 + 重读方向
-            for (int level = 1; level <= pyramidEnd; level++)
+            // Level 2+: 逐层 PyrDown + 独立提取，参数等比缩放
+            for (int level = 2; level <= pyramidStart; level++)
             {
-                int newW = gray.Width / (1 << level);
-                int newH = gray.Height / (1 << level);
-                if (newW < 32 || newH < 32) break;
+                int newW = currentImage.Width / 2;
+                int newH = currentImage.Height / 2;
+                if (newW < 16 || newH < 16) break;
 
                 using var downsampled = new Mat();
                 Cv2.PyrDown(currentImage, downsampled, new OpenCvSharp.Size(newW, newH));
 
-                // 记录实际 PyrDown 输出尺寸
                 _resultTemplate.PyramidLevelSizes![level] = new LevelSizeInfo
                 {
-                    Width = downsampled.Width,
-                    Height = downsampled.Height
+                    Width = downsampled.Width, Height = downsampled.Height
                 };
 
-                // 不在目标范围内则继续缩放下一层
-                if (level < pyramidStart || level > pyramidEnd)
+                if (level < pyramidEnd || level > pyramidStart)
                 {
                     downsampled.CopyTo(currentImage);
                     continue;
                 }
 
-                // 计算该层梯度
-                CvOp.ComputeShapeGradient(downsampled, out var gx, out var gy, out var mag);
+                // ★ 对比度跨层不变（梯度已逐层归一化），链长等比缩放
+                float adaptedContrast = baseContrast;
+                int adaptedChainLen = Math.Max(baseChainLen / (1 << (level - 1)), 1);
 
-                // 坐标缩放因子：L0 全分辨率 → 当前层
+                // 独立梯度计算
+                CvOp.ComputeShapeGradient(downsampled, out var gx, out var gy, out var mag);
+                using var nms = CvOp.ApplyNms(mag, gx, gy, adaptedContrast);
+
+                // ROI 掩码降采样后应用
+                using var maskedNms = level1Mask != null
+                    ? ApplyMaskToLevel(nms, level1Mask, downsampled.Size())
+                    : nms.Clone();
+
+                // 固定使用适配后的手动链长（不再 per-level 自动计算）
+                var levelPoints = CvOp.CollectEdgePoints(maskedNms, gx, gy,
+                    autoMinChainLength: false,
+                    manualMinChainLength: adaptedChainLen,
+                    out int actualChainLength,
+                    closingRadius: 1);
+
+                // 归一化到参考点
                 double scaleX = (double)downsampled.Width / gray.Width;
                 double scaleY = (double)downsampled.Height / gray.Height;
                 double levelRefX = refX * scaleX;
                 double levelRefY = refY * scaleY;
 
-                var levelPoints = new List<CvOp.EdgePoint>();
-                for (int i = 0; i < pyramidPoints[0].Count; i++)
+                for (int i = 0; i < levelPoints.Count; i++)
                 {
-                    var p = pyramidPoints[0][i];
-
-                    // 将 L0 绝对坐标映射到当前层
-                    double absX = p.X + refX;
-                    double absY = p.Y + refY;
-                    int lx = (int)Math.Round(absX * scaleX);
-                    int ly = (int)Math.Round(absY * scaleY);
-
-                    // 边界检查
-                    if (lx < 0 || lx >= downsampled.Width || ly < 0 || ly >= downsampled.Height)
-                        continue;
-
-                    // 从该层梯度重读方向 + 幅值
-                    float dir = (float)Math.Atan2(gy.At<float>(ly, lx), gx.At<float>(ly, lx));
-                    float magVal = mag.At<float>(ly, lx);
-
-                    // 幅值过滤：低于 1.0 视为噪声
-                    if (magVal <= 1.0f) continue;
-
-                    levelPoints.Add(new CvOp.EdgePoint
+                    var p = levelPoints[i];
+                    levelPoints[i] = new CvOp.EdgePoint
                     {
-                        X = (float)(lx - levelRefX),
-                        Y = (float)(ly - levelRefY),
-                        Direction = dir,
-                        Magnitude = magVal
-                    });
+                        X = p.X - levelRefX, Y = p.Y - levelRefY,
+                        Direction = p.Direction, Magnitude = p.Magnitude
+                    };
                 }
 
-                // 应用密度散布抽样
-                if (densityRatio < 1.0f && levelPoints.Count > 0)
-                {
-                    int targetCount = Math.Max(10, (int)(levelPoints.Count * densityRatio));
-                    if (levelPoints.Count > targetCount)
-                    {
-                        levelPoints = CvOp.SelectScatteredFeatures(levelPoints, targetCount, 3.0f);
-                    }
-                }
-
+                // 不截断，全部保留
                 pyramidPoints[level] = levelPoints;
 
                 gx.Dispose(); gy.Dispose(); mag.Dispose();
@@ -1038,49 +1010,35 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
 
             _resultTemplate.PyramidEdgePoints = pyramidPoints;
 
+            // 日志
             int maxLvl = pyramidPoints.Keys.Max();
-            PluginLogger.Info(
-                $"[ShapeMatchTemplateEditor] 金字塔预计算完成(L0单源): {pyramidPoints.Count}层 (0~{maxLvl}), " +
-                $"密度比={densityRatio:F3}",
-                "ShapeMatchTool");
-
-            // ★ 坐标监控：输出金字塔各层尺寸和点数信息
-            var sizeInfo = _resultTemplate.PyramidLevelSizes;
-            var refLog = new List<string> { $"  参考点: ({refX:F4}, {refY:F4}) 在原图 {gray.Width}x{gray.Height}" };
-            if (sizeInfo != null)
+            var logs = new List<string>
             {
-                foreach (int lvl in sizeInfo.Keys.OrderBy(k => k))
-                {
-                    var sz = sizeInfo[lvl];
-                    int ptCount = pyramidPoints.TryGetValue(lvl, out var pts) ? pts.Count : 0;
-                    refLog.Add($"  L{lvl}: 实际尺寸={sz.Width}x{sz.Height}, 边缘点数={ptCount}");
-                }
+                $"[ShapeMatchTemplateEditor] 金字塔预计算完成(参数适配): {pyramidPoints.Count}层 (1~{maxLvl})",
+                $"  L1 基准: Contrast={baseContrast:F1}, ChainLen={baseChainLen}, 参考点=({refX:F4},{refY:F4})"
+            };
+            foreach (int lvl in _resultTemplate.PyramidLevelSizes.Keys.OrderBy(k => k))
+            {
+                var sz = _resultTemplate.PyramidLevelSizes[lvl];
+                int ptCount = pyramidPoints.TryGetValue(lvl, out var pts) ? pts.Count : 0;
+                logs.Add($"  L{lvl}: {sz.Width}x{sz.Height}, {ptCount}pt" +
+                         (lvl >= pyramidEnd && lvl <= pyramidStart && lvl >= 2
+                            ? $"  [Contrast={baseContrast:F1}(不变), ChainLen={Math.Max(baseChainLen / (1 << (lvl - 1)), 1)}]"
+                            : ""));
             }
-            PluginLogger.Info(
-                $"[ShapeMatchTemplateEditor] 金字塔坐标基准:\n" + string.Join("\n", refLog),
-                "ShapeMatchTool");
+            PluginLogger.Info(string.Join("\n", logs), "ShapeMatchTool");
         }
 
         /// <summary>
-        /// 计算密度比例（各层散布抽样的保留比例）
-        /// Auto模式根据L0点数自适应；Manual模式以Medium为基准×用户系数
+        /// 将 L1 ROI 掩码降采样到目标层级分辨率后应用到 NMS 图
         /// </summary>
-        private static float ComputeDensityRatio(DensityMode mode, float densityFactor, int l0PointCount)
+        private static Mat ApplyMaskToLevel(Mat nms, Mat level1Mask, OpenCvSharp.Size targetSize)
         {
-            if (mode == DensityMode.Auto)
-            {
-                // Auto: 根据L0点数分级
-                if (l0PointCount < 500) return 1.0f;   // 点少不精简
-                if (l0PointCount < 2000) return 0.7f;  // Low
-                if (l0PointCount < 8000) return 0.4f;  // Medium
-                return 0.2f;                            // High
-            }
-            else
-            {
-                // Manual: Medium基准(0.4) × 用户系数
-                float ratio = 0.4f * densityFactor;
-                return Math.Clamp(ratio, 0.05f, 1.0f);
-            }
+            using var resizedMask = new Mat();
+            Cv2.Resize(level1Mask, resizedMask, targetSize, 0, 0, InterpolationFlags.Nearest);
+            var masked = new Mat(nms.Size(), nms.Type(), Scalar.All(0));
+            nms.CopyTo(masked, resizedMask);
+            return masked;
         }
 
         private void UpdatePyramidLevelInfo(int level)
@@ -1089,12 +1047,14 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
 
             bool hasLevel = _resultTemplate.PyramidEdgePoints.TryGetValue(level, out var edgePoints);
             int levelCount = edgePoints?.Count ?? 0;
-            int originalCount = _resultTemplate.PyramidEdgePoints.TryGetValue(0, out var l0)
-                ? l0.Count : 0;
+            int originalCount = _resultTemplate.PyramidEdgePoints.TryGetValue(1, out var l1)
+                ? l1.Count : 0;
 
             if (txtCurrentLevel != null)
                 txtCurrentLevel.Text = hasLevel
-                    ? $"Level {level} (1/{1 << level})  {levelCount} / {originalCount}pt"
+                    ? level == 1
+                        ? $"Level {level} (全分辨率)  {levelCount} / {originalCount}pt"
+                        : $"Level {level} (1/{1 << (level - 1)})  {levelCount} / {originalCount}pt"
                     : "--";
 
             if (txtLevelAdvice != null)

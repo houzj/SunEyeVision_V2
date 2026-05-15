@@ -188,7 +188,7 @@ namespace SunEyeVision.Tool.ShapeMatch
 
                 // ===== Step 4: NMS合并 =====
                 stepSw.Restart();
-                var nmsMatches = ApplyNms(allMatches, parameters.MinMatchDistance.Value);
+                var nmsMatches = ApplyNms(allMatches, 10); // MinMatchDistance 已删除，使用默认值 10px
                 stepSw.Stop();
                 stepTimings.Add(("NMS合并", stepSw.ElapsedMilliseconds));
 
@@ -294,21 +294,19 @@ namespace SunEyeVision.Tool.ShapeMatch
             double scaleStep = parameters.ScaleStep.Value;
             int timeoutMs = parameters.MatchTimeoutMs.Value;
 
-            // ★ 从模板读取金字塔搜索范围（PyramidStart/PyramidEnd）
+            // ★ 从模板读取金字塔搜索范围（PyramidStart=粗层, PyramidEnd=细层）
             int maxLevel = template.PyramidEdgePoints?.Keys.Max() ?? 0;
-            int finestLevel = template.PyramidStart;   // 起始层（最细）
-            int coarsestLevel = template.PyramidEnd;   // 结束层（最粗）
+            int pyramidStart = template.PyramidStart;   // 起始层（最粗）
+            int pyramidEnd = template.PyramidEnd;       // 结束层（最细）
 
-            if (finestLevel > coarsestLevel)
-                throw new InvalidOperationException(
-                    $"模板 {template.Name}: 起始层({finestLevel}) > 结束层({coarsestLevel}) — 金字塔搜索范围无效");
-
-            int pyramidStart = Math.Min(coarsestLevel, maxLevel); // FindShape 期望 pyramidStart=最粗层
-            int pyramidEnd = Math.Min(finestLevel, pyramidStart); // FindShape 期望 pyramidEnd=最细层
-
+            // 约束: 起始(粗) ≥ 结束(细)
             if (pyramidStart < pyramidEnd)
                 throw new InvalidOperationException(
-                    $"PyramidStart({pyramidStart}) < PyramidEnd({pyramidEnd}) — 搜索范围无效");
+                    $"模板 {template.Name}: 起始层(粗L{pyramidStart}) < 结束层(细L{pyramidEnd}) — 金字塔搜索范围无效");
+
+            // 截断到可用最大层级
+            pyramidStart = Math.Min(pyramidStart, maxLevel);
+            pyramidEnd = Math.Min(pyramidEnd, pyramidStart);
 
             // 始终使用每层独立边缘点金字塔搜索
             var pyramidPoints = template.PyramidEdgePoints
@@ -321,13 +319,27 @@ namespace SunEyeVision.Tool.ShapeMatch
                     throw new InvalidOperationException(
                         $"金字塔 Level {lvl} 数据缺失 — 请重新提取模板");
 
-            // 调用 CvEngine 形状匹配算子（增强版：每层独立边缘点 + 三维精化 + 提前终止）
+            // 调用 CvEngine 形状匹配算子（Greediness + MaxOverlap NMS + NumMatches）
             var findSw = System.Diagnostics.Stopwatch.StartNew();
+
+            // ★ 计算有效 MinContrast
+            MinContrastMode effectiveMode = parameters.MinContrastMode.Value;
+            float effectiveMinContrast = parameters.MinContrast.Value;
+            if (effectiveMode == MinContrastMode.FromTemplate && template.Contrast > 0)
+                effectiveMinContrast = template.Contrast;
+
+            // ★ 读取 Greediness / MaxOverlap / NumMatches
+            int numMatches = parameters.NumMatches?.Value ?? 1;
+            double maxOverlap = parameters.MaxOverlap?.Value ?? 0.5;
+            double greediness = parameters.Greediness?.Value ?? 0.9;
+
             CvOp.FindShape(
                 grayImage, pyramidPoints,
-                minScore, angleStart, angleEnd, angleStep,
+                minScore, numMatches, maxOverlap, greediness,
+                angleStart, angleEnd, angleStep,
                 scaleMin, scaleMax, scaleStep,
                 pyramidStart, pyramidEnd, timeoutMs,
+                effectiveMode, effectiveMinContrast,
                 out var matchResults,
                 out var perfStats);
             findSw.Stop();
@@ -342,8 +354,7 @@ namespace SunEyeVision.Tool.ShapeMatch
             {
                 $"========== 轮廓匹配精度监控 [{template.Name}] ==========",
                 $"【模板基准】参考点=({template.ReferencePointX:F4},{template.ReferencePointY:F4}), " +
-                $"L0点数={pyramidPoints[0].Count}, " +
-                $"金字塔={pyramidPoints.Keys.Min()}~{pyramidPoints.Keys.Max()}层",
+                $"金字塔=LSB(1)~{pyramidPoints.Keys.Max()}层, L1={pyramidPoints[1].Count}pt(全分辨率)",
                 $"【匹配参数】搜索=L{pyramidStart}(粗)~L{pyramidEnd}(细), " +
                 $"角度=[{angleStart:F1}~{angleEnd:F1}]/{angleStep:F1}°, " +
                 $"缩放=[{scaleMin:F3}~{scaleMax:F3}]/{scaleStep:F3}, " +
@@ -395,11 +406,14 @@ namespace SunEyeVision.Tool.ShapeMatch
             {
                 summary.Add("【逐层性能】" +
                     $"建图={perfStats.BuildPyramidMs}ms, 总={perfStats.TotalMs}ms");
-                summary.Add($"  Lv  图像   点数  模式        候选  时间ms  角度×缩放   搜索像素    模板检查    提前终止  终止均点");
-                summary.Add($"  ──  ────  ────  ─────────  ───  ─────  ─────────  ─────────  ─────────  ─────────  ───────");
+                summary.Add($"  Lv  图像   点数  模式        候选  时间ms   内部耗时(准/全搜/回退/精搜)  角度×缩放   搜索像素    模板检查    提前终止  终止均点");
+                summary.Add($"  ──  ────  ────  ─────────  ───  ─────  ──────────────────────────────  ─────────  ─────────  ─────────  ─────────  ───────");
                 foreach (var ls in perfStats.Levels)
                 {
                     string mode = ls.IsFullSearch ? "FullSearch" : "RefineSrch";
+                    string innerTiming = ls.IsFullSearch
+                        ? $"准={ls.PointPrepMs,3} 全搜={ls.FullSearchFirstMs,4}{(ls.FullSearchFallbackMs > 0 ? $"+回退{ls.FullSearchFallbackMs}" : "")}"
+                        : $"准={ls.PointPrepMs,3} 精搜={ls.RefineSearchMs,4}";
                     string earlyInfo = ls.EarlyTerminations > 0
                         ? $"{ls.EarlyTerminations,8}  {ls.EarlyTerminationAvgPoint,5:F1}"
                         : $"{0,8}  {0,5:F1}";
@@ -410,6 +424,7 @@ namespace SunEyeVision.Tool.ShapeMatch
                         $"{mode,-9}  " +
                         $"{ls.Candidates,3}  " +
                         $"{ls.SearchMs,5}  " +
+                        $"{innerTiming,-32}  " +
                         $"{ls.AngleCombosTried,4}×{ls.ScaleCombosTried,-3}  " +
                         $"{ls.SpatialPixelsSearched,9}  " +
                         $"{ls.TotalTemplateChecks,9}  " +
@@ -423,7 +438,7 @@ namespace SunEyeVision.Tool.ShapeMatch
                 parameters.LogInfo(string.Join("\n", summary));
 
             // ★ 使用预归一化的模板轮廓点（所有层级已统一归一化到参考点，坐标为相对参考点的偏移）
-            var normalizedContour = pyramidPoints[0]
+            var normalizedContour = pyramidPoints[1]
                 .Select(p => new OpenCvSharp.Point2f((float)p.X, (float)p.Y))
                 .ToList();
 
@@ -434,12 +449,14 @@ namespace SunEyeVision.Tool.ShapeMatch
                 double cosA = Math.Cos(match.Angle * Math.PI / 180.0);
                 double sinA = Math.Sin(match.Angle * Math.PI / 180.0);
 
-                // Scale 不参与轮廓位置计算 — 仅位置+角度决定匹配轮廓的刚体变换
+                // Scale 参与轮廓位置计算 — 匹配到的目标可能缩放，轮廓需等比变换
                 var transformedContour = normalizedContour.Select(p =>
                 {
+                    float sx = (float)(p.X * match.Scale);
+                    float sy = (float)(p.Y * match.Scale);
                     return new OpenCvSharp.Point2f(
-                        (float)(p.X * cosA - p.Y * sinA + match.CenterX),
-                        (float)(p.X * sinA + p.Y * cosA + match.CenterY));
+                        (float)(sx * cosA - sy * sinA + match.CenterX),
+                        (float)(sx * sinA + sy * cosA + match.CenterY));
                 }).ToList();
 
                 float minX = transformedContour.Min(p => p.X);

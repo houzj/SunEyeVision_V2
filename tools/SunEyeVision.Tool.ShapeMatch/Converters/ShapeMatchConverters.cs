@@ -1,6 +1,7 @@
-using System;
+﻿using System;
 using System.Globalization;
 using System.Windows.Data;
+using SunEyeVision.CvEngine;
 using SunEyeVision.Tool.ShapeMatch.Models;
 
 namespace SunEyeVision.Tool.ShapeMatch.Converters
@@ -104,6 +105,43 @@ namespace SunEyeVision.Tool.ShapeMatch.Converters
         public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
+        }
+    }
+
+    /// <summary>
+    /// MinContrastMode枚举到显示文本的转换
+    /// </summary>
+    [ValueConversion(typeof(MinContrastMode), typeof(string))]
+    public class MinContrastModeConverter : IValueConverter
+    {
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            if (value is MinContrastMode mode)
+            {
+                return mode switch
+                {
+                    MinContrastMode.Auto => "自动",
+                    MinContrastMode.Manual => "手动",
+                    MinContrastMode.FromTemplate => "模版阈值",
+                    _ => mode.ToString()
+                };
+            }
+            return value?.ToString();
+        }
+
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            if (value is string text)
+            {
+                return text switch
+                {
+                    "自动" => MinContrastMode.Auto,
+                    "手动" => MinContrastMode.Manual,
+                    "模版阈值" => MinContrastMode.FromTemplate,
+                    _ => Enum.Parse(typeof(MinContrastMode), text)
+                };
+            }
+            return MinContrastMode.Auto;
         }
     }
 }

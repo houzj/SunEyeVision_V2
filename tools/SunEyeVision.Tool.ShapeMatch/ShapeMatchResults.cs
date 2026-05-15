@@ -26,10 +26,10 @@ namespace SunEyeVision.Tool.ShapeMatch
         /// <summary>搜索区域掩码（如果有）</summary>
         [System.Text.Json.Serialization.JsonIgnore]
         public Mat? DebugSearchRegionMask { get; set; }
-        /// <summary>梯度幅值图（Level 0）</summary>
+        /// <summary>梯度幅值图（Level 1）</summary>
         [System.Text.Json.Serialization.JsonIgnore]
         public Mat? DebugMagnitude { get; set; }
-        /// <summary>NMS 边缘图（Level 0）</summary>
+        /// <summary>NMS 边缘图（Level 1）</summary>
         [System.Text.Json.Serialization.JsonIgnore]
         public Mat? DebugEdgeMap { get; set; }
 

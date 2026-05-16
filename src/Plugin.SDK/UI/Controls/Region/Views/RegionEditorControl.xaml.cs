@@ -7,7 +7,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Shapes;
 using System.Windows.Threading;
 using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Logging;
@@ -21,8 +20,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
     public partial class RegionEditorControl : UserControl, INotifyPropertyChanged
     {
         private RegionEditorViewModel _viewModel;
-        private ShapeType _currentTool = ShapeType.Rectangle;
-        private Button? _activeShapeButton;
 
         private readonly string _controlInstanceId = Guid.NewGuid().ToString("N").Substring(0, 8);
 
@@ -97,7 +94,48 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             set => SetValue(DefaultRegionTypeProperty, value);
         }
 
-        public ShapeType CurrentShapeTool => _currentTool;
+        #region 区域标题属性
+
+        public static readonly DependencyProperty HeaderTextProperty =
+            DependencyProperty.Register(nameof(HeaderText), typeof(string), typeof(RegionEditorControl),
+                new PropertyMetadata(null, OnHeaderTextChanged));
+
+        public string? HeaderText
+        {
+            get => (string?)GetValue(HeaderTextProperty);
+            set => SetValue(HeaderTextProperty, value);
+        }
+
+        public static readonly DependencyProperty HeaderFontWeightProperty =
+            DependencyProperty.Register(nameof(HeaderFontWeight), typeof(FontWeight), typeof(RegionEditorControl),
+                new PropertyMetadata(FontWeights.Bold));
+
+        public FontWeight HeaderFontWeight
+        {
+            get => (FontWeight)GetValue(HeaderFontWeightProperty);
+            set => SetValue(HeaderFontWeightProperty, value);
+        }
+
+        public static readonly DependencyProperty HeaderForegroundProperty =
+            DependencyProperty.Register(nameof(HeaderForeground), typeof(Brush), typeof(RegionEditorControl),
+                new PropertyMetadata(new SolidColorBrush(Color.FromRgb(0x44, 0x88, 0xFF))));
+
+        public Brush HeaderForeground
+        {
+            get => (Brush)GetValue(HeaderForegroundProperty);
+            set => SetValue(HeaderForegroundProperty, value);
+        }
+
+        private static void OnHeaderTextChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is RegionEditorControl ctrl && ctrl.HeaderTextBlock != null)
+            {
+                ctrl.HeaderTextBlock.Visibility = string.IsNullOrEmpty(ctrl.HeaderText)
+                    ? Visibility.Collapsed : Visibility.Visible;
+            }
+        }
+
+        #endregion
 
         #endregion
 
@@ -116,6 +154,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
             EnsureViewModel();
             InitializeComponent();
+
+            ShapeSelector.ShapeTypeChanged += OnShapeTypeSelected;
 
             Focusable = true;
             FocusVisualStyle = null;
@@ -199,138 +239,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
         #endregion
 
-        #region 形状选择
+        #region 形状选择（委托给 ShapeSelectorControl）
 
-        private void OnSelectButtonClick(object sender, RoutedEventArgs e)
+        private void OnShapeTypeSelected(object? sender, ShapeType shapeType)
         {
-            SetActiveTool(ShapeType.Point, sender as Button);
-            _viewModel.IsDrawing = false;
-            EndDrawingSession();
-            ToolActivated?.Invoke();
-        }
-
-        private void OnCircleButtonClick(object sender, RoutedEventArgs e)
-        {
-            SetActiveTool(ShapeType.Circle, sender as Button);
             _viewModel.IsDrawing = true;
-            StartDrawingSession(ShapeType.Circle);
+            _viewModel.SelectedShapeType = shapeType;
+            StartDrawingSession(shapeType);
             ToolActivated?.Invoke();
-        }
-
-        private void OnRotatedRectangleButtonClick(object sender, RoutedEventArgs e)
-        {
-            SetActiveTool(ShapeType.RotatedRectangle, sender as Button);
-            _viewModel.IsDrawing = true;
-            StartDrawingSession(ShapeType.RotatedRectangle);
-            ToolActivated?.Invoke();
-        }
-
-        private void OnLineButtonClick(object sender, RoutedEventArgs e)
-        {
-            SetActiveTool(ShapeType.Line, sender as Button);
-            _viewModel.IsDrawing = true;
-            ToolActivated?.Invoke();
-        }
-
-        private void OnPolygonButtonClick(object sender, RoutedEventArgs e)
-        {
-            SetActiveTool(ShapeType.Polygon, sender as Button);
-            _viewModel.IsDrawing = true;
-            ToolActivated?.Invoke();
-        }
-
-        /// <summary>
-        /// 矩形按钮点击
-        /// </summary>
-        private void OnRectangleButtonClick(object sender, RoutedEventArgs e)
-        {
-            SetActiveTool(ShapeType.Rectangle, sender as Button);
-            _viewModel.IsDrawing = true;
-            StartDrawingSession(ShapeType.Rectangle);
-            ToolActivated?.Invoke();
-        }
-
-        private void SetActiveTool(ShapeType tool, Button? button)
-        {
-            _currentTool = tool;
-
-            ResetAllShapeButtons(FindShapeContainer());
-
-            if (button != null)
-            {
-                SetShapeButtonActive(button);
-                _activeShapeButton = button;
-            }
-
-            OnPropertyChanged(nameof(CurrentShapeTool));
-        }
-
-        #endregion
-
-        #region 形状按钮样式
-
-        private void SetShapeButtonActive(Button button)
-        {
-            button.Background = new SolidColorBrush(Color.FromRgb(230, 242, 255));
-            button.BorderBrush = new SolidColorBrush(Color.FromRgb(0, 120, 215));
-            button.BorderThickness = new Thickness(2);
-
-            UpdateIconColor(button, Color.FromRgb(0, 120, 215));
-        }
-
-        private void ResetShapeButtonStyle(Button? button)
-        {
-            if (button == null) return;
-            button.Background = Brushes.Transparent;
-            button.BorderBrush = new SolidColorBrush(Color.FromRgb(224, 224, 224));
-            button.BorderThickness = new Thickness(1);
-            UpdateIconColor(button, Color.FromRgb(85, 85, 85));
-        }
-
-        private static void UpdateIconColor(Button button, Color color)
-        {
-            var brush = new SolidColorBrush(color);
-
-            if (button.Content is Shape shape)
-            {
-                shape.Stroke = brush;
-                if (shape.Fill != Brushes.Transparent)
-                    shape.Fill = brush;
-            }
-            else if (button.Content is Grid grid)
-            {
-                foreach (var child in grid.Children)
-                {
-                    if (child is Shape s)
-                    {
-                        s.Stroke = brush;
-                        if (s.Fill != Brushes.Transparent)
-                            s.Fill = brush;
-                    }
-                    else if (child is Path p)
-                    {
-                        p.Stroke = brush;
-                        if (p.Fill != Brushes.Transparent)
-                            p.Fill = brush;
-                    }
-                }
-            }
-        }
-
-        private void ResetAllShapeButtons(Panel container)
-        {
-            foreach (var child in container.Children)
-            {
-                if (child is Button button)
-                    ResetShapeButtonStyle(button);
-                else if (child is Panel childPanel)
-                    ResetAllShapeButtons(childPanel);
-            }
-        }
-
-        private Panel? FindShapeContainer()
-        {
-            return ShapeButtonPanel;
         }
 
         #endregion
@@ -339,7 +255,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
         public void EnterIdleMode()
         {
-            SetActiveTool(ShapeType.Point, SelectButton);
+            ShapeSelector.DeselectAll();
             _viewModel.IsDrawing = false;
             EndDrawingSession();
         }
@@ -472,7 +388,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         {
             if (_halconImageControl == null) return false;
 
-            var shapeType = _currentTool;
+            var shapeType = _viewModel.SelectedShapeType ?? ShapeType.Rectangle;
 
             // 计算形状参数
             var centerX = (c1 + c2) / 2;
@@ -513,6 +429,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
             // 触发变更事件
             _viewModel.FireRegionChanged(region, RegionChangeType.Added);
+
+            // 绘制完成 → 取消按钮高亮，退出绘制模式
+            ShapeSelector.DeselectAll();
+            _viewModel.IsDrawing = false;
 
             VisionLogger.Instance.Log(LogLevel.Success,
                 $"[OnPreviewDrawFinished] 区域已创建 | Name={regionName} | Type={shapeType} | Center=({centerX:F1}, {centerY:F1}) | Size={width:F1}x{height:F1}",

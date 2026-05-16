@@ -10,26 +10,18 @@
         </ResourceDictionary>
     </UserControl.Resources>
     <StackPanel>
-        <!-- 检测区域 - 蓝色主题 -->
-        <Border CornerRadius="8" BorderThickness="1" BorderBrush="#4488FF" Padding="8" Margin="0,0,0,8">
-            <StackPanel>
-                <TextBlock Text="检测区域" FontWeight="Bold" Foreground="#4488FF" Margin="0,0,0,4"/>
-                <region:RegionEditorControl x:Name="inspectionsEditor"
-                                          DefaultRegionType="Inspection"
-                                          VerticalContentAlignment="Stretch"
-                                          Height="auto" />
-            </StackPanel>
-        </Border>
+        <!-- 检测区域 -->
+        <region:RegionEditorControl x:Name="inspectionsEditor"
+                                    HeaderText="检测区域"
+                                    HeaderForeground="#4488FF"
+                                    DefaultRegionType="Inspection"
+                                    Margin="0,0,0,4"/>
 
-        <!-- 屏蔽区域 - 橙色主题 -->
-        <Border CornerRadius="8" BorderThickness="1" BorderBrush="#FFA500" Padding="8">
-            <StackPanel>
-                <TextBlock Text="屏蔽区域" FontWeight="Bold" Foreground="#FFA500" Margin="0,0,0,4"/>
-                <region:RegionEditorControl x:Name="masksEditor"
-                                          DefaultRegionType="Mask"
-                                          VerticalContentAlignment="Stretch"
-                                          Height="auto" />
-            </StackPanel>
-        </Border>
+        <!-- 屏蔽区域 -->
+        <region:RegionEditorControl x:Name="masksEditor"
+                                    HeaderText="屏蔽区域"
+                                    HeaderForeground="#FFA500"
+                                    DefaultRegionType="Mask"/>
+
     </StackPanel>
 </UserControl>

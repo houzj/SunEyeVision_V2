@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Region.Views"
              xmlns:models="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Region.Models"
->
+             x:Name="Root">
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -33,131 +33,43 @@
         <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
             <StackPanel Margin="0">
 
-                <!-- 模式切换 - 每个编辑器独立，通过 TwoWay 绑定到 ViewModel 实现互斥 -->
+                <!-- 标题 + 模式切换（同一行） -->
                 <Border CornerRadius="6" Background="#F0F0F0" BorderBrush="#DDD"
                         BorderThickness="1" Padding="3" Margin="0,0,0,12">
-                    <UniformGrid Columns="2" HorizontalAlignment="Center">
-                        <RadioButton Content="绘制"
-                                     ToolTip="手动绘制区域形状"
-                                     FontSize="12"
-                                     FontWeight="Medium"
-                                     HorizontalContentAlignment="Center"
-                                     Padding="16,6"
-                                     Style="{StaticResource SegmentedToggleStyle}"
-                                     IsChecked="{Binding IsDrawingMode, Mode=TwoWay}"/>
-                        <RadioButton Content="订阅"
-                                     ToolTip="订阅其他节点输出的区域"
-                                     FontSize="12"
-                                     FontWeight="Medium"
-                                     HorizontalContentAlignment="Center"
-                                     Padding="16,6"
-                                     Style="{StaticResource SegmentedToggleStyle}"
-                                     IsChecked="{Binding IsSubscribeMode, Mode=TwoWay}"/>
-                    </UniformGrid>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock x:Name="HeaderTextBlock" Grid.Column="0"
+                                   Text="{Binding HeaderText, ElementName=Root}"
+                                   FontWeight="{Binding HeaderFontWeight, ElementName=Root}"
+                                   Foreground="{Binding HeaderForeground, ElementName=Root}"
+                                   VerticalAlignment="Center" Margin="6,0,8,0"/>
+                        <UniformGrid Grid.Column="1" Columns="2" HorizontalAlignment="Right">
+                            <RadioButton Content="绘制"
+                                         ToolTip="手动绘制区域形状"
+                                         FontSize="12"
+                                         FontWeight="Medium"
+                                         HorizontalContentAlignment="Center"
+                                         Padding="16,6"
+                                         Style="{StaticResource SegmentedToggleStyle}"
+                                         IsChecked="{Binding IsDrawingMode, Mode=TwoWay}"/>
+                            <RadioButton Content="订阅"
+                                         ToolTip="订阅其他节点输出的区域"
+                                         FontSize="12"
+                                         FontWeight="Medium"
+                                         HorizontalContentAlignment="Center"
+                                         Padding="16,6"
+                                         Style="{StaticResource SegmentedToggleStyle}"
+                                         IsChecked="{Binding IsSubscribeMode, Mode=TwoWay}"/>
+                        </UniformGrid>
+                    </Grid>
                 </Border>
 
                 <!-- 形状选择（绘制模式显示） -->
-                <Border Margin="0,0,0,12" Padding="0"
-                        Background="Transparent"
-                        Visibility="{Binding ShowShapeTypeSelector, Converter={StaticResource BooleanToVisibilityConverter}}"
-                        x:Name="ShapeSelectorPanel">
-                    <WrapPanel x:Name="ShapeButtonPanel" HorizontalAlignment="Center" Orientation="Horizontal">
-                        <!-- 选择按钮 -->
-                        <Button Style="{StaticResource ShapeButtonStyle}"
-                                ToolTip="选择/编辑模式 (V)&#x0a;点击选中区域进行编辑&#x0a;可缩放平移图像"
-                                Click="OnSelectButtonClick"
-                                x:Name="SelectButton">
-                            <Path Width="18" Height="18"
-                                  Stroke="{StaticResource ShapeIconBrush}"
-                                  StrokeThickness="1.5"
-                                  Fill="{StaticResource ShapeIconBrush}"
-                                  Data="M3,3 L3,14 L6,10 L9,16 L12,14 L9,9 L14,9 Z"
-                                  Stretch="Uniform"
-                                  HorizontalAlignment="Center"
-                                  VerticalAlignment="Center"/>
-                        </Button>
-
-                        <!-- 形状工具 -->
-                        <WrapPanel x:Name="ShapeToolsPanel" HorizontalAlignment="Center" Orientation="Horizontal">
-                            <!-- 矩形 -->
-                            <Button Style="{StaticResource ShapeButtonStyle}"
-                                    ToolTip="矩形 (R)"
-                                    Click="OnRectangleButtonClick"
-                                    x:Name="RectangleButton">
-                                <Rectangle Width="16" Height="12"
-                                           Stroke="{StaticResource ShapeIconBrush}"
-                                           StrokeThickness="1.5"
-                                           Fill="Transparent"
-                                           RadiusX="1" RadiusY="1"
-                                           HorizontalAlignment="Center"
-                                           VerticalAlignment="Center"/>
-                            </Button>
-
-                            <!-- 圆形 -->
-                            <Button Style="{StaticResource ShapeButtonStyle}"
-                                    ToolTip="圆形 (C)"
-                                    Click="OnCircleButtonClick"
-                                    x:Name="CircleButton">
-                                <Path Width="18" Height="18"
-                                      Stroke="{StaticResource ShapeIconBrush}"
-                                      StrokeThickness="1.5"
-                                      Fill="Transparent"
-                                      Data="M9,1 A8,8 0 1,0 9,17 A8,8 0 1,0 9,1 Z M9,4 L9,14 M4,9 L14,9"
-                                      Stretch="Uniform"
-                                      HorizontalAlignment="Center"
-                                      VerticalAlignment="Center"/>
-                            </Button>
-
-                            <!-- 旋转矩形 -->
-                            <Button Style="{StaticResource ShapeButtonStyle}"
-                                    ToolTip="旋转矩形 (O)"
-                                    Click="OnRotatedRectangleButtonClick"
-                                    x:Name="RotatedRectangleButton">
-                                <Grid Width="18" Height="18">
-                                    <Rectangle Width="15" Height="15"
-                                               Stroke="{StaticResource ShapeIconBrush}"
-                                               StrokeThickness="1.5"
-                                               Fill="Transparent"
-                                               RadiusX="2" RadiusY="2"
-                                               RenderTransformOrigin="0.5,0.5">
-                                        <Rectangle.RenderTransform>
-                                            <RotateTransform Angle="35"/>
-                                        </Rectangle.RenderTransform>
-                                    </Rectangle>
-                                    <Path Stroke="{StaticResource ShapeIconBrush}" StrokeThickness="1" Fill="Transparent"
-                                          Data="M15,4 A6,6 0 0,1 18,8"/>
-                                </Grid>
-                            </Button>
-
-                            <!-- 直线 - 隐藏 -->
-                            <Button Style="{StaticResource ShapeButtonStyle}"
-                                    ToolTip="直线 (L)"
-                                    Click="OnLineButtonClick"
-                                    x:Name="LineButton"
-                                    Visibility="Collapsed">
-                                <Line X1="3" Y1="19" X2="19" Y2="3"
-                                      Stroke="{StaticResource ShapeIconBrush}"
-                                      StrokeThickness="1.5"
-                                      Width="18" Height="18"/>
-                            </Button>
-
-                            <!-- 多边形 -->
-                            <Button Style="{StaticResource ShapeButtonStyle}"
-                                    ToolTip="多边形 (P)&#x0a;点击添加顶点&#x0a;右键撤销上一点&#x0a;双击/Enter完成"
-                                    Click="OnPolygonButtonClick"
-                                    x:Name="PolygonButton">
-                                <Path Width="18" Height="18"
-                                      Stroke="{StaticResource ShapeIconBrush}"
-                                      StrokeThickness="1.5"
-                                      Fill="Transparent"
-                                      Data="M11,1 L19,6 L18,15 L12,19 L4,16 L2,9 Z"
-                                      Stretch="Uniform"
-                                      HorizontalAlignment="Center"
-                                      VerticalAlignment="Center"/>
-                            </Button>
-                        </WrapPanel>
-                    </WrapPanel>
-                </Border>
+                <local:ShapeSelectorControl x:Name="ShapeSelector"
+                    Visibility="{Binding ShowShapeTypeSelector, Converter={StaticResource BooleanToVisibilityConverter}}" />
 
                 <!-- 参数面板 - 绘制模式 -->
                 <Expander Header="绘制参数"

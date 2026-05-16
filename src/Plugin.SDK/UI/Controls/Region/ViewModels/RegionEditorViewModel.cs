@@ -282,60 +282,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.ViewModels
 
 
         /// <summary>
-        /// 当前图形类型
-        /// </summary>
-        public ShapeType? CurrentShapeType
-        {
-            get => _selectedShapeType;
-            set
-            {
-                if (SetProperty(ref _selectedShapeType, value))
-                {
-                    OnPropertyChanged(nameof(IsRectangleSelected));
-                    OnPropertyChanged(nameof(IsCircleSelected));
-                    OnPropertyChanged(nameof(IsRotatedRectangleSelected));
-                    OnPropertyChanged(nameof(IsLineSelected));
-                }
-            }
-        }
-
-        /// <summary>
-        /// 是否选中矩形
-        /// </summary>
-        public bool IsRectangleSelected
-        {
-            get => CurrentShapeType == ShapeType.Rectangle;
-            set { if (value) CurrentShapeType = ShapeType.Rectangle; }
-        }
-
-        /// <summary>
-        /// 是否选中圆形
-        /// </summary>
-        public bool IsCircleSelected
-        {
-            get => CurrentShapeType == ShapeType.Circle;
-            set { if (value) CurrentShapeType = ShapeType.Circle; }
-        }
-
-        /// <summary>
-        /// 是否选中旋转矩形
-        /// </summary>
-        public bool IsRotatedRectangleSelected
-        {
-            get => CurrentShapeType == ShapeType.RotatedRectangle;
-            set { if (value) CurrentShapeType = ShapeType.RotatedRectangle; }
-        }
-
-        /// <summary>
-        /// 是否选中直线
-        /// </summary>
-        public bool IsLineSelected
-        {
-            get => CurrentShapeType == ShapeType.Line;
-            set { if (value) CurrentShapeType = ShapeType.Line; }
-        }
-
-        /// <summary>
         /// 选中区域的定义模式
         /// </summary>
         public RegionSourceMode SelectedRegionMode => SelectedRegion?.GetMode() ?? RegionSourceMode.Drawing;
@@ -395,20 +341,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.ViewModels
         public bool CanRedo => _editHistory.CanRedo;
 
         /// <summary>
-        /// 可用的形状类型列表
-        /// </summary>
-        public IReadOnlyList<ShapeType> AvailableShapeTypes { get; } = new[]
-        {
-            ShapeType.Point,
-            ShapeType.Line,
-            ShapeType.Circle,
-            ShapeType.Rectangle,
-            ShapeType.RotatedRectangle,
-            ShapeType.Polygon
-        };
-
-        /// <summary>
-        /// 可用的区域类型列表（检测/屏蔽）
+        /// 区域类型列表（检测/屏蔽）
         /// </summary>
         public IReadOnlyList<RegionType> RegionTypeList { get; } = new[]
         {

@@ -1,4 +1,5 @@
 <UserControl x:Class="SunEyeVision.Plugin.SDK.UI.Controls.HalconImageControl"
+             Background="Black"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:halcon="clr-namespace:HalconDotNet;assembly=halcondotnetxl"
@@ -268,11 +269,12 @@
         </Border>
 
         <!-- 图像区域：HSmartWindowControl [底层] + Canvas [顶层] -->
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="1" Background="Black" UseLayoutRounding="True">
 
             <!-- [层1] HSmartWindowControl - HALCON 渲染 -->
             <halcon:HSmartWindowControlWPF x:Name="SmartWindow"
-                                         HInitWindow="OnHalconInit"/>
+                                         HInitWindow="OnHalconInit"
+                                         Background="#1E1E1E"/>
 
             <!-- [层3] 绘制预览 Canvas - 透明穿透，仅在绘制预览时捕获鼠标事件 -->
             <Canvas x:Name="PreviewCanvas"

@@ -180,6 +180,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         public HalconImageControl()
         {
             InitializeComponent();
+            SmartWindow.SizeChanged += OnSmartWindowSizeChanged;
         }
 
         #endregion
@@ -189,6 +190,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         private void OnHalconInit(object? sender, EventArgs e)
         {
             _isHalconReady = true;
+
+            SmartWindow.HKeepAspectRatio = true;
 
             var hWindow = SmartWindow.HalconWindow;
             hWindow.SetLineWidth(2);
@@ -207,12 +210,18 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             }
         }
 
-        /// <summary>resize 后重新显示图像，消除 D3D 表面重建导致的闪白</summary>
+        /// <summary>
+        /// resize 后重新贴背景，消除 D3D 表面重建导致的闪白。
+        /// 不调用 DetachBackgroundFromWindow / ClearWindow ——
+        /// AttachBackgroundToWindow 会自动替换已有背景，避免中间空白帧。
+        /// 不调用 SetFullImagePart（否则会覆盖 HKeepAspectRatio 的自动等比例行为）。
+        /// </summary>
         private void OnSmartWindowSizeChanged(object? sender, SizeChangedEventArgs e)
         {
             if (_isHalconReady && _currentHImage != null)
             {
-                DisplayHImageInternal(_currentHImage);
+                var hWindow = SmartWindow.HalconWindow;
+                hWindow.AttachBackgroundToWindow(_currentHImage);
             }
         }
 
@@ -242,10 +251,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         private void DisplayHImageInternal(HImage image)
         {
             var hWindow = SmartWindow.HalconWindow;
-            hWindow.DetachBackgroundFromWindow();
-            hWindow.ClearWindow();
             hWindow.AttachBackgroundToWindow(image);
-            FitToWindow();
+            SmartWindow.SetFullImagePart(image);
         }
 
         /// <summary>

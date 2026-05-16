@@ -517,7 +517,7 @@ return nodeResult.ToolResult;
         {
             if (_synchronizationContext != null)
             {
-                _synchronizationContext.Post(_ => action(), null);
+                _synchronizationContext.Send(_ => action(), null);
             }
             else
             {

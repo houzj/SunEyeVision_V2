@@ -16,6 +16,19 @@ using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 namespace SunEyeVision.Plugin.SDK.UI.Controls
 {
     /// <summary>
+    /// 图像自动适配窗口模式
+    /// </summary>
+    public enum ImageAutoFitMode
+    {
+        /// <summary>图像变化时始终自动适配窗口</summary>
+        Always,
+        /// <summary>仅在首次加载图像时自动适配（默认）</summary>
+        FirstOnly,
+        /// <summary>从不自动适配</summary>
+        Never
+    }
+
+    /// <summary>
     /// 基于 HSmartWindowControlWPF 的图像显示控件（V2）
     /// 两层架构：HSmartWindowControlWPF(HALCON渲染) + Canvas(预览绘制)
     /// ROI 可编辑对象使用 HALCON DrawingObject（自带命中测试/拖拽/缩放/旋转）
@@ -54,6 +67,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         // 参数: r1, c1, r2, c2 (图像坐标), 返回 true 表示已处理（跳过默认 DrawingObject 创建）
         internal Func<double, double, double, double, bool>? OnPreviewDrawComplete;
 
+        // AutoFitMode 首次加载标记
+        private bool _isFirstAutoFitDone;
+
         #endregion
 
         #region 依赖属性
@@ -77,6 +93,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         public static readonly DependencyProperty SelectedImageSourceIndexProperty =
             DependencyProperty.Register(nameof(SelectedImageSourceIndex), typeof(int), typeof(HalconImageControl),
                 new PropertyMetadata(-1, OnSelectedImageSourceIndexChanged));
+
+        /// <summary>
+        /// 图像自动适配窗口模式
+        /// </summary>
+        public static readonly DependencyProperty AutoFitModeProperty =
+            DependencyProperty.Register(nameof(AutoFitMode), typeof(ImageAutoFitMode), typeof(HalconImageControl),
+                new PropertyMetadata(ImageAutoFitMode.FirstOnly, OnAutoFitModeChanged));
 
         #endregion
 
@@ -119,6 +142,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         public bool IsHalconReady => _isHalconReady;
 
         public bool IsFullscreen => _isFullscreen;
+
+        /// <summary>图像自动适配窗口模式</summary>
+        public ImageAutoFitMode AutoFitMode
+        {
+            get => (ImageAutoFitMode)GetValue(AutoFitModeProperty);
+            set => SetValue(AutoFitModeProperty, value);
+        }
 
         public int ImageWidth => _originalImageWidth;
 
@@ -252,7 +282,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         {
             var hWindow = SmartWindow.HalconWindow;
             hWindow.AttachBackgroundToWindow(image);
-            SmartWindow.SetFullImagePart(image);
+            ApplyAutoFit();
         }
 
         /// <summary>
@@ -271,6 +301,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             _originalImageHeight = height;
 
             ImageSizeText.Text = $"图像: {_originalImageWidth} x {_originalImageHeight}";
+        }
+
+        /// <summary>
+        /// 通知控件图像已更新，触发 AutoFit 策略决策
+        /// 供 NodeResultManager 在 WindowRenderer 渲染后调用
+        /// </summary>
+        public void NotifyImageUpdated()
+        {
+            ApplyAutoFit();
         }
 
         /// <summary>
@@ -318,6 +357,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             }
             _currentHImage?.Dispose();
             _currentHImage = null;
+            _isFirstAutoFitDone = false;
         }
 
         #endregion
@@ -748,6 +788,30 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 partH - offsetRow - 1, partW - offsetCol - 1);
         }
 
+        /// <summary>
+        /// 根据 AutoFitMode 策略决策是否执行 FitToWindow
+        /// </summary>
+        private void ApplyAutoFit()
+        {
+            if (_currentHImage == null || !_isHalconReady) return;
+
+            switch (AutoFitMode)
+            {
+                case ImageAutoFitMode.Always:
+                    FitToWindow();
+                    break;
+                case ImageAutoFitMode.FirstOnly:
+                    if (!_isFirstAutoFitDone)
+                    {
+                        FitToWindow();
+                        _isFirstAutoFitDone = true;
+                    }
+                    break;
+                case ImageAutoFitMode.Never:
+                    break;
+            }
+        }
+
         /// <summary>放大</summary>
         public void ZoomIn()
         {
@@ -855,6 +919,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                         toggleButton.Content = control.ImageSourceSelector.Items[newIndex];
                     }
                 }
+            }
+        }
+
+        private static void OnAutoFitModeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is HalconImageControl control && (ImageAutoFitMode)e.NewValue == ImageAutoFitMode.Always)
+            {
+                control.ApplyAutoFit();
             }
         }
 

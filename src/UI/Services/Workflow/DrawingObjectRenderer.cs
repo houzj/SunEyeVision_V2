@@ -19,11 +19,13 @@ namespace SunEyeVision.UI.Services.Workflow
         private readonly Dictionary<IntPtr, (HDrawingObject DrawObj, TextDisplayItem Item, int Index)> _textMap = new();
 
         /// <summary>
-        /// 将 DisplayCollector 渲染为 Interactive 模式的 HDrawingObject
+        /// 将 DisplayCollector 渲染为混合模式：
+        /// - GraphicsDisplayItem → DispObj（静态计算结果图形）
+        /// - TextDisplayItem → HDrawingObject（可拖拽文本）
         /// </summary>
         public void RenderInteractive(HWindow hWindow, DisplayCollector collector)
         {
-            // 每次渲染前先清理旧的 DrawingObject
+            // 每次渲染前先清理旧的 DrawingObject（仅文本的 DrawingObj）
             DetachAll(hWindow);
 
             foreach (var item in collector.Items)
@@ -31,18 +33,22 @@ namespace SunEyeVision.UI.Services.Workflow
                 if (!item.IsVisible) continue;
 
                 if (item is GraphicsDisplayItem gfx)
-                    CreateGraphicsDrawingObjects(hWindow, gfx);
+                    RenderGraphicsAsDispObj(hWindow, gfx);
                 else if (item is TextDisplayItem txt)
                     CreateTextDrawingObjects(hWindow, txt);
             }
         }
 
-        private void CreateGraphicsDrawingObjects(HWindow hWindow, GraphicsDisplayItem item)
+        /// <summary>
+        /// 将图形项渲染为 DispObj（计算结果图形，不可交互）
+        /// </summary>
+        private static void RenderGraphicsAsDispObj(HWindow hWindow, GraphicsDisplayItem item)
         {
             var style = item.Style;
-            if (style == null) return;
+            if (style == null || item.Geometries.Length == 0) return;
 
             hWindow.SetLineWidth(style.LineWidth);
+            hWindow.SetDraw("margin");
 
             for (int i = 0; i < item.Geometries.Length; i++)
             {
@@ -50,48 +56,19 @@ namespace SunEyeVision.UI.Services.Workflow
                     ? ColorToHalcon(style.GetEffectiveColor(item.IsPassArray[i]))
                     : ColorToHalcon(style.OkColor);
 
-                HDrawingObject? drawObj = CreateDrawingObject(item.Type, item.Geometries[i]);
-                if (drawObj != null)
+                hWindow.SetColor(color);
+
+                // Arrow 特殊处理：DispArrow 直接操作窗口
+                if (item.Type == GraphicsType.Arrow && item.Geometries[i] is ArrowGeometry arrow)
                 {
-                    drawObj.SetDrawingObjectParams("color", color);
-                    if (item.IsFilled)
-                        drawObj.SetDrawingObjectParams("fill_mode", "true");
-                    hWindow.AttachDrawingObjectToWindow(drawObj);
-                    _drawObjs.Add(drawObj);
+                    HOperatorSet.DispArrow(hWindow,
+                        arrow.Start.Y, arrow.Start.X, arrow.End.Y, arrow.End.X, arrow.HeadSize);
+                    continue;
                 }
-                else
-                {
-                    // 不支持的类型回退 DispObj
-                    using var hObj = GeometryToHObject(item.Type, item.Geometries[i], style);
-                    if (hObj != null && hObj.IsInitialized())
-                    {
-                        hWindow.SetColor(color);
-                        hWindow.DispObj(hObj);
-                    }
-                }
-            }
-        }
 
-        private static HDrawingObject? CreateDrawingObject(GraphicsType type, object geometry)
-        {
-            switch (type)
-            {
-                // RECTANGLE1: HDrawingObject(row1, col1, row2, col2)
-                case GraphicsType.Rectangle when geometry is Rect2d r:
-                    return new HDrawingObject(r.Y, r.X, r.Y + r.Height, r.X + r.Width);
-
-                // RECTANGLE2: HDrawingObject(row, col, phi, length1, length2)
-                case GraphicsType.RotatedRectangle when geometry is RotatedRect rr:
-                    return new HDrawingObject(rr.Center.Y, rr.Center.X,
-                        rr.AngleRadians, rr.Width / 2, rr.Height / 2);
-
-                // CIRCLE: HDrawingObject(row, col, radius)
-                case GraphicsType.Circle when geometry is Circle2d c:
-                    return new HDrawingObject(c.Center.Y, c.Center.X, c.Radius);
-
-                // Ellipse / Line / Cross / Arrow / Contour / Arc → HDrawingObject 不支持，回退 DispObj
-                default:
-                    return null;
+                using var hObj = GeometryToHObject(item.Type, item.Geometries[i], style);
+                if (hObj != null && hObj.IsInitialized())
+                    hWindow.DispObj(hObj);
             }
         }
 
@@ -117,7 +94,7 @@ namespace SunEyeVision.UI.Services.Workflow
 
                 // 拖拽回调：将新位置写回 TextDisplayItem
                 int capturedIndex = i;
-                IntPtr drawId = (IntPtr)drawObj.GetDrawingObjectParams("id").L;
+                IntPtr drawId = (IntPtr)drawObj.ID;
                 _textMap[drawId] = (drawObj, item, capturedIndex);
 
                 drawObj.OnDrag(new HDrawingObject.HDrawingObjectCallback(OnTextDrag));

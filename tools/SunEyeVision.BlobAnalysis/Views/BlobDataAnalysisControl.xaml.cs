@@ -4,58 +4,150 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Controls;
 using System.Windows.Media;
-using OpenCvSharp;
-using SunEyeVision.CvEngine.Models;
 using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Plugin.SDK.UI.Controls;
+using SunEyeVision.Tool.BlobAnalysis.Models;
 
 namespace SunEyeVision.Tool.BlobAnalysis.Views
 {
     /// <summary>
     /// Blob 数据分析控件 - 显示连通域特征数据的 DataGrid + 统计摘要 + 选中高亮
     /// </summary>
+    /// <remarks>
+    /// 直接实现 INotifyPropertyChanged（需继承 UserControl 无法同时继承 ObservableObject）
+    /// 使用社区工具包 ObservableObject 的兼容模式绑定，参见 rule-001 例外说明。
+    /// </remarks>
     public partial class BlobDataAnalysisControl : UserControl, IToolControlDataAnalysis
     {
         /// <summary>Blob 特征数据列表</summary>
-        public ObservableCollection<BlobInfo> FilteredBlobs { get; } = new();
+        public ObservableCollection<BlobData> FilteredBlobs { get; } = new();
+
+        private int _totalBlobCount;
 
         /// <summary>Blob总数</summary>
-        public int TotalBlobCount { get; private set; }
+        public int TotalBlobCount
+        {
+            get => _totalBlobCount;
+            private set
+            {
+                if (_totalBlobCount != value)
+                {
+                    _totalBlobCount = value;
+                    NotifyPropertyChanged(nameof(TotalBlobCount));
+                }
+            }
+        }
 
         /// <summary>筛选后数量</summary>
         public int FilteredBlobCount => FilteredBlobs.Count;
 
+        private double _totalArea;
+
         /// <summary>总面积（px²）</summary>
-        public double TotalArea { get; private set; }
+        public double TotalArea
+        {
+            get => _totalArea;
+            private set
+            {
+                if (Math.Abs(_totalArea - value) > double.Epsilon)
+                {
+                    _totalArea = value;
+                    NotifyPropertyChanged(nameof(TotalArea));
+                }
+            }
+        }
+
+        private double _filteredTotalArea;
 
         /// <summary>筛选后总面积（px²）</summary>
-        public double FilteredTotalArea => FilteredBlobs.Sum(b => b.Area);
+        public double FilteredTotalArea
+        {
+            get => _filteredTotalArea;
+            private set
+            {
+                if (Math.Abs(_filteredTotalArea - value) > double.Epsilon)
+                {
+                    _filteredTotalArea = value;
+                    NotifyPropertyChanged(nameof(FilteredTotalArea));
+                }
+            }
+        }
+
+        private double _averageArea;
 
         /// <summary>平均面积（px²）</summary>
-        public double AverageArea => FilteredBlobs.Count > 0 ? FilteredBlobs.Sum(b => b.Area) / FilteredBlobs.Count : 0;
+        public double AverageArea
+        {
+            get => _averageArea;
+            private set
+            {
+                if (Math.Abs(_averageArea - value) > double.Epsilon)
+                {
+                    _averageArea = value;
+                    NotifyPropertyChanged(nameof(AverageArea));
+                }
+            }
+        }
+
+        private double _maxArea;
 
         /// <summary>最大面积（px²）</summary>
-        public double MaxArea => FilteredBlobs.Count > 0 ? FilteredBlobs.Max(b => b.Area) : 0;
+        public double MaxArea
+        {
+            get => _maxArea;
+            private set
+            {
+                if (Math.Abs(_maxArea - value) > double.Epsilon)
+                {
+                    _maxArea = value;
+                    NotifyPropertyChanged(nameof(MaxArea));
+                }
+            }
+        }
+
+        private double _minArea;
 
         /// <summary>最小面积（px²）</summary>
-        public double MinArea => FilteredBlobs.Count > 0 ? FilteredBlobs.Min(b => b.Area) : 0;
+        public double MinArea
+        {
+            get => _minArea;
+            private set
+            {
+                if (Math.Abs(_minArea - value) > double.Epsilon)
+                {
+                    _minArea = value;
+                    NotifyPropertyChanged(nameof(MinArea));
+                }
+            }
+        }
+
+        private double _thresholdUsed;
 
         /// <summary>实际阈值</summary>
-        public int ThresholdUsed { get; private set; }
+        public double ThresholdUsed
+        {
+            get => _thresholdUsed;
+            private set
+            {
+                if (Math.Abs(_thresholdUsed - value) > double.Epsilon)
+                {
+                    _thresholdUsed = value;
+                    NotifyPropertyChanged(nameof(ThresholdUsed));
+                }
+            }
+        }
 
         /// <summary>阈值类型</summary>
         public string ThresholdTypeText { get; private set; } = "-";
 
-        /// <summary>连通性</summary>
-        public string ConnectivityText { get; private set; } = "-";
-
         #region 选中 Blob 相关
 
-        private BlobInfo? _selectedBlob;
+        private BlobData? _selectedBlob;
 
         /// <summary>当前选中的 Blob（由 DataGrid SelectionChanged 驱动）</summary>
-        public BlobInfo? SelectedBlob
+        public BlobData? SelectedBlob
         {
             get => _selectedBlob;
             private set
@@ -101,14 +193,14 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
         /// <summary>DataGrid 行选择变化 → 更新 SelectedBlob 属性并触发事件</summary>
         private void BlobDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (BlobDataGrid.SelectedItem is BlobInfo blob)
+            if (BlobDataGrid.SelectedItem is BlobData blob)
                 SelectedBlob = blob;
             else
                 SelectedBlob = null;
         }
 
         /// <summary>构建选中 Blob 的高亮 DisplayItem（黄色外接矩形）</summary>
-        private static IEnumerable<DisplayItemBase>? BuildHighlightItems(BlobInfo? blob)
+        private static IEnumerable<DisplayItemBase>? BuildHighlightItems(BlobData? blob)
             {
                 if (blob == null) return null;
 
@@ -145,24 +237,19 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
                     }
                 }
 
-                // 更新统计摘要
+                // 更新统计摘要（从 BlobAnalysisResults 直读，避免重复计算）
                 TotalBlobCount = blobResult.TotalBlobCount;
                 TotalArea = blobResult.TotalArea;
+                FilteredTotalArea = blobResult.FilteredTotalArea;
+                AverageArea = blobResult.AverageArea;
+                MaxArea = blobResult.LargestBlobArea;
+                MinArea = blobResult.SmallestBlobArea;
                 ThresholdUsed = blobResult.ThresholdUsed;
                 ThresholdTypeText = blobResult.TypeUsed.ToString();
-                ConnectivityText = blobResult.ConnectivityUsed.ToString();
 
-                // 通知 UI 更新所有统计属性
-                NotifyPropertyChanged(nameof(TotalBlobCount));
+                // 通知 UI 更新派生属性
                 NotifyPropertyChanged(nameof(FilteredBlobCount));
-                NotifyPropertyChanged(nameof(TotalArea));
-                NotifyPropertyChanged(nameof(FilteredTotalArea));
-                NotifyPropertyChanged(nameof(AverageArea));
-                NotifyPropertyChanged(nameof(MaxArea));
-                NotifyPropertyChanged(nameof(MinArea));
-                NotifyPropertyChanged(nameof(ThresholdUsed));
                 NotifyPropertyChanged(nameof(ThresholdTypeText));
-                NotifyPropertyChanged(nameof(ConnectivityText));
             }
         }
 
@@ -170,6 +257,7 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
 
         /// <summary>
         /// 属性变更通知
+        /// 必须直接实现 INotifyPropertyChanged：UserControl 无法同时继承 ObservableObject
         /// </summary>
         public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
 

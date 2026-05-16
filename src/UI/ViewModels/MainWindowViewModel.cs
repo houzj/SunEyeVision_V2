@@ -2621,7 +2621,12 @@ SplitterPosition = position;
         private void SetDisplayImageFromSource(AvailableDataSource source)
         {
             var executionResult = _workflowContext.GetNodeResult(source.SourceNodeId);
-            if (executionResult?.ToolResult == null) return;
+            if (executionResult?.ToolResult == null)
+            {
+                LogWarning($"图像源|节点 {source.SourceNodeName}({source.SourceNodeId}) 尚未执行，无法显示图像", "ImageSourceSelector");
+                GetMainImageControl?.Invoke()?.ClearAll();
+                return;
+            }
 
             // ★ 从结果的 GetDisplayImages() 中获取对应的 HImage，直接渲染到 HalconImageControl
             var images = executionResult.ToolResult.GetDisplayImages();
@@ -3134,8 +3139,8 @@ AddLog($"⚠️ 日志记录异常: {ex.Message}");
                 bool hasImageOutput = outputValues?.Any(kv => kv.Value is HalconDotNet.HImage) ?? false;
                 AddLog($"✅ 节点执行完成: {e.Node.Name}, 成功={e.Result?.IsSuccess}, 有图像输出={hasImageOutput}");
 
-                // 通过 NodeResultManager 更新节点结果（更新 OutputCache，不修改 InputSource）
-                _nodeResultManager.UpdateNodeResult(e.Node, e.Result);
+                // 通过 NodeResultManager 刷新节点结果（含 WorkflowContext 写入 + FitToWindow）
+                _nodeResultManager.RefreshResultDisplay(e.Node, e.Result);
 
                 // ★ 重建模块结果树（NodeResultManager.UpdateViewModelResults 清空了但未重建）
                 if (_currentDisplayNodeId == e.Node.Id && e.Result != null)
@@ -3147,22 +3152,19 @@ AddLog($"⚠️ 日志记录异常: {ex.Message}");
                 // ★ 更新所有依赖此节点的数据提供者（修复前置节点未执行问题）
                 UpdateDataProvidersForNode(e.Node, e.Result);
 
-                // ★ 更新数据分析控件（任何节点执行完成后刷新）
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                // ★ 更新数据分析控件（任何节点执行完成后刷新，已在 UI 线程无需 Invoke）
+                if (SelectedNodeDataAnalysisControl is Plugin.SDK.UI.Controls.IToolControlDataAnalysis dataAnalysisControl
+                    && e.Result != null && e.Result.IsSuccess)
                 {
-                    if (SelectedNodeDataAnalysisControl is Plugin.SDK.UI.Controls.IToolControlDataAnalysis dataAnalysisControl
-                        && e.Result != null && e.Result.IsSuccess)
+                    try
                     {
-                        try
-                        {
-                            dataAnalysisControl.OnResultUpdated(e.Result);
-                        }
-                        catch (Exception updateEx)
-                        {
-                            AddLog($"⚠️ 更新数据分析控件失败: {updateEx.Message}");
-                        }
+                        dataAnalysisControl.OnResultUpdated(e.Result);
                     }
-                });
+                    catch (Exception updateEx)
+                    {
+                        AddLog($"⚠️ 更新数据分析控件失败: {updateEx.Message}");
+                    }
+                }
 
                 // 如果节点是当前显示节点，刷新输出缓存绑定
                 if (_currentDisplayNodeId == e.Node.Id)

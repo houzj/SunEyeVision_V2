@@ -238,10 +238,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             if (FilteredImageSources == null)
                 return;
 
-            // 使用名称匹配过滤 Mat 类型的数据源
+            // 使用名称匹配过滤 Mat/HImage/HObject 类型的数据源
             // 与之前 XAML DataTrigger (PropertyType.Name=="Mat") 行为一致，比精确类型匹配更健壮
             var filtered = AvailableDataSources != null
-                ? AvailableDataSources.Where(ds => ds.PropertyType?.Name == "Mat").ToList()
+                ? AvailableDataSources.Where(ds => ds.PropertyType?.Name == "Mat" || 
+                                                   ds.PropertyType?.Name == "HImage" || 
+                                                   ds.PropertyType?.Name == "HObject").ToList()
                 : new List<AvailableDataSource>();
 
             FilteredImageSources.Clear();

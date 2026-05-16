@@ -69,6 +69,15 @@ namespace SunEyeVision.UI.Services.Workflow
             if (result == null) return;
             UpdateViewModelResults(result);
 
+            // 缓存到 WorkflowContext（供 ComboBox 图像源切换使用）
+            var executionResult = new NodeExecutionResult
+            {
+                NodeId = node.Id,
+                Success = result.IsSuccess,
+                ToolResult = result,
+            };
+            _workflowContext.SetNodeResult(node.Id, executionResult);
+
             // 延迟获取 HWindow（如果 HalconImageControl 未初始化或尚未传入 HWindow）
             if (_mainWindowHandle == null && _mainImageControl != null)
                 _mainWindowHandle = _mainImageControl.HalconWindow;
@@ -117,10 +126,11 @@ namespace SunEyeVision.UI.Services.Workflow
                 WindowRenderer.Render(_mainWindowHandle!, displayImage, display, RenderMode.Static);
             }
 
+            // 更新 HalconImageControl 的图像引用 + 触发 AutoFit 策略
             if (displayImage != null && _mainImageControl != null)
             {
                 _mainImageControl.SetImageReference(displayImage);
-                _mainImageControl.FitToWindow();
+                _mainImageControl.NotifyImageUpdated();
             }
         }
 
@@ -138,20 +148,12 @@ namespace SunEyeVision.UI.Services.Workflow
             if (!images.TryGetValue(propertyName, out var image) || image == null || !image.IsInitialized())
                 return;
 
-            if (_mainWindowHandle != null && _mainWindowHandle.IsInitialized())
-            {
-                RenderToWindow(image, result.Display);
-            }
-            else
-            {
-                _mainImageControl?.SetImageReference(image);
-                _mainImageControl?.FitToWindow();
-            }
+            // 统一走 RenderToWindow，兼容 HWindow 和 HalconImageControl 两种状态
+            RenderToWindow(image, result.Display);
         }
 
         public void RefreshResultDisplay(WorkflowNodeBase node, ToolResults result)
         {
-            // 刷新当前节点结果显示
             UpdateNodeResult(node, result);
         }
 

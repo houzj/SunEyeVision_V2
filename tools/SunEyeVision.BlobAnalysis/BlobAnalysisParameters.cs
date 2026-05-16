@@ -17,12 +17,28 @@ namespace SunEyeVision.Tool.BlobAnalysis
     }
 
     /// <summary>
-    /// 连通性类型枚举
+    /// 图像预处理滤波类型
     /// </summary>
-    public enum ConnectivityType
+    public enum PreprocessFilterType
     {
-        Connect4 = 0,
-        Connect8 = 1
+        Gaussian = 0,
+        Median = 1,
+        Smooth = 2,
+        Emphasize = 3
+    }
+
+    /// <summary>
+    /// 形态学操作类型
+    /// </summary>
+    public enum MorphOperation
+    {
+        Erode = 0,
+        Dilate = 1,
+        Open = 2,
+        Close = 3,
+        Gradient = 4,
+        TopHat = 5,
+        BlackHat = 6
     }
 
     /// <summary>
@@ -49,6 +65,35 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// 阈值最大值
         /// </summary>
         public const int ThresholdMax = 255;
+
+        #endregion
+
+        #region 图像预处理参数
+
+        /// <summary>是否启用图像预处理</summary>
+        public ParamValue<bool> IsImagePreprocessingEnabled { get; set; } =
+            ParamValue<bool>.CreateConstant(false, "IsImagePreprocessingEnabled");
+
+        /// <summary>预处理滤波类型</summary>
+        public ParamValue<PreprocessFilterType> PreprocessFilterType { get; set; } =
+            ParamValue<PreprocessFilterType>.CreateConstant((PreprocessFilterType)0, "PreprocessFilterType");
+
+        /// <summary>内核大小（奇数）</summary>
+        public ParamValue<int> PreprocessKernelSize { get; set; } =
+            ParamValue<int>.CreateConstant(3, "PreprocessKernelSize");
+
+        /// <summary>高斯滤波 Sigma</summary>
+        public ParamValue<double> PreprocessSigma { get; set; } =
+            ParamValue<double>.CreateConstant(1.0, "PreprocessSigma");
+
+        /// <summary>锐化强度（仅 Emphasize 类型有效）</summary>
+        public ParamValue<double> PreprocessEmphasizeFactor { get; set; } =
+            ParamValue<double>.CreateConstant(1.5, "PreprocessEmphasizeFactor");
+
+        [JsonIgnore] public bool IsGaussianMethod => PreprocessFilterType.Value == (PreprocessFilterType)0;
+        [JsonIgnore] public bool IsMedianMethod => PreprocessFilterType.Value == (PreprocessFilterType)1;
+        [JsonIgnore] public bool IsSmoothMethod => PreprocessFilterType.Value == (PreprocessFilterType)2;
+        [JsonIgnore] public bool IsEmphasizeMethod => PreprocessFilterType.Value == (PreprocessFilterType)3;
 
         #endregion
 
@@ -118,11 +163,25 @@ namespace SunEyeVision.Tool.BlobAnalysis
         public ParamValue<double> MaxRectangularity { get; set; } =
             ParamValue<double>.CreateConstant(1.0, "MaxRectangularity");
 
-        /// <summary>
-        /// 连通性类型(4连通/8连通)
-        /// </summary>
-        public ParamValue<ConnectivityType> Connectivity { get; set; } =
-            ParamValue<ConnectivityType>.CreateConstant(ConnectivityType.Connect8, "Connectivity");
+        #endregion
+
+        #region 形态学预处理参数
+
+        /// <summary>是否启用形态学预处理</summary>
+        public ParamValue<bool> IsMorphologyEnabled { get; set; } =
+            ParamValue<bool>.CreateConstant(false, "IsMorphologyEnabled");
+
+        /// <summary>形态学操作类型</summary>
+        public ParamValue<MorphOperation> MorphOperation { get; set; } =
+            ParamValue<MorphOperation>.CreateConstant((MorphOperation)2, "MorphOperation");
+
+        /// <summary>结构元素大小（奇数）</summary>
+        public ParamValue<int> MorphKernelSize { get; set; } =
+            ParamValue<int>.CreateConstant(3, "MorphKernelSize");
+
+        /// <summary>迭代次数</summary>
+        public ParamValue<int> MorphIterations { get; set; } =
+            ParamValue<int>.CreateConstant(1, "MorphIterations");
 
         #endregion
 
@@ -138,9 +197,6 @@ namespace SunEyeVision.Tool.BlobAnalysis
 
         /// <summary>质心标记样式</summary>
         public GraphicsStyle CentroidsStyle { get; set; } = new() { Name = "Centroids", LineWidth = 2, CrossSize = 8 };
-
-        /// <summary>统计信息样式</summary>
-        public TextStyle StatisticsStyle { get; set; } = new() { Name = "Statistics", FontSize = 11.0, PositionX = 10, PositionY = 22 };
 
         /// <summary>轮廓样式</summary>
         public GraphicsStyle ContoursStyle { get; set; } = new() { Name = "Contours", LineWidth = 1 };
@@ -254,6 +310,26 @@ namespace SunEyeVision.Tool.BlobAnalysis
 
             // 结果配置验证
             ValidateResultConfig(result);
+
+            // 图像预处理参数验证
+            if (IsImagePreprocessingEnabled.Value)
+            {
+                if (PreprocessKernelSize.Value < 1 || PreprocessKernelSize.Value > 31)
+                    result.AddError($"预处理内核大小必须在 1-31 范围内，当前值: {PreprocessKernelSize.Value}");
+                if (PreprocessKernelSize.Value % 2 == 0)
+                    result.AddError($"预处理内核大小必须为奇数，当前值: {PreprocessKernelSize.Value}");
+            }
+
+            // 形态学预处理参数验证
+            if (IsMorphologyEnabled.Value)
+            {
+                if (MorphKernelSize.Value < 1 || MorphKernelSize.Value > 51)
+                    result.AddError($"形态学内核大小必须在 1-51 范围内，当前值: {MorphKernelSize.Value}");
+                if (MorphKernelSize.Value % 2 == 0)
+                    result.AddError($"形态学内核大小必须为奇数，当前值: {MorphKernelSize.Value}");
+                if (MorphIterations.Value < 1 || MorphIterations.Value > 20)
+                    result.AddError($"形态学迭代次数必须在 1-20 范围内，当前值: {MorphIterations.Value}");
+            }
 
             return result;
         }
@@ -409,14 +485,6 @@ namespace SunEyeVision.Tool.BlobAnalysis
         public static IReadOnlyList<string> GetThresholdTypeOptions()
         {
             return new List<string> { "Binary", "BinaryInv" };
-        }
-
-        /// <summary>
-        /// 获取连通性类型选项
-        /// </summary>
-        public static IReadOnlyList<string> GetConnectivityTypeOptions()
-        {
-            return new List<string> { "Connect4", "Connect8" };
         }
     }
 }

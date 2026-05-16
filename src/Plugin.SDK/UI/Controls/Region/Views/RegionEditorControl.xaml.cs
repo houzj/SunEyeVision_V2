@@ -514,8 +514,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         /// </summary>
         private void RegisterDrawObjectCallbacks(HDrawingObject drawObj, Guid regionId)
         {
-            var drawId = (IntPtr)drawObj.GetDrawingObjectParams("id").L; // 获取 IntPtr 句柄
-            _callbackMap[drawId] = regionId;
+            var drawId = drawObj.ID; // 获取 IntPtr 句柄
+            _callbackMap[(IntPtr)drawId] = regionId;
 
             // OnDrag — 拖拽过程中实时同步
             drawObj.OnDrag(new HDrawingObject.HDrawingObjectCallback(OnDrawObjDrag));

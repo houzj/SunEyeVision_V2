@@ -22,8 +22,5 @@
     </Reference>
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="OpenCvSharp4" Version="4.13.0.20260222" />
-    <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.13.0.20260222" />
-  </ItemGroup>
+  <!-- OpenCvSharp 依赖已移除，全链路迁移至 Halcon -->
 </Project>

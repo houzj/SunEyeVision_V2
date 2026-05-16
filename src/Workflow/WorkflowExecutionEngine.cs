@@ -636,15 +636,16 @@ namespace SunEyeVision.Workflow
                     { "Output", algorithmResult.ResultImage }
                 };
                 result.Success = true;
-
-                // 传递原始工具结果
-                result.ToolResult = algorithmResult.ToolResults;
             }
             else if (!algorithmResult.Success)
             {
                 result.ErrorMessages = new List<string> { algorithmResult.ErrorMessage };
                 result.Success = false;
             }
+
+            // ★ 无论成功/失败，只要 ToolResults 存在就保留（显示对象不因失败而丢失）
+            if (algorithmResult.ToolResults != null)
+                result.ToolResult = algorithmResult.ToolResults;
 
             return result;
         }
@@ -858,6 +859,13 @@ namespace SunEyeVision.Workflow
 
             // 设置当前节点ID
             _dataSourceQueryService.CurrentNodeId = nodeId;
+
+            // 设置当前节点到调试窗口（确保 PopulateParameterSources 中 _currentNodeId 不为空）
+            var setCurrentNodeMethod = debugWindow.GetType().GetMethod("SetCurrentNode");
+            if (setCurrentNodeMethod != null)
+            {
+                setCurrentNodeMethod.Invoke(debugWindow, new object[] { node });
+            }
 
             // 注入数据提供者（支持 SetDataProvider 方法的窗口）
             var setDataProviderMethod = debugWindow.GetType().GetMethod("SetDataProvider");

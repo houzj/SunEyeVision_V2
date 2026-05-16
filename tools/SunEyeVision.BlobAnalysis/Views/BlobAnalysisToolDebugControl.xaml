@@ -22,7 +22,8 @@
 
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
             <localConverters:ThresholdTypeConverter x:Key="ThresholdTypeConverter"/>
-            <localConverters:ConnectivityTypeConverter x:Key="ConnectivityTypeConverter"/>
+            <localConverters:PreprocessFilterTypeConverter x:Key="PreprocessFilterTypeConverter"/>
+            <localConverters:MorphOperationConverter x:Key="MorphOperationConverter"/>
         </ResourceDictionary>
     </controls:ToolDebugControlBase.Resources>
 
@@ -80,6 +81,49 @@
       <TabItem Header="预处理参数">
         <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12">
           <StackPanel>
+            <!-- ========== 图像预处理 ========== -->
+            <controls:LabeledControl Label="启用图像预处理">
+              <controls:ToggleSwitch IsChecked="{Binding IsImagePreprocessingEnabled.Value, Mode=TwoWay}"/>
+            </controls:LabeledControl>
+
+            <StackPanel Visibility="{Binding IsImagePreprocessingEnabled.Value, Converter={StaticResource BoolToVisibilityConverter}}">
+              <controls:LabeledControl Label="滤波类型">
+                <ComboBox Height="32" VerticalContentAlignment="Center" Width="250"
+                    SelectedItem="{Binding PreprocessFilterType.Value, Mode=TwoWay, Converter={StaticResource PreprocessFilterTypeConverter}}">
+                  <sys:String>高斯滤波</sys:String>
+                  <sys:String>中值滤波</sys:String>
+                  <sys:String>均值滤波</sys:String>
+                  <sys:String>锐化</sys:String>
+                </ComboBox>
+              </controls:LabeledControl>
+              <controls:LabeledControl Label="内核大小">
+                <controls:ConfigSetting ParameterName="PreprocessKernelSize"
+                    DataType="{x:Type sys:Int32}"
+                    Value="{Binding PreprocessKernelSize.Value, Mode=TwoWay}"
+                    Minimum="1" Maximum="31" SmallChange="2" LargeChange="2"
+                    ShowSlider="True" Width="250"/>
+              </controls:LabeledControl>
+              <controls:LabeledControl Label="Sigma"
+                  Visibility="{Binding IsGaussianMethod, Converter={StaticResource BoolToVisibilityConverter}}">
+                <controls:ConfigSetting ParameterName="PreprocessSigma"
+                    DataType="{x:Type sys:Double}"
+                    Value="{Binding PreprocessSigma.Value, Mode=TwoWay}"
+                    Minimum="0.1" Maximum="10" SmallChange="0.1" LargeChange="1"
+                    ShowSlider="True" Width="250"/>
+              </controls:LabeledControl>
+              <controls:LabeledControl Label="锐化强度"
+                  Visibility="{Binding IsEmphasizeMethod, Converter={StaticResource BoolToVisibilityConverter}}">
+                <controls:ConfigSetting ParameterName="PreprocessEmphasizeFactor"
+                    DataType="{x:Type sys:Double}"
+                    Value="{Binding PreprocessEmphasizeFactor.Value, Mode=TwoWay}"
+                    Minimum="0.5" Maximum="5" SmallChange="0.1" LargeChange="0.5"
+                    ShowSlider="True" Width="250"/>
+              </controls:LabeledControl>
+            </StackPanel>
+
+            <Separator Margin="0,8,0,4" Background="#E0E0E0" Height="1"/>
+
+            <!-- ========== 阈值化 ========== -->
             <controls:LabeledControl Label="阈值" >
               <controls:ConfigSetting
                                 x:Name="thresholdParam"
@@ -123,6 +167,41 @@
                         Content="反转二值化结果"/>
             </controls:LabeledControl>
 
+            <Separator Margin="0,8,0,4" Background="#E0E0E0" Height="1"/>
+
+            <!-- ========== 形态学预处理 ========== -->
+            <controls:LabeledControl Label="启用形态学预处理">
+              <controls:ToggleSwitch IsChecked="{Binding IsMorphologyEnabled.Value, Mode=TwoWay}"/>
+            </controls:LabeledControl>
+
+            <StackPanel Visibility="{Binding IsMorphologyEnabled.Value, Converter={StaticResource BoolToVisibilityConverter}}">
+              <controls:LabeledControl Label="操作类型">
+                <ComboBox Height="32" VerticalContentAlignment="Center" Width="250"
+                    SelectedItem="{Binding MorphOperation.Value, Mode=TwoWay, Converter={StaticResource MorphOperationConverter}}">
+                  <sys:String>腐蚀</sys:String>
+                  <sys:String>膨胀</sys:String>
+                  <sys:String>开运算</sys:String>
+                  <sys:String>闭运算</sys:String>
+                  <sys:String>梯度</sys:String>
+                  <sys:String>顶帽</sys:String>
+                  <sys:String>黑帽</sys:String>
+                </ComboBox>
+              </controls:LabeledControl>
+              <controls:LabeledControl Label="结构元素大小">
+                <controls:ConfigSetting ParameterName="MorphKernelSize"
+                    DataType="{x:Type sys:Int32}"
+                    Value="{Binding MorphKernelSize.Value, Mode=TwoWay}"
+                    Minimum="1" Maximum="51" SmallChange="2" LargeChange="2"
+                    ShowSlider="True" Width="250"/>
+              </controls:LabeledControl>
+              <controls:LabeledControl Label="迭代次数">
+                <controls:ConfigSetting ParameterName="MorphIterations"
+                    DataType="{x:Type sys:Int32}"
+                    Value="{Binding MorphIterations.Value, Mode=TwoWay}"
+                    Minimum="1" Maximum="20" SmallChange="1" LargeChange="1"
+                    ShowSlider="True" Width="250"/>
+              </controls:LabeledControl>
+            </StackPanel>
           </StackPanel>
         </ScrollViewer>
       </TabItem>
@@ -131,16 +210,6 @@
       <TabItem Header="Blob筛选">
         <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12">
           <StackPanel>
-            <!-- 连通性 -->
-            <controls:LabeledControl Label="连通性" >
-              <ComboBox Height="32"
-                      VerticalContentAlignment="Center" Width="250"
-                      SelectedItem="{Binding Connectivity.Value, Mode=TwoWay, Converter={StaticResource ConnectivityTypeConverter}}">
-                <sys:String>4连通</sys:String>
-                <sys:String>8连通</sys:String>
-              </ComboBox>
-            </controls:LabeledControl>
-
             <!-- 面积范围 -->
             <controls:LabeledControl Label="面积范围 (px²)">
               <controls:RangeInputControl

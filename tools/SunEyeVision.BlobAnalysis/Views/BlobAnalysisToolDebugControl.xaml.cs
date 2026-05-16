@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Windows;
-using OpenCvSharp;
+using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Logging;
@@ -71,9 +71,9 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
 
         #region 主窗口ImageControl绑定
 
-        protected ImageControl? _mainImageControl;
+        protected HalconImageControl? _mainImageControl;
 
-        public override void SetMainImageControl(ImageControl? imageControl)
+        public override void SetMainImageControl(HalconImageControl? imageControl)
         {
             _mainImageControl = imageControl;
 
@@ -204,12 +204,20 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
                 throw new InvalidOperationException("图像源节点尚未执行，请先执行前驱节点");
             }
 
-            var imageMat = _dataProvider.GetPropertyValue(
+            var imageValue = _dataProvider.GetPropertyValue(
                 imageSource.SourceNodeId,
                 imageSource.PropertyName
-            ) as Mat;
+            );
 
-            if (imageMat == null || imageMat.Empty())
+            // 上游节点输出可能为 HImage 或 HObject，统一转为 HImage
+            HImage? hImage = imageValue switch
+            {
+                HImage img => img,
+                HObject obj when obj.IsInitialized() => new HImage(obj),
+                _ => null
+            };
+
+            if (hImage == null || !hImage.IsInitialized())
             {
                 throw new InvalidOperationException("无法获取图像数据或图像为空");
             }
@@ -220,7 +228,7 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
             }
 
             var runParams = (BlobAnalysisParameters)Parameters!;
-            runParams.ResolvedInputImage = imageMat;
+            runParams.ResolvedInputImage = hImage;
             return blobTool.Run(runParams);
         }
 

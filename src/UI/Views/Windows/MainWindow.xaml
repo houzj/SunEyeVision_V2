@@ -858,6 +858,7 @@
                                             <sdk:HalconImageControl x:Name="ImageDisplayContent"
                                                                      ShowToolBar="True"
                                                                      ShowStatusBar="True"
+                                                                     AutoFitMode="FirstOnly"
                                                                      ImageSources="{Binding DisplayImageSources}"
                                                                      SelectedImageSourceIndex="{Binding SelectedDisplayImageSourceIndex, Mode=TwoWay}"/>
                                         </Border>

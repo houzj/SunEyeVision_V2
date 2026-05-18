@@ -204,6 +204,9 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// <summary>面积列表样式</summary>
         public TextStyle AreaDisplayStyle { get; set; } = new() { Name = "AreaDisplay", FontSize = 9.0, PositionX = 10, PositionY = 50 };
 
+        /// <summary>统计信息样式</summary>
+        public TextStyle StatisticsStyle { get; set; } = new() { Name = "Statistics", FontSize = 11.0 };
+
         #endregion
 
         #region 位置修正

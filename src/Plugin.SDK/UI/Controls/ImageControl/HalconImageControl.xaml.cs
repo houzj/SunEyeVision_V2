@@ -8,7 +8,8 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Shapes;
+
+using System.Windows.Threading;
 using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
@@ -17,9 +18,7 @@ using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls
 {
-    /// <summary>
-    /// 图像自动适配窗口模式
-    /// </summary>
+    /// <summary>图像自动适配窗口模式</summary>
     public enum ImageAutoFitMode
     {
         /// <summary>图像变化时始终自动适配窗口</summary>
@@ -32,8 +31,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
     /// <summary>
     /// 基于 HSmartWindowControlWPF 的图像显示控件（V2）
-    /// 两层架构：HSmartWindowControlWPF(HALCON渲染) + Canvas(预览绘制)
-    /// ROI 可编辑对象使用 HALCON DrawingObject（自带命中测试/拖拽/缩放/旋转）
+    /// 使用 HDrawingObject 进行区域交互
     /// </summary>
     public partial class HalconImageControl : UserControl
     {
@@ -41,22 +39,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         private HImage? _currentHImage;
         private bool _isHalconReady;
-
-        // 绘制预览状态
-        private bool _isDrawing;
-        private bool _isDrawingActive;
-        private Point _drawStartCanvasPos;       // Canvas 坐标（预览绘制定位用）
-        private Point _drawStartImagePos;        // 图像坐标（供回调使用）
-        private Shape? _previewShape;
-        private ShapeType _previewShapeType;
-
-        // 多边形多点交互状态
-        private readonly List<Point> _polygonCanvasPoints = new();
-        private readonly List<Point> _polygonImagePoints = new();
-        private System.Windows.Shapes.Polyline? _polygonPreviewPolyline;
-        private System.Windows.Shapes.Line? _polygonTailLine;
-        private DateTime _polygonLastClickTime = DateTime.MinValue;
-        private bool _polygonCompleted;
 
         // 全屏相关
         private bool _isFullscreen;
@@ -69,18 +51,19 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         private int _originalImageWidth;
         private int _originalImageHeight;
 
-        // 已附加的 DrawingObject 列表
-        private readonly List<HDrawingObject> _drawingObjects = new();
-
-        // 区域 ID → DrawingObject 映射（供 RegionEditorControl 双向同步使用）
-        private readonly Dictionary<Guid, HDrawingObject> _regionDrawObjects = new();
-
-        // 预览绘制完成回调（供 RegionEditorControl 注册）
-        // 参数: ShapeParameters（含形状类型和所有坐标数据）, 返回 true 表示已处理（跳过默认 DrawingObject 创建）
-        internal Func<ShapeParameters, bool>? OnPreviewDrawComplete;
-
         // AutoFitMode 首次加载标记
         private bool _isFirstAutoFitDone;
+
+        // 交互式绘制临时状态
+        private HDrawingObject? _tempDrawObj;
+        private ShapeParameters _tempShape;
+        private HDrawingObject.HDrawingObjectCallback? _tempDrawCallback;
+
+        // 区域 ID → HDrawingObject 映射
+        private readonly Dictionary<Guid, HDrawingObject> _regionDrawingObjects = new();
+
+        // 区域 HDrawingObject 回调委托持久化（防止 GC 回收导致 native crash）
+        private readonly Dictionary<Guid, HDrawingObject.HDrawingObjectCallback> _regionCallbacks = new();
 
         #endregion
 
@@ -166,12 +149,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         public int ImageHeight => _originalImageHeight;
 
-        /// <summary>当前是否处于绘制预览状态（Canvas 覆盖层驱动）</summary>
-        public bool IsDrawingPreviewActive => _isDrawingActive;
-
-        /// <summary>绘制预览 Canvas（视觉叠加层）</summary>
-        public Canvas PreviewOverlayCanvas => PreviewCanvas;
-
         #endregion
 
         #region 路由事件
@@ -206,15 +183,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             remove => RemoveHandler(ImageSourceSelectionChangedEvent, value);
         }
 
-        /// <summary>绘制预览鼠标按下事件（RegionEditorManager 订阅使用）</summary>
-        public event EventHandler<MouseButtonEventArgs>? PreviewDrawMouseDown;
-
-        /// <summary>绘制预览鼠标移动事件（RegionEditorManager 订阅使用）</summary>
-        public event EventHandler<MouseEventArgs>? PreviewDrawMouseMove;
-
-        /// <summary>绘制预览鼠标松开事件（RegionEditorManager 订阅使用）</summary>
-        public event EventHandler<MouseButtonEventArgs>? PreviewDrawMouseUp;
-
         #endregion
 
         #region 构造函数
@@ -222,7 +190,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         public HalconImageControl()
         {
             InitializeComponent();
-            SmartWindow.SizeChanged += OnSmartWindowSizeChanged;
         }
 
         #endregion
@@ -241,7 +208,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             hWindow.SetColored(12);
             hWindow.SetWindowParam("background_color", "#1E1E1E");
 
-                // 订阅 HALCON 鼠标事件（使用标准 WPF 事件避免委托签名冲突）
+            // 订阅 HALCON 鼠标事件（使用标准 WPF 事件避免委托签名冲突）
             SmartWindow.MouseMove += OnSmartWindowMouseMove;
 
             RaiseEvent(new RoutedEventArgs(HalconInitializedEvent));
@@ -249,21 +216,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             if (_currentHImage != null)
             {
                 DisplayHImageInternal(_currentHImage);
-            }
-        }
-
-        /// <summary>
-        /// resize 后重新贴背景，消除 D3D 表面重建导致的闪白。
-        /// 不调用 DetachBackgroundFromWindow / ClearWindow ——
-        /// AttachBackgroundToWindow 会自动替换已有背景，避免中间空白帧。
-        /// 不调用 SetFullImagePart（否则会覆盖 HKeepAspectRatio 的自动等比例行为）。
-        /// </summary>
-        private void OnSmartWindowSizeChanged(object? sender, SizeChangedEventArgs e)
-        {
-            if (_isHalconReady && _currentHImage != null)
-            {
-                var hWindow = SmartWindow.HalconWindow;
-                hWindow.AttachBackgroundToWindow(_currentHImage);
             }
         }
 
@@ -298,15 +250,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         }
 
         /// <summary>
-        /// 设置图像引用但不操作 HWindow（供 WindowRenderer 使用）
-        /// 更新 _currentHImage、图像尺寸、状态栏文本
+        /// 设置图像引用但不操作 HWindow（供 WindowRenderer / DisplayResultImage 使用）
+        /// 调用方必须传递我们可拥有的克隆图像，不再二次 Clone
         /// </summary>
         public void SetImageReference(HImage image)
         {
             if (image == null) return;
 
             _currentHImage?.Dispose();
-            _currentHImage = image.Clone();
+            _currentHImage = image;
 
             image.GetImageSize(out int width, out int height);
             _originalImageWidth = width;
@@ -359,10 +311,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             }
         }
 
-        /// <summary>清空所有显示（图像 + 覆盖 + DrawingObject）</summary>
+        /// <summary>清空所有显示（图像 + 覆盖 + HDrawingObject）</summary>
         public void ClearAll()
         {
-            DetachAllDrawingObjects();
+            ClearAllRegionDrawingObjects();
             if (_isHalconReady && _currentHImage != null)
             {
                 SmartWindow.HalconWindow.ClearWindow();
@@ -374,705 +326,327 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         #endregion
 
-        #region DrawingObject 管理（基础）
+        #region HDrawingObject 管理
 
-        /// <summary>创建矩形 DrawingObject 并附加到窗口</summary>
-        public HDrawingObject CreateDrawingObjectRect(double row1, double col1, double row2, double col2)
+        /// <summary>根据 ShapeParameters 创建 HDrawingObject</summary>
+        private static HDrawingObject CreateHDrawingObject(ShapeParameters shape)
         {
-            var drawObj = new HDrawingObject(row1, col1, row2, col2);
-            drawObj.SetDrawingObjectParams("color", "green");
-            drawObj.SetDrawingObjectParams("line_width", 2.0);
-            SmartWindow.HalconWindow.AttachDrawingObjectToWindow(drawObj);
-            _drawingObjects.Add(drawObj);
-            return drawObj;
+            return shape.ShapeType switch
+            {
+                ShapeType.Circle => new HDrawingObject(shape.CenterY, shape.CenterX, shape.Radius),
+                ShapeType.Rectangle => new HDrawingObject(
+                    shape.CenterY - shape.Height / 2,
+                    shape.CenterX - shape.Width / 2,
+                    shape.CenterY + shape.Height / 2,
+                    shape.CenterX + shape.Width / 2),
+                ShapeType.RotatedRectangle => new HDrawingObject(
+                    shape.CenterY, shape.CenterX,
+                    shape.Angle * Math.PI / 180.0,
+                    shape.Width / 2, shape.Height / 2),
+                ShapeType.Line => CreateLineDrawingObject(shape),
+                ShapeType.Polygon => CreatePolygonDrawingObject(shape),
+                _ => throw new NotSupportedException($"不支持的形状: {shape.ShapeType}")
+            };
         }
 
-        /// <summary>创建圆形 DrawingObject</summary>
-        public HDrawingObject CreateDrawingObjectCircle(double row, double col, double radius)
+        private static HDrawingObject CreateLineDrawingObject(ShapeParameters shape)
         {
-            var drawObj = new HDrawingObject(row, col, radius);
-            drawObj.SetDrawingObjectParams("color", "green");
-            drawObj.SetDrawingObjectParams("line_width", 2.0);
-            SmartWindow.HalconWindow.AttachDrawingObjectToWindow(drawObj);
-            _drawingObjects.Add(drawObj);
-            return drawObj;
+            var dummy = new HDrawingObject(shape.StartY, shape.StartX, shape.EndY, shape.EndX);
+            dummy.CreateDrawingObjectLine(shape.StartY, shape.StartX, shape.EndY, shape.EndX);
+            return dummy;
         }
 
-        /// <summary>创建旋转矩形 DrawingObject</summary>
-        public HDrawingObject CreateDrawingObjectRect2(double row, double col, double phi, double length1, double length2)
+        private static HDrawingObject CreatePolygonDrawingObject(ShapeParameters shape)
         {
-            var drawObj = new HDrawingObject(row, col, phi, length1, length2);
-            drawObj.SetDrawingObjectParams("color", "green");
-            drawObj.SetDrawingObjectParams("line_width", 2.0);
-            SmartWindow.HalconWindow.AttachDrawingObjectToWindow(drawObj);
-            _drawingObjects.Add(drawObj);
-            return drawObj;
+            var rows = new HTuple(shape.Points.Select(p => p.Y).ToArray());
+            var cols = new HTuple(shape.Points.Select(p => p.X).ToArray());
+            var dummy = new HDrawingObject(0, 0, 1);
+            dummy.CreateDrawingObjectXld(rows, cols);
+            return dummy;
         }
 
-        /// <summary>分离并清理所有 DrawingObject</summary>
-        public void DetachAllDrawingObjects()
+        /// <summary>从 HDrawingObject 读取参数到 ShapeParameters</summary>
+        private static void ReadDrawingObjectParams(HDrawingObject drawObj, ShapeType shapeType, ShapeParameters result)
         {
-            _regionDrawObjects.Clear();
+            switch (shapeType)
+            {
+                case ShapeType.Circle:
+                    result.CenterY = drawObj.GetDrawingObjectParams("row");
+                    result.CenterX = drawObj.GetDrawingObjectParams("column");
+                    result.Radius = drawObj.GetDrawingObjectParams("radius");
+                    break;
+                case ShapeType.Rectangle:
+                    double r1 = drawObj.GetDrawingObjectParams("row1");
+                    double c1 = drawObj.GetDrawingObjectParams("column1");
+                    double r2 = drawObj.GetDrawingObjectParams("row2");
+                    double c2 = drawObj.GetDrawingObjectParams("column2");
+                    result.CenterY = (r1 + r2) / 2;
+                    result.CenterX = (c1 + c2) / 2;
+                    result.Height = Math.Abs(r2 - r1);
+                    result.Width = Math.Abs(c2 - c1);
+                    break;
+                case ShapeType.RotatedRectangle:
+                    result.CenterY = drawObj.GetDrawingObjectParams("row");
+                    result.CenterX = drawObj.GetDrawingObjectParams("column");
+                    result.Angle = drawObj.GetDrawingObjectParams("phi") * 180.0 / Math.PI;
+                    result.Width = drawObj.GetDrawingObjectParams("length1") * 2;
+                    result.Height = drawObj.GetDrawingObjectParams("length2") * 2;
+                    break;
+                case ShapeType.Line:
+                    result.StartY = drawObj.GetDrawingObjectParams("row1");
+                    result.StartX = drawObj.GetDrawingObjectParams("column1");
+                    result.EndY = drawObj.GetDrawingObjectParams("row2");
+                    result.EndX = drawObj.GetDrawingObjectParams("column2");
+                    break;
+            }
+        }
+
+        /// <summary>从原生 drawId 读取参数（回调线程直接调用，避免 UI 线程重入）</summary>
+        private static void NativeReadDrawingObjectParams(IntPtr drawId, ShapeType shapeType, ShapeParameters result)
+        {
+            var hId = new HTuple(drawId.ToInt64());
+            switch (shapeType)
+            {
+                case ShapeType.Circle:
+                    HOperatorSet.GetDrawingObjectParams(hId, "row", out var row);
+                    HOperatorSet.GetDrawingObjectParams(hId, "column", out var col);
+                    HOperatorSet.GetDrawingObjectParams(hId, "radius", out var radius);
+                    result.CenterY = row.D;
+                    result.CenterX = col.D;
+                    result.Radius = radius.D;
+                    break;
+                case ShapeType.Rectangle:
+                    HOperatorSet.GetDrawingObjectParams(hId, "row1", out var r1);
+                    HOperatorSet.GetDrawingObjectParams(hId, "column1", out var c1);
+                    HOperatorSet.GetDrawingObjectParams(hId, "row2", out var r2);
+                    HOperatorSet.GetDrawingObjectParams(hId, "column2", out var c2);
+                    result.CenterY = (r1.D + r2.D) / 2;
+                    result.CenterX = (c1.D + c2.D) / 2;
+                    result.Height = Math.Abs(r2.D - r1.D);
+                    result.Width = Math.Abs(c2.D - c1.D);
+                    break;
+                case ShapeType.RotatedRectangle:
+                    HOperatorSet.GetDrawingObjectParams(hId, "row", out var rotRow);
+                    HOperatorSet.GetDrawingObjectParams(hId, "column", out var rotCol);
+                    HOperatorSet.GetDrawingObjectParams(hId, "phi", out var phi);
+                    HOperatorSet.GetDrawingObjectParams(hId, "length1", out var len1);
+                    HOperatorSet.GetDrawingObjectParams(hId, "length2", out var len2);
+                    result.CenterY = rotRow.D;
+                    result.CenterX = rotCol.D;
+                    result.Angle = phi.D * 180.0 / Math.PI;
+                    result.Width = len1.D * 2;
+                    result.Height = len2.D * 2;
+                    break;
+                case ShapeType.Line:
+                    HOperatorSet.GetDrawingObjectParams(hId, "row1", out var lr1);
+                    HOperatorSet.GetDrawingObjectParams(hId, "column1", out var lc1);
+                    HOperatorSet.GetDrawingObjectParams(hId, "row2", out var lr2);
+                    HOperatorSet.GetDrawingObjectParams(hId, "column2", out var lc2);
+                    result.StartY = lr1.D;
+                    result.StartX = lc1.D;
+                    result.EndY = lr2.D;
+                    result.EndX = lc2.D;
+                    break;
+            }
+        }
+
+        /// <summary>开始交互式绘制形状</summary>
+        public void BeginInteractiveDraw(ShapeType shapeType)
+        {
             if (!_isHalconReady) return;
 
-            foreach (var drawObj in _drawingObjects)
+            var hWindow = SmartWindow.HalconWindow;
+            hWindow.GetPart(out int r1, out int c1, out int r2, out int c2);
+            double vw = Math.Abs(c2 - c1) + 1;
+            double vh = Math.Abs(r2 - r1) + 1;
+            double cr = (r1 + r2) / 2.0, cc = (c1 + c2) / 2.0;
+
+            _tempShape = new ShapeParameters { ShapeType = shapeType };
+
+            var drawObj = shapeType switch
             {
-                try
-                {
-                    SmartWindow.HalconWindow.DetachDrawingObjectFromWindow(drawObj);
-                    drawObj.Dispose();
-                }
-                catch { }
-            }
-            _drawingObjects.Clear();
+                ShapeType.Circle => new HDrawingObject(cr, cc, Math.Min(vw, vh) / 4.0),
+                ShapeType.Rectangle => new HDrawingObject(cr - vh / 6, cc - vw / 6, cr + vh / 6, cc + vw / 6),
+                ShapeType.RotatedRectangle => new HDrawingObject(cr, cc, 0.0, vw / 6, vh / 6),
+                ShapeType.Line => CreateLineDrawAtCenter(cr, cc, vw),
+                ShapeType.Polygon => CreatePolygonDrawAtCenter(cr, cc, vw, vh),
+                _ => throw new NotSupportedException($"不支持的形状: {shapeType}")
+            };
+
+            drawObj.SetDrawingObjectParams(new HTuple("color"), new HTuple("yellow"));
+            drawObj.SetDrawingObjectParams(new HTuple("line_width"), new HTuple(2));
+
+            // 拖拽/缩放时同步参数
+            _tempDrawCallback = new HDrawingObject.HDrawingObjectCallback(OnTempDrawObjEvent);
+            drawObj.OnDrag(_tempDrawCallback);
+            drawObj.OnResize(_tempDrawCallback);
+
+            _tempDrawObj = drawObj;
+            hWindow.AttachDrawingObjectToWindow(drawObj);
         }
 
-        #endregion
-
-        #region 区域 DrawingObject 管理（按 Guid 映射，供 RegionEditorControl 双向同步）
-
-        /// <summary>根据 ShapeParameters 创建 DrawingObject 并关联到区域 ID</summary>
-        public HDrawingObject? CreateRegionDrawingObject(Guid regionId, ShapeParameters shape)
+        private static HDrawingObject CreateLineDrawAtCenter(double cr, double cc, double vw)
         {
-            if (!_isHalconReady) return null;
+            var dummy = new HDrawingObject(cr, cc - vw / 4, cr, cc + vw / 4);
+            dummy.CreateDrawingObjectLine(cr, cc - vw / 4, cr, cc + vw / 4);
+            return dummy;
+        }
 
-            // 如果已存在同名 ID，先分离
-            if (_regionDrawObjects.ContainsKey(regionId))
-                DetachRegionDrawingObject(regionId);
+        private static HDrawingObject CreatePolygonDrawAtCenter(double cr, double cc, double vw, double vh)
+        {
+            double hw6 = vw / 6, hh6 = vh / 6;
+            var dummy = new HDrawingObject(0, 0, 1);
+            dummy.CreateDrawingObjectXld(
+                new HTuple(new[] { cr - hh6, cr, cr + hh6, cr }),
+                new HTuple(new[] { cc, cc + hw6, cc, cc - hw6 }));
+            return dummy;
+        }
 
-            HDrawingObject? drawObj = null;
-            var shapeType = shape.ShapeType;
+        private void OnTempDrawObjEvent(IntPtr drawId, IntPtr windowHandle, string type)
+        {
+            if (_tempDrawObj == null) return;
+            // ★ 直接使用原生 API 读取参数，不经过 UI 线程调度
+            // 避免拖拽操作期间 UI 线程重入 Halcon 图形系统导致其他 DrawingObject 丢失
+            NativeReadDrawingObjectParams(drawId, _tempShape.ShapeType, _tempShape);
+        }
+
+        /// <summary>结束交互式绘制并获取结果</summary>
+        public bool EndInteractiveDraw(out ShapeParameters? result)
+        {
+            if (_tempDrawObj == null || !_isHalconReady)
+            {
+                result = null;
+                return false;
+            }
+
+            ReadDrawingObjectParams(_tempDrawObj, _tempShape.ShapeType, _tempShape);
+
+            var hWindow = SmartWindow.HalconWindow;
+            hWindow.DetachDrawingObjectFromWindow(_tempDrawObj);
+            _tempDrawObj.Dispose();
+            _tempDrawObj = null;
+            _tempDrawCallback = null;
+
+            result = _tempShape;
+            return true;
+        }
+
+        /// <summary>取消交互式绘制</summary>
+        public void CancelInteractiveDraw()
+        {
+            if (_tempDrawObj == null) return;
 
             try
             {
-                switch (shapeType)
+                if (_isHalconReady)
                 {
-                    case ShapeType.Rectangle:
-                    {
-                        double r1 = shape.CenterY - shape.Height / 2;
-                        double c1 = shape.CenterX - shape.Width / 2;
-                        double r2 = shape.CenterY + shape.Height / 2;
-                        double c2 = shape.CenterX + shape.Width / 2;
-                        drawObj = new HDrawingObject(r1, c1, r2, c2);
-                        break;
-                    }
-                    case ShapeType.Circle:
-                        drawObj = new HDrawingObject(shape.CenterY, shape.CenterX, shape.Radius);
-                        break;
-                    case ShapeType.RotatedRectangle:
-                    {
-                        double phiRad = shape.Angle * Math.PI / 180.0;
-                        double len1 = shape.Width / 2;
-                        double len2 = shape.Height / 2;
-                        drawObj = new HDrawingObject(shape.CenterY, shape.CenterX, phiRad, len1, len2);
-                        break;
-                    }
-                    case ShapeType.Line:
-                    {
-                        drawObj = new HDrawingObject();
-                        drawObj.CreateDrawingObjectLine(shape.StartY, shape.StartX, shape.EndY, shape.EndX);
-                        break;
-                    }
-                    case ShapeType.Polygon:
-                    {
-                        var rows = new HTuple(shape.Points.Select(p => p.Y).ToArray());
-                        var cols = new HTuple(shape.Points.Select(p => p.X).ToArray());
-                        drawObj = new HDrawingObject();
-                        drawObj.CreateDrawingObjectXld(rows, cols);
-                        break;
-                    }
-                }
-
-                if (drawObj != null)
-                {
-                    // 设置显示样式
-                    ApplyDrawingObjectStyle(drawObj, shape);
-
-                    SmartWindow.HalconWindow.AttachDrawingObjectToWindow(drawObj);
-                    _drawingObjects.Add(drawObj);
-                    _regionDrawObjects[regionId] = drawObj;
+                    var hWindow = SmartWindow.HalconWindow;
+                    hWindow.DetachDrawingObjectFromWindow(_tempDrawObj);
                 }
             }
-            catch (Exception ex)
-            {
-                drawObj?.Dispose();
-                drawObj = null;
-                VisionLogger.Instance.Log(LogLevel.Error,
-                    $"[CreateRegionDrawingObject] 创建失败 | RegionId={regionId:B} | Type={shape.ShapeType} | Error={ex.Message}",
-                    "HalconImageControl");
-            }
-
-            return drawObj;
+            catch { }
+            _tempDrawObj.Dispose();
+            _tempDrawObj = null;
+            _tempDrawCallback = null;
         }
 
-        /// <summary>根据 ShapeParameters 更新已有 DrawingObject 的几何和样式</summary>
+        /// <summary>渲染区域为 HDrawingObject 并附着到窗口</summary>
+        public void RenderRegionDrawingObject(Guid regionId, ShapeParameters shape)
+        {
+            if (!_isHalconReady) return;
+
+            if (_regionDrawingObjects.ContainsKey(regionId))
+                RemoveRegionDrawingObject(regionId);
+
+            var drawObj = CreateHDrawingObject(shape);
+            drawObj.SetDrawingObjectParams(new HTuple("color"), new HTuple("cyan"));
+            drawObj.SetDrawingObjectParams(new HTuple("line_width"), new HTuple(2));
+
+            // 注册永久区域回调：拖拽/缩放时同步参数到数据模型
+            var capturedShape = shape;
+            var onDragResize = new HDrawingObject.HDrawingObjectCallback((id, hwnd, type) =>
+            {
+                if (capturedShape == null) return;
+                // ★ 直接使用原生 API 读取参数，不经过 UI 线程调度
+                // 避免拖拽操作期间 UI 线程重入 Halcon 图形系统导致其他 DrawingObject 丢失
+                NativeReadDrawingObjectParams(id, capturedShape.ShapeType, capturedShape);
+            });
+
+            drawObj.OnDrag(onDragResize);
+            drawObj.OnResize(onDragResize);
+
+            _regionCallbacks[regionId] = onDragResize;
+
+            var hWindow = SmartWindow.HalconWindow;
+            hWindow.AttachDrawingObjectToWindow(drawObj);
+            _regionDrawingObjects[regionId] = drawObj;
+        }
+
+        /// <summary>更新 HDrawingObject 位置/大小</summary>
         public void UpdateRegionDrawingObject(Guid regionId, ShapeParameters shape)
         {
             if (!_isHalconReady) return;
-            if (!_regionDrawObjects.TryGetValue(regionId, out var drawObj)) return;
+            RemoveRegionDrawingObject(regionId);
+            RenderRegionDrawingObject(regionId, shape);
+        }
 
-            var shapeType = shape.ShapeType;
+        /// <summary>移除区域的 HDrawingObject</summary>
+        public void RemoveRegionDrawingObject(Guid regionId)
+        {
+            if (!_regionDrawingObjects.TryGetValue(regionId, out var drawObj)) return;
 
             try
             {
-                switch (shapeType)
+                if (_isHalconReady)
                 {
-                    case ShapeType.Rectangle:
-                    {
-                        double r1 = shape.CenterY - shape.Height / 2;
-                        double c1 = shape.CenterX - shape.Width / 2;
-                        double r2 = shape.CenterY + shape.Height / 2;
-                        double c2 = shape.CenterX + shape.Width / 2;
-                        drawObj.SetDrawingObjectParams("row1", r1);
-                        drawObj.SetDrawingObjectParams("column1", c1);
-                        drawObj.SetDrawingObjectParams("row2", r2);
-                        drawObj.SetDrawingObjectParams("column2", c2);
-                        break;
-                    }
-                    case ShapeType.Circle:
-                        drawObj.SetDrawingObjectParams("row", shape.CenterY);
-                        drawObj.SetDrawingObjectParams("column", shape.CenterX);
-                        drawObj.SetDrawingObjectParams("radius", shape.Radius);
-                        break;
-                    case ShapeType.RotatedRectangle:
-                    {
-                        double phiRad = shape.Angle * Math.PI / 180.0;
-                        double len1 = shape.Width / 2;
-                        double len2 = shape.Height / 2;
-                        drawObj.SetDrawingObjectParams("row", shape.CenterY);
-                        drawObj.SetDrawingObjectParams("column", shape.CenterX);
-                        drawObj.SetDrawingObjectParams("phi", phiRad);
-                        drawObj.SetDrawingObjectParams("length1", len1);
-                        drawObj.SetDrawingObjectParams("length2", len2);
-                        break;
-                    }
-                    case ShapeType.Line:
-                    {
-                        drawObj.SetDrawingObjectParams("row1", shape.StartY);
-                        drawObj.SetDrawingObjectParams("column1", shape.StartX);
-                        drawObj.SetDrawingObjectParams("row2", shape.EndY);
-                        drawObj.SetDrawingObjectParams("column2", shape.EndX);
-                        break;
-                    }
-                    case ShapeType.Polygon:
-                    {
-                        var rows = new HTuple(shape.Points.Select(p => p.Y).ToArray());
-                        var cols = new HTuple(shape.Points.Select(p => p.X).ToArray());
-                        var xld = new HXLDCont();
-                        xld.GenContourPolygonXld(rows, cols);
-                        drawObj.SetDrawingObjectXld(xld);
-                        xld.Dispose();
-                        break;
-                    }
-                }
-
-                ApplyDrawingObjectStyle(drawObj, shape);
-            }
-            catch (Exception ex)
-            {
-                VisionLogger.Instance.Log(LogLevel.Error,
-                    $"[UpdateRegionDrawingObject] 更新失败 | RegionId={regionId:B} | Type={shape.ShapeType} | Error={ex.Message}",
-                    "HalconImageControl");
-            }
-        }
-
-        /// <summary>从 DrawingObject 读取几何参数，写回 ShapeParameters（正向同步用）</summary>
-        public void ReadDrawingObjectParams(Guid regionId, ShapeParameters shape)
-        {
-            if (!_regionDrawObjects.TryGetValue(regionId, out var drawObj)) return;
-
-            try
-            {
-                var shapeType = shape.ShapeType;
-
-                switch (shapeType)
-                {
-                    case ShapeType.Rectangle:
-                    {
-                        var row1 = drawObj.GetDrawingObjectParams("row1").D;
-                        var col1 = drawObj.GetDrawingObjectParams("column1").D;
-                        var row2 = drawObj.GetDrawingObjectParams("row2").D;
-                        var col2 = drawObj.GetDrawingObjectParams("column2").D;
-                        shape.CenterX = (col1 + col2) / 2;
-                        shape.CenterY = (row1 + row2) / 2;
-                        shape.Width = Math.Abs(col2 - col1);
-                        shape.Height = Math.Abs(row2 - row1);
-                        break;
-                    }
-                    case ShapeType.Circle:
-                    {
-                        var row = drawObj.GetDrawingObjectParams("row").D;
-                        var col = drawObj.GetDrawingObjectParams("column").D;
-                        var radius = drawObj.GetDrawingObjectParams("radius").D;
-                        shape.CenterY = row;
-                        shape.CenterX = col;
-                        shape.Radius = radius;
-                        break;
-                    }
-                    case ShapeType.RotatedRectangle:
-                    {
-                        var row = drawObj.GetDrawingObjectParams("row").D;
-                        var col = drawObj.GetDrawingObjectParams("column").D;
-                        var phi = drawObj.GetDrawingObjectParams("phi").D;
-                        var l1 = drawObj.GetDrawingObjectParams("length1").D;
-                        var l2 = drawObj.GetDrawingObjectParams("length2").D;
-                        shape.CenterY = row;
-                        shape.CenterX = col;
-                        shape.Angle = phi * 180.0 / Math.PI;
-                        shape.Width = l1 * 2;
-                        shape.Height = l2 * 2;
-                        break;
-                    }
-                    case ShapeType.Line:
-                    {
-                        shape.StartY = drawObj.GetDrawingObjectParams("row1").D;
-                        shape.StartX = drawObj.GetDrawingObjectParams("column1").D;
-                        shape.EndY = drawObj.GetDrawingObjectParams("row2").D;
-                        shape.EndX = drawObj.GetDrawingObjectParams("column2").D;
-                        break;
-                    }
-                    case ShapeType.Polygon:
-                    {
-                        var hXld = drawObj.GetDrawingObjectIconic();
-                        if (hXld is HXLDCont xldCont && xldCont.IsInitialized())
-                        {
-                            xldCont.GetContourXld(out HTuple rows, out HTuple cols);
-                            shape.Points.Clear();
-                            for (int i = 0; i < rows.Length; i++)
-                                shape.Points.Add(new Point2D(cols[i].D, rows[i].D));
-                        }
-                        break;
-                    }
+                    var hWindow = SmartWindow.HalconWindow;
+                    hWindow.DetachDrawingObjectFromWindow(drawObj);
                 }
             }
-            catch (Exception ex)
-            {
-                VisionLogger.Instance.Log(LogLevel.Error,
-                    $"[ReadDrawingObjectParams] 读取失败 | RegionId={regionId:B} | ShapeType={shape.ShapeType} | Error={ex.Message}",
-                    "HalconImageControl");
-            }
+            catch { }
+            drawObj.Dispose();
+            _regionDrawingObjects.Remove(regionId);
+            _regionCallbacks.Remove(regionId);
         }
 
-        /// <summary>设置 DrawingObject 显示样式（根据 ShapeParameters）</summary>
-        private void ApplyDrawingObjectStyle(HDrawingObject drawObj, ShapeParameters shape)
+        /// <summary>清理所有 HDrawingObject</summary>
+        public void ClearAllRegionDrawingObjects()
         {
-            drawObj.SetDrawingObjectParams("line_width", shape.StrokeThickness);
-
-            // 颜色转换：ARGB uint → HALCON color string
-            var strokeColor = ArgbToHalconColor(shape.StrokeColorArgb);
-            drawObj.SetDrawingObjectParams("color", strokeColor);
-
-            // 填充色（HALCON DrawingObject 仅支持 "margin" 或 "fill"）
-            if (shape.FillColorArgb != 0)
+            if (!_isHalconReady)
             {
-                drawObj.SetDrawingObjectParams("draw", "fill");
-                drawObj.SetDrawingObjectParams("fill_color", ArgbToHalconColor(shape.FillColorArgb));
-            }
-            else
-            {
-                drawObj.SetDrawingObjectParams("draw", "margin");
-            }
-        }
-
-        /// <summary>ARGB uint 转 HALCON 颜色字符串（返回 "#RRGGBB"）</summary>
-        private static string ArgbToHalconColor(uint argb)
-        {
-            var r = (byte)((argb >> 16) & 0xFF);
-            var g = (byte)((argb >> 8) & 0xFF);
-            var b = (byte)(argb & 0xFF);
-            return $"#{r:X2}{g:X2}{b:X2}";
-        }
-
-        /// <summary>根据区域 ID 获取关联的 DrawingObject</summary>
-        public HDrawingObject? GetRegionDrawingObject(Guid regionId)
-        {
-            return _regionDrawObjects.TryGetValue(regionId, out var drawObj) ? drawObj : null;
-        }
-
-        /// <summary>分离并释放指定区域的 DrawingObject</summary>
-        public void DetachRegionDrawingObject(Guid regionId)
-        {
-            if (!_regionDrawObjects.TryGetValue(regionId, out var drawObj)) return;
-            _regionDrawObjects.Remove(regionId);
-
-            if (_isHalconReady && drawObj != null)
-            {
-                try
+                foreach (var drawObj in _regionDrawingObjects.Values)
                 {
-                    SmartWindow.HalconWindow.DetachDrawingObjectFromWindow(drawObj);
+                    try { drawObj.Dispose(); }
+                    catch { }
                 }
+                _regionDrawingObjects.Clear();
+                _regionCallbacks.Clear();
+                return;
+            }
+
+            var hWindow = SmartWindow.HalconWindow;
+            foreach (var drawObj in _regionDrawingObjects.Values)
+            {
+                try { hWindow.DetachDrawingObjectFromWindow(drawObj); }
                 catch { }
-                drawObj.Dispose();
+                try { drawObj.Dispose(); }
+                catch { }
             }
-            _drawingObjects.Remove(drawObj);
+            _regionDrawingObjects.Clear();
+            _regionCallbacks.Clear();
+        }
+
+        /// <summary>选中指定区域的 HDrawingObject（高亮）</summary>
+        public void SelectRegionDrawingObject(Guid regionId)
+        {
+            foreach (var kvp in _regionDrawingObjects)
+            {
+                var color = kvp.Key == regionId ? new HTuple("yellow") : new HTuple("cyan");
+                kvp.Value.SetDrawingObjectParams(new HTuple("color"), color);
+            }
         }
 
         #endregion
-
-        #region 绘制预览 (Canvas 覆盖层事件)
-
-        /// <summary>开始绘制预览模式（默认形状为 Rectangle）</summary>
-        public void BeginPreviewDraw()
-        {
-            _previewShapeType = ShapeType.Rectangle;
-            ActivatePreviewCanvas();
-        }
-
-        /// <summary>开始绘制预览模式，指定要绘制的形状类型</summary>
-        public void BeginPreviewDraw(ShapeType shapeType)
-        {
-            _previewShapeType = shapeType;
-            ActivatePreviewCanvas();
-        }
-
-        private void ActivatePreviewCanvas()
-        {
-            _isDrawingActive = true;
-            PreviewCanvas.Visibility = Visibility.Visible;
-            PreviewCanvas.MouseLeftButtonDown += PreviewCanvas_MouseLeftButtonDown;
-            PreviewCanvas.MouseMove += PreviewCanvas_MouseMove;
-            PreviewCanvas.MouseUp += PreviewCanvas_MouseUp;
-            Cursor = Cursors.Cross;
-        }
-
-        /// <summary>结束绘制预览模式（隐藏 Canvas 覆盖层，恢复鼠标穿透到 SmartWindow）</summary>
-        public void EndPreviewDraw()
-        {
-            _isDrawingActive = false;
-            PreviewCanvas.MouseLeftButtonDown -= PreviewCanvas_MouseLeftButtonDown;
-            PreviewCanvas.MouseMove -= PreviewCanvas_MouseMove;
-            PreviewCanvas.MouseUp -= PreviewCanvas_MouseUp;
-            PreviewCanvas.Visibility = Visibility.Collapsed;
-            Cursor = Cursors.Arrow;
-            RemovePreviewShape();
-        }
-
-        private void RemovePreviewShape()
-        {
-            PreviewCanvas.Children.Clear();
-            _previewShape = null;
-            _isDrawing = false;
-            _polygonCanvasPoints.Clear();
-            _polygonImagePoints.Clear();
-            _polygonPreviewPolyline = null;
-            _polygonTailLine = null;
-            _polygonCompleted = false;
-        }
-
-        /// <summary>Canvas 坐标 → 图像坐标（利用 Halcon 窗口坐标转换，Canvas 与 SmartWindow 位置重叠）</summary>
-        private Point CanvasToImagePoint(Point canvasPt)
-        {
-            if (!_isHalconReady || _currentHImage == null) return new Point(0, 0);
-            try
-            {
-                var hWindow = SmartWindow.HalconWindow;
-                hWindow.ConvertCoordinatesWindowToImage(
-                    canvasPt.Y, canvasPt.X, out double imgRow, out double imgCol);
-                return new Point(imgCol, imgRow);
-            }
-            catch
-            {
-                return new Point(0, 0);
-            }
-        }
-
-        private void PreviewCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            if (!_isDrawingActive) return;
-
-            // 多边形模式特殊处理：单击累加顶点，双击完成
-            if (_previewShapeType == ShapeType.Polygon)
-            {
-                // 双击检测
-                var now = DateTime.Now;
-                bool isDoubleClick = (now - _polygonLastClickTime).TotalMilliseconds < 500
-                    && _polygonCanvasPoints.Count > 0;
-                _polygonLastClickTime = now;
-
-                if (_polygonCompleted) return;
-
-                if (isDoubleClick && _polygonCanvasPoints.Count >= 3)
-                {
-                    CompletePolygonPreview();
-                    PreviewDrawMouseDown?.Invoke(this, e);
-                    return;
-                }
-
-                // 累加顶点
-                var canvasPt = e.GetPosition(PreviewCanvas);
-                var imagePt = CanvasToImagePoint(canvasPt);
-                _polygonCanvasPoints.Add(canvasPt);
-                _polygonImagePoints.Add(imagePt);
-
-                // 更新多边形预览（已有顶点连成折线）
-                UpdatePolygonPreview(canvasPt);
-                PreviewDrawMouseDown?.Invoke(this, e);
-                return;
-            }
-
-            _isDrawing = true;
-            _drawStartCanvasPos = e.GetPosition(PreviewCanvas);
-            _drawStartImagePos = CanvasToImagePoint(_drawStartCanvasPos);
-
-            switch (_previewShapeType)
-            {
-                case ShapeType.Circle:
-                    _previewShape = new Ellipse
-                    {
-                        Stroke = Brushes.Red,
-                        StrokeThickness = 2,
-                        StrokeDashArray = new DoubleCollection { 4, 2 },
-                        Fill = new SolidColorBrush(Color.FromArgb(30, 255, 0, 0))
-                    };
-                    break;
-
-                case ShapeType.Line:
-                    _previewShape = new System.Windows.Shapes.Line
-                    {
-                        Stroke = Brushes.Red,
-                        StrokeThickness = 2,
-                        StrokeDashArray = new DoubleCollection { 4, 2 },
-                        X1 = _drawStartCanvasPos.X,
-                        Y1 = _drawStartCanvasPos.Y,
-                        X2 = _drawStartCanvasPos.X,
-                        Y2 = _drawStartCanvasPos.Y
-                    };
-                    break;
-
-                default: // Rectangle, RotatedRectangle
-                    _previewShape = new Rectangle
-                    {
-                        Stroke = Brushes.Red,
-                        StrokeThickness = 2,
-                        StrokeDashArray = new DoubleCollection { 4, 2 },
-                        Fill = new SolidColorBrush(Color.FromArgb(30, 255, 0, 0))
-                    };
-                    break;
-            }
-
-            PreviewCanvas.Children.Add(_previewShape);
-            PreviewDrawMouseDown?.Invoke(this, e);
-        }
-
-        /// <summary>更新多边形预览：已固定顶点 + 当前鼠标尾随线</summary>
-        private void UpdatePolygonPreview(Point currentCanvasPt)
-        {
-            PreviewCanvas.Children.Clear();
-
-            if (_polygonCanvasPoints.Count >= 1)
-            {
-                var polyline = new System.Windows.Shapes.Polyline
-                {
-                    Stroke = Brushes.Red,
-                    StrokeThickness = 2,
-                    StrokeDashArray = new DoubleCollection { 4, 2 },
-                    Points = new PointCollection(_polygonCanvasPoints)
-                };
-                PreviewCanvas.Children.Add(polyline);
-                _polygonPreviewPolyline = polyline;
-
-                // 尾随线：从最后一个顶点到鼠标位置
-                var lastPt = _polygonCanvasPoints[_polygonCanvasPoints.Count - 1];
-                var tailLine = new System.Windows.Shapes.Line
-                {
-                    Stroke = Brushes.Red,
-                    StrokeThickness = 1.5,
-                    StrokeDashArray = new DoubleCollection { 2, 4 },
-                    X1 = lastPt.X,
-                    Y1 = lastPt.Y,
-                    X2 = currentCanvasPt.X,
-                    Y2 = currentCanvasPt.Y
-                };
-                PreviewCanvas.Children.Add(tailLine);
-                _polygonTailLine = tailLine;
-            }
-        }
-
-        /// <summary>完成多边形绘制，构造 ShapeParameters 并触发回调</summary>
-        private void CompletePolygonPreview()
-        {
-            _polygonCompleted = true;
-
-            // 构造 ShapeParameters
-            var shape = new ShapeParameters { ShapeType = ShapeType.Polygon };
-            shape.Points.Clear();
-            foreach (var pt in _polygonImagePoints)
-                shape.Points.Add(new Point2D(pt.X, pt.Y));
-
-            // 清预览
-            RemovePreviewShape();
-
-            bool handled = false;
-            if (OnPreviewDrawComplete != null)
-            {
-                try
-                {
-                    handled = OnPreviewDrawComplete(shape);
-                }
-                catch (Exception ex)
-                {
-                    VisionLogger.Instance.Error(
-                        $"[HalconImageControl] Polygon OnPreviewDrawComplete 异常: {ex.Message}",
-                        "HalconImageControl");
-                    throw;
-                }
-            }
-
-            PreviewDrawMouseUp?.Invoke(this, null!);
-            EndPreviewDraw();
-        }
-
-        private void PreviewCanvas_MouseMove(object sender, MouseEventArgs e)
-        {
-            var canvasPos = e.GetPosition(PreviewCanvas);
-
-            // 多边形模式：更新尾随线
-            if (_previewShapeType == ShapeType.Polygon && _polygonCanvasPoints.Count >= 1 && !_polygonCompleted)
-            {
-                if (_polygonTailLine != null)
-                {
-                    var lastPt = _polygonCanvasPoints[_polygonCanvasPoints.Count - 1];
-                    _polygonTailLine.X1 = lastPt.X;
-                    _polygonTailLine.Y1 = lastPt.Y;
-                    _polygonTailLine.X2 = canvasPos.X;
-                    _polygonTailLine.Y2 = canvasPos.Y;
-                    return;
-                }
-                // 首次移动时创建预览
-                if (_polygonPreviewPolyline == null)
-                {
-                    UpdatePolygonPreview(canvasPos);
-                }
-                return;
-            }
-
-            if (!_isDrawing || _previewShape == null) return;
-
-            switch (_previewShapeType)
-            {
-                case ShapeType.Circle:
-                {
-                    double dx = canvasPos.X - _drawStartCanvasPos.X;
-                    double dy = canvasPos.Y - _drawStartCanvasPos.Y;
-                    double radius = Math.Sqrt(dx * dx + dy * dy);
-                    _previewShape.Width = _previewShape.Height = radius * 2;
-                    Canvas.SetLeft(_previewShape, _drawStartCanvasPos.X - radius);
-                    Canvas.SetTop(_previewShape, _drawStartCanvasPos.Y - radius);
-                    break;
-                }
-                case ShapeType.Line:
-                {
-                    var line = (System.Windows.Shapes.Line)_previewShape;
-                    line.X2 = canvasPos.X;
-                    line.Y2 = canvasPos.Y;
-                    break;
-                }
-                default: // Rectangle, RotatedRectangle
-                {
-                    var x = Math.Min(_drawStartCanvasPos.X, canvasPos.X);
-                    var y = Math.Min(_drawStartCanvasPos.Y, canvasPos.Y);
-                    _previewShape.Width = Math.Abs(canvasPos.X - _drawStartCanvasPos.X);
-                    _previewShape.Height = Math.Abs(canvasPos.Y - _drawStartCanvasPos.Y);
-                    Canvas.SetLeft(_previewShape, x);
-                    Canvas.SetTop(_previewShape, y);
-                    break;
-                }
-            }
-
-            PreviewDrawMouseMove?.Invoke(this, e);
-        }
-
-        private void PreviewCanvas_MouseUp(object sender, MouseButtonEventArgs e)
-        {
-            if (!_isDrawing) return;
-            // 多边形不在此处完成（由 CompletePolygonPreview 处理）
-            if (_previewShapeType == ShapeType.Polygon) return;
-
-            _isDrawing = false;
-
-            var canvasPos = e.GetPosition(PreviewCanvas);
-            var imagePos = CanvasToImagePoint(canvasPos);
-
-            // 构造 ShapeParameters
-            var shape = new ShapeParameters { ShapeType = _previewShapeType };
-
-            switch (_previewShapeType)
-            {
-                case ShapeType.Line:
-                {
-                    shape.StartX = _drawStartImagePos.X;
-                    shape.StartY = _drawStartImagePos.Y;
-                    shape.EndX = imagePos.X;
-                    shape.EndY = imagePos.Y;
-                    break;
-                }
-                case ShapeType.Circle:
-                {
-                    double radius = Math.Max(
-                        Math.Abs(imagePos.X - _drawStartImagePos.X),
-                        Math.Abs(imagePos.Y - _drawStartImagePos.Y));
-                    shape.CenterX = _drawStartImagePos.X;
-                    shape.CenterY = _drawStartImagePos.Y;
-                    shape.Radius = radius;
-                    break;
-                }
-                case ShapeType.Rectangle:
-                case ShapeType.RotatedRectangle:
-                default:
-                {
-                    double r1 = Math.Min(_drawStartImagePos.Y, imagePos.Y);
-                    double c1 = Math.Min(_drawStartImagePos.X, imagePos.X);
-                    double r2 = Math.Max(_drawStartImagePos.Y, imagePos.Y);
-                    double c2 = Math.Max(_drawStartImagePos.X, imagePos.X);
-                    shape.CenterX = (c1 + c2) / 2;
-                    shape.CenterY = (r1 + r2) / 2;
-                    shape.Width = Math.Abs(c2 - c1);
-                    shape.Height = Math.Abs(r2 - r1);
-                    break;
-                }
-            }
-
-            // 先清预览
-            RemovePreviewShape();
-
-            bool handled = false;
-            if (OnPreviewDrawComplete != null)
-            {
-                try
-                {
-                    handled = OnPreviewDrawComplete(shape);
-                }
-                catch (Exception ex)
-                {
-                    VisionLogger.Instance.Error(
-                        $"[HalconImageControl] OnPreviewDrawComplete 异常: {ex.Message}",
-                        "HalconImageControl");
-                    throw;
-                }
-            }
-
-            if (!handled && _isHalconReady && _currentHImage != null)
-            {
-                // 默认回退：为 Rectangle 创建 DrawingObject
-                if (_previewShapeType == ShapeType.Rectangle)
-                {
-                    CreateDrawingObjectRect(
-                        shape.CenterY - shape.Height / 2,
-                        shape.CenterX - shape.Width / 2,
-                        shape.CenterY + shape.Height / 2,
-                        shape.CenterX + shape.Width / 2);
-                }
-            }
-
-            PreviewDrawMouseUp?.Invoke(this, e);
-
-            // 绘制完成自动结束预览模式（隐藏 Canvas，恢复 SmartWindow 交互）
-            EndPreviewDraw();
-        }
-
-        #endregion
-
-        #region 缩放控制
 
         /// <summary>适应窗口（等比例居中显示）</summary>
         public void FitToWindow()
@@ -1150,8 +724,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 SmartWindow.HZoomWindowContents(center.X, center.Y, -1);
             }
         }
-
-        #endregion
 
         #region 公共方法
 

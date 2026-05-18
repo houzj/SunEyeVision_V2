@@ -115,7 +115,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 inspectionsEditor.SetHalconImageControl(_mainImageControl);
                 masksEditor.SetHalconImageControl(_mainImageControl);
 
-                PluginLogger.Info("[RegionEditorManager] HalconImageControl set", "RegionEditorManager");
+                PluginLogger.Info(
+                    $"[RegionEditorManager] HalconImageControl set | " +
+                    $"检测区域实例Id={inspectionsEditor.InstanceId} | 屏蔽区域实例Id={masksEditor.InstanceId}",
+                    "RegionEditorManager");
             }
         }
 
@@ -139,11 +142,29 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         {
             if (activatedEditor == inspectionsEditor)
             {
+                VisionLogger.Instance.Log(LogLevel.Info,
+                    $"══════ 全链监控 [管理调度] ══════ 检测区域 激活 → 屏蔽区域 暂停 | " +
+                    $"激活实例={inspectionsEditor.InstanceId} | 暂停实例={masksEditor.InstanceId}",
+                    "RegionEditorManager");
+
                 masksEditor.EnterIdleMode();
+
+                VisionLogger.Instance.Log(LogLevel.Success,
+                    $"══════ 全链监控 [管理调度] ══════ 屏蔽区域 已暂停 → 调度完成",
+                    "RegionEditorManager");
             }
             else
             {
+                VisionLogger.Instance.Log(LogLevel.Info,
+                    $"══════ 全链监控 [管理调度] ══════ 屏蔽区域 激活 → 检测区域 暂停 | " +
+                    $"激活实例={masksEditor.InstanceId} | 暂停实例={inspectionsEditor.InstanceId}",
+                    "RegionEditorManager");
+
                 inspectionsEditor.EnterIdleMode();
+
+                VisionLogger.Instance.Log(LogLevel.Success,
+                    $"══════ 全链监控 [管理调度] ══════ 检测区域 已暂停 → 调度完成",
+                    "RegionEditorManager");
             }
         }
 

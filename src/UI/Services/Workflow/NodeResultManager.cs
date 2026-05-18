@@ -136,35 +136,50 @@ namespace SunEyeVision.UI.Services.Workflow
 
         private void RenderToWindow(HImage? displayImage, DisplayCollector display)
         {
-            if (_currentRenderMode == RenderMode.Interactive)
+            // 克隆以拥有独立数据（AttachBackgroundToWindow 不拷贝数据，只引用原生内存）
+            // 克隆体通过 _mainImageControl.SetImageReference 管理生命周期
+            HImage? ownedImage = null;
+            if (displayImage != null && displayImage.IsInitialized())
             {
-                // ★ Interactive 模式：由 DrawingObjectRenderer 管理 HDrawingObject
-                _drawingObjectRenderer ??= new DrawingObjectRenderer();
+                ownedImage = displayImage.Clone();
+            }
 
-                // 先清除窗口 + 设置背景图像
-                if (displayImage != null && displayImage.IsInitialized())
+            try
+            {
+                if (_currentRenderMode == RenderMode.Interactive)
                 {
-                    _mainWindowHandle!.AttachBackgroundToWindow(displayImage);
-                    _mainWindowHandle.ClearWindow();
+                    // ★ Interactive 模式：由 DrawingObjectRenderer 管理 HDrawingObject
+                    _drawingObjectRenderer ??= new DrawingObjectRenderer();
+
+                    if (ownedImage != null)
+                    {
+                        _mainWindowHandle!.AttachBackgroundToWindow(ownedImage);
+                        _mainWindowHandle.ClearWindow();
+                    }
+                    else
+                    {
+                        _mainWindowHandle?.ClearWindow();
+                    }
+
+                    // 渲染 Interactive 图形
+                    _drawingObjectRenderer.RenderInteractive(_mainWindowHandle!, display);
                 }
                 else
                 {
-                    _mainWindowHandle?.ClearWindow();
+                    // ★ Static 模式：走 WindowRenderer（DispObj）
+                    WindowRenderer.Render(_mainWindowHandle!, ownedImage, display, RenderMode.Static);
                 }
 
-                // 渲染 Interactive 图形
-                _drawingObjectRenderer.RenderInteractive(_mainWindowHandle!, display);
+                // 更新 HalconImageControl 的图像引用（传递我们拥有的克隆，不再二次 Clone）
+                if (ownedImage != null && _mainImageControl != null)
+                {
+                    _mainImageControl.SetImageReference(ownedImage);
+                }
             }
-            else
+            catch
             {
-                // ★ Static 模式：走 WindowRenderer（DispObj）
-                WindowRenderer.Render(_mainWindowHandle!, displayImage, display, RenderMode.Static);
-            }
-
-            // 更新 HalconImageControl 的图像引用
-            if (displayImage != null && _mainImageControl != null)
-            {
-                _mainImageControl.SetImageReference(displayImage);
+                ownedImage?.Dispose();
+                throw;
             }
         }
 
@@ -186,18 +201,28 @@ namespace SunEyeVision.UI.Services.Workflow
 
             if (_mainWindowHandle != null && _mainWindowHandle.IsInitialized())
             {
-                // 仅更换背景层：前景覆盖图形保持不变
-                _mainWindowHandle.AttachBackgroundToWindow(image);
+                // 克隆以拥有独立数据，传给窗口背景 + HalconImageControl 管理生命周期
+                var ownedImage = image.Clone();
+                try
+                {
+                    _mainWindowHandle.AttachBackgroundToWindow(ownedImage);
+                }
+                catch
+                {
+                    ownedImage.Dispose();
+                    throw;
+                }
+
+                // 更新控件内部引用 + 状态栏（不影响窗口显示内容）
+                _mainImageControl?.SetImageReference(ownedImage);
             }
             else
             {
-                // 回退到 HalconImageControl 独立显示
+                // 回退到 HalconImageControl 独立显示（DisplayHImage 内部已 Clone，安全）
                 _mainImageControl?.DisplayHImage(image);
                 return;
             }
 
-            // 更新控件内部引用 + 状态栏（不影响窗口显示内容）
-            _mainImageControl?.SetImageReference(image);
             _mainImageControl?.NotifyImageUpdated();
         }
 

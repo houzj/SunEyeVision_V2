@@ -18,6 +18,9 @@ namespace SunEyeVision.UI.Services.Workflow
         // drawId(IntPtr) → (HDrawingObject, TextDisplayItem, int index)
         private readonly Dictionary<IntPtr, (HDrawingObject DrawObj, TextDisplayItem Item, int Index)> _textMap = new();
 
+        // 持久化保存所有文本拖拽回调委托，防止 Halcon native 层调用时被 GC 回收
+        private readonly List<HDrawingObject.HDrawingObjectCallback> _textCallbacks = new();
+
         /// <summary>
         /// 将 DisplayCollector 渲染为混合模式：
         /// - GraphicsDisplayItem → DispObj（静态计算结果图形）
@@ -97,7 +100,9 @@ namespace SunEyeVision.UI.Services.Workflow
                 IntPtr drawId = (IntPtr)drawObj.ID;
                 _textMap[drawId] = (drawObj, item, capturedIndex);
 
-                drawObj.OnDrag(new HDrawingObject.HDrawingObjectCallback(OnTextDrag));
+                var callback = new HDrawingObject.HDrawingObjectCallback(OnTextDrag);
+                drawObj.OnDrag(callback);
+                _textCallbacks.Add(callback);
 
                 hWindow.AttachDrawingObjectToWindow(drawObj);
                 _drawObjs.Add(drawObj);
@@ -130,6 +135,7 @@ namespace SunEyeVision.UI.Services.Workflow
                 }
                 _drawObjs.Clear();
                 _textMap.Clear();
+                _textCallbacks.Clear();
                 return;
             }
 
@@ -149,6 +155,7 @@ namespace SunEyeVision.UI.Services.Workflow
             }
             _drawObjs.Clear();
             _textMap.Clear();
+            _textCallbacks.Clear();
         }
 
         // ===== Static 模式回退：将几何数据转为 HObject（与 WindowRenderer 共享逻辑） =====

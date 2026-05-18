@@ -268,19 +268,14 @@
             </Grid>
         </Border>
 
-        <!-- 图像区域：HSmartWindowControl [底层] + Canvas [顶层] -->
+        <!-- 图像区域：HSmartWindowControl -->
         <Grid Grid.Row="1" Background="Black" UseLayoutRounding="True">
 
-            <!-- [层1] HSmartWindowControl - HALCON 渲染 -->
+            <!-- HSmartWindowControl - HALCON 渲染 -->
             <halcon:HSmartWindowControlWPF x:Name="SmartWindow"
+                                         x:FieldModifier="public"
                                          HInitWindow="OnHalconInit"
                                          Background="#1E1E1E"/>
-
-            <!-- [层3] 绘制预览 Canvas - 覆盖在 SmartWindow 之上，绘制模式下捕获鼠标事件 -->
-            <Canvas x:Name="PreviewCanvas"
-                    Background="Transparent"
-                    Visibility="Collapsed"
-                    Panel.ZIndex="1" />
         </Grid>
 
         <!-- 状态栏 - 深色主题 -->

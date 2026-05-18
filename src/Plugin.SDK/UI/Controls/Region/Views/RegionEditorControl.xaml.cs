@@ -28,7 +28,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
     {
         private RegionEditorViewModel _viewModel;
         private ShapeType _currentTool = ShapeType.Point;  // 初始为选择模式（Point=选择）
-        private Button? _activeShapeButton;
 
         // 控件实例ID（用于区分不同的 RegionEditorControl 实例）
         private readonly string _controlInstanceId = Guid.NewGuid().ToString("N").Substring(0, 8);
@@ -153,13 +152,59 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             DependencyProperty.Register(nameof(DefaultRegionType),
                 typeof(RegionType),
                 typeof(RegionEditorControl),
-                new PropertyMetadata(RegionType.Inspection));
+                new PropertyMetadata(RegionType.Inspection, OnDefaultRegionTypeChanged));
 
         public RegionType DefaultRegionType
         {
             get => (RegionType)GetValue(DefaultRegionTypeProperty);
             set => SetValue(DefaultRegionTypeProperty, value);
         }
+
+        #region 区域类型标题（由 DefaultRegionType 自动派生）
+
+        /// <summary>
+        /// 区域类型标题文本（检测区域/屏蔽区域）
+        /// </summary>
+        public static readonly DependencyProperty RegionTypeTitleProperty =
+            DependencyProperty.Register(nameof(RegionTypeTitle),
+                typeof(string),
+                typeof(RegionEditorControl),
+                new PropertyMetadata("检测区域"));
+
+        public string RegionTypeTitle
+        {
+            get => (string)GetValue(RegionTypeTitleProperty);
+            set => SetValue(RegionTypeTitleProperty, value);
+        }
+
+        /// <summary>
+        /// 区域类型标题颜色（检测区域=蓝色 #4488FF，屏蔽区域=橙色 #FFA500）
+        /// </summary>
+        public static readonly DependencyProperty RegionTypeTitleBrushProperty =
+            DependencyProperty.Register(nameof(RegionTypeTitleBrush),
+                typeof(Brush),
+                typeof(RegionEditorControl),
+                new PropertyMetadata(new SolidColorBrush((Color)ColorConverter.ConvertFromString("#4488FF"))));
+
+        public Brush RegionTypeTitleBrush
+        {
+            get => (Brush)GetValue(RegionTypeTitleBrushProperty);
+            set => SetValue(RegionTypeTitleBrushProperty, value);
+        }
+
+        private static void OnDefaultRegionTypeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is RegionEditorControl control)
+            {
+                var newType = (RegionType)e.NewValue;
+                control.RegionTypeTitle = newType == RegionType.Inspection ? "检测区域" : "屏蔽区域";
+                control.RegionTypeTitleBrush = newType == RegionType.Inspection
+                    ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#4488FF"))
+                    : new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFA500"));
+            }
+        }
+
+        #endregion
 
         /// <summary>
         /// 当前选中的形状工具
@@ -221,6 +266,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             InitializeComponent();
             _handleManager = new HandleManager();
             _settings = RegionEditorSettings.Default;
+
+            // 初始化形状工具栏（数据驱动，每个形状可见性可单独控制）
+            InitializeShapeTools();
+            ShapeToolBarControl.ShapeSelectionChanged += OnShapeToolBarSelectionChanged;
 
             // 启用键盘焦点
             Focusable = true;
@@ -485,24 +534,24 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                     e.Handled = true;
                     break;
                 case Key.R:
-                    SelectShapeTool(ShapeType.Rectangle, null);
+                    SelectShapeTool(ShapeType.Rectangle);
                     e.Handled = true;
                     break;
                 case Key.C:
-                    SelectShapeTool(ShapeType.Circle, null);
+                    SelectShapeTool(ShapeType.Circle);
                     e.Handled = true;
                     break;
                 case Key.O:
-                    SelectShapeTool(ShapeType.RotatedRectangle, null);
+                    SelectShapeTool(ShapeType.RotatedRectangle);
                     e.Handled = true;
                     break;
                 case Key.L:
-                    SelectShapeTool(ShapeType.Line, null);
+                    SelectShapeTool(ShapeType.Line);
                     e.Handled = true;
                     break;
                 case Key.P:
                     _isDrawingPolygon = false;
-                    SelectShapeTool(ShapeType.Polygon, null);
+                    SelectShapeTool(ShapeType.Polygon);
                     e.Handled = true;
                     break;
             }
@@ -584,7 +633,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         {
             if (tool == ShapeType.Polygon)
                 _isDrawingPolygon = false;
-            SelectShapeTool(tool, null);
+            SelectShapeTool(tool);
         }
 
         /// <summary>
@@ -610,24 +659,24 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                     e.Handled = true;
                     break;
                 case Key.R:
-                    SelectShapeTool(ShapeType.Rectangle, null);
+                    SelectShapeTool(ShapeType.Rectangle);
                     e.Handled = true;
                     break;
                 case Key.C:
-                    SelectShapeTool(ShapeType.Circle, null);
+                    SelectShapeTool(ShapeType.Circle);
                     e.Handled = true;
                     break;
                 case Key.O:
-                    SelectShapeTool(ShapeType.RotatedRectangle, null);
+                    SelectShapeTool(ShapeType.RotatedRectangle);
                     e.Handled = true;
                     break;
                 case Key.L:
-                    SelectShapeTool(ShapeType.Line, null);
+                    SelectShapeTool(ShapeType.Line);
                     e.Handled = true;
                     break;
                 case Key.P:
                     _isDrawingPolygon = false;
-                    SelectShapeTool(ShapeType.Polygon, null);
+                    SelectShapeTool(ShapeType.Polygon);
                     e.Handled = true;
                     break;
             }
@@ -673,9 +722,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             // 3. 取消区域选中
             DeselectAll();
 
-            // 4. 清除所有按钮高亮
-            ResetShapeButtonStyle(_activeShapeButton);
-            _activeShapeButton = null;
+            // 4. 清除形状工具栏选中状态
+            ShapeToolBarControl.ClearSelection();
 
             // 5. 更新状态消息
             _viewModel.StatusMessage = "空闲 - 点击工具栏选择工具";
@@ -2473,8 +2521,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                     _isDrawing = false;
                     _currentDrawingRegion = null;
                     _viewModel.IsDrawing = false;
-                    ResetShapeButtonStyle(_activeShapeButton);
-                    _activeShapeButton = null;
+                    ShapeToolBarControl.ClearSelection();
                     RenderRequested?.Invoke();
                     VisionLogger.Instance.Log(LogLevel.Info,
                         $"[OnViewModelPropertyChanged] 切换到订阅模式，已取消绘制 | InstanceId={_controlInstanceId}",
@@ -2600,62 +2647,45 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             }
         }
 
-        #region 形状按钮点击事件
+        #region 形状工具栏
 
-        private void OnRectangleButtonClick(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// 初始化形状工具栏数据（数据驱动，每个形状可见性可单独控制）
+        /// </summary>
+        private void InitializeShapeTools()
         {
-            SelectShapeTool(ShapeType.Rectangle, sender as Button);
-        }
+            const string polygonToolTip = "多边形 (P)\n点击添加顶点\n右键撤销上一点\n双击/Enter完成";
+            var shapeTools = new System.Collections.ObjectModel.ObservableCollection<Models.ShapeToolItem>
+            {
+                new(Models.ShapeType.Rectangle, "矩形", "M2,2 L18,2 L18,18 L2,18 Z", Key.R),
+                new(Models.ShapeType.Circle, "圆形",
+                    "M9,1 A8,8 0 1,0 9,17 A8,8 0 1,0 9,1 Z M9,4 L9,14 M4,9 L14,9", Key.C),
+                new(Models.ShapeType.RotatedRectangle, "旋转矩形",
+                    "M5,10 L10,3 L19,10 L14,17 Z M17,7 A3,3 0 0,1 20,11", Key.O),
+                new(Models.ShapeType.Line, "直线", "M3,17 L17,3", Key.L, isVisible: false),
+                new(Models.ShapeType.Polygon, "多边形",
+                    "M11,1 L19,6 L18,15 L12,19 L4,16 L2,9 Z", Key.P, toolTip: polygonToolTip)
+            };
 
-        private void OnCircleButtonClick(object sender, RoutedEventArgs e)
-        {
-            SelectShapeTool(ShapeType.Circle, sender as Button);
-        }
-
-        private void OnRotatedRectangleButtonClick(object sender, RoutedEventArgs e)
-        {
-            SelectShapeTool(ShapeType.RotatedRectangle, sender as Button);
-        }
-
-        private void OnLineButtonClick(object sender, RoutedEventArgs e)
-        {
-            SelectShapeTool(ShapeType.Line, sender as Button);
-        }
-
-        private void OnPolygonButtonClick(object sender, RoutedEventArgs e)
-        {
-            _isDrawingPolygon = false;
-            SelectShapeTool(ShapeType.Polygon, sender as Button);
+            ShapeToolBarControl.ShapeTools = shapeTools;
         }
 
         /// <summary>
-        /// 切换模式由 RadioButton 的 TwoWay Binding 自动处理
+        /// 形状工具栏选择变更处理
         /// </summary>
-        /// <remarks>
-        /// 绘制/订阅 RadioButton 通过 IsChecked="{Binding IsDrawingMode, Mode=TwoWay}"
-        /// 和 IsChecked="{Binding IsSubscribeMode, Mode=TwoWay}" 绑定到 ViewModel，
-        /// ViewModel 的 setter 中已有互斥逻辑，无需手动处理。
-        /// </remarks>
-
-        /// <summary>
-        /// 进入选择/编辑模式（无按钮高亮）
-        /// </summary>
-        private void EnterSelectMode(bool notifyManager = true)
+        private void OnShapeToolBarSelectionChanged(object? sender, Models.ShapeType? shapeType)
         {
-            // 退出绘制状态，进入选择状态
-            _viewModel.IsDrawing = false;
-            _currentTool = ShapeType.Point; // Point 表示选择工具
-
-            // 清除所有按钮高亮
-            ResetShapeButtonStyle(_activeShapeButton);
-            _activeShapeButton = null;
-
-            // 更新状态消息
-            _viewModel.StatusMessage = "选择/编辑模式 - 点击区域可编辑，滚轮缩放，拖拽平移";
-
-            // 通知 Manager：工具已更改（用于分组互斥）
-            if (notifyManager)
-                ToolActivated?.Invoke();
+            if (shapeType.HasValue)
+            {
+                // 多边形特殊情况
+                if (shapeType.Value == Models.ShapeType.Polygon)
+                    _isDrawingPolygon = false;
+                SelectShapeTool(shapeType.Value);
+            }
+            else
+            {
+                EnterSelectMode();
+            }
         }
 
         /// <summary>
@@ -2663,7 +2693,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         /// 已激活的相同形状 → 退出绘制模式回到选择模式
         /// 不同形状 → 切换形状工具
         /// </summary>
-        private void SelectShapeTool(ShapeType shapeType, Button? clickedButton)
+        private void SelectShapeTool(Models.ShapeType shapeType)
         {
             // 如果当前是绘制模式且点击的是同一个形状 → 退出绘制，回到选择模式
             if (_viewModel.IsDrawing && _currentTool == shapeType)
@@ -2683,9 +2713,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 return;
             }
 
-            // 清除上一个按钮的高亮
-            ResetShapeButtonStyle(_activeShapeButton);
-
             // 设置当前工具
             _currentTool = shapeType;
             _viewModel.IsDrawing = true;
@@ -2694,20 +2721,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             _viewModel.SelectedShapeType = shapeType;
             _viewModel.CallUpdateParameters();
 
-            // 更新按钮高亮状态（键盘快捷键时 clickedButton 为 null，跳过高亮）
-            if (clickedButton != null)
-            {
-                UpdateShapeButtonHighlight(clickedButton);
-            }
+            // 更新形状工具栏选中状态
+            ShapeToolBarControl.SetSelectedShape(shapeType);
 
             // 更新状态消息
             var shapeName = shapeType switch
             {
-                ShapeType.Rectangle => "矩形",
-                ShapeType.Circle => "圆形",
-                ShapeType.RotatedRectangle => "旋转矩形",
-                ShapeType.Line => "直线",
-                ShapeType.Polygon => "多边形",
+                Models.ShapeType.Rectangle => "矩形",
+                Models.ShapeType.Circle => "圆形",
+                Models.ShapeType.RotatedRectangle => "旋转矩形",
+                Models.ShapeType.Line => "直线",
+                Models.ShapeType.Polygon => "多边形",
                 _ => shapeType.ToString()
             };
             _viewModel.StatusMessage = $"已选择 {shapeName} 工具，在图像上拖动绘制";
@@ -2717,75 +2741,23 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         }
 
         /// <summary>
-        /// 更新形状按钮高亮状态（仅高亮当前激活的形状按钮）
+        /// 进入选择/编辑模式
         /// </summary>
-        private void UpdateShapeButtonHighlight(Button? activeButton)
+        private void EnterSelectMode(bool notifyManager = true)
         {
-            if (activeButton == null) return;
+            // 退出绘制状态，进入选择状态
+            _viewModel.IsDrawing = false;
+            _currentTool = Models.ShapeType.None;
 
-            // 高亮选中的形状按钮
-            activeButton.Background = new SolidColorBrush(Color.FromRgb(232, 244, 252));
-            activeButton.BorderBrush = new SolidColorBrush(Color.FromRgb(0, 102, 204));
-            activeButton.BorderThickness = new Thickness(1.5);
+            // 清除形状工具栏选中状态
+            ShapeToolBarControl.ClearSelection();
 
-            // 更新图标颜色
-            UpdateIconColor(activeButton, Color.FromRgb(0, 102, 204));
+            // 更新状态消息
+            _viewModel.StatusMessage = "选择/编辑模式 - 点击区域可编辑，滚轮缩放，拖拽平移";
 
-            _activeShapeButton = activeButton;
-        }
-
-        /// <summary>
-        /// 更新图标颜色
-        /// </summary>
-        private static void UpdateIconColor(Button button, Color color)
-        {
-            var brush = new SolidColorBrush(color);
-
-            if (button.Content is Shape shape)
-            {
-                shape.Stroke = brush;
-                if (shape.Fill != Brushes.Transparent)
-                {
-                    shape.Fill = brush;
-                }
-            }
-            else if (button.Content is Grid grid)
-            {
-                foreach (var child in grid.Children)
-                {
-                    if (child is Shape s)
-                    {
-                        s.Stroke = brush;
-                        if (s.Fill != Brushes.Transparent)
-                        {
-                            s.Fill = brush;
-                        }
-                    }
-                    else if (child is Path p)
-                    {
-                        p.Stroke = brush;
-                        if (p.Fill != Brushes.Transparent)
-                        {
-                            p.Fill = brush;
-                        }
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// 重置形状按钮样式
-        /// </summary>
-        private void ResetShapeButtonStyle(Button? button)
-        {
-            if (button == null) return;
-
-            button.Background = Brushes.Transparent;
-            button.BorderBrush = new SolidColorBrush(Color.FromRgb(224, 224, 224));
-            button.BorderThickness = new Thickness(1);
-
-            // 重置图标颜色
-            UpdateIconColor(button, Color.FromRgb(85, 85, 85));
+            // 通知 Manager：工具已更改（用于分组互斥）
+            if (notifyManager)
+                ToolActivated?.Invoke();
         }
 
         #endregion

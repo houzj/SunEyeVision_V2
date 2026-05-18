@@ -335,19 +335,20 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             bool maskSelectMode = !masksEditor.ViewModel.IsDrawing;
 
             // 仅在编辑器处于选择模式时，才响应对应类型的区域命中
-            if (inspectionSelectMode && inspectionHit != null)
+            // 注意：屏蔽区域视觉上层优先命中，因此先检测屏蔽区域
+            if (maskSelectMode && maskHit != null)
             {
-                inspectionsEditor.ProcessMouseDown(pos);
-                masksEditor.DeselectAll();
+                masksEditor.ProcessMouseDown(pos);
+                inspectionsEditor.DeselectAll();
                 e.Handled = true;
                 RenderAll();
                 return;
             }
 
-            if (maskSelectMode && maskHit != null)
+            if (inspectionSelectMode && inspectionHit != null)
             {
-                masksEditor.ProcessMouseDown(pos);
-                inspectionsEditor.DeselectAll();
+                inspectionsEditor.ProcessMouseDown(pos);
+                masksEditor.DeselectAll();
                 e.Handled = true;
                 RenderAll();
                 return;

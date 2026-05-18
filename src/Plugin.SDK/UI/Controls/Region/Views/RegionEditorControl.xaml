@@ -33,17 +33,33 @@
         <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
             <StackPanel Margin="0">
 
-                <!-- 模式切换（绘制/订阅） -->
+                <!-- 模式切换（绘制/订阅）+ 区域类型标识 -->
                 <Border CornerRadius="6" Background="#F0F0F0" BorderBrush="#DDD"
                         BorderThickness="1" Padding="3" Margin="0,0,0,12">
-                    <UniformGrid Columns="2" HorizontalAlignment="Center">
-                        <RadioButton Content="绘制"
-                                     Style="{StaticResource SegmentedToggleStyle}"
-                                     IsChecked="{Binding IsDrawingMode, Mode=TwoWay}"/>
-                        <RadioButton Content="订阅"
-                                     Style="{StaticResource SegmentedToggleStyle}"
-                                     IsChecked="{Binding IsSubscribeMode, Mode=TwoWay}"/>
-                    </UniformGrid>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <!-- 区域类型标签（颜色/文本由 DefaultRegionType 驱动） -->
+                        <Border Grid.Column="0" CornerRadius="4" Padding="6,2" Margin="4,0"
+                                Background="#FAFAFA"
+                                BorderBrush="{Binding RegionTypeTitleBrush, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                BorderThickness="1">
+                            <TextBlock Text="{Binding RegionTypeTitle, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                       FontWeight="Bold" FontSize="12"
+                                       Foreground="{Binding RegionTypeTitleBrush, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                        </Border>
+                        <!-- 模式切换 -->
+                        <UniformGrid Grid.Column="1" Columns="2" HorizontalAlignment="Center">
+                            <RadioButton Content="绘制"
+                                         Style="{StaticResource SegmentedToggleStyle}"
+                                         IsChecked="{Binding IsDrawingMode, Mode=TwoWay}"/>
+                            <RadioButton Content="订阅"
+                                         Style="{StaticResource SegmentedToggleStyle}"
+                                         IsChecked="{Binding IsSubscribeMode, Mode=TwoWay}"/>
+                        </UniformGrid>
+                    </Grid>
                 </Border>
 
                 <!-- 形状选择工具栏（仅绘制模式可见）-->
@@ -52,77 +68,8 @@
                         x:Name="ShapeSelectorPanel"
                         Visibility="{Binding ShowShapeTypeSelector, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <StackPanel>
-                        <!-- 模式指示器 -->
-                        <TextBlock Text="{Binding CurrentToolMode}"
-                                   FontSize="11" Foreground="#888"
-                                   HorizontalAlignment="Center"
-                                   Margin="0,2,0,4"/>
-
-                        <!-- 形状工具 -->
-                        <WrapPanel x:Name="ShapeToolsPanel" HorizontalAlignment="Center" Orientation="Horizontal">
-                            <!-- 圆形 -->
-                            <Button Style="{StaticResource ShapeButtonStyle}"
-                                    ToolTip="圆形 (C)"
-                                    Click="OnCircleButtonClick"
-                                    x:Name="CircleButton">
-                                <Path Width="18" Height="18"
-                                      Stroke="{StaticResource ShapeIconBrush}"
-                                      StrokeThickness="1.5"
-                                      Fill="Transparent"
-                                      Data="M9,1 A8,8 0 1,0 9,17 A8,8 0 1,0 9,1 Z M9,4 L9,14 M4,9 L14,9"
-                                      Stretch="Uniform"
-                                      HorizontalAlignment="Center"
-                                      VerticalAlignment="Center"/>
-                            </Button>
-
-                            <!-- 旋转矩形 -->
-                            <Button Style="{StaticResource ShapeButtonStyle}"
-                                    ToolTip="旋转矩形 (O)"
-                                    Click="OnRotatedRectangleButtonClick"
-                                    x:Name="RotatedRectangleButton">
-                                <Grid Width="18" Height="18">
-                                    <Rectangle Width="15" Height="15"
-                                               Stroke="{StaticResource ShapeIconBrush}"
-                                               StrokeThickness="1.5"
-                                               Fill="Transparent"
-                                               RadiusX="2" RadiusY="2"
-                                               RenderTransformOrigin="0.5,0.5">
-                                        <Rectangle.RenderTransform>
-                                            <RotateTransform Angle="35"/>
-                                        </Rectangle.RenderTransform>
-                                    </Rectangle>
-                                    <Path Stroke="{StaticResource ShapeIconBrush}" StrokeThickness="1" Fill="Transparent"
-                                          Data="M15,4 A6,6 0 0,1 18,8"/>
-                                </Grid>
-                            </Button>
-
-                            <!-- 直线 - 隐藏 -->
-                            <Button Style="{StaticResource ShapeButtonStyle}"
-                                    ToolTip="直线 (L)"
-                                    Click="OnLineButtonClick"
-                                    x:Name="LineButton"
-                                    Visibility="Collapsed">
-                                <Line X1="3" Y1="19" X2="19" Y2="3"
-                                      Stroke="{StaticResource ShapeIconBrush}"
-                                      StrokeThickness="1.5"
-                                      Width="18" Height="18"/>
-                            </Button>
-
-                            <!-- 多边形 -->
-                            <Button Style="{StaticResource ShapeButtonStyle}"
-                                    ToolTip="多边形 (P)&#x0a;点击添加顶点&#x0a;右键撤销上一点&#x0a;双击/Enter完成"
-                                    Click="OnPolygonButtonClick"
-                                    x:Name="PolygonButton">
-                                <Path Width="18" Height="18"
-                                      Stroke="{StaticResource ShapeIconBrush}"
-                                      StrokeThickness="1.5"
-                                      Fill="Transparent"
-                                      Data="M11,1 L19,6 L18,15 L12,19 L4,16 L2,9 Z"
-                                      Stretch="Uniform"
-                                      HorizontalAlignment="Center"
-                                      VerticalAlignment="Center"/>
-                            </Button>
-                        </WrapPanel>
+                        <!-- 形状工具 - 数据驱动的 ShapeToolBar -->
+                        <local:ShapeToolBar x:Name="ShapeToolBarControl"/>
                     </StackPanel>
                 </Border>
 

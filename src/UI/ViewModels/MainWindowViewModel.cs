@@ -200,6 +200,13 @@ namespace SunEyeVision.UI.ViewModels
         private int _selectedDisplayImageSourceIndex = -1;
 
         /// <summary>
+        /// 延迟回调版本号，用于取消旧延迟回调
+        /// 递增式版本号：每次 SetSelectedDisplayImageSourceIndexDeferred 调用递增+1
+        /// 旧延迟回调发现 version != _deferredVersion 时跳过执行
+        /// </summary>
+        private int _deferredVersion = 0;
+
+        /// <summary>
         /// 当前选中的图像显示源索引
         /// </summary>
         public int SelectedDisplayImageSourceIndex
@@ -271,9 +278,12 @@ namespace SunEyeVision.UI.ViewModels
 
                     if (executionResult?.ToolResult != null)
                     {
-                        _nodeResultManager.RefreshResultDisplay((Models.WorkflowNode?)value, executionResult.ToolResult);
+                        // 全量渲染：背景图像 + 覆盖图形（blob 区域、检测结果等）
+                        // UpdateDisplayImageSources → 延迟回调 → SetDisplayImageFromSource 会再次切换背景，
+                        // 但覆盖图形已由 UpdateNodeResult 正确渲染，延迟回调仅补充 ComboBox 用户选择的背景源
+                        _nodeResultManager.UpdateNodeResult((WorkflowNodeBase?)value, executionResult.ToolResult);
 
-                        // ★ 重建模块结果树（RefreshResultDisplay 清空了但未重建）
+                        // ★ 重建模块结果树
                         UpdateModuleResults(executionResult.ToolResult, value.Name, toolId);
                     }
                     else if (value != null)
@@ -2558,11 +2568,19 @@ SplitterPosition = position;
         /// </summary>
         private void SetSelectedDisplayImageSourceIndexDeferred(int index)
         {
-            LogInfo($"图像源|Deferred排队: index={index}, 当前集合Count={DisplayImageSources.Count}", "ImageSourceSelector");
+            int version = Interlocked.Increment(ref _deferredVersion);
+            LogInfo($"图像源|Deferred排队: index={index}, version={version}, 当前集合Count={DisplayImageSources.Count}", "ImageSourceSelector");
+
             Application.Current.Dispatcher.BeginInvoke(
                 System.Windows.Threading.DispatcherPriority.Loaded,
                 new Action(() =>
                 {
+                    if (version != _deferredVersion)
+                    {
+                        LogInfo($"图像源|Deferred[阶段1]跳过: version={version} != {_deferredVersion}", "ImageSourceSelector");
+                        return;
+                    }
+
                     var currentProperty = SelectedDisplayImageSourceIndex;
                     var currentField = _selectedDisplayImageSourceIndex;
                     var comboMayAutoSelect = (currentField != -1 || currentProperty != -1);
@@ -2578,6 +2596,12 @@ SplitterPosition = position;
                 System.Windows.Threading.DispatcherPriority.Loaded,
                 new Action(() =>
                 {
+                    if (version != _deferredVersion)
+                    {
+                        LogInfo($"图像源|Deferred[阶段2]跳过: version={version} != {_deferredVersion}", "ImageSourceSelector");
+                        return;
+                    }
+
                     _selectedDisplayImageSourceIndex = -1;
                     SelectedDisplayImageSourceIndex = index;
                     LogInfo($"图像源|Deferred执行[阶段2]: 设置选中 index={index}, " +
@@ -3139,8 +3163,31 @@ AddLog($"⚠️ 日志记录异常: {ex.Message}");
                 bool hasImageOutput = outputValues?.Any(kv => kv.Value is HalconDotNet.HImage) ?? false;
                 AddLog($"✅ 节点执行完成: {e.Node.Name}, 成功={e.Result?.IsSuccess}, 有图像输出={hasImageOutput}");
 
-                // 通过 NodeResultManager 刷新节点结果（含 WorkflowContext 写入 + FitToWindow）
-                _nodeResultManager.RefreshResultDisplay(e.Node, e.Result);
+                // P3: 仅当选中的节点执行完成时才刷新显示，否则仅缓存结果（不干扰用户当前视图）
+                if (e.Node == SelectedNode || _currentDisplayNodeId == e.Node.Id)
+                {
+                    // 通过 NodeResultManager 刷新节点结果（含 WorkflowContext 写入 + FitToWindow）
+                    _nodeResultManager.RefreshResultDisplay(e.Node, e.Result);
+
+                    // ★ 刷新 ComboBox 数据源 + 排队新版本延迟回调（版本号递增，旧回调自动跳过）
+                    //   Phase 4 通过持久化匹配到用户已选的图像源，确保延迟回调使用当前正确的选择
+                    //   修复：执行完成后 ComboBox 选择被旧延迟回调覆盖的问题
+                    UpdateDisplayImageSources((Models.WorkflowNode?)e.Node);
+                }
+                else
+                {
+                    // 非选中节点：仅缓存结果到 WorkflowContext，不更新 ViewModel（不干扰当前选中节点的显示）
+                    if (e.Result != null)
+                    {
+                        var execResult = new NodeExecutionResult
+                        {
+                            NodeId = e.Node.Id,
+                            Success = e.Result.IsSuccess,
+                            ToolResult = e.Result,
+                        };
+                        _workflowContext.SetNodeResult(e.Node.Id, execResult);
+                    }
+                }
 
                 // ★ 重建模块结果树（NodeResultManager.UpdateViewModelResults 清空了但未重建）
                 if (_currentDisplayNodeId == e.Node.Id && e.Result != null)

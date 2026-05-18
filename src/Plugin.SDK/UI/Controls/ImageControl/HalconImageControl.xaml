@@ -276,13 +276,11 @@
                                          HInitWindow="OnHalconInit"
                                          Background="#1E1E1E"/>
 
-            <!-- [层3] 绘制预览 Canvas - 透明穿透，仅在绘制预览时捕获鼠标事件 -->
+            <!-- [层3] 绘制预览 Canvas - 覆盖在 SmartWindow 之上，绘制模式下捕获鼠标事件 -->
             <Canvas x:Name="PreviewCanvas"
                     Background="Transparent"
-                    IsHitTestVisible="False"
-                    MouseLeftButtonDown="PreviewCanvas_MouseDown"
-                    MouseMove="PreviewCanvas_MouseMove"
-                    MouseLeftButtonUp="PreviewCanvas_MouseUp" />
+                    Visibility="Collapsed"
+                    Panel.ZIndex="1" />
         </Grid>
 
         <!-- 状态栏 - 深色主题 -->

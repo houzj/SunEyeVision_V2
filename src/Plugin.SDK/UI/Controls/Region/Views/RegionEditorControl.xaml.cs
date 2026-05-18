@@ -45,6 +45,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         private const double DEBOUNCE_INTERVAL_MS = 50;
         private readonly Dictionary<Guid, DispatcherTimer> _debounceTimers = new();
 
+        // 绘制会话ID（用于全链日志关联）
+        private string _drawSessionId = string.Empty;
+
+        // 标记当前 editor 是否拥有 HalconImageControl 的绘图会话所有权
+        // 防止共享 HalconImageControl 时，一个 editor 的 EnterIdleMode 清掉另一个的绘图状态
+        private bool _isDrawingSessionOwned;
+
         #endregion
 
         public RegionEditorViewModel ViewModel => _viewModel;
@@ -204,7 +211,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
         public void SetHalconImageControl(HalconImageControl? imageControl)
         {
+            if (_halconImageControl != null)
+                _halconImageControl.PreviewKeyDown -= OnImagePreviewKeyDown;
+
             _halconImageControl = imageControl;
+
+            if (_halconImageControl != null)
+                _halconImageControl.PreviewKeyDown += OnImagePreviewKeyDown;
         }
 
         #endregion
@@ -247,6 +260,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             _viewModel.SelectedShapeType = shapeType;
             StartDrawingSession(shapeType);
             ToolActivated?.Invoke();
+
+            if (shapeType != ShapeType.None)
+            {
+                _drawSessionId = Guid.NewGuid().ToString("N").Substring(0, 8);
+                VisionLogger.Instance.Log(LogLevel.Success,
+                    $"══════ 全链监控 [1/4] ══════ 形状选择 → 绘制启动 | Session={_drawSessionId} | ShapeType={shapeType}",
+                    "RegionEditorControl");
+            }
         }
 
         #endregion
@@ -353,21 +374,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         {
             if (_halconImageControl == null) return;
 
-            // 形状类型必须是可交互的
-            if (shapeType != ShapeType.Rectangle &&
-                shapeType != ShapeType.Circle &&
-                shapeType != ShapeType.RotatedRectangle)
-                return;
-
             // 注册预览绘制完成回调
             _halconImageControl.OnPreviewDrawComplete = OnPreviewDrawFinished;
 
-            // 启动预览模式
-            _halconImageControl.BeginPreviewDraw();
+            // 启动预览模式（传递形状类型，确保 Canvas 预览形状正确）
+            _halconImageControl.BeginPreviewDraw(shapeType);
 
-            VisionLogger.Instance.Log(LogLevel.Info,
-                $"[RegionEditorControl] 绘制会话启动 | ShapeType={shapeType}",
-                "RegionEditorControl");
+            _isDrawingSessionOwned = true; // 此 editor 拥有会话所有权
         }
 
         /// <summary>结束绘制会话：清除预览回调</summary>
@@ -375,8 +388,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         {
             if (_halconImageControl == null) return;
 
-            _halconImageControl.OnPreviewDrawComplete = null;
-            _halconImageControl.EndPreviewDraw();
+            // 只有当前 editor 拥有会话所有权时，才清理共享 HalconImageControl 的状态
+            // 防止另一个 editor 的 EnterIdleMode 误清正在进行的绘图会话
+            if (_isDrawingSessionOwned)
+            {
+                _halconImageControl.OnPreviewDrawComplete = null;
+                _halconImageControl.EndPreviewDraw();
+                _isDrawingSessionOwned = false;
+            }
 
             VisionLogger.Instance.Log(LogLevel.Info,
                 "[RegionEditorControl] 绘制会话结束",
@@ -384,32 +403,31 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         }
 
         /// <summary>预览绘制完成回调：创建区域 + DrawingObject + 注册双向同步</summary>
-        private bool OnPreviewDrawFinished(double r1, double c1, double r2, double c2)
+        private bool OnPreviewDrawFinished(ShapeParameters shape)
         {
             if (_halconImageControl == null) return false;
 
-            var shapeType = _viewModel.SelectedShapeType ?? ShapeType.Rectangle;
-
-            // 计算形状参数
-            var centerX = (c1 + c2) / 2;
-            var centerY = (r1 + r2) / 2;
-            var width = Math.Abs(c2 - c1);
-            var height = Math.Abs(r2 - r1);
-
-            // 创建区域数据
+            var shapeType = shape.ShapeType;
             var regionName = _viewModel.RequestNextRegionName();
             var region = RegionData.CreateDrawingRegion(regionName, shapeType);
 
-            if (region.Parameters is ShapeParameters shape)
+            if (region.Parameters is ShapeParameters target)
             {
-                shape.CenterX = centerX;
-                shape.CenterY = centerY;
-                shape.Width = width;
-                shape.Height = height;
+                target.CenterX = shape.CenterX;
+                target.CenterY = shape.CenterY;
+                target.Width = shape.Width;
+                target.Height = shape.Height;
+                target.Radius = shape.Radius;
+                target.StartX = shape.StartX;
+                target.StartY = shape.StartY;
+                target.EndX = shape.EndX;
+                target.EndY = shape.EndY;
 
-                if (shapeType == ShapeType.Circle)
+                if (shapeType == ShapeType.Polygon)
                 {
-                    shape.Radius = Math.Max(width, height) / 2;
+                    target.Points.Clear();
+                    foreach (var pt in shape.Points)
+                        target.Points.Add(new Point2D(pt.X, pt.Y));
                 }
 
                 // 应用区域类型颜色
@@ -435,7 +453,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             _viewModel.IsDrawing = false;
 
             VisionLogger.Instance.Log(LogLevel.Success,
-                $"[OnPreviewDrawFinished] 区域已创建 | Name={regionName} | Type={shapeType} | Center=({centerX:F1}, {centerY:F1}) | Size={width:F1}x{height:F1}",
+                $"══════ 全链监控 [2/4] ══════ 区域数据已创建 | Session={_drawSessionId} | Name={regionName} | Type={shapeType} | " +
+                (shapeType == ShapeType.Line
+                    ? $"Start=({shape.StartX:F1},{shape.StartY:F1}) End=({shape.EndX:F1},{shape.EndY:F1})"
+                    : shapeType == ShapeType.Polygon
+                        ? $"Points={shape.Points.Count}"
+                        : $"Center=({shape.CenterX:F1},{shape.CenterY:F1}) Size={shape.Width:F1}x{shape.Height:F1}"),
                 "RegionEditorControl");
 
             return true; // 已处理，HalconImageControl 不再创建默认 DrawingObject
@@ -476,21 +499,22 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
             var regionId = region.Id;
 
-            // 创建 DrawingObject
+            // [3/4] 创建 DrawingObject
             var drawObj = _halconImageControl.CreateRegionDrawingObject(regionId, shape);
             if (drawObj == null) return;
 
-            // 记录形状类型
             _regionDrawTypes[regionId] = shape.ShapeType;
 
-            // 注册 HDrawingObject 拖拽/缩放回调 → ShapeParameters 同步
-            RegisterDrawObjectCallbacks(drawObj, regionId);
+            VisionLogger.Instance.Log(LogLevel.Success,
+                $"══════ 全链监控 [3/4] ══════ DrawingObject 创建完成 | Session={_drawSessionId} | Region={region.Name}({regionId:B}) | Type={shape.ShapeType}",
+                "RegionEditorControl");
 
-            // 订阅 ShapeParameters.PropertyChanged → DrawingObject 同步
+            // [4/4] 注册双向同步
+            RegisterDrawObjectCallbacks(drawObj, regionId);
             SubscribeShapeParams(regionId, shape);
 
-            VisionLogger.Instance.Log(LogLevel.Info,
-                $"[ApplyRegionDrawingObject] DrawingObject 已创建 | RegionId={regionId:B} | Type={shape.ShapeType}",
+            VisionLogger.Instance.Log(LogLevel.Success,
+                $"══════ 全链监控 [4/4] ══════ 双向同步已注册 | Session={_drawSessionId} | 回调=OnDrag/OnResize/OnSelect | PropertyChanged=Shape→Draw | 全链完成",
                 "RegionEditorControl");
         }
 
@@ -502,6 +526,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             UnsubscribeShapeParams(region.Id);
             _regionDrawTypes.Remove(region.Id);
             StopDebounceTimer(region.Id);
+            CleanupCallbackMap(region.Id);
             _halconImageControl.DetachRegionDrawingObject(region.Id);
         }
 
@@ -679,6 +704,50 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 timer.Stop();
                 _debounceTimers.Remove(regionId);
             }
+        }
+
+        #endregion
+
+        #region ========== Delete 键删除选中 DrawingObject ==========
+
+        private void OnImagePreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key != Key.Delete || _viewModel.SelectedRegion == null)
+                return;
+
+            DeleteSelectedRegion();
+            e.Handled = true;
+        }
+
+        private void DeleteSelectedRegion()
+        {
+            var region = _viewModel.SelectedRegion;
+            if (region == null) return;
+
+            var regionName = region.Name;
+
+            // 1. 清理 DrawingObject + 事件订阅 + 去抖 + callbackMap
+            DetachRegionDrawingObject(region);
+
+            // 2. 从 ViewModel 移除（内部处理 Regions.Remove + 编辑历史 + 选中下一个）
+            _viewModel.RemoveSelectedRegion();
+
+            VisionLogger.Instance.Log(LogLevel.Success,
+                $"[RegionEditorControl] Delete: 区域已删除 | Name={regionName}",
+                "RegionEditorControl");
+
+            RenderRequested?.Invoke();
+        }
+
+        private void CleanupCallbackMap(Guid regionId)
+        {
+            var keysToRemove = _callbackMap
+                .Where(kvp => kvp.Value == regionId)
+                .Select(kvp => kvp.Key)
+                .ToList();
+
+            foreach (var key in keysToRemove)
+                _callbackMap.Remove(key);
         }
 
         #endregion

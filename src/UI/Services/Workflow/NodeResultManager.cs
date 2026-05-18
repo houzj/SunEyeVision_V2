@@ -64,12 +64,15 @@ namespace SunEyeVision.UI.Services.Workflow
         /// <summary>当前渲染模式</summary>
         public RenderMode CurrentRenderMode => _currentRenderMode;
 
-        public void UpdateNodeResult(WorkflowNodeBase node, ToolResults result)
+        /// <summary>
+        /// 缓存节点结果 + 更新 ViewModel，不做窗口渲染
+        /// 供非选中节点或无 RenderTarget 场景使用
+        /// </summary>
+        public void CacheNodeResult(WorkflowNodeBase node, ToolResults result)
         {
             if (result == null) return;
             UpdateViewModelResults(result);
 
-            // 缓存到 WorkflowContext（供 ComboBox 图像源切换使用）
             var executionResult = new NodeExecutionResult
             {
                 NodeId = node.Id,
@@ -77,15 +80,22 @@ namespace SunEyeVision.UI.Services.Workflow
                 ToolResult = result,
             };
             _workflowContext.SetNodeResult(node.Id, executionResult);
+        }
+
+        public void UpdateNodeResult(WorkflowNodeBase node, ToolResults result)
+        {
+            if (result == null) return;
+            CacheNodeResult(node, result);
 
             // 延迟获取 HWindow（如果 HalconImageControl 未初始化或尚未传入 HWindow）
             if (_mainWindowHandle == null && _mainImageControl != null)
                 _mainWindowHandle = _mainImageControl.HalconWindow;
 
-            var displayImage = result.GetDisplayImages().Values.FirstOrDefault(m => m != null && m.IsInitialized());
-
             if (_mainWindowHandle == null || !_mainWindowHandle.IsInitialized())
                 return;
+
+            // 根据当前选中状态获取正确的显示图像（P1: 优先使用 ComboBox 选中的图像源）
+            var displayImage = GetDisplayImageForNode(node, result);
 
             // 确保在 UI 线程执行渲染（HWindow 和 WPF 控件都要求 UI 线程）
             if (System.Windows.Application.Current.Dispatcher.CheckAccess())
@@ -97,6 +107,31 @@ namespace SunEyeVision.UI.Services.Workflow
                 System.Windows.Application.Current.Dispatcher.Invoke(() =>
                     RenderToWindow(displayImage, result.Display));
             }
+
+            // 工作流执行完成后触发 AutoFit 策略（首次显示时自动缩放到窗口）
+            _mainImageControl?.NotifyImageUpdated();
+        }
+
+        /// <summary>
+        /// 根据节点的选中状态和用户 ComboBox 选择，确定要显示的图像
+        /// </summary>
+        private HImage? GetDisplayImageForNode(WorkflowNodeBase node, ToolResults result)
+        {
+            // 如果该节点是当前选中节点，优先使用用户 ComboBox 选中的图像源
+            if (node == _viewModel.SelectedNode)
+            {
+                var selectedSource = _viewModel.GetSelectedImageSource();
+                if (selectedSource != null && selectedSource.SourceNodeId == node.Id)
+                {
+                    var images = result.GetDisplayImages();
+                    if (images.TryGetValue(selectedSource.PropertyName, out var image) &&
+                        image != null && image.IsInitialized())
+                        return image;
+                }
+            }
+
+            // 回退：取第一个可用的图像
+            return result.GetDisplayImages().Values.FirstOrDefault(m => m != null && m.IsInitialized());
         }
 
         private void RenderToWindow(HImage? displayImage, DisplayCollector display)
@@ -126,11 +161,10 @@ namespace SunEyeVision.UI.Services.Workflow
                 WindowRenderer.Render(_mainWindowHandle!, displayImage, display, RenderMode.Static);
             }
 
-            // 更新 HalconImageControl 的图像引用 + 触发 AutoFit 策略
+            // 更新 HalconImageControl 的图像引用
             if (displayImage != null && _mainImageControl != null)
             {
                 _mainImageControl.SetImageReference(displayImage);
-                _mainImageControl.NotifyImageUpdated();
             }
         }
 
@@ -140,7 +174,9 @@ namespace SunEyeVision.UI.Services.Workflow
         }
 
         /// <summary>
-        /// 将指定 ToolResult 中某属性图像+覆盖图形渲染到主窗口
+        /// 将指定 ToolResult 中某属性图像渲染到主窗口
+        /// 仅更换背景层，前景覆盖图形（DispObj/DispText/HDrawingObject）保持不变
+        /// 供 ComboBox 图像源切换使用
         /// </summary>
         public void DisplayResultImage(ToolResults result, string propertyName)
         {
@@ -148,8 +184,21 @@ namespace SunEyeVision.UI.Services.Workflow
             if (!images.TryGetValue(propertyName, out var image) || image == null || !image.IsInitialized())
                 return;
 
-            // 统一走 RenderToWindow，兼容 HWindow 和 HalconImageControl 两种状态
-            RenderToWindow(image, result.Display);
+            if (_mainWindowHandle != null && _mainWindowHandle.IsInitialized())
+            {
+                // 仅更换背景层：前景覆盖图形保持不变
+                _mainWindowHandle.AttachBackgroundToWindow(image);
+            }
+            else
+            {
+                // 回退到 HalconImageControl 独立显示
+                _mainImageControl?.DisplayHImage(image);
+                return;
+            }
+
+            // 更新控件内部引用 + 状态栏（不影响窗口显示内容）
+            _mainImageControl?.SetImageReference(image);
+            _mainImageControl?.NotifyImageUpdated();
         }
 
         public void RefreshResultDisplay(WorkflowNodeBase node, ToolResults result)

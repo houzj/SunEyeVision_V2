@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -11,6 +12,7 @@ using System.Windows.Shapes;
 using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
+using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls
@@ -43,8 +45,18 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         // 绘制预览状态
         private bool _isDrawing;
         private bool _isDrawingActive;
-        private Point _drawStartPos;
-        private Rectangle? _previewRect;
+        private Point _drawStartCanvasPos;       // Canvas 坐标（预览绘制定位用）
+        private Point _drawStartImagePos;        // 图像坐标（供回调使用）
+        private Shape? _previewShape;
+        private ShapeType _previewShapeType;
+
+        // 多边形多点交互状态
+        private readonly List<Point> _polygonCanvasPoints = new();
+        private readonly List<Point> _polygonImagePoints = new();
+        private System.Windows.Shapes.Polyline? _polygonPreviewPolyline;
+        private System.Windows.Shapes.Line? _polygonTailLine;
+        private DateTime _polygonLastClickTime = DateTime.MinValue;
+        private bool _polygonCompleted;
 
         // 全屏相关
         private bool _isFullscreen;
@@ -64,8 +76,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         private readonly Dictionary<Guid, HDrawingObject> _regionDrawObjects = new();
 
         // 预览绘制完成回调（供 RegionEditorControl 注册）
-        // 参数: r1, c1, r2, c2 (图像坐标), 返回 true 表示已处理（跳过默认 DrawingObject 创建）
-        internal Func<double, double, double, double, bool>? OnPreviewDrawComplete;
+        // 参数: ShapeParameters（含形状类型和所有坐标数据）, 返回 true 表示已处理（跳过默认 DrawingObject 创建）
+        internal Func<ShapeParameters, bool>? OnPreviewDrawComplete;
 
         // AutoFitMode 首次加载标记
         private bool _isFirstAutoFitDone;
@@ -154,10 +166,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         public int ImageHeight => _originalImageHeight;
 
-        /// <summary>当前是否处于绘制预览状态（Canvas 拦截鼠标事件）</summary>
+        /// <summary>当前是否处于绘制预览状态（Canvas 覆盖层驱动）</summary>
         public bool IsDrawingPreviewActive => _isDrawingActive;
 
-        /// <summary>绘制预览 Canvas（供 RegionEditorManager 设置绘制模式）</summary>
+        /// <summary>绘制预览 Canvas（视觉叠加层）</summary>
         public Canvas PreviewOverlayCanvas => PreviewCanvas;
 
         #endregion
@@ -455,6 +467,20 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                         drawObj = new HDrawingObject(shape.CenterY, shape.CenterX, phiRad, len1, len2);
                         break;
                     }
+                    case ShapeType.Line:
+                    {
+                        drawObj = new HDrawingObject();
+                        drawObj.CreateDrawingObjectLine(shape.StartY, shape.StartX, shape.EndY, shape.EndX);
+                        break;
+                    }
+                    case ShapeType.Polygon:
+                    {
+                        var rows = new HTuple(shape.Points.Select(p => p.Y).ToArray());
+                        var cols = new HTuple(shape.Points.Select(p => p.X).ToArray());
+                        drawObj = new HDrawingObject();
+                        drawObj.CreateDrawingObjectXld(rows, cols);
+                        break;
+                    }
                 }
 
                 if (drawObj != null)
@@ -471,7 +497,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             {
                 drawObj?.Dispose();
                 drawObj = null;
-                System.Diagnostics.Debug.WriteLine($"[HalconImageControl] CreateRegionDrawingObject 失败: {ex.Message}");
+                VisionLogger.Instance.Log(LogLevel.Error,
+                    $"[CreateRegionDrawingObject] 创建失败 | RegionId={regionId:B} | Type={shape.ShapeType} | Error={ex.Message}",
+                    "HalconImageControl");
             }
 
             return drawObj;
@@ -518,13 +546,33 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                         drawObj.SetDrawingObjectParams("length2", len2);
                         break;
                     }
+                    case ShapeType.Line:
+                    {
+                        drawObj.SetDrawingObjectParams("row1", shape.StartY);
+                        drawObj.SetDrawingObjectParams("column1", shape.StartX);
+                        drawObj.SetDrawingObjectParams("row2", shape.EndY);
+                        drawObj.SetDrawingObjectParams("column2", shape.EndX);
+                        break;
+                    }
+                    case ShapeType.Polygon:
+                    {
+                        var rows = new HTuple(shape.Points.Select(p => p.Y).ToArray());
+                        var cols = new HTuple(shape.Points.Select(p => p.X).ToArray());
+                        var xld = new HXLDCont();
+                        xld.GenContourPolygonXld(rows, cols);
+                        drawObj.SetDrawingObjectXld(xld);
+                        xld.Dispose();
+                        break;
+                    }
                 }
 
                 ApplyDrawingObjectStyle(drawObj, shape);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[HalconImageControl] UpdateRegionDrawingObject 失败: {ex.Message}");
+                VisionLogger.Instance.Log(LogLevel.Error,
+                    $"[UpdateRegionDrawingObject] 更新失败 | RegionId={regionId:B} | Type={shape.ShapeType} | Error={ex.Message}",
+                    "HalconImageControl");
             }
         }
 
@@ -575,11 +623,33 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                         shape.Height = l2 * 2;
                         break;
                     }
+                    case ShapeType.Line:
+                    {
+                        shape.StartY = drawObj.GetDrawingObjectParams("row1").D;
+                        shape.StartX = drawObj.GetDrawingObjectParams("column1").D;
+                        shape.EndY = drawObj.GetDrawingObjectParams("row2").D;
+                        shape.EndX = drawObj.GetDrawingObjectParams("column2").D;
+                        break;
+                    }
+                    case ShapeType.Polygon:
+                    {
+                        var hXld = drawObj.GetDrawingObjectIconic();
+                        if (hXld is HXLDCont xldCont && xldCont.IsInitialized())
+                        {
+                            xldCont.GetContourXld(out HTuple rows, out HTuple cols);
+                            shape.Points.Clear();
+                            for (int i = 0; i < rows.Length; i++)
+                                shape.Points.Add(new Point2D(cols[i].D, rows[i].D));
+                        }
+                        break;
+                    }
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[HalconImageControl] ReadDrawingObjectParams 失败: {ex.Message}");
+                VisionLogger.Instance.Log(LogLevel.Error,
+                    $"[ReadDrawingObjectParams] 读取失败 | RegionId={regionId:B} | ShapeType={shape.ShapeType} | Error={ex.Message}",
+                    "HalconImageControl");
             }
         }
 
@@ -639,44 +709,65 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         #endregion
 
-        #region 绘制预览 (PreviewCanvas)
+        #region 绘制预览 (Canvas 覆盖层事件)
 
-        /// <summary>开始绘制预览模式（Canvas 拦截鼠标事件）</summary>
+        /// <summary>开始绘制预览模式（默认形状为 Rectangle）</summary>
         public void BeginPreviewDraw()
         {
+            _previewShapeType = ShapeType.Rectangle;
+            ActivatePreviewCanvas();
+        }
+
+        /// <summary>开始绘制预览模式，指定要绘制的形状类型</summary>
+        public void BeginPreviewDraw(ShapeType shapeType)
+        {
+            _previewShapeType = shapeType;
+            ActivatePreviewCanvas();
+        }
+
+        private void ActivatePreviewCanvas()
+        {
             _isDrawingActive = true;
-            PreviewCanvas.IsHitTestVisible = true;
+            PreviewCanvas.Visibility = Visibility.Visible;
+            PreviewCanvas.MouseLeftButtonDown += PreviewCanvas_MouseLeftButtonDown;
+            PreviewCanvas.MouseMove += PreviewCanvas_MouseMove;
+            PreviewCanvas.MouseUp += PreviewCanvas_MouseUp;
             Cursor = Cursors.Cross;
         }
 
-        /// <summary>结束绘制预览模式（Canvas 穿透事件）</summary>
+        /// <summary>结束绘制预览模式（隐藏 Canvas 覆盖层，恢复鼠标穿透到 SmartWindow）</summary>
         public void EndPreviewDraw()
         {
             _isDrawingActive = false;
-            PreviewCanvas.IsHitTestVisible = false;
+            PreviewCanvas.MouseLeftButtonDown -= PreviewCanvas_MouseLeftButtonDown;
+            PreviewCanvas.MouseMove -= PreviewCanvas_MouseMove;
+            PreviewCanvas.MouseUp -= PreviewCanvas_MouseUp;
+            PreviewCanvas.Visibility = Visibility.Collapsed;
             Cursor = Cursors.Arrow;
             RemovePreviewShape();
         }
 
         private void RemovePreviewShape()
         {
-            if (_previewRect != null)
-            {
-                PreviewCanvas.Children.Remove(_previewRect);
-                _previewRect = null;
-            }
+            PreviewCanvas.Children.Clear();
+            _previewShape = null;
             _isDrawing = false;
+            _polygonCanvasPoints.Clear();
+            _polygonImagePoints.Clear();
+            _polygonPreviewPolyline = null;
+            _polygonTailLine = null;
+            _polygonCompleted = false;
         }
 
-        private Point GetMouseImagePos(MouseEventArgs e)
+        /// <summary>Canvas 坐标 → 图像坐标（利用 Halcon 窗口坐标转换，Canvas 与 SmartWindow 位置重叠）</summary>
+        private Point CanvasToImagePoint(Point canvasPt)
         {
             if (!_isHalconReady || _currentHImage == null) return new Point(0, 0);
             try
             {
-                var winPos = e.GetPosition(SmartWindow);
                 var hWindow = SmartWindow.HalconWindow;
                 hWindow.ConvertCoordinatesWindowToImage(
-                    winPos.Y, winPos.X, out double imgRow, out double imgCol);
+                    canvasPt.Y, canvasPt.X, out double imgRow, out double imgCol);
                 return new Point(imgCol, imgRow);
             }
             catch
@@ -685,34 +776,208 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             }
         }
 
-        private void PreviewCanvas_MouseDown(object sender, MouseButtonEventArgs e)
+        private void PreviewCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            _isDrawing = true;
-            _drawStartPos = GetMouseImagePos(e);
+            if (!_isDrawingActive) return;
 
-            _previewRect = new Rectangle
+            // 多边形模式特殊处理：单击累加顶点，双击完成
+            if (_previewShapeType == ShapeType.Polygon)
             {
-                Stroke = Brushes.Red,
-                StrokeThickness = 2,
-                StrokeDashArray = new DoubleCollection { 4, 2 },
-                Fill = new SolidColorBrush(Color.FromArgb(30, 255, 0, 0))
-            };
-            PreviewCanvas.Children.Add(_previewRect);
+                // 双击检测
+                var now = DateTime.Now;
+                bool isDoubleClick = (now - _polygonLastClickTime).TotalMilliseconds < 500
+                    && _polygonCanvasPoints.Count > 0;
+                _polygonLastClickTime = now;
 
+                if (_polygonCompleted) return;
+
+                if (isDoubleClick && _polygonCanvasPoints.Count >= 3)
+                {
+                    CompletePolygonPreview();
+                    PreviewDrawMouseDown?.Invoke(this, e);
+                    return;
+                }
+
+                // 累加顶点
+                var canvasPt = e.GetPosition(PreviewCanvas);
+                var imagePt = CanvasToImagePoint(canvasPt);
+                _polygonCanvasPoints.Add(canvasPt);
+                _polygonImagePoints.Add(imagePt);
+
+                // 更新多边形预览（已有顶点连成折线）
+                UpdatePolygonPreview(canvasPt);
+                PreviewDrawMouseDown?.Invoke(this, e);
+                return;
+            }
+
+            _isDrawing = true;
+            _drawStartCanvasPos = e.GetPosition(PreviewCanvas);
+            _drawStartImagePos = CanvasToImagePoint(_drawStartCanvasPos);
+
+            switch (_previewShapeType)
+            {
+                case ShapeType.Circle:
+                    _previewShape = new Ellipse
+                    {
+                        Stroke = Brushes.Red,
+                        StrokeThickness = 2,
+                        StrokeDashArray = new DoubleCollection { 4, 2 },
+                        Fill = new SolidColorBrush(Color.FromArgb(30, 255, 0, 0))
+                    };
+                    break;
+
+                case ShapeType.Line:
+                    _previewShape = new System.Windows.Shapes.Line
+                    {
+                        Stroke = Brushes.Red,
+                        StrokeThickness = 2,
+                        StrokeDashArray = new DoubleCollection { 4, 2 },
+                        X1 = _drawStartCanvasPos.X,
+                        Y1 = _drawStartCanvasPos.Y,
+                        X2 = _drawStartCanvasPos.X,
+                        Y2 = _drawStartCanvasPos.Y
+                    };
+                    break;
+
+                default: // Rectangle, RotatedRectangle
+                    _previewShape = new Rectangle
+                    {
+                        Stroke = Brushes.Red,
+                        StrokeThickness = 2,
+                        StrokeDashArray = new DoubleCollection { 4, 2 },
+                        Fill = new SolidColorBrush(Color.FromArgb(30, 255, 0, 0))
+                    };
+                    break;
+            }
+
+            PreviewCanvas.Children.Add(_previewShape);
             PreviewDrawMouseDown?.Invoke(this, e);
+        }
+
+        /// <summary>更新多边形预览：已固定顶点 + 当前鼠标尾随线</summary>
+        private void UpdatePolygonPreview(Point currentCanvasPt)
+        {
+            PreviewCanvas.Children.Clear();
+
+            if (_polygonCanvasPoints.Count >= 1)
+            {
+                var polyline = new System.Windows.Shapes.Polyline
+                {
+                    Stroke = Brushes.Red,
+                    StrokeThickness = 2,
+                    StrokeDashArray = new DoubleCollection { 4, 2 },
+                    Points = new PointCollection(_polygonCanvasPoints)
+                };
+                PreviewCanvas.Children.Add(polyline);
+                _polygonPreviewPolyline = polyline;
+
+                // 尾随线：从最后一个顶点到鼠标位置
+                var lastPt = _polygonCanvasPoints[_polygonCanvasPoints.Count - 1];
+                var tailLine = new System.Windows.Shapes.Line
+                {
+                    Stroke = Brushes.Red,
+                    StrokeThickness = 1.5,
+                    StrokeDashArray = new DoubleCollection { 2, 4 },
+                    X1 = lastPt.X,
+                    Y1 = lastPt.Y,
+                    X2 = currentCanvasPt.X,
+                    Y2 = currentCanvasPt.Y
+                };
+                PreviewCanvas.Children.Add(tailLine);
+                _polygonTailLine = tailLine;
+            }
+        }
+
+        /// <summary>完成多边形绘制，构造 ShapeParameters 并触发回调</summary>
+        private void CompletePolygonPreview()
+        {
+            _polygonCompleted = true;
+
+            // 构造 ShapeParameters
+            var shape = new ShapeParameters { ShapeType = ShapeType.Polygon };
+            shape.Points.Clear();
+            foreach (var pt in _polygonImagePoints)
+                shape.Points.Add(new Point2D(pt.X, pt.Y));
+
+            // 清预览
+            RemovePreviewShape();
+
+            bool handled = false;
+            if (OnPreviewDrawComplete != null)
+            {
+                try
+                {
+                    handled = OnPreviewDrawComplete(shape);
+                }
+                catch (Exception ex)
+                {
+                    VisionLogger.Instance.Error(
+                        $"[HalconImageControl] Polygon OnPreviewDrawComplete 异常: {ex.Message}",
+                        "HalconImageControl");
+                    throw;
+                }
+            }
+
+            PreviewDrawMouseUp?.Invoke(this, null!);
+            EndPreviewDraw();
         }
 
         private void PreviewCanvas_MouseMove(object sender, MouseEventArgs e)
         {
-            if (!_isDrawing || _previewRect == null) return;
+            var canvasPos = e.GetPosition(PreviewCanvas);
 
-            var pos = GetMouseImagePos(e);
-            var x = Math.Min(_drawStartPos.X, pos.X);
-            var y = Math.Min(_drawStartPos.Y, pos.Y);
-            _previewRect.Width = Math.Abs(pos.X - _drawStartPos.X);
-            _previewRect.Height = Math.Abs(pos.Y - _drawStartPos.Y);
-            Canvas.SetLeft(_previewRect, x);
-            Canvas.SetTop(_previewRect, y);
+            // 多边形模式：更新尾随线
+            if (_previewShapeType == ShapeType.Polygon && _polygonCanvasPoints.Count >= 1 && !_polygonCompleted)
+            {
+                if (_polygonTailLine != null)
+                {
+                    var lastPt = _polygonCanvasPoints[_polygonCanvasPoints.Count - 1];
+                    _polygonTailLine.X1 = lastPt.X;
+                    _polygonTailLine.Y1 = lastPt.Y;
+                    _polygonTailLine.X2 = canvasPos.X;
+                    _polygonTailLine.Y2 = canvasPos.Y;
+                    return;
+                }
+                // 首次移动时创建预览
+                if (_polygonPreviewPolyline == null)
+                {
+                    UpdatePolygonPreview(canvasPos);
+                }
+                return;
+            }
+
+            if (!_isDrawing || _previewShape == null) return;
+
+            switch (_previewShapeType)
+            {
+                case ShapeType.Circle:
+                {
+                    double dx = canvasPos.X - _drawStartCanvasPos.X;
+                    double dy = canvasPos.Y - _drawStartCanvasPos.Y;
+                    double radius = Math.Sqrt(dx * dx + dy * dy);
+                    _previewShape.Width = _previewShape.Height = radius * 2;
+                    Canvas.SetLeft(_previewShape, _drawStartCanvasPos.X - radius);
+                    Canvas.SetTop(_previewShape, _drawStartCanvasPos.Y - radius);
+                    break;
+                }
+                case ShapeType.Line:
+                {
+                    var line = (System.Windows.Shapes.Line)_previewShape;
+                    line.X2 = canvasPos.X;
+                    line.Y2 = canvasPos.Y;
+                    break;
+                }
+                default: // Rectangle, RotatedRectangle
+                {
+                    var x = Math.Min(_drawStartCanvasPos.X, canvasPos.X);
+                    var y = Math.Min(_drawStartCanvasPos.Y, canvasPos.Y);
+                    _previewShape.Width = Math.Abs(canvasPos.X - _drawStartCanvasPos.X);
+                    _previewShape.Height = Math.Abs(canvasPos.Y - _drawStartCanvasPos.Y);
+                    Canvas.SetLeft(_previewShape, x);
+                    Canvas.SetTop(_previewShape, y);
+                    break;
+                }
+            }
 
             PreviewDrawMouseMove?.Invoke(this, e);
         }
@@ -720,35 +985,89 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         private void PreviewCanvas_MouseUp(object sender, MouseButtonEventArgs e)
         {
             if (!_isDrawing) return;
+            // 多边形不在此处完成（由 CompletePolygonPreview 处理）
+            if (_previewShapeType == ShapeType.Polygon) return;
+
             _isDrawing = false;
 
-            var pos = GetMouseImagePos(e);
-            double r1 = Math.Min(_drawStartPos.Y, pos.Y);
-            double c1 = Math.Min(_drawStartPos.X, pos.X);
-            double r2 = Math.Max(_drawStartPos.Y, pos.Y);
-            double c2 = Math.Max(_drawStartPos.X, pos.X);
+            var canvasPos = e.GetPosition(PreviewCanvas);
+            var imagePos = CanvasToImagePoint(canvasPos);
 
-            // 触发预览绘制完成回调（供 RegionEditorControl 处理）
+            // 构造 ShapeParameters
+            var shape = new ShapeParameters { ShapeType = _previewShapeType };
+
+            switch (_previewShapeType)
+            {
+                case ShapeType.Line:
+                {
+                    shape.StartX = _drawStartImagePos.X;
+                    shape.StartY = _drawStartImagePos.Y;
+                    shape.EndX = imagePos.X;
+                    shape.EndY = imagePos.Y;
+                    break;
+                }
+                case ShapeType.Circle:
+                {
+                    double radius = Math.Max(
+                        Math.Abs(imagePos.X - _drawStartImagePos.X),
+                        Math.Abs(imagePos.Y - _drawStartImagePos.Y));
+                    shape.CenterX = _drawStartImagePos.X;
+                    shape.CenterY = _drawStartImagePos.Y;
+                    shape.Radius = radius;
+                    break;
+                }
+                case ShapeType.Rectangle:
+                case ShapeType.RotatedRectangle:
+                default:
+                {
+                    double r1 = Math.Min(_drawStartImagePos.Y, imagePos.Y);
+                    double c1 = Math.Min(_drawStartImagePos.X, imagePos.X);
+                    double r2 = Math.Max(_drawStartImagePos.Y, imagePos.Y);
+                    double c2 = Math.Max(_drawStartImagePos.X, imagePos.X);
+                    shape.CenterX = (c1 + c2) / 2;
+                    shape.CenterY = (r1 + r2) / 2;
+                    shape.Width = Math.Abs(c2 - c1);
+                    shape.Height = Math.Abs(r2 - r1);
+                    break;
+                }
+            }
+
+            // 先清预览
+            RemovePreviewShape();
+
             bool handled = false;
             if (OnPreviewDrawComplete != null)
             {
                 try
                 {
-                    handled = OnPreviewDrawComplete.Invoke(r1, c1, r2, c2);
+                    handled = OnPreviewDrawComplete(shape);
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    VisionLogger.Instance.Error(
+                        $"[HalconImageControl] OnPreviewDrawComplete 异常: {ex.Message}",
+                        "HalconImageControl");
+                    throw;
+                }
             }
 
-            // 如果回调未处理，按默认方式创建矩形 DrawingObject
             if (!handled && _isHalconReady && _currentHImage != null)
             {
-                CreateDrawingObjectRect(r1, c1, r2, c2);
+                // 默认回退：为 Rectangle 创建 DrawingObject
+                if (_previewShapeType == ShapeType.Rectangle)
+                {
+                    CreateDrawingObjectRect(
+                        shape.CenterY - shape.Height / 2,
+                        shape.CenterX - shape.Width / 2,
+                        shape.CenterY + shape.Height / 2,
+                        shape.CenterX + shape.Width / 2);
+                }
             }
 
-            RemovePreviewShape();
-            EndPreviewDraw();
-
             PreviewDrawMouseUp?.Invoke(this, e);
+
+            // 绘制完成自动结束预览模式（隐藏 Canvas，恢复 SmartWindow 交互）
+            EndPreviewDraw();
         }
 
         #endregion

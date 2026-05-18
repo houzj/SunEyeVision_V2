@@ -838,6 +838,16 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             RenderOptions.SetBitmapScalingMode(DisplayImage,
                 Zoom >= 1.0 ? BitmapScalingMode.NearestNeighbor : BitmapScalingMode.Fant);
 
+            // 将当前视口（图像坐标系）传递给结果渲染层，用于视口裁剪
+            if (MainCanvas.ActualWidth > 0 && MainCanvas.ActualHeight > 0)
+            {
+                double left = -_offsetX / Zoom;
+                double top = -_offsetY / Zoom;
+                double right = (MainCanvas.ActualWidth - _offsetX) / Zoom;
+                double bottom = (MainCanvas.ActualHeight - _offsetY) / Zoom;
+                ResultRenderLayer.SetViewport(left, top, right, bottom);
+            }
+
             // 同步结果渲染层的视口缩放（使线宽/十字大小随缩放幂律变化）
             ResultRenderLayer.SetViewportScale(Zoom);
             RaiseEvent(new ViewTransformEventArgs(Zoom, _offsetX, _offsetY, ViewTransformedEvent));

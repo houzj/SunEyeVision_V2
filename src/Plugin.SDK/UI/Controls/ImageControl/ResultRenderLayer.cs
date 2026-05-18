@@ -28,6 +28,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         private readonly Dictionary<uint, SolidColorBrush> _brushCache = new();
         private readonly Dictionary<uint, Pen> _penCache = new();
 
+        // 视口裁剪（图像坐标系）
+        private double _viewLeft, _viewTop, _viewRight, _viewBottom;
+        private bool _hasViewport;
+
+        // LOD 阈值：当缩放倍率低于此值且 Cross 数量超过阈值时启用密度采样
+        private const double LOD_ZOOM_THRESHOLD = 0.15;
+        private const int LOD_MAX_CROSSES = 2000;
+
         #endregion
 
         #region 公共接口
@@ -130,6 +138,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         }
 
         public void SetViewportScale(double scale) => ViewportScale = scale;
+
+        /// <summary>设置视口范围（图像坐标系），用于视口裁剪</summary>
+        public void SetViewport(double left, double top, double right, double bottom)
+        {
+            _viewLeft = left;
+            _viewTop = top;
+            _viewRight = right;
+            _viewBottom = bottom;
+            _hasViewport = true;
+            InvalidateVisual();
+        }
 
         private double GetScaledLineWidth(double rawWidth, double power = 1.0) =>
             _viewportScale > 0.001 ? rawWidth / Math.Pow(_viewportScale, power) : rawWidth;
@@ -241,16 +260,26 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             var defaultColorArgb = style.GetEffectiveColorArgb(true);
             var crossPen = GetPen(defaultColorArgb, crossThickness);
 
+            int totalCount = item.Geometries.Length;
+
+            // LOD：缩放很小且点数量多时，只采样一部分渲染
+            bool useLod = _viewportScale < LOD_ZOOM_THRESHOLD && totalCount > LOD_MAX_CROSSES;
+            int lodStep = useLod ? Math.Max(1, totalCount / LOD_MAX_CROSSES) : 1;
+
             if (isUnified)
             {
                 // 统一模式：所有十字线段合并到单个 StreamGeometry
                 var geometry = new StreamGeometry();
                 using (var ctx = geometry.Open())
                 {
-                    for (int i = 0; i < item.Geometries.Length; i++)
+                    for (int i = 0; i < totalCount; i += lodStep)
                     {
                         if (item.Geometries[i] is Point2d pt)
                         {
+                            // 视口裁剪
+                            if (_hasViewport && !IsInViewport(pt))
+                                continue;
+
                             double x = pt.X, y = pt.Y;
                             ctx.BeginFigure(new WpfPoint(x - s, y), false, false);
                             ctx.LineTo(new WpfPoint(x + s, y), true, false);
@@ -273,10 +302,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 using (var okCtx = okGeo.Open())
                 using (var ngCtx = ngGeo.Open())
                 {
-                    for (int i = 0; i < item.Geometries.Length; i++)
+                    for (int i = 0; i < totalCount; i += lodStep)
                     {
                         if (item.Geometries[i] is Point2d pt)
                         {
+                            // 视口裁剪
+                            if (_hasViewport && !IsInViewport(pt))
+                                continue;
+
                             double x = pt.X, y = pt.Y;
                             bool isPass = item.IsPassArray.Length > i ? item.IsPassArray[i] : true;
                             var ctx = isPass ? okCtx : ngCtx;
@@ -521,52 +554,74 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             var ngPen = GetPen(ngColorArgb, scale);
             var s = GetScaledLineWidth(style.CrossSize, 0.7);
 
+            int totalCount = item.Geometries.Length;
+
+            // LOD：缩放很小且 Cross 数量多时，只采样一部分渲染
+            bool useLod = _viewportScale < LOD_ZOOM_THRESHOLD && totalCount > LOD_MAX_CROSSES;
+            int lodStep = useLod ? Math.Max(1, totalCount / LOD_MAX_CROSSES) : 1;
+
             if (isUnified)
             {
-                // 统一模式：所有十字的线段合并到单个 StreamGeometry
-                var allLines = new List<WpfPoint[]>();
-                for (int i = 0; i < item.Geometries.Length; i++)
+                // 统一模式：所有十字的线段合并到单个 StreamGeometry（直接构建，无中间列表）
+                var geometry = new StreamGeometry();
+                using (var ctx = geometry.Open())
                 {
-                    if (item.Geometries[i] is Point2d center)
+                    for (int i = 0; i < totalCount; i += lodStep)
                     {
-                        double cx = center.X, cy = center.Y;
-                        allLines.Add(new[] { new WpfPoint(cx - s, cy), new WpfPoint(cx + s, cy) });
-                        allLines.Add(new[] { new WpfPoint(cx, cy - s), new WpfPoint(cx, cy + s) });
+                        if (item.Geometries[i] is Point2d center)
+                        {
+                            // 视口裁剪：跳过不可见点
+                            if (_hasViewport && !IsInViewport(center))
+                                continue;
+
+                            double cx = center.X, cy = center.Y;
+                            ctx.BeginFigure(new WpfPoint(cx - s, cy), false, false);
+                            ctx.LineTo(new WpfPoint(cx + s, cy), true, false);
+                            ctx.BeginFigure(new WpfPoint(cx, cy - s), false, false);
+                            ctx.LineTo(new WpfPoint(cx, cy + s), true, false);
+                        }
                     }
                 }
-                DrawMultipleFigures(dc, allLines, null, defaultPen, false);
+                geometry.Freeze();
+                dc.DrawGeometry(null, defaultPen, geometry);
             }
             else
             {
-                // 独立模式：分 OK/NG 两批
-                var okLines = new List<WpfPoint[]>();
-                var ngLines = new List<WpfPoint[]>();
-
-                for (int i = 0; i < item.Geometries.Length; i++)
+                // 独立模式：分 OK/NG 两批，各用单独的 StreamGeometry（直接构建，无中间列表）
+                var okGeo = new StreamGeometry();
+                var ngGeo = new StreamGeometry();
+                using (var okCtx = okGeo.Open())
+                using (var ngCtx = ngGeo.Open())
                 {
-                    if (item.Geometries[i] is Point2d center)
+                    for (int i = 0; i < totalCount; i += lodStep)
                     {
-                        bool isPass = item.IsPassArray.Length > i ? item.IsPassArray[i] : true;
-                        double cx = center.X, cy = center.Y;
-                        var lines = new[]
+                        if (item.Geometries[i] is Point2d center)
                         {
-                            new[] { new WpfPoint(cx - s, cy), new WpfPoint(cx + s, cy) },
-                            new[] { new WpfPoint(cx, cy - s), new WpfPoint(cx, cy + s) }
-                        };
-                        if (isPass)
-                        {
-                            okLines.Add(lines[0]); okLines.Add(lines[1]);
-                        }
-                        else
-                        {
-                            ngLines.Add(lines[0]); ngLines.Add(lines[1]);
+                            // 视口裁剪：跳过不可见点
+                            if (_hasViewport && !IsInViewport(center))
+                                continue;
+
+                            double cx = center.X, cy = center.Y;
+                            bool isPass = item.IsPassArray.Length > i ? item.IsPassArray[i] : true;
+                            var ctx = isPass ? okCtx : ngCtx;
+                            ctx.BeginFigure(new WpfPoint(cx - s, cy), false, false);
+                            ctx.LineTo(new WpfPoint(cx + s, cy), true, false);
+                            ctx.BeginFigure(new WpfPoint(cx, cy - s), false, false);
+                            ctx.LineTo(new WpfPoint(cx, cy + s), true, false);
                         }
                     }
                 }
-                DrawMultipleFigures(dc, okLines, null, defaultPen, false);
-                DrawMultipleFigures(dc, ngLines, null, ngPen, false);
+                okGeo.Freeze();
+                ngGeo.Freeze();
+                dc.DrawGeometry(null, defaultPen, okGeo);
+                dc.DrawGeometry(null, ngPen, ngGeo);
             }
         }
+
+        /// <summary>快速视口内测试（图像坐标系）</summary>
+        private bool IsInViewport(Point2d pt) =>
+            pt.X >= _viewLeft && pt.X <= _viewRight &&
+            pt.Y >= _viewTop && pt.Y <= _viewBottom;
 
         private void RenderCoordinateSystem(DrawingContext dc, GraphicsDisplayItem item, GraphicsStyle style)
         {

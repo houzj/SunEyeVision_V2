@@ -330,11 +330,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             var inspectionHit = inspectionsEditor.HitTestRegion(pos);
             var maskHit = masksEditor.HitTestRegion(pos);
 
-            // 判断每个编辑器是否处于选择模式（非绘制且当前工具为 Point）
-            bool inspectionSelectMode = !inspectionsEditor.ViewModel.IsDrawing
-                                        && inspectionsEditor.CurrentShapeTool == ShapeType.Point;
-            bool maskSelectMode = !masksEditor.ViewModel.IsDrawing
-                                  && masksEditor.CurrentShapeTool == ShapeType.Point;
+            // 判断每个编辑器是否处于选择模式（IsDrawing=false 表示非绘制状态）
+            bool inspectionSelectMode = !inspectionsEditor.ViewModel.IsDrawing;
+            bool maskSelectMode = !masksEditor.ViewModel.IsDrawing;
 
             // 仅在编辑器处于选择模式时，才响应对应类型的区域命中
             if (inspectionSelectMode && inspectionHit != null)

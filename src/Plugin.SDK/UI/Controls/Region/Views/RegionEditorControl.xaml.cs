@@ -27,7 +27,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
     public partial class RegionEditorControl : UserControl, INotifyPropertyChanged
     {
         private RegionEditorViewModel _viewModel;
-        private ShapeType _currentTool = ShapeType.Rectangle;
+        private ShapeType _currentTool = ShapeType.Point;  // 初始为选择模式（Point=选择）
         private Button? _activeShapeButton;
 
         // 控件实例ID（用于区分不同的 RegionEditorControl 实例）
@@ -477,46 +477,34 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 return;
             }
 
-            // 快捷键选择形状工具（只处理当前获得键盘焦点的编辑器）
-            if (_viewModel.IsDrawingMode)
+            // 快捷键选择形状工具
+            switch (e.Key)
             {
-                switch (e.Key)
-                {
-                    case Key.V:
-                        EnterSelectMode(null);
-                        e.Handled = true;
-                        break;
-                    case Key.R:
-                        SelectShapeTool(ShapeType.Rectangle, null);
-                        e.Handled = true;
-                        break;
-                    case Key.C:
-                        SelectShapeTool(ShapeType.Circle, null);
-                        e.Handled = true;
-                        break;
-                    case Key.O:
-                        SelectShapeTool(ShapeType.RotatedRectangle, null);
-                        e.Handled = true;
-                        break;
-                    case Key.L:
-                        SelectShapeTool(ShapeType.Line, null);
-                        e.Handled = true;
-                        break;
-                    case Key.P:
-                        _isDrawingPolygon = false;
-                        SelectShapeTool(ShapeType.Polygon, null);
-                        e.Handled = true;
-                        break;
-                }
-            }
-            else
-            {
-                // 非绘制模式下，V键也可以切换到选择模式
-                if (e.Key == Key.V)
-                {
-                    EnterSelectMode(null);
+                case Key.V:
+                    EnterSelectMode();
                     e.Handled = true;
-                }
+                    break;
+                case Key.R:
+                    SelectShapeTool(ShapeType.Rectangle, null);
+                    e.Handled = true;
+                    break;
+                case Key.C:
+                    SelectShapeTool(ShapeType.Circle, null);
+                    e.Handled = true;
+                    break;
+                case Key.O:
+                    SelectShapeTool(ShapeType.RotatedRectangle, null);
+                    e.Handled = true;
+                    break;
+                case Key.L:
+                    SelectShapeTool(ShapeType.Line, null);
+                    e.Handled = true;
+                    break;
+                case Key.P:
+                    _isDrawingPolygon = false;
+                    SelectShapeTool(ShapeType.Polygon, null);
+                    e.Handled = true;
+                    break;
             }
         }
 
@@ -604,7 +592,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         /// </summary>
         public void EnterSelectMode()
         {
-            EnterSelectMode(null);
+            EnterSelectMode(notifyManager: true);
         }
 
         /// <summary>
@@ -615,46 +603,33 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         {
             if (e.Handled) return;
 
-            // 快捷键仅在绘制模式下生效
-            if (_viewModel.IsDrawing)
+            switch (e.Key)
             {
-                switch (e.Key)
-                {
-                    case Key.V:
-                        EnterSelectMode(null);
-                        e.Handled = true;
-                        break;
-                    case Key.R:
-                        SelectShapeTool(ShapeType.Rectangle, null);
-                        e.Handled = true;
-                        break;
-                    case Key.C:
-                        SelectShapeTool(ShapeType.Circle, null);
-                        e.Handled = true;
-                        break;
-                    case Key.O:
-                        SelectShapeTool(ShapeType.RotatedRectangle, null);
-                        e.Handled = true;
-                        break;
-                    case Key.L:
-                        SelectShapeTool(ShapeType.Line, null);
-                        e.Handled = true;
-                        break;
-                    case Key.P:
-                        _isDrawingPolygon = false;
-                        SelectShapeTool(ShapeType.Polygon, null);
-                        e.Handled = true;
-                        break;
-                }
-            }
-            else
-            {
-                // 非绘制模式下，V键也可以切换到选择模式
-                if (e.Key == Key.V)
-                {
-                    EnterSelectMode(null);
+                case Key.V:
+                    EnterSelectMode();
                     e.Handled = true;
-                }
+                    break;
+                case Key.R:
+                    SelectShapeTool(ShapeType.Rectangle, null);
+                    e.Handled = true;
+                    break;
+                case Key.C:
+                    SelectShapeTool(ShapeType.Circle, null);
+                    e.Handled = true;
+                    break;
+                case Key.O:
+                    SelectShapeTool(ShapeType.RotatedRectangle, null);
+                    e.Handled = true;
+                    break;
+                case Key.L:
+                    SelectShapeTool(ShapeType.Line, null);
+                    e.Handled = true;
+                    break;
+                case Key.P:
+                    _isDrawingPolygon = false;
+                    SelectShapeTool(ShapeType.Polygon, null);
+                    e.Handled = true;
+                    break;
             }
         }
 
@@ -665,7 +640,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         {
             if (_viewModel.IsDrawing)
             {
-                EnterSelectMode(null, notifyManager: false);
+                EnterSelectMode(notifyManager: false);
             }
         }
 
@@ -698,13 +673,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             // 3. 取消区域选中
             DeselectAll();
 
-            // 4. 清除所有按钮高亮（形状按钮 + SelectButton）
-            var shapeContainer = FindShapeContainer();
-            if (shapeContainer != null)
-            {
-                ResetAllShapeButtons(shapeContainer);
-            }
-            ResetShapeButtonStyle(SelectButton);
+            // 4. 清除所有按钮高亮
+            ResetShapeButtonStyle(_activeShapeButton);
             _activeShapeButton = null;
 
             // 5. 更新状态消息
@@ -1076,7 +1046,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                         _viewModel.StatusMessage = $"已创建 {_currentTool} 区域";
                         RegionDataChanged?.Invoke(this, _currentDrawingRegion);
 
-                        // ★ 诊断日志：新建区域后的完整状态
+                        // 诊断日志：新建区域后的完整状态
                         var allRegionNames = string.Join(", ", _viewModel.Regions.Select(r => $"{r.Name}(Id={r.Id:B},IsVisible={r.IsVisible})"));
                         VisionLogger.Instance.Log(LogLevel.Success,
                             $"[FinishInteraction] 区域已添加到集合 | InstanceId={_controlInstanceId} | Region={_currentDrawingRegion.Name}(Id={_currentDrawingRegion.Id:B}) | TotalRegions={_viewModel.Regions.Count} | Regions=[{allRegionNames}]",
@@ -1104,6 +1074,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             _originalShapeDefinition = null;
             _rotateStartAngle = null;
             _rotateStartMouseAngle = null;
+
+            // 绘制完成自动回到选择模式
+            EnterSelectMode(notifyManager: false);
 
             RenderRequested?.Invoke();
 
@@ -2480,6 +2453,34 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                     $"[OnViewModelPropertyChanged] SelectedShapeType 变化 | InstanceId={_controlInstanceId} | NewValue={_viewModel.SelectedShapeType}",
                     "RegionEditorControl");
             }
+            else if (e.PropertyName == nameof(RegionEditorViewModel.CurrentMode))
+            {
+                VisionLogger.Instance.Log(LogLevel.Info,
+                    $"[OnViewModelPropertyChanged] CurrentMode 变化 | InstanceId={_controlInstanceId} | NewValue={_viewModel.CurrentMode}",
+                    "RegionEditorControl");
+
+                // 切换到订阅模式时取消进行中的绘制
+                if (_viewModel.CurrentMode == RegionSourceMode.Subscribe && (_isDrawing || _isDrawingPolygon))
+                {
+                    if (_isDrawingPolygon)
+                    {
+                        _isDrawingPolygon = false;
+                        _polygonPoints.Clear();
+                        ClearRubberBand();
+                    }
+                    if (_currentDrawingRegion != null)
+                        ReleaseRegionIndex(_currentDrawingRegion.Name);
+                    _isDrawing = false;
+                    _currentDrawingRegion = null;
+                    _viewModel.IsDrawing = false;
+                    ResetShapeButtonStyle(_activeShapeButton);
+                    _activeShapeButton = null;
+                    RenderRequested?.Invoke();
+                    VisionLogger.Instance.Log(LogLevel.Info,
+                        $"[OnViewModelPropertyChanged] 切换到订阅模式，已取消绘制 | InstanceId={_controlInstanceId}",
+                        "RegionEditorControl");
+                }
+            }
         }
 
         private void OnRegionChanged(object? sender, RegionChangedEventArgs e)
@@ -2601,23 +2602,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
         #region 形状按钮点击事件
 
-        /// <summary>
-        /// 选择按钮点击事件 - 空闲↔选择模式切换（toggle）
-        /// 空闲 → 进入选择模式 | 选择中/绘制中 → 空闲
-        /// </summary>
-        private void OnSelectButtonClick(object sender, RoutedEventArgs e)
-        {
-            // ★ Phase 4: Select 按钮切换逻辑
-            if (_currentTool == ShapeType.Point)
-            {
-                EnterIdleMode();
-            }
-            else
-            {
-                EnterSelectMode(sender as Button);
-            }
-        }
-
         private void OnRectangleButtonClick(object sender, RoutedEventArgs e)
         {
             SelectShapeTool(ShapeType.Rectangle, sender as Button);
@@ -2654,77 +2638,67 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         /// </remarks>
 
         /// <summary>
-        /// 进入选择/编辑模式
+        /// 进入选择/编辑模式（无按钮高亮）
         /// </summary>
-        private void EnterSelectMode(Button? clickedButton, bool notifyManager = true)
+        private void EnterSelectMode(bool notifyManager = true)
         {
-            VisionLogger.Instance.Log(LogLevel.Info,
-                $"[EnterSelectMode] 进入选择模式 | IsLoaded={IsLoaded} | IsVisible={IsVisible}",
-                "RegionEditorControl");
-
-            // 确保处于绘制模式（启用编辑功能）
-            _viewModel.CurrentMode = RegionSourceMode.Drawing;
-
             // 退出绘制状态，进入选择状态
             _viewModel.IsDrawing = false;
             _currentTool = ShapeType.Point; // Point 表示选择工具
 
-            VisionLogger.Instance.Log(LogLevel.Success,
-                $"[EnterSelectMode] 已切换到选择模式 | CurrentMode={_viewModel.CurrentMode} | IsDrawing={_viewModel.IsDrawing} | CurrentTool={_currentTool}",
-                "RegionEditorControl");
-
-            // 更新按钮高亮状态
-            UpdateShapeButtonHighlight(clickedButton);
+            // 清除所有按钮高亮
+            ResetShapeButtonStyle(_activeShapeButton);
+            _activeShapeButton = null;
 
             // 更新状态消息
             _viewModel.StatusMessage = "选择/编辑模式 - 点击区域可编辑，滚轮缩放，拖拽平移";
 
-            // ★ Phase 4: 通知 Manager：工具已更改（用于分组互斥）
-            // ExitDrawingMode 调用时 notifyManager=false，避免连锁反应
+            // 通知 Manager：工具已更改（用于分组互斥）
             if (notifyManager)
                 ToolActivated?.Invoke();
         }
 
         /// <summary>
-        /// 选择形状工具并开始绘制
+        /// 选择形状工具 - toggle 行为
+        /// 已激活的相同形状 → 退出绘制模式回到选择模式
+        /// 不同形状 → 切换形状工具
         /// </summary>
         private void SelectShapeTool(ShapeType shapeType, Button? clickedButton)
         {
-            VisionLogger.Instance.Log(LogLevel.Info,
-                $"[SelectShapeTool] 选择形状工具 | ShapeType={shapeType} | IsLoaded={IsLoaded} | IsVisible={IsVisible}",
-                "RegionEditorControl");
+            // 如果当前是绘制模式且点击的是同一个形状 → 退出绘制，回到选择模式
+            if (_viewModel.IsDrawing && _currentTool == shapeType)
+            {
+                // 取消进行中的绘制
+                if (_isDrawing || _isDrawingPolygon)
+                {
+                    if (_currentDrawingRegion != null)
+                        ReleaseRegionIndex(_currentDrawingRegion.Name);
+                    _isDrawing = false;
+                    _isDrawingPolygon = false;
+                    _polygonPoints.Clear();
+                    _currentDrawingRegion = null;
+                    ClearRubberBand();
+                }
+                EnterSelectMode();
+                return;
+            }
+
+            // 清除上一个按钮的高亮
+            ResetShapeButtonStyle(_activeShapeButton);
 
             // 设置当前工具
             _currentTool = shapeType;
-
-            // 切换到绘制模式
-            _viewModel.CurrentMode = RegionSourceMode.Drawing;
             _viewModel.IsDrawing = true;
 
-            VisionLogger.Instance.Log(LogLevel.Success,
-                $"[SelectShapeTool] 切换到绘制模式 | CurrentMode={_viewModel.CurrentMode} | IsDrawing={_viewModel.IsDrawing} | SelectedShapeType={shapeType}",
-                "RegionEditorControl");
-
-            // 手动触发 IsDrawingMode 的 PropertyChanged 事件
-            // 因为 CurrentMode 的默认值已经是 Drawing，所以 setter 不会触发 PropertyChanged
-            _viewModel.NotifyIsDrawingModeChanged();
-
-            // 设置 SelectedShapeType（如果值变化，setter 会自动调用 UpdateParameters）
-            // 如果值相同，setter 不会调用 UpdateParameters，所以我们需要手动调用
-            var oldShapeType = _viewModel.SelectedShapeType;
+            // 设置 SelectedShapeType
             _viewModel.SelectedShapeType = shapeType;
+            _viewModel.CallUpdateParameters();
 
-            // 只有当形状类型未变化时，才手动调用 UpdateParameters
-            // 因为这种情况下 setter 不会调用 UpdateParameters
-            // 同时需要手动触发 SelectedShapeType 的 PropertyChanged 事件，以确保参数面板可见性更新
-            if (oldShapeType == shapeType)
+            // 更新按钮高亮状态（键盘快捷键时 clickedButton 为 null，跳过高亮）
+            if (clickedButton != null)
             {
-                _viewModel.CallUpdateParameters();
-                _viewModel.NotifySelectedShapeTypeChanged();
+                UpdateShapeButtonHighlight(clickedButton);
             }
-
-            // 更新按钮高亮状态
-            UpdateShapeButtonHighlight(clickedButton);
 
             // 更新状态消息
             var shapeName = shapeType switch
@@ -2738,35 +2712,18 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             };
             _viewModel.StatusMessage = $"已选择 {shapeName} 工具，在图像上拖动绘制";
 
-            // ★ Phase 4: 通知 Manager：工具已更改（用于分组互斥）
+            // 通知 Manager：工具已更改（用于分组互斥）
             ToolActivated?.Invoke();
         }
 
         /// <summary>
-        /// 更新形状按钮高亮状态
+        /// 更新形状按钮高亮状态（仅高亮当前激活的形状按钮）
         /// </summary>
         private void UpdateShapeButtonHighlight(Button? activeButton)
         {
-            // 递归遍历所有形状按钮并重置样式（支持嵌套 WrapPanel 结构）
-            var shapeContainer = FindShapeContainer();
-            if (shapeContainer != null)
-            {
-                ResetAllShapeButtons(shapeContainer);
-            }
+            if (activeButton == null) return;
 
-            // ★ Phase 2: activeButton==null 表示进入选择模式，高亮 Select 按钮
-            if (activeButton == null)
-            {
-                ResetShapeButtonStyle(SelectButton);
-                SelectButton.Background = new SolidColorBrush(Color.FromRgb(232, 244, 252));
-                SelectButton.BorderBrush = new SolidColorBrush(Color.FromRgb(0, 102, 204));
-                SelectButton.BorderThickness = new Thickness(1.5);
-                UpdateIconColor(SelectButton, Color.FromRgb(0, 102, 204));
-                _activeShapeButton = SelectButton;
-                return;
-            }
-
-            // 高亮选中按钮
+            // 高亮选中的形状按钮
             activeButton.Background = new SolidColorBrush(Color.FromRgb(232, 244, 252));
             activeButton.BorderBrush = new SolidColorBrush(Color.FromRgb(0, 102, 204));
             activeButton.BorderThickness = new Thickness(1.5);
@@ -2814,54 +2771,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// 递归重置所有形状按钮样式（支持嵌套 Panel 结构）
-        /// </summary>
-        private void ResetAllShapeButtons(Panel container)
-        {
-            foreach (var child in container.Children)
-            {
-                if (child is Button button)
-                {
-                    ResetShapeButtonStyle(button);
-                }
-                else if (child is Panel childPanel)
-                {
-                    ResetAllShapeButtons(childPanel);
-                }
-            }
-        }
-
-        /// <summary>
-        /// 查找形状选择区域容器
-        /// </summary>
-        private System.Windows.Controls.Panel? FindShapeContainer()
-        {
-            return ShapeButtonPanel;
-        }
-
-        /// <summary>
-        /// 查找可视化树中的子元素
-        /// </summary>
-        private static T? FindVisualChild<T>(DependencyObject parent, Func<T, bool>? condition = null) where T : DependencyObject
-        {
-            for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent); i++)
-            {
-                var child = System.Windows.Media.VisualTreeHelper.GetChild(parent, i);
-                if (child is T typedChild && (condition == null || condition(typedChild)))
-                {
-                    return typedChild;
-                }
-
-                var result = FindVisualChild(child, condition);
-                if (result != null)
-                {
-                    return result;
-                }
-            }
-            return null;
         }
 
         /// <summary>

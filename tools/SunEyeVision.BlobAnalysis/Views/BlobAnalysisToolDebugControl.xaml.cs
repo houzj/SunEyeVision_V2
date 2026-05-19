@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Windows;
-using OpenCvSharp;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Imaging;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Metadata;
 using SunEyeVision.Plugin.SDK.UI.Controls;
@@ -204,12 +204,12 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
                 throw new InvalidOperationException("图像源节点尚未执行，请先执行前驱节点");
             }
 
-            var imageMat = _dataProvider.GetPropertyValue(
+            var image = _dataProvider.GetPropertyValue(
                 imageSource.SourceNodeId,
                 imageSource.PropertyName
-            ) as Mat;
+            ) as IVisionImage;
 
-            if (imageMat == null || imageMat.Empty())
+            if (image == null || image.IsEmpty)
             {
                 throw new InvalidOperationException("无法获取图像数据或图像为空");
             }
@@ -220,7 +220,7 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
             }
 
             var runParams = (BlobAnalysisParameters)Parameters!;
-            runParams.ResolvedInputImage = imageMat;
+            runParams.ResolvedInputImage = image;
             return blobTool.Run(runParams);
         }
 

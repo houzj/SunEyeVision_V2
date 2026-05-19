@@ -1,6 +1,8 @@
-using System;
+﻿using System;
 using System.Linq;
 using OpenCvSharp;
+using SunEyeVision.Plugin.SDK.Imaging;
+using WpfPoint = System.Windows.Point;
 
 namespace SunEyeVision.CvEngine
 {
@@ -23,7 +25,7 @@ namespace SunEyeVision.CvEngine
     /// | gen_contour_polygon_xld | Create        | 从点集创建轮廓 |
     /// | copy_obj            | CopyObj            | 深拷贝轮廓     |
     /// </remarks>
-    public class CvContour : IDisposable
+    public class CvContour : IVisionContour, IDisposable
     {
         private Point[]? _points;
         private bool _isClosed;
@@ -40,6 +42,22 @@ namespace SunEyeVision.CvEngine
 
         /// <summary>是否为空轮廓</summary>
         public bool IsEmpty => _points == null || _points.Length == 0;
+
+        #region IVisionContour 接口实现
+
+        WpfPoint[] IVisionContour.Points
+        {
+            get
+            {
+                if (_points == null)
+                    return Array.Empty<WpfPoint>();
+                return _points.Select(p => new WpfPoint(p.X, p.Y)).ToArray();
+            }
+        }
+
+        IVisionContour IVisionContour.Clone() => CopyObj();
+
+        #endregion
 
         private CvContour()
         {

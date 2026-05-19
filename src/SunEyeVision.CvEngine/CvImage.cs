@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Media.Imaging;
 using OpenCvSharp;
+using SunEyeVision.Plugin.SDK.Imaging;
 
 namespace SunEyeVision.CvEngine
 {
@@ -21,7 +23,7 @@ namespace SunEyeVision.CvEngine
     /// 算子（ReduceDomain/CropDomain/Rgb1ToGray/Intensity）仍按单图像处理，
     /// 后续按需扩展为数组处理。
     /// </remarks>
-    public class CvImage : IDisposable
+    public class CvImage : IVisionImage, IDisposable
     {
         #region 内部字段
 
@@ -104,6 +106,45 @@ namespace SunEyeVision.CvEngine
         /// 是否为空（不含任何图像）
         /// </summary>
         public bool Empty => _items.Count == 0;
+
+        #endregion
+
+        #region IVisionImage 接口实现
+
+        int IVisionImage.Width => Size.Width;
+
+        int IVisionImage.Height => Size.Height;
+
+        bool IVisionImage.IsEmpty => Empty;
+
+        /// <summary>转换为 WPF BitmapSource</summary>
+        BitmapSource IVisionImage.ToBitmapSource()
+        {
+            var src = Image;
+            var pixelFormat = src.Channels() switch
+            {
+                1 => System.Windows.Media.PixelFormats.Gray8,
+                3 => System.Windows.Media.PixelFormats.Bgr24,
+                4 => System.Windows.Media.PixelFormats.Bgra32,
+                _ => System.Windows.Media.PixelFormats.Gray8
+            };
+            int stride = src.Width * src.Channels();
+            var bytes = new byte[stride * src.Height];
+            System.Runtime.InteropServices.Marshal.Copy(src.Data, bytes, 0, bytes.Length);
+            return System.Windows.Media.Imaging.BitmapSource.Create(
+                src.Width, src.Height, 96, 96, pixelFormat, null, bytes, stride);
+        }
+
+        /// <summary>获取像素数据字节数组</summary>
+        byte[] IVisionImage.GetPixelData()
+        {
+            var src = Image;
+            var bytes = new byte[src.Total() * src.ElemSize()];
+            System.Runtime.InteropServices.Marshal.Copy(src.Data, bytes, 0, bytes.Length);
+            return bytes;
+        }
+
+        IVisionImage IVisionImage.Clone() => CopyObj();
 
         #endregion
 

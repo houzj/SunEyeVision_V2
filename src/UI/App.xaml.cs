@@ -14,6 +14,8 @@ using SunEyeVision.Workflow;
 using SunEyeVision.UI.Services;
 using SunEyeVision.UI.Services.Monitoring;
 using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Plugin.SDK.Imaging;
+using SunEyeVision.HalAdapter;
 
 namespace SunEyeVision.UI;
 
@@ -68,6 +70,9 @@ public partial class App : Application
 
         // 2. 标记插件已加载（全局状态）
         PluginLoader.MarkAsLoaded();
+
+        // 2.5 初始化 Halcon 适配器工厂（在任何服务使用 IVisionImage 之前）
+        VisionAdapter.Factory = new HalVisionFactory();
 
         // 3. 初始化服务（包括节点显示适配器）
         ServiceInitializer.InitializeServices();

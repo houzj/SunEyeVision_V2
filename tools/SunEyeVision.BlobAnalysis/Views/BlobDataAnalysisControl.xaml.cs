@@ -4,8 +4,6 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Controls;
 using System.Windows.Media;
-using OpenCvSharp;
-using SunEyeVision.CvEngine.Models;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Plugin.SDK.UI.Controls;
@@ -18,10 +16,7 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
     public partial class BlobDataAnalysisControl : UserControl, IToolControlDataAnalysis
     {
         /// <summary>Blob 特征数据列表</summary>
-        public ObservableCollection<BlobInfo> FilteredBlobs { get; } = new();
-
-        /// <summary>Blob总数</summary>
-        public int TotalBlobCount { get; private set; }
+        public ObservableCollection<BlobResult> FilteredBlobs { get; } = new();
 
         /// <summary>筛选后数量</summary>
         public int FilteredBlobCount => FilteredBlobs.Count;
@@ -47,15 +42,12 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
         /// <summary>阈值类型</summary>
         public string ThresholdTypeText { get; private set; } = "-";
 
-        /// <summary>连通性</summary>
-        public string ConnectivityText { get; private set; } = "-";
-
         #region 选中 Blob 相关
 
-        private BlobInfo? _selectedBlob;
+        private BlobResult? _selectedBlob;
 
         /// <summary>当前选中的 Blob（由 DataGrid SelectionChanged 驱动）</summary>
-        public BlobInfo? SelectedBlob
+        public BlobResult? SelectedBlob
         {
             get => _selectedBlob;
             private set
@@ -101,14 +93,14 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
         /// <summary>DataGrid 行选择变化 → 更新 SelectedBlob 属性并触发事件</summary>
         private void BlobDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (BlobDataGrid.SelectedItem is BlobInfo blob)
+            if (BlobDataGrid.SelectedItem is BlobResult blob)
                 SelectedBlob = blob;
             else
                 SelectedBlob = null;
         }
 
         /// <summary>构建选中 Blob 的高亮 DisplayItem（黄色外接矩形）</summary>
-        private static IEnumerable<DisplayItemBase>? BuildHighlightItems(BlobInfo? blob)
+        private static IEnumerable<DisplayItemBase>? BuildHighlightItems(BlobResult? blob)
             {
                 if (blob == null) return null;
 
@@ -120,7 +112,7 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
                     new GraphicsDisplayItem
                     {
                         Name = "HighlightRect", Type = GraphicsType.Rectangle,
-                        Geometries = new object[] { new Rect2d(bb.X, bb.Y, bb.Width, bb.Height) },
+                        Geometries = new object[] { bb },
                         Style = new GraphicsStyle { OkColor = highlightColor, LineWidth = 3 }
                     }
                 };
@@ -146,14 +138,11 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
                 }
 
                 // 更新统计摘要
-                TotalBlobCount = blobResult.TotalBlobCount;
-                TotalArea = blobResult.TotalArea;
+                TotalArea = blobResult.FilteredTotalArea;
                 ThresholdUsed = blobResult.ThresholdUsed;
                 ThresholdTypeText = blobResult.TypeUsed.ToString();
-                ConnectivityText = blobResult.ConnectivityUsed.ToString();
 
                 // 通知 UI 更新所有统计属性
-                NotifyPropertyChanged(nameof(TotalBlobCount));
                 NotifyPropertyChanged(nameof(FilteredBlobCount));
                 NotifyPropertyChanged(nameof(TotalArea));
                 NotifyPropertyChanged(nameof(FilteredTotalArea));
@@ -162,7 +151,6 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
                 NotifyPropertyChanged(nameof(MinArea));
                 NotifyPropertyChanged(nameof(ThresholdUsed));
                 NotifyPropertyChanged(nameof(ThresholdTypeText));
-                NotifyPropertyChanged(nameof(ConnectivityText));
             }
         }
 

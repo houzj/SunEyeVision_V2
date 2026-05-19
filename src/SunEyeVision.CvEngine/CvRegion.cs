@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using OpenCvSharp;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
+using SunEyeVision.Plugin.SDK.Imaging;
+using WpfRect = System.Windows.Rect;
+using WpfPoint = System.Windows.Point;
 
 namespace SunEyeVision.CvEngine
 {
@@ -28,7 +29,7 @@ namespace SunEyeVision.CvEngine
     /// | (从二值图创建)  | FromMask           | 从掩码创建区域 |
     /// | (UI区域列表)    | CreateFromRegions  | 从UI定义创建   |
     /// </remarks>
-    public class CvRegion : IDisposable
+    public class CvRegion : IVisionRegion, IDisposable
     {
         #region 内部字段
 
@@ -127,26 +128,6 @@ namespace SunEyeVision.CvEngine
             return new CvRegion(m, mask.Size());
         }
 
-        /// <summary>
-        /// 从 UI 区域定义列表直接创建 CvRegion
-        /// </summary>
-        public static CvRegion CreateFromRegions(Size imageSize, IEnumerable<RegionData> regions)
-        {
-            if (regions == null)
-                throw new ArgumentNullException(nameof(regions));
-
-            var regionList = regions.ToList();
-            if (regionList.Count == 0)
-                throw new ArgumentException("区域列表不能为空", nameof(regions));
-
-            var validRegions = regionList.Where(r => r.IsEnabled && r.Parameters != null).ToList();
-            if (validRegions.Count == 0)
-                throw new ArgumentException("区域列表中无有效（启用且参数完整）的区域", nameof(regions));
-
-            var mask = RegionMaskBuilder.CreateMask(imageSize, validRegions);
-            return FromMask(mask, ownsData: true);
-        }
-
         #endregion
 
         #region 属性
@@ -177,6 +158,49 @@ namespace SunEyeVision.CvEngine
                 return combined != null && !combined.Empty() ? Cv2.CountNonZero(combined) : 0;
             }
         }
+
+        #endregion
+
+        #region IVisionRegion 接口实现
+
+        WpfRect IVisionRegion.BoundingBox
+        {
+            get
+            {
+                var mask = GetCombinedMask();
+                if (mask == null || mask.Empty())
+                    return WpfRect.Empty;
+                var rect = Cv2.BoundingRect(mask);
+                return new WpfRect(rect.X, rect.Y, rect.Width, rect.Height);
+            }
+        }
+
+        WpfPoint[] IVisionRegion.GetContour()
+        {
+            var mask = GetCombinedMask();
+            if (mask == null || mask.Empty())
+                return Array.Empty<WpfPoint>();
+
+            var contours = Cv2.FindContoursAsArray(mask,
+                RetrievalModes.External, ContourApproximationModes.ApproxNone);
+            if (contours.Length == 0)
+                return Array.Empty<WpfPoint>();
+
+            return contours[0].Select(p => new WpfPoint(p.X, p.Y)).ToArray();
+        }
+
+        byte[] IVisionRegion.GetMaskData()
+        {
+            var mask = GetCombinedMask();
+            if (mask == null || mask.Empty())
+                return Array.Empty<byte>();
+
+            var bytes = new byte[mask.Total() * mask.ElemSize()];
+            System.Runtime.InteropServices.Marshal.Copy(mask.Data, bytes, 0, bytes.Length);
+            return bytes;
+        }
+
+        IVisionRegion IVisionRegion.Clone() => CopyObj();
 
         #endregion
 

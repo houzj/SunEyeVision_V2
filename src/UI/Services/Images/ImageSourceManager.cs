@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using OpenCvSharp;
+using SunEyeVision.Plugin.SDK.Imaging;
 using SunEyeVision.Plugin.SDK.Models.Imaging;
 
 namespace SunEyeVision.UI.Services.Images
@@ -110,12 +111,12 @@ namespace SunEyeVision.UI.Services.Images
         /// <summary>
         /// 创建内存图像源
         /// </summary>
-        public IImageSource CreateFromMemory(Mat mat, string? sourceId = null)
+        public IImageSource CreateFromMemory(IVisionImage image, string? sourceId = null)
         {
             ThrowIfDisposed();
 
-            if (mat == null)
-                throw new ArgumentNullException(nameof(mat));
+            if (image == null)
+                throw new ArgumentNullException(nameof(image));
 
             var id = sourceId ?? $"memory://{Guid.NewGuid():N}";
 
@@ -128,14 +129,15 @@ namespace SunEyeVision.UI.Services.Images
                     return existing;
                 }
 
-                // 创建新的图像源
-                var imageSource = new MemoryImageSource(mat, id, ownsMat: true);
+                // 创建新的图像源 - 克隆图像以避免所有权问题
+                var imageClone = image.Clone();
+                var imageSource = new MemoryImageSource(imageClone, id);
 
                 // 添加到缓存
                 AddToCache(imageSource);
 
                 // 估算内存使用
-                _estimatedMemoryUsage += EstimateMatSize(mat);
+                _estimatedMemoryUsage += EstimateImageSize(image);
 
                 return imageSource;
             }
@@ -442,6 +444,14 @@ namespace SunEyeVision.UI.Services.Images
         private static long EstimateMatSize(Mat mat)
         {
             return mat.Width * mat.Height * mat.Channels();
+        }
+
+        /// <summary>
+        /// 估算图像大小
+        /// </summary>
+        private static long EstimateImageSize(IVisionImage image)
+        {
+            return image.Width * image.Height * image.Channels;
         }
 
         /// <summary>

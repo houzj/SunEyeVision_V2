@@ -1,53 +1,41 @@
-using OpenCvSharp;
-using SunEyeVision.Plugin.SDK.Extensions;
-using System;
+﻿using System;
+using System.Windows;
+using System.Windows.Media;
 
 namespace SunEyeVision.Plugin.SDK.Models.Roi
 {
-    /// <summary>
-    /// 多边形ROI
-    /// </summary>
     public sealed class PolygonRoi : RoiBase
     {
-        private readonly Point2d[] _vertices;
+        private readonly Point[] _vertices;
 
-        /// <summary>
-        /// 从顶点数组创建多边形ROI
-        /// </summary>
-        public PolygonRoi(Point2d[] vertices)
+        public PolygonRoi(Point[] vertices)
         {
-            _vertices = vertices ?? Array.Empty<Point2d>();
+            _vertices = vertices ?? Array.Empty<Point>();
         }
 
-        /// <summary>
-        /// 从矩形创建多边形ROI
-        /// </summary>
-        public static PolygonRoi FromRectangle(Rect2d rect)
+        public static PolygonRoi FromRectangle(Rect rect)
         {
             return new PolygonRoi(new[]
             {
-                rect.TopLeft(),
-                rect.TopRight(),
-                rect.BottomRight(),
-                rect.BottomLeft()
+                new Point(rect.X, rect.Y),
+                new Point(rect.X + rect.Width, rect.Y),
+                new Point(rect.X + rect.Width, rect.Y + rect.Height),
+                new Point(rect.X, rect.Y + rect.Height)
             });
         }
 
-        /// <summary>
-        /// 创建正多边形ROI
-        /// </summary>
-        public static PolygonRoi CreateRegular(Point2d center, double radius, int sides, double startAngle = 0)
+        public static PolygonRoi CreateRegular(Point center, double radius, int sides, double startAngle = 0)
         {
             if (sides < 3)
                 throw new ArgumentException("正多边形至少需要3条边", nameof(sides));
 
-            Point2d[] vertices = new Point2d[sides];
+            Point[] vertices = new Point[sides];
             double angleStep = 2 * Math.PI / sides;
 
             for (int i = 0; i < sides; i++)
             {
                 double angle = startAngle + i * angleStep;
-                vertices[i] = new Point2d(
+                vertices[i] = new Point(
                     center.X + radius * Math.Cos(angle),
                     center.Y + radius * Math.Sin(angle)
                 );
@@ -57,45 +45,40 @@ namespace SunEyeVision.Plugin.SDK.Models.Roi
         }
 
         public override RoiType Type => RoiType.Polygon;
-
         public override bool IsValid => _vertices.Length >= 3;
 
-        public override Rect2d BoundingBox
+        public override Rect BoundingBox
         {
             get
             {
                 if (_vertices.Length == 0)
-                    return new Rect2d(0, 0, 0, 0);
+                    return new Rect(0, 0, 0, 0);
 
                 double minX = double.MaxValue, minY = double.MaxValue;
                 double maxX = double.MinValue, maxY = double.MinValue;
 
                 foreach (var p in _vertices)
                 {
-                    minX = Math.Min(minX, p.X);
-                    minY = Math.Min(minY, p.Y);
-                    maxX = Math.Max(maxX, p.X);
-                    maxY = Math.Max(maxY, p.Y);
+                    if (p.X < minX) minX = p.X;
+                    if (p.Y < minY) minY = p.Y;
+                    if (p.X > maxX) maxX = p.X;
+                    if (p.Y > maxY) maxY = p.Y;
                 }
 
-                return new Rect2d(minX, minY, maxX - minX, maxY - minY);
+                return new Rect(minX, minY, maxX - minX, maxY - minY);
             }
         }
 
-        public override Point2d Center
+        public override Point Center
         {
             get
             {
                 if (_vertices.Length == 0)
-                    return new Point2d(0, 0);
+                    return new Point(0, 0);
 
                 double sumX = 0, sumY = 0;
-                foreach (var p in _vertices)
-                {
-                    sumX += p.X;
-                    sumY += p.Y;
-                }
-                return new Point2d(sumX / _vertices.Length, sumY / _vertices.Length);
+                foreach (var p in _vertices) { sumX += p.X; sumY += p.Y; }
+                return new Point(sumX / _vertices.Length, sumY / _vertices.Length);
             }
         }
 
@@ -103,10 +86,7 @@ namespace SunEyeVision.Plugin.SDK.Models.Roi
         {
             get
             {
-                if (_vertices.Length < 3)
-                    return 0;
-
-                // 使用鞋带公式计算面积
+                if (_vertices.Length < 3) return 0;
                 double area = 0;
                 int n = _vertices.Length;
                 for (int i = 0; i < n; i++)
@@ -119,43 +99,29 @@ namespace SunEyeVision.Plugin.SDK.Models.Roi
             }
         }
 
-        /// <summary>
-        /// 顶点数量
-        /// </summary>
         public int VertexCount => _vertices.Length;
+        public Point[] Vertices => _vertices;
 
-        /// <summary>
-        /// 顶点数组
-        /// </summary>
-        public Point2d[] Vertices => _vertices;
-
-        /// <summary>
-        /// 周长
-        /// </summary>
         public double Perimeter
         {
             get
             {
-                if (_vertices.Length < 2)
-                    return 0;
-
+                if (_vertices.Length < 2) return 0;
                 double perimeter = 0;
                 int n = _vertices.Length;
                 for (int i = 0; i < n; i++)
                 {
                     int j = (i + 1) % n;
-                    perimeter += _vertices[i].DistanceTo(_vertices[j]);
+                    perimeter += (_vertices[i] - _vertices[j]).Length;
                 }
                 return perimeter;
             }
         }
 
-        public override bool Contains(Point2d point)
+        public override bool Contains(Point point)
         {
-            if (_vertices.Length < 3)
-                return false;
+            if (_vertices.Length < 3) return false;
 
-            // 射线法判断点是否在多边形内
             int n = _vertices.Length;
             bool inside = false;
 
@@ -172,63 +138,33 @@ namespace SunEyeVision.Plugin.SDK.Models.Roi
             return inside;
         }
 
-        public override Point2d[] GetBoundaryPoints()
-        {
-            return _vertices;
-        }
-
-        public override Mat CreateMask(Size imageSize)
-        {
-            Mat mask = new Mat(imageSize, MatType.CV_8UC1, Scalar.Black);
-            if (_vertices.Length < 3) return mask;
-
-            // 转换为Point数组
-            Point[] intPoints = new Point[_vertices.Length];
-            for (int i = 0; i < _vertices.Length; i++)
-            {
-                intPoints[i] = new Point((int)Math.Round(_vertices[i].X), (int)Math.Round(_vertices[i].Y));
-            }
-
-            Cv2.FillPoly(mask, new[] { intPoints }, Scalar.White);
-            return mask;
-        }
+        public override Point[] GetBoundaryPoints() => _vertices;
 
         public override IRoi Offset(double dx, double dy)
         {
-            Point2d[] newVertices = new Point2d[_vertices.Length];
+            var v = new Vector(dx, dy);
+            Point[] newVertices = new Point[_vertices.Length];
             for (int i = 0; i < _vertices.Length; i++)
-            {
-                newVertices[i] = new Point2d(_vertices[i].X + dx, _vertices[i].Y + dy);
-            }
+                newVertices[i] = _vertices[i] + v;
             return new PolygonRoi(newVertices);
         }
 
         public override IRoi Scale(double factor)
         {
-            Point2d[] newVertices = new Point2d[_vertices.Length];
+            Point[] newVertices = new Point[_vertices.Length];
             for (int i = 0; i < _vertices.Length; i++)
-            {
-                newVertices[i] = new Point2d(_vertices[i].X * factor, _vertices[i].Y * factor);
-            }
+                newVertices[i] = new Point(_vertices[i].X * factor, _vertices[i].Y * factor);
             return new PolygonRoi(newVertices);
         }
 
-        public override IRoi Transform(Mat transformMatrix)
+        public override IRoi Transform(Matrix transformMatrix)
         {
-            if (transformMatrix == null || transformMatrix.Empty())
+            if (transformMatrix.IsIdentity)
                 return this;
 
-            Point2d[] newVertices = new Point2d[_vertices.Length];
+            Point[] newVertices = new Point[_vertices.Length];
             for (int i = 0; i < _vertices.Length; i++)
-            {
-                double x = _vertices[i].X * transformMatrix.Get<double>(0, 0) +
-                          _vertices[i].Y * transformMatrix.Get<double>(0, 1) +
-                          transformMatrix.Get<double>(0, 2);
-                double y = _vertices[i].X * transformMatrix.Get<double>(1, 0) +
-                          _vertices[i].Y * transformMatrix.Get<double>(1, 1) +
-                          transformMatrix.Get<double>(1, 2);
-                newVertices[i] = new Point2d(x, y);
-            }
+                newVertices[i] = transformMatrix.Transform(_vertices[i]);
             return new PolygonRoi(newVertices);
         }
 
@@ -240,22 +176,56 @@ namespace SunEyeVision.Plugin.SDK.Models.Roi
             if (_vertices.Length <= 3)
                 return this;
 
-            // 转换为Point2f数组用于OpenCV
-            Point2f[] points2f = new Point2f[_vertices.Length];
-            for (int i = 0; i < _vertices.Length; i++)
+            var simplified = DouglasPeuckerSimplify(_vertices, tolerance);
+            return new PolygonRoi(simplified);
+        }
+
+        private static Point[] DouglasPeuckerSimplify(Point[] points, double tolerance)
+        {
+            if (points.Length <= 2)
+                return points;
+
+            int first = 0, last = points.Length - 1;
+            var resultIndices = new System.Collections.Generic.List<int> { first, last };
+
+            SimplifySegment(points, first, last, tolerance, resultIndices);
+
+            resultIndices.Sort();
+            var result = new Point[resultIndices.Count];
+            for (int i = 0; i < result.Length; i++)
+                result[i] = points[resultIndices[i]];
+
+            return result;
+        }
+
+        private static void SimplifySegment(Point[] points, int first, int last, double tolerance,
+            System.Collections.Generic.List<int> result)
+        {
+            double maxDist = 0;
+            int maxIdx = 0;
+
+            for (int i = first + 1; i < last; i++)
             {
-                points2f[i] = new Point2f((float)_vertices[i].X, (float)_vertices[i].Y);
+                double dist = PointToSegmentDistance(points[i], points[first], points[last]);
+                if (dist > maxDist) { maxDist = dist; maxIdx = i; }
             }
 
-            var simplified = Cv2.ApproxPolyDP(points2f, tolerance, true);
-
-            Point2d[] result = new Point2d[simplified.Length];
-            for (int i = 0; i < simplified.Length; i++)
+            if (maxDist > tolerance)
             {
-                result[i] = new Point2d(simplified[i].X, simplified[i].Y);
+                SimplifySegment(points, first, maxIdx, tolerance, result);
+                result.Add(maxIdx);
+                SimplifySegment(points, maxIdx, last, tolerance, result);
             }
+        }
 
-            return new PolygonRoi(result);
+        private static double PointToSegmentDistance(Point p, Point a, Point b)
+        {
+            var ab = b - a;
+            var ap = p - a;
+            double t = Math.Max(0, Math.Min(1, (ap.X * ab.X + ap.Y * ab.Y) / (ab.X * ab.X + ab.Y * ab.Y)));
+            double projX = a.X + t * ab.X;
+            double projY = a.Y + t * ab.Y;
+            return Math.Sqrt((p.X - projX) * (p.X - projX) + (p.Y - projY) * (p.Y - projY));
         }
 
         public override string ToString() => $"PolygonROI({VertexCount} vertices)";

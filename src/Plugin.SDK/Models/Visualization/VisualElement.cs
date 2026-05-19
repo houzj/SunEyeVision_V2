@@ -1,31 +1,32 @@
-using OpenCvSharp;
+﻿using System.Windows;
+using System.Windows.Media;
 
 namespace SunEyeVision.Plugin.SDK.Models.Visualization
 {
     /// <summary>线段几何</summary>
     public sealed class LineSegment
     {
-        public Point2d Start { get; }
-        public Point2d End { get; }
+        public Point Start { get; }
+        public Point End { get; }
 
-        public LineSegment(Point2d start, Point2d end)
+        public LineSegment(Point start, Point end)
         {
             Start = start;
             End = end;
         }
 
-        public double Length => Start.DistanceTo(End);
+        public double Length => (End - Start).Length;
     }
 
     /// <summary>圆弧几何</summary>
     public sealed class ArcGeometry
     {
-        public Point2d Center { get; }
+        public Point Center { get; }
         public double Radius { get; }
         public double StartAngle { get; }
         public double EndAngle { get; }
 
-        public ArcGeometry(Point2d center, double radius, double startAngle, double endAngle)
+        public ArcGeometry(Point center, double radius, double startAngle, double endAngle)
         {
             Center = center;
             Radius = radius;
@@ -37,12 +38,12 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
     /// <summary>坐标系几何</summary>
     public sealed class CoordinateSystemGeometry
     {
-        public Mat TransformMatrix { get; }
+        public Matrix TransformMatrix { get; }
         public double AxisLength { get; }
         public uint XAxisColor { get; }
         public uint YAxisColor { get; }
 
-        public CoordinateSystemGeometry(Mat transformMatrix, double axisLength, uint xAxisColor, uint yAxisColor)
+        public CoordinateSystemGeometry(Matrix transformMatrix, double axisLength, uint xAxisColor, uint yAxisColor)
         {
             TransformMatrix = transformMatrix;
             AxisLength = axisLength;
@@ -54,10 +55,10 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
     /// <summary>轮廓几何</summary>
     public sealed class ContourGeometry
     {
-        public Point2d[] Points { get; }
+        public Point[] Points { get; }
         public bool IsClosed { get; }
 
-        public ContourGeometry(Point2d[] points, bool isClosed)
+        public ContourGeometry(Point[] points, bool isClosed)
         {
             Points = points;
             IsClosed = isClosed;

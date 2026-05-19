@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using OpenCvSharp;
+using SunEyeVision.Plugin.SDK.Imaging;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Core.Models;
 using SunEyeVision.Plugin.SDK.Core;
@@ -125,7 +125,7 @@ namespace SunEyeVision.Workflow
         /// </summary>
         private async Task<ExecutionResult> ExecuteWorkflowWithParallelGroups(
             Workflow workflow,
-            Mat inputImage,
+            IVisionImage inputImage,
             WorkflowContext context)
         {
             var result = new ExecutionResult();
@@ -236,7 +236,7 @@ namespace SunEyeVision.Workflow
         private async Task<ExecutionResult> ExecuteNodesInParallel(
             Workflow workflow,
             List<string> nodeIds,
-            Mat defaultInput,
+            IVisionImage defaultInput,
             WorkflowContext context)
         {
             var result = new ExecutionResult();
@@ -406,7 +406,7 @@ namespace SunEyeVision.Workflow
         /// <summary>
         /// 执行工作流（同步，支持工作流控制节点）
         /// </summary>
-        public async Task<ExecutionResult> ExecuteWorkflow(string workflowId, Mat inputImage)
+        public async Task<ExecutionResult> ExecuteWorkflow(string workflowId, IVisionImage inputImage)
         {
             if (_currentState == WorkflowExecutionState.Running)
             {
@@ -545,15 +545,15 @@ namespace SunEyeVision.Workflow
             try
             {
                 // 处理多输入情况
-                Mat matInput = null;
-                if (inputImage is Mat)
+                IVisionImage matInput = null;
+                if (inputImage is IVisionImage)
                 {
-                    matInput = inputImage as Mat;
+                    matInput = inputImage as IVisionImage;
                 }
                 else if (inputImage is List<object> inputList && inputList.Count > 0)
                 {
                     // 多输入情况：使用第一个输入作为主输入（算法节点默认行为）
-                    matInput = inputList[0] as Mat;
+                    matInput = inputList[0] as IVisionImage;
                 }
                 else
                 {
@@ -619,7 +619,7 @@ namespace SunEyeVision.Workflow
         /// <param name="node">算法节点</param>
         /// <param name="inputImage">输入图像（作为 ResolvedInputImage 的回退值）</param>
         /// <param name="nodeResults">节点执行结果缓存，用于参数绑定解析</param>
-        private NodeExecutionResult ExecuteAlgorithmNode(AlgorithmNode node, Mat? inputImage)
+        private NodeExecutionResult ExecuteAlgorithmNode(AlgorithmNode node, IVisionImage? inputImage)
         {
             var result = new NodeExecutionResult { NodeId = node.Id, StartTime = DateTime.Now, EndTime = DateTime.Now };
 
@@ -654,7 +654,7 @@ namespace SunEyeVision.Workflow
         /// </summary>
         private async Task<NodeExecutionResult> ExecuteSubroutineNode(
             SubroutineNode node,
-            Mat inputImage,
+            IVisionImage inputImage,
             WorkflowContext context,
             Workflow workflow)
         {
@@ -695,7 +695,7 @@ namespace SunEyeVision.Workflow
         /// </summary>
         private NodeExecutionResult ExecuteConditionNode(
             ConditionNode node,
-            Mat inputImage,
+            IVisionImage inputImage,
             WorkflowContext context)
         {
             // 查找工作流控制插件
@@ -737,7 +737,7 @@ namespace SunEyeVision.Workflow
         /// <summary>
         /// 异步执行工作流
         /// </summary>
-        public async Task<ExecutionResult> ExecuteWorkflowAsync(string workflowId, Mat inputImage)
+        public async Task<ExecutionResult> ExecuteWorkflowAsync(string workflowId, IVisionImage inputImage)
         {
             _cancellationTokenSource = new CancellationTokenSource();
 

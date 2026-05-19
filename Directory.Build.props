@@ -49,4 +49,13 @@
   <ItemGroup Condition="'$(IsToolPlugin)'=='true'">
     <PackageReference Include="System.Text.Json" Version="10.0.3" />
   </ItemGroup>
+
+  <!-- 全局: Halcon 运行时 DLL 拷贝 -->
+  <ItemGroup Condition="Exists('$(MSBuildThisFileDirectory)libs\halcon\runtime\x64-win64')">
+    <None Include="$(MSBuildThisFileDirectory)libs\halcon\runtime\x64-win64\**\*.dll"
+          Link="runtimes\halcon\%(RecursiveDir)%(Filename)%(Extension)">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Visible>false</Visible>
+    </None>
+  </ItemGroup>
 </Project>

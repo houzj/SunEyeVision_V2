@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using OpenCvSharp;
 using SunEyeVision.CvEngine.Models;
-using SunEyeVision.Plugin.SDK.Logging;
 
 namespace SunEyeVision.CvEngine
 {

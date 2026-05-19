@@ -170,5 +170,8 @@ temp_*.cs
 /output/
 tools/*/output/
 
+# 第三方库文件（Halcon 运行库等），单独管理，不纳入版本控制
+/libs/
+
 # Example files (SunEyeVision specific)
 UsageExample.cs

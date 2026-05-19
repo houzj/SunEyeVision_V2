@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using SunEyeVision.Plugin.SDK.Imaging;
 
 namespace SunEyeVision.Plugin.SDK.Models.Imaging
 {
@@ -29,10 +30,10 @@ namespace SunEyeVision.Plugin.SDK.Models.Imaging
         /// <summary>
         /// 创建内存图像源（用于算法处理结果）
         /// </summary>
-        /// <param name="mat">OpenCV Mat对象（所有权转移，管理器负责释放）</param>
+        /// <param name="image">IVisionImage 图像（所有权转移，管理器负责释放）</param>
         /// <param name="sourceId">可选的图像源ID，不提供则自动生成</param>
         /// <returns>图像源实例</returns>
-        IImageSource CreateFromMemory(OpenCvSharp.Mat mat, string? sourceId = null);
+        IImageSource CreateFromMemory(IVisionImage image, string? sourceId = null);
 
         /// <summary>
         /// 从现有BitmapSource创建内存图像源

@@ -33,7 +33,10 @@ namespace SunEyeVision.UI.Services.ParameterSetting
             "Bitmap",
             "BitmapSource",
             "ImageSource",
-            "WriteableBitmap"
+            "WriteableBitmap",
+            "IVisionImage",
+            "HImage",
+            "HalImage"
         };
 
         /// <summary>

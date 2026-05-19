@@ -1,9 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using OpenCvSharp;
+using SunEyeVision.Plugin.SDK.Imaging;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.Infrastructure.Infrastructure;
@@ -362,7 +362,7 @@ namespace SunEyeVision.Workflow
     {
         public string WorkflowId { get; set; }
         public string ExecutionId { get; set; }
-        public Mat InputImage { get; set; }
+        public IVisionImage InputImage { get; set; }
         public ExecutionResult Result { get; set; }
         public long DurationMs { get; set; }
         public ImageQueueEntry QueueEntry { get; set; }

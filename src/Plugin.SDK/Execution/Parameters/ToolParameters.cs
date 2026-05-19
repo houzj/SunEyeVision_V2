@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json.Serialization;
-using OpenCvSharp;
+using SunEyeVision.Plugin.SDK.Imaging;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Metadata;
 using SunEyeVision.Plugin.SDK.Models;
@@ -98,7 +98,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// 对于图像源节点（如 ImageLoad），此属性为 null，工具自行从文件加载图像。
         /// </remarks>
         [JsonIgnore]
-        public Mat? ResolvedInputImage { get; set; }
+        public IVisionImage? ResolvedInputImage { get; set; }
 
         /// <summary>
         /// 验证所有参数

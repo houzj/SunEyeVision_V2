@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using OpenCvSharp;
-using OpenCvSharp.WpfExtensions;
+using SunEyeVision.Plugin.SDK.Imaging;
 using SunEyeVision.Plugin.SDK.Models.Imaging;
 
 namespace SunEyeVision.UI.Services.Images
@@ -21,6 +21,9 @@ namespace SunEyeVision.UI.Services.Images
 
         // 原始Mat数据
         private Mat? _originalMat;
+
+        // IVisionImage缓存（当从IVisionImage创建或首次从Mat转换后持有）
+        private IVisionImage? _visionImage;
 
         // 转换后的BitmapSource
         private BitmapSource? _thumbnail;
@@ -95,7 +98,7 @@ namespace SunEyeVision.UI.Services.Images
             _fullImage = bitmapSource;
             Id = id ?? $"memory://{Guid.NewGuid():N}";
             _ownsMat = false;
-            _fullImageState = ImageLoadState.Loaded;
+                _fullImageState = ImageLoadState.Loaded;
             _matState = ImageLoadState.NotLoaded;
 
             _metadata = new ImageMetadata
@@ -105,6 +108,28 @@ namespace SunEyeVision.UI.Services.Images
                 PixelFormat = ConvertPixelFormat(bitmapSource.Format),
                 BitsPerPixel = bitmapSource.Format.BitsPerPixel,
                 Channels = bitmapSource.Format.BitsPerPixel / 8
+            };
+        }
+
+        /// <summary>
+        /// 从IVisionImage创建内存图像源
+        /// </summary>
+        /// <param name="image">IVisionImage图像</param>
+        /// <param name="id">可选ID</param>
+        public MemoryImageSource(IVisionImage image, string? id = null)
+        {
+            _visionImage = image ?? throw new ArgumentNullException(nameof(image));
+            _ownsMat = false;
+            Id = id ?? $"memory://{Guid.NewGuid():N}";
+            _matState = ImageLoadState.Loaded;
+
+            _metadata = new ImageMetadata
+            {
+                Width = image.Width,
+                Height = image.Height,
+                PixelFormat = PixelFormat.Undefined,
+                BitsPerPixel = image.Channels * 8,
+                Channels = image.Channels
             };
         }
 
@@ -200,7 +225,7 @@ namespace SunEyeVision.UI.Services.Images
                 else if (_originalMat != null && !_originalMat.Empty())
                 {
                     using var resized = ResizeMat(_originalMat, size);
-                    thumbnail = resized?.ToBitmapSource();
+                    thumbnail = resized != null ? MatToBitmapSource(resized) : null;
                 }
 
                 if (thumbnail != null)
@@ -249,7 +274,7 @@ namespace SunEyeVision.UI.Services.Images
 
                 if (_originalMat != null && !_originalMat.Empty())
                 {
-                    fullImage = _originalMat.ToBitmapSource();
+                    fullImage = MatToBitmapSource(_originalMat);
                     fullImage.Freeze();
                 }
 
@@ -281,12 +306,23 @@ namespace SunEyeVision.UI.Services.Images
         /// <summary>
         /// 获取Mat格式图像
         /// </summary>
-        public Mat? GetMat()
+        public IVisionImage? GetMat()
         {
             lock (_lock)
             {
                 ThrowIfDisposed();
-                return _originalMat;
+
+                if (_visionImage != null)
+                    return _visionImage;
+
+                if (_originalMat == null)
+                    return null;
+
+                // 从 Mat 提取像素数据通过 Factory 创建 IVisionImage
+                var pixelData = new byte[_originalMat.Total() * _originalMat.ElemSize()];
+                System.Runtime.InteropServices.Marshal.Copy(_originalMat.Data, pixelData, 0, pixelData.Length);
+                _visionImage = VisionAdapter.Factory.LoadFromBytes(pixelData, _originalMat.Width, _originalMat.Height, _originalMat.Channels());
+                return _visionImage;
             }
         }
 
@@ -309,7 +345,7 @@ namespace SunEyeVision.UI.Services.Images
         /// <summary>
         /// 异步获取Mat格式图像
         /// </summary>
-        public Task<Mat?> GetMatAsync(CancellationToken cancellationToken = default)
+        public Task<IVisionImage?> GetMatAsync(CancellationToken cancellationToken = default)
         {
             return Task.Run(GetMat, cancellationToken);
         }
@@ -433,6 +469,27 @@ namespace SunEyeVision.UI.Services.Images
         }
 
         /// <summary>
+        /// Mat → BitmapSource 手动转换（替代 OpenCvSharp.WpfExtensions）
+        /// </summary>
+        private static BitmapSource MatToBitmapSource(Mat mat)
+        {
+            var pixelFormat = mat.Channels() switch
+            {
+                1 => System.Windows.Media.PixelFormats.Gray8,
+                3 => System.Windows.Media.PixelFormats.Bgr24,
+                4 => System.Windows.Media.PixelFormats.Bgra32,
+                _ => System.Windows.Media.PixelFormats.Gray8
+            };
+            int stride = mat.Width * mat.Channels();
+            var bytes = new byte[stride * mat.Height];
+            System.Runtime.InteropServices.Marshal.Copy(mat.Data, bytes, 0, bytes.Length);
+            var bitmap = BitmapSource.Create(
+                mat.Width, mat.Height, 96, 96, pixelFormat, null, bytes, stride);
+            bitmap.Freeze();
+            return bitmap;
+        }
+
+        /// <summary>
         /// 抛出已释放异常
         /// </summary>
         private void ThrowIfDisposed()
@@ -458,6 +515,9 @@ namespace SunEyeVision.UI.Services.Images
                     _originalMat.Dispose();
                     _originalMat = null;
                 }
+
+                _visionImage?.Dispose();
+                _visionImage = null;
 
                 _disposed = true;
             }

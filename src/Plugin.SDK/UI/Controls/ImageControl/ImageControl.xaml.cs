@@ -11,10 +11,8 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using OpenCvSharp.WpfExtensions;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Logging;
-using CvMat = OpenCvSharp.Mat;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls
 {
@@ -457,43 +455,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             {
                 FitToWindow();
             }), System.Windows.Threading.DispatcherPriority.ContextIdle);
-        }
-
-        /// <summary>
-        /// 加载图像，利用 WPF GPU 渲染管线进行硬件缩放
-        /// 始终基于完整原图纹理渲染，任何缩放级别下清晰度无损
-        /// </summary>
-        public void LoadImageDownscaled(CvMat mat)
-        {
-            if (mat == null || mat.Empty()) return;
-
-            _originalImagePixelWidth = mat.Width;
-            _originalImagePixelHeight = mat.Height;
-
-            var bmp = mat.ToBitmapSource();
-            bmp?.Freeze();
-
-            SourceImage = bmp;
-
-            // GPU 硬件缩放：基于完整原图纹理，由 WPF 渲染管线完成
-            DisplayImage.Stretch = Stretch.Uniform;
-            RenderOptions.SetBitmapScalingMode(DisplayImage, BitmapScalingMode.NearestNeighbor);
-
-            ImageContainer.Width = _originalImagePixelWidth;
-            ImageContainer.Height = _originalImagePixelHeight;
-            ResultRenderLayer.Width = _originalImagePixelWidth;
-            ResultRenderLayer.Height = _originalImagePixelHeight;
-            InteractionOverlayCanvas.Width = _originalImagePixelWidth;
-            InteractionOverlayCanvas.Height = _originalImagePixelHeight;
-
-            ImageSizeText.Text = $"图像: {_originalImagePixelWidth} x {_originalImagePixelHeight}";
-
-            // 重置视图状态
-            Zoom = 1.0;
-            _offsetX = 0;
-            _offsetY = 0;
-
-            Dispatcher.BeginInvoke(new Action(FitToWindow), System.Windows.Threading.DispatcherPriority.ContextIdle);
         }
 
         /// <summary>

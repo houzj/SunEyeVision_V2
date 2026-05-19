@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
-using OpenCvSharp;
-using SunEyeVision.Plugin.SDK.Logging;
-using SunEyeVision.Core.Models;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.SDK.Imaging;
+using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 
 namespace SunEyeVision.Workflow
@@ -44,11 +43,13 @@ namespace SunEyeVision.Workflow
         /// </summary>
         /// <param name="defaultInputImage">引擎通过拓扑传递的默认输入图像（回退使用）</param>
         /// <param name="nodeResults">其他节点的执行结果缓存（用于动态绑定解析）</param>
-        public AlgorithmResult Execute(Mat? defaultInputImage, IDictionary<string, ToolResults>? nodeResults)
+        public AlgorithmResult Execute(IVisionImage? defaultInputImage, IDictionary<string, ToolResults>? nodeResults)
         {
             if (!IsEnabled)
             {
-                return AlgorithmResult.CreateSuccess(defaultInputImage, 0);
+                return AlgorithmResult.CreateSuccess(
+                    defaultInputImage,
+                    0);
             }
 
             OnBeforeExecute();
@@ -118,7 +119,7 @@ namespace SunEyeVision.Workflow
         /// <summary>
         /// 解析输入图像 — 优先使用参数绑定中的 ImageSource，回退到拓扑传递的默认图像
         /// </summary>
-        private Mat? ResolveInputImage(ToolParameters parameters, Mat? defaultInputImage, IDictionary<string, ToolResults>? nodeResults)
+        private IVisionImage? ResolveInputImage(ToolParameters parameters, IVisionImage? defaultInputImage, IDictionary<string, ToolResults>? nodeResults)
         {
             // 优先级1：参数中的 ImageSource 绑定（AvailableDataSource）
             var imageSourceProp = parameters.GetType().GetProperty("ImageSource");
@@ -129,9 +130,9 @@ namespace SunEyeVision.Workflow
                     && nodeResults.TryGetValue(imageSource.SourceNodeId, out var sourceResult))
                 {
                     var value = GetPropertyValueFromResult(sourceResult, imageSource.PropertyName);
-                    if (value is Mat mat && !mat.Empty())
+                    if (value is IVisionImage image && !image.IsEmpty)
                     {
-                        return mat;
+                        return image;
                     }
                 }
             }
@@ -188,7 +189,7 @@ namespace SunEyeVision.Workflow
 
             // 获取第一张可显示图像作为主输出
             var displayImages = result.GetDisplayImages();
-            var primaryImage = displayImages.Values.FirstOrDefault(m => m != null && !m.Empty());
+            var primaryImage = displayImages.Values.FirstOrDefault(m => m != null && !m.IsEmpty);
 
             // 如果没有输出图像，返回错误
             if (primaryImage == null)

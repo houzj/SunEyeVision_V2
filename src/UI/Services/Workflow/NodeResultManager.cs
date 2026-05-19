@@ -6,6 +6,7 @@ using OpenCvSharp;
 using OpenCvSharp.Extensions;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.SDK.Imaging;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
@@ -76,10 +77,10 @@ namespace SunEyeVision.UI.Services.Workflow
 
             // 存储所有显示图像
             var displayImages = result.GetDisplayImages();
-            foreach (var (name, mat) in displayImages)
+            foreach (var (name, image) in displayImages)
             {
-                if (mat != null && !mat.Empty())
-                    executionResult.Outputs[name] = mat;
+                if (image != null && !image.IsEmpty)
+                    executionResult.Outputs[name] = image;
             }
 
             _workflowContext.SetNodeResult(node.Id, executionResult);
@@ -185,8 +186,8 @@ namespace SunEyeVision.UI.Services.Workflow
         public bool UpdateNodeImage(WorkflowNodeBase node, ToolResults result)
         {
             var images = result.GetDisplayImages();
-            var primaryMat = images.Values.FirstOrDefault(m => m != null && !m.Empty());
-            if (primaryMat == null)
+            var primaryImage = images.Values.FirstOrDefault(m => m != null && !m.IsEmpty);
+            if (primaryImage == null)
             {
                 return false;
             }
@@ -198,7 +199,7 @@ namespace SunEyeVision.UI.Services.Workflow
 
                 // 通过ImageSourceManager创建内存图像源
                 var imageSource = ImageSourceManager.Instance.CreateFromMemory(
-                    primaryMat.Clone(), // 克隆Mat，避免所有权问题
+                    primaryImage.Clone(), // 克隆IVisionImage，避免所有权问题
                     imageSourceId
                 );
 
@@ -231,8 +232,13 @@ namespace SunEyeVision.UI.Services.Workflow
 
                 if (cachedResult.ProcessedImage != null)
                 {
-                    var mat = cachedResult.ProcessedImage.ToMat();
-                    executionResult.Outputs["Output"] = mat;
+                    var bmp = cachedResult.ProcessedImage;
+                    var stride = bmp.PixelWidth * (bmp.Format.BitsPerPixel / 8);
+                    var pixelData = new byte[stride * bmp.PixelHeight];
+                    bmp.CopyPixels(pixelData, stride, 0);
+                    var image = VisionAdapter.Factory.LoadFromBytes(
+                        pixelData, bmp.PixelWidth, bmp.PixelHeight, bmp.Format.BitsPerPixel / 8);
+                    executionResult.Outputs["Output"] = image;
                 }
 
                 _workflowContext.SetNodeResult(node.Id, executionResult);
@@ -244,9 +250,9 @@ namespace SunEyeVision.UI.Services.Workflow
         }
 
         /// <summary>
-        /// 获取节点的输出Mat
+        /// 获取节点的输出图像
         /// </summary>
-        public Mat? GetNodeOutputMat(WorkflowNodeBase node)
+        public IVisionImage? GetNodeOutputImage(WorkflowNodeBase node)
         {
             if (node == null)
                 return null;
@@ -256,7 +262,7 @@ namespace SunEyeVision.UI.Services.Workflow
                 return null;
 
             var images = executionResult.ToolResult.GetDisplayImages();
-            return images.Values.FirstOrDefault(m => m != null && !m.Empty());
+            return images.Values.FirstOrDefault(m => m != null && !m.IsEmpty);
         }
 
         /// <summary>
@@ -283,11 +289,11 @@ namespace SunEyeVision.UI.Services.Workflow
         public BitmapSource? GetDisplayImageFromSource(ToolResults result, string propertyName)
         {
             var images = result.GetDisplayImages();
-            if (images.TryGetValue(propertyName, out var mat) && mat != null && !mat.Empty())
+            if (images.TryGetValue(propertyName, out var hImage) && hImage != null && !hImage.IsEmpty)
             {
                 try
                 {
-                    return mat.ToBitmapSource();
+                    return hImage.ToBitmapSource();
                 }
                 catch
                 {
@@ -350,7 +356,7 @@ namespace SunEyeVision.UI.Services.Workflow
                 ShapeType.Rectangle => new GraphicsDisplayItem
                 {
                     Style = style, Type = GraphicsType.Rectangle,
-                    Geometries = new object[] { new Rect2d(shape.CenterX - shape.Width / 2, shape.CenterY - shape.Height / 2, shape.Width, shape.Height) }
+                    Geometries = new object[] { new System.Windows.Rect(shape.CenterX - shape.Width / 2, shape.CenterY - shape.Height / 2, shape.Width, shape.Height) }
                 },
                 ShapeType.RotatedRectangle => new GraphicsDisplayItem
                 {
@@ -381,12 +387,12 @@ namespace SunEyeVision.UI.Services.Workflow
                 ShapeType.Polygon when shape.Points != null && shape.Points.Count >= 3 => new GraphicsDisplayItem
                 {
                     Style = style, Type = GraphicsType.Polygon,
-                    Geometries = new object[] { shape.Points.Select(p => new Point2d(p.X, p.Y)).ToArray() }
+                    Geometries = new object[] { shape.Points.Select(p => new System.Windows.Point(p.X, p.Y)).ToArray() }
                 },
                 ShapeType.Line => new GraphicsDisplayItem
                 {
                     Style = style, Type = GraphicsType.Line,
-                    Geometries = new object[] { new LineSegment(new Point2d(shape.StartX, shape.StartY), new Point2d(shape.EndX, shape.EndY)) }
+                    Geometries = new object[] { new LineSegment(new System.Windows.Point(shape.StartX, shape.StartY), new System.Windows.Point(shape.EndX, shape.EndY)) }
                 },
                 _ => null
             };

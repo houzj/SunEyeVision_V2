@@ -12,7 +12,6 @@ using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
-using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Tool.ShapeMatch.Models;
 using SunEyeVision.CvEngine;
@@ -651,7 +650,7 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
                 OkColor = Colors.LimeGreen,
                 LineWidth = 1.5
             };
-            var points = edgePoints.Select(p => new Point2d(p.X, p.Y)).ToList();
+            var points = edgePoints.Select(p => new System.Windows.Point(p.X, p.Y)).ToList();
             display.AddPoints(style, points);
             dialogImageControl.ResultRenderLayerControl.SetDisplayCollector(display);
         }
@@ -662,7 +661,7 @@ namespace SunEyeVision.Tool.ShapeMatch.Views
             ClearContourOverlay();
             var display = new DisplayCollector();
             var style = new GraphicsStyle { Name = "EdgePoint", OkColor = color, LineWidth = 1.5 };
-            var points = edgePoints.Select(p => new Point2d(p.X, p.Y)).ToList();
+            var points = edgePoints.Select(p => new System.Windows.Point(p.X, p.Y)).ToList();
             display.AddPoints(style, points);
             dialogImageControl.ResultRenderLayerControl.SetDisplayCollector(display);
         }

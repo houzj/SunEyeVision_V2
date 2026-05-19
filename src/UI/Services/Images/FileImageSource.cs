@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using OpenCvSharp;
-using OpenCvSharp.WpfExtensions;
+using SunEyeVision.Plugin.SDK.Imaging;
 using SunEyeVision.Plugin.SDK.Models.Imaging;
 
 namespace SunEyeVision.UI.Services.Images
@@ -25,6 +25,7 @@ namespace SunEyeVision.UI.Services.Images
         private BitmapSource? _thumbnail;
         private BitmapSource? _fullImage;
         private Mat? _mat;
+        private IVisionImage? _visionImage;
 
         // 加载状态
         private ImageLoadState _thumbnailState = ImageLoadState.NotLoaded;
@@ -193,7 +194,7 @@ namespace SunEyeVision.UI.Services.Images
                 int newHeight = (int)(mat.Height * scale);
 
                 using var resized = mat.Resize(new Size(newWidth, newHeight), 0, 0, InterpolationFlags.Linear);
-                var thumbnail = resized.ToBitmapSource();
+                var thumbnail = MatToBitmapSource(resized);
 
                 // 冻结以提高性能
                 thumbnail.Freeze();
@@ -248,7 +249,7 @@ namespace SunEyeVision.UI.Services.Images
                     return null;
                 }
 
-                var fullImage = mat.ToBitmapSource();
+                var fullImage = MatToBitmapSource(mat);
                 fullImage.Freeze();
 
                 lock (_lock)
@@ -276,14 +277,14 @@ namespace SunEyeVision.UI.Services.Images
         /// <summary>
         /// 获取Mat格式图像
         /// </summary>
-        public Mat? GetMat()
+        public IVisionImage? GetMat()
         {
             lock (_lock)
             {
                 ThrowIfDisposed();
 
-                if (_matState == ImageLoadState.Loaded && _mat != null)
-                    return _mat;
+                if (_matState == ImageLoadState.Loaded && _visionImage != null)
+                    return _visionImage;
 
                 if (_matState == ImageLoadState.Loading)
                     return null;
@@ -301,16 +302,21 @@ namespace SunEyeVision.UI.Services.Images
                     return null;
                 }
 
+                var pixelData = new byte[mat.Total() * mat.ElemSize()];
+                System.Runtime.InteropServices.Marshal.Copy(mat.Data, pixelData, 0, pixelData.Length);
+
                 lock (_lock)
                 {
                     _mat = mat;
                     _matState = ImageLoadState.Loaded;
+                    var visionImage = VisionAdapter.Factory.LoadFromBytes(pixelData, mat.Width, mat.Height, mat.Channels());
+                    _visionImage = visionImage;
                 }
 
                 sw.Stop();
                 OnImageLoaded(ImageFormat.Mat, true, null, sw.ElapsedMilliseconds);
 
-                return mat;
+                return _visionImage;
             }
             catch (Exception ex)
             {
@@ -342,7 +348,7 @@ namespace SunEyeVision.UI.Services.Images
         /// <summary>
         /// 异步获取Mat格式图像
         /// </summary>
-        public Task<Mat?> GetMatAsync(CancellationToken cancellationToken = default)
+        public Task<IVisionImage?> GetMatAsync(CancellationToken cancellationToken = default)
         {
             return Task.Run(GetMat, cancellationToken);
         }
@@ -424,6 +430,8 @@ namespace SunEyeVision.UI.Services.Images
                 {
                     _mat?.Dispose();
                     _mat = null;
+                    _visionImage?.Dispose();
+                    _visionImage = null;
                     _matState = ImageLoadState.Released;
                 }
             }
@@ -456,6 +464,27 @@ namespace SunEyeVision.UI.Services.Images
         }
 
         /// <summary>
+        /// Mat → BitmapSource 手动转换（替代 OpenCvSharp.WpfExtensions）
+        /// </summary>
+        private static BitmapSource MatToBitmapSource(Mat mat)
+        {
+            var pixelFormat = mat.Channels() switch
+            {
+                1 => System.Windows.Media.PixelFormats.Gray8,
+                3 => System.Windows.Media.PixelFormats.Bgr24,
+                4 => System.Windows.Media.PixelFormats.Bgra32,
+                _ => System.Windows.Media.PixelFormats.Gray8
+            };
+            int stride = mat.Width * mat.Channels();
+            var bytes = new byte[stride * mat.Height];
+            System.Runtime.InteropServices.Marshal.Copy(mat.Data, bytes, 0, bytes.Length);
+            var bitmap = BitmapSource.Create(
+                mat.Width, mat.Height, 96, 96, pixelFormat, null, bytes, stride);
+            bitmap.Freeze();
+            return bitmap;
+        }
+
+        /// <summary>
         /// 释放资源
         /// </summary>
         public void Dispose()
@@ -468,6 +497,8 @@ namespace SunEyeVision.UI.Services.Images
                 _fullImage = null;
                 _mat?.Dispose();
                 _mat = null;
+                _visionImage?.Dispose();
+                _visionImage = null;
 
                 _disposed = true;
             }

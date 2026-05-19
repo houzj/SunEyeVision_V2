@@ -2086,9 +2086,10 @@ SplitterPosition = position;
                 var metadataList = metadataProvider.GetAllPropertyMetadata(sourceNode.ToolType);
                 if (metadataList == null) continue;
 
-                // 找第一个 Mat 类型的属性（与 ImageSourceSelector 的过滤逻辑一致）
+                // 找第一个图像类型的属性（Mat / IVisionImage / HImage）
+                var imageTypeNames = new HashSet<string> { "Mat", "IVisionImage", "HImage" };
                 var matMetadata = metadataList.FirstOrDefault(m =>
-                    m.PropertyType?.Name == "Mat");
+                    m.PropertyType != null && imageTypeNames.Contains(m.PropertyType.Name));
 
                 if (matMetadata != null)
                 {
@@ -3528,13 +3529,17 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
             if (fullName == null)
                 return false;
 
-            // 图像类型：Mat, CvImage 及其派生
-            if (fullName.Contains("OpenCvSharp.Mat") ||
-                fullName.Contains("CvImage"))
+            // 图像类型：IVisionImage, HImage, HalImage, CvImage, Mat 及其派生
+            if (fullName.Contains("IVisionImage") ||
+                fullName.Contains("HImage") ||
+                fullName.Contains("HalImage") ||
+                fullName.Contains("CvImage") ||
+                fullName.Contains("OpenCvSharp.Mat"))
                 return true;
 
-            // 区域/图形类型：CvRegion 及其派生
-            if (fullName.Contains("CvRegion"))
+            // 区域/图形类型：IVisionRegion, CvRegion 及其派生
+            if (fullName.Contains("IVisionRegion") ||
+                fullName.Contains("CvRegion"))
                 return true;
 
             // 检查基类链（处理继承关系）
@@ -3544,7 +3549,9 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
                 var baseName = baseType.FullName;
                 if (baseName != null &&
                     (baseName.Contains("OpenCvSharp.Mat") ||
+                     baseName.Contains("IVisionImage") ||
                      baseName.Contains("CvImage") ||
+                     baseName.Contains("IVisionRegion") ||
                      baseName.Contains("CvRegion")))
                     return true;
                 baseType = baseType.BaseType;

@@ -1,11 +1,13 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using OpenCvSharp;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.SDK.Imaging;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.UI.Models;
 using SunEyeVision.UI.ViewModels;
@@ -316,7 +318,13 @@ namespace SunEyeVision.UI.Services.Workflow
                 InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.Name, "[EXEC] 正在创建测试图像...")));
                 var matImage = CreateTestMat();
                 InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.Name, "[EXEC] 测试图像已创建，开始执行工作流...")));
-                var result = await executionEngine.ExecuteWorkflowAsync(suneyeWorkflow.Id, matImage);
+
+                // 将 Mat 转换为 IVisionImage
+                var pixelData = new byte[matImage.Total() * matImage.ElemSize()];
+                System.Runtime.InteropServices.Marshal.Copy(matImage.Data, pixelData, 0, pixelData.Length);
+                var visionImage = VisionAdapter.Factory.LoadFromBytes(pixelData, matImage.Width, matImage.Height, matImage.Channels());
+
+                var result = await executionEngine.ExecuteWorkflowAsync(suneyeWorkflow.Id, visionImage);
 
                 // 输出结果
                 logger.LogInfo($"工作流执行完成: {workflow.Name}");

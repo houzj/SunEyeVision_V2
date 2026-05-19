@@ -219,16 +219,19 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         }
 
         /// <summary>
-        /// 获取图像显示用的 Mat 数据源集合（当前节点 + 所有上游节点）
+        /// 获取图像显示用的数据源集合（当前节点 + 所有上游节点）
         /// 统一供 ImageControl 使用，与 ImageSourceSelector 共享相同的元数据源
         /// </summary>
         /// <param name="currentNodeId">当前选中的节点ID</param>
-        /// <returns>按距离排序的 Mat 数据源列表</returns>
+        /// <returns>按距离排序的图像数据源列表</returns>
         public List<AvailableDataSource> GetMatDisplaySources(string currentNodeId)
         {
             var result = new List<AvailableDataSource>();
 
-            // 步骤 1: 当前节点自身的 Mat 输出 (Distance=0)
+            // 图像类型名集合（兼容 Mat / IVisionImage / HImage 等）
+            var imageTypeNames = new HashSet<string> { "Mat", "IVisionImage", "HImage" };
+
+            // 步骤 1: 当前节点自身的图像输出 (Distance=0)
             var nodeType = _nodeInfoProvider?.GetNodeType(currentNodeId);
             var nodeName = _nodeInfoProvider?.GetNodeName(currentNodeId) ?? currentNodeId;
             if (nodeType != null)
@@ -236,7 +239,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 var metadataList = _metadataProvider?.GetAllPropertyMetadata(nodeType);
                 if (metadataList != null)
                 {
-                    foreach (var meta in metadataList.Where(m => m.PropertyType?.Name == "Mat"))
+                    foreach (var meta in metadataList.Where(m =>
+                        m.PropertyType != null && imageTypeNames.Contains(m.PropertyType.Name)))
                     {
                         result.Add(new AvailableDataSource
                         {
@@ -251,7 +255,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 }
             }
 
-            // 步骤 2: BFS 遍历所有上游节点的 Mat 输出 (Distance>=1)
+            // 步骤 2: BFS 遍历所有上游节点的图像输出 (Distance>=1)
             if (_connectionProvider != null)
             {
                 var visited = new HashSet<string> { currentNodeId };
@@ -270,9 +274,9 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                             visited.Add(parentId);
                             int childDistance = currentDistance + 1;
 
-                            // 获取该节点的 Mat 输出属性
+                            // 获取该节点的图像输出属性
                             foreach (var prop in GetNodeOutputProperties(parentId)
-                                .Where(p => p.PropertyType?.Name == "Mat"))
+                                .Where(p => p.PropertyType != null && imageTypeNames.Contains(p.PropertyType.Name)))
                             {
                                 prop.Distance = childDistance;
                                 result.Add(prop);

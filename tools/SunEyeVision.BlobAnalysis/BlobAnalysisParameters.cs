@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Windows.Media;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
@@ -17,12 +18,66 @@ namespace SunEyeVision.Tool.BlobAnalysis
     }
 
     /// <summary>
-    /// 连通性类型枚举
+    /// Blob排序方式枚举
     /// </summary>
-    public enum ConnectivityType
+    public enum BlobSortMode
     {
-        Connect4 = 0,
-        Connect8 = 1
+        /// <summary>不排序（保持原始连通域顺序）</summary>
+        None = 0,
+        /// <summary>面积从小到大</summary>
+        AreaAsc = 1,
+        /// <summary>面积从大到小</summary>
+        AreaDesc = 2,
+        /// <summary>圆度从小到大</summary>
+        CircularityAsc = 3,
+        /// <summary>圆度从大到小</summary>
+        CircularityDesc = 4,
+        /// <summary>矩形度从小到大</summary>
+        RectangularityAsc = 5,
+        /// <summary>矩形度从大到小</summary>
+        RectangularityDesc = 6,
+        /// <summary>质心X坐标从小到大</summary>
+        XAsc = 7,
+        /// <summary>质心X坐标从大到小</summary>
+        XDesc = 8,
+        /// <summary>质心Y坐标从小到大</summary>
+        YAsc = 9,
+        /// <summary>质心Y坐标从大到小</summary>
+        YDesc = 10
+    }
+
+    /// <summary>
+    /// 图像预处理方法枚举
+    /// </summary>
+    public enum PreprocessMethod
+    {
+        None = 0,
+        Mean = 1,
+        Gaussian = 2,
+        Median = 3,
+        HistogramEqualization = 4
+    }
+
+    /// <summary>
+    /// 形态学操作类型枚举
+    /// </summary>
+    public enum MorphOperationType
+    {
+        Erosion = 0,
+        Dilation = 1,
+        Opening = 2,
+        Closing = 3,
+        TopHat = 4,
+        BottomHat = 5
+    }
+
+    /// <summary>
+    /// 形态学结构元素形状枚举
+    /// </summary>
+    public enum MorphElementShapeType
+    {
+        Rectangle = 0,
+        Circle = 1
     }
 
     /// <summary>
@@ -80,49 +135,65 @@ namespace SunEyeVision.Tool.BlobAnalysis
 
         #endregion
 
-        #region Blob筛选参数
+        #region 图像预处理参数
 
         /// <summary>
-        /// 最小面积（像素数）
+        /// 是否启用图像预处理
         /// </summary>
-        public ParamValue<int> MinArea { get; set; } =
-            ParamValue<int>.CreateConstant(0, "MinArea");
+        public ParamValue<bool> IsPreprocessingEnabled { get; set; } =
+            ParamValue<bool>.CreateConstant(false, "IsPreprocessingEnabled");
 
         /// <summary>
-        /// 最大面积（像素数）
+        /// 预处理方法
         /// </summary>
-        public ParamValue<int> MaxArea { get; set; } =
-            ParamValue<int>.CreateConstant(999999, "MaxArea");
+        public ParamValue<PreprocessMethod> PreprocessMethodValue { get; set; } =
+            ParamValue<PreprocessMethod>.CreateConstant(PreprocessMethod.None, "PreprocessMethodValue");
 
         /// <summary>
-        /// 最小圆度(0~1)
+        /// 预处理滤波核大小（均值/高斯/中值滤波，奇数3~31）
         /// </summary>
-        public ParamValue<double> MinCircularity { get; set; } =
-            ParamValue<double>.CreateConstant(0.0, "MinCircularity");
+        public ParamValue<int> PreprocessKernelSize { get; set; } =
+            ParamValue<int>.CreateConstant(5, "PreprocessKernelSize");
+
+        #endregion
+
+        #region 形态学处理参数
 
         /// <summary>
-        /// 最大圆度(0~1)
+        /// 是否启用形态学处理
         /// </summary>
-        public ParamValue<double> MaxCircularity { get; set; } =
-            ParamValue<double>.CreateConstant(1.0, "MaxCircularity");
+        public ParamValue<bool> IsMorphologyEnabled { get; set; } =
+            ParamValue<bool>.CreateConstant(false, "IsMorphologyEnabled");
 
         /// <summary>
-        /// 最小矩形度(0~1)
+        /// 形态学操作类型
         /// </summary>
-        public ParamValue<double> MinRectangularity { get; set; } =
-            ParamValue<double>.CreateConstant(0.0, "MinRectangularity");
+        public ParamValue<MorphOperationType> MorphOperationValue { get; set; } =
+            ParamValue<MorphOperationType>.CreateConstant(MorphOperationType.Erosion, "MorphOperationValue");
 
         /// <summary>
-        /// 最大矩形度(0~1)
+        /// 结构元素形状
         /// </summary>
-        public ParamValue<double> MaxRectangularity { get; set; } =
-            ParamValue<double>.CreateConstant(1.0, "MaxRectangularity");
+        public ParamValue<MorphElementShapeType> MorphElementShapeValue { get; set; } =
+            ParamValue<MorphElementShapeType>.CreateConstant(MorphElementShapeType.Rectangle, "MorphElementShapeValue");
 
         /// <summary>
-        /// 连通性类型(4连通/8连通)
+        /// 结构元素宽度(1~101)
         /// </summary>
-        public ParamValue<ConnectivityType> Connectivity { get; set; } =
-            ParamValue<ConnectivityType>.CreateConstant(ConnectivityType.Connect8, "Connectivity");
+        public ParamValue<int> MorphElementWidth { get; set; } =
+            ParamValue<int>.CreateConstant(5, "MorphElementWidth");
+
+        /// <summary>
+        /// 结构元素高度(1~101)
+        /// </summary>
+        public ParamValue<int> MorphElementHeight { get; set; } =
+            ParamValue<int>.CreateConstant(5, "MorphElementHeight");
+
+        /// <summary>
+        /// 形态学迭代次数(1~10)
+        /// </summary>
+        public ParamValue<int> MorphIterations { get; set; } =
+            ParamValue<int>.CreateConstant(1, "MorphIterations");
 
         #endregion
 
@@ -132,6 +203,16 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// 结果判断配置
         /// </summary>
         public BlobAnalysisResultConfig ResultConfig { get; set; } = new();
+
+        #region 排序方式
+
+        /// <summary>
+        /// Blob排序方式
+        /// </summary>
+        public ParamValue<BlobSortMode> SortMode { get; set; } =
+            ParamValue<BlobSortMode>.CreateConstant(BlobSortMode.None, "SortMode");
+
+        #endregion
 
         /// <summary>外接矩形样式</summary>
         public GraphicsStyle BlobsStyle { get; set; } = new() { Name = "Blobs", LineWidth = 2 };
@@ -147,6 +228,22 @@ namespace SunEyeVision.Tool.BlobAnalysis
 
         /// <summary>面积列表样式</summary>
         public TextStyle AreaDisplayStyle { get; set; } = new() { Name = "AreaDisplay", FontSize = 9.0, PositionX = 10, PositionY = 50 };
+
+        /// <summary>检测区域边框样式（默认蓝色 #4488FF，与 ROI 编辑器检测区域一致）</summary>
+        public GraphicsStyle InspectionRegionStyle { get; set; } = new()
+        {
+            Name = "InspectionRegion",
+            LineWidth = 1,
+            OkColor = Color.FromRgb(0x44, 0x88, 0xFF)
+        };
+
+        /// <summary>屏蔽区域边框样式（默认橙色 #FFA500，与 ROI 编辑器屏蔽区域一致）</summary>
+        public GraphicsStyle MaskRegionStyle { get; set; } = new()
+        {
+            Name = "MaskRegion",
+            LineWidth = 1,
+            OkColor = Color.FromRgb(0xFF, 0xA5, 0x00)
+        };
 
         #endregion
 
@@ -211,45 +308,31 @@ namespace SunEyeVision.Tool.BlobAnalysis
                 result.AddError($"最大值必须在 {ThresholdMin}-{ThresholdMax} 范围内，当前值: {MaxValue.Value}");
             }
 
-            // Blob筛选参数范围检查
-            if (MinArea.Value < 0)
+            // 预处理参数验证
+            if (IsPreprocessingEnabled.Value && PreprocessMethodValue.Value != PreprocessMethod.None)
             {
-                result.AddError($"最小面积不能为负数，当前值: {MinArea.Value}");
+                int kernelSize = PreprocessKernelSize.Value;
+                if (kernelSize < 3 || kernelSize > 31 || kernelSize % 2 == 0)
+                {
+                    result.AddError($"滤波核大小必须为 3~31 之间的奇数，当前值: {kernelSize}");
+                }
             }
 
-            if (MinArea.Value > MaxArea.Value)
+            // 形态学参数验证
+            if (IsMorphologyEnabled.Value)
             {
-                result.AddError($"最小面积({MinArea.Value})不能大于最大面积({MaxArea.Value})");
-            }
-
-            if (MinCircularity.Value < 0 || MinCircularity.Value > 1.0)
-            {
-                result.AddError($"最小圆度必须在 0-1 范围内，当前值: {MinCircularity.Value}");
-            }
-
-            if (MaxCircularity.Value < 0 || MaxCircularity.Value > 1.0)
-            {
-                result.AddError($"最大圆度必须在 0-1 范围内，当前值: {MaxCircularity.Value}");
-            }
-
-            if (MinCircularity.Value > MaxCircularity.Value)
-            {
-                result.AddError($"最小圆度({MinCircularity.Value})不能大于最大圆度({MaxCircularity.Value})");
-            }
-
-            if (MinRectangularity.Value < 0 || MinRectangularity.Value > 1.0)
-            {
-                result.AddError($"最小矩形度必须在 0-1 范围内，当前值: {MinRectangularity.Value}");
-            }
-
-            if (MaxRectangularity.Value < 0 || MaxRectangularity.Value > 1.0)
-            {
-                result.AddError($"最大矩形度必须在 0-1 范围内，当前值: {MaxRectangularity.Value}");
-            }
-
-            if (MinRectangularity.Value > MaxRectangularity.Value)
-            {
-                result.AddError($"最小矩形度({MinRectangularity.Value})不能大于最大矩形度({MaxRectangularity.Value})");
+                if (MorphElementWidth.Value < 1 || MorphElementWidth.Value > 101)
+                {
+                    result.AddError($"结构元素宽度必须在 1~101 范围内，当前值: {MorphElementWidth.Value}");
+                }
+                if (MorphElementHeight.Value < 1 || MorphElementHeight.Value > 101)
+                {
+                    result.AddError($"结构元素高度必须在 1~101 范围内，当前值: {MorphElementHeight.Value}");
+                }
+                if (MorphIterations.Value < 1 || MorphIterations.Value > 10)
+                {
+                    result.AddError($"迭代次数必须在 1~10 范围内，当前值: {MorphIterations.Value}");
+                }
             }
 
             // 结果配置验证
@@ -412,11 +495,35 @@ namespace SunEyeVision.Tool.BlobAnalysis
         }
 
         /// <summary>
-        /// 获取连通性类型选项
+        /// 获取排序方式选项（中文）
         /// </summary>
-        public static IReadOnlyList<string> GetConnectivityTypeOptions()
+        public static IReadOnlyList<string> GetSortModeOptions()
         {
-            return new List<string> { "Connect4", "Connect8" };
+            return new List<string> { "不排序", "面积 ↑", "面积 ↓", "圆度 ↑", "圆度 ↓", "矩形度 ↑", "矩形度 ↓", "X坐标 ↑", "X坐标 ↓", "Y坐标 ↑", "Y坐标 ↓" };
+        }
+
+        /// <summary>
+        /// 获取预处理方法选项（中文）
+        /// </summary>
+        public static IReadOnlyList<string> GetPreprocessMethodOptions()
+        {
+            return new List<string> { "无", "均值滤波", "高斯滤波", "中值滤波", "直方图均衡化" };
+        }
+
+        /// <summary>
+        /// 获取形态学操作选项（中文）
+        /// </summary>
+        public static IReadOnlyList<string> GetMorphOperationOptions()
+        {
+            return new List<string> { "腐蚀", "膨胀", "开运算", "闭运算", "顶帽", "黑帽" };
+        }
+
+        /// <summary>
+        /// 获取结构元素形状选项（中文）
+        /// </summary>
+        public static IReadOnlyList<string> GetMorphElementShapeOptions()
+        {
+            return new List<string> { "矩形", "圆形" };
         }
     }
 }

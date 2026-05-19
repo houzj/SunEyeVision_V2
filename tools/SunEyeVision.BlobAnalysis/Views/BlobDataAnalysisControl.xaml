@@ -29,7 +29,6 @@
 
                 <TextBlock Grid.Column="0" Margin="0,0,12,0" VerticalAlignment="Center">
                     <Run Text="Blob: " Foreground="#666"/><Run Text="{Binding FilteredBlobCount, Mode=OneWay}" FontWeight="Bold" Foreground="#2196F3"/>
-                    <Run Text="/"/><Run Text="{Binding TotalBlobCount, Mode=OneWay}" Foreground="#999"/>
                 </TextBlock>
 
                 <TextBlock Grid.Column="1" Margin="0,0,12,0" VerticalAlignment="Center">

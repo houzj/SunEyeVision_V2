@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
-using OpenCvSharp;
-using SunEyeVision.CvEngine.Models;
+using HalconDotNet;
+using SunEyeVision.HalAdapter;
 using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.SDK.Imaging;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 
 namespace SunEyeVision.Tool.BlobAnalysis
@@ -16,30 +18,30 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// <summary>
         /// 灰度输入图像（预处理后）
         /// </summary>
-        public Mat? GrayImage { get; set; }
+        public HImage? GrayImage { get; set; }
 
         /// <summary>
-        /// 二值分割掩码图像（CV_8UC1, 0/255）
+        /// 二值分割掩码图像（阈值得到的二值区域转图像）
         /// </summary>
-        public Mat? BinaryMask { get; set; }
+        public HImage? BinaryMask { get; set; }
 
         /// <summary>
-        /// 合成显示图像（灰度+二值叠加效果）
+        /// 合成显示图像
         /// </summary>
-        public Mat? OverlayImage { get; set; }
+        public HImage? OverlayImage { get; set; }
 
         /// <summary>
         /// 获取所有可显示的图像
         /// </summary>
-        public override Dictionary<string, Mat?> GetDisplayImages()
+        public override Dictionary<string, IVisionImage?> GetDisplayImages()
         {
-            var images = new Dictionary<string, Mat?>();
-            if (GrayImage != null && !GrayImage.Empty())
-                images["GrayImage"] = GrayImage;
-            if (BinaryMask != null && !BinaryMask.Empty())
-                images["BinaryMask"] = BinaryMask;
-            if (OverlayImage != null && !OverlayImage.Empty())
-                images["OverlayImage"] = OverlayImage;
+            var images = new Dictionary<string, IVisionImage?>();
+            if (GrayImage != null && GrayImage.IsInitialized())
+                images["GrayImage"] = new HalImage(GrayImage);
+            if (BinaryMask != null && BinaryMask.IsInitialized())
+                images["BinaryMask"] = new HalImage(BinaryMask);
+            if (OverlayImage != null && OverlayImage.IsInitialized())
+                images["OverlayImage"] = new HalImage(OverlayImage);
             return images;
         }
 
@@ -54,9 +56,9 @@ namespace SunEyeVision.Tool.BlobAnalysis
         public int MaxValueUsed { get; set; }
 
         /// <summary>
-        /// 使用的阈值类型
+        /// 使用的阈值类型（0=Binary, 1=Truncate...）
         /// </summary>
-        public ThresholdType TypeUsed { get; set; }
+        public int TypeUsed { get; set; }
 
         /// <summary>
         /// 实际使用的阈值（Double 类型，用于参数绑定）
@@ -74,11 +76,6 @@ namespace SunEyeVision.Tool.BlobAnalysis
         public bool InvertUsed { get; set; }
 
         /// <summary>
-        /// 连通性类型
-        /// </summary>
-        public ConnectivityType ConnectivityUsed { get; set; }
-
-        /// <summary>
         /// 灰度直方图数据（256个bin）
         /// </summary>
         public double[] HistogramData { get; set; } = Array.Empty<double>();
@@ -91,7 +88,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// <summary>
         /// 输入图像尺寸
         /// </summary>
-        public OpenCvSharp.Size InputSize { get; set; }
+        public Size InputSize { get; set; }
 
         /// <summary>
         /// 处理时间戳
@@ -99,19 +96,9 @@ namespace SunEyeVision.Tool.BlobAnalysis
         public DateTime ProcessedAt { get; set; } = DateTime.Now;
 
         /// <summary>
-        /// 所有检测到的Blob
+        /// 所有检测到的Blob（经过面积筛选和Per-Blob判断的最终集合）
         /// </summary>
-        public List<BlobInfo> AllBlobs { get; set; } = new();
-
-        /// <summary>
-        /// 筛选后的Blob
-        /// </summary>
-        public List<BlobInfo> FilteredBlobs { get; set; } = new();
-
-        /// <summary>
-        /// 所有Blob数量
-        /// </summary>
-        public int TotalBlobCount => AllBlobs?.Count ?? 0;
+        public List<BlobResult> FilteredBlobs { get; set; } = new();
 
         /// <summary>
         /// 筛选后Blob数量
@@ -119,24 +106,9 @@ namespace SunEyeVision.Tool.BlobAnalysis
         public int FilteredBlobCount => FilteredBlobs?.Count ?? 0;
 
         /// <summary>
-        /// 所有Blob总面积
-        /// </summary>
-        public double TotalArea => AllBlobs?.Sum(b => b.Area) ?? 0;
-
-        /// <summary>
         /// 筛选后Blob总面积
         /// </summary>
         public double FilteredTotalArea => FilteredBlobs?.Sum(b => b.Area) ?? 0;
-
-        /// <summary>
-        /// 最大Blob面积
-        /// </summary>
-        public double LargestBlobArea => AllBlobs?.Count > 0 ? AllBlobs.Max(b => b.Area) : 0;
-
-        /// <summary>
-        /// 最小Blob面积
-        /// </summary>
-        public double SmallestBlobArea => AllBlobs?.Count > 0 ? AllBlobs.Min(b => b.Area) : 0;
 
         /// <summary>
         /// 筛选后平均面积
@@ -219,11 +191,8 @@ namespace SunEyeVision.Tool.BlobAnalysis
             var items = new List<ResultItem>
             {
                 ResultItem.Boolean("判断通过", JudgmentPassed),
-                ResultItem.Numeric("Blob总数", TotalBlobCount),
-                ResultItem.Numeric("筛选后数量", FilteredBlobCount),
+                ResultItem.Numeric("Blob数量", FilteredBlobCount),
                 ResultItem.Numeric("总面积", FilteredTotalArea, "像素"),
-                ResultItem.Numeric("最大面积", LargestBlobArea, "像素"),
-                ResultItem.Numeric("最小面积", SmallestBlobArea, "像素"),
                 ResultItem.Numeric("平均面积", AverageArea, "像素"),
                 ResultItem.Numeric("平均圆度", AverageCircularity),
                 ResultItem.Numeric("平均矩形度", AverageRectangularity),
@@ -264,14 +233,9 @@ namespace SunEyeVision.Tool.BlobAnalysis
                 new("MaxValueUsedDouble",       "最大值(Double)",         "预处理"),
                 new("TypeUsed",                 "阈值类型",               "预处理"),
                 new("InvertUsed",               "是否反转",               "预处理"),
-                new("ConnectivityUsed",         "连通性类型",             "筛选"),
                 new("JudgmentPassed",           "判断通过",               "判断"),
-                new("TotalBlobCount",           "Blob总数",               "统计"),
-                new("FilteredBlobCount",        "筛选后数量",             "统计"),
-                new("TotalArea",                "总面积",                 "统计"),
-                new("FilteredTotalArea",        "筛选后总面积",           "统计"),
-                new("LargestBlobArea",          "最大Blob面积",           "统计"),
-                new("SmallestBlobArea",         "最小Blob面积",           "统计"),
+                new("FilteredBlobCount",        "Blob数量",               "统计"),
+                new("FilteredTotalArea",        "总面积",                 "统计"),
                 new("AverageArea",              "平均面积",               "统计"),
                 new("AverageCircularity",       "平均圆度",               "统计"),
                 new("AverageRectangularity",    "平均矩形度",             "统计"),
@@ -301,14 +265,9 @@ namespace SunEyeVision.Tool.BlobAnalysis
             dict["MaxValueUsed"] = MaxValueUsed;
             dict["TypeUsed"] = TypeUsed.ToString();
             dict["InvertUsed"] = InvertUsed;
-            dict["ConnectivityUsed"] = ConnectivityUsed.ToString();
             dict["JudgmentPassed"] = JudgmentPassed;
-            dict["TotalBlobCount"] = TotalBlobCount;
             dict["FilteredBlobCount"] = FilteredBlobCount;
-            dict["TotalArea"] = TotalArea;
             dict["FilteredTotalArea"] = FilteredTotalArea;
-            dict["LargestBlobArea"] = LargestBlobArea;
-            dict["SmallestBlobArea"] = SmallestBlobArea;
             dict["AverageArea"] = AverageArea;
             dict["AverageCircularity"] = AverageCircularity;
             dict["AverageRectangularity"] = AverageRectangularity;

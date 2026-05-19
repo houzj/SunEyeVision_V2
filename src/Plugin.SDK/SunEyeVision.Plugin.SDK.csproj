@@ -39,13 +39,6 @@
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
   </ItemGroup>
 
-  <!-- 图像处理核心依赖 -->
-  <ItemGroup>
-    <PackageReference Include="OpenCvSharp4" Version="4.13.0.20260222" />
-    <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.13.0.20260222" />
-    <PackageReference Include="OpenCvSharp4.WpfExtensions" Version="4.13.0.20260222" />
-  </ItemGroup>
-
   <!-- WPF 主题配置 -->
   <ItemGroup>
     <ThemeInfo Include="Themes\Generic.xaml" />

@@ -1,23 +1,17 @@
-using OpenCvSharp;
-using SunEyeVision.Plugin.SDK.Extensions;
 using System;
+using System.Windows;
 
 namespace SunEyeVision.Plugin.SDK.Models.Geometry
 {
     /// <summary>
     /// 圆环结构ROI
     /// </summary>
-    /// <remarks>
-    /// OpenCvSharp缺少Annulus类型，提供了此类型。
-    /// 用于同圆度检测、环形区域分析等。
-    /// 支持圆弧和完整圆环。
-    /// </remarks>
     public readonly struct Annulus2d : IEquatable<Annulus2d>
     {
         /// <summary>
         /// 圆心
         /// </summary>
-        public readonly Point2d Center;
+        public readonly Point Center;
 
         /// <summary>
         /// 内半径
@@ -42,7 +36,7 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
         /// <summary>
         /// 创建完整圆环
         /// </summary>
-        public Annulus2d(Point2d center, double innerRadius, double outerRadius)
+        public Annulus2d(Point center, double innerRadius, double outerRadius)
         {
             Center = center;
             InnerRadius = innerRadius;
@@ -55,12 +49,12 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
         /// 创建完整圆环
         /// </summary>
         public Annulus2d(double centerX, double centerY, double innerRadius, double outerRadius)
-            : this(new Point2d(centerX, centerY), innerRadius, outerRadius) { }
+            : this(new Point(centerX, centerY), innerRadius, outerRadius) { }
 
         /// <summary>
         /// 创建圆弧圆环
         /// </summary>
-        public Annulus2d(Point2d center, double innerRadius, double outerRadius,
+        public Annulus2d(Point center, double innerRadius, double outerRadius,
                         double startAngle, double endAngle)
         {
             Center = center;
@@ -75,7 +69,7 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
         /// </summary>
         public Annulus2d(double centerX, double centerY, double innerRadius, double outerRadius,
                         double startAngle, double endAngle)
-            : this(new Point2d(centerX, centerY), innerRadius, outerRadius, startAngle, endAngle) { }
+            : this(new Point(centerX, centerY), innerRadius, outerRadius, startAngle, endAngle) { }
 
         /// <summary>
         /// 空圆环
@@ -136,14 +130,14 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
         /// <summary>
         /// 边界矩形
         /// </summary>
-        public Rect2d BoundingBox => OuterCircle.BoundingBox;
+        public Rect BoundingBox => OuterCircle.BoundingBox;
 
         /// <summary>
         /// 是否包含点
         /// </summary>
-        public bool Contains(Point2d point)
+        public bool Contains(Point point)
         {
-            double distance = Center.DistanceTo(point);
+            double distance = (Center - point).Length;
             if (distance < InnerRadius || distance > OuterRadius)
                 return false;
 
@@ -159,9 +153,9 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
         /// <summary>
         /// 获取圆环上的点（平均半径）
         /// </summary>
-        public Point2d GetPointOnAnnulus(double angleRadians)
+        public Point GetPointOnAnnulus(double angleRadians)
         {
-            return new Point2d(
+            return new Point(
                 Center.X + MeanRadius * Math.Cos(angleRadians),
                 Center.Y + MeanRadius * Math.Sin(angleRadians)
             );
@@ -171,9 +165,9 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
         /// 获取圆环边界上的采样点
         /// </summary>
         /// <param name="pointCount">点数</param>
-        public Point2d[] GetSamplePoints(int pointCount)
+        public Point[] GetSamplePoints(int pointCount)
         {
-            Point2d[] points = new Point2d[pointCount];
+            Point[] points = new Point[pointCount];
             double angleStep = AngularSpan / pointCount;
 
             for (int i = 0; i < pointCount; i++)
@@ -191,7 +185,7 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
         public Annulus2d Offset(double dx, double dy)
         {
             return new Annulus2d(
-                new Point2d(Center.X + dx, Center.Y + dy),
+                new Point(Center.X + dx, Center.Y + dy),
                 InnerRadius, OuterRadius, StartAngle, EndAngle
             );
         }

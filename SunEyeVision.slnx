@@ -12,6 +12,9 @@
   <Folder Name="/Src/SunEyeVision.CvEngine/">
     <Project Path="Src/SunEyeVision.CvEngine/SunEyeVision.CvEngine.csproj" />
   </Folder>
+  <Folder Name="/Src/SunEyeVision.HalAdapter/">
+    <Project Path="Src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj" />
+  </Folder>
   <Folder Name="/Src/SunEyeVision.DeviceDriver/">
     <Project Path="Src/DeviceDriver/SunEyeVision.DeviceDriver.csproj" />
   </Folder>

@@ -593,7 +593,7 @@ namespace SunEyeVision.Tool.ShapeMatch
                 if (bbox.HasValue && bbox.Value.Width > 0 && bbox.Value.Height > 0)
                 {
                     display.AddRect(config.MatchBoxStyle,
-                        new OpenCvSharp.Rect2d(bbox.Value.X, bbox.Value.Y, bbox.Value.Width, bbox.Value.Height),
+                        new System.Windows.Rect(bbox.Value.X, bbox.Value.Y, bbox.Value.Width, bbox.Value.Height),
                         match.JudgmentPassed);
                 }
             }
@@ -601,17 +601,17 @@ namespace SunEyeVision.Tool.ShapeMatch
             // 匹配中心 + 角度指示线
             foreach (var match in result.MatchedItems)
             {
-                var center = new OpenCvSharp.Point2d(match.CenterX, match.CenterY);
+                var center = new System.Windows.Point(match.CenterX, match.CenterY);
                 display.AddCross(config.MatchCenterStyle, center, match.JudgmentPassed);
 
                 // 角度指示线：用轮廓线段替代（DisplayCollector 无 AddLine 方法）
                 double angleRad = match.Angle * Math.PI / 180.0;
                 double lineLen = 20.0;
-                var lineEnd = new OpenCvSharp.Point2d(
+                var lineEnd = new System.Windows.Point(
                     match.CenterX + lineLen * Math.Cos(angleRad),
                     match.CenterY + lineLen * Math.Sin(angleRad));
                 display.AddContour(config.AngleLineStyle,
-                    new OpenCvSharp.Point[] { new OpenCvSharp.Point((int)center.X, (int)center.Y), new OpenCvSharp.Point((int)lineEnd.X, (int)lineEnd.Y) },
+                    new System.Windows.Point[] { center, lineEnd },
                     match.JudgmentPassed);
             }
 
@@ -621,7 +621,7 @@ namespace SunEyeVision.Tool.ShapeMatch
                 if (match.ContourPoints != null && match.ContourPoints.Count > 0)
                 {
                     display.AddPoints(config.TemplateContourStyle,
-                        match.ContourPoints.Select(p => new OpenCvSharp.Point2d(p.X, p.Y)).ToList(),
+                        match.ContourPoints.Select(p => new System.Windows.Point(p.X, p.Y)).ToList(),
                         Enumerable.Range(0, match.ContourPoints.Count)
                             .Select(_ => match.JudgmentPassed).ToArray());
                 }
@@ -633,7 +633,7 @@ namespace SunEyeVision.Tool.ShapeMatch
                 if (match.OriginalTemplateContour != null && match.OriginalTemplateContour.Count > 0)
                 {
                     var refPoints = match.OriginalTemplateContour
-                        .Select(p => new OpenCvSharp.Point2d(
+                        .Select(p => new System.Windows.Point(
                             p.X + match.ReferencePointX,
                             p.Y + match.ReferencePointY))
                         .ToList();

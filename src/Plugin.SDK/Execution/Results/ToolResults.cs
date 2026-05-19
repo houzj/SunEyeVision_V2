@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using OpenCvSharp;
+using System.Windows;
+using SunEyeVision.Plugin.SDK.Imaging;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
@@ -237,7 +238,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
         /// <summary>
         /// 创建点结果
         /// </summary>
-        public static ResultItem Point(string name, Point2d point)
+        public static ResultItem Point(string name, Point point)
         {
             return new ResultItem
             {
@@ -398,7 +399,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
         /// 字典键使用属性名（如 "OutputImage", "BinaryImage", "InputImage"），
         /// 与 AvailableDataSource.PropertyName 匹配。
         /// </remarks>
-        public virtual Dictionary<string, Mat?> GetDisplayImages() => new();
+        public virtual Dictionary<string, IVisionImage?> GetDisplayImages() => new();
 
         /// <summary>
         /// 获取结果项（数据面板）
@@ -624,7 +625,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
         /// <summary>
         /// 添加点项
         /// </summary>
-        public static void AddPoint(this List<ResultItem> items, string name, Point2d point)
+        public static void AddPoint(this List<ResultItem> items, string name, Point point)
         {
             items.Add(ResultItem.Point(name, point));
         }
@@ -661,14 +662,14 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
         /// <summary>
         /// 从结果项中提取 Mat 图像供 UI 显示
         /// </summary>
-        public override Dictionary<string, Mat?> GetDisplayImages()
+        public override Dictionary<string, IVisionImage?> GetDisplayImages()
         {
-            var images = new Dictionary<string, Mat?>();
+            var images = new Dictionary<string, IVisionImage?>();
             foreach (var item in _resultItems)
             {
-                if (item.Value is Mat mat && !mat.Empty())
+                if (item.Value is IVisionImage image && !image.IsEmpty)
                 {
-                    images[item.Name] = mat;
+                    images[item.Name] = image;
                 }
             }
             return images;

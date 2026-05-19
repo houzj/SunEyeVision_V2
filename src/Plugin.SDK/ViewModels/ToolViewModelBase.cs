@@ -5,11 +5,10 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
-using OpenCvSharp;
-using OpenCvSharp.WpfExtensions;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.SDK.Imaging;
 using SunEyeVision.Plugin.SDK.Metadata;
 using SunEyeVision.Plugin.SDK.Models;
 
@@ -48,7 +47,7 @@ namespace SunEyeVision.Plugin.SDK.ViewModels
         // 工具执行相关
         private ToolRunner? _runner;
         private IToolPlugin? _tool;
-        private Mat? _currentImage;
+        private IVisionImage? _currentImage;
         private bool _isExecuting;
 
         #endregion
@@ -126,7 +125,7 @@ namespace SunEyeVision.Plugin.SDK.ViewModels
         /// <summary>
         /// 是否可以执行
         /// </summary>
-        public bool CanExecute => !IsExecuting && CurrentImage != null && !CurrentImage.Empty();
+        public bool CanExecute => !IsExecuting && CurrentImage?.IsEmpty == false;
 
         /// <summary>
         /// 工具实例
@@ -141,7 +140,7 @@ namespace SunEyeVision.Plugin.SDK.ViewModels
         /// <summary>
         /// 当前输入图像
         /// </summary>
-        public Mat? CurrentImage
+        public IVisionImage? CurrentImage
         {
             get => _currentImage;
             set
@@ -277,7 +276,7 @@ namespace SunEyeVision.Plugin.SDK.ViewModels
                 return;
             }
 
-            if (CurrentImage == null || CurrentImage.Empty())
+            if (CurrentImage == null || CurrentImage.IsEmpty)
             {
                 StatusMessage = "请先加载输入图像";
                 ToolStatus = "错误";
@@ -452,7 +451,7 @@ namespace SunEyeVision.Plugin.SDK.ViewModels
 
                 // 获取第一张可显示图像
                 var displayImages = result.ToolResult?.GetDisplayImages();
-                var primaryImage = displayImages?.Values.FirstOrDefault(m => m != null && !m.Empty());
+                var primaryImage = displayImages?.Values.FirstOrDefault(m => m != null && !m.IsEmpty);
                 if (primaryImage != null)
                 {
                     OutputImage = primaryImage.ToBitmapSource();

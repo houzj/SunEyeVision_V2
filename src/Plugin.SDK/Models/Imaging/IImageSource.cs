@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
-using OpenCvSharp;
+using SunEyeVision.Plugin.SDK.Imaging;
 
 namespace SunEyeVision.Plugin.SDK.Models.Imaging
 {
@@ -66,10 +66,10 @@ namespace SunEyeVision.Plugin.SDK.Models.Imaging
         BitmapSource? GetFullImage();
 
         /// <summary>
-        /// 获取OpenCV Mat格式图像
+        /// 获取IVisionImage格式图像
         /// </summary>
-        /// <returns>Mat对象，加载失败返回null</returns>
-        Mat? GetMat();
+        /// <returns>IVisionImage对象，加载失败返回null</returns>
+        IVisionImage? GetMat();
 
         /// <summary>
         /// 异步获取缩略图
@@ -87,11 +87,11 @@ namespace SunEyeVision.Plugin.SDK.Models.Imaging
         Task<BitmapSource?> GetFullImageAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// 异步获取OpenCV Mat格式图像
+        /// 异步获取IVisionImage格式图像
         /// </summary>
         /// <param name="cancellationToken">取消令牌</param>
-        /// <returns>Mat对象，加载失败返回null</returns>
-        Task<Mat?> GetMatAsync(CancellationToken cancellationToken = default);
+        /// <returns>IVisionImage对象，加载失败返回null</returns>
+        Task<IVisionImage?> GetMatAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 获取指定格式的加载状态

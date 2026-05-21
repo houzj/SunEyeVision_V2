@@ -607,6 +607,14 @@ namespace SunEyeVision.Workflow
         }
 
         /// <summary>
+        /// 反序列化后回调。子类可重写以初始化默认值。
+        /// Phase 2 优化：确保反序列化后的节点初始化 UI 默认值。
+        /// </summary>
+        public virtual void OnDeserialized()
+        {
+        }
+
+        /// <summary>
         /// 创建工具实例（的初始化处理方法）
         /// </summary>
         public virtual IToolPlugin? CreateInstance()

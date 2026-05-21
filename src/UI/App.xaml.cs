@@ -77,6 +77,11 @@ public partial class App : Application
         // 3. 初始化服务（包括节点显示适配器）
         ServiceInitializer.InitializeServices();
 
+        // 3.5 Phase 2: 注册工作流节点类型转换器
+        // 确保反序列化时 WorkflowNodeBase 自动转换为 WorkflowNode 实例
+        WorkflowNodeFactory.TypeConverter = baseNode =>
+            baseNode is Models.WorkflowNode ? baseNode : Models.WorkflowNode.FromBase(baseNode);
+
         // 4. 使用默认路径
         var defaultPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
 

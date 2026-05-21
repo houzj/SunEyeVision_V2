@@ -33,6 +33,17 @@ namespace SunEyeVision.UI.ViewModels
         private CanvasType _canvasType;
 
         /// <summary>
+        /// 外部节点集合引用（通常是 Solution.Workflow.Nodes），用于反向同步
+        /// Phase 3: UI 侧删除/添加节点时自动同步到数据层
+        /// </summary>
+        private ObservableCollection<WorkflowNodeBase>? _externalNodes;
+
+        /// <summary>
+        /// 反向同步重入锁，防止双向同步死循环
+        /// </summary>
+        private bool _isReverseSyncing;
+
+        /// <summary>
         /// 节点序号管理器
         /// </summary>
         private readonly INodeSequenceManager _sequenceManager;
@@ -225,6 +236,49 @@ namespace SunEyeVision.UI.ViewModels
 
         private void OnWorkflowNodesChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
+            // Phase 3: 反向同步 - UI 集合变更时同步到外部集合（Solution.Workflow.Nodes）
+            if (!_isReverseSyncing && _externalNodes != null)
+            {
+                _isReverseSyncing = true;
+                try
+                {
+                    if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove && e.OldItems != null)
+                    {
+                        foreach (WorkflowNodeBase node in e.OldItems)
+                        {
+                            if (_externalNodes.Contains(node))
+                            {
+                                _externalNodes.Remove(node);
+                                VisionLogger.Instance.Log(
+                                    LogLevel.Info,
+                                    $"反向同步：从数据层删除节点: {node.Id}",
+                                    "WorkflowTabViewModel"
+                                );
+                            }
+                        }
+                    }
+                    else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add && e.NewItems != null)
+                    {
+                        foreach (WorkflowNodeBase node in e.NewItems)
+                        {
+                            if (!_externalNodes.Contains(node))
+                            {
+                                _externalNodes.Add(node);
+                                VisionLogger.Instance.Log(
+                                    LogLevel.Info,
+                                    $"反向同步：添加到数据层节点: {node.Id}",
+                                    "WorkflowTabViewModel"
+                                );
+                            }
+                        }
+                    }
+                }
+                finally
+                {
+                    _isReverseSyncing = false;
+                }
+            }
+
             // 处理删除节点，释放索引到空洞池
             if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove)
             {
@@ -322,6 +376,81 @@ namespace SunEyeVision.UI.ViewModels
                 if (_workflowConnections != null)
                 {
                     _workflowConnections.CollectionChanged += (s, e) => OnWorkflowConnectionsChanged(s, e);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 设置节点集合（直接绑定外部集合中的相同实例，实现对象级共享）
+        /// </summary>
+        /// <param name="nodes">外部节点集合（通常是 Solution.Workflow.Nodes）</param>
+        /// <remarks>
+        /// Phase 2 优化：
+        /// - 将外部集合中的节点引用直接添加到内部集合（同一对象实例）
+        /// - 订阅外部集合的 CollectionChanged 事件，实现自动同步
+        /// - 外部集合中的节点必须已经是 WorkflowNode 实例
+        /// </remarks>
+        public void SetNodes(ObservableCollection<WorkflowNodeBase> nodes)
+        {
+            if (nodes == null)
+                throw new ArgumentNullException(nameof(nodes));
+
+            // 保存外部集合引用，用于反向同步
+            _externalNodes = nodes;
+
+            // 取消外部集合的事件订阅
+            nodes.CollectionChanged -= OnExternalNodesCollectionChanged;
+
+            // 清空并填充（同一对象引用）
+            _workflowNodes.Clear();
+            foreach (var node in nodes)
+            {
+                if (node is Models.WorkflowNode uiNode)
+                {
+                    _workflowNodes.Add(uiNode);
+                }
+                else
+                {
+                    throw new InvalidOperationException(
+                        $"所有节点必须是 WorkflowNode 实例。节点 {node.Id} 的实际类型为 {node.GetType().Name}");
+                }
+            }
+
+            // 订阅外部集合的变化事件
+            nodes.CollectionChanged += OnExternalNodesCollectionChanged;
+
+            // 通知属性变化
+            OnPropertyChanged(nameof(WorkflowNodes));
+
+            // 重新创建 CommandManager（持有新的集合引用）
+            CommandManager = new CommandManager(_workflowNodes, _workflowConnections);
+        }
+
+        private void OnExternalNodesCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            // Phase 3: 反向同步重入锁 - 如果变更来自反向同步，跳过避免死循环
+            if (_isReverseSyncing)
+                return;
+
+            // 当外部集合（workflow.Nodes）变化时，同步到内部集合
+            if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add && e.NewItems != null)
+            {
+                foreach (WorkflowNodeBase node in e.NewItems)
+                {
+                    if (node is Models.WorkflowNode uiNode && !_workflowNodes.Contains(uiNode))
+                    {
+                        _workflowNodes.Add(uiNode);
+                    }
+                }
+            }
+            else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove && e.OldItems != null)
+            {
+                foreach (WorkflowNodeBase node in e.OldItems)
+                {
+                    if (node is Models.WorkflowNode uiNode)
+                    {
+                        _workflowNodes.Remove(uiNode);
+                    }
                 }
             }
         }

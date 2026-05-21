@@ -13,6 +13,12 @@ namespace SunEyeVision.Workflow
     public static class WorkflowNodeFactory
     {
         /// <summary>
+        /// 节点类型转换器。UI 层在启动时注册，确保反序列化后
+        /// 所有 WorkflowNodeBase 实例自动转换为 WorkflowNode 实例。
+        /// Phase 2 优化：消除节点副本，实现对象级共享。
+        /// </summary>
+        public static Func<WorkflowNodeBase, WorkflowNodeBase>? TypeConverter { get; set; }
+        /// <summary>
         /// 从工具元数据创建算法节点
         /// </summary>
         /// <param name="toolId">工具ID(统一标识符)</param>

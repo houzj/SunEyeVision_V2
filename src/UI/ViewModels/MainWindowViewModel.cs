@@ -90,8 +90,8 @@ namespace SunEyeVision.UI.ViewModels
         // 执行管理
         private readonly WorkflowExecutionManager _executionManager;
 
-        // 工作流上下文（用于存储执行结果）
-        private readonly WorkflowContext _workflowContext;
+        // 工作流上下文字典（按工作流ID索引，每个工作流独立存储执行结果）
+        private readonly Dictionary<string, WorkflowContext> _workflowContexts = new();
 
         // 运行时参数存储
         private readonly Dictionary<string, object> _runtimeParameters = new();
@@ -266,7 +266,7 @@ namespace SunEyeVision.UI.ViewModels
                     UpdateDataAnalysisControl((Models.WorkflowNode?)value).GetAwaiter().GetResult();
 
                     // 刷新结果显示（如果节点有缓存结果）
-                    var executionResult = value != null ? _workflowContext.GetNodeResult(value.Id) : null;
+                    var executionResult = value != null ? CurrentWorkflowContext?.GetNodeResult(value.Id) : null;
                     var toolId = (value as WorkflowNodeBase)?.ToolType ?? "";
 
                     if (executionResult?.ToolResult != null)
@@ -325,7 +325,6 @@ namespace SunEyeVision.UI.ViewModels
         }
 
         public WorkflowConnection? SelectedConnection { get; set; }
-        public WorkflowViewModel WorkflowViewModel { get; set; }
 
         // 工作流标签页
         public WorkflowTabControlViewModel WorkflowTabViewModel { get; }
@@ -741,9 +740,7 @@ SplitterPosition = position;
         public MainWindowViewModel()
         {
             Toolbox = new ToolboxViewModel();
-            // 删除全局 WorkflowNodes 和 WorkflowConnections 的初始化
 
-            WorkflowViewModel = new WorkflowViewModel();
             WorkflowTabViewModel = new WorkflowTabControlViewModel();
 
             // 初始化计算结果
@@ -762,11 +759,8 @@ SplitterPosition = position;
             // 初始化执行管理器
             _executionManager = new Services.Workflow.WorkflowExecutionManager(new Infrastructure.DefaultInputProvider());
 
-            // 初始化工作流上下文
-            _workflowContext = new WorkflowContext();
-
             // 初始化节点结果管理器
-            _nodeResultManager = new Services.Workflow.NodeResultManager(_workflowContext, this);
+            _nodeResultManager = new Services.Workflow.NodeResultManager(() => CurrentWorkflowContext, this);
 
             // 初始化工作流执行协调器（图像切换优化）
             _executionOrchestrator = new WorkflowExecutionOrchestrator(_nodeResultManager, maxCacheSize: 50, maxMemoryMB: 100);
@@ -787,6 +781,9 @@ SplitterPosition = position;
 
             // 订阅工作流状态变化
             WorkflowTabViewModel.WorkflowStatusChanged += OnWorkflowStatusChanged;
+
+            // Phase 3: 订阅工作流删除事件（清理引擎和 Solution）
+            WorkflowTabViewModel.WorkflowDeleted += OnWorkflowDeleted;
 
             // 命令管理器的初始化
             SubscribeToCurrentCommandManager();
@@ -846,6 +843,31 @@ SplitterPosition = position;
         }
 
         /// <summary>
+        /// 获取当前选中工作流的独立执行上下文（按工作流ID懒加载）
+        /// 每个工作流有独立的上下文，切换时互不干扰。
+        /// </summary>
+        private WorkflowContext? CurrentWorkflowContext
+        {
+            get
+            {
+                var selectedTab = WorkflowTabViewModel?.SelectedTab;
+                if (selectedTab == null) return null;
+
+                if (!_workflowContexts.TryGetValue(selectedTab.Id, out var ctx))
+                {
+                    ctx = new WorkflowContext
+                    {
+                        WorkflowId = selectedTab.Id,
+                        WorkflowName = selectedTab.Name,
+                        ExecutionStartTime = DateTime.Now
+                    };
+                    _workflowContexts[selectedTab.Id] = ctx;
+                }
+                return ctx;
+            }
+        }
+
+        /// <summary>
         /// 选中的标签页变化
         /// </summary>
         private void OnSelectedTabChanged(object? sender, EventArgs e)
@@ -879,9 +901,17 @@ SplitterPosition = position;
                     _logger?.LogInfo($"OnSelectedTabChanged: Auto-created workflow in engine: {selectedName} (ID: {selectedId})");
                 }
 
+                // ★ 先设置当前工作流，再同步UI数据（修复切换标签页时同步到错误工作流的问题）
                 _workflowEngine.SetCurrentWorkflow(selectedId);
+                SyncCurrentWorkflowWithTab();
                 _logger?.LogInfo($"OnSelectedTabChanged: Current workflow set to {selectedName} (ID: {selectedId})");
             }
+
+            // ★ 切换标签页时清除选中状态（避免旧标签页的选中节点引用残留）
+            SelectedNode = null;
+            SelectedConnection = null;
+            ClearNodeSelections();
+            ClearConnectionSelections();
         }
 
         /// <summary>
@@ -896,6 +926,26 @@ SplitterPosition = position;
             // 更新CanExecute状态
             (RunAllWorkflowsCommand as RelayCommand)?.RaiseCanExecuteChanged();
             (ToggleContinuousAllCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        }
+
+        /// <summary>
+        /// 工作流删除事件处理（Phase 3: 清理引擎和 Solution 中的对应工作流）
+        /// </summary>
+        private void OnWorkflowDeleted(object? sender, WorkflowTabViewModel deletedTab)
+        {
+            if (deletedTab == null)
+                return;
+
+            // 1. 从引擎中移除
+            _workflowEngine.DeleteWorkflow(deletedTab.Id);
+
+            // 2. 从 Solution 中移除
+            var solutionManager = Adapters.ServiceInitializer.SolutionManager;
+            if (solutionManager?.CurrentSolution != null)
+            {
+                solutionManager.CurrentSolution.RemoveWorkflow(deletedTab.Id);
+                LogSuccess($"工作流删除事件处理：已从引擎和解决方案中移除工作流: {deletedTab.Name}");
+            }
         }
 
         /// <summary>
@@ -1029,7 +1079,18 @@ SplitterPosition = position;
 
         private void ExecuteNewWorkflow()
         {
-            // TODO: 新建工作流
+            var tabControl = WorkflowTabViewModel;
+            if (tabControl == null)
+                return;
+
+            tabControl.AddWorkflow();
+            var newTab = tabControl.SelectedTab;
+            if (newTab != null)
+            {
+                // 注册到引擎
+                _workflowEngine.CreateWorkflow(newTab.Id, newTab.Name);
+                LogSuccess($"创建新工作流: {newTab.Name}");
+            }
         }
 
         private void ExecuteOpenWorkflow()
@@ -1533,20 +1594,16 @@ SplitterPosition = position;
             tabViewModel.Id = workflow.Id;
             tabViewModel.Name = workflow.Name;
 
-            // 使用统一转换方法将 WorkflowNodeBase → WorkflowNode
-            // 确保位置、参数、尺寸等属性完整传递
-            int nodeIndex = 0;
-            foreach (var workflowNode in workflow.Nodes)
+            // Phase 2：通过 SetNodes 直接绑定外部集合中的相同节点实例
+            // 节点在 WorkflowJsonConverter.Read 中已被 WorkflowNodeFactory 转换为 WorkflowNode
+            // 因此 FromBase 为恒等转换（同一对象），不再创建副本
+            try
             {
-                nodeIndex++;
-                try
-                {
-                    tabViewModel.WorkflowNodes.Add(Models.WorkflowNode.FromBase(workflowNode));
-                }
-                catch (Exception ex)
-                {
-                    LogError($"节点加载失败 [{nodeIndex}/{workflow.Nodes.Count}]: {workflowNode.Name} - {ex.Message}");
-                }
+                tabViewModel.SetNodes(workflow.Nodes);
+            }
+            catch (Exception ex)
+            {
+                LogError($"节点绑定失败: {ex.Message}");
             }
 
             LogInfo($"节点加载完成，数量: {tabViewModel.WorkflowNodes.Count}/{workflow.Nodes.Count}");
@@ -1825,57 +1882,18 @@ SplitterPosition = position;
             if (WorkflowTabViewModel.SelectedTab == null)
                 return;
 
+            // Phase 3: 确保节点是 WorkflowNode 实例（消除 FromBase 副本，实现对象级共享）
+            if (node is not Models.WorkflowNode uiNode)
+            {
+                throw new InvalidOperationException(
+                    $"节点必须是 WorkflowNode 实例。节点 {node.Id} 的实际类型为 {node.GetType().Name}");
+            }
+
             AddLog($"➕ 添加节点: {node.Name} (ID={node.Id}, 类型={node.ToolType})");
 
-            // 添加到 UI 集合（通过命令模式，支持撤销）
-            var uiNode = Models.WorkflowNode.FromBase(node);
+            // Phase 3: 只添加到 UI 集合，反向同步自动传播到数据层
             var command = new AppCommands.AddNodeCommand(WorkflowTabViewModel.SelectedTab.WorkflowNodes, uiNode);
             WorkflowTabViewModel.SelectedTab.CommandManager.Execute(command);
-
-            // 同时添加到 Solution.Workflow.Nodes（同一对象引用）
-            var solutionManager = Adapters.ServiceInitializer.SolutionManager;
-            var workflow = solutionManager?.CurrentSolution?.Workflows.FirstOrDefault(w => w.Id == WorkflowTabViewModel.SelectedTab.Id);
-            if (workflow != null && !workflow.Nodes.Contains(node))
-            {
-                workflow.Nodes.Add(node);
-            }
-        }
-
-        /// <summary>
-        /// 从当前工作流删除节点（通过命令模式）
-        /// </summary>
-        public void DeleteNodeFromWorkflow(WorkflowNodeBase node)
-        {
-            if (WorkflowTabViewModel.SelectedTab == null)
-                return;
-
-            AddLog($"➖ 删除节点: {node.Name} (ID={node.Id})");
-
-            var command = new AppCommands.DeleteNodeCommand(
-                WorkflowTabViewModel.SelectedTab.WorkflowNodes,
-                WorkflowTabViewModel.SelectedTab.WorkflowConnections,
-                Models.WorkflowNode.FromBase(node));
-            WorkflowTabViewModel.SelectedTab.CommandManager.Execute(command);
-
-            // 同时从 Solution.Workflow.Nodes 删除
-            var solutionManager = Adapters.ServiceInitializer.SolutionManager;
-            var workflow = solutionManager?.CurrentSolution?.Workflows.FirstOrDefault(w => w.Id == WorkflowTabViewModel.SelectedTab.Id);
-            if (workflow != null)
-            {
-                workflow.Nodes.Remove(node);
-            }
-        }
-
-        /// <summary>
-        /// 移动节点到新位置（通过命令模式）
-        /// </summary>
-        public void MoveNode(WorkflowNodeBase node, Point newPosition)
-        {
-            var command = new AppCommands.MoveNodeCommand(Models.WorkflowNode.FromBase(node), node.Position, newPosition);
-            if (WorkflowTabViewModel.SelectedTab != null)
-            {
-                WorkflowTabViewModel.SelectedTab.CommandManager.Execute(command);
-            }
         }
 
         /// <summary>
@@ -1918,34 +1936,6 @@ SplitterPosition = position;
 
             // 连线建立后自动绑定 ImageSource（所见即所得）
             AutoBindImageSourceOnConnectionAdded(connection);
-
-            // 连接变更后立即刷新当前选中节点的图像显示（无需用户切走再切回）
-            RefreshImageDisplayIfAffected(connection);
-        }
-
-        /// <summary>
-        /// 从当前工作流删除连接（通过命令模式）
-        /// </summary>
-        public void DeleteConnectionFromWorkflow(WorkflowConnection connection)
-        {
-            if (WorkflowTabViewModel.SelectedTab == null)
-            {
-                return;
-            }
-
-            // 获取节点名称用于日志
-            var sourceNode = WorkflowTabViewModel.SelectedTab.WorkflowNodes.FirstOrDefault(n => n.Id == connection.SourceNodeId);
-            var targetNode = WorkflowTabViewModel.SelectedTab.WorkflowNodes.FirstOrDefault(n => n.Id == connection.TargetNodeId);
-            AddLog($"⛓️ 删除连接: {sourceNode?.Name ?? connection.SourceNodeId} → {targetNode?.Name ?? connection.TargetNodeId}");
-
-            // 删除前记录目标节点引用（删除后连接集合会变更）
-            var targetNodeRef = targetNode as WorkflowNodeBase;
-
-            var command = new AppCommands.DeleteConnectionCommand(WorkflowTabViewModel.SelectedTab.WorkflowConnections, connection);
-            WorkflowTabViewModel.SelectedTab.CommandManager.Execute(command);
-
-            // 连线删除后自动回退 ImageSource
-            AutoBindImageSourceOnConnectionRemoved(connection.SourceNodeId, targetNodeRef);
 
             // 连接变更后立即刷新当前选中节点的图像显示（无需用户切走再切回）
             RefreshImageDisplayIfAffected(connection);
@@ -2109,26 +2099,6 @@ SplitterPosition = position;
         }
 
         /// <summary>
-        /// 删除选中的节点（通过命令模式）
-        /// </summary>
-        public void DeleteSelectedNodes()
-        {
-            if (WorkflowTabViewModel.SelectedTab == null)
-                return;
-
-            var selectedNodes = WorkflowTabViewModel.SelectedTab.WorkflowNodes.Where(n => n.IsSelected).ToList();
-            var command = new AppCommands.BatchDeleteNodesCommand(
-                WorkflowTabViewModel.SelectedTab.WorkflowNodes,
-                WorkflowTabViewModel.SelectedTab.WorkflowConnections,
-                selectedNodes);
-            WorkflowTabViewModel.SelectedTab.CommandManager.Execute(command);
-
-            // 清除选中状态
-            SelectedNode = null;
-            ClearNodeSelections();
-        }
-
-        /// <summary>
         /// 清除所有节点选中状态
         /// </summary>
         private void ClearNodeSelections()
@@ -2197,32 +2167,56 @@ SplitterPosition = position;
                 System.Windows.MessageBoxButton.YesNo,
                 System.Windows.MessageBoxImage.Question);
 
-            if (result == System.Windows.MessageBoxResult.Yes)
+            if (result != System.Windows.MessageBoxResult.Yes)
+                return;
+
+            // 执行前预计算所有将会被删除的连接（显式选中 + 与待删节点关联的，去重）
+            var allAffectedConnectionIds = new HashSet<string>(
+                selectedConnections.Select(c => c.Id));
+            var allAffectedConnections = new List<WorkflowConnection>(selectedConnections);
+
+            foreach (var node in selectedNodes)
             {
-                // 1. 先删除选中的连接线
-                foreach (var conn in selectedConnections.ToList())
+                foreach (var conn in WorkflowTabViewModel.SelectedTab.WorkflowConnections
+                    .Where(c => c.SourceNodeId == node.Id || c.TargetNodeId == node.Id))
                 {
-                    DeleteConnectionFromWorkflow(conn);
+                    if (allAffectedConnectionIds.Add(conn.Id))
+                        allAffectedConnections.Add(conn);
                 }
-
-                // 2. 再删除选中的节点（BatchDeleteNodesCommand 会自动清理关联连接线）
-                if (selectedNodes.Count > 0)
-                {
-                    var command = new AppCommands.BatchDeleteNodesCommand(
-                        WorkflowTabViewModel.SelectedTab.WorkflowNodes,
-                        WorkflowTabViewModel.SelectedTab.WorkflowConnections,
-                        selectedNodes);
-                    WorkflowTabViewModel.SelectedTab.CommandManager.Execute(command);
-                }
-
-                // 3. 清除选中状态
-                SelectedNode = null;
-                SelectedConnection = null;
-                ClearNodeSelections();
-                ClearConnectionSelections();
-
-                AddLog($"🗑️ 已删除 {string.Join("和 ", parts)}");
             }
+
+            // 合并为一个原子命令，消除两步骤间的重叠删除问题
+            var command = new AppCommands.BatchDeleteNodesAndConnectionsCommand(
+                WorkflowTabViewModel.SelectedTab.WorkflowNodes,
+                WorkflowTabViewModel.SelectedTab.WorkflowConnections,
+                selectedNodes,
+                selectedConnections);
+            WorkflowTabViewModel.SelectedTab.CommandManager.Execute(command);
+
+            // 处理被删连接的后置副作用（ImageSource 回退、日志）
+            foreach (var conn in allAffectedConnections)
+            {
+                var targetNode = WorkflowTabViewModel.SelectedTab.WorkflowNodes
+                    .FirstOrDefault(n => n.Id == conn.TargetNodeId) as WorkflowNodeBase;
+                AutoBindImageSourceOnConnectionRemoved(conn.SourceNodeId, targetNode);
+
+                var sourceNodeName = WorkflowTabViewModel.SelectedTab.WorkflowNodes
+                    .FirstOrDefault(n => n.Id == conn.SourceNodeId)?.Name ?? conn.SourceNodeId;
+                var targetNodeName = targetNode?.Name ?? conn.TargetNodeId;
+                AddLog($"⛓️ 删除连接: {sourceNodeName} → {targetNodeName}");
+            }
+
+            // 刷新当前选中节点的图像（如果受影响）
+            if (allAffectedConnections.Count > 0)
+                RefreshImageDisplayIfAffected(allAffectedConnections[^1]);
+
+            // 清除选中状态
+            SelectedNode = null;
+            SelectedConnection = null;
+            ClearNodeSelections();
+            ClearConnectionSelections();
+
+            AddLog($"🗑️ 已删除 {string.Join("和 ", parts)}");
         }
 
         private async void ExecuteOpenDebugWindow(Models.WorkflowNode? node)
@@ -2340,7 +2334,7 @@ SplitterPosition = position;
                                         // 3. 刷新当前选中节点的结果显示
                                         if (SelectedNode != null && SelectedNode.IsSelected)
                                         {
-                                            var executionResult = _workflowContext.GetNodeResult(SelectedNode.Id);
+                                            var executionResult = CurrentWorkflowContext?.GetNodeResult(SelectedNode.Id);
                                             if (executionResult?.ToolResult != null)
                                             {
                                                 _nodeResultManager.RefreshResultDisplay(SelectedNode, executionResult.ToolResult);
@@ -2440,6 +2434,9 @@ SplitterPosition = position;
                 // 选中新创建的标签页
                 WorkflowTabViewModel.SelectedTab = newWorkflowTab;
 
+                // ★ 注册到引擎，确保 OnSelectedTabChanged 能找到现有工作流，不再创建空壳
+                _workflowEngine.CreateWorkflow(newWorkflowTab.Id, newWorkflowTab.Name);
+
                 AddLog($"✅ 创建子程序 '{workflowName}' 成功");
                 AddLog($"💡 现在可以在画布中添加子程序内部节点逻辑");
             }
@@ -2461,12 +2458,20 @@ SplitterPosition = position;
         /// </summary>
         private void UpdateDisplayImageSources(Models.WorkflowNode? selectedNode)
         {
+            // ★ 同步UI Tab数据到引擎（确保拓扑查询正确）
+            SyncCurrentWorkflowWithTab();
+
             LogInfo($"图像源|UpdateDisplayImageSources 入口: node={(selectedNode != null ? $"{selectedNode.Name}({selectedNode.Id})" : "null")}, Clear前Count={DisplayImageSources.Count}", "ImageSourceSelector");
             DisplayImageSources.Clear();
 
             if (selectedNode == null)
             {
-                LogInfo($"图像源|selectedNode==null, 清空数据源", "ImageSourceSelector");
+                LogInfo($"图像源|selectedNode==null, 清空数据源和显示", "ImageSourceSelector");
+                // ★ Bug修复：当 selectedNode==null 时 UpdateDisplayImageFromCurrentSource
+                //   会因为 _selectedNode==null 而直接返回（第2616行），导致 DisplayImage
+                //   永远不会被清除。必须在 return 前直接清除，不能依赖延迟回调。
+                DisplayImage = null;
+                _nodeResultManager.ClearResultGraphics();
                 SetSelectedDisplayImageSourceIndexDeferred(-1);
                 return;
             }
@@ -2616,7 +2621,7 @@ SplitterPosition = position;
         /// </summary>
         private void SetDisplayImageFromSource(AvailableDataSource source)
         {
-            var executionResult = _workflowContext.GetNodeResult(source.SourceNodeId);
+            var executionResult = CurrentWorkflowContext?.GetNodeResult(source.SourceNodeId);
             if (executionResult?.ToolResult == null)
             {
                 // 节点未执行过，无可显示图像 → 清除残留
@@ -2707,7 +2712,7 @@ SplitterPosition = position;
                 HasDataAnalysisControl = true;
 
                 // ★ 加载缓存结果（节点已执行过时，立即填充数据分析控件）
-                var cachedResult = _workflowContext.GetNodeResult(selectedNode.Id);
+                var cachedResult = CurrentWorkflowContext?.GetNodeResult(selectedNode.Id);
                 if (cachedResult?.ToolResult != null && dataAnalysisControl is IToolControlDataAnalysis daControl)
                 {
                     try
@@ -2750,6 +2755,37 @@ SplitterPosition = position;
 
 
         /// <summary>
+        /// 将当前UI标签页的节点和连接同步到 _workflowEngine.CurrentWorkflow，
+        /// 确保 DataSourceQueryService 能正确查询到拓扑关系（父节点/子节点）。
+        /// </summary>
+        private void SyncCurrentWorkflowWithTab()
+        {
+            var selectedTab = WorkflowTabViewModel?.SelectedTab;
+            if (_workflowEngine == null || selectedTab == null)
+                return;
+
+            var engineWorkflow = _workflowEngine.GetWorkflowById(selectedTab.Id) ?? _workflowEngine.CurrentWorkflow;
+            if (engineWorkflow == null)
+                return;
+
+            bool needSync = engineWorkflow.Nodes.Count != selectedTab.WorkflowNodes.Count ||
+                            engineWorkflow.Connections.Count != selectedTab.WorkflowConnections.Count;
+            if (!needSync)
+                return;
+
+            engineWorkflow.Nodes.Clear();
+            foreach (var uiNode in selectedTab.WorkflowNodes)
+                engineWorkflow.Nodes.Add(uiNode);
+
+            engineWorkflow.Connections.Clear();
+            foreach (var conn in selectedTab.WorkflowConnections)
+                engineWorkflow.Connections.Add(conn);
+
+            _logger?.LogInfo($"[Sync] 引擎工作流 [{engineWorkflow.Name}] 已同步: " +
+                            $"Nodes={engineWorkflow.Nodes.Count}, Connections={engineWorkflow.Connections.Count}");
+        }
+
+        /// <summary>
         /// 获取节点的数据提供者
         /// </summary>
         /// <param name="node">节点</param>
@@ -2779,6 +2815,9 @@ SplitterPosition = position;
                 // 由于架构分层限制，DataSourceQueryService 不能直接引用 WorkflowEngine 类，
                 // 因此通过接口注入。虽然传入的是同一个对象 _workflowEngine，
                 // 但它被分别用作两个不同的接口角色。
+
+                // ★ 同步UI Tab数据到引擎（确保拓扑查询正确）
+                SyncCurrentWorkflowWithTab();
 
                 // 创建属性元数据提供者
                 var metadataProvider = new SunEyeVision.Plugin.Infrastructure.Managers.Tool.PropertyMetadataProviderAdapter();
@@ -2882,7 +2921,7 @@ SplitterPosition = position;
                         // 3. 刷新当前选中节点的结果显示（如果有）
                         if (SelectedNode != null && SelectedNode.IsSelected)
                         {
-                            var executionResult = _workflowContext.GetNodeResult(SelectedNode.Id);
+                            var executionResult = CurrentWorkflowContext?.GetNodeResult(SelectedNode.Id);
                             if (executionResult?.ToolResult != null)
                             {
                                 _nodeResultManager.RefreshResultDisplay(SelectedNode, executionResult.ToolResult);

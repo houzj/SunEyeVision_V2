@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Media.Imaging;
@@ -31,7 +31,7 @@ namespace SunEyeVision.UI.Services.Workflow
     /// </remarks>
     public class NodeResultManager
     {
-        private readonly WorkflowCore.WorkflowContext _workflowContext;
+        private readonly Func<WorkflowCore.WorkflowContext?> _getContext;
         private readonly ViewModels.MainWindowViewModel _viewModel;
 
         // 结果渲染层引用
@@ -40,9 +40,9 @@ namespace SunEyeVision.UI.Services.Workflow
         // 图像转换器池
         private readonly ImageConverterPool _imageConverterPool;
 
-        public NodeResultManager(WorkflowCore.WorkflowContext workflowContext, ViewModels.MainWindowViewModel viewModel)
+        public NodeResultManager(Func<WorkflowCore.WorkflowContext?> getContext, ViewModels.MainWindowViewModel viewModel)
         {
-            _workflowContext = workflowContext ?? throw new ArgumentNullException(nameof(workflowContext));
+            _getContext = getContext ?? throw new ArgumentNullException(nameof(getContext));
             _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
             _imageConverterPool = new ImageConverterPool(maxCacheSize: 10);
         }
@@ -82,7 +82,7 @@ namespace SunEyeVision.UI.Services.Workflow
                     executionResult.Outputs[name] = image;
             }
 
-            _workflowContext.SetNodeResult(node.Id, executionResult);
+            _getContext()?.SetNodeResult(node.Id, executionResult);
 
             // 2. 更新图像数据
             UpdateNodeImage(node, result);
@@ -121,7 +121,7 @@ namespace SunEyeVision.UI.Services.Workflow
                 else
                 {
                     // 父节点/其他节点：从 WorkflowContext 缓存获取
-                    var sourceExecResult = _workflowContext.GetNodeResult(selectedSource.SourceNodeId);
+                    var sourceExecResult = _getContext()?.GetNodeResult(selectedSource.SourceNodeId);
                     sourceResult = sourceExecResult?.ToolResult;
                     if (sourceResult == null)
                         return; // 尚未执行的节点跳过，不清空当前图像
@@ -204,7 +204,7 @@ namespace SunEyeVision.UI.Services.Workflow
             try
             {
                 // 直接缓存 IVisionImage 到 WorkflowContext
-                var nodeResult = _workflowContext.GetNodeResult(node.Id);
+                var nodeResult = _getContext()?.GetNodeResult(node.Id);
                 if (nodeResult == null)
                 {
                     nodeResult = new NodeExecutionResult
@@ -214,7 +214,7 @@ namespace SunEyeVision.UI.Services.Workflow
                         StartTime = DateTime.Now,
                         EndTime = DateTime.Now
                     };
-                    _workflowContext.SetNodeResult(node.Id, nodeResult);
+                    _getContext()?.SetNodeResult(node.Id, nodeResult);
                 }
 
                 return true;
@@ -254,7 +254,7 @@ namespace SunEyeVision.UI.Services.Workflow
                     executionResult.Outputs["Output"] = image;
                 }
 
-                _workflowContext.SetNodeResult(node.Id, executionResult);
+                _getContext()?.SetNodeResult(node.Id, executionResult);
             }
             catch
             {
@@ -270,7 +270,7 @@ namespace SunEyeVision.UI.Services.Workflow
             if (node == null)
                 return null;
 
-            var executionResult = _workflowContext.GetNodeResult(node.Id);
+            var executionResult = _getContext()?.GetNodeResult(node.Id);
             if (executionResult?.ToolResult == null)
                 return null;
 

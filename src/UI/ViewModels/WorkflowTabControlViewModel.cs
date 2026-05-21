@@ -29,6 +29,11 @@ namespace SunEyeVision.UI.ViewModels
         /// </summary>
         public event EventHandler? WorkflowStatusChanged;
 
+        /// <summary>
+        /// 工作流删除事件（Phase 3: 用于通知 MainWindowViewModel 清理引擎和 Solution 中的对应工作流）
+        /// </summary>
+        public event System.EventHandler<WorkflowTabViewModel>? WorkflowDeleted;
+
         public WorkflowTabControlViewModel()
         {
             // 创建默认工作流。
@@ -183,6 +188,9 @@ namespace SunEyeVision.UI.ViewModels
                     SelectedTab = null;
                 }
             }
+
+            // Phase 3: 触发工作流删除事件（通知 MainWindowViewModel 清理引擎和 Solution）
+            WorkflowDeleted?.Invoke(this, workflow);
 
             return true;
         }

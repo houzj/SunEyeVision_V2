@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Media.Imaging;
@@ -6,12 +6,11 @@ using OpenCvSharp;
 using OpenCvSharp.Extensions;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.Imaging;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 using SunEyeVision.UI.Extensions;
-using SunEyeVision.UI.Services.Images;
 using SunEyeVision.UI.Services.Performance;
 using WorkflowCore = SunEyeVision.Workflow;
 using SunEyeVision.Workflow;
@@ -133,6 +132,16 @@ namespace SunEyeVision.UI.Services.Workflow
                 {
                     _viewModel.SetDisplayImageFromBitmap(bitmapSource);
                 }
+                else
+                {
+                    // 节点无可用显示图像 → 清除残留图像
+                    _viewModel.DisplayImage = null;
+                }
+            }
+            else
+            {
+                // 无可选图像源 → 清除残留图像
+                _viewModel.DisplayImage = null;
             }
 
             // ★ Step 4: 工具输出 → 直接传 DisplayCollector
@@ -194,14 +203,19 @@ namespace SunEyeVision.UI.Services.Workflow
 
             try
             {
-                // 创建唯一ID
-                var imageSourceId = $"node_{node.Id}_output_{Guid.NewGuid():N}";
-
-                // 通过ImageSourceManager创建内存图像源
-                var imageSource = ImageSourceManager.Instance.CreateFromMemory(
-                    primaryImage.Clone(), // 克隆IVisionImage，避免所有权问题
-                    imageSourceId
-                );
+                // 直接缓存 IVisionImage 到 WorkflowContext
+                var nodeResult = _workflowContext.GetNodeResult(node.Id);
+                if (nodeResult == null)
+                {
+                    nodeResult = new NodeExecutionResult
+                    {
+                        NodeId = node.Id,
+                        Success = true,
+                        StartTime = DateTime.Now,
+                        EndTime = DateTime.Now
+                    };
+                    _workflowContext.SetNodeResult(node.Id, nodeResult);
+                }
 
                 return true;
             }
@@ -236,8 +250,7 @@ namespace SunEyeVision.UI.Services.Workflow
                     var stride = bmp.PixelWidth * (bmp.Format.BitsPerPixel / 8);
                     var pixelData = new byte[stride * bmp.PixelHeight];
                     bmp.CopyPixels(pixelData, stride, 0);
-                    var image = VisionAdapter.Factory.LoadFromBytes(
-                        pixelData, bmp.PixelWidth, bmp.PixelHeight, bmp.Format.BitsPerPixel / 8);
+                    var image = VisionImage.FromBitmapSource(bmp);
                     executionResult.Outputs["Output"] = image;
                 }
 

@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using SunEyeVision.Plugin.SDK.Imaging;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Core.Models;
 using SunEyeVision.Plugin.SDK.Core;
@@ -125,7 +125,7 @@ namespace SunEyeVision.Workflow
         /// </summary>
         private async Task<ExecutionResult> ExecuteWorkflowWithParallelGroups(
             Workflow workflow,
-            IVisionImage inputImage,
+            IVisionImage? inputImage,
             WorkflowContext context)
         {
             var result = new ExecutionResult();
@@ -236,7 +236,7 @@ namespace SunEyeVision.Workflow
         private async Task<ExecutionResult> ExecuteNodesInParallel(
             Workflow workflow,
             List<string> nodeIds,
-            IVisionImage defaultInput,
+            IVisionImage? defaultInput,
             WorkflowContext context)
         {
             var result = new ExecutionResult();
@@ -406,7 +406,7 @@ namespace SunEyeVision.Workflow
         /// <summary>
         /// 执行工作流（同步，支持工作流控制节点）
         /// </summary>
-        public async Task<ExecutionResult> ExecuteWorkflow(string workflowId, IVisionImage inputImage)
+        public async Task<ExecutionResult> ExecuteWorkflow(string workflowId, IVisionImage? inputImage)
         {
             if (_currentState == WorkflowExecutionState.Running)
             {
@@ -532,7 +532,7 @@ namespace SunEyeVision.Workflow
         /// <param name="nodeResults">节点执行结果缓存，用于参数绑定解析</param>
         private async Task<NodeExecutionResult> ExecuteNode(
             WorkflowNodeBase node,
-            object inputImage,
+            object? inputImage,
             WorkflowContext context,
             Workflow workflow)
         {
@@ -737,7 +737,7 @@ namespace SunEyeVision.Workflow
         /// <summary>
         /// 异步执行工作流
         /// </summary>
-        public async Task<ExecutionResult> ExecuteWorkflowAsync(string workflowId, IVisionImage inputImage)
+        public async Task<ExecutionResult> ExecuteWorkflowAsync(string workflowId, IVisionImage? inputImage)
         {
             _cancellationTokenSource = new CancellationTokenSource();
 

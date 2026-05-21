@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
+using System.Windows.Media;
 
 namespace SunEyeVision.Plugin.SDK.Models.Visualization
 {
@@ -75,21 +76,29 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
         }
 
         /// <summary>添加轮廓</summary>
-        public void AddContour(GraphicsStyle style, Point[] points, bool isPass = true)
+        public void AddContour(GraphicsStyle style, Point[] points, bool isPass = true, bool isClosed = true)
         {
             var item = GetOrCreateGraphicsItem(style, GraphicsType.Contour);
-            var contourGeom = new ContourGeometry(points, true);
+            var contourGeom = new ContourGeometry(points, isClosed);
+            AppendGeometry(item, contourGeom, isPass);
+        }
+
+        /// <summary>添加轮廓（带仿射变换矩阵）</summary>
+        public void AddContour(GraphicsStyle style, Point[] points, Matrix transform, bool isPass = true, bool isClosed = true)
+        {
+            var item = GetOrCreateGraphicsItem(style, GraphicsType.Contour);
+            var contourGeom = new ContourGeometry(points, isClosed, transform);
             AppendGeometry(item, contourGeom, isPass);
         }
 
         /// <summary>批量添加轮廓</summary>
-        public void AddContours(GraphicsStyle style, IReadOnlyList<Point[]> contoursList, IReadOnlyList<bool>? isPassList = null)
+        public void AddContours(GraphicsStyle style, IReadOnlyList<Point[]> contoursList, IReadOnlyList<bool>? isPassList = null, bool isClosed = true)
         {
             var item = GetOrCreateGraphicsItem(style, GraphicsType.Contour);
             for (int i = 0; i < contoursList.Count; i++)
             {
                 var isPass = isPassList != null && i < isPassList.Count ? isPassList[i] : true;
-                var contourGeom = new ContourGeometry(contoursList[i], true);
+                var contourGeom = new ContourGeometry(contoursList[i], isClosed);
                 AppendGeometry(item, contourGeom, isPass);
             }
         }

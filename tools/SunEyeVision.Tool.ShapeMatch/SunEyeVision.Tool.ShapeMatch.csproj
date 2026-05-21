@@ -5,6 +5,7 @@
     <OutputType>Library</OutputType>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <UseWPF>true</UseWPF>
     <RootNamespace>SunEyeVision.Tool.ShapeMatch</RootNamespace>
     <AssemblyName>SunEyeVision.Tool.ShapeMatch</AssemblyName>
@@ -17,7 +18,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Plugin.SDK\SunEyeVision.Plugin.SDK.csproj" />
-    <ProjectReference Include="..\..\src\SunEyeVision.CvEngine\SunEyeVision.CvEngine.csproj" />
   </ItemGroup>
 
   <ItemGroup>

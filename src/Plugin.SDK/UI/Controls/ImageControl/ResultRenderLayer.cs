@@ -453,61 +453,71 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             var ngPen = GetPen(ngColorArgb, scale);
             var ngBrush = item.IsFilled ? GetBrush(ngColorArgb) : null;
 
-            if (isUnified)
-            {
-                var polygonPoints = new List<Point[]>();
-                var polylinePoints = new List<Point[]>();
+            // 分离有/无变换的轮廓：有变换的逐个绘制，无变换的批量合并以保持性能
+            var batchPolygons = new List<Point[]>();
+            var batchPolylines = new List<Point[]>();
+            var batchOkPolygons = new List<Point[]>();
+            var batchNgPolygons = new List<Point[]>();
+            var batchOkPolylines = new List<Point[]>();
+            var batchNgPolylines = new List<Point[]>();
 
-                for (int i = 0; i < item.Geometries.Length; i++)
+            for (int i = 0; i < item.Geometries.Length; i++)
+            {
+                if (item.Geometries[i] is ContourGeometry contour && contour.Points != null)
                 {
-                    if (item.Geometries[i] is ContourGeometry contour && contour.Points != null)
+                    var pts = contour.Points;
+                    if (pts.Length < 2) continue;
+
+                    bool isPass = isUnified || (item.IsPassArray.Length > i ? item.IsPassArray[i] : true);
+                    bool isClosed = contour.IsClosed && pts.Length >= 3;
+
+                    if (contour.Transform.HasValue)
                     {
-                        var pts = contour.Points;
-                        if (pts.Length >= 2)
+                        // 有变换的轮廓逐个绘制，各自应用 PushTransform
+                        dc.PushTransform(new MatrixTransform(contour.Transform.Value));
+                        if (isClosed)
+                            DrawPolygon(dc, pts, (isPass && item.IsFilled) ? defaultBrush : null, isPass ? defaultPen : ngPen);
+                        else
+                            DrawPolyline(dc, pts, isPass ? defaultPen : ngPen);
+                        dc.Pop();
+                    }
+                    else
+                    {
+                        // 无变换的轮廓继续批量合并
+                        if (isUnified)
                         {
-                            if (contour.IsClosed && pts.Length >= 3)
-                                polygonPoints.Add(pts);
+                            if (isClosed) batchPolygons.Add(pts);
+                            else batchPolylines.Add(pts);
+                        }
+                        else
+                        {
+                            if (isPass)
+                            {
+                                if (isClosed) batchOkPolygons.Add(pts);
+                                else batchOkPolylines.Add(pts);
+                            }
                             else
-                                polylinePoints.Add(pts);
+                            {
+                                if (isClosed) batchNgPolygons.Add(pts);
+                                else batchNgPolylines.Add(pts);
+                            }
                         }
                     }
                 }
-                DrawMultipleFigures(dc, polygonPoints, item.IsFilled ? defaultBrush : null, defaultPen, true);
-                DrawMultipleFigures(dc, polylinePoints, null, defaultPen, false);
+            }
+
+            // 批量绘制无变换的轮廓
+            if (isUnified)
+            {
+                DrawMultipleFigures(dc, batchPolygons, item.IsFilled ? defaultBrush : null, defaultPen, true);
+                DrawMultipleFigures(dc, batchPolylines, null, defaultPen, false);
             }
             else
             {
-                var okPolygons = new List<Point[]>();
-                var ngPolygons = new List<Point[]>();
-                var okPolylines = new List<Point[]>();
-                var ngPolylines = new List<Point[]>();
-
-                for (int i = 0; i < item.Geometries.Length; i++)
-                {
-                    if (item.Geometries[i] is ContourGeometry contour && contour.Points != null)
-                    {
-                        var pts = contour.Points;
-                        if (pts.Length >= 2)
-                        {
-                            bool isPass = item.IsPassArray.Length > i ? item.IsPassArray[i] : true;
-                            bool isClosed = contour.IsClosed && pts.Length >= 3;
-
-                            if (isPass)
-                            {
-                                if (isClosed) okPolygons.Add(pts); else okPolylines.Add(pts);
-                            }
-                            else
-                            {
-                                if (isClosed) ngPolygons.Add(pts); else ngPolylines.Add(pts);
-                            }
-                        }
-                    }
-                }
-
-                DrawMultipleFigures(dc, okPolygons, item.IsFilled ? defaultBrush : null, defaultPen, true);
-                DrawMultipleFigures(dc, okPolylines, null, defaultPen, false);
-                DrawMultipleFigures(dc, ngPolygons, ngBrush, ngPen, true);
-                DrawMultipleFigures(dc, ngPolylines, null, ngPen, false);
+                DrawMultipleFigures(dc, batchOkPolygons, item.IsFilled ? defaultBrush : null, defaultPen, true);
+                DrawMultipleFigures(dc, batchOkPolylines, null, defaultPen, false);
+                DrawMultipleFigures(dc, batchNgPolygons, ngBrush, ngPen, true);
+                DrawMultipleFigures(dc, batchNgPolylines, null, ngPen, false);
             }
         }
 

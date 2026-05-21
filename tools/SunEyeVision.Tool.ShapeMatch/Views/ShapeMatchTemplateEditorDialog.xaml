@@ -16,7 +16,7 @@
       <RowDefinition Height="Auto"/>
     </Grid.RowDefinitions>
 
-    <!-- 模版名称 + 图像源选择（同一行） -->
+    <!-- 模版名称 + 图像源选择 -->
     <Border Grid.Row="0" Background="White" Padding="12,8" Margin="0,0,0,6" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="2">
       <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
         <TextBlock Text="模版名称:" VerticalAlignment="Center" FontSize="13" FontWeight="SemiBold"/>
@@ -26,27 +26,21 @@
         <ComboBox x:Name="imageSourceCombo" Width="100" Height="26" FontSize="11"
                   SelectionChanged="OnImageSourceSelectionChanged"/>
         <Rectangle Width="1" Fill="#D0D0D0" Margin="0,2,8,2"/>
-        <Button x:Name="btnExtractContour" Content="提取轮廓" Width="70" Height="26" Click="OnExtractClick" FontSize="11" Margin="0,0,6,0"/>
+        <Button x:Name="btnExtractContour" Content="提取模板" Width="70" Height="26" Click="OnExtractClick" FontSize="11" Margin="0,0,6,0"/>
         <ComboBox x:Name="cmbPyramidLevel" Width="120" Height="26" FontSize="11" Margin="0,0,6,0"
                   SelectionChanged="OnPyramidLevelSelected" IsEnabled="False"/>
-        <ComboBox x:Name="cmbDebugView" Width="90" Height="26" FontSize="10" Margin="0,0,6,0"
-                  SelectionChanged="OnDebugViewChanged" IsEnabled="False">
-          <ComboBoxItem Content="原始" Tag="original" IsSelected="True"/>
-          <ComboBoxItem Content="对比度" Tag="mag"/>
-          <ComboBoxItem Content="NMS" Tag="nms"/>
-        </ComboBox>
         <Button x:Name="btnClearContour" Content="🗑 清除" Width="70" Height="26" Click="OnClearClick" FontSize="11" Foreground="#D32F2F"/>
       </StackPanel>
     </Border>
 
-    <!-- 主内容区：左右分栏 -->
+    <!-- 主内容区 -->
     <Grid Grid.Row="1">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="65*"/>
         <ColumnDefinition Width="35*"/>
       </Grid.ColumnDefinitions>
 
-      <!-- ===== 左侧栏 (65%) - 仅图像显示 ===== -->
+      <!-- 左侧栏 — 图像显示 -->
       <Border Grid.Column="0" Background="White" Margin="0,0,3,0" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="2">
         <controls:ImageControl x:Name="dialogImageControl"
                                ShowToolBar="True"
@@ -57,7 +51,7 @@
                                OverlayHitTestVisible="True"/>
       </Border>
 
-      <!-- ===== 右侧栏 (35%) ===== -->
+      <!-- 右侧栏 — 参数面板 -->
       <ScrollViewer Grid.Column="1" Margin="3,0,0,0" VerticalScrollBarVisibility="Auto">
         <StackPanel>
           <!-- 区域编辑管理器 -->
@@ -67,58 +61,91 @@
                                                 MaskRegionsSource="{Binding DialogMaskRegions}"/>
           </Border>
 
-          <!-- 轮廓提取参数 -->
-          <GroupBox Header="轮廓提取参数" Margin="0,6,0,0" Padding="8" Background="White" BorderBrush="#E0E0E0">
+          <!-- 模板创建参数 -->
+          <GroupBox Header="模板创建参数" Margin="0,6,0,0" Padding="8" Background="White" BorderBrush="#E0E0E0">
             <StackPanel Margin="0,4">
-              <controls:LabeledControl Label="金字塔模式:" LabelWidth="80">
-                <ComboBox x:Name="cmbPyramidMode" Height="26" FontSize="11"
-                          ToolTip="自动：根据起始层/结束层自动管理金字塔层级|手动：使用下方设定的起始层/结束层控制"/>
+              <TextBlock Text="金字塔" FontSize="12" FontWeight="SemiBold" Foreground="#1976D2" Margin="0,4,0,2"/>
+
+              <controls:LabeledControl Label="模式:" LabelWidth="80">
+                <ComboBox x:Name="cmbPyramidMode" Height="26" FontSize="11"/>
               </controls:LabeledControl>
 
               <controls:LabeledControl Label="起始层:" LabelWidth="80">
                 <controls:NumericUpDown x:Name="numPyramidStart" Height="26"
                                          IntValue="4" Minimum="1" Maximum="10" SmallChange="1"
-                                         ShowUpDownButtons="True" ShowSlider="True"
-                                         ToolTip="起始层(最粗层)，值越大图像缩得越小，从这开始搜索。"/>
+                                         ShowUpDownButtons="True" ShowSlider="True"/>
               </controls:LabeledControl>
 
               <controls:LabeledControl Label="结束层:" LabelWidth="80">
                 <controls:NumericUpDown x:Name="numPyramidEnd" Height="26"
                                          IntValue="1" Minimum="1" Maximum="10" SmallChange="1"
-                                         ShowUpDownButtons="True" ShowSlider="True"
-                                         ToolTip="结束层(最细层)，值越小越精细，到这里结束搜索。1=全分辨率。"/>
+                                         ShowUpDownButtons="True" ShowSlider="True"/>
               </controls:LabeledControl>
 
-              <controls:LabeledControl Label="对比度模式:" LabelWidth="80">
-                <ComboBox x:Name="cmbContrastMode" Height="26" FontSize="11"
-                          ToolTip="自动：使用 Otsu 自适应阈值计算对比度|手动：使用下方设定的固定对比度值"/>
+              <TextBlock Text="对比度" FontSize="12" FontWeight="SemiBold" Foreground="#1976D2" Margin="0,8,0,2"/>
+
+              <controls:LabeledControl Label="模式:" LabelWidth="80">
+                <ComboBox x:Name="cmbContrastMode" Height="26" FontSize="11"/>
               </controls:LabeledControl>
 
-              <controls:LabeledControl Label="对比度:" LabelWidth="80">
+              <controls:LabeledControl Label="阈值:" LabelWidth="80">
                 <controls:NumericUpDown x:Name="numContrast" Height="26"
                                          IntValue="30" Minimum="1" Maximum="255" SmallChange="1"
+                                         ShowUpDownButtons="True" ShowSlider="True"/>
+              </controls:LabeledControl>
+
+              <controls:LabeledControl Label="最小对比度:" LabelWidth="80">
+                <ComboBox x:Name="cmbMinContrastMode" Height="26" FontSize="11" Width="80" Margin="0,0,4,0"/>
+              </controls:LabeledControl>
+
+              <controls:LabeledControl Label="值:" LabelWidth="80">
+                <controls:NumericUpDown x:Name="numMinContrast" Height="26"
+                                         IntValue="10" Minimum="1" Maximum="255" SmallChange="1"
                                          ShowUpDownButtons="True" ShowSlider="True"
-                                         ToolTip="边缘提取对比度阈值。高对比度=保留强边缘。典型值：20~100。手动模式有效。"/>
+                                         IsEnabled="False"/>
               </controls:LabeledControl>
 
-              <controls:LabeledControl Label="链长模式:" LabelWidth="80">
-                <ComboBox x:Name="cmbChainLengthMode" Height="26" FontSize="11"
-                          ToolTip="自动：使用 20% 分位自动计算链长阈值|手动：使用下方设定的固定链长值"/>
+              <TextBlock Text="角度" FontSize="12" FontWeight="SemiBold" Foreground="#1976D2" Margin="0,8,0,2"/>
+
+              <controls:LabeledControl Label="步长模式:" LabelWidth="80">
+                <ComboBox x:Name="cmbAngleStepMode" Height="26" FontSize="11" Width="80" Margin="0,0,4,0"/>
               </controls:LabeledControl>
 
-              <controls:LabeledControl Label="最小链长:" LabelWidth="80">
-                <controls:NumericUpDown x:Name="numMinChainLength" Height="26"
-                                         IntValue="5" Minimum="1" Maximum="1000" SmallChange="1"
+              <controls:LabeledControl Label="步长(°):" LabelWidth="80">
+                <controls:NumericUpDown x:Name="numAngleStep" Height="26"
+                                         Value="2.0" Minimum="0.1" Maximum="90" SmallChange="0.1"
                                          ShowUpDownButtons="True" ShowSlider="True"
-                                         ToolTip="边缘点链的最小长度，低于此值视为噪声丢弃。手动模式有效。"/>
+                                         IsEnabled="False"/>
               </controls:LabeledControl>
 
+              <TextBlock Text="缩放" FontSize="12" FontWeight="SemiBold" Foreground="#1976D2" Margin="0,8,0,2"/>
+
+              <controls:LabeledControl Label="步长模式:" LabelWidth="80">
+                <ComboBox x:Name="cmbScaleStepMode" Height="26" FontSize="11" Width="80" Margin="0,0,4,0"/>
+              </controls:LabeledControl>
+
+              <controls:LabeledControl Label="步长:" LabelWidth="80">
+                <controls:NumericUpDown x:Name="numScaleStep" Height="26"
+                                         Value="0.02" Minimum="0.001" Maximum="1.0" SmallChange="0.001"
+                                         ShowUpDownButtons="True" ShowSlider="True"
+                                         IsEnabled="False"/>
+              </controls:LabeledControl>
+
+              <TextBlock Text="高级" FontSize="12" FontWeight="SemiBold" Foreground="#1976D2" Margin="0,8,0,2"/>
+
+              <controls:LabeledControl Label="极性匹配:" LabelWidth="80">
+                <ComboBox x:Name="cmbMetricMode" Height="26" FontSize="11" Width="140"/>
+              </controls:LabeledControl>
+
+              <controls:LabeledControl Label="优化模式:" LabelWidth="80">
+                <ComboBox x:Name="cmbOptimizationMode" Height="26" FontSize="11" Width="140"/>
+              </controls:LabeledControl>
 
             </StackPanel>
           </GroupBox>
 
-          <!-- 提取结果 -->
-          <GroupBox Header="提取结果" Margin="0,6,0,0" Padding="8" Background="White" BorderBrush="#E0E0E0">
+          <!-- 模板信息 -->
+          <GroupBox Header="模板信息" Margin="0,6,0,0" Padding="8" Background="White" BorderBrush="#E0E0E0">
             <StackPanel>
               <Grid Margin="0,2">
                 <Grid.ColumnDefinitions>
@@ -152,6 +179,15 @@
                   <ColumnDefinition Width="Auto"/>
                   <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
+                <TextBlock Text="轮廓链数:" Grid.Column="0" FontSize="11" VerticalAlignment="Center" Foreground="#666"/>
+                <TextBlock x:Name="txtContourChainCount" Grid.Column="1" FontSize="11" VerticalAlignment="Center"
+                           Foreground="#999" Text="--"/>
+              </Grid>
+              <Grid Margin="0,2">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto"/>
+                  <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
                 <TextBlock Text="包围矩形:" Grid.Column="0" FontSize="11" VerticalAlignment="Center" Foreground="#666"/>
                 <TextBlock x:Name="txtBoundingRect" Grid.Column="1" FontSize="11" VerticalAlignment="Center"
                            Foreground="#999" Text="--"/>
@@ -170,11 +206,22 @@
                   <ColumnDefinition Width="Auto"/>
                   <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Text="过滤统计:" Grid.Column="0" FontSize="11" VerticalAlignment="Center" Foreground="#666"/>
-                <TextBlock x:Name="txtFilterStats" Grid.Column="1" FontSize="11" VerticalAlignment="Center"
+                <TextBlock Text="实际对比度:" Grid.Column="0" FontSize="11" VerticalAlignment="Center" Foreground="#666"/>
+                <TextBlock x:Name="txtActualContrast" Grid.Column="1" FontSize="11" VerticalAlignment="Center"
+                           Foreground="#999" Text="--"/>
+              </Grid>
+              <Grid Margin="0,2">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto"/>
+                  <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="金字塔层数:" Grid.Column="0" FontSize="11" VerticalAlignment="Center" Foreground="#666"/>
+                <TextBlock x:Name="txtActualLevels" Grid.Column="1" FontSize="11" VerticalAlignment="Center"
                            Foreground="#999" Text="--"/>
               </Grid>
               <Rectangle Height="1" Fill="#E0E0E0" Margin="0,4,0,2"/>
+              <TextBlock x:Name="txtFilterStats" Grid.ColumnSpan="2" FontSize="11" Foreground="#666"
+                         TextWrapping="Wrap" Visibility="Collapsed" Margin="0,2,0,0"/>
               <TextBlock x:Name="txtLevelAdvice" Grid.ColumnSpan="2" FontSize="11" Foreground="#E65100"
                          TextWrapping="Wrap" Visibility="Collapsed" Margin="0,2,0,0"/>
             </StackPanel>

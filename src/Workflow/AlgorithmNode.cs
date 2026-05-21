@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -6,7 +6,7 @@ using System.Windows;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.Imaging;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 
@@ -117,8 +117,12 @@ namespace SunEyeVision.Workflow
         }
 
         /// <summary>
-        /// 解析输入图像 — 优先使用参数绑定中的 ImageSource，回退到拓扑传递的默认图像
+        /// 解析输入图像 — 优先使用参数绑定中的 ImageSource，否则返回 null
         /// </summary>
+        /// <remarks>
+        /// 返回 null 表示节点为图像源节点（如 ImageLoad），自行从文件加载图像。
+        /// 下游工具如需要输入图像会自行检查 null 并报错。
+        /// </remarks>
         private IVisionImage? ResolveInputImage(ToolParameters parameters, IVisionImage? defaultInputImage, IDictionary<string, ToolResults>? nodeResults)
         {
             // 优先级1：参数中的 ImageSource 绑定（AvailableDataSource）
@@ -138,7 +142,11 @@ namespace SunEyeVision.Workflow
             }
 
             // 优先级2：引擎通过拓扑传递的默认图像
-            return defaultInputImage;
+            if (defaultInputImage != null && !defaultInputImage.IsEmpty)
+                return defaultInputImage;
+
+            // 无有效输入图像源 → 返回 null（起始节点自行加载图像）
+            return null;
         }
 
         /// <summary>

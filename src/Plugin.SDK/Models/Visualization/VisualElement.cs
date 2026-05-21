@@ -57,11 +57,18 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
     {
         public Point[] Points { get; }
         public bool IsClosed { get; }
+        public Matrix? Transform { get; }
 
         public ContourGeometry(Point[] points, bool isClosed)
+            : this(points, isClosed, null)
+        {
+        }
+
+        public ContourGeometry(Point[] points, bool isClosed, Matrix? transform)
         {
             Points = points;
             IsClosed = isClosed;
+            Transform = transform;
         }
     }
 }

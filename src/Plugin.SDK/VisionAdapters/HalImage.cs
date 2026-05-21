@@ -1,16 +1,11 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
-using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using HalconDotNet;
-using SunEyeVision.Plugin.SDK.Imaging;
 
-namespace SunEyeVision.HalAdapter
+namespace SunEyeVision.Plugin.SDK.VisionAdapters
 {
-    /// <summary>
-    /// Halcon HImage 的适配包装，实现 <see cref="IVisionImage"/>
-    /// </summary>
     public sealed class HalImage : IVisionImage
     {
         private readonly HImage _image;
@@ -21,9 +16,6 @@ namespace SunEyeVision.HalAdapter
             _image = image ?? throw new ArgumentNullException(nameof(image));
         }
 
-        /// <summary>
-        /// 拆包获取内部 HImage 引用（不转移所有权）
-        /// </summary>
         public HImage Unwrap()
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
@@ -71,53 +63,38 @@ namespace SunEyeVision.HalAdapter
         public BitmapSource ToBitmapSource()
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
-
             int w = Width;
             int h = Height;
-
             if (Channels == 1)
             {
                 HOperatorSet.GetImagePointer1(_image, out var ptr, out _, out _, out _);
-                return BitmapSource.Create(
-                    w, h, 96, 96,
-                    PixelFormats.Gray8, null,
-                    ptr, w * h, w);
+                return BitmapSource.Create(w, h, 96, 96, PixelFormats.Gray8, null, ptr, w * h, w);
             }
-
-            // 多通道：直接 GetImagePointer3 → BGR 交错
-            HOperatorSet.GetImagePointer3(_image, out var ptrR, out var ptrG, out var ptrB,
-                out _, out _, out _);
-
+            HOperatorSet.GetImagePointer3(_image, out var ptrR, out var ptrG, out var ptrB, out _, out _, out _);
             int stride = w * 3;
             var pixels = new byte[stride * h];
             var rowR = new byte[w];
             var rowG = new byte[w];
             var rowB = new byte[w];
-
             for (int y = 0; y < h; y++)
             {
                 Marshal.Copy(ptrR + y * w, rowR, 0, w);
                 Marshal.Copy(ptrG + y * w, rowG, 0, w);
                 Marshal.Copy(ptrB + y * w, rowB, 0, w);
-
                 int rowOffset = y * stride;
                 for (int x = 0; x < w; x++)
                 {
-                    pixels[rowOffset + x * 3] = rowB[x];      // B
-                    pixels[rowOffset + x * 3 + 1] = rowG[x];  // G
-                    pixels[rowOffset + x * 3 + 2] = rowR[x];  // R
+                    pixels[rowOffset + x * 3] = rowB[x];
+                    pixels[rowOffset + x * 3 + 1] = rowG[x];
+                    pixels[rowOffset + x * 3 + 2] = rowR[x];
                 }
             }
-
-            return BitmapSource.Create(w, h, 96, 96,
-                PixelFormats.Bgr24, null,
-                pixels, stride);
+            return BitmapSource.Create(w, h, 96, 96, PixelFormats.Bgr24, null, pixels, stride);
         }
 
         public byte[] GetPixelData()
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
-
             if (Channels == 1)
             {
                 HOperatorSet.GetImagePointer1(_image, out var ptr, out _, out var imgW, out var imgH);
@@ -125,24 +102,18 @@ namespace SunEyeVision.HalAdapter
                 Marshal.Copy(ptr, bytes, 0, bytes.Length);
                 return bytes;
             }
-
-            // 多通道：R/G/B → RGB 交错
-            HOperatorSet.GetImagePointer3(_image, out var ptrR, out var ptrG, out var ptrB,
-                out _, out var w3, out var h3);
-
+            HOperatorSet.GetImagePointer3(_image, out var ptrR, out var ptrG, out var ptrB, out _, out var w3, out var h3);
             int w = (int)w3.L;
             int h = (int)h3.L;
             var result = new byte[w * h * 3];
             var rowR = new byte[w];
             var rowG = new byte[w];
             var rowB = new byte[w];
-
             for (int y = 0; y < h; y++)
             {
                 Marshal.Copy(ptrR + y * w, rowR, 0, w);
                 Marshal.Copy(ptrG + y * w, rowG, 0, w);
                 Marshal.Copy(ptrB + y * w, rowB, 0, w);
-
                 int rowOffset = y * w * 3;
                 for (int x = 0; x < w; x++)
                 {
@@ -151,7 +122,6 @@ namespace SunEyeVision.HalAdapter
                     result[rowOffset + x * 3 + 2] = rowB[x];
                 }
             }
-
             return result;
         }
 
@@ -169,5 +139,76 @@ namespace SunEyeVision.HalAdapter
                 _image.Dispose();
             }
         }
+
+        #region Static factory methods
+
+        public static HalImage CreateFromFile(string path)
+        {
+            ArgumentNullException.ThrowIfNull(path);
+            return new HalImage(new HImage(path));
+        }
+
+        public static HalImage FromBitmapSource(BitmapSource source)
+        {
+            ArgumentNullException.ThrowIfNull(source);
+            int w = source.PixelWidth;
+            int h = source.PixelHeight;
+            int bpp = source.Format.BitsPerPixel;
+            var pixelData = new byte[w * h * (bpp / 8)];
+            source.CopyPixels(pixelData, w * (bpp / 8), 0);
+            unsafe
+            {
+                fixed (byte* p = pixelData)
+                {
+                    if (bpp == 8)
+                        return new HalImage(new HImage("byte", w, h, (IntPtr)p));
+                    string colorFormat = bpp switch { 24 => "bgr", 32 => "bgrx", _ => "bgr" };
+                    var hImg = new HImage();
+                    hImg.GenImageInterleaved((IntPtr)p, colorFormat, w, h, 0, "byte", 0, 0, 0, 0, -1, 0);
+                    return new HalImage(hImg);
+                }
+            }
+        }
+
+        public static HalImage CreateFromBytes(byte[] data, int width, int height, int channels)
+        {
+            ArgumentNullException.ThrowIfNull(data);
+            if (width <= 0) throw new ArgumentOutOfRangeException(nameof(width));
+            if (height <= 0) throw new ArgumentOutOfRangeException(nameof(height));
+            if (channels is not (1 or 3)) throw new NotSupportedException($"channels: {channels}");
+
+            HalImage halImage;
+            unsafe
+            {
+                fixed (byte* p = data)
+                {
+                    if (channels == 1)
+                        halImage = new HalImage(new HImage("byte", width, height, (IntPtr)p));
+                    else
+                    {
+                        var hImg = new HImage();
+                        hImg.GenImageInterleaved((IntPtr)p, "rgb", width, height, 0, "byte", 0, 0, 0, 0, -1, 0);
+                        halImage = new HalImage(hImg);
+                    }
+                }
+            }
+            return halImage;
+        }
+
+        public static HalImage CreateGrayFromColor(IVisionImage colorImage)
+        {
+            ArgumentNullException.ThrowIfNull(colorImage);
+            if (colorImage.Channels <= 1)
+            {
+                var cloned = colorImage.Clone();
+                return cloned as HalImage ?? throw new InvalidOperationException("Image type mismatch");
+            }
+            var halImage = colorImage as HalImage ?? throw new ArgumentException($"Expected {nameof(HalImage)}, got {colorImage.GetType().Name}");
+            var hWrapped = halImage.Unwrap();
+            HOperatorSet.Rgb1ToGray(hWrapped, out var grayObj);
+            return new HalImage(new HImage(grayObj));
+        }
+
+        #endregion
     }
 }

@@ -1,50 +1,20 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Media.Imaging;
 using OpenCvSharp;
-using SunEyeVision.Plugin.SDK.Imaging;
 
-namespace SunEyeVision.CvEngine
+namespace SunEyeVision.Plugin.SDK.VisionAdapters
 {
-    /// <summary>
-    /// 图像数据载体 - 对应 Halcon 的 HImage / Image(-array)
-    /// </summary>
-    /// <remarks>
-    /// 纯数据类，不含任何算法逻辑。
-    /// 所有图像操作通过 <see cref="CvOp"/> 静态类执行。
-    /// 
-    /// 设计原则（对齐 CvRegion）：
-    /// 1. 内部用 List&lt;ImageItem&gt; 存储（对齐 HObject tuple 语义）
-    /// 2. Count 属性即数组长度（对齐 Halcon CountObj()）
-    /// 3. 单图像快捷属性：Image / Size / Channels（Count=1 时零开销）
-    /// 
-    /// 当前阶段：CvImage 数组语义基础设施就位，
-    /// 算子（ReduceDomain/CropDomain/Rgb1ToGray/Intensity）仍按单图像处理，
-    /// 后续按需扩展为数组处理。
-    /// </remarks>
     public class CvImage : IVisionImage, IDisposable
     {
-        #region 内部字段
-
-        /// <summary>图像列表（对齐 HObject tuple）</summary>
         internal List<ImageItem> _items;
 
-        #endregion
-
-        #region 构造函数与工厂方法
-
-        /// <summary>私有构造 - 通过工厂方法或 CvOp 内部创建</summary>
         private CvImage()
         {
             _items = new List<ImageItem>();
         }
 
-        /// <summary>
-        /// 构造函数 - 创建单图像 CvImage
-        /// </summary>
-        /// <param name="image">输入 Mat</param>
-        /// <param name="ownsImage">是否拥有所有权（true=Dispose时释放）</param>
         public CvImage(Mat image, bool ownsImage = false)
         {
             _items = new List<ImageItem>();
@@ -52,72 +22,37 @@ namespace SunEyeVision.CvEngine
                 _items.Add(new ImageItem(image, ownsImage));
         }
 
-        /// <summary>
-        /// 内部构造 - 供 CvOp 创建多图像结果
-        /// </summary>
         internal CvImage(List<ImageItem> items)
         {
             _items = items ?? new List<ImageItem>();
         }
 
-        /// <summary>从已有图像创建克隆副本</summary>
         public static CvImage FromMat(Mat image) => new(image.Clone(), ownsImage: true);
 
-        /// <summary>创建纯色图像</summary>
         public static CvImage Create(Size size, Scalar color, int channels = 1)
         {
             var type = channels == 1 ? MatType.CV_8UC1 : MatType.CV_8UC3;
             return new CvImage(new Mat(size, type, color), ownsImage: true);
         }
 
-        /// <summary>
-        /// 创建空图像对象 - 对应 Halcon gen_empty_obj()
-        /// </summary>
         public static CvImage GenEmptyObj() => new();
 
-        #endregion
-
-        #region 属性
-
-        /// <summary>
-        /// 图像数量 - 对应 Halcon CountObj()
-        /// </summary>
         public int Count => _items.Count;
 
-        /// <summary>
-        /// 底层 Mat 图像（单图像快捷访问，Count=1 时使用）
-        /// </summary>
-        /// <exception cref="InvalidOperationException">空图像时抛出</exception>
         public Mat Image => _items.Count > 0
             ? _items[0].Image
-            : throw new InvalidOperationException("空图像对象");
+            : throw new InvalidOperationException("Empty image object");
 
-        /// <summary>
-        /// 图像尺寸（单图像快捷访问）
-        /// </summary>
         public Size Size => Image.Size();
 
-        /// <summary>
-        /// 通道数（单图像快捷访问）
-        /// </summary>
         public int Channels => Image.Channels();
 
-        /// <summary>
-        /// 是否为空（不含任何图像）
-        /// </summary>
         public bool Empty => _items.Count == 0;
 
-        #endregion
-
-        #region IVisionImage 接口实现
-
         int IVisionImage.Width => Size.Width;
-
         int IVisionImage.Height => Size.Height;
-
         bool IVisionImage.IsEmpty => Empty;
 
-        /// <summary>转换为 WPF BitmapSource</summary>
         BitmapSource IVisionImage.ToBitmapSource()
         {
             var src = Image;
@@ -131,11 +66,9 @@ namespace SunEyeVision.CvEngine
             int stride = src.Width * src.Channels();
             var bytes = new byte[stride * src.Height];
             System.Runtime.InteropServices.Marshal.Copy(src.Data, bytes, 0, bytes.Length);
-            return System.Windows.Media.Imaging.BitmapSource.Create(
-                src.Width, src.Height, 96, 96, pixelFormat, null, bytes, stride);
+            return BitmapSource.Create(src.Width, src.Height, 96, 96, pixelFormat, null, bytes, stride);
         }
 
-        /// <summary>获取像素数据字节数组</summary>
         byte[] IVisionImage.GetPixelData()
         {
             var src = Image;
@@ -146,13 +79,6 @@ namespace SunEyeVision.CvEngine
 
         IVisionImage IVisionImage.Clone() => CopyObj();
 
-        #endregion
-
-        #region 生命周期管理
-
-        /// <summary>
-        /// 深拷贝 - 对应 Halcon copy_obj()
-        /// </summary>
         public CvImage CopyObj()
         {
             var items = new List<ImageItem>(_items.Count);
@@ -164,9 +90,6 @@ namespace SunEyeVision.CvEngine
             return new CvImage(items);
         }
 
-        /// <summary>
-        /// 释放资源
-        /// </summary>
         public void Dispose()
         {
             foreach (var item in _items) item.Dispose();
@@ -174,35 +97,23 @@ namespace SunEyeVision.CvEngine
             GC.SuppressFinalize(this);
         }
 
-        /// <summary>
-        /// Finalizer 安全网
-        /// </summary>
         ~CvImage()
         {
             foreach (var item in _items) item.Dispose();
         }
-
-        #endregion
     }
 
-    /// <summary>
-    /// 图像项 - CvImage 的内部存储单元，对齐 HObject tuple 中的单个元素
-    /// </summary>
     internal class ImageItem : IDisposable
     {
         private readonly Mat _image;
         private readonly bool _ownsImage;
 
-        /// <summary>创建图像项</summary>
-        /// <param name="image">图像 Mat</param>
-        /// <param name="ownsImage">是否拥有所有权</param>
         internal ImageItem(Mat image, bool ownsImage = true)
         {
             _image = image;
             _ownsImage = ownsImage;
         }
 
-        /// <summary>底层 Mat 图像</summary>
         internal Mat Image => _image;
 
         public void Dispose()

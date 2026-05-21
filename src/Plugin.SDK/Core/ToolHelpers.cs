@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.Imaging;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
 
 namespace SunEyeVision.Plugin.SDK.Core
 {

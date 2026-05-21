@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Windows;
 
-namespace SunEyeVision.Plugin.SDK.Imaging
+namespace SunEyeVision.Plugin.SDK.VisionAdapters
 {
     /// <summary>
     /// 统一轮廓数据接口 - 对齐 Halcon HXLDCont / CvContour

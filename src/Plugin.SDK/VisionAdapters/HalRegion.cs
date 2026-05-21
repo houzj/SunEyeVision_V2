@@ -1,14 +1,10 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Windows;
 using HalconDotNet;
-using SunEyeVision.Plugin.SDK.Imaging;
 
-namespace SunEyeVision.HalAdapter
+namespace SunEyeVision.Plugin.SDK.VisionAdapters
 {
-    /// <summary>
-    /// Halcon HRegion 的适配包装，实现 <see cref="IVisionRegion"/>
-    /// </summary>
     public sealed class HalRegion : IVisionRegion
     {
         private readonly HRegion _region;
@@ -56,28 +52,22 @@ namespace SunEyeVision.HalAdapter
         public Point[] GetContour()
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
-
             HOperatorSet.GetRegionContour(_region, out var rows, out var cols);
             if (rows == null || cols == null || rows.Length == 0)
                 return Array.Empty<Point>();
-
             var points = new Point[rows.Length];
             for (int i = 0; i < rows.Length; i++)
                 points[i] = new Point(cols.LArr[i], rows.LArr[i]);
-
             return points;
         }
 
         public byte[] GetMaskData()
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
-
             HOperatorSet.SmallestRectangle1(_region, out var r1, out var c1, out var r2, out var c2);
             int maskW = (int)(c2.L - c1.L + 1);
             int maskH = (int)(r2.L - r1.L + 1);
-
             using var binImage = _region.RegionToBin(255, 0, maskW, maskH);
-
             HOperatorSet.GetImagePointer1(binImage, out var ptr, out _, out var w, out var h);
             var bytes = new byte[(int)w.L * (int)h.L];
             System.Runtime.InteropServices.Marshal.Copy(ptr, bytes, 0, bytes.Length);

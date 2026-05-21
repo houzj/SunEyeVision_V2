@@ -20,4 +20,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Plugin.SDK\SunEyeVision.Plugin.SDK.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="SunEyeVision.Plugin.SDK.VisionAdapters" />
+  </ItemGroup>
 </Project>

@@ -1,9 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using HalconDotNet;
-using SunEyeVision.HalAdapter;
 using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.Imaging;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 
 namespace SunEyeVision.Tool.ImageLoad
@@ -18,12 +17,12 @@ namespace SunEyeVision.Tool.ImageLoad
         /// <summary>
         /// 输出图像（原始加载图像）
         /// </summary>
-        public HImage? OutputImage { get; set; }
+        public IVisionImage? OutputImage { get; set; }
 
         /// <summary>
         /// 灰度图像（彩色输入时转换得到，灰度输入时为原图克隆）
         /// </summary>
-        public HImage? GrayImage { get; set; }
+        public IVisionImage? GrayImage { get; set; }
 
         /// <summary>
         /// 获取所有可显示的图像
@@ -31,10 +30,10 @@ namespace SunEyeVision.Tool.ImageLoad
         public override Dictionary<string, IVisionImage?> GetDisplayImages()
         {
             var images = new Dictionary<string, IVisionImage?>();
-            if (OutputImage != null && OutputImage.IsInitialized())
-                images["OutputImage"] = new HalImage(OutputImage);
-            if (GrayImage != null && GrayImage.IsInitialized())
-                images["GrayImage"] = new HalImage(GrayImage);
+            if (OutputImage != null && !OutputImage.IsEmpty)
+                images["OutputImage"] = OutputImage;
+            if (GrayImage != null && !GrayImage.IsEmpty)
+                images["GrayImage"] = GrayImage;
             return images;
         }
 
@@ -71,7 +70,7 @@ namespace SunEyeVision.Tool.ImageLoad
         {
             get
             {
-                if (OutputImage == null || !OutputImage.IsInitialized())
+                if (OutputImage == null || OutputImage.IsEmpty)
                     return "Unknown";
                 return Channels switch
                 {
@@ -124,7 +123,7 @@ namespace SunEyeVision.Tool.ImageLoad
         {
             get
             {
-                if (_minPixelValue == null && OutputImage != null && OutputImage.IsInitialized())
+                if (_minPixelValue == null && OutputImage != null && !OutputImage.IsEmpty)
                 {
                     CalculatePixelValues();
                 }
@@ -139,7 +138,7 @@ namespace SunEyeVision.Tool.ImageLoad
         {
             get
             {
-                if (_maxPixelValue == null && OutputImage != null && OutputImage.IsInitialized())
+                if (_maxPixelValue == null && OutputImage != null && !OutputImage.IsEmpty)
                 {
                     CalculatePixelValues();
                 }
@@ -154,7 +153,7 @@ namespace SunEyeVision.Tool.ImageLoad
         {
             get
             {
-                if (_meanPixelValue == null && OutputImage != null && OutputImage.IsInitialized())
+                if (_meanPixelValue == null && OutputImage != null && !OutputImage.IsEmpty)
                 {
                     CalculatePixelValues();
                 }
@@ -172,23 +171,27 @@ namespace SunEyeVision.Tool.ImageLoad
         /// </summary>
         private void CalculatePixelValues()
         {
-            if (OutputImage != null && OutputImage.IsInitialized())
-            {
-                try
-                {
-                    HOperatorSet.MinMaxGray(OutputImage, OutputImage, 0, out var min, out var max, out _);
-                    _minPixelValue = min.D;
-                    _maxPixelValue = max.D;
+            if (OutputImage == null || OutputImage.IsEmpty) return;
 
-                    HOperatorSet.Intensity(OutputImage, OutputImage, out var mean, out _);
-                    _meanPixelValue = mean.D;
-                }
-                catch
-                {
-                    _minPixelValue = 0.0;
-                    _maxPixelValue = 255.0;
-                    _meanPixelValue = 0.0;
-                }
+            // 拆包获取 HImage 计算像素统计
+            if (OutputImage is not HalImage halImage) return;
+            var hImage = halImage.Unwrap();
+            if (hImage == null || !hImage.IsInitialized()) return;
+
+            try
+            {
+                HOperatorSet.MinMaxGray(hImage, hImage, 0, out var min, out var max, out _);
+                _minPixelValue = min.D;
+                _maxPixelValue = max.D;
+
+                HOperatorSet.Intensity(hImage, hImage, out var mean, out _);
+                _meanPixelValue = mean.D;
+            }
+            catch
+            {
+                _minPixelValue = 0.0;
+                _maxPixelValue = 255.0;
+                _meanPixelValue = 0.0;
             }
         }
 

@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.Imaging;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
 
 namespace SunEyeVision.Workflow
 {

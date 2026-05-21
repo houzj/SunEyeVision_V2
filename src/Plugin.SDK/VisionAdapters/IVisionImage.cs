@@ -1,7 +1,7 @@
 using System;
 using System.Windows.Media.Imaging;
 
-namespace SunEyeVision.Plugin.SDK.Imaging
+namespace SunEyeVision.Plugin.SDK.VisionAdapters
 {
     /// <summary>
     /// 统一图像数据接口 - 对齐 Halcon HImage / OpenCV Mat / CvImage

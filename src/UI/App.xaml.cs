@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows;
 using System.IO;
 using SunEyeVision.UI.Adapters;
@@ -14,8 +14,7 @@ using SunEyeVision.Workflow;
 using SunEyeVision.UI.Services;
 using SunEyeVision.UI.Services.Monitoring;
 using SunEyeVision.Plugin.SDK.Logging;
-using SunEyeVision.Plugin.SDK.Imaging;
-using SunEyeVision.HalAdapter;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
 
 namespace SunEyeVision.UI;
 
@@ -71,8 +70,9 @@ public partial class App : Application
         // 2. 标记插件已加载（全局状态）
         PluginLoader.MarkAsLoaded();
 
-        // 2.5 初始化 Halcon 适配器工厂（在任何服务使用 IVisionImage 之前）
-        VisionAdapter.Factory = new HalVisionFactory();
+        // 2.5 初始化视觉图像加载入口
+        // HalImage 及其静态工厂方法已内置在 Plugin.SDK.Imaging 中
+        // 使用 VisionImage.FromFile / VisionImage.FromBitmapSource 直接加载图像
 
         // 3. 初始化服务（包括节点显示适配器）
         ServiceInitializer.InitializeServices();

@@ -17,7 +17,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Plugin.SDK\SunEyeVision.Plugin.SDK.csproj" />
-    <ProjectReference Include="..\..\src\SunEyeVision.HalAdapter\SunEyeVision.HalAdapter.csproj" />
   </ItemGroup>
 
   <ItemGroup>

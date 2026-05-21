@@ -1,13 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using OpenCvSharp;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.Imaging;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.UI.Models;
 using SunEyeVision.UI.ViewModels;
@@ -241,7 +239,7 @@ namespace SunEyeVision.UI.Services.Workflow
         }
 
         /// <summary>
-        /// 内部执行工作流
+        /// 执行工作流内部逻辑
         /// </summary>
         private async Task ExecuteWorkflowInternal(WorkflowTabViewModel workflow, CancellationToken cancellationToken)
         {
@@ -250,24 +248,9 @@ namespace SunEyeVision.UI.Services.Workflow
 
             try
             {
-                // 获取输入图像
-                object? inputImage = null;
-                try
-                {
-                    InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.Name, "[EXEC] 正在获取输入图像...")));
-                    inputImage = await _inputProvider.GetInputImageAsync();
-                    InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.Name, "[EXEC] 输入图像获取完成")));
-                    cancellationToken.ThrowIfCancellationRequested();
-                }
-                catch (OperationCanceledException)
-                {
-                    throw;
-                }
-                catch (Exception ex)
-                {
-                    // 获取图像失败只记录日志
-                    InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.Name, $"[WARN] 获取输入图像失败: {ex.Message}")));
-}
+                // 获取输入图像（可能为 null，工作流引擎会处理）
+                var inputImage = await _inputProvider.GetInputImageAsync();
+                cancellationToken.ThrowIfCancellationRequested();
 
                 InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.Name, "[EXEC] 正在创建日志器...")));
                 // 使用全局日志器（自动转发到UILogWriter）
@@ -315,16 +298,9 @@ namespace SunEyeVision.UI.Services.Workflow
 
                 // 执行
                 logger.LogInfo($"开始执行工作流: {workflow.Name}");
-                InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.Name, "[EXEC] 正在创建测试图像...")));
-                var matImage = CreateTestMat();
-                InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.Name, "[EXEC] 测试图像已创建，开始执行工作流...")));
+                InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.Name, "[EXEC] 开始执行工作流...")));
 
-                // 将 Mat 转换为 IVisionImage
-                var pixelData = new byte[matImage.Total() * matImage.ElemSize()];
-                System.Runtime.InteropServices.Marshal.Copy(matImage.Data, pixelData, 0, pixelData.Length);
-                var visionImage = VisionAdapter.Factory.LoadFromBytes(pixelData, matImage.Width, matImage.Height, matImage.Channels());
-
-                var result = await executionEngine.ExecuteWorkflowAsync(suneyeWorkflow.Id, visionImage);
+                var result = await executionEngine.ExecuteWorkflowAsync(suneyeWorkflow.Id, inputImage as IVisionImage);
 
                 // 输出结果
                 logger.LogInfo($"工作流执行完成: {workflow.Name}");
@@ -367,13 +343,9 @@ namespace SunEyeVision.UI.Services.Workflow
         }
 
         /// <summary>
-        /// 创建测试用的Mat
+        /// 创建测试用的Mat — 已废弃，工作流不再提供默认输入图像
         /// </summary>
-        private OpenCvSharp.Mat CreateTestMat()
-        {
-            // 创建640x480的3通道图像
-            return new OpenCvSharp.Mat(480, 640, OpenCvSharp.MatType.CV_8UC3, new OpenCvSharp.Scalar(0));
-        }
+        // 已删除：工作流不再提供默认输入图像，缺少输入图像的节点将直接报错
 
         /// <summary>
         /// 从UI节点创建AlgorithmNode

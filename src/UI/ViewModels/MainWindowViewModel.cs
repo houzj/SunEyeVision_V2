@@ -2530,6 +2530,17 @@ SplitterPosition = position;
             }
             int targetIdx = firstCurrent >= 0 ? firstCurrent : (DisplayImageSources.Count > 0 ? 0 : -1);
             SetSelectedDisplayImageSourceIndexDeferred(targetIdx);
+
+            // 节点已选中但无可显示图像源 → 清除残留图像和图形覆盖
+            if (DisplayImageSources.Count == 0)
+            {
+                if (DisplayImage != null)
+                {
+                    LogInfo($"图像源|节点 {selectedNode.Name} 无输出图像, 清除残留显示", "ImageSourceSelector");
+                    DisplayImage = null;
+                }
+                _nodeResultManager.ClearResultGraphics();
+            }
         }
 
         /// <summary>
@@ -2606,7 +2617,12 @@ SplitterPosition = position;
         private void SetDisplayImageFromSource(AvailableDataSource source)
         {
             var executionResult = _workflowContext.GetNodeResult(source.SourceNodeId);
-            if (executionResult?.ToolResult == null) return;
+            if (executionResult?.ToolResult == null)
+            {
+                // 节点未执行过，无可显示图像 → 清除残留
+                DisplayImage = null;
+                return;
+            }
 
             // 通过 NodeResultManager 获取对应的 Mat 并转换为 BitmapSource
             var bitmapSource = _nodeResultManager.GetDisplayImageFromSource(
@@ -2614,6 +2630,10 @@ SplitterPosition = position;
             if (bitmapSource != null)
             {
                 DisplayImage = bitmapSource;
+            }
+            else
+            {
+                DisplayImage = null;
             }
         }
 

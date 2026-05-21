@@ -337,9 +337,20 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
                 ? new HTuple("auto")
                 : new HTuple(parameters.MinContrast.Value);
 
-            // 搜索层级
-            int searchNumLevels = 0; // 0 = 使用模型全层级
-            HTuple numLevelsTuple = new HTuple(searchNumLevels > 0 ? searchNumLevels : 0);
+            // 搜索层级：使用 Parameters 中的搜索层级区间
+            int searchLevelStart = parameters.SearchLevelStart.Value;
+            int searchLevelEnd = parameters.SearchLevelEnd.Value;
+            HTuple numLevelsTuple;
+            if (searchLevelStart > 0 && searchLevelEnd > 0 && searchLevelStart >= searchLevelEnd)
+            {
+                int clampedStart = Math.Min(searchLevelStart, template.NumLevels);
+                int clampedEnd = Math.Min(searchLevelEnd, template.NumLevels);
+                numLevelsTuple = new HTuple(new int[] { clampedStart, clampedEnd });
+            }
+            else
+            {
+                numLevelsTuple = 0; // 全层级
+            }
 
             // 设置超时
             HOperatorSet.SetShapeModelParam(modelHandle, "timeout", timeoutMs);

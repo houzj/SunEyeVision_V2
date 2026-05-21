@@ -64,40 +64,33 @@
           <!-- 模板创建参数 -->
           <GroupBox Header="模板创建参数" Margin="0,6,0,0" Padding="8" Background="White" BorderBrush="#E0E0E0">
             <StackPanel Margin="0,4">
+              <!-- 金字塔 -->
               <TextBlock Text="金字塔" FontSize="12" FontWeight="SemiBold" Foreground="#1976D2" Margin="0,4,0,2"/>
-
               <controls:LabeledControl Label="模式:" LabelWidth="80">
                 <ComboBox x:Name="cmbPyramidMode" Height="26" FontSize="11"/>
               </controls:LabeledControl>
-
-              <controls:LabeledControl Label="起始层:" LabelWidth="80">
-                <controls:NumericUpDown x:Name="numPyramidStart" Height="26"
+              <controls:LabeledControl Label="层数:" LabelWidth="80">
+                <controls:NumericUpDown x:Name="numPyramidLevel" Height="26"
                                          IntValue="4" Minimum="1" Maximum="10" SmallChange="1"
                                          ShowUpDownButtons="True" ShowSlider="True"/>
               </controls:LabeledControl>
 
-              <controls:LabeledControl Label="结束层:" LabelWidth="80">
-                <controls:NumericUpDown x:Name="numPyramidEnd" Height="26"
-                                         IntValue="1" Minimum="1" Maximum="10" SmallChange="1"
-                                         ShowUpDownButtons="True" ShowSlider="True"/>
-              </controls:LabeledControl>
-
+              <!-- 对比度 -->
               <TextBlock Text="对比度" FontSize="12" FontWeight="SemiBold" Foreground="#1976D2" Margin="0,8,0,2"/>
-
               <controls:LabeledControl Label="模式:" LabelWidth="80">
                 <ComboBox x:Name="cmbContrastMode" Height="26" FontSize="11"/>
               </controls:LabeledControl>
-
               <controls:LabeledControl Label="阈值:" LabelWidth="80">
                 <controls:NumericUpDown x:Name="numContrast" Height="26"
                                          IntValue="30" Minimum="1" Maximum="255" SmallChange="1"
                                          ShowUpDownButtons="True" ShowSlider="True"/>
               </controls:LabeledControl>
 
-              <controls:LabeledControl Label="最小对比度:" LabelWidth="80">
-                <ComboBox x:Name="cmbMinContrastMode" Height="26" FontSize="11" Width="80" Margin="0,0,4,0"/>
+              <!-- 最小对比度 -->
+              <TextBlock Text="最小对比度" FontSize="12" FontWeight="SemiBold" Foreground="#1976D2" Margin="0,8,0,2"/>
+              <controls:LabeledControl Label="模式:" LabelWidth="80">
+                <ComboBox x:Name="cmbMinContrastMode" Height="26" FontSize="11"/>
               </controls:LabeledControl>
-
               <controls:LabeledControl Label="值:" LabelWidth="80">
                 <controls:NumericUpDown x:Name="numMinContrast" Height="26"
                                          IntValue="10" Minimum="1" Maximum="255" SmallChange="1"
@@ -105,12 +98,11 @@
                                          IsEnabled="False"/>
               </controls:LabeledControl>
 
+              <!-- 角度 -->
               <TextBlock Text="角度" FontSize="12" FontWeight="SemiBold" Foreground="#1976D2" Margin="0,8,0,2"/>
-
               <controls:LabeledControl Label="步长模式:" LabelWidth="80">
-                <ComboBox x:Name="cmbAngleStepMode" Height="26" FontSize="11" Width="80" Margin="0,0,4,0"/>
+                <ComboBox x:Name="cmbAngleStepMode" Height="26" FontSize="11"/>
               </controls:LabeledControl>
-
               <controls:LabeledControl Label="步长(°):" LabelWidth="80">
                 <controls:NumericUpDown x:Name="numAngleStep" Height="26"
                                          Value="2.0" Minimum="0.1" Maximum="90" SmallChange="0.1"
@@ -118,12 +110,11 @@
                                          IsEnabled="False"/>
               </controls:LabeledControl>
 
+              <!-- 缩放 -->
               <TextBlock Text="缩放" FontSize="12" FontWeight="SemiBold" Foreground="#1976D2" Margin="0,8,0,2"/>
-
               <controls:LabeledControl Label="步长模式:" LabelWidth="80">
-                <ComboBox x:Name="cmbScaleStepMode" Height="26" FontSize="11" Width="80" Margin="0,0,4,0"/>
+                <ComboBox x:Name="cmbScaleStepMode" Height="26" FontSize="11"/>
               </controls:LabeledControl>
-
               <controls:LabeledControl Label="步长:" LabelWidth="80">
                 <controls:NumericUpDown x:Name="numScaleStep" Height="26"
                                          Value="0.02" Minimum="0.001" Maximum="1.0" SmallChange="0.001"
@@ -131,14 +122,13 @@
                                          IsEnabled="False"/>
               </controls:LabeledControl>
 
+              <!-- 高级 -->
               <TextBlock Text="高级" FontSize="12" FontWeight="SemiBold" Foreground="#1976D2" Margin="0,8,0,2"/>
-
               <controls:LabeledControl Label="极性匹配:" LabelWidth="80">
-                <ComboBox x:Name="cmbMetricMode" Height="26" FontSize="11" Width="140"/>
+                <ComboBox x:Name="cmbMetricMode" Height="26" FontSize="11"/>
               </controls:LabeledControl>
-
               <controls:LabeledControl Label="优化模式:" LabelWidth="80">
-                <ComboBox x:Name="cmbOptimizationMode" Height="26" FontSize="11" Width="140"/>
+                <ComboBox x:Name="cmbOptimizationMode" Height="26" FontSize="11"/>
               </controls:LabeledControl>
 
             </StackPanel>
@@ -217,6 +207,33 @@
                 </Grid.ColumnDefinitions>
                 <TextBlock Text="金字塔层数:" Grid.Column="0" FontSize="11" VerticalAlignment="Center" Foreground="#666"/>
                 <TextBlock x:Name="txtActualLevels" Grid.Column="1" FontSize="11" VerticalAlignment="Center"
+                           Foreground="#999" Text="--"/>
+              </Grid>
+              <Grid Margin="0,2">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto"/>
+                  <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="实际角度步长:" Grid.Column="0" FontSize="11" VerticalAlignment="Center" Foreground="#666"/>
+                <TextBlock x:Name="txtActualAngleStep" Grid.Column="1" FontSize="11" VerticalAlignment="Center"
+                           Foreground="#999" Text="--"/>
+              </Grid>
+              <Grid Margin="0,2">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto"/>
+                  <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="实际缩放步长:" Grid.Column="0" FontSize="11" VerticalAlignment="Center" Foreground="#666"/>
+                <TextBlock x:Name="txtActualScaleStep" Grid.Column="1" FontSize="11" VerticalAlignment="Center"
+                           Foreground="#999" Text="--"/>
+              </Grid>
+              <Grid Margin="0,2">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto"/>
+                  <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="实际最小对比度:" Grid.Column="0" FontSize="11" VerticalAlignment="Center" Foreground="#666"/>
+                <TextBlock x:Name="txtActualMinContrast" Grid.Column="1" FontSize="11" VerticalAlignment="Center"
                            Foreground="#999" Text="--"/>
               </Grid>
               <Rectangle Height="1" Fill="#E0E0E0" Margin="0,4,0,2"/>

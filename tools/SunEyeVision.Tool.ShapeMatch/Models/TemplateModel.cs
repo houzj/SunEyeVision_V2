@@ -48,15 +48,18 @@ public class TemplateModel : ObservableObject
 
     // ============ Halcon 模型数据 ============
     private byte[]? _modelData;             // serialize_shape_model → byte[]
-    private float _contrast = 30f;          // 创建时实际使用的对比度
+    private float _actualContrast = 30f;    // 创建时实际使用的对比度（auto 时由 Halcon/HUI 估算）
     private int _numLevels = 4;             // 金字塔层数
-    private int _pyramidStart = 3;          // 搜索起始层（最粗层）
-    private int _pyramidEnd = 1;            // 搜索结束层（最细层）
+    private double _actualAngleStep;        // 实际角度步长（弧度，get_shape_model_params 回读）
+    private double _actualScaleStep;        // 实际缩放步长（get_shape_model_params 回读）
+    private float _actualMinContrast;       // 实际最小对比度（get_shape_model_params 回读）
 
     private TemplateExtractionStatus _extractionStatus = TemplateExtractionStatus.NotExtracted;
     private List<RegionData> _inspectionRegions = new();
     private List<RegionData> _maskRegions = new();
-    private byte[]? _sourceImageBytes;
+    private byte[]? _sourceImageBytes;        // raw pixel data (灰度值, 非 PNG)
+    private int _sourceImageWidth;
+    private int _sourceImageHeight;
     private double _referencePointX;        // 模板参考点 X（模板轮廓质心，用于编辑器还原）
     private double _referencePointY;        // 模板参考点 Y
 
@@ -78,32 +81,39 @@ public class TemplateModel : ObservableObject
         set => SetProperty(ref _modelData, value);
     }
 
-    /// <summary>创建时使用的对比度</summary>
-    public float Contrast
+    /// <summary>创建时实际使用的对比度（auto 时由 Halcon 估算或 UI 值回写）</summary>
+    public float ActualContrast
     {
-        get => _contrast;
-        set => SetProperty(ref _contrast, value, "对比度");
+        get => _actualContrast;
+        set => SetProperty(ref _actualContrast, value, "实际对比度");
     }
 
-    /// <summary>金字塔层数（创建时使用）</summary>
+    /// <summary>金字塔层数（创建时实际生成的总层数）</summary>
     public int NumLevels
     {
         get => _numLevels;
         set => SetProperty(ref _numLevels, value, "金字塔层数");
     }
 
-    /// <summary>搜索起始层（最粗层）</summary>
-    public int PyramidStart
+    /// <summary>实际角度步长（弧度，get_shape_model_params 回读）</summary>
+    public double ActualAngleStep
     {
-        get => _pyramidStart;
-        set => SetProperty(ref _pyramidStart, value, "起始层");
+        get => _actualAngleStep;
+        set => SetProperty(ref _actualAngleStep, value);
     }
 
-    /// <summary>搜索结束层（最细层，1=全分辨率）</summary>
-    public int PyramidEnd
+    /// <summary>实际缩放步长（get_shape_model_params 回读）</summary>
+    public double ActualScaleStep
     {
-        get => _pyramidEnd;
-        set => SetProperty(ref _pyramidEnd, value, "结束层");
+        get => _actualScaleStep;
+        set => SetProperty(ref _actualScaleStep, value);
+    }
+
+    /// <summary>实际最小对比度（get_shape_model_params 回读）</summary>
+    public float ActualMinContrast
+    {
+        get => _actualMinContrast;
+        set => SetProperty(ref _actualMinContrast, value);
     }
 
     // ============ 编辑器 / 显示数据 ============
@@ -150,11 +160,25 @@ public class TemplateModel : ObservableObject
         set => SetProperty(ref _extractionStatus, value, "提取状态");
     }
 
-    /// <summary>创建时的原始图像（PNG bytes）</summary>
+    /// <summary>创建时的原始图像数据（raw pixel bytes，IplImage 格式：width*height 的 byte 灰度值）</summary>
     public byte[]? SourceImageBytes
     {
         get => _sourceImageBytes;
         set => SetProperty(ref _sourceImageBytes, value);
+    }
+
+    /// <summary>原始图像宽度</summary>
+    public int SourceImageWidth
+    {
+        get => _sourceImageWidth;
+        set => SetProperty(ref _sourceImageWidth, value);
+    }
+
+    /// <summary>原始图像高度</summary>
+    public int SourceImageHeight
+    {
+        get => _sourceImageHeight;
+        set => SetProperty(ref _sourceImageHeight, value);
     }
 
     /// <summary>参考点 X（模板创建时 Halcon 参考点在图像中的列坐标，由 FindScaledShapeModel 自匹配结果赋值）</summary>

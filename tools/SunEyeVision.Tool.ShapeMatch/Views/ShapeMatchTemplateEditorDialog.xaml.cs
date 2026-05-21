@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Runtime.InteropServices;
 using HalconDotNet;
 using Microsoft.Win32;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
@@ -53,9 +54,6 @@ public partial class ShapeMatchTemplateEditorDialog : WpfWindow
         InitializeComponent();
         InitializeComboBoxes();
         DataContext = this;
-
-        numPyramidStart.ValueChanged += OnPyramidLevelValueChanged;
-        numPyramidEnd.ValueChanged += OnPyramidLevelValueChanged;
     }
 
     public void LoadImageBeforeShow()
@@ -69,11 +67,14 @@ public partial class ShapeMatchTemplateEditorDialog : WpfWindow
             {
                 try
                 {
-                    var bitmap = new BitmapImage();
-                    bitmap.BeginInit();
-                    bitmap.StreamSource = new System.IO.MemoryStream(_resultTemplate.SourceImageBytes);
-                    bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                    bitmap.EndInit();
+                    int w = _resultTemplate!.SourceImageWidth;
+                    int h = _resultTemplate!.SourceImageHeight;
+                    if (w <= 0 || h <= 0)
+                        throw new InvalidOperationException("注册图像尺寸无效");
+
+                    int stride = w;
+                    var bitmap = BitmapSource.Create(w, h, 96, 96, PixelFormats.Gray8, null,
+                        _resultTemplate.SourceImageBytes, stride);
                     bitmap.Freeze();
 
                     if (dialogImageControl != null)
@@ -234,19 +235,8 @@ public partial class ShapeMatchTemplateEditorDialog : WpfWindow
 
     private void OnPyramidModeChanged(object sender, SelectionChangedEventArgs e)
     {
-        bool isManual = cmbPyramidMode?.SelectedIndex == 0;
-        if (numPyramidStart != null) numPyramidStart.IsEnabled = isManual;
-        if (numPyramidEnd != null) numPyramidEnd.IsEnabled = isManual;
-    }
-
-    private void OnPyramidLevelValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-    {
-        if (numPyramidStart.IntValue < numPyramidEnd.IntValue)
-        {
-            MessageBox.Show($"起始层(粗L{numPyramidStart.IntValue})不能小于结束层(细L{numPyramidEnd.IntValue})，请重新设置。",
-                "参数错误", MessageBoxButton.OK, MessageBoxImage.Warning);
-            numPyramidStart.IntValue = numPyramidEnd.IntValue;
-        }
+        if (numPyramidLevel != null)
+            numPyramidLevel.IsEnabled = cmbPyramidMode?.SelectedIndex == 0;
     }
 
     #endregion
@@ -263,9 +253,8 @@ public partial class ShapeMatchTemplateEditorDialog : WpfWindow
         if (templateNameTextBox != null)
             templateNameTextBox.Text = _resultTemplate.Name;
 
-        numPyramidStart.IntValue = _resultTemplate.PyramidStart;
-        numPyramidEnd.IntValue = _resultTemplate.PyramidEnd;
-        numContrast.IntValue = (int)_resultTemplate.Contrast;
+        numPyramidLevel.IntValue = _resultTemplate.NumLevels;
+        numContrast.IntValue = (int)_resultTemplate.ActualContrast;
 
         foreach (var insp in _resultTemplate.InspectionRegions)
             DialogInspectionRegions.Add(insp);
@@ -301,6 +290,8 @@ public partial class ShapeMatchTemplateEditorDialog : WpfWindow
             _resultTemplate.LevelContours = null;
             _resultTemplate.ExtractionStatus = TemplateExtractionStatus.NotExtracted;
             _resultTemplate.SourceImageBytes = null;
+            _resultTemplate.SourceImageWidth = 0;
+            _resultTemplate.SourceImageHeight = 0;
         }
 
         cmbPyramidLevel.Items.Clear();
@@ -334,8 +325,7 @@ public partial class ShapeMatchTemplateEditorDialog : WpfWindow
         {
             // ===== 读取 UI 参数 =====
             bool pyramidAuto = cmbPyramidMode?.SelectedIndex == 1;
-            int pyramidStart = numPyramidStart.IntValue;
-            int pyramidEnd = numPyramidEnd.IntValue;
+            int pyramidLevelValue = numPyramidLevel.IntValue;
             bool contrastAuto = cmbContrastMode?.SelectedIndex == 1;
             int contrastValue = numContrast.IntValue;
             bool angleStepManual = cmbAngleStepMode?.SelectedIndex == 0;
@@ -388,7 +378,7 @@ public partial class ShapeMatchTemplateEditorDialog : WpfWindow
                     using (reducedImage)
                     {
                         // ===== 构建 Halcon 参数 =====
-                        int numLevels = pyramidAuto ? 0 : pyramidStart;
+                        int numLevels = pyramidAuto ? 0 : pyramidLevelValue;
 
                         double angleStart = -45.0;
                         double angleExtent = 90.0;
@@ -425,6 +415,19 @@ public partial class ShapeMatchTemplateEditorDialog : WpfWindow
 
                         using (modelID)
                         {
+                            // ===== 回读自动计算的实际参数值 =====
+                            HOperatorSet.GetShapeModelParams(modelID,
+                                out var actualNumLevels,
+                                out var actualAngleStart, out var actualAngleExtent,
+                                out var actualAngleStep, out var actualScaleMin,
+                                out var actualScaleMax, out var actualScaleStep,
+                                out var actualMetric, out var actualMinContrast);
+
+                            int actualLevels = actualNumLevels.I;
+                            double ahAngleStep = actualAngleStep.D;
+                            double ahScaleStep = actualScaleStep.D;
+                            float ahMinContrast = (float)actualMinContrast.D;
+
                             // ===== 自匹配获取参考点在图像中的位置 =====
                             double refCol, refRow, refAngle, refScale;
                             try
@@ -466,6 +469,17 @@ public partial class ShapeMatchTemplateEditorDialog : WpfWindow
                                 PluginLogger.Warning(
                                     $"[ShapeMatchTemplateEditor] 模板自匹配失败: {ex.Message}",
                                     "ShapeMatchTool");
+                                // 增加诊断
+                                try
+                                {
+                                    HOperatorSet.Intensity(grayImage, grayImage,
+                                        out var mean, out var dev);
+                                    PluginLogger.Info(
+                                        $"  诊断: 图像均值={mean.D:F1}, 标准差={dev.D:F1}",
+                                        "ShapeMatchTool");
+                                }
+                                catch { }
+
                                 HOperatorSet.GetImageSize(grayImage,
                                     out var imgW, out var imgH);
                                 refCol = imgW.D / 2.0;
@@ -486,7 +500,7 @@ public partial class ShapeMatchTemplateEditorDialog : WpfWindow
                             _resultTemplate.ContourChains = rawContours;
                             _resultTemplate.ReferencePointX = refCol;
                             _resultTemplate.ReferencePointY = refRow;
-                            _resultTemplate.Contrast = contrastAuto ? 0 : contrastValue;
+                            _resultTemplate.ActualContrast = contrastAuto ? contrastValue : contrastValue;
                             _resultTemplate.ExtractionStatus = TemplateExtractionStatus.Success;
 
                             // 保存源图像
@@ -495,47 +509,39 @@ public partial class ShapeMatchTemplateEditorDialog : WpfWindow
                                 SaveSourceImageBytes(_currentHImage);
                             }
 
-                            // 获取各层轮廓（原始模型坐标系）
+                            // 获取各层轮廓（使用回读的实际层数，替代 try-catch 逐级探测）
                             _resultTemplate.LevelContours = new Dictionary<int, List<WpfPoint[]>>();
-                            int actualMaxLevel = 0;
-                            for (int lvl = 1; lvl <= 10; lvl++)
+                            for (int lvl = 1; lvl <= actualLevels; lvl++)
                             {
-                                try
-                                {
-                                    var rawLevel = TemplateModel.GetShapeModelContours(
-                                        modelID, lvl);
-                                    _resultTemplate.LevelContours[lvl] = rawLevel;
-                                    actualMaxLevel = lvl;
-                                }
-                                catch
-                                {
-                                    break;
-                                }
+                                var rawLevel = TemplateModel.GetShapeModelContours(modelID, lvl);
+                                _resultTemplate.LevelContours[lvl] = rawLevel;
                             }
 
-                            // 设置金字塔层数
-                            _resultTemplate.NumLevels = actualMaxLevel;
-                            _resultTemplate.PyramidStart = pyramidAuto ? actualMaxLevel : pyramidStart;
-                            _resultTemplate.PyramidEnd = Math.Min(pyramidEnd, actualMaxLevel);
+                            // 保存金字塔层数及自动计算值
+                            _resultTemplate.NumLevels = actualLevels;
+                            _resultTemplate.ActualAngleStep = ahAngleStep;
+                            _resultTemplate.ActualScaleStep = ahScaleStep;
+                            _resultTemplate.ActualMinContrast = ahMinContrast;
 
                             int totalPoints = _resultTemplate.EdgePointCount;
                             UpdateResultDisplay(TemplateExtractionStatus.Success, totalPoints, 0, 0, 0, 0);
 
-                            txtFilterStats.Text = $"轮廓点: {totalPoints} (金字塔={_resultTemplate.NumLevels}层, 对比度={contrastValue})";
+                            txtFilterStats.Text = $"轮廓点: {totalPoints} | 金字塔={actualLevels}层 | " +
+                                $"对比度={_resultTemplate.ActualContrast:F0} | " +
+                                $"角步长={ahAngleStep:F4} rad | 缩步长={ahScaleStep:F4}";
 
                             // 创建时回写自动值
+                            if (pyramidAuto)
+                                numPyramidLevel.IntValue = actualLevels;
                             if (contrastAuto)
                                 numContrast.IntValue = contrastValue;
-                            if (pyramidAuto)
-                            {
-                                numPyramidStart.IntValue = _resultTemplate.PyramidStart;
-                            }
 
                             DrawContourOverlay(rawContours, refCol, refRow);
 
                             PluginLogger.Info(
                                 $"[ShapeMatchTemplateEditor] Halcon 模板创建成功 | " +
-                                $"轮廓点={totalPoints}, 金字塔={_resultTemplate.NumLevels}层",
+                                $"轮廓点={totalPoints}, 金字塔={actualLevels}层, " +
+                                $"角步长={ahAngleStep:F4} rad, 缩步长={ahScaleStep:F4}",
                                 "ShapeMatchTool");
                         }
                     }
@@ -688,14 +694,19 @@ public partial class ShapeMatchTemplateEditorDialog : WpfWindow
     {
         try
         {
-            HOperatorSet.WriteImage(hImage, "png", 0, "temp_shape_match.png");
-            var bytes = System.IO.File.ReadAllBytes("temp_shape_match.png");
+            // 直接从 HImage 取 raw pixel data，跳过 Halcon PNG 编码/解码的全链问题
+            HOperatorSet.GetImagePointer1(hImage, out var pointer, out var type, out var width, out var height);
+            int w = width.I;
+            int h = height.I;
+            var bytes = new byte[w * h];
+            Marshal.Copy((IntPtr)pointer, bytes, 0, bytes.Length);
             _resultTemplate!.SourceImageBytes = bytes;
-            System.IO.File.Delete("temp_shape_match.png");
+            _resultTemplate!.SourceImageWidth = w;
+            _resultTemplate!.SourceImageHeight = h;
         }
-        catch
+        catch (Exception ex)
         {
-            PluginLogger.Warning("[ShapeMatchTemplateEditor] 无法保存源图像", "ShapeMatchTool");
+            PluginLogger.Warning($"[ShapeMatchTemplateEditor] 无法保存源图像: {ex.Message}", "ShapeMatchTool");
         }
     }
 
@@ -768,22 +779,38 @@ public partial class ShapeMatchTemplateEditorDialog : WpfWindow
             LineWidth = 1.5
         };
 
-        // 构建仿射变换矩阵
-        // 变换：P_image = scale * 2^(level-1) * R(angle) * P_model + (originCol, originRow)
+        // 层级缩放：降采样轮廓点乘以 2^(level-1) 还原到原始图像坐标
+        // 必须在传入 AddContour 前完成缩放，避免 PushTransform 同时放大画笔线宽
         double levelScale = 1 << (level - 1);
-        double combinedScale = scale * levelScale;
+
+        // 构建仿射变换矩阵（仅含旋转+平移+匹配缩放，不含层级缩放）
+        // 变换：P_image = scale * R(angle) * P_model + (originCol, originRow)
         double cosA = Math.Cos(angle);
         double sinA = Math.Sin(angle);
         var transformMatrix = new System.Windows.Media.Matrix(
-            combinedScale * cosA,  combinedScale * sinA,
-           -combinedScale * sinA,  combinedScale * cosA,
+            scale * cosA,  scale * sinA,
+           -scale * sinA,  scale * cosA,
             originCol, originRow);
 
         foreach (var chain in contourChains)
         {
             if (chain.Length <= 1) continue;
-            // 传入原始链点 + 变换矩阵，渲染器 PushTransform 完成变换
-            display.AddContour(style, chain, transformMatrix, isPass: true, isClosed: false);
+
+            // 预先对点做层级缩放，再传给渲染层（渲染层的 PushTransform 不会放大线宽）
+            WpfPoint[] scaledChain;
+            if (levelScale == 1.0)
+            {
+                scaledChain = chain; // Level 1 无需处理
+            }
+            else
+            {
+                scaledChain = new WpfPoint[chain.Length];
+                for (int i = 0; i < chain.Length; i++)
+                    scaledChain[i] = new WpfPoint(
+                        chain[i].X * levelScale,
+                        chain[i].Y * levelScale);
+            }
+            display.AddContour(style, scaledChain, transformMatrix, isPass: true, isClosed: false);
         }
 
         dialogImageControl.ResultRenderLayerControl.SetDisplayCollector(display);
@@ -839,7 +866,34 @@ public partial class ShapeMatchTemplateEditorDialog : WpfWindow
 
         // 实际对比度
         if (txtActualContrast != null && _resultTemplate != null && _resultTemplate.ExtractionStatus == TemplateExtractionStatus.Success)
-            txtActualContrast.Text = $"{_resultTemplate.Contrast:F0}";
+            txtActualContrast.Text = $"{_resultTemplate.ActualContrast:F0}";
+
+        // 实际角度步长
+        if (txtActualAngleStep != null)
+        {
+            if (_resultTemplate?.ActualAngleStep > 0 && _resultTemplate?.ExtractionStatus == TemplateExtractionStatus.Success)
+                txtActualAngleStep.Text = $"{_resultTemplate.ActualAngleStep:F4} rad";
+            else
+                txtActualAngleStep.Text = "--";
+        }
+
+        // 实际缩放步长
+        if (txtActualScaleStep != null)
+        {
+            if (_resultTemplate?.ActualScaleStep > 0 && _resultTemplate?.ExtractionStatus == TemplateExtractionStatus.Success)
+                txtActualScaleStep.Text = $"{_resultTemplate.ActualScaleStep:F4}";
+            else
+                txtActualScaleStep.Text = "--";
+        }
+
+        // 实际最小对比度
+        if (txtActualMinContrast != null)
+        {
+            if (_resultTemplate?.ActualMinContrast > 0 && _resultTemplate?.ExtractionStatus == TemplateExtractionStatus.Success)
+                txtActualMinContrast.Text = $"{_resultTemplate.ActualMinContrast:F0}";
+            else
+                txtActualMinContrast.Text = "--";
+        }
     }
 
     #endregion
@@ -861,29 +915,21 @@ public partial class ShapeMatchTemplateEditorDialog : WpfWindow
             if (source == "registered")
             {
                 var bytes = _resultTemplate?.SourceImageBytes;
-                if (bytes == null || bytes.Length == 0)
+                int w = _resultTemplate?.SourceImageWidth ?? 0;
+                int h = _resultTemplate?.SourceImageHeight ?? 0;
+                if (bytes == null || bytes.Length == 0 || w <= 0 || h <= 0)
                 {
                     MessageBox.Show("当前模板没有注册图像数据。", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
-                var bitmap = new BitmapImage();
-                bitmap.BeginInit();
-                bitmap.StreamSource = new System.IO.MemoryStream(bytes);
-                bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                bitmap.EndInit();
+                // 直接从 raw pixel bytes 创建 Gray8 BitmapSource，彻底消除 PNG→Indexed8 格式分歧
+                int stride = w;
+                var bitmap = BitmapSource.Create(w, h, 96, 96, PixelFormats.Gray8, null, bytes, stride);
                 bitmap.Freeze();
 
-                // 强制统一为 Gray8，消除 Halcon PNG → Indexed8 格式分歧
-                var converted = new FormatConvertedBitmap();
-                converted.BeginInit();
-                converted.Source = bitmap;
-                converted.DestinationFormat = PixelFormats.Gray8;
-                converted.EndInit();
-                converted.Freeze();
-
-                dialogImageControl?.LoadImage(converted);
-                UpdateCurrentHImage(converted);
+                dialogImageControl?.LoadImage(bitmap);
+                UpdateCurrentHImage(bitmap);
                 BindRegionManagerToImage();
             }
             else if (source == "current")
@@ -981,7 +1027,8 @@ public partial class ShapeMatchTemplateEditorDialog : WpfWindow
         if (_resultTemplate.ModelData == null || _resultTemplate.ModelData.Length == 0)
             errors.Add("- 模型数据为空，请先执行轮廓提取。");
 
-        if (_resultTemplate.SourceImageBytes == null || _resultTemplate.SourceImageBytes.Length == 0)
+        if (_resultTemplate.SourceImageBytes == null || _resultTemplate.SourceImageBytes.Length == 0
+            || _resultTemplate.SourceImageWidth <= 0 || _resultTemplate.SourceImageHeight <= 0)
             errors.Add("- 注册图像数据为空，请确保已加载图像。");
 
         if (errors.Count > 0)
@@ -1052,7 +1099,7 @@ public partial class ShapeMatchTemplateEditorDialog : WpfWindow
         }
 
         foreach (int level in _resultTemplate.LevelContours.Keys
-                     .Where(k => k <= _resultTemplate.PyramidStart && k >= _resultTemplate.PyramidEnd)
+                     .Where(k => k >= 1 && k <= _resultTemplate.NumLevels)
                      .OrderBy(k => k))
         {
             int ptCount = _resultTemplate.LevelContours[level]?.Sum(c => c.Length) ?? 0;

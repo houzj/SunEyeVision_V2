@@ -491,18 +491,17 @@ public partial class ShapeMatchToolDebugControl
         try
         {
             BitmapSource? sourceImg = null;
-            if (template?.SourceImageBytes != null && template.SourceImageBytes.Length > 0)
+            if (template?.SourceImageBytes != null && template.SourceImageBytes.Length > 0
+                && template.SourceImageWidth > 0 && template.SourceImageHeight > 0)
             {
                 try
                 {
-                    using var ms = new MemoryStream(template.SourceImageBytes);
-                    var bitmap = new BitmapImage();
-                    bitmap.BeginInit();
-                    bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                    bitmap.StreamSource = ms;
-                    bitmap.EndInit();
-                    bitmap.Freeze();
-                    sourceImg = bitmap;
+                    int stride = template.SourceImageWidth;
+                    sourceImg = BitmapSource.Create(
+                        template.SourceImageWidth, template.SourceImageHeight,
+                        96, 96, PixelFormats.Gray8, null,
+                        template.SourceImageBytes, stride);
+                    sourceImg.Freeze();
                 }
                 catch (Exception ex)
                 {

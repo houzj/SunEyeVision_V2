@@ -56,6 +56,14 @@ public class ShapeMatchParameters : RegionParameters
     public ParamValue<int> NumMatches { get; set; } =
         ParamValue<int>.CreateConstant(1, "NumMatches");
 
+    /// <summary>搜索起始层（0=使用模型全层级，>0 表示从该层开始粗定位）</summary>
+    public ParamValue<int> SearchLevelStart { get; set; } =
+        ParamValue<int>.CreateConstant(0, "SearchLevelStart");
+
+    /// <summary>搜索结束层（0=全分辨率，>=1 表示搜索到该层结束细定位）</summary>
+    public ParamValue<int> SearchLevelEnd { get; set; } =
+        ParamValue<int>.CreateConstant(1, "SearchLevelEnd");
+
     /// <summary>NMS 最大重叠率 0~1（Halcon MaxOverlap）</summary>
     public ParamValue<double> MaxOverlap { get; set; } =
         ParamValue<double>.CreateConstant(0.5, "MaxOverlap");

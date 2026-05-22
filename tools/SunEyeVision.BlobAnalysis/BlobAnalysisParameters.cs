@@ -197,6 +197,46 @@ namespace SunEyeVision.Tool.BlobAnalysis
 
         #endregion
 
+        #region Blob 筛选参数（Tab3：独立于 Tab4 判断的筛选条件）
+
+        /// <summary>启用面积筛选</summary>
+        public ParamValue<bool> IsAreaFilterEnabled { get; set; } =
+            ParamValue<bool>.CreateConstant(true, "IsAreaFilterEnabled");
+
+        /// <summary>面积筛选最小值</summary>
+        public ParamValue<double> FilterAreaMin { get; set; } =
+            ParamValue<double>.CreateConstant(10, "FilterAreaMin");
+
+        /// <summary>面积筛选最大值</summary>
+        public ParamValue<double> FilterAreaMax { get; set; } =
+            ParamValue<double>.CreateConstant(999999, "FilterAreaMax");
+
+        /// <summary>启用圆度筛选</summary>
+        public ParamValue<bool> IsCircularityFilterEnabled { get; set; } =
+            ParamValue<bool>.CreateConstant(false, "IsCircularityFilterEnabled");
+
+        /// <summary>圆度筛选最小值</summary>
+        public ParamValue<double> FilterCircularityMin { get; set; } =
+            ParamValue<double>.CreateConstant(0, "FilterCircularityMin");
+
+        /// <summary>圆度筛选最大值</summary>
+        public ParamValue<double> FilterCircularityMax { get; set; } =
+            ParamValue<double>.CreateConstant(1.0, "FilterCircularityMax");
+
+        /// <summary>启用矩形度筛选</summary>
+        public ParamValue<bool> IsRectangularityFilterEnabled { get; set; } =
+            ParamValue<bool>.CreateConstant(false, "IsRectangularityFilterEnabled");
+
+        /// <summary>矩形度筛选最小值</summary>
+        public ParamValue<double> FilterRectangularityMin { get; set; } =
+            ParamValue<double>.CreateConstant(0, "FilterRectangularityMin");
+
+        /// <summary>矩形度筛选最大值</summary>
+        public ParamValue<double> FilterRectangularityMax { get; set; } =
+            ParamValue<double>.CreateConstant(1.0, "FilterRectangularityMax");
+
+        #endregion
+
         #region 显示样式
 
         /// <summary>
@@ -210,7 +250,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// Blob排序方式
         /// </summary>
         public ParamValue<BlobSortMode> SortMode { get; set; } =
-            ParamValue<BlobSortMode>.CreateConstant(BlobSortMode.None, "SortMode");
+            ParamValue<BlobSortMode>.CreateConstant(BlobSortMode.AreaDesc, "SortMode");
 
         #endregion
 
@@ -220,14 +260,11 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// <summary>质心标记样式</summary>
         public GraphicsStyle CentroidsStyle { get; set; } = new() { Name = "Centroids", LineWidth = 2, CrossSize = 8 };
 
-        /// <summary>统计信息样式</summary>
-        public TextStyle StatisticsStyle { get; set; } = new() { Name = "Statistics", FontSize = 11.0, PositionX = 10, PositionY = 22 };
-
         /// <summary>轮廓样式</summary>
         public GraphicsStyle ContoursStyle { get; set; } = new() { Name = "Contours", LineWidth = 1 };
 
         /// <summary>面积列表样式</summary>
-        public TextStyle AreaDisplayStyle { get; set; } = new() { Name = "AreaDisplay", FontSize = 9.0, PositionX = 10, PositionY = 50 };
+        public TextStyle AreaDisplayStyle { get; set; } = new() { Name = "AreaDisplay", FontSize = 9.0, PositionX = 0, PositionY = 0 };
 
         /// <summary>检测区域边框样式（默认蓝色 #4488FF，与 ROI 编辑器检测区域一致）</summary>
         public GraphicsStyle InspectionRegionStyle { get; set; } = new()

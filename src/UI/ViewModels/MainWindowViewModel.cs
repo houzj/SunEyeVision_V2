@@ -2711,6 +2711,12 @@ SplitterPosition = position;
                 SelectedNodeDataAnalysisControl = dataAnalysisControl;
                 HasDataAnalysisControl = true;
 
+                // ★ 订阅选中高亮联动事件（必须无条件订阅，否则数据执行后选中DataGrid不会渲染高亮）
+                if (dataAnalysisControl is IToolControlDataAnalysis daControlForEvent)
+                {
+                    daControlForEvent.SelectionHighlightChanged += OnSelectionHighlightChanged;
+                }
+
                 // ★ 加载缓存结果（节点已执行过时，立即填充数据分析控件）
                 var cachedResult = CurrentWorkflowContext?.GetNodeResult(selectedNode.Id);
                 if (cachedResult?.ToolResult != null && dataAnalysisControl is IToolControlDataAnalysis daControl)
@@ -2718,9 +2724,6 @@ SplitterPosition = position;
                     try
                     {
                         daControl.OnResultUpdated(cachedResult.ToolResult);
-
-                        // ★ 订阅选中高亮联动事件（图像高亮反馈）
-                        daControl.SelectionHighlightChanged += OnSelectionHighlightChanged;
                     }
                     catch (Exception loadEx)
                     {
@@ -2976,52 +2979,76 @@ SplitterPosition = position;
             IDataSourceQueryService dataProvider)
         {
             var eventInfo = debugWindow.GetType().GetEvent("ToolExecutionCompleted");
-            if (eventInfo != null)
+            if (eventInfo == null)
             {
-                // 创建事件处理器（使用 Delegate.CreateDelegate 动态创建）
-                var eventHandlerType = eventInfo.EventHandlerType;
+                AddLog($"⚠️ [调试窗口事件] {debugWindow.GetType().Name} 未定义 ToolExecutionCompleted 事件 | 结果将无法传播到数据分析控件");
+                return;
+            }
 
-                // 创建委托方法
-                var invokeMethod = eventHandlerType.GetMethod("Invoke");
-                var parameters = invokeMethod?.GetParameters();
+            AddLog($"🔍 [调试窗口事件] 找到 {eventInfo.EventHandlerType.Name} 事件，准备订阅 | 节点={node.Name}");
 
-                if (parameters != null && parameters.Length == 2)
-                {
-                    // 创建通用的处理方法
-                    Action<object?, object?> handlerAction = (sender, result) =>
+            // 创建事件处理器（使用 Delegate.CreateDelegate 动态创建）
+            var eventHandlerType = eventInfo.EventHandlerType;
+
+            // 创建委托方法
+            var invokeMethod = eventHandlerType.GetMethod("Invoke");
+            var parameters = invokeMethod?.GetParameters();
+
+            if (parameters != null && parameters.Length == 2)
+            {
+                // 创建通用的处理方法
+                Action<object?, object?> handlerAction = (sender, result) =>
+                    {
+                        try
                         {
-                            try
+                            // ★ 修复：从 EventArgs 中提取 ToolResults
+                            var toolResult = result switch
                             {
-                                if (result is SunEyeVision.Plugin.SDK.Execution.Results.ToolResults toolResult)
+                                SunEyeVision.Plugin.SDK.Execution.Results.ToolResults tr => tr,
+                                SunEyeVision.Plugin.SDK.UI.Events.ToolExecutionCompletedEventArgs args => args.Results as SunEyeVision.Plugin.SDK.Execution.Results.ToolResults,
+                                _ => null
+                            };
+
+                            if (toolResult != null)
+                            {
+                                // 执行结果已通过 NodeResultManager.UpdateNodeResult 存储到 WorkflowContext
+                                // 这里不再需要直接赋值给 node.LastResult
+
+                                // 获取输出图像（通过反射调用 GetOutputValue 方法）
+                                var getOutputMethod = toolResult.GetType().GetMethod("GetOutputValue");
+                                var outputImage = getOutputMethod?.MakeGenericMethod(typeof(OpenCvSharp.Mat))
+                                    .Invoke(toolResult, new object[] { "OutputImage" }) as OpenCvSharp.Mat;
+
+                                // 更新数据提供者中的节点输出
+                                if (outputImage != null)
                                 {
-                                    // 执行结果已通过 NodeResultManager.UpdateNodeResult 存储到 WorkflowContext
-                                    // 这里不再需要直接赋值给 node.LastResult
+                                    dataProvider.UpdateNodeOutput(node.Id, "OutputImage", outputImage);
+                                }
 
-                                    // 获取输出图像（通过反射调用 GetOutputValue 方法）
-                                    var getOutputMethod = toolResult.GetType().GetMethod("GetOutputValue");
-                                    var outputImage = getOutputMethod?.MakeGenericMethod(typeof(OpenCvSharp.Mat))
-                                        .Invoke(toolResult, new object[] { "OutputImage" }) as OpenCvSharp.Mat;
+                                // 更新图像显示（内部已存储到 WorkflowContext）
+                                _nodeResultManager?.UpdateNodeResult(node, toolResult);
 
-                                    // 更新数据提供者中的节点输出
-                                    if (outputImage != null)
+                                // ★ 更新数据分析控件（调试窗口执行后立即刷新）
+                                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                                {
+                                    if (SelectedNodeDataAnalysisControl is Plugin.SDK.UI.Controls.IToolControlDataAnalysis daCtrl)
                                     {
-                                        dataProvider.UpdateNodeOutput(node.Id, "OutputImage", outputImage);
-                                    }
-
-                                    // 更新图像显示（内部已存储到 WorkflowContext）
-                                    _nodeResultManager?.UpdateNodeResult(node, toolResult);
-
-                                    // ★ 更新数据分析控件（调试窗口执行后立即刷新）
-                                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                                    {
-                                        if (SelectedNodeDataAnalysisControl is Plugin.SDK.UI.Controls.IToolControlDataAnalysis daCtrl)
+                                        try
                                         {
-                                            try { daCtrl.OnResultUpdated(toolResult); }
-                                            catch { /* 忽略 */ }
+                                            daCtrl.OnResultUpdated(toolResult);
                                         }
-                                    });
+                                        catch (Exception onResultEx)
+                                        {
+                                            AddLog($"⚠️ 数据分析控件更新失败: {onResultEx.Message}");
+                                        }
+                                    }
+                                });
 
-                                    AddLog($"✅ 调试窗口执行完成: {node.Name}");
+                                AddLog($"✅ 调试窗口执行完成: {node.Name}");
+                            }
+                            else
+                            {
+                                AddLog($"⚠️ 调试窗口执行结果类型不匹配: {result?.GetType().Name ?? "null"}");
                             }
                         }
                         catch (Exception ex)
@@ -3030,18 +3057,17 @@ SplitterPosition = position;
                         }
                     };
 
-                    // 创建委托
-                    var handler = Delegate.CreateDelegate(eventHandlerType, handlerAction.Target, handlerAction.Method);
+                // 创建委托
+                var handler = Delegate.CreateDelegate(eventHandlerType, handlerAction.Target, handlerAction.Method);
 
-                    // 订阅事件
-                    eventInfo.AddEventHandler(debugWindow, handler);
+                // 订阅事件
+                eventInfo.AddEventHandler(debugWindow, handler);
 
-                    // 窗口关闭时取消订阅（防止内存泄漏）
-                    debugWindow.Closed += (s, e) =>
-                    {
-                        eventInfo.RemoveEventHandler(debugWindow, handler);
-                    };
-                }
+                // 窗口关闭时取消订阅（防止内存泄漏）
+                debugWindow.Closed += (s, e) =>
+                {
+                    eventInfo.RemoveEventHandler(debugWindow, handler);
+                };
             }
         }
 
@@ -3197,22 +3223,25 @@ AddLog($"⚠️ 日志记录异常: {ex.Message}");
                 // ★ 更新所有依赖此节点的数据提供者（修复前置节点未执行问题）
                 UpdateDataProvidersForNode(e.Node, e.Result);
 
-                // ★ 更新数据分析控件（任何节点执行完成后刷新）
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                // ★ 更新数据分析控件（仅当完成节点是当前选中节点时）
+                if (e.Node.Id == SelectedNode?.Id)
                 {
-                    if (SelectedNodeDataAnalysisControl is Plugin.SDK.UI.Controls.IToolControlDataAnalysis dataAnalysisControl
-                        && e.Result != null && e.Result.IsSuccess)
+                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
                     {
-                        try
+                        if (SelectedNodeDataAnalysisControl is Plugin.SDK.UI.Controls.IToolControlDataAnalysis dataAnalysisControl
+                            && e.Result != null && e.Result.IsSuccess)
                         {
-                            dataAnalysisControl.OnResultUpdated(e.Result);
+                            try
+                            {
+                                dataAnalysisControl.OnResultUpdated(e.Result);
+                            }
+                            catch (Exception updateEx)
+                            {
+                                AddLog($"⚠️ 更新数据分析控件失败: {updateEx.Message}");
+                            }
                         }
-                        catch (Exception updateEx)
-                        {
-                            AddLog($"⚠️ 更新数据分析控件失败: {updateEx.Message}");
-                        }
-                    }
-                });
+                    });
+                }
 
                 // 如果节点是当前显示节点，刷新输出缓存绑定
                 if (_currentDisplayNodeId == e.Node.Id)

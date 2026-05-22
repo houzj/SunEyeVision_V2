@@ -247,43 +247,73 @@
               </ComboBox>
             </controls:LabeledControl>
 
-            <!-- 面积范围 -->
-            <controls:LabeledControl Label="面积范围 (px²)">
-              <controls:RangeInputControl
-                      Unit="px²"
-                      Minimum="0"
-                      Maximum="999999"
-                      MinValue="{Binding MinArea.Value, Mode=TwoWay}"
-                      MaxValue="{Binding MaxArea.Value, Mode=TwoWay}"
-                      DecimalPlaces="0"
-                      SmallChange="10"
-                      NumericWidth="100"/>
+            <!-- ====== 面积筛选 ====== -->
+            <Separator Margin="0,8,0,4" Background="#E0E0E0" Height="1"/>
+            <TextBlock Text="面积筛选" FontWeight="SemiBold" Margin="0,4,0,8"/>
+
+            <controls:LabeledControl Label="启用面积筛选" ContentHorizontalAlignment="Left" Margin="0,0,0,4">
+              <controls:ToggleSwitch
+                IsChecked="{Binding IsAreaFilterEnabled.Value, Mode=TwoWay}"
+                SwitchWidth="48" SwitchHeight="24"/>
             </controls:LabeledControl>
 
-            <!-- 圆度范围 -->
-            <controls:LabeledControl Label="圆度范围">
+            <controls:LabeledControl Label="面积范围 (px²)"
+              Visibility="{Binding IsAreaFilterEnabled.Value, Converter={StaticResource BoolToVisibilityConverter}}">
               <controls:RangeInputControl
-                      Unit=""
-                      Minimum="0"
-                      Maximum="1"
-                      MinValue="{Binding MinCircularity.Value, Mode=TwoWay}"
-                      MaxValue="{Binding MaxCircularity.Value, Mode=TwoWay}"
-                      DecimalPlaces="3"
-                      SmallChange="0.01"
-                      NumericWidth="100"/>
+                Unit="px²"
+                Minimum="0"
+                Maximum="999999"
+                MinValue="{Binding FilterAreaMin.Value, Mode=TwoWay}"
+                MaxValue="{Binding FilterAreaMax.Value, Mode=TwoWay}"
+                DecimalPlaces="0"
+                SmallChange="10"
+                NumericWidth="100"/>
             </controls:LabeledControl>
 
-            <!-- 矩形度范围 -->
-            <controls:LabeledControl Label="矩形度范围">
+            <!-- ====== 圆度筛选 ====== -->
+            <Separator Margin="0,8,0,4" Background="#E0E0E0" Height="1"/>
+            <TextBlock Text="圆度筛选" FontWeight="SemiBold" Margin="0,4,0,8"/>
+
+            <controls:LabeledControl Label="启用圆度筛选" ContentHorizontalAlignment="Left" Margin="0,0,0,4">
+              <controls:ToggleSwitch
+                IsChecked="{Binding IsCircularityFilterEnabled.Value, Mode=TwoWay}"
+                SwitchWidth="48" SwitchHeight="24"/>
+            </controls:LabeledControl>
+
+            <controls:LabeledControl Label="圆度范围"
+              Visibility="{Binding IsCircularityFilterEnabled.Value, Converter={StaticResource BoolToVisibilityConverter}}">
               <controls:RangeInputControl
-                      Unit=""
-                      Minimum="0"
-                      Maximum="1"
-                      MinValue="{Binding MinRectangularity.Value, Mode=TwoWay}"
-                      MaxValue="{Binding MaxRectangularity.Value, Mode=TwoWay}"
-                      DecimalPlaces="3"
-                      SmallChange="0.01"
-                      NumericWidth="100"/>
+                Unit=""
+                Minimum="0"
+                Maximum="1"
+                MinValue="{Binding FilterCircularityMin.Value, Mode=TwoWay}"
+                MaxValue="{Binding FilterCircularityMax.Value, Mode=TwoWay}"
+                DecimalPlaces="3"
+                SmallChange="0.01"
+                NumericWidth="100"/>
+            </controls:LabeledControl>
+
+            <!-- ====== 矩形度筛选 ====== -->
+            <Separator Margin="0,8,0,4" Background="#E0E0E0" Height="1"/>
+            <TextBlock Text="矩形度筛选" FontWeight="SemiBold" Margin="0,4,0,8"/>
+
+            <controls:LabeledControl Label="启用矩形度筛选" ContentHorizontalAlignment="Left" Margin="0,0,0,4">
+              <controls:ToggleSwitch
+                IsChecked="{Binding IsRectangularityFilterEnabled.Value, Mode=TwoWay}"
+                SwitchWidth="48" SwitchHeight="24"/>
+            </controls:LabeledControl>
+
+            <controls:LabeledControl Label="矩形度范围"
+              Visibility="{Binding IsRectangularityFilterEnabled.Value, Converter={StaticResource BoolToVisibilityConverter}}">
+              <controls:RangeInputControl
+                Unit=""
+                Minimum="0"
+                Maximum="1"
+                MinValue="{Binding FilterRectangularityMin.Value, Mode=TwoWay}"
+                MaxValue="{Binding FilterRectangularityMax.Value, Mode=TwoWay}"
+                DecimalPlaces="3"
+                SmallChange="0.01"
+                NumericWidth="100"/>
             </controls:LabeledControl>
 
           </StackPanel>
@@ -541,12 +571,7 @@
                                       Margin="0,0,0,8"
                                       Background="White">
                 <StackPanel Margin="16,8">
-                  <controls:LabeledControl Label="统计信息" ContentHorizontalAlignment="Left">
-                    <controls:DispTextColorControl
-                        Item="{Binding StatisticsStyle, Mode=TwoWay}"
-                        AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                  </controls:LabeledControl>
-                  <controls:LabeledControl Label="面积列表" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
+                  <controls:LabeledControl Label="面积列表" ContentHorizontalAlignment="Left">
                     <controls:DispTextColorControl
                         Item="{Binding AreaDisplayStyle, Mode=TwoWay}"
                         AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>

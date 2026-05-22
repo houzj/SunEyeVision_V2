@@ -12,7 +12,7 @@ namespace SunEyeVision.Tool.ImageFilter.Views
     /// <summary>
     /// 图像滤波数据分析控件 - 显示执行结果统计信息的摘要 + 详细列表
     /// </summary>
-    public partial class ImageFilterDataAnalysisControl : UserControl, IToolControlDataAnalysis
+    public partial class ImageFilterDataAnalysisControl : UserControl, IToolControlDataAnalysis, System.ComponentModel.INotifyPropertyChanged
     {
         #region 数据项模型
 

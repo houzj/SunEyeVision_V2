@@ -34,6 +34,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
     /// </remarks>
     public partial class DefaultDebugWindow : Window, IToolControlInitializer
     {
+        #region 事件
+
+        /// <summary>
+        /// 工具执行完成事件（CLR 事件，供外部订阅，如 MainWindowViewModel）
+        /// </summary>
+        public event ToolExecutionCompletedEventHandler? ToolExecutionCompleted;
+
+        #endregion
+
         #region 字段
 
         private readonly UserControl _control;
@@ -182,6 +191,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
         /// </summary>
         private void OnToolExecutionCompleted(object sender, ToolExecutionCompletedEventArgs e)
         {
+            // ★ 向外传播执行结果（CLR 事件供 MainWindowViewModel 订阅）
+            var resultInfo = e.Results?.GetType().Name ?? "null";
+            var execTimeInfo = e.ExecutionTime > 0 ? $" | 耗时={e.ExecutionTime}ms" : "";
+            PluginLogger.Info($"[OnToolExecutionCompleted] 路由事件到达 | 结果={resultInfo}{execTimeInfo}", "DefaultDebugWindow");
+
+            ToolExecutionCompleted?.Invoke(this, e);
+
             Dispatcher.Invoke(() =>
             {
                 _isExecuting = false;

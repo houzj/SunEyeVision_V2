@@ -27,30 +27,33 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <TextBlock Grid.Column="0" Margin="0,0,12,0" VerticalAlignment="Center">
-                    <Run Text="Blob: " Foreground="#666"/><Run Text="{Binding FilteredBlobCount, Mode=OneWay}" FontWeight="Bold" Foreground="#2196F3"/>
-                </TextBlock>
+                <StackPanel Grid.Column="0" Margin="0,0,12,0" VerticalAlignment="Center" Orientation="Horizontal">
+                    <TextBlock Text="Blob: " Foreground="#666"/>
+                    <TextBlock Text="{Binding FilteredBlobCount, Mode=OneWay}" FontWeight="Bold" Foreground="#2196F3"/>
+                </StackPanel>
 
-                <TextBlock Grid.Column="1" Margin="0,0,12,0" VerticalAlignment="Center">
-                    <Run Text="面积: " Foreground="#666"/><Run Text="{Binding FilteredTotalArea, StringFormat='{}{0:F0}', Mode=OneWay}" FontWeight="Bold" Foreground="#4CAF50"/>
-                    <Run Text=" px²" Foreground="#999" FontSize="10"/>
-                </TextBlock>
+                <StackPanel Grid.Column="1" Margin="0,0,12,0" VerticalAlignment="Center" Orientation="Horizontal">
+                    <TextBlock Text="面积: " Foreground="#666"/>
+                    <TextBlock Text="{Binding FilteredTotalArea, StringFormat='{}{0:F0}', Mode=OneWay}" FontWeight="Bold" Foreground="#4CAF50"/>
+                    <TextBlock Text=" px²" Foreground="#999" FontSize="10"/>
+                </StackPanel>
 
-                <TextBlock Grid.Column="2" Margin="0,0,12,0" VerticalAlignment="Center">
-                    <Run Text="均值: " Foreground="#666"/><Run Text="{Binding AverageArea, StringFormat='{}{0:F0}', Mode=OneWay}" Foreground="#FF9800"/>
-                </TextBlock>
+                <StackPanel Grid.Column="2" Margin="0,0,12,0" VerticalAlignment="Center" Orientation="Horizontal">
+                    <TextBlock Text="均值: " Foreground="#666"/>
+                    <TextBlock Text="{Binding AverageArea, StringFormat='{}{0:F0}', Mode=OneWay}" Foreground="#FF9800"/>
+                </StackPanel>
 
-                <TextBlock Grid.Column="3" Margin="0,0,12,0" VerticalAlignment="Center">
-                    <Run Text="最大: " Foreground="#666"/><Run Text="{Binding MaxArea, StringFormat='{}{0:F0}', Mode=OneWay}" Foreground="#E91E63"/>
-                </TextBlock>
+                <StackPanel Grid.Column="3" Margin="0,0,12,0" VerticalAlignment="Center" Orientation="Horizontal">
+                    <TextBlock Text="最大: " Foreground="#666"/>
+                    <TextBlock Text="{Binding MaxArea, StringFormat='{}{0:F0}', Mode=OneWay}" Foreground="#E91E63"/>
+                </StackPanel>
 
-                <TextBlock Grid.Column="4" Margin="0,0,12,0" VerticalAlignment="Center">
-                    <Run Text="阈值: " Foreground="#666"/><Run Text="{Binding ThresholdUsed, Mode=OneWay}" FontWeight="Bold" Foreground="#9C27B0"/>
-                </TextBlock>
+                <StackPanel Grid.Column="4" Margin="0,0,12,0" VerticalAlignment="Center" Orientation="Horizontal">
+                    <TextBlock Text="阈值: " Foreground="#666"/>
+                    <TextBlock Text="{Binding ThresholdUsed, Mode=OneWay}" FontWeight="Bold" Foreground="#9C27B0"/>
+                </StackPanel>
 
-                <TextBlock Grid.Column="5" VerticalAlignment="Center">
-                    <Run Text="{Binding ThresholdTypeText, Mode=OneWay}" Foreground="#607D8B" FontSize="11"/>
-                </TextBlock>
+                <TextBlock Grid.Column="5" VerticalAlignment="Center" Text="{Binding ThresholdTypeText, Mode=OneWay}" Foreground="#607D8B" FontSize="11"/>
             </Grid>
         </Border>
 
@@ -82,20 +85,5 @@
             </DataGrid.Columns>
         </DataGrid>
 
-        <!-- 选中 Blob 详情面板（底部固定） -->
-        <Border DockPanel.Dock="Bottom" Background="#FFFDE7" BorderBrush="#FFC107" BorderThickness="1,0,0,0" Padding="10,8"
-                Visibility="{Binding HasSelectedBlob, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" VerticalAlignment="Center" FontWeight="Bold" Foreground="#F57C00">
-                    <Run Text="★ 选中: Blob #"/><Run Text="{Binding SelectedBlob.Label, Mode=OneWay, FallbackValue=-}"/>
-                </TextBlock>
-                <TextBlock Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" Foreground="#5D4037" TextWrapping="NoWrap"
-                           TextTrimming="CharacterEllipsis" Text="{Binding SelectedBlobDetailText, Mode=OneWay}"/>
-            </Grid>
-        </Border>
     </DockPanel>
 </UserControl>

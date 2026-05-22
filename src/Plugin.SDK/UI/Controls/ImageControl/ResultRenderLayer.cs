@@ -650,6 +650,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     Math.Abs(t.X - texts[0].X) > 0.001 ||
                     Math.Abs(t.Y - texts[0].Y) > 0.001);
 
+                var scaledFontSize = _viewportScale > 0.001 ? style.FontSize / _viewportScale : style.FontSize;
+
                 if (useIndividualPositions)
                 {
                     for (int i = 0; i < texts.Length; i++)
@@ -657,7 +659,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                         var td = texts[i];
                         bool isPass = isPassArray.Length > i ? isPassArray[i] : true;
                         var color = ArgbToColor(style.GetEffectiveColorArgb(isPass));
-                        var formattedText = CreateFormattedText(td.Content, color, style.FontSize, style.IsBold);
+                        var formattedText = CreateFormattedText(td.Content, color, scaledFontSize, style.IsBold);
                         dc.DrawText(formattedText, new Point(td.X, td.Y));
                     }
                 }
@@ -665,7 +667,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 {
                     double baseX = style.PositionX;
                     double baseY = style.PositionY;
-                    var lineHeight = style.FontSize * 1.4;
+                    var lineHeight = scaledFontSize * 1.4;
 
                     for (int i = 0; i < texts.Length; i++)
                     {
@@ -675,7 +677,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
                         bool isPass = isPassArray.Length > i ? isPassArray[i] : true;
                         var color = ArgbToColor(style.GetEffectiveColorArgb(isPass));
-                        var formattedText = CreateFormattedText(td.Content, color, style.FontSize, style.IsBold);
+                        var formattedText = CreateFormattedText(td.Content, color, scaledFontSize, style.IsBold);
                         dc.DrawText(formattedText, new Point(x, y));
                     }
                 }

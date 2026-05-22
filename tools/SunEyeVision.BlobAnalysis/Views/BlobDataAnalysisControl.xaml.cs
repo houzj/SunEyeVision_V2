@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows.Controls;
 using System.Windows.Media;
 using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 
@@ -13,7 +14,7 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
     /// <summary>
     /// Blob 数据分析控件 - 显示连通域特征数据的 DataGrid + 统计摘要 + 选中高亮
     /// </summary>
-    public partial class BlobDataAnalysisControl : UserControl, IToolControlDataAnalysis
+    public partial class BlobDataAnalysisControl : UserControl, IToolControlDataAnalysis, System.ComponentModel.INotifyPropertyChanged
     {
         /// <summary>Blob 特征数据列表</summary>
         public ObservableCollection<BlobResult> FilteredBlobs { get; } = new();
@@ -42,7 +43,7 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
         /// <summary>阈值类型</summary>
         public string ThresholdTypeText { get; private set; } = "-";
 
-        #region 选中 Blob 相关
+        #region 选中 Blob
 
         private BlobResult? _selectedBlob;
 
@@ -56,30 +57,12 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
                 {
                     _selectedBlob = value;
                     NotifyPropertyChanged(nameof(SelectedBlob));
-                    NotifyPropertyChanged(nameof(HasSelectedBlob));
-                    NotifyPropertyChanged(nameof(SelectedBlobDetailText));
 
                     // 触发接口事件：构建高亮元素供图像联动
                     SelectionHighlightChanged?.Invoke(this, BuildHighlightItems(_selectedBlob));
                 }
             }
         }
-
-        /// <summary>是否有选中的 Blob</summary>
-        public bool HasSelectedBlob => _selectedBlob != null;
-
-        /// <summary>选中 Blob 的详情文本（绑定到底部面板）</summary>
-        public string SelectedBlobDetailText
-        {
-            get
-            {
-                if (_selectedBlob == null) return string.Empty;
-                var bb = _selectedBlob.BoundingBox;
-                return $"面积: {_selectedBlob.Area:F0}px²  周长: {_selectedBlob.Perimeter:F1}  圆度: {_selectedBlob.Circularity:F3}  矩形度: {_selectedBlob.Rectangularity:F3}  质心: ({_selectedBlob.CentroidX:F1}, {_selectedBlob.CentroidY:F1})  边框: {bb.Width}×{bb.Height}@({bb.X},{bb.Y})";
-            }
-        }
-
-        #endregion
 
         /// <inheritdoc/>
         public event EventHandler<IEnumerable<DisplayItemBase>?>? SelectionHighlightChanged;
@@ -118,6 +101,8 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
                 };
             }
 
+        #endregion
+
         #region IToolControlDataAnalysis
 
         /// <summary>
@@ -125,9 +110,13 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
         /// </summary>
         public void OnResultUpdated(ToolResults result)
         {
+            PluginLogger.Info($"[OnResultUpdated] 收到结果 | Type={result?.GetType().Name ?? "null"}", "BlobDataAnalysis");
+
             if (result is BlobAnalysisResults blobResult)
             {
-                // 更新 Blob 列表
+                PluginLogger.Info($"[OnResultUpdated] BlobAnalysisResults | Blob数量={blobResult.FilteredBlobs?.Count ?? 0} | 总面积={blobResult.FilteredTotalArea:F0}", "BlobDataAnalysis");
+
+                // Step 1: 先清空并填充 Blob 列表数据
                 FilteredBlobs.Clear();
                 if (blobResult.FilteredBlobs != null)
                 {
@@ -137,12 +126,12 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
                     }
                 }
 
-                // 更新统计摘要
+                // 更新统计摘要（字段）
                 TotalArea = blobResult.FilteredTotalArea;
                 ThresholdUsed = blobResult.ThresholdUsed;
                 ThresholdTypeText = blobResult.TypeUsed.ToString();
 
-                // 通知 UI 更新所有统计属性
+                // Step 2: 数据就绪后，再通知所有计算属性重新计算
                 NotifyPropertyChanged(nameof(FilteredBlobCount));
                 NotifyPropertyChanged(nameof(TotalArea));
                 NotifyPropertyChanged(nameof(FilteredTotalArea));
@@ -151,6 +140,12 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
                 NotifyPropertyChanged(nameof(MinArea));
                 NotifyPropertyChanged(nameof(ThresholdUsed));
                 NotifyPropertyChanged(nameof(ThresholdTypeText));
+
+                PluginLogger.Success($"[OnResultUpdated] UI通知完成 | 实际Blob数={FilteredBlobs.Count} | 总面积={FilteredTotalArea:F0}", "BlobDataAnalysis");
+            }
+            else
+            {
+                PluginLogger.Warning($"[OnResultUpdated] 类型不匹配: 期望 BlobAnalysisResults, 实际 {result?.GetType().Name ?? "null"}", "BlobDataAnalysis");
             }
         }
 

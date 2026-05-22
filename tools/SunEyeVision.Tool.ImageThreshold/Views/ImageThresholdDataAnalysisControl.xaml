@@ -26,25 +26,27 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <TextBlock Grid.Column="0" Margin="0,0,12,0" VerticalAlignment="Center">
-                    <Run Text="方法: " Foreground="#666"/><Run Text="{Binding MethodName, Mode=OneWay}" FontWeight="Bold" Foreground="#2196F3"/>
-                </TextBlock>
+                <StackPanel Grid.Column="0" Margin="0,0,12,0" VerticalAlignment="Center" Orientation="Horizontal">
+                    <TextBlock Text="方法: " Foreground="#666"/>
+                    <TextBlock Text="{Binding MethodName, Mode=OneWay}" FontWeight="Bold" Foreground="#2196F3"/>
+                </StackPanel>
 
-                <TextBlock Grid.Column="1" Margin="0,0,12,0" VerticalAlignment="Center">
-                    <Run Text="阈值: " Foreground="#666"/><Run Text="{Binding ThresholdValue, StringFormat='{}{0:F0}', Mode=OneWay}" FontWeight="Bold" Foreground="#4CAF50"/>
-                </TextBlock>
+                <StackPanel Grid.Column="1" Margin="0,0,12,0" VerticalAlignment="Center" Orientation="Horizontal">
+                    <TextBlock Text="阈值: " Foreground="#666"/>
+                    <TextBlock Text="{Binding ThresholdValue, StringFormat='{}{0:F0}', Mode=OneWay}" FontWeight="Bold" Foreground="#4CAF50"/>
+                </StackPanel>
 
-                <TextBlock Grid.Column="2" Margin="0,0,12,0" VerticalAlignment="Center">
-                    <Run Text="白色比例: " Foreground="#666"/><Run Text="{Binding WhiteRatio, StringFormat='{}{0:F1}%', Mode=OneWay}" Foreground="#E91E63"/>
-                </TextBlock>
+                <StackPanel Grid.Column="2" Margin="0,0,12,0" VerticalAlignment="Center" Orientation="Horizontal">
+                    <TextBlock Text="白色比例: " Foreground="#666"/>
+                    <TextBlock Text="{Binding WhiteRatio, StringFormat='{}{0:F1}%', Mode=OneWay}" Foreground="#E91E63"/>
+                </StackPanel>
 
-                <TextBlock Grid.Column="3" Margin="0,0,12,0" VerticalAlignment="Center">
-                    <Run Text="面积: " Foreground="#666"/><Run Text="{Binding OutputArea, StringFormat='{}{0}', Mode=OneWay}" Foreground="#9C27B0"/>
-                </TextBlock>
+                <StackPanel Grid.Column="3" Margin="0,0,12,0" VerticalAlignment="Center" Orientation="Horizontal">
+                    <TextBlock Text="面积: " Foreground="#666"/>
+                    <TextBlock Text="{Binding OutputArea, StringFormat='{}{0}', Mode=OneWay}" Foreground="#9C27B0"/>
+                </StackPanel>
 
-                <TextBlock Grid.Column="4" VerticalAlignment="Center">
-                    <Run Text="{Binding MethodDetail, Mode=OneWay}" Foreground="#607D8B" FontSize="11"/>
-                </TextBlock>
+                <TextBlock Grid.Column="4" VerticalAlignment="Center" Text="{Binding MethodDetail, Mode=OneWay}" Foreground="#607D8B" FontSize="11"/>
             </Grid>
         </Border>
 
@@ -74,10 +76,10 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" VerticalAlignment="Center" FontWeight="Bold"
-                           Foreground="{Binding IsPassColor, Mode=OneWay}">
-                    <Run Text="结果: "/><Run Text="{Binding IsPassText, Mode=OneWay}"/>
-                </TextBlock>
+                <StackPanel Grid.Column="0" VerticalAlignment="Center" Orientation="Horizontal">
+                    <TextBlock Text="结果: " FontWeight="Bold" Foreground="{Binding IsPassColor, Mode=OneWay}"/>
+                    <TextBlock Text="{Binding IsPassText, Mode=OneWay}" FontWeight="Bold" Foreground="{Binding IsPassColor, Mode=OneWay}"/>
+                </StackPanel>
                 <TextBlock Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" Foreground="#5D4037" TextWrapping="NoWrap"
                            TextTrimming="CharacterEllipsis" Text="{Binding FailReasonText, Mode=OneWay}"/>
             </Grid>

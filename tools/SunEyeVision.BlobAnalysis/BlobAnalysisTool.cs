@@ -133,8 +133,9 @@ namespace SunEyeVision.Tool.BlobAnalysis
                         // 构建检测区域（未设置时 = 全图）
                         if (hasInspection)
                         {
-                            inspHRegion = BuildHRegion(inspectionRegions);
-                            roiRegion = new HRegion(inspHRegion);
+                            inspHRegion = BuildHRegion(inspectionRegions); // 保持 tuple 供独立轮廓渲染
+                            HOperatorSet.Union1(inspHRegion, out var unionRegion); // 合并为单一处理域
+                            roiRegion = new HRegion(unionRegion);
                         }
                         else
                         {
@@ -144,8 +145,10 @@ namespace SunEyeVision.Tool.BlobAnalysis
                         if (hasMask)
                         {
                             using var diffTarget = roiRegion;
-                            maskHRegion = BuildHRegion(maskRegions);
-                            HOperatorSet.Difference(diffTarget, maskHRegion, out var diffObj);
+                            maskHRegion = BuildHRegion(maskRegions); // 保持 tuple 供独立轮廓渲染
+                            HOperatorSet.Union1(maskHRegion, out var maskUnion); // 合并后再做差集
+                            HOperatorSet.Difference(diffTarget, maskUnion, out var diffObj);
+                            maskUnion.Dispose();
                             roiRegion = new HRegion(diffObj);
                         }
                     }
@@ -225,18 +228,17 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                     HOperatorSet.CountObj(connectedRegions, out var numReg);
                                     int rawBlobCount = (int)numReg.L;
 
-                                    // ===== Step 6~8: 按需特征提取 + 统一判断 =====
+                                    // ===== Step 6~8: 按需特征提取 + Tab3筛选 + Tab4判断 =====
                                     stepSw.Restart();
 
-                                    // Step 6: SelectShape - Halcon原生面积筛选（仅对 Per-Blob 面积检查启用时执行）
-                                    var config = parameters.ResultConfig;
-                                    bool useAreaFilter = config.IsPerBlobAreaCheckEnabled && rawBlobCount > 0;
+                                    // Step 6: SelectShape - Halcon原生面积筛选（仅对 Tab3 面积筛选启用时执行）
+                                    bool useAreaFilter = parameters.IsAreaFilterEnabled.Value && rawBlobCount > 0;
 
                                     HRegion shapeFilteredRegions;
                                     if (useAreaFilter)
                                     {
                                         HOperatorSet.SelectShape(connectedRegions, out var selected,
-                                            "area", "and", config.PerBlobAreaMin, config.PerBlobAreaMax);
+                                            "area", "and", parameters.FilterAreaMin.Value, parameters.FilterAreaMax.Value);
                                         shapeFilteredRegions = new HRegion(selected);
                                     }
                                     else
@@ -249,8 +251,13 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                         HOperatorSet.CountObj(shapeFilteredRegions, out var numSel);
                                         int candidateCount = (int)numSel.L;
 
-                                        // Step 7-8: 仅对面积筛选后的blob按需计算特征 + 统一判断
+                                        // Step 7: 对剩余 blob 按需计算特征 + Tab3 C#筛选 + Tab4判断
                                         var filteredBlobs = new List<BlobResult>(candidateCount);
+                                        var config = parameters.ResultConfig;
+
+                                        bool tab3FilterArea = parameters.IsAreaFilterEnabled.Value;
+                                        bool tab3FilterCircularity = parameters.IsCircularityFilterEnabled.Value;
+                                        bool tab3FilterRectangularity = parameters.IsRectangularityFilterEnabled.Value;
 
                                         for (int i = 1; i <= candidateCount; i++)
                                         {
@@ -288,19 +295,37 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                                 BoundingBox = bbox
                                             };
 
-                                            // 统一Per-Blob判断（融合原C#筛选 + Per-Blob判断）
-                                            if (EvaluateBlob(blob, config))
+                                            // ★ Phase A: Tab3 筛选（不通过则丢弃）
+                                            bool passesTab3Filter = true;
+                                            if (passesTab3Filter && tab3FilterArea)
                                             {
-                                                blob.JudgmentPassed = true;
-
-                                                // 仅对通过blob提取亚像素平滑轮廓（延迟计算，昂贵操作只对最终结果执行）
-                                                var geom = ContourGeometryFactory.FromRegionSmooth(singleRegion);
-                                                if (geom.Points.Length > 0)
-                                                    blob.Contour = geom.Points;
-
-                                                blob.Label = filteredBlobs.Count + 1;
-                                                filteredBlobs.Add(blob);
+                                                if (blob.Area < parameters.FilterAreaMin.Value || blob.Area > parameters.FilterAreaMax.Value)
+                                                    passesTab3Filter = false;
                                             }
+                                            if (passesTab3Filter && tab3FilterCircularity)
+                                            {
+                                                if (blob.Circularity < parameters.FilterCircularityMin.Value || blob.Circularity > parameters.FilterCircularityMax.Value)
+                                                    passesTab3Filter = false;
+                                            }
+                                            if (passesTab3Filter && tab3FilterRectangularity)
+                                            {
+                                                if (blob.Rectangularity < parameters.FilterRectangularityMin.Value || blob.Rectangularity > parameters.FilterRectangularityMax.Value)
+                                                    passesTab3Filter = false;
+                                            }
+
+                                            if (!passesTab3Filter)
+                                                continue; // Tab3 丢弃
+
+                                            // ★ Phase B: Tab4 独立判断（标记 JudgmentPassed 但不丢弃）
+                                            blob.JudgmentPassed = EvaluateBlobJudgment(blob, config);
+
+                                            // 提取轮廓（所有 blob 都有轮廓，颜色由 JudgmentPassed 通过 contourPassList 控制）
+                                            var geom = ContourGeometryFactory.FromRegionSmooth(singleRegion);
+                                            if (geom.Points.Length > 0)
+                                                blob.Contour = geom.Points;
+
+                                            blob.Label = filteredBlobs.Count + 1;
+                                            filteredBlobs.Add(blob);
                                         }
 
                                         stepSw.Stop();
@@ -364,65 +389,47 @@ namespace SunEyeVision.Tool.BlobAnalysis
 
                                         // 检测区域轮廓
                                         if (inspHRegion != null && parameters.InspectionRegionStyle.IsVisible)
-                                        {
-                                            var inspGeom = ContourGeometryFactory.FromRegion(inspHRegion);
-                                            if (inspGeom.Points.Length > 0)
-                                                display.AddContour(parameters.InspectionRegionStyle, inspGeom.Points, true);
-                                        }
+                                            display.AddContours(parameters.InspectionRegionStyle, inspHRegion);
 
                                         // 屏蔽区域轮廓
                                         if (maskHRegion != null && parameters.MaskRegionStyle.IsVisible)
-                                        {
-                                            var maskGeom = ContourGeometryFactory.FromRegion(maskHRegion);
-                                            if (maskGeom.Points.Length > 0)
-                                                display.AddContour(parameters.MaskRegionStyle, maskGeom.Points, true);
-                                        }
+                                            display.AddContours(parameters.MaskRegionStyle, maskHRegion);
 
-                                        // 轮廓：仅对通过blob（FilteredBlobs全部通过）
+                                        // 轮廓：仅对有轮廓数据的 blob（通过 Tab4 判断的 blob 有轮廓）
                                         var contourBlobs = filteredBlobs
                                             .Where(b => b.HasContour)
                                             .ToList();
                                         if (contourBlobs.Count > 0)
                                         {
                                             var allContourPoints = contourBlobs.Select(b => b.Contour!).ToList();
-                                            display.AddContours(parameters.ContoursStyle, allContourPoints, null);
+                                            var contourPassList = contourBlobs.Select(b => b.JudgmentPassed).ToList();
+                                            display.AddContours(parameters.ContoursStyle, allContourPoints, contourPassList);
                                         }
 
-                                        // 外接矩形
+                                        // 外接矩形（根据 JudgmentPassed 显示 OK/NG 颜色）
                                         foreach (var blob in filteredBlobs)
                                         {
                                             var bbox = blob.BoundingBox;
                                             if (bbox.Width > 0 && bbox.Height > 0)
-                                                display.AddRect(parameters.BlobsStyle, bbox, true);
+                                                display.AddRect(parameters.BlobsStyle, bbox, blob.JudgmentPassed);
                                         }
 
-                                        // 质心十字
+                                        // 质心十字（根据 JudgmentPassed 显示 OK/NG 颜色）
                                         foreach (var blob in filteredBlobs)
                                         {
                                             if (blob.CentroidX > 0 || blob.CentroidY > 0)
                                                 display.AddCross(parameters.CentroidsStyle,
-                                                    new WpfPoint(blob.CentroidX, blob.CentroidY), true);
+                                                    new WpfPoint(blob.CentroidX, blob.CentroidY), blob.JudgmentPassed);
                                         }
 
-                                        // 面积文本
+                                        // 面积文本（根据 JudgmentPassed 显示 OK/NG 颜色）
                                         var areaStyle = parameters.AreaDisplayStyle;
                                         foreach (var blob in filteredBlobs)
                                         {
                                             if (blob.CentroidX > 0 || blob.CentroidY > 0)
                                                 display.AddText(areaStyle, areaStyle.PositionX, areaStyle.PositionY,
-                                                    $"#{blob.Label}: {blob.Area:F0}px", true);
+                                                    $"#{blob.Label}: {blob.Area:F0}px", blob.JudgmentPassed);
                                         }
-
-                                        // 统计文本
-                                        var filteredTotalArea = filteredBlobs.Sum(b => b.Area);
-                                        var wholePassed = result.JudgmentPassed;
-                                        display.AddText(parameters.StatisticsStyle,
-                                            parameters.StatisticsStyle.PositionX, parameters.StatisticsStyle.PositionY,
-                                            new[]
-                                            {
-                                                $"Blob: {filteredBlobs.Count}  阈值: {actualThreshold}  面积: {filteredTotalArea:F0}  类型: {parameters.Type.Value}"
-                                            },
-                                            wholePassed);
 
                                         stepSw.Stop();
                                         stepTimings.Add(("显示构建", stepSw.ElapsedMilliseconds));
@@ -522,10 +529,10 @@ namespace SunEyeVision.Tool.BlobAnalysis
                         result = single;
                     else
                     {
-                        HOperatorSet.Union2(result, single, out var unionObj);
+                        HOperatorSet.ConcatObj(result, single, out var concatObj);
                         result.Dispose();
                         single.Dispose();
-                        result = new HRegion(unionObj);
+                        result = new HRegion(concatObj);
                     }
                 }
             }
@@ -564,7 +571,8 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// 评估整体结果判断（OK/NG判定）- 仅保留整体统计判断
         /// </summary>
         /// <remarks>
-        /// Per-Blob 判断已集成到特征提取循环中（EvaluateBlob），
+        /// Per-Blob 判断（Tab4）已分离到 EvaluateBlobJudgment，不在此处处理。
+        /// Tab3 筛选在特征提取循环中处理。
         /// 此处只处理基于 FilteredBlobs 聚合统计的整体判断条件。
         /// </remarks>
         private static void EvaluateJudgments(
@@ -675,13 +683,13 @@ namespace SunEyeVision.Tool.BlobAnalysis
         }
 
         /// <summary>
-        /// 统一Per-Blob判断（融合原C#筛选条件 + Per-Blob判断条件）
+        /// Tab4 独立判断：判断单个 Blob 是否通过（仅标记 JudgmentPassed，不丢弃 blob）
         /// </summary>
         /// <returns>
-        /// true 表示通过判断，blob 将加入 FilteredBlobs 并提取轮廓；
-        /// false 表示跳过，不参与显示和统计。
+        /// true 表示通过判断（显示绿色）；false 表示未通过（显示红色）。
+        /// 无论通过与否，blob 都会被保留在 FilteredBlobs 中（Tab3 已筛选过）。
         /// </returns>
-        private static bool EvaluateBlob(BlobResult blob, BlobAnalysisResultConfig config)
+        private static bool EvaluateBlobJudgment(BlobResult blob, BlobAnalysisResultConfig config)
         {
             if (!config.HasPerBlobJudgmentEnabled)
                 return true;

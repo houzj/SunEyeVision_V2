@@ -255,10 +255,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
             if (_shapePool.TryGetValue(region.Id, out var existingShape))
             {
                 // 更新现有Shape
-                VisionLogger.Instance.Log(LogLevel.Info,
-                    $"[UpdateOrCreateRegion] 更新已有Shape | RegionId={region.Id:B} | ShapeType={region.ShapeType} | IsSelected={region.IsSelected}",
-                    "WpfShapeRenderer");
-
                 UpdateShapeFromContext(existingShape, region);
 
                 // 更新ZIndex
@@ -316,16 +312,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
         private void UpdateShapeFromContext(Shape shape, RegionRenderContext region)
         {
                 region.CalculateBounds();
-
-                // ★ 关键诊断：降频日志，输出实际线宽计算值（仅每 LogInterval 次记录一次）
-                if (_logger != null && _logCounter % LogInterval == 0)
-                {
-                    var actualThickness = _viewportScale > 0 ? region.StrokeThickness / _viewportScale : region.StrokeThickness;
-                    _logger.Log(LogLevel.Info, 
-                        $"[UpdateShape] IsPreview={region.IsPreview}, " +
-                        $"rawStroke={region.StrokeThickness:F1}, viewportScale={_viewportScale:F3}, actualStroke={actualThickness:F3}", 
-                        "WpfShapeRenderer");
-                }
 
                 // 更新位置
                 var position = GetShapePosition(region);

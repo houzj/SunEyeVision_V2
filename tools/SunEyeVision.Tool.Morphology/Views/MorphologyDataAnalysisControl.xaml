@@ -27,29 +27,35 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <TextBlock Grid.Column="0" Margin="0,0,12,0" VerticalAlignment="Center">
-                    <Run Text="操作: " Foreground="#666"/><Run Text="{Binding OperationText, Mode=OneWay}" FontWeight="Bold" Foreground="#2196F3"/>
-                </TextBlock>
+                <StackPanel Grid.Column="0" Margin="0,0,12,0" VerticalAlignment="Center" Orientation="Horizontal">
+                    <TextBlock Text="操作: " Foreground="#666"/>
+                    <TextBlock Text="{Binding OperationText, Mode=OneWay}" FontWeight="Bold" Foreground="#2196F3"/>
+                </StackPanel>
 
-                <TextBlock Grid.Column="1" Margin="0,0,12,0" VerticalAlignment="Center">
-                    <Run Text="核: " Foreground="#666"/><Run Text="{Binding KernelText, Mode=OneWay}" FontWeight="Bold" Foreground="#4CAF50"/>
-                </TextBlock>
+                <StackPanel Grid.Column="1" Margin="0,0,12,0" VerticalAlignment="Center" Orientation="Horizontal">
+                    <TextBlock Text="核: " Foreground="#666"/>
+                    <TextBlock Text="{Binding KernelText, Mode=OneWay}" FontWeight="Bold" Foreground="#4CAF50"/>
+                </StackPanel>
 
-                <TextBlock Grid.Column="2" Margin="0,0,12,0" VerticalAlignment="Center">
-                    <Run Text="迭代: " Foreground="#666"/><Run Text="{Binding IterationText, Mode=OneWay}" Foreground="#FF9800"/>
-                </TextBlock>
+                <StackPanel Grid.Column="2" Margin="0,0,12,0" VerticalAlignment="Center" Orientation="Horizontal">
+                    <TextBlock Text="迭代: " Foreground="#666"/>
+                    <TextBlock Text="{Binding IterationText, Mode=OneWay}" Foreground="#FF9800"/>
+                </StackPanel>
 
-                <TextBlock Grid.Column="3" Margin="0,0,12,0" VerticalAlignment="Center">
-                    <Run Text="Blob数: " Foreground="#666"/><Run Text="{Binding BlobCount, Mode=OneWay}" Foreground="#E91E63"/>
-                </TextBlock>
+                <StackPanel Grid.Column="3" Margin="0,0,12,0" VerticalAlignment="Center" Orientation="Horizontal">
+                    <TextBlock Text="Blob数: " Foreground="#666"/>
+                    <TextBlock Text="{Binding BlobCount, Mode=OneWay}" Foreground="#E91E63"/>
+                </StackPanel>
 
-                <TextBlock Grid.Column="4" Margin="0,0,12,0" VerticalAlignment="Center">
-                    <Run Text="总面积: " Foreground="#666"/><Run Text="{Binding TotalArea, Mode=OneWay}" Foreground="#9C27B0"/>
-                </TextBlock>
+                <StackPanel Grid.Column="4" Margin="0,0,12,0" VerticalAlignment="Center" Orientation="Horizontal">
+                    <TextBlock Text="总面积: " Foreground="#666"/>
+                    <TextBlock Text="{Binding TotalArea, Mode=OneWay}" Foreground="#9C27B0"/>
+                </StackPanel>
 
-                <TextBlock Grid.Column="5" VerticalAlignment="Center">
-                    <Run Text="最大Blob: " Foreground="#666"/><Run Text="{Binding MaxBlobArea, StringFormat='{}{0:F0}', Mode=OneWay}" FontSize="11" Foreground="#607D8B"/>
-                </TextBlock>
+                <StackPanel Grid.Column="5" VerticalAlignment="Center" Orientation="Horizontal">
+                    <TextBlock Text="最大Blob: " Foreground="#666" FontSize="11"/>
+                    <TextBlock Text="{Binding MaxBlobArea, StringFormat='{}{0:F0}', Mode=OneWay}" FontSize="11" Foreground="#607D8B"/>
+                </StackPanel>
             </Grid>
         </Border>
 
@@ -79,10 +85,10 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" VerticalAlignment="Center" FontWeight="Bold"
-                           Foreground="{Binding IsPassColor, Mode=OneWay}">
-                    <Run Text="结果: "/><Run Text="{Binding IsPassText, Mode=OneWay}"/>
-                </TextBlock>
+                <StackPanel Grid.Column="0" VerticalAlignment="Center" Orientation="Horizontal">
+                    <TextBlock Text="结果: " FontWeight="Bold" Foreground="{Binding IsPassColor, Mode=OneWay}"/>
+                    <TextBlock Text="{Binding IsPassText, Mode=OneWay}" FontWeight="Bold" Foreground="{Binding IsPassColor, Mode=OneWay}"/>
+                </StackPanel>
                 <TextBlock Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" Foreground="#5D4037" TextWrapping="NoWrap"
                            TextTrimming="CharacterEllipsis" Text="{Binding FailReasonText, Mode=OneWay}"/>
             </Grid>

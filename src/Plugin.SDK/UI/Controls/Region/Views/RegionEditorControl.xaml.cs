@@ -1951,10 +1951,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         /// </summary>
         private RegionRenderContext CreateRenderContextInternal(RegionData region, ShapeParameters shape, bool isPreview = false)
         {
-            // 日志监控（每次调用都记录，因为这个方法调用频率不高）
-            VisionLogger.Instance.Log(LogLevel.Info,
-                $"[CreateRenderContext] RegionId={region.Id}, IsPreview={isPreview}, ShapeType={shape.ShapeType}",
-                "RegionEditorControl");
 
             var context = new RegionRenderContext
             {

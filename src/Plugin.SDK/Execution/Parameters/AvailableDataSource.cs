@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Globalization;
 
 namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 {
@@ -33,6 +35,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     /// }
     /// </code>
     /// </remarks>
+    [TypeConverter(typeof(AvailableDataSourceConverter))]
     public class AvailableDataSource : IEquatable<AvailableDataSource>
     {
         /// <summary>
@@ -297,6 +300,66 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             => !(left == right);
 
         #endregion
+    }
+
+    /// <summary>
+    /// AvailableDataSource 类型转换器，支持 string ↔ AvailableDataSource 的 WPF 绑定转换。
+    /// 格式：NodeId.PropertyName
+    /// </summary>
+    public class AvailableDataSourceConverter : TypeConverter
+    {
+        /// <summary>
+        /// 判断是否可以从指定源类型转换为 AvailableDataSource
+        /// </summary>
+        public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
+        {
+            return sourceType == typeof(string) || base.CanConvertFrom(context, sourceType);
+        }
+
+        /// <summary>
+        /// 从字符串转换（格式：NodeId.PropertyName）
+        /// </summary>
+        public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
+        {
+            if (value is string str && !string.IsNullOrEmpty(str))
+            {
+                var dotIndex = str.IndexOf('.');
+                if (dotIndex > 0 && dotIndex < str.Length - 1)
+                {
+                    var nodeId = str[..dotIndex];
+                    var propertyName = str[(dotIndex + 1)..];
+                    // 去掉数组索引标记 []
+                    if (propertyName.EndsWith("[]"))
+                        propertyName = propertyName[..^2];
+                    return new AvailableDataSource
+                    {
+                        SourceNodeId = nodeId,
+                        PropertyName = propertyName,
+                    };
+                }
+            }
+            return base.ConvertFrom(context, culture, value);
+        }
+
+        /// <summary>
+        /// 判断是否可以转换为指定目标类型
+        /// </summary>
+        public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType)
+        {
+            return destinationType == typeof(string) || base.CanConvertTo(context, destinationType);
+        }
+
+        /// <summary>
+        /// 转换为字符串
+        /// </summary>
+        public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
+        {
+            if (destinationType == typeof(string) && value is AvailableDataSource ds)
+            {
+                return ds.GetBindingPath();
+            }
+            return base.ConvertTo(context, culture, value, destinationType);
+        }
     }
 
     /// <summary>

@@ -141,7 +141,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Helpers
                 HOperatorSet.AffineTransRegion(inspHRegion, out var transInsp,
                     homMat2D, "nearest_neighbor");
                 inspHRegion.Dispose();
-                inspHRegion = (HRegion)transInsp;
+                inspHRegion = new HRegion(transInsp);
             }
 
             if (maskHRegion != null)
@@ -149,7 +149,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Helpers
                 HOperatorSet.AffineTransRegion(maskHRegion, out var transMask,
                     homMat2D, "nearest_neighbor");
                 maskHRegion.Dispose();
-                maskHRegion = (HRegion)transMask;
+                maskHRegion = new HRegion(transMask);
             }
 
             // 重新构建 roiRegion = insp - mask

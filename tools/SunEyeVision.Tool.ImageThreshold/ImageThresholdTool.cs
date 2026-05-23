@@ -135,7 +135,9 @@ namespace SunEyeVision.Tool.ImageThreshold
                         }
                         else
                         {
-                            parameters.LogWarning("位置修正启用但绑定源无有效矩阵");
+                            parameters.LogError("位置修正已启用但绑定源无有效矩阵，无法继续处理");
+                            result.SetError("位置修正已启用但绑定源无有效矩阵");
+                            return result;
                         }
                         stepSw.Stop();
                         stepTimings.Add(("位置修正", stepSw.ElapsedMilliseconds));

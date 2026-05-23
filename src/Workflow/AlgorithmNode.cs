@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -78,6 +78,12 @@ namespace SunEyeVision.Workflow
                             OnAfterExecute(result);
                             return result;
                         }
+                    }
+
+                    // 2a. 刷新所有 AvailableDataSource 属性的运行时 CurrentValue
+                    if (nodeResults != null)
+                    {
+                        ResolveAvailableDataSources(typedParams, nodeResults);
                     }
 
                     // 3. 注入执行上下文（使 parameters.LogInfo() 等日志方法生效）
@@ -237,6 +243,101 @@ namespace SunEyeVision.Workflow
                     });
                 }
             }
+        }
+
+        /// <summary>
+        /// 刷新参数对象中所有 AvailableDataSource 属性的运行时 CurrentValue。
+        /// 在设计时 AvailableDataSource 的 CurrentValue 为 null（上游节点未执行），
+        /// 此方法在工具执行前从 nodeResults 中读取实际值并回填。
+        /// 
+        /// 如果 AvailableDataSource 属性为 null（因 [JsonIgnore] 反序列化后为空），
+        /// 会自动从对应的 ImageSourceReference 属性恢复（如 PositionCorrectionBindingSource → PositionCorrectionSource）。
+        /// </summary>
+        private void ResolveAvailableDataSources(
+            ToolParameters parameters,
+            IDictionary<string, ToolResults> nodeResults)
+        {
+            foreach (var prop in parameters.GetType()
+                .GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            {
+                if (prop.PropertyType != typeof(AvailableDataSource))
+                    continue;
+
+                var dataSource = prop.GetValue(parameters) as AvailableDataSource;
+
+                // 如果 AvailableDataSource 为 null（[JsonIgnore] 反序列化后丢失），
+                // 从对应的 ImageSourceReference 属性恢复
+                if (dataSource == null)
+                {
+                    dataSource = RestoreAvailableDataSourceFromRef(parameters, prop);
+                    if (dataSource == null)
+                        continue;
+                }
+
+                if (string.IsNullOrEmpty(dataSource.SourceNodeId))
+                    continue;
+                if (string.IsNullOrEmpty(dataSource.PropertyName))
+                    continue;
+
+                if (!nodeResults.TryGetValue(dataSource.SourceNodeId, out var sourceResult))
+                    continue;
+
+                var value = GetPropertyValueFromResult(sourceResult, dataSource.PropertyName);
+                if (value != null)
+                {
+                    dataSource.CurrentValue = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 从对应的 ImageSourceReference 属性恢复 AvailableDataSource。
+        /// 命名约定：xxxBindingSource ↔ xxxSource / xxx ↔ xxxRef
+        /// </summary>
+        private static AvailableDataSource? RestoreAvailableDataSourceFromRef(
+            ToolParameters parameters,
+            PropertyInfo availableDataSourceProp)
+        {
+            var propName = availableDataSourceProp.Name;
+
+            // 尝试多种命名模式查找对应的 ImageSourceReference 属性
+            string[] candidateRefNames;
+
+            if (propName.EndsWith("BindingSource"))
+            {
+                var baseName = propName[..^"BindingSource".Length];
+                candidateRefNames = new[] { baseName + "Source", baseName + "Ref", baseName + "Reference" };
+            }
+            else
+            {
+                candidateRefNames = new[] { propName + "Ref", propName + "Reference", propName + "Source" };
+            }
+
+            foreach (var refName in candidateRefNames)
+            {
+                var refProp = parameters.GetType().GetProperty(refName, BindingFlags.Public | BindingFlags.Instance);
+                if (refProp == null || refProp.PropertyType != typeof(ImageSourceReference))
+                    continue;
+
+                var refValue = refProp.GetValue(parameters) as ImageSourceReference;
+                if (refValue == null || string.IsNullOrEmpty(refValue.SourceNodeId))
+                    continue;
+
+                // 直接从 ImageSourceReference 创建 AvailableDataSource
+                var dataSource = new AvailableDataSource
+                {
+                    SourceNodeId = refValue.SourceNodeId,
+                    SourceNodeName = refValue.SourceNodeName ?? "",
+                    PropertyName = refValue.PropertyName ?? "",
+                    DisplayName = refValue.DisplayName ?? "",
+                };
+
+                // 设置回原属性（供后续代码使用）
+                availableDataSourceProp.SetValue(parameters, dataSource);
+                return dataSource;
+            }
+
+            return null;
         }
 
     }

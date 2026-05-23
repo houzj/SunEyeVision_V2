@@ -63,24 +63,35 @@ public class ShapeMatchResults : ToolResults
 
     #endregion
 
-    #region 位置修正（模型→图像方向，下游工具直接正向使用）
+    #region 位置修正（参考图像→测试图像方向，已扣除模板参考点）
 
     /// <summary>
-    /// 位置修正矩阵（最佳匹配的仿射变换，模型→图像方向）
-    /// 与渲染层使用的 TransformMatrix 是同一个矩阵，仅类型投影
-    /// 下游工具直接绑定此属性使用
+    /// 位置修正矩阵（参考图像→测试图像方向）
+    /// 已扣除模板参考点偏移，下游工具直接正向使用
     /// </summary>
     public AffineMatrix BestPositionCorrection =>
         BestMatch != null
-            ? AffineMatrix.FromWpfMatrix(BestMatch.TransformMatrix)
+            ? new AffineMatrix(
+                BestMatch.TransformMatrix.M11,
+                BestMatch.TransformMatrix.M12,
+                BestMatch.TransformMatrix.M21,
+                BestMatch.TransformMatrix.M22,
+                BestMatch.TransformMatrix.OffsetX - BestMatch.ReferencePointX,
+                BestMatch.TransformMatrix.OffsetY - BestMatch.ReferencePointY)
             : AffineMatrix.Identity;
 
     /// <summary>
     /// 所有匹配的位置修正矩阵数组（工作流多实例展开用）
-    /// 有多少个匹配结果，就有多少个矩阵
+    /// 已扣除模板参考点偏移
     /// </summary>
     public AffineMatrix[] MatchedPositionCorrections =>
-        MatchedItems?.Select(m => AffineMatrix.FromWpfMatrix(m.TransformMatrix)).ToArray()
+        MatchedItems?.Select(m => new AffineMatrix(
+            m.TransformMatrix.M11,
+            m.TransformMatrix.M12,
+            m.TransformMatrix.M21,
+            m.TransformMatrix.M22,
+            m.TransformMatrix.OffsetX - m.ReferencePointX,
+            m.TransformMatrix.OffsetY - m.ReferencePointY)).ToArray()
         ?? Array.Empty<AffineMatrix>();
 
     #endregion
@@ -202,6 +213,12 @@ public class ShapeMatchResultItem
     /// <summary>仿射变换矩阵（将模型坐标变换到图像坐标）</summary>
     [System.Text.Json.Serialization.JsonIgnore]
     public System.Windows.Media.Matrix TransformMatrix { get; set; }
+
+    /// <summary>模板参考点 X（训练时模板在参考图像中的列坐标）</summary>
+    public double ReferencePointX { get; set; }
+
+    /// <summary>模板参考点 Y（训练时模板在参考图像中的行坐标）</summary>
+    public double ReferencePointY { get; set; }
 
     /// <summary>轮廓点数量</summary>
     public int ContourPointCount => ContourPoints?.Count ?? 0;

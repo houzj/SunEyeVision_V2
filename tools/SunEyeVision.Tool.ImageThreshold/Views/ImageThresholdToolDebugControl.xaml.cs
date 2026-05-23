@@ -171,6 +171,7 @@ namespace SunEyeVision.Tool.ImageThreshold.Views
                 regionManager.AvailableDataSources = AvailableDataSources;
 
                 Parameters?.RestoreImageSource(AvailableDataSources);
+                Parameters?.RestorePositionCorrectionSource(AvailableDataSources);
             }
         }
 

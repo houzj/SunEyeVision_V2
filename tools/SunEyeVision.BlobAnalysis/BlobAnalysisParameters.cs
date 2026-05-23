@@ -286,9 +286,6 @@ namespace SunEyeVision.Tool.BlobAnalysis
 
         #region 位置修正
 
-        private string? _positionCorrectionBindingSource;
-        private string? _positionCorrectionBindingDisplayText;
-
         /// <summary>
         /// 是否启用位置修正
         /// </summary>
@@ -296,32 +293,53 @@ namespace SunEyeVision.Tool.BlobAnalysis
             ParamValue<bool>.CreateConstant(false, "IsPositionCorrectionEnabled");
 
         /// <summary>
-        /// 位置修正绑定源路径（可序列化）
+        /// 位置修正绑定源（运行时，不序列化）
         /// </summary>
-        /// <remarks>
-        /// 格式：节点ID.属性名，如 "templateMatch1.PositionOffset"
-        /// 用户通过 ParamBinding 控件选择上游节点的位置修正输出自动设置
-        /// </remarks>
-        [JsonPropertyOrder(16)]
-        [JsonPropertyName("positionCorrectionBindingSource")]
-        public string? PositionCorrectionBindingSource
+        [JsonIgnore]
+        public AvailableDataSource? PositionCorrectionBindingSource
         {
             get => _positionCorrectionBindingSource;
-            set => SetProperty(ref _positionCorrectionBindingSource, value);
+            set
+            {
+                if (SetProperty(ref _positionCorrectionBindingSource, value, "位置修正绑定源"))
+                {
+                    _positionCorrectionSource = ImageSourceReference.FromDataSource(value);
+                }
+            }
         }
 
         /// <summary>
-        /// 位置修正绑定显示文本（可序列化）
+        /// 位置修正绑定源（序列化引用）
         /// </summary>
-        /// <remarks>
-        /// 格式：节点名.显示名，如 "模板匹配1.位置偏移"
-        /// </remarks>
+        [JsonPropertyOrder(16)]
+        [JsonPropertyName("positionCorrectionSource")]
+        public ImageSourceReference? PositionCorrectionSource { get; set; }
+
+        /// <summary>
+        /// 位置修正绑定源显示文本
+        /// </summary>
         [JsonPropertyOrder(17)]
-        [JsonPropertyName("positionCorrectionBindingDisplayText")]
-        public string? PositionCorrectionBindingDisplayText
+        public string? PositionCorrectionBindingDisplayText { get; set; }
+
+        private AvailableDataSource? _positionCorrectionBindingSource;
+        private ImageSourceReference? _positionCorrectionSource;
+
+        /// <summary>
+        /// 从 AvailableDataSources 列表恢复 PositionCorrectionBindingSource
+        /// </summary>
+        public bool RestorePositionCorrectionSource(IEnumerable<AvailableDataSource>? dataSources)
         {
-            get => _positionCorrectionBindingDisplayText;
-            set => SetProperty(ref _positionCorrectionBindingDisplayText, value);
+            if (_positionCorrectionSource == null || dataSources == null)
+                return false;
+
+            var matched = _positionCorrectionSource.MatchDataSource(dataSources);
+            if (matched != null)
+            {
+                _positionCorrectionBindingSource = matched;
+                OnPropertyChanged(nameof(PositionCorrectionBindingSource));
+                return true;
+            }
+            return false;
         }
 
         #endregion

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -185,36 +185,21 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// <summary>
         /// 获取结果显示项（用于数据面板显示）
         /// </summary>
-        public override IReadOnlyList<ResultItem> GetResultItems()
+    public override IReadOnlyList<ResultItem> GetResultItems()
+    {
+        return new List<ResultItem>
         {
-            var items = new List<ResultItem>
-            {
-                ResultItem.Boolean("判断通过", JudgmentPassed),
-                ResultItem.Numeric("Blob数量", FilteredBlobCount),
-                ResultItem.Numeric("总面积", FilteredTotalArea, "像素"),
-                ResultItem.Numeric("平均面积", AverageArea, "像素"),
-                ResultItem.Numeric("平均圆度", AverageCircularity),
-                ResultItem.Numeric("平均矩形度", AverageRectangularity),
-                ResultItem.Numeric("白色像素比例", WhitePixelRatio, "%"),
-                ResultItem.Numeric("实际阈值", ThresholdUsed),
-                ResultItem.Text("阈值类型", TypeUsed.ToString())
-            };
-
-            // 每个Blob属性的数组输出
-            if (FilteredBlobs != null && FilteredBlobs.Count > 0)
-            {
-                items.Add(ResultItem.Text("面积", string.Join(", ", FilteredBlobs.Select(b => $"{b.Area:F0}"))));
-                items.Add(ResultItem.Text("周长", string.Join(", ", FilteredBlobs.Select(b => $"{b.Perimeter:F1}"))));
-                items.Add(ResultItem.Text("中心X", string.Join(", ", FilteredBlobs.Select(b => $"{b.CentroidX:F1}"))));
-                items.Add(ResultItem.Text("中心Y", string.Join(", ", FilteredBlobs.Select(b => $"{b.CentroidY:F1}"))));
-                items.Add(ResultItem.Text("圆度", string.Join(", ", FilteredBlobs.Select(b => $"{b.Circularity:F3}"))));
-                items.Add(ResultItem.Text("矩形度", string.Join(", ", FilteredBlobs.Select(b => $"{b.Rectangularity:F3}"))));
-                items.Add(ResultItem.Text("边框", string.Join(", ", FilteredBlobs.Select(b => b.BoundingRectText))));
-                items.Add(ResultItem.Text("判断", string.Join(", ", FilteredBlobs.Select(b => b.JudgmentPassed ? "✓" : "✗"))));
-            }
-
-            return items;
-        }
+            ResultItem.Boolean("判断通过", JudgmentPassed),
+            ResultItem.Numeric("Blob数量", FilteredBlobCount),
+            ResultItem.Numeric("总面积", FilteredTotalArea, "像素"),
+            ResultItem.Numeric("平均面积", AverageArea, "像素"),
+            ResultItem.Numeric("平均圆度", AverageCircularity),
+            ResultItem.Numeric("平均矩形度", AverageRectangularity),
+            ResultItem.Numeric("白色像素比例", WhitePixelRatio, "%"),
+            ResultItem.Numeric("实际阈值", ThresholdUsed),
+            ResultItem.Text("阈值类型", TypeUsed.ToString())
+        };
+    }
 
         /// <summary>
         /// 获取属性映射表

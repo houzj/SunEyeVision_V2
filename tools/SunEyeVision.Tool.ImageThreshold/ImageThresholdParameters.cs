@@ -105,24 +105,54 @@ namespace SunEyeVision.Tool.ImageThreshold
             set => _isPositionCorrectionEnabled = value;
         }
 
-        private string _positionCorrectionBindingSource = string.Empty;
         /// <summary>
-        /// 位置修正绑定源
+        /// 位置修正绑定源（运行时，不序列化）
         /// </summary>
-        public string PositionCorrectionBindingSource
+        [JsonIgnore]
+        public AvailableDataSource? PositionCorrectionBindingSource
         {
             get => _positionCorrectionBindingSource;
-            set => _positionCorrectionBindingSource = value;
+            set
+            {
+                if (SetProperty(ref _positionCorrectionBindingSource, value, "位置修正绑定源"))
+                {
+                    _positionCorrectionSource = ImageSourceReference.FromDataSource(value);
+                }
+            }
         }
 
-        private string _positionCorrectionBindingDisplayText = string.Empty;
         /// <summary>
-        /// 位置修正绑定显示文本
+        /// 位置修正绑定源（序列化引用）
         /// </summary>
-        public string PositionCorrectionBindingDisplayText
+        [JsonPropertyOrder(16)]
+        [JsonPropertyName("positionCorrectionSource")]
+        public ImageSourceReference? PositionCorrectionSource { get; set; }
+
+        /// <summary>
+        /// 位置修正绑定源显示文本
+        /// </summary>
+        [JsonPropertyOrder(17)]
+        public string? PositionCorrectionBindingDisplayText { get; set; }
+
+        private AvailableDataSource? _positionCorrectionBindingSource;
+        private ImageSourceReference? _positionCorrectionSource;
+
+        /// <summary>
+        /// 从 AvailableDataSources 列表恢复 PositionCorrectionBindingSource
+        /// </summary>
+        public bool RestorePositionCorrectionSource(IEnumerable<AvailableDataSource>? dataSources)
         {
-            get => _positionCorrectionBindingDisplayText;
-            set => _positionCorrectionBindingDisplayText = value;
+            if (_positionCorrectionSource == null || dataSources == null)
+                return false;
+
+            var matched = _positionCorrectionSource.MatchDataSource(dataSources);
+            if (matched != null)
+            {
+                _positionCorrectionBindingSource = matched;
+                OnPropertyChanged(nameof(PositionCorrectionBindingSource));
+                return true;
+            }
+            return false;
         }
 
         #endregion

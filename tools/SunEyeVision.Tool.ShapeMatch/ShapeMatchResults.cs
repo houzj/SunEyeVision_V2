@@ -51,6 +51,40 @@ public class ShapeMatchResults : ToolResults
     /// <summary>处理时间戳</summary>
     public DateTime ProcessedAt { get; set; } = DateTime.Now;
 
+    #region 匹配详细数据（数组类型 — 对齐 BlobAnalysis）
+
+    public double[] MatchedScores => MatchedItems.Select(m => m.Score).ToArray();
+    public double[] MatchedCenterXs => MatchedItems.Select(m => m.CenterX).ToArray();
+    public double[] MatchedCenterYs => MatchedItems.Select(m => m.CenterY).ToArray();
+    public double[] MatchedAngles => MatchedItems.Select(m => m.Angle).ToArray();
+    public double[] MatchedScales => MatchedItems.Select(m => m.Scale).ToArray();
+    public int[]    MatchedTemplateIndices => MatchedItems.Select(m => m.TemplateOrderIndex).ToArray();
+    public string[] MatchedTemplateNames => MatchedItems.Select(m => m.TemplateName).ToArray();
+
+    #endregion
+
+    #region 位置修正（模型→图像方向，下游工具直接正向使用）
+
+    /// <summary>
+    /// 位置修正矩阵（最佳匹配的仿射变换，模型→图像方向）
+    /// 与渲染层使用的 TransformMatrix 是同一个矩阵，仅类型投影
+    /// 下游工具直接绑定此属性使用
+    /// </summary>
+    public AffineMatrix BestPositionCorrection =>
+        BestMatch != null
+            ? AffineMatrix.FromWpfMatrix(BestMatch.TransformMatrix)
+            : AffineMatrix.Identity;
+
+    /// <summary>
+    /// 所有匹配的位置修正矩阵数组（工作流多实例展开用）
+    /// 有多少个匹配结果，就有多少个矩阵
+    /// </summary>
+    public AffineMatrix[] MatchedPositionCorrections =>
+        MatchedItems?.Select(m => AffineMatrix.FromWpfMatrix(m.TransformMatrix)).ToArray()
+        ?? Array.Empty<AffineMatrix>();
+
+    #endregion
+
     #region 判断结果
 
     public bool JudgmentPassed { get; set; } = true;
@@ -79,29 +113,12 @@ public class ShapeMatchResults : ToolResults
 
     public override IReadOnlyList<ResultItem> GetResultItems()
     {
-        var items = new List<ResultItem>
+        return new List<ResultItem>
         {
             ResultItem.Boolean("判断通过", JudgmentPassed),
             ResultItem.Numeric("匹配数量", MatchCount),
             ResultItem.Numeric("最佳得分", BestScore)
         };
-
-        if (MatchedItems != null && MatchedItems.Count > 0)
-        {
-            items.Add(ResultItem.Text("得分", string.Join(", ", MatchedItems.Select(m => $"{m.Score:F3}"))));
-            items.Add(ResultItem.Text("中心X", string.Join(", ", MatchedItems.Select(m => $"{m.CenterX:F1}"))));
-            items.Add(ResultItem.Text("中心Y", string.Join(", ", MatchedItems.Select(m => $"{m.CenterY:F1}"))));
-            items.Add(ResultItem.Text("角度", string.Join(", ", MatchedItems.Select(m => $"{m.Angle:F1}"))));
-            items.Add(ResultItem.Text("缩放", string.Join(", ", MatchedItems.Select(m => $"{m.Scale:F3}"))));
-            items.Add(ResultItem.Text("模板", string.Join(", ", MatchedItems.Select(m => m.TemplateName))));
-
-            if (MatchedItems[0].BoundingBox != null)
-            {
-                items.Add(ResultItem.Text("边框", string.Join(", ",
-                    MatchedItems.Select(m => $"({m.BoundingBox.Value.X:F0},{m.BoundingBox.Value.Y:F0} {m.BoundingBox.Value.Width:F0}x{m.BoundingBox.Value.Height:F0})"))));
-            }
-        }
-        return items;
     }
 
     public override List<PropertyMapEntry> GetPropertyMap()
@@ -114,7 +131,16 @@ public class ShapeMatchResults : ToolResults
             new("JudgmentPassed",        "判断通过",           "判断"),
             new("MatchCount",            "匹配数量",           "结果"),
             new("BestScore",             "最佳得分",           "结果"),
+            new("BestPositionCorrection","位置修正矩阵",       "位置修正"),
+            new("MatchedPositionCorrections","位置修正矩阵列表", "位置修正"),
             new("InputSize",             "输入图像尺寸",       "结果"),
+            new("MatchedScores",         "得分",               "匹配详细"),
+            new("MatchedCenterXs",       "中心X",              "匹配详细"),
+            new("MatchedCenterYs",       "中心Y",              "匹配详细"),
+            new("MatchedAngles",         "角度",               "匹配详细"),
+            new("MatchedScales",         "缩放",               "匹配详细"),
+            new("MatchedTemplateIndices","模板索引",           "匹配详细"),
+            new("MatchedTemplateNames",  "模板名称",           "匹配详细"),
             new("ProcessedAt",           "处理时间戳",         "执行信息"),
         ];
     }
@@ -126,6 +152,8 @@ public class ShapeMatchResults : ToolResults
         dict["MatchCount"] = MatchCount;
         dict["HasMatch"] = HasMatch;
         dict["BestScore"] = BestScore;
+        dict["BestPositionCorrection"] = BestPositionCorrection;
+        dict["MatchedPositionCorrections"] = MatchedPositionCorrections;
         dict["InputSize"] = InputSize;
         dict["ProcessedAt"] = ProcessedAt;
         return dict;
@@ -157,6 +185,9 @@ public class ShapeMatchResultItem
 
     /// <summary>匹配到的模板ID</summary>
     public string TemplateId { get; set; } = string.Empty;
+
+    /// <summary>模板在参数列表中的序号（从0开始）</summary>
+    public int TemplateOrderIndex { get; set; }
 
     /// <summary>包围矩形</summary>
     public WpfRect? BoundingBox { get; set; }

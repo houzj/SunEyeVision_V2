@@ -651,23 +651,44 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     Math.Abs(t.Y - texts[0].Y) > 0.001);
 
                 var scaledFontSize = _viewportScale > 0.001 ? style.FontSize / _viewportScale : style.FontSize;
+                var lineHeight = scaledFontSize * 1.4;
 
                 if (useIndividualPositions)
                 {
-                    for (int i = 0; i < texts.Length; i++)
+                    // 混合模式：连续同锚点文字自动分组，组内 Y 偏移实现换行
+                    int idx = 0;
+                    while (idx < texts.Length)
                     {
-                        var td = texts[i];
-                        bool isPass = isPassArray.Length > i ? isPassArray[i] : true;
-                        var color = ArgbToColor(style.GetEffectiveColorArgb(isPass));
-                        var formattedText = CreateFormattedText(td.Content, color, scaledFontSize, style.IsBold);
-                        dc.DrawText(formattedText, new Point(td.X, td.Y));
+                        var anchorText = texts[idx];
+                        double anchorX = anchorText.X;
+                        double anchorY = anchorText.Y;
+
+                        int groupStart = idx;
+                        while (idx < texts.Length &&
+                               Math.Abs(texts[idx].X - anchorX) < 0.001 &&
+                               Math.Abs(texts[idx].Y - anchorY) < 0.001)
+                        {
+                            idx++;
+                        }
+                        int groupCount = idx - groupStart;
+
+                        for (int j = 0; j < groupCount; j++)
+                        {
+                            var td = texts[groupStart + j];
+                            bool isPass = isPassArray.Length > groupStart + j
+                                ? isPassArray[groupStart + j] : true;
+                            var color = ArgbToColor(style.GetEffectiveColorArgb(isPass));
+                            var formattedText = CreateFormattedText(td.Content, color,
+                                scaledFontSize, style.IsBold);
+                            dc.DrawText(formattedText,
+                                new Point(anchorX, anchorY + j * lineHeight));
+                        }
                     }
                 }
                 else
                 {
-                    double baseX = style.PositionX;
-                    double baseY = style.PositionY;
-                    var lineHeight = scaledFontSize * 1.4;
+                    double baseX = texts[0].X;
+                    double baseY = texts[0].Y;
 
                     for (int i = 0; i < texts.Length; i++)
                     {

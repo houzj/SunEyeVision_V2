@@ -117,6 +117,7 @@ public partial class ShapeMatchToolDebugControl
             Parameters = shapeParams;
             int templateCount = shapeParams.Templates?.Count ?? 0;
             PluginLogger.Info($"[SetParameters] 参数注入完成 | Templates={templateCount}", "ShapeMatchTool");
+            SyncMinContrastMode();
         }
         else
         {
@@ -150,6 +151,7 @@ public partial class ShapeMatchToolDebugControl
             _dataProvider = queryService;
             regionManager.AvailableDataSources = AvailableDataSources;
             Parameters?.RestoreImageSource(AvailableDataSources);
+            Parameters?.RestorePositionCorrectionSource(AvailableDataSources);
         }
     }
 
@@ -196,10 +198,8 @@ public partial class ShapeMatchToolDebugControl
 
         var result = shapeTool.Run(runParams);
 
-        // 刷新中间调试图像
         if (result is ShapeMatchResults shapeResult)
         {
-            RefreshDebugImages(shapeResult);
             // 将匹配结果显示到主图像控件的渲染层（轮廓、匹配框、十字、文本等）
             _mainImageControl?.ResultRenderLayerControl?.SetDisplayCollector(shapeResult.Display);
         }
@@ -210,33 +210,6 @@ public partial class ShapeMatchToolDebugControl
     protected override bool CanExecuteTool()
     {
         return Parameters?.ImageSource != null && _dataProvider != null;
-    }
-
-    private void RefreshDebugImages(ShapeMatchResults result)
-    {
-        SetHImageSource(imgDebugGray, result.DebugGrayImage);
-        SetHImageSource(imgDebugMagnitude, result.DebugMagnitude);
-        SetHImageSource(imgDebugSearchMask, result.DebugSearchRegionMask);
-        SetHImageSource(imgDebugEdgeMap, result.DebugEdgeMap);
-    }
-
-    private static void SetHImageSource(Image? image, HImage? hImage)
-    {
-        if (image == null) return;
-        if (hImage == null || !hImage.IsInitialized())
-        {
-            image.Source = null;
-            return;
-        }
-
-        try
-        {
-            image.Source = ConvertHImageToBitmapSource(hImage);
-        }
-        catch
-        {
-            image.Source = null;
-        }
     }
 
     /// <summary>
@@ -654,6 +627,31 @@ public partial class ShapeMatchToolDebugControl
         if (templates == null) return;
         for (int i = 0; i < templates.Count; i++)
             templates[i].OrderIndex = i;
+    }
+
+    #endregion
+
+    #region 最小对比度模式同步
+
+    private void SyncMinContrastMode()
+    {
+        if (Parameters == null || cmbMinContrastMode == null) return;
+        bool isAuto = Parameters.IsMinContrastAuto.Value;
+        cmbMinContrastMode.SelectedIndex = isAuto ? 0 : 1;
+        SyncMinContrastEnabled();
+    }
+
+    private void OnMinContrastModeChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (Parameters == null) return;
+        Parameters.IsMinContrastAuto.Value = cmbMinContrastMode.SelectedIndex == 0;
+        SyncMinContrastEnabled();
+    }
+
+    private void SyncMinContrastEnabled()
+    {
+        if (minContrastConfig == null || cmbMinContrastMode == null) return;
+        minContrastConfig.IsEnabled = cmbMinContrastMode.SelectedIndex != 0;
     }
 
     #endregion

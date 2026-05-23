@@ -8,6 +8,7 @@ using OpenCvSharp;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.CvEngine;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 using SunEyeVision.Plugin.SDK.Validation;
 using SunEyeVision.Tool.ImageFilter.Views;
@@ -107,37 +108,37 @@ namespace SunEyeVision.Tool.ImageFilter
 
                     CvRegion? roiRegion = null;
 
-                    // ===== Step 2: 构建ROI区域 + 差集处理 =====
+                    // ===== Step 2: 构建ROI区域 =====
                     stepSw.Restart();
                     if (isRegionEnabled)
                     {
                         var inspectionRegions = parameters.GetRegionsByType(RegionType.Inspection);
                         var maskRegions = parameters.GetRegionsByType(RegionType.Mask);
-
-                        bool hasInspection = inspectionRegions.Any();
-                        bool hasMask = maskRegions.Any();
-
-                        if (hasInspection && hasMask)
-                        {
-                            using var inspRegion = CvRegion.CreateFromRegions(grayImage.Size, inspectionRegions);
-                            using var maskRegion = CvRegion.CreateFromRegions(grayImage.Size, maskRegions);
-
-                            CvOp.Difference(inspRegion, maskRegion, out roiRegion);
-
-                            parameters.LogInfo($"差集ROI区域创建成功（检测区-遮罩），白色像素数: {roiRegion.PixelCount}");
-                        }
-                        else if (hasInspection)
-                        {
-                            roiRegion = CvRegion.CreateFromRegions(grayImage.Size, inspectionRegions);
-                            parameters.LogInfo($"检测区域创建成功，白色像素数: {roiRegion.PixelCount}");
-                        }
-                        else
-                        {
-                            parameters.LogWarning("启用区域限制，但没有有效的检测区域");
-                        }
+                        roiRegion = CvRegionHelper.BuildROI(grayImage.Size, inspectionRegions, maskRegions);
+                        if (roiRegion != null)
+                            parameters.LogInfo($"ROI区域创建成功，白色像素数: {roiRegion.PixelCount}");
                     }
                     stepSw.Stop();
                     stepTimings.Add(("ROI构建", stepSw.ElapsedMilliseconds));
+
+                    // ===== Step 2.5: 位置修正（正向变换 ROI 掩码） =====
+                    if (parameters.IsPositionCorrectionEnabled?.Value == true)
+                    {
+                        stepSw.Restart();
+                        var bindingSource = parameters.PositionCorrectionBindingSource;
+                        if (bindingSource?.CurrentValue is AffineMatrix matrix)
+                        {
+                            roiRegion = CvRegionHelper.ApplyPositionCorrection(
+                                roiRegion, matrix, grayImage.Size);
+                            parameters.LogInfo($"位置修正已启用, 矩阵: {matrix}");
+                        }
+                        else
+                        {
+                            parameters.LogWarning("位置修正启用但绑定源无有效矩阵");
+                        }
+                        stepSw.Stop();
+                        stepTimings.Add(("位置修正", stepSw.ElapsedMilliseconds));
+                    }
 
                     try
                     {

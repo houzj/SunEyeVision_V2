@@ -11,6 +11,8 @@ using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
+using SunEyeVision.Plugin.SDK.Execution.Helpers;
+using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Validation;
 using SunEyeVision.Tool.ShapeMatch.Models;
 using SunEyeVision.Tool.ShapeMatch.Views;
@@ -105,42 +107,52 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
                 stepSw.Restart();
                 var inspectionRegions = parameters.GetRegionsByType(RegionType.Inspection);
                 var maskRegions = parameters.GetRegionsByType(RegionType.Mask);
-                bool hasInspection = inspectionRegions.Any();
-                bool hasMask = maskRegions.Any();
 
                 HRegion? roiRegion = null;
                 HRegion? inspHRegion = null;
                 HRegion? maskHRegion = null;
 
-                if (hasInspection || hasMask)
+                (roiRegion, inspHRegion, maskHRegion) = ToolRegionHelper.BuildHalconROI(
+                    width, height, inspectionRegions, maskRegions);
+
+                // 保存搜索区域掩码
+                if (roiRegion != null)
                 {
-                    if (hasInspection)
-                    {
-                        inspHRegion = BuildHRegion(inspectionRegions);
-                        roiRegion = new HRegion(inspHRegion);
-                    }
-                    else
-                    {
-                        roiRegion = new HRegion(0.0, 0.0, height - 1, width - 1);
-                    }
-
-                    if (hasMask)
-                    {
-                        using var diffTarget = roiRegion;
-                        maskHRegion = BuildHRegion(maskRegions);
-                        HOperatorSet.Difference(diffTarget, maskHRegion, out var diffObj);
-                        roiRegion = new HRegion(diffObj);
-                    }
-
-                    // 保存搜索区域掩码
-                    if (roiRegion != null)
-                    {
-                        HOperatorSet.RegionToBin(roiRegion!, out var maskObj, 255, 0, width, height);
-                        result.DebugSearchRegionMask = new HImage(maskObj);
-                    }
+                    HOperatorSet.RegionToBin(roiRegion!, out var maskObj, 255, 0, width, height);
+                    result.DebugSearchRegionMask = new HImage(maskObj);
                 }
                 stepSw.Stop();
                 stepTimings.Add(("ROI构建", stepSw.ElapsedMilliseconds));
+
+                // ===== Step 2.5: 位置修正（正向变换 ROI） =====
+                if (parameters.IsPositionCorrectionEnabled?.Value == true)
+                {
+                    stepSw.Restart();
+                    var bindingSource = parameters.PositionCorrectionBindingSource;
+                    if (bindingSource?.CurrentValue is AffineMatrix matrix)
+                    {
+                        parameters.LogInfo($"位置修正已启用, 矩阵: {matrix}");
+                        (roiRegion, inspHRegion, maskHRegion) = ToolRegionHelper.ApplyPositionCorrectionHalcon(
+                            roiRegion, inspHRegion, maskHRegion, matrix, width, height);
+
+                        // 更新搜索区域掩码
+                        if (result.DebugSearchRegionMask != null)
+                        {
+                            result.DebugSearchRegionMask.Dispose();
+                        }
+                        if (roiRegion != null)
+                        {
+                            HOperatorSet.RegionToBin(roiRegion!, out var maskObj, 255, 0, width, height);
+                            result.DebugSearchRegionMask = new HImage(maskObj);
+                        }
+                    }
+                    else
+                    {
+                        parameters.LogWarning("位置修正启用但绑定源无有效矩阵");
+                    }
+                    stepSw.Stop();
+                    stepTimings.Add(("位置修正", stepSw.ElapsedMilliseconds));
+                }
 
                 try
                 {
@@ -409,6 +421,7 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
                     Scale = matchScale,
                     TemplateName = template.Name,
                     TemplateId = template.Id,
+                    TemplateOrderIndex = template.OrderIndex,
                     BoundingBox = bbox,
                     ContourPoints = flatModelPoints,
                     ContourChains = modelContours,  // 保持链结构，渲染时逐链独立添加
@@ -587,86 +600,21 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
             }
         }
 
-        // 文本标注
+        // 文本标注（字符串数组 + 共享锚点自动换行）
         foreach (var match in result.MatchedItems)
         {
             float baseY = (float)match.CenterY;
             float baseX = (float)(match.CenterX + 10);
 
-            display.AddText(config.ScoreStyle, baseX, baseY,
-                $"Score={match.Score:F3}", wholePassed);
-            display.AddText(config.PositionStyle, baseX, baseY + 14,
-                $"({match.CenterX:F1}, {match.CenterY:F1})", wholePassed);
-            display.AddText(config.AngleStyle, baseX, baseY + 28,
-                $"Ang={match.Angle:F1}°", wholePassed);
-            display.AddText(config.ScaleStyle, baseX, baseY + 42,
-                $"Scale={match.Scale:F3}", wholePassed);
-        }
-    }
-
-    /// <summary>
-    /// 从 UI 区域定义创建 HRegion
-    /// </summary>
-    private static HRegion BuildHRegion(IEnumerable<RegionData> regions)
-    {
-        HRegion? result = null;
-        foreach (var region in regions.Where(r => r.IsEnabled))
-        {
-            if (region.Parameters is not ShapeParameters shape) continue;
-
-            HRegion? single = shape.ShapeType switch
+            display.AddText(config.ScoreStyle, baseX, baseY, new[]
             {
-                ShapeType.Rectangle => new HRegion(
-                    shape.CenterY - shape.Height / 2,
-                    shape.CenterX - shape.Width / 2,
-                    shape.CenterY + shape.Height / 2,
-                    shape.CenterX + shape.Width / 2),
-
-                ShapeType.Circle => new HRegion(
-                    shape.CenterY, shape.CenterX, shape.Radius),
-
-                ShapeType.Polygon when shape.Points.Count >= 3
-                    => BuildPolygonRegion(shape.Points),
-
-                ShapeType.RotatedRectangle => new HRegion(
-                    shape.CenterY - shape.Height / 2,
-                    shape.CenterX - shape.Width / 2,
-                    shape.CenterY + shape.Height / 2,
-                    shape.CenterX + shape.Width / 2),
-
-                _ => null
-            };
-
-            if (single != null)
-            {
-                if (result == null)
-                    result = single;
-                else
-                {
-                    HOperatorSet.Union2(result, single, out var unionObj);
-                    result.Dispose();
-                    single.Dispose();
-                    result = new HRegion(unionObj);
-                }
-            }
+                $"{match.TemplateName}",
+                $"S={match.Score:F3}",
+                $"A={match.Angle:F3}°"
+            }, wholePassed);
         }
-
-        return result ?? new HRegion();
     }
 
-    private static HRegion BuildPolygonRegion(IList<Point2D> points)
-    {
-        var rows = new HTuple();
-        var cols = new HTuple();
-        for (int i = 0; i < points.Count; i++)
-        {
-            rows = rows.TupleConcat(points[i].Y);
-            cols = cols.TupleConcat(points[i].X);
-        }
-        var region = new HRegion();
-        region.GenRegionPolygon(rows, cols);
-        return region;
-    }
 
     #region Halcon 参数映射
 

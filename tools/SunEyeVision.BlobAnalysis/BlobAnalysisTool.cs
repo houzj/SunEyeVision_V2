@@ -7,9 +7,11 @@ using System.Windows;
 using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
+using SunEyeVision.Plugin.SDK.Execution.Helpers;
 using SunEyeVision.Plugin.SDK.Validation;
 using SunEyeVision.Tool.BlobAnalysis.Models;
 using SunEyeVision.Tool.BlobAnalysis.Views;
@@ -125,35 +127,29 @@ namespace SunEyeVision.Tool.BlobAnalysis
                     stepSw.Restart();
                     var inspectionRegions = parameters.GetRegionsByType(RegionType.Inspection);
                     var maskRegions = parameters.GetRegionsByType(RegionType.Mask);
-                    bool hasInspection = inspectionRegions.Any();
-                    bool hasMask = maskRegions.Any();
+                    (roiRegion, inspHRegion, maskHRegion) = ToolRegionHelper.BuildHalconROI(
+                        imgWidth, imgHeight, inspectionRegions, maskRegions);
+                    stepSw.Stop();
+                    stepTimings.Add(("ROI构建", stepSw.ElapsedMilliseconds));
 
-                    if (hasInspection || hasMask)
+                    // ===== Step 2.5: 位置修正（正向变换 ROI） =====
+                    if (parameters.IsPositionCorrectionEnabled?.Value == true)
                     {
-                        // 构建检测区域（未设置时 = 全图）
-                        if (hasInspection)
+                        stepSw.Restart();
+                        var bindingSource = parameters.PositionCorrectionBindingSource;
+                        if (bindingSource?.CurrentValue is AffineMatrix matrix)
                         {
-                            inspHRegion = BuildHRegion(inspectionRegions); // 保持 tuple 供独立轮廓渲染
-                            HOperatorSet.Union1(inspHRegion, out var unionRegion); // 合并为单一处理域
-                            roiRegion = new HRegion(unionRegion);
+                            parameters.LogInfo($"位置修正已启用, 矩阵: {matrix}");
+                            (roiRegion, inspHRegion, maskHRegion) = ToolRegionHelper.ApplyPositionCorrectionHalcon(
+                                roiRegion, inspHRegion, maskHRegion, matrix, imgWidth, imgHeight);
                         }
                         else
                         {
-                            roiRegion = new HRegion(0.0, 0.0, (double)imgHeight - 1, (double)imgWidth - 1);
+                            parameters.LogWarning("位置修正启用但绑定源无有效矩阵");
                         }
-
-                        if (hasMask)
-                        {
-                            using var diffTarget = roiRegion;
-                            maskHRegion = BuildHRegion(maskRegions); // 保持 tuple 供独立轮廓渲染
-                            HOperatorSet.Union1(maskHRegion, out var maskUnion); // 合并后再做差集
-                            HOperatorSet.Difference(diffTarget, maskUnion, out var diffObj);
-                            maskUnion.Dispose();
-                            roiRegion = new HRegion(diffObj);
-                        }
+                        stepSw.Stop();
+                        stepTimings.Add(("位置修正", stepSw.ElapsedMilliseconds));
                     }
-                    stepSw.Stop();
-                    stepTimings.Add(("ROI构建", stepSw.ElapsedMilliseconds));
 
                     try
                     {
@@ -428,7 +424,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                         {
                                             if (blob.CentroidX > 0 || blob.CentroidY > 0)
                                                 display.AddText(areaStyle, areaStyle.PositionX, areaStyle.PositionY,
-                                                    $"#{blob.Label}: {blob.Area:F0}px", blob.JudgmentPassed);
+                                                    $"{blob.Label}: {blob.Area:F0}px", blob.JudgmentPassed);
                                         }
 
                                         stepSw.Stop();
@@ -488,73 +484,6 @@ namespace SunEyeVision.Tool.BlobAnalysis
             if (parameters == null)
                 return ValidationResult.Failure("参数不能为空");
             return parameters.Validate();
-        }
-
-        /// <summary>
-        /// 从 UI 区域定义创建 HRegion
-        /// </summary>
-        private static HRegion BuildHRegion(IEnumerable<RegionData> regions)
-        {
-            HRegion? result = null;
-            foreach (var region in regions.Where(r => r.IsEnabled))
-            {
-                if (region.Parameters is not ShapeParameters shape) continue;
-
-                HRegion? single = shape.ShapeType switch
-                {
-                    ShapeType.Rectangle => new HRegion(
-                        shape.CenterY - shape.Height / 2,
-                        shape.CenterX - shape.Width / 2,
-                        shape.CenterY + shape.Height / 2,
-                        shape.CenterX + shape.Width / 2),
-
-                    ShapeType.Circle => new HRegion(
-                        shape.CenterY, shape.CenterX, shape.Radius),
-
-                    ShapeType.Polygon when shape.Points.Count >= 3
-                        => BuildPolygonRegion(shape.Points),
-
-                    ShapeType.RotatedRectangle => new HRegion(
-                        shape.CenterY - shape.Height / 2,
-                        shape.CenterX - shape.Width / 2,
-                        shape.CenterY + shape.Height / 2,
-                        shape.CenterX + shape.Width / 2),
-
-                    _ => null
-                };
-
-                if (single != null)
-                {
-                    if (result == null)
-                        result = single;
-                    else
-                    {
-                        HOperatorSet.ConcatObj(result, single, out var concatObj);
-                        result.Dispose();
-                        single.Dispose();
-                        result = new HRegion(concatObj);
-                    }
-                }
-            }
-
-            return result ?? new HRegion();
-        }
-
-        /// <summary>
-        /// 从多边形点集构建 HRegion
-        /// </summary>
-        private static HRegion BuildPolygonRegion(IList<Point2D> points)
-        {
-            var rows = new HTuple();
-            var cols = new HTuple();
-            for (int i = 0; i < points.Count; i++)
-            {
-                rows = rows.TupleConcat(points[i].Y);
-                cols = cols.TupleConcat(points[i].X);
-            }
-            var region = new HRegion();
-            region.GenRegionPolygon(rows, cols);
-            return region;
         }
 
         public FrameworkElement? CreateDebugControl()

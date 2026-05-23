@@ -1,7 +1,8 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using OpenCvSharp;
+using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 using WpfRect = System.Windows.Rect;
 using WpfPoint = System.Windows.Point;
 
@@ -60,6 +61,53 @@ namespace SunEyeVision.Plugin.SDK.VisionAdapters
                 return GenEmptyObj();
             var m = ownsData ? mask : mask.Clone();
             return new CvRegion(m, mask.Size());
+        }
+
+        /// <summary>
+        /// From Regions from RegionData collection
+        /// </summary>
+        public static CvRegion CreateFromRegions(Size imageSize, IEnumerable<RegionData> regions)
+        {
+            var enabled = regions.Where(r => r.IsEnabled).ToList();
+            if (enabled.Count == 0)
+                return GenEmptyObj();
+
+            var combinedMask = new Mat(imageSize, MatType.CV_8UC1, Scalar.Black);
+
+            foreach (var region in enabled)
+            {
+                if (region.Parameters is not ShapeParameters shape) continue;
+
+                switch (shape.ShapeType)
+                {
+                    case ShapeType.Rectangle:
+                    case ShapeType.RotatedRectangle:
+                    {
+                        int x = (int)Math.Round(shape.CenterX - shape.Width / 2);
+                        int y = (int)Math.Round(shape.CenterY - shape.Height / 2);
+                        int w = (int)Math.Round(shape.Width);
+                        int h = (int)Math.Round(shape.Height);
+                        Cv2.Rectangle(combinedMask, new Rect(x, y, w, h), Scalar.White, -1);
+                        break;
+                    }
+                    case ShapeType.Circle:
+                    {
+                        int cx = (int)Math.Round(shape.CenterX);
+                        int cy = (int)Math.Round(shape.CenterY);
+                        int r = (int)Math.Round(shape.Radius);
+                        Cv2.Circle(combinedMask, cx, cy, r, Scalar.White, -1);
+                        break;
+                    }
+                    case ShapeType.Polygon when shape.Points.Count >= 3:
+                    {
+                        var pts = shape.Points.Select(p => new Point((int)p.X, (int)p.Y)).ToArray();
+                        Cv2.FillPoly(combinedMask, new[] { pts }, Scalar.White);
+                        break;
+                    }
+                }
+            }
+
+            return new CvRegion(combinedMask, imageSize);
         }
 
         public int Count => _items.Count;

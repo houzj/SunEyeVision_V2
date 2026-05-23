@@ -2221,14 +2221,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
         #region 命中测试和选择
 
-        public RegionData? HitTestRegion(Point point)
+        public RegionData? HitTestRegion(Point point, double tolerance = 0)
         {
             // 从后往前测试（后绘制的在上面）
             foreach (var region in _viewModel.Regions.Reverse())
             {
                 if (!region.IsVisible) continue;
 
-                if (IsPointInRegion(point, region))
+                if (IsPointInRegion(point, region, tolerance))
                 {
                     return region;
                 }
@@ -2237,61 +2237,62 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             return null;
         }
 
-        private bool IsPointInRegion(Point point, RegionData region)
+        private bool IsPointInRegion(Point point, RegionData region, double tolerance)
         {
             if (region.Parameters is not ShapeParameters shapeDef)
                 return false;
 
             return shapeDef.ShapeType switch
             {
-                ShapeType.Rectangle => IsPointInRectangle(point, shapeDef),
-                ShapeType.RotatedRectangle => IsPointInRotatedRectangle(point, shapeDef),
-                ShapeType.Circle => IsPointInCircle(point, shapeDef),
-                ShapeType.Line => IsPointNearLine(point, shapeDef),
-                ShapeType.Polygon => IsPointInPolygon(point, shapeDef),
+                ShapeType.Rectangle => IsPointInRectangle(point, shapeDef, tolerance),
+                ShapeType.RotatedRectangle => IsPointInRotatedRectangle(point, shapeDef, tolerance),
+                ShapeType.Circle => IsPointInCircle(point, shapeDef, tolerance),
+                ShapeType.Line => IsPointNearLine(point, shapeDef, tolerance),
+                ShapeType.Polygon => IsPointInPolygon(point, shapeDef, tolerance),
                 _ => false
             };
         }
 
         /// <summary>
-        /// 判断点是否在矩形内（参考ROI编辑器使用GetBounds和Contains）
+        /// 判断点是否在矩形内（支持容差扩展）
         /// </summary>
-        private bool IsPointInRectangle(Point point, ShapeParameters shapeDef)
+        private bool IsPointInRectangle(Point point, ShapeParameters shapeDef, double tolerance)
         {
             var bounds = new Rect(
-                shapeDef.CenterX - shapeDef.Width / 2,
-                shapeDef.CenterY - shapeDef.Height / 2,
-                shapeDef.Width,
-                shapeDef.Height
+                shapeDef.CenterX - shapeDef.Width / 2 - tolerance,
+                shapeDef.CenterY - shapeDef.Height / 2 - tolerance,
+                shapeDef.Width + tolerance * 2,
+                shapeDef.Height + tolerance * 2
             );
             return bounds.Contains(point);
         }
 
         /// <summary>
-        /// 判断点是否在圆形内
+        /// 判断点是否在圆形内（支持容差扩展）
         /// </summary>
-        private bool IsPointInCircle(Point point, ShapeParameters shapeDef)
+        private bool IsPointInCircle(Point point, ShapeParameters shapeDef, double tolerance)
         {
             var distance = Math.Sqrt(
                 Math.Pow(point.X - shapeDef.CenterX, 2) +
                 Math.Pow(point.Y - shapeDef.CenterY, 2));
-            return distance <= shapeDef.Radius;
+            return distance <= shapeDef.Radius + tolerance;
         }
 
         /// <summary>
-        /// 判断点是否在直线附近（10像素容差）
+        /// 判断点是否在直线附近（基础容差10像素 + 额外容差）
         /// </summary>
-        private bool IsPointNearLine(Point point, ShapeParameters shapeDef)
+        private bool IsPointNearLine(Point point, ShapeParameters shapeDef, double tolerance)
         {
+            const double baseTolerance = 10.0;
             return DistanceToLine(point,
                 new Point(shapeDef.StartX, shapeDef.StartY),
-                new Point(shapeDef.EndX, shapeDef.EndY)) < 10;
+                new Point(shapeDef.EndX, shapeDef.EndY)) < baseTolerance + tolerance;
         }
 
         /// <summary>
-        /// 判断点是否在旋转矩形内（使用坐标变换法）
+        /// 判断点是否在旋转矩形内（支持容差扩展）
         /// </summary>
-        private bool IsPointInRotatedRectangle(Point point, ShapeParameters shapeDef)
+        private bool IsPointInRotatedRectangle(Point point, ShapeParameters shapeDef, double tolerance)
         {
             // 1. 将测试点平移到以矩形中心为原点
             double dx = point.X - shapeDef.CenterX;
@@ -2307,9 +2308,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             double localX = dx * cos - dy * sin;
             double localY = dx * sin + dy * cos;
 
-            // 4. 判断是否在轴对齐矩形内
-            double halfW = shapeDef.Width / 2;
-            double halfH = shapeDef.Height / 2;
+            // 4. 判断是否在轴对齐矩形内（扩展容差）
+            double halfW = shapeDef.Width / 2 + tolerance;
+            double halfH = shapeDef.Height / 2 + tolerance;
 
             return Math.Abs(localX) <= halfW && Math.Abs(localY) <= halfH;
         }
@@ -2330,13 +2331,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         }
 
         /// <summary>
-        /// 射线法判断点是否在多边形内
+        /// 射线法判断点是否在多边形内（支持容差：在多边形边的容差范围内也可命中）
         /// </summary>
-        private bool IsPointInPolygon(Point point, ShapeParameters shapeDef)
+        private bool IsPointInPolygon(Point point, ShapeParameters shapeDef, double tolerance)
         {
             var points = shapeDef.Points;
             if (points.Count < 3) return false;
 
+            // 射线法判断点是否在多边形内部
             bool inside = false;
             int j = points.Count - 1;
 
@@ -2352,7 +2354,21 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 }
             }
 
-            return inside;
+            if (inside) return true;
+
+            // 容差检查：点到多边形的任意一条边的距离在容差范围内也视为命中
+            if (tolerance > 0)
+            {
+                for (int i = 0; i < points.Count; i++)
+                {
+                    var p1 = new Point(points[i].X, points[i].Y);
+                    var p2 = new Point(points[(i + 1) % points.Count].X, points[(i + 1) % points.Count].Y);
+                    if (DistanceToLine(point, p1, p2) <= tolerance)
+                        return true;
+                }
+            }
+
+            return false;
         }
 
         private void SelectRegion(RegionData? region)

@@ -10,6 +10,7 @@
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:local="clr-namespace:SunEyeVision.Tool.ImageFilter"
         xmlns:localConverters="clr-namespace:SunEyeVision.Tool.ImageFilter.Converters"
+        xmlns:results="clr-namespace:SunEyeVision.Plugin.SDK.Execution.Results;assembly=SunEyeVision.Plugin.SDK"
         mc:Ignorable="d"
         d:DesignHeight="550" d:DesignWidth="400"
         DataContext="{Binding Parameters, RelativeSource={RelativeSource Self}}">
@@ -66,6 +67,7 @@
                 Visibility="{Binding IsPositionCorrectionEnabled.Value, Converter={StaticResource BoolToVisibilityConverter}}">
               <controls:ParamBinding
                   x:Name="positionCorrectionBinding"
+                  DataType="{x:Type results:AffineMatrix}"
                   ParameterName="位置修正" Width="200"
                   BindingSource="{Binding PositionCorrectionBindingSource, Mode=TwoWay}"
                   BindingDisplayText="{Binding PositionCorrectionBindingDisplayText, Mode=TwoWay}"

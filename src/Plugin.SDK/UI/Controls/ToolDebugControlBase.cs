@@ -353,6 +353,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         #region 数据注入方法
 
         /// <summary>
+        /// 外部结果到达通知（基类默认空实现）
+        /// </summary>
+        /// <remarks>
+        /// 工作流引擎执行完成后调用，子类可重写以刷新依赖运行时的 UI 状态（如位置修正矩阵）。
+        /// </remarks>
+        public virtual void OnExternalResultArrived()
+        {
+            // 基类默认空实现
+        }
+
+        /// <summary>
         /// 设置当前节点
         /// </summary>
         public virtual void SetCurrentNode(object node)

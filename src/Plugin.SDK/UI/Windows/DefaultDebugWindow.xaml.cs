@@ -338,6 +338,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
         }
 
         /// <summary>
+        /// 外部结果到达通知（委托给内部控件）
+        /// </summary>
+        /// <remarks>
+        /// 工作流引擎执行完成后调用，触发控件刷新依赖运行时的 UI 状态。
+        /// </remarks>
+        public void OnExternalResultArrived()
+        {
+            _toolControl?.OnExternalResultArrived();
+        }
+
+        /// <summary>
         /// 设置主窗口 ImageControl 引用（委托给内部控件）
         /// </summary>
         /// <remarks>

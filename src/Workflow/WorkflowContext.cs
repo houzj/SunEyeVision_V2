@@ -604,7 +604,7 @@ namespace SunEyeVision.Workflow
         public T? GetNodeResult<T>(string nodeId) where T : ToolResults
         {
             var result = GetNodeResult(nodeId);
-            if (result?.ToolResult is T typedResult)
+            if (result?.Result is T typedResult)
             {
                 return typedResult;
             }

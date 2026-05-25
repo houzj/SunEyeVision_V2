@@ -1,5 +1,4 @@
-using System;
-using System.Collections.Concurrent;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -47,13 +46,7 @@ namespace SunEyeVision.Workflow
         // 执行统计
         private DateTime _executionStartTime;
 
-        // 统一的执行结果字典（合并了nodeResults、nodeExecutionResults、toolResultsCache）
-        private readonly ConcurrentDictionary<string, NodeExecutionResult> _executionResults = new();
-
-        // 数据源查询服务
-        private readonly DataSourceQueryService _dataSourceQueryService;
-
-        private readonly ConcurrentDictionary<string, object> _nodeOutputs = new();
+        // ★ SSOT 已转移到 WorkflowContext，引擎不再维护重复缓存
 
         /// <summary>
         /// 当前执行状态
@@ -94,28 +87,7 @@ namespace SunEyeVision.Workflow
             _toolExecutor = toolExecutor ?? new ToolExecutor(new ParameterResolver());
             _currentState = WorkflowExecutionState.Idle;
 
-            // 初始化数据源查询服务
-            var connectionProvider = workflowEngine as IWorkflowConnectionProvider;
-            var nodeInfoProvider = workflowEngine as INodeInfoProvider;
-
-            // 创建属性元数据提供者
-            var metadataProvider = new PropertyMetadataProviderAdapter();
-
-            _logger.LogInfo($"========== 初始化数据源查询服务 ==========");
-            _logger.LogInfo($"WorkflowEngine 类型: {workflowEngine.GetType().FullName}");
-            _logger.LogInfo($"connectionProvider: {(connectionProvider != null ? "✅ 已注入" : "❌ 为 null")}");
-            _logger.LogInfo($"nodeInfoProvider: {(nodeInfoProvider != null ? "✅ 已注入" : "❌ 为 null")}");
-            _logger.LogInfo($"metadataProvider: {(metadataProvider != null ? "✅ 已注入" : "❌ 为 null")}");
-
-            _dataSourceQueryService = new DataSourceQueryService(
-                connectionProvider,
-                nodeInfoProvider,
-                _logger,
-                metadataProvider
-            );
-
-            _logger.LogInfo($"DataSourceQueryService 实例化完成");
-            _logger.LogInfo($"=============================================");
+            // ★ SSOT 统一由 WorkflowContext 管理，引擎不再维护独立 DSQS
         }
 
         #region 同步执行
@@ -182,13 +154,16 @@ namespace SunEyeVision.Workflow
                 }
             }
 
+            // 从 SSOT (WorkflowContext) 获取所有节点结果
+            var allResults = context.GetAllNodeResults().ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
             // 合并所有节点结果
-            result.Success = _executionResults.Values.All(r => r.Success);
+            result.Success = allResults.Values.All(r => r.Success);
             result.ExecutionTime = DateTime.Now - _executionStartTime;
-            result.NodeResults = _executionResults.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+            result.NodeResults = allResults;
 
             // 收集错误
-            foreach (var nodeResult in _executionResults.Values.Where(r => !r.Success))
+            foreach (var nodeResult in allResults.Values.Where(r => !r.Success))
             {
                 if (nodeResult.ErrorMessages?.Any() == true)
                 {
@@ -200,16 +175,21 @@ namespace SunEyeVision.Workflow
             }
 
             // 合并成功节点的输出
-            if (result.Success && _executionResults.Any(r => r.Value.Outputs?.Any() == true))
+            if (result.Success && allResults.Any(r => r.Value.Result != null))
             {
-                var lastSuccessfulOutput = _executionResults.Values
-                    .LastOrDefault(r => r.Success && r.Outputs?.Any() == true);
-                if (lastSuccessfulOutput != null)
+                var lastSuccessful = allResults.Values
+                    .LastOrDefault(r => r.Success && r.Result != null);
+                if (lastSuccessful != null)
                 {
-                    result.Outputs = new Dictionary<string, object>
+                    var images = lastSuccessful.Result.GetDisplayImages();
+                    var firstImage = images.Values.FirstOrDefault(m => m != null && !m.IsEmpty);
+                    if (firstImage != null)
                     {
-                        { "FinalResult", lastSuccessfulOutput.Outputs.Values.Last() }
-                    };
+                        result.Outputs = new Dictionary<string, object>
+                        {
+                            { "FinalResult", firstImage }
+                        };
+                    }
                 }
             }
 
@@ -217,8 +197,8 @@ namespace SunEyeVision.Workflow
             _logger.LogInfo($"========== 工作流执行总结 ==========");
             _logger.LogInfo($"  总执行节点: {totalExecutedNodes}");
             _logger.LogInfo($"  执行组数: {parallelGroups.Count}");
-            _logger.LogInfo($"  成功节点: {_executionResults.Values.Count(r => r.Success)}");
-            _logger.LogInfo($"  失败节点: {_executionResults.Values.Count(r => !r.Success)}");
+            _logger.LogInfo($"  成功节点: {allResults.Values.Count(r => r.Success)}");
+            _logger.LogInfo($"  失败节点: {allResults.Values.Count(r => !r.Success)}");
             _logger.LogInfo($"  总耗时: {(DateTime.Now - _executionStartTime).TotalMilliseconds:F2} ms");
             _logger.LogInfo($"======================================");
 
@@ -259,23 +239,18 @@ namespace SunEyeVision.Workflow
                     context.UpdateNodeStatus(node.Id, NodeStatus.Running);
                     NodeStatusChanged?.Invoke(this, new NodeExecutionStatus { NodeId = node.Id, Status = NodeStatus.Running });
 
-                    var nodeInput = GetNodeInput(workflow, node, defaultInput);
+                    var nodeInput = GetNodeInput(workflow, node, defaultInput, context);
                     var nodeResult = await ExecuteNode(node, nodeInput, context, workflow);
 
                     var duration = nodeResult.Duration?.TotalMilliseconds ?? 0;
                     _logger.Info($"执行完成, 状态: {(nodeResult.Success ? "? 成功" : "? 失败")}, 耗时: {duration:F2}ms", node.Name);
 
-                    if (nodeResult.Success && nodeResult.Outputs?.Any() == true)
+                    if (nodeResult.Success && nodeResult.Result != null)
                     {
-                        var firstOutput = nodeResult.Outputs.Values.FirstOrDefault();
-                        if (firstOutput != null)
-                        {
-                            // 更新数据提供者
-                            OnNodeExecuted(node.Id, firstOutput);
-                        }
+                        // ★ 结果已通过 context.SetNodeResult 存入 SSOT
                     }
 
-                    _executionResults.TryAdd(node.Id, nodeResult);
+                    context.SetNodeResult(node.Id, nodeResult);
                     context.UpdateNodeStatus(node.Id, nodeResult.Success ? NodeStatus.Completed : NodeStatus.Failed);
                     NodeStatusChanged?.Invoke(this, new NodeExecutionStatus { NodeId = node.Id, Status = nodeResult.Success ? NodeStatus.Completed : NodeStatus.Failed });
 
@@ -308,23 +283,18 @@ namespace SunEyeVision.Workflow
                     context.UpdateNodeStatus(node.Id, NodeStatus.Running);
                     NodeStatusChanged?.Invoke(this, new NodeExecutionStatus { NodeId = node.Id, Status = NodeStatus.Running });
 
-                    var nodeInput = GetNodeInput(workflow, node, defaultInput);
+                    var nodeInput = GetNodeInput(workflow, node, defaultInput, context);
                     var nodeResult = await ExecuteNode(node, nodeInput, context, workflow);
 
                     var duration = nodeResult.Duration?.TotalMilliseconds ?? 0;
                     _logger.Info($"执行完成, 状态: {(nodeResult.Success ? "? 成功" : "? 失败")}, 耗时: {duration:F2}ms", node.Name);
 
-                    if (nodeResult.Success && nodeResult.Outputs?.Any() == true)
+                    if (nodeResult.Success && nodeResult.Result != null)
                     {
-                        var firstOutput = nodeResult.Outputs.Values.FirstOrDefault();
-                        if (firstOutput != null)
-                        {
-                            // 更新数据提供者
-                            OnNodeExecuted(node.Id, firstOutput);
-                        }
+                        // ★ 结果已通过 context.SetNodeResult 存入 SSOT
                     }
 
-                    _executionResults.TryAdd(nodeId, nodeResult);
+                    context.SetNodeResult(nodeId, nodeResult);
                     context.UpdateNodeStatus(nodeId, nodeResult.Success ? NodeStatus.Completed : NodeStatus.Failed);
                     NodeStatusChanged?.Invoke(this, new NodeExecutionStatus { NodeId = nodeId, Status = nodeResult.Success ? NodeStatus.Completed : NodeStatus.Failed });
 
@@ -482,7 +452,7 @@ namespace SunEyeVision.Workflow
         /// - 单个父节点：返回父节点输出（object类型）
         /// - 多个父节点：返回 List<object>，包含所有父节点输出
         /// </returns>
-        private object GetNodeInput(Workflow workflow, WorkflowNodeBase node, object defaultInput)
+        private object GetNodeInput(Workflow workflow, WorkflowNodeBase node, object defaultInput, WorkflowContext context)
         {
             // 查找所有父节点
             var parentIds = workflow.Connections
@@ -496,13 +466,19 @@ namespace SunEyeVision.Workflow
                 return defaultInput;
             }
 
-            // 收集所有可用父节点的输出
+            // 从 SSOT (WorkflowContext) 收集所有可用父节点的输出
             var parentOutputs = new List<object>();
             foreach (var parentId in parentIds)
             {
-                if (_executionResults.TryGetValue(parentId, out var parentResult) && parentResult.Outputs?.Any() == true)
+                var parentResult = context.GetNodeResult(parentId);
+                if (parentResult?.Result != null)
                 {
-                    parentOutputs.Add(parentResult.Outputs.Values.FirstOrDefault());
+                    var images = parentResult.Result.GetDisplayImages();
+                    var firstImage = images.Values.FirstOrDefault(m => m != null && !m.IsEmpty);
+                    if (firstImage != null)
+                    {
+                        parentOutputs.Add(firstImage);
+                    }
                 }
             }
 
@@ -564,11 +540,7 @@ namespace SunEyeVision.Workflow
                 switch (node)
                 {
                     case AlgorithmNode algorithmNode:
-                        var algoResult = ExecuteAlgorithmNode(algorithmNode, matInput);
-                        nodeResult.Outputs = algoResult.Outputs;
-                        nodeResult.Success = algoResult.Success;
-                        nodeResult.ErrorMessages = algoResult.ErrorMessages;
-                        nodeResult.ToolResult = algoResult.ToolResult;
+                        nodeResult = ExecuteAlgorithmNode(algorithmNode, matInput, context);
                         break;
 
                     case SubroutineNode subroutineNode:
@@ -576,18 +548,17 @@ namespace SunEyeVision.Workflow
                         break;
 
                     case ConditionNode conditionNode:
-                        var condResult = ExecuteConditionNode(conditionNode, matInput, context);
-                        nodeResult.Outputs = condResult.Outputs;
-                        nodeResult.Success = condResult.Success;
-                        nodeResult.ErrorMessages = condResult.ErrorMessages;
+                        nodeResult = ExecuteConditionNode(conditionNode, matInput, context);
                         break;
 
                     case WorkflowNodeBase WorkflowNodeBase when WorkflowNodeBase.NodeType == NodeType.Start:
                         // Start节点直接传递输入
-                        nodeResult.Outputs = new Dictionary<string, object>
+                        var genericResults = new GenericToolResults
                         {
-                            { "Output", inputImage ?? context.GetVariable("InputImage") }
+                            Status = ExecutionStatus.Success
                         };
+                        genericResults.AddResultItem("Output", inputImage ?? context.GetVariable("InputImage"));
+                        nodeResult.Result = genericResults;
                         nodeResult.Success = true;
                         break;
 
@@ -618,27 +589,23 @@ namespace SunEyeVision.Workflow
         /// </remarks>
         /// <param name="node">算法节点</param>
         /// <param name="inputImage">输入图像（作为 ResolvedInputImage 的回退值）</param>
-        /// <param name="nodeResults">节点执行结果缓存，用于参数绑定解析</param>
-        private NodeExecutionResult ExecuteAlgorithmNode(AlgorithmNode node, IVisionImage? inputImage)
+        /// <param name="context">工作流上下文（SSOT，用于参数绑定解析）</param>
+        private NodeExecutionResult ExecuteAlgorithmNode(AlgorithmNode node, IVisionImage? inputImage, WorkflowContext context)
         {
             var result = new NodeExecutionResult { NodeId = node.Id, StartTime = DateTime.Now, EndTime = DateTime.Now };
 
-            // 构建工具结果字典用于参数绑定解析
-            var toolResultsDict = _executionResults.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToolResult);
+            // 从 SSOT (WorkflowContext) 构建工具结果字典用于参数绑定解析（过滤空结果）
+            var toolResultsDict = context.GetAllNodeResults()
+                .Where(kvp => kvp.Value.Result != null)
+                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Result!);
 
             // 调用 AlgorithmNode.Execute，图像通过 ResolvedInputImage 传递
             var algorithmResult = node.Execute(inputImage, toolResultsDict);
 
-            if (algorithmResult.Success && algorithmResult.ResultImage != null)
+            if (algorithmResult.Success && algorithmResult.ToolResults != null)
             {
-                result.Outputs = new Dictionary<string, object>
-                {
-                    { "Output", algorithmResult.ResultImage }
-                };
                 result.Success = true;
-
-                // 传递原始工具结果
-                result.ToolResult = algorithmResult.ToolResults;
+                result.Result = algorithmResult.ToolResults;
             }
             else if (!algorithmResult.Success)
             {
@@ -678,7 +645,15 @@ namespace SunEyeVision.Workflow
             
             if (result.Success && result.Outputs?.Any() == true)
             {
-                nodeResult.Outputs = result.Outputs;
+                var subroutineResults = new GenericToolResults
+                {
+                    Status = ExecutionStatus.Success
+                };
+                foreach (var output in result.Outputs)
+                {
+                    subroutineResults.AddResultItem(output.Key, output.Value);
+                }
+                nodeResult.Result = subroutineResults;
             }
             else if (!result.Success)
             {
@@ -721,11 +696,13 @@ namespace SunEyeVision.Workflow
                 EndTime = DateTime.Now,
                 Success = true
             };
-            nodeResult.Outputs = new Dictionary<string, object>
+            var conditionResults = new GenericToolResults
             {
-                { "ConditionResult", conditionResult },
-                { "Output", inputImage }
+                Status = ExecutionStatus.Success
             };
+            conditionResults.AddResultItem("ConditionResult", conditionResult);
+            conditionResults.AddResultItem("Output", inputImage);
+            nodeResult.Result = conditionResults;
 
             return nodeResult;
         }
@@ -796,109 +773,14 @@ namespace SunEyeVision.Workflow
 
         #endregion
 
-        #region 数据源集成
+        #region 数据源集成（SSOT 已转移到 WorkflowContext）
 
         /// <summary>
-        /// 执行节点前准备数据源
+        /// 执行节点前准备数据源（SSOT 模式下为空操作，数据已存储在 WorkflowContext 中）
         /// </summary>
         public void PrepareNodeExecution(string nodeId, IEnumerable<string> parentNodeIds)
         {
-            // 设置当前节点ID
-            _dataSourceQueryService.CurrentNodeId = nodeId;
-
-            // 收集所有父节点的输出并更新到查询服务
-            foreach (var parentId in parentNodeIds)
-            {
-                if (_nodeOutputs.TryGetValue(parentId, out var output))
-                {
-                    // 将输出转换为 ToolResults
-                    var toolResults = new GenericToolResults
-                    {
-                        Status = ExecutionStatus.Success
-                    };
-
-                    // 尝试添加输出到结果
-                    if (output != null)
-                    {
-                        toolResults.AddResultItem("Output", output);
-                    }
-
-                    _dataSourceQueryService.SetNodeResult(parentId, toolResults);
-                }
-            }
-        }
-
-        /// <summary>
-        /// 打开节点调试窗口
-        /// </summary>
-        public void OpenNodeDebugWindow(string nodeId)
-        {
-            var workflow = _workflowEngine.GetAllWorkflows().FirstOrDefault(w =>
-                w.Nodes.Any(n => n.Id == nodeId));
-
-            if (workflow == null) return;
-
-            var node = workflow.Nodes.FirstOrDefault(n => n.Id == nodeId);
-            if (node == null) return;
-
-            // 通过 ToolRegistry 查找工具（通过 ToolType 匹配显示名称或ID）
-            var allMetadata = ToolRegistry.GetAllToolMetadata();
-            var toolMetadata = allMetadata.FirstOrDefault(m =>
-                m.DisplayName == node.ToolType ||
-                m.Id == node.ToolType);
-            if (toolMetadata == null) return;
-
-            // 创建工具实例
-            var tool = ToolRegistry.CreateToolInstance(toolMetadata.Id);
-            if (tool == null) return;
-
-            // 创建调试窗口
-            var debugWindow = tool.CreateDebugWindow();
-            if (debugWindow == null) return;
-
-            // 设置当前节点ID
-            _dataSourceQueryService.CurrentNodeId = nodeId;
-
-            // 注入数据提供者（支持 SetDataProvider 方法的窗口）
-            var setDataProviderMethod = debugWindow.GetType().GetMethod("SetDataProvider");
-            if (setDataProviderMethod != null)
-            {
-                setDataProviderMethod.Invoke(debugWindow, new object[] { _dataSourceQueryService });
-            }
-
-            debugWindow.Show();
-        }
-
-        /// <summary>
-        /// 节点执行完成后更新输出
-        /// </summary>
-        public void OnNodeExecuted(string nodeId, object output)
-        {
-            _nodeOutputs[nodeId] = output;
-
-            // 将输出转换为 ToolResults 并更新到查询服务
-            var toolResults = new GenericToolResults
-            {
-                Status = ExecutionStatus.Success
-            };
-
-            if (output != null)
-            {
-                toolResults.AddResultItem("Output", output);
-            }
-
-            _dataSourceQueryService.SetNodeResult(nodeId, toolResults);
-
-            // 刷新输出订阅
-            _dataSourceQueryService.RefreshOutputs();
-        }
-
-        /// <summary>
-        /// 获取数据源查询服务
-        /// </summary>
-        public DataSourceQueryService GetDataSourceQueryService()
-        {
-            return _dataSourceQueryService;
+            // ★ SSOT: 数据已通过 context.SetNodeResult 存入 WorkflowContext
         }
 
         #endregion

@@ -453,11 +453,10 @@ namespace SunEyeVision.UI.Services.Workflow
         /// </summary>
         private ToolResults CreateToolResultsFromNodeResult(NodeExecutionResult nodeResult)
         {
-            // ★ 关键日志：节点执行结果状态
-// 优先使用原始工具结果
-            if (nodeResult.ToolResult != null)
+            // 优先使用原始工具结果
+            if (nodeResult.Result != null)
             {
-return nodeResult.ToolResult;
+                return nodeResult.Result;
             }
 
             var results = new GenericToolResults
@@ -466,15 +465,6 @@ return nodeResult.ToolResult;
                 ExecutionTimeMs = (long)(nodeResult.Duration?.TotalMilliseconds ?? 0),
                 Timestamp = DateTime.Now
             };
-
-            // 使用输出数据
-            if (nodeResult.Outputs != null)
-            {
-                foreach (var output in nodeResult.Outputs)
-                {
-                    results.AddResultItem(output.Key, output.Value, ResultItemType.Object);
-                }
-            }
 
             // 添加错误消息
             if (nodeResult.ErrorMessages != null)

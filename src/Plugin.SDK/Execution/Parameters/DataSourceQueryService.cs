@@ -27,9 +27,14 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     public class DataSourceQueryService : IDataSourceQueryService
     {
         /// <summary>
-        /// 节点结果缓存
+        /// 节点结果缓存（本地覆盖，用于"正在执行的实时数据"）
         /// </summary>
         private readonly ConcurrentDictionary<string, ToolResults> _nodeResults = new ConcurrentDictionary<string, ToolResults>();
+
+        /// <summary>
+        /// SSOT 读取器（引用 WorkflowContext 中的持久结果，仅作为回退读取，不写回）
+        /// </summary>
+        private Func<string, ToolResults?>? _ssotReader;
 
         /// <summary>
         /// Logger
@@ -135,6 +140,39 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             _nodeInfoProvider = nodeInfoProvider;
             _logger = logger;
             _metadataProvider = metadataProvider;
+        }
+
+        /// <summary>
+        /// 设置 SSOT 读取器，使 DSQS 能回退到外部持久化结果
+        /// </summary>
+        /// <param name="reader">给定节点ID返回 ToolResults 的委托</param>
+        public void SetSootReader(Func<string, ToolResults?> reader)
+        {
+            _ssotReader = reader;
+        }
+
+        /// <summary>
+        /// 从外部源批量初始化本地缓存（创建 DSQS 时调用，预加载已有执行结果）
+        /// </summary>
+        /// <param name="source">节点ID到 ToolResults 的映射</param>
+        public void InitializeFromSource(Dictionary<string, ToolResults> source)
+        {
+            foreach (var kvp in source)
+            {
+                _nodeResults[kvp.Key] = kvp.Value;
+            }
+        }
+
+        /// <summary>
+        /// 从外部源批量初始化本地缓存（创建 DSQS 时调用，预加载已有执行结果）
+        /// </summary>
+        /// <param name="source">节点ID到 ToolResults 的映射</param>
+        public void InitializeFromSource(IEnumerable<KeyValuePair<string, ToolResults>> source)
+        {
+            foreach (var kvp in source)
+            {
+                _nodeResults[kvp.Key] = kvp.Value;
+            }
         }
 
         /// <inheritdoc/>
@@ -362,12 +400,15 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         }
 
         /// <summary>
-        /// 从缓存获取节点执行结果
+        /// 从缓存或 SSOT 获取节点执行结果
         /// </summary>
         private ToolResults? GetNodeResultFromCache(string nodeId)
         {
-            _nodeResults.TryGetValue(nodeId, out var result);
-            return result;
+            if (_nodeResults.TryGetValue(nodeId, out var result))
+                return result;
+            if (_ssotReader != null)
+                return _ssotReader(nodeId);
+            return null;
         }
 
         /// <inheritdoc/>
@@ -457,7 +498,15 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <inheritdoc/>
         public bool HasNodeExecuted(string nodeId)
         {
-            return _nodeResults.ContainsKey(nodeId);
+            if (_nodeResults.ContainsKey(nodeId))
+                return true;
+            if (_ssotReader != null)
+            {
+                var result = _ssotReader(nodeId);
+                if (result != null)
+                    return true;
+            }
+            return false;
         }
 
         /// <inheritdoc/>

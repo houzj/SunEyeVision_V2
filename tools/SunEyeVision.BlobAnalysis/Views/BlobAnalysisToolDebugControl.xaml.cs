@@ -1,7 +1,8 @@
-using System;
+﻿using System;
 using System.Windows;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Metadata;
@@ -49,6 +50,9 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
                     $"Old={(oldParams != null ? oldParams.GetHashCode().ToString("X8") : "null")} | " +
                     $"New={(newParams != null ? newParams.GetHashCode().ToString("X8") : "null")}",
                     "BlobAnalysisTool");
+
+                // 参数变更时立即更新位置修正矩阵
+                control.UpdatePositionCorrectionMatrix();
             }
         }
 
@@ -80,6 +84,7 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
             if (regionManager != null && imageControl != null)
             {
                 regionManager.SetMainImageControl(imageControl);
+                UpdatePositionCorrectionMatrix();
                 PluginLogger.Info("已为区域管理器设置主窗口ImageControl", "BlobAnalysisTool");
             }
         }
@@ -222,7 +227,55 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
 
             var runParams = (BlobAnalysisParameters)Parameters!;
             runParams.ResolvedInputImage = image;
-            return blobTool.Run(runParams);
+            var result = blobTool.Run(runParams);
+
+            // 执行完成后，设置位置修正矩阵到 ROI 编辑器
+            UpdatePositionCorrectionMatrix();
+
+            return result;
+        }
+
+        /// <summary>
+        /// 从数据提供者实时查询位置修正矩阵并设置到 ROI 编辑器
+        /// 不依赖 AvailableDataSource.CurrentValue 快照，避免快照过期问题
+        /// </summary>
+        internal void UpdatePositionCorrectionMatrix()
+        {
+            PluginLogger.Info("[UpdatePositionCorrectionMatrix] 开始查询矩阵", "BlobAnalysisTool");
+
+            if (Parameters?.IsPositionCorrectionEnabled?.Value == true
+                && _dataProvider != null
+                && Parameters.PositionCorrectionBindingSource != null)
+            {
+                var source = Parameters.PositionCorrectionBindingSource;
+
+                PluginLogger.Info($"[UpdatePositionCorrectionMatrix] 查询参数 | " +
+                    $"SourceNodeId={source.SourceNodeId} | PropertyName={source.PropertyName}",
+                    "BlobAnalysisTool");
+
+                var matrix = _dataProvider.GetPropertyValue(
+                    source.SourceNodeId, source.PropertyName) as AffineMatrix;
+
+                PluginLogger.Info($"[UpdatePositionCorrectionMatrix] 查询结果 | Matrix={matrix}", "BlobAnalysisTool");
+
+                if (matrix != null)
+                {
+                    Parameters.LogInfo($"设置位置修正矩阵到 ROI 编辑器 (实时查询): {matrix}");
+                    regionManager?.SetPositionCorrectionMatrix(matrix);
+                    return;
+                }
+            }
+            else
+            {
+                PluginLogger.Warning($"[UpdatePositionCorrectionMatrix] 条件不满足 | " +
+                    $"IsEnabled={Parameters?.IsPositionCorrectionEnabled?.Value} | " +
+                    $"DataProvider={_dataProvider != null} | " +
+                    $"HasBindingSource={Parameters?.PositionCorrectionBindingSource != null}",
+                    "BlobAnalysisTool");
+            }
+
+            PluginLogger.Warning("[UpdatePositionCorrectionMatrix] 矩阵为null，清空区域变换", "BlobAnalysisTool");
+            regionManager?.SetPositionCorrectionMatrix(null);
         }
 
         protected override bool CanExecuteTool()
@@ -230,12 +283,36 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
             return Parameters?.ImageSource != null && _dataProvider != null;
         }
 
+        /// <summary>
+        /// 外部结果到达通知 - 工作流引擎执行完成后调用，刷新位置修正矩阵
+        /// </summary>
+        public void OnExternalResultArrived()
+        {
+            PluginLogger.Info("[OnExternalResultArrived] 外部结果到达，刷新位置修正矩阵", "BlobAnalysisTool");
+
+            PluginLogger.Info($"[OnExternalResultArrived] 前置检查 | " +
+                $"IsEnabled={Parameters?.IsPositionCorrectionEnabled?.Value} | " +
+                $"DataProvider={_dataProvider != null} | " +
+                $"BindingSource={Parameters?.PositionCorrectionBindingSource != null}",
+                "BlobAnalysisTool");
+
+            UpdatePositionCorrectionMatrix();
+        }
+
         #endregion
 
         #region IToolControlInitializer 实现
 
+        private bool _isInitialized = false;
+
         public override async System.Threading.Tasks.Task InitializeAsync()
         {
+            // ★ 延迟到所有 Set 方法（SetCurrentNode, SetParameters, SetDataProvider）完成后才更新位置修正矩阵
+            if (!_isInitialized)
+            {
+                _isInitialized = true;
+                UpdatePositionCorrectionMatrix();
+            }
             await System.Threading.Tasks.Task.CompletedTask;
         }
 

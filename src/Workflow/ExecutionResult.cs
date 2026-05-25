@@ -138,11 +138,6 @@ namespace SunEyeVision.Workflow
         public TimeSpan? Duration => EndTime.HasValue ? EndTime.Value - StartTime : null;
 
         /// <summary>
-        /// 输出数据
-        /// </summary>
-        public Dictionary<string, object> Outputs { get; set; }
-
-        /// <summary>
         /// 错误消息
         /// </summary>
         public List<string> ErrorMessages { get; set; }
@@ -153,13 +148,12 @@ namespace SunEyeVision.Workflow
         public IReadOnlyList<ResultItem>? ResultItems { get; set; }
 
         /// <summary>
-        /// 原始工具结果引用（用于保留完整结果信息）
+        /// 节点执行结果（强类型 ToolResults，单一真相源）
         /// </summary>
-        public ToolResults? ToolResult { get; set; }
+        public ToolResults? Result { get; set; }
 
         public NodeExecutionResult()
         {
-            Outputs = new Dictionary<string, object>();
             ErrorMessages = new List<string>();
         }
     }

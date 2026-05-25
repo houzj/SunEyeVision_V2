@@ -113,6 +113,9 @@ namespace SunEyeVision.UI.ViewModels
         // 数据提供者缓存（用于在节点执行完成后更新前置节点输出）
         private readonly Dictionary<string, IDataSourceQueryService> _nodeDataProviders = new();
 
+        // 调试窗口缓存（用于在节点执行完成后通知 ToolDebugControl 刷新运行时状态）
+        private readonly Dictionary<string, System.Windows.Window> _nodeDebugWindows = new();
+
         private string _logText = "[系统] 等待中...\n";
         private bool _hasModuleResults;
 
@@ -269,9 +272,9 @@ namespace SunEyeVision.UI.ViewModels
                     var executionResult = value != null ? CurrentWorkflowContext?.GetNodeResult(value.Id) : null;
                     var toolId = (value as WorkflowNodeBase)?.ToolType ?? "";
 
-                    if (executionResult?.ToolResult != null)
+                    if (executionResult?.Result != null)
                     {
-                        _nodeResultManager.RefreshResultDisplay((Models.WorkflowNode?)value, executionResult.ToolResult);
+                        _nodeResultManager.RefreshResultDisplay((Models.WorkflowNode?)value, executionResult.Result);
                     }
                     else if (value != null)
                     {
@@ -2335,9 +2338,9 @@ SplitterPosition = position;
                                         if (SelectedNode != null && SelectedNode.IsSelected)
                                         {
                                             var executionResult = CurrentWorkflowContext?.GetNodeResult(SelectedNode.Id);
-                                            if (executionResult?.ToolResult != null)
+                                            if (executionResult?.Result != null)
                                             {
-                                                _nodeResultManager.RefreshResultDisplay(SelectedNode, executionResult.ToolResult);
+                                                _nodeResultManager.RefreshResultDisplay(SelectedNode, executionResult.Result);
                                             }
                                         }
 
@@ -2622,7 +2625,7 @@ SplitterPosition = position;
         private void SetDisplayImageFromSource(AvailableDataSource source)
         {
             var executionResult = CurrentWorkflowContext?.GetNodeResult(source.SourceNodeId);
-            if (executionResult?.ToolResult == null)
+            if (executionResult?.Result == null)
             {
                 // 节点未执行过，无可显示图像 → 清除残留
                 DisplayImage = null;
@@ -2631,7 +2634,7 @@ SplitterPosition = position;
 
             // 通过 NodeResultManager 获取对应的 Mat 并转换为 BitmapSource
             var bitmapSource = _nodeResultManager.GetDisplayImageFromSource(
-                executionResult.ToolResult, source.PropertyName);
+                executionResult.Result, source.PropertyName);
             if (bitmapSource != null)
             {
                 DisplayImage = bitmapSource;
@@ -2719,11 +2722,11 @@ SplitterPosition = position;
 
                 // ★ 加载缓存结果（节点已执行过时，立即填充数据分析控件）
                 var cachedResult = CurrentWorkflowContext?.GetNodeResult(selectedNode.Id);
-                if (cachedResult?.ToolResult != null && dataAnalysisControl is IToolControlDataAnalysis daControl)
+                if (cachedResult?.Result != null && dataAnalysisControl is IToolControlDataAnalysis daControl)
                 {
                     try
                     {
-                        daControl.OnResultUpdated(cachedResult.ToolResult);
+                        daControl.OnResultUpdated(cachedResult.Result);
                     }
                     catch (Exception loadEx)
                     {
@@ -2826,6 +2829,19 @@ SplitterPosition = position;
                 var metadataProvider = new SunEyeVision.Plugin.Infrastructure.Managers.Tool.PropertyMetadataProviderAdapter();
 
                 var queryService = new DataSourceQueryService(_workflowEngine, _workflowEngine, null, metadataProvider);
+
+                // ★ SSOT: 从 WorkflowContext 同步已有的执行结果（修复"先执行→再开窗"场景）
+                var ctx = CurrentWorkflowContext;
+                if (ctx != null)
+                {
+                    var allResults = ctx.GetAllNodeResults();
+                    var nonNullResults = allResults
+                        .Where(kvp => kvp.Value?.Result != null)
+                        .Select(kvp => new KeyValuePair<string, ToolResults>(kvp.Key, kvp.Value!.Result!));
+                    queryService.InitializeFromSource(nonNullResults);
+                    LogInfo($"✓ 已从 WorkflowContext 同步 {nonNullResults.Count()} 个节点结果到 DSQS");
+                }
+
                 LogInfo($"✓ 创建数据查询服务成功: 节点 {node.Id}, 工作流 {currentWorkflow.Name}");
                 return queryService;
             }
@@ -2894,6 +2910,9 @@ SplitterPosition = position;
                     // 显示窗口（确保数据初始化完成后再显示，这样 Loaded 事件触发时所有数据已就绪）
                     debugWindow.Show();
 
+                    // 缓存调试窗口（用于工作流执行完成后通知刷新）
+                    _nodeDebugWindows[node.Id] = debugWindow;
+
                     // 🔍 日志监控：窗口已显示，准备获取 ImageControl
                     AddLog($"🔍 [监控] 窗口已调用 Show()，开始获取 ImageControl");
 
@@ -2914,20 +2933,23 @@ SplitterPosition = position;
                         // 1. 移除数据提供者
                         _nodeDataProviders.Remove(node.Id);
 
-                        // 2. 恢复主窗口 ImageControl 的只读模式
+                        // 2. 移除调试窗口缓存
+                        _nodeDebugWindows.Remove(node.Id);
+
+                        // 3. 恢复主窗口 ImageControl 的只读模式
                         var mainImageControl = GetMainImageControl?.Invoke();
                         if (mainImageControl != null)
                         {
                             mainImageControl.OverlayHitTestVisible = false;
                         }
 
-                        // 3. 刷新当前选中节点的结果显示（如果有）
+                        // 4. 刷新当前选中节点的结果显示（如果有）
                         if (SelectedNode != null && SelectedNode.IsSelected)
                         {
                             var executionResult = CurrentWorkflowContext?.GetNodeResult(SelectedNode.Id);
-                            if (executionResult?.ToolResult != null)
+                            if (executionResult?.Result != null)
                             {
-                                _nodeResultManager.RefreshResultDisplay(SelectedNode, executionResult.ToolResult);
+                                _nodeResultManager.RefreshResultDisplay(SelectedNode, executionResult.Result);
                             }
                         }
                     };
@@ -3028,6 +3050,9 @@ SplitterPosition = position;
                                 // 更新图像显示（内部已存储到 WorkflowContext）
                                 _nodeResultManager?.UpdateNodeResult(node, toolResult);
 
+                                // ★ 通知调试窗口外部结果已到达（用于刷新位置修正矩阵等运行时状态）
+                                NotifyDebugWindowExternalResult(node.Id);
+
                                 // ★ 更新数据分析控件（调试窗口执行后立即刷新）
                                 System.Windows.Application.Current.Dispatcher.Invoke(() =>
                                 {
@@ -3068,6 +3093,58 @@ SplitterPosition = position;
                 {
                     eventInfo.RemoveEventHandler(debugWindow, handler);
                 };
+            }
+        }
+
+        /// <summary>
+        /// 通知指定节点的调试窗口：外部结果已到达
+        /// </summary>
+        private void NotifyDebugWindowExternalResult(string nodeId)
+        {
+            if (_nodeDebugWindows.TryGetValue(nodeId, out var window))
+            {
+                try
+                {
+                    var method = window.GetType().GetMethod("OnExternalResultArrived");
+                    if (method != null)
+                    {
+                        method.Invoke(window, null);
+                        AddLog($"✅ 已通知调试窗口外部结果到达: {nodeId}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    AddLog($"⚠️ 通知调试窗口外部结果失败: {ex.Message}");
+                }
+            }
+        }
+
+        /// <summary>
+        /// 通知所有已打开的调试窗口：上游节点已执行完成，可刷新运行时状态
+        /// </summary>
+        private void NotifyAllDebugWindowsExternalResult()
+        {
+            AddLog($"🔍 [NotifyAll] 开始通知 | 缓存窗口数={_nodeDebugWindows.Count}");
+
+            foreach (var kvp in _nodeDebugWindows.ToList())
+            {
+                try
+                {
+                    var window = kvp.Value;
+                    var method = window.GetType().GetMethod("OnExternalResultArrived");
+
+                    AddLog($"🔍 [NotifyAll] 节点={kvp.Key} | WindowType={window.GetType().Name} | MethodFound={method != null}");
+
+                    if (method != null)
+                    {
+                        method.Invoke(window, null);
+                        AddLog($"✅ [NotifyAll] 成功调用 OnExternalResultArrived: {kvp.Key}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    AddLog($"⚠️ 通知调试窗口刷新失败 (节点 {kvp.Key}): {ex.Message}");
+                }
             }
         }
 
@@ -3223,6 +3300,9 @@ AddLog($"⚠️ 日志记录异常: {ex.Message}");
                 // ★ 更新所有依赖此节点的数据提供者（修复前置节点未执行问题）
                 UpdateDataProvidersForNode(e.Node, e.Result);
 
+                // ★ 通知所有打开调试窗口的控件：上游节点执行完成，可刷新运行时状态
+                NotifyAllDebugWindowsExternalResult();
+
                 // ★ 更新数据分析控件（仅当完成节点是当前选中节点时）
                 if (e.Node.Id == SelectedNode?.Id)
                 {
@@ -3299,6 +3379,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                     try
                     {
 kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
+                        kvp.Value.SetNodeResult(node.Id, result);
                         updatedCount++;
                     }
                     catch (Exception ex)

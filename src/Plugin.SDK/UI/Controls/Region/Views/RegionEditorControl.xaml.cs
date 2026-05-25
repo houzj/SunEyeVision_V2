@@ -18,6 +18,7 @@ using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Logic;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Execution.Results;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 {
@@ -60,6 +61,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         private int _drawingLogCount = 0;
         private int _previewLogCount = 0;
 
+        // ★ 位置修正诊断计数器
+        private int _correctionStatusCount = 0;
+        private const int CORRECTION_LOG_INTERVAL = 50;
+
         // 区域名称索引管理（空洞池策略）
         private int _nextRegionIndex = 1;
         private readonly SortedSet<int> _availableIndices = new();
@@ -78,6 +83,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         private double? _rotateStartAngle = null;
         private double? _rotateStartMouseAngle = null;
 
+        // 位置修正矩阵 (参考→测试)
+        private AffineMatrix? _positionCorrectionMatrix;
+        private AffineMatrix? _inverseMatrix;
+
         /// <summary>
         /// Overlay Canvas引用（由RegionEditorManagerControl设置，用于手柄/橡皮筋绘制）
         /// </summary>
@@ -92,6 +101,59 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         /// 需要重新渲染时触发（Manager订阅）
         /// </summary>
         public event Action? RenderRequested;
+
+        /// <summary>
+        /// 设置位置修正矩阵。
+        /// 显示正向变换，编辑逆变换，存储不变（始终存参考坐标系）。
+        /// </summary>
+        public void SetPositionCorrectionMatrix(AffineMatrix? matrix)
+        {
+            _positionCorrectionMatrix = matrix;
+            _inverseMatrix = matrix?.Inverse();
+
+            // ★ 诊断：设置矩阵时输出完整状态汇总
+            LogCorrectionStatus("SetPositionCorrectionMatrix");
+
+            PluginLogger.Info($"[SetPositionCorrectionMatrix] 矩阵已设置 | Matrix={(matrix != null ? $"[{matrix.M11:F4},{matrix.M12:F4},{matrix.M21:F4},{matrix.M22:F4},{matrix.OffsetX:F2},{matrix.OffsetY:F2}]" : "null")} | RenderRequested触发", "RegionEditorControl");
+
+            RenderRequested?.Invoke();
+        }
+
+        /// <summary>
+        /// 输出位置修正状态汇总日志（收集-总结模式）。
+        /// 一次调用输出完整的状态信息，便于全链分析而非分散查找。
+        /// </summary>
+        private void LogCorrectionStatus(string trigger)
+        {
+            if (_correctionStatusCount++ % CORRECTION_LOG_INTERVAL != 0)
+                return;
+
+            var matrixInfo = _positionCorrectionMatrix != null
+                ? $"M11={_positionCorrectionMatrix.M11:F4} M12={_positionCorrectionMatrix.M12:F4} " +
+                  $"M21={_positionCorrectionMatrix.M21:F4} M22={_positionCorrectionMatrix.M22:F4} " +
+                  $"OffsetX={_positionCorrectionMatrix.OffsetX:F2} OffsetY={_positionCorrectionMatrix.OffsetY:F2}"
+                : "(null)";
+            var inverseInfo = _inverseMatrix != null
+                ? $"M11={_inverseMatrix.M11:F4} M12={_inverseMatrix.M12:F4} " +
+                  $"M21={_inverseMatrix.M21:F4} M22={_inverseMatrix.M22:F4} " +
+                  $"OffsetX={_inverseMatrix.OffsetX:F2} OffsetY={_inverseMatrix.OffsetY:F2}"
+                : "(null)";
+
+            var regions = _viewModel.Regions;
+            var regionSummary = regions.Count == 0
+                ? "(空)"
+                : string.Join(" | ", regions.Take(5).Select(r =>
+                    r.Parameters is ShapeParameters s
+                        ? $"{r.Name}:Type={s.ShapeType} Center=({s.CenterX:F1},{s.CenterY:F1})"
+                        : $"{r.Name}:Params={r.Parameters?.GetType().Name ?? "null"}"));
+
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[LogCorrectionStatus] Trigger={trigger} InstanceId={_controlInstanceId}\n" +
+                $"  ForwardMatrix={matrixInfo}\n" +
+                $"  InverseMatrix={inverseInfo}\n" +
+                $"  RegionCount={regions.Count} Regions=[{regionSummary}]",
+                "RegionEditorControl");
+        }
 
         /// <summary>
         /// ★ Phase 4: 工具激活事件（Manager 用于分组互斥控制）
@@ -282,6 +344,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             VisionLogger.Instance.Log(LogLevel.Success,
                 $"[RegionEditorControl] 控件初始化完成 | InstanceId={_controlInstanceId}",
                 "RegionEditorControl");
+
+            // ★ 诊断：输出初始位置修正状态（应显示 Matrix=null）
+            LogCorrectionStatus("Constructor");
         }
 
         private void RegionEditorControl_Loaded(object sender, RoutedEventArgs e)
@@ -742,12 +807,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         {
             if (OverlayCanvas == null) return;
 
-            _lastMouseImagePosition = position;
+            // 逆变换到参考坐标系用于形状编辑，保留原始（测试）坐标用于橡皮筋渲染
+            Point refPosition = _inverseMatrix != null
+                ? _inverseMatrix.TransformWpfPoint(position)
+                : position;
+
+            _lastMouseImagePosition = refPosition;
 
             if (_mouseMoveLogCounter++ % 100 == 0)
             {
                 VisionLogger.Instance.Log(LogLevel.Info,
-                    $"[ProcessMouseMove] Count={_mouseMoveLogCounter} | Position={position:F1} | IsDrawing={_isDrawing} | IsDragging={_isDragging} | IsDraggingHandle={_isDraggingHandle}",
+                    $"[ProcessMouseMove] Count={_mouseMoveLogCounter} | Position={position:F1} | RefPosition={refPosition:F1} | Matrix={(_positionCorrectionMatrix != null ? "set" : "null")} | IsDrawing={_isDrawing} | IsDragging={_isDragging} | IsDraggingHandle={_isDraggingHandle}",
                     "RegionEditorControl");
             }
 
@@ -756,15 +826,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
             if (_isDraggingHandle && _activeHandleType != Rendering.HandleType.None && _selectedRegion?.Parameters is ShapeParameters shape)
             {
-                HandleShapeEdit(shape, position);
+                HandleShapeEdit(shape, refPosition);
                 return;
             }
 
             if (_isDragging && _selectedRegion != null)
             {
-                var offset = position - _dragStartPoint;
+                var offset = refPosition - _dragStartPoint;
                 MoveRegion(_selectedRegion, offset);
-                _dragStartPoint = position;
+                _dragStartPoint = refPosition;
                 return;
             }
 
@@ -772,7 +842,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             {
                 if (_currentTool == ShapeType.Polygon && _isDrawingPolygon)
                 {
-                    // 多边形橡皮筋线（从最后一个顶点到鼠标位置）
+                    // 多边形橡皮筋线：使用原始测试坐标（OverlayCanvas 在测试坐标系中）
                     DrawPolygonRubberBand(position);
                 }
                 else
@@ -780,12 +850,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                     if (_drawingLogCount == 0)
                     {
                         VisionLogger.Instance.Log(LogLevel.Info,
-                            $"[绘制预览] 开始更新预览 | CurrentDrawingRegion={_currentDrawingRegion.Name} | Position={position:F1}",
+                            $"[绘制预览] 开始更新预览 | CurrentDrawingRegion={_currentDrawingRegion.Name} | Position={refPosition:F1}",
                             "RegionEditorControl");
                         _drawingLogCount++;
                     }
 
-                    UpdateDrawingPreview(position);
+                    UpdateDrawingPreview(refPosition);
                 }
             }
         }
@@ -796,8 +866,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         /// <returns>true=事件已消费（区域操作），false=空白处点击（允许平移）</returns>
         public bool ProcessMouseDown(Point position)
         {
+            // 逆变换到参考坐标系（内部状态始终使用参考坐标）
+            Point refPosition = _inverseMatrix != null
+                ? _inverseMatrix.TransformWpfPoint(position)
+                : position;
+
             VisionLogger.Instance.Log(LogLevel.Info,
-                $"[ProcessMouseDown] MouseDown事件 | InstanceId={_controlInstanceId} | IsDrawing={_viewModel.IsDrawing} | _isDrawing={_isDrawing} | Tool={_currentTool} | Position={position:F1} | OverlayCanvas={OverlayCanvas != null}",
+                $"[ProcessMouseDown] MouseDown事件 | InstanceId={_controlInstanceId} | IsDrawing={_viewModel.IsDrawing} | _isDrawing={_isDrawing} | Tool={_currentTool} | Position={position:F1} | RefPosition={refPosition:F1} | Matrix={(_positionCorrectionMatrix != null ? "set" : "null")} | OverlayCanvas={OverlayCanvas != null}",
                 "RegionEditorControl");
 
             if (OverlayCanvas == null) return false;
@@ -829,7 +904,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                     _currentDrawingRegion.IsPreview = true;
                 }
 
-            _polygonPoints.Add(position);
+            _polygonPoints.Add(refPosition);
             SyncPolygonToShapeDef();
             ClearRubberBand();
             RenderRequested?.Invoke();
@@ -848,7 +923,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 }
 
                 _isDrawing = true;
-                _startPoint = position;
+                _startPoint = refPosition;
 
                 _currentDrawingRegion = RegionData.CreateDrawingRegion(
                     GenerateRegionName(), _currentTool);
@@ -860,23 +935,23 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                     {
                         case ShapeType.Rectangle:
                         case ShapeType.RotatedRectangle:
-                            shapeDef.CenterX = position.X;
-                            shapeDef.CenterY = position.Y;
+                            shapeDef.CenterX = refPosition.X;
+                            shapeDef.CenterY = refPosition.Y;
                             shapeDef.Width = 0;
                             shapeDef.Height = 0;
                             break;
                         case ShapeType.Circle:
-                            shapeDef.CenterX = position.X;
-                            shapeDef.CenterY = position.Y;
+                            shapeDef.CenterX = refPosition.X;
+                            shapeDef.CenterY = refPosition.Y;
                             shapeDef.Radius = 0;
                             shapeDef.Width = 0;
                             shapeDef.Height = 0;
                             break;
                         case ShapeType.Line:
-                            shapeDef.StartX = position.X;
-                            shapeDef.StartY = position.Y;
-                            shapeDef.EndX = position.X;
-                            shapeDef.EndY = position.Y;
+                            shapeDef.StartX = refPosition.X;
+                            shapeDef.StartY = refPosition.Y;
+                            shapeDef.EndX = refPosition.X;
+                            shapeDef.EndY = refPosition.Y;
                             break;
                     }
                 }
@@ -887,14 +962,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             {
                 if (_currentHandles != null)
                 {
-                    var hitHandleType = Rendering.HandleRenderer.HitTestHandle(position, _currentHandles);
+                    var hitHandleType = Rendering.HandleRenderer.HitTestHandle(refPosition, _currentHandles);
 
                     if (hitHandleType != Rendering.HandleType.None)
                     {
                         if (hitHandleType == Rendering.HandleType.Center)
                         {
                             _isDragging = true;
-                            _dragStartPoint = position;
+                            _dragStartPoint = refPosition;
                             _viewModel.StatusMessage = "正在拖动区域";
                             return true;
                         }
@@ -903,7 +978,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                         {
                             _isDraggingHandle = true;
                             _activeHandleType = hitHandleType;
-                            _handleDragStartPoint = position;
+                            _handleDragStartPoint = refPosition;
                             _activeVertexIndex = -1;
                             if (_currentHandles != null)
                             {
@@ -911,8 +986,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                                 {
                                     if (h.Type == Rendering.HandleType.PolygonVertex && h.VertexIndex >= 0)
                                     {
-                                        var dx = position.X - h.Position.X;
-                                        var dy = position.Y - h.Position.Y;
+                                        var dx = refPosition.X - h.Position.X;
+                                        var dy = refPosition.Y - h.Position.Y;
                                         if (Math.Sqrt(dx * dx + dy * dy) < h.HandleSize)
                                         {
                                             _activeVertexIndex = h.VertexIndex;
@@ -929,7 +1004,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
                         _isDraggingHandle = true;
                         _activeHandleType = hitHandleType;
-                        _handleDragStartPoint = position;
+                        _handleDragStartPoint = refPosition;
 
                         if (_selectedRegion.Parameters is ShapeParameters shapeDef)
                         {
@@ -942,7 +1017,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                             {
                                 _rotateStartAngle = shapeDef.Angle;
                                 var center = new Point(shapeDef.CenterX, shapeDef.CenterY);
-                                _rotateStartMouseAngle = CalculateMouseAngle(center, position);
+                                _rotateStartMouseAngle = CalculateMouseAngle(center, refPosition);
                             }
                         }
 
@@ -952,12 +1027,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 }
             }
 
-            var hitRegion = HitTestRegion(position);
+            var hitRegion = HitTestRegion(refPosition);
             if (hitRegion != null)
             {
                 SelectRegion(hitRegion);
                 _isDragging = true;
-                _dragStartPoint = position;
+                _dragStartPoint = refPosition;
                 return true;  // ★ 命中区域，事件已消费
             }
             else
@@ -1228,10 +1303,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             var zoom = CurrentZoom;
             var lastPoint = _polygonPoints[_polygonPoints.Count - 1];
 
+            // 正向变换多边形最后一个顶点到测试坐标（OverlayCanvas 在测试坐标系中）
+            Point displayLastPoint = _positionCorrectionMatrix != null
+                ? _positionCorrectionMatrix.TransformWpfPoint(lastPoint)
+                : lastPoint;
+
             // 实线：最后一个顶点 -> 鼠标位置
             var line = new System.Windows.Shapes.Line
             {
-                X1 = lastPoint.X, Y1 = lastPoint.Y,
+                X1 = displayLastPoint.X, Y1 = displayLastPoint.Y,
                 X2 = mousePosition.X, Y2 = mousePosition.Y,
                 Stroke = Brushes.DodgerBlue,
                 StrokeThickness = 2.0 / zoom,
@@ -1926,7 +2006,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 // ★ 多边形预览：包含临时鼠标位置，让用户看到"点击后会是什么样的"
                 if (_currentTool == ShapeType.Polygon && _isDrawingPolygon && _polygonPoints.Count >= 1)
                 {
-                    context.PolygonPoints.Add(new Point(_lastMouseImagePosition.X, _lastMouseImagePosition.Y));
+                    Point displayMousePos = _positionCorrectionMatrix != null
+                        ? _positionCorrectionMatrix.TransformWpfPoint(_lastMouseImagePosition)
+                        : new Point(_lastMouseImagePosition.X, _lastMouseImagePosition.Y);
+                    context.PolygonPoints.Add(displayMousePos);
                     context.CalculateBounds();
                 }
 
@@ -1951,6 +2034,27 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         /// </summary>
         private RegionRenderContext CreateRenderContextInternal(RegionData region, ShapeParameters shape, bool isPreview = false)
         {
+            // ★ 诊断：首次渲染时输出位置修正状态
+            if (_correctionStatusCount < 5)
+                LogCorrectionStatus($"CreateRenderContext(Region={region.Name})");
+            // 正向变换：参考坐标 → 显示（测试）坐标
+            Point center = _positionCorrectionMatrix != null
+                ? _positionCorrectionMatrix.TransformWpfPoint(new Point(shape.CenterX, shape.CenterY))
+                : new Point(shape.CenterX, shape.CenterY);
+
+            Point lineStart = _positionCorrectionMatrix != null
+                ? _positionCorrectionMatrix.TransformWpfPoint(new Point(shape.StartX, shape.StartY))
+                : new Point(shape.StartX, shape.StartY);
+
+            Point lineEnd = _positionCorrectionMatrix != null
+                ? _positionCorrectionMatrix.TransformWpfPoint(new Point(shape.EndX, shape.EndY))
+                : new Point(shape.EndX, shape.EndY);
+
+            List<Point> polygonPoints = shape.Points?.Select(p =>
+                _positionCorrectionMatrix != null
+                    ? _positionCorrectionMatrix.TransformWpfPoint(new Point(p.X, p.Y))
+                    : new Point(p.X, p.Y)
+            ).ToList() ?? new List<Point>();
 
             var context = new RegionRenderContext
             {
@@ -1961,15 +2065,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 IsVisible = true,
                 RegionType = region.RegionType,
 
-                // 几何参数
-                Center = new Point(shape.CenterX, shape.CenterY),
+                // 几何参数（正向变换后的显示坐标）
+                Center = center,
                 Width = shape.Width,
                 Height = shape.Height,
                 Angle = shape.Angle,
                 Radius = shape.Radius,
-                LineStart = new Point(shape.StartX, shape.StartY),
-                LineEnd = new Point(shape.EndX, shape.EndY),
-                PolygonPoints = shape.Points?.Select(p => new Point(p.X, p.Y)).ToList() ?? new List<Point>(),
+                LineStart = lineStart,
+                LineEnd = lineEnd,
+                PolygonPoints = polygonPoints,
 
                 // 样式参数
                 FillColor = Color.FromArgb(
@@ -1994,6 +2098,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             };
 
             context.CalculateBounds();
+
+            // ★ 诊断：数据层坐标变换校验 - 参考坐标 → 显示坐标（正向变换）
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[CreateRenderContext] Region={region.Name} | 参考坐标: Center=({shape.CenterX:F1},{shape.CenterY:F1}) W={shape.Width:F1} H={shape.Height:F1} | 显示坐标: Center=({center.X:F1},{center.Y:F1}) | 直线起点=({lineStart.X:F1},{lineStart.Y:F1}) 终点=({lineEnd.X:F1},{lineEnd.Y:F1}) | Matrix={(_positionCorrectionMatrix != null ? "set" : "null")} | isPreview={isPreview}",
+                "RegionEditorControl");
+
             return context;
         }
 
@@ -2028,7 +2138,27 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                     Models.RegionType.Inspection => new SolidColorBrush(Color.FromArgb(255, 0, 120, 215)), // 蓝色
                     _ => Brushes.Orange
                 };
-                Rendering.HandleRenderer.DrawHandles(OverlayCanvas, _currentHandles, shapeDef.ShapeType, zoom, handleColor);
+
+                // 正向变换手柄位置到测试坐标系（OverlayCanvas 在测试坐标系中）
+                var displayHandles = _currentHandles;
+                if (_positionCorrectionMatrix != null)
+                {
+                    displayHandles = _currentHandles.Select(h =>
+                    {
+                        var displayPos = _positionCorrectionMatrix.TransformWpfPoint(h.Position);
+                        return new Rendering.EditHandle
+                        {
+                            Type = h.Type,
+                            Position = displayPos,
+                            HandleSize = h.HandleSize,
+                            Cursor = h.Cursor,
+                            VertexIndex = h.VertexIndex,
+                            Bounds = new Rect(displayPos.X - h.HandleSize / 2, displayPos.Y - h.HandleSize / 2, h.HandleSize, h.HandleSize)
+                        };
+                    }).ToArray();
+                }
+
+                Rendering.HandleRenderer.DrawHandles(OverlayCanvas, displayHandles, shapeDef.ShapeType, zoom, handleColor);
             }
         }
 
@@ -2223,13 +2353,26 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
         public RegionData? HitTestRegion(Point point, double tolerance = 0)
         {
+            // 逆变换到参考坐标系（ShapeParameters 存的是参考坐标）
+            Point refPoint = _inverseMatrix != null
+                ? _inverseMatrix.TransformWpfPoint(point)
+                : point;
+
+            // ★ 诊断：命中测试坐标变换 - 屏幕坐标 → 参考坐标
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[HitTestRegion] 屏幕坐标=({point.X:F1},{point.Y:F1}) → 参考坐标=({refPoint.X:F1},{refPoint.Y:F1}) | Matrix={(_positionCorrectionMatrix != null ? "inverse" : "null")} | tolerance={tolerance:F1} | RegionCount={_viewModel.Regions.Count}",
+                "RegionEditorControl");
+
             // 从后往前测试（后绘制的在上面）
             foreach (var region in _viewModel.Regions.Reverse())
             {
                 if (!region.IsVisible) continue;
 
-                if (IsPointInRegion(point, region, tolerance))
+                if (IsPointInRegion(refPoint, region, tolerance))
                 {
+                    VisionLogger.Instance.Log(LogLevel.Success,
+                        $"[HitTestRegion] 命中: Region={region.Name}(Id={region.Id:B}) | 区域类型={region.RegionType} | 参考坐标=({refPoint.X:F1},{refPoint.Y:F1})",
+                        "RegionEditorControl");
                     return region;
                 }
             }

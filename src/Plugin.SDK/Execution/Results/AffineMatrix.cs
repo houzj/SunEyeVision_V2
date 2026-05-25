@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text.Json.Serialization;
+using System.Windows;
 
 namespace SunEyeVision.Plugin.SDK.Execution.Results;
 
@@ -54,6 +55,35 @@ public class AffineMatrix
         $"[{M11:F4},{M12:F4},{M21:F4},{M22:F4},{OffsetX:F2},{OffsetY:F2}]";
 
     public double[] ToArray() => [M11, M12, M21, M22, OffsetX, OffsetY];
+
+    /// <summary>Transform a point from reference coordinates to test coordinates (forward).</summary>
+    public (double X, double Y) TransformPoint(double x, double y)
+    {
+        var newX = M11 * x + M12 * y + OffsetX;
+        var newY = M21 * x + M22 * y + OffsetY;
+        return (newX, newY);
+    }
+
+    /// <summary>Transform a WPF point from reference coordinates to test coordinates (forward).</summary>
+    public Point TransformWpfPoint(Point p)
+    {
+        var (x, y) = TransformPoint(p.X, p.Y);
+        return new Point(x, y);
+    }
+
+    /// <summary>Compute inverse matrix (test → reference).</summary>
+    public AffineMatrix Inverse()
+    {
+        double det = M11 * M22 - M12 * M21;
+        if (Math.Abs(det) < 1e-10)
+            throw new InvalidOperationException("位置修正矩阵不可逆");
+        double invDet = 1.0 / det;
+        return new AffineMatrix(
+            M22 * invDet, -M12 * invDet,
+            -M21 * invDet,  M11 * invDet,
+            (M21 * OffsetY - M22 * OffsetX) * invDet,
+            (M12 * OffsetX - M11 * OffsetY) * invDet);
+    }
 
     /// <summary>
     /// 转为 Halcon hom_mat2D 数组顺序

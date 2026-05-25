@@ -70,17 +70,8 @@ namespace SunEyeVision.UI.Services.Workflow
                 Success = true,
                 StartTime = DateTime.Now,
                 EndTime = DateTime.Now,
-                ToolResult = result,
-                Outputs = new Dictionary<string, object>()
+                Result = result
             };
-
-            // 存储所有显示图像
-            var displayImages = result.GetDisplayImages();
-            foreach (var (name, image) in displayImages)
-            {
-                if (image != null && !image.IsEmpty)
-                    executionResult.Outputs[name] = image;
-            }
 
             _getContext()?.SetNodeResult(node.Id, executionResult);
 
@@ -122,7 +113,7 @@ namespace SunEyeVision.UI.Services.Workflow
                 {
                     // 父节点/其他节点：从 WorkflowContext 缓存获取
                     var sourceExecResult = _getContext()?.GetNodeResult(selectedSource.SourceNodeId);
-                    sourceResult = sourceExecResult?.ToolResult;
+                    sourceResult = sourceExecResult?.Result;
                     if (sourceResult == null)
                         return; // 尚未执行的节点跳过，不清空当前图像
                 }
@@ -240,8 +231,7 @@ namespace SunEyeVision.UI.Services.Workflow
                     NodeId = node.Id,
                     Success = true,
                     StartTime = DateTime.Now,
-                    EndTime = DateTime.Now,
-                    Outputs = new Dictionary<string, object>()
+                    EndTime = DateTime.Now
                 };
 
                 if (cachedResult.ProcessedImage != null)
@@ -251,7 +241,12 @@ namespace SunEyeVision.UI.Services.Workflow
                     var pixelData = new byte[stride * bmp.PixelHeight];
                     bmp.CopyPixels(pixelData, stride, 0);
                     var image = VisionImage.FromBitmapSource(bmp);
-                    executionResult.Outputs["Output"] = image;
+                    var genericResults = new GenericToolResults
+                    {
+                        Status = ExecutionStatus.Success
+                    };
+                    genericResults.AddResultItem("Output", image);
+                    executionResult.Result = genericResults;
                 }
 
                 _getContext()?.SetNodeResult(node.Id, executionResult);
@@ -271,10 +266,10 @@ namespace SunEyeVision.UI.Services.Workflow
                 return null;
 
             var executionResult = _getContext()?.GetNodeResult(node.Id);
-            if (executionResult?.ToolResult == null)
+            if (executionResult?.Result == null)
                 return null;
 
-            var images = executionResult.ToolResult.GetDisplayImages();
+            var images = executionResult.Result.GetDisplayImages();
             return images.Values.FirstOrDefault(m => m != null && !m.IsEmpty);
         }
 

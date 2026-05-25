@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
@@ -167,6 +168,21 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
                 PluginLogger.Info("[RegionEditorManager] ImageControl set with centralized event routing", "RegionEditorManager");
             }
+        }
+
+        /// <summary>
+        /// 设置位置修正矩阵，透传给两个子编辑器。
+        /// 显示正向变换，编辑逆变换，存储不变（始终存参考坐标系）。
+        /// </summary>
+        public void SetPositionCorrectionMatrix(Execution.Results.AffineMatrix? matrix)
+        {
+            var matrixInfo = matrix != null
+                ? $"M11={matrix.M11:F4} M12={matrix.M12:F4} M21={matrix.M21:F4} M22={matrix.M22:F4} OffsetX={matrix.OffsetX:F2} OffsetY={matrix.OffsetY:F2}"
+                : "null";
+            PluginLogger.Info($"[RegionEditorManager] SetPositionCorrectionMatrix 传入 | Matrix={matrixInfo}", "RegionEditorManager");
+
+            inspectionsEditor.SetPositionCorrectionMatrix(matrix);
+            masksEditor.SetPositionCorrectionMatrix(matrix);
         }
 
         /// <summary>

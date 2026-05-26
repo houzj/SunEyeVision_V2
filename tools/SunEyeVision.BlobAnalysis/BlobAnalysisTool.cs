@@ -133,7 +133,6 @@ namespace SunEyeVision.Tool.BlobAnalysis
                     stepTimings.Add(("ROI构建", stepSw.ElapsedMilliseconds));
 
                     // ===== Step 2.5: 位置修正（正向变换 ROI） =====
-                    // ===== Step 2.5: 位置修正（正向变换 ROI） =====
                     if (parameters.IsPositionCorrectionEnabled?.Value == true)
                     {
                         stepSw.Restart();
@@ -158,19 +157,6 @@ namespace SunEyeVision.Tool.BlobAnalysis
                         }
                         stepSw.Stop();
                         stepTimings.Add(("位置修正", stepSw.ElapsedMilliseconds));
-                    }
-
-                    // 日志监控：记录检测区域（inspHRegion）信息
-                    if (inspHRegion != null)
-                    {
-                        HOperatorSet.AreaCenter(inspHRegion, out var area, out var row, out var col);
-                        HOperatorSet.SmallestRectangle1(inspHRegion, out var r1, out var c1, out var r2, out var c2);
-                        parameters.LogInfo($"检测区域: 面积={area.L}px², 质心=({col.D:F1},{row.D:F1}), " +
-                            $"BBox=[{c1.L},{r1.L},{c2.L},{r2.L}], 尺寸={c2.L - c1.L + 1}x{r2.L - r1.L + 1}");
-                    }
-                    else
-                    {
-                        parameters.LogInfo("检测区域: 未配置检测区域(InspHRegion=null)");
                     }
 
                     try
@@ -404,14 +390,6 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                         stepSw.Restart();
                                         var display = result.Display;
                                         display.Clear();
-
-                                        // 检测区域轮廓
-                                        if (inspHRegion != null && parameters.InspectionRegionStyle.IsVisible)
-                                            display.AddContours(parameters.InspectionRegionStyle, inspHRegion);
-
-                                        // 屏蔽区域轮廓
-                                        if (maskHRegion != null && parameters.MaskRegionStyle.IsVisible)
-                                            display.AddContours(parameters.MaskRegionStyle, maskHRegion);
 
                                         // 轮廓：仅对有轮廓数据的 blob（通过 Tab4 判断的 blob 有轮廓）
                                         var contourBlobs = filteredBlobs

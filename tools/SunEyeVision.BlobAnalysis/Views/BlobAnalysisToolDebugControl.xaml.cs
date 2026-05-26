@@ -279,15 +279,6 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
                     return;
                 }
             }
-            else
-            {
-                PluginLogger.Warning($"[UpdatePositionCorrectionMatrix] 条件不满足 | " +
-                    $"IsEnabled={Parameters?.IsPositionCorrectionEnabled?.Value} | " +
-                    $"DataProvider={_dataProvider != null} | " +
-                    $"HasBindingSource={Parameters?.PositionCorrectionBindingSource != null}",
-                    "BlobAnalysisTool");
-            }
-
             // ★ _dataProvider 未就绪时不设 null（保留之前的值，如 InitializeAsync 或 SetDataProvider 设置的）
             if (_dataProvider == null)
                 return;

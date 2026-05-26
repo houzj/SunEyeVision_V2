@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text.Json.Serialization;
+using System.Windows.Media;
 using SunEyeVision.Plugin.SDK.Metadata;
+using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 
 namespace SunEyeVision.Plugin.SDK.Execution.Parameters
@@ -90,6 +92,30 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             get => _isRegionEnabled;
             set => _isRegionEnabled = value;
         }
+
+        #region 显示样式
+
+        /// <summary>检测区域显示样式（UI 可通过 DispItemColorControl 绑定控制可见性）</summary>
+        [JsonIgnore]
+        public virtual GraphicsStyle InspectionRegionStyle { get; set; } = new()
+        {
+            Name = "InspectionRegion",
+            IsVisible = true,
+            OkColor = System.Windows.Media.Color.FromRgb(0, 0, 255),
+            LineWidth = 1.5
+        };
+
+        /// <summary>屏蔽区域显示样式（UI 可通过 DispItemColorControl 绑定控制可见性）</summary>
+        [JsonIgnore]
+        public virtual GraphicsStyle MaskRegionStyle { get; set; } = new()
+        {
+            Name = "MaskRegion",
+            IsVisible = true,
+            OkColor = System.Windows.Media.Color.FromRgb(255, 165, 0),  // 橙色
+            LineWidth = 1.5
+        };
+
+        #endregion
 
         #region 图像源绑定
 

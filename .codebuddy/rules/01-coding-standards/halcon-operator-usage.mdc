@@ -1,0 +1,82 @@
+---
+id: rule-014
+title: Halcon HOperatorSet 调用规范
+category: coding-standards
+priority: high
+alwaysApply: true
+enabled: true
+version: "1.0"
+updatedAt: 2026-05-26
+---
+
+# rule-014: Halcon HOperatorSet 调用规范
+
+## 触发条件
+
+当用户表达以下意图时，**必须**自动检查 Halcon 算子调用规范：
+- 添加/修改 **Halcon**、**HRegion**、**HImage**、**HOperatorSet** 调用
+- 添加/修改 **FillUp**、**Connection**、**Union1**、**Difference**、**SelectShape**、**Erosion1**、**Dilation1**、**Opening**、**Closing**、**Threshold** 等拓扑变更或图像处理算子
+- 添加/修改 **region 实例方法** 调用（如 `region.FillUp()`, `region.Connection()` 等）
+- 包含上述意图的变体表达
+
+## 硬性约束
+
+### Halcon 算子调用方式
+
+**正确用法（HOperatorSet 静态方法）：**
+
+```csharp
+// FillUp（会改变区域拓扑）
+HOperatorSet.FillUp(region, out var filled);
+region.Dispose();
+region = new HRegion(filled);
+
+// Union1（合并区域）
+HOperatorSet.Union1(region, out var unionRegion);
+var roi = new HRegion(unionRegion);
+
+// Connection（连通域分析）
+HOperatorSet.Connection(binaryRegion, out var connectedRegions);
+using var regions = new HRegion(connectedRegions);
+
+// Erosion1（腐蚀）
+HOperatorSet.Erosion1(region, se, out var result, iterations);
+return new HRegion(result);
+
+// Dilation1（膨胀）
+HOperatorSet.Dilation1(region, se, out var result, iterations);
+return new HRegion(result);
+
+// 其他 HOperatorSet 算子同理
+```
+
+### 禁止用法
+
+**禁止** 使用 HRegion/HImage 的实例方法调用会改变拓扑或产生新对象的算子：
+
+```csharp
+// ❌ 禁止：实例方法的 FillUp 在某些 Halcon 版本中包装有 bug
+region.FillUp();
+
+// ❌ 禁止：实例方法的 Connection
+var conn = region.Connection();
+
+// ❌ 禁止：实例方法的 Union1
+var union = region.Union1();
+```
+
+### 原因说明
+
+Halcon `.NET` 实例方法封装 (`HRegion.FillUp()` 等) 在不同版本中存在实现 bug，可能发生：
+- 就地修改未真正执行底层算子
+- 句柄释放和重新初始化失败
+- 对象引用语义异常
+
+而 `HOperatorSet.FillUp(region, out filled)` 等静态方法直接映射 Halcon 底层引擎，输入输出分离，行为稳定可预测。
+
+### 使用原则
+
+1. **拓扑变更算子**（FillUp、Connection、Union1、Difference、Erosion1、Dilation1 等）**必须**使用 `HOperatorSet` 静态方法
+2. **纯查询算子**（AreaCenter、SmallestRectangle1、Circularity、Rectangularity、Contlength 等）建议使用 `HOperatorSet` 静态方法（与拓扑算子保持调用风格一致），**禁止**混用实例方法和静态方法
+3. 模式：`HOperatorSet.算子名(输入, out var 输出)` → `输入.Dispose()`（如有旧引用）→ `var 新实例 = new HRegion(输出)` / `new HImage(输出)`
+4. **禁止** `try-catch` 吞异常，让异常向上传播（遵循 rule-008 报错优先原则）

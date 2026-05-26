@@ -12,6 +12,7 @@ using Microsoft.Win32;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.UI.Controls;
+using SunEyeVision.Plugin.SDK.Execution.Helpers;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Tool.ShapeMatch.Models;
@@ -562,85 +563,12 @@ public partial class ShapeMatchTemplateEditorDialog : WpfWindow
 
     /// <summary>
     /// 构建 ROI 区域（检测区域并集 - 屏蔽区域）
+    /// 委托给 ToolRegionHelper 统一处理
     /// </summary>
     private static HRegion? BuildRoiRegion(List<RegionData> inspections, List<RegionData> masks)
     {
-        HRegion? result = null;
-
-        // 检测区域并集
-        foreach (var region in inspections.Where(r => r.IsEnabled))
-        {
-            var hReg = RegionDataToHRegion(region);
-            if (hReg == null) continue;
-
-            if (result == null)
-                result = hReg;
-            else
-            {
-                HOperatorSet.Union2(result, hReg, out var unionObj);
-                result.Dispose();
-                hReg.Dispose();
-                result = new HRegion(unionObj);
-            }
-        }
-
-        if (result == null) return null;
-
-        // 屏蔽区域差集
-        foreach (var mask in masks.Where(r => r.IsEnabled))
-        {
-            var hMask = RegionDataToHRegion(mask);
-            if (hMask == null) continue;
-
-            HOperatorSet.Difference(result, hMask, out var diffObj);
-            result.Dispose();
-            hMask.Dispose();
-            result = new HRegion(diffObj);
-        }
-
-        return result;
-    }
-
-    private static HRegion? RegionDataToHRegion(RegionData region)
-    {
-        if (region.Parameters is not ShapeParameters shape) return null;
-
-        return shape.ShapeType switch
-        {
-            ShapeType.Rectangle => new HRegion(
-                shape.CenterY - shape.Height / 2,
-                shape.CenterX - shape.Width / 2,
-                shape.CenterY + shape.Height / 2,
-                shape.CenterX + shape.Width / 2),
-
-            ShapeType.Circle => new HRegion(
-                shape.CenterY, shape.CenterX, shape.Radius),
-
-            ShapeType.Polygon when shape.Points.Count >= 3
-                => BuildPolygonHRegion(shape.Points),
-
-            ShapeType.RotatedRectangle => new HRegion(
-                shape.CenterY - shape.Height / 2,
-                shape.CenterX - shape.Width / 2,
-                shape.CenterY + shape.Height / 2,
-                shape.CenterX + shape.Width / 2),
-
-            _ => null
-        };
-    }
-
-    private static HRegion BuildPolygonHRegion(IList<Point2D> points)
-    {
-        var rows = new HTuple();
-        var cols = new HTuple();
-        for (int i = 0; i < points.Count; i++)
-        {
-            rows = rows.TupleConcat(points[i].Y);
-            cols = cols.TupleConcat(points[i].X);
-        }
-        var region = new HRegion();
-        region.GenRegionPolygon(rows, cols);
-        return region;
+        var (roi, _, _) = ToolRegionHelper.BuildHalconROI(0, 0, inspections, masks);
+        return roi;
     }
 
     /// <inheritdoc cref="TemplateModel.GetShapeModelContours"/>

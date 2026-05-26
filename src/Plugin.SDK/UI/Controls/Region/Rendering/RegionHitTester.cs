@@ -242,7 +242,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
             var bottomCenter = new Point(
                 (corners[2].X + corners[3].X) / 2,
                 (corners[2].Y + corners[3].Y) / 2);
-            return HandleRenderer.CreateRotatedRectangleHandles(corners, region.Angle, bottomCenter, scale);
+            return HandleRenderer.CreateRotatedRectangleHandles(corners, region.Angle, bottomCenter, scale, region.Width);
         }
 
         private static EditHandle[] CreateLineHandles(RegionRenderContext region, double scale)

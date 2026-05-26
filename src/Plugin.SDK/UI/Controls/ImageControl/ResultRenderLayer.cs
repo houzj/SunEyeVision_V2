@@ -823,7 +823,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 ctx.BeginFigure(start, false, false);
                 ctx.LineTo(end, true, true);
                 var angle = Math.Atan2(end.Y - start.Y, end.X - start.X);
-                var arrowSize = thickness * 4;
+                var arrowSize = thickness * 6;
                 double a1 = angle + Math.PI * 0.85, a2 = angle - Math.PI * 0.85;
                 ctx.BeginFigure(end, true, false);
                 ctx.LineTo(new Point(end.X + arrowSize * Math.Cos(a1), end.Y + arrowSize * Math.Sin(a1)), true, true);

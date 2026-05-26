@@ -11,7 +11,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
     {
         /// <summary>
         /// 规范化角度到[-180°, 180°]（参考ROI.NormalizeAngle 325-336行）
-        /// 图像坐标系角度定义：顺时针为正，0°表示箭头向下（+Y方向）
+        /// 屏幕角度系定义：顺时针为正，0°表示箭头向右（+X方向）
         /// </summary>
         public static double NormalizeAngle(double angle)
         {
@@ -31,11 +31,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
         /// 参考ROI.GetCorners 345-381行
         /// 角点顺序：TopLeft, TopRight, BottomRight, BottomLeft
         /// 尺寸语义：Width垂直于箭头方向，Height沿箭头方向
-        /// 图像坐标系角度：0°时箭头向下，90°向右，180°向上，-90°向左（顺时针为正）
+        /// 屏幕角度系：0°时箭头向右，+90°向下，180°向左，-90°向上（顺时针为正）
         /// </summary>
         public static Point[] GetCorners(Point center, double width, double height, double rotation)
         {
-            // 图像坐标系角度：顺时针为正，0°向下
+            // 屏幕角度系：顺时针为正，0°向右
             var angleRad = rotation * Math.PI / 180;
             var cos = Math.Cos(angleRad);
             var sin = Math.Sin(angleRad);
@@ -48,8 +48,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
             Point Transform(double localX, double localY)
             {
                 return new Point(
-                    center.X + localX * cos + localY * sin,
-                    center.Y - localX * sin + localY * cos
+                    center.X + localX * cos - localY * sin,
+                    center.Y + localX * sin + localY * cos
                 );
             }
 
@@ -67,20 +67,20 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
         /// 参考ROI.GetDirectionArrow 390-411行
         /// 箭头从中心沿高度方向指向下边中点
         /// 尺寸语义：Height沿箭头方向（高度），Width垂直于箭头方向（宽度）
-        /// 图像坐标系角度：0°时箭头向下，90°向右，180°向上，-90°向左（顺时针为正）
+        /// 屏幕角度系：0°时箭头向右，+90°向下，180°向左，-90°向上（顺时针为正）
         /// </summary>
-        public static (Point Start, Point End) GetDirectionArrow(Point center, double height, double rotation)
+        public static (Point Start, Point End) GetDirectionArrow(Point center, double width, double rotation)
         {
-            // 图像坐标系角度：顺时针为正，0°向下
+            // 屏幕角度系：顺时针为正，0°向右
             var angleRad = rotation * Math.PI / 180;
-            var sin = Math.Sin(angleRad);
             var cos = Math.Cos(angleRad);
+            var sin = Math.Sin(angleRad);
 
-            // 箭头终点：沿高度方向指向下边中点
-            // 箭头方向向量：(sin, cos) - 箭头朝下
-            // 下边中点距离中心：h/2
-            var arrowEndX = center.X + (height / 2) * sin;
-            var arrowEndY = center.Y + (height / 2) * cos;
+            // 箭头终点：沿宽度方向穿出矩形前端，长度为宽度的一半
+            // 箭头方向向量：(cos, sin) - 屏幕角度系，0°时箭头朝右
+            var arrowLength = width / 2;
+            var arrowEndX = center.X + arrowLength * cos;
+            var arrowEndY = center.Y + arrowLength * sin;
 
             return (center, new Point(arrowEndX, arrowEndY));
         }
@@ -90,17 +90,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
         /// 参考ROI.GetRotationHandlePosition 420-446行
         /// 旋转手柄位置 = center + (height/4) * direction
         /// </summary>
-        public static Point GetRotationHandlePosition(Point center, double height, double rotation, double scale = 1.0)
+        public static Point GetRotationHandlePosition(Point center, double width, double rotation, double scale = 1.0)
         {
-            // 图像坐标系角度：顺时针为正，0°向下
+            // 屏幕角度系：顺时针为正，0°向右
             var angleRad = rotation * Math.PI / 180;
             var sin = Math.Sin(angleRad);
             var cos = Math.Cos(angleRad);
 
-            // 旋转手柄位置 = center + (height/4) * direction（图像坐标系，无需/scale）
-            var handleOffset = height / 4;
-            var handleX = center.X + handleOffset * sin;
-            var handleY = center.Y + handleOffset * cos;
+            // 旋转手柄位置 = center + (width/4) * direction（箭头中点，屏幕角度系，无需/scale）
+            var handleOffset = width / 4;
+            var handleX = center.X + handleOffset * cos;
+            var handleY = center.Y + handleOffset * sin;
 
             return new Point(handleX, handleY);
         }
@@ -219,19 +219,21 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
         /// <summary>
         /// 绘制旋转手柄连接线（参考ROI编辑器DrawRotateHandleLine 1431-1459行）
         /// </summary>
-        public static void DrawRotateHandleLine(System.Windows.Controls.Canvas canvas, Point center, double height, double rotation, Point rotateHandlePos, double scale = 1.0)
+        public static void DrawRotateHandleLine(System.Windows.Controls.Canvas canvas, Point center, double width, double rotation, Point rotateHandlePos, double scale = 1.0)
         {
             // 先绘制方向箭头
-            var arrow = GetDirectionArrow(center, height, rotation);
+            var arrow = GetDirectionArrow(center, width, rotation);
             DrawDirectionArrow(canvas, arrow.Start, arrow.End, new SolidColorBrush(Color.FromRgb(0, 0, 255)), scale);
 
-            // 绘制从下边中点到旋转手柄的连接线（虚线）
+            // 绘制从箭头前端中点到旋转手柄的连接线（虚线）
             var angleRad = rotation * Math.PI / 180;
             var sin = Math.Sin(angleRad);
             var cos = Math.Cos(angleRad);
 
-            var bottomCenterX = center.X + (height / 2) * sin;
-            var bottomCenterY = center.Y + (height / 2) * cos;
+            // 连接线起点 = 箭头终点（与 GetDirectionArrow 统一长度：width/2）
+            var frontDistance = width / 2;
+            var bottomCenterX = center.X + frontDistance * cos;
+            var bottomCenterY = center.Y + frontDistance * sin;
             var bottomCenter = new Point(bottomCenterX, bottomCenterY);
 
             var connectorLine = new System.Windows.Shapes.Line

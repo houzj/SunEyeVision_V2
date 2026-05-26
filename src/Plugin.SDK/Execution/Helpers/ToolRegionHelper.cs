@@ -15,6 +15,22 @@ namespace SunEyeVision.Plugin.SDK.Execution.Helpers
         #region Halcon 系列
 
         /// <summary>
+        /// 从 ShapeParameters 构建 Halcon 旋转矩形区域
+        /// 角度转换：ShapeParameters.Angle(屏幕角度系,顺时针+,0°向右,度数) → Halcon Phi(数学,逆时针+,0°向右,弧度)
+        /// 公式：phi = -Angle * π / 180（屏幕角度系顺时针为正 → Halcon 逆时针为正，取负号转换）
+        /// </summary>
+        private static HRegion BuildHalconRotatedRectangle(ShapeParameters shape)
+        {
+            double phi = -shape.Angle * Math.PI / 180.0;
+            HOperatorSet.GenRectangle2(out var rect,
+                shape.CenterY, shape.CenterX,
+                phi,
+                shape.Width / 2.0,
+                shape.Height / 2.0);
+            return new HRegion(rect);
+        }
+
+        /// <summary>
         /// 从 RegionData 集合构建 HRegion（保持 tuple 结构，支持多边形）
         /// </summary>
         public static HRegion BuildHalconRegion(IEnumerable<RegionData> regions)
@@ -38,11 +54,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Helpers
                     ShapeType.Polygon when shape.Points.Count >= 3
                         => BuildHalconPolygonRegion(shape.Points),
 
-                    ShapeType.RotatedRectangle => new HRegion(
-                        shape.CenterY - shape.Height / 2,
-                        shape.CenterX - shape.Width / 2,
-                        shape.CenterY + shape.Height / 2,
-                        shape.CenterX + shape.Width / 2),
+                    ShapeType.RotatedRectangle => BuildHalconRotatedRectangle(shape),
 
                     _ => null
                 };
@@ -76,8 +88,19 @@ namespace SunEyeVision.Plugin.SDK.Execution.Helpers
                 rows = rows.TupleConcat(points[i].Y);
                 cols = cols.TupleConcat(points[i].X);
             }
+            // 闭合多边形：GenRegionPolygon 不会自动闭合首尾顶点
+            if (points.Count >= 3)
+            {
+                rows = rows.TupleConcat(points[0].Y);
+                cols = cols.TupleConcat(points[0].X);
+            }
             var region = new HRegion();
             region.GenRegionPolygon(rows, cols);
+
+            HOperatorSet.FillUp(region, out var filled);
+            region.Dispose();
+            region = new HRegion(filled);
+
             return region;
         }
 
@@ -104,6 +127,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Helpers
             if (hasInspection)
             {
                 inspHRegion = BuildHalconRegion(inspectionRegions); // 保持 tuple 供独立轮廓渲染
+
                 HOperatorSet.Union1(inspHRegion, out var unionRegion); // 合并为单一处理域
                 roiRegion = new HRegion(unionRegion);
             }
@@ -167,7 +191,9 @@ namespace SunEyeVision.Plugin.SDK.Execution.Helpers
                 }
                 else if (inspHRegion != null)
                 {
-                    roiRegion = new HRegion(inspHRegion);
+                    HOperatorSet.Union1(inspHRegion, out var inspUnion);
+                    roiRegion = new HRegion(inspUnion);
+                    inspUnion.Dispose();
                 }
                 else
                 {

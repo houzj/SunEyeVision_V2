@@ -469,9 +469,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                     StrokeThickness = strokeThickness,
                     RenderTransform = new RotateTransform(region.Angle, region.Width / 2, region.Height / 2)
                     {
-                        // 使用数学角度系统
-                        // RotateTransform使用顺时针为正，需要转换
-                        Angle = -region.Angle
+                        // 屏幕角度系：顺时针为正，0°向右
+                        // 与方向箭头/旋转手柄保持一致
+                        Angle = region.Angle
                     }
                 };
 
@@ -561,10 +561,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                                                 shape.Height = region.Height;
                                                 if (shape is Rectangle rect && region.ShapeType == ShapeType.RotatedRectangle)
                                                 {
-                                                    rect.RenderTransform = new RotateTransform(region.Angle, region.Width / 2, region.Height / 2)
-                                                    {
-                                                        Angle = -region.Angle
-                                                    };
+                                                rect.RenderTransform = new RotateTransform(region.Angle, region.Width / 2, region.Height / 2)
+                                                {
+                                                    // 屏幕角度系：顺时针为正，0°向右
+                                                    Angle = region.Angle
+                                                };
                                                 }
                                                 break;
 
@@ -727,7 +728,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
             var rotation = region.Angle;
 
             // 计算箭头几何
-            var arrow = RotatedRectangleHelper.GetDirectionArrow(center, height, rotation);
+            var arrow = RotatedRectangleHelper.GetDirectionArrow(center, region.Width, rotation);
 
             // 确定箭头颜色（选中时为蓝色，否则使用区域颜色）
             var arrowColor = region.IsSelected

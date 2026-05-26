@@ -423,7 +423,7 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
                     Score = matchScore,
                     CenterX = matchCol,
                     CenterY = matchRow,
-                    Angle = matchAngle / DEG2RAD,   // 弧度→度
+                    Angle = -matchAngle / DEG2RAD,   // Halcon ccw+ → 屏幕角度系 cw+
                     Scale = matchScale,
                     TemplateName = template.Name,
                     TemplateId = template.Id,

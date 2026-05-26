@@ -11,6 +11,7 @@ using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering;
 using SunEyeVision.UI.Extensions;
 using SunEyeVision.UI.Services.Performance;
 using WorkflowCore = SunEyeVision.Workflow;
@@ -316,16 +317,19 @@ namespace SunEyeVision.UI.Services.Workflow
         }
 
         /// <summary>
-        /// 构建区域显示项列表（节点检测区域）
+        /// 默认检测区域样式（当参数中未定义对应样式时使用）
         /// </summary>
-        private static readonly GraphicsStyle RegionStyle = new()
+        private static readonly GraphicsStyle DefaultRegionStyle = new()
         {
             Name = "Region",
-            OkColor = System.Windows.Media.Color.FromRgb(0, 0, 255),
+            OkColor = System.Windows.Media.Color.FromRgb(0x44, 0x88, 0xFF),
             LineWidth = 1.5
         };
 
-        private static readonly GraphicsStyle MaskRegionStyle = new()
+        /// <summary>
+        /// 默认屏蔽区域样式（当参数中未定义对应样式时使用）
+        /// </summary>
+        private static readonly GraphicsStyle DefaultMaskRegionStyle = new()
         {
             Name = "MaskRegion",
             OkColor = System.Windows.Media.Color.FromRgb(255, 165, 0),  // 橙色
@@ -403,8 +407,7 @@ namespace SunEyeVision.UI.Services.Workflow
 
         private IEnumerable<DisplayItemBase>? BuildRegionItems(WorkflowNodeBase node)
         {
-            if (node.Parameters is not RegionParameters regionParams ||
-                regionParams.IsRegionEnabled?.Value != true)
+            if (node.Parameters is not RegionParameters regionParams)
                 return null;
 
             var items = new List<DisplayItemBase>();
@@ -422,20 +425,42 @@ namespace SunEyeVision.UI.Services.Workflow
                 $"[结果层] 节点 {node.Name}: 位置修正矩阵={matrixVals} | Hash=0x{matrixHash:X8} | 来源=WorkflowContext",
                 "NodeResultManager");
 
-            // 检测区域（蓝色）
+            // 检测区域（蓝色）— 使用参数中的样式实例，UI 的 DispItemColorControl 可绑定控制可见性
             var enabledRegions = regionParams.InspectionRegions.GetEnabledRegions();
+            var inspectionStyle = regionParams.InspectionRegionStyle ?? DefaultRegionStyle;
             foreach (var region in enabledRegions)
             {
-                var regionItem = CreateRegionDisplayItem(region, RegionStyle, correctionMatrix);
+                var regionItem = CreateRegionDisplayItem(region, inspectionStyle, correctionMatrix);
                 if (regionItem != null) items.Add(regionItem);
+
+                // 旋转矩形附加方向箭头（线宽与轮廓一致，箭杆延伸至矩形外）
+                if (region.Parameters is ShapeParameters rShape && rShape.ShapeType == ShapeType.RotatedRectangle)
+                {
+                    var arrowCenter = correctionMatrix != null
+                        ? correctionMatrix.TransformWpfPoint(new System.Windows.Point(rShape.CenterX, rShape.CenterY))
+                        : new System.Windows.Point(rShape.CenterX, rShape.CenterY);
+
+                    items.Add(BuildDirectionArrowItem(rShape, arrowCenter));
+                }
             }
 
-            // 屏蔽区域（橙色）
+            // 屏蔽区域（橙色）— 使用参数中的样式实例，UI 的 DispItemColorControl 可绑定控制可见性
             var enabledMasks = regionParams.MaskRegions.GetEnabledRegions();
+            var maskStyle = regionParams.MaskRegionStyle ?? DefaultMaskRegionStyle;
             foreach (var region in enabledMasks)
             {
-                var regionItem = CreateRegionDisplayItem(region, MaskRegionStyle, correctionMatrix);
+                var regionItem = CreateRegionDisplayItem(region, maskStyle, correctionMatrix);
                 if (regionItem != null) items.Add(regionItem);
+
+                // 旋转矩形附加方向箭头（线宽与轮廓一致，箭杆延伸至矩形外）
+                if (region.Parameters is ShapeParameters mShape && mShape.ShapeType == ShapeType.RotatedRectangle)
+                {
+                    var arrowCenter = correctionMatrix != null
+                        ? correctionMatrix.TransformWpfPoint(new System.Windows.Point(mShape.CenterX, mShape.CenterY))
+                        : new System.Windows.Point(mShape.CenterX, mShape.CenterY);
+
+                    items.Add(BuildDirectionArrowItem(mShape, arrowCenter));
+                }
             }
 
             // 输出位置修正诊断摘要（单行日志，减少假阳性干扰）
@@ -484,13 +509,11 @@ namespace SunEyeVision.UI.Services.Workflow
                 },
                 ShapeType.RotatedRectangle => new GraphicsDisplayItem
                 {
-                    Style = style, Type = GraphicsType.Rectangle,
+                    Style = style, Type = GraphicsType.Polygon,
                     Geometries = new object[]
                     {
-                        new RotatedRect(
-                            new Point2f((float)center.X, (float)center.Y),
-                            new Size2f((float)shape.Width, (float)shape.Height),
-                            (float)(-shape.Angle))  // 数学角度 → OpenCV 顺时针角度
+                        RotatedRectangleHelper.GetCorners(
+                            center, shape.Width, shape.Height, shape.Angle)
                     }
                 },
                 ShapeType.Circle => new GraphicsDisplayItem
@@ -519,6 +542,50 @@ namespace SunEyeVision.UI.Services.Workflow
                     Geometries = new object[] { new LineSegment(lineStart, lineEnd) }
                 },
                 _ => null
+            };
+        }
+
+        /// <summary>
+        /// 结果显示层旋转矩形轮廓样式（与交互层 RegionEditor 一致）
+        /// </summary>
+        private static readonly GraphicsStyle ResultRotatedRegionStyle = new()
+        {
+            Name = "ResultRotatedRegion",
+            OkColor = System.Windows.Media.Color.FromRgb(0, 0, 255),
+            NgColor = System.Windows.Media.Color.FromRgb(0, 0, 255),
+            LineWidth = 2.0,
+            Opacity = 0.7
+        };
+
+        /// <summary>
+        /// 结果显示层旋转矩形方向箭头专用样式（LineWidth=2.0 → 配合 arrowSize=thickness×6，头部=12px）
+        /// </summary>
+        private static readonly GraphicsStyle ResultArrowStyle = new()
+        {
+            Name = "ResultArrow",
+            OkColor = System.Windows.Media.Color.FromRgb(0, 0, 255),
+            NgColor = System.Windows.Media.Color.FromRgb(0, 0, 255),
+            LineWidth = 2.0,
+            Opacity = 0.7
+        };
+
+        /// <summary>
+        /// 构建旋转矩形方向箭头显示项（线宽与轮廓一致，箭杆到矩形边界）
+        /// </summary>
+        private static GraphicsDisplayItem BuildDirectionArrowItem(ShapeParameters shape, System.Windows.Point center)
+        {
+            // 箭杆从中心到矩形边界（width / 2）
+            var arrowLength = shape.Width / 2;
+            var angleRad = shape.Angle * Math.PI / 180;
+            var arrowEnd = new System.Windows.Point(
+                center.X + arrowLength * Math.Cos(angleRad),
+                center.Y + arrowLength * Math.Sin(angleRad));
+
+            return new GraphicsDisplayItem
+            {
+                Style = ResultArrowStyle,
+                Type = GraphicsType.Arrow,
+                Geometries = new object[] { new LineSegment(center, arrowEnd) }
             };
         }
     }

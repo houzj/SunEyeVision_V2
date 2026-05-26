@@ -1027,7 +1027,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 }
             }
 
-            var hitRegion = HitTestRegion(refPosition);
+            // 传入原始画布坐标(position)，HitTestRegion 内部会自行做反向变换
+            var hitRegion = HitTestRegion(position);
             if (hitRegion != null)
             {
                 SelectRegion(hitRegion);
@@ -1578,9 +1579,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             // Math.Atan2返回数学角度：逆时针为正，0°向右
             var mathAngle = Math.Atan2(mousePos.Y - center.Y, mousePos.X - center.X) * 180 / Math.PI;
 
-            // 转换为图像坐标系角度（顺时针为正，0°向下）
-            // 公式：imageAngle = -mathAngle + 90
-            return -mathAngle + 90;
+            // Math.Atan2 在屏幕坐标系（Y向下）中天然返回顺时针为正的角度
+            // 直接返回即可，无需取负
+            return mathAngle;
         }
 
         /// <summary>
@@ -2207,7 +2208,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                         shape.Angle,
                         rotatedCenter,
                         zoom,
-                        shape.Height
+                        shape.Width
                     );
                     break;
 

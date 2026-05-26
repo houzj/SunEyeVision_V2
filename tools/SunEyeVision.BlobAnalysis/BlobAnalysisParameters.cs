@@ -313,7 +313,11 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// </summary>
         [JsonPropertyOrder(16)]
         [JsonPropertyName("positionCorrectionSource")]
-        public ImageSourceReference? PositionCorrectionSource { get; set; }
+        public ImageSourceReference? PositionCorrectionSource
+        {
+            get => _positionCorrectionSource;
+            set => _positionCorrectionSource = value;
+        }
 
         /// <summary>
         /// 位置修正绑定源显示文本

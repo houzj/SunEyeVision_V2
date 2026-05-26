@@ -133,6 +133,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
                     stepTimings.Add(("ROI构建", stepSw.ElapsedMilliseconds));
 
                     // ===== Step 2.5: 位置修正（正向变换 ROI） =====
+                    // ===== Step 2.5: 位置修正（正向变换 ROI） =====
                     if (parameters.IsPositionCorrectionEnabled?.Value == true)
                     {
                         stepSw.Restart();
@@ -143,11 +144,17 @@ namespace SunEyeVision.Tool.BlobAnalysis
                             (roiRegion, inspHRegion, maskHRegion) = ToolRegionHelper.ApplyPositionCorrectionHalcon(
                                 roiRegion, inspHRegion, maskHRegion, matrix, imgWidth, imgHeight);
                         }
+                        else if (bindingSource != null &&
+                                 !string.IsNullOrEmpty(bindingSource.SourceNodeId) &&
+                                 !string.IsNullOrEmpty(bindingSource.PropertyName))
+                        {
+                            // 已配置绑定源但上游节点尚未返回有效矩阵（非错误，降级为信息日志）
+                            parameters.LogInfo("位置修正已启用，但绑定源当前无有效矩阵，跳过位置修正");
+                        }
                         else
                         {
-                            parameters.LogError("位置修正已启用但绑定源无有效矩阵，无法继续处理");
-                            result.SetError("位置修正已启用但绑定源无有效矩阵");
-                            return result;
+                            // 未配置绑定源：发出警告但不阻断执行（用户可能忘记配置绑定源）
+                            parameters.LogWarning("位置修正已启用但未配置绑定源，跳过位置修正");
                         }
                         stepSw.Stop();
                         stepTimings.Add(("位置修正", stepSw.ElapsedMilliseconds));

@@ -694,13 +694,17 @@ namespace SunEyeVision.UI.Views.Controls.Canvas
                                             var nodeBorders = allBorders.Where(b => b.Tag is WorkflowNode).ToList();
                                             var workflowNodes = workflowTab.WorkflowNodes;
 
+                                            // 每个节点对应2个 Border（HitAreaBorder + NodeBorder），按 ID 去重后比较
+                                            var uniqueNodeIds = nodeBorders
+                                                .Select(b => ((WorkflowNode)b.Tag).Id)
+                                                .Distinct()
+                                                .Count();
 
-
-                                            if (nodeBorders.Count != workflowNodes.Count)
+                                            if (uniqueNodeIds != workflowNodes.Count)
                                             {
                                                 Plugin.SDK.Logging.VisionLogger.Instance?.Log(
                                                     Plugin.SDK.Logging.LogLevel.Warning,
-                                                    $"[CollectionChanged] Border与Nodes数量不一致 - Border数={nodeBorders.Count}, Nodes数={workflowNodes.Count}, 差异={nodeBorders.Count - workflowNodes.Count}",
+                                                    $"[CollectionChanged] Border与Nodes数量不一致 - 含Tag Border数={nodeBorders.Count}, 去重节点ID数={uniqueNodeIds}, Nodes数={workflowNodes.Count}, 差异={uniqueNodeIds - workflowNodes.Count}",
                                                     "WorkflowCanvasControl");
 
                                                 // 列出所有节点Border的信息

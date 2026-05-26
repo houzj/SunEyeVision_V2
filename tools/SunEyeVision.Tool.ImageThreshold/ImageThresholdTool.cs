@@ -133,11 +133,15 @@ namespace SunEyeVision.Tool.ImageThreshold
                                 roiRegion, matrix, grayImage.Size);
                             parameters.LogInfo($"位置修正已启用, 矩阵: {matrix}");
                         }
+                        else if (bindingSource != null &&
+                                 !string.IsNullOrEmpty(bindingSource.SourceNodeId) &&
+                                 !string.IsNullOrEmpty(bindingSource.PropertyName))
+                        {
+                            parameters.LogInfo("位置修正已启用，但绑定源当前无有效矩阵，跳过位置修正");
+                        }
                         else
                         {
-                            parameters.LogError("位置修正已启用但绑定源无有效矩阵，无法继续处理");
-                            result.SetError("位置修正已启用但绑定源无有效矩阵");
-                            return result;
+                            parameters.LogWarning("位置修正已启用但未配置绑定源，跳过位置修正");
                         }
                         stepSw.Stop();
                         stepTimings.Add(("位置修正", stepSw.ElapsedMilliseconds));

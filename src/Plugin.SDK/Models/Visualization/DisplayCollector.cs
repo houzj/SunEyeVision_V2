@@ -220,6 +220,15 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
             {
                 item.AnchorX = x;
                 item.AnchorY = y;
+
+                // 检测：如果文本位置与样式位置一致，认定为样式驱动
+                // （工具显式使用 style.PositionX/Y 作为锚点，如 Blob 面积列表）
+                if (item.Style != null &&
+                    Math.Abs(x - item.Style.PositionX) < 0.001 &&
+                    Math.Abs(y - item.Style.PositionY) < 0.001)
+                {
+                    item.IsPositionStyleDriven = true;
+                }
             }
         }
     }

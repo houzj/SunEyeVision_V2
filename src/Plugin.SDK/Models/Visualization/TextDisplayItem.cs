@@ -40,6 +40,11 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
         [JsonIgnore]
         public bool[] IsPassArray { get; set; } = Array.Empty<bool>();
 
+        /// <summary>文本位置是否由 Style.PositionX/Y 控制（如 Blob 面积列表），
+        /// 为 true 时样式 Position 变更自动更新所有文本位置</summary>
+        [JsonIgnore]
+        internal bool IsPositionStyleDriven { get; set; }
+
         /// <summary>文本数据（运行时，不序列化）</summary>
         [JsonIgnore]
         public DisplayTextData[] Texts { get; set; } = Array.Empty<DisplayTextData>();
@@ -70,7 +75,22 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
         private void OnStylePropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(TextStyle.IsVisible))
+            {
                 IsVisible = _style!.IsVisible;
+            }
+            else if (e.PropertyName is nameof(TextStyle.PositionX) or nameof(TextStyle.PositionY)
+                     && IsPositionStyleDriven && Texts.Length > 0)
+            {
+                double newValue = e.PropertyName == nameof(TextStyle.PositionX)
+                    ? _style!.PositionX : _style!.PositionY;
+                for (int i = 0; i < Texts.Length; i++)
+                {
+                    if (e.PropertyName == nameof(TextStyle.PositionX))
+                        Texts[i].X = newValue;
+                    else
+                        Texts[i].Y = newValue;
+                }
+            }
             NotifyChanged();
         }
     }

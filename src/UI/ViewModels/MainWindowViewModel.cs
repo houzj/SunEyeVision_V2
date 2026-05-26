@@ -3289,10 +3289,22 @@ AddLog($"⚠️ 日志记录异常: {ex.Message}");
         {
             try
             {
-                // ★ 关键日志：节点执行完成
+                // ★ 关键日志：节点执行完成 - 记录节点类型和顺序
                 var outputValues = e.Result?.GetOutputValues();
                 bool hasImageOutput = outputValues?.Any(kv => kv.Value is OpenCvSharp.Mat) ?? false;
-                AddLog($"✅ 节点执行完成: {e.Node.Name}, 成功={e.Result?.IsSuccess}, 有图像输出={hasImageOutput}");
+                AddLog($"✅ 节点执行完成: {e.Node.Name}({e.Node.ToolType}), ID={e.Node.Id}, 成功={e.Result?.IsSuccess}, 有图像输出={hasImageOutput}");
+
+                // ★ 诊断：检查 ShapeMatch 结果中包含的 BestPositionCorrection 属性
+                if (outputValues != null)
+                {
+                    var hasPositionCorrection = outputValues.Any(kv =>
+                        kv.Key.Contains("PositionCorrection", StringComparison.Ordinal) ||
+                        kv.Key.Contains("BestPosition", StringComparison.Ordinal));
+                    if (hasPositionCorrection)
+                    {
+                        AddLog($"📐 [位置修正] 节点 {e.Node.Name} 输出包含位置修正属性");
+                    }
+                }
 
                 // 通过 NodeResultManager 更新节点结果（更新 OutputCache，不修改 InputSource）
                 _nodeResultManager.UpdateNodeResult(e.Node, e.Result);
@@ -3369,8 +3381,9 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                     return;
                 }
 
-                // ★ 关键日志：输出值类型
-                AddLog($"📤 节点 {node.Name} 输出类型: {outputValue.GetType().Name}");
+                // ★ 关键日志：输出值类型和输出属性名称列表
+                var allPropNames = string.Join(", ", outputValues.Keys);
+                AddLog($"📤 节点 {node.Name}({node.ToolType}) 输出类型: {outputValue.GetType().Name} | 输出属性: [{allPropNames}] | ID={node.Id}");
 
                 // 更新所有缓存的数据提供者
                 int updatedCount = 0;
@@ -3381,10 +3394,13 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
 kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
                         kvp.Value.SetNodeResult(node.Id, result);
                         updatedCount++;
+                        // ★ 诊断：记录为哪个节点ID注入了结果
+                        AddLog($"  └→ DSQS[{kvp.Key}] 已注入节点 {node.Name}(ID={node.Id}) 的结果 | ResultType={result.GetType().Name}");
                     }
                     catch (Exception ex)
                     {
-}
+                        AddLog($"  ⚠️ DSQS更新失败 [{kvp.Key}]: {ex.Message}");
+                    }
                 }
                 if (updatedCount > 0)
                 {
@@ -3393,7 +3409,8 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
             }
             catch (Exception ex)
             {
-}
+                AddLog($"⚠️ UpdateDataProvidersForNode 异常: {ex.Message}");
+            }
         }
 
         /// <summary>

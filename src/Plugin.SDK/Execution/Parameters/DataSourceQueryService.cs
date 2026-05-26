@@ -422,6 +422,14 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             {
                 if (outputs.TryGetValue(pureName, out var value))
                 {
+                    // ★ 诊断：位置修正矩阵查询通过 _nodeOutputs 命中
+                    if (pureName.Contains("PositionCorrection", StringComparison.Ordinal) || pureName.Contains("BestPosition", StringComparison.Ordinal))
+                    {
+                        var valueType = value?.GetType().Name ?? "null";
+                        VisionLogger.Instance?.Log(LogLevel.Info,
+                            $"[DSQS.GetPropertyValue] _nodeOutputs 命中 | NodeId={nodeId} | Property={pureName} | ValueType={valueType} | Value={value}",
+                            "DSQS");
+                    }
                     // 处理数组索引
                     if (arrayIndex.HasValue && value is Array array)
                     {
@@ -437,7 +445,28 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             var result = GetNodeResultFromCache(nodeId);
             if (result != null)
             {
-                return GetNestedPropertyValue(result, propertyName);
+                var val = GetNestedPropertyValue(result, propertyName);
+
+                // ★ 诊断：位置修正矩阵查询通过 _nodeResults 反射命中
+                if (pureName.Contains("PositionCorrection", StringComparison.Ordinal) || pureName.Contains("BestPosition", StringComparison.Ordinal))
+                {
+                    var valType = val?.GetType().Name ?? "null";
+                    var resultType = result.GetType().Name;
+                    VisionLogger.Instance?.Log(LogLevel.Info,
+                        $"[DSQS.GetPropertyValue] 反射回退命中 | NodeId={nodeId} | Property={pureName} | ResultType={resultType} | ValueType={valType} | Value={val}",
+                        "DSQS");
+                }
+
+                return val;
+            }
+
+            // ★ 诊断：位置修正矩阵查询完全未命中缓存
+            if (pureName.Contains("PositionCorrection", StringComparison.Ordinal) || pureName.Contains("BestPosition", StringComparison.Ordinal))
+            {
+                var cachedResultTypes = string.Join(", ", _nodeResults.Keys);
+                VisionLogger.Instance?.Log(LogLevel.Warning,
+                    $"[DSQS.GetPropertyValue] 缓存未命中 | NodeId={nodeId} | Property={pureName} | _nodeResults.Keys=[{cachedResultTypes}] | _ssotReaderSet={_ssotReader != null}",
+                    "DSQS");
             }
 
             return null;

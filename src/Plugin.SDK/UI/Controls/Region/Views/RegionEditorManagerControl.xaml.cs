@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -181,8 +182,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 : "null";
             PluginLogger.Info($"[RegionEditorManager] SetPositionCorrectionMatrix 传入 | Matrix={matrixInfo}", "RegionEditorManager");
 
+            // ★ 诊断：记录传入矩阵的引用和哈希值，追踪是否每个调用都是同一实例
+            var hash = matrix != null ? RuntimeHelpers.GetHashCode(matrix) : 0;
+
             inspectionsEditor.SetPositionCorrectionMatrix(matrix);
             masksEditor.SetPositionCorrectionMatrix(matrix);
+
+            PluginLogger.Info($"[RegionEditorManager] SetPositionCorrectionMatrix 完成 | MatrixHash=0x{hash:X8} | inspectorEditor矩阵已设置 | maskEditor矩阵已设置", "RegionEditorManager");
         }
 
         /// <summary>
@@ -594,6 +600,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             previewCtx = masksEditor.GetPreviewContext();
             if (previewCtx != null)
                 allContexts.Add(previewCtx);
+
+            // ★ 诊断：渲染前记录上下文数量
+            PluginLogger.Info($"[RenderAll] 开始渲染 | ContextCount={allContexts.Count} | _renderScheduled={_renderScheduled}", "RegionEditorManager");
 
             // Render all regions
             _renderer.Render(allContexts, new RegionRenderOptions { ShowLabels = true, ShowHandles = false });

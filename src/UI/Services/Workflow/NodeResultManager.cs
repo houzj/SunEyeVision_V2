@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Media.Imaging;
@@ -39,6 +40,9 @@ namespace SunEyeVision.UI.Services.Workflow
 
         // 图像转换器池
         private readonly ImageConverterPool _imageConverterPool;
+
+        // 位置修正矩阵诊断收集（字典 → 单行摘要日志，减少假阳性日志干扰）
+        private readonly ConcurrentDictionary<string, string> _correctionDiagnostics = new();
 
         public NodeResultManager(Func<WorkflowCore.WorkflowContext?> getContext, ViewModels.MainWindowViewModel viewModel)
         {
@@ -328,6 +332,75 @@ namespace SunEyeVision.UI.Services.Workflow
             LineWidth = 1.5
         };
 
+        /// <summary>
+        /// 从 WorkflowContext 中查询位置修正矩阵。
+        /// 直接通过 AvailableDataSource 的 SourceNodeId+PropertyName 查询父节点执行结果，
+        /// 避免依赖 CurrentValue（设计时为 null，仅执行时临时填充）。
+        /// </summary>
+        private AffineMatrix? GetPositionCorrectionMatrix(ToolParameters parameters)
+        {
+            if (parameters == null) return null;
+
+            try
+            {
+                var isEnabledProp = parameters.GetType().GetProperty("IsPositionCorrectionEnabled");
+                if (isEnabledProp == null)
+                {
+                    _correctionDiagnostics["状态"] = "无IsPositionCorrectionEnabled属性";
+                    return null;
+                }
+
+                var isEnabledValue = isEnabledProp.GetValue(parameters);
+                if (isEnabledValue is not ParamValue<bool> { Value: true })
+                {
+                    _correctionDiagnostics["状态"] = "位置修正未启用";
+                    return null;
+                }
+
+                // 获取 AvailableDataSource 信息（SourceNodeId + PropertyName）
+                var bindingSourceProp = parameters.GetType().GetProperty("PositionCorrectionBindingSource");
+                var dataSource = bindingSourceProp?.GetValue(parameters) as AvailableDataSource;
+                if (dataSource == null || string.IsNullOrEmpty(dataSource.SourceNodeId) || string.IsNullOrEmpty(dataSource.PropertyName))
+                {
+                    _correctionDiagnostics["状态"] = "无有效绑定源";
+                    return null;
+                }
+
+                _correctionDiagnostics["绑定源"] = $"{dataSource.SourceNodeId}.{dataSource.PropertyName}";
+
+                // 直接通过 WorkflowContext 查询父节点执行结果
+                var context = _getContext();
+                if (context == null)
+                {
+                    _correctionDiagnostics["状态"] = "无WorkflowContext";
+                    return null;
+                }
+
+                var parentResult = context.GetNodeResult(dataSource.SourceNodeId);
+                if (parentResult?.Result == null)
+                {
+                    _correctionDiagnostics["状态"] = $"父节点{dataSource.SourceNodeId}无执行结果";
+                    return null;
+                }
+
+                var matrix = parentResult.Result.GetOutputValue<AffineMatrix>(dataSource.PropertyName);
+                _correctionDiagnostics["矩阵"] = matrix?.ToString() ?? "null";
+                _correctionDiagnostics["状态"] = matrix != null ? "已应用" : "父节点输出无矩阵";
+
+                return matrix;
+            }
+            catch (Exception ex)
+            {
+                _correctionDiagnostics["状态"] = $"异常:{ex.Message}";
+                Plugin.SDK.Logging.VisionLogger.Instance?.Log(
+                    Plugin.SDK.Logging.LogLevel.Warning,
+                    $"[GetPositionCorrectionMatrix] 查询位置修正矩阵失败: {ex.Message}",
+                    "NodeResultManager");
+            }
+
+            return null;
+        }
+
         private IEnumerable<DisplayItemBase>? BuildRegionItems(WorkflowNodeBase node)
         {
             if (node.Parameters is not RegionParameters regionParams ||
@@ -336,11 +409,24 @@ namespace SunEyeVision.UI.Services.Workflow
 
             var items = new List<DisplayItemBase>();
 
+            // 获取位置修正矩阵（使结果层与交互层坐标一致）
+            var correctionMatrix = GetPositionCorrectionMatrix(node.Parameters);
+
+            // ★ 诊断：结果层矩阵详细信息，与交互层对比
+            var matrixHash = correctionMatrix != null ? System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(correctionMatrix) : 0;
+            var matrixVals = correctionMatrix != null
+                ? $"[{correctionMatrix.M11:F4},{correctionMatrix.M12:F4},{correctionMatrix.M21:F4},{correctionMatrix.M22:F4},{correctionMatrix.OffsetX:F2},{correctionMatrix.OffsetY:F2}]"
+                : "null";
+            Plugin.SDK.Logging.VisionLogger.Instance?.Log(
+                Plugin.SDK.Logging.LogLevel.Info,
+                $"[结果层] 节点 {node.Name}: 位置修正矩阵={matrixVals} | Hash=0x{matrixHash:X8} | 来源=WorkflowContext",
+                "NodeResultManager");
+
             // 检测区域（蓝色）
             var enabledRegions = regionParams.InspectionRegions.GetEnabledRegions();
             foreach (var region in enabledRegions)
             {
-                var regionItem = CreateRegionDisplayItem(region, RegionStyle);
+                var regionItem = CreateRegionDisplayItem(region, RegionStyle, correctionMatrix);
                 if (regionItem != null) items.Add(regionItem);
             }
 
@@ -348,23 +434,53 @@ namespace SunEyeVision.UI.Services.Workflow
             var enabledMasks = regionParams.MaskRegions.GetEnabledRegions();
             foreach (var region in enabledMasks)
             {
-                var regionItem = CreateRegionDisplayItem(region, MaskRegionStyle);
+                var regionItem = CreateRegionDisplayItem(region, MaskRegionStyle, correctionMatrix);
                 if (regionItem != null) items.Add(regionItem);
+            }
+
+            // 输出位置修正诊断摘要（单行日志，减少假阳性干扰）
+            if (_correctionDiagnostics.Count > 0)
+            {
+                var summary = string.Join(" | ", _correctionDiagnostics.Select(kv => $"{kv.Key}={kv.Value}"));
+                Plugin.SDK.Logging.VisionLogger.Instance?.Log(
+                    Plugin.SDK.Logging.LogLevel.Info,
+                    $"[位置修正] {node.Name}: {summary}",
+                    "NodeResultManager");
+                _correctionDiagnostics.Clear();
             }
 
             return items.Count > 0 ? items : null;
         }
 
-        private static DisplayItemBase? CreateRegionDisplayItem(RegionData region, GraphicsStyle style)
+        private static DisplayItemBase? CreateRegionDisplayItem(RegionData region, GraphicsStyle style, AffineMatrix? correctionMatrix = null)
         {
             if (region?.Parameters is not ShapeParameters shape) return null;
+
+            // 应用位置修正矩阵：参考坐标 → 显示坐标（与 RegionEditor.CreateRenderContextInternal 保持一致）
+            System.Windows.Point center = correctionMatrix != null
+                ? correctionMatrix.TransformWpfPoint(new System.Windows.Point(shape.CenterX, shape.CenterY))
+                : new System.Windows.Point(shape.CenterX, shape.CenterY);
+
+            System.Windows.Point lineStart = correctionMatrix != null
+                ? correctionMatrix.TransformWpfPoint(new System.Windows.Point(shape.StartX, shape.StartY))
+                : new System.Windows.Point(shape.StartX, shape.StartY);
+
+            System.Windows.Point lineEnd = correctionMatrix != null
+                ? correctionMatrix.TransformWpfPoint(new System.Windows.Point(shape.EndX, shape.EndY))
+                : new System.Windows.Point(shape.EndX, shape.EndY);
+
+            var polygonPoints = shape.Points?.Select(p =>
+                correctionMatrix != null
+                    ? correctionMatrix.TransformWpfPoint(new System.Windows.Point(p.X, p.Y))
+                    : new System.Windows.Point(p.X, p.Y)
+            ).ToList();
 
             return shape.ShapeType switch
             {
                 ShapeType.Rectangle => new GraphicsDisplayItem
                 {
                     Style = style, Type = GraphicsType.Rectangle,
-                    Geometries = new object[] { new System.Windows.Rect(shape.CenterX - shape.Width / 2, shape.CenterY - shape.Height / 2, shape.Width, shape.Height) }
+                    Geometries = new object[] { new System.Windows.Rect(center.X - shape.Width / 2, center.Y - shape.Height / 2, shape.Width, shape.Height) }
                 },
                 ShapeType.RotatedRectangle => new GraphicsDisplayItem
                 {
@@ -372,7 +488,7 @@ namespace SunEyeVision.UI.Services.Workflow
                     Geometries = new object[]
                     {
                         new RotatedRect(
-                            new Point2f((float)shape.CenterX, (float)shape.CenterY),
+                            new Point2f((float)center.X, (float)center.Y),
                             new Size2f((float)shape.Width, (float)shape.Height),
                             (float)(-shape.Angle))  // 数学角度 → OpenCV 顺时针角度
                     }
@@ -380,27 +496,27 @@ namespace SunEyeVision.UI.Services.Workflow
                 ShapeType.Circle => new GraphicsDisplayItem
                 {
                     Style = style, Type = GraphicsType.Circle,
-                    Geometries = new object[] { new Circle2d(shape.CenterX, shape.CenterY, shape.Radius) }
+                    Geometries = new object[] { new Circle2d(center.X, center.Y, shape.Radius) }
                 },
                 ShapeType.Annulus => new GraphicsDisplayItem
                 {
                     Style = style, Type = GraphicsType.Circle,
                     Geometries = new object[]
                     {
-                        new Circle2d(shape.CenterX, shape.CenterY, shape.OuterRadius),
-                        new Circle2d(shape.CenterX, shape.CenterY, shape.Radius)
+                        new Circle2d(center.X, center.Y, shape.OuterRadius),
+                        new Circle2d(center.X, center.Y, shape.Radius)
                     },
                     IsPassArray = new bool[2]
                 },
-                ShapeType.Polygon when shape.Points != null && shape.Points.Count >= 3 => new GraphicsDisplayItem
+                ShapeType.Polygon when polygonPoints != null && polygonPoints.Count >= 3 => new GraphicsDisplayItem
                 {
                     Style = style, Type = GraphicsType.Polygon,
-                    Geometries = new object[] { shape.Points.Select(p => new System.Windows.Point(p.X, p.Y)).ToArray() }
+                    Geometries = new object[] { polygonPoints.ToArray() }
                 },
                 ShapeType.Line => new GraphicsDisplayItem
                 {
                     Style = style, Type = GraphicsType.Line,
-                    Geometries = new object[] { new LineSegment(new System.Windows.Point(shape.StartX, shape.StartY), new System.Windows.Point(shape.EndX, shape.EndY)) }
+                    Geometries = new object[] { new LineSegment(lineStart, lineEnd) }
                 },
                 _ => null
             };

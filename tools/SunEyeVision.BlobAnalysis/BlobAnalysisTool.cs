@@ -160,6 +160,19 @@ namespace SunEyeVision.Tool.BlobAnalysis
                         stepTimings.Add(("位置修正", stepSw.ElapsedMilliseconds));
                     }
 
+                    // 日志监控：记录检测区域（inspHRegion）信息
+                    if (inspHRegion != null)
+                    {
+                        HOperatorSet.AreaCenter(inspHRegion, out var area, out var row, out var col);
+                        HOperatorSet.SmallestRectangle1(inspHRegion, out var r1, out var c1, out var r2, out var c2);
+                        parameters.LogInfo($"检测区域: 面积={area.L}px², 质心=({col.D:F1},{row.D:F1}), " +
+                            $"BBox=[{c1.L},{r1.L},{c2.L},{r2.L}], 尺寸={c2.L - c1.L + 1}x{r2.L - r1.L + 1}");
+                    }
+                    else
+                    {
+                        parameters.LogInfo("检测区域: 未配置检测区域(InspHRegion=null)");
+                    }
+
                     try
                     {
                         // ===== Step 3: ReduceDomain =====

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
@@ -179,6 +180,9 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
                 // 从 ImageSourceRef 恢复 ImageSource（加载后重建运行时数据）
                 Parameters?.RestoreImageSource(AvailableDataSources);
                 Parameters?.RestorePositionCorrectionSource(AvailableDataSources);
+
+                // ★ 数据提供者就绪后立即查询矩阵（避免 OnParametersChanged 中 _dataProvider==null 导致矩阵丢失）
+                UpdatePositionCorrectionMatrix();
             }
         }
 
@@ -236,9 +240,14 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
         }
 
         /// <summary>
-        /// 从数据提供者实时查询位置修正矩阵并设置到 ROI 编辑器
-        /// 不依赖 AvailableDataSource.CurrentValue 快照，避免快照过期问题
+        /// 从 DataSourceQueryService 实时查询位置修正矩阵并设置到 ROI 编辑器
+        /// 与结果层（BlobAnalysisTool.Run）使用同一数据源，保证交互层与结果层一致
         /// </summary>
+        /// <remarks>
+        /// 使用 _dataProvider.GetPropertyValue() 实时查询而非 source.CurrentValue，
+        /// 因为 CurrentValue 来自构造时缓存的 AvailableDataSource 实例，
+        /// 工作流重新执行后新结果仅注入 DataSourceQueryService 缓存，旧实例的 CurrentValue 不会自动更新。
+        /// </remarks>
         internal void UpdatePositionCorrectionMatrix()
         {
             PluginLogger.Info("[UpdatePositionCorrectionMatrix] 开始查询矩阵", "BlobAnalysisTool");
@@ -253,10 +262,15 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
                     $"SourceNodeId={source.SourceNodeId} | PropertyName={source.PropertyName}",
                     "BlobAnalysisTool");
 
+                // 实时查询，保证拿到工作流重新执行后的最新矩阵值
                 var matrix = _dataProvider.GetPropertyValue(
                     source.SourceNodeId, source.PropertyName) as AffineMatrix;
 
-                PluginLogger.Info($"[UpdatePositionCorrectionMatrix] 查询结果 | Matrix={matrix}", "BlobAnalysisTool");
+                // ★ 诊断：矩阵详细信息
+                var matrixValues = matrix != null
+                    ? $"[{matrix.M11:F4},{matrix.M12:F4},{matrix.M21:F4},{matrix.M22:F4},{matrix.OffsetX:F2},{matrix.OffsetY:F2}]"
+                    : "null";
+                PluginLogger.Info($"[UpdatePositionCorrectionMatrix] 查询结果 | Matrix={matrixValues}", "BlobAnalysisTool");
 
                 if (matrix != null)
                 {
@@ -274,6 +288,10 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
                     "BlobAnalysisTool");
             }
 
+            // ★ _dataProvider 未就绪时不设 null（保留之前的值，如 InitializeAsync 或 SetDataProvider 设置的）
+            if (_dataProvider == null)
+                return;
+
             PluginLogger.Warning("[UpdatePositionCorrectionMatrix] 矩阵为null，清空区域变换", "BlobAnalysisTool");
             regionManager?.SetPositionCorrectionMatrix(null);
         }
@@ -286,7 +304,7 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
         /// <summary>
         /// 外部结果到达通知 - 工作流引擎执行完成后调用，刷新位置修正矩阵
         /// </summary>
-        public void OnExternalResultArrived()
+        public override void OnExternalResultArrived()
         {
             PluginLogger.Info("[OnExternalResultArrived] 外部结果到达，刷新位置修正矩阵", "BlobAnalysisTool");
 

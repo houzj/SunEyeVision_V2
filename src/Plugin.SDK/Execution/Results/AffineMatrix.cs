@@ -57,10 +57,15 @@ public class AffineMatrix
     public double[] ToArray() => [M11, M12, M21, M22, OffsetX, OffsetY];
 
     /// <summary>Transform a point from reference coordinates to test coordinates (forward).</summary>
+    /// <remarks>
+    /// 与 ToWpfMatrix() / ToHalconArray() 对齐，使用标准行向量乘法：
+    /// P'x = Px*M11 + Py*M21 + Ox
+    /// P'y = Px*M12 + Py*M22 + Oy
+    /// </remarks>
     public (double X, double Y) TransformPoint(double x, double y)
     {
-        var newX = M11 * x + M12 * y + OffsetX;
-        var newY = M21 * x + M22 * y + OffsetY;
+        var newX = x * M11 + y * M21 + OffsetX;
+        var newY = x * M12 + y * M22 + OffsetY;
         return (newX, newY);
     }
 

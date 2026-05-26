@@ -63,7 +63,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
         // ★ 位置修正诊断计数器
         private int _correctionStatusCount = 0;
-        private const int CORRECTION_LOG_INTERVAL = 50;
+        private const int CORRECTION_LOG_INTERVAL = 1;
 
         // 区域名称索引管理（空洞池策略）
         private int _nextRegionIndex = 1;
@@ -2034,9 +2034,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         /// </summary>
         private RegionRenderContext CreateRenderContextInternal(RegionData region, ShapeParameters shape, bool isPreview = false)
         {
-            // ★ 诊断：首次渲染时输出位置修正状态
-            if (_correctionStatusCount < 5)
-                LogCorrectionStatus($"CreateRenderContext(Region={region.Name})");
+            // ★ 诊断：每次渲染都输出位置修正状态
+            LogCorrectionStatus($"CreateRenderContext(Region={region.Name})");
             // 正向变换：参考坐标 → 显示（测试）坐标
             Point center = _positionCorrectionMatrix != null
                 ? _positionCorrectionMatrix.TransformWpfPoint(new Point(shape.CenterX, shape.CenterY))
@@ -2100,8 +2099,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             context.CalculateBounds();
 
             // ★ 诊断：数据层坐标变换校验 - 参考坐标 → 显示坐标（正向变换）
+            var matrixSummary = _positionCorrectionMatrix != null
+                ? $"[{_positionCorrectionMatrix.M11:F4},{_positionCorrectionMatrix.M12:F4},{_positionCorrectionMatrix.M21:F4},{_positionCorrectionMatrix.M22:F4},{_positionCorrectionMatrix.OffsetX:F2},{_positionCorrectionMatrix.OffsetY:F2}]"
+                : "null";
             VisionLogger.Instance.Log(LogLevel.Info,
-                $"[CreateRenderContext] Region={region.Name} | 参考坐标: Center=({shape.CenterX:F1},{shape.CenterY:F1}) W={shape.Width:F1} H={shape.Height:F1} | 显示坐标: Center=({center.X:F1},{center.Y:F1}) | 直线起点=({lineStart.X:F1},{lineStart.Y:F1}) 终点=({lineEnd.X:F1},{lineEnd.Y:F1}) | Matrix={(_positionCorrectionMatrix != null ? "set" : "null")} | isPreview={isPreview}",
+                $"[CreateRenderContext] Region={region.Name} | 参考坐标: Center=({shape.CenterX:F1},{shape.CenterY:F1}) W={shape.Width:F1} H={shape.Height:F1} | 显示坐标: Center=({center.X:F1},{center.Y:F1}) | 直线起点=({lineStart.X:F1},{lineStart.Y:F1}) 终点=({lineEnd.X:F1},{lineEnd.Y:F1}) | Matrix={matrixSummary} | isPreview={isPreview}",
                 "RegionEditorControl");
 
             return context;

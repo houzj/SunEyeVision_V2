@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SunEyeVision.UI.Views.Windows"
         mc:Ignorable="d"
         Title="全局变量管理器"
         Width="1000"
@@ -125,8 +126,10 @@
             <Setter Property="BorderThickness" Value="0,0,0,2"/>
             <Setter Property="BorderBrush" Value="Transparent"/>
             <Setter Property="Padding" Value="15,10"/>
+            <Setter Property="MaxWidth" Value="150"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="ToolTip" Value="{Binding DisplayName}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="RadioButton">
@@ -135,7 +138,13 @@
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center"
-                                            VerticalAlignment="Center"/>
+                                            VerticalAlignment="Center">
+                                <ContentPresenter.Resources>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                                    </Style>
+                                </ContentPresenter.Resources>
+                            </ContentPresenter>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
@@ -194,6 +203,72 @@
             </Setter>
             <Setter Property="Cursor" Value="Hand"/>
         </Style>
+        <!-- 内联编辑 TextBox 样式（与 GroupTabStyle 视觉一致） -->
+        <Style x:Key="InlineTabEditStyle" TargetType="TextBox">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#2196F3"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="MinWidth" Value="80"/>
+            <Setter Property="MaxWidth" Value="160"/>
+            <Setter Property="CaretBrush" Value="#2196F3"/>
+        </Style>
+
+        <!-- 分组 Popup 列表项样式 -->
+        <Style x:Key="PopupGroupItemStyle" TargetType="RadioButton">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#424242"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border Background="{TemplateBinding Background}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#F5F5F5"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter Property="Foreground" Value="#2196F3"/>
+                                <Setter Property="FontWeight" Value="Medium"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ====== 阴影效果 ====== -->
+        <DropShadowEffect x:Key="DropShadowEffect"
+                          ShadowDepth="3" BlurRadius="8"
+                          Opacity="0.3" Color="#000000"/>
+
+        <!-- ====== 转换器 ====== -->
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <local:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
+
+        <!-- 全局变量类型列表 -->
+        <x:Array x:Key="GlobalVariableTypes" Type="sys:String" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+            <sys:String>Integer</sys:String>
+            <sys:String>Float</sys:String>
+            <sys:String>String</sys:String>
+            <sys:String>Boolean</sys:String>
+            <sys:String>Int64</sys:String>
+            <sys:String>Double</sys:String>
+            <sys:String>Byte</sys:String>
+            <sys:String>Point</sys:String>
+            <sys:String>Rectangle</sys:String>
+            <sys:String>Size</sys:String>
+            <sys:String>Array</sys:String>
+            <sys:String>List</sys:String>
+            <sys:String>Image</sys:String>
+        </x:Array>
     </Window.Resources>
 
     <Grid Margin="0">
@@ -210,59 +285,66 @@
 
         <!-- 工具栏 -->
         <Border Grid.Row="0" Background="White" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1" Padding="16,8">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <!-- 0: 添加变量 -->
-                    <ColumnDefinition Width="Auto"/>
-                    <!-- 1: 删除变量 -->
-                    <ColumnDefinition Width="Auto"/>
-                    <!-- 2: 分隔线 -->
-                    <ColumnDefinition Width="Auto"/>
-                    <!-- 3: 导入 -->
-                    <ColumnDefinition Width="Auto"/>
-                    <!-- 4: 导出 -->
-                    <ColumnDefinition Width="*"/>
-                    <!-- 5: 搜索框 -->
-                    <ColumnDefinition Width="Auto"/>
-                    <!-- 6: 保存 -->
-                </Grid.ColumnDefinitions>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <!-- 0: 添加变量 -->
+                        <ColumnDefinition Width="Auto"/>
+                        <!-- 1: 分隔线 -->
+                        <ColumnDefinition Width="Auto"/>
+                        <!-- 2: 导入 -->
+                        <ColumnDefinition Width="Auto"/>
+                        <!-- 3: 导出 -->
+                        <ColumnDefinition Width="Auto"/>
+                        <!-- 4: 搜索框 -->
+                        <ColumnDefinition Width="*"/>
+                        <!-- 5: 弹性空间 -->
+                    </Grid.ColumnDefinitions>
 
                 <!-- 添加按钮 -->
                 <Button Grid.Column="0" Content="➕ 添加变量" Command="{Binding AddVariableCommand}"
                         Style="{StaticResource ToolbarButtonStyle}" Margin="0,0,8,0"/>
 
-                <!-- 删除按钮 -->
-                <Button Grid.Column="1" Content="➖ 删除变量" Command="{Binding DeleteVariableCommand}"
-                        Style="{StaticResource DangerButtonStyle}" Margin="0,0,8,0"/>
-
                 <!-- 分组分隔线 -->
-                <Separator Grid.Column="2" Margin="8,0"/>
+                <Separator Grid.Column="1" Margin="8,0"/>
 
                 <!-- 导入 -->
-                <Button Grid.Column="3" Content="📥 导入" Command="{Binding ImportCommand}"
+                <Button Grid.Column="2" Content="📥 导入" Command="{Binding ImportCommand}"
                         Style="{StaticResource ToolbarButtonStyle}" Margin="0,0,4,0"/>
 
                 <!-- 导出 -->
-                <Button Grid.Column="4" Content="📤 导出" Command="{Binding ExportCommand}"
+                <Button Grid.Column="3" Content="📤 导出" Command="{Binding ExportCommand}"
                         Style="{StaticResource ToolbarButtonStyle}" Margin="0,0,8,0"/>
 
-                <!-- 搜索框 -->
-                <TextBox Grid.Column="5" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                         VerticalAlignment="Center" Padding="8,5" Margin="16,0"
-                         Width="200" HorizontalAlignment="Right">
-                    <TextBox.Style>
-                        <Style TargetType="TextBox">
-                            <Setter Property="Background" Value="White"/>
-                            <Setter Property="BorderBrush" Value="#E0E0E0"/>
-                            <Setter Property="BorderThickness" Value="1"/>
-                        </Style>
-                    </TextBox.Style>
-                </TextBox>
+                <!-- 搜索框（带水印） -->
+                <Grid Grid.Column="4" Width="200" Margin="16,0">
+                    <TextBox x:Name="SearchTextBox"
+                             Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                             VerticalAlignment="Center" Padding="8,5"
+                             Background="White" BorderBrush="#E0E0E0" BorderThickness="1"/>
 
-                <!-- 保存按钮 -->
-                <Button Grid.Column="6" Content="💾 保存" Command="{Binding SaveCommand}"
-                        Style="{StaticResource PrimaryButtonStyle}"/>
+                    <!-- 水印：空 + 未聚焦 显示；聚焦或有内容 隐藏 -->
+                    <TextBlock IsHitTestVisible="False"
+                               VerticalAlignment="Center" Padding="8,5"
+                               Foreground="#9E9E9E" FontSize="12"
+                               TextTrimming="CharacterEllipsis"
+                               Text="🔍 请输入变量名称">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding Text, ElementName=SearchTextBox}" Value=""/>
+                                            <Condition Binding="{Binding IsKeyboardFocused, ElementName=SearchTextBox}" Value="False"/>
+                                        </MultiDataTrigger.Conditions>
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </MultiDataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Grid>
             </Grid>
         </Border>
 
@@ -274,27 +356,109 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- 分组标签 -->
-                <ItemsControl Grid.Column="0" ItemsSource="{Binding Groups}" VerticalAlignment="Bottom">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel Orientation="Horizontal"/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <RadioButton Content="{Binding DisplayName}"
-                                        IsChecked="{Binding IsSelected, Mode=TwoWay}"
-                                        Style="{StaticResource GroupTabStyle}"
-                                        GroupName="VariableGroups"
-                                        Checked="GroupRadioButton_Checked"/>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                <!-- 列0: 可滚动的 Tab 区域（含内部 "+" 按钮在末尾） -->
+                <ScrollViewer x:Name="GroupTabScrollViewer" Grid.Column="0"
+                              HorizontalScrollBarVisibility="Hidden"
+                              VerticalScrollBarVisibility="Disabled">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom">
 
-                <!-- 添加分组按钮 -->
-                <Button Grid.Column="1" Content="➕ 新建分组" Command="{Binding AddGroupCommand}"
-                        Style="{StaticResource ToolbarButtonStyle}" Margin="8,8"/>
+                        <!-- 分组标签 -->
+                        <ItemsControl x:Name="GroupItemsControl" ItemsSource="{Binding Groups}" VerticalAlignment="Bottom">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <!-- 正常模式：RadioButton Tab -->
+                                        <RadioButton Content="{Binding DisplayName}"
+                                                    IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                    Style="{StaticResource GroupTabStyle}"
+                                                    GroupName="VariableGroups"
+                                                    Checked="GroupRadioButton_Checked"
+                                                    Visibility="{Binding IsEditing, 
+                                                        Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
+
+                                        <!-- 编辑模式：内联 TextBox -->
+                                        <TextBox Text="{Binding EditingText, UpdateSourceTrigger=PropertyChanged}"
+                                                 Visibility="{Binding IsEditing, 
+                                                     Converter={StaticResource BoolToVisibilityConverter}}"
+                                                 Style="{StaticResource InlineTabEditStyle}"
+                                                 IsVisibleChanged="EditTextBox_IsVisibleChanged"
+                                                 TextChanged="EditTextBox_TextChanged"
+                                                 KeyDown="EditTextBox_KeyDown"
+                                                 LostFocus="EditTextBox_LostFocus"/>
+
+                                        <!-- 右键菜单 -->
+                                        <Grid.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Header="重命名" Click="RenameGroupMenuItem_Click" CommandParameter="{Binding}"/>
+                                                <Separator/>
+                                                <MenuItem Header="删除分组" Click="DeleteGroupMenuItem_Click" CommandParameter="{Binding}"/>
+                                            </ContextMenu>
+                                        </Grid.ContextMenu>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <!-- 内部 "+" 按钮（Tab 未溢出时显示，紧跟在最后一个 Tab 右侧） -->
+                        <Button x:Name="ScrollableAddButton" Content="+" FontSize="18" FontWeight="Bold"
+                                Width="32" Height="28" Padding="0"
+                                Foreground="#2196F3" Background="Transparent"
+                                BorderThickness="0" Cursor="Hand"
+                                Command="{Binding AddGroupCommand}"
+                                ToolTip="新建分组（最多10个）"
+                                VerticalAlignment="Bottom"
+                                Margin="4,0,0,2"/>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- 列1: 固定按钮区域（始终可见） -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom" Margin="4,0,8,2">
+                    <!-- 固定 "+" 按钮（Tab 溢出时显示） -->
+                    <Button x:Name="FixedAddButton" Content="+" FontSize="18" FontWeight="Bold"
+                            Width="32" Height="28" Padding="0"
+                            Foreground="#2196F3" Background="Transparent"
+                            BorderThickness="0" Cursor="Hand"
+                            Command="{Binding AddGroupCommand}"
+                            ToolTip="新建分组（最多10个）"
+                            VerticalAlignment="Bottom"/>
+                    <!-- "▼" 下拉切换分组按钮 -->
+                    <ToggleButton x:Name="GroupDropdownButton"
+                                  Content="▼" FontSize="12"
+                                  Width="28" Height="28" Padding="0"
+                                  Foreground="#757575" Background="Transparent"
+                                  BorderThickness="0" Cursor="Hand"
+                                  ToolTip="快速切换分组"
+                                  VerticalAlignment="Bottom" Margin="4,0,0,0"/>
+                </StackPanel>
+
+                <!-- Popup 下拉分组列表（覆盖所有列） -->
+                <Popup Grid.ColumnSpan="3"
+                       IsOpen="{Binding IsChecked, ElementName=GroupDropdownButton, Mode=TwoWay}"
+                       StaysOpen="False"
+                       PlacementTarget="{Binding ElementName=GroupDropdownButton}"
+                       Placement="Bottom" HorizontalOffset="0" VerticalOffset="2">
+                    <Border Background="White" BorderBrush="#E0E0E0" BorderThickness="1"
+                            CornerRadius="4" Effect="{StaticResource DropShadowEffect}">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="500">
+                            <ItemsControl ItemsSource="{Binding Groups}" MinWidth="150">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <RadioButton Content="{Binding DisplayName}"
+                                                     IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                     GroupName="VariableGroups"
+                                                     Checked="GroupRadioButton_Checked"
+                                                     Style="{StaticResource PopupGroupItemStyle}"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Border>
+                </Popup>
             </Grid>
         </Border>
 
@@ -333,28 +497,18 @@
                 <DataGridTextColumn Header="注释" Binding="{Binding Description, UpdateSourceTrigger=PropertyChanged}"
                                     Width="150" IsReadOnly="False"/>
 
-                <!-- 类型 -->
-                <DataGridComboBoxColumn Header="类型" 
-                                        SelectedItemBinding="{Binding Type, UpdateSourceTrigger=PropertyChanged}"
-                                        Width="100">
-                    <DataGridComboBoxColumn.ItemsSource>
-                        <x:Array Type="sys:String" xmlns:sys="clr-namespace:System;assembly=mscorlib">
-                            <sys:String>Integer</sys:String>
-                            <sys:String>Float</sys:String>
-                            <sys:String>String</sys:String>
-                            <sys:String>Boolean</sys:String>
-                            <sys:String>Int64</sys:String>
-                            <sys:String>Double</sys:String>
-                            <sys:String>Byte</sys:String>
-                            <sys:String>Point</sys:String>
-                            <sys:String>Rectangle</sys:String>
-                            <sys:String>Size</sys:String>
-                            <sys:String>Array</sys:String>
-                            <sys:String>List</sys:String>
-                            <sys:String>Image</sys:String>
-                        </x:Array>
-                    </DataGridComboBoxColumn.ItemsSource>
-                </DataGridComboBoxColumn>
+                <!-- 类型（DataGridTemplateColumn + PreviewMouseDown，避免三击问题） -->
+                <DataGridTemplateColumn Header="类型" Width="100">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <ComboBox ItemsSource="{StaticResource GlobalVariableTypes}"
+                                      SelectedItem="{Binding Type, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                      BorderThickness="0"
+                                      IsSynchronizedWithCurrentItem="False"
+                                      PreviewMouseDown="TypeComboBox_PreviewMouseDown"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
 
                 <!-- 当前值 -->
                 <DataGridTextColumn Header="当前值" Binding="{Binding Value, UpdateSourceTrigger=PropertyChanged}"

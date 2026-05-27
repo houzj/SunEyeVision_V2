@@ -3,9 +3,11 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Windows;
 using System.Windows.Input;
 using Microsoft.Win32;
 using SunEyeVision.Plugin.SDK.Models;
+
 using SunEyeVision.Workflow;
 
 namespace SunEyeVision.UI.ViewModels
@@ -222,10 +224,17 @@ namespace SunEyeVision.UI.ViewModels
         #region 分组操作
 
         /// <summary>
-        /// 添加分组
+        /// 添加分组（上限 10 个）
         /// </summary>
         private void AddGroup()
         {
+            const int MaxGroups = 10;
+            if (Groups.Count >= MaxGroups)
+            {
+                LogWarning($"分组数量已达上限 ({MaxGroups} 个)");
+                return;
+            }
+
             // 生成新分组名称
             int groupIndex = Groups.Count + 1;
             string groupName = $"分组{groupIndex}";
@@ -281,6 +290,88 @@ namespace SunEyeVision.UI.ViewModels
         private bool CanDeleteGroup()
         {
             return SelectedGroup != null;
+        }
+
+        /// <summary>
+        /// 确认分组重命名（内联编辑提交时调用）
+        /// </summary>
+        public void ConfirmGroupRename(VariableGroupViewModel? groupVM)
+        {
+            if (groupVM == null || !groupVM.IsEditing) return;
+
+            string newName = groupVM.EditingText?.Trim();
+
+            // 空名称 → 还原
+            if (string.IsNullOrWhiteSpace(newName))
+            {
+                groupVM.CancelEdit();
+                return;
+            }
+
+            // 名称未变 → 直接退出编辑
+            if (newName == groupVM.Name)
+            {
+                groupVM.CommitEdit();
+                return;
+            }
+
+            // 名称唯一性
+            if (Groups.Any(g => g.Name == newName && g != groupVM))
+            {
+                LogWarning($"分组名称 '{newName}' 已存在");
+                groupVM.BeginEdit(); // 重新进入编辑让用户修改
+                return;
+            }
+
+            string oldName = groupVM.Name;
+            groupVM.Name = newName;
+            groupVM.CommitEdit();
+
+            foreach (var variable in groupVM.Variables.ToList())
+                variable.Group = newName;
+
+            LogInfo($"重命名分组: '{oldName}' → '{newName}' ({groupVM.Variables.Count} 个变量)");
+        }
+
+        /// <summary>
+        /// 删除分组（级联删除变量，从右键菜单调用）
+        /// </summary>
+        public void DeleteGroupWithVariables()
+        {
+            if (SelectedGroup == null) return;
+
+            var groupName = SelectedGroup.Name;
+            var variablesToRemove = SelectedGroup.Variables.ToList();
+
+            // 1. 从 Solution 中移除变量
+            var solution = _solutionManager.CurrentSolution;
+            if (solution != null)
+            {
+                foreach (var variable in variablesToRemove)
+                {
+                    solution.GlobalVariables.Remove(variable);
+                }
+            }
+
+            // 2. 从 Groups 集合中移除分组
+            Groups.Remove(SelectedGroup);
+
+            // 3. 选中剩余的第一个分组
+            if (Groups.Count > 0)
+            {
+                SelectedGroup = Groups[0];
+                SelectedGroup.IsSelected = true;
+            }
+            else
+            {
+                // 全删了则创建默认分组
+                var defaultGroup = new VariableGroupViewModel("分组1");
+                Groups.Add(defaultGroup);
+                SelectedGroup = defaultGroup;
+                SelectedGroup.IsSelected = true;
+            }
+
+            LogInfo($"删除分组: '{groupName}' (同时删除 {variablesToRemove.Count} 个变量)");
         }
 
         #endregion

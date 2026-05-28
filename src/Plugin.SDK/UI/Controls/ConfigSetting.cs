@@ -1081,7 +1081,19 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 var parts = BindingSource.Split('.');
                 var nodeId = parts.Length > 0 ? parts[0] : string.Empty;
                 var property = parts.Length > 1 ? parts[1] : BindingSource;
-                return ParamSetting.CreateBinding(ParameterName, nodeId, property);
+
+                var setting = ParamSetting.CreateBinding(ParameterName, nodeId, property);
+
+                // 从 BindingDisplayText 提取显示名称（用于跨会话重建显示文本）
+                // 例如："全局变量.变量2" → SourceNodeName="全局变量", SourceDisplayName="变量2"
+                var displayParts = BindingDisplayText?.Split(new[] { '.' }, 2);
+                if (displayParts != null && displayParts.Length == 2)
+                {
+                    setting.SourceNodeName = displayParts[0];
+                    setting.SourceDisplayName = displayParts[1];
+                }
+
+                return setting;
             }
         }
 
@@ -1132,6 +1144,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     {
                         setting.SourceNodeName = matchedSource.SourceNodeName;
                         setting.SourceDisplayName = matchedSource.DisplayName;
+                    }
+                    else if (!string.IsNullOrEmpty(BindingDisplayText))
+                    {
+                        // 无法从 AvailableDataSources 匹配（如全局变量 __GlobalVars__），
+                        // 从 BindingDisplayText 提取显示名称
+                        var displayParts = BindingDisplayText.Split(new[] { '.' }, 2);
+                        if (displayParts.Length == 2)
+                        {
+                            setting.SourceNodeName = displayParts[0];
+                            setting.SourceDisplayName = displayParts[1];
+                        }
                     }
 
                     paramValue.BindingConfig = setting;

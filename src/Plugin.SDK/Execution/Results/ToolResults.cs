@@ -660,6 +660,11 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
         }
 
         /// <summary>
+        /// 获取结果项列表（覆盖基类虚方法，供参数解析器从 ResultItems 中查找）
+        /// </summary>
+        public override IReadOnlyList<ResultItem> GetResultItems() => _resultItems.AsReadOnly();
+
+        /// <summary>
         /// 从结果项中提取 Mat 图像供 UI 显示
         /// </summary>
         public override Dictionary<string, IVisionImage?> GetDisplayImages()

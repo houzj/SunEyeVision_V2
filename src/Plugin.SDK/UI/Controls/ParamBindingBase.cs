@@ -80,18 +80,24 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// 从数据源列表构建树形结构
         /// </summary>
         /// <remarks>
-        /// 按节点名称分组，每个节点作为根节点，该节点的属性按 GroupName 分组
+        /// 按节点名称分组，每个节点作为根节点，该节点的属性按 GroupName 分组。
+        /// GroupName 支持 "/" 分隔的层级路径，例如 "Blob详细/边框" 会在 "Blob详细" 
+        /// 分组下创建 "边框" 子分组。
         /// 示例：
         /// - 节点A
         ///   - 结果
         ///     - 实际使用的阈值
         ///     - 最大值
+        ///   - Blob详细
+        ///     - 面积
+        ///     - 中心
+        ///       - 中心X
+        ///       - 中心Y
+        ///     - 边框
+        ///       - 边框宽
+        ///       - 边框高
         ///   - 执行信息
         ///     - 处理时间戳
-        /// - 节点B
-        ///   - 图像
-        ///     - 宽度
-        ///     - 高度
         /// </remarks>
         /// <param name="dataSources">数据源列表</param>
         /// <returns>树形结构的根节点列表</returns>
@@ -117,20 +123,30 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     }
                     else
                     {
-                        // 有分组：查找或创建分组节点
-                        if (!groupCache.TryGetValue(dataSource.GroupName, out var groupNode))
+                        // 支持 "/" 分隔的层级分组，逐层创建/查找分组节点
+                        var groupNames = dataSource.GroupName.Split('/');
+                        TreeNodeData currentParent = rootNode;
+
+                        for (int i = 0; i < groupNames.Length; i++)
                         {
-                            groupNode = TreeNodeData.CreateGroupNode(dataSource.GroupName);
-                            groupNode.Parent = rootNode;
-                            groupNode.BindingPath = string.Empty;
-                            rootNode.Children.Add(groupNode);
-                            groupCache[dataSource.GroupName] = groupNode;
+                            var cacheKey = string.Join("/", groupNames.Take(i + 1));
+
+                            if (!groupCache.TryGetValue(cacheKey, out var groupNode))
+                            {
+                                groupNode = TreeNodeData.CreateGroupNode(groupNames[i]);
+                                groupNode.Parent = currentParent;
+                                groupNode.BindingPath = string.Empty;
+                                currentParent.Children.Add(groupNode);
+                                groupCache[cacheKey] = groupNode;
+                            }
+
+                            currentParent = groupNode;
                         }
 
                         var leafNode = TreeNodeData.CreateDataSourceNode(dataSource);
-                        leafNode.Parent = groupNode;
+                        leafNode.Parent = currentParent;
                         leafNode.BindingPath = dataSource.PropertyName;
-                        groupNode.Children.Add(leafNode);
+                        currentParent.Children.Add(leafNode);
                     }
                 }
 

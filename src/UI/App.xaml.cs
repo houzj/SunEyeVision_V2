@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Windows;
 using System.IO;
 using SunEyeVision.UI.Adapters;
@@ -14,6 +14,7 @@ using SunEyeVision.Workflow;
 using SunEyeVision.UI.Services;
 using SunEyeVision.UI.Services.Monitoring;
 using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 
 namespace SunEyeVision.UI;
@@ -87,6 +88,11 @@ public partial class App : Application
 
         // 5. 初始化解决方案管理器
         ServiceInitializer.InitializeSolutionManager(defaultPath);
+
+        // 5.5 注册全局变量选择事件处理（所有 ParamBinding 实例）
+        EventManager.RegisterClassHandler(typeof(ParamBinding),
+            ParamBinding.GlobalVariableSelectionRequestedEvent,
+            new RoutedEventHandler(OnGlobalVariableSelectionRequested));
 
         // 初始化DispatcherTimer监控
         InitializeMonitoring();
@@ -391,6 +397,44 @@ public partial class App : Application
         _monitorTimer?.Stop();
 
         base.OnExit(e);
+    }
+
+    /// <summary>
+    /// 全局变量选择请求处理 — 打开选择对话框并完成绑定
+    /// </summary>
+    private static void OnGlobalVariableSelectionRequested(object sender, RoutedEventArgs e)
+    {
+        if (sender is not ParamBinding paramBinding)
+            return;
+
+        var solutionManager = ServiceInitializer.SolutionManager;
+        if (solutionManager == null)
+            return;
+
+        // ★ 使用 GlobalVariableTypeMapper 将 DataType 映射为 GlobalVariable 类型字符串，用于选择器过滤
+        var filterType = GlobalVariableTypeMapper.ToGlobalVarType(paramBinding.DataType);
+
+        // ★ 无兜底原则：DataType 已设置但无法映射到任何 GlobalVariable 类型 → 直接报错
+        if (filterType == null && paramBinding.DataType != null)
+        {
+            MessageBox.Show(
+                $"参数类型 \"{paramBinding.DataType.Name}\" 不是全局变量支持的通用类型。\n" +
+                $"\n请将工具输出适配为通用类型后再绑定全局变量。\n" +
+                $"支持的通用类型：Integer, Float, String, Boolean, Double, Point, Rectangle, Size, Image 等。",
+                "不支持的参数类型", MessageBoxButton.OK, MessageBoxImage.Warning);
+            e.Handled = true;
+            return;
+        }
+
+        // 打开全局变量选择对话框（按数据类型过滤）
+        var selectedVariable = GlobalVariableSelectDialog.ShowSelect(solutionManager, filterType);
+        if (selectedVariable != null)
+        {
+            paramBinding.CompleteGlobalVariableBinding(selectedVariable.Name);
+        }
+
+        // 标记事件已处理
+        e.Handled = true;
     }
 }
 

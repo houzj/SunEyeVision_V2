@@ -180,6 +180,16 @@ namespace SunEyeVision.Tool.BlobAnalysis
             ? FilteredBlobs.Select(b => b.BoundingRectText).ToArray()
             : Array.Empty<string>();
 
+        /// <summary>各Blob边框宽度数组</summary>
+        public double[] BlobBoundingWidths => FilteredBlobs != null
+            ? FilteredBlobs.Select(b => b.BoundingBox.Width).ToArray()
+            : Array.Empty<double>();
+
+        /// <summary>各Blob边框高度数组</summary>
+        public double[] BlobBoundingHeights => FilteredBlobs != null
+            ? FilteredBlobs.Select(b => b.BoundingBox.Height).ToArray()
+            : Array.Empty<double>();
+
         #endregion
 
         /// <summary>
@@ -227,14 +237,16 @@ namespace SunEyeVision.Tool.BlobAnalysis
                 new("HistogramData",            "直方图数据",             "统计"),
                 new("ChannelMeans",             "通道均值",               "统计"),
                 new("InputSize",                "输入图像尺寸",           "结果"),
-                // Blob详细数据（分号分隔数组）
+                // Blob详细数据（支持 / 分隔的层级分组）
                 new("BlobAreas",                "面积",                   "Blob详细"),
                 new("BlobPerimeters",           "周长",                   "Blob详细"),
-                new("BlobCentroidXs",           "中心X",                  "Blob详细"),
-                new("BlobCentroidYs",           "中心Y",                  "Blob详细"),
-                new("BlobCircularities",        "圆度",                   "Blob详细"),
-                new("BlobRectangularities",     "矩形度",                 "Blob详细"),
-                new("BlobBoundingRects",        "边框",                   "Blob详细"),
+                new("BlobCentroidXs",           "中心X",                  "Blob详细/中心"),
+                new("BlobCentroidYs",           "中心Y",                  "Blob详细/中心"),
+                new("BlobCircularities",        "圆度",                   "Blob详细/形状"),
+                new("BlobRectangularities",     "矩形度",                 "Blob详细/形状"),
+                new("BlobBoundingWidths",       "边框宽",                 "Blob详细/边框"),
+                new("BlobBoundingHeights",      "边框高",                 "Blob详细/边框"),
+                new("BlobBoundingRects",        "边框(文本)",             "Blob详细/边框"),
                 new("ProcessedAt",              "处理时间戳",             "执行信息"),
             ];
         }

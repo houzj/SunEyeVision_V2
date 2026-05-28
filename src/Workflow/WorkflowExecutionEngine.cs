@@ -376,7 +376,8 @@ namespace SunEyeVision.Workflow
         /// <summary>
         /// 执行工作流（同步，支持工作流控制节点）
         /// </summary>
-        public async Task<ExecutionResult> ExecuteWorkflow(string workflowId, IVisionImage? inputImage)
+        public async Task<ExecutionResult> ExecuteWorkflow(string workflowId, IVisionImage? inputImage,
+            IDictionary<string, object?>? globalVariables = null)
         {
             if (_currentState == WorkflowExecutionState.Running)
             {
@@ -403,6 +404,7 @@ namespace SunEyeVision.Workflow
             // 创建执行上下文
             _currentContext = new WorkflowContext();
             _currentContext.SetVariable("InputImage", inputImage);
+            _currentContext.GlobalVariables = globalVariables;
 
             _currentState = WorkflowExecutionState.Running;
             _executionStartTime = DateTime.Now;
@@ -599,6 +601,17 @@ namespace SunEyeVision.Workflow
                 .Where(kvp => kvp.Value.Result != null)
                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Result!);
 
+            // 注入全局变量作为合成节点结果（使 __GlobalVars__.变量名 绑定可解析）
+            if (context.GlobalVariables != null && context.GlobalVariables.Count > 0)
+            {
+                var globalVarResults = new GenericToolResults { Status = ExecutionStatus.Success };
+                foreach (var kvp in context.GlobalVariables)
+                {
+                    globalVarResults.AddResultItem(kvp.Key, kvp.Value);
+                }
+                toolResultsDict["__GlobalVars__"] = globalVarResults;
+            }
+
             // 调用 AlgorithmNode.Execute，图像通过 ResolvedInputImage 传递
             var algorithmResult = node.Execute(inputImage, toolResultsDict);
 
@@ -714,11 +727,12 @@ namespace SunEyeVision.Workflow
         /// <summary>
         /// 异步执行工作流
         /// </summary>
-        public async Task<ExecutionResult> ExecuteWorkflowAsync(string workflowId, IVisionImage? inputImage)
+        public async Task<ExecutionResult> ExecuteWorkflowAsync(string workflowId, IVisionImage? inputImage,
+            IDictionary<string, object?>? globalVariables = null)
         {
             _cancellationTokenSource = new CancellationTokenSource();
 
-            return await Task.Run(async () => await ExecuteWorkflow(workflowId, inputImage), _cancellationTokenSource.Token);
+            return await Task.Run(async () => await ExecuteWorkflow(workflowId, inputImage, globalVariables), _cancellationTokenSource.Token);
         }
 
         /// <summary>

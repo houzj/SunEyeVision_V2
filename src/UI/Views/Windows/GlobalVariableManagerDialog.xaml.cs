@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using SunEyeVision.UI.ViewModels;
+using SunEyeVision.Workflow;
 
 namespace SunEyeVision.UI.Views.Windows
 {
@@ -220,6 +221,33 @@ namespace SunEyeVision.UI.Views.Windows
                 {
                     comboBox.IsDropDownOpen = true;
                 }), System.Windows.Threading.DispatcherPriority.Input);
+            }
+        }
+
+        /// <summary>
+        /// DataGrid 单元格编辑结束 — 拦截变量重命名重名
+        /// </summary>
+        private void DataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
+        {
+            if (e.Column.Header is string header && header == "名称")
+            {
+                var editingElement = e.EditingElement as TextBox;
+                if (editingElement == null) return;
+
+                var variable = e.Row.Item as GlobalVariable;
+                var viewModel = DataContext as GlobalVariableManagerViewModel;
+                if (variable == null || viewModel == null) return;
+
+                var newName = editingElement.Text.Trim();
+
+                // 名称未变 → 直接通过
+                if (newName == variable.Name)
+                    return;
+
+                if (!viewModel.ConfirmVariableRename(variable, newName))
+                {
+                    e.Cancel = true;
+                }
             }
         }
     }

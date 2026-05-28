@@ -203,6 +203,22 @@ public class GlobalVariable : ObservableObject
     }
 
     /// <summary>
+    /// 检查名称是否全局重复
+    /// </summary>
+    /// <param name="allVariables">所有全局变量</param>
+    /// <param name="newName">新名称</param>
+    /// <param name="excludeId">排除的变量ID（重命名时排除自身）</param>
+    public static bool IsNameDuplicate(
+        IEnumerable<GlobalVariable> allVariables,
+        string newName,
+        string? excludeId = null)
+    {
+        return allVariables.Any(v =>
+            v.Name.Equals(newName, StringComparison.OrdinalIgnoreCase) &&
+            v.Id != excludeId);
+    }
+
+    /// <summary>
     /// 验证变量
     /// </summary>
     public (bool IsValid, List<string> Errors) Validate()

@@ -176,6 +176,20 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 typeof(ParamBinding));
 
         /// <summary>
+        /// 全局变量选择请求事件 — 点击"全局变量"动作节点时触发
+        /// </summary>
+        /// <remarks>
+        /// 宿主代码处理此事件，打开全局变量选择对话框，选择完成后调用
+        /// <see cref="CompleteGlobalVariableBinding"/> 设置绑定结果。
+        /// </remarks>
+        public static readonly RoutedEvent GlobalVariableSelectionRequestedEvent =
+            EventManager.RegisterRoutedEvent(
+                nameof(GlobalVariableSelectionRequested),
+                RoutingStrategy.Bubble,
+                typeof(RoutedEventHandler),
+                typeof(ParamBinding));
+
+        /// <summary>
         /// 绑定状态变更事件
         /// </summary>
         public event RoutedEventHandler BindingStateChanged
@@ -191,6 +205,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         {
             add => AddHandler(BindingSourceSelectedEvent, value);
             remove => RemoveHandler(BindingSourceSelectedEvent, value);
+        }
+
+        /// <summary>
+        /// 全局变量选择请求事件
+        /// </summary>
+        public event RoutedEventHandler GlobalVariableSelectionRequested
+        {
+            add => AddHandler(GlobalVariableSelectionRequestedEvent, value);
+            remove => RemoveHandler(GlobalVariableSelectionRequestedEvent, value);
         }
 
         #endregion
@@ -265,21 +288,33 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// </summary>
         private void RebuildTreeNodes()
         {
+            var nodes = new System.Collections.ObjectModel.ObservableCollection<TreeNodeData>();
+
             if (_currentDataSources != null)
             {
                 var dataSourceList = _currentDataSources.ToList();
-                
+
                 // 使用基类的静态方法进行类型过滤
                 var filteredDataSources = ParamBindingBase.FilterDataSourcesByType(dataSourceList, DataType);
-                
+
                 // 使用基类的静态方法构建树形结构
                 var treeNodes = ParamBindingBase.BuildTreeStructure(filteredDataSources);
-                TreeNodes = new System.Collections.ObjectModel.ObservableCollection<TreeNodeData>(treeNodes);
+                foreach (var node in treeNodes)
+                {
+                    nodes.Add(node);
+                }
             }
-            else
+
+            // 始终在末尾追加"全局变量"动作节点（即使无可绑定数据源也能显示）
+            nodes.Add(new TreeNodeData
             {
-                TreeNodes = new System.Collections.ObjectModel.ObservableCollection<TreeNodeData>();
-            }
+                Text = "全局变量",
+                IsSelectable = true,
+                IsActionNode = true,
+                DataSource = null,
+            });
+
+            TreeNodes = nodes;
         }
 
         #endregion
@@ -343,33 +378,43 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             var originalSource = e.OriginalSource as DependencyObject;
             var treeViewItem = FindParent<TreeViewItem>(originalSource);
 
-            if (treeViewItem != null && treeViewItem.DataContext is TreeNodeData selectedNode &&
-                selectedNode.IsSelectable && selectedNode.DataSource != null)
+            if (treeViewItem != null && treeViewItem.DataContext is TreeNodeData selectedNode)
             {
-                // 设置绑定源路径（格式：节点ID.属性名）
-                BindingSource = selectedNode.DataSource.GetBindingPath();
-
-                // 设置友好显示名称：根据树形结构动态生成
-                var rootNode = GetRootNode(selectedNode);
-                var rootName = rootNode?.Text ?? "";
-                var leafName = GetDisplayLeafName(selectedNode);
-
-                BindingDisplayText = $"{rootName}.{leafName}";
-
-                // 触发事件
-                RaiseEvent(new RoutedEventArgs(BindingSourceSelectedEvent));
-                IsBound = true;
-
-                // 关闭 Popup
-                if (_bindingPopup != null)
+                // 动作节点：触发全局变量选择
+                if (selectedNode.IsActionNode)
                 {
-                    _bindingPopup.IsOpen = false;
+                    e.Handled = true;
+                    RaiseEvent(new RoutedEventArgs(GlobalVariableSelectionRequestedEvent));
+                    return;
                 }
 
-                RaiseEvent(new RoutedEventArgs(BindingStateChangedEvent));
+                if (selectedNode.IsSelectable && selectedNode.DataSource != null)
+                {
+                    // 设置绑定源路径（格式：节点ID.属性名）
+                    BindingSource = selectedNode.DataSource.GetBindingPath();
 
-                // 标记事件已处理，防止触发 SelectedItemChanged
-                e.Handled = true;
+                    // 设置友好显示名称：根据树形结构动态生成
+                    var rootNode = GetRootNode(selectedNode);
+                    var rootName = rootNode?.Text ?? "";
+                    var leafName = GetDisplayLeafName(selectedNode);
+
+                    BindingDisplayText = $"{rootName}.{leafName}";
+
+                    // 触发事件
+                    RaiseEvent(new RoutedEventArgs(BindingSourceSelectedEvent));
+                    IsBound = true;
+
+                    // 关闭 Popup
+                    if (_bindingPopup != null)
+                    {
+                        _bindingPopup.IsOpen = false;
+                    }
+
+                    RaiseEvent(new RoutedEventArgs(BindingStateChangedEvent));
+
+                    // 标记事件已处理，防止触发 SelectedItemChanged
+                    e.Handled = true;
+                }
             }
         }
 
@@ -394,36 +439,47 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         private void OnBindingTreeViewSelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
-            if (e.NewValue is TreeNodeData selectedNode && selectedNode.IsSelectable && selectedNode.DataSource != null)
+            if (e.NewValue is TreeNodeData selectedNode)
             {
-                // 设置绑定源路径（格式：节点ID.属性名）
-                BindingSource = selectedNode.DataSource.GetBindingPath();
-
-                // 设置绑定显示文本：根据树形结构动态生成
-                // 格式：根节点名称.叶子节点名称
-                // 例如：图像阈值化4.实际使用的阈值
-
-                var rootNode = GetRootNode(selectedNode);
-                var rootName = rootNode?.Text ?? "";
-                var leafName = GetDisplayLeafName(selectedNode);
-
-                VisionLogger.Instance.Log(LogLevel.Info,
-                    $"[ParamBinding] 选中节点: {leafName}, 父节点: {selectedNode.Parent?.Text ?? "null"}, 根节点: {rootName}",
-                    "ParamBinding");
-
-                BindingDisplayText = $"{rootName}.{leafName}";
-
-                // 触发事件
-                RaiseEvent(new RoutedEventArgs(BindingSourceSelectedEvent));
-                IsBound = true;
-
-                // 关闭 Popup
-                if (_bindingPopup != null)
+                // 动作节点：触发全局变量选择
+                if (selectedNode.IsActionNode)
                 {
-                    _bindingPopup.IsOpen = false;
+                    e.Handled = true;
+                    RaiseEvent(new RoutedEventArgs(GlobalVariableSelectionRequestedEvent));
+                    return;
                 }
 
-                RaiseEvent(new RoutedEventArgs(BindingStateChangedEvent));
+                if (selectedNode.IsSelectable && selectedNode.DataSource != null)
+                {
+                    // 设置绑定源路径（格式：节点ID.属性名）
+                    BindingSource = selectedNode.DataSource.GetBindingPath();
+
+                    // 设置绑定显示文本：根据树形结构动态生成
+                    // 格式：根节点名称.叶子节点名称
+                    // 例如：图像阈值化4.实际使用的阈值
+
+                    var rootNode = GetRootNode(selectedNode);
+                    var rootName = rootNode?.Text ?? "";
+                    var leafName = GetDisplayLeafName(selectedNode);
+
+                    VisionLogger.Instance.Log(LogLevel.Info,
+                        $"[ParamBinding] 选中节点: {leafName}, 父节点: {selectedNode.Parent?.Text ?? "null"}, 根节点: {rootName}",
+                        "ParamBinding");
+
+                    BindingDisplayText = $"{rootName}.{leafName}";
+
+                    // 触发事件
+                    RaiseEvent(new RoutedEventArgs(BindingSourceSelectedEvent));
+                    IsBound = true;
+
+                    // 关闭 Popup
+                    if (_bindingPopup != null)
+                    {
+                        _bindingPopup.IsOpen = false;
+                    }
+
+                    RaiseEvent(new RoutedEventArgs(BindingStateChangedEvent));
+                }
             }
         }
 
@@ -591,6 +647,36 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 BindingSource = $"{nodeId}.{propertyName}[{indexStr}]";
             }
             // 无效内容 → 不更新
+        }
+
+        /// <summary>
+        /// 完成全局变量绑定（由宿主代码在处理 <see cref="GlobalVariableSelectionRequestedEvent"/> 后调用）
+        /// </summary>
+        /// <param name="variableName">选中变量的名称</param>
+        public void CompleteGlobalVariableBinding(string variableName)
+        {
+            if (string.IsNullOrEmpty(variableName))
+                return;
+
+            // 绑定源格式：__GlobalVars__.变量名
+            BindingSource = $"__GlobalVars__.{variableName}";
+            BindingDisplayText = $"全局变量.{variableName}";
+            IsBound = true;
+
+            // 触发事件
+            RaiseEvent(new RoutedEventArgs(BindingSourceSelectedEvent));
+
+            // 关闭 Popup
+            if (_bindingPopup != null)
+            {
+                _bindingPopup.IsOpen = false;
+            }
+
+            RaiseEvent(new RoutedEventArgs(BindingStateChangedEvent));
+
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[ParamBinding] 全局变量绑定: {variableName}, BindingSource={BindingSource}",
+                "ParamBinding");
         }
 
         #endregion

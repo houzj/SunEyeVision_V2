@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -32,6 +32,11 @@ namespace SunEyeVision.UI.Services.Workflow
         /// </summary>
         private Dictionary<string, object> _runtimeParameters = new();
 
+        /// <summary>
+        /// 当前全局变量（从 SolutionManager 获取，用于 __GlobalVars__ 绑定解析）
+        /// </summary>
+        private IDictionary<string, object?>? _globalVariables;
+
         public event EventHandler<WorkflowExecutionEventArgs>? WorkflowExecutionStarted;
         public event EventHandler<WorkflowExecutionEventArgs>? WorkflowExecutionCompleted;
         public event EventHandler<WorkflowExecutionEventArgs>? WorkflowExecutionStopped;
@@ -58,6 +63,15 @@ namespace SunEyeVision.UI.Services.Workflow
         public void SetRuntimeParameters(Dictionary<string, object> parameters)
         {
             _runtimeParameters = parameters ?? new Dictionary<string, object>();
+        }
+
+        /// <summary>
+        /// 设置全局变量（用于 __GlobalVars__ 绑定解析）
+        /// </summary>
+        /// <param name="globalVariables">全局变量字典（变量名 -> 变量值）</param>
+        public void SetGlobalVariables(IDictionary<string, object?>? globalVariables)
+        {
+            _globalVariables = globalVariables;
         }
 
         /// <summary>
@@ -300,7 +314,7 @@ namespace SunEyeVision.UI.Services.Workflow
                 logger.LogInfo($"开始执行工作流: {workflow.Name}");
                 InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.Name, "[EXEC] 开始执行工作流...")));
 
-                var result = await executionEngine.ExecuteWorkflowAsync(suneyeWorkflow.Id, inputImage as IVisionImage);
+                var result = await executionEngine.ExecuteWorkflowAsync(suneyeWorkflow.Id, inputImage as IVisionImage, _globalVariables);
 
                 // 输出结果
                 logger.LogInfo($"工作流执行完成: {workflow.Name}");

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -33,6 +34,9 @@ namespace SunEyeVision.UI.ViewModels
         private readonly SolutionManager _solutionManager;
         private string _searchText = "";
         private VariableGroupViewModel? _selectedGroup;
+
+        // 已释放序号池（全局），用于空洞填充
+        private readonly SortedSet<int> _releasedIndices = new();
 
         /// <summary>
         /// 分组列表
@@ -128,6 +132,11 @@ namespace SunEyeVision.UI.ViewModels
         public ICommand CloseCommand { get; private set; }
 
         #endregion
+
+        /// <summary>
+        /// 类型选项列表（中文显示名 + 英文值，用于 ComboBox 绑定）
+        /// </summary>
+        public List<TypeOption> TypeOptions { get; } = GlobalVariableTypeMapper.GetAllTypeOptions();
 
         public GlobalVariableManagerViewModel(SolutionManager solutionManager)
         {
@@ -379,7 +388,7 @@ namespace SunEyeVision.UI.ViewModels
         #region 变量操作
 
         /// <summary>
-        /// 添加变量
+        /// 添加变量（全局唯一名称 + 空洞序号填充）
         /// </summary>
         private void AddVariable()
         {
@@ -389,10 +398,10 @@ namespace SunEyeVision.UI.ViewModels
                 return;
             }
 
-            int variableIndex = SelectedGroup.Variables.Count + 1;
+            int variableIndex = GetNextAvailableIndex();
             var variable = new GlobalVariable
             {
-                Name = $"变量{variableIndex}",
+                Name = GenerateUniqueName($"变量{variableIndex}"),
                 Type = "String",
                 Value = "",
                 Description = "",
@@ -407,7 +416,7 @@ namespace SunEyeVision.UI.ViewModels
             CurrentVariables.Add(variable);
             SelectedVariable = variable;
 
-            LogInfo($"添加全局变量: {variable.Name} (分组: {SelectedGroup.Name})");
+            LogInfo($"添加全局变量: {variable.Name} (分组: {SelectedGroup.Name}, 序号: {variableIndex})");
         }
 
         /// <summary>
@@ -430,6 +439,9 @@ namespace SunEyeVision.UI.ViewModels
             var variableName = variable.Name;
             var groupName = variable.Group;
 
+            // 回收序号到全局空洞池
+            _releasedIndices.Add(variable.Index);
+
             SelectedGroup?.RemoveVariable(variable);
             _solutionManager.CurrentSolution?.GlobalVariables.Remove(variable);
             CurrentVariables.Remove(variable);
@@ -437,7 +449,7 @@ namespace SunEyeVision.UI.ViewModels
             if (SelectedVariable == variable)
                 SelectedVariable = null;
 
-            LogInfo($"删除全局变量: {variableName} (分组: {groupName})");
+            LogInfo($"删除全局变量: {variableName} (分组: {groupName}, 序号 {variable.Index} 已回收)");
         }
 
         /// <summary>
@@ -446,6 +458,74 @@ namespace SunEyeVision.UI.ViewModels
         private bool CanDeleteVariable(object? parameter)
         {
             return parameter is GlobalVariable || SelectedVariable != null;
+        }
+
+        #endregion
+
+        #region 全局变量名称/序号管理
+
+        /// <summary>
+        /// 获取下一个可用序号（优先从空洞池中取）
+        /// </summary>
+        private int GetNextAvailableIndex()
+        {
+            if (_releasedIndices.Count > 0)
+            {
+                var index = _releasedIndices.Min;
+                _releasedIndices.Remove(index);
+                return index;
+            }
+
+            var allVariables = _solutionManager.CurrentSolution?.GlobalVariables;
+            return allVariables != null && allVariables.Count > 0
+                ? allVariables.Max(v => v.Index) + 1
+                : 1;
+        }
+
+        /// <summary>
+        /// 生成全局唯一的变量名称（跨所有分组查重）
+        /// </summary>
+        private string GenerateUniqueName(string baseName)
+        {
+            var allNames = _solutionManager.CurrentSolution?.GlobalVariables
+                .Select(v => v.Name)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase)
+                ?? new HashSet<string>();
+
+            if (!allNames.Contains(baseName))
+                return baseName;
+
+            int suffix = 1;
+            while (allNames.Contains($"{baseName}({suffix})"))
+                suffix++;
+
+            return $"{baseName}({suffix})";
+        }
+
+        /// <summary>
+        /// 确认变量重命名（DataGrid CellEditEnding 时调用）
+        /// </summary>
+        /// <returns>true=通过，false=弹窗提示并取消编辑</returns>
+        public bool ConfirmVariableRename(GlobalVariable variable, string newName)
+        {
+            if (string.IsNullOrWhiteSpace(newName))
+            {
+                MessageBox.Show("变量名称不能为空", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+
+            var allVariables = _solutionManager.CurrentSolution?.GlobalVariables;
+            if (allVariables == null)
+                return true;
+
+            if (GlobalVariable.IsNameDuplicate(allVariables, newName, variable.Id))
+            {
+                MessageBox.Show($"变量名称 '{newName}' 已存在，请使用其他名称",
+                    "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+
+            return true;
         }
 
         #endregion
@@ -478,7 +558,7 @@ namespace SunEyeVision.UI.ViewModels
                     return;
                 }
 
-                // 添加到当前分组
+                // 添加到对应分组
                 foreach (var variable in variables)
                 {
                     variable.Id = Guid.NewGuid().ToString();
@@ -491,6 +571,9 @@ namespace SunEyeVision.UI.ViewModels
                         group = new VariableGroupViewModel(variable.Group);
                         Groups.Add(group);
                     }
+
+                    // 重新分配序号（全局空洞填充）
+                    variable.Index = GetNextAvailableIndex();
                     group.AddVariable(variable);
                 }
 
@@ -561,7 +644,7 @@ namespace SunEyeVision.UI.ViewModels
             {
                 try
                 {
-                    // 更新所有变量的Index属性
+                    // 更新所有变量的Index属性（紧凑重排）
                     foreach (var group in Groups)
                     {
                         int index = 1;
@@ -570,6 +653,9 @@ namespace SunEyeVision.UI.ViewModels
                             variable.Index = index++;
                         }
                     }
+
+                    // 清空全局空洞池（保存即 compact）
+                    _releasedIndices.Clear();
 
                     _solutionManager.SaveSolution(currentSolution.FilePath);
                     LogSuccess("全局变量保存成功");

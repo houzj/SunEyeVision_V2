@@ -1780,6 +1780,12 @@ SplitterPosition = position;
                 // ★ 传递运行时参数到执行管理器
                 _executionManager.SetRuntimeParameters(GetAllRuntimeParameters());
 
+                // ★ 传递全局变量到执行管理器（用于 __GlobalVars__ 绑定解析）
+                var solutionManager = Adapters.ServiceInitializer.SolutionManager;
+                var globalVars = solutionManager.CurrentSolution?.GlobalVariables?
+                    .ToDictionary(gv => gv.Name, gv => gv.Value);
+                _executionManager.SetGlobalVariables(globalVars);
+
                 await _executionManager.RunSingleAsync(WorkflowTabViewModel.SelectedTab);
                 AddLog("✅ 执行完成");
             }
@@ -3602,21 +3608,42 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
                 IsExpanded = true
             };
 
-            // 有缓存数据：按 GroupName 分组构建树
+            // 有缓存数据：按 GroupName 分组构建树（支持 / 分隔的层级分组）
             if (metadataList.Count > 0)
             {
                 var groups = metadataList
                     .GroupBy(m => m.GroupName ?? "其他")
                     .OrderBy(g => g.Key);
 
+                // 缓存已创建的组节点，key = 完整路径（如 "Blob详细/边框"）
+                var groupNodeCache = new Dictionary<string, ModuleResultNode>();
+
                 foreach (var group in groups)
                 {
-                    var groupNode = new ModuleResultNode
+                    if (string.IsNullOrEmpty(group.Key))
+                        continue;
+
+                    var groupNames = group.Key.Split('/');
+                    ModuleResultNode currentParent = rootNode;
+
+                    for (int i = 0; i < groupNames.Length; i++)
                     {
-                        DisplayName = group.Key,
-                        IsGroup = true,
-                        IsExpanded = true
-                    };
+                        var cacheKey = string.Join("/", groupNames.Take(i + 1));
+
+                        if (!groupNodeCache.TryGetValue(cacheKey, out var groupNode))
+                        {
+                            groupNode = new ModuleResultNode
+                            {
+                                DisplayName = groupNames[i],
+                                IsGroup = true,
+                                IsExpanded = true
+                            };
+                            currentParent.Children.Add(groupNode);
+                            groupNodeCache[cacheKey] = groupNode;
+                        }
+
+                        currentParent = groupNode;
+                    }
 
                     foreach (var meta in group.OrderBy(m => m.DisplayName))
                     {
@@ -3638,7 +3665,7 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
                             displayValue = "--";
                         }
 
-                        groupNode.Children.Add(new ModuleResultNode
+                        currentParent.Children.Add(new ModuleResultNode
                         {
                             DisplayName = meta.DisplayName,
                             DisplayValue = displayValue,
@@ -3646,10 +3673,14 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
                             IsGroup = false
                         });
                     }
-
-                    if (groupNode.Children.Count > 0)
-                        rootNode.Children.Add(groupNode);
                 }
+
+                // 移除没有非可视化子节点的空组
+                var emptyGroups = rootNode.Children
+                    .Where(c => c.IsGroup && c.Children.Count == 0)
+                    .ToList();
+                foreach (var empty in emptyGroups)
+                    rootNode.Children.Remove(empty);
             }
             if (rootNode.Children.Count > 0)
             {
@@ -4309,14 +4340,8 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
         /// <summary>展开/折叠图标</summary>
         public string ExpandIcon => IsGroup ? (_isExpanded ? "▼ " : "▶ ") : "";
 
-        /// <summary>左侧缩进距离</summary>
-        public Thickness Indent => Level switch
-        {
-            0 => new Thickness(4, 4, 0, 4),
-            1 => new Thickness(28, 3, 0, 3),
-            2 => new Thickness(52, 3, 0, 3),
-            _ => new Thickness(4, 3, 0, 3)
-        };
+        /// <summary>左侧缩进距离（每层 +24px，支持任意深度）</summary>
+        public Thickness Indent => new Thickness(4 + Level * 24, Level == 0 ? 4 : 3, 0, Level == 0 ? 4 : 3);
 
         /// <summary>行背景色</summary>
         public Brush RowBackground => Level switch

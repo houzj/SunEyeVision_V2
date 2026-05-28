@@ -1,0 +1,80 @@
+---
+id: rule-015
+title: 禁止兜底回退原则
+category: coding-standards
+priority: critical
+alwaysApply: true
+enabled: true
+version: "1.0"
+updatedAt: 2026-05-28
+---
+
+# rule-015: 禁止兜底回退原则
+
+## 触发条件
+
+当用户表达以下意图时，**必须**自动检查是否违反了禁止兜底回退原则：
+- 添加/修改 **类型映射**、**类型转换**、**类型适配**
+- 添加/修改 **回退**、**兜底**、**fallback**、**兼容**、**默认值**
+- 实现 **未映射类型**、**不支持类型** 的处理逻辑
+- 包含上述意图的变体表达
+
+触发时检查是否存在静默回退/兜底逻辑。
+
+## 硬性约束
+
+### 核心原则
+
+- **禁止**任何形式的静默回退、兜底处理、默默降级
+- **禁止**未映射/不支持的类型显示全部或返回默认空结果
+- 发现类型不匹配、未映射、不支持时，**必须**直接报错或弹窗提示用户，不得静默处理
+
+### 典型违规场景
+
+```csharp
+// ❌ 禁止：未映射类型时显示全部（用户不知情）
+var filterType = GlobalVariableTypeMapper.ToGlobalVarType(paramBinding.DataType);
+// filterType == null → 静默显示全部变量 ← 用户不知道类型不支持
+
+// ❌ 禁止：不支持的类型返回默认值
+if (!TryParse(typeName, out var result))
+    return default;  // 用户不知道解析失败
+
+// ❌ 禁止：catch 吞异常后静默继续
+try { ... }
+catch { /* 什么都不做 */ }
+```
+
+### 正确做法
+
+```csharp
+// ✅ 正确：直接报错，让用户知道问题
+var filterType = GlobalVariableTypeMapper.ToGlobalVarType(paramBinding.DataType);
+if (filterType == null && paramBinding.DataType != null)
+{
+    MessageBox.Show($"参数类型 \"{paramBinding.DataType.Name}\" 不是全局变量支持的通用类型。",
+        "不支持的参数类型", MessageBoxButton.OK, MessageBoxImage.Warning);
+    return;
+}
+
+// ✅ 正确：不支持的配置直接抛异常
+if (!TryParse(typeName, out var result))
+    throw new NotSupportedException($"不支持的类型: {typeName}");
+
+// ✅ 正确：只捕获明确可恢复的异常
+try { ... }
+catch (SpecificRecoverableException ex) { /* 明确的恢复逻辑 */ }
+```
+
+### 适用范围
+
+1. **类型映射**：`GlobalVariableTypeMapper` 映射失败时不得静默回退到"显示全部"
+2. **类型解析**：`ParameterResolver` 解析失败时不得返回 null/空值
+3. **参数系统**：数据类型校验不通过时直接报错
+4. **序列化**：不支持的序列化格式直接抛异常
+5. **配置加载**：配置文件格式错误直接报错
+
+### 参考
+
+- 本规则是 rule-008 报错优先原则的强化补充
+- 遵循 rule-004 方案设计要求：不允许有回退方案和兼容层

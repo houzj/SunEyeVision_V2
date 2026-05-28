@@ -252,23 +252,6 @@
         <!-- ====== 转换器 ====== -->
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <local:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
-
-        <!-- 全局变量类型列表 -->
-        <x:Array x:Key="GlobalVariableTypes" Type="sys:String" xmlns:sys="clr-namespace:System;assembly=mscorlib">
-            <sys:String>Integer</sys:String>
-            <sys:String>Float</sys:String>
-            <sys:String>String</sys:String>
-            <sys:String>Boolean</sys:String>
-            <sys:String>Int64</sys:String>
-            <sys:String>Double</sys:String>
-            <sys:String>Byte</sys:String>
-            <sys:String>Point</sys:String>
-            <sys:String>Rectangle</sys:String>
-            <sys:String>Size</sys:String>
-            <sys:String>Array</sys:String>
-            <sys:String>List</sys:String>
-            <sys:String>Image</sys:String>
-        </x:Array>
     </Window.Resources>
 
     <Grid Margin="0">
@@ -478,7 +461,8 @@
                   BorderThickness="1"
                   HorizontalGridLinesBrush="#F0F0F0"
                   RowHeight="28"
-                  FontSize="12">
+                  FontSize="12"
+                  CellEditEnding="DataGrid_CellEditEnding">
             <DataGrid.Columns>
                 <!-- 序号 -->
                 <DataGridTextColumn Header="序号" Binding="{Binding Index}" Width="50" IsReadOnly="True">
@@ -497,12 +481,14 @@
                 <DataGridTextColumn Header="注释" Binding="{Binding Description, UpdateSourceTrigger=PropertyChanged}"
                                     Width="150" IsReadOnly="False"/>
 
-                <!-- 类型（DataGridTemplateColumn + PreviewMouseDown，避免三击问题） -->
+                <!-- 类型（DataGridTemplateColumn + PreviewMouseDown + 中文显示名 + 英文值） -->
                 <DataGridTemplateColumn Header="类型" Width="100">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <ComboBox ItemsSource="{StaticResource GlobalVariableTypes}"
-                                      SelectedItem="{Binding Type, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                            <ComboBox ItemsSource="{Binding DataContext.TypeOptions, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                      DisplayMemberPath="DisplayName"
+                                      SelectedValuePath="Value"
+                                      SelectedValue="{Binding Type, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
                                       BorderThickness="0"
                                       IsSynchronizedWithCurrentItem="False"
                                       PreviewMouseDown="TypeComboBox_PreviewMouseDown"/>

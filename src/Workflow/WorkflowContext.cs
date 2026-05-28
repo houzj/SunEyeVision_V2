@@ -229,6 +229,11 @@ namespace SunEyeVision.Workflow
         public Dictionary<string, object> Variables { get; set; }
 
         /// <summary>
+        /// 解决方案级别全局变量（用于 __GlobalVars__ 参数绑定解析）
+        /// </summary>
+        public IDictionary<string, object?>? GlobalVariables { get; set; }
+
+        /// <summary>
         /// 子程序调用栈
         /// </summary>
         public Stack<SubroutineCallInfo> CallStack { get; set; }

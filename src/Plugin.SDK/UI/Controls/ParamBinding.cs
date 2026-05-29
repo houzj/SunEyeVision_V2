@@ -32,6 +32,26 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 typeof(ParamBinding),
                 new PropertyMetadata(string.Empty));
 
+        /// <summary>
+        /// 所属节点ID（用于消费者绑定记录）
+        /// </summary>
+        public static readonly DependencyProperty NodeIdProperty =
+            DependencyProperty.Register(
+                nameof(NodeId),
+                typeof(string),
+                typeof(ParamBinding),
+                new PropertyMetadata(string.Empty));
+
+        /// <summary>
+        /// 所属节点名称（用于消费者绑定记录）
+        /// </summary>
+        public static readonly DependencyProperty NodeNameProperty =
+            DependencyProperty.Register(
+                nameof(NodeName),
+                typeof(string),
+                typeof(ParamBinding),
+                new PropertyMetadata(string.Empty));
+
         public static readonly DependencyProperty IsBoundProperty =
             DependencyProperty.Register(
                 nameof(IsBound),
@@ -92,6 +112,24 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         {
             get => (string)GetValue(ParameterNameProperty);
             set => SetValue(ParameterNameProperty, value);
+        }
+
+        /// <summary>
+        /// 所属节点ID（用于消费者绑定记录）
+        /// </summary>
+        public string NodeId
+        {
+            get => (string)GetValue(NodeIdProperty);
+            set => SetValue(NodeIdProperty, value);
+        }
+
+        /// <summary>
+        /// 所属节点名称（用于消费者绑定记录）
+        /// </summary>
+        public string NodeName
+        {
+            get => (string)GetValue(NodeNameProperty);
+            set => SetValue(NodeNameProperty, value);
         }
 
         /// <summary>

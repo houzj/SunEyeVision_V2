@@ -1,4 +1,7 @@
 ﻿using System;
+using System.ComponentModel;
+using System.Linq;
+using System.Reflection;
 using System.Windows;
 using System.IO;
 using SunEyeVision.UI.Adapters;
@@ -16,6 +19,8 @@ using SunEyeVision.UI.Services.Monitoring;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
+using System.Windows.Media;
+using SunEyeVision.UI.ViewModels;
 
 namespace SunEyeVision.UI;
 
@@ -431,10 +436,135 @@ public partial class App : Application
         if (selectedVariable != null)
         {
             paramBinding.CompleteGlobalVariableBinding(selectedVariable.Name);
+
+            // ★ Phase 5: 自动记录 ConsumerBinding
+            RecordConsumerBinding(paramBinding, selectedVariable, solutionManager);
         }
 
         // 标记事件已处理
         e.Handled = true;
     }
+
+    /// <summary>
+    /// 记录消费者绑定：参数绑定到全局变量时自动追加 ConsumerBinding 记录
+    /// </summary>
+    private static void RecordConsumerBinding(ParamBinding paramBinding, GlobalVariable variable, SolutionManager solutionManager)
+    {
+        try
+        {
+            // ★ 从视觉树向上查找最近的 ToolDebugControlBase，获取节点 ID 和名称
+            // 使用动态解析而非预设置，避免因 TabItem 懒加载导致 ParamBinding 创建时未设置 NodeId
+            string? nodeId = null;
+            string? nodeName = null;
+
+            var toolControl = FindVisualParent<ToolDebugControlBase>(paramBinding);
+            if (toolControl?.CurrentNode is { } node)
+            {
+                nodeId = node.GetType().GetProperty("Id")?.GetValue(node) as string;
+                nodeName = node.GetType().GetProperty("DispName")?.GetValue(node) as string
+                        ?? node.GetType().GetProperty("Name")?.GetValue(node) as string;
+            }
+
+            if (string.IsNullOrEmpty(nodeId) || string.IsNullOrEmpty(nodeName))
+            {
+                VisionLogger.Instance.Log(LogLevel.Warning,
+                    $"RecordConsumerBinding: 无法从视觉树解析节点信息, sender={paramBinding.GetType().Name}",
+                    "App");
+                return;
+            }
+
+            var paramName = paramBinding.ParameterName;
+            if (string.IsNullOrEmpty(paramName))
+                return;
+
+            // ★ 查找节点所属工作流名称和参数显示名称
+            string? workflowName = null;
+            string? parameterDisplayName = null;
+
+            var solution = solutionManager.CurrentSolution;
+            if (solution != null)
+            {
+                foreach (var wf in solution.Workflows)
+                {
+                    var workflowNode = wf.Nodes?.FirstOrDefault(n => n.Id == nodeId);
+                    if (workflowNode != null)
+                    {
+                        workflowName = wf.Name ?? wf.Id;
+
+                        // 从参数的 [DisplayName] 属性获取中文显示名
+                        if (workflowNode.Parameters != null)
+                        {
+                            var prop = workflowNode.Parameters.GetType().GetProperty(paramName);
+                            if (prop != null)
+                            {
+                                var attr = prop.GetCustomAttribute<DisplayNameAttribute>(false);
+                                parameterDisplayName = attr?.DisplayName ?? paramName;
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+
+            // 检查是否已存在相同的消费者绑定
+            var existing = variable.ConsumerBindings
+                .FirstOrDefault(c => c.NodeId == nodeId && c.ParameterName == paramName);
+
+            if (existing != null)
+            {
+                // 已存在则更新节点名称、工作流名称、参数显示名称
+                existing.NodeName = nodeName;
+                if (workflowName != null) existing.WorkflowName = workflowName;
+                if (parameterDisplayName != null) existing.ParameterDisplayName = parameterDisplayName;
+            }
+            else
+            {
+                // 追加新的消费者绑定（含 WorkflowName + ParameterDisplayName）
+                variable.ConsumerBindings.Add(new ConsumerBinding
+                {
+                    NodeId = nodeId,
+                    NodeName = nodeName,
+                    WorkflowName = workflowName ?? "",
+                    ParameterName = paramName,
+                    ParameterDisplayName = parameterDisplayName ?? paramName
+                });
+            }
+
+            // ★ 通知 UI 刷新"目标输出"列
+            variable.NotifyOutputDisplayChanged();
+
+            // 持久化保存
+            try
+            {
+                if (solutionManager.CurrentSolution?.FilePath != null)
+                    solutionManager.SaveSolution(solutionManager.CurrentSolution.FilePath);
+            }
+            catch { /* 静默忽略保存失败，不影响用户体验 */ }
+        }
+        catch (Exception ex)
+        {
+            VisionLogger.Instance.Log(LogLevel.Warning,
+                $"记录消费者绑定失败: {ex.Message}", "App", ex);
+        }
+    }
+
+    /// <summary>
+    /// 在视觉树中向上查找指定类型的父控件
+    /// </summary>
+    private static T? FindVisualParent<T>(DependencyObject? child) where T : DependencyObject
+    {
+        if (child == null)
+            return null;
+
+        var parent = VisualTreeHelper.GetParent(child);
+        while (parent != null)
+        {
+            if (parent is T typedParent)
+                return typedParent;
+            parent = VisualTreeHelper.GetParent(parent);
+        }
+        return null;
+    }
+
 }
 

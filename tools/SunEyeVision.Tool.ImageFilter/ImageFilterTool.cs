@@ -92,7 +92,7 @@ namespace SunEyeVision.Tool.ImageFilter
                 double sigmaColor = parameters.SigmaColor.Value;
                 double sigmaSpace = parameters.SigmaSpace.Value;
                 var borderType = ImageFilterParameters.ToCvBorderType(parameters.BorderTypeValue.Value);
-                bool isRegionEnabled = parameters.IsRegionEnabled.Value;
+                bool isRegionEnabled = parameters.IsRegionEnabled;
 
                 // ===== Step 1: 灰度转换 (rgb1_to_gray) =====
                 stepSw.Restart();
@@ -122,7 +122,7 @@ namespace SunEyeVision.Tool.ImageFilter
                     stepTimings.Add(("ROI构建", stepSw.ElapsedMilliseconds));
 
                     // ===== Step 2.5: 位置修正（正向变换 ROI 掩码） =====
-                    if (parameters.IsPositionCorrectionEnabled?.Value == true)
+                    if (parameters.IsPositionCorrectionEnabled)
                     {
                         stepSw.Restart();
                         var bindingSource = parameters.PositionCorrectionBindingSource;

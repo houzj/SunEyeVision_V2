@@ -10,6 +10,8 @@ using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.UI.Events;
 
+
+
 namespace SunEyeVision.Plugin.SDK.UI.Controls
 {
     /// <summary>
@@ -371,7 +373,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             CurrentNode = node;
             PluginLogger.Info($"已设置当前节点: {node?.GetType().Name}", GetType().Name);
 
-            // 从节点对象中提取节点ID
+            // 从节点对象中提取节点ID和名称
+            string? nodeName = null;
             if (node != null)
             {
                 // 尝试通过反射获取 Id 属性
@@ -385,6 +388,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 {
                     PluginLogger.Warning($"节点对象 {node.GetType().Name} 没有 Id 属性", GetType().Name);
                 }
+
+                // 优先 DispName（UI显示名），回退到 Name
+                var nameProperty = node.GetType().GetProperty("DispName")
+                                ?? node.GetType().GetProperty("Name");
+                nodeName = nameProperty?.GetValue(node) as string;
             }
             else
             {

@@ -133,7 +133,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
                     stepTimings.Add(("ROI构建", stepSw.ElapsedMilliseconds));
 
                     // ===== Step 2.5: 位置修正（正向变换 ROI） =====
-                    if (parameters.IsPositionCorrectionEnabled?.Value == true)
+                    if (parameters.IsPositionCorrectionEnabled)
                     {
                         stepSw.Restart();
                         var bindingSource = parameters.PositionCorrectionBindingSource;
@@ -177,7 +177,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
                         stepTimings.Add(("ReduceDomain", stepSw.ElapsedMilliseconds));
 
                         // ===== Step 3.5: 图像预处理（可选） =====
-                        if (parameters.IsPreprocessingEnabled.Value && parameters.PreprocessMethodValue.Value != PreprocessMethod.None)
+                        if (parameters.IsPreprocessingEnabled && parameters.PreprocessMethodValue.Value != PreprocessMethod.None)
                         {
                             stepSw.Restart();
                             var preprocessed = ApplyPreprocessing(processingImage, parameters);
@@ -197,7 +197,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
                             HOperatorSet.Threshold(processingImage, out var binaryRegion,
                                 thresholdMin, thresholdMax);
 
-                            if (parameters.Invert.Value)
+                            if (parameters.Invert)
                             {
                                 HOperatorSet.Complement(binaryRegion, out var complRegion);
                                 binaryRegion.Dispose();
@@ -211,7 +211,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
                             using (binaryRegion)
                             {
                                 // ===== Step 4.5: 形态学处理（可选） =====
-                                if (parameters.IsMorphologyEnabled.Value)
+                                if (parameters.IsMorphologyEnabled)
                                 {
                                     stepSw.Restart();
                                     var morphed = ApplyMorphology(new HRegion(binaryRegion), parameters);
@@ -236,13 +236,13 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                     stepSw.Restart();
 
                                     // Step 6: SelectShape - Halcon原生面积筛选（仅对 Tab3 面积筛选启用时执行）
-                                    bool useAreaFilter = parameters.IsAreaFilterEnabled.Value && rawBlobCount > 0;
+                                    bool useAreaFilter = parameters.IsAreaFilterEnabled && rawBlobCount > 0;
 
                                     HRegion shapeFilteredRegions;
                                     if (useAreaFilter)
                                     {
                                         HOperatorSet.SelectShape(connectedRegions, out var selected,
-                                            "area", "and", parameters.FilterAreaMin.Value, parameters.FilterAreaMax.Value);
+                                            "area", "and", parameters.FilterAreaMin, parameters.FilterAreaMax);
                                         shapeFilteredRegions = new HRegion(selected);
                                     }
                                     else
@@ -259,9 +259,9 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                         var filteredBlobs = new List<BlobResult>(candidateCount);
                                         var config = parameters.ResultConfig;
 
-                                        bool tab3FilterArea = parameters.IsAreaFilterEnabled.Value;
-                                        bool tab3FilterCircularity = parameters.IsCircularityFilterEnabled.Value;
-                                        bool tab3FilterRectangularity = parameters.IsRectangularityFilterEnabled.Value;
+                                        bool tab3FilterArea = parameters.IsAreaFilterEnabled;
+                                        bool tab3FilterCircularity = parameters.IsCircularityFilterEnabled;
+                                        bool tab3FilterRectangularity = parameters.IsRectangularityFilterEnabled;
 
                                         for (int i = 1; i <= candidateCount; i++)
                                         {
@@ -303,17 +303,17 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                             bool passesTab3Filter = true;
                                             if (passesTab3Filter && tab3FilterArea)
                                             {
-                                                if (blob.Area < parameters.FilterAreaMin.Value || blob.Area > parameters.FilterAreaMax.Value)
+                                                if (blob.Area < parameters.FilterAreaMin || blob.Area > parameters.FilterAreaMax)
                                                     passesTab3Filter = false;
                                             }
                                             if (passesTab3Filter && tab3FilterCircularity)
                                             {
-                                                if (blob.Circularity < parameters.FilterCircularityMin.Value || blob.Circularity > parameters.FilterCircularityMax.Value)
+                                                if (blob.Circularity < parameters.FilterCircularityMin || blob.Circularity > parameters.FilterCircularityMax)
                                                     passesTab3Filter = false;
                                             }
                                             if (passesTab3Filter && tab3FilterRectangularity)
                                             {
-                                                if (blob.Rectangularity < parameters.FilterRectangularityMin.Value || blob.Rectangularity > parameters.FilterRectangularityMax.Value)
+                                                if (blob.Rectangularity < parameters.FilterRectangularityMin || blob.Rectangularity > parameters.FilterRectangularityMax)
                                                     passesTab3Filter = false;
                                             }
 
@@ -350,7 +350,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                         result.MaxValueUsed = parameters.MaxValue.Value;
                                         result.MaxValueUsedDouble = parameters.MaxValue.Value;
                                         result.TypeUsed = (int)parameters.Type.Value;
-                                        result.InvertUsed = parameters.Invert.Value;
+                                        result.InvertUsed = parameters.Invert;
 
                                         // 二值掩码
                                         HOperatorSet.RegionToBin(binaryRegion, out var binObj,

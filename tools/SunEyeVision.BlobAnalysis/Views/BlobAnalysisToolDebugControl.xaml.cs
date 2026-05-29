@@ -252,7 +252,7 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
         {
             PluginLogger.Info("[UpdatePositionCorrectionMatrix] 开始查询矩阵", "BlobAnalysisTool");
 
-            if (Parameters?.IsPositionCorrectionEnabled?.Value == true
+            if (Parameters?.IsPositionCorrectionEnabled == true
                 && _dataProvider != null
                 && Parameters.PositionCorrectionBindingSource != null)
             {
@@ -300,7 +300,7 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
             PluginLogger.Info("[OnExternalResultArrived] 外部结果到达，刷新位置修正矩阵", "BlobAnalysisTool");
 
             PluginLogger.Info($"[OnExternalResultArrived] 前置检查 | " +
-                $"IsEnabled={Parameters?.IsPositionCorrectionEnabled?.Value} | " +
+                $"IsEnabled={Parameters?.IsPositionCorrectionEnabled} | " +
                 $"DataProvider={_dataProvider != null} | " +
                 $"BindingSource={Parameters?.PositionCorrectionBindingSource != null}",
                 "BlobAnalysisTool");

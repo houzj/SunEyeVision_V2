@@ -40,12 +40,12 @@
             </controls:LabeledControl>
 
             <controls:LabeledControl Label="启用区域限制">
-              <CheckBox IsChecked="{Binding IsRegionEnabled.Value, Mode=TwoWay}"
+              <CheckBox IsChecked="{Binding IsRegionEnabled, Mode=TwoWay}"
                         Content="仅对指定区域进行二值化处理"/>
             </controls:LabeledControl>
 
             <GroupBox Header="区域设置" Margin="0,8,0,0"
-                      Visibility="{Binding IsRegionEnabled.Value, Converter={StaticResource BoolToVisibilityConverter}}">
+                      Visibility="{Binding IsRegionEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
                 <region:RegionEditorManagerControl x:Name="regionManager"
                     InspectionRegionsSource="{Binding InspectionRegions.Regions}"
                     MaskRegionsSource="{Binding MaskRegions.Regions}"/>
@@ -54,12 +54,12 @@
             <!-- 位置修正 -->
             <controls:LabeledControl Label="位置修正" Margin="0,8,0,0" HorizontalAlignment="Left">
               <controls:ToggleSwitch
-                  IsChecked="{Binding IsPositionCorrectionEnabled.Value, Mode=TwoWay}"
+                  IsChecked="{Binding IsPositionCorrectionEnabled, Mode=TwoWay}"
                   SwitchWidth="48" SwitchHeight="24"/>
             </controls:LabeledControl>
 
             <controls:LabeledControl Label="修正信息" Margin="0,4,0,0" HorizontalAlignment="Left"
-                Visibility="{Binding IsPositionCorrectionEnabled.Value, Converter={StaticResource BoolToVisibilityConverter}}">
+                Visibility="{Binding IsPositionCorrectionEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
               <controls:ParamBinding
                   x:Name="positionCorrectionBinding"
                   DataType="{x:Type results:AffineMatrix}"
@@ -116,7 +116,7 @@
                       AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                 </controls:LabeledControl>
                 <controls:LabeledControl Label="反转结果" ContentHorizontalAlignment="Left" Margin="0,4,0,0" ToolTip="反转结果：勾选后将黑白颠倒">
-                  <CheckBox IsChecked="{Binding Invert.Value, Mode=TwoWay}" Content="反转二值化结果"/>
+                  <CheckBox IsChecked="{Binding Invert, Mode=TwoWay}" Content="反转二值化结果"/>
                 </controls:LabeledControl>
                 <controls:ParamGroup Header="参数说明" IsExpanded="False">
                     <StackPanel Margin="8,4">
@@ -153,7 +153,7 @@
                       AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                 </controls:LabeledControl>
                 <controls:LabeledControl Label="反转结果" ContentHorizontalAlignment="Left" Margin="0,4,0,0" ToolTip="反转结果">
-                  <CheckBox IsChecked="{Binding Invert.Value, Mode=TwoWay}" Content="反转二值化结果"/>
+                  <CheckBox IsChecked="{Binding Invert, Mode=TwoWay}" Content="反转二值化结果"/>
                 </controls:LabeledControl>
                 <controls:ParamGroup Header="参数说明" IsExpanded="False">
                     <StackPanel Margin="8,4">
@@ -283,7 +283,7 @@
                       AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                 </controls:LabeledControl>
                 <controls:LabeledControl Label="反转结果" ContentHorizontalAlignment="Left" Margin="0,4,0,0" ToolTip="反转结果">
-                  <CheckBox IsChecked="{Binding Invert.Value, Mode=TwoWay}" Content="反转二值化结果"/>
+                  <CheckBox IsChecked="{Binding Invert, Mode=TwoWay}" Content="反转二值化结果"/>
                 </controls:LabeledControl>
                 <controls:ParamGroup Header="参数说明" IsExpanded="False">
                     <StackPanel Margin="8,4">
@@ -311,7 +311,7 @@
                       AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                 </controls:LabeledControl>
                 <controls:LabeledControl Label="反转结果" ContentHorizontalAlignment="Left" Margin="0,4,0,0" ToolTip="反转结果">
-                  <CheckBox IsChecked="{Binding Invert.Value, Mode=TwoWay}" Content="反转二值化结果"/>
+                  <CheckBox IsChecked="{Binding Invert, Mode=TwoWay}" Content="反转二值化结果"/>
                 </controls:LabeledControl>
                 <controls:ParamGroup Header="参数说明" IsExpanded="False">
                     <StackPanel Margin="8,4">

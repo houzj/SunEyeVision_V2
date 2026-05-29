@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Validation;
@@ -95,14 +96,15 @@ namespace SunEyeVision.Tool.ImageThreshold
 
         #region 位置修正参数
 
-        private ParamValue<bool> _isPositionCorrectionEnabled = ParamValue<bool>.CreateConstant(false, "IsPositionCorrectionEnabled");
+        private bool _isPositionCorrectionEnabled;
         /// <summary>
         /// 是否启用位置修正
         /// </summary>
-        public ParamValue<bool> IsPositionCorrectionEnabled
+        [DisplayName("启用位置修正")]
+        public bool IsPositionCorrectionEnabled
         {
             get => _isPositionCorrectionEnabled;
-            set => _isPositionCorrectionEnabled = value;
+            set => SetProperty(ref _isPositionCorrectionEnabled, value, "启用位置修正");
         }
 
         /// <summary>
@@ -179,10 +181,9 @@ namespace SunEyeVision.Tool.ImageThreshold
         #region 运行参数
 
         /// <summary>
-        /// 阈值方法（字段后备属性，反序列化替换实例时自动恢复事件订阅）
+        /// 阈值方法
         /// </summary>
-        private ParamValue<ThresholdMethod> _method = ParamValue<ThresholdMethod>.CreateConstant(ThresholdMethod.Binary, "Method");
-
+        [DisplayName("阈值方法")]
         public ParamValue<ThresholdMethod> Method
         {
             get => _method;
@@ -214,42 +215,54 @@ namespace SunEyeVision.Tool.ImageThreshold
         /// <summary>
         /// 二值化阈值(0-255)
         /// </summary>
+        [DisplayName("阈值")]
         public ParamValue<int> Threshold { get; set; } =
             ParamValue<int>.CreateConstant(128, "Threshold");
 
         /// <summary>
         /// 超过阈值时使用的最大值(0-255)
         /// </summary>
+        [DisplayName("最大值")]
         public ParamValue<int> MaxValue { get; set; } =
             ParamValue<int>.CreateConstant(255, "MaxValue");
 
         /// <summary>
         /// 是否反转二值化结果
         /// </summary>
-        public ParamValue<bool> Invert { get; set; } =
-            ParamValue<bool>.CreateConstant(false, "Invert");
+        private bool _invert;
+
+        [DisplayName("反转结果")]
+        public bool Invert
+        {
+            get => _invert;
+            set => SetProperty(ref _invert, value, "反转结果");
+        }
 
         /// <summary>
         /// 自适应阈值块大小(奇数, 3-31)
         /// </summary>
+        [DisplayName("块大小")]
         public ParamValue<int> BlockSize { get; set; } =
             ParamValue<int>.CreateConstant(11, "BlockSize");
 
         /// <summary>
         /// 自适应阈值C常数(0-100)
         /// </summary>
+        [DisplayName("C常数")]
         public ParamValue<double> C { get; set; } =
             ParamValue<double>.CreateConstant(2.0, "C");
 
         /// <summary>
         /// InRange最小阈值(0-255)
         /// </summary>
+        [DisplayName("最小阈值")]
         public ParamValue<int> MinThreshold { get; set; } =
             ParamValue<int>.CreateConstant(0, "MinThreshold");
 
         /// <summary>
         /// InRange最大阈值(0-255)
         /// </summary>
+        [DisplayName("最大阈值")]
         public ParamValue<int> MaxThreshold { get; set; } =
             ParamValue<int>.CreateConstant(255, "MaxThreshold");
 

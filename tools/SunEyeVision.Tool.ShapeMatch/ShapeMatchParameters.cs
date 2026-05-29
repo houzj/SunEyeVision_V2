@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
@@ -17,58 +18,72 @@ public class ShapeMatchParameters : RegionParameters
     #region 匹配参数
 
     /// <summary>最小匹配分数（0~1）</summary>
+    [DisplayName("最小匹配分数")]
     public ParamValue<double> MinMatchScore { get; set; } =
         ParamValue<double>.CreateConstant(0.5, "MinMatchScore");
 
     /// <summary>最大匹配数量</summary>
+    [DisplayName("最大匹配数量")]
     public ParamValue<int> MaxMatchCount { get; set; } =
         ParamValue<int>.CreateConstant(1, "MaxMatchCount");
 
     /// <summary>匹配超时（毫秒）</summary>
+    [DisplayName("匹配超时(毫秒)")]
     public ParamValue<int> MatchTimeoutMs { get; set; } =
         ParamValue<int>.CreateConstant(30000, "MatchTimeoutMs");
 
     /// <summary>角度范围起始值（度）</summary>
+    [DisplayName("角度起始值")]
     public ParamValue<double> AngleStart { get; set; } =
         ParamValue<double>.CreateConstant(-45.0, "AngleStart");
 
     /// <summary>角度范围终止值（度）</summary>
+    [DisplayName("角度终止值")]
     public ParamValue<double> AngleEnd { get; set; } =
         ParamValue<double>.CreateConstant(45.0, "AngleEnd");
 
     /// <summary>角度步长（度），0=auto</summary>
+    [DisplayName("角度步长")]
     public ParamValue<double> AngleStep { get; set; } =
         ParamValue<double>.CreateConstant(0, "AngleStep");
 
     /// <summary>缩放范围最小值</summary>
+    [DisplayName("缩放最小值")]
     public ParamValue<double> ScaleMin { get; set; } =
         ParamValue<double>.CreateConstant(0.8, "ScaleMin");
 
     /// <summary>缩放范围最大值</summary>
+    [DisplayName("缩放最大值")]
     public ParamValue<double> ScaleMax { get; set; } =
         ParamValue<double>.CreateConstant(1.2, "ScaleMax");
 
     /// <summary>缩放步长，0=auto</summary>
+    [DisplayName("缩放步长")]
     public ParamValue<double> ScaleStep { get; set; } =
         ParamValue<double>.CreateConstant(0, "ScaleStep");
 
     /// <summary>最大返回匹配数（Halcon NumMatches）</summary>
+    [DisplayName("最大返回数")]
     public ParamValue<int> NumMatches { get; set; } =
         ParamValue<int>.CreateConstant(1, "NumMatches");
 
     /// <summary>搜索起始层（0=使用模型全层级，>0 表示从该层开始粗定位）</summary>
+    [DisplayName("搜索起始层")]
     public ParamValue<int> SearchLevelStart { get; set; } =
         ParamValue<int>.CreateConstant(0, "SearchLevelStart");
 
     /// <summary>搜索结束层（0=全分辨率，>=1 表示搜索到该层结束细定位）</summary>
+    [DisplayName("搜索结束层")]
     public ParamValue<int> SearchLevelEnd { get; set; } =
         ParamValue<int>.CreateConstant(1, "SearchLevelEnd");
 
     /// <summary>NMS 最大重叠率 0~1（Halcon MaxOverlap）</summary>
+    [DisplayName("最大重叠率")]
     public ParamValue<double> MaxOverlap { get; set; } =
         ParamValue<double>.CreateConstant(0.5, "MaxOverlap");
 
     /// <summary>贪婪度 0~1（Halcon Greediness）</summary>
+    [DisplayName("贪婪度")]
     public ParamValue<double> Greediness { get; set; } =
         ParamValue<double>.CreateConstant(0.9, "Greediness");
 
@@ -77,14 +92,17 @@ public class ShapeMatchParameters : RegionParameters
     #region 引擎参数（新增 — 对齐 Halcon）
 
     /// <summary>极性匹配模式</summary>
+    [DisplayName("极性模式")]
     public ParamValue<MetricMode> MetricMode { get; set; } =
         ParamValue<MetricMode>.CreateConstant(Models.MetricMode.UsePolarity, "MetricMode");
 
     /// <summary>优化模式</summary>
+    [DisplayName("优化模式")]
     public ParamValue<OptimizationMode> OptimizationMode { get; set; } =
         ParamValue<OptimizationMode>.CreateConstant(Models.OptimizationMode.Auto, "OptimizationMode");
 
     /// <summary>亚像素模式</summary>
+    [DisplayName("亚像素模式")]
     public ParamValue<SubPixelMode> SubPixelMode { get; set; } =
         ParamValue<SubPixelMode>.CreateConstant(Models.SubPixelMode.LeastSquares, "SubPixelMode");
 
@@ -93,10 +111,11 @@ public class ShapeMatchParameters : RegionParameters
     #region 最小对比度（搜索时噪声过滤）
 
     /// <summary>最小对比度是否自动</summary>
-    public ParamValue<bool> IsMinContrastAuto { get; set; } =
-        ParamValue<bool>.CreateConstant(true, "IsMinContrastAuto");
+    [DisplayName("最小对比度自动")]
+    public bool IsMinContrastAuto { get; set; } = true;
 
     /// <summary>手动最小对比度值（仅非 Auto 模式有效）</summary>
+    [DisplayName("最小对比度")]
     public ParamValue<double> MinContrast { get; set; } =
         ParamValue<double>.CreateConstant(10.0, "MinContrast");
 
@@ -105,6 +124,7 @@ public class ShapeMatchParameters : RegionParameters
     #region 结果排序
 
     /// <summary>排序方式</summary>
+    [DisplayName("排序方式")]
     public ParamValue<SortMode> SortMode { get; set; } =
         ParamValue<SortMode>.CreateConstant(Models.SortMode.None, "SortMode");
 
@@ -113,10 +133,12 @@ public class ShapeMatchParameters : RegionParameters
     #region 高级参数
 
     /// <summary>执行模式（多模板）</summary>
+    [DisplayName("执行模式")]
     public ParamValue<MultiTemplateMode> MultiMode { get; set; } =
         ParamValue<MultiTemplateMode>.CreateConstant(MultiTemplateMode.ParallelShared, "MultiMode");
 
     /// <summary>最大并行度（0=自动/CPU核数）</summary>
+    [DisplayName("最大并行度")]
     public ParamValue<int> MaxParallelism { get; set; } =
         ParamValue<int>.CreateConstant(0, "MaxParallelism");
 
@@ -142,8 +164,8 @@ public class ShapeMatchParameters : RegionParameters
     #region 位置修正
 
     /// <summary>是否启用位置修正</summary>
-    public ParamValue<bool> IsPositionCorrectionEnabled { get; set; } =
-        ParamValue<bool>.CreateConstant(false, "IsPositionCorrectionEnabled");
+    [DisplayName("启用位置修正")]
+    public bool IsPositionCorrectionEnabled { get; set; } = false;
 
     /// <summary>位置修正绑定源（运行时，不序列化）</summary>
     [JsonIgnore]
@@ -226,7 +248,7 @@ public class ShapeMatchParameters : RegionParameters
         if (MaxParallelism.Value < 0)
             result.AddError($"最大并行度不能为负数，当前值: {MaxParallelism.Value}");
 
-        if (!IsMinContrastAuto.Value && MinContrast.Value <= 0)
+        if (!IsMinContrastAuto && MinContrast.Value <= 0)
             result.AddError($"手动最小对比度必须大于0，当前值: {MinContrast.Value}");
 
         return result;

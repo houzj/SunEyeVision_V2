@@ -53,12 +53,12 @@
 
             <controls:LabeledControl Label="位置修正" Margin="0,8,0,0" HorizontalAlignment="Left">
               <controls:ToggleSwitch
-                  IsChecked="{Binding IsPositionCorrectionEnabled.Value, Mode=TwoWay}"
+                  IsChecked="{Binding IsPositionCorrectionEnabled, Mode=TwoWay}"
                   SwitchWidth="48" SwitchHeight="24"/>
             </controls:LabeledControl>
 
             <controls:LabeledControl Label="修正信息" Margin="0,4,0,0" HorizontalAlignment="Left"
-                Visibility="{Binding IsPositionCorrectionEnabled.Value, Converter={StaticResource BoolToVisibilityConverter}}">
+                Visibility="{Binding IsPositionCorrectionEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
               <controls:ParamBinding
                   x:Name="positionCorrectionBinding"
                   DataType="{x:Type results:AffineMatrix}"

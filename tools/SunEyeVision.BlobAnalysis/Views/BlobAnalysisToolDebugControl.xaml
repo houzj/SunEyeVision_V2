@@ -56,12 +56,12 @@
             <!-- 位置修正 -->
             <controls:LabeledControl Label="位置修正" Margin="0,8,0,0" HorizontalAlignment="Left">
               <controls:ToggleSwitch
-                  IsChecked="{Binding IsPositionCorrectionEnabled.Value, Mode=TwoWay}"
+                  IsChecked="{Binding IsPositionCorrectionEnabled, Mode=TwoWay}"
                   SwitchWidth="48" SwitchHeight="24"/>
             </controls:LabeledControl>
 
             <controls:LabeledControl Label="修正信息" Margin="0,4,0,0" HorizontalAlignment="Left"
-                Visibility="{Binding IsPositionCorrectionEnabled.Value, Converter={StaticResource BoolToVisibilityConverter}}">
+                Visibility="{Binding IsPositionCorrectionEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
               <controls:ParamBinding
                   x:Name="positionCorrectionBinding"
                   DataType="{x:Type results:AffineMatrix}"
@@ -84,12 +84,12 @@
 
             <controls:LabeledControl Label="启用预处理" ContentHorizontalAlignment="Left" Margin="0,0,0,4">
               <controls:ToggleSwitch
-                IsChecked="{Binding IsPreprocessingEnabled.Value, Mode=TwoWay}"
+                IsChecked="{Binding IsPreprocessingEnabled, Mode=TwoWay}"
                 SwitchWidth="48" SwitchHeight="24"/>
             </controls:LabeledControl>
 
             <controls:LabeledControl Label="预处理方法"
-              Visibility="{Binding IsPreprocessingEnabled.Value, Converter={StaticResource BoolToVisibilityConverter}}">
+              Visibility="{Binding IsPreprocessingEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
               <ComboBox Height="32" VerticalContentAlignment="Center" Width="250"
                 SelectedItem="{Binding PreprocessMethodValue.Value, Mode=TwoWay, Converter={StaticResource PreprocessMethodConverter}}">
                 <sys:String>无</sys:String>
@@ -101,7 +101,7 @@
             </controls:LabeledControl>
 
             <controls:LabeledControl Label="滤波核大小"
-              Visibility="{Binding IsPreprocessingEnabled.Value, Converter={StaticResource BoolToVisibilityConverter}}">
+              Visibility="{Binding IsPreprocessingEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
               <controls:ConfigSetting
                 ParameterName="PreprocessKernelSize"
                 DataType="{x:Type sys:Int32}"
@@ -150,7 +150,7 @@
             </controls:LabeledControl>
 
             <controls:LabeledControl Label="反转结果" ContentHorizontalAlignment="Left" Margin="0,4,0,0">
-              <CheckBox IsChecked="{Binding Invert.Value, Mode=TwoWay}"
+              <CheckBox IsChecked="{Binding Invert, Mode=TwoWay}"
                     Content="反转二值化结果"/>
             </controls:LabeledControl>
 
@@ -160,12 +160,12 @@
 
             <controls:LabeledControl Label="启用形态学" ContentHorizontalAlignment="Left" Margin="0,0,0,4">
               <controls:ToggleSwitch
-                IsChecked="{Binding IsMorphologyEnabled.Value, Mode=TwoWay}"
+                IsChecked="{Binding IsMorphologyEnabled, Mode=TwoWay}"
                 SwitchWidth="48" SwitchHeight="24"/>
             </controls:LabeledControl>
 
             <controls:LabeledControl Label="操作类型"
-              Visibility="{Binding IsMorphologyEnabled.Value, Converter={StaticResource BoolToVisibilityConverter}}">
+              Visibility="{Binding IsMorphologyEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
               <ComboBox Height="32" VerticalContentAlignment="Center" Width="250"
                 SelectedItem="{Binding MorphOperationValue.Value, Mode=TwoWay, Converter={StaticResource MorphOperationConverter}}">
                 <sys:String>腐蚀</sys:String>
@@ -178,7 +178,7 @@
             </controls:LabeledControl>
 
             <controls:LabeledControl Label="结构元素"
-              Visibility="{Binding IsMorphologyEnabled.Value, Converter={StaticResource BoolToVisibilityConverter}}">
+              Visibility="{Binding IsMorphologyEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
               <ComboBox Height="32" VerticalContentAlignment="Center" Width="250"
                 SelectedItem="{Binding MorphElementShapeValue.Value, Mode=TwoWay, Converter={StaticResource MorphElementShapeConverter}}">
                 <sys:String>矩形</sys:String>
@@ -187,7 +187,7 @@
             </controls:LabeledControl>
 
             <controls:LabeledControl Label="结构元素宽度"
-              Visibility="{Binding IsMorphologyEnabled.Value, Converter={StaticResource BoolToVisibilityConverter}}">
+              Visibility="{Binding IsMorphologyEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
               <controls:ConfigSetting
                 ParameterName="MorphElementWidth"
                 DataType="{x:Type sys:Int32}"
@@ -199,7 +199,7 @@
             </controls:LabeledControl>
 
             <controls:LabeledControl Label="结构元素高度"
-              Visibility="{Binding IsMorphologyEnabled.Value, Converter={StaticResource BoolToVisibilityConverter}}">
+              Visibility="{Binding IsMorphologyEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
               <controls:ConfigSetting
                 ParameterName="MorphElementHeight"
                 DataType="{x:Type sys:Int32}"
@@ -211,7 +211,7 @@
             </controls:LabeledControl>
 
             <controls:LabeledControl Label="迭代次数"
-              Visibility="{Binding IsMorphologyEnabled.Value, Converter={StaticResource BoolToVisibilityConverter}}">
+              Visibility="{Binding IsMorphologyEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
               <controls:ConfigSetting
                 ParameterName="MorphIterations"
                 DataType="{x:Type sys:Int32}"
@@ -255,18 +255,18 @@
 
             <controls:LabeledControl Label="启用面积筛选" ContentHorizontalAlignment="Left" Margin="0,0,0,4">
               <controls:ToggleSwitch
-                IsChecked="{Binding IsAreaFilterEnabled.Value, Mode=TwoWay}"
+                IsChecked="{Binding IsAreaFilterEnabled, Mode=TwoWay}"
                 SwitchWidth="48" SwitchHeight="24"/>
             </controls:LabeledControl>
 
             <controls:LabeledControl Label="面积范围 (px²)"
-              Visibility="{Binding IsAreaFilterEnabled.Value, Converter={StaticResource BoolToVisibilityConverter}}">
+              Visibility="{Binding IsAreaFilterEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
               <controls:RangeInputControl
                 Unit="px²"
                 Minimum="0"
                 Maximum="999999"
-                MinValue="{Binding FilterAreaMin.Value, Mode=TwoWay}"
-                MaxValue="{Binding FilterAreaMax.Value, Mode=TwoWay}"
+                MinValue="{Binding FilterAreaMin, Mode=TwoWay}"
+                MaxValue="{Binding FilterAreaMax, Mode=TwoWay}"
                 DecimalPlaces="0"
                 SmallChange="10"
                 NumericWidth="100"/>
@@ -278,18 +278,18 @@
 
             <controls:LabeledControl Label="启用圆度筛选" ContentHorizontalAlignment="Left" Margin="0,0,0,4">
               <controls:ToggleSwitch
-                IsChecked="{Binding IsCircularityFilterEnabled.Value, Mode=TwoWay}"
+                IsChecked="{Binding IsCircularityFilterEnabled, Mode=TwoWay}"
                 SwitchWidth="48" SwitchHeight="24"/>
             </controls:LabeledControl>
 
             <controls:LabeledControl Label="圆度范围"
-              Visibility="{Binding IsCircularityFilterEnabled.Value, Converter={StaticResource BoolToVisibilityConverter}}">
+              Visibility="{Binding IsCircularityFilterEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
               <controls:RangeInputControl
                 Unit=""
                 Minimum="0"
                 Maximum="1"
-                MinValue="{Binding FilterCircularityMin.Value, Mode=TwoWay}"
-                MaxValue="{Binding FilterCircularityMax.Value, Mode=TwoWay}"
+                MinValue="{Binding FilterCircularityMin, Mode=TwoWay}"
+                MaxValue="{Binding FilterCircularityMax, Mode=TwoWay}"
                 DecimalPlaces="3"
                 SmallChange="0.01"
                 NumericWidth="100"/>
@@ -301,18 +301,18 @@
 
             <controls:LabeledControl Label="启用矩形度筛选" ContentHorizontalAlignment="Left" Margin="0,0,0,4">
               <controls:ToggleSwitch
-                IsChecked="{Binding IsRectangularityFilterEnabled.Value, Mode=TwoWay}"
+                IsChecked="{Binding IsRectangularityFilterEnabled, Mode=TwoWay}"
                 SwitchWidth="48" SwitchHeight="24"/>
             </controls:LabeledControl>
 
             <controls:LabeledControl Label="矩形度范围"
-              Visibility="{Binding IsRectangularityFilterEnabled.Value, Converter={StaticResource BoolToVisibilityConverter}}">
+              Visibility="{Binding IsRectangularityFilterEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
               <controls:RangeInputControl
                 Unit=""
                 Minimum="0"
                 Maximum="1"
-                MinValue="{Binding FilterRectangularityMin.Value, Mode=TwoWay}"
-                MaxValue="{Binding FilterRectangularityMax.Value, Mode=TwoWay}"
+                MinValue="{Binding FilterRectangularityMin, Mode=TwoWay}"
+                MaxValue="{Binding FilterRectangularityMax, Mode=TwoWay}"
                 DecimalPlaces="3"
                 SmallChange="0.01"
                 NumericWidth="100"/>

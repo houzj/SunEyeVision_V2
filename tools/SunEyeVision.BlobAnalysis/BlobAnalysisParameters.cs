@@ -1,5 +1,6 @@
 ﻿using System.Windows.Media;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
@@ -112,26 +113,33 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// <summary>
         /// 二值化阈值(0-255)
         /// </summary>
+        [DisplayName("阈值")]
         public ParamValue<int> Threshold { get; set; } =
             ParamValue<int>.CreateConstant(128, "Threshold");
 
         /// <summary>
         /// 超过阈值时使用的最大值(0-255)
         /// </summary>
+        [DisplayName("最大值")]
         public ParamValue<int> MaxValue { get; set; } =
             ParamValue<int>.CreateConstant(255, "MaxValue");
 
         /// <summary>
         /// 二值化方法（仅支持 Binary/BinaryInv）
         /// </summary>
+        [DisplayName("二值化方法")]
         public ParamValue<ThresholdType> Type { get; set; } =
             ParamValue<ThresholdType>.CreateConstant(ThresholdType.Binary, "Type");
 
         /// <summary>
         /// 是否反转二值化结果
         /// </summary>
-        public ParamValue<bool> Invert { get; set; } =
-            ParamValue<bool>.CreateConstant(false, "Invert");
+        [DisplayName("反转结果")]
+        public bool Invert
+        {
+            get => _invert;
+            set => SetProperty(ref _invert, value, "反转结果");
+        }
 
         #endregion
 
@@ -140,18 +148,24 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// <summary>
         /// 是否启用图像预处理
         /// </summary>
-        public ParamValue<bool> IsPreprocessingEnabled { get; set; } =
-            ParamValue<bool>.CreateConstant(false, "IsPreprocessingEnabled");
+        [DisplayName("启用预处理")]
+        public bool IsPreprocessingEnabled
+        {
+            get => _isPreprocessingEnabled;
+            set => SetProperty(ref _isPreprocessingEnabled, value, "启用预处理");
+        }
 
         /// <summary>
         /// 预处理方法
         /// </summary>
+        [DisplayName("预处理方法")]
         public ParamValue<PreprocessMethod> PreprocessMethodValue { get; set; } =
             ParamValue<PreprocessMethod>.CreateConstant(PreprocessMethod.None, "PreprocessMethodValue");
 
         /// <summary>
         /// 预处理滤波核大小（均值/高斯/中值滤波，奇数3~31）
         /// </summary>
+        [DisplayName("滤波核大小")]
         public ParamValue<int> PreprocessKernelSize { get; set; } =
             ParamValue<int>.CreateConstant(5, "PreprocessKernelSize");
 
@@ -162,36 +176,45 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// <summary>
         /// 是否启用形态学处理
         /// </summary>
-        public ParamValue<bool> IsMorphologyEnabled { get; set; } =
-            ParamValue<bool>.CreateConstant(false, "IsMorphologyEnabled");
+        [DisplayName("启用形态学")]
+        public bool IsMorphologyEnabled
+        {
+            get => _isMorphologyEnabled;
+            set => SetProperty(ref _isMorphologyEnabled, value, "启用形态学");
+        }
 
         /// <summary>
         /// 形态学操作类型
         /// </summary>
+        [DisplayName("形态学操作")]
         public ParamValue<MorphOperationType> MorphOperationValue { get; set; } =
             ParamValue<MorphOperationType>.CreateConstant(MorphOperationType.Erosion, "MorphOperationValue");
 
         /// <summary>
         /// 结构元素形状
         /// </summary>
+        [DisplayName("结构元素形状")]
         public ParamValue<MorphElementShapeType> MorphElementShapeValue { get; set; } =
             ParamValue<MorphElementShapeType>.CreateConstant(MorphElementShapeType.Rectangle, "MorphElementShapeValue");
 
         /// <summary>
         /// 结构元素宽度(1~101)
         /// </summary>
+        [DisplayName("结构元素宽度")]
         public ParamValue<int> MorphElementWidth { get; set; } =
             ParamValue<int>.CreateConstant(5, "MorphElementWidth");
 
         /// <summary>
         /// 结构元素高度(1~101)
         /// </summary>
+        [DisplayName("结构元素高度")]
         public ParamValue<int> MorphElementHeight { get; set; } =
             ParamValue<int>.CreateConstant(5, "MorphElementHeight");
 
         /// <summary>
         /// 形态学迭代次数(1~10)
         /// </summary>
+        [DisplayName("迭代次数")]
         public ParamValue<int> MorphIterations { get; set; } =
             ParamValue<int>.CreateConstant(1, "MorphIterations");
 
@@ -200,40 +223,76 @@ namespace SunEyeVision.Tool.BlobAnalysis
         #region Blob 筛选参数（Tab3：独立于 Tab4 判断的筛选条件）
 
         /// <summary>启用面积筛选</summary>
-        public ParamValue<bool> IsAreaFilterEnabled { get; set; } =
-            ParamValue<bool>.CreateConstant(true, "IsAreaFilterEnabled");
+        [DisplayName("启用面积筛选")]
+        public bool IsAreaFilterEnabled
+        {
+            get => _isAreaFilterEnabled;
+            set => SetProperty(ref _isAreaFilterEnabled, value, "启用面积筛选");
+        }
 
         /// <summary>面积筛选最小值</summary>
-        public ParamValue<double> FilterAreaMin { get; set; } =
-            ParamValue<double>.CreateConstant(10, "FilterAreaMin");
+        [DisplayName("面积最小值")]
+        public double FilterAreaMin
+        {
+            get => _filterAreaMin;
+            set => SetProperty(ref _filterAreaMin, value, "面积最小值");
+        }
 
         /// <summary>面积筛选最大值</summary>
-        public ParamValue<double> FilterAreaMax { get; set; } =
-            ParamValue<double>.CreateConstant(999999, "FilterAreaMax");
+        [DisplayName("面积最大值")]
+        public double FilterAreaMax
+        {
+            get => _filterAreaMax;
+            set => SetProperty(ref _filterAreaMax, value, "面积最大值");
+        }
 
         /// <summary>启用圆度筛选</summary>
-        public ParamValue<bool> IsCircularityFilterEnabled { get; set; } =
-            ParamValue<bool>.CreateConstant(false, "IsCircularityFilterEnabled");
+        [DisplayName("启用圆度筛选")]
+        public bool IsCircularityFilterEnabled
+        {
+            get => _isCircularityFilterEnabled;
+            set => SetProperty(ref _isCircularityFilterEnabled, value, "启用圆度筛选");
+        }
 
         /// <summary>圆度筛选最小值</summary>
-        public ParamValue<double> FilterCircularityMin { get; set; } =
-            ParamValue<double>.CreateConstant(0, "FilterCircularityMin");
+        [DisplayName("圆度最小值")]
+        public double FilterCircularityMin
+        {
+            get => _filterCircularityMin;
+            set => SetProperty(ref _filterCircularityMin, value, "圆度最小值");
+        }
 
         /// <summary>圆度筛选最大值</summary>
-        public ParamValue<double> FilterCircularityMax { get; set; } =
-            ParamValue<double>.CreateConstant(1.0, "FilterCircularityMax");
+        [DisplayName("圆度最大值")]
+        public double FilterCircularityMax
+        {
+            get => _filterCircularityMax;
+            set => SetProperty(ref _filterCircularityMax, value, "圆度最大值");
+        }
 
         /// <summary>启用矩形度筛选</summary>
-        public ParamValue<bool> IsRectangularityFilterEnabled { get; set; } =
-            ParamValue<bool>.CreateConstant(false, "IsRectangularityFilterEnabled");
+        [DisplayName("启用矩形度筛选")]
+        public bool IsRectangularityFilterEnabled
+        {
+            get => _isRectangularityFilterEnabled;
+            set => SetProperty(ref _isRectangularityFilterEnabled, value, "启用矩形度筛选");
+        }
 
         /// <summary>矩形度筛选最小值</summary>
-        public ParamValue<double> FilterRectangularityMin { get; set; } =
-            ParamValue<double>.CreateConstant(0, "FilterRectangularityMin");
+        [DisplayName("矩形度最小值")]
+        public double FilterRectangularityMin
+        {
+            get => _filterRectangularityMin;
+            set => SetProperty(ref _filterRectangularityMin, value, "矩形度最小值");
+        }
 
         /// <summary>矩形度筛选最大值</summary>
-        public ParamValue<double> FilterRectangularityMax { get; set; } =
-            ParamValue<double>.CreateConstant(1.0, "FilterRectangularityMax");
+        [DisplayName("矩形度最大值")]
+        public double FilterRectangularityMax
+        {
+            get => _filterRectangularityMax;
+            set => SetProperty(ref _filterRectangularityMax, value, "矩形度最大值");
+        }
 
         #endregion
 
@@ -249,6 +308,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// <summary>
         /// Blob排序方式
         /// </summary>
+        [DisplayName("排序方式")]
         public ParamValue<BlobSortMode> SortMode { get; set; } =
             ParamValue<BlobSortMode>.CreateConstant(BlobSortMode.AreaDesc, "SortMode");
 
@@ -289,8 +349,12 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// <summary>
         /// 是否启用位置修正
         /// </summary>
-        public ParamValue<bool> IsPositionCorrectionEnabled { get; set; } =
-            ParamValue<bool>.CreateConstant(false, "IsPositionCorrectionEnabled");
+        [DisplayName("启用位置修正")]
+        public bool IsPositionCorrectionEnabled
+        {
+            get => _isPositionCorrectionEnabled;
+            set => SetProperty(ref _isPositionCorrectionEnabled, value, "启用位置修正");
+        }
 
         /// <summary>
         /// 位置修正绑定源（运行时，不序列化）
@@ -325,6 +389,19 @@ namespace SunEyeVision.Tool.BlobAnalysis
         [JsonPropertyOrder(17)]
         public string? PositionCorrectionBindingDisplayText { get; set; }
 
+        private bool _invert;
+        private bool _isPreprocessingEnabled;
+        private bool _isMorphologyEnabled;
+        private double _filterAreaMin = 10;
+        private double _filterAreaMax = 999999;
+        private double _filterCircularityMin;
+        private double _filterCircularityMax = 1.0;
+        private double _filterRectangularityMin;
+        private double _filterRectangularityMax = 1.0;
+        private bool _isAreaFilterEnabled = true;
+        private bool _isCircularityFilterEnabled;
+        private bool _isRectangularityFilterEnabled;
+        private bool _isPositionCorrectionEnabled;
         private AvailableDataSource? _positionCorrectionBindingSource;
         private ImageSourceReference? _positionCorrectionSource;
 
@@ -368,7 +445,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
             }
 
             // 预处理参数验证
-            if (IsPreprocessingEnabled.Value && PreprocessMethodValue.Value != PreprocessMethod.None)
+            if (IsPreprocessingEnabled && PreprocessMethodValue.Value != PreprocessMethod.None)
             {
                 int kernelSize = PreprocessKernelSize.Value;
                 if (kernelSize < 3 || kernelSize > 31 || kernelSize % 2 == 0)
@@ -378,7 +455,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
             }
 
             // 形态学参数验证
-            if (IsMorphologyEnabled.Value)
+            if (IsMorphologyEnabled)
             {
                 if (MorphElementWidth.Value < 1 || MorphElementWidth.Value > 101)
                 {

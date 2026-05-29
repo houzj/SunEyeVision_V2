@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -39,7 +40,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     {
         private RegionCollectionParameter _inspectionRegions;
         private RegionCollectionParameter _maskRegions;
-        private ParamValue<bool> _isRegionEnabled;
+        private bool _isRegionEnabled;
         private ImageSourceReference? _imageSourceRef;
         private AvailableDataSource? _imageSource;
 
@@ -50,7 +51,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         {
             _inspectionRegions = new RegionCollectionParameter(RegionParameterMode.InspectionRegion);
             _maskRegions = new RegionCollectionParameter(RegionParameterMode.MaskRegion);
-            _isRegionEnabled = new ParamValue<bool> { Value = false };
+            _isRegionEnabled = false;
         }
 
         /// <summary>
@@ -87,10 +88,11 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// true = 仅对有效区域（检测区域 - 屏蔽区域）进行处理
         /// </remarks>
         [JsonPropertyOrder(12)]
-        public ParamValue<bool> IsRegionEnabled
+        [DisplayName("启用区域限制")]
+        public bool IsRegionEnabled
         {
             get => _isRegionEnabled;
-            set => _isRegionEnabled = value;
+            set => SetProperty(ref _isRegionEnabled, value, "启用区域限制");
         }
 
         #region 显示样式

@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json.Serialization;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -279,7 +280,7 @@ namespace SunEyeVision.UI.ViewModels
                     else if (value != null)
                     {
                         // 未运行也从 _typeCache 显示属性表结构
-                        UpdateModuleResults(null, value.Name, toolId);
+                        UpdateModuleResults(null, value.Name, toolId, value.Id);
                         // 清空旧节点残留在图像上的图形覆盖，防止显示错位
                         _nodeResultManager.ClearResultGraphics();
                     }
@@ -731,6 +732,10 @@ SplitterPosition = position;
         public ICommand ShowCameraManagerCommand { get; }
         public ICommand ShowCommunicationManagerCommand { get; }
 
+        // 全局变量绑定
+        public ICommand BindResultToGlobalVarCommand { get; }
+        public ICommand UnbindResultFromGlobalVarCommand { get; }
+
         // 主窗口 ImageControl 获取委托 - 用于区域编辑器绑定
         /// <summary>
         /// 获取主窗口 ImageControl 的委托 - 用于区域编辑器绑定
@@ -843,6 +848,10 @@ SplitterPosition = position;
             ShowGlobalVariableManagerCommand = new RelayCommand(ExecuteShowGlobalVariableManager);
             ShowCameraManagerCommand = new RelayCommand(ExecuteShowCameraManager);
             ShowCommunicationManagerCommand = new RelayCommand(ExecuteShowCommunicationManager);
+
+            // 全局变量绑定
+            BindResultToGlobalVarCommand = new RelayCommand(ExecuteBindResultToGlobalVar);
+            UnbindResultFromGlobalVarCommand = new RelayCommand(ExecuteUnbindResultFromGlobalVar);
         }
 
         /// <summary>
@@ -2202,6 +2211,12 @@ SplitterPosition = position;
                 selectedConnections);
             WorkflowTabViewModel.SelectedTab.CommandManager.Execute(command);
 
+            // 级联清理：清理被删节点关联的全局变量绑定
+            foreach (var node in selectedNodes)
+            {
+                CleanupBindingsForDeletedNode(node.Id);
+            }
+
             // 处理被删连接的后置副作用（ImageSource 回退、日志）
             foreach (var conn in allAffectedConnections)
             {
@@ -3315,6 +3330,9 @@ AddLog($"⚠️ 日志记录异常: {ex.Message}");
                 // 通过 NodeResultManager 更新节点结果（更新 OutputCache，不修改 InputSource）
                 _nodeResultManager.UpdateNodeResult(e.Node, e.Result);
 
+                // ★ 运行时同步：将节点结果写入绑定的全局变量
+                SyncProducerBindingsToGlobalVariables(e.Node.Id, e.Result);
+
                 // ★ 更新所有依赖此节点的数据提供者（修复前置节点未执行问题）
                 UpdateDataProvidersForNode(e.Node, e.Result);
 
@@ -3587,7 +3605,8 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
         /// <param name="result">运行结果（可为null，此时仅显示表头结构）</param>
         /// <param name="nodeName">节点显示名称</param>
         /// <param name="toolId">工具ID，用于从 _typeCache 查询属性元数据</param>
-        public void UpdateModuleResults(ToolResults? result, string? nodeName, string? toolId = null)
+        /// <param name="nodeId">节点ID，用于绑定状态反查</param>
+        public void UpdateModuleResults(ToolResults? result, string? nodeName, string? toolId = null, string? nodeId = null)
         {
             ModuleResultTree.Clear();
             HasModuleResults = false;
@@ -3670,6 +3689,9 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
                             DisplayName = meta.DisplayName,
                             DisplayValue = displayValue,
                             PropertyName = meta.PropertyName,
+                            SourceNodeId = nodeId,
+                            SourcePropertyName = meta.PropertyName,
+                            PropertyClrType = meta.PropertyType,
                             IsGroup = false
                         });
                     }
@@ -3792,6 +3814,40 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
 
         private void AddFlatRow(ModuleResultNode node, int level)
         {
+            // 反查绑定状态：检查是否有全局变量的 ProducerBinding 指向此节点+属性
+            string? boundVarName = null;
+            string? boundVarId = null;
+            bool isBound = false;
+            if (node.SourceNodeId != null && node.SourcePropertyName != null)
+            {
+                var solution = Adapters.ServiceInitializer.SolutionManager?.CurrentSolution;
+                if (solution?.GlobalVariables != null)
+                {
+                    foreach (var gv in solution.GlobalVariables)
+                    {
+                        if (gv.ProducerBinding != null &&
+                            gv.ProducerBinding.NodeId == node.SourceNodeId &&
+                            gv.ProducerBinding.PropertyName == node.SourcePropertyName)
+                        {
+                            boundVarName = gv.Name;
+                            boundVarId = gv.Id;
+                            isBound = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // 解析节点名称
+            string? resolvedNodeName = null;
+            if (node.SourceNodeId != null && WorkflowTabViewModel.SelectedTab != null)
+            {
+                var srcNode = WorkflowTabViewModel.SelectedTab.WorkflowNodes
+                    .FirstOrDefault(n => n.Id == node.SourceNodeId);
+                if (srcNode != null)
+                    resolvedNodeName = srcNode.Name;
+            }
+
             var row = new FlatResultRow
             {
                 DisplayName = node.DisplayName,
@@ -3799,7 +3855,14 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
                 Level = level,
                 IsGroup = node.IsGroup,
                 IsExpanded = node.IsExpanded,
-                SourceNode = node
+                SourceNode = node,
+                SourceNodeId = node.SourceNodeId,
+                SourceNodeName = resolvedNodeName,
+                SourcePropertyName = node.SourcePropertyName,
+                PropertyClrType = node.PropertyClrType,
+                IsBoundToGlobalVar = isBound,
+                BoundVariableName = boundVarName,
+                BoundGlobalVariableId = boundVarId
             };
 
             // 同步展开状态变化
@@ -4134,6 +4197,194 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
         }
 
         /// <summary>
+        /// 执行绑定：将模块结果项绑定到全局变量
+        /// </summary>
+        private void ExecuteBindResultToGlobalVar(object? parameter)
+        {
+            try
+            {
+                if (parameter is not FlatResultRow row || !row.CanBind)
+                    return;
+
+                var solutionManager = Adapters.ServiceInitializer.SolutionManager;
+                var currentSolution = solutionManager.CurrentSolution;
+                if (currentSolution == null)
+                {
+                    MessageBox.Show("请先打开一个解决方案", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                if (string.IsNullOrEmpty(row.SourceNodeId) || string.IsNullOrEmpty(row.SourcePropertyName))
+                    return;
+
+                // 检查是否有全局变量
+                var variables = currentSolution.GlobalVariables;
+                if (variables == null || variables.Count == 0)
+                {
+                    MessageBox.Show("当前解决方案中没有全局变量。\n请在\"全局变量管理器\"中添加后重试。",
+                        "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                // 打开全局变量选择对话框（按类型过滤）
+                var filterType = row.PropertyClrType != null
+                    ? GlobalVariableTypeMapper.ToGlobalVarType(row.PropertyClrType)
+                    : null;
+                var selected = GlobalVariableSelectDialog.ShowSelect(variables.ToList(), filterType);
+                if (selected == null)
+                    return;
+
+                // 如果该变量已有提供者绑定，直接替换
+                selected.ProducerBinding = new ProducerBinding
+                {
+                    NodeId = row.SourceNodeId,
+                    NodeName = row.SourceNodeName ?? row.SourceNodeId,
+                    PropertyName = row.SourcePropertyName,
+                    WorkflowName = WorkflowTabViewModel.SelectedTab?.Name ?? "",
+                    PropertyDisplayName = row.DisplayName
+                };
+                selected.NotifyInputDisplayChanged();
+
+                // 更新行显示状态
+                row.IsBoundToGlobalVar = true;
+                row.BoundVariableName = selected.Name;
+                row.BoundGlobalVariableId = selected.Id;
+                row.NotifyBindingDisplayChanged();
+
+                // 刷新绑定源的显示
+                var bindingNode = ModuleResultTree
+                    .SelectMany(n => FlattenNodes(n))
+                    .FirstOrDefault(n => n.SourceNodeId == row.SourceNodeId && n.SourcePropertyName == row.SourcePropertyName);
+                if (bindingNode != null)
+                {
+                    // 实际叶子节点路径不变，但重建 FlatRows 会更新反查
+                    BuildFlatRows();
+                }
+
+                LogSuccess($"绑定模块结果 [{row.SourceNodeName}>{row.SourcePropertyName}] → 全局变量 [{selected.Name}]");
+            }
+            catch (Exception ex)
+            {
+                LogError($"绑定全局变量失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 执行解绑：移除模块结果项与全局变量的绑定
+        /// </summary>
+        private void ExecuteUnbindResultFromGlobalVar(object? parameter)
+        {
+            try
+            {
+                if (parameter is not FlatResultRow row || !row.IsBoundToGlobalVar)
+                    return;
+
+                var solutionManager = Adapters.ServiceInitializer.SolutionManager;
+                var currentSolution = solutionManager.CurrentSolution;
+                if (currentSolution == null)
+                    return;
+
+                // 查找绑定的变量，清除 ProducerBinding
+                if (!string.IsNullOrEmpty(row.BoundGlobalVariableId))
+                {
+                    var gv = currentSolution.GlobalVariables
+                        .FirstOrDefault(v => v.Id == row.BoundGlobalVariableId);
+                    if (gv != null)
+                    {
+                        gv.ProducerBinding = null;
+                        gv.NotifyInputDisplayChanged();
+                        LogInfo($"解绑模块结果 → 全局变量 [{gv.Name}]");
+                    }
+                }
+                else if (row.BoundVariableName != null)
+                {
+                    var gv = currentSolution.GlobalVariables
+                        .FirstOrDefault(v => v.Name == row.BoundVariableName);
+                    if (gv != null)
+                    {
+                        gv.ProducerBinding = null;
+                        gv.NotifyInputDisplayChanged();
+                        LogInfo($"解绑模块结果 → 全局变量 [{gv.Name}]");
+                    }
+                }
+
+                row.IsBoundToGlobalVar = false;
+                row.BoundVariableName = null;
+                row.BoundGlobalVariableId = null;
+                row.NotifyBindingDisplayChanged();
+
+                BuildFlatRows();
+            }
+            catch (Exception ex)
+            {
+                LogError($"解绑全局变量失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 运行时同步：将节点执行结果写入绑定的全局变量
+        /// </summary>
+        /// <param name="nodeId">执行完成的节点ID</param>
+        /// <param name="result">执行结果</param>
+        private void SyncProducerBindingsToGlobalVariables(string nodeId, ToolResults? result)
+        {
+            var solution = Adapters.ServiceInitializer.SolutionManager?.CurrentSolution;
+            if (solution?.GlobalVariables == null || result == null)
+                return;
+
+            foreach (var gv in solution.GlobalVariables)
+            {
+                var pb = gv.ProducerBinding;
+                if (pb == null || pb.NodeId != nodeId)
+                    continue;
+
+                // 通过反射从结果中取值
+                var value = ReflectGetValue(result, pb.PropertyName);
+                gv.Value = value;
+                pb.CachedResult = result;
+            }
+        }
+
+        /// <summary>
+        /// 级联清理：删除节点时清理所有关联的 ProducerBinding 和 ConsumerBinding
+        /// </summary>
+        /// <param name="nodeId">被删除的节点ID</param>
+        private void CleanupBindingsForDeletedNode(string nodeId)
+        {
+            var solution = Adapters.ServiceInitializer.SolutionManager?.CurrentSolution;
+            if (solution?.GlobalVariables == null)
+                return;
+
+            foreach (var gv in solution.GlobalVariables)
+            {
+                // 清理 ProducerBinding
+                if (gv.ProducerBinding?.NodeId == nodeId)
+                {
+                    gv.ProducerBinding = null;
+                }
+
+                // 清理 ConsumerBinding
+                gv.ConsumerBindings.RemoveAll(c => c.NodeId == nodeId);
+            }
+
+            // 重建模块结果 FlatRows（变更新绑定状态显示）
+            BuildFlatRows();
+        }
+
+        /// <summary>
+        /// 扁平化 ModuleResultTree（用于搜索节点）
+        /// </summary>
+        private static IEnumerable<ModuleResultNode> FlattenNodes(ModuleResultNode node)
+        {
+            yield return node;
+            foreach (var child in node.Children)
+            {
+                foreach (var sub in FlattenNodes(child))
+                    yield return sub;
+            }
+        }
+
+        /// <summary>
         /// 显示相机管理器
         /// </summary>
         private void ExecuteShowCameraManager()
@@ -4305,6 +4556,15 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
         /// 展开/折叠图标（仅分组显示）
         /// </summary>
         public string ExpandIcon => IsGroup ? (_isExpanded ? "▼ " : "▶ ") : "";
+
+        /// <summary>关联的源工具节点ID（叶子节点使用时设置）</summary>
+        public string? SourceNodeId { get; set; }
+
+        /// <summary>关联的属性名完整路径（如 "阈值"）</summary>
+        public string? SourcePropertyName { get; set; }
+
+        /// <summary>关联的CLR属性类型（用于类型过滤）</summary>
+        public Type? PropertyClrType { get; set; }
     }
 
     /// <summary>
@@ -4360,5 +4620,51 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
 
         /// <summary>关联的源树节点（用于展开/折叠时重建扁平列表）</summary>
         public ModuleResultNode? SourceNode { get; set; }
+
+        /// <summary>当前结果项关联的工具节点ID</summary>
+        public string? SourceNodeId { get; set; }
+
+        /// <summary>当前结果项关联的工具节点名称</summary>
+        public string? SourceNodeName { get; set; }
+
+        /// <summary>当前结果项关联的属性名</summary>
+        public string? SourcePropertyName { get; set; }
+
+        /// <summary>关联的CLR属性类型（用于类型过滤）</summary>
+        public Type? PropertyClrType { get; set; }
+
+        /// <summary>此结果项是否已绑定到某个全局变量</summary>
+        [JsonIgnore]
+        public bool IsBoundToGlobalVar { get; set; }
+
+        /// <summary>绑定的全局变量名称</summary>
+        [JsonIgnore]
+        public string? BoundVariableName { get; set; }
+
+        /// <summary>绑定的全局变量ID</summary>
+        [JsonIgnore]
+        public string? BoundGlobalVariableId { get; set; }
+
+        /// <summary>是否可绑定（仅叶子节点且非分组）</summary>
+        [JsonIgnore]
+        public bool CanBind => !IsGroup && !string.IsNullOrEmpty(SourcePropertyName);
+
+        /// <summary>变量管理列显示文本</summary>
+        [JsonIgnore]
+        public string VariableBindingDisplay
+        {
+            get
+            {
+                if (IsBoundToGlobalVar && BoundVariableName != null)
+                    return $"全局变量.{BoundVariableName}";
+                return "🔗";
+            }
+        }
+
+        /// <summary>通知绑定显示已变化（供外部类调用）</summary>
+        public void NotifyBindingDisplayChanged()
+        {
+            OnPropertyChanged(nameof(VariableBindingDisplay));
+        }
     }
 }

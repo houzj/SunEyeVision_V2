@@ -500,15 +500,64 @@
                 <DataGridTextColumn Header="当前值" Binding="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
                                     Width="120" IsReadOnly="False"/>
 
-                <!-- 输入来源 -->
-                <DataGridTextColumn Header="输入来源"
-                                    Binding="{Binding InputSource, UpdateSourceTrigger=PropertyChanged}"
-                                    Width="100" IsReadOnly="False"/>
+                <!-- 输入来源（只读显示） -->
+                <DataGridTemplateColumn Header="输入来源" Width="130" IsReadOnly="True">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding InputSourceDisplayText}"
+                                       VerticalAlignment="Center"
+                                       Padding="8,0"
+                                       FontSize="12"
+                                       Foreground="#666666"
+                                       ToolTip="{Binding InputSourceDisplayText}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
 
-                <!-- 目标输出 -->
-                <DataGridTextColumn Header="目标输出"
-                                    Binding="{Binding OutputTarget, UpdateSourceTrigger=PropertyChanged}"
-                                    Width="100" IsReadOnly="False"/>
+                <!-- 目标输出（只读显示，点击打开目标参数管理，Tooltip 显示全部消费者路径） -->
+                <DataGridTemplateColumn Header="目标输出" Width="140" IsReadOnly="True">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Background="Transparent"
+                                    BorderThickness="0"
+                                    Cursor="Hand"
+                                    Padding="8,0"
+                                    HorizontalContentAlignment="Left"
+                                    VerticalContentAlignment="Center"
+                                    Command="{Binding DataContext.OpenTargetParameterCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                    CommandParameter="{Binding}"
+                                    ToolTip="点击管理目标参数">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <ContentPresenter HorizontalAlignment="Left"
+                                                          VerticalAlignment="Center"
+                                                          Content="{TemplateBinding Content}"/>
+                                    </ControlTemplate>
+                                </Button.Template>
+                                <TextBlock Text="{Binding OutputTargetDisplayText}"
+                                           FontSize="12"
+                                           Foreground="#2196F3"
+                                           TextTrimming="CharacterEllipsis"
+                                           TextDecorations="Underline">
+                                    <TextBlock.ToolTip>
+                                        <ToolTip>
+                                            <ItemsControl ItemsSource="{Binding ConsumerBindings}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding DisplayPath}"
+                                                                   Margin="0,2"
+                                                                   FontSize="11"
+                                                                   Foreground="#333333"/>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </ToolTip>
+                                    </TextBlock.ToolTip>
+                                </TextBlock>
+                            </Button>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
 
                 <!-- 初始化（滑动开关） -->
                 <DataGridTemplateColumn Header="初始化" Width="65">

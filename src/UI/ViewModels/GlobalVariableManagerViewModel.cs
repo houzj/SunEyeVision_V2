@@ -8,6 +8,8 @@ using System.Windows;
 using System.Windows.Input;
 using Microsoft.Win32;
 using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.UI.Views.Windows;
 
 using SunEyeVision.Workflow;
 
@@ -131,6 +133,11 @@ namespace SunEyeVision.UI.ViewModels
         /// </summary>
         public ICommand CloseCommand { get; private set; }
 
+        /// <summary>
+        /// 打开目标参数管理命令
+        /// </summary>
+        public ICommand OpenTargetParameterCommand { get; private set; }
+
         #endregion
 
         /// <summary>
@@ -159,6 +166,7 @@ namespace SunEyeVision.UI.ViewModels
             ExportCommand = new RelayCommand(Export, CanExport);
             SaveCommand = new RelayCommand(Save, CanSave);
             CloseCommand = new RelayCommand(Close, () => true);
+            OpenTargetParameterCommand = new RelayCommand<object?>(OpenTargetParameter, _ => true);
         }
 
         /// <summary>
@@ -407,8 +415,8 @@ namespace SunEyeVision.UI.ViewModels
                 Description = "",
                 Group = SelectedGroup.Name,
                 Index = variableIndex,
-                InputSource = "手动输入",
-                OutputTarget = "无"
+                ProducerBinding = null,
+                ConsumerBindings = new List<ConsumerBinding>()
             };
 
             SelectedGroup.AddVariable(variable);
@@ -685,6 +693,107 @@ namespace SunEyeVision.UI.ViewModels
         private void Close()
         {
             LogInfo("关闭全局变量管理器");
+        }
+
+        /// <summary>
+        /// 打开目标参数管理对话框
+        /// </summary>
+        private void OpenTargetParameter(object? parameter)
+        {
+            if (parameter is not GlobalVariable variable)
+                return;
+
+            try
+            {
+                var currentSolution = _solutionManager.CurrentSolution;
+                if (currentSolution == null || currentSolution.Workflows.Count == 0)
+                {
+                    LogWarning("当前解决方案没有工作流，无法管理消费者");
+                    return;
+                }
+
+                var result = TargetParameterDialog.ShowDialog(
+                    currentSolution.Workflows,
+                    variable.ConsumerBindings);
+
+                if (result != null)
+                {
+                    // 1. 计算变化：哪些新增，哪些移除
+                    var oldSet = new HashSet<(string, string)>(
+                        variable.ConsumerBindings.Select(b => (b.NodeId, b.ParameterName)));
+                    var newSet = new HashSet<(string, string)>(
+                        result.Select(b => (b.NodeId, b.ParameterName)));
+
+                    var added = result.Where(b => !oldSet.Contains((b.NodeId, b.ParameterName))).ToList();
+                    var removed = variable.ConsumerBindings
+                        .Where(b => !newSet.Contains((b.NodeId, b.ParameterName))).ToList();
+
+                    // 2. 更新 ConsumerBindings
+                    variable.ConsumerBindings = result;
+
+                    // 3. 新增绑定 → 设置节点参数的 BindingConfig（全局变量绑定）
+                    foreach (var binding in added)
+                        SetNodeParamBinding(currentSolution, binding, variable.Name);
+
+                    // 4. 移除绑定 → 清除节点参数的 BindingConfig（切回常量模式）
+                    foreach (var binding in removed)
+                        ClearNodeParamBinding(currentSolution, binding);
+
+                    variable.NotifyOutputDisplayChanged();
+                    LogSuccess($"更新目标输出 (共 {result.Count} 个消费者)");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError($"打开目标参数管理失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 为节点参数设置全局变量绑定
+        /// </summary>
+        private static void SetNodeParamBinding(Solution solution, ConsumerBinding binding, string variableName)
+        {
+            var node = solution.Workflows
+                .SelectMany(w => w.Nodes ?? Enumerable.Empty<WorkflowNodeBase>())
+                .FirstOrDefault(n => n.Id == binding.NodeId);
+            if (node?.Parameters == null) return;
+
+            var prop = node.Parameters.GetType().GetProperty(binding.ParameterName);
+            if (prop == null) return;
+
+            if (prop.GetValue(node.Parameters) is ParamValueBase paramValue)
+            {
+                paramValue.BindingConfig = new ParamSetting
+                {
+                    ParameterName = binding.ParameterName,
+                    BindingType = BindingType.Binding,
+                    SourceNodeId = "__GlobalVars__",
+                    SourceProperty = variableName,
+                    SourceNodeName = "全局变量",
+                    SourceDisplayName = variableName
+                };
+            }
+        }
+
+        /// <summary>
+        /// 清除节点参数的绑定（切回常量模式）
+        /// </summary>
+        private static void ClearNodeParamBinding(Solution solution, ConsumerBinding binding)
+        {
+            var node = solution.Workflows
+                .SelectMany(w => w.Nodes ?? Enumerable.Empty<WorkflowNodeBase>())
+                .FirstOrDefault(n => n.Id == binding.NodeId);
+            if (node?.Parameters == null) return;
+
+            var prop = node.Parameters.GetType().GetProperty(binding.ParameterName);
+            if (prop == null) return;
+
+            if (prop.GetValue(node.Parameters) is ParamValueBase paramValue)
+            {
+                // BindingConfig = null → 切回常量模式
+                paramValue.BindingConfig = null;
+            }
         }
 
         #endregion

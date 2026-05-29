@@ -94,8 +94,8 @@ namespace SunEyeVision.Tool.ImageThreshold
                 double c = parameters.C.Value;
                 int minThreshold = parameters.MinThreshold.Value;
                 int maxThreshold = parameters.MaxThreshold.Value;
-                bool invert = parameters.Invert.Value;
-                bool isRegionEnabled = parameters.IsRegionEnabled.Value;
+                bool invert = parameters.Invert;
+                bool isRegionEnabled = parameters.IsRegionEnabled;
 
                 // ===== Step 1: 灰度转换 =====
                 stepSw.Restart();
@@ -123,7 +123,7 @@ namespace SunEyeVision.Tool.ImageThreshold
                     stepTimings.Add(("ROI构建", stepSw.ElapsedMilliseconds));
 
                     // ===== Step 2.5: 位置修正（正向变换 ROI 掩码） =====
-                    if (parameters.IsPositionCorrectionEnabled?.Value == true)
+                    if (parameters.IsPositionCorrectionEnabled)
                     {
                         stepSw.Restart();
                         var bindingSource = parameters.PositionCorrectionBindingSource;

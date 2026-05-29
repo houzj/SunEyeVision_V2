@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Validation;
@@ -80,10 +81,9 @@ namespace SunEyeVision.Tool.ImageFilter
         #region 运行参数
 
         /// <summary>
-        /// 滤波类型（字段后备属性，反序列化替换实例时自动恢复事件订阅）
+        /// 滤波类型
         /// </summary>
-        private ParamValue<FilterType> _filterTypeValue = ParamValue<FilterType>.CreateConstant(FilterType.Gaussian, "FilterType");
-
+        [DisplayName("滤波类型")]
         public ParamValue<FilterType> FilterTypeValue
         {
             get => _filterTypeValue;
@@ -129,42 +129,49 @@ namespace SunEyeVision.Tool.ImageFilter
         /// <summary>
         /// 内核宽度
         /// </summary>
+        [DisplayName("内核宽度")]
         public ParamValue<int> KernelWidth { get; set; } =
             ParamValue<int>.CreateConstant(3, "KernelWidth");
 
         /// <summary>
         /// 内核高度
         /// </summary>
+        [DisplayName("内核高度")]
         public ParamValue<int> KernelHeight { get; set; } =
             ParamValue<int>.CreateConstant(3, "KernelHeight");
 
         /// <summary>
         /// 高斯滤波 SigmaX
         /// </summary>
+        [DisplayName("Sigma X")]
         public ParamValue<double> SigmaX { get; set; } =
             ParamValue<double>.CreateConstant(0.0, "SigmaX");
 
         /// <summary>
         /// 高斯滤波 SigmaY
         /// </summary>
+        [DisplayName("Sigma Y")]
         public ParamValue<double> SigmaY { get; set; } =
             ParamValue<double>.CreateConstant(0.0, "SigmaY");
 
         /// <summary>
         /// 双边滤波颜色空间 Sigma
         /// </summary>
+        [DisplayName("颜色Sigma")]
         public ParamValue<double> SigmaColor { get; set; } =
             ParamValue<double>.CreateConstant(10.0, "SigmaColor");
 
         /// <summary>
         /// 双边滤波坐标空间 Sigma
         /// </summary>
+        [DisplayName("空间Sigma")]
         public ParamValue<double> SigmaSpace { get; set; } =
             ParamValue<double>.CreateConstant(10.0, "SigmaSpace");
 
         /// <summary>
         /// 边界处理类型
         /// </summary>
+        [DisplayName("边界类型")]
         public ParamValue<ImageFilter.BorderType> BorderTypeValue { get; set; } =
             ParamValue<ImageFilter.BorderType>.CreateConstant(ImageFilter.BorderType.Reflect, "BorderType");
 
@@ -175,8 +182,14 @@ namespace SunEyeVision.Tool.ImageFilter
         /// <summary>
         /// 是否启用位置修正
         /// </summary>
-        public ParamValue<bool> IsPositionCorrectionEnabled { get; set; } =
-            ParamValue<bool>.CreateConstant(false, "IsPositionCorrectionEnabled");
+        private bool _isPositionCorrectionEnabled;
+
+        [DisplayName("启用位置修正")]
+        public bool IsPositionCorrectionEnabled
+        {
+            get => _isPositionCorrectionEnabled;
+            set => SetProperty(ref _isPositionCorrectionEnabled, value, "启用位置修正");
+        }
 
         /// <summary>
         /// 位置修正绑定源（运行时，不序列化）

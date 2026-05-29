@@ -125,7 +125,7 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
                 stepTimings.Add(("ROI构建", stepSw.ElapsedMilliseconds));
 
                 // ===== Step 2.5: 位置修正（正向变换 ROI） =====
-                if (parameters.IsPositionCorrectionEnabled?.Value == true)
+                if (parameters.IsPositionCorrectionEnabled)
                 {
                     stepSw.Restart();
                     var bindingSource = parameters.PositionCorrectionBindingSource;
@@ -345,7 +345,7 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
                 : new HTuple("auto");
 
             // 最小对比度：auto / float
-            HTuple minContrast = parameters.IsMinContrastAuto.Value
+            HTuple minContrast = parameters.IsMinContrastAuto
                 ? new HTuple("auto")
                 : new HTuple(parameters.MinContrast.Value);
 

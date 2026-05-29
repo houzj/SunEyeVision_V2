@@ -92,7 +92,7 @@ namespace SunEyeVision.Tool.Morphology
                 var kernelHeight = parameters.KernelHeight.Value;
                 var iterations = parameters.Iterations.Value;
                 var borderType = parameters.BorderType.Value;
-                var isRegionEnabled = parameters.IsRegionEnabled.Value;
+                var isRegionEnabled = parameters.IsRegionEnabled;
 
                 // ===== Step 1: 灰度转换 =====
                 stepSw.Restart();
@@ -120,7 +120,7 @@ namespace SunEyeVision.Tool.Morphology
                     stepTimings.Add(("ROI构建", stepSw.ElapsedMilliseconds));
 
                     // ===== Step 2.5: 位置修正（正向变换 ROI 掩码） =====
-                    if (parameters.IsPositionCorrectionEnabled?.Value == true)
+                    if (parameters.IsPositionCorrectionEnabled)
                     {
                         stepSw.Restart();
                         var bindingSource = parameters.PositionCorrectionBindingSource;

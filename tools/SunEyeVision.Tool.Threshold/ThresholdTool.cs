@@ -89,8 +89,8 @@ namespace SunEyeVision.Tool.Threshold
                 ThresholdType type = parameters.Type.Value;
                 AdaptiveMethod adaptiveMethod = parameters.AdaptiveMethod.Value;
                 int blockSize = parameters.BlockSize.Value;
-                bool invert = parameters.Invert.Value;
-                bool isRegionEnabled = parameters.IsRegionEnabled.Value;
+                bool invert = parameters.Invert;
+                bool isRegionEnabled = parameters.IsRegionEnabled;
 
                 // ===== Step 1: 灰度转换 (rgb1_to_gray) =====
                 stepSw.Restart();

@@ -1,5 +1,6 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text.Json.Serialization;
 using OpenCvSharp;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
@@ -65,36 +66,42 @@ namespace SunEyeVision.Tool.Morphology
         /// <summary>
         /// 形态学操作类型
         /// </summary>
+        [DisplayName("形态学操作")]
         public ParamValue<MorphOperation> Operation { get; set; } =
             ParamValue<MorphOperation>.CreateConstant(MorphOperation.Open, "Operation");
 
         /// <summary>
         /// 结构元素形状
         /// </summary>
+        [DisplayName("结构元素形状")]
         public ParamValue<MorphShapes> KernelShape { get; set; } =
             ParamValue<MorphShapes>.CreateConstant(MorphShapes.Rect, "KernelShape");
 
         /// <summary>
         /// 结构元素宽度（像素）
         /// </summary>
+        [DisplayName("核宽度")]
         public ParamValue<int> KernelWidth { get; set; } =
             ParamValue<int>.CreateConstant(3, "KernelWidth");
 
         /// <summary>
         /// 结构元素高度（像素）
         /// </summary>
+        [DisplayName("核高度")]
         public ParamValue<int> KernelHeight { get; set; } =
             ParamValue<int>.CreateConstant(3, "KernelHeight");
 
         /// <summary>
         /// 迭代次数
         /// </summary>
+        [DisplayName("迭代次数")]
         public ParamValue<int> Iterations { get; set; } =
             ParamValue<int>.CreateConstant(1, "Iterations");
 
         /// <summary>
         /// 边框类型
         /// </summary>
+        [DisplayName("边框类型")]
         public ParamValue<BorderTypes> BorderType { get; set; } =
             ParamValue<BorderTypes>.CreateConstant(BorderTypes.Constant, "BorderType");
 
@@ -105,8 +112,8 @@ namespace SunEyeVision.Tool.Morphology
         /// <summary>
         /// 是否启用位置修正
         /// </summary>
-        public ParamValue<bool> IsPositionCorrectionEnabled { get; set; } =
-            ParamValue<bool>.CreateConstant(false, "IsPositionCorrectionEnabled");
+        [DisplayName("启用位置修正")]
+        public bool IsPositionCorrectionEnabled { get; set; } = false;
 
         /// <summary>
         /// 位置修正绑定源（序列化引用）

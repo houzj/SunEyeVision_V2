@@ -645,7 +645,7 @@ public partial class ShapeMatchToolDebugControl
     private void SyncMinContrastMode()
     {
         if (Parameters == null || cmbMinContrastMode == null) return;
-        bool isAuto = Parameters.IsMinContrastAuto.Value;
+        bool isAuto = Parameters.IsMinContrastAuto;
         cmbMinContrastMode.SelectedIndex = isAuto ? 0 : 1;
         SyncMinContrastEnabled();
     }
@@ -653,7 +653,7 @@ public partial class ShapeMatchToolDebugControl
     private void OnMinContrastModeChanged(object sender, SelectionChangedEventArgs e)
     {
         if (Parameters == null) return;
-        Parameters.IsMinContrastAuto.Value = cmbMinContrastMode.SelectedIndex == 0;
+        Parameters.IsMinContrastAuto = cmbMinContrastMode.SelectedIndex == 0;
         SyncMinContrastEnabled();
     }
 

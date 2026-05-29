@@ -272,6 +272,15 @@ public partial class ShapeMatchToolDebugControl
     {
         var dialog = new ShapeMatchTemplateEditorDialog();
         // 传入 BitmapSource 获取回调
+        // 传入运行时的角度/缩放范围作为模板创建参数
+        if (Parameters != null)
+        {
+            dialog.TemplateAngleStart = Parameters.AngleStart.Value;
+            dialog.TemplateAngleExtent = Parameters.AngleEnd.Value - Parameters.AngleStart.Value;
+            dialog.TemplateScaleMin = Parameters.ScaleMin.Value;
+            dialog.TemplateScaleMax = Parameters.ScaleMax.Value;
+        }
+
         dialog.GetCurrentImage = () =>
         {
             try

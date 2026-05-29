@@ -224,12 +224,12 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 // 获取父节点的输出属性
                 var outputProps = parent.OutputProperties;
                 
-                // 类型过滤（精确匹配 + 数组元素类型匹配）
+                // 类型过滤（精确匹配 + 数组可接受单值元素）
                 if (targetType != null)
                 {
                     outputProps = outputProps
                         .Where(p => p.PropertyType == targetType ||
-                                    (p.PropertyType.IsArray && p.PropertyType.GetElementType() == targetType))
+                                    (targetType.IsArray && p.PropertyType == targetType.GetElementType()))
                         .ToList();
                 }
 

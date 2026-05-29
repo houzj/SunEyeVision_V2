@@ -3645,7 +3645,7 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
                         currentParent = groupNode;
                     }
 
-                    foreach (var meta in group.OrderBy(m => m.DisplayName))
+                    foreach (var meta in group)
                     {
                         // 跳过图像和图形类型（由图像显示控件展示）
                         if (IsVisualResultType(meta.PropertyType))

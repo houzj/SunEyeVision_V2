@@ -502,7 +502,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
                         DisplayName = displayName,
                         GroupName = groupName,
                         PropertyType = prop.PropertyType,
-                        Description = GetPropertyDescription(prop)
+                        Description = GetPropertyDescription(prop),
                     };
                     
                     // 获取类型全名（作为缓存Key）

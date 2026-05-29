@@ -204,6 +204,18 @@
                                     AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                 </controls:LabeledControl>
 
+                <controls:LabeledControl Label="单模版最大匹配数"
+                    ToolTip="每个Halcon模板返回的最大候选数。多模板时每个模板独立计算，最终结果受「最大匹配数」限制">
+                  <controls:ConfigSetting
+                                    ParameterName="NumMatches"
+                                    DataType="{x:Type sys:Int32}"
+                                    Value="{Binding NumMatches.Value, Mode=TwoWay}"
+                                    Minimum="1" Maximum="1000"
+                                    SmallChange="1" LargeChange="10"
+                                    Width="200"
+                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                </controls:LabeledControl>
+
                 <!-- 最小对比度（两行：模式 + 数值） -->
                 <controls:LabeledControl Label="最小对比度" Margin="0,8,0,0">
                   <StackPanel>

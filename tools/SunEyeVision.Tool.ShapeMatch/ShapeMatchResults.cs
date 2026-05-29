@@ -43,7 +43,7 @@ public class ShapeMatchResults : ToolResults
     public double BestScore => MatchedItems?.Count > 0 ? MatchedItems.Max(m => m.Score) : 0;
 
     /// <summary>最佳匹配项</summary>
-    public ShapeMatchResultItem? BestMatch => MatchedItems?.Count > 0 ? MatchedItems.OrderByDescending(m => m.Score).First() : null;
+    public ShapeMatchResultItem? BestMatch => MatchedItems?.Count > 0 ? MatchedItems[0] : null;
 
     /// <summary>输入图像尺寸</summary>
     public System.Drawing.Size InputSize { get; set; }
@@ -81,7 +81,7 @@ public class ShapeMatchResults : ToolResults
             : AffineMatrix.Identity;
 
     /// <summary>
-    /// 所有匹配的位置修正矩阵数组（工作流多实例展开用）
+    /// 所有匹配的位置修正矩阵列表（工作流多实例绑定用）
     /// 已扣除模板参考点偏移
     /// </summary>
     public AffineMatrix[] MatchedPositionCorrections =>
@@ -93,6 +93,36 @@ public class ShapeMatchResults : ToolResults
             m.TransformMatrix.OffsetX - m.ReferencePointX,
             m.TransformMatrix.OffsetY - m.ReferencePointY)).ToArray()
         ?? Array.Empty<AffineMatrix>();
+
+    /// <summary>位置修正矩阵 缩放分量X（M11）数组</summary>
+    public double[] CorrectionM11s =>
+        MatchedItems?.Select(m => m.TransformMatrix.M11).ToArray()
+        ?? Array.Empty<double>();
+
+    /// <summary>位置修正矩阵 旋转分量X（M12）数组</summary>
+    public double[] CorrectionM12s =>
+        MatchedItems?.Select(m => m.TransformMatrix.M12).ToArray()
+        ?? Array.Empty<double>();
+
+    /// <summary>位置修正矩阵 旋转分量Y（M21）数组</summary>
+    public double[] CorrectionM21s =>
+        MatchedItems?.Select(m => m.TransformMatrix.M21).ToArray()
+        ?? Array.Empty<double>();
+
+    /// <summary>位置修正矩阵 缩放分量Y（M22）数组</summary>
+    public double[] CorrectionM22s =>
+        MatchedItems?.Select(m => m.TransformMatrix.M22).ToArray()
+        ?? Array.Empty<double>();
+
+    /// <summary>位置修正矩阵 X偏移量 数组</summary>
+    public double[] CorrectionOffsetXs =>
+        MatchedItems?.Select(m => m.TransformMatrix.OffsetX - m.ReferencePointX).ToArray()
+        ?? Array.Empty<double>();
+
+    /// <summary>位置修正矩阵 Y偏移量 数组</summary>
+    public double[] CorrectionOffsetYs =>
+        MatchedItems?.Select(m => m.TransformMatrix.OffsetY - m.ReferencePointY).ToArray()
+        ?? Array.Empty<double>();
 
     #endregion
 
@@ -124,12 +154,29 @@ public class ShapeMatchResults : ToolResults
 
     public override IReadOnlyList<ResultItem> GetResultItems()
     {
-        return new List<ResultItem>
+        var items = new List<ResultItem>
         {
             ResultItem.Boolean("判断通过", JudgmentPassed),
             ResultItem.Numeric("匹配数量", MatchCount),
             ResultItem.Numeric("最佳得分", BestScore)
         };
+
+        if (MatchedItems != null && MatchedItems.Count > 0)
+        {
+            var tableLines = new List<string>
+            {
+                $"{"序号",4} {"模板",-10} {"分数",8} {"中心X",8} {"中心Y",8} {"角度(°)",8} {"缩放",8} {"判断",4}"
+            };
+            tableLines.Add(new string('-', 58));
+            foreach (var m in MatchedItems.Select((item, idx) => (item, idx)))
+            {
+                tableLines.Add(
+                    $"{m.idx + 1,4} {m.item.TemplateName,-10} {m.item.Score,8:F3} {m.item.CenterX,8:F1} {m.item.CenterY,8:F1} {m.item.Angle,8:F2} {m.item.Scale,8:F4} {(m.item.JudgmentPassed ? "✓" : "✗"),4}");
+            }
+            items.Add(ResultItem.Text("匹配详情", string.Join("\n", tableLines)));
+        }
+
+        return items;
     }
 
     public override List<PropertyMapEntry> GetPropertyMap()
@@ -142,8 +189,13 @@ public class ShapeMatchResults : ToolResults
             new("JudgmentPassed",        "判断通过",           "判断"),
             new("MatchCount",            "匹配数量",           "结果"),
             new("BestScore",             "最佳得分",           "结果"),
-            new("BestPositionCorrection","位置修正矩阵",       "位置修正"),
-            new("MatchedPositionCorrections","位置修正矩阵列表", "位置修正"),
+            new("BestPositionCorrection","最佳位置修正矩阵",   "位置修正"),
+            new("CorrectionM11s",        "缩放分量X(M11)",     "位置修正/分量"),
+            new("CorrectionM12s",        "旋转分量X(M12)",     "位置修正/分量"),
+            new("CorrectionM21s",        "旋转分量Y(M21)",     "位置修正/分量"),
+            new("CorrectionM22s",        "缩放分量Y(M22)",     "位置修正/分量"),
+            new("CorrectionOffsetXs",    "平移X(OffsetX)",     "位置修正/分量"),
+            new("CorrectionOffsetYs",    "平移Y(OffsetY)",     "位置修正/分量"),
             new("InputSize",             "输入图像尺寸",       "结果"),
             new("MatchedScores",         "得分",               "匹配详细/得分"),
             new("MatchedCenterXs",       "中心X",              "匹配详细/中心"),

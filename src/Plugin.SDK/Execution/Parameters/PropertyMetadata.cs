@@ -44,5 +44,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// 描述
         /// </summary>
         public string? Description { get; set; }
+
     }
 }

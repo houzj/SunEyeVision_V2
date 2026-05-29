@@ -207,15 +207,9 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
                         stepSw.Stop();
                         stepTimings.Add(("模板匹配", stepSw.ElapsedMilliseconds));
 
-                        // ===== NMS 合并（Halcon 内部通过 MaxOverlap 处理，此处做二次合并） =====
-                        stepSw.Restart();
-                        var nmsMatches = ApplyNms(allMatches, 5);
-                        stepSw.Stop();
-                        stepTimings.Add(("NMS合并", stepSw.ElapsedMilliseconds));
-
                         // ===== 结果排序 =====
                         stepSw.Restart();
-                        var sortedMatches = SortResults(nmsMatches, parameters.SortMode.Value);
+                        var sortedMatches = SortResults(allMatches, parameters.SortMode.Value);
                         stepSw.Stop();
                         stepTimings.Add(("结果排序", stepSw.ElapsedMilliseconds));
 
@@ -230,7 +224,7 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
                         {
                             var resultSummary = new List<string>
                             {
-                                $">> 最终匹配结果 (NMS后 {finalMatches.Count}/{allMatches.Count} 个)"
+                                $">> 最终匹配结果 ({finalMatches.Count}/{allMatches.Count} 个)"
                             };
                             foreach (var item in finalMatches)
                             {
@@ -469,34 +463,6 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
     }
 
     /// <summary>
-    /// NMS 非极大值抑制 — 基于距离的中心点合并
-    /// </summary>
-    private static List<ShapeMatchResultItem> ApplyNms(
-        List<ShapeMatchResultItem> matches, int minDistance)
-    {
-        if (matches.Count <= 1 || minDistance <= 0)
-            return matches;
-
-        var sorted = matches.OrderByDescending(m => m.Score).ToList();
-        var result = new List<ShapeMatchResultItem>();
-
-        foreach (var match in sorted)
-        {
-            bool isDuplicate = result.Any(r =>
-            {
-                double dx = r.CenterX - match.CenterX;
-                double dy = r.CenterY - match.CenterY;
-                return Math.Sqrt(dx * dx + dy * dy) < minDistance;
-            });
-
-            if (!isDuplicate)
-                result.Add(match);
-        }
-
-        return result;
-    }
-
-    /// <summary>
     /// 结果排序
     /// </summary>
     private static List<ShapeMatchResultItem> SortResults(
@@ -654,7 +620,7 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
 
     public FrameworkElement? CreateDataAnalysisControl()
     {
-        return null;
+        return new ShapeMatchDataAnalysisControl();
     }
 
     #endregion

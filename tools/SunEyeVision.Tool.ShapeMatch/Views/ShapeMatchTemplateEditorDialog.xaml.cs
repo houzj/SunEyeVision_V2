@@ -40,6 +40,12 @@ public partial class ShapeMatchTemplateEditorDialog : WpfWindow
     // 外部传入的当前图像
     public Func<BitmapSource?>? GetCurrentImage { get; set; }
 
+    // 模板创建参数（从运行匹配参数传入，确保创建和匹配使用相同范围）
+    public double TemplateAngleStart { get; set; } = -45.0;
+    public double TemplateAngleExtent { get; set; } = 90.0;
+    public double TemplateScaleMin { get; set; } = 0.9;
+    public double TemplateScaleMax { get; set; } = 1.1;
+
     // 对话框内部区域数据源
     public ObservableCollection<RegionData> DialogInspectionRegions { get; } = new();
     public ObservableCollection<RegionData> DialogMaskRegions { get; } = new();
@@ -381,15 +387,15 @@ public partial class ShapeMatchTemplateEditorDialog : WpfWindow
                         // ===== 构建 Halcon 参数 =====
                         int numLevels = pyramidAuto ? 0 : pyramidLevelValue;
 
-                        double angleStart = -45.0;
-                        double angleExtent = 90.0;
+                        double angleStart = TemplateAngleStart;
+                        double angleExtent = TemplateAngleExtent;
 
                         HTuple angleStep = angleStepManual
                             ? new HTuple(angleStepDeg * DEG2RAD)
                             : new HTuple("auto");
 
-                        double scaleMin = 0.9;
-                        double scaleMax = 1.1;
+                        double scaleMin = TemplateScaleMin;
+                        double scaleMax = TemplateScaleMax;
                         HTuple scaleStep = scaleStepManual
                             ? new HTuple(scaleStepValue)
                             : new HTuple("auto");

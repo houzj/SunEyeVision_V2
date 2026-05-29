@@ -52,7 +52,7 @@ public class AffineMatrix
     public static AffineMatrix Identity => new(1, 0, 0, 1, 0, 0);
 
     public override string ToString() =>
-        $"[{M11:F4},{M12:F4},{M21:F4},{M22:F4},{OffsetX:F2},{OffsetY:F2}]";
+        $"[{M11:F4},{M12:F4},{M21:F4},{M22:F4},{OffsetX:F4},{OffsetY:F4}]";
 
     public double[] ToArray() => [M11, M12, M21, M22, OffsetX, OffsetY];
 

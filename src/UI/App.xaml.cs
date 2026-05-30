@@ -99,6 +99,9 @@ public partial class App : Application
             ParamBinding.GlobalVariableSelectionRequestedEvent,
             new RoutedEventHandler(OnGlobalVariableSelectionRequested));
 
+        // 5.6 订阅 ConfigSetting 全局变量解绑事件（清理 ConsumerBinding + 刷新 UI）
+        ConfigSetting.BeforeGlobalVariableUnbinding += OnConfigSettingBeforeGlobalVariableUnbinding;
+
         // 初始化DispatcherTimer监控
         InitializeMonitoring();
 
@@ -479,6 +482,56 @@ public partial class App : Application
 
         // 标记事件已处理
         e.Handled = true;
+    }
+
+    /// <summary>
+    /// 处理 ConfigSetting 解绑全局变量 — 清理 ConsumerBinding 并刷新 UI
+    /// </summary>
+    private static void OnConfigSettingBeforeGlobalVariableUnbinding(ConfigSetting configSetting, string variableName)
+    {
+        try
+        {
+            var solutionManager = ServiceInitializer.SolutionManager;
+            if (solutionManager?.CurrentSolution == null)
+                return;
+
+            var variable = solutionManager.CurrentSolution.GlobalVariables
+                .FirstOrDefault(v => v.Name == variableName);
+            if (variable == null)
+                return;
+
+            // 从视觉树向上查找最近的 ToolDebugControlBase，获取节点信息
+            var toolControl = FindVisualParent<ToolDebugControlBase>(configSetting);
+            string? nodeId = null;
+            string? paramName = configSetting.ParameterName;
+
+            if (toolControl?.CurrentNode is { } node)
+            {
+                nodeId = node.GetType().GetProperty("Id")?.GetValue(node) as string;
+            }
+
+            if (string.IsNullOrEmpty(nodeId) || string.IsNullOrEmpty(paramName))
+                return;
+
+            // 查找并移除匹配的 ConsumerBinding
+            var removed = variable.ConsumerBindings.RemoveAll(c =>
+                c.NodeId == nodeId && c.ParameterName == paramName);
+
+            if (removed > 0)
+            {
+                variable.NotifyOutputDisplayChanged();
+                VisionLogger.Instance.Log(LogLevel.Info,
+                    $"[监控] 清理 ConsumerBinding 成功 | " +
+                    $"variable={variableName} | nodeId={nodeId} | param={paramName}",
+                    "App-Monitor");
+            }
+        }
+        catch (Exception ex)
+        {
+            VisionLogger.Instance.Log(LogLevel.Error,
+                $"[监控] 清理 ConsumerBinding 异常 | {ex.Message}",
+                "App-Monitor", ex);
+        }
     }
 
     /// <summary>

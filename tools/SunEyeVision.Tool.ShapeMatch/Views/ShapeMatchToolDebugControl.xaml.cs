@@ -9,6 +9,7 @@ using System.Windows.Media.Imaging;
 using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Metadata;
@@ -39,18 +40,21 @@ public partial class ShapeMatchToolDebugControl
             typeof(ShapeMatchToolDebugControl),
             new PropertyMetadata(null, OnParametersChanged));
 
-    private static void OnParametersChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-    {
-        if (d is ShapeMatchToolDebugControl control)
+        private static void OnParametersChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            var oldParams = e.OldValue as ShapeMatchParameters;
-            var newParams = e.NewValue as ShapeMatchParameters;
-            PluginLogger.Info($"[OnParametersChanged] Parameters 变化 | " +
-                $"Old={(oldParams != null ? oldParams.GetHashCode().ToString("X8") : "null")} | " +
-                $"New={(newParams != null ? newParams.GetHashCode().ToString("X8") : "null")}",
-                "ShapeMatchTool");
+            if (d is ShapeMatchToolDebugControl control)
+            {
+                var oldParams = e.OldValue as ShapeMatchParameters;
+                var newParams = e.NewValue as ShapeMatchParameters;
+                PluginLogger.Info($"[OnParametersChanged] Parameters 变化 | " +
+                    $"Old={(oldParams != null ? oldParams.GetHashCode().ToString("X8") : "null")} | " +
+                    $"New={(newParams != null ? newParams.GetHashCode().ToString("X8") : "null")}",
+                    "ShapeMatchTool");
+
+                // 参数变更时立即更新位置修正矩阵
+                control.UpdatePositionCorrectionMatrix();
+            }
         }
-    }
 
     public ShapeMatchParameters Parameters
     {
@@ -76,6 +80,7 @@ public partial class ShapeMatchToolDebugControl
         if (regionManager != null && imageControl != null)
         {
             regionManager.SetMainImageControl(imageControl);
+            UpdatePositionCorrectionMatrix();
             PluginLogger.Info("已为区域管理器设置主窗口 ImageControl", "ShapeMatchTool");
         }
     }
@@ -203,6 +208,9 @@ public partial class ShapeMatchToolDebugControl
             // 将匹配结果显示到主图像控件的渲染层（轮廓、匹配框、十字、文本等）
             _mainImageControl?.ResultRenderLayerControl?.SetDisplayCollector(shapeResult.Display);
         }
+
+        // 执行后刷新位置修正矩阵
+        UpdatePositionCorrectionMatrix();
 
         return result;
     }
@@ -665,10 +673,77 @@ public partial class ShapeMatchToolDebugControl
 
     #endregion
 
+    #region 外部结果到达 & 位置修正矩阵
+
+    /// <summary>
+    /// 外部结果到达通知 - 工作流引擎执行完成后调用，刷新位置修正矩阵
+    /// </summary>
+    public override void OnExternalResultArrived()
+    {
+        PluginLogger.Info("[OnExternalResultArrived] 外部结果到达，刷新位置修正矩阵", "ShapeMatchTool");
+
+        PluginLogger.Info($"[OnExternalResultArrived] 前置检查 | " +
+            $"IsEnabled={Parameters?.IsPositionCorrectionEnabled} | " +
+            $"DataProvider={_dataProvider != null} | " +
+            $"BindingSource={Parameters?.PositionCorrectionBindingSource != null}",
+            "ShapeMatchTool");
+
+        UpdatePositionCorrectionMatrix();
+    }
+
+    /// <summary>
+    /// 从 DataSourceQueryService 实时查询位置修正矩阵并设置到 ROI 编辑器
+    /// 与结果层（ShapeMatchTool.Run）使用同一数据源，保证交互层与结果层一致
+    /// </summary>
+    internal void UpdatePositionCorrectionMatrix()
+    {
+        PluginLogger.Info("[UpdatePositionCorrectionMatrix] 开始查询矩阵", "ShapeMatchTool");
+
+        if (Parameters?.IsPositionCorrectionEnabled == true
+            && _dataProvider != null
+            && Parameters.PositionCorrectionBindingSource != null)
+        {
+            var source = Parameters.PositionCorrectionBindingSource;
+
+            PluginLogger.Info($"[UpdatePositionCorrectionMatrix] 查询参数 | " +
+                $"SourceNodeId={source.SourceNodeId} | PropertyName={source.PropertyName}",
+                "ShapeMatchTool");
+
+            var matrix = _dataProvider.GetPropertyValue(
+                source.SourceNodeId, source.PropertyName) as AffineMatrix;
+
+            var matrixValues = matrix != null
+                ? $"[{matrix.M11:F4},{matrix.M12:F4},{matrix.M21:F4},{matrix.M22:F4},{matrix.OffsetX:F2},{matrix.OffsetY:F2}]"
+                : "null";
+            PluginLogger.Info($"[UpdatePositionCorrectionMatrix] 查询结果 | Matrix={matrixValues}", "ShapeMatchTool");
+
+            if (matrix != null)
+            {
+                Parameters.LogInfo($"设置位置修正矩阵到 ROI 编辑器 (实时查询): {matrix}");
+                regionManager?.SetPositionCorrectionMatrix(matrix);
+                return;
+            }
+        }
+        if (_dataProvider == null)
+            return;
+
+        PluginLogger.Warning("[UpdatePositionCorrectionMatrix] 矩阵为null，清空区域变换", "ShapeMatchTool");
+        regionManager?.SetPositionCorrectionMatrix(null);
+    }
+
+    #endregion
+
     #region IToolControlInitializer
+
+    private bool _isInitialized = false;
 
     public override async System.Threading.Tasks.Task InitializeAsync()
     {
+        if (!_isInitialized)
+        {
+            _isInitialized = true;
+            UpdatePositionCorrectionMatrix();
+        }
         await System.Threading.Tasks.Task.CompletedTask;
     }
 

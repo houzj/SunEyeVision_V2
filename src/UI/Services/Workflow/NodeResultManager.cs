@@ -355,7 +355,10 @@ namespace SunEyeVision.UI.Services.Workflow
                 }
 
                 var isEnabledValue = isEnabledProp.GetValue(parameters);
-                if (isEnabledValue is not ParamValue<bool> { Value: true })
+                bool isEnabled = isEnabledValue is ParamValue<bool> pv
+                    ? pv.Value
+                    : isEnabledValue is true;
+                if (!isEnabled)
                 {
                     _correctionDiagnostics["状态"] = "位置修正未启用";
                     return null;

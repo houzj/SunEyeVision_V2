@@ -468,16 +468,28 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 }
 
                 // 切回常量模式时，恢复原始常量值（所见即所得）
-                if (oldType == BindingType.Binding && newType == BindingType.Constant
-                    && control._constantValueBeforeBinding != null)
+                // 并将值同步到 ParamValue，确保执行时使用正确的常量值
+                if (oldType == BindingType.Binding && newType == BindingType.Constant)
                 {
-                    control.Value = control._constantValueBeforeBinding;
+                    object? restoreValue;
 
-                    // 同步到 ParamValue.Value，确保执行时使用恢复的常量值
+                    if (control._constantValueBeforeBinding != null)
+                    {
+                        // 有保存的常量值，恢复之
+                        restoreValue = control._constantValueBeforeBinding;
+                        control.Value = restoreValue;
+                    }
+                    else
+                    {
+                        // 没有保存的常量值（如反序列化后从绑定模式加载），使用当前值
+                        restoreValue = control.Value;
+                    }
+
+                    // 同步到 ParamValue.Value，确保执行时使用正确的常量值
                     var paramValue = control.GetBoundParamValue();
                     if (paramValue != null)
                     {
-                        paramValue.ObjectValue = control.UnwrapParamValue(control._constantValueBeforeBinding);
+                        paramValue.ObjectValue = control.UnwrapParamValue(restoreValue);
                     }
                 }
 
@@ -1108,6 +1120,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         public event EventHandler? BindingConfigChanged;
 
         /// <summary>
+        /// 全局变量解绑前通知 — 当 ConfigSetting 从绑定模式切回常量模式，且旧的绑定源以 __GlobalVars__ 开头时触发
+        /// 参数: (configSetting, variableName)
+        /// App.xaml.cs 订阅此事件，用于清理 GlobalVariable.ConsumerBindings
+        /// </summary>
+        public static event Action<ConfigSetting, string>? BeforeGlobalVariableUnbinding;
+
+        /// <summary>
         /// 同步当前配置到绑定的 ParamValue 对象（方案B核心方法）
         /// </summary>
         /// <remarks>
@@ -1126,6 +1145,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             {
                 if (BindingType == BindingType.Constant)
                 {
+                    // 在清除绑定前，检测是否为全局变量解绑
+                    // 此时 BindingSource 仍保存着旧值（__GlobalVars__.VariableName）
+                    if (!string.IsNullOrEmpty(BindingSource) && BindingSource.StartsWith("__GlobalVars__."))
+                    {
+                        var variableName = BindingSource.Substring("__GlobalVars__.".Length);
+                        BeforeGlobalVariableUnbinding?.Invoke(this, variableName);
+                    }
+
                     paramValue.BindingConfig = null;
                 }
                 else if (!string.IsNullOrEmpty(BindingSource))

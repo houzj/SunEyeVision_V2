@@ -228,6 +228,7 @@
                             <controls:ParamBinding x:Name="PART_ParamBinding"
                                                 AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource TemplatedParent}}"
                                                 DataType="{Binding DataType, RelativeSource={RelativeSource TemplatedParent}}"
+                                                ParameterName="{Binding ParameterName, RelativeSource={RelativeSource TemplatedParent}}"
                                                 HorizontalAlignment="Stretch"
                                                 Visibility="{Binding ParamBindingVisibility, RelativeSource={RelativeSource TemplatedParent}}"/>
                         </Grid>

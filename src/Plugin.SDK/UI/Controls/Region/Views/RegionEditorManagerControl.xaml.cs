@@ -601,9 +601,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             if (previewCtx != null)
                 allContexts.Add(previewCtx);
 
-            // ★ 诊断：渲染前记录上下文数量
-            PluginLogger.Info($"[RenderAll] 开始渲染 | ContextCount={allContexts.Count} | _renderScheduled={_renderScheduled}", "RegionEditorManager");
-
             // Render all regions
             _renderer.Render(allContexts, new RegionRenderOptions { ShowLabels = true, ShowHandles = false });
 

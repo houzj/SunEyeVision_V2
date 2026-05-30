@@ -410,14 +410,38 @@ public partial class App : Application
     private static void OnGlobalVariableSelectionRequested(object sender, RoutedEventArgs e)
     {
         if (sender is not ParamBinding paramBinding)
+        {
+            VisionLogger.Instance.Log(LogLevel.Warning,
+                "[监控] OnGlobalVariableSelectionRequested: sender 不是 ParamBinding",
+                "App-Monitor");
             return;
+        }
 
         var solutionManager = ServiceInitializer.SolutionManager;
         if (solutionManager == null)
+        {
+            VisionLogger.Instance.Log(LogLevel.Warning,
+                "[监控] OnGlobalVariableSelectionRequested: SolutionManager 为 null",
+                "App-Monitor");
             return;
+        }
+
+        // ★ 监控日志：拦截入口
+        var logger = VisionLogger.Instance;
+        logger.Log(LogLevel.Info,
+            $"[监控] 进入 OnGlobalVariableSelectionRequested | " +
+            $"sender={sender.GetType().Name} | " +
+            $"ParameterName={paramBinding.ParameterName} | " +
+            $"DataType={paramBinding.DataType?.Name ?? "null"}",
+            "App-Monitor");
 
         // ★ 使用 GlobalVariableTypeMapper 将 DataType 映射为 GlobalVariable 类型字符串，用于选择器过滤
         var filterType = GlobalVariableTypeMapper.ToGlobalVarType(paramBinding.DataType);
+
+        // ★ 监控日志：类型映射结果
+        logger.Log(LogLevel.Info,
+            $"[监控] 类型映射 | DataType={paramBinding.DataType?.Name ?? "null"} → filterType={filterType ?? "null"}",
+            "App-Monitor");
 
         // ★ 无兜底原则：DataType 已设置但无法映射到任何 GlobalVariable 类型 → 直接报错
         if (filterType == null && paramBinding.DataType != null)
@@ -433,9 +457,21 @@ public partial class App : Application
 
         // 打开全局变量选择对话框（按数据类型过滤）
         var selectedVariable = GlobalVariableSelectDialog.ShowSelect(solutionManager, filterType);
+
+        // ★ 监控日志：变量选择结果
+        logger.Log(selectedVariable != null ? LogLevel.Success : LogLevel.Info,
+            $"[监控] 全局变量选择结果 | " +
+            $"selected={(selectedVariable != null ? $"Name={selectedVariable.Name}, Type={selectedVariable.Type}, Id={selectedVariable.Id}" : "null")}",
+            "App-Monitor");
+
         if (selectedVariable != null)
         {
             paramBinding.CompleteGlobalVariableBinding(selectedVariable.Name);
+
+            // ★ 监控日志：开始记录 ConsumerBinding
+            logger.Log(LogLevel.Info,
+                $"[监控] 即将调用 RecordConsumerBinding | variableName={selectedVariable.Name}",
+                "App-Monitor");
 
             // ★ Phase 5: 自动记录 ConsumerBinding
             RecordConsumerBinding(paramBinding, selectedVariable, solutionManager);
@@ -452,30 +488,76 @@ public partial class App : Application
     {
         try
         {
+            var logger = VisionLogger.Instance;
+
             // ★ 从视觉树向上查找最近的 ToolDebugControlBase，获取节点 ID 和名称
             // 使用动态解析而非预设置，避免因 TabItem 懒加载导致 ParamBinding 创建时未设置 NodeId
             string? nodeId = null;
             string? nodeName = null;
 
             var toolControl = FindVisualParent<ToolDebugControlBase>(paramBinding);
+
+            // ★ 监控日志1：FindVisualParent 结果
+            logger.Log(LogLevel.Info,
+                $"[监控] FindVisualParent<ToolDebugControlBase> | " +
+                $"found={(toolControl != null)} | " +
+                $"controlType={toolControl?.GetType().FullName ?? "null"}",
+                "App-Monitor");
+
             if (toolControl?.CurrentNode is { } node)
             {
+                // ★ 监控日志2：CurrentNode 存在
+                logger.Log(LogLevel.Info,
+                    $"[监控] CurrentNode | " +
+                    $"nodeType={node.GetType().FullName}",
+                    "App-Monitor");
+
                 nodeId = node.GetType().GetProperty("Id")?.GetValue(node) as string;
                 nodeName = node.GetType().GetProperty("DispName")?.GetValue(node) as string
                         ?? node.GetType().GetProperty("Name")?.GetValue(node) as string;
+
+                // ★ 监控日志3：反射提取结果
+                logger.Log(LogLevel.Info,
+                    $"[监控] 节点信息反射提取 | " +
+                    $"Id={nodeId ?? "null"} | " +
+                    $"DispName/Name={nodeName ?? "null"}",
+                    "App-Monitor");
+            }
+            else
+            {
+                // ★ 监控日志4：CurrentNode 为 null 或 toolControl 为 null
+                logger.Log(LogLevel.Warning,
+                    $"[监控] ★★★ CurrentNode 不可用 ★★★ | " +
+                    $"toolControl null={(toolControl == null)} | " +
+                    $"CurrentNode null={(toolControl?.CurrentNode == null)}",
+                    "App-Monitor");
             }
 
             if (string.IsNullOrEmpty(nodeId) || string.IsNullOrEmpty(nodeName))
             {
-                VisionLogger.Instance.Log(LogLevel.Warning,
-                    $"RecordConsumerBinding: 无法从视觉树解析节点信息, sender={paramBinding.GetType().Name}",
-                    "App");
+                logger.Log(LogLevel.Warning,
+                    $"[监控] ★★★ 节点信息为空，ConsumerBinding 终止 ★★★ | " +
+                    $"nodeId={nodeId ?? "null"} | " +
+                    $"nodeName={nodeName ?? "null"} | " +
+                    $"toolControl found={(toolControl != null)} | " +
+                    $"CurrentNode null={(toolControl?.CurrentNode == null)}",
+                    "App-Monitor");
                 return;
             }
 
             var paramName = paramBinding.ParameterName;
+            // ★ 监控日志5：参数名
+            logger.Log(LogLevel.Info,
+                $"[监控] ParameterName={paramName ?? "null"}",
+                "App-Monitor");
+
             if (string.IsNullOrEmpty(paramName))
+            {
+                logger.Log(LogLevel.Warning,
+                    "[监控] ★★★ ParameterName 为空，ConsumerBinding 终止 ★★★",
+                    "App-Monitor");
                 return;
+            }
 
             // ★ 查找节点所属工作流名称和参数显示名称
             string? workflowName = null;
@@ -506,6 +588,16 @@ public partial class App : Application
                 }
             }
 
+            // ★ 监控日志6：工作流查找结果
+            logger.Log(LogLevel.Info,
+                $"[监控] 工作流查找 | " +
+                $"solution null={(solution == null)} | " +
+                $"workflowCount={solution?.Workflows?.Count ?? 0} | " +
+                $"found={(workflowName != null)} | " +
+                $"workflowName={workflowName ?? "null"} | " +
+                $"parameterDisplayName={parameterDisplayName ?? "null"}",
+                "App-Monitor");
+
             // 检查是否已存在相同的消费者绑定
             var existing = variable.ConsumerBindings
                 .FirstOrDefault(c => c.NodeId == nodeId && c.ParameterName == paramName);
@@ -530,8 +622,21 @@ public partial class App : Application
                 });
             }
 
+            // ★ 监控日志7：ConsumerBinding 操作结果
+            logger.Log(existing != null ? LogLevel.Info : LogLevel.Success,
+                $"[监控] ConsumerBinding {(existing != null ? "更新" : "添加")}成功 | " +
+                $"consumerCount={variable.ConsumerBindings.Count} | " +
+                $"DisplayPath={variable.OutputTargetDisplayText}",
+                "App-Monitor");
+
             // ★ 通知 UI 刷新"目标输出"列
             variable.NotifyOutputDisplayChanged();
+
+            // ★ 监控日志8：UI 刷新通知完成
+            logger.Log(LogLevel.Info,
+                $"[监控] NotifyOutputDisplayChanged 已调用 | " +
+                $"OutputTargetDisplayText 新值={variable.OutputTargetDisplayText}",
+                "App-Monitor");
 
             // 持久化保存
             try
@@ -543,8 +648,10 @@ public partial class App : Application
         }
         catch (Exception ex)
         {
-            VisionLogger.Instance.Log(LogLevel.Warning,
-                $"记录消费者绑定失败: {ex.Message}", "App", ex);
+            VisionLogger.Instance.Log(LogLevel.Error,
+                $"[监控] ★★★ RecordConsumerBinding 异常 ★★★ | {ex.Message} | " +
+                $"StackTrace: {ex.StackTrace}",
+                "App-Monitor", ex);
         }
     }
 

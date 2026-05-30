@@ -1007,6 +1007,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 _paramBinding.IsEnabled = true;
                 _paramBinding.AvailableDataSources = AvailableDataSources;
                 _paramBinding.DataType = DataType;
+                _paramBinding.ParameterName = ParameterName;
 
                 // 设置绑定状态
                 _paramBinding.IsBound = true;

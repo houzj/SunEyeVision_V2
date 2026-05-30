@@ -390,13 +390,27 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 }
 
                 // 优先 DispName（UI显示名），回退到 Name
-                var nameProperty = node.GetType().GetProperty("DispName")
-                                ?? node.GetType().GetProperty("Name");
-                nodeName = nameProperty?.GetValue(node) as string;
+                var dispNameProperty = node.GetType().GetProperty("DispName");
+                var nameProperty = node.GetType().GetProperty("Name");
+                nodeName = dispNameProperty?.GetValue(node) as string
+                        ?? nameProperty?.GetValue(node) as string;
+
+                // ★ 监控日志：SetCurrentNode 完整节点信息
+                var dispName = dispNameProperty?.GetValue(node) as string;
+                var name = nameProperty?.GetValue(node) as string;
+                PluginLogger.Info(
+                    $"[监控] SetCurrentNode 完整信息 | " +
+                    $"nodeId={_currentNodeId ?? "null"} | " +
+                    $"DispName={dispName ?? "null"} | " +
+                    $"Name={name ?? "null"} | " +
+                    $"nodeName={nodeName ?? "null"} | " +
+                    $"nodeType={node.GetType().FullName}",
+                    "App-Monitor");
             }
             else
             {
                 _currentNodeId = null;
+                PluginLogger.Warning("[监控] SetCurrentNode: node 为 null", "App-Monitor");
             }
 
             // 如果数据提供者已设置，重新填充数据源（使用当前节点ID）

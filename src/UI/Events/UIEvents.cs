@@ -241,6 +241,24 @@ namespace SunEyeVision.UI.Events
         }
 
         /// <summary>
+        /// 全局变量重命名事件。
+        /// </summary>
+        public class GlobalVariableRenamedEvent : EventBase
+        {
+            public string VariableId { get; set; }
+            public string OldName { get; set; }
+            public string NewName { get; set; }
+
+            public GlobalVariableRenamedEvent(string source, string variableId, string oldName, string newName)
+                : base(source)
+            {
+                VariableId = variableId;
+                OldName = oldName;
+                NewName = newName;
+            }
+        }
+
+        /// <summary>
         /// 工作流执行事件。
         /// </summary>
         public class WorkflowExecutionEvent : EventBase

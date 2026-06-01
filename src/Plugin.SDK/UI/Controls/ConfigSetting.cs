@@ -367,6 +367,16 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         #endregion
 
+        #region 静态活跃实例列表（用于全局变量重命名广播）
+
+        /// <summary>
+        /// 活跃的 ConfigSetting 实例列表（WeakReference 避免阻止 GC 回收）
+        /// </summary>
+        private static readonly System.Collections.Concurrent.ConcurrentBag<WeakReference<ConfigSetting>> _activeInstances
+            = new System.Collections.Concurrent.ConcurrentBag<WeakReference<ConfigSetting>>();
+
+        #endregion
+
         #region 内部绑定状态恢复接口
 
         /// <summary>
@@ -392,6 +402,55 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         internal void SetConstantValueBeforeBinding(object? value)
         {
             _constantValueBeforeBinding = value;
+        }
+
+        /// <summary>
+        /// 当全局变量被重命名时更新此控件的绑定显示
+        /// </summary>
+        /// <param name="oldName">旧变量名</param>
+        /// <param name="newName">新变量名</param>
+        public void OnGlobalVariableRenamed(string oldName, string newName)
+        {
+            // 只处理绑定模式且绑定源为全局变量的情况
+            if (BindingType != BindingType.Binding || string.IsNullOrEmpty(BindingSource))
+            {
+                VisionLogger.Instance.Log(LogLevel.Info,
+                    $"[ConfigSetting] 跳过重命名 | 非绑定模式或绑定源为空 | " +
+                    $"ParameterName={ParameterName} | BindingType={BindingType} | BindingSource='{BindingSource}'",
+                    "ConfigSetting-Rename");
+                return;
+            }
+
+            var expectedPrefix = $"__GlobalVars__.{oldName}";
+            bool matched = (BindingSource == expectedPrefix);
+
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[ConfigSetting] 检查重命名 | ParameterName={ParameterName} | " +
+                $"BindingSource='{BindingSource}' | expected='{expectedPrefix}' | matched={matched}",
+                "ConfigSetting-Rename");
+
+            if (matched)
+            {
+                var newBindingSource = $"__GlobalVars__.{newName}";
+
+                // 更新 BindingDisplayText（例如 "全局变量.变量2" → "全局变量.新名称"）
+                if (!string.IsNullOrEmpty(BindingDisplayText))
+                {
+                    var dotIndex = BindingDisplayText.LastIndexOf('.');
+                    if (dotIndex > 0 && BindingDisplayText[..dotIndex] == "全局变量")
+                    {
+                        BindingDisplayText = $"全局变量.{newName}";
+                    }
+                }
+
+                // 更新 BindingSource
+                BindingSource = newBindingSource;
+
+                VisionLogger.Instance.Log(LogLevel.Success,
+                    $"[ConfigSetting] 重命名成功 | ParameterName={ParameterName} | " +
+                    $"BindingSource: '{BindingSource}' → '{newBindingSource}'",
+                    "ConfigSetting-Rename");
+            }
         }
 
         #endregion
@@ -448,6 +507,21 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         public ConfigSetting()
         {
             AvailableBindings = new System.Collections.Generic.List<string>();
+
+            // 全局变量重命名时自动更新绑定显示（自注册到静态列表，避免 VisualTreeHelper 遍历不可达）
+            Loaded += OnConfigSettingLoaded;
+            Unloaded += OnConfigSettingUnloaded;
+        }
+
+        private void OnConfigSettingLoaded(object sender, RoutedEventArgs e)
+        {
+            _activeInstances.Add(new WeakReference<ConfigSetting>(this));
+        }
+
+        private void OnConfigSettingUnloaded(object sender, RoutedEventArgs e)
+        {
+            // ConcurrentBag 不支持移除，WeakReference 由 GC 自动清理
+            // 通知时使用 TryGetTarget 检查有效性即可
         }
 
         #region 回调方法
@@ -1125,6 +1199,43 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// App.xaml.cs 订阅此事件，用于清理 GlobalVariable.ConsumerBindings
         /// </summary>
         public static event Action<ConfigSetting, string>? BeforeGlobalVariableUnbinding;
+
+        /// <summary>
+        /// 全局变量重命名通知 — 当全局变量管理器中变量被重命名时触发
+        /// 参数: (oldName, newName)
+        /// App.xaml.cs 订阅此事件，广播到所有已打开的 ConfigSetting 实例
+        /// </summary>
+        public static event Action<string, string>? GlobalVariableRenamed;
+
+        /// <summary>
+        /// 通知所有活跃的 ConfigSetting 实例全局变量已重命名
+        /// </summary>
+        /// <remarks>
+        /// 替代 VisualTreeHelper 视觉树遍历方式，通过 Loaded 时自注册的 WeakReference 列表
+        /// 直接通知每个已加载的 ConfigSetting 实例。未加载的实例会在 Tab 加载时
+        /// 通过 TryRestoreBindingFromParamValue 从 BindingConfig.SourceDisplayName 读取最新名称。
+        /// </remarks>
+        public static void NotifyAllGlobalVariableRenamed(string oldName, string newName)
+        {
+            int notifiedCount = 0;
+            int aliveCount = 0;
+            foreach (var weakRef in _activeInstances)
+            {
+                aliveCount++;
+                if (weakRef.TryGetTarget(out var instance))
+                {
+                    instance.OnGlobalVariableRenamed(oldName, newName);
+                    notifiedCount++;
+                }
+            }
+
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[ConfigSetting] 全局变量重命名通知 | old='{oldName}' → new='{newName}' | 活跃实例数={aliveCount} | 已通知={notifiedCount}",
+                "ConfigSetting-Rename");
+
+            // 同时触发旧的静态事件（兼容外部订阅者）
+            GlobalVariableRenamed?.Invoke(oldName, newName);
+        }
 
         /// <summary>
         /// 同步当前配置到绑定的 ParamValue 对象（方案B核心方法）

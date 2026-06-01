@@ -21,6 +21,8 @@ using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 using System.Windows.Media;
 using SunEyeVision.UI.ViewModels;
+using SunEyeVision.UI.Infrastructure;
+using SunEyeVision.UI.Events;
 
 namespace SunEyeVision.UI;
 
@@ -101,6 +103,14 @@ public partial class App : Application
 
         // 5.6 订阅 ConfigSetting 全局变量解绑事件（清理 ConsumerBinding + 刷新 UI）
         ConfigSetting.BeforeGlobalVariableUnbinding += OnConfigSettingBeforeGlobalVariableUnbinding;
+
+        // 5.7 订阅全局变量重命名事件（更新已打开的 ConfigSetting 绑定显示）
+        var eventBus = ServiceLocator.Instance.GetService<SunEyeVision.Core.Events.IEventBus>();
+        if (eventBus != null)
+        {
+            var renameHandler = new SunEyeVision.Core.Events.EventHandler<UIEvents.GlobalVariableRenamedEvent>(OnGlobalVariableRenamed);
+            eventBus.Subscribe(renameHandler);
+        }
 
         // 初始化DispatcherTimer监控
         InitializeMonitoring();
@@ -530,6 +540,30 @@ public partial class App : Application
         {
             VisionLogger.Instance.Log(LogLevel.Error,
                 $"[监控] 清理 ConsumerBinding 异常 | {ex.Message}",
+                "App-Monitor", ex);
+        }
+    }
+
+    /// <summary>
+    /// 全局变量重命名事件处理 — 通过 ConfigSetting 静态通知机制更新所有已打开实例的绑定显示
+    /// </summary>
+    private static void OnGlobalVariableRenamed(UIEvents.GlobalVariableRenamedEvent evt)
+    {
+        VisionLogger.Instance.Log(LogLevel.Info,
+            $"[监控] 全局变量重命名事件进入 | old='{evt.OldName}' → new='{evt.NewName}' | source={evt.Source}",
+            "App-Monitor");
+        try
+        {
+            ConfigSetting.NotifyAllGlobalVariableRenamed(evt.OldName, evt.NewName);
+
+            VisionLogger.Instance.Log(LogLevel.Success,
+                $"[监控] 全局变量重命名 ConfigSetting 通知完成 | old='{evt.OldName}' → new='{evt.NewName}'",
+                "App-Monitor");
+        }
+        catch (Exception ex)
+        {
+            VisionLogger.Instance.Log(LogLevel.Error,
+                $"[监控] 全局变量重命名更新异常 | {ex.Message}",
                 "App-Monitor", ex);
         }
     }

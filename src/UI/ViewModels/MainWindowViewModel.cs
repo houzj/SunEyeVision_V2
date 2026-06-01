@@ -39,6 +39,7 @@ using SunEyeVision.UI.Converters.Path;
 using SunEyeVision.UI.Services.Performance;
 using SunEyeVision.UI.Services.Logging;
 using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.UI.Events;
 using SunEyeVision.Core.Models;
 
 namespace SunEyeVision.UI.ViewModels
@@ -802,6 +803,10 @@ SplitterPosition = position;
 
             // 初始化当前解决方案信息
             UpdateCurrentSolutionInfo();
+
+            // 订阅全局变量重命名事件（更新模块结果 FlatResultRow 的显示）
+            var eventBus = ServiceLocator.Instance.GetService<SunEyeVision.Core.Events.IEventBus>();
+            eventBus?.Subscribe<UIEvents.GlobalVariableRenamedEvent>(OnGlobalVariableRenamed);
 
             NewWorkflowCommand = new RelayCommand(ExecuteNewWorkflow);
             OpenWorkflowCommand = new RelayCommand(ExecuteOpenWorkflow);
@@ -4318,6 +4323,25 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
             catch (Exception ex)
             {
                 LogError($"解绑全局变量失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 全局变量重命名事件处理 — 完全重建模块结果行（最可靠，GlobalVariable.Name 已更新）
+        /// </summary>
+        private void OnGlobalVariableRenamed(UIEvents.GlobalVariableRenamedEvent evt)
+        {
+            try
+            {
+                // 完全重建 FlatResultRows，因为 GlobalVariable.Name 已被更新为新名称，
+                // BuildFlatRows 会从所有 GlobalVariable 的 ProducerBinding 重新读取名称
+                BuildFlatRows();
+
+                LogInfo($"全局变量重命名: '{evt.OldName}' → '{evt.NewName}', 已重建模块结果显示");
+            }
+            catch (Exception ex)
+            {
+                LogError($"全局变量重命名更新失败: {ex.Message}");
             }
         }
 

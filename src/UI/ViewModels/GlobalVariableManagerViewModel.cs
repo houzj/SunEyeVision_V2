@@ -10,7 +10,8 @@ using Microsoft.Win32;
 using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.UI.Views.Windows;
-
+using SunEyeVision.UI.Events;
+using SunEyeVision.UI.Infrastructure;
 using SunEyeVision.Workflow;
 
 namespace SunEyeVision.UI.ViewModels
@@ -533,7 +534,64 @@ namespace SunEyeVision.UI.ViewModels
                 return false;
             }
 
+            // 名称已变更 → 执行重命名并传播
+            if (variable.Name != newName)
+            {
+                var oldName = variable.Name;
+
+                // ★ 在 ConfirmVariableRename 中提前设置 Name（早于绑定写回），
+                // 后续绑定写回同名值，PropertyChanged 再次触发但值相同，无副作用
+                variable.Name = newName;
+
+                // ★ 传播到所有引用处（节点参数 BindingConfig + 模块结果行）
+                UpdateGlobalVariableNameReferences(variable, oldName, newName);
+            }
+
             return true;
+        }
+
+        /// <summary>
+        /// 全局变量重命名后，更新所有引用处的显示名称
+        /// </summary>
+        private void UpdateGlobalVariableNameReferences(GlobalVariable variable, string oldName, string newName)
+        {
+            var solution = _solutionManager.CurrentSolution;
+            if (solution == null) return;
+
+            LogInfo($"全局变量重命名传播: '{oldName}' → '{newName}'");
+
+            // 1. 更新所有节点参数的 BindingConfig
+            foreach (var workflow in solution.Workflows)
+            {
+                foreach (var node in workflow.Nodes ?? Enumerable.Empty<WorkflowNodeBase>())
+                {
+                    if (node?.Parameters == null) continue;
+
+                    var parametersType = node.Parameters.GetType();
+                    foreach (var prop in parametersType.GetProperties())
+                    {
+                        if (prop.GetValue(node.Parameters) is ParamValueBase paramValue)
+                        {
+                            var bc = paramValue.BindingConfig;
+                            if (bc?.SourceNodeId == "__GlobalVars__" && bc.SourceProperty == oldName)
+                            {
+                                bc.SourceProperty = newName;
+                                bc.SourceDisplayName = newName;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 2. 发布全局变量重命名事件（通知 MainWindowViewModel 更新模块结果 UI、ConfigSetting 等）
+            var eventBus = ServiceLocator.Instance.GetService<SunEyeVision.Core.Events.IEventBus>();
+            eventBus?.Publish(new UIEvents.GlobalVariableRenamedEvent(
+                source: "GlobalVariableManagerViewModel",
+                variableId: variable.Id,
+                oldName: oldName,
+                newName: newName));
+
+            LogInfo($"全局变量重命名传播完成");
         }
 
         #endregion

@@ -474,7 +474,7 @@
                 </DataGridTextColumn>
 
                 <!-- 名称 -->
-                <DataGridTextColumn Header="名称" Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
+                <DataGridTextColumn Header="名称" Binding="{Binding Name}"
                                     Width="120" IsReadOnly="False"/>
 
                 <!-- 注释 -->

@@ -102,7 +102,7 @@ namespace SunEyeVision.UI.Services.Workflow
             }
 
             // ★ Step 1-2: 更新模块结果树（分组显示）
-            _viewModel.UpdateModuleResults(result, node.Name, node.ToolType);
+            _viewModel.UpdateModuleResults(result, node.Name, node.ToolType, node.Id);
 
             // ★ Step 3: 更新图像 - 基于当前 ComboBox 选中项（跨节点支持）
             var selectedSource = _viewModel.GetSelectedImageSource();

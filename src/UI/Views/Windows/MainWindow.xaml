@@ -579,12 +579,70 @@
                                                         <ColumnDefinition Width="Auto"/>
                                                         <ColumnDefinition Width="Auto"/>
                                                         <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="Auto"/>
                                                     </Grid.ColumnDefinitions>
 
+                                                    <!-- [↩] 返回按钮 - 仅子程序模式下可见 -->
+                                                    <Button x:Name="SubroutineBackBtn"
+                                                            Grid.Column="0"
+                                                            Content="&#x21A9;"
+                                                            FontSize="14" FontWeight="Bold"
+                                                            Foreground="#666666"
+                                                            Background="Transparent"
+                                                            BorderThickness="0"
+                                                            Padding="6,2"
+                                                            Cursor="Hand"
+                                                            Margin="0,0,4,0"
+                                                            ToolTip="返回上层工作流"
+                                                            Click="NavigateBack_Click">
+                                                        <Button.Style>
+                                                            <Style TargetType="Button">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsInSubroutine}" Value="True">
+                                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                                    </DataTrigger>
+                                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                                        <Setter Property="Foreground" Value="#0066CC"/>
+                                                                    </Trigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Button.Style>
+                                                    </Button>
+
+                                                    <!-- [⚙] 设置按钮 - 仅子程序模式下可见 -->
+                                                    <Button x:Name="SubroutineSettingsBtn"
+                                                            Grid.Column="1"
+                                                            Content="&#x2699;"
+                                                            FontSize="14" FontWeight="Bold"
+                                                            Foreground="#888888"
+                                                            Background="Transparent"
+                                                            BorderThickness="0"
+                                                            Padding="6,2"
+                                                            Cursor="Hand"
+                                                            Margin="0,0,8,0"
+                                                            ToolTip="子程序参数设置"
+                                                            Click="SubroutineSettings_Click">
+                                                        <Button.Style>
+                                                            <Style TargetType="Button">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsInSubroutine}" Value="True">
+                                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                                    </DataTrigger>
+                                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                                        <Setter Property="Foreground" Value="#0066CC"/>
+                                                                    </Trigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Button.Style>
+                                                    </Button>
+
                                                     <!-- 工作流名称（支持行内重命名） -->
-                                                    <Grid Grid.Column="0" Margin="0,0,12,0">
+                                                    <Grid Grid.Column="2" Margin="0,0,12,0">
                                                         <TextBlock x:Name="TabNameText"
-                                                                   Text="{Binding Name}"
+                                                                   Text="{Binding EffectiveDisplayName}"
                                                                    FontSize="13"
                                                                    FontWeight="SemiBold"
                                                                    Foreground="#333333"
@@ -603,7 +661,7 @@
 
                                                     <!-- 单次运行按钮 - 仅在选中时显示 -->
                                                     <Button x:Name="SingleRunBtn"
-                                                            Grid.Column="1"
+                                                            Grid.Column="3"
                                                             Content="▶"
                                                             Padding="6,4"
                                                             Margin="0"
@@ -653,7 +711,7 @@
 
                                                     <!-- 连续运行/停止按钮 - 仅在选中时显示 -->
                                                     <Button x:Name="ContinuousRunBtn"
-                                                            Grid.Column="2"
+                                                            Grid.Column="4"
                                                             Padding="6,4"
                                                             Margin="6,0,0,0"
                                                             BorderThickness="0"
@@ -703,7 +761,7 @@
 
                                                     <!-- 状态指示器 - 仅在选中时显示 -->
                                                     <Ellipse x:Name="StateIndicator"
-                                                             Grid.Column="3"
+                                                             Grid.Column="5"
                                                              Width="12" Height="12"
                                                              Fill="{Binding State, Converter={StaticResource WorkflowStateToColorConverter}}"
                                                              VerticalAlignment="Center"
@@ -717,7 +775,7 @@
 
                                                     <!-- 删除按钮 - 仅在选中时显示 -->
                                                     <Button x:Name="DeleteBtn"
-                                                            Grid.Column="4"
+                                                            Grid.Column="6"
                                                             Content="✕"
                                                             Padding="0"
                                                             Margin="0"
@@ -785,6 +843,10 @@
                                             <DataTrigger Binding="{Binding IsEditingName}" Value="True">
                                                 <Setter TargetName="TabNameText" Property="Visibility" Value="Collapsed"/>
                                                 <Setter TargetName="TabNameEditor" Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                            <!-- 子程序模式下隐藏删除按钮 -->
+                                            <DataTrigger Binding="{Binding IsInSubroutine}" Value="True">
+                                                <Setter TargetName="DeleteBtn" Property="Visibility" Value="Collapsed"/>
                                             </DataTrigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>

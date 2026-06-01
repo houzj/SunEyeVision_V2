@@ -9,6 +9,7 @@ using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.UI.Models;
 using SunEyeVision.UI.ViewModels;
+using SunEyeVision.Tool.Subroutine;
 using SunEyeVision.Workflow;
 using SunEyeVision.UI.Infrastructure;
 using SunEyeVision.UI.Services.Workflow;
@@ -272,6 +273,10 @@ namespace SunEyeVision.UI.Services.Workflow
 
                 InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.Name, "[EXEC] 正在创建工作流引擎...")));
                 var (workflowEngine, executionEngine, pluginManager) = WorkflowEngineFactory.CreateEngineSuite(logger);
+
+                // 注册子程序插件
+                var subroutinePlugin = new SubroutinePlugin(workflowEngine);
+                pluginManager.RegisterPlugin(subroutinePlugin);
 
                 // 创建工作流
                 var suneyeWorkflow = workflowEngine.CreateWorkflow(workflow.Name, workflow.Name);

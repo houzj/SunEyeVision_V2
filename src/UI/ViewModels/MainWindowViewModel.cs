@@ -14,6 +14,8 @@ using AppCommands = SunEyeVision.UI.Commands;
 using SunEyeVision.UI.Models;
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 using SunEyeVision.Workflow.Nodes;
+
+
 using SunEyeVision.Plugin.SDK;
 using SunEyeVision.Plugin.SDK.Validation;
 using SunEyeVision.Plugin.SDK.Core;
@@ -793,6 +795,9 @@ SplitterPosition = position;
 
             // Phase 3: 订阅工作流删除事件（清理引擎和 Solution）
             WorkflowTabViewModel.WorkflowDeleted += OnWorkflowDeleted;
+
+            // 订阅控制流节点打开事件（由 NodeOpenDecisionChain 统一路由）
+            NodeOpenDecisionChain.OnControlFlowNodeOpen += OnControlFlowNodeOpen;
 
             // 命令管理器的初始化
             SubscribeToCurrentCommandManager();
@@ -2250,234 +2255,255 @@ SplitterPosition = position;
 
         private async void ExecuteOpenDebugWindow(Models.WorkflowNode? node)
         {
-            if (node != null)
+            if (node == null) return;
+
+            try
             {
-                try
+                var mainImageControl = GetMainImageControl?.Invoke();
+                var context = new NodeOpenContext(Application.Current.MainWindow, mainImageControl);
+                var decisionChain = new NodeOpenDecisionChain();
+                var success = decisionChain.Execute(node.ToWorkflowNode(), context);
+
+                if (!success)
                 {
-                    // 从 ToolRegistry 获取元数据
-                    var toolId = node.ToolType ?? node.Name;
-                    var toolMetadata = ToolRegistry.GetToolMetadata(toolId);
+                    AddLog($"❌ 节点打开失败: {node.Name}");
+                    return;
+                }
 
-                    AddLog($"🔧 尝试打开调试窗口：工具ID={toolId}，节点名称={node.Name}");
+                if (context.CreatedWindow == null)
+                {
+                    AddLog($"ℹ️ 节点 '{node.Name}' 无需打开窗口");
+                    return;
+                }
 
-                    if (toolMetadata == null)
+                // 调试窗口单例管理
+                if (_openDebugWindow?.IsLoaded == true)
+                {
+                    var result = System.Windows.MessageBox.Show(
+                        $"调试窗口已打开（{_openDebugWindow.Title}）\n\n是否关闭当前窗口并打开新的调试窗口？",
+                        "调试窗口已存在",
+                        System.Windows.MessageBoxButton.YesNo,
+                        System.Windows.MessageBoxImage.Question);
+
+                    if (result != System.Windows.MessageBoxResult.Yes)
                     {
-                        AddLog($"❌ 未找到工具 '{toolId}' 的元数据信息");
-                        System.Windows.MessageBox.Show(
-                            $"未找到工具 '{toolId}' 的元数据信息",
-                            "未找到工具",
-                            System.Windows.MessageBoxButton.OK,
-                            System.Windows.MessageBoxImage.Warning);
+                        _openDebugWindow.Activate();
+                        _openDebugWindow.Focus();
                         return;
                     }
-
-                    AddLog($"✅ 找到工具元数据：{toolMetadata.DisplayName}");
-
-                    // 获取工具实例用于运行时检查
-                    var tool = ToolRegistry.CreateToolInstance(toolId);
-                    if (tool == null)
-                    {
-                        AddLog($"❌ 无法创建工具实例");
-                        System.Windows.MessageBox.Show(
-                            $"无法创建工具 '{toolId}' 的实例",
-                            "无法创建工具",
-                            System.Windows.MessageBoxButton.OK,
-                            System.Windows.MessageBoxImage.Warning);
-                        return;
-                    }
-
-                    AddLog($"✅ 创建工具实例成功：{tool.GetType().Name}，HasDebugWindow={tool.HasDebugWindow}");
-
-                    // 使用 NodeInterfaceFactory 获取界面类型（运行时检查版本）
-                    var interfaceType = NodeInterfaceFactory.GetInterfaceType(node.ToWorkflowNode(), toolMetadata, tool);
-                    AddLog($"🔍 界面类型：{interfaceType}");
-
-                    switch (interfaceType)
-                    {
-                        case NodeInterfaceType.DebugWindow:
-                            // 全局单例模式：有且只能有一个调试窗口被打开
-                            if (_openDebugWindow != null && _openDebugWindow.IsLoaded)
-                            {
-                                // 已有窗口，询问用户是否切换
-                                var result = System.Windows.MessageBox.Show(
-                                    $"调试窗口已打开（{_openDebugWindow.Title}）\n\n是否关闭当前窗口并打开新的调试窗口？",
-                                    "调试窗口已存在",
-                                    System.Windows.MessageBoxButton.YesNo,
-                                    System.Windows.MessageBoxImage.Question);
-
-                                if (result != System.Windows.MessageBoxResult.Yes)
-                                {
-                                    // 用户选择不切换，激活现有窗口
-                                    _openDebugWindow.Activate();
-                                    _openDebugWindow.Focus();
-                                    break;
-                                }
-
-                                // 关闭现有窗口
-                                _openDebugWindow.Close();
-                                _openDebugWindow = null;
-                            }
-
-                            // 使用新架构创建调试窗口
-                            try
-                            {
-                                // 创建决策链
-                                var decisionChain = new NodeOpenDecisionChain();
-
-                                // 创建上下文
-                                var mainImageControl = GetMainImageControl?.Invoke();
-                                var context = new NodeOpenContext(
-                                    Application.Current.MainWindow,
-                                    mainImageControl)
-                                {
-                                    Node = node.ToWorkflowNode()
-                                };
-
-                                // 执行决策链
-                                var success = decisionChain.Execute(context.Node, context);
-
-                                if (success && context.CreatedWindow != null)
-                                {
-                                    // 获取创建的窗口
-                                    var debugWindow = context.CreatedWindow;
-
-                                    // 设置标题
-                                    debugWindow.Title = node.Name;
-
-                                    // 赋值到 _openDebugWindow，支持 IsDebugWindowOpen 检测
-                                    _openDebugWindow = debugWindow;
-
-                                    // 注册关闭事件，窗口关闭时清理引用
-                                    debugWindow.Closed += (s, e) =>
-                                    {
-                                        // 1. 清除窗口引用
-                                        _openDebugWindow = null;
-
-                                        // 2. 恢复主窗口 ImageControl 的只读模式
-                                        var mainImageControl = GetMainImageControl?.Invoke();
-                                        if (mainImageControl != null)
-                                        {
-                                            mainImageControl.OverlayHitTestVisible = false;
-                                        }
-
-                                        // 3. 刷新当前选中节点的结果显示
-                                        if (SelectedNode != null && SelectedNode.IsSelected)
-                                        {
-                                            var executionResult = CurrentWorkflowContext?.GetNodeResult(SelectedNode.Id);
-                                            if (executionResult?.Result != null)
-                                            {
-                                                _nodeResultManager.RefreshResultDisplay(SelectedNode, executionResult.Result);
-                                            }
-                                        }
-
-                                        AddLog($"🔧 关闭调试窗口: {node.Name}");
-                                    };
-
-                                    // 初始化调试目标（统一入口：注入参数、数据提供者、显示窗口）
-                                    await InitializeToolControlAsync(debugWindow, node);
-                                }
-                                else
-                                {
-                                    AddLog($"⚠️ 工具 '{node.Name}' 无调试窗口或创建失败");
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                AddLog($"❌ 创建调试窗口失败: {ex.Message}");
-                                System.Windows.MessageBox.Show(
-                                    $"创建调试窗口失败: {ex.Message}",
-                                    "错误",
-                                    System.Windows.MessageBoxButton.OK,
-                                    System.Windows.MessageBoxImage.Error);
-                            }
-                            break;
-
-                        case NodeInterfaceType.NewWorkflowCanvas:
-                            // 创建新的工作流标签页（子程序节点专用）
-                            CreateSubroutineWorkflowTab(node);
-                            break;
-
-                        case NodeInterfaceType.SubroutineEditor:
-                            // TODO: 实现节点编辑
-                            System.Windows.MessageBox.Show(
-                                "节点编辑功能待实现",
-                                "提示",
-                                System.Windows.MessageBoxButton.OK,
-                                System.Windows.MessageBoxImage.Information);
-                            break;
-
-                        case NodeInterfaceType.None:
-                        default:
-                            // 不显示任何界面
-                            break;
-                    }
+                    _openDebugWindow.Close();
                 }
-                catch (Exception ex)
+
+                _openDebugWindow = context.CreatedWindow;
+                _openDebugWindow.Title = node.Name;
+
+                _openDebugWindow.Closed += (s, e) =>
                 {
-                    System.Windows.MessageBox.Show(
-                        $"打开节点失败: {ex.Message}",
-                        "错误",
-                        System.Windows.MessageBoxButton.OK,
-                        System.Windows.MessageBoxImage.Error);
-                    AddLog($"打开节点失败: {ex.Message}");
-                }
+                    _openDebugWindow = null;
+                    var imgCtrl = GetMainImageControl?.Invoke();
+                    if (imgCtrl != null) imgCtrl.OverlayHitTestVisible = false;
+                    if (SelectedNode?.IsSelected == true)
+                    {
+                        var executionResult = CurrentWorkflowContext?.GetNodeResult(SelectedNode.Id);
+                        if (executionResult?.Result != null)
+                            _nodeResultManager.RefreshResultDisplay(SelectedNode, executionResult.Result);
+                    }
+                    AddLog($"🔧 关闭调试窗口: {node.Name}");
+                };
+
+                await InitializeToolControlAsync(_openDebugWindow, node);
+                AddLog($"✅ 调试窗口已打开: {node.Name}");
+            }
+            catch (Exception ex)
+            {
+                AddLog($"打开节点失败: {ex.Message}");
+                System.Windows.MessageBox.Show(
+                    $"打开节点失败: {ex.Message}",
+                    "错误",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Error);
             }
         }
 
         /// <summary>
-        /// 为子程序节点创建新的标签页
+        /// 控制流节点打开事件处理 - 由 NodeOpenDecisionChain 通过事件触发
         /// </summary>
-        /// <param name="subroutineNode">子程序节点</param>
-        private void CreateSubroutineWorkflowTab(Models.WorkflowNode subroutineNode)
+        private void OnControlFlowNodeOpen(WorkflowNodeBase workflowNode)
+        {
+            var uiNode = WorkflowTabViewModel?.SelectedTab?.WorkflowNodes
+                ?.FirstOrDefault(n => n.Id == workflowNode.Id);
+            if (uiNode != null)
+            {
+                AddLog($"↪️ 双击子程序节点: {uiNode.Name}");
+                OpenOrNavigateToSubroutine(uiNode);
+            }
+        }
+
+        /// <summary>
+        /// 打开或导航到子程序（VM风格：同一Tab内下钻，不新建Tab）
+        /// </summary>
+        /// <param name="node">触发导航的子程序节点</param>
+        private void OpenOrNavigateToSubroutine(Models.WorkflowNode node)
         {
             try
             {
-                if (WorkflowTabViewModel == null)
+                if (WorkflowTabViewModel?.SelectedTab == null)
                 {
-                    AddLog("❌ WorkflowTabViewModel 为null");
+                    AddLog("❌ 没有选中的工作流标签页，无法导航到子程序");
                     return;
                 }
 
-                // 使用子程序节点名称作为工作流名称
-                string workflowName = subroutineNode.Name;
-                if (string.IsNullOrWhiteSpace(workflowName))
+                var selectedTab = WorkflowTabViewModel.SelectedTab;
+
+                // 确保导航栈已初始化
+                if (!selectedTab.IsNavigationInitialized)
+                    selectedTab.InitializeNavigation();
+
+                string subroutineId;
+                string subroutineName = node.Name;
+
+                // 从节点数据中提取子程序关联信息
+                var subroutineData = ExtractSubroutineNodeData(node);
+
+                if (subroutineData != null && !string.IsNullOrEmpty(subroutineData.SubroutineId))
                 {
-                    workflowName = "子程序";
+                    // 已有关联：直接下钻
+                    subroutineId = subroutineData.SubroutineId;
+                    AddLog($"↪️ 导航到已有子程序: {subroutineName} (ID: {subroutineId})");
+                }
+                else
+                {
+                    // 首次打开：创建子程序工作流并关联到节点
+                    subroutineId = CreateNewSubroutineWorkflow(node);
+                    AddLog($"🆕 创建并导航到子程序: {subroutineName} (ID: {subroutineId})");
                 }
 
-                AddLog($"📝 创建子程序标签页: {workflowName}");
+                // 执行下钻导航
+                selectedTab.NavigateToSubroutine(subroutineId, subroutineName, node.Id);
 
-                // 创建新的工作流标签页
-                var newWorkflowTab = new WorkflowTabViewModel
-                {
-                    Name = workflowName,
-                    Id = Guid.NewGuid().ToString()
-                };
+                // 加载子程序画布内容（从引擎获取子程序工作流的节点/连接）
+                LoadSubroutineCanvasContent(subroutineId);
 
-                // ✅ 为没有绑定 Solution 的工作流创建独立的连接集合
-                newWorkflowTab.SetConnections(new ObservableCollection<WorkflowConnection>());
-
-                // 添加到标签页集合
-                WorkflowTabViewModel.Tabs.Add(newWorkflowTab);
-
-                // 选中新创建的标签页
-                WorkflowTabViewModel.SelectedTab = newWorkflowTab;
-
-                // ★ 注册到引擎，确保 OnSelectedTabChanged 能找到现有工作流，不再创建空壳
-                _workflowEngine.CreateWorkflow(newWorkflowTab.Id, newWorkflowTab.Name);
-
-                AddLog($"✅ 创建子程序 '{workflowName}' 成功");
-                AddLog($"💡 现在可以在画布中添加子程序内部节点逻辑");
+                AddLog($"✅ 子程序导航完成: {subroutineName}");
             }
             catch (Exception ex)
             {
                 System.Windows.MessageBox.Show(
-                    $"创建子程序失败: {ex.Message}",
+                    $"导航到子程序失败: {ex.Message}",
                     "错误",
                     System.Windows.MessageBoxButton.OK,
                     System.Windows.MessageBoxImage.Error);
-                AddLog($"❌ 创建子程序失败: {ex.Message}");
+                AddLog($"❌ 子程序导航失败: {ex.Message}");
             }
+        }
+
+        /// <summary>
+        /// 从节点数据中提取子程序关联信息
+        /// </summary>
+        private SubroutineNodeData? ExtractSubroutineNodeData(Models.WorkflowNode node)
+        {
+            // 查找节点关联的 SubroutineNode 元数据
+            // 优先从节点的额外数据中查找
+            if (node.ExtraData != null &&
+                node.ExtraData.TryGetValue("SubroutineId", out var subId) &&
+                subId is string sid)
+            {
+                if (string.IsNullOrEmpty(sid))
+                    return null;
+
+                return new SubroutineNodeData
+                {
+                    SubroutineId = sid,
+                    SubroutineName = node.Name
+                };
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// 为子程序节点创建新的子程序工作流并关联
+        /// </summary>
+        private string CreateNewSubroutineWorkflow(Models.WorkflowNode node)
+        {
+            var subroutineId = Guid.NewGuid().ToString();
+
+            // 注册到工作流引擎
+            _workflowEngine.CreateWorkflow(subroutineId, node.Name);
+
+            // 关联到节点数据
+            node.ExtraData ??= new Dictionary<string, object>();
+            node.ExtraData["SubroutineId"] = subroutineId;
+
+            AddLog($"📝 新建子程序工作流: {node.Name} (ID: {subroutineId})");
+
+            return subroutineId;
+        }
+
+        /// <summary>
+        /// 加载子程序画布内容（节点和连接）
+        /// </summary>
+        private void LoadSubroutineCanvasContent(string subroutineId)
+        {
+            var selectedTab = WorkflowTabViewModel?.SelectedTab;
+            if (selectedTab == null) return;
+
+            // 从引擎获取子程序工作流的节点和连接
+            var subroutineWorkflow = _workflowEngine.GetWorkflow(subroutineId);
+            if (subroutineWorkflow == null)
+            {
+                AddLog($"⚠️ 子程序工作流未找到: {subroutineId}，将使用空画布");
+                return;
+            }
+
+            // 直接绑定引擎中的节点和连接集合到 Tab
+            selectedTab.SetNodes(subroutineWorkflow.Nodes);
+            selectedTab.SetConnections(subroutineWorkflow.Connections);
+
+            AddLog($"📋 已加载子程序画布: 节点={subroutineWorkflow.Nodes.Count}, 连接={subroutineWorkflow.Connections.Count}");
+        }
+
+        /// <summary>
+        /// 子程序节点数据
+        /// </summary>
+        private class SubroutineNodeData
+        {
+            public string SubroutineId { get; set; } = string.Empty;
+            public string SubroutineName { get; set; } = string.Empty;
+        }
+
+        /// <summary>
+        /// 导航返回（由 [↩] 按钮触发）
+        /// </summary>
+        public bool NavigateBackFromSubroutine()
+        {
+            if (WorkflowTabViewModel?.SelectedTab == null) return false;
+
+            var tab = WorkflowTabViewModel.SelectedTab;
+            if (!tab.NavigateBack()) return false;
+
+            // 恢复上层工作流的画布内容
+            var workflowId = tab.CurrentWorkflowId;
+            RestoreHostCanvasContent(workflowId);
+
+            AddLog($"↩️ 返回上层工作流: {tab.EffectiveDisplayName}");
+            return true;
+        }
+
+        /// <summary>
+        /// 恢复上层工作流的画布内容
+        /// </summary>
+        private void RestoreHostCanvasContent(string workflowId)
+        {
+            var selectedTab = WorkflowTabViewModel?.SelectedTab;
+            if (selectedTab == null) return;
+
+            var hostWorkflow = _workflowEngine.GetWorkflow(workflowId);
+            if (hostWorkflow == null) return;
+
+            // 直接绑定引擎中的节点和连接集合到 Tab
+            selectedTab.SetNodes(hostWorkflow.Nodes);
+            selectedTab.SetConnections(hostWorkflow.Connections);
         }
 
         /// <summary>
@@ -2716,6 +2742,10 @@ SplitterPosition = position;
                 // 获取工具注册信息
                 var toolType = selectedNode.ToolType;
                 if (string.IsNullOrEmpty(toolType))
+                    return System.Threading.Tasks.Task.CompletedTask;
+
+                // 控制流节点（子程序、条件等）跳过数据分析控件
+                if (ControlFlowRegistry.IsControlFlow(toolType))
                     return System.Threading.Tasks.Task.CompletedTask;
 
                 // 创建工具实例

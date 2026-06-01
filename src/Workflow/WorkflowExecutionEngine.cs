@@ -647,9 +647,10 @@ namespace SunEyeVision.Workflow
                 throw new InvalidOperationException("未找到工作流控制插件");
             }
 
-            // 设置上下文变量
+            // 设置上下文变量和执行引擎引用
             context.SetVariable("InputImage", inputImage);
             context.SetVariable("CurrentNode", node);
+            context.ExecutionEngine = this;
 
             // 执行子程序
             var result = await plugin.ExecuteSubroutine(node, context);

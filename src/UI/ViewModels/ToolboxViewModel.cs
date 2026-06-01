@@ -194,6 +194,44 @@ namespace SunEyeVision.UI.ViewModels
                 toolItem.ToolId = tool.Id;
                 AllTools.Add(toolItem);
             }
+
+            // 从 ControlFlowRegistry 加载控制流节点（替代硬编码）
+            LoadControlFlowTools();
+        }
+
+        /// <summary>
+        /// 从 ControlFlowRegistry 加载控制流节点工具项
+        /// </summary>
+        private void LoadControlFlowTools()
+        {
+            // 添加工作流控制分类
+            if (!Categories.Any(c => c.Name == "工作流控制"))
+            {
+                Categories.Add(new ToolCategory("工作流控制", "🔄", "流程控制工具", 0, false));
+            }
+
+            // 从 ControlFlowRegistry 获取所有已注册的控制流节点
+            var flowTools = ControlFlowRegistry.GetAll();
+            foreach (var (id, displayName, icon) in flowTools)
+            {
+                var description = id switch
+                {
+                    "Subroutine" => "子程序节点，可嵌套执行另一工作流",
+                    "Condition" => "条件判断节点，根据条件分支执行",
+                    _ => "控制流节点"
+                };
+
+                var toolItem = new ToolItem(
+                    displayName,
+                    "工作流控制",
+                    icon,
+                    description,
+                    id,
+                    false
+                );
+                toolItem.ToolId = id;
+                AllTools.Add(toolItem);
+            }
         }
 
         /// <summary>
@@ -208,6 +246,7 @@ namespace SunEyeVision.UI.ViewModels
                 "图像处理" => "🖼️",
                 "识别" => "🔍",
                 "测量" => "📏",
+                "工作流控制" => "🔄",
                 _ => "📦"
             };
         }

@@ -31,33 +31,9 @@ namespace SunEyeVision.Workflow
             // 3. 创建执行引擎
             var executionEngine = new WorkflowExecutionEngine(workflowEngine, pluginManager, logger);
 
-            // 4. 加载并注册工作流控制插件
-            RegisterWorkflowControlPlugin(workflowEngine, pluginManager, logger);
+            // 子程序插件由 UI 层负责创建和注册
 
             return (workflowEngine, executionEngine, pluginManager);
-        }
-
-        /// <summary>
-        /// 注册工作流控制插件
-        /// </summary>
-        private static void RegisterWorkflowControlPlugin(
-            WorkflowEngine workflowEngine,
-            IPluginManager pluginManager,
-            ILogger logger)
-        {
-            try
-            {
-                // 创建控制插件
-                var controlPlugin = new SubroutinePlugin(workflowEngine);
-                pluginManager.RegisterPlugin(controlPlugin);
-
-                logger.LogInfo("工作流控制插件已注册");
-            }
-            catch (Exception ex)
-            {
-                logger.LogError($"注册工作流控制插件失败: {ex.Message}", ex);
-                throw;
-            }
         }
 
         /// <summary>

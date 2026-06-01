@@ -1,51 +1,31 @@
 ﻿
 using System;
 using System.IO;
-
-// 别名：避免与 System.Windows.Shapes.Path 冲突
-using IOPath = System.IO.Path;
-
 using System.Collections.ObjectModel;
-
 using System.Linq;
-
 using System.Windows;
-
 using System.Windows.Controls;
-
 using System.Windows.Controls.Primitives;
-
 using System.Windows.Input;
-
 using System.Windows.Media;
-
 using System.Windows.Shapes;
 
 using SunEyeVision.UI.Views.Controls.Canvas;
-
 using SunEyeVision.UI.Views.Controls.Panels;
-
 using SunEyeVision.UI.Views.Controls.Common;
-
 using SunEyeVision.UI.Models;
-
 using SunEyeVision.UI.Services;
-
 using SunEyeVision.UI.ViewModels;
-
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 
 using AIStudio.Wpf.DiagramDesigner;
-
 using AIStudio.Wpf.DiagramDesigner.ViewModels;
 
 using SunEyeVision.UI.Services.Canvas;
-
 using SunEyeVision.UI.Converters.Path;
-
 using SunEyeVision.Plugin.SDK.UI.Controls;
-
 using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.UI.Views.Dialogs;
 
 
 
@@ -1730,6 +1710,130 @@ namespace SunEyeVision.UI.Views.Windows
             DeleteWorkflowWithConfirm(workflow);
 
         }
+
+        #region 子程序导航事件
+
+        /// <summary>
+
+        /// [↩] 返回按钮点击 - 返回上层工作流
+
+        /// </summary>
+
+        private void NavigateBack_Click(object sender, RoutedEventArgs e)
+
+        {
+
+            if (_viewModel?.NavigateBackFromSubroutine() == true)
+
+            {
+
+                _viewModel.StatusText = $"已返回: {_viewModel.WorkflowTabViewModel?.SelectedTab?.EffectiveDisplayName}";
+
+            }
+
+        }
+
+        /// <summary>
+
+        /// [⚙] 子程序参数设置按钮点击 - 打开参数映射对话框
+
+        /// </summary>
+
+        private void SubroutineSettings_Click(object sender, RoutedEventArgs e)
+
+        {
+
+            var selectedTab = _viewModel?.WorkflowTabViewModel?.SelectedTab;
+
+            if (selectedTab == null || !selectedTab.IsInSubroutine)
+
+            {
+
+                _viewModel?.LogWarning("没有选中的子程序", "Navigation");
+
+                return;
+
+            }
+
+            OpenSubroutineParameterDialog(selectedTab);
+
+        }
+
+        /// <summary>
+
+        /// 打开子程序参数设置对话框
+
+        /// </summary>
+
+        private void OpenSubroutineParameterDialog(WorkflowTabViewModel tab)
+
+        {
+
+            try
+
+            {
+
+                var dialog = new SubroutineParameterDialog(tab.CurrentWorkflowId, tab.EffectiveDisplayName)
+
+                {
+
+                    Owner = this
+
+                };
+
+                dialog.ShowDialog();
+
+            }
+
+            catch (Exception ex)
+
+            {
+
+                System.Windows.MessageBox.Show(
+
+                    $"打开子程序参数设置失败: {ex.Message}",
+
+                    "错误",
+
+                    System.Windows.MessageBoxButton.OK,
+
+                    System.Windows.MessageBoxImage.Error);
+
+                _viewModel?.AddLog(LogLevel.Error, $"打开子程序参数设置失败: {ex.Message}", LogSource.UIOperation);
+
+            }
+
+        }
+
+        /// <summary>
+        /// 从画布节点打开子程序参数设置对话框
+        /// </summary>
+        internal void OpenSubroutineNodeParameterDialog(Models.WorkflowNode node)
+        {
+            try
+            {
+                // 使用节点 ID 作为子程序标识，节点名称作为显示名
+                var dialog = new SubroutineParameterDialog(node.Id, node.DispName)
+                {
+                    Owner = this
+                };
+                dialog.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show(
+                    $"打开子程序参数设置失败: {ex.Message}",
+
+                    "错误",
+
+                    System.Windows.MessageBoxButton.OK,
+
+                    System.Windows.MessageBoxImage.Error);
+                _viewModel?.AddLog(LogLevel.Error, $"打开子程序参数设置失败: {ex.Message}", LogSource.UIOperation);
+            }
+        }
+
+        #endregion
 
         /// <summary>
 

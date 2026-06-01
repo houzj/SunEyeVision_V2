@@ -384,32 +384,80 @@ namespace SunEyeVision.Workflow
         #region 计算属性（从元数据推断，不序列化）
 
         /// <summary>
-        /// 节点类型（从 ToolType 动态推断，不序列化）
+        /// 节点类型（从 ControlFlowRegistry/ToolRegistry 动态推断，不序列化）
         /// </summary>
         [JsonIgnore]
-        public NodeType NodeType => NodeTypeHelper.InferNodeTypeFromToolType(ToolType);
+        public NodeType NodeType
+        {
+            get
+            {
+                if (ControlFlowRegistry.IsControlFlow(ToolType))
+                {
+                    var info = ControlFlowRegistry.Get(ToolType);
+                    return info?.ControlFlowType switch
+                    {
+                        Core.Models.ControlFlowType.Subroutine => NodeType.Subroutine,
+                        Core.Models.ControlFlowType.Condition => NodeType.Condition,
+                        Core.Models.ControlFlowType.Switch => NodeType.Switch,
+                        Core.Models.ControlFlowType.Loop => NodeType.Algorithm,
+                        _ => NodeType.Algorithm
+                    };
+                }
+                return InferStartNodeType(ToolType);
+            }
+        }
 
         /// <summary>
-        /// 显示名称（从工具元数据获取，不序列化）
+        /// 从工具类型推断是否为起始节点
+        /// </summary>
+        private static NodeType InferStartNodeType(string toolType)
+        {
+            if (string.IsNullOrWhiteSpace(toolType))
+                return NodeType.Algorithm;
+
+            var lower = toolType.ToLowerInvariant();
+            if (lower.Contains("imagecapture") ||
+                lower.Contains("imageacquisition") ||
+                lower.Contains("camera") ||
+                lower.Contains("image_load") ||
+                lower.Contains("imageload") ||
+                lower.Contains("imagecapturetool") ||
+                lower.Contains("image_load_tool"))
+            {
+                return NodeType.Start;
+            }
+            return NodeType.Algorithm;
+        }
+
+        /// <summary>
+        /// 显示名称（从控制流注册中心或工具元数据获取，不序列化）
         /// </summary>
         [JsonIgnore]
         public string DisplayName
         {
             get
             {
+                var flowInfo = ControlFlowRegistry.Get(ToolType);
+                if (flowInfo != null)
+                    return flowInfo.DisplayName;
+
                 var metadata = ToolRegistry.GetToolMetadata(ToolType);
                 return metadata?.DisplayName ?? Name;
             }
         }
 
         /// <summary>
-        /// 节点图标（从工具元数据获取，不序列化）
+        /// 节点图标（从控制流注册中心或工具元数据获取，不序列化）
         /// </summary>
         [JsonIgnore]
         public string Icon
         {
             get
             {
+                var flowInfo = ControlFlowRegistry.Get(ToolType);
+                if (flowInfo != null)
+                    return flowInfo.Icon;
+
                 var metadata = ToolRegistry.GetToolMetadata(ToolType);
                 return metadata?.Icon ?? "?";
             }
@@ -657,14 +705,14 @@ namespace SunEyeVision.Workflow
             NodeType nodeType = NodeType.Algorithm;
             if (dict.TryGetValue("NodeType", out var typeVal))
             {
-                if (Enum.IsDefined(typeof(NodeType), typeVal))
+                if (typeVal is int intVal && Enum.IsDefined(typeof(NodeType), intVal))
                 {
-                    nodeType = (NodeType)Convert.ToInt32(typeVal);
+                    nodeType = (NodeType)intVal;
                 }
-            }
-            else
-            {
-                nodeType = NodeTypeHelper.InferNodeTypeFromToolType(toolType);
+                else if (typeVal is string strVal && Enum.TryParse<NodeType>(strVal, out var parsed))
+                {
+                    nodeType = parsed;
+                }
             }
 
             var node = new WorkflowNodeBase(id, name, dispName, toolType)

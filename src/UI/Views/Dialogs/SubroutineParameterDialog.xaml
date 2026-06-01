@@ -1,0 +1,179 @@
+<!-- SubroutineParameterDialog.xaml -->
+<!-- 子程序参数映射对话框 -->
+<Window x:Class="SunEyeVision.UI.Views.Dialogs.SubroutineParameterDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:converters="clr-namespace:SunEyeVision.UI.Converters.UI"
+        Title="{Binding DialogTitle}"
+        Width="800" Height="600"
+        WindowStartupLocation="CenterOwner"
+        Background="#FFFFFF">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/SunEyeVision.UI;component/Views/Resources/AppResources.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- 标题 -->
+        <TextBlock Grid.Row="0" Text="{Binding DialogTitle}"
+                   FontSize="18" FontWeight="Bold"
+                   Foreground="#333333"
+                   Margin="0,0,0,12"/>
+
+        <!-- 内容区域 - TabControl -->
+        <TabControl Grid.Row="1" SelectedIndex="0"
+                    Background="#F8F9FA"
+                    BorderBrush="#E0E0E0"
+                    BorderThickness="1">
+            <TabItem Header="输入设置" Padding="12,8">
+                <Grid Margin="8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0"
+                               Text="配置子程序从外部接收的参数映射关系"
+                               FontSize="12" Foreground="#666666"
+                               Margin="0,0,0,8"/>
+
+                    <DataGrid Grid.Row="1"
+                              ItemsSource="{Binding InputMappings}"
+                              AutoGenerateColumns="False"
+                              CanUserAddRows="False"
+                              CanUserDeleteRows="False"
+                              IsReadOnly="True"
+                              GridLinesVisibility="Vertical"
+                              BorderThickness="1"
+                              BorderBrush="#E0E0E0"
+                              Background="White">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="参数名称"
+                                                Binding="{Binding ParameterName}"
+                                                Width="150"/>
+                            <DataGridTextColumn Header="类型"
+                                                Binding="{Binding DataType}"
+                                                Width="100"/>
+                            <DataGridTextColumn Header="订阅源"
+                                                Binding="{Binding SourceDisplay}"
+                                                Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <Button Grid.Row="2"
+                            Content="+ 添加输入映射"
+                            Width="140" Height="30"
+                            Margin="0,8,0,0"
+                            Style="{StaticResource SecondaryButton}"
+                            Command="{Binding AddInputMappingCommand}"/>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="输出设置" Padding="12,8">
+                <Grid Margin="8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0"
+                               Text="配置子程序向外部输出的参数映射关系"
+                               FontSize="12" Foreground="#666666"
+                               Margin="0,0,0,8"/>
+
+                    <DataGrid Grid.Row="1"
+                              ItemsSource="{Binding OutputMappings}"
+                              AutoGenerateColumns="False"
+                              CanUserAddRows="False"
+                              CanUserDeleteRows="False"
+                              IsReadOnly="True"
+                              GridLinesVisibility="Vertical"
+                              BorderThickness="1"
+                              BorderBrush="#E0E0E0"
+                              Background="White">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="参数名称"
+                                                Binding="{Binding ParameterName}"
+                                                Width="150"/>
+                            <DataGridTextColumn Header="类型"
+                                                Binding="{Binding DataType}"
+                                                Width="100"/>
+                            <DataGridTextColumn Header="内部端口"
+                                                Binding="{Binding SourceDisplay}"
+                                                Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <Button Grid.Row="2"
+                            Content="+ 添加输出映射"
+                            Width="140" Height="30"
+                            Margin="0,8,0,0"
+                            Style="{StaticResource SecondaryButton}"
+                            Command="{Binding AddOutputMappingCommand}"/>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="运行参数" Padding="12,8">
+                <Grid Margin="8">
+                    <StackPanel>
+                        <CheckBox Content="启用循环执行"
+                                  IsChecked="{Binding EnableLoop}"
+                                  Margin="0,0,0,8"/>
+                        <StackPanel Orientation="Horizontal"
+                                    Margin="20,0,0,0"
+                                    IsEnabled="{Binding EnableLoop}">
+                            <TextBlock Text="最大迭代次数:" VerticalAlignment="Center"
+                                       Margin="0,0,8,0"/>
+                            <TextBox Text="{Binding MaxIterations}"
+                                     Width="80" Height="26"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="显示设置" Padding="12,8">
+                <Grid Margin="8">
+                    <TextBlock Text="显示设置将在后续版本中完善"
+                               FontSize="13" Foreground="#999999"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Center"/>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="循环设置" Padding="12,8">
+                <Grid Margin="8">
+                    <TextBlock Text="循环设置将在后续版本中完善"
+                               FontSize="13" Foreground="#999999"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Center"/>
+                </Grid>
+            </TabItem>
+        </TabControl>
+
+        <!-- 底部按钮 -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Margin="0,12,0,0">
+            <Button Content="确定"
+                    Width="80" Height="32"
+                    Margin="0,0,8,0"
+                    Click="OkButton_Click"/>
+            <Button Content="取消"
+                    Width="80" Height="32"
+                    Click="CancelButton_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>
+

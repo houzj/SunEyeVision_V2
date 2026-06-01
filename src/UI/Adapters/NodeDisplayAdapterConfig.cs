@@ -39,6 +39,10 @@ namespace SunEyeVision.UI.Adapters
         // 注册AI分析节点适配器。
         NodeDisplayAdapterFactory.RegisterAdapter("AIAnalysis", new AIAnalysisNodeDisplayAdapter());
 
+        // 注册控制流节点适配器（子程序、条件判断等）。
+        NodeDisplayAdapterFactory.RegisterAdapter("Subroutine", new ControlFlowNodeDisplayAdapter());
+        NodeDisplayAdapterFactory.RegisterAdapter("Condition", new ControlFlowNodeDisplayAdapter());
+
         // 可以继续添加其他类型的适配器...
 
         _isInitialized = true;

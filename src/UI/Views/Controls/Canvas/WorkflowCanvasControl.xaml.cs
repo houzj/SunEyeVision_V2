@@ -5188,6 +5188,23 @@ _viewModel.SelectedNode = targetNode;
             }
         }
 
+        /// <summary>
+        /// 子程序设置按钮点击 - 打开子程序参数配置对话框
+        /// </summary>
+        private void SubroutineNodeSettings_Click(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+
+            if (sender is FrameworkElement element && element.DataContext is WorkflowNode node)
+            {
+                var mainWindow = Window.GetWindow(this) as MainWindow;
+                if (mainWindow != null)
+                {
+                    mainWindow.OpenSubroutineNodeParameterDialog(node);
+                }
+            }
+        }
+
         #endregion
 
     }

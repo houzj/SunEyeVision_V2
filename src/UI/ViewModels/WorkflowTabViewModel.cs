@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Media;
@@ -31,6 +32,38 @@ namespace SunEyeVision.UI.ViewModels
         private ScaleTransform _scaleTransform;
         private double _currentScale;
         private CanvasType _canvasType;
+
+        // ========== 子程序导航栈 ==========
+
+        /// <summary>
+        /// 导航栈，保存各级子程序/主工作流的画布状态
+        /// </summary>
+        private readonly Stack<NavigationFrame> _navigationStack = new();
+
+        /// <summary>
+        /// 当前帧（当前显示的层级）
+        /// </summary>
+        private NavigationFrame? _currentFrame;
+
+        /// <summary>
+        /// 是否已初始化导航（第一次设置画布状态后为 true）
+        /// </summary>
+        private bool _isNavigationInitialized;
+
+        /// <summary>
+        /// 是否处于子程序下钻模式
+        /// </summary>
+        public bool IsInSubroutine => _currentFrame != null && _navigationStack.Count > 0;
+
+        /// <summary>
+        /// 当前有效显示名称（主工作流显示 Name，子程序显示子程序名）
+        /// </summary>
+        public string EffectiveDisplayName => _currentFrame?.DisplayName ?? Name;
+
+        /// <summary>
+        /// 当前工作流ID（下钻时指向子程序工作流，返回后指回主工作流）
+        /// </summary>
+        public string CurrentWorkflowId => _currentFrame?.WorkflowId ?? Id;
 
         /// <summary>
         /// 外部节点集合引用（通常是 Solution.Workflow.Nodes），用于反向同步
@@ -600,6 +633,124 @@ namespace SunEyeVision.UI.ViewModels
         public void RefreshProperty(string propertyName)
         {
             base.OnPropertyChanged(propertyName);
+        }
+
+        // ========== 子程序导航栈方法 ==========
+
+        /// <summary>
+        /// 初始化导航（在 SetNodes 后由外部调用一次）
+        /// </summary>
+        public void InitializeNavigation()
+        {
+            if (_isNavigationInitialized) return;
+            _currentFrame = new NavigationFrame
+            {
+                DisplayName = Name,
+                WorkflowId = Id,
+                Nodes = WorkflowNodes,
+                Connections = WorkflowConnections,
+                CurrentScale = CurrentScale
+            };
+            _isNavigationInitialized = true;
+        }
+
+        /// <summary>
+        /// 是否已初始化导航栈
+        /// </summary>
+        public bool IsNavigationInitialized => _isNavigationInitialized;
+
+        /// <summary>
+        /// 下钻到子程序
+        /// </summary>
+        /// <param name="subroutineId">子程序工作流ID</param>
+        /// <param name="displayName">Tab显示名称</param>
+        /// <param name="callerNodeId">调用此子程序的节点ID</param>
+        public void NavigateToSubroutine(string subroutineId, string displayName, string callerNodeId)
+        {
+            if (!_isNavigationInitialized)
+                throw new InvalidOperationException("请先调用 InitializeNavigation()");
+
+            // 1. 更新当前帧的缩放状态
+            if (_currentFrame != null)
+            {
+                _currentFrame.CurrentScale = CurrentScale;
+            }
+
+            // 2. 保存当前帧到栈
+            _navigationStack.Push(_currentFrame!);
+
+            // 3. 创建子程序帧（节点/连线稍后由外部填充）
+            _currentFrame = new NavigationFrame
+            {
+                DisplayName = displayName,
+                WorkflowId = subroutineId,
+                CallerNodeId = callerNodeId,
+                CurrentScale = 1.0
+            };
+
+            // 4. 通知UI更新
+            OnPropertyChanged(nameof(IsInSubroutine));
+            OnPropertyChanged(nameof(EffectiveDisplayName));
+            OnPropertyChanged(nameof(CurrentWorkflowId));
+        }
+
+        /// <summary>
+        /// 返回上一层
+        /// </summary>
+        /// <returns>是否有更高层级可返回</returns>
+        public bool NavigateBack()
+        {
+            if (_navigationStack.Count == 0) return false;
+
+            // 1. 恢复上一帧
+            _currentFrame = _navigationStack.Pop();
+
+            // 2. 通知UI更新
+            OnPropertyChanged(nameof(IsInSubroutine));
+            OnPropertyChanged(nameof(EffectiveDisplayName));
+            OnPropertyChanged(nameof(CurrentWorkflowId));
+
+            return true;
+        }
+
+        /// <summary>
+        /// 重置导航栈（返回主工作流顶层）
+        /// </summary>
+        public void ResetNavigation()
+        {
+            _navigationStack.Clear();
+            if (_currentFrame != null)
+            {
+                _currentFrame = new NavigationFrame
+                {
+                    DisplayName = Name,
+                    WorkflowId = Id,
+                    Nodes = WorkflowNodes,
+                    Connections = WorkflowConnections,
+                    CurrentScale = CurrentScale
+                };
+            }
+            OnPropertyChanged(nameof(IsInSubroutine));
+            OnPropertyChanged(nameof(EffectiveDisplayName));
+            OnPropertyChanged(nameof(CurrentWorkflowId));
+        }
+
+        /// <summary>
+        /// 获取调用链上所有层级的显示名称（从顶层到底层）
+        /// </summary>
+        public string[] GetNavigationPath()
+        {
+            var path = new List<string>();
+            var frames = _navigationStack.ToArray();
+            for (int i = frames.Length - 1; i >= 0; i--)
+            {
+                path.Add(frames[i].DisplayName);
+            }
+            if (_currentFrame != null)
+            {
+                path.Add(_currentFrame.DisplayName);
+            }
+            return path.ToArray();
         }
     }
 

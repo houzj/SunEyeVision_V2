@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using System.Windows;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
@@ -57,6 +59,12 @@ namespace SunEyeVision.UI.Models
             get => base.StyleConfig as NodeStyleConfig ?? NodeStyles.Standard;
             set => base.StyleConfig = value;
         }
+
+        /// <summary>
+        /// 节点扩展数据（工具/插件自定义的附加数据，不序列化）
+        /// </summary>
+        [JsonIgnore]
+        public Dictionary<string, object>? ExtraData { get; set; }
 
         #region 端口位置计算属性
 

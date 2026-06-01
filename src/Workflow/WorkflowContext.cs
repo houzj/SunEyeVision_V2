@@ -254,6 +254,11 @@ namespace SunEyeVision.Workflow
         public IWorkflowControlPlugin WorkflowControlPlugin { get; set; }
 
         /// <summary>
+        /// 执行引擎引用（由 WorkflowExecutionEngine 设置，供子程序插件使用）
+        /// </summary>
+        public WorkflowExecutionEngine ExecutionEngine { get; set; }
+
+        /// <summary>
         /// 取消令牌
         /// </summary>
         public System.Threading.CancellationToken CancellationToken { get; set; }

@@ -263,10 +263,48 @@
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
 
-                                <!-- 节点类型图标 -->
-                                <TextBlock Grid.Column="0"
-                                           Text="{Binding Icon}"
-                                           Style="{DynamicResource NodeIconStyle}"/>
+                                <!-- 节点类型图标（非子程序）/ 子程序设置按钮 -->
+                                <Grid Grid.Column="0">
+                                    <!-- 图标（对子程序节点隐藏） -->
+                                    <TextBlock Text="{Binding Icon}">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock" BasedOn="{StaticResource NodeIconStyle}">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ToolType}" Value="Subroutine">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+
+                                    <!-- 子程序设置按钮（仅 Subroutine 类型节点可见，替换图标显示） -->
+                                    <Button Content="⚙"
+                                            Width="20" Height="20"
+                                            FontSize="12"
+                                            Foreground="#888888"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            Padding="0"
+                                            Cursor="Hand"
+                                            ToolTip="子程序参数设置"
+                                            Click="SubroutineNodeSettings_Click"
+                                            Panel.ZIndex="10">
+                                        <Button.Style>
+                                            <Style TargetType="Button">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ToolType}" Value="Subroutine">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Foreground" Value="#0066CC"/>
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
+                                </Grid>
 
                                 <!-- 全局序号 -->
                                 <TextBlock Grid.Column="1"
@@ -370,6 +408,8 @@
                                      MouseLeave="Port_MouseLeave"
                                      Tag="RightPort"
                                      Visibility="Collapsed"/>
+
+
                         </Grid>
 
                         <Border.Style>

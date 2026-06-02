@@ -41,14 +41,13 @@ namespace SunEyeVision.Workflow
         /// <summary>
         /// 执行节点算法（带绑定解析）
         /// </summary>
-        /// <param name="defaultInputImage">引擎通过拓扑传递的默认输入图像（回退使用）</param>
         /// <param name="nodeResults">其他节点的执行结果缓存（用于动态绑定解析）</param>
-        public AlgorithmResult Execute(IVisionImage? defaultInputImage, IDictionary<string, ToolResults>? nodeResults)
+        public AlgorithmResult Execute(IDictionary<string, ToolResults>? nodeResults)
         {
             if (!IsEnabled)
             {
                 return AlgorithmResult.CreateSuccess(
-                    defaultInputImage,
+                    null,
                     0);
             }
 
@@ -60,8 +59,8 @@ namespace SunEyeVision.Workflow
                 {
                     var typedParams = GetTypedParameters();
 
-                    // 1. 解析输入图像：优先使用参数绑定中的 ImageSource，回退到拓扑传递的默认图像
-                    var inputImage = ResolveInputImage(typedParams, defaultInputImage, nodeResults);
+                    // 1. 解析输入图像：优先使用参数绑定中的 ImageSource
+                    var inputImage = ResolveInputImage(typedParams, nodeResults);
                     typedParams.ResolvedInputImage = inputImage;
 
                     // 2. 应用参数绑定（从参数内部 BindingConfig 读取并解析）
@@ -123,15 +122,15 @@ namespace SunEyeVision.Workflow
         }
 
         /// <summary>
-        /// 解析输入图像 — 优先使用参数绑定中的 ImageSource，否则返回 null
+        /// 解析输入图像 — 从参数中的 ImageSource 绑定获取
         /// </summary>
         /// <remarks>
         /// 返回 null 表示节点为图像源节点（如 ImageLoad），自行从文件加载图像。
         /// 下游工具如需要输入图像会自行检查 null 并报错。
         /// </remarks>
-        private IVisionImage? ResolveInputImage(ToolParameters parameters, IVisionImage? defaultInputImage, IDictionary<string, ToolResults>? nodeResults)
+        private IVisionImage? ResolveInputImage(ToolParameters parameters, IDictionary<string, ToolResults>? nodeResults)
         {
-            // 优先级1：参数中的 ImageSource 绑定（AvailableDataSource）
+            // 参数中的 ImageSource 绑定（AvailableDataSource）
             var imageSourceProp = parameters.GetType().GetProperty("ImageSource");
             if (imageSourceProp != null)
             {
@@ -146,10 +145,6 @@ namespace SunEyeVision.Workflow
                     }
                 }
             }
-
-            // 优先级2：引擎通过拓扑传递的默认图像
-            if (defaultInputImage != null && !defaultInputImage.IsEmpty)
-                return defaultInputImage;
 
             // 无有效输入图像源 → 返回 null（起始节点自行加载图像）
             return null;

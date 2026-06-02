@@ -34,7 +34,13 @@ namespace SunEyeVision.Workflow
     /// </remarks>
     public class WorkflowNodeBase : ObservableObject
     {
-        #region 核心字段（8个）
+        #region 核心字段（9个）
+
+        /// <summary>
+        /// 子程序关联ID（当 ToolType == "Subroutine" 时有效）
+        /// 指向 WorkflowEngine 中一个独立的 Workflow
+        /// </summary>
+        public string? SubroutineId { get; set; }
 
         /// <summary>
         /// 节点ID - 使用Guid确保全局唯一性和稳定性
@@ -403,30 +409,8 @@ namespace SunEyeVision.Workflow
                         _ => NodeType.Algorithm
                     };
                 }
-                return InferStartNodeType(ToolType);
-            }
-        }
-
-        /// <summary>
-        /// 从工具类型推断是否为起始节点
-        /// </summary>
-        private static NodeType InferStartNodeType(string toolType)
-        {
-            if (string.IsNullOrWhiteSpace(toolType))
                 return NodeType.Algorithm;
-
-            var lower = toolType.ToLowerInvariant();
-            if (lower.Contains("imagecapture") ||
-                lower.Contains("imageacquisition") ||
-                lower.Contains("camera") ||
-                lower.Contains("image_load") ||
-                lower.Contains("imageload") ||
-                lower.Contains("imagecapturetool") ||
-                lower.Contains("image_load_tool"))
-            {
-                return NodeType.Start;
             }
-            return NodeType.Algorithm;
         }
 
         /// <summary>

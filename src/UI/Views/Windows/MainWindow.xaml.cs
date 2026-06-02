@@ -25,7 +25,10 @@ using SunEyeVision.UI.Services.Canvas;
 using SunEyeVision.UI.Converters.Path;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.SDK.Logging;
-using SunEyeVision.UI.Views.Dialogs;
+using SunEyeVision.Tool.Subroutine;
+
+
+
 
 
 
@@ -1773,15 +1776,7 @@ namespace SunEyeVision.UI.Views.Windows
 
             {
 
-                var dialog = new SubroutineParameterDialog(tab.CurrentWorkflowId, tab.EffectiveDisplayName)
-
-                {
-
-                    Owner = this
-
-                };
-
-                dialog.ShowDialog();
+                SubroutinePlugin.ShowParameterDialog(this, tab.CurrentWorkflowId, tab.EffectiveDisplayName);
 
             }
 
@@ -1812,12 +1807,9 @@ namespace SunEyeVision.UI.Views.Windows
         {
             try
             {
-                // 使用节点 ID 作为子程序标识，节点名称作为显示名
-                var dialog = new SubroutineParameterDialog(node.Id, node.DispName)
-                {
-                    Owner = this
-                };
-                dialog.ShowDialog();
+                // ★ 使用 SubroutineId 属性（SSOT），而非 node.Id
+                var subroutineId = node.SubroutineId ?? node.Id;
+                SubroutinePlugin.ShowParameterDialog(this, subroutineId, node.DispName);
             }
             catch (Exception ex)
             {

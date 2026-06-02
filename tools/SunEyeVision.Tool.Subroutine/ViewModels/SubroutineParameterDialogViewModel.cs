@@ -1,51 +1,27 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using SunEyeVision.Plugin.SDK.Commands;
 using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Tool.Subroutine.Models;
 
-namespace SunEyeVision.UI.ViewModels
+namespace SunEyeVision.Tool.Subroutine.ViewModels
 {
-    /// <summary>
-    /// 参数映射项（用于对话框显示）
-    /// </summary>
-    public class ParameterMappingItem : ObservableObject
-    {
-        private string _parameterName = string.Empty;
-        private string _dataType = "object";
-        private string _sourceDisplay = "未设置";
-
-        /// <summary>参数名称</summary>
-        public string ParameterName
-        {
-            get => _parameterName;
-            set => SetProperty(ref _parameterName, value);
-        }
-
-        /// <summary>数据类型</summary>
-        public string DataType
-        {
-            get => _dataType;
-            set => SetProperty(ref _dataType, value);
-        }
-
-        /// <summary>订阅源显示文本</summary>
-        public string SourceDisplay
-        {
-            get => _sourceDisplay;
-            set => SetProperty(ref _sourceDisplay, value);
-        }
-    }
-
     /// <summary>
     /// 子程序参数映射对话框的 ViewModel
     /// </summary>
-    public class SubroutineParameterDialogViewModel : ViewModelBase
+    public class SubroutineParameterDialogViewModel : ObservableObject
     {
         private readonly string _subroutineId;
         private readonly string _subroutineName;
         private bool _enableLoop;
         private int _maxIterations = 10;
+
+        /// <summary>
+        /// 保存回调（由对话框宿主注册，用于将参数写回节点 ExtraData）
+        /// </summary>
+        public event Action<List<ParameterMappingItem>, List<ParameterMappingItem>, bool, int>? OnSave;
 
         /// <summary>
         /// 对话框标题
@@ -113,8 +89,8 @@ namespace SunEyeVision.UI.ViewModels
                 SourceDisplay = "子程序输出"
             });
 
-            AddInputMappingCommand = new RelayCommand(_ => AddInputMapping());
-            AddOutputMappingCommand = new RelayCommand(_ => AddOutputMapping());
+            AddInputMappingCommand = new RelayCommand(AddInputMapping);
+            AddOutputMappingCommand = new RelayCommand(AddOutputMapping);
         }
 
         /// <summary>
@@ -148,8 +124,8 @@ namespace SunEyeVision.UI.ViewModels
         /// </summary>
         public void Save()
         {
-            // TODO: 将参数映射写回 SubroutineNode 的数据
-            // 当前为占位实现
+            // 触发保存回调，将映射数据传回对话框宿主
+            OnSave?.Invoke(new List<ParameterMappingItem>(InputMappings), new List<ParameterMappingItem>(OutputMappings), EnableLoop, MaxIterations);
         }
     }
 }

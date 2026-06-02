@@ -61,9 +61,10 @@ namespace SunEyeVision.UI.Models
         }
 
         /// <summary>
-        /// 节点扩展数据（工具/插件自定义的附加数据，不序列化）
+        /// 节点扩展数据（工具/插件自定义的附加数据）
+        /// Phase 3: 移除 [JsonIgnore] 使其参与序列化，确保子程序关联保存/加载不丢失
         /// </summary>
-        [JsonIgnore]
+        [JsonInclude]
         public Dictionary<string, object>? ExtraData { get; set; }
 
         #region 端口位置计算属性
@@ -183,7 +184,8 @@ namespace SunEyeVision.UI.Models
                 Height = baseNode.Height,
                 IsEnabled = baseNode.IsEnabled,
                 Parameters = baseNode.Parameters,
-                SelectedDisplaySource = baseNode.SelectedDisplaySource
+                SelectedDisplaySource = baseNode.SelectedDisplaySource,
+                SubroutineId = baseNode.SubroutineId    // ★ SSOT
             };
 
             return node;

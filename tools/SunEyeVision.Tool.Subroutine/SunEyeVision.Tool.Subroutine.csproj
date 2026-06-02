@@ -11,11 +11,7 @@
     <IsToolPlugin>true</IsToolPlugin>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="OpenCvSharp4" Version="4.13.0.20260222" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\src\Plugin.SDK\SunEyeVision.Plugin.SDK.csproj" />
-    <ProjectReference Include="..\..\src\SunEyeVision.CvEngine\SunEyeVision.CvEngine.csproj" />
     <ProjectReference Include="..\..\src\Workflow\SunEyeVision.Workflow.csproj" />
   </ItemGroup>
 </Project>

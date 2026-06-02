@@ -1,9 +1,7 @@
-<!-- SubroutineParameterDialog.xaml -->
 <!-- 子程序参数映射对话框 -->
-<Window x:Class="SunEyeVision.UI.Views.Dialogs.SubroutineParameterDialog"
+<Window x:Class="SunEyeVision.Tool.Subroutine.Views.SubroutineParameterDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:converters="clr-namespace:SunEyeVision.UI.Converters.UI"
         Title="{Binding DialogTitle}"
         Width="800" Height="600"
         WindowStartupLocation="CenterOwner"
@@ -11,9 +9,9 @@
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/SunEyeVision.UI;component/Views/Resources/AppResources.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/SunEyeVision.UI;component/Views/Resources/AppResources.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+            <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         </ResourceDictionary>
     </Window.Resources>
 
@@ -176,4 +174,3 @@
         </StackPanel>
     </Grid>
 </Window>
-

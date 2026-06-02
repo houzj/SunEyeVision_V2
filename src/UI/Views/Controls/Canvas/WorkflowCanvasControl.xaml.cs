@@ -2652,9 +2652,8 @@ namespace SunEyeVision.UI.Views.Controls.Canvas
 
 
 
-            // 添加连接到集合
-
-            selectedTab.WorkflowConnections?.Add(newConnection);
+            // 添加连接到集合（通过 ViewModel 统一入口：日志 + 命令 + ImageSource绑定）
+            _viewModel?.AddConnectionToWorkflow(newConnection);
 
 
 

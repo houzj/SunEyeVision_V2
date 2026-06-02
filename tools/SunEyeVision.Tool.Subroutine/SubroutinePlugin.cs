@@ -4,10 +4,10 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using SunEyeVision.Plugin.SDK.Logging;
-using OpenCvSharp;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Metadata;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
+using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Workflow;
 using LogLevel = SunEyeVision.Plugin.SDK.Logging.LogLevel;
 using WorkflowModel = SunEyeVision.Workflow.Workflow;
@@ -18,9 +18,24 @@ namespace SunEyeVision.Tool.Subroutine
     {
         private readonly WorkflowEngine _workflowEngine;
 
+        // Phase 2: 最大嵌套深度
+        private const int MAX_NESTING_DEPTH = 10;
+
         public SubroutinePlugin(WorkflowEngine workflowEngine)
         {
             _workflowEngine = workflowEngine ?? throw new ArgumentNullException(nameof(workflowEngine));
+        }
+
+        /// <summary>
+        /// 显示子程序参数设置对话框
+        /// </summary>
+        public static bool ShowParameterDialog(System.Windows.Window owner, string id, string name)
+        {
+            var dialog = new Views.SubroutineParameterDialog(id, name)
+            {
+                Owner = owner
+            };
+            return dialog.ShowDialog() == true;
         }
 
         public ToolMetadata GetMetadata()
@@ -60,11 +75,44 @@ namespace SunEyeVision.Tool.Subroutine
 
         public async Task<ExecutionResult> ExecuteSubroutine(SubroutineNode node, WorkflowContext context)
         {
-            var result = new ExecutionResult();
+            var result = ExecutionResult.CreateSuccess();
             var stopwatch = Stopwatch.StartNew();
 
             try
             {
+                // ★ 前置验证：SubroutineId 空检查（必须在任何 Dictionary 操作之前）
+                if (string.IsNullOrEmpty(node.SubroutineId))
+                {
+                    result.AddError($"子程序节点 \"{node.Name}\" 未配置目标工作流，请在节点属性中设置", node.Id);
+                    return result;
+                }
+
+                var validationResult = node.Validate();
+                if (!validationResult.IsValid)
+                {
+                    foreach (var error in validationResult.Errors)
+                        result.AddError(error, node.Id);
+                    return result;
+                }
+
+                // ★ Phase 2: 跨工作流循环依赖检测
+                if (context.VisitedWorkflowIds.Contains(node.SubroutineId))
+                {
+                    var path = string.Join(" → ", context.VisitedWorkflowIds) + $" → {node.SubroutineId}";
+                    result.AddError($"检测到跨工作流循环依赖: {path}", node.Id);
+                    return result;
+                }
+
+                // ★ Phase 2: 嵌套深度限制
+                var currentDepth = context.VisitedWorkflowIds.Count;
+                if (currentDepth >= MAX_NESTING_DEPTH)
+                {
+                    result.AddError($"子程序嵌套超过最大深度限制 ({MAX_NESTING_DEPTH})", node.Id);
+                    return result;
+                }
+
+                context.VisitedWorkflowIds.Add(node.SubroutineId);
+
                 context.PushCallInfo(new SubroutineCallInfo
                 {
                     SubroutineId = node.SubroutineId,
@@ -79,14 +127,6 @@ namespace SunEyeVision.Tool.Subroutine
                 if (subroutineWorkflow == null)
                 {
                     result.AddError($"子程序 {node.SubroutineId} 不存在", node.Id);
-                    return result;
-                }
-
-                var validationResult = node.Validate();
-                if (!validationResult.IsValid)
-                {
-                    foreach (var error in validationResult.Errors)
-                        result.AddError(error, node.Id);
                     return result;
                 }
 
@@ -136,6 +176,7 @@ namespace SunEyeVision.Tool.Subroutine
                 stopwatch.Stop();
                 result.ExecutionTime = stopwatch.Elapsed;
                 context.PopCallInfo();
+                context.VisitedWorkflowIds.Remove(node.SubroutineId); // ★ Phase 2: 清理循环检测
             }
 
             return result;
@@ -162,10 +203,7 @@ namespace SunEyeVision.Tool.Subroutine
             var source = LogSource.Runtime(context.WorkflowName ?? "未知", node.SubroutineName);
             context.AddLog($"执行子程序: {node.SubroutineName}", LogLevel.Info, source);
 
-            var inputMat = GetInputImageFromContext(context);
-            var inputImage = inputMat != null && !inputMat.Empty()
-                ? new CvImage(inputMat, ownsImage: false)
-                : null;
+            var inputImage = context.GetVariable<IVisionImage>("InputImage");
 
             var subContext = context.CreateSubContext(node.SubroutineId);
 
@@ -185,7 +223,7 @@ namespace SunEyeVision.Tool.Subroutine
                 context.AddLog($"  输入映射: {mapping.MappingName} <- {mapping.ExternalPortId}", LogLevel.Debug, source);
             }
 
-            subContext.SetVariable("InputImage", inputMat);
+            subContext.SetVariable("InputImage", inputImage);
 
             ExecutionResult execResult;
             if (context.ExecutionEngine != null)
@@ -200,12 +238,26 @@ namespace SunEyeVision.Tool.Subroutine
 
             var result = new ExecutionResult { Success = execResult.Success };
 
+            // ★ Phase 2: 使用结果项键名作为输出 key，匹配 MapOutputParameters 的查找
             if (execResult.NodeResults != null)
             {
                 foreach (var kvp in execResult.NodeResults)
                 {
                     if (kvp.Value?.Result != null)
-                        result.Outputs[$"{kvp.Key}_{kvp.Value.Result.GetType().Name}"] = kvp.Value.Result;
+                    {
+                        // 从 GenericToolResults 提取实际结果项
+                        if (kvp.Value.Result is GenericToolResults genericResults)
+                        {
+                            var items = genericResults.GetResultItems();
+                            foreach (var item in items)
+                                result.Outputs[item.Name] = item.Value;
+                        }
+                        else
+                        {
+                            // 对于强类型结果，输出完整结果对象
+                            result.Outputs[kvp.Key] = kvp.Value.Result;
+                        }
+                    }
                 }
             }
             else if (execResult.Outputs != null)
@@ -268,7 +320,7 @@ namespace SunEyeVision.Tool.Subroutine
                 }
 
                 result.Merge(iterationResult);
-                context.ReportProgress(new ExecutionProgress
+                context.ReportProgress(new SunEyeVision.Workflow.ExecutionProgress
                 {
                     CurrentIteration = node.CurrentIteration + 1,
                     TotalIterations = node.MaxIterations,
@@ -414,11 +466,5 @@ namespace SunEyeVision.Tool.Subroutine
             return value.Trim('"', '\'');
         }
 
-        private Mat GetInputImageFromContext(WorkflowContext context)
-        {
-            if (context.HasVariable("InputImage"))
-                return context.GetVariable<Mat>("InputImage");
-            return new Mat(480, 640, MatType.CV_8UC3, new Scalar(0));
-        }
     }
 }

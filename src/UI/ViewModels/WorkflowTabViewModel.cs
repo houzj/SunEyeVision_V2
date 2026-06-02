@@ -36,45 +36,41 @@ namespace SunEyeVision.UI.ViewModels
         // ========== 子程序导航栈 ==========
 
         /// <summary>
-        /// 导航栈，保存各级子程序/主工作流的画布状态
+        /// 导航栈，仅保存 workflowId 字符串
+        /// SSOT 原则：引擎中的 Workflow 是唯一数据源
         /// </summary>
-        private readonly Stack<NavigationFrame> _navigationStack = new();
+        private readonly Stack<string> _navigationStack = new();
 
         /// <summary>
-        /// 当前帧（当前显示的层级）
+        /// 当前显示的工作流ID（下钻时指向子程序工作流，返回后指回主工作流）
         /// </summary>
-        private NavigationFrame? _currentFrame;
+        private string _currentWorkflowId;
 
         /// <summary>
-        /// 是否已初始化导航（第一次设置画布状态后为 true）
+        /// 当前显示的工作流名称（下钻时为子程序名，根层次为 Tab.Name）
         /// </summary>
-        private bool _isNavigationInitialized;
+        private string _currentWorkflowName;
 
         /// <summary>
         /// 是否处于子程序下钻模式
         /// </summary>
-        public bool IsInSubroutine => _currentFrame != null && _navigationStack.Count > 0;
+        public bool IsInSubroutine => _navigationStack.Count > 0;
 
         /// <summary>
         /// 当前有效显示名称（主工作流显示 Name，子程序显示子程序名）
         /// </summary>
-        public string EffectiveDisplayName => _currentFrame?.DisplayName ?? Name;
+        public string EffectiveDisplayName => _currentWorkflowName;
 
         /// <summary>
         /// 当前工作流ID（下钻时指向子程序工作流，返回后指回主工作流）
         /// </summary>
-        public string CurrentWorkflowId => _currentFrame?.WorkflowId ?? Id;
+        public string CurrentWorkflowId => _currentWorkflowId;
 
         /// <summary>
-        /// 外部节点集合引用（通常是 Solution.Workflow.Nodes），用于反向同步
-        /// Phase 3: UI 侧删除/添加节点时自动同步到数据层
+        /// Tab 根工作流ID（Tab 创建时确定，永不改变）
+        /// 执行引擎始终使用此 ID 定位根工作流
         /// </summary>
-        private ObservableCollection<WorkflowNodeBase>? _externalNodes;
-
-        /// <summary>
-        /// 反向同步重入锁，防止双向同步死循环
-        /// </summary>
-        private bool _isReverseSyncing;
+        public string RootWorkflowId => _id;
 
         /// <summary>
         /// 节点序号管理器
@@ -115,47 +111,69 @@ namespace SunEyeVision.UI.ViewModels
             // 初始化节点工厂
             _nodeFactory = new WorkflowNodeFactory(_sequenceManager);
 
-            Id = Guid.NewGuid().ToString();
-            Name = "工作流"; // 默认名称，可以被外部覆盖
+            _id = Guid.NewGuid().ToString();
+            _currentWorkflowId = _id;
+            _currentWorkflowName = "工作流"; // 默认名称，可以被外部覆盖
+            _name = "工作流"; // 默认名称，可以被外部覆盖
             State = WorkflowState.Stopped;
             RunMode = RunMode.Single;
-            WorkflowNodes = new ObservableCollection<Models.WorkflowNode>();
-            // ✅ 优化：创建临时的连接集合，稍后通过 SetConnections 方法绑定外部集合
+            _workflowNodes = new ObservableCollection<Models.WorkflowNode>();
             _workflowConnections = new ObservableCollection<WorkflowConnection>();
             CurrentScale = 1.0;
             ScaleTransform = new ScaleTransform(1.0, 1.0);
-            CanvasType = CanvasType.WorkflowCanvas; // 默认使用 WorkflowCanvas，每个工作流独立
+            CanvasType = CanvasType.WorkflowCanvas;
 
-            // 初始化命令管理器（使用临时连接集合）
-            CommandManager = new CommandManager(WorkflowNodes, _workflowConnections);
+            // 初始化命令管理器
+            CommandManager = new CommandManager(_workflowNodes, _workflowConnections);
 
-            // 订阅节点和连接集合变化事件
-            WorkflowNodes.CollectionChanged += (s, e) => OnWorkflowNodesChanged(s, e);
-            _workflowConnections.CollectionChanged += (s, e) => OnWorkflowConnectionsChanged(s, e);
+            // 订阅节点集合变化事件（仅用于索引释放）
+            _workflowNodes.CollectionChanged += OnWorkflowNodesChanged;
+            _workflowConnections.CollectionChanged += (s, e) => { };
         }
 
         /// <summary>
-        /// 唯一标识ID
+        /// 唯一标识ID（也是 RootWorkflowId）
         /// </summary>
         public string Id
         {
             get => _id;
-            set => SetProperty(ref _id, value);
+            set
+            {
+                if (SetProperty(ref _id, value))
+                {
+                    // RootWorkflowId 跟随 Id
+                    _currentWorkflowId = value;
+                    OnPropertyChanged(nameof(RootWorkflowId));
+                    OnPropertyChanged(nameof(CurrentWorkflowId));
+                }
+            }
         }
 
         /// <summary>
-        /// 标签页名称
+        /// 标签页名称（根工作流名称）
         /// </summary>
         public string Name
         {
             get => _name;
-            set => SetProperty(ref _name, value);
+            set
+            {
+                if (SetProperty(ref _name, value))
+                {
+                    _currentWorkflowName = value;
+                    OnPropertyChanged(nameof(EffectiveDisplayName));
+                }
+            }
         }
 
         #region 行内重命名
 
         private bool _isEditingName;
         private string _renameBuffer = string.Empty;
+
+        /// <summary>
+        /// 重命名完成事件 — 通知外部（如 MainWindowViewModel）更新引擎中的 Workflow.Name
+        /// </summary>
+        public event EventHandler<string>? NameCommitted;
 
         /// <summary>
         /// 是否正在编辑名称
@@ -176,16 +194,18 @@ namespace SunEyeVision.UI.ViewModels
         }
 
         /// <summary>
-        /// 开始重命名（将当前名称复制到缓冲）
+        /// 开始重命名（复制当前显示名称到缓冲）
+        /// 子程序下钻时显示子程序名，根层次显示 Tab.Name
         /// </summary>
         public void BeginRename()
         {
-            RenameBuffer = Name;
+            RenameBuffer = EffectiveDisplayName;
             IsEditingName = true;
         }
 
         /// <summary>
-        /// 确认重命名
+        /// 确认重命名 — 写入引擎中当前工作流的 Name
+        /// 触发 NameCommitted 事件通知外部更新引擎
         /// </summary>
         public bool ConfirmRename()
         {
@@ -196,11 +216,18 @@ namespace SunEyeVision.UI.ViewModels
                 return false;
             }
 
-            if (_name != trimmed)
+            // 更新当前显示名称
+            _currentWorkflowName = trimmed;
+            if (!IsInSubroutine)
             {
-                Name = trimmed;
+                _name = trimmed;
+                OnPropertyChanged(nameof(Name));
             }
+            OnPropertyChanged(nameof(EffectiveDisplayName));
             IsEditingName = false;
+
+            // 通知外部更新引擎中的 Workflow.Name
+            NameCommitted?.Invoke(this, trimmed);
             return true;
         }
 
@@ -213,6 +240,15 @@ namespace SunEyeVision.UI.ViewModels
         }
 
         #endregion
+
+        /// <summary>
+        /// 设置当前显示的工作流名称（由外部在导航后调用）
+        /// </summary>
+        public void SetCurrentWorkflowName(string name)
+        {
+            _currentWorkflowName = name;
+            OnPropertyChanged(nameof(EffectiveDisplayName));
+        }
 
         /// <summary>
         /// 是否正在运行
@@ -257,61 +293,18 @@ namespace SunEyeVision.UI.ViewModels
             {
                 if (_workflowNodes != null)
                 {
-                    _workflowNodes.CollectionChanged -= (s, e) => OnWorkflowNodesChanged(s, e);
+                    _workflowNodes.CollectionChanged -= OnWorkflowNodesChanged;
                 }
                 SetProperty(ref _workflowNodes, value);
                 if (_workflowNodes != null)
                 {
-                    _workflowNodes.CollectionChanged += (s, e) => OnWorkflowNodesChanged(s, e);
+                    _workflowNodes.CollectionChanged += OnWorkflowNodesChanged;
                 }
             }
         }
 
         private void OnWorkflowNodesChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            // Phase 3: 反向同步 - UI 集合变更时同步到外部集合（Solution.Workflow.Nodes）
-            if (!_isReverseSyncing && _externalNodes != null)
-            {
-                _isReverseSyncing = true;
-                try
-                {
-                    if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove && e.OldItems != null)
-                    {
-                        foreach (WorkflowNodeBase node in e.OldItems)
-                        {
-                            if (_externalNodes.Contains(node))
-                            {
-                                _externalNodes.Remove(node);
-                                VisionLogger.Instance.Log(
-                                    LogLevel.Info,
-                                    $"反向同步：从数据层删除节点: {node.Id}",
-                                    "WorkflowTabViewModel"
-                                );
-                            }
-                        }
-                    }
-                    else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add && e.NewItems != null)
-                    {
-                        foreach (WorkflowNodeBase node in e.NewItems)
-                        {
-                            if (!_externalNodes.Contains(node))
-                            {
-                                _externalNodes.Add(node);
-                                VisionLogger.Instance.Log(
-                                    LogLevel.Info,
-                                    $"反向同步：添加到数据层节点: {node.Id}",
-                                    "WorkflowTabViewModel"
-                                );
-                            }
-                        }
-                    }
-                }
-                finally
-                {
-                    _isReverseSyncing = false;
-                }
-            }
-
             // 处理删除节点，释放索引到空洞池
             if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove)
             {
@@ -321,11 +314,9 @@ namespace SunEyeVision.UI.ViewModels
                     {
                         try
                         {
-                            // 直接使用LocalIndex属性释放索引到空洞池
                             if (node.LocalIndex >= 0)
                             {
-                                _sequenceManager.ReleaseLocalIndex(Id, node.ToolType ?? string.Empty, node.LocalIndex);
-
+                                _sequenceManager.ReleaseLocalIndex(CurrentWorkflowId, node.ToolType ?? string.Empty, node.LocalIndex);
                                 VisionLogger.Instance.Log(
                                     LogLevel.Info,
                                     $"节点删除，释放索引: {node.LocalIndex}, 节点ID: {node.Id}",
@@ -333,11 +324,9 @@ namespace SunEyeVision.UI.ViewModels
                                 );
                             }
 
-                            // 释放全局索引到空洞池
                             if (node.GlobalIndex >= 0)
                             {
                                 _sequenceManager.ReleaseGlobalIndex(node.GlobalIndex);
-
                                 VisionLogger.Instance.Log(
                                     LogLevel.Info,
                                     $"节点删除，释放全局索引: {node.GlobalIndex}, 节点ID: {node.Id}",
@@ -362,10 +351,6 @@ namespace SunEyeVision.UI.ViewModels
         /// <summary>
         /// 设置连接集合（直接绑定外部集合，实现自动同步）
         /// </summary>
-        /// <param name="connections">外部连接集合（通常是 Solution.Workflow.Connections）</param>
-        /// <remarks>
-        /// 注意：此方法会替换内部的连接集合引用，所有对连接的操作都会直接影响外部集合
-        /// </remarks>
         public void SetConnections(ObservableCollection<WorkflowConnection> connections)
         {
             if (connections == null)
@@ -373,24 +358,12 @@ namespace SunEyeVision.UI.ViewModels
                 throw new ArgumentNullException(nameof(connections));
             }
 
-            // 备份当前集合中的连接（如果有）
-            var tempConnections = new List<WorkflowConnection>(_workflowConnections);
-
-            // 取消旧集合的事件订阅
-            _workflowConnections.CollectionChanged -= (s, e) => OnWorkflowConnectionsChanged(s, e);
-
-            // ✅ 优化：直接绑定外部集合，实现自动同步
+            _workflowConnections.CollectionChanged -= (s, e) => { };
             _workflowConnections = connections;
+            _workflowConnections.CollectionChanged += (s, e) => { };
 
-            // 订阅新集合的事件
-            _workflowConnections.CollectionChanged += (s, e) => OnWorkflowConnectionsChanged(s, e);
-
-            // 通知属性变化
             OnPropertyChanged(nameof(WorkflowConnections));
-
-            // ✅ 由于 CommandManager 持有的是旧集合的引用，我们需要重新创建 CommandManager
-            // TODO: 考虑优化 CommandManager 设计，支持动态更新集合引用
-            CommandManager = new CommandManager(WorkflowNodes, _workflowConnections);
+            CommandManager = new CommandManager(_workflowNodes, _workflowConnections);
         }
 
         /// <summary>
@@ -403,38 +376,24 @@ namespace SunEyeVision.UI.ViewModels
             {
                 if (_workflowConnections != null)
                 {
-                    _workflowConnections.CollectionChanged -= (s, e) => OnWorkflowConnectionsChanged(s, e);
+                    _workflowConnections.CollectionChanged -= (s, e) => { };
                 }
                 SetProperty(ref _workflowConnections, value);
                 if (_workflowConnections != null)
                 {
-                    _workflowConnections.CollectionChanged += (s, e) => OnWorkflowConnectionsChanged(s, e);
+                    _workflowConnections.CollectionChanged += (s, e) => { };
                 }
             }
         }
 
         /// <summary>
-        /// 设置节点集合（直接绑定外部集合中的相同实例，实现对象级共享）
+        /// 设置节点集合 — 直接绑定引擎中的同一对象实例
         /// </summary>
-        /// <param name="nodes">外部节点集合（通常是 Solution.Workflow.Nodes）</param>
-        /// <remarks>
-        /// Phase 2 优化：
-        /// - 将外部集合中的节点引用直接添加到内部集合（同一对象实例）
-        /// - 订阅外部集合的 CollectionChanged 事件，实现自动同步
-        /// - 外部集合中的节点必须已经是 WorkflowNode 实例
-        /// </remarks>
         public void SetNodes(ObservableCollection<WorkflowNodeBase> nodes)
         {
             if (nodes == null)
                 throw new ArgumentNullException(nameof(nodes));
 
-            // 保存外部集合引用，用于反向同步
-            _externalNodes = nodes;
-
-            // 取消外部集合的事件订阅
-            nodes.CollectionChanged -= OnExternalNodesCollectionChanged;
-
-            // 清空并填充（同一对象引用）
             _workflowNodes.Clear();
             foreach (var node in nodes)
             {
@@ -449,47 +408,8 @@ namespace SunEyeVision.UI.ViewModels
                 }
             }
 
-            // 订阅外部集合的变化事件
-            nodes.CollectionChanged += OnExternalNodesCollectionChanged;
-
-            // 通知属性变化
             OnPropertyChanged(nameof(WorkflowNodes));
-
-            // 重新创建 CommandManager（持有新的集合引用）
             CommandManager = new CommandManager(_workflowNodes, _workflowConnections);
-        }
-
-        private void OnExternalNodesCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-        {
-            // Phase 3: 反向同步重入锁 - 如果变更来自反向同步，跳过避免死循环
-            if (_isReverseSyncing)
-                return;
-
-            // 当外部集合（workflow.Nodes）变化时，同步到内部集合
-            if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add && e.NewItems != null)
-            {
-                foreach (WorkflowNodeBase node in e.NewItems)
-                {
-                    if (node is Models.WorkflowNode uiNode && !_workflowNodes.Contains(uiNode))
-                    {
-                        _workflowNodes.Add(uiNode);
-                    }
-                }
-            }
-            else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove && e.OldItems != null)
-            {
-                foreach (WorkflowNodeBase node in e.OldItems)
-                {
-                    if (node is Models.WorkflowNode uiNode)
-                    {
-                        _workflowNodes.Remove(uiNode);
-                    }
-                }
-            }
-        }
-
-        private void OnWorkflowConnectionsChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-        {
         }
 
         /// <summary>
@@ -638,57 +558,20 @@ namespace SunEyeVision.UI.ViewModels
         // ========== 子程序导航栈方法 ==========
 
         /// <summary>
-        /// 初始化导航（在 SetNodes 后由外部调用一次）
-        /// </summary>
-        public void InitializeNavigation()
-        {
-            if (_isNavigationInitialized) return;
-            _currentFrame = new NavigationFrame
-            {
-                DisplayName = Name,
-                WorkflowId = Id,
-                Nodes = WorkflowNodes,
-                Connections = WorkflowConnections,
-                CurrentScale = CurrentScale
-            };
-            _isNavigationInitialized = true;
-        }
-
-        /// <summary>
-        /// 是否已初始化导航栈
-        /// </summary>
-        public bool IsNavigationInitialized => _isNavigationInitialized;
-
-        /// <summary>
         /// 下钻到子程序
         /// </summary>
-        /// <param name="subroutineId">子程序工作流ID</param>
+        /// <param name="subroutineWorkflowId">子程序工作流ID</param>
         /// <param name="displayName">Tab显示名称</param>
-        /// <param name="callerNodeId">调用此子程序的节点ID</param>
-        public void NavigateToSubroutine(string subroutineId, string displayName, string callerNodeId)
+        public void NavigateToSubroutine(string subroutineWorkflowId, string displayName)
         {
-            if (!_isNavigationInitialized)
-                throw new InvalidOperationException("请先调用 InitializeNavigation()");
+            // 保存当前工作流ID到栈
+            _navigationStack.Push(_currentWorkflowId);
 
-            // 1. 更新当前帧的缩放状态
-            if (_currentFrame != null)
-            {
-                _currentFrame.CurrentScale = CurrentScale;
-            }
+            // 切换到子程序工作流
+            _currentWorkflowId = subroutineWorkflowId;
+            _currentWorkflowName = displayName;
 
-            // 2. 保存当前帧到栈
-            _navigationStack.Push(_currentFrame!);
-
-            // 3. 创建子程序帧（节点/连线稍后由外部填充）
-            _currentFrame = new NavigationFrame
-            {
-                DisplayName = displayName,
-                WorkflowId = subroutineId,
-                CallerNodeId = callerNodeId,
-                CurrentScale = 1.0
-            };
-
-            // 4. 通知UI更新
+            // 通知UI更新
             OnPropertyChanged(nameof(IsInSubroutine));
             OnPropertyChanged(nameof(EffectiveDisplayName));
             OnPropertyChanged(nameof(CurrentWorkflowId));
@@ -702,10 +585,10 @@ namespace SunEyeVision.UI.ViewModels
         {
             if (_navigationStack.Count == 0) return false;
 
-            // 1. 恢复上一帧
-            _currentFrame = _navigationStack.Pop();
+            // 弹出上一级工作流ID
+            _currentWorkflowId = _navigationStack.Pop();
 
-            // 2. 通知UI更新
+            // _currentWorkflowName 由外部在调用 SetCurrentWorkflowName 时设置
             OnPropertyChanged(nameof(IsInSubroutine));
             OnPropertyChanged(nameof(EffectiveDisplayName));
             OnPropertyChanged(nameof(CurrentWorkflowId));
@@ -719,17 +602,9 @@ namespace SunEyeVision.UI.ViewModels
         public void ResetNavigation()
         {
             _navigationStack.Clear();
-            if (_currentFrame != null)
-            {
-                _currentFrame = new NavigationFrame
-                {
-                    DisplayName = Name,
-                    WorkflowId = Id,
-                    Nodes = WorkflowNodes,
-                    Connections = WorkflowConnections,
-                    CurrentScale = CurrentScale
-                };
-            }
+            _currentWorkflowId = _id;
+            _currentWorkflowName = _name;
+
             OnPropertyChanged(nameof(IsInSubroutine));
             OnPropertyChanged(nameof(EffectiveDisplayName));
             OnPropertyChanged(nameof(CurrentWorkflowId));
@@ -744,12 +619,9 @@ namespace SunEyeVision.UI.ViewModels
             var frames = _navigationStack.ToArray();
             for (int i = frames.Length - 1; i >= 0; i--)
             {
-                path.Add(frames[i].DisplayName);
+                path.Add(frames[i]); // 现在只是 workflowId，暂时用 ID 代替，调用方可决定是否显示
             }
-            if (_currentFrame != null)
-            {
-                path.Add(_currentFrame.DisplayName);
-            }
+            path.Add(_currentWorkflowName);
             return path.ToArray();
         }
     }

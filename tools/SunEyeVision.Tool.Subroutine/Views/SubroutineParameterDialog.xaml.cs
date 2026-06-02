@@ -1,7 +1,7 @@
-﻿using System.Windows;
-using SunEyeVision.UI.ViewModels;
+using System.Windows;
+using SunEyeVision.Tool.Subroutine.ViewModels;
 
-namespace SunEyeVision.UI.Views.Dialogs
+namespace SunEyeVision.Tool.Subroutine.Views
 {
     /// <summary>
     /// 子程序参数映射对话框

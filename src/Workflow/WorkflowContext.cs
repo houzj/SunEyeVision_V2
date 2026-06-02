@@ -259,6 +259,11 @@ namespace SunEyeVision.Workflow
         public WorkflowExecutionEngine ExecutionEngine { get; set; }
 
         /// <summary>
+        /// 已访问的工作流 ID 集合（Phase 2：用于跨工作流循环依赖检测）
+        /// </summary>
+        public HashSet<string> VisitedWorkflowIds { get; set; } = new();
+
+        /// <summary>
         /// 取消令牌
         /// </summary>
         public System.Threading.CancellationToken CancellationToken { get; set; }
@@ -503,7 +508,8 @@ namespace SunEyeVision.Workflow
                 CancellationToken = CancellationToken,
                 ProgressReporter = ProgressReporter,
                 IsDebugMode = IsDebugMode,
-                EnableProfiling = EnableProfiling
+                EnableProfiling = EnableProfiling,
+                VisitedWorkflowIds = VisitedWorkflowIds  // ★ Phase 2: 复制循环检测集合
             };
 
             // 复制全局变量

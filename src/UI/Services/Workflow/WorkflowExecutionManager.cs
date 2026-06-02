@@ -13,6 +13,8 @@ using SunEyeVision.Tool.Subroutine;
 using SunEyeVision.Workflow;
 using SunEyeVision.UI.Infrastructure;
 using SunEyeVision.UI.Services.Workflow;
+using SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
+using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 
 namespace SunEyeVision.UI.Services.Workflow
 {
@@ -23,6 +25,7 @@ namespace SunEyeVision.UI.Services.Workflow
     public class WorkflowExecutionManager
     {
         private readonly IInputProvider _inputProvider;
+        private readonly WorkflowEngine _workflowEngine;
         private readonly Dictionary<string, CancellationTokenSource> _cancellationTokens;
         private readonly Dictionary<string, Task> _runningTasks;
         private readonly object _lock = new object();
@@ -49,9 +52,10 @@ namespace SunEyeVision.UI.Services.Workflow
         /// </summary>
         public event EventHandler<NodeExecutionResultEventArgs>? NodeExecutionCompleted;
 
-        public WorkflowExecutionManager(IInputProvider inputProvider)
+        public WorkflowExecutionManager(IInputProvider inputProvider, WorkflowEngine workflowEngine)
         {
             _inputProvider = inputProvider ?? throw new ArgumentNullException(nameof(inputProvider));
+            _workflowEngine = workflowEngine ?? throw new ArgumentNullException(nameof(workflowEngine));
             _cancellationTokens = new Dictionary<string, CancellationTokenSource>();
             _runningTasks = new Dictionary<string, Task>();
             _synchronizationContext = SynchronizationContext.Current;
@@ -91,7 +95,7 @@ namespace SunEyeVision.UI.Services.Workflow
             if (workflow == null)
                 throw new ArgumentNullException(nameof(workflow));
 
-            var workflowId = workflow.Name;
+            var workflowId = workflow.RootWorkflowId;
             OnWorkflowExecutionStarted(workflowId);
 
             try
@@ -117,7 +121,7 @@ namespace SunEyeVision.UI.Services.Workflow
             if (workflow == null)
                 throw new ArgumentNullException(nameof(workflow));
 
-            var workflowId = workflow.Name;
+            var workflowId = workflow.RootWorkflowId;
 
             lock (_lock)
             {
@@ -175,7 +179,7 @@ namespace SunEyeVision.UI.Services.Workflow
             if (workflow == null)
                 throw new ArgumentNullException(nameof(workflow));
 
-            var workflowId = workflow.Name;
+            var workflowId = workflow.RootWorkflowId;
 
             lock (_lock)
             {
@@ -254,12 +258,12 @@ namespace SunEyeVision.UI.Services.Workflow
         }
 
         /// <summary>
-        /// 执行工作流内部逻辑
+        /// 执行工作流内部逻辑 — 始终从根工作流（RootWorkflowId）读取节点
         /// </summary>
         private async Task ExecuteWorkflowInternal(WorkflowTabViewModel workflow, CancellationToken cancellationToken)
         {
             // 在开始时先发送一条开始日志
-            InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.Name, "[EXEC] ====== 开始执行工作流 ======")));
+            InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.RootWorkflowId, "[EXEC] ====== 开始执行工作流 ======")));
 
             try
             {
@@ -267,20 +271,26 @@ namespace SunEyeVision.UI.Services.Workflow
                 var inputImage = await _inputProvider.GetInputImageAsync();
                 cancellationToken.ThrowIfCancellationRequested();
 
-                InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.Name, "[EXEC] 正在创建日志器...")));
+                InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.RootWorkflowId, "[EXEC] 正在创建日志器...")));
                 // 使用全局日志器（自动转发到UILogWriter）
                 var logger = VisionLogger.Instance.ForSource(workflow.Name);
 
-                InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.Name, "[EXEC] 正在创建工作流引擎...")));
-                var (workflowEngine, executionEngine, pluginManager) = WorkflowEngineFactory.CreateEngineSuite(logger);
+                InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.RootWorkflowId, "[EXEC] 正在创建执行引擎...")));
+                // ★ Phase 1: 使用共享的 _workflowEngine（子程序工作流已注册在其中），不再创建新引擎
+                var pluginManager = new PluginManager(logger);
+                var executionEngine = new WorkflowExecutionEngine(_workflowEngine, pluginManager, logger);
 
-                // 注册子程序插件
-                var subroutinePlugin = new SubroutinePlugin(workflowEngine);
+                // 注册子程序插件（持有共享的 _workflowEngine）
+                var subroutinePlugin = new SubroutinePlugin(_workflowEngine);
                 pluginManager.RegisterPlugin(subroutinePlugin);
 
-                // 创建工作流
-                var suneyeWorkflow = workflowEngine.CreateWorkflow(workflow.Name, workflow.Name);
-                InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.Name, $"[EXEC] 工作流已创建, ID: {suneyeWorkflow.Id}")));
+                // ★ 从引擎获取根工作流（始终读取 RootWorkflowId 对应的节点）
+                var rootEngineWorkflow = _workflowEngine.GetWorkflow(workflow.RootWorkflowId);
+                if (rootEngineWorkflow == null)
+                {
+                    logger.LogError($"根工作流未找到: {workflow.RootWorkflowId}");
+                    return;
+                }
 
                 // 记录运行时参数
                 foreach (var param in _runtimeParameters)
@@ -288,41 +298,33 @@ namespace SunEyeVision.UI.Services.Workflow
                     logger.LogInfo($"运行时参数: {param.Key} = {param.Value}");
                 }
 
-                // 从UI节点创建AlgorithmNode
-                InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.Name, $"[EXEC] 正在添加节点 (总数: {workflow.WorkflowNodes.Count})...")));
-                foreach (var uiNode in workflow.WorkflowNodes)
+                // ★ 运行时参数注入到 UI 节点 Parameters（引擎 ConvertNodesForExecution 自动携带）
+                //   UI 层专属逻辑：为图像源节点注入当前图像路径
+                foreach (var workflowNode in rootEngineWorkflow.Nodes)
                 {
-                    var algorithmNode = CreateAlgorithmNodeFromUiNode(uiNode, logger);
-                    if (algorithmNode != null)
+                    if (workflowNode is not Models.WorkflowNode uiNode) continue;
+                    var toolId = uiNode.ToolType ?? uiNode.Name;
+                    if (IsImageSourceNode(toolId) &&
+                        _runtimeParameters.TryGetValue("CurrentImagePath", out var imagePath) &&
+                        imagePath is string path && !string.IsNullOrEmpty(path))
                     {
-                        suneyeWorkflow.AddNode(algorithmNode);
-                        logger.LogInfo($"添加节点: {uiNode.Name} (ID: {uiNode.Id})");
+                        var prop = uiNode.Parameters.GetType().GetProperty("FilePath");
+                        if (prop != null && prop.CanWrite)
+                        {
+                            prop.SetValue(uiNode.Parameters, path);
+                            logger.LogInfo($"★ 注入图像路径到节点 {uiNode.Name}: {path}");
+                        }
                     }
                 }
 
-                // 添加UI连接
-                InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.Name, $"[EXEC] 正在添加连接 (总数: {workflow.WorkflowConnections.Count})...")));
-                foreach (var uiConnection in workflow.WorkflowConnections)
-                {
-                    try
-                    {
-                        suneyeWorkflow.ConnectNodes(uiConnection.SourceNodeId, uiConnection.TargetNodeId);
-                        logger.LogInfo($"添加连接: {uiConnection.SourceNodeId} -> {uiConnection.TargetNodeId}");
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.LogWarning($"添加连接失败: {ex.Message}");
-                    }
-                }
+                // ★ 引擎内部统一完成节点类型转换，主/子工作流共享同一逻辑
+                logger.LogInfo($"开始执行工作流: {rootEngineWorkflow.Name}");
+                InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.RootWorkflowId, "[EXEC] 开始执行工作流...")));
 
-                // 执行
-                logger.LogInfo($"开始执行工作流: {workflow.Name}");
-                InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.Name, "[EXEC] 开始执行工作流...")));
-
-                var result = await executionEngine.ExecuteWorkflowAsync(suneyeWorkflow.Id, inputImage as IVisionImage, _globalVariables);
+                var result = await executionEngine.ExecuteWorkflowAsync(workflow.RootWorkflowId, null, _globalVariables);
 
                 // 输出结果
-                logger.LogInfo($"工作流执行完成: {workflow.Name}");
+                logger.LogInfo($"工作流执行完成: {rootEngineWorkflow.Name}");
                 logger.LogInfo($"执行结果: {(result.Success ? "成功" : "失败")}");
                 logger.LogInfo($"执行时间: {result.ExecutionTime.TotalMilliseconds:F2} ms");
 
@@ -331,19 +333,19 @@ namespace SunEyeVision.UI.Services.Workflow
                 {
                     foreach (var nodeResult in result.NodeResults)
                     {
-                        var node = workflow.WorkflowNodes.FirstOrDefault(n => n.Id == nodeResult.Key);
-                        if (node != null)
+                        var node = rootEngineWorkflow.Nodes.FirstOrDefault(n => n.Id == nodeResult.Key);
+                        if (node is Models.WorkflowNode uiNode)
                         {
                             // 创建一个包含结果的 ToolResults
                             var toolResults = CreateToolResultsFromNodeResult(nodeResult.Value);
-                            OnNodeExecutionCompleted(node, toolResults);
+                            OnNodeExecutionCompleted(uiNode, toolResults);
                         }
                     }
                 }
 
                 if (!result.Success && result.Errors.Any())
                 {
-                    InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.Name, $"[ERROR] 工作流执行失败，错误数量: {result.Errors.Count}")));
+                    InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.RootWorkflowId, $"[ERROR] 工作流执行失败，错误数量: {result.Errors.Count}")));
                     foreach (var error in result.Errors)
                     {
                         logger.LogError($"错误: {error}");
@@ -351,12 +353,12 @@ namespace SunEyeVision.UI.Services.Workflow
                 }
                 else
                 {
-                    InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.Name, "[EXEC] ====== 工作流执行结束 ======")));
+                    InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.RootWorkflowId, "[EXEC] ====== 工作流执行结束 ======")));
                 }
             }
             catch (Exception ex)
             {
-                InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.Name, $"[ERROR] ExecuteWorkflowInternal异常: {ex.Message}")));
+                InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.RootWorkflowId, $"[ERROR] ExecuteWorkflowInternal异常: {ex.Message}")));
                 throw;
             }
         }
@@ -365,63 +367,6 @@ namespace SunEyeVision.UI.Services.Workflow
         /// 创建测试用的Mat — 已废弃，工作流不再提供默认输入图像
         /// </summary>
         // 已删除：工作流不再提供默认输入图像，缺少输入图像的节点将直接报错
-
-        /// <summary>
-        /// 从UI节点创建AlgorithmNode
-        /// </summary>
-        private SunEyeVision.Workflow.AlgorithmNode? CreateAlgorithmNodeFromUiNode(
-            Models.WorkflowNode uiNode,
-            SunEyeVision.Plugin.SDK.Logging.ILogger logger)
-        {
-            try
-            {
-                // 使用WorkflowNodeFactory创建节点(使用真实插件)
-                var toolId = uiNode.ToolType ?? uiNode.Name;
-                var node = SunEyeVision.Workflow.WorkflowNodeFactory.CreateAlgorithmNode(
-                    toolId,
-                    uiNode.Id,
-                    uiNode.Name,
-                    uiNode.DispName,
-                    uiNode.Parameters,  // ✅ 修复：传递UI节点的参数
-                    enableCaching: true,
-                    enableRetry: false
-                );
-
-                if (node != null)
-                {
-                    logger.LogInfo($"通过WorkflowNodeFactory创建节点: {uiNode.Name} (ToolId: {toolId})");
-
-                    // ★ 为图像源节点注入运行时参数
-                    if (IsImageSourceNode(toolId))
-                    {
-                        // 获取运行时图像路径
-                        if (_runtimeParameters.TryGetValue("CurrentImagePath", out var imagePath) && imagePath is string path && !string.IsNullOrEmpty(path))
-                        {
-                            // 使用反射设置属性值
-                            var prop = node.Parameters.GetType().GetProperty("FilePath");
-                            if (prop != null && prop.CanWrite)
-                            {
-                                prop.SetValue(node.Parameters, path);
-                                logger.LogInfo($"★ 注入图像路径到节点 {uiNode.Name}: {path}");
-                            }
-                        }
-                    }
-
-                    return node;
-                }
-                else
-                {
-                    // 工具不存在
-                    logger.LogError($"工具不存在: {toolId}");
-                    return null;
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.LogError($"创建AlgorithmNode失败: {ex.Message}");
-                return null;
-            }
-        }
 
         /// <summary>
         /// 判断是否为图像源节点

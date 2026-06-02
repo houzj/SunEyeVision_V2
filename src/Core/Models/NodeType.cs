@@ -5,13 +5,6 @@ namespace SunEyeVision.Core.Models
     /// </summary>
     public enum NodeType
     {
-        // ==================== 流程控制类型 ====================
-
-        /// <summary>
-        /// 开始节点 - 执行链起点（如图像采集）。
-        /// </summary>
-        Start,
-
         // ==================== 数据处理类型 ====================
 
         /// <summary>

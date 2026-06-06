@@ -1,5 +1,4 @@
 ﻿using System;
-using SunEyeVision.Core.Models;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
@@ -11,8 +10,7 @@ namespace SunEyeVision.Workflow.Nodes
     /// </summary>
     /// <remarks>
     /// 决策链步骤：
-    /// 1. 判断是否为控制流节点（子程序/条件等）
-    ///    - 控制流节点：通过 ControlFlowRegistry 分发，由 MainWindowViewModel 处理导航
+    /// 1. 判断是否为控制流节点（Subroutine 仍然通过 SubroutineId 区分，由 MainWindowViewModel 处理导航）
     /// 2. 算法节点流程：获取元数据 → 决定窗口类型 → 创建调试控件 → 创建窗口
     /// </remarks>
     public class NodeOpenDecisionChain
@@ -25,9 +23,6 @@ namespace SunEyeVision.Workflow.Nodes
         /// <summary>
         /// 执行决策链
         /// </summary>
-        /// <param name="node">要打开的节点</param>
-        /// <param name="context">节点打开上下文</param>
-        /// <returns>true 表示成功处理，false 表示处理失败或无窗口</returns>
         public bool Execute(WorkflowNodeBase node, NodeOpenContext context)
         {
             try
@@ -35,8 +30,8 @@ namespace SunEyeVision.Workflow.Nodes
                 // Step 1: 设置上下文
                 context.Node = node;
 
-                // Step 2: 判断是否为控制流节点（子程序/条件等）
-                if (ControlFlowRegistry.IsControlFlow(node.ToolType))
+                // Step 2: 判断是否为子程序节点（通过 SubroutineId 区分）
+                if (!string.IsNullOrEmpty(node.SubroutineId))
                 {
                     OnControlFlowNodeOpen?.Invoke(node);
                     return true;
@@ -51,7 +46,7 @@ namespace SunEyeVision.Workflow.Nodes
 
                 CreateDebugControl(context);
 
-                // Step 4: 创建并显示调试窗口（默认策略逻辑内联）
+                // Step 4: 创建并显示调试窗口
                 DefaultOpenWindow(context);
                 return true;
             }

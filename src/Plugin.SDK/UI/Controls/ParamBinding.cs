@@ -343,6 +343,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 }
             }
 
+            // 最前面插入"无"选项（用于解绑）
+            nodes.Insert(0, new TreeNodeData
+            {
+                Text = "无",
+                IsSelectable = true,
+                DataSource = null,
+            });
+
             // 始终在末尾追加"全局变量"动作节点（即使无可绑定数据源也能显示）
             nodes.Add(new TreeNodeData
             {
@@ -426,6 +434,24 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     return;
                 }
 
+                // "无"节点：解绑
+                if (selectedNode.IsSelectable && selectedNode.DataSource == null)
+                {
+                    e.Handled = true;
+                    BindingSource = string.Empty;
+                    BindingDisplayText = string.Empty;
+                    IsBound = false;
+
+                    if (_bindingPopup != null)
+                    {
+                        _bindingPopup.IsOpen = false;
+                    }
+
+                    RaiseEvent(new RoutedEventArgs(BindingSourceSelectedEvent));
+                    RaiseEvent(new RoutedEventArgs(BindingStateChangedEvent));
+                    return;
+                }
+
                 if (selectedNode.IsSelectable && selectedNode.DataSource != null)
                 {
                     // 设置绑定源路径（格式：节点ID.属性名）
@@ -484,6 +510,24 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 {
                     e.Handled = true;
                     RaiseEvent(new RoutedEventArgs(GlobalVariableSelectionRequestedEvent));
+                    return;
+                }
+
+                // "无"节点：解绑
+                if (selectedNode.IsSelectable && selectedNode.DataSource == null)
+                {
+                    e.Handled = true;
+                    BindingSource = string.Empty;
+                    BindingDisplayText = string.Empty;
+                    IsBound = false;
+
+                    if (_bindingPopup != null)
+                    {
+                        _bindingPopup.IsOpen = false;
+                    }
+
+                    RaiseEvent(new RoutedEventArgs(BindingSourceSelectedEvent));
+                    RaiseEvent(new RoutedEventArgs(BindingStateChangedEvent));
                     return;
                 }
 

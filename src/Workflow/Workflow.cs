@@ -43,6 +43,12 @@ public class Workflow : ObservableObject
     }
 
     /// <summary>
+    /// 是否为子程序工作流（不显示独立 Tab，由子程序节点双击进入）
+    /// </summary>
+    [JsonInclude]
+    public bool IsSubroutine { get; set; }
+
+    /// <summary>
     /// 节点列表（ObservableCollection 支持UI直接绑定）
     /// </summary>
     public ObservableCollection<WorkflowNodeBase> Nodes { get; set; } = new();

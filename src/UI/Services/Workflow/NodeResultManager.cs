@@ -95,6 +95,12 @@ namespace SunEyeVision.UI.Services.Workflow
         /// </summary>
         public void RefreshResultDisplay(WorkflowNodeBase node, ToolResults result)
         {
+            // ★ 诊断：记录入参
+            Plugin.SDK.Logging.VisionLogger.Instance?.Log(
+                Plugin.SDK.Logging.LogLevel.Info,
+                $"[诊断:RefreshResultDisplay] node.Name='{node.Name}' | node.ToolType='{node.ToolType}' | node.Id='{node.Id}' | result.Type={result?.GetType().Name ?? "null"} | result.IsSelected={node.IsSelected}",
+                "NodeResultManager");
+
             if (result == null)
             {
                 ClearResultDisplay();

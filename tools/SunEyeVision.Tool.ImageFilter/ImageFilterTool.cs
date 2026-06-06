@@ -24,7 +24,7 @@ namespace SunEyeVision.Tool.ImageFilter
     ///   4. 结果判断       → OK/NG判定
     /// </summary>
     [Tool(
-        id: "image-filter",
+        id: "ImageFilter",
         displayName: "图像滤波",
         Description = "对图像进行滤波处理，支持均值/高斯/中值/双边/自定义卷积",
         Icon = "🖼️",
@@ -50,7 +50,7 @@ namespace SunEyeVision.Tool.ImageFilter
             var result = new ImageFilterResults
             {
                 ToolName = _attribute?.DisplayName ?? "ImageFilter",
-                ToolId = _attribute?.Id ?? "image-filter",
+                ToolId = _attribute?.Id ?? "ImageFilter",
                 Timestamp = DateTime.Now
             };
 

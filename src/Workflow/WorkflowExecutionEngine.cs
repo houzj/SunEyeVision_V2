@@ -10,7 +10,6 @@ using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.Infrastructure.Infrastructure;
-using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 
 namespace SunEyeVision.Workflow
 {
@@ -124,9 +123,31 @@ namespace SunEyeVision.Workflow
             _logger.LogInfo($"=====================================================");
 
             // 按组顺序执行
+            string? forcedNextNodeId = null; // ★ 条件分支控制信号
+
             for (int groupIndex = 0; groupIndex < parallelGroups.Count; groupIndex++)
             {
                 var group = parallelGroups[groupIndex];
+
+                // ★ 如果上一轮产生了 NextNodeId，过滤本组只保留目标节点
+                if (forcedNextNodeId != null)
+                {
+                    var filtered = group.Where(id => id == forcedNextNodeId).ToList();
+                    if (filtered.Count == 0)
+                    {
+                        _logger.LogInfo($"条件分支目标节点 {forcedNextNodeId} 不在当前组中，跳过本组执行");
+                        forcedNextNodeId = null;
+                        continue;
+                    }
+                    // 将非选中分支节点标记为 Skipped
+                    foreach (var skippedId in group.Where(id => id != forcedNextNodeId))
+                    {
+                        context.UpdateNodeStatus(skippedId, NodeStatus.Skipped);
+                    }
+                    group = filtered;
+                    forcedNextNodeId = null;
+                }
+
                 _logger.LogInfo($"");
                 _logger.LogInfo($"========== 执行组 {groupIndex + 1}/{parallelGroups.Count} ({group.Count}个节点) ==========");
 
@@ -142,7 +163,7 @@ namespace SunEyeVision.Workflow
                     group,
                     context);
 
-                totalExecutedNodes += group.Count;
+                totalExecutedNodes += groupResult.Success ? group.Count : 0;
 
                 var groupDuration = (DateTime.Now - groupStartTime).TotalMilliseconds;
                 _logger.LogInfo($"组 {groupIndex + 1} 执行完成, 耗时: {groupDuration:F2}ms, 成功节点: {groupResult.Success}");
@@ -151,6 +172,13 @@ namespace SunEyeVision.Workflow
                 {
                     _currentState = WorkflowExecutionState.Error;
                     return groupResult;
+                }
+
+                // ★ 检查本轮是否有节点输出了 NextNodeId（控制信号）
+                forcedNextNodeId = TryExtractNextNodeId(workflow, group, context);
+                if (forcedNextNodeId != null)
+                {
+                    _logger.LogInfo($"条件分支控制: NextNodeId = {forcedNextNodeId}");
                 }
             }
 
@@ -376,7 +404,8 @@ namespace SunEyeVision.Workflow
         /// 主工作流和子程序递归共享同一节点类型转换逻辑
         /// </summary>
         public async Task<ExecutionResult> ExecuteWorkflow(string workflowId, IVisionImage? inputImage,
-            IDictionary<string, object?>? globalVariables = null)
+            IDictionary<string, object?>? globalVariables = null,
+            Dictionary<string, object>? contextVariables = null)
         {
             var sourceWorkflow = _workflowEngine.GetWorkflow(workflowId);
             if (sourceWorkflow == null)
@@ -409,6 +438,24 @@ namespace SunEyeVision.Workflow
                 var subContext = new WorkflowContext();
                 subContext.SetVariable("InputImage", inputImage);
                 subContext.GlobalVariables = globalVariables;
+
+                // 合并子程序输入端口值到子上下文（同时注入为合成节点结果供绑定解析）
+                if (contextVariables != null && contextVariables.Count > 0)
+                {
+                    var syntheticResults = new GenericToolResults { Status = ExecutionStatus.Success };
+                    foreach (var kvp in contextVariables)
+                    {
+                        subContext.SetVariable(kvp.Key, kvp.Value);
+                        syntheticResults.AddResultItem(kvp.Key, kvp.Value);
+                    }
+                    subContext.SetNodeResult("__SubroutineInputs__", new NodeExecutionResult
+                    {
+                        NodeId = "__SubroutineInputs__",
+                        Success = true,
+                        Result = syntheticResults
+                    });
+                }
+
                 _logger.LogInfo($"递归执行子程序工作流: {sourceWorkflow.Name}");
                 return await ExecuteWorkflowWithParallelGroups(execWorkflow, subContext);
             }
@@ -458,12 +505,9 @@ namespace SunEyeVision.Workflow
         /// 供 ExecuteWorkflow 内部统一调用，主工作流和子程序递归共享同一转换逻辑
         /// </summary>
         /// <remarks>
-        /// - Subroutine 节点 → SubroutineNode（复制 SubroutineId、SubroutineName）
-        /// - Condition 节点 → ConditionNode
-        /// - 普通算法节点 → AlgorithmNode（通过 WorkflowNodeFactory）
+        /// - 所有节点（含 Condition、Subroutine）统一转为 AlgorithmNode，通过 ToolRegistry + IToolPlugin 执行
         /// - 参数绑定配置 ParamSettings 一并复制
         /// - 节点 ID 保持不变，连接关系直接复制
-        /// - Start 节点跳过（UI 层面板节点，无执行逻辑）
         /// - 转换失败的节点直接报错（遵循 fail-fast 原则）
         /// </remarks>
         private void ConvertNodesForExecution(Workflow source, Workflow target)
@@ -480,34 +524,17 @@ namespace SunEyeVision.Workflow
 
             foreach (var node in source.Nodes)
             {
-                WorkflowNodeBase executionNode;
-
-                if (ControlFlowRegistry.IsControlFlow(node.ToolType))
-                {
-                    executionNode = node.ToolType.ToLowerInvariant() switch
-                    {
-                        "subroutine" => ConvertSubroutineNode(node),
-                        "condition" => new ConditionNode(node.Id, node.Name, node.DispName ?? node.Name)
-                        {
-                            Parameters = node.Parameters
-                        },
-                        _ => throw new NotSupportedException(
-                            $"不支持的控制流节点类型: {node.ToolType} (节点: {node.Name})")
-                    };
-                }
-                else
-                {
-                    executionNode = WorkflowNodeFactory.CreateAlgorithmNode(
-                        node.ToolType,
-                        node.Id,
-                        node.Name,
-                        node.DispName ?? node.Name,
-                        node.Parameters,
-                        enableCaching: true,
-                        enableRetry: false)
-                        ?? throw new InvalidOperationException(
-                            $"无法创建算法节点: ToolType={node.ToolType}, Name={node.Name}");
-                }
+                // 所有节点（含 Condition、Subroutine）统一作为 AlgorithmNode + IToolPlugin 执行
+                var executionNode = WorkflowNodeFactory.CreateAlgorithmNode(
+                    node.ToolType,
+                    node.Id,
+                    node.Name,
+                    node.DispName ?? node.Name,
+                    node.Parameters,
+                    enableCaching: true,
+                    enableRetry: false)
+                    ?? throw new InvalidOperationException(
+                        $"无法创建算法节点: ToolType={node.ToolType}, Name={node.Name}");
 
                 // 复制参数绑定配置
                 executionNode.ParamSettings = node.ParamSettings;
@@ -529,28 +556,34 @@ namespace SunEyeVision.Workflow
         }
 
         /// <summary>
-        /// 将 UI 节点转换为 SubroutineNode
+        /// 检查刚执行的节点组中是否有节点输出了 NextNodeId 控制信号。
+        /// 用于条件分支工具：Run() 返回 ConditionResults，引擎读取 NextNodeId 决定下一个执行分支。
         /// </summary>
-        private SubroutineNode ConvertSubroutineNode(WorkflowNodeBase node)
+        private string? TryExtractNextNodeId(Workflow workflow, List<string> executedGroupNodeIds, WorkflowContext context)
         {
-            var subNode = new SubroutineNode(node.Id, node.Name, node.DispName ?? node.Name)
+            foreach (var nodeId in executedGroupNodeIds)
             {
-                Parameters = node.Parameters,
-                SubroutineId = node.SubroutineId
-            };
+                var nodeResult = context.GetNodeResult(nodeId);
+                if (nodeResult?.Result == null) continue;
 
-            if (!string.IsNullOrEmpty(subNode.SubroutineId))
-            {
-                var targetWorkflow = _workflowEngine.GetWorkflow(subNode.SubroutineId);
-                if (targetWorkflow != null)
-                    subNode.SubroutineName = targetWorkflow.Name;
+                // 通过反射检查结果类型是否包含 NextNodeId 属性
+                var resultType = nodeResult.Result.GetType();
+                var nextNodeIdProp = resultType.GetProperty("NextNodeId");
+                if (nextNodeIdProp != null)
+                {
+                    var nextNodeId = nextNodeIdProp.GetValue(nodeResult.Result) as string;
+                    if (!string.IsNullOrEmpty(nextNodeId))
+                    {
+                        _logger.LogInfo($"节点 {nodeId} 输出控制信号 NextNodeId = {nextNodeId}", nodeId);
+                        return nextNodeId;
+                    }
+                }
             }
-
-            return subNode;
+            return null;
         }
 
         /// <summary>
-        /// 执行单个节点（支持多种节点类型）
+        /// 执行单个节点（统一为 AlgorithmNode 执行）
         /// </summary>
         /// <param name="node">工作流节点</param>
         /// <param name="context">工作流上下文</param>
@@ -568,27 +601,11 @@ namespace SunEyeVision.Workflow
 
             try
             {
-                // 根据节点类型执行
-                switch (node)
-                {
-                    case AlgorithmNode algorithmNode:
-                        nodeResult = ExecuteAlgorithmNode(algorithmNode, context);
-                        break;
+                // 所有节点统一为 AlgorithmNode 执行
+                var algorithmNode = node as AlgorithmNode
+                    ?? throw new InvalidOperationException($"节点 {node.Name} 不是 AlgorithmNode 类型，实际类型: {node.GetType().Name}");
 
-                    case SubroutineNode subroutineNode:
-                        var savedStartTime = nodeResult.StartTime;
-                        nodeResult = await ExecuteSubroutineNode(subroutineNode, context, workflow);
-                        nodeResult.StartTime = savedStartTime;
-                        break;
-
-                    case ConditionNode conditionNode:
-                        nodeResult = ExecuteConditionNode(conditionNode, context);
-                        break;
-
-                    default:
-                        throw new NotSupportedException($"不支持的节点类型: {node.GetType().Name}");
-                }
-
+                nodeResult = ExecuteAlgorithmNode(algorithmNode, context);
                 nodeResult.EndTime = DateTime.Now;
                 return nodeResult;
             }
@@ -649,131 +666,8 @@ namespace SunEyeVision.Workflow
             return result;
         }
 
-        /// <summary>
-        /// 执行子程序节点
-        /// </summary>
-        private async Task<NodeExecutionResult> ExecuteSubroutineNode(
-            SubroutineNode node,
-            WorkflowContext context,
-            Workflow workflow)
-        {
-            // 查找工作流控制插件
-            var plugins = _pluginManager.GetPlugins<IWorkflowControlPlugin>();
-            var plugin = plugins.FirstOrDefault();
 
-            if (plugin == null)
-            {
-                throw new InvalidOperationException("未找到工作流控制插件");
-            }
 
-            // 从已执行节点结果中查找上游图像
-            IVisionImage? inputImage = null;
-            foreach (var kvp in context.GetAllNodeResults())
-            {
-                if (kvp.Value?.Result != null)
-                {
-                    var images = kvp.Value.Result.GetDisplayImages();
-                    var firstImage = images.Values.FirstOrDefault(m => m != null && !m.IsEmpty);
-                    if (firstImage != null)
-                    {
-                        inputImage = firstImage;
-                        break;
-                    }
-                }
-            }
-
-            // 设置上下文变量和执行引擎引用
-            context.SetVariable("InputImage", inputImage);
-            context.SetVariable("CurrentNode", node);
-            context.ExecutionEngine = this;
-
-            // 执行子程序
-            var result = await plugin.ExecuteSubroutine(node, context);
-
-            var nodeResult = new NodeExecutionResult { NodeId = node.Id };
-
-            if (result.Success)
-            {
-                nodeResult.Success = true;
-                if (result.Outputs?.Any() == true)
-                {
-                    var subroutineResults = new GenericToolResults
-                    {
-                        Status = ExecutionStatus.Success
-                    };
-                    foreach (var output in result.Outputs)
-                    {
-                        subroutineResults.AddResultItem(output.Key, output.Value);
-                    }
-                    nodeResult.Result = subroutineResults;
-                }
-            }
-            else
-            {
-                nodeResult.ErrorMessages = new List<string> {
-                    result.Errors?.FirstOrDefault() ?? "子程序执行失败"
-                };
-            }
-
-            return nodeResult;
-        }
-
-        /// <summary>
-        /// 执行条件节点
-        /// </summary>
-        private NodeExecutionResult ExecuteConditionNode(
-            ConditionNode node,
-            WorkflowContext context)
-        {
-            // 查找工作流控制插件
-            var plugins = _pluginManager.GetPlugins<IWorkflowControlPlugin>();
-            var plugin = plugins.FirstOrDefault();
-
-            if (plugin == null)
-            {
-                throw new InvalidOperationException("未找到工作流控制插件");
-            }
-
-            // 从已执行节点结果中查找上游图像
-            IVisionImage? inputImage = null;
-            foreach (var kvp in context.GetAllNodeResults())
-            {
-                if (kvp.Value?.Result != null)
-                {
-                    var images = kvp.Value.Result.GetDisplayImages();
-                    var firstImage = images.Values.FirstOrDefault(m => m != null && !m.IsEmpty);
-                    if (firstImage != null)
-                    {
-                        inputImage = firstImage;
-                        break;
-                    }
-                }
-            }
-
-            // 设置上下文变量
-            context.SetVariable("InputImage", inputImage);
-            context.SetVariable("CurrentNode", node);
-
-            // 评估条件
-            var conditionResult = plugin.EvaluateCondition(node, context);
-
-            var nodeResult = new NodeExecutionResult
-            {
-                NodeId = node.Id,
-                StartTime = DateTime.Now,
-                EndTime = DateTime.Now,
-                Success = true
-            };
-            var conditionResults = new GenericToolResults
-            {
-                Status = ExecutionStatus.Success
-            };
-            conditionResults.AddResultItem("ConditionResult", conditionResult);
-            conditionResults.AddResultItem("Output", inputImage);
-            nodeResult.Result = conditionResults;
-
-            return nodeResult;
-        }
 
         #endregion
 
@@ -783,11 +677,12 @@ namespace SunEyeVision.Workflow
         /// 异步执行工作流
         /// </summary>
         public async Task<ExecutionResult> ExecuteWorkflowAsync(string workflowId, IVisionImage? inputImage,
-            IDictionary<string, object?>? globalVariables = null)
+            IDictionary<string, object?>? globalVariables = null,
+            Dictionary<string, object>? contextVariables = null)
         {
             _cancellationTokenSource = new CancellationTokenSource();
 
-            return await Task.Run(async () => await ExecuteWorkflow(workflowId, inputImage, globalVariables), _cancellationTokenSource.Token);
+            return await Task.Run(async () => await ExecuteWorkflow(workflowId, inputImage, globalVariables, contextVariables), _cancellationTokenSource.Token);
         }
 
         /// <summary>

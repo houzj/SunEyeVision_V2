@@ -280,9 +280,8 @@ namespace SunEyeVision.UI.Services.Workflow
                 var pluginManager = new PluginManager(logger);
                 var executionEngine = new WorkflowExecutionEngine(_workflowEngine, pluginManager, logger);
 
-                // 注册子程序插件（持有共享的 _workflowEngine）
-                var subroutinePlugin = new SubroutinePlugin(_workflowEngine);
-                pluginManager.RegisterPlugin(subroutinePlugin);
+                // 初始化子程序插件（将引擎注入到 SubroutineTool）
+                var subroutinePlugin = new SubroutinePlugin(_workflowEngine, executionEngine);
 
                 // ★ 从引擎获取根工作流（始终读取 RootWorkflowId 对应的节点）
                 var rootEngineWorkflow = _workflowEngine.GetWorkflow(workflow.RootWorkflowId);
@@ -298,24 +297,8 @@ namespace SunEyeVision.UI.Services.Workflow
                     logger.LogInfo($"运行时参数: {param.Key} = {param.Value}");
                 }
 
-                // ★ 运行时参数注入到 UI 节点 Parameters（引擎 ConvertNodesForExecution 自动携带）
-                //   UI 层专属逻辑：为图像源节点注入当前图像路径
-                foreach (var workflowNode in rootEngineWorkflow.Nodes)
-                {
-                    if (workflowNode is not Models.WorkflowNode uiNode) continue;
-                    var toolId = uiNode.ToolType ?? uiNode.Name;
-                    if (IsImageSourceNode(toolId) &&
-                        _runtimeParameters.TryGetValue("CurrentImagePath", out var imagePath) &&
-                        imagePath is string path && !string.IsNullOrEmpty(path))
-                    {
-                        var prop = uiNode.Parameters.GetType().GetProperty("FilePath");
-                        if (prop != null && prop.CanWrite)
-                        {
-                            prop.SetValue(uiNode.Parameters, path);
-                            logger.LogInfo($"★ 注入图像路径到节点 {uiNode.Name}: {path}");
-                        }
-                    }
-                }
+                // ★ 从各节点的 InputSource 递归注入路径（每个 ImageLoad 节点独立控制）
+                InjectFilePathFromInputSource(rootEngineWorkflow, logger, new HashSet<string>());
 
                 // ★ 引擎内部统一完成节点类型转换，主/子工作流共享同一逻辑
                 logger.LogInfo($"开始执行工作流: {rootEngineWorkflow.Name}");
@@ -369,19 +352,105 @@ namespace SunEyeVision.UI.Services.Workflow
         // 已删除：工作流不再提供默认输入图像，缺少输入图像的节点将直接报错
 
         /// <summary>
-        /// 判断是否为图像源节点
+        /// 递归遍历工作流（含子工作流），从每个 ImageLoad 节点的 InputSource
+        /// 读取当前选中的图像路径，注入到 Parameters.FilePath
         /// </summary>
-        private bool IsImageSourceNode(string toolId)
+        /// <remarks>
+        /// 使用 WorkflowNodeBase 基类而非 Models.WorkflowNode，确保子程序工作流中的节点
+        /// （类型为 WorkflowNodeBase）也能正确注入路径。
+        /// IsImageLoadNode 通过 ToolType 字符串判断（在基类上可访问）。
+        /// InputSource 在 WorkflowNodeBase 上为 object?，通过 as 转换访问。
+        /// </remarks>
+        private void InjectFilePathFromInputSource(
+            SunEyeVision.Workflow.Workflow workflow, ILogger logger, HashSet<string> visitedIds)
         {
-            if (string.IsNullOrEmpty(toolId)) return false;
-            
-            var lowerToolId = toolId.ToLowerInvariant();
-            return lowerToolId.Contains("imageload") ||
-                   lowerToolId.Contains("image_load") ||
-                   lowerToolId.Contains("imagecapture") ||
-                   lowerToolId.Contains("image_capture") ||
-                   lowerToolId.Contains("image_acquire") ||
-                   lowerToolId == "image_source";
+            if (workflow == null || !visitedIds.Add(workflow.Id)) return;
+
+            logger.LogInfo($"[DIAG] InjectFilePath 遍历工作流: '{workflow.Name}'({workflow.Id}), Nodes.Count={workflow.Nodes.Count}");
+
+            foreach (var wn in workflow.Nodes)
+            {
+                // ★ 使用 WorkflowNodeBase 基类，同时兼容 WorkflowNode 和纯 WorkflowNodeBase
+                if (wn == null) { logger.LogWarning("[DIAG] wn is null"); continue; }
+
+                logger.LogInfo($"[DIAG] 节点: '{wn.Name}', Id={wn.Id}, ToolType={wn.ToolType}, " +
+                    $"Type={wn.GetType().Name}, SubroutineId={wn.SubroutineId ?? "(null)"}");
+
+                // ★ 递归优先：子工作流遍历必须在 IsImageLoadToolType 判断之前，
+                //   确保 Subroutine 节点（非 ImageLoad 类型）也能触发子工作流递归
+                if (!string.IsNullOrEmpty(wn.SubroutineId))
+                {
+                    logger.LogInfo($"[DIAG]   -> 递归处理子工作流: SubroutineId={wn.SubroutineId}");
+                    var subWorkflow = _workflowEngine.GetWorkflow(wn.SubroutineId);
+                    logger.LogInfo($"[DIAG]   -> GetWorkflow 结果: {(subWorkflow == null ? "null" : $"'{subWorkflow.Name}'({subWorkflow.Id}), Nodes.Count={subWorkflow.Nodes.Count}")}");
+                    if (subWorkflow != null)
+                        InjectFilePathFromInputSource(subWorkflow, logger, visitedIds);
+                }
+
+                // 通过 ToolType 判断是否为图像载入节点（基类属性，无需强制转换为 Models.WorkflowNode）
+                if (!IsImageLoadToolType(wn.ToolType))
+                {
+                    logger.LogInfo($"[DIAG]   -> 不是 ImageLoad 类型，跳过");
+                    continue;
+                }
+
+                // ★ 诊断：记录 InputSource 的所有状态信息
+                var inputSource = wn.InputSource as ImageInputSource;
+                logger.LogInfo($"[DIAG]   -> InputSource(as ImageInputSource) = {(inputSource == null ? "null" : $"Count={inputSource.Count}, CurrentIndex={inputSource.CurrentIndex}")}");
+
+                if (inputSource == null)
+                {
+                    // ★ 关键诊断：InputSource 的原始运行时类型和值
+                    logger.LogInfo($"[DIAG]   -> wn.InputSource(raw) Type={wn.InputSource?.GetType().FullName ?? "null"}, Value={wn.InputSource ?? "null"}");
+                    logger.LogInfo($"[DIAG]   -> 跳过该节点 (InputSource 为空)");
+                    continue;
+                }
+
+                if (inputSource.Count <= 0)
+                {
+                    logger.LogInfo($"[DIAG]   -> InputSource.Count <= 0，跳过");
+                    continue;
+                }
+
+                if (inputSource.CurrentIndex < 0)
+                {
+                    logger.LogInfo($"[DIAG]   -> InputSource.CurrentIndex < 0，跳过");
+                    continue;
+                }
+
+                var currentImage = inputSource.CurrentImage;
+                logger.LogInfo($"[DIAG]   -> CurrentImage = {(currentImage == null ? "null" : $"FilePath='{currentImage.FilePath ?? "(empty)"}'")}");
+
+                if (currentImage == null || string.IsNullOrEmpty(currentImage.FilePath))
+                {
+                    logger.LogInfo($"[DIAG]   -> CurrentImage 无效，跳过");
+                    continue;
+                }
+
+                var prop = wn.Parameters.GetType().GetProperty("FilePath");
+                logger.LogInfo($"[DIAG]   -> FilePath property exists={prop != null}, CanWrite={prop?.CanWrite}");
+
+                if (prop == null || !prop.CanWrite)
+                {
+                    logger.LogInfo($"[DIAG]   -> 无法写入 FilePath，跳过");
+                    continue;
+                }
+
+                prop.SetValue(wn.Parameters, currentImage.FilePath);
+                logger.LogInfo($"★ 从 InputSource 注入路径: '{wn.Name}' -> '{currentImage.FilePath}'");
+            }
+        }
+
+        /// <summary>
+        /// 判断工具类型是否为图像载入节点（基于 ToolType 字符串匹配）
+        /// 用于 WorkflowNodeBase 基类，无需强制转换为 Models.WorkflowNode
+        /// </summary>
+        private static bool IsImageLoadToolType(string toolType)
+        {
+            return toolType != null && (
+                toolType.Contains("ImageLoad", StringComparison.OrdinalIgnoreCase) ||
+                toolType.Contains("图片载入", StringComparison.OrdinalIgnoreCase) ||
+                toolType.Contains("ImageSource", StringComparison.OrdinalIgnoreCase));
         }
 
         private void OnWorkflowExecutionStarted(string workflowId)

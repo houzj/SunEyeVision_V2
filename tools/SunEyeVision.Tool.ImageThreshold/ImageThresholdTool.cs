@@ -26,7 +26,7 @@ namespace SunEyeVision.Tool.ImageThreshold
     ///   6. ComposeDisplay → 合成显示图像
     /// </summary>
     [Tool(
-        id: "image-threshold",
+        id: "ImageThreshold",
         displayName: "图像二值化",
         Description = "将灰度图像通过阈值分割转换为二值图像，支持固定阈值/Otsu/Triangle/自适应/范围阈值",
         Icon = "📷",
@@ -52,7 +52,7 @@ namespace SunEyeVision.Tool.ImageThreshold
             var result = new ImageThresholdResults
             {
                 ToolName = _attribute?.DisplayName ?? "ImageThreshold",
-                ToolId = _attribute?.Id ?? "image-threshold",
+                ToolId = _attribute?.Id ?? "ImageThreshold",
                 Timestamp = DateTime.Now
             };
 

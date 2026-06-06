@@ -566,6 +566,88 @@ namespace SunEyeVision.UI.Services.Thumbnail
         }
 
         /// <summary>
+        /// 追加模式加载新图片：不清除已有状态，只加载新增的图片
+        /// 解决追加模式下 fileNames[i] 与 imageCollection[i] 索引错位的问题
+        /// </summary>
+        public async Task LoadAppendedImagesAsync(
+            string[] fileNames,
+            int startIndex,
+            Action<int>? onFirstImageLoaded = null)
+        {
+            var imageCollection = _imageCollection;
+            if (imageCollection == null || fileNames == null || fileNames.Length == 0) return;
+
+            // 同步 _loadedIndices 与现有缩略图（旧图片已加载的保留）
+            SyncExistingThumbnails();
+
+            // 记录启动时间，用于并发调整延迟计算
+            _startupTime = DateTime.Now;
+
+            // 获取可视数量
+            int visibleCount = CalculateVisibleCount();
+            if (visibleCount <= 1 && _getVisibleRangeFunc != null)
+            {
+                await Task.Delay(50);
+                visibleCount = CalculateVisibleCount();
+            }
+            visibleCount = Math.Max(1, visibleCount);
+            int loadCount = Math.Min(visibleCount, fileNames.Length);
+
+            // 设置可视区域范围（从 startIndex 开始）
+            _lastFirstVisible = startIndex;
+            _lastLastVisible = startIndex + loadCount - 1;
+            _visibleAreaLoadStartTime = DateTime.Now;
+            _visibleAreaCount = loadCount;
+            _loadedInVisibleArea = 0;
+
+            // 加载第一张新图（Critical - 同步执行）
+            if (fileNames.Length > 0 && startIndex < imageCollection.Count)
+            {
+                var thumbnail = LoadThumbnailOptimized(fileNames[0], 60, isHighPriority: true);
+                if (thumbnail != null)
+                {
+                    await Application.Current.Dispatcher.InvokeAsync(() =>
+                    {
+                        if (startIndex < imageCollection.Count)
+                            imageCollection[startIndex].Thumbnail = thumbnail;
+                    }, DispatcherPriority.Normal);
+
+                    _addToCacheAction?.Invoke(fileNames[0], thumbnail);
+
+                    lock (_queueLock)
+                    {
+                        _loadedIndices.Add(startIndex);
+                    }
+
+                    onFirstImageLoaded?.Invoke(startIndex);
+                }
+            }
+
+            // 计算缓冲/预加载数量（对齐 LoadInitialScreenAsync 的策略）
+            int bufferSize = Math.Min(_dynamicPolicy.BufferSize, fileNames.Length - 1);
+            int prefetchSize = Math.Min(_dynamicPolicy.PrefetchSize,
+                fileNames.Length - 1 - bufferSize);
+            int visibleEnd = Math.Min(loadCount, fileNames.Length);
+
+            // 入队剩余新图片
+            for (int i = 1; i < fileNames.Length; i++)
+            {
+                int index = startIndex + i;
+                if (index < imageCollection.Count)
+                {
+                    if (i < visibleEnd)
+                        EnqueueLoadTask(index, fileNames[i], LoadPriority.High);
+                    else if (i < visibleEnd + bufferSize)
+                        EnqueueLoadTask(index, fileNames[i], LoadPriority.Medium);
+                    else if (i < visibleEnd + bufferSize + prefetchSize)
+                        EnqueueLoadTask(index, fileNames[i], LoadPriority.Low);
+                }
+            }
+
+            StartLoading();
+        }
+
+        /// <summary>
         /// 更新可视区域 - 滚动时调试?
         /// ?单一数据源架构：使用实际可视数量进行判断
         /// </summary>
@@ -853,6 +935,27 @@ namespace SunEyeVision.UI.Services.Thumbnail
             if (toRemove.Count > 0)
             {
 }
+        }
+
+        /// <summary>
+        /// 同步现有缩略图状态到 _loadedIndices
+        /// 用于追加模式：保留旧图片的已加载状态，避免重新加载
+        /// </summary>
+        public void SyncExistingThumbnails()
+        {
+            var collection = _imageCollection;
+            if (collection == null) return;
+
+            lock (_queueLock)
+            {
+                for (int i = 0; i < collection.Count; i++)
+                {
+                    if (collection[i].Thumbnail != null)
+                    {
+                        _loadedIndices.Add(i);
+                    }
+                }
+            }
         }
 
         /// <summary>

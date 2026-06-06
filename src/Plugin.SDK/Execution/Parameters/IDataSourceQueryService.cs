@@ -132,6 +132,12 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         List<AvailableDataSource> GetNodeOutputProperties(string parentNodeId);
 
         /// <summary>
+        /// 获取当前工作流中所有节点的数据源（子程序输出/显示绑定用）
+        /// </summary>
+        /// <returns>所有节点的输出属性列表</returns>
+        List<AvailableDataSource> GetWorkflowNodeDataSources();
+
+        /// <summary>
         /// 获取节点执行上下文
         /// </summary>
         /// <param name="nodeId">节点ID</param>

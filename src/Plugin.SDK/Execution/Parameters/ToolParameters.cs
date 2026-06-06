@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -6,6 +6,7 @@ using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Metadata;
+using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Plugin.SDK.Validation;
 using ValidationResult = SunEyeVision.Plugin.SDK.Validation.ValidationResult;
@@ -74,6 +75,12 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// </remarks>
         [JsonIgnore]
         public ExecutionContext? Context { get; internal set; }
+
+        /// <summary>
+        /// 上游节点执行结果（由 AlgorithmNode.Execute() 在调用 Tool.Run() 前注入）
+        /// </summary>
+        [JsonIgnore]
+        public IDictionary<string, ToolResults>? NodeResults { get; set; }
 
         /// <summary>
         /// 设置执行上下文（供执行引擎调用，注入日志器等运行时服务）

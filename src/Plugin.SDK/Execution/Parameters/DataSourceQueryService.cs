@@ -381,6 +381,21 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         }
 
         /// <inheritdoc/>
+        public List<AvailableDataSource> GetWorkflowNodeDataSources()
+        {
+            var result = new List<AvailableDataSource>();
+            var allNodeIds = _connectionProvider?.GetAllNodeIds();
+            if (allNodeIds == null) return result;
+
+            foreach (var nodeId in allNodeIds)
+            {
+                var props = GetNodeOutputProperties(nodeId);
+                result.AddRange(props);
+            }
+            return result;
+        }
+
+        /// <inheritdoc/>
         public NodeExecutionContext? GetNodeContext(string nodeId)
         {
             if (_nodeInfoProvider == null)

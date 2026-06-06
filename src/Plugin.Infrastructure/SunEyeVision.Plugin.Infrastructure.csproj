@@ -31,6 +31,5 @@
     <Compile Include="Managers\Plugin\PluginManager.cs" />
     <Compile Include="Managers\Tool\ToolRegistry.cs" />
     <Compile Include="Managers\Tool\PropertyMetadataProviderAdapter.cs" />
-    <Compile Include="Managers\Tool\ControlFlowRegistry.cs" />
   </ItemGroup>
 </Project>

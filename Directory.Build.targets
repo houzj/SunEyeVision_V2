@@ -1,0 +1,46 @@
+<Project>
+  <!-- ============================================================
+       工具插件输出控制
+       目标: dev/Debug/plugins/ 只包含工具自身的 dll/pdb/deps.json
+       ============================================================ -->
+
+  <!-- Halcon 运行时 DLL: 排除工具插件 -->
+  <ItemGroup Condition="Exists('$(MSBuildThisFileDirectory)libs\halcon\runtime\x64-win64') And '$(IsToolPlugin)'!='true'">
+    <None Include="$(MSBuildThisFileDirectory)libs\halcon\runtime\x64-win64\**\*.dll"
+          Link="runtimes\halcon\%(RecursiveDir)%(Filename)%(Extension)">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Visible>false</Visible>
+    </None>
+  </ItemGroup>
+
+  <!-- 工具插件全局属性 -->
+  <PropertyGroup Condition="'$(IsToolPlugin)'=='true'">
+    <!-- 禁止引用项目的 .pdb/.xml 复制 -->
+    <AllowedReferenceRelatedFileExtensions>.none</AllowedReferenceRelatedFileExtensions>
+  </PropertyGroup>
+
+  <!-- 工具插件: 禁止项目引用输出复制 -->
+  <Target Name="SuppressCopyLocalForToolPlugins" BeforeTargets="ResolveAssemblyReferences" Condition="'$(IsToolPlugin)'=='true'">
+    <ItemGroup>
+      <ProjectReference Update="@(ProjectReference)">
+        <Private>false</Private>
+      </ProjectReference>
+      <!-- 直接引用 halcondotnetxl 也不复制 -->
+      <Reference Update="halcondotnetxl">
+        <Private>false</Private>
+      </Reference>
+    </ItemGroup>
+  </Target>
+
+  <!-- 工具插件: 禁止 NuGet 原生运行时 DLL 复制 (OpenCvSharp4) 和 Halcon 运行时 -->
+  <Target Name="SuppressNativeRuntimesForToolPlugins" BeforeTargets="PrepareForBuild" Condition="'$(IsToolPlugin)'=='true'">
+    <ItemGroup>
+      <_RuntimeTrash Include="@(None)" Condition="'%(None.Link)' != '' And $([System.String]::new('%(None.Link)').Contains('runtimes'))" />
+      <_RuntimeTrash Include="@(Content)" Condition="'%(Content.Link)' != '' And $([System.String]::new('%(Content.Link)').Contains('runtimes'))" />
+    </ItemGroup>
+    <ItemGroup>
+      <None Remove="@(_RuntimeTrash)" />
+      <Content Remove="@(_RuntimeTrash)" />
+    </ItemGroup>
+  </Target>
+</Project>

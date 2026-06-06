@@ -89,6 +89,9 @@ namespace SunEyeVision.UI.ViewModels
 
         // 工作流引擎
         private readonly WorkflowEngine _workflowEngine;
+
+        /// <summary>公开工作流引擎访问（供 MainWindow code-behind 等使用）</summary>
+        public WorkflowEngine WorkflowEngine => _workflowEngine;
         private readonly ILogger _logger;
 
         // 执行管理
@@ -1567,11 +1570,22 @@ SplitterPosition = position;
                 // 删除、添加连接会自动同步到 Solution，保存时无需额外同步代码
             }
 
+            // ★ 确保子程序工作流也保存到 solution（它们没有独立 Tab，但属于引擎中的工作流）
+            var subWorkflows = _workflowEngine.GetAllWorkflows()
+                .Where(w => w.IsSubroutine && !solution.Workflows.Any(s => s.Id == w.Id))
+                .ToList();
+            foreach (var subWf in subWorkflows)
+            {
+                solution.Workflows.Add(subWf);
+                LogInfo($"添加子程序工作流到 Solution: {subWf.Name} (ID: {subWf.Id})");
+            }
+
             // ✅ 删除 Solution 中所有不在 UI 标签页中的工作流（解决创建新方案时多余工作流的问题）
             // 例如：创建新方案时默认创建的空"工作流1"会被删除，只保留UI中已编辑的工作流
             // 注意：需要处理同名但不同 ID 的情况（重命名而不是删除）
+            // ★ 子程序工作流（IsSubroutine=true）不删除（它们没有独立 Tab）
             var workflowsToRemove = solution.Workflows
-                .Where(w => !WorkflowTabViewModel.Tabs.Any(t => t.Id == w.Id))
+                .Where(w => !WorkflowTabViewModel.Tabs.Any(t => t.Id == w.Id) && !w.IsSubroutine)
                 .ToList();
 
             foreach (var workflow in workflowsToRemove)
@@ -1719,8 +1733,18 @@ SplitterPosition = position;
                     LogInfo($"\n--- 加载工作流: {workflow.Name} (ID: {workflow.Id}) ---");
                     LogInfo($"节点数量: {workflow.Nodes.Count}");
                     LogInfo($"连接数量: {workflow.Connections.Count}");
+                    LogInfo($"是否子程序: {workflow.IsSubroutine}");
 
-                    CreateWorkflowTab(workflow, solution.FilePath);
+                    if (workflow.IsSubroutine)
+                    {
+                        // 子程序工作流：只注册到引擎，不创建 Tab
+                        _workflowEngine.RegisterWorkflow(workflow);
+                        LogInfo($"注册子程序工作流到引擎: {workflow.Name} (ID: {workflow.Id})");
+                    }
+                    else
+                    {
+                        CreateWorkflowTab(workflow, solution.FilePath);
+                    }
 
                     totalNodes += workflow.Nodes.Count;
                     totalConnections += workflow.Connections.Count;
@@ -2487,7 +2511,8 @@ SplitterPosition = position;
             var subroutineId = Guid.NewGuid().ToString();
 
             // 注册到工作流引擎
-            _workflowEngine.CreateWorkflow(subroutineId, node.DispName ?? node.Name);
+            var workflow = _workflowEngine.CreateWorkflow(subroutineId, node.DispName ?? node.Name);
+            workflow.IsSubroutine = true;
 
             // ★ 使用 SubroutineId 属性（不再是 ExtraData 弱类型字典）
             node.SubroutineId = subroutineId;
@@ -2779,10 +2804,6 @@ SplitterPosition = position;
                 if (string.IsNullOrEmpty(toolType))
                     return System.Threading.Tasks.Task.CompletedTask;
 
-                // 控制流节点（子程序、条件等）跳过数据分析控件
-                if (ControlFlowRegistry.IsControlFlow(toolType))
-                    return System.Threading.Tasks.Task.CompletedTask;
-
                 // 创建工具实例
                 var tool = ToolRegistry.CreateToolInstance(toolType);
                 if (tool == null)
@@ -2909,6 +2930,71 @@ SplitterPosition = position;
                 AddLog($"❌ 创建数据查询服务失败: {ex.Message}");
                 return null;
             }
+        }
+
+        /// <summary>
+        /// 创建 DataSourceQueryService（供子程序参数对话框使用，无需特定节点上下文）
+        /// </summary>
+        /// <param name="scopeWorkflowId">可选：限定到指定工作流的作用域（子程序内部数据源查询用）</param>
+        public DataSourceQueryService CreateDataSourceQueryService(string? scopeWorkflowId = null)
+        {
+            var metadataProvider = new SunEyeVision.Plugin.Infrastructure.Managers.Tool.PropertyMetadataProviderAdapter();
+
+            IWorkflowConnectionProvider connectionProvider;
+            INodeInfoProvider nodeInfoProvider;
+
+            if (scopeWorkflowId != null)
+            {
+                var subWorkflow = _workflowEngine.GetWorkflow(scopeWorkflowId);
+                if (subWorkflow == null)
+                {
+                    LogWarning($"子程序工作流未找到: {scopeWorkflowId}", "DSQS");
+                    throw new InvalidOperationException($"子程序工作流未找到: {scopeWorkflowId}");
+                }
+
+                var scopedProvider = new SunEyeVision.UI.Services.Workflow.WorkflowScopedQueryProvider(subWorkflow);
+                connectionProvider = scopedProvider;
+                nodeInfoProvider = scopedProvider;
+                LogInfo($"✓ 创建作用域查询服务 → 子程序工作流: {subWorkflow.Name} (ID: {scopeWorkflowId})");
+            }
+            else
+            {
+                connectionProvider = _workflowEngine;
+                nodeInfoProvider = _workflowEngine;
+            }
+
+            var queryService = new DataSourceQueryService(connectionProvider, nodeInfoProvider, null, metadataProvider);
+
+            // SSOT：同步已有执行结果
+            var ctx = CurrentWorkflowContext;
+            if (ctx != null)
+            {
+                var allResults = ctx.GetAllNodeResults();
+                var nonNullResults = allResults
+                    .Where(kvp => kvp.Value?.Result != null)
+                    .Select(kvp => new KeyValuePair<string, ToolResults>(kvp.Key, kvp.Value!.Result!));
+                queryService.InitializeFromSource(nonNullResults);
+            }
+
+            return queryService;
+        }
+
+        /// <summary>
+        /// 在所有已注册工作流中查找引用指定子程序工作流 ID 的节点
+        /// </summary>
+        /// <param name="subroutineWorkflowId">子程序工作流 ID</param>
+        /// <returns>父节点 ID，找不到则返回 null</returns>
+        public string? FindParentSubroutineNodeId(string subroutineWorkflowId)
+        {
+            foreach (var workflow in _workflowEngine.GetAllWorkflows())
+            {
+                foreach (var node in workflow.Nodes)
+                {
+                    if (node.SubroutineId == subroutineWorkflowId)
+                        return node.Id;
+                }
+            }
+            return null;
         }
 
         /// <summary>
@@ -3646,6 +3732,11 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
         /// <param name="nodeId">节点ID，用于绑定状态反查</param>
         public void UpdateModuleResults(ToolResults? result, string? nodeName, string? toolId = null, string? nodeId = null)
         {
+            // ★ 诊断：记录入参
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[诊断:UpdateModuleResults] nodeName='{nodeName}' | toolId='{toolId}' | nodeId='{nodeId}' | result={(result != null ? result.GetType().Name : "null")}",
+                "MainWindowViewModel");
+
             ModuleResultTree.Clear();
             HasModuleResults = false;
 
@@ -3653,6 +3744,11 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
             var metadataList = string.IsNullOrEmpty(toolId)
                 ? []
                 : ToolRegistry.GetAllPropertyMetadata(toolId);
+
+            // ★ 诊断：记录查询结果
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[诊断:UpdateModuleResults] toolId='{toolId}' | metadataList.Count={metadataList.Count} | 将{(metadataList.Count == 0 ? "直接返回（模块结果为空）" : "继续构建结果树")}",
+                "MainWindowViewModel");
 
             if (metadataList.Count == 0)
                 return;

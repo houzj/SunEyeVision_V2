@@ -390,25 +390,19 @@ namespace SunEyeVision.Workflow
         #region 计算属性（从元数据推断，不序列化）
 
         /// <summary>
-        /// 节点类型（从 ControlFlowRegistry/ToolRegistry 动态推断，不序列化）
+        /// 节点类型（从 ToolRegistry 动态推断，不序列化）
+        /// Condition 和 Subroutine 已作为标准 IToolPlugin 由 ToolRegistry 管理，统一为 Algorithm
         /// </summary>
         [JsonIgnore]
         public NodeType NodeType
         {
             get
             {
-                if (ControlFlowRegistry.IsControlFlow(ToolType))
-                {
-                    var info = ControlFlowRegistry.Get(ToolType);
-                    return info?.ControlFlowType switch
-                    {
-                        Core.Models.ControlFlowType.Subroutine => NodeType.Subroutine,
-                        Core.Models.ControlFlowType.Condition => NodeType.Condition,
-                        Core.Models.ControlFlowType.Switch => NodeType.Switch,
-                        Core.Models.ControlFlowType.Loop => NodeType.Algorithm,
-                        _ => NodeType.Algorithm
-                    };
-                }
+                // Subroutine 是标准 IToolPlugin，但逻辑上属于 Subroutine 类型（用于 UI 样式区分）
+                if (string.Equals(ToolType, "Subroutine", StringComparison.OrdinalIgnoreCase) ||
+                    !string.IsNullOrEmpty(SubroutineId))
+                    return NodeType.Subroutine;
+
                 return NodeType.Algorithm;
             }
         }
@@ -421,10 +415,6 @@ namespace SunEyeVision.Workflow
         {
             get
             {
-                var flowInfo = ControlFlowRegistry.Get(ToolType);
-                if (flowInfo != null)
-                    return flowInfo.DisplayName;
-
                 var metadata = ToolRegistry.GetToolMetadata(ToolType);
                 return metadata?.DisplayName ?? Name;
             }
@@ -438,10 +428,6 @@ namespace SunEyeVision.Workflow
         {
             get
             {
-                var flowInfo = ControlFlowRegistry.Get(ToolType);
-                if (flowInfo != null)
-                    return flowInfo.Icon;
-
                 var metadata = ToolRegistry.GetToolMetadata(ToolType);
                 return metadata?.Icon ?? "?";
             }

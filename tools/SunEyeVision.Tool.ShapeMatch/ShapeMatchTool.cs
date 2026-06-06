@@ -25,7 +25,7 @@ namespace SunEyeVision.Tool.ShapeMatch;
 /// 轮廓匹配工具 — 基于 Halcon 形状模板匹配
 /// </summary>
 [Tool(
-    id: "shape-match",
+    id: "ShapeMatch",
     displayName: "轮廓匹配",
     Description = "基于形状的轮廓模板匹配 (Halcon)",
     Icon = "🔍",
@@ -49,7 +49,7 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
         var result = new ShapeMatchResults
         {
             ToolName = _attribute?.DisplayName ?? "ShapeMatch",
-            ToolId = _attribute?.Id ?? "shape-match",
+            ToolId = _attribute?.Id ?? "ShapeMatch",
             Timestamp = DateTime.Now
         };
 

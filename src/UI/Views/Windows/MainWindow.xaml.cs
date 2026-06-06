@@ -1769,17 +1769,30 @@ namespace SunEyeVision.UI.Views.Windows
         /// </summary>
 
         private void OpenSubroutineParameterDialog(WorkflowTabViewModel tab)
-
         {
-
             try
-
             {
+                // 在父工作流中查找对应的子程序节点（用于数据源绑定和参数获取）
+                var parentNodeId = _viewModel?.FindParentSubroutineNodeId(tab.CurrentWorkflowId)
+                    ?? tab.CurrentWorkflowId;
 
-                SubroutinePlugin.ShowParameterDialog(this, tab.CurrentWorkflowId, tab.EffectiveDisplayName);
+                // 1. 找到父工作流 ID
+                var parentWorkflowId = FindParentWorkflowId(tab.CurrentWorkflowId);
+
+                // 2. 父工作流作用域查询服务 → 输入绑定（和其他节点一致）
+                var queryService = _viewModel?.CreateDataSourceQueryService(parentWorkflowId);
+
+                // 3. 预计算子程序内部数据源 → 输出/显示绑定
+                var subQueryService = _viewModel?.CreateDataSourceQueryService(tab.CurrentWorkflowId);
+                var internalSources = subQueryService?.GetWorkflowNodeDataSources() ?? new();
+
+                // 4. 获取参数
+                var parameters = FindParentSubroutineParameters(tab.CurrentWorkflowId);
+
+                SubroutinePlugin.ShowParameterDialog(this, tab.CurrentWorkflowId, tab.EffectiveDisplayName,
+                    parentNodeId, queryService, parameters, internalSources);
 
             }
-
             catch (Exception ex)
 
             {
@@ -1809,7 +1822,21 @@ namespace SunEyeVision.UI.Views.Windows
             {
                 // ★ 使用 SubroutineId 属性（SSOT），而非 node.Id
                 var subroutineId = node.SubroutineId ?? node.Id;
-                SubroutinePlugin.ShowParameterDialog(this, subroutineId, node.DispName);
+
+                // 1. 找到父工作流 ID
+                var parentWorkflowId = FindParentWorkflowId(subroutineId);
+
+                // 2. 父工作流作用域查询服务 → 输入绑定（和其他节点一致）
+                var queryService = _viewModel?.CreateDataSourceQueryService(parentWorkflowId);
+
+                // 3. 预计算子程序内部数据源 → 输出/显示绑定
+                var subQueryService = _viewModel?.CreateDataSourceQueryService(subroutineId);
+                var internalSources = subQueryService?.GetWorkflowNodeDataSources() ?? new();
+
+                // ★ node.Id 是父工作流中该子程序节点的 ID（用于数据源绑定）
+                SubroutinePlugin.ShowParameterDialog(this, subroutineId, node.DispName, node.Id, queryService,
+                    node.Parameters as SunEyeVision.Tool.Subroutine.Models.SubroutineParameters,
+                    internalSources);
             }
             catch (Exception ex)
             {
@@ -1823,6 +1850,41 @@ namespace SunEyeVision.UI.Views.Windows
                     System.Windows.MessageBoxImage.Error);
                 _viewModel?.AddLog(LogLevel.Error, $"打开子程序参数设置失败: {ex.Message}", LogSource.UIOperation);
             }
+        }
+
+        /// <summary>
+        /// 在工作流引擎中查找父节点对应的 SubroutineParameters
+        /// </summary>
+        private SunEyeVision.Tool.Subroutine.Models.SubroutineParameters? FindParentSubroutineParameters(string subroutineWorkflowId)
+        {
+            if (_viewModel?.WorkflowEngine == null) return null;
+
+            foreach (var workflow in _viewModel.WorkflowEngine.GetAllWorkflows())
+            {
+                foreach (var node in workflow.Nodes)
+                {
+                    if (node.SubroutineId == subroutineWorkflowId)
+                        return node.Parameters as SunEyeVision.Tool.Subroutine.Models.SubroutineParameters;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// 在所有工作流中查找引用指定子程序工作流的父工作流 ID
+        /// </summary>
+        private string? FindParentWorkflowId(string subroutineWorkflowId)
+        {
+            if (_viewModel?.WorkflowEngine == null) return null;
+            foreach (var workflow in _viewModel.WorkflowEngine.GetAllWorkflows())
+            {
+                foreach (var node in workflow.Nodes)
+                {
+                    if (node.SubroutineId == subroutineWorkflowId)
+                        return workflow.Id;
+                }
+            }
+            return null;
         }
 
         #endregion

@@ -98,7 +98,10 @@ namespace SunEyeVision.Workflow
                         ResolveTextStyleParameterBindings(typedParams, nodeResults, resolver);
                     }
 
-                    // 4. 执行工具（不再传递 image 参数）
+                    // 3a. 注入上游节点结果（供子程序工具等特殊类型在 Run() 内部解析端口绑定）
+                    typedParams.NodeResults = nodeResults;
+
+                    // 4. 执行工具
                     var toolResult = Tool.Run(typedParams);
                     LastToolResult = toolResult;
                     LastResult = ConvertToAlgorithmResult(toolResult);
@@ -200,10 +203,12 @@ namespace SunEyeVision.Workflow
             var displayImages = result.GetDisplayImages();
             var primaryImage = displayImages.Values.FirstOrDefault(m => m != null && !m.IsEmpty);
 
-            // 如果没有输出图像，返回错误
+            // 如果没有输出图像，返回成功（无主图像的结果仍然可以包含结构化数据）
             if (primaryImage == null)
             {
-                return AlgorithmResult.CreateError("工具执行成功但没有输出图像");
+                var nullResult = AlgorithmResult.CreateSuccess(null, result.ExecutionTimeMs);
+                nullResult.ToolResults = result;
+                return nullResult;
             }
 
             var algorithmResult = AlgorithmResult.CreateSuccess(primaryImage, result.ExecutionTimeMs);

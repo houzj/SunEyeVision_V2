@@ -26,7 +26,7 @@ namespace SunEyeVision.Tool.Morphology
     ///   6. 结果判断       → OK/NG判定
     /// </summary>
     [Tool(
-        id: "morphology",
+        id: "Morphology",
         displayName: "形态学处理",
         Description = "对二值图像执行形态学操作（腐蚀/膨胀/开闭运算等）",
         Icon = "🔲",
@@ -52,7 +52,7 @@ namespace SunEyeVision.Tool.Morphology
             var result = new MorphologyResults
             {
                 ToolName = _attribute?.DisplayName ?? "Morphology",
-                ToolId = _attribute?.Id ?? "morphology",
+                ToolId = _attribute?.Id ?? "Morphology",
                 Timestamp = DateTime.Now
             };
 

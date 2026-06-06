@@ -9,6 +9,8 @@
     <RootNamespace>SunEyeVision.Tool.Subroutine</RootNamespace>
     <AssemblyName>SunEyeVision.Tool.Subroutine</AssemblyName>
     <IsToolPlugin>true</IsToolPlugin>
+    <OutDir Condition="'$(Configuration)'=='Debug'">$(MSBuildProjectDirectory)\..\..\dev\Debug\plugins\</OutDir>
+    <OutDir Condition="'$(Configuration)'=='Release'">$(MSBuildProjectDirectory)\..\..\Release\SunEyeVision_v1.0.0\SunEyeVision\plugins\</OutDir>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Plugin.SDK\SunEyeVision.Plugin.SDK.csproj" />

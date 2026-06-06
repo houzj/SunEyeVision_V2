@@ -42,7 +42,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
     /// - 延迟轮廓提取：仅对最终通过的blob提取contour
     /// </remarks>
     [Tool(
-        id: "blob-analysis",
+        id: "BlobAnalysis",
         displayName: "Blob分析",
         Description = "连通域分析与特征提取",
         Icon = "🔬",
@@ -69,7 +69,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
             var result = new BlobAnalysisResults
             {
                 ToolName = _attribute?.DisplayName ?? "BlobAnalysis",
-                ToolId = _attribute?.Id ?? "blob-analysis",
+                ToolId = _attribute?.Id ?? "BlobAnalysis",
                 Timestamp = DateTime.Now
             };
 
@@ -351,6 +351,14 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                         result.MaxValueUsedDouble = parameters.MaxValue.Value;
                                         result.TypeUsed = (int)parameters.Type.Value;
                                         result.InvertUsed = parameters.Invert;
+
+                                        // 图形结果（供下游节点显示绑定）
+                                        result.BlobBoundingBoxes = filteredBlobs
+                                            .Select(b => b.BoundingBox).ToArray();
+                                        result.BlobCentroids = filteredBlobs
+                                            .Select(b => new WpfPoint(b.CentroidX, b.CentroidY)).ToArray();
+                                        result.BlobContours = filteredBlobs
+                                            .Where(b => b.HasContour).Select(b => b.Contour!).ToArray();
 
                                         // 二值掩码
                                         HOperatorSet.RegionToBin(binaryRegion, out var binObj,

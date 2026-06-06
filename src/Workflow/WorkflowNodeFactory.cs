@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
@@ -128,55 +128,7 @@ return null;
         }
 
         // Start 节点已废弃，不再需要特殊节点类型
-        // 执行顺序由连线关系决定，基于入度自动识别入口节点
-
-        /// <summary>
-        /// 创建子程序节点
-        /// </summary>
-        /// <param name="nodeId">节点ID</param>
-        /// <param name="nodeName">节点名称（包含全局序号，用于序列化）</param>
-        /// <param name="dispName">节点显示名称（不含序号，用于UI显示）</param>
-        /// <param name="parameters">算法参数</param>
-        /// <returns>创建的SubroutineNode</returns>
-        public static SubroutineNode CreateSubroutineNode(
-            string nodeId,
-            string nodeName,
-            string dispName,
-            ToolParameters? parameters = null)
-        {
-            var node = new SubroutineNode(nodeId, nodeName, dispName);
-            if (parameters != null)
-            {
-                node.Parameters = parameters;
-            }
-            return node;
-        }
-
-        /// <summary>
-        /// 创建条件节点
-        /// </summary>
-        /// <param name="nodeId">节点ID</param>
-        /// <param name="nodeName">节点名称（包含全局序号，用于序列化）</param>
-        /// <param name="dispName">节点显示名称（不含序号，用于UI显示）</param>
-        /// <param name="conditionExpression">条件表达式</param>
-        /// <param name="parameters">算法参数</param>
-        /// <returns>创建的ConditionNode</returns>
-        public static ConditionNode CreateConditionNode(
-            string nodeId,
-            string nodeName,
-            string dispName,
-            string conditionExpression,
-            ToolParameters? parameters = null)
-        {
-            var node = new ConditionNode(nodeId, nodeName, dispName);
-            node.SetExpressionCondition(conditionExpression);
-
-            if (parameters != null)
-            {
-                node.Parameters = parameters;
-            }
-            return node;
-        }
+        // ConditionNode 已删除 — Condition 作为 ConditionTool (IToolPlugin) 由 ToolRegistry 统一管理
 
         /// <summary>
         /// 验证工具是否可用

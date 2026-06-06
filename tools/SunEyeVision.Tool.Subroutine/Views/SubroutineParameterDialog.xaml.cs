@@ -1,37 +1,37 @@
+﻿using System;
+using System.Collections.Generic;
 using System.Windows;
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Tool.Subroutine.Models;
 using SunEyeVision.Tool.Subroutine.ViewModels;
 
 namespace SunEyeVision.Tool.Subroutine.Views
 {
     /// <summary>
-    /// 子程序参数映射对话框
+    /// 子程序参数配置对话框（内联 ComboBox 版本，无需弹窗）
     /// </summary>
     public partial class SubroutineParameterDialog : Window
     {
-        /// <summary>
-        /// 构造函数
-        /// </summary>
-        /// <param name="subroutineId">子程序工作流ID</param>
-        /// <param name="subroutineName">子程序名称</param>
-        public SubroutineParameterDialog(string subroutineId, string subroutineName)
+        private readonly SubroutineParameterDialogViewModel _viewModel;
+
+        public SubroutineParameterDialog(
+            string subroutineId,
+            string subroutineName,
+            string nodeId,
+            IDataSourceQueryService? dataSourceQueryService,
+            List<AvailableDataSource>? subroutineInternalSources,
+            SubroutineParameters parameters)
         {
             InitializeComponent();
-            DataContext = new SubroutineParameterDialogViewModel(subroutineId, subroutineName);
+
+            _viewModel = new SubroutineParameterDialogViewModel(
+                subroutineId, subroutineName, nodeId, dataSourceQueryService, subroutineInternalSources, parameters);
+            DataContext = _viewModel;
         }
 
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
-            if (DataContext is SubroutineParameterDialogViewModel vm)
-            {
-                vm.Save();
-            }
             DialogResult = true;
-            Close();
-        }
-
-        private void CancelButton_Click(object sender, RoutedEventArgs e)
-        {
-            DialogResult = false;
             Close();
         }
     }

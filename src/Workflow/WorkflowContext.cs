@@ -249,11 +249,6 @@ namespace SunEyeVision.Workflow
         public Dictionary<string, NodeExecutionStatusInternal> NodeStates { get; set; }
 
         /// <summary>
-        /// 工作流控制插件引用
-        /// </summary>
-        public IWorkflowControlPlugin WorkflowControlPlugin { get; set; }
-
-        /// <summary>
         /// 执行引擎引用（由 WorkflowExecutionEngine 设置，供子程序插件使用）
         /// </summary>
         public WorkflowExecutionEngine ExecutionEngine { get; set; }
@@ -504,7 +499,7 @@ namespace SunEyeVision.Workflow
             var subContext = new WorkflowContext
             {
                 WorkflowId = subroutineId,
-                WorkflowControlPlugin = WorkflowControlPlugin,
+                ExecutionEngine = ExecutionEngine,
                 CancellationToken = CancellationToken,
                 ProgressReporter = ProgressReporter,
                 IsDebugMode = IsDebugMode,

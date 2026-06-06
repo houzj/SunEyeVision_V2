@@ -70,6 +70,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
             // 设置内容
             ContentHost.Content = _control;
 
+            // 自适应尺寸：控件有显式宽高时 SizeToContent，否则用 XAML 默认的 400x550
+            if (!double.IsNaN(control.Width) && !double.IsNaN(control.Height))
+            {
+                SizeToContent = SizeToContent.WidthAndHeight;
+            }
+
             // 订阅路由事件
             SubscribeRoutedEvents();
 

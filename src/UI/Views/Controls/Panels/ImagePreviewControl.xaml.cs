@@ -917,10 +917,23 @@ return cpuConcurrency;
                 // 设置首张图片加载完成的回调
                 var firstImageTcs = new TaskCompletionSource<bool>();
 
-                await _priorityLoader.LoadInitialScreenAsync(fileNames, ImageCollection, index =>
+                if (append && ImageCollection.Count > allImages.Length)
                 {
-                    firstImageTcs.TrySetResult(true);
-                });
+                    // ★ 追加模式：保留旧图片的已加载状态，只加载新增图片
+                    int oldCount = ImageCollection.Count - allImages.Length;
+                    await _priorityLoader.LoadAppendedImagesAsync(fileNames, oldCount, index =>
+                    {
+                        firstImageTcs.TrySetResult(true);
+                    });
+                }
+                else
+                {
+                    // 替换模式：使用原有逻辑
+                    await _priorityLoader.LoadInitialScreenAsync(fileNames, ImageCollection, index =>
+                    {
+                        firstImageTcs.TrySetResult(true);
+                    });
+                }
 
                 // 等待首张图片加载完成
                 await firstImageTcs.Task;

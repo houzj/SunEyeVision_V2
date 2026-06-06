@@ -71,7 +71,7 @@ public partial class App : Application
         // 解决：在任何可能触发序列化操作之前加载插件
 
         // 1. 初始化插件管理器（在任何其他初始化之前）
-        var pluginManager = new PluginManager();
+        var pluginManager = new PluginManager(VisionLogger.Instance);
         string pluginsPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "plugins");
         pluginManager.LoadPlugins(pluginsPath);
 

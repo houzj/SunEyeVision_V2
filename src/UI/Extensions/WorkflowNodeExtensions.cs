@@ -18,6 +18,7 @@ namespace SunEyeVision.UI.Extensions
             workflowNode.ToolType = uiNode.ToolType;
             workflowNode.LocalIndex = uiNode.LocalIndex;
             workflowNode.GlobalIndex = uiNode.GlobalIndex;
+            workflowNode.SubroutineId = uiNode.SubroutineId;
             return workflowNode;
         }
     }

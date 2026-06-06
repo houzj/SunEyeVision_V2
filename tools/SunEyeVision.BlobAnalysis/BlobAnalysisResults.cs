@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Windows;
 using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
+using WpfPoint = System.Windows.Point;
 
 namespace SunEyeVision.Tool.BlobAnalysis
 {
@@ -192,6 +194,19 @@ namespace SunEyeVision.Tool.BlobAnalysis
 
         #endregion
 
+        #region 图形结果（供下游节点数据绑定用）
+
+        /// <summary>所有筛选通过Blob的外接矩形数组</summary>
+        public Rect[] BlobBoundingBoxes { get; set; } = Array.Empty<Rect>();
+
+        /// <summary>所有筛选通过Blob的轮廓点集数组</summary>
+        public WpfPoint[][] BlobContours { get; set; } = Array.Empty<WpfPoint[]>();
+
+        /// <summary>所有筛选通过Blob的质心点数组</summary>
+        public WpfPoint[] BlobCentroids { get; set; } = Array.Empty<WpfPoint>();
+
+        #endregion
+
         /// <summary>
         /// 获取结果显示项（用于数据面板显示）
         /// </summary>
@@ -248,6 +263,10 @@ namespace SunEyeVision.Tool.BlobAnalysis
                 new("BlobBoundingHeights",      "边框高",                 "Blob详细/边框"),
                 new("BlobBoundingRects",        "边框(文本)",             "Blob详细/边框"),
                 new("ProcessedAt",              "处理时间戳",             "执行信息"),
+                // 图形结果（供下游节点绑定显示）
+                new("BlobBoundingBoxes",         "外接矩形",               "图形结果"),
+                new("BlobContours",              "轮廓",                   "图形结果"),
+                new("BlobCentroids",             "质心",                   "图形结果"),
             ];
         }
 
@@ -269,6 +288,9 @@ namespace SunEyeVision.Tool.BlobAnalysis
             dict["AverageRectangularity"] = AverageRectangularity;
             dict["WhitePixelRatio"] = WhitePixelRatio;
             dict["ProcessedAt"] = ProcessedAt;
+            dict["BlobBoundingBoxes"] = BlobBoundingBoxes;
+            dict["BlobContours"] = BlobContours;
+            dict["BlobCentroids"] = BlobCentroids;
             return dict;
         }
     }

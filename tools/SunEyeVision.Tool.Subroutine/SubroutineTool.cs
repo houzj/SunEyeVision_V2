@@ -30,16 +30,6 @@ namespace SunEyeVision.Tool.Subroutine
     public class SubroutineTool : IToolPlugin<SubroutineParameters, SubroutineResults>
     {
         /// <summary>
-        /// 工作流引擎引用（框架初始化时注入）
-        /// </summary>
-        public static WorkflowEngine? WorkflowEngine { get; set; }
-
-        /// <summary>
-        /// 工作流执行引擎引用（框架初始化时注入）
-        /// </summary>
-        public static WorkflowExecutionEngine? WorkflowExecutionEngine { get; set; }
-
-        /// <summary>
         /// 执行子程序逻辑
         /// </summary>
         public SubroutineResults Run(SubroutineParameters parameters)
@@ -55,14 +45,11 @@ namespace SunEyeVision.Tool.Subroutine
             try
             {
                 // ===== 前置验证 =====
-                if (WorkflowEngine == null)
-                    throw new InvalidOperationException("工作流引擎未初始化，请检查框架初始顺序");
-
-                if (WorkflowExecutionEngine == null)
-                    throw new InvalidOperationException("工作流执行引擎未初始化，请检查框架初始顺序");
-
                 if (string.IsNullOrEmpty(parameters.SubroutineId))
                     throw new InvalidOperationException($"子程序 \"{parameters.SubroutineName}\" 未配置目标工作流");
+
+                if (parameters.ExecuteSubWorkflowAsync == null)
+                    throw new InvalidOperationException("子工作流执行委托未注入，请确保通过 WorkflowExecutionEngine 执行包含子程序节点的工作流");
 
                 var inputImage = parameters.ResolvedInputImage;
 
@@ -160,11 +147,11 @@ namespace SunEyeVision.Tool.Subroutine
         private static ExecutionResult ExecuteSubWorkflowOnce(SubroutineParameters parameters, IVisionImage? inputImage,
             Dictionary<string, object> contextVariables)
         {
-            if (WorkflowExecutionEngine == null)
-                throw new InvalidOperationException("工作流执行引擎未初始化，请检查框架初始顺序");
+            if (parameters.ExecuteSubWorkflowAsync == null)
+                throw new InvalidOperationException("子工作流执行委托未注入");
 
             return Task.Run(async () =>
-                await WorkflowExecutionEngine.ExecuteWorkflowAsync(parameters.SubroutineId, inputImage, null, contextVariables))
+                await parameters.ExecuteSubWorkflowAsync(parameters.SubroutineId, inputImage, contextVariables))
                 .GetAwaiter().GetResult();
         }
 
@@ -210,16 +197,155 @@ namespace SunEyeVision.Tool.Subroutine
             var config = parameters.LoopConfig;
             var result = new ExecutionResult();
 
-            for (int i = 0; i < config.MaxIterations; i++)
+            // ===== 解析循环起止值（始终从绑定源获取）=====
+            var resolver = new ParameterResolver(parameters.Context?.Logger);
+            var nodeResults = parameters.NodeResults;
+
+            int start = ResolveLoopBound(config.StartValueBinding, "循环起始值", resolver, nodeResults);
+            int end = ResolveLoopBound(config.EndValueBinding, "循环结束值", resolver, nodeResults);
+
+            parameters.LogInfo($"循环起止: [{start}, {end}), 中断循环: {config.EnableBreak}, 共 {end - start} 次");
+
+            for (int i = start; i < end; i++)
             {
                 parameters.CurrentIteration = i;
                 var iterResult = ExecuteSubWorkflowOnce(parameters, inputImage, contextVariables);
                 result.Merge(iterResult);
+
                 if (!iterResult.Success)
                     break;
+
+                // ===== 中断条件判断 =====
+                if (config.EnableBreak)
+                {
+                    bool shouldBreak = EvaluateBreakCondition(config, resolver, nodeResults, iterResult, parameters);
+                    if (shouldBreak)
+                    {
+                        parameters.LogInfo($"循环在第 {i} 次迭代后触发中断条件，提前结束");
+                        break;
+                    }
+                }
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// 解析循环边界值：必须通过绑定源获取，不支持字面量
+        /// </summary>
+        private static int ResolveLoopBound(string bindingPath, string displayName,
+            ParameterResolver resolver, IDictionary<string, ToolResults>? nodeResults)
+        {
+            if (string.IsNullOrEmpty(bindingPath))
+                throw new InvalidOperationException($"{displayName} 未配置绑定源，请先点击 🔗 选择上游节点输出");
+
+            if (nodeResults == null)
+                throw new InvalidOperationException($"节点结果为空，无法解析 {displayName} 绑定");
+
+            var parts = bindingPath.Split('.');
+            if (parts.Length < 2)
+                throw new InvalidOperationException($"{displayName} 绑定源格式无效: '{bindingPath}'，应为 \"节点ID.属性名\"");
+
+            var binding = new ParamSetting
+            {
+                ParameterName = displayName,
+                BindingType = BindingType.Binding,
+                SourceNodeId = parts[0],
+                SourceProperty = parts[1],
+                TargetType = typeof(int)
+            };
+            var resolveResult = resolver.Resolve(binding, nodeResults);
+            if (!resolveResult.IsSuccess || resolveResult.Value == null)
+                throw new InvalidOperationException($"{displayName} 绑定解析失败: {resolveResult.ErrorMessage ?? "值为空"}");
+
+            return Convert.ToInt32(resolveResult.Value);
+        }
+
+        /// <summary>
+        /// 评估循环中断条件：源/目的比较值均必须通过绑定获取
+        /// </summary>
+        private static bool EvaluateBreakCondition(SubroutineLoopConfig config,
+            ParameterResolver resolver, IDictionary<string, ToolResults>? nodeResults,
+            ExecutionResult iterResult, SubroutineParameters parameters)
+        {
+            if (!config.EnableBreak) return false;
+
+            // 源比较值：从绑定源解析（当前迭代结果）
+            string? sourceStr = null;
+            if (!string.IsNullOrEmpty(config.SourceCompareBinding) && iterResult.NodeResults != null)
+            {
+                var parts = config.SourceCompareBinding.Split('.');
+                if (parts.Length >= 2)
+                {
+                    var binding = new ParamSetting
+                    {
+                        ParameterName = "源比较值",
+                        BindingType = BindingType.Binding,
+                        SourceNodeId = parts[0],
+                        SourceProperty = parts[1],
+                        TargetType = typeof(double)
+                    };
+                    var iterToolResults = iterResult.NodeResults
+                        .Where(kvp => kvp.Value?.Result != null)
+                        .ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Result!);
+                    var resolveResult = resolver.Resolve(binding, iterToolResults);
+                    if (resolveResult.IsSuccess && resolveResult.Value != null)
+                    {
+                        sourceStr = resolveResult.Value.ToString();
+                    }
+                }
+            }
+            if (string.IsNullOrEmpty(sourceStr))
+            {
+                parameters.LogWarning("中断条件: 源比较值未配置有效绑定源，不触发中断");
+                return false;
+            }
+
+            // 目的比较值：从绑定源解析（父工作流）
+            string? targetStr = null;
+            if (!string.IsNullOrEmpty(config.TargetCompareBinding) && nodeResults != null)
+            {
+                var parts = config.TargetCompareBinding.Split('.');
+                if (parts.Length >= 2)
+                {
+                    var binding = new ParamSetting
+                    {
+                        ParameterName = "目的比较值",
+                        BindingType = BindingType.Binding,
+                        SourceNodeId = parts[0],
+                        SourceProperty = parts[1],
+                        TargetType = typeof(double)
+                    };
+                    var resolveResult = resolver.Resolve(binding, nodeResults);
+                    if (resolveResult.IsSuccess && resolveResult.Value != null)
+                    {
+                        targetStr = resolveResult.Value.ToString();
+                    }
+                }
+            }
+            if (string.IsNullOrEmpty(targetStr))
+            {
+                parameters.LogWarning("中断条件: 目的比较值未配置有效绑定源，不触发中断");
+                return false;
+            }
+
+            // 类型转换后比较
+            if (!double.TryParse(sourceStr, out var sourceVal) || !double.TryParse(targetStr, out var targetVal))
+                return false;
+
+            bool conditionMet = config.ComparisonOperator switch
+            {
+                ">" => sourceVal > targetVal,
+                ">=" => sourceVal >= targetVal,
+                "<" => sourceVal < targetVal,
+                "<=" => sourceVal <= targetVal,
+                "==" => Math.Abs(sourceVal - targetVal) < 1e-9,
+                "!=" => Math.Abs(sourceVal - targetVal) >= 1e-9,
+                _ => false
+            };
+
+            parameters.LogInfo($"  中断判断: {sourceStr} {config.ComparisonOperator} {targetStr} = {conditionMet}");
+            return conditionMet;
         }
     }
 }

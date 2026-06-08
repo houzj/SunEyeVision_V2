@@ -9,7 +9,6 @@ using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.UI.Models;
 using SunEyeVision.UI.ViewModels;
-using SunEyeVision.Tool.Subroutine;
 using SunEyeVision.Workflow;
 using SunEyeVision.UI.Infrastructure;
 using SunEyeVision.UI.Services.Workflow;
@@ -279,9 +278,6 @@ namespace SunEyeVision.UI.Services.Workflow
                 // ★ Phase 1: 使用共享的 _workflowEngine（子程序工作流已注册在其中），不再创建新引擎
                 var pluginManager = new PluginManager(logger);
                 var executionEngine = new WorkflowExecutionEngine(_workflowEngine, pluginManager, logger);
-
-                // 初始化子程序插件（将引擎注入到 SubroutineTool）
-                var subroutinePlugin = new SubroutinePlugin(_workflowEngine, executionEngine);
 
                 // ★ 从引擎获取根工作流（始终读取 RootWorkflowId 对应的节点）
                 var rootEngineWorkflow = _workflowEngine.GetWorkflow(workflow.RootWorkflowId);

@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Windows.Media;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 
 namespace SunEyeVision.Tool.Subroutine.Models
@@ -17,6 +19,13 @@ namespace SunEyeVision.Tool.Subroutine.Models
         private bool _isAccumulated;
         private string _bindingSource = string.Empty;
         private string _bindingDisplayText = string.Empty;
+        private GraphicsStyle _graphicsStyle = new()
+        {
+            Name = "子程序显示",
+            LineWidth = 2,
+            OkColor = Color.FromRgb(0, 255, 0)
+        };
+        private TextStyle? _textStyle;
 
         /// <summary>参数名称</summary>
         public string DisplayName
@@ -73,6 +82,27 @@ namespace SunEyeVision.Tool.Subroutine.Models
             get => _bindingDisplayText;
             set => SetProperty(ref _bindingDisplayText, value);
         }
+
+        /// <summary>图形样式（Point/Line/Rectangle/Circle/Arc/Polygon/Contour/Arrow/Cross/CoordinateSystem 使用）</summary>
+        public GraphicsStyle GraphicsStyle
+        {
+            get => _graphicsStyle;
+            set => SetProperty(ref _graphicsStyle, value);
+        }
+
+        /// <summary>文本样式（Text 类型使用）</summary>
+        public TextStyle? TextStyle
+        {
+            get => _textStyle;
+            set => SetProperty(ref _textStyle, value);
+        }
+
+        /// <summary>是否为图形类型（非 Text/Image 时显示 DispItemColorControl）</summary>
+        public bool IsGraphicType => DisplayType != SubroutineDisplayType.Text
+                                   && DisplayType != SubroutineDisplayType.Image;
+
+        /// <summary>是否为文本类型（Text 时显示 DispTextColorControl）</summary>
+        public bool IsTextType => DisplayType == SubroutineDisplayType.Text;
     }
 
     /// <summary>

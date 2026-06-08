@@ -3,28 +3,16 @@ using System.Collections.Generic;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Tool.Subroutine.Models;
-using SunEyeVision.Workflow;
 
 namespace SunEyeVision.Tool.Subroutine
 {
     /// <summary>
-    /// 子程序插件 — 负责引擎注入和对话框服务。
-    /// Condition 已迁移为 ConditionTool (IToolPlugin)，不再需要 IWorkflowControlPlugin。
+    /// 子程序插件 — 只负责对话框服务。
+    /// 引擎注入已迁移为委托注入（SubroutineParameters.ExecuteSubWorkflowAsync），
+    /// 不再需要静态属性注入。
     /// </summary>
     public class SubroutinePlugin
     {
-        /// <summary>
-        /// 初始化子程序插件，将 WorkflowEngine/ExecutionEngine 注入到 SubroutineTool
-        /// </summary>
-        public SubroutinePlugin(WorkflowEngine workflowEngine, WorkflowExecutionEngine? executionEngine = null)
-        {
-            if (workflowEngine == null)
-                throw new ArgumentNullException(nameof(workflowEngine));
-
-            SubroutineTool.WorkflowEngine = workflowEngine;
-            SubroutineTool.WorkflowExecutionEngine = executionEngine;
-        }
-
         /// <summary>
         /// 显示子程序参数设置对话框
         /// </summary>

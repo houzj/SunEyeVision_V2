@@ -538,6 +538,16 @@ namespace SunEyeVision.Workflow
 
                 // 复制参数绑定配置
                 executionNode.ParamSettings = node.ParamSettings;
+
+                // ★ 委托注入：Subroutine 节点通过委托调用 ExecuteWorkflowAsync 执行子工作流
+                if (node.Parameters is ISubWorkflowExecutor executor)
+                {
+                    // 运行时同步 SubroutineId（以 node.SubroutineId 为 SSOT）
+                    executor.SubroutineId = node.SubroutineId ?? string.Empty;
+                    executor.ExecuteSubWorkflowAsync = (subId, img, ctx) =>
+                        ExecuteWorkflowAsync(subId, img, null, ctx);
+                }
+
                 target.AddNode(executionNode);
             }
 

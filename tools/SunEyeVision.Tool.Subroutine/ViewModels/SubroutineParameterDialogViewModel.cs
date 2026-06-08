@@ -23,8 +23,6 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
         private string _selectedInputTypeName = "Image";
         private string _selectedOutputTypeName = "Float";
         private SubroutineDisplayType _selectedDisplayType = SubroutineDisplayType.Circle;
-        private System.Windows.Media.ImageSource? _previewImage;
-
         public string DialogTitle => $"{_subroutineName} - 子程序参数设置";
 
         /// <summary>直接暴露源参数的集合（共享引用，实时同步到 node.Parameters）</summary>
@@ -32,8 +30,6 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
         public ObservableCollection<SubroutineOutputConfig> Outputs => _parameters.Outputs;
         public ObservableCollection<SubroutineDisplayItem> DisplayItems => _parameters.DisplayConfigs;
         public SubroutineLoopConfig LoopConfig => _parameters.LoopConfig;
-
-        public ObservableCollection<OutputResultItem> OutputResults { get; } = new();
 
         public ObservableCollection<AvailableDataSource> AvailableSources { get; } = new();
 
@@ -62,11 +58,11 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
 
         public List<SubroutineDisplayType> AvailableDisplayTypes { get; }
 
-        public System.Windows.Media.ImageSource? PreviewImage
-        {
-            get => _previewImage;
-            set => SetProperty(ref _previewImage, value);
-        }
+        /// <summary>循环设置：可用数据类型</summary>
+        public List<string> AvailableLoopDataTypes { get; } = new() { "int", "double", "float", "string" };
+
+        /// <summary>循环设置：比较运算符</summary>
+        public List<string> ComparisonOperators { get; } = new() { ">", ">=", "<", "<=", "==", "!=" };
 
         public ICommand AddInputCommand { get; }
         public ICommand AddOutputCommand { get; }
@@ -153,11 +149,32 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
 
         private void AddDisplayItem()
         {
-            DisplayItems.Add(new SubroutineDisplayItem
+            var item = new SubroutineDisplayItem
             {
                 DisplayName = SelectedDisplayType.ToString(),
                 DisplayType = SelectedDisplayType
-            });
+            };
+
+            // 根据类型初始化样式对象
+            if (SelectedDisplayType == SubroutineDisplayType.Text)
+            {
+                item.TextStyle = new TextStyle
+                {
+                    Name = SelectedDisplayType.ToString(),
+                    FontSize = 12.0,
+                    OkColor = System.Windows.Media.Color.FromRgb(0, 255, 0),
+                    PositionX = 10,
+                    PositionY = 10
+                };
+            }
+            else if (SelectedDisplayType != SubroutineDisplayType.Image)
+            {
+                // 图形类型——更新默认 GraphicsStyle 的名称
+                item.GraphicsStyle.Name = SelectedDisplayType.ToString();
+            }
+            // Image 类型：不需要任何样式对象
+
+            DisplayItems.Add(item);
         }
 
         private void ExecuteRemoveItem(object? item)
@@ -210,28 +227,5 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
 
     }
 
-    public class OutputResultItem : ObservableObject
-    {
-        private string _name = string.Empty;
-        private string _value = string.Empty;
-        private string _status = string.Empty;
 
-        public string Name
-        {
-            get => _name;
-            set => SetProperty(ref _name, value);
-        }
-
-        public string Value
-        {
-            get => _value;
-            set => SetProperty(ref _value, value);
-        }
-
-        public string Status
-        {
-            get => _status;
-            set => SetProperty(ref _status, value);
-        }
-    }
 }

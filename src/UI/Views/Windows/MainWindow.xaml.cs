@@ -26,6 +26,7 @@ using SunEyeVision.UI.Converters.Path;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Tool.Subroutine;
+using SunEyeVision.Tool.Subroutine.Models;
 
 
 
@@ -1789,8 +1790,24 @@ namespace SunEyeVision.UI.Views.Windows
                 // 4. 获取参数
                 var parameters = FindParentSubroutineParameters(tab.CurrentWorkflowId);
 
+                // ★ 创建实时刷新回调
+                Action? onOutputsChanged = null;
+                if (_viewModel?.SelectedNode != null && parameters != null)
+                {
+                    var capturedNodeId = _viewModel.SelectedNode.Id;
+                    var capturedNodeName = _viewModel.SelectedNode.Name;
+                    onOutputsChanged = () =>
+                    {
+                        var tempResults = new SubroutineResults
+                        {
+                            OutputConfigs = parameters.Outputs.ToList()
+                        };
+                        _viewModel?.UpdateModuleResults(tempResults, capturedNodeName, "Subroutine", capturedNodeId);
+                    };
+                }
+
                 SubroutinePlugin.ShowParameterDialog(this, tab.CurrentWorkflowId, tab.EffectiveDisplayName,
-                    parentNodeId, queryService, parameters, internalSources);
+                    parentNodeId, queryService, parameters, internalSources, onOutputsChanged);
 
             }
             catch (Exception ex)
@@ -1833,10 +1850,19 @@ namespace SunEyeVision.UI.Views.Windows
                 var subQueryService = _viewModel?.CreateDataSourceQueryService(subroutineId);
                 var internalSources = subQueryService?.GetWorkflowNodeDataSources() ?? new();
 
+                // ★ 创建实时刷新回调：Outputs 变更时立即更新模块结果树
+                Action? onOutputsChanged = () =>
+                {
+                    var sp = node.Parameters as SubroutineParameters;
+                    if (sp == null) return;
+                    var tempResults = new SubroutineResults { OutputConfigs = sp.Outputs.ToList() };
+                    _viewModel?.UpdateModuleResults(tempResults, node.DispName, "Subroutine", node.Id);
+                };
+
                 // ★ node.Id 是父工作流中该子程序节点的 ID（用于数据源绑定）
                 SubroutinePlugin.ShowParameterDialog(this, subroutineId, node.DispName, node.Id, queryService,
                     node.Parameters as SunEyeVision.Tool.Subroutine.Models.SubroutineParameters,
-                    internalSources);
+                    internalSources, onOutputsChanged);
             }
             catch (Exception ex)
             {

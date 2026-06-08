@@ -20,12 +20,13 @@ namespace SunEyeVision.Tool.Subroutine.Views
             string nodeId,
             IDataSourceQueryService? dataSourceQueryService,
             List<AvailableDataSource>? subroutineInternalSources,
-            SubroutineParameters parameters)
+            SubroutineParameters parameters,
+            Action? onOutputsChanged = null)
         {
             InitializeComponent();
 
             _viewModel = new SubroutineParameterDialogViewModel(
-                subroutineId, subroutineName, nodeId, dataSourceQueryService, subroutineInternalSources, parameters);
+                subroutineId, subroutineName, nodeId, dataSourceQueryService, subroutineInternalSources, parameters, onOutputsChanged);
             DataContext = _viewModel;
         }
 

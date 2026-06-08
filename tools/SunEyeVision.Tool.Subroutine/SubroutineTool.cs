@@ -100,6 +100,9 @@ namespace SunEyeVision.Tool.Subroutine
                     }
                 }
 
+                // 捕获输出配置快照（供结果模块树在设计态展示动态输出端口）
+                result.OutputConfigs = parameters.Outputs.ToList();
+
                 // ===== 解析输出项（根据 Outputs 配置，从子工作流节点结果中取值）=====
                 if (subWorkflowNodeResults.Count > 0)
                 {

@@ -482,32 +482,17 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <!-- 图像预览区域 -->
+                    <!-- 图像预览区域（使用 SDK ImageControl） -->
                     <Border Grid.Row="0" Margin="8" BorderBrush="#D0D0D0" BorderThickness="1" CornerRadius="4">
-                        <Grid>
-                            <Border Background="#1A1A1A" CornerRadius="4">
-                                <Viewbox Stretch="Uniform">
-                                    <Image Source="{Binding PreviewImage}" Stretch="Uniform"/>
-                                </Viewbox>
-                            </Border>
-                            <TextBlock Text="图像预览"
-                                       Foreground="#888888"
-                                       FontSize="14"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"
-                                       IsHitTestVisible="False">
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding PreviewImage}" Value="{x:Null}">
-                                                <Setter Property="Visibility" Value="Visible"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
-                        </Grid>
+                        <controls:ImageControl
+                            SourceImage="{Binding PreviewImage}"
+                            ImageSources="{Binding SubroutineInternalSources}"
+                            ShowToolBar="True"
+                            ShowImageSourceSelector="True"
+                            ShowStatusBar="True"
+                            AutoFitMode="FirstOnly"
+                            EnablePanning="True"
+                            EnableZoom="True"/>
                     </Border>
 
                     <!-- 输出结果表格 -->

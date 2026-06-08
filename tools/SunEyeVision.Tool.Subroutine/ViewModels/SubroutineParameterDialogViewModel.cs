@@ -19,6 +19,7 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
         private readonly IDataSourceQueryService? _dataSourceQueryService;
         private readonly List<AvailableDataSource>? _subroutineInternalSources;
         private readonly SubroutineParameters _parameters;
+        private readonly Action? _onOutputsChanged;
         private string _selectedInputTypeName = "Image";
         private string _selectedOutputTypeName = "Float";
         private SubroutineDisplayType _selectedDisplayType = SubroutineDisplayType.Circle;
@@ -79,7 +80,8 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
             string nodeId,
             IDataSourceQueryService? dataSourceQueryService,
             List<AvailableDataSource>? subroutineInternalSources,
-            SubroutineParameters parameters)
+            SubroutineParameters parameters,
+            Action? onOutputsChanged = null)
         {
             _subroutineId = subroutineId ?? throw new ArgumentNullException(nameof(subroutineId));
             _subroutineName = subroutineName ?? throw new ArgumentNullException(nameof(subroutineName));
@@ -87,6 +89,7 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
             _dataSourceQueryService = dataSourceQueryService;
             _subroutineInternalSources = subroutineInternalSources;
             _parameters = parameters ?? throw new ArgumentNullException(nameof(parameters));
+            _onOutputsChanged = onOutputsChanged;
 
             AvailableDisplayTypes = Enum.GetValues<SubroutineDisplayType>().ToList();
 
@@ -95,6 +98,13 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
             AddDisplayItemCommand = new RelayCommand(AddDisplayItem);
             RemoveItemCommand = new RelayCommand<object>(ExecuteRemoveItem);
             RemoveDisplayItemCommand = new RelayCommand<SubroutineDisplayItem>(ExecuteRemoveDisplayItem);
+
+            // ★ 订阅 Outputs 变更 → 实时通知主窗口刷新模块结果树
+            _parameters.Outputs.CollectionChanged += OnOutputsCollectionChanged;
+
+            // ★ 订阅已有输出项的 PropertyChanged（名称/类型修改时刷新）
+            foreach (var output in _parameters.Outputs)
+                output.PropertyChanged += OnOutputPropertyChanged;
 
             LoadAvailableSources();
         }
@@ -163,6 +173,39 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
         {
             if (item == null) return;
             DisplayItems.Remove(item);
+        }
+
+        /// <summary>
+        /// Outputs 集合增删时触发回调，通知主窗口实时刷新模块结果树
+        /// </summary>
+        private void OnOutputsCollectionChanged(object? sender,
+            System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            // 新加项 → 订阅 PropertyChanged
+            if (e.NewItems != null)
+            {
+                foreach (var item in e.NewItems.OfType<SubroutineOutputConfig>())
+                    item.PropertyChanged += OnOutputPropertyChanged;
+            }
+
+            // 移除项 → 取消订阅
+            if (e.OldItems != null)
+            {
+                foreach (var item in e.OldItems.OfType<SubroutineOutputConfig>())
+                    item.PropertyChanged -= OnOutputPropertyChanged;
+            }
+
+            // 增删 → 触发回调
+            _onOutputsChanged?.Invoke();
+        }
+
+        /// <summary>
+        /// 输出项属性变更（如名称修改）→ 实时刷新模块结果树
+        /// </summary>
+        private void OnOutputPropertyChanged(object? sender,
+            System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            _onOutputsChanged?.Invoke();
         }
 
     }

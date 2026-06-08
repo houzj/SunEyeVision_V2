@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
@@ -30,6 +31,13 @@ namespace SunEyeVision.Tool.Subroutine.Models
         /// </summary>
         [JsonIgnore]
         public Dictionary<string, object> ResolvedOutputValues { get; set; } = new();
+
+        /// <summary>
+        /// 输出配置快照（由 SubroutineTool.Run() 在运行时从参数捕获）。
+        /// 用于在未执行时（设计态）也让 GetPropertyMap() 返回完整的输出端口结构。
+        /// </summary>
+        [JsonIgnore]
+        public List<SubroutineOutputConfig> OutputConfigs { get; set; } = new();
 
         public override Dictionary<string, IVisionImage?> GetDisplayImages()
         {
@@ -71,8 +79,12 @@ namespace SunEyeVision.Tool.Subroutine.Models
                 new("ExecutedNodeCount", "执行节点数", "执行信息"),
                 new("ExecutedAt", "执行时间", "执行信息")
             };
-            foreach (var kvp in ResolvedOutputValues)
-                map.Add(new PropertyMapEntry(kvp.Key, kvp.Key, "输出结果"));
+            // 优先运行时解析值，回退到输出配置定义（设计态也可见）
+            var keys = ResolvedOutputValues.Count > 0
+                ? ResolvedOutputValues.Keys
+                : OutputConfigs.Select(c => c.Name);
+            foreach (var name in keys)
+                map.Add(new PropertyMapEntry(name, name, "输出结果"));
             return map;
         }
 

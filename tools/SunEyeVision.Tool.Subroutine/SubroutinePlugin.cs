@@ -30,7 +30,7 @@ namespace SunEyeVision.Tool.Subroutine
         /// </summary>
         public static bool ShowParameterDialog(System.Windows.Window owner, string id, string name)
         {
-            return ShowParameterDialog(owner, id, name, id, null, null, null);
+            return ShowParameterDialog(owner, id, name, id, null, null, null, null);
         }
 
         /// <summary>
@@ -43,10 +43,11 @@ namespace SunEyeVision.Tool.Subroutine
             string nodeId,
             IDataSourceQueryService? dataSourceQueryService,
             SubroutineParameters? parameters = null,
-            List<AvailableDataSource>? subroutineInternalSources = null)
+            List<AvailableDataSource>? subroutineInternalSources = null,
+            Action? onOutputsChanged = null)
         {
             parameters ??= new SubroutineParameters();
-            var dialog = new Views.SubroutineParameterDialog(id, name, nodeId, dataSourceQueryService, subroutineInternalSources, parameters)
+            var dialog = new Views.SubroutineParameterDialog(id, name, nodeId, dataSourceQueryService, subroutineInternalSources, parameters, onOutputsChanged)
             {
                 Owner = owner
             };

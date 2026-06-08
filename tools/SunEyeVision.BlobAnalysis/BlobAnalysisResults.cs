@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Windows;
 using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 using WpfPoint = System.Windows.Point;
+using WpfRect = System.Windows.Rect;
 
 namespace SunEyeVision.Tool.BlobAnalysis
 {
@@ -197,7 +197,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
         #region 图形结果（供下游节点数据绑定用）
 
         /// <summary>所有筛选通过Blob的外接矩形数组</summary>
-        public Rect[] BlobBoundingBoxes { get; set; } = Array.Empty<Rect>();
+        public WpfRect[] BlobBoundingBoxes { get; set; } = Array.Empty<WpfRect>();
 
         /// <summary>所有筛选通过Blob的轮廓点集数组</summary>
         public WpfPoint[][] BlobContours { get; set; } = Array.Empty<WpfPoint[]>();

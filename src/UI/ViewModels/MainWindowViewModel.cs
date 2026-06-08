@@ -42,7 +42,7 @@ using SunEyeVision.UI.Services.Performance;
 using SunEyeVision.UI.Services.Logging;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.UI.Events;
-using SunEyeVision.Core.Models;
+using SunEyeVision.Tool.Subroutine.Models;
 
 namespace SunEyeVision.UI.ViewModels
 {
@@ -286,7 +286,18 @@ namespace SunEyeVision.UI.ViewModels
                     else if (value != null)
                     {
                         // 未运行也从 _typeCache 显示属性表结构
-                        UpdateModuleResults(null, value.Name, toolId, value.Id);
+                        ToolResults? tempResult = null;
+
+                        // ★ 子程序：从 Parameters 构造临时结果展示动态输出端口（设计态）
+                        if (string.Equals(toolId, "Subroutine", StringComparison.OrdinalIgnoreCase)
+                            && value.Parameters is SubroutineParameters sp
+                            && sp.Outputs.Count > 0)
+                        {
+                            tempResult = new SubroutineResults { OutputConfigs = sp.Outputs.ToList() };
+                        }
+
+                        UpdateModuleResults(tempResult, value.Name, toolId, value.Id);
+
                         // 清空旧节点残留在图像上的图形覆盖，防止显示错位
                         _nodeResultManager.ClearResultGraphics();
                     }
@@ -3750,6 +3761,25 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
                 $"[诊断:UpdateModuleResults] toolId='{toolId}' | metadataList.Count={metadataList.Count} | 将{(metadataList.Count == 0 ? "直接返回（模块结果为空）" : "继续构建结果树")}",
                 "MainWindowViewModel");
 
+            // ★ 新增：从结果实例中合并动态属性元数据（让子程序的动态输出端口在模块结果树中可见）
+            if (result != null)
+            {
+                var instanceMap = result.GetPropertyMap();
+                foreach (var entry in instanceMap)
+                {
+                    if (!metadataList.Any(m => m.PropertyName == entry.PropertyName))
+                    {
+                        metadataList.Add(new ToolPropertyMetadata
+                        {
+                            PropertyName = entry.PropertyName,
+                            DisplayName = entry.DisplayName,
+                            GroupName = entry.GroupName,
+                            PropertyType = typeof(object)
+                        });
+                    }
+                }
+            }
+
             if (metadataList.Count == 0)
                 return;
 
@@ -3810,6 +3840,11 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
                         {
                             // 有结果 → 反射取值并格式化
                             var value = ReflectGetValue(result, pn);
+                            // 反射取不到值时从 GetResultItems() 查找（支持子程序动态输出等基于字典的值）
+                            if (value == null)
+                                value = result.GetResultItems()
+                                    .FirstOrDefault(i => string.Equals(i.Name, pn, StringComparison.Ordinal))
+                                    ?.Value;
                             displayValue = FormatTypedValue(value, meta.PropertyType);
                         }
                         else

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 
 namespace SunEyeVision.Plugin.SDK.Execution.Helpers
@@ -202,6 +203,107 @@ namespace SunEyeVision.Plugin.SDK.Execution.Helpers
             }
 
             return (roiRegion, inspHRegion, maskHRegion);
+        }
+
+        #endregion
+
+        #region ShapeResult → HRegion 转换
+
+        /// <summary>
+        /// 将通用 ShapeResult[] 转换为 Halcon HRegion（保持 tuple 结构）
+        /// </summary>
+        public static HRegion ShapeResultsToHalcon(ShapeResult[] shapes)
+        {
+            HRegion? result = null;
+            foreach (var shape in shapes)
+            {
+                HRegion? single = shape.Type switch
+                {
+                    ShapeType.Rectangle => new HRegion(
+                        shape.CenterY - shape.Height / 2,
+                        shape.CenterX - shape.Width / 2,
+                        shape.CenterY + shape.Height / 2,
+                        shape.CenterX + shape.Width / 2),
+
+                    ShapeType.Circle => new HRegion(
+                        shape.CenterY, shape.CenterX, shape.Radius),
+
+                    ShapeType.RotatedRectangle => BuildHalconRotatedRectFromShape(shape),
+
+                    ShapeType.Line => BuildHalconLineRegion(shape),
+
+                    ShapeType.Point => new HRegion(
+                        shape.CenterY, shape.CenterX,
+                        shape.CenterY, shape.CenterX),
+
+                    ShapeType.Polygon when shape.PolygonPoints.Length >= 3
+                        => BuildHalconPolygonRegionFromShape(shape),
+
+                    _ => null
+                };
+
+                if (single != null)
+                {
+                    if (result == null)
+                        result = single;
+                    else
+                    {
+                        HOperatorSet.ConcatObj(result, single, out var concatObj);
+                        result.Dispose();
+                        single.Dispose();
+                        result = new HRegion(concatObj);
+                    }
+                }
+            }
+
+            return result ?? new HRegion();
+        }
+
+        private static HRegion BuildHalconRotatedRectFromShape(ShapeResult shape)
+        {
+            double phi = -shape.Angle * Math.PI / 180.0;
+            HOperatorSet.GenRectangle2(out var rect,
+                shape.CenterY, shape.CenterX,
+                phi,
+                shape.Width / 2.0,
+                shape.Height / 2.0);
+            return new HRegion(rect);
+        }
+
+        private static HRegion BuildHalconLineRegion(ShapeResult shape)
+        {
+            // 直线转矩形线宽（1像素宽）
+            double midY = (shape.StartY + shape.EndY) / 2;
+            double midX = (shape.StartX + shape.EndX) / 2;
+            double dx = shape.EndX - shape.StartX;
+            double dy = shape.EndY - shape.StartY;
+            double length = Math.Sqrt(dx * dx + dy * dy);
+            double phi = Math.Atan2(-dy, dx); // 屏幕→Halcon 角度转换
+            HOperatorSet.GenRectangle2(out var line,
+                midY, midX, phi,
+                length / 2.0, 0.5); // 线宽1像素
+            return new HRegion(line);
+        }
+
+        private static HRegion BuildHalconPolygonRegionFromShape(ShapeResult shape)
+        {
+            var rows = new HTuple();
+            var cols = new HTuple();
+            foreach (var pt in shape.PolygonPoints)
+            {
+                rows = rows.TupleConcat(pt.Y);
+                cols = cols.TupleConcat(pt.X);
+            }
+            if (shape.PolygonPoints.Length >= 3)
+            {
+                rows = rows.TupleConcat(shape.PolygonPoints[0].Y);
+                cols = cols.TupleConcat(shape.PolygonPoints[0].X);
+            }
+            var region = new HRegion();
+            region.GenRegionPolygon(rows, cols);
+            HOperatorSet.FillUp(region, out var filled);
+            region.Dispose();
+            return new HRegion(filled);
         }
 
         #endregion

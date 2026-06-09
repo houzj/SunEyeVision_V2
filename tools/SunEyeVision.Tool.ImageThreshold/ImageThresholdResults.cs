@@ -1,8 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using OpenCvSharp;
 using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
 
 namespace SunEyeVision.Tool.ImageThreshold
 {
@@ -102,6 +104,15 @@ namespace SunEyeVision.Tool.ImageThreshold
 
         #endregion
 
+        #region 图形结果（供下游节点数据绑定用）
+
+        /// <summary>
+        /// 二值区域集合（含1个区域，保持集合格式统一）
+        /// </summary>
+        public IVisionRegion[] OutputRegions { get; set; } = Array.Empty<IVisionRegion>();
+
+        #endregion
+
         #region 分析数据
 
         /// <summary>
@@ -164,6 +175,7 @@ namespace SunEyeVision.Tool.ImageThreshold
                 new("ThresholdUsed",   "实际使用的阈值",    "参数回写"),
                 new("MaxValueUsed",    "实际使用的最大值",  "参数回写"),
                 new("MethodUsed",      "阈值方法",          "参数回写"),
+                new("OutputRegions",   "二值区域",          "图形结果"),
                 new("InputSize",       "输入图像尺寸",      "输入信息"),
                 new("InputChannels",   "输入图像通道数",    "输入信息"),
                 new("WhitePixelCount", "白色像素数",        "统计"),

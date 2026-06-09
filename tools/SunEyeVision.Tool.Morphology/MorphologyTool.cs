@@ -185,6 +185,10 @@ namespace SunEyeVision.Tool.Morphology
                                     // 保存二值掩码
                                     CvOp.RegionToMask(morphRegion, out var binaryMask);
                                     result.BinaryMask = binaryMask;
+
+                                    // 图形结果输出
+                                    result.OutputRegions = new IVisionRegion[] { morphRegion.Clone() };
+
                                     result.OutputImage = outputImage;
 
                                     // 参数回写

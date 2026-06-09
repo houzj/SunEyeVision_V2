@@ -184,6 +184,9 @@ namespace SunEyeVision.Tool.Threshold
                                 CvOp.RegionToMask(binaryRegion, out var binaryMask);
                                 result.BinaryMask = binaryMask;
 
+                                // 图形结果输出
+                                result.OutputRegions = new IVisionRegion[] { binaryRegion.Clone() };
+
                                 result.OutputImage = outputImage;
                                 result.ThresholdUsed = actualThreshold;
                                 result.MaxValueUsed = maxValue;

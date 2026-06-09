@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.VisionAdapters;
+using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
 using WpfPoint = System.Windows.Point;
 using WpfRect = System.Windows.Rect;
 
@@ -204,6 +205,12 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// <summary>所有筛选通过Blob的质心点数组</summary>
         public WpfPoint[] BlobCentroids { get; set; } = Array.Empty<WpfPoint>();
 
+        /// <summary>所有筛选通过Blob的连通域区域集合</summary>
+        public IVisionRegion[] OutputRegions { get; set; } = Array.Empty<IVisionRegion>();
+
+        /// <summary>所有筛选通过Blob的几何形状集合（外接矩形）</summary>
+        public ShapeResult[] OutputShapes { get; set; } = Array.Empty<ShapeResult>();
+
         #endregion
 
         /// <summary>
@@ -266,6 +273,8 @@ namespace SunEyeVision.Tool.BlobAnalysis
                 new("BlobBoundingBoxes",         "外接矩形",               "图形结果"),
                 new("BlobContours",              "轮廓",                   "图形结果"),
                 new("BlobCentroids",             "质心",                   "图形结果"),
+                new("OutputRegions",             "连通域区域",             "图形结果"),
+                new("OutputShapes",              "外接矩形(通用)",         "图形结果"),
             ];
         }
 

@@ -9,6 +9,7 @@ using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
+using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 using SunEyeVision.Plugin.SDK.Execution.Helpers;
@@ -359,6 +360,19 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                             .Select(b => new WpfPoint(b.CentroidX, b.CentroidY)).ToArray();
                                         result.BlobContours = filteredBlobs
                                             .Where(b => b.HasContour).Select(b => b.Contour!).ToArray();
+
+                                        // 图形结果（通用类型，供下游节点数据绑定）
+                                        result.OutputRegions = filteredBlobs
+                                            .Select(b =>
+                                            {
+                                                HOperatorSet.SelectObj(shapeFilteredRegions, out var obj, b.Label);
+                                                return (IVisionRegion)new HalRegion(new HRegion(obj));
+                                            }).ToArray();
+                                        result.OutputShapes = filteredBlobs
+                                            .Select(b => ShapeResult.Rectangle(
+                                                b.BoundingBox.X, b.BoundingBox.Y,
+                                                b.BoundingBox.Width, b.BoundingBox.Height))
+                                            .ToArray();
 
                                         // 二值掩码
                                         HOperatorSet.RegionToBin(binaryRegion, out var binObj,

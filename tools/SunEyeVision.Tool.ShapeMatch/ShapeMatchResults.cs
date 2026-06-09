@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.VisionAdapters;
+using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.Tool.ShapeMatch.Models;
 using WpfPoint = System.Windows.Point;
 using WpfRect = System.Windows.Rect;
@@ -122,6 +123,13 @@ public class ShapeMatchResults : ToolResults
 
     #endregion
 
+    #region 图形结果（供下游节点数据绑定用）
+
+    /// <summary>所有匹配结果的几何形状集合（旋转矩形包围框）</summary>
+    public ShapeResult[] OutputShapes { get; set; } = Array.Empty<ShapeResult>();
+
+    #endregion
+
     #region 判断结果
 
     public bool JudgmentPassed { get; set; } = true;
@@ -196,6 +204,7 @@ public class ShapeMatchResults : ToolResults
             new("MatchedScales",         "缩放",               "匹配详细/姿态"),
             new("MatchedTemplateIndices","模板索引",           "匹配详细/模板信息"),
             new("MatchedTemplateNames",  "模板名称",           "匹配详细/模板信息"),
+            new("OutputShapes",         "匹配包围框(通用)",    "图形结果"),
             new("ProcessedAt",           "处理时间戳",         "执行信息"),
         ];
     }

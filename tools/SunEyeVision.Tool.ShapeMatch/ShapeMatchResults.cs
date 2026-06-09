@@ -18,17 +18,13 @@ public class ShapeMatchResults : ToolResults
 {
     // ===== 输出图像 =====
     [System.Text.Json.Serialization.JsonIgnore]
-    public HImage? OutputImage { get; set; }
+    public IVisionImage? OutputImage { get; set; }
 
-    // ===== 调试中间图像 =====
     [System.Text.Json.Serialization.JsonIgnore]
-    public HImage? DebugGrayImage { get; set; }
+    public IVisionImage? GrayImage { get; set; }
+
     [System.Text.Json.Serialization.JsonIgnore]
-    public HImage? DebugSearchRegionMask { get; set; }
-    [System.Text.Json.Serialization.JsonIgnore]
-    public HImage? DebugMagnitude { get; set; }
-    [System.Text.Json.Serialization.JsonIgnore]
-    public HImage? DebugEdgeMap { get; set; }
+    public IVisionImage? SearchRegionMask { get; set; }
 
     /// <summary>匹配到的结果列表</summary>
     public List<ShapeMatchResultItem> MatchedItems { get; set; } = new();
@@ -139,16 +135,12 @@ public class ShapeMatchResults : ToolResults
     public override Dictionary<string, IVisionImage?> GetDisplayImages()
     {
         var images = new Dictionary<string, IVisionImage?>();
-        if (OutputImage?.IsInitialized() == true)
-            images["OutputImage"] = new HalImage(OutputImage);
-        if (DebugGrayImage?.IsInitialized() == true)
-            images["DebugGrayImage"] = new HalImage(DebugGrayImage);
-        if (DebugSearchRegionMask?.IsInitialized() == true)
-            images["DebugSearchRegionMask"] = new HalImage(DebugSearchRegionMask);
-        if (DebugMagnitude?.IsInitialized() == true)
-            images["DebugMagnitude"] = new HalImage(DebugMagnitude);
-        if (DebugEdgeMap?.IsInitialized() == true)
-            images["DebugEdgeMap"] = new HalImage(DebugEdgeMap);
+        if (OutputImage != null && !OutputImage.IsEmpty)
+            images[nameof(OutputImage)] = OutputImage;
+        if (GrayImage != null && !GrayImage.IsEmpty)
+            images[nameof(GrayImage)] = GrayImage;
+        if (SearchRegionMask != null && !SearchRegionMask.IsEmpty)
+            images[nameof(SearchRegionMask)] = SearchRegionMask;
         return images;
     }
 
@@ -183,9 +175,9 @@ public class ShapeMatchResults : ToolResults
     {
         return
         [
-            new("OutputImage",           "输出图像",           null),
-            new("DebugGrayImage",        "灰度图像(调试)",     null),
-            new("DebugSearchRegionMask", "搜索区域掩码(调试)", null),
+            new("OutputImage",      "输出图像",        null),
+            new("GrayImage",        "灰度图像",        null),
+            new("SearchRegionMask", "搜索区域掩码",    null),
             new("JudgmentPassed",        "判断通过",           "判断"),
             new("MatchCount",            "匹配数量",           "结果"),
             new("BestScore",             "最佳得分",           "结果"),

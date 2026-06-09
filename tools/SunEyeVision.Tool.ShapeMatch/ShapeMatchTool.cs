@@ -96,8 +96,8 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
             {
                 grayImage = hImage.Clone();
             }
-            result.DebugGrayImage = grayImage.Clone();
-            result.OutputImage = grayImage.Clone();
+            result.GrayImage = new HalImage(grayImage.Clone());
+            // OutputImage 在 ReduceDomain 后赋值
             stepSw.Stop();
             stepTimings.Add(("灰度转换", stepSw.ElapsedMilliseconds));
 
@@ -119,7 +119,7 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
                 if (roiRegion != null)
                 {
                     HOperatorSet.RegionToBin(roiRegion!, out var maskObj, 255, 0, width, height);
-                    result.DebugSearchRegionMask = new HImage(maskObj);
+                    result.SearchRegionMask = new HalImage(new HImage(maskObj));
                 }
                 stepSw.Stop();
                 stepTimings.Add(("ROI构建", stepSw.ElapsedMilliseconds));
@@ -136,14 +136,11 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
                             roiRegion, inspHRegion, maskHRegion, matrix, width, height);
 
                         // 更新搜索区域掩码
-                        if (result.DebugSearchRegionMask != null)
-                        {
-                            result.DebugSearchRegionMask.Dispose();
-                        }
+                        result.SearchRegionMask?.Dispose();
                         if (roiRegion != null)
                         {
                             HOperatorSet.RegionToBin(roiRegion!, out var maskObj, 255, 0, width, height);
-                            result.DebugSearchRegionMask = new HImage(maskObj);
+                            result.SearchRegionMask = new HalImage(new HImage(maskObj));
                         }
                     }
                     else if (bindingSource != null &&
@@ -172,6 +169,9 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
                     {
                         processingImage = grayImage.Clone();
                     }
+
+                    // 保存预处理后的图像作为输出图像
+                    result.OutputImage = new HalImage(processingImage.Clone());
 
                     using (processingImage)
                     {

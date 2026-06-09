@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
@@ -19,17 +18,17 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// <summary>
         /// 灰度输入图像（预处理后）
         /// </summary>
-        public HImage? GrayImage { get; set; }
+        public IVisionImage? GrayImage { get; set; }
 
         /// <summary>
         /// 二值分割掩码图像（阈值得到的二值区域转图像）
         /// </summary>
-        public HImage? BinaryMask { get; set; }
+        public IVisionImage? BinaryMask { get; set; }
 
         /// <summary>
         /// 合成显示图像
         /// </summary>
-        public HImage? OverlayImage { get; set; }
+        public IVisionImage? OverlayImage { get; set; }
 
         /// <summary>
         /// 获取所有可显示的图像
@@ -37,12 +36,12 @@ namespace SunEyeVision.Tool.BlobAnalysis
         public override Dictionary<string, IVisionImage?> GetDisplayImages()
         {
             var images = new Dictionary<string, IVisionImage?>();
-            if (GrayImage != null && GrayImage.IsInitialized())
-                images["GrayImage"] = new HalImage(GrayImage);
-            if (BinaryMask != null && BinaryMask.IsInitialized())
-                images["BinaryMask"] = new HalImage(BinaryMask);
-            if (OverlayImage != null && OverlayImage.IsInitialized())
-                images["OverlayImage"] = new HalImage(OverlayImage);
+            if (GrayImage != null && !GrayImage.IsEmpty)
+                images["GrayImage"] = GrayImage;
+            if (BinaryMask != null && !BinaryMask.IsEmpty)
+                images["BinaryMask"] = BinaryMask;
+            if (OverlayImage != null && !OverlayImage.IsEmpty)
+                images["OverlayImage"] = OverlayImage;
             return images;
         }
 

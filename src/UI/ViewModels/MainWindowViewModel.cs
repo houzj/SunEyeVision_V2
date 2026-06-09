@@ -2919,7 +2919,8 @@ SplitterPosition = position;
                 // 创建属性元数据提供者
                 var metadataProvider = new SunEyeVision.Plugin.Infrastructure.Managers.Tool.PropertyMetadataProviderAdapter();
 
-                var queryService = new DataSourceQueryService(_workflowEngine, _workflowEngine, null, metadataProvider);
+                var workflow = _workflowEngine.CurrentWorkflow ?? throw new InvalidOperationException("当前工作流为空");
+                var queryService = new DataSourceQueryService(workflow, workflow, null, metadataProvider);
 
                 // ★ SSOT: 从 WorkflowContext 同步已有的执行结果（修复"先执行→再开窗"场景）
                 var ctx = CurrentWorkflowContext;
@@ -2956,22 +2957,18 @@ SplitterPosition = position;
 
             if (scopeWorkflowId != null)
             {
-                var subWorkflow = _workflowEngine.GetWorkflow(scopeWorkflowId);
-                if (subWorkflow == null)
-                {
-                    LogWarning($"子程序工作流未找到: {scopeWorkflowId}", "DSQS");
-                    throw new InvalidOperationException($"子程序工作流未找到: {scopeWorkflowId}");
-                }
-
-                var scopedProvider = new SunEyeVision.UI.Services.Workflow.WorkflowScopedQueryProvider(subWorkflow);
-                connectionProvider = scopedProvider;
-                nodeInfoProvider = scopedProvider;
+                var subWorkflow = _workflowEngine.GetWorkflow(scopeWorkflowId)
+                    ?? throw new InvalidOperationException($"子程序工作流未找到: {scopeWorkflowId}");
+                connectionProvider = subWorkflow;
+                nodeInfoProvider = subWorkflow;
                 LogInfo($"✓ 创建作用域查询服务 → 子程序工作流: {subWorkflow.Name} (ID: {scopeWorkflowId})");
             }
             else
             {
-                connectionProvider = _workflowEngine;
-                nodeInfoProvider = _workflowEngine;
+                var workflow = _workflowEngine.CurrentWorkflow
+                    ?? throw new InvalidOperationException("当前工作流为空");
+                connectionProvider = workflow;
+                nodeInfoProvider = workflow;
             }
 
             var queryService = new DataSourceQueryService(connectionProvider, nodeInfoProvider, null, metadataProvider);

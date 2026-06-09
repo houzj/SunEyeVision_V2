@@ -1806,8 +1806,10 @@ namespace SunEyeVision.UI.Views.Windows
                     };
                 }
 
-                SubroutinePlugin.ShowParameterDialog(this, tab.CurrentWorkflowId, tab.EffectiveDisplayName,
+                var debugWindow = SubroutinePlugin.ShowDebugWindow(this, tab.CurrentWorkflowId, tab.EffectiveDisplayName,
                     parentNodeId, queryService, parameters, internalSources, onOutputsChanged);
+                debugWindow.Title = tab.EffectiveDisplayName;
+                debugWindow.Show();
 
             }
             catch (Exception ex)
@@ -1860,9 +1862,11 @@ namespace SunEyeVision.UI.Views.Windows
                 };
 
                 // ★ node.Id 是父工作流中该子程序节点的 ID（用于数据源绑定）
-                SubroutinePlugin.ShowParameterDialog(this, subroutineId, node.DispName, node.Id, queryService,
-                    node.Parameters as SunEyeVision.Tool.Subroutine.Models.SubroutineParameters,
+                var debugWindow = SubroutinePlugin.ShowDebugWindow(this, subroutineId, node.DispName, node.Id, queryService,
+                    node.Parameters as SubroutineParameters,
                     internalSources, onOutputsChanged);
+                debugWindow.Title = node.Name;
+                debugWindow.Show();
             }
             catch (Exception ex)
             {

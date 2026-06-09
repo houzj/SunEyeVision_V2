@@ -24,7 +24,7 @@ namespace SunEyeVision.Workflow
 /// - 可升级：修改Workflow不影响NodeParameters数据
 /// - 可版本化：支持多个版本共存
 /// </remarks>
-public class Workflow : ObservableObject
+public class Workflow : ObservableObject, IWorkflowConnectionProvider, INodeInfoProvider
 {
     private string _name = "新建工作流";
 
@@ -257,6 +257,79 @@ public class Workflow : ObservableObject
             return Nodes.FirstOrDefault(n => n.Id == nodeId);
         }
 
+        #region IWorkflowConnectionProvider / INodeInfoProvider 实现
+
+        /// <summary>
+        /// BFS 递归查找所有上游节点（包括直接父节点和间接父节点）
+        /// </summary>
+        public List<string> GetUpstreamNodeIds(string nodeId)
+        {
+            if (Connections == null)
+                return new List<string>();
+
+            var upstreamNodeIds = new List<string>();
+            var queue = new Queue<string>();
+            var visited = new HashSet<string>();
+
+            queue.Enqueue(nodeId);
+            visited.Add(nodeId);
+
+            while (queue.Count > 0)
+            {
+                var currentId = queue.Dequeue();
+                foreach (var conn in Connections)
+                {
+                    if (conn.TargetNodeId == currentId && visited.Add(conn.SourceNodeId))
+                    {
+                        upstreamNodeIds.Add(conn.SourceNodeId);
+                        queue.Enqueue(conn.SourceNodeId);
+                    }
+                }
+            }
+
+            return upstreamNodeIds;
+        }
+
+        // IWorkflowConnectionProvider
+        public List<string> GetParentNodeIds(string nodeId) => GetUpstreamNodeIds(nodeId);
+
+        public List<string> GetChildNodeIds(string nodeId)
+        {
+            if (Connections == null) return new List<string>();
+            return Connections
+                .Where(c => c.SourceNodeId == nodeId)
+                .Select(c => c.TargetNodeId)
+                .Distinct()
+                .ToList();
+        }
+
+        public List<string> GetAllNodeIds() => Nodes?.Select(n => n.Id).ToList() ?? new List<string>();
+
+        // INodeInfoProvider
+        public string GetNodeName(string nodeId) => GetNode(nodeId)?.Name ?? nodeId;
+        public string GetNodeType(string nodeId) => GetNode(nodeId)?.ToolType ?? "Unknown";
+        public string? GetNodeIcon(string nodeId) => GetNode(nodeId)?.Icon;
+        public bool NodeExists(string nodeId) => Nodes?.Any(n => n.Id == nodeId) ?? false;
+
+        public Type? GetResultType(string nodeId)
+        {
+            var node = GetNode(nodeId);
+            if (node == null) return null;
+            var toolMetadata = ToolRegistry.GetToolMetadata(node.ToolType);
+            var toolType = toolMetadata?.ToolType;
+            if (toolType == null) return null;
+            foreach (var iface in toolType.GetInterfaces())
+            {
+                if (iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(IToolPlugin<,>))
+                {
+                    var genericArgs = iface.GetGenericArguments();
+                    if (genericArgs.Length >= 2) return genericArgs[1];
+                }
+            }
+            return null;
+        }
+
+        #endregion
 
 
         /// <summary>

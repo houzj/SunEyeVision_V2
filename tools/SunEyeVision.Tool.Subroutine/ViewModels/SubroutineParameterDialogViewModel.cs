@@ -6,6 +6,7 @@ using System.Windows.Input;
 using SunEyeVision.Plugin.SDK.Commands;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Tool.Subroutine.Models;
 using SunEyeVision.Workflow;
 

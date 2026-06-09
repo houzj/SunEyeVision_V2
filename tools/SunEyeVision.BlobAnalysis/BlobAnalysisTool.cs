@@ -343,7 +343,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
 
                                         // ===== Step 9: 设置结果数据 =====
                                         stepSw.Restart();
-                                        result.GrayImage = grayImage.Clone();
+                                        result.GrayImage = new HalImage(grayImage.Clone());
                                         result.FilteredBlobs = filteredBlobs;
                                         result.ThresholdUsed = (int)actualThreshold;
                                         result.ThresholdUsedDouble = actualThreshold;
@@ -363,13 +363,13 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                         // 二值掩码
                                         HOperatorSet.RegionToBin(binaryRegion, out var binObj,
                                             255, 0, imgWidth, imgHeight);
-                                        result.BinaryMask = new HImage(binObj);
+                                        result.BinaryMask = new HalImage(new HImage(binObj));
 
                                         // 合成显示：PaintRegion 在灰度图上绘制二值区域
                                         var overlayClone = processingImage.Clone();
                                         HOperatorSet.PaintRegion(binaryRegion, overlayClone,
                                             out var paintedObj, 255.0, "fill");
-                                        result.OverlayImage = new HImage(paintedObj);
+                                        result.OverlayImage = new HalImage(new HImage(paintedObj));
                                         overlayClone.Dispose();
                                         stepSw.Stop();
                                         stepTimings.Add(("结果赋值", stepSw.ElapsedMilliseconds));

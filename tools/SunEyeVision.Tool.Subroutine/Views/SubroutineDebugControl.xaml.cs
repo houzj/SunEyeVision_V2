@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Windows;
+using System.Windows.Controls;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Tool.Subroutine.Models;
 using SunEyeVision.Tool.Subroutine.ViewModels;
@@ -8,13 +9,15 @@ using SunEyeVision.Tool.Subroutine.ViewModels;
 namespace SunEyeVision.Tool.Subroutine.Views
 {
     /// <summary>
-    /// 子程序参数配置对话框（内联 ComboBox 版本，无需弹窗）
+    /// 子程序调试控件 — 包装参数设置的 TabControl 内容，由 DefaultDebugWindow 包裹弹出。
+    /// 点击设置按钮时创建此控件 + DefaultDebugWindow，替代旧的独立对话框。
     /// </summary>
-    public partial class SubroutineParameterDialog : Window
+    public partial class SubroutineDebugControl : UserControl
     {
-        private readonly SubroutineParameterDialogViewModel _viewModel;
+        /// <summary>ViewModel 引用（保持对象存活）</summary>
+        public SubroutineParameterDialogViewModel ViewModel { get; }
 
-        public SubroutineParameterDialog(
+        public SubroutineDebugControl(
             string subroutineId,
             string subroutineName,
             string nodeId,
@@ -25,15 +28,9 @@ namespace SunEyeVision.Tool.Subroutine.Views
         {
             InitializeComponent();
 
-            _viewModel = new SubroutineParameterDialogViewModel(
+            ViewModel = new SubroutineParameterDialogViewModel(
                 subroutineId, subroutineName, nodeId, dataSourceQueryService, subroutineInternalSources, parameters, onOutputsChanged);
-            DataContext = _viewModel;
-        }
-
-        private void OkButton_Click(object sender, RoutedEventArgs e)
-        {
-            DialogResult = true;
-            Close();
+            DataContext = ViewModel;
         }
     }
 }

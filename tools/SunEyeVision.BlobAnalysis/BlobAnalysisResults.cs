@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 using WpfPoint = System.Windows.Point;
@@ -208,9 +207,6 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// <summary>所有筛选通过Blob的连通域区域集合</summary>
         public IVisionRegion[] OutputRegions { get; set; } = Array.Empty<IVisionRegion>();
 
-        /// <summary>所有筛选通过Blob的几何形状集合（外接矩形）</summary>
-        public ShapeResult[] OutputShapes { get; set; } = Array.Empty<ShapeResult>();
-
         #endregion
 
         /// <summary>
@@ -274,7 +270,6 @@ namespace SunEyeVision.Tool.BlobAnalysis
                 new("BlobContours",              "轮廓",                   "图形结果"),
                 new("BlobCentroids",             "质心",                   "图形结果"),
                 new("OutputRegions",             "连通域区域",             "图形结果"),
-                new("OutputShapes",              "外接矩形(通用)",         "图形结果"),
             ];
         }
 

@@ -9,7 +9,6 @@ using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
-using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 using SunEyeVision.Plugin.SDK.Execution.Helpers;
@@ -114,7 +113,7 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
                 HRegion? maskHRegion = null;
 
                 (roiRegion, inspHRegion, maskHRegion) = ToolRegionHelper.BuildHalconROI(
-                    width, height, inspectionRegions, maskRegions);
+                    width, height, inspectionRegions, maskRegions, parameters.NodeResults);
 
                 // 保存搜索区域掩码
                 if (roiRegion != null)
@@ -219,16 +218,6 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
 
                         // ===== 设置结果 =====
                         result.MatchedItems = finalMatches;
-
-                        // 图形结果输出（旋转矩形包围框）
-                        result.OutputShapes = finalMatches
-                            .Select(m => m.BoundingBox.HasValue
-                                ? ShapeResult.RotatedRect(
-                                    m.CenterX, m.CenterY,
-                                    m.BoundingBox.Value.Width, m.BoundingBox.Value.Height,
-                                    m.Angle)
-                                : ShapeResult.Point(m.CenterX, m.CenterY))
-                            .ToArray();
 
                         // 汇总日志
                         if (finalMatches.Count > 0)

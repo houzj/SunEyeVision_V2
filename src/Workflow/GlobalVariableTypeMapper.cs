@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using OpenCvSharp;
+using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 
 namespace SunEyeVision.Workflow;
 
 /// <summary>
-/// 全局变量类型映射器 — 13 种类型对称映射，System.Type ↔ GlobalVariable 类型字符串
+/// 全局变量类型映射器 — 15 种类型对称映射，System.Type ↔ GlobalVariable 类型字符串
 /// </summary>
 /// <remarks>
 /// 只包含通用 .NET 类型、OpenCvSharp 类型和 SDK 接口类型。
@@ -21,12 +23,10 @@ public static class GlobalVariableTypeMapper
     /// </summary>
     private static readonly Dictionary<Type, string> TypeToString = new()
     {
-        // 基础类型（7 个）
+        // 基础类型（5 个）
         [typeof(int)]    = GlobalVariableValueConverter.SupportedTypes.Integer,
-        [typeof(float)]  = GlobalVariableValueConverter.SupportedTypes.Float,
         [typeof(string)] = GlobalVariableValueConverter.SupportedTypes.String,
         [typeof(bool)]   = GlobalVariableValueConverter.SupportedTypes.Boolean,
-        [typeof(long)]   = GlobalVariableValueConverter.SupportedTypes.Int64,
         [typeof(double)] = GlobalVariableValueConverter.SupportedTypes.Double,
         [typeof(byte)]   = GlobalVariableValueConverter.SupportedTypes.Byte,
 
@@ -38,12 +38,14 @@ public static class GlobalVariableTypeMapper
         [typeof(System.Windows.Size)]  = GlobalVariableValueConverter.SupportedTypes.Size,
         [typeof(OpenCvSharp.Size)]     = GlobalVariableValueConverter.SupportedTypes.Size,
 
-        // 集合类型（2 个）
-        [typeof(Array)]                    = GlobalVariableValueConverter.SupportedTypes.Array,
-        [typeof(System.Collections.IList)] = GlobalVariableValueConverter.SupportedTypes.List,
-
-        // 图像类型（1 个）— SDK 通用接口
+        // 图像类型
         [typeof(IVisionImage)] = GlobalVariableValueConverter.SupportedTypes.Image,
+
+        // SDK 几何模型类型
+        [typeof(IVisionRegion)] = GlobalVariableValueConverter.SupportedTypes.Region,
+        [typeof(Circle2d)]      = GlobalVariableValueConverter.SupportedTypes.Circle,
+        [typeof(Line2d)]        = GlobalVariableValueConverter.SupportedTypes.Line,
+        [typeof(Annulus2d)]     = GlobalVariableValueConverter.SupportedTypes.Annulus,
     };
 
     /// <summary>
@@ -54,23 +56,25 @@ public static class GlobalVariableTypeMapper
             .ToDictionary(g => g.Key, g => g.First().Key, StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
-    /// 中文显示名（13 种类型全对称）
+    /// 中文显示名（15 种类型全对称）
     /// </summary>
     public static readonly Dictionary<string, string> ChineseNames = new()
     {
         [GlobalVariableValueConverter.SupportedTypes.Integer]    = "整数",
-        [GlobalVariableValueConverter.SupportedTypes.Float]      = "浮点数",
         [GlobalVariableValueConverter.SupportedTypes.String]     = "字符串",
         [GlobalVariableValueConverter.SupportedTypes.Boolean]    = "布尔",
-        [GlobalVariableValueConverter.SupportedTypes.Int64]      = "长整数",
         [GlobalVariableValueConverter.SupportedTypes.Double]     = "双精度",
         [GlobalVariableValueConverter.SupportedTypes.Byte]       = "字节",
         [GlobalVariableValueConverter.SupportedTypes.Point]      = "点",
         [GlobalVariableValueConverter.SupportedTypes.Rectangle]  = "矩形",
         [GlobalVariableValueConverter.SupportedTypes.Size]       = "尺寸",
-        [GlobalVariableValueConverter.SupportedTypes.Array]      = "数组",
-        [GlobalVariableValueConverter.SupportedTypes.List]       = "列表",
         [GlobalVariableValueConverter.SupportedTypes.Image]      = "图像",
+        [GlobalVariableValueConverter.SupportedTypes.Region]     = "区域",
+        [GlobalVariableValueConverter.SupportedTypes.Circle]     = "圆",
+        [GlobalVariableValueConverter.SupportedTypes.Line]       = "直线",
+        [GlobalVariableValueConverter.SupportedTypes.RotatedRect] = "旋转矩形",
+        [GlobalVariableValueConverter.SupportedTypes.Polygon]    = "多边形",
+        [GlobalVariableValueConverter.SupportedTypes.Annulus]    = "圆环",
     };
 
     /// <summary>

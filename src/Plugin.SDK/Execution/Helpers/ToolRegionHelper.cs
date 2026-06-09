@@ -1,17 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
 using HalconDotNet;
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
 
 namespace SunEyeVision.Plugin.SDK.Execution.Helpers
 {
     /// <summary>
     /// 工具区域处理辅助类 - 消除各工具中重复的 ROI 构建、位置修正等代码
     /// </summary>
-    public static class ToolRegionHelper
+    public static partial class ToolRegionHelper
     {
         #region Halcon 系列
 
@@ -32,31 +34,59 @@ namespace SunEyeVision.Plugin.SDK.Execution.Helpers
         }
 
         /// <summary>
-        /// 从 RegionData 集合构建 HRegion（保持 tuple 结构，支持多边形）
+        /// 从 WpfRect 构建 HRegion（轴对齐矩形）
         /// </summary>
-        public static HRegion BuildHalconRegion(IEnumerable<RegionData> regions)
+        private static HRegion BuildHalconRegionFromRect(Rect rect)
+        {
+            return new HRegion(
+                rect.Top, rect.Left,
+                rect.Bottom - 1, rect.Right - 1);
+        }
+
+        /// <summary>
+        /// 从 IVisionRegion 解包为 HRegion（直接使用底层 HRegion）
+        /// 非 HalRegion 类型时取其外接矩形
+        /// </summary>
+        private static HRegion BuildHalconRegionFromVisionRegion(IVisionRegion visionRegion)
+        {
+            if (visionRegion is HalRegion halRegion)
+                return halRegion.Unwrap().Clone();
+
+            // 非 HalRegion 回退到外接矩形
+            var bbox = visionRegion.BoundingBox;
+            return BuildHalconRegionFromRect(bbox);
+        }
+
+        /// <summary>
+        /// 从 RegionData 集合构建 HRegion（保持 tuple 结构，支持 Drawing/Subscribe 模式）
+        /// </summary>
+        public static HRegion BuildHalconRegion(
+            IEnumerable<RegionData> regions,
+            IDictionary<string, ToolResults>? nodeResults = null)
+        {
+            var context = nodeResults != null ? new NodeResultsParameterContext(nodeResults) : null;
+            return BuildHalconRegion(regions, context);
+        }
+
+        /// <summary>
+        /// 从 RegionData 集合构建 HRegion（内部方法，接受 IParameterContext）
+        /// </summary>
+        private static HRegion BuildHalconRegion(
+            IEnumerable<RegionData> regions,
+            IParameterContext? context)
         {
             HRegion? result = null;
             foreach (var region in regions.Where(r => r.IsEnabled))
             {
-                if (region.Parameters is not ShapeParameters shape) continue;
-
-                HRegion? single = shape.ShapeType switch
+                HRegion? single = region.Parameters switch
                 {
-                    ShapeType.Rectangle => new HRegion(
-                        shape.CenterY - shape.Height / 2,
-                        shape.CenterX - shape.Width / 2,
-                        shape.CenterY + shape.Height / 2,
-                        shape.CenterX + shape.Width / 2),
-
-                    ShapeType.Circle => new HRegion(
-                        shape.CenterY, shape.CenterX, shape.Radius),
-
-                    ShapeType.Polygon when shape.Points.Count >= 3
-                        => BuildHalconPolygonRegion(shape.Points),
-
-                    ShapeType.RotatedRectangle => BuildHalconRotatedRectangle(shape),
-
+                    ShapeParameters shape => BuildFromShapeParams(shape),
+                    FixedRegion fixedDef when context != null => BuildFromFixedRegion(fixedDef, context),
+                    ComputedRegion computedDef when context != null => BuildFromComputedRegion(computedDef, context),
+                    FixedRegion fixedDef => throw new InvalidOperationException(
+                        $"无法解析固定区域订阅: 节点 {fixedDef.SourceNodeId}.{fixedDef.OutputName}: 未提供 NodeResults"),
+                    ComputedRegion computedDef => throw new InvalidOperationException(
+                        $"无法解析计算区域: 未提供 NodeResults"),
                     _ => null
                 };
 
@@ -75,6 +105,97 @@ namespace SunEyeVision.Plugin.SDK.Execution.Helpers
             }
 
             return result ?? new HRegion();
+        }
+
+        /// <summary>
+        /// 从 ShapeParameters 构建 HRegion
+        /// </summary>
+        private static HRegion? BuildFromShapeParams(ShapeParameters shape)
+        {
+            return shape.ShapeType switch
+            {
+                ShapeType.Rectangle => new HRegion(
+                    shape.CenterY - shape.Height / 2,
+                    shape.CenterX - shape.Width / 2,
+                    shape.CenterY + shape.Height / 2,
+                    shape.CenterX + shape.Width / 2),
+
+                ShapeType.Circle => new HRegion(
+                    shape.CenterY, shape.CenterX, shape.Radius),
+
+                ShapeType.Polygon when shape.Points.Count >= 3
+                    => BuildHalconPolygonRegion(shape.Points),
+
+                ShapeType.RotatedRectangle => BuildHalconRotatedRectangle(shape),
+
+                _ => null
+            };
+        }
+
+        /// <summary>
+        /// 从 FixedRegion 解析并构建 HRegion
+        /// </summary>
+        private static HRegion? BuildFromFixedRegion(FixedRegion fixedDef, IParameterContext context)
+        {
+            var value = context.GetNodeOutputValue(
+                fixedDef.SourceNodeId,
+                fixedDef.OutputName,
+                fixedDef.RegionIndex);
+
+            if (value == null)
+                return null;
+
+            return value switch
+            {
+                Rect rect => BuildHalconRegionFromRect(rect),
+                IVisionRegion region => BuildHalconRegionFromVisionRegion(region),
+                _ => null
+            };
+        }
+
+        /// <summary>
+        /// 从 ComputedRegion 解析并构建 HRegion
+        /// </summary>
+        private static HRegion? BuildFromComputedRegion(ComputedRegion computedDef, IParameterContext context)
+        {
+            double ResolveParam(string name, double defaultValue)
+            {
+                var source = computedDef.GetParameterBinding(name);
+                if (source == null) return defaultValue;
+                var val = source.GetValue(context);
+                if (val == null) return defaultValue;
+                try { return Convert.ToDouble(val); }
+                catch { return defaultValue; }
+            }
+
+            var centerX = ResolveParam("CenterX", 0.0);
+            var centerY = ResolveParam("CenterY", 0.0);
+            var width = ResolveParam("Width", 100.0);
+            var height = ResolveParam("Height", 100.0);
+            var angle = ResolveParam("Angle", 0.0);
+            var radius = ResolveParam("Radius", 50.0);
+
+            return computedDef.TargetShapeType switch
+            {
+                ShapeType.Rectangle => new HRegion(
+                    centerY - height / 2,
+                    centerX - width / 2,
+                    centerY + height / 2,
+                    centerX + width / 2),
+
+                ShapeType.Circle => new HRegion(centerY, centerX, radius),
+
+                ShapeType.RotatedRectangle => BuildHalconRotatedRectFromParams(centerX, centerY, width, height, angle),
+
+                _ => null
+            };
+        }
+
+        private static HRegion BuildHalconRotatedRectFromParams(double cx, double cy, double w, double h, double angle)
+        {
+            double phi = -angle * Math.PI / 180.0;
+            HOperatorSet.GenRectangle2(out var rect, cy, cx, phi, w / 2.0, h / 2.0);
+            return new HRegion(rect);
         }
 
         /// <summary>
@@ -106,14 +227,17 @@ namespace SunEyeVision.Plugin.SDK.Execution.Helpers
         }
 
         /// <summary>
-        /// 构建 Halcon ROI = 检测区域 - 屏蔽区域
+        /// 构建 Halcon ROI = 检测区域 - 屏蔽区域（支持订阅模式）
         /// </summary>
         /// <returns>(roiRegion 用于处理, inspHRegion 用于显示轮廓, maskHRegion 用于显示轮廓)</returns>
         public static (HRegion? Roi, HRegion? Insp, HRegion? Mask) BuildHalconROI(
             int imgWidth, int imgHeight,
             IEnumerable<RegionData> inspectionRegions,
-            IEnumerable<RegionData> maskRegions)
+            IEnumerable<RegionData> maskRegions,
+            IDictionary<string, ToolResults>? nodeResults = null)
         {
+            var context = nodeResults != null ? new NodeResultsParameterContext(nodeResults) : null;
+
             HRegion? roiRegion = null;
             HRegion? inspHRegion = null;
             HRegion? maskHRegion = null;
@@ -127,7 +251,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Helpers
             // 构建检测区域（未设置时 = 全图）
             if (hasInspection)
             {
-                inspHRegion = BuildHalconRegion(inspectionRegions); // 保持 tuple 供独立轮廓渲染
+                inspHRegion = BuildHalconRegion(inspectionRegions, context); // 保持 tuple 供独立轮廓渲染
 
                 HOperatorSet.Union1(inspHRegion, out var unionRegion); // 合并为单一处理域
                 roiRegion = new HRegion(unionRegion);
@@ -140,7 +264,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Helpers
             if (hasMask)
             {
                 using var diffTarget = roiRegion;
-                maskHRegion = BuildHalconRegion(maskRegions); // 保持 tuple 供独立轮廓渲染
+                maskHRegion = BuildHalconRegion(maskRegions, context); // 保持 tuple 供独立轮廓渲染
                 HOperatorSet.Union1(maskHRegion, out var maskUnion); // 合并后再做差集
                 HOperatorSet.Difference(diffTarget, maskUnion, out var diffObj);
                 maskUnion.Dispose();
@@ -207,103 +331,61 @@ namespace SunEyeVision.Plugin.SDK.Execution.Helpers
 
         #endregion
 
-        #region ShapeResult → HRegion 转换
+        #region NodeResults 参数上下文适配器
 
         /// <summary>
-        /// 将通用 ShapeResult[] 转换为 Halcon HRegion（保持 tuple 结构）
+        /// IParameterContext 适配器 - 将 IDictionary&lt;string, ToolResults&gt; 适配为参数上下文
         /// </summary>
-        public static HRegion ShapeResultsToHalcon(ShapeResult[] shapes)
+        private sealed class NodeResultsParameterContext : IParameterContext
         {
-            HRegion? result = null;
-            foreach (var shape in shapes)
+            private readonly IDictionary<string, ToolResults> _nodeResults;
+
+            public NodeResultsParameterContext(IDictionary<string, ToolResults> nodeResults)
             {
-                HRegion? single = shape.Type switch
+                _nodeResults = nodeResults ?? throw new ArgumentNullException(nameof(nodeResults));
+            }
+
+            public object? GetNodeOutputValue(string nodeId, string outputName, int? index = null, string? propertyPath = null)
+            {
+                if (!_nodeResults.TryGetValue(nodeId, out var result))
+                    return null;
+
+                // 先尝试直接属性访问
+                var property = result.GetType().GetProperty(outputName);
+                if (property == null)
+                    return null;
+
+                var value = property.GetValue(result);
+
+                // 处理数组索引
+                if (index.HasValue && value is Array array)
                 {
-                    ShapeType.Rectangle => new HRegion(
-                        shape.CenterY - shape.Height / 2,
-                        shape.CenterX - shape.Width / 2,
-                        shape.CenterY + shape.Height / 2,
-                        shape.CenterX + shape.Width / 2),
-
-                    ShapeType.Circle => new HRegion(
-                        shape.CenterY, shape.CenterX, shape.Radius),
-
-                    ShapeType.RotatedRectangle => BuildHalconRotatedRectFromShape(shape),
-
-                    ShapeType.Line => BuildHalconLineRegion(shape),
-
-                    ShapeType.Point => new HRegion(
-                        shape.CenterY, shape.CenterX,
-                        shape.CenterY, shape.CenterX),
-
-                    ShapeType.Polygon when shape.PolygonPoints.Length >= 3
-                        => BuildHalconPolygonRegionFromShape(shape),
-
-                    _ => null
-                };
-
-                if (single != null)
-                {
-                    if (result == null)
-                        result = single;
-                    else
-                    {
-                        HOperatorSet.ConcatObj(result, single, out var concatObj);
-                        result.Dispose();
-                        single.Dispose();
-                        result = new HRegion(concatObj);
-                    }
+                    if (index.Value >= 0 && index.Value < array.Length)
+                        return array.GetValue(index.Value);
+                    return null;
                 }
+
+                // 属性路径访问
+                if (!string.IsNullOrEmpty(propertyPath) && value != null)
+                {
+                    return GetNestedPropertyValue(value, propertyPath);
+                }
+
+                return value;
             }
 
-            return result ?? new HRegion();
-        }
-
-        private static HRegion BuildHalconRotatedRectFromShape(ShapeResult shape)
-        {
-            double phi = -shape.Angle * Math.PI / 180.0;
-            HOperatorSet.GenRectangle2(out var rect,
-                shape.CenterY, shape.CenterX,
-                phi,
-                shape.Width / 2.0,
-                shape.Height / 2.0);
-            return new HRegion(rect);
-        }
-
-        private static HRegion BuildHalconLineRegion(ShapeResult shape)
-        {
-            // 直线转矩形线宽（1像素宽）
-            double midY = (shape.StartY + shape.EndY) / 2;
-            double midX = (shape.StartX + shape.EndX) / 2;
-            double dx = shape.EndX - shape.StartX;
-            double dy = shape.EndY - shape.StartY;
-            double length = Math.Sqrt(dx * dx + dy * dy);
-            double phi = Math.Atan2(-dy, dx); // 屏幕→Halcon 角度转换
-            HOperatorSet.GenRectangle2(out var line,
-                midY, midX, phi,
-                length / 2.0, 0.5); // 线宽1像素
-            return new HRegion(line);
-        }
-
-        private static HRegion BuildHalconPolygonRegionFromShape(ShapeResult shape)
-        {
-            var rows = new HTuple();
-            var cols = new HTuple();
-            foreach (var pt in shape.PolygonPoints)
+            private static object? GetNestedPropertyValue(object obj, string path)
             {
-                rows = rows.TupleConcat(pt.Y);
-                cols = cols.TupleConcat(pt.X);
+                object? current = obj;
+                foreach (var part in path.Split('.'))
+                {
+                    if (current == null) return null;
+                    var prop = current.GetType().GetProperty(part);
+                    if (prop == null) return null;
+                    current = prop.GetValue(current);
+                }
+                return current;
             }
-            if (shape.PolygonPoints.Length >= 3)
-            {
-                rows = rows.TupleConcat(shape.PolygonPoints[0].Y);
-                cols = cols.TupleConcat(shape.PolygonPoints[0].X);
-            }
-            var region = new HRegion();
-            region.GenRegionPolygon(rows, cols);
-            HOperatorSet.FillUp(region, out var filled);
-            region.Dispose();
-            return new HRegion(filled);
         }
 
         #endregion

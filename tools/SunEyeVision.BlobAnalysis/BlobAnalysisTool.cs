@@ -9,7 +9,6 @@ using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
-using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 using SunEyeVision.Plugin.SDK.Execution.Helpers;
@@ -129,7 +128,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
                     var inspectionRegions = parameters.GetRegionsByType(RegionType.Inspection);
                     var maskRegions = parameters.GetRegionsByType(RegionType.Mask);
                     (roiRegion, inspHRegion, maskHRegion) = ToolRegionHelper.BuildHalconROI(
-                        imgWidth, imgHeight, inspectionRegions, maskRegions);
+                        imgWidth, imgHeight, inspectionRegions, maskRegions, parameters.NodeResults);
                     stepSw.Stop();
                     stepTimings.Add(("ROI构建", stepSw.ElapsedMilliseconds));
 
@@ -368,11 +367,6 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                                 HOperatorSet.SelectObj(shapeFilteredRegions, out var obj, b.Label);
                                                 return (IVisionRegion)new HalRegion(new HRegion(obj));
                                             }).ToArray();
-                                        result.OutputShapes = filteredBlobs
-                                            .Select(b => ShapeResult.Rectangle(
-                                                b.BoundingBox.X, b.BoundingBox.Y,
-                                                b.BoundingBox.Width, b.BoundingBox.Height))
-                                            .ToArray();
 
                                         // 二值掩码
                                         HOperatorSet.RegionToBin(binaryRegion, out var binObj,

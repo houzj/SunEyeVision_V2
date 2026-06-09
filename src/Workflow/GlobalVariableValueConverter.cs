@@ -1,9 +1,11 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using OpenCvSharp;
+using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Plugin.SDK.Models.Geometry;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
 using VisionLogger = SunEyeVision.Plugin.SDK.Logging.VisionLogger;
 using VisionLogLevel = SunEyeVision.Plugin.SDK.Logging.LogLevel;
 
@@ -16,13 +18,14 @@ namespace SunEyeVision.Workflow;
 /// 设计原则（rule-010: 方案系统实现规范）：
 /// - 弱类型 + 类型字符串（视觉软件行业标准）
 /// - JSON格式直观易读：{ "Type": "Integer", "Value": 128 }
-/// - 支持14种基础类型和OpenCvSharp特殊类型
-/// 
+/// - 支持15种类型：基础类型+几何类型+图像+区域
+///
 /// 支持的数据类型：
-/// 1. 基础类型：Integer, Float, String, Boolean, Int64, Double, Byte
+/// 1. 基础类型：Integer, String, Boolean, Double, Byte
 /// 2. OpenCvSharp类型：Point, Rectangle, Size
-/// 3. 集合类型：Array, List
-/// 4. 图像类型：Image（Mat序列化）
+/// 3. 图像类型：Image（Mat序列化）
+/// 4. 几何类型：Circle, Line, Annulus, RotatedRect, Polygon
+/// 5. 区域：Region（仅运行时，不支持序列化）
 /// 
 /// 设计理念：
 /// - 与VisionMaster、Halcon等行业软件保持一致
@@ -37,18 +40,20 @@ public class GlobalVariableValueConverter : JsonConverter<object?>
     public static class SupportedTypes
     {
         public const string Integer = "Integer";
-        public const string Float = "Float";
         public const string String = "String";
         public const string Boolean = "Boolean";
-        public const string Int64 = "Int64";
         public const string Double = "Double";
         public const string Byte = "Byte";
         public const string Point = "Point";
         public const string Rectangle = "Rectangle";
         public const string Size = "Size";
-        public const string Array = "Array";
-        public const string List = "List";
         public const string Image = "Image";
+        public const string Region = "Region";
+        public const string Circle = "Circle";
+        public const string Line = "Line";
+        public const string RotatedRect = "RotatedRect";
+        public const string Polygon = "Polygon";
+        public const string Annulus = "Annulus";
     }
 
     /// <summary>
@@ -129,18 +134,20 @@ public class GlobalVariableValueConverter : JsonConverter<object?>
         return typeName switch
         {
             SupportedTypes.Integer => valueElement.GetInt32(),
-            SupportedTypes.Float => valueElement.GetSingle(),
             SupportedTypes.String => valueElement.GetString(),
             SupportedTypes.Boolean => valueElement.GetBoolean(),
-            SupportedTypes.Int64 => valueElement.GetInt64(),
             SupportedTypes.Double => valueElement.GetDouble(),
             SupportedTypes.Byte => valueElement.GetByte(),
             SupportedTypes.Point => ParsePoint(valueElement),
             SupportedTypes.Rectangle => ParseRectangle(valueElement),
             SupportedTypes.Size => ParseSize(valueElement),
-            SupportedTypes.Array => ParseArray(valueElement, options),
-            SupportedTypes.List => ParseList(valueElement, options),
             SupportedTypes.Image => ParseImage(valueElement),
+            SupportedTypes.Region => throw new NotSupportedException("区域类型不能序列化为JSON"),
+            SupportedTypes.Circle => ParseCircle(valueElement),
+            SupportedTypes.Line => ParseLine(valueElement),
+            SupportedTypes.RotatedRect => ParseRotatedRect(valueElement),
+            SupportedTypes.Polygon => ParsePolygon(valueElement),
+            SupportedTypes.Annulus => ParseAnnulus(valueElement),
             _ => throw new NotSupportedException($"不支持的类型: {typeName}")
         };
     }
@@ -153,18 +160,18 @@ public class GlobalVariableValueConverter : JsonConverter<object?>
         return value switch
         {
             int intValue => (SupportedTypes.Integer, intValue),
-            float floatValue => (SupportedTypes.Float, floatValue),
             string stringValue => (SupportedTypes.String, stringValue),
             bool boolValue => (SupportedTypes.Boolean, boolValue),
-            long longValue => (SupportedTypes.Int64, longValue),
             double doubleValue => (SupportedTypes.Double, doubleValue),
             byte byteValue => (SupportedTypes.Byte, byteValue),
             Point point => (SupportedTypes.Point, SerializePoint(point)),
             Rect rect => (SupportedTypes.Rectangle, SerializeRectangle(rect)),
             Size size => (SupportedTypes.Size, SerializeSize(size)),
-            Array array => (SupportedTypes.Array, SerializeArray(array)),
-            IList list => (SupportedTypes.List, SerializeList(list)),
             Mat mat => (SupportedTypes.Image, SerializeImage(mat)),
+            IVisionRegion => throw new NotSupportedException("区域类型不能序列化为JSON"),
+            Circle2d circle => (SupportedTypes.Circle, SerializeCircle(circle)),
+            Line2d line => (SupportedTypes.Line, SerializeLine(line)),
+            Annulus2d annulus => (SupportedTypes.Annulus, SerializeAnnulus(annulus)),
             _ => (SupportedTypes.String, value.ToString())
         };
     }
@@ -285,72 +292,98 @@ public class GlobalVariableValueConverter : JsonConverter<object?>
 
     #endregion
 
-    #region Array 序列化
+    #region 新增几何类型序列化 (Circle, Line, Annulus, RotatedRect, Polygon)
 
-    private Array? ParseArray(JsonElement element, JsonSerializerOptions options)
+    private Circle2d ParseCircle(JsonElement element)
     {
-        if (element.ValueKind != JsonValueKind.Array)
-            return null;
-
-        var list = new List<object?>();
-        foreach (var item in element.EnumerateArray())
-        {
-            list.Add(ParseArrayItem(item, options));
-        }
-
-        return list.ToArray();
+        var center = element.GetProperty("Center");
+        var cx = center.GetProperty("X").GetDouble();
+        var cy = center.GetProperty("Y").GetDouble();
+        var radius = element.GetProperty("Radius").GetDouble();
+        return new Circle2d(cx, cy, radius);
     }
 
-    private object? ParseArrayItem(JsonElement element, JsonSerializerOptions options)
+    private Dictionary<string, object> SerializeCircle(Circle2d circle)
     {
-        return element.ValueKind switch
+        return new Dictionary<string, object>
         {
-            JsonValueKind.String => element.GetString(),
-            JsonValueKind.Number => element.TryGetInt32(out var intVal) ? intVal : element.GetDouble(),
-            JsonValueKind.True => true,
-            JsonValueKind.False => false,
-            JsonValueKind.Null => null,
-            _ => element.ToString()
+            ["Center"] = new Dictionary<string, double> { ["X"] = circle.Center.X, ["Y"] = circle.Center.Y },
+            ["Radius"] = circle.Radius
         };
     }
 
-    private List<object?> SerializeArray(Array array)
+    private Line2d ParseLine(JsonElement element)
     {
-        var list = new List<object?>();
-        foreach (var item in array)
-        {
-            list.Add(item);
-        }
-        return list;
+        var ptEl = element.GetProperty("Point");
+        var px = ptEl.GetProperty("X").GetDouble();
+        var py = ptEl.GetProperty("Y").GetDouble();
+        var dirEl = element.GetProperty("Direction");
+        var dx = dirEl.GetProperty("X").GetDouble();
+        var dy = dirEl.GetProperty("Y").GetDouble();
+        return new Line2d(new System.Windows.Point(px, py), new System.Windows.Vector(dx, dy));
     }
 
-    #endregion
-
-    #region List 序列化
-
-    private IList? ParseList(JsonElement element, JsonSerializerOptions options)
+    private Dictionary<string, object> SerializeLine(Line2d line)
     {
-        if (element.ValueKind != JsonValueKind.Array)
-            return null;
-
-        var list = new List<object?>();
-        foreach (var item in element.EnumerateArray())
+        return new Dictionary<string, object>
         {
-            list.Add(ParseArrayItem(item, options));
-        }
-
-        return list;
+            ["Point"] = new Dictionary<string, double> { ["X"] = line.Point.X, ["Y"] = line.Point.Y },
+            ["Direction"] = new Dictionary<string, double> { ["X"] = line.Direction.X, ["Y"] = line.Direction.Y }
+        };
     }
 
-    private List<object?> SerializeList(IList list)
+    private Annulus2d ParseAnnulus(JsonElement element)
     {
-        var result = new List<object?>();
-        foreach (var item in list)
-        {
-            result.Add(item);
-        }
-        return result;
+        var centerEl = element.GetProperty("Center");
+        var cx = centerEl.GetProperty("X").GetDouble();
+        var cy = centerEl.GetProperty("Y").GetDouble();
+        var innerR = element.GetProperty("InnerR").GetDouble();
+        var outerR = element.GetProperty("OuterR").GetDouble();
+        var startA = element.GetProperty("StartA").GetDouble();
+        var endA = element.GetProperty("EndA").GetDouble();
+        return new Annulus2d(cx, cy, innerR, outerR, startA, endA);
     }
+
+    private Dictionary<string, object> SerializeAnnulus(Annulus2d annulus)
+    {
+        return new Dictionary<string, object>
+        {
+            ["Center"] = new Dictionary<string, double> { ["X"] = annulus.Center.X, ["Y"] = annulus.Center.Y },
+            ["InnerR"] = annulus.InnerRadius,
+            ["OuterR"] = annulus.OuterRadius,
+            ["StartA"] = annulus.StartAngle,
+            ["EndA"] = annulus.EndAngle
+        };
+    }
+
+    private Dictionary<string, double> ParseRotatedRect(JsonElement element)
+    {
+        return new Dictionary<string, double>
+        {
+            ["Cx"] = element.GetProperty("Cx").GetDouble(),
+            ["Cy"] = element.GetProperty("Cy").GetDouble(),
+            ["W"] = element.GetProperty("W").GetDouble(),
+            ["H"] = element.GetProperty("H").GetDouble(),
+            ["Angle"] = element.GetProperty("Angle").GetDouble()
+        };
+    }
+
+        private Dictionary<string, double>[]? ParsePolygon(JsonElement element)
+        {
+            if (element.ValueKind != JsonValueKind.Array)
+                return null;
+
+            var points = new List<Dictionary<string, double>>();
+            foreach (var item in element.EnumerateArray())
+            {
+                points.Add(new Dictionary<string, double>
+                {
+                    ["X"] = item.GetProperty("X").GetDouble(),
+                    ["Y"] = item.GetProperty("Y").GetDouble()
+                });
+            }
+            return points.ToArray();
+        }
 
     #endregion
 

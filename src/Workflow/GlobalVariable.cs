@@ -69,10 +69,11 @@ public class ConsumerBinding
 /// - 支持分组管理（多工位/多相机场景）
 /// 
 /// 支持的数据类型：
-/// - 基础类型：Integer, Float, String, Boolean, Int64, Double, Byte
+/// - 基础类型：Integer, String, Boolean, Double, Byte
 /// - OpenCvSharp类型：Point, Rectangle, Size
-/// - 集合类型：Array, List
 /// - 图像类型：Image
+/// - 几何类型：Circle, Line, Annulus, RotatedRect, Polygon
+/// - 区域/图形：Region（仅运行时）
 /// 
 /// JSON格式示例：
 /// {
@@ -349,18 +350,20 @@ public class GlobalVariable : ObservableObject
         return type switch
         {
             GlobalVariableValueConverter.SupportedTypes.Integer => true,
-            GlobalVariableValueConverter.SupportedTypes.Float => true,
             GlobalVariableValueConverter.SupportedTypes.String => true,
             GlobalVariableValueConverter.SupportedTypes.Boolean => true,
-            GlobalVariableValueConverter.SupportedTypes.Int64 => true,
             GlobalVariableValueConverter.SupportedTypes.Double => true,
             GlobalVariableValueConverter.SupportedTypes.Byte => true,
             GlobalVariableValueConverter.SupportedTypes.Point => true,
             GlobalVariableValueConverter.SupportedTypes.Rectangle => true,
             GlobalVariableValueConverter.SupportedTypes.Size => true,
-            GlobalVariableValueConverter.SupportedTypes.Array => true,
-            GlobalVariableValueConverter.SupportedTypes.List => true,
             GlobalVariableValueConverter.SupportedTypes.Image => true,
+            GlobalVariableValueConverter.SupportedTypes.Region => true,
+            GlobalVariableValueConverter.SupportedTypes.Circle => true,
+            GlobalVariableValueConverter.SupportedTypes.Line => true,
+            GlobalVariableValueConverter.SupportedTypes.RotatedRect => true,
+            GlobalVariableValueConverter.SupportedTypes.Polygon => true,
+            GlobalVariableValueConverter.SupportedTypes.Annulus => true,
             _ => false
         };
     }

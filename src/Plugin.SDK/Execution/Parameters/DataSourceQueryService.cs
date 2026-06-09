@@ -224,12 +224,17 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 // 获取父节点的输出属性
                 var outputProps = parent.OutputProperties;
                 
-                // 类型过滤（精确匹配 + 数组可接受单值元素）
+                // 类型过滤（精确匹配 + 双向数组/元素兼容）
+                // 场景1: targetType=double[]  → 匹配 double[] (精确) 或 double (元素)
+                // 场景2: targetType=double   → 匹配 double (精确) 或 double[] (数组版本)
+                // 原因：视觉工具输出通常是数组类型（BlobAreas=double[], BlobBoundingBoxes=WpfRect[]），
+                //       但参数声明通常使用元素类型（Double, Circle），需要双向兼容。
                 if (targetType != null)
                 {
                     outputProps = outputProps
                         .Where(p => p.PropertyType == targetType ||
-                                    (targetType.IsArray && p.PropertyType == targetType.GetElementType()))
+                                    (targetType.IsArray && p.PropertyType == targetType.GetElementType()) ||
+                                    (!targetType.IsArray && p.PropertyType.IsArray && p.PropertyType.GetElementType() == targetType))
                         .ToList();
                 }
 

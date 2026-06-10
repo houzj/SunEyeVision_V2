@@ -2214,90 +2214,81 @@ namespace SunEyeVision.UI.Views.Controls.Canvas
 
 
 
-            // 执行命中测试目标端口
-
+            // 使用回调式 HitTest 查找目标端口（修复间歇性命中失败问题）
+            // Preview 处理器中的回调式 HitTest 能找到所有层级的元素，
+            // 而简单式 HitTest 只返回最顶层元素，端口 Ellipse 可能被上层元素遮挡
             var mousePos = e.GetPosition(WorkflowCanvas);
+            var hitPorts = new List<(Ellipse port, string portName, double distance)>();
 
-            var hitTestResult = VisualTreeHelper.HitTest(WorkflowCanvas, mousePos);
+            VisualTreeHelper.HitTest(WorkflowCanvas, null,
+                result =>
+                {
+                    if (result.VisualHit is Ellipse hitEllipse)
+                    {
+                        var ellipseName = hitEllipse.Name;
+                        if (!string.IsNullOrEmpty(ellipseName) &&
+                            (ellipseName == "LeftPortEllipse" ||
+                             ellipseName == "RightPortEllipse" ||
+                             ellipseName == "TopPortEllipse" ||
+                             ellipseName == "BottomPortEllipse"))
+                        {
+                            string portName = ellipseName.Replace("Ellipse", "");
 
+                            var portCenterX = hitEllipse.RenderSize.Width / 2;
+                            var portCenterY = hitEllipse.RenderSize.Height / 2;
+                            var portPos = hitEllipse.PointToScreen(new Point(portCenterX, portCenterY));
+                            var canvasPos = WorkflowCanvas.PointFromScreen(portPos);
+                            double portDistance = Math.Sqrt(
+                                Math.Pow(mousePos.X - canvasPos.X, 2) +
+                                Math.Pow(mousePos.Y - canvasPos.Y, 2));
 
+                            hitPorts.Add((hitEllipse, portName, portDistance));
+                        }
+                    }
+                    return HitTestResultBehavior.Continue;
+                },
+                new PointHitTestParameters(mousePos));
 
-            if (hitTestResult?.VisualHit is Ellipse targetEllipse &&
-                targetEllipse.Tag is string targetPortName &&
-                targetEllipse.Name.Contains("PortEllipse"))
+            if (hitPorts.Count > 0)
             {
-                // 🔍 关键日志：记录目标端口命中成功
+                var nearestPort = hitPorts.OrderBy(p => p.distance).First();
+                string targetPortName = nearestPort.portName;
+
                 Plugin.SDK.Logging.VisionLogger.Instance?.Log(
                     Plugin.SDK.Logging.LogLevel.Success,
-                    $"[Port_MouseLeftButtonUp] 目标端口命中成功 - 端口名称: {targetPortName}, Ellipse名称: {targetEllipse.Name}, 鼠标位置: ({mousePos.X:F1}, {mousePos.Y:F1})",
+                    $"[Port_MouseLeftButtonUp] 回调式 HitTest 命中端口 - 端口名称: {targetPortName}, 命中端口数: {hitPorts.Count}, 鼠标位置: ({mousePos.X:F1}, {mousePos.Y:F1})",
                     "WorkflowCanvasControl");
 
-                // 获取目标节点 - 向上遍历视觉树找到 Border (Ellipse → Grid → Border)
-
+                // 向上遍历视觉树找到端口所属的 Border（节点容器）
                 Border? targetBorder = null;
-
-                DependencyObject? parent = VisualTreeHelper.GetParent(targetEllipse);
-
+                DependencyObject? parent = nearestPort.port;
                 while (parent != null)
-
                 {
-
                     if (parent is Border border)
-
                     {
-
                         targetBorder = border;
-
                         break;
-
                     }
-
                     parent = VisualTreeHelper.GetParent(parent);
-
                 }
 
-
-
                 if (targetBorder?.Tag is WorkflowNode targetNode &&
-
                     targetNode != _dragConnectionSourceNode)
                 {
                     // 创建连接
-
                     var connectionCreated = CreateConnectionBetweenPorts(
-
                         _dragConnectionSourceNode,
-
                         _dragConnectionSourcePort ?? "RightPort",
-
                         targetNode,
-
                         targetPortName
-
                     );
 
                     // 连接创建成功后，阻止事件冒泡，避免触发节点选择导致图像预览器被隐藏
-
                     if (connectionCreated)
-
                     {
-
                         e.Handled = true;
-
                     }
-
                 }
-
-                else
-
-                {
-}
-
-            }
-
-            else
-            {
-                // 未命中有效端口，不做任何操作
             }
 
 

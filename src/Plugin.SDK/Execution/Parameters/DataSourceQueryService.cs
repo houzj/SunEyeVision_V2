@@ -50,8 +50,49 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// 节点输出缓存（节点ID -> 属性名 -> 值）
         /// </summary>
         private readonly ConcurrentDictionary<string, Dictionary<string, object?>> _nodeOutputs = new ConcurrentDictionary<string, Dictionary<string, object?>>();
-        
 
+        /// <summary>
+        /// 额外数据源提供者委托列表（每次查询时动态调用，支持输入名称实时更新）
+        /// </summary>
+        private readonly List<Func<List<AvailableDataSource>>> _extraDataSourceProviders = new();
+
+        /// <summary>
+        /// 注册额外数据源提供者委托
+        /// </summary>
+        /// <param name="provider">每次查询时动态调用的委托，返回额外数据源列表</param>
+        public void AddExtraDataSourceProvider(Func<List<AvailableDataSource>> provider)
+        {
+            lock (_extraDataSourceProviders)
+            {
+                _extraDataSourceProviders.Add(provider);
+            }
+        }
+
+        /// <summary>
+        /// 从所有注册提供者获取当前额外数据源（动态合并，支持实时更新）
+        /// </summary>
+        private List<AvailableDataSource> GetExtraDataSources()
+        {
+            var result = new List<AvailableDataSource>();
+            lock (_extraDataSourceProviders)
+            {
+                foreach (var provider in _extraDataSourceProviders)
+                {
+                    try
+                    {
+                        var sources = provider();
+                        if (sources == null) continue;
+                        foreach (var ds in sources)
+                        {
+                            if (!result.Any(e => e.SourceNodeId == ds.SourceNodeId && e.PropertyName == ds.PropertyName))
+                                result.Add(ds);
+                        }
+                    }
+                    catch { /* 提供者异常不传播 */ }
+                }
+            }
+            return result;
+        }
 
         /// <summary>
         /// 工作流连接提供者（外部注入）
@@ -258,6 +299,20 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 }
             }
 
+            // ★ 合并额外数据源（子程序输入端口等，支持实时更新）
+            foreach (var extra in GetExtraDataSources())
+            {
+                if (targetType != null)
+                {
+                    bool typeMatch = extra.PropertyType == targetType ||
+                        (targetType.IsArray && extra.PropertyType == targetType.GetElementType()) ||
+                        (!targetType.IsArray && extra.PropertyType.IsArray && extra.PropertyType.GetElementType() == targetType);
+                    if (!typeMatch) continue;
+                }
+                if (!allDataSources.Any(ds => ds.SourceNodeId == extra.SourceNodeId && ds.PropertyName == extra.PropertyName))
+                    allDataSources.Add(extra);
+            }
+
             return allDataSources;
         }
 
@@ -328,6 +383,18 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                             queue.Enqueue((parentId, childDistance));
                         }
                     }
+                }
+            }
+
+            // ★ 合并额外数据源中的图像类型（子程序输入端口等）
+            var imageTypeNames2 = new HashSet<string> { "Mat", "IVisionImage", "HImage" };
+            foreach (var extra in GetExtraDataSources().Where(ds =>
+                ds.PropertyType != null && imageTypeNames2.Contains(ds.PropertyType.Name)))
+            {
+                if (!result.Any(r => r.SourceNodeId == extra.SourceNodeId && r.PropertyName == extra.PropertyName))
+                {
+                    extra.Distance = 1;
+                    result.Add(extra);
                 }
             }
 

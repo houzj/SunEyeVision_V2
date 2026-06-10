@@ -2919,7 +2919,11 @@ SplitterPosition = position;
                 // 创建属性元数据提供者
                 var metadataProvider = new SunEyeVision.Plugin.Infrastructure.Managers.Tool.PropertyMetadataProviderAdapter();
 
-                var workflow = _workflowEngine.CurrentWorkflow ?? throw new InvalidOperationException("当前工作流为空");
+                // ★ 子程序模式下使用子程序工作流作为连接/节点提供者（保持 BFS 能找到子程序内部节点）
+                var workflow = selectedTab.IsInSubroutine
+                    ? _workflowEngine.GetWorkflow(selectedTab.CurrentWorkflowId)
+                        ?? throw new InvalidOperationException($"子程序工作流未找到: {selectedTab.CurrentWorkflowId}")
+                    : _workflowEngine.CurrentWorkflow ?? throw new InvalidOperationException("当前工作流为空");
                 var queryService = new DataSourceQueryService(workflow, workflow, null, metadataProvider);
 
                 // ★ SSOT: 从 WorkflowContext 同步已有的执行结果（修复"先执行→再开窗"场景）
@@ -2934,7 +2938,61 @@ SplitterPosition = position;
                     LogInfo($"✓ 已从 WorkflowContext 同步 {nonNullResults.Count()} 个节点结果到 DSQS");
                 }
 
-                LogInfo($"✓ 创建数据查询服务成功: 节点 {node.Id}, 工作流 {currentWorkflow.Name}");
+                LogInfo($"✓ 创建数据查询服务成功: 节点 {node.Id}, 工作流 {workflow.Name}");
+                // ★ 子程序内部节点：注册数据源提供者，动态注入子程序输入端口
+                if (selectedTab.IsInSubroutine)
+                {
+                    try
+                    {
+                        var subWorkflowId = selectedTab.CurrentWorkflowId;
+                        var parentNodeId = FindParentSubroutineNodeId(subWorkflowId);
+                        if (parentNodeId != null)
+                        {
+                            WorkflowNodeBase? capturedParentNode = null;
+                            foreach (var wf in _workflowEngine.GetAllWorkflows())
+                            {
+                                var found = wf.Nodes.FirstOrDefault(n => n.Id == parentNodeId);
+                                if (found?.Parameters is SubroutineParameters)
+                                {
+                                    capturedParentNode = found;
+                                    break;
+                                }
+                            }
+
+                            if (capturedParentNode != null)
+                            {
+                                queryService.AddExtraDataSourceProvider(() =>
+                                {
+                                    if (capturedParentNode?.Parameters is not SubroutineParameters sp)
+                                        return new List<AvailableDataSource>();
+
+                                    var nodeName = capturedParentNode.Name ?? capturedParentNode.DispName ?? "子程序";
+                                    var sources = new List<AvailableDataSource>();
+                                    foreach (var input in sp.Inputs)
+                                    {
+                                        if (string.IsNullOrEmpty(input.Name)) continue;
+                                        var paramType = input.ParamType ?? typeof(object);
+                                        sources.Add(new AvailableDataSource
+                                        {
+                                            SourceNodeId = "__SubroutineInputs__",
+                                            SourceNodeName = nodeName,
+                                            PropertyName = input.Name,
+                                            DisplayName = input.Name,
+                                            PropertyType = paramType,
+                                            Description = $"子程序输入: {input.Name}",
+                                        });
+                                    }
+                                    return sources;
+                                });
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogWarning($"⚠ 注册子程序输入端口提供者失败: {ex.Message}");
+                    }
+                }
+
                 return queryService;
             }
             catch (Exception ex)

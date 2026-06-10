@@ -1,12 +1,15 @@
-using System;
+﻿using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Media.Effects;
 using SunEyeVision.UI.Models;
 using SunEyeVision.UI.ViewModels;
 using SunEyeVision.UI;
 using SunEyeVision.UI.Views.Controls.Canvas;
 using SunEyeVision.UI.Views.Windows;
 using SunEyeVision.UI.Services.Canvas;
+using ControlsCanvas = System.Windows.Controls.Canvas;
 
 namespace SunEyeVision.UI.Services.Interaction
 {
@@ -30,6 +33,11 @@ namespace SunEyeVision.UI.Services.Interaction
         private static MainWindowViewModel? _cachedViewModel;
         private static DateTime _viewModelCacheTime = DateTime.MinValue;
         private static readonly TimeSpan _cacheExpiry = TimeSpan.FromSeconds(30);
+
+        // 临时拖拽节点（拖拽工具箱工具时跟随鼠标的视觉元素，完全复刻真实节点外观）
+        private Border? _tempDragNode;
+        private const double _tempNodeWidth = 160;   // 匹配 NodeWidth
+        private const double _tempNodeHeight = 40;   // 匹配 NodeHeight
 
         /// <summary>
         /// 工作流标签页管理器（属性注入，在 Canvas Loaded 后设置）
@@ -81,35 +89,140 @@ namespace SunEyeVision.UI.Services.Interaction
         }
 
         /// <summary>
-        /// 拖放进入事件
+        /// 显示临时节点（完全复刻真实节点的胶囊外观，半透明 + 蓝色虚线边框）
+        /// </summary>
+        private void ShowTempNode(ToolItem item, Point position, ControlsCanvas canvas)
+        {
+            if (_tempDragNode != null)
+            {
+                _tempDragNode.Visibility = Visibility.Visible;
+                ControlsCanvas.SetLeft(_tempDragNode, position.X - _tempNodeWidth / 2);
+                ControlsCanvas.SetTop(_tempDragNode, position.Y - _tempNodeHeight / 2);
+
+                // 更新图标和名称（重用已有节点）
+                if (_tempDragNode.Child is StackPanel panel && panel.Children.Count >= 2)
+                {
+                    if (panel.Children[0] is TextBlock iconBlock)
+                        iconBlock.Text = item.Icon;
+                    if (panel.Children[1] is TextBlock nameBlock)
+                        nameBlock.Text = item.Name;
+                }
+                return;
+            }
+
+            // 内容面板：图标 + 名称
+            var contentPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                Margin = new Thickness(12, 0, 12, 0),
+                VerticalAlignment = VerticalAlignment.Center
+            };
+
+            contentPanel.Children.Add(new TextBlock
+            {
+                Text = item.Icon,
+                FontSize = 18,
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(0, 0, 8, 0)
+            });
+
+            contentPanel.Children.Add(new TextBlock
+            {
+                Text = item.Name,
+                FontSize = 13,
+                FontWeight = FontWeights.Medium,
+                VerticalAlignment = VerticalAlignment.Center,
+                Foreground = new SolidColorBrush(Color.FromRgb(0x33, 0x33, 0x33)),
+                TextTrimming = TextTrimming.CharacterEllipsis
+            });
+
+            // 创建节点外观的 Border（完全复刻真实节点的胶囊外形）
+            _tempDragNode = new Border
+            {
+                Width = _tempNodeWidth,
+                Height = _tempNodeHeight,
+                CornerRadius = new CornerRadius(20),
+                Background = new SolidColorBrush(Color.FromArgb(191, 255, 255, 255)),
+                BorderBrush = new SolidColorBrush(Color.FromArgb(128, 0x00, 0x66, 0xCC)),
+                BorderThickness = new Thickness(1),
+                Opacity = 0.75,
+                Effect = new DropShadowEffect
+                {
+                    Color = Colors.Black,
+                    BlurRadius = 8,
+                    Opacity = 0.3,
+                    ShadowDepth = 2
+                },
+                Child = contentPanel
+            };
+
+            ControlsCanvas.SetZIndex(_tempDragNode, 10000);
+            ControlsCanvas.SetLeft(_tempDragNode, position.X - _tempNodeWidth / 2);
+            ControlsCanvas.SetTop(_tempDragNode, position.Y - _tempNodeHeight / 2);
+            canvas.Children.Add(_tempDragNode);
+        }
+
+        /// <summary>
+        /// 更新临时节点位置（跟随鼠标）
+        /// </summary>
+        private void UpdateTempNodePosition(Point position)
+        {
+            if (_tempDragNode != null)
+            {
+                ControlsCanvas.SetLeft(_tempDragNode, position.X - _tempNodeWidth / 2);
+                ControlsCanvas.SetTop(_tempDragNode, position.Y - _tempNodeHeight / 2);
+            }
+        }
+
+        /// <summary>
+        /// 隐藏临时节点
+        /// </summary>
+        private void HideTempNode()
+        {
+            if (_tempDragNode != null)
+            {
+                _tempDragNode.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        /// <summary>
+        /// 拖放进入事件 - 显示临时节点
         /// </summary>
         public void Canvas_DragEnter(object sender, DragEventArgs e)
         {
-#if DEBUG
-#endif
             if (e.Data.GetDataPresent("ToolItem"))
             {
                 e.Effects = DragDropEffects.Copy;
-#if DEBUG
-#endif
+
+                // 显示临时节点（跟随鼠标）
+                if (sender is ControlsCanvas canvas && e.Data.GetData("ToolItem") is ToolItem item)
+                {
+                    var position = e.GetPosition(canvas);
+                    ShowTempNode(item, position, canvas);
+                }
             }
             else
             {
                 e.Effects = DragDropEffects.None;
-#if DEBUG
-#endif
             }
             e.Handled = true;
         }
 
         /// <summary>
-        /// 拖放悬停事件
+        /// 拖放悬停事件 - 更新临时节点位置
         /// </summary>
         public void Canvas_DragOver(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent("ToolItem"))
             {
                 e.Effects = DragDropEffects.Copy;
+
+                // 更新临时节点位置
+                if (_tempDragNode != null && sender is ControlsCanvas canvas)
+                {
+                    var position = e.GetPosition(canvas);
+                    UpdateTempNodePosition(position);
+                }
             }
             else
             {
@@ -119,10 +232,11 @@ namespace SunEyeVision.UI.Services.Interaction
         }
 
         /// <summary>
-        /// 拖放离开事件
+        /// 拖放离开事件 - 隐藏临时节点
         /// </summary>
         public void Canvas_DragLeave(object sender, DragEventArgs e)
         {
+            HideTempNode();
             e.Handled = true;
         }
 
@@ -140,6 +254,9 @@ LogTimestamp("Drop", "▶ Canvas_Drop 开始执行");
 
             try
             {
+                // 隐藏临时节点（即将创建真正的节点）
+                HideTempNode();
+
                 // 检查 sender
                 if (sender is not System.Windows.Controls.Canvas canvas)
                 {

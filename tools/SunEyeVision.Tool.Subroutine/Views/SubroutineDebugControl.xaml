@@ -386,7 +386,9 @@
                                 Background="#FAFAFA" Padding="4,4">
                             <StackPanel Orientation="Horizontal">
                                 <ComboBox ItemsSource="{Binding AvailableDisplayTypes}"
-                                          SelectedItem="{Binding SelectedDisplayType}"
+                                          DisplayMemberPath="DisplayName"
+                                          SelectedValuePath="Value"
+                                          SelectedValue="{Binding SelectedDisplayType}"
                                           Height="26" MinWidth="120" VerticalAlignment="Center"/>
                                 <Button Content="+" Height="26" Margin="4,0,0,0"
                                         Style="{StaticResource AddButton}"

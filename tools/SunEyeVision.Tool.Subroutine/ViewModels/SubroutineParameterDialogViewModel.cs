@@ -22,7 +22,7 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
         private readonly SubroutineParameters _parameters;
         private readonly Action? _onOutputsChanged;
         private string _selectedInputTypeName = "Image";
-        private string _selectedOutputTypeName = "Float";
+        private string _selectedOutputTypeName = "Double";
         private SubroutineDisplayType _selectedDisplayType = SubroutineDisplayType.Circle;
         public string DialogTitle => $"{_subroutineName} - 子程序参数设置";
 
@@ -57,7 +57,7 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
 
         public List<TypeOption> AvailableTypes { get; } = GlobalVariableTypeMapper.GetAllTypeOptions();
 
-        public List<SubroutineDisplayType> AvailableDisplayTypes { get; }
+        public List<DisplayTypeOption> AvailableDisplayTypes { get; } = SubroutineDisplayTypeExtensions.GetAllOptions();
 
         /// <summary>循环设置：可用数据类型</summary>
         public List<string> AvailableLoopDataTypes { get; } = new() { "int", "double", "float", "string" };
@@ -87,8 +87,6 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
             _subroutineInternalSources = subroutineInternalSources;
             _parameters = parameters ?? throw new ArgumentNullException(nameof(parameters));
             _onOutputsChanged = onOutputsChanged;
-
-            AvailableDisplayTypes = Enum.GetValues<SubroutineDisplayType>().ToList();
 
             AddInputCommand = new RelayCommand(AddInput);
             AddOutputCommand = new RelayCommand(AddOutput);
@@ -152,7 +150,7 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
         {
             var item = new SubroutineDisplayItem
             {
-                DisplayName = SelectedDisplayType.ToString(),
+                DisplayName = SelectedDisplayType.GetChineseName(),
                 DisplayType = SelectedDisplayType
             };
 
@@ -161,7 +159,7 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
             {
                 item.TextStyle = new TextStyle
                 {
-                    Name = SelectedDisplayType.ToString(),
+                    Name = SelectedDisplayType.GetChineseName(),
                     FontSize = 12.0,
                     OkColor = System.Windows.Media.Color.FromRgb(0, 255, 0),
                     PositionX = 10,
@@ -171,7 +169,7 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
             else if (SelectedDisplayType != SubroutineDisplayType.Image)
             {
                 // 图形类型——更新默认 GraphicsStyle 的名称
-                item.GraphicsStyle.Name = SelectedDisplayType.ToString();
+                item.GraphicsStyle.Name = SelectedDisplayType.GetChineseName();
             }
             // Image 类型：不需要任何样式对象
 

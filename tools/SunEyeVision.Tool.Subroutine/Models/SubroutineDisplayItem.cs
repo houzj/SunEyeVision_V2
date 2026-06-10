@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Windows.Media;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models;
@@ -124,44 +122,5 @@ namespace SunEyeVision.Tool.Subroutine.Models
         CoordinateSystem,
         Text,
         Image
-    }
-
-    /// <summary>显示类型选项（带中文显示名）</summary>
-    public class DisplayTypeOption
-    {
-        public string DisplayName { get; }
-        public SubroutineDisplayType Value { get; }
-
-        public DisplayTypeOption(string displayName, SubroutineDisplayType value)
-        {
-            DisplayName = displayName;
-            Value = value;
-        }
-    }
-
-    /// <summary>SubroutineDisplayType 扩展方法</summary>
-    public static class SubroutineDisplayTypeExtensions
-    {
-        private static readonly Dictionary<SubroutineDisplayType, string> ChineseNames = new()
-        {
-            [SubroutineDisplayType.Point] = "点",
-            [SubroutineDisplayType.Line] = "直线",
-            [SubroutineDisplayType.Rectangle] = "矩形",
-            [SubroutineDisplayType.Circle] = "圆",
-            [SubroutineDisplayType.Arc] = "圆弧",
-            [SubroutineDisplayType.Polygon] = "多边形",
-            [SubroutineDisplayType.Contour] = "轮廓",
-            [SubroutineDisplayType.Arrow] = "箭头",
-            [SubroutineDisplayType.Cross] = "十字",
-            [SubroutineDisplayType.CoordinateSystem] = "坐标系",
-            [SubroutineDisplayType.Text] = "文本",
-            [SubroutineDisplayType.Image] = "图像",
-        };
-
-        public static string GetChineseName(this SubroutineDisplayType type)
-            => ChineseNames.TryGetValue(type, out var name) ? name : type.ToString();
-
-        public static List<DisplayTypeOption> GetAllOptions()
-            => ChineseNames.Select(kvp => new DisplayTypeOption(kvp.Value, kvp.Key)).ToList();
     }
 }

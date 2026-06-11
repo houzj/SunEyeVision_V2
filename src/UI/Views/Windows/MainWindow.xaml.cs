@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.IO;
 using System.Collections.ObjectModel;
@@ -54,6 +54,7 @@ namespace SunEyeVision.UI.Views.Windows
         private bool _isTabItemClick = false;  // 标记是否是通过点击TabItem触发的切换
 
         private WorkflowCanvasControl? _currentWorkflowCanvas = null;  // 当前显示的WorkflowCanvasControl
+        private Window? _openSubroutineDebugWindow;  // 子程序调试窗口单例跟踪
 
 
 
@@ -1763,120 +1764,134 @@ namespace SunEyeVision.UI.Views.Windows
 
         }
 
+
         /// <summary>
-
-        /// 打开子程序参数设置对话框
-
+        /// 统一的子程序调试窗口打开逻辑（消除两个入口点的重复代码）
         /// </summary>
+        private void OpenSubroutineDebugWindowCore(
+            string subroutineId,
+            string nodeId,
+            string nodeDispName,
+            SubroutineParameters parameters)
+        {
+            // 单例管理：如果同一子程序的调试窗口已打开，激活并返回
+            if (_openSubroutineDebugWindow?.IsLoaded == true)
+            {
+                _openSubroutineDebugWindow.Activate();
+                _openSubroutineDebugWindow.Focus();
+                return;
+            }
 
+            // 1. 找到父工作流 ID
+            var parentWorkflowId = FindParentWorkflowId(subroutineId);
+
+            // 2. 父工作流作用域查询服务 → 输入绑定
+            var queryService = _viewModel?.CreateDataSourceQueryService(parentWorkflowId);
+
+            // 3. 子工作流内部数据源 → 输出/显示绑定
+            var subQueryService = _viewModel?.CreateDataSourceQueryService(subroutineId);
+            var internalSources = subQueryService?.GetWorkflowNodeDataSources() ?? new();
+
+            // 4. 创建实时刷新回调：Outputs 变更时立即更新模块结果树
+            Action? onOutputsChanged = () =>
+            {
+                if (parameters == null) return;
+                var tempResults = new SubroutineResults
+                {
+                    OutputConfigs = parameters.Outputs.ToList()
+                };
+                _viewModel?.UpdateModuleResults(tempResults, nodeDispName, "Subroutine", nodeId);
+            };
+
+            // 5. 绑定路径校验：输入绑定的源节点必须在父工作流中存在（Fail-Fast）
+            if (queryService != null && parameters.Inputs.Count > 0)
+            {
+                var sources = queryService.GetAvailableDataSources(nodeId);
+                var registeredNodeIds = new HashSet<string>(sources
+                    .Where(s => !string.IsNullOrEmpty(s.SourceNodeId))
+                    .Select(s => s.SourceNodeId!));
+
+                foreach (var input in parameters.Inputs)
+                {
+                    if (string.IsNullOrEmpty(input.BindingSource)) continue;
+                    var parts = input.BindingSource.Split('.');
+                    if (parts.Length < 1) continue;
+
+                    if (!registeredNodeIds.Contains(parts[0]))
+                    {
+                        var msg = $"子程序输入 '{input.Name}' 绑定的源节点 '{parts[0]}' 在父工作流中不存在。\n" +
+                                  $"请检查是否删除了上游节点或绑定的节点 ID 已变更。\n" +
+                                  $"(子程序: {nodeDispName})";
+                        System.Windows.MessageBox.Show(msg, "绑定路径错误",
+                            System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                        return; // 不打开调试窗口
+                    }
+                }
+            }
+
+            var debugWindow = SubroutinePlugin.ShowDebugWindow(this, subroutineId, nodeDispName,
+                nodeId, queryService, parameters, internalSources, onOutputsChanged);
+            debugWindow.Title = nodeDispName;
+
+            // 单例跟踪：关闭时清理引用
+            debugWindow.Closed += (s, e) => _openSubroutineDebugWindow = null;
+            _openSubroutineDebugWindow = debugWindow;
+            debugWindow.Show();
+        }
+
+        /// <summary>
+        /// 打开子程序参数设置对话框（从子程序 Tab 导航栏按钮进入）
+        /// </summary>
         private void OpenSubroutineParameterDialog(WorkflowTabViewModel tab)
         {
             try
             {
-                // 在父工作流中查找对应的子程序节点（用于数据源绑定和参数获取）
                 var parentNodeId = _viewModel?.FindParentSubroutineNodeId(tab.CurrentWorkflowId)
                     ?? tab.CurrentWorkflowId;
-
-                // 1. 找到父工作流 ID
-                var parentWorkflowId = FindParentWorkflowId(tab.CurrentWorkflowId);
-
-                // 2. 父工作流作用域查询服务 → 输入绑定（和其他节点一致）
-                var queryService = _viewModel?.CreateDataSourceQueryService(parentWorkflowId);
-
-                // 3. 预计算子程序内部数据源 → 输出/显示绑定
-                var subQueryService = _viewModel?.CreateDataSourceQueryService(tab.CurrentWorkflowId);
-                var internalSources = subQueryService?.GetWorkflowNodeDataSources() ?? new();
-
-                // 4. 获取参数
                 var parameters = FindParentSubroutineParameters(tab.CurrentWorkflowId);
-
-                // ★ 创建实时刷新回调
-                Action? onOutputsChanged = null;
-                if (_viewModel?.SelectedNode != null && parameters != null)
+                if (parameters == null)
                 {
-                    var capturedNodeId = _viewModel.SelectedNode.Id;
-                    var capturedNodeName = _viewModel.SelectedNode.Name;
-                    onOutputsChanged = () =>
-                    {
-                        var tempResults = new SubroutineResults
-                        {
-                            OutputConfigs = parameters.Outputs.ToList()
-                        };
-                        _viewModel?.UpdateModuleResults(tempResults, capturedNodeName, "Subroutine", capturedNodeId);
-                    };
+                    _viewModel?.LogWarning("未找到子程序参数", "Subroutine");
+                    return;
                 }
-
-                var debugWindow = SubroutinePlugin.ShowDebugWindow(this, tab.CurrentWorkflowId, tab.EffectiveDisplayName,
-                    parentNodeId, queryService, parameters, internalSources, onOutputsChanged);
-                debugWindow.Title = tab.EffectiveDisplayName;
-                debugWindow.Show();
-
+                OpenSubroutineDebugWindowCore(
+                    tab.CurrentWorkflowId, parentNodeId,
+                    tab.EffectiveDisplayName, parameters);
             }
             catch (Exception ex)
-
             {
-
                 System.Windows.MessageBox.Show(
-
                     $"打开子程序参数设置失败: {ex.Message}",
-
                     "错误",
-
                     System.Windows.MessageBoxButton.OK,
-
                     System.Windows.MessageBoxImage.Error);
-
                 _viewModel?.AddLog(LogLevel.Error, $"打开子程序参数设置失败: {ex.Message}", LogSource.UIOperation);
-
             }
-
         }
 
         /// <summary>
-        /// 从画布节点打开子程序参数设置对话框
+        /// 从画布节点双击打开子程序参数设置对话框
         /// </summary>
         internal void OpenSubroutineNodeParameterDialog(Models.WorkflowNode node)
         {
             try
             {
-                // ★ 使用 SubroutineId 属性（SSOT），而非 node.Id
                 var subroutineId = node.SubroutineId ?? node.Id;
-
-                // 1. 找到父工作流 ID
-                var parentWorkflowId = FindParentWorkflowId(subroutineId);
-
-                // 2. 父工作流作用域查询服务 → 输入绑定（和其他节点一致）
-                var queryService = _viewModel?.CreateDataSourceQueryService(parentWorkflowId);
-
-                // 3. 预计算子程序内部数据源 → 输出/显示绑定
-                var subQueryService = _viewModel?.CreateDataSourceQueryService(subroutineId);
-                var internalSources = subQueryService?.GetWorkflowNodeDataSources() ?? new();
-
-                // ★ 创建实时刷新回调：Outputs 变更时立即更新模块结果树
-                Action? onOutputsChanged = () =>
+                if (node.Parameters is not SubroutineParameters parameters)
                 {
-                    var sp = node.Parameters as SubroutineParameters;
-                    if (sp == null) return;
-                    var tempResults = new SubroutineResults { OutputConfigs = sp.Outputs.ToList() };
-                    _viewModel?.UpdateModuleResults(tempResults, node.DispName, "Subroutine", node.Id);
-                };
-
-                // ★ node.Id 是父工作流中该子程序节点的 ID（用于数据源绑定）
-                var debugWindow = SubroutinePlugin.ShowDebugWindow(this, subroutineId, node.DispName, node.Id, queryService,
-                    node.Parameters as SubroutineParameters,
-                    internalSources, onOutputsChanged);
-                debugWindow.Title = node.Name;
-                debugWindow.Show();
+                    _viewModel?.LogWarning($"节点 '{node.Name}' 不是子程序或参数为空", "Subroutine");
+                    return;
+                }
+                OpenSubroutineDebugWindowCore(
+                    subroutineId, node.Id,
+                    node.DispName, parameters);
             }
             catch (Exception ex)
             {
                 System.Windows.MessageBox.Show(
                     $"打开子程序参数设置失败: {ex.Message}",
-
                     "错误",
-
                     System.Windows.MessageBoxButton.OK,
-
                     System.Windows.MessageBoxImage.Error);
                 _viewModel?.AddLog(LogLevel.Error, $"打开子程序参数设置失败: {ex.Message}", LogSource.UIOperation);
             }
@@ -3554,4 +3569,3 @@ if (DataContext is MainWindowViewModel viewModel)
     }
 
 }
-

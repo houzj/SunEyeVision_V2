@@ -62,6 +62,9 @@ namespace SunEyeVision.Workflow
                     // 1. 解析输入图像：优先使用参数绑定中的 ImageSource
                     var inputImage = ResolveInputImage(typedParams, nodeResults);
                     typedParams.ResolvedInputImage = inputImage;
+                    VisionLogger.Instance.Log(LogLevel.Info,
+                        $"[DIAG] {Name}({Id}): ResolvedInputImage={(inputImage == null ? "null" : $"{inputImage.GetType().Name}, IsEmpty={inputImage.IsEmpty}")}",
+                        $"诊断.算法节点");
 
                     // 2. 应用参数绑定（从参数内部 BindingConfig 读取并解析）
                     ParameterResolver? resolver = null;
@@ -133,20 +136,72 @@ namespace SunEyeVision.Workflow
         /// </remarks>
         private IVisionImage? ResolveInputImage(ToolParameters parameters, IDictionary<string, ToolResults>? nodeResults)
         {
+            var logger = VisionLogger.Instance;
+            var paramTypeName = parameters.GetType().Name;
+
             // 参数中的 ImageSource 绑定（AvailableDataSource）
             var imageSourceProp = parameters.GetType().GetProperty("ImageSource");
             if (imageSourceProp != null)
             {
                 var imageSource = imageSourceProp.GetValue(parameters) as AvailableDataSource;
-                if (imageSource != null && nodeResults != null
-                    && nodeResults.TryGetValue(imageSource.SourceNodeId, out var sourceResult))
+                logger.Log(LogLevel.Info,
+                    $"[DIAG] {Name}({Id}): ResolveInputImage, paramType={paramTypeName}, ImageSource={(imageSource == null ? "null" : $"SourceNodeId={imageSource.SourceNodeId}, PropertyName={imageSource.PropertyName}")}, nodeResults={(nodeResults == null ? "null" : $"Count={nodeResults.Count}")}",
+                    $"诊断.算法节点");
+
+                if (imageSource != null && nodeResults != null)
                 {
-                    var value = GetPropertyValueFromResult(sourceResult, imageSource.PropertyName);
-                    if (value is IVisionImage image && !image.IsEmpty)
+                    if (nodeResults.TryGetValue(imageSource.SourceNodeId, out var sourceResult))
                     {
-                        return image;
+                        var value = GetPropertyValueFromResult(sourceResult, imageSource.PropertyName);
+                        logger.Log(LogLevel.Info,
+                            $"[DIAG] {Name}({Id}): nodeResults contains SourceNodeId={imageSource.SourceNodeId}, GetProperty={imageSource.PropertyName}, value type={(value?.GetType().Name ?? "null")}, is IVisionImage={(value is IVisionImage)}",
+                            $"诊断.算法节点");
+                        if (value is IVisionImage image && !image.IsEmpty)
+                        {
+                            return image;
+                        }
+                    }
+                    else
+                    {
+                        logger.Log(LogLevel.Info,
+                            $"[DIAG] {Name}({Id}): nodeResults does NOT contain SourceNodeId={imageSource.SourceNodeId}, available keys=[{string.Join(", ", nodeResults.Keys)}]",
+                            $"诊断.算法节点");
                     }
                 }
+
+                // 如果 ImageSource 为 null，尝试从 ImageSourceRef 恢复
+                if (imageSource == null)
+                {
+                    var restoredSource = RestoreAvailableDataSourceFromRef(parameters, imageSourceProp);
+                    if (restoredSource != null)
+                    {
+                        logger.Log(LogLevel.Info,
+                            $"[DIAG] {Name}({Id}): ImageSource was null, restored from ImageSourceRef: SourceNodeId={restoredSource.SourceNodeId}, PropertyName={restoredSource.PropertyName}",
+                            $"诊断.算法节点");
+
+                        // 重试查找
+                        if (nodeResults != null && nodeResults.TryGetValue(restoredSource.SourceNodeId, out var sourceResult2))
+                        {
+                            var value = GetPropertyValueFromResult(sourceResult2, restoredSource.PropertyName);
+                            if (value is IVisionImage image && !image.IsEmpty)
+                            {
+                                return image;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        logger.Log(LogLevel.Info,
+                            $"[DIAG] {Name}({Id}): ImageSource was null, no ImageSourceRef found to restore from",
+                            $"诊断.算法节点");
+                    }
+                }
+            }
+            else
+            {
+                logger.Log(LogLevel.Info,
+                    $"[DIAG] {Name}({Id}): ResolveInputImage, paramType={paramTypeName}, ImageSource property NOT FOUND",
+                    $"诊断.算法节点");
             }
 
             // 无有效输入图像源 → 返回 null（起始节点自行加载图像）
@@ -156,6 +211,11 @@ namespace SunEyeVision.Workflow
         /// <summary>
         /// 从工具结果中获取指定属性的值
         /// </summary>
+        /// <remarks>
+        /// 先尝试通过反射获取属性值，如果失败则尝试从 GetResultItems() 中查找。
+        /// 后者支持 GenericToolResults 等基于结果项的弱类型结果类，
+        /// 对齐 ParameterResolver.ResolveDynamic 的查找模式。
+        /// </remarks>
         private object? GetPropertyValueFromResult(ToolResults result, string propertyName)
         {
             if (result == null || string.IsNullOrEmpty(propertyName))
@@ -166,6 +226,15 @@ namespace SunEyeVision.Workflow
             if (property != null && property.CanRead)
             {
                 return property.GetValue(result);
+            }
+
+            // 从 GetResultItems() 中查找（支持 GenericToolResults 等弱类型结果）
+            var resultItems = result.GetResultItems();
+            var foundItem = resultItems.FirstOrDefault(item =>
+                string.Equals(item.Name, propertyName, StringComparison.OrdinalIgnoreCase));
+            if (foundItem != null)
+            {
+                return foundItem.Value;
             }
 
             return null;
@@ -257,6 +326,8 @@ namespace SunEyeVision.Workflow
             ToolParameters parameters,
             IDictionary<string, ToolResults> nodeResults)
         {
+            var logger = VisionLogger.Instance;
+
             foreach (var prop in parameters.GetType()
                 .GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {
@@ -264,6 +335,7 @@ namespace SunEyeVision.Workflow
                     continue;
 
                 var dataSource = prop.GetValue(parameters) as AvailableDataSource;
+                var restored = false;
 
                 // 如果 AvailableDataSource 为 null（[JsonIgnore] 反序列化后丢失），
                 // 从对应的 ImageSourceReference 属性恢复
@@ -271,21 +343,54 @@ namespace SunEyeVision.Workflow
                 {
                     dataSource = RestoreAvailableDataSourceFromRef(parameters, prop);
                     if (dataSource == null)
+                    {
+                        logger.Log(LogLevel.Info,
+                            $"[DIAG] {Name}({Id}): ResolveAvailableDataSources property={prop.Name} is null, cannot restore from ref",
+                            $"诊断.算法节点");
                         continue;
+                    }
+                    restored = true;
                 }
 
                 if (string.IsNullOrEmpty(dataSource.SourceNodeId))
+                {
+                    if (restored)
+                        logger.Log(LogLevel.Info,
+                            $"[DIAG] {Name}({Id}): ResolveAvailableDataSources property={prop.Name} restored but SourceNodeId is empty",
+                            $"诊断.算法节点");
                     continue;
+                }
                 if (string.IsNullOrEmpty(dataSource.PropertyName))
                     continue;
 
+                if (restored)
+                {
+                    logger.Log(LogLevel.Info,
+                        $"[DIAG] {Name}({Id}): ResolveAvailableDataSources property={prop.Name} restored from ref, SourceNodeId={dataSource.SourceNodeId}, PropertyName={dataSource.PropertyName}",
+                        $"诊断.算法节点");
+                }
+
                 if (!nodeResults.TryGetValue(dataSource.SourceNodeId, out var sourceResult))
+                {
+                    logger.Log(LogLevel.Info,
+                        $"[DIAG] {Name}({Id}): ResolveAvailableDataSources property={prop.Name}, SourceNodeId={dataSource.SourceNodeId} NOT found in nodeResults, keys=[{string.Join(", ", nodeResults.Keys)}]",
+                        $"诊断.算法节点");
                     continue;
+                }
 
                 var value = GetPropertyValueFromResult(sourceResult, dataSource.PropertyName);
                 if (value != null)
                 {
                     dataSource.CurrentValue = value;
+                    logger.Log(LogLevel.Info,
+                        $"[DIAG] {Name}({Id}): ResolveAvailableDataSources property={prop.Name}, SourceNodeId={dataSource.SourceNodeId}, CurrentValue set, type={value.GetType().Name}",
+                        $"诊断.算法节点");
+                }
+                else
+                {
+                    logger.Log(LogLevel.Info,
+                        $"[DIAG] {Name}({Id}): ResolveAvailableDataSources property={prop.Name}, SourceNodeId={dataSource.SourceNodeId}, GetPropertyValueFromResult returned null",
+                        $"诊断.算法节点");
                 }
             }
         }

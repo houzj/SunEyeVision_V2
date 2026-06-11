@@ -8,6 +8,7 @@ using System.Windows.Media;
 using SunEyeVision.Plugin.SDK.Metadata;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
 
 namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 {
@@ -165,17 +166,40 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <returns>是否成功恢复</returns>
         public bool RestoreImageSource(System.Collections.Generic.IEnumerable<AvailableDataSource>? dataSources)
         {
-            if (_imageSourceRef == null || dataSources == null)
+            if (dataSources == null)
                 return false;
 
-            var matched = _imageSourceRef.MatchDataSource(dataSources);
-            if (matched != null)
+            // 分支1：有序列化引用 → 精确匹配恢复
+            if (_imageSourceRef != null)
             {
-                // 直接设置字段，避免触发 setter 中的重复同步
-                _imageSource = matched;
-                OnPropertyChanged(nameof(ImageSource));
-                return true;
+                var matched = _imageSourceRef.MatchDataSource(dataSources);
+                if (matched != null)
+                {
+                    // 直接设置字段，避免触发 setter 中的重复同步
+                    _imageSource = matched;
+                    OnPropertyChanged(nameof(ImageSource));
+                    return true;
+                }
+                return false;
             }
+
+            // 分支2：无序列化引用且无运行时图像源 → 数据驱动自动匹配
+            // 场景：子程序内部工具首次执行时无序列化引用(dataSources为设计时推断的可用数据源)，
+            // 自动匹配第一个 IVisionImage 类型的数据源
+            if (_imageSource == null)
+            {
+                var firstImageSource = dataSources
+                    .FirstOrDefault(ds => ds.PropertyType != null &&
+                        typeof(IVisionImage).IsAssignableFrom(ds.PropertyType));
+                if (firstImageSource != null)
+                {
+                    _imageSource = firstImageSource;
+                    _imageSourceRef = ImageSourceReference.FromDataSource(firstImageSource);
+                    OnPropertyChanged(nameof(ImageSource));
+                    return true;
+                }
+            }
+
             return false;
         }
 

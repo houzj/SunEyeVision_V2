@@ -14,6 +14,17 @@ using SunEyeVision.Plugin.Infrastructure.Infrastructure;
 namespace SunEyeVision.Workflow
 {
     /// <summary>
+    /// 子程序父节点 ID 在上下文变量中的键名
+    /// </summary>
+    internal static class SubroutineContextKeys
+    {
+        /// <summary>
+        /// 用于在 contextVariables 中传递子程序节点在父工作流中的 NodeId
+        /// </summary>
+        public const string ParentNodeId = "__SubroutineParentNodeId__";
+    }
+
+    /// <summary>
     /// 工作流执行状态
     /// </summary>
     public enum WorkflowExecutionState
@@ -435,6 +446,19 @@ namespace SunEyeVision.Workflow
             // 递归路径：跳过状态管理，直接执行
             if (_currentState == WorkflowExecutionState.Running)
             {
+                // [DIAG] 记录子程序上下文
+                var ctxVarKeys = contextVariables != null ? string.Join(", ", contextVariables.Keys) : "null";
+                var ctxVarValues = contextVariables != null
+                    ? string.Join(", ", contextVariables.Select(kvp =>
+                    {
+                        var valType = kvp.Value?.GetType().Name ?? "null";
+                        var valStr = kvp.Value is IVisionImage img ? $"HImage(IsEmpty={img.IsEmpty})" : (kvp.Value?.ToString() is string s ? (s.Length > 60 ? s.Substring(0, 60) + "..." : s) : "null");
+                        return $"{kvp.Key}({valType}={valStr})";
+                    }))
+                    : "null";
+                _logger.LogInfo($"[DIAG] 子程序递归: workflowId={workflowId}, sourceName={sourceWorkflow.Name}, inputImage={(inputImage == null ? "null" : $"HImage(IsEmpty={inputImage.IsEmpty})")}, contextVariables keys=[{ctxVarKeys}], values=[{ctxVarValues}]",
+                    "诊断.执行引擎");
+
                 var subContext = new WorkflowContext();
                 subContext.SetVariable("InputImage", inputImage);
                 subContext.GlobalVariables = globalVariables;
@@ -442,9 +466,19 @@ namespace SunEyeVision.Workflow
                 // 合并子程序输入端口值到子上下文（同时注入为合成节点结果供绑定解析）
                 if (contextVariables != null && contextVariables.Count > 0)
                 {
+                    // 提取 __SubroutineParentNodeId__ 并移出，不进入合成结果
+                    string? parentNodeId = null;
+                    if (contextVariables.TryGetValue(SubroutineContextKeys.ParentNodeId, out var pnId) && pnId is string pnIdStr)
+                    {
+                        parentNodeId = pnIdStr;
+                    }
+
                     var syntheticResults = new GenericToolResults { Status = ExecutionStatus.Success };
                     foreach (var kvp in contextVariables)
                     {
+                        // 排除 __SubroutineParentNodeId__ 元数据键
+                        if (string.Equals(kvp.Key, SubroutineContextKeys.ParentNodeId, StringComparison.Ordinal)) continue;
+
                         subContext.SetVariable(kvp.Key, kvp.Value);
                         syntheticResults.AddResultItem(kvp.Key, kvp.Value);
                     }
@@ -454,10 +488,35 @@ namespace SunEyeVision.Workflow
                         Success = true,
                         Result = syntheticResults
                     });
+
+                    // ★ 架构核心：同时以父节点 ID 为 key 注入合成结果
+                    // 使子程序内部节点通过绑定 SourceNodeId=父节点ID 即可正确解析输入值
+                    if (!string.IsNullOrEmpty(parentNodeId))
+                    {
+                        subContext.SetNodeResult(parentNodeId, new NodeExecutionResult
+                        {
+                            NodeId = parentNodeId,
+                            Success = true,
+                            Result = syntheticResults
+                        });
+                        _logger.LogInfo($"注入子程序输入合成结果到父节点ID: {parentNodeId}");
+                    }
                 }
 
                 _logger.LogInfo($"递归执行子程序工作流: {sourceWorkflow.Name}");
-                return await ExecuteWorkflowWithParallelGroups(execWorkflow, subContext);
+                var subResult = await ExecuteWorkflowWithParallelGroups(execWorkflow, subContext);
+
+                // 将子程序内部节点的执行结果回传到主上下文
+                // 确保子程序下钻模式下，选中内部节点也能正确显示该节点的结果
+                if (_currentContext != null)
+                {
+                    foreach (var kvp in subResult.NodeResults)
+                    {
+                        _currentContext.SetNodeResult(kvp.Key, kvp.Value);
+                    }
+                }
+
+                return subResult;
             }
 
             // 首次进入：全生命周期管理
@@ -544,8 +603,15 @@ namespace SunEyeVision.Workflow
                 {
                     // 运行时同步 SubroutineId（以 node.SubroutineId 为 SSOT）
                     executor.SubroutineId = node.SubroutineId ?? string.Empty;
+                    // 闭包捕获 node.Id 作为父节点 ID，通过扩展字典传入子上下文
                     executor.ExecuteSubWorkflowAsync = (subId, img, ctx) =>
-                        ExecuteWorkflowAsync(subId, img, null, ctx);
+                    {
+                        var extendedCtx = ctx != null
+                            ? new Dictionary<string, object>(ctx)
+                            : new Dictionary<string, object>();
+                        extendedCtx[SubroutineContextKeys.ParentNodeId] = node.Id;
+                        return ExecuteWorkflowAsync(subId, img, null, extendedCtx);
+                    };
                 }
 
                 target.AddNode(executionNode);
@@ -647,6 +713,18 @@ namespace SunEyeVision.Workflow
             var toolResultsDict = context.GetAllNodeResults()
                 .Where(kvp => kvp.Value.Result != null)
                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Result!);
+
+            // [DIAG] 记录 toolResultsDict 的内容，便于排查参数绑定问题
+            var toolResultKeys = string.Join(", ", toolResultsDict.Select(kvp =>
+            {
+                var res = kvp.Value;
+                // 尝试获取 ToolResults 的 DisplayName 或 Image 相关内容
+                var imageCount = res?.GetDisplayImages()?.Count ?? 0;
+                var resultType = res?.GetType().Name ?? "null";
+                return $"{kvp.Key}({resultType}, images={imageCount})";
+            }));
+            _logger.LogInfo($"[DIAG ExecuteAlgorithmNode] node={node.Name}({node.Id}), toolResultsDict keys=[{toolResultKeys}]",
+                "诊断.执行引擎");
 
             // 注入全局变量作为合成节点结果（使 __GlobalVars__.变量名 绑定可解析）
             if (context.GlobalVariables != null && context.GlobalVariables.Count > 0)

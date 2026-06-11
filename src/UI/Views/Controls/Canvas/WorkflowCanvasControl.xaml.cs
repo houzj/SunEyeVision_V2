@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 using System.Collections.Generic;
 
@@ -28,6 +28,7 @@ using SunEyeVision.UI.Services.Rendering;
 
 using SunEyeVision.UI.Services.Path;
 using SunEyeVision.UI.Services.PathCalculators;
+using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.UI.Services.Canvas;
 using SunEyeVision.UI.Converters.Path;
 
@@ -808,71 +809,61 @@ namespace SunEyeVision.UI.Views.Controls.Canvas
         /// </summary>
 
         public void ForceRefreshItemsControls()
-
         {
+            var logger = VisionLogger.Instance;
+            var itemsControls = FindVisualChildren<ItemsControl>(WorkflowCanvas).ToList();
+
+            logger.Log(LogLevel.Debug, $"ForceRefreshItemsControls|找到 {itemsControls.Count} 个 ItemsControl", "WorkflowCanvas");
+
+            int refreshed = 0;
+            int datacontextHack = 0;
 
             try
-
             {
-
-                // 查找 WorkflowCanvas 中的所有 ItemsControl
-
-                var itemsControls = FindVisualChildren<ItemsControl>(WorkflowCanvas).ToList();
-
-
-
-                int refreshed = 0;
-
                 foreach (var itemsControl in itemsControls)
-
                 {
-
-                    // 获取绑定表达式
-
                     var bindingExpression = itemsControl.GetBindingExpression(ItemsControl.ItemsSourceProperty);
 
                     if (bindingExpression != null)
-
                     {
-
-                        // 刷新绑定表达式，强制重新从DataContext读取数据
-
                         bindingExpression.UpdateTarget();
-
+                        refreshed++;
                     }
-
                     else
-
                     {
-
-                        // 如果没有绑定表达式，可能是因为绑定还没有建立
-
-                        // 我们需要手动触发DataContextChanged事件
-
+                        datacontextHack++;
                         var oldDataContext = itemsControl.DataContext;
 
-                        itemsControl.DataContext = null;
+                        logger.Log(LogLevel.Debug,
+                            $"ForceRefreshItemsControls|DataContextHack: ItemsControl={itemsControl.GetType().Name}, " +
+                            $"DataContext={oldDataContext?.GetType().Name ?? "null"}, " +
+                            $"ItemsSource={itemsControl.ItemsSource?.GetType().Name ?? "null"}",
+                            "WorkflowCanvas");
 
-                        itemsControl.DataContext = oldDataContext;
-
+                        try
+                        {
+                            itemsControl.DataContext = null;
+                            itemsControl.DataContext = oldDataContext;
+                        }
+                        catch (InvalidOperationException ex) when (ex.Message.Contains("DeferRefresh"))
+                        {
+                            logger.Log(LogLevel.Error,
+                                $"ForceRefreshItemsControls|DeferRefresh冲突(DataContextHack): " +
+                                $"ItemsControl={itemsControl.GetType().Name}, " +
+                                $"DataContext={oldDataContext?.GetType().Name ?? "null"}, " +
+                                $"错误={ex.Message}",
+                                "WorkflowCanvas", ex);
+                        }
                     }
-
-
-
-                    refreshed++;
-
                 }
-
             }
-
-            catch (Exception)
-
+            catch (Exception ex)
             {
-
-                // 忽略异常
-
+                logger.Log(LogLevel.Error,
+                    $"ForceRefreshItemsControls|异常: 刷新={refreshed}, DataContextHack={datacontextHack}, " +
+                    $"错误={ex.Message}",
+                    "WorkflowCanvas", ex);
             }
-
         }
 
 

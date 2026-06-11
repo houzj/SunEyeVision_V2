@@ -275,6 +275,9 @@ namespace SunEyeVision.UI.ViewModels
                     // 更新数据分析控件（同步等待异步操作）
                     UpdateDataAnalysisControl((Models.WorkflowNode?)value).GetAwaiter().GetResult();
 
+                    // 先更新图像显示数据源（当前节点 + 父节点），RefreshResultDisplay 依赖正确的数据源
+                    UpdateDisplayImageSources((Models.WorkflowNode?)value);
+
                     // 刷新结果显示（如果节点有缓存结果）
                     var executionResult = value != null ? CurrentWorkflowContext?.GetNodeResult(value.Id) : null;
                     var toolId = (value as WorkflowNodeBase)?.ToolType ?? "";
@@ -306,9 +309,6 @@ namespace SunEyeVision.UI.ViewModels
                         // 清空结果显示
                         _nodeResultManager.ClearResultDisplay();
                     }
-
-                    // 更新图像显示数据源（当前节点 + 父节点）
-                    UpdateDisplayImageSources((Models.WorkflowNode?)value);
 
                     // 节点选中状态变化时更新图像预览
                     UpdateImagePreviewVisibility((Models.WorkflowNode?)value);
@@ -2477,23 +2477,23 @@ SplitterPosition = position;
                 {
                     // 已有关联：同步节点 DispName 到引擎工作流名称（支持重命名）
                     var existingWorkflow = _workflowEngine.GetWorkflow(subroutineId);
-                    if (existingWorkflow != null && existingWorkflow.Name != node.DispName)
+                    if (existingWorkflow != null && existingWorkflow.Name != node.Name)
                     {
-                        existingWorkflow.Name = node.DispName;
+                        existingWorkflow.Name = node.Name;
                         AddLog($"🔄 同步子程序工作流名称: {existingWorkflow.Name}");
                     }
-                    AddLog($"↪️ 导航到已有子程序: {node.DispName} (ID: {subroutineId})");
+                    AddLog($"↪️ 导航到已有子程序: {node.Name} (ID: {subroutineId})");
                 }
                 else
                 {
                     // 首次打开：创建子程序工作流并关联到节点
                     subroutineId = CreateNewSubroutineWorkflow(node);
-                    AddLog($"🆕 创建并导航到子程序: {node.DispName} (ID: {subroutineId})");
+                    AddLog($"🆕 创建并导航到子程序: {node.Name} (ID: {subroutineId})");
                 }
 
                 // 从引擎读取子程序工作流的实际名称
                 var subWorkflow = _workflowEngine.GetWorkflow(subroutineId);
-                var workflowDisplayName = subWorkflow?.Name ?? node.DispName;
+                var workflowDisplayName = node.Name;
 
                 // 下钻导航
                 selectedTab.NavigateToSubroutine(subroutineId, workflowDisplayName);
@@ -2522,13 +2522,13 @@ SplitterPosition = position;
             var subroutineId = Guid.NewGuid().ToString();
 
             // 注册到工作流引擎
-            var workflow = _workflowEngine.CreateWorkflow(subroutineId, node.DispName ?? node.Name);
+            var workflow = _workflowEngine.CreateWorkflow(subroutineId, node.Name);
             workflow.IsSubroutine = true;
 
             // ★ 使用 SubroutineId 属性（不再是 ExtraData 弱类型字典）
             node.SubroutineId = subroutineId;
 
-            AddLog($"📝 新建子程序工作流: {node.DispName} (ID: {subroutineId})");
+            AddLog($"📝 新建子程序工作流: {node.Name} (ID: {subroutineId})");
 
             return subroutineId;
         }
@@ -2541,6 +2541,16 @@ SplitterPosition = position;
         {
             var selectedTab = WorkflowTabViewModel?.SelectedTab;
             if (selectedTab == null) return;
+
+            // ★ 清空当前画布上所有节点和连接的选中状态（防止切换后残留）
+            foreach (var node in selectedTab.WorkflowNodes)
+            {
+                node.IsSelected = false;
+            }
+            foreach (var conn in selectedTab.WorkflowConnections)
+            {
+                conn.IsSelected = false;
+            }
 
             var workflow = _workflowEngine.GetWorkflow(workflowId);
             if (workflow == null)

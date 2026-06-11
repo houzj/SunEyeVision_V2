@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
@@ -25,7 +26,7 @@ namespace SunEyeVision.Tool.Subroutine
         Icon = "\U0001F501",
         Category = "工作流控制",
         Version = "1.0.0",
-        HasDebugWindow = false
+        HasDebugWindow = true
     )]
     public class SubroutineTool : IToolPlugin<SubroutineParameters, SubroutineResults>
     {
@@ -93,6 +94,7 @@ namespace SunEyeVision.Tool.Subroutine
                 // ===== 解析输出项（根据 Outputs 配置，从子工作流节点结果中取值）=====
                 if (subWorkflowNodeResults.Count > 0)
                 {
+                    var outputErrors = new List<string>();
                     var resolver = new ParameterResolver(parameters.Context?.Logger);
                     foreach (var output in parameters.Outputs.Where(o => o.Source != null))
                     {
@@ -113,10 +115,20 @@ namespace SunEyeVision.Tool.Subroutine
                         }
                         else
                         {
-                            parameters.LogWarning($"  输出 '{output.Name}' 绑定解析失败: {resolveResult.ErrorMessage ?? "值为空"}");
+                            outputErrors.Add($"输出 '{output.Name}' 绑定解析失败: {resolveResult.ErrorMessage ?? "值为空"}");
                         }
                     }
+
+                    if (outputErrors.Count > 0)
+                    {
+                        var errorMsg = string.Join("; ", outputErrors);
+                        parameters.LogError($"子程序输出绑定解析失败: {errorMsg}");
+                        throw new InvalidOperationException(errorMsg);
+                    }
                 }
+
+                // ===== 构建显示项（根据 DisplayConfigs 从子工作流节点结果提取图形）=====
+                BuildDisplayItemsFromConfig(result, parameters, subWorkflowNodeResults);
 
                 result.ExecutedNodeCount = execResult.NodeResults?.Count ?? 0;
                 result.SubWorkflowExecutionTimeMs = (long)execResult.ExecutionTime.TotalMilliseconds;
@@ -161,33 +173,68 @@ namespace SunEyeVision.Tool.Subroutine
         private static Dictionary<string, object> ResolveInputs(SubroutineParameters parameters)
         {
             var values = new Dictionary<string, object>();
+            var errors = new List<string>();
             var nodeResults = parameters.NodeResults;
             if (nodeResults == null) return values;
 
             var resolver = new ParameterResolver(parameters.Context?.Logger);
 
-            foreach (var input in parameters.Inputs.Where(i => i.Source != null))
+            foreach (var input in parameters.Inputs.Where(i => i.Source != null || !string.IsNullOrEmpty(i.BindingSource)))
             {
-                var src = input.Source!;
+                string sourceNodeId, sourceProperty;
+                string sourceNodeName = "?", displayName = "?";
+
+                if (input.Source != null)
+                {
+                    // 优先使用对象引用（含完整类型信息）
+                    sourceNodeId = input.Source.SourceNodeId;
+                    sourceProperty = input.Source.PropertyName;
+                    sourceNodeName = input.Source.SourceNodeName ?? "?";
+                    displayName = input.Source.DisplayName ?? sourceProperty;
+                }
+                else
+                {
+                    // ★ 从 BindingSource 字符串 "NodeId.PropertyName" 解析
+                    var parts = input.BindingSource.Split('.');
+                    if (parts.Length < 2)
+                    {
+                        errors.Add($"输入 '{input.Name}' BindingSource 格式无效: '{input.BindingSource}'");
+                        continue;
+                    }
+                    sourceNodeId = parts[0];
+                    sourceProperty = parts[1];
+                    sourceNodeName = input.BindingDisplayText?.Split('.') is { Length: >= 2 } displayParts
+                        ? displayParts[0] : sourceNodeId;
+                    displayName = sourceProperty;
+                }
+
                 var binding = new ParamSetting
                 {
                     ParameterName = input.Name,
                     BindingType = BindingType.Binding,
-                    SourceNodeId = src.SourceNodeId,
-                    SourceProperty = src.PropertyName,
-                    TargetType = src.PropertyType ?? typeof(object)
+                    SourceNodeId = sourceNodeId,
+                    SourceProperty = sourceProperty,
+                    TargetType = typeof(object)
                 };
                 var resolveResult = resolver.Resolve(binding, nodeResults);
                 if (resolveResult.IsSuccess && resolveResult.Value != null)
                 {
                     values[input.Name] = resolveResult.Value;
-                    parameters.LogInfo($"  输入 '{input.Name}' <- {src.SourceNodeName}.{src.DisplayName} = {resolveResult.Value}");
+                    parameters.LogInfo($"  输入 '{input.Name}' <- {sourceNodeName}.{displayName} (来自 {(input.Source != null ? "Source对象" : "BindingSource字符串")})");
                 }
                 else
                 {
-                    parameters.LogWarning($"  输入 '{input.Name}' 绑定解析失败: {resolveResult.ErrorMessage ?? "值为空"}");
+                    errors.Add($"输入 '{input.Name}' 绑定解析失败: {resolveResult.ErrorMessage ?? "值为空"}");
                 }
             }
+
+            if (errors.Count > 0)
+            {
+                var errorMsg = string.Join("; ", errors);
+                parameters.LogError($"子程序输入参数绑定解析失败: {errorMsg}");
+                throw new InvalidOperationException(errorMsg);
+            }
+
             return values;
         }
 
@@ -225,6 +272,10 @@ namespace SunEyeVision.Tool.Subroutine
                         break;
                     }
                 }
+
+                // ===== 循环间隔 =====
+                if (config.LoopInterval > 0)
+                    Task.Delay(config.LoopInterval).GetAwaiter().GetResult();
             }
 
             return result;
@@ -346,6 +397,92 @@ namespace SunEyeVision.Tool.Subroutine
 
             parameters.LogInfo($"  中断判断: {sourceStr} {config.ComparisonOperator} {targetStr} = {conditionMet}");
             return conditionMet;
+        }
+
+        /// <summary>
+        /// 根据 DisplayConfigs 从子工作流节点结果中提取图形数据，推入 DisplayCollector。
+        /// 对齐普通工具在 Run() 中主动构建显示项的模式。
+        /// </summary>
+        private static void BuildDisplayItemsFromConfig(
+            SubroutineResults result,
+            SubroutineParameters parameters,
+            Dictionary<string, ToolResults> subWorkflowNodeResults)
+        {
+            if (parameters.DisplayConfigs.Count == 0)
+                return;
+
+            var resolver = new ParameterResolver(parameters.Context?.Logger);
+
+            foreach (var displayItem in parameters.DisplayConfigs)
+            {
+                if (string.IsNullOrEmpty(displayItem.BindingSource))
+                    continue;
+
+                var parts = displayItem.BindingSource.Split('.');
+                if (parts.Length < 2)
+                    continue;
+
+                var binding = new ParamSetting
+                {
+                    ParameterName = displayItem.DisplayName,
+                    BindingType = BindingType.Binding,
+                    SourceNodeId = parts[0],
+                    SourceProperty = parts[1],
+                    TargetType = typeof(object)
+                };
+
+                var resolveResult = resolver.Resolve(binding, subWorkflowNodeResults);
+                if (!resolveResult.IsSuccess || resolveResult.Value == null)
+                {
+                    parameters.LogWarning($"显示项 '{displayItem.DisplayName}' 绑定解析失败: {resolveResult.ErrorMessage ?? "值为空"}");
+                    continue;
+                }
+
+                var value = resolveResult.Value;
+                const bool isPass = true; // 子程序不代为评估内部节点通过/失败，显示属于子程序自身结果
+
+                switch (displayItem.DisplayType)
+                {
+                    case SubroutineDisplayType.Point when value is Point pt:
+                        result.Display.AddPoint(displayItem.GraphicsStyle, pt, isPass);
+                        break;
+
+                    case SubroutineDisplayType.Rectangle when value is Rect rect:
+                        result.Display.AddRect(displayItem.GraphicsStyle, rect, isPass);
+                        break;
+
+                    case SubroutineDisplayType.Cross when value is Point crossPt:
+                        result.Display.AddCross(displayItem.GraphicsStyle, crossPt, isPass);
+                        break;
+
+                    case SubroutineDisplayType.Text when displayItem.TextStyle != null:
+                        result.Display.AddText(displayItem.TextStyle,
+                            displayItem.TextStyle.PositionX, displayItem.TextStyle.PositionY,
+                            value.ToString() ?? string.Empty, isPass);
+                        break;
+
+                    case SubroutineDisplayType.Circle:
+                    case SubroutineDisplayType.Line:
+                    case SubroutineDisplayType.Contour:
+                    case SubroutineDisplayType.Polygon:
+                    {
+                        if (value is Point[] pts)
+                        {
+                            bool isClosed = displayItem.DisplayType != SubroutineDisplayType.Line;
+                            result.Display.AddContour(displayItem.GraphicsStyle, pts, isPass, isClosed);
+                        }
+                        break;
+                    }
+
+                    case SubroutineDisplayType.Image:
+                        // Image 由 GetDisplayImages() 处理，不加到 GraphicsDisplay
+                        break;
+
+                    default:
+                        parameters.LogWarning($"显示项 '{displayItem.DisplayName}' 类型 {displayItem.DisplayType} 暂不支持自动映射");
+                        break;
+                }
+            }
         }
     }
 }

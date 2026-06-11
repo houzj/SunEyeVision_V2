@@ -312,7 +312,7 @@ namespace SunEyeVision.UI.Services.Workflow
                 {
                     foreach (var nodeResult in result.NodeResults)
                     {
-                        var node = rootEngineWorkflow.Nodes.FirstOrDefault(n => n.Id == nodeResult.Key);
+                        var node = FindNodeRecursive(rootEngineWorkflow, nodeResult.Key);
                         if (node is Models.WorkflowNode uiNode)
                         {
                             // 创建一个包含结果的 ToolResults
@@ -447,6 +447,35 @@ namespace SunEyeVision.UI.Services.Workflow
                 toolType.Contains("ImageLoad", StringComparison.OrdinalIgnoreCase) ||
                 toolType.Contains("图片载入", StringComparison.OrdinalIgnoreCase) ||
                 toolType.Contains("ImageSource", StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
+        /// 递归在工作流树中查找指定 ID 的节点（含子工作流）
+        /// </summary>
+        private SunEyeVision.Workflow.WorkflowNodeBase? FindNodeRecursive(
+            SunEyeVision.Workflow.Workflow workflow, string nodeId, HashSet<string>? visited = null)
+        {
+            visited ??= new HashSet<string>();
+            if (!visited.Add(workflow.Id)) return null;
+
+            var node = workflow.Nodes.FirstOrDefault(n => n.Id == nodeId);
+            if (node != null) return node;
+
+            // 递归搜索子工作流
+            foreach (var n in workflow.Nodes)
+            {
+                if (!string.IsNullOrEmpty(n.SubroutineId))
+                {
+                    var subWf = _workflowEngine.GetWorkflow(n.SubroutineId);
+                    if (subWf != null)
+                    {
+                        var found = FindNodeRecursive(subWf, nodeId, visited);
+                        if (found != null) return found;
+                    }
+                }
+            }
+
+            return null;
         }
 
         private void OnWorkflowExecutionStarted(string workflowId)

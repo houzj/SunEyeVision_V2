@@ -12,10 +12,71 @@ namespace SunEyeVision.Tool.Script.Models
     [JsonDerivedType(typeof(ScriptParameters), "Script")]
     public class ScriptParameters : ToolParameters
     {
-        private string _scriptCode = string.Empty;
-        private List<string> _assemblyReferences = new();
-        private List<ScriptParamItem> _inputVariables = new();
-        private List<ScriptParamItem> _outputVariables = new();
+        /// <summary>
+        /// 默认脚本代码模板（三段式生命周期，含常用 using）
+        /// </summary>
+        public const string DefaultScriptCode = @"using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.IO;
+using System.Drawing;
+using System.Diagnostics;
+using HalconDotNet;
+
+/************************************
+ * 脚本工具 - 用户自定义脚本
+ * 继承 Script，实现 Init/Process/Release 生命周期
+ * 自动注入 using：System.*, HalconDotNet, System.Drawing 等
+ ************************************/
+public class UserScript : Script
+{
+    private int _processCount;
+    private DateTime _startTime;
+
+    public override void Init()
+    {
+        _processCount = 0;
+        _startTime = DateTime.Now;
+        LogInfo($""[{_startTime:HH:mm:ss}] 脚本初始化完成"");
+    }
+
+    public override void Process()
+    {
+        _processCount++;
+        var elapsedMs = (DateTime.Now - _startTime).TotalMilliseconds;
+
+        SetOutput(""ProcessCount"", _processCount);
+        SetOutput(""ElapsedMs"", elapsedMs);
+
+        LogInfo($""第 {_processCount} 次处理, 耗时 {elapsedMs:F0}ms"");
+    }
+
+    public override void Release()
+    {
+        LogInfo($""共处理 {_processCount} 次, 总耗时 {(DateTime.Now - _startTime).TotalSeconds:F1}s"");
+    }
+}
+";
+
+        /// <summary>
+        /// 新建工具时预填充的默认程序集引用列表（按名称装载）
+        /// </summary>
+        private static readonly List<string> DefaultAssemblyReferences =
+        [
+            "System.Drawing",
+            "System.Data",
+            "System.Xml",
+            "System.Xml.Linq",
+            "System.Net.Http",
+            "System.Numerics",
+            "System.IO.Compression"
+        ];
+
+        private string _scriptCode = DefaultScriptCode;
+        private List<string> _assemblyReferences = new(DefaultAssemblyReferences);
+        private List<ScriptParamItem> _inputVariables = [];
+        private List<ScriptParamItem> _outputVariables = [];
 
         /// <summary>
         /// 脚本代码（C# 源码文本）

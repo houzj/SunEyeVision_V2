@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -70,11 +70,18 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
             // 设置内容
             ContentHost.Content = _control;
 
-            // 自适应尺寸：控件有显式宽高时 SizeToContent，否则用 XAML 默认的 400x550
-            if (!double.IsNaN(control.Width) && !double.IsNaN(control.Height))
+            // 自适应尺寸：使用工具控件指定的首选尺寸
+            if (_toolControl != null)
             {
-                SizeToContent = SizeToContent.WidthAndHeight;
+                Width = _toolControl.PreferredDebugWindowSize.Width;
+                Height = _toolControl.PreferredDebugWindowSize.Height;
+                MaximizeButton.Visibility = _toolControl.ShowMaximizeButton
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
             }
+
+            // ★ 修复初始图标：根据窗口实际状态设置正确的按钮图标
+            UpdateMaximizeButtonContent();
 
             // 订阅路由事件
             SubscribeRoutedEvents();
@@ -477,6 +484,45 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
             {
                 DragMove();
             }
+        }
+
+        /// <summary>
+        /// 标题栏鼠标左键弹起（检测双击最大化/还原）
+        /// </summary>
+        private void OnTitleBarMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ClickCount == 2)
+            {
+                ToggleMaximizeRestore();
+            }
+        }
+
+        /// <summary>
+        /// 最大化按钮点击
+        /// </summary>
+        private void OnMaximizeButtonClick(object sender, RoutedEventArgs e)
+        {
+            ToggleMaximizeRestore();
+        }
+
+        /// <summary>
+        /// 切换最大化/还原状态
+        /// </summary>
+        private void ToggleMaximizeRestore()
+        {
+            WindowState = WindowState == WindowState.Maximized
+                ? WindowState.Normal
+                : WindowState.Maximized;
+            UpdateMaximizeButtonContent();
+        }
+
+        /// <summary>
+        /// 根据当前 WindowState 更新按钮图标（Segoe MDL2 Assets）
+        /// </summary>
+        private void UpdateMaximizeButtonContent()
+        {
+            // \uE739 = Maximize (❐), \uE923 = Restore (□)
+            MaximizeButton.Content = WindowState == WindowState.Maximized ? "\uE923" : "\uE739";
         }
 
         /// <summary>

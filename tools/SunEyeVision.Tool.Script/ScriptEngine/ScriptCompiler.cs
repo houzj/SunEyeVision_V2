@@ -11,7 +11,7 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
 {
     /// <summary>
     /// 脚本编译器 — 使用 Roslyn 编译 C# 代码为程序集。
-    /// 自动注入基础 using 和 DLL 引用。
+    /// 自动注入基础 using 和 DLL 引用，支持系统程序集名称装载和自定义 DLL 路径装载。
     /// </summary>
     internal sealed class ScriptCompiler
     {
@@ -23,6 +23,16 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             "System.Text",
             "System.Threading.Tasks",
             "System.Drawing",
+            "System.IO",
+            "System.Net.Http",
+            "System.Xml",
+            "System.Xml.Linq",
+            "System.Data",
+            "System.Numerics",
+            "System.Diagnostics",
+            "System.Runtime.InteropServices",
+            "System.Collections.Concurrent",
+            "HalconDotNet",
             "SunEyeVision.Tool.Script.ScriptEngine"
         ];
 
@@ -76,26 +86,46 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             foreach (var assembly in GetDefaultAssemblies())
                 referencedAssemblies.Add(assembly);
 
-            // 用户指定的 DLL 引用
+            // 用户指定的 DLL 引用（双模式：路径装载 / 名称装载）
             if (additionalAssemblies != null)
             {
-                foreach (var dllPath in additionalAssemblies)
+                foreach (var reference in additionalAssemblies)
                 {
-                    if (File.Exists(dllPath))
+                    if (string.IsNullOrWhiteSpace(reference))
+                        continue;
+
+                    if (reference.Contains('\\') || reference.Contains('/') || reference.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
                     {
-                        try
+                        // 模式A: 文件路径 → Assembly.LoadFrom(path)
+                        if (File.Exists(reference))
                         {
-                            var asm = Assembly.LoadFrom(dllPath);
-                            referencedAssemblies.Add(asm);
+                            try
+                            {
+                                var asm = Assembly.LoadFrom(reference);
+                                referencedAssemblies.Add(asm);
+                            }
+                            catch (Exception ex)
+                            {
+                                result.Diagnostics.Add($"加载程序集引用失败: {reference} — {ex.Message}");
+                            }
                         }
-                        catch (Exception ex)
+                        else
                         {
-                            result.Diagnostics.Add($"加载程序集引用失败: {dllPath} — {ex.Message}");
+                            result.Diagnostics.Add($"程序集引用文件不存在: {reference}");
                         }
                     }
                     else
                     {
-                        result.Diagnostics.Add($"程序集引用文件不存在: {dllPath}");
+                        // 模式B: 程序集名称 → Assembly.Load(new AssemblyName(name))
+                        try
+                        {
+                            var asm = Assembly.Load(new AssemblyName(reference));
+                            referencedAssemblies.Add(asm);
+                        }
+                        catch (Exception ex)
+                        {
+                            result.Diagnostics.Add($"加载程序集引用失败: {reference} — {ex.Message}");
+                        }
                     }
                 }
             }
@@ -143,16 +173,16 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
         }
 
         /// <summary>
-        /// 从代码中提取继承 ScriptBase 的类名
+        /// 从代码中提取继承 Script 的类名
         /// </summary>
         private static string? ExtractClassName(string code)
         {
-            // 简单解析：查找 "class XXX : ScriptBase" 模式
+            // 简单解析：查找 "class XXX : Script" 模式
             var lines = code.Split('\n');
             foreach (var line in lines)
             {
                 var trimmed = line.Trim();
-                if (trimmed.Contains(": ScriptBase"))
+                if (trimmed.Contains(": Script"))
                 {
                     var classIndex = trimmed.IndexOf("class ", StringComparison.Ordinal);
                     if (classIndex >= 0)
@@ -186,9 +216,9 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
         }
 
         /// <summary>
-        /// 获取默认引用的基础程序集
+        /// 获取默认引用的基础程序集（系统程序集按名称装载，自定义程序集扫描路径）
         /// </summary>
-        private static List<Assembly> GetDefaultAssemblies()
+        internal static List<Assembly> GetDefaultAssemblies()
         {
             var assemblies = new List<Assembly>
             {
@@ -196,34 +226,82 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                 typeof(System.Linq.Enumerable).Assembly,   // System.Linq
                 typeof(System.Text.StringBuilder).Assembly, // System.Text
                 typeof(System.Collections.Generic.List<>).Assembly, // System.Collections
-                typeof(ScriptBase).Assembly                 // 脚本引擎所在程序集
+                typeof(Script).Assembly                      // 脚本引擎所在程序集
             };
 
-            // 加载 System.Runtime（需要显式加载）
-            try
+            // 按名称装载的常用系统程序集
+            var systemAssemblyNames = new[]
             {
-                var runtimeAssembly = Assembly.Load(new AssemblyName("System.Runtime"));
-                if (runtimeAssembly != null)
-                    assemblies.Add(runtimeAssembly);
-            }
-            catch
+                "System.Runtime",
+                "System.Console",
+                "System.Threading",
+                "System.Collections.Concurrent",
+                "System.IO.Compression",
+                "System.Net.Http",
+                "System.Xml.ReaderWriter",
+                "System.Xml.Linq",
+                "System.Data.Common",
+                "System.Drawing.Common",
+                "System.Numerics",
+                "System.Runtime.Serialization.Xml",
+                "Microsoft.CSharp"
+            };
+
+            foreach (var name in systemAssemblyNames)
             {
-                // 可选
+                try
+                {
+                    var asm = Assembly.Load(new AssemblyName(name));
+                    if (asm != null)
+                        assemblies.Add(asm);
+                }
+                catch
+                {
+                    // 系统程序集不可用时不报错（目标框架裁剪场景）
+                }
             }
 
-            // 加载 System.Console (有时需要)
-            try
-            {
-                var consoleAssembly = Assembly.Load(new AssemblyName("System.Console"));
-                if (consoleAssembly != null)
-                    assemblies.Add(consoleAssembly);
-            }
-            catch
-            {
-                // 可选
-            }
+            // 尝试装载 HalconDotNet（从已知相对路径查找）
+            var halconAsm = TryLoadHalconAssembly();
+            if (halconAsm != null)
+                assemblies.Add(halconAsm);
 
             return assemblies;
+        }
+
+        /// <summary>
+        /// 尝试从已知路径加载 HalconDotNet 程序集
+        /// </summary>
+        private static Assembly? TryLoadHalconAssembly()
+        {
+            // 1. 按名称尝试（已在加载上下文中的情况）
+            try { return Assembly.Load(new AssemblyName("halcondotnetxl")); } catch { }
+            try { return Assembly.Load(new AssemblyName("HalconDotNet")); } catch { }
+
+            // 2. 相对路径扫描（从当前程序集目录向上查找）
+            var baseDir = Path.GetDirectoryName(typeof(ScriptCompiler).Assembly.Location);
+            if (baseDir == null) return null;
+
+            var searchPaths = new[]
+            {
+                baseDir,
+                Path.Combine(baseDir, "..", "..", "..", "..", "libs", "halcon", "net"),
+                Path.Combine(baseDir, "..", "..", "..", "libs", "halcon", "net"),
+                Path.Combine(baseDir, "..", "..", "libs", "halcon", "net"),
+                Path.Combine(baseDir, "..", "libs", "halcon", "net")
+            };
+
+            foreach (var dir in searchPaths)
+            {
+                var resolved = Path.GetFullPath(dir);
+                var dllPath = Path.Combine(resolved, "halcondotnetxl.dll");
+                if (File.Exists(dllPath))
+                {
+                    try { return Assembly.LoadFrom(dllPath); } catch { }
+                }
+            }
+
+            return null;
         }
     }
 }

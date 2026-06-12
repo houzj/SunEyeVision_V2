@@ -5,212 +5,255 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
              xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
+             xmlns:models="clr-namespace:SunEyeVision.Tool.Script.Models"
              mc:Ignorable="d"
              d:DesignHeight="700" d:DesignWidth="1200"
-             Background="#FF2D2D30"
-             Foreground="#FFDCDCDC"
-             DataContext="{Binding Parameters, RelativeSource={RelativeSource Self}}">
+             Background="#FFF5F5F5"
+             Foreground="#FF333333">
 
     <Grid Margin="4">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="140" />
+            <RowDefinition Height="3" />
+            <RowDefinition Height="200" />
         </Grid.RowDefinitions>
 
         <!-- ===== 工具栏 ===== -->
-        <ToolBar Grid.Row="0" Background="#FF3C3C3C" BorderBrush="#FF3C3C3C" Height="32">
+        <ToolBar Grid.Row="0" Background="#FFF0F0F0" BorderBrush="#FFE0E0E0" Height="32">
             <Button x:Name="ExecuteButton" Content="  执行" Click="ExecuteButton_Click"
                     Background="#FF007ACC" Foreground="White" BorderThickness="0"
                     Padding="10,3" Margin="2,0" FontSize="13" FontWeight="Bold" />
             <Separator />
             <Button x:Name="ClearCodeButton" Content="清空代码" Click="ClearCodeButton_Click"
-                    Background="#FF3C3C3C" Foreground="#FFDCDCDC" BorderThickness="0"
+                    Background="#FFF0F0F0" Foreground="#FF333333" BorderThickness="0"
                     Padding="8,3" Margin="2,0" FontSize="12" />
             <Button x:Name="ClearResultButton" Content="清空结果" Click="ClearResultButton_Click"
-                    Background="#FF3C3C3C" Foreground="#FFDCDCDC" BorderThickness="0"
+                    Background="#FFF0F0F0" Foreground="#FF333333" BorderThickness="0"
                     Padding="8,3" Margin="2,0" FontSize="12" />
             <Separator />
-            <Label Content="状态:" Foreground="#FF999999" FontSize="12" VerticalAlignment="Center" Padding="4,0" />
-            <Label x:Name="StatusLabel" Content="就绪" Foreground="#FF6A9955" FontSize="12"
+            <Button x:Name="AssemblyRefButton" Content="引用程序集"
+                    Click="AssemblyRefButton_Click"
+                    Background="#FFF0F0F0" Foreground="#FF333333" BorderThickness="0"
+                    Padding="8,3" Margin="2,0" FontSize="12" />
+            <Separator />
+            <Label Content="状态:" Foreground="#FF666666" FontSize="12" VerticalAlignment="Center" Padding="4,0" />
+            <Label x:Name="StatusLabel" Content="就绪" Foreground="#FF107C10" FontSize="12"
                    VerticalAlignment="Center" Padding="4,0" FontWeight="Bold" />
         </ToolBar>
 
         <!-- ===== 主内容区域（可调节分区）===== -->
-        <Grid Grid.Row="1" Margin="0,4,0,4">
+        <Grid Grid.Row="1" Margin="0,4,0,0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="240" />
+                <ColumnDefinition Width="280" />
                 <ColumnDefinition Width="5" />
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="5" />
-                <ColumnDefinition Width="280" />
             </Grid.ColumnDefinitions>
 
-            <!-- 左侧面板：输入/输出变量（TabControl 切换） -->
-            <Grid Grid.Column="0" Background="#FF252526">
-                <TabControl Background="#FF252526" BorderThickness="0"
-                           Padding="0" Margin="0">
-                    <TabControl.Resources>
-                        <Style TargetType="TabPanel">
-                            <Setter Property="Background" Value="#FF2D2D30" />
-                        </Style>
-                    </TabControl.Resources>
+            <!-- ***** 浅色 TabControl 和 DataGrid 共用资源 ***** -->
+            <Grid.Resources>
+                <ResourceDictionary>
+                    <!-- ===== TabControl 浅色样式 ===== -->
+                    <Style TargetType="TabPanel">
+                        <Setter Property="Background" Value="#FFF0F0F0" />
+                    </Style>
 
-                    <!-- ===== Tab 1: 输入变量 ===== -->
-                    <TabItem Header="输入变量" Background="#FF252526" Foreground="#FFDCDCDC"
-                             FontSize="12" Padding="8,3">
+                    <Style TargetType="TabItem">
+                        <Setter Property="Background" Value="#FFF0F0F0" />
+                        <Setter Property="Foreground" Value="#FF555555" />
+                        <Setter Property="BorderBrush" Value="#FFD0D0D0" />
+                        <Setter Property="BorderThickness" Value="0" />
+                        <Setter Property="Padding" Value="8,4" />
+                        <Setter Property="FontSize" Value="12" />
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="TabItem">
+                                    <Border Name="Border"
+                                            Background="{TemplateBinding Background}"
+                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                            BorderThickness="0"
+                                            Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter ContentSource="Header"
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"
+                                                        TextElement.Foreground="{TemplateBinding Foreground}" />
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter TargetName="Border" Property="Background" Value="#FFFFFFFF" />
+                                            <Setter Property="Foreground" Value="#FF000000" />
+                                        </Trigger>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Border" Property="Background" Value="#FFE8E8E8" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+
+                    <!-- ===== DataGrid 浅色样式 ===== -->
+                    <!-- 列头 -->
+                    <Style TargetType="DataGridColumnHeader">
+                        <Setter Property="Background" Value="#FFF0F0F0" />
+                        <Setter Property="Foreground" Value="#FF000000" />
+                        <Setter Property="BorderBrush" Value="#FFD0D0D0" />
+                        <Setter Property="BorderThickness" Value="0,0,0,1" />
+                        <Setter Property="Padding" Value="4,2" />
+                    </Style>
+
+                    <!-- 行 -->
+                    <Style TargetType="DataGridRow">
+                        <Setter Property="Background" Value="#FFFAFAFA" />
+                        <Setter Property="Foreground" Value="#FF000000" />
+                        <Setter Property="BorderBrush" Value="#FFE8E8E8" />
+                        <Setter Property="BorderThickness" Value="0,0,0,1" />
+                        <Style.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" Value="#FF007ACC" />
+                                <Setter Property="Foreground" Value="White" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#FFF5F5F5" />
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+
+                    <!-- 单元格 -->
+                    <Style TargetType="DataGridCell">
+                        <Setter Property="Background" Value="Transparent" />
+                        <Setter Property="Foreground" Value="#FF000000" />
+                        <Setter Property="BorderBrush" Value="#FFE8E8E8" />
+                        <Setter Property="BorderThickness" Value="0" />
+                        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                        <Style.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" Value="#FF007ACC" />
+                                <Setter Property="Foreground" Value="White" />
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </ResourceDictionary>
+            </Grid.Resources>
+
+            <!-- 左侧面板：输入/输出变量 -->
+            <TabControl Grid.Column="0" Background="#FFFAFAFA" BorderThickness="0"
+                       Padding="0" Margin="0">
+
+                <TabItem Header="输入变量" FontSize="12" Padding="8,3">
+                    <Border Background="#FFFAFAFA">
                         <DataGrid x:Name="InputDataGrid"
                                   AutoGenerateColumns="False" CanUserAddRows="True" CanUserDeleteRows="True"
-                                  Background="#FF252526" Foreground="#FFDCDCDC"
                                   RowHeaderWidth="0" BorderThickness="0"
                                   GridLinesVisibility="Horizontal"
                                   HeadersVisibility="Column"
                                   FontSize="12">
-                            <DataGrid.Resources>
-                                <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="#FF264F78" />
-                            </DataGrid.Resources>
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="名称" Binding="{Binding Name}" Width="*" />
                                 <DataGridTextColumn Header="值" Binding="{Binding DisplayValue}" Width="*" />
                             </DataGrid.Columns>
                         </DataGrid>
-                    </TabItem>
+                    </Border>
+                </TabItem>
 
-                    <!-- ===== Tab 2: 输出变量 ===== -->
-                    <TabItem Header="输出变量" Background="#FF252526" Foreground="#FFDCDCDC"
-                             FontSize="12" Padding="8,3">
+                <TabItem Header="输出变量" FontSize="12" Padding="8,3">
+                    <Border Background="#FFFAFAFA">
                         <DataGrid x:Name="OutputDataGrid"
                                   AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
-                                  Background="#FF252526" Foreground="#FFDCDCDC"
                                   RowHeaderWidth="0" BorderThickness="0"
                                   GridLinesVisibility="Horizontal"
                                   HeadersVisibility="Column"
                                   FontSize="12">
-                            <DataGrid.Resources>
-                                <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="#FF264F78" />
-                            </DataGrid.Resources>
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="名称" Binding="{Binding Name}" Width="*" />
                                 <DataGridTextColumn Header="值" Binding="{Binding DisplayValue}" Width="*" />
                             </DataGrid.Columns>
                         </DataGrid>
-                    </TabItem>
-                </TabControl>
-            </Grid>
+                    </Border>
+                </TabItem>
+            </TabControl>
 
-            <GridSplitter Grid.Column="1" Width="5" Background="#FF3C3C3C"
+            <GridSplitter Grid.Column="1" Width="5" Background="#FFD0D0D0"
                           HorizontalAlignment="Stretch" />
 
-            <!-- 中间面板：代码编辑器（AvalonEdit） -->
-            <Grid Grid.Column="2" Background="#FF1E1E1E">
+            <!-- 中间面板：代码编辑器 -->
+            <Grid Grid.Column="2" Background="#FFFFFFFF">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
-                <Border Grid.Row="0" Background="#FF1E1E1E" Padding="6,4">
+                <Border Grid.Row="0" Background="#FFF8F8F8" Padding="6,4">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="脚本代码 (C#)" Foreground="#FF569CD6" FontSize="13" FontWeight="Bold" />
+                        <TextBlock Grid.Column="0" Text="脚本代码 (C#)" Foreground="#FF0066CC" FontSize="13" FontWeight="Bold" />
                         <Label x:Name="CodeInfoLabel" Grid.Column="1"
-                               Content="就绪" Foreground="#FF999999" FontSize="11"
+                               Content="就绪" Foreground="#FF666666" FontSize="11"
                                VerticalAlignment="Center" Padding="4,0" />
                     </Grid>
                 </Border>
 
                 <avalonedit:TextEditor Grid.Row="1" x:Name="CodeEditor"
                                         FontFamily="Consolas" FontSize="12"
-                                        Foreground="#FFDCDCDC" Background="#FF1E1E1E"
-                                        LineNumbersForeground="#FF2B91AF"
+                                        Background="#FFFFFFFF"
+                                        Foreground="#FF000000"
+                                        LineNumbersForeground="#FF888888"
+                                        SyntaxHighlighting="{x:Null}"
+
                                         WordWrap="False"
                                         ShowLineNumbers="True"
                                         HorizontalScrollBarVisibility="Auto"
-                                        VerticalScrollBarVisibility="Visible"
-                                        SyntaxHighlighting="C#" />
-            </Grid>
-
-            <GridSplitter Grid.Column="3" Width="5" Background="#FF3C3C3C"
-                          HorizontalAlignment="Stretch" />
-
-            <!-- 右侧面板：错误列表 + DLL 引用 -->
-            <Grid Grid.Column="4" Background="#FF252526">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="2*" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-
-                <Border Grid.Row="0" Background="#FF1E1E1E" Padding="6,4">
-                    <TextBlock Text="错误列表" Foreground="#FFF44747" FontSize="13" FontWeight="Bold" />
-                </Border>
-
-                <ListBox Grid.Row="1" x:Name="ErrorListBox"
-                         Background="#FF252526" Foreground="#FFF44747"
-                         BorderThickness="0" FontSize="12"
-                         MouseDoubleClick="ErrorListBox_MouseDoubleClick">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="2" />
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-
-                <Border Grid.Row="2" Background="#FF1E1E1E" Padding="6,4">
-                    <TextBlock Text="DLL 引用" Foreground="#FF4EC9B0" FontSize="13" FontWeight="Bold" />
-                </Border>
-
-                <ListBox Grid.Row="3" x:Name="DllReferenceList"
-                         Background="#FF252526" Foreground="#FFDCDCDC"
-                         BorderThickness="0" FontSize="11">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="2" />
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
+                                        VerticalScrollBarVisibility="Visible" />
             </Grid>
         </Grid>
 
-        <GridSplitter Grid.Row="2" Height="3" Background="#FF3C3C3C"
+        <GridSplitter Grid.Row="2" Height="3" Background="#FFD0D0D0"
                       HorizontalAlignment="Stretch" />
 
-        <!-- ===== 底部：日志输出面板 ===== -->
-        <Grid Grid.Row="3" Background="#FF1E1E1E" Margin="0,2,0,0">
+        <!-- ===== 底部：统一输出面板（编译错误红色 + 运行日志深灰）===== -->
+        <Grid Grid.Row="3" Background="#FFFAFAFA" Margin="0,2,0,0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <Grid Grid.Row="0" Background="#FF1E1E1E" Margin="6,4,6,4">
+            <Grid Grid.Row="0" Background="#FFF8F8F8" Margin="6,4,6,4">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="日志输出" Foreground="#FFDCDCDC" FontSize="12" FontWeight="Bold" />
+                <TextBlock Grid.Column="0" Text="输出" Foreground="#FF000000" FontSize="12" FontWeight="Bold" />
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
-                    <Label x:Name="CompileTimeLabel" Content="" Foreground="#FF569CD6" FontSize="11" Padding="4,0" />
-                    <Label x:Name="ExecTimeLabel" Content="" Foreground="#FF6A9955" FontSize="11" Padding="4,0" />
+                    <Label x:Name="CompileTimeLabel" Content="" Foreground="#FF0066CC" FontSize="11" Padding="4,0" />
+                    <Label x:Name="ExecTimeLabel" Content="" Foreground="#FF107C10" FontSize="11" Padding="4,0" />
                 </StackPanel>
             </Grid>
 
             <ListBox Grid.Row="1" x:Name="LogListBox"
-                     Background="#FF1E1E1E" Foreground="#FFDCDCDC"
+                     Background="#FFFAFAFA" Foreground="#FF333333"
                      BorderThickness="0" FontSize="11"
-                     VirtualizingPanel.ScrollUnit="Pixel">
+                     VirtualizingPanel.ScrollUnit="Pixel"
+                     MouseDoubleClick="LogListBox_MouseDoubleClick">
                 <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="1" />
+                    <DataTemplate DataType="models:LogEntry">
+                        <TextBlock Text="{Binding Text}" TextWrapping="Wrap" Margin="1" />
                     </DataTemplate>
                 </ListBox.ItemTemplate>
                 <ListBox.ItemContainerStyle>
                     <Style TargetType="ListBoxItem">
                         <Setter Property="Background" Value="Transparent" />
                         <Setter Property="Padding" Value="2,1" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsError}" Value="True">
+                                <Setter Property="Foreground" Value="#FFCC0000" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding IsError}" Value="False">
+                                <Setter Property="Foreground" Value="#FF333333" />
+                            </DataTrigger>
+                        </Style.Triggers>
                     </Style>
                 </ListBox.ItemContainerStyle>
             </ListBox>

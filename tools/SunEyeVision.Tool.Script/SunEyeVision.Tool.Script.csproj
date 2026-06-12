@@ -14,8 +14,13 @@
     <OutDir Condition="'$(Configuration)'=='Release'">$(MSBuildProjectDirectory)\..\..\Release\SunEyeVision_v1.0.0\SunEyeVision\plugins\Script\</OutDir>
   </PropertyGroup>
   <ItemGroup>
+    <!-- C# 高亮改用内置定义深拷贝改色，不再需要自定义 xshd -->
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="AvalonEdit" Version="6.3.1.120" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Features" Version="4.12.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" Version="4.12.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Plugin.SDK\SunEyeVision.Plugin.SDK.csproj">
@@ -32,8 +37,14 @@
   <!-- 清理冗余 NuGet DLL（框架 DLL 已由 Directory.Build.targets 静态 ItemGroup 禁止复制） -->
   <Target Name="CleanRedundantNuGetDlls" AfterTargets="Build">
     <ItemGroup>
+      <!-- 移除 WPF 框架内部 DLL（宿主提供） -->
+      <RedundantDlls Include="$(OutDir)System.Private.Windows.*.dll" />
+      <!-- 移除 .NET 运行时提供的 System.* 框架 DLL（保留 Roslyn MEF 依赖 System.Composition.*） -->
+      <RedundantDlls Include="$(OutDir)System.IO.Pipelines.dll" />
+      <RedundantDlls Include="$(OutDir)System.Text.Encodings.Web.dll" />
       <RedundantDlls Include="$(OutDir)System.Text.Json.dll" />
-      <RedundantDlls Include="$(OutDir)System.Drawing.Common.dll" />
+      <!-- 移除 Microsoft.Win32.* 框架 DLL -->
+      <RedundantDlls Include="$(OutDir)Microsoft.Win32.*.dll" />
     </ItemGroup>
     <Delete Files="@(RedundantDlls)" Condition="Exists('%(Identity)')" />
     <!-- 只保留 cs/ 和 zh-Hans/ 语言资源 -->

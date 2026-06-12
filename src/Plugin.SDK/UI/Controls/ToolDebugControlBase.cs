@@ -211,6 +211,16 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// </summary>
         private string? _currentNodeId;
 
+        /// <summary>
+        /// 调试窗口是否显示最大化按钮（默认 false，脚本工具重写为 true）
+        /// </summary>
+        public virtual bool ShowMaximizeButton => false;
+
+        /// <summary>
+        /// 调试窗口首选尺寸（默认 400x550）
+        /// </summary>
+        public virtual Size PreferredDebugWindowSize => new Size(400, 550);
+
         #endregion
 
         #region 构造函数

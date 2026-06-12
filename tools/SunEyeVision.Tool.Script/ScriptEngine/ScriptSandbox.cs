@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Reflection;
 using System.Runtime.Loader;
@@ -48,7 +48,7 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
         /// <summary>
         /// 创建脚本实例（必须已调用 LoadAssembly）
         /// </summary>
-        public ScriptBase? CreateScriptInstance(string className)
+        public Script? CreateScriptInstance(string className)
         {
             if (LoadedAssembly == null)
                 throw new InvalidOperationException("请先调用 LoadAssembly 加载程序集");
@@ -57,7 +57,7 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             if (type == null)
                 return null;
 
-            return Activator.CreateInstance(type) as ScriptBase;
+            return Activator.CreateInstance(type) as Script;
         }
 
         /// <summary>

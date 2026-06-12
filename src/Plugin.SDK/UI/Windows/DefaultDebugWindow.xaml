@@ -8,9 +8,8 @@
         AllowsTransparency="True"
         Background="Transparent"
         ResizeMode="CanResize"
-        SizeToContent="WidthAndHeight"
         MinWidth="300" MinHeight="450"
-        MaxWidth="800" MaxHeight="600">
+        Width="400" Height="550">
 
     <!-- 窗口命令绑定 -->
     <Window.CommandBindings>
@@ -50,11 +49,13 @@
                     Background="#1E1E1E"
                     Height="32"
                     Padding="12,0,8,0"
-                    MouseLeftButtonDown="OnTitleBarMouseLeftButtonDown">
+                    MouseLeftButtonDown="OnTitleBarMouseLeftButtonDown"
+                    MouseLeftButtonUp="OnTitleBarMouseLeftButtonUp">
                 
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
@@ -66,8 +67,32 @@
                               VerticalAlignment="Center"
                               FontSize="13"/>
 
-                    <!-- 关闭按钮 -->
+                    <!-- 最大化/还原按钮 -->
                     <Button Grid.Column="1"
+                            x:Name="MaximizeButton"
+                            Width="32"
+                            Height="32"
+                            Background="Transparent"
+                            Foreground="White"
+                            BorderThickness="0"
+                            FontFamily="Segoe MDL2 Assets"
+                            FontSize="12"
+                            Cursor="Hand"
+                            Click="OnMaximizeButtonClick">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#505050"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <!-- 关闭按钮 -->
+                    <Button Grid.Column="2"
                             Content="✕"
                             Width="32"
                             Height="32"

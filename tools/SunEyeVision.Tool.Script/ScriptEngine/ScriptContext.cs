@@ -1,13 +1,12 @@
 using System;
-using System.Collections.Generic;
 
 namespace SunEyeVision.Tool.Script.ScriptEngine
 {
     /// <summary>
-    /// 脚本 API 内部实现 — 通过委托桥接 ScriptTool 和脚本实例。
-    /// ScriptBase 使用此类的实例，用户无需直接接触。
+    /// 脚本上下文 — 内部实现，桥接 ScriptTool 和脚本实例。
+    /// Script 通过此对象访问外部委托，用户无需直接接触。
     /// </summary>
-    internal sealed class ScriptApi
+    internal sealed class ScriptContext
     {
         #region 委托注入
 
@@ -20,7 +19,7 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
 
         #endregion
 
-        #region 公开方法（由 ScriptBase 调用）
+        #region 公开方法（由 Script 调用）
 
         public T? GetGlobal<T>(string name) where T : class
         {

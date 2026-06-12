@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -86,7 +86,7 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
 
             if (compileResult.EntryClassName == null)
             {
-                errors.Add("未找到继承 ScriptBase 的类。请确保脚本中有一个类继承 ScriptBase。");
+                errors.Add("未找到继承 Script 的类。请确保脚本中有一个类继承 Script。");
                 return errors;
             }
 
@@ -117,8 +117,8 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                 return errors;
             }
 
-            // 4. 注入 API
-            scriptInstance.Api = new ScriptApi
+            // 4. 注入上下文
+            scriptInstance.Context = new ScriptContext
             {
                 GetGlobalValue = getGlobalValue,
                 SetGlobalValue = setGlobalValue,

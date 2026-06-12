@@ -19,20 +19,43 @@
     <AllowedReferenceRelatedFileExtensions>.none</AllowedReferenceRelatedFileExtensions>
   </PropertyGroup>
 
-  <!-- 工具插件: 禁止项目引用输出复制 -->
-  <Target Name="SuppressCopyLocalForToolPlugins" BeforeTargets="ResolveAssemblyReferences" Condition="'$(IsToolPlugin)'=='true'">
+  <!-- =====================================================================
+       工具插件: 禁止框架 DLL 复制到 plugins/ 目录
+        
+       方案说明:
+       1. 静态 ItemGroup — 运行时评估阶段设置 Private=false，阻止直接引用复制
+       2. RemoveFrameworkDllsFromCopyLocal — 在 ResolveAssemblyReferences 之后
+          从 ReferenceCopyLocalPaths 中移除框架 DLL，阻止传递依赖复制
+       3. SuppressNativeRuntimesForToolPlugins — 禁止原生运行时 DLL 复制
+       
+       效果: plugins/ 只包含工具自身的 .dll/.pdb/.deps.json
+       ===================================================================== -->
+       
+  <!-- Step 1: 静态 ItemGroup — 阻止直接引用复制 -->
+  <ItemGroup Condition="'$(IsToolPlugin)'=='true'">
+    <ProjectReference Update="@(ProjectReference)">
+      <Private>false</Private>
+    </ProjectReference>
+    <Reference Update="halcondotnetxl">
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- Step 2: 构建时移除传递依赖 — 从 ReferenceCopyLocalPaths 删除框架 DLL -->
+  <Target Name="RemoveFrameworkDllsFromCopyLocal" AfterTargets="ResolveAssemblyReferences" Condition="'$(IsToolPlugin)'=='true'">
     <ItemGroup>
-      <ProjectReference Update="@(ProjectReference)">
-        <Private>false</Private>
-      </ProjectReference>
-      <!-- 直接引用 halcondotnetxl 也不复制 -->
-      <Reference Update="halcondotnetxl">
-        <Private>false</Private>
-      </Reference>
+      <!-- 移除 SunEyeVision.* 框架 DLL（保留 SunEyeVision.Tool.* 工具自身） -->
+      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" 
+          Condition="$([System.String]::new('%(Filename)').StartsWith('SunEyeVision.'))
+                    And !$([System.String]::new('%(Filename)').StartsWith('SunEyeVision.Tool.'))" />
+      <!-- 移除 Halcon .NET 包装 -->
+      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" 
+          Condition="$([System.String]::new('%(Filename)').Equals('halcondotnetxl'))" />
+      <!-- OpenCvSharp 由 SuppressNativeRuntimesForToolPlugins 处理 -->
     </ItemGroup>
   </Target>
 
-  <!-- 工具插件: 禁止 NuGet 原生运行时 DLL 复制 (OpenCvSharp4) 和 Halcon 运行时 -->
+  <!-- Step 3: 禁止 NuGet 原生运行时 DLL 复制 (OpenCvSharp4) 和 Halcon 运行时 -->
   <Target Name="SuppressNativeRuntimesForToolPlugins" BeforeTargets="PrepareForBuild" Condition="'$(IsToolPlugin)'=='true'">
     <ItemGroup>
       <_RuntimeTrash Include="@(None)" Condition="'%(None.Link)' != '' And $([System.String]::new('%(None.Link)').Contains('runtimes'))" />

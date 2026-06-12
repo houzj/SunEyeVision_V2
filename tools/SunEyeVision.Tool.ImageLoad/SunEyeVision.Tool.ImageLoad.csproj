@@ -22,7 +22,6 @@
   <ItemGroup>
     <Reference Include="halcondotnetxl">
       <HintPath>..\..\libs\halcon\net\halcondotnetxl.dll</HintPath>
-      <Private>true</Private>
     </Reference>
   </ItemGroup>
 </Project>

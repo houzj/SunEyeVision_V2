@@ -8,7 +8,8 @@
              mc:Ignorable="d"
              d:DesignHeight="700" d:DesignWidth="1200"
              Background="#FF2D2D30"
-             Foreground="#FFDCDCDC">
+             Foreground="#FFDCDCDC"
+             DataContext="{Binding Parameters, RelativeSource={RelativeSource Self}}">
 
     <Grid Margin="4">
         <Grid.RowDefinitions>

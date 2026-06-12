@@ -9,6 +9,7 @@ namespace SunEyeVision.Tool.Script.Models
     /// <summary>
     /// 脚本工具参数 — 包含脚本代码、DLL 引用列表、输入/输出变量定义
     /// </summary>
+    [JsonDerivedType(typeof(ScriptParameters), "Script")]
     public class ScriptParameters : ToolParameters
     {
         private string _scriptCode = string.Empty;

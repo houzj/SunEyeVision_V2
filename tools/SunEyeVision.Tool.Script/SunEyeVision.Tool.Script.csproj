@@ -9,16 +9,35 @@
     <RootNamespace>SunEyeVision.Tool.Script</RootNamespace>
     <AssemblyName>SunEyeVision.Tool.Script</AssemblyName>
     <IsToolPlugin>true</IsToolPlugin>
-    <OutDir Condition="'$(Configuration)'=='Debug'">$(MSBuildProjectDirectory)\..\..\dev\Debug\plugins\</OutDir>
-    <OutDir Condition="'$(Configuration)'=='Release'">$(MSBuildProjectDirectory)\..\..\Release\SunEyeVision_v1.0.0\SunEyeVision\plugins\</OutDir>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <OutDir Condition="'$(Configuration)'=='Debug'">$(MSBuildProjectDirectory)\..\..\dev\Debug\plugins\Script\</OutDir>
+    <OutDir Condition="'$(Configuration)'=='Release'">$(MSBuildProjectDirectory)\..\..\Release\SunEyeVision_v1.0.0\SunEyeVision\plugins\Script\</OutDir>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="AvalonEdit" Version="6.3.1.120" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Plugin.SDK\SunEyeVision.Plugin.SDK.csproj" />
-    <ProjectReference Include="..\..\src\Workflow\SunEyeVision.Workflow.csproj" />
-    <ProjectReference Include="..\..\src\SunEyeVision.CvEngine\SunEyeVision.CvEngine.csproj" />
+    <ProjectReference Include="..\..\src\Plugin.SDK\SunEyeVision.Plugin.SDK.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Workflow\SunEyeVision.Workflow.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\SunEyeVision.CvEngine\SunEyeVision.CvEngine.csproj">
+      <Private>false</Private>
+    </ProjectReference>
   </ItemGroup>
+
+  <!-- 清理冗余 NuGet DLL（框架 DLL 已由 Directory.Build.targets 静态 ItemGroup 禁止复制） -->
+  <Target Name="CleanRedundantNuGetDlls" AfterTargets="Build">
+    <ItemGroup>
+      <RedundantDlls Include="$(OutDir)System.Text.Json.dll" />
+      <RedundantDlls Include="$(OutDir)System.Drawing.Common.dll" />
+    </ItemGroup>
+    <Delete Files="@(RedundantDlls)" Condition="Exists('%(Identity)')" />
+    <!-- 只保留 cs/ 和 zh-Hans/ 语言资源 -->
+    <RemoveDir Directories="$(OutDir)de;$(OutDir)es;$(OutDir)fr;$(OutDir)it;$(OutDir)ja;$(OutDir)ko;$(OutDir)pl;$(OutDir)pt-BR;$(OutDir)ru;$(OutDir)tr;$(OutDir)zh-Hant" />
+    <RemoveDir Directories="$(OutDir)runtimes" Condition="Exists('$(OutDir)runtimes')" />
+  </Target>
 </Project>

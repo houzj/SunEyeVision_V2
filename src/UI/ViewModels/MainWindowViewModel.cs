@@ -118,8 +118,8 @@ namespace SunEyeVision.UI.ViewModels
         /// </summary>
         public bool IsDebugWindowOpen => _openDebugWindow != null && _openDebugWindow.IsLoaded;
 
-        // 数据提供者缓存（用于在节点执行完成后更新前置节点输出）
-        private readonly Dictionary<string, IDataSourceQueryService> _nodeDataProviders = new();
+        // 按 Workflow 缓存的 DSQS（key: WorkflowId，替代旧的按节点缓存的 _nodeDataProviders）
+        private readonly Dictionary<string, DataSourceQueryService> _workflowDsqsCache = new();
 
         // 调试窗口缓存（用于在节点执行完成后通知 ToolDebugControl 刷新运行时状态）
         private readonly Dictionary<string, System.Windows.Window> _nodeDebugWindows = new();
@@ -975,7 +975,7 @@ SplitterPosition = position;
         }
 
         /// <summary>
-        /// 工作流删除事件处理（Phase 3: 清理引擎和 Solution 中的对应工作流）
+        /// 工作流删除事件处理（Phase 3: 清理引擎和 Solution 中的对应工作流 + DSQS 缓存）
         /// </summary>
         private void OnWorkflowDeleted(object? sender, WorkflowTabViewModel deletedTab)
         {
@@ -992,6 +992,9 @@ SplitterPosition = position;
                 solutionManager.CurrentSolution.RemoveWorkflow(deletedTab.Id);
                 LogSuccess($"工作流删除事件处理：已从引擎和解决方案中移除工作流: {deletedTab.Name}");
             }
+
+            // 3. 清理按 Workflow 缓存的 DSQS
+            _workflowDsqsCache.Remove(deletedTab.Id);
         }
 
         /// <summary>
@@ -2851,7 +2854,7 @@ SplitterPosition = position;
 
 
         /// <summary>
-        /// 获取节点的数据提供者
+        /// 获取节点的数据提供者（按 WorkflowId 缓存，SSOT 委托读取，抛弃旧的 _nodeResults 本地缓存）
         /// </summary>
         /// <param name="node">节点</param>
         /// <returns>数据提供者实例</returns>
@@ -2866,99 +2869,44 @@ SplitterPosition = position;
                     return null;
                 }
 
-                // 获取当前工作流
-                var currentWorkflow = _workflowEngine.CurrentWorkflow;
-                if (currentWorkflow == null)
+                // 确定工作流 ID
+                var workflowId = selectedTab.IsInSubroutine
+                    ? selectedTab.CurrentWorkflowId
+                    : _workflowEngine.CurrentWorkflow?.Id;
+
+                if (workflowId == null)
                 {
                     return null;
                 }
 
-                // 创建数据查询服务
-                // 说明：WorkflowEngine 同时实现了两个接口：
-                //   - IWorkflowConnectionProvider：提供工作流连接关系（父节点、子节点、连接线）
-                //   - INodeInfoProvider：提供节点信息（结果类型、输出端口）
-                // 由于架构分层限制，DataSourceQueryService 不能直接引用 WorkflowEngine 类，
-                // 因此通过接口注入。虽然传入的是同一个对象 _workflowEngine，
-                // 但它被分别用作两个不同的接口角色。
-
-                // ★ 数据已在引擎中（SSOT），无需额外同步
-
-                // 创建属性元数据提供者
-                var metadataProvider = new SunEyeVision.Plugin.Infrastructure.Managers.Tool.PropertyMetadataProviderAdapter();
-
-                // ★ 子程序模式下使用子程序工作流作为连接/节点提供者（保持 BFS 能找到子程序内部节点）
-                var workflow = selectedTab.IsInSubroutine
-                    ? _workflowEngine.GetWorkflow(selectedTab.CurrentWorkflowId)
-                        ?? throw new InvalidOperationException($"子程序工作流未找到: {selectedTab.CurrentWorkflowId}")
-                    : _workflowEngine.CurrentWorkflow ?? throw new InvalidOperationException("当前工作流为空");
-                var queryService = new DataSourceQueryService(workflow, workflow, null, metadataProvider);
-
-                // ★ SSOT: 从 WorkflowContext 同步已有的执行结果（修复"先执行→再开窗"场景）
-                var ctx = CurrentWorkflowContext;
-                if (ctx != null)
+                // 按 WorkflowId 缓存（GetOrAdd）
+                if (!_workflowDsqsCache.TryGetValue(workflowId, out var queryService))
                 {
-                    var allResults = ctx.GetAllNodeResults();
-                    var nonNullResults = allResults
-                        .Where(kvp => kvp.Value?.Result != null)
-                        .Select(kvp => new KeyValuePair<string, ToolResults>(kvp.Key, kvp.Value!.Result!));
-                    queryService.InitializeFromSource(nonNullResults);
-                    LogInfo($"✓ 已从 WorkflowContext 同步 {nonNullResults.Count()} 个节点结果到 DSQS");
-                }
+                    // 创建属性元数据提供者
+                    var metadataProvider = new SunEyeVision.Plugin.Infrastructure.Managers.Tool.PropertyMetadataProviderAdapter();
 
-                LogInfo($"✓ 创建数据查询服务成功: 节点 {node.Id}, 工作流 {workflow.Name}");
-                // ★ 子程序内部节点：注册数据源提供者，动态注入子程序输入端口
-                if (selectedTab.IsInSubroutine)
-                {
-                    try
+                    // ★ 子程序模式下使用子程序工作流作为连接/节点提供者
+                    var workflow = selectedTab.IsInSubroutine
+                        ? _workflowEngine.GetWorkflow(workflowId)
+                            ?? throw new InvalidOperationException($"子程序工作流未找到: {workflowId}")
+                        : _workflowEngine.CurrentWorkflow ?? throw new InvalidOperationException("当前工作流为空");
+
+                    queryService = new DataSourceQueryService(workflow, workflow, null, metadataProvider);
+
+                    // ★ SSOT 委托：不拷贝结果，直接委托到 WorkflowContext（SSOT 实时读取）
+                    //    GetNodeResult / GetPropertyValue 均通过此委托实时读取，无需本地缓存
+                    queryService.SetSootReader(nodeId =>
+                        CurrentWorkflowContext?.GetNodeResult(nodeId)?.Result);
+
+                    LogInfo($"✓ 创建数据查询服务成功: 工作流 {workflow.Name} (ID: {workflowId})");
+
+                    // ★ 子程序内部节点：注册数据源提供者，动态注入子程序输入端口（仅首次注册）
+                    if (selectedTab.IsInSubroutine)
                     {
-                        var subWorkflowId = selectedTab.CurrentWorkflowId;
-                        var parentNodeId = FindParentSubroutineNodeId(subWorkflowId);
-                        if (parentNodeId != null)
-                        {
-                            WorkflowNodeBase? capturedParentNode = null;
-                            foreach (var wf in _workflowEngine.GetAllWorkflows())
-                            {
-                                var found = wf.Nodes.FirstOrDefault(n => n.Id == parentNodeId);
-                                if (found?.Parameters is SubroutineParameters)
-                                {
-                                    capturedParentNode = found;
-                                    break;
-                                }
-                            }
-
-                            if (capturedParentNode != null)
-                            {
-                                queryService.AddExtraDataSourceProvider(() =>
-                                {
-                                    if (capturedParentNode?.Parameters is not SubroutineParameters sp)
-                                        return new List<AvailableDataSource>();
-
-                                    var nodeName = capturedParentNode.Name ?? capturedParentNode.DispName ?? "子程序";
-                                    var sources = new List<AvailableDataSource>();
-                                    foreach (var input in sp.Inputs)
-                                    {
-                                        if (string.IsNullOrEmpty(input.Name)) continue;
-                                        var paramType = input.ParamType ?? typeof(object);
-                                        var bindingKey = input.BindingKey ?? input.Name;
-                                        sources.Add(new AvailableDataSource
-                                        {
-                                            SourceNodeId = "__SubroutineInputs__",
-                                            SourceNodeName = nodeName,
-                                            PropertyName = bindingKey,
-                                            DisplayName = input.Name,
-                                            PropertyType = paramType,
-                                            Description = $"子程序输入: {input.Name}",
-                                        });
-                                    }
-                                    return sources;
-                                });
-                            }
-                        }
+                        RegisterSubroutineInputProvider(queryService, selectedTab.CurrentWorkflowId);
                     }
-                    catch (Exception ex)
-                    {
-                        LogWarning($"⚠ 注册子程序输入端口提供者失败: {ex.Message}");
-                    }
+
+                    _workflowDsqsCache[workflowId] = queryService;
                 }
 
                 return queryService;
@@ -2967,6 +2915,61 @@ SplitterPosition = position;
             {
                 AddLog($"❌ 创建数据查询服务失败: {ex.Message}");
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// 为子程序工作流注册输入端口数据源提供者
+        /// </summary>
+        private void RegisterSubroutineInputProvider(DataSourceQueryService queryService, string subWorkflowId)
+        {
+            try
+            {
+                var parentNodeId = FindParentSubroutineNodeId(subWorkflowId);
+                if (parentNodeId == null) return;
+
+                WorkflowNodeBase? capturedParentNode = null;
+                foreach (var wf in _workflowEngine.GetAllWorkflows())
+                {
+                    var found = wf.Nodes.FirstOrDefault(n => n.Id == parentNodeId);
+                    if (found?.Parameters is SubroutineParameters)
+                    {
+                        capturedParentNode = found;
+                        break;
+                    }
+                }
+
+                if (capturedParentNode != null)
+                {
+                    queryService.AddExtraDataSourceProvider(() =>
+                    {
+                        if (capturedParentNode?.Parameters is not SubroutineParameters sp)
+                            return new List<AvailableDataSource>();
+
+                        var nodeName = capturedParentNode.Name ?? capturedParentNode.DispName ?? "子程序";
+                        var sources = new List<AvailableDataSource>();
+                        foreach (var input in sp.Inputs)
+                        {
+                            if (string.IsNullOrEmpty(input.Name)) continue;
+                            var paramType = input.ParamType ?? typeof(object);
+                            var bindingKey = input.BindingKey ?? input.Name;
+                            sources.Add(new AvailableDataSource
+                            {
+                                SourceNodeId = "__SubroutineInputs__",
+                                SourceNodeName = nodeName,
+                                PropertyName = bindingKey,
+                                DisplayName = input.Name,
+                                PropertyType = paramType,
+                                Description = $"子程序输入: {input.Name}",
+                            });
+                        }
+                        return sources;
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogWarning($"⚠ 注册子程序输入端口提供者失败: {ex.Message}");
             }
         }
 
@@ -2999,16 +3002,9 @@ SplitterPosition = position;
 
             var queryService = new DataSourceQueryService(connectionProvider, nodeInfoProvider, null, metadataProvider);
 
-            // SSOT：同步已有执行结果
-            var ctx = CurrentWorkflowContext;
-            if (ctx != null)
-            {
-                var allResults = ctx.GetAllNodeResults();
-                var nonNullResults = allResults
-                    .Where(kvp => kvp.Value?.Result != null)
-                    .Select(kvp => new KeyValuePair<string, ToolResults>(kvp.Key, kvp.Value!.Result!));
-                queryService.InitializeFromSource(nonNullResults);
-            }
+            // SSOT 委托：实时读取 WorkflowContext，无本地缓存拷贝
+            queryService.SetSootReader(nodeId =>
+                CurrentWorkflowContext?.GetNodeResult(nodeId)?.Result);
 
             return queryService;
         }
@@ -3077,8 +3073,7 @@ SplitterPosition = position;
                 // 窗口路径的额外处理
                 if (target is System.Windows.Window debugWindow)
                 {
-                    // 缓存数据提供者
-                    _nodeDataProviders[node.Id] = dataProvider!;
+                    // 缓存数据提供者（已在 _workflowDsqsCache 中按 WorkflowId 缓存）
 
                     // 订阅执行完成事件
                     SubscribeToolExecutionCompleted(debugWindow, node, dataProvider!);
@@ -3109,10 +3104,7 @@ SplitterPosition = position;
                     // 窗口关闭清理
                     debugWindow.Closed += (s, e) =>
                     {
-                        // 1. 移除数据提供者
-                        _nodeDataProviders.Remove(node.Id);
-
-                        // 2. 移除调试窗口缓存
+                        // 1. 移除调试窗口缓存（DSQS 仍在 _workflowDsqsCache 中缓存，工作流删除时统一清理）
                         _nodeDebugWindows.Remove(node.Id);
 
                         // 3. 恢复主窗口 ImageControl 的只读模式
@@ -3215,18 +3207,7 @@ SplitterPosition = position;
                                 // 执行结果已通过 NodeResultManager.UpdateNodeResult 存储到 WorkflowContext
                                 // 这里不再需要直接赋值给 node.LastResult
 
-                                // 获取输出图像（通过反射调用 GetOutputValue 方法）
-                                var getOutputMethod = toolResult.GetType().GetMethod("GetOutputValue");
-                                var outputImage = getOutputMethod?.MakeGenericMethod(typeof(OpenCvSharp.Mat))
-                                    .Invoke(toolResult, new object[] { "OutputImage" }) as OpenCvSharp.Mat;
-
-                                // 更新数据提供者中的节点输出
-                                if (outputImage != null)
-                                {
-                                    dataProvider.UpdateNodeOutput(node.Id, "OutputImage", outputImage);
-                                }
-
-                                // 更新图像显示（内部已存储到 WorkflowContext）
+                                // 更新图像显示（内部已存储到 WorkflowContext，DSQS 通过 _ssotReader 实时读取）
                                 _nodeResultManager?.UpdateNodeResult(node, toolResult);
 
                                 // ★ 通知调试窗口外部结果已到达（用于刷新位置修正矩阵等运行时状态）
@@ -3491,8 +3472,8 @@ AddLog($"⚠️ 日志记录异常: {ex.Message}");
                 // ★ 运行时同步：将节点结果写入绑定的全局变量
                 SyncProducerBindingsToGlobalVariables(e.Node.Id, e.Result);
 
-                // ★ 更新所有依赖此节点的数据提供者（修复前置节点未执行问题）
-                UpdateDataProvidersForNode(e.Node, e.Result);
+                // ★ 节点执行后处理（DSQS 自动读取 SSOT，无需推送）
+                OnNodeExecutionPostProcess(e.Node, e.Result);
 
                 // ★ 通知所有打开调试窗口的控件：上游节点执行完成，可刷新运行时状态
                 NotifyAllDebugWindowsExternalResult();
@@ -3534,15 +3515,17 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         }
 
         /// <summary>
-        /// 更新所有依赖此节点的数据提供者
+        /// 节点执行完成后的后处理（DSQS 已通过 _ssotReader 委托自动读取 SSOT，无需推送）
         /// </summary>
-        private void UpdateDataProvidersForNode(Models.WorkflowNode node, Plugin.SDK.Execution.Results.ToolResults? result)
+        private void OnNodeExecutionPostProcess(Models.WorkflowNode node, Plugin.SDK.Execution.Results.ToolResults? result)
         {
             if (result == null || !result.IsSuccess) return;
 
             try
             {
-                // 获取节点的输出图像
+                // ★ DSQS 已通过 _ssotReader 委托自动读取 WorkflowContext，无需手动推送
+                //    删除旧的 UpdateNodeOutput / SetNodeResult 遍历代码
+
                 var outputValues = result.GetOutputValues();
                 if (outputValues == null || outputValues.Count == 0)
                 {
@@ -3550,48 +3533,12 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                     return;
                 }
 
-                // 尝试找到图像类型的输出
-                var imageOutput = outputValues.FirstOrDefault(kv =>
-                    kv.Value is OpenCvSharp.Mat ||
-                    kv.Key.Contains("Image", StringComparison.OrdinalIgnoreCase) ||
-                    kv.Key.Contains("Output", StringComparison.OrdinalIgnoreCase));
-
-                object? outputValue = imageOutput.Value ?? outputValues.FirstOrDefault(kv => kv.Value != null).Value;
-                if (outputValue == null)
-                {
-                    AddLog($"⚠️ 节点 {node.Name} 输出值为空");
-                    return;
-                }
-
-                // ★ 关键日志：输出值类型和输出属性名称列表
                 var allPropNames = string.Join(", ", outputValues.Keys);
-                AddLog($"📤 节点 {node.Name}({node.ToolType}) 输出类型: {outputValue.GetType().Name} | 输出属性: [{allPropNames}] | ID={node.Id}");
-
-                // 更新所有缓存的数据提供者
-                int updatedCount = 0;
-                foreach (var kvp in _nodeDataProviders.ToList())
-                {
-                    try
-                    {
-kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
-                        kvp.Value.SetNodeResult(node.Id, result);
-                        updatedCount++;
-                        // ★ 诊断：记录为哪个节点ID注入了结果
-                        AddLog($"  └→ DSQS[{kvp.Key}] 已注入节点 {node.Name}(ID={node.Id}) 的结果 | ResultType={result.GetType().Name}");
-                    }
-                    catch (Exception ex)
-                    {
-                        AddLog($"  ⚠️ DSQS更新失败 [{kvp.Key}]: {ex.Message}");
-                    }
-                }
-                if (updatedCount > 0)
-                {
-                    AddLog($"🔄 已更新 {updatedCount} 个数据提供者");
-                }
+                AddLog($"📤 节点 {node.Name}({node.ToolType}) 输出: [{allPropNames}] | ID={node.Id}");
             }
             catch (Exception ex)
             {
-                AddLog($"⚠️ UpdateDataProvidersForNode 异常: {ex.Message}");
+                AddLog($"⚠️ OnNodeExecutionPostProcess 异常: {ex.Message}");
             }
         }
 

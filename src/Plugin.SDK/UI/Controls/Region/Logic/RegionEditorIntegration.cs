@@ -67,22 +67,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Logic
         }
 
         /// <summary>
-        /// 更新节点输出（由工作流引擎调用）
-        /// </summary>
-        public void UpdateNodeOutput(string nodeId, string portName, object? output)
-        {
-            _dataProvider.UpdateNodeOutput(nodeId, portName, output);
-        }
-
-        /// <summary>
-        /// 清除节点输出
-        /// </summary>
-        public void ClearNodeOutput(string nodeId)
-        {
-            _dataProvider.ClearNodeOutput(nodeId);
-        }
-
-        /// <summary>
         /// 设置当前节点ID（用于过滤）
         /// </summary>
         public void SetCurrentNodeId(string nodeId)

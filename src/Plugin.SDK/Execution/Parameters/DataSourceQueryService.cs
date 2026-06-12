@@ -16,23 +16,14 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     /// 
     /// 核心功能：
     /// 1. 基于工作流连接关系查找父节点
-    /// 2. 从执行结果缓存提取输出属性
+    /// 2. 通过 SSOT 读取器（委托到 WorkflowContext）实时读取执行结果
     /// 3. 支持类型过滤
-    /// 4. 线程安全的结果缓存
-    /// 
-    /// 设计优化历史：
-    /// - 支持可选注入 IPropertyMetadataProvider（设计时优化）
-    /// - SDK 层不依赖 Infrastructure 层（依赖倒置原则）
+    /// 4. 不维护本地结果缓存，全部通过 _ssotReader 委托读取 SSOT
     /// </remarks>
     public class DataSourceQueryService : IDataSourceQueryService
     {
         /// <summary>
-        /// 节点结果缓存（本地覆盖，用于"正在执行的实时数据"）
-        /// </summary>
-        private readonly ConcurrentDictionary<string, ToolResults> _nodeResults = new ConcurrentDictionary<string, ToolResults>();
-
-        /// <summary>
-        /// SSOT 读取器（引用 WorkflowContext 中的持久结果，仅作为回退读取，不写回）
+        /// SSOT 读取器（委托到 WorkflowContext，实时读取持久结果，不维护本地缓存）
         /// </summary>
         private Func<string, ToolResults?>? _ssotReader;
 
@@ -45,11 +36,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// 节点信息缓存
         /// </summary>
         private readonly ConcurrentDictionary<string, ParentNodeInfo> _nodeInfoCache = new ConcurrentDictionary<string, ParentNodeInfo>();
-
-        /// <summary>
-        /// 节点输出缓存（节点ID -> 属性名 -> 值）
-        /// </summary>
-        private readonly ConcurrentDictionary<string, Dictionary<string, object?>> _nodeOutputs = new ConcurrentDictionary<string, Dictionary<string, object?>>();
 
         /// <summary>
         /// 额外数据源提供者委托列表（每次查询时动态调用，支持输入名称实时更新）
@@ -108,11 +94,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// 属性元数据提供者(可选,用于设计时优化)
         /// </summary>
         private readonly IPropertyMetadataProvider? _metadataProvider;
-
-        /// <summary>
-        /// 输出变更订阅字典
-        /// </summary>
-        private readonly ConcurrentDictionary<string, List<Action<object?>>> _outputSubscriptions = new ConcurrentDictionary<string, List<Action<object?>>>();
 
         /// <summary>
         /// 当前节点ID
@@ -190,30 +171,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         public void SetSootReader(Func<string, ToolResults?> reader)
         {
             _ssotReader = reader;
-        }
-
-        /// <summary>
-        /// 从外部源批量初始化本地缓存（创建 DSQS 时调用，预加载已有执行结果）
-        /// </summary>
-        /// <param name="source">节点ID到 ToolResults 的映射</param>
-        public void InitializeFromSource(Dictionary<string, ToolResults> source)
-        {
-            foreach (var kvp in source)
-            {
-                _nodeResults[kvp.Key] = kvp.Value;
-            }
-        }
-
-        /// <summary>
-        /// 从外部源批量初始化本地缓存（创建 DSQS 时调用，预加载已有执行结果）
-        /// </summary>
-        /// <param name="source">节点ID到 ToolResults 的映射</param>
-        public void InitializeFromSource(IEnumerable<KeyValuePair<string, ToolResults>> source)
-        {
-            foreach (var kvp in source)
-            {
-                _nodeResults[kvp.Key] = kvp.Value;
-            }
         }
 
         /// <inheritdoc/>
@@ -483,79 +440,27 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 NodeName = _nodeInfoProvider.GetNodeName(nodeId) ?? nodeId,
                 NodeType = _nodeInfoProvider.GetNodeType(nodeId) ?? "Unknown",
                 NodeIcon = _nodeInfoProvider.GetNodeIcon(nodeId),
-                Result = GetNodeResultFromCache(nodeId),
+                Result = _ssotReader?.Invoke(nodeId),
                 ResultType = _nodeInfoProvider.GetResultType(nodeId)
             };
         }
 
         /// <summary>
-        /// 从缓存或 SSOT 获取节点执行结果
+        /// 从 SSOT 读取器获取节点执行结果（无本地缓存，实时读取 WorkflowContext）
         /// </summary>
-        private ToolResults? GetNodeResultFromCache(string nodeId)
+        private ToolResults? GetNodeResult(string nodeId)
         {
-            if (_nodeResults.TryGetValue(nodeId, out var result))
-                return result;
-            if (_ssotReader != null)
-                return _ssotReader(nodeId);
-            return null;
+            return _ssotReader?.Invoke(nodeId);
         }
 
         /// <inheritdoc/>
         public object? GetPropertyValue(string nodeId, string propertyName)
         {
-            // 解析属性名（去掉索引标记）
-            var (pureName, arrayIndex) = PropertyPathParser.ParsePropertyPart(propertyName);
-
-            // 从节点输出中获取属性值
-            if (_nodeOutputs.TryGetValue(nodeId, out var outputs))
-            {
-                if (outputs.TryGetValue(pureName, out var value))
-                {
-                    // ★ 诊断：位置修正矩阵查询通过 _nodeOutputs 命中
-                    if (pureName.Contains("PositionCorrection", StringComparison.Ordinal) || pureName.Contains("BestPosition", StringComparison.Ordinal))
-                    {
-                        var valueType = value?.GetType().Name ?? "null";
-                        VisionLogger.Instance?.Log(LogLevel.Info,
-                            $"[DSQS.GetPropertyValue] _nodeOutputs 命中 | NodeId={nodeId} | Property={pureName} | ValueType={valueType} | Value={value}",
-                            "DSQS");
-                    }
-                    // 处理数组索引
-                    if (arrayIndex.HasValue && value is Array array)
-                    {
-                        if (arrayIndex.Value >= 0 && arrayIndex.Value < array.Length)
-                            return array.GetValue(arrayIndex.Value);
-                        return null;  // 索引越界
-                    }
-                    return value;
-                }
-            }
-
-            // 从节点结果中获取属性值（使用反射）
-            var result = GetNodeResultFromCache(nodeId);
+            // 从 SSOT 读取器获取节点结果并反射取值（无本地缓存）
+            var result = _ssotReader?.Invoke(nodeId);
             if (result != null)
             {
-                var val = GetNestedPropertyValue(result, propertyName);
-
-                // ★ 诊断：位置修正矩阵查询通过 _nodeResults 反射命中
-                if (pureName.Contains("PositionCorrection", StringComparison.Ordinal) || pureName.Contains("BestPosition", StringComparison.Ordinal))
-                {
-                    var valType = val?.GetType().Name ?? "null";
-                    var resultType = result.GetType().Name;
-                    VisionLogger.Instance?.Log(LogLevel.Info,
-                        $"[DSQS.GetPropertyValue] 反射回退命中 | NodeId={nodeId} | Property={pureName} | ResultType={resultType} | ValueType={valType} | Value={val}",
-                        "DSQS");
-                }
-
-                return val;
-            }
-
-            // ★ 诊断：位置修正矩阵查询完全未命中缓存
-            if (pureName.Contains("PositionCorrection", StringComparison.Ordinal) || pureName.Contains("BestPosition", StringComparison.Ordinal))
-            {
-                var cachedResultTypes = string.Join(", ", _nodeResults.Keys);
-                VisionLogger.Instance?.Log(LogLevel.Warning,
-                    $"[DSQS.GetPropertyValue] 缓存未命中 | NodeId={nodeId} | Property={pureName} | _nodeResults.Keys=[{cachedResultTypes}] | _ssotReaderSet={_ssotReader != null}",
-                    "DSQS");
+                return GetNestedPropertyValue(result, propertyName);
             }
 
             return null;
@@ -611,101 +516,10 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             return current;
         }
 
-        #region IDataSourceQueryService Runtime Methods
-
         /// <inheritdoc/>
         public bool HasNodeExecuted(string nodeId)
         {
-            if (_nodeResults.ContainsKey(nodeId))
-                return true;
-            if (_ssotReader != null)
-            {
-                var result = _ssotReader(nodeId);
-                if (result != null)
-                    return true;
-            }
-            return false;
-        }
-
-        /// <inheritdoc/>
-        public void RefreshNodeData(string nodeId)
-        {
-            // TODO: 实现节点数据刷新逻辑
-        }
-
-        /// <inheritdoc/>
-        public void RefreshAll()
-        {
-            // TODO: 实现所有数据刷新逻辑
-        }
-
-        /// <inheritdoc/>
-        public void SetNodeResult(string nodeId, ToolResults result)
-        {
-            _nodeResults[nodeId] = result;
-        }
-
-        /// <inheritdoc/>
-        public void ClearNodeResult(string nodeId)
-        {
-            _nodeResults.TryRemove(nodeId, out _);
-        }
-
-        /// <inheritdoc/>
-        public void ClearAllResults()
-        {
-            _nodeResults.Clear();
-        }
-
-        /// <inheritdoc/>
-        public bool HasNodeOutput(string nodeId)
-        {
-            return _nodeOutputs.ContainsKey(nodeId);
-        }
-
-        /// <inheritdoc/>
-        public void UpdateNodeOutput(string nodeId, string propertyName, object? value)
-        {
-            if (!_nodeOutputs.ContainsKey(nodeId))
-            {
-                _nodeOutputs[nodeId] = new Dictionary<string, object?>();
-            }
-            _nodeOutputs[nodeId][propertyName] = value;
-        }
-
-        /// <inheritdoc/>
-        public void ClearNodeOutput(string nodeId)
-        {
-            _nodeOutputs.TryRemove(nodeId, out _);
-        }
-
-        /// <inheritdoc/>
-        public object? GetCurrentBindingValue(string nodeId, string propertyName, string? bindingPath = null)
-        {
-            // TODO: 实现绑定值获取逻辑
-            return null;
-        }
-
-        /// <inheritdoc/>
-        public string GetBindingDisplayPath(string nodeId, string propertyName, string? bindingPath = null)
-        {
-            // TODO: 实现绑定显示路径逻辑
-            return propertyName;
-        }
-
-        /// <inheritdoc/>
-        public IDisposable SubscribeOutputChanged(string nodeId, string propertyName, string? bindingPath, Action<object?> callback)
-        {
-            // TODO: 实现输出变更订阅逻辑
-
-            // 返回一个空的订阅令牌
-            return new SubscriptionToken(() => { });
-        }
-
-        /// <inheritdoc/>
-        public void RefreshOutputs()
-        {
-            // TODO: 实现输出刷新逻辑
+            return _ssotReader?.Invoke(nodeId) != null;
         }
 
         /// <inheritdoc/>
@@ -713,64 +527,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         {
             return _nodeInfoCache.ContainsKey(nodeId);
         }
-
-        #endregion
-
-        // ========================================
-        // 辅助方法
-        // ========================================
-
-        /// <summary>
-        /// 创建数据源对象
-        /// </summary>
-        private AvailableDataSource? CreateDataSource(ParentNodeInfo node, ToolPropertyMetadata metadata)
-        {
-            // 获取当前值
-            object? currentValue = null;
-            var property = node.OutputProperties.FirstOrDefault(p => p.PropertyName == metadata.PropertyName);
-            if (property != null)
-            {
-                currentValue = property.CurrentValue;
-            }
-            
-            return new AvailableDataSource
-            {
-                SourceNodeId = node.NodeId,
-                SourceNodeName = node.NodeName,
-                SourceNodeType = node.NodeType,
-                PropertyName = metadata.PropertyName,
-                DisplayName = metadata.DisplayName,
-                PropertyType = metadata.PropertyType,
-                CurrentValue = currentValue,
-                Unit = null,
-                Description = metadata.Description,
-                GroupName = metadata.GroupName,
-            };
-        }
-
-        /// <summary>
-        /// 订阅令牌
-        /// </summary>
-        private class SubscriptionToken : IDisposable
-        {
-            private readonly Action _disposeAction;
-            private bool _disposed;
-
-            public SubscriptionToken(Action disposeAction)
-            {
-                _disposeAction = disposeAction ?? throw new ArgumentNullException(nameof(disposeAction));
-            }
-
-            public void Dispose()
-            {
-                if (!_disposed)
-                {
-                    _disposeAction();
-                    _disposed = true;
-                }
-            }
-        }
     }
+
 
     /// <summary>
     /// 工作流连接提供者接口

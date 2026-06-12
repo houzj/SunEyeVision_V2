@@ -827,7 +827,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.ViewModels
             if (_parameterPanel != null)
             {
                 _parameterPanel.ParamSettingChanged -= OnParamSettingChanged;
-                _parameterPanel.Dispose();
             }
 
             if (_nodeSelector != null)

@@ -13,13 +13,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.ViewModels
     /// <summary>
     /// 参数面板视图模型
     /// </summary>
-    public class ParameterPanelViewModel : ObservableObject, IDisposable
+    public class ParameterPanelViewModel : ObservableObject
     {
         private readonly DataSourceQueryService? _dataProvider;
         private ShapeType _currentShapeType;
         private bool _isEditable = true;
         private ParamSettingItem? _selectedParameter;
-        private readonly Dictionary<string, IDisposable> _subscriptions = new();
 
         /// <summary>
         /// 参数绑定项列表
@@ -83,13 +82,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.ViewModels
         /// </summary>
         private void UpdateParameterDefinitions()
         {
-            // 清理旧的订阅
-            foreach (var subscription in _subscriptions.Values)
-            {
-                subscription.Dispose();
-            }
-            _subscriptions.Clear();
-
             // 清空参数列表
             Parameters.Clear();
 
@@ -206,33 +198,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.ViewModels
         }
 
         /// <summary>
-        /// 订阅值变更
+        /// 订阅值变更（通过 GetPropertyValue 实时查询，DSQS 已无本地缓存/订阅机制）
         /// </summary>
         private void SubscribeToValue(ParamSettingItem item, NodeOutputSource source)
         {
-            // 取消旧订阅
-            if (_subscriptions.TryGetValue(item.ParameterName, out var oldSubscription))
-            {
-                oldSubscription.Dispose();
-                _subscriptions.Remove(item.ParameterName);
-            }
-
             if (_dataProvider == null) return;
 
-            // 创建新订阅
-            var subscription = _dataProvider.SubscribeOutputChanged(
-                source.NodeId,
-                source.OutputName,
-                source.PropertyPath,
-                value => item.CurrentValue = value);
-
-            _subscriptions[item.ParameterName] = subscription;
-
-            // 立即获取当前值
-            item.CurrentValue = _dataProvider.GetCurrentBindingValue(
-                source.NodeId,
-                source.OutputName,
-                source.PropertyPath);
+            // 实时查询 SSOT（DSQS 通过 _ssotReader 委托读取 WorkflowContext）
+            item.CurrentValue = _dataProvider.GetPropertyValue(source.NodeId, source.PropertyPath);
         }
 
         /// <summary>
@@ -250,10 +223,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.ViewModels
 
                     if (source is NodeOutputSource nodeSource && _dataProvider != null)
                     {
-                        param.DisplayPath = _dataProvider.GetBindingDisplayPath(
-                            nodeSource.NodeId,
-                            nodeSource.OutputName,
-                            nodeSource.PropertyPath);
+                        param.DisplayPath = $"{nodeSource.NodeId}.{nodeSource.PropertyPath}";
 
                         SubscribeToValue(param, nodeSource);
                     }
@@ -282,15 +252,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.ViewModels
             return result;
         }
 
-        public void Dispose()
-        {
-            foreach (var subscription in _subscriptions.Values)
-            {
-                subscription.Dispose();
-            }
-            _subscriptions.Clear();
-        }
     }
+
 
     /// <summary>
     /// 参数绑定变更事件参数

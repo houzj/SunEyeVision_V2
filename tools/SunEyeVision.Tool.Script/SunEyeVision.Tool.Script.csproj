@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+    <OutputType>Library</OutputType>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>SunEyeVision.Tool.Script</RootNamespace>
+    <AssemblyName>SunEyeVision.Tool.Script</AssemblyName>
+    <IsToolPlugin>true</IsToolPlugin>
+    <OutDir Condition="'$(Configuration)'=='Debug'">$(MSBuildProjectDirectory)\..\..\dev\Debug\plugins\</OutDir>
+    <OutDir Condition="'$(Configuration)'=='Release'">$(MSBuildProjectDirectory)\..\..\Release\SunEyeVision_v1.0.0\SunEyeVision\plugins\</OutDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="AvalonEdit" Version="6.3.1.120" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Plugin.SDK\SunEyeVision.Plugin.SDK.csproj" />
+    <ProjectReference Include="..\..\src\Workflow\SunEyeVision.Workflow.csproj" />
+    <ProjectReference Include="..\..\src\SunEyeVision.CvEngine\SunEyeVision.CvEngine.csproj" />
+  </ItemGroup>
+</Project>

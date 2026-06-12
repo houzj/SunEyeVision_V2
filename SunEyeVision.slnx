@@ -32,5 +32,6 @@
     <Project Path="tools/SunEyeVision.Tool.ShapeMatch/SunEyeVision.Tool.ShapeMatch.csproj" />
     <Project Path="tools/SunEyeVision.Tool.Subroutine/SunEyeVision.Tool.Subroutine.csproj" />
     <Project Path="tools/SunEyeVision.Tool.Condition/SunEyeVision.Tool.Condition.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.Script/SunEyeVision.Tool.Script.csproj" />
   </Folder>
 </Solution>

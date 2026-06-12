@@ -49,4 +49,6 @@
   <ItemGroup Condition="'$(IsToolPlugin)'=='true'">
     <PackageReference Include="System.Text.Json" Version="10.0.3" />
   </ItemGroup>
+
+
 </Project>

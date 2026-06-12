@@ -282,7 +282,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
         /// <summary>
         /// 创建旋转矩形手柄（参考ROI编辑器CreateRotatedRectangleHandles 1131-1213行）
         /// </summary>
-        public static EditHandle[] CreateRotatedRectangleHandles(Point[] corners, double rotation, Point bottomCenter, double scale = 1.0, double height = 0)
+        public static EditHandle[] CreateRotatedRectangleHandles(Point[] corners, double rotation, Point bottomCenter, double scale = 1.0, double width = 0)
         {
             var handles = new System.Collections.Generic.List<EditHandle>();
 
@@ -316,7 +316,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
 
             // 旋转手柄
             var rectCenter = new Point((corners[0].X + corners[2].X) / 2, (corners[0].Y + corners[2].Y) / 2);
-            var rotateHandlePos = CalculateRotationHandlePosition(rectCenter, rotation, scale, height);
+            var rotateHandlePos = CalculateRotationHandlePosition(rectCenter, rotation, scale, width);
             var rotateHandleSize = GetScaledHandleSize(scale);
             handles.Add(new EditHandle
             {
@@ -493,20 +493,21 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
         }
 
         /// <summary>
-        /// 计算旋转手柄位置（参考ROI.GetRotationHandlePosition）
-        /// 旋转手柄位置 = center + (height/4) * direction
+        /// 计算旋转手柄位置
+        /// 数学角度系：逆时针为正，0°向右
+        /// 手柄位于方向箭头的中间（宽度方向 offset = width/4）
         /// </summary>
-        public static Point CalculateRotationHandlePosition(Point center, double rotation, double scale = 1.0, double height = 0)
+        public static Point CalculateRotationHandlePosition(Point center, double rotation, double scale = 1.0, double width = 0)
         {
-            // 图像坐标系角度：顺时针为正，0°向下
+            // 数学角度系：逆时针为正，0°向右
             var angleRad = rotation * Math.PI / 180;
-            var sin = Math.Sin(angleRad);
             var cos = Math.Cos(angleRad);
+            var sin = Math.Sin(angleRad);
 
-            // 旋转手柄位置 = center + (height/4) * direction（图像坐标系，无需/scale）
-            var handleOffset = height > 0 ? height / 4 : 35;
-            var handleX = center.X + handleOffset * sin;
-            var handleY = center.Y + handleOffset * cos;
+            // 旋转手柄位置 = center + (width/4) * direction，位于箭头中点
+            var handleOffset = width > 0 ? width / 4 : 35;
+            var handleX = center.X + handleOffset * cos;
+            var handleY = center.Y + handleOffset * sin;
 
             return new Point(handleX, handleY);
         }

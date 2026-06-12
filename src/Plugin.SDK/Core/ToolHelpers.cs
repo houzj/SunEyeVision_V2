@@ -1,8 +1,8 @@
 using System;
 using System.Diagnostics;
-using OpenCvSharp;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
 
 namespace SunEyeVision.Plugin.SDK.Core
 {
@@ -46,9 +46,9 @@ namespace SunEyeVision.Plugin.SDK.Core
         /// </summary>
         /// <param name="image">输入图像</param>
         /// <returns>是否有效</returns>
-        public static bool ValidateInput(Mat? image)
+        public static bool ValidateInput(IVisionImage? image)
         {
-            return image != null && !image.Empty();
+            return image != null && !image.IsEmpty;
         }
 
         /// <summary>
@@ -57,9 +57,9 @@ namespace SunEyeVision.Plugin.SDK.Core
         /// <param name="image">输入图像</param>
         /// <param name="error">错误信息</param>
         /// <returns>是否有效</returns>
-        public static bool ValidateInput(Mat? image, out string? error)
+        public static bool ValidateInput(IVisionImage? image, out string? error)
         {
-            if (image == null || image.Empty())
+            if (image == null || image.IsEmpty)
             {
                 error = "输入图像为空";
                 return false;

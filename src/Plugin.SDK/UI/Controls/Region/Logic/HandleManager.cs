@@ -400,8 +400,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Logic
             Point2D Transform(double localX, double localY)
             {
                 return new Point2D(
-                    center.X + localX * cos + localY * sin,
-                    center.Y - localX * sin + localY * cos
+                    center.X + localX * cos - localY * sin,
+                    center.Y + localX * sin + localY * cos
                 );
             }
 

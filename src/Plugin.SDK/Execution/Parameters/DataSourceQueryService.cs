@@ -16,20 +16,16 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     /// 
     /// 核心功能：
     /// 1. 基于工作流连接关系查找父节点
-    /// 2. 从执行结果缓存提取输出属性
+    /// 2. 通过 SSOT 读取器（委托到 WorkflowContext）实时读取执行结果
     /// 3. 支持类型过滤
-    /// 4. 线程安全的结果缓存
-    /// 
-    /// 设计优化历史：
-    /// - 支持可选注入 IPropertyMetadataProvider（设计时优化）
-    /// - SDK 层不依赖 Infrastructure 层（依赖倒置原则）
+    /// 4. 不维护本地结果缓存，全部通过 _ssotReader 委托读取 SSOT
     /// </remarks>
     public class DataSourceQueryService : IDataSourceQueryService
     {
         /// <summary>
-        /// 节点结果缓存
+        /// SSOT 读取器（委托到 WorkflowContext，实时读取持久结果，不维护本地缓存）
         /// </summary>
-        private readonly ConcurrentDictionary<string, ToolResults> _nodeResults = new ConcurrentDictionary<string, ToolResults>();
+        private Func<string, ToolResults?>? _ssotReader;
 
         /// <summary>
         /// Logger
@@ -42,11 +38,47 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         private readonly ConcurrentDictionary<string, ParentNodeInfo> _nodeInfoCache = new ConcurrentDictionary<string, ParentNodeInfo>();
 
         /// <summary>
-        /// 节点输出缓存（节点ID -> 属性名 -> 值）
+        /// 额外数据源提供者委托列表（每次查询时动态调用，支持输入名称实时更新）
         /// </summary>
-        private readonly ConcurrentDictionary<string, Dictionary<string, object?>> _nodeOutputs = new ConcurrentDictionary<string, Dictionary<string, object?>>();
-        
+        private readonly List<Func<List<AvailableDataSource>>> _extraDataSourceProviders = new();
 
+        /// <summary>
+        /// 注册额外数据源提供者委托
+        /// </summary>
+        /// <param name="provider">每次查询时动态调用的委托，返回额外数据源列表</param>
+        public void AddExtraDataSourceProvider(Func<List<AvailableDataSource>> provider)
+        {
+            lock (_extraDataSourceProviders)
+            {
+                _extraDataSourceProviders.Add(provider);
+            }
+        }
+
+        /// <summary>
+        /// 从所有注册提供者获取当前额外数据源（动态合并，支持实时更新）
+        /// </summary>
+        private List<AvailableDataSource> GetExtraDataSources()
+        {
+            var result = new List<AvailableDataSource>();
+            lock (_extraDataSourceProviders)
+            {
+                foreach (var provider in _extraDataSourceProviders)
+                {
+                    try
+                    {
+                        var sources = provider();
+                        if (sources == null) continue;
+                        foreach (var ds in sources)
+                        {
+                            if (!result.Any(e => e.SourceNodeId == ds.SourceNodeId && e.PropertyName == ds.PropertyName))
+                                result.Add(ds);
+                        }
+                    }
+                    catch { /* 提供者异常不传播 */ }
+                }
+            }
+            return result;
+        }
 
         /// <summary>
         /// 工作流连接提供者（外部注入）
@@ -62,11 +94,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// 属性元数据提供者(可选,用于设计时优化)
         /// </summary>
         private readonly IPropertyMetadataProvider? _metadataProvider;
-
-        /// <summary>
-        /// 输出变更订阅字典
-        /// </summary>
-        private readonly ConcurrentDictionary<string, List<Action<object?>>> _outputSubscriptions = new ConcurrentDictionary<string, List<Action<object?>>>();
 
         /// <summary>
         /// 当前节点ID
@@ -137,6 +164,15 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             _metadataProvider = metadataProvider;
         }
 
+        /// <summary>
+        /// 设置 SSOT 读取器，使 DSQS 能回退到外部持久化结果
+        /// </summary>
+        /// <param name="reader">给定节点ID返回 ToolResults 的委托</param>
+        public void SetSootReader(Func<string, ToolResults?> reader)
+        {
+            _ssotReader = reader;
+        }
+
         /// <inheritdoc/>
         public List<ParentNodeInfo> GetParentNodes(string nodeId)
         {
@@ -186,12 +222,17 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 // 获取父节点的输出属性
                 var outputProps = parent.OutputProperties;
                 
-                // 类型过滤（精确匹配 + 数组元素类型匹配）
+                // 类型过滤（精确匹配 + 双向数组/元素兼容）
+                // 场景1: targetType=double[]  → 匹配 double[] (精确) 或 double (元素)
+                // 场景2: targetType=double   → 匹配 double (精确) 或 double[] (数组版本)
+                // 原因：视觉工具输出通常是数组类型（BlobAreas=double[], BlobBoundingBoxes=WpfRect[]），
+                //       但参数声明通常使用元素类型（Double, Circle），需要双向兼容。
                 if (targetType != null)
                 {
                     outputProps = outputProps
                         .Where(p => p.PropertyType == targetType ||
-                                    (p.PropertyType.IsArray && p.PropertyType.GetElementType() == targetType))
+                                    (targetType.IsArray && p.PropertyType == targetType.GetElementType()) ||
+                                    (!targetType.IsArray && p.PropertyType.IsArray && p.PropertyType.GetElementType() == targetType))
                         .ToList();
                 }
 
@@ -215,20 +256,37 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 }
             }
 
+            // ★ 合并额外数据源（子程序输入端口等，支持实时更新）
+            foreach (var extra in GetExtraDataSources())
+            {
+                if (targetType != null)
+                {
+                    bool typeMatch = extra.PropertyType == targetType ||
+                        (targetType.IsArray && extra.PropertyType == targetType.GetElementType()) ||
+                        (!targetType.IsArray && extra.PropertyType.IsArray && extra.PropertyType.GetElementType() == targetType);
+                    if (!typeMatch) continue;
+                }
+                if (!allDataSources.Any(ds => ds.SourceNodeId == extra.SourceNodeId && ds.PropertyName == extra.PropertyName))
+                    allDataSources.Add(extra);
+            }
+
             return allDataSources;
         }
 
         /// <summary>
-        /// 获取图像显示用的 Mat 数据源集合（当前节点 + 所有上游节点）
+        /// 获取图像显示用的数据源集合（当前节点 + 所有上游节点）
         /// 统一供 ImageControl 使用，与 ImageSourceSelector 共享相同的元数据源
         /// </summary>
         /// <param name="currentNodeId">当前选中的节点ID</param>
-        /// <returns>按距离排序的 Mat 数据源列表</returns>
-        public List<AvailableDataSource> GetMatDisplaySources(string currentNodeId)
+        /// <returns>按距离排序的图像数据源列表</returns>
+        public List<AvailableDataSource> GetImageDisplaySources(string currentNodeId)
         {
             var result = new List<AvailableDataSource>();
 
-            // 步骤 1: 当前节点自身的 Mat 输出 (Distance=0)
+            // 图像类型名集合（系统统一使用 IVisionImage）
+            var imageTypeNames = new HashSet<string> { "IVisionImage" };
+
+            // 步骤 1: 当前节点自身的图像输出 (Distance=0)
             var nodeType = _nodeInfoProvider?.GetNodeType(currentNodeId);
             var nodeName = _nodeInfoProvider?.GetNodeName(currentNodeId) ?? currentNodeId;
             if (nodeType != null)
@@ -236,7 +294,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 var metadataList = _metadataProvider?.GetAllPropertyMetadata(nodeType);
                 if (metadataList != null)
                 {
-                    foreach (var meta in metadataList.Where(m => m.PropertyType?.Name == "Mat"))
+                    foreach (var meta in metadataList.Where(m =>
+                        m.PropertyType != null && imageTypeNames.Contains(m.PropertyType.Name)))
                     {
                         result.Add(new AvailableDataSource
                         {
@@ -251,7 +310,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 }
             }
 
-            // 步骤 2: BFS 遍历所有上游节点的 Mat 输出 (Distance>=1)
+            // 步骤 2: BFS 遍历所有上游节点的图像输出 (Distance>=1)
             if (_connectionProvider != null)
             {
                 var visited = new HashSet<string> { currentNodeId };
@@ -270,9 +329,9 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                             visited.Add(parentId);
                             int childDistance = currentDistance + 1;
 
-                            // 获取该节点的 Mat 输出属性
+                            // 获取该节点的图像输出属性
                             foreach (var prop in GetNodeOutputProperties(parentId)
-                                .Where(p => p.PropertyType?.Name == "Mat"))
+                                .Where(p => p.PropertyType != null && imageTypeNames.Contains(p.PropertyType.Name)))
                             {
                                 prop.Distance = childDistance;
                                 result.Add(prop);
@@ -281,6 +340,20 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                             queue.Enqueue((parentId, childDistance));
                         }
                     }
+                }
+            }
+
+            // ★ 合并额外数据源中的图像类型（仅保留节点输出，排除子程序输入端口）
+            // 说明：子程序输入端口（SourceNodeId == "__SubroutineInputs__"）供 ImageSourceSelector 使用，
+            // 不应出现在图像显示器的 ComboBox 中。
+            foreach (var extra in GetExtraDataSources().Where(ds =>
+                ds.PropertyType != null && imageTypeNames.Contains(ds.PropertyType.Name)
+                && ds.SourceNodeId != "__SubroutineInputs__"))
+            {
+                if (!result.Any(r => r.SourceNodeId == extra.SourceNodeId && r.PropertyName == extra.PropertyName))
+                {
+                    extra.Distance = 1;
+                    result.Add(extra);
                 }
             }
 
@@ -339,6 +412,21 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         }
 
         /// <inheritdoc/>
+        public List<AvailableDataSource> GetWorkflowNodeDataSources()
+        {
+            var result = new List<AvailableDataSource>();
+            var allNodeIds = _connectionProvider?.GetAllNodeIds();
+            if (allNodeIds == null) return result;
+
+            foreach (var nodeId in allNodeIds)
+            {
+                var props = GetNodeOutputProperties(nodeId);
+                result.AddRange(props);
+            }
+            return result;
+        }
+
+        /// <inheritdoc/>
         public NodeExecutionContext? GetNodeContext(string nodeId)
         {
             if (_nodeInfoProvider == null)
@@ -352,44 +440,24 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 NodeName = _nodeInfoProvider.GetNodeName(nodeId) ?? nodeId,
                 NodeType = _nodeInfoProvider.GetNodeType(nodeId) ?? "Unknown",
                 NodeIcon = _nodeInfoProvider.GetNodeIcon(nodeId),
-                Result = GetNodeResultFromCache(nodeId),
+                Result = _ssotReader?.Invoke(nodeId),
                 ResultType = _nodeInfoProvider.GetResultType(nodeId)
             };
         }
 
         /// <summary>
-        /// 从缓存获取节点执行结果
+        /// 从 SSOT 读取器获取节点执行结果（无本地缓存，实时读取 WorkflowContext）
         /// </summary>
-        private ToolResults? GetNodeResultFromCache(string nodeId)
+        private ToolResults? GetNodeResult(string nodeId)
         {
-            _nodeResults.TryGetValue(nodeId, out var result);
-            return result;
+            return _ssotReader?.Invoke(nodeId);
         }
 
         /// <inheritdoc/>
         public object? GetPropertyValue(string nodeId, string propertyName)
         {
-            // 解析属性名（去掉索引标记）
-            var (pureName, arrayIndex) = PropertyPathParser.ParsePropertyPart(propertyName);
-
-            // 从节点输出中获取属性值
-            if (_nodeOutputs.TryGetValue(nodeId, out var outputs))
-            {
-                if (outputs.TryGetValue(pureName, out var value))
-                {
-                    // 处理数组索引
-                    if (arrayIndex.HasValue && value is Array array)
-                    {
-                        if (arrayIndex.Value >= 0 && arrayIndex.Value < array.Length)
-                            return array.GetValue(arrayIndex.Value);
-                        return null;  // 索引越界
-                    }
-                    return value;
-                }
-            }
-
-            // 从节点结果中获取属性值（使用反射）
-            var result = GetNodeResultFromCache(nodeId);
+            // 从 SSOT 读取器获取节点结果并反射取值（无本地缓存）
+            var result = _ssotReader?.Invoke(nodeId);
             if (result != null)
             {
                 return GetNestedPropertyValue(result, propertyName);
@@ -448,93 +516,10 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             return current;
         }
 
-        #region IDataSourceQueryService Runtime Methods
-
         /// <inheritdoc/>
         public bool HasNodeExecuted(string nodeId)
         {
-            return _nodeResults.ContainsKey(nodeId);
-        }
-
-        /// <inheritdoc/>
-        public void RefreshNodeData(string nodeId)
-        {
-            // TODO: 实现节点数据刷新逻辑
-        }
-
-        /// <inheritdoc/>
-        public void RefreshAll()
-        {
-            // TODO: 实现所有数据刷新逻辑
-        }
-
-        /// <inheritdoc/>
-        public void SetNodeResult(string nodeId, ToolResults result)
-        {
-            _nodeResults[nodeId] = result;
-        }
-
-        /// <inheritdoc/>
-        public void ClearNodeResult(string nodeId)
-        {
-            _nodeResults.TryRemove(nodeId, out _);
-        }
-
-        /// <inheritdoc/>
-        public void ClearAllResults()
-        {
-            _nodeResults.Clear();
-        }
-
-        /// <inheritdoc/>
-        public bool HasNodeOutput(string nodeId)
-        {
-            return _nodeOutputs.ContainsKey(nodeId);
-        }
-
-        /// <inheritdoc/>
-        public void UpdateNodeOutput(string nodeId, string propertyName, object? value)
-        {
-            if (!_nodeOutputs.ContainsKey(nodeId))
-            {
-                _nodeOutputs[nodeId] = new Dictionary<string, object?>();
-            }
-            _nodeOutputs[nodeId][propertyName] = value;
-        }
-
-        /// <inheritdoc/>
-        public void ClearNodeOutput(string nodeId)
-        {
-            _nodeOutputs.TryRemove(nodeId, out _);
-        }
-
-        /// <inheritdoc/>
-        public object? GetCurrentBindingValue(string nodeId, string propertyName, string? bindingPath = null)
-        {
-            // TODO: 实现绑定值获取逻辑
-            return null;
-        }
-
-        /// <inheritdoc/>
-        public string GetBindingDisplayPath(string nodeId, string propertyName, string? bindingPath = null)
-        {
-            // TODO: 实现绑定显示路径逻辑
-            return propertyName;
-        }
-
-        /// <inheritdoc/>
-        public IDisposable SubscribeOutputChanged(string nodeId, string propertyName, string? bindingPath, Action<object?> callback)
-        {
-            // TODO: 实现输出变更订阅逻辑
-
-            // 返回一个空的订阅令牌
-            return new SubscriptionToken(() => { });
-        }
-
-        /// <inheritdoc/>
-        public void RefreshOutputs()
-        {
-            // TODO: 实现输出刷新逻辑
+            return _ssotReader?.Invoke(nodeId) != null;
         }
 
         /// <inheritdoc/>
@@ -542,64 +527,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         {
             return _nodeInfoCache.ContainsKey(nodeId);
         }
-
-        #endregion
-
-        // ========================================
-        // 辅助方法
-        // ========================================
-
-        /// <summary>
-        /// 创建数据源对象
-        /// </summary>
-        private AvailableDataSource? CreateDataSource(ParentNodeInfo node, ToolPropertyMetadata metadata)
-        {
-            // 获取当前值
-            object? currentValue = null;
-            var property = node.OutputProperties.FirstOrDefault(p => p.PropertyName == metadata.PropertyName);
-            if (property != null)
-            {
-                currentValue = property.CurrentValue;
-            }
-            
-            return new AvailableDataSource
-            {
-                SourceNodeId = node.NodeId,
-                SourceNodeName = node.NodeName,
-                SourceNodeType = node.NodeType,
-                PropertyName = metadata.PropertyName,
-                DisplayName = metadata.DisplayName,
-                PropertyType = metadata.PropertyType,
-                CurrentValue = currentValue,
-                Unit = null,
-                Description = metadata.Description,
-                GroupName = metadata.GroupName,
-            };
-        }
-
-        /// <summary>
-        /// 订阅令牌
-        /// </summary>
-        private class SubscriptionToken : IDisposable
-        {
-            private readonly Action _disposeAction;
-            private bool _disposed;
-
-            public SubscriptionToken(Action disposeAction)
-            {
-                _disposeAction = disposeAction ?? throw new ArgumentNullException(nameof(disposeAction));
-            }
-
-            public void Dispose()
-            {
-                if (!_disposed)
-                {
-                    _disposeAction();
-                    _disposed = true;
-                }
-            }
-        }
     }
+
 
     /// <summary>
     /// 工作流连接提供者接口

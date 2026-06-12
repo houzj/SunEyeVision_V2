@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Text.Json.Serialization;
-using OpenCvSharp;
+using System.Windows.Media;
 using SunEyeVision.Plugin.SDK.Metadata;
+using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
 
 namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 {
@@ -38,7 +41,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     {
         private RegionCollectionParameter _inspectionRegions;
         private RegionCollectionParameter _maskRegions;
-        private ParamValue<bool> _isRegionEnabled;
+        private bool _isRegionEnabled;
         private ImageSourceReference? _imageSourceRef;
         private AvailableDataSource? _imageSource;
 
@@ -49,7 +52,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         {
             _inspectionRegions = new RegionCollectionParameter(RegionParameterMode.InspectionRegion);
             _maskRegions = new RegionCollectionParameter(RegionParameterMode.MaskRegion);
-            _isRegionEnabled = new ParamValue<bool> { Value = false };
+            _isRegionEnabled = false;
         }
 
         /// <summary>
@@ -86,11 +89,36 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// true = 仅对有效区域（检测区域 - 屏蔽区域）进行处理
         /// </remarks>
         [JsonPropertyOrder(12)]
-        public ParamValue<bool> IsRegionEnabled
+        [DisplayName("启用区域限制")]
+        public bool IsRegionEnabled
         {
             get => _isRegionEnabled;
-            set => _isRegionEnabled = value;
+            set => SetProperty(ref _isRegionEnabled, value, "启用区域限制");
         }
+
+        #region 显示样式
+
+        /// <summary>检测区域显示样式（UI 可通过 DispItemColorControl 绑定控制可见性）</summary>
+        [JsonIgnore]
+        public virtual GraphicsStyle InspectionRegionStyle { get; set; } = new()
+        {
+            Name = "InspectionRegion",
+            IsVisible = true,
+            OkColor = System.Windows.Media.Color.FromRgb(0, 0, 255),
+            LineWidth = 1.5
+        };
+
+        /// <summary>屏蔽区域显示样式（UI 可通过 DispItemColorControl 绑定控制可见性）</summary>
+        [JsonIgnore]
+        public virtual GraphicsStyle MaskRegionStyle { get; set; } = new()
+        {
+            Name = "MaskRegion",
+            IsVisible = true,
+            OkColor = System.Windows.Media.Color.FromRgb(255, 165, 0),  // 橙色
+            LineWidth = 1.5
+        };
+
+        #endregion
 
         #region 图像源绑定
 
@@ -138,17 +166,40 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <returns>是否成功恢复</returns>
         public bool RestoreImageSource(System.Collections.Generic.IEnumerable<AvailableDataSource>? dataSources)
         {
-            if (_imageSourceRef == null || dataSources == null)
+            if (dataSources == null)
                 return false;
 
-            var matched = _imageSourceRef.MatchDataSource(dataSources);
-            if (matched != null)
+            // 分支1：有序列化引用 → 精确匹配恢复
+            if (_imageSourceRef != null)
             {
-                // 直接设置字段，避免触发 setter 中的重复同步
-                _imageSource = matched;
-                OnPropertyChanged(nameof(ImageSource));
-                return true;
+                var matched = _imageSourceRef.MatchDataSource(dataSources);
+                if (matched != null)
+                {
+                    // 直接设置字段，避免触发 setter 中的重复同步
+                    _imageSource = matched;
+                    OnPropertyChanged(nameof(ImageSource));
+                    return true;
+                }
+                return false;
             }
+
+            // 分支2：无序列化引用且无运行时图像源 → 数据驱动自动匹配
+            // 场景：子程序内部工具首次执行时无序列化引用(dataSources为设计时推断的可用数据源)，
+            // 自动匹配第一个 IVisionImage 类型的数据源
+            if (_imageSource == null)
+            {
+                var firstImageSource = dataSources
+                    .FirstOrDefault(ds => ds.PropertyType != null &&
+                        typeof(IVisionImage).IsAssignableFrom(ds.PropertyType));
+                if (firstImageSource != null)
+                {
+                    _imageSource = firstImageSource;
+                    _imageSourceRef = ImageSourceReference.FromDataSource(firstImageSource);
+                    OnPropertyChanged(nameof(ImageSource));
+                    return true;
+                }
+            }
+
             return false;
         }
 
@@ -226,55 +277,55 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <summary>
         /// 获取区域的边界盒
         /// </summary>
-        private static Rect GetRegionBounds(RegionData region)
+        private static Rectangle GetRegionBounds(RegionData region)
         {
             if (region.Parameters == null)
-                return new Rect(0, 0, 0, 0);
+                return Rectangle.Empty;
 
             var shape = region.Parameters;
             var shapeType = shape.GetShapeType();
 
             if (!shapeType.HasValue || shape is not ShapeParameters shapeParams)
-                return new Rect(0, 0, 0, 0);
+                return Rectangle.Empty;
 
             return shapeType.Value switch
             {
-                ShapeType.Rectangle => new Rect(
+                ShapeType.Rectangle => new Rectangle(
                     (int)(shapeParams.CenterX - shapeParams.Width / 2),
                     (int)(shapeParams.CenterY - shapeParams.Height / 2),
                     (int)shapeParams.Width,
                     (int)shapeParams.Height
                 ),
-                ShapeType.Circle => new Rect(
+                ShapeType.Circle => new Rectangle(
                     (int)(shapeParams.CenterX - shapeParams.Radius),
                     (int)(shapeParams.CenterY - shapeParams.Radius),
                     (int)(shapeParams.Radius * 2),
                     (int)(shapeParams.Radius * 2)
                 ),
-                ShapeType.RotatedRectangle => new Rect(
+                ShapeType.RotatedRectangle => new Rectangle(
                     (int)(shapeParams.CenterX - shapeParams.Width / 2),
                     (int)(shapeParams.CenterY - shapeParams.Height / 2),
                     (int)shapeParams.Width,
                     (int)shapeParams.Height
                 ),
                 ShapeType.Polygon => GetPolygonBounds(shapeParams.Points),
-                ShapeType.Annulus => new Rect(
-                    (int)(shapeParams.CenterX - shapeParams.OuterRadius > 0 ? shapeParams.OuterRadius : shapeParams.Radius + 20),
-                    (int)(shapeParams.CenterY - shapeParams.OuterRadius > 0 ? shapeParams.OuterRadius : shapeParams.Radius + 20),
-                    (int)(shapeParams.OuterRadius > 0 ? shapeParams.OuterRadius * 2 : (shapeParams.Radius + 20) * 2),
-                    (int)(shapeParams.OuterRadius > 0 ? shapeParams.OuterRadius * 2 : (shapeParams.Radius + 20) * 2)
+                ShapeType.Annulus => new Rectangle(
+                    (int)(shapeParams.CenterX - (shapeParams.OuterRadius > 0 ? shapeParams.OuterRadius : shapeParams.Radius + 20)),
+                    (int)(shapeParams.CenterY - (shapeParams.OuterRadius > 0 ? shapeParams.OuterRadius : shapeParams.Radius + 20)),
+                    (int)((shapeParams.OuterRadius > 0 ? shapeParams.OuterRadius * 2 : (shapeParams.Radius + 20) * 2)),
+                    (int)((shapeParams.OuterRadius > 0 ? shapeParams.OuterRadius * 2 : (shapeParams.Radius + 20) * 2))
                 ),
-                _ => new Rect(0, 0, 0, 0)
+                _ => Rectangle.Empty
             };
         }
 
         /// <summary>
         /// 获取多边形的边界盒
         /// </summary>
-        private static Rect GetPolygonBounds(System.Collections.Generic.IList<UI.Controls.Region.Models.Point2D> points)
+        private static Rectangle GetPolygonBounds(System.Collections.Generic.IList<UI.Controls.Region.Models.Point2D> points)
         {
             if (points == null || points.Count == 0)
-                return new Rect(0, 0, 0, 0);
+                return Rectangle.Empty;
 
             float minX = float.MaxValue, minY = float.MaxValue;
             float maxX = float.MinValue, maxY = float.MinValue;
@@ -287,7 +338,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 if (point.Y > maxY) maxY = (float)point.Y;
             }
 
-            return new Rect(
+            return new Rectangle(
                 (int)minX,
                 (int)minY,
                 (int)(maxX - minX),
@@ -298,7 +349,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <summary>
         /// 检查两个边界盒是否重叠
         /// </summary>
-        private static bool IsBoundsOverlapped(Rect bounds1, Rect bounds2)
+        private static bool IsBoundsOverlapped(Rectangle bounds1, Rectangle bounds2)
         {
             if (bounds1.Width <= 0 || bounds1.Height <= 0 || bounds2.Width <= 0 || bounds2.Height <= 0)
                 return false;

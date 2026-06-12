@@ -1,6 +1,6 @@
 using System;
-using OpenCvSharp;
 using SunEyeVision.Plugin.SDK.Core;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
 
 namespace SunEyeVision.Workflow
 {
@@ -17,7 +17,7 @@ namespace SunEyeVision.Workflow
         /// <summary>
         /// Captured image
         /// </summary>
-        public Mat Image { get; set; }
+        public IVisionImage Image { get; set; }
 
         /// <summary>
         /// Image timestamp
@@ -34,7 +34,7 @@ namespace SunEyeVision.Workflow
         /// </summary>
         public object Metadata { get; set; }
 
-        public ImageCapturedEvent(string source, string deviceId, Mat image, long frameNumber = 0)
+        public ImageCapturedEvent(string source, string deviceId, IVisionImage image, long frameNumber = 0)
             : base(source)
         {
             DeviceId = deviceId;
@@ -67,14 +67,14 @@ namespace SunEyeVision.Workflow
         /// <summary>
         /// Image to process (if provided)
         /// </summary>
-        public Mat Image { get; set; }
+        public IVisionImage Image { get; set; }
 
         /// <summary>
         /// Image metadata
         /// </summary>
         public object ImageMetadata { get; set; }
 
-        public WorkflowTriggerEvent(string source, TriggerType triggerType, string triggerSource, Mat image = null)
+        public WorkflowTriggerEvent(string source, TriggerType triggerType, string triggerSource, IVisionImage image = null)
             : base(source)
         {
             TriggerType = triggerType;
@@ -171,7 +171,7 @@ namespace SunEyeVision.Workflow
         /// <summary>
         /// Input image
         /// </summary>
-        public Mat InputImage { get; set; }
+        public IVisionImage InputImage { get; set; }
 
         /// <summary>
         /// Processing result
@@ -183,7 +183,7 @@ namespace SunEyeVision.Workflow
         /// </summary>
         public long ProcessingDurationMs { get; set; }
 
-        public ProcessingCompletedEvent(string source, string workflowId, string executionId, Mat inputImage, ExecutionResult result, long durationMs)
+        public ProcessingCompletedEvent(string source, string workflowId, string executionId, IVisionImage inputImage, ExecutionResult result, long durationMs)
             : base(source)
         {
             WorkflowId = workflowId;

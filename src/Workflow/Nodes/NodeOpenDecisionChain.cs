@@ -2,125 +2,105 @@
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
-using SunEyeVision.Workflow;
 
 namespace SunEyeVision.Workflow.Nodes
 {
     /// <summary>
-    /// 节点打开决策链 - 集中处理节点双击的决策流程
+    /// 节点打开决策链 - 集中处理节点双击/打开的决策流程
     /// </summary>
     /// <remarks>
     /// 决策链步骤：
-    /// 1. 数据获取：从节点获取基本信息
-    /// 2. 元数据获取：从 ToolRegistry 获取工具元数据
-    /// 3. 窗口类型决策：根据优先级确定窗口类型
-    /// 4. 窗口类型判断：如果是 None，直接返回
-    /// 5. 内容创建决策：调用 IToolPlugin.CreateDebugControl()
-    /// 6. 策略查找和执行：根据节点类型查找合适的策略并执行
-    /// 
-    /// 窗口类型优先级：节点级配置 → 工具级配置 → 全局默认值
+    /// 1. 判断是否为控制流节点（Subroutine 仍然通过 SubroutineId 区分，由 MainWindowViewModel 处理导航）
+    /// 2. 算法节点流程：获取元数据 → 决定窗口类型 → 创建调试控件 → 创建窗口
     /// </remarks>
     public class NodeOpenDecisionChain
     {
-        private readonly NodeOpenStrategyRegistry _strategyRegistry;
-
-        public NodeOpenDecisionChain()
-        {
-            _strategyRegistry = new NodeOpenStrategyRegistry();
-        }
+        /// <summary>
+        /// 控制流节点打开事件 - 由 MainWindowViewModel 订阅处理子程序导航等
+        /// </summary>
+        public static event Action<WorkflowNodeBase>? OnControlFlowNodeOpen;
 
         /// <summary>
         /// 执行决策链
         /// </summary>
-        /// <param name="node">要打开的节点</param>
-        /// <param name="context">节点打开上下文</param>
-        /// <returns>true 表示成功处理，false 表示处理失败或无窗口</returns>
         public bool Execute(WorkflowNodeBase node, NodeOpenContext context)
         {
             try
             {
-                // Step 1: 数据获取
+                // Step 1: 设置上下文
                 context.Node = node;
 
-                // Step 2: 元数据获取
-                FetchMetadata(context);
-
-                // Step 3: 窗口类型决策
-                DecideWindowStyle(context);
-
-                // Step 4: 窗口类型判断
-                if (context.WindowStyle == DebugWindowStyle.None)
+                // Step 2: 判断是否为子程序节点（通过 SubroutineId 区分）
+                if (!string.IsNullOrEmpty(node.SubroutineId))
                 {
+                    OnControlFlowNodeOpen?.Invoke(node);
                     return true;
                 }
 
-                // Step 5: 内容创建决策
+                // Step 3: 算法节点 — 执行 ToolRegistry 流程
+                FetchMetadata(context);
+                DecideWindowStyle(context);
+
+                if (context.WindowStyle == DebugWindowStyle.None)
+                    return true;
+
                 CreateDebugControl(context);
 
-                // Step 6: 策略查找和执行
-                ExecuteStrategy(context);
-
+                // Step 4: 创建并显示调试窗口
+                DefaultOpenWindow(context);
                 return true;
             }
             catch (Exception ex)
             {
-                VisionLogger.Instance.Log(LogLevel.Error, 
-                    $"节点打开失败: {ex.Message}", 
+                VisionLogger.Instance.Log(LogLevel.Error,
+                    $"节点打开失败: {ex.Message}",
                     "NodeOpenDecisionChain", ex);
                 return false;
             }
         }
 
         /// <summary>
-        /// Step 2: 获取工具元数据
+        /// 获取工具元数据
         /// </summary>
         private void FetchMetadata(NodeOpenContext context)
         {
             var node = context.Node;
-            
-            // 从 ToolRegistry 获取元数据
             var metadata = ToolRegistry.GetToolMetadata(node.ToolType);
             context.Metadata = metadata;
 
             if (metadata == null)
             {
-                VisionLogger.Instance.Log(LogLevel.Warning, 
-                    $"未找到工具元数据: {node.ToolType}", 
+                VisionLogger.Instance.Log(LogLevel.Warning,
+                    $"未找到工具元数据: {node.ToolType}",
                     "NodeOpenDecisionChain");
             }
         }
 
         /// <summary>
-        /// Step 3: 决定窗口类型
+        /// 决定窗口类型（优先级：节点级 → 工具级 → 全局默认）
         /// </summary>
-        /// <remarks>
-        /// 窗口类型优先级：节点级配置 → 工具级配置 → 全局默认值
-        /// </remarks>
         private void DecideWindowStyle(NodeOpenContext context)
         {
             var node = context.Node;
             var metadata = context.Metadata;
 
-            // 优先级1：节点级配置
             if (node.DebugWindowStyle != DebugWindowStyle.Default)
             {
                 context.WindowStyle = node.DebugWindowStyle;
                 return;
             }
 
-            // 优先级2：工具级配置
             if (metadata?.DebugWindowStyle != DebugWindowStyle.Default)
             {
                 context.WindowStyle = metadata.DebugWindowStyle;
                 return;
             }
 
-            // 优先级3：全局默认值
             context.WindowStyle = DebugWindowStyle.Default;
         }
 
         /// <summary>
-        /// Step 5: 创建调试控件
+        /// 创建调试控件
         /// </summary>
         private void CreateDebugControl(NodeOpenContext context)
         {
@@ -128,44 +108,61 @@ namespace SunEyeVision.Workflow.Nodes
 
             try
             {
-                // 创建工具实例
                 var toolInstance = node.CreateInstance();
                 context.ToolInstance = toolInstance;
 
                 if (toolInstance == null)
                 {
-                    VisionLogger.Instance.Log(LogLevel.Warning, 
-                        $"无法创建工具实例: {node.ToolType}", 
+                    VisionLogger.Instance.Log(LogLevel.Warning,
+                        $"无法创建工具实例: {node.ToolType}",
                         "NodeOpenDecisionChain");
                     return;
                 }
 
-                // 调用 CreateDebugControl 方法
                 var debugControl = toolInstance.CreateDebugControl();
                 context.DebugControl = debugControl;
 
                 if (debugControl == null)
                 {
-                    VisionLogger.Instance.Log(LogLevel.Info, 
-                        $"工具未提供调试控件: {node.ToolType}", 
+                    VisionLogger.Instance.Log(LogLevel.Info,
+                        $"工具未提供调试控件: {node.ToolType}",
                         "NodeOpenDecisionChain");
                 }
             }
             catch (Exception ex)
             {
-                VisionLogger.Instance.Log(LogLevel.Error, 
-                    $"创建调试控件失败: {ex.Message}", 
+                VisionLogger.Instance.Log(LogLevel.Error,
+                    $"创建调试控件失败: {ex.Message}",
                     "NodeOpenDecisionChain", ex);
             }
         }
 
         /// <summary>
-        /// Step 6: 查找并执行策略
+        /// 默认打开窗口逻辑 - 使用 DefaultDebugWindow 包装调试控件
         /// </summary>
-        private void ExecuteStrategy(NodeOpenContext context)
+        private void DefaultOpenWindow(NodeOpenContext context)
         {
-            var strategy = _strategyRegistry.FindStrategy(context);
-            strategy.Execute(context);
+            if (context.DebugControl == null)
+            {
+                VisionLogger.Instance.Log(LogLevel.Warning,
+                    "调试控件为空，无法创建窗口",
+                    "NodeOpenDecisionChain");
+                return;
+            }
+
+            // 控件已经是 Window 类型，直接使用
+            if (context.DebugControl is System.Windows.Window existingWindow)
+            {
+                if (context.MainWindow != null && existingWindow.Owner == null)
+                    existingWindow.Owner = context.MainWindow;
+                context.CreatedWindow = existingWindow;
+                return;
+            }
+
+            context.CreatedWindow = null;
+            VisionLogger.Instance.Log(LogLevel.Info,
+                "调试控件需要由调用方包装为窗口（DefaultDebugWindow）",
+                "NodeOpenDecisionChain");
         }
     }
 }

@@ -208,6 +208,7 @@ namespace SunEyeVision.UI.ViewModels
                 "图像处理" => "🖼️",
                 "识别" => "🔍",
                 "测量" => "📏",
+                "工作流控制" => "🔄",
                 _ => "📦"
             };
         }

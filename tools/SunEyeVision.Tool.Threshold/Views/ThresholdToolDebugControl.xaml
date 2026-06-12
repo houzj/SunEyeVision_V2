@@ -42,13 +42,13 @@
 
             <!-- 启用区域限制 -->
             <controls:LabeledControl Label="启用区域限制">
-              <CheckBox IsChecked="{Binding IsRegionEnabled.Value, Mode=TwoWay}"
+              <CheckBox IsChecked="{Binding IsRegionEnabled, Mode=TwoWay}"
                         Content="仅对指定区域进行阈值化处理"/>
             </controls:LabeledControl>
 
             <!-- 区域管理器（检测区域 + 屏蔽区域） -->
             <GroupBox Header="区域设置" Margin="0,8,0,0"
-                      Visibility="{Binding IsRegionEnabled.Value, Converter={StaticResource BoolToVisibilityConverter}}">
+                      Visibility="{Binding IsRegionEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
                 <region:RegionEditorManagerControl x:Name="regionManager"
                     InspectionRegionsSource="{Binding InspectionRegions.Regions}"
                     MaskRegionsSource="{Binding MaskRegions.Regions}"/>
@@ -100,7 +100,7 @@
             </controls:LabeledControl>
 
             <controls:LabeledControl Label="反转结果" ContentHorizontalAlignment="Left" Margin="0,4,0,0">
-              <CheckBox IsChecked="{Binding Invert.Value, Mode=TwoWay}"
+              <CheckBox IsChecked="{Binding Invert, Mode=TwoWay}"
                         Content="反转二值化结果"/>
             </controls:LabeledControl>
 

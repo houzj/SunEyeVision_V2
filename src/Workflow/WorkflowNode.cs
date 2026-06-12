@@ -34,7 +34,13 @@ namespace SunEyeVision.Workflow
     /// </remarks>
     public class WorkflowNodeBase : ObservableObject
     {
-        #region 核心字段（8个）
+        #region 核心字段（9个）
+
+        /// <summary>
+        /// 子程序关联ID（当 ToolType == "Subroutine" 时有效）
+        /// 指向 WorkflowEngine 中一个独立的 Workflow
+        /// </summary>
+        public string? SubroutineId { get; set; }
 
         /// <summary>
         /// 节点ID - 使用Guid确保全局唯一性和稳定性
@@ -384,13 +390,25 @@ namespace SunEyeVision.Workflow
         #region 计算属性（从元数据推断，不序列化）
 
         /// <summary>
-        /// 节点类型（从 ToolType 动态推断，不序列化）
+        /// 节点类型（从 ToolRegistry 动态推断，不序列化）
+        /// Condition 和 Subroutine 已作为标准 IToolPlugin 由 ToolRegistry 管理，统一为 Algorithm
         /// </summary>
         [JsonIgnore]
-        public NodeType NodeType => NodeTypeHelper.InferNodeTypeFromToolType(ToolType);
+        public NodeType NodeType
+        {
+            get
+            {
+                // Subroutine 是标准 IToolPlugin，但逻辑上属于 Subroutine 类型（用于 UI 样式区分）
+                if (string.Equals(ToolType, "Subroutine", StringComparison.OrdinalIgnoreCase) ||
+                    !string.IsNullOrEmpty(SubroutineId))
+                    return NodeType.Subroutine;
+
+                return NodeType.Algorithm;
+            }
+        }
 
         /// <summary>
-        /// 显示名称（从工具元数据获取，不序列化）
+        /// 显示名称（从控制流注册中心或工具元数据获取，不序列化）
         /// </summary>
         [JsonIgnore]
         public string DisplayName
@@ -403,7 +421,7 @@ namespace SunEyeVision.Workflow
         }
 
         /// <summary>
-        /// 节点图标（从工具元数据获取，不序列化）
+        /// 节点图标（从控制流注册中心或工具元数据获取，不序列化）
         /// </summary>
         [JsonIgnore]
         public string Icon
@@ -607,6 +625,14 @@ namespace SunEyeVision.Workflow
         }
 
         /// <summary>
+        /// 反序列化后回调。子类可重写以初始化默认值。
+        /// Phase 2 优化：确保反序列化后的节点初始化 UI 默认值。
+        /// </summary>
+        public virtual void OnDeserialized()
+        {
+        }
+
+        /// <summary>
         /// 创建工具实例（的初始化处理方法）
         /// </summary>
         public virtual IToolPlugin? CreateInstance()
@@ -649,14 +675,14 @@ namespace SunEyeVision.Workflow
             NodeType nodeType = NodeType.Algorithm;
             if (dict.TryGetValue("NodeType", out var typeVal))
             {
-                if (Enum.IsDefined(typeof(NodeType), typeVal))
+                if (typeVal is int intVal && Enum.IsDefined(typeof(NodeType), intVal))
                 {
-                    nodeType = (NodeType)Convert.ToInt32(typeVal);
+                    nodeType = (NodeType)intVal;
                 }
-            }
-            else
-            {
-                nodeType = NodeTypeHelper.InferNodeTypeFromToolType(toolType);
+                else if (typeVal is string strVal && Enum.TryParse<NodeType>(strVal, out var parsed))
+                {
+                    nodeType = parsed;
+                }
             }
 
             var node = new WorkflowNodeBase(id, name, dispName, toolType)

@@ -52,6 +52,15 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         public bool IsSelectable { get; set; }
 
         /// <summary>
+        /// 是否为动作节点（点击时触发自定义操作，而非直接绑定数据源）
+        /// </summary>
+        /// <remarks>
+        /// 例如"全局变量"入口节点，点击后打开选择对话框，再完成绑定。
+        /// 动作节点无 DataSource，IsSelectable=true 使其可被点击选中。
+        /// </remarks>
+        public bool IsActionNode { get; set; }
+
+        /// <summary>
         /// 是否展开
         /// </summary>
         public bool IsExpanded

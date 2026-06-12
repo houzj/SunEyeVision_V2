@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using OpenCvSharp;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Core;
 
@@ -43,7 +43,7 @@ namespace SunEyeVision.Workflow
         /// <summary>
         /// Image data
         /// </summary>
-        public Mat Image { get; set; }
+        public IVisionImage Image { get; set; }
 
         /// <summary>
         /// Enqueue timestamp
@@ -143,7 +143,7 @@ namespace SunEyeVision.Workflow
         /// <summary>
         /// Enqueue an image (producer)
         /// </summary>
-        public async Task<bool> EnqueueAsync(Mat image, string deviceId = null, object metadata = null)
+        public async Task<bool> EnqueueAsync(IVisionImage image, string deviceId = null, object metadata = null)
         {
             if (_disposed)
             {

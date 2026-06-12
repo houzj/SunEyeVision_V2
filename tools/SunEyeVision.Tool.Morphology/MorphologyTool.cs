@@ -8,6 +8,7 @@ using OpenCvSharp;
 using SunEyeVision.CvEngine;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 using SunEyeVision.Plugin.SDK.Validation;
 using SunEyeVision.Tool.Morphology.Views;
@@ -25,7 +26,7 @@ namespace SunEyeVision.Tool.Morphology
     ///   6. 结果判断       → OK/NG判定
     /// </summary>
     [Tool(
-        id: "morphology",
+        id: "Morphology",
         displayName: "形态学处理",
         Description = "对二值图像执行形态学操作（腐蚀/膨胀/开闭运算等）",
         Icon = "🔲",
@@ -51,7 +52,7 @@ namespace SunEyeVision.Tool.Morphology
             var result = new MorphologyResults
             {
                 ToolName = _attribute?.DisplayName ?? "Morphology",
-                ToolId = _attribute?.Id ?? "morphology",
+                ToolId = _attribute?.Id ?? "Morphology",
                 Timestamp = DateTime.Now
             };
 
@@ -91,7 +92,7 @@ namespace SunEyeVision.Tool.Morphology
                 var kernelHeight = parameters.KernelHeight.Value;
                 var iterations = parameters.Iterations.Value;
                 var borderType = parameters.BorderType.Value;
-                var isRegionEnabled = parameters.IsRegionEnabled.Value;
+                var isRegionEnabled = parameters.IsRegionEnabled;
 
                 // ===== Step 1: 灰度转换 =====
                 stepSw.Restart();
@@ -105,37 +106,43 @@ namespace SunEyeVision.Tool.Morphology
 
                     CvRegion? roiRegion = null;
 
-                    // ===== Step 2: 构建ROI区域 + 差集处理 =====
+                    // ===== Step 2: 构建ROI区域 =====
                     stepSw.Restart();
                     if (isRegionEnabled)
                     {
                         var inspectionRegions = parameters.GetRegionsByType(RegionType.Inspection);
                         var maskRegions = parameters.GetRegionsByType(RegionType.Mask);
-
-                        bool hasInspection = inspectionRegions.Any();
-                        bool hasMask = maskRegions.Any();
-
-                        if (hasInspection && hasMask)
-                        {
-                            using var inspRegion = CvRegion.CreateFromRegions(grayImage.Size, inspectionRegions);
-                            using var maskRegion = CvRegion.CreateFromRegions(grayImage.Size, maskRegions);
-
-                            CvOp.Difference(inspRegion, maskRegion, out roiRegion);
-
-                            parameters.LogInfo($"差集ROI区域创建成功（检测区-遮罩），白色像素数: {roiRegion.PixelCount}");
-                        }
-                        else if (hasInspection)
-                        {
-                            roiRegion = CvRegion.CreateFromRegions(grayImage.Size, inspectionRegions);
-                            parameters.LogInfo($"检测区域创建成功，白色像素数: {roiRegion.PixelCount}");
-                        }
-                        else
-                        {
-                            parameters.LogWarning("启用区域限制，但没有有效的检测区域");
-                        }
+                        roiRegion = CvRegionHelper.BuildROI(grayImage.Size, inspectionRegions, maskRegions);
+                        if (roiRegion != null)
+                            parameters.LogInfo($"ROI区域创建成功，白色像素数: {roiRegion.PixelCount}");
                     }
                     stepSw.Stop();
                     stepTimings.Add(("ROI构建", stepSw.ElapsedMilliseconds));
+
+                    // ===== Step 2.5: 位置修正（正向变换 ROI 掩码） =====
+                    if (parameters.IsPositionCorrectionEnabled)
+                    {
+                        stepSw.Restart();
+                        var bindingSource = parameters.PositionCorrectionBindingSource;
+                        if (bindingSource?.CurrentValue is AffineMatrix matrix)
+                        {
+                            roiRegion = CvRegionHelper.ApplyPositionCorrection(
+                                roiRegion, matrix, grayImage.Size);
+                            parameters.LogInfo($"位置修正已启用, 矩阵: {matrix}");
+                        }
+                        else if (bindingSource != null &&
+                                 !string.IsNullOrEmpty(bindingSource.SourceNodeId) &&
+                                 !string.IsNullOrEmpty(bindingSource.PropertyName))
+                        {
+                            parameters.LogInfo("位置修正已启用，但绑定源当前无有效矩阵，跳过位置修正");
+                        }
+                        else
+                        {
+                            parameters.LogWarning("位置修正已启用但未配置绑定源，跳过位置修正");
+                        }
+                        stepSw.Stop();
+                        stepTimings.Add(("位置修正", stepSw.ElapsedMilliseconds));
+                    }
 
                     try
                     {
@@ -178,6 +185,10 @@ namespace SunEyeVision.Tool.Morphology
                                     // 保存二值掩码
                                     CvOp.RegionToMask(morphRegion, out var binaryMask);
                                     result.BinaryMask = binaryMask;
+
+                                    // 图形结果输出
+                                    result.OutputRegions = new IVisionRegion[] { morphRegion.Clone() };
+
                                     result.OutputImage = outputImage;
 
                                     // 参数回写

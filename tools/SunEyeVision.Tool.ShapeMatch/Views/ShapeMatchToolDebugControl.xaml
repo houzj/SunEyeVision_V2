@@ -11,6 +11,7 @@
         xmlns:models="clr-namespace:SunEyeVision.Tool.ShapeMatch.Models"
         xmlns:localConverters="clr-namespace:SunEyeVision.Tool.ShapeMatch.Converters"
         xmlns:views="clr-namespace:SunEyeVision.Tool.ShapeMatch.Views"
+        xmlns:results="clr-namespace:SunEyeVision.Plugin.SDK.Execution.Results;assembly=SunEyeVision.Plugin.SDK"
         mc:Ignorable="d"
         d:DesignHeight="600" d:DesignWidth="420"
         DataContext="{Binding Parameters, RelativeSource={RelativeSource Self}}">
@@ -25,11 +26,9 @@
             <localConverters:SortModeConverter x:Key="SortModeConverter"/>
             <localConverters:MultiTemplateModeConverter x:Key="MultiTemplateModeConverter"/>
             <localConverters:ExtractionStatusConverter x:Key="ExtractionStatusConverter"/>
-            <localConverters:MinContrastModeConverter x:Key="MinContrastModeConverter"/>
         </ResourceDictionary>
     </controls:ToolDebugControlBase.Resources>
 
-  <!-- 主布局 -->
   <Grid>
     <TabControl Margin="5,0,5,0">
       <!-- Tab1: 基本参数 -->
@@ -45,31 +44,24 @@
                                 SelectedDataSource="{Binding ImageSource, Mode=TwoWay}"/>
             </controls:LabeledControl>
 
-            <!-- 启用区域限制 -->
-            <controls:LabeledControl Label="启用区域限制">
-              <CheckBox IsChecked="{Binding IsRegionEnabled.Value, Mode=TwoWay}"
-                        Content="仅对指定区域进行匹配"/>
-            </controls:LabeledControl>
-
-            <!-- 区域管理器 -->
-            <GroupBox Header="搜索区域" Margin="0,8,0,0"
-                      Visibility="{Binding IsRegionEnabled.Value, Converter={StaticResource BoolToVisibilityConverter}}">
+            <!-- 检测区域数量=0时全图分析，否则自动启用区域限制 -->
+            <GroupBox Header="区域设置" Margin="0,8,0,0">
                 <region:RegionEditorManagerControl x:Name="regionManager"
                     InspectionRegionsSource="{Binding InspectionRegions.Regions}"
                     MaskRegionsSource="{Binding MaskRegions.Regions}"/>
             </GroupBox>
 
-            <!-- 位置修正 -->
             <controls:LabeledControl Label="位置修正" Margin="0,8,0,0" HorizontalAlignment="Left">
               <controls:ToggleSwitch
-                  IsChecked="{Binding IsPositionCorrectionEnabled.Value, Mode=TwoWay}"
+                  IsChecked="{Binding IsPositionCorrectionEnabled, Mode=TwoWay}"
                   SwitchWidth="48" SwitchHeight="24"/>
             </controls:LabeledControl>
 
             <controls:LabeledControl Label="修正信息" Margin="0,4,0,0" HorizontalAlignment="Left"
-                Visibility="{Binding IsPositionCorrectionEnabled.Value, Converter={StaticResource BoolToVisibilityConverter}}">
+                Visibility="{Binding IsPositionCorrectionEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
               <controls:ParamBinding
                   x:Name="positionCorrectionBinding"
+                  DataType="{x:Type results:AffineMatrix}"
                   ParameterName="位置修正" Width="200"
                   BindingSource="{Binding PositionCorrectionBindingSource, Mode=TwoWay}"
                   BindingDisplayText="{Binding PositionCorrectionBindingDisplayText, Mode=TwoWay}"
@@ -79,17 +71,15 @@
         </ScrollViewer>
       </TabItem>
 
-      <!-- Tab2: 模版创建 (左侧列表为主 + 右侧小预览) -->
-      <TabItem Header="模版创建">
+      <!-- Tab2: 模板管理 -->
+      <TabItem Header="模板管理">
         <Grid Background="#FAFAFA">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="140"/>
           </Grid.ColumnDefinitions>
 
-          <!-- ===== 左侧栏 (主体) ===== -->
           <DockPanel Grid.Column="0">
-            <!-- 工具栏: [+ 创建] [↓ 载入] -->
             <Border DockPanel.Dock="Top" Background="#F5F5F5" Padding="10,8"
                     BorderBrush="#EEEEEE" BorderThickness="0,0,0,1">
               <StackPanel Orientation="Horizontal">
@@ -100,7 +90,6 @@
               </StackPanel>
             </Border>
 
-            <!-- 模版列表 (填满剩余空间) -->
             <ListView x:Name="templateListView"
                      DockPanel.Dock="Top"
                      ItemsSource="{Binding Templates}"
@@ -139,7 +128,6 @@
             </ListView>
           </DockPanel>
 
-          <!-- ===== 右侧栏 (固定宽度小预览区) ===== -->
           <Grid Grid.Column="1" Margin="4,0,0,0">
             <Grid.RowDefinitions>
               <RowDefinition Height="100"/>
@@ -149,7 +137,6 @@
               <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- 小尺寸预览缩略图 -->
             <Border Grid.Row="0" Background="#333" CornerRadius="3" ClipToBounds="True"
                     BorderBrush="#CCC" BorderThickness="1">
               <Grid>
@@ -160,7 +147,6 @@
               </Grid>
             </Border>
 
-            <!-- 紧凑状态信息 -->
             <StackPanel Grid.Row="1" Margin="0,4,0,0">
               <TextBlock x:Name="rightStatusText" FontSize="10" Foreground="#888" TextWrapping="Wrap"
                          Text="--"/>
@@ -170,17 +156,14 @@
                          Text="--"/>
             </StackPanel>
 
-            <!-- [编辑模板] 按钮 -->
             <Button Grid.Row="2" x:Name="btnEditTemplate" Content="编辑模板" Width="90" Height="26"
                     HorizontalAlignment="Left" Margin="0,6,0,2" FontSize="11"
                     Click="OnEditTemplateClick"/>
 
-            <!-- [删除所有模板] 按钮 -->
             <Button Grid.Row="3" x:Name="btnDeleteAllTemplates" Content="删除所有" Width="90" Height="24"
                     HorizontalAlignment="Left" Foreground="#D32F2F" FontSize="10"
                     Click="OnDeleteAllTemplatesClick"/>
 
-            <!-- 底部弹性填充 -->
             <Border Grid.Row="4"/>
           </Grid>
         </Grid>
@@ -195,17 +178,17 @@
         </TabItem.Resources>
         <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12">
           <StackPanel>
-            <!-- 目标模板选择（ConfigSetting 双模式） -->
-            <GroupBox Header="匹配参数" Margin="0,0,0,8">
+            <!-- 匹配设置 -->
+            <GroupBox Header="匹配设置" Margin="0,0,0,8">
               <StackPanel>
-                <controls:LabeledControl Label="最小分数 (0~1)">
+                <controls:LabeledControl Label="最小分数" ToolTip="范围: 0~1">
                   <controls:ConfigSetting
                                     ParameterName="MinMatchScore"
                                     DataType="{x:Type sys:Double}"
                                     Value="{Binding MinMatchScore.Value, Mode=TwoWay}"
                                     Minimum="0" Maximum="1"
                                     SmallChange="0.01" LargeChange="0.1"
-                                    ShowSlider="True" Width="220"
+                                    ShowSlider="True" Width="200"
                                     DecimalPlaces="3"
                                     AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                 </controls:LabeledControl>
@@ -221,145 +204,58 @@
                                     AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                 </controls:LabeledControl>
 
-                <controls:LabeledControl Label="超时时间 (ms)">
+                <controls:LabeledControl Label="单模版最大匹配数"
+                    ToolTip="每个Halcon模板返回的最大候选数。多模板时每个模板独立计算，最终结果受「最大匹配数」限制">
                   <controls:ConfigSetting
-                                    ParameterName="MatchTimeoutMs"
+                                    ParameterName="NumMatches"
                                     DataType="{x:Type sys:Int32}"
-                                    Value="{Binding MatchTimeoutMs.Value, Mode=TwoWay}"
-                                    Minimum="100" Maximum="60000"
-                                    SmallChange="500" LargeChange="5000"
+                                    Value="{Binding NumMatches.Value, Mode=TwoWay}"
+                                    Minimum="1" Maximum="1000"
+                                    SmallChange="1" LargeChange="10"
                                     Width="200"
                                     AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                 </controls:LabeledControl>
 
-                <controls:LabeledControl Label="NMS 重叠率 (0~1)">
-                  <controls:ConfigSetting
-                                    ParameterName="MaxOverlap"
-                                    DataType="{x:Type sys:Double}"
-                                    Value="{Binding MaxOverlap.Value, Mode=TwoWay}"
-                                    Minimum="0" Maximum="1"
-                                    SmallChange="0.01" LargeChange="0.1"
-                                    Width="200" DecimalPlaces="2"
-                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                </controls:LabeledControl>
-
-                <controls:LabeledControl Label="贪婪度 (0~1)">
-                  <controls:ConfigSetting
-                                    ParameterName="Greediness"
-                                    DataType="{x:Type sys:Double}"
-                                    Value="{Binding Greediness.Value, Mode=TwoWay}"
-                                    Minimum="0" Maximum="1"
-                                    SmallChange="0.01" LargeChange="0.1"
-                                    Width="200" DecimalPlaces="2"
-                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                </controls:LabeledControl>
-
-                <!-- 最小对比度模式 -->
-                <controls:LabeledControl Label="最小对比度模式" Margin="0,8,0,0">
-                  <ComboBox ItemsSource="{Binding MinContrastModeList, RelativeSource={RelativeSource AncestorType={x:Type views:ShapeMatchToolDebugControl}}}"
-                            SelectedItem="{Binding MinContrastMode.Value, Mode=TwoWay}"
-                            Height="32" VerticalContentAlignment="Center" Width="220"
-                            ToolTip="自动：基于图像梯度自动计算|手动：使用下方固定值|模版阈值：使用模板创建时的 Contrast/3">
-                    <ComboBox.ItemTemplate>
-                      <DataTemplate>
-                        <TextBlock Text="{Binding Converter={StaticResource MinContrastModeConverter}}"/>
-                      </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                  </ComboBox>
-                </controls:LabeledControl>
-
-                <!-- 阈值参数（仅手动模式有效） -->
-                <controls:LabeledControl Label="阈值参数" Margin="0,4,0,0">
-                  <controls:ConfigSetting
+                <!-- 最小对比度（两行：模式 + 数值） -->
+                <controls:LabeledControl Label="最小对比度" Margin="0,8,0,0">
+                  <StackPanel>
+                    <ComboBox x:Name="cmbMinContrastMode" Height="26" VerticalContentAlignment="Center" Width="200"
+                              SelectionChanged="OnMinContrastModeChanged" Margin="0,0,0,4">
+                      <sys:String>自动</sys:String>
+                      <sys:String>手动</sys:String>
+                    </ComboBox>
+                    <controls:ConfigSetting x:Name="minContrastConfig"
                                     ParameterName="MinContrast"
-                                    DataType="{x:Type sys:Single}"
+                                    DataType="{x:Type sys:Double}"
                                     Value="{Binding MinContrast.Value, Mode=TwoWay}"
                                     Minimum="1" Maximum="255"
                                     SmallChange="1" LargeChange="10"
-                                    Width="220" DecimalPlaces="0"
+                                    Width="200" DecimalPlaces="0"
                                     AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                  </StackPanel>
                 </controls:LabeledControl>
 
-                <!-- 角度起始 -->
-                <controls:LabeledControl Label="角度起始 (°)" Margin="0,8,0,0">
-                  <controls:ConfigSetting
-                                    ParameterName="AngleMin"
-                                    DataType="{x:Type sys:Double}"
-                                    Value="{Binding AngleMin.Value, Mode=TwoWay}"
+                <controls:LabeledControl Label="角度范围" ToolTip="单位: °, 范围: -360~360" Margin="0,8,0,0">
+                  <controls:RangeInputControl
+                                    Width="200"
                                     Minimum="-360" Maximum="360"
+                                    MinValue="{Binding AngleStart.Value, Mode=TwoWay}"
+                                    MaxValue="{Binding AngleEnd.Value, Mode=TwoWay}"
+                                    DecimalPlaces="1"
                                     SmallChange="1" LargeChange="45"
-                                    ShowSlider="False" Width="200" DecimalPlaces="1"
-                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                </controls:LabeledControl>
-                <!-- 角度终止 -->
-                <controls:LabeledControl Label="角度终止 (°)" Margin="0,4,0,0">
-                  <controls:ConfigSetting
-                                    ParameterName="AngleMax"
-                                    DataType="{x:Type sys:Double}"
-                                    Value="{Binding AngleMax.Value, Mode=TwoWay}"
-                                    Minimum="-360" Maximum="360"
-                                    SmallChange="1" LargeChange="45"
-                                    ShowSlider="False" Width="200" DecimalPlaces="1"
-                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                </controls:LabeledControl>
-                <!-- 角度步长 -->
-                <controls:LabeledControl Label="角度步长 (°)" Margin="0,4,0,0">
-                  <controls:ConfigSetting
-                                    ParameterName="AngleStep"
-                                    DataType="{x:Type sys:Double}"
-                                    Value="{Binding AngleStep.Value, Mode=TwoWay}"
-                                    Minimum="0.1" Maximum="90"
-                                    SmallChange="0.1" LargeChange="10"
-                                    ShowSlider="False" Width="200" DecimalPlaces="1"
-                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                                    NumericWidth="80"/>
                 </controls:LabeledControl>
 
-                <!-- 缩放起始 -->
-                <controls:LabeledControl Label="缩放起始" Margin="0,8,0,0">
-                  <controls:ConfigSetting
-                                    ParameterName="ScaleMin"
-                                    DataType="{x:Type sys:Double}"
-                                    Value="{Binding ScaleMin.Value, Mode=TwoWay}"
+                <controls:LabeledControl Label="缩放范围" ToolTip="缩放范围, 0.1~10.0">
+                  <controls:RangeInputControl
+                                    Width="200"
                                     Minimum="0.1" Maximum="10.0"
+                                    MinValue="{Binding ScaleMin.Value, Mode=TwoWay}"
+                                    MaxValue="{Binding ScaleMax.Value, Mode=TwoWay}"
+                                    DecimalPlaces="3"
                                     SmallChange="0.01" LargeChange="0.1"
-                                    ShowSlider="False" Width="200" DecimalPlaces="3"
-                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                                    NumericWidth="80"/>
                 </controls:LabeledControl>
-                <!-- 缩放终止 -->
-                <controls:LabeledControl Label="缩放终止" Margin="0,4,0,0">
-                  <controls:ConfigSetting
-                                    ParameterName="ScaleMax"
-                                    DataType="{x:Type sys:Double}"
-                                    Value="{Binding ScaleMax.Value, Mode=TwoWay}"
-                                    Minimum="0.1" Maximum="10.0"
-                                    SmallChange="0.01" LargeChange="0.1"
-                                    ShowSlider="False" Width="200" DecimalPlaces="3"
-                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                </controls:LabeledControl>
-                <!-- 缩放步长 -->
-                <controls:LabeledControl Label="缩放步长" Margin="0,4,0,0">
-                  <controls:ConfigSetting
-                                    ParameterName="ScaleStep"
-                                    DataType="{x:Type sys:Double}"
-                                    Value="{Binding ScaleStep.Value, Mode=TwoWay}"
-                                    Minimum="0.001" Maximum="1.0"
-                                    SmallChange="0.001" LargeChange="0.01"
-                                    ShowSlider="False" Width="200" DecimalPlaces="3"
-                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                </controls:LabeledControl>
-
-
-                <!-- ★ 金字塔层数已移除 — 由模板属性自动决定，运行时不设独立参数 -->
-              </StackPanel>
-            </GroupBox>
-
-            <!-- 亚像素精定位 -->
-            <GroupBox Header="亚像素精定位" Margin="0,0,0,8">
-              <StackPanel>
-                <controls:LabeledControl Label="启用亚像素" ContentHorizontalAlignment="Left">
-                  <CheckBox IsChecked="{Binding EnableSubPixel.Value, Mode=TwoWay}"/>
-                </controls:LabeledControl>
-                <!-- 搜索半径固定为 2px，不暴露独立参数 -->
               </StackPanel>
             </GroupBox>
 
@@ -382,35 +278,158 @@
               </ComboBox>
             </controls:LabeledControl>
 
-            <!-- 高级参数（Expander 折叠） -->
-            <Expander Header="高级参数" IsExpanded="False"
-                                      BorderBrush="#E0E0E0" BorderThickness="1"
-                                      Margin="0,8,0,0" Background="White">
+            <!-- 高级设置 -->
+            <Expander Header="高级设置" IsExpanded="False"
+                      BorderBrush="#E0E0E0" BorderThickness="1"
+                      Margin="0,8,0,0" Background="White">
               <StackPanel Margin="16,8">
-                <controls:LabeledControl Label="多模板模式">
-                  <ComboBox Height="32" VerticalContentAlignment="Center" Width="220"
-                          SelectedItem="{Binding MultiMode.Value, Mode=TwoWay}">
-                    <ComboBox.ItemTemplate>
-                      <DataTemplate>
-                        <TextBlock Text="{Binding Converter={StaticResource MultiTemplateModeConverter}}"/>
-                      </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                    <models:MultiTemplateMode>Sequential</models:MultiTemplateMode>
-                    <models:MultiTemplateMode>ParallelIndependent</models:MultiTemplateMode>
-                    <models:MultiTemplateMode>ParallelShared</models:MultiTemplateMode>
-                  </ComboBox>
-                </controls:LabeledControl>
+                <!-- 结果过滤 -->
+                <GroupBox Header="结果过滤" Margin="0,0,0,8">
+                  <StackPanel>
+                    <controls:LabeledControl Label="重叠率" ToolTip="NMS 重叠率过滤，范围: 0~1">
+                      <controls:ConfigSetting
+                                        ParameterName="MaxOverlap"
+                                        DataType="{x:Type sys:Double}"
+                                        Value="{Binding MaxOverlap.Value, Mode=TwoWay}"
+                                        Minimum="0" Maximum="1"
+                                        SmallChange="0.01" LargeChange="0.1"
+                                        Width="200" DecimalPlaces="2"
+                                        AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                    </controls:LabeledControl>
 
-                <controls:LabeledControl Label="最大并行度 (0=自动)" Margin="0,4,0,0">
-                  <controls:ConfigSetting
-                                    ParameterName="MaxParallelism"
-                                    DataType="{x:Type sys:Int32}"
-                                    Value="{Binding MaxParallelism.Value, Mode=TwoWay}"
-                                    Minimum="0" Maximum="16"
-                                    SmallChange="1" Width="200"
-                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                </controls:LabeledControl>
+                    <controls:LabeledControl Label="贪婪度" ToolTip="范围: 0~1">
+                      <controls:ConfigSetting
+                                        ParameterName="Greediness"
+                                        DataType="{x:Type sys:Double}"
+                                        Value="{Binding Greediness.Value, Mode=TwoWay}"
+                                        Minimum="0" Maximum="1"
+                                        SmallChange="0.01" LargeChange="0.1"
+                                        Width="200" DecimalPlaces="2"
+                                        AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                    </controls:LabeledControl>
 
+                    <controls:LabeledControl Label="超时" ToolTip="单位: ms">
+                      <controls:ConfigSetting
+                                        ParameterName="MatchTimeoutMs"
+                                        DataType="{x:Type sys:Int32}"
+                                        Value="{Binding MatchTimeoutMs.Value, Mode=TwoWay}"
+                                        Minimum="100" Maximum="60000"
+                                        SmallChange="500" LargeChange="5000"
+                                        Width="200"
+                                        AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                    </controls:LabeledControl>
+                  </StackPanel>
+                </GroupBox>
+
+                <!-- 引擎调优 -->
+                <GroupBox Header="引擎调优" Margin="0,0,0,8">
+                  <StackPanel>
+                    <controls:LabeledControl Label="极性匹配">
+                      <ComboBox SelectedItem="{Binding MetricMode.Value, Mode=TwoWay}"
+                                Height="32" VerticalContentAlignment="Center" Width="220">
+                        <models:MetricMode>UsePolarity</models:MetricMode>
+                        <models:MetricMode>IgnoreGlobalPolarity</models:MetricMode>
+                        <models:MetricMode>IgnoreLocalPolarity</models:MetricMode>
+                      </ComboBox>
+                    </controls:LabeledControl>
+                    <controls:LabeledControl Label="优化模式" Margin="0,4,0,0">
+                      <ComboBox SelectedItem="{Binding OptimizationMode.Value, Mode=TwoWay}"
+                                Height="32" VerticalContentAlignment="Center" Width="220">
+                        <models:OptimizationMode>Auto</models:OptimizationMode>
+                        <models:OptimizationMode>None</models:OptimizationMode>
+                        <models:OptimizationMode>PointReductionLow</models:OptimizationMode>
+                        <models:OptimizationMode>PointReductionMedium</models:OptimizationMode>
+                        <models:OptimizationMode>PointReductionHigh</models:OptimizationMode>
+                      </ComboBox>
+                    </controls:LabeledControl>
+                    <controls:LabeledControl Label="亚像素" Margin="0,4,0,0">
+                      <ComboBox SelectedItem="{Binding SubPixelMode.Value, Mode=TwoWay}"
+                                Height="32" VerticalContentAlignment="Center" Width="220">
+                        <models:SubPixelMode>None</models:SubPixelMode>
+                        <models:SubPixelMode>Interpolation</models:SubPixelMode>
+                        <models:SubPixelMode>LeastSquares</models:SubPixelMode>
+                        <models:SubPixelMode>LeastSquaresHigh</models:SubPixelMode>
+                        <models:SubPixelMode>LeastSquaresVeryHigh</models:SubPixelMode>
+                      </ComboBox>
+                    </controls:LabeledControl>
+                  </StackPanel>
+                </GroupBox>
+
+                <!-- 搜索精度 -->
+                <GroupBox Header="搜索精度" Margin="0,0,0,8">
+                  <StackPanel>
+                    <controls:LabeledControl Label="角度步长" ToolTip="0=自动，单位: °">
+                      <controls:ConfigSetting
+                                        ParameterName="AngleStep"
+                                        DataType="{x:Type sys:Double}"
+                                        Value="{Binding AngleStep.Value, Mode=TwoWay}"
+                                        Minimum="0" Maximum="90"
+                                        SmallChange="0.1" LargeChange="10"
+                                        Width="200" DecimalPlaces="1"
+                                        AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                    </controls:LabeledControl>
+
+                    <controls:LabeledControl Label="缩放步长" ToolTip="0=自动">
+                      <controls:ConfigSetting
+                                        ParameterName="ScaleStep"
+                                        DataType="{x:Type sys:Double}"
+                                        Value="{Binding ScaleStep.Value, Mode=TwoWay}"
+                                        Minimum="0" Maximum="1.0"
+                                        SmallChange="0.001" LargeChange="0.01"
+                                        Width="200" DecimalPlaces="3"
+                                        AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                    </controls:LabeledControl>
+
+                    <controls:LabeledControl Label="搜索层级" ToolTip="起始层和结束层">
+                      <StackPanel Orientation="Horizontal">
+                        <controls:ConfigSetting
+                                        ParameterName="SearchLevelStart"
+                                        DataType="{x:Type sys:Int32}"
+                                        Value="{Binding SearchLevelStart.Value, Mode=TwoWay}"
+                                        Minimum="0" Maximum="10"
+                                        SmallChange="1" Width="85"
+                                        AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                        <TextBlock Text="→" VerticalAlignment="Center" Margin="4,0"/>
+                        <controls:ConfigSetting
+                                        ParameterName="SearchLevelEnd"
+                                        DataType="{x:Type sys:Int32}"
+                                        Value="{Binding SearchLevelEnd.Value, Mode=TwoWay}"
+                                        Minimum="0" Maximum="10"
+                                        SmallChange="1" Width="85"
+                                        AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                      </StackPanel>
+                    </controls:LabeledControl>
+                  </StackPanel>
+                </GroupBox>
+
+                <!-- 多模板 -->
+                <GroupBox Header="多模板" Margin="0,0,0,0">
+                  <StackPanel>
+                    <controls:LabeledControl Label="多模板模式">
+                      <ComboBox Height="32" VerticalContentAlignment="Center" Width="220"
+                              SelectedItem="{Binding MultiMode.Value, Mode=TwoWay}">
+                        <ComboBox.ItemTemplate>
+                          <DataTemplate>
+                            <TextBlock Text="{Binding Converter={StaticResource MultiTemplateModeConverter}}"/>
+                          </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                        <models:MultiTemplateMode>Sequential</models:MultiTemplateMode>
+                        <models:MultiTemplateMode>ParallelIndependent</models:MultiTemplateMode>
+                        <models:MultiTemplateMode>ParallelShared</models:MultiTemplateMode>
+                      </ComboBox>
+                    </controls:LabeledControl>
+
+                    <controls:LabeledControl Label="最大并行度" ToolTip="0=自动" Margin="0,4,0,0">
+                      <controls:ConfigSetting
+                                        ParameterName="MaxParallelism"
+                                        DataType="{x:Type sys:Int32}"
+                                        Value="{Binding MaxParallelism.Value, Mode=TwoWay}"
+                                        Minimum="0" Maximum="16"
+                                        SmallChange="1" Width="200"
+                                        AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                    </controls:LabeledControl>
+                  </StackPanel>
+                </GroupBox>
               </StackPanel>
             </Expander>
           </StackPanel>
@@ -426,7 +445,7 @@
 
           <ScrollViewer Grid.Row="0" Padding="3">
             <StackPanel>
-              <!-- 结果判断分组 -->
+              <!-- 结果判断 -->
               <Expander Header="结果判断"
                                       IsExpanded="True"
                                       BorderBrush="#E0E0E0"
@@ -434,36 +453,38 @@
                                       Margin="0,0,0,8"
                                       Background="White">
                 <StackPanel Margin="16,8">
-                  <!-- 匹配数量判断 -->
                   <controls:LabeledControl Label="匹配数量判断" ContentHorizontalAlignment="Left">
                     <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsMatchCountCheckEnabled, Mode=TwoWay}"/>
                   </controls:LabeledControl>
                   <controls:LabeledControl Label="数量范围:" Margin="0,2,0,0" ContentHorizontalAlignment="Left"
                                                              Visibility="{Binding ResultConfig.IsMatchCountCheckEnabled,
                     Converter={StaticResource BoolToVisibilityConverter}}">
-                    <StackPanel Orientation="Horizontal">
-                      <TextBox Text="{Binding ResultConfig.MatchCountMin, Mode=TwoWay}" Width="50" VerticalContentAlignment="Center"/>
-                      <TextBlock Text=" ~ " VerticalAlignment="Center" Margin="4,0"/>
-                      <TextBox Text="{Binding ResultConfig.MatchCountMax, Mode=TwoWay}" Width="50" VerticalContentAlignment="Center"/>
-                    </StackPanel>
+                    <controls:RangeInputControl
+                                    Minimum="0" Maximum="99999"
+                                    MinValue="{Binding ResultConfig.MatchCountMin, Mode=TwoWay}"
+                                    MaxValue="{Binding ResultConfig.MatchCountMax, Mode=TwoWay}"
+                                    DecimalPlaces="0"
+                                    SmallChange="1" LargeChange="10"
+                                    NumericWidth="95"/>
                   </controls:LabeledControl>
 
-                  <!-- 匹配分数判断 -->
                   <controls:LabeledControl Label="匹配分数判断" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
                     <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsMatchScoreCheckEnabled, Mode=TwoWay}"/>
                   </controls:LabeledControl>
                   <controls:LabeledControl Label="分数范围:" Margin="0,2,0,0" ContentHorizontalAlignment="Left"
                                                              Visibility="{Binding ResultConfig.IsMatchScoreCheckEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <StackPanel Orientation="Horizontal">
-                      <TextBox Text="{Binding ResultConfig.MatchScoreMin, Mode=TwoWay, StringFormat=F2}" Width="55" VerticalContentAlignment="Center"/>
-                      <TextBlock Text=" ~ " VerticalAlignment="Center" Margin="4,0"/>
-                      <TextBox Text="{Binding ResultConfig.MatchScoreMax, Mode=TwoWay, StringFormat=F2}" Width="55" VerticalContentAlignment="Center"/>
-                    </StackPanel>
+                    <controls:RangeInputControl
+                                    Minimum="0" Maximum="1"
+                                    MinValue="{Binding ResultConfig.MatchScoreMin, Mode=TwoWay}"
+                                    MaxValue="{Binding ResultConfig.MatchScoreMax, Mode=TwoWay}"
+                                    DecimalPlaces="2"
+                                    SmallChange="0.01" LargeChange="0.1"
+                                    NumericWidth="95"/>
                   </controls:LabeledControl>
                 </StackPanel>
               </Expander>
 
-              <!-- 图形显示分组 -->
+              <!-- 图形显示 -->
               <Expander Header="图形显示"
                                       IsExpanded="True"
                                       BorderBrush="#E0E0E0"
@@ -483,10 +504,11 @@
                   <controls:LabeledControl Label="轮廓叠加" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
                     <controls:DispItemColorControl Item="{Binding ResultConfig.TemplateContourStyle, Mode=TwoWay}" ContentHorizontalAlignment="Left"/>
                   </controls:LabeledControl>
+
                 </StackPanel>
               </Expander>
 
-              <!-- 文本显示分组 -->
+              <!-- 文本显示 -->
               <Expander Header="文本显示"
                                       IsExpanded="True"
                                       BorderBrush="#E0E0E0"
@@ -494,58 +516,11 @@
                                       Margin="0,0,0,8"
                                       Background="White">
                 <StackPanel Margin="16,8">
-                  <controls:LabeledControl Label="得分文本" ContentHorizontalAlignment="Left">
+                  <controls:LabeledControl Label="匹配标注" ContentHorizontalAlignment="Left">
                     <controls:DispTextColorControl
                         Item="{Binding ResultConfig.ScoreStyle, Mode=TwoWay}"
                         AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                   </controls:LabeledControl>
-                  <controls:LabeledControl Label="位置文本" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
-                    <controls:DispTextColorControl
-                        Item="{Binding ResultConfig.PositionStyle, Mode=TwoWay}"
-                        AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                  </controls:LabeledControl>
-                  <controls:LabeledControl Label="角度文本" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
-                    <controls:DispTextColorControl
-                        Item="{Binding ResultConfig.AngleStyle, Mode=TwoWay}"
-                        AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                  </controls:LabeledControl>
-                  <controls:LabeledControl Label="缩放文本" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
-                    <controls:DispTextColorControl
-                        Item="{Binding ResultConfig.ScaleStyle, Mode=TwoWay}"
-                        AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                  </controls:LabeledControl>
-                </StackPanel>
-              </Expander>
-
-              <!-- 中间调试图像分组 -->
-              <Expander Header="中间调试图像"
-                                      IsExpanded="False"
-                                      BorderBrush="#E0E0E0"
-                                      BorderThickness="1"
-                                      Margin="0,0,0,8"
-                                      Background="White">
-                <StackPanel Margin="16,8">
-                  <!-- 第一行: 灰度图 + 梯度幅值 -->
-                  <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                    <Border Background="#333" CornerRadius="3" BorderBrush="#CCC" BorderThickness="1" Width="180" Height="135" ClipToBounds="True">
-                      <Image x:Name="imgDebugGray" Stretch="Uniform"/>
-                    </Border>
-                    <Border Background="#333" CornerRadius="3" BorderBrush="#CCC" BorderThickness="1" Width="180" Height="135" ClipToBounds="True" Margin="8,0,0,0">
-                      <Image x:Name="imgDebugMagnitude" Stretch="Uniform"/>
-                    </Border>
-                  </StackPanel>
-                  <!-- 第二行: ROI掩码 + NMS边缘 -->
-                  <StackPanel Orientation="Horizontal">
-                    <Border Background="#333" CornerRadius="3" BorderBrush="#CCC" BorderThickness="1" Width="180" Height="135" ClipToBounds="True">
-                      <Image x:Name="imgDebugSearchMask" Stretch="Uniform"/>
-                    </Border>
-                    <Border Background="#333" CornerRadius="3" BorderBrush="#CCC" BorderThickness="1" Width="180" Height="135" ClipToBounds="True" Margin="8,0,0,0">
-                      <Image x:Name="imgDebugEdgeMap" Stretch="Uniform"/>
-                    </Border>
-                  </StackPanel>
-                  <!-- 图像标签 -->
-                  <TextBlock Text="灰度输入 | 梯度幅值(mag)" FontSize="10" Foreground="#888" HorizontalAlignment="Center" Margin="0,2,0,0"/>
-                  <TextBlock Text="搜索区域掩码 | NMS 边缘图" FontSize="10" Foreground="#888" HorizontalAlignment="Center" Margin="0,2,0,0"/>
                 </StackPanel>
               </Expander>
             </StackPanel>

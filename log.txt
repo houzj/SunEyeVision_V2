@@ -1,0 +1,39 @@
+d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\Logging\VisionLogger.cs(17,42): warning CS1570: XML 注释出现 XML 格式错误 --“应为标识符。” [d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\SunEyeVision.Plugin.SDK_pv2zutyk_wpftmp.csproj]
+d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\Execution\Parameters\RegionCollectionParameter.cs(41,11): warning CS1570: XML 注释出现 XML 格式错误 --“结束标记“remarks”与开始标记“T”不匹配。” [d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\SunEyeVision.Plugin.SDK_pv2zutyk_wpftmp.csproj]
+d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\Logging\VisionLogger.cs(17,43): warning CS1570: XML 注释出现 XML 格式错误 --“此位置无法使用字符“0”。” [d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\SunEyeVision.Plugin.SDK_pv2zutyk_wpftmp.csproj]
+d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\Execution\Parameters\RegionCollectionParameter.cs(42,1): warning CS1570: XML 注释出现 XML 格式错误 --“元素“remarks”需要结束标记。” [d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\SunEyeVision.Plugin.SDK_pv2zutyk_wpftmp.csproj]
+d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\UI\Controls\ImageControl\ImageControl.xaml.cs(292,1): warning CS1570: XML 注释出现 XML 格式错误 --“元素“summary”需要结束标记。” [d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\SunEyeVision.Plugin.SDK_pv2zutyk_wpftmp.csproj]
+d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\Execution\Parameters\RegionParameters.cs(33,11): warning CS1570: XML 注释出现 XML 格式错误 --“结束标记“code”与开始标记“int”不匹配。” [d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\SunEyeVision.Plugin.SDK_pv2zutyk_wpftmp.csproj]
+d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\Execution\Parameters\RegionParameters.cs(34,11): warning CS1570: XML 注释出现 XML 格式错误 --“结束标记“remarks”与开始标记“int”不匹配。” [d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\SunEyeVision.Plugin.SDK_pv2zutyk_wpftmp.csproj]
+d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\Execution\Parameters\RegionParameters.cs(35,1): warning CS1570: XML 注释出现 XML 格式错误 --“元素“code”需要结束标记。” [d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\SunEyeVision.Plugin.SDK_pv2zutyk_wpftmp.csproj]
+d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\Execution\Parameters\RegionParameters.cs(35,1): warning CS1570: XML 注释出现 XML 格式错误 --“元素“remarks”需要结束标记。” [d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\SunEyeVision.Plugin.SDK_pv2zutyk_wpftmp.csproj]
+d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\UI\Controls\Region\ViewModels\RegionEditorViewModel.cs(13,7): warning CS0105: “SunEyeVision.Plugin.SDK.UI.Controls.Region.Logic”的 using 指令以前在此命名空间中出现过 [d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\SunEyeVision.Plugin.SDK_pv2zutyk_wpftmp.csproj]
+d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\Execution\Helpers\ToolRegionHelper.cs(189,23): error CS0246: 未能找到类型或命名空间名“CvRegion”(是否缺少 using 指令或程序集引用?) [d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\SunEyeVision.Plugin.SDK_pv2zutyk_wpftmp.csproj]
+d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\Execution\Helpers\ToolRegionHelper.cs(216,13): error CS0246: 未能找到类型或命名空间名“CvRegion”(是否缺少 using 指令或程序集引用?) [d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\SunEyeVision.Plugin.SDK_pv2zutyk_wpftmp.csproj]
+d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\Execution\Helpers\ToolRegionHelper.cs(215,23): error CS0246: 未能找到类型或命名空间名“CvRegion”(是否缺少 using 指令或程序集引用?) [d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\SunEyeVision.Plugin.SDK_pv2zutyk_wpftmp.csproj]
+d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\Execution\Parameters\ParamValue.cs(36,22): warning CS0109: 成员“ParamValue<T>.Value”不会隐藏可访问成员。不需要关键字 new。 [d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\SunEyeVision.Plugin.SDK_pv2zutyk_wpftmp.csproj]
+d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\UI\Controls\RangeInputControl.cs(97,51): warning CS0108: “RangeInputControl.IsVisibleProperty”隐藏继承的成员“UIElement.IsVisibleProperty”。如果是有意隐藏，请使用关键字 new。 [d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\SunEyeVision.Plugin.SDK_pv2zutyk_wpftmp.csproj]
+d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\UI\Controls\RangeInputControl.cs(226,21): warning CS0108: “RangeInputControl.IsVisible”隐藏继承的成员“UIElement.IsVisible”。如果是有意隐藏，请使用关键字 new。 [d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\SunEyeVision.Plugin.SDK_pv2zutyk_wpftmp.csproj]
+
+生成失败。
+
+d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\Logging\VisionLogger.cs(17,42): warning CS1570: XML 注释出现 XML 格式错误 --“应为标识符。” [d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\SunEyeVision.Plugin.SDK_pv2zutyk_wpftmp.csproj]
+d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\Execution\Parameters\RegionCollectionParameter.cs(41,11): warning CS1570: XML 注释出现 XML 格式错误 --“结束标记“remarks”与开始标记“T”不匹配。” [d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\SunEyeVision.Plugin.SDK_pv2zutyk_wpftmp.csproj]
+d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\Logging\VisionLogger.cs(17,43): warning CS1570: XML 注释出现 XML 格式错误 --“此位置无法使用字符“0”。” [d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\SunEyeVision.Plugin.SDK_pv2zutyk_wpftmp.csproj]
+d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\Execution\Parameters\RegionCollectionParameter.cs(42,1): warning CS1570: XML 注释出现 XML 格式错误 --“元素“remarks”需要结束标记。” [d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\SunEyeVision.Plugin.SDK_pv2zutyk_wpftmp.csproj]
+d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\UI\Controls\ImageControl\ImageControl.xaml.cs(292,1): warning CS1570: XML 注释出现 XML 格式错误 --“元素“summary”需要结束标记。” [d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\SunEyeVision.Plugin.SDK_pv2zutyk_wpftmp.csproj]
+d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\Execution\Parameters\RegionParameters.cs(33,11): warning CS1570: XML 注释出现 XML 格式错误 --“结束标记“code”与开始标记“int”不匹配。” [d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\SunEyeVision.Plugin.SDK_pv2zutyk_wpftmp.csproj]
+d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\Execution\Parameters\RegionParameters.cs(34,11): warning CS1570: XML 注释出现 XML 格式错误 --“结束标记“remarks”与开始标记“int”不匹配。” [d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\SunEyeVision.Plugin.SDK_pv2zutyk_wpftmp.csproj]
+d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\Execution\Parameters\RegionParameters.cs(35,1): warning CS1570: XML 注释出现 XML 格式错误 --“元素“code”需要结束标记。” [d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\SunEyeVision.Plugin.SDK_pv2zutyk_wpftmp.csproj]
+d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\Execution\Parameters\RegionParameters.cs(35,1): warning CS1570: XML 注释出现 XML 格式错误 --“元素“remarks”需要结束标记。” [d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\SunEyeVision.Plugin.SDK_pv2zutyk_wpftmp.csproj]
+d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\UI\Controls\Region\ViewModels\RegionEditorViewModel.cs(13,7): warning CS0105: “SunEyeVision.Plugin.SDK.UI.Controls.Region.Logic”的 using 指令以前在此命名空间中出现过 [d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\SunEyeVision.Plugin.SDK_pv2zutyk_wpftmp.csproj]
+d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\Execution\Parameters\ParamValue.cs(36,22): warning CS0109: 成员“ParamValue<T>.Value”不会隐藏可访问成员。不需要关键字 new。 [d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\SunEyeVision.Plugin.SDK_pv2zutyk_wpftmp.csproj]
+d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\UI\Controls\RangeInputControl.cs(97,51): warning CS0108: “RangeInputControl.IsVisibleProperty”隐藏继承的成员“UIElement.IsVisibleProperty”。如果是有意隐藏，请使用关键字 new。 [d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\SunEyeVision.Plugin.SDK_pv2zutyk_wpftmp.csproj]
+d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\UI\Controls\RangeInputControl.cs(226,21): warning CS0108: “RangeInputControl.IsVisible”隐藏继承的成员“UIElement.IsVisible”。如果是有意隐藏，请使用关键字 new。 [d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\SunEyeVision.Plugin.SDK_pv2zutyk_wpftmp.csproj]
+d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\Execution\Helpers\ToolRegionHelper.cs(189,23): error CS0246: 未能找到类型或命名空间名“CvRegion”(是否缺少 using 指令或程序集引用?) [d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\SunEyeVision.Plugin.SDK_pv2zutyk_wpftmp.csproj]
+d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\Execution\Helpers\ToolRegionHelper.cs(216,13): error CS0246: 未能找到类型或命名空间名“CvRegion”(是否缺少 using 指令或程序集引用?) [d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\SunEyeVision.Plugin.SDK_pv2zutyk_wpftmp.csproj]
+d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\Execution\Helpers\ToolRegionHelper.cs(215,23): error CS0246: 未能找到类型或命名空间名“CvRegion”(是否缺少 using 指令或程序集引用?) [d:\MyWork\SunEyeVision_V2\Src\Plugin.SDK\SunEyeVision.Plugin.SDK_pv2zutyk_wpftmp.csproj]
+    13 个警告
+    3 个错误
+
+已用时间 00:00:05.35

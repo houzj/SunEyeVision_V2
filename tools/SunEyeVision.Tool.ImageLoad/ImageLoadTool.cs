@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
-using OpenCvSharp;
+using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.Plugin.SDK.Validation;
 
 namespace SunEyeVision.Tool.ImageLoad
@@ -54,30 +55,27 @@ namespace SunEyeVision.Tool.ImageLoad
                 result.FileSize = fileInfo.Length;
                 result.FileFormat = fileInfo.Extension.ToUpperInvariant();
 
-                var loadedImage = Cv2.ImRead(parameters.FilePath, ImreadModes.Unchanged);
-
-                if (loadedImage == null || loadedImage.Empty())
+                // 通过 VisionImage 统一加载图像
+                result.OutputImage = VisionImage.FromFile(parameters.FilePath);
+                if (result.OutputImage == null || result.OutputImage.IsEmpty)
                 {
                     result.SetError($"无法加载图像: {parameters.FilePath}");
                     return result;
                 }
 
-                result.OutputImage = loadedImage;
-                result.Width = loadedImage.Width;
-                result.Height = loadedImage.Height;
-                result.Channels = loadedImage.Channels();
-                result.Depth = (int)loadedImage.Depth();
+                result.Width = result.OutputImage.Width;
+                result.Height = result.OutputImage.Height;
+                result.Channels = result.OutputImage.Channels;
+                result.Depth = 8; // Halcon "byte" 类型 = 8bit
 
-                // 灰度转换：彩色→灰度，灰度原图直接克隆
-                if (loadedImage.Channels() > 1)
+                // 灰度转换：彩色->灰度，灰度输入直接克隆
+                if (result.Channels > 1)
                 {
-                    var grayMat = new Mat();
-                    Cv2.CvtColor(loadedImage, grayMat, ColorConversionCodes.BGR2GRAY);
-                    result.GrayImage = grayMat;
+                    result.GrayImage = HalImage.CreateGrayFromColor(result.OutputImage);
                 }
                 else
                 {
-                    result.GrayImage = loadedImage.Clone();
+                    result.GrayImage = result.OutputImage;
                 }
 
                 stopwatch.Stop();

@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Linq;
 using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Workflow;
@@ -28,7 +28,13 @@ namespace SunEyeVision.UI.ViewModels
         public string Name
         {
             get => _name;
-            set => SetProperty(ref _name, value, "分组名称");
+            set
+            {
+                if (SetProperty(ref _name, value, "分组名称"))
+                {
+                    OnPropertyChanged(nameof(DisplayName));
+                }
+            }
         }
 
         /// <summary>
@@ -46,7 +52,13 @@ namespace SunEyeVision.UI.ViewModels
         public int VariableCount
         {
             get => _variableCount;
-            set => SetProperty(ref _variableCount, value);
+            set
+            {
+                if (SetProperty(ref _variableCount, value))
+                {
+                    OnPropertyChanged(nameof(DisplayName));
+                }
+            }
         }
 
         /// <summary>
@@ -93,5 +105,37 @@ namespace SunEyeVision.UI.ViewModels
         /// 显示名称（包含数量）
         /// </summary>
         public string DisplayName => $"{Name} ({VariableCount})";
+
+        // ===== 内联编辑模式 =====
+
+        private bool _isEditing;
+        private string _editingText = "";
+
+        /// <summary>是否处于内联编辑模式（控制 Tab 变为 TextBox）</summary>
+        public bool IsEditing
+        {
+            get => _isEditing;
+            set => SetProperty(ref _isEditing, value);
+        }
+
+        /// <summary>编辑中的文本（绑定到 TextBox.Text）</summary>
+        public string EditingText
+        {
+            get => _editingText;
+            set => SetProperty(ref _editingText, value);
+        }
+
+        /// <summary>开始编辑：将当前名称复制到编辑文本</summary>
+        public void BeginEdit()
+        {
+            EditingText = Name;
+            IsEditing = true;
+        }
+
+        /// <summary>确认编辑</summary>
+        public void CommitEdit() => IsEditing = false;
+
+        /// <summary>取消编辑：还原名称</summary>
+        public void CancelEdit() { IsEditing = false; EditingText = ""; }
     }
 }

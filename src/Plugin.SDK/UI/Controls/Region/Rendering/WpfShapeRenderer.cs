@@ -255,10 +255,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
             if (_shapePool.TryGetValue(region.Id, out var existingShape))
             {
                 // 更新现有Shape
-                VisionLogger.Instance.Log(LogLevel.Info,
-                    $"[UpdateOrCreateRegion] 更新已有Shape | RegionId={region.Id:B} | ShapeType={region.ShapeType} | IsSelected={region.IsSelected}",
-                    "WpfShapeRenderer");
-
                 UpdateShapeFromContext(existingShape, region);
 
                 // 更新ZIndex
@@ -297,8 +293,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
 
                 // 设置位置
                 var position = GetShapePosition(region);
-                Canvas.SetLeft(shape, position.X + _viewportOffset.X);
-                Canvas.SetTop(shape, position.Y + _viewportOffset.Y);
+                var canvasLeft = position.X + _viewportOffset.X;
+                var canvasTop = position.Y + _viewportOffset.Y;
+                Canvas.SetLeft(shape, canvasLeft);
+                Canvas.SetTop(shape, canvasTop);
                 Canvas.SetZIndex(shape, region.IsSelected ? 100 : 0);
 
                 // 添加到Canvas和对象池
@@ -306,7 +304,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                 _shapePool[region.Id] = shape;
 
                 VisionLogger.Instance.Log(LogLevel.Success,
-                    $"[WpfShapeRenderer.CreateShapeFromContext] 创建新Shape | InstanceId={_rendererInstanceId} | RegionId={region.Id} | ShapeType={region.ShapeType} | IsPreview={region.IsPreview} | ShapePoolSize={_shapePool.Count}",
+                    $"[WpfShapeRenderer.CreateShapeFromContext] 创建新Shape | InstanceId={_rendererInstanceId} | RegionId={region.Id} | ShapeType={region.ShapeType} | IsPreview={region.IsPreview} | Canvas位置=({canvasLeft:F1},{canvasTop:F1}) | 显示中心=({region.Center.X:F1},{region.Center.Y:F1}) | W={region.Width:F1} H={region.Height:F1} | 视口偏移=({_viewportOffset.X:F1},{_viewportOffset.Y:F1}) | 缩放={_viewportScale:F3} | ShapePoolSize={_shapePool.Count}",
                     "WpfShapeRenderer");
         }
 
@@ -317,20 +315,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
         {
                 region.CalculateBounds();
 
-                // ★ 关键诊断：降频日志，输出实际线宽计算值（仅每 LogInterval 次记录一次）
-                if (_logger != null && _logCounter % LogInterval == 0)
-                {
-                    var actualThickness = _viewportScale > 0 ? region.StrokeThickness / _viewportScale : region.StrokeThickness;
-                    _logger.Log(LogLevel.Info, 
-                        $"[UpdateShape] IsPreview={region.IsPreview}, " +
-                        $"rawStroke={region.StrokeThickness:F1}, viewportScale={_viewportScale:F3}, actualStroke={actualThickness:F3}", 
-                        "WpfShapeRenderer");
-                }
-
                 // 更新位置
                 var position = GetShapePosition(region);
-                Canvas.SetLeft(shape, position.X + _viewportOffset.X);
-                Canvas.SetTop(shape, position.Y + _viewportOffset.Y);
+                var canvasLeft = position.X + _viewportOffset.X;
+                var canvasTop = position.Y + _viewportOffset.Y;
+                Canvas.SetLeft(shape, canvasLeft);
+                Canvas.SetTop(shape, canvasTop);
 
                 // 更新填充和边框
                 shape.Fill = new SolidColorBrush(region.FillColor) { Opacity = region.Opacity };
@@ -339,6 +329,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
 
                 // 根据形状类型更新尺寸
                 UpdateShapeDimensions(shape, region);
+
+                // ★ 诊断：增量更新时的 Canvas 实际位置（结果层坐标验证）
+                VisionLogger.Instance.Log(LogLevel.Info,
+                    $"[WpfShapeRenderer.UpdateShapeFromContext] 更新Shape | InstanceId={_rendererInstanceId} | RegionId={region.Id} | ShapeType={region.ShapeType} | Canvas位置=({canvasLeft:F1},{canvasTop:F1}) | 显示中心=({region.Center.X:F1},{region.Center.Y:F1}) | W={region.Width:F1} H={region.Height:F1} | 视口偏移=({_viewportOffset.X:F1},{_viewportOffset.Y:F1}) | 缩放={_viewportScale:F3} | IsPreview={region.IsPreview}",
+                    "WpfShapeRenderer");
         }
 
         /// <summary>
@@ -474,9 +469,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                     StrokeThickness = strokeThickness,
                     RenderTransform = new RotateTransform(region.Angle, region.Width / 2, region.Height / 2)
                     {
-                        // 使用数学角度系统
-                        // RotateTransform使用顺时针为正，需要转换
-                        Angle = -region.Angle
+                        // 屏幕角度系：顺时针为正，0°向右
+                        // 与方向箭头/旋转手柄保持一致
+                        Angle = region.Angle
                     }
                 };
 
@@ -566,10 +561,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
                                                 shape.Height = region.Height;
                                                 if (shape is Rectangle rect && region.ShapeType == ShapeType.RotatedRectangle)
                                                 {
-                                                    rect.RenderTransform = new RotateTransform(region.Angle, region.Width / 2, region.Height / 2)
-                                                    {
-                                                        Angle = -region.Angle
-                                                    };
+                                                rect.RenderTransform = new RotateTransform(region.Angle, region.Width / 2, region.Height / 2)
+                                                {
+                                                    // 屏幕角度系：顺时针为正，0°向右
+                                                    Angle = region.Angle
+                                                };
                                                 }
                                                 break;
 
@@ -732,7 +728,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
             var rotation = region.Angle;
 
             // 计算箭头几何
-            var arrow = RotatedRectangleHelper.GetDirectionArrow(center, height, rotation);
+            var arrow = RotatedRectangleHelper.GetDirectionArrow(center, region.Width, rotation);
 
             // 确定箭头颜色（选中时为蓝色，否则使用区域颜色）
             var arrowColor = region.IsSelected

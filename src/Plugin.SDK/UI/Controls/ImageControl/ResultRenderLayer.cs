@@ -3,14 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media;
-using OpenCvSharp;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
-
-// 类型别名解决歧义
-using WpfPoint = System.Windows.Point;
-using WpfSize = System.Windows.Size;
-using WpfRect = System.Windows.Rect;
+// 解决 System.Windows.Media.LineSegment 与 SDK LineSegment 的命名冲突
 using SdkLineSegment = SunEyeVision.Plugin.SDK.Models.Visualization.LineSegment;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls
@@ -26,7 +21,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         private IReadOnlyList<DisplayItemBase>? _regionItems;
         private IReadOnlyList<DisplayItemBase>? _highlightItems;
         private readonly Dictionary<uint, SolidColorBrush> _brushCache = new();
-        private readonly Dictionary<uint, Pen> _penCache = new();
+        private readonly Dictionary<long, Pen> _penCache = new();
+
+        // 视口裁剪（图像坐标系）
+        private double _viewLeft, _viewTop, _viewRight, _viewBottom;
+        private bool _hasViewport;
+
+        // LOD 阈值：当缩放倍率低于此值且 Cross 数量超过阈值时启用密度采样
+        private const double LOD_ZOOM_THRESHOLD = 0.15;
+        private const int LOD_MAX_CROSSES = 2000;
 
         #endregion
 
@@ -131,6 +134,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         public void SetViewportScale(double scale) => ViewportScale = scale;
 
+        /// <summary>设置视口范围（图像坐标系），用于视口裁剪</summary>
+        public void SetViewport(double left, double top, double right, double bottom)
+        {
+            _viewLeft = left;
+            _viewTop = top;
+            _viewRight = right;
+            _viewBottom = bottom;
+            _hasViewport = true;
+            InvalidateVisual();
+        }
+
         private double GetScaledLineWidth(double rawWidth, double power = 1.0) =>
             _viewportScale > 0.001 ? rawWidth / Math.Pow(_viewportScale, power) : rawWidth;
 
@@ -146,8 +160,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             // Pen 键已包含厚度信息，不同线宽自动对应不同缓存项
 
             // 渲染顺序：区域(底层) → 工具输出(中层) → 高亮(顶层)
-            // DrawingContext 后画覆盖先画，通道顺序即层次
-
             if (_regionItems != null)
             {
                 foreach (var item in _regionItems)
@@ -193,7 +205,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             var style = item.Style;
             if (style == null) return;
 
-            // Opacity 支持：PushOpacity / Pop 包裹整个渲染过程
             dc.PushOpacity(style.Opacity);
             try
             {
@@ -234,28 +245,33 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         private void RenderPoints(DrawingContext dc, GraphicsDisplayItem item, GraphicsStyle style, Pen defaultPen)
         {
             bool isUnified = item.RenderMode == DisplayRenderMode.Unified;
-            double s = GetScaledLineWidth(2.5, 0.7); // 十字半长（亚像素点，小尺寸）
-
-            // 十字线宽固定 1 像素，不随 style.LineWidth 变化
+            double s = GetScaledLineWidth(2.5, 0.7);
             double crossThickness = GetScaledLineWidth(1.0, 0.7);
             var defaultColorArgb = style.GetEffectiveColorArgb(true);
             var crossPen = GetPen(defaultColorArgb, crossThickness);
 
+            int totalCount = item.Geometries.Length;
+
+            bool useLod = _viewportScale < LOD_ZOOM_THRESHOLD && totalCount > LOD_MAX_CROSSES;
+            int lodStep = useLod ? Math.Max(1, totalCount / LOD_MAX_CROSSES) : 1;
+
             if (isUnified)
             {
-                // 统一模式：所有十字线段合并到单个 StreamGeometry
                 var geometry = new StreamGeometry();
                 using (var ctx = geometry.Open())
                 {
-                    for (int i = 0; i < item.Geometries.Length; i++)
+                    for (int i = 0; i < totalCount; i += lodStep)
                     {
-                        if (item.Geometries[i] is Point2d pt)
+                        if (item.Geometries[i] is Point pt)
                         {
+                            if (_hasViewport && !IsInViewport(pt))
+                                continue;
+
                             double x = pt.X, y = pt.Y;
-                            ctx.BeginFigure(new WpfPoint(x - s, y), false, false);
-                            ctx.LineTo(new WpfPoint(x + s, y), true, false);
-                            ctx.BeginFigure(new WpfPoint(x, y - s), false, false);
-                            ctx.LineTo(new WpfPoint(x, y + s), true, false);
+                            ctx.BeginFigure(new Point(x - s, y), false, false);
+                            ctx.LineTo(new Point(x + s, y), true, false);
+                            ctx.BeginFigure(new Point(x, y - s), false, false);
+                            ctx.LineTo(new Point(x, y + s), true, false);
                         }
                     }
                 }
@@ -264,7 +280,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             }
             else
             {
-                // 独立模式：分 OK/NG 两批
                 var ngColorArgb = style.GetEffectiveColorArgb(false);
                 var ngPen = GetPen(ngColorArgb, crossThickness);
 
@@ -273,17 +288,20 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 using (var okCtx = okGeo.Open())
                 using (var ngCtx = ngGeo.Open())
                 {
-                    for (int i = 0; i < item.Geometries.Length; i++)
+                    for (int i = 0; i < totalCount; i += lodStep)
                     {
-                        if (item.Geometries[i] is Point2d pt)
+                        if (item.Geometries[i] is Point pt)
                         {
+                            if (_hasViewport && !IsInViewport(pt))
+                                continue;
+
                             double x = pt.X, y = pt.Y;
                             bool isPass = item.IsPassArray.Length > i ? item.IsPassArray[i] : true;
                             var ctx = isPass ? okCtx : ngCtx;
-                            ctx.BeginFigure(new WpfPoint(x - s, y), false, false);
-                            ctx.LineTo(new WpfPoint(x + s, y), true, false);
-                            ctx.BeginFigure(new WpfPoint(x, y - s), false, false);
-                            ctx.LineTo(new WpfPoint(x, y + s), true, false);
+                            ctx.BeginFigure(new Point(x - s, y), false, false);
+                            ctx.LineTo(new Point(x + s, y), true, false);
+                            ctx.BeginFigure(new Point(x, y - s), false, false);
+                            ctx.LineTo(new Point(x, y + s), true, false);
                         }
                     }
                 }
@@ -301,28 +319,26 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
             if (isUnified)
             {
-                // 统一模式：全部线合并到单个 StreamGeometry
-                var okPoints = new List<WpfPoint[]>();
+                var okPoints = new List<Point[]>();
                 for (int i = 0; i < item.Geometries.Length; i++)
                 {
                     if (item.Geometries[i] is SdkLineSegment line)
-                        okPoints.Add(new[] { new WpfPoint(line.Start.X, line.Start.Y), new WpfPoint(line.End.X, line.End.Y) });
+                        okPoints.Add(new[] { line.Start, line.End });
                 }
                 DrawMultipleFigures(dc, okPoints, null, defaultPen, false);
             }
             else
             {
-                // 独立模式：分 OK/NG 两批
                 var ngColorArgb = item.Style!.GetEffectiveColorArgb(false);
                 var ngPen = GetPen(ngColorArgb, scale);
-                var okPoints = new List<WpfPoint[]>();
-                var ngPoints = new List<WpfPoint[]>();
+                var okPoints = new List<Point[]>();
+                var ngPoints = new List<Point[]>();
 
                 for (int i = 0; i < item.Geometries.Length; i++)
                 {
                     if (item.Geometries[i] is SdkLineSegment line)
                     {
-                        var pts = new[] { new WpfPoint(line.Start.X, line.Start.Y), new WpfPoint(line.End.X, line.End.Y) };
+                        var pts = new[] { line.Start, line.End };
                         bool isPass = item.IsPassArray.Length > i ? item.IsPassArray[i] : true;
                         if (isPass)
                             okPoints.Add(pts);
@@ -342,7 +358,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             var ngColorArgb = style.GetEffectiveColorArgb(false);
             var ngPen = GetPen(ngColorArgb, scale);
 
-            // Rect2d 逐元素 DrawRectangle（WPF 内部批处理高效，不必合并）
             for (int i = 0; i < item.Geometries.Length; i++)
             {
                 var geom = item.Geometries[i];
@@ -352,13 +367,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     ? (isPass ? brush : GetBrush(ngColorArgb))
                     : null;
 
-                if (geom is Rect2d rect)
-                    dc.DrawRectangle(effectiveBrush, effectivePen, new WpfRect(rect.X, rect.Y, rect.Width, rect.Height));
-                else if (geom is RotatedRect rr)
+                if (geom is Rect rect)
+                    dc.DrawRectangle(effectiveBrush, effectivePen, rect);
+                else if (geom is Point[] polygonPoints && polygonPoints.Length >= 3)
                 {
-                    var points = Cv2.BoxPoints(rr);
-                    var wpfPoints = Array.ConvertAll(points, p => new WpfPoint(p.X, p.Y));
-                    DrawPolygon(dc, wpfPoints, effectiveBrush, effectivePen);
+                    DrawPolygon(dc, polygonPoints, effectiveBrush, effectivePen);
                 }
             }
         }
@@ -374,7 +387,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     var effectivePen = isPass ? defaultPen : GetPen(effectiveColorArgb, GetScaledLineWidth(style.LineWidth));
                     var effectiveBrush = item.IsFilled ? (isPass ? brush : GetBrush(effectiveColorArgb)) : null;
                     dc.DrawEllipse(effectiveBrush, effectivePen,
-                        new WpfPoint(circle.Center.X, circle.Center.Y), circle.Radius, circle.Radius);
+                        circle.Center, circle.Radius, circle.Radius);
                 }
             }
         }
@@ -403,31 +416,28 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
             if (isUnified)
             {
-                // 统一模式：所有多边形合并到一个 StreamGeometry
-                var allPoints = new List<WpfPoint[]>();
+                var allPoints = new List<Point[]>();
                 for (int i = 0; i < item.Geometries.Length; i++)
                 {
-                    if (item.Geometries[i] is Point2d[] points && points.Length >= 2)
-                        allPoints.Add(Array.ConvertAll(points, p => new WpfPoint(p.X, p.Y)));
+                    if (item.Geometries[i] is Point[] points && points.Length >= 2)
+                        allPoints.Add(points);
                 }
                 DrawMultipleFigures(dc, allPoints, item.IsFilled ? defaultBrush : null, defaultPen, true);
             }
             else
             {
-                // 独立模式：分 OK/NG 两批
-                var okPoints = new List<WpfPoint[]>();
-                var ngPoints = new List<WpfPoint[]>();
+                var okPoints = new List<Point[]>();
+                var ngPoints = new List<Point[]>();
 
                 for (int i = 0; i < item.Geometries.Length; i++)
                 {
-                    if (item.Geometries[i] is Point2d[] points && points.Length >= 2)
+                    if (item.Geometries[i] is Point[] points && points.Length >= 2)
                     {
                         bool isPass = item.IsPassArray.Length > i ? item.IsPassArray[i] : true;
-                        var wpf = Array.ConvertAll(points, p => new WpfPoint(p.X, p.Y));
                         if (isPass)
-                            okPoints.Add(wpf);
+                            okPoints.Add(points);
                         else
-                            ngPoints.Add(wpf);
+                            ngPoints.Add(points);
                     }
                 }
                 DrawMultipleFigures(dc, okPoints, item.IsFilled ? defaultBrush : null, defaultPen, true);
@@ -443,57 +453,71 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             var ngPen = GetPen(ngColorArgb, scale);
             var ngBrush = item.IsFilled ? GetBrush(ngColorArgb) : null;
 
-            if (isUnified)
-            {
-                // 统一模式：所有轮廓合并到单个 StreamGeometry
-                var polygonPoints = new List<WpfPoint[]>();
-                var polylinePoints = new List<WpfPoint[]>();
+            // 分离有/无变换的轮廓：有变换的逐个绘制，无变换的批量合并以保持性能
+            var batchPolygons = new List<Point[]>();
+            var batchPolylines = new List<Point[]>();
+            var batchOkPolygons = new List<Point[]>();
+            var batchNgPolygons = new List<Point[]>();
+            var batchOkPolylines = new List<Point[]>();
+            var batchNgPolylines = new List<Point[]>();
 
-                for (int i = 0; i < item.Geometries.Length; i++)
+            for (int i = 0; i < item.Geometries.Length; i++)
+            {
+                if (item.Geometries[i] is ContourGeometry contour && contour.Points != null)
                 {
-                    if (item.Geometries[i] is ContourGeometry contour && contour.Points != null && contour.Points.Length >= 2)
+                    var pts = contour.Points;
+                    if (pts.Length < 2) continue;
+
+                    bool isPass = isUnified || (item.IsPassArray.Length > i ? item.IsPassArray[i] : true);
+                    bool isClosed = contour.IsClosed && pts.Length >= 3;
+
+                    if (contour.Transform.HasValue)
                     {
-                        var wpf = Array.ConvertAll(contour.Points, p => new WpfPoint(p.X, p.Y));
-                        if (contour.IsClosed && wpf.Length >= 3)
-                            polygonPoints.Add(wpf);
+                        // 有变换的轮廓逐个绘制，各自应用 PushTransform
+                        dc.PushTransform(new MatrixTransform(contour.Transform.Value));
+                        if (isClosed)
+                            DrawPolygon(dc, pts, (isPass && item.IsFilled) ? defaultBrush : null, isPass ? defaultPen : ngPen);
                         else
-                            polylinePoints.Add(wpf);
+                            DrawPolyline(dc, pts, isPass ? defaultPen : ngPen);
+                        dc.Pop();
+                    }
+                    else
+                    {
+                        // 无变换的轮廓继续批量合并
+                        if (isUnified)
+                        {
+                            if (isClosed) batchPolygons.Add(pts);
+                            else batchPolylines.Add(pts);
+                        }
+                        else
+                        {
+                            if (isPass)
+                            {
+                                if (isClosed) batchOkPolygons.Add(pts);
+                                else batchOkPolylines.Add(pts);
+                            }
+                            else
+                            {
+                                if (isClosed) batchNgPolygons.Add(pts);
+                                else batchNgPolylines.Add(pts);
+                            }
+                        }
                     }
                 }
-                DrawMultipleFigures(dc, polygonPoints, item.IsFilled ? defaultBrush : null, defaultPen, true);
-                DrawMultipleFigures(dc, polylinePoints, null, defaultPen, false);
+            }
+
+            // 批量绘制无变换的轮廓
+            if (isUnified)
+            {
+                DrawMultipleFigures(dc, batchPolygons, item.IsFilled ? defaultBrush : null, defaultPen, true);
+                DrawMultipleFigures(dc, batchPolylines, null, defaultPen, false);
             }
             else
             {
-                // 独立模式：分 OK/NG 两批，每批各自合并
-                var okPolygons = new List<WpfPoint[]>();
-                var ngPolygons = new List<WpfPoint[]>();
-                var okPolylines = new List<WpfPoint[]>();
-                var ngPolylines = new List<WpfPoint[]>();
-
-                for (int i = 0; i < item.Geometries.Length; i++)
-                {
-                    if (item.Geometries[i] is ContourGeometry contour && contour.Points != null && contour.Points.Length >= 2)
-                    {
-                        bool isPass = item.IsPassArray.Length > i ? item.IsPassArray[i] : true;
-                        var wpf = Array.ConvertAll(contour.Points, p => new WpfPoint(p.X, p.Y));
-                        bool isClosed = contour.IsClosed && wpf.Length >= 3;
-
-                        if (isPass)
-                        {
-                            if (isClosed) okPolygons.Add(wpf); else okPolylines.Add(wpf);
-                        }
-                        else
-                        {
-                            if (isClosed) ngPolygons.Add(wpf); else ngPolylines.Add(wpf);
-                        }
-                    }
-                }
-
-                DrawMultipleFigures(dc, okPolygons, item.IsFilled ? defaultBrush : null, defaultPen, true);
-                DrawMultipleFigures(dc, okPolylines, null, defaultPen, false);
-                DrawMultipleFigures(dc, ngPolygons, ngBrush, ngPen, true);
-                DrawMultipleFigures(dc, ngPolylines, null, ngPen, false);
+                DrawMultipleFigures(dc, batchOkPolygons, item.IsFilled ? defaultBrush : null, defaultPen, true);
+                DrawMultipleFigures(dc, batchOkPolylines, null, defaultPen, false);
+                DrawMultipleFigures(dc, batchNgPolygons, ngBrush, ngPen, true);
+                DrawMultipleFigures(dc, batchNgPolylines, null, ngPen, false);
             }
         }
 
@@ -521,52 +545,69 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             var ngPen = GetPen(ngColorArgb, scale);
             var s = GetScaledLineWidth(style.CrossSize, 0.7);
 
+            int totalCount = item.Geometries.Length;
+
+            bool useLod = _viewportScale < LOD_ZOOM_THRESHOLD && totalCount > LOD_MAX_CROSSES;
+            int lodStep = useLod ? Math.Max(1, totalCount / LOD_MAX_CROSSES) : 1;
+
             if (isUnified)
             {
-                // 统一模式：所有十字的线段合并到单个 StreamGeometry
-                var allLines = new List<WpfPoint[]>();
-                for (int i = 0; i < item.Geometries.Length; i++)
+                var geometry = new StreamGeometry();
+                using (var ctx = geometry.Open())
                 {
-                    if (item.Geometries[i] is Point2d center)
+                    for (int i = 0; i < totalCount; i += lodStep)
                     {
-                        double cx = center.X, cy = center.Y;
-                        allLines.Add(new[] { new WpfPoint(cx - s, cy), new WpfPoint(cx + s, cy) });
-                        allLines.Add(new[] { new WpfPoint(cx, cy - s), new WpfPoint(cx, cy + s) });
+                        if (item.Geometries[i] is Point center)
+                        {
+                            if (_hasViewport && !IsInViewport(center))
+                                continue;
+
+                            double cx = center.X, cy = center.Y;
+                            ctx.BeginFigure(new Point(cx - s, cy), false, false);
+                            ctx.LineTo(new Point(cx + s, cy), true, false);
+                            ctx.BeginFigure(new Point(cx, cy - s), false, false);
+                            ctx.LineTo(new Point(cx, cy + s), true, false);
+                        }
                     }
                 }
-                DrawMultipleFigures(dc, allLines, null, defaultPen, false);
+                geometry.Freeze();
+                dc.DrawGeometry(null, defaultPen, geometry);
             }
             else
             {
-                // 独立模式：分 OK/NG 两批
-                var okLines = new List<WpfPoint[]>();
-                var ngLines = new List<WpfPoint[]>();
-
-                for (int i = 0; i < item.Geometries.Length; i++)
+                var okGeo = new StreamGeometry();
+                var ngGeo = new StreamGeometry();
+                using (var okCtx = okGeo.Open())
+                using (var ngCtx = ngGeo.Open())
                 {
-                    if (item.Geometries[i] is Point2d center)
+                    for (int i = 0; i < totalCount; i += lodStep)
                     {
-                        bool isPass = item.IsPassArray.Length > i ? item.IsPassArray[i] : true;
-                        double cx = center.X, cy = center.Y;
-                        var lines = new[]
+                        if (item.Geometries[i] is Point center)
                         {
-                            new[] { new WpfPoint(cx - s, cy), new WpfPoint(cx + s, cy) },
-                            new[] { new WpfPoint(cx, cy - s), new WpfPoint(cx, cy + s) }
-                        };
-                        if (isPass)
-                        {
-                            okLines.Add(lines[0]); okLines.Add(lines[1]);
-                        }
-                        else
-                        {
-                            ngLines.Add(lines[0]); ngLines.Add(lines[1]);
+                            if (_hasViewport && !IsInViewport(center))
+                                continue;
+
+                            double cx = center.X, cy = center.Y;
+                            bool isPass = item.IsPassArray.Length > i ? item.IsPassArray[i] : true;
+                            var ctx = isPass ? okCtx : ngCtx;
+                            ctx.BeginFigure(new Point(cx - s, cy), false, false);
+                            ctx.LineTo(new Point(cx + s, cy), true, false);
+                            ctx.BeginFigure(new Point(cx, cy - s), false, false);
+                            ctx.LineTo(new Point(cx, cy + s), true, false);
                         }
                     }
                 }
-                DrawMultipleFigures(dc, okLines, null, defaultPen, false);
-                DrawMultipleFigures(dc, ngLines, null, ngPen, false);
+                okGeo.Freeze();
+                ngGeo.Freeze();
+                dc.DrawGeometry(null, defaultPen, okGeo);
+                dc.DrawGeometry(null, ngPen, ngGeo);
             }
         }
+
+        /// <summary>快速视口内测试（图像坐标系）</summary>
+        private bool IsInViewport(Point pt) =>
+            pt.X >= _viewLeft && pt.X <= _viewRight &&
+            pt.Y >= _viewTop && pt.Y <= _viewBottom;
 
         private void RenderCoordinateSystem(DrawingContext dc, GraphicsDisplayItem item, GraphicsStyle style)
         {
@@ -576,8 +617,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 {
                     var xPen = GetPen(csg.XAxisColor, GetScaledLineWidth(style.LineWidth));
                     var yPen = GetPen(csg.YAxisColor, GetScaledLineWidth(style.LineWidth));
-                    dc.DrawLine(xPen, new WpfPoint(0, 0), new WpfPoint(csg.AxisLength, 0));
-                    dc.DrawLine(yPen, new WpfPoint(0, 0), new WpfPoint(0, csg.AxisLength));
+
+                    // 使用 Matrix.Transform
+                    var origin = csg.TransformMatrix.Transform(new Point(0, 0));
+                    var xEnd = csg.TransformMatrix.Transform(new Point(csg.AxisLength, 0));
+                    var yEnd = csg.TransformMatrix.Transform(new Point(0, csg.AxisLength));
+
+                    dc.DrawLine(xPen, origin, xEnd);
+                    dc.DrawLine(yPen, origin, yEnd);
                 }
             }
         }
@@ -593,37 +640,55 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             var style = item.Style;
             if (style == null) return;
 
-            // Opacity 支持
             dc.PushOpacity(style.Opacity);
             try
             {
                 var texts = item.Texts;
                 var isPassArray = item.IsPassArray;
 
-                // 检测是否为独立定位模式：所有文本的 X/Y 是否完全相同
                 bool useIndividualPositions = texts.Any(t =>
                     Math.Abs(t.X - texts[0].X) > 0.001 ||
                     Math.Abs(t.Y - texts[0].Y) > 0.001);
 
+                var scaledFontSize = _viewportScale > 0.001 ? style.FontSize / _viewportScale : style.FontSize;
+                var lineHeight = scaledFontSize * 1.4;
+
                 if (useIndividualPositions)
                 {
-                    // ===== 独立锚点模式：每个文本使用自己的 X/Y，不折行 =====
-                    for (int i = 0; i < texts.Length; i++)
+                    // 混合模式：连续同锚点文字自动分组，组内 Y 偏移实现换行
+                    int idx = 0;
+                    while (idx < texts.Length)
                     {
-                        var td = texts[i];
-                        bool isPass = isPassArray.Length > i ? isPassArray[i] : true;
-                        var color = ArgbToColor(style.GetEffectiveColorArgb(isPass));
-                        var formattedText = CreateFormattedText(td.Content, color, style.FontSize, style.IsBold);
-                        dc.DrawText(formattedText, new WpfPoint(td.X, td.Y));
+                        var anchorText = texts[idx];
+                        double anchorX = anchorText.X;
+                        double anchorY = anchorText.Y;
+
+                        int groupStart = idx;
+                        while (idx < texts.Length &&
+                               Math.Abs(texts[idx].X - anchorX) < 0.001 &&
+                               Math.Abs(texts[idx].Y - anchorY) < 0.001)
+                        {
+                            idx++;
+                        }
+                        int groupCount = idx - groupStart;
+
+                        for (int j = 0; j < groupCount; j++)
+                        {
+                            var td = texts[groupStart + j];
+                            bool isPass = isPassArray.Length > groupStart + j
+                                ? isPassArray[groupStart + j] : true;
+                            var color = ArgbToColor(style.GetEffectiveColorArgb(isPass));
+                            var formattedText = CreateFormattedText(td.Content, color,
+                                scaledFontSize, style.IsBold);
+                            dc.DrawText(formattedText,
+                                new Point(anchorX, anchorY + j * lineHeight));
+                        }
                     }
                 }
                 else
                 {
-                    // ===== 统一锚点 + 自动换行模式：首个文本的坐标即锚点 =====
-                    // 从 style（实时引用）读取位置，确保位置随样式同步更新
-                    double baseX = style.PositionX;
-                    double baseY = style.PositionY;
-                    var lineHeight = style.FontSize * 1.4;
+                    double baseX = texts[0].X;
+                    double baseY = texts[0].Y;
 
                     for (int i = 0; i < texts.Length; i++)
                     {
@@ -633,14 +698,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
                         bool isPass = isPassArray.Length > i ? isPassArray[i] : true;
                         var color = ArgbToColor(style.GetEffectiveColorArgb(isPass));
-                        var formattedText = CreateFormattedText(td.Content, color, style.FontSize, style.IsBold);
-                        dc.DrawText(formattedText, new WpfPoint(x, y));
+                        var formattedText = CreateFormattedText(td.Content, color, scaledFontSize, style.IsBold);
+                        dc.DrawText(formattedText, new Point(x, y));
                     }
                 }
             }
             finally
             {
-                dc.Pop(); // 恢复 Opacity 状态
+                dc.Pop();
             }
         }
 
@@ -648,7 +713,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         #region 辅助方法
 
-        private static void DrawPolygon(DrawingContext dc, WpfPoint[] points, Brush? fill, Pen stroke)
+        private static void DrawPolygon(DrawingContext dc, Point[] points, Brush? fill, Pen stroke)
         {
             if (points == null || points.Length < 2) return;
             var geometry = new StreamGeometry();
@@ -662,7 +727,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             dc.DrawGeometry(fill, stroke, geometry);
         }
 
-        private static void DrawPolyline(DrawingContext dc, WpfPoint[] points, Pen pen)
+        private static void DrawPolyline(DrawingContext dc, Point[] points, Pen pen)
         {
             var geometry = new StreamGeometry();
             using (var ctx = geometry.Open())
@@ -675,10 +740,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             dc.DrawGeometry(null, pen, geometry);
         }
 
-        /// <summary>
-        /// 将多个图形（多边形或折线）合并到单个 StreamGeometry 中渲染，大幅减少 WPF 绘制调用次数
-        /// </summary>
-        private static void DrawMultipleFigures(DrawingContext dc, List<WpfPoint[]> allPoints, Brush? fill, Pen stroke, bool closeFigures)
+        private static void DrawMultipleFigures(DrawingContext dc, List<Point[]> allPoints, Brush? fill, Pen stroke, bool closeFigures)
         {
             if (allPoints == null || allPoints.Count == 0) return;
 
@@ -710,7 +772,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         private Pen GetPen(uint argb, double thickness)
         {
-            var key = argb ^ ((uint)(thickness * 100) << 16);
+            var thicknessInt = (uint)(thickness * 100);
+            var key = ((long)argb) | ((long)thicknessInt << 32);
             if (_penCache.TryGetValue(key, out var cached)) return cached;
             var brush = GetBrush(argb);
             var pen = new Pen(brush, thickness);
@@ -739,33 +802,33 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             {
                 var startRad = arc.StartAngle * Math.PI / 180;
                 var endRad = arc.EndAngle * Math.PI / 180;
-                ctx.BeginFigure(new WpfPoint(
+                ctx.BeginFigure(new Point(
                     arc.Center.X + arc.Radius * Math.Cos(startRad),
                     arc.Center.Y + arc.Radius * Math.Sin(startRad)), false, false);
                 ctx.ArcTo(
-                    new WpfPoint(arc.Center.X + arc.Radius * Math.Cos(endRad),
-                                arc.Center.Y + arc.Radius * Math.Sin(endRad)),
-                    new WpfSize(arc.Radius, arc.Radius), 0, false,
+                    new Point(arc.Center.X + arc.Radius * Math.Cos(endRad),
+                              arc.Center.Y + arc.Radius * Math.Sin(endRad)),
+                    new Size(arc.Radius, arc.Radius), 0, false,
                     SweepDirection.Clockwise, true, true);
             }
             geometry.Freeze();
             return geometry;
         }
 
-        private static StreamGeometry CreateArrowGeometry(Point2d start, Point2d end, double thickness)
+        private static StreamGeometry CreateArrowGeometry(Point start, Point end, double thickness)
         {
             var geometry = new StreamGeometry();
             using (var ctx = geometry.Open())
             {
-                ctx.BeginFigure(new WpfPoint(start.X, start.Y), false, false);
-                ctx.LineTo(new WpfPoint(end.X, end.Y), true, true);
+                ctx.BeginFigure(start, false, false);
+                ctx.LineTo(end, true, true);
                 var angle = Math.Atan2(end.Y - start.Y, end.X - start.X);
-                var arrowSize = thickness * 4;
+                var arrowSize = thickness * 6;
                 double a1 = angle + Math.PI * 0.85, a2 = angle - Math.PI * 0.85;
-                ctx.BeginFigure(new WpfPoint(end.X, end.Y), true, false);
-                ctx.LineTo(new WpfPoint(end.X + arrowSize * Math.Cos(a1), end.Y + arrowSize * Math.Sin(a1)), true, true);
-                ctx.BeginFigure(new WpfPoint(end.X, end.Y), true, false);
-                ctx.LineTo(new WpfPoint(end.X + arrowSize * Math.Cos(a2), end.Y + arrowSize * Math.Sin(a2)), true, true);
+                ctx.BeginFigure(end, true, false);
+                ctx.LineTo(new Point(end.X + arrowSize * Math.Cos(a1), end.Y + arrowSize * Math.Sin(a1)), true, true);
+                ctx.BeginFigure(end, true, false);
+                ctx.LineTo(new Point(end.X + arrowSize * Math.Cos(a2), end.Y + arrowSize * Math.Sin(a2)), true, true);
             }
             geometry.Freeze();
             return geometry;

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Validation;
@@ -74,31 +75,29 @@ namespace SunEyeVision.Tool.Threshold
         /// <summary>
         /// 二值化阈值(0-255)
         /// </summary>
-        /// <remarks>
-        /// ParamValue 统一管理值和绑定配置。
-        /// 算法层使用：parameters.Threshold.Value
-        /// 框架层使用：parameters.Threshold.BindingConfig
-        /// </remarks>
+        [DisplayName("阈值")]
         public ParamValue<int> Threshold { get; set; } =
             ParamValue<int>.CreateConstant(128, "Threshold");
 
         /// <summary>
         /// 超过阈值时使用的最大值(0-255)
         /// </summary>
+        [DisplayName("最大值")]
         public ParamValue<int> MaxValue { get; set; } =
             ParamValue<int>.CreateConstant(255, "MaxValue");
 
         /// <summary>
         /// 二值化方法
         /// </summary>
+        [DisplayName("二值化方法")]
         public ParamValue<ThresholdType> Type { get; set; } =
             ParamValue<ThresholdType>.CreateConstant(ThresholdType.Binary, "Type");
 
         /// <summary>
         /// 是否反转二值化结果
         /// </summary>
-        public ParamValue<bool> Invert { get; set; } =
-            ParamValue<bool>.CreateConstant(false, "Invert");
+        [DisplayName("反转结果")]
+        public bool Invert { get; set; } = false;
 
         #endregion
 
@@ -107,12 +106,14 @@ namespace SunEyeVision.Tool.Threshold
         /// <summary>
         /// 自适应阈值方法
         /// </summary>
+        [DisplayName("自适应方法")]
         public ParamValue<AdaptiveMethod> AdaptiveMethod { get; set; } =
             ParamValue<AdaptiveMethod>.CreateConstant(SunEyeVision.Tool.Threshold.AdaptiveMethod.Mean, "AdaptiveMethod");
 
         /// <summary>
         /// 计算阈值的邻域大小(奇数, 3-31)
         /// </summary>
+        [DisplayName("块大小")]
         public ParamValue<int> BlockSize { get; set; } =
             ParamValue<int>.CreateConstant(11, "BlockSize");
 

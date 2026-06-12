@@ -37,6 +37,7 @@ namespace SunEyeVision.Workflow
             var workflow = new Workflow(id, name);
 
             // 直接反序列化节点（无需 Dictionary 转换层）
+            // Phase 2：反序列化后通过工厂转换为 WorkflowNode 实例
             if (root.TryGetProperty("Nodes", out var nodesElement))
             {
                 workflow.Nodes = new ObservableCollection<WorkflowNodeBase>();
@@ -46,6 +47,15 @@ namespace SunEyeVision.Workflow
                         nodeElement.GetRawText(), options);
                     if (node != null)
                     {
+                        // Phase 2：通过工厂转换为强类型实例（WorkflowNode）
+                        if (WorkflowNodeFactory.TypeConverter != null)
+                        {
+                            node = WorkflowNodeFactory.TypeConverter(node);
+                        }
+
+                        // 调用反序列化后回调
+                        node.OnDeserialized();
+
                         workflow.Nodes.Add(node);
                     }
                 }

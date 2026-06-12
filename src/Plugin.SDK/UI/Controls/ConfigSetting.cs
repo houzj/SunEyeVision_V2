@@ -367,6 +367,16 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         #endregion
 
+        #region 静态活跃实例列表（用于全局变量重命名广播）
+
+        /// <summary>
+        /// 活跃的 ConfigSetting 实例列表（WeakReference 避免阻止 GC 回收）
+        /// </summary>
+        private static readonly System.Collections.Concurrent.ConcurrentBag<WeakReference<ConfigSetting>> _activeInstances
+            = new System.Collections.Concurrent.ConcurrentBag<WeakReference<ConfigSetting>>();
+
+        #endregion
+
         #region 内部绑定状态恢复接口
 
         /// <summary>
@@ -392,6 +402,55 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         internal void SetConstantValueBeforeBinding(object? value)
         {
             _constantValueBeforeBinding = value;
+        }
+
+        /// <summary>
+        /// 当全局变量被重命名时更新此控件的绑定显示
+        /// </summary>
+        /// <param name="oldName">旧变量名</param>
+        /// <param name="newName">新变量名</param>
+        public void OnGlobalVariableRenamed(string oldName, string newName)
+        {
+            // 只处理绑定模式且绑定源为全局变量的情况
+            if (BindingType != BindingType.Binding || string.IsNullOrEmpty(BindingSource))
+            {
+                VisionLogger.Instance.Log(LogLevel.Info,
+                    $"[ConfigSetting] 跳过重命名 | 非绑定模式或绑定源为空 | " +
+                    $"ParameterName={ParameterName} | BindingType={BindingType} | BindingSource='{BindingSource}'",
+                    "ConfigSetting-Rename");
+                return;
+            }
+
+            var expectedPrefix = $"__GlobalVars__.{oldName}";
+            bool matched = (BindingSource == expectedPrefix);
+
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[ConfigSetting] 检查重命名 | ParameterName={ParameterName} | " +
+                $"BindingSource='{BindingSource}' | expected='{expectedPrefix}' | matched={matched}",
+                "ConfigSetting-Rename");
+
+            if (matched)
+            {
+                var newBindingSource = $"__GlobalVars__.{newName}";
+
+                // 更新 BindingDisplayText（例如 "全局变量.变量2" → "全局变量.新名称"）
+                if (!string.IsNullOrEmpty(BindingDisplayText))
+                {
+                    var dotIndex = BindingDisplayText.LastIndexOf('.');
+                    if (dotIndex > 0 && BindingDisplayText[..dotIndex] == "全局变量")
+                    {
+                        BindingDisplayText = $"全局变量.{newName}";
+                    }
+                }
+
+                // 更新 BindingSource
+                BindingSource = newBindingSource;
+
+                VisionLogger.Instance.Log(LogLevel.Success,
+                    $"[ConfigSetting] 重命名成功 | ParameterName={ParameterName} | " +
+                    $"BindingSource: '{BindingSource}' → '{newBindingSource}'",
+                    "ConfigSetting-Rename");
+            }
         }
 
         #endregion
@@ -448,6 +507,21 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         public ConfigSetting()
         {
             AvailableBindings = new System.Collections.Generic.List<string>();
+
+            // 全局变量重命名时自动更新绑定显示（自注册到静态列表，避免 VisualTreeHelper 遍历不可达）
+            Loaded += OnConfigSettingLoaded;
+            Unloaded += OnConfigSettingUnloaded;
+        }
+
+        private void OnConfigSettingLoaded(object sender, RoutedEventArgs e)
+        {
+            _activeInstances.Add(new WeakReference<ConfigSetting>(this));
+        }
+
+        private void OnConfigSettingUnloaded(object sender, RoutedEventArgs e)
+        {
+            // ConcurrentBag 不支持移除，WeakReference 由 GC 自动清理
+            // 通知时使用 TryGetTarget 检查有效性即可
         }
 
         #region 回调方法
@@ -468,16 +542,28 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 }
 
                 // 切回常量模式时，恢复原始常量值（所见即所得）
-                if (oldType == BindingType.Binding && newType == BindingType.Constant
-                    && control._constantValueBeforeBinding != null)
+                // 并将值同步到 ParamValue，确保执行时使用正确的常量值
+                if (oldType == BindingType.Binding && newType == BindingType.Constant)
                 {
-                    control.Value = control._constantValueBeforeBinding;
+                    object? restoreValue;
 
-                    // 同步到 ParamValue.Value，确保执行时使用恢复的常量值
+                    if (control._constantValueBeforeBinding != null)
+                    {
+                        // 有保存的常量值，恢复之
+                        restoreValue = control._constantValueBeforeBinding;
+                        control.Value = restoreValue;
+                    }
+                    else
+                    {
+                        // 没有保存的常量值（如反序列化后从绑定模式加载），使用当前值
+                        restoreValue = control.Value;
+                    }
+
+                    // 同步到 ParamValue.Value，确保执行时使用正确的常量值
                     var paramValue = control.GetBoundParamValue();
                     if (paramValue != null)
                     {
-                        paramValue.ObjectValue = control.UnwrapParamValue(control._constantValueBeforeBinding);
+                        paramValue.ObjectValue = control.UnwrapParamValue(restoreValue);
                     }
                 }
 
@@ -1007,6 +1093,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 _paramBinding.IsEnabled = true;
                 _paramBinding.AvailableDataSources = AvailableDataSources;
                 _paramBinding.DataType = DataType;
+                _paramBinding.ParameterName = ParameterName;
 
                 // 设置绑定状态
                 _paramBinding.IsBound = true;
@@ -1081,7 +1168,19 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 var parts = BindingSource.Split('.');
                 var nodeId = parts.Length > 0 ? parts[0] : string.Empty;
                 var property = parts.Length > 1 ? parts[1] : BindingSource;
-                return ParamSetting.CreateBinding(ParameterName, nodeId, property);
+
+                var setting = ParamSetting.CreateBinding(ParameterName, nodeId, property);
+
+                // 从 BindingDisplayText 提取显示名称（用于跨会话重建显示文本）
+                // 例如："全局变量.变量2" → SourceNodeName="全局变量", SourceDisplayName="变量2"
+                var displayParts = BindingDisplayText?.Split(new[] { '.' }, 2);
+                if (displayParts != null && displayParts.Length == 2)
+                {
+                    setting.SourceNodeName = displayParts[0];
+                    setting.SourceDisplayName = displayParts[1];
+                }
+
+                return setting;
             }
         }
 
@@ -1093,6 +1192,50 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// 主动保存 ConfigSetting 的绑定状态到自有持久化存储（如 TextStyle）。
         /// </remarks>
         public event EventHandler? BindingConfigChanged;
+
+        /// <summary>
+        /// 全局变量解绑前通知 — 当 ConfigSetting 从绑定模式切回常量模式，且旧的绑定源以 __GlobalVars__ 开头时触发
+        /// 参数: (configSetting, variableName)
+        /// App.xaml.cs 订阅此事件，用于清理 GlobalVariable.ConsumerBindings
+        /// </summary>
+        public static event Action<ConfigSetting, string>? BeforeGlobalVariableUnbinding;
+
+        /// <summary>
+        /// 全局变量重命名通知 — 当全局变量管理器中变量被重命名时触发
+        /// 参数: (oldName, newName)
+        /// App.xaml.cs 订阅此事件，广播到所有已打开的 ConfigSetting 实例
+        /// </summary>
+        public static event Action<string, string>? GlobalVariableRenamed;
+
+        /// <summary>
+        /// 通知所有活跃的 ConfigSetting 实例全局变量已重命名
+        /// </summary>
+        /// <remarks>
+        /// 替代 VisualTreeHelper 视觉树遍历方式，通过 Loaded 时自注册的 WeakReference 列表
+        /// 直接通知每个已加载的 ConfigSetting 实例。未加载的实例会在 Tab 加载时
+        /// 通过 TryRestoreBindingFromParamValue 从 BindingConfig.SourceDisplayName 读取最新名称。
+        /// </remarks>
+        public static void NotifyAllGlobalVariableRenamed(string oldName, string newName)
+        {
+            int notifiedCount = 0;
+            int aliveCount = 0;
+            foreach (var weakRef in _activeInstances)
+            {
+                aliveCount++;
+                if (weakRef.TryGetTarget(out var instance))
+                {
+                    instance.OnGlobalVariableRenamed(oldName, newName);
+                    notifiedCount++;
+                }
+            }
+
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[ConfigSetting] 全局变量重命名通知 | old='{oldName}' → new='{newName}' | 活跃实例数={aliveCount} | 已通知={notifiedCount}",
+                "ConfigSetting-Rename");
+
+            // 同时触发旧的静态事件（兼容外部订阅者）
+            GlobalVariableRenamed?.Invoke(oldName, newName);
+        }
 
         /// <summary>
         /// 同步当前配置到绑定的 ParamValue 对象（方案B核心方法）
@@ -1113,6 +1256,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             {
                 if (BindingType == BindingType.Constant)
                 {
+                    // 在清除绑定前，检测是否为全局变量解绑
+                    // 此时 BindingSource 仍保存着旧值（__GlobalVars__.VariableName）
+                    if (!string.IsNullOrEmpty(BindingSource) && BindingSource.StartsWith("__GlobalVars__."))
+                    {
+                        var variableName = BindingSource.Substring("__GlobalVars__.".Length);
+                        BeforeGlobalVariableUnbinding?.Invoke(this, variableName);
+                    }
+
                     paramValue.BindingConfig = null;
                 }
                 else if (!string.IsNullOrEmpty(BindingSource))
@@ -1132,6 +1283,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     {
                         setting.SourceNodeName = matchedSource.SourceNodeName;
                         setting.SourceDisplayName = matchedSource.DisplayName;
+                    }
+                    else if (!string.IsNullOrEmpty(BindingDisplayText))
+                    {
+                        // 无法从 AvailableDataSources 匹配（如全局变量 __GlobalVars__），
+                        // 从 BindingDisplayText 提取显示名称
+                        var displayParts = BindingDisplayText.Split(new[] { '.' }, 2);
+                        if (displayParts.Length == 2)
+                        {
+                            setting.SourceNodeName = displayParts[0];
+                            setting.SourceDisplayName = displayParts[1];
+                        }
                     }
 
                     paramValue.BindingConfig = setting;

@@ -171,6 +171,7 @@ namespace SunEyeVision.Tool.ImageFilter.Views
                 regionManager.AvailableDataSources = AvailableDataSources;
 
                 Parameters?.RestoreImageSource(AvailableDataSources);
+                Parameters?.RestorePositionCorrectionSource(AvailableDataSources);
             }
         }
 

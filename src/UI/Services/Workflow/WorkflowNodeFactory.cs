@@ -61,9 +61,9 @@ namespace SunEyeVision.UI.Services.Workflow
                 throw new ArgumentException("Algorithm type cannot be null or empty.", nameof(algorithmType));
             }
 
-            // 获取工具元数据
+            // 获取工具元数据（统一从 ToolRegistry 获取，Condition 已迁移为 ConditionTool）
             var metadata = ToolRegistry.GetToolMetadata(algorithmType);
-            var displayName = metadata?.DisplayName ?? algorithmType;
+            string displayName = metadata?.DisplayName ?? algorithmType;
 
             // 使用Guid生成节点ID
             string nodeId = Guid.NewGuid().ToString();
@@ -97,12 +97,14 @@ namespace SunEyeVision.UI.Services.Workflow
         /// </summary>
         private void InitializeNodeParameters(NodeModel node, string algorithmType)
         {
-            // 从 ToolRegistry 创建默认参数（直接返回 ToolParameters）
-            var defaultParams = ToolRegistry.CreateParameters(algorithmType);
+            // 所有节点（含 Condition、Subroutine）统一从 ToolRegistry 创建参数
+            if (!ToolRegistry.ToolExists(algorithmType))
+            {
+                return;
+            }
 
-            // 直接使用 ToolParameters，不进行转换
+            var defaultParams = ToolRegistry.CreateParameters(algorithmType);
             node.Parameters = defaultParams;
-            // ParametersTypeName 已过时，不再使用
         }
     }
 }

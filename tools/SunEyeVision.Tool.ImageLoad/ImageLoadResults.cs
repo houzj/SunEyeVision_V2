@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using OpenCvSharp;
+using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 
 namespace SunEyeVision.Tool.ImageLoad
@@ -13,22 +14,25 @@ namespace SunEyeVision.Tool.ImageLoad
     {
         #region 核心属性
 
-        public Mat? OutputImage { get; set; }
+        /// <summary>
+        /// 输出图像（原始加载图像）
+        /// </summary>
+        public IVisionImage? OutputImage { get; set; }
 
         /// <summary>
         /// 灰度图像（彩色输入时转换得到，灰度输入时为原图克隆）
         /// </summary>
-        public Mat? GrayImage { get; set; }
+        public IVisionImage? GrayImage { get; set; }
 
         /// <summary>
         /// 获取所有可显示的图像
         /// </summary>
-        public override Dictionary<string, Mat?> GetDisplayImages()
+        public override Dictionary<string, IVisionImage?> GetDisplayImages()
         {
-            var images = new Dictionary<string, Mat?>();
-            if (OutputImage != null && !OutputImage.Empty())
+            var images = new Dictionary<string, IVisionImage?>();
+            if (OutputImage != null && !OutputImage.IsEmpty)
                 images["OutputImage"] = OutputImage;
-            if (GrayImage != null && !GrayImage.Empty())
+            if (GrayImage != null && !GrayImage.IsEmpty)
                 images["GrayImage"] = GrayImage;
             return images;
         }
@@ -46,11 +50,6 @@ namespace SunEyeVision.Tool.ImageLoad
         #region 尺寸相关属性
 
         /// <summary>
-        /// 图像尺寸（OpenCV标准类型）
-        /// </summary>
-        public OpenCvSharp.Size Size => new OpenCvSharp.Size(Width, Height);
-
-        /// <summary>
         /// 宽高比（宽度/高度）
         /// </summary>
         public double AspectRatio => Height > 0 ? (double)Width / Height : 0.0;
@@ -65,40 +64,19 @@ namespace SunEyeVision.Tool.ImageLoad
         #region 格式相关属性
 
         /// <summary>
-        /// OpenCV类型名称（如"CV_8UC3"）
+        /// Halcon 图像类型描述（如 "byte"）
         /// </summary>
-        public string TypeName
+        public string ImageTypeDisplay
         {
             get
             {
-                if (OutputImage == null || OutputImage.Empty())
+                if (OutputImage == null || OutputImage.IsEmpty)
                     return "Unknown";
-
-                return OutputImage.Type().ToString();
-            }
-        }
-
-        /// <summary>
-        /// 深度类型名称（如"CV_8U"）
-        /// </summary>
-        public string DepthName
-        {
-            get
-            {
-                if (OutputImage == null || OutputImage.Empty())
-                    return "Unknown";
-
-                var depth = OutputImage.Depth();
-                return depth switch
+                return Channels switch
                 {
-                    0 => "CV_8U",
-                    1 => "CV_8S",
-                    2 => "CV_16U",
-                    3 => "CV_16S",
-                    4 => "CV_32S",
-                    5 => "CV_32F",
-                    6 => "CV_64F",
-                    _ => $"Unknown({depth})"
+                    1 => "byte (灰度)",
+                    3 => "byte (彩色)",
+                    _ => $"byte ({Channels}通道)"
                 };
             }
         }
@@ -145,9 +123,9 @@ namespace SunEyeVision.Tool.ImageLoad
         {
             get
             {
-                if (_minPixelValue == null && OutputImage != null && !OutputImage.Empty())
+                if (_minPixelValue == null && OutputImage != null && !OutputImage.IsEmpty)
                 {
-                    CalculatePixelValueRange();
+                    CalculatePixelValues();
                 }
                 return _minPixelValue ?? 0.0;
             }
@@ -160,9 +138,9 @@ namespace SunEyeVision.Tool.ImageLoad
         {
             get
             {
-                if (_maxPixelValue == null && OutputImage != null && !OutputImage.Empty())
+                if (_maxPixelValue == null && OutputImage != null && !OutputImage.IsEmpty)
                 {
-                    CalculatePixelValueRange();
+                    CalculatePixelValues();
                 }
                 return _maxPixelValue ?? 0.0;
             }
@@ -175,9 +153,9 @@ namespace SunEyeVision.Tool.ImageLoad
         {
             get
             {
-                if (_meanPixelValue == null && OutputImage != null && !OutputImage.Empty())
+                if (_meanPixelValue == null && OutputImage != null && !OutputImage.IsEmpty)
                 {
-                    CalculateMeanPixelValue();
+                    CalculatePixelValues();
                 }
                 return _meanPixelValue ?? 0.0;
             }
@@ -189,41 +167,30 @@ namespace SunEyeVision.Tool.ImageLoad
         public string PixelValueRange => $"{MinPixelValue:F1} - {MaxPixelValue:F1}";
 
         /// <summary>
-        /// 计算像素值范围（延迟计算）
+        /// 计算像素值范围（延迟计算，通过 Halcon MinMaxGray/Intensity）
         /// </summary>
-        private void CalculatePixelValueRange()
+        private void CalculatePixelValues()
         {
-            if (OutputImage == null || OutputImage.Empty())
-                return;
+            if (OutputImage == null || OutputImage.IsEmpty) return;
+
+            // 拆包获取 HImage 计算像素统计
+            if (OutputImage is not HalImage halImage) return;
+            var hImage = halImage.Unwrap();
+            if (hImage == null || !hImage.IsInitialized()) return;
 
             try
             {
-                OutputImage.MinMaxLoc(out double minVal, out double maxVal);
-                _minPixelValue = minVal;
-                _maxPixelValue = maxVal;
+                HOperatorSet.MinMaxGray(hImage, hImage, 0, out var min, out var max, out _);
+                _minPixelValue = min.D;
+                _maxPixelValue = max.D;
+
+                HOperatorSet.Intensity(hImage, hImage, out var mean, out _);
+                _meanPixelValue = mean.D;
             }
             catch
             {
                 _minPixelValue = 0.0;
                 _maxPixelValue = 255.0;
-            }
-        }
-
-        /// <summary>
-        /// 计算平均像素值（延迟计算）
-        /// </summary>
-        private void CalculateMeanPixelValue()
-        {
-            if (OutputImage == null || OutputImage.Empty())
-                return;
-
-            try
-            {
-                var mean = OutputImage.Mean();
-                _meanPixelValue = mean.Val0;
-            }
-            catch
-            {
                 _meanPixelValue = 0.0;
             }
         }
@@ -239,28 +206,26 @@ namespace SunEyeVision.Tool.ImageLoad
         {
             return
             [
-                new("OutputImage",      "输出图像",     null),
-                new("GrayImage",        "灰度图像",     null),
-                new("Width",            "宽度",         "图像"),
-                new("Height",           "高度",         "图像"),
-                new("Size",             "尺寸",         "图像"),
-                new("Channels",         "通道数",       "图像"),
-                new("Depth",            "深度",         "图像"),
-                new("TypeName",         "类型名称",     "图像"),
-                new("DepthName",        "深度名称",     "图像"),
-                new("IsColor",          "是否彩色",     "图像"),
-                new("IsGrayscale",      "是否灰度",     "图像"),
-                new("ColorType",        "颜色类型",     "图像"),
-                new("AspectRatio",      "宽高比",       "图像"),
-                new("TotalPixels",      "总像素数",     "图像"),
-                new("MinPixelValue",    "最小值",       "像素值"),
-                new("MaxPixelValue",    "最大值",       "像素值"),
-                new("MeanPixelValue",   "平均值",       "像素值"),
-                new("PixelValueRange",  "范围描述",     "像素值"),
-                new("FilePath",         "路径",         "文件"),
-                new("FileSize",         "大小",         "文件"),
-                new("FileFormat",       "格式",         "文件"),
-                new("ExecutionTimeMs",  "耗时",         "执行"),
+                new("OutputImage",          "输出图像",     null),
+                new("GrayImage",            "灰度图像",     null),
+                new("Width",                "宽度",         "图像"),
+                new("Height",               "高度",         "图像"),
+                new("Channels",             "通道数",       "图像"),
+                new("Depth",                "深度",         "图像"),
+                new("ImageTypeDisplay",     "类型名称",     "图像"),
+                new("IsColor",              "是否彩色",     "图像"),
+                new("IsGrayscale",          "是否灰度",     "图像"),
+                new("ColorType",            "颜色类型",     "图像"),
+                new("AspectRatio",          "宽高比",       "图像"),
+                new("TotalPixels",          "总像素数",     "图像"),
+                new("MinPixelValue",        "最小值",       "像素值"),
+                new("MaxPixelValue",        "最大值",       "像素值"),
+                new("MeanPixelValue",       "平均值",       "像素值"),
+                new("PixelValueRange",      "范围描述",     "像素值"),
+                new("FilePath",             "路径",         "文件"),
+                new("FileSize",             "大小",         "文件"),
+                new("FileFormat",           "格式",         "文件"),
+                new("ExecutionTimeMs",      "耗时",         "执行"),
             ];
         }
 
@@ -275,8 +240,7 @@ namespace SunEyeVision.Tool.ImageLoad
             items.Add(ResultItem.Numeric("高度", Height, "像素"));
             items.Add(ResultItem.Numeric("通道数", Channels, "通道"));
             items.Add(ResultItem.Numeric("深度", Depth));
-            items.Add(ResultItem.Text("类型名称", TypeName));
-            items.Add(ResultItem.Text("深度名称", DepthName));
+            items.Add(ResultItem.Text("类型名称", ImageTypeDisplay));
             items.Add(ResultItem.Boolean("是否彩色", IsColor));
             items.Add(ResultItem.Boolean("是否灰度", IsGrayscale));
             items.Add(ResultItem.Text("颜色类型", ColorType));

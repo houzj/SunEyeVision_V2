@@ -231,17 +231,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         }
 
         /// <summary>
-        /// 从 AvailableDataSources 中筛选 Mat 类型的数据源，重建 FilteredImageSources
+        /// 从 AvailableDataSources 中筛选图像类型的数据源，重建 FilteredImageSources
         /// </summary>
         private void RebuildFilteredList()
         {
             if (FilteredImageSources == null)
                 return;
 
-            // 使用名称匹配过滤 Mat 类型的数据源
-            // 与之前 XAML DataTrigger (PropertyType.Name=="Mat") 行为一致，比精确类型匹配更健壮
+            // 使用名称匹配过滤图像类型的数据源（系统统一使用 IVisionImage）
+            var imageTypeNames = new HashSet<string> { "IVisionImage" };
             var filtered = AvailableDataSources != null
-                ? AvailableDataSources.Where(ds => ds.PropertyType?.Name == "Mat").ToList()
+                ? AvailableDataSources.Where(ds => ds.PropertyType != null && imageTypeNames.Contains(ds.PropertyType.Name)).ToList()
                 : new List<AvailableDataSource>();
 
             FilteredImageSources.Clear();

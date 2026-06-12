@@ -1,5 +1,4 @@
-using System;
-using OpenCvSharp;
+﻿using System;
 
 namespace SunEyeVision.Plugin.SDK.Models.Imaging
 {
@@ -215,7 +214,7 @@ namespace SunEyeVision.Plugin.SDK.Models.Imaging
         /// <summary>
         /// 获取ROI区域的图像数据
         /// </summary>
-        public ImageData GetRoi(Rect2d roi)
+        public ImageData GetRoi(System.Windows.Rect roi)
         {
             ThrowIfDisposed();
 

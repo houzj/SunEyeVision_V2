@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json.Serialization;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -13,6 +14,8 @@ using AppCommands = SunEyeVision.UI.Commands;
 using SunEyeVision.UI.Models;
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 using SunEyeVision.Workflow.Nodes;
+
+
 using SunEyeVision.Plugin.SDK;
 using SunEyeVision.Plugin.SDK.Validation;
 using SunEyeVision.Plugin.SDK.Core;
@@ -20,6 +23,7 @@ using SunEyeVision.Plugin.SDK.Metadata;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.UI;
 using SunEyeVision.UI.Adapters;
 using SunEyeVision.Workflow;
@@ -38,7 +42,8 @@ using SunEyeVision.UI.Converters.Path;
 using SunEyeVision.UI.Services.Performance;
 using SunEyeVision.UI.Services.Logging;
 using SunEyeVision.Plugin.SDK.Logging;
-using SunEyeVision.Core.Models;
+using SunEyeVision.UI.Events;
+using SunEyeVision.Tool.Subroutine.Models;
 
 namespace SunEyeVision.UI.ViewModels
 {
@@ -85,13 +90,16 @@ namespace SunEyeVision.UI.ViewModels
 
         // 工作流引擎
         private readonly WorkflowEngine _workflowEngine;
+
+        /// <summary>公开工作流引擎访问（供 MainWindow code-behind 等使用）</summary>
+        public WorkflowEngine WorkflowEngine => _workflowEngine;
         private readonly ILogger _logger;
 
         // 执行管理
         private readonly WorkflowExecutionManager _executionManager;
 
-        // 工作流上下文（用于存储执行结果）
-        private readonly WorkflowContext _workflowContext;
+        // 工作流上下文字典（按工作流ID索引，每个工作流独立存储执行结果）
+        private readonly Dictionary<string, WorkflowContext> _workflowContexts = new();
 
         // 运行时参数存储
         private readonly Dictionary<string, object> _runtimeParameters = new();
@@ -110,8 +118,11 @@ namespace SunEyeVision.UI.ViewModels
         /// </summary>
         public bool IsDebugWindowOpen => _openDebugWindow != null && _openDebugWindow.IsLoaded;
 
-        // 数据提供者缓存（用于在节点执行完成后更新前置节点输出）
-        private readonly Dictionary<string, IDataSourceQueryService> _nodeDataProviders = new();
+        // 按 Workflow 缓存的 DSQS（key: WorkflowId，替代旧的按节点缓存的 _nodeDataProviders）
+        private readonly Dictionary<string, DataSourceQueryService> _workflowDsqsCache = new();
+
+        // 调试窗口缓存（用于在节点执行完成后通知 ToolDebugControl 刷新运行时状态）
+        private readonly Dictionary<string, System.Windows.Window> _nodeDebugWindows = new();
 
         private string _logText = "[系统] 等待中...\n";
         private bool _hasModuleResults;
@@ -265,18 +276,32 @@ namespace SunEyeVision.UI.ViewModels
                     // 更新数据分析控件（同步等待异步操作）
                     UpdateDataAnalysisControl((Models.WorkflowNode?)value).GetAwaiter().GetResult();
 
+                    // 先更新图像显示数据源（当前节点 + 父节点），RefreshResultDisplay 依赖正确的数据源
+                    UpdateDisplayImageSources((Models.WorkflowNode?)value);
+
                     // 刷新结果显示（如果节点有缓存结果）
-                    var executionResult = value != null ? _workflowContext.GetNodeResult(value.Id) : null;
+                    var executionResult = value != null ? CurrentWorkflowContext?.GetNodeResult(value.Id) : null;
                     var toolId = (value as WorkflowNodeBase)?.ToolType ?? "";
 
-                    if (executionResult?.ToolResult != null)
+                    if (executionResult?.Result != null)
                     {
-                        _nodeResultManager.RefreshResultDisplay((Models.WorkflowNode?)value, executionResult.ToolResult);
+                        _nodeResultManager.RefreshResultDisplay((Models.WorkflowNode?)value, executionResult.Result);
                     }
                     else if (value != null)
                     {
                         // 未运行也从 _typeCache 显示属性表结构
-                        UpdateModuleResults(null, value.Name, toolId);
+                        ToolResults? tempResult = null;
+
+                        // ★ 子程序：从 Parameters 构造临时结果展示动态输出端口（设计态）
+                        if (string.Equals(toolId, "Subroutine", StringComparison.OrdinalIgnoreCase)
+                            && value.Parameters is SubroutineParameters sp
+                            && sp.Outputs.Count > 0)
+                        {
+                            tempResult = new SubroutineResults { OutputConfigs = sp.Outputs.ToList() };
+                        }
+
+                        UpdateModuleResults(tempResult, value.Name, toolId, value.Id);
+
                         // 清空旧节点残留在图像上的图形覆盖，防止显示错位
                         _nodeResultManager.ClearResultGraphics();
                     }
@@ -285,9 +310,6 @@ namespace SunEyeVision.UI.ViewModels
                         // 清空结果显示
                         _nodeResultManager.ClearResultDisplay();
                     }
-
-                    // 更新图像显示数据源（当前节点 + 父节点）
-                    UpdateDisplayImageSources((Models.WorkflowNode?)value);
 
                     // 节点选中状态变化时更新图像预览
                     UpdateImagePreviewVisibility((Models.WorkflowNode?)value);
@@ -325,7 +347,6 @@ namespace SunEyeVision.UI.ViewModels
         }
 
         public WorkflowConnection? SelectedConnection { get; set; }
-        public WorkflowViewModel WorkflowViewModel { get; set; }
 
         // 工作流标签页
         public WorkflowTabControlViewModel WorkflowTabViewModel { get; }
@@ -729,6 +750,10 @@ SplitterPosition = position;
         public ICommand ShowCameraManagerCommand { get; }
         public ICommand ShowCommunicationManagerCommand { get; }
 
+        // 全局变量绑定
+        public ICommand BindResultToGlobalVarCommand { get; }
+        public ICommand UnbindResultFromGlobalVarCommand { get; }
+
         // 主窗口 ImageControl 获取委托 - 用于区域编辑器绑定
         /// <summary>
         /// 获取主窗口 ImageControl 的委托 - 用于区域编辑器绑定
@@ -741,9 +766,7 @@ SplitterPosition = position;
         public MainWindowViewModel()
         {
             Toolbox = new ToolboxViewModel();
-            // 删除全局 WorkflowNodes 和 WorkflowConnections 的初始化
 
-            WorkflowViewModel = new WorkflowViewModel();
             WorkflowTabViewModel = new WorkflowTabControlViewModel();
 
             // 初始化计算结果
@@ -759,14 +782,11 @@ SplitterPosition = position;
             _logger = VisionLogger.Instance;
             _workflowEngine = new WorkflowEngine(_logger);
 
-            // 初始化执行管理器
-            _executionManager = new Services.Workflow.WorkflowExecutionManager(new Infrastructure.DefaultInputProvider());
-
-            // 初始化工作流上下文
-            _workflowContext = new WorkflowContext();
+            // 初始化执行管理器（传入共享的 WorkflowEngine，子程序工作流已注册在其中）
+            _executionManager = new Services.Workflow.WorkflowExecutionManager(new Infrastructure.DefaultInputProvider(), _workflowEngine);
 
             // 初始化节点结果管理器
-            _nodeResultManager = new Services.Workflow.NodeResultManager(_workflowContext, this);
+            _nodeResultManager = new Services.Workflow.NodeResultManager(() => CurrentWorkflowContext, this);
 
             // 初始化工作流执行协调器（图像切换优化）
             _executionOrchestrator = new WorkflowExecutionOrchestrator(_nodeResultManager, maxCacheSize: 50, maxMemoryMB: 100);
@@ -785,8 +805,24 @@ SplitterPosition = position;
             // 选中标签页变化时更新运行/停止按钮状态
             WorkflowTabViewModel.SelectionChanged += OnSelectedTabChanged;
 
+            // 监听新 Tab 创建，自动订阅 NameCommitted 事件
+            WorkflowTabViewModel.Tabs.CollectionChanged += OnTabsCollectionChanged;
+
+            // 为已存在的 Tab（如默认工作流）订阅 NameCommitted
+            foreach (var tab in WorkflowTabViewModel.Tabs)
+            {
+                tab.NameCommitted -= OnTabNameCommitted;
+                tab.NameCommitted += OnTabNameCommitted;
+            }
+
             // 订阅工作流状态变化
             WorkflowTabViewModel.WorkflowStatusChanged += OnWorkflowStatusChanged;
+
+            // Phase 3: 订阅工作流删除事件（清理引擎和 Solution）
+            WorkflowTabViewModel.WorkflowDeleted += OnWorkflowDeleted;
+
+            // 订阅控制流节点打开事件（由 NodeOpenDecisionChain 统一路由）
+            NodeOpenDecisionChain.OnControlFlowNodeOpen += OnControlFlowNodeOpen;
 
             // 命令管理器的初始化
             SubscribeToCurrentCommandManager();
@@ -797,6 +833,10 @@ SplitterPosition = position;
 
             // 初始化当前解决方案信息
             UpdateCurrentSolutionInfo();
+
+            // 订阅全局变量重命名事件（更新模块结果 FlatResultRow 的显示）
+            var eventBus = ServiceLocator.Instance.GetService<SunEyeVision.Core.Events.IEventBus>();
+            eventBus?.Subscribe<UIEvents.GlobalVariableRenamedEvent>(OnGlobalVariableRenamed);
 
             NewWorkflowCommand = new RelayCommand(ExecuteNewWorkflow);
             OpenWorkflowCommand = new RelayCommand(ExecuteOpenWorkflow);
@@ -843,6 +883,35 @@ SplitterPosition = position;
             ShowGlobalVariableManagerCommand = new RelayCommand(ExecuteShowGlobalVariableManager);
             ShowCameraManagerCommand = new RelayCommand(ExecuteShowCameraManager);
             ShowCommunicationManagerCommand = new RelayCommand(ExecuteShowCommunicationManager);
+
+            // 全局变量绑定
+            BindResultToGlobalVarCommand = new RelayCommand(ExecuteBindResultToGlobalVar);
+            UnbindResultFromGlobalVarCommand = new RelayCommand(ExecuteUnbindResultFromGlobalVar);
+        }
+
+        /// <summary>
+        /// 获取当前选中工作流的独立执行上下文（按工作流ID懒加载）
+        /// 每个工作流有独立的上下文，切换时互不干扰。
+        /// </summary>
+        private WorkflowContext? CurrentWorkflowContext
+        {
+            get
+            {
+                var selectedTab = WorkflowTabViewModel?.SelectedTab;
+                if (selectedTab == null) return null;
+
+                if (!_workflowContexts.TryGetValue(selectedTab.Id, out var ctx))
+                {
+                    ctx = new WorkflowContext
+                    {
+                        WorkflowId = selectedTab.Id,
+                        WorkflowName = selectedTab.Name,
+                        ExecutionStartTime = DateTime.Now
+                    };
+                    _workflowContexts[selectedTab.Id] = ctx;
+                }
+                return ctx;
+            }
         }
 
         /// <summary>
@@ -879,9 +948,16 @@ SplitterPosition = position;
                     _logger?.LogInfo($"OnSelectedTabChanged: Auto-created workflow in engine: {selectedName} (ID: {selectedId})");
                 }
 
+                // 设置当前工作流（引擎是SSOT，无需额外同步）
                 _workflowEngine.SetCurrentWorkflow(selectedId);
                 _logger?.LogInfo($"OnSelectedTabChanged: Current workflow set to {selectedName} (ID: {selectedId})");
             }
+
+            // ★ 切换标签页时清除选中状态（避免旧标签页的选中节点引用残留）
+            SelectedNode = null;
+            SelectedConnection = null;
+            ClearNodeSelections();
+            ClearConnectionSelections();
         }
 
         /// <summary>
@@ -896,6 +972,63 @@ SplitterPosition = position;
             // 更新CanExecute状态
             (RunAllWorkflowsCommand as RelayCommand)?.RaiseCanExecuteChanged();
             (ToggleContinuousAllCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        }
+
+        /// <summary>
+        /// 工作流删除事件处理（Phase 3: 清理引擎和 Solution 中的对应工作流 + DSQS 缓存）
+        /// </summary>
+        private void OnWorkflowDeleted(object? sender, WorkflowTabViewModel deletedTab)
+        {
+            if (deletedTab == null)
+                return;
+
+            // 1. 从引擎中移除
+            _workflowEngine.DeleteWorkflow(deletedTab.Id);
+
+            // 2. 从 Solution 中移除
+            var solutionManager = Adapters.ServiceInitializer.SolutionManager;
+            if (solutionManager?.CurrentSolution != null)
+            {
+                solutionManager.CurrentSolution.RemoveWorkflow(deletedTab.Id);
+                LogSuccess($"工作流删除事件处理：已从引擎和解决方案中移除工作流: {deletedTab.Name}");
+            }
+
+            // 3. 清理按 Workflow 缓存的 DSQS
+            _workflowDsqsCache.Remove(deletedTab.Id);
+        }
+
+        /// <summary>
+        /// Tab 重命名提交事件 — 同步更新引擎中对应 Workflow 的 Name
+        /// </summary>
+        private void OnTabNameCommitted(object? sender, string newName)
+        {
+            if (sender is not WorkflowTabViewModel tab) return;
+
+            // 更新引擎中当前显示的工作流名称
+            var engineWorkflow = _workflowEngine.GetWorkflow(tab.CurrentWorkflowId);
+            if (engineWorkflow != null && engineWorkflow.Name != newName)
+            {
+                engineWorkflow.Name = newName;
+                LogInfo($"引擎工作流已重命名: {engineWorkflow.Name} (ID: {tab.CurrentWorkflowId})");
+            }
+        }
+
+        /// <summary>
+        /// Tabs 集合变化事件 — 为新增的 Tab 订阅 NameCommitted
+        /// </summary>
+        private void OnTabsCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add && e.NewItems != null)
+            {
+                foreach (var item in e.NewItems)
+                {
+                    if (item is WorkflowTabViewModel tab)
+                    {
+                        tab.NameCommitted -= OnTabNameCommitted;
+                        tab.NameCommitted += OnTabNameCommitted;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -1029,7 +1162,18 @@ SplitterPosition = position;
 
         private void ExecuteNewWorkflow()
         {
-            // TODO: 新建工作流
+            var tabControl = WorkflowTabViewModel;
+            if (tabControl == null)
+                return;
+
+            tabControl.AddWorkflow();
+            var newTab = tabControl.SelectedTab;
+            if (newTab != null)
+            {
+                // 注册到引擎
+                _workflowEngine.CreateWorkflow(newTab.Id, newTab.Name);
+                LogSuccess($"创建新工作流: {newTab.Name}");
+            }
         }
 
         private void ExecuteOpenWorkflow()
@@ -1441,11 +1585,22 @@ SplitterPosition = position;
                 // 删除、添加连接会自动同步到 Solution，保存时无需额外同步代码
             }
 
+            // ★ 确保子程序工作流也保存到 solution（它们没有独立 Tab，但属于引擎中的工作流）
+            var subWorkflows = _workflowEngine.GetAllWorkflows()
+                .Where(w => w.IsSubroutine && !solution.Workflows.Any(s => s.Id == w.Id))
+                .ToList();
+            foreach (var subWf in subWorkflows)
+            {
+                solution.Workflows.Add(subWf);
+                LogInfo($"添加子程序工作流到 Solution: {subWf.Name} (ID: {subWf.Id})");
+            }
+
             // ✅ 删除 Solution 中所有不在 UI 标签页中的工作流（解决创建新方案时多余工作流的问题）
             // 例如：创建新方案时默认创建的空"工作流1"会被删除，只保留UI中已编辑的工作流
             // 注意：需要处理同名但不同 ID 的情况（重命名而不是删除）
+            // ★ 子程序工作流（IsSubroutine=true）不删除（它们没有独立 Tab）
             var workflowsToRemove = solution.Workflows
-                .Where(w => !WorkflowTabViewModel.Tabs.Any(t => t.Id == w.Id))
+                .Where(w => !WorkflowTabViewModel.Tabs.Any(t => t.Id == w.Id) && !w.IsSubroutine)
                 .ToList();
 
             foreach (var workflow in workflowsToRemove)
@@ -1469,46 +1624,7 @@ SplitterPosition = position;
             }
         }
 
-        /// <summary>
-        /// 根据算法类型确定节点类型
-        /// </summary>
-        private SunEyeVision.Core.Models.NodeType DetermineNodeTypeFromToolType(string toolType)
-        {
-            if (string.IsNullOrEmpty(toolType))
-                return SunEyeVision.Core.Models.NodeType.Algorithm;
 
-            // 图像采集类工具作为起始节点
-            if (toolType.Contains("ImageCapture") ||
-                toolType.Contains("ImageAcquisition") ||
-                toolType.Contains("Camera") ||
-                toolType.Contains("image_capture"))
-            {
-                return SunEyeVision.Core.Models.NodeType.Start;
-            }
-
-            // 图像载入类工具作为起始节点
-            if (toolType.Contains("ImageLoad") ||
-                toolType.Contains("image_load"))
-            {
-                return SunEyeVision.Core.Models.NodeType.Start;
-            }
-
-            // 控制类节点
-            if (toolType.Contains("Subroutine") ||
-                toolType.Contains("subroutine"))
-            {
-                return SunEyeVision.Core.Models.NodeType.Subroutine;
-            }
-
-            if (toolType.Contains("Condition") ||
-                toolType.Contains("condition"))
-            {
-                return SunEyeVision.Core.Models.NodeType.Condition;
-            }
-
-            // 默认为算法节点
-            return SunEyeVision.Core.Models.NodeType.Algorithm;
-        }
 
 
 
@@ -1533,20 +1649,19 @@ SplitterPosition = position;
             tabViewModel.Id = workflow.Id;
             tabViewModel.Name = workflow.Name;
 
-            // 使用统一转换方法将 WorkflowNodeBase → WorkflowNode
-            // 确保位置、参数、尺寸等属性完整传递
-            int nodeIndex = 0;
-            foreach (var workflowNode in workflow.Nodes)
+            // 订阅重命名事件（更新引擎中的 Workflow.Name）
+            tabViewModel.NameCommitted += OnTabNameCommitted;
+
+            // Phase 2：通过 SetNodes 直接绑定外部集合中的相同节点实例
+            // 节点在 WorkflowJsonConverter.Read 中已被 WorkflowNodeFactory 转换为 WorkflowNode
+            // 因此 FromBase 为恒等转换（同一对象），不再创建副本
+            try
             {
-                nodeIndex++;
-                try
-                {
-                    tabViewModel.WorkflowNodes.Add(Models.WorkflowNode.FromBase(workflowNode));
-                }
-                catch (Exception ex)
-                {
-                    LogError($"节点加载失败 [{nodeIndex}/{workflow.Nodes.Count}]: {workflowNode.Name} - {ex.Message}");
-                }
+                tabViewModel.SetNodes(workflow.Nodes);
+            }
+            catch (Exception ex)
+            {
+                LogError($"节点绑定失败: {ex.Message}");
             }
 
             LogInfo($"节点加载完成，数量: {tabViewModel.WorkflowNodes.Count}/{workflow.Nodes.Count}");
@@ -1633,8 +1748,18 @@ SplitterPosition = position;
                     LogInfo($"\n--- 加载工作流: {workflow.Name} (ID: {workflow.Id}) ---");
                     LogInfo($"节点数量: {workflow.Nodes.Count}");
                     LogInfo($"连接数量: {workflow.Connections.Count}");
+                    LogInfo($"是否子程序: {workflow.IsSubroutine}");
 
-                    CreateWorkflowTab(workflow, solution.FilePath);
+                    if (workflow.IsSubroutine)
+                    {
+                        // 子程序工作流：只注册到引擎，不创建 Tab
+                        _workflowEngine.RegisterWorkflow(workflow);
+                        LogInfo($"注册子程序工作流到引擎: {workflow.Name} (ID: {workflow.Id})");
+                    }
+                    else
+                    {
+                        CreateWorkflowTab(workflow, solution.FilePath);
+                    }
 
                     totalNodes += workflow.Nodes.Count;
                     totalConnections += workflow.Connections.Count;
@@ -1719,6 +1844,12 @@ SplitterPosition = position;
             {
                 // ★ 传递运行时参数到执行管理器
                 _executionManager.SetRuntimeParameters(GetAllRuntimeParameters());
+
+                // ★ 传递全局变量到执行管理器（用于 __GlobalVars__ 绑定解析）
+                var solutionManager = Adapters.ServiceInitializer.SolutionManager;
+                var globalVars = solutionManager.CurrentSolution?.GlobalVariables?
+                    .ToDictionary(gv => gv.Name, gv => gv.Value);
+                _executionManager.SetGlobalVariables(globalVars);
 
                 await _executionManager.RunSingleAsync(WorkflowTabViewModel.SelectedTab);
                 AddLog("✅ 执行完成");
@@ -1825,56 +1956,32 @@ SplitterPosition = position;
             if (WorkflowTabViewModel.SelectedTab == null)
                 return;
 
+            // Phase 3: 确保节点是 WorkflowNode 实例（消除 FromBase 副本，实现对象级共享）
+            if (node is not Models.WorkflowNode uiNode)
+            {
+                throw new InvalidOperationException(
+                    $"节点必须是 WorkflowNode 实例。节点 {node.Id} 的实际类型为 {node.GetType().Name}");
+            }
+
             AddLog($"➕ 添加节点: {node.Name} (ID={node.Id}, 类型={node.ToolType})");
 
-            // 添加到 UI 集合（通过命令模式，支持撤销）
-            var uiNode = Models.WorkflowNode.FromBase(node);
+            // ★ 子程序节点：自动创建子工作流并关联（用户无需手动配置）
+            if (string.Equals(node.ToolType, "Subroutine", StringComparison.OrdinalIgnoreCase) &&
+                string.IsNullOrEmpty(uiNode.SubroutineId))
+            {
+                CreateNewSubroutineWorkflow(uiNode);
+                AddLog($"🆕 自动创建子程序工作流: {uiNode.DispName} (ID: {uiNode.SubroutineId})");
+            }
+
+            // 添加到 UI 集合
             var command = new AppCommands.AddNodeCommand(WorkflowTabViewModel.SelectedTab.WorkflowNodes, uiNode);
             WorkflowTabViewModel.SelectedTab.CommandManager.Execute(command);
 
-            // 同时添加到 Solution.Workflow.Nodes（同一对象引用）
-            var solutionManager = Adapters.ServiceInitializer.SolutionManager;
-            var workflow = solutionManager?.CurrentSolution?.Workflows.FirstOrDefault(w => w.Id == WorkflowTabViewModel.SelectedTab.Id);
-            if (workflow != null && !workflow.Nodes.Contains(node))
+            // 同步到引擎工作流（导航时 NavigateToWorkflowCanvas 从引擎读取，必须双向同步）
+            var engineWf = _workflowEngine.GetWorkflow(WorkflowTabViewModel.SelectedTab.CurrentWorkflowId);
+            if (engineWf != null && !engineWf.Nodes.Contains(uiNode))
             {
-                workflow.Nodes.Add(node);
-            }
-        }
-
-        /// <summary>
-        /// 从当前工作流删除节点（通过命令模式）
-        /// </summary>
-        public void DeleteNodeFromWorkflow(WorkflowNodeBase node)
-        {
-            if (WorkflowTabViewModel.SelectedTab == null)
-                return;
-
-            AddLog($"➖ 删除节点: {node.Name} (ID={node.Id})");
-
-            var command = new AppCommands.DeleteNodeCommand(
-                WorkflowTabViewModel.SelectedTab.WorkflowNodes,
-                WorkflowTabViewModel.SelectedTab.WorkflowConnections,
-                Models.WorkflowNode.FromBase(node));
-            WorkflowTabViewModel.SelectedTab.CommandManager.Execute(command);
-
-            // 同时从 Solution.Workflow.Nodes 删除
-            var solutionManager = Adapters.ServiceInitializer.SolutionManager;
-            var workflow = solutionManager?.CurrentSolution?.Workflows.FirstOrDefault(w => w.Id == WorkflowTabViewModel.SelectedTab.Id);
-            if (workflow != null)
-            {
-                workflow.Nodes.Remove(node);
-            }
-        }
-
-        /// <summary>
-        /// 移动节点到新位置（通过命令模式）
-        /// </summary>
-        public void MoveNode(WorkflowNodeBase node, Point newPosition)
-        {
-            var command = new AppCommands.MoveNodeCommand(Models.WorkflowNode.FromBase(node), node.Position, newPosition);
-            if (WorkflowTabViewModel.SelectedTab != null)
-            {
-                WorkflowTabViewModel.SelectedTab.CommandManager.Execute(command);
+                engineWf.Nodes.Add(uiNode);
             }
         }
 
@@ -1895,6 +2002,9 @@ SplitterPosition = position;
                 c.SourcePort == connection.SourcePort &&
                 c.TargetPort == connection.TargetPort);
 
+            // 获取引擎工作流（同步用）
+            var engineWf = _workflowEngine.GetWorkflow(WorkflowTabViewModel.SelectedTab.CurrentWorkflowId);
+
             if (existingConnection != null)
             {
                 // 覆盖：用新连接替换旧连接
@@ -1904,6 +2014,14 @@ SplitterPosition = position;
 
                 var command = new AppCommands.ReplaceConnectionCommand(connections, existingConnection, connection);
                 WorkflowTabViewModel.SelectedTab.CommandManager.Execute(command);
+
+                // 同步到引擎工作流
+                if (engineWf != null)
+                {
+                    engineWf.Connections.Remove(existingConnection);
+                    if (!engineWf.Connections.Contains(connection))
+                        engineWf.Connections.Add(connection);
+                }
             }
             else
             {
@@ -1914,38 +2032,16 @@ SplitterPosition = position;
 
                 var command = new AppCommands.AddConnectionCommand(connections, connection);
                 WorkflowTabViewModel.SelectedTab.CommandManager.Execute(command);
+
+                // 同步到引擎工作流
+                if (engineWf != null && !engineWf.Connections.Contains(connection))
+                {
+                    engineWf.Connections.Add(connection);
+                }
             }
 
             // 连线建立后自动绑定 ImageSource（所见即所得）
             AutoBindImageSourceOnConnectionAdded(connection);
-
-            // 连接变更后立即刷新当前选中节点的图像显示（无需用户切走再切回）
-            RefreshImageDisplayIfAffected(connection);
-        }
-
-        /// <summary>
-        /// 从当前工作流删除连接（通过命令模式）
-        /// </summary>
-        public void DeleteConnectionFromWorkflow(WorkflowConnection connection)
-        {
-            if (WorkflowTabViewModel.SelectedTab == null)
-            {
-                return;
-            }
-
-            // 获取节点名称用于日志
-            var sourceNode = WorkflowTabViewModel.SelectedTab.WorkflowNodes.FirstOrDefault(n => n.Id == connection.SourceNodeId);
-            var targetNode = WorkflowTabViewModel.SelectedTab.WorkflowNodes.FirstOrDefault(n => n.Id == connection.TargetNodeId);
-            AddLog($"⛓️ 删除连接: {sourceNode?.Name ?? connection.SourceNodeId} → {targetNode?.Name ?? connection.TargetNodeId}");
-
-            // 删除前记录目标节点引用（删除后连接集合会变更）
-            var targetNodeRef = targetNode as WorkflowNodeBase;
-
-            var command = new AppCommands.DeleteConnectionCommand(WorkflowTabViewModel.SelectedTab.WorkflowConnections, connection);
-            WorkflowTabViewModel.SelectedTab.CommandManager.Execute(command);
-
-            // 连线删除后自动回退 ImageSource
-            AutoBindImageSourceOnConnectionRemoved(connection.SourceNodeId, targetNodeRef);
 
             // 连接变更后立即刷新当前选中节点的图像显示（无需用户切走再切回）
             RefreshImageDisplayIfAffected(connection);
@@ -1981,74 +2077,61 @@ SplitterPosition = position;
 
         /// <summary>
         /// 连线建立后自动绑定 ImageSource — 确保所见即所得
+        /// 同时对目标节点和源节点尝试自动绑定。
+        /// 源节点绑定覆盖子工作流第一个节点（无上游连线）的场景。
         /// </summary>
-        /// <remarks>
-        /// 核心逻辑：如果目标节点的 ImageSource 为 null（从未手动选过），
-        /// 则自动设置为当前所有上游节点中第一个 Mat 类型的 AvailableDataSource。
-        /// 这样不打开调试窗口时执行路径和打开调试窗口时显示路径始终一致。
-        /// </remarks>
         private void AutoBindImageSourceOnConnectionAdded(WorkflowConnection connection)
         {
             if (WorkflowTabViewModel.SelectedTab == null) return;
 
             var targetNode = WorkflowTabViewModel.SelectedTab.WorkflowNodes
                 .FirstOrDefault(n => n.Id == connection.TargetNodeId) as WorkflowNodeBase;
-            if (targetNode?.Parameters == null) return;
+            if (targetNode != null)
+                TryAutoBindImageSource(targetNode);
 
-            // 检查参数是否有 ImageSource 属性
-            var imageSourceProp = targetNode.Parameters.GetType().GetProperty("ImageSource");
-            if (imageSourceProp == null) return;
-
-            // 如果 ImageSource 已有值（用户手动选过），不覆盖
-            var currentImageSource = imageSourceProp.GetValue(targetNode.Parameters) as AvailableDataSource;
-            if (currentImageSource != null) return;
-
-            // 查找第一个 Mat 类型的上游数据源
-            var firstMatSource = FindFirstMatDataSource(
-                connection.TargetNodeId,
-                WorkflowTabViewModel.SelectedTab.WorkflowConnections);
-
-            if (firstMatSource != null)
+            if (connection.SourceNodeId != connection.TargetNodeId)
             {
-                imageSourceProp.SetValue(targetNode.Parameters, firstMatSource);
-                AddLog($"自动绑定图像源: {targetNode.Name} → {firstMatSource.DropdownDisplayText}");
+                var sourceNode = WorkflowTabViewModel.SelectedTab.WorkflowNodes
+                    .FirstOrDefault(n => n.Id == connection.SourceNodeId) as WorkflowNodeBase;
+                if (sourceNode != null)
+                    TryAutoBindImageSource(sourceNode);
             }
         }
 
         /// <summary>
-        /// 连线删除后自动回退 ImageSource — 确保所见即所得
+        /// 连线删除后自动重设 ImageSource — 确保所见即所得
         /// </summary>
-        /// <remarks>
-        /// 核心逻辑：如果当前 ImageSource 指向被删的源节点，
-        /// 则自动回退到剩余上游的第一个 Mat 输出，无上游则清空。
-        /// </remarks>
         private void AutoBindImageSourceOnConnectionRemoved(
             string removedSourceNodeId,
             WorkflowNodeBase? targetNode)
         {
             if (targetNode?.Parameters == null) return;
 
-            // 检查参数是否有 ImageSource 属性
             var imageSourceProp = targetNode.Parameters.GetType().GetProperty("ImageSource");
             if (imageSourceProp == null) return;
 
-            // 如果当前 ImageSource 不是指向被删的源节点，不需要处理
             var currentImageSource = imageSourceProp.GetValue(targetNode.Parameters) as AvailableDataSource;
             if (currentImageSource?.SourceNodeId != removedSourceNodeId) return;
 
-            // 查找剩余上游的第一个 Mat 输出
-            if (WorkflowTabViewModel.SelectedTab == null) return;
-
-            var firstMatSource = FindFirstMatDataSource(
-                targetNode.Id,
-                WorkflowTabViewModel.SelectedTab.WorkflowConnections);
-
-            // 有则回退，无则清空
-            imageSourceProp.SetValue(targetNode.Parameters, firstMatSource);
-
-            if (firstMatSource != null)
+            // 从 DSQS 获取剩余可用图像源，取第一个
+            // 没有则清空（null），不兜底回退
+            AvailableDataSource? firstImageSource = null;
+            if (targetNode is UI.Models.WorkflowNode uiNode)
             {
-                AddLog($"图像源自动回退: {targetNode.Name} → {firstMatSource.DropdownDisplayText}");
+                var dataProvider = GetDataProviderForNode(uiNode);
+                if (dataProvider is IDataSourceQueryService queryService)
+                {
+                    firstImageSource = queryService.GetAvailableDataSources(targetNode.Id)
+                        .FirstOrDefault(ds => ds.PropertyType != null
+                            && typeof(IVisionImage).IsAssignableFrom(ds.PropertyType));
+                }
+            }
+
+            imageSourceProp.SetValue(targetNode.Parameters, firstImageSource);
+
+            if (firstImageSource != null)
+            {
+                AddLog($"图像源已更新: {targetNode.Name} → {firstImageSource.DropdownDisplayText}");
             }
             else
             {
@@ -2057,74 +2140,37 @@ SplitterPosition = position;
         }
 
         /// <summary>
-        /// 从所有上游节点中查找第一个 Mat 类型的 AvailableDataSource
+        /// 从 DataSourceQueryService 取可用数据源列表中的第一个 IVisionImage 源，
+        /// 统一设置到节点参数的 ImageSource 属性。
+        /// 单一路径，无回退 — DataSourceQueryService 返回所有可用数据源
+        /// （包含真实上游节点输出 + 子程序合成端口 __SubroutineInputs__）。
         /// </summary>
-        /// <remarks>
-        /// 与 ImageSourceSelector 的下拉列表过滤逻辑一致：
-        /// 只返回 PropertyType.Name == "Mat" 的数据源。
-        /// </remarks>
-        private AvailableDataSource? FindFirstMatDataSource(
-            string targetNodeId,
-            ObservableCollection<WorkflowConnection> connections)
+        private void TryAutoBindImageSource(WorkflowNodeBase node)
         {
-            if (WorkflowTabViewModel.SelectedTab == null) return null;
+            if (node?.Parameters == null) return;
 
-            var metadataProvider = new PropertyMetadataProviderAdapter();
-            var nodes = WorkflowTabViewModel.SelectedTab.WorkflowNodes;
+            var imageSourceProp = node.Parameters.GetType().GetProperty("ImageSource");
+            if (imageSourceProp == null) return;
 
-            // 按连接顺序遍历所有上游节点
-            var parentConnections = connections
-                .Where(c => c.TargetNodeId == targetNodeId)
-                .ToList();
-
-            foreach (var conn in parentConnections)
-            {
-                var sourceNode = nodes.FirstOrDefault(n => n.Id == conn.SourceNodeId) as WorkflowNodeBase;
-                if (sourceNode == null) continue;
-
-                // 通过 PropertyMetadataProvider 获取源节点的所有输出属性元数据
-                var metadataList = metadataProvider.GetAllPropertyMetadata(sourceNode.ToolType);
-                if (metadataList == null) continue;
-
-                // 找第一个 Mat 类型的属性（与 ImageSourceSelector 的过滤逻辑一致）
-                var matMetadata = metadataList.FirstOrDefault(m =>
-                    m.PropertyType?.Name == "Mat");
-
-                if (matMetadata != null)
-                {
-                    return new AvailableDataSource
-                    {
-                        SourceNodeId = sourceNode.Id,
-                        SourceNodeName = sourceNode.Name,
-                        SourceNodeType = sourceNode.ToolType,
-                        PropertyName = matMetadata.PropertyName,
-                        DisplayName = matMetadata.DisplayName,
-                        PropertyType = matMetadata.PropertyType,
-                    };
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// 删除选中的节点（通过命令模式）
-        /// </summary>
-        public void DeleteSelectedNodes()
-        {
-            if (WorkflowTabViewModel.SelectedTab == null)
+            // 已有绑定（用户手动选过），不覆盖
+            if (imageSourceProp.GetValue(node.Parameters) is AvailableDataSource current
+                && !string.IsNullOrEmpty(current.SourceNodeId))
                 return;
 
-            var selectedNodes = WorkflowTabViewModel.SelectedTab.WorkflowNodes.Where(n => n.IsSelected).ToList();
-            var command = new AppCommands.BatchDeleteNodesCommand(
-                WorkflowTabViewModel.SelectedTab.WorkflowNodes,
-                WorkflowTabViewModel.SelectedTab.WorkflowConnections,
-                selectedNodes);
-            WorkflowTabViewModel.SelectedTab.CommandManager.Execute(command);
+            if (node is not UI.Models.WorkflowNode uiNode) return;
 
-            // 清除选中状态
-            SelectedNode = null;
-            ClearNodeSelections();
+            var dataProvider = GetDataProviderForNode(uiNode);
+            if (dataProvider is not IDataSourceQueryService queryService) return;
+
+            var firstImageSource = queryService.GetAvailableDataSources(node.Id)
+                .FirstOrDefault(ds => ds.PropertyType != null
+                    && typeof(IVisionImage).IsAssignableFrom(ds.PropertyType));
+
+            if (firstImageSource != null)
+            {
+                imageSourceProp.SetValue(node.Parameters, firstImageSource);
+                AddLog($"自动绑定图像源: {node.Name} → {firstImageSource.DropdownDisplayText}");
+            }
         }
 
         /// <summary>
@@ -2196,286 +2242,342 @@ SplitterPosition = position;
                 System.Windows.MessageBoxButton.YesNo,
                 System.Windows.MessageBoxImage.Question);
 
-            if (result == System.Windows.MessageBoxResult.Yes)
+            if (result != System.Windows.MessageBoxResult.Yes)
+                return;
+
+            // 执行前预计算所有将会被删除的连接（显式选中 + 与待删节点关联的，去重）
+            var allAffectedConnectionIds = new HashSet<string>(
+                selectedConnections.Select(c => c.Id));
+            var allAffectedConnections = new List<WorkflowConnection>(selectedConnections);
+
+            foreach (var node in selectedNodes)
             {
-                // 1. 先删除选中的连接线
-                foreach (var conn in selectedConnections.ToList())
+                foreach (var conn in WorkflowTabViewModel.SelectedTab.WorkflowConnections
+                    .Where(c => c.SourceNodeId == node.Id || c.TargetNodeId == node.Id))
                 {
-                    DeleteConnectionFromWorkflow(conn);
+                    if (allAffectedConnectionIds.Add(conn.Id))
+                        allAffectedConnections.Add(conn);
                 }
-
-                // 2. 再删除选中的节点（BatchDeleteNodesCommand 会自动清理关联连接线）
-                if (selectedNodes.Count > 0)
-                {
-                    var command = new AppCommands.BatchDeleteNodesCommand(
-                        WorkflowTabViewModel.SelectedTab.WorkflowNodes,
-                        WorkflowTabViewModel.SelectedTab.WorkflowConnections,
-                        selectedNodes);
-                    WorkflowTabViewModel.SelectedTab.CommandManager.Execute(command);
-                }
-
-                // 3. 清除选中状态
-                SelectedNode = null;
-                SelectedConnection = null;
-                ClearNodeSelections();
-                ClearConnectionSelections();
-
-                AddLog($"🗑️ 已删除 {string.Join("和 ", parts)}");
             }
+
+            // 合并为一个原子命令，消除两步骤间的重叠删除问题
+            var command = new AppCommands.BatchDeleteNodesAndConnectionsCommand(
+                WorkflowTabViewModel.SelectedTab.WorkflowNodes,
+                WorkflowTabViewModel.SelectedTab.WorkflowConnections,
+                selectedNodes,
+                selectedConnections);
+            WorkflowTabViewModel.SelectedTab.CommandManager.Execute(command);
+
+            // 同步删除到引擎工作流
+            var engineWf = _workflowEngine.GetWorkflow(WorkflowTabViewModel.SelectedTab.CurrentWorkflowId);
+            if (engineWf != null)
+            {
+                foreach (var conn in allAffectedConnections)
+                {
+                    engineWf.Connections.Remove(conn);
+                }
+                foreach (var node in selectedNodes)
+                {
+                    engineWf.Nodes.Remove(node);
+                }
+            }
+
+            // 级联清理：清理被删节点关联的全局变量绑定
+            foreach (var node in selectedNodes)
+            {
+                CleanupBindingsForDeletedNode(node.Id);
+            }
+
+            // 处理被删连接的后置副作用（ImageSource 回退、日志）
+            foreach (var conn in allAffectedConnections)
+            {
+                var targetNode = WorkflowTabViewModel.SelectedTab.WorkflowNodes
+                    .FirstOrDefault(n => n.Id == conn.TargetNodeId) as WorkflowNodeBase;
+                AutoBindImageSourceOnConnectionRemoved(conn.SourceNodeId, targetNode);
+
+                var sourceNodeName = WorkflowTabViewModel.SelectedTab.WorkflowNodes
+                    .FirstOrDefault(n => n.Id == conn.SourceNodeId)?.Name ?? conn.SourceNodeId;
+                var targetNodeName = targetNode?.Name ?? conn.TargetNodeId;
+                AddLog($"⛓️ 删除连接: {sourceNodeName} → {targetNodeName}");
+            }
+
+            // 刷新当前选中节点的图像（如果受影响）
+            if (allAffectedConnections.Count > 0)
+                RefreshImageDisplayIfAffected(allAffectedConnections[^1]);
+
+            // 清除选中状态
+            SelectedNode = null;
+            SelectedConnection = null;
+            ClearNodeSelections();
+            ClearConnectionSelections();
+
+            AddLog($"🗑️ 已删除 {string.Join("和 ", parts)}");
         }
 
         private async void ExecuteOpenDebugWindow(Models.WorkflowNode? node)
         {
-            if (node != null)
+            if (node == null) return;
+
+            try
             {
-                try
+                var mainImageControl = GetMainImageControl?.Invoke();
+                var context = new NodeOpenContext(Application.Current.MainWindow, mainImageControl);
+                var decisionChain = new NodeOpenDecisionChain();
+                var success = decisionChain.Execute(node.ToWorkflowNode(), context);
+
+                if (!success)
                 {
-                    // 从 ToolRegistry 获取元数据
-                    var toolId = node.ToolType ?? node.Name;
-                    var toolMetadata = ToolRegistry.GetToolMetadata(toolId);
+                    AddLog($"❌ 节点打开失败: {node.Name}");
+                    return;
+                }
 
-                    AddLog($"🔧 尝试打开调试窗口：工具ID={toolId}，节点名称={node.Name}");
-
-                    if (toolMetadata == null)
+                if (context.CreatedWindow == null)
+                {
+                    if (context.DebugControl is System.Windows.Controls.UserControl userControl)
                     {
-                        AddLog($"❌ 未找到工具 '{toolId}' 的元数据信息");
-                        System.Windows.MessageBox.Show(
-                            $"未找到工具 '{toolId}' 的元数据信息",
-                            "未找到工具",
-                            System.Windows.MessageBoxButton.OK,
-                            System.Windows.MessageBoxImage.Warning);
+                        // DecisionChain 将 FrameworkElement 留待调用方包装为 DefaultDebugWindow
+                        var debugWindow = new SunEyeVision.Plugin.SDK.UI.Windows.DefaultDebugWindow(userControl);
+                        if (context.MainWindow != null)
+                            debugWindow.Owner = context.MainWindow;
+                        context.CreatedWindow = debugWindow;
+                    }
+                    else
+                    {
+                        AddLog($"ℹ️ 节点 '{node.Name}' 无调试界面，无需打开窗口");
                         return;
                     }
+                }
 
-                    AddLog($"✅ 找到工具元数据：{toolMetadata.DisplayName}");
+                // 调试窗口单例管理
+                if (_openDebugWindow?.IsLoaded == true)
+                {
+                    var result = System.Windows.MessageBox.Show(
+                        $"调试窗口已打开（{_openDebugWindow.Title}）\n\n是否关闭当前窗口并打开新的调试窗口？",
+                        "调试窗口已存在",
+                        System.Windows.MessageBoxButton.YesNo,
+                        System.Windows.MessageBoxImage.Question);
 
-                    // 获取工具实例用于运行时检查
-                    var tool = ToolRegistry.CreateToolInstance(toolId);
-                    if (tool == null)
+                    if (result != System.Windows.MessageBoxResult.Yes)
                     {
-                        AddLog($"❌ 无法创建工具实例");
-                        System.Windows.MessageBox.Show(
-                            $"无法创建工具 '{toolId}' 的实例",
-                            "无法创建工具",
-                            System.Windows.MessageBoxButton.OK,
-                            System.Windows.MessageBoxImage.Warning);
+                        _openDebugWindow.Activate();
+                        _openDebugWindow.Focus();
                         return;
                     }
-
-                    AddLog($"✅ 创建工具实例成功：{tool.GetType().Name}，HasDebugWindow={tool.HasDebugWindow}");
-
-                    // 使用 NodeInterfaceFactory 获取界面类型（运行时检查版本）
-                    var interfaceType = NodeInterfaceFactory.GetInterfaceType(node.ToWorkflowNode(), toolMetadata, tool);
-                    AddLog($"🔍 界面类型：{interfaceType}");
-
-                    switch (interfaceType)
-                    {
-                        case NodeInterfaceType.DebugWindow:
-                            // 全局单例模式：有且只能有一个调试窗口被打开
-                            if (_openDebugWindow != null && _openDebugWindow.IsLoaded)
-                            {
-                                // 已有窗口，询问用户是否切换
-                                var result = System.Windows.MessageBox.Show(
-                                    $"调试窗口已打开（{_openDebugWindow.Title}）\n\n是否关闭当前窗口并打开新的调试窗口？",
-                                    "调试窗口已存在",
-                                    System.Windows.MessageBoxButton.YesNo,
-                                    System.Windows.MessageBoxImage.Question);
-
-                                if (result != System.Windows.MessageBoxResult.Yes)
-                                {
-                                    // 用户选择不切换，激活现有窗口
-                                    _openDebugWindow.Activate();
-                                    _openDebugWindow.Focus();
-                                    break;
-                                }
-
-                                // 关闭现有窗口
-                                _openDebugWindow.Close();
-                                _openDebugWindow = null;
-                            }
-
-                            // 使用新架构创建调试窗口
-                            try
-                            {
-                                // 创建决策链
-                                var decisionChain = new NodeOpenDecisionChain();
-
-                                // 创建上下文
-                                var mainImageControl = GetMainImageControl?.Invoke();
-                                var context = new NodeOpenContext(
-                                    Application.Current.MainWindow,
-                                    mainImageControl)
-                                {
-                                    Node = node.ToWorkflowNode()
-                                };
-
-                                // 执行决策链
-                                var success = decisionChain.Execute(context.Node, context);
-
-                                if (success && context.CreatedWindow != null)
-                                {
-                                    // 获取创建的窗口
-                                    var debugWindow = context.CreatedWindow;
-
-                                    // 设置标题
-                                    debugWindow.Title = node.Name;
-
-                                    // 赋值到 _openDebugWindow，支持 IsDebugWindowOpen 检测
-                                    _openDebugWindow = debugWindow;
-
-                                    // 注册关闭事件，窗口关闭时清理引用
-                                    debugWindow.Closed += (s, e) =>
-                                    {
-                                        // 1. 清除窗口引用
-                                        _openDebugWindow = null;
-
-                                        // 2. 恢复主窗口 ImageControl 的只读模式
-                                        var mainImageControl = GetMainImageControl?.Invoke();
-                                        if (mainImageControl != null)
-                                        {
-                                            mainImageControl.OverlayHitTestVisible = false;
-                                        }
-
-                                        // 3. 刷新当前选中节点的结果显示
-                                        if (SelectedNode != null && SelectedNode.IsSelected)
-                                        {
-                                            var executionResult = _workflowContext.GetNodeResult(SelectedNode.Id);
-                                            if (executionResult?.ToolResult != null)
-                                            {
-                                                _nodeResultManager.RefreshResultDisplay(SelectedNode, executionResult.ToolResult);
-                                            }
-                                        }
-
-                                        AddLog($"🔧 关闭调试窗口: {node.Name}");
-                                    };
-
-                                    // 初始化调试目标（统一入口：注入参数、数据提供者、显示窗口）
-                                    await InitializeToolControlAsync(debugWindow, node);
-                                }
-                                else
-                                {
-                                    AddLog($"⚠️ 工具 '{node.Name}' 无调试窗口或创建失败");
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                AddLog($"❌ 创建调试窗口失败: {ex.Message}");
-                                System.Windows.MessageBox.Show(
-                                    $"创建调试窗口失败: {ex.Message}",
-                                    "错误",
-                                    System.Windows.MessageBoxButton.OK,
-                                    System.Windows.MessageBoxImage.Error);
-                            }
-                            break;
-
-                        case NodeInterfaceType.NewWorkflowCanvas:
-                            // 创建新的工作流标签页（子程序节点专用）
-                            CreateSubroutineWorkflowTab(node);
-                            break;
-
-                        case NodeInterfaceType.SubroutineEditor:
-                            // TODO: 实现节点编辑
-                            System.Windows.MessageBox.Show(
-                                "节点编辑功能待实现",
-                                "提示",
-                                System.Windows.MessageBoxButton.OK,
-                                System.Windows.MessageBoxImage.Information);
-                            break;
-
-                        case NodeInterfaceType.None:
-                        default:
-                            // 不显示任何界面
-                            break;
-                    }
+                    _openDebugWindow.Close();
                 }
-                catch (Exception ex)
+
+                _openDebugWindow = context.CreatedWindow;
+                _openDebugWindow.Title = node.Name;
+
+                _openDebugWindow.Closed += (s, e) =>
                 {
-                    System.Windows.MessageBox.Show(
-                        $"打开节点失败: {ex.Message}",
-                        "错误",
-                        System.Windows.MessageBoxButton.OK,
-                        System.Windows.MessageBoxImage.Error);
-                    AddLog($"打开节点失败: {ex.Message}");
-                }
+                    _openDebugWindow = null;
+                    var imgCtrl = GetMainImageControl?.Invoke();
+                    if (imgCtrl != null) imgCtrl.OverlayHitTestVisible = false;
+                    if (SelectedNode?.IsSelected == true)
+                    {
+                        var executionResult = CurrentWorkflowContext?.GetNodeResult(SelectedNode.Id);
+                        if (executionResult?.Result != null)
+                            _nodeResultManager.RefreshResultDisplay(SelectedNode, executionResult.Result);
+                    }
+                    AddLog($"🔧 关闭调试窗口: {node.Name}");
+                };
+
+                await InitializeToolControlAsync(_openDebugWindow, node);
+                AddLog($"✅ 调试窗口已打开: {node.Name}");
+            }
+            catch (Exception ex)
+            {
+                AddLog($"打开节点失败: {ex.Message}");
+                System.Windows.MessageBox.Show(
+                    $"打开节点失败: {ex.Message}",
+                    "错误",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Error);
             }
         }
 
         /// <summary>
-        /// 为子程序节点创建新的标签页
+        /// 控制流节点打开事件处理 - 由 NodeOpenDecisionChain 通过事件触发
         /// </summary>
-        /// <param name="subroutineNode">子程序节点</param>
-        private void CreateSubroutineWorkflowTab(Models.WorkflowNode subroutineNode)
+        private void OnControlFlowNodeOpen(WorkflowNodeBase workflowNode)
+        {
+            var uiNode = WorkflowTabViewModel?.SelectedTab?.WorkflowNodes
+                ?.FirstOrDefault(n => n.Id == workflowNode.Id);
+            if (uiNode != null)
+            {
+                AddLog($"↪️ 双击子程序节点: {uiNode.Name}");
+                OpenOrNavigateToSubroutine(uiNode);
+            }
+        }
+
+        /// <summary>
+        /// 打开或导航到子程序（VM风格：同一Tab内下钻，不新建Tab）
+        /// 使用 SubroutineId 属性（而非 ExtraData）关联子程序工作流
+        /// </summary>
+        /// <param name="node">触发导航的子程序节点</param>
+        private void OpenOrNavigateToSubroutine(Models.WorkflowNode node)
         {
             try
             {
-                if (WorkflowTabViewModel == null)
+                if (WorkflowTabViewModel?.SelectedTab == null)
                 {
-                    AddLog("❌ WorkflowTabViewModel 为null");
+                    AddLog("❌ 没有选中的工作流标签页，无法导航到子程序");
                     return;
                 }
 
-                // 使用子程序节点名称作为工作流名称
-                string workflowName = subroutineNode.Name;
-                if (string.IsNullOrWhiteSpace(workflowName))
+                var selectedTab = WorkflowTabViewModel.SelectedTab;
+
+                string subroutineId;
+
+                // ★ 使用节点上的 SubroutineId 属性（SSOT，取代 ExtraData）
+                subroutineId = node.SubroutineId ?? string.Empty;
+
+                if (!string.IsNullOrEmpty(subroutineId))
                 {
-                    workflowName = "子程序";
+                    // 已有关联：同步节点 DispName 到引擎工作流名称（支持重命名）
+                    var existingWorkflow = _workflowEngine.GetWorkflow(subroutineId);
+                    if (existingWorkflow != null && existingWorkflow.Name != node.Name)
+                    {
+                        existingWorkflow.Name = node.Name;
+                        AddLog($"🔄 同步子程序工作流名称: {existingWorkflow.Name}");
+                    }
+                    AddLog($"↪️ 导航到已有子程序: {node.Name} (ID: {subroutineId})");
+                }
+                else
+                {
+                    // 首次打开：创建子程序工作流并关联到节点
+                    subroutineId = CreateNewSubroutineWorkflow(node);
+                    AddLog($"🆕 创建并导航到子程序: {node.Name} (ID: {subroutineId})");
                 }
 
-                AddLog($"📝 创建子程序标签页: {workflowName}");
+                // 从引擎读取子程序工作流的实际名称
+                var subWorkflow = _workflowEngine.GetWorkflow(subroutineId);
+                var workflowDisplayName = node.Name;
 
-                // 创建新的工作流标签页
-                var newWorkflowTab = new WorkflowTabViewModel
-                {
-                    Name = workflowName,
-                    Id = Guid.NewGuid().ToString()
-                };
+                // 下钻导航
+                selectedTab.NavigateToSubroutine(subroutineId, workflowDisplayName);
 
-                // ✅ 为没有绑定 Solution 的工作流创建独立的连接集合
-                newWorkflowTab.SetConnections(new ObservableCollection<WorkflowConnection>());
+                // 加载子程序画布内容（从引擎获取子程序工作流的节点/连接）
+                NavigateToWorkflowCanvas(subroutineId);
 
-                // 添加到标签页集合
-                WorkflowTabViewModel.Tabs.Add(newWorkflowTab);
-
-                // 选中新创建的标签页
-                WorkflowTabViewModel.SelectedTab = newWorkflowTab;
-
-                AddLog($"✅ 创建子程序 '{workflowName}' 成功");
-                AddLog($"💡 现在可以在画布中添加子程序内部节点逻辑");
+                AddLog($"✅ 子程序导航完成: {workflowDisplayName}");
             }
             catch (Exception ex)
             {
                 System.Windows.MessageBox.Show(
-                    $"创建子程序失败: {ex.Message}",
+                    $"导航到子程序失败: {ex.Message}",
                     "错误",
                     System.Windows.MessageBoxButton.OK,
                     System.Windows.MessageBoxImage.Error);
-                AddLog($"❌ 创建子程序失败: {ex.Message}");
+                AddLog($"❌ 子程序导航失败: {ex.Message}");
             }
         }
 
         /// <summary>
+        /// 为子程序节点创建新的子程序工作流并关联（使用 SubroutineId 属性）
+        /// </summary>
+        private string CreateNewSubroutineWorkflow(Models.WorkflowNode node)
+        {
+            var subroutineId = Guid.NewGuid().ToString();
+
+            // 注册到工作流引擎
+            var workflow = _workflowEngine.CreateWorkflow(subroutineId, node.Name);
+            workflow.IsSubroutine = true;
+
+            // ★ 使用 SubroutineId 属性（不再是 ExtraData 弱类型字典）
+            node.SubroutineId = subroutineId;
+
+            AddLog($"📝 新建子程序工作流: {node.Name} (ID: {subroutineId})");
+
+            return subroutineId;
+        }
+
+        /// <summary>
+        /// 导航到指定工作流ID对应的画布内容
+        /// 从引擎读取工作流的节点/连接并绑定到 Tab
+        /// </summary>
+        private void NavigateToWorkflowCanvas(string workflowId)
+        {
+            var selectedTab = WorkflowTabViewModel?.SelectedTab;
+            if (selectedTab == null) return;
+
+            // ★ 清空当前画布上所有节点和连接的选中状态（防止切换后残留）
+            foreach (var node in selectedTab.WorkflowNodes)
+            {
+                node.IsSelected = false;
+            }
+            foreach (var conn in selectedTab.WorkflowConnections)
+            {
+                conn.IsSelected = false;
+            }
+
+            var workflow = _workflowEngine.GetWorkflow(workflowId);
+            if (workflow == null)
+            {
+                AddLog($"⚠️ 工作流未找到: {workflowId}，将使用空画布");
+                return;
+            }
+
+            // 直接绑定引擎中的节点和连接集合到 Tab
+            selectedTab.SetNodes(workflow.Nodes);
+            selectedTab.SetConnections(workflow.Connections);
+
+            AddLog($"📋 已加载画布: 工作流={workflow.Name}, 节点={workflow.Nodes.Count}, 连接={workflow.Connections.Count}");
+        }
+
+        /// <summary>
+        /// 导航返回（由 [↩] 按钮触发）
+        /// Tab 的 NavigateBack 已弹出工作流ID栈，此处加载对应画布内容
+        /// </summary>
+        public bool NavigateBackFromSubroutine()
+        {
+            if (WorkflowTabViewModel?.SelectedTab == null) return false;
+
+            var tab = WorkflowTabViewModel.SelectedTab;
+            if (!tab.NavigateBack()) return false;
+
+            // 恢复上层工作流的画布内容
+            NavigateToWorkflowCanvas(tab.CurrentWorkflowId);
+
+            // 恢复上层工作流名称
+            var parentWorkflow = _workflowEngine.GetWorkflow(tab.CurrentWorkflowId);
+            tab.SetCurrentWorkflowName(parentWorkflow?.Name ?? tab.Name);
+
+            AddLog($"↩️ 返回上层工作流: {tab.EffectiveDisplayName}");
+            return true;
+        }
+
+        /// <summary>
         /// 更新图像显示控件的数据源（当前节点 + 所有上游节点）
-        /// 统一使用 DataSourceQueryService.GetMatDisplaySources() 获取数据源，
+        /// 统一使用 DataSourceQueryService.GetImageDisplaySources() 获取数据源，
         /// 与 ImageSourceSelector 共享相同的元数据源
         /// </summary>
         private void UpdateDisplayImageSources(Models.WorkflowNode? selectedNode)
         {
+            // ★ 数据已在引擎中（SSOT），无需额外同步
+
             LogInfo($"图像源|UpdateDisplayImageSources 入口: node={(selectedNode != null ? $"{selectedNode.Name}({selectedNode.Id})" : "null")}, Clear前Count={DisplayImageSources.Count}", "ImageSourceSelector");
             DisplayImageSources.Clear();
 
             if (selectedNode == null)
             {
-                LogInfo($"图像源|selectedNode==null, 清空数据源", "ImageSourceSelector");
+                LogInfo($"图像源|selectedNode==null, 清空数据源和显示", "ImageSourceSelector");
+                // ★ Bug修复：当 selectedNode==null 时 UpdateDisplayImageFromCurrentSource
+                //   会因为 _selectedNode==null 而直接返回（第2616行），导致 DisplayImage
+                //   永远不会被清除。必须在 return 前直接清除，不能依赖延迟回调。
+                DisplayImage = null;
+                _nodeResultManager.ClearResultGraphics();
                 SetSelectedDisplayImageSourceIndexDeferred(-1);
                 return;
             }
 
-            // 统一从 DataSourceQueryService 获取 Mat 数据源
+            // 统一从 DataSourceQueryService 获取图像数据源
             // （走 IPropertyMetadataProvider，与 ImageSourceSelector 同源）
             var provider = GetDataProviderForNode(selectedNode);
             if (provider is DataSourceQueryService queryService)
             {
-                var sources = queryService.GetMatDisplaySources(selectedNode.Id);
+                var sources = queryService.GetImageDisplaySources(selectedNode.Id);
                 foreach (var ds in sources)
                     DisplayImageSources.Add(ds);
                 LogInfo($"图像源|数据源列表 (Count={DisplayImageSources.Count}): {string.Join(" | ", DisplayImageSources.Select((s, i) => $"[{i}]{s.SourceNodeName}.{s.DisplayName}"))}", "ImageSourceSelector");
@@ -2529,6 +2631,17 @@ SplitterPosition = position;
             }
             int targetIdx = firstCurrent >= 0 ? firstCurrent : (DisplayImageSources.Count > 0 ? 0 : -1);
             SetSelectedDisplayImageSourceIndexDeferred(targetIdx);
+
+            // 节点已选中但无可显示图像源 → 清除残留图像和图形覆盖
+            if (DisplayImageSources.Count == 0)
+            {
+                if (DisplayImage != null)
+                {
+                    LogInfo($"图像源|节点 {selectedNode.Name} 无输出图像, 清除残留显示", "ImageSourceSelector");
+                    DisplayImage = null;
+                }
+                _nodeResultManager.ClearResultGraphics();
+            }
         }
 
         /// <summary>
@@ -2604,15 +2717,24 @@ SplitterPosition = position;
         /// </summary>
         private void SetDisplayImageFromSource(AvailableDataSource source)
         {
-            var executionResult = _workflowContext.GetNodeResult(source.SourceNodeId);
-            if (executionResult?.ToolResult == null) return;
+            var executionResult = CurrentWorkflowContext?.GetNodeResult(source.SourceNodeId);
+            if (executionResult?.Result == null)
+            {
+                // 节点未执行过，无可显示图像 → 清除残留
+                DisplayImage = null;
+                return;
+            }
 
             // 通过 NodeResultManager 获取对应的 Mat 并转换为 BitmapSource
             var bitmapSource = _nodeResultManager.GetDisplayImageFromSource(
-                executionResult.ToolResult, source.PropertyName);
+                executionResult.Result, source.PropertyName);
             if (bitmapSource != null)
             {
                 DisplayImage = bitmapSource;
+            }
+            else
+            {
+                DisplayImage = null;
             }
         }
 
@@ -2685,16 +2807,19 @@ SplitterPosition = position;
                 SelectedNodeDataAnalysisControl = dataAnalysisControl;
                 HasDataAnalysisControl = true;
 
+                // ★ 订阅选中高亮联动事件（必须无条件订阅，否则数据执行后选中DataGrid不会渲染高亮）
+                if (dataAnalysisControl is IToolControlDataAnalysis daControlForEvent)
+                {
+                    daControlForEvent.SelectionHighlightChanged += OnSelectionHighlightChanged;
+                }
+
                 // ★ 加载缓存结果（节点已执行过时，立即填充数据分析控件）
-                var cachedResult = _workflowContext.GetNodeResult(selectedNode.Id);
-                if (cachedResult?.ToolResult != null && dataAnalysisControl is IToolControlDataAnalysis daControl)
+                var cachedResult = CurrentWorkflowContext?.GetNodeResult(selectedNode.Id);
+                if (cachedResult?.Result != null && dataAnalysisControl is IToolControlDataAnalysis daControl)
                 {
                     try
                     {
-                        daControl.OnResultUpdated(cachedResult.ToolResult);
-
-                        // ★ 订阅选中高亮联动事件（图像高亮反馈）
-                        daControl.SelectionHighlightChanged += OnSelectionHighlightChanged;
+                        daControl.OnResultUpdated(cachedResult.Result);
                     }
                     catch (Exception loadEx)
                     {
@@ -2729,7 +2854,7 @@ SplitterPosition = position;
 
 
         /// <summary>
-        /// 获取节点的数据提供者
+        /// 获取节点的数据提供者（按 WorkflowId 缓存，SSOT 委托读取，抛弃旧的 _nodeResults 本地缓存）
         /// </summary>
         /// <param name="node">节点</param>
         /// <returns>数据提供者实例</returns>
@@ -2744,26 +2869,46 @@ SplitterPosition = position;
                     return null;
                 }
 
-                // 获取当前工作流
-                var currentWorkflow = _workflowEngine.CurrentWorkflow;
-                if (currentWorkflow == null)
+                // 确定工作流 ID
+                var workflowId = selectedTab.IsInSubroutine
+                    ? selectedTab.CurrentWorkflowId
+                    : _workflowEngine.CurrentWorkflow?.Id;
+
+                if (workflowId == null)
                 {
                     return null;
                 }
 
-                // 创建数据查询服务
-                // 说明：WorkflowEngine 同时实现了两个接口：
-                //   - IWorkflowConnectionProvider：提供工作流连接关系（父节点、子节点、连接线）
-                //   - INodeInfoProvider：提供节点信息（结果类型、输出端口）
-                // 由于架构分层限制，DataSourceQueryService 不能直接引用 WorkflowEngine 类，
-                // 因此通过接口注入。虽然传入的是同一个对象 _workflowEngine，
-                // 但它被分别用作两个不同的接口角色。
+                // 按 WorkflowId 缓存（GetOrAdd）
+                if (!_workflowDsqsCache.TryGetValue(workflowId, out var queryService))
+                {
+                    // 创建属性元数据提供者
+                    var metadataProvider = new SunEyeVision.Plugin.Infrastructure.Managers.Tool.PropertyMetadataProviderAdapter();
 
-                // 创建属性元数据提供者
-                var metadataProvider = new SunEyeVision.Plugin.Infrastructure.Managers.Tool.PropertyMetadataProviderAdapter();
+                    // ★ 子程序模式下使用子程序工作流作为连接/节点提供者
+                    var workflow = selectedTab.IsInSubroutine
+                        ? _workflowEngine.GetWorkflow(workflowId)
+                            ?? throw new InvalidOperationException($"子程序工作流未找到: {workflowId}")
+                        : _workflowEngine.CurrentWorkflow ?? throw new InvalidOperationException("当前工作流为空");
 
-                var queryService = new DataSourceQueryService(_workflowEngine, _workflowEngine, null, metadataProvider);
-                LogInfo($"✓ 创建数据查询服务成功: 节点 {node.Id}, 工作流 {currentWorkflow.Name}");
+                    queryService = new DataSourceQueryService(workflow, workflow, null, metadataProvider);
+
+                    // ★ SSOT 委托：不拷贝结果，直接委托到 WorkflowContext（SSOT 实时读取）
+                    //    GetNodeResult / GetPropertyValue 均通过此委托实时读取，无需本地缓存
+                    queryService.SetSootReader(nodeId =>
+                        CurrentWorkflowContext?.GetNodeResult(nodeId)?.Result);
+
+                    LogInfo($"✓ 创建数据查询服务成功: 工作流 {workflow.Name} (ID: {workflowId})");
+
+                    // ★ 子程序内部节点：注册数据源提供者，动态注入子程序输入端口（仅首次注册）
+                    if (selectedTab.IsInSubroutine)
+                    {
+                        RegisterSubroutineInputProvider(queryService, selectedTab.CurrentWorkflowId);
+                    }
+
+                    _workflowDsqsCache[workflowId] = queryService;
+                }
+
                 return queryService;
             }
             catch (Exception ex)
@@ -2771,6 +2916,115 @@ SplitterPosition = position;
                 AddLog($"❌ 创建数据查询服务失败: {ex.Message}");
                 return null;
             }
+        }
+
+        /// <summary>
+        /// 为子程序工作流注册输入端口数据源提供者
+        /// </summary>
+        private void RegisterSubroutineInputProvider(DataSourceQueryService queryService, string subWorkflowId)
+        {
+            try
+            {
+                var parentNodeId = FindParentSubroutineNodeId(subWorkflowId);
+                if (parentNodeId == null) return;
+
+                WorkflowNodeBase? capturedParentNode = null;
+                foreach (var wf in _workflowEngine.GetAllWorkflows())
+                {
+                    var found = wf.Nodes.FirstOrDefault(n => n.Id == parentNodeId);
+                    if (found?.Parameters is SubroutineParameters)
+                    {
+                        capturedParentNode = found;
+                        break;
+                    }
+                }
+
+                if (capturedParentNode != null)
+                {
+                    queryService.AddExtraDataSourceProvider(() =>
+                    {
+                        if (capturedParentNode?.Parameters is not SubroutineParameters sp)
+                            return new List<AvailableDataSource>();
+
+                        var nodeName = capturedParentNode.Name ?? capturedParentNode.DispName ?? "子程序";
+                        var sources = new List<AvailableDataSource>();
+                        foreach (var input in sp.Inputs)
+                        {
+                            if (string.IsNullOrEmpty(input.Name)) continue;
+                            var paramType = input.ParamType ?? typeof(object);
+                            var bindingKey = input.BindingKey ?? input.Name;
+                            sources.Add(new AvailableDataSource
+                            {
+                                SourceNodeId = "__SubroutineInputs__",
+                                SourceNodeName = nodeName,
+                                PropertyName = bindingKey,
+                                DisplayName = input.Name,
+                                PropertyType = paramType,
+                                Description = $"子程序输入: {input.Name}",
+                            });
+                        }
+                        return sources;
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogWarning($"⚠ 注册子程序输入端口提供者失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 创建 DataSourceQueryService（供子程序参数对话框使用，无需特定节点上下文）
+        /// </summary>
+        /// <param name="scopeWorkflowId">可选：限定到指定工作流的作用域（子程序内部数据源查询用）</param>
+        public DataSourceQueryService CreateDataSourceQueryService(string? scopeWorkflowId = null)
+        {
+            var metadataProvider = new SunEyeVision.Plugin.Infrastructure.Managers.Tool.PropertyMetadataProviderAdapter();
+
+            IWorkflowConnectionProvider connectionProvider;
+            INodeInfoProvider nodeInfoProvider;
+
+            if (scopeWorkflowId != null)
+            {
+                var subWorkflow = _workflowEngine.GetWorkflow(scopeWorkflowId)
+                    ?? throw new InvalidOperationException($"子程序工作流未找到: {scopeWorkflowId}");
+                connectionProvider = subWorkflow;
+                nodeInfoProvider = subWorkflow;
+                LogInfo($"✓ 创建作用域查询服务 → 子程序工作流: {subWorkflow.Name} (ID: {scopeWorkflowId})");
+            }
+            else
+            {
+                var workflow = _workflowEngine.CurrentWorkflow
+                    ?? throw new InvalidOperationException("当前工作流为空");
+                connectionProvider = workflow;
+                nodeInfoProvider = workflow;
+            }
+
+            var queryService = new DataSourceQueryService(connectionProvider, nodeInfoProvider, null, metadataProvider);
+
+            // SSOT 委托：实时读取 WorkflowContext，无本地缓存拷贝
+            queryService.SetSootReader(nodeId =>
+                CurrentWorkflowContext?.GetNodeResult(nodeId)?.Result);
+
+            return queryService;
+        }
+
+        /// <summary>
+        /// 在所有已注册工作流中查找引用指定子程序工作流 ID 的节点
+        /// </summary>
+        /// <param name="subroutineWorkflowId">子程序工作流 ID</param>
+        /// <returns>父节点 ID，找不到则返回 null</returns>
+        public string? FindParentSubroutineNodeId(string subroutineWorkflowId)
+        {
+            foreach (var workflow in _workflowEngine.GetAllWorkflows())
+            {
+                foreach (var node in workflow.Nodes)
+                {
+                    if (node.SubroutineId == subroutineWorkflowId)
+                        return node.Id;
+                }
+            }
+            return null;
         }
 
         /// <summary>
@@ -2819,8 +3073,7 @@ SplitterPosition = position;
                 // 窗口路径的额外处理
                 if (target is System.Windows.Window debugWindow)
                 {
-                    // 缓存数据提供者
-                    _nodeDataProviders[node.Id] = dataProvider!;
+                    // 缓存数据提供者（已在 _workflowDsqsCache 中按 WorkflowId 缓存）
 
                     // 订阅执行完成事件
                     SubscribeToolExecutionCompleted(debugWindow, node, dataProvider!);
@@ -2830,6 +3083,9 @@ SplitterPosition = position;
 
                     // 显示窗口（确保数据初始化完成后再显示，这样 Loaded 事件触发时所有数据已就绪）
                     debugWindow.Show();
+
+                    // 缓存调试窗口（用于工作流执行完成后通知刷新）
+                    _nodeDebugWindows[node.Id] = debugWindow;
 
                     // 🔍 日志监控：窗口已显示，准备获取 ImageControl
                     AddLog($"🔍 [监控] 窗口已调用 Show()，开始获取 ImageControl");
@@ -2848,23 +3104,23 @@ SplitterPosition = position;
                     // 窗口关闭清理
                     debugWindow.Closed += (s, e) =>
                     {
-                        // 1. 移除数据提供者
-                        _nodeDataProviders.Remove(node.Id);
+                        // 1. 移除调试窗口缓存（DSQS 仍在 _workflowDsqsCache 中缓存，工作流删除时统一清理）
+                        _nodeDebugWindows.Remove(node.Id);
 
-                        // 2. 恢复主窗口 ImageControl 的只读模式
+                        // 3. 恢复主窗口 ImageControl 的只读模式
                         var mainImageControl = GetMainImageControl?.Invoke();
                         if (mainImageControl != null)
                         {
                             mainImageControl.OverlayHitTestVisible = false;
                         }
 
-                        // 3. 刷新当前选中节点的结果显示（如果有）
+                        // 4. 刷新当前选中节点的结果显示（如果有）
                         if (SelectedNode != null && SelectedNode.IsSelected)
                         {
-                            var executionResult = _workflowContext.GetNodeResult(SelectedNode.Id);
-                            if (executionResult?.ToolResult != null)
+                            var executionResult = CurrentWorkflowContext?.GetNodeResult(SelectedNode.Id);
+                            if (executionResult?.Result != null)
                             {
-                                _nodeResultManager.RefreshResultDisplay(SelectedNode, executionResult.ToolResult);
+                                _nodeResultManager.RefreshResultDisplay(SelectedNode, executionResult.Result);
                             }
                         }
                     };
@@ -2916,52 +3172,68 @@ SplitterPosition = position;
             IDataSourceQueryService dataProvider)
         {
             var eventInfo = debugWindow.GetType().GetEvent("ToolExecutionCompleted");
-            if (eventInfo != null)
+            if (eventInfo == null)
             {
-                // 创建事件处理器（使用 Delegate.CreateDelegate 动态创建）
-                var eventHandlerType = eventInfo.EventHandlerType;
+                AddLog($"⚠️ [调试窗口事件] {debugWindow.GetType().Name} 未定义 ToolExecutionCompleted 事件 | 结果将无法传播到数据分析控件");
+                return;
+            }
 
-                // 创建委托方法
-                var invokeMethod = eventHandlerType.GetMethod("Invoke");
-                var parameters = invokeMethod?.GetParameters();
+            AddLog($"🔍 [调试窗口事件] 找到 {eventInfo.EventHandlerType.Name} 事件，准备订阅 | 节点={node.Name}");
 
-                if (parameters != null && parameters.Length == 2)
-                {
-                    // 创建通用的处理方法
-                    Action<object?, object?> handlerAction = (sender, result) =>
+            // 创建事件处理器（使用 Delegate.CreateDelegate 动态创建）
+            var eventHandlerType = eventInfo.EventHandlerType;
+
+            // 创建委托方法
+            var invokeMethod = eventHandlerType.GetMethod("Invoke");
+            var parameters = invokeMethod?.GetParameters();
+
+            if (parameters != null && parameters.Length == 2)
+            {
+                // 创建通用的处理方法
+                Action<object?, object?> handlerAction = (sender, result) =>
+                    {
+                        try
                         {
-                            try
+                            // ★ 修复：从 EventArgs 中提取 ToolResults
+                            var toolResult = result switch
                             {
-                                if (result is SunEyeVision.Plugin.SDK.Execution.Results.ToolResults toolResult)
+                                SunEyeVision.Plugin.SDK.Execution.Results.ToolResults tr => tr,
+                                SunEyeVision.Plugin.SDK.UI.Events.ToolExecutionCompletedEventArgs args => args.Results as SunEyeVision.Plugin.SDK.Execution.Results.ToolResults,
+                                _ => null
+                            };
+
+                            if (toolResult != null)
+                            {
+                                // 执行结果已通过 NodeResultManager.UpdateNodeResult 存储到 WorkflowContext
+                                // 这里不再需要直接赋值给 node.LastResult
+
+                                // 更新图像显示（内部已存储到 WorkflowContext，DSQS 通过 _ssotReader 实时读取）
+                                _nodeResultManager?.UpdateNodeResult(node, toolResult);
+
+                                // ★ 通知调试窗口外部结果已到达（用于刷新位置修正矩阵等运行时状态）
+                                NotifyDebugWindowExternalResult(node.Id);
+
+                                // ★ 更新数据分析控件（调试窗口执行后立即刷新）
+                                System.Windows.Application.Current.Dispatcher.Invoke(() =>
                                 {
-                                    // 执行结果已通过 NodeResultManager.UpdateNodeResult 存储到 WorkflowContext
-                                    // 这里不再需要直接赋值给 node.LastResult
-
-                                    // 获取输出图像（通过反射调用 GetOutputValue 方法）
-                                    var getOutputMethod = toolResult.GetType().GetMethod("GetOutputValue");
-                                    var outputImage = getOutputMethod?.MakeGenericMethod(typeof(OpenCvSharp.Mat))
-                                        .Invoke(toolResult, new object[] { "OutputImage" }) as OpenCvSharp.Mat;
-
-                                    // 更新数据提供者中的节点输出
-                                    if (outputImage != null)
+                                    if (SelectedNodeDataAnalysisControl is Plugin.SDK.UI.Controls.IToolControlDataAnalysis daCtrl)
                                     {
-                                        dataProvider.UpdateNodeOutput(node.Id, "OutputImage", outputImage);
-                                    }
-
-                                    // 更新图像显示（内部已存储到 WorkflowContext）
-                                    _nodeResultManager?.UpdateNodeResult(node, toolResult);
-
-                                    // ★ 更新数据分析控件（调试窗口执行后立即刷新）
-                                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                                    {
-                                        if (SelectedNodeDataAnalysisControl is Plugin.SDK.UI.Controls.IToolControlDataAnalysis daCtrl)
+                                        try
                                         {
-                                            try { daCtrl.OnResultUpdated(toolResult); }
-                                            catch { /* 忽略 */ }
+                                            daCtrl.OnResultUpdated(toolResult);
                                         }
-                                    });
+                                        catch (Exception onResultEx)
+                                        {
+                                            AddLog($"⚠️ 数据分析控件更新失败: {onResultEx.Message}");
+                                        }
+                                    }
+                                });
 
-                                    AddLog($"✅ 调试窗口执行完成: {node.Name}");
+                                AddLog($"✅ 调试窗口执行完成: {node.Name}");
+                            }
+                            else
+                            {
+                                AddLog($"⚠️ 调试窗口执行结果类型不匹配: {result?.GetType().Name ?? "null"}");
                             }
                         }
                         catch (Exception ex)
@@ -2970,17 +3242,68 @@ SplitterPosition = position;
                         }
                     };
 
-                    // 创建委托
-                    var handler = Delegate.CreateDelegate(eventHandlerType, handlerAction.Target, handlerAction.Method);
+                // 创建委托
+                var handler = Delegate.CreateDelegate(eventHandlerType, handlerAction.Target, handlerAction.Method);
 
-                    // 订阅事件
-                    eventInfo.AddEventHandler(debugWindow, handler);
+                // 订阅事件
+                eventInfo.AddEventHandler(debugWindow, handler);
 
-                    // 窗口关闭时取消订阅（防止内存泄漏）
-                    debugWindow.Closed += (s, e) =>
+                // 窗口关闭时取消订阅（防止内存泄漏）
+                debugWindow.Closed += (s, e) =>
+                {
+                    eventInfo.RemoveEventHandler(debugWindow, handler);
+                };
+            }
+        }
+
+        /// <summary>
+        /// 通知指定节点的调试窗口：外部结果已到达
+        /// </summary>
+        private void NotifyDebugWindowExternalResult(string nodeId)
+        {
+            if (_nodeDebugWindows.TryGetValue(nodeId, out var window))
+            {
+                try
+                {
+                    var method = window.GetType().GetMethod("OnExternalResultArrived");
+                    if (method != null)
                     {
-                        eventInfo.RemoveEventHandler(debugWindow, handler);
-                    };
+                        method.Invoke(window, null);
+                        AddLog($"✅ 已通知调试窗口外部结果到达: {nodeId}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    AddLog($"⚠️ 通知调试窗口外部结果失败: {ex.Message}");
+                }
+            }
+        }
+
+        /// <summary>
+        /// 通知所有已打开的调试窗口：上游节点已执行完成，可刷新运行时状态
+        /// </summary>
+        private void NotifyAllDebugWindowsExternalResult()
+        {
+            AddLog($"🔍 [NotifyAll] 开始通知 | 缓存窗口数={_nodeDebugWindows.Count}");
+
+            foreach (var kvp in _nodeDebugWindows.ToList())
+            {
+                try
+                {
+                    var window = kvp.Value;
+                    var method = window.GetType().GetMethod("OnExternalResultArrived");
+
+                    AddLog($"🔍 [NotifyAll] 节点={kvp.Key} | WindowType={window.GetType().Name} | MethodFound={method != null}");
+
+                    if (method != null)
+                    {
+                        method.Invoke(window, null);
+                        AddLog($"✅ [NotifyAll] 成功调用 OnExternalResultArrived: {kvp.Key}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    AddLog($"⚠️ 通知调试窗口刷新失败 (节点 {kvp.Key}): {ex.Message}");
                 }
             }
         }
@@ -3126,33 +3449,54 @@ AddLog($"⚠️ 日志记录异常: {ex.Message}");
         {
             try
             {
-                // ★ 关键日志：节点执行完成
+                // ★ 关键日志：节点执行完成 - 记录节点类型和顺序
                 var outputValues = e.Result?.GetOutputValues();
                 bool hasImageOutput = outputValues?.Any(kv => kv.Value is OpenCvSharp.Mat) ?? false;
-                AddLog($"✅ 节点执行完成: {e.Node.Name}, 成功={e.Result?.IsSuccess}, 有图像输出={hasImageOutput}");
+                AddLog($"✅ 节点执行完成: {e.Node.Name}({e.Node.ToolType}), ID={e.Node.Id}, 成功={e.Result?.IsSuccess}, 有图像输出={hasImageOutput}");
+
+                // ★ 诊断：检查 ShapeMatch 结果中包含的 BestPositionCorrection 属性
+                if (outputValues != null)
+                {
+                    var hasPositionCorrection = outputValues.Any(kv =>
+                        kv.Key.Contains("PositionCorrection", StringComparison.Ordinal) ||
+                        kv.Key.Contains("BestPosition", StringComparison.Ordinal));
+                    if (hasPositionCorrection)
+                    {
+                        AddLog($"📐 [位置修正] 节点 {e.Node.Name} 输出包含位置修正属性");
+                    }
+                }
 
                 // 通过 NodeResultManager 更新节点结果（更新 OutputCache，不修改 InputSource）
                 _nodeResultManager.UpdateNodeResult(e.Node, e.Result);
 
-                // ★ 更新所有依赖此节点的数据提供者（修复前置节点未执行问题）
-                UpdateDataProvidersForNode(e.Node, e.Result);
+                // ★ 运行时同步：将节点结果写入绑定的全局变量
+                SyncProducerBindingsToGlobalVariables(e.Node.Id, e.Result);
 
-                // ★ 更新数据分析控件（任何节点执行完成后刷新）
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                // ★ 节点执行后处理（DSQS 自动读取 SSOT，无需推送）
+                OnNodeExecutionPostProcess(e.Node, e.Result);
+
+                // ★ 通知所有打开调试窗口的控件：上游节点执行完成，可刷新运行时状态
+                NotifyAllDebugWindowsExternalResult();
+
+                // ★ 更新数据分析控件（仅当完成节点是当前选中节点时）
+                if (e.Node.Id == SelectedNode?.Id)
                 {
-                    if (SelectedNodeDataAnalysisControl is Plugin.SDK.UI.Controls.IToolControlDataAnalysis dataAnalysisControl
-                        && e.Result != null && e.Result.IsSuccess)
+                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
                     {
-                        try
+                        if (SelectedNodeDataAnalysisControl is Plugin.SDK.UI.Controls.IToolControlDataAnalysis dataAnalysisControl
+                            && e.Result != null && e.Result.IsSuccess)
                         {
-                            dataAnalysisControl.OnResultUpdated(e.Result);
+                            try
+                            {
+                                dataAnalysisControl.OnResultUpdated(e.Result);
+                            }
+                            catch (Exception updateEx)
+                            {
+                                AddLog($"⚠️ 更新数据分析控件失败: {updateEx.Message}");
+                            }
                         }
-                        catch (Exception updateEx)
-                        {
-                            AddLog($"⚠️ 更新数据分析控件失败: {updateEx.Message}");
-                        }
-                    }
-                });
+                    });
+                }
 
                 // 如果节点是当前显示节点，刷新输出缓存绑定
                 if (_currentDisplayNodeId == e.Node.Id)
@@ -3171,15 +3515,17 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         }
 
         /// <summary>
-        /// 更新所有依赖此节点的数据提供者
+        /// 节点执行完成后的后处理（DSQS 已通过 _ssotReader 委托自动读取 SSOT，无需推送）
         /// </summary>
-        private void UpdateDataProvidersForNode(Models.WorkflowNode node, Plugin.SDK.Execution.Results.ToolResults? result)
+        private void OnNodeExecutionPostProcess(Models.WorkflowNode node, Plugin.SDK.Execution.Results.ToolResults? result)
         {
             if (result == null || !result.IsSuccess) return;
 
             try
             {
-                // 获取节点的输出图像
+                // ★ DSQS 已通过 _ssotReader 委托自动读取 WorkflowContext，无需手动推送
+                //    删除旧的 UpdateNodeOutput / SetNodeResult 遍历代码
+
                 var outputValues = result.GetOutputValues();
                 if (outputValues == null || outputValues.Count == 0)
                 {
@@ -3187,43 +3533,13 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                     return;
                 }
 
-                // 尝试找到图像类型的输出
-                var imageOutput = outputValues.FirstOrDefault(kv =>
-                    kv.Value is OpenCvSharp.Mat ||
-                    kv.Key.Contains("Image", StringComparison.OrdinalIgnoreCase) ||
-                    kv.Key.Contains("Output", StringComparison.OrdinalIgnoreCase));
-
-                object? outputValue = imageOutput.Value ?? outputValues.FirstOrDefault(kv => kv.Value != null).Value;
-                if (outputValue == null)
-                {
-                    AddLog($"⚠️ 节点 {node.Name} 输出值为空");
-                    return;
-                }
-
-                // ★ 关键日志：输出值类型
-                AddLog($"📤 节点 {node.Name} 输出类型: {outputValue.GetType().Name}");
-
-                // 更新所有缓存的数据提供者
-                int updatedCount = 0;
-                foreach (var kvp in _nodeDataProviders.ToList())
-                {
-                    try
-                    {
-kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
-                        updatedCount++;
-                    }
-                    catch (Exception ex)
-                    {
-}
-                }
-                if (updatedCount > 0)
-                {
-                    AddLog($"🔄 已更新 {updatedCount} 个数据提供者");
-                }
+                var allPropNames = string.Join(", ", outputValues.Keys);
+                AddLog($"📤 节点 {node.Name}({node.ToolType}) 输出: [{allPropNames}] | ID={node.Id}");
             }
             catch (Exception ex)
             {
-}
+                AddLog($"⚠️ OnNodeExecutionPostProcess 异常: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -3394,8 +3710,14 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
         /// <param name="result">运行结果（可为null，此时仅显示表头结构）</param>
         /// <param name="nodeName">节点显示名称</param>
         /// <param name="toolId">工具ID，用于从 _typeCache 查询属性元数据</param>
-        public void UpdateModuleResults(ToolResults? result, string? nodeName, string? toolId = null)
+        /// <param name="nodeId">节点ID，用于绑定状态反查</param>
+        public void UpdateModuleResults(ToolResults? result, string? nodeName, string? toolId = null, string? nodeId = null)
         {
+            // ★ 诊断：记录入参
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[诊断:UpdateModuleResults] nodeName='{nodeName}' | toolId='{toolId}' | nodeId='{nodeId}' | result={(result != null ? result.GetType().Name : "null")}",
+                "MainWindowViewModel");
+
             ModuleResultTree.Clear();
             HasModuleResults = false;
 
@@ -3403,6 +3725,30 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
             var metadataList = string.IsNullOrEmpty(toolId)
                 ? []
                 : ToolRegistry.GetAllPropertyMetadata(toolId);
+
+            // ★ 诊断：记录查询结果
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[诊断:UpdateModuleResults] toolId='{toolId}' | metadataList.Count={metadataList.Count} | 将{(metadataList.Count == 0 ? "直接返回（模块结果为空）" : "继续构建结果树")}",
+                "MainWindowViewModel");
+
+            // ★ 新增：从结果实例中合并动态属性元数据（让子程序的动态输出端口在模块结果树中可见）
+            if (result != null)
+            {
+                var instanceMap = result.GetPropertyMap();
+                foreach (var entry in instanceMap)
+                {
+                    if (!metadataList.Any(m => m.PropertyName == entry.PropertyName))
+                    {
+                        metadataList.Add(new ToolPropertyMetadata
+                        {
+                            PropertyName = entry.PropertyName,
+                            DisplayName = entry.DisplayName,
+                            GroupName = entry.GroupName,
+                            PropertyType = typeof(object)
+                        });
+                    }
+                }
+            }
 
             if (metadataList.Count == 0)
                 return;
@@ -3415,23 +3761,44 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
                 IsExpanded = true
             };
 
-            // 有缓存数据：按 GroupName 分组构建树
+            // 有缓存数据：按 GroupName 分组构建树（支持 / 分隔的层级分组）
             if (metadataList.Count > 0)
             {
                 var groups = metadataList
                     .GroupBy(m => m.GroupName ?? "其他")
                     .OrderBy(g => g.Key);
 
+                // 缓存已创建的组节点，key = 完整路径（如 "Blob详细/边框"）
+                var groupNodeCache = new Dictionary<string, ModuleResultNode>();
+
                 foreach (var group in groups)
                 {
-                    var groupNode = new ModuleResultNode
-                    {
-                        DisplayName = group.Key,
-                        IsGroup = true,
-                        IsExpanded = true
-                    };
+                    if (string.IsNullOrEmpty(group.Key))
+                        continue;
 
-                    foreach (var meta in group.OrderBy(m => m.DisplayName))
+                    var groupNames = group.Key.Split('/');
+                    ModuleResultNode currentParent = rootNode;
+
+                    for (int i = 0; i < groupNames.Length; i++)
+                    {
+                        var cacheKey = string.Join("/", groupNames.Take(i + 1));
+
+                        if (!groupNodeCache.TryGetValue(cacheKey, out var groupNode))
+                        {
+                            groupNode = new ModuleResultNode
+                            {
+                                DisplayName = groupNames[i],
+                                IsGroup = true,
+                                IsExpanded = true
+                            };
+                            currentParent.Children.Add(groupNode);
+                            groupNodeCache[cacheKey] = groupNode;
+                        }
+
+                        currentParent = groupNode;
+                    }
+
+                    foreach (var meta in group)
                     {
                         // 跳过图像和图形类型（由图像显示控件展示）
                         if (IsVisualResultType(meta.PropertyType))
@@ -3443,6 +3810,11 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
                         {
                             // 有结果 → 反射取值并格式化
                             var value = ReflectGetValue(result, pn);
+                            // 反射取不到值时从 GetResultItems() 查找（支持子程序动态输出等基于字典的值）
+                            if (value == null)
+                                value = result.GetResultItems()
+                                    .FirstOrDefault(i => string.Equals(i.Name, pn, StringComparison.Ordinal))
+                                    ?.Value;
                             displayValue = FormatTypedValue(value, meta.PropertyType);
                         }
                         else
@@ -3451,18 +3823,25 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
                             displayValue = "--";
                         }
 
-                        groupNode.Children.Add(new ModuleResultNode
+                        currentParent.Children.Add(new ModuleResultNode
                         {
                             DisplayName = meta.DisplayName,
                             DisplayValue = displayValue,
                             PropertyName = meta.PropertyName,
+                            SourceNodeId = nodeId,
+                            SourcePropertyName = meta.PropertyName,
+                            PropertyClrType = meta.PropertyType,
                             IsGroup = false
                         });
                     }
-
-                    if (groupNode.Children.Count > 0)
-                        rootNode.Children.Add(groupNode);
                 }
+
+                // 移除没有非可视化子节点的空组
+                var emptyGroups = rootNode.Children
+                    .Where(c => c.IsGroup && c.Children.Count == 0)
+                    .ToList();
+                foreach (var empty in emptyGroups)
+                    rootNode.Children.Remove(empty);
             }
             if (rootNode.Children.Count > 0)
             {
@@ -3528,13 +3907,17 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
             if (fullName == null)
                 return false;
 
-            // 图像类型：Mat, CvImage 及其派生
-            if (fullName.Contains("OpenCvSharp.Mat") ||
-                fullName.Contains("CvImage"))
+            // 图像类型：IVisionImage, HImage, HalImage, CvImage, Mat 及其派生
+            if (fullName.Contains("IVisionImage") ||
+                fullName.Contains("HImage") ||
+                fullName.Contains("HalImage") ||
+                fullName.Contains("CvImage") ||
+                fullName.Contains("OpenCvSharp.Mat"))
                 return true;
 
-            // 区域/图形类型：CvRegion 及其派生
-            if (fullName.Contains("CvRegion"))
+            // 区域/图形类型：IVisionRegion, CvRegion 及其派生
+            if (fullName.Contains("IVisionRegion") ||
+                fullName.Contains("CvRegion"))
                 return true;
 
             // 检查基类链（处理继承关系）
@@ -3544,7 +3927,9 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
                 var baseName = baseType.FullName;
                 if (baseName != null &&
                     (baseName.Contains("OpenCvSharp.Mat") ||
+                     baseName.Contains("IVisionImage") ||
                      baseName.Contains("CvImage") ||
+                     baseName.Contains("IVisionRegion") ||
                      baseName.Contains("CvRegion")))
                     return true;
                 baseType = baseType.BaseType;
@@ -3568,6 +3953,40 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
 
         private void AddFlatRow(ModuleResultNode node, int level)
         {
+            // 反查绑定状态：检查是否有全局变量的 ProducerBinding 指向此节点+属性
+            string? boundVarName = null;
+            string? boundVarId = null;
+            bool isBound = false;
+            if (node.SourceNodeId != null && node.SourcePropertyName != null)
+            {
+                var solution = Adapters.ServiceInitializer.SolutionManager?.CurrentSolution;
+                if (solution?.GlobalVariables != null)
+                {
+                    foreach (var gv in solution.GlobalVariables)
+                    {
+                        if (gv.ProducerBinding != null &&
+                            gv.ProducerBinding.NodeId == node.SourceNodeId &&
+                            gv.ProducerBinding.PropertyName == node.SourcePropertyName)
+                        {
+                            boundVarName = gv.Name;
+                            boundVarId = gv.Id;
+                            isBound = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // 解析节点名称
+            string? resolvedNodeName = null;
+            if (node.SourceNodeId != null && WorkflowTabViewModel.SelectedTab != null)
+            {
+                var srcNode = WorkflowTabViewModel.SelectedTab.WorkflowNodes
+                    .FirstOrDefault(n => n.Id == node.SourceNodeId);
+                if (srcNode != null)
+                    resolvedNodeName = srcNode.Name;
+            }
+
             var row = new FlatResultRow
             {
                 DisplayName = node.DisplayName,
@@ -3575,7 +3994,14 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
                 Level = level,
                 IsGroup = node.IsGroup,
                 IsExpanded = node.IsExpanded,
-                SourceNode = node
+                SourceNode = node,
+                SourceNodeId = node.SourceNodeId,
+                SourceNodeName = resolvedNodeName,
+                SourcePropertyName = node.SourcePropertyName,
+                PropertyClrType = node.PropertyClrType,
+                IsBoundToGlobalVar = isBound,
+                BoundVariableName = boundVarName,
+                BoundGlobalVariableId = boundVarId
             };
 
             // 同步展开状态变化
@@ -3693,6 +4119,10 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
 
             if (!hasInputConnection)
             {
+                // ★ 子程序内部：不隐藏预览器，保持当前父工作流的图像预览
+                if (WorkflowTabViewModel?.SelectedTab?.IsInSubroutine == true)
+                    return;
+
                 // 没有输入连接，隐藏预览器
                 if (ShowImagePreview || ActiveInputSource != null || _currentDisplayNodeId != null)
                 {
@@ -3727,6 +4157,10 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
             }
             else
             {
+                // ★ 子程序内部：不隐藏预览器，保持当前父工作流的图像预览
+                if (WorkflowTabViewModel?.SelectedTab?.IsInSubroutine == true)
+                    return;
+
                 // 找不到上游图像载入节点，隐藏预览器（没有数据源可绑定）
                 if (ShowImagePreview || ActiveInputSource != null || _currentDisplayNodeId != null)
                 {
@@ -3910,6 +4344,213 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
         }
 
         /// <summary>
+        /// 执行绑定：将模块结果项绑定到全局变量
+        /// </summary>
+        private void ExecuteBindResultToGlobalVar(object? parameter)
+        {
+            try
+            {
+                if (parameter is not FlatResultRow row || !row.CanBind)
+                    return;
+
+                var solutionManager = Adapters.ServiceInitializer.SolutionManager;
+                var currentSolution = solutionManager.CurrentSolution;
+                if (currentSolution == null)
+                {
+                    MessageBox.Show("请先打开一个解决方案", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                if (string.IsNullOrEmpty(row.SourceNodeId) || string.IsNullOrEmpty(row.SourcePropertyName))
+                    return;
+
+                // 检查是否有全局变量
+                var variables = currentSolution.GlobalVariables;
+                if (variables == null || variables.Count == 0)
+                {
+                    MessageBox.Show("当前解决方案中没有全局变量。\n请在\"全局变量管理器\"中添加后重试。",
+                        "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                // 打开全局变量选择对话框（按类型过滤）
+                var filterType = row.PropertyClrType != null
+                    ? GlobalVariableTypeMapper.ToGlobalVarType(row.PropertyClrType)
+                    : null;
+                var selected = GlobalVariableSelectDialog.ShowSelect(variables.ToList(), filterType);
+                if (selected == null)
+                    return;
+
+                // 如果该变量已有提供者绑定，直接替换
+                selected.ProducerBinding = new ProducerBinding
+                {
+                    NodeId = row.SourceNodeId,
+                    NodeName = row.SourceNodeName ?? row.SourceNodeId,
+                    PropertyName = row.SourcePropertyName,
+                    WorkflowName = WorkflowTabViewModel.SelectedTab?.Name ?? "",
+                    PropertyDisplayName = row.DisplayName
+                };
+                selected.NotifyInputDisplayChanged();
+
+                // 更新行显示状态
+                row.IsBoundToGlobalVar = true;
+                row.BoundVariableName = selected.Name;
+                row.BoundGlobalVariableId = selected.Id;
+                row.NotifyBindingDisplayChanged();
+
+                // 刷新绑定源的显示
+                var bindingNode = ModuleResultTree
+                    .SelectMany(n => FlattenNodes(n))
+                    .FirstOrDefault(n => n.SourceNodeId == row.SourceNodeId && n.SourcePropertyName == row.SourcePropertyName);
+                if (bindingNode != null)
+                {
+                    // 实际叶子节点路径不变，但重建 FlatRows 会更新反查
+                    BuildFlatRows();
+                }
+
+                LogSuccess($"绑定模块结果 [{row.SourceNodeName}>{row.SourcePropertyName}] → 全局变量 [{selected.Name}]");
+            }
+            catch (Exception ex)
+            {
+                LogError($"绑定全局变量失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 执行解绑：移除模块结果项与全局变量的绑定
+        /// </summary>
+        private void ExecuteUnbindResultFromGlobalVar(object? parameter)
+        {
+            try
+            {
+                if (parameter is not FlatResultRow row || !row.IsBoundToGlobalVar)
+                    return;
+
+                var solutionManager = Adapters.ServiceInitializer.SolutionManager;
+                var currentSolution = solutionManager.CurrentSolution;
+                if (currentSolution == null)
+                    return;
+
+                // 查找绑定的变量，清除 ProducerBinding
+                if (!string.IsNullOrEmpty(row.BoundGlobalVariableId))
+                {
+                    var gv = currentSolution.GlobalVariables
+                        .FirstOrDefault(v => v.Id == row.BoundGlobalVariableId);
+                    if (gv != null)
+                    {
+                        gv.ProducerBinding = null;
+                        gv.NotifyInputDisplayChanged();
+                        LogInfo($"解绑模块结果 → 全局变量 [{gv.Name}]");
+                    }
+                }
+                else if (row.BoundVariableName != null)
+                {
+                    var gv = currentSolution.GlobalVariables
+                        .FirstOrDefault(v => v.Name == row.BoundVariableName);
+                    if (gv != null)
+                    {
+                        gv.ProducerBinding = null;
+                        gv.NotifyInputDisplayChanged();
+                        LogInfo($"解绑模块结果 → 全局变量 [{gv.Name}]");
+                    }
+                }
+
+                row.IsBoundToGlobalVar = false;
+                row.BoundVariableName = null;
+                row.BoundGlobalVariableId = null;
+                row.NotifyBindingDisplayChanged();
+
+                BuildFlatRows();
+            }
+            catch (Exception ex)
+            {
+                LogError($"解绑全局变量失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 全局变量重命名事件处理 — 完全重建模块结果行（最可靠，GlobalVariable.Name 已更新）
+        /// </summary>
+        private void OnGlobalVariableRenamed(UIEvents.GlobalVariableRenamedEvent evt)
+        {
+            try
+            {
+                // 完全重建 FlatResultRows，因为 GlobalVariable.Name 已被更新为新名称，
+                // BuildFlatRows 会从所有 GlobalVariable 的 ProducerBinding 重新读取名称
+                BuildFlatRows();
+
+                LogInfo($"全局变量重命名: '{evt.OldName}' → '{evt.NewName}', 已重建模块结果显示");
+            }
+            catch (Exception ex)
+            {
+                LogError($"全局变量重命名更新失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 运行时同步：将节点执行结果写入绑定的全局变量
+        /// </summary>
+        /// <param name="nodeId">执行完成的节点ID</param>
+        /// <param name="result">执行结果</param>
+        private void SyncProducerBindingsToGlobalVariables(string nodeId, ToolResults? result)
+        {
+            var solution = Adapters.ServiceInitializer.SolutionManager?.CurrentSolution;
+            if (solution?.GlobalVariables == null || result == null)
+                return;
+
+            foreach (var gv in solution.GlobalVariables)
+            {
+                var pb = gv.ProducerBinding;
+                if (pb == null || pb.NodeId != nodeId)
+                    continue;
+
+                // 通过反射从结果中取值
+                var value = ReflectGetValue(result, pb.PropertyName);
+                gv.Value = value;
+                pb.CachedResult = result;
+            }
+        }
+
+        /// <summary>
+        /// 级联清理：删除节点时清理所有关联的 ProducerBinding 和 ConsumerBinding
+        /// </summary>
+        /// <param name="nodeId">被删除的节点ID</param>
+        private void CleanupBindingsForDeletedNode(string nodeId)
+        {
+            var solution = Adapters.ServiceInitializer.SolutionManager?.CurrentSolution;
+            if (solution?.GlobalVariables == null)
+                return;
+
+            foreach (var gv in solution.GlobalVariables)
+            {
+                // 清理 ProducerBinding
+                if (gv.ProducerBinding?.NodeId == nodeId)
+                {
+                    gv.ProducerBinding = null;
+                }
+
+                // 清理 ConsumerBinding
+                gv.ConsumerBindings.RemoveAll(c => c.NodeId == nodeId);
+            }
+
+            // 重建模块结果 FlatRows（变更新绑定状态显示）
+            BuildFlatRows();
+        }
+
+        /// <summary>
+        /// 扁平化 ModuleResultTree（用于搜索节点）
+        /// </summary>
+        private static IEnumerable<ModuleResultNode> FlattenNodes(ModuleResultNode node)
+        {
+            yield return node;
+            foreach (var child in node.Children)
+            {
+                foreach (var sub in FlattenNodes(child))
+                    yield return sub;
+            }
+        }
+
+        /// <summary>
         /// 显示相机管理器
         /// </summary>
         private void ExecuteShowCameraManager()
@@ -4081,6 +4722,15 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
         /// 展开/折叠图标（仅分组显示）
         /// </summary>
         public string ExpandIcon => IsGroup ? (_isExpanded ? "▼ " : "▶ ") : "";
+
+        /// <summary>关联的源工具节点ID（叶子节点使用时设置）</summary>
+        public string? SourceNodeId { get; set; }
+
+        /// <summary>关联的属性名完整路径（如 "阈值"）</summary>
+        public string? SourcePropertyName { get; set; }
+
+        /// <summary>关联的CLR属性类型（用于类型过滤）</summary>
+        public Type? PropertyClrType { get; set; }
     }
 
     /// <summary>
@@ -4116,14 +4766,8 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
         /// <summary>展开/折叠图标</summary>
         public string ExpandIcon => IsGroup ? (_isExpanded ? "▼ " : "▶ ") : "";
 
-        /// <summary>左侧缩进距离</summary>
-        public Thickness Indent => Level switch
-        {
-            0 => new Thickness(4, 4, 0, 4),
-            1 => new Thickness(28, 3, 0, 3),
-            2 => new Thickness(52, 3, 0, 3),
-            _ => new Thickness(4, 3, 0, 3)
-        };
+        /// <summary>左侧缩进距离（每层 +24px，支持任意深度）</summary>
+        public Thickness Indent => new Thickness(4 + Level * 24, Level == 0 ? 4 : 3, 0, Level == 0 ? 4 : 3);
 
         /// <summary>行背景色</summary>
         public Brush RowBackground => Level switch
@@ -4142,5 +4786,51 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
 
         /// <summary>关联的源树节点（用于展开/折叠时重建扁平列表）</summary>
         public ModuleResultNode? SourceNode { get; set; }
+
+        /// <summary>当前结果项关联的工具节点ID</summary>
+        public string? SourceNodeId { get; set; }
+
+        /// <summary>当前结果项关联的工具节点名称</summary>
+        public string? SourceNodeName { get; set; }
+
+        /// <summary>当前结果项关联的属性名</summary>
+        public string? SourcePropertyName { get; set; }
+
+        /// <summary>关联的CLR属性类型（用于类型过滤）</summary>
+        public Type? PropertyClrType { get; set; }
+
+        /// <summary>此结果项是否已绑定到某个全局变量</summary>
+        [JsonIgnore]
+        public bool IsBoundToGlobalVar { get; set; }
+
+        /// <summary>绑定的全局变量名称</summary>
+        [JsonIgnore]
+        public string? BoundVariableName { get; set; }
+
+        /// <summary>绑定的全局变量ID</summary>
+        [JsonIgnore]
+        public string? BoundGlobalVariableId { get; set; }
+
+        /// <summary>是否可绑定（仅叶子节点且非分组）</summary>
+        [JsonIgnore]
+        public bool CanBind => !IsGroup && !string.IsNullOrEmpty(SourcePropertyName);
+
+        /// <summary>变量管理列显示文本</summary>
+        [JsonIgnore]
+        public string VariableBindingDisplay
+        {
+            get
+            {
+                if (IsBoundToGlobalVar && BoundVariableName != null)
+                    return $"全局变量.{BoundVariableName}";
+                return "🔗";
+            }
+        }
+
+        /// <summary>通知绑定显示已变化（供外部类调用）</summary>
+        public void NotifyBindingDisplayChanged()
+        {
+            OnPropertyChanged(nameof(VariableBindingDisplay));
+        }
     }
 }

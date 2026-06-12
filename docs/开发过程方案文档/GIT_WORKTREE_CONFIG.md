@@ -6,30 +6,38 @@
 
 | 工作区 | 路径 | 分支 | 负责人 | 任务 |
 |--------|------|------|--------|------|
-| 主工作区 | `d:/MyWork/SunEyeVision_Dev/` | `main` | team-lead | 协调团队、工具插件开发 |
+| 主工作区 | `d:/MyWork/SunEyeVision_V2/` | `main` | team-lead | 协调团队、工具插件开发 |
 | 相机工作区 | `d:/MyWork/SunEyeVision_Dev-camera/` | `feature/camera-type-support` | camera-developer | 相机管理器开发 |
+| 脚本工作区 | `d:/MyWork/SunEyeVision_V2-script/` | `feature/script-tool` | script-developer | 脚本工具开发 |
 
 ### 目录结构
 
 ```
 D:/MyWork/
-├── SunEyeVision_Dev/                    # 主工作区 (main)
+├── SunEyeVision_V2/                     # 主工作区 (main)
 │   ├── .git/                            # Git 仓库（唯一的）
 │   ├── src/
 │   ├── tools/                           # 工具插件（主分支开发）
 │   └── .codebuddy/
 │       └── teams/
-│           └── camera-tool-dev/          # Team 配置
-│               ├── config.json           # Team 配置文件
-│               └── inboxes/             # 成员邮箱
+│           ├── camera-tool-dev/          # 相机 Team 配置
+│           │   ├── config.json           # Team 配置文件
+│           │   └── inboxes/             # 成员邮箱
+│           └── script-tool-dev/          # 脚本工具 Team 配置
+│               └── config.json           # Team 配置文件
 │
-└── SunEyeVision_Dev-camera/              # 相机开发工作区 (feature/camera-type-support)
+├── SunEyeVision_Dev-camera/              # 相机开发工作区 (feature/camera-type-support)
+│   ├── .git (worktree 引用)            # 指向主仓库
+│   ├── src/
+│   │   └── Core/
+│   │       └── Devices/                 # 相机设备类
+│   │       └── Providers/               # 相机提供者
+│   └── (其他代码...)
+│
+└── SunEyeVision_V2-script/               # 脚本工具开发工作区 (feature/script-tool)
     ├── .git (worktree 引用)            # 指向主仓库
     ├── src/
-    │   └── Core/
-    │       └── Devices/                 # 相机设备类
-    │       └── Providers/               # 相机提供者
-    └── (其他代码...)
+    └── tools/                           # 脚本工具插件
 ```
 
 ---
@@ -42,8 +50,9 @@ git worktree list
 
 **输出**：
 ```
-D:/MyWork/SunEyeVision_Dev        9157cf7 [main]
+D:/MyWork/SunEyeVision_V2        b949a1e [main]
 D:/MyWork/SunEyeVision_Dev-camera 6c2f9ce [feature/camera-type-support]
+D:/MyWork/SunEyeVision_V2-script b949a1e [feature/script-tool]
 ```
 
 ---
@@ -51,7 +60,7 @@ D:/MyWork/SunEyeVision_Dev-camera 6c2f9ce [feature/camera-type-support]
 ## 👥 Team 成员配置
 
 ### Team Lead (team-lead)
-- **工作目录**: `d:/MyWork/SunEyeVision_Dev`
+- **工作目录**: `d:/MyWork/SunEyeVision_V2`
 - **工作分支**: `main`
 - **职责**: 协调团队、工具插件开发、与用户交互
 
@@ -60,11 +69,34 @@ D:/MyWork/SunEyeVision_Dev-camera 6c2f9ce [feature/camera-type-support]
 - **工作分支**: `feature/camera-type-support`
 - **职责**: 开发相机管理器（IP/USB/GigE相机）
 
+### Script Developer (script-developer)
+- **工作目录**: `d:/MyWork/SunEyeVision_V2-script`
+- **工作分支**: `feature/script-tool`
+- **职责**: 开发脚本工具（C# Script 执行引擎）
+
 ---
 
 ## 🔄 并行开发流程
 
 ### 1. 日常开发
+
+#### Script Developer 工作
+```powershell
+# 切换到脚本工作区
+cd d:/MyWork/SunEyeVision_V2-script
+
+# 查看当前分支
+git branch --show-current
+# 输出: feature/script-tool
+
+# 开发脚本工具功能
+# ...
+
+# 提交代码
+git add .
+git commit -m "feat: 添加脚本工具"
+git push origin feature/script-tool
+```
 
 #### Camera Developer 工作
 ```powershell
@@ -88,13 +120,18 @@ git push origin feature/camera-type-support
 
 ```powershell
 # 切换到主工作区
-cd d:/MyWork/SunEyeVision_Dev
+cd d:/MyWork/SunEyeVision_V2
 
 # 拉取最新代码
 git pull origin main
 
 # 合并相机管理器分支
 git merge feature/camera-type-support
+# 解决冲突（如果有）
+git push origin main
+
+# 合并脚本工具分支
+git merge feature/script-tool
 # 解决冲突（如果有）
 git push origin main
 ```
@@ -128,7 +165,7 @@ git worktree prune
 ## 🎯 关键特性
 
 ### 1. 独立工作
-- ✅ 主工作区（main分支）和相机 Worktree（feature/camera-type-support）互不干扰
+- ✅ 主工作区（main分支）、相机 Worktree（feature/camera-type-support）、脚本 Worktree（feature/script-tool）互不干扰
 - ✅ 可以同时提交
 - ✅ 无需频繁切换分支
 
@@ -139,6 +176,7 @@ git worktree prune
 
 ### 3. 并行开发
 - ✅ camera-developer 在相机 Worktree 上工作
+- ✅ script-developer 在脚本 Worktree 上工作
 - ✅ team-lead 在主分支直接进行工具插件开发
 - ✅ 工具代码直接在 main 分支提交，无需额外合并
 
@@ -174,11 +212,12 @@ git worktree prune
 ## 📝 配置文件位置
 
 ### Team 配置
-- 文件: `d:/MyWork/SunEyeVision_Dev/.codebuddy/teams/camera-tool-dev/config.json`
+- 文件: `d:/MyWork/SunEyeVision_V2/.codebuddy/teams/camera-tool-dev/config.json`
+- 文件: `d:/MyWork/SunEyeVision_V2/.codebuddy/teams/script-tool-dev/config.json`
 - 说明: 定义团队成员和工作目录
 
 ### 成员邮箱
-- 目录: `d:/MyWork/SunEyeVision_Dev/.codebuddy/teams/camera-tool-dev/inboxes/`
+- 目录: `d:/MyWork/SunEyeVision_V2/.codebuddy/teams/camera-tool-dev/inboxes/`
 - 说明: 存储成员之间的消息
 
 ---
@@ -187,12 +226,14 @@ git worktree prune
 
 1. ✅ Git Worktree 已创建
 2. ✅ Team 配置已更新
-3. ⏭️ 启动 camera-developer 并行开发
+3. ✅ 脚本工具 Worktree 已创建
+4. ⏭️ 启动 script-developer 并行开发
 
 ---
 
 ## 📞 联系方式
 
 如果遇到问题，请联系：
-- Team Lead: `team-lead@camera-tool-dev`
+- Team Lead: `team-lead@camera-tool-dev` / `team-lead@script-tool-dev`
 - Camera Developer: `camera-developer@camera-tool-dev`
+- Script Developer: `script-developer@script-tool-dev`

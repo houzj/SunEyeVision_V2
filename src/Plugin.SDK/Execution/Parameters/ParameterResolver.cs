@@ -352,6 +352,21 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 }
             }
 
+            // ★ 新增：从 GetResultItems() 中查找（支持 GenericToolResults 等基于结果项的弱类型类）
+            if (value == null && nodeResult is ToolResults toolResult)
+            {
+                var resultItems = toolResult.GetResultItems();
+                var foundItem = resultItems.FirstOrDefault(item =>
+                    string.Equals(item.Name, binding.SourceProperty, StringComparison.OrdinalIgnoreCase));
+                if (foundItem != null)
+                {
+                    value = foundItem.Value;
+                    _logger?.Log(LogLevel.Info,
+                        $"从 ResultItems 获取属性 {binding.SourceProperty}: {value?.GetType().Name ?? "null"}",
+                        nameof(ParameterResolver));
+                }
+            }
+
             var result = ParameterResolveResult.Success(value, binding.TargetType);
             result.SourceNodeId = binding.SourceNodeId;
             result.SourceProperty = binding.SourceProperty;

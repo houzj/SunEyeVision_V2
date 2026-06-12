@@ -1,11 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Windows;
 using System.Windows.Input;
 using Microsoft.Win32;
 using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.UI.Views.Windows;
+using SunEyeVision.UI.Events;
+using SunEyeVision.UI.Infrastructure;
 using SunEyeVision.Workflow;
 
 namespace SunEyeVision.UI.ViewModels
@@ -31,6 +37,9 @@ namespace SunEyeVision.UI.ViewModels
         private readonly SolutionManager _solutionManager;
         private string _searchText = "";
         private VariableGroupViewModel? _selectedGroup;
+
+        // 已释放序号池（全局），用于空洞填充
+        private readonly SortedSet<int> _releasedIndices = new();
 
         /// <summary>
         /// 分组列表
@@ -125,7 +134,17 @@ namespace SunEyeVision.UI.ViewModels
         /// </summary>
         public ICommand CloseCommand { get; private set; }
 
+        /// <summary>
+        /// 打开目标参数管理命令
+        /// </summary>
+        public ICommand OpenTargetParameterCommand { get; private set; }
+
         #endregion
+
+        /// <summary>
+        /// 类型选项列表（中文显示名 + 英文值，用于 ComboBox 绑定）
+        /// </summary>
+        public List<TypeOption> TypeOptions { get; } = GlobalVariableTypeMapper.GetAllTypeOptions();
 
         public GlobalVariableManagerViewModel(SolutionManager solutionManager)
         {
@@ -148,6 +167,7 @@ namespace SunEyeVision.UI.ViewModels
             ExportCommand = new RelayCommand(Export, CanExport);
             SaveCommand = new RelayCommand(Save, CanSave);
             CloseCommand = new RelayCommand(Close, () => true);
+            OpenTargetParameterCommand = new RelayCommand<object?>(OpenTargetParameter, _ => true);
         }
 
         /// <summary>
@@ -222,10 +242,17 @@ namespace SunEyeVision.UI.ViewModels
         #region 分组操作
 
         /// <summary>
-        /// 添加分组
+        /// 添加分组（上限 10 个）
         /// </summary>
         private void AddGroup()
         {
+            const int MaxGroups = 10;
+            if (Groups.Count >= MaxGroups)
+            {
+                LogWarning($"分组数量已达上限 ({MaxGroups} 个)");
+                return;
+            }
+
             // 生成新分组名称
             int groupIndex = Groups.Count + 1;
             string groupName = $"分组{groupIndex}";
@@ -283,12 +310,94 @@ namespace SunEyeVision.UI.ViewModels
             return SelectedGroup != null;
         }
 
+        /// <summary>
+        /// 确认分组重命名（内联编辑提交时调用）
+        /// </summary>
+        public void ConfirmGroupRename(VariableGroupViewModel? groupVM)
+        {
+            if (groupVM == null || !groupVM.IsEditing) return;
+
+            string newName = groupVM.EditingText?.Trim();
+
+            // 空名称 → 还原
+            if (string.IsNullOrWhiteSpace(newName))
+            {
+                groupVM.CancelEdit();
+                return;
+            }
+
+            // 名称未变 → 直接退出编辑
+            if (newName == groupVM.Name)
+            {
+                groupVM.CommitEdit();
+                return;
+            }
+
+            // 名称唯一性
+            if (Groups.Any(g => g.Name == newName && g != groupVM))
+            {
+                LogWarning($"分组名称 '{newName}' 已存在");
+                groupVM.BeginEdit(); // 重新进入编辑让用户修改
+                return;
+            }
+
+            string oldName = groupVM.Name;
+            groupVM.Name = newName;
+            groupVM.CommitEdit();
+
+            foreach (var variable in groupVM.Variables.ToList())
+                variable.Group = newName;
+
+            LogInfo($"重命名分组: '{oldName}' → '{newName}' ({groupVM.Variables.Count} 个变量)");
+        }
+
+        /// <summary>
+        /// 删除分组（级联删除变量，从右键菜单调用）
+        /// </summary>
+        public void DeleteGroupWithVariables()
+        {
+            if (SelectedGroup == null) return;
+
+            var groupName = SelectedGroup.Name;
+            var variablesToRemove = SelectedGroup.Variables.ToList();
+
+            // 1. 从 Solution 中移除变量
+            var solution = _solutionManager.CurrentSolution;
+            if (solution != null)
+            {
+                foreach (var variable in variablesToRemove)
+                {
+                    solution.GlobalVariables.Remove(variable);
+                }
+            }
+
+            // 2. 从 Groups 集合中移除分组
+            Groups.Remove(SelectedGroup);
+
+            // 3. 选中剩余的第一个分组
+            if (Groups.Count > 0)
+            {
+                SelectedGroup = Groups[0];
+                SelectedGroup.IsSelected = true;
+            }
+            else
+            {
+                // 全删了则创建默认分组
+                var defaultGroup = new VariableGroupViewModel("分组1");
+                Groups.Add(defaultGroup);
+                SelectedGroup = defaultGroup;
+                SelectedGroup.IsSelected = true;
+            }
+
+            LogInfo($"删除分组: '{groupName}' (同时删除 {variablesToRemove.Count} 个变量)");
+        }
+
         #endregion
 
         #region 变量操作
 
         /// <summary>
-        /// 添加变量
+        /// 添加变量（全局唯一名称 + 空洞序号填充）
         /// </summary>
         private void AddVariable()
         {
@@ -298,17 +407,17 @@ namespace SunEyeVision.UI.ViewModels
                 return;
             }
 
-            int variableIndex = SelectedGroup.Variables.Count + 1;
+            int variableIndex = GetNextAvailableIndex();
             var variable = new GlobalVariable
             {
-                Name = $"变量{variableIndex}",
+                Name = GenerateUniqueName($"变量{variableIndex}"),
                 Type = "String",
                 Value = "",
                 Description = "",
                 Group = SelectedGroup.Name,
                 Index = variableIndex,
-                InputSource = "手动输入",
-                OutputTarget = "无"
+                ProducerBinding = null,
+                ConsumerBindings = new List<ConsumerBinding>()
             };
 
             SelectedGroup.AddVariable(variable);
@@ -316,7 +425,7 @@ namespace SunEyeVision.UI.ViewModels
             CurrentVariables.Add(variable);
             SelectedVariable = variable;
 
-            LogInfo($"添加全局变量: {variable.Name} (分组: {SelectedGroup.Name})");
+            LogInfo($"添加全局变量: {variable.Name} (分组: {SelectedGroup.Name}, 序号: {variableIndex})");
         }
 
         /// <summary>
@@ -339,6 +448,9 @@ namespace SunEyeVision.UI.ViewModels
             var variableName = variable.Name;
             var groupName = variable.Group;
 
+            // 回收序号到全局空洞池
+            _releasedIndices.Add(variable.Index);
+
             SelectedGroup?.RemoveVariable(variable);
             _solutionManager.CurrentSolution?.GlobalVariables.Remove(variable);
             CurrentVariables.Remove(variable);
@@ -346,7 +458,7 @@ namespace SunEyeVision.UI.ViewModels
             if (SelectedVariable == variable)
                 SelectedVariable = null;
 
-            LogInfo($"删除全局变量: {variableName} (分组: {groupName})");
+            LogInfo($"删除全局变量: {variableName} (分组: {groupName}, 序号 {variable.Index} 已回收)");
         }
 
         /// <summary>
@@ -355,6 +467,131 @@ namespace SunEyeVision.UI.ViewModels
         private bool CanDeleteVariable(object? parameter)
         {
             return parameter is GlobalVariable || SelectedVariable != null;
+        }
+
+        #endregion
+
+        #region 全局变量名称/序号管理
+
+        /// <summary>
+        /// 获取下一个可用序号（优先从空洞池中取）
+        /// </summary>
+        private int GetNextAvailableIndex()
+        {
+            if (_releasedIndices.Count > 0)
+            {
+                var index = _releasedIndices.Min;
+                _releasedIndices.Remove(index);
+                return index;
+            }
+
+            var allVariables = _solutionManager.CurrentSolution?.GlobalVariables;
+            return allVariables != null && allVariables.Count > 0
+                ? allVariables.Max(v => v.Index) + 1
+                : 1;
+        }
+
+        /// <summary>
+        /// 生成全局唯一的变量名称（跨所有分组查重）
+        /// </summary>
+        private string GenerateUniqueName(string baseName)
+        {
+            var allNames = _solutionManager.CurrentSolution?.GlobalVariables
+                .Select(v => v.Name)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase)
+                ?? new HashSet<string>();
+
+            if (!allNames.Contains(baseName))
+                return baseName;
+
+            int suffix = 1;
+            while (allNames.Contains($"{baseName}({suffix})"))
+                suffix++;
+
+            return $"{baseName}({suffix})";
+        }
+
+        /// <summary>
+        /// 确认变量重命名（DataGrid CellEditEnding 时调用）
+        /// </summary>
+        /// <returns>true=通过，false=弹窗提示并取消编辑</returns>
+        public bool ConfirmVariableRename(GlobalVariable variable, string newName)
+        {
+            if (string.IsNullOrWhiteSpace(newName))
+            {
+                MessageBox.Show("变量名称不能为空", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+
+            var allVariables = _solutionManager.CurrentSolution?.GlobalVariables;
+            if (allVariables == null)
+                return true;
+
+            if (GlobalVariable.IsNameDuplicate(allVariables, newName, variable.Id))
+            {
+                MessageBox.Show($"变量名称 '{newName}' 已存在，请使用其他名称",
+                    "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+
+            // 名称已变更 → 执行重命名并传播
+            if (variable.Name != newName)
+            {
+                var oldName = variable.Name;
+
+                // ★ 在 ConfirmVariableRename 中提前设置 Name（早于绑定写回），
+                // 后续绑定写回同名值，PropertyChanged 再次触发但值相同，无副作用
+                variable.Name = newName;
+
+                // ★ 传播到所有引用处（节点参数 BindingConfig + 模块结果行）
+                UpdateGlobalVariableNameReferences(variable, oldName, newName);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// 全局变量重命名后，更新所有引用处的显示名称
+        /// </summary>
+        private void UpdateGlobalVariableNameReferences(GlobalVariable variable, string oldName, string newName)
+        {
+            var solution = _solutionManager.CurrentSolution;
+            if (solution == null) return;
+
+            LogInfo($"全局变量重命名传播: '{oldName}' → '{newName}'");
+
+            // 1. 更新所有节点参数的 BindingConfig
+            foreach (var workflow in solution.Workflows)
+            {
+                foreach (var node in workflow.Nodes ?? Enumerable.Empty<WorkflowNodeBase>())
+                {
+                    if (node?.Parameters == null) continue;
+
+                    var parametersType = node.Parameters.GetType();
+                    foreach (var prop in parametersType.GetProperties())
+                    {
+                        if (prop.GetValue(node.Parameters) is ParamValueBase paramValue)
+                        {
+                            var bc = paramValue.BindingConfig;
+                            if (bc?.SourceNodeId == "__GlobalVars__" && bc.SourceProperty == oldName)
+                            {
+                                bc.SourceProperty = newName;
+                                bc.SourceDisplayName = newName;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 2. 发布全局变量重命名事件（通知 MainWindowViewModel 更新模块结果 UI、ConfigSetting 等）
+            var eventBus = ServiceLocator.Instance.GetService<SunEyeVision.Core.Events.IEventBus>();
+            eventBus?.Publish(new UIEvents.GlobalVariableRenamedEvent(
+                source: "GlobalVariableManagerViewModel",
+                variableId: variable.Id,
+                oldName: oldName,
+                newName: newName));
+
+            LogInfo($"全局变量重命名传播完成");
         }
 
         #endregion
@@ -387,7 +624,7 @@ namespace SunEyeVision.UI.ViewModels
                     return;
                 }
 
-                // 添加到当前分组
+                // 添加到对应分组
                 foreach (var variable in variables)
                 {
                     variable.Id = Guid.NewGuid().ToString();
@@ -400,6 +637,9 @@ namespace SunEyeVision.UI.ViewModels
                         group = new VariableGroupViewModel(variable.Group);
                         Groups.Add(group);
                     }
+
+                    // 重新分配序号（全局空洞填充）
+                    variable.Index = GetNextAvailableIndex();
                     group.AddVariable(variable);
                 }
 
@@ -470,7 +710,7 @@ namespace SunEyeVision.UI.ViewModels
             {
                 try
                 {
-                    // 更新所有变量的Index属性
+                    // 更新所有变量的Index属性（紧凑重排）
                     foreach (var group in Groups)
                     {
                         int index = 1;
@@ -479,6 +719,9 @@ namespace SunEyeVision.UI.ViewModels
                             variable.Index = index++;
                         }
                     }
+
+                    // 清空全局空洞池（保存即 compact）
+                    _releasedIndices.Clear();
 
                     _solutionManager.SaveSolution(currentSolution.FilePath);
                     LogSuccess("全局变量保存成功");
@@ -508,6 +751,107 @@ namespace SunEyeVision.UI.ViewModels
         private void Close()
         {
             LogInfo("关闭全局变量管理器");
+        }
+
+        /// <summary>
+        /// 打开目标参数管理对话框
+        /// </summary>
+        private void OpenTargetParameter(object? parameter)
+        {
+            if (parameter is not GlobalVariable variable)
+                return;
+
+            try
+            {
+                var currentSolution = _solutionManager.CurrentSolution;
+                if (currentSolution == null || currentSolution.Workflows.Count == 0)
+                {
+                    LogWarning("当前解决方案没有工作流，无法管理消费者");
+                    return;
+                }
+
+                var result = TargetParameterDialog.ShowDialog(
+                    currentSolution.Workflows,
+                    variable.ConsumerBindings);
+
+                if (result != null)
+                {
+                    // 1. 计算变化：哪些新增，哪些移除
+                    var oldSet = new HashSet<(string, string)>(
+                        variable.ConsumerBindings.Select(b => (b.NodeId, b.ParameterName)));
+                    var newSet = new HashSet<(string, string)>(
+                        result.Select(b => (b.NodeId, b.ParameterName)));
+
+                    var added = result.Where(b => !oldSet.Contains((b.NodeId, b.ParameterName))).ToList();
+                    var removed = variable.ConsumerBindings
+                        .Where(b => !newSet.Contains((b.NodeId, b.ParameterName))).ToList();
+
+                    // 2. 更新 ConsumerBindings
+                    variable.ConsumerBindings = result;
+
+                    // 3. 新增绑定 → 设置节点参数的 BindingConfig（全局变量绑定）
+                    foreach (var binding in added)
+                        SetNodeParamBinding(currentSolution, binding, variable.Name);
+
+                    // 4. 移除绑定 → 清除节点参数的 BindingConfig（切回常量模式）
+                    foreach (var binding in removed)
+                        ClearNodeParamBinding(currentSolution, binding);
+
+                    variable.NotifyOutputDisplayChanged();
+                    LogSuccess($"更新目标输出 (共 {result.Count} 个消费者)");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError($"打开目标参数管理失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 为节点参数设置全局变量绑定
+        /// </summary>
+        private static void SetNodeParamBinding(Solution solution, ConsumerBinding binding, string variableName)
+        {
+            var node = solution.Workflows
+                .SelectMany(w => w.Nodes ?? Enumerable.Empty<WorkflowNodeBase>())
+                .FirstOrDefault(n => n.Id == binding.NodeId);
+            if (node?.Parameters == null) return;
+
+            var prop = node.Parameters.GetType().GetProperty(binding.ParameterName);
+            if (prop == null) return;
+
+            if (prop.GetValue(node.Parameters) is ParamValueBase paramValue)
+            {
+                paramValue.BindingConfig = new ParamSetting
+                {
+                    ParameterName = binding.ParameterName,
+                    BindingType = BindingType.Binding,
+                    SourceNodeId = "__GlobalVars__",
+                    SourceProperty = variableName,
+                    SourceNodeName = "全局变量",
+                    SourceDisplayName = variableName
+                };
+            }
+        }
+
+        /// <summary>
+        /// 清除节点参数的绑定（切回常量模式）
+        /// </summary>
+        private static void ClearNodeParamBinding(Solution solution, ConsumerBinding binding)
+        {
+            var node = solution.Workflows
+                .SelectMany(w => w.Nodes ?? Enumerable.Empty<WorkflowNodeBase>())
+                .FirstOrDefault(n => n.Id == binding.NodeId);
+            if (node?.Parameters == null) return;
+
+            var prop = node.Parameters.GetType().GetProperty(binding.ParameterName);
+            if (prop == null) return;
+
+            if (prop.GetValue(node.Parameters) is ParamValueBase paramValue)
+            {
+                // BindingConfig = null → 切回常量模式
+                paramValue.BindingConfig = null;
+            }
         }
 
         #endregion

@@ -12,6 +12,7 @@
   <Folder Name="/Src/SunEyeVision.CvEngine/">
     <Project Path="Src/SunEyeVision.CvEngine/SunEyeVision.CvEngine.csproj" />
   </Folder>
+  <!-- HalAdapter project removed, types moved to Plugin.SDK/Imaging/ -->
   <Folder Name="/Src/SunEyeVision.DeviceDriver/">
     <Project Path="Src/DeviceDriver/SunEyeVision.DeviceDriver.csproj" />
   </Folder>
@@ -29,5 +30,7 @@
     <Project Path="tools/SunEyeVision.Tool.ImageFilter/SunEyeVision.Tool.ImageFilter.csproj" />
     <Project Path="tools/SunEyeVision.Tool.Morphology/SunEyeVision.Tool.Morphology.csproj" />
     <Project Path="tools/SunEyeVision.Tool.ShapeMatch/SunEyeVision.Tool.ShapeMatch.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.Subroutine/SunEyeVision.Tool.Subroutine.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.Condition/SunEyeVision.Tool.Condition.csproj" />
   </Folder>
 </Solution>

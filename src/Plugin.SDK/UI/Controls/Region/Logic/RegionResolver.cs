@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Windows;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.Plugin.SDK.Logging;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Logic
@@ -281,6 +283,18 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Logic
                 return resolved;
             }
 
+            // WpfRect → 轴对齐矩形
+            if (value is Rect rect)
+            {
+                return RectToResolvedRegion(rect, sourceData);
+            }
+
+            // IVisionRegion → 取其外接矩形
+            if (value is IVisionRegion visionRegion)
+            {
+                return VisionRegionToResolvedRegion(visionRegion, sourceData);
+            }
+
             // 尝试从字典或匿名对象解析
             if (value is IDictionary<string, object> dict)
             {
@@ -288,6 +302,41 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Logic
             }
 
             return ResolvedRegion.Invalid($"无法将值类型 {value.GetType().Name} 转换为区域");
+        }
+
+        /// <summary>
+        /// 从 WpfRect 转换为解析区域
+        /// </summary>
+        private static ResolvedRegion RectToResolvedRegion(Rect rect, RegionData sourceData)
+        {
+            return new ResolvedRegion
+            {
+                ShapeType = ShapeType.Rectangle,
+                IsValid = true,
+                SourceData = sourceData,
+                CenterX = rect.X + rect.Width / 2,
+                CenterY = rect.Y + rect.Height / 2,
+                Width = rect.Width,
+                Height = rect.Height
+            };
+        }
+
+        /// <summary>
+        /// 从 IVisionRegion 转换为解析区域（取外接矩形）
+        /// </summary>
+        private static ResolvedRegion VisionRegionToResolvedRegion(IVisionRegion visionRegion, RegionData sourceData)
+        {
+            var bbox = visionRegion.BoundingBox;
+            return new ResolvedRegion
+            {
+                ShapeType = ShapeType.Rectangle,
+                IsValid = true,
+                SourceData = sourceData,
+                CenterX = bbox.X + bbox.Width / 2,
+                CenterY = bbox.Y + bbox.Height / 2,
+                Width = bbox.Width,
+                Height = bbox.Height
+            };
         }
 
         /// <summary>

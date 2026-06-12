@@ -228,6 +228,7 @@
                             <controls:ParamBinding x:Name="PART_ParamBinding"
                                                 AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource TemplatedParent}}"
                                                 DataType="{Binding DataType, RelativeSource={RelativeSource TemplatedParent}}"
+                                                ParameterName="{Binding ParameterName, RelativeSource={RelativeSource TemplatedParent}}"
                                                 HorizontalAlignment="Stretch"
                                                 Visibility="{Binding ParamBindingVisibility, RelativeSource={RelativeSource TemplatedParent}}"/>
                         </Grid>
@@ -1458,9 +1459,18 @@
                                                                                   Width="20"
                                                                                   Height="20"
                                                                                   Margin="-2,0,2,0"
-                                                                                  IsChecked="{Binding Path=IsExpanded, Mode=TwoWay}"
-                                                                                  Visibility="{Binding HasChildren, Converter={StaticResource BoolToVisibilityConverter}}"
-                                                                                  IsHitTestVisible="True">
+                                                                  IsChecked="{Binding Path=IsExpanded, Mode=TwoWay}"
+                                                                  IsHitTestVisible="True">
+                                                                    <ToggleButton.Style>
+                                                                        <Style TargetType="ToggleButton">
+                                                                            <Setter Property="Visibility" Value="Hidden"/>
+                                                                            <Style.Triggers>
+                                                                                <DataTrigger Binding="{Binding HasChildren}" Value="True">
+                                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                                </DataTrigger>
+                                                                            </Style.Triggers>
+                                                                        </Style>
+                                                                    </ToggleButton.Style>
                                                                         <ToggleButton.Template>
                                                                             <ControlTemplate TargetType="ToggleButton">
                                                                                 <Grid Width="20" Height="20" Background="Transparent">

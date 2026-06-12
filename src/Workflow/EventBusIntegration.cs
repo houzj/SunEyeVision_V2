@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using OpenCvSharp;
 using SunEyeVision.Core.Events;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.Plugin.SDK.Logging;
 
 namespace SunEyeVision.Workflow
@@ -148,7 +148,7 @@ namespace SunEyeVision.Workflow
         /// <summary>
         /// Execute a single node with event publishing
         /// </summary>
-        public AlgorithmResult ExecuteNode(WorkflowNodeBase node, Mat inputImage)
+        public AlgorithmResult ExecuteNode(WorkflowNodeBase node, IVisionImage? inputImage)
         {
             var stopwatch = Stopwatch.StartNew();
             bool success = true;
@@ -159,7 +159,7 @@ namespace SunEyeVision.Workflow
                 _eventPublisher.PublishNodeExecutionStarted(Id, node.Id, node.Name);
 
                 var tool = node.CreateInstance();
-                Mat? resultImage = null;
+                IVisionImage? resultImage = null;
 
                 if (tool != null)
                 {
@@ -172,7 +172,7 @@ namespace SunEyeVision.Workflow
                     var outputImageProp = toolResult.GetType().GetProperty("OutputImage");
                     if (outputImageProp != null)
                     {
-                        resultImage = outputImageProp.GetValue(toolResult) as Mat;
+                        resultImage = outputImageProp.GetValue(toolResult) as IVisionImage;
                     }
                 }
 

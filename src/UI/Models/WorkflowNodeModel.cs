@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using System.Windows;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
@@ -57,6 +59,13 @@ namespace SunEyeVision.UI.Models
             get => base.StyleConfig as NodeStyleConfig ?? NodeStyles.Standard;
             set => base.StyleConfig = value;
         }
+
+        /// <summary>
+        /// 节点扩展数据（工具/插件自定义的附加数据）
+        /// Phase 3: 移除 [JsonIgnore] 使其参与序列化，确保子程序关联保存/加载不丢失
+        /// </summary>
+        [JsonInclude]
+        public Dictionary<string, object>? ExtraData { get; set; }
 
         #region 端口位置计算属性
 
@@ -175,7 +184,8 @@ namespace SunEyeVision.UI.Models
                 Height = baseNode.Height,
                 IsEnabled = baseNode.IsEnabled,
                 Parameters = baseNode.Parameters,
-                SelectedDisplaySource = baseNode.SelectedDisplaySource
+                SelectedDisplaySource = baseNode.SelectedDisplaySource,
+                SubroutineId = baseNode.SubroutineId    // ★ SSOT
             };
 
             return node;

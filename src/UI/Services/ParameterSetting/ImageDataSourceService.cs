@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
@@ -27,13 +27,9 @@ namespace SunEyeVision.UI.Services.ParameterSetting
         /// </summary>
         private static readonly HashSet<string> SupportedImageTypeNames = new(StringComparer.OrdinalIgnoreCase)
         {
-            "Mat",
-            "Mat`1",
-            "Image`2",
-            "Bitmap",
+            "IVisionImage",
             "BitmapSource",
-            "ImageSource",
-            "WriteableBitmap"
+            "BitmapImage"
         };
 
         /// <summary>
@@ -41,10 +37,7 @@ namespace SunEyeVision.UI.Services.ParameterSetting
         /// </summary>
         private static readonly string[] SupportedImageNamespaces = new[]
         {
-            "OpenCvSharp.",
-            "System.Drawing.",
-            "System.Windows.Media.Imaging.",
-            "SixLabors.ImageSharp."
+            "System.Windows.Media.Imaging."
         };
 
         /// <summary>
@@ -164,16 +157,11 @@ namespace SunEyeVision.UI.Services.ParameterSetting
             if (type == null)
                 return "未知";
 
-            // OpenCvSharp.Mat
-            if (type.Name == "Mat")
-                return "Mat图像";
+            if (type.Name == "IVisionImage")
+                return "图像";
 
             // BitmapSource派生类
             if (type.Name == "BitmapSource" || type.Name == "BitmapImage")
-                return "位图";
-
-            // System.Drawing.Bitmap
-            if (type.Name == "Bitmap" && type.Namespace == "System.Drawing")
                 return "位图";
 
             return type.Name;

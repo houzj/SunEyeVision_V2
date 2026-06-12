@@ -229,6 +229,11 @@ namespace SunEyeVision.Workflow
         public Dictionary<string, object> Variables { get; set; }
 
         /// <summary>
+        /// 解决方案级别全局变量（用于 __GlobalVars__ 参数绑定解析）
+        /// </summary>
+        public IDictionary<string, object?>? GlobalVariables { get; set; }
+
+        /// <summary>
         /// 子程序调用栈
         /// </summary>
         public Stack<SubroutineCallInfo> CallStack { get; set; }
@@ -244,9 +249,14 @@ namespace SunEyeVision.Workflow
         public Dictionary<string, NodeExecutionStatusInternal> NodeStates { get; set; }
 
         /// <summary>
-        /// 工作流控制插件引用
+        /// 执行引擎引用（由 WorkflowExecutionEngine 设置，供子程序插件使用）
         /// </summary>
-        public IWorkflowControlPlugin WorkflowControlPlugin { get; set; }
+        public WorkflowExecutionEngine ExecutionEngine { get; set; }
+
+        /// <summary>
+        /// 已访问的工作流 ID 集合（Phase 2：用于跨工作流循环依赖检测）
+        /// </summary>
+        public HashSet<string> VisitedWorkflowIds { get; set; } = new();
 
         /// <summary>
         /// 取消令牌
@@ -489,11 +499,12 @@ namespace SunEyeVision.Workflow
             var subContext = new WorkflowContext
             {
                 WorkflowId = subroutineId,
-                WorkflowControlPlugin = WorkflowControlPlugin,
+                ExecutionEngine = ExecutionEngine,
                 CancellationToken = CancellationToken,
                 ProgressReporter = ProgressReporter,
                 IsDebugMode = IsDebugMode,
-                EnableProfiling = EnableProfiling
+                EnableProfiling = EnableProfiling,
+                VisitedWorkflowIds = VisitedWorkflowIds  // ★ Phase 2: 复制循环检测集合
             };
 
             // 复制全局变量
@@ -604,7 +615,7 @@ namespace SunEyeVision.Workflow
         public T? GetNodeResult<T>(string nodeId) where T : ToolResults
         {
             var result = GetNodeResult(nodeId);
-            if (result?.ToolResult is T typedResult)
+            if (result?.Result is T typedResult)
             {
                 return typedResult;
             }

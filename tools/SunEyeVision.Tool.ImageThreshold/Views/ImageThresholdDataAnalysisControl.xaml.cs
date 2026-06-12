@@ -12,7 +12,7 @@ namespace SunEyeVision.Tool.ImageThreshold.Views
     /// <summary>
     /// 图像二值化数据分析控件
     /// </summary>
-    public partial class ImageThresholdDataAnalysisControl : UserControl, IToolControlDataAnalysis
+    public partial class ImageThresholdDataAnalysisControl : UserControl, IToolControlDataAnalysis, System.ComponentModel.INotifyPropertyChanged
     {
         #region 数据项模型
 

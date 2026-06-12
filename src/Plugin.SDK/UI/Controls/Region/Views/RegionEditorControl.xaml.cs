@@ -18,6 +18,7 @@ using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Logic;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Execution.Results;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 {
@@ -27,8 +28,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
     public partial class RegionEditorControl : UserControl, INotifyPropertyChanged
     {
         private RegionEditorViewModel _viewModel;
-        private ShapeType _currentTool = ShapeType.Rectangle;
-        private Button? _activeShapeButton;
+        private ShapeType _currentTool = ShapeType.Point;  // 初始为选择模式（Point=选择）
 
         // 控件实例ID（用于区分不同的 RegionEditorControl 实例）
         private readonly string _controlInstanceId = Guid.NewGuid().ToString("N").Substring(0, 8);
@@ -61,6 +61,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         private int _drawingLogCount = 0;
         private int _previewLogCount = 0;
 
+        // ★ 位置修正诊断计数器
+        private int _correctionStatusCount = 0;
+        private const int CORRECTION_LOG_INTERVAL = 1;
+
         // 区域名称索引管理（空洞池策略）
         private int _nextRegionIndex = 1;
         private readonly SortedSet<int> _availableIndices = new();
@@ -79,6 +83,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         private double? _rotateStartAngle = null;
         private double? _rotateStartMouseAngle = null;
 
+        // 位置修正矩阵 (参考→测试)
+        private AffineMatrix? _positionCorrectionMatrix;
+        private AffineMatrix? _inverseMatrix;
+
         /// <summary>
         /// Overlay Canvas引用（由RegionEditorManagerControl设置，用于手柄/橡皮筋绘制）
         /// </summary>
@@ -93,6 +101,59 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         /// 需要重新渲染时触发（Manager订阅）
         /// </summary>
         public event Action? RenderRequested;
+
+        /// <summary>
+        /// 设置位置修正矩阵。
+        /// 显示正向变换，编辑逆变换，存储不变（始终存参考坐标系）。
+        /// </summary>
+        public void SetPositionCorrectionMatrix(AffineMatrix? matrix)
+        {
+            _positionCorrectionMatrix = matrix;
+            _inverseMatrix = matrix?.Inverse();
+
+            // ★ 诊断：设置矩阵时输出完整状态汇总
+            LogCorrectionStatus("SetPositionCorrectionMatrix");
+
+            PluginLogger.Info($"[SetPositionCorrectionMatrix] 矩阵已设置 | Matrix={(matrix != null ? $"[{matrix.M11:F4},{matrix.M12:F4},{matrix.M21:F4},{matrix.M22:F4},{matrix.OffsetX:F2},{matrix.OffsetY:F2}]" : "null")} | RenderRequested触发", "RegionEditorControl");
+
+            RenderRequested?.Invoke();
+        }
+
+        /// <summary>
+        /// 输出位置修正状态汇总日志（收集-总结模式）。
+        /// 一次调用输出完整的状态信息，便于全链分析而非分散查找。
+        /// </summary>
+        private void LogCorrectionStatus(string trigger)
+        {
+            if (_correctionStatusCount++ % CORRECTION_LOG_INTERVAL != 0)
+                return;
+
+            var matrixInfo = _positionCorrectionMatrix != null
+                ? $"M11={_positionCorrectionMatrix.M11:F4} M12={_positionCorrectionMatrix.M12:F4} " +
+                  $"M21={_positionCorrectionMatrix.M21:F4} M22={_positionCorrectionMatrix.M22:F4} " +
+                  $"OffsetX={_positionCorrectionMatrix.OffsetX:F2} OffsetY={_positionCorrectionMatrix.OffsetY:F2}"
+                : "(null)";
+            var inverseInfo = _inverseMatrix != null
+                ? $"M11={_inverseMatrix.M11:F4} M12={_inverseMatrix.M12:F4} " +
+                  $"M21={_inverseMatrix.M21:F4} M22={_inverseMatrix.M22:F4} " +
+                  $"OffsetX={_inverseMatrix.OffsetX:F2} OffsetY={_inverseMatrix.OffsetY:F2}"
+                : "(null)";
+
+            var regions = _viewModel.Regions;
+            var regionSummary = regions.Count == 0
+                ? "(空)"
+                : string.Join(" | ", regions.Take(5).Select(r =>
+                    r.Parameters is ShapeParameters s
+                        ? $"{r.Name}:Type={s.ShapeType} Center=({s.CenterX:F1},{s.CenterY:F1})"
+                        : $"{r.Name}:Params={r.Parameters?.GetType().Name ?? "null"}"));
+
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[LogCorrectionStatus] Trigger={trigger} InstanceId={_controlInstanceId}\n" +
+                $"  ForwardMatrix={matrixInfo}\n" +
+                $"  InverseMatrix={inverseInfo}\n" +
+                $"  RegionCount={regions.Count} Regions=[{regionSummary}]",
+                "RegionEditorControl");
+        }
 
         /// <summary>
         /// ★ Phase 4: 工具激活事件（Manager 用于分组互斥控制）
@@ -153,13 +214,59 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             DependencyProperty.Register(nameof(DefaultRegionType),
                 typeof(RegionType),
                 typeof(RegionEditorControl),
-                new PropertyMetadata(RegionType.Inspection));
+                new PropertyMetadata(RegionType.Inspection, OnDefaultRegionTypeChanged));
 
         public RegionType DefaultRegionType
         {
             get => (RegionType)GetValue(DefaultRegionTypeProperty);
             set => SetValue(DefaultRegionTypeProperty, value);
         }
+
+        #region 区域类型标题（由 DefaultRegionType 自动派生）
+
+        /// <summary>
+        /// 区域类型标题文本（检测区域/屏蔽区域）
+        /// </summary>
+        public static readonly DependencyProperty RegionTypeTitleProperty =
+            DependencyProperty.Register(nameof(RegionTypeTitle),
+                typeof(string),
+                typeof(RegionEditorControl),
+                new PropertyMetadata("检测区域"));
+
+        public string RegionTypeTitle
+        {
+            get => (string)GetValue(RegionTypeTitleProperty);
+            set => SetValue(RegionTypeTitleProperty, value);
+        }
+
+        /// <summary>
+        /// 区域类型标题颜色（检测区域=蓝色 #4488FF，屏蔽区域=橙色 #FFA500）
+        /// </summary>
+        public static readonly DependencyProperty RegionTypeTitleBrushProperty =
+            DependencyProperty.Register(nameof(RegionTypeTitleBrush),
+                typeof(Brush),
+                typeof(RegionEditorControl),
+                new PropertyMetadata(new SolidColorBrush((Color)ColorConverter.ConvertFromString("#4488FF"))));
+
+        public Brush RegionTypeTitleBrush
+        {
+            get => (Brush)GetValue(RegionTypeTitleBrushProperty);
+            set => SetValue(RegionTypeTitleBrushProperty, value);
+        }
+
+        private static void OnDefaultRegionTypeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is RegionEditorControl control)
+            {
+                var newType = (RegionType)e.NewValue;
+                control.RegionTypeTitle = newType == RegionType.Inspection ? "检测区域" : "屏蔽区域";
+                control.RegionTypeTitleBrush = newType == RegionType.Inspection
+                    ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#4488FF"))
+                    : new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFA500"));
+            }
+        }
+
+        #endregion
 
         /// <summary>
         /// 当前选中的形状工具
@@ -222,6 +329,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             _handleManager = new HandleManager();
             _settings = RegionEditorSettings.Default;
 
+            // 初始化形状工具栏（数据驱动，每个形状可见性可单独控制）
+            InitializeShapeTools();
+            ShapeToolBarControl.ShapeSelectionChanged += OnShapeToolBarSelectionChanged;
+
             // 启用键盘焦点
             Focusable = true;
             FocusVisualStyle = null;
@@ -233,6 +344,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             VisionLogger.Instance.Log(LogLevel.Success,
                 $"[RegionEditorControl] 控件初始化完成 | InstanceId={_controlInstanceId}",
                 "RegionEditorControl");
+
+            // ★ 诊断：输出初始位置修正状态（应显示 Matrix=null）
+            LogCorrectionStatus("Constructor");
         }
 
         private void RegionEditorControl_Loaded(object sender, RoutedEventArgs e)
@@ -477,46 +591,34 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 return;
             }
 
-            // 快捷键选择形状工具（只处理当前获得键盘焦点的编辑器）
-            if (_viewModel.IsDrawingMode)
+            // 快捷键选择形状工具
+            switch (e.Key)
             {
-                switch (e.Key)
-                {
-                    case Key.V:
-                        EnterSelectMode(null);
-                        e.Handled = true;
-                        break;
-                    case Key.R:
-                        SelectShapeTool(ShapeType.Rectangle, null);
-                        e.Handled = true;
-                        break;
-                    case Key.C:
-                        SelectShapeTool(ShapeType.Circle, null);
-                        e.Handled = true;
-                        break;
-                    case Key.O:
-                        SelectShapeTool(ShapeType.RotatedRectangle, null);
-                        e.Handled = true;
-                        break;
-                    case Key.L:
-                        SelectShapeTool(ShapeType.Line, null);
-                        e.Handled = true;
-                        break;
-                    case Key.P:
-                        _isDrawingPolygon = false;
-                        SelectShapeTool(ShapeType.Polygon, null);
-                        e.Handled = true;
-                        break;
-                }
-            }
-            else
-            {
-                // 非绘制模式下，V键也可以切换到选择模式
-                if (e.Key == Key.V)
-                {
-                    EnterSelectMode(null);
+                case Key.V:
+                    EnterSelectMode();
                     e.Handled = true;
-                }
+                    break;
+                case Key.R:
+                    SelectShapeTool(ShapeType.Rectangle);
+                    e.Handled = true;
+                    break;
+                case Key.C:
+                    SelectShapeTool(ShapeType.Circle);
+                    e.Handled = true;
+                    break;
+                case Key.O:
+                    SelectShapeTool(ShapeType.RotatedRectangle);
+                    e.Handled = true;
+                    break;
+                case Key.L:
+                    SelectShapeTool(ShapeType.Line);
+                    e.Handled = true;
+                    break;
+                case Key.P:
+                    _isDrawingPolygon = false;
+                    SelectShapeTool(ShapeType.Polygon);
+                    e.Handled = true;
+                    break;
             }
         }
 
@@ -596,7 +698,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         {
             if (tool == ShapeType.Polygon)
                 _isDrawingPolygon = false;
-            SelectShapeTool(tool, null);
+            SelectShapeTool(tool);
         }
 
         /// <summary>
@@ -604,7 +706,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         /// </summary>
         public void EnterSelectMode()
         {
-            EnterSelectMode(null);
+            EnterSelectMode(notifyManager: true);
         }
 
         /// <summary>
@@ -615,46 +717,33 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         {
             if (e.Handled) return;
 
-            // 快捷键仅在绘制模式下生效
-            if (_viewModel.IsDrawing)
+            switch (e.Key)
             {
-                switch (e.Key)
-                {
-                    case Key.V:
-                        EnterSelectMode(null);
-                        e.Handled = true;
-                        break;
-                    case Key.R:
-                        SelectShapeTool(ShapeType.Rectangle, null);
-                        e.Handled = true;
-                        break;
-                    case Key.C:
-                        SelectShapeTool(ShapeType.Circle, null);
-                        e.Handled = true;
-                        break;
-                    case Key.O:
-                        SelectShapeTool(ShapeType.RotatedRectangle, null);
-                        e.Handled = true;
-                        break;
-                    case Key.L:
-                        SelectShapeTool(ShapeType.Line, null);
-                        e.Handled = true;
-                        break;
-                    case Key.P:
-                        _isDrawingPolygon = false;
-                        SelectShapeTool(ShapeType.Polygon, null);
-                        e.Handled = true;
-                        break;
-                }
-            }
-            else
-            {
-                // 非绘制模式下，V键也可以切换到选择模式
-                if (e.Key == Key.V)
-                {
-                    EnterSelectMode(null);
+                case Key.V:
+                    EnterSelectMode();
                     e.Handled = true;
-                }
+                    break;
+                case Key.R:
+                    SelectShapeTool(ShapeType.Rectangle);
+                    e.Handled = true;
+                    break;
+                case Key.C:
+                    SelectShapeTool(ShapeType.Circle);
+                    e.Handled = true;
+                    break;
+                case Key.O:
+                    SelectShapeTool(ShapeType.RotatedRectangle);
+                    e.Handled = true;
+                    break;
+                case Key.L:
+                    SelectShapeTool(ShapeType.Line);
+                    e.Handled = true;
+                    break;
+                case Key.P:
+                    _isDrawingPolygon = false;
+                    SelectShapeTool(ShapeType.Polygon);
+                    e.Handled = true;
+                    break;
             }
         }
 
@@ -665,7 +754,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         {
             if (_viewModel.IsDrawing)
             {
-                EnterSelectMode(null, notifyManager: false);
+                EnterSelectMode(notifyManager: false);
             }
         }
 
@@ -698,14 +787,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             // 3. 取消区域选中
             DeselectAll();
 
-            // 4. 清除所有按钮高亮（形状按钮 + SelectButton）
-            var shapeContainer = FindShapeContainer();
-            if (shapeContainer != null)
-            {
-                ResetAllShapeButtons(shapeContainer);
-            }
-            ResetShapeButtonStyle(SelectButton);
-            _activeShapeButton = null;
+            // 4. 清除形状工具栏选中状态
+            ShapeToolBarControl.ClearSelection();
 
             // 5. 更新状态消息
             _viewModel.StatusMessage = "空闲 - 点击工具栏选择工具";
@@ -724,12 +807,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         {
             if (OverlayCanvas == null) return;
 
-            _lastMouseImagePosition = position;
+            // 逆变换到参考坐标系用于形状编辑，保留原始（测试）坐标用于橡皮筋渲染
+            Point refPosition = _inverseMatrix != null
+                ? _inverseMatrix.TransformWpfPoint(position)
+                : position;
+
+            _lastMouseImagePosition = refPosition;
 
             if (_mouseMoveLogCounter++ % 100 == 0)
             {
                 VisionLogger.Instance.Log(LogLevel.Info,
-                    $"[ProcessMouseMove] Count={_mouseMoveLogCounter} | Position={position:F1} | IsDrawing={_isDrawing} | IsDragging={_isDragging} | IsDraggingHandle={_isDraggingHandle}",
+                    $"[ProcessMouseMove] Count={_mouseMoveLogCounter} | Position={position:F1} | RefPosition={refPosition:F1} | Matrix={(_positionCorrectionMatrix != null ? "set" : "null")} | IsDrawing={_isDrawing} | IsDragging={_isDragging} | IsDraggingHandle={_isDraggingHandle}",
                     "RegionEditorControl");
             }
 
@@ -738,15 +826,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
             if (_isDraggingHandle && _activeHandleType != Rendering.HandleType.None && _selectedRegion?.Parameters is ShapeParameters shape)
             {
-                HandleShapeEdit(shape, position);
+                HandleShapeEdit(shape, refPosition);
                 return;
             }
 
             if (_isDragging && _selectedRegion != null)
             {
-                var offset = position - _dragStartPoint;
+                var offset = refPosition - _dragStartPoint;
                 MoveRegion(_selectedRegion, offset);
-                _dragStartPoint = position;
+                _dragStartPoint = refPosition;
                 return;
             }
 
@@ -754,7 +842,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             {
                 if (_currentTool == ShapeType.Polygon && _isDrawingPolygon)
                 {
-                    // 多边形橡皮筋线（从最后一个顶点到鼠标位置）
+                    // 多边形橡皮筋线：使用原始测试坐标（OverlayCanvas 在测试坐标系中）
                     DrawPolygonRubberBand(position);
                 }
                 else
@@ -762,12 +850,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                     if (_drawingLogCount == 0)
                     {
                         VisionLogger.Instance.Log(LogLevel.Info,
-                            $"[绘制预览] 开始更新预览 | CurrentDrawingRegion={_currentDrawingRegion.Name} | Position={position:F1}",
+                            $"[绘制预览] 开始更新预览 | CurrentDrawingRegion={_currentDrawingRegion.Name} | Position={refPosition:F1}",
                             "RegionEditorControl");
                         _drawingLogCount++;
                     }
 
-                    UpdateDrawingPreview(position);
+                    UpdateDrawingPreview(refPosition);
                 }
             }
         }
@@ -778,8 +866,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         /// <returns>true=事件已消费（区域操作），false=空白处点击（允许平移）</returns>
         public bool ProcessMouseDown(Point position)
         {
+            // 逆变换到参考坐标系（内部状态始终使用参考坐标）
+            Point refPosition = _inverseMatrix != null
+                ? _inverseMatrix.TransformWpfPoint(position)
+                : position;
+
             VisionLogger.Instance.Log(LogLevel.Info,
-                $"[ProcessMouseDown] MouseDown事件 | InstanceId={_controlInstanceId} | IsDrawing={_viewModel.IsDrawing} | _isDrawing={_isDrawing} | Tool={_currentTool} | Position={position:F1} | OverlayCanvas={OverlayCanvas != null}",
+                $"[ProcessMouseDown] MouseDown事件 | InstanceId={_controlInstanceId} | IsDrawing={_viewModel.IsDrawing} | _isDrawing={_isDrawing} | Tool={_currentTool} | Position={position:F1} | RefPosition={refPosition:F1} | Matrix={(_positionCorrectionMatrix != null ? "set" : "null")} | OverlayCanvas={OverlayCanvas != null}",
                 "RegionEditorControl");
 
             if (OverlayCanvas == null) return false;
@@ -811,7 +904,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                     _currentDrawingRegion.IsPreview = true;
                 }
 
-            _polygonPoints.Add(position);
+            _polygonPoints.Add(refPosition);
             SyncPolygonToShapeDef();
             ClearRubberBand();
             RenderRequested?.Invoke();
@@ -830,7 +923,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 }
 
                 _isDrawing = true;
-                _startPoint = position;
+                _startPoint = refPosition;
 
                 _currentDrawingRegion = RegionData.CreateDrawingRegion(
                     GenerateRegionName(), _currentTool);
@@ -842,23 +935,23 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                     {
                         case ShapeType.Rectangle:
                         case ShapeType.RotatedRectangle:
-                            shapeDef.CenterX = position.X;
-                            shapeDef.CenterY = position.Y;
+                            shapeDef.CenterX = refPosition.X;
+                            shapeDef.CenterY = refPosition.Y;
                             shapeDef.Width = 0;
                             shapeDef.Height = 0;
                             break;
                         case ShapeType.Circle:
-                            shapeDef.CenterX = position.X;
-                            shapeDef.CenterY = position.Y;
+                            shapeDef.CenterX = refPosition.X;
+                            shapeDef.CenterY = refPosition.Y;
                             shapeDef.Radius = 0;
                             shapeDef.Width = 0;
                             shapeDef.Height = 0;
                             break;
                         case ShapeType.Line:
-                            shapeDef.StartX = position.X;
-                            shapeDef.StartY = position.Y;
-                            shapeDef.EndX = position.X;
-                            shapeDef.EndY = position.Y;
+                            shapeDef.StartX = refPosition.X;
+                            shapeDef.StartY = refPosition.Y;
+                            shapeDef.EndX = refPosition.X;
+                            shapeDef.EndY = refPosition.Y;
                             break;
                     }
                 }
@@ -869,14 +962,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             {
                 if (_currentHandles != null)
                 {
-                    var hitHandleType = Rendering.HandleRenderer.HitTestHandle(position, _currentHandles);
+                    var hitHandleType = Rendering.HandleRenderer.HitTestHandle(refPosition, _currentHandles);
 
                     if (hitHandleType != Rendering.HandleType.None)
                     {
                         if (hitHandleType == Rendering.HandleType.Center)
                         {
                             _isDragging = true;
-                            _dragStartPoint = position;
+                            _dragStartPoint = refPosition;
                             _viewModel.StatusMessage = "正在拖动区域";
                             return true;
                         }
@@ -885,7 +978,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                         {
                             _isDraggingHandle = true;
                             _activeHandleType = hitHandleType;
-                            _handleDragStartPoint = position;
+                            _handleDragStartPoint = refPosition;
                             _activeVertexIndex = -1;
                             if (_currentHandles != null)
                             {
@@ -893,8 +986,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                                 {
                                     if (h.Type == Rendering.HandleType.PolygonVertex && h.VertexIndex >= 0)
                                     {
-                                        var dx = position.X - h.Position.X;
-                                        var dy = position.Y - h.Position.Y;
+                                        var dx = refPosition.X - h.Position.X;
+                                        var dy = refPosition.Y - h.Position.Y;
                                         if (Math.Sqrt(dx * dx + dy * dy) < h.HandleSize)
                                         {
                                             _activeVertexIndex = h.VertexIndex;
@@ -911,7 +1004,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
                         _isDraggingHandle = true;
                         _activeHandleType = hitHandleType;
-                        _handleDragStartPoint = position;
+                        _handleDragStartPoint = refPosition;
 
                         if (_selectedRegion.Parameters is ShapeParameters shapeDef)
                         {
@@ -924,7 +1017,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                             {
                                 _rotateStartAngle = shapeDef.Angle;
                                 var center = new Point(shapeDef.CenterX, shapeDef.CenterY);
-                                _rotateStartMouseAngle = CalculateMouseAngle(center, position);
+                                _rotateStartMouseAngle = CalculateMouseAngle(center, refPosition);
                             }
                         }
 
@@ -934,12 +1027,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 }
             }
 
+            // 传入原始画布坐标(position)，HitTestRegion 内部会自行做反向变换
             var hitRegion = HitTestRegion(position);
             if (hitRegion != null)
             {
                 SelectRegion(hitRegion);
                 _isDragging = true;
-                _dragStartPoint = position;
+                _dragStartPoint = refPosition;
                 return true;  // ★ 命中区域，事件已消费
             }
             else
@@ -1076,7 +1170,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                         _viewModel.StatusMessage = $"已创建 {_currentTool} 区域";
                         RegionDataChanged?.Invoke(this, _currentDrawingRegion);
 
-                        // ★ 诊断日志：新建区域后的完整状态
+                        // 诊断日志：新建区域后的完整状态
                         var allRegionNames = string.Join(", ", _viewModel.Regions.Select(r => $"{r.Name}(Id={r.Id:B},IsVisible={r.IsVisible})"));
                         VisionLogger.Instance.Log(LogLevel.Success,
                             $"[FinishInteraction] 区域已添加到集合 | InstanceId={_controlInstanceId} | Region={_currentDrawingRegion.Name}(Id={_currentDrawingRegion.Id:B}) | TotalRegions={_viewModel.Regions.Count} | Regions=[{allRegionNames}]",
@@ -1104,6 +1198,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             _originalShapeDefinition = null;
             _rotateStartAngle = null;
             _rotateStartMouseAngle = null;
+
+            // 绘制完成自动回到选择模式
+            EnterSelectMode(notifyManager: false);
 
             RenderRequested?.Invoke();
 
@@ -1207,10 +1304,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             var zoom = CurrentZoom;
             var lastPoint = _polygonPoints[_polygonPoints.Count - 1];
 
+            // 正向变换多边形最后一个顶点到测试坐标（OverlayCanvas 在测试坐标系中）
+            Point displayLastPoint = _positionCorrectionMatrix != null
+                ? _positionCorrectionMatrix.TransformWpfPoint(lastPoint)
+                : lastPoint;
+
             // 实线：最后一个顶点 -> 鼠标位置
             var line = new System.Windows.Shapes.Line
             {
-                X1 = lastPoint.X, Y1 = lastPoint.Y,
+                X1 = displayLastPoint.X, Y1 = displayLastPoint.Y,
                 X2 = mousePosition.X, Y2 = mousePosition.Y,
                 Stroke = Brushes.DodgerBlue,
                 StrokeThickness = 2.0 / zoom,
@@ -1477,9 +1579,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             // Math.Atan2返回数学角度：逆时针为正，0°向右
             var mathAngle = Math.Atan2(mousePos.Y - center.Y, mousePos.X - center.X) * 180 / Math.PI;
 
-            // 转换为图像坐标系角度（顺时针为正，0°向下）
-            // 公式：imageAngle = -mathAngle + 90
-            return -mathAngle + 90;
+            // Math.Atan2 在屏幕坐标系（Y向下）中天然返回顺时针为正的角度
+            // 直接返回即可，无需取负
+            return mathAngle;
         }
 
         /// <summary>
@@ -1905,7 +2007,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 // ★ 多边形预览：包含临时鼠标位置，让用户看到"点击后会是什么样的"
                 if (_currentTool == ShapeType.Polygon && _isDrawingPolygon && _polygonPoints.Count >= 1)
                 {
-                    context.PolygonPoints.Add(new Point(_lastMouseImagePosition.X, _lastMouseImagePosition.Y));
+                    Point displayMousePos = _positionCorrectionMatrix != null
+                        ? _positionCorrectionMatrix.TransformWpfPoint(_lastMouseImagePosition)
+                        : new Point(_lastMouseImagePosition.X, _lastMouseImagePosition.Y);
+                    context.PolygonPoints.Add(displayMousePos);
                     context.CalculateBounds();
                 }
 
@@ -1930,10 +2035,26 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         /// </summary>
         private RegionRenderContext CreateRenderContextInternal(RegionData region, ShapeParameters shape, bool isPreview = false)
         {
-            // 日志监控（每次调用都记录，因为这个方法调用频率不高）
-            VisionLogger.Instance.Log(LogLevel.Info,
-                $"[CreateRenderContext] RegionId={region.Id}, IsPreview={isPreview}, ShapeType={shape.ShapeType}",
-                "RegionEditorControl");
+            // ★ 诊断：每次渲染都输出位置修正状态
+            LogCorrectionStatus($"CreateRenderContext(Region={region.Name})");
+            // 正向变换：参考坐标 → 显示（测试）坐标
+            Point center = _positionCorrectionMatrix != null
+                ? _positionCorrectionMatrix.TransformWpfPoint(new Point(shape.CenterX, shape.CenterY))
+                : new Point(shape.CenterX, shape.CenterY);
+
+            Point lineStart = _positionCorrectionMatrix != null
+                ? _positionCorrectionMatrix.TransformWpfPoint(new Point(shape.StartX, shape.StartY))
+                : new Point(shape.StartX, shape.StartY);
+
+            Point lineEnd = _positionCorrectionMatrix != null
+                ? _positionCorrectionMatrix.TransformWpfPoint(new Point(shape.EndX, shape.EndY))
+                : new Point(shape.EndX, shape.EndY);
+
+            List<Point> polygonPoints = shape.Points?.Select(p =>
+                _positionCorrectionMatrix != null
+                    ? _positionCorrectionMatrix.TransformWpfPoint(new Point(p.X, p.Y))
+                    : new Point(p.X, p.Y)
+            ).ToList() ?? new List<Point>();
 
             var context = new RegionRenderContext
             {
@@ -1944,15 +2065,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 IsVisible = true,
                 RegionType = region.RegionType,
 
-                // 几何参数
-                Center = new Point(shape.CenterX, shape.CenterY),
+                // 几何参数（正向变换后的显示坐标）
+                Center = center,
                 Width = shape.Width,
                 Height = shape.Height,
                 Angle = shape.Angle,
                 Radius = shape.Radius,
-                LineStart = new Point(shape.StartX, shape.StartY),
-                LineEnd = new Point(shape.EndX, shape.EndY),
-                PolygonPoints = shape.Points?.Select(p => new Point(p.X, p.Y)).ToList() ?? new List<Point>(),
+                LineStart = lineStart,
+                LineEnd = lineEnd,
+                PolygonPoints = polygonPoints,
 
                 // 样式参数
                 FillColor = Color.FromArgb(
@@ -1977,6 +2098,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             };
 
             context.CalculateBounds();
+
+            // ★ 诊断：数据层坐标变换校验 - 参考坐标 → 显示坐标（正向变换）
+            var matrixSummary = _positionCorrectionMatrix != null
+                ? $"[{_positionCorrectionMatrix.M11:F4},{_positionCorrectionMatrix.M12:F4},{_positionCorrectionMatrix.M21:F4},{_positionCorrectionMatrix.M22:F4},{_positionCorrectionMatrix.OffsetX:F2},{_positionCorrectionMatrix.OffsetY:F2}]"
+                : "null";
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[CreateRenderContext] Region={region.Name} | 参考坐标: Center=({shape.CenterX:F1},{shape.CenterY:F1}) W={shape.Width:F1} H={shape.Height:F1} | 显示坐标: Center=({center.X:F1},{center.Y:F1}) | 直线起点=({lineStart.X:F1},{lineStart.Y:F1}) 终点=({lineEnd.X:F1},{lineEnd.Y:F1}) | Matrix={matrixSummary} | isPreview={isPreview}",
+                "RegionEditorControl");
+
             return context;
         }
 
@@ -2011,7 +2141,27 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                     Models.RegionType.Inspection => new SolidColorBrush(Color.FromArgb(255, 0, 120, 215)), // 蓝色
                     _ => Brushes.Orange
                 };
-                Rendering.HandleRenderer.DrawHandles(OverlayCanvas, _currentHandles, shapeDef.ShapeType, zoom, handleColor);
+
+                // 正向变换手柄位置到测试坐标系（OverlayCanvas 在测试坐标系中）
+                var displayHandles = _currentHandles;
+                if (_positionCorrectionMatrix != null)
+                {
+                    displayHandles = _currentHandles.Select(h =>
+                    {
+                        var displayPos = _positionCorrectionMatrix.TransformWpfPoint(h.Position);
+                        return new Rendering.EditHandle
+                        {
+                            Type = h.Type,
+                            Position = displayPos,
+                            HandleSize = h.HandleSize,
+                            Cursor = h.Cursor,
+                            VertexIndex = h.VertexIndex,
+                            Bounds = new Rect(displayPos.X - h.HandleSize / 2, displayPos.Y - h.HandleSize / 2, h.HandleSize, h.HandleSize)
+                        };
+                    }).ToArray();
+                }
+
+                Rendering.HandleRenderer.DrawHandles(OverlayCanvas, displayHandles, shapeDef.ShapeType, zoom, handleColor);
             }
         }
 
@@ -2058,7 +2208,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                         shape.Angle,
                         rotatedCenter,
                         zoom,
-                        shape.Height
+                        shape.Width
                     );
                     break;
 
@@ -2204,15 +2354,28 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
         #region 命中测试和选择
 
-        public RegionData? HitTestRegion(Point point)
+        public RegionData? HitTestRegion(Point point, double tolerance = 0)
         {
+            // 逆变换到参考坐标系（ShapeParameters 存的是参考坐标）
+            Point refPoint = _inverseMatrix != null
+                ? _inverseMatrix.TransformWpfPoint(point)
+                : point;
+
+            // ★ 诊断：命中测试坐标变换 - 屏幕坐标 → 参考坐标
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[HitTestRegion] 屏幕坐标=({point.X:F1},{point.Y:F1}) → 参考坐标=({refPoint.X:F1},{refPoint.Y:F1}) | Matrix={(_positionCorrectionMatrix != null ? "inverse" : "null")} | tolerance={tolerance:F1} | RegionCount={_viewModel.Regions.Count}",
+                "RegionEditorControl");
+
             // 从后往前测试（后绘制的在上面）
             foreach (var region in _viewModel.Regions.Reverse())
             {
                 if (!region.IsVisible) continue;
 
-                if (IsPointInRegion(point, region))
+                if (IsPointInRegion(refPoint, region, tolerance))
                 {
+                    VisionLogger.Instance.Log(LogLevel.Success,
+                        $"[HitTestRegion] 命中: Region={region.Name}(Id={region.Id:B}) | 区域类型={region.RegionType} | 参考坐标=({refPoint.X:F1},{refPoint.Y:F1})",
+                        "RegionEditorControl");
                     return region;
                 }
             }
@@ -2220,61 +2383,62 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             return null;
         }
 
-        private bool IsPointInRegion(Point point, RegionData region)
+        private bool IsPointInRegion(Point point, RegionData region, double tolerance)
         {
             if (region.Parameters is not ShapeParameters shapeDef)
                 return false;
 
             return shapeDef.ShapeType switch
             {
-                ShapeType.Rectangle => IsPointInRectangle(point, shapeDef),
-                ShapeType.RotatedRectangle => IsPointInRotatedRectangle(point, shapeDef),
-                ShapeType.Circle => IsPointInCircle(point, shapeDef),
-                ShapeType.Line => IsPointNearLine(point, shapeDef),
-                ShapeType.Polygon => IsPointInPolygon(point, shapeDef),
+                ShapeType.Rectangle => IsPointInRectangle(point, shapeDef, tolerance),
+                ShapeType.RotatedRectangle => IsPointInRotatedRectangle(point, shapeDef, tolerance),
+                ShapeType.Circle => IsPointInCircle(point, shapeDef, tolerance),
+                ShapeType.Line => IsPointNearLine(point, shapeDef, tolerance),
+                ShapeType.Polygon => IsPointInPolygon(point, shapeDef, tolerance),
                 _ => false
             };
         }
 
         /// <summary>
-        /// 判断点是否在矩形内（参考ROI编辑器使用GetBounds和Contains）
+        /// 判断点是否在矩形内（支持容差扩展）
         /// </summary>
-        private bool IsPointInRectangle(Point point, ShapeParameters shapeDef)
+        private bool IsPointInRectangle(Point point, ShapeParameters shapeDef, double tolerance)
         {
             var bounds = new Rect(
-                shapeDef.CenterX - shapeDef.Width / 2,
-                shapeDef.CenterY - shapeDef.Height / 2,
-                shapeDef.Width,
-                shapeDef.Height
+                shapeDef.CenterX - shapeDef.Width / 2 - tolerance,
+                shapeDef.CenterY - shapeDef.Height / 2 - tolerance,
+                shapeDef.Width + tolerance * 2,
+                shapeDef.Height + tolerance * 2
             );
             return bounds.Contains(point);
         }
 
         /// <summary>
-        /// 判断点是否在圆形内
+        /// 判断点是否在圆形内（支持容差扩展）
         /// </summary>
-        private bool IsPointInCircle(Point point, ShapeParameters shapeDef)
+        private bool IsPointInCircle(Point point, ShapeParameters shapeDef, double tolerance)
         {
             var distance = Math.Sqrt(
                 Math.Pow(point.X - shapeDef.CenterX, 2) +
                 Math.Pow(point.Y - shapeDef.CenterY, 2));
-            return distance <= shapeDef.Radius;
+            return distance <= shapeDef.Radius + tolerance;
         }
 
         /// <summary>
-        /// 判断点是否在直线附近（10像素容差）
+        /// 判断点是否在直线附近（基础容差10像素 + 额外容差）
         /// </summary>
-        private bool IsPointNearLine(Point point, ShapeParameters shapeDef)
+        private bool IsPointNearLine(Point point, ShapeParameters shapeDef, double tolerance)
         {
+            const double baseTolerance = 10.0;
             return DistanceToLine(point,
                 new Point(shapeDef.StartX, shapeDef.StartY),
-                new Point(shapeDef.EndX, shapeDef.EndY)) < 10;
+                new Point(shapeDef.EndX, shapeDef.EndY)) < baseTolerance + tolerance;
         }
 
         /// <summary>
-        /// 判断点是否在旋转矩形内（使用坐标变换法）
+        /// 判断点是否在旋转矩形内（支持容差扩展）
         /// </summary>
-        private bool IsPointInRotatedRectangle(Point point, ShapeParameters shapeDef)
+        private bool IsPointInRotatedRectangle(Point point, ShapeParameters shapeDef, double tolerance)
         {
             // 1. 将测试点平移到以矩形中心为原点
             double dx = point.X - shapeDef.CenterX;
@@ -2290,9 +2454,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             double localX = dx * cos - dy * sin;
             double localY = dx * sin + dy * cos;
 
-            // 4. 判断是否在轴对齐矩形内
-            double halfW = shapeDef.Width / 2;
-            double halfH = shapeDef.Height / 2;
+            // 4. 判断是否在轴对齐矩形内（扩展容差）
+            double halfW = shapeDef.Width / 2 + tolerance;
+            double halfH = shapeDef.Height / 2 + tolerance;
 
             return Math.Abs(localX) <= halfW && Math.Abs(localY) <= halfH;
         }
@@ -2313,13 +2477,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         }
 
         /// <summary>
-        /// 射线法判断点是否在多边形内
+        /// 射线法判断点是否在多边形内（支持容差：在多边形边的容差范围内也可命中）
         /// </summary>
-        private bool IsPointInPolygon(Point point, ShapeParameters shapeDef)
+        private bool IsPointInPolygon(Point point, ShapeParameters shapeDef, double tolerance)
         {
             var points = shapeDef.Points;
             if (points.Count < 3) return false;
 
+            // 射线法判断点是否在多边形内部
             bool inside = false;
             int j = points.Count - 1;
 
@@ -2335,7 +2500,21 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 }
             }
 
-            return inside;
+            if (inside) return true;
+
+            // 容差检查：点到多边形的任意一条边的距离在容差范围内也视为命中
+            if (tolerance > 0)
+            {
+                for (int i = 0; i < points.Count; i++)
+                {
+                    var p1 = new Point(points[i].X, points[i].Y);
+                    var p2 = new Point(points[(i + 1) % points.Count].X, points[(i + 1) % points.Count].Y);
+                    if (DistanceToLine(point, p1, p2) <= tolerance)
+                        return true;
+                }
+            }
+
+            return false;
         }
 
         private void SelectRegion(RegionData? region)
@@ -2480,6 +2659,33 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                     $"[OnViewModelPropertyChanged] SelectedShapeType 变化 | InstanceId={_controlInstanceId} | NewValue={_viewModel.SelectedShapeType}",
                     "RegionEditorControl");
             }
+            else if (e.PropertyName == nameof(RegionEditorViewModel.CurrentMode))
+            {
+                VisionLogger.Instance.Log(LogLevel.Info,
+                    $"[OnViewModelPropertyChanged] CurrentMode 变化 | InstanceId={_controlInstanceId} | NewValue={_viewModel.CurrentMode}",
+                    "RegionEditorControl");
+
+                // 切换到订阅模式时取消进行中的绘制
+                if (_viewModel.CurrentMode == RegionSourceMode.Subscribe && (_isDrawing || _isDrawingPolygon))
+                {
+                    if (_isDrawingPolygon)
+                    {
+                        _isDrawingPolygon = false;
+                        _polygonPoints.Clear();
+                        ClearRubberBand();
+                    }
+                    if (_currentDrawingRegion != null)
+                        ReleaseRegionIndex(_currentDrawingRegion.Name);
+                    _isDrawing = false;
+                    _currentDrawingRegion = null;
+                    _viewModel.IsDrawing = false;
+                    ShapeToolBarControl.ClearSelection();
+                    RenderRequested?.Invoke();
+                    VisionLogger.Instance.Log(LogLevel.Info,
+                        $"[OnViewModelPropertyChanged] 切换到订阅模式，已取消绘制 | InstanceId={_controlInstanceId}",
+                        "RegionEditorControl");
+                }
+            }
         }
 
         private void OnRegionChanged(object? sender, RegionChangedEventArgs e)
@@ -2599,284 +2805,117 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             }
         }
 
-        #region 形状按钮点击事件
+        #region 形状工具栏
 
         /// <summary>
-        /// 选择按钮点击事件 - 空闲↔选择模式切换（toggle）
-        /// 空闲 → 进入选择模式 | 选择中/绘制中 → 空闲
+        /// 初始化形状工具栏数据（数据驱动，每个形状可见性可单独控制）
         /// </summary>
-        private void OnSelectButtonClick(object sender, RoutedEventArgs e)
+        private void InitializeShapeTools()
         {
-            // ★ Phase 4: Select 按钮切换逻辑
-            if (_currentTool == ShapeType.Point)
+            const string polygonToolTip = "多边形 (P)\n点击添加顶点\n右键撤销上一点\n双击/Enter完成";
+            var shapeTools = new System.Collections.ObjectModel.ObservableCollection<Models.ShapeToolItem>
             {
-                EnterIdleMode();
+                new(Models.ShapeType.Rectangle, "矩形", "M2,2 L18,2 L18,18 L2,18 Z", Key.R),
+                new(Models.ShapeType.Circle, "圆形",
+                    "M9,1 A8,8 0 1,0 9,17 A8,8 0 1,0 9,1 Z M9,4 L9,14 M4,9 L14,9", Key.C),
+                new(Models.ShapeType.RotatedRectangle, "旋转矩形",
+                    "M5,10 L10,3 L19,10 L14,17 Z M17,7 A3,3 0 0,1 20,11", Key.O),
+                new(Models.ShapeType.Line, "直线", "M3,17 L17,3", Key.L, isVisible: false),
+                new(Models.ShapeType.Polygon, "多边形",
+                    "M11,1 L19,6 L18,15 L12,19 L4,16 L2,9 Z", Key.P, toolTip: polygonToolTip)
+            };
+
+            ShapeToolBarControl.ShapeTools = shapeTools;
+        }
+
+        /// <summary>
+        /// 形状工具栏选择变更处理
+        /// </summary>
+        private void OnShapeToolBarSelectionChanged(object? sender, Models.ShapeType? shapeType)
+        {
+            if (shapeType.HasValue)
+            {
+                // 多边形特殊情况
+                if (shapeType.Value == Models.ShapeType.Polygon)
+                    _isDrawingPolygon = false;
+                SelectShapeTool(shapeType.Value);
             }
             else
             {
-                EnterSelectMode(sender as Button);
+                EnterSelectMode();
             }
         }
 
-        private void OnRectangleButtonClick(object sender, RoutedEventArgs e)
-        {
-            SelectShapeTool(ShapeType.Rectangle, sender as Button);
-        }
-
-        private void OnCircleButtonClick(object sender, RoutedEventArgs e)
-        {
-            SelectShapeTool(ShapeType.Circle, sender as Button);
-        }
-
-        private void OnRotatedRectangleButtonClick(object sender, RoutedEventArgs e)
-        {
-            SelectShapeTool(ShapeType.RotatedRectangle, sender as Button);
-        }
-
-        private void OnLineButtonClick(object sender, RoutedEventArgs e)
-        {
-            SelectShapeTool(ShapeType.Line, sender as Button);
-        }
-
-        private void OnPolygonButtonClick(object sender, RoutedEventArgs e)
-        {
-            _isDrawingPolygon = false;
-            SelectShapeTool(ShapeType.Polygon, sender as Button);
-        }
-
         /// <summary>
-        /// 切换模式由 RadioButton 的 TwoWay Binding 自动处理
+        /// 选择形状工具 - toggle 行为
+        /// 已激活的相同形状 → 退出绘制模式回到选择模式
+        /// 不同形状 → 切换形状工具
         /// </summary>
-        /// <remarks>
-        /// 绘制/订阅 RadioButton 通过 IsChecked="{Binding IsDrawingMode, Mode=TwoWay}"
-        /// 和 IsChecked="{Binding IsSubscribeMode, Mode=TwoWay}" 绑定到 ViewModel，
-        /// ViewModel 的 setter 中已有互斥逻辑，无需手动处理。
-        /// </remarks>
-
-        /// <summary>
-        /// 进入选择/编辑模式
-        /// </summary>
-        private void EnterSelectMode(Button? clickedButton, bool notifyManager = true)
+        private void SelectShapeTool(Models.ShapeType shapeType)
         {
-            VisionLogger.Instance.Log(LogLevel.Info,
-                $"[EnterSelectMode] 进入选择模式 | IsLoaded={IsLoaded} | IsVisible={IsVisible}",
-                "RegionEditorControl");
-
-            // 确保处于绘制模式（启用编辑功能）
-            _viewModel.CurrentMode = RegionSourceMode.Drawing;
-
-            // 退出绘制状态，进入选择状态
-            _viewModel.IsDrawing = false;
-            _currentTool = ShapeType.Point; // Point 表示选择工具
-
-            VisionLogger.Instance.Log(LogLevel.Success,
-                $"[EnterSelectMode] 已切换到选择模式 | CurrentMode={_viewModel.CurrentMode} | IsDrawing={_viewModel.IsDrawing} | CurrentTool={_currentTool}",
-                "RegionEditorControl");
-
-            // 更新按钮高亮状态
-            UpdateShapeButtonHighlight(clickedButton);
-
-            // 更新状态消息
-            _viewModel.StatusMessage = "选择/编辑模式 - 点击区域可编辑，滚轮缩放，拖拽平移";
-
-            // ★ Phase 4: 通知 Manager：工具已更改（用于分组互斥）
-            // ExitDrawingMode 调用时 notifyManager=false，避免连锁反应
-            if (notifyManager)
-                ToolActivated?.Invoke();
-        }
-
-        /// <summary>
-        /// 选择形状工具并开始绘制
-        /// </summary>
-        private void SelectShapeTool(ShapeType shapeType, Button? clickedButton)
-        {
-            VisionLogger.Instance.Log(LogLevel.Info,
-                $"[SelectShapeTool] 选择形状工具 | ShapeType={shapeType} | IsLoaded={IsLoaded} | IsVisible={IsVisible}",
-                "RegionEditorControl");
+            // 如果当前是绘制模式且点击的是同一个形状 → 退出绘制，回到选择模式
+            if (_viewModel.IsDrawing && _currentTool == shapeType)
+            {
+                // 取消进行中的绘制
+                if (_isDrawing || _isDrawingPolygon)
+                {
+                    if (_currentDrawingRegion != null)
+                        ReleaseRegionIndex(_currentDrawingRegion.Name);
+                    _isDrawing = false;
+                    _isDrawingPolygon = false;
+                    _polygonPoints.Clear();
+                    _currentDrawingRegion = null;
+                    ClearRubberBand();
+                }
+                EnterSelectMode();
+                return;
+            }
 
             // 设置当前工具
             _currentTool = shapeType;
-
-            // 切换到绘制模式
-            _viewModel.CurrentMode = RegionSourceMode.Drawing;
             _viewModel.IsDrawing = true;
 
-            VisionLogger.Instance.Log(LogLevel.Success,
-                $"[SelectShapeTool] 切换到绘制模式 | CurrentMode={_viewModel.CurrentMode} | IsDrawing={_viewModel.IsDrawing} | SelectedShapeType={shapeType}",
-                "RegionEditorControl");
-
-            // 手动触发 IsDrawingMode 的 PropertyChanged 事件
-            // 因为 CurrentMode 的默认值已经是 Drawing，所以 setter 不会触发 PropertyChanged
-            _viewModel.NotifyIsDrawingModeChanged();
-
-            // 设置 SelectedShapeType（如果值变化，setter 会自动调用 UpdateParameters）
-            // 如果值相同，setter 不会调用 UpdateParameters，所以我们需要手动调用
-            var oldShapeType = _viewModel.SelectedShapeType;
+            // 设置 SelectedShapeType
             _viewModel.SelectedShapeType = shapeType;
+            _viewModel.CallUpdateParameters();
 
-            // 只有当形状类型未变化时，才手动调用 UpdateParameters
-            // 因为这种情况下 setter 不会调用 UpdateParameters
-            // 同时需要手动触发 SelectedShapeType 的 PropertyChanged 事件，以确保参数面板可见性更新
-            if (oldShapeType == shapeType)
-            {
-                _viewModel.CallUpdateParameters();
-                _viewModel.NotifySelectedShapeTypeChanged();
-            }
-
-            // 更新按钮高亮状态
-            UpdateShapeButtonHighlight(clickedButton);
+            // 更新形状工具栏选中状态
+            ShapeToolBarControl.SetSelectedShape(shapeType);
 
             // 更新状态消息
             var shapeName = shapeType switch
             {
-                ShapeType.Rectangle => "矩形",
-                ShapeType.Circle => "圆形",
-                ShapeType.RotatedRectangle => "旋转矩形",
-                ShapeType.Line => "直线",
-                ShapeType.Polygon => "多边形",
+                Models.ShapeType.Rectangle => "矩形",
+                Models.ShapeType.Circle => "圆形",
+                Models.ShapeType.RotatedRectangle => "旋转矩形",
+                Models.ShapeType.Line => "直线",
+                Models.ShapeType.Polygon => "多边形",
                 _ => shapeType.ToString()
             };
             _viewModel.StatusMessage = $"已选择 {shapeName} 工具，在图像上拖动绘制";
 
-            // ★ Phase 4: 通知 Manager：工具已更改（用于分组互斥）
+            // 通知 Manager：工具已更改（用于分组互斥）
             ToolActivated?.Invoke();
         }
 
         /// <summary>
-        /// 更新形状按钮高亮状态
+        /// 进入选择/编辑模式
         /// </summary>
-        private void UpdateShapeButtonHighlight(Button? activeButton)
+        private void EnterSelectMode(bool notifyManager = true)
         {
-            // 递归遍历所有形状按钮并重置样式（支持嵌套 WrapPanel 结构）
-            var shapeContainer = FindShapeContainer();
-            if (shapeContainer != null)
-            {
-                ResetAllShapeButtons(shapeContainer);
-            }
+            // 退出绘制状态，进入选择状态
+            _viewModel.IsDrawing = false;
+            _currentTool = Models.ShapeType.None;
 
-            // ★ Phase 2: activeButton==null 表示进入选择模式，高亮 Select 按钮
-            if (activeButton == null)
-            {
-                ResetShapeButtonStyle(SelectButton);
-                SelectButton.Background = new SolidColorBrush(Color.FromRgb(232, 244, 252));
-                SelectButton.BorderBrush = new SolidColorBrush(Color.FromRgb(0, 102, 204));
-                SelectButton.BorderThickness = new Thickness(1.5);
-                UpdateIconColor(SelectButton, Color.FromRgb(0, 102, 204));
-                _activeShapeButton = SelectButton;
-                return;
-            }
+            // 清除形状工具栏选中状态
+            ShapeToolBarControl.ClearSelection();
 
-            // 高亮选中按钮
-            activeButton.Background = new SolidColorBrush(Color.FromRgb(232, 244, 252));
-            activeButton.BorderBrush = new SolidColorBrush(Color.FromRgb(0, 102, 204));
-            activeButton.BorderThickness = new Thickness(1.5);
+            // 更新状态消息
+            _viewModel.StatusMessage = "选择/编辑模式 - 点击区域可编辑，滚轮缩放，拖拽平移";
 
-            // 更新图标颜色
-            UpdateIconColor(activeButton, Color.FromRgb(0, 102, 204));
-
-            _activeShapeButton = activeButton;
-        }
-
-        /// <summary>
-        /// 更新图标颜色
-        /// </summary>
-        private static void UpdateIconColor(Button button, Color color)
-        {
-            var brush = new SolidColorBrush(color);
-
-            if (button.Content is Shape shape)
-            {
-                shape.Stroke = brush;
-                if (shape.Fill != Brushes.Transparent)
-                {
-                    shape.Fill = brush;
-                }
-            }
-            else if (button.Content is Grid grid)
-            {
-                foreach (var child in grid.Children)
-                {
-                    if (child is Shape s)
-                    {
-                        s.Stroke = brush;
-                        if (s.Fill != Brushes.Transparent)
-                        {
-                            s.Fill = brush;
-                        }
-                    }
-                    else if (child is Path p)
-                    {
-                        p.Stroke = brush;
-                        if (p.Fill != Brushes.Transparent)
-                        {
-                            p.Fill = brush;
-                        }
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// 递归重置所有形状按钮样式（支持嵌套 Panel 结构）
-        /// </summary>
-        private void ResetAllShapeButtons(Panel container)
-        {
-            foreach (var child in container.Children)
-            {
-                if (child is Button button)
-                {
-                    ResetShapeButtonStyle(button);
-                }
-                else if (child is Panel childPanel)
-                {
-                    ResetAllShapeButtons(childPanel);
-                }
-            }
-        }
-
-        /// <summary>
-        /// 查找形状选择区域容器
-        /// </summary>
-        private System.Windows.Controls.Panel? FindShapeContainer()
-        {
-            return ShapeButtonPanel;
-        }
-
-        /// <summary>
-        /// 查找可视化树中的子元素
-        /// </summary>
-        private static T? FindVisualChild<T>(DependencyObject parent, Func<T, bool>? condition = null) where T : DependencyObject
-        {
-            for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent); i++)
-            {
-                var child = System.Windows.Media.VisualTreeHelper.GetChild(parent, i);
-                if (child is T typedChild && (condition == null || condition(typedChild)))
-                {
-                    return typedChild;
-                }
-
-                var result = FindVisualChild(child, condition);
-                if (result != null)
-                {
-                    return result;
-                }
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// 重置形状按钮样式
-        /// </summary>
-        private void ResetShapeButtonStyle(Button? button)
-        {
-            if (button == null) return;
-
-            button.Background = Brushes.Transparent;
-            button.BorderBrush = new SolidColorBrush(Color.FromRgb(224, 224, 224));
-            button.BorderThickness = new Thickness(1);
-
-            // 重置图标颜色
-            UpdateIconColor(button, Color.FromRgb(85, 85, 85));
+            // 通知 Manager：工具已更改（用于分组互斥）
+            if (notifyManager)
+                ToolActivated?.Invoke();
         }
 
         #endregion

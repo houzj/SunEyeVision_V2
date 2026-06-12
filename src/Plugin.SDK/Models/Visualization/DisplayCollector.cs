@@ -1,23 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using OpenCvSharp;
-using SunEyeVision.Plugin.SDK.Models.Geometry;
+using System.Windows;
+using System.Windows.Media;
 
 namespace SunEyeVision.Plugin.SDK.Models.Visualization
 {
     /// <summary>
     /// 显示收集器 - Style 引用驱动的按需 Push 收集器
     /// </summary>
-    /// <remarks>
-    /// 使用方式：
-    ///   1. AddRect/AddCross/AddText — 算法过程中按需 Push（第一个参数为 Style 引用）
-    ///   2. Clear() — 清空收集器（算法开始前调用）
-    ///
-    /// 设计要点：Style 对象由 Parameters 持有，全链路共享同一实例。
-    /// DisplayItem 通过 Style 引用读取渲染属性，无需属性拷贝。
-    /// Add 时即时构建 DisplayItem 并加入 Items（O(1) 追加，Freeze 时一次数组构建）。
-    /// </remarks>
     public sealed class DisplayCollector
     {
         private readonly List<DisplayItemBase> _items = new();
@@ -31,14 +22,14 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
         // ===== 图形按需收集 =====
 
         /// <summary>添加矩形</summary>
-        public void AddRect(GraphicsStyle style, Rect2d rect, bool isPass = true)
+        public void AddRect(GraphicsStyle style, Rect rect, bool isPass = true)
         {
             var item = GetOrCreateGraphicsItem(style, GraphicsType.Rectangle);
             AppendGeometry(item, rect, isPass);
         }
 
         /// <summary>批量添加矩形</summary>
-        public void AddRects(GraphicsStyle style, IReadOnlyList<Rect2d> rects, IReadOnlyList<bool>? isPassList = null)
+        public void AddRects(GraphicsStyle style, IReadOnlyList<Rect> rects, IReadOnlyList<bool>? isPassList = null)
         {
             var item = GetOrCreateGraphicsItem(style, GraphicsType.Rectangle);
             for (int i = 0; i < rects.Count; i++)
@@ -49,14 +40,14 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
         }
 
         /// <summary>添加十字标记</summary>
-        public void AddCross(GraphicsStyle style, Point2d center, bool isPass = true)
+        public void AddCross(GraphicsStyle style, Point center, bool isPass = true)
         {
             var item = GetOrCreateGraphicsItem(style, GraphicsType.Cross);
             AppendGeometry(item, center, isPass);
         }
 
         /// <summary>批量添加十字标记</summary>
-        public void AddCrosses(GraphicsStyle style, IReadOnlyList<Point2d> centers, IReadOnlyList<bool>? isPassList = null)
+        public void AddCrosses(GraphicsStyle style, IReadOnlyList<Point> centers, IReadOnlyList<bool>? isPassList = null)
         {
             var item = GetOrCreateGraphicsItem(style, GraphicsType.Cross);
             for (int i = 0; i < centers.Count; i++)
@@ -67,14 +58,14 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
         }
 
         /// <summary>添加点（实心圆）</summary>
-        public void AddPoint(GraphicsStyle style, Point2d point, bool isPass = true)
+        public void AddPoint(GraphicsStyle style, Point point, bool isPass = true)
         {
             var item = GetOrCreateGraphicsItem(style, GraphicsType.Point);
             AppendGeometry(item, point, isPass);
         }
 
         /// <summary>批量添加点（实心圆）</summary>
-        public void AddPoints(GraphicsStyle style, IReadOnlyList<Point2d> points, IReadOnlyList<bool>? isPassList = null)
+        public void AddPoints(GraphicsStyle style, IReadOnlyList<Point> points, IReadOnlyList<bool>? isPassList = null)
         {
             var item = GetOrCreateGraphicsItem(style, GraphicsType.Point);
             for (int i = 0; i < points.Count; i++)
@@ -85,23 +76,29 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
         }
 
         /// <summary>添加轮廓</summary>
-        public void AddContour(GraphicsStyle style, Point[] points, bool isPass = true)
+        public void AddContour(GraphicsStyle style, Point[] points, bool isPass = true, bool isClosed = true)
         {
             var item = GetOrCreateGraphicsItem(style, GraphicsType.Contour);
-            var contourGeom = new ContourGeometry(
-                points.Select(p => new Point2d(p.X, p.Y)).ToArray(), true);
+            var contourGeom = new ContourGeometry(points, isClosed);
+            AppendGeometry(item, contourGeom, isPass);
+        }
+
+        /// <summary>添加轮廓（带仿射变换矩阵）</summary>
+        public void AddContour(GraphicsStyle style, Point[] points, Matrix transform, bool isPass = true, bool isClosed = true)
+        {
+            var item = GetOrCreateGraphicsItem(style, GraphicsType.Contour);
+            var contourGeom = new ContourGeometry(points, isClosed, transform);
             AppendGeometry(item, contourGeom, isPass);
         }
 
         /// <summary>批量添加轮廓</summary>
-        public void AddContours(GraphicsStyle style, IReadOnlyList<Point[]> contoursList, IReadOnlyList<bool>? isPassList = null)
+        public void AddContours(GraphicsStyle style, IReadOnlyList<Point[]> contoursList, IReadOnlyList<bool>? isPassList = null, bool isClosed = true)
         {
             var item = GetOrCreateGraphicsItem(style, GraphicsType.Contour);
             for (int i = 0; i < contoursList.Count; i++)
             {
                 var isPass = isPassList != null && i < isPassList.Count ? isPassList[i] : true;
-                var contourGeom = new ContourGeometry(
-                    contoursList[i].Select(p => new Point2d(p.X, p.Y)).ToArray(), true);
+                var contourGeom = new ContourGeometry(contoursList[i], isClosed);
                 AppendGeometry(item, contourGeom, isPass);
             }
         }
@@ -196,7 +193,6 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
 
         private void AppendGeometry(GraphicsDisplayItem item, object geom, bool isPass)
         {
-            // O(1) 追加到内部列表，Freeze 时一次数组构建
             item.GeometryList.Add(geom);
             item.PassList.Add(isPass);
         }
@@ -217,15 +213,22 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
 
         private void AppendText(TextDisplayItem item, double x, double y, string content, bool isPass = true)
         {
-            // O(1) 追加到内部列表，Freeze 时一次数组构建
             item.TextList.Add(new DisplayTextData { Content = content, X = x, Y = y });
             item.PassList.Add(isPass);
 
-            // 更新锚点：首个文本的坐标即为锚点
             if (item.TextList.Count == 1)
             {
                 item.AnchorX = x;
                 item.AnchorY = y;
+
+                // 检测：如果文本位置与样式位置一致，认定为样式驱动
+                // （工具显式使用 style.PositionX/Y 作为锚点，如 Blob 面积列表）
+                if (item.Style != null &&
+                    Math.Abs(x - item.Style.PositionX) < 0.001 &&
+                    Math.Abs(y - item.Style.PositionY) < 0.001)
+                {
+                    item.IsPositionStyleDriven = true;
+                }
             }
         }
     }

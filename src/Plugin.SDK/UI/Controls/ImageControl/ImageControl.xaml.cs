@@ -11,10 +11,8 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using OpenCvSharp.WpfExtensions;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Logging;
-using CvMat = OpenCvSharp.Mat;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls
 {
@@ -460,43 +458,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         }
 
         /// <summary>
-        /// 加载图像，利用 WPF GPU 渲染管线进行硬件缩放
-        /// 始终基于完整原图纹理渲染，任何缩放级别下清晰度无损
-        /// </summary>
-        public void LoadImageDownscaled(CvMat mat)
-        {
-            if (mat == null || mat.Empty()) return;
-
-            _originalImagePixelWidth = mat.Width;
-            _originalImagePixelHeight = mat.Height;
-
-            var bmp = mat.ToBitmapSource();
-            bmp?.Freeze();
-
-            SourceImage = bmp;
-
-            // GPU 硬件缩放：基于完整原图纹理，由 WPF 渲染管线完成
-            DisplayImage.Stretch = Stretch.Uniform;
-            RenderOptions.SetBitmapScalingMode(DisplayImage, BitmapScalingMode.NearestNeighbor);
-
-            ImageContainer.Width = _originalImagePixelWidth;
-            ImageContainer.Height = _originalImagePixelHeight;
-            ResultRenderLayer.Width = _originalImagePixelWidth;
-            ResultRenderLayer.Height = _originalImagePixelHeight;
-            InteractionOverlayCanvas.Width = _originalImagePixelWidth;
-            InteractionOverlayCanvas.Height = _originalImagePixelHeight;
-
-            ImageSizeText.Text = $"图像: {_originalImagePixelWidth} x {_originalImagePixelHeight}";
-
-            // 重置视图状态
-            Zoom = 1.0;
-            _offsetX = 0;
-            _offsetY = 0;
-
-            Dispatcher.BeginInvoke(new Action(FitToWindow), System.Windows.Threading.DispatcherPriority.ContextIdle);
-        }
-
-        /// <summary>
         /// 适应窗口大小
         /// </summary>
         public void FitToWindow()
@@ -837,6 +798,16 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             // 缩小 <1x: 高质量下采样(避免摩尔纹)
             RenderOptions.SetBitmapScalingMode(DisplayImage,
                 Zoom >= 1.0 ? BitmapScalingMode.NearestNeighbor : BitmapScalingMode.Fant);
+
+            // 将当前视口（图像坐标系）传递给结果渲染层，用于视口裁剪
+            if (MainCanvas.ActualWidth > 0 && MainCanvas.ActualHeight > 0)
+            {
+                double left = -_offsetX / Zoom;
+                double top = -_offsetY / Zoom;
+                double right = (MainCanvas.ActualWidth - _offsetX) / Zoom;
+                double bottom = (MainCanvas.ActualHeight - _offsetY) / Zoom;
+                ResultRenderLayer.SetViewport(left, top, right, bottom);
+            }
 
             // 同步结果渲染层的视口缩放（使线宽/十字大小随缩放幂律变化）
             ResultRenderLayer.SetViewportScale(Zoom);

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -34,6 +34,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
     /// </remarks>
     public partial class DefaultDebugWindow : Window, IToolControlInitializer
     {
+        #region 事件
+
+        /// <summary>
+        /// 工具执行完成事件（CLR 事件，供外部订阅，如 MainWindowViewModel）
+        /// </summary>
+        public event ToolExecutionCompletedEventHandler? ToolExecutionCompleted;
+
+        #endregion
+
         #region 字段
 
         private readonly UserControl _control;
@@ -60,6 +69,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
 
             // 设置内容
             ContentHost.Content = _control;
+
+            // 自适应尺寸：控件有显式宽高时 SizeToContent，否则用 XAML 默认的 400x550
+            if (!double.IsNaN(control.Width) && !double.IsNaN(control.Height))
+            {
+                SizeToContent = SizeToContent.WidthAndHeight;
+            }
 
             // 订阅路由事件
             SubscribeRoutedEvents();
@@ -182,6 +197,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
         /// </summary>
         private void OnToolExecutionCompleted(object sender, ToolExecutionCompletedEventArgs e)
         {
+            // ★ 向外传播执行结果（CLR 事件供 MainWindowViewModel 订阅）
+            var resultInfo = e.Results?.GetType().Name ?? "null";
+            var execTimeInfo = e.ExecutionTime > 0 ? $" | 耗时={e.ExecutionTime}ms" : "";
+            PluginLogger.Info($"[OnToolExecutionCompleted] 路由事件到达 | 结果={resultInfo}{execTimeInfo}", "DefaultDebugWindow");
+
+            ToolExecutionCompleted?.Invoke(this, e);
+
             Dispatcher.Invoke(() =>
             {
                 _isExecuting = false;
@@ -319,6 +341,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
                     $"控件 {_control.GetType().Name} 未继承 ToolDebugControlBase 基类",
                     "DefaultDebugWindow");
             }
+        }
+
+        /// <summary>
+        /// 外部结果到达通知（委托给内部控件）
+        /// </summary>
+        /// <remarks>
+        /// 工作流引擎执行完成后调用，触发控件刷新依赖运行时的 UI 状态。
+        /// </remarks>
+        public void OnExternalResultArrived()
+        {
+            _toolControl?.OnExternalResultArrived();
         }
 
         /// <summary>

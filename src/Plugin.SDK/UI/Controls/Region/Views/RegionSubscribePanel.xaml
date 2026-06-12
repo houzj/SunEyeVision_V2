@@ -7,7 +7,7 @@
              xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls"
              xmlns:converters="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Region.Converters"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
-             xmlns:cv="clr-namespace:OpenCvSharp;assembly=OpenCvSharp"
+             xmlns:cv="clr-namespace:System.Windows;assembly=WindowsBase"
              xmlns:models="clr-namespace:SunEyeVision.Plugin.SDK.Models.Geometry;assembly=SunEyeVision.Plugin.SDK"
              xmlns:vm="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Region.ViewModels"
              mc:Ignorable="d" d:DesignHeight="500" d:DesignWidth="300">

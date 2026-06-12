@@ -1,0 +1,109 @@
+---
+description: 数据驱动优先 - 数据 > 事件 > 程序式；发挥 WPF 数据绑定优势
+globs: "*.cs"
+---
+
+# 数据驱动优先 (Data-Driven First)
+
+## 触发条件
+
+当涉及以下意图时，**必须**检查数据驱动优先原则：
+- UI 行为更新、属性联动、数据同步
+- 参数恢复、图像源绑定、DataSource 匹配
+- 节点执行结果传递、工具参数初始化
+- 包含上述意图的变体表达
+
+## 核心原则
+
+### 优先级链（三选一判断链）
+
+```
+数据驱动 (Data-Driven) > 事件驱动 (Event-Driven) > 程序式/时间驱动 (Procedural/Time-Driven)
+```
+
+1. **数据驱动优先（首选）**：通过 WPF 数据绑定（Data Binding）自动传播数据变化
+2. **事件驱动（次选）**：仅当数据绑定无法实现时，使用事件通知
+3. **程序式/时间驱动（最末）**：尽量避免轮询、定时扫描、执行时硬编码
+
+### 判断链：选择方案时依次判断
+
+| 序号 | 问题 | 可采取方案 | 优先级 |
+|------|------|-----------|--------|
+| 1 | 能否通过 WPF 数据绑定自动传播？ | 数据驱动 | ✅ 首选 |
+| 2 | 能否通过事件/通知触发更新？ | 事件驱动 | ✅ 次选 |
+| 3 | 是否只能在执行/运行时处理？ | 程序式驱动 | ⚠️ 末选 |
+
+## 硬性约束
+
+1. **数据驱动优先**：能通过数据绑定解决的问题，禁止使用事件或定时方案
+2. **禁止轮询**：禁止 `Timer`、`Task.Delay` 循环检查、轮询扫描等时间驱动方式
+3. **禁止执行时扫描推理**：禁止在执行过程中动态扫描 `nodeResults` 来推断输入
+4. **事件驱动需注释**：使用事件驱动时必须添加注释说明为何无法使用数据驱动
+5. **绑定类型须明确**：绑定目标属性的类型必须明确，禁止 `object` 兜底
+
+## 典型模式对照
+
+### ✅ 数据驱动（正确）
+
+```csharp
+// RegionParameters.RestoreImageSource - 数据驱动自动匹配
+// 当 dataSources 数据就绪时，自动匹配 IVisionImage 类型的数据源
+if (_imageSource == null)
+{
+    var firstImageSource = dataSources
+        .FirstOrDefault(ds => ds.PropertyType != null &&
+            typeof(IVisionImage).IsAssignableFrom(ds.PropertyType));
+    if (firstImageSource != null)
+    {
+        _imageSource = firstImageSource;
+        _imageSourceRef = ImageSourceReference.FromDataSource(firstImageSource);
+        OnPropertyChanged(nameof(ImageSource));
+    }
+}
+```
+
+### ❌ 事件/时间驱动（禁止）
+
+```csharp
+// ❌ 禁止：执行时扫描 nodeResults 推理输入
+public void OnExecuted(Dictionary<string, object> nodeResults)
+{
+    // 运行时扫描所有结果的 IVisionImage 类型
+    foreach (var kvp in nodeResults)
+        if (kvp.Value is IVisionImage image) { ... }
+}
+
+// ❌ 禁止：Timer 轮询检查数据是否就绪
+var timer = new Timer(_ =>
+{
+    if (dataSources.Any(ds => ds.PropertyType == typeof(IVisionImage)))
+        MatchInput();
+}, null, 0, 100);
+```
+
+### ❌ 程序式驱动（禁止，除非有数据驱动不能实现的场景）
+
+```csharp
+// ❌ 禁止：硬编码默认输入
+if (_imageSource == null)
+    _imageSource = predefinedDefaultInput;
+```
+
+## 例外场景
+
+当数据驱动确实无法实现时，允许使用事件驱动，但**必须满足以下条件**：
+1. **数据绑定无法到达**：WPF 绑定路径无法覆盖该属性（如非 UI 层的数据同步）
+2. **必须添加注释**：在事件处理代码上方添加注释说明为何无法使用数据驱动
+
+```csharp
+// 例外：无法使用数据驱动的原因：__SubroutineInputs__ 字典键名是执行时动态构造的，
+// 无法在 XAML 中预先声明绑定路径。事件驱动是次优但必要的方案。
+var inputsKey = $"__SubroutineInputs__";
+if (context.TryGetValue(inputsKey, out var inputs)) { ... }
+```
+
+## 参考
+
+- WPF 数据绑定：`{Binding PropertyName}`、`SetProperty` 通知
+- `OnPropertyChanged` 用于驱动 UI 更新
+- `RegionParameters.RestoreImageSource()` 的数据驱动自动匹配模式

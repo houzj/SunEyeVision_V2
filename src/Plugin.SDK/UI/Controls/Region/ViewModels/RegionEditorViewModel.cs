@@ -26,8 +26,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.ViewModels
         private ShapeParameters? _editingShape;
         private bool _isEditing;
         private bool _isDrawing;
-        private ShapeType? _selectedShapeType = null;  // 默认为null（无形状选择）
         private RegionSourceMode _currentMode = RegionSourceMode.Drawing;
+        private ShapeType? _selectedShapeType = null;  // 默认为null（无形状选择）
         private string _statusMessage = "就绪";
         private bool _isInfoPanelVisible = true;
 
@@ -98,22 +98,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.ViewModels
             get => _isDrawing;
             set
             {
-                VisionLogger.Instance.Log(LogLevel.Info,
-                    $"[IsDrawing.Setter] 被调用 | 旧值={_isDrawing} | 新值={value} | CurrentMode={CurrentMode}",
-                    "RegionEditorViewModel");
-
                 if (SetProperty(ref _isDrawing, value))
                 {
                     OnPropertyChanged(nameof(IsSelectMode));
                     OnPropertyChanged(nameof(CurrentToolMode));
-
-                    // ★ 如果被设置为 false，记录调用栈
-                    if (!value)
-                    {
-                        VisionLogger.Instance.Log(LogLevel.Warning,
-                            $"[IsDrawing.Setter] ⚠️ IsDrawing 被设置为 false！调用栈:\n{Environment.StackTrace}",
-                            "RegionEditorViewModel");
-                    }
                 }
             }
         }
@@ -124,18 +112,48 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.ViewModels
         public bool IsSelectMode => !IsDrawing;
 
         /// <summary>
+        /// 当前编辑模式（绘制/订阅）
+        /// </summary>
+        public RegionSourceMode CurrentMode
+        {
+            get => _currentMode;
+            set
+            {
+                if (SetProperty(ref _currentMode, value))
+                {
+                    OnPropertyChanged(nameof(IsDrawingMode));
+                    OnPropertyChanged(nameof(IsSubscribeMode));
+                    OnPropertyChanged(nameof(ShowShapeTypeSelector));
+                    OnPropertyChanged(nameof(CurrentToolMode));
+                }
+            }
+        }
+
+        /// <summary>
+        /// 是否为绘制模式
+        /// </summary>
+        public bool IsDrawingMode
+        {
+            get => CurrentMode == RegionSourceMode.Drawing;
+            set
+            {
+                if (value && CurrentMode != RegionSourceMode.Drawing)
+                    CurrentMode = RegionSourceMode.Drawing;
+            }
+        }
+
+        /// <summary>
         /// 当前工具模式描述（用于状态栏显示）
         /// </summary>
         public string CurrentToolMode
         {
             get
             {
-                if (!IsDrawingMode)
+                if (CurrentMode == RegionSourceMode.Subscribe)
                     return "订阅模式";
-
                 return IsDrawing && SelectedShapeType.HasValue
                     ? $"绘制{GetShapeTypeName(SelectedShapeType.Value)}"
-                    : "选择模式";
+                    : "选择/编辑模式";
             }
         }
 
@@ -206,51 +224,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.ViewModels
         }
 
         /// <summary>
-        /// 当前模式
-        /// </summary>
-        public RegionSourceMode CurrentMode
-        {
-            get => _currentMode;
-            set
-            {
-                if (SetProperty(ref _currentMode, value))
-                {
-                    OnPropertyChanged(nameof(IsDrawingMode));
-                    OnPropertyChanged(nameof(IsSubscribeMode));
-                    OnPropertyChanged(nameof(ShowShapeTypeSelector));
-                    OnPropertyChanged(nameof(CurrentToolMode));
-                }
-            }
-        }
-
-        /// <summary>
-        /// 是否为绘制模式
-        /// </summary>
-        public bool IsDrawingMode
-        {
-            get => CurrentMode == RegionSourceMode.Drawing;
-            set
-            {
-                VisionLogger.Instance.Log(LogLevel.Info,
-                    $"[IsDrawingMode.Setter] 被调用 | value={value} | CurrentMode={CurrentMode} | IsDrawing={IsDrawing}",
-                    "RegionEditorViewModel");
-
-                if (value && CurrentMode != RegionSourceMode.Drawing)
-                {
-                    CurrentMode = RegionSourceMode.Drawing;
-                    OnPropertyChanged(nameof(IsSubscribeMode));
-                    OnPropertyChanged(nameof(ShowShapeTypeSelector));
-                }
-                else if (!value)
-                {
-                    VisionLogger.Instance.Log(LogLevel.Warning,
-                        $"[IsDrawingMode.Setter] value=false，不做任何操作 | CurrentMode={CurrentMode} | IsDrawing={IsDrawing}",
-                        "RegionEditorViewModel");
-                }
-            }
-        }
-
-        /// <summary>
         /// 是否为订阅模式
         /// </summary>
         public bool IsSubscribeMode
@@ -258,82 +231,16 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.ViewModels
             get => CurrentMode == RegionSourceMode.Subscribe;
             set
             {
-                if (value && CurrentMode == RegionSourceMode.Drawing)
-                {
+                if (value && CurrentMode != RegionSourceMode.Subscribe)
                     CurrentMode = RegionSourceMode.Subscribe;
-                    OnPropertyChanged(nameof(IsDrawingMode));
-                    OnPropertyChanged(nameof(ShowShapeTypeSelector));
-                }
             }
         }
 
-
-
-
-
-
-
-
-
         /// <summary>
-        /// 是否显示图形类型选择器
+        /// 是否显示图形类型选择器（仅绘制模式显示）
         /// </summary>
         public bool ShowShapeTypeSelector => IsDrawingMode;
 
-
-        /// <summary>
-        /// 当前图形类型
-        /// </summary>
-        public ShapeType? CurrentShapeType
-        {
-            get => _selectedShapeType;
-            set
-            {
-                if (SetProperty(ref _selectedShapeType, value))
-                {
-                    OnPropertyChanged(nameof(IsRectangleSelected));
-                    OnPropertyChanged(nameof(IsCircleSelected));
-                    OnPropertyChanged(nameof(IsRotatedRectangleSelected));
-                    OnPropertyChanged(nameof(IsLineSelected));
-                }
-            }
-        }
-
-        /// <summary>
-        /// 是否选中矩形
-        /// </summary>
-        public bool IsRectangleSelected
-        {
-            get => CurrentShapeType == ShapeType.Rectangle;
-            set { if (value) CurrentShapeType = ShapeType.Rectangle; }
-        }
-
-        /// <summary>
-        /// 是否选中圆形
-        /// </summary>
-        public bool IsCircleSelected
-        {
-            get => CurrentShapeType == ShapeType.Circle;
-            set { if (value) CurrentShapeType = ShapeType.Circle; }
-        }
-
-        /// <summary>
-        /// 是否选中旋转矩形
-        /// </summary>
-        public bool IsRotatedRectangleSelected
-        {
-            get => CurrentShapeType == ShapeType.RotatedRectangle;
-            set { if (value) CurrentShapeType = ShapeType.RotatedRectangle; }
-        }
-
-        /// <summary>
-        /// 是否选中直线
-        /// </summary>
-        public bool IsLineSelected
-        {
-            get => CurrentShapeType == ShapeType.Line;
-            set { if (value) CurrentShapeType = ShapeType.Line; }
-        }
 
         /// <summary>
         /// 选中区域的定义模式
@@ -439,8 +346,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.ViewModels
         public ICommand AddRegionCommand { get; }
         public ICommand RemoveRegionCommand { get; }
         public ICommand ClearAllCommand { get; }
-        public ICommand SetDrawingModeCommand { get; }
-        public ICommand SetSubscribeModeCommand { get; }
         public ICommand ToggleInfoPanelCommand { get; }
         public ICommand UndoCommand { get; }
         public ICommand RedoCommand { get; }
@@ -471,8 +376,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.ViewModels
             AddRegionCommand = new RelayCommand<ShapeType>(AddRegion);
             RemoveRegionCommand = new RelayCommand(RemoveSelectedRegion, () => HasSelection);
             ClearAllCommand = new RelayCommand(ClearAllRegions, () => Regions.Count > 0);
-            SetDrawingModeCommand = new RelayCommand(() => CurrentMode = RegionSourceMode.Drawing);
-            SetSubscribeModeCommand = new RelayCommand(() => CurrentMode = RegionSourceMode.Subscribe);
             ToggleInfoPanelCommand = new RelayCommand(() => IsInfoPanelVisible = !IsInfoPanelVisible);
             UndoCommand = new RelayCommand(Undo, () => CanUndo);
             RedoCommand = new RelayCommand(Redo, () => CanRedo);
@@ -791,9 +694,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.ViewModels
         public void NotifySelectedShapeTypeChanged() => OnPropertyChanged(nameof(SelectedShapeType));
 
         /// <summary>
-        /// 公共方法：强制触发 IsDrawingMode 的 PropertyChanged 事件
+        /// 公共方法：强制触发 IsSubscribeMode 的 PropertyChanged 事件
         /// </summary>
-        public void NotifyIsDrawingModeChanged() => OnPropertyChanged(nameof(IsDrawingMode));
+        public void NotifyIsSubscribeModeChanged() => OnPropertyChanged(nameof(IsSubscribeMode));
 
         /// <summary>
         /// 更新编辑形状
@@ -829,7 +732,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.ViewModels
             OnPropertyChanged(nameof(CanEdit));
             OnPropertyChanged(nameof(SelectedRegionMode));
             OnPropertyChanged(nameof(SelectedRegionShapeType));
-            OnPropertyChanged(nameof(IsDrawingMode));
+            OnPropertyChanged(nameof(IsSubscribeMode));
             OnPropertyChanged(nameof(ParamSettings));
             OnPropertyChanged(nameof(HasParametersVisible));
             OnPropertyChanged(nameof(Parameters));
@@ -924,7 +827,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.ViewModels
             if (_parameterPanel != null)
             {
                 _parameterPanel.ParamSettingChanged -= OnParamSettingChanged;
-                _parameterPanel.Dispose();
             }
 
             if (_nodeSelector != null)

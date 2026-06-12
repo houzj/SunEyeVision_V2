@@ -8,6 +8,7 @@ using OpenCvSharp;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.CvEngine;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 using SunEyeVision.Plugin.SDK.Validation;
 using SunEyeVision.Tool.ImageFilter.Views;
@@ -23,7 +24,7 @@ namespace SunEyeVision.Tool.ImageFilter
     ///   4. 结果判断       → OK/NG判定
     /// </summary>
     [Tool(
-        id: "image-filter",
+        id: "ImageFilter",
         displayName: "图像滤波",
         Description = "对图像进行滤波处理，支持均值/高斯/中值/双边/自定义卷积",
         Icon = "🖼️",
@@ -49,7 +50,7 @@ namespace SunEyeVision.Tool.ImageFilter
             var result = new ImageFilterResults
             {
                 ToolName = _attribute?.DisplayName ?? "ImageFilter",
-                ToolId = _attribute?.Id ?? "image-filter",
+                ToolId = _attribute?.Id ?? "ImageFilter",
                 Timestamp = DateTime.Now
             };
 
@@ -91,7 +92,7 @@ namespace SunEyeVision.Tool.ImageFilter
                 double sigmaColor = parameters.SigmaColor.Value;
                 double sigmaSpace = parameters.SigmaSpace.Value;
                 var borderType = ImageFilterParameters.ToCvBorderType(parameters.BorderTypeValue.Value);
-                bool isRegionEnabled = parameters.IsRegionEnabled.Value;
+                bool isRegionEnabled = parameters.IsRegionEnabled;
 
                 // ===== Step 1: 灰度转换 (rgb1_to_gray) =====
                 stepSw.Restart();
@@ -107,37 +108,43 @@ namespace SunEyeVision.Tool.ImageFilter
 
                     CvRegion? roiRegion = null;
 
-                    // ===== Step 2: 构建ROI区域 + 差集处理 =====
+                    // ===== Step 2: 构建ROI区域 =====
                     stepSw.Restart();
                     if (isRegionEnabled)
                     {
                         var inspectionRegions = parameters.GetRegionsByType(RegionType.Inspection);
                         var maskRegions = parameters.GetRegionsByType(RegionType.Mask);
-
-                        bool hasInspection = inspectionRegions.Any();
-                        bool hasMask = maskRegions.Any();
-
-                        if (hasInspection && hasMask)
-                        {
-                            using var inspRegion = CvRegion.CreateFromRegions(grayImage.Size, inspectionRegions);
-                            using var maskRegion = CvRegion.CreateFromRegions(grayImage.Size, maskRegions);
-
-                            CvOp.Difference(inspRegion, maskRegion, out roiRegion);
-
-                            parameters.LogInfo($"差集ROI区域创建成功（检测区-遮罩），白色像素数: {roiRegion.PixelCount}");
-                        }
-                        else if (hasInspection)
-                        {
-                            roiRegion = CvRegion.CreateFromRegions(grayImage.Size, inspectionRegions);
-                            parameters.LogInfo($"检测区域创建成功，白色像素数: {roiRegion.PixelCount}");
-                        }
-                        else
-                        {
-                            parameters.LogWarning("启用区域限制，但没有有效的检测区域");
-                        }
+                        roiRegion = CvRegionHelper.BuildROI(grayImage.Size, inspectionRegions, maskRegions);
+                        if (roiRegion != null)
+                            parameters.LogInfo($"ROI区域创建成功，白色像素数: {roiRegion.PixelCount}");
                     }
                     stepSw.Stop();
                     stepTimings.Add(("ROI构建", stepSw.ElapsedMilliseconds));
+
+                    // ===== Step 2.5: 位置修正（正向变换 ROI 掩码） =====
+                    if (parameters.IsPositionCorrectionEnabled)
+                    {
+                        stepSw.Restart();
+                        var bindingSource = parameters.PositionCorrectionBindingSource;
+                        if (bindingSource?.CurrentValue is AffineMatrix matrix)
+                        {
+                            roiRegion = CvRegionHelper.ApplyPositionCorrection(
+                                roiRegion, matrix, grayImage.Size);
+                            parameters.LogInfo($"位置修正已启用, 矩阵: {matrix}");
+                        }
+                        else if (bindingSource != null &&
+                                 !string.IsNullOrEmpty(bindingSource.SourceNodeId) &&
+                                 !string.IsNullOrEmpty(bindingSource.PropertyName))
+                        {
+                            parameters.LogInfo("位置修正已启用，但绑定源当前无有效矩阵，跳过位置修正");
+                        }
+                        else
+                        {
+                            parameters.LogWarning("位置修正已启用但未配置绑定源，跳过位置修正");
+                        }
+                        stepSw.Stop();
+                        stepTimings.Add(("位置修正", stepSw.ElapsedMilliseconds));
+                    }
 
                     try
                     {

@@ -10,6 +10,7 @@
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:local="clr-namespace:SunEyeVision.Tool.ImageFilter"
         xmlns:localConverters="clr-namespace:SunEyeVision.Tool.ImageFilter.Converters"
+        xmlns:results="clr-namespace:SunEyeVision.Plugin.SDK.Execution.Results;assembly=SunEyeVision.Plugin.SDK"
         mc:Ignorable="d"
         d:DesignHeight="550" d:DesignWidth="400"
         DataContext="{Binding Parameters, RelativeSource={RelativeSource Self}}">
@@ -43,13 +44,13 @@
 
             <!-- 启用区域限制 -->
             <controls:LabeledControl Label="启用区域限制">
-              <CheckBox IsChecked="{Binding IsRegionEnabled.Value, Mode=TwoWay}"
+              <CheckBox IsChecked="{Binding IsRegionEnabled, Mode=TwoWay}"
                         Content="仅对指定区域进行滤波处理"/>
             </controls:LabeledControl>
 
             <!-- 区域管理器（检测区域 + 屏蔽区域） -->
             <GroupBox Header="区域设置" Margin="0,8,0,0"
-                      Visibility="{Binding IsRegionEnabled.Value, Converter={StaticResource BoolToVisibilityConverter}}">
+                      Visibility="{Binding IsRegionEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
                 <region:RegionEditorManagerControl x:Name="regionManager"
                     InspectionRegionsSource="{Binding InspectionRegions.Regions}"
                     MaskRegionsSource="{Binding MaskRegions.Regions}"/>
@@ -58,14 +59,15 @@
             <!-- 位置修正 -->
             <controls:LabeledControl Label="位置修正" Margin="0,8,0,0" HorizontalAlignment="Left">
               <controls:ToggleSwitch
-                  IsChecked="{Binding IsPositionCorrectionEnabled.Value, Mode=TwoWay}"
+                  IsChecked="{Binding IsPositionCorrectionEnabled, Mode=TwoWay}"
                   SwitchWidth="48" SwitchHeight="24"/>
             </controls:LabeledControl>
 
             <controls:LabeledControl Label="修正信息" Margin="0,4,0,0" HorizontalAlignment="Left"
-                Visibility="{Binding IsPositionCorrectionEnabled.Value, Converter={StaticResource BoolToVisibilityConverter}}">
+                Visibility="{Binding IsPositionCorrectionEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
               <controls:ParamBinding
                   x:Name="positionCorrectionBinding"
+                  DataType="{x:Type results:AffineMatrix}"
                   ParameterName="位置修正" Width="200"
                   BindingSource="{Binding PositionCorrectionBindingSource, Mode=TwoWay}"
                   BindingDisplayText="{Binding PositionCorrectionBindingDisplayText, Mode=TwoWay}"

@@ -3,8 +3,59 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Plugin.SDK.Execution.Results;
 
 namespace SunEyeVision.Workflow;
+
+/// <summary>
+/// 提供者绑定：标记全局变量由哪个节点/属性提供值
+/// </summary>
+public class ProducerBinding
+{
+    /// <summary>提供值的节点ID</summary>
+    public string NodeId { get; set; } = string.Empty;
+
+    /// <summary>提供值的节点名称</summary>
+    public string NodeName { get; set; } = string.Empty;
+
+    /// <summary>提供值的属性名（模块结果中的PropertyName）</summary>
+    public string PropertyName { get; set; } = string.Empty;
+
+    /// <summary>提供值的工作流名称</summary>
+    public string WorkflowName { get; set; } = string.Empty;
+
+    /// <summary>属性中文显示名称（如"过滤区域"）</summary>
+    public string PropertyDisplayName { get; set; } = string.Empty;
+
+    /// <summary>运行时缓存的结果对象引用（不参与序列化）</summary>
+    [JsonIgnore]
+    public ToolResults? CachedResult { get; set; }
+}
+
+/// <summary>
+/// 消费者绑定：标记哪个工具的哪个参数绑定到此全局变量
+/// </summary>
+public class ConsumerBinding
+{
+    /// <summary>消费者节点ID</summary>
+    public string NodeId { get; set; } = string.Empty;
+
+    /// <summary>消费者节点名称</summary>
+    public string NodeName { get; set; } = string.Empty;
+
+    /// <summary>消费者所属工作流名称</summary>
+    public string WorkflowName { get; set; } = string.Empty;
+
+    /// <summary>绑定的参数名称（属性名）</summary>
+    public string ParameterName { get; set; } = string.Empty;
+
+    /// <summary>参数中文显示名称</summary>
+    public string ParameterDisplayName { get; set; } = string.Empty;
+
+    /// <summary>显示路径："工作流名.节点名.参数显示名"</summary>
+    [JsonIgnore]
+    public string DisplayPath => $"{WorkflowName}.{NodeName}.{ParameterDisplayName}";
+}
 
 /// <summary>
 /// 全局变量
@@ -18,10 +69,11 @@ namespace SunEyeVision.Workflow;
 /// - 支持分组管理（多工位/多相机场景）
 /// 
 /// 支持的数据类型：
-/// - 基础类型：Integer, Float, String, Boolean, Int64, Double, Byte
+/// - 基础类型：Integer, String, Boolean, Double, Byte
 /// - OpenCvSharp类型：Point, Rectangle, Size
-/// - 集合类型：Array, List
 /// - 图像类型：Image
+/// - 几何类型：Circle, Line, Annulus, RotatedRect, Polygon
+/// - 区域/图形：Region（仅运行时）
 /// 
 /// JSON格式示例：
 /// {
@@ -31,9 +83,7 @@ namespace SunEyeVision.Workflow;
 ///   "Index": 1,
 ///   "Type": "Integer",
 ///   "Value": { "Type": "Integer", "Value": 128 },
-///   "Description": "二值化阈值",
-///   "InputSource": "手动输入",
-///   "OutputTarget": "无"
+///   "Description": "二值化阈值"
 /// }
 /// </remarks>
 public class GlobalVariable : ObservableObject
@@ -44,8 +94,6 @@ public class GlobalVariable : ObservableObject
     private object? _value = null;
     private string _type = "String";
     private string _description = "";
-    private string _inputSource = "手动输入";
-    private string _outputTarget = "无";
     private bool _isInitialized = false;
 
     /// <summary>
@@ -120,27 +168,63 @@ public class GlobalVariable : ObservableObject
     }
 
     /// <summary>
-    /// 输入来源
+    /// 提供者绑定：标明此变量由哪个节点/模块结果提供值
     /// </summary>
     /// <remarks>
-    /// 值来源：手动输入、PLC通讯、串口通讯、数据库、文件等
+    /// 有 ProducerBinding 时，运行时由模块结果自动写入 Value；
+    /// 无 ProducerBinding 时，使用手动设置的 Value。
     /// </remarks>
-    public string InputSource
+    public ProducerBinding? ProducerBinding { get; set; }
+
+    /// <summary>
+    /// 消费者绑定列表：哪些参数绑定到此变量
+    /// </summary>
+    /// <remarks>
+    /// 参数绑定至此变量时自动追加记录，解绑时移除。
+    /// </remarks>
+    public List<ConsumerBinding> ConsumerBindings { get; set; } = new();
+
+    /// <summary>
+    /// 输入来源显示文本（用于UI）
+    /// </summary>
+    [JsonIgnore]
+    public string InputSourceDisplayText
     {
-        get => _inputSource;
-        set => SetProperty(ref _inputSource, value, "输入来源");
+        get
+        {
+            if (ProducerBinding != null)
+                return $"{ProducerBinding.WorkflowName}.{ProducerBinding.NodeName}.{ProducerBinding.PropertyDisplayName}";
+            return "当前值";
+        }
     }
 
     /// <summary>
-    /// 目标输出
+    /// 目标输出显示文本（用于UI）
     /// </summary>
-    /// <remarks>
-    /// 值输出目标：无、PLC通讯、串口通讯、数据库、文件等
-    /// </remarks>
-    public string OutputTarget
+    [JsonIgnore]
+    public string OutputTargetDisplayText
     {
-        get => _outputTarget;
-        set => SetProperty(ref _outputTarget, value, "目标输出");
+        get
+        {
+            if (ConsumerBindings.Count == 0)
+                return "无";
+            // 只显示第一个消费者的路径
+            return ConsumerBindings[0].DisplayPath;
+        }
+    }
+
+    /// <summary>
+    /// 第一个消费者的路径（用于模块结果列的快速绑定显示）
+    /// </summary>
+    [JsonIgnore]
+    public string? FirstConsumerPath
+    {
+        get
+        {
+            if (ConsumerBindings.Count == 0)
+                return null;
+            return ConsumerBindings[0].DisplayPath;
+        }
     }
 
     /// <summary>
@@ -194,12 +278,42 @@ public class GlobalVariable : ObservableObject
             Value = Value,  // 注意：值类型会被复制，引用类型只复制引用
             Type = Type,
             Description = Description,
-            InputSource = InputSource,
-            OutputTarget = OutputTarget,
+            ProducerBinding = ProducerBinding != null ? new ProducerBinding
+            {
+                NodeId = ProducerBinding.NodeId,
+                NodeName = ProducerBinding.NodeName,
+                PropertyName = ProducerBinding.PropertyName,
+                WorkflowName = ProducerBinding.WorkflowName,
+                PropertyDisplayName = ProducerBinding.PropertyDisplayName
+            } : null,
+            ConsumerBindings = ConsumerBindings.Select(c => new ConsumerBinding
+            {
+                NodeId = c.NodeId,
+                NodeName = c.NodeName,
+                WorkflowName = c.WorkflowName,
+                ParameterName = c.ParameterName,
+                ParameterDisplayName = c.ParameterDisplayName
+            }).ToList(),
             IsInitialized = IsInitialized,
             CreatedTime = CreatedTime,
             ModifiedTime = DateTime.Now
         };
+    }
+
+    /// <summary>
+    /// 检查名称是否全局重复
+    /// </summary>
+    /// <param name="allVariables">所有全局变量</param>
+    /// <param name="newName">新名称</param>
+    /// <param name="excludeId">排除的变量ID（重命名时排除自身）</param>
+    public static bool IsNameDuplicate(
+        IEnumerable<GlobalVariable> allVariables,
+        string newName,
+        string? excludeId = null)
+    {
+        return allVariables.Any(v =>
+            v.Name.Equals(newName, StringComparison.OrdinalIgnoreCase) &&
+            v.Id != excludeId);
     }
 
     /// <summary>
@@ -236,20 +350,38 @@ public class GlobalVariable : ObservableObject
         return type switch
         {
             GlobalVariableValueConverter.SupportedTypes.Integer => true,
-            GlobalVariableValueConverter.SupportedTypes.Float => true,
             GlobalVariableValueConverter.SupportedTypes.String => true,
             GlobalVariableValueConverter.SupportedTypes.Boolean => true,
-            GlobalVariableValueConverter.SupportedTypes.Int64 => true,
             GlobalVariableValueConverter.SupportedTypes.Double => true,
             GlobalVariableValueConverter.SupportedTypes.Byte => true,
             GlobalVariableValueConverter.SupportedTypes.Point => true,
             GlobalVariableValueConverter.SupportedTypes.Rectangle => true,
             GlobalVariableValueConverter.SupportedTypes.Size => true,
-            GlobalVariableValueConverter.SupportedTypes.Array => true,
-            GlobalVariableValueConverter.SupportedTypes.List => true,
             GlobalVariableValueConverter.SupportedTypes.Image => true,
+            GlobalVariableValueConverter.SupportedTypes.Region => true,
+            GlobalVariableValueConverter.SupportedTypes.Circle => true,
+            GlobalVariableValueConverter.SupportedTypes.Line => true,
+            GlobalVariableValueConverter.SupportedTypes.RotatedRect => true,
+            GlobalVariableValueConverter.SupportedTypes.Polygon => true,
+            GlobalVariableValueConverter.SupportedTypes.Annulus => true,
             _ => false
         };
+    }
+
+    /// <summary>
+    /// 通知输出显示文本已变化（供外部类调用）
+    /// </summary>
+    public void NotifyOutputDisplayChanged()
+    {
+        OnPropertyChanged(nameof(OutputTargetDisplayText));
+    }
+
+    /// <summary>
+    /// 通知输入来源显示文本已变化（供外部类调用）
+    /// </summary>
+    public void NotifyInputDisplayChanged()
+    {
+        OnPropertyChanged(nameof(InputSourceDisplayText));
     }
 }
 

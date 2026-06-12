@@ -12,7 +12,7 @@ namespace SunEyeVision.Plugin.SDK.Core
     /// 使用示例：
     /// <code>
     /// [Tool(
-    ///     id: "threshold", 
+    ///     id: "Threshold", 
     ///     displayName: "图像阈值化",
     ///     Description = "将灰度图像转换为二值图像",
     ///     Icon = "📷",

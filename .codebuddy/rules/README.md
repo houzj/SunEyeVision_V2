@@ -6,7 +6,10 @@
 │   ├── property-notification.mdc     # rule-001 属性更改通知
 │   ├── naming-conventions.mdc        # rule-002 命名规范
 │   ├── logging-system.mdc            # rule-003 日志系统
-│   └── file-encoding.mdc             # rule-013 文件编码
+│   ├── file-encoding.mdc             # rule-013 文件编码
+│   ├── halcon-operator-usage.mdc     # rule-014 Halcon 算子调用
+│   ├── no-silent-fallback.mdc        # rule-015 禁止兜底回退
+│   └── data-driven-first.mdc         # rule-016 数据驱动优先
 ├── 02-development-process/
 │   ├── solution-design.mdc           # rule-004 方案设计
 │   ├── prototype-design-clean-principle.mdc  # rule-008 开发与代码纯净
@@ -34,3 +37,6 @@
 | 010 | 方案系统 | System.Text.Json+[JsonPolymorphic]；PascalCase；禁止 Newtonsoft.Json |
 | 012 | 参数系统 | UI 层 Dictionary+ParametersTypeName；保持工具注册机制 |
 | 013 | 文件编码 | 优先 replace_in_file；中文写入用 PowerShell+UTF8 无 BOM |
+| 014 | Halcon 算子 | HOperatorSet 静态方法；禁止实例方法 |
+| 015 | 禁止兜底回退 | 未映射/不支持的类型直接报错，禁止静默处理 |
+| 016 | 数据驱动优先 | 数据 > 事件 > 程序式；判断链三选一；例外场景需注释 |

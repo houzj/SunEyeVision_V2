@@ -10,6 +10,7 @@
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:local="clr-namespace:SunEyeVision.Tool.BlobAnalysis"
         xmlns:localConverters="clr-namespace:SunEyeVision.Tool.BlobAnalysis.Converters"
+        xmlns:results="clr-namespace:SunEyeVision.Plugin.SDK.Execution.Results;assembly=SunEyeVision.Plugin.SDK"
         mc:Ignorable="d"
         d:DesignHeight="550" d:DesignWidth="400"
         DataContext="{Binding Parameters, RelativeSource={RelativeSource Self}}">
@@ -22,7 +23,10 @@
 
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
             <localConverters:ThresholdTypeConverter x:Key="ThresholdTypeConverter"/>
-            <localConverters:ConnectivityTypeConverter x:Key="ConnectivityTypeConverter"/>
+            <localConverters:BlobSortModeConverter x:Key="BlobSortModeConverter"/>
+            <localConverters:PreprocessMethodConverter x:Key="PreprocessMethodConverter"/>
+            <localConverters:MorphOperationConverter x:Key="MorphOperationConverter"/>
+            <localConverters:MorphElementShapeConverter x:Key="MorphElementShapeConverter"/>
         </ResourceDictionary>
     </controls:ToolDebugControlBase.Resources>
 
@@ -42,15 +46,8 @@
                                 SelectedDataSource="{Binding ImageSource, Mode=TwoWay}"/>
             </controls:LabeledControl>
             
-            <!-- 启用区域限制 -->
-            <controls:LabeledControl Label="启用区域限制">
-              <CheckBox IsChecked="{Binding IsRegionEnabled.Value, Mode=TwoWay}"
-                        Content="仅对指定区域进行分析"/>
-            </controls:LabeledControl>
-            
-            <!-- 区域管理器（集成检测区域 + 屏蔽区域） -->
-            <GroupBox Header="区域设置" Margin="0,8,0,0"
-                      Visibility="{Binding IsRegionEnabled.Value, Converter={StaticResource BoolToVisibilityConverter}}">
+            <!-- 区域设置（检测区域数量=0时全图分析，否则自动启用区域限制） -->
+            <GroupBox Header="区域设置" Margin="0,8,0,0">
                 <region:RegionEditorManagerControl x:Name="regionManager"
                     InspectionRegionsSource="{Binding InspectionRegions.Regions}"
                     MaskRegionsSource="{Binding MaskRegions.Regions}"/>
@@ -59,14 +56,15 @@
             <!-- 位置修正 -->
             <controls:LabeledControl Label="位置修正" Margin="0,8,0,0" HorizontalAlignment="Left">
               <controls:ToggleSwitch
-                  IsChecked="{Binding IsPositionCorrectionEnabled.Value, Mode=TwoWay}"
+                  IsChecked="{Binding IsPositionCorrectionEnabled, Mode=TwoWay}"
                   SwitchWidth="48" SwitchHeight="24"/>
             </controls:LabeledControl>
 
             <controls:LabeledControl Label="修正信息" Margin="0,4,0,0" HorizontalAlignment="Left"
-                Visibility="{Binding IsPositionCorrectionEnabled.Value, Converter={StaticResource BoolToVisibilityConverter}}">
+                Visibility="{Binding IsPositionCorrectionEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
               <controls:ParamBinding
                   x:Name="positionCorrectionBinding"
+                  DataType="{x:Type results:AffineMatrix}"
                   ParameterName="位置修正" Width="200"
                   BindingSource="{Binding PositionCorrectionBindingSource, Mode=TwoWay}"
                   BindingDisplayText="{Binding PositionCorrectionBindingDisplayText, Mode=TwoWay}"
@@ -80,47 +78,148 @@
       <TabItem Header="预处理参数">
         <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12">
           <StackPanel>
-            <controls:LabeledControl Label="阈值" >
+            <!-- ===== 图像预处理 ===== -->
+            <Separator Margin="0,0,0,4" Background="#E0E0E0" Height="1"/>
+            <TextBlock Text="图像预处理" FontWeight="SemiBold" Margin="0,4,0,8"/>
+
+            <controls:LabeledControl Label="启用预处理" ContentHorizontalAlignment="Left" Margin="0,0,0,4">
+              <controls:ToggleSwitch
+                IsChecked="{Binding IsPreprocessingEnabled, Mode=TwoWay}"
+                SwitchWidth="48" SwitchHeight="24"/>
+            </controls:LabeledControl>
+
+            <controls:LabeledControl Label="预处理方法"
+              Visibility="{Binding IsPreprocessingEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
+              <ComboBox Height="32" VerticalContentAlignment="Center" Width="250"
+                SelectedItem="{Binding PreprocessMethodValue.Value, Mode=TwoWay, Converter={StaticResource PreprocessMethodConverter}}">
+                <sys:String>无</sys:String>
+                <sys:String>均值滤波</sys:String>
+                <sys:String>高斯滤波</sys:String>
+                <sys:String>中值滤波</sys:String>
+                <sys:String>直方图均衡化</sys:String>
+              </ComboBox>
+            </controls:LabeledControl>
+
+            <controls:LabeledControl Label="滤波核大小"
+              Visibility="{Binding IsPreprocessingEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
               <controls:ConfigSetting
-                                x:Name="thresholdParam"
-                                ParameterName="Threshold"
-                                DataType="{x:Type sys:Int32}"
-                                Value="{Binding Threshold.Value, Mode=TwoWay}"
-                                Minimum="0"
-                                Maximum="255"
-                                SmallChange="1"
-                                LargeChange="10"
-                                ShowSlider="True" Width="250"
-                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                ParameterName="PreprocessKernelSize"
+                DataType="{x:Type sys:Int32}"
+                Value="{Binding PreprocessKernelSize.Value, Mode=TwoWay}"
+                Minimum="3" Maximum="31"
+                SmallChange="2" LargeChange="4"
+                Width="250"
+                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+            </controls:LabeledControl>
+
+            <!-- ===== 阈值分割 ===== -->
+            <Separator Margin="0,8,0,4" Background="#E0E0E0" Height="1"/>
+            <TextBlock Text="阈值分割" FontWeight="SemiBold" Margin="0,4,0,8"/>
+
+            <controls:LabeledControl Label="阈值">
+              <controls:ConfigSetting
+                x:Name="thresholdParam"
+                ParameterName="Threshold"
+                DataType="{x:Type sys:Int32}"
+                Value="{Binding Threshold.Value, Mode=TwoWay}"
+                Minimum="0" Maximum="255"
+                SmallChange="1" LargeChange="10"
+                ShowSlider="True" Width="250"
+                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
             </controls:LabeledControl>
 
             <controls:LabeledControl Label="最大值">
               <controls:ConfigSetting
-                                x:Name="maxValueParam"
-                                ParameterName="MaxValue"
-                                DataType="{x:Type sys:Int32}"
-                                Value="{Binding MaxValue.Value, Mode=TwoWay}"
-                                Minimum="0"
-                                Maximum="255"
-                                SmallChange="1"
-                                LargeChange="10"
-                                ShowSlider="True" Width="250"
-                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                x:Name="maxValueParam"
+                ParameterName="MaxValue"
+                DataType="{x:Type sys:Int32}"
+                Value="{Binding MaxValue.Value, Mode=TwoWay}"
+                Minimum="0" Maximum="255"
+                SmallChange="1" LargeChange="10"
+                ShowSlider="True" Width="250"
+                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
             </controls:LabeledControl>
 
-            <controls:LabeledControl Label="阈值类型" >
+            <controls:LabeledControl Label="阈值类型">
               <ComboBox x:Name="thresholdTypeComboBox"
-                      Height="32"
-                      VerticalContentAlignment="Center" Width="250"
-                      SelectedItem="{Binding Type.Value, Mode=TwoWay, Converter={StaticResource ThresholdTypeConverter}}">
+                Height="32" VerticalContentAlignment="Center" Width="250"
+                SelectedItem="{Binding Type.Value, Mode=TwoWay, Converter={StaticResource ThresholdTypeConverter}}">
                 <sys:String>Binary</sys:String>
                 <sys:String>BinaryInv</sys:String>
               </ComboBox>
             </controls:LabeledControl>
 
             <controls:LabeledControl Label="反转结果" ContentHorizontalAlignment="Left" Margin="0,4,0,0">
-              <CheckBox IsChecked="{Binding Invert.Value, Mode=TwoWay}"
-                        Content="反转二值化结果"/>
+              <CheckBox IsChecked="{Binding Invert, Mode=TwoWay}"
+                    Content="反转二值化结果"/>
+            </controls:LabeledControl>
+
+            <!-- ===== 形态学处理 ===== -->
+            <Separator Margin="0,8,0,4" Background="#E0E0E0" Height="1"/>
+            <TextBlock Text="形态学处理" FontWeight="SemiBold" Margin="0,4,0,8"/>
+
+            <controls:LabeledControl Label="启用形态学" ContentHorizontalAlignment="Left" Margin="0,0,0,4">
+              <controls:ToggleSwitch
+                IsChecked="{Binding IsMorphologyEnabled, Mode=TwoWay}"
+                SwitchWidth="48" SwitchHeight="24"/>
+            </controls:LabeledControl>
+
+            <controls:LabeledControl Label="操作类型"
+              Visibility="{Binding IsMorphologyEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
+              <ComboBox Height="32" VerticalContentAlignment="Center" Width="250"
+                SelectedItem="{Binding MorphOperationValue.Value, Mode=TwoWay, Converter={StaticResource MorphOperationConverter}}">
+                <sys:String>腐蚀</sys:String>
+                <sys:String>膨胀</sys:String>
+                <sys:String>开运算</sys:String>
+                <sys:String>闭运算</sys:String>
+                <sys:String>顶帽</sys:String>
+                <sys:String>黑帽</sys:String>
+              </ComboBox>
+            </controls:LabeledControl>
+
+            <controls:LabeledControl Label="结构元素"
+              Visibility="{Binding IsMorphologyEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
+              <ComboBox Height="32" VerticalContentAlignment="Center" Width="250"
+                SelectedItem="{Binding MorphElementShapeValue.Value, Mode=TwoWay, Converter={StaticResource MorphElementShapeConverter}}">
+                <sys:String>矩形</sys:String>
+                <sys:String>圆形</sys:String>
+              </ComboBox>
+            </controls:LabeledControl>
+
+            <controls:LabeledControl Label="结构元素宽度"
+              Visibility="{Binding IsMorphologyEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
+              <controls:ConfigSetting
+                ParameterName="MorphElementWidth"
+                DataType="{x:Type sys:Int32}"
+                Value="{Binding MorphElementWidth.Value, Mode=TwoWay}"
+                Minimum="1" Maximum="101"
+                SmallChange="1" LargeChange="10"
+                Width="250"
+                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+            </controls:LabeledControl>
+
+            <controls:LabeledControl Label="结构元素高度"
+              Visibility="{Binding IsMorphologyEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
+              <controls:ConfigSetting
+                ParameterName="MorphElementHeight"
+                DataType="{x:Type sys:Int32}"
+                Value="{Binding MorphElementHeight.Value, Mode=TwoWay}"
+                Minimum="1" Maximum="101"
+                SmallChange="1" LargeChange="10"
+                Width="250"
+                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+            </controls:LabeledControl>
+
+            <controls:LabeledControl Label="迭代次数"
+              Visibility="{Binding IsMorphologyEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
+              <controls:ConfigSetting
+                ParameterName="MorphIterations"
+                DataType="{x:Type sys:Int32}"
+                Value="{Binding MorphIterations.Value, Mode=TwoWay}"
+                Minimum="1" Maximum="10"
+                SmallChange="1" LargeChange="2"
+                Width="250"
+                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
             </controls:LabeledControl>
 
           </StackPanel>
@@ -131,53 +230,92 @@
       <TabItem Header="Blob筛选">
         <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12">
           <StackPanel>
-            <!-- 连通性 -->
-            <controls:LabeledControl Label="连通性" >
+            <!-- 排序方式 -->
+            <controls:LabeledControl Label="排序方式" >
               <ComboBox Height="32"
                       VerticalContentAlignment="Center" Width="250"
-                      SelectedItem="{Binding Connectivity.Value, Mode=TwoWay, Converter={StaticResource ConnectivityTypeConverter}}">
-                <sys:String>4连通</sys:String>
-                <sys:String>8连通</sys:String>
+                      SelectedItem="{Binding SortMode.Value, Mode=TwoWay, Converter={StaticResource BlobSortModeConverter}}">
+                <sys:String>不排序</sys:String>
+                <sys:String>面积 ↑</sys:String>
+                <sys:String>面积 ↓</sys:String>
+                <sys:String>圆度 ↑</sys:String>
+                <sys:String>圆度 ↓</sys:String>
+                <sys:String>矩形度 ↑</sys:String>
+                <sys:String>矩形度 ↓</sys:String>
+                <sys:String>X坐标 ↑</sys:String>
+                <sys:String>X坐标 ↓</sys:String>
+                <sys:String>Y坐标 ↑</sys:String>
+                <sys:String>Y坐标 ↓</sys:String>
               </ComboBox>
             </controls:LabeledControl>
 
-            <!-- 面积范围 -->
-            <controls:LabeledControl Label="面积范围 (px²)">
-              <controls:RangeInputControl
-                      Unit="px²"
-                      Minimum="0"
-                      Maximum="999999"
-                      MinValue="{Binding MinArea.Value, Mode=TwoWay}"
-                      MaxValue="{Binding MaxArea.Value, Mode=TwoWay}"
-                      DecimalPlaces="0"
-                      SmallChange="10"
-                      NumericWidth="100"/>
+            <!-- ====== 面积筛选 ====== -->
+            <Separator Margin="0,8,0,4" Background="#E0E0E0" Height="1"/>
+            <TextBlock Text="面积筛选" FontWeight="SemiBold" Margin="0,4,0,8"/>
+
+            <controls:LabeledControl Label="启用面积筛选" ContentHorizontalAlignment="Left" Margin="0,0,0,4">
+              <controls:ToggleSwitch
+                IsChecked="{Binding IsAreaFilterEnabled, Mode=TwoWay}"
+                SwitchWidth="48" SwitchHeight="24"/>
             </controls:LabeledControl>
 
-            <!-- 圆度范围 -->
-            <controls:LabeledControl Label="圆度范围">
+            <controls:LabeledControl Label="面积范围 (px²)"
+              Visibility="{Binding IsAreaFilterEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
               <controls:RangeInputControl
-                      Unit=""
-                      Minimum="0"
-                      Maximum="1"
-                      MinValue="{Binding MinCircularity.Value, Mode=TwoWay}"
-                      MaxValue="{Binding MaxCircularity.Value, Mode=TwoWay}"
-                      DecimalPlaces="3"
-                      SmallChange="0.01"
-                      NumericWidth="100"/>
+                Unit="px²"
+                Minimum="0"
+                Maximum="999999"
+                MinValue="{Binding FilterAreaMin, Mode=TwoWay}"
+                MaxValue="{Binding FilterAreaMax, Mode=TwoWay}"
+                DecimalPlaces="0"
+                SmallChange="10"
+                NumericWidth="100"/>
             </controls:LabeledControl>
 
-            <!-- 矩形度范围 -->
-            <controls:LabeledControl Label="矩形度范围">
+            <!-- ====== 圆度筛选 ====== -->
+            <Separator Margin="0,8,0,4" Background="#E0E0E0" Height="1"/>
+            <TextBlock Text="圆度筛选" FontWeight="SemiBold" Margin="0,4,0,8"/>
+
+            <controls:LabeledControl Label="启用圆度筛选" ContentHorizontalAlignment="Left" Margin="0,0,0,4">
+              <controls:ToggleSwitch
+                IsChecked="{Binding IsCircularityFilterEnabled, Mode=TwoWay}"
+                SwitchWidth="48" SwitchHeight="24"/>
+            </controls:LabeledControl>
+
+            <controls:LabeledControl Label="圆度范围"
+              Visibility="{Binding IsCircularityFilterEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
               <controls:RangeInputControl
-                      Unit=""
-                      Minimum="0"
-                      Maximum="1"
-                      MinValue="{Binding MinRectangularity.Value, Mode=TwoWay}"
-                      MaxValue="{Binding MaxRectangularity.Value, Mode=TwoWay}"
-                      DecimalPlaces="3"
-                      SmallChange="0.01"
-                      NumericWidth="100"/>
+                Unit=""
+                Minimum="0"
+                Maximum="1"
+                MinValue="{Binding FilterCircularityMin, Mode=TwoWay}"
+                MaxValue="{Binding FilterCircularityMax, Mode=TwoWay}"
+                DecimalPlaces="3"
+                SmallChange="0.01"
+                NumericWidth="100"/>
+            </controls:LabeledControl>
+
+            <!-- ====== 矩形度筛选 ====== -->
+            <Separator Margin="0,8,0,4" Background="#E0E0E0" Height="1"/>
+            <TextBlock Text="矩形度筛选" FontWeight="SemiBold" Margin="0,4,0,8"/>
+
+            <controls:LabeledControl Label="启用矩形度筛选" ContentHorizontalAlignment="Left" Margin="0,0,0,4">
+              <controls:ToggleSwitch
+                IsChecked="{Binding IsRectangularityFilterEnabled, Mode=TwoWay}"
+                SwitchWidth="48" SwitchHeight="24"/>
+            </controls:LabeledControl>
+
+            <controls:LabeledControl Label="矩形度范围"
+              Visibility="{Binding IsRectangularityFilterEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
+              <controls:RangeInputControl
+                Unit=""
+                Minimum="0"
+                Maximum="1"
+                MinValue="{Binding FilterRectangularityMin, Mode=TwoWay}"
+                MaxValue="{Binding FilterRectangularityMax, Mode=TwoWay}"
+                DecimalPlaces="3"
+                SmallChange="0.01"
+                NumericWidth="100"/>
             </controls:LabeledControl>
 
           </StackPanel>
@@ -399,7 +537,17 @@
                                       Margin="0,0,0,8"
                                       Background="White">
                 <StackPanel Margin="16,8">
-                  <controls:LabeledControl Label="轮廓" ContentHorizontalAlignment="Left">
+                  <controls:LabeledControl Label="检测区域" ContentHorizontalAlignment="Left">
+                    <controls:DispItemColorControl
+                        Item="{Binding InspectionRegionStyle, Mode=TwoWay}"
+                        ContentHorizontalAlignment="Left"/>
+                  </controls:LabeledControl>
+                  <controls:LabeledControl Label="屏蔽区域" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
+                    <controls:DispItemColorControl
+                        Item="{Binding MaskRegionStyle, Mode=TwoWay}"
+                        ContentHorizontalAlignment="Left"/>
+                  </controls:LabeledControl>
+                  <controls:LabeledControl Label="轮廓" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
                     <controls:DispItemColorControl
                         Item="{Binding ContoursStyle, Mode=TwoWay}"
                         ContentHorizontalAlignment="Left"/>
@@ -425,12 +573,7 @@
                                       Margin="0,0,0,8"
                                       Background="White">
                 <StackPanel Margin="16,8">
-                  <controls:LabeledControl Label="统计信息" ContentHorizontalAlignment="Left">
-                    <controls:DispTextColorControl
-                        Item="{Binding StatisticsStyle, Mode=TwoWay}"
-                        AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                  </controls:LabeledControl>
-                  <controls:LabeledControl Label="面积列表" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
+                  <controls:LabeledControl Label="面积列表" ContentHorizontalAlignment="Left">
                     <controls:DispTextColorControl
                         Item="{Binding AreaDisplayStyle, Mode=TwoWay}"
                         AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>

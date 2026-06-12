@@ -1,4 +1,7 @@
 ﻿using System;
+using System.ComponentModel;
+using System.Linq;
+using System.Reflection;
 using System.Windows;
 using System.IO;
 using SunEyeVision.UI.Adapters;
@@ -14,6 +17,12 @@ using SunEyeVision.Workflow;
 using SunEyeVision.UI.Services;
 using SunEyeVision.UI.Services.Monitoring;
 using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Plugin.SDK.UI.Controls;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
+using System.Windows.Media;
+using SunEyeVision.UI.ViewModels;
+using SunEyeVision.UI.Infrastructure;
+using SunEyeVision.UI.Events;
 
 namespace SunEyeVision.UI;
 
@@ -62,21 +71,46 @@ public partial class App : Application
         // 解决：在任何可能触发序列化操作之前加载插件
 
         // 1. 初始化插件管理器（在任何其他初始化之前）
-        var pluginManager = new PluginManager();
+        var pluginManager = new PluginManager(VisionLogger.Instance);
         string pluginsPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "plugins");
         pluginManager.LoadPlugins(pluginsPath);
 
         // 2. 标记插件已加载（全局状态）
         PluginLoader.MarkAsLoaded();
 
+        // 2.5 初始化视觉图像加载入口
+        // HalImage 及其静态工厂方法已内置在 Plugin.SDK.Imaging 中
+        // 使用 VisionImage.FromFile / VisionImage.FromBitmapSource 直接加载图像
+
         // 3. 初始化服务（包括节点显示适配器）
         ServiceInitializer.InitializeServices();
+
+        // 3.5 Phase 2: 注册工作流节点类型转换器
+        // 确保反序列化时 WorkflowNodeBase 自动转换为 WorkflowNode 实例
+        WorkflowNodeFactory.TypeConverter = baseNode =>
+            baseNode is Models.WorkflowNode ? baseNode : Models.WorkflowNode.FromBase(baseNode);
 
         // 4. 使用默认路径
         var defaultPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
 
         // 5. 初始化解决方案管理器
         ServiceInitializer.InitializeSolutionManager(defaultPath);
+
+        // 5.5 注册全局变量选择事件处理（所有 ParamBinding 实例）
+        EventManager.RegisterClassHandler(typeof(ParamBinding),
+            ParamBinding.GlobalVariableSelectionRequestedEvent,
+            new RoutedEventHandler(OnGlobalVariableSelectionRequested));
+
+        // 5.6 订阅 ConfigSetting 全局变量解绑事件（清理 ConsumerBinding + 刷新 UI）
+        ConfigSetting.BeforeGlobalVariableUnbinding += OnConfigSettingBeforeGlobalVariableUnbinding;
+
+        // 5.7 订阅全局变量重命名事件（更新已打开的 ConfigSetting 绑定显示）
+        var eventBus = ServiceLocator.Instance.GetService<SunEyeVision.Core.Events.IEventBus>();
+        if (eventBus != null)
+        {
+            var renameHandler = new SunEyeVision.Core.Events.EventHandler<UIEvents.GlobalVariableRenamedEvent>(OnGlobalVariableRenamed);
+            eventBus.Subscribe(renameHandler);
+        }
 
         // 初始化DispatcherTimer监控
         InitializeMonitoring();
@@ -382,5 +416,349 @@ public partial class App : Application
 
         base.OnExit(e);
     }
+
+    /// <summary>
+    /// 全局变量选择请求处理 — 打开选择对话框并完成绑定
+    /// </summary>
+    private static void OnGlobalVariableSelectionRequested(object sender, RoutedEventArgs e)
+    {
+        if (sender is not ParamBinding paramBinding)
+        {
+            VisionLogger.Instance.Log(LogLevel.Warning,
+                "[监控] OnGlobalVariableSelectionRequested: sender 不是 ParamBinding",
+                "App-Monitor");
+            return;
+        }
+
+        var solutionManager = ServiceInitializer.SolutionManager;
+        if (solutionManager == null)
+        {
+            VisionLogger.Instance.Log(LogLevel.Warning,
+                "[监控] OnGlobalVariableSelectionRequested: SolutionManager 为 null",
+                "App-Monitor");
+            return;
+        }
+
+        // ★ 监控日志：拦截入口
+        var logger = VisionLogger.Instance;
+        logger.Log(LogLevel.Info,
+            $"[监控] 进入 OnGlobalVariableSelectionRequested | " +
+            $"sender={sender.GetType().Name} | " +
+            $"ParameterName={paramBinding.ParameterName} | " +
+            $"DataType={paramBinding.DataType?.Name ?? "null"}",
+            "App-Monitor");
+
+        // ★ 使用 GlobalVariableTypeMapper 将 DataType 映射为 GlobalVariable 类型字符串，用于选择器过滤
+        var filterType = GlobalVariableTypeMapper.ToGlobalVarType(paramBinding.DataType);
+
+        // ★ 监控日志：类型映射结果
+        logger.Log(LogLevel.Info,
+            $"[监控] 类型映射 | DataType={paramBinding.DataType?.Name ?? "null"} → filterType={filterType ?? "null"}",
+            "App-Monitor");
+
+        // ★ 无兜底原则：DataType 已设置但无法映射到任何 GlobalVariable 类型 → 直接报错
+        if (filterType == null && paramBinding.DataType != null)
+        {
+            MessageBox.Show(
+                $"参数类型 \"{paramBinding.DataType.Name}\" 不是全局变量支持的通用类型。\n" +
+                $"\n请将工具输出适配为通用类型后再绑定全局变量。\n" +
+                $"支持的通用类型：Integer, Float, String, Boolean, Double, Point, Rectangle, Size, Image 等。",
+                "不支持的参数类型", MessageBoxButton.OK, MessageBoxImage.Warning);
+            e.Handled = true;
+            return;
+        }
+
+        // 打开全局变量选择对话框（按数据类型过滤）
+        var selectedVariable = GlobalVariableSelectDialog.ShowSelect(solutionManager, filterType);
+
+        // ★ 监控日志：变量选择结果
+        logger.Log(selectedVariable != null ? LogLevel.Success : LogLevel.Info,
+            $"[监控] 全局变量选择结果 | " +
+            $"selected={(selectedVariable != null ? $"Name={selectedVariable.Name}, Type={selectedVariable.Type}, Id={selectedVariable.Id}" : "null")}",
+            "App-Monitor");
+
+        if (selectedVariable != null)
+        {
+            paramBinding.CompleteGlobalVariableBinding(selectedVariable.Name);
+
+            // ★ 监控日志：开始记录 ConsumerBinding
+            logger.Log(LogLevel.Info,
+                $"[监控] 即将调用 RecordConsumerBinding | variableName={selectedVariable.Name}",
+                "App-Monitor");
+
+            // ★ Phase 5: 自动记录 ConsumerBinding
+            RecordConsumerBinding(paramBinding, selectedVariable, solutionManager);
+        }
+
+        // 标记事件已处理
+        e.Handled = true;
+    }
+
+    /// <summary>
+    /// 处理 ConfigSetting 解绑全局变量 — 清理 ConsumerBinding 并刷新 UI
+    /// </summary>
+    private static void OnConfigSettingBeforeGlobalVariableUnbinding(ConfigSetting configSetting, string variableName)
+    {
+        try
+        {
+            var solutionManager = ServiceInitializer.SolutionManager;
+            if (solutionManager?.CurrentSolution == null)
+                return;
+
+            var variable = solutionManager.CurrentSolution.GlobalVariables
+                .FirstOrDefault(v => v.Name == variableName);
+            if (variable == null)
+                return;
+
+            // 从视觉树向上查找最近的 ToolDebugControlBase，获取节点信息
+            var toolControl = FindVisualParent<ToolDebugControlBase>(configSetting);
+            string? nodeId = null;
+            string? paramName = configSetting.ParameterName;
+
+            if (toolControl?.CurrentNode is { } node)
+            {
+                nodeId = node.GetType().GetProperty("Id")?.GetValue(node) as string;
+            }
+
+            if (string.IsNullOrEmpty(nodeId) || string.IsNullOrEmpty(paramName))
+                return;
+
+            // 查找并移除匹配的 ConsumerBinding
+            var removed = variable.ConsumerBindings.RemoveAll(c =>
+                c.NodeId == nodeId && c.ParameterName == paramName);
+
+            if (removed > 0)
+            {
+                variable.NotifyOutputDisplayChanged();
+                VisionLogger.Instance.Log(LogLevel.Info,
+                    $"[监控] 清理 ConsumerBinding 成功 | " +
+                    $"variable={variableName} | nodeId={nodeId} | param={paramName}",
+                    "App-Monitor");
+            }
+        }
+        catch (Exception ex)
+        {
+            VisionLogger.Instance.Log(LogLevel.Error,
+                $"[监控] 清理 ConsumerBinding 异常 | {ex.Message}",
+                "App-Monitor", ex);
+        }
+    }
+
+    /// <summary>
+    /// 全局变量重命名事件处理 — 通过 ConfigSetting 静态通知机制更新所有已打开实例的绑定显示
+    /// </summary>
+    private static void OnGlobalVariableRenamed(UIEvents.GlobalVariableRenamedEvent evt)
+    {
+        VisionLogger.Instance.Log(LogLevel.Info,
+            $"[监控] 全局变量重命名事件进入 | old='{evt.OldName}' → new='{evt.NewName}' | source={evt.Source}",
+            "App-Monitor");
+        try
+        {
+            ConfigSetting.NotifyAllGlobalVariableRenamed(evt.OldName, evt.NewName);
+
+            VisionLogger.Instance.Log(LogLevel.Success,
+                $"[监控] 全局变量重命名 ConfigSetting 通知完成 | old='{evt.OldName}' → new='{evt.NewName}'",
+                "App-Monitor");
+        }
+        catch (Exception ex)
+        {
+            VisionLogger.Instance.Log(LogLevel.Error,
+                $"[监控] 全局变量重命名更新异常 | {ex.Message}",
+                "App-Monitor", ex);
+        }
+    }
+
+    /// <summary>
+    /// 记录消费者绑定：参数绑定到全局变量时自动追加 ConsumerBinding 记录
+    /// </summary>
+    private static void RecordConsumerBinding(ParamBinding paramBinding, GlobalVariable variable, SolutionManager solutionManager)
+    {
+        try
+        {
+            var logger = VisionLogger.Instance;
+
+            // ★ 从视觉树向上查找最近的 ToolDebugControlBase，获取节点 ID 和名称
+            // 使用动态解析而非预设置，避免因 TabItem 懒加载导致 ParamBinding 创建时未设置 NodeId
+            string? nodeId = null;
+            string? nodeName = null;
+
+            var toolControl = FindVisualParent<ToolDebugControlBase>(paramBinding);
+
+            // ★ 监控日志1：FindVisualParent 结果
+            logger.Log(LogLevel.Info,
+                $"[监控] FindVisualParent<ToolDebugControlBase> | " +
+                $"found={(toolControl != null)} | " +
+                $"controlType={toolControl?.GetType().FullName ?? "null"}",
+                "App-Monitor");
+
+            if (toolControl?.CurrentNode is { } node)
+            {
+                // ★ 监控日志2：CurrentNode 存在
+                logger.Log(LogLevel.Info,
+                    $"[监控] CurrentNode | " +
+                    $"nodeType={node.GetType().FullName}",
+                    "App-Monitor");
+
+                nodeId = node.GetType().GetProperty("Id")?.GetValue(node) as string;
+                nodeName = node.GetType().GetProperty("DispName")?.GetValue(node) as string
+                        ?? node.GetType().GetProperty("Name")?.GetValue(node) as string;
+
+                // ★ 监控日志3：反射提取结果
+                logger.Log(LogLevel.Info,
+                    $"[监控] 节点信息反射提取 | " +
+                    $"Id={nodeId ?? "null"} | " +
+                    $"DispName/Name={nodeName ?? "null"}",
+                    "App-Monitor");
+            }
+            else
+            {
+                // ★ 监控日志4：CurrentNode 为 null 或 toolControl 为 null
+                logger.Log(LogLevel.Warning,
+                    $"[监控] ★★★ CurrentNode 不可用 ★★★ | " +
+                    $"toolControl null={(toolControl == null)} | " +
+                    $"CurrentNode null={(toolControl?.CurrentNode == null)}",
+                    "App-Monitor");
+            }
+
+            if (string.IsNullOrEmpty(nodeId) || string.IsNullOrEmpty(nodeName))
+            {
+                logger.Log(LogLevel.Warning,
+                    $"[监控] ★★★ 节点信息为空，ConsumerBinding 终止 ★★★ | " +
+                    $"nodeId={nodeId ?? "null"} | " +
+                    $"nodeName={nodeName ?? "null"} | " +
+                    $"toolControl found={(toolControl != null)} | " +
+                    $"CurrentNode null={(toolControl?.CurrentNode == null)}",
+                    "App-Monitor");
+                return;
+            }
+
+            var paramName = paramBinding.ParameterName;
+            // ★ 监控日志5：参数名
+            logger.Log(LogLevel.Info,
+                $"[监控] ParameterName={paramName ?? "null"}",
+                "App-Monitor");
+
+            if (string.IsNullOrEmpty(paramName))
+            {
+                logger.Log(LogLevel.Warning,
+                    "[监控] ★★★ ParameterName 为空，ConsumerBinding 终止 ★★★",
+                    "App-Monitor");
+                return;
+            }
+
+            // ★ 查找节点所属工作流名称和参数显示名称
+            string? workflowName = null;
+            string? parameterDisplayName = null;
+
+            var solution = solutionManager.CurrentSolution;
+            if (solution != null)
+            {
+                foreach (var wf in solution.Workflows)
+                {
+                    var workflowNode = wf.Nodes?.FirstOrDefault(n => n.Id == nodeId);
+                    if (workflowNode != null)
+                    {
+                        workflowName = wf.Name ?? wf.Id;
+
+                        // 从参数的 [DisplayName] 属性获取中文显示名
+                        if (workflowNode.Parameters != null)
+                        {
+                            var prop = workflowNode.Parameters.GetType().GetProperty(paramName);
+                            if (prop != null)
+                            {
+                                var attr = prop.GetCustomAttribute<DisplayNameAttribute>(false);
+                                parameterDisplayName = attr?.DisplayName ?? paramName;
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+
+            // ★ 监控日志6：工作流查找结果
+            logger.Log(LogLevel.Info,
+                $"[监控] 工作流查找 | " +
+                $"solution null={(solution == null)} | " +
+                $"workflowCount={solution?.Workflows?.Count ?? 0} | " +
+                $"found={(workflowName != null)} | " +
+                $"workflowName={workflowName ?? "null"} | " +
+                $"parameterDisplayName={parameterDisplayName ?? "null"}",
+                "App-Monitor");
+
+            // 检查是否已存在相同的消费者绑定
+            var existing = variable.ConsumerBindings
+                .FirstOrDefault(c => c.NodeId == nodeId && c.ParameterName == paramName);
+
+            if (existing != null)
+            {
+                // 已存在则更新节点名称、工作流名称、参数显示名称
+                existing.NodeName = nodeName;
+                if (workflowName != null) existing.WorkflowName = workflowName;
+                if (parameterDisplayName != null) existing.ParameterDisplayName = parameterDisplayName;
+            }
+            else
+            {
+                // 追加新的消费者绑定（含 WorkflowName + ParameterDisplayName）
+                variable.ConsumerBindings.Add(new ConsumerBinding
+                {
+                    NodeId = nodeId,
+                    NodeName = nodeName,
+                    WorkflowName = workflowName ?? "",
+                    ParameterName = paramName,
+                    ParameterDisplayName = parameterDisplayName ?? paramName
+                });
+            }
+
+            // ★ 监控日志7：ConsumerBinding 操作结果
+            logger.Log(existing != null ? LogLevel.Info : LogLevel.Success,
+                $"[监控] ConsumerBinding {(existing != null ? "更新" : "添加")}成功 | " +
+                $"consumerCount={variable.ConsumerBindings.Count} | " +
+                $"DisplayPath={variable.OutputTargetDisplayText}",
+                "App-Monitor");
+
+            // ★ 通知 UI 刷新"目标输出"列
+            variable.NotifyOutputDisplayChanged();
+
+            // ★ 监控日志8：UI 刷新通知完成
+            logger.Log(LogLevel.Info,
+                $"[监控] NotifyOutputDisplayChanged 已调用 | " +
+                $"OutputTargetDisplayText 新值={variable.OutputTargetDisplayText}",
+                "App-Monitor");
+
+            // 持久化保存
+            try
+            {
+                if (solutionManager.CurrentSolution?.FilePath != null)
+                    solutionManager.SaveSolution(solutionManager.CurrentSolution.FilePath);
+            }
+            catch { /* 静默忽略保存失败，不影响用户体验 */ }
+        }
+        catch (Exception ex)
+        {
+            VisionLogger.Instance.Log(LogLevel.Error,
+                $"[监控] ★★★ RecordConsumerBinding 异常 ★★★ | {ex.Message} | " +
+                $"StackTrace: {ex.StackTrace}",
+                "App-Monitor", ex);
+        }
+    }
+
+    /// <summary>
+    /// 在视觉树中向上查找指定类型的父控件
+    /// </summary>
+    private static T? FindVisualParent<T>(DependencyObject? child) where T : DependencyObject
+    {
+        if (child == null)
+            return null;
+
+        var parent = VisualTreeHelper.GetParent(child);
+        while (parent != null)
+        {
+            if (parent is T typedParent)
+                return typedParent;
+            parent = VisualTreeHelper.GetParent(parent);
+        }
+        return null;
+    }
+
 }
 

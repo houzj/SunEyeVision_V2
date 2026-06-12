@@ -502,7 +502,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
                         DisplayName = displayName,
                         GroupName = groupName,
                         PropertyType = prop.PropertyType,
-                        Description = GetPropertyDescription(prop)
+                        Description = GetPropertyDescription(prop),
                     };
                     
                     // 获取类型全名（作为缓存Key）
@@ -579,7 +579,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
         public static List<ToolPropertyMetadata> GetAllPropertyMetadata(string toolId)
         {
             var allMetadata = new List<ToolPropertyMetadata>();
-            
+
             foreach (var typeCache in _typeCache.Values)
             {
                 if (typeCache.TryGetValue(toolId, out var properties))
@@ -587,7 +587,24 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
                     allMetadata.AddRange(properties);
                 }
             }
-            
+
+            // ★ 诊断：查询结果为空时输出缓存状态
+            if (allMetadata.Count == 0)
+            {
+                var registeredKeys = new HashSet<string>();
+                foreach (var kvp in _typeCache)
+                {
+                    foreach (var key in kvp.Value.Keys)
+                        registeredKeys.Add(key);
+                }
+
+                VisionLogger.Instance.Log(LogLevel.Warning,
+                    $"[诊断:GetAllPropertyMetadata] toolId='{toolId}' 查询结果为空 | " +
+                    $"_typeCache.Count={_typeCache.Count} | " +
+                    $"已注册的 toolId 列表: [{string.Join(", ", registeredKeys.OrderBy(k => k))}]",
+                    "ToolRegistry");
+            }
+
             return allMetadata;
         }
 

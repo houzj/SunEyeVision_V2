@@ -10,6 +10,8 @@ using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.UI.Events;
 
+
+
 namespace SunEyeVision.Plugin.SDK.UI.Controls
 {
     /// <summary>
@@ -353,6 +355,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         #region 数据注入方法
 
         /// <summary>
+        /// 外部结果到达通知（基类默认空实现）
+        /// </summary>
+        /// <remarks>
+        /// 工作流引擎执行完成后调用，子类可重写以刷新依赖运行时的 UI 状态（如位置修正矩阵）。
+        /// </remarks>
+        public virtual void OnExternalResultArrived()
+        {
+            // 基类默认空实现
+        }
+
+        /// <summary>
         /// 设置当前节点
         /// </summary>
         public virtual void SetCurrentNode(object node)
@@ -360,7 +373,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             CurrentNode = node;
             PluginLogger.Info($"已设置当前节点: {node?.GetType().Name}", GetType().Name);
 
-            // 从节点对象中提取节点ID
+            // 从节点对象中提取节点ID和名称
+            string? nodeName = null;
             if (node != null)
             {
                 // 尝试通过反射获取 Id 属性
@@ -374,10 +388,29 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 {
                     PluginLogger.Warning($"节点对象 {node.GetType().Name} 没有 Id 属性", GetType().Name);
                 }
+
+                // 优先 DispName（UI显示名），回退到 Name
+                var dispNameProperty = node.GetType().GetProperty("DispName");
+                var nameProperty = node.GetType().GetProperty("Name");
+                nodeName = dispNameProperty?.GetValue(node) as string
+                        ?? nameProperty?.GetValue(node) as string;
+
+                // ★ 监控日志：SetCurrentNode 完整节点信息
+                var dispName = dispNameProperty?.GetValue(node) as string;
+                var name = nameProperty?.GetValue(node) as string;
+                PluginLogger.Info(
+                    $"[监控] SetCurrentNode 完整信息 | " +
+                    $"nodeId={_currentNodeId ?? "null"} | " +
+                    $"DispName={dispName ?? "null"} | " +
+                    $"Name={name ?? "null"} | " +
+                    $"nodeName={nodeName ?? "null"} | " +
+                    $"nodeType={node.GetType().FullName}",
+                    "App-Monitor");
             }
             else
             {
                 _currentNodeId = null;
+                PluginLogger.Warning("[监控] SetCurrentNode: node 为 null", "App-Monitor");
             }
 
             // 如果数据提供者已设置，重新填充数据源（使用当前节点ID）

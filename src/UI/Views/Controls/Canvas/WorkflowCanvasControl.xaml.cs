@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 using System.Collections.Generic;
 
@@ -28,6 +28,7 @@ using SunEyeVision.UI.Services.Rendering;
 
 using SunEyeVision.UI.Services.Path;
 using SunEyeVision.UI.Services.PathCalculators;
+using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.UI.Services.Canvas;
 using SunEyeVision.UI.Converters.Path;
 
@@ -694,13 +695,17 @@ namespace SunEyeVision.UI.Views.Controls.Canvas
                                             var nodeBorders = allBorders.Where(b => b.Tag is WorkflowNode).ToList();
                                             var workflowNodes = workflowTab.WorkflowNodes;
 
+                                            // 每个节点对应2个 Border（HitAreaBorder + NodeBorder），按 ID 去重后比较
+                                            var uniqueNodeIds = nodeBorders
+                                                .Select(b => ((WorkflowNode)b.Tag).Id)
+                                                .Distinct()
+                                                .Count();
 
-
-                                            if (nodeBorders.Count != workflowNodes.Count)
+                                            if (uniqueNodeIds != workflowNodes.Count)
                                             {
                                                 Plugin.SDK.Logging.VisionLogger.Instance?.Log(
                                                     Plugin.SDK.Logging.LogLevel.Warning,
-                                                    $"[CollectionChanged] Border与Nodes数量不一致 - Border数={nodeBorders.Count}, Nodes数={workflowNodes.Count}, 差异={nodeBorders.Count - workflowNodes.Count}",
+                                                    $"[CollectionChanged] Border与Nodes数量不一致 - 含Tag Border数={nodeBorders.Count}, 去重节点ID数={uniqueNodeIds}, Nodes数={workflowNodes.Count}, 差异={uniqueNodeIds - workflowNodes.Count}",
                                                     "WorkflowCanvasControl");
 
                                                 // 列出所有节点Border的信息
@@ -804,71 +809,61 @@ namespace SunEyeVision.UI.Views.Controls.Canvas
         /// </summary>
 
         public void ForceRefreshItemsControls()
-
         {
+            var logger = VisionLogger.Instance;
+            var itemsControls = FindVisualChildren<ItemsControl>(WorkflowCanvas).ToList();
+
+            logger.Log(LogLevel.Debug, $"ForceRefreshItemsControls|找到 {itemsControls.Count} 个 ItemsControl", "WorkflowCanvas");
+
+            int refreshed = 0;
+            int datacontextHack = 0;
 
             try
-
             {
-
-                // 查找 WorkflowCanvas 中的所有 ItemsControl
-
-                var itemsControls = FindVisualChildren<ItemsControl>(WorkflowCanvas).ToList();
-
-
-
-                int refreshed = 0;
-
                 foreach (var itemsControl in itemsControls)
-
                 {
-
-                    // 获取绑定表达式
-
                     var bindingExpression = itemsControl.GetBindingExpression(ItemsControl.ItemsSourceProperty);
 
                     if (bindingExpression != null)
-
                     {
-
-                        // 刷新绑定表达式，强制重新从DataContext读取数据
-
                         bindingExpression.UpdateTarget();
-
+                        refreshed++;
                     }
-
                     else
-
                     {
-
-                        // 如果没有绑定表达式，可能是因为绑定还没有建立
-
-                        // 我们需要手动触发DataContextChanged事件
-
+                        datacontextHack++;
                         var oldDataContext = itemsControl.DataContext;
 
-                        itemsControl.DataContext = null;
+                        logger.Log(LogLevel.Debug,
+                            $"ForceRefreshItemsControls|DataContextHack: ItemsControl={itemsControl.GetType().Name}, " +
+                            $"DataContext={oldDataContext?.GetType().Name ?? "null"}, " +
+                            $"ItemsSource={itemsControl.ItemsSource?.GetType().Name ?? "null"}",
+                            "WorkflowCanvas");
 
-                        itemsControl.DataContext = oldDataContext;
-
+                        try
+                        {
+                            itemsControl.DataContext = null;
+                            itemsControl.DataContext = oldDataContext;
+                        }
+                        catch (InvalidOperationException ex) when (ex.Message.Contains("DeferRefresh"))
+                        {
+                            logger.Log(LogLevel.Error,
+                                $"ForceRefreshItemsControls|DeferRefresh冲突(DataContextHack): " +
+                                $"ItemsControl={itemsControl.GetType().Name}, " +
+                                $"DataContext={oldDataContext?.GetType().Name ?? "null"}, " +
+                                $"错误={ex.Message}",
+                                "WorkflowCanvas", ex);
+                        }
                     }
-
-
-
-                    refreshed++;
-
                 }
-
             }
-
-            catch (Exception)
-
+            catch (Exception ex)
             {
-
-                // 忽略异常
-
+                logger.Log(LogLevel.Error,
+                    $"ForceRefreshItemsControls|异常: 刷新={refreshed}, DataContextHack={datacontextHack}, " +
+                    $"错误={ex.Message}",
+                    "WorkflowCanvas", ex);
             }
-
         }
 
 
@@ -2210,90 +2205,81 @@ namespace SunEyeVision.UI.Views.Controls.Canvas
 
 
 
-            // 执行命中测试目标端口
-
+            // 使用回调式 HitTest 查找目标端口（修复间歇性命中失败问题）
+            // Preview 处理器中的回调式 HitTest 能找到所有层级的元素，
+            // 而简单式 HitTest 只返回最顶层元素，端口 Ellipse 可能被上层元素遮挡
             var mousePos = e.GetPosition(WorkflowCanvas);
+            var hitPorts = new List<(Ellipse port, string portName, double distance)>();
 
-            var hitTestResult = VisualTreeHelper.HitTest(WorkflowCanvas, mousePos);
+            VisualTreeHelper.HitTest(WorkflowCanvas, null,
+                result =>
+                {
+                    if (result.VisualHit is Ellipse hitEllipse)
+                    {
+                        var ellipseName = hitEllipse.Name;
+                        if (!string.IsNullOrEmpty(ellipseName) &&
+                            (ellipseName == "LeftPortEllipse" ||
+                             ellipseName == "RightPortEllipse" ||
+                             ellipseName == "TopPortEllipse" ||
+                             ellipseName == "BottomPortEllipse"))
+                        {
+                            string portName = ellipseName.Replace("Ellipse", "");
 
+                            var portCenterX = hitEllipse.RenderSize.Width / 2;
+                            var portCenterY = hitEllipse.RenderSize.Height / 2;
+                            var portPos = hitEllipse.PointToScreen(new Point(portCenterX, portCenterY));
+                            var canvasPos = WorkflowCanvas.PointFromScreen(portPos);
+                            double portDistance = Math.Sqrt(
+                                Math.Pow(mousePos.X - canvasPos.X, 2) +
+                                Math.Pow(mousePos.Y - canvasPos.Y, 2));
 
+                            hitPorts.Add((hitEllipse, portName, portDistance));
+                        }
+                    }
+                    return HitTestResultBehavior.Continue;
+                },
+                new PointHitTestParameters(mousePos));
 
-            if (hitTestResult?.VisualHit is Ellipse targetEllipse &&
-                targetEllipse.Tag is string targetPortName &&
-                targetEllipse.Name.Contains("PortEllipse"))
+            if (hitPorts.Count > 0)
             {
-                // 🔍 关键日志：记录目标端口命中成功
+                var nearestPort = hitPorts.OrderBy(p => p.distance).First();
+                string targetPortName = nearestPort.portName;
+
                 Plugin.SDK.Logging.VisionLogger.Instance?.Log(
                     Plugin.SDK.Logging.LogLevel.Success,
-                    $"[Port_MouseLeftButtonUp] 目标端口命中成功 - 端口名称: {targetPortName}, Ellipse名称: {targetEllipse.Name}, 鼠标位置: ({mousePos.X:F1}, {mousePos.Y:F1})",
+                    $"[Port_MouseLeftButtonUp] 回调式 HitTest 命中端口 - 端口名称: {targetPortName}, 命中端口数: {hitPorts.Count}, 鼠标位置: ({mousePos.X:F1}, {mousePos.Y:F1})",
                     "WorkflowCanvasControl");
 
-                // 获取目标节点 - 向上遍历视觉树找到 Border (Ellipse → Grid → Border)
-
+                // 向上遍历视觉树找到端口所属的 Border（节点容器）
                 Border? targetBorder = null;
-
-                DependencyObject? parent = VisualTreeHelper.GetParent(targetEllipse);
-
+                DependencyObject? parent = nearestPort.port;
                 while (parent != null)
-
                 {
-
                     if (parent is Border border)
-
                     {
-
                         targetBorder = border;
-
                         break;
-
                     }
-
                     parent = VisualTreeHelper.GetParent(parent);
-
                 }
 
-
-
                 if (targetBorder?.Tag is WorkflowNode targetNode &&
-
                     targetNode != _dragConnectionSourceNode)
                 {
                     // 创建连接
-
                     var connectionCreated = CreateConnectionBetweenPorts(
-
                         _dragConnectionSourceNode,
-
                         _dragConnectionSourcePort ?? "RightPort",
-
                         targetNode,
-
                         targetPortName
-
                     );
 
                     // 连接创建成功后，阻止事件冒泡，避免触发节点选择导致图像预览器被隐藏
-
                     if (connectionCreated)
-
                     {
-
                         e.Handled = true;
-
                     }
-
                 }
-
-                else
-
-                {
-}
-
-            }
-
-            else
-            {
-                // 未命中有效端口，不做任何操作
             }
 
 
@@ -2648,9 +2634,8 @@ namespace SunEyeVision.UI.Views.Controls.Canvas
 
 
 
-            // 添加连接到集合
-
-            selectedTab.WorkflowConnections?.Add(newConnection);
+            // 添加连接到集合（通过 ViewModel 统一入口：日志 + 命令 + ImageSource绑定）
+            _viewModel?.AddConnectionToWorkflow(newConnection);
 
 
 
@@ -5181,6 +5166,23 @@ _viewModel.SelectedNode = targetNode;
             if (tab != null)
             {
                 tab.ReleaseNodeLocalIndex(node);
+            }
+        }
+
+        /// <summary>
+        /// 子程序设置按钮点击 - 打开子程序参数配置对话框
+        /// </summary>
+        private void SubroutineNodeSettings_Click(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+
+            if (sender is FrameworkElement element && element.DataContext is WorkflowNode node)
+            {
+                var mainWindow = Window.GetWindow(this) as MainWindow;
+                if (mainWindow != null)
+                {
+                    mainWindow.OpenSubroutineNodeParameterDialog(node);
+                }
             }
         }
 

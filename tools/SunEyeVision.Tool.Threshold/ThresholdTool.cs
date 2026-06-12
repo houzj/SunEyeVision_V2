@@ -24,7 +24,7 @@ namespace SunEyeVision.Tool.Threshold
     ///   5. 结果判断       → OK/NG判定（5种条件）
     /// </summary>
     [Tool(
-        id: "threshold",
+        id: "Threshold",
         displayName: "图像阈值化",
         Description = "将灰度图像转换为二值图像",
         Icon = "📷",
@@ -50,7 +50,7 @@ namespace SunEyeVision.Tool.Threshold
             var result = new ThresholdResults
             {
                 ToolName = _attribute?.DisplayName ?? "Threshold",
-                ToolId = _attribute?.Id ?? "threshold",
+                ToolId = _attribute?.Id ?? "Threshold",
                 Timestamp = DateTime.Now
             };
 
@@ -89,8 +89,8 @@ namespace SunEyeVision.Tool.Threshold
                 ThresholdType type = parameters.Type.Value;
                 AdaptiveMethod adaptiveMethod = parameters.AdaptiveMethod.Value;
                 int blockSize = parameters.BlockSize.Value;
-                bool invert = parameters.Invert.Value;
-                bool isRegionEnabled = parameters.IsRegionEnabled.Value;
+                bool invert = parameters.Invert;
+                bool isRegionEnabled = parameters.IsRegionEnabled;
 
                 // ===== Step 1: 灰度转换 (rgb1_to_gray) =====
                 stepSw.Restart();
@@ -183,6 +183,9 @@ namespace SunEyeVision.Tool.Threshold
                                 // 保存二值掩码（从 binaryRegion 提取纯二值 Mat）
                                 CvOp.RegionToMask(binaryRegion, out var binaryMask);
                                 result.BinaryMask = binaryMask;
+
+                                // 图形结果输出
+                                result.OutputRegions = new IVisionRegion[] { binaryRegion.Clone() };
 
                                 result.OutputImage = outputImage;
                                 result.ThresholdUsed = actualThreshold;

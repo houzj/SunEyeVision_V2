@@ -109,21 +109,6 @@ namespace SunEyeVision.Tool.ShapeMatch.Models
             set => SetProperty(ref _templateContourStyle, value);
         }
 
-        /// <summary>
-        /// 模板参考轮廓样式 — 显示在图像左上角的原始模板轮廓（使用蓝色以便与匹配轮廓区分）
-        /// </summary>
-        private GraphicsStyle _templateRefContourStyle = new()
-        {
-            Name = "TemplateRefContour",
-            LineWidth = 1,
-            OkColor = System.Windows.Media.Color.FromRgb(0, 150, 255)  // 蓝色
-        };
-        public GraphicsStyle TemplateRefContourStyle
-        {
-            get => _templateRefContourStyle;
-            set => SetProperty(ref _templateRefContourStyle, value);
-        }
-
         private TextStyle _scoreStyle = new() { Name = "Score", FontSize = 12.0, PositionX = 0, PositionY = 0 };
         public TextStyle ScoreStyle
         {
@@ -131,26 +116,7 @@ namespace SunEyeVision.Tool.ShapeMatch.Models
             set => SetProperty(ref _scoreStyle, value);
         }
 
-        private TextStyle _positionStyle = new() { Name = "Position", FontSize = 11.0, PositionX = 0, PositionY = 0 };
-        public TextStyle PositionStyle
-        {
-            get => _positionStyle;
-            set => SetProperty(ref _positionStyle, value);
-        }
 
-        private TextStyle _angleStyle = new() { Name = "Angle", FontSize = 11.0, PositionX = 0, PositionY = 0 };
-        public TextStyle AngleStyle
-        {
-            get => _angleStyle;
-            set => SetProperty(ref _angleStyle, value);
-        }
-
-        private TextStyle _scaleStyle = new() { Name = "Scale", FontSize = 11.0, PositionX = 0, PositionY = 0 };
-        public TextStyle ScaleStyle
-        {
-            get => _scaleStyle;
-            set => SetProperty(ref _scaleStyle, value);
-        }
 
         #endregion
 
@@ -168,11 +134,7 @@ namespace SunEyeVision.Tool.ShapeMatch.Models
                 MatchCenterStyle = new GraphicsStyle { Name = _matchCenterStyle.Name, IsVisible = _matchCenterStyle.IsVisible, OkColor = _matchCenterStyle.OkColor, NgColor = _matchCenterStyle.NgColor, Opacity = _matchCenterStyle.Opacity, LineWidth = _matchCenterStyle.LineWidth, CrossSize = _matchCenterStyle.CrossSize },
                 AngleLineStyle = new GraphicsStyle { Name = _angleLineStyle.Name, IsVisible = _angleLineStyle.IsVisible, OkColor = _angleLineStyle.OkColor, NgColor = _angleLineStyle.NgColor, Opacity = _angleLineStyle.Opacity, LineWidth = _angleLineStyle.LineWidth, CrossSize = _angleLineStyle.CrossSize },
                 TemplateContourStyle = new GraphicsStyle { Name = _templateContourStyle.Name, IsVisible = _templateContourStyle.IsVisible, OkColor = _templateContourStyle.OkColor, NgColor = _templateContourStyle.NgColor, Opacity = _templateContourStyle.Opacity, LineWidth = _templateContourStyle.LineWidth, CrossSize = _templateContourStyle.CrossSize },
-                TemplateRefContourStyle = new GraphicsStyle { Name = _templateRefContourStyle.Name, IsVisible = _templateRefContourStyle.IsVisible, OkColor = _templateRefContourStyle.OkColor, NgColor = _templateRefContourStyle.NgColor, Opacity = _templateRefContourStyle.Opacity, LineWidth = _templateRefContourStyle.LineWidth, CrossSize = _templateRefContourStyle.CrossSize },
-                ScoreStyle = new TextStyle { Name = _scoreStyle.Name, FontSize = _scoreStyle.FontSize, PositionX = _scoreStyle.PositionX, PositionY = _scoreStyle.PositionY },
-                PositionStyle = new TextStyle { Name = _positionStyle.Name, FontSize = _positionStyle.FontSize, PositionX = _positionStyle.PositionX, PositionY = _positionStyle.PositionY },
-                AngleStyle = new TextStyle { Name = _angleStyle.Name, FontSize = _angleStyle.FontSize, PositionX = _angleStyle.PositionX, PositionY = _angleStyle.PositionY },
-                ScaleStyle = new TextStyle { Name = _scaleStyle.Name, FontSize = _scaleStyle.FontSize, PositionX = _scaleStyle.PositionX, PositionY = _scaleStyle.PositionY }
+                ScoreStyle = new TextStyle { Name = _scoreStyle.Name, FontSize = _scoreStyle.FontSize, PositionX = _scoreStyle.PositionX, PositionY = _scoreStyle.PositionY }
             };
         }
     }

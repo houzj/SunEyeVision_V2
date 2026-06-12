@@ -1,22 +1,17 @@
-using OpenCvSharp;
-using SunEyeVision.Plugin.SDK.Extensions;
 using System;
+using System.Windows;
 
 namespace SunEyeVision.Plugin.SDK.Models.Geometry
 {
     /// <summary>
     /// 圆形结构（双精度）
     /// </summary>
-    /// <remarks>
-    /// OpenCvSharp缺少Circle类型，因此提供此补充类型。
-    /// 与OpenCvSharp.Point2d和Rect2d配合使用。
-    /// </remarks>
     public readonly struct Circle2d : IEquatable<Circle2d>
     {
         /// <summary>
         /// 圆心
         /// </summary>
-        public readonly Point2d Center;
+        public readonly Point Center;
 
         /// <summary>
         /// 半径
@@ -26,7 +21,7 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
         /// <summary>
         /// 创建圆形
         /// </summary>
-        public Circle2d(Point2d center, double radius)
+        public Circle2d(Point center, double radius)
         {
             Center = center;
             Radius = radius;
@@ -36,7 +31,7 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
         /// 创建圆形
         /// </summary>
         public Circle2d(double centerX, double centerY, double radius)
-            : this(new Point2d(centerX, centerY), radius) { }
+            : this(new Point(centerX, centerY), radius) { }
 
         /// <summary>
         /// 空圆（无效圆）
@@ -66,7 +61,7 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
         /// <summary>
         /// 边界矩形
         /// </summary>
-        public Rect2d BoundingBox => new Rect2d(
+        public Rect BoundingBox => new Rect(
             Center.X - Radius,
             Center.Y - Radius,
             Diameter,
@@ -76,25 +71,25 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
         /// <summary>
         /// 是否包含点
         /// </summary>
-        public bool Contains(Point2d point)
+        public bool Contains(Point point)
         {
-            return Center.DistanceTo(point) <= Radius;
+            return (Center - point).Length <= Radius;
         }
 
         /// <summary>
         /// 是否包含点（指定容差）
         /// </summary>
-        public bool Contains(Point2d point, double tolerance)
+        public bool Contains(Point point, double tolerance)
         {
-            return Center.DistanceTo(point) <= Radius + tolerance;
+            return (Center - point).Length <= Radius + tolerance;
         }
 
         /// <summary>
         /// 点是否在圆上
         /// </summary>
-        public bool IsOnCircle(Point2d point, double tolerance = 0.001)
+        public bool IsOnCircle(Point point, double tolerance = 0.001)
         {
-            double distance = Center.DistanceTo(point);
+            double distance = (Center - point).Length;
             return Math.Abs(distance - Radius) <= tolerance;
         }
 
@@ -102,9 +97,9 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
         /// 获取圆上指定角度的点
         /// </summary>
         /// <param name="angleRadians">角度（弧度，0为右侧，逆时针为正）</param>
-        public Point2d GetPointOnCircle(double angleRadians)
+        public Point GetPointOnCircle(double angleRadians)
         {
-            return new Point2d(
+            return new Point(
                 Center.X + Radius * Math.Cos(angleRadians),
                 Center.Y + Radius * Math.Sin(angleRadians)
             );
@@ -113,7 +108,7 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
         /// <summary>
         /// 计算点到圆心的角度
         /// </summary>
-        public double GetAngleToPoint(Point2d point)
+        public double GetAngleToPoint(Point point)
         {
             return Math.Atan2(point.Y - Center.Y, point.X - Center.X);
         }
@@ -123,20 +118,20 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
         /// </summary>
         public bool Intersects(Circle2d other)
         {
-            double distance = Center.DistanceTo(other.Center);
+            double distance = (Center - other.Center).Length;
             return distance <= Radius + other.Radius;
         }
 
         /// <summary>
         /// 是否与矩形相交
         /// </summary>
-        public bool Intersects(Rect2d rect)
+        public bool Intersects(Rect rect)
         {
             // 找到矩形上离圆心最近的点
             double closestX = Math.Clamp(Center.X, rect.X, rect.X + rect.Width);
             double closestY = Math.Clamp(Center.Y, rect.Y, rect.Y + rect.Height);
 
-            double distance = Center.DistanceTo(new Point2d(closestX, closestY));
+            double distance = (Center - new Point(closestX, closestY)).Length;
             return distance <= Radius;
         }
 
@@ -159,7 +154,7 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
         /// <summary>
         /// 从三点拟合圆
         /// </summary>
-        public static Circle2d FromThreePoints(Point2d p1, Point2d p2, Point2d p3)
+        public static Circle2d FromThreePoints(Point p1, Point p2, Point p3)
         {
             double x1 = p1.X, y1 = p1.Y;
             double x2 = p2.X, y2 = p2.Y;

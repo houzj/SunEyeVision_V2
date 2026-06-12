@@ -7,8 +7,7 @@ using System.Text.Json;
 using OpenCvSharp;
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 using SunEyeVision.Plugin.SDK.Logging;
-using SunEyeVision.Plugin.SDK.Core;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
+
 using SunEyeVision.Core.Services.Serialization;
 
 namespace SunEyeVision.Workflow
@@ -16,7 +15,7 @@ namespace SunEyeVision.Workflow
     /// <summary>
     /// Workflow Engine
     /// </summary>
-    public class WorkflowEngine : IWorkflowConnectionProvider, INodeInfoProvider
+    public class WorkflowEngine
     {
         /// <summary>
         /// Workflow list
@@ -282,163 +281,6 @@ namespace SunEyeVision.Workflow
             }
         }
 
-        #region IWorkflowConnectionProvider 实现
 
-        /// <inheritdoc/>
-        /// <summary>
-        /// 递归查找所有上游节点（包括直接父节点和间接父节点）
-        /// 使用 BFS 遍历，保证节点按照距离顺序返回
-        /// 使用 List 保持顺序，使用 HashSet 去重，避免循环依赖
-        /// </summary>
-        public List<string> GetParentNodeIds(string nodeId)
-        {
-            if (CurrentWorkflow == null)
-            {
-                return new List<string>();
-            }
-
-            // BFS 递归查找所有上游节点
-            var upstreamNodeIds = new List<string>();  // 使用 List 保持 BFS 顺序
-            var queue = new Queue<string>();
-            var visited = new HashSet<string>();
-
-            queue.Enqueue(nodeId);
-            visited.Add(nodeId);
-
-            int bfsStep = 0;
-            while (queue.Count > 0)
-            {
-                var currentNodeId = queue.Dequeue();
-                bfsStep++;
-                Logger.LogInfo($"  🔄 BFS 步骤 {bfsStep}: 处理节点 {currentNodeId}", "WorkflowEngine");
-
-                // 查找当前节点的所有父节点（连接指向当前节点的）
-                // 🔍 按连接创建顺序排序（使用索引）
-                var parentConnections = CurrentWorkflow.Connections
-                    .Select((conn, index) => new { Connection = conn, Index = index })
-                    .Where(x => x.Connection.TargetNodeId == currentNodeId)
-                    .OrderBy(x => x.Index)  // ✅ 按连接创建顺序排序
-                    .ToList();
-                    
-                Logger.LogInfo($"    找到 {parentConnections.Count} 个连接指向此节点", "WorkflowEngine");
-
-                foreach (var item in parentConnections)
-                {
-                    var connection = item.Connection;
-                    Logger.LogInfo($"      [{item.Index}] 连接: {connection.SourceNodeId} → {connection.TargetNodeId}", "WorkflowEngine");
-                    
-                    if (!visited.Contains(connection.SourceNodeId))
-                    {
-                        visited.Add(connection.SourceNodeId);
-                        upstreamNodeIds.Add(connection.SourceNodeId);  // 添加到有序列表
-                        queue.Enqueue(connection.SourceNodeId);
-                        Logger.LogInfo($"        ✅ 添加到结果: {connection.SourceNodeId}", "WorkflowEngine");
-                    }
-                    else
-                    {
-                        Logger.LogInfo($"        ⏭️ 已访问，跳过: {connection.SourceNodeId}", "WorkflowEngine");
-                    }
-                }
-            }
-
-            Logger.LogInfo($"找到 {upstreamNodeIds.Count} 个父节点: [{string.Join(", ", upstreamNodeIds)}]", "WorkflowEngine");
-            Logger.LogInfo($"============================================", "WorkflowEngine");
-            return upstreamNodeIds;
-        }
-
-        /// <inheritdoc/>
-        public List<string> GetChildNodeIds(string nodeId)
-        {
-            if (CurrentWorkflow == null)
-                return new List<string>();
-
-            return CurrentWorkflow.Connections
-                .Where(conn => conn.SourceNodeId == nodeId)
-                .Select(conn => conn.TargetNodeId)
-                .ToList();
-        }
-
-        /// <inheritdoc/>
-        public List<string> GetAllNodeIds()
-        {
-            return CurrentWorkflow?.Nodes?.Select(n => n.Id).ToList() ?? new List<string>();
-        }
-
-        #endregion
-
-        #region INodeInfoProvider 实现
-
-        /// <inheritdoc/>
-        public string GetNodeName(string nodeId)
-        {
-            var node = CurrentWorkflow?.Nodes?.FirstOrDefault(n => n.Id == nodeId);
-            var nodeName = node?.Name ?? nodeId;
-            Logger.LogInfo($"  GetNodeName({nodeId}) = {nodeName}", "WorkflowEngine");
-            return nodeName;
-        }
-
-        /// <inheritdoc/>
-        public string GetNodeType(string nodeId)
-        {
-            var node = CurrentWorkflow?.Nodes?.FirstOrDefault(n => n.Id == nodeId);
-            var nodeType = node?.ToolType ?? "Unknown";
-            Logger.LogInfo($"  GetNodeType({nodeId}) = {nodeType}", "WorkflowEngine");
-            return nodeType;
-        }
-
-        /// <inheritdoc/>
-        public string? GetNodeIcon(string nodeId)
-        {
-            var node = CurrentWorkflow?.Nodes?.FirstOrDefault(n => n.Id == nodeId);
-            return node?.Icon;
-        }
-
-        /// <inheritdoc/>
-        public bool NodeExists(string nodeId)
-        {
-            return CurrentWorkflow?.Nodes?.Any(n => n.Id == nodeId) ?? false;
-        }
-
-        /// <inheritdoc/>
-        public Type? GetResultType(string nodeId)
-        {
-            var node = CurrentWorkflow?.Nodes?.FirstOrDefault(n => n.Id == nodeId);
-            if (node == null)
-            {
-                return null;
-            }
-
-            // 从工具元数据中获取 ToolType
-            var toolMetadata = ToolRegistry.GetToolMetadata(node.ToolType);
-            Type? toolType = toolMetadata?.ToolType;
-
-            if (toolType == null)
-            {
-                Logger.LogWarning($"  GetResultType({nodeId}) - ToolType not found for {node.ToolType}", "WorkflowEngine");
-                return null;
-            }
-
-            // 从 ToolType 推断 ResultType
-            Type? resultType = null;
-
-            // 检查 ToolType 是否实现了 IToolPlugin<TParams, TResult>
-            foreach (var iface in toolType.GetInterfaces())
-            {
-                if (iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(SunEyeVision.Plugin.SDK.Core.IToolPlugin<,>))
-                {
-                    var genericArgs = iface.GetGenericArguments();
-                    if (genericArgs.Length >= 2)
-                    {
-                        resultType = genericArgs[1]; // TResult 是第二个泛型参数
-                        break;
-                    }
-                }
-            }
-
-            Logger.LogInfo($"  GetResultType({nodeId}) = {resultType?.Name ?? "null"} (from {toolType.Name})", "WorkflowEngine");
-            return resultType;
-        }
-
-        #endregion
     }
 }

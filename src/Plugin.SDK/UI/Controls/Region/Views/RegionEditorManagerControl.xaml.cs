@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
@@ -170,6 +172,26 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         }
 
         /// <summary>
+        /// 设置位置修正矩阵，透传给两个子编辑器。
+        /// 显示正向变换，编辑逆变换，存储不变（始终存参考坐标系）。
+        /// </summary>
+        public void SetPositionCorrectionMatrix(Execution.Results.AffineMatrix? matrix)
+        {
+            var matrixInfo = matrix != null
+                ? $"M11={matrix.M11:F4} M12={matrix.M12:F4} M21={matrix.M21:F4} M22={matrix.M22:F4} OffsetX={matrix.OffsetX:F2} OffsetY={matrix.OffsetY:F2}"
+                : "null";
+            PluginLogger.Info($"[RegionEditorManager] SetPositionCorrectionMatrix 传入 | Matrix={matrixInfo}", "RegionEditorManager");
+
+            // ★ 诊断：记录传入矩阵的引用和哈希值，追踪是否每个调用都是同一实例
+            var hash = matrix != null ? RuntimeHelpers.GetHashCode(matrix) : 0;
+
+            inspectionsEditor.SetPositionCorrectionMatrix(matrix);
+            masksEditor.SetPositionCorrectionMatrix(matrix);
+
+            PluginLogger.Info($"[RegionEditorManager] SetPositionCorrectionMatrix 完成 | MatrixHash=0x{hash:X8} | inspectorEditor矩阵已设置 | maskEditor矩阵已设置", "RegionEditorManager");
+        }
+
+        /// <summary>
         /// Clear main overlay, unsubscribe events, dispose renderer
         /// </summary>
         public void ClearMainOverlay()
@@ -326,79 +348,75 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 return;
             }
 
-            // 场景2 - 选择模式，根据 hit-test 路由（带选择模式过滤）
-            var inspectionHit = inspectionsEditor.HitTestRegion(pos);
-            var maskHit = masksEditor.HitTestRegion(pos);
-
-            // 判断每个编辑器是否处于选择模式（非绘制且当前工具为 Point）
-            bool inspectionSelectMode = !inspectionsEditor.ViewModel.IsDrawing
-                                        && inspectionsEditor.CurrentShapeTool == ShapeType.Point;
-            bool maskSelectMode = !masksEditor.ViewModel.IsDrawing
-                                  && masksEditor.CurrentShapeTool == ShapeType.Point;
-
-            // 仅在编辑器处于选择模式时，才响应对应类型的区域命中
-            if (inspectionSelectMode && inspectionHit != null)
-            {
-                inspectionsEditor.ProcessMouseDown(pos);
-                masksEditor.DeselectAll();
-                e.Handled = true;
-                RenderAll();
-                return;
-            }
-
-            if (maskSelectMode && maskHit != null)
-            {
-                masksEditor.ProcessMouseDown(pos);
-                inspectionsEditor.DeselectAll();
-                e.Handled = true;
-                RenderAll();
-                return;
-            }
-
-            // 如果处于选择模式但点了其他类型的区域，不路由该事件，
-            // 让后续的空白点击逻辑取消当前选择
-
-            // 场景3 - 空白点击：先检查是否有编辑器选中了绘制工具
-            bool eventConsumed = false;  // ★ 跟踪事件是否被消费
+            // 场景2 - 绘制模式优先：先检查是否有编辑器处于绘制模式
+            // 即使鼠标位于其他区域上方，也优先执行绘制操作
             if (inspectionsEditor.ViewModel.IsDrawing)
             {
-                eventConsumed = inspectionsEditor.ProcessMouseDown(pos);
-                // ★ Phase 4: 同步更新活跃编辑器引用并互斥
+                var consumed = inspectionsEditor.ProcessMouseDown(pos);
                 if (_activeEditor != inspectionsEditor)
                 {
                     _activeEditor = inspectionsEditor;
                     masksEditor.EnterIdleMode();
                 }
+                e.Handled = consumed;
+                RenderAll();
+                return;
             }
-            else if (masksEditor.ViewModel.IsDrawing)
+            if (masksEditor.ViewModel.IsDrawing)
             {
-                eventConsumed = masksEditor.ProcessMouseDown(pos);
-                // ★ Phase 4: 同步更新活跃编辑器引用并互斥
+                var consumed = masksEditor.ProcessMouseDown(pos);
                 if (_activeEditor != masksEditor)
                 {
                     _activeEditor = masksEditor;
                     inspectionsEditor.EnterIdleMode();
                 }
+                e.Handled = consumed;
+                RenderAll();
+                return;
             }
-            else
+
+            // 场景3 - 两个编辑器都在选择模式，执行 HitTest
+            // 屏蔽区域使用更大容差，使其在检测区域内部更容易被选中
+            var inspectionHit = inspectionsEditor.HitTestRegion(pos, tolerance: 4.0);
+            var maskHit = masksEditor.HitTestRegion(pos, tolerance: 8.0);
+
+            // 屏蔽区域视觉上层优先命中
+            if (maskHit != null)
             {
-                // ★ 先路由给有选中区域的编辑器（手柄可能超出区域范围，绕过场景2的HitTestRegion检查）
-                var editorWithSelection = GetEditorWithSelection();
-                if (editorWithSelection != null)
-                {
-                    eventConsumed = editorWithSelection.ProcessMouseDown(pos);
-                    if (_activeEditor != editorWithSelection)
-                        _activeEditor = editorWithSelection;
-                }
-                else
-                {
-                    // 都没有选中区域，双方同时取消选择
-                    inspectionsEditor.DeselectAll();
-                    masksEditor.DeselectAll();
-                    // eventConsumed 保持 false → 允许平移
-                }
+                masksEditor.ProcessMouseDown(pos);
+                inspectionsEditor.DeselectAll();
+                _activeEditor = masksEditor;
+                e.Handled = true;
+                RenderAll();
+                return;
             }
-            e.Handled = eventConsumed;  // ★ 仅在事件被消费时拦截，空白处允许平移
+
+            if (inspectionHit != null)
+            {
+                inspectionsEditor.ProcessMouseDown(pos);
+                masksEditor.DeselectAll();
+                _activeEditor = inspectionsEditor;
+                e.Handled = true;
+                RenderAll();
+                return;
+            }
+
+            // 场景4 - 有选中区域的编辑器（手柄可能超出区域范围，需要额外处理）
+            var editorWithSelection = GetEditorWithSelection();
+            if (editorWithSelection != null)
+            {
+                editorWithSelection.ProcessMouseDown(pos);
+                if (_activeEditor != editorWithSelection)
+                    _activeEditor = editorWithSelection;
+                e.Handled = true;
+                RenderAll();
+                return;
+            }
+
+            // 都没有选中区域，双方同时取消选择，允许平移
+            inspectionsEditor.DeselectAll();
+            masksEditor.DeselectAll();
+            e.Handled = false;
             RenderAll();
         }
 

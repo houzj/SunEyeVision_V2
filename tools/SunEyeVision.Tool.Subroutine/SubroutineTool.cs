@@ -208,9 +208,10 @@ namespace SunEyeVision.Tool.Subroutine
                     displayName = sourceProperty;
                 }
 
+                var bindingKey = input.BindingKey ?? input.Name;
                 var binding = new ParamSetting
                 {
-                    ParameterName = input.Name,
+                    ParameterName = bindingKey,
                     BindingType = BindingType.Binding,
                     SourceNodeId = sourceNodeId,
                     SourceProperty = sourceProperty,
@@ -219,7 +220,7 @@ namespace SunEyeVision.Tool.Subroutine
                 var resolveResult = resolver.Resolve(binding, nodeResults);
                 if (resolveResult.IsSuccess && resolveResult.Value != null)
                 {
-                    values[input.Name] = resolveResult.Value;
+                    values[bindingKey] = resolveResult.Value;
                     parameters.LogInfo($"  输入 '{input.Name}' <- {sourceNodeName}.{displayName} (来自 {(input.Source != null ? "Source对象" : "BindingSource字符串")})");
                 }
                 else

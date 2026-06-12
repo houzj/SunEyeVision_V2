@@ -130,9 +130,11 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
 
         private void AddInput()
         {
+            var initialName = $"in_{Inputs.Count + 1}";
             Inputs.Add(new SubroutineInputConfig
             {
-                Name = $"in_{Inputs.Count + 1}",
+                Name = initialName,
+                BindingKey = initialName,
                 TypeName = SelectedInputTypeName
             });
         }

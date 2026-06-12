@@ -238,9 +238,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             if (FilteredImageSources == null)
                 return;
 
-            // 使用名称匹配过滤图像类型的数据源（支持 Mat / IVisionImage / HImage 等）
-            // 与之前 XAML DataTrigger (PropertyType.Name=="Mat") 行为一致，比精确类型匹配更健壮
-            var imageTypeNames = new HashSet<string> { "Mat", "IVisionImage", "HImage" };
+            // 使用名称匹配过滤图像类型的数据源（系统统一使用 IVisionImage）
+            var imageTypeNames = new HashSet<string> { "IVisionImage" };
             var filtered = AvailableDataSources != null
                 ? AvailableDataSources.Where(ds => ds.PropertyType != null && imageTypeNames.Contains(ds.PropertyType.Name)).ToList()
                 : new List<AvailableDataSource>();

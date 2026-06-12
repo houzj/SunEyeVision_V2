@@ -8,6 +8,7 @@ namespace SunEyeVision.Tool.Subroutine.Models
     public class SubroutineInputConfig : ObservableObject
     {
         private string _name = string.Empty;
+        private string? _bindingKey;
         private string _typeName = "Image";
         private AvailableDataSource? _source;
         private string _bindingSource = string.Empty;
@@ -17,6 +18,16 @@ namespace SunEyeVision.Tool.Subroutine.Models
         {
             get => _name;
             set => SetProperty(ref _name, value);
+        }
+
+        /// <summary>
+        /// 绑定标识（创建时锁定并与 Name 初始值一致，之后只读）。
+        /// 将身份标识与用户可编辑的 Name 解耦 —— Name 变更是纯显示行为，不影响运行时绑定匹配。
+        /// </summary>
+        public string? BindingKey
+        {
+            get => _bindingKey;
+            init => _bindingKey = value;
         }
 
         public string TypeName

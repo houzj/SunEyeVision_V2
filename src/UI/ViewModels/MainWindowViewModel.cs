@@ -23,6 +23,7 @@ using SunEyeVision.Plugin.SDK.Metadata;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.UI;
 using SunEyeVision.UI.Adapters;
 using SunEyeVision.Workflow;
@@ -2073,74 +2074,61 @@ SplitterPosition = position;
 
         /// <summary>
         /// 连线建立后自动绑定 ImageSource — 确保所见即所得
+        /// 同时对目标节点和源节点尝试自动绑定。
+        /// 源节点绑定覆盖子工作流第一个节点（无上游连线）的场景。
         /// </summary>
-        /// <remarks>
-        /// 核心逻辑：如果目标节点的 ImageSource 为 null（从未手动选过），
-        /// 则自动设置为当前所有上游节点中第一个 Mat 类型的 AvailableDataSource。
-        /// 这样不打开调试窗口时执行路径和打开调试窗口时显示路径始终一致。
-        /// </remarks>
         private void AutoBindImageSourceOnConnectionAdded(WorkflowConnection connection)
         {
             if (WorkflowTabViewModel.SelectedTab == null) return;
 
             var targetNode = WorkflowTabViewModel.SelectedTab.WorkflowNodes
                 .FirstOrDefault(n => n.Id == connection.TargetNodeId) as WorkflowNodeBase;
-            if (targetNode?.Parameters == null) return;
+            if (targetNode != null)
+                TryAutoBindImageSource(targetNode);
 
-            // 检查参数是否有 ImageSource 属性
-            var imageSourceProp = targetNode.Parameters.GetType().GetProperty("ImageSource");
-            if (imageSourceProp == null) return;
-
-            // 如果 ImageSource 已有值（用户手动选过），不覆盖
-            var currentImageSource = imageSourceProp.GetValue(targetNode.Parameters) as AvailableDataSource;
-            if (currentImageSource != null) return;
-
-            // 查找第一个 Mat 类型的上游数据源
-            var firstMatSource = FindFirstMatDataSource(
-                connection.TargetNodeId,
-                WorkflowTabViewModel.SelectedTab.WorkflowConnections);
-
-            if (firstMatSource != null)
+            if (connection.SourceNodeId != connection.TargetNodeId)
             {
-                imageSourceProp.SetValue(targetNode.Parameters, firstMatSource);
-                AddLog($"自动绑定图像源: {targetNode.Name} → {firstMatSource.DropdownDisplayText}");
+                var sourceNode = WorkflowTabViewModel.SelectedTab.WorkflowNodes
+                    .FirstOrDefault(n => n.Id == connection.SourceNodeId) as WorkflowNodeBase;
+                if (sourceNode != null)
+                    TryAutoBindImageSource(sourceNode);
             }
         }
 
         /// <summary>
-        /// 连线删除后自动回退 ImageSource — 确保所见即所得
+        /// 连线删除后自动重设 ImageSource — 确保所见即所得
         /// </summary>
-        /// <remarks>
-        /// 核心逻辑：如果当前 ImageSource 指向被删的源节点，
-        /// 则自动回退到剩余上游的第一个 Mat 输出，无上游则清空。
-        /// </remarks>
         private void AutoBindImageSourceOnConnectionRemoved(
             string removedSourceNodeId,
             WorkflowNodeBase? targetNode)
         {
             if (targetNode?.Parameters == null) return;
 
-            // 检查参数是否有 ImageSource 属性
             var imageSourceProp = targetNode.Parameters.GetType().GetProperty("ImageSource");
             if (imageSourceProp == null) return;
 
-            // 如果当前 ImageSource 不是指向被删的源节点，不需要处理
             var currentImageSource = imageSourceProp.GetValue(targetNode.Parameters) as AvailableDataSource;
             if (currentImageSource?.SourceNodeId != removedSourceNodeId) return;
 
-            // 查找剩余上游的第一个 Mat 输出
-            if (WorkflowTabViewModel.SelectedTab == null) return;
-
-            var firstMatSource = FindFirstMatDataSource(
-                targetNode.Id,
-                WorkflowTabViewModel.SelectedTab.WorkflowConnections);
-
-            // 有则回退，无则清空
-            imageSourceProp.SetValue(targetNode.Parameters, firstMatSource);
-
-            if (firstMatSource != null)
+            // 从 DSQS 获取剩余可用图像源，取第一个
+            // 没有则清空（null），不兜底回退
+            AvailableDataSource? firstImageSource = null;
+            if (targetNode is UI.Models.WorkflowNode uiNode)
             {
-                AddLog($"图像源自动回退: {targetNode.Name} → {firstMatSource.DropdownDisplayText}");
+                var dataProvider = GetDataProviderForNode(uiNode);
+                if (dataProvider is IDataSourceQueryService queryService)
+                {
+                    firstImageSource = queryService.GetAvailableDataSources(targetNode.Id)
+                        .FirstOrDefault(ds => ds.PropertyType != null
+                            && typeof(IVisionImage).IsAssignableFrom(ds.PropertyType));
+                }
+            }
+
+            imageSourceProp.SetValue(targetNode.Parameters, firstImageSource);
+
+            if (firstImageSource != null)
+            {
+                AddLog($"图像源已更新: {targetNode.Name} → {firstImageSource.DropdownDisplayText}");
             }
             else
             {
@@ -2149,68 +2137,37 @@ SplitterPosition = position;
         }
 
         /// <summary>
-        /// 沿连线链向上游回溯查找第一个 Mat 类型的 AvailableDataSource
+        /// 从 DataSourceQueryService 取可用数据源列表中的第一个 IVisionImage 源，
+        /// 统一设置到节点参数的 ImageSource 属性。
+        /// 单一路径，无回退 — DataSourceQueryService 返回所有可用数据源
+        /// （包含真实上游节点输出 + 子程序合成端口 __SubroutineInputs__）。
         /// </summary>
-        /// <remarks>
-        /// 与 ImageSourceSelector 的下拉列表过滤逻辑一致：
-        /// 只返回 PropertyType.Name == "Mat" 或 "IVisionImage" 或 "HImage" 的数据源。
-        /// 沿连线链递归向上游查找，绕过无图像输出的中间节点（如空子程序）。
-        /// </remarks>
-        private AvailableDataSource? FindFirstMatDataSource(
-            string targetNodeId,
-            ObservableCollection<WorkflowConnection> connections)
+        private void TryAutoBindImageSource(WorkflowNodeBase node)
         {
-            if (WorkflowTabViewModel.SelectedTab == null) return null;
+            if (node?.Parameters == null) return;
 
-            var metadataProvider = new PropertyMetadataProviderAdapter();
-            var nodes = WorkflowTabViewModel.SelectedTab.WorkflowNodes;
-            var imageTypeNames = new HashSet<string> { "Mat", "IVisionImage", "HImage" };
+            var imageSourceProp = node.Parameters.GetType().GetProperty("ImageSource");
+            if (imageSourceProp == null) return;
 
-            // 沿连线链向上游深度优先回溯，逐级检查节点是否有图像类型输出
-            var visited = new HashSet<string> { targetNodeId };
-            var stack = new Stack<string>();
-            stack.Push(targetNodeId);
+            // 已有绑定（用户手动选过），不覆盖
+            if (imageSourceProp.GetValue(node.Parameters) is AvailableDataSource current
+                && !string.IsNullOrEmpty(current.SourceNodeId))
+                return;
 
-            while (stack.Count > 0)
+            if (node is not UI.Models.WorkflowNode uiNode) return;
+
+            var dataProvider = GetDataProviderForNode(uiNode);
+            if (dataProvider is not IDataSourceQueryService queryService) return;
+
+            var firstImageSource = queryService.GetAvailableDataSources(node.Id)
+                .FirstOrDefault(ds => ds.PropertyType != null
+                    && typeof(IVisionImage).IsAssignableFrom(ds.PropertyType));
+
+            if (firstImageSource != null)
             {
-                var currentId = stack.Pop();
-                var parentConnections = connections.Where(c => c.TargetNodeId == currentId);
-
-                foreach (var conn in parentConnections)
-                {
-                    if (!visited.Add(conn.SourceNodeId))
-                        continue;  // 防循环
-
-                    var sourceNode = nodes.FirstOrDefault(n => n.Id == conn.SourceNodeId) as WorkflowNodeBase;
-                    if (sourceNode == null) continue;
-
-                    // 检查当前上游节点是否有图像类型输出
-                    var metadataList = metadataProvider.GetAllPropertyMetadata(sourceNode.ToolType);
-                    if (metadataList != null)
-                    {
-                        var matMetadata = metadataList.FirstOrDefault(m =>
-                            m.PropertyType != null && imageTypeNames.Contains(m.PropertyType.Name));
-
-                        if (matMetadata != null)
-                        {
-                            return new AvailableDataSource
-                            {
-                                SourceNodeId = sourceNode.Id,
-                                SourceNodeName = sourceNode.Name,
-                                SourceNodeType = sourceNode.ToolType,
-                                PropertyName = matMetadata.PropertyName,
-                                DisplayName = matMetadata.DisplayName,
-                                PropertyType = matMetadata.PropertyType,
-                            };
-                        }
-                    }
-
-                    // 当前节点无图像输出 → 继续向上游回溯
-                    stack.Push(conn.SourceNodeId);
-                }
+                imageSourceProp.SetValue(node.Parameters, firstImageSource);
+                AddLog($"自动绑定图像源: {node.Name} → {firstImageSource.DropdownDisplayText}");
             }
-
-            return null;
         }
 
         /// <summary>
@@ -2590,7 +2547,7 @@ SplitterPosition = position;
 
         /// <summary>
         /// 更新图像显示控件的数据源（当前节点 + 所有上游节点）
-        /// 统一使用 DataSourceQueryService.GetMatDisplaySources() 获取数据源，
+        /// 统一使用 DataSourceQueryService.GetImageDisplaySources() 获取数据源，
         /// 与 ImageSourceSelector 共享相同的元数据源
         /// </summary>
         private void UpdateDisplayImageSources(Models.WorkflowNode? selectedNode)
@@ -2612,12 +2569,12 @@ SplitterPosition = position;
                 return;
             }
 
-            // 统一从 DataSourceQueryService 获取 Mat 数据源
+            // 统一从 DataSourceQueryService 获取图像数据源
             // （走 IPropertyMetadataProvider，与 ImageSourceSelector 同源）
             var provider = GetDataProviderForNode(selectedNode);
             if (provider is DataSourceQueryService queryService)
             {
-                var sources = queryService.GetMatDisplaySources(selectedNode.Id);
+                var sources = queryService.GetImageDisplaySources(selectedNode.Id);
                 foreach (var ds in sources)
                     DisplayImageSources.Add(ds);
                 LogInfo($"图像源|数据源列表 (Count={DisplayImageSources.Count}): {string.Join(" | ", DisplayImageSources.Select((s, i) => $"[{i}]{s.SourceNodeName}.{s.DisplayName}"))}", "ImageSourceSelector");
@@ -2982,11 +2939,12 @@ SplitterPosition = position;
                                     {
                                         if (string.IsNullOrEmpty(input.Name)) continue;
                                         var paramType = input.ParamType ?? typeof(object);
+                                        var bindingKey = input.BindingKey ?? input.Name;
                                         sources.Add(new AvailableDataSource
                                         {
                                             SourceNodeId = "__SubroutineInputs__",
                                             SourceNodeName = nodeName,
-                                            PropertyName = input.Name,
+                                            PropertyName = bindingKey,
                                             DisplayName = input.Name,
                                             PropertyType = paramType,
                                             Description = $"子程序输入: {input.Name}",
@@ -4214,6 +4172,10 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
 
             if (!hasInputConnection)
             {
+                // ★ 子程序内部：不隐藏预览器，保持当前父工作流的图像预览
+                if (WorkflowTabViewModel?.SelectedTab?.IsInSubroutine == true)
+                    return;
+
                 // 没有输入连接，隐藏预览器
                 if (ShowImagePreview || ActiveInputSource != null || _currentDisplayNodeId != null)
                 {
@@ -4248,6 +4210,10 @@ kvp.Value.UpdateNodeOutput(node.Id, "OutputValue", outputValue);
             }
             else
             {
+                // ★ 子程序内部：不隐藏预览器，保持当前父工作流的图像预览
+                if (WorkflowTabViewModel?.SelectedTab?.IsInSubroutine == true)
+                    return;
+
                 // 找不到上游图像载入节点，隐藏预览器（没有数据源可绑定）
                 if (ShowImagePreview || ActiveInputSource != null || _currentDisplayNodeId != null)
                 {

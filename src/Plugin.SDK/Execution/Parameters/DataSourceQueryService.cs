@@ -322,12 +322,12 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// </summary>
         /// <param name="currentNodeId">当前选中的节点ID</param>
         /// <returns>按距离排序的图像数据源列表</returns>
-        public List<AvailableDataSource> GetMatDisplaySources(string currentNodeId)
+        public List<AvailableDataSource> GetImageDisplaySources(string currentNodeId)
         {
             var result = new List<AvailableDataSource>();
 
-            // 图像类型名集合（兼容 Mat / IVisionImage / HImage 等）
-            var imageTypeNames = new HashSet<string> { "Mat", "IVisionImage", "HImage" };
+            // 图像类型名集合（系统统一使用 IVisionImage）
+            var imageTypeNames = new HashSet<string> { "IVisionImage" };
 
             // 步骤 1: 当前节点自身的图像输出 (Distance=0)
             var nodeType = _nodeInfoProvider?.GetNodeType(currentNodeId);
@@ -386,10 +386,12 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 }
             }
 
-            // ★ 合并额外数据源中的图像类型（子程序输入端口等）
-            var imageTypeNames2 = new HashSet<string> { "Mat", "IVisionImage", "HImage" };
+            // ★ 合并额外数据源中的图像类型（仅保留节点输出，排除子程序输入端口）
+            // 说明：子程序输入端口（SourceNodeId == "__SubroutineInputs__"）供 ImageSourceSelector 使用，
+            // 不应出现在图像显示器的 ComboBox 中。
             foreach (var extra in GetExtraDataSources().Where(ds =>
-                ds.PropertyType != null && imageTypeNames2.Contains(ds.PropertyType.Name)))
+                ds.PropertyType != null && imageTypeNames.Contains(ds.PropertyType.Name)
+                && ds.SourceNodeId != "__SubroutineInputs__"))
             {
                 if (!result.Any(r => r.SourceNodeId == extra.SourceNodeId && r.PropertyName == extra.PropertyName))
                 {

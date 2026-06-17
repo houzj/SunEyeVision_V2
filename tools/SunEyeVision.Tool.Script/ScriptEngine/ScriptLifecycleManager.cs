@@ -43,13 +43,13 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
         /// 执行指定脚本代码
         /// </summary>
         /// <param name="code">脚本代码</param>
-        /// <param name="assemblyReferences">DLL 引用路径列表</param>
+        /// <param name="assemblyRefDir">程序集引用目录路径（目录下所有 *.dll 均为引用）</param>
         /// <param name="getGlobalValue">获取全局变量委托</param>
         /// <param name="setGlobalValue">设置全局变量委托</param>
         /// <returns>编译和执行错误信息列表</returns>
         public List<string> Execute(
             string code,
-            List<string>? assemblyReferences,
+            string? assemblyRefDir,
             Func<string, object?>? getGlobalValue,
             Action<string, object?>? setGlobalValue)
         {
@@ -74,7 +74,7 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
 
             // 1. 编译
             var compileSw = Stopwatch.StartNew();
-            var compileResult = _compiler.Compile(code, assemblyName, assemblyReferences);
+            var compileResult = _compiler.Compile(code, assemblyName, assemblyRefDir);
             compileSw.Stop();
             _compileTimeMs = compileSw.ElapsedMilliseconds;
 

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
@@ -11,30 +10,10 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
 {
     /// <summary>
     /// 脚本编译器 — 使用 Roslyn 编译 C# 代码为程序集。
-    /// 自动注入基础 using 和 DLL 引用，支持系统程序集名称装载和自定义 DLL 路径装载。
+    /// 程序集引用全部从指定目录下的 *.dll 文件扫描获取。
     /// </summary>
     internal sealed class ScriptCompiler
     {
-        private static readonly string[] DefaultUsings =
-        [
-            "System",
-            "System.Collections.Generic",
-            "System.Linq",
-            "System.Text",
-            "System.Threading.Tasks",
-            "System.Drawing",
-            "System.IO",
-            "System.Net.Http",
-            "System.Xml",
-            "System.Xml.Linq",
-            "System.Data",
-            "System.Numerics",
-            "System.Diagnostics",
-            "System.Runtime.InteropServices",
-            "System.Collections.Concurrent",
-            "HalconDotNet",
-            "SunEyeVision.Tool.Script.ScriptEngine"
-        ];
 
         /// <summary>
         /// 编译结果
@@ -54,12 +33,12 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
         /// </summary>
         /// <param name="code">C# 代码</param>
         /// <param name="assemblyName">程序集名称（每次不同，避免 ALC 缓存冲突）</param>
-        /// <param name="additionalAssemblies">额外引用的 DLL 路径列表</param>
+        /// <param name="assemblyRefDir">程序集引用目录路径，目录下所有 *.dll 均为引用</param>
         /// <returns>编译结果</returns>
         public CompileResult Compile(
             string code,
             string assemblyName,
-            List<string>? additionalAssemblies = null)
+            string? assemblyRefDir = null)
         {
             var result = new CompileResult();
 
@@ -69,65 +48,31 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                 return result;
             }
 
-            // 1. 预置 using 语句（自动注入基础命名空间，用户无需手动添加）
-            var usingBlock = string.Join(Environment.NewLine,
-                DefaultUsings.Select(u => $"using {u};"));
-            result.UsingLineOffset = DefaultUsings.Length + 1; // +1 空行
-            var fullCode = usingBlock + Environment.NewLine + Environment.NewLine + code;
+            // 1. 不再自动注入 using — 补全和编译由脚本中的显式 using 语句驱动
+            result.UsingLineOffset = 0;
+            var fullCode = code;
 
             // 2. 构建语法树
             var sourceText = SourceText.From(fullCode);
             var syntaxTree = SyntaxFactory.ParseSyntaxTree(sourceText,
                 new CSharpParseOptions(LanguageVersion.Latest));
 
-            // 3. 收集引用
-            var referencedAssemblies = new HashSet<Assembly>();
-
-            foreach (var assembly in GetDefaultAssemblies())
-                referencedAssemblies.Add(assembly);
-
-            // 用户指定的 DLL 引用（双模式：路径装载 / 名称装载）
-            if (additionalAssemblies != null)
+            // 3. 扫描引用目录下所有 DLL 作为元数据引用
+            var metadataReferences = new List<MetadataReference>();
+            try
             {
-                foreach (var reference in additionalAssemblies)
+                if (!string.IsNullOrEmpty(assemblyRefDir) && Directory.Exists(assemblyRefDir))
                 {
-                    if (string.IsNullOrWhiteSpace(reference))
-                        continue;
-
-                    if (reference.Contains('\\') || reference.Contains('/') || reference.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+                    foreach (var dll in Directory.EnumerateFiles(assemblyRefDir, "*.dll"))
                     {
-                        // 模式A: 文件路径 → Assembly.LoadFrom(path)
-                        if (File.Exists(reference))
-                        {
-                            try
-                            {
-                                var asm = Assembly.LoadFrom(reference);
-                                referencedAssemblies.Add(asm);
-                            }
-                            catch (Exception ex)
-                            {
-                                result.Diagnostics.Add($"加载程序集引用失败: {reference} — {ex.Message}");
-                            }
-                        }
-                        else
-                        {
-                            result.Diagnostics.Add($"程序集引用文件不存在: {reference}");
-                        }
-                    }
-                    else
-                    {
-                        // 模式B: 程序集名称 → Assembly.Load(new AssemblyName(name))
-                        try
-                        {
-                            var asm = Assembly.Load(new AssemblyName(reference));
-                            referencedAssemblies.Add(asm);
-                        }
-                        catch (Exception ex)
-                        {
-                            result.Diagnostics.Add($"加载程序集引用失败: {reference} — {ex.Message}");
-                        }
+                        if (File.Exists(dll))
+                            metadataReferences.Add(MetadataReference.CreateFromFile(dll));
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                result.Diagnostics.Add($"扫描引用目录失败: {assemblyRefDir} - {ex.Message}");
             }
 
             // 4. 创建编译
@@ -139,10 +84,10 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             var compilation = CSharpCompilation.Create(
                 assemblyName,
                 [syntaxTree],
-                referencedAssemblies.Select(a => MetadataReference.CreateFromFile(a.Location)),
+                metadataReferences,
                 options);
 
-            // 4. 编译并输出
+            // 5. 编译并输出
             using var assemblyStream = new MemoryStream();
             using var symbolStream = new MemoryStream();
 
@@ -215,93 +160,5 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             return string.Empty;
         }
 
-        /// <summary>
-        /// 获取默认引用的基础程序集（系统程序集按名称装载，自定义程序集扫描路径）
-        /// </summary>
-        internal static List<Assembly> GetDefaultAssemblies()
-        {
-            var assemblies = new List<Assembly>
-            {
-                typeof(object).Assembly,                    // System.Private.CoreLib
-                typeof(System.Linq.Enumerable).Assembly,   // System.Linq
-                typeof(System.Text.StringBuilder).Assembly, // System.Text
-                typeof(System.Collections.Generic.List<>).Assembly, // System.Collections
-                typeof(Script).Assembly                      // 脚本引擎所在程序集
-            };
-
-            // 按名称装载的常用系统程序集
-            var systemAssemblyNames = new[]
-            {
-                "System.Runtime",
-                "System.Console",
-                "System.Threading",
-                "System.Collections.Concurrent",
-                "System.IO.Compression",
-                "System.Net.Http",
-                "System.Xml.ReaderWriter",
-                "System.Xml.Linq",
-                "System.Data.Common",
-                "System.Drawing.Common",
-                "System.Numerics",
-                "System.Runtime.Serialization.Xml",
-                "Microsoft.CSharp"
-            };
-
-            foreach (var name in systemAssemblyNames)
-            {
-                try
-                {
-                    var asm = Assembly.Load(new AssemblyName(name));
-                    if (asm != null)
-                        assemblies.Add(asm);
-                }
-                catch
-                {
-                    // 系统程序集不可用时不报错（目标框架裁剪场景）
-                }
-            }
-
-            // 尝试装载 HalconDotNet（从已知相对路径查找）
-            var halconAsm = TryLoadHalconAssembly();
-            if (halconAsm != null)
-                assemblies.Add(halconAsm);
-
-            return assemblies;
-        }
-
-        /// <summary>
-        /// 尝试从已知路径加载 HalconDotNet 程序集
-        /// </summary>
-        private static Assembly? TryLoadHalconAssembly()
-        {
-            // 1. 按名称尝试（已在加载上下文中的情况）
-            try { return Assembly.Load(new AssemblyName("halcondotnetxl")); } catch { }
-            try { return Assembly.Load(new AssemblyName("HalconDotNet")); } catch { }
-
-            // 2. 相对路径扫描（从当前程序集目录向上查找）
-            var baseDir = Path.GetDirectoryName(typeof(ScriptCompiler).Assembly.Location);
-            if (baseDir == null) return null;
-
-            var searchPaths = new[]
-            {
-                baseDir,
-                Path.Combine(baseDir, "..", "..", "..", "..", "libs", "halcon", "net"),
-                Path.Combine(baseDir, "..", "..", "..", "libs", "halcon", "net"),
-                Path.Combine(baseDir, "..", "..", "libs", "halcon", "net"),
-                Path.Combine(baseDir, "..", "libs", "halcon", "net")
-            };
-
-            foreach (var dir in searchPaths)
-            {
-                var resolved = Path.GetFullPath(dir);
-                var dllPath = Path.Combine(resolved, "halcondotnetxl.dll");
-                if (File.Exists(dllPath))
-                {
-                    try { return Assembly.LoadFrom(dllPath); } catch { }
-                }
-            }
-
-            return null;
-        }
     }
 }

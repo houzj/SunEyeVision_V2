@@ -61,13 +61,11 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
                 return;
             }
 
-            // 只扫描 plugins 目录根层，排除 runtimes 等原生依赖目录
+            // 只扫描 plugins 目录根层，不递归子目录（防止 ScriptRefs 等数据目录被误扫）
             var dllFiles = Directory.GetFiles(pluginDirectory, "*.dll", SearchOption.TopDirectoryOnly)
                 .Concat(
                     Directory.GetDirectories(pluginDirectory)
-                        .Where(dir => !Path.GetFileName(dir).Equals("runtimes", StringComparison.OrdinalIgnoreCase)
-                                   && !Path.GetFileName(dir).Equals("native", StringComparison.OrdinalIgnoreCase))
-                        .SelectMany(subDir => Directory.GetFiles(subDir, "*.dll", SearchOption.AllDirectories))
+                        .SelectMany(subDir => Directory.GetFiles(subDir, "*.dll", SearchOption.TopDirectoryOnly))
                 )
                 .ToArray();
             _logger.LogInfo($"找到 {dllFiles.Length} 个DLL文件");

@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0"?>
-<SyntaxDefinition name="C# Dark" extensions=".cs" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
+<SyntaxDefinition name="C#" extensions=".cs" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
+  <Color name="Default" foreground="#D4D4D4" />
   <Color name="PlainText" foreground="#D4D4D4" />
   <Color name="Comment" foreground="#6A9955" />
   <Color name="CommentLine" foreground="#6A9955" />
@@ -10,6 +11,7 @@
   <Color name="Type" foreground="#4EC9B0" />
   <Color name="Number" foreground="#B5CEA8" />
   <Color name="Preprocessor" foreground="#9B9B9B" />
+  <Color name="MethodCall" foreground="#DCDCAA" />
 
   <!-- Main rule set -->
   <RuleSet>
@@ -20,16 +22,16 @@
       <End>\*/</End>
     </Span>
 
+    <!-- XML Doc comment /// (必须在 // 之前) -->
+    <Span color="CommentLine">
+      <Begin>///(?!/)</Begin>
+      <!-- 无 End，自动行尾；(?!/) 防止 //// 误匹配 -->
+    </Span>
+
     <!-- Single-line comment // ... -->
     <Span color="CommentLine">
       <Begin>//</Begin>
-      <End>$</End>
-    </Span>
-
-    <!-- XML Doc comment /// -->
-    <Span color="CommentLine">
-      <Begin>///</Begin>
-      <End>$</End>
+      <!-- 无 End，自动行尾 -->
     </Span>
 
     <!-- Verbatim string @"..." -->
@@ -71,17 +73,17 @@
     <!-- Preprocessor directives -->
     <Span color="Preprocessor" ruleSet="PreprocessorContent">
       <Begin>^#(if|else|elif|endif|define|undef|region|endregion|error|warning|line|pragma|nullable|nullable restore|nullable disable)\b</Begin>
-      <End>$</End>
+      <!-- 无 End，自动行尾 -->
     </Span>
 
     <Span color="Preprocessor">
       <Begin>^#\s*region\b</Begin>
-      <End>$</End>
+      <!-- 无 End，自动行尾 -->
     </Span>
 
     <Span color="Preprocessor">
       <Begin>^#\s*endregion\b</Begin>
-      <End>$</End>
+      <!-- 无 End，自动行尾 -->
     </Span>
 
     <!-- C# keywords -->
@@ -212,9 +214,14 @@
       \b\d[\d_]*\b
     </Rule>
 
-    <!-- Type names (PascalCase words) - heuristic -->
+    <!-- Type names (PascalCase heuristic) -->
     <Rule color="Type">
-      \b[A-Z][a-zA-Z0-9]*(?=&lt;|\s*[\[\(]|\s+[A-Za-z]|$)
+      \b[A-Z][a-zA-Z0-9]*(?=&lt;|\s*[\[\(\)]|\s+[A-Za-z]|$)
+    </Rule>
+
+    <!-- Method call: lowercase/camelCase identifier followed by ( -->
+    <Rule color="MethodCall">
+      \b[a-z_][\w_]*(?=\s*\()
     </Rule>
 
   </RuleSet>

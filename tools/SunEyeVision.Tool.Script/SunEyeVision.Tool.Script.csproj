@@ -14,7 +14,13 @@
     <OutDir Condition="'$(Configuration)'=='Release'">$(MSBuildProjectDirectory)\..\..\Release\SunEyeVision_v1.0.0\SunEyeVision\plugins\Script\</OutDir>
   </PropertyGroup>
   <ItemGroup>
-    <!-- C# 高亮改用内置定义深拷贝改色，不再需要自定义 xshd -->
+    <!-- 将 xshd 语法高亮文件复制到输出目录的 Resources 子文件夹 -->
+    <None Include="Resources\CSharpLight.xshd">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Resources\CSharpDark.xshd">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AvalonEdit" Version="6.3.1.120" />

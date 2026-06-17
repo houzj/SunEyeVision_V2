@@ -51,7 +51,7 @@ namespace SunEyeVision.Tool.Script
 
                 var errors = lifecycleManager.Execute(
                     parameters.ScriptCode,
-                    parameters.AssemblyReferences,
+                    parameters.AssemblyReferenceFullPath,
                     getGlobal,
                     setGlobal);
 

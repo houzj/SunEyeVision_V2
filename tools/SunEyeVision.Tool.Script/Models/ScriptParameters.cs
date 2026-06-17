@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Tool.Script.Models;
 
 namespace SunEyeVision.Tool.Script.Models
 {
     /// <summary>
-    /// 脚本工具参数 — 包含脚本代码、DLL 引用列表、输入/输出变量定义
+    /// 脚本工具参数 — 包含脚本代码、DLL 引用目录、输入/输出变量定义
     /// </summary>
     [JsonDerivedType(typeof(ScriptParameters), "Script")]
     public class ScriptParameters : ToolParameters
@@ -20,14 +20,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
-using System.Drawing;
 using System.Diagnostics;
-using HalconDotNet;
 
 /************************************
  * 脚本工具 - 用户自定义脚本
  * 继承 Script，实现 Init/Process/Release 生命周期
- * 自动注入 using：System.*, HalconDotNet, System.Drawing 等
+ * 可用引用：System.Runtime（BCL 核心类型）、
+ *   SunEyeVision.Tool.Script（Script 基类）、
+ *   SunEyeVision.Plugin.SDK（全局变量和日志 API）
+ * 需要额外程序集请通过 [程序集引用管理] 对话框添加
  ************************************/
 public class UserScript : Script
 {
@@ -59,22 +60,8 @@ public class UserScript : Script
 }
 ";
 
-        /// <summary>
-        /// 新建工具时预填充的默认程序集引用列表（按名称装载）
-        /// </summary>
-        private static readonly List<string> DefaultAssemblyReferences =
-        [
-            "System.Drawing",
-            "System.Data",
-            "System.Xml",
-            "System.Xml.Linq",
-            "System.Net.Http",
-            "System.Numerics",
-            "System.IO.Compression"
-        ];
-
         private string _scriptCode = DefaultScriptCode;
-        private List<string> _assemblyReferences = new(DefaultAssemblyReferences);
+        private string _assemblyReferenceDir = "ScriptRefs";
         private List<ScriptParamItem> _inputVariables = [];
         private List<ScriptParamItem> _outputVariables = [];
 
@@ -89,13 +76,26 @@ public class UserScript : Script
         }
 
         /// <summary>
-        /// 引用的 DLL 程序集路径列表
+        /// 程序集引用目录（相对路径，相对于插件输出目录）。目录下的所有 *.dll 均为程序集引用。
         /// </summary>
         [JsonPropertyOrder(2)]
-        public List<string> AssemblyReferences
+        public string AssemblyReferenceDir
         {
-            get => _assemblyReferences;
-            set => SetProperty(ref _assemblyReferences, value, "程序集引用");
+            get => _assemblyReferenceDir;
+            set => SetProperty(ref _assemblyReferenceDir, value, "程序集引用目录");
+        }
+
+        /// <summary>
+        /// 获取引用目录的完整路径（基于应用程序根目录解析，不依赖插件 DLL 路径）
+        /// </summary>
+        [JsonIgnore]
+        public string AssemblyReferenceFullPath
+        {
+            get
+            {
+                var baseDir = AppDomain.CurrentDomain.BaseDirectory;
+                return Path.GetFullPath(Path.Combine(baseDir, "data", _assemblyReferenceDir));
+            }
         }
 
         /// <summary>
@@ -120,7 +120,9 @@ public class UserScript : Script
 
         public new string GetParameterSummary()
         {
-            return $"脚本行数: {ScriptCode.Split('\n').Length}, 引用: {AssemblyReferences.Count}, 输入: {InputVariables.Count}, 输出: {OutputVariables.Count}";
+            var dir = AssemblyReferenceFullPath;
+            var count = Directory.Exists(dir) ? Directory.GetFiles(dir, "*.dll").Length : 0;
+            return $"脚本行数: {ScriptCode.Split('\n').Length}, 引用DLL: {count}, 输入: {InputVariables.Count}, 输出: {OutputVariables.Count}";
         }
     }
 }

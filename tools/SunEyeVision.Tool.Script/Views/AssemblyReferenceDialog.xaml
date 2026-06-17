@@ -64,23 +64,14 @@
                 </Grid.RowDefinitions>
 
                 <!-- 工具栏 -->
-                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
                     <Button Content="+ 添加DLL..." Click="OnAddButtonClick"
                             Background="#FF007ACC" Foreground="White"
-                            BorderThickness="0" Padding="10,4" FontSize="12"
-                            Margin="0,0,6,0" Cursor="Hand"/>
-                    <Button Content="▼ 常用程序集" x:Name="CommonAssembliesButton"
-                            Click="OnCommonAssembliesClick"
-                            Background="#FF3C3C3C" Foreground="#FFDCDCDC"
-                            BorderThickness="0" Padding="10,4" FontSize="12"
-                            Margin="0,0,6,0" Cursor="Hand"/>
-                    <Button Content="− 删除选中" Click="OnDeleteButtonClick"
-                            Background="#FF3C3C3C" Foreground="#FFDCDCDC"
                             BorderThickness="0" Padding="10,4" FontSize="12"
                             Cursor="Hand"/>
                 </StackPanel>
 
-                <!-- 引用列表 -->
+                <!-- 引用列表（每条自带 ✕ 删除按钮） -->
                 <ListBox Grid.Row="1" x:Name="ReferenceListBox"
                          Background="#FF1E1E1E" Foreground="#FFDCDCDC"
                          BorderBrush="#FF3C3C3C" BorderThickness="1"
@@ -88,8 +79,31 @@
                          ItemsSource="{Binding}">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding Converter={StaticResource AssemblyDisplayConverter}}"
-                                       TextWrapping="Wrap" Margin="4,2"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding Converter={StaticResource AssemblyDisplayConverter}}"
+                                           TextWrapping="Wrap" Margin="4,2" VerticalAlignment="Center"/>
+                                <Button Grid.Column="1" Content="✕" Width="20" Height="20"
+                                        Background="Transparent" Foreground="#FF999999"
+                                        BorderThickness="0" FontSize="10" Cursor="Hand"
+                                        Click="OnItemDeleteButtonClick"
+                                        ToolTip="移除此引用">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Background" Value="Transparent"/>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#E81123"/>
+                                                    <Setter Property="Foreground" Value="White"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+                            </Grid>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>

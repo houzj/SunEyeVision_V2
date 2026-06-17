@@ -1,0 +1,255 @@
+﻿<?xml version="1.0"?>
+<SyntaxDefinition name="C#" extensions=".cs" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
+  <Color name="Default" foreground="#000000" />
+  <Color name="PlainText" foreground="#000000" />
+  <Color name="Comment" foreground="#008000" />
+  <Color name="CommentLine" foreground="#008000" />
+  <Color name="String" foreground="#A31515" />
+  <Color name="VerbatimString" foreground="#A31515" />
+  <Color name="Char" foreground="#A31515" />
+  <Color name="Keyword" foreground="#0000FF" fontWeight="bold" />
+  <Color name="Type" foreground="#2B91AF" />
+  <Color name="Number" foreground="#098658" />
+  <Color name="Preprocessor" foreground="#888888" />
+  <Color name="MethodCall" foreground="#74569F" />
+
+  <!-- Main rule set -->
+  <RuleSet>
+
+    <!-- Multi-line comment /* ... */ -->
+    <Span color="Comment" ruleSet="CommentContent" multiline="true">
+      <Begin>/*</Begin>
+      <End>\*/</End>
+    </Span>
+
+    <!-- XML Doc comment /// (必须在 // 之前) -->
+    <Span color="CommentLine">
+      <Begin>///(?!/)</Begin>
+      <!-- 无 End，自动行尾；(?!/) 防止 //// 误匹配 -->
+    </Span>
+
+    <!-- Single-line comment // ... -->
+    <Span color="CommentLine">
+      <Begin>//</Begin>
+      <!-- 无 End，自动行尾 -->
+    </Span>
+
+    <!-- Verbatim string @"..." -->
+    <Span color="VerbatimString" multiline="true">
+      <Begin>@"</Begin>
+      <End>"</End>
+      <RuleSet>
+        <Span color="VerbatimString">
+          <Begin>""</Begin>
+          <End></End>
+        </Span>
+      </RuleSet>
+    </Span>
+
+    <!-- Regular string "..." -->
+    <Span color="String">
+      <Begin>"</Begin>
+      <End>"</End>
+      <RuleSet>
+        <Span color="String">
+          <Begin>\\</Begin>
+          <End>.</End>
+        </Span>
+      </RuleSet>
+    </Span>
+
+    <!-- Char literal '...' -->
+    <Span color="Char">
+      <Begin>'</Begin>
+      <End>'</End>
+      <RuleSet>
+        <Span color="Char">
+          <Begin>\\</Begin>
+          <End>.</End>
+        </Span>
+      </RuleSet>
+    </Span>
+
+    <!-- Preprocessor directives -->
+    <Span color="Preprocessor" ruleSet="PreprocessorContent">
+      <Begin>^#(if|else|elif|endif|define|undef|region|endregion|error|warning|line|pragma|nullable|nullable restore|nullable disable)\b</Begin>
+      <!-- 无 End，自动行尾 -->
+    </Span>
+
+    <Span color="Preprocessor">
+      <Begin>^#\s*region\b</Begin>
+      <!-- 无 End，自动行尾 -->
+    </Span>
+
+    <Span color="Preprocessor">
+      <Begin>^#\s*endregion\b</Begin>
+      <!-- 无 End，自动行尾 -->
+    </Span>
+
+    <!-- C# keywords -->
+    <Keywords color="Keyword">
+      <Word>abstract</Word>
+      <Word>as</Word>
+      <Word>base</Word>
+      <Word>bool</Word>
+      <Word>break</Word>
+      <Word>byte</Word>
+      <Word>case</Word>
+      <Word>catch</Word>
+      <Word>char</Word>
+      <Word>checked</Word>
+      <Word>class</Word>
+      <Word>const</Word>
+      <Word>continue</Word>
+      <Word>decimal</Word>
+      <Word>default</Word>
+      <Word>delegate</Word>
+      <Word>do</Word>
+      <Word>double</Word>
+      <Word>else</Word>
+      <Word>enum</Word>
+      <Word>event</Word>
+      <Word>explicit</Word>
+      <Word>extern</Word>
+      <Word>false</Word>
+      <Word>finally</Word>
+      <Word>fixed</Word>
+      <Word>float</Word>
+      <Word>for</Word>
+      <Word>foreach</Word>
+      <Word>goto</Word>
+      <Word>if</Word>
+      <Word>implicit</Word>
+      <Word>in</Word>
+      <Word>int</Word>
+      <Word>interface</Word>
+      <Word>internal</Word>
+      <Word>is</Word>
+      <Word>lock</Word>
+      <Word>long</Word>
+      <Word>namespace</Word>
+      <Word>new</Word>
+      <Word>null</Word>
+      <Word>object</Word>
+      <Word>operator</Word>
+      <Word>out</Word>
+      <Word>override</Word>
+      <Word>params</Word>
+      <Word>private</Word>
+      <Word>protected</Word>
+      <Word>public</Word>
+      <Word>readonly</Word>
+      <Word>ref</Word>
+      <Word>return</Word>
+      <Word>sbyte</Word>
+      <Word>sealed</Word>
+      <Word>short</Word>
+      <Word>sizeof</Word>
+      <Word>stackalloc</Word>
+      <Word>static</Word>
+      <Word>string</Word>
+      <Word>struct</Word>
+      <Word>switch</Word>
+      <Word>this</Word>
+      <Word>throw</Word>
+      <Word>true</Word>
+      <Word>try</Word>
+      <Word>typeof</Word>
+      <Word>uint</Word>
+      <Word>ulong</Word>
+      <Word>unchecked</Word>
+      <Word>unsafe</Word>
+      <Word>ushort</Word>
+      <Word>using</Word>
+      <Word>var</Word>
+      <Word>virtual</Word>
+      <Word>void</Word>
+      <Word>volatile</Word>
+      <Word>while</Word>
+    </Keywords>
+
+    <!-- Contextual keywords -->
+    <Keywords color="Keyword">
+      <Word>async</Word>
+      <Word>await</Word>
+      <Word>from</Word>
+      <Word>let</Word>
+      <Word>orderby</Word>
+      <Word>select</Word>
+      <Word>where</Word>
+      <Word>group</Word>
+      <Word>by</Word>
+      <Word>into</Word>
+      <Word>join</Word>
+      <Word>on</Word>
+      <Word>equals</Word>
+      <Word>descending</Word>
+      <Word>ascending</Word>
+      <Word>yield</Word>
+      <Word>nameof</Word>
+      <Word>notnull</Word>
+      <Word>record</Word>
+      <Word>init</Word>
+      <Word>required</Word>
+      <Word>global</Word>
+      <Word>file</Word>
+      <Word>partial</Word>
+      <Word>when</Word>
+    </Keywords>
+
+    <!-- Number literal (integer, float, hex, binary) -->
+    <Rule color="Number">
+      \b0[xX][0-9a-fA-F][0-9a-fA-F_]*(u|l|ul|lu|U|L|UL|LU)?\b
+    </Rule>
+    <Rule color="Number">
+      \b0[bB][01][01_]*\b
+    </Rule>
+    <Rule color="Number">
+      \b\d[\d_]*\.\d[\d_]*([eE][+-]?\d[\d_]*)?[fFdDmM]?\b
+    </Rule>
+    <Rule color="Number">
+      \b\d[\d_]*[fFdDmMuUlL]\b
+    </Rule>
+    <Rule color="Number">
+      \b\d[\d_]*\b
+    </Rule>
+
+    <!-- Type names (PascalCase heuristic) -->
+    <Rule color="Type">
+      \b[A-Z][a-zA-Z0-9]*(?=&lt;|\s*[\[\(\)]|\s+[A-Za-z]|$)
+    </Rule>
+
+    <!-- Method call: lowercase/camelCase identifier followed by ( -->
+    <Rule color="MethodCall">
+      \b[a-z_][\w_]*(?=\s*\()
+    </Rule>
+
+  </RuleSet>
+
+  <!-- Comment content (support TODO, FIXME, etc.) -->
+  <RuleSet name="CommentContent">
+    <Rule color="Comment">
+      TODO|FIXME|HACK|UNDONE|XXX
+    </Rule>
+  </RuleSet>
+
+  <!-- Preprocessor content -->
+  <RuleSet name="PreprocessorContent">
+    <Keywords color="Keyword">
+      <Word>if</Word>
+      <Word>else</Word>
+      <Word>elif</Word>
+      <Word>endif</Word>
+      <Word>define</Word>
+      <Word>undef</Word>
+      <Word>warning</Word>
+      <Word>error</Word>
+      <Word>line</Word>
+      <Word>region</Word>
+      <Word>endregion</Word>
+      <Word>pragma</Word>
+      <Word>nullable</Word>
+    </Keywords>
+  </RuleSet>
+
+</SyntaxDefinition>

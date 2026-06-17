@@ -201,7 +201,6 @@
                                         Background="#FFFFFFFF"
                                         Foreground="#FF000000"
                                         LineNumbersForeground="#FF888888"
-                                        SyntaxHighlighting="{x:Null}"
 
                                         WordWrap="False"
                                         ShowLineNumbers="True"

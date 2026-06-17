@@ -66,4 +66,9 @@
       <Content Remove="@(_RuntimeTrash)" />
     </ItemGroup>
   </Target>
+
+  <!-- Step 4: 构建后清理残留的运行时目录（防止全解决方案构建时其他项目拷贝干扰） -->
+  <Target Name="CleanupPluginRuntimeResidue" AfterTargets="Build" Condition="'$(IsToolPlugin)'=='true'">
+    <RemoveDir Directories="$(OutDir)runtimes" Condition="Exists('$(OutDir)runtimes')" />
+  </Target>
 </Project>

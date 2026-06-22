@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
+using System.Text;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
 
 namespace SunEyeVision.Tool.Script.Models
 {
@@ -13,61 +16,38 @@ namespace SunEyeVision.Tool.Script.Models
     public class ScriptParameters : ToolParameters
     {
         /// <summary>
-        /// 默认脚本代码模板（三段式生命周期，含常用 using）
+        /// 默认代码模板（完整的 partial class，用户可自由写 using/class/方法/字段等）
         /// </summary>
-        public const string DefaultScriptCode = @"using System;
+        public const string DefaultMethodCode = @"using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
-using System.Diagnostics;
 using SunEyeVision.Tool.Script.ScriptEngine;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
 
-/************************************
- * 脚本工具 - 用户自定义脚本
- * 继承 Script，实现 Init/Process/Release 生命周期
- * 可用引用：System.Runtime（BCL 核心类型）、
- *   SunEyeVision.Tool.Script（Script 基类）、
- *   SunEyeVision.Plugin.SDK（全局变量和日志 API）
- * 需要额外程序集请通过 [程序集引用管理] 对话框添加
- ************************************/
-public class UserScript : Script
+public partial class UserScript : Script
 {
-    private int _processCount;
-    private DateTime _startTime;
-
     public override void Init()
     {
-        _processCount = 0;
-        _startTime = DateTime.Now;
-        LogInfo($""[{_startTime:HH:mm:ss}] 脚本初始化完成"");
+        // 在此处初始化代码
     }
 
     public override void Process()
     {
-        _processCount++;
-        var elapsedMs = (DateTime.Now - _startTime).TotalMilliseconds;
-
-        SetOutput(""ProcessCount"", _processCount);
-        SetOutput(""ElapsedMs"", elapsedMs);
-
-        LogInfo($""第 {_processCount} 次处理, 耗时 {elapsedMs:F0}ms"");
+        // 在此处编写算法逻辑
+        // 可直接访问输入变量（如 image1, threshold）
+        // 可直接赋值输出变量（如 result = xxx）
     }
+}";
 
-    public override void Release()
-    {
-        LogInfo($""共处理 {_processCount} 次, 总耗时 {(DateTime.Now - _startTime).TotalSeconds:F1}s"");
-    }
-}
-";
-
-        private string _scriptCode = DefaultScriptCode;
+        private string _scriptCode = DefaultMethodCode;
         private string _assemblyReferenceDir = "ScriptRefs";
-        private List<ScriptParamItem> _inputVariables = [];
-        private List<ScriptParamItem> _outputVariables = [];
+        private ObservableCollection<ScriptInputConfig> _inputs = [];
+        private ObservableCollection<ScriptOutputConfig> _outputs = [];
 
         /// <summary>
-        /// 脚本代码（C# 源码文本）
+        /// 脚本方法体代码（不含 class 声明，由 BuildFullCode 自动包裹）
         /// </summary>
         [JsonPropertyOrder(1)]
         public string ScriptCode
@@ -100,30 +80,65 @@ public class UserScript : Script
         }
 
         /// <summary>
-        /// 输入变量列表（调试控件中 DataGrid 绑定显示）
+        /// 输入变量配置列表（含 Name/TypeName/绑定关系）
         /// </summary>
         [JsonPropertyOrder(3)]
-        public List<ScriptParamItem> InputVariables
+        public ObservableCollection<ScriptInputConfig> Inputs
         {
-            get => _inputVariables;
-            set => SetProperty(ref _inputVariables, value, "输入变量");
+            get => _inputs;
+            set => SetProperty(ref _inputs, value, "输入");
         }
 
         /// <summary>
-        /// 输出变量列表（调试控件中 DataGrid 绑定显示，实时监视）
+        /// 输出变量配置列表（含 Name/TypeName/绑定关系）
         /// </summary>
         [JsonPropertyOrder(4)]
-        public List<ScriptParamItem> OutputVariables
+        public ObservableCollection<ScriptOutputConfig> Outputs
         {
-            get => _outputVariables;
-            set => SetProperty(ref _outputVariables, value, "输出变量");
+            get => _outputs;
+            set => SetProperty(ref _outputs, value, "输出");
+        }
+
+        /// <summary>
+        /// 系统生成的字段声明 partial class（不含用户代码，由 Inputs/Outputs 字段声明生成）
+        /// </summary>
+        [JsonIgnore]
+        public string GeneratedCode => BuildGeneratedCode();
+
+        private string BuildGeneratedCode()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("using System;");
+            sb.AppendLine("using System.Collections.Generic;");
+            sb.AppendLine("using System.Linq;");
+            sb.AppendLine("using System.Text;");
+            sb.AppendLine("using System.IO;");
+            sb.AppendLine("using SunEyeVision.Tool.Script.ScriptEngine;");
+            sb.AppendLine("using SunEyeVision.Plugin.SDK.VisionAdapters;");
+            sb.AppendLine();
+            sb.AppendLine("public partial class UserScript : Script");
+            sb.AppendLine("{");
+
+            // 输入字段
+            foreach (var input in Inputs)
+                sb.AppendLine($"    {input.GenerateFieldCode()}");
+
+            if (Inputs.Count > 0)
+                sb.AppendLine();
+
+            // 输出字段
+            foreach (var output in Outputs)
+                sb.AppendLine($"    {output.GenerateFieldCode()}");
+
+            sb.AppendLine("}");
+            return sb.ToString();
         }
 
         public new string GetParameterSummary()
         {
             var dir = AssemblyReferenceFullPath;
             var count = Directory.Exists(dir) ? Directory.GetFiles(dir, "*.dll").Length : 0;
-            return $"脚本行数: {ScriptCode.Split('\n').Length}, 引用DLL: {count}, 输入: {InputVariables.Count}, 输出: {OutputVariables.Count}";
+            return $"脚本行数: {ScriptCode.Split('\n').Length}, 引用DLL: {count}, 输入: {Inputs.Count}, 输出: {Outputs.Count}";
         }
     }
 }

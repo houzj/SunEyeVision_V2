@@ -1,10 +1,11 @@
-using System;
+﻿using System;
 
 namespace SunEyeVision.Tool.Script.ScriptEngine
 {
     /// <summary>
     /// 脚本基类 — 用户编写的脚本必须继承此类。
-    /// 提供日志、全局变量、输出设置等 protected 方法，用户脚本中可直接调用。
+    /// partial class 机制在编译时合并用户代码和系统生成的字段声明。
+    /// 提供日志、全局变量等 protected 方法，用户脚本中可直接调用。
     /// </summary>
     public abstract class Script
     {
@@ -21,9 +22,9 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
         public abstract void Process();
 
         /// <summary>
-        /// 释放阶段：清理资源
+        /// 释放阶段：清理资源（可选重写）
         /// </summary>
-        public abstract void Release();
+        public virtual void Release() { }
 
         #region 封装 API 方法（protected，用户可直接调用）
 
@@ -36,9 +37,6 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
 
         protected void SetGlobal(string name, object? value)
             => Context.SetGlobal(name, value);
-
-        protected void SetOutput(string name, object? value)
-            => Context.SetOutput(name, value);
 
         #endregion
     }

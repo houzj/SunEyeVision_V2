@@ -12,7 +12,6 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
 
         public Func<string, object?>? GetGlobalValue { get; set; }
         public Action<string, object?>? SetGlobalValue { get; set; }
-        public Action<string, object?>? SetOutputValue { get; set; }
         public Action<string>? LogInfoAction { get; set; }
         public Action<string>? LogWarningAction { get; set; }
         public Action<string>? LogErrorAction { get; set; }
@@ -30,11 +29,6 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
         public void SetGlobal(string name, object? value)
         {
             SetGlobalValue?.Invoke(name, value);
-        }
-
-        public void SetOutput(string name, object? value)
-        {
-            SetOutputValue?.Invoke(name, value);
         }
 
         public void LogInfo(string message)

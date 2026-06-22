@@ -149,33 +149,37 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
         private string? _lastRefDir;
 
         /// <summary>
-        /// 编译 C# 脚本代码
+        /// 编译 C# 脚本代码（多代码段，每个代码段构建独立语法树，通过 partial class 合并）
         /// </summary>
-        /// <param name="code">C# 代码</param>
+        /// <param name="codeParts">多个 C# 代码段（如 [generatedCode, userCode]）</param>
         /// <param name="assemblyName">程序集名称（每次不同，避免 ALC 缓存冲突）</param>
         /// <param name="assemblyRefDir">程序集引用目录路径，目录下所有 *.dll 均为引用</param>
         /// <returns>编译结果</returns>
         public CompileResult Compile(
-            string code,
+            IReadOnlyList<string> codeParts,
             string assemblyName,
             string? assemblyRefDir = null)
         {
             var totalSw = Stopwatch.StartNew();
             var result = new CompileResult();
+            result.UsingLineOffset = 0;
 
-            if (string.IsNullOrWhiteSpace(code))
+            if (codeParts == null || codeParts.Count == 0 || codeParts.All(string.IsNullOrWhiteSpace))
             {
                 result.Diagnostics.Add("脚本代码为空");
                 return result;
             }
 
+            // 合并所有代码段用于缓存哈希 + 类名提取
+            var combinedCode = string.Join("\n", codeParts);
+
             // 0a. 检查编译缓存（相同代码 + 相同引用目录）
-            var codeHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(code)));
+            var codeHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(combinedCode)));
             var cacheKey = $"{codeHash}|{assemblyRefDir ?? ""}";
             if (_compileCache.TryGetValue(cacheKey, out var cached))
             {
                 PluginLogger.Info(
-                    $"[ScriptCompiler] 编译缓存命中: hash={codeHash[..8]}..., 代码长度={code.Length}",
+                    $"[ScriptCompiler] 编译缓存命中: hash={codeHash[..8]}..., 代码长度={combinedCode.Length}",
                     nameof(ScriptCompiler));
                 return new CompileResult
                 {
@@ -188,14 +192,14 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                 };
             }
 
-            // 0b. 不再自动注入 using — 补全和编译由脚本中的显式 using 语句驱动
-            result.UsingLineOffset = 0;
-            var fullCode = code;
-
-            // 2. 构建语法树（使用缓存的 ParseOptions）
+            // 2. 构建多个语法树（每个代码段独立语法树）
             var parseSw = Stopwatch.StartNew();
-            var sourceText = SourceText.From(fullCode);
-            var syntaxTree = SyntaxFactory.ParseSyntaxTree(sourceText, _parseOptions);
+            var syntaxTrees = new SyntaxTree[codeParts.Count];
+            for (int i = 0; i < codeParts.Count; i++)
+            {
+                syntaxTrees[i] = SyntaxFactory.ParseSyntaxTree(
+                    SourceText.From(codeParts[i]), _parseOptions);
+            }
             parseSw.Stop();
 
             // 3. 获取元数据引用：默认 ALC（缓存） + ScriptRefs（按目录缓存）
@@ -229,11 +233,11 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             }
             refSw.Stop();
 
-            // 4. 创建编译（使用缓存的 CompilationOptions）
+            // 4. 创建编译（传入多个语法树）
             var createSw = Stopwatch.StartNew();
             var compilation = CSharpCompilation.Create(
                 assemblyName,
-                [syntaxTree],
+                syntaxTrees,
                 metadataReferences,
                 _compilationOptions);
             createSw.Stop();
@@ -250,11 +254,11 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
 
             totalSw.Stop();
 
-            PluginLogger.Info($"[ScriptCompiler] 编译性能: 语法树={parseSw.ElapsedMilliseconds}ms, " +
+            PluginLogger.Info($"[ScriptCompiler] 编译性能: 语法树={codeParts.Count}({parseSw.ElapsedMilliseconds}ms), " +
                 $"引用={refSw.ElapsedMilliseconds}ms(默认={defaultRefs.Count},ScriptRefs={scriptRefCount}), " +
                 $"创建编译={createSw.ElapsedMilliseconds}ms, Emit={emitSw.ElapsedMilliseconds}ms, " +
                 $"总={totalSw.ElapsedMilliseconds}ms, 成功={emitResult.Success}, " +
-                $"代码长度={code.Length}",
+                $"代码长度={combinedCode.Length}",
                 nameof(ScriptCompiler));
 
             if (emitResult.Success)
@@ -262,7 +266,7 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                 result.Success = true;
                 result.AssemblyBytes = assemblyStream.ToArray();
                 result.SymbolBytes = symbolStream.ToArray();
-                result.EntryClassName = ExtractClassName(code);
+                result.EntryClassName = ExtractClassName(combinedCode);
 
                 // 编译成功，加入缓存
                 _compileCache[cacheKey] = result;
@@ -274,7 +278,8 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                     if (diagnostic.Severity == DiagnosticSeverity.Error)
                     {
                         var location = diagnostic.Location.GetLineSpan();
-                        var actualLine = location.StartLinePosition.Line + 1 - result.UsingLineOffset;
+                        // 行号相对于所在语法树，已自然对应各代码段内的行号
+                        var actualLine = location.StartLinePosition.Line + 1;
                         result.Diagnostics.Add(
                             $"错误 (行 {actualLine}, 列 {location.StartLinePosition.Character + 1}): {diagnostic.GetMessage()}");
                     }
@@ -285,12 +290,12 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
         }
 
         /// <summary>
-        /// 从代码中提取继承 Script 的类名
+        /// 从合并的代码中提取继承 Script 的类名
         /// </summary>
-        private static string? ExtractClassName(string code)
+        private static string? ExtractClassName(string combinedCode)
         {
             // 简单解析：查找 "class XXX : Script" 模式
-            var lines = code.Split('\n');
+            var lines = combinedCode.Split('\n');
             foreach (var line in lines)
             {
                 var trimmed = line.Trim();
@@ -303,7 +308,7 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                         var colonIndex = afterClass.IndexOf(" :", StringComparison.Ordinal);
                         if (colonIndex > 0)
                         {
-                            var ns = ExtractNamespace(code);
+                            var ns = ExtractNamespace(combinedCode);
                             var className = afterClass.Substring(0, colonIndex).Trim();
                             return string.IsNullOrEmpty(ns) ? className : $"{ns}.{className}";
                         }
@@ -313,9 +318,9 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             return null;
         }
 
-        private static string ExtractNamespace(string code)
+        private static string ExtractNamespace(string combinedCode)
         {
-            var lines = code.Split('\n');
+            var lines = combinedCode.Split('\n');
             foreach (var line in lines)
             {
                 var trimmed = line.Trim();

@@ -92,31 +92,41 @@ namespace SunEyeVision.Tool.Script.ViewModels
         }
 
         /// <summary>
-        /// 浠庡弬鏁板悓姝ヨ緭鍏ュ彉閲忓埌 ObservableCollection
+        /// 从参数同步输入变量到监视集合
         /// </summary>
         public void SyncInputVariables()
         {
             _inputVariables.Clear();
-            if (_parameters.InputVariables != null)
+            if (_parameters.Inputs != null)
             {
-                foreach (var item in _parameters.InputVariables)
+                foreach (var input in _parameters.Inputs)
                 {
-                    _inputVariables.Add(item);
+                    _inputVariables.Add(new ScriptParamItem
+                    {
+                        Name = input.Name,
+                        TypeName = input.TypeName,
+                        Value = null
+                    });
                 }
             }
         }
 
         /// <summary>
-        /// 浠庡弬鏁板悓姝ヨ緭鍑哄彉閲忓埌 ObservableCollection
+        /// 从参数同步输出变量到监视集合
         /// </summary>
         public void SyncOutputVariables()
         {
             _outputVariables.Clear();
-            if (_parameters.OutputVariables != null)
+            if (_parameters.Outputs != null)
             {
-                foreach (var item in _parameters.OutputVariables)
+                foreach (var output in _parameters.Outputs)
                 {
-                    _outputVariables.Add(item);
+                    _outputVariables.Add(new ScriptParamItem
+                    {
+                        Name = output.Name,
+                        TypeName = output.TypeName,
+                        Value = null
+                    });
                 }
             }
         }

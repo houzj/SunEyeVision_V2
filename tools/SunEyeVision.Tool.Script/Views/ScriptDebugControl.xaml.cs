@@ -40,13 +40,14 @@ namespace SunEyeVision.Tool.Script.Views
     public partial class ScriptDebugControl
     {
         private ScriptParameters _parameters = new();
-        private readonly ObservableCollection<ScriptParamItem> _inputVariables = new();
-        private readonly ObservableCollection<ScriptParamItem> _outputVariables = new();
+        private readonly ObservableCollection<ScriptParamItem> _monitorInputVars = new();
+        private readonly ObservableCollection<ScriptParamItem> _monitorOutputVars = new();
         private readonly ObservableCollection<LogEntry> _logEntries = new();
 
         // Roslyn completion workspace
         private AdhocWorkspace? _workspace;
-        private DocumentId? _documentId;                              // 不可变标识，仅 RebuildWorkspace 赋值
+        private DocumentId? _documentId;                              // 生成的字段声明文档 ID（不可变，仅 RebuildWorkspace 赋值）
+        private DocumentId? _userDocumentId;                          // 用户代码文档 ID（不可变，仅 RebuildWorkspace 赋值）
         private CompletionWindow? _completionWindow;
         private CompletionItem[] _currentItems;                        // 唯一数据源（单层，无后台刷新）
         private CancellationTokenSource? _throttleCts;                // 50ms 节流令牌
@@ -141,8 +142,8 @@ namespace SunEyeVision.Tool.Script.Views
             return _defaultReferences;
         }
 
-        public ObservableCollection<ScriptParamItem> InputVariables => _inputVariables;
-        public ObservableCollection<ScriptParamItem> OutputVariables => _outputVariables;
+        public ObservableCollection<ScriptParamItem> MonitorInputVars => _monitorInputVars;
+        public ObservableCollection<ScriptParamItem> MonitorOutputVars => _monitorOutputVars;
         public ObservableCollection<LogEntry> LogEntries => _logEntries;
 
         public string ScriptCode
@@ -157,8 +158,8 @@ namespace SunEyeVision.Tool.Script.Views
         public ScriptDebugControl()
         {
             InitializeComponent();
-            InputDataGrid.ItemsSource = _inputVariables;
-            OutputDataGrid.ItemsSource = _outputVariables;
+            MonitorInputGrid.ItemsSource = _monitorInputVars;
+            MonitorOutputGrid.ItemsSource = _monitorOutputVars;
             LogListBox.ItemsSource = _logEntries;
             UpdateStatus("初始化中...");
 
@@ -212,6 +213,9 @@ namespace SunEyeVision.Tool.Script.Views
                 _diagnosticsCts?.Cancel();
                 _diagnosticsCts?.Dispose();
             };
+
+            // 初始化变量摘要
+            UpdateVariableSummary();
         }
 
         /// <summary>
@@ -255,64 +259,142 @@ namespace SunEyeVision.Tool.Script.Views
                 {
                     CodeEditor.Text = _parameters.ScriptCode;
                 }
-                SyncInputVariables();
-                SyncOutputVariables();
-                RebuildWorkspace();  // Recipe 恢复后重建 Roslyn 工作区，确保补全使用最新引用
-                ScheduleSemanticAnalysis();  // 重建后立即触发语义分析，更新高亮
+                SyncMonitorsFromConfig();
+                UpdateVariableSummary();
+                RebuildWorkspace();
+                ScheduleSemanticAnalysis();
+            }
+        }
+
+        /// <summary>
+        /// 从 _parameters.Inputs/Outputs 同步到监控显示
+        /// </summary>
+        private void SyncMonitorsFromConfig()
+        {
+            _monitorInputVars.Clear();
+            foreach (var input in _parameters.Inputs)
+            {
+                _monitorInputVars.Add(new ScriptParamItem
+                {
+                    Name = input.Name,
+                    TypeName = input.TypeName,
+                    Value = null
+                });
+            }
+
+            _monitorOutputVars.Clear();
+            foreach (var output in _parameters.Outputs)
+            {
+                _monitorOutputVars.Add(new ScriptParamItem
+                {
+                    Name = output.Name,
+                    TypeName = output.TypeName,
+                    Value = null
+                });
+            }
+        }
+
+        /// <summary>
+        /// 更新左侧"变量管理"Tab 的摘要显示
+        /// </summary>
+        private void UpdateVariableSummary()
+        {
+            if (InputSummaryList == null || OutputSummaryList == null) return;
+
+            var inputTexts = new List<string>();
+            if (_parameters.Inputs.Count == 0)
+                inputTexts.Add("  (无输入变量)");
+            else
+                foreach (var input in _parameters.Inputs)
+                    inputTexts.Add($"  ▸ {input.Name} ({input.CsTypeName})");
+
+            InputSummaryList.ItemsSource = inputTexts;
+
+            var outputTexts = new List<string>();
+            if (_parameters.Outputs.Count == 0)
+                outputTexts.Add("  (无输出变量)");
+            else
+                foreach (var output in _parameters.Outputs)
+                    outputTexts.Add($"  ▸ {output.Name} ({output.CsTypeName})");
+
+            OutputSummaryList.ItemsSource = outputTexts;
+        }
+
+        /// <summary>
+        /// ✏ 编辑变量按钮 — 弹出变量管理对话框
+        /// </summary>
+        private void EditVariableButton_Click(object sender, RoutedEventArgs e)
+        {
+            SyncCodeToParameters();
+
+            var dialog = new ScriptIoDialog(_parameters.Inputs, _parameters.Outputs)
+            {
+                Owner = Window.GetWindow(this)
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                UpdateVariableSummary();
+                SyncMonitorsFromConfig();
+                RebuildWorkspace();
+                ScheduleSemanticAnalysis();
+
+                StatusLabel.Content = "变量配置已更新";
+                StatusLabel.Foreground = System.Windows.Media.Brushes.Gray;
             }
         }
 
 
 
 
-        private void SyncInputVariables()
+        protected override void OnConfirmCommand(object sender, ExecutedRoutedEventArgs e)
         {
-            _inputVariables.Clear();
-            if (_parameters.InputVariables != null)
-                foreach (var item in _parameters.InputVariables)
-                    _inputVariables.Add(item);
-        }
-
-        private void SyncOutputVariables()
-        {
-            _outputVariables.Clear();
-            if (_parameters.OutputVariables != null)
-                foreach (var item in _parameters.OutputVariables)
-                    _outputVariables.Add(item);
-        }
-
-        private void SyncCodeToParameters()
-        {
-            if (CodeEditor != null)
-                _parameters.ScriptCode = CodeEditor.Text;
+            SyncCodeToParameters();
+            base.OnConfirmCommand(sender, e);
         }
 
         protected override object ExecuteTool()
         {
             SyncCodeToParameters();
-            _parameters.InputVariables = _inputVariables.ToList();
+
             _logEntries.Clear();
-            foreach (var item in _outputVariables) item.Value = null;
+            foreach (var item in _monitorOutputVars) item.Value = null;
 
             using var lifecycleManager = new ScriptEngine.ScriptLifecycleManager();
             // Global variable delegates - injected by workflow engine in workflow mode
             Func<string, object?>? getGlobal = null;
             Action<string, object?>? setGlobal = null;
 
+            // 解析输入绑定（调试模式简单赋值，集成时由 WorkflowEngine 提供）
+            Dictionary<string, object?>? inputValues = null;
+            if (_parameters.Inputs.Count > 0)
+            {
+                inputValues = new Dictionary<string, object?>();
+                foreach (var input in _parameters.Inputs)
+                {
+                    // 调试模式下输入值为 null
+                    inputValues[input.Name] = null;
+                }
+            }
+
             var errors = lifecycleManager.Execute(
+                _parameters.GeneratedCode,
                 _parameters.ScriptCode,
                 _parameters.AssemblyReferenceFullPath,
-                getGlobal, setGlobal);
+                getGlobal, setGlobal,
+                inputValues);
 
             // 编译错误用红色标记加入统一输出
             foreach (var error in errors)
                 _logEntries.Add(new LogEntry { Text = error, IsError = true });
 
-            // 运行日志用白色标记
+            // 运行日志
             foreach (var log in lifecycleManager.LogMessages)
                 _logEntries.Add(new LogEntry { Text = log, IsError = false });
 
-            UpdateOutputValues(lifecycleManager.OutputValues);
+            // 更新输出监控值
+            foreach (var kvp in lifecycleManager.OutputValues)
+                UpdateOutputValue(kvp.Key, kvp.Value);
 
             CompileTimeLabel.Content = $"编译: {lifecycleManager.CompileTimeMs}ms";
             ExecTimeLabel.Content = $"执行: {lifecycleManager.ExecutionTimeMs}ms";
@@ -336,21 +418,18 @@ namespace SunEyeVision.Tool.Script.Views
             return !string.IsNullOrWhiteSpace(CodeEditor?.Text);
         }
 
-        private void UpdateOutputValues(IReadOnlyDictionary<string, object?> outputValues)
+        private void UpdateOutputValue(string name, object? value)
         {
-            foreach (var kvp in outputValues)
-            {
-                var existing = _outputVariables.FirstOrDefault(v => v.Name == kvp.Key);
-                if (existing != null)
-                    existing.Value = kvp.Value;
-                else
-                    _outputVariables.Add(new ScriptParamItem
-                    {
-                        Name = kvp.Key,
-                        Value = kvp.Value,
-                        TypeName = kvp.Value?.GetType().Name ?? "null"
-                    });
-            }
+            var existing = _monitorOutputVars.FirstOrDefault(v => v.Name == name);
+            if (existing != null)
+                existing.Value = value;
+            else
+                _monitorOutputVars.Add(new ScriptParamItem
+                {
+                    Name = name,
+                    Value = value,
+                    TypeName = value?.GetType().Name ?? "null"
+                });
         }
 
         private void UpdateStatus(string status)
@@ -376,7 +455,7 @@ namespace SunEyeVision.Tool.Script.Views
         private void ClearResultButton_Click(object sender, RoutedEventArgs e)
         {
             _logEntries.Clear();
-            foreach (var item in _outputVariables) item.Value = null;
+            foreach (var item in _monitorOutputVars) item.Value = null;
             CompileTimeLabel.Content = ""; ExecTimeLabel.Content = "";
             UpdateStatus("就绪");
         }
@@ -384,7 +463,8 @@ namespace SunEyeVision.Tool.Script.Views
         private void CodeEditor_LostFocus(object sender, RoutedEventArgs e) => SyncCodeToParameters();
 
         /// <summary>
-        /// 统一输出面板的双击处理：跳转到编译错误对应行号
+        /// 统一输出面板的双击处理：跳转到编译错误对应行号。
+        /// 错误行号已来自用户文档语法树，直接对应编辑器行号，无需偏移。
         /// </summary>
         private void LogListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
@@ -393,6 +473,7 @@ namespace SunEyeVision.Tool.Script.Views
                 var match = Regex.Match(entry.Text, @"行 (\d+)");
                 if (match.Success && int.TryParse(match.Groups[1].Value, out var lineNumber))
                 {
+                    if (lineNumber < 1) lineNumber = 1;
                     CodeEditor.TextArea.Caret.Line = lineNumber;
                     CodeEditor.TextArea.Caret.Column = 1;
                     CodeEditor.ScrollToLine(lineNumber);
@@ -499,10 +580,11 @@ namespace SunEyeVision.Tool.Script.Views
 
 
 
-        protected override void OnConfirmCommand(object sender, ExecutedRoutedEventArgs e)
+
+        private void SyncCodeToParameters()
         {
-            SyncCodeToParameters();
-            base.OnConfirmCommand(sender, e);
+            if (CodeEditor != null)
+                _parameters.ScriptCode = CodeEditor.Text;
         }
 
         // =======================================================
@@ -510,16 +592,17 @@ namespace SunEyeVision.Tool.Script.Views
         // =======================================================
 
         /// <summary>
-        /// 动态重建工作区（构造函数/SetParameters/用户增删 DLL 后调用）
-        /// 放弃旧 workspace，用当前代码文本 + 引用目录下的所有 DLL 重建
+        /// 动态重建工作区（构造函数/SetParameters/用户增删 DLL/修改变量后调用）
+        /// 添加两个文档：生成的字段声明 partial class + 用户完整 partial class，通过 Roslyn 自动合并
         /// </summary>
         private void RebuildWorkspace()
         {
-            var currentCode = CodeEditor?.Text ?? "";
+            var generatedCode = _parameters.GeneratedCode;
+            var userCode = _parameters.ScriptCode;
             var typeName = GetType().Name;
             var totalSw = System.Diagnostics.Stopwatch.StartNew();
 
-            PluginLogger.Info($"[补全] RebuildWorkspace 开始: 代码长度={currentCode.Length}", typeName);
+            PluginLogger.Info($"[补全] RebuildWorkspace 开始: generatedCodeLen={generatedCode.Length}, userCodeLen={userCode.Length}", typeName);
 
             _diagnosticsCts?.Cancel();  // 取消正在进行的语义分析，防止访问已 Dispose 的 workspace
             _workspace?.Dispose();
@@ -599,15 +682,22 @@ namespace SunEyeVision.Tool.Script.Views
             PluginLogger.Info($"[补全] TryApplyChanges: {sw.ElapsedMilliseconds}ms", typeName);
 
             sw.Restart();
-            var document = _workspace.AddDocument(project.Id, "Script.cs",
-                SourceText.From(currentCode));
-            _documentId = document.Id;
-            PluginLogger.Info($"[补全] 文档添加完成，文档 ID={_documentId}: {sw.ElapsedMilliseconds}ms", typeName);
+
+            // ★ 添加两个文档：字段声明 partial class + 用户完整 partial class
+            var genDoc = _workspace.AddDocument(project.Id, "ScriptGenerated.cs",
+                SourceText.From(generatedCode));
+            _documentId = genDoc.Id;
+
+            var userDoc = _workspace.AddDocument(project.Id, "ScriptUser.cs",
+                SourceText.From(userCode));
+            _userDocumentId = userDoc.Id;
+
+            PluginLogger.Info($"[补全] 文档添加完成: genDocId={_documentId}, userDocId={_userDocumentId}: {sw.ElapsedMilliseconds}ms", typeName);
 
             _currentItems = [];   // 清空缓存，下次输入触发全新解析
 
             var refs = _workspace.CurrentSolution.Projects.First().MetadataReferences;
-            PluginLogger.Info($"[补全] Workspace 重建完成: {refs.Count} 个引用, 代码长度={currentCode.Length}, 总耗时={totalSw.ElapsedMilliseconds}ms", typeName);
+            PluginLogger.Info($"[补全] Workspace 重建完成: {refs.Count} 个引用, 总耗时={totalSw.ElapsedMilliseconds}ms", typeName);
         }
 
         /// <summary>
@@ -618,9 +708,9 @@ namespace SunEyeVision.Tool.Script.Views
         {
             var typeName = GetType().Name;
 
-            if (_workspace == null || _documentId == null)
+            if (_workspace == null || _userDocumentId == null)
             {
-                PluginLogger.Warning($"[补全] TextEntered 跳过: workspace={_workspace != null}, documentId={_documentId != null}, text='{e.Text}'", typeName);
+                PluginLogger.Warning($"[补全] TextEntered 跳过: workspace={_workspace != null}, userDocumentId={_userDocumentId != null}, text='{e.Text}'", typeName);
                 return;
             }
 
@@ -840,14 +930,15 @@ namespace SunEyeVision.Tool.Script.Views
         /// <summary>
         /// 从 Roslyn 获取最新补全结果的原始 CompletionItem 列表
         /// 使用 document.WithText() 避免与诊断线程的 TryApplyChanges 竞态
+        /// 使用 _userDocumentId 保证补全在用户代码空间内
         /// </summary>
         private async Task<ImmutableArray<CompletionItem>> FetchFreshCompletions(char triggerChar = '\0')
         {
             var typeName = GetType().Name;
 
-            if (_workspace == null || _documentId == null)
+            if (_workspace == null || _userDocumentId == null)
             {
-                PluginLogger.Warning($"[补全] FetchFreshCompletions 跳过: workspace={_workspace != null}, documentId={_documentId != null}", typeName);
+                PluginLogger.Warning($"[补全] FetchFreshCompletions 跳过: workspace={_workspace != null}, userDocumentId={_userDocumentId != null}", typeName);
                 return default;
             }
 
@@ -869,12 +960,12 @@ namespace SunEyeVision.Tool.Script.Views
 
             try
             {
-                // 从 workspace 获取最新 Document，使用局部 doc，不修改任何字段
+                // 从 workspace 获取用户文档，使用局部 doc，不修改任何字段
                 var sw = System.Diagnostics.Stopwatch.StartNew();
-                var doc = _workspace.CurrentSolution.GetDocument(_documentId);
+                var doc = _workspace.CurrentSolution.GetDocument(_userDocumentId);
                 if (doc == null)
                 {
-                    PluginLogger.Warning($"[补全] workspace 中找不到 document: {_documentId}", typeName);
+                    PluginLogger.Warning($"[补全] workspace 中找不到 user document: {_userDocumentId}", typeName);
                     return default;
                 }
                 doc = doc.WithText(SourceText.From(code));
@@ -925,10 +1016,12 @@ namespace SunEyeVision.Tool.Script.Views
         // =======================================================
 
         /// <summary>
-        /// 编辑器文本变更 → 500ms 节流 → 诊断+语义分析（共享 workspace 快照）
+        /// 编辑器文本变更 → 同步到 Parameters → 500ms 节流 → 诊断+语义分析
         /// </summary>
         private void OnCodeEditorTextChanged(object? sender, EventArgs e)
         {
+            if (CodeEditor != null)
+                _parameters.ScriptCode = CodeEditor.Text;
             ScheduleSemanticAnalysis();
         }
 
@@ -952,46 +1045,46 @@ namespace SunEyeVision.Tool.Script.Views
         }
 
         /// <summary>
-        /// 更新 workspace 文本 → 获取诊断 → 获取语义分类 → UI 重绘
+        /// 更新 workspace 文本（双文档） → 获取诊断 → 获取语义分类 → UI 重绘
         /// </summary>
         private async Task RunSemanticAnalysisAsync(CancellationToken token)
         {
             var typeName = GetType().Name;
 
-            if (_workspace == null || _documentId == null)
+            if (_workspace == null || _userDocumentId == null)
             {
-                PluginLogger.Warning($"[SemanticHighlight] 跳过: workspace={_workspace != null}, documentId={_documentId != null}", typeName);
+                PluginLogger.Warning($"[SemanticHighlight] 跳过: workspace={_workspace != null}, userDocumentId={_userDocumentId != null}", typeName);
                 return;
             }
 
-            var code = CodeEditor.Text;
-            if (string.IsNullOrEmpty(code))
-            {
-                PluginLogger.Warning("[SemanticHighlight] 跳过: 代码为空", typeName);
-                return;
-            }
+            var generatedCode = _parameters.GeneratedCode;
+            var userCode = _parameters.ScriptCode;
 
             try
             {
-                // 1. 更新 workspace 文本（TryApplyChanges 确保 Document 在 workspace solution 中，
-                //    Classifier.GetClassifiedSpansAsync 需要 workspace-backed SemanticModel）
-                var sourceText = SourceText.From(code);
-                var newSolution = _workspace.CurrentSolution.WithDocumentText(_documentId, sourceText);
+                // 1. 更新 workspace 文本：双文档同步更新
+                var newSolution = _workspace.CurrentSolution
+                    .WithDocumentText(_documentId, SourceText.From(generatedCode))
+                    .WithDocumentText(_userDocumentId, SourceText.From(userCode));
                 if (!_workspace.TryApplyChanges(newSolution))
                 {
                     PluginLogger.Warning("[SemanticHighlight] TryApplyChanges 失败", typeName);
                     return;
                 }
-                var doc = _workspace.CurrentSolution.GetDocument(_documentId);
-                if (doc == null)
+
+                var userDoc = _workspace.CurrentSolution.GetDocument(_userDocumentId);
+                if (userDoc == null)
                 {
-                    PluginLogger.Warning("[SemanticHighlight] workspace 中找不到 document", typeName);
+                    PluginLogger.Warning("[SemanticHighlight] workspace 中找不到 user document", typeName);
                     return;
                 }
 
-                // 2. 并行获取诊断 + 语义分类（使用局部 doc，不修改字段）
-                var modelTask = doc.GetSemanticModelAsync(token);
-                var spansTask = Classifier.GetClassifiedSpansAsync(doc, new TextSpan(0, code.Length), token);
+                // 获取用户文档的语法树，用于过滤诊断
+                var userSyntaxTree = await userDoc.GetSyntaxTreeAsync(token);
+
+                // 2. 并行获取诊断 + 语义分类（使用用户文档）
+                var modelTask = userDoc.GetSemanticModelAsync(token);
+                var spansTask = Classifier.GetClassifiedSpansAsync(userDoc, new TextSpan(0, userCode.Length), token);
 
                 await Task.WhenAll(modelTask, spansTask);
 
@@ -1000,13 +1093,14 @@ namespace SunEyeVision.Tool.Script.Views
                 var model = modelTask.Result;
                 var allSpans = spansTask.Result;
 
-                // Phase 1: 诊断
+                // Phase 1: 诊断 — 只取用户文档中的错误（行号直接对应编辑器行）
                 var diagnostics = model!.GetDiagnostics(cancellationToken: token)
-                    .Where(d => d.Severity == DiagnosticSeverity.Error)
+                    .Where(d => d.Severity == DiagnosticSeverity.Error
+                        && d.Location.SourceTree == userSyntaxTree)
                     .ToImmutableArray();
                 _currentDiagnostics = diagnostics;
 
-                // Phase 2: 语义分类缓存（使用全部 Roslyn 分类，覆盖 Layer 1 的 xshd）
+                // Phase 2: 语义分类缓存（使用用户文档的语义分类）
                 _classificationSpans = allSpans.ToImmutableArray();
 
                 PluginLogger.Info($"[SemanticHighlight] TotalSpans={allSpans.Count()}, CachedSpans={_classificationSpans.Count}", typeName);

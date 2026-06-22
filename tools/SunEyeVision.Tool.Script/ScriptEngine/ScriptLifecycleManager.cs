@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace SunEyeVision.Tool.Script.ScriptEngine
 {
     /// <summary>
-    /// 脚本生命周期管理器 — 协调编译→加载→Init→Process→Release 流程。
+    /// 脚本生命周期管理器 — 协调编译→加载→字段注入→Init→Process→字段读取 流程。
     /// 每次 Run 创建独立沙箱，执行后自动卸载。
+    /// 输入/输出通过 partial class 字段反射读写，无需 SetOutput 中间层。
     /// </summary>
     internal sealed class ScriptLifecycleManager : IDisposable
     {
@@ -40,18 +42,22 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
         public long ExecutionTimeMs => _executionTimeMs;
 
         /// <summary>
-        /// 执行指定脚本代码
+        /// 执行指定脚本代码（使用 GeneratedCode + ScriptCode 双段 partial class 编译）
         /// </summary>
-        /// <param name="code">脚本代码</param>
+        /// <param name="generatedCode">系统生成的字段声明 partial class 代码</param>
+        /// <param name="userCode">用户编写的完整 partial class 代码</param>
         /// <param name="assemblyRefDir">程序集引用目录路径（目录下所有 *.dll 均为引用）</param>
         /// <param name="getGlobalValue">获取全局变量委托</param>
         /// <param name="setGlobalValue">设置全局变量委托</param>
+        /// <param name="inputValues">输入字段值映射（名称→值，反射设置到脚本实例字段）</param>
         /// <returns>编译和执行错误信息列表</returns>
         public List<string> Execute(
-            string code,
+            string generatedCode,
+            string userCode,
             string? assemblyRefDir,
             Func<string, object?>? getGlobalValue,
-            Action<string, object?>? setGlobalValue)
+            Action<string, object?>? setGlobalValue,
+            Dictionary<string, object?>? inputValues = null)
         {
             var errors = new List<string>();
 
@@ -70,11 +76,18 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                 _runCounter++;
             }
 
+            if (string.IsNullOrWhiteSpace(generatedCode) && string.IsNullOrWhiteSpace(userCode))
+            {
+                errors.Add("脚本代码为空");
+                return errors;
+            }
+
             var assemblyName = $"ScriptAssembly_{_runCounter}_{Guid.NewGuid():N}";
 
-            // 1. 编译
+            // 1. 编译（双语法树：系统生成的字段声明 + 用户完整 partial class）
             var compileSw = Stopwatch.StartNew();
-            var compileResult = _compiler.Compile(code, assemblyName, assemblyRefDir);
+            var compileResult = _compiler.Compile(
+                [generatedCode, userCode], assemblyName, assemblyRefDir);
             compileSw.Stop();
             _compileTimeMs = compileSw.ElapsedMilliseconds;
 
@@ -117,18 +130,11 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                 return errors;
             }
 
-            // 4. 注入上下文
+            // 4. 注入上下文（日志 + 全局变量）
             scriptInstance.Context = new ScriptContext
             {
                 GetGlobalValue = getGlobalValue,
                 SetGlobalValue = setGlobalValue,
-                SetOutputValue = (name, value) =>
-                {
-                    lock (_lock)
-                    {
-                        _outputValues[name] = value;
-                    }
-                },
                 LogInfoAction = msg =>
                 {
                     lock (_lock)
@@ -152,7 +158,33 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                 }
             };
 
-            // 5. 执行三段式生命周期
+            // 5. 反射设置输入字段值（在 Init/Process 之前）
+            if (inputValues != null && inputValues.Count > 0)
+            {
+                var scriptType = scriptInstance.GetType();
+                foreach (var kvp in inputValues)
+                {
+                    var field = scriptType.GetField(kvp.Key, BindingFlags.Public | BindingFlags.Instance);
+                    if (field != null)
+                    {
+                        try
+                        {
+                            var value = ConvertType(kvp.Value, field.FieldType);
+                            field.SetValue(scriptInstance, value);
+                        }
+                        catch (Exception ex)
+                        {
+                            errors.Add($"设置输入字段 \"{kvp.Key}\" 失败: {ex.Message}");
+                        }
+                    }
+                    else
+                    {
+                        errors.Add($"脚本中未找到输入字段 \"{kvp.Key}\"");
+                    }
+                }
+            }
+
+            // 6. 执行生命周期（Init → Process）
             var runSw = Stopwatch.StartNew();
             try
             {
@@ -171,7 +203,51 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             runSw.Stop();
             _executionTimeMs = runSw.ElapsedMilliseconds;
 
+            // 7. 反射读取输出字段值
+            var outputType = scriptInstance.GetType();
+            foreach (var field in outputType.GetFields(BindingFlags.Public | BindingFlags.Instance))
+            {
+                // 跳过 Script 基类继承的字段（如果有）
+                if (field.DeclaringType == typeof(Script)) continue;
+
+                // 只取 partial class 中声明的 public 字段
+                var value = field.GetValue(scriptInstance);
+                lock (_lock)
+                {
+                    _outputValues[field.Name] = value;
+                }
+            }
+
             return errors;
+        }
+
+        /// <summary>
+        /// 类型转换：将 object? 值转换到目标字段类型
+        /// </summary>
+        private static object? ConvertType(object? value, Type targetType)
+        {
+            if (value == null) return null;
+            if (value.GetType() == targetType || targetType.IsInstanceOfType(value))
+                return value;
+
+            // 数字类型互转
+            if (IsNumericType(value.GetType()) && IsNumericType(targetType))
+                return Convert.ChangeType(value, targetType);
+
+            // 字符串转换
+            if (targetType == typeof(string))
+                return value.ToString();
+
+            return value;
+        }
+
+        private static bool IsNumericType(Type type)
+        {
+            return type == typeof(int) || type == typeof(long) || type == typeof(float)
+                || type == typeof(double) || type == typeof(decimal)
+                || type == typeof(short) || type == typeof(byte)
+                || type == typeof(uint) || type == typeof(ulong)
+                || type == typeof(ushort) || type == typeof(sbyte);
         }
 
         public void Dispose()

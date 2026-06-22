@@ -136,40 +136,81 @@
                 </ResourceDictionary>
             </Grid.Resources>
 
-            <!-- 左侧面板：输入/输出变量 -->
+            <!-- 左侧面板：变量管理 / 实时监视 -->
             <TabControl Grid.Column="0" Background="#FFFAFAFA" BorderThickness="0"
                        Padding="0" Margin="0">
 
-                <TabItem Header="输入变量" FontSize="12" Padding="8,3">
-                    <Border Background="#FFFAFAFA">
-                        <DataGrid x:Name="InputDataGrid"
-                                  AutoGenerateColumns="False" CanUserAddRows="True" CanUserDeleteRows="True"
-                                  RowHeaderWidth="0" BorderThickness="0"
-                                  GridLinesVisibility="Horizontal"
-                                  HeadersVisibility="Column"
-                                  FontSize="12">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="名称" Binding="{Binding Name}" Width="*" />
-                                <DataGridTextColumn Header="值" Binding="{Binding DisplayValue}" Width="*" />
-                            </DataGrid.Columns>
-                        </DataGrid>
+                <!-- Tab 0: 变量管理（配置 I/O 变量名和类型） -->
+                <TabItem Header="变量管理" FontSize="12" Padding="8,3">
+                    <Border Background="#FFFAFAFA" Padding="6">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Top" Text="输入变量:" FontWeight="Bold"
+                                       Foreground="#FF0066CC" Margin="0,0,0,4"/>
+                            <ItemsControl x:Name="InputSummaryList" DockPanel.Dock="Top"
+                                          Margin="0,0,0,8">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}" FontSize="11" Foreground="#FF333333"
+                                                   Padding="2,1"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <TextBlock DockPanel.Dock="Top" Text="输出变量:" FontWeight="Bold"
+                                       Foreground="#FF007A33" Margin="0,0,0,4"/>
+                            <ItemsControl x:Name="OutputSummaryList" DockPanel.Dock="Top"
+                                          Margin="0,0,0,8">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}" FontSize="11" Foreground="#FF333333"
+                                                   Padding="2,1"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <Button x:Name="EditVariableButton" Content="✏ 编辑变量"
+                                    Click="EditVariableButton_Click"
+                                    Background="#FFF0F0F0" Foreground="#FF007ACC"
+                                    BorderBrush="#FFB8D6F0" Cursor="Hand"
+                                    HorizontalAlignment="Center" Padding="12,4"
+                                    Margin="0,8,0,0"/>
+                        </DockPanel>
                     </Border>
                 </TabItem>
 
-                <TabItem Header="输出变量" FontSize="12" Padding="8,3">
-                    <Border Background="#FFFAFAFA">
-                        <DataGrid x:Name="OutputDataGrid"
-                                  AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
-                                  RowHeaderWidth="0" BorderThickness="0"
-                                  GridLinesVisibility="Horizontal"
-                                  HeadersVisibility="Column"
-                                  FontSize="12">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="名称" Binding="{Binding Name}" Width="*" />
-                                <DataGridTextColumn Header="值" Binding="{Binding DisplayValue}" Width="*" />
-                            </DataGrid.Columns>
-                        </DataGrid>
-                    </Border>
+                <!-- Tab 1: 实时监视（运行时输入/输出值） -->
+                <TabItem Header="实时监视" FontSize="12" Padding="8,3">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Background="#FFFAFAFA">
+                        <StackPanel Margin="0,4">
+                            <TextBlock Text="输入值" FontWeight="Bold" Foreground="#FF0066CC"
+                                       Margin="6,4,6,2" FontSize="12"/>
+                            <DataGrid x:Name="MonitorInputGrid"
+                                      AutoGenerateColumns="False" CanUserAddRows="False"
+                                      RowHeaderWidth="0" BorderThickness="0"
+                                      GridLinesVisibility="Horizontal"
+                                      HeadersVisibility="Column"
+                                      FontSize="11" Height="Auto" MaxHeight="150">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="名称" Binding="{Binding Name}" Width="*" />
+                                    <DataGridTextColumn Header="值" Binding="{Binding DisplayValue}" Width="*" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+
+                            <TextBlock Text="输出值" FontWeight="Bold" Foreground="#FF007A33"
+                                       Margin="6,8,6,2" FontSize="12"/>
+                            <DataGrid x:Name="MonitorOutputGrid"
+                                      AutoGenerateColumns="False" CanUserAddRows="False"
+                                      RowHeaderWidth="0" BorderThickness="0"
+                                      GridLinesVisibility="Horizontal"
+                                      HeadersVisibility="Column"
+                                      FontSize="11" Height="Auto" MaxHeight="150">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="名称" Binding="{Binding Name}" Width="*" />
+                                    <DataGridTextColumn Header="值" Binding="{Binding DisplayValue}" Width="*" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </StackPanel>
+                    </ScrollViewer>
                 </TabItem>
             </TabControl>
 

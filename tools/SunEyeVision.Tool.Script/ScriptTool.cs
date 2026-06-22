@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -14,10 +14,10 @@ namespace SunEyeVision.Tool.Script
     [Tool(
         id: "Script",
         displayName: "Script",
-        Description = "Execute user-defined C# script with DLL references and Init/Process/Release lifecycle",
+        Description = "Execute user-defined C# script with DLL references and Init/Process lifecycle",
         Icon = "S",
         Category = "Tools",
-        Version = "1.0.0",
+        Version = "2.0.0",
         HasDebugWindow = true
     )]
     public class ScriptTool : IToolPlugin<ScriptParameters, ScriptResults>
@@ -49,11 +49,25 @@ namespace SunEyeVision.Tool.Script
                 Func<string, object?>? getGlobal = null;
                 Action<string, object?>? setGlobal = null;
 
+                // ★ 解析输入绑定（集成时由 WorkflowEngine 提供，此处为空）
+                Dictionary<string, object?>? inputValues = null;
+                if (parameters.Inputs.Count > 0)
+                {
+                    inputValues = new Dictionary<string, object?>();
+                    foreach (var input in parameters.Inputs)
+                    {
+                        // 调试模式或未集成 Workflow 时，输入为空值
+                        inputValues[input.Name] = null;
+                    }
+                }
+
                 var errors = lifecycleManager.Execute(
+                    parameters.GeneratedCode,
                     parameters.ScriptCode,
                     parameters.AssemblyReferenceFullPath,
                     getGlobal,
-                    setGlobal);
+                    setGlobal,
+                    inputValues);
 
                 result.CompileErrors = errors;
                 result.CompileTimeMs = lifecycleManager.CompileTimeMs;

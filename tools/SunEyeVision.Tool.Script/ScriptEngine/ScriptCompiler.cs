@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Loader;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
@@ -57,8 +58,31 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             var syntaxTree = SyntaxFactory.ParseSyntaxTree(sourceText,
                 new CSharpParseOptions(LanguageVersion.Latest));
 
-            // 3. 扫描引用目录下所有 DLL 作为元数据引用
+            // 3. 获取元数据引用：默认 ALC 已加载程序集 + ScriptRefs 用户自定义 DLL
             var metadataReferences = new List<MetadataReference>();
+
+            // 3a. 默认 ALC 已加载的程序集（框架 + 项目，版本与运行时完全一致）
+            try
+            {
+                foreach (var asm in AssemblyLoadContext.Default.Assemblies)
+                {
+                    if (asm.IsDynamic) continue;
+                    try
+                    {
+                        metadataReferences.Add(MetadataReference.CreateFromFile(asm.Location));
+                    }
+                    catch
+                    {
+                        // 跳过无法创建引用的程序集（如原生镜像）
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                result.Diagnostics.Add($"枚举默认 ALC 程序集失败: {ex.Message}");
+            }
+
+            // 3b. ScriptRefs 目录（用户自定义第三方 DLL）
             try
             {
                 if (!string.IsNullOrEmpty(assemblyRefDir) && Directory.Exists(assemblyRefDir))

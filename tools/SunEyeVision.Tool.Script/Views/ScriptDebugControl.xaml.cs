@@ -14,6 +14,7 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using System.Collections.Immutable;
 using System.Runtime.InteropServices;
+using System.Runtime.Loader;
 using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
@@ -298,7 +299,7 @@ namespace SunEyeVision.Tool.Script.Views
         {
             if (LogListBox.SelectedItem is LogEntry entry && entry.IsError && CodeEditor != null)
             {
-                var match = Regex.Match(entry.Text, @"line (\d+)");
+                var match = Regex.Match(entry.Text, @"行 (\d+)");
                 if (match.Success && int.TryParse(match.Groups[1].Value, out var lineNumber))
                 {
                     CodeEditor.TextArea.Caret.Line = lineNumber;
@@ -418,10 +419,25 @@ namespace SunEyeVision.Tool.Script.Views
         // =======================================================
 
         /// <summary>
-        /// 枚举程序集引用：从指定目录扫描所有 *.dll 文件
+        /// 枚举程序集引用：从默认 ALC 已加载程序集 + ScriptRefs 目录中获取
         /// </summary>
         private static IEnumerable<MetadataReference> EnumerateAssemblyReferences(string refDir)
         {
+            // 1. 默认 ALC 已加载程序集（框架 + 项目）
+            foreach (var asm in AssemblyLoadContext.Default.Assemblies)
+            {
+                if (asm.IsDynamic) continue;
+                MetadataReference? mdRef = null;
+                try
+                {
+                    mdRef = MetadataReference.CreateFromFile(asm.Location);
+                }
+                catch { }
+                if (mdRef != null)
+                    yield return mdRef;
+            }
+
+            // 2. ScriptRefs 目录（用户自定义第三方 DLL）
             if (!Directory.Exists(refDir))
                 yield break;
 
@@ -460,10 +476,31 @@ namespace SunEyeVision.Tool.Script.Views
                     .WithAllowUnsafe(true));
             PluginLogger.Info($"[补全] 项目创建完成: {sw.ElapsedMilliseconds}ms", typeName);
 
-            // 扫描引用目录下所有 DLL，无任何分类逻辑
+            // 扫描引用：默认 ALC 已加载程序集 + ScriptRefs 用户自定义 DLL
             sw.Restart();
             var refDir = _parameters?.AssemblyReferenceFullPath;
             var refCount = 0;
+
+            // 1. 默认 ALC 已加载程序集（框架 + 项目）
+            try
+            {
+                foreach (var asm in AssemblyLoadContext.Default.Assemblies)
+                {
+                    if (asm.IsDynamic) continue;
+                    try
+                    {
+                        project = project.AddMetadataReference(MetadataReference.CreateFromFile(asm.Location));
+                        refCount++;
+                    }
+                    catch { }
+                }
+            }
+            catch (Exception ex)
+            {
+                PluginLogger.Warning($"[补全] 枚举 ALC 程序集失败: {ex.Message}", typeName);
+            }
+
+            // 2. ScriptRefs 目录（用户自定义第三方 DLL）
             if (!string.IsNullOrEmpty(refDir))
             {
                 if (!Directory.Exists(refDir))

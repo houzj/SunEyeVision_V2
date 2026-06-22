@@ -3,6 +3,8 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.Loader;
 using System.Windows;
 using System.Windows.Data;
 
@@ -27,12 +29,19 @@ namespace SunEyeVision.Tool.Script.Views
     }
 
     /// <summary>
+    /// 系统程序集信息（只读，用于展示 ALC 已加载程序集）
+    /// </summary>
+    public record SystemAssemblyInfo(string Name, string Version);
+
+    /// <summary>
     /// 程序集引用管理对话框。
     /// 所有操作均针对引用目录下的 *.dll 文件（扫描、复制、删除）。
+    /// 新增"系统程序集"标签页展示 ALC 已加载的程序集（只读）。
     /// </summary>
     public partial class AssemblyReferenceDialog : Window
     {
         private readonly ObservableCollection<string> _dllFiles;
+        private readonly ObservableCollection<SystemAssemblyInfo> _systemAssemblies = new();
         private readonly string _refDir;
 
         /// <summary>
@@ -53,6 +62,27 @@ namespace SunEyeVision.Tool.Script.Views
             RefreshList();
 
             ReferenceListBox.ItemsSource = _dllFiles;
+
+            // 填充系统程序集列表（ALC 已加载）
+            PopulateSystemAssemblies();
+            SystemAssemblyListBox.ItemsSource = _systemAssemblies;
+        }
+
+        /// <summary>
+        /// 从默认 ALC 填充系统程序集只读列表（按名称排序）
+        /// </summary>
+        private void PopulateSystemAssemblies()
+        {
+            _systemAssemblies.Clear();
+            foreach (var asm in AssemblyLoadContext.Default.Assemblies
+                .Where(a => !a.IsDynamic)
+                .OrderBy(a => a.GetName().Name))
+            {
+                var asmName = asm.GetName();
+                _systemAssemblies.Add(new SystemAssemblyInfo(
+                    asmName.Name ?? "?",
+                    asmName.Version?.ToString() ?? "?"));
+            }
         }
 
         /// <summary>

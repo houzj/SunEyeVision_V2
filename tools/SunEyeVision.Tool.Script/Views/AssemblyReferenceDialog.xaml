@@ -53,61 +53,111 @@
                 </Grid>
             </Border>
 
-            <!-- 内容区 -->
-            <Grid Grid.Row="1" Margin="12,8,12,8">
-                <Grid.Resources>
+            <!-- 内容区：TabControl 两个标签页 -->
+            <TabControl Grid.Row="1" Margin="12,8,12,8"
+                        Background="#FF1E1E1E" BorderBrush="#FF3C3C3C"
+                        Foreground="#FFDCDCDC" FontSize="12">
+                <TabControl.Resources>
                     <local:AssemblyDisplayConverter x:Key="AssemblyDisplayConverter"/>
-                </Grid.Resources>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
+                </TabControl.Resources>
 
-                <!-- 工具栏 -->
-                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
-                    <Button Content="+ 添加DLL..." Click="OnAddButtonClick"
-                            Background="#FF007ACC" Foreground="White"
-                            BorderThickness="0" Padding="10,4" FontSize="12"
-                            Cursor="Hand"/>
-                </StackPanel>
-
-                <!-- 引用列表（每条自带 ✕ 删除按钮） -->
-                <ListBox Grid.Row="1" x:Name="ReferenceListBox"
+                <!-- 自定义程序集标签页（可管理：添加/删除） -->
+                <TabItem Header="自定义程序集"
                          Background="#FF1E1E1E" Foreground="#FFDCDCDC"
-                         BorderBrush="#FF3C3C3C" BorderThickness="1"
-                         FontSize="12"
-                         ItemsSource="{Binding}">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="{Binding Converter={StaticResource AssemblyDisplayConverter}}"
-                                           TextWrapping="Wrap" Margin="4,2" VerticalAlignment="Center"/>
-                                <Button Grid.Column="1" Content="✕" Width="20" Height="20"
-                                        Background="Transparent" Foreground="#FF999999"
-                                        BorderThickness="0" FontSize="10" Cursor="Hand"
-                                        Click="OnItemDeleteButtonClick"
-                                        ToolTip="移除此引用">
-                                    <Button.Style>
-                                        <Style TargetType="Button">
-                                            <Setter Property="Background" Value="Transparent"/>
-                                            <Style.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="#E81123"/>
-                                                    <Setter Property="Foreground" Value="White"/>
-                                                </Trigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Button.Style>
-                                </Button>
-                            </Grid>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-            </Grid>
+                         BorderBrush="#FF3C3C3C">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- 工具栏 -->
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
+                            <Button Content="+ 添加DLL..." Click="OnAddButtonClick"
+                                    Background="#FF007ACC" Foreground="White"
+                                    BorderThickness="0" Padding="10,4" FontSize="12"
+                                    Cursor="Hand"/>
+                        </StackPanel>
+
+                        <!-- 引用列表（每条自带 ✕ 删除按钮） -->
+                        <ListBox Grid.Row="1" x:Name="ReferenceListBox"
+                                 Background="#FF1E1E1E" Foreground="#FFDCDCDC"
+                                 BorderBrush="#FF3C3C3C" BorderThickness="1"
+                                 FontSize="12"
+                                 ItemsSource="{Binding}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{Binding Converter={StaticResource AssemblyDisplayConverter}}"
+                                                   TextWrapping="Wrap" Margin="4,2" VerticalAlignment="Center"/>
+                                        <Button Grid.Column="1" Content="✕" Width="20" Height="20"
+                                                Background="Transparent" Foreground="#FF999999"
+                                                BorderThickness="0" FontSize="10" Cursor="Hand"
+                                                Click="OnItemDeleteButtonClick"
+                                                ToolTip="移除此引用">
+                                            <Button.Style>
+                                                <Style TargetType="Button">
+                                                    <Setter Property="Background" Value="Transparent"/>
+                                                    <Style.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="Background" Value="#E81123"/>
+                                                            <Setter Property="Foreground" Value="White"/>
+                                                        </Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Grid>
+                </TabItem>
+
+                <!-- 系统程序集标签页（只读：ALC 已加载程序集） -->
+                <TabItem Header="系统程序集"
+                         Background="#FF1E1E1E" Foreground="#FFDCDCDC"
+                         BorderBrush="#FF3C3C3C">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- 说明文字 -->
+                        <TextBlock Grid.Row="0" Text="默认 ALC 已加载程序集（只读，由运行时自动管理）"
+                                   Foreground="#FF999999" FontSize="11" Margin="0,0,0,6"/>
+
+                        <!-- 系统程序集列表 -->
+                        <ListBox Grid.Row="1" x:Name="SystemAssemblyListBox"
+                                 Background="#FF1E1E1E" Foreground="#FFDCDCDC"
+                                 BorderBrush="#FF3C3C3C" BorderThickness="1"
+                                 FontSize="12"
+                                 ItemsSource="{Binding}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="📦" Margin="4,2,6,2"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding Name}"
+                                                   TextWrapping="Wrap" Margin="0,2" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="2" Text="{Binding Version}"
+                                                   Foreground="#FF999999" Margin="4,2" VerticalAlignment="Center"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Grid>
+                </TabItem>
+            </TabControl>
 
             <!-- 底部按钮 -->
             <Border Grid.Row="2" Background="#FF252526" BorderBrush="#FF3C3C3C"

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+
 using System.Reflection;
 using System.Runtime.Loader;
 
@@ -76,14 +77,18 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
 
         private Assembly? OnResolving(AssemblyLoadContext context, AssemblyName assemblyName)
         {
-            // 尝试从默认 ALC 解析（框架程序集）
+            var name = assemblyName.Name;
+            if (string.IsNullOrEmpty(name))
+                return null;
+
+            // 按简单名称解析（忽略版本号），匹配默认 ALC 中已加载的框架程序集
             try
             {
-                return Assembly.Load(assemblyName);
+                return Assembly.Load(new AssemblyName(name));
             }
             catch
             {
-                return null;
+                return null;  // Resolving 事件协议：返回 null = "我无法解析"
             }
         }
 

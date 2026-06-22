@@ -1,73 +1,64 @@
-﻿# ScriptReferences 初始化 — 复制 BCL 核心程序集 + 项目依赖
+﻿# ScriptRefs 清理与迁移
+# 新方案：框架程序集和项目程序集由默认 ALC 自动提供，不再需要复制到 ScriptRefs。
+# ScriptRefs 目录仅保留用户通过程序集管理器手动添加的第三方 DLL。
+
 $targetDir = "d:\MyWork\SunEyeVision_V2-script\dev\Debug\data\ScriptRefs"
-if (-not (Test-Path $targetDir)) { New-Item -ItemType Directory -Path $targetDir -Force | Out-Null }
-
-# === 自动探测最新 .NET 运行时版本目录 ===
-$dotnetRoot = "C:\Program Files\dotnet\shared\Microsoft.NETCore.App"
-if (-not (Test-Path $dotnetRoot)) {
-    Write-Host "ERROR: .NET runtime directory not found at $dotnetRoot" -ForegroundColor Red
-    exit 1
+if (-not (Test-Path $targetDir)) {
+    Write-Host "ScriptRefs 目录不存在，无需清理。" -ForegroundColor Cyan
+    exit 0
 }
 
-$latestVersion = Get-ChildItem $dotnetRoot -Directory |
-    Where-Object { $_.Name -match '^\d+\.\d+\.\d+$' } |
-    Sort-Object { [version]$_.Name } -Descending |
-    Select-Object -First 1
-
-if (-not $latestVersion) {
-    Write-Host "ERROR: no .NET runtime version directory found under $dotnetRoot" -ForegroundColor Red
-    exit 1
-}
-
-$netCoreDir = $latestVersion.FullName
-Write-Host "使用 .NET 运行时: $($latestVersion.Name) ($netCoreDir)" -ForegroundColor Cyan
-
-# === BCL 核心程序集（脚本模板 using：System, System.Collections.Generic, System.Linq, System.Text, System.IO, System.Diagnostics） ===
-$bclAssemblies = @(
-    "System.Private.CoreLib.dll",   # ★ 关键：所有 BCL 类型的实际定义
-    "System.Runtime.dll",           # 类型转发到 System.Private.CoreLib
-    "System.Collections.dll",       # System.Collections.Generic
-    "System.Linq.dll",              # System.Linq
-    "System.Console.dll",           # System.Console
-    "System.IO.dll",                # System.IO
-    # Note: System.Text 命名空间类型已包含在 System.Private.CoreLib.dll 中
-    "System.Diagnostics.Debug.dll"  # System.Diagnostics
+# === 清理旧框架程序集（由 ALC 自动提供） ===
+$systemPrefixes = @(
+    "System.", "Microsoft.", "netstandard", "mscorlib",
+    "SunEyeVision.",  # 项目程序集也由 ALC 自动提供
+    "Presentation", "WindowsBase", "DirectWriteForwarder",
+    "Accessibility", "ReachFramework", "SMDiagnostics",
+    "UIAutomation", "System.Core", "System.Data", "System.Drawing",
+    "System.Numerics", "System.Xml", "System.Configuration",
+    "System.ComponentModel", "System.Collections", "System.IO",
+    "System.Linq", "System.Text", "System.Threading", "System.Runtime",
+    "System.Console", "System.Diagnostics", "System.Globalization",
+    "System.Net", "System.Security", "System.Reflection"
 )
 
-Write-Host "`n复制 BCL 程序集..." -ForegroundColor Yellow
-$copiedCount = 0
-foreach ($asm in $bclAssemblies) {
-    $src = Join-Path $netCoreDir $asm
-    $dst = Join-Path $targetDir $asm
-    if (Test-Path $src -PathType Leaf) {
-        Copy-Item -Path $src -Destination $dst -Force
-        Write-Host "  OK  $asm" -ForegroundColor Green
-        $copiedCount++
-    } else {
-        Write-Host " MISS  $asm (not found in runtime)" -ForegroundColor Red
+$removedCount = 0
+$fileList = Get-ChildItem $targetDir -Filter "*.dll"
+
+foreach ($file in $fileList) {
+    $name = $file.Name
+    $shouldRemove = $false
+    foreach ($prefix in $systemPrefixes) {
+        if ($name.StartsWith($prefix, [StringComparison]::OrdinalIgnoreCase)) {
+            $shouldRemove = $true
+            break
+        }
+    }
+    if ($shouldRemove) {
+        Remove-Item $file.FullName -Force
+        Write-Host "  已清理: $name" -ForegroundColor Yellow
+        $removedCount++
     }
 }
 
-# === 项目依赖程序集 ===
-Write-Host "`n复制项目依赖..." -ForegroundColor Yellow
-$appAssemblies = @{
-    "SunEyeVision.Tool.Script.dll"  = "d:\MyWork\SunEyeVision_V2-script\dev\Debug\plugins\Script\SunEyeVision.Tool.Script.dll"
-    "SunEyeVision.Plugin.SDK.dll"   = "d:\MyWork\SunEyeVision_V2-script\dev\Debug\SunEyeVision.Plugin.SDK.dll"
+if ($removedCount -eq 0) {
+    Write-Host "未发现需要清理的程序集。ScriptRefs 已干净。" -ForegroundColor Green
+} else {
+    Write-Host "`n共清理 $removedCount 个旧程序集" -ForegroundColor Cyan
 }
 
-foreach ($name in $appAssemblies.Keys) {
-    $src = $appAssemblies[$name]
-    $dst = Join-Path $targetDir $name
-    if (Test-Path $src -PathType Leaf) {
-        Copy-Item -Path $src -Destination $dst -Force
-        Write-Host "  OK  $name" -ForegroundColor Green
-        $copiedCount++
-    } else {
-        Write-Host " MISS  $name (not found)" -ForegroundColor Red
-    }
+# === 显示剩余（用户自定义）程序集 ===
+$remaining = Get-ChildItem $targetDir -Filter "*.dll"
+if ($remaining.Count -gt 0) {
+    Write-Host "`n剩余（用户自定义）程序集:" -ForegroundColor Green
+    $remaining | Select-Object Name | Format-Table -AutoSize
+} else {
+    Write-Host "`nScriptRefs 目录为空（所有程序集由 ALC 自动提供）" -ForegroundColor Cyan
 }
 
-# === 汇总 ===
-Write-Host ""
-Write-Host "ScriptRefs 初始化完成 (共 $copiedCount DLLs)" -ForegroundColor Cyan
-Get-ChildItem $targetDir | Select-Object Name | Format-Table -AutoSize
+Write-Host "`n============================================" -ForegroundColor DarkGray
+Write-Host "新方案说明" -ForegroundColor DarkGray
+Write-Host "============================================" -ForegroundColor DarkGray
+Write-Host "框架程序集和项目程序集已由运行时默认 ALC 自动提供。" -ForegroundColor DarkGray
+Write-Host "ScriptRefs 目录仅需保留用户通过程序集管理器添加的第三方 DLL。" -ForegroundColor DarkGray
+Write-Host "如需添加自定义 DLL，请在脚本编辑器中点击『程序集引用管理』。" -ForegroundColor DarkGray

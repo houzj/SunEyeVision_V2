@@ -1,11 +1,15 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.Loader;
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Text;
 using SunEyeVision.Plugin.SDK.Logging;
 
@@ -30,6 +34,15 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             public string? EntryClassName { get; set; }
             public int UsingLineOffset { get; set; }
         }
+
+        // =====================================================
+        // 编译结果缓存（按代码哈希 + 引用目录，相同代码跳过 Emit）
+        // =====================================================
+
+        /// <summary>
+        /// 编译结果缓存（键 = 代码SHA256[:8] + | + 引用目录路径）
+        /// </summary>
+        private static readonly ConcurrentDictionary<string, CompileResult> _compileCache = new();
 
         // =====================================================
         // 缓存区：进程生命周期内不变的对象
@@ -156,7 +169,26 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                 return result;
             }
 
-            // 1. 不再自动注入 using — 补全和编译由脚本中的显式 using 语句驱动
+            // 0a. 检查编译缓存（相同代码 + 相同引用目录）
+            var codeHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(code)));
+            var cacheKey = $"{codeHash}|{assemblyRefDir ?? ""}";
+            if (_compileCache.TryGetValue(cacheKey, out var cached))
+            {
+                PluginLogger.Info(
+                    $"[ScriptCompiler] 编译缓存命中: hash={codeHash[..8]}..., 代码长度={code.Length}",
+                    nameof(ScriptCompiler));
+                return new CompileResult
+                {
+                    Success = cached.Success,
+                    AssemblyBytes = cached.AssemblyBytes,
+                    SymbolBytes = cached.SymbolBytes,
+                    Diagnostics = cached.Diagnostics,
+                    EntryClassName = cached.EntryClassName,
+                    UsingLineOffset = cached.UsingLineOffset,
+                };
+            }
+
+            // 0b. 不再自动注入 using — 补全和编译由脚本中的显式 using 语句驱动
             result.UsingLineOffset = 0;
             var fullCode = code;
 
@@ -211,7 +243,9 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             using var assemblyStream = new MemoryStream();
             using var symbolStream = new MemoryStream();
 
-            var emitResult = compilation.Emit(assemblyStream, symbolStream);
+            var emitResult = compilation.Emit(assemblyStream, symbolStream,
+                options: new EmitOptions(
+                    debugInformationFormat: DebugInformationFormat.PortablePdb));
             emitSw.Stop();
 
             totalSw.Stop();
@@ -229,6 +263,9 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                 result.AssemblyBytes = assemblyStream.ToArray();
                 result.SymbolBytes = symbolStream.ToArray();
                 result.EntryClassName = ExtractClassName(code);
+
+                // 编译成功，加入缓存
+                _compileCache[cacheKey] = result;
             }
             else
             {

@@ -11,12 +11,15 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 using System.Text.RegularExpressions;
+using System.Xml;
 using System.Collections.Immutable;
+using System.Runtime.InteropServices;
 using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Editing;
 using ICSharpCode.AvalonEdit.Highlighting;
+using ICSharpCode.AvalonEdit.Highlighting.Xshd;
 using ICSharpCode.AvalonEdit.Rendering;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Completion;
@@ -42,9 +45,8 @@ namespace SunEyeVision.Tool.Script.Views
 
         // Roslyn completion workspace
         private AdhocWorkspace? _workspace;
-        private Document? _document;
+        private DocumentId? _documentId;                              // 不可变标识，仅 RebuildWorkspace 赋值
         private CompletionWindow? _completionWindow;
-        private CompletionService? _completionService;                 // 缓存 CompletionService 避免重复 GetService
         private CompletionItem[] _currentItems;                        // 唯一数据源（单层，无后台刷新）
         private CancellationTokenSource? _throttleCts;                // 50ms 节流令牌
 
@@ -54,7 +56,6 @@ namespace SunEyeVision.Tool.Script.Views
 
         // Phase 2: 语义高亮缓存
         private IReadOnlyList<ClassifiedSpan>? _classificationSpans;
-        private CancellationTokenSource? _classificationCts;
 
         public ObservableCollection<ScriptParamItem> InputVariables => _inputVariables;
         public ObservableCollection<ScriptParamItem> OutputVariables => _outputVariables;
@@ -77,13 +78,11 @@ namespace SunEyeVision.Tool.Script.Views
             LogListBox.ItemsSource = _logEntries;
             UpdateStatus("初始化中...");
 
-            // Phase 1: 语法高亮（内置 C# + Roslyn 语义高亮 + 实时错误标记）
-            // 放弃从 xshd 加载，避开 AvalonEdit 6.3 的 xshd 兼容性问题
+            // Phase 1: 语法高亮（自定义 xshd + Roslyn 语义高亮 + 实时错误标记）
             var typeName = GetType().Name;
 
-            // Layer 1: 使用内置 C# 高亮（AvalonEdit 6.3 稳定兼容）
-            CodeEditor.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("C#");
-            PluginLogger.Info("[Highlighting] 使用内置 C# 高亮方案: " + (CodeEditor.SyntaxHighlighting?.Name ?? "null"), typeName);
+            // Layer 1: 从输出目录加载自定义 xshd（含 BCL 类型关键词），失败则回退到内置 C# 高亮
+            LoadCustomHighlighting();
 
             // Layer 2a: Roslyn 语义高亮着色器（替代正则猜测的 ScriptSemanticColorizer）
             var semanticColorizer = new RoslynSemanticColorizer(
@@ -97,11 +96,15 @@ namespace SunEyeVision.Tool.Script.Views
             CodeEditor.TextArea.TextView.LineTransformers.Add(errorMarker);
             PluginLogger.Info("[Highlighting] 已加载实时错误标记着色器", typeName);
 
+            // 设置语义高亮主题色（当前为浅色主题，与 xshd 颜色一致）
+            RoslynClassificationColors.SetTheme(false);
+
             // Phase 1: 实时诊断（文本变更 → 500ms 节流 → Roslyn 诊断 → 着色）
             CodeEditor.TextChanged += OnCodeEditorTextChanged;
 
             // Phase 2: 初始化 Roslyn 补全工作区（同步完成，窗口弹出时已就绪）
             RebuildWorkspace();
+            ScheduleSemanticAnalysis();  // 初始化后立即触发语义分析，避免打开编辑器时无语义高亮
 
             // 自动补全事件
             CodeEditor.TextArea.TextEntered += TextArea_TextEntered;
@@ -116,9 +119,38 @@ namespace SunEyeVision.Tool.Script.Views
                 _workspace?.Dispose();
                 _diagnosticsCts?.Cancel();
                 _diagnosticsCts?.Dispose();
-                _classificationCts?.Cancel();
-                _classificationCts?.Dispose();
             };
+        }
+
+        /// <summary>
+        /// 从输出目录 Resources 子文件夹加载自定义 xshd 语法定义（含 BCL 类型关键词）。
+        /// 文件不存在或加载失败时回退到内置 C# 高亮，不抛异常。
+        /// </summary>
+        private void LoadCustomHighlighting()
+        {
+            var typeName = GetType().Name;
+            var assemblyDir = Path.GetDirectoryName(typeof(ScriptDebugControl).Assembly.Location);
+            var xshdPath = Path.Combine(assemblyDir ?? AppContext.BaseDirectory, "Resources", "CSharpLight.xshd");
+
+            if (!File.Exists(xshdPath))
+            {
+                PluginLogger.Warning($"[Highlighting] xshd 文件不存在: {xshdPath}，回退到内置 C# 高亮", typeName);
+                CodeEditor.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("C#");
+                return;
+            }
+
+            try
+            {
+                using var stream = File.OpenRead(xshdPath);
+                using var reader = XmlReader.Create(stream);
+                CodeEditor.SyntaxHighlighting = HighlightingLoader.Load(reader, HighlightingManager.Instance);
+                PluginLogger.Info($"[Highlighting] 已加载自定义 xshd: {xshdPath}, Name={CodeEditor.SyntaxHighlighting?.Name}", typeName);
+            }
+            catch (Exception ex)
+            {
+                PluginLogger.Warning($"[Highlighting] xshd 加载失败: {ex.Message}，回退到内置 C# 高亮", typeName);
+                CodeEditor.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("C#");
+            }
         }
 
         public override void SetParameters(ToolParameters parameters)
@@ -134,6 +166,7 @@ namespace SunEyeVision.Tool.Script.Views
                 SyncInputVariables();
                 SyncOutputVariables();
                 RebuildWorkspace();  // Recipe 恢复后重建 Roslyn 工作区，确保补全使用最新引用
+                ScheduleSemanticAnalysis();  // 重建后立即触发语义分析，更新高亮
             }
         }
 
@@ -278,6 +311,77 @@ namespace SunEyeVision.Tool.Script.Views
         }
 
         /// <summary>
+        /// 输出面板快捷键：Ctrl+A 全选、Ctrl+C 复制选中条目到剪贴板
+        /// </summary>
+        private void LogListBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.A && Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                LogListBox.SelectAll();
+                e.Handled = true;
+            }
+            else if (e.Key == Key.C && Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                CopySelectedLogEntries();
+                e.Handled = true;
+            }
+        }
+
+        /// <summary>
+        /// 右键菜单「复制选中」
+        /// </summary>
+        private void CopyLogMenuItem_Click(object sender, RoutedEventArgs e)
+            => CopySelectedLogEntries();
+
+        /// <summary>
+        /// 右键菜单「全选」
+        /// </summary>
+        private void SelectAllLogMenuItem_Click(object sender, RoutedEventArgs e)
+            => LogListBox.SelectAll();
+
+        /// <summary>
+        /// 将当前选中的日志条目文本复制到剪贴板（多条用 Environment.NewLine 连接）。
+        /// 剪贴板可能被其他进程占用，重试若干次；重试耗尽必须明确告知用户（禁止静默失败）。
+        /// </summary>
+        private void CopySelectedLogEntries()
+        {
+            var selected = LogListBox.SelectedItems
+                .OfType<LogEntry>()
+                .Select(entry => entry.Text)
+                .ToArray();
+
+            if (selected.Length == 0)
+            {
+                PluginLogger.Warning("复制日志：未选中任何条目", nameof(ScriptDebugControl));
+                return;
+            }
+
+            var text = string.Join(Environment.NewLine, selected);
+            PluginLogger.Info($"复制日志：选中 {selected.Length} 条，文本长度 {text.Length} 字符", nameof(ScriptDebugControl));
+
+            for (int attempt = 0; attempt < 10; attempt++)
+            {
+                try
+                {
+                    Clipboard.SetText(text);
+                    PluginLogger.Success($"复制日志成功（第 {attempt + 1} 次尝试）", nameof(ScriptDebugControl));
+                    return;
+                }
+                catch (COMException ex) when (ex.ErrorCode == unchecked((int)0x800401D0))
+                {
+                    PluginLogger.Warning($"剪贴板被占用，重试 {attempt + 1}/10：{ex.Message}", nameof(ScriptDebugControl));
+                    Thread.Sleep(50);
+                }
+            }
+
+            // 重试耗尽：禁止静默返回，必须告知用户（rule-008 / rule-015）
+            PluginLogger.Error("复制日志失败：剪贴板被占用，10 次重试均失败", nameof(ScriptDebugControl));
+            MessageBox.Show(
+                "剪贴板被其他程序占用，复制失败（已重试 10 次）。\n请关闭剪贴板管理工具（如 Win+V 历史记录、输入法、截图软件）后重试。",
+                "复制失败", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+
+        /// <summary>
         /// 引用程序集按钮点击 — 弹出对话框管理引用目录下的 DLL
         /// </summary>
         private void AssemblyRefButton_Click(object sender, RoutedEventArgs e)
@@ -338,6 +442,7 @@ namespace SunEyeVision.Tool.Script.Views
 
             PluginLogger.Info($"[补全] RebuildWorkspace 开始: 代码长度={currentCode.Length}", typeName);
 
+            _diagnosticsCts?.Cancel();  // 取消正在进行的语义分析，防止访问已 Dispose 的 workspace
             _workspace?.Dispose();
 
             // 加载 MefHostServices 确保所有 CompletionProvider 可用
@@ -398,14 +503,10 @@ namespace SunEyeVision.Tool.Script.Views
             PluginLogger.Info($"[补全] TryApplyChanges: {sw.ElapsedMilliseconds}ms", typeName);
 
             sw.Restart();
-            _document = _workspace.AddDocument(project.Id, "Script.cs",
+            var document = _workspace.AddDocument(project.Id, "Script.cs",
                 SourceText.From(currentCode));
-            PluginLogger.Info($"[补全] 文档添加完成，文档 ID={_document.Id}: {sw.ElapsedMilliseconds}ms", typeName);
-
-            sw.Restart();
-            _completionService = CompletionService.GetService(_document);
-            var csAvailable = _completionService != null;
-            PluginLogger.Info($"[补全] CompletionService{(csAvailable ? "" : " 不")}可用: {sw.ElapsedMilliseconds}ms", typeName);
+            _documentId = document.Id;
+            PluginLogger.Info($"[补全] 文档添加完成，文档 ID={_documentId}: {sw.ElapsedMilliseconds}ms", typeName);
 
             _currentItems = [];   // 清空缓存，下次输入触发全新解析
 
@@ -421,9 +522,9 @@ namespace SunEyeVision.Tool.Script.Views
         {
             var typeName = GetType().Name;
 
-            if (_workspace == null || _document == null || _completionService == null)
+            if (_workspace == null || _documentId == null)
             {
-                PluginLogger.Warning($"[补全] TextEntered 跳过: workspace={_workspace != null}, document={_document != null}, completionService={_completionService != null}, text='{e.Text}'", typeName);
+                PluginLogger.Warning($"[补全] TextEntered 跳过: workspace={_workspace != null}, documentId={_documentId != null}, text='{e.Text}'", typeName);
                 return;
             }
 
@@ -602,14 +703,13 @@ namespace SunEyeVision.Tool.Script.Views
 
         /// <summary>
         /// 将 Roslyn CompletionItem[] 直接注入 CompletionList（AvalonEdit 接管客户端过滤）
-        /// 同时传入当前 _document，使 Complete 能走 GetChangeAsync 精确路径而非 fallback
         /// </summary>
         private void PopulateData(IList<ICompletionData> data,
             ImmutableArray<CompletionItem> items)
         {
             data.Clear();
             foreach (var item in items)
-                data.Add(new RoslynCompletionData(item, _document));
+                data.Add(new RoslynCompletionData(item, null));
         }
 
         /// <summary>
@@ -649,9 +749,9 @@ namespace SunEyeVision.Tool.Script.Views
         {
             var typeName = GetType().Name;
 
-            if (_workspace == null || _document == null)
+            if (_workspace == null || _documentId == null)
             {
-                PluginLogger.Warning($"[补全] FetchFreshCompletions 跳过: workspace={_workspace != null}, document={_document != null}", typeName);
+                PluginLogger.Warning($"[补全] FetchFreshCompletions 跳过: workspace={_workspace != null}, documentId={_documentId != null}", typeName);
                 return default;
             }
 
@@ -673,14 +773,20 @@ namespace SunEyeVision.Tool.Script.Views
 
             try
             {
-                // ★ 使用 WithText 避免与 RunSemanticAnalysisAsync 的 TryApplyChanges 竞态
+                // 从 workspace 获取最新 Document，使用局部 doc，不修改任何字段
                 var sw = System.Diagnostics.Stopwatch.StartNew();
-                _document = _document.WithText(SourceText.From(code));
+                var doc = _workspace.CurrentSolution.GetDocument(_documentId);
+                if (doc == null)
+                {
+                    PluginLogger.Warning($"[补全] workspace 中找不到 document: {_documentId}", typeName);
+                    return default;
+                }
+                doc = doc.WithText(SourceText.From(code));
                 PluginLogger.Info($"[补全] WithText 完成: {sw.ElapsedMilliseconds}ms", typeName);
 
                 sw.Restart();
-                _completionService = CompletionService.GetService(_document);
-                if (_completionService == null)
+                var completionService = CompletionService.GetService(doc);
+                if (completionService == null)
                 {
                     PluginLogger.Warning($"[补全] CompletionService 不可用, caretOffset={caretOffset}", typeName);
                     return default;
@@ -695,7 +801,7 @@ namespace SunEyeVision.Tool.Script.Views
                 sw.Restart();
                 PluginLogger.Info($"[补全] 调用 GetCompletionsAsync: triggerType={trigger.Kind}, triggerChar='{(triggerChar == '\0' ? "\\0" : triggerChar.ToString())}'", typeName);
 
-                var results = await _completionService.GetCompletionsAsync(_document, caretOffset, trigger);
+                var results = await completionService.GetCompletionsAsync(doc, caretOffset, trigger);
 
                 if (results == null)
                 {
@@ -754,23 +860,42 @@ namespace SunEyeVision.Tool.Script.Views
         /// </summary>
         private async Task RunSemanticAnalysisAsync(CancellationToken token)
         {
-            if (_workspace == null || _document == null) return;
+            var typeName = GetType().Name;
+
+            if (_workspace == null || _documentId == null)
+            {
+                PluginLogger.Warning($"[SemanticHighlight] 跳过: workspace={_workspace != null}, documentId={_documentId != null}", typeName);
+                return;
+            }
 
             var code = CodeEditor.Text;
-            if (string.IsNullOrEmpty(code)) return;
+            if (string.IsNullOrEmpty(code))
+            {
+                PluginLogger.Warning("[SemanticHighlight] 跳过: 代码为空", typeName);
+                return;
+            }
 
             try
             {
-                // 1. 更新 workspace 文本
+                // 1. 更新 workspace 文本（TryApplyChanges 确保 Document 在 workspace solution 中，
+                //    Classifier.GetClassifiedSpansAsync 需要 workspace-backed SemanticModel）
                 var sourceText = SourceText.From(code);
-                var newSolution = _workspace.CurrentSolution.WithDocumentText(_document.Id, sourceText);
-                if (!_workspace.TryApplyChanges(newSolution)) return;
-                _document = _workspace.CurrentSolution.GetDocument(_document.Id);
-                if (_document == null) return;
+                var newSolution = _workspace.CurrentSolution.WithDocumentText(_documentId, sourceText);
+                if (!_workspace.TryApplyChanges(newSolution))
+                {
+                    PluginLogger.Warning("[SemanticHighlight] TryApplyChanges 失败", typeName);
+                    return;
+                }
+                var doc = _workspace.CurrentSolution.GetDocument(_documentId);
+                if (doc == null)
+                {
+                    PluginLogger.Warning("[SemanticHighlight] workspace 中找不到 document", typeName);
+                    return;
+                }
 
-                // 2. 并行获取诊断 + 语义分类
-                var modelTask = _document.GetSemanticModelAsync(token);
-                var spansTask = Classifier.GetClassifiedSpansAsync(_document, new TextSpan(0, code.Length), token);
+                // 2. 并行获取诊断 + 语义分类（使用局部 doc，不修改字段）
+                var modelTask = doc.GetSemanticModelAsync(token);
+                var spansTask = Classifier.GetClassifiedSpansAsync(doc, new TextSpan(0, code.Length), token);
 
                 await Task.WhenAll(modelTask, spansTask);
 
@@ -785,8 +910,14 @@ namespace SunEyeVision.Tool.Script.Views
                     .ToImmutableArray();
                 _currentDiagnostics = diagnostics;
 
-                // Phase 2: 语义分类缓存（只保留语义分类，语法/注释由 Layer 1 处理）
-                _classificationSpans = allSpans.Where(s => IsSemanticType(s.ClassificationType)).ToImmutableArray();
+                // Phase 2: 语义分类缓存（使用全部 Roslyn 分类，覆盖 Layer 1 的 xshd）
+                _classificationSpans = allSpans.ToImmutableArray();
+
+                PluginLogger.Info($"[SemanticHighlight] TotalSpans={allSpans.Count()}, CachedSpans={_classificationSpans.Count}", typeName);
+                var typeGroups = _classificationSpans.GroupBy(s => s.ClassificationType)
+                    .Select(g => $"{g.Key}={g.Count()}")
+                    .ToArray();
+                PluginLogger.Info($"[SemanticHighlight] Types: {string.Join(", ", typeGroups)}", typeName);
 
                 // 3. UI 线程重绘
                 await Dispatcher.InvokeAsync(() => CodeEditor.TextArea.TextView.Redraw(), DispatcherPriority.Background, token);
@@ -794,26 +925,8 @@ namespace SunEyeVision.Tool.Script.Views
             catch (OperationCanceledException) { }
             catch (Exception ex)
             {
-                PluginLogger.Warning($"[ScriptDebug] SemanticAnalysis error: {ex.Message}");
+                PluginLogger.Warning($"[ScriptDebug] SemanticAnalysis error: {ex.Message}", typeName);
             }
-        }
-
-        /// <summary>
-        /// 分类过滤器：只保留语义相关的分类，语法/注释由 Layer 1 处理
-        /// </summary>
-        private static bool IsSemanticType(string type)
-        {
-            return type switch
-            {
-                ClassificationTypeNames.Keyword        => false,
-                ClassificationTypeNames.StringLiteral  => false,
-                ClassificationTypeNames.Comment        => false,
-                ClassificationTypeNames.NumericLiteral => false,
-                ClassificationTypeNames.Operator       => false,
-                ClassificationTypeNames.Punctuation    => false,
-                ClassificationTypeNames.WhiteSpace     => false,
-                _ => true   // 类名/方法/属性/字段/局部变量/参数等
-            };
         }
 
         // =======================================================
@@ -1030,11 +1143,11 @@ namespace SunEyeVision.Tool.Script.Views
                 ClassificationTypeNames.LocalName     => dark ? DarkLocal : LightLocal,
                 ClassificationTypeNames.ParameterName => dark ? DarkLocal : LightLocal,
 
-                // 语法分类（返回 null = 让 Layer 1 内置高亮处理）
-                ClassificationTypeNames.Keyword        => null,
-                ClassificationTypeNames.StringLiteral  => null,
-                ClassificationTypeNames.Comment        => null,
-                ClassificationTypeNames.NumericLiteral => null,
+                // 语法分类（覆盖 Layer 1 的 xshd，保持颜色一致）
+                ClassificationTypeNames.Keyword        => dark ? DarkKeyword   : LightKeyword,
+                ClassificationTypeNames.StringLiteral  => null,  // 字符串由 xshd 处理
+                ClassificationTypeNames.Comment        => null,  // 注释由 xshd 处理
+                ClassificationTypeNames.NumericLiteral => null,  // 数字由 xshd 处理
                 ClassificationTypeNames.Operator       => null,
                 ClassificationTypeNames.Punctuation    => null,
                 ClassificationTypeNames.WhiteSpace     => null,

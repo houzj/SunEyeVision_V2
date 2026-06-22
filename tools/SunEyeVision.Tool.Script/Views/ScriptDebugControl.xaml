@@ -234,8 +234,18 @@
             <ListBox Grid.Row="1" x:Name="LogListBox"
                      Background="#FFFAFAFA" Foreground="#FF333333"
                      BorderThickness="0" FontSize="11"
+                     SelectionMode="Extended"
                      VirtualizingPanel.ScrollUnit="Pixel"
-                     MouseDoubleClick="LogListBox_MouseDoubleClick">
+                     MouseDoubleClick="LogListBox_MouseDoubleClick"
+                     KeyDown="LogListBox_KeyDown">
+                <ListBox.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="复制选中" Click="CopyLogMenuItem_Click" InputGestureText="Ctrl+C" />
+                        <MenuItem Header="全选" Click="SelectAllLogMenuItem_Click" InputGestureText="Ctrl+A" />
+                        <Separator />
+                        <MenuItem Header="清空" Click="ClearResultButton_Click" />
+                    </ContextMenu>
+                </ListBox.ContextMenu>
                 <ListBox.ItemTemplate>
                     <DataTemplate DataType="models:LogEntry">
                         <TextBlock Text="{Binding Text}" TextWrapping="Wrap" Margin="1" />

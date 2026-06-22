@@ -21,6 +21,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Diagnostics;
+using SunEyeVision.Tool.Script.ScriptEngine;
 
 /************************************
  * 脚本工具 - 用户自定义脚本

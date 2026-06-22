@@ -9,16 +9,17 @@
   <Color name="Char" foreground="#A31515" />
   <Color name="Keyword" foreground="#0000FF" fontWeight="bold" />
   <Color name="Type" foreground="#2B91AF" />
+  <Color name="Method" foreground="#74569F" />
   <Color name="Number" foreground="#098658" />
   <Color name="Preprocessor" foreground="#888888" />
-  <Color name="MethodCall" foreground="#74569F" />
+
 
   <!-- Main rule set -->
   <RuleSet>
 
     <!-- Multi-line comment /* ... */ -->
     <Span color="Comment" ruleSet="CommentContent" multiline="true">
-      <Begin>/*</Begin>
+      <Begin>/\*</Begin>
       <End>\*/</End>
     </Span>
 
@@ -39,10 +40,9 @@
       <Begin>@"</Begin>
       <End>"</End>
       <RuleSet>
-        <Span color="VerbatimString">
-          <Begin>""</Begin>
-          <End></End>
-        </Span>
+        <Rule color="VerbatimString">
+          ""
+        </Rule>
       </RuleSet>
     </Span>
 
@@ -70,21 +70,10 @@
       </RuleSet>
     </Span>
 
-    <!-- Preprocessor directives -->
-    <Span color="Preprocessor" ruleSet="PreprocessorContent">
-      <Begin>^#(if|else|elif|endif|define|undef|region|endregion|error|warning|line|pragma|nullable|nullable restore|nullable disable)\b</Begin>
-      <!-- 无 End，自动行尾 -->
-    </Span>
-
-    <Span color="Preprocessor">
-      <Begin>^#\s*region\b</Begin>
-      <!-- 无 End，自动行尾 -->
-    </Span>
-
-    <Span color="Preprocessor">
-      <Begin>^#\s*endregion\b</Begin>
-      <!-- 无 End，自动行尾 -->
-    </Span>
+    <!-- Preprocessor directives (# followed by directive name, rest of line colored) -->
+    <Rule color="Preprocessor">
+      \#(if|else|elif|endif|define|undef|region|endregion|error|warning|line|pragma|nullable)\b[^\r\n]*
+    </Rule>
 
     <!-- C# keywords -->
     <Keywords color="Keyword">
@@ -197,6 +186,140 @@
       <Word>when</Word>
     </Keywords>
 
+    <!-- BCL 常用类型名（脚本场景高频类型，Layer 1 即时高亮，Layer 2a 语义补充） -->
+    <Keywords color="Type">
+      <Word>DateTime</Word>
+      <Word>TimeSpan</Word>
+      <Word>DateTimeOffset</Word>
+      <Word>Guid</Word>
+      <Word>Math</Word>
+      <Word>Convert</Word>
+      <Word>Environment</Word>
+      <Word>Console</Word>
+      <Word>Random</Word>
+      <Word>Stopwatch</Word>
+      <Word>Version</Word>
+      <Word>Uri</Word>
+      <Word>StringBuilder</Word>
+      <Word>StringComparison</Word>
+      <Word>StringSplitOptions</Word>
+      <Word>Type</Word>
+      <Word>Array</Word>
+      <Word>Enum</Word>
+      <Word>Delegate</Word>
+      <Word>Action</Word>
+      <Word>Func</Word>
+      <Word>Predicate</Word>
+      <Word>Tuple</Word>
+      <Word>ValueTuple</Word>
+      <Word>Nullable</Word>
+      <Word>Lazy</Word>
+      <Word>Exception</Word>
+      <Word>InvalidOperationException</Word>
+      <Word>ArgumentException</Word>
+      <Word>ArgumentNullException</Word>
+      <Word>NotImplementedException</Word>
+      <Word>NotSupportedException</Word>
+      <Word>KeyNotFoundException</Word>
+      <Word>List</Word>
+      <Word>Dictionary</Word>
+      <Word>HashSet</Word>
+      <Word>SortedList</Word>
+      <Word>SortedDictionary</Word>
+      <Word>SortedSet</Word>
+      <Word>Queue</Word>
+      <Word>Stack</Word>
+      <Word>LinkedList</Word>
+      <Word>KeyValuePair</Word>
+      <Word>IReadOnlyList</Word>
+      <Word>IReadOnlyDictionary</Word>
+      <Word>IReadOnlyCollection</Word>
+      <Word>IEnumerable</Word>
+      <Word>IEnumerator</Word>
+      <Word>ICollection</Word>
+      <Word>IDictionary</Word>
+      <Word>IList</Word>
+      <Word>ISet</Word>
+      <Word>Task</Word>
+      <Word>TaskCompletionSource</Word>
+      <Word>CancellationToken</Word>
+      <Word>SemaphoreSlim</Word>
+      <Word>ManualResetEvent</Word>
+      <Word>AutoResetEvent</Word>
+      <Word>Stream</Word>
+      <Word>FileStream</Word>
+      <Word>MemoryStream</Word>
+      <Word>StreamReader</Word>
+      <Word>StreamWriter</Word>
+      <Word>StringReader</Word>
+      <Word>StringWriter</Word>
+      <Word>BinaryReader</Word>
+      <Word>BinaryWriter</Word>
+      <Word>Directory</Word>
+      <Word>File</Word>
+      <Word>Path</Word>
+      <Word>DirectoryInfo</Word>
+      <Word>FileInfo</Word>
+      <Word>DriveInfo</Word>
+      <Word>Encoding</Word>
+      <Word>Regex</Word>
+      <Word>Match</Word>
+      <Word>Group</Word>
+      <Word>Capture</Word>
+      <Word>XDocument</Word>
+      <Word>XElement</Word>
+      <Word>XAttribute</Word>
+      <Word>JObject</Word>
+      <Word>JArray</Word>
+      <Word>JToken</Word>
+      <Word>WebClient</Word>
+      <Word>HttpClient</Word>
+      <Word>IPAddress</Word>
+      <Word>IPEndPoint</Word>
+      <Word>Dns</Word>
+      <Word>Socket</Word>
+      <Word>Bitmap</Word>
+      <Word>Image</Word>
+      <Word>Point</Word>
+      <Word>PointF</Word>
+      <Word>Size</Word>
+      <Word>SizeF</Word>
+      <Word>Rectangle</Word>
+      <Word>RectangleF</Word>
+      <Word>Color</Word>
+      <Word>Pen</Word>
+      <Word>Brush</Word>
+      <Word>Font</Word>
+      <Word>String</Word>
+      <Word>IntPtr</Word>
+      <Word>UIntPtr</Word>
+      <Word>Marshal</Word>
+      <Word>BitConverter</Word>
+      <Word>Buffer</Word>
+      <Word>ValueType</Word>
+      <Word>Attribute</Word>
+      <Word>FlagsAttribute</Word>
+      <Word>SerializableAttribute</Word>
+      <Word>DataTable</Word>
+      <Word>DataSet</Word>
+      <Word>DataColumn</Word>
+      <Word>DataRow</Word>
+      <Word>SqlConnection</Word>
+      <Word>SqlCommand</Word>
+      <Word>SqlDataReader</Word>
+      <Word>OleDbConnection</Word>
+      <Word>OleDbCommand</Word>
+      <Word>OleDbDataReader</Word>
+      <Word>XPathDocument</Word>
+      <Word>XmlDocument</Word>
+      <Word>XmlNode</Word>
+      <Word>XmlElement</Word>
+      <Word>XmlAttribute</Word>
+      <Word>XmlReader</Word>
+      <Word>XmlWriter</Word>
+      <Word>XmlSerializer</Word>
+    </Keywords>
+
     <!-- Number literal (integer, float, hex, binary) -->
     <Rule color="Number">
       \b0[xX][0-9a-fA-F][0-9a-fA-F_]*(u|l|ul|lu|U|L|UL|LU)?\b
@@ -214,14 +337,9 @@
       \b\d[\d_]*\b
     </Rule>
 
-    <!-- Type names (PascalCase heuristic) -->
-    <Rule color="Type">
-      \b[A-Z][a-zA-Z0-9]*(?=&lt;|\s*[\[\(\)]|\s+[A-Za-z]|$)
-    </Rule>
-
-    <!-- Method call: lowercase/camelCase identifier followed by ( -->
-    <Rule color="MethodCall">
-      \b[a-z_][\w_]*(?=\s*\()
+    <!-- Method name fallback: 标识符后跟 ( → 方法颜色（Layer 2 Roslyn 语义分类覆盖） -->
+    <Rule color="Method">
+      \b[A-Za-z_]\w*(?=\s*\()
     </Rule>
 
   </RuleSet>
@@ -233,23 +351,6 @@
     </Rule>
   </RuleSet>
 
-  <!-- Preprocessor content -->
-  <RuleSet name="PreprocessorContent">
-    <Keywords color="Keyword">
-      <Word>if</Word>
-      <Word>else</Word>
-      <Word>elif</Word>
-      <Word>endif</Word>
-      <Word>define</Word>
-      <Word>undef</Word>
-      <Word>warning</Word>
-      <Word>error</Word>
-      <Word>line</Word>
-      <Word>region</Word>
-      <Word>endregion</Word>
-      <Word>pragma</Word>
-      <Word>nullable</Word>
-    </Keywords>
-  </RuleSet>
+  <!-- Preprocessor content ruleSet removed: preprocessor now uses a single Rule that colors the whole line -->
 
 </SyntaxDefinition>

@@ -58,6 +58,89 @@ namespace SunEyeVision.Tool.Script.Views
         // Phase 2: 语义高亮缓存
         private IReadOnlyList<ClassifiedSpan>? _classificationSpans;
 
+        // 进程生命周期内共享的 MefHostServices 和默认程序集引用（首次慢，后续快）
+        private static MefHostServices? _sharedMefHost;
+        private static List<MetadataReference>? _defaultReferences;
+
+        private static MefHostServices GetSharedMefHost()
+        {
+            if (_sharedMefHost == null)
+            {
+                var sw = System.Diagnostics.Stopwatch.StartNew();
+                _sharedMefHost = MefHostServices.Create(MefHostServices.DefaultAssemblies);
+                sw.Stop();
+                PluginLogger.Info($"[补全] MefHostServices 首次初始化: {sw.ElapsedMilliseconds}ms",
+                    nameof(ScriptDebugControl));
+            }
+            else
+            {
+                PluginLogger.Info("[补全] MefHostServices 缓存命中", nameof(ScriptDebugControl));
+            }
+            return _sharedMefHost;
+        }
+
+        /// <summary>
+        /// 判断程序集是否与脚本编译/补全相关（排除 WPF、Roslyn 自身、Win32/UI 等）
+        /// </summary>
+        private static bool IsScriptRelevantAssembly(string? assemblyName)
+        {
+            if (string.IsNullOrEmpty(assemblyName)) return false;
+
+            if (assemblyName is "System.Runtime" or "System.Private.CoreLib"
+                or "netstandard" or "mscorlib")
+                return true;
+
+            if (assemblyName.StartsWith("System.") || assemblyName == "System")
+                return !assemblyName.StartsWith("System.Windows")
+                    && !assemblyName.StartsWith("System.Xaml");
+
+            if (assemblyName.StartsWith("Microsoft."))
+                return !assemblyName.StartsWith("Microsoft.Win32")
+                    && !assemblyName.StartsWith("Microsoft.UI")
+                    && assemblyName != "Microsoft.CodeAnalysis"
+                    && !assemblyName.StartsWith("Microsoft.CodeAnalysis.");
+
+            if (assemblyName.StartsWith("SunEyeVision."))
+                return true;
+
+            return !assemblyName.StartsWith("Presentation")
+                && !assemblyName.StartsWith("UIAutomation")
+                && assemblyName != "WindowsBase"
+                && assemblyName != "Accessibility"
+                && assemblyName != "DirectWriteForwarder"
+                && assemblyName != "ReachFramework"
+                && !assemblyName.StartsWith("Avalon");
+        }
+
+        private static List<MetadataReference> GetDefaultReferences()
+        {
+            if (_defaultReferences == null)
+            {
+                var sw = System.Diagnostics.Stopwatch.StartNew();
+                var refs = new List<MetadataReference>();
+                int totalAsm = 0, filteredCount = 0;
+                foreach (var asm in AssemblyLoadContext.Default.Assemblies)
+                {
+                    totalAsm++;
+                    if (asm.IsDynamic) continue;
+                    if (!IsScriptRelevantAssembly(asm.GetName().Name)) continue;
+                    filteredCount++;
+                    try { refs.Add(MetadataReference.CreateFromFile(asm.Location)); }
+                    catch { }
+                }
+                _defaultReferences = refs;
+                sw.Stop();
+                PluginLogger.Info($"[补全] 程序集引用首次初始化: ALC总={totalAsm}, 过滤后={filteredCount}, 成功创建={refs.Count}, 耗时={sw.ElapsedMilliseconds}ms",
+                    nameof(ScriptDebugControl));
+            }
+            else
+            {
+                PluginLogger.Info($"[补全] 程序集引用缓存命中: {_defaultReferences.Count} 个引用",
+                    nameof(ScriptDebugControl));
+            }
+            return _defaultReferences;
+        }
+
         public ObservableCollection<ScriptParamItem> InputVariables => _inputVariables;
         public ObservableCollection<ScriptParamItem> OutputVariables => _outputVariables;
         public ObservableCollection<LogEntry> LogEntries => _logEntries;
@@ -96,6 +179,14 @@ namespace SunEyeVision.Tool.Script.Views
             var errorMarker = new ErrorMarkerColorizer(() => _currentDiagnostics, false);
             CodeEditor.TextArea.TextView.LineTransformers.Add(errorMarker);
             PluginLogger.Info("[Highlighting] 已加载实时错误标记着色器", typeName);
+
+            // 当前行高亮：光标所在行浅蓝色背景，替代纯光标闪烁（提升代码定位体验）
+            CodeEditor.Options.HighlightCurrentLine = true;
+            CodeEditor.TextArea.TextView.CurrentLineBackground =
+                new SolidColorBrush(Color.FromArgb(0x18, 0x00, 0x7A, 0xCC));
+            if (CodeEditor.TextArea.TextView.CurrentLineBackground.CanFreeze)
+                CodeEditor.TextArea.TextView.CurrentLineBackground.Freeze();
+            PluginLogger.Info("[Highlighting] 已启用当前行高亮", typeName);
 
             // 设置语义高亮主题色（当前为浅色主题，与 xshd 颜色一致）
             RoslynClassificationColors.SetTheme(false);
@@ -419,35 +510,6 @@ namespace SunEyeVision.Tool.Script.Views
         // =======================================================
 
         /// <summary>
-        /// 枚举程序集引用：从默认 ALC 已加载程序集 + ScriptRefs 目录中获取
-        /// </summary>
-        private static IEnumerable<MetadataReference> EnumerateAssemblyReferences(string refDir)
-        {
-            // 1. 默认 ALC 已加载程序集（框架 + 项目）
-            foreach (var asm in AssemblyLoadContext.Default.Assemblies)
-            {
-                if (asm.IsDynamic) continue;
-                MetadataReference? mdRef = null;
-                try
-                {
-                    mdRef = MetadataReference.CreateFromFile(asm.Location);
-                }
-                catch { }
-                if (mdRef != null)
-                    yield return mdRef;
-            }
-
-            // 2. ScriptRefs 目录（用户自定义第三方 DLL）
-            if (!Directory.Exists(refDir))
-                yield break;
-
-            foreach (var dll in Directory.EnumerateFiles(refDir, "*.dll"))
-            {
-                yield return MetadataReference.CreateFromFile(dll);
-            }
-        }
-
-        /// <summary>
         /// 动态重建工作区（构造函数/SetParameters/用户增删 DLL 后调用）
         /// 放弃旧 workspace，用当前代码文本 + 引用目录下的所有 DLL 重建
         /// </summary>
@@ -455,15 +517,16 @@ namespace SunEyeVision.Tool.Script.Views
         {
             var currentCode = CodeEditor?.Text ?? "";
             var typeName = GetType().Name;
+            var totalSw = System.Diagnostics.Stopwatch.StartNew();
 
             PluginLogger.Info($"[补全] RebuildWorkspace 开始: 代码长度={currentCode.Length}", typeName);
 
             _diagnosticsCts?.Cancel();  // 取消正在进行的语义分析，防止访问已 Dispose 的 workspace
             _workspace?.Dispose();
 
-            // 加载 MefHostServices 确保所有 CompletionProvider 可用
+            // 加载 MefHostServices 确保所有 CompletionProvider 可用（缓存机制，首次慢后续快）
             var sw = System.Diagnostics.Stopwatch.StartNew();
-            var host = MefHostServices.Create(MefHostServices.DefaultAssemblies);
+            var host = GetSharedMefHost();
             PluginLogger.Info($"[补全] MefHostServices 创建完成: {sw.ElapsedMilliseconds}ms", typeName);
 
             _workspace = new AdhocWorkspace(host);
@@ -481,18 +544,14 @@ namespace SunEyeVision.Tool.Script.Views
             var refDir = _parameters?.AssemblyReferenceFullPath;
             var refCount = 0;
 
-            // 1. 默认 ALC 已加载程序集（框架 + 项目）
+            // 1. 默认 ALC 已加载程序集（缓存 + 过滤，首次慢后续快）
             try
             {
-                foreach (var asm in AssemblyLoadContext.Default.Assemblies)
+                var defaultRefs = GetDefaultReferences();
+                foreach (var mdRef in defaultRefs)
                 {
-                    if (asm.IsDynamic) continue;
-                    try
-                    {
-                        project = project.AddMetadataReference(MetadataReference.CreateFromFile(asm.Location));
-                        refCount++;
-                    }
-                    catch { }
+                    project = project.AddMetadataReference(mdRef);
+                    refCount++;
                 }
             }
             catch (Exception ex)
@@ -548,7 +607,7 @@ namespace SunEyeVision.Tool.Script.Views
             _currentItems = [];   // 清空缓存，下次输入触发全新解析
 
             var refs = _workspace.CurrentSolution.Projects.First().MetadataReferences;
-            PluginLogger.Info($"[补全] Workspace 重建完成: {refs.Count} 个引用, 代码长度={currentCode.Length}", typeName);
+            PluginLogger.Info($"[补全] Workspace 重建完成: {refs.Count} 个引用, 代码长度={currentCode.Length}, 总耗时={totalSw.ElapsedMilliseconds}ms", typeName);
         }
 
         /// <summary>

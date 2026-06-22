@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.Loader;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
+using SunEyeVision.Plugin.SDK.Logging;
 
 namespace SunEyeVision.Tool.Script.ScriptEngine
 {
@@ -29,6 +31,110 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             public int UsingLineOffset { get; set; }
         }
 
+        // =====================================================
+        // 缓存区：进程生命周期内不变的对象
+        // =====================================================
+
+        /// <summary>
+        /// 默认 ALC 中脚本相关的程序集引用（进程生命周期内不变，懒初始 + 过滤）
+        /// </summary>
+        private static List<MetadataReference>? _defaultReferences;
+
+        /// <summary>
+        /// 判断程序集是否与脚本编译/补全相关（排除 WPF、Roslyn 自身、Win32/UI 等）
+        /// </summary>
+        private static bool IsScriptRelevantAssembly(string? assemblyName)
+        {
+            if (string.IsNullOrEmpty(assemblyName)) return false;
+
+            // 始终包含：核心运行时
+            if (assemblyName is "System.Runtime" or "System.Private.CoreLib"
+                or "netstandard" or "mscorlib")
+                return true;
+
+            // System.*（排除 WPF/UI 相关）
+            if (assemblyName.StartsWith("System.") || assemblyName == "System")
+                return !assemblyName.StartsWith("System.Windows")
+                    && !assemblyName.StartsWith("System.Xaml");
+
+            // Microsoft.*（排除 Win32/WinUI/Roslyn 等）
+            if (assemblyName.StartsWith("Microsoft."))
+                return !assemblyName.StartsWith("Microsoft.Win32")
+                    && !assemblyName.StartsWith("Microsoft.UI")
+                    && assemblyName != "Microsoft.CodeAnalysis"
+                    && !assemblyName.StartsWith("Microsoft.CodeAnalysis.");
+
+            // 项目程序集
+            if (assemblyName.StartsWith("SunEyeVision."))
+                return true;
+
+            // 其他（包括第三方 NuGet 如 Humanizer、Newtonsoft.Json 等）
+            // 排除已知的 WPF/UI/Windows 程序集
+            return !assemblyName.StartsWith("Presentation")
+                && !assemblyName.StartsWith("UIAutomation")
+                && assemblyName != "WindowsBase"
+                && assemblyName != "Accessibility"
+                && assemblyName != "DirectWriteForwarder"
+                && assemblyName != "ReachFramework"
+                && !assemblyName.StartsWith("Avalon");
+        }
+
+        private static List<MetadataReference> GetDefaultReferences()
+        {
+            if (_defaultReferences == null)
+            {
+                var sw = Stopwatch.StartNew();
+                var refs = new List<MetadataReference>();
+                int totalAsm = 0, filteredCount = 0;
+                foreach (var asm in AssemblyLoadContext.Default.Assemblies)
+                {
+                    totalAsm++;
+                    if (asm.IsDynamic) continue;
+                    if (!IsScriptRelevantAssembly(asm.GetName().Name)) continue;
+                    filteredCount++;
+                    try
+                    {
+                        refs.Add(MetadataReference.CreateFromFile(asm.Location));
+                    }
+                    catch
+                    {
+                        // 跳过无法创建引用的程序集（如原生镜像）
+                    }
+                }
+                _defaultReferences = refs;
+                sw.Stop();
+                PluginLogger.Info($"[ScriptCompiler] 程序集引用首次初始化: ALC总={totalAsm}, 过滤后={filteredCount}, 成功创建={refs.Count}, 耗时={sw.ElapsedMilliseconds}ms",
+                    nameof(ScriptCompiler));
+            }
+            else
+            {
+                PluginLogger.Info($"[ScriptCompiler] 程序集引用缓存命中: {_defaultReferences.Count} 个引用",
+                    nameof(ScriptCompiler));
+            }
+            return _defaultReferences;
+        }
+
+        /// <summary>
+        /// 语法解析选项（LanguageVersion.Latest 不变）
+        /// </summary>
+        private static readonly CSharpParseOptions _parseOptions =
+            new CSharpParseOptions(LanguageVersion.Latest);
+
+        /// <summary>
+        /// 编译选项（OutputKind/OptimizationLevel 不变）
+        /// </summary>
+        private static readonly CSharpCompilationOptions _compilationOptions =
+            new CSharpCompilationOptions(
+                OutputKind.DynamicallyLinkedLibrary,
+                optimizationLevel: OptimizationLevel.Release)
+            .WithAllowUnsafe(true);
+
+        /// <summary>
+        /// ScriptRefs 目录引用缓存（按目录缓存，目录变化时重新加载）
+        /// </summary>
+        private List<MetadataReference>? _cachedScriptRefs;
+        private string? _lastRefDir;
+
         /// <summary>
         /// 编译 C# 脚本代码
         /// </summary>
@@ -41,6 +147,7 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             string assemblyName,
             string? assemblyRefDir = null)
         {
+            var totalSw = Stopwatch.StartNew();
             var result = new CompileResult();
 
             if (string.IsNullOrWhiteSpace(code))
@@ -53,69 +160,68 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             result.UsingLineOffset = 0;
             var fullCode = code;
 
-            // 2. 构建语法树
+            // 2. 构建语法树（使用缓存的 ParseOptions）
+            var parseSw = Stopwatch.StartNew();
             var sourceText = SourceText.From(fullCode);
-            var syntaxTree = SyntaxFactory.ParseSyntaxTree(sourceText,
-                new CSharpParseOptions(LanguageVersion.Latest));
+            var syntaxTree = SyntaxFactory.ParseSyntaxTree(sourceText, _parseOptions);
+            parseSw.Stop();
 
-            // 3. 获取元数据引用：默认 ALC 已加载程序集 + ScriptRefs 用户自定义 DLL
-            var metadataReferences = new List<MetadataReference>();
+            // 3. 获取元数据引用：默认 ALC（缓存） + ScriptRefs（按目录缓存）
+            var refSw = Stopwatch.StartNew();
+            var defaultRefs = GetDefaultReferences();
+            var metadataReferences = new List<MetadataReference>(defaultRefs.Count + 16);
+            metadataReferences.AddRange(defaultRefs);
 
-            // 3a. 默认 ALC 已加载的程序集（框架 + 项目，版本与运行时完全一致）
-            try
+            // 3b. ScriptRefs 目录（用户自定义第三方 DLL），有变化才重新扫描
+            int scriptRefCount = 0;
+            if (!string.IsNullOrEmpty(assemblyRefDir) && Directory.Exists(assemblyRefDir))
             {
-                foreach (var asm in AssemblyLoadContext.Default.Assemblies)
+                if (_cachedScriptRefs == null || _lastRefDir != assemblyRefDir)
                 {
-                    if (asm.IsDynamic) continue;
                     try
                     {
-                        metadataReferences.Add(MetadataReference.CreateFromFile(asm.Location));
+                        _cachedScriptRefs = Directory.EnumerateFiles(assemblyRefDir, "*.dll")
+                            .Select(dll => MetadataReference.CreateFromFile(dll))
+                            .Cast<MetadataReference>()
+                            .ToList();
+                        _lastRefDir = assemblyRefDir;
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        // 跳过无法创建引用的程序集（如原生镜像）
+                        result.Diagnostics.Add($"扫描引用目录失败: {assemblyRefDir} - {ex.Message}");
+                        _cachedScriptRefs = [];
                     }
                 }
+                scriptRefCount = _cachedScriptRefs.Count;
+                metadataReferences.AddRange(_cachedScriptRefs);
             }
-            catch (Exception ex)
-            {
-                result.Diagnostics.Add($"枚举默认 ALC 程序集失败: {ex.Message}");
-            }
+            refSw.Stop();
 
-            // 3b. ScriptRefs 目录（用户自定义第三方 DLL）
-            try
-            {
-                if (!string.IsNullOrEmpty(assemblyRefDir) && Directory.Exists(assemblyRefDir))
-                {
-                    foreach (var dll in Directory.EnumerateFiles(assemblyRefDir, "*.dll"))
-                    {
-                        if (File.Exists(dll))
-                            metadataReferences.Add(MetadataReference.CreateFromFile(dll));
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                result.Diagnostics.Add($"扫描引用目录失败: {assemblyRefDir} - {ex.Message}");
-            }
-
-            // 4. 创建编译
-            var options = new CSharpCompilationOptions(
-                OutputKind.DynamicallyLinkedLibrary,
-                optimizationLevel: OptimizationLevel.Release)
-                .WithAllowUnsafe(true);
-
+            // 4. 创建编译（使用缓存的 CompilationOptions）
+            var createSw = Stopwatch.StartNew();
             var compilation = CSharpCompilation.Create(
                 assemblyName,
                 [syntaxTree],
                 metadataReferences,
-                options);
+                _compilationOptions);
+            createSw.Stop();
 
             // 5. 编译并输出
+            var emitSw = Stopwatch.StartNew();
             using var assemblyStream = new MemoryStream();
             using var symbolStream = new MemoryStream();
 
             var emitResult = compilation.Emit(assemblyStream, symbolStream);
+            emitSw.Stop();
+
+            totalSw.Stop();
+
+            PluginLogger.Info($"[ScriptCompiler] 编译性能: 语法树={parseSw.ElapsedMilliseconds}ms, " +
+                $"引用={refSw.ElapsedMilliseconds}ms(默认={defaultRefs.Count},ScriptRefs={scriptRefCount}), " +
+                $"创建编译={createSw.ElapsedMilliseconds}ms, Emit={emitSw.ElapsedMilliseconds}ms, " +
+                $"总={totalSw.ElapsedMilliseconds}ms, 成功={emitResult.Success}, " +
+                $"代码长度={code.Length}",
+                nameof(ScriptCompiler));
 
             if (emitResult.Success)
             {

@@ -40,8 +40,6 @@ namespace SunEyeVision.Tool.Script.Views
     public partial class ScriptDebugControl
     {
         private ScriptParameters _parameters = new();
-        private readonly ObservableCollection<ScriptParamItem> _monitorInputVars = new();
-        private readonly ObservableCollection<ScriptParamItem> _monitorOutputVars = new();
         private readonly ObservableCollection<LogEntry> _logEntries = new();
 
         // Roslyn completion workspace
@@ -142,8 +140,6 @@ namespace SunEyeVision.Tool.Script.Views
             return _defaultReferences;
         }
 
-        public ObservableCollection<ScriptParamItem> MonitorInputVars => _monitorInputVars;
-        public ObservableCollection<ScriptParamItem> MonitorOutputVars => _monitorOutputVars;
         public ObservableCollection<LogEntry> LogEntries => _logEntries;
 
         public string ScriptCode
@@ -158,8 +154,6 @@ namespace SunEyeVision.Tool.Script.Views
         public ScriptDebugControl()
         {
             InitializeComponent();
-            MonitorInputGrid.ItemsSource = _monitorInputVars;
-            MonitorOutputGrid.ItemsSource = _monitorOutputVars;
             LogListBox.ItemsSource = _logEntries;
             UpdateStatus("初始化中...");
 
@@ -214,8 +208,11 @@ namespace SunEyeVision.Tool.Script.Views
                 _diagnosticsCts?.Dispose();
             };
 
-            // 初始化变量摘要
-            UpdateVariableSummary();
+            // 初始化变量配置面板（输入/输出 Tab）
+            InitializeTabs();
+            // 传递可用的全局变量类型给输入 Tab（ParamBinding 用）
+            InputTabControl.SetAvailableSources(null);
+            OutputTabControl.SetAvailableSources(null);
         }
 
         /// <summary>
@@ -259,97 +256,42 @@ namespace SunEyeVision.Tool.Script.Views
                 {
                     CodeEditor.Text = _parameters.ScriptCode;
                 }
-                SyncMonitorsFromConfig();
-                UpdateVariableSummary();
+
+                InitializeTabs();
                 RebuildWorkspace();
                 ScheduleSemanticAnalysis();
             }
         }
 
-        /// <summary>
-        /// 从 _parameters.Inputs/Outputs 同步到监控显示
-        /// </summary>
-        private void SyncMonitorsFromConfig()
-        {
-            _monitorInputVars.Clear();
-            foreach (var input in _parameters.Inputs)
-            {
-                _monitorInputVars.Add(new ScriptParamItem
-                {
-                    Name = input.Name,
-                    TypeName = input.TypeName,
-                    Value = null
-                });
-            }
-
-            _monitorOutputVars.Clear();
-            foreach (var output in _parameters.Outputs)
-            {
-                _monitorOutputVars.Add(new ScriptParamItem
-                {
-                    Name = output.Name,
-                    TypeName = output.TypeName,
-                    Value = null
-                });
-            }
-        }
+        // ===== 嵌入式变量管理面板 =====
 
         /// <summary>
-        /// 更新左侧"变量管理"Tab 的摘要显示
+        /// 初始化输入/输出变量配置 Tab
         /// </summary>
-        private void UpdateVariableSummary()
+        private void InitializeTabs()
         {
-            if (InputSummaryList == null || OutputSummaryList == null) return;
-
-            var inputTexts = new List<string>();
-            if (_parameters.Inputs.Count == 0)
-                inputTexts.Add("  (无输入变量)");
-            else
-                foreach (var input in _parameters.Inputs)
-                    inputTexts.Add($"  ▸ {input.Name} ({input.CsTypeName})");
-
-            InputSummaryList.ItemsSource = inputTexts;
-
-            var outputTexts = new List<string>();
-            if (_parameters.Outputs.Count == 0)
-                outputTexts.Add("  (无输出变量)");
-            else
-                foreach (var output in _parameters.Outputs)
-                    outputTexts.Add($"  ▸ {output.Name} ({output.CsTypeName})");
-
-            OutputSummaryList.ItemsSource = outputTexts;
-        }
-
-        /// <summary>
-        /// ✏ 编辑变量按钮 — 弹出变量管理对话框
-        /// </summary>
-        private void EditVariableButton_Click(object sender, RoutedEventArgs e)
-        {
-            SyncCodeToParameters();
-
-            var dialog = new ScriptIoDialog(_parameters.Inputs, _parameters.Outputs)
-            {
-                Owner = Window.GetWindow(this)
-            };
-
-            if (dialog.ShowDialog() == true)
-            {
-                UpdateVariableSummary();
-                SyncMonitorsFromConfig();
-                RebuildWorkspace();
-                ScheduleSemanticAnalysis();
-
-                StatusLabel.Content = "变量配置已更新";
-                StatusLabel.Foreground = System.Windows.Media.Brushes.Gray;
-            }
+            InputTabControl.Initialize(_parameters.Inputs, true);
+            OutputTabControl.Initialize(_parameters.Outputs, false);
         }
 
 
 
+
+        /// <summary>
+        /// 退出编辑模式并重建 workspace（当用户确认时调用）
+        /// </summary>
+        public void ExitEditMode()
+        {
+            InputTabControl.ShowMonitorMode();
+            OutputTabControl.ShowMonitorMode();
+            RebuildWorkspace();
+            ScheduleSemanticAnalysis();
+        }
 
         protected override void OnConfirmCommand(object sender, ExecutedRoutedEventArgs e)
         {
             SyncCodeToParameters();
+            ExitEditMode();
             base.OnConfirmCommand(sender, e);
         }
 
@@ -358,7 +300,15 @@ namespace SunEyeVision.Tool.Script.Views
             SyncCodeToParameters();
 
             _logEntries.Clear();
-            foreach (var item in _monitorOutputVars) item.Value = null;
+            // 清除输出 Tab 的监视数据
+            foreach (var item in OutputTabControl.MonitorItems.Items)
+            {
+                if (item is MonitorNode node)
+                {
+                    node.DisplayValue = "无结果";
+                    node.ValueBrush = System.Windows.Media.Brushes.Gray;
+                }
+            }
 
             using var lifecycleManager = new ScriptEngine.ScriptLifecycleManager();
             // Global variable delegates - injected by workflow engine in workflow mode
@@ -392,9 +342,12 @@ namespace SunEyeVision.Tool.Script.Views
             foreach (var log in lifecycleManager.LogMessages)
                 _logEntries.Add(new LogEntry { Text = log, IsError = false });
 
-            // 更新输出监控值
+            // 更新输出 Tab 的监视值
             foreach (var kvp in lifecycleManager.OutputValues)
-                UpdateOutputValue(kvp.Key, kvp.Value);
+            {
+                var displayText = kvp.Value?.ToString() ?? "(null)";
+                OutputTabControl.SetMonitorValue(kvp.Key, displayText, kvp.Value != null);
+            }
 
             CompileTimeLabel.Content = $"编译: {lifecycleManager.CompileTimeMs}ms";
             ExecTimeLabel.Content = $"执行: {lifecycleManager.ExecutionTimeMs}ms";
@@ -416,20 +369,6 @@ namespace SunEyeVision.Tool.Script.Views
         protected override bool CanExecuteTool()
         {
             return !string.IsNullOrWhiteSpace(CodeEditor?.Text);
-        }
-
-        private void UpdateOutputValue(string name, object? value)
-        {
-            var existing = _monitorOutputVars.FirstOrDefault(v => v.Name == name);
-            if (existing != null)
-                existing.Value = value;
-            else
-                _monitorOutputVars.Add(new ScriptParamItem
-                {
-                    Name = name,
-                    Value = value,
-                    TypeName = value?.GetType().Name ?? "null"
-                });
         }
 
         private void UpdateStatus(string status)
@@ -455,7 +394,15 @@ namespace SunEyeVision.Tool.Script.Views
         private void ClearResultButton_Click(object sender, RoutedEventArgs e)
         {
             _logEntries.Clear();
-            foreach (var item in _monitorOutputVars) item.Value = null;
+            // 清除输出 Tab 的监视值
+            foreach (var item in OutputTabControl.MonitorItems.Items)
+            {
+                if (item is MonitorNode node)
+                {
+                    node.DisplayValue = "无结果";
+                    node.ValueBrush = System.Windows.Media.Brushes.Gray;
+                }
+            }
             CompileTimeLabel.Content = ""; ExecTimeLabel.Content = "";
             UpdateStatus("就绪");
         }

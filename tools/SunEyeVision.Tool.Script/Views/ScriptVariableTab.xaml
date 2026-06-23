@@ -1,0 +1,171 @@
+<UserControl x:Class="SunEyeVision.Tool.Script.Views.ScriptVariableTab"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
+    mc:Ignorable="d"
+    d:DesignHeight="350" d:DesignWidth="350"
+    Background="#FFFAFAFA">
+    <UserControl.Resources>
+        <Style TargetType="Button">
+            <Setter Property="Padding" Value="6,2"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style TargetType="DataGrid">
+            <Setter Property="AutoGenerateColumns" Value="False"/>
+            <Setter Property="CanUserAddRows" Value="False"/>
+            <Setter Property="RowHeaderWidth" Value="0"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+            <Setter Property="HeadersVisibility" Value="Column"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="RowHeight" Value="32"/>
+        </Style>
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="#FFF0F0F0"/>
+            <Setter Property="Foreground" Value="#FF000000"/>
+            <Setter Property="BorderBrush" Value="#FFD0D0D0"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+            <Setter Property="Padding" Value="4,2"/>
+            <Setter Property="Height" Value="28"/>
+        </Style>
+        <Style TargetType="DataGridRow">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="#FFE8E8E8"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+            <Setter Property="MinHeight" Value="28"/>
+        </Style>
+        <Style TargetType="DataGridCell">
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="4,0"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />  <!-- 标题行 -->
+            <RowDefinition Height="Auto" />  <!-- 内容行（DataGrid 自适应高度） -->
+            <RowDefinition Height="Auto" />  <!-- 添加行 -->
+        </Grid.RowDefinitions>
+
+        <!-- ===== 第 1 行：标题栏 + ✏ 编辑/完成按钮 ===== -->
+        <DockPanel Grid.Row="0" Margin="0,0,0,6">
+            <TextBlock x:Name="TitleText" DockPanel.Dock="Left"
+                       FontWeight="Bold" FontSize="13"
+                       Foreground="#FF0066CC" VerticalAlignment="Center"/>
+            <Button x:Name="ToggleEditButton" DockPanel.Dock="Right"
+                    Content="✏ 编辑" Click="ToggleEditMode_Click"
+                    Width="70" Height="26" Padding="0" FontSize="12"
+                    Background="#FF007ACC" Foreground="White"
+                    BorderThickness="0" Cursor="Hand"/>
+        </DockPanel>
+
+        <!-- ===== 第 2 行：监视模式 / 编辑模式 ===== -->
+        <!-- 监视模式：变量树 -->
+        <ScrollViewer x:Name="MonitorView" Grid.Row="1"
+                      VerticalScrollBarVisibility="Auto"
+                      BorderThickness="0" Background="Transparent"
+                      MaxHeight="400">
+            <ItemsControl x:Name="MonitorItems" Margin="2,0">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Margin="0,3">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#x25BE; " Foreground="#FF888888" VerticalAlignment="Center" FontSize="12"/>
+                                <TextBlock Text="{Binding Name}" FontWeight="Bold" Foreground="#FF0066CC" FontSize="12"/>
+                                <TextBlock Text="{Binding TypeDisplay}" Foreground="#FF888888" Margin="4,0,0,0" FontSize="11"/>
+                            </StackPanel>
+                            <TextBlock Text="{Binding DisplayValue}"
+                                       Foreground="{Binding ValueBrush}"
+                                       Margin="24,0,0,0" FontSize="11" FontStyle="Italic"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <!-- 编辑模式：DataGrid（默认隐藏） -->
+        <Grid x:Name="EditView" Grid.Row="1" Visibility="Collapsed">
+            <DataGrid x:Name="EditGrid" MaxHeight="400">
+                <DataGrid.Columns>
+                    <!-- 变量名 -->
+                    <DataGridTemplateColumn Header="&#x53D8;&#x91CF;&#x540D;" Width="*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
+                                         VerticalContentAlignment="Center"
+                                         BorderBrush="#D0D0D0" BorderThickness="0"
+                                         Background="Transparent" Padding="2,0"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <!-- 类型 -->
+                    <DataGridTemplateColumn Header="&#x7C7B;&#x578B;" Width="80">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <ComboBox ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=AvailableTypes}"
+                                          Text="{Binding TypeName, UpdateSourceTrigger=PropertyChanged}"
+                                          IsEditable="False" Margin="1,0"
+                                          BorderThickness="0" Background="Transparent"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <!-- 订阅关系（仅输入列，输出隐藏） -->
+                    <DataGridTemplateColumn x:Name="BindingColumn" Header="&#x8BA2;&#x9605;&#x5173;&#x7CFB;" Width="*" MinWidth="120">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <controls:ParamBinding
+                                    AvailableDataSources="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=AvailableSources}"
+                                    DataType="{Binding ParamType}"
+                                    BindingSource="{Binding BindingSource, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    BindingDisplayText="{Binding BindingDisplayText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    Height="26"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <!-- 操作 -->
+                    <DataGridTemplateColumn Header="&#x64CD;&#x4F5C;" Width="Auto">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                    <Button Content="&#x2191;" Click="MoveUp_Click"
+                                            Width="22" Height="22" Padding="0" Margin="1,0"
+                                            Background="#FFF0F0F0" Foreground="#FF666666"
+                                            BorderThickness="0" FontSize="12"/>
+                                    <Button Content="&#x2193;" Click="MoveDown_Click"
+                                            Width="22" Height="22" Padding="0" Margin="1,0"
+                                            Background="#FFF0F0F0" Foreground="#FF666666"
+                                            BorderThickness="0" FontSize="12"/>
+                                    <Button x:Name="DeleteButton" Content="&#x2715;"
+                                            Click="DeleteItem_Click"
+                                            Width="22" Height="22" Padding="0" Margin="1,0"
+                                            Background="#FFF0F0F0" Foreground="#FFCC0000"
+                                            BorderThickness="0" FontSize="12"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+
+        <!-- ===== 第 3 行：添加栏（编辑模式可见）===== -->
+        <Border x:Name="AddBar" Grid.Row="2" Visibility="Collapsed"
+                BorderBrush="#D0D0D0" BorderThickness="0,1,0,0"
+                Background="#FAFAFA" Padding="4,4">
+            <StackPanel Orientation="Horizontal">
+                <ComboBox x:Name="TypeCombo" Height="26" MinWidth="110"
+                          VerticalAlignment="Center"/>
+                <Button Content="+" Height="26" Width="32" Margin="4,0,0,0"
+                        Click="AddVariable_Click"
+                        Background="#4CAF50" Foreground="White"
+                        BorderThickness="0" FontWeight="Bold" FontSize="16"
+                        ToolTip="&#x6DFB;&#x52A0;&#x53D8;&#x91CF;"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

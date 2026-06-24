@@ -129,14 +129,10 @@
             <TabControl Grid.Column="0" Background="#FFFAFAFA" BorderThickness="0"
                        Padding="0" Margin="0">
                 <TabItem Header="输入设置" FontSize="12" Padding="8,4">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto">
-                        <views:ScriptVariableTab x:Name="InputTabControl" />
-                    </ScrollViewer>
+                    <views:ScriptVariableTab x:Name="InputTabControl" />
                 </TabItem>
                 <TabItem Header="输出设置" FontSize="12" Padding="8,4">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto">
-                        <views:ScriptVariableTab x:Name="OutputTabControl" />
-                    </ScrollViewer>
+                    <views:ScriptVariableTab x:Name="OutputTabControl" />
                 </TabItem>
                 <TabItem Header="显示设置" FontSize="12" Padding="8,4">
                     <TextBlock Text="显示设置（占位）" Margin="12,20"

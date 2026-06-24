@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using System.Collections.ObjectModel;
@@ -35,6 +36,7 @@ using LogEntry = SunEyeVision.Tool.Script.Models.LogEntry;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Tool.Script.Models;
 using SunEyeVision.Tool.Script.ScriptEngine;
+using SunEyeVision.Workflow;
 using ScriptExecutionContext = SunEyeVision.Plugin.SDK.Execution.Parameters.ExecutionContext;
 
 namespace SunEyeVision.Tool.Script.Views
@@ -365,28 +367,11 @@ namespace SunEyeVision.Tool.Script.Views
             foreach (var log in result.LogMessages)
                 _logEntries.Add(new LogEntry { Text = log, IsError = false });
 
-            // 更新输出监视值
-            foreach (var kvp in result.OutputValues)
-            {
-                PluginLogger.Info(
-                    $"[MonitorDiag][Output] key='{kvp.Key}' runtimeType={(kvp.Value?.GetType().FullName ?? "null")} toString='{kvp.Value}'",
-                    nameof(ScriptDebugControl));
-                var hasResult = kvp.Value != null;
-                OutputTabControl.SetMonitorValue(kvp.Key, kvp.Value, hasResult);
-            }
+            // ★ 数据驱动：设置输出数据源，ScriptVariableTab 内部通过 DP 变更自动同步到 MonitorNodes
+            OutputTabControl.ValueSource = result.OutputValues;
 
-            // ★ 更新输入监视值（从解析后的输入值读取，而非 OutputValues 的错误 key）
-            if (_parameters.ResolvedInputValues != null)
-            {
-                foreach (var kvp in _parameters.ResolvedInputValues)
-                {
-                    PluginLogger.Info(
-                        $"[MonitorDiag][Input] key='{kvp.Key}' runtimeType={(kvp.Value?.GetType().FullName ?? "null")} toString='{kvp.Value}'",
-                        nameof(ScriptDebugControl));
-                    var hasResult = kvp.Value != null;
-                    InputTabControl.SetMonitorValue(kvp.Key, kvp.Value, hasResult);
-                }
-            }
+            // ★ 数据驱动：设置输入数据源
+            InputTabControl.ValueSource = _parameters.ResolvedInputValues;
 
             CompileTimeLabel.Content = $"编译: {result.CompileTimeMs}ms";
             ExecTimeLabel.Content = $"执行: {result.ExecutionTimeMs}ms";
@@ -398,6 +383,28 @@ namespace SunEyeVision.Tool.Script.Views
         protected override bool CanExecuteTool()
         {
             return !string.IsNullOrWhiteSpace(CodeEditor?.Text);
+        }
+
+        /// <summary>
+        /// 工作流引擎执行完成后通知。
+        /// CurrentNode 是 UI 层的 WorkflowNode（工具层无引用 UI 程序集），
+        /// 通过反射/属性检测（duck typing）获取 Parameters，通过 DSQS 查询 SSOT 获取输出结果。
+        /// </summary>
+        public override void OnExternalResultArrived()
+        {
+            // 输入：ScriptParameters.ResolvedInputValues 已被执行引擎原地更新，
+            //       直接赋值新引用触发 DP 变更，无需 RefreshFromSource
+            if (CurrentNode?.GetType().GetProperty("Parameters")?.GetValue(CurrentNode) is ScriptParameters sp)
+                InputTabControl.ValueSource = sp.ResolvedInputValues;
+
+            // 输出：通过 DSQS 查询 SSOT（WorkflowContext）获取最新结果
+            var nodeId = GetNodeIdFromCurrentNode();
+            if (!string.IsNullOrEmpty(nodeId) && DataProvider is IDataSourceQueryService queryService)
+            {
+                var context = queryService.GetNodeContext(nodeId);
+                if (context?.Result is ScriptResults result)
+                    OutputTabControl.ValueSource = result.OutputValues;
+            }
         }
 
 

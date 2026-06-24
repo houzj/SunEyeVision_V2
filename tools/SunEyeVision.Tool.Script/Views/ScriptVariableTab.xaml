@@ -49,7 +49,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />  <!-- 标题行 -->
-            <RowDefinition Height="Auto" />  <!-- 内容行（DataGrid 自适应高度） -->
+            <RowDefinition Height="*" />  <!-- 内容行（填满剩余空间） -->
             <RowDefinition Height="Auto" />  <!-- 添加行 -->
         </Grid.RowDefinitions>
 
@@ -66,9 +66,11 @@
         </DockPanel>
 
         <!-- ===== 第 2 行：监视模式 / 编辑模式 ===== -->
-        <!-- 监视模式：变量树（TreeView 自带 ScrollViewer，删除外层冗余包装） -->
+        <!-- 监视模式：变量树（TreeView 自带 ScrollViewer，删除外层冗余包装）
+             ItemsSource 绑定到 MonitorNodes（SSOT），外部可直接增删改该集合，UI 自动刷新。 -->
         <TreeView x:Name="MonitorItems" Grid.Row="1" BorderThickness="0"
-                  Background="Transparent" MaxHeight="400"
+                  Background="Transparent"
+                  ItemsSource="{Binding MonitorNodes, RelativeSource={RelativeSource AncestorType=UserControl}}"
                   VirtualizingPanel.IsVirtualizing="True"
                   VirtualizingPanel.VirtualizationMode="Recycling"
                   VirtualizingPanel.ScrollUnit="Item"
@@ -151,7 +153,7 @@
 
         <!-- 编辑模式：DataGrid（默认隐藏） -->
         <Grid x:Name="EditView" Grid.Row="1" Visibility="Collapsed">
-            <DataGrid x:Name="EditGrid" MaxHeight="400">
+            <DataGrid x:Name="EditGrid">
                 <DataGrid.Columns>
                     <!-- 变量名 -->
                     <DataGridTemplateColumn Header="&#x53D8;&#x91CF;&#x540D;" Width="*">

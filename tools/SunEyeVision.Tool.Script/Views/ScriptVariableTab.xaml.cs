@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
@@ -26,6 +27,12 @@ namespace SunEyeVision.Tool.Script.Views
         private ObservableCollection<AvailableDataSource>? _availableSources;
 
         /// <summary>
+        /// 监视树的根节点集合（SSOT）。
+        /// 外部可通过此属性直接增删改监视节点，UI 自动刷新（ItemsSource 绑定到本集合）。
+        /// </summary>
+        public ObservableCollection<MonitorNode> MonitorNodes { get; } = new();
+
+        /// <summary>
         /// 供 ComboBox 显示的字符串列表
         public string[] AvailableTypes { get; } =
         [
@@ -46,6 +53,87 @@ namespace SunEyeVision.Tool.Script.Views
                 // 刷新 ParamBinding 列
                 if (_isInput && EditGrid?.Columns.Count > 2)
                     EditGrid.Columns[2].Visibility = value != null ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+
+        /// <summary>
+        /// 声明式数据源依赖属性。外部设置此属性后，内部自动同步所有监视节点的值。
+        /// 数据驱动替代之前的过程式 SetMonitorValue 逐项调用。
+        /// </summary>
+        public static readonly DependencyProperty ValueSourceProperty =
+            DependencyProperty.Register(nameof(ValueSource), typeof(IDictionary<string, object?>),
+                typeof(ScriptVariableTab), new PropertyMetadata(null, OnValueSourceChanged));
+
+        /// <summary>
+        /// 数据源字典（变量名 → 值）。设置后自动触发 UI 同步。
+        /// </summary>
+        public IDictionary<string, object?>? ValueSource
+        {
+            get => (IDictionary<string, object?>?)GetValue(ValueSourceProperty);
+            set => SetValue(ValueSourceProperty, value);
+        }
+
+        private static void OnValueSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var tab = (ScriptVariableTab)d;
+            tab.SyncValuesFromSource();
+        }
+
+        /// <summary>
+        /// 强制从 ValueSource 重新同步（即使 ValueSource 引用未变）。
+        /// 用于工作流执行完成后，字典内容原地更新但引用相同的场景。
+        /// </summary>
+        public void RefreshFromSource()
+        {
+            SunEyeVision.Plugin.SDK.Logging.PluginLogger.Info($"[ScriptVariableTab] RefreshFromSource 被调用, _isInput={_isInput}", nameof(ScriptVariableTab));
+            SyncValuesFromSource();
+        }
+
+        /// <summary>
+        /// 从 ValueSource 数据源同步到 MonitorNodes（保留根节点结构，只更新子节点树）。
+        /// 数据驱动核心：外部只需设置 ValueSource，DP 变更时自动触发此方法。
+        /// </summary>
+        private void SyncValuesFromSource()
+        {
+            var source = ValueSource;
+            SunEyeVision.Plugin.SDK.Logging.PluginLogger.Info($"[ScriptVariableTab] SyncValuesFromSource: _isInput={_isInput}, source={(source == null ? "null" : $"Count={source.Count}")}, MonitorNodes.Count={MonitorNodes.Count}", nameof(ScriptVariableTab));
+
+            if (source == null)
+            {
+                // 数据源清空 → 重置所有节点为"无结果"
+                foreach (var node in MonitorNodes)
+                    node.ClearValuesRecursive();
+                return;
+            }
+
+            foreach (var node in MonitorNodes)
+            {
+                SunEyeVision.Plugin.SDK.Logging.PluginLogger.Info($"[ScriptVariableTab]   node='{node.Name}', source.TryGetValue={source.TryGetValue(node.Name, out _)}", nameof(ScriptVariableTab));
+
+                if (!source.TryGetValue(node.Name, out var value))
+                {
+                    // 没有匹配 → 重置为"无结果"
+                    node.ClearValuesRecursive();
+                    continue;
+                }
+
+                node.ValueBrush = value != null ? Brushes.Black : Brushes.Gray;
+                node.ClearChildren();
+
+                if (value != null)
+                    BuildChildren(value, node);
+
+                if (!node.HasChildren)
+                {
+                    node.AddChild(new MonitorNode
+                    {
+                        Name = "",
+                        DisplayValue = value?.ToString() ?? "(null)",
+                        ValueBrush = node.ValueBrush
+                    });
+                }
+                node.DisplayValue = "";
+                node.IsExpanded = true;
             }
         }
 
@@ -161,9 +249,9 @@ namespace SunEyeVision.Tool.Script.Views
         /// </summary>
         public void SetMonitorValue(string name, object? rawValue, bool hasResult)
         {
-            foreach (var item in MonitorItems.Items)
+            foreach (var node in MonitorNodes)
             {
-                if (item is MonitorNode node && node.Name == name)
+                if (node.Name == name)
                 {
                     node.ValueBrush = hasResult ? Brushes.Black : Brushes.Gray;
                     node.ClearChildren();
@@ -194,11 +282,8 @@ namespace SunEyeVision.Tool.Script.Views
         /// </summary>
         public void ClearAllValues()
         {
-            foreach (var item in MonitorItems.Items)
-            {
-                if (item is MonitorNode node)
-                    node.ClearValuesRecursive();
-            }
+            foreach (var node in MonitorNodes)
+                node.ClearValuesRecursive();
         }
 
         /// <summary>
@@ -259,11 +344,12 @@ namespace SunEyeVision.Tool.Script.Views
         }
 
         /// <summary>
-        /// 重建监视树
+        /// 重建监视树 — 填充 MonitorNodes（SSOT），UI 自动刷新。
+        /// 重建后自动从 ValueSource 同步值（数据驱动）。
         /// </summary>
         private void RebuildMonitor()
         {
-            var nodes = new ObservableCollection<MonitorNode>();
+            MonitorNodes.Clear();
             if (_sourceItems != null)
             {
                 foreach (var item in _sourceItems)
@@ -272,7 +358,7 @@ namespace SunEyeVision.Tool.Script.Views
                     var typeName = GetPropertyValue<string>(item, "TypeName") ?? "?";
                     // 提取绑定源信息（仅输入变量有），如果没有则留空
                     var bindingDisplayText = GetPropertyValue<string>(item, "BindingDisplayText") ?? string.Empty;
-                    nodes.Add(new MonitorNode
+                    MonitorNodes.Add(new MonitorNode
                     {
                         Name = name,
                         TypeDisplay = $"({typeName})",
@@ -283,7 +369,10 @@ namespace SunEyeVision.Tool.Script.Views
                     });
                 }
             }
-            MonitorItems.ItemsSource = nodes;
+            MonitorItems.ItemsSource = MonitorNodes;
+
+            // 数据驱动：如果已有 ValueSource，自动同步值
+            SyncValuesFromSource();
         }
 
         /// <summary>

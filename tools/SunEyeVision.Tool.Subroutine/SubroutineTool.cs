@@ -9,9 +9,10 @@ using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Metadata;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
-using SunEyeVision.Tool.Subroutine.Models;
-using SunEyeVision.Workflow;
-using ExecutionResult = SunEyeVision.Workflow.ExecutionResult;
+using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Plugin.SDK.UI.Windows;
+using SunEyeVision.Tool.Subroutine.Views;
+using ExecutionResult = SunEyeVision.Plugin.SDK.Execution.Results.ExecutionResult;
 
 namespace SunEyeVision.Tool.Subroutine
 {
@@ -30,6 +31,10 @@ namespace SunEyeVision.Tool.Subroutine
     )]
     public class SubroutineTool : IToolPlugin<SubroutineParameters, SubroutineResults>
     {
+        static SubroutineTool()
+        {
+            SubroutineDebugServiceProvider.Register(new SubroutineDebugServiceImpl());
+        }
         /// <summary>
         /// 执行子程序逻辑
         /// </summary>
@@ -484,6 +489,34 @@ namespace SunEyeVision.Tool.Subroutine
                         break;
                 }
             }
+        }
+    }
+
+    /// <summary>
+    /// 子程序调试服务实现 — 在 SubroutineTool 加载时注册到 SubroutineDebugServiceProvider。
+    /// UI 通过此服务创建调试窗口，不依赖 Subroutine 工具程序集的具体类型。
+    /// </summary>
+    internal class SubroutineDebugServiceImpl : ISubroutineDebugService
+    {
+        public DefaultDebugWindow CreateDebugWindow(
+            System.Windows.Window owner,
+            string subroutineId,
+            string subroutineName,
+            string nodeId,
+            IDataSourceQueryService? queryService,
+            SubroutineParameters parameters,
+            List<AvailableDataSource>? subroutineInternalSources,
+            Action? onOutputsChanged)
+        {
+            var control = new SubroutineDebugControl(
+                subroutineId, subroutineName, nodeId,
+                queryService, subroutineInternalSources,
+                parameters, onOutputsChanged);
+
+            return new DefaultDebugWindow(control)
+            {
+                Owner = owner
+            };
         }
     }
 }

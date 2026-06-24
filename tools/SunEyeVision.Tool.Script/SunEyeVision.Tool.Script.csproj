@@ -10,8 +10,6 @@
     <AssemblyName>SunEyeVision.Tool.Script</AssemblyName>
     <IsToolPlugin>true</IsToolPlugin>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-    <OutDir Condition="'$(Configuration)'=='Debug'">$(MSBuildProjectDirectory)\..\..\dev\Debug\plugins\Script\</OutDir>
-    <OutDir Condition="'$(Configuration)'=='Release'">$(MSBuildProjectDirectory)\..\..\Release\SunEyeVision_v1.0.0\SunEyeVision\plugins\Script\</OutDir>
   </PropertyGroup>
   <ItemGroup>
     <!-- 将 xshd 语法高亮文件复制到输出目录的 Resources 子文件夹 -->
@@ -22,6 +20,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+  <!-- XAML 编译期 + C# 代码 (ICSharpCode.AvalonEdit.*) 都需要类型解析,
+       运行时由主程序 SunEyeVision.UI 统一加载,Directory.Build.targets Step 1.2 拦截
+       不让 AvalonEdit / Roslyn dll 复制到 plugins/<ToolName>/,工具目录保持干净。
+       (主程序已声明同名 PackageReference,Assembly.LoadFrom 时 CLR 在 probing 根找到) -->
   <ItemGroup>
     <PackageReference Include="AvalonEdit" Version="6.3.1.120" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0" />
@@ -39,22 +41,4 @@
       <Private>false</Private>
     </ProjectReference>
   </ItemGroup>
-
-  <!-- 清理冗余 NuGet DLL（框架 DLL 已由 Directory.Build.targets 静态 ItemGroup 禁止复制） -->
-  <Target Name="CleanRedundantNuGetDlls" AfterTargets="Build">
-    <ItemGroup>
-      <!-- 移除 WPF 框架内部 DLL（宿主提供） -->
-      <RedundantDlls Include="$(OutDir)System.Private.Windows.*.dll" />
-      <!-- 移除 .NET 运行时提供的 System.* 框架 DLL（保留 Roslyn MEF 依赖 System.Composition.*） -->
-      <RedundantDlls Include="$(OutDir)System.IO.Pipelines.dll" />
-      <RedundantDlls Include="$(OutDir)System.Text.Encodings.Web.dll" />
-      <RedundantDlls Include="$(OutDir)System.Text.Json.dll" />
-      <!-- 移除 Microsoft.Win32.* 框架 DLL -->
-      <RedundantDlls Include="$(OutDir)Microsoft.Win32.*.dll" />
-    </ItemGroup>
-    <Delete Files="@(RedundantDlls)" Condition="Exists('%(Identity)')" />
-    <!-- 只保留 cs/ 和 zh-Hans/ 语言资源 -->
-    <RemoveDir Directories="$(OutDir)de;$(OutDir)es;$(OutDir)fr;$(OutDir)it;$(OutDir)ja;$(OutDir)ko;$(OutDir)pl;$(OutDir)pt-BR;$(OutDir)ru;$(OutDir)tr;$(OutDir)zh-Hant" />
-    <RemoveDir Directories="$(OutDir)runtimes" Condition="Exists('$(OutDir)runtimes')" />
-  </Target>
 </Project>

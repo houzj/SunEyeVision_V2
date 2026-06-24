@@ -49,16 +49,23 @@ namespace SunEyeVision.Tool.Script
                 Func<string, object?>? getGlobal = null;
                 Action<string, object?>? setGlobal = null;
 
-                // ★ 解析输入绑定（集成时由 WorkflowEngine 提供，此处为空）
-                Dictionary<string, object?>? inputValues = null;
+                // ★ 解析输入绑定（从 ExecutionContext.GlobalVariables 读取）
+                // 工具调试：ExecutionContext.GlobalVariables 由 ToolExecutor 注入（反射 ServiceInitializer）
+                // 工作流执行：ExecutionContext.GlobalVariables + NodeResults 由 AlgorithmNode.Execute 注入
+                // NodeResults 支持节点属性绑定（NodeId.PropertyName 格式）
+                var inputValues = ScriptBindingResolver.Resolve(
+                    parameters.Inputs,
+                    parameters.Context?.GlobalVariables,
+                    parameters.NodeResults);
+
+                // ★ 捕获解析后的输入值（供调试监视面板显示）
+                parameters.ResolvedInputValues = inputValues;
+
                 if (parameters.Inputs.Count > 0)
                 {
-                    inputValues = new Dictionary<string, object?>();
-                    foreach (var input in parameters.Inputs)
-                    {
-                        // 调试模式或未集成 Workflow 时，输入为空值
-                        inputValues[input.Name] = null;
-                    }
+                    parameters.LogInfo($"  解析了 {inputValues.Count} 个输入绑定: " +
+                        $"全局变量可用={parameters.Context?.GlobalVariables?.Count ?? 0}, " +
+                        $"上游节点结果={parameters.NodeResults?.Count ?? 0}");
                 }
 
                 var errors = lifecycleManager.Execute(
@@ -103,7 +110,7 @@ namespace SunEyeVision.Tool.Script
             return result;
         }
 
-        public FrameworkElement? CreateDebugControl()
+        public FrameworkElement? CreateDebugControl(IToolPlugin tool)
         {
             return new ScriptDebugControl();
         }

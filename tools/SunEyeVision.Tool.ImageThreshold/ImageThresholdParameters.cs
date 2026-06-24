@@ -178,6 +178,12 @@ namespace SunEyeVision.Tool.ImageThreshold
 
         #endregion
 
+        /// <summary>
+        /// 阈值方法后端字段
+        /// </summary>
+        private ParamValue<ThresholdMethod> _method =
+            ParamValue<ThresholdMethod>.CreateConstant(ThresholdMethod.Binary, "Method");
+
         #region 运行参数
 
         /// <summary>

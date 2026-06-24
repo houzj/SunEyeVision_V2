@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
@@ -61,7 +62,7 @@ namespace SunEyeVision.Workflow
                 }
             }
 
-            // 反序列化连接
+            // 反序列化连接（加载时一次性过滤孤立连接，运行时信任不变量）
             if (root.TryGetProperty("Connections", out var connElement))
             {
                 try
@@ -70,9 +71,26 @@ namespace SunEyeVision.Workflow
                         connElement.GetRawText(),
                         options
                     );
-                    workflow.Connections = connList != null
-                        ? new ObservableCollection<WorkflowConnection>(connList)
-                        : new ObservableCollection<WorkflowConnection>();
+                    // 收集所有合法节点 ID
+                    var validNodeIds = new HashSet<string>(workflow.Nodes.Select(n => n.Id));
+                    var filteredCount = 0;
+                    var validConnections = (connList ?? new())
+                        .Where(c =>
+                        {
+                            if (validNodeIds.Contains(c.SourceNodeId)
+                                && validNodeIds.Contains(c.TargetNodeId))
+                                return true;
+                            filteredCount++;
+                            return false;
+                        })
+                        .ToList();
+                    if (filteredCount > 0)
+                    {
+                        VisionLogger.Instance.Log(LogLevel.Warning,
+                            $"已过滤 {filteredCount} 个孤立连接（指向不存在节点）",
+                            "WorkflowJsonConverter");
+                    }
+                    workflow.Connections = new ObservableCollection<WorkflowConnection>(validConnections);
                 }
                 catch (Exception ex)
                 {

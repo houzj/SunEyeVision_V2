@@ -43,7 +43,6 @@ using SunEyeVision.UI.Services.Performance;
 using SunEyeVision.UI.Services.Logging;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.UI.Events;
-using SunEyeVision.Tool.Subroutine.Models;
 
 namespace SunEyeVision.UI.ViewModels
 {

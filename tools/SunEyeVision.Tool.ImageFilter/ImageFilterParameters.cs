@@ -78,6 +78,12 @@ namespace SunEyeVision.Tool.ImageFilter
 
         #endregion
 
+        /// <summary>
+        /// 滤波类型后端字段
+        /// </summary>
+        private ParamValue<FilterType> _filterTypeValue =
+            ParamValue<FilterType>.CreateConstant(FilterType.Blur, "FilterType");
+
         #region 运行参数
 
         /// <summary>

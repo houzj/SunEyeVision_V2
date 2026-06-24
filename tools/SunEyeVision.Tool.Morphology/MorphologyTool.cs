@@ -11,6 +11,7 @@ using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 using SunEyeVision.Plugin.SDK.Validation;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.Tool.Morphology.Views;
 
 namespace SunEyeVision.Tool.Morphology
@@ -48,7 +49,7 @@ namespace SunEyeVision.Tool.Morphology
         /// </summary>
         public MorphologyResults Run(MorphologyParameters parameters)
         {
-            var image = parameters.ResolvedInputImage;
+            var image = parameters.GetCvImage();
             var result = new MorphologyResults
             {
                 ToolName = _attribute?.DisplayName ?? "Morphology",
@@ -76,15 +77,15 @@ namespace SunEyeVision.Tool.Morphology
                 }
 
                 // ===== 输入图像验证 =====
-                if (image == null || image.Empty())
+                if (image.Empty)
                 {
                     parameters.LogWarning("输入图像为空");
                     result.SetError("输入图像为空");
                     return result;
                 }
 
-                parameters.LogInfo($"开始形态学处理: 图像尺寸 {image.Width}x{image.Height}");
-                result.InputSize = image.Size();
+                parameters.LogInfo($"开始形态学处理: 图像尺寸 {image.Size.Width}x{image.Size.Height}");
+                result.InputSize = image.Size;
 
                 var operation = parameters.Operation.Value;
                 var kernelShape = parameters.KernelShape.Value;
@@ -187,7 +188,7 @@ namespace SunEyeVision.Tool.Morphology
                                     result.BinaryMask = binaryMask;
 
                                     // 图形结果输出
-                                    result.OutputRegions = new IVisionRegion[] { morphRegion.Clone() };
+                                    result.OutputRegions = new IVisionRegion[] { morphRegion.CopyObj() };
 
                                     result.OutputImage = outputImage;
 
@@ -196,8 +197,8 @@ namespace SunEyeVision.Tool.Morphology
                                     result.KernelShapeUsed = kernelShape.ToString();
                                     result.KernelWidthUsed = kernelWidth;
                                     result.KernelHeightUsed = kernelHeight;
+                                    result.InputChannels = image.Channels;
                                     result.IterationsUsed = iterations;
-                                    result.InputChannels = image.Channels();
 
                                     // 统计：输出均值
                                     var outputMean = Cv2.Mean(resultMat);
@@ -235,7 +236,7 @@ namespace SunEyeVision.Tool.Morphology
                                     var reportLines = new List<string>
                                     {
                                         $"===== 形态学性能报告 =====",
-                                        $"图像: {image.Width}x{image.Height}  总耗时: {totalMs}ms",
+                                        $"图像: {image.Size.Width}x{image.Size.Height}  总耗时: {totalMs}ms",
                                         $"步骤  名称              耗时(ms)    占比",
                                         $"────  ──────────────── ────────  ──────"
                                     };
@@ -284,9 +285,9 @@ namespace SunEyeVision.Tool.Morphology
         /// <summary>
         /// 创建调试控件
         /// </summary>
-        public FrameworkElement? CreateDebugControl()
+        public FrameworkElement? CreateDebugControl(IToolPlugin tool)
         {
-            return new MorphologyToolDebugControl();
+            return new MorphologyToolDebugControl("Morphology", tool, null);
         }
 
         /// <summary>

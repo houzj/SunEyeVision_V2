@@ -1,0 +1,114 @@
+﻿---
+id: rule-016
+title: MSBuild 项目配置规范
+category: coding-standards
+priority: high
+alwaysApply: true
+enabled: true
+version: "1.1"
+updatedAt: 2026-06-24
+---
+
+# rule-016: MSBuild 项目配置规范
+
+## 1. 解决方案文件格式
+
+- **必须**使用 `.slnx`（XML 格式）作为唯一解决方案文件
+- **禁止**保留 `.sln`（旧版二进制格式），如存在应直接删除
+- **禁止**混用 `.sln` 和 `.slnx`（避免 IDE 行为不一致）
+
+## 2. 构建命令
+
+- **必须**使用 `dotnet build <project>.slnx`（或 `dotnet build <project>.csproj`）
+- **禁止**使用 `dotnet build <project>.sln`（二进制格式 dotnet 8+ 已逐步弃用，slnx 是推荐替代）
+
+## 3. 编译范围控制
+
+- 验证编译时**优先**编译单个 `csproj`（快速反馈、定位问题）
+- 完整方案编译**仅在**集成验证阶段使用
+- **禁止**对未加载的引用项目强行编译（浪费时间、引入噪声错误）
+
+## 4. 项目文件 (.csproj) 约束
+
+### 4.1 OutDir 来源唯一
+
+- `OutDir` **必须**由 `Directory.Build.targets` 的 `IsToolPlugin` 条件块统一控制
+- 工具 csproj **禁止**重复声明 `OutDir`（已统一通过 `$(MSBuildProjectName)` 拼接到独立子目录）
+- OutDir 必须用 `$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\..\..\dev\Debug\plugins\$(MSBuildProjectName)\'))` 规范化,避免字面拼接 `..\..\` 在 Delete/RemoveDir 中路径不匹配
+
+### 4.2 Reference Private 策略
+
+- **必须**显式声明 `<Private>false</Private>`（框架 DLL 不复制到工具输出目录）
+- **禁止**使用 `Condition="Exists(...)"` 防御壳（文件不存在直接报错，禁止静默）
+- 报错优先：路径错误 = 配置错误，必须立即暴露
+
+### 4.3 禁止模式
+
+```xml
+<!-- ❌ 禁止：Exists 防御壳掩盖问题 -->
+<ItemGroup Condition="Exists('..\..\dev\Debug\halcondotnetxl.dll')">
+  <Reference Include="halcondotnetxl">
+    <HintPath>..\..\dev\Debug\halcondotnetxl.dll</HintPath>
+    <Private>false</Private>
+  </Reference>
+</ItemGroup>
+
+<!-- ✅ 正确：直接引用，文件不存在则构建失败 -->
+<ItemGroup>
+  <Reference Include="halcondotnetxl">
+    <HintPath>..\..\dev\Debug\halcondotnetxl.dll</HintPath>
+    <Private>false</Private>
+  </Reference>
+</ItemGroup>
+```
+
+## 5. Directory.Build.targets 工具插件污染拦截
+
+工具插件输出目录 `plugins/<ToolName>/` 必须保持**仅包含工具主程序集 + 工具自带资源**。
+通过 `Directory.Build.targets` 中 8 步拦截,清理 5 类 MSBuild 独立复制通道的污染:
+
+| Step | 拦截目标 | 实现机制 |
+|---|---|---|
+| 1 | NuGet 框架 dll (AvalonEdit/Roslyn/OpenCvSharp 等) + 内部 framework pdb/xml | `ReferenceCopyLocalPaths Remove` (AfterTargets=ResolveAssemblyReferences) |
+| 2 | NuGet 原生运行时 dll (Content/None Link 包含 'runtimes') | `None/Content Remove` (BeforeTargets=PrepareForBuild) |
+| 4 | 工具自身 .deps.json (SDK 内部 AddDepsFileToOutput 通道) | `Delete` (AfterTargets=Build) |
+| 5 | NuGet 多语言资源子目录 (cs/ de/ es/ fr/ it/ ja/ ko/ pl/ pt-BR/ ru/ tr/ zh-Hans/ zh-Hant/) | `RemoveDir` (AfterTargets=Build) |
+| 7 | RID 解析空目录树 (runtimes/win-x64/native/ 等) | `RemoveDir` (AfterTargets=Build) |
+| 8 | WPF 临时构建目录 `<ToolName>_*_wpftmp/` | PowerShell 辅助脚本 (AfterTargets=Build) |
+
+**Step 3 跳过**（与 OutDir 覆盖直接相关）
+**Step 6 撤回**（Script 工具自带 Resources/ 与 NuGet 通用 Resources/ 重名,一刀切会误删工具自带的 xshd）
+
+### 5.1 工具插件启用条件
+
+- csproj **必须**设置 `<IsToolPlugin>true</IsToolPlugin>`
+- 上述 8 步 Target 全部 `Condition="'$(IsToolPlugin)'=='true'"`,非工具项目零影响
+- Step 1/2/4/5/7/8 全部用 `$(OutDir)` 而非 `$(MSBuildProjectDirectory)`,跟随 csproj 的 OutDir 设置
+
+### 5.2 验证标准
+
+工具编译成功后,`plugins/<ToolName>/` 应**只包含**:
+- `<ToolName>.dll` + `<ToolName>.pdb`(工具主程序集)
+- 工具 csproj 显式 `<None>` + `<CopyToOutputDirectory>` 复制的资源(如 Script 工具的 `Resources/*.xshd`)
+
+**禁止**出现:
+- NuGet 框架 dll / pdb / xml
+- 工具主程序集以外的 .dll
+- 任何 `<lang>/` 语言子目录
+- 任何 `runtimes/` 目录
+- 任何 `<ToolName>_*_wpftmp/` 临时目录
+- 任何 `<ToolName>.deps.json`
+
+## 6. 适用范围
+
+- 所有工具插件 csproj（`tools/**/*.csproj`）
+- 所有核心库 csproj（`src/**/*.csproj`）
+- `Directory.Build.props` / `Directory.Build.targets`（全局配置）
+- 解决方案文件（`*.sln` / `*.slnx`）
+- 辅助脚本（`utilities/Remove-WpfTempDir.ps1`）
+
+## 7. 参考
+
+- 遵循 rule-008 零兼容 / 报错优先 / YAGNI / KISS 原则
+- 遵循 rule-015 禁止兜底回退
+- 与 MAGE3D MCTools/ 对比: SunEyeVision plugins/ 比 MAGE3D MCTools/ 更干净(MCTools/ 残留 20+ 框架 dll + 10+ pdb + 10+ xml)

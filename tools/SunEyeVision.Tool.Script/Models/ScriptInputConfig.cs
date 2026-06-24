@@ -1,8 +1,7 @@
-using System;
+﻿using System;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models;
-using SunEyeVision.Workflow;
 
 namespace SunEyeVision.Tool.Script.Models
 {
@@ -75,9 +74,13 @@ namespace SunEyeVision.Tool.Script.Models
         {
             "Image"       => "IVisionImage",
             "Integer"     => "int",
+            "Integer[]"   => "int[]",
             "Double"      => "double",
+            "Double[]"    => "double[]",
             "Float"       => "double",
+            "Float[]"     => "double[]",
             "String"      => "string",
+            "String[]"    => "string[]",
             "Boolean"     => "bool",
             "Byte"        => "byte",
             "Point"       => "System.Windows.Point",
@@ -100,8 +103,12 @@ namespace SunEyeVision.Tool.Script.Models
                 "Image"       => "= null!",
                 "String"      => "= string.Empty",
                 "Integer"     => "= 0",
+                "Integer[]"   => "= null!",
                 "Double"      => "= 0.0",
+                "Double[]"    => "= null!",
                 "Float"       => "= 0.0",
+                "Float[]"     => "= null!",
+                "String[]"    => "= null!",
                 "Boolean"     => "= false",
                 "Byte"        => "= 0",
                 "Point"       => "= default",

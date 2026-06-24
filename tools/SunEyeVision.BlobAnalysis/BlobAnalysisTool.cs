@@ -502,9 +502,9 @@ namespace SunEyeVision.Tool.BlobAnalysis
             return parameters.Validate();
         }
 
-        public FrameworkElement? CreateDebugControl()
+        public FrameworkElement? CreateDebugControl(IToolPlugin tool)
         {
-            return new BlobAnalysisToolDebugControl();
+            return new BlobAnalysisToolDebugControl("BlobAnalysis", tool, null);
         }
 
         public FrameworkElement? CreateDataAnalysisControl()

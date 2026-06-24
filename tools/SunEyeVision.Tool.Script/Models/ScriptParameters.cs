@@ -67,6 +67,13 @@ public partial class UserScript : Script
         }
 
         /// <summary>
+        /// 输入绑定解析后的实际值（运行时填充，供调试监视面板显示）
+        /// 相当于普通工具的 ResolvedInputImage —— 都是"绑定解析完成后得到的实际输入值"
+        /// </summary>
+        [JsonIgnore]
+        public Dictionary<string, object?>? ResolvedInputValues { get; set; }
+
+        /// <summary>
         /// 获取引用目录的完整路径（基于应用程序根目录解析，不依赖插件 DLL 路径）
         /// </summary>
         [JsonIgnore]

@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models;
-using SunEyeVision.Workflow;
 
-namespace SunEyeVision.Tool.Subroutine.Models
+namespace SunEyeVision.Plugin.SDK.Models
 {
     public class SubroutineOutputConfig : ObservableObject
     {
@@ -30,7 +30,7 @@ namespace SunEyeVision.Tool.Subroutine.Models
             }
         }
 
-        /// <summary>参数类型（供 ParamBinding.DataType 类型筛选）</summary>
+        [JsonIgnore]
         public Type? ParamType => GlobalVariableTypeMapper.ToSystemType(TypeName);
 
         public AvailableDataSource? Source
@@ -54,14 +54,12 @@ namespace SunEyeVision.Tool.Subroutine.Models
 
         public string SourceDisplayText => Source?.DropdownDisplayText ?? string.Empty;
 
-        /// <summary>绑定源路径（格式：节点ID.属性名），对接 ParamBinding.BindingSource</summary>
         public string BindingSource
         {
             get => _bindingSource;
             set => SetProperty(ref _bindingSource, value);
         }
 
-        /// <summary>绑定显示文本（格式：节点名.属性名），对接 ParamBinding.BindingDisplayText</summary>
         public string BindingDisplayText
         {
             get => _bindingDisplayText;

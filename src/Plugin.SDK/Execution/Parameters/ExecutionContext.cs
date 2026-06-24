@@ -1,3 +1,4 @@
+﻿using System.Collections.Generic;
 using System.Threading;
 using SunEyeVision.Plugin.SDK.Logging;
 
@@ -107,6 +108,16 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         public CancellationToken CancellationToken { get; init; }
 
         /// <summary>
+        /// 全局变量字典（用于 __GlobalVars__.xxx 绑定解析）
+        /// </summary>
+        /// <remarks>
+        /// 包含解决方案级全局变量值，键为变量名，值为运行时值。
+        /// 工具可通过此字典解析 "__GlobalVars__.变量名" 格式的绑定源。
+        /// 如果为 null，表示当前上下文未注入全局变量。
+        /// </remarks>
+        public IDictionary<string, object?>? GlobalVariables { get; init; }
+
+        /// <summary>
         /// 创建执行上下文
         /// </summary>
         /// <param name="logger">日志记录器</param>
@@ -118,6 +129,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <param name="subCategory">日志子分类</param>
         /// <param name="traceId">追踪ID</param>
         /// <param name="cancellationToken">取消令牌</param>
+        /// <param name="globalVariables">全局变量字典</param>
         public ExecutionContext(
             ILogger? logger = null,
             string? toolName = null,
@@ -127,7 +139,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             string category = "运行",
             string? subCategory = null,
             string? traceId = null,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default,
+            IDictionary<string, object?>? globalVariables = null)
         {
             Logger = logger;
             ToolName = toolName;
@@ -138,6 +151,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             SubCategory = subCategory;
             TraceId = traceId;
             CancellationToken = cancellationToken;
+            GlobalVariables = globalVariables;
         }
 
         /// <summary>

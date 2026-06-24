@@ -1,5 +1,6 @@
 using System;
 using System.Windows.Media.Imaging;
+using OpenCvSharp;
 
 namespace SunEyeVision.Plugin.SDK.VisionAdapters
 {
@@ -21,6 +22,12 @@ namespace SunEyeVision.Plugin.SDK.VisionAdapters
         {
             ArgumentNullException.ThrowIfNull(source);
             return HalImage.FromBitmapSource(source);
+        }
+
+        public static IVisionImage FromMat(Mat image)
+        {
+            ArgumentNullException.ThrowIfNull(image);
+            return CvImage.FromMat(image);
         }
     }
 }

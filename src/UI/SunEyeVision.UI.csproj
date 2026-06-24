@@ -21,6 +21,11 @@
 
     <ItemGroup>
     <PackageReference Include="AIStudio.Wpf.DiagramDesigner" Version="1.3.1" />
+    <!-- Script 工具运行时依赖(宿主统一加载, Script 工具 csproj 不再声明) -->
+    <PackageReference Include="AvalonEdit" Version="6.3.1.120" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Features" Version="4.12.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" Version="4.12.0" />
     <PackageReference Include="OpenCvSharp4" Version="4.13.0.20260222" />
     <PackageReference Include="OpenCvSharp4.Extensions" Version="4.13.0.20260222" />
     <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.13.0.20260222" />
@@ -32,7 +37,8 @@
     <PackageReference Include="Vortice.Direct2D1" Version="3.8.2" />
     <PackageReference Include="Vortice.Direct3D11" Version="3.8.2" />
     <PackageReference Include="Vortice.DXGI" Version="3.8.2" />
-    <PackageReference Include="System.Text.Encoding.CodePages" Version="10.0.3" />
+
+
     <PackageReference Include="Msagl" Version="1.2.1" />
     <PackageReference Include="Msagl.Drawing" Version="1.2.1" />
     <PackageReference Include="Msagl.WpfGraphControl" Version="1.2.1" />
@@ -44,9 +50,6 @@
     <ProjectReference Include="..\Workflow\SunEyeVision.Workflow.csproj" />
     <ProjectReference Include="..\Plugin.SDK\SunEyeVision.Plugin.SDK.csproj" />
     <ProjectReference Include="..\Plugin.Infrastructure\SunEyeVision.Plugin.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\tools\SunEyeVision.Tool.Subroutine\SunEyeVision.Tool.Subroutine.csproj">
-      <Private>false</Private>
-    </ProjectReference>
     <!-- HalAdapter removed, types moved to Plugin.SDK -->
   </ItemGroup>
 

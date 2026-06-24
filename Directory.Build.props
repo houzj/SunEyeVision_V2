@@ -16,10 +16,11 @@
     <WorktreeName Condition="$(MSBuildProjectDirectory.Contains('SunEyeVision_Dev-tool'))">tool</WorktreeName>
     <WorktreeName Condition="'$(WorktreeName)' == ''">main</WorktreeName>
     
-    <!-- 根据工作区设置基础路径 (各 worktree 输出到各自的 dev/ 目录) -->
-    <WorktreeBasePath Condition="'$(WorktreeName)'=='main'">$(MSBuildProjectDirectory)\..\..</WorktreeBasePath>
-    <WorktreeBasePath Condition="'$(WorktreeName)'=='camera'">$(MSBuildProjectDirectory)\..\..</WorktreeBasePath>
-    <WorktreeBasePath Condition="'$(WorktreeName)'=='tool'">$(MSBuildProjectDirectory)\..\..</WorktreeBasePath>
+    <!-- 根据工作区设置基础路径 (各 worktree 输出到各自的 dev/ 目录)
+         末尾带 \ 避免下游拼接时反斜杠被吞 -->
+    <WorktreeBasePath Condition="'$(WorktreeName)'=='main'">$(MSBuildProjectDirectory)\..\..\</WorktreeBasePath>
+    <WorktreeBasePath Condition="'$(WorktreeName)'=='camera'">$(MSBuildProjectDirectory)\..\..\</WorktreeBasePath>
+    <WorktreeBasePath Condition="'$(WorktreeName)'=='tool'">$(MSBuildProjectDirectory)\..\..\</WorktreeBasePath>
     
     <!-- Debug 输出到各 worktree 独立的 dev/Debug/ 目录 -->
     <OutDir Condition="'$(Configuration)'=='Debug'">$(WorktreeBasePath)\dev\Debug\</OutDir>
@@ -40,11 +41,9 @@
     <OutDir Condition="'$(Configuration)'=='Release'">$(WorktreeBasePath)\Release\SunEyeVision_v1.0.0\SunEyeVision\</OutDir>
   </PropertyGroup>
 
-  <!-- 工具插件特殊配置 -->
-  <PropertyGroup Condition="'$(IsToolPlugin)'=='true'">
-    <OutDir Condition="'$(Configuration)'=='Debug'">$(WorktreeBasePath)\dev\Debug\plugins\</OutDir>
-    <OutDir Condition="'$(Configuration)'=='Release'">$(WorktreeBasePath)\Release\SunEyeVision_v1.0.0\SunEyeVision\plugins\</OutDir>
-  </PropertyGroup>
+  <!-- 工具插件特殊配置: OutDir 覆盖必须放在 Directory.Build.targets,
+       因为 props 评估时 csproj 的 <IsToolPlugin>true</IsToolPlugin> 尚未生效。 -->
+
 
   <ItemGroup Condition="'$(IsToolPlugin)'=='true'">
     <PackageReference Include="System.Text.Json" Version="10.0.3" />

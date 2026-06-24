@@ -479,6 +479,11 @@ public class Workflow : ObservableObject, IWorkflowConnectionProvider, INodeInfo
     /// </summary>
     public void AddConnection(WorkflowConnection connection)
     {
+        if (!Nodes.Any(n => n.Id == connection.SourceNodeId))
+            throw new ArgumentException($"源节点不存在: {connection.SourceNodeId}", nameof(connection));
+        if (!Nodes.Any(n => n.Id == connection.TargetNodeId))
+            throw new ArgumentException($"目标节点不存在: {connection.TargetNodeId}", nameof(connection));
+
         Connections.Add(connection);
 
         // 增量更新：连接建立时，更新目标节点的上游节点池
@@ -493,6 +498,11 @@ public class Workflow : ObservableObject, IWorkflowConnectionProvider, INodeInfo
     /// <returns>创建的连接</returns>
     public WorkflowConnection ConnectNodes(string sourceNodeId, string targetNodeId)
     {
+        if (!Nodes.Any(n => n.Id == sourceNodeId))
+            throw new ArgumentException($"源节点不存在: {sourceNodeId}", nameof(sourceNodeId));
+        if (!Nodes.Any(n => n.Id == targetNodeId))
+            throw new ArgumentException($"目标节点不存在: {targetNodeId}", nameof(targetNodeId));
+
         var connection = new WorkflowConnection
         {
             Id = Guid.NewGuid().ToString(),
@@ -615,6 +625,9 @@ public class Workflow : ObservableObject, IWorkflowConnectionProvider, INodeInfo
                 inDegree[node.Id] = 0;
             }
 
+            // 不变量：Connections 中所有 SourceNodeId/TargetNodeId 必在 Nodes 中
+            // （由 AddConnection/RemoveNode 入口保证 + WorkflowJsonConverter 加载过滤）
+            // 此处信任不变量，不再做防御检查。
             foreach (var connection in Connections)
             {
                 inDegree[connection.TargetNodeId]++;

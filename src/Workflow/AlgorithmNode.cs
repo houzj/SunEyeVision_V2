@@ -88,28 +88,25 @@ namespace SunEyeVision.Workflow
                         ResolveAvailableDataSources(typedParams, nodeResults);
                     }
 
-                    // 3. 注入执行上下文（使 parameters.LogInfo() 等日志方法生效）
-                    typedParams.SetExecutionContext(new ExecutionContext(
-                        logger: VisionLogger.Instance,
-                        toolName: Tool?.ParamsType?.Name?.Replace("Parameters", "") ?? ToolType,
-                        nodeName: Name,
-                        nodeId: Id));
-
                     // 3a. 解析参数中所有 TextStyle 的运行时绑定（工具执行前解析，使 PositionX/Y 绑定值在工具中可用）
                     if (nodeResults != null)
                     {
                         ResolveTextStyleParameterBindings(typedParams, nodeResults, resolver);
                     }
 
-                    // 3a. 注入上游节点结果（供子程序工具等特殊类型在 Run() 内部解析端口绑定）
-                    typedParams.NodeResults = nodeResults;
+                    // ★ 通过 ToolExecutor 统一执行路径（与工具调试共享同一执行器）
+                    // ToolExecutor 负责：注入 ExecutionContext（含 WorkflowName/GlobalVariables）、
+                    // 强制 NodeResults 非空、捕获异常、设置 ExecutionTimeMs
+                    var executor = new ToolExecutor(resolver ?? new ParameterResolver(VisionLogger.Instance), VisionLogger.Instance);
+                    var toolResult = executor.Run(
+                        Tool,
+                        typedParams,
+                        context: nodeResults,
+                        nodeName: Name,
+                        nodeId: Id);
 
-                    // 4. 执行工具
-                    var toolResult = Tool.Run(typedParams);
                     LastToolResult = toolResult;
                     LastResult = ConvertToAlgorithmResult(toolResult);
-
-
                 }
                 else
                 {

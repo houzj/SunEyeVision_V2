@@ -4,6 +4,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
+    xmlns:models="clr-namespace:SunEyeVision.Tool.Script.Models"
     mc:Ignorable="d"
     d:DesignHeight="350" d:DesignWidth="350"
     Background="#FFFAFAFA">
@@ -65,28 +66,88 @@
         </DockPanel>
 
         <!-- ===== 第 2 行：监视模式 / 编辑模式 ===== -->
-        <!-- 监视模式：变量树 -->
-        <ScrollViewer x:Name="MonitorView" Grid.Row="1"
-                      VerticalScrollBarVisibility="Auto"
-                      BorderThickness="0" Background="Transparent"
-                      MaxHeight="400">
-            <ItemsControl x:Name="MonitorItems" Margin="2,0">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel Margin="0,3">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="&#x25BE; " Foreground="#FF888888" VerticalAlignment="Center" FontSize="12"/>
-                                <TextBlock Text="{Binding Name}" FontWeight="Bold" Foreground="#FF0066CC" FontSize="12"/>
-                                <TextBlock Text="{Binding TypeDisplay}" Foreground="#FF888888" Margin="4,0,0,0" FontSize="11"/>
+        <!-- 监视模式：变量树（TreeView 自带 ScrollViewer，删除外层冗余包装） -->
+        <TreeView x:Name="MonitorItems" Grid.Row="1" BorderThickness="0"
+                  Background="Transparent" MaxHeight="400"
+                  VirtualizingPanel.IsVirtualizing="True"
+                  VirtualizingPanel.VirtualizationMode="Recycling"
+                  VirtualizingPanel.ScrollUnit="Item"
+                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                  ScrollViewer.CanContentScroll="True">
+            <TreeView.Resources>
+                    <HierarchicalDataTemplate DataType="{x:Type models:MonitorNode}"
+                                              ItemsSource="{Binding Children}">
+                        <Grid Margin="0,2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <!-- 单行布局：Name（+ 叶子节点的 Value 同行） + Type + Binding -->
+                            <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                <TextBlock Text="{Binding Name}" FontWeight="Bold"
+                                           Foreground="#FF0066CC" FontSize="12"/>
+                                <!-- 叶子节点：Name 同行追加 " DisplayValue" -->
+                                <TextBlock Margin="4,0,0,0" FontSize="11" FontStyle="Italic"
+                                           Foreground="{Binding ValueBrush}"
+                                           Text="{Binding DisplayValue}">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding HasChildren}" Value="False">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <TextBlock Text="{Binding TypeDisplay}"
+                                           Foreground="#FF888888"
+                                           Margin="4,0,0,0" FontSize="11">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding TypeDisplay}" Value="">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
                             </StackPanel>
-                            <TextBlock Text="{Binding DisplayValue}"
-                                       Foreground="{Binding ValueBrush}"
-                                       Margin="24,0,0,0" FontSize="11" FontStyle="Italic"/>
-                        </StackPanel>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ScrollViewer>
+                            <!-- Binding 显示（仅 HasBinding=True 时显示） -->
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding BindingDisplayText}"
+                                       Foreground="#FF999999"
+                                       VerticalAlignment="Center" Margin="8,0,0,0"
+                                       FontSize="10" FontStyle="Italic">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HasBinding}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                    </HierarchicalDataTemplate>
+                    <Style TargetType="TreeViewItem">
+                        <Setter Property="IsExpanded" Value="{Binding IsExpanded}"/>
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="BorderBrush" Value="Transparent"/>
+                        <!-- 鼠标悬停时浅色高亮提升交互感 -->
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#1A007ACC"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </TreeView.Resources>
+            </TreeView>
 
         <!-- 编辑模式：DataGrid（默认隐藏） -->
         <Grid x:Name="EditView" Grid.Row="1" Visibility="Collapsed">

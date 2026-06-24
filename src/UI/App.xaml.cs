@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using SunEyeVision.UI.Views.Windows;
 using System.Runtime.InteropServices;
 using SunEyeVision.Workflow;
+using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.UI.Services;
 using SunEyeVision.UI.Services.Monitoring;
 using SunEyeVision.Plugin.SDK.Logging;

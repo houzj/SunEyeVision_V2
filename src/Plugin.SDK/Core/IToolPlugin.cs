@@ -94,20 +94,22 @@ namespace SunEyeVision.Plugin.SDK.Core
         /// <summary>
         /// 创建调试控件（可选实现）
         /// </summary>
+        /// <param name="tool">调用此方法的工具实例（框架传入 == this）</param>
         /// <returns>调试控件实例，如果返回 null 则表示该工具无调试界面</returns>
         /// <remarks>
         /// 工具只负责创建内容，框架负责创建窗口。
         /// 框架根据 DebugWindowStyle 决定窗口类型，并将此控件放入窗口中。
-        /// 
+        /// tool 参数显式传入避免在实现端写 this（保证参数化、可单测）。
+        ///
         /// 示例：
         /// <code>
-        /// public FrameworkElement? CreateDebugControl()
+        /// public FrameworkElement? CreateDebugControl(IToolPlugin tool)
         /// {
-        ///     return new ThresholdToolDebugControl(this);
+        ///     return new ThresholdToolDebugControl("Id", tool, null);
         /// }
         /// </code>
         /// </remarks>
-        System.Windows.FrameworkElement? CreateDebugControl() => null;
+        System.Windows.FrameworkElement? CreateDebugControl(IToolPlugin tool) => null;
 
         /// <summary>
         /// 创建数据分析控件（可选实现）
@@ -117,7 +119,7 @@ namespace SunEyeVision.Plugin.SDK.Core
         /// 用于主界面右下角"数据分析"Tab中展示工具执行结果的数据分析。
         /// 
         /// 与 CreateDebugControl() 的区别：
-        /// - CreateDebugControl()   → 双击节点弹出的调试窗口内容（用于调参）
+        /// - CreateDebugControl(tool)   → 双击节点弹出的调试窗口内容（用于调参）
         /// - CreateDataAnalysisControl() → 右下角数据分析Tab内容（用于数据展示）
         /// 
         /// 框架行为：

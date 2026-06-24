@@ -29,11 +29,13 @@ using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis.Classification;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Logging;
 using LogEntry = SunEyeVision.Tool.Script.Models.LogEntry;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Tool.Script.Models;
-// ScriptEngine 命名空间通过父命名空间 SunEyeVision.Tool.Script 隐式可用
+using SunEyeVision.Tool.Script.ScriptEngine;
+using ScriptExecutionContext = SunEyeVision.Plugin.SDK.Execution.Parameters.ExecutionContext;
 
 namespace SunEyeVision.Tool.Script.Views
 {
@@ -41,6 +43,7 @@ namespace SunEyeVision.Tool.Script.Views
     {
         private ScriptParameters _parameters = new();
         private readonly ObservableCollection<LogEntry> _logEntries = new();
+        private ScriptTool? _scriptTool;
 
         // Roslyn completion workspace
         private AdhocWorkspace? _workspace;
@@ -209,10 +212,8 @@ namespace SunEyeVision.Tool.Script.Views
             };
 
             // 初始化变量配置面板（输入/输出 Tab）
+            // 上游节点数据源在 SetDataProvider 中通过基类缓存桥接（避免此处硬编码 null）
             InitializeTabs();
-            // 传递可用的全局变量类型给输入 Tab（ParamBinding 用）
-            InputTabControl.SetAvailableSources(null);
-            OutputTabControl.SetAvailableSources(null);
         }
 
         /// <summary>
@@ -263,6 +264,24 @@ namespace SunEyeVision.Tool.Script.Views
             }
         }
 
+        /// <summary>
+        /// 设置数据查询服务（主工作流模式）— 桥接基类已填充的上游节点数据源到 InputTab。
+        /// </summary>
+        /// <remarks>
+        /// 基类 SetDataProvider 内部已调用 PopulateParameterSources 从 DataSourceQueryService
+        /// 拉取当前节点上游所有节点的输出，填充到基类 AvailableDataSources 集合。
+        /// 此处将该集合（同一 ObservableCollection 实例）传给 InputTabControl，
+        /// ParamBinding 通过 INotifyCollectionChanged 监听后续变化，无需重复桥接。
+        /// 调试模式（未注入 queryService）下基类缓存保持空集合，ParamBinding 仅显示"无"/"全局变量"。
+        /// </remarks>
+        public override void SetDataProvider(object dataProvider)
+        {
+            base.SetDataProvider(dataProvider);
+
+            // 将基类已填充的上游节点输出数据源桥接到输入 Tab
+            InputTabControl.SetAvailableSources(AvailableDataSources);
+        }
+
         // ===== 嵌入式变量管理面板 =====
 
         /// <summary>
@@ -300,68 +319,78 @@ namespace SunEyeVision.Tool.Script.Views
             SyncCodeToParameters();
 
             _logEntries.Clear();
-            // 清除输出 Tab 的监视数据
-            foreach (var item in OutputTabControl.MonitorItems.Items)
+            // 清除所有监视数据（输入 + 输出）
+            ClearAllMonitorValues();
+
+            // ★ 对齐普通工具（Blob/Threshold）调试模式：
+            //    直接在 UI 层构建上游节点结果上下文和全局变量，
+            //    然后直调 _scriptTool.Run()，不走 ToolRunner/ToolExecutor。
+            _scriptTool ??= new ScriptTool();
+
+            // 构建上游节点结果字典（从 DataProvider/DataSourceQueryService 查询）
+            var nodeResults = BuildNodeResultsContext();
+            if (nodeResults != null)
             {
-                if (item is MonitorNode node)
-                {
-                    node.DisplayValue = "无结果";
-                    node.ValueBrush = System.Windows.Media.Brushes.Gray;
-                }
+                PluginLogger.Info($"[{nameof(ScriptDebugControl)}] 构建了 {nodeResults.Count} 个上游节点结果",
+                    nameof(ScriptDebugControl));
             }
 
-            using var lifecycleManager = new ScriptEngine.ScriptLifecycleManager();
-            // Global variable delegates - injected by workflow engine in workflow mode
-            Func<string, object?>? getGlobal = null;
-            Action<string, object?>? setGlobal = null;
+            var globalVars = GetDebugModeGlobalVariables();
+            _parameters.NodeResults = nodeResults;
+            _parameters.SetExecutionContext(new ScriptExecutionContext(
+                logger: PluginLogger.Logger,
+                toolName: "Script",
+                nodeName: CurrentNode?.GetType().GetProperty("DispName")?.GetValue(CurrentNode) as string,
+                globalVariables: globalVars));
 
-            // 解析输入绑定（调试模式简单赋值，集成时由 WorkflowEngine 提供）
-            Dictionary<string, object?>? inputValues = null;
-            if (_parameters.Inputs.Count > 0)
+            var result = _scriptTool.Run(_parameters);
+
+            if (result == null)
             {
-                inputValues = new Dictionary<string, object?>();
-                foreach (var input in _parameters.Inputs)
+                UpdateStatus("失败");
+                var errResult = new ScriptResults
                 {
-                    // 调试模式下输入值为 null
-                    inputValues[input.Name] = null;
-                }
+                    ToolName = "Script", ToolId = "Script", Timestamp = DateTime.Now,
+                    ErrorMessage = "执行返回 null"
+                };
+                errResult.SetError("执行返回 null");
+                return errResult;
             }
 
-            var errors = lifecycleManager.Execute(
-                _parameters.GeneratedCode,
-                _parameters.ScriptCode,
-                _parameters.AssemblyReferenceFullPath,
-                getGlobal, setGlobal,
-                inputValues);
-
-            // 编译错误用红色标记加入统一输出
-            foreach (var error in errors)
+            // 收集编译错误到 UI 日志面板
+            foreach (var error in result.CompileErrors)
                 _logEntries.Add(new LogEntry { Text = error, IsError = true });
 
-            // 运行日志
-            foreach (var log in lifecycleManager.LogMessages)
+            // 收集运行日志
+            foreach (var log in result.LogMessages)
                 _logEntries.Add(new LogEntry { Text = log, IsError = false });
 
-            // 更新输出 Tab 的监视值
-            foreach (var kvp in lifecycleManager.OutputValues)
+            // 更新输出监视值
+            foreach (var kvp in result.OutputValues)
             {
-                var displayText = kvp.Value?.ToString() ?? "(null)";
-                OutputTabControl.SetMonitorValue(kvp.Key, displayText, kvp.Value != null);
+                PluginLogger.Info(
+                    $"[MonitorDiag][Output] key='{kvp.Key}' runtimeType={(kvp.Value?.GetType().FullName ?? "null")} toString='{kvp.Value}'",
+                    nameof(ScriptDebugControl));
+                var hasResult = kvp.Value != null;
+                OutputTabControl.SetMonitorValue(kvp.Key, kvp.Value, hasResult);
             }
 
-            CompileTimeLabel.Content = $"编译: {lifecycleManager.CompileTimeMs}ms";
-            ExecTimeLabel.Content = $"执行: {lifecycleManager.ExecutionTimeMs}ms";
-            UpdateStatus(errors.Count == 0 ? "成功" : "失败");
-
-            var result = new ScriptResults
+            // ★ 更新输入监视值（从解析后的输入值读取，而非 OutputValues 的错误 key）
+            if (_parameters.ResolvedInputValues != null)
             {
-                ToolName = "Script", ToolId = "Script", Timestamp = DateTime.Now,
-                CompileErrors = errors, CompileTimeMs = lifecycleManager.CompileTimeMs,
-                ExecutionTimeMs = lifecycleManager.ExecutionTimeMs,
-                LogMessages = lifecycleManager.LogMessages.ToList()
-            };
-            foreach (var kvp in lifecycleManager.OutputValues)
-                result.OutputValues[kvp.Key] = kvp.Value;
+                foreach (var kvp in _parameters.ResolvedInputValues)
+                {
+                    PluginLogger.Info(
+                        $"[MonitorDiag][Input] key='{kvp.Key}' runtimeType={(kvp.Value?.GetType().FullName ?? "null")} toString='{kvp.Value}'",
+                        nameof(ScriptDebugControl));
+                    var hasResult = kvp.Value != null;
+                    InputTabControl.SetMonitorValue(kvp.Key, kvp.Value, hasResult);
+                }
+            }
+
+            CompileTimeLabel.Content = $"编译: {result.CompileTimeMs}ms";
+            ExecTimeLabel.Content = $"执行: {result.ExecutionTimeMs}ms";
+            UpdateStatus(result.IsSuccess ? "成功" : "失败");
 
             return result;
         }
@@ -369,6 +398,99 @@ namespace SunEyeVision.Tool.Script.Views
         protected override bool CanExecuteTool()
         {
             return !string.IsNullOrWhiteSpace(CodeEditor?.Text);
+        }
+
+
+
+        /// <summary>
+        /// 获取调试模式下的全局变量字典（反射访问 SunEyeVision.UI.Adapters.ServiceInitializer）
+        /// </summary>
+        /// <remarks>
+        /// 工具层不能直接引用 SunEyeVision.UI 程序集（分层架构约束），
+        /// 通过反射访问 SunEyeVision.UI.Adapters.ServiceInitializer.SolutionManager.CurrentSolution.GlobalVariables。
+        /// 反射失败 → 静默返回 null，ScriptBindingResolver 会按规则报错。
+        /// </remarks>
+        private static IDictionary<string, object?>? GetDebugModeGlobalVariables()
+        {
+            try
+            {
+                var serviceInitializerType = AppDomain.CurrentDomain.GetAssemblies()
+                    .Select(a => a.GetType("SunEyeVision.UI.Adapters.ServiceInitializer"))
+                    .FirstOrDefault(t => t != null);
+                if (serviceInitializerType == null) return null;
+
+                var solutionManagerProp = serviceInitializerType.GetProperty(
+                    "SolutionManager",
+                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+                if (solutionManagerProp == null) return null;
+
+                var solutionManager = solutionManagerProp.GetValue(null);
+                if (solutionManager == null) return null;
+
+                var currentSolutionProp = solutionManager.GetType().GetProperty(
+                    "CurrentSolution",
+                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                if (currentSolutionProp == null) return null;
+
+                var currentSolution = currentSolutionProp.GetValue(solutionManager) as SunEyeVision.Workflow.Solution;
+                if (currentSolution == null) return null;
+
+                var dict = new Dictionary<string, object?>();
+                foreach (var v in currentSolution.GlobalVariables)
+                {
+                    dict[v.Name] = v.Value;
+                }
+                return dict;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[ScriptDebugControl] 获取全局变量失败: {ex.Message}");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 从 DataProvider（DataSourceQueryService）构建上游节点结果上下文
+        /// </summary>
+        /// <remarks>
+        /// 调试模式下，DataSourceQueryService 已注入 SSOT 读取器（委托到 WorkflowContext），
+        /// 可实时读取上游节点执行结果。将结果构造成 IDictionary&lt;string, ToolResults&gt;
+        /// 供 ScriptBindingResolver 解析节点属性绑定。
+        /// 对齐普通工具（Blob/Threshold）在调试模式下手动从 _dataProvider 取值的做法。
+        /// </remarks>
+        /// <returns>节点 ID → ToolResults 字典（无上游节点时返回 null）</returns>
+        private IDictionary<string, ToolResults>? BuildNodeResultsContext()
+        {
+            var nodeId = GetNodeIdFromCurrentNode();
+            if (string.IsNullOrEmpty(nodeId))
+                return null;
+
+            if (DataProvider is not IDataSourceQueryService queryService)
+                return null;
+
+            var parentNodes = queryService.GetParentNodes(nodeId);
+            if (parentNodes.Count == 0)
+                return null;
+
+            var dict = new Dictionary<string, ToolResults>();
+            foreach (var parent in parentNodes)
+            {
+                var context = queryService.GetNodeContext(parent.NodeId);
+                if (context?.Result != null)
+                    dict[parent.NodeId] = context.Result;
+            }
+
+            return dict.Count > 0 ? dict : null;
+        }
+
+        /// <summary>
+        /// 从 CurrentNode 反射提取节点 ID
+        /// </summary>
+        private string? GetNodeIdFromCurrentNode()
+        {
+            if (CurrentNode == null) return null;
+            var idProperty = CurrentNode.GetType().GetProperty("Id");
+            return idProperty?.GetValue(CurrentNode) as string;
         }
 
         private void UpdateStatus(string status)
@@ -381,30 +503,21 @@ namespace SunEyeVision.Tool.Script.Views
                     : System.Windows.Media.Brushes.Gray;
         }
 
-        private void ExecuteButton_Click(object sender, RoutedEventArgs e)
-        {
-            ExecuteTool();
-        }
-
-        private void ClearCodeButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (CodeEditor != null) { CodeEditor.Text = string.Empty; SyncCodeToParameters(); }
-        }
-
         private void ClearResultButton_Click(object sender, RoutedEventArgs e)
         {
             _logEntries.Clear();
-            // 清除输出 Tab 的监视值
-            foreach (var item in OutputTabControl.MonitorItems.Items)
-            {
-                if (item is MonitorNode node)
-                {
-                    node.DisplayValue = "无结果";
-                    node.ValueBrush = System.Windows.Media.Brushes.Gray;
-                }
-            }
+            ClearAllMonitorValues();
             CompileTimeLabel.Content = ""; ExecTimeLabel.Content = "";
             UpdateStatus("就绪");
+        }
+
+        /// <summary>
+        /// 清除输入和输出 Tab 的所有监视值（含子节点）
+        /// </summary>
+        private void ClearAllMonitorValues()
+        {
+            InputTabControl.ClearAllValues();
+            OutputTabControl.ClearAllValues();
         }
 
         private void CodeEditor_LostFocus(object sender, RoutedEventArgs e) => SyncCodeToParameters();

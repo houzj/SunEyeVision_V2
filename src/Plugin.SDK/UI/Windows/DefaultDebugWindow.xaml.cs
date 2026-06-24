@@ -141,7 +141,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
 
             PluginLogger.Info("执行命令触发", "DefaultDebugWindow");
 
-            // 命令会由工具控件处理，这里只需要设置状态
+            // 显式将 Execute 命令路由到工具控件执行（按钮在 Window 底部栏，
+            // 命令冒泡路径不经过 ContentHost 中的工具控件，必须显式转发）
+            ToolCommands.Execute.Execute(null, _control);
         }
 
         /// <summary>
@@ -244,12 +246,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
             _isExecuting = true;
             SetButtonsEnabled(false);
 
-            // 触发路由命令
-            if (_control.CommandBindings.Count > 0)
-            {
-                // 执行命令会由工具控件处理
-                CommandManager.InvalidateRequerySuggested();
-            }
+            // 显式将 Execute 命令路由到工具控件执行
+            ToolCommands.Execute.Execute(null, _control);
         }
 
         #endregion

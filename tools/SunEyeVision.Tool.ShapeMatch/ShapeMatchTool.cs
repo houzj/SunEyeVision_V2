@@ -613,9 +613,9 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
         return parameters.Validate();
     }
 
-    public FrameworkElement? CreateDebugControl()
+    public FrameworkElement? CreateDebugControl(IToolPlugin tool)
     {
-        return new ShapeMatchToolDebugControl();
+        return new ShapeMatchToolDebugControl("ShapeMatch", tool, null);
     }
 
     public FrameworkElement? CreateDataAnalysisControl()

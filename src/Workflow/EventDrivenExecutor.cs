@@ -8,6 +8,7 @@ using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.Infrastructure.Infrastructure;
 using SunEyeVision.Plugin.SDK;
+using SunEyeVision.Plugin.SDK.Execution.Results;
 using Events = SunEyeVision.Core.Events;
 
 namespace SunEyeVision.Workflow

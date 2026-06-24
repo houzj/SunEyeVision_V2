@@ -29,7 +29,7 @@ namespace SunEyeVision.Tool.Script.Views
         /// 供 ComboBox 显示的字符串列表
         public string[] AvailableTypes { get; } =
         [
-            "Image", "Integer", "Double", "Float", "String", "Boolean", "Byte",
+            "Image", "Integer", "Integer[]", "Double", "Double[]", "Float", "Float[]", "String", "String[]", "Boolean", "Byte",
             "Point", "Rectangle", "Size",
             "Region", "Circle", "Line", "Annulus", "RotatedRect", "Polygon"
         ];
@@ -107,10 +107,28 @@ namespace SunEyeVision.Tool.Script.Views
         }
 
         /// <summary>
+        /// 强制提交 DataGrid 中任何挂起的编辑事务（Cell → Row 两级提交）。
+        /// 不清除选中项，不改变当前编辑状态，仅确保 EditItem 事务结束。
+        /// 避免在切换模式/重新绑定时触发 "DeferRefresh is not allowed during AddNew or EditItem transaction" 异常。
+        /// </summary>
+        private void CommitDataGridEdit()
+        {
+            if (!_isEditMode) return;
+
+            // 先提交 Cell 级别编辑（当前激活的单元格）
+            EditGrid.CommitEdit(DataGridEditingUnit.Cell, true);
+            // 再提交 Row 级别编辑（确保整行的 EditItem 事务结束）
+            EditGrid.CommitEdit(DataGridEditingUnit.Row, true);
+            // 强制取消任何残留的编辑事务（安全调用，无活跃编辑时无副作用）
+            EditGrid.CancelEdit();
+        }
+
+        /// <summary>
         /// 切换到监视模式
         /// </summary>
         public void ShowMonitorMode()
         {
+            CommitDataGridEdit();  // ★ 先提交 DataGrid 挂起编辑，再切换模式
             _isEditMode = false;
             UpdateModeVisibility();
             RebuildMonitor();
@@ -121,7 +139,7 @@ namespace SunEyeVision.Tool.Script.Views
         /// </summary>
         private void UpdateModeVisibility()
         {
-            MonitorView.Visibility = _isEditMode ? Visibility.Collapsed : Visibility.Visible;
+            MonitorItems.Visibility = _isEditMode ? Visibility.Collapsed : Visibility.Visible;
             EditView.Visibility = _isEditMode ? Visibility.Visible : Visibility.Collapsed;
             AddBar.Visibility = _isEditMode ? Visibility.Visible : Visibility.Collapsed;
 
@@ -138,18 +156,105 @@ namespace SunEyeVision.Tool.Script.Views
         }
 
         /// <summary>
-        /// 更新指定变量的监视值
+        /// 更新指定变量的监视值。
+        /// 统一树形结构：标量也包装成单子节点（让根节点可折叠），值在子节点上显示。
         /// </summary>
-        public void SetMonitorValue(string name, string displayText, bool hasResult)
+        public void SetMonitorValue(string name, object? rawValue, bool hasResult)
         {
             foreach (var item in MonitorItems.Items)
             {
                 if (item is MonitorNode node && node.Name == name)
                 {
-                    node.DisplayValue = displayText;
                     node.ValueBrush = hasResult ? Brushes.Black : Brushes.Gray;
+                    node.ClearChildren();
+
+                    if (rawValue != null)
+                        BuildChildren(rawValue, node);
+
+                    // 标量（无子节点）→ 加一个值子节点，使根节点总是可折叠
+                    if (!node.HasChildren)
+                    {
+                        var vc = new MonitorNode
+                        {
+                            Name = "",                                              // 子节点不显示 Name（值就是值，没有"名字"）
+                            DisplayValue = rawValue?.ToString() ?? "(null)",         // 值显示在 DisplayValue（XAML 模板的叶子节点位置）
+                            ValueBrush = hasResult ? Brushes.Black : Brushes.Gray
+                        };
+                        node.AddChild(vc);
+                    }
+                    node.DisplayValue = "";
+                    node.IsExpanded = true;
                     break;
                 }
+            }
+        }
+
+        /// <summary>
+        /// 清除所有节点（含子节点）的监视值，恢复为初始状态
+        /// </summary>
+        public void ClearAllValues()
+        {
+            foreach (var item in MonitorItems.Items)
+            {
+                if (item is MonitorNode node)
+                    node.ClearValuesRecursive();
+            }
+        }
+
+        /// <summary>
+        /// 将数组/集合值拆解为子节点树
+        /// </summary>
+        private static void BuildChildren(object? value, MonitorNode parent)
+        {
+            if (value is Array arr)
+            {
+                for (int i = 0; i < arr.Length; i++)
+                {
+                    var child = new MonitorNode { Name = $"[{i}]" };
+                    SetChildValue(child, arr.GetValue(i));
+                    parent.AddChild(child);
+                }
+            }
+            else if (value is System.Collections.IEnumerable enumerable and not string)
+            {
+                int i = 0;
+                foreach (var item in enumerable)
+                {
+                    var child = new MonitorNode { Name = $"[{i}]" };
+                    SetChildValue(child, item);
+                    parent.AddChild(child);
+                    i++;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 设置子节点的值（叶子节点直接赋值，容器节点递归展开）
+        /// </summary>
+        private static void SetChildValue(MonitorNode node, object? value)
+        {
+            if (value is Array arr && arr.Length > 0)
+            {
+                node.DisplayValue = "";
+                BuildChildren(value, node);
+            }
+            else if (value is System.Collections.IEnumerable enumerable and not string)
+            {
+                bool hasItems = false;
+                foreach (var _ in enumerable) { hasItems = true; break; }
+                if (hasItems)
+                {
+                    node.DisplayValue = "";
+                    BuildChildren(value, node);
+                }
+                else
+                {
+                    node.DisplayValue = value?.ToString() ?? "(null)";
+                }
+            }
+            else
+            {
+                node.DisplayValue = value?.ToString() ?? "(null)";
             }
         }
 
@@ -165,12 +270,16 @@ namespace SunEyeVision.Tool.Script.Views
                 {
                     var name = GetPropertyValue<string>(item, "Name") ?? "?";
                     var typeName = GetPropertyValue<string>(item, "TypeName") ?? "?";
+                    // 提取绑定源信息（仅输入变量有），如果没有则留空
+                    var bindingDisplayText = GetPropertyValue<string>(item, "BindingDisplayText") ?? string.Empty;
                     nodes.Add(new MonitorNode
                     {
                         Name = name,
                         TypeDisplay = $"({typeName})",
                         DisplayValue = "无结果",
-                        ValueBrush = Brushes.Gray
+                        ValueBrush = Brushes.Gray,
+                        BindingDisplayText = bindingDisplayText,
+                        HasBinding = !string.IsNullOrEmpty(bindingDisplayText)
                     });
                 }
             }
@@ -213,6 +322,7 @@ namespace SunEyeVision.Tool.Script.Views
         /// </summary>
         private void AddVariable_Click(object sender, RoutedEventArgs e)
         {
+            CommitDataGridEdit();  // ★ 先提交 DataGrid 挂起编辑，再操作集合
             var list = _sourceItems;
             if (list == null) return;
 
@@ -251,6 +361,7 @@ namespace SunEyeVision.Tool.Script.Views
         /// </summary>
         private void DeleteItem_Click(object sender, RoutedEventArgs e)
         {
+            CommitDataGridEdit();  // ★ 先提交 DataGrid 挂起编辑，再操作集合
             if (_sourceItems == null || _sourceItems.Count <= 1) return;
 
             var item = (sender as FrameworkElement)?.DataContext;
@@ -268,6 +379,7 @@ namespace SunEyeVision.Tool.Script.Views
         /// </summary>
         private void MoveUp_Click(object sender, RoutedEventArgs e)
         {
+            CommitDataGridEdit();  // ★ 先提交 DataGrid 挂起编辑，再操作集合
             var item = (sender as FrameworkElement)?.DataContext;
             if (item == null || _sourceItems == null) return;
 
@@ -290,6 +402,7 @@ namespace SunEyeVision.Tool.Script.Views
         /// </summary>
         private void MoveDown_Click(object sender, RoutedEventArgs e)
         {
+            CommitDataGridEdit();  // ★ 先提交 DataGrid 挂起编辑，再操作集合
             var item = (sender as FrameworkElement)?.DataContext;
             if (item == null || _sourceItems == null) return;
 

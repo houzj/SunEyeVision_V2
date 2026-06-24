@@ -9,17 +9,20 @@
     <RootNamespace>SunEyeVision.Tool.ImageThreshold</RootNamespace>
     <AssemblyName>SunEyeVision.Tool.ImageThreshold</AssemblyName>
     <IsToolPlugin>true</IsToolPlugin>
-    <OutDir Condition="'$(Configuration)'=='Debug'">$(MSBuildProjectDirectory)\..\..\dev\Debug\plugins\</OutDir>
-    <OutDir Condition="'$(Configuration)'=='Release'">$(MSBuildProjectDirectory)\..\..\Release\SunEyeVision_v1.0.0\SunEyeVision\plugins\</OutDir>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Plugin.SDK\SunEyeVision.Plugin.SDK.csproj" />
-    <ProjectReference Include="..\..\src\SunEyeVision.CvEngine\SunEyeVision.CvEngine.csproj" />
+    <ProjectReference Include="..\..\src\Plugin.SDK\SunEyeVision.Plugin.SDK.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\SunEyeVision.CvEngine\SunEyeVision.CvEngine.csproj">
+      <Private>false</Private>
+    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="halcondotnetxl">
-      <HintPath>..\..\libs\halcon\net\halcondotnetxl.dll</HintPath>
+      <HintPath>..\..\dev\Debug\halcondotnetxl.dll</HintPath>
+      <Private>false</Private>
     </Reference>
   </ItemGroup>
 </Project>

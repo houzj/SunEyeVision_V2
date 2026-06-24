@@ -22,7 +22,7 @@ namespace SunEyeVision.Tool.Condition
     )]
     public class ConditionTool : IToolPlugin<ConditionParameters, ConditionResults>
     {
-        public System.Windows.FrameworkElement? CreateDebugControl()
+        public System.Windows.FrameworkElement? CreateDebugControl(IToolPlugin tool)
         {
             return new Views.ConditionDebugControl();
         }

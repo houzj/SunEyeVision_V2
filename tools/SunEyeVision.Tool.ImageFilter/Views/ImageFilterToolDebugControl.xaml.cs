@@ -6,6 +6,7 @@ using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Metadata;
 using SunEyeVision.Plugin.SDK.UI.Controls;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
 
 namespace SunEyeVision.Tool.ImageFilter.Views
 {
@@ -219,7 +220,7 @@ namespace SunEyeVision.Tool.ImageFilter.Views
             }
 
             var runParams = (ImageFilterParameters)Parameters!;
-            runParams.ResolvedInputImage = imageMat;
+            runParams.ResolvedInputImage = VisionImage.FromMat(imageMat);
             return filterTool.Run(runParams);
         }
 

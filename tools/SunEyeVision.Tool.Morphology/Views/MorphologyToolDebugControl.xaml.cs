@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Windows;
 using OpenCvSharp;
 using SunEyeVision.Plugin.SDK.Core;
@@ -6,6 +6,7 @@ using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Metadata;
 using SunEyeVision.Plugin.SDK.UI.Controls;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
 
 namespace SunEyeVision.Tool.Morphology.Views
 {
@@ -219,7 +220,7 @@ namespace SunEyeVision.Tool.Morphology.Views
             }
 
             var runParams = (MorphologyParameters)Parameters!;
-            runParams.ResolvedInputImage = imageMat;
+            runParams.ResolvedInputImage = VisionImage.FromMat(imageMat);
             return morphologyTool.Run(runParams);
         }
 

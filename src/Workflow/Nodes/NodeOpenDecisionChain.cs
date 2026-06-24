@@ -119,7 +119,7 @@ namespace SunEyeVision.Workflow.Nodes
                     return;
                 }
 
-                var debugControl = toolInstance.CreateDebugControl();
+                var debugControl = toolInstance.CreateDebugControl(toolInstance);
                 context.DebugControl = debugControl;
 
                 if (debugControl == null)

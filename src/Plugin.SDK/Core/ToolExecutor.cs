@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
 using System.Threading;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
@@ -59,7 +62,7 @@ namespace SunEyeVision.Plugin.SDK.Core
         /// <typeparam name="TResult">结果类型</typeparam>
         /// <param name="tool">工具实例</param>
         /// <param name="parameters">参数（图像通过 ResolvedInputImage 传入）</param>
-        /// <param name="context">执行上下文（可选）</param>
+        /// <param name="context">上游节点结果字典（null 时使用空字典，保证工具总能安全探测）</param>
         /// <param name="nodeName">节点名称（可选，用于日志来源）</param>
         /// <param name="nodeId">节点ID（可选）</param>
         /// <param name="cancellationToken">取消令牌（可选）</param>
@@ -81,13 +84,17 @@ namespace SunEyeVision.Plugin.SDK.Core
 
             var stopwatch = Stopwatch.StartNew();
 
+            // ★ 强制非 null：工具只需通过 TryGetValue 探测上游数据是否存在，无需判空
+            parameters.NodeResults = context ?? new Dictionary<string, ToolResults>();
+
             // 注入执行上下文
             parameters.Context = new ToolExecutionContext(
                 logger: _logger,
                 toolName: tool.ParamsType.Name.Replace("Parameters", ""),
                 nodeName: nodeName ?? tool.ParamsType.Name.Replace("Parameters", ""),
                 nodeId: nodeId,
-                cancellationToken: cancellationToken);
+                cancellationToken: cancellationToken,
+                globalVariables: TryGetGlobalVariables());
 
             try
             {
@@ -140,7 +147,7 @@ namespace SunEyeVision.Plugin.SDK.Core
         /// </summary>
         /// <param name="tool">工具实例</param>
         /// <param name="parameters">参数（图像通过 ResolvedInputImage 传入）</param>
-        /// <param name="context">执行上下文（可选）</param>
+        /// <param name="context">上游节点结果字典（null 时使用空字典，保证工具总能安全探测）</param>
         /// <param name="nodeName">节点名称（可选，用于日志来源）</param>
         /// <param name="nodeId">节点ID（可选）</param>
         /// <param name="cancellationToken">取消令牌（可选）</param>
@@ -161,13 +168,17 @@ namespace SunEyeVision.Plugin.SDK.Core
 
             var stopwatch = Stopwatch.StartNew();
 
+            // ★ 强制非 null：工具只需通过 TryGetValue 探测上游数据是否存在
+            parameters.NodeResults = context ?? new Dictionary<string, ToolResults>();
+
             // 注入执行上下文
             parameters.Context = new ToolExecutionContext(
                 logger: _logger,
                 toolName: tool.ParamsType.Name.Replace("Parameters", ""),
                 nodeName: nodeName ?? tool.ParamsType.Name.Replace("Parameters", ""),
                 nodeId: nodeId,
-                cancellationToken: cancellationToken);
+                cancellationToken: cancellationToken,
+                globalVariables: TryGetGlobalVariables());
 
             try
             {
@@ -222,7 +233,7 @@ namespace SunEyeVision.Plugin.SDK.Core
         /// <typeparam name="TResult">结果类型</typeparam>
         /// <param name="tool">工具实例</param>
         /// <param name="parameters">参数（图像通过 ResolvedInputImage 传入）</param>
-        /// <param name="context">执行上下文（可选）</param>
+        /// <param name="context">上游节点结果字典（null 时使用空字典，保证工具总能安全探测）</param>
         /// <param name="nodeName">节点名称（可选，用于日志来源）</param>
         /// <param name="nodeId">节点ID（可选）</param>
         /// <param name="cancellationToken">取消令牌（可选）</param>
@@ -245,13 +256,17 @@ namespace SunEyeVision.Plugin.SDK.Core
 
             var stopwatch = Stopwatch.StartNew();
 
+            // ★ 强制非 null：工具只需通过 TryGetValue 探测上游数据是否存在
+            parameters.NodeResults = context ?? new Dictionary<string, ToolResults>();
+
             // 注入执行上下文
             parameters.Context = new ToolExecutionContext(
                 logger: _logger,
                 toolName: typeof(TParams).Name.Replace("Parameters", ""),
                 nodeName: nodeName ?? typeof(TParams).Name.Replace("Parameters", ""),
                 nodeId: nodeId,
-                cancellationToken: cancellationToken);
+                cancellationToken: cancellationToken,
+                globalVariables: TryGetGlobalVariables());
 
             try
             {
@@ -307,6 +322,75 @@ namespace SunEyeVision.Plugin.SDK.Core
             IDictionary<string, ToolResults> context)
         {
             return _parameterResolver.ApplyBindings(parameters, context);
+        }
+
+        /// <summary>
+        /// 尝试从解决方案管理器获取全局变量字典（反射访问避免跨层耦合）
+        /// </summary>
+        /// <remarks>
+        /// 工具层不能直接引用 SunEyeVision.UI 程序集（分层架构约束），
+        /// 通过反射访问 SunEyeVision.UI.Adapters.ServiceInitializer.SolutionManager.CurrentSolution.GlobalVariables。
+        /// 反射失败（UI 未加载、解决方案未初始化等）→ 静默返回 null。
+        /// </remarks>
+        /// <returns>全局变量字典，若无法获取返回 null</returns>
+        private static IDictionary<string, object?>? TryGetGlobalVariables()
+        {
+            try
+            {
+                // 查找 SunEyeVision.UI.Adapters.ServiceInitializer 类型
+                var serviceInitializerType = AppDomain.CurrentDomain.GetAssemblies()
+                    .Select(a => a.GetType("SunEyeVision.UI.Adapters.ServiceInitializer"))
+                    .FirstOrDefault(t => t != null);
+                if (serviceInitializerType == null) return null;
+
+                // 读取静态属性 SolutionManager
+                var solutionManagerProp = serviceInitializerType.GetProperty(
+                    "SolutionManager",
+                    BindingFlags.Public | BindingFlags.Static);
+                if (solutionManagerProp == null) return null;
+
+                var solutionManager = solutionManagerProp.GetValue(null);
+                if (solutionManager == null) return null;
+
+                // 读取实例属性 CurrentSolution
+                var currentSolutionProp = solutionManager.GetType().GetProperty(
+                    "CurrentSolution",
+                    BindingFlags.Public | BindingFlags.Instance);
+                if (currentSolutionProp == null) return null;
+
+                var currentSolution = currentSolutionProp.GetValue(solutionManager);
+                if (currentSolution == null) return null;
+
+                // 读取 GlobalVariables 列表（List<GlobalVariable>）
+                var globalVariablesProp = currentSolution.GetType().GetProperty(
+                    "GlobalVariables",
+                    BindingFlags.Public | BindingFlags.Instance);
+                if (globalVariablesProp == null) return null;
+
+                var globalVariablesList = globalVariablesProp.GetValue(currentSolution) as IEnumerable;
+                if (globalVariablesList == null) return null;
+
+                // 反射遍历每个 GlobalVariable：取 Name 和 Value
+                var dict = new Dictionary<string, object?>();
+                foreach (var v in globalVariablesList)
+                {
+                    if (v == null) continue;
+                    var vType = v.GetType();
+                    var nameProp = vType.GetProperty("Name", BindingFlags.Public | BindingFlags.Instance);
+                    var valueProp = vType.GetProperty("Value", BindingFlags.Public | BindingFlags.Instance);
+                    if (nameProp == null || valueProp == null) continue;
+                    var name = nameProp.GetValue(v) as string;
+                    if (string.IsNullOrEmpty(name)) continue;
+                    dict[name] = valueProp.GetValue(v);
+                }
+                return dict;
+            }
+            catch
+            {
+                // 反射失败（UI 层未加载、初始化异常等）→ 返回 null
+                // Script 工具解析时若发现 BindingSource = "__GlobalVars__.xxx" 而 GlobalVariables 为 null → 会直接报错
+                return null;
+            }
         }
     }
 }

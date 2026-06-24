@@ -6,6 +6,7 @@ using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Metadata;
 using SunEyeVision.Plugin.SDK.UI.Controls;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
 
 namespace SunEyeVision.Tool.Threshold.Views
 {
@@ -218,7 +219,7 @@ namespace SunEyeVision.Tool.Threshold.Views
             }
 
             var runParams = (ThresholdParameters)Parameters!;
-            runParams.ResolvedInputImage = imageMat;
+            runParams.ResolvedInputImage = VisionImage.FromMat(imageMat);
             return thresholdTool.Run(runParams);
         }
 

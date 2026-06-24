@@ -1,4 +1,4 @@
-
+﻿
 using System;
 using System.IO;
 using System.Collections.ObjectModel;
@@ -25,8 +25,8 @@ using SunEyeVision.UI.Services.Canvas;
 using SunEyeVision.UI.Converters.Path;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.SDK.Logging;
-using SunEyeVision.Tool.Subroutine;
-using SunEyeVision.Tool.Subroutine.Models;
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Execution.Results;
 
 
 
@@ -1829,7 +1829,7 @@ namespace SunEyeVision.UI.Views.Windows
                 }
             }
 
-            var debugWindow = SubroutinePlugin.ShowDebugWindow(this, subroutineId, nodeDispName,
+            var debugWindow = SubroutineDebugServiceProvider.GetService().CreateDebugWindow(this, subroutineId, nodeDispName,
                 nodeId, queryService, parameters, internalSources, onOutputsChanged);
             debugWindow.Title = nodeDispName;
 
@@ -1900,7 +1900,7 @@ namespace SunEyeVision.UI.Views.Windows
         /// <summary>
         /// 在工作流引擎中查找父节点对应的 SubroutineParameters
         /// </summary>
-        private SunEyeVision.Tool.Subroutine.Models.SubroutineParameters? FindParentSubroutineParameters(string subroutineWorkflowId)
+        private SubroutineParameters? FindParentSubroutineParameters(string subroutineWorkflowId)
         {
             if (_viewModel?.WorkflowEngine == null) return null;
 
@@ -1909,7 +1909,7 @@ namespace SunEyeVision.UI.Views.Windows
                 foreach (var node in workflow.Nodes)
                 {
                     if (node.SubroutineId == subroutineWorkflowId)
-                        return node.Parameters as SunEyeVision.Tool.Subroutine.Models.SubroutineParameters;
+                        return node.Parameters as SubroutineParameters;
                 }
             }
             return null;

@@ -38,17 +38,17 @@ namespace SunEyeVision.Tool.Threshold
         /// <summary>
         /// 获取所有可显示的图像
         /// </summary>
-        public override Dictionary<string, Mat?> GetDisplayImages()
+        public override Dictionary<string, IVisionImage?> GetDisplayImages()
         {
-            var images = new Dictionary<string, Mat?>();
+            var images = new Dictionary<string, IVisionImage?>();
             if (OutputImage != null && !OutputImage.Empty())
-                images["OutputImage"] = OutputImage;
+                images["OutputImage"] = VisionImage.FromMat(OutputImage);
             if (GrayImage != null && !GrayImage.Empty())
-                images["GrayImage"] = GrayImage;
+                images["GrayImage"] = VisionImage.FromMat(GrayImage);
             if (ReducedImage != null && !ReducedImage.Empty())
-                images["ReducedImage"] = ReducedImage;
+                images["ReducedImage"] = VisionImage.FromMat(ReducedImage);
             if (BinaryMask != null && !BinaryMask.Empty())
-                images["BinaryMask"] = BinaryMask;
+                images["BinaryMask"] = VisionImage.FromMat(BinaryMask);
             return images;
         }
 

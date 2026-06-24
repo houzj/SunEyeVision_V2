@@ -11,6 +11,7 @@ using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 using SunEyeVision.Plugin.SDK.Validation;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.Tool.ImageThreshold.Views;
 
 namespace SunEyeVision.Tool.ImageThreshold
@@ -48,7 +49,7 @@ namespace SunEyeVision.Tool.ImageThreshold
         /// </summary>
         public ImageThresholdResults Run(ImageThresholdParameters parameters)
         {
-            var image = parameters.ResolvedInputImage;
+            var image = parameters.GetCvImage();
             var result = new ImageThresholdResults
             {
                 ToolName = _attribute?.DisplayName ?? "ImageThreshold",
@@ -76,16 +77,16 @@ namespace SunEyeVision.Tool.ImageThreshold
                 }
 
                 // ===== 输入图像验证 =====
-                if (image == null || image.Empty())
+                if (image.Empty)
                 {
                     parameters.LogWarning("输入图像为空");
                     result.SetError("输入图像为空");
                     return result;
                 }
 
-                parameters.LogInfo($"开始二值化处理: 图像尺寸 {image.Width}x{image.Height}");
-                result.InputSize = image.Size();
-                result.InputChannels = image.Channels();
+                parameters.LogInfo($"开始二值化处理: 图像尺寸 {image.Size.Width}x{image.Size.Height}");
+                result.InputSize = image.Size;
+                result.InputChannels = image.Channels;
 
                 var method = parameters.Method.Value;
                 int threshold = parameters.Threshold.Value;
@@ -224,7 +225,7 @@ namespace SunEyeVision.Tool.ImageThreshold
                                 result.BinaryMask = binaryMask;
 
                                 // 图形结果输出
-                                result.OutputRegions = new IVisionRegion[] { binaryRegion.Clone() };
+                                result.OutputRegions = new IVisionRegion[] { binaryRegion.CopyObj() };
 
                                 result.ThresholdUsed = actualThreshold;
                                 result.MaxValueUsed = maxValue;
@@ -232,7 +233,7 @@ namespace SunEyeVision.Tool.ImageThreshold
 
                                 // ===== Step 5: 统计信息 =====
                                 stepSw.Restart();
-                                ComputeStatistics(result, outputImage, image);
+                                ComputeStatistics(result, outputImage, image.Image);
                                 stepSw.Stop();
                                 stepTimings.Add(("统计计算", stepSw.ElapsedMilliseconds));
 
@@ -251,7 +252,7 @@ namespace SunEyeVision.Tool.ImageThreshold
                                 var reportLines = new List<string>
                                 {
                                     $"===== 图像二值化性能报告 =====",
-                                    $"图像: {image.Width}x{image.Height}  总耗时: {totalMs}ms",
+                                    $"图像: {image.Size.Width}x{image.Size.Height}  总耗时: {totalMs}ms",
                                     $"步骤  名称              耗时(ms)    占比",
                                     $"────  ──────────────── ────────  ──────"
                                 };
@@ -299,9 +300,9 @@ namespace SunEyeVision.Tool.ImageThreshold
         /// <summary>
         /// 创建调试控件
         /// </summary>
-        public FrameworkElement? CreateDebugControl()
+        public FrameworkElement? CreateDebugControl(IToolPlugin tool)
         {
-            return new ImageThresholdToolDebugControl();
+            return new ImageThresholdToolDebugControl("ImageThreshold", tool, null);
         }
 
         /// <summary>

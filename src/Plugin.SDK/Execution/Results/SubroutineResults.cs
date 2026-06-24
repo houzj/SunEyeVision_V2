@@ -4,38 +4,20 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
+using SunEyeVision.Plugin.SDK.Models;
 
-namespace SunEyeVision.Tool.Subroutine.Models
+namespace SunEyeVision.Plugin.SDK.Execution.Results
 {
-    /// <summary>
-    /// 子程序执行结果 — 子工作流中所有节点的输出汇总。
-    /// 下游工具可通过 AvailableDataSource 绑定此结果中的属性。
-    /// </summary>
     public class SubroutineResults : ToolResults
     {
-        /// <summary>各节点输出结果（节点ID → 结果对象）</summary>
         public Dictionary<string, object> NodeOutputs { get; set; } = new();
-
-        /// <summary>子工作流执行耗时(ms)</summary>
         public long SubWorkflowExecutionTimeMs { get; set; }
-
-        /// <summary>执行的节点数</summary>
         public int ExecutedNodeCount { get; set; }
-
-        /// <summary>执行的时间戳</summary>
         public DateTime ExecutedAt { get; set; } = DateTime.Now;
 
-        /// <summary>
-        /// 解析后的输出端口值（端口名 → 值），由 SubroutineTool.Run() 在子工作流执行后填充。
-        /// 下游工具可通过 AvailableDataSource 绑定这些属性，与其他工具的输出属性一致。
-        /// </summary>
         [JsonIgnore]
         public Dictionary<string, object> ResolvedOutputValues { get; set; } = new();
 
-        /// <summary>
-        /// 输出配置快照（由 SubroutineTool.Run() 在运行时从参数捕获）。
-        /// 用于在未执行时（设计态）也让 GetPropertyMap() 返回完整的输出端口结构。
-        /// </summary>
         [JsonIgnore]
         public List<SubroutineOutputConfig> OutputConfigs { get; set; } = new();
 
@@ -43,10 +25,8 @@ namespace SunEyeVision.Tool.Subroutine.Models
         {
             var images = new Dictionary<string, IVisionImage?>();
             foreach (var kvp in NodeOutputs)
-            {
                 if (kvp.Value is IVisionImage img && !img.IsEmpty)
                     images[kvp.Key] = img;
-            }
             return images;
         }
 
@@ -54,9 +34,9 @@ namespace SunEyeVision.Tool.Subroutine.Models
         {
             var items = new List<ResultItem>
             {
-                ResultItem.Numeric("执行节点数", ExecutedNodeCount),
-                ResultItem.Numeric("子流程耗时(ms)", SubWorkflowExecutionTimeMs),
-                ResultItem.Boolean("执行成功", IsSuccess)
+                ResultItem.Numeric("\u5b50\u6d41\u7a0b\u8017\u65f6(ms)", SubWorkflowExecutionTimeMs),
+                ResultItem.Numeric("\u6267\u884c\u8282\u70b9\u6570", ExecutedNodeCount),
+                ResultItem.Boolean("\u6267\u884c\u6210\u529f", IsSuccess)
             };
             foreach (var kvp in ResolvedOutputValues)
                 items.Add(new ResultItem { Name = kvp.Key, Value = kvp.Value, Type = InferResultItemType(kvp.Value) });
@@ -75,22 +55,16 @@ namespace SunEyeVision.Tool.Subroutine.Models
         {
             var map = new List<PropertyMapEntry>
             {
-                new("SubWorkflowExecutionTimeMs", "子流程耗时", "执行信息"),
-                new("ExecutedNodeCount", "执行节点数", "执行信息"),
-                new("ExecutedAt", "执行时间", "执行信息")
+                new("SubWorkflowExecutionTimeMs", "\u5b50\u6d41\u7a0b\u8017\u65f6", "\u6267\u884c\u4fe1\u606f"),
+                new("ExecutedNodeCount", "\u6267\u884c\u8282\u70b9\u6570", "\u6267\u884c\u4fe1\u606f"),
+                new("ExecutedAt", "\u6267\u884c\u65f6\u95f4", "\u6267\u884c\u4fe1\u606f")
             };
-            // 优先运行时解析值，回退到输出配置定义（设计态也可见）
-            var keys = ResolvedOutputValues.Count > 0
-                ? ResolvedOutputValues.Keys
-                : OutputConfigs.Select(c => c.Name);
+            var keys = ResolvedOutputValues.Count > 0 ? ResolvedOutputValues.Keys : OutputConfigs.Select(c => c.Name);
             foreach (var name in keys)
-                map.Add(new PropertyMapEntry(name, name, "输出结果"));
+                map.Add(new PropertyMapEntry(name, name, "\u8f93\u51fa\u7ed3\u679c"));
             return map;
         }
 
-        /// <summary>
-        /// 转换为字典（与 BlobAnalysisResults 一致）
-        /// </summary>
         public override Dictionary<string, object> ToDictionary()
         {
             var dict = base.ToDictionary();

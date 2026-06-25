@@ -1,5 +1,7 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Windows;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
 
 namespace SunEyeVision.Plugin.SDK.Models.Geometry
 {
@@ -193,6 +195,16 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
         public override int GetHashCode() => HashCode.Combine(Center, Radius);
 
         public override string ToString() => $"Circle2d(Center={Center}, R={Radius:F2})";
+
+        public IReadOnlyList<(string FieldName, object? FieldValue)> GetMonitorFields()
+        {
+            return new (string, object?)[]
+            {
+                ("中心X", Center.X),
+                ("中心Y", Center.Y),
+                ("半径", Radius),
+            };
+        }
 
         #endregion
     }

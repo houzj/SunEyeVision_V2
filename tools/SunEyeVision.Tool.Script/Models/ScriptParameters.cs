@@ -16,13 +16,16 @@ namespace SunEyeVision.Tool.Script.Models
     public class ScriptParameters : ToolParameters
     {
         /// <summary>
-        /// 默认代码模板（完整的 partial class，用户可自由写 using/class/方法/字段等）
+        /// 默认代码模板（对齐默认占位项：1 输入 input1 + 1 输出 output1，类型均为 Image）
         /// </summary>
+        /// <remarks>
+        /// 客户新建 Script 工具时,编辑器直接显示一份可编译运行的最小示例：
+        /// 1. 在 Init() 中做资源加载
+        /// 2. 在 Process() 中检查 input1 有效性并打印图像信息
+        /// 3. 将输入图像透传给 output1 作为最简流水线
+        /// 用户在此基础上自由改写即可。
+        /// </remarks>
         public const string DefaultMethodCode = @"using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
 using SunEyeVision.Tool.Script.ScriptEngine;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 
@@ -30,21 +33,36 @@ public partial class UserScript : Script
 {
     public override void Init()
     {
-        // 在此处初始化代码
+        // 初始化阶段:加载资源、初始化变量
+        LogInfo(""脚本初始化开始"");
     }
 
     public override void Process()
     {
-        // 在此处编写算法逻辑
-        // 可直接访问输入变量（如 image1, threshold）
-        // 可直接赋值输出变量（如 result = xxx）
+        // ★ Demo:图像直通 + 信息查询
+        if (input1 == null)
+        {
+            LogError(""输入图像 input1 为空,请在变量面板绑定上游图像源"");
+            return;
+        }
+        LogInfo($""输入图像: {input1.Width}x{input1.Height}, 通道数: {input1.Channels}"");
+
+        // 将输入图像传给输出,作为最简流水线
+        output1 = input1;
+        LogInfo(""脚本处理完成"");
     }
 }";
 
         private string _scriptCode = DefaultMethodCode;
         private string _assemblyReferenceDir = "ScriptRefs";
-        private ObservableCollection<ScriptInputConfig> _inputs = [];
-        private ObservableCollection<ScriptOutputConfig> _outputs = [];
+        private ObservableCollection<ScriptInputConfig> _inputs =
+        [
+            new ScriptInputConfig { Name = "input1", TypeName = "Image" }
+        ];
+        private ObservableCollection<ScriptOutputConfig> _outputs =
+        [
+            new ScriptOutputConfig { Name = "output1", TypeName = "Image" }
+        ];
 
         /// <summary>
         /// 脚本方法体代码（不含 class 声明，由 BuildFullCode 自动包裹）

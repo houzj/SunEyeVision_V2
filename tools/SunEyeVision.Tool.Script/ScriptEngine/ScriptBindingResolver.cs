@@ -59,10 +59,10 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
 
             foreach (var input in inputs)
             {
-                // 规则 1：未配置绑定 → 使用类型默认值（int=0, string="", object=null）
+                // 规则 1：未配置绑定 → 不加入结果字典，监视面板显示"无结果"
+                // 脚本字段由 CLR 零初始化保证了有效初始值（int=0, bool=false, string=null）
                 if (string.IsNullOrEmpty(input.BindingSource))
                 {
-                    result[input.Name] = GetDefaultValue(input.TypeName);
                     continue;
                 }
 
@@ -272,7 +272,7 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             if (targetType != null && targetType.IsInstanceOfType(rawValue))
                 return rawValue;
 
-            if (targetType != null && IsNumericType(rawValue.GetType()) && IsNumericType(targetType))
+            if (targetType != null && NumericTypes.IsNumericType(rawValue.GetType()) && NumericTypes.IsNumericType(targetType))
                 return Convert.ChangeType(rawValue, targetType, CultureInfo.InvariantCulture);
 
             if (rawValue is string str)
@@ -329,7 +329,7 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                 return rawValue;
 
             // 2. 数字类型互转（int → double, long → int 等）
-            if (targetType != null && IsNumericType(rawValue.GetType()) && IsNumericType(targetType))
+            if (targetType != null && NumericTypes.IsNumericType(rawValue.GetType()) && NumericTypes.IsNumericType(targetType))
                 return Convert.ChangeType(rawValue, targetType, CultureInfo.InvariantCulture);
 
             // 3. 字符串 → 目标类型（关键：UI 文本框输入统一是 String）
@@ -382,15 +382,6 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             throw new InvalidOperationException(
                 $"脚本输入 '{inputName}' 绑定的全局变量 '{varName}' 类型为 '{rawValue.GetType().Name}'，" +
                 $"与字段类型 '{targetTypeName}' 不匹配，且无法自动转换。");
-        }
-
-        private static bool IsNumericType(Type type)
-        {
-            return type == typeof(int) || type == typeof(long) || type == typeof(float)
-                || type == typeof(double) || type == typeof(decimal)
-                || type == typeof(short) || type == typeof(byte)
-                || type == typeof(uint) || type == typeof(ulong)
-                || type == typeof(ushort) || type == typeof(sbyte);
         }
 
         private static bool IsSimpleType(Type type)

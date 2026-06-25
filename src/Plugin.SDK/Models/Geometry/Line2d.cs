@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
 
 namespace SunEyeVision.Plugin.SDK.Models.Geometry
 {
@@ -219,6 +221,17 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
         public override int GetHashCode() => HashCode.Combine(Point, Direction);
 
         public override string ToString() => $"Line2d(Point={Point}, Dir={Direction})";
+
+        public IReadOnlyList<(string FieldName, object? FieldValue)> GetMonitorFields()
+        {
+            return new (string, object?)[]
+            {
+                ("点X", Point.X),
+                ("点Y", Point.Y),
+                ("方向X", Direction.X),
+                ("方向Y", Direction.Y),
+            };
+        }
 
         #endregion
     }

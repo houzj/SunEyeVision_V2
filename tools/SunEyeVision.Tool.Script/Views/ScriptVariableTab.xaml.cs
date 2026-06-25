@@ -3,12 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Globalization;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using SunEyeVision.Tool.Script.Models;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
 
 namespace SunEyeVision.Tool.Script.Views
 {
@@ -121,7 +123,19 @@ namespace SunEyeVision.Tool.Script.Views
                 node.ClearChildren();
 
                 if (value != null)
+                {
                     BuildChildren(value, node);
+                }
+                else
+                {
+                    // value=null：创建"无结果"占位子节点（保持树形结构一致）
+                    node.AddChild(new MonitorNode
+                    {
+                        Name = "",
+                        DisplayValue = "无结果",
+                        ValueBrush = Brushes.Gray,
+                    });
+                }
 
                 if (!node.HasChildren)
                 {
@@ -133,7 +147,6 @@ namespace SunEyeVision.Tool.Script.Views
                     });
                 }
                 node.DisplayValue = "";
-                node.IsExpanded = true;
             }
         }
 
@@ -257,7 +270,19 @@ namespace SunEyeVision.Tool.Script.Views
                     node.ClearChildren();
 
                     if (rawValue != null)
+                    {
                         BuildChildren(rawValue, node);
+                    }
+                    else
+                    {
+                        // rawValue=null：创建"无结果"占位子节点
+                        node.AddChild(new MonitorNode
+                        {
+                            Name = "",
+                            DisplayValue = "无结果",
+                            ValueBrush = Brushes.Gray,
+                        });
+                    }
 
                     // 标量（无子节点）→ 加一个值子节点，使根节点总是可折叠
                     if (!node.HasChildren)
@@ -271,7 +296,6 @@ namespace SunEyeVision.Tool.Script.Views
                         node.AddChild(vc);
                     }
                     node.DisplayValue = "";
-                    node.IsExpanded = true;
                     break;
                 }
             }
@@ -287,10 +311,71 @@ namespace SunEyeVision.Tool.Script.Views
         }
 
         /// <summary>
-        /// 将数组/集合值拆解为子节点树
+        /// 将对象值拆解为子节点树
+        /// 优先级：IMonitorable → WPF 内置结构(Point/Size/Rect/Vector) → 数组/集合 → 标量 ToString
         /// </summary>
         private static void BuildChildren(object? value, MonitorNode parent)
         {
+            // 1) IMonitorable 协议：业务对象结构化展开
+            if (value is IMonitorable monitorable)
+            {
+                var fields = monitorable.GetMonitorFields();
+                foreach (var (fieldName, fieldValue) in fields)
+                {
+                    var child = new MonitorNode
+                    {
+                        Name = fieldName,
+                        ValueBrush = fieldValue != null ? Brushes.Black : Brushes.Gray,
+                    };
+                    SetChildValue(child, fieldValue);
+                    parent.AddChild(child);
+                }
+                return;
+            }
+
+            // 2) WPF 内置几何结构：点/尺寸/矩形/向量显式展开（无 IMonitorable）
+            switch (value)
+            {
+                case System.Windows.Point p:
+                    AddSimpleChild(parent, "X", p.X);
+                    AddSimpleChild(parent, "Y", p.Y);
+                    return;
+                case System.Windows.Size sz:
+                    AddSimpleChild(parent, "宽", sz.Width);
+                    AddSimpleChild(parent, "高", sz.Height);
+                    return;
+                case System.Windows.Rect r:
+                    AddSimpleChild(parent, "X", r.X);
+                    AddSimpleChild(parent, "Y", r.Y);
+                    AddSimpleChild(parent, "宽", r.Width);
+                    AddSimpleChild(parent, "高", r.Height);
+                    return;
+                case System.Windows.Vector v:
+                    AddSimpleChild(parent, "X", v.X);
+                    AddSimpleChild(parent, "Y", v.Y);
+                    return;
+            }
+
+            // 3) OpenCvSharp 内置几何结构
+            switch (value)
+            {
+                case OpenCvSharp.Point op:
+                    AddSimpleChild(parent, "X", op.X);
+                    AddSimpleChild(parent, "Y", op.Y);
+                    return;
+                case OpenCvSharp.Size os:
+                    AddSimpleChild(parent, "宽", os.Width);
+                    AddSimpleChild(parent, "高", os.Height);
+                    return;
+                case OpenCvSharp.Rect orc:
+                    AddSimpleChild(parent, "X", orc.X);
+                    AddSimpleChild(parent, "Y", orc.Y);
+                    AddSimpleChild(parent, "宽", orc.Width);
+                    AddSimpleChild(parent, "高", orc.Height);
+                    return;
+            }
+
+            // 4) 数组：按 [0]/[1]/... 拆解
             if (value is Array arr)
             {
                 for (int i = 0; i < arr.Length; i++)
@@ -299,8 +384,11 @@ namespace SunEyeVision.Tool.Script.Views
                     SetChildValue(child, arr.GetValue(i));
                     parent.AddChild(child);
                 }
+                return;
             }
-            else if (value is System.Collections.IEnumerable enumerable and not string)
+
+            // 5) 集合（非 string）
+            if (value is System.Collections.IEnumerable enumerable)
             {
                 int i = 0;
                 foreach (var item in enumerable)
@@ -310,37 +398,110 @@ namespace SunEyeVision.Tool.Script.Views
                     parent.AddChild(child);
                     i++;
                 }
+                return;
             }
         }
 
         /// <summary>
-        /// 设置子节点的值（叶子节点直接赋值，容器节点递归展开）
+        /// 添加单值子节点（叶节点）
+        /// </summary>
+        private static void AddSimpleChild(MonitorNode parent, string name, object value)
+        {
+            var child = new MonitorNode
+            {
+                Name = name,
+                DisplayValue = FormatScalar(value),
+                ValueBrush = Brushes.Black,
+            };
+            parent.AddChild(child);
+        }
+
+        /// <summary>
+        /// 标量值格式化：double/float 用 F3，其他类型用 ToString
+        /// </summary>
+        private static string FormatScalar(object value)
+        {
+            return value switch
+            {
+                double d => d.ToString("F3", CultureInfo.InvariantCulture),
+                float f => f.ToString("F3", CultureInfo.InvariantCulture),
+                _ => value.ToString() ?? "(null)"
+            };
+        }
+
+        /// <summary>
+        /// 设置子节点的值（递归展开：容器拆分子节点，叶子直接显示字符串）
         /// </summary>
         private static void SetChildValue(MonitorNode node, object? value)
         {
-            if (value is Array arr && arr.Length > 0)
+            if (value == null)
+            {
+                node.DisplayValue = "无结果";
+                node.ValueBrush = Brushes.Gray;
+                return;
+            }
+
+            // 1) IMonitorable 协议
+            if (value is IMonitorable monitorable)
+            {
+                var fields = monitorable.GetMonitorFields();
+                if (fields.Count == 0)
+                {
+                    node.DisplayValue = value.ToString() ?? "(null)";
+                    return;
+                }
+                node.DisplayValue = "";
+                foreach (var (fieldName, fieldValue) in fields)
+                {
+                    var child = new MonitorNode
+                    {
+                        Name = fieldName,
+                        ValueBrush = fieldValue != null ? Brushes.Black : Brushes.Gray,
+                    };
+                    SetChildValue(child, fieldValue);
+                    node.AddChild(child);
+                }
+                return;
+            }
+
+            // 2) WPF / OpenCvSharp 内置结构 → 直接展开为子节点（与 BuildChildren 复用）
+            if (value is System.Windows.Point or System.Windows.Size or System.Windows.Rect or System.Windows.Vector
+                || value is OpenCvSharp.Point or OpenCvSharp.Size or OpenCvSharp.Rect)
             {
                 node.DisplayValue = "";
                 BuildChildren(value, node);
+                return;
             }
-            else if (value is System.Collections.IEnumerable enumerable and not string)
+
+            // 3) 数组 / 集合：递归展开
+            if (value is Array arr)
+            {
+                if (arr.Length == 0)
+                {
+                    node.DisplayValue = "(空数组)";
+                    return;
+                }
+                node.DisplayValue = "";
+                BuildChildren(value, node);
+                return;
+            }
+
+            if (value is System.Collections.IEnumerable enumerable)
             {
                 bool hasItems = false;
                 foreach (var _ in enumerable) { hasItems = true; break; }
-                if (hasItems)
+                if (!hasItems)
                 {
-                    node.DisplayValue = "";
-                    BuildChildren(value, node);
+                    node.DisplayValue = "(空集合)";
+                    return;
                 }
-                else
-                {
-                    node.DisplayValue = value?.ToString() ?? "(null)";
-                }
+                node.DisplayValue = "";
+                BuildChildren(value, node);
+                return;
             }
-            else
-            {
-                node.DisplayValue = value?.ToString() ?? "(null)";
-            }
+
+            // 4) 标量：直接显示
+            node.DisplayValue = FormatScalar(value);
         }
 
         /// <summary>

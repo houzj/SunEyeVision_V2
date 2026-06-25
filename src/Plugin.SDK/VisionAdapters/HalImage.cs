@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -6,7 +7,7 @@ using HalconDotNet;
 
 namespace SunEyeVision.Plugin.SDK.VisionAdapters
 {
-    public sealed class HalImage : IVisionImage
+    public sealed class HalImage : IVisionImage, IMonitorable
     {
         private readonly HImage _image;
         private bool _disposed;
@@ -210,5 +211,15 @@ namespace SunEyeVision.Plugin.SDK.VisionAdapters
         }
 
         #endregion
+
+        public IReadOnlyList<(string FieldName, object? FieldValue)> GetMonitorFields()
+        {
+            return new (string, object?)[]
+            {
+                ("宽度", Width),
+                ("高度", Height),
+                ("通道数", Channels),
+            };
+        }
     }
 }

@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
 {
@@ -51,7 +52,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
     /// <summary>
     /// 形状参数 - 用户绘制的形状参数
     /// </summary>
-    public class ShapeParameters : RegionDefinition
+    public class ShapeParameters : RegionDefinition, IMonitorable
     {
         #region 私有字段
 
@@ -376,6 +377,85 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
                 clone.Points.Add(point.Clone());
             }
             return clone;
+        }
+
+        public IReadOnlyList<(string FieldName, object? FieldValue)> GetMonitorFields()
+        {
+            switch (ShapeType)
+            {
+                case ShapeType.Point:
+                    return new (string, object?)[]
+                    {
+                        ("X", CenterX),
+                        ("Y", CenterY),
+                    };
+                case ShapeType.Circle:
+                    return new (string, object?)[]
+                    {
+                        ("中心X", CenterX),
+                        ("中心Y", CenterY),
+                        ("半径", Radius),
+                    };
+                case ShapeType.Rectangle:
+                    return new (string, object?)[]
+                    {
+                        ("中心X", CenterX),
+                        ("中心Y", CenterY),
+                        ("宽", Width),
+                        ("高", Height),
+                    };
+                case ShapeType.RotatedRectangle:
+                    return new (string, object?)[]
+                    {
+                        ("中心X", CenterX),
+                        ("中心Y", CenterY),
+                        ("宽", Width),
+                        ("高", Height),
+                        ("角度", Angle),
+                    };
+                case ShapeType.Line:
+                    return new (string, object?)[]
+                    {
+                        ("起点X", StartX),
+                        ("起点Y", StartY),
+                        ("终点X", EndX),
+                        ("终点Y", EndY),
+                    };
+                case ShapeType.Annulus:
+                    return new (string, object?)[]
+                    {
+                        ("中心X", CenterX),
+                        ("中心Y", CenterY),
+                        ("内半径", Radius),
+                        ("外半径", OuterRadius),
+                    };
+                case ShapeType.Polygon:
+                {
+                    var fields = new List<(string, object?)>(Points.Count + 1)
+                    {
+                        ("顶点数", Points.Count),
+                    };
+                    for (int i = 0; i < Points.Count; i++)
+                    {
+                        fields.Add(($"顶点[{i}]", Points[i]));
+                    }
+                    return fields;
+                }
+                case ShapeType.Arc:
+                    return new (string, object?)[]
+                    {
+                        ("中心X", CenterX),
+                        ("中心Y", CenterY),
+                        ("半径", Radius),
+                        ("起始角度", StartAngle),
+                        ("结束角度", EndAngle),
+                    };
+                default:
+                    return new (string, object?)[]
+                    {
+                        ("形状类型", ShapeType.ToString()),
+                    };
+            }
         }
     }
 

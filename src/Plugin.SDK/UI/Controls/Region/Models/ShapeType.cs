@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
 {
@@ -74,7 +76,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
     /// <summary>
     /// 点结构
     /// </summary>
-    public class Point2D : INotifyPropertyChanged
+    public class Point2D : INotifyPropertyChanged, IMonitorable
     {
         private double _x;
         private double _y;
@@ -156,6 +158,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
         protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        public IReadOnlyList<(string FieldName, object? FieldValue)> GetMonitorFields()
+        {
+            return new (string, object?)[]
+            {
+                ("X", _x),
+                ("Y", _y),
+            };
         }
     }
 }

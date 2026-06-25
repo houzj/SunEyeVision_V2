@@ -1,5 +1,7 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Windows;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
 
 namespace SunEyeVision.Plugin.SDK.Models.Geometry
 {
@@ -227,6 +229,17 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
         public override string ToString() => IsFullCircle
             ? $"Annulus2d(Center={Center}, R=[{InnerRadius:F1}, {OuterRadius:F1}])"
             : $"Annulus2d(Center={Center}, R=[{InnerRadius:F1}, {OuterRadius:F1}], Angle=[{StartAngle:F2}, {EndAngle:F2}])";
+
+        public IReadOnlyList<(string FieldName, object? FieldValue)> GetMonitorFields()
+        {
+            return new (string, object?)[]
+            {
+                ("中心X", Center.X),
+                ("中心Y", Center.Y),
+                ("内半径", InnerRadius),
+                ("外半径", OuterRadius),
+            };
+        }
 
         #endregion
     }

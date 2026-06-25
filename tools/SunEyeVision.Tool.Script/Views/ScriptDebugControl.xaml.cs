@@ -84,6 +84,24 @@ namespace SunEyeVision.Tool.Script.Views
         }
 
         /// <summary>
+        /// 后台预热 Roslyn 服务（MEF 初始化 + 程序集引用枚举），窗口可立即渲染。
+        /// 预热结果存入静态缓存 GetSharedMefHost/GetDefaultReferences，SetParameters 中
+        /// 的 RebuildWorkspace 可直接复用，首次弹出不再阻塞 UI 线程。
+        /// </summary>
+        private static async Task WarmupRoslynAsync()
+        {
+            await Task.Run(() =>
+            {
+                var sw = System.Diagnostics.Stopwatch.StartNew();
+                PluginLogger.Info("[补全] 后台预热 Roslyn 开始...", nameof(ScriptDebugControl));
+                GetSharedMefHost();
+                GetDefaultReferences();
+                sw.Stop();
+                PluginLogger.Info($"[补全] 后台预热 Roslyn 完成: {sw.ElapsedMilliseconds}ms", nameof(ScriptDebugControl));
+            });
+        }
+
+        /// <summary>
         /// 判断程序集是否与脚本编译/补全相关（排除 WPF、Roslyn 自身、Win32/UI 等）
         /// </summary>
         private static bool IsScriptRelevantAssembly(string? assemblyName)
@@ -194,9 +212,8 @@ namespace SunEyeVision.Tool.Script.Views
             // Phase 1: 实时诊断（文本变更 → 500ms 节流 → Roslyn 诊断 → 着色）
             CodeEditor.TextChanged += OnCodeEditorTextChanged;
 
-            // Phase 2: 初始化 Roslyn 补全工作区（同步完成，窗口弹出时已就绪）
-            RebuildWorkspace();
-            ScheduleSemanticAnalysis();  // 初始化后立即触发语义分析，避免打开编辑器时无语义高亮
+            // Phase 2: 后台预热 Roslyn 补全（MEF + 程序集引用，窗口立即弹出，不阻塞 UI）
+            _ = WarmupRoslynAsync();
 
             // 自动补全事件
             CodeEditor.TextArea.TextEntered += TextArea_TextEntered;
@@ -261,8 +278,12 @@ namespace SunEyeVision.Tool.Script.Views
                 }
 
                 InitializeTabs();
-                RebuildWorkspace();
-                ScheduleSemanticAnalysis();
+                // 异步在 UI 线程重建 workspace（后台已完成 MEF + 引用预热，大幅提速）
+                _ = Dispatcher.InvokeAsync(() =>
+                {
+                    RebuildWorkspace();
+                    ScheduleSemanticAnalysis();
+                });
             }
         }
 
@@ -367,8 +388,8 @@ namespace SunEyeVision.Tool.Script.Views
             foreach (var log in result.LogMessages)
                 _logEntries.Add(new LogEntry { Text = log, IsError = false });
 
-            // ★ 数据驱动：设置输出数据源，ScriptVariableTab 内部通过 DP 变更自动同步到 MonitorNodes
-            OutputTabControl.ValueSource = result.OutputValues;
+            // ★ 数据驱动：设置输出数据源，过滤掉未赋值的默认值
+            OutputTabControl.ValueSource = FilterDefaultValues(result.OutputValues);
 
             // ★ 数据驱动：设置输入数据源
             InputTabControl.ValueSource = _parameters.ResolvedInputValues;
@@ -403,7 +424,7 @@ namespace SunEyeVision.Tool.Script.Views
             {
                 var context = queryService.GetNodeContext(nodeId);
                 if (context?.Result is ScriptResults result)
-                    OutputTabControl.ValueSource = result.OutputValues;
+                    OutputTabControl.ValueSource = FilterDefaultValues(result.OutputValues);
             }
         }
 
@@ -508,6 +529,29 @@ namespace SunEyeVision.Tool.Script.Views
                 : status == "失败"
                     ? System.Windows.Media.Brushes.Red
                     : System.Windows.Media.Brushes.Gray;
+        }
+
+        /// <summary>
+        /// 过滤掉值为类型默认值的条目（未赋值的输出字段显示"无结果"）
+        /// </summary>
+        private static Dictionary<string, object?> FilterDefaultValues(Dictionary<string, object?> raw)
+        {
+            if (raw == null || raw.Count == 0)
+                return raw;
+
+            var filtered = new Dictionary<string, object?>(raw.Count);
+            foreach (var kvp in raw)
+            {
+                if (kvp.Value == null)
+                    continue;  // 引用类型默认值 null
+
+                var type = kvp.Value.GetType();
+                if (type.IsValueType && Equals(kvp.Value, Activator.CreateInstance(type)))
+                    continue;  // 值类型默认值 0 / false / 0.0 等
+
+                filtered[kvp.Key] = kvp.Value;
+            }
+            return filtered;
         }
 
         private void ClearResultButton_Click(object sender, RoutedEventArgs e)

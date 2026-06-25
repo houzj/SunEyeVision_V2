@@ -4,6 +4,7 @@ using System.Linq;
 using OpenCvSharp;
 using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
+using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 
 namespace SunEyeVision.Plugin.SDK.Models
@@ -24,6 +25,7 @@ namespace SunEyeVision.Plugin.SDK.Models
             [typeof(string[])] = "String[]",
             [typeof(System.Windows.Point)] = "Point",
             [typeof(OpenCvSharp.Point)]    = "Point",
+            [typeof(Point2D)]              = "Point",
             [typeof(System.Windows.Rect)]  = "Rectangle",
             [typeof(OpenCvSharp.Rect)]     = "Rectangle",
             [typeof(System.Windows.Size)]  = "Size",
@@ -33,6 +35,7 @@ namespace SunEyeVision.Plugin.SDK.Models
             [typeof(Circle2d)]      = "Circle",
             [typeof(Line2d)]        = "Line",
             [typeof(Annulus2d)]     = "Annulus",
+            [typeof(ShapeParameters)] = "Rectangle",
         };
 
         private static readonly Dictionary<string, Type> StringToType =

@@ -17,7 +17,7 @@ namespace SunEyeVision.Tool.Script.Models
         private bool _hasBinding;
         private string _bindingDisplayText = string.Empty;
         private ObservableCollection<MonitorNode>? _children;
-        private bool _isExpanded = true;
+        private bool _isExpanded;
 
         public string Name
         {

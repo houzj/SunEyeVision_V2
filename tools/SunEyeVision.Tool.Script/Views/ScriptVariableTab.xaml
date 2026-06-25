@@ -49,8 +49,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />  <!-- 标题行 -->
-            <RowDefinition Height="*" />  <!-- 内容行（填满剩余空间） -->
-            <RowDefinition Height="Auto" />  <!-- 添加行 -->
+            <RowDefinition Height="*" />  <!-- 内容行（填满剩余空间，编辑模式 DataGrid + 添加栏） -->
         </Grid.RowDefinitions>
 
         <!-- ===== 第 1 行：标题栏 + ✏ 编辑/完成按钮 ===== -->
@@ -151,84 +150,87 @@
                 </TreeView.Resources>
             </TreeView>
 
-        <!-- 编辑模式：DataGrid（默认隐藏） -->
+        <!-- 编辑模式：DataGrid + 添加栏（默认隐藏） -->
         <Grid x:Name="EditView" Grid.Row="1" Visibility="Collapsed">
-            <DataGrid x:Name="EditGrid">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <DataGrid x:Name="EditGrid" Grid.Row="0">
                 <DataGrid.Columns>
-                    <!-- 变量名 -->
-                    <DataGridTemplateColumn Header="&#x53D8;&#x91CF;&#x540D;" Width="*">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
-                                         VerticalContentAlignment="Center"
-                                         BorderBrush="#D0D0D0" BorderThickness="0"
-                                         Background="Transparent" Padding="2,0"/>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                    <!-- 类型 -->
-                    <DataGridTemplateColumn Header="&#x7C7B;&#x578B;" Width="80">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <ComboBox ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=AvailableTypes}"
-                                          Text="{Binding TypeName, UpdateSourceTrigger=PropertyChanged}"
-                                          IsEditable="False" Margin="1,0"
-                                          BorderThickness="0" Background="Transparent"/>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                    <!-- 订阅关系（仅输入列，输出隐藏） -->
-                    <DataGridTemplateColumn x:Name="BindingColumn" Header="&#x8BA2;&#x9605;&#x5173;&#x7CFB;" Width="*" MinWidth="120">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <controls:ParamBinding
-                                    AvailableDataSources="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=AvailableSources}"
-                                    DataType="{Binding ParamType}"
-                                    BindingSource="{Binding BindingSource, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                    BindingDisplayText="{Binding BindingDisplayText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                    Height="26"/>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                    <!-- 操作 -->
-                    <DataGridTemplateColumn Header="&#x64CD;&#x4F5C;" Width="Auto">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                    <Button Content="&#x2191;" Click="MoveUp_Click"
-                                            Width="22" Height="22" Padding="0" Margin="1,0"
-                                            Background="#FFF0F0F0" Foreground="#FF666666"
-                                            BorderThickness="0" FontSize="12"/>
-                                    <Button Content="&#x2193;" Click="MoveDown_Click"
-                                            Width="22" Height="22" Padding="0" Margin="1,0"
-                                            Background="#FFF0F0F0" Foreground="#FF666666"
-                                            BorderThickness="0" FontSize="12"/>
-                                    <Button x:Name="DeleteButton" Content="&#x2715;"
-                                            Click="DeleteItem_Click"
-                                            Width="22" Height="22" Padding="0" Margin="1,0"
-                                            Background="#FFF0F0F0" Foreground="#FFCC0000"
-                                            BorderThickness="0" FontSize="12"/>
-                                </StackPanel>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                </DataGrid.Columns>
-            </DataGrid>
+                        <!-- 变量名 -->
+                        <DataGridTemplateColumn Header="&#x53D8;&#x91CF;&#x540D;" Width="*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
+                                             VerticalContentAlignment="Center"
+                                             BorderBrush="#D0D0D0" BorderThickness="0"
+                                             Background="Transparent" Padding="2,0"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <!-- 类型 -->
+                        <DataGridTemplateColumn Header="&#x7C7B;&#x578B;" Width="80">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <ComboBox ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=AvailableTypes}"
+                                              Text="{Binding TypeName, UpdateSourceTrigger=PropertyChanged}"
+                                              IsEditable="False" Margin="1,0"
+                                              BorderThickness="0" Background="Transparent"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <!-- 订阅关系（仅输入列，输出隐藏） -->
+                        <DataGridTemplateColumn x:Name="BindingColumn" Header="&#x8BA2;&#x9605;&#x5173;&#x7CFB;" Width="*" MinWidth="120">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <controls:ParamBinding
+                                        AvailableDataSources="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=AvailableSources}"
+                                        DataType="{Binding ParamType}"
+                                        BindingSource="{Binding BindingSource, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                        BindingDisplayText="{Binding BindingDisplayText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                        Height="26"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <!-- 操作 -->
+                        <DataGridTemplateColumn Header="&#x64CD;&#x4F5C;" Width="Auto">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <Button Content="&#x2191;" Click="MoveUp_Click"
+                                                Width="22" Height="22" Padding="0" Margin="1,0"
+                                                Background="#FFF0F0F0" Foreground="#FF666666"
+                                                BorderThickness="0" FontSize="12"/>
+                                        <Button Content="&#x2193;" Click="MoveDown_Click"
+                                                Width="22" Height="22" Padding="0" Margin="1,0"
+                                                Background="#FFF0F0F0" Foreground="#FF666666"
+                                                BorderThickness="0" FontSize="12"/>
+                                        <Button x:Name="DeleteButton" Content="&#x2715;"
+                                                Click="DeleteItem_Click"
+                                                Width="22" Height="22" Padding="0" Margin="1,0"
+                                                Background="#FFF0F0F0" Foreground="#FFCC0000"
+                                                BorderThickness="0" FontSize="12"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            <!-- 添加栏紧贴 DataGrid 底部 -->
+            <Border x:Name="AddBar" Grid.Row="1"
+                    BorderBrush="#D0D0D0" BorderThickness="0,1,0,0"
+                    Background="#FAFAFA" Padding="4,4">
+                <StackPanel Orientation="Horizontal">
+                    <ComboBox x:Name="TypeCombo" Height="26" MinWidth="110"
+                              VerticalAlignment="Center"/>
+                    <Button Content="+" Height="26" Width="32" Margin="4,0,0,0"
+                            Click="AddVariable_Click"
+                            Background="#4CAF50" Foreground="White"
+                            BorderThickness="0" FontWeight="Bold" FontSize="16"
+                            ToolTip="&#x6DFB;&#x52A0;&#x53D8;&#x91CF;"/>
+                </StackPanel>
+            </Border>
         </Grid>
-
-        <!-- ===== 第 3 行：添加栏（编辑模式可见）===== -->
-        <Border x:Name="AddBar" Grid.Row="2" Visibility="Collapsed"
-                BorderBrush="#D0D0D0" BorderThickness="0,1,0,0"
-                Background="#FAFAFA" Padding="4,4">
-            <StackPanel Orientation="Horizontal">
-                <ComboBox x:Name="TypeCombo" Height="26" MinWidth="110"
-                          VerticalAlignment="Center"/>
-                <Button Content="+" Height="26" Width="32" Margin="4,0,0,0"
-                        Click="AddVariable_Click"
-                        Background="#4CAF50" Foreground="White"
-                        BorderThickness="0" FontWeight="Bold" FontSize="16"
-                        ToolTip="&#x6DFB;&#x52A0;&#x53D8;&#x91CF;"/>
-            </StackPanel>
-        </Border>
     </Grid>
 </UserControl>

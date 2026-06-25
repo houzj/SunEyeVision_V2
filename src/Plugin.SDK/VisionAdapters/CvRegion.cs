@@ -8,7 +8,7 @@ using WpfPoint = System.Windows.Point;
 
 namespace SunEyeVision.Plugin.SDK.VisionAdapters
 {
-    public class CvRegion : IVisionRegion, IDisposable
+    public class CvRegion : IVisionRegion, IMonitorable, IDisposable
     {
         internal List<RegionItem> _items;
         internal Size _imageSize;
@@ -217,6 +217,14 @@ namespace SunEyeVision.Plugin.SDK.VisionAdapters
             _ccLabels?.Dispose();
             _ccStats?.Dispose();
             _ccCentroids?.Dispose();
+        }
+
+        public IReadOnlyList<(string FieldName, object? FieldValue)> GetMonitorFields()
+        {
+            return new (string, object?)[]
+            {
+                ("面积", PixelCount),
+            };
         }
     }
 

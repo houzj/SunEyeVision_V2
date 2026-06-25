@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Media.Imaging;
@@ -6,7 +6,7 @@ using OpenCvSharp;
 
 namespace SunEyeVision.Plugin.SDK.VisionAdapters
 {
-    public class CvImage : IVisionImage, IDisposable
+    public class CvImage : IVisionImage, IMonitorable, IDisposable
     {
         internal List<ImageItem> _items;
 
@@ -100,6 +100,27 @@ namespace SunEyeVision.Plugin.SDK.VisionAdapters
         ~CvImage()
         {
             foreach (var item in _items) item.Dispose();
+        }
+
+        public IReadOnlyList<(string FieldName, object? FieldValue)> GetMonitorFields()
+        {
+            int w = 0, h = 0, ch = 0;
+            if (_items.Count > 0)
+            {
+                var src = _items[0].Image;
+                if (src != null && !src.Empty())
+                {
+                    w = src.Width;
+                    h = src.Height;
+                    ch = src.Channels();
+                }
+            }
+            return new (string, object?)[]
+            {
+                ("宽度", w),
+                ("高度", h),
+                ("通道数", ch),
+            };
         }
     }
 

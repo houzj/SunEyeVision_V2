@@ -1,11 +1,12 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using HalconDotNet;
 
 namespace SunEyeVision.Plugin.SDK.VisionAdapters
 {
-    public sealed class HalRegion : IVisionRegion
+    public sealed class HalRegion : IVisionRegion, IMonitorable
     {
         private readonly HRegion _region;
         private bool _disposed;
@@ -87,6 +88,14 @@ namespace SunEyeVision.Plugin.SDK.VisionAdapters
                 _disposed = true;
                 _region.Dispose();
             }
+        }
+
+        public IReadOnlyList<(string FieldName, object? FieldValue)> GetMonitorFields()
+        {
+            return new (string, object?)[]
+            {
+                ("面积", PixelCount),
+            };
         }
     }
 }

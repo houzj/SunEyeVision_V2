@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Plugin.SDK.Models;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls
 {
@@ -160,8 +161,19 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// 根据参数类型过滤数据源
         /// </summary>
         /// <param name="dataSources">数据源集合</param>
-        /// <param name="targetType">目标类型（精确匹配 + 数组可接受单值元素）</param>
+        /// <param name="targetType">目标类型</param>
         /// <returns>过滤后的数据源</returns>
+        /// <remarks>
+        /// 呈现层严格规则（rule-008 零兼容 + 视觉软件行业标准）：
+        /// 1. 数组参数 = 只显示数组（不显示标量元素，避免"数组字段选了标量"的歧义）
+        /// 2. 标量参数 = 数组不显示（避免"标量字段选了数组"的歧义）
+        /// 3. 数字标量 = 跨类型可见（int 字段能看到 double/long/short 等上游，
+        ///    绑定执行时 ScriptBindingResolver.CoerceValue 会用 Convert.ChangeType 转）
+        /// 4. 其他类型 = 精确类型匹配（ShapeParameters 之间不互通，避免运行时类型错误）
+        ///
+        /// 手动路径：客户仍可在 BindingSource 文本框中强行写非筛选项，
+        /// ScriptBindingResolver 会按既定规则做类型转换或抛错。
+        /// </remarks>
         public static List<AvailableDataSource> FilterDataSourcesByType(List<AvailableDataSource> dataSources, Type targetType)
         {
             if (targetType == null)
@@ -175,16 +187,21 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 if (ds.PropertyType == null)
                     return false;
 
-                // 精确匹配
-                if (ds.PropertyType == targetType)
+                // 规则 1：数组参数 = 只显示数组
+                if (targetType.IsArray)
+                    return ds.PropertyType.IsArray;
+
+                // 规则 2：标量参数 = 数组不显示
+                if (ds.PropertyType.IsArray)
+                    return false;
+
+                // 规则 3：数字标量 = 跨类型可见
+                if (NumericTypes.IsNumericType(ds.PropertyType)
+                    && NumericTypes.IsNumericType(targetType))
                     return true;
 
-                // 数组参数可以接受单值元素：targetType=double[] 可匹配 double 属性
-                // 但单值参数不能直接接受数组（避免歧义）
-                if (targetType.IsArray && ds.PropertyType == targetType.GetElementType())
-                    return true;
-
-                return false;
+                // 规则 4：其他 = 精确类型匹配
+                return ds.PropertyType == targetType;
             }).ToList();
         }
 

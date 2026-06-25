@@ -91,46 +91,25 @@ namespace SunEyeVision.Tool.Script.Models
             "String[]"    => "string[]",
             "Boolean"     => "bool",
             "Byte"        => "byte",
-            "Point"       => "System.Windows.Point",
-            "Rectangle"   => "System.Windows.Rect",
+            "Point"       => "SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.Point2D",
+            "Rectangle"   => "SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeParameters",
             "Size"        => "System.Windows.Size",
             "Region"      => "IVisionRegion",
-            "Circle"      => "Circle2d",
-            "Line"        => "Line2d",
-            "Annulus"     => "Annulus2d",
-            "RotatedRect" => "RotatedRect",
-            "Polygon"     => "Polygon2d",
+            "Circle"      => "SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeParameters",
+            "Line"        => "SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeParameters",
+            "Annulus"     => "SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeParameters",
+            "RotatedRect" => "SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeParameters",
+            "Polygon"     => "SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeParameters",
             _             => "object"
         };
 
-        /// <summary>生成字段声明代码行</summary>
+        /// <summary>
+        /// 生成字段声明代码行（输出字段只定义不赋值，CLR 零初始化后 = 类型默认值）
+        /// 监视面板显示时跳过类型默认值，显示"无结果"
+        /// </summary>
         public string GenerateFieldCode()
         {
-            var defaultExpr = TypeName switch
-            {
-                "Image"       => "= null!",
-                "String"      => "= string.Empty",
-                "Integer"     => "= 0",
-                "Integer[]"   => "= null!",
-                "Double"      => "= 0.0",
-                "Double[]"    => "= null!",
-                "Float"       => "= 0.0",
-                "Float[]"     => "= null!",
-                "String[]"    => "= null!",
-                "Boolean"     => "= false",
-                "Byte"        => "= 0",
-                "Point"       => "= default",
-                "Rectangle"   => "= default",
-                "Size"        => "= default",
-                "Region"      => "= null!",
-                "Circle"      => "= default",
-                "Line"        => "= default",
-                "Annulus"     => "= default",
-                "RotatedRect" => "= default",
-                "Polygon"     => "= null!",
-                _             => "= default!"
-            };
-            return $"public {CsTypeName} {Name} {defaultExpr};";
+            return $"public {CsTypeName} {Name};";
         }
     }
 }

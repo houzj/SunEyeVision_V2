@@ -16,40 +16,85 @@ namespace SunEyeVision.Tool.Script.Models
     public class ScriptParameters : ToolParameters
     {
         /// <summary>
-        /// 默认代码模板（对齐默认占位项：1 输入 input1 + 1 输出 output1，类型均为 Image）
+        /// 默认代码模板 — Halcon 算子风格，覆盖 5 个核心视觉处理场景
         /// </summary>
         /// <remarks>
-        /// 客户新建 Script 工具时,编辑器直接显示一份可编译运行的最小示例：
-        /// 1. 在 Init() 中做资源加载
-        /// 2. 在 Process() 中检查 input1 有效性并打印图像信息
-        /// 3. 将输入图像透传给 output1 作为最简流水线
+        /// 客户新建 Script 工具时，编辑器直接显示一份可编译运行的标准示例：
+        /// 场景1: 图像信息查询（GetImageSize + 通道数）
+        /// 场景2: 彩色转灰度（高层封装 CreateGrayFromColor + 底层 Rgb1ToGray）
+        /// 场景3: 阈值分割（Threshold + AreaCenter）
+        /// 场景4: Blob 分析（Connection + SelectShape + 遍历输出）
+        /// 场景5: 全局变量读写（GetGlobal/SetGlobal）
         /// 用户在此基础上自由改写即可。
+        /// 注意：input1/output1 类型为 IVisionImage，强制转换 ((HalImage)input1).Unwrap() 拿到 HImage。
         /// </remarks>
         public const string DefaultMethodCode = @"using System;
+using System.Linq;
+using HalconDotNet;
 using SunEyeVision.Tool.Script.ScriptEngine;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 
 public partial class UserScript : Script
 {
+    private int _invokeCount;
+    private double _lastMean;
+
     public override void Init()
     {
-        // 初始化阶段:加载资源、初始化变量
-        LogInfo(""脚本初始化开始"");
+        _invokeCount = 0;
+        LogInfo(""脚本初始化完成"");
     }
 
     public override void Process()
     {
-        // ★ Demo:图像直通 + 信息查询
-        if (input1 == null)
+        _invokeCount++;
+
+        // === 场景1: 图像信息查询 ===
+        if (input1 == null || input1.IsEmpty)
         {
-            LogError(""输入图像 input1 为空,请在变量面板绑定上游图像源"");
+            LogError(""输入图像 input1 为空，请在上游绑定图像源"");
             return;
         }
-        LogInfo($""输入图像: {input1.Width}x{input1.Height}, 通道数: {input1.Channels}"");
 
-        // 将输入图像传给输出,作为最简流水线
-        output1 = input1;
-        LogInfo(""脚本处理完成"");
+        // 使用 Halcon 算子查询图像尺寸
+        HOperatorSet.GetImageSize(((HalImage)input1).Unwrap(), out var imgW, out var imgH);
+        LogInfo($""[{_invokeCount}] 输入图像: {imgW.I}×{imgH.I}, 通道数: {input1.Channels}"");
+
+        // === 场景2: 彩色转灰度（高层封装 + 底层算子对比） ===
+        var grayImage = HalImage.CreateGrayFromColor(input1);
+        output1 = grayImage;
+
+        // 底层算子方式（演示两种调用风格）
+        HOperatorSet.Rgb1ToGray(((HalImage)input1).Unwrap(), out var grayObj);
+        using var grayH = new HImage(grayObj);
+        LogInfo(""灰度转换完成"");
+
+        // === 场景3: 阈值分割 ===
+        HOperatorSet.Threshold(grayImage.Unwrap(), out var thresholdRegion, 100.0, 255.0);
+        HOperatorSet.AreaCenter(thresholdRegion, out var thresholdArea, out _, out _);
+        LogInfo($""阈值分割区域: {thresholdArea.I} 像素"");
+
+        // === 场景4: Blob 分析（连通域 + 面积筛选 + 遍历输出） ===
+        HOperatorSet.Connection(thresholdRegion, out var connectedRegions);
+        HOperatorSet.SelectShape(connectedRegions, out var bigBlobs, ""area"", ""and"", 500.0, 99999.0);
+
+        var blobCount = bigBlobs.CountObj();
+        LogInfo($""筛选后 Blob 数量: {blobCount}"");
+
+        for (int i = 1; i <= blobCount; i++)
+        {
+            HOperatorSet.SelectObj(bigBlobs, out var singleBlob, i);
+            HOperatorSet.AreaCenter(singleBlob, out var area, out var row, out var col);
+            LogInfo($""  Blob#{i}: 面积={area.I}, 中心=({col.D:F1}, {row.D:F1})"");
+        }
+
+        // === 场景5: 全局变量读写 ===
+        var upstreamImage = GetGlobal<HalImage>(""upstreamImage"");
+        if (upstreamImage != null)
+            LogInfo($""上游图像引用可用: {upstreamImage.Width}×{upstreamImage.Height}"");
+
+        SetGlobal(""lastBlobCount"", blobCount);
+        SetGlobal(""lastInvokeCount"", _invokeCount);
     }
 }";
 

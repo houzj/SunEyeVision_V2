@@ -176,3 +176,9 @@ tools/*/output/
 
 # Example files (SunEyeVision specific)
 UsageExample.cs
+
+# 大型二进制依赖 - 不追踪到 Git（部署时单独分发）
+libs/halcon/runtime/
+build_output/
+runtime/
+

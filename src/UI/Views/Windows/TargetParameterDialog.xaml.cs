@@ -59,6 +59,12 @@ namespace SunEyeVision.UI.Views.Windows
         {
             var viewModel = new TargetParameterViewModel(workflows, existingBindings, targetTypeName);
             var dialog = new TargetParameterDialog(viewModel);
+
+            // 设置 Owner 为当前活动窗口（通常是 GlobalVariableManagerDialog），
+            // 避免对话框出现在父窗口后方需要手动切换
+            dialog.Owner = Application.Current?.Windows.OfType<Window>()
+                .FirstOrDefault(w => w.IsActive);
+
             return dialog.ShowDialog() == true ? dialog.ResultBindings : null;
         }
     }

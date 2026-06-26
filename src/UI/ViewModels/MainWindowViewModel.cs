@@ -1007,15 +1007,25 @@ SplitterPosition = position;
             }
 
             // 2. 共享同一实例到 solution.Workflows（不再 new 一个新 Workflow）
-            //    只有在已打开解决方案时才同步；未打开解决方案时由 SaveSolutionData /
-            //    SyncWorkflowsToSolution 在保存/关闭时统一处理。
+            SyncWorkflowToSolution(engineWorkflow, addedTab.Name);
+        }
+
+        /// <summary>
+        /// 将工作流实例同步到 Solution（确保运行时目标参数选择树可以看到工作流中的工具参数）。
+        /// 统一入口 — OnWorkflowAdded 和 CreateNewSubroutineWorkflow 都调用此方法，
+        /// 避免重复代码，且确保所有创建路径都经过同一同步点。
+        /// </summary>
+        private void SyncWorkflowToSolution(SunEyeVision.Workflow.Workflow workflow, string? displayName = null)
+        {
+            if (workflow == null) return;
             var solutionManager = Adapters.ServiceInitializer.SolutionManager;
-            var currentSolution = solutionManager?.CurrentSolution;
-            if (currentSolution != null && !currentSolution.Workflows.Any(w => w.Id == addedTab.Id))
+            var solution = solutionManager?.CurrentSolution;
+            if (solution != null && !solution.Workflows.Any(w => w.Id == workflow.Id))
             {
-                currentSolution.Workflows.Add(engineWorkflow);
+                solution.Workflows.Add(workflow);
+                var name = displayName ?? workflow.Name;
                 _logger?.LogInfo(
-                    $"OnWorkflowAdded: 共享实例同步工作流到 Solution: {addedTab.Name} (ID: {addedTab.Id}, 节点数: {engineWorkflow.Nodes.Count})");
+                    $"SyncWorkflowToSolution: {name} (ID: {workflow.Id}, IsSubroutine: {workflow.IsSubroutine})");
             }
         }
 
@@ -1550,8 +1560,14 @@ SplitterPosition = position;
 
                 if (workflow == null)
                 {
-                    // 如果 Solution 中没有对应的 Workflow，创建一个
-                    workflow = new SunEyeVision.Workflow.Workflow(tab.Id, tab.Name);
+                    // ✅ 优先复用引擎实例，引擎没有才创建新实例（避免序列化/运行时双实例漂移）
+                    workflow = _workflowEngine.GetWorkflowById(tab.Id);
+                    if (workflow == null)
+                    {
+                        workflow = new SunEyeVision.Workflow.Workflow(tab.Id, tab.Name);
+                        _logger?.LogWarning(
+                            $"[SaveSolutionData] 回退创建新 Workflow 实例（引擎中未找到）: {tab.Name} (ID: {tab.Id})");
+                    }
                     solution.Workflows.Add(workflow);
                 }
                 else
@@ -2329,6 +2345,25 @@ SplitterPosition = position;
                 CleanupBindingsForDeletedNode(node.Id);
             }
 
+            // ★ Phase 3：级联清理子程序工作流（删除 Subroutine 节点时同步清理对应后台工作流）
+            foreach (var node in selectedNodes)
+            {
+                if (string.Equals(node.ToolType, "Subroutine", StringComparison.OrdinalIgnoreCase)
+                    && !string.IsNullOrEmpty(node.SubroutineId))
+                {
+                    var subId = node.SubroutineId;
+                    _workflowEngine.DeleteWorkflow(subId);
+
+                    var solMgr = Adapters.ServiceInitializer.SolutionManager;
+                    if (solMgr?.CurrentSolution != null)
+                    {
+                        solMgr.CurrentSolution.RemoveWorkflow(subId);
+                    }
+
+                    AddLog($"🗑️ 级联清理子程序工作流: {node.Name} (ID: {subId})");
+                }
+            }
+
             // 处理被删连接的后置副作用（ImageSource 回退、日志）
             foreach (var conn in allAffectedConnections)
             {
@@ -2528,6 +2563,9 @@ SplitterPosition = position;
 
             // ★ 使用 SubroutineId 属性（不再是 ExtraData 弱类型字典）
             node.SubroutineId = subroutineId;
+
+            // ★ 同步到 Solution（通过统一入口，和 OnWorkflowAdded 共用同一方法）
+            SyncWorkflowToSolution(workflow, node.Name);
 
             AddLog($"📝 新建子程序工作流: {node.Name} (ID: {subroutineId})");
 

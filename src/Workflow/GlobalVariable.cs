@@ -182,7 +182,12 @@ public class GlobalVariable : ObservableObject
     /// <remarks>
     /// 参数绑定至此变量时自动追加记录，解绑时移除。
     /// </remarks>
-    public List<ConsumerBinding> ConsumerBindings { get; set; } = new();
+    private List<ConsumerBinding> _consumerBindings = new();
+    public List<ConsumerBinding> ConsumerBindings
+    {
+        get => _consumerBindings;
+        set => SetProperty(ref _consumerBindings, value, "消费者绑定");
+    }
 
     /// <summary>
     /// 输入来源显示文本（用于UI）
@@ -374,6 +379,7 @@ public class GlobalVariable : ObservableObject
     public void NotifyOutputDisplayChanged()
     {
         OnPropertyChanged(nameof(OutputTargetDisplayText));
+        OnPropertyChanged(nameof(ConsumerBindings));
     }
 
     /// <summary>

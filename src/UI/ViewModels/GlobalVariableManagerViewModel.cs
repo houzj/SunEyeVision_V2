@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -772,7 +773,8 @@ namespace SunEyeVision.UI.ViewModels
 
                 var result = TargetParameterDialog.ShowDialog(
                     currentSolution.Workflows,
-                    variable.ConsumerBindings);
+                    variable.ConsumerBindings,
+                    variable.Type);
 
                 if (result != null)
                 {
@@ -808,7 +810,7 @@ namespace SunEyeVision.UI.ViewModels
         }
 
         /// <summary>
-        /// 为节点参数设置全局变量绑定
+        /// 为节点参数设置全局变量绑定（支持 ParamValue 和集合型输入）
         /// </summary>
         private static void SetNodeParamBinding(Solution solution, ConsumerBinding binding, string variableName)
         {
@@ -817,6 +819,11 @@ namespace SunEyeVision.UI.ViewModels
                 .FirstOrDefault(n => n.Id == binding.NodeId);
             if (node?.Parameters == null) return;
 
+            // ★ 集合型输入（脚本工具 Inputs / 子程序 Inputs）
+            if (TrySetInputBinding(node.Parameters, binding.ParameterName, variableName))
+                return;
+
+            // ParamValue<T> 包装类型
             var prop = node.Parameters.GetType().GetProperty(binding.ParameterName);
             if (prop == null) return;
 
@@ -835,7 +842,33 @@ namespace SunEyeVision.UI.ViewModels
         }
 
         /// <summary>
-        /// 清除节点参数的绑定（切回常量模式）
+        /// 尝试为集合型输入（Inputs 集合）设置绑定
+        /// </summary>
+        private static bool TrySetInputBinding(ToolParameters parameters, string parameterName, string variableName)
+        {
+            var inputsProp = parameters.GetType().GetProperty("Inputs");
+            if (inputsProp == null) return false;
+
+            if (inputsProp.GetValue(parameters) is IEnumerable inputs)
+            {
+                foreach (var input in inputs)
+                {
+                    var nameProp = input.GetType().GetProperty("Name");
+                    if (nameProp?.GetValue(input) is string name && name == parameterName)
+                    {
+                        var bindingSourceProp = input.GetType().GetProperty("BindingSource");
+                        var bindingDisplayProp = input.GetType().GetProperty("BindingDisplayText");
+                        bindingSourceProp?.SetValue(input, $"__GlobalVars__.{variableName}");
+                        bindingDisplayProp?.SetValue(input, $"全局变量.{variableName}");
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 清除节点参数的绑定（支持 ParamValue 和集合型输入）
         /// </summary>
         private static void ClearNodeParamBinding(Solution solution, ConsumerBinding binding)
         {
@@ -844,6 +877,11 @@ namespace SunEyeVision.UI.ViewModels
                 .FirstOrDefault(n => n.Id == binding.NodeId);
             if (node?.Parameters == null) return;
 
+            // ★ 集合型输入
+            if (TryClearInputBinding(node.Parameters, binding.ParameterName))
+                return;
+
+            // ParamValue<T>
             var prop = node.Parameters.GetType().GetProperty(binding.ParameterName);
             if (prop == null) return;
 
@@ -852,6 +890,32 @@ namespace SunEyeVision.UI.ViewModels
                 // BindingConfig = null → 切回常量模式
                 paramValue.BindingConfig = null;
             }
+        }
+
+        /// <summary>
+        /// 尝试清除集合型输入（Inputs 集合）的绑定
+        /// </summary>
+        private static bool TryClearInputBinding(ToolParameters parameters, string parameterName)
+        {
+            var inputsProp = parameters.GetType().GetProperty("Inputs");
+            if (inputsProp == null) return false;
+
+            if (inputsProp.GetValue(parameters) is IEnumerable inputs)
+            {
+                foreach (var input in inputs)
+                {
+                    var nameProp = input.GetType().GetProperty("Name");
+                    if (nameProp?.GetValue(input) is string name && name == parameterName)
+                    {
+                        var bindingSourceProp = input.GetType().GetProperty("BindingSource");
+                        var bindingDisplayProp = input.GetType().GetProperty("BindingDisplayText");
+                        bindingSourceProp?.SetValue(input, string.Empty);
+                        bindingDisplayProp?.SetValue(input, string.Empty);
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         #endregion

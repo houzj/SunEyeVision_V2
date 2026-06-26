@@ -30,6 +30,11 @@ namespace SunEyeVision.UI.ViewModels
         public event EventHandler? WorkflowStatusChanged;
 
         /// <summary>
+        /// 工作流添加事件（用于通知 MainWindowViewModel 注册引擎 + 同步 solution.Workflows）
+        /// </summary>
+        public event System.EventHandler<WorkflowTabViewModel>? WorkflowAdded;
+
+        /// <summary>
         /// 工作流删除事件（Phase 3: 用于通知 MainWindowViewModel 清理引擎和 Solution 中的对应工作流）
         /// </summary>
         public event System.EventHandler<WorkflowTabViewModel>? WorkflowDeleted;
@@ -141,6 +146,10 @@ namespace SunEyeVision.UI.ViewModels
         /// <summary>
         /// 添加新工作流
         /// </summary>
+        /// <remarks>
+        /// 触发 WorkflowAdded 事件，通知 MainWindowViewModel 同步注册引擎和 solution.Workflows。
+        /// 这样无论从哪个入口（Ctrl+N / UI 按钮）添加工作流，都能保证数据层一致。
+        /// </remarks>
         public void AddWorkflow()
         {
             int nextNumber = GetNextWorkflowNumber();
@@ -152,6 +161,9 @@ namespace SunEyeVision.UI.ViewModels
             newWorkflow.SetConnections(new ObservableCollection<WorkflowConnection>());
             Tabs.Add(newWorkflow);
             SelectedTab = newWorkflow;
+
+            // 触发工作流添加事件（统一处理引擎注册和 Solution 同步）
+            WorkflowAdded?.Invoke(this, newWorkflow);
         }
 
         /// <summary>

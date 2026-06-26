@@ -54,9 +54,10 @@ namespace SunEyeVision.UI.Views.Windows
         /// <returns>更新后的 ConsumerBinding 列表，取消则返回 null</returns>
         public static List<ConsumerBinding>? ShowDialog(
             IEnumerable<Workflow.Workflow> workflows,
-            List<ConsumerBinding>? existingBindings)
+            List<ConsumerBinding>? existingBindings,
+            string? targetTypeName = null)
         {
-            var viewModel = new TargetParameterViewModel(workflows, existingBindings);
+            var viewModel = new TargetParameterViewModel(workflows, existingBindings, targetTypeName);
             var dialog = new TargetParameterDialog(viewModel);
             return dialog.ShowDialog() == true ? dialog.ResultBindings : null;
         }

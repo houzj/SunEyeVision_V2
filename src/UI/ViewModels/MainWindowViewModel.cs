@@ -817,6 +817,9 @@ SplitterPosition = position;
             // 订阅工作流状态变化
             WorkflowTabViewModel.WorkflowStatusChanged += OnWorkflowStatusChanged;
 
+            // 订阅工作流添加事件（注册引擎 + 同步 solution.Workflows）
+            WorkflowTabViewModel.WorkflowAdded += OnWorkflowAdded;
+
             // Phase 3: 订阅工作流删除事件（清理引擎和 Solution）
             WorkflowTabViewModel.WorkflowDeleted += OnWorkflowDeleted;
 
@@ -976,6 +979,46 @@ SplitterPosition = position;
         /// <summary>
         /// 工作流删除事件处理（Phase 3: 清理引擎和 Solution 中的对应工作流 + DSQS 缓存）
         /// </summary>
+        /// <summary>
+        /// 工作流添加事件处理 — 统一注册引擎 + 同步 solution.Workflows
+        /// </summary>
+        /// <remarks>
+        /// 由 WorkflowTabViewModel.AddWorkflow 触发。
+        /// 解决历史 Bug：UI 按钮 / Ctrl+N 添加工作流后，solution.Workflows 未更新，
+        /// 导致全局变量对话框等只读 solution.Workflows 的 UI 看不到新工作流。
+        /// </remarks>
+        private void OnWorkflowAdded(object? sender, WorkflowTabViewModel addedTab)
+        {
+            if (addedTab == null)
+                return;
+
+            // 1. 引擎内复用同一实例（idempotent：OnSelectedTabChanged 通常已先创建）
+            //    引擎没有时才创建。后续 Solution 与 Engine 共享同一 Workflow 引用，
+            //    避免双实例漂移（节点加在引擎实例、Solution 实例始终为空）。
+            var engineWorkflow = _workflowEngine.GetWorkflowById(addedTab.Id);
+            if (engineWorkflow == null)
+            {
+                engineWorkflow = _workflowEngine.CreateWorkflow(addedTab.Id, addedTab.Name);
+            }
+            else if (engineWorkflow.Name != addedTab.Name)
+            {
+                // 同步名称（用户在 Tab 上改名时引擎实例可能先于事件到达）
+                engineWorkflow.Name = addedTab.Name;
+            }
+
+            // 2. 共享同一实例到 solution.Workflows（不再 new 一个新 Workflow）
+            //    只有在已打开解决方案时才同步；未打开解决方案时由 SaveSolutionData /
+            //    SyncWorkflowsToSolution 在保存/关闭时统一处理。
+            var solutionManager = Adapters.ServiceInitializer.SolutionManager;
+            var currentSolution = solutionManager?.CurrentSolution;
+            if (currentSolution != null && !currentSolution.Workflows.Any(w => w.Id == addedTab.Id))
+            {
+                currentSolution.Workflows.Add(engineWorkflow);
+                _logger?.LogInfo(
+                    $"OnWorkflowAdded: 共享实例同步工作流到 Solution: {addedTab.Name} (ID: {addedTab.Id}, 节点数: {engineWorkflow.Nodes.Count})");
+            }
+        }
+
         private void OnWorkflowDeleted(object? sender, WorkflowTabViewModel deletedTab)
         {
             if (deletedTab == null)
@@ -1165,13 +1208,12 @@ SplitterPosition = position;
             if (tabControl == null)
                 return;
 
+            // AddWorkflow 内部会触发 WorkflowAdded 事件，由 OnWorkflowAdded 统一处理
+            // 引擎注册 + solution.Workflows 同步，避免双路径遗漏。
             tabControl.AddWorkflow();
-            var newTab = tabControl.SelectedTab;
-            if (newTab != null)
+            if (tabControl.SelectedTab != null)
             {
-                // 注册到引擎
-                _workflowEngine.CreateWorkflow(newTab.Id, newTab.Name);
-                LogSuccess($"创建新工作流: {newTab.Name}");
+                LogSuccess($"创建新工作流: {tabControl.SelectedTab.Name}");
             }
         }
 

@@ -27,6 +27,7 @@ namespace SunEyeVision.Tool.Script.Models
         /// 场景5: 全局变量读写（GetGlobal/SetGlobal）
         /// 用户在此基础上自由改写即可。
         /// 注意：input1/output1 类型为 IVisionImage，强制转换 ((HalImage)input1).Unwrap() 拿到 HImage。
+        /// 场景5 演示了全局变量读写的通用接口优先原则：用 IVisionImage 拿上游图像，需 Halcon 算子时再 is 断言。
         /// </remarks>
         public const string DefaultMethodCode = @"using System;
 using System.Linq;
@@ -88,11 +89,25 @@ public partial class UserScript : Script
             LogInfo($""  Blob#{i}: 面积={area.I}, 中心=({col.D:F1}, {row.D:F1})"");
         }
 
-        // === 场景5: 全局变量读写 ===
-        var upstreamImage = GetGlobal<HalImage>(""upstreamImage"");
-        if (upstreamImage != null)
-            LogInfo($""上游图像引用可用: {upstreamImage.Width}×{upstreamImage.Height}"");
+        // === 场景5: 全局变量读写（通用接口优先，引擎特定能力再断言） ===
+        // 5a. 用通用接口拿上游图像，不受引擎类型限制
+        var upstream = GetGlobal<IVisionImage>(""upstreamImage"");
+        if (upstream != null)
+            LogInfo($""上游图像可用: {upstream.Width}×{upstream.Height}, 通道数: {upstream.Channels}"");
 
+        // 5b. 需要用 Halcon 算子时，显式断言引擎类型
+        if (upstream is HalImage halUpstream)
+        {
+            HOperatorSet.GetImageSize(halUpstream.Unwrap(), out var w, out var h);
+            LogInfo($""[Halcon] 解析尺寸: {w.I}×{h.I}"");
+        }
+        else if (upstream != null)
+        {
+            LogWarning($""[非 Halcon] 上游类型 {upstream.GetType().Name}, 无法用 HOperatorSet 算子"");
+        }
+
+        // 5c. 写:推荐用通用接口类型 SetGlobal
+        SetGlobal(""lastImage"", upstream);
         SetGlobal(""lastBlobCount"", blobCount);
         SetGlobal(""lastInvokeCount"", _invokeCount);
     }

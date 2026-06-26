@@ -189,6 +189,7 @@
                                         DataType="{Binding ParamType}"
                                         BindingSource="{Binding BindingSource, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                         BindingDisplayText="{Binding BindingDisplayText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                        ParameterName="{Binding Name}"
                                         Height="26"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>

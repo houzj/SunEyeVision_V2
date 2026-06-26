@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -131,6 +132,7 @@ namespace SunEyeVision.UI.ViewModels
     public class TargetParameterViewModel : ViewModelBase
     {
         private readonly ObservableCollection<ConsumerItemViewModel> _selectedConsumers = new();
+        private readonly string? _targetTypeName;
         public ObservableCollection<TargetParamTreeNode> TreeNodes { get; } = new();
         public ReadOnlyObservableCollection<ConsumerItemViewModel> SelectedConsumers { get; }
         public ICommand SaveCommand { get; }
@@ -140,8 +142,10 @@ namespace SunEyeVision.UI.ViewModels
 
         public TargetParameterViewModel(
             IEnumerable<Workflow.Workflow> workflows,
-            List<ConsumerBinding>? existingBindings)
+            List<ConsumerBinding>? existingBindings,
+            string? targetTypeName = null)
         {
+            _targetTypeName = targetTypeName;
             SelectedConsumers = new ReadOnlyObservableCollection<ConsumerItemViewModel>(_selectedConsumers);
             SaveCommand = new RelayCommand(Save);
             RemoveConsumerCommand = new RelayCommand<object?>(RemoveConsumer);
@@ -150,73 +154,51 @@ namespace SunEyeVision.UI.ViewModels
 
         private void BuildTree(IEnumerable<Workflow.Workflow> workflows, List<ConsumerBinding>? existingBindings)
         {
-            // 构建已有绑定的快速查找集合
-            var selectedSet = existingBindings != null
-                ? new HashSet<(string nodeId, string paramName)>(
-                    existingBindings.Select(b => (b.NodeId, b.ParameterName)))
-                : new HashSet<(string, string)>();
+            var selectedSet = BuildSelectedSet(existingBindings);
+            var workflowsList = workflows.ToList();
 
-            foreach (var wf in workflows)
+            // 1. 构建子程序引用映射: $"{parentWfId}|{nodeId}" → subWorkflowId
+            var subCalls = new Dictionary<string, string>();
+            var referencedIds = new HashSet<string>();
+
+            foreach (var wf in workflowsList)
             {
+                foreach (var node in wf.Nodes ?? Enumerable.Empty<WorkflowNodeBase>())
+                {
+                    var subId = node.SubroutineId;
+                    if (string.IsNullOrEmpty(subId) && node.Parameters is SubroutineParameters subParams)
+                        subId = subParams.SubroutineId;
+
+                    if (!string.IsNullOrEmpty(subId) && workflowsList.Any(w => w.Id == subId))
+                    {
+                        subCalls[$"{wf.Id}|{node.Id}"] = subId;
+                        referencedIds.Add(subId);
+                    }
+                }
+            }
+
+            // 2. 子工作流查找表
+            var subWorkflowMap = workflowsList
+                .Where(w => referencedIds.Contains(w.Id))
+                .ToDictionary(w => w.Id);
+
+            // 3. 根工作流（不被任何子程序引用的）
+            var rootWorkflows = workflowsList.Where(w => !referencedIds.Contains(w.Id));
+
+            // 4. 递归构建嵌套树
+            foreach (var wf in rootWorkflows)
+            {
+                var wfName = wf.Name ?? wf.Id;
                 var wfNode = new TargetParamTreeNode
                 {
-                    Name = wf.Name ?? wf.Id,
-                    DisplayPath = wf.Name ?? wf.Id,
+                    Name = wfName,
+                    DisplayPath = wfName,
                     NodeType = "workflow",
                     IsExpanded = true
                 };
 
-                var nodes = wf.Nodes?.OrderBy(n => n.GlobalIndex).ToList() ?? new();
-                foreach (var node in nodes)
-                {
-                    var nodeName = !string.IsNullOrEmpty(node.DispName) ? node.DispName : node.Name;
-                    var nodeTreeNode = new TargetParamTreeNode
-                    {
-                        Name = nodeName,
-                        DisplayPath = wfNode.DisplayPath + "/" + nodeName,
-                        NodeType = "node",
-                        NodeId = node.Id,
-                        IsExpanded = true,
-                        Parent = wfNode
-                    };
-
-                    var paramInfos = GetParameterNames(node);
-                    foreach (var (paramName, displayName) in paramInfos)
-                    {
-                        var isSelected = selectedSet.Contains((node.Id, paramName));
-                        var leaf = new TargetParamTreeNode
-                        {
-                            Name = displayName,
-                            DisplayPath = nodeTreeNode.DisplayPath + " > " + displayName,
-                            NodeType = "parameter",
-                            NodeId = node.Id,
-                            ParameterName = paramName,
-                            Parent = nodeTreeNode
-                        };
-                        // 订阅叶子选中事件（实时同步右侧列表）
-                        leaf.OnLeafSelectionChanged += OnLeafSelectionChanged;
-
-                        // 初始化时不触发副作用，直接设置选中
-                        leaf.SetInitialSelection(isSelected);
-
-                        if (isSelected)
-                        {
-                            _selectedConsumers.Add(new ConsumerItemViewModel
-                            {
-                                NodeId = node.Id,
-                                NodeName = nodeName,
-                                WorkflowName = wf.Name ?? wf.Id,
-                                ParameterName = paramName,
-                                ParameterDisplayName = displayName
-                            });
-                        }
-
-                        nodeTreeNode.Children.Add(leaf);
-                    }
-
-                    if (nodeTreeNode.Children.Count > 0)
-                        wfNode.Children.Add(nodeTreeNode);
-                }
+                BuildNodeTree(wf, subCalls, subWorkflowMap, wfNode, selectedSet,
+                    new HashSet<string> { wf.Id }, wf.Id);
 
                 if (wfNode.Children.Count > 0)
                     TreeNodes.Add(wfNode);
@@ -225,6 +207,116 @@ namespace SunEyeVision.UI.ViewModels
             // 初始状态传播：自底向上聚合父节点三态
             foreach (var root in TreeNodes)
                 PropagateParentStates(root);
+        }
+
+        /// <summary>
+        /// 提取已有绑定的快速查找集合
+        /// </summary>
+        private static HashSet<(string nodeId, string paramName)> BuildSelectedSet(
+            List<ConsumerBinding>? existingBindings)
+        {
+            return existingBindings != null
+                ? new HashSet<(string, string)>(
+                    existingBindings.Select(b => (b.NodeId, b.ParameterName)))
+                : new HashSet<(string, string)>();
+        }
+
+        /// <summary>
+        /// 创建工作流树节点
+        /// </summary>
+        private static TargetParamTreeNode BuildWorkflowNode(
+            Workflow.Workflow wf, string name, TargetParamTreeNode? parent)
+        {
+            return new TargetParamTreeNode
+            {
+                Name = name,
+                DisplayPath = name,
+                NodeType = "workflow",
+                IsExpanded = true,
+                Parent = parent
+            };
+        }
+
+        /// <summary>
+        /// 递归构建：将 workflow 中的所有节点添加到 parentNode 下（支持子程序嵌套展开）
+        /// </summary>
+        private void BuildNodeTree(
+            Workflow.Workflow workflow,
+            Dictionary<string, string> subCalls,
+            Dictionary<string, Workflow.Workflow> subWorkflowMap,
+            TargetParamTreeNode parentNode,
+            HashSet<(string nodeId, string paramName)> selectedSet,
+            HashSet<string> visited,
+            string parentWfId)
+        {
+            var nodes = workflow.Nodes?.OrderBy(n => n.GlobalIndex).ToList() ?? new();
+            foreach (var node in nodes)
+            {
+                var nodeName = !string.IsNullOrEmpty(node.DispName) ? node.DispName : node.Name;
+                var nodeTreeNode = new TargetParamTreeNode
+                {
+                    Name = nodeName,
+                    DisplayPath = parentNode.DisplayPath + "/" + nodeName,
+                    NodeType = "node",
+                    NodeId = node.Id,
+                    IsExpanded = true,
+                    Parent = parentNode
+                };
+
+                // 添加参数（ParamValue + 集合型输入）
+                var paramInfos = GetParameterNames(node, _targetTypeName);
+                foreach (var (paramName, displayName) in paramInfos)
+                    AddParameterLeaf(node, nodeTreeNode, paramName, displayName, selectedSet);
+
+                // 递归展开子程序
+                var subCallKey = $"{parentWfId}|{node.Id}";
+                if (subCalls.TryGetValue(subCallKey, out var subWfId)
+                    && subWorkflowMap.TryGetValue(subWfId, out var subWf)
+                    && visited.Add(subWf.Id))  // 防止循环引用
+                {
+                    BuildNodeTree(subWf, subCalls, subWorkflowMap,
+                        nodeTreeNode, selectedSet, visited, subWfId);
+                }
+
+                if (nodeTreeNode.Children.Count > 0)
+                    parentNode.Children.Add(nodeTreeNode);
+            }
+        }
+
+        /// <summary>
+        /// 为节点添加参数叶子节点
+        /// </summary>
+        private void AddParameterLeaf(
+            WorkflowNodeBase node, TargetParamTreeNode parentNode,
+            string paramName, string displayName,
+            HashSet<(string nodeId, string paramName)> selectedSet)
+        {
+            var isSelected = selectedSet.Contains((node.Id, paramName));
+            var leaf = new TargetParamTreeNode
+            {
+                Name = displayName,
+                DisplayPath = parentNode.DisplayPath + " > " + displayName,
+                NodeType = "parameter",
+                NodeId = node.Id,
+                ParameterName = paramName,
+                Parent = parentNode
+            };
+            leaf.OnLeafSelectionChanged += OnLeafSelectionChanged;
+            leaf.SetInitialSelection(isSelected);
+
+            if (isSelected)
+            {
+                _selectedConsumers.Add(new ConsumerItemViewModel
+                {
+                    NodeId = node.Id,
+                    NodeName = parentNode.Name,
+                    WorkflowName = GetWorkflowName(leaf),
+                    ParameterName = paramName,
+                    ParameterDisplayName = displayName
+                });
+            }
+
+            parentNode.Children.Add(leaf);
         }
 
         /// <summary>
@@ -281,7 +373,7 @@ namespace SunEyeVision.UI.ViewModels
             return current?.Name ?? "";
         }
 
-        private static List<(string name, string displayName)> GetParameterNames(WorkflowNodeBase node)
+        private static List<(string name, string displayName)> GetParameterNames(WorkflowNodeBase node, string? targetTypeName)
         {
             var result = new List<(string name, string displayName)>();
 
@@ -301,11 +393,35 @@ namespace SunEyeVision.UI.ViewModels
             if (node.Parameters != null)
             {
                 var bindableProps = node.Parameters.GetBindableInputProperties()
-                    .Where(IsBindableParamForTargetBinding);
+                    .Where(p => IsBindableParamForTargetBinding(p, targetTypeName));
 
                 foreach (var prop in bindableProps)
                 {
                     result.Add((prop.Name, GetDisplayName(prop)));
+                }
+
+                // ═══ 途径3: 集合型输入（脚本工具 Inputs / 子程序 Inputs）═══
+                var inputsProp = node.Parameters.GetType().GetProperty("Inputs");
+                if (inputsProp != null && inputsProp.GetValue(node.Parameters) is IEnumerable inputs)
+                {
+                    foreach (var input in inputs)
+                    {
+                        var nameProp = input.GetType().GetProperty("Name");
+                        var typeNameProp = input.GetType().GetProperty("TypeName");
+                        if (nameProp?.GetValue(input) is string name && !string.IsNullOrEmpty(name)
+                            && !result.Any(r => r.name == name))
+                        {
+                            // ★ 类型筛选：按目标类型过滤集合型输入
+                            if (!string.IsNullOrEmpty(targetTypeName))
+                            {
+                                var inputTypeName = typeNameProp?.GetValue(input) as string;
+                                if (!string.Equals(inputTypeName, targetTypeName, StringComparison.OrdinalIgnoreCase))
+                                    continue;
+                            }
+
+                            result.Add((name, name));
+                        }
+                    }
                 }
             }
 
@@ -315,7 +431,7 @@ namespace SunEyeVision.UI.ViewModels
         /// <summary>
         /// 判断属性是否为目标参数绑定场景中可显示的参数
         /// </summary>
-        private static bool IsBindableParamForTargetBinding(PropertyInfo prop)
+        private static bool IsBindableParamForTargetBinding(PropertyInfo prop, string? targetTypeName)
         {
             // 排除 [JsonIgnore] 运行时注入属性
             if (prop.IsDefined(typeof(JsonIgnoreAttribute), false))
@@ -323,22 +439,44 @@ namespace SunEyeVision.UI.ViewModels
 
             var type = prop.PropertyType;
 
-            // 仅保留 ParamValue<T> 且 T 为基本数据类型的参数
-            // 排除枚举、自定义类型等复杂类型
+            // ParamValue<T>
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(ParamValue<>))
             {
                 var genericArg = type.GetGenericArguments()[0];
-                return genericArg == typeof(bool)
-                    || genericArg == typeof(int) || genericArg == typeof(long)
-                    || genericArg == typeof(float) || genericArg == typeof(double)
-                    || genericArg == typeof(string)
-                    || genericArg == typeof(byte) || genericArg == typeof(sbyte)
-                    || genericArg == typeof(short) || genericArg == typeof(ushort)
-                    || genericArg == typeof(uint) || genericArg == typeof(ulong)
-                    || genericArg == typeof(char);
+                if (string.IsNullOrEmpty(targetTypeName))
+                    return IsBasicType(genericArg); // 无筛选时只显示基本类型（原行为）
+                else
+                {
+                    var paramTypeName = GlobalVariableTypeMapper.ToGlobalVarType(genericArg);
+                    return paramTypeName != null
+                        && string.Equals(paramTypeName, targetTypeName, StringComparison.OrdinalIgnoreCase);
+                }
             }
 
-            return false;
+            // 直接属性（非 ParamValue 包装）
+            if (string.IsNullOrEmpty(targetTypeName))
+                return IsBasicType(type);
+            else
+            {
+                var paramTypeName = GlobalVariableTypeMapper.ToGlobalVarType(type);
+                return paramTypeName != null
+                    && string.Equals(paramTypeName, targetTypeName, StringComparison.OrdinalIgnoreCase);
+            }
+        }
+
+        /// <summary>
+        /// 判断是否为基本数据类型（可绑定到全局变量的类型）
+        /// </summary>
+        private static bool IsBasicType(Type type)
+        {
+            return type == typeof(bool)
+                || type == typeof(int) || type == typeof(long)
+                || type == typeof(float) || type == typeof(double)
+                || type == typeof(string)
+                || type == typeof(byte) || type == typeof(sbyte)
+                || type == typeof(short) || type == typeof(ushort)
+                || type == typeof(uint) || type == typeof(ulong)
+                || type == typeof(char);
         }
 
         /// <summary>

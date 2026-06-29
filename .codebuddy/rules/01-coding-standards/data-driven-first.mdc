@@ -1,6 +1,9 @@
 ---
-description: 数据驱动优先 - 数据 > 事件 > 程序式；发挥 WPF 数据绑定优势
-globs: "*.cs"
+description: 
+alwaysApply: false
+enabled: true
+updatedAt: 2026-06-29T05:32:00.508Z
+provider: 
 ---
 
 # 数据驱动优先 (Data-Driven First)

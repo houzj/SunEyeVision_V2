@@ -1,0 +1,11 @@
+{
+  "enabledPlugins": {
+    "agents-development-architecture@codebuddy-plugins-official": true,
+    "frontend-design@codebuddy-plugins-official": true,
+    "doc-coauthoring@codebuddy-plugins-official": true,
+    "canvas-design@codebuddy-plugins-official": true,
+    "code-refactoring@codebuddy-plugins-official": true,
+    "code-review-ai@codebuddy-plugins-official": true,
+    "codebuddy-md-management@codebuddy-plugins-official": true
+  }
+}

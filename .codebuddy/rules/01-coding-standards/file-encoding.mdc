@@ -5,18 +5,38 @@ category: coding-standards
 priority: critical
 alwaysApply: true
 enabled: true
-version: "3.0"
-updatedAt: 2026-04-23
+version: "3.1"
+updatedAt: 2026-06-29
 ---
 
 # rule-013: 文件编码与写入规范
 
-## 写入策略
+## 写入策略（按优先级）
 
 1. **首选** `replace_in_file` 工具（精确匹配上下文，原子操作）
-2. **备选** PowerShell + UTF-8 无 BOM：`[System.IO.File]::WriteAllText("路径", $content, [System.Text.UTF8Encoding]::new($false))`
+2. **次选** `write_to_file` 工具（效率高，适合整文件替换/创建）
+3. **兜底** PowerShell + UTF-8 无 BOM：`[System.IO.File]::WriteAllText("路径", $content, [System.Text.UTF8Encoding]::new($false))`
+
+## 中文乱码修复流程
+
+使用 `write_to_file` 写入含中文的内容后，**必须**做验收检查：
+
+```
+write_to_file 写入
+       ↓
+验收检查：文件中的中文是否显示正常？
+  ├── 正常 → 完成 ✓
+  └── 乱码 → 第1次修复：重新用 write_to_file 写入（重试一次）
+                  ↓
+              验收检查
+              ├── 正常 → 完成 ✓
+              └── 仍乱码 → 改用 PowerShell WriteAllText + UTF-8 无 BOM 写入
+```
+
+> 说明：`write_to_file` 的编码行为受 IDE 后端环境影响，大部分场景已正确输出 UTF-8。
+> 仅当出现乱码时才走修复流程，无需提前规避。
 
 ## 禁止
 
-- **禁止**使用 `write_to_file` 写入包含中文的内容（可能乱码）
-- **禁止**使用 `echo` 命令输出中文
+- **禁止**使用 `echo` 命令输出中文（控制台编码问题）
+- **禁止**在未验收的情况下合入含中文的修改

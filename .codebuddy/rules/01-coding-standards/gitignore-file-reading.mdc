@@ -1,0 +1,116 @@
+---
+id: rule-017
+title: .gitignore 屏蔽目录的文件读取规范
+category: coding-standards
+priority: high
+alwaysApply: true
+enabled: true
+version: "1.0"
+updatedAt: 2026-06-26
+---
+
+# rule-017: .gitignore 屏蔽目录的文件读取规范
+
+## 核心问题
+
+项目 `.gitignore` 第 174 行 `/dev/` 规则屏蔽了整个 dev/ 构建输出目录（含 halcondotnetxl.dll、halcon.dll、SunEyeVision.UI.exe 等所有运行时 DLL）。**所有基于 ripgrep 的内置工具（`search_file` / `search_content` / `list_dir`）默认尊重 .gitignore，会静默跳过被屏蔽的文件**，导致：
+
+- `search_file` 搜 `*.dll` 在 dev/ 下永远返回空数组
+- `search_content` 查 dll 内部字符串也搜不到
+- `list_dir` 不显示 dev/Debug 下的文件
+- 工具**不会报错也不会警告**，开发者误以为文件不存在
+
+## 受影响的常见目录
+
+| 目录 | 屏蔽规则 | 常见文件 |
+|------|---------|---------|
+| `dev/` | `/dev/` | halcondotnetxl.dll、halcon.dll、SunEyeVision.UI.exe、所有插件 DLL |
+| `dev/Debug/data/ScriptRefs/` | 继承自 `/dev/` | 脚本编译引用清单（mscorlib.dll、OpenCvSharp.dll 等） |
+| `libs/halcon/runtime/` | `libs/halcon/runtime/` | halcon native dll 部署源 |
+| `output/` | `/output/` | 历史构建产物 |
+| `bin/` / `obj/` | `[Bb]in/` / `[Oo]bj/` | 标准 .NET 构建目录 |
+
+## 硬性约束
+
+### 1. 读取 dev/ 及类似被屏蔽目录的文件：**必须**用 `execute_command` + PowerShell
+
+**推荐通用模式**（可粘贴复用）：
+
+```powershell
+# 列出目录下所有文件
+Get-ChildItem -Path "<绝对路径>" -File | Select-Object Name, Length, LastWriteTime
+
+# 按扩展名过滤
+Get-ChildItem -Path "<绝对路径>" -Filter "*.dll" -File
+
+# 递归搜索
+Get-ChildItem -Path "<绝对路径>" -Filter "*.dll" -Recurse -File
+
+# 读文件内容（中文安全）
+[System.IO.File]::ReadAllText("<绝对路径>", [System.Text.UTF8Encoding]::new($false))
+```
+
+### 2. 确认某文件是否被 .gitignore 屏蔽
+
+```powershell
+git check-ignore -v <文件路径>
+```
+
+退出码 0 = 被屏蔽；1 = 未屏蔽。
+
+### 3. `search_file` / `search_content` 适用范围
+
+| 场景 | 用 search_* 工具 | 用 PowerShell |
+|------|-----------------|--------------|
+| 搜索 .cs / .xaml / .csproj / .md | ✅ 推荐 | 可选 |
+| 搜索 .dll / .exe / .pdb | ❌ 漏读 | ✅ **必须** |
+| 搜索 dev/ 下任何文件 | ❌ 漏读 | ✅ **必须** |
+| 搜索 libs/halcon/runtime/ | ❌ 漏读 | ✅ **必须** |
+| 搜索 bin/obj/ | ❌ 漏读 | ✅ **必须** |
+
+### 4. 禁止行为
+
+- **禁止**对被屏蔽目录反复调用 `search_file` 然后"文件不存在"（实际是工具看不到）
+- **禁止**因为 `list_dir` 看不到 dev/ 就判断"dev 目录不存在"
+- **禁止**在 csproj 改完后用 `search_content "halcondotnetxl"` 验证部署结果（搜不到 ≠ 没部署）
+
+## 工作流前置检查
+
+在执行"查找构建产物 / 部署验证 / DLL 引用清单"类任务时：
+
+```powershell
+# 1. 列出目标目录,确认文件真实存在
+Get-ChildItem -Path "d:\MyWork\SunEyeVision_V2-script\dev\Debug\data\ScriptRefs" -File
+
+# 2. 如目录被 .gitignore 屏蔽,切换到 PowerShell 模式（已自动）
+git check-ignore -v "d:\MyWork\SunEyeVision_V2-script\dev\Debug" # 退出码 0 = 确认屏蔽
+```
+
+## 典型场景
+
+### 场景 1：ScriptRefs 引用清单盘点
+
+```powershell
+$dlls = Get-ChildItem -Path "d:\MyWork\SunEyeVision_V2-script\dev\Debug\data\ScriptRefs" -Filter "*.dll" -File
+$dlls | ForEach-Object { "{0,-40} {1,10:N0} bytes" -f $_.Name, $_.Length }
+```
+
+### 场景 2：验证工具主程序集是否部署到 plugins/
+
+```powershell
+$PluginPath = "d:\MyWork\SunEyeVision_V2-script\dev\Debug\plugins\SunEyeVision.Tool.Script"
+Get-ChildItem -Path $PluginPath -File | Select-Object Name
+```
+
+### 场景 3：扫描所有 .NET ref pack facade
+
+```powershell
+$RefPack = "C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\8.0.27\ref\net8.0"
+Get-ChildItem -Path $RefPack -Filter "mscorlib.dll"  # 验证 ref pack 路径
+```
+
+## 参考
+
+- rule-013：文件编码与写入规范（PowerShell + UTF-8 无 BOM 读取模式）
+- rule-016：MSBuild 项目配置规范（`dev/Debug/plugins/` 部署验证）
+- `.codebuddy/skills/build-verify/SKILL.md`：构建验证工作流（已用 PowerShell 处理此问题）

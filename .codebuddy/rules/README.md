@@ -1,3 +1,11 @@
+---
+description: 
+alwaysApply: true
+enabled: true
+updatedAt: 2026-06-29T05:31:40.849Z
+provider: 
+---
+
 # 规则文件目录
 
 ```
@@ -9,7 +17,9 @@
 │   ├── file-encoding.mdc             # rule-013 文件编码
 │   ├── halcon-operator-usage.mdc     # rule-014 Halcon 算子调用
 │   ├── no-silent-fallback.mdc        # rule-015 禁止兜底回退
-│   └── data-driven-first.mdc         # rule-016 数据驱动优先
+│   ├── data-driven-first.mdc         # rule-016 数据驱动优先
+│   ├── gitignore-file-reading.mdc    # rule-017 gitignore 屏蔽目录读取规范
+│   └── skill-priority.mdc            # rule-018 Skill 优先级与选择规范
 ├── 02-development-process/
 │   ├── solution-design.mdc           # rule-004 方案设计
 │   ├── prototype-design-clean-principle.mdc  # rule-008 开发与代码纯净
@@ -40,3 +50,5 @@
 | 014 | Halcon 算子 | HOperatorSet 静态方法；禁止实例方法 |
 | 015 | 禁止兜底回退 | 未映射/不支持的类型直接报错，禁止静默处理 |
 | 016 | 数据驱动优先 | 数据 > 事件 > 程序式；判断链三选一；例外场景需注释 |
+| 017 | gitignore 屏蔽目录 | dev/libs/halcon/runtime 等被屏蔽目录必须用 PowerShell 读取 |
+| 018 | Skill 优先级 | project > user > plugin；use_skill 前必须扫描 project 级 |

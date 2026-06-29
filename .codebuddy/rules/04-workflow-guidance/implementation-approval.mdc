@@ -1,12 +1,9 @@
-﻿---
-id: rule-005
-title: 实施方案审批流程
-category: workflow-guidance
-priority: high
-alwaysApply: false
+---
+description: 
+alwaysApply: true
 enabled: true
-version: "3.0"
-updatedAt: 2026-04-23
+updatedAt: 2026-06-29T05:32:37.235Z
+provider: 
 ---
 
 # rule-005: 实施方案审批流程

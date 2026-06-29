@@ -1,0 +1,79 @@
+# rule-018: Skill 优先级与选择规范
+
+## 触发条件
+
+当 AI 准备调用 `use_skill` 工具时，**必须**自动应用本规则。
+
+## 硬性约束
+
+### 优先级顺序（绝对优先级，不可颠倒）
+
+| 优先级 | 级别 | 位置 | 适用范围 |
+|:-----:|------|------|---------|
+| 1（最高） | **project** | `.codebuddy/skills/` | 本项目定制 SOP，含项目专属工作流 |
+| 2 | **user** | `~/.codebuddy/skills/` | 通用模板，跨项目复用 |
+| 3（最低） | **plugin** | plugin 内 `skills/` | 跨领域工具（pdf、pptx、xlsx 等） |
+
+### use_skill 前置检查（强制 4 步）
+
+调用 `use_skill` 前**必须**完成以下检查：
+
+```text
+Step 1: 扫描 .codebuddy/skills/ → 列出 project 级匹配项（按 trigger_keywords / description 匹配）
+Step 2: 扫描 ~/.codebuddy/skills/ → 列出 user 级匹配项
+Step 3: 对比 → 按优先级排序 → 输出选择理由（含路径 + 优先级 + 选择理由）
+Step 4: 用户/AI 确认后再调 use_skill
+```
+
+### 同主题冲突时的处理
+
+当 project 级和 user 级存在**同主题**技能（命名/描述/触发关键词重合），**必须**：
+
+1. **优先使用 project 级**（最高优先级硬约束）
+2. 在对话中**显式输出**选择理由，例如：
+
+   ```markdown
+   ## 技能选择清单
+   - project 级匹配: `.codebuddy/skills/方案实施/SKILL.md`（PDTAC + Commit + Self-Refinement）
+   - user 级匹配: `~/.codebuddy/skills/implementation-loop/SKILL.md`（PDCA）
+   - **选择**: project 级 `方案实施`（遵循 rule-018 优先级 + 含项目定制外循环）
+   ```
+
+3. **禁止**用 user 级技能覆盖 project 级技能的工作流
+4. **禁止**在已有 project 级同主题技能时，无说明地选用 user 级
+
+### 已知冲突清单（项目级 vs user 级）
+
+| 主题 | project 级 | user 级 | 冲突时首选 |
+|------|------------|---------|-----------|
+| 方案实施 / 循环工程 | `方案实施` | `implementation-loop` | **project 级** |
+| （其他冲突待发现时补充） | - | - | - |
+
+### 典型违规场景
+
+```text
+❌ 违规 1：直接 use_skill("implementation-loop")，未先扫描 project 级
+❌ 违规 2：扫描后发现 project 级有方案实施，但仍用 user 级 implementation-loop
+❌ 违规 3：使用 project 级后未在 SKILL.md 顶部标注"项目级首选"
+❌ 违规 4：user 级同名技能未加"优先级让步声明"
+```
+
+### 正确做法
+
+```text
+✅ 正确 1：use_skill 前先扫描 .codebuddy/skills/（Step 1）
+✅ 正确 2：发现 project 级有同主题技能时优先调用
+✅ 正确 3：project 级 SKILL.md 顶部加 ⭐ "项目级首选技能" 标识
+✅ 正确 4：user 级 SKILL.md 顶部加 ⚠️ "优先级让步声明"
+```
+
+## 适用范围
+
+所有 AI Agent 的 `use_skill` 工具调用，特别是实施类技能（实施、修复、重构、构建验证等）。
+
+## 参考
+
+- rule-013：文件编码与写入规范
+- rule-008：开发与代码纯净原则（约束 AI 行为模式）
+- `.codebuddy/skills/方案实施/SKILL.md` — 当前项目级首选的实施技能
+- `.codebuddy/skills/solution-design-check/SKILL.md` — 上游方案设计审查

@@ -182,3 +182,9 @@ libs/halcon/runtime/
 build_output/
 runtime/
 
+# IDE 临时文件 (find-skills 等技能自动生成的 plan 草案,不应入库)
+.codebuddy/plans/
+
+# 工具运行时状态 (方案实施 STATE.md 每次实施会重写,不入库)
+.codebuddy/skills/方案实施/STATE.md
+

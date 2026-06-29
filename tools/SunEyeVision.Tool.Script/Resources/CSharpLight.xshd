@@ -337,7 +337,17 @@
       \b\d[\d_]*\b
     </Rule>
 
-    <!-- Method name fallback: 标识符后跟 ( → 方法颜色（Layer 2 Roslyn 语义分类覆盖） -->
+    <!-- 类型声明：class/struct/interface/enum/delegate + 紧随的标识符（必须是 PascalCase 首字母大写） -->
+    <Rule color="Type">
+      \b(class|struct|interface|enum|delegate)\s+([A-Z_]\w*)
+    </Rule>
+
+    <!-- 方法声明：修饰符 + 返回类型 + 大写开头方法名 + ( -->
+    <Rule color="Method">
+      \b(public|private|protected|internal|static|virtual|override|abstract|async)\s+([A-Za-z_][\w&lt;&gt;,\s\[\]?]*)\s+([A-Z]\w*)\s*\(
+    </Rule>
+
+    <!-- Method call fallback: 标识符后跟 ( → 方法颜色（仅作方法调用的兜底） -->
     <Rule color="Method">
       \b[A-Za-z_]\w*(?=\s*\()
     </Rule>

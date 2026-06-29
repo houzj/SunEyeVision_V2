@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.Loader;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -49,85 +48,6 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
         // =====================================================
 
         /// <summary>
-        /// 默认 ALC 中脚本相关的程序集引用（进程生命周期内不变，懒初始 + 过滤）
-        /// </summary>
-        private static List<MetadataReference>? _defaultReferences;
-
-        /// <summary>
-        /// 判断程序集是否与脚本编译/补全相关（排除 WPF、Roslyn 自身、Win32/UI 等）
-        /// </summary>
-        private static bool IsScriptRelevantAssembly(string? assemblyName)
-        {
-            if (string.IsNullOrEmpty(assemblyName)) return false;
-
-            // 始终包含：核心运行时
-            if (assemblyName is "System.Runtime" or "System.Private.CoreLib"
-                or "netstandard" or "mscorlib")
-                return true;
-
-            // System.*（排除 WPF/UI 相关）
-            if (assemblyName.StartsWith("System.") || assemblyName == "System")
-                return !assemblyName.StartsWith("System.Windows")
-                    && !assemblyName.StartsWith("System.Xaml");
-
-            // Microsoft.*（排除 Win32/WinUI/Roslyn 等）
-            if (assemblyName.StartsWith("Microsoft."))
-                return !assemblyName.StartsWith("Microsoft.Win32")
-                    && !assemblyName.StartsWith("Microsoft.UI")
-                    && assemblyName != "Microsoft.CodeAnalysis"
-                    && !assemblyName.StartsWith("Microsoft.CodeAnalysis.");
-
-            // 项目程序集
-            if (assemblyName.StartsWith("SunEyeVision."))
-                return true;
-
-            // 其他（包括第三方 NuGet 如 Humanizer、Newtonsoft.Json 等）
-            // 排除已知的 WPF/UI/Windows 程序集
-            return !assemblyName.StartsWith("Presentation")
-                && !assemblyName.StartsWith("UIAutomation")
-                && assemblyName != "WindowsBase"
-                && assemblyName != "Accessibility"
-                && assemblyName != "DirectWriteForwarder"
-                && assemblyName != "ReachFramework"
-                && !assemblyName.StartsWith("Avalon");
-        }
-
-        private static List<MetadataReference> GetDefaultReferences()
-        {
-            if (_defaultReferences == null)
-            {
-                var sw = Stopwatch.StartNew();
-                var refs = new List<MetadataReference>();
-                int totalAsm = 0, filteredCount = 0;
-                foreach (var asm in AssemblyLoadContext.Default.Assemblies)
-                {
-                    totalAsm++;
-                    if (asm.IsDynamic) continue;
-                    if (!IsScriptRelevantAssembly(asm.GetName().Name)) continue;
-                    filteredCount++;
-                    try
-                    {
-                        refs.Add(MetadataReference.CreateFromFile(asm.Location));
-                    }
-                    catch
-                    {
-                        // 跳过无法创建引用的程序集（如原生镜像）
-                    }
-                }
-                _defaultReferences = refs;
-                sw.Stop();
-                PluginLogger.Info($"[ScriptCompiler] 程序集引用首次初始化: ALC总={totalAsm}, 过滤后={filteredCount}, 成功创建={refs.Count}, 耗时={sw.ElapsedMilliseconds}ms",
-                    nameof(ScriptCompiler));
-            }
-            else
-            {
-                PluginLogger.Info($"[ScriptCompiler] 程序集引用缓存命中: {_defaultReferences.Count} 个引用",
-                    nameof(ScriptCompiler));
-            }
-            return _defaultReferences;
-        }
-
-        /// <summary>
         /// 语法解析选项（LanguageVersion.Latest 不变）
         /// </summary>
         private static readonly CSharpParseOptions _parseOptions =
@@ -141,12 +61,6 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                 OutputKind.DynamicallyLinkedLibrary,
                 optimizationLevel: OptimizationLevel.Release)
             .WithAllowUnsafe(true);
-
-        /// <summary>
-        /// ScriptRefs 目录引用缓存（按目录缓存，目录变化时重新加载）
-        /// </summary>
-        private List<MetadataReference>? _cachedScriptRefs;
-        private string? _lastRefDir;
 
         /// <summary>
         /// 编译 C# 脚本代码（多代码段，每个代码段构建独立语法树，通过 partial class 合并）
@@ -202,34 +116,19 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             }
             parseSw.Stop();
 
-            // 3. 获取元数据引用：默认 ALC（缓存） + ScriptRefs（按目录缓存）
+            // 3. 获取元数据引用：默认 ALC（统一服务缓存） + ScriptRefs（按目录缓存）
             var refSw = Stopwatch.StartNew();
-            var defaultRefs = GetDefaultReferences();
+            var defaultRefs = MetadataReferenceProvider.GetHostReferences();
             var metadataReferences = new List<MetadataReference>(defaultRefs.Count + 16);
             metadataReferences.AddRange(defaultRefs);
 
-            // 3b. ScriptRefs 目录（用户自定义第三方 DLL），有变化才重新扫描
+            // 3b. ScriptRefs 目录（用户自定义第三方 DLL），通过共享缓存加载
             int scriptRefCount = 0;
-            if (!string.IsNullOrEmpty(assemblyRefDir) && Directory.Exists(assemblyRefDir))
+            if (!string.IsNullOrEmpty(assemblyRefDir))
             {
-                if (_cachedScriptRefs == null || _lastRefDir != assemblyRefDir)
-                {
-                    try
-                    {
-                        _cachedScriptRefs = Directory.EnumerateFiles(assemblyRefDir, "*.dll")
-                            .Select(dll => MetadataReference.CreateFromFile(dll))
-                            .Cast<MetadataReference>()
-                            .ToList();
-                        _lastRefDir = assemblyRefDir;
-                    }
-                    catch (Exception ex)
-                    {
-                        result.Diagnostics.Add($"扫描引用目录失败: {assemblyRefDir} - {ex.Message}");
-                        _cachedScriptRefs = [];
-                    }
-                }
-                scriptRefCount = _cachedScriptRefs.Count;
-                metadataReferences.AddRange(_cachedScriptRefs);
+                var sharedRefs = SharedMetadataReferenceProvider.GetScriptRefs(assemblyRefDir);
+                scriptRefCount = sharedRefs.Count;
+                metadataReferences.AddRange(sharedRefs);
             }
             refSw.Stop();
 

@@ -25,6 +25,15 @@
                     Background="#FFF0F0F0" Foreground="#FF333333" BorderThickness="0"
                     Padding="8,3" Margin="2,0" FontSize="12" />
             <Separator />
+            <Button x:Name="DemoCodeButton" Content="Demo示例"
+                    Click="DemoCodeButton_Click"
+                    Background="#FFF0F0F0" Foreground="#FF333333" BorderThickness="0"
+                    Padding="8,3" Margin="2,0" FontSize="12" />
+            <Button x:Name="ResetCodeButton" Content="复位最简"
+                    Click="ResetCodeButton_Click"
+                    Background="#FFF0F0F0" Foreground="#FF333333" BorderThickness="0"
+                    Padding="8,3" Margin="2,0" FontSize="12" />
+            <Separator />
             <Button x:Name="AssemblyRefButton" Content="引用程序集"
                     Click="AssemblyRefButton_Click"
                     Background="#FFF0F0F0" Foreground="#FF333333" BorderThickness="0"

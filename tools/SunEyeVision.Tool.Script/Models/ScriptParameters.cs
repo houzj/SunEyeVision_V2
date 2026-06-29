@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
@@ -16,104 +17,32 @@ namespace SunEyeVision.Tool.Script.Models
     public class ScriptParameters : ToolParameters
     {
         /// <summary>
-        /// 默认代码模板 — Halcon 算子风格，覆盖 5 个核心视觉处理场景
+        /// 最简代码模板 — Init + Process 空壳骨架，无示例注释，仅含 null 检查和输出传递。
+        /// 默认新建工具时显示的代码。如果代码不小心被删除，可通过"复位最简"按钮恢复到此模板。
+        /// </summary>
+        public static string MinimalCode => LoadEmbeddedResource("Resources.MinimalCode.txt");
+
+        /// <summary>
+        /// Demo 示例代码 — Halcon 算子风格，覆盖 5 个核心视觉处理场景。
+        /// 用户可通过工具栏"Demo示例"按钮加载此代码进行学习和测试。
         /// </summary>
         /// <remarks>
-        /// 客户新建 Script 工具时，编辑器直接显示一份可编译运行的标准示例：
         /// 场景1: 图像信息查询（GetImageSize + 通道数）
         /// 场景2: 彩色转灰度（高层封装 CreateGrayFromColor + 底层 Rgb1ToGray）
         /// 场景3: 阈值分割（Threshold + AreaCenter）
         /// 场景4: Blob 分析（Connection + SelectShape + 遍历输出）
         /// 场景5: 全局变量读写（GetGlobal/SetGlobal）
-        /// 用户在此基础上自由改写即可。
         /// 注意：input1/output1 类型为 IVisionImage，强制转换 ((HalImage)input1).Unwrap() 拿到 HImage。
         /// 场景5 演示了全局变量读写的通用接口优先原则：用 IVisionImage 拿上游图像，需 Halcon 算子时再 is 断言。
         /// </remarks>
-        public const string DefaultMethodCode = @"using System;
-using System.Linq;
-using HalconDotNet;
-using SunEyeVision.Tool.Script.ScriptEngine;
-using SunEyeVision.Plugin.SDK.VisionAdapters;
+        public static string DemoCode => LoadEmbeddedResource("Resources.DemoCode.txt");
 
-public partial class UserScript : Script
-{
-    private int _invokeCount;
-    private double _lastMean;
+        /// <summary>
+        /// 向后兼容别名 — DefaultMethodCode 目前指向 DemoCode
+        /// </summary>
+        public static string DefaultMethodCode => DemoCode;
 
-    public override void Init()
-    {
-        _invokeCount = 0;
-        LogInfo(""脚本初始化完成"");
-    }
-
-    public override void Process()
-    {
-        _invokeCount++;
-
-        // === 场景1: 图像信息查询 ===
-        if (input1 == null || input1.IsEmpty)
-        {
-            LogError(""输入图像 input1 为空，请在上游绑定图像源"");
-            return;
-        }
-
-        // 使用 Halcon 算子查询图像尺寸
-        HOperatorSet.GetImageSize(((HalImage)input1).Unwrap(), out var imgW, out var imgH);
-        LogInfo($""[{_invokeCount}] 输入图像: {imgW.I}×{imgH.I}, 通道数: {input1.Channels}"");
-
-        // === 场景2: 彩色转灰度（高层封装 + 底层算子对比） ===
-        var grayImage = HalImage.CreateGrayFromColor(input1);
-        output1 = grayImage;
-
-        // 底层算子方式（演示两种调用风格）
-        HOperatorSet.Rgb1ToGray(((HalImage)input1).Unwrap(), out var grayObj);
-        using var grayH = new HImage(grayObj);
-        LogInfo(""灰度转换完成"");
-
-        // === 场景3: 阈值分割 ===
-        HOperatorSet.Threshold(grayImage.Unwrap(), out var thresholdRegion, 100.0, 255.0);
-        HOperatorSet.AreaCenter(thresholdRegion, out var thresholdArea, out _, out _);
-        LogInfo($""阈值分割区域: {thresholdArea.I} 像素"");
-
-        // === 场景4: Blob 分析（连通域 + 面积筛选 + 遍历输出） ===
-        HOperatorSet.Connection(thresholdRegion, out var connectedRegions);
-        HOperatorSet.SelectShape(connectedRegions, out var bigBlobs, ""area"", ""and"", 500.0, 99999.0);
-
-        var blobCount = bigBlobs.CountObj();
-        LogInfo($""筛选后 Blob 数量: {blobCount}"");
-
-        for (int i = 1; i <= blobCount; i++)
-        {
-            HOperatorSet.SelectObj(bigBlobs, out var singleBlob, i);
-            HOperatorSet.AreaCenter(singleBlob, out var area, out var row, out var col);
-            LogInfo($""  Blob#{i}: 面积={area.I}, 中心=({col.D:F1}, {row.D:F1})"");
-        }
-
-        // === 场景5: 全局变量读写（通用接口优先，引擎特定能力再断言） ===
-        // 5a. 用通用接口拿上游图像，不受引擎类型限制
-        var upstream = GetGlobal<IVisionImage>(""upstreamImage"");
-        if (upstream != null)
-            LogInfo($""上游图像可用: {upstream.Width}×{upstream.Height}, 通道数: {upstream.Channels}"");
-
-        // 5b. 需要用 Halcon 算子时，显式断言引擎类型
-        if (upstream is HalImage halUpstream)
-        {
-            HOperatorSet.GetImageSize(halUpstream.Unwrap(), out var w, out var h);
-            LogInfo($""[Halcon] 解析尺寸: {w.I}×{h.I}"");
-        }
-        else if (upstream != null)
-        {
-            LogWarning($""[非 Halcon] 上游类型 {upstream.GetType().Name}, 无法用 HOperatorSet 算子"");
-        }
-
-        // 5c. 写:推荐用通用接口类型 SetGlobal
-        SetGlobal(""lastImage"", upstream);
-        SetGlobal(""lastBlobCount"", blobCount);
-        SetGlobal(""lastInvokeCount"", _invokeCount);
-    }
-}";
-
-        private string _scriptCode = DefaultMethodCode;
+        private string _scriptCode = MinimalCode;
         private string _assemblyReferenceDir = "ScriptRefs";
         private ObservableCollection<ScriptInputConfig> _inputs =
         [
@@ -198,7 +127,7 @@ public partial class UserScript : Script
             sb.AppendLine("using System.Linq;");
             sb.AppendLine("using System.Text;");
             sb.AppendLine("using System.IO;");
-            sb.AppendLine("using SunEyeVision.Tool.Script.ScriptEngine;");
+            sb.AppendLine("using SunEyeVision.Plugin.SDK.Scripting;");
             sb.AppendLine("using SunEyeVision.Plugin.SDK.VisionAdapters;");
             sb.AppendLine();
             sb.AppendLine("public partial class UserScript : Script");
@@ -224,6 +153,20 @@ public partial class UserScript : Script
             var dir = AssemblyReferenceFullPath;
             var count = Directory.Exists(dir) ? Directory.GetFiles(dir, "*.dll").Length : 0;
             return $"脚本行数: {ScriptCode.Split('\n').Length}, 引用DLL: {count}, 输入: {Inputs.Count}, 输出: {Outputs.Count}";
+        }
+
+        /// <summary>
+        /// 从嵌入式资源加载文本内容
+        /// </summary>
+        private static string LoadEmbeddedResource(string resourceName)
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+            var fullName = $"{assembly.GetName().Name}.{resourceName}";
+            using var stream = assembly.GetManifestResourceStream(fullName);
+            if (stream == null)
+                throw new InvalidOperationException($"嵌入式资源 '{fullName}' 未找到。确认 Build Action 设置为 Embedded resource。");
+            using var reader = new StreamReader(stream);
+            return reader.ReadToEnd();
         }
     }
 }

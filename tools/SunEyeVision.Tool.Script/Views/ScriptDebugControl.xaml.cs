@@ -15,7 +15,6 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using System.Collections.Immutable;
 using System.Runtime.InteropServices;
-using System.Runtime.Loader;
 using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
@@ -58,35 +57,35 @@ namespace SunEyeVision.Tool.Script.Views
         // Phase 1: 实时诊断
         private CancellationTokenSource? _diagnosticsCts;             // 500ms 诊断节流
         private IReadOnlyList<Diagnostic> _currentDiagnostics = [];   // 当前错误列表
+        private string? _lastDiagnosedCode;                            // 上次已诊断的代码，用于跳过不变代码
 
-        // Phase 2: 语义高亮缓存
-        private IReadOnlyList<ClassifiedSpan>? _classificationSpans;
-
-        // 进程生命周期内共享的 MefHostServices 和默认程序集引用（首次慢，后续快）
+        // 进程生命周期内共享的 MefHostServices（首次初始化慢，后续缓存命中快）
         private static MefHostServices? _sharedMefHost;
-        private static List<MetadataReference>? _defaultReferences;
+        private static object _mefLock = new();
 
+        // 预热 AdhocWorkspace 缓存（工具注册时创建，SetParameters 中复用）
+        private static AdhocWorkspace? _preWarmedWorkspace;
+
+        /// <summary>
+        /// 线程安全地获取共享 MefHostServices（LazyInitializer 消除预热与主线程的竞态）。
+        /// </summary>
         private static MefHostServices GetSharedMefHost()
         {
-            if (_sharedMefHost == null)
+            return LazyInitializer.EnsureInitialized(ref _sharedMefHost, ref _mefLock, () =>
             {
                 var sw = System.Diagnostics.Stopwatch.StartNew();
-                _sharedMefHost = MefHostServices.Create(MefHostServices.DefaultAssemblies);
+                var host = MefHostServices.Create(MefHostServices.DefaultAssemblies);
                 sw.Stop();
                 PluginLogger.Info($"[补全] MefHostServices 首次初始化: {sw.ElapsedMilliseconds}ms",
                     nameof(ScriptDebugControl));
-            }
-            else
-            {
-                PluginLogger.Info("[补全] MefHostServices 缓存命中", nameof(ScriptDebugControl));
-            }
-            return _sharedMefHost;
+                return host;
+            });
         }
 
         /// <summary>
-        /// 后台预热 Roslyn 服务（MEF 初始化 + 程序集引用枚举），窗口可立即渲染。
-        /// 预热结果存入静态缓存 GetSharedMefHost/GetDefaultReferences，SetParameters 中
-        /// 的 RebuildWorkspace 可直接复用，首次弹出不再阻塞 UI 线程。
+        /// 后台预热 Roslyn MefHostServices（线程安全，消除预热与主线程的竞态）。
+        /// 预热结果存入静态缓存，SetParameters 中 RebuildWorkspace 可直接复用，
+        /// 首次弹出不再阻塞 UI 线程。
         /// </summary>
         private static async Task WarmupRoslynAsync()
         {
@@ -95,72 +94,28 @@ namespace SunEyeVision.Tool.Script.Views
                 var sw = System.Diagnostics.Stopwatch.StartNew();
                 PluginLogger.Info("[补全] 后台预热 Roslyn 开始...", nameof(ScriptDebugControl));
                 GetSharedMefHost();
-                GetDefaultReferences();
                 sw.Stop();
                 PluginLogger.Info($"[补全] 后台预热 Roslyn 完成: {sw.ElapsedMilliseconds}ms", nameof(ScriptDebugControl));
             });
         }
 
         /// <summary>
-        /// 判断程序集是否与脚本编译/补全相关（排除 WPF、Roslyn 自身、Win32/UI 等）
+        /// 后台预热 AdhocWorkspace（创建空项目骨架），
+        /// SetParameters 中 RebuildWorkspace 直接复用，节省 ~200-500ms。
         /// </summary>
-        private static bool IsScriptRelevantAssembly(string? assemblyName)
+        private static async Task WarmupWorkspaceAsync()
         {
-            if (string.IsNullOrEmpty(assemblyName)) return false;
-
-            if (assemblyName is "System.Runtime" or "System.Private.CoreLib"
-                or "netstandard" or "mscorlib")
-                return true;
-
-            if (assemblyName.StartsWith("System.") || assemblyName == "System")
-                return !assemblyName.StartsWith("System.Windows")
-                    && !assemblyName.StartsWith("System.Xaml");
-
-            if (assemblyName.StartsWith("Microsoft."))
-                return !assemblyName.StartsWith("Microsoft.Win32")
-                    && !assemblyName.StartsWith("Microsoft.UI")
-                    && assemblyName != "Microsoft.CodeAnalysis"
-                    && !assemblyName.StartsWith("Microsoft.CodeAnalysis.");
-
-            if (assemblyName.StartsWith("SunEyeVision."))
-                return true;
-
-            return !assemblyName.StartsWith("Presentation")
-                && !assemblyName.StartsWith("UIAutomation")
-                && assemblyName != "WindowsBase"
-                && assemblyName != "Accessibility"
-                && assemblyName != "DirectWriteForwarder"
-                && assemblyName != "ReachFramework"
-                && !assemblyName.StartsWith("Avalon");
-        }
-
-        private static List<MetadataReference> GetDefaultReferences()
-        {
-            if (_defaultReferences == null)
+            await Task.Run(() =>
             {
                 var sw = System.Diagnostics.Stopwatch.StartNew();
-                var refs = new List<MetadataReference>();
-                int totalAsm = 0, filteredCount = 0;
-                foreach (var asm in AssemblyLoadContext.Default.Assemblies)
-                {
-                    totalAsm++;
-                    if (asm.IsDynamic) continue;
-                    if (!IsScriptRelevantAssembly(asm.GetName().Name)) continue;
-                    filteredCount++;
-                    try { refs.Add(MetadataReference.CreateFromFile(asm.Location)); }
-                    catch { }
-                }
-                _defaultReferences = refs;
+                PluginLogger.Info("[补全] 后台预热 Workspace 开始...", nameof(ScriptDebugControl));
+                var host = GetSharedMefHost();
+                var ws = new AdhocWorkspace(host);
+                ws.AddProject("ScriptCompletion", LanguageNames.CSharp);
+                Interlocked.Exchange(ref _preWarmedWorkspace, ws);
                 sw.Stop();
-                PluginLogger.Info($"[补全] 程序集引用首次初始化: ALC总={totalAsm}, 过滤后={filteredCount}, 成功创建={refs.Count}, 耗时={sw.ElapsedMilliseconds}ms",
-                    nameof(ScriptDebugControl));
-            }
-            else
-            {
-                PluginLogger.Info($"[补全] 程序集引用缓存命中: {_defaultReferences.Count} 个引用",
-                    nameof(ScriptDebugControl));
-            }
-            return _defaultReferences;
+                PluginLogger.Info($"[补全] 后台预热 Workspace 完成: {sw.ElapsedMilliseconds}ms", nameof(ScriptDebugControl));
+            });
         }
 
         public ObservableCollection<LogEntry> LogEntries => _logEntries;
@@ -176,6 +131,7 @@ namespace SunEyeVision.Tool.Script.Views
 
         public ScriptDebugControl()
         {
+            var perfSw = System.Diagnostics.Stopwatch.StartNew();
             InitializeComponent();
             LogListBox.ItemsSource = _logEntries;
             UpdateStatus("初始化中...");
@@ -186,14 +142,7 @@ namespace SunEyeVision.Tool.Script.Views
             // Layer 1: 从输出目录加载自定义 xshd（含 BCL 类型关键词），失败则回退到内置 C# 高亮
             LoadCustomHighlighting();
 
-            // Layer 2a: Roslyn 语义高亮着色器（替代正则猜测的 ScriptSemanticColorizer）
-            var semanticColorizer = new RoslynSemanticColorizer(
-                () => _classificationSpans,
-                RoslynClassificationColors.GetBrush);
-            CodeEditor.TextArea.TextView.LineTransformers.Add(semanticColorizer);
-            PluginLogger.Info("[Highlighting] 已加载 Roslyn 语义高亮着色器", typeName);
-
-            // Layer 2b: 实时错误标记着色器（红色标记编译错误行）
+            // Layer 2: 实时错误标记着色器（浅红背景标记编译错误行，保留语法颜色）
             var errorMarker = new ErrorMarkerColorizer(() => _currentDiagnostics, false);
             CodeEditor.TextArea.TextView.LineTransformers.Add(errorMarker);
             PluginLogger.Info("[Highlighting] 已加载实时错误标记着色器", typeName);
@@ -206,14 +155,12 @@ namespace SunEyeVision.Tool.Script.Views
                 CodeEditor.TextArea.TextView.CurrentLineBackground.Freeze();
             PluginLogger.Info("[Highlighting] 已启用当前行高亮", typeName);
 
-            // 设置语义高亮主题色（当前为浅色主题，与 xshd 颜色一致）
-            RoslynClassificationColors.SetTheme(false);
-
             // Phase 1: 实时诊断（文本变更 → 500ms 节流 → Roslyn 诊断 → 着色）
             CodeEditor.TextChanged += OnCodeEditorTextChanged;
 
             // Phase 2: 后台预热 Roslyn 补全（MEF + 程序集引用，窗口立即弹出，不阻塞 UI）
             _ = WarmupRoslynAsync();
+            _ = WarmupWorkspaceAsync();
 
             // 自动补全事件
             CodeEditor.TextArea.TextEntered += TextArea_TextEntered;
@@ -233,6 +180,9 @@ namespace SunEyeVision.Tool.Script.Views
             // 初始化变量配置面板（输入/输出 Tab）
             // 上游节点数据源在 SetDataProvider 中通过基类缓存桥接（避免此处硬编码 null）
             InitializeTabs();
+
+            perfSw.Stop();
+            PluginLogger.Info($"[Perf] ScriptDebugControl 构造函数: {perfSw.ElapsedMilliseconds}ms", typeName);
         }
 
         /// <summary>
@@ -278,12 +228,15 @@ namespace SunEyeVision.Tool.Script.Views
                 }
 
                 InitializeTabs();
-                // 异步在 UI 线程重建 workspace（后台已完成 MEF + 引用预热，大幅提速）
+                // ★ 后台异步执行：窗口先显示，补全引擎和诊断在后台就绪。
+                //   用户先看到编辑器，3-4s 后 IntelliSense 可用（对齐 VS Code 的标准行为）。
                 _ = Dispatcher.InvokeAsync(() =>
                 {
+                    var perfSw = System.Diagnostics.Stopwatch.StartNew();
                     RebuildWorkspace();
-                    ScheduleSemanticAnalysis();
-                });
+                    PluginLogger.Info($"[Perf] RebuildWorkspace: {perfSw.ElapsedMilliseconds}ms", GetType().Name);
+                    ScheduleDiagnosticAsync();
+                }, DispatcherPriority.Background);
             }
         }
 
@@ -327,7 +280,7 @@ namespace SunEyeVision.Tool.Script.Views
             InputTabControl.ShowMonitorMode();
             OutputTabControl.ShowMonitorMode();
             RebuildWorkspace();
-            ScheduleSemanticAnalysis();
+            ScheduleDiagnosticAsync();
         }
 
         protected override void OnConfirmCommand(object sender, ExecutedRoutedEventArgs e)
@@ -366,7 +319,7 @@ namespace SunEyeVision.Tool.Script.Views
                 nodeName: CurrentNode?.GetType().GetProperty("DispName")?.GetValue(CurrentNode) as string,
                 globalVariables: globalVars));
 
-            var result = _scriptTool.Run(_parameters);
+            var result = Task.Run(() => _scriptTool.Run(_parameters)).GetAwaiter().GetResult();
 
             if (result == null)
             {
@@ -472,7 +425,7 @@ namespace SunEyeVision.Tool.Script.Views
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[ScriptDebugControl] 获取全局变量失败: {ex.Message}");
+                PluginLogger.Error($"获取调试模式全局变量失败: {ex.Message}", nameof(ScriptDebugControl));
                 return null;
             }
         }
@@ -688,6 +641,32 @@ namespace SunEyeVision.Tool.Script.Views
             }
         }
 
+        /// <summary>
+        /// Demo示例按钮 — 将编辑器内容替换为 DemoCode（综合示例代码，方便学习测试）
+        /// </summary>
+        private void DemoCodeButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (CodeEditor == null) return;
+            CodeEditor.Text = ScriptParameters.DemoCode;
+            SyncCodeToParameters();
+            RebuildWorkspace();
+            ScheduleDiagnosticAsync();
+            UpdateStatus("已加载 Demo 示例");
+        }
+
+        /// <summary>
+        /// 复位最简按钮 — 将编辑器内容替换为 MinimalCode（代码误删或想从头开始）
+        /// </summary>
+        private void ResetCodeButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (CodeEditor == null) return;
+            CodeEditor.Text = ScriptParameters.MinimalCode;
+            SyncCodeToParameters();
+            RebuildWorkspace();
+            ScheduleDiagnosticAsync();
+            UpdateStatus("已复位至最简代码");
+        }
+
 
 
 
@@ -723,61 +702,61 @@ namespace SunEyeVision.Tool.Script.Views
             var host = GetSharedMefHost();
             PluginLogger.Info($"[补全] MefHostServices 创建完成: {sw.ElapsedMilliseconds}ms", typeName);
 
-            _workspace = new AdhocWorkspace(host);
-            PluginLogger.Info("[补全] AdhocWorkspace 实例已创建", typeName);
+            Project project;
+            if (_preWarmedWorkspace != null)
+            {
+                _workspace = _preWarmedWorkspace;
+                _preWarmedWorkspace = null;
+                PluginLogger.Info("[补全] 复用预热 Workspace", typeName);
+            }
+            else
+            {
+                _workspace = new AdhocWorkspace(host);
+                PluginLogger.Info("[补全] AdhocWorkspace 实例已创建", typeName);
+            }
 
             sw.Restart();
-            var project = _workspace.AddProject("ScriptCompletion", LanguageNames.CSharp);
-            project = project.WithCompilationOptions(
-                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
-                    .WithAllowUnsafe(true));
-            PluginLogger.Info($"[补全] 项目创建完成: {sw.ElapsedMilliseconds}ms", typeName);
+            var existingProject = _workspace.CurrentSolution.Projects.FirstOrDefault();
+            if (existingProject != null)
+            {
+                project = existingProject.WithCompilationOptions(
+                    new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+                        .WithAllowUnsafe(true));
+                PluginLogger.Info($"[补全] 复用预热项目: {sw.ElapsedMilliseconds}ms", typeName);
+            }
+            else
+            {
+                project = _workspace.AddProject("ScriptCompletion", LanguageNames.CSharp);
+                project = project.WithCompilationOptions(
+                    new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+                        .WithAllowUnsafe(true));
+                PluginLogger.Info($"[补全] 项目创建完成: {sw.ElapsedMilliseconds}ms", typeName);
+            }
 
-            // 扫描引用：默认 ALC 已加载程序集 + ScriptRefs 用户自定义 DLL
+            // 扫描引用：MetadataReferenceProvider 统一服务（ALC 扫描 + 过滤）→ ScriptRefs 用户自定义 DLL
             sw.Restart();
             var refDir = _parameters?.AssemblyReferenceFullPath;
             var refCount = 0;
 
-            // 1. 默认 ALC 已加载程序集（缓存 + 过滤，首次慢后续快）
-            try
+            // 0. 宿主 ALC 已加载程序集（统一服务：SSOT，与 ScriptCompiler 共享同一份清单）
+            var hostRefs = MetadataReferenceProvider.GetHostReferences();
+            foreach (var mdRef in hostRefs)
             {
-                var defaultRefs = GetDefaultReferences();
-                foreach (var mdRef in defaultRefs)
+                project = project.AddMetadataReference(mdRef);
+                refCount++;
+            }
+            PluginLogger.Info($"[补全] 宿主 ALC 注入: {refCount} 个 (来自统一服务)", typeName);
+
+            // 1. ScriptRefs 目录（用户自定义第三方 DLL），通过共享缓存加载
+            if (!string.IsNullOrEmpty(refDir))
+            {
+                var sharedRefs = SharedMetadataReferenceProvider.GetScriptRefs(refDir);
+                foreach (var mdRef in sharedRefs)
                 {
                     project = project.AddMetadataReference(mdRef);
                     refCount++;
                 }
-            }
-            catch (Exception ex)
-            {
-                PluginLogger.Warning($"[补全] 枚举 ALC 程序集失败: {ex.Message}", typeName);
-            }
-
-            // 2. ScriptRefs 目录（用户自定义第三方 DLL）
-            if (!string.IsNullOrEmpty(refDir))
-            {
-                if (!Directory.Exists(refDir))
-                {
-                    PluginLogger.Warning($"[补全] 引用目录不存在: {refDir}", typeName);
-                }
-                else
-                {
-                    var dllFiles = Directory.EnumerateFiles(refDir, "*.dll").ToList();
-                    PluginLogger.Info($"[补全] 引用目录扫描到 {dllFiles.Count} 个 DLL: {refDir}", typeName);
-                    foreach (var dll in dllFiles)
-                    {
-                        try
-                        {
-                            var mdRef = MetadataReference.CreateFromFile(dll);
-                            project = project.AddMetadataReference(mdRef);
-                            refCount++;
-                        }
-                        catch (Exception ex)
-                        {
-                            PluginLogger.Warning($"[补全] 加载 DLL 失败: {dll}, 错误: {ex.Message}", typeName);
-                        }
-                    }
-                }
+                PluginLogger.Info($"[补全] ScriptRefs 已添加 {sharedRefs.Count} 个引用 ({sw.ElapsedMilliseconds}ms)", typeName);
             }
             else
             {
@@ -1127,16 +1106,16 @@ namespace SunEyeVision.Tool.Script.Views
         // =======================================================
 
         /// <summary>
-        /// 编辑器文本变更 → 同步到 Parameters → 500ms 节流 → 诊断+语义分析
+        /// 编辑器文本变更 → 同步到 Parameters → 500ms 节流 → 诊断
         /// </summary>
         private void OnCodeEditorTextChanged(object? sender, EventArgs e)
         {
             if (CodeEditor != null)
                 _parameters.ScriptCode = CodeEditor.Text;
-            ScheduleSemanticAnalysis();
+            ScheduleDiagnosticAsync();
         }
 
-        private void ScheduleSemanticAnalysis()
+        private void ScheduleDiagnosticAsync()
         {
             _diagnosticsCts?.Cancel();
             _diagnosticsCts?.Dispose();
@@ -1149,27 +1128,35 @@ namespace SunEyeVision.Tool.Script.Views
                 {
                     await Task.Delay(500, token);
                     if (!token.IsCancellationRequested)
-                        await RunSemanticAnalysisAsync(token);
+                        await RunDiagnosticAsync(token);
                 }
                 catch (OperationCanceledException) { }
             });
         }
 
         /// <summary>
-        /// 更新 workspace 文本（双文档） → 获取诊断 → 获取语义分类 → UI 重绘
+        /// 更新 workspace 文本（双文档） → 获取诊断 → 红色波浪线
         /// </summary>
-        private async Task RunSemanticAnalysisAsync(CancellationToken token)
+        private async Task RunDiagnosticAsync(CancellationToken token)
         {
             var typeName = GetType().Name;
 
             if (_workspace == null || _userDocumentId == null)
             {
-                PluginLogger.Warning($"[SemanticHighlight] 跳过: workspace={_workspace != null}, userDocumentId={_userDocumentId != null}", typeName);
+                PluginLogger.Warning($"[Diagnostic] 跳过: workspace={_workspace != null}, userDocumentId={_userDocumentId != null}", typeName);
                 return;
             }
 
             var generatedCode = _parameters.GeneratedCode;
             var userCode = _parameters.ScriptCode;
+
+            // 代码未变则跳过诊断（避免同段代码重复 Roslyn 分析）
+            if (userCode == _lastDiagnosedCode)
+            {
+                PluginLogger.Info("[Diagnostic] 代码未变，跳过诊断", typeName);
+                return;
+            }
+            _lastDiagnosedCode = userCode;
 
             try
             {
@@ -1179,54 +1166,47 @@ namespace SunEyeVision.Tool.Script.Views
                     .WithDocumentText(_userDocumentId, SourceText.From(userCode));
                 if (!_workspace.TryApplyChanges(newSolution))
                 {
-                    PluginLogger.Warning("[SemanticHighlight] TryApplyChanges 失败", typeName);
+                    PluginLogger.Warning("[Diagnostic] TryApplyChanges 失败", typeName);
                     return;
                 }
 
                 var userDoc = _workspace.CurrentSolution.GetDocument(_userDocumentId);
                 if (userDoc == null)
                 {
-                    PluginLogger.Warning("[SemanticHighlight] workspace 中找不到 user document", typeName);
+                    PluginLogger.Warning("[Diagnostic] workspace 中找不到 user document", typeName);
                     return;
                 }
 
                 // 获取用户文档的语法树，用于过滤诊断
                 var userSyntaxTree = await userDoc.GetSyntaxTreeAsync(token);
-
-                // 2. 并行获取诊断 + 语义分类（使用用户文档）
-                var modelTask = userDoc.GetSemanticModelAsync(token);
-                var spansTask = Classifier.GetClassifiedSpansAsync(userDoc, new TextSpan(0, userCode.Length), token);
-
-                await Task.WhenAll(modelTask, spansTask);
+                var model = await userDoc.GetSemanticModelAsync(token);
 
                 if (token.IsCancellationRequested) return;
 
-                var model = modelTask.Result;
-                var allSpans = spansTask.Result;
-
-                // Phase 1: 诊断 — 只取用户文档中的错误（行号直接对应编辑器行）
+                // 诊断 — 只取用户文档中的错误（行号直接对应编辑器行）
                 var diagnostics = model!.GetDiagnostics(cancellationToken: token)
                     .Where(d => d.Severity == DiagnosticSeverity.Error
                         && d.Location.SourceTree == userSyntaxTree)
                     .ToImmutableArray();
                 _currentDiagnostics = diagnostics;
 
-                // Phase 2: 语义分类缓存（使用用户文档的语义分类）
-                _classificationSpans = allSpans.ToImmutableArray();
+                PluginLogger.Info($"[Diagnostic] Errors={diagnostics.Length}", typeName);
+                // 详情输出前 5 条，辅助排查：若 SDK 引用缺失，会出现 CS0246/CS0103 大量误报
+                foreach (var diag in diagnostics.Take(5))
+                {
+                    var loc = diag.Location.GetLineSpan();
+                    PluginLogger.Info(
+                        $"[Diagnostic]   {diag.Id} @ line {loc.StartLinePosition.Line + 1}: {diag.GetMessage()}",
+                        typeName);
+                }
 
-                PluginLogger.Info($"[SemanticHighlight] TotalSpans={allSpans.Count()}, CachedSpans={_classificationSpans.Count}", typeName);
-                var typeGroups = _classificationSpans.GroupBy(s => s.ClassificationType)
-                    .Select(g => $"{g.Key}={g.Count()}")
-                    .ToArray();
-                PluginLogger.Info($"[SemanticHighlight] Types: {string.Join(", ", typeGroups)}", typeName);
-
-                // 3. UI 线程重绘
+                // 2. UI 线程重绘
                 await Dispatcher.InvokeAsync(() => CodeEditor.TextArea.TextView.Redraw(), DispatcherPriority.Background, token);
             }
             catch (OperationCanceledException) { }
             catch (Exception ex)
             {
-                PluginLogger.Warning($"[ScriptDebug] SemanticAnalysis error: {ex.Message}", typeName);
+                PluginLogger.Warning($"[ScriptDebug] Diagnostic error: {ex.Message}", typeName);
             }
         }
 
@@ -1273,14 +1253,15 @@ namespace SunEyeVision.Tool.Script.Views
     // =======================================================
 
     /// <summary>
-    /// 编译错误标记着色器：将 _currentDiagnostics 中的错误位置标记为红色。
+    /// 编译错误标记着色器：将 _currentDiagnostics 中的错误位置标记为浅红背景。
+    /// 仅设置背景色，不覆盖 xshd 语法颜色（保留关键字蓝、类型青、方法紫）。
     /// 运行在 Layer 1 内置高亮之后，通过 DocumentColorizingTransformer 增量覆盖。
     /// </summary>
     internal sealed class ErrorMarkerColorizer : DocumentColorizingTransformer
     {
         private readonly Func<IReadOnlyList<Diagnostic>> _getDiagnostics;
-        private static readonly Brush ErrorBrush = FrozenBrush(0xCC, 0x00, 0x00);
-        private static readonly Brush DarkErrorBrush = FrozenBrush(0xF4, 0x47, 0x47);
+        private static readonly Brush ErrorBgBrush = FrozenBrush(0xFF, 0xE0, 0xE0);      // 浅红背景
+        private static readonly Brush DarkErrorBgBrush = FrozenBrush(0x5C, 0x00, 0x00);  // 深红背景（暗色主题）
 
         private readonly bool _isDark;
 
@@ -1295,12 +1276,16 @@ namespace SunEyeVision.Tool.Script.Views
             var diagnostics = _getDiagnostics();
             if (diagnostics == null || diagnostics.Count == 0) return;
 
-            var brush = _isDark ? DarkErrorBrush : ErrorBrush;
+            var brush = _isDark ? DarkErrorBgBrush : ErrorBgBrush;
             var lineStart = line.Offset;
             var lineEnd = line.EndOffset;
 
             foreach (var diag in diagnostics)
             {
+                // 过滤"引用缺失导致的级联误报"：缺 using/缺引用的错误不应让整行变红
+                // CS0246: 找不到类型/命名空间  CS0234: 类型或命名空间不存在  CS0103: 名称不存在于当前上下文
+                if (diag.Id is "CS0246" or "CS0234" or "CS0103") continue;
+
                 var span = diag.Location.SourceSpan;
                 if (span.Start >= lineEnd) continue;
                 if (span.End <= lineStart) continue;
@@ -1313,7 +1298,8 @@ namespace SunEyeVision.Tool.Script.Views
                 {
                     if (e.TextRunProperties is VisualLineElementTextRunProperties tp)
                     {
-                        tp.SetForegroundBrush(brush);
+                        // ★ 背景色覆盖，保留 xshd 语法前景色
+                        tp.SetBackgroundBrush(brush);
                     }
                 });
             }
@@ -1326,143 +1312,8 @@ namespace SunEyeVision.Tool.Script.Views
             return brush;
         }
     }
-
-    /// <summary>
-    /// Roslyn 语义着色器：读取预计算的 ClassifiedSpan 缓存，在 AvalonEdit
-    /// 内置语法高亮之上增量覆盖语义颜色。
-    /// 运行在内置 C# 高亮之后，只覆盖标识符文本范围。
-    /// </summary>
-    internal sealed class RoslynSemanticColorizer : DocumentColorizingTransformer
-    {
-        private readonly Func<IReadOnlyList<ClassifiedSpan>?> _getSpans;
-        private readonly Func<string, Brush?> _getBrush;
-
-        public RoslynSemanticColorizer(
-            Func<IReadOnlyList<ClassifiedSpan>?> getSpans,
-            Func<string, Brush?> getBrush)
-        {
-            _getSpans = getSpans;
-            _getBrush = getBrush;
-        }
-
-        protected override void ColorizeLine(DocumentLine line)
-        {
-            var spans = _getSpans();
-            if (spans == null || spans.Count == 0) return;
-
-            var lineStart = line.Offset;
-            var lineEnd = line.EndOffset;
-
-            // 二分查找第一个 >= lineStart 的 span
-            var idx = BinarySearchFirstSpan(spans, lineStart);
-            if (idx < 0) return;
-
-            for (int i = idx; i < spans.Count; i++)
-            {
-                var span = spans[i];
-                if (span.TextSpan.Start >= lineEnd) break;  // 超出当前行
-
-                var start = Math.Max(span.TextSpan.Start, lineStart);
-                var end = Math.Min(span.TextSpan.End, lineEnd);
-                if (start >= end) continue;
-
-                var brush = _getBrush(span.ClassificationType);
-                if (brush == null) continue;
-
-                ChangeLinePart(start, end, e =>
-                {
-                    if (e.TextRunProperties is VisualLineElementTextRunProperties tp)
-                        tp.SetForegroundBrush(brush);
-                });
-            }
-        }
-
-        private static int BinarySearchFirstSpan(
-            IReadOnlyList<ClassifiedSpan> spans, int lineStart)
-        {
-            int lo = 0, hi = spans.Count - 1;
-            while (lo <= hi)
-            {
-                int mid = (lo + hi) / 2;
-                if (spans[mid].TextSpan.End <= lineStart)
-                    lo = mid + 1;
-                else
-                    hi = mid - 1;
-            }
-            return lo < spans.Count ? lo : -1;
-        }
-    }
-
-    /// <summary>
-    /// Roslyn 分类类型 → 颜色刷映射（浅色/深色两套）
-    /// 语义分类覆盖 Layer 1 语法高亮，语法分类返回 null 让 Layer 1 生效。
-    /// </summary>
-    public static class RoslynClassificationColors
-    {
-        // ── 浅色主题 ──
-        private static readonly Brush LightKeyword   = FrozenBrush(0x00, 0x00, 0xFF);
-        private static readonly Brush LightString    = FrozenBrush(0xA3, 0x15, 0x15);
-        private static readonly Brush LightType      = FrozenBrush(0x2B, 0x91, 0xAF);  // 类/结构/接口/枚举/委托
-        private static readonly Brush LightMethod    = FrozenBrush(0x74, 0x56, 0x9F);  // 方法/属性
-        private static readonly Brush LightField     = FrozenBrush(0xE0, 0x7B, 0x00);  // 字段/枚举成员
-        private static readonly Brush LightLocal     = FrozenBrush(0xCC, 0x00, 0x00);  // 局部变量/参数
-
-        // ── 深色主题 ──
-        private static readonly Brush DarkKeyword   = FrozenBrush(0x56, 0x9C, 0xD6);
-        private static readonly Brush DarkString    = FrozenBrush(0xCE, 0x91, 0x78);
-        private static readonly Brush DarkType      = FrozenBrush(0x4E, 0xC9, 0xB0);
-        private static readonly Brush DarkMethod    = FrozenBrush(0xDC, 0xDC, 0xAA);
-        private static readonly Brush DarkField     = FrozenBrush(0xD7, 0xBA, 0x7D);
-        private static readonly Brush DarkLocal     = FrozenBrush(0xF4, 0x47, 0x47);
-
-        private static bool _isDark;
-
-        public static void SetTheme(bool isDark) => _isDark = isDark;
-
-        public static Brush? GetBrush(string classificationType)
-        {
-            bool dark = _isDark;
-            return classificationType switch
-            {
-                // 语义分类（覆盖 Layer 1 语法高亮的标识符范围）
-                ClassificationTypeNames.ClassName         => dark ? DarkType   : LightType,
-                ClassificationTypeNames.StructName        => dark ? DarkType   : LightType,
-                ClassificationTypeNames.InterfaceName     => dark ? DarkType   : LightType,
-                ClassificationTypeNames.EnumName          => dark ? DarkType   : LightType,
-                ClassificationTypeNames.DelegateName      => dark ? DarkType   : LightType,
-                ClassificationTypeNames.TypeParameterName => dark ? DarkType   : LightType,
-
-                ClassificationTypeNames.MethodName          => dark ? DarkMethod : LightMethod,
-                ClassificationTypeNames.ExtensionMethodName => dark ? DarkMethod : LightMethod,
-                ClassificationTypeNames.PropertyName        => dark ? DarkMethod : LightMethod,
-                ClassificationTypeNames.EventName           => dark ? DarkMethod : LightMethod,
-
-                ClassificationTypeNames.FieldName      => dark ? DarkField : LightField,
-                ClassificationTypeNames.EnumMemberName => dark ? DarkField : LightField,
-                ClassificationTypeNames.ConstantName   => dark ? DarkField : LightField,
-
-                ClassificationTypeNames.LocalName     => dark ? DarkLocal : LightLocal,
-                ClassificationTypeNames.ParameterName => dark ? DarkLocal : LightLocal,
-
-                // 语法分类（覆盖 Layer 1 的 xshd，保持颜色一致）
-                ClassificationTypeNames.Keyword        => dark ? DarkKeyword   : LightKeyword,
-                ClassificationTypeNames.StringLiteral  => null,  // 字符串由 xshd 处理
-                ClassificationTypeNames.Comment        => null,  // 注释由 xshd 处理
-                ClassificationTypeNames.NumericLiteral => null,  // 数字由 xshd 处理
-                ClassificationTypeNames.Operator       => null,
-                ClassificationTypeNames.Punctuation    => null,
-                ClassificationTypeNames.WhiteSpace     => null,
-
-                _ => null
-            };
-        }
-
-        private static Brush FrozenBrush(byte r, byte g, byte b)
-        {
-            var brush = new SolidColorBrush(Color.FromRgb(r, g, b));
-            if (brush.CanFreeze) brush.Freeze();
-            return brush;
-        }
-    }
 }
+
+
+
 

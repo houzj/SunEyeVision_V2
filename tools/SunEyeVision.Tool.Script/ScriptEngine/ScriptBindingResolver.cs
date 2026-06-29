@@ -99,12 +99,10 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                 {
                     if (nodeResults == null)
                     {
-                        PluginLogger.Warning(
+                        throw new InvalidOperationException(
                             $"脚本输入 '{input.Name}' 绑定了节点属性 '{input.BindingSource}'，" +
-                            $"但上游节点尚未执行，未获取到节点结果，已使用默认值继续。",
-                            nameof(ScriptBindingResolver));
-                        result[input.Name] = GetDefaultValue(input.TypeName);
-                        continue;
+                            $"但当前执行上下文未注入上游节点结果。" +
+                            $"请确保上游节点已执行后再运行脚本工具。");
                     }
 
                     result[input.Name] = ResolveNodeProperty(

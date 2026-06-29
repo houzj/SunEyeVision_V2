@@ -19,6 +19,9 @@
     <None Include="Resources\CSharpDark.xshd">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <!-- 嵌入式资源：代码模板（由 ScriptParameters.LoadEmbeddedResource 加载） -->
+    <EmbeddedResource Include="Resources\MinimalCode.txt" />
+    <EmbeddedResource Include="Resources\DemoCode.txt" />
   </ItemGroup>
   <!-- XAML 编译期 + C# 代码 (ICSharpCode.AvalonEdit.*) 都需要类型解析,
        运行时由主程序 SunEyeVision.UI 统一加载,Directory.Build.targets Step 1.2 拦截

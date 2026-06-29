@@ -3113,6 +3113,9 @@ SplitterPosition = position;
         /// <param name="node">当前节点</param>
         private async System.Threading.Tasks.Task InitializeToolControlAsync(object target, Models.WorkflowNode node)
         {
+            // ★ 性能剪口：首次打开调试窗口的完整耗时
+            var perfSw = System.Diagnostics.Stopwatch.StartNew();
+
             try
             {
                 // 获取初始化接口
@@ -3124,13 +3127,19 @@ SplitterPosition = position;
                 }
 
                 // ① 设置当前节点
+                var stepSw = System.Diagnostics.Stopwatch.StartNew();
                 initializer.SetCurrentNode(node);
+                stepSw.Stop();
+                _logger?.LogInfo($"[Perf] SetCurrentNode: {stepSw.ElapsedMilliseconds}ms", "MainWindowViewModel");
                 AddLog($"✅ 已设置当前节点");
 
                 // ② 设置节点参数
                 if (node.Parameters != null)
                 {
+                    stepSw.Restart();
                     initializer.SetParameters(node.Parameters);
+                    stepSw.Stop();
+                    _logger?.LogInfo($"[Perf] SetParameters: {stepSw.ElapsedMilliseconds}ms", "MainWindowViewModel");
                     AddLog($"✅ 已初始化节点参数");
                 }
 
@@ -3138,7 +3147,10 @@ SplitterPosition = position;
                 var dataProvider = GetDataProviderForNode(node);
                 if (dataProvider != null)
                 {
+                    stepSw.Restart();
                     initializer.SetDataProvider(dataProvider);
+                    stepSw.Stop();
+                    _logger?.LogInfo($"[Perf] SetDataProvider: {stepSw.ElapsedMilliseconds}ms", "MainWindowViewModel");
                     AddLog($"✅ 已初始化数据提供者");
                 }
 
@@ -3146,7 +3158,10 @@ SplitterPosition = position;
                 // 注意：已移到 debugWindow.Show() 之后调用，确保 OverlayCanvas 已准备就绪
 
                 // ⑤ 异步初始化
+                stepSw.Restart();
                 await initializer.InitializeAsync();
+                stepSw.Stop();
+                _logger?.LogInfo($"[Perf] InitializeAsync: {stepSw.ElapsedMilliseconds}ms", "MainWindowViewModel");
                 AddLog($"✅ 调试控件初始化完成");
 
                 // 窗口路径的额外处理
@@ -3161,7 +3176,11 @@ SplitterPosition = position;
                     AddLog($"🔍 [监控] 准备显示窗口并设置 ImageControl");
 
                     // 显示窗口（确保数据初始化完成后再显示，这样 Loaded 事件触发时所有数据已就绪）
+                    stepSw.Restart();
                     debugWindow.Show();
+                    stepSw.Stop();
+                    _logger?.LogInfo($"[Perf] debugWindow.Show(): {stepSw.ElapsedMilliseconds}ms", "MainWindowViewModel");
+                    AddLog($"✅ 调试窗口已显示");
 
                     // 缓存调试窗口（用于工作流执行完成后通知刷新）
                     _nodeDebugWindows[node.Id] = debugWindow;
@@ -3204,6 +3223,9 @@ SplitterPosition = position;
                         }
                     };
                 }
+
+                perfSw.Stop();
+                _logger?.LogInfo($"[Perf] 调试窗口打开总耗时: {perfSw.ElapsedMilliseconds}ms | 节点: {node.Name}", "MainWindowViewModel");
             }
             catch (Exception ex)
             {

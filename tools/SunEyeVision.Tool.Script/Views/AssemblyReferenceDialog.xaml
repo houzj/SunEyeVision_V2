@@ -53,16 +53,56 @@
                 </Grid>
             </Border>
 
-            <!-- 内容区：TabControl 两个标签页 -->
+            <!-- 内容区：TabControl 两标签页 -->
             <TabControl Grid.Row="1" Margin="12,8,12,8"
                         Background="#FF1E1E1E" BorderBrush="#FF3C3C3C"
                         Foreground="#FFDCDCDC" FontSize="12">
                 <TabControl.Resources>
-                    <local:AssemblyDisplayConverter x:Key="AssemblyDisplayConverter"/>
+                    <local:AssemblyStatusConverter x:Key="AssemblyStatusConverter"/>
                 </TabControl.Resources>
 
-                <!-- 自定义程序集标签页（可管理：添加/删除） -->
-                <TabItem Header="自定义程序集"
+                <!-- 内置程序集标签页（只读：ScriptRefs 自动部署的 8 个关键 DLL） -->
+                <TabItem Header="内置程序集"
+                         Background="#FF1E1E1E" Foreground="#FFDCDCDC"
+                         BorderBrush="#FF3C3C3C">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- 说明文字 -->
+                        <TextBlock Grid.Row="0" Text="CopyScriptRefs.ps1 自动部署的 8 个关键程序集（只读）"
+                                   Foreground="#FF999999" FontSize="11" Margin="0,0,0,6"
+                                   TextWrapping="Wrap"/>
+
+                        <!-- 内置程序集列表 -->
+                        <ListBox Grid.Row="1" x:Name="BuiltInAssemblyListBox"
+                                 Background="#FF1E1E1E" Foreground="#FFDCDCDC"
+                                 BorderBrush="#FF3C3C3C" BorderThickness="1"
+                                 FontSize="12"
+                                 ItemsSource="{Binding}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0"
+                                                   Text="{Binding Status, Converter={StaticResource AssemblyStatusConverter}}"
+                                                   Margin="4,2,6,2"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding DisplayName}"
+                                                   TextWrapping="Wrap" Margin="0,2" VerticalAlignment="Center"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Grid>
+                </TabItem>
+
+                <!-- 用户自定义DLL标签页（可管理：添加/删除） -->
+                <TabItem Header="用户自定义DLL"
                          Background="#FF1E1E1E" Foreground="#FFDCDCDC"
                          BorderBrush="#FF3C3C3C">
                     <Grid>
@@ -79,8 +119,8 @@
                                     Cursor="Hand"/>
                         </StackPanel>
 
-                        <!-- 引用列表（每条自带 ✕ 删除按钮） -->
-                        <ListBox Grid.Row="1" x:Name="ReferenceListBox"
+                        <!-- 用户自定义 DLL 列表（每条自带 ✕ 删除按钮） -->
+                        <ListBox Grid.Row="1" x:Name="UserCustomListBox"
                                  Background="#FF1E1E1E" Foreground="#FFDCDCDC"
                                  BorderBrush="#FF3C3C3C" BorderThickness="1"
                                  FontSize="12"
@@ -92,7 +132,7 @@
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
-                                        <TextBlock Text="{Binding Converter={StaticResource AssemblyDisplayConverter}}"
+                                        <TextBlock Text="{Binding DisplayName}"
                                                    TextWrapping="Wrap" Margin="4,2" VerticalAlignment="Center"/>
                                         <Button Grid.Column="1" Content="✕" Width="20" Height="20"
                                                 Background="Transparent" Foreground="#FF999999"
@@ -111,46 +151,6 @@
                                                 </Style>
                                             </Button.Style>
                                         </Button>
-                                    </Grid>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
-                    </Grid>
-                </TabItem>
-
-                <!-- 系统程序集标签页（只读：ALC 已加载程序集） -->
-                <TabItem Header="系统程序集"
-                         Background="#FF1E1E1E" Foreground="#FFDCDCDC"
-                         BorderBrush="#FF3C3C3C">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-
-                        <!-- 说明文字 -->
-                        <TextBlock Grid.Row="0" Text="默认 ALC 已加载程序集（只读，由运行时自动管理）"
-                                   Foreground="#FF999999" FontSize="11" Margin="0,0,0,6"/>
-
-                        <!-- 系统程序集列表 -->
-                        <ListBox Grid.Row="1" x:Name="SystemAssemblyListBox"
-                                 Background="#FF1E1E1E" Foreground="#FFDCDCDC"
-                                 BorderBrush="#FF3C3C3C" BorderThickness="1"
-                                 FontSize="12"
-                                 ItemsSource="{Binding}">
-                            <ListBox.ItemTemplate>
-                                <DataTemplate>
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" Text="📦" Margin="4,2,6,2"/>
-                                        <TextBlock Grid.Column="1" Text="{Binding Name}"
-                                                   TextWrapping="Wrap" Margin="0,2" VerticalAlignment="Center"/>
-                                        <TextBlock Grid.Column="2" Text="{Binding Version}"
-                                                   Foreground="#FF999999" Margin="4,2" VerticalAlignment="Center"/>
                                     </Grid>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>

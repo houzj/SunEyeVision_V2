@@ -9,10 +9,11 @@ using SunEyeVision.Tool.Script.Models;
 namespace SunEyeVision.Tool.Script.ViewModels
 {
     /// <summary>
-    /// 鑴氭湰缂栬緫鍣?ViewModel 鈥?绠＄悊浠ｇ爜缂栬緫銆佸彉閲忕洃瑙嗐€佺紪璇戦敊璇€佹棩蹇楁樉绀恒€?    /// </summary>
+    /// 脚本编辑器 ViewModel — 管理代码编辑、变量监视、编译错误、日志显示。
+    /// </summary>
     public class ScriptEditorViewModel
     {
-        #region 瀛楁
+        #region 字段
 
         private ScriptParameters _parameters;
         private readonly ObservableCollection<ScriptParamItem> _inputVariables = new();
@@ -22,14 +23,14 @@ namespace SunEyeVision.Tool.Script.ViewModels
 
         #endregion
 
-        #region 灞炴€?
+        #region 属性
         /// <summary>
-        /// 褰撳墠鍙傛暟瀵硅薄
+        /// 当前参数对象
         /// </summary>
         public ScriptParameters Parameters => _parameters;
 
         /// <summary>
-        /// 鑴氭湰浠ｇ爜
+        /// 脚本代码
         /// </summary>
         public string ScriptCode
         {
@@ -38,36 +39,38 @@ namespace SunEyeVision.Tool.Script.ViewModels
         }
 
         /// <summary>
-        /// 杈撳叆鍙橀噺鍒楄〃锛堢粦瀹氬埌 DataGrid锛?        /// </summary>
+        /// 输入变量列表（绑定到 DataGrid）
+        /// </summary>
         public ObservableCollection<ScriptParamItem> InputVariables => _inputVariables;
 
         /// <summary>
-        /// 杈撳嚭鍙橀噺鍒楄〃锛堢粦瀹氬埌 DataGrid锛岃繍琛屽悗鏄剧ず鍊硷級
+        /// 输出变量列表（绑定到 DataGrid，运行后显示值）
         /// </summary>
         public ObservableCollection<ScriptParamItem> OutputVariables => _outputVariables;
 
         /// <summary>
-        /// 缂栬瘧/杩愯鏃堕敊璇垪琛?        /// </summary>
+        /// 编译/运行时错误列表
+        /// </summary>
         public ObservableCollection<string> ErrorMessages => _errorMessages;
 
         /// <summary>
-        /// 鏃ュ織淇℃伅鍒楄〃
+        /// 日志信息列表
         /// </summary>
         public ObservableCollection<string> LogMessages => _logMessages;
 
         /// <summary>
-        /// 鎵ц鑰楁椂锛堟绉掞級
+        /// 执行耗时（毫秒）
         /// </summary>
         public long ExecutionTimeMs { get; set; }
 
         /// <summary>
-        /// 缂栬瘧鑰楁椂锛堟绉掞級
+        /// 编译耗时（毫秒）
         /// </summary>
         public long CompileTimeMs { get; set; }
 
         #endregion
 
-        #region 鏋勯€犲嚱鏁?
+        #region 构造函数
         public ScriptEditorViewModel()
         {
             _parameters = new ScriptParameters();
@@ -80,10 +83,11 @@ namespace SunEyeVision.Tool.Script.ViewModels
 
         #endregion
 
-        #region 鍏紑鏂规硶
+        #region 公开方法
 
         /// <summary>
-        /// 璁剧疆鍙傛暟瀵硅薄锛堢敱 SetParameters 娉ㄥ叆锛?        /// </summary>
+        /// 设置参数对象（由 SetParameters 注入）
+        /// </summary>
         public void SetParameters(ScriptParameters parameters)
         {
             _parameters = parameters ?? throw new ArgumentNullException(nameof(parameters));
@@ -132,7 +136,8 @@ namespace SunEyeVision.Tool.Script.ViewModels
         }
 
         /// <summary>
-        /// 浣跨敤鎵ц缁撴灉鏇存柊杈撳嚭鍙橀噺鍊?        /// </summary>
+        /// 使用执行结果更新输出变量值
+        /// </summary>
         public void UpdateOutputs(Dictionary<string, object?> outputValues)
         {
             foreach (var kvp in outputValues)
@@ -155,7 +160,8 @@ namespace SunEyeVision.Tool.Script.ViewModels
         }
 
         /// <summary>
-        /// 鏇存柊缂栬瘧/杩愯鏃堕敊璇垪琛?        /// </summary>
+        /// 更新编译/运行时错误列表
+        /// </summary>
         public void UpdateErrors(List<string> errors)
         {
             _errorMessages.Clear();
@@ -166,7 +172,7 @@ namespace SunEyeVision.Tool.Script.ViewModels
         }
 
         /// <summary>
-        /// 鏇存柊鏃ュ織淇℃伅鍒楄〃
+        /// 更新日志信息列表
         /// </summary>
         public void UpdateLogs(List<string> logs)
         {
@@ -178,7 +184,8 @@ namespace SunEyeVision.Tool.Script.ViewModels
         }
 
         /// <summary>
-        /// 娓呴櫎鎵€鏈夎緭鍑?        /// </summary>
+        /// 清除所有输出
+        /// </summary>
         public void ClearResults()
         {
             _errorMessages.Clear();

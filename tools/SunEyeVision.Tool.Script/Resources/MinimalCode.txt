@@ -1,0 +1,28 @@
+using System;
+using HalconDotNet;
+using SunEyeVision.Plugin.SDK.Scripting;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
+
+public partial class UserScript : Script
+{
+    private int _invokeCount;
+
+    public override void Init()
+    {
+        _invokeCount = 0;
+        LogInfo("初始化完成");
+    }
+
+    public override void Process()
+    {
+        _invokeCount++;
+        if (input1 == null; input1.IsEmpty)
+        {
+            LogError("输入图像 input1 为空");
+            return;
+        }
+
+        // 在此处编写图像处理逻辑
+        output1 = input1;
+    }
+}

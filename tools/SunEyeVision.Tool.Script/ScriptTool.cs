@@ -45,9 +45,15 @@ namespace SunEyeVision.Tool.Script
 
                 using var lifecycleManager = new ScriptLifecycleManager();
 
-                // Global variable delegates - injected by WorkflowExecutionEngine in workflow mode
-                Func<string, object?>? getGlobal = null;
-                Action<string, object?>? setGlobal = null;
+                // Global variable delegates - bridge from ExecutionContext.GlobalVariables
+                var globalVars = parameters.Context?.GlobalVariables;
+                Func<string, object?>? getGlobal = name =>
+                    globalVars?.TryGetValue(name, out var v) == true ? v : null;
+                Action<string, object?>? setGlobal = (name, value) =>
+                {
+                    if (globalVars != null)
+                        globalVars[name] = value;
+                };
 
                 // ★ 解析输入绑定（从 ExecutionContext.GlobalVariables 读取）
                 // 工具调试：ExecutionContext.GlobalVariables 由 ToolExecutor 注入（反射 ServiceInitializer）

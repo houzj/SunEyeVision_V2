@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
+using SunEyeVision.Plugin.SDK.Scripting;
+using ScriptBase = SunEyeVision.Plugin.SDK.Scripting.Script;
 
 namespace SunEyeVision.Tool.Script.ScriptEngine
 {
@@ -103,8 +105,8 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                 return errors;
             }
 
-            // 2. 在沙箱中加载并执行
-            using var sandbox = new ScriptSandbox($"ScriptSandbox_{_runCounter}");
+            // 2. 在沙箱中加载并执行（传递 refDir 预加载 ScriptRefs 用户 DLL）
+            using var sandbox = new ScriptSandbox($"ScriptSandbox_{_runCounter}", assemblyRefDir);
             Exception? loadError = null;
 
             try
@@ -208,7 +210,7 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             foreach (var field in outputType.GetFields(BindingFlags.Public | BindingFlags.Instance))
             {
                 // 跳过 Script 基类继承的字段（如果有）
-                if (field.DeclaringType == typeof(Script)) continue;
+                if (field.DeclaringType == typeof(ScriptBase)) continue;
 
                 // 只取 partial class 中声明的 public 字段
                 var value = field.GetValue(scriptInstance);

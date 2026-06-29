@@ -8,6 +8,18 @@ MSBuild 构建验证技能。用于验证 `csproj` / `slnx` 的 MSBuild 配置�
 
 构建验证、build verify、MSBuild 验证、csproj 验证、OutDir 验证、参考解析、Reference 解析、编译验证、slnx、sln 编译、build、构建、编译、plugins 污染、工具插件输出
 
+## ⚠️ dev/ 目录读取强制约束
+
+**`dev/` 被 `.gitignore` 第 174 行 `/dev/` 规则屏蔽。`search_file` / `search_content` / `list_dir` 在此目录下会静默返回空结果（不会报错）。**
+
+涉及 dev/ 下文件的操作（验证部署、查 DLL、扫 plugins/ 子目录、读 ScriptRefs/）**必须**用 `execute_command` + PowerShell：
+
+```powershell
+Get-ChildItem -Path "d:\MyWork\SunEyeVision_V2-script\dev\Debug\data\ScriptRefs" -Filter "*.dll" -File
+```
+
+详细规范见 `rule-017: .gitignore 屏蔽目录的文件读取规范`。
+
 ## 核心原则
 
 1. **优先 slnx**：使用 `.slnx` 格式编译（XML，比 `.sln` 二进制格式更可靠）
@@ -134,5 +146,6 @@ Get-ChildItem -Path $PluginPath -Directory -Filter "runtimes"
 ## 参考
 
 - rule-016：MSBuild 项目配置规范（含 8 步拦截说明）
+- rule-017：.gitignore 屏蔽目录的文件读取规范（dev/ 读取强制用 PowerShell）
 - rule-013：文件编码与写入规范
 - rule-008：报错优先 / 零兼容原则

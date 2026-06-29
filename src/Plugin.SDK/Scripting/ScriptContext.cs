@@ -1,12 +1,12 @@
-using System;
+﻿using System;
 
-namespace SunEyeVision.Tool.Script.ScriptEngine
+namespace SunEyeVision.Plugin.SDK.Scripting
 {
     /// <summary>
-    /// 脚本上下文 — 内部实现，桥接 ScriptTool 和脚本实例。
+    /// 脚本上下文 — 内部实现，桥接宿主和脚本实例。
     /// Script 通过此对象访问外部委托，用户无需直接接触。
     /// </summary>
-    internal sealed class ScriptContext
+    public sealed class ScriptContext
     {
         #region 委托注入
 
@@ -27,24 +27,11 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
         }
 
         public void SetGlobal(string name, object? value)
-        {
-            SetGlobalValue?.Invoke(name, value);
-        }
+            => SetGlobalValue?.Invoke(name, value);
 
-        public void LogInfo(string message)
-        {
-            LogInfoAction?.Invoke(message);
-        }
-
-        public void LogWarning(string message)
-        {
-            LogWarningAction?.Invoke(message);
-        }
-
-        public void LogError(string message)
-        {
-            LogErrorAction?.Invoke(message);
-        }
+        public void LogInfo(string message) => LogInfoAction?.Invoke(message);
+        public void LogWarning(string message) => LogWarningAction?.Invoke(message);
+        public void LogError(string message) => LogErrorAction?.Invoke(message);
 
         #endregion
     }

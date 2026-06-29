@@ -17,6 +17,10 @@ if %errorlevel% neq 0 (
 )
 
 echo.
+echo 正在部署 ScriptRefs（关键懒加载 DLL）...
+powershell -ExecutionPolicy Bypass -File CopyScriptRefs.ps1
+
+echo.
 echo ========================================
 echo 构建成功！
 echo ========================================

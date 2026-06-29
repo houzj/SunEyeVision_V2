@@ -1,64 +1,52 @@
-﻿# ScriptRefs 清理与迁移
-# 新方案：框架程序集和项目程序集由默认 ALC 自动提供，不再需要复制到 ScriptRefs。
-# ScriptRefs 目录仅保留用户通过程序集管理器手动添加的第三方 DLL。
+﻿# ScriptRefs 部署脚本
+# 严格模式：从主程序目录 + .NET ref pack 复制 7 个关键 DLL 到 ScriptRefs
+# 任何缺失即 exit 1（rule-008 报错优先）
+# 仅复制，不删除已存在的额外 DLL（用户自定义 DLL 安全）
 
-$targetDir = "d:\MyWork\SunEyeVision_V2-script\dev\Debug\data\ScriptRefs"
-if (-not (Test-Path $targetDir)) {
-    Write-Host "ScriptRefs 目录不存在，无需清理。" -ForegroundColor Cyan
-    exit 0
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$baseDir = Join-Path $scriptDir "dev\Debug"
+$targetDir = Join-Path $baseDir "data\ScriptRefs"
+$refDir = "C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\10.0.8\ref\net10.0"
+$winFormsRefDir = "C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\10.0.8\ref\net10.0"
+
+if (-not (Test-Path $baseDir)) {
+    Write-Host "主程序目录不存在: $baseDir（请先构建）" -ForegroundColor Red
+    exit 1
 }
 
-# === 清理旧框架程序集（由 ALC 自动提供） ===
-$systemPrefixes = @(
-    "System.", "Microsoft.", "netstandard", "mscorlib",
-    "SunEyeVision.",  # 项目程序集也由 ALC 自动提供
-    "Presentation", "WindowsBase", "DirectWriteForwarder",
-    "Accessibility", "ReachFramework", "SMDiagnostics",
-    "UIAutomation", "System.Core", "System.Data", "System.Drawing",
-    "System.Numerics", "System.Xml", "System.Configuration",
-    "System.ComponentModel", "System.Collections", "System.IO",
-    "System.Linq", "System.Text", "System.Threading", "System.Runtime",
-    "System.Console", "System.Diagnostics", "System.Globalization",
-    "System.Net", "System.Security", "System.Reflection"
+if (-not (Test-Path $targetDir)) {
+    New-Item -ItemType Directory -Path $targetDir -Force | Out-Null
+}
+
+# 7 个关键 DLL（严格模式：任意缺失 exit 1）
+$deploy = @(
+    @{Name="halcondotnetxl.dll";        Src=Join-Path $baseDir "halcondotnetxl.dll"}
+    @{Name="OpenCvSharp.dll";           Src=Join-Path $baseDir "OpenCvSharp.dll"}
+    @{Name="mscorlib.dll";              Src=Join-Path $refDir "mscorlib.dll"}
+    @{Name="System.dll";                Src=Join-Path $refDir "System.dll"}
+    @{Name="System.Core.dll";           Src=Join-Path $refDir "System.Core.dll"}
+    @{Name="System.Windows.Forms.dll";  Src=Join-Path $winFormsRefDir "System.Windows.Forms.dll"}
+    @{Name="netstandard.dll";           Src=Join-Path $refDir "netstandard.dll"}
 )
 
-$removedCount = 0
-$fileList = Get-ChildItem $targetDir -Filter "*.dll"
-
-foreach ($file in $fileList) {
-    $name = $file.Name
-    $shouldRemove = $false
-    foreach ($prefix in $systemPrefixes) {
-        if ($name.StartsWith($prefix, [StringComparison]::OrdinalIgnoreCase)) {
-            $shouldRemove = $true
-            break
-        }
-    }
-    if ($shouldRemove) {
-        Remove-Item $file.FullName -Force
-        Write-Host "  已清理: $name" -ForegroundColor Yellow
-        $removedCount++
+$copied = 0
+$errors = 0
+foreach ($item in $deploy) {
+    $src = $item.Src
+    $dst = Join-Path $targetDir $item.Name
+    if (Test-Path $src) {
+        Copy-Item $src $dst -Force
+        Write-Host "  [OK] $($item.Name)" -ForegroundColor Green
+        $copied++
+    } else {
+        Write-Host "  [缺失] $($item.Name) (预期路径: $src)" -ForegroundColor Red
+        $errors++
     }
 }
 
-if ($removedCount -eq 0) {
-    Write-Host "未发现需要清理的程序集。ScriptRefs 已干净。" -ForegroundColor Green
-} else {
-    Write-Host "`n共清理 $removedCount 个旧程序集" -ForegroundColor Cyan
+if ($errors -gt 0) {
+    Write-Host "ScriptRefs 部署失败: $errors 个 DLL 缺失（严格模式，报错优先）" -ForegroundColor Red
+    exit 1
 }
 
-# === 显示剩余（用户自定义）程序集 ===
-$remaining = Get-ChildItem $targetDir -Filter "*.dll"
-if ($remaining.Count -gt 0) {
-    Write-Host "`n剩余（用户自定义）程序集:" -ForegroundColor Green
-    $remaining | Select-Object Name | Format-Table -AutoSize
-} else {
-    Write-Host "`nScriptRefs 目录为空（所有程序集由 ALC 自动提供）" -ForegroundColor Cyan
-}
-
-Write-Host "`n============================================" -ForegroundColor DarkGray
-Write-Host "新方案说明" -ForegroundColor DarkGray
-Write-Host "============================================" -ForegroundColor DarkGray
-Write-Host "框架程序集和项目程序集已由运行时默认 ALC 自动提供。" -ForegroundColor DarkGray
-Write-Host "ScriptRefs 目录仅需保留用户通过程序集管理器添加的第三方 DLL。" -ForegroundColor DarkGray
-Write-Host "如需添加自定义 DLL，请在脚本编辑器中点击『程序集引用管理』。" -ForegroundColor DarkGray
+Write-Host "ScriptRefs 部署完成: $copied 个 DLL" -ForegroundColor Cyan

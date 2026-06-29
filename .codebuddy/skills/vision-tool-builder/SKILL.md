@@ -5,6 +5,14 @@ description: 视觉工具构建技能。用于创建新的视觉检测工具插�
 
 # 视觉工具构建技能
 
+## ⚠️ 工具输出目录读取
+
+工具编译后验证 `dev/Debug/plugins/<ToolName>/` 目录内容时，**禁止**用 `search_file` / `list_dir`（被 .gitignore 屏蔽，会漏读）。**必须**用 `execute_command` + PowerShell（见 rule-017）：
+
+```powershell
+Get-ChildItem -Path "d:\MyWork\SunEyeVision_V2-script\dev\Debug\plugins\SunEyeVision.Tool.XXX" -File
+```
+
 ## 触发场景
 
 - 创建新的视觉检测工具

@@ -50,6 +50,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="SunEyeVision.CvEngine" />
+    <InternalsVisibleTo Include="SunEyeVision.Tool.Script" />
   </ItemGroup>
 
   <!-- WPF 主题配置 -->

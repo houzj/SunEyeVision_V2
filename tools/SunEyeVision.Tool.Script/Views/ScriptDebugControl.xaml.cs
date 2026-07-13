@@ -27,7 +27,7 @@ using Microsoft.CodeAnalysis.Completion;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Text;
-using Microsoft.CodeAnalysis.Classification;
+
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Logging;
@@ -58,10 +58,6 @@ namespace SunEyeVision.Tool.Script.Views
         private CancellationTokenSource? _diagnosticsCts;             // 500ms 诊断节流
         private IReadOnlyList<Diagnostic> _currentDiagnostics = [];   // 当前错误列表
         private string? _lastDiagnosedCode;                            // 上次已诊断的代码，用于跳过不变代码
-
-        // Phase 2b: Roslyn 语义高亮
-        private ImmutableArray<ClassifiedSpan> _currentClassifications = [];
-        private RoslynSemanticColorizer? _semanticColorizer;
 
         // 初始化阶段抑制诊断（避免 TextChanged 在 workspace 就绪前触发诊断，
         // 消除 "[Diagnostic] 跳过: workspace=False" 日志噪声）
@@ -154,12 +150,6 @@ namespace SunEyeVision.Tool.Script.Views
             var errorMarker = new ErrorMarkerColorizer(() => _currentDiagnostics, false);
             CodeEditor.TextArea.TextView.LineTransformers.Add(errorMarker);
             PluginLogger.Info("[Highlighting] 已加载实时错误标记着色器", typeName);
-
-            // Layer 2b: Roslyn 语义高亮（精准类型/方法着色，覆盖 xshd 正则猜测的不足）
-            _semanticColorizer = new RoslynSemanticColorizer(
-                () => _currentClassifications);
-            CodeEditor.TextArea.TextView.LineTransformers.Add(_semanticColorizer);
-            PluginLogger.Info("[Highlighting] 已加载 Roslyn 语义高亮着色器", typeName);
 
             // 当前行高亮：光标所在行浅蓝色背景，替代纯光标闪烁（提升代码定位体验）
             CodeEditor.Options.HighlightCurrentLine = true;
@@ -1122,8 +1112,6 @@ namespace SunEyeVision.Tool.Script.Views
 
         // =======================================================
         // Phase 1: 实时诊断（Roslyn SemanticModel.GetDiagnostics → 红色波浪线）
-        // Phase 2: 语义高亮（Roslyn Classifier.GetClassifiedSpans → 精准着色）
-        // 合并为一条 500ms 节流管线，共享同一 workspace 快照
         // =======================================================
 
         /// <summary>
@@ -1244,17 +1232,7 @@ namespace SunEyeVision.Tool.Script.Views
                         typeName);
                 }
 
-                // 3. Roslyn 语义高亮分类（与诊断共享同一 workspace 快照）
-                var classSw = System.Diagnostics.Stopwatch.StartNew();
-                var classSourceText = await userDoc.GetTextAsync(token);
-                var classifiedSpans = await Microsoft.CodeAnalysis.Classification.Classifier
-                    .GetClassifiedSpansAsync(userDoc, new Microsoft.CodeAnalysis.Text.TextSpan(0, classSourceText.Length), token);
-                _currentClassifications = [..classifiedSpans];
-                classSw.Stop();
-                if (classSw.ElapsedMilliseconds > 100)
-                    PluginLogger.Warning($"[Diagnostic] 慢诊断: Classifier 耗时 {classSw.ElapsedMilliseconds}ms", typeName);
-
-                // 4. UI 线程重绘（红色错误标记 + 语义高亮）
+                // 4. UI 线程重绘（红色错误标记）
                 await Dispatcher.InvokeAsync(() => CodeEditor.TextArea.TextView.Redraw(), DispatcherPriority.Background, token);
             }
             catch (OperationCanceledException) { }
@@ -1302,8 +1280,7 @@ namespace SunEyeVision.Tool.Script.Views
     }
 
     // =======================================================
-    // Phase 1: 实时诊断着色器 — 编译错误行标记为红色文字
-    // Phase 2: Roslyn 语义高亮着色器 — 替代正则猜测的 ScriptSemanticColorizer
+    // Phase 1: 实时诊断着色器 — 编译错误行标记为红色背景
     // =======================================================
 
     /// <summary>

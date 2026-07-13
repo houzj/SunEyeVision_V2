@@ -8,8 +8,8 @@
   <Color name="VerbatimString" foreground="#A31515" />
   <Color name="Char" foreground="#A31515" />
   <Color name="Keyword" foreground="#0000FF" fontWeight="bold" />
-  <Color name="Type" foreground="#2B91AF" />
-  <Color name="Method" foreground="#74569F" />
+  <Color name="Type" foreground="#267F99" />
+  <Color name="Method" foreground="#6F42C1" />
   <Color name="Number" foreground="#098658" />
   <Color name="Preprocessor" foreground="#888888" />
 

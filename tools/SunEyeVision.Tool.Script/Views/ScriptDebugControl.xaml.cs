@@ -59,6 +59,10 @@ namespace SunEyeVision.Tool.Script.Views
         private IReadOnlyList<Diagnostic> _currentDiagnostics = [];   // 当前错误列表
         private string? _lastDiagnosedCode;                            // 上次已诊断的代码，用于跳过不变代码
 
+        // Phase 2b: Roslyn 语义高亮
+        private ImmutableArray<ClassifiedSpan> _currentClassifications = [];
+        private RoslynSemanticColorizer? _semanticColorizer;
+
         // 进程生命周期内共享的 MefHostServices（首次初始化慢，后续缓存命中快）
         private static MefHostServices? _sharedMefHost;
         private static object _mefLock = new();
@@ -142,10 +146,16 @@ namespace SunEyeVision.Tool.Script.Views
             // Layer 1: 从输出目录加载自定义 xshd（含 BCL 类型关键词），失败则回退到内置 C# 高亮
             LoadCustomHighlighting();
 
-            // Layer 2: 实时错误标记着色器（浅红背景标记编译错误行，保留语法颜色）
+            // Layer 2a: 实时错误标记着色器（浅红背景标记编译错误行，保留语法颜色）
             var errorMarker = new ErrorMarkerColorizer(() => _currentDiagnostics, false);
             CodeEditor.TextArea.TextView.LineTransformers.Add(errorMarker);
             PluginLogger.Info("[Highlighting] 已加载实时错误标记着色器", typeName);
+
+            // Layer 2b: Roslyn 语义高亮（精准类型/方法着色，覆盖 xshd 正则猜测的不足）
+            _semanticColorizer = new RoslynSemanticColorizer(
+                () => _currentClassifications);
+            CodeEditor.TextArea.TextView.LineTransformers.Add(_semanticColorizer);
+            PluginLogger.Info("[Highlighting] 已加载 Roslyn 语义高亮着色器", typeName);
 
             // 当前行高亮：光标所在行浅蓝色背景，替代纯光标闪烁（提升代码定位体验）
             CodeEditor.Options.HighlightCurrentLine = true;
@@ -1195,12 +1205,22 @@ namespace SunEyeVision.Tool.Script.Views
                 foreach (var diag in diagnostics.Take(5))
                 {
                     var loc = diag.Location.GetLineSpan();
-                    PluginLogger.Info(
-                        $"[Diagnostic]   {diag.Id} @ line {loc.StartLinePosition.Line + 1}: {diag.GetMessage()}",
-                        typeName);
+                PluginLogger.Info(
+                    $"[Diagnostic]   {diag.Id} @ line {loc.StartLinePosition.Line + 1}: {diag.GetMessage()}",
+                    typeName);
                 }
 
-                // 2. UI 线程重绘
+                // 3. Roslyn 语义高亮分类（与诊断共享同一 workspace 快照）
+                var classSw = System.Diagnostics.Stopwatch.StartNew();
+                var classSourceText = await userDoc.GetTextAsync(token);
+                var classifiedSpans = await Microsoft.CodeAnalysis.Classification.Classifier
+                    .GetClassifiedSpansAsync(userDoc, new Microsoft.CodeAnalysis.Text.TextSpan(0, classSourceText.Length), token);
+                _currentClassifications = [..classifiedSpans];
+                classSw.Stop();
+                if (classSw.ElapsedMilliseconds > 100)
+                    PluginLogger.Warning($"[Diagnostic] 慢诊断: Classifier 耗时 {classSw.ElapsedMilliseconds}ms", typeName);
+
+                // 4. UI 线程重绘（红色错误标记 + 语义高亮）
                 await Dispatcher.InvokeAsync(() => CodeEditor.TextArea.TextView.Redraw(), DispatcherPriority.Background, token);
             }
             catch (OperationCanceledException) { }

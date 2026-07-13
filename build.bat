@@ -17,8 +17,8 @@ if %errorlevel% neq 0 (
 )
 
 echo.
-echo 正在部署 ScriptRefs（关键懒加载 DLL）...
-powershell -ExecutionPolicy Bypass -File CopyScriptRefs.ps1
+echo 正在初始化 ScriptRefs（3 个必备 DLL）...
+powershell -ExecutionPolicy Bypass -File scripts\Init-ScriptRefs.ps1
 
 echo.
 echo ========================================

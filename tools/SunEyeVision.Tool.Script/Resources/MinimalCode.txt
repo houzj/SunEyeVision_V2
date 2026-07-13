@@ -16,7 +16,7 @@ public partial class UserScript : Script
     public override void Process()
     {
         _invokeCount++;
-        if (input1 == null; input1.IsEmpty)
+        if (input1 == null || input1.IsEmpty)
         {
             LogError("输入图像 input1 为空");
             return;

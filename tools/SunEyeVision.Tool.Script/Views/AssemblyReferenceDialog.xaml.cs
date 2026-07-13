@@ -1,64 +1,26 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Windows;
-using System.Windows.Data;
 
 namespace SunEyeVision.Tool.Script.Views
 {
     /// <summary>
-    /// 内置程序集状态显示转换器 — 显示 ✓（存在）或 ✗（缺失）
+    /// DLL 引用条目
     /// </summary>
-    public class AssemblyStatusConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            if (value is bool exists)
-                return exists ? "✓" : "✗";
-            return "?";
-        }
-
-        public object ConvertBack(object value, Type targetTypes, object parameter, CultureInfo culture)
-            => throw new NotImplementedException();
-    }
-
-    /// <summary>
-    /// 内置程序集条目（只读显示）
-    /// </summary>
-    public record BuiltInAssemblyItem(string DisplayName, bool Status);
-
-    /// <summary>
-    /// 用户自定义 DLL 条目（可管理）
-    /// </summary>
-    public record UserCustomDllItem(string FullPath, string DisplayName)
+    public record DllItem(string FullPath, string DisplayName)
     {
         public string DisplayName => Path.GetFileName(FullPath);
     }
 
     /// <summary>
-    /// 程序集引用管理对话框。
-    /// 两标签页：内置程序集（只读：7 个关键 DLL 状态）+ 用户自定义DLL（可添加/删除）。
-    /// ScriptRefs 目录由 CopyScriptRefs.ps1 自动化部署，用户仅管理自定义 DLL。
+    /// 程序集引用管理对话框。只包含一个 Tab：引用程序集。
+    /// ScriptRefs 目录的所有 *.dll 均可在 UI 中查看/添加/删除。
     /// </summary>
     public partial class AssemblyReferenceDialog : Window
     {
-        // CopyScriptRefs.ps1 部署的 7 个关键 DLL 名称
-        private static readonly HashSet<string> _criticalNames = new(StringComparer.OrdinalIgnoreCase)
-        {
-            "halcondotnetxl.dll",
-            "OpenCvSharp.dll",
-            "mscorlib.dll",
-            "System.dll",
-            "System.Core.dll",
-            "System.Windows.Forms.dll",
-            "netstandard.dll"
-        };
-
-        private readonly ObservableCollection<BuiltInAssemblyItem> _builtInItems = new();
-        private readonly ObservableCollection<UserCustomDllItem> _userCustomItems = new();
+        private readonly ObservableCollection<DllItem> _refItems = new();
         private readonly string _refDir;
 
         /// <summary>
@@ -74,50 +36,22 @@ namespace SunEyeVision.Tool.Script.Views
             // 确保目录存在
             Directory.CreateDirectory(_refDir);
 
-            // 刷新两个标签页列表
-            RefreshAll();
+            // 刷新列表
+            RefreshRefList();
 
-            BuiltInAssemblyListBox.ItemsSource = _builtInItems;
-            UserCustomListBox.ItemsSource = _userCustomItems;
+            UserRefListBox.ItemsSource = _refItems;
         }
 
         /// <summary>
-        /// 刷新所有列表
+        /// 刷新引用程序集列表
         /// </summary>
-        private void RefreshAll()
+        private void RefreshRefList()
         {
-            RefreshBuiltInList();
-            RefreshUserCustomList();
-        }
-
-        /// <summary>
-        /// 刷新内置程序集列表（只读：7 个关键 DLL 的存在状态）
-        /// </summary>
-        private void RefreshBuiltInList()
-        {
-            _builtInItems.Clear();
-            var existingFiles = new HashSet<string>(
-                Directory.EnumerateFiles(_refDir, "*.dll")
-                    .Select(f => Path.GetFileName(f)),
-                StringComparer.OrdinalIgnoreCase);
-
-            foreach (var name in _criticalNames.OrderBy(n => n))
-            {
-                _builtInItems.Add(new BuiltInAssemblyItem(name, existingFiles.Contains(name)));
-            }
-        }
-
-        /// <summary>
-        /// 刷新用户自定义 DLL 列表（不在 7 个关键列表中的 DLL）
-        /// </summary>
-        private void RefreshUserCustomList()
-        {
-            _userCustomItems.Clear();
+            _refItems.Clear();
             foreach (var dll in Directory.EnumerateFiles(_refDir, "*.dll")
-                .Where(f => !_criticalNames.Contains(Path.GetFileName(f)))
                 .OrderBy(f => Path.GetFileName(f)))
             {
-                _userCustomItems.Add(new UserCustomDllItem(dll, Path.GetFileName(dll)));
+                _refItems.Add(new DllItem(dll, Path.GetFileName(dll)));
             }
         }
 
@@ -145,30 +79,22 @@ namespace SunEyeVision.Tool.Script.Views
                     if (File.Exists(destPath))
                         continue;
 
-                    // 禁止覆盖内置关键 DLL
-                    if (_criticalNames.Contains(fileName))
-                        continue;
-
                     File.Copy(sourcePath, destPath);
                 }
 
-                RefreshAll();
+                RefreshRefList();
             }
         }
 
         /// <summary>
-        /// ✕ 删除按钮 — 从目录中删除自定义 DLL 文件
+        /// ✕ 删除按钮 — 从目录中删除 DLL 文件
         /// </summary>
         private void OnItemDeleteButtonClick(object sender, RoutedEventArgs e)
         {
-            if (sender is FrameworkElement element && element.DataContext is UserCustomDllItem item && File.Exists(item.FullPath))
+            if (sender is FrameworkElement element && element.DataContext is DllItem item && File.Exists(item.FullPath))
             {
-                // 禁止删除内置关键 DLL（安全防护）
-                if (_criticalNames.Contains(Path.GetFileName(item.FullPath)))
-                    return;
-
                 File.Delete(item.FullPath);
-                _userCustomItems.Remove(item);
+                _refItems.Remove(item);
             }
         }
 

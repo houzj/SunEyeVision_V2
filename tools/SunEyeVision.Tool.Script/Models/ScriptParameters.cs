@@ -89,7 +89,7 @@ namespace SunEyeVision.Tool.Script.Models
             get
             {
                 var baseDir = AppDomain.CurrentDomain.BaseDirectory;
-                return Path.GetFullPath(Path.Combine(baseDir, "data", _assemblyReferenceDir));
+                return Path.GetFullPath(Path.Combine(baseDir, _assemblyReferenceDir));
             }
         }
 

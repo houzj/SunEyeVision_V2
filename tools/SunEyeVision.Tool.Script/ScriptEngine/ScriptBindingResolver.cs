@@ -388,34 +388,11 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
         }
 
         /// <summary>
-        /// 获取类型默认值（与 ScriptInputConfig.GenerateFieldCode 中的默认值保持一致）
+        /// 获取类型默认值，委派到 ScriptTypeMapper 统一管理。
         /// </summary>
         private static object? GetDefaultValue(string typeName)
         {
-            return typeName switch
-            {
-                "Image"       => null,
-                "String"      => string.Empty,
-                "Integer"     => 0,
-                "Integer[]"   => null,
-                "Double"      => 0.0,
-                "Double[]"    => null,
-                "Float"       => 0.0,
-                "Float[]"     => null,
-                "String[]"    => null,
-                "Boolean"     => false,
-                "Byte"        => (byte)0,
-                "Point"       => null,
-                "Rectangle"   => null,
-                "Size"        => null,
-                "Region"      => null,
-                "Circle"      => null,
-                "Line"        => null,
-                "Annulus"     => null,
-                "RotatedRect" => null,
-                "Polygon"     => null,
-                _             => null
-            };
+            return ScriptTypeMapper.GetDefaultValue(typeName);
         }
     }
 }

@@ -166,7 +166,11 @@ namespace SunEyeVision.UI.Adapters
             var fileWriter = new FileLogWriter();
             logger.AddWriter(fileWriter);
 
-            // 3. UI写入器 - 通过延迟初始化方法创建，确保全局共享唯一实例
+            // 3. 控制台写入器 - 默认关闭（避免命令行窗口刷屏，开发调试时可手动开启）
+            var consoleWriter = new ConsoleLogWriter { IsEnabled = false };
+            logger.AddWriter(consoleWriter);
+
+            // 4. UI写入器 - 通过延迟初始化方法创建，确保全局共享唯一实例
             InitializeUILogWriter();
 
             // 设置 PluginLogger 的提供者

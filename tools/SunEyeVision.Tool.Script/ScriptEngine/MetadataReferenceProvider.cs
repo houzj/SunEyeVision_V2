@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
@@ -100,7 +100,7 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                 var refs = ImmutableList.CreateBuilder<MetadataReference>();
                 var paths = ImmutableHashSet.CreateBuilder<string>(StringComparer.OrdinalIgnoreCase);
                 var names = ImmutableHashSet.CreateBuilder<string>(StringComparer.OrdinalIgnoreCase);
-                int totalDlls = 0, filteredCount = 0, failed = 0;
+                int totalDlls = 0, filteredCount = 0, filteredRefPack = 0, failed = 0;
 
                 foreach (var dllPath in Directory.EnumerateFiles(baseDir, "*.dll"))
                 {
@@ -129,15 +129,106 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                     }
                 }
 
+                // 补充：从 .NET SDK Ref Pack 加载运行时核心引用（如 System.Private.CoreLib）
+                // 这些程序集不在发布输出目录（dev/Debug/）中，但 Roslyn 编译需要它们来识别
+                // System.Void、System.Int32 等预定义类型（修复 CS0518 级联误报）
+                filteredRefPack = TryLoadRefPackFallback(refs, paths, names);
+
                 _cachedReferences = refs.ToImmutable();
                 _cachedPaths = paths.ToImmutable();
                 _cachedNames = names.ToImmutable();
                 sw.Stop();
 
                 PluginLogger.Info(
-                    $"[MetadataRef] 统一引用初始化完成: 基础目录总DLL={totalDlls}, 白名单命中={filteredCount}, 失败={failed}, 耗时={sw.ElapsedMilliseconds}ms",
+                    $"[MetadataRef] 统一引用初始化完成: 基础目录总DLL={totalDlls}, 白名单命中={filteredCount}, RefPack补充={filteredRefPack}, 失败={failed}, 耗时={sw.ElapsedMilliseconds}ms",
                     nameof(MetadataReferenceProvider));
             }
+        }
+
+        /// <summary>
+        /// 从 .NET SDK Ref Pack 扫描补充运行时核心引用（如 System.Private.CoreLib）。
+        /// 这些程序集不在发布输出目录中，但 Roslyn 编译需要它们识别预定义类型。
+        /// </summary>
+        /// <returns>本次补充的引用数量</returns>
+        private static int TryLoadRefPackFallback(
+            ImmutableList<MetadataReference>.Builder refs,
+            ImmutableHashSet<string>.Builder paths,
+            ImmutableHashSet<string>.Builder names)
+        {
+            int count = 0;
+            try
+            {
+                var dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
+                if (string.IsNullOrEmpty(dotnetRoot))
+                {
+                    var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+                    if (string.IsNullOrEmpty(programFiles)) return count;
+                    dotnetRoot = Path.Combine(programFiles, "dotnet");
+                }
+
+                var packsDir = Path.Combine(dotnetRoot, "packs", "Microsoft.NETCore.App.Ref");
+                if (!Directory.Exists(packsDir)) return count;
+
+                // 找最新版本的 Ref Pack
+                Version? latestVersion = null;
+                foreach (var dir in Directory.EnumerateDirectories(packsDir))
+                {
+                    var dirName = Path.GetFileName(dir);
+                    if (Version.TryParse(dirName, out var v))
+                    {
+                        if (latestVersion == null || v > latestVersion)
+                            latestVersion = v;
+                    }
+                }
+
+                if (latestVersion == null) return count;
+
+                // 从版本号推导 TFM 目录名：8.x → net8.0, 9.x → net9.0
+                var tfm = $"net{latestVersion.Major}.0";
+                var refDir = Path.Combine(packsDir, latestVersion.ToString(), "ref", tfm);
+                if (!Directory.Exists(refDir))
+                {
+                    // 兜底：扫描 ref/ 下第一个存在的 TFM 子目录
+                    var refParentDir = Path.Combine(packsDir, latestVersion.ToString(), "ref");
+                    if (Directory.Exists(refParentDir))
+                        refDir = Directory.EnumerateDirectories(refParentDir).FirstOrDefault();
+                    if (!Directory.Exists(refDir)) return count;
+                }
+
+                foreach (var dllPath in Directory.EnumerateFiles(refDir, "*.dll"))
+                {
+                    var fileName = Path.GetFileNameWithoutExtension(dllPath);
+                    if (string.IsNullOrEmpty(fileName)) continue;
+                    if (!_allowedPrefixes.Any(prefix =>
+                            fileName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
+                        continue;
+                    if (names.Contains(fileName)) continue; // 已从 baseDir 加载
+
+                    try
+                    {
+                        refs.Add(MetadataReference.CreateFromFile(dllPath));
+                        paths.Add(dllPath);
+                        names.Add(fileName);
+                        count++;
+                        PluginLogger.Info(
+                            $"[MetadataRef] 从 RefPack 补充引用: {fileName} @ {dllPath}",
+                            nameof(MetadataReferenceProvider));
+                    }
+                    catch (Exception ex)
+                    {
+                        PluginLogger.Warning(
+                            $"[MetadataRef] RefPack 加载失败: Name={fileName}, 错误={ex.Message}",
+                            nameof(MetadataReferenceProvider));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                PluginLogger.Warning(
+                    $"[MetadataRef] RefPack 扫描异常: {ex.Message}",
+                    nameof(MetadataReferenceProvider));
+            }
+            return count;
         }
     }
 }

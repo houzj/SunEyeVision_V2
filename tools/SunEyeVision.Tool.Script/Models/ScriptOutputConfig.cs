@@ -78,30 +78,7 @@ namespace SunEyeVision.Tool.Script.Models
 
         /// <summary>映射为 C# 类型名</summary>
         [JsonIgnore]
-        public string CsTypeName => TypeName switch
-        {
-            "Image"       => "IVisionImage",
-            "Integer"     => "int",
-            "Integer[]"   => "int[]",
-            "Double"      => "double",
-            "Double[]"    => "double[]",
-            "Float"       => "double",
-            "Float[]"     => "double[]",
-            "String"      => "string",
-            "String[]"    => "string[]",
-            "Boolean"     => "bool",
-            "Byte"        => "byte",
-            "Point"       => "SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.Point2D",
-            "Rectangle"   => "SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeParameters",
-            "Size"        => "System.Windows.Size",
-            "Region"      => "IVisionRegion",
-            "Circle"      => "SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeParameters",
-            "Line"        => "SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeParameters",
-            "Annulus"     => "SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeParameters",
-            "RotatedRect" => "SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeParameters",
-            "Polygon"     => "SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeParameters",
-            _             => "object"
-        };
+        public string CsTypeName => ScriptTypeMapper.ToCsTypeName(TypeName);
 
         /// <summary>
         /// 生成字段声明代码行（输出字段只定义不赋值，CLR 零初始化后 = 类型默认值）

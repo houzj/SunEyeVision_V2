@@ -247,6 +247,10 @@ namespace SunEyeVision.Tool.Script.Views
                     PluginLogger.Info($"[Perf] RebuildWorkspace: {perfSw.ElapsedMilliseconds}ms", GetType().Name);
                     ScheduleDiagnosticAsync();
                 }, DispatcherPriority.Background);
+
+                // ★ 参数注入完成 → 状态从"初始化中..."切到"就绪"
+                //   此时编辑器代码已加载、Roslyn 预热已发起，对用户而言工具已就绪
+                UpdateStatus("就绪");
             }
         }
 
@@ -1120,6 +1124,14 @@ namespace SunEyeVision.Tool.Script.Views
         /// </summary>
         private void OnCodeEditorTextChanged(object? sender, EventArgs e)
         {
+            // ★ 用户改代码 → 旧执行结果失效，状态回"就绪"
+            //   当前显示"成功/失败"时，用户改代码意味着新的执行周期开始
+            if (StatusLabel.Content is string currentStatus &&
+                (currentStatus == "成功" || currentStatus == "失败"))
+            {
+                UpdateStatus("就绪");
+            }
+
             if (CodeEditor != null)
                 _parameters.ScriptCode = CodeEditor.Text;
             ScheduleDiagnosticAsync();
@@ -1201,13 +1213,23 @@ namespace SunEyeVision.Tool.Script.Views
                 _currentDiagnostics = diagnostics;
 
                 PluginLogger.Info($"[Diagnostic] Errors={diagnostics.Length}", typeName);
-                // 详情输出前 5 条，辅助排查：若 SDK 引用缺失，会出现 CS0246/CS0103 大量误报
-                foreach (var diag in diagnostics.Take(5))
+                // 完整输出诊断详情（不限量），辅助排查编译错误
+                var hasMissingRef = false;
+                foreach (var diag in diagnostics)
                 {
                     var loc = diag.Location.GetLineSpan();
                 PluginLogger.Info(
                     $"[Diagnostic]   {diag.Id} @ line {loc.StartLinePosition.Line + 1}: {diag.GetMessage()}",
                     typeName);
+                    if (diag.Id == "CS0518") hasMissingRef = true;
+                }
+
+                // 检测到 CS0518（预定义类型缺失）时输出 Warning 级汇总提示
+                if (hasMissingRef)
+                {
+                    PluginLogger.Warning(
+                        $"[Diagnostic] ⚠ 检测到 CS0518（预定义类型缺失），可能原因：.NET SDK Ref Pack 引用未正确加载。",
+                        typeName);
                 }
 
                 // 3. Roslyn 语义高亮分类（与诊断共享同一 workspace 快照）

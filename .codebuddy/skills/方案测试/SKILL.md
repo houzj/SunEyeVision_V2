@@ -17,8 +17,75 @@ description: >
 
 # 方案测试 — 全链路验证闭环
 
-> ⚠️ **项目当前无测试项目基础设施**。验证以代码合规审查 + 构建验证 + 手动验收为主。
-> 验证时必须**逐项核对方案中声明的防御机制、验收标准、bug 模式修复**是否真实落地。
+> ✅ **测试项目架构已就绪**
+> - `tests/` 目录与 `src/`、`tools/` 平级
+> - src 层按职责拆分为 3 个测试项目：SunEyeVision.Core.Tests、SunEyeVision.Plugin.SDK.Tests、SunEyeVision.CvEngine.Tests
+> - tools 层每个工具独立测试项目：SunEyeVision.Tool.XXX.Tests
+> - 验证以 `dotnet test` 为核心，配合代码审查 + 手动验收
+
+## 测试项目架构
+
+```
+tests/
+├── SunEyeVision.Core.Tests/              # src/Core/ 的测试
+│   ├── SunEyeVision.Core.Tests.csproj
+│   ├── Models/                           # 数据模型测试
+│   ├── Services/                         # 服务层测试
+│   └── Serialization/                    # 序列化往返测试
+│
+├── SunEyeVision.Plugin.SDK.Tests/        # src/Plugin.SDK/ 的测试
+│   ├── SunEyeVision.Plugin.SDK.Tests.csproj
+│   ├── Execution/                        # 执行引擎测试
+│   └── Parameters/                       # 参数系统测试
+│
+├── SunEyeVision.CvEngine.Tests/          # src/CvEngine/ 的测试
+│   ├── SunEyeVision.CvEngine.Tests.csproj
+│   ├── Operators/                        # 算子测试（CvOp）
+│   └── CvRegion/                         # 区域数据模型测试
+│
+├── SunEyeVision.Tool.Script.Tests/       # Script 工具的测试
+│   ├── SunEyeVision.Tool.Script.Tests.csproj
+│   ├── ScriptEngine/                     # 脚本引擎测试
+│   └── Models/                           # 参数序列化测试
+│
+├── SunEyeVision.Tool.BlobAnalysis.Tests/ # Blob 工具测试
+├── SunEyeVision.Tool.Threshold.Tests/    # 阈值工具测试
+├── ... (其余工具类同)
+│
+└── Directory.Build.props                 # 可选：测试项目共享配置（xUnit/NSubstitute 版本集中管理）
+```
+
+### csproj 模板
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.*" />
+    <PackageReference Include="xunit" Version="2.*" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.*">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.collector" Version="6.*">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="NSubstitute" Version="5.*" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\{相对路径}\Target.csproj" />
+  </ItemGroup>
+</Project>
+```
+
+---
 
 ## 闭环定位
 
@@ -35,8 +102,10 @@ Phase 0:   就绪检查 + 治本验证清单
 Phase 0.1: 验证覆盖扫描 (Discovery)          ← 代码自发现 + git 历史比对
 Phase 0.3: 自动验证清单生成 (Auto-Checklist)  ← 基于源码结构自动推导验证项
 Phase 0.5: 防御机制清单核对
+Phase 0.7: 测试项目就绪检查                    ← 确认测试项目存在，缺失则创建
 Phase 1:   构建验证 (Build)
-Phase 2:   代码合规审查 (Code Review)        ← 替代单元测试（无测试项目）
+Phase 2:   dotnet test 执行                    ← 核心变更：替代手动代码审查
+Phase 2.5: 代码合规审查 (Code Review)          ← 补充规则审查（rule-002/014/015 等）
 Phase 3:   防御机制逐项验证
 Phase 3.5: 手动验收引导 (Manual Verify)
 Phase 4:   增量回归测试 (Incremental Regression) ← 依据覆盖表 + 变更类型定深度
@@ -115,19 +184,20 @@ Phase 6.5: 验证覆盖仪表盘 (Coverage Dashboard) ← 过期标记 + 衰减�
 ### 验收标准（来自方案报告）
 | # | 验收标准 | 验证方法 |
 |---|---------|---------|
-| 1 | {用户场景描述} | 代码审查 + 手动 |
+| 1 | {用户场景描述} | dotnet test + 手动 |
 | 2 | {用户场景描述} | 代码审查 |
-| 3 | {数据/参数正确性} | 手动跑图验证 |
+| 3 | {数据/参数正确性} | dotnet test |
 
 ### 防御机制验证（来自方案报告）
 | # | 防御机制 | 验证方法 |
 |---|---------|---------|
-| 1 | 契约测试 | 代码审查有无 type check + 启动校验 |
+| 1 | 契约测试 | dotnet test 含契约测试用例 |
 | 2 | 端到端冒烟 | 手动：加载工具 → 配参数 → 跑图 |
 | 3 | Fail-Forward | 注入无效图像/参数，看是否报错而非崩溃 |
 
 ### 验证等级
 - 构建验证: ✅ dotnet build
+- dotnet test: ✅ (N 个测试项目，N 个用例)
 - 代码合规审查: ✅ rule-014/015/002/001/003 逐项检查
 - 验收验证: ✅ (N 个验收场景，手动验证)
 - 回归验证: ✅ (增量，基于覆盖表 + Phase 4 决策树)
@@ -333,6 +403,133 @@ read_file "tools/$ToolName/$ToolName.csproj"
 
 ---
 
+## Phase 0.5: 防御机制清单核对
+
+参见 Phase 0 的 §0.2 防御机制清单核对。此处输出到验证计划中：
+
+```
+使用 Phase 0.2 生成的防御机制清单，嵌入验证计划。
+```
+
+---
+
+## Phase 0.7: 测试项目就绪检查
+
+> **核心变更**：确认测试项目存在，缺失则自动创建。
+
+### 0.7.1 检查测试项目是否存在
+
+针对本次改动涉及的模块，检查对应测试项目是否存在：
+
+```powershell
+# 检查 src 层测试项目
+$srcTestProjects = @(
+    "SunEyeVision.Core.Tests",
+    "SunEyeVision.Plugin.SDK.Tests",
+    "SunEyeVision.CvEngine.Tests"
+)
+foreach ($proj in $srcTestProjects) {
+    $path = "d:\MyWork\SunEyeVision_V2-script\tests\$proj\$proj.csproj"
+    if (Test-Path $path) {
+        Write-Host "✅ $proj 存在"
+    } else {
+        Write-Host "🚩 $proj 缺失"
+    }
+}
+
+# 检查工具层测试项目（按需）
+$toolName = "SunEyeVision.Tool.XXX"
+$toolTestPath = "d:\MyWork\SunEyeVision_V2-script\tests\$toolName.Tests\$toolName.Tests.csproj"
+if (Test-Path $toolTestPath) {
+    Write-Host "✅ $toolName.Tests 存在"
+} else {
+    Write-Host "🚩 $toolName.Tests 缺失"
+}
+```
+
+### 0.7.2 缺失时自动创建测试项目
+
+如果测试项目缺失，自动创建：
+
+```powershell
+# 创建测试项目目录
+$testDir = "d:\MyWork\SunEyeVision_V2-script\tests\$projName"
+New-Item -ItemType Directory -Path $testDir -Force
+
+# 创建 csproj（按模板）
+$csproj = @"
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.*" />
+    <PackageReference Include="xunit" Version="2.*" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.*">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.collector" Version="6.*">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="NSubstitute" Version="5.*" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\{相对路径}\TargetProject.csproj" />
+  </ItemGroup>
+</Project>
+"@
+$csproj | Out-File -FilePath "$testDir\$projName.csproj" -Encoding UTF8
+```
+
+### 0.7.3 创建基础测试桩（Placeholder Test）
+
+为新创建的测试项目添加一个 placeholder 测试类，确保 `dotnet test` 至少有一个测试可运行：
+
+```csharp
+using Xunit;
+
+namespace SunEyeVision.Tool.XXX.Tests;
+
+/// <summary>
+/// 占位测试 — 测试项目创建后的基础验证。
+/// 当写入真实测试用例后，请删除本文件。
+/// </summary>
+public class PlaceholderTests
+{
+    [Fact]
+    public void Test_Project_Can_Build_And_Run()
+    {
+        Assert.True(true, "测试项目创建成功，可编译运行。");
+    }
+}
+```
+
+### 0.7.4 验证创建结果
+
+```powershell
+dotnet build "tests\$projName\$projName.csproj" -v:minimal -nologo
+# 构建成功后运行 placeholder 测试
+dotnet test "tests\$projName\$projName.csproj" -v:minimal --no-build -nologo
+```
+
+### 0.7.5 输出
+
+```markdown
+### 测试项目就绪检查结果
+| 测试项目 | 状态 | 说明 |
+|---------|:----:|------|
+| SunEyeVision.Core.Tests | ✅ | 已存在 |
+| SunEyeVision.Tool.XXX.Tests | 🚩 缺失 → 已创建 | 自动创建 csproj + placeholder 测试 |
+```
+
+---
+
 ## Phase 1: 构建验证 (Build)
 
 > ⚠️ 注意：`dev/Debug/` 构建产物目录被 .gitignore 屏蔽（rule-017），验证插件部署必须用 PowerShell。
@@ -383,9 +580,129 @@ Get-ChildItem -Path $PluginPath -Directory -Filter "runtimes"
 
 ---
 
-## Phase 2: 代码合规审查 (Code Review) ← 替代单元测试
+## Phase 2: dotnet test 执行
 
-> 项目当前无测试项目基础设施，改为代码合规审查。逐项检查项目规则（rule-001~018）是否被违反。
+> **核心变更**：用真实的 `dotnet test` 替代旧版的手动代码审查模式。
+> 所有测试项目必须通过 `dotnet test` 验证，不能手动"目视通过"。
+
+### 2.1 确定测试范围（基于 Phase 4 增量决策树）
+
+根据 Phase 0.1 覆盖表 + Phase 0.3 自动验证清单，确定哪些测试项目需要运行：
+
+| 改动类型 | 运行范围 |
+|---------|--------|
+| 修改 src/Core/ | SunEyeVision.Core.Tests + 1 层调用方测试 |
+| 修改 Plugin.SDK/ | 全量 src 层测试 + 所有工具测试 |
+| 修改单个工具 | 该工具的测试项目 + 1 层调用方 |
+| 修改 csproj/Directory.Build.targets | 受影响工具的全量构建 |
+| 新增工具 | 该工具的测试项目 |
+
+### 2.2 执行 dotnet test
+
+```powershell
+# 运行单个测试项目
+dotnet test "tests/SunEyeVision.Core.Tests/SunEyeVision.Core.Tests.csproj" `
+  --configuration Debug -v:minimal -nologo
+
+# 运行多个测试项目
+$testProjects = @(
+    "tests/SunEyeVision.Core.Tests/SunEyeVision.Core.Tests.csproj",
+    "tests/SunEyeVision.Tool.XXX.Tests/SunEyeVision.Tool.XXX.Tests.csproj"
+)
+foreach ($proj in $testProjects) {
+    dotnet test $proj --configuration Debug -v:minimal -nologo
+}
+
+# 运行所有测试项目（全量回归）
+dotnet test SunEyeVision.slnx --configuration Debug -v:minimal -nologo
+```
+
+### 2.3 带覆盖率收集
+
+```powershell
+# 带覆盖率运行
+dotnet test "tests/SunEyeVision.Core.Tests/SunEyeVision.Core.Tests.csproj" `
+  --configuration Debug -v:minimal -nologo `
+  /p:CollectCoverage=true `
+  /p:CoverletOutputFormat=opencover
+
+# 覆盖率文件输出位置：tests/SunEyeVision.Core.Tests/coverage.opencover.xml
+```
+
+### 2.4 测试结果必须包含的关键信息
+
+| 信息 | 来源 | 用途 |
+|------|------|------|
+| 测试总数 | dotnet test 输出 | 确认所有用例已运行 |
+| 通过数 | dotnet test 输出 | 基本通过率 |
+| 失败数 | dotnet test 输出 | 识别回归 |
+| 跳过数 | dotnet test 输出 | 识别因条件跳过的用例 |
+| 执行时间 | dotnet test 输出 | 性能基线 |
+| 覆盖率 | coverlet 输出 | 确认新代码被覆盖 |
+
+### 2.5 失败处理
+
+```powershell
+# 测试失败时，必须获取失败详情
+$testProject = "tests/SunEyeVision.Core.Tests/SunEyeVision.Core.Tests.csproj"
+$result = dotnet test $testProject --configuration Debug -v:normal -nologo 2>&1
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "❌ 测试失败，退出码: $LASTEXITCODE"
+    # 提取失败测试名称
+    $result | Select-String "Failed "
+}
+```
+
+### 2.6 防虚假测试红线（强制）
+
+| 红线 | 检查方法 | 违规后果 |
+|------|---------|---------|
+| 禁止在验证报告中编造测试结果 | 必须提供 dotnet test 的命令行输出 | 报告无效，必须重新执行 |
+| 禁止跳过 dotnet test 直接写报告 | 有测试项目时必须运行 | 报告无效，必须补测 |
+| 禁止仅报告"全部通过"而不给出原始输出 | 必须附带原始 dotnet test 输出摘要 | 报告无效，必须补原始数据 |
+| 禁止用"之前跑过了"跳过 Phase 2 | 必须重新执行 | 报告无效，必须重新执行 |
+| 禁止手动伪造测试输出 | 检查 dotnet test 退出码是否为 0 | 报告无效，标记为虚假报告 |
+
+### 2.7 输出格式
+
+```markdown
+## dotnet test 结果
+
+### 测试项目: SunEyeVision.Core.Tests
+
+```输出
+# dotnet test 原始输出（截取关键部分）
+Test run for d:\MyWork\SunEyeVision_V2-script\tests\SunEyeVision.Core.Tests\bin\Debug\net9.0-windows\SunEyeVision.Core.Tests.dll (.NETCoreApp,Version=v9.0)
+Microsoft (R) Test Execution Command Line Tool Version 17.12.0 (x64)
+Copyright (c) Microsoft Corporation.  All rights reserved.
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+  Passed: 12, Failed: 0, Skipped: 0, Total: 12, Duration: 0.5s
+```
+
+| 指标 | 值 |
+|:----|:----:|
+| 通过 | 12 |
+| 失败 | 0 |
+| 跳过 | 0 |
+| 总计 | 12 |
+| 执行时间 | 0.5s |
+| 退出码 | 0 (✅ 成功) |
+
+### 测试项目: SunEyeVision.Tool.XXX.Tests
+
+```输出
+{同上格式}
+```
+```
+
+---
+
+## Phase 2.5: 代码合规审查 (Code Review)
+
+> **定位**：补充规则审查（rule-002/014/015 等），`dotnet test` 不覆盖的编码规范检查。
+> 仅在 dotnet test 通过后执行。如果 dotnet test 失败，先修复再审查。
 
 ### 审查清单
 
@@ -417,7 +734,7 @@ Get-ChildItem -Path $PluginPath -Directory -Filter "runtimes"
 
 ---
 
-## Phase 2.5: 手动验收准备 (Manual Verify Prep)
+## Phase 3: 手动验收准备 (Manual Verify Prep)
 
 > **视觉检测工具的特性决定了其验证必须以手动跑图为主**。Halcon 算子处理结果、区域合并效果、参数面板联动等很难用自动化测试覆盖。
 
@@ -464,37 +781,37 @@ Get-ChildItem -Path $PluginPath -Directory -Filter "runtimes"
 
 ---
 
-## Phase 3: 防御机制逐项验证
+## Phase 3.5: 防御机制逐项验证
 
 > **目的**：方案中声明的防御机制必须**真实落地**且**真实有效**，防止实施方把"加 log"冒充"Fail-Forward"。
 
-### 3.1 契约测试验证
+### 3.5.1 契约测试验证
 
 ```markdown
 ### 防御机制 #1: 契约测试
 
 | 验证项 | 验证方法 | 通过标准 | 状态 |
 |--------|---------|---------|:----:|
-| 编译期契约 | 编译时 attribute 检查 / csproj 配置校验 | 缺契约 = 编译失败 | ✅/❌ |
+| 编译期契约 | dotnet test 编译通过 | 缺契约 = 编译失败 | ✅/❌ |
 | 启动期契约 | 工具加载时参数反序列化校验 / 类型检查 | 参数不匹配 = 报错提示 | ✅/❌ |
 | 运行期契约 | ToolPlugin 接口一致性检查 | 接口不匹配 = 加载失败 | ✅/❌ |
-| 代码审核 | 检查关键调用点的 type check / null check | 类型不匹配 = 立即抛错 | ✅/❌ |
+| 测试用例 | 检查测试项目中是否存在契约测试用例 | 至少 1 个测试用例验证契约 | ✅/❌ |
 ```
 
-### 3.2 端到端冒烟验证
+### 3.5.2 端到端冒烟验证
 
 ```markdown
 ### 防御机制 #2: 端到端冒烟
 
 | 验证项 | 验证方法 | 通过标准 | 状态 |
 |--------|---------|---------|:----:|
-| 手动步骤存在 | Phase 2.5 输出手动测试步骤 | 步骤清晰可执行 | ✅/❌ |
+| 手动步骤存在 | Phase 3 输出手动测试步骤 | 步骤清晰可执行 | ✅/❌ |
 | 覆盖"加载工具 → 配置参数 → 跑图" | 走完一遍正常流程 | 用户能正常使用 | ✅/❌ |
 | 失败路径冒烟 | 输入无效参数/无效图像 | 用户看到报错而非崩溃 | ✅/❌ |
 | 插件部署完整 | 使用 PowerShell 验证 plugins/<ToolName>/ 目录 | 主程序集 + 资源齐全 | ✅/❌ |
 ```
 
-### 3.3 Fail-Forward 验证
+### 3.5.3 Fail-Forward 验证
 
 ```markdown
 ### 防御机制 #3: Fail-Forward
@@ -507,7 +824,7 @@ Get-ChildItem -Path $PluginPath -Directory -Filter "runtimes"
 | 不静默吞错 | 搜索代码确认无空 catch { } | 都有显式处理 | ✅/❌ |
 ```
 
-### 3.4 失败兜底验证（依方案而定）
+### 3.5.4 失败兜底验证（依方案而定）
 
 ```markdown
 ### 防御机制 #4: 失败兜底
@@ -532,7 +849,7 @@ Get-ChildItem -Path $PluginPath -Directory -Filter "runtimes"
 
 ---
 
-## Phase 3.5: 验收场景测试 (Acceptance Test)
+## Phase 4: 验收场景测试 (Acceptance Test)
 
 从方案报告的「验收标准」章节提取每个验收项，转换为可执行的测试步骤。
 
@@ -551,11 +868,12 @@ Get-ChildItem -Path $PluginPath -Directory -Filter "runtimes"
 
 ```
 对每个验收项:
-  1. 如果是代码逻辑验证 → 代码审查确认实现正确
-  2. 如果是 UI/参数绑定验证 → 输出手动测试步骤（参照 Phase 2.5 模板）
-  3. 如果是 Halcon 视觉处理验证 → 手动跑图确认结果
-  4. 如果是数据持久化 → 检查序列化/反序列化是否符合 rule-010
-  5. 混合型 → 代码审查 + 手动验证
+  1. 如果有对应的测试用例 → dotnet test 验证
+  2. 如果是代码逻辑验证 → 代码审查确认实现正确
+  3. 如果是 UI/参数绑定验证 → 输出手动测试步骤（参照 Phase 3 模板）
+  4. 如果是 Halcon 视觉处理验证 → 手动跑图确认结果
+  5. 如果是数据持久化 → 检查序列化/反序列化是否符合 rule-010
+  6. 混合型 → dotnet test + 代码审查 + 手动验证
 ```
 
 ### 验收项 ↔ 防御机制交叉验证
@@ -572,11 +890,11 @@ Get-ChildItem -Path $PluginPath -Directory -Filter "runtimes"
 
 ---
 
-## Phase 4: 增量回归测试 (Incremental Regression)
+## Phase 5: 增量回归测试 (Incremental Regression)
 
 > **目的**：不再无差别全量回归。依据验证覆盖表（Phase 0.1）+ 代码变更类型，**只跑必要的验证**。
 
-### 4.1 变更类型获取
+### 5.1 变更类型获取
 
 从方案报告 + git diff 获取本次变更类型：
 
@@ -585,7 +903,7 @@ Get-ChildItem -Path $PluginPath -Directory -Filter "runtimes"
 git diff --name-only HEAD
 ```
 
-### 4.2 增量决策树
+### 5.2 增量决策树
 
 依据覆盖表状态 + 变更类型，决定验证深度：
 
@@ -593,16 +911,16 @@ git diff --name-only HEAD
 flowchart TD
     A[覆盖表状态] --> B{工具状态?}
     B -->|✅ 最新且代码未改| C[跳过跳过: 输出'已验证✅']
-    B -->|🚩 从未验证| D[全量: 构建+契约+参数+规则+手动跑图]
+    B -->|🚩 从未验证| D[全量: dotnet test + 构建+契约+参数+手动跑图]
     B -->|⚠️ 过期| E{变更类型?}
-    E -->|Parameters 类| F[全量: 参数往返+契约+构建+手动跑图]
-    E -->|Run 方法| G[偏量: 契约+构建+手动跑图]
+    E -->|Parameters 类| F[全量: dotnet test + 参数往返+契约+手动跑图]
+    E -->|Run 方法| G[偏量: dotnet test + 契约+手动跑图]
     E -->|csproj| H[构建验证+插件部署验证]
     E -->|XAML/UI| I[仅构建+目视确认]
-    B -->|🟡 衰减(>90天)| J[衰减验证: 构建+规则审查,无需手动跑图]
+    B -->|🟡 衰减(>90天)| J[衰减验证: dotnet test + 规则审查,无需手动跑图]
 ```
 
-### 4.3 回归范围判定（保留原有依赖分析）
+### 5.3 回归范围判定
 
 | 改动类型 | 回归范围 | 验证深度决策 |
 |---------|--------|------------|
@@ -615,7 +933,7 @@ flowchart TD
 | **修改公共 API/接口 (Plugin.SDK)** | **所有工具全部重新构建验证** | **全量（覆盖表全部降级为⚠️）** |
 | **修改 core/ 库 (CvEngine/ModuleBase)** | **所有使用该库的工具 + 主程序** | **全量** |
 
-### 4.4 跳过声明
+### 5.4 跳过声明
 
 每次手动验证的跳过必须显式声明原因：
 
@@ -624,10 +942,10 @@ flowchart TD
 | 跳过项 | 原因 | 依据 |
 |--------|------|------|
 | BlobAnalysis 参数往返验证 | 参数哈希未变（上次已验证） | verification-coverage.json:parametersHash |
-| Threshold 手动跑图 | 仅 XAML 布局修改，不涉逻辑 | Phase 4.2 决策树: XAML → 仅构建 |
+| Threshold 手动跑图 | 仅 XAML 布局修改，不涉逻辑 | Phase 5.2 决策树: XAML → 仅构建 |
 ```
 
-### 4.5 插件依赖链回归（SunEyeVision 特有）
+### 5.5 插件依赖链回归
 
 ```markdown
 | 改动位置 | 回归范围 | 验证方式 |
@@ -639,7 +957,7 @@ flowchart TD
 | src/ 核心库 | 主程序 + 所有工具 | 全量构建 |
 ```
 
-### 4.6 同类 pattern 回归（防"只修了当前点"）
+### 5.6 同类 pattern 回归
 
 ```
 对方案中识别的"同类潜伏点"：
@@ -650,7 +968,7 @@ flowchart TD
 
 ---
 
-## Phase 5: 报告输出 (Report)
+## Phase 6: 报告输出 (Report)
 
 ### 报告模板 — 功能场景优先
 
@@ -686,6 +1004,7 @@ flowchart TD
 |------|:----:|
 | **治本验证** | ✅ N/N 通过 / ❌ 未通过 |
 | **防御机制** | ✅ N/N 落地 / ❌ 未落地 |
+| **dotnet test** | ✅ N/N 测试通过 (N 个测试项目) / ❌ 失败 |
 | 构建验证 | ✅ 通过 / ❌ 失败 |
 | 代码合规审查 | ✅ N/N 通过 / ❌ 违规 |
 | 验收验证 | ✅ N/N 通过 |
@@ -722,7 +1041,7 @@ flowchart TD
 
 | # | 防御机制 | 验证项 | 通过标准 | 实际 | 状态 |
 |---|---------|--------|---------|------|:----:|
-| 1 | 契约测试 | 编译期 | 缺契约 = 编译失败 | 编译通过 | ✅ |
+| 1 | 契约测试 | dotnet test | 缺契约 = 编译失败 | dotnet test 通过 | ✅ |
 | 1 | 契约测试 | 启动期 | 参数不匹配 = 报错提示 | 代码审查通过 | ✅ |
 | 2 | 端到端冒烟 | 完整流程 | 工具加载→配置→跑图正常 | 手动验证 | ✅ |
 | 3 | Fail-Forward | 注入无效图像 | 报错提示而非崩溃 | 手动验证 | ✅ |
@@ -730,7 +1049,24 @@ flowchart TD
 
 ---
 
-## 5. 构建验证详情
+## 5. dotnet test 结果
+
+### 测试项目执行汇总
+
+| 测试项目 | 通过 | 失败 | 跳过 | 总计 | 状态 |
+|---------|:---:|:---:|:---:|:---:|:---:|
+| SunEyeVision.Core.Tests | 12 | 0 | 0 | 12 | ✅ |
+| SunEyeVision.Tool.XXX.Tests | 5 | 0 | 0 | 5 | ✅ |
+
+### 原始输出摘要
+
+```
+{dotnet test 原始输出，截取关键行}
+```
+
+---
+
+## 6. 构建验证详情
 
 ```
 {构建输出摘要}
@@ -747,25 +1083,25 @@ plugins/<ToolName>/ 目录内容：
 - 无 wpftmp / runtimes 残留 ✓
 ```
 
-## 6. 代码合规审查详情
+## 7. 代码合规审查详情
 
 ### 违规项
 | 规则 | 违规项 | 位置 | 修复建议 |
 |------|--------|------|---------|
 
-## 7. 验收验证详情
+## 8. 验收验证详情
 
 | 验收项 | 状态 | 覆盖防御机制 | 功能场景说明 |
 |--------|:----:|------------|------------|
 | AC-01: {描述} | ✅ | 契约测试 | 改前: ... → 改后: ... |
 | AC-02: {描述} | ✅ | 端到端冒烟 | 改前: ... → 改后: ... |
 
-## 8. 回归验证详情
+## 9. 回归验证详情
 
 | 回归范围 | 验证方式 | 失败明细 | 根因 |
 |---------|---------|---------|------|
 
-## 9. 结论与建议
+## 10. 结论与建议
 
 ### 通过
 ✅ 所有验证项 + 治本验证 + 防御机制全部通过，方案实施符合设计要求。
@@ -780,15 +1116,15 @@ plugins/<ToolName>/ 目录内容：
 | 3 | {治本验证 Z} | 设计缺陷 | 回退到方案设计 |
 | 4 | {同类潜伏点} | 治本失败 | 回退到方案设计 |
 
-## 10. 跳过声明
+## 11. 跳过声明
 
 | 跳过项 | 原因 | 数据来源 |
 |--------|------|---------|
 | {工具/校验项} | {哈希未变 / 代码未改 / 衰减跳过} | verification-coverage.json |
 
-## 11. 验证覆盖仪表盘
+## 12. 验证覆盖仪表盘
 
-> 由 Phase 6.5 自动生成，追加到报告末尾。
+> 由 Phase 7 自动生成，追加到报告末尾。
 
 | 总计 | ✅ 最新 | ⚠️ 过期 | 🚩 未覆盖 | 🟡 衰减 |
 |:----:|:------:|:-------:|:---------:|:-------:|
@@ -796,19 +1132,16 @@ plugins/<ToolName>/ 目录内容：
 
 ```
 
----
-
-## 闭环决策逻辑
+### 闭环决策逻辑
 
 ```
-Phase 5 报告输出后 → Phase 6 验证记忆持久化：
+Phase 6 报告输出后 → Phase 6.5 验证记忆持久化：
 
-```
 ┌── 整体结论全通过 ──→ 写入 verification-coverage.json
 │                          ├── 更新各工具的 lastVerificationDate
 │                          ├── 记录 passedChecks / skippedChecks
 │                          ├── 计算并存储 parametersHash / contractHash
-│                          └── 追加 Phase 6.5 覆盖仪表盘到报告
+│                          └── 追加 Phase 7 覆盖仪表盘到报告
 │                          ↓
 │                       ✅ 方案完成
 │
@@ -831,22 +1164,21 @@ Phase 5 报告输出后 → Phase 6 验证记忆持久化：
                                  回退到方案设计
                                  重新调研 → 输出修正方案
 ```
-```
 
 ---
 
-## Phase 6: 验证结果记忆 (Persistence)
+## Phase 6.5: 验证结果记忆 (Persistence)
 
 > **目的**：将验证结果持久化，下次运行时增量复用，避免重复验证。
 > 解决"每次方案测试从零开始"的问题，让验证体系随项目变大有积累而不是变重。
 
-### 6.1 持久化文件位置
+### 6.5.1 持久化文件位置
 
 ```powershell
 $memPath = "d:\MyWork\SunEyeVision_V2-script\.codebuddy\memory\verification-coverage.json"
 ```
 
-### 6.2 数据结构
+### 6.5.2 数据结构
 
 ```json
 {
@@ -861,7 +1193,7 @@ $memPath = "d:\MyWork\SunEyeVision_V2-script\.codebuddy\memory\verification-cove
       "parametersHash": "sha256-of-Parameters-class-definition",
       "contractHash": "sha256-of-IToolPlugin-interface-signature",
       "result": "pass",
-      "passedChecks": ["构建✅", "规则审查✅", "参数往返✅", "手动跑图✅"],
+      "passedChecks": ["构建✅", "规则审查✅", "dotnet test✅", "手动跑图✅"],
       "reportFile": "方案测试报告-2026-07-12.md"
     },
     "SunEyeVision.Threshold": {
@@ -869,14 +1201,14 @@ $memPath = "d:\MyWork\SunEyeVision_V2-script\.codebuddy\memory\verification-cove
       "lastVerificationType": "partial",
       "lastModificationDate": "2026-07-12",
       "result": "pass",
-      "passedChecks": ["构建✅", "规则审查✅"],
+      "passedChecks": ["构建✅", "规则审查✅", "dotnet test✅"],
       "skippedChecks": ["手动跑图✅ 跳过（上次已验证，代码未改）"]
     }
   }
 }
 ```
 
-### 6.3 哈希生成方法
+### 6.5.3 哈希生成方法
 
 ```markdown
 **contractHash** 生成方法：
@@ -890,15 +1222,15 @@ search_content "class .*Parameters" --path "src/Plugin.SDK/Execution/Parameters/
 实际实现中，提取类定义行文本后计算 SHA256 即可。
 ```
 
-### 6.4 写入时机
+### 6.5.4 写入时机
 
-每次 Phase 5 报告输出后立即写入：
+每次 Phase 6 报告输出后立即写入：
 - 所有 ✅ 的检查项记录到 `passedChecks`
 - 所有显式跳过的项记录到 `skippedChecks`
-- `lastVerificationType`: 全量/偏量/衰减（来自 Phase 4 决策）
+- `lastVerificationType`: 全量/偏量/衰减（来自 Phase 5 决策）
 - 仅记录"最终确认通过的方案测试报告"
 
-### 6.5 幂等性
+### 6.5.5 幂等性
 
 - `verification-coverage.json` 若已存在，**覆盖写入**（保持单一真相源）
 - 不保留历史版本（git 已提供版本历史，遵循 rule-008）
@@ -906,11 +1238,11 @@ search_content "class .*Parameters" --path "src/Plugin.SDK/Execution/Parameters/
 
 ---
 
-## Phase 6.5: 验证覆盖仪表盘 (Coverage Dashboard)
+## Phase 7: 验证覆盖仪表盘 (Coverage Dashboard)
 
 > **目的**：每次方案测试报告末尾输出覆盖仪表盘，让用户一目了然知道哪些工具已覆盖、哪些过期、哪些从未验证。
 
-### 6.5.1 仪表盘格式
+### 7.1 仪表盘格式
 
 ```markdown
 ## 验证覆盖仪表盘 (Verification Coverage Dashboard)
@@ -919,8 +1251,8 @@ search_content "class .*Parameters" --path "src/Plugin.SDK/Execution/Parameters/
 
 | 工具 | 最后验证 | 最后修改 | 状态 | 通过项 | 跳过项 |
 |------|---------|---------|:----:|--------|--------|
-| BlobAnalysis | 2026-07-12 | 2026-07-10 | ✅ 最新 | 构建/规则/参数/手动 | — |
-| Threshold | 2026-07-12 | 2026-06-15 | ✅ 最新 | 构建/规则 | 手动(代码未改) |
+| BlobAnalysis | 2026-07-12 | 2026-07-10 | ✅ 最新 | 构建/规则/dotnet test/手动 | — |
+| Threshold | 2026-07-12 | 2026-06-15 | ✅ 最新 | 构建/规则/dotnet test | 手动(代码未改) |
 | ImageLoad | — | 2026-05-20 | 🚩 未覆盖 | — | — |
 | Caliper | 2026-04-01 | 2026-04-01 | 🟡 衰减(103天) | 构建/规则 | 手动(已衰减) |
 | ... | ... | ... | ... | ... | ... |
@@ -941,9 +1273,9 @@ search_content "class .*Parameters" --path "src/Plugin.SDK/Execution/Parameters/
 - **衰减工具 > 50%** → 项目需要周期性全量回归
 ```
 
-### 6.5.2 附加到 Phase 5 报告末尾
+### 7.2 附加到 Phase 6 报告末尾
 
-每次 Phase 5 报告输出后，将仪表盘追加到报告末尾：
+每次 Phase 6 报告输出后，将仪表盘追加到报告末尾：
 
 ```markdown
 ---
@@ -953,7 +1285,7 @@ search_content "class .*Parameters" --path "src/Plugin.SDK/Execution/Parameters/
 {上述仪表盘内容}
 ```
 
-### 6.5.3 空覆盖时的处理
+### 7.3 空覆盖时的处理
 
 如果是首次运行（验证记忆不存在），仪表盘显示：
 
@@ -971,24 +1303,28 @@ search_content "class .*Parameters" --path "src/Plugin.SDK/Execution/Parameters/
 1. **方案驱动** — 验收标准来自方案报告，不自行编造
 2. **治本验证** — 方案中的 bug 模式分析必须真的修复（防打补丁冒充治本）
 3. **防御机制验证** — 方案中的防御机制必须真实落地（防文档冒充实现）
-4. **分层验证** — 构建 → 合规审查 → 验收 → 回归，逐层递进
+4. **分层验证** — dotnet test → 构建 → 合规审查 → 验收 → 回归，逐层递进
 5. **失败回退** — 发现严重问题必须回退，不隐瞒
 6. **可重复** — 测试报告作为知识沉淀，下次回归可复用
 7. **不修改代码** — 测试技能只验证，不修改
 8. **覆盖扫描** — 每次测试启动时自动建立验证覆盖表，标记过期/未覆盖工具
 9. **增量复用** — 验证结果持久化，哈希未变时自动跳过，不重复验证
+10. **测试项目自发现** — 缺失的测试项目自动创建，不阻塞验证流程
+11. **dotnet test 真实执行** — 所有测试必须通过 dotnet test 真实运行，禁止手工编造
 
 ## 禁止行为
 
 - **禁止** 在验证过程中修改方案代码
 - **禁止** 隐瞒验证失败
-- **禁止** 跳过构建验证直接进入合规审查
-- **禁止** 向用户承诺验证结果而不展示原始数据
+- **禁止** 跳过构建验证直接进入 dotnet test
+- **禁止** 跳过 dotnet test 直接写报告
+- **禁止** 手动编造 dotnet test 输出
+- **禁止** 向用户承诺测试结果而不展示原始 dotnet test 输出
 - **禁止** 跳过治本验证清单（防打补丁冒充治本）
 - **禁止** 跳过防御机制逐项验证（防文档冒充实现）
 - **禁止** 用"实施方说做了"作为防御机制验证通过的标准，必须看到真实代码
 - **禁止** 跳过 Phase 0.1 覆盖扫描直接进入 Phase 1 构建验证
-- **禁止** 对已验证且哈希未变的工具重复跑参数/契约验证
+- **禁止** 对已验证且哈希未变的工具重复跑参数/契约验证（但 dotnet test 仍需执行）
 - **禁止** 在验证失败时写入 verification-coverage.json（保持记忆文件仅记录通过）
 - **禁止** 手动编造验证覆盖表（必须来自代码扫描 + git log 真实数据）
 
@@ -996,7 +1332,10 @@ search_content "class .*Parameters" --path "src/Plugin.SDK/Execution/Parameters/
 
 - skill:方案设计 — 方案报告的验收标准来源
 - skill:方案实施 — 实施完成后移交测试
+- **rule-001: 属性更改通知统一规范** — SetProperty/ObservableObject
+- **rule-002: 命名规范** — PascalCase/_camelCase
 - **rule-008: 开发与代码纯净原则** — 零兼容/报错优先/YAGNI/KISS
+- **rule-010: 方案系统实现规范** — System.Text.Json / [JsonPolymorphic]
 - **rule-014: Halcon HOperatorSet 调用规范** — 禁止实例方法调用
 - **rule-015: 禁止兜底回退原则** — 未映射类型直接报错
 - **rule-016: MSBuild 项目配置规范** — OutDir/插件部署/污染拦截
@@ -1004,4 +1343,3 @@ search_content "class .*Parameters" --path "src/Plugin.SDK/Execution/Parameters/
 - skill:build-verify — MSBuild 构建验证辅助
 - skill:cv-engine-builder — 视觉算子封装验证辅助
 - **verification-coverage.json** — `.codebuddy/memory/verification-coverage.json` 验证记忆文件
-- **Phase 0.1/0.3/4/6/6.5** — 本技能新增的覆盖扫描 → 自动验证 → 增量决策 → 持久化 → 仪表盘闭环

@@ -47,16 +47,16 @@
         /// <summary>
         /// 记录信息日志
         /// </summary>
-        public static void Info(string message, string? source = null, LogTarget target = LogTarget.UI)
+        public static void Info(string message, string? source = null, LogTarget target = LogTarget.All)
             => Logger.Info(message, source, target);
 
-        public static void Success(string message, string? source = null, LogTarget target = LogTarget.UI)
+        public static void Success(string message, string? source = null, LogTarget target = LogTarget.All)
             => Logger.Success(message, source, target);
 
-        public static void Warning(string message, string? source = null, LogTarget target = LogTarget.UI)
+        public static void Warning(string message, string? source = null, LogTarget target = LogTarget.All)
             => Logger.Warning(message, source, target);
 
-        public static void Error(string message, string? source = null, System.Exception? exception = null, LogTarget target = LogTarget.UI)
+        public static void Error(string message, string? source = null, System.Exception? exception = null, LogTarget target = LogTarget.All)
             => Logger.Error(message, source, exception, target);
 
         /// <summary>
@@ -133,7 +133,7 @@
     {
         public static readonly NullLogger Instance = new();
 
-        public void Log(LogLevel level, string message, string? source = null, System.Exception? exception = null, LogTarget target = LogTarget.UI)
+        public void Log(LogLevel level, string message, string? source = null, System.Exception? exception = null, LogTarget target = LogTarget.All)
         {
             // 不执行任何操作
         }

@@ -70,59 +70,12 @@ namespace SunEyeVision.Tool.Script.Models
 
         /// <summary>映射为 C# 类型名（供生成字段声明和自动补全）</summary>
         [JsonIgnore]
-        public string CsTypeName => TypeName switch
-        {
-            "Image"       => "IVisionImage",
-            "Integer"     => "int",
-            "Integer[]"   => "int[]",
-            "Double"      => "double",
-            "Double[]"    => "double[]",
-            "Float"       => "double",
-            "Float[]"     => "double[]",
-            "String"      => "string",
-            "String[]"    => "string[]",
-            "Boolean"     => "bool",
-            "Byte"        => "byte",
-            "Point"       => "SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.Point2D",
-            "Rectangle"   => "SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeParameters",
-            "Size"        => "System.Windows.Size",
-            "Region"      => "IVisionRegion",
-            "Circle"      => "SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeParameters",
-            "Line"        => "SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeParameters",
-            "Annulus"     => "SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeParameters",
-            "RotatedRect" => "SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeParameters",
-            "Polygon"     => "SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeParameters",
-            _             => "object"
-        };
+        public string CsTypeName => ScriptTypeMapper.ToCsTypeName(TypeName);
 
         /// <summary>生成字段声明代码行</summary>
         public string GenerateFieldCode()
         {
-            var defaultExpr = TypeName switch
-            {
-                "Image"       => "= null!",
-                "String"      => "= string.Empty",
-                "Integer"     => "= 0",
-                "Integer[]"   => "= null!",
-                "Double"      => "= 0.0",
-                "Double[]"    => "= null!",
-                "Float"       => "= 0.0",
-                "Float[]"     => "= null!",
-                "String[]"    => "= null!",
-                "Boolean"     => "= false",
-                "Byte"        => "= 0",
-                "Point"       => "= new SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.Point2D()",
-                "Rectangle"   => "= new SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeParameters { ShapeType = SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeType.Rectangle }",
-                "Size"        => "= default",
-                "Region"      => "= null!",
-                "Circle"      => "= new SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeParameters { ShapeType = SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeType.Circle }",
-                "Line"        => "= new SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeParameters { ShapeType = SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeType.Line }",
-                "Annulus"     => "= new SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeParameters { ShapeType = SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeType.Annulus }",
-                "RotatedRect" => "= new SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeParameters { ShapeType = SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeType.RotatedRectangle }",
-                "Polygon"     => "= new SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeParameters { ShapeType = SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeType.Polygon }",
-                _             => "= default!"
-            };
-            return $"public {CsTypeName} {Name} {defaultExpr};";
+            return $"public {CsTypeName} {Name} {ScriptTypeMapper.GetFieldDefault(TypeName)};";
         }
     }
 }

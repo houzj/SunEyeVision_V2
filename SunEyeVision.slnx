@@ -34,4 +34,44 @@
     <Project Path="tools/SunEyeVision.Tool.Condition/SunEyeVision.Tool.Condition.csproj" />
     <Project Path="tools/SunEyeVision.Tool.Script/SunEyeVision.Tool.Script.csproj" />
   </Folder>
+  <Folder Name="/Tests/" />
+  <Folder Name="/Tests/SunEyeVision.Core.Tests/">
+    <Project Path="tests/SunEyeVision.Core.Tests/SunEyeVision.Core.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SunEyeVision.Plugin.SDK.Tests/">
+    <Project Path="tests/SunEyeVision.Plugin.SDK.Tests/SunEyeVision.Plugin.SDK.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SunEyeVision.CvEngine.Tests/">
+    <Project Path="tests/SunEyeVision.CvEngine.Tests/SunEyeVision.CvEngine.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SunEyeVision.Tool.BlobAnalysis.Tests/">
+    <Project Path="tests/SunEyeVision.Tool.BlobAnalysis.Tests/SunEyeVision.Tool.BlobAnalysis.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SunEyeVision.Tool.Condition.Tests/">
+    <Project Path="tests/SunEyeVision.Tool.Condition.Tests/SunEyeVision.Tool.Condition.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SunEyeVision.Tool.ImageFilter.Tests/">
+    <Project Path="tests/SunEyeVision.Tool.ImageFilter.Tests/SunEyeVision.Tool.ImageFilter.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SunEyeVision.Tool.ImageLoad.Tests/">
+    <Project Path="tests/SunEyeVision.Tool.ImageLoad.Tests/SunEyeVision.Tool.ImageLoad.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SunEyeVision.Tool.ImageThreshold.Tests/">
+    <Project Path="tests/SunEyeVision.Tool.ImageThreshold.Tests/SunEyeVision.Tool.ImageThreshold.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SunEyeVision.Tool.Morphology.Tests/">
+    <Project Path="tests/SunEyeVision.Tool.Morphology.Tests/SunEyeVision.Tool.Morphology.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SunEyeVision.Tool.Script.Tests/">
+    <Project Path="tests/SunEyeVision.Tool.Script.Tests/SunEyeVision.Tool.Script.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SunEyeVision.Tool.ShapeMatch.Tests/">
+    <Project Path="tests/SunEyeVision.Tool.ShapeMatch.Tests/SunEyeVision.Tool.ShapeMatch.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SunEyeVision.Tool.Subroutine.Tests/">
+    <Project Path="tests/SunEyeVision.Tool.Subroutine.Tests/SunEyeVision.Tool.Subroutine.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SunEyeVision.Tool.Threshold.Tests/">
+    <Project Path="tests/SunEyeVision.Tool.Threshold.Tests/SunEyeVision.Tool.Threshold.Tests.csproj" />
+  </Folder>
 </Solution>

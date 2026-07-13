@@ -186,7 +186,7 @@ namespace SunEyeVision.Plugin.SDK.Logging
         /// <summary>
         /// 记录日志（核心方法）- 高性能非阻塞
         /// </summary>
-        public void Log(LogLevel level, string message, string? source = null, Exception? exception = null, LogTarget target = LogTarget.UI)
+        public void Log(LogLevel level, string message, string? source = null, Exception? exception = null, LogTarget target = LogTarget.All)
         {
             if (!IsEnabled || level < _minLevel)
             {
@@ -223,16 +223,16 @@ namespace SunEyeVision.Plugin.SDK.Logging
         /// <summary>
         /// 记录信息日志
         /// </summary>
-        public void Info(string message, string? source = null, LogTarget target = LogTarget.UI)
+        public void Info(string message, string? source = null, LogTarget target = LogTarget.All)
             => Log(LogLevel.Info, message, source, null, target);
 
-        public void Success(string message, string? source = null, LogTarget target = LogTarget.UI)
+        public void Success(string message, string? source = null, LogTarget target = LogTarget.All)
             => Log(LogLevel.Success, message, source, null, target);
 
-        public void Warning(string message, string? source = null, LogTarget target = LogTarget.UI)
+        public void Warning(string message, string? source = null, LogTarget target = LogTarget.All)
             => Log(LogLevel.Warning, message, source, null, target);
 
-        public void Error(string message, string? source = null, Exception? exception = null, LogTarget target = LogTarget.UI)
+        public void Error(string message, string? source = null, Exception? exception = null, LogTarget target = LogTarget.All)
             => Log(LogLevel.Error, message, source, exception, target);
 
         /// <summary>

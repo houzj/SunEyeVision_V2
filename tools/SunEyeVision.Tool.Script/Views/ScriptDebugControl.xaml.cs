@@ -63,6 +63,10 @@ namespace SunEyeVision.Tool.Script.Views
         // 消除 "[Diagnostic] 跳过: workspace=False" 日志噪声）
         private bool _suppressDiagnostic;
 
+        // Phase 2b: Roslyn 语义高亮
+        private CancellationTokenSource? _semanticCts;             // 100ms 语义着色节流
+        private IReadOnlyList<SemanticSpan>? _semanticSpans;        // 当前语义着色区间（offset / length / brush），供 SemanticColorizer 读取
+
         // 进程生命周期内共享的 MefHostServices（首次初始化慢，后续缓存命中快）
         private static MefHostServices? _sharedMefHost;
         private static object _mefLock = new();
@@ -151,6 +155,12 @@ namespace SunEyeVision.Tool.Script.Views
             CodeEditor.TextArea.TextView.LineTransformers.Add(errorMarker);
             PluginLogger.Info("[Highlighting] 已加载实时错误标记着色器", typeName);
 
+            // Layer 2b: Roslyn 语义高亮着色器（基于 SemanticModel，对类型=青/方法·属性=紫/字段=金 上色，与 xshd 互补）
+            //   ColorizeLine 覆盖前景色，与 Layer 2a 的背景标记互不干扰
+            var semanticColorizer = new SemanticColorizer(() => _semanticSpans);
+            CodeEditor.TextArea.TextView.LineTransformers.Add(semanticColorizer);
+            PluginLogger.Info("[Highlighting] 已加载 Roslyn 语义高亮着色器", typeName);
+
             // 当前行高亮：光标所在行浅蓝色背景，替代纯光标闪烁（提升代码定位体验）
             CodeEditor.Options.HighlightCurrentLine = true;
             CodeEditor.TextArea.TextView.CurrentLineBackground =
@@ -179,6 +189,8 @@ namespace SunEyeVision.Tool.Script.Views
                 _workspace?.Dispose();
                 _diagnosticsCts?.Cancel();
                 _diagnosticsCts?.Dispose();
+                _semanticCts?.Cancel();
+                _semanticCts?.Dispose();
             };
 
             // 初始化变量配置面板（输入/输出 Tab）
@@ -243,6 +255,7 @@ namespace SunEyeVision.Tool.Script.Views
                     PluginLogger.Info($"[Perf] RebuildWorkspace: {perfSw.ElapsedMilliseconds}ms", GetType().Name);
                     _suppressDiagnostic = false;    // workspace 就绪，开放诊断
                     ScheduleDiagnosticAsync();
+                    ScheduleSemanticAsync(0);       // 首次打开立即着色（0ms）
                 }, DispatcherPriority.Background);
 
                 // ★ 参数注入完成 → 状态从"初始化中..."切到"就绪"
@@ -292,6 +305,7 @@ namespace SunEyeVision.Tool.Script.Views
             OutputTabControl.ShowMonitorMode();
             RebuildWorkspace();
             ScheduleDiagnosticAsync();
+            ScheduleSemanticAsync();
         }
 
         protected override void OnConfirmCommand(object sender, ExecutedRoutedEventArgs e)
@@ -662,6 +676,7 @@ namespace SunEyeVision.Tool.Script.Views
             SyncCodeToParameters();
             RebuildWorkspace();
             ScheduleDiagnosticAsync();
+            ScheduleSemanticAsync();
             UpdateStatus("已加载 Demo 示例");
         }
 
@@ -675,6 +690,7 @@ namespace SunEyeVision.Tool.Script.Views
             SyncCodeToParameters();
             RebuildWorkspace();
             ScheduleDiagnosticAsync();
+            ScheduleSemanticAsync();
             UpdateStatus("已复位至最简代码");
         }
 
@@ -1135,6 +1151,7 @@ namespace SunEyeVision.Tool.Script.Views
             if (CodeEditor != null)
                 _parameters.ScriptCode = CodeEditor.Text;
             ScheduleDiagnosticAsync();
+            ScheduleSemanticAsync();
         }
 
         private void ScheduleDiagnosticAsync()
@@ -1243,6 +1260,116 @@ namespace SunEyeVision.Tool.Script.Views
         }
 
         // =======================================================
+        // Phase 2b: Roslyn 语义高亮（SemanticModel → 类型/方法/属性/字段 着色）
+        // =======================================================
+
+        /// <summary>
+        /// 编辑/重建后调度语义着色：独立 100ms 节流（首次打开传 0 立即着色）。
+        /// 与诊断线程（500ms）互不干扰：本方法使用 doc.WithText 局部快照，不修改 workspace 共享状态。
+        /// </summary>
+        private void ScheduleSemanticAsync(int delayMs = 100)
+        {
+            _semanticCts?.Cancel();
+            _semanticCts?.Dispose();
+            _semanticCts = new CancellationTokenSource();
+            var token = _semanticCts.Token;
+
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await Task.Delay(delayMs, token);
+                    if (!token.IsCancellationRequested)
+                        await RunSemanticAsync(token);
+                }
+                catch (OperationCanceledException) { }
+            });
+        }
+
+        /// <summary>
+        /// 基于 SemanticModel 对标识符上色：类型=青、方法/事件=紫、属性=紫、字段=金。
+        /// 与 xshd 语法高亮互补（xshd 仅覆盖 BCL 类型名与声明/调用，本类覆盖所有符号含用户类型）。
+        /// 着色结果缓存到 _semanticSpans，由 SemanticColorizer.ColorizeLine 按行消费。
+        /// </summary>
+        private async Task RunSemanticAsync(CancellationToken token)
+        {
+            var typeName = GetType().Name;
+
+            if (_workspace == null || _userDocumentId == null)
+            {
+                PluginLogger.Warning($"[Semantic] 跳过: workspace={_workspace != null}, userDocumentId={_userDocumentId != null}", typeName);
+                return;
+            }
+
+            var code = _parameters.ScriptCode;
+            if (string.IsNullOrEmpty(code))
+            {
+                _semanticSpans = [];
+                await Dispatcher.InvokeAsync(() => CodeEditor.TextArea.TextView.Redraw(), DispatcherPriority.Background, token);
+                return;
+            }
+
+            try
+            {
+                var doc = _workspace.CurrentSolution.GetDocument(_userDocumentId);
+                if (doc == null)
+                {
+                    PluginLogger.Warning("[Semantic] workspace 中找不到 user document", typeName);
+                    return;
+                }
+                doc = doc.WithText(SourceText.From(code));
+
+                var root = await doc.GetSyntaxRootAsync(token);
+                var model = await doc.GetSemanticModelAsync(token);
+                if (root == null || model == null || token.IsCancellationRequested) return;
+
+                var spans = new List<SemanticSpan>();
+                foreach (var syntaxToken in root.DescendantTokens())
+                {
+                    var brush = ClassifyToken(syntaxToken, model);
+                    if (brush != null)
+                        spans.Add(new SemanticSpan(syntaxToken.SpanStart, syntaxToken.Span.Length, brush));
+                }
+
+                _semanticSpans = spans;
+                PluginLogger.Info($"[Semantic] 已生成 {spans.Count} 个语义着色区间", typeName);
+
+                if (!token.IsCancellationRequested)
+                    await Dispatcher.InvokeAsync(() => CodeEditor.TextArea.TextView.Redraw(), DispatcherPriority.Background, token);
+            }
+            catch (OperationCanceledException) { }
+            catch (Exception ex)
+            {
+                PluginLogger.Warning($"[Semantic] 着色异常: {ex.Message}", typeName);
+            }
+        }
+
+        /// <summary>
+        /// 根据标识符的语义符号返回前景色，无语义意义（局部变量/参数/命名空间）返回 null 保持默认色。
+        /// </summary>
+        private static Brush? ClassifyToken(SyntaxToken token, SemanticModel model)
+        {
+            if (!token.IsKind(SyntaxKind.IdentifierToken)) return null;
+            var node = token.Parent;
+            if (node == null) return null;
+
+            var symbol = model.GetSymbolInfo(node).Symbol;
+            if (symbol == null)
+                symbol = model.GetTypeInfo(node).Type;
+            if (symbol == null) return null;
+
+            return symbol.Kind switch
+            {
+                SymbolKind.NamedType => SemanticBrushes.Type,
+                SymbolKind.Method => SemanticBrushes.Method,
+                SymbolKind.Property => SemanticBrushes.Property,
+                SymbolKind.Field => SemanticBrushes.Field,
+                SymbolKind.Event => SemanticBrushes.Method,
+                _ => null
+            };
+        }
+
+        // =======================================================
         // CompletionData 包装 — 桥接 Roslyn CompletionItem -> AvalonEdit ICompletionData
         // =======================================================
 
@@ -1277,6 +1404,78 @@ namespace SunEyeVision.Tool.Script.Views
                 textArea.Document.Replace(start, actualLen, item.DisplayText);
             }
         }
+    // =======================================================
+    // Phase 2b: Roslyn 语义高亮 — 调色板 / 区间 / 着色器
+    // =======================================================
+
+    /// <summary>
+    /// 语义着色调色板（与 CSharpLight.xshd 对齐：Type=#267F99 青，Method=#6F42C1 紫）。
+    /// </summary>
+    private static class SemanticBrushes
+    {
+        public static readonly Brush Type = FrozenSolidBrush(0x26, 0x7F, 0x99);   // 类型：青
+        public static readonly Brush Method = FrozenSolidBrush(0x6F, 0x42, 0xC1); // 方法/事件：紫
+        public static readonly Brush Property = FrozenSolidBrush(0x6F, 0x42, 0xC1); // 属性：紫（对齐 VS）
+        public static readonly Brush Field = FrozenSolidBrush(0x79, 0x5E, 0x26);  // 字段：金
+
+        private static Brush FrozenSolidBrush(byte r, byte g, byte b)
+        {
+            var brush = new SolidColorBrush(Color.FromRgb(r, g, b));
+            if (brush.CanFreeze) brush.Freeze();
+            return brush;
+        }
+    }
+
+    /// <summary>
+    /// 单个语义着色区间（文档绝对偏移 + 长度 + 前景色）。
+    /// </summary>
+    internal sealed class SemanticSpan(int start, int length, Brush brush)
+    {
+        public int Start { get; } = start;
+        public int Length { get; } = length;
+        public Brush Brush { get; } = brush;
+    }
+
+    /// <summary>
+    /// Roslyn 语义高亮着色器：根据 SemanticModel 将标识符（类型/方法/属性/字段）着色为对应前景色。
+    /// 运行在 xshd 语法高亮之后，通过 DocumentColorizingTransformer 增量覆盖前景，
+    /// 与 ErrorMarkerColorizer（背景）互补，互不干扰。
+    /// </summary>
+    internal sealed class SemanticColorizer : DocumentColorizingTransformer
+    {
+        private readonly Func<IReadOnlyList<SemanticSpan>?> _getSpans;
+
+        public SemanticColorizer(Func<IReadOnlyList<SemanticSpan>?> getSpans)
+        {
+            _getSpans = getSpans;
+        }
+
+        protected override void ColorizeLine(DocumentLine line)
+        {
+            var spans = _getSpans();
+            if (spans == null || spans.Count == 0) return;
+
+            var lineStart = line.Offset;
+            var lineEnd = line.EndOffset;
+
+            foreach (var span in spans)
+            {
+                if (span.Start >= lineEnd) continue;
+                if (span.Start + span.Length <= lineStart) continue;
+
+                var start = Math.Max(span.Start, lineStart);
+                var end = Math.Min(span.Start + span.Length, lineEnd);
+                if (start >= end) continue;
+
+                ChangeLinePart(start, end, e =>
+                {
+                    if (e.TextRunProperties is VisualLineElementTextRunProperties tp)
+                        tp.SetForegroundBrush(span.Brush);
+                });
+            }
+        }
+    }
+
     }
 
     // =======================================================

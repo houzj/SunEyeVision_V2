@@ -8,12 +8,12 @@ using SunEyeVision.Plugin.SDK.Logging;
 namespace SunEyeVision.Tool.Script.ScriptEngine
 {
     /// <summary>
-    /// 统一元数据引用服务 — 固定路径扫描（非 ALC），扫描 AppBase 目录中白名单程序集，
-    /// 为 Roslyn Workspace（UI 高亮）、CSharpCompilation（编译 Emit）、
-    /// AssemblyLoadContext（沙箱加载）提供同一份宿主程序集可见性（SSOT）。
+    /// 统一元数据引用服务 — 从 .NET SDK RefPack 加载 BCL 引用程序集，
+    /// 为 Roslyn Workspace（UI 高亮）和 CSharpCompilation（编译 Emit）提供类型元数据。
+    /// 业务 DLL（halcondotnetxl/OpenCvSharp/用户自定义）由 ScriptRefs 目录独立管理。
     ///
-    /// 设计决策：固定路径扫描替代 ALC 扫描，提高可观测性和可控性。
-    /// .NET facade（mscorlib, System, System.Core, netstandard）由 Roslyn 自动解析，不纳入。
+    /// Roslyn 引用 = RefPack（BCL，~165 个） + ScriptRefs（业务，用户自定义）。
+    /// 不再扫描 AppBase 目录，消除白名单维护成本和路径重复问题。
     /// </summary>
     internal static class MetadataReferenceProvider
     {
@@ -23,21 +23,19 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
         private static ImmutableHashSet<string>? _cachedNames;
 
         /// <summary>
-        /// 白名单前缀列表 — 只有匹配的程序集才会被纳入宿主引用。
-        /// 不含 .NET facade（mscorlib/System/System.Core/netstandard），由 Roslyn 自动解析。
+        /// RefPack 排除名单 — RefPack 目录下所有 DLL 都是合法 .NET 引用程序集，
+        /// 不应再加白名单过滤。唯独 System.Private.CoreLib 是实现程序集
+        /// （带 ReferenceAssembly 标记），不能直接作为 Roslyn MetadataReference。
         /// </summary>
-        private static readonly string[] _allowedPrefixes =
+        private static readonly string[] _refPackBlockedNames =
         [
-            "SunEyeVision.",
-            "halcondotnet",
-            "OpenCvSharp",
-            "System.Windows.Forms",
-            "System.Runtime",
             "System.Private.CoreLib",
         ];
 
         /// <summary>
-        /// 获取宿主程序集的元数据引用（缓存），用于 Roslyn Workspace 和 CSharpCompilation。
+        /// 获取所有引用程序集的元数据引用（缓存），用于 Roslyn Workspace 和 CSharpCompilation。
+        /// 当前仅包含 .NET SDK RefPack 的 BCL 引用程序集。
+        /// 业务 DLL（halcondotnetxl/OpenCvSharp/用户自定义）由 ScriptRefs 独立管理。
         /// </summary>
         public static ImmutableList<MetadataReference> GetHostReferences()
         {
@@ -46,7 +44,8 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
         }
 
         /// <summary>
-        /// 获取所有宿主程序集的文件路径（绝对路径集合），供沙箱 ALC 按路径精确加载。
+        /// 获取 RefPack 引用程序集的文件路径（仅用于诊断，不用于运行时加载）。
+        /// RefPack 程序集为 metadata-only 引用程序集，不可在运行时 LoadFromAssemblyPath。
         /// </summary>
         public static ImmutableHashSet<string> GetHostAssemblyPaths()
         {
@@ -55,7 +54,7 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
         }
 
         /// <summary>
-        /// 获取所有宿主程序集的简单名称，供沙箱 OnResolving 名称匹配。
+        /// 获取 RefPack 引用程序集的简单名称（仅用于诊断）。
         /// </summary>
         public static ImmutableHashSet<string> GetHostAssemblyNames()
         {
@@ -64,7 +63,7 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
         }
 
         /// <summary>
-        /// 强制重新扫描（仅在宿主动态加载新程序集时使用，当前版本不调用，保留 API）。
+        /// 清除缓存，下次调用 EnsureLoaded 时重新加载。
         /// </summary>
         public static void InvalidateCache()
         {
@@ -84,55 +83,15 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                 if (_cachedReferences != null) return;
 
                 var sw = System.Diagnostics.Stopwatch.StartNew();
-                var baseDir = AppDomain.CurrentDomain.BaseDirectory;
-
-                if (!Directory.Exists(baseDir))
-                {
-                    PluginLogger.Warning(
-                        $"[MetadataRef] AppBase 目录不存在: {baseDir}",
-                        nameof(MetadataReferenceProvider));
-                    _cachedReferences = ImmutableList<MetadataReference>.Empty;
-                    _cachedPaths = ImmutableHashSet<string>.Empty;
-                    _cachedNames = ImmutableHashSet<string>.Empty;
-                    return;
-                }
-
                 var refs = ImmutableList.CreateBuilder<MetadataReference>();
                 var paths = ImmutableHashSet.CreateBuilder<string>(StringComparer.OrdinalIgnoreCase);
                 var names = ImmutableHashSet.CreateBuilder<string>(StringComparer.OrdinalIgnoreCase);
-                int totalDlls = 0, filteredCount = 0, filteredRefPack = 0, failed = 0;
+                int count = 0;
 
-                foreach (var dllPath in Directory.EnumerateFiles(baseDir, "*.dll"))
-                {
-                    totalDlls++;
-                    var fileName = Path.GetFileNameWithoutExtension(dllPath);
-                    if (string.IsNullOrEmpty(fileName)) continue;
-
-                    // 白名单过滤
-                    if (!_allowedPrefixes.Any(prefix =>
-                            fileName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
-                        continue;
-
-                    try
-                    {
-                        refs.Add(MetadataReference.CreateFromFile(dllPath));
-                        paths.Add(dllPath);
-                        names.Add(fileName);
-                        filteredCount++;
-                    }
-                    catch (Exception ex)
-                    {
-                        PluginLogger.Warning(
-                            $"[MetadataRef] 创建引用失败被跳过: Name={fileName}, Path={dllPath}, 错误={ex.Message}",
-                            nameof(MetadataReferenceProvider));
-                        failed++;
-                    }
-                }
-
-                // 补充：从 .NET SDK Ref Pack 加载运行时核心引用（如 System.Private.CoreLib）
-                // 这些程序集不在发布输出目录（dev/Debug/）中，但 Roslyn 编译需要它们来识别
+                // 从 .NET SDK Ref Pack 加载运行时核心引用（如 System.Private.CoreLib）
+                // 这些程序集不在发布输出目录中，但 Roslyn 编译需要它们来识别
                 // System.Void、System.Int32 等预定义类型（修复 CS0518 级联误报）
-                filteredRefPack = TryLoadRefPackFallback(refs, paths, names);
+                count = TryLoadRefPackFallback(refs, paths, names);
 
                 _cachedReferences = refs.ToImmutable();
                 _cachedPaths = paths.ToImmutable();
@@ -140,7 +99,7 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                 sw.Stop();
 
                 PluginLogger.Info(
-                    $"[MetadataRef] 统一引用初始化完成: 基础目录总DLL={totalDlls}, 白名单命中={filteredCount}, RefPack补充={filteredRefPack}, 失败={failed}, 耗时={sw.ElapsedMilliseconds}ms",
+                    $"[MetadataRef] 统一引用初始化完成: RefPack补充={count}, 耗时={sw.ElapsedMilliseconds}ms",
                     nameof(MetadataReferenceProvider));
             }
         }
@@ -199,10 +158,12 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                 {
                     var fileName = Path.GetFileNameWithoutExtension(dllPath);
                     if (string.IsNullOrEmpty(fileName)) continue;
-                    if (!_allowedPrefixes.Any(prefix =>
-                            fileName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
+
+                    // RefPack 目录下所有 DLL 都是合法的 .NET 引用程序集，
+                    // 唯独排除 System.Private.CoreLib（实现程序集，不应作为 MetadataReference）。
+                    if (_refPackBlockedNames.Any(name =>
+                            string.Equals(name, fileName, StringComparison.OrdinalIgnoreCase)))
                         continue;
-                    if (names.Contains(fileName)) continue; // 已从 baseDir 加载
 
                     try
                     {

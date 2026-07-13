@@ -63,6 +63,10 @@ namespace SunEyeVision.Tool.Script.Views
         private ImmutableArray<ClassifiedSpan> _currentClassifications = [];
         private RoslynSemanticColorizer? _semanticColorizer;
 
+        // 初始化阶段抑制诊断（避免 TextChanged 在 workspace 就绪前触发诊断，
+        // 消除 "[Diagnostic] 跳过: workspace=False" 日志噪声）
+        private bool _suppressDiagnostic;
+
         // 进程生命周期内共享的 MefHostServices（首次初始化慢，后续缓存命中快）
         private static MefHostServices? _sharedMefHost;
         private static object _mefLock = new();
@@ -232,6 +236,8 @@ namespace SunEyeVision.Tool.Script.Views
             if (parameters is ScriptParameters scriptParams)
             {
                 _parameters = scriptParams;
+                _suppressDiagnostic = true;     // 抑制 CodeEditor.Text 触发器引发的诊断
+
                 if (CodeEditor != null)
                 {
                     CodeEditor.Text = _parameters.ScriptCode;
@@ -245,6 +251,7 @@ namespace SunEyeVision.Tool.Script.Views
                     var perfSw = System.Diagnostics.Stopwatch.StartNew();
                     RebuildWorkspace();
                     PluginLogger.Info($"[Perf] RebuildWorkspace: {perfSw.ElapsedMilliseconds}ms", GetType().Name);
+                    _suppressDiagnostic = false;    // workspace 就绪，开放诊断
                     ScheduleDiagnosticAsync();
                 }, DispatcherPriority.Background);
 
@@ -1124,6 +1131,11 @@ namespace SunEyeVision.Tool.Script.Views
         /// </summary>
         private void OnCodeEditorTextChanged(object? sender, EventArgs e)
         {
+            // 初始化期间抑制诊断（SetParameters → RebuildWorkspace 完成前，
+            // workspace 和 userDocumentId 尚未就绪，此时触发诊断只会打印
+            // "[Diagnostic] 跳过: workspace=False" 日志噪声）
+            if (_suppressDiagnostic) return;
+
             // ★ 用户改代码 → 旧执行结果失效，状态回"就绪"
             //   当前显示"成功/失败"时，用户改代码意味着新的执行周期开始
             if (StatusLabel.Content is string currentStatus &&

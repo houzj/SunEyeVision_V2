@@ -109,6 +109,14 @@ provider:
 1. [步骤1]
 2. [步骤2]
 
+### 清理清单
+| 文件 | 清理内容 | 原因 |
+|------|---------|------|
+| path/file.cs | 删除已废弃的 ReadLegacyData() XML doc 注释（含 5 行 param 描述） | 该方法已在上一轮重构时删除，注释残留 |
+| path/file2.cs | 删除被注释掉的旧实现代码块（16 行，含 TODO 标记） | 已有新实现替代，旧代码不应保留 |
+| path/file3.cs | 更新 XML doc 中已改名参数（oldParam → newParam） | 参数改名但 doc 未更新，语义不一致 |
+| path/file4.cs | 删除无用 using（System.Data、System.Xml 等 3 行） | 重构后不再使用 |
+
 ### 防御机制（≥ 2 项）
 
 | 防御机制 | 说明 | 验证方式 |

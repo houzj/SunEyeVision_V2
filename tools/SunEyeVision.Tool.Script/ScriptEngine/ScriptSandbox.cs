@@ -11,8 +11,9 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
     /// 脚本沙箱 — 使用 AssemblyLoadContext 隔离加载脚本程序集。
     /// 每次执行后卸载，防止内存泄漏。
     ///
-    /// 程序集可见性：构造函数一次性预加载宿主 ALC 的所有脚本相关程序集（按路径加载），
-    /// 以及 ScriptRefs 目录下的用户第三方 DLL。按路径加载避免 .NET 8 facade 按名解析歧义。
+    /// 程序集可见性：构造函数预加载 ScriptRefs 目录下的用户第三方 DLL。
+    /// 业务程序集（halcondotnetxl/OpenCvSharp/用户自定义）走 ScriptRefs，
+    /// .NET BCL 类型走默认 ALC 自动 fallback。
     /// </summary>
     internal sealed class ScriptSandbox : IDisposable
     {
@@ -29,22 +30,6 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
         {
             _contextName = contextName;
             _alc = new AssemblyLoadContext(contextName, isCollectible: true);
-
-            // 预加载宿主 ALC 中与脚本相关的所有程序集（按路径，避免 .NET 8 facade 解析歧义）
-            var hostPaths = MetadataReferenceProvider.GetHostAssemblyPaths();
-            foreach (var path in hostPaths)
-            {
-                try
-                {
-                    _alc.LoadFromAssemblyPath(path);
-                }
-                catch (Exception ex)
-                {
-                    PluginLogger.Warning(
-                        $"[Sandbox] 预加载宿主程序集失败: {path}, 错误={ex.Message}",
-                        nameof(ScriptSandbox));
-                }
-            }
 
             // 预加载 ScriptRefs 目录中的所有用户自定义 DLL
             if (!string.IsNullOrEmpty(assemblyRefDir) && Directory.Exists(assemblyRefDir))
@@ -64,7 +49,11 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                 }
             }
 
-            // OnResolving 兜底：仅用于诊断，正常路径下所有程序集已预加载到 _alc
+            // OnResolving 兜底（rule-008 报错优先）：
+            // ScriptRefs 已预加载 halcondotnetxl/OpenCvSharp/SWF 等业务 DLL。
+            // 未预加载的类型（如 SunEyeVision.*，由默认 ALC fallback 自动解析）
+            // 触发本回调时返回 null，让 ALC 抛 FileNotFoundException，
+            // 脚本作者立刻知道哪个类型不可用（不静默）。
             _alc.Resolving += OnResolving;
         }
 
@@ -115,9 +104,8 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
 
         /// <summary>
         /// OnResolving 兜底（rule-008 报错优先）：
-        /// 所有宿主程序集已在构造函数预加载，正常路径下不会触发本回调。
-        /// 若触发，说明预加载遗漏 → 返回 null 让 ALC 抛 FileNotFoundException，
-        /// 让脚本作者立刻知道哪个类型不可用（不静默）。
+        /// ScriptRefs 已预加载业务 DLL，未预加载的类型触发的 resolve 事件
+        /// 返回 null，让 ALC 抛 FileNotFoundException（不静默）。
         /// </summary>
         private Assembly? OnResolving(AssemblyLoadContext context, AssemblyName assemblyName)
         {

@@ -33,6 +33,18 @@
     <PackageReference Include="Microsoft.CodeAnalysis.Features" Version="4.12.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" Version="4.12.0" />
   </ItemGroup>
+  <!-- ScriptRefs 部署：构建后从主程序输出根目录复制宿主 DLL 到 ScriptRefs 子目录，
+       这些 DLL 被 Roslyn 编译和沙箱运行时引用。部署机制确保 clean build 后 ScriptRefs 非空。 -->
+  <Target Name="CopyToScriptRefs" AfterTargets="Build" Condition="'$(IsToolPlugin)'=='true'">
+    <PropertyGroup>
+      <_ScriptRefsDir>$(OutDir)ScriptRefs\</_ScriptRefsDir>
+    </PropertyGroup>
+    <ItemGroup>
+      <_ScriptRefsDlls Include="$([System.IO.Path]::GetFullPath('$(OutDir)..\..\halcondotnetxl.dll'))" />
+      <_ScriptRefsDlls Include="$([System.IO.Path]::GetFullPath('$(OutDir)..\..\OpenCvSharp.dll'))" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_ScriptRefsDlls)" DestinationFolder="$(_ScriptRefsDir)" SkipUnchangedFiles="true" />
+  </Target>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Plugin.SDK\SunEyeVision.Plugin.SDK.csproj">
       <Private>false</Private>

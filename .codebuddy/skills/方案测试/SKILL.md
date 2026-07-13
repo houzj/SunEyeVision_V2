@@ -719,6 +719,7 @@ A total of 1 test files matched the specified pattern.
 | 6 | rule-008 | 无 [Obsolete]/条件编译/注释代码/兼容层 | 全部修改文件 | ✅/❌ |
 | 7 | rule-010 | System.Text.Json 序列化，用 [JsonPolymorphic] | src/XXX.cs | ✅/❌ |
 | 8 | rule-016 | csproj OutDir 由 Directory.Build.targets 统一控制 | *.csproj | ✅/❌ |
+| 9 | rule-008 纯净 | 修改文件无"注释残留"：XML doc 引用已删除/已改名的方法、属性、参数；被注释掉的旧代码块 >3 行；与代码不匹配的语义描述 | 全部修改文件 | ✅/❌ |
 ```
 
 > 审查方法：`search_content` 搜索违规 pattern，必要时 `read_file` 确认。
@@ -731,6 +732,7 @@ A total of 1 test files matched the specified pattern.
 | rule-015 违反（静默回退/兜底） | 回退到方案实施，必须直接报错 |
 | rule-002/001/003 违反 | 回退到方案实施，修复命名/通知/日志 |
 | rule-008 违反（含旧代码/注释） | 回退到方案实施，清理残留 |
+| rule-008 纯净（注释残留/死代码/XML doc 不匹配） | 回退到方案实施，对涉及文件执行 Phase 2 Step E Purify |
 
 ---
 

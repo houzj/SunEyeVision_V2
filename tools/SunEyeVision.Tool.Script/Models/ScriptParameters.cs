@@ -81,15 +81,20 @@ namespace SunEyeVision.Tool.Script.Models
         public Dictionary<string, object?>? ResolvedInputValues { get; set; }
 
         /// <summary>
-        /// 获取引用目录的完整路径（基于应用程序根目录解析，不依赖插件 DLL 路径）
+        /// 获取引用目录的完整路径（基于工具自身 Assembly.Location 解析，
+        /// 跟随 OutDir 迁移，不依赖主程序 AppDomain.BaseDirectory）。
+        /// 注：typeof(ScriptParameters).Assembly.Location = 工具 DLL 所在目录
+        /// （如 dev/Debug/plugins/SunEyeVision.Tool.Script/），
+        /// AssemblyReferenceDir 默认 "ScriptRefs" 拼接后指向同目录下的 ScriptRefs 子目录。
         /// </summary>
         [JsonIgnore]
         public string AssemblyReferenceFullPath
         {
             get
             {
-                var baseDir = AppDomain.CurrentDomain.BaseDirectory;
-                return Path.GetFullPath(Path.Combine(baseDir, _assemblyReferenceDir));
+                var assemblyDir = Path.GetDirectoryName(typeof(ScriptParameters).Assembly.Location)
+                    ?? AppContext.BaseDirectory;
+                return Path.GetFullPath(Path.Combine(assemblyDir, _assemblyReferenceDir));
             }
         }
 

@@ -17,7 +17,9 @@ description: 遗留代码清理技能。用于清理废弃代码、重命名过�
 
 ## 清理流程
 
-### 第1步：全面分析
+### 模式 A：全量清理（独立调用 — 用户主动触发）
+
+适用于架构迁移、概念重命名、大规模废弃代码清理。按照以下流程操作。
 
 先搜索再动手，确认影响范围：
 
@@ -57,6 +59,43 @@ search_content pattern="class.*旧类名" outputMode="files_with_matches"
 read_lints paths="<modified-file>"
 dotnet build SunEyeVision.sln
 ```
+
+---
+
+### 模式 B：轻量文件级净化（管线调用 — 由"方案实施"Phase 2 Step E 自动触发）
+
+适用于单次代码修改后的"后处理净化"。每次修改文件后调用，清理该文件内的残留。
+
+#### B1 净化范围
+
+只扫描**本次修改过的文件**，不扫描全库。目标仅为：
+1. **注释残留** — 注释/XML doc 中引用已删除/已改名的方法、属性、类名、参数名
+2. **死代码残留** — >3 行的注释掉的旧代码块（GUID/时间戳标记的旧实现）
+3. **无用 using** — 已不再使用的命名空间导入
+4. **XML doc 不匹配** — `/// <param name="xxx">` 与实际参数不一致；`/// <returns>` 描述与实际返回类型不匹配
+5. **无引用私有成员** — private 字段/方法（确认无反射/序列化依赖后删除）
+
+#### B2 净化流程
+
+```
+for each modified .cs file:
+  1. Read file full content
+  2. Scan for 5 类残留模式（B1）
+  3. If found:
+     ├── 注释残留 → delete/update XML doc
+     ├── 死代码块 → delete the commented block
+     ├── 无用 using → remove the line
+     ├── XML doc 不匹配 → fix param/returns description
+     └── 无引用私有成员 → delete (confirm safety first)
+  4. Write cleaned file
+  5. Log: "清理完成: {文件} → 清理了 N 处残留 ({类型})"
+```
+
+#### B3 约束
+
+- **禁止**修改本次修改范围外的逻辑代码（只清理残留，不新增功能）
+- **禁止**删除跨文件引用的公共成员（检查 `search_content` 找引用）
+- **禁止**跳过 >3 行的注释代码块（发现即删除，不累积）
 
 ## 项目特定清理场景
 

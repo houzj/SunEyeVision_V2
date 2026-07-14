@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.Loader;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -87,9 +88,11 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             // 合并所有代码段用于缓存哈希 + 类名提取
             var combinedCode = string.Join("\n", codeParts);
 
-            // 0a. 检查编译缓存（相同代码 + 相同引用目录）
+            // 0a. 检查编译缓存（相同代码 + 宿主程序集指纹）
+            // 缓存键包含宿主已加载程序集的版本指纹：宿主 DLL（SunEyeVision.*/halcon/OpenCvSharp）
+            // 升级后指纹变化，自动触发重新编译，避免用旧元数据编译出的 IL 引用已变更的类型。
             var codeHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(combinedCode)));
-            var cacheKey = $"{codeHash}|{assemblyRefDir ?? ""}";
+            var cacheKey = $"{codeHash}|{ComputeHostFingerprint()}";
             if (_compileCache.TryGetValue(cacheKey, out var cached))
             {
                 PluginLogger.Info(
@@ -116,19 +119,29 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             }
             parseSw.Stop();
 
-            // 3. 获取元数据引用：默认 ALC（统一服务缓存） + ScriptRefs（按目录缓存）
+            // 3. 获取元数据引用：宿主已加载程序集（运行时 ALC / TPA，含 BCL 与宿主 API）
+            //    + ScriptRefs（用户自定义第三方 DLL）。
+            //    BCL（System.Private.CoreLib / System.Runtime / netstandard）由运行时 TPA 保证提供，
+            //    不再依赖 .NET SDK RefPack（部署环境可能缺失，且曾错误排除 System.Private.CoreLib 导致 CS0518）。
             var refSw = Stopwatch.StartNew();
-            var defaultRefs = MetadataReferenceProvider.GetHostReferences();
-            var metadataReferences = new List<MetadataReference>(defaultRefs.Count + 16);
-            metadataReferences.AddRange(defaultRefs);
+            var metadataReferences = new List<MetadataReference>();
+            var addedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            int hostRefCount = 0, scriptRefCount = 0;
 
-            // 3b. ScriptRefs 目录（用户自定义第三方 DLL），通过共享缓存加载
-            int scriptRefCount = 0;
+            foreach (var mdRef in MetadataReferenceProvider.GetHostReferences())
+            {
+                if (TryAddMetadataRef(metadataReferences, addedPaths, mdRef)) hostRefCount++;
+            }
+
+            // 3b. ScriptRefs 目录（仅用户自定义第三方 DLL），通过共享缓存加载
             if (!string.IsNullOrEmpty(assemblyRefDir))
             {
                 var sharedRefs = SharedMetadataReferenceProvider.GetScriptRefs(assemblyRefDir);
                 scriptRefCount = sharedRefs.Count;
-                metadataReferences.AddRange(sharedRefs);
+                foreach (var mdRef in sharedRefs)
+                {
+                    TryAddMetadataRef(metadataReferences, addedPaths, mdRef);
+                }
             }
             refSw.Stop();
 
@@ -154,7 +167,7 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             totalSw.Stop();
 
             PluginLogger.Info($"[ScriptCompiler] 编译性能: 语法树={codeParts.Count}({parseSw.ElapsedMilliseconds}ms), " +
-                $"引用={refSw.ElapsedMilliseconds}ms(默认={defaultRefs.Count},ScriptRefs={scriptRefCount}), " +
+                $"引用={refSw.ElapsedMilliseconds}ms(宿主={hostRefCount},ScriptRefs={scriptRefCount}), " +
                 $"创建编译={createSw.ElapsedMilliseconds}ms, Emit={emitSw.ElapsedMilliseconds}ms, " +
                 $"总={totalSw.ElapsedMilliseconds}ms, 成功={emitResult.Success}, " +
                 $"代码长度={combinedCode.Length}",
@@ -186,6 +199,25 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// 按元数据引用的文件路径去重后加入引用列表，避免重复引用导致 Roslyn CS1703。
+        /// 文件型引用以规范化全路径为键；无路径的引用（如内存引用）直接加入。
+        /// </summary>
+        private static bool TryAddMetadataRef(
+            List<MetadataReference> list, HashSet<string> addedPaths, MetadataReference mdRef)
+        {
+            var p = (mdRef as PortableExecutableReference)?.FilePath;
+            if (p != null)
+            {
+                string key;
+                try { key = Path.GetFullPath(p); }
+                catch { key = p; }
+                if (!addedPaths.Add(key)) return false;
+            }
+            list.Add(mdRef);
+            return true;
         }
 
         /// <summary>
@@ -229,6 +261,36 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                 }
             }
             return string.Empty;
+        }
+
+        /// <summary>
+        /// 计算宿主程序集版本指纹（用于编译缓存键）。
+        /// 仅关注脚本实际依赖的宿主 DLL（SunEyeVision.* / halcondotnetxl / OpenCvSharp / System.Windows.Forms），
+        /// 这些 DLL 升级会改变 API 表面，必须触发脚本重新编译。
+        /// BCL 程序集版本在进程生命周期内不变，不计入指纹以保证缓存命中率。
+        /// </summary>
+        private static string ComputeHostFingerprint()
+        {
+            var nativeHostNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "halcondotnetxl",
+                "OpenCvSharp",
+                "System.Windows.Forms",
+            };
+
+            var sb = new StringBuilder();
+            foreach (var asm in AssemblyLoadContext.Default.Assemblies
+                .Where(a => !a.IsDynamic && a.GetName().Name != null)
+                .Where(a =>
+                    a.GetName().Name!.StartsWith("SunEyeVision.", StringComparison.OrdinalIgnoreCase)
+                    || nativeHostNames.Contains(a.GetName().Name!))
+                .OrderBy(a => a.GetName().Name))
+            {
+                var name = asm.GetName();
+                sb.Append($"{name.Name}:{name.Version}|");
+            }
+
+            return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(sb.ToString())))[..16];
         }
 
     }

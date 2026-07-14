@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
 using ScriptBase = SunEyeVision.Plugin.SDK.Scripting.Script;
@@ -11,9 +12,12 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
     /// 脚本沙箱 — 使用 AssemblyLoadContext 隔离加载脚本程序集。
     /// 每次执行后卸载，防止内存泄漏。
     ///
-    /// 程序集可见性：构造函数预加载 ScriptRefs 目录下的用户第三方 DLL。
-    /// 业务程序集（halcondotnetxl/OpenCvSharp/用户自定义）走 ScriptRefs，
-    /// .NET BCL 类型走默认 ALC 自动 fallback。
+    /// 程序集可见性（遵循 .NET 官方插件隔离模式）：
+    ///   宿主系统 DLL（已在默认 ALC 中加载的 SunEyeVision.* / halcon / OpenCvSharp 等）
+    ///   必须由默认 ALC fallback 解析，禁止预加载到自定义 ALC，否则脚本继承的
+    ///   Script 基类与沙箱 as ScriptBase 校验时类型身份不一致 → 静默失败。
+    ///   仅用户自定义第三方 DLL（来自 userLibDir，通常为 ScriptRefs 中的用户 DLL）
+    ///   才预加载到自定义 ALC 实现隔离。
     /// </summary>
     internal sealed class ScriptSandbox : IDisposable
     {
@@ -26,16 +30,21 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
         /// </summary>
         public Assembly? LoadedAssembly { get; private set; }
 
-        public ScriptSandbox(string contextName, string? assemblyRefDir = null)
+        public ScriptSandbox(string contextName, string? userLibDir = null)
         {
             _contextName = contextName;
             _alc = new AssemblyLoadContext(contextName, isCollectible: true);
 
-            // 预加载 ScriptRefs 目录中的所有用户自定义 DLL
-            if (!string.IsNullOrEmpty(assemblyRefDir) && Directory.Exists(assemblyRefDir))
+            // 预加载用户自定义第三方 DLL（来自 userLibDir，通常为 ScriptRefs 中的用户 DLL）。
+            // 宿主系统 DLL（已在默认 ALC 中的程序集）跳过预加载，由默认 ALC fallback 解析，
+            // 保证脚本基类 Script 与沙箱校验用的 ScriptBase 是同一 CLR 类型身份。
+            if (!string.IsNullOrEmpty(userLibDir) && Directory.Exists(userLibDir))
             {
-                foreach (var dll in Directory.EnumerateFiles(assemblyRefDir, "*.dll"))
+                foreach (var dll in Directory.EnumerateFiles(userLibDir, "*.dll"))
                 {
+                    if (IsHostAssembly(Path.GetFileNameWithoutExtension(dll)))
+                        continue;
+
                     try
                     {
                         _alc.LoadFromAssemblyPath(dll);
@@ -43,18 +52,26 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                     catch (Exception ex)
                     {
                         PluginLogger.Warning(
-                            $"[Sandbox] 预加载 ScriptRefs DLL 失败: {dll}, 错误={ex.Message}",
+                            $"[Sandbox] 预加载用户自定义 DLL 失败: {dll}, 错误={ex.Message}",
                             nameof(ScriptSandbox));
                     }
                 }
             }
 
             // OnResolving 兜底（rule-008 报错优先）：
-            // ScriptRefs 已预加载 halcondotnetxl/OpenCvSharp/SWF 等业务 DLL。
-            // 未预加载的类型（如 SunEyeVision.*，由默认 ALC fallback 自动解析）
-            // 触发本回调时返回 null，让 ALC 抛 FileNotFoundException，
-            // 脚本作者立刻知道哪个类型不可用（不静默）。
+            // 脚本引用但未预加载的 DLL 触发本回调，记录诊断信息后返回 null，
+            // 让 CLR 继续走默认 ALC fallback 或抛 FileNotFoundException（不静默）。
             _alc.Resolving += OnResolving;
+        }
+
+        /// <summary>
+        /// 判断程序集是否为宿主已加载程序集（已在默认 ALC 中存在）。
+        /// 宿主程序集禁止复制到自定义 ALC，必须由默认 ALC fallback 解析以保持类型一致。
+        /// </summary>
+        private static bool IsHostAssembly(string assemblyName)
+        {
+            return AssemblyLoadContext.Default.Assemblies
+                .Any(a => !a.IsDynamic && a.GetName().Name == assemblyName);
         }
 
         /// <summary>
@@ -74,18 +91,29 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
         }
 
         /// <summary>
-        /// 创建脚本实例（必须已调用 LoadAssembly）
+        /// 创建脚本实例（必须已调用 LoadAssembly）。
+        /// 类不存在或类型不匹配时直接抛异常（不静默返回 null），错误信息包含 ALC 上下文。
         /// </summary>
-        public ScriptBase? CreateScriptInstance(string className)
+        public ScriptBase CreateScriptInstance(string className)
         {
             if (LoadedAssembly == null)
                 throw new InvalidOperationException("请先调用 LoadAssembly 加载程序集");
 
-            var type = LoadedAssembly.GetType(className);
-            if (type == null)
-                return null;
+            var type = LoadedAssembly.GetType(className)
+                ?? throw new InvalidOperationException(
+                    $"程序集中找不到类 \"{className}\"。请确认脚本代码中有 public class {className} : Script 的定义。");
 
-            return Activator.CreateInstance(type) as ScriptBase;
+            var instance = Activator.CreateInstance(type);
+
+            if (instance is not ScriptBase scriptInstance)
+                throw new InvalidOperationException(
+                    $"类 \"{className}\" 类型不匹配，无法作为脚本实例。\n" +
+                    $"  实际基类: {type.BaseType?.FullName}\n" +
+                    $"  基类所在程序集: {type.BaseType?.Assembly.GetName().Name}\n" +
+                    $"  宿主 ScriptBase 程序集: {typeof(ScriptBase).Assembly.GetName().Name}\n" +
+                    $"原因：宿主 DLL 被错误预加载到了自定义 ALC，导致基类类型出现两份副本。");
+
+            return scriptInstance;
         }
 
         /// <summary>
@@ -104,11 +132,18 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
 
         /// <summary>
         /// OnResolving 兜底（rule-008 报错优先）：
-        /// ScriptRefs 已预加载业务 DLL，未预加载的类型触发的 resolve 事件
-        /// 返回 null，让 ALC 抛 FileNotFoundException（不静默）。
+        /// 记录无法解析的程序集全名与自定义 ALC 已加载列表，便于定位缺失的 DLL，
+        /// 然后返回 null 让 CLR 继续走默认 ALC fallback 或抛 FileNotFoundException（不静默）。
         /// </summary>
         private Assembly? OnResolving(AssemblyLoadContext context, AssemblyName assemblyName)
         {
+            PluginLogger.Error(
+                $"[Sandbox] 程序集解析失败: \"{assemblyName.FullName}\"\n" +
+                $"  上下文: {_contextName}\n" +
+                $"  自定义 ALC 已加载: [{string.Join(", ", context.Assemblies.Select(a => a.GetName().Name))}]\n" +
+                $"  提示: 宿主系统 DLL (SunEyeVision.*/halcon/OpenCvSharp) 通过默认 ALC fallback 解析；" +
+                $"用户自定义 DLL 请放置到 ScriptRefs 目录。",
+                nameof(ScriptSandbox));
             return null;
         }
 

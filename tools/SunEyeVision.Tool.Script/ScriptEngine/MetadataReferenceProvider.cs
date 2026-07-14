@@ -1,65 +1,39 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
-using System.Linq;
+using System.Reflection;
+using System.Runtime.Loader;
 using Microsoft.CodeAnalysis;
 using SunEyeVision.Plugin.SDK.Logging;
 
 namespace SunEyeVision.Tool.Script.ScriptEngine
 {
     /// <summary>
-    /// 统一元数据引用服务 — 从 .NET SDK RefPack 加载 BCL 引用程序集，
-    /// 为 Roslyn Workspace（UI 高亮）和 CSharpCompilation（编译 Emit）提供类型元数据。
-    /// 业务 DLL（halcondotnetxl/OpenCvSharp/用户自定义）由 ScriptRefs 目录独立管理。
+    /// 统一元数据引用服务 — 为 Roslyn Workspace（UI 高亮）和 CSharpCompilation（编译 Emit）提供类型元数据。
     ///
-    /// Roslyn 引用 = RefPack（BCL，~165 个） + ScriptRefs（业务，用户自定义）。
-    /// 不再扫描 AppBase 目录，消除白名单维护成本和路径重复问题。
+    /// 引用来源（全部来自运行时已加载程序集，不再依赖 .NET SDK RefPack）：
+    ///   1. 可信平台程序集（TRUSTED_PLATFORM_ASSEMBLIES）— 由 .NET 运行时宿主设置，必然包含
+    ///      System.Private.CoreLib / System.Runtime / netstandard，确保 System.Void / System.Boolean 等
+    ///      预定义类型可解析（修复 CS0518 级联误报）。在任何部署形态（框架依赖 / 自包含）下均可用。
+    ///   2. 宿主已加载程序集（默认 ALC + 当前插件 ALC）— Script / IVisionImage / LogInfo / halcon 等宿主 API，
+    ///      由宿主统一加载，编译元数据与运行时版本完全一致，保证脚本继承的 Script 基类与运行时类型身份一致。
+    ///
+    /// 不再扫描 .NET SDK RefPack 目录：部署环境（无 SDK）下 RefPack 不存在，且曾错误排除
+    /// System.Private.CoreLib 导致预定义类型缺失（CS0518）。元数据统一来自运行时 ALC，符合"注入 ALC"语义。
     /// </summary>
     internal static class MetadataReferenceProvider
     {
         private static readonly object _lock = new();
         private static ImmutableList<MetadataReference>? _cachedReferences;
-        private static ImmutableHashSet<string>? _cachedPaths;
-        private static ImmutableHashSet<string>? _cachedNames;
 
         /// <summary>
-        /// RefPack 排除名单 — RefPack 目录下所有 DLL 都是合法 .NET 引用程序集，
-        /// 不应再加白名单过滤。唯独 System.Private.CoreLib 是实现程序集
-        /// （带 ReferenceAssembly 标记），不能直接作为 Roslyn MetadataReference。
-        /// </summary>
-        private static readonly string[] _refPackBlockedNames =
-        [
-            "System.Private.CoreLib",
-        ];
-
-        /// <summary>
-        /// 获取所有引用程序集的元数据引用（缓存），用于 Roslyn Workspace 和 CSharpCompilation。
-        /// 当前仅包含 .NET SDK RefPack 的 BCL 引用程序集。
-        /// 业务 DLL（halcondotnetxl/OpenCvSharp/用户自定义）由 ScriptRefs 独立管理。
+        /// 获取脚本编译所需的全部宿主元数据引用（BCL + 宿主 API），按文件路径去重，进程内缓存一次。
         /// </summary>
         public static ImmutableList<MetadataReference> GetHostReferences()
         {
             EnsureLoaded();
             return _cachedReferences!;
-        }
-
-        /// <summary>
-        /// 获取 RefPack 引用程序集的文件路径（仅用于诊断，不用于运行时加载）。
-        /// RefPack 程序集为 metadata-only 引用程序集，不可在运行时 LoadFromAssemblyPath。
-        /// </summary>
-        public static ImmutableHashSet<string> GetHostAssemblyPaths()
-        {
-            EnsureLoaded();
-            return _cachedPaths!;
-        }
-
-        /// <summary>
-        /// 获取 RefPack 引用程序集的简单名称（仅用于诊断）。
-        /// </summary>
-        public static ImmutableHashSet<string> GetHostAssemblyNames()
-        {
-            EnsureLoaded();
-            return _cachedNames!;
         }
 
         /// <summary>
@@ -70,8 +44,6 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             lock (_lock)
             {
                 _cachedReferences = null;
-                _cachedPaths = null;
-                _cachedNames = null;
             }
         }
 
@@ -83,113 +55,125 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                 if (_cachedReferences != null) return;
 
                 var sw = System.Diagnostics.Stopwatch.StartNew();
-                var refs = ImmutableList.CreateBuilder<MetadataReference>();
-                var paths = ImmutableHashSet.CreateBuilder<string>(StringComparer.OrdinalIgnoreCase);
-                var names = ImmutableHashSet.CreateBuilder<string>(StringComparer.OrdinalIgnoreCase);
-                int count = 0;
 
-                // 从 .NET SDK Ref Pack 加载运行时核心引用（如 System.Private.CoreLib）
-                // 这些程序集不在发布输出目录中，但 Roslyn 编译需要它们来识别
-                // System.Void、System.Int32 等预定义类型（修复 CS0518 级联误报）
-                count = TryLoadRefPackFallback(refs, paths, names);
+                // 按规范化路径去重，避免重复引用导致 Roslyn CS1703
+                var refs = new Dictionary<string, MetadataReference>(StringComparer.OrdinalIgnoreCase);
+                int added = 0;
 
-                _cachedReferences = refs.ToImmutable();
-                _cachedPaths = paths.ToImmutable();
-                _cachedNames = names.ToImmutable();
+                // 1. 可信平台程序集（TPA）：框架 + 宿主主程序集，必然含 System.Private.CoreLib
+                added += AddTrustedPlatformAssemblies(refs);
+
+                // 2. 宿主已加载程序集（默认 ALC + 当前插件 ALC）：脚本实际依赖的宿主 API
+                added += AddLoadedContextAssemblies(refs);
+
+                _cachedReferences = refs.Values.ToImmutableList();
                 sw.Stop();
 
                 PluginLogger.Info(
-                    $"[MetadataRef] 统一引用初始化完成: RefPack补充={count}, 耗时={sw.ElapsedMilliseconds}ms",
+                    $"[MetadataRef] 统一引用初始化完成: 总数={_cachedReferences.Count}, TPA+ALC加入={added}, 耗时={sw.ElapsedMilliseconds}ms",
                     nameof(MetadataReferenceProvider));
             }
         }
 
         /// <summary>
-        /// 从 .NET SDK Ref Pack 扫描补充运行时核心引用（如 System.Private.CoreLib）。
-        /// 这些程序集不在发布输出目录中，但 Roslyn 编译需要它们识别预定义类型。
+        /// 从运行时可信平台程序集（TRUSTED_PLATFORM_ASSEMBLIES）注入 BCL 引用。
+        /// TPA 由 .NET 运行时宿主设置，必然包含 System.Private.CoreLib / System.Runtime / netstandard，
+        /// 是预定义类型可解析的可靠来源，不依赖 .NET SDK 是否安装。
         /// </summary>
-        /// <returns>本次补充的引用数量</returns>
-        private static int TryLoadRefPackFallback(
-            ImmutableList<MetadataReference>.Builder refs,
-            ImmutableHashSet<string>.Builder paths,
-            ImmutableHashSet<string>.Builder names)
+        private static int AddTrustedPlatformAssemblies(Dictionary<string, MetadataReference> refs)
         {
-            int count = 0;
+            var tpa = AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES") as string;
+            if (string.IsNullOrEmpty(tpa))
+            {
+                PluginLogger.Warning(
+                    "[MetadataRef] TRUSTED_PLATFORM_ASSEMBLIES 为空，BCL 引用可能缺失（将导致 CS0518）",
+                    nameof(MetadataReferenceProvider));
+                return 0;
+            }
+
+            int added = 0;
+            foreach (var raw in tpa.Split(Path.PathSeparator))
+            {
+                var path = raw.Trim();
+                if (path.Length == 0) continue;
+                if (!path.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)) continue;
+                if (!File.Exists(path)) continue;
+                if (TryAddRef(refs, path)) added++;
+            }
+            return added;
+        }
+
+        /// <summary>
+        /// 注入宿主已加载程序集（默认 ALC + 当前插件 ALC），提供脚本实际依赖的宿主 API
+        /// （Script 基类 / Plugin.SDK / CvEngine / halcon / OpenCvSharp 等）。
+        /// 当前插件 ALC 确保脚本继承的 Script 基类类型身份与运行时一致。
+        /// </summary>
+        private static int AddLoadedContextAssemblies(Dictionary<string, MetadataReference> refs)
+        {
+            var seen = new HashSet<Assembly>();
+            int added = 0;
+            foreach (var alc in EnumerateRelevantContexts())
+            {
+                foreach (var asm in alc.Assemblies)
+                {
+                    if (!seen.Add(asm)) continue;
+                    if (asm.IsDynamic || string.IsNullOrEmpty(asm.Location)) continue;
+                    if (TryAddRef(refs, asm.Location)) added++;
+                }
+            }
+            return added;
+        }
+
+        private static IEnumerable<AssemblyLoadContext> EnumerateRelevantContexts()
+        {
+            yield return AssemblyLoadContext.Default;
+            var current = AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly());
+            if (current != null && current != AssemblyLoadContext.Default)
+                yield return current;
+        }
+
+        /// <summary>
+        /// 校验为托管程序集后加入引用字典（按规范化路径去重）。
+        /// 使用 AssemblyName.GetAssemblyName 既能排除原生 C++ DLL，也能排除无有效 .NET 元数据的文件，
+        /// 避免 Roslyn 在编译期因无法打开原生 DLL 元数据而报 CS0006。
+        /// </summary>
+        private static bool TryAddRef(Dictionary<string, MetadataReference> refs, string path)
+        {
+            if (!IsManagedAssembly(path)) return false;
+
+            string key;
+            try { key = Path.GetFullPath(path); }
+            catch { key = path; }
+            if (refs.ContainsKey(key)) return false;
+
             try
             {
-                var dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
-                if (string.IsNullOrEmpty(dotnetRoot))
-                {
-                    var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
-                    if (string.IsNullOrEmpty(programFiles)) return count;
-                    dotnetRoot = Path.Combine(programFiles, "dotnet");
-                }
-
-                var packsDir = Path.Combine(dotnetRoot, "packs", "Microsoft.NETCore.App.Ref");
-                if (!Directory.Exists(packsDir)) return count;
-
-                // 找最新版本的 Ref Pack
-                Version? latestVersion = null;
-                foreach (var dir in Directory.EnumerateDirectories(packsDir))
-                {
-                    var dirName = Path.GetFileName(dir);
-                    if (Version.TryParse(dirName, out var v))
-                    {
-                        if (latestVersion == null || v > latestVersion)
-                            latestVersion = v;
-                    }
-                }
-
-                if (latestVersion == null) return count;
-
-                // 从版本号推导 TFM 目录名：8.x → net8.0, 9.x → net9.0
-                var tfm = $"net{latestVersion.Major}.0";
-                var refDir = Path.Combine(packsDir, latestVersion.ToString(), "ref", tfm);
-                if (!Directory.Exists(refDir))
-                {
-                    // 兜底：扫描 ref/ 下第一个存在的 TFM 子目录
-                    var refParentDir = Path.Combine(packsDir, latestVersion.ToString(), "ref");
-                    if (Directory.Exists(refParentDir))
-                        refDir = Directory.EnumerateDirectories(refParentDir).FirstOrDefault();
-                    if (!Directory.Exists(refDir)) return count;
-                }
-
-                foreach (var dllPath in Directory.EnumerateFiles(refDir, "*.dll"))
-                {
-                    var fileName = Path.GetFileNameWithoutExtension(dllPath);
-                    if (string.IsNullOrEmpty(fileName)) continue;
-
-                    // RefPack 目录下所有 DLL 都是合法的 .NET 引用程序集，
-                    // 唯独排除 System.Private.CoreLib（实现程序集，不应作为 MetadataReference）。
-                    if (_refPackBlockedNames.Any(name =>
-                            string.Equals(name, fileName, StringComparison.OrdinalIgnoreCase)))
-                        continue;
-
-                    try
-                    {
-                        refs.Add(MetadataReference.CreateFromFile(dllPath));
-                        paths.Add(dllPath);
-                        names.Add(fileName);
-                        count++;
-                        PluginLogger.Info(
-                            $"[MetadataRef] 从 RefPack 补充引用: {fileName} @ {dllPath}",
-                            nameof(MetadataReferenceProvider));
-                    }
-                    catch (Exception ex)
-                    {
-                        PluginLogger.Warning(
-                            $"[MetadataRef] RefPack 加载失败: Name={fileName}, 错误={ex.Message}",
-                            nameof(MetadataReferenceProvider));
-                    }
-                }
+                refs[key] = MetadataReference.CreateFromFile(path);
+                return true;
             }
             catch (Exception ex)
             {
                 PluginLogger.Warning(
-                    $"[MetadataRef] RefPack 扫描异常: {ex.Message}",
+                    $"[MetadataRef] 加载引用失败: {path}, 错误: {ex.Message}",
                     nameof(MetadataReferenceProvider));
+                return false;
             }
-            return count;
+        }
+
+        /// <summary>
+        /// 判断 DLL 是否为有效托管程序集（排除原生 C++ DLL 等无 .NET 元数据的文件）。
+        /// </summary>
+        private static bool IsManagedAssembly(string filePath)
+        {
+            try
+            {
+                AssemblyName.GetAssemblyName(filePath);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

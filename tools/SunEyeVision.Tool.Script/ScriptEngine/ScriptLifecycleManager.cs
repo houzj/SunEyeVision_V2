@@ -124,11 +124,15 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                 return errors;
             }
 
-            // 3. 创建实例
-            var scriptInstance = sandbox.CreateScriptInstance(compileResult.EntryClassName);
-            if (scriptInstance == null)
+            // 3. 创建实例（类不存在或类型不匹配时 CreateScriptInstance 直接抛异常，错误信息已含诊断上下文）
+            ScriptBase scriptInstance;
+            try
             {
-                errors.Add($"创建脚本实例失败: 找不到类 \"{compileResult.EntryClassName}\"");
+                scriptInstance = sandbox.CreateScriptInstance(compileResult.EntryClassName);
+            }
+            catch (Exception ex)
+            {
+                errors.Add($"创建脚本实例失败: {ex.Message}");
                 return errors;
             }
 

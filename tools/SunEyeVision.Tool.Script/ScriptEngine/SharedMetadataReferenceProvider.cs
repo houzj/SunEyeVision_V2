@@ -1,8 +1,7 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Reflection.PortableExecutable;
+using System.Reflection;
 using Microsoft.CodeAnalysis;
 using SunEyeVision.Plugin.SDK.Logging;
 
@@ -76,15 +75,15 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
         }
 
         /// <summary>
-        /// 判断 DLL 是否为托管程序集（跳过原生 C++ DLL，避免 Roslyn 编译报错）
+        /// 判断 DLL 是否为有效托管程序集（跳过原生 C++ DLL，避免 Roslyn 编译报 CS0006）。
+        /// 使用 AssemblyName.GetAssemblyName：既能排除原生 C++ DLL，也能排除无有效 .NET 元数据的文件。
         /// </summary>
         private static bool IsManagedAssembly(string filePath)
         {
             try
             {
-                using var stream = File.OpenRead(filePath);
-                using var peReader = new PEReader(stream);
-                return peReader.HasMetadata;
+                AssemblyName.GetAssemblyName(filePath);
+                return true;
             }
             catch
             {

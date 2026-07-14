@@ -765,14 +765,23 @@ namespace SunEyeVision.Tool.Script.Views
             var refDir = _parameters?.AssemblyReferenceFullPath;
             var refCount = 0;
 
-            // 0. 宿主 ALC 已加载程序集（统一服务：SSOT，与 ScriptCompiler 共享同一份清单）
+            // 0. 宿主已加载程序集（运行时 ALC / TPA）：Script/IVisionImage/LogInfo 等宿主 API 元数据，
+            //    与 ScriptCompiler 共享统一服务，保证 IntelliSense 与编译引用一致。
             var hostRefs = MetadataReferenceProvider.GetHostReferences();
+            var seenRefs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var mdRef in hostRefs)
             {
+                if (mdRef is PortableExecutableReference per && per.FilePath != null)
+                {
+                    string key;
+                    try { key = System.IO.Path.GetFullPath(per.FilePath); }
+                    catch { key = per.FilePath; }
+                    if (!seenRefs.Add(key)) continue;
+                }
                 project = project.AddMetadataReference(mdRef);
                 refCount++;
             }
-            PluginLogger.Info($"[补全] 宿主 ALC 注入: {refCount} 个 (来自统一服务)", typeName);
+            PluginLogger.Info($"[补全] 宿主注入: {refCount} 个 (ALC/TPA 引用={hostRefs.Count})", typeName);
 
             // 1. ScriptRefs 目录（用户自定义第三方 DLL），通过共享缓存加载
             if (!string.IsNullOrEmpty(refDir))
@@ -780,6 +789,13 @@ namespace SunEyeVision.Tool.Script.Views
                 var sharedRefs = SharedMetadataReferenceProvider.GetScriptRefs(refDir);
                 foreach (var mdRef in sharedRefs)
                 {
+                    if (mdRef is PortableExecutableReference per && per.FilePath != null)
+                    {
+                        string key;
+                        try { key = System.IO.Path.GetFullPath(per.FilePath); }
+                        catch { key = per.FilePath; }
+                        if (!seenRefs.Add(key)) continue;
+                    }
                     project = project.AddMetadataReference(mdRef);
                     refCount++;
                 }
@@ -1245,7 +1261,7 @@ namespace SunEyeVision.Tool.Script.Views
                 if (hasMissingRef)
                 {
                     PluginLogger.Warning(
-                        $"[Diagnostic] ⚠ 检测到 CS0518（预定义类型缺失），可能原因：.NET SDK Ref Pack 引用未正确加载。",
+                        $"[Diagnostic] ⚠ 检测到 CS0518（预定义类型缺失），可能原因：运行时 BCL 引用（System.Private.CoreLib / System.Runtime）未正确加载，请检查 [MetadataRef] 初始化日志。",
                         typeName);
                 }
 

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.ViewModels;
 
@@ -249,20 +251,28 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Logic
             _editor = editor;
         }
 
+        private void OffsetGeometry(ShapeParameters shapeDef, double dx, double dy)
+        {
+            if (shapeDef.Geometry == null) return;
+            shapeDef.Geometry = shapeDef.Geometry switch
+            {
+                Circle2d c => new Circle2d(c.Center.X + dx, c.Center.Y + dy, c.Radius),
+                RotatedRect2d rr => new RotatedRect2d(rr.CenterX + dx, rr.CenterY + dy, rr.Width, rr.Height, rr.Angle),
+                Line2d l => new Line2d(
+                    new System.Windows.Point(l.Point.X + dx, l.Point.Y + dy), l.Direction),
+                System.Windows.Rect r => new System.Windows.Rect(r.X + dx, r.Y + dy, r.Width, r.Height),
+                Polygon2d poly => new Polygon2d(
+                    poly.Vertices.Select(v => new System.Windows.Point(v.X + dx, v.Y + dy)).ToArray(), poly.IsClosed),
+                _ => shapeDef.Geometry,
+            };
+        }
+
         public void Undo()
         {
             var region = FindRegion(_regionId);
             if (region?.Parameters is ShapeParameters shapeDef)
             {
-                shapeDef.CenterX -= _deltaX;
-                shapeDef.CenterY -= _deltaY;
-                if (shapeDef.ShapeType == ShapeType.Line)
-                {
-                    shapeDef.StartX -= _deltaX;
-                    shapeDef.StartY -= _deltaY;
-                    shapeDef.EndX -= _deltaX;
-                    shapeDef.EndY -= _deltaY;
-                }
+                OffsetGeometry(shapeDef, -_deltaX, -_deltaY);
                 region.MarkModified();
             }
         }
@@ -272,15 +282,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Logic
             var region = FindRegion(_regionId);
             if (region?.Parameters is ShapeParameters shapeDef)
             {
-                shapeDef.CenterX += _deltaX;
-                shapeDef.CenterY += _deltaY;
-                if (shapeDef.ShapeType == ShapeType.Line)
-                {
-                    shapeDef.StartX += _deltaX;
-                    shapeDef.StartY += _deltaY;
-                    shapeDef.EndX += _deltaX;
-                    shapeDef.EndY -= _deltaY;
-                }
+                OffsetGeometry(shapeDef, _deltaX, _deltaY);
                 region.MarkModified();
             }
         }
@@ -337,17 +339,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Logic
 
         private static void CopyState(ShapeParameters source, ShapeParameters target)
         {
-            target.CenterX = source.CenterX;
-            target.CenterY = source.CenterY;
-            target.Width = source.Width;
-            target.Height = source.Height;
-            target.Radius = source.Radius;
-            target.OuterRadius = source.OuterRadius;
-            target.Angle = source.Angle;
-            target.StartX = source.StartX;
-            target.StartY = source.StartY;
-            target.EndX = source.EndX;
-            target.EndY = source.EndY;
+            target.Geometry = source.Geometry switch
+            {
+                Circle2d c => new Circle2d(c.Center.X, c.Center.Y, c.Radius),
+                RotatedRect2d rr => new RotatedRect2d(rr.CenterX, rr.CenterY, rr.Width, rr.Height, rr.Angle),
+                Line2d l => new Line2d(l.Point, l.Direction),
+                Polygon2d poly => new Polygon2d(
+                    poly.Vertices.Select(v => new System.Windows.Point(v.X, v.Y)).ToArray(), poly.IsClosed),
+                _ => source.Geometry,
+            };
         }
 
         private RegionData? FindRegion(Guid id)
@@ -406,17 +406,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Logic
 
         private static void CopyState(ShapeParameters source, ShapeParameters target)
         {
-            target.CenterX = source.CenterX;
-            target.CenterY = source.CenterY;
-            target.Width = source.Width;
-            target.Height = source.Height;
-            target.Radius = source.Radius;
-            target.OuterRadius = source.OuterRadius;
-            target.Angle = source.Angle;
-            target.StartX = source.StartX;
-            target.StartY = source.StartY;
-            target.EndX = source.EndX;
-            target.EndY = source.EndY;
+            target.Geometry = source.Geometry switch
+            {
+                Circle2d c => new Circle2d(c.Center.X, c.Center.Y, c.Radius),
+                RotatedRect2d rr => new RotatedRect2d(rr.CenterX, rr.CenterY, rr.Width, rr.Height, rr.Angle),
+                Line2d l => new Line2d(l.Point, l.Direction),
+                Polygon2d poly => new Polygon2d(
+                    poly.Vertices.Select(v => new System.Windows.Point(v.X, v.Y)).ToArray(), poly.IsClosed),
+                _ => source.Geometry,
+            };
         }
 
         private RegionData? FindRegion(Guid id)

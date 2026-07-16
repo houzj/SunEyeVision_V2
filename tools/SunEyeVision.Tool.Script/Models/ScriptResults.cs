@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.SDK.Models;
 
 namespace SunEyeVision.Tool.Script.Models
 {
@@ -13,6 +14,9 @@ namespace SunEyeVision.Tool.Script.Models
         /// 脚本设置的输出值字典（通过 SetOutput 设置）
         /// </summary>
         public Dictionary<string, object?> OutputValues { get; set; } = new();
+
+        /// <summary>输出变量声明（来自 ScriptParameters.Outputs，通过 Run 注入），作为输出变量契约 SSOT</summary>
+        public List<ScriptOutputConfig> OutputConfigs { get; set; } = new();
 
         /// <summary>
         /// 执行过程中的日志信息列表
@@ -33,6 +37,33 @@ namespace SunEyeVision.Tool.Script.Models
         /// 执行的脚本代码（供调试显示）
         /// </summary>
         public string? ScriptCode { get; set; }
+
+        /// <summary>
+        /// 基于输出变量契约派生：变量声明来自 OutputConfigs，运行值来自 OutputValues。
+        /// 未知类型（未注册到 SdkTypeVocabulary）直接报错（rule-015）。
+        /// </summary>
+        public override IReadOnlyList<OutputVariable> GetOutputVariables()
+        {
+            var variables = new List<OutputVariable>();
+            foreach (var cfg in OutputConfigs)
+            {
+                if (SdkTypeVocabulary.ToSystemType(cfg.TypeName) is null)
+                {
+                    throw new InvalidOperationException(
+                        $"脚本输出变量 '{cfg.Name}' 类型 '{cfg.TypeName}' 未在 SdkTypeVocabulary 词汇表注册。");
+                }
+                variables.Add(new OutputVariable
+                {
+                    Name = cfg.Name,
+                    VariableType = cfg.TypeName,
+                    DisplayName = string.IsNullOrEmpty(cfg.DisplayName) ? cfg.Name : cfg.DisplayName,
+                    Group = cfg.Group,
+                    Kind = OutputVariableKind.Data,
+                    RuntimeValue = OutputValues.TryGetValue(cfg.Name, out var v) ? v : null
+                });
+            }
+            return variables;
+        }
 
         public override IReadOnlyList<ResultItem> GetResultItems()
         {

@@ -1,4 +1,5 @@
-﻿using SunEyeVision.Plugin.SDK.Execution.Parameters;
+﻿using System;
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
@@ -10,6 +11,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
     {
         private ParameterSource? _source;
         private string _displayPath = string.Empty;
+        private string _bindingPath = string.Empty;
         private object? _currentValue;
 
         /// <summary>
@@ -23,9 +25,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
         public string DisplayName { get; set; } = string.Empty;
 
         /// <summary>
-        /// 参数数据类型
+        /// 参数数据类型（CLR 类型，与 ParamBinding.DataType / AvailableDataSource.PropertyType 一致）
         /// </summary>
-        public string DataType { get; set; } = "double";
+        public Type DataType { get; set; } = typeof(double);
 
         /// <summary>
         /// 参数源（可能为null表示未绑定）
@@ -41,6 +43,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
                     OnPropertyChanged(nameof(BindingType));
                 }
             }
+        }
+
+        /// <summary>
+        /// 绑定路径（作为 ParamBinding.BindingSource 的双向桥；格式：节点ID.属性名 或 __GlobalVars__.变量名）
+        /// </summary>
+        public string BindingPath
+        {
+            get => _bindingPath;
+            set => SetProperty(ref _bindingPath, value);
         }
 
         /// <summary>

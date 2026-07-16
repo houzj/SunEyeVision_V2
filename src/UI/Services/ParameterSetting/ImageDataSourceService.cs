@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.SDK.Models;
 
 namespace SunEyeVision.UI.Services.ParameterSetting
 {
@@ -21,24 +22,6 @@ namespace SunEyeVision.UI.Services.ParameterSetting
     public class ImageDataSourceService
     {
         private readonly IDataSourceQueryService _dataSourceQueryService;
-
-        /// <summary>
-        /// 支持的图像类型名称
-        /// </summary>
-        private static readonly HashSet<string> SupportedImageTypeNames = new(StringComparer.OrdinalIgnoreCase)
-        {
-            "IVisionImage",
-            "BitmapSource",
-            "BitmapImage"
-        };
-
-        /// <summary>
-        /// 支持的图像类型完整命名空间前缀
-        /// </summary>
-        private static readonly string[] SupportedImageNamespaces = new[]
-        {
-            "System.Windows.Media.Imaging."
-        };
 
         /// <summary>
         /// 创建图像数据源服务
@@ -93,65 +76,25 @@ namespace SunEyeVision.UI.Services.ParameterSetting
         }
 
         /// <summary>
-        /// 检查类型是否为图像类型
+        /// 检查类型是否为图像类型（通过 Mapper 词汇表）
         /// </summary>
-        /// <param name="type">要检查的类型</param>
-        /// <returns>是否为图像类型</returns>
         public static bool IsImageType(Type type)
         {
-            if (type == null)
-                return false;
-
-            // 检查类型名称
-            if (SupportedImageTypeNames.Contains(type.Name))
-                return true;
-
-            // 检查命名空间
-            var fullName = type.FullName;
-            if (fullName != null)
-            {
-                foreach (var ns in SupportedImageNamespaces)
-                {
-                    if (fullName.StartsWith(ns))
-                    {
-                        // 确保是图像类型而不是其他类型
-                        if (fullName.Contains("Mat") || 
-                            fullName.Contains("Image") ||
-                            fullName.Contains("Bitmap"))
-                        {
-                            return true;
-                        }
-                    }
-                }
-            }
-
-            // 检查基类和接口
-            var baseType = type.BaseType;
-            while (baseType != null)
-            {
-                if (SupportedImageTypeNames.Contains(baseType.Name))
-                    return true;
-                baseType = baseType.BaseType;
-            }
-
-            return false;
+            if (type == null) return false;
+            return SdkTypeVocabulary.ToTypeVocabulary(type) == "Image";
         }
 
         /// <summary>
-        /// 检查数据源是否为图像类型
+        /// 检查数据源是否为图像类型（通过 AvailableDataSource.VariableType）
         /// </summary>
-        /// <param name="dataSource">数据源</param>
-        /// <returns>是否为图像类型</returns>
         public static bool IsImageType(AvailableDataSource dataSource)
         {
-            return dataSource != null && IsImageType(dataSource.PropertyType);
+            return dataSource?.VariableType == "Image";
         }
 
         /// <summary>
         /// 获取图像类型的显示名称
         /// </summary>
-        /// <param name="type">图像类型</param>
-        /// <returns>显示名称</returns>
         public static string GetImageTypeDisplayName(Type type)
         {
             if (type == null)

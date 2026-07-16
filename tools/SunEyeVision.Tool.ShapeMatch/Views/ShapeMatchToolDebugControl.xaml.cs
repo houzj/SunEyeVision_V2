@@ -10,6 +10,7 @@ using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Metadata;
@@ -220,14 +221,7 @@ public partial class ShapeMatchToolDebugControl
         return Parameters?.ImageSource != null && _dataProvider != null;
     }
 
-    /// <summary>
-    /// 将 Halcon HImage 转换为 WPF BitmapSource（使用 HalImage.ToBitmapSource 正确支持多通道）
-    /// </summary>
-    private static BitmapSource? ConvertHImageToBitmapSource(HImage hImage)
-    {
-        if (hImage == null || !hImage.IsInitialized()) return null;
-        return new HalImage(hImage).ToBitmapSource();
-    }
+
 
     #endregion
 
@@ -301,9 +295,9 @@ public partial class ShapeMatchToolDebugControl
                     {
                         HOperatorSet.Rgb1ToGray(hImg, out var grayObj);
                         using var grayHImage = new HImage(grayObj);
-                        return ConvertHImageToBitmapSource(grayHImage);
+                        return new HalImage(grayHImage).ToBitmapSource();
                     }
-                    return ConvertHImageToBitmapSource(hImg);
+                    return new HalImage(hImg).ToBitmapSource();
                 }
             }
             catch { }
@@ -513,39 +507,32 @@ public partial class ShapeMatchToolDebugControl
                 {
                     if (!insp.IsEnabled || insp.Parameters is not ShapeParameters s) continue;
 
-                    switch (s.ShapeType)
+                    if (s.Geometry is RotatedRect2d rrRect && Math.Abs(rrRect.Angle) < 0.01)
                     {
-                        case ShapeType.Rectangle when Math.Abs(s.Angle) < 0.01:
+                        double l = rrRect.CenterX - rrRect.Width / 2, t = rrRect.CenterY - rrRect.Height / 2;
+                        double r = l + rrRect.Width, b = t + rrRect.Height;
+                        if (l < minX) minX = l; if (t < minY) minY = t;
+                        if (r > maxX) maxX = r; if (b > maxY) maxY = b;
+                    }
+                    else if (s.Geometry is RotatedRect2d rr)
+                    {
+                        double angleRad = rr.Angle * Math.PI / 180;
+                        double cosA = Math.Cos(angleRad), sinA = Math.Sin(angleRad);
+                        double hw = rr.Width / 2, hh = rr.Height / 2;
+                        for (int i = 0; i < 4; i++)
                         {
-                            double l = s.CenterX - s.Width / 2, t = s.CenterY - s.Height / 2;
-                            double r = l + s.Width, b = t + s.Height;
-                            if (l < minX) minX = l; if (t < minY) minY = t;
-                            if (r > maxX) maxX = r; if (b > maxY) maxY = b;
-                            break;
+                            double cx = rr.CenterX + cosA * ((i & 2) == 0 ? -hw : hw) - sinA * ((i & 1) == 0 ? -hh : hh);
+                            double cy = rr.CenterY + sinA * ((i & 2) == 0 ? -hw : hw) + cosA * ((i & 1) == 0 ? -hh : hh);
+                            if (cx < minX) minX = cx; if (cy < minY) minY = cy;
+                            if (cx > maxX) maxX = cx; if (cy > maxY) maxY = cy;
                         }
-                        case ShapeType.Rectangle:
-                        case ShapeType.RotatedRectangle:
-                        {
-                            double angleRad = s.Angle * Math.PI / 180;
-                            double cosA = Math.Cos(angleRad), sinA = Math.Sin(angleRad);
-                            double hw = s.Width / 2, hh = s.Height / 2;
-                            for (int i = 0; i < 4; i++)
-                            {
-                                double cx = s.CenterX + cosA * ((i & 2) == 0 ? -hw : hw) - sinA * ((i & 1) == 0 ? -hh : hh);
-                                double cy = s.CenterY + sinA * ((i & 2) == 0 ? -hw : hw) + cosA * ((i & 1) == 0 ? -hh : hh);
-                                if (cx < minX) minX = cx; if (cy < minY) minY = cy;
-                                if (cx > maxX) maxX = cx; if (cy > maxY) maxY = cy;
-                            }
-                            break;
-                        }
-                        case ShapeType.Circle:
-                        {
-                            double l = s.CenterX - s.Radius, t = s.CenterY - s.Radius;
-                            double r = s.CenterX + s.Radius, b = s.CenterY + s.Radius;
-                            if (l < minX) minX = l; if (t < minY) minY = t;
-                            if (r > maxX) maxX = r; if (b > maxY) maxY = b;
-                            break;
-                        }
+                    }
+                    else if (s.Geometry is Circle2d circleVal)
+                    {
+                        double l = circleVal.Center.X - circleVal.Radius, t = circleVal.Center.Y - circleVal.Radius;
+                        double r = circleVal.Center.X + circleVal.Radius, b = circleVal.Center.Y + circleVal.Radius;
+                        if (l < minX) minX = l; if (t < minY) minY = t;
+                        if (r > maxX) maxX = r; if (b > maxY) maxY = b;
                     }
                 }
                 if (maxX > minX && maxY > minY)

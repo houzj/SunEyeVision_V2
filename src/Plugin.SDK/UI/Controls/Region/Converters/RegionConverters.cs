@@ -171,45 +171,5 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Converters
         }
     }
 
-    /// <summary>
-    /// 订阅模式转换为布尔值的转换器
-    /// </summary>
-    public class SubscribeModeToBoolConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            // 支持 RegionSubscribeMode 枚举
-            if (value is RegionSubscribeMode mode && parameter is string targetMode)
-            {
-                if (Enum.TryParse<RegionSubscribeMode>(targetMode, out var targetValue))
-                {
-                    return mode == targetValue;
-                }
-            }
-
-            // 支持字符串模式（向后兼容）
-            if (value is string modeStr && parameter is string targetModeStr)
-            {
-                return modeStr == targetModeStr;
-            }
-
-            return false;
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            if (value is bool b && b && parameter is string targetMode)
-            {
-                // 优先尝试解析为 RegionSubscribeMode 枚举
-                if (Enum.TryParse<RegionSubscribeMode>(targetMode, out var enumValue))
-                {
-                    return enumValue;
-                }
-
-                // 否则返回字符串（向后兼容）
-                return targetMode;
-            }
-            return DependencyProperty.UnsetValue;
-        }
-    }
 }
+

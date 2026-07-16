@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Plugin.SDK.Models;
 
 namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 {
@@ -222,18 +223,19 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 // 获取父节点的输出属性
                 var outputProps = parent.OutputProperties;
                 
-                // 类型过滤（精确匹配 + 双向数组/元素兼容）
-                // 场景1: targetType=double[]  → 匹配 double[] (精确) 或 double (元素)
-                // 场景2: targetType=double   → 匹配 double (精确) 或 double[] (数组版本)
-                // 原因：视觉工具输出通常是数组类型（BlobAreas=double[], BlobBoundingBoxes=WpfRect[]），
-                //       但参数声明通常使用元素类型（Double, Circle），需要双向兼容。
+                // 类型过滤：统一通过 Mapper 词汇匹配（VariableType 字符串），
+                // 取代之前基于 CLR PropertyType 的双向数组/元素兼容逻辑。
+                // 类型表中只有数组类型（rule-008 零兼容），单值 T 通过
+                // SdkTypeVocabulary.ToTypeVocabulary 自动提升为 T[]。
                 if (targetType != null)
                 {
-                    outputProps = outputProps
-                        .Where(p => p.PropertyType == targetType ||
-                                    (targetType.IsArray && p.PropertyType == targetType.GetElementType()) ||
-                                    (!targetType.IsArray && p.PropertyType.IsArray && p.PropertyType.GetElementType() == targetType))
-                        .ToList();
+                    var targetVarType = SdkTypeVocabulary.ToTypeVocabulary(targetType);
+                    if (targetVarType != null)
+                    {
+                        outputProps = outputProps
+                            .Where(p => p.VariableType == targetVarType)
+                            .ToList();
+                    }
                 }
 
                 // 添加到结果列表
@@ -261,10 +263,9 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             {
                 if (targetType != null)
                 {
-                    bool typeMatch = extra.PropertyType == targetType ||
-                        (targetType.IsArray && extra.PropertyType == targetType.GetElementType()) ||
-                        (!targetType.IsArray && extra.PropertyType.IsArray && extra.PropertyType.GetElementType() == targetType);
-                    if (!typeMatch) continue;
+                    var extraVarType = SdkTypeVocabulary.ToTypeVocabulary(targetType);
+                    if (extraVarType == null || extra.VariableType != extraVarType)
+                        continue;
                 }
                 if (!allDataSources.Any(ds => ds.SourceNodeId == extra.SourceNodeId && ds.PropertyName == extra.PropertyName))
                     allDataSources.Add(extra);
@@ -283,8 +284,10 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         {
             var result = new List<AvailableDataSource>();
 
-            // 图像类型名集合（系统统一使用 IVisionImage）
-            var imageTypeNames = new HashSet<string> { "IVisionImage" };
+            // 图像类型识别统一按 AvailableDataSource.VariableType == "Image"（#18），
+            // 取代之前基于 CLR PropertyType 的 IsImageType 和内嵌的 SdkTypeVocabulary 调用。
+            bool IsImageSource(AvailableDataSource ds) =>
+                ds.VariableType == "Image";
 
             // 步骤 1: 当前节点自身的图像输出 (Distance=0)
             var nodeType = _nodeInfoProvider?.GetNodeType(currentNodeId);
@@ -294,9 +297,14 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 var metadataList = _metadataProvider?.GetAllPropertyMetadata(nodeType);
                 if (metadataList != null)
                 {
-                    foreach (var meta in metadataList.Where(m =>
-                        m.PropertyType != null && imageTypeNames.Contains(m.PropertyType.Name)))
+                    // 临时构造 AvailableDataSource 用 VariableType 过滤
+                    foreach (var meta in metadataList)
                     {
+                        var vt = meta.PropertyType != null
+                            ? SdkTypeVocabulary.ToTypeVocabulary(meta.PropertyType)
+                            : null;
+                        if (vt != "Image")
+                            continue;
                         result.Add(new AvailableDataSource
                         {
                             SourceNodeId = currentNodeId,
@@ -304,6 +312,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                             PropertyName = meta.PropertyName,
                             DisplayName = meta.DisplayName,
                             PropertyType = meta.PropertyType,
+                            VariableType = vt,
                             Distance = 0,
                         });
                     }
@@ -329,9 +338,9 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                             visited.Add(parentId);
                             int childDistance = currentDistance + 1;
 
-                            // 获取该节点的图像输出属性
+                            // 获取该节点的图像输出属性（GetNodeOutputProperties 已填充 VariableType）
                             foreach (var prop in GetNodeOutputProperties(parentId)
-                                .Where(p => p.PropertyType != null && imageTypeNames.Contains(p.PropertyType.Name)))
+                                .Where(IsImageSource))
                             {
                                 prop.Distance = childDistance;
                                 result.Add(prop);
@@ -343,11 +352,9 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 }
             }
 
-            // ★ 合并额外数据源中的图像类型（仅保留节点输出，排除子程序输入端口）
-            // 说明：子程序输入端口（SourceNodeId == "__SubroutineInputs__"）供 ImageSourceSelector 使用，
-            // 不应出现在图像显示器的 ComboBox 中。
+            // 合并额外数据源中的图像类型（仅保留节点输出，排除子程序输入端口）
             foreach (var extra in GetExtraDataSources().Where(ds =>
-                ds.PropertyType != null && imageTypeNames.Contains(ds.PropertyType.Name)
+                ds.VariableType == "Image"
                 && ds.SourceNodeId != "__SubroutineInputs__"))
             {
                 if (!result.Any(r => r.SourceNodeId == extra.SourceNodeId && r.PropertyName == extra.PropertyName))
@@ -372,7 +379,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             }
 
             // 从变量池获取属性元数据（不再反射）
-            // 注意：需要通过元数据提供者获取，避免直接依赖 Infrastructure 层
             var metadataList = _metadataProvider?.GetAllPropertyMetadata(context.NodeType);
 
             if (metadataList == null)
@@ -382,13 +388,23 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 
             foreach (var metadata in metadataList)
             {
-                // 直接从元数据创建，不再反射
+                // VariableType 从 PropertyType 派生（与 OutputVariable 契约同源）
+                var variableType = metadata.PropertyType != null
+                    ? SdkTypeVocabulary.ToTypeVocabulary(metadata.PropertyType)
+                    : null;
+
+                // 运行期值：优先从输出变量契约取（支持动态工具），反射兜底已删除
                 object? currentValue = null;
-                if (context.Result != null && metadata.PropertyType != null)
+                if (context.Result != null && metadata.PropertyName != null)
                 {
-                    // 运行时：填充实际值
-                    var propInfo = context.ResultType.GetProperty(metadata.PropertyName);
-                    currentValue = propInfo?.GetValue(context.Result);
+                    try
+                    {
+                        currentValue = OutputVariableResolver.Resolve(context.Result, metadata.PropertyName);
+                    }
+                    catch
+                    {
+                        // 契约未找到时不抛（设计期预期行为），currentValue 保留 null
+                    }
                 }
 
                 var dataSource = new AvailableDataSource
@@ -399,11 +415,41 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                     PropertyName = metadata.PropertyName,
                     DisplayName = metadata.DisplayName,
                     PropertyType = metadata.PropertyType,
+                    VariableType = variableType,
                     CurrentValue = currentValue,
                     Unit = null,
                     Description = metadata.Description,
                     GroupName = metadata.GroupName,
                 };
+
+                // 数组属性暴露 [i] 子数据源（决策1：支持 T[i] 绑定路径直接取单元素）
+                if (metadata.PropertyType?.IsArray == true)
+                {
+                    var elementType = metadata.PropertyType.GetElementType();
+                    var elementVarType = elementType != null
+                        ? SdkTypeVocabulary.ToTypeVocabulary(elementType)
+                        : null;
+                    object? elementValue = null;
+                    if (currentValue is Array arr && arr.Length > 0)
+                        elementValue = arr.GetValue(0);
+
+                    dataSource.Children = new List<AvailableDataSource>
+                    {
+                        new AvailableDataSource
+                        {
+                            SourceNodeId = parentNodeId,
+                            SourceNodeName = context.NodeName,
+                            SourceNodeType = context.NodeType,
+                            PropertyName = metadata.PropertyName + "[i]",
+                            DisplayName = (metadata.DisplayName ?? metadata.PropertyName) + "[i]",
+                            PropertyType = elementType,
+                            VariableType = elementVarType,
+                            CurrentValue = elementValue,
+                            Description = metadata.Description,
+                            GroupName = metadata.GroupName,
+                        }
+                    };
+                }
 
                 properties.Add(dataSource);
             }
@@ -456,56 +502,13 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <inheritdoc/>
         public object? GetPropertyValue(string nodeId, string propertyName)
         {
-            // 从 SSOT 读取器获取节点结果并反射取值（无本地缓存）
+            // 从 SSOT 读取器获取节点结果并委托 OutputVariableResolver 取值（无反射、无 GetResultItems 兜底）
             var result = _ssotReader?.Invoke(nodeId);
             if (result != null)
             {
-                return GetNestedPropertyValue(result, propertyName);
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// 获取嵌套属性值（支持数组索引）
-        /// </summary>
-        private object? GetNestedPropertyValue(object obj, string propertyPath)
-        {
-            var parsedPath = PropertyPathParser.ParsePropertyPath(propertyPath);
-            object? current = obj;
-
-            foreach (var (propName, arrayIndex) in parsedPath)
-            {
-                if (current == null)
-                    return null;
-
-                var type = current.GetType();
-                var property = type.GetProperty(propName, BindingFlags.Public | BindingFlags.Instance);
-
-                if (property == null)
-                    return null;
-
                 try
                 {
-                    current = property.GetValue(current);
-
-                    // 如果当前值是数组，根据索引处理
-                    if (current is Array array)
-                    {
-                        if (arrayIndex.HasValue)
-                        {
-                            if (arrayIndex.Value >= 0 && arrayIndex.Value < array.Length)
-                                current = array.GetValue(arrayIndex.Value);
-                            else
-                                return null;  // 索引越界
-                        }
-                        // [] 或无括号 → 返回整个数组（current 不变）
-                    }
-                    else if (arrayIndex.HasValue)
-                    {
-                        // 非数组但有索引 → 类型错误
-                        return null;
-                    }
+                    return OutputVariableResolver.Resolve(result, propertyName, nodeId);
                 }
                 catch
                 {
@@ -513,7 +516,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 }
             }
 
-            return current;
+            return null;
         }
 
         /// <inheritdoc/>

@@ -20,6 +20,7 @@ using SunEyeVision.UI.Services.Monitoring;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
+using SunEyeVision.UI.Services.Vision;
 using System.Windows.Media;
 using SunEyeVision.UI.ViewModels;
 using SunEyeVision.UI.Infrastructure;
@@ -85,6 +86,9 @@ public partial class App : Application
 
         // 3. 初始化服务（包括节点显示适配器）
         ServiceInitializer.InitializeServices();
+
+        // 3.1 注册 IVisionImage → BitmapSource 显示桥（SDK 层通过 VisionImageConverterLocator 调用）
+        VisionImageConverterLocator.Current = new UiVisionImageToBitmapSourceConverter();
 
         // 3.5 Phase 2: 注册工作流节点类型转换器
         // 确保反序列化时 WorkflowNodeBase 自动转换为 WorkflowNode 实例
@@ -449,8 +453,8 @@ public partial class App : Application
             $"DataType={paramBinding.DataType?.Name ?? "null"}",
             "App-Monitor");
 
-        // ★ 使用 GlobalVariableTypeMapper 将 DataType 映射为 GlobalVariable 类型字符串，用于选择器过滤
-        var filterType = GlobalVariableTypeMapper.ToGlobalVarType(paramBinding.DataType);
+        // ★ 使用 SdkTypeVocabulary 将 DataType 映射为 GlobalVariable 类型字符串，用于选择器过滤
+        var filterType = SdkTypeVocabulary.ToTypeVocabulary(paramBinding.DataType);
 
         // ★ 监控日志：类型映射结果
         logger.Log(LogLevel.Info,
@@ -463,7 +467,7 @@ public partial class App : Application
             MessageBox.Show(
                 $"参数类型 \"{paramBinding.DataType.Name}\" 不是全局变量支持的通用类型。\n" +
                 $"\n请将工具输出适配为通用类型后再绑定全局变量。\n" +
-                $"支持的通用类型：Integer, Float, String, Boolean, Double, Point, Rectangle, Size, Image 等。",
+                $"支持的通用类型：Integer, Double, String, Boolean, Image, Region, Transform。",
                 "不支持的参数类型", MessageBoxButton.OK, MessageBoxImage.Warning);
             e.Handled = true;
             return;

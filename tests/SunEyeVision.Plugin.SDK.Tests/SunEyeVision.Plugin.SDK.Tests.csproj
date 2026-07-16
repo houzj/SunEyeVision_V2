@@ -22,5 +22,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../../src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj" />
+    <ProjectReference Include="../../src/Workflow/SunEyeVision.Workflow.csproj" />
   </ItemGroup>
 </Project>

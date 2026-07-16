@@ -5,6 +5,7 @@ using System.Windows;
 using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 
@@ -22,14 +23,10 @@ namespace SunEyeVision.Plugin.SDK.Execution.Helpers
         /// 角度转换：ShapeParameters.Angle(屏幕角度系,顺时针+,0°向右,度数) → Halcon Phi(数学,逆时针+,0°向右,弧度)
         /// 公式：phi = -Angle * π / 180（屏幕角度系顺时针为正 → Halcon 逆时针为正，取负号转换）
         /// </summary>
-        private static HRegion BuildHalconRotatedRectangle(ShapeParameters shape)
+        private static HRegion BuildHalconRotatedRectFromParams(double cx, double cy, double w, double h, double angle)
         {
-            double phi = -shape.Angle * Math.PI / 180.0;
-            HOperatorSet.GenRectangle2(out var rect,
-                shape.CenterY, shape.CenterX,
-                phi,
-                shape.Width / 2.0,
-                shape.Height / 2.0);
+            double phi = -angle * Math.PI / 180.0;
+            HOperatorSet.GenRectangle2(out var rect, cy, cx, phi, w / 2.0, h / 2.0);
             return new HRegion(rect);
         }
 
@@ -112,24 +109,26 @@ namespace SunEyeVision.Plugin.SDK.Execution.Helpers
         /// </summary>
         private static HRegion? BuildFromShapeParams(ShapeParameters shape)
         {
-            return shape.ShapeType switch
+            if (shape.Geometry == null) return null;
+
+            if (shape.Geometry is Circle2d c)
             {
-                ShapeType.Rectangle => new HRegion(
-                    shape.CenterY - shape.Height / 2,
-                    shape.CenterX - shape.Width / 2,
-                    shape.CenterY + shape.Height / 2,
-                    shape.CenterX + shape.Width / 2),
+                return new HRegion(c.Center.Y, c.Center.X, c.Radius);
+            }
+            else if (shape.Geometry is RotatedRect2d rr)
+            {
+                return BuildHalconRotatedRectFromParams(rr.CenterX, rr.CenterY, rr.Width, rr.Height, rr.Angle);
+            }
+            else if (shape.Geometry is Polygon2d poly)
+            {
+                return BuildHalconPolygonFromPoints(poly.Vertices);
+            }
+            else if (shape.Geometry is System.Windows.Rect rect)
+            {
+                return BuildHalconRegionFromRect(rect);
+            }
 
-                ShapeType.Circle => new HRegion(
-                    shape.CenterY, shape.CenterX, shape.Radius),
-
-                ShapeType.Polygon when shape.Points.Count >= 3
-                    => BuildHalconPolygonRegion(shape.Points),
-
-                ShapeType.RotatedRectangle => BuildHalconRotatedRectangle(shape),
-
-                _ => null
-            };
+            return null;
         }
 
         /// <summary>
@@ -191,15 +190,31 @@ namespace SunEyeVision.Plugin.SDK.Execution.Helpers
             };
         }
 
-        private static HRegion BuildHalconRotatedRectFromParams(double cx, double cy, double w, double h, double angle)
+        /// <summary>
+        /// 从多边形点集构建 HRegion（SDK Point[] 重载）
+        /// </summary>
+        private static HRegion BuildHalconPolygonFromPoints(System.Windows.Point[] points)
         {
-            double phi = -angle * Math.PI / 180.0;
-            HOperatorSet.GenRectangle2(out var rect, cy, cx, phi, w / 2.0, h / 2.0);
-            return new HRegion(rect);
+            if (points.Length < 3) return new HRegion();
+            var rows = new HTuple();
+            var cols = new HTuple();
+            for (int i = 0; i < points.Length; i++)
+            {
+                rows = rows.TupleConcat(points[i].Y);
+                cols = cols.TupleConcat(points[i].X);
+            }
+            // 闭合多边形
+            rows = rows.TupleConcat(points[0].Y);
+            cols = cols.TupleConcat(points[0].X);
+            var region = new HRegion();
+            region.GenRegionPolygon(rows, cols);
+            HOperatorSet.FillUp(region, out var filled);
+            region.Dispose();
+            return new HRegion(filled);
         }
 
         /// <summary>
-        /// 从多边形点集构建 HRegion
+        /// 从多边形点集构建 HRegion（UI Point2D 重载）
         /// </summary>
         private static HRegion BuildHalconPolygonRegion(IList<Point2D> points)
         {
@@ -385,6 +400,27 @@ namespace SunEyeVision.Plugin.SDK.Execution.Helpers
                     current = prop.GetValue(current);
                 }
                 return current;
+            }
+        }
+
+        #endregion
+
+        #region 几何提取
+
+        /// <summary>
+        /// 从检测区域集合中提取 SDK 几何对象，填充到 result.InspectionGeometries。
+        /// 仅提取 Drawing 模式的 ShapeParameters（Fixed/Computed 模式的区域需运行期解析）。
+        /// </summary>
+        public static void ExtractInspectionGeometries(ToolResults result,
+            IEnumerable<RegionData>? regions)
+        {
+            result.InspectionGeometries.Clear();
+            if (regions == null) return;
+
+            foreach (var rd in regions.Where(r => r.IsEnabled))
+            {
+                if (rd.Parameters is ShapeParameters sp && sp.Geometry != null)
+                    result.InspectionGeometries.Add(sp.Geometry);
             }
         }
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models;
@@ -36,7 +36,7 @@ namespace SunEyeVision.Tool.Script.Models
 
         /// <summary>参数类型（供 ParamBinding.DataType 类型筛选）</summary>
         [JsonIgnore]
-        public Type? ParamType => GlobalVariableTypeMapper.ToSystemType(TypeName);
+        public Type? ParamType => SdkTypeVocabulary.ToSystemType(TypeName);
 
         public AvailableDataSource? Source
         {

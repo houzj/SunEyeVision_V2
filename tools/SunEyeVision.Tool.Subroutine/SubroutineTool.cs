@@ -48,6 +48,10 @@ namespace SunEyeVision.Tool.Subroutine
                 Timestamp = DateTime.Now
             };
 
+            // 单一 ParameterResolver 实例，消除 4 处重复 new
+            var resolver = new ParameterResolver(parameters.Context?.Logger);
+            var nodeResults = parameters.NodeResults;
+
             try
             {
                 // ===== 前置验证 =====
@@ -61,8 +65,8 @@ namespace SunEyeVision.Tool.Subroutine
 
                 parameters.LogInfo($"开始执行子程序: {parameters.SubroutineName}, 工作流ID: {parameters.SubroutineId}, 输入图像: {(inputImage != null ? $"{inputImage.Width}x{inputImage.Height}" : "null")}");
 
-                // ===== 解析输入参数绑定（与标准工具一致：在 Run() 内主动解析）=====
-                var contextVariables = ResolveInputs(parameters);
+                // ===== 解析输入参数绑定 =====
+                var contextVariables = ResolveInputs(parameters, resolver);
                 if (contextVariables.Count > 0)
                 {
                     parameters.LogInfo($"  已解析 {contextVariables.Count} 个输入参数绑定");
@@ -72,7 +76,7 @@ namespace SunEyeVision.Tool.Subroutine
                 ExecutionResult execResult;
                 if (parameters.IsLoopEnabled)
                 {
-                    execResult = ExecuteWithLoop(parameters, inputImage, contextVariables);
+                    execResult = ExecuteWithLoop(parameters, inputImage, contextVariables, resolver, nodeResults);
                 }
                 else
                 {
@@ -93,14 +97,12 @@ namespace SunEyeVision.Tool.Subroutine
                     }
                 }
 
-                // 捕获输出配置快照（供结果模块树在设计态展示动态输出端口）
                 result.OutputConfigs = parameters.Outputs.ToList();
 
-                // ===== 解析输出项（根据 Outputs 配置，从子工作流节点结果中取值）=====
+                // ===== 解析输出项 =====
                 if (subWorkflowNodeResults.Count > 0)
                 {
                     var outputErrors = new List<string>();
-                    var resolver = new ParameterResolver(parameters.Context?.Logger);
                     foreach (var output in parameters.Outputs.Where(o => o.Source != null))
                     {
                         var source = output.Source!;
@@ -133,7 +135,7 @@ namespace SunEyeVision.Tool.Subroutine
                 }
 
                 // ===== 构建显示项（根据 DisplayConfigs 从子工作流节点结果提取图形）=====
-                BuildDisplayItemsFromConfig(result, parameters, subWorkflowNodeResults);
+                BuildDisplayItemsFromConfig(result, parameters, subWorkflowNodeResults, resolver);
 
                 result.ExecutedNodeCount = execResult.NodeResults?.Count ?? 0;
                 result.SubWorkflowExecutionTimeMs = (long)execResult.ExecutionTime.TotalMilliseconds;
@@ -175,14 +177,12 @@ namespace SunEyeVision.Tool.Subroutine
         /// <summary>
         /// 解析输入参数 — 从父工作流的 NodeResults 中根据 Inputs[].Source 取值
         /// </summary>
-        private static Dictionary<string, object> ResolveInputs(SubroutineParameters parameters)
+        private static Dictionary<string, object> ResolveInputs(SubroutineParameters parameters, ParameterResolver resolver)
         {
             var values = new Dictionary<string, object>();
             var errors = new List<string>();
             var nodeResults = parameters.NodeResults;
             if (nodeResults == null) return values;
-
-            var resolver = new ParameterResolver(parameters.Context?.Logger);
 
             foreach (var input in parameters.Inputs.Where(i => i.Source != null || !string.IsNullOrEmpty(i.BindingSource)))
             {
@@ -245,14 +245,10 @@ namespace SunEyeVision.Tool.Subroutine
         }
 
         private static ExecutionResult ExecuteWithLoop(SubroutineParameters parameters, IVisionImage? inputImage,
-            Dictionary<string, object> contextVariables)
+            Dictionary<string, object> contextVariables, ParameterResolver resolver, IDictionary<string, ToolResults>? nodeResults)
         {
             var config = parameters.LoopConfig;
             var result = new ExecutionResult();
-
-            // ===== 解析循环起止值（始终从绑定源获取）=====
-            var resolver = new ParameterResolver(parameters.Context?.Logger);
-            var nodeResults = parameters.NodeResults;
 
             int start = ResolveLoopBound(config.StartValueBinding, "循环起始值", resolver, nodeResults);
             int end = ResolveLoopBound(config.EndValueBinding, "循环结束值", resolver, nodeResults);
@@ -412,12 +408,11 @@ namespace SunEyeVision.Tool.Subroutine
         private static void BuildDisplayItemsFromConfig(
             SubroutineResults result,
             SubroutineParameters parameters,
-            Dictionary<string, ToolResults> subWorkflowNodeResults)
+            Dictionary<string, ToolResults> subWorkflowNodeResults,
+            ParameterResolver resolver)
         {
             if (parameters.DisplayConfigs.Count == 0)
                 return;
-
-            var resolver = new ParameterResolver(parameters.Context?.Logger);
 
             foreach (var displayItem in parameters.DisplayConfigs)
             {

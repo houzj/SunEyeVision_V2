@@ -174,7 +174,9 @@
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <ComboBox ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=AvailableTypes}"
-                                              Text="{Binding TypeName, UpdateSourceTrigger=PropertyChanged}"
+                                              DisplayMemberPath="DisplayName"
+                                              SelectedValuePath="Value"
+                                              SelectedValue="{Binding TypeName, UpdateSourceTrigger=PropertyChanged}"
                                               IsEditable="False" Margin="1,0"
                                               BorderThickness="0" Background="Transparent"/>
                                 </DataTemplate>

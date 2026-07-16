@@ -1,5 +1,6 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls.Region
@@ -20,10 +21,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region
             var rectRegion = RegionData.CreateDrawingRegion("矩形区域1", ShapeType.Rectangle);
             if (rectRegion.Parameters is ShapeParameters rectDef)
             {
-                rectDef.CenterX = 200;
-                rectDef.CenterY = 150;
-                rectDef.Width = 100;
-                rectDef.Height = 80;
+                rectDef.Geometry = new RotatedRect2d(200, 150, 100, 80, 0);
             }
             regions.Add(rectRegion);
 
@@ -31,9 +29,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region
             var circleRegion = RegionData.CreateDrawingRegion("圆形区域1", ShapeType.Circle);
             if (circleRegion.Parameters is ShapeParameters circleDef)
             {
-                circleDef.CenterX = 400;
-                circleDef.CenterY = 200;
-                circleDef.Radius = 60;
+                circleDef.Geometry = new Circle2d(400, 200, 60);
             }
             regions.Add(circleRegion);
 
@@ -41,11 +37,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region
             var rotatedRectRegion = RegionData.CreateDrawingRegion("旋转矩形1", ShapeType.RotatedRectangle);
             if (rotatedRectRegion.Parameters is ShapeParameters rotatedDef)
             {
-                rotatedDef.CenterX = 300;
-                rotatedDef.CenterY = 300;
-                rotatedDef.Width = 120;
-                rotatedDef.Height = 60;
-                rotatedDef.Angle = 30;
+                rotatedDef.Geometry = new RotatedRect2d(300, 300, 120, 60, 30);
             }
             regions.Add(rotatedRectRegion);
 
@@ -53,10 +45,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region
             var lineRegion = RegionData.CreateDrawingRegion("直线1", ShapeType.Line);
             if (lineRegion.Parameters is ShapeParameters lineDef)
             {
-                lineDef.StartX = 100;
-                lineDef.StartY = 100;
-                lineDef.EndX = 300;
-                lineDef.EndY = 200;
+                lineDef.Geometry = Line2d.FromTwoPoints(
+                    new System.Windows.Point(100, 100),
+                    new System.Windows.Point(300, 200));
             }
             regions.Add(lineRegion);
 

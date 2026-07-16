@@ -323,141 +323,14 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 $"尝试获取属性: {binding.SourceProperty} 从节点 {binding.SourceNodeId}", 
                 nameof(ParameterResolver));
 
-            // 获取属性值
-            var value = GetPropertyValue(nodeResult, binding.SourceProperty!);
-            
-            if (value == null)
-            {
-                _logger?.Log(LogLevel.Warning, 
-                    $"属性 {binding.SourceProperty} 获取结果为 null", 
-                    nameof(ParameterResolver));
-            }
-            else
-            {
-                _logger?.Log(LogLevel.Info, 
-                    $"属性 {binding.SourceProperty} 获取成功: {value.GetType().Name} = {value}", 
-                    nameof(ParameterResolver));
-            }
-
-            if (value == null && !binding.SourceProperty!.Contains('.'))
-            {
-                // 尝试从结果项获取（使用反射，统一使用新机制）
-                var property = nodeResult.GetType().GetProperty(binding.SourceProperty);
-                if (property != null && property.CanRead)
-                {
-                    value = property.GetValue(nodeResult);
-                    _logger?.Log(LogLevel.Info, 
-                        $"通过反射获取属性 {binding.SourceProperty}: {value?.GetType().Name ?? "null"}", 
-                        nameof(ParameterResolver));
-                }
-            }
-
-            // ★ 新增：从 GetResultItems() 中查找（支持 GenericToolResults 等基于结果项的弱类型类）
-            if (value == null && nodeResult is ToolResults toolResult)
-            {
-                var resultItems = toolResult.GetResultItems();
-                var foundItem = resultItems.FirstOrDefault(item =>
-                    string.Equals(item.Name, binding.SourceProperty, StringComparison.OrdinalIgnoreCase));
-                if (foundItem != null)
-                {
-                    value = foundItem.Value;
-                    _logger?.Log(LogLevel.Info,
-                        $"从 ResultItems 获取属性 {binding.SourceProperty}: {value?.GetType().Name ?? "null"}",
-                        nameof(ParameterResolver));
-                }
-            }
+            // 通过输出变量契约解析（唯一路径，无反射、无 GetResultItems 兜底）
+            var value = OutputVariableResolver.Resolve(nodeResults, binding.SourceNodeId!, binding.SourceProperty!);
 
             var result = ParameterResolveResult.Success(value, binding.TargetType);
             result.SourceNodeId = binding.SourceNodeId;
             result.SourceProperty = binding.SourceProperty;
 
             return result;
-        }
-
-        /// <summary>
-        /// 获取属性值（支持嵌套属性和数组索引）
-        /// </summary>
-        private object? GetPropertyValue(object obj, string propertyPath)
-        {
-            if (obj == null || string.IsNullOrEmpty(propertyPath))
-                return null;
-
-            // 🔍 关键日志：解析属性路径
-            var parsedPath = PropertyPathParser.ParsePropertyPath(propertyPath);
-            _logger?.Log(LogLevel.Info, 
-                $"解析属性路径: {propertyPath} -> {string.Join(" -> ", parsedPath.Select(p => $"{p.propertyName}{(p.arrayIndex.HasValue ? $"[{p.arrayIndex.Value}]" : "")}"))}", 
-                nameof(ParameterResolver));
-            
-            object? current = obj;
-
-            foreach (var (propName, arrayIndex) in parsedPath)
-            {
-                if (current == null)
-                    return null;
-
-                var type = current.GetType();
-                var property = type.GetProperty(propName, BindingFlags.Public | BindingFlags.Instance);
-
-                if (property == null)
-                {
-                    // 🔍 关键日志：属性不存在
-                    _logger?.Log(LogLevel.Warning, 
-                        $"属性 {propName} 在类型 {type.Name} 中不存在", 
-                        nameof(ParameterResolver));
-                    
-                    // 尝试使用类型转换器
-                    var converter = TypeDescriptor.GetConverter(type);
-                    if (converter != null)
-                    {
-                        return null;
-                    }
-                    return null;
-                }
-
-                try
-                {
-                    current = property.GetValue(current);
-                    _logger?.Log(LogLevel.Info, 
-                        $"获取属性 {propName}: {current?.GetType().Name ?? "null"}", 
-                        nameof(ParameterResolver));
-
-                    // 如果当前值是数组，根据索引处理
-                    if (current is Array array)
-                    {
-                        if (arrayIndex.HasValue)
-                        {
-                            // [0] [1] → 取指定索引的元素
-                            if (arrayIndex.Value >= 0 && arrayIndex.Value < array.Length)
-                                current = array.GetValue(arrayIndex.Value);
-                            else
-                            {
-                                _logger?.Log(LogLevel.Warning, 
-                                    $"数组索引 {arrayIndex.Value} 越界, 数组长度: {array.Length}", 
-                                    nameof(ParameterResolver));
-                                return null;  // 索引越界
-                            }
-                        }
-                        // [] 或无括号 → 返回整个数组（current 不变）
-                    }
-                    else if (arrayIndex.HasValue)
-                    {
-                        // 非数组但有索引 → 类型错误
-                        _logger?.Log(LogLevel.Warning, 
-                            $"属性 {propName} 不是数组类型，但指定了索引 [{arrayIndex.Value}]", 
-                            nameof(ParameterResolver));
-                        return null;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger?.Log(LogLevel.Warning, 
-                        $"获取属性 {propName} 异常: {ex.Message}", 
-                        nameof(ParameterResolver));
-                    return null;
-                }
-            }
-
-            return current;
         }
 
         /// <summary>

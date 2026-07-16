@@ -206,35 +206,11 @@ namespace SunEyeVision.Workflow
         }
 
         /// <summary>
-        /// 从工具结果中获取指定属性的值
+        /// 从工具结果中获取指定属性的值（通过输出变量契约读取，无反射、无 GetResultItems 兜底）
         /// </summary>
-        /// <remarks>
-        /// 先尝试通过反射获取属性值，如果失败则尝试从 GetResultItems() 中查找。
-        /// 后者支持 GenericToolResults 等基于结果项的弱类型结果类，
-        /// 对齐 ParameterResolver.ResolveDynamic 的查找模式。
-        /// </remarks>
         private object? GetPropertyValueFromResult(ToolResults result, string propertyName)
         {
-            if (result == null || string.IsNullOrEmpty(propertyName))
-                return null;
-
-            // 通过反射获取属性值
-            var property = result.GetType().GetProperty(propertyName);
-            if (property != null && property.CanRead)
-            {
-                return property.GetValue(result);
-            }
-
-            // 从 GetResultItems() 中查找（支持 GenericToolResults 等弱类型结果）
-            var resultItems = result.GetResultItems();
-            var foundItem = resultItems.FirstOrDefault(item =>
-                string.Equals(item.Name, propertyName, StringComparison.OrdinalIgnoreCase));
-            if (foundItem != null)
-            {
-                return foundItem.Value;
-            }
-
-            return null;
+            return OutputVariableResolver.Resolve(result, propertyName);
         }
 
         /// <summary>

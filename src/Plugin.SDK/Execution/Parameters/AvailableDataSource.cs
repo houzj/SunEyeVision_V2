@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
@@ -77,6 +77,12 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         public Type PropertyType { get; set; } = typeof(object);
 
         /// <summary>
+        /// 全局变量类型名称（SdkTypeVocabulary 词汇，如 "Image"/"Double"/"Circle"）。
+        /// 取代 PropertyType 驱动的 CLR 类型过滤与 imageTypeNames 字符串 hack。
+        /// </summary>
+        public string? VariableType { get; set; }
+
+        /// <summary>
         /// 类型名称（用于显示）
         /// </summary>
         public string TypeName => PropertyType.Name;
@@ -126,6 +132,15 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// 关联的树节点对象，用于支持完整的树形结构导航。
         /// </remarks>
         public TreeNodeData? TreeNode { get; set; }
+
+        /// <summary>
+        /// 子数据源列表（数组属性暴露 [i] 子节点时使用）
+        /// </summary>
+        /// <remarks>
+        /// 数组属性（Circle2d[]/double[] 等）会附带一个 [i] 子数据源，
+        /// 用于绑定路径显式取单个元素（决策1）。
+        /// </remarks>
+        public List<AvailableDataSource>? Children { get; set; }
 
         /// <summary>
         /// 下拉显示文本（中文，用于界面显示）

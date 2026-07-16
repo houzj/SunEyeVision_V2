@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Linq;
 using System.Text.Json.Serialization;
-using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
@@ -20,18 +21,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
         private Guid _id = Guid.NewGuid();
         private RegionSourceMode _mode = RegionSourceMode.Drawing;
 
-        /// <summary>
-        /// 区域定义ID
-        /// </summary>
         public Guid Id
         {
             get => _id;
             set => SetProperty(ref _id, value);
         }
 
-        /// <summary>
-        /// 定义模式
-        /// </summary>
         public RegionSourceMode Mode
         {
             get => _mode;
@@ -50,223 +45,51 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
     }
 
     /// <summary>
-    /// 形状参数 - 用户绘制的形状参数
+    /// 形状参数 - 用户绘制的形状参数。
+    /// 持有 UI 样式信息和 SDK 几何类型实例。
     /// </summary>
     public class ShapeParameters : RegionDefinition, IMonitorable
     {
         #region 私有字段
 
-        private ShapeType _shapeType = ShapeType.Rectangle;
-        private double _centerX = 0;
-        private double _centerY = 0;
-        private double _width = 100;
-        private double _height = 100;
-        private double _angle = 0;
-        private double _radius = 50;
-        private double _outerRadius = 0;
-        private double _startX = 0;
-        private double _startY = 0;
-        private double _endX = 100;
-        private double _endY = 100;
-        private double _startAngle = 0;
-        private double _endAngle = 0;
-        private uint _fillColorArgb = 0x00000000;  // 完全透明
-        private uint _strokeColorArgb = 0xFF0000FF; // 蓝色 RGB(0,0,255)
+        private object? _geometry;
+        private uint _fillColorArgb = 0x00000000;
+        private uint _strokeColorArgb = 0xFF0000FF;
         private double _strokeThickness = RegionEditorSettings.Default.DefaultStrokeThickness;
         private double _opacity = 0.3;
 
         #endregion
 
-        #region 通用参数
-
         /// <summary>
-        /// 形状类型
+        /// SDK 几何类型实例。
+        /// Circle2d / Line2d / Annulus2d / RotatedRect2d / Polygon2d / Arc2d / Point2D / System.Windows.Rect
         /// </summary>
-        public ShapeType ShapeType
+        public object? Geometry
         {
-            get => _shapeType;
-            set => SetProperty(ref _shapeType, value, "形状类型");
+            get => _geometry;
+            set => SetProperty(ref _geometry, value);
         }
 
-        /// <summary>
-        /// 中心点X坐标
-        /// </summary>
-        public double CenterX
-        {
-            get => _centerX;
-            set => SetProperty(ref _centerX, value, "中心点X坐标");
-        }
+        #region 样式属性
 
-        /// <summary>
-        /// 中心点Y坐标
-        /// </summary>
-        public double CenterY
-        {
-            get => _centerY;
-            set => SetProperty(ref _centerY, value, "中心点Y坐标");
-        }
-
-        /// <summary>
-        /// 宽度（矩形、旋转矩形）
-        /// </summary>
-        public double Width
-        {
-            get => _width;
-            set => SetProperty(ref _width, value, "宽度");
-        }
-
-        /// <summary>
-        /// 高度（矩形、旋转矩形）
-        /// </summary>
-        public double Height
-        {
-            get => _height;
-            set => SetProperty(ref _height, value, "高度");
-        }
-
-        /// <summary>
-        /// 旋转角度（度数，数学角度系统：[-180°, 180°]，逆时针为正）
-        /// </summary>
-        public double Angle
-        {
-            get => _angle;
-            set => SetProperty(ref _angle, value, "角度");
-        }
-
-        /// <summary>
-        /// 半径（圆形、圆环）
-        /// </summary>
-        public double Radius
-        {
-            get => _radius;
-            set
-            {
-                SetProperty(ref _radius, value, "半径");
-                if (ShapeType == ShapeType.Circle)
-                {
-                    // 同步 Width/Height，保证 GetShapePosition 定位正确
-                    _width = value * 2;
-                    _height = value * 2;
-                    OnPropertyChanged(nameof(Width));
-                    OnPropertyChanged(nameof(Height));
-                }
-            }
-        }
-
-        /// <summary>
-        /// 外半径（圆环）
-        /// </summary>
-        public double OuterRadius
-        {
-            get => _outerRadius;
-            set => SetProperty(ref _outerRadius, value, "外半径");
-        }
-
-        #endregion
-
-        #region 直线参数
-
-        /// <summary>
-        /// 起点X坐标（直线）
-        /// </summary>
-        public double StartX
-        {
-            get => _startX;
-            set => SetProperty(ref _startX, value, "起点X坐标");
-        }
-
-        /// <summary>
-        /// 起点Y坐标（直线）
-        /// </summary>
-        public double StartY
-        {
-            get => _startY;
-            set => SetProperty(ref _startY, value, "起点Y坐标");
-        }
-
-        /// <summary>
-        /// 终点X坐标（直线）
-        /// </summary>
-        public double EndX
-        {
-            get => _endX;
-            set => SetProperty(ref _endX, value, "终点X坐标");
-        }
-
-        /// <summary>
-        /// 终点Y坐标（直线）
-        /// </summary>
-        public double EndY
-        {
-            get => _endY;
-            set => SetProperty(ref _endY, value, "终点Y坐标");
-        }
-
-        #endregion
-
-        #region 多边形参数
-
-        /// <summary>
-        /// 多边形顶点（使用 ObservableCollection 支持 ItemsControl 自动刷新）
-        /// </summary>
-        public ObservableCollection<Point2D> Points { get; set; } = new();
-
-        #endregion
-
-        #region 弧形参数
-
-        /// <summary>
-        /// 起始角度（弧形）
-        /// </summary>
-        public double StartAngle
-        {
-            get => _startAngle;
-            set => SetProperty(ref _startAngle, value, "起始角度");
-        }
-
-        /// <summary>
-        /// 结束角度（弧形）
-        /// </summary>
-        public double EndAngle
-        {
-            get => _endAngle;
-            set => SetProperty(ref _endAngle, value, "结束角度");
-        }
-
-        #endregion
-
-        #region 样式属性（参考ROI编辑器）
-
-        /// <summary>
-        /// 填充颜色（ARGB）
-        /// </summary>
         public uint FillColorArgb
         {
             get => _fillColorArgb;
             set => SetProperty(ref _fillColorArgb, value, "填充颜色");
         }
 
-        /// <summary>
-        /// 边框颜色（ARGB）
-        /// </summary>
         public uint StrokeColorArgb
         {
             get => _strokeColorArgb;
             set => SetProperty(ref _strokeColorArgb, value, "边框颜色");
         }
 
-        /// <summary>
-        /// 边框厚度
-        /// </summary>
         public double StrokeThickness
         {
             get => _strokeThickness;
             set => SetProperty(ref _strokeThickness, value, "边框厚度");
         }
 
-        /// <summary>
-        /// 透明度 (0-1)
-        /// </summary>
         public double Opacity
         {
             get => _opacity;
@@ -275,53 +98,105 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
 
         #endregion
 
+        /// <summary>
+        /// 从 Geometry 推导 ShapeType 枚举（UI 下拉用）
+        /// </summary>
+        public ShapeType ShapeType => GeometryToShapeType(_geometry);
+
         public ShapeParameters()
         {
             Mode = RegionSourceMode.Drawing;
         }
 
-        public override ShapeType? GetShapeType() => ShapeType;
+        public override ShapeType? GetShapeType() => GeometryToShapeType(_geometry);
+
+        #region 编辑辅助方法
 
         /// <summary>
-        /// 获取中心点
+        /// 获取中心点（UI 坐标）
         /// </summary>
-        public Point2D GetCenter() => new Point2D(CenterX, CenterY);
+        public Point2D GetCenter()
+        {
+            var wpfPt = _geometry switch
+            {
+                Circle2d c       => c.Center,
+                RotatedRect2d rr => new System.Windows.Point(rr.CenterX, rr.CenterY),
+                Polygon2d poly   => poly.Center,
+                Annulus2d a      => a.Center,
+                Line2d l         => l.Point,
+                System.Windows.Rect r => new System.Windows.Point(r.X + r.Width / 2, r.Y + r.Height / 2),
+                _                => new System.Windows.Point(0, 0),
+            };
+            return new Point2D(wpfPt.X, wpfPt.Y);
+        }
 
         /// <summary>
-        /// 设置中心点
+        /// 设置中心点（创建新 Geometry，仅对中心点可变的类型生效）
         /// </summary>
         public void SetCenter(Point2D center)
         {
-            CenterX = center.X;
-            CenterY = center.Y;
+            _geometry = _geometry switch
+            {
+                Circle2d c => new Circle2d(center.X, center.Y, c.Radius),
+                RotatedRect2d rr => new RotatedRect2d(center.X, center.Y, rr.Width, rr.Height, rr.Angle),
+                Annulus2d a => new Annulus2d(center.X, center.Y, a.InnerRadius, a.OuterRadius, a.StartAngle, a.EndAngle),
+                System.Windows.Rect r => new System.Windows.Rect(center.X - r.Width / 2, center.Y - r.Height / 2, r.Width, r.Height),
+                _ => _geometry,
+            };
+            OnPropertyChanged(nameof(Geometry));
         }
 
         /// <summary>
-        /// 获取起点（直线）
+        /// 获取直线起点
         /// </summary>
-        public Point2D GetStartPoint() => new Point2D(StartX, StartY);
+        public Point2D GetStartPoint()
+        {
+            if (_geometry is Line2d l)
+                return new Point2D(l.Point.X, l.Point.Y);
+            return new Point2D(0, 0);
+        }
 
         /// <summary>
-        /// 设置起点（直线）
+        /// 设置直线起点
         /// </summary>
         public void SetStartPoint(Point2D point)
         {
-            StartX = point.X;
-            StartY = point.Y;
+            if (_geometry is Line2d l)
+            {
+                var dir = l.Direction;
+                _geometry = new Line2d(new System.Windows.Point(point.X, point.Y), dir);
+                OnPropertyChanged(nameof(Geometry));
+            }
         }
 
         /// <summary>
-        /// 获取终点（直线）
+        /// 获取直线终点（基于点向式，从点+方向逆推终点）
         /// </summary>
-        public Point2D GetEndPoint() => new Point2D(EndX, EndY);
+        public Point2D GetEndPoint()
+        {
+            if (_geometry is Line2d l)
+            {
+                // 取一个足够远的点表示"终点"
+                var endPt = l.GetPointAt(100);
+                return new Point2D(endPt.X, endPt.Y);
+            }
+            return new Point2D(0, 0);
+        }
 
         /// <summary>
-        /// 设置终点（直线）
+        /// 设置直线终点（重新计算方向）
         /// </summary>
         public void SetEndPoint(Point2D point)
         {
-            EndX = point.X;
-            EndY = point.Y;
+            if (_geometry is Line2d l)
+            {
+                var startPt = new System.Windows.Point(l.Point.X, l.Point.Y);
+                var endPt = new System.Windows.Point(point.X, point.Y);
+                var dir = endPt - startPt;
+                if (dir.LengthSquared > 1e-20)
+                    _geometry = new Line2d(startPt, dir);
+                OnPropertyChanged(nameof(Geometry));
+            }
         }
 
         /// <summary>
@@ -329,10 +204,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
         /// </summary>
         public double GetLineLength()
         {
-            if (ShapeType != ShapeType.Line) return 0;
-            var dx = EndX - StartX;
-            var dy = EndY - StartY;
-            return Math.Sqrt(dx * dx + dy * dy);
+            return _geometry switch
+            {
+                Line2d l => 100 * l.Direction.Length,  // GetPointAt(100) 的长度
+                _ => 0,
+            };
         }
 
         /// <summary>
@@ -340,11 +216,32 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
         /// </summary>
         public double GetLineAngle()
         {
-            if (ShapeType != ShapeType.Line) return 0;
-            var dx = EndX - StartX;
-            var dy = EndY - StartY;
-            // 数学角度：逆时针为正，屏幕坐标系Y轴向下，需要取负
-            return -Math.Atan2(dy, dx) * 180 / Math.PI;
+            return _geometry switch
+            {
+                Line2d l => -l.Angle * 180 / Math.PI,
+                _ => 0,
+            };
+        }
+
+        #endregion
+
+        /// <summary>
+        /// 将 Geometry 类型映射回 ShapeType 枚举
+        /// </summary>
+        public static ShapeType GeometryToShapeType(object? geometry)
+        {
+            return geometry switch
+            {
+                Point2D pt       => ShapeType.Point,
+                Circle2d         => ShapeType.Circle,
+                Line2d           => ShapeType.Line,
+                Annulus2d        => ShapeType.Annulus,
+                RotatedRect2d    => ShapeType.RotatedRectangle,
+                Polygon2d        => ShapeType.Polygon,
+                Arc2d            => ShapeType.Arc,
+                System.Windows.Rect => ShapeType.Rectangle,
+                _                => ShapeType.None,
+            };
         }
 
         public override RegionDefinition Clone()
@@ -353,109 +250,45 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
             {
                 Id = Id,
                 Mode = Mode,
-                ShapeType = ShapeType,
-                CenterX = CenterX,
-                CenterY = CenterY,
-                Width = Width,
-                Height = Height,
-                Angle = Angle,
-                Radius = Radius,
-                OuterRadius = OuterRadius,
-                StartX = StartX,
-                StartY = StartY,
-                EndX = EndX,
-                EndY = EndY,
-                StartAngle = StartAngle,
-                EndAngle = EndAngle,
+                Geometry = CloneGeometry(_geometry),
                 FillColorArgb = FillColorArgb,
                 StrokeColorArgb = StrokeColorArgb,
                 StrokeThickness = StrokeThickness,
-                Opacity = Opacity
+                Opacity = Opacity,
             };
-            foreach (var point in Points)
-            {
-                clone.Points.Add(point.Clone());
-            }
             return clone;
+        }
+
+        private static object? CloneGeometry(object? geometry)
+        {
+            return geometry switch
+            {
+                Polygon2d poly => new Polygon2d(
+                    poly.Vertices.Select(v => new System.Windows.Point(v.X, v.Y)).ToArray(), poly.IsClosed),
+                Point2D pt => new Point2D(pt.X, pt.Y),
+                ICloneable cloneable => cloneable.Clone(),
+                _ => geometry,  // struct 值类型直接复制
+            };
         }
 
         public IReadOnlyList<(string FieldName, object? FieldValue)> GetMonitorFields()
         {
-            switch (ShapeType)
+            if (_geometry is IMonitorable m)
+                return m.GetMonitorFields();
+
+            // 兜底
+            return _geometry switch
             {
-                case ShapeType.Point:
-                    return new (string, object?)[]
-                    {
-                        ("X", CenterX),
-                        ("Y", CenterY),
-                    };
-                case ShapeType.Circle:
-                    return new (string, object?)[]
-                    {
-                        ("中心X", CenterX),
-                        ("中心Y", CenterY),
-                        ("半径", Radius),
-                    };
-                case ShapeType.Rectangle:
-                    return new (string, object?)[]
-                    {
-                        ("中心X", CenterX),
-                        ("中心Y", CenterY),
-                        ("宽", Width),
-                        ("高", Height),
-                    };
-                case ShapeType.RotatedRectangle:
-                    return new (string, object?)[]
-                    {
-                        ("中心X", CenterX),
-                        ("中心Y", CenterY),
-                        ("宽", Width),
-                        ("高", Height),
-                        ("角度", Angle),
-                    };
-                case ShapeType.Line:
-                    return new (string, object?)[]
-                    {
-                        ("起点X", StartX),
-                        ("起点Y", StartY),
-                        ("终点X", EndX),
-                        ("终点Y", EndY),
-                    };
-                case ShapeType.Annulus:
-                    return new (string, object?)[]
-                    {
-                        ("中心X", CenterX),
-                        ("中心Y", CenterY),
-                        ("内半径", Radius),
-                        ("外半径", OuterRadius),
-                    };
-                case ShapeType.Polygon:
+                System.Windows.Rect r => new (string, object?)[]
                 {
-                    var fields = new List<(string, object?)>(Points.Count + 1)
-                    {
-                        ("顶点数", Points.Count),
-                    };
-                    for (int i = 0; i < Points.Count; i++)
-                    {
-                        fields.Add(($"顶点[{i}]", Points[i]));
-                    }
-                    return fields;
-                }
-                case ShapeType.Arc:
-                    return new (string, object?)[]
-                    {
-                        ("中心X", CenterX),
-                        ("中心Y", CenterY),
-                        ("半径", Radius),
-                        ("起始角度", StartAngle),
-                        ("结束角度", EndAngle),
-                    };
-                default:
-                    return new (string, object?)[]
-                    {
-                        ("形状类型", ShapeType.ToString()),
-                    };
-            }
+                    ("X", r.X), ("Y", r.Y), ("宽", r.Width), ("高", r.Height),
+                },
+                Point2D pt => new (string, object?)[]
+                {
+                    ("X", pt.X), ("Y", pt.Y),
+                },
+                _ => new (string, object?)[] { ("类型", _geometry?.GetType().Name ?? "Null") },
+            };
         }
     }
 
@@ -464,19 +297,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
     /// </summary>
     public class FixedRegion : RegionDefinition
     {
-        /// <summary>
-        /// 源节点ID
-        /// </summary>
         public string SourceNodeId { get; set; } = string.Empty;
-
-        /// <summary>
-        /// 输出端口名称
-        /// </summary>
         public string OutputName { get; set; } = string.Empty;
-
-        /// <summary>
-        /// 区域索引（用于多区域输出）
-        /// </summary>
         public int? RegionIndex { get; set; }
 
         public FixedRegion()
@@ -508,14 +330,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
     /// </summary>
     public class ComputedRegion : RegionDefinition
     {
-        /// <summary>
-        /// 目标形状类型
-        /// </summary>
         public ShapeType TargetShapeType { get; set; } = ShapeType.Rectangle;
-
-        /// <summary>
-        /// 参数绑定字典（参数名 -> 参数源）
-        /// </summary>
         public Dictionary<string, ParameterSource> ParameterBindings { get; set; } = new();
 
         public ComputedRegion()
@@ -525,33 +340,21 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
 
         public override ShapeType? GetShapeType() => TargetShapeType;
 
-        /// <summary>
-        /// 设置参数绑定
-        /// </summary>
         public void SetParameterBinding(string parameterName, ParameterSource source)
         {
             ParameterBindings[parameterName] = source;
         }
 
-        /// <summary>
-        /// 获取参数绑定
-        /// </summary>
         public ParameterSource? GetParameterBinding(string parameterName)
         {
             return ParameterBindings.TryGetValue(parameterName, out var source) ? source : null;
         }
 
-        /// <summary>
-        /// 移除参数绑定
-        /// </summary>
         public void RemoveParameterBinding(string parameterName)
         {
             ParameterBindings.Remove(parameterName);
         }
 
-        /// <summary>
-        /// 解析参数值
-        /// </summary>
         public object? ResolveParameter(string parameterName, IParameterContext? context)
         {
             var source = GetParameterBinding(parameterName);

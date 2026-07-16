@@ -633,7 +633,7 @@ namespace SunEyeVision.Workflow
 
         /// <summary>
         /// 检查刚执行的节点组中是否有节点输出了 NextNodeId 控制信号。
-        /// 用于条件分支工具：Run() 返回 ConditionResults，引擎读取 NextNodeId 决定下一个执行分支。
+        /// 用于条件分支工具：Run() 返回 ConditionResults（实现 IControlFlowResult），引擎强类型读取 NextNodeId 决定下一个执行分支。
         /// </summary>
         private string? TryExtractNextNodeId(Workflow workflow, List<string> executedGroupNodeIds, WorkflowContext context)
         {
@@ -642,17 +642,11 @@ namespace SunEyeVision.Workflow
                 var nodeResult = context.GetNodeResult(nodeId);
                 if (nodeResult?.Result == null) continue;
 
-                // 通过反射检查结果类型是否包含 NextNodeId 属性
-                var resultType = nodeResult.Result.GetType();
-                var nextNodeIdProp = resultType.GetProperty("NextNodeId");
-                if (nextNodeIdProp != null)
+                // 强类型读取流程控制信号，取代反射 GetProperty("NextNodeId")
+                if (nodeResult.Result is IControlFlowResult cfr && !string.IsNullOrEmpty(cfr.NextNodeId))
                 {
-                    var nextNodeId = nextNodeIdProp.GetValue(nodeResult.Result) as string;
-                    if (!string.IsNullOrEmpty(nextNodeId))
-                    {
-                        _logger.LogInfo($"节点 {nodeId} 输出控制信号 NextNodeId = {nextNodeId}", nodeId);
-                        return nextNodeId;
-                    }
+                    _logger.LogInfo($"节点 {nodeId} 输出控制信号 NextNodeId = {cfr.NextNodeId}", nodeId);
+                    return cfr.NextNodeId;
                 }
             }
             return null;

@@ -53,7 +53,7 @@ namespace SunEyeVision.Plugin.SDK.VisionAdapters
         int IVisionImage.Height => Size.Height;
         bool IVisionImage.IsEmpty => Empty;
 
-        BitmapSource IVisionImage.ToBitmapSource()
+        public BitmapSource ToBitmapSource()
         {
             var src = Image;
             var pixelFormat = src.Channels() switch

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Logic
@@ -218,8 +219,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Logic
         /// </summary>
         private void CreateCircleHandles(ShapeParameters shape)
         {
-            var center = shape.GetCenter();
-            var radius = shape.Radius;
+            if (shape.Geometry is not Circle2d c) return;
+            var center = new Point2D(c.Center.X, c.Center.Y);
+            var radius = c.Radius;
 
             // 4个对称点手柄，用于调整半径
             var directions = new[]
@@ -324,12 +326,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Logic
         /// </summary>
         private void CreatePolygonHandles(ShapeParameters shape)
         {
-            for (int i = 0; i < shape.Points.Count; i++)
+            if (shape.Geometry is not Polygon2d poly) return;
+            for (int i = 0; i < poly.Vertices.Length; i++)
             {
-                var pt = shape.Points[i];
-                AddHandle(HandleType.PolygonVertex, pt);
+                var v = poly.Vertices[i];
+                AddHandle(HandleType.PolygonVertex, new Point2D(v.X, v.Y));
             }
-            // 中心手柄用于拖动整个多边形
             AddHandle(HandleType.Center, shape.GetCenter());
         }
 
@@ -357,26 +359,30 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Logic
         /// </summary>
         private Bounds GetBounds(ShapeParameters shape)
         {
-            return shape.ShapeType switch
+            if (shape.Geometry == null)
+                return new Bounds(0, 0, 100, 100);
+
+            if (shape.Geometry is System.Windows.Rect r)
+                return new Bounds(r.X, r.Y, r.Width, r.Height);
+            else if (shape.Geometry is Circle2d c)
+                return new Bounds(c.Center.X - c.Radius, c.Center.Y - c.Radius, c.Diameter, c.Diameter);
+            else if (shape.Geometry is RotatedRect2d)
+                return GetRotatedBoundingBox(shape);
+            else if (shape.Geometry is Line2d l)
             {
-                ShapeType.Rectangle => new Bounds(
-                    shape.CenterX - shape.Width / 2,
-                    shape.CenterY - shape.Height / 2,
-                    shape.Width,
-                    shape.Height),
-                ShapeType.Circle => new Bounds(
-                    shape.CenterX - shape.Radius,
-                    shape.CenterY - shape.Radius,
-                    shape.Radius * 2,
-                    shape.Radius * 2),
-                ShapeType.RotatedRectangle => GetRotatedBoundingBox(shape),
-                ShapeType.Line => new Bounds(
-                    Math.Min(shape.StartX, shape.EndX),
-                    Math.Min(shape.StartY, shape.EndY),
-                    Math.Abs(shape.EndX - shape.StartX),
-                    Math.Abs(shape.EndY - shape.StartY)),
-                _ => new Bounds(shape.CenterX, shape.CenterY, shape.Width, shape.Height)
-            };
+                var endPt = l.GetPointAt(100);
+                var startPt = new System.Windows.Point(l.Point.X, l.Point.Y);
+                return new Bounds(
+                    Math.Min(startPt.X, endPt.X), Math.Min(startPt.Y, endPt.Y),
+                    Math.Abs(endPt.X - startPt.X), Math.Abs(endPt.Y - startPt.Y));
+            }
+            else if (shape.Geometry is Polygon2d poly)
+            {
+                var bx = poly.BoundingBox;
+                return new Bounds(bx.X, bx.Y, bx.Width, bx.Height);
+            }
+
+            return new Bounds(0, 0, 100, 100);
         }
 
         /// <summary>
@@ -384,13 +390,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Logic
         /// </summary>
         private Point2D[]? GetCorners(ShapeParameters shape)
         {
-            if (shape.ShapeType != ShapeType.RotatedRectangle)
+            if (shape.Geometry is not RotatedRect2d rr)
                 return null;
 
-            var center = shape.GetCenter();
-            var w = shape.Width;
-            var h = shape.Height;
-            var angleRad = shape.Angle * Math.PI / 180;
+            var center = new Point2D(rr.CenterX, rr.CenterY);
+            var w = rr.Width;
+            var h = rr.Height;
+            var angleRad = rr.Angle * Math.PI / 180;
             var cos = Math.Cos(angleRad);
             var sin = Math.Sin(angleRad);
 
@@ -421,7 +427,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Logic
         {
             var corners = GetCorners(shape);
             if (corners == null || corners.Length == 0)
-                return new Bounds(shape.CenterX, shape.CenterY, shape.Width, shape.Height);
+            {
+                if (shape.Geometry is RotatedRect2d rr)
+                    return new Bounds(rr.CenterX - rr.Width / 2, rr.CenterY - rr.Height / 2, rr.Width, rr.Height);
+                return new Bounds(0, 0, 100, 100);
+            }
 
             var minX = double.MaxValue;
             var minY = double.MaxValue;

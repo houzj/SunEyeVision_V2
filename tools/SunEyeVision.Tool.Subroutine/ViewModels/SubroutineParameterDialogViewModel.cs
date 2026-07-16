@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -53,7 +53,7 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
             set => SetProperty(ref _selectedDisplayType, value);
         }
 
-        public List<TypeOption> AvailableTypes { get; } = GlobalVariableTypeMapper.GetAllTypeOptions();
+        public List<TypeOption> AvailableTypes { get; } = SdkTypeVocabulary.GetAllTypeOptions();
 
         public List<DisplayTypeOption> AvailableDisplayTypes { get; } = SubroutineDisplayTypeExtensions.GetAllOptions();
 

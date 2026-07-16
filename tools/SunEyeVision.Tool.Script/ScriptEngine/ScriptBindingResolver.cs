@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -123,11 +123,11 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
         /// 解析节点属性绑定：NodeId.PropertyName[/Sub.Property][N]
         /// </summary>
         /// <remarks>
-        /// 复用 PropertyPathParser + AlgorithmNode.GetPropertyValueFromResult 的取值模式：
+        /// 通过输出变量契约（SSOT）+ OutputVariableResolver 统一解析：
         /// 1. 先按 '.' 分割，前段为节点 ID，后段为属性路径
-        /// 2. 用反射在 nodeResult.GetType() 上找属性
-        /// 3. 找不到时回退到 nodeResult.GetResultItems() 弱类型查询（对齐 GenericToolResults）
-        /// 4. 属性路径支持嵌套（C.D）和数组索引（C[0] / C[]）
+        /// 2. 由 OutputVariableResolver.Resolve() 在 GetOutputVariables() 中按 Name 寻址
+        /// 3. 属性路径支持嵌套（C.D）和数组索引（C[0] / C[]）
+        /// 4. 找不到时直接抛 InvalidOperationException（rule-015 禁止兜底回退）
         ///
         /// 错误处理（rule-008）：
         /// - 节点未执行 / 不在结果集中 → 抛 InvalidOperationException 列出可用节点
@@ -150,105 +150,11 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             var nodeId = bindingSource.Substring(0, firstDot);
             var propertyPath = bindingSource.Substring(firstDot + 1);
 
-            // 2. 查找节点结果
-            if (!nodeResults.TryGetValue(nodeId, out var nodeResult) || nodeResult == null)
-            {
-                var available = nodeResults.Count > 0
-                    ? "[" + string.Join(", ", nodeResults.Keys) + "]"
-                    : "(空)";
-                throw new InvalidOperationException(
-                    $"脚本输入 '{inputName}' 绑定的节点 '{nodeId}' 不在执行结果中。可用节点: {available}。" +
-                    $"该节点必须先于脚本工具执行才能获取其输出结果。");
-            }
+            // 2. 通过输出变量契约解析（SSOT），找不到即报错
+            var rawValue = OutputVariableResolver.Resolve(nodeResults, nodeId, propertyPath);
 
-            // 3. 沿属性路径取值（复用 PropertyPathParser + 反射 + GetResultItems 弱类型回退）
-            var parsedPath = PropertyPathParser.ParsePropertyPath(propertyPath);
-            if (parsedPath.Count == 0)
-                throw new InvalidOperationException(
-                    $"脚本输入 '{inputName}' 的属性路径为空: '{bindingSource}'");
-
-            object? current = nodeResult;
-            foreach (var (propName, arrayIndex) in parsedPath)
-            {
-                if (current == null)
-                    throw new InvalidOperationException(
-                        $"脚本输入 '{inputName}' 的属性路径 '{propertyPath}' 中途遇到 null 值（取到属性 '{propName}' 时）");
-
-                current = GetPropertyOrResultItem(current, propName, inputName, propertyPath);
-
-                // 数组索引处理
-                if (current is null)
-                {
-                    // null 值 + 需要索引 → 索引语法对 null 无意义
-                    if (arrayIndex.HasValue)
-                        throw new InvalidOperationException(
-                            $"脚本输入 '{inputName}' 的属性 '{propName}' 为 null，无法使用索引 [{arrayIndex.Value}]");
-                    // 无索引要求 → 直接保留 null（供下游 CoerceNodeValue 处理）
-                    continue;
-                }
-
-                if (current is Array arr)
-                {
-                    if (!arrayIndex.HasValue)
-                    {
-                        // [] 或无括号 → 返回整个数组（current 不变）
-                        continue;
-                    }
-
-                    if (arrayIndex.Value < 0 || arrayIndex.Value >= arr.Length)
-                        throw new InvalidOperationException(
-                            $"脚本输入 '{inputName}' 的属性 '{propName}' 数组索引 {arrayIndex.Value} 越界 (长度={arr.Length})");
-
-                    current = arr.GetValue(arrayIndex.Value);
-                }
-                else if (arrayIndex.HasValue)
-                {
-                    var actualType = current.GetType().Name;
-                    throw new InvalidOperationException(
-                        $"脚本输入 '{inputName}' 的属性 '{propName}' 不是数组，无法使用索引 [{arrayIndex.Value}]。" +
-                        $"实际类型: {actualType}");
-                }
-            }
-
-            // 4. 类型适配（与全局变量一致：完全匹配直接返回，否则按视觉软件行业标准宽松转换）
-            return CoerceNodeValue(current, targetTypeName, inputName, nodeId, propertyPath);
-        }
-
-        /// <summary>
-        /// 取对象的属性值，弱类型回退到 GetResultItems()
-        /// </summary>
-        private static object? GetPropertyOrResultItem(
-            object current, string propName, string inputName, string propertyPath)
-        {
-            var type = current.GetType();
-            var property = type.GetProperty(
-                propName, BindingFlags.Public | BindingFlags.Instance);
-
-            if (property != null && property.CanRead)
-            {
-                try
-                {
-                    return property.GetValue(current);
-                }
-                catch (Exception ex)
-                {
-                    throw new InvalidOperationException(
-                        $"脚本输入 '{inputName}' 获取属性 '{propName}' (路径 '{propertyPath}') 失败: {ex.Message}", ex);
-                }
-            }
-
-            // 弱类型回退：GenericToolResults 等通过 GetResultItems() 暴露命名值
-            if (current is ToolResults tr)
-            {
-                var foundItem = tr.GetResultItems()
-                    .FirstOrDefault(i => string.Equals(i.Name, propName, StringComparison.OrdinalIgnoreCase));
-                if (foundItem != null)
-                    return foundItem.Value;
-            }
-
-            throw new InvalidOperationException(
-                $"脚本输入 '{inputName}' 的属性路径 '{propertyPath}' 中找不到属性 '{propName}'" +
-                $"(在 {type.Name} 上既没有该公共属性，也不在 GetResultItems() 中)");
+            // 3. 类型适配
+            return CoerceNodeValue(rawValue, targetTypeName, inputName, nodeId, propertyPath);
         }
 
         /// <summary>
@@ -266,7 +172,17 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
 
             if (rawValue == null) return null;
 
-            var targetType = GlobalVariableTypeMapper.ToSystemType(targetTypeName);
+            var targetType = SdkTypeVocabulary.ToSystemType(targetTypeName);
+
+            // 决策1：数组→单值必须通过 [i] 索引（rule-015 禁止兜底回退）
+            if (rawValue is Array && targetType != null && !targetType.IsArray)
+            {
+                throw new InvalidOperationException(
+                    $"脚本输入 '{inputName}' 绑定的节点属性 '{nodeId}.{propertyPath}' 的值为数组类型，" +
+                    $"不能直接赋值给单值字段 '{inputName}'（类型 '{targetTypeName}'）。" +
+                    $"请在绑定路径末尾添加 [i] 索引，例如: {nodeId}.{propertyPath}[0]");
+            }
+
             if (targetType != null && targetType.IsInstanceOfType(rawValue))
                 return rawValue;
 
@@ -321,8 +237,18 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
 
             if (rawValue == null) return null;
 
+            var targetType = SdkTypeVocabulary.ToSystemType(targetTypeName);
+
+            // 决策1：数组→单值必须通过 [i] 索引（rule-015 禁止兜底回退）
+            if (rawValue is Array && targetType != null && !targetType.IsArray)
+            {
+                throw new InvalidOperationException(
+                    $"脚本输入 '{inputName}' 绑定的全局变量 '{varName}' 的值为数组类型，" +
+                    $"不能直接赋值给单值字段 '{inputName}'（类型 '{targetTypeName}'）。" +
+                    $"请在绑定路径末尾添加 [i] 索引，例如: {varName}[0]");
+            }
+
             // 1. 类型完全匹配 → 直接返回
-            var targetType = GlobalVariableTypeMapper.ToSystemType(targetTypeName);
             if (targetType != null && targetType.IsInstanceOfType(rawValue))
                 return rawValue;
 

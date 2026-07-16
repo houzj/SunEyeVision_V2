@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using OpenCvSharp;
+using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 using WpfRect = System.Windows.Rect;
 using WpfPoint = System.Windows.Point;
@@ -76,34 +77,31 @@ namespace SunEyeVision.Plugin.SDK.VisionAdapters
 
             foreach (var region in enabled)
             {
-                if (region.Parameters is not ShapeParameters shape) continue;
+                if (region.Parameters is not ShapeParameters shape || shape.Geometry == null) continue;
 
-                switch (shape.ShapeType)
+                if (shape.Geometry is Circle2d c)
                 {
-                    case ShapeType.Rectangle:
-                    case ShapeType.RotatedRectangle:
-                    {
-                        int x = (int)Math.Round(shape.CenterX - shape.Width / 2);
-                        int y = (int)Math.Round(shape.CenterY - shape.Height / 2);
-                        int w = (int)Math.Round(shape.Width);
-                        int h = (int)Math.Round(shape.Height);
-                        Cv2.Rectangle(combinedMask, new Rect(x, y, w, h), Scalar.White, -1);
-                        break;
-                    }
-                    case ShapeType.Circle:
-                    {
-                        int cx = (int)Math.Round(shape.CenterX);
-                        int cy = (int)Math.Round(shape.CenterY);
-                        int r = (int)Math.Round(shape.Radius);
-                        Cv2.Circle(combinedMask, cx, cy, r, Scalar.White, -1);
-                        break;
-                    }
-                    case ShapeType.Polygon when shape.Points.Count >= 3:
-                    {
-                        var pts = shape.Points.Select(p => new Point((int)p.X, (int)p.Y)).ToArray();
-                        Cv2.FillPoly(combinedMask, new[] { pts }, Scalar.White);
-                        break;
-                    }
+                    Cv2.Circle(combinedMask,
+                        (int)Math.Round(c.Center.X), (int)Math.Round(c.Center.Y),
+                        (int)Math.Round(c.Radius), Scalar.White, -1);
+                }
+                else if (shape.Geometry is RotatedRect2d rr)
+                {
+                    int x = (int)Math.Round(rr.CenterX - rr.Width / 2);
+                    int y = (int)Math.Round(rr.CenterY - rr.Height / 2);
+                    Cv2.Rectangle(combinedMask, new Rect(x, y,
+                        (int)Math.Round(rr.Width), (int)Math.Round(rr.Height)), Scalar.White, -1);
+                }
+                else if (shape.Geometry is Polygon2d poly && poly.Vertices.Length >= 3)
+                {
+                    var pts = poly.Vertices.Select(v => new Point((int)v.X, (int)v.Y)).ToArray();
+                    Cv2.FillPoly(combinedMask, new Point[][] { pts }, Scalar.White);
+                }
+                else if (shape.Geometry is System.Windows.Rect rect)
+                {
+                    Cv2.Rectangle(combinedMask, new Rect(
+                        (int)Math.Round(rect.X), (int)Math.Round(rect.Y),
+                        (int)Math.Round(rect.Width), (int)Math.Round(rect.Height)), Scalar.White, -1);
                 }
             }
 

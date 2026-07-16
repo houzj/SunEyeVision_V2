@@ -1,5 +1,4 @@
-using System;
-using System.Windows.Media.Imaging;
+﻿using System;
 
 namespace SunEyeVision.Plugin.SDK.VisionAdapters
 {
@@ -20,9 +19,6 @@ namespace SunEyeVision.Plugin.SDK.VisionAdapters
 
         /// <summary>是否为空图像</summary>
         bool IsEmpty { get; }
-
-        /// <summary>转换为 WPF BitmapSource（用于显示层）</summary>
-        BitmapSource ToBitmapSource();
 
         /// <summary>获取像素数据字节数组（用于算法处理）</summary>
         byte[] GetPixelData();

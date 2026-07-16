@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Plugin.SDK.Models.Geometry;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
 {
@@ -216,8 +217,34 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
             return new RegionData
             {
                 Name = name,
-                Parameters = new ShapeParameters { ShapeType = shapeType },
+                Parameters = new ShapeParameters
+                {
+                    Geometry = CreateDefaultGeometry(shapeType),
+                },
                 IsPreview = true
+            };
+        }
+
+        /// <summary>
+        /// 根据 ShapeType 创建默认 SDK 几何类型
+        /// </summary>
+        internal static object? CreateDefaultGeometry(ShapeType shapeType)
+        {
+            return shapeType switch
+            {
+                ShapeType.Circle            => new Circle2d(0, 0, 50),
+                ShapeType.Line              => Line2d.FromTwoPoints(new System.Windows.Point(0, 0), new System.Windows.Point(100, 100)),
+                ShapeType.Annulus           => new Annulus2d(0, 0, 30, 80),
+                ShapeType.RotatedRectangle  => new RotatedRect2d(0, 0, 100, 100, 0),
+                ShapeType.Polygon           => new Polygon2d(new[]
+                {
+                    new System.Windows.Point(0, 0),
+                    new System.Windows.Point(100, 0),
+                    new System.Windows.Point(50, 100),
+                }),
+                ShapeType.Arc               => new Arc2d(0, 0, 50, 0, Math.PI),
+                ShapeType.Point             => new Point2D(0, 0),
+                _                           => new System.Windows.Rect(-50, -50, 100, 100),
             };
         }
 

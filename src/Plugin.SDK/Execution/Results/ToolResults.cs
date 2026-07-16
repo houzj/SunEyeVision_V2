@@ -384,6 +384,13 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
         public object? Tag { get; set; }
 
         /// <summary>
+        /// 检测区域几何输出列表。
+        /// 工具 Run() 中由 ExtractInspectionGeometries() 填充，
+        /// 供下游按 SDK 几何类型（Circle2d/RotatedRect2d/Polygon2d 等）绑定。
+        /// </summary>
+        public List<object?> InspectionGeometries { get; set; } = new();
+
+        /// <summary>
         /// 显示收集器（Push 模型）
         /// </summary>
         protected readonly DisplayCollector _display = new();
@@ -579,6 +586,42 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
             {
                 new("ExecutionTimeMs", "执行耗时", "执行信息")
             };
+        }
+
+        /// <summary>
+        /// 基于输出变量契约派生输出变量列表（SSOT）。
+        /// 以声明性 GetPropertyMap() 为准，结合真实 CLR 属性类型与运行期值，
+        /// 取代原 ToDictionary() 反射 + 各子类手写三虚方法对齐的模式。
+        /// 变量类型复用 SdkTypeVocabulary 固定词汇；未映射类型或契约漏洞直接报错（rule-015）。
+        /// </summary>
+        public virtual IReadOnlyList<OutputVariable> GetOutputVariables()
+        {
+            var variables = new List<OutputVariable>();
+            foreach (var entry in GetPropertyMap())
+            {
+                var prop = GetType().GetProperty(entry.PropertyName, BindingFlags.Public | BindingFlags.Instance);
+                if (prop == null)
+                {
+                    throw new InvalidOperationException(
+                        $"工具 '{ToolName ?? GetType().Name}' 的 GetPropertyMap 声明了输出属性 '{entry.PropertyName}'，但结果类型中不存在该属性（契约漏洞）。");
+                }
+
+                var runtimeValue = prop.GetValue(this);
+                var variableType = SunEyeVision.Plugin.SDK.Models.SdkTypeVocabulary.ToTypeVocabulary(prop.PropertyType)
+                    ?? throw new InvalidOperationException(
+                        $"工具 '{ToolName ?? GetType().Name}' 的输出属性 '{entry.PropertyName}' 类型 '{prop.PropertyType.Name}' 不是全局变量支持的通用类型，请检查 SdkTypeVocabulary 词汇表。");
+
+                variables.Add(new OutputVariable
+                {
+                    Name = entry.PropertyName,
+                    VariableType = variableType,
+                    DisplayName = entry.DisplayName,
+                    Group = entry.GroupName,
+                    Kind = OutputVariableKind.Data,
+                    RuntimeValue = runtimeValue
+                });
+            }
+            return variables;
         }
 
         #endregion

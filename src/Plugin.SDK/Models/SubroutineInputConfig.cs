@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models;
@@ -37,7 +37,7 @@ namespace SunEyeVision.Plugin.SDK.Models
         }
 
         [JsonIgnore]
-        public Type? ParamType => GlobalVariableTypeMapper.ToSystemType(TypeName);
+        public Type? ParamType => SdkTypeVocabulary.ToSystemType(TypeName);
 
         public AvailableDataSource? Source
         {

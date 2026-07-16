@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -66,7 +66,6 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
                 
                 // 提取参数类型信息（用于诊断）
                 Type? paramsType = null;
-                Type? resultType = null;
                 foreach (var iface in toolType.GetInterfaces())
                 {
                     if (iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(IToolPlugin<,>))
@@ -75,7 +74,6 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
                         if (genericArgs.Length >= 2)
                         {
                             paramsType = genericArgs[0];
-                            resultType = genericArgs[1];
                             break;
                         }
                     }
@@ -87,11 +85,13 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
                     RegisterParameterTypeToRegistry(paramsType);
                 }
                 
-                // ✅ 提取并缓存属性元数据
-                ExtractPropertyMetadata(attr.Id, resultType);
+                // ✅ 基于输出变量契约（IToolPlugin.OutputVariables）提取并缓存属性元数据
+                var pluginInstance = CreateToolInstance(attr.Id);
+                if (pluginInstance != null)
+                    ExtractPropertyMetadata(attr.Id, pluginInstance);
                 
                 VisionLogger.Instance.Log(LogLevel.Success,
-                    $"工具注册成功: {attr.DisplayName} (Id={attr.Id}, ParamsType={paramsType?.Name ?? "未指定"}, ResultType={resultType?.Name ?? "未指定"})",
+                    $"工具注册成功: {attr.DisplayName} (Id={attr.Id}, ParamsType={paramsType?.Name ?? "未指定"})",
                     "ToolRegistry");
             }
         }
@@ -418,129 +418,76 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
         }
 
         /// <summary>
-        /// 提取属性元数据到类型缓存（优化方案）
+        /// 提取属性元数据到类型缓存（基于输出变量契约 SSOT，取代空实例反射）。
+        /// 静态工具由框架自动派生 OutputVariables；动态工具（脚本/子程序）由实现类从 Parameters 注入。
+        /// 未注册到 SdkTypeVocabulary 词汇表的变量类型直接报错提示并跳过（rule-015，不静默兜底）。
         /// </summary>
         /// <param name="toolId">工具ID</param>
-        /// <param name="resultType">结果类型</param>
-        private static void ExtractPropertyMetadata(string toolId, Type? resultType)
+        /// <param name="plugin">工具插件实例（已注册，持有 OutputVariables 契约）</param>
+        private static void ExtractPropertyMetadata(string toolId, IToolPlugin plugin)
         {
-            if (resultType == null || !typeof(ToolResults).IsAssignableFrom(resultType))
-            {
-                return;
-            }
-
             try
             {
-                // 创建临时空实例（仅用于提取元数据）
-                ToolResults? tempResult;
-                try
-                {
-                    tempResult = Activator.CreateInstance(resultType) as ToolResults;
-                }
-                catch (Exception ex)
-                {
-                    VisionLogger.Instance.Log(LogLevel.Warning, 
-                        $"创建临时实例失败: {toolId}, 错误: {ex.Message}", 
-                        "ToolRegistry");
+                var variables = plugin.OutputVariables;
+                if (variables == null)
                     return;
-                }
-                
-                if (tempResult == null)
+
+                int dataVariableCount = 0;
+                foreach (var v in variables)
                 {
-                    return;
-                }
-                
-                // 遍历所有公共属性
-                var properties = resultType.GetProperties(
-                    BindingFlags.Public |
-                    BindingFlags.Instance);
-                
-                // 一次性获取属性映射表（性能优化）
-                var propertyMap = tempResult.GetPropertyMap();
-                
-                int validPropertyCount = 0;
-                
-                foreach (var prop in properties)
-                {
-                    // 跳过索引属性
-                    if (prop.GetIndexParameters().Length > 0)
+                    // 控制信号（如 NextNodeId）不进数据面板 / 绑定候选
+                    if (v.Kind != OutputVariableKind.Data)
                         continue;
-                    
-                    // 跳过基类 ToolResults 的属性（执行耗时 ExecutionTimeMs 除外，对所有工具可见）
-                    if (prop.DeclaringType == typeof(ToolResults))
+
+                    if (SunEyeVision.Plugin.SDK.Models.SdkTypeVocabulary.ToSystemType(v.VariableType) is not { } varType)
                     {
-                        if (prop.Name == "ExecutionTimeMs")
-                        {
-                            // 执行耗时所有工具通用，保留用于性能监控
-                            // 因工具可能重写 GetPropertyMap() 而不包含基类属性，此处兜底设置中文显示名
-                        }
-                        else
-                        {
-                            continue;
-                        }
-                    }
-                    
-                    // 跳过特殊属性
-                    if (IsSpecialProperty(prop.Name))
+                        VisionLogger.Instance.Log(LogLevel.Error,
+                            $"工具 '{toolId}' 的输出变量 '{v.Name}' 类型 '{v.VariableType}' 未在 SdkTypeVocabulary 词汇表注册，已跳过。",
+                            "ToolRegistry");
                         continue;
-                    
-                    // 从属性映射表获取 DisplayName 和 GroupName
-                    var mapEntry = propertyMap.FirstOrDefault(e => e.PropertyName == prop.Name);
-                    
-                    // 执行耗时统一使用中文显示名（即使工具的 GetPropertyMap() 未包含它也生效）
-                    var displayName = prop.Name == "ExecutionTimeMs"
-                        ? "执行耗时"
-                        : mapEntry?.DisplayName ?? GetDisplayName(prop.Name);
-                    var groupName = prop.Name == "ExecutionTimeMs"
-                        ? "执行信息"
-                        : mapEntry?.GroupName;
-                    
-                    // 创建元数据
+                    }
+
+                    var typeFullName = varType.FullName;
+                    if (string.IsNullOrEmpty(typeFullName))
+                        continue;
+
                     var metadata = new ToolPropertyMetadata
                     {
-                        PropertyName = prop.Name,
-                        DisplayName = displayName,
-                        GroupName = groupName,
-                        PropertyType = prop.PropertyType,
-                        Description = GetPropertyDescription(prop),
+                        PropertyName = v.Name,
+                        DisplayName = string.IsNullOrEmpty(v.DisplayName) ? v.Name : v.DisplayName,
+                        GroupName = v.Group,
+                        PropertyType = varType,
+                        Description = null
                     };
-                    
-                    // 获取类型全名（作为缓存Key）
-                    var typeFullName = prop.PropertyType.FullName;
-                    if (string.IsNullOrEmpty(typeFullName))
-                    {
-                        continue;
-                    }
-                    
-                    // 添加到类型缓存（关键优化：直接按具体类型缓存）
+
+                    // 直接按类型全名缓存（关键优化：直接按具体类型缓存）
                     if (!_typeCache.ContainsKey(typeFullName))
                     {
                         _typeCache[typeFullName] = new Dictionary<string, List<ToolPropertyMetadata>>();
                     }
-                    
+
                     if (!_typeCache[typeFullName].ContainsKey(toolId))
                     {
                         _typeCache[typeFullName][toolId] = new List<ToolPropertyMetadata>();
                     }
-                    
+
                     _typeCache[typeFullName][toolId].Add(metadata);
-                    
-                    validPropertyCount++;
-                    
+                    dataVariableCount++;
+
                     VisionLogger.Instance.Log(LogLevel.Debug,
-                        $"属性元数据已提取: {toolId}.{metadata.PropertyName} ({prop.PropertyType.Name})",
+                        $"属性元数据已提取(契约): {toolId}.{metadata.PropertyName} ({varType.Name})",
                         "ToolRegistry");
                 }
-                
+
                 VisionLogger.Instance.Log(LogLevel.Success,
-                    $"属性元数据提取完成: {toolId}, 共 {validPropertyCount} 个属性",
+                    $"属性元数据提取完成(契约): {toolId}, 共 {dataVariableCount} 个数据变量",
                     "ToolRegistry");
             }
             catch (Exception ex)
             {
-                VisionLogger.Instance.Log(LogLevel.Warning,
-                    $"提取属性元数据失败: {toolId}, 错误: {ex.Message}",
-                    "ToolRegistry");
+                VisionLogger.Instance.Log(LogLevel.Error,
+                    $"提取属性元数据失败(契约): {toolId}, 错误: {ex.Message}",
+                    "ToolRegistry", ex);
             }
         }
 

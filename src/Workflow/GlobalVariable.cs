@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -147,11 +147,8 @@ public class GlobalVariable : ObservableObject
     }
 
     /// <summary>
-    /// 变量类型
+    /// 变量类型（词汇表由 SdkTypeVocabulary 定义）
     /// </summary>
-    /// <remarks>
-    /// 支持的类型见 GlobalVariableValueConverter.SupportedTypes
-    /// </remarks>
     public string Type
     {
         get => _type;
@@ -352,25 +349,8 @@ public class GlobalVariable : ObservableObject
     /// </summary>
     private static bool IsValidType(string type)
     {
-        return type switch
-        {
-            GlobalVariableValueConverter.SupportedTypes.Integer => true,
-            GlobalVariableValueConverter.SupportedTypes.String => true,
-            GlobalVariableValueConverter.SupportedTypes.Boolean => true,
-            GlobalVariableValueConverter.SupportedTypes.Double => true,
-            GlobalVariableValueConverter.SupportedTypes.Byte => true,
-            GlobalVariableValueConverter.SupportedTypes.Point => true,
-            GlobalVariableValueConverter.SupportedTypes.Rectangle => true,
-            GlobalVariableValueConverter.SupportedTypes.Size => true,
-            GlobalVariableValueConverter.SupportedTypes.Image => true,
-            GlobalVariableValueConverter.SupportedTypes.Region => true,
-            GlobalVariableValueConverter.SupportedTypes.Circle => true,
-            GlobalVariableValueConverter.SupportedTypes.Line => true,
-            GlobalVariableValueConverter.SupportedTypes.RotatedRect => true,
-            GlobalVariableValueConverter.SupportedTypes.Polygon => true,
-            GlobalVariableValueConverter.SupportedTypes.Annulus => true,
-            _ => false
-        };
+        // 通过 SdkTypeVocabulary 验证类型有效性（SSOT）
+        return SdkTypeVocabulary.ToSystemType(type) != null && type != "Region";
     }
 
     /// <summary>

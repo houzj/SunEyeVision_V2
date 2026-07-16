@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -3814,45 +3814,46 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         /// <param name="nodeId">节点ID，用于绑定状态反查</param>
         public void UpdateModuleResults(ToolResults? result, string? nodeName, string? toolId = null, string? nodeId = null)
         {
-            // ★ 诊断：记录入参
-            VisionLogger.Instance.Log(LogLevel.Info,
-                $"[诊断:UpdateModuleResults] nodeName='{nodeName}' | toolId='{toolId}' | nodeId='{nodeId}' | result={(result != null ? result.GetType().Name : "null")}",
-                "MainWindowViewModel");
-
             ModuleResultTree.Clear();
             HasModuleResults = false;
 
-            // 从 _typeCache 获取该工具的所有输出属性
-            var metadataList = string.IsNullOrEmpty(toolId)
-                ? []
-                : ToolRegistry.GetAllPropertyMetadata(toolId);
+            // 统一以「输出变量契约 SSOT」为数据来源：
+            //  - 运行期：直读 result.GetOutputVariables()（含 RuntimeValue），取代 ReflectGetValue + GetResultItems 兜底
+            //  - 设计期（未运行）：回退到 ToolRegistry 缓存的契约元数据展示属性结构（占位符 --）
+            var entries = new List<(string Name, string DisplayName, string? Group, Type? ClrType, object? RuntimeValue)>();
 
-            // ★ 诊断：记录查询结果
-            VisionLogger.Instance.Log(LogLevel.Info,
-                $"[诊断:UpdateModuleResults] toolId='{toolId}' | metadataList.Count={metadataList.Count} | 将{(metadataList.Count == 0 ? "直接返回（模块结果为空）" : "继续构建结果树")}",
-                "MainWindowViewModel");
-
-            // ★ 新增：从结果实例中合并动态属性元数据（让子程序的动态输出端口在模块结果树中可见）
             if (result != null)
             {
-                var instanceMap = result.GetPropertyMap();
-                foreach (var entry in instanceMap)
+                foreach (var v in result.GetOutputVariables())
                 {
-                    if (!metadataList.Any(m => m.PropertyName == entry.PropertyName))
-                    {
-                        metadataList.Add(new ToolPropertyMetadata
-                        {
-                            PropertyName = entry.PropertyName,
-                            DisplayName = entry.DisplayName,
-                            GroupName = entry.GroupName,
-                            PropertyType = typeof(object)
-                        });
-                    }
+                    if (v.Kind != OutputVariableKind.Data)
+                        continue;
+                    entries.Add((
+                        v.Name,
+                        string.IsNullOrEmpty(v.DisplayName) ? v.Name : v.DisplayName,
+                        v.Group,
+                        SunEyeVision.Plugin.SDK.Models.SdkTypeVocabulary.ToSystemType(v.VariableType),
+                        v.RuntimeValue));
                 }
             }
-
-            if (metadataList.Count == 0)
+            else if (!string.IsNullOrEmpty(toolId))
+            {
+                foreach (var m in ToolRegistry.GetAllPropertyMetadata(toolId))
+                {
+                    entries.Add((m.PropertyName, m.DisplayName, m.GroupName, m.PropertyType, null));
+                }
+            }
+            else
+            {
                 return;
+            }
+
+            if (entries.Count == 0)
+                return;
+
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[诊断:UpdateModuleResults] nodeName='{nodeName}' | toolId='{toolId}' | 契约变量数={entries.Count}",
+                "MainWindowViewModel");
 
             // 根节点 = 当前选中节点名称
             var rootNode = new ModuleResultNode
@@ -3862,110 +3863,109 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                 IsExpanded = true
             };
 
-            // 有缓存数据：按 GroupName 分组构建树（支持 / 分隔的层级分组）
-            if (metadataList.Count > 0)
+            // 按 Group 分组构建树（支持 / 分隔的层级分组），跳过可视化结果类型（图像/区域，由图像显示控件展示）
+            var groups = entries
+                .GroupBy(e => e.Group ?? "其他")
+                .OrderBy(g => g.Key);
+
+            var groupNodeCache = new Dictionary<string, ModuleResultNode>();
+
+            foreach (var group in groups)
             {
-                var groups = metadataList
-                    .GroupBy(m => m.GroupName ?? "其他")
-                    .OrderBy(g => g.Key);
+                if (string.IsNullOrEmpty(group.Key))
+                    continue;
 
-                // 缓存已创建的组节点，key = 完整路径（如 "Blob详细/边框"）
-                var groupNodeCache = new Dictionary<string, ModuleResultNode>();
+                var groupNames = group.Key.Split('/');
+                ModuleResultNode currentParent = rootNode;
 
-                foreach (var group in groups)
+                for (int i = 0; i < groupNames.Length; i++)
                 {
-                    if (string.IsNullOrEmpty(group.Key))
-                        continue;
+                    var cacheKey = string.Join("/", groupNames.Take(i + 1));
 
-                    var groupNames = group.Key.Split('/');
-                    ModuleResultNode currentParent = rootNode;
-
-                    for (int i = 0; i < groupNames.Length; i++)
+                    if (!groupNodeCache.TryGetValue(cacheKey, out var groupNode))
                     {
-                        var cacheKey = string.Join("/", groupNames.Take(i + 1));
-
-                        if (!groupNodeCache.TryGetValue(cacheKey, out var groupNode))
+                        groupNode = new ModuleResultNode
                         {
-                            groupNode = new ModuleResultNode
-                            {
-                                DisplayName = groupNames[i],
-                                IsGroup = true,
-                                IsExpanded = true
-                            };
-                            currentParent.Children.Add(groupNode);
-                            groupNodeCache[cacheKey] = groupNode;
-                        }
-
-                        currentParent = groupNode;
+                            DisplayName = groupNames[i],
+                            IsGroup = true,
+                            IsExpanded = true
+                        };
+                        currentParent.Children.Add(groupNode);
+                        groupNodeCache[cacheKey] = groupNode;
                     }
 
-                    foreach (var meta in group)
-                    {
-                        // 跳过图像和图形类型（由图像显示控件展示）
-                        if (IsVisualResultType(meta.PropertyType))
-                            continue;
-
-                        string displayValue;
-
-                        if (result != null && meta.PropertyName is { Length: > 0 } pn)
-                        {
-                            // 有结果 → 反射取值并格式化
-                            var value = ReflectGetValue(result, pn);
-                            // 反射取不到值时从 GetResultItems() 查找（支持子程序动态输出等基于字典的值）
-                            if (value == null)
-                                value = result.GetResultItems()
-                                    .FirstOrDefault(i => string.Equals(i.Name, pn, StringComparison.Ordinal))
-                                    ?.Value;
-                            displayValue = FormatTypedValue(value, meta.PropertyType);
-                        }
-                        else
-                        {
-                            // 无结果 → 占位符
-                            displayValue = "--";
-                        }
-
-                        currentParent.Children.Add(new ModuleResultNode
-                        {
-                            DisplayName = meta.DisplayName,
-                            DisplayValue = displayValue,
-                            PropertyName = meta.PropertyName,
-                            SourceNodeId = nodeId,
-                            SourcePropertyName = meta.PropertyName,
-                            PropertyClrType = meta.PropertyType,
-                            IsGroup = false
-                        });
-                    }
+                    currentParent = groupNode;
                 }
 
-                // 移除没有非可视化子节点的空组
-                var emptyGroups = rootNode.Children
-                    .Where(c => c.IsGroup && c.Children.Count == 0)
-                    .ToList();
-                foreach (var empty in emptyGroups)
-                    rootNode.Children.Remove(empty);
+                foreach (var e in group)
+                {
+                    if (e.ClrType != null && IsVisualResultType(e.ClrType))
+                        continue;
+
+                    var node = new ModuleResultNode
+                    {
+                        DisplayName = e.DisplayName,
+                        DisplayValue = FormatTypedValue(e.RuntimeValue, e.ClrType),
+                        PropertyName = e.Name,
+                        SourceNodeId = nodeId,
+                        SourcePropertyName = e.Name,
+                        PropertyClrType = e.ClrType,
+                        IsGroup = false
+                    };
+
+                    // 几何数组展开：RuntimeValue 为数组且元素实现 IMonitorable → 展开子字段
+                    if (e.RuntimeValue is System.Collections.IEnumerable enumerable
+                        && !(e.RuntimeValue is string)
+                        && e.ClrType?.IsArray == true)
+                    {
+                        var elementType = e.ClrType.GetElementType();
+                        if (elementType != null && typeof(IMonitorable).IsAssignableFrom(elementType))
+                        {
+                            node.IsGroup = true;
+                            node.DisplayValue = null;
+                            int index = 0;
+                            foreach (var item in enumerable)
+                            {
+                                if (item is IMonitorable monitorable)
+                                {
+                                    var itemNode = new ModuleResultNode
+                                    {
+                                        DisplayName = $"[{index}]",
+                                        IsGroup = true,
+                                        IsExpanded = false
+                                    };
+                                    foreach (var field in monitorable.GetMonitorFields())
+                                    {
+                                        itemNode.Children.Add(new ModuleResultNode
+                                        {
+                                            DisplayName = field.FieldName,
+                                            DisplayValue = field.FieldValue?.ToString() ?? "--",
+                                            IsGroup = false
+                                        });
+                                    }
+                                    node.Children.Add(itemNode);
+                                    index++;
+                                }
+                            }
+                        }
+                    }
+
+                    currentParent.Children.Add(node);
+                }
             }
+
+            // 移除没有非可视化子节点的空组
+            var emptyGroups = rootNode.Children
+                .Where(c => c.IsGroup && c.Children.Count == 0)
+                .ToList();
+            foreach (var empty in emptyGroups)
+                rootNode.Children.Remove(empty);
+
             if (rootNode.Children.Count > 0)
             {
                 ModuleResultTree.Add(rootNode);
                 HasModuleResults = true;
                 BuildFlatRows();
-            }
-        }
-
-        /// <summary>
-        /// 反射获取结果实例的属性值
-        /// </summary>
-        private static object? ReflectGetValue(ToolResults result, string propertyName)
-        {
-            try
-            {
-                var prop = result.GetType().GetProperty(propertyName,
-                    BindingFlags.Public | BindingFlags.Instance);
-                return prop?.GetValue(result);
-            }
-            catch
-            {
-                return null;
             }
         }
 
@@ -4476,7 +4476,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
 
                 // 打开全局变量选择对话框（按类型过滤）
                 var filterType = row.PropertyClrType != null
-                    ? GlobalVariableTypeMapper.ToGlobalVarType(row.PropertyClrType)
+                    ? SdkTypeVocabulary.ToTypeVocabulary(row.PropertyClrType)
                     : null;
                 var selected = GlobalVariableSelectDialog.ShowSelect(variables.ToList(), filterType);
                 if (selected == null)
@@ -4605,8 +4605,10 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                 if (pb == null || pb.NodeId != nodeId)
                     continue;
 
-                // 通过反射从结果中取值
-                var value = ReflectGetValue(result, pb.PropertyName);
+                // 通过输出变量契约取运行期值（取代反射），未命中不写回（rule-015 不静默兜底）
+                var value = result.GetOutputVariables()
+                    .FirstOrDefault(v => string.Equals(v.Name, pb.PropertyName, StringComparison.Ordinal))
+                    ?.RuntimeValue;
                 gv.Value = value;
                 pb.CachedResult = result;
             }
@@ -4730,6 +4732,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         {
             public Type ParamsType => typeof(GenericToolParameters);
             public Type ResultType => typeof(GenericToolResults);
+            public IReadOnlyList<OutputVariable> OutputVariables => Array.Empty<OutputVariable>();
 
             public ToolResults Run(ToolParameters parameters)
             {

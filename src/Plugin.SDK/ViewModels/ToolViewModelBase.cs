@@ -454,7 +454,7 @@ namespace SunEyeVision.Plugin.SDK.ViewModels
                 var primaryImage = displayImages?.Values.FirstOrDefault(m => m != null && !m.IsEmpty);
                 if (primaryImage != null)
                 {
-                    OutputImage = primaryImage.ToBitmapSource();
+                    OutputImage = VisionImageConverterLocator.Current?.ToBitmapSource(primaryImage);
                     OnPropertyChanged(nameof(OutputImage));
                 }
 

@@ -138,9 +138,11 @@ public class VisionLoggerRoutingTests
 
         await FlushAsync(logger);
 
-        Assert.Single(fileWriter.Entries);
-        Assert.Equal("PluginLogger broadcast", fileWriter.Entries[0].Message);
-        Assert.Single(debugWriter.Entries);
+        // VisionLogger.Instance 是进程级单例，并行测试类（如 SdkTypeVocabularyContractTests）
+        // 反序列化全局变量时也会写日志到该单例，可能在本测试 300ms flush 窗口内泄漏进来。
+        // 本测试意图是验证路由（广播消息到达 File + Debug），因此断言"目标消息已到达"而非精确条数。
+        Assert.Contains(fileWriter.Entries, e => e.Message == "PluginLogger broadcast");
+        Assert.Contains(debugWriter.Entries, e => e.Message == "PluginLogger broadcast");
     }
 
     /// <summary>

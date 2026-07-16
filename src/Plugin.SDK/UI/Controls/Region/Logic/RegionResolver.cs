@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
+using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.Plugin.SDK.Logging;
@@ -114,21 +116,45 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Logic
                 SourceData = sourceData
             };
 
-            // 复制几何参数
-            result.CenterX = shapeDef.CenterX;
-            result.CenterY = shapeDef.CenterY;
-            result.Width = shapeDef.Width;
-            result.Height = shapeDef.Height;
-            result.Angle = shapeDef.Angle;
-            result.Radius = shapeDef.Radius;
-            result.OuterRadius = shapeDef.OuterRadius;
-            result.StartX = shapeDef.StartX;
-            result.StartY = shapeDef.StartY;
-            result.EndX = shapeDef.EndX;
-            result.EndY = shapeDef.EndY;
-            result.StartAngle = shapeDef.StartAngle;
-            result.EndAngle = shapeDef.EndAngle;
-            result.Points = new List<Point2D>(shapeDef.Points);
+            // 从 Geometry 复制几何参数
+            if (shapeDef.Geometry is Circle2d c)
+            {
+                result.CenterX = c.Center.X; result.CenterY = c.Center.Y;
+                result.Radius = c.Radius;
+            }
+            else if (shapeDef.Geometry is RotatedRect2d rr)
+            {
+                result.CenterX = rr.CenterX; result.CenterY = rr.CenterY;
+                result.Width = rr.Width; result.Height = rr.Height;
+                result.Angle = rr.Angle;
+            }
+            else if (shapeDef.Geometry is Line2d l)
+            {
+                result.StartX = l.Point.X; result.StartY = l.Point.Y;
+                var endPt = l.GetPointAt(100);
+                result.EndX = endPt.X; result.EndY = endPt.Y;
+            }
+            else if (shapeDef.Geometry is Annulus2d a)
+            {
+                result.CenterX = a.Center.X; result.CenterY = a.Center.Y;
+                result.Radius = a.InnerRadius; result.OuterRadius = a.OuterRadius;
+                result.StartAngle = a.StartAngle; result.EndAngle = a.EndAngle;
+            }
+            else if (shapeDef.Geometry is Polygon2d poly)
+            {
+                result.Points = poly.Vertices.Select(v => new Point2D(v.X, v.Y)).ToList();
+            }
+            else if (shapeDef.Geometry is System.Windows.Rect r)
+            {
+                result.CenterX = r.X + r.Width / 2; result.CenterY = r.Y + r.Height / 2;
+                result.Width = r.Width; result.Height = r.Height;
+            }
+            else if (shapeDef.Geometry is Arc2d arc)
+            {
+                result.CenterX = arc.Center.X; result.CenterY = arc.Center.Y;
+                result.Radius = arc.Radius;
+                result.StartAngle = arc.StartAngle; result.EndAngle = arc.EndAngle;
+            }
 
             // 验证参数
             var validationError = ValidateShapeParameters(result);

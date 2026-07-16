@@ -1,0 +1,18 @@
+  正在确定要还原的项目…
+  所有项目均是最新的，无法还原。
+  SunEyeVision.Plugin.SDK -> d:\MyWork\SunEyeVision_V2-script\dev\Debug\SunEyeVision.Plugin.SDK.dll
+  [Halcon] 已部署 25 个 native dll -> d:\MyWork\SunEyeVision_V2-script\src\Plugin.SDK\..\..\\dev\Debug\
+  SunEyeVision.Core -> d:\MyWork\SunEyeVision_V2-script\dev\Debug\SunEyeVision.Core.dll
+  [Halcon] 已部署 25 个 native dll -> d:\MyWork\SunEyeVision_V2-script\src\Core\..\..\\dev\Debug\
+  SunEyeVision.Plugin.Infrastructure -> d:\MyWork\SunEyeVision_V2-script\dev\Debug\SunEyeVision.Plugin.Infrastructure.dll
+  [Halcon] 已部署 25 个 native dll -> d:\MyWork\SunEyeVision_V2-script\src\Plugin.Infrastructure\..\..\\dev\Debug\
+  SunEyeVision.Workflow -> d:\MyWork\SunEyeVision_V2-script\dev\Debug\SunEyeVision.Workflow.dll
+  [Halcon] 已部署 25 个 native dll -> d:\MyWork\SunEyeVision_V2-script\src\Workflow\..\..\\dev\Debug\
+  SunEyeVision.UI -> d:\MyWork\SunEyeVision_V2-script\dev\Debug\SunEyeVision.UI.dll
+  [Halcon] 已部署 25 个 native dll -> d:\MyWork\SunEyeVision_V2-script\src\UI\..\..\\dev\Debug\
+
+已成功生成。
+    0 个警告
+    0 个错误
+
+已用时间 00:00:02.07

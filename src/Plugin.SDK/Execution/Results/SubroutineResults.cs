@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -63,6 +63,56 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
             foreach (var name in keys)
                 map.Add(new PropertyMapEntry(name, name, "\u8f93\u51fa\u7ed3\u679c"));
             return map;
+        }
+
+        /// <summary>
+        /// 基于输出变量契约派生：保留执行元信息（中文本地化），并叠加用户声明的输出变量
+        /// （含 DisplayName/Group 中文别名与分组，运行值来自 ResolvedOutputValues）。
+        /// </summary>
+        public override IReadOnlyList<OutputVariable> GetOutputVariables()
+        {
+            var variables = new List<OutputVariable>();
+
+            // 元信息：GetPropertyMap 中存在真实 CLR 属性的条目（如子流程耗时）
+            foreach (var entry in GetPropertyMap())
+            {
+                var prop = GetType().GetProperty(entry.PropertyName);
+                if (prop == null) continue; // 跳过动态输出变量（无 CLR 属性）
+
+                var variableType = SdkTypeVocabulary.ToTypeVocabulary(prop.PropertyType)
+                    ?? throw new InvalidOperationException(
+                        $"子程序元信息属性 '{entry.PropertyName}' 类型 '{prop.PropertyType.Name}' 未注册到 SdkTypeVocabulary 词汇表。");
+                variables.Add(new OutputVariable
+                {
+                    Name = entry.PropertyName,
+                    VariableType = variableType,
+                    DisplayName = entry.DisplayName,
+                    Group = entry.GroupName,
+                    Kind = OutputVariableKind.Data,
+                    RuntimeValue = prop.GetValue(this)
+                });
+            }
+
+            // 用户声明输出变量（含 DisplayName/Group）
+            foreach (var cfg in OutputConfigs)
+            {
+                if (SdkTypeVocabulary.ToSystemType(cfg.TypeName) is null)
+                {
+                    throw new InvalidOperationException(
+                        $"子程序输出变量 '{cfg.Name}' 类型 '{cfg.TypeName}' 未在 SdkTypeVocabulary 词汇表注册。");
+                }
+                variables.Add(new OutputVariable
+                {
+                    Name = cfg.Name,
+                    VariableType = cfg.TypeName,
+                    DisplayName = string.IsNullOrEmpty(cfg.DisplayName) ? cfg.Name : cfg.DisplayName,
+                    Group = cfg.Group,
+                    Kind = OutputVariableKind.Data,
+                    RuntimeValue = ResolvedOutputValues.TryGetValue(cfg.Name, out var v) ? v : null
+                });
+            }
+
+            return variables;
         }
 
         public override Dictionary<string, object> ToDictionary()

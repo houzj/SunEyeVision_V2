@@ -6,152 +6,68 @@
              xmlns:local="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Region.Views"
              xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls"
              xmlns:converters="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Region.Converters"
-             xmlns:sys="clr-namespace:System;assembly=mscorlib"
-             xmlns:cv="clr-namespace:System.Windows;assembly=WindowsBase"
-             xmlns:models="clr-namespace:SunEyeVision.Plugin.SDK.Models.Geometry;assembly=SunEyeVision.Plugin.SDK"
-             xmlns:vm="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Region.ViewModels"
+             xmlns:va="clr-namespace:SunEyeVision.Plugin.SDK.VisionAdapters"
              mc:Ignorable="d" d:DesignHeight="500" d:DesignWidth="300">
     <UserControl.Resources>
-        <vm:RegionSubscribeViewModel x:Key="SubscribeViewModel"/>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-        <converters:SubscribeModeToBoolConverter x:Key="SubscribeModeToBoolConverter"/>
     </UserControl.Resources>
-    <Grid DataContext="{StaticResource SubscribeViewModel}">
-        <StackPanel Margin="2">
-            <TextBlock Text="区域订阅面板"
-                       FontWeight="Bold"
-                       FontSize="14"
-                       Margin="0,0,0,12"/>
 
-            <!-- 继承方式选择区 - 2x2网格布局 -->
-            <GroupBox Header="继承方式" Margin="0,0,0,12">
-                <UniformGrid Columns="2" Rows="2" Margin="8">
-                    <RadioButton Content="按矩形区域"
-                                IsChecked="{Binding SubscribeMode, Converter={StaticResource SubscribeModeToBoolConverter}, ConverterParameter=RectRegion}"
-                                Margin="0,0,0,8"
-                                GroupName="SubscribeMode"/>
-                    <RadioButton Content="按矩形参数"
-                                IsChecked="{Binding SubscribeMode, Converter={StaticResource SubscribeModeToBoolConverter}, ConverterParameter=RectParameter}"
-                                Margin="0,0,0,8"
-                                GroupName="SubscribeMode"/>
-                    <RadioButton Content="按圆形区域"
-                                IsChecked="{Binding SubscribeMode, Converter={StaticResource SubscribeModeToBoolConverter}, ConverterParameter=CircleRegion}"
-                                Margin="0,0,0,8"
-                                GroupName="SubscribeMode"/>
-                    <RadioButton Content="按圆形参数"
-                                IsChecked="{Binding SubscribeMode, Converter={StaticResource SubscribeModeToBoolConverter}, ConverterParameter=CircleParameter}"
-                                GroupName="SubscribeMode"/>
-                </UniformGrid>
-            </GroupBox>
+    <!-- 根 Grid 直接继承父级 DataContext（ParameterPanel），修复旧版自绑 SubscribeViewModel 导致的接线断裂 -->
+    <StackPanel Margin="2">
+        <TextBlock Text="区域订阅面板"
+                   FontWeight="Bold"
+                   FontSize="14"
+                   Margin="0,0,0,12"/>
 
-            <!-- 参数绑定区（根据模式动态显示） -->
-            <GroupBox Header="参数绑定">
-                <StackPanel Margin="2">
-                    <!-- 按矩形区域模式：显示1个参数 -->
-                    <controls:LabeledControl Label="矩形区域"
-                                                   LabelWidth="70" 
-                                                   Margin="0,0,0,8"
-                                                   Visibility="{Binding IsRectRegionMode, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <controls:ParamBinding
-                            Width="200"
-                            ParameterName="RectRegion"
-                            DataType="{x:Type cv:Rect}"
-                            BindingSource="{Binding RectRegionSource, Mode=TwoWay}"
-                            AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:RegionSubscribePanel}}}"/>
-                    </controls:LabeledControl>
+        <!-- 订阅方式选择 -->
+        <GroupBox Header="订阅方式" Margin="0,0,0,12">
+            <UniformGrid Columns="2" Margin="8">
+                <RadioButton Content="订阅整个区域"
+                             GroupName="SubscribeSubMode"
+                             IsChecked="{Binding IsWholeRegionMode}"
+                             Checked="WholeRegionRadio_Checked"
+                             Margin="0,0,0,8"/>
+                <RadioButton Content="订阅几何参数"
+                             GroupName="SubscribeSubMode"
+                             IsChecked="{Binding IsGeometricMode}"
+                             Checked="GeometricRadio_Checked"
+                             Margin="0,0,0,8"/>
+            </UniformGrid>
+        </GroupBox>
 
-                    <!-- 按矩形参数模式：显示4个参数 -->
-                    <StackPanel Visibility="{Binding IsRectParameterMode, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <controls:LabeledControl Label="X"
-                                                       LabelWidth="70"
-                                                       Margin="0,0,0,8">
-                            <controls:ParamBinding
-                                Width="200"
-                                ParameterName="RectX"
-                                DataType="{x:Type sys:Double}"
-                                BindingSource="{Binding RectXSource, Mode=TwoWay}"
-                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:RegionSubscribePanel}}}"/>
-                        </controls:LabeledControl>
-                        <controls:LabeledControl Label="Y"
-                                                       LabelWidth="70"
-                                                       Margin="0,0,0,8">
-                            <controls:ParamBinding
-                                Width="200"
-                                ParameterName="RectY"
-                                DataType="{x:Type sys:Double}"
-                                BindingSource="{Binding RectYSource, Mode=TwoWay}"
-                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:RegionSubscribePanel}}}"/>
-                        </controls:LabeledControl>
-                        <controls:LabeledControl Label="Width"
-                                                       LabelWidth="70"
-                                                       Margin="0,0,0,8">
-                            <controls:ParamBinding
-                                Width="200"
-                                ParameterName="RectWidth"
-                                DataType="{x:Type sys:Double}"
-                                BindingSource="{Binding RectWidthSource, Mode=TwoWay}"
-                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:RegionSubscribePanel}}}"/>
-                        </controls:LabeledControl>
-                        <controls:LabeledControl Label="Height"
-                                                       LabelWidth="70"
-                                                       Margin="0,0,0,8">
-                            <controls:ParamBinding
-                                Width="200"
-                                ParameterName="RectHeight"
-                                DataType="{x:Type sys:Double}"
-                                BindingSource="{Binding RectHeightSource, Mode=TwoWay}"
-                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:RegionSubscribePanel}}}"/>
-                        </controls:LabeledControl>
-                    </StackPanel>
+        <!-- 整区域订阅 -->
+        <GroupBox Header="区域源" Margin="0,0,0,12"
+                  Visibility="{Binding IsWholeRegionMode, Converter={StaticResource BoolToVisibilityConverter}}">
+            <controls:LabeledControl Label="区域源" LabelWidth="70" Margin="0,0,0,8">
+                <controls:ParamBinding Width="200"
+                                       ParameterName="WholeRegion"
+                                       DataType="{x:Type va:IVisionRegion}"
+                                       BindingSource="{Binding WholeRegionBindingPath, Mode=TwoWay}"
+                                       AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:RegionSubscribePanel}}}"/>
+            </controls:LabeledControl>
+        </GroupBox>
 
-                    <!-- 按圆形区域模式：显示1个参数 -->
-                    <controls:LabeledControl Label="圆形区域"
-                                                   LabelWidth="70"
-                                                   Margin="0,0,0,8"
-                                                   Visibility="{Binding IsCircleRegionMode, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <controls:ParamBinding
-                            Width="200"
-                            ParameterName="CircleRegion"
-                            DataType="{x:Type models:Circle2d}"
-                            BindingSource="{Binding CircleRegionSource, Mode=TwoWay}"
-                            AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:RegionSubscribePanel}}}"/>
-                    </controls:LabeledControl>
-
-                    <!-- 按圆形参数模式：显示3个参数 -->
-                    <StackPanel Visibility="{Binding IsCircleParameterMode, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <controls:LabeledControl Label="CenterX"
-                                                       LabelWidth="70"
-                                                       Margin="0,0,0,8">
-                            <controls:ParamBinding
-                                Width="200"
-                                ParameterName="CircleCenterX"
-                                DataType="{x:Type sys:Double}"
-                                BindingSource="{Binding CircleCenterXSource, Mode=TwoWay}"
-                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:RegionSubscribePanel}}}"/>
-                        </controls:LabeledControl>
-                        <controls:LabeledControl Label="CenterY"
-                                                       LabelWidth="70"
-                                                       Margin="0,0,0,8">
-                            <controls:ParamBinding
-                                Width="200"
-                                ParameterName="CircleCenterY"
-                                DataType="{x:Type sys:Double}"
-                                BindingSource="{Binding CircleCenterYSource, Mode=TwoWay}"
-                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:RegionSubscribePanel}}}"/>
-                        </controls:LabeledControl>
-                        <controls:LabeledControl Label="Radius"
-                                                       LabelWidth="70"
-                                                       Margin="0,0,0,8">
-                            <controls:ParamBinding
-                                Width="200"
-                                ParameterName="CircleRadius"
-                                DataType="{x:Type sys:Double}"
-                                BindingSource="{Binding CircleRadiusSource, Mode=TwoWay}"
-                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:RegionSubscribePanel}}}"/>
-                        </controls:LabeledControl>
-                    </StackPanel>
-                </StackPanel>
-            </GroupBox>
-        </StackPanel>
-    </Grid>
+        <!-- 几何参数订阅 -->
+        <GroupBox Header="几何参数" Margin="0,0,0,12"
+                  Visibility="{Binding IsGeometricMode, Converter={StaticResource BoolToVisibilityConverter}}">
+            <StackPanel Margin="2">
+                <ComboBox ItemsSource="{Binding AvailableShapeTypes}"
+                          SelectedItem="{Binding CurrentShapeType}"
+                          Margin="0,0,0,8"/>
+                <ItemsControl ItemsSource="{Binding Parameters}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <controls:LabeledControl Label="{Binding DisplayName}" LabelWidth="70" Margin="0,0,0,8">
+                                <controls:ParamBinding Width="200"
+                                                       ParameterName="{Binding ParameterName}"
+                                                       DataType="{Binding DataType}"
+                                                       BindingSource="{Binding BindingPath, Mode=TwoWay}"
+                                                       AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:RegionSubscribePanel}}}"/>
+                            </controls:LabeledControl>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </GroupBox>
+    </StackPanel>
 </UserControl>

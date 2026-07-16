@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Windows.Media;
 using SunEyeVision.Plugin.SDK.Metadata;
+using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
@@ -184,13 +185,11 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             }
 
             // 分支2：无序列化引用且无运行时图像源 → 数据驱动自动匹配
-            // 场景：子程序内部工具首次执行时无序列化引用(dataSources为设计时推断的可用数据源)，
-            // 自动匹配第一个 IVisionImage 类型的数据源
+            // 通过 AvailableDataSource.VariableType == "Image" 匹配（统一 Mapper 词汇体系）
             if (_imageSource == null)
             {
                 var firstImageSource = dataSources
-                    .FirstOrDefault(ds => ds.PropertyType != null &&
-                        typeof(IVisionImage).IsAssignableFrom(ds.PropertyType));
+                    .FirstOrDefault(ds => ds.VariableType == "Image");
                 if (firstImageSource != null)
                 {
                     _imageSource = firstImageSource;
@@ -285,38 +284,28 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             var shape = region.Parameters;
             var shapeType = shape.GetShapeType();
 
-            if (!shapeType.HasValue || shape is not ShapeParameters shapeParams)
+            if (!shapeType.HasValue || shape is not ShapeParameters shapeParams || shapeParams.Geometry == null)
                 return Rectangle.Empty;
 
-            return shapeType.Value switch
-            {
-                ShapeType.Rectangle => new Rectangle(
-                    (int)(shapeParams.CenterX - shapeParams.Width / 2),
-                    (int)(shapeParams.CenterY - shapeParams.Height / 2),
-                    (int)shapeParams.Width,
-                    (int)shapeParams.Height
-                ),
-                ShapeType.Circle => new Rectangle(
-                    (int)(shapeParams.CenterX - shapeParams.Radius),
-                    (int)(shapeParams.CenterY - shapeParams.Radius),
-                    (int)(shapeParams.Radius * 2),
-                    (int)(shapeParams.Radius * 2)
-                ),
-                ShapeType.RotatedRectangle => new Rectangle(
-                    (int)(shapeParams.CenterX - shapeParams.Width / 2),
-                    (int)(shapeParams.CenterY - shapeParams.Height / 2),
-                    (int)shapeParams.Width,
-                    (int)shapeParams.Height
-                ),
-                ShapeType.Polygon => GetPolygonBounds(shapeParams.Points),
-                ShapeType.Annulus => new Rectangle(
-                    (int)(shapeParams.CenterX - (shapeParams.OuterRadius > 0 ? shapeParams.OuterRadius : shapeParams.Radius + 20)),
-                    (int)(shapeParams.CenterY - (shapeParams.OuterRadius > 0 ? shapeParams.OuterRadius : shapeParams.Radius + 20)),
-                    (int)((shapeParams.OuterRadius > 0 ? shapeParams.OuterRadius * 2 : (shapeParams.Radius + 20) * 2)),
-                    (int)((shapeParams.OuterRadius > 0 ? shapeParams.OuterRadius * 2 : (shapeParams.Radius + 20) * 2))
-                ),
-                _ => Rectangle.Empty
-            };
+            if (shapeParams.Geometry is Circle2d c)
+                return new Rectangle(
+                    (int)(c.Center.X - c.Radius), (int)(c.Center.Y - c.Radius),
+                    (int)(c.Radius * 2), (int)(c.Radius * 2));
+            else if (shapeParams.Geometry is RotatedRect2d rr)
+                return new Rectangle(
+                    (int)(rr.CenterX - rr.Width / 2), (int)(rr.CenterY - rr.Height / 2),
+                    (int)rr.Width, (int)rr.Height);
+            else if (shapeParams.Geometry is Annulus2d a)
+                return new Rectangle(
+                    (int)(a.Center.X - a.OuterRadius), (int)(a.Center.Y - a.OuterRadius),
+                    (int)(a.OuterRadius * 2), (int)(a.OuterRadius * 2));
+            else if (shapeParams.Geometry is System.Windows.Rect r)
+                return new Rectangle(
+                    (int)r.X, (int)r.Y, (int)r.Width, (int)r.Height);
+            else if (shapeParams.Geometry is Polygon2d poly)
+                return GetPolygonBounds(poly.Vertices.Select(v => new Point2D(v.X, v.Y)).ToList());
+
+            return Rectangle.Empty;
         }
 
         /// <summary>

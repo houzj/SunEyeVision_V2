@@ -149,6 +149,7 @@ return null;
     {
         public Type ParamsType => typeof(GenericToolParameters);
         public Type ResultType => typeof(GenericToolResults);
+        public IReadOnlyList<OutputVariable> OutputVariables => Array.Empty<OutputVariable>();
 
         public ToolResults Run(ToolParameters parameters)
         {

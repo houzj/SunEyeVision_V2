@@ -7,6 +7,7 @@ using System.Windows;
 using OpenCvSharp;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.CvEngine;
+using SunEyeVision.Plugin.SDK.Execution.Helpers;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 using SunEyeVision.Plugin.SDK.Validation;
@@ -207,6 +208,10 @@ namespace SunEyeVision.Tool.Threshold
                                 EvaluateResult(result, parameters.ResultConfig);
                                 stepSw.Stop();
                                 stepTimings.Add(("结果判断", stepSw.ElapsedMilliseconds));
+
+                                // 提取检测区域几何输出
+                                ToolRegionHelper.ExtractInspectionGeometries(result,
+                                    parameters.InspectionRegions?.Regions);
 
                                 stopwatch.Stop();
                                 result.SetSuccess(stopwatch.ElapsedMilliseconds);

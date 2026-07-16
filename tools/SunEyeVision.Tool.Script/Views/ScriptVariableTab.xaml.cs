@@ -10,6 +10,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using SunEyeVision.Tool.Script.Models;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 
 namespace SunEyeVision.Tool.Script.Views
@@ -35,13 +36,8 @@ namespace SunEyeVision.Tool.Script.Views
         public ObservableCollection<MonitorNode> MonitorNodes { get; } = new();
 
         /// <summary>
-        /// 供 ComboBox 显示的字符串列表
-        public string[] AvailableTypes { get; } =
-        [
-            "Image", "Integer", "Integer[]", "Double", "Double[]", "Float", "Float[]", "String", "String[]", "Boolean", "Byte",
-            "Point", "Rectangle", "Size",
-            "Region", "Circle", "Line", "Annulus", "RotatedRect", "Polygon"
-        ];
+        /// 类型下拉选项，统一收口到 SDK 层的 SdkTypeVocabulary（与全局变量管理器、子程序参数对话框一致）。
+        public List<TypeOption> AvailableTypes { get; } = SdkTypeVocabulary.GetAllTypeOptions();
 
         /// <summary>
         /// 可供 ParamBinding 选择的数据源
@@ -159,6 +155,8 @@ namespace SunEyeVision.Tool.Script.Views
         private void PopulateTypeCombo()
         {
             TypeCombo.ItemsSource = AvailableTypes;
+            TypeCombo.DisplayMemberPath = "DisplayName";
+            TypeCombo.SelectedValuePath = "Value";
             TypeCombo.SelectedIndex = 0;
         }
 
@@ -576,7 +574,7 @@ namespace SunEyeVision.Tool.Script.Views
             var list = _sourceItems;
             if (list == null) return;
 
-            var selectedType = TypeCombo.SelectedItem as string ?? "Integer";
+            var selectedType = TypeCombo.SelectedValue as string ?? "Integer";
             int index = list.Count + 1;
 
             if (_isInput)

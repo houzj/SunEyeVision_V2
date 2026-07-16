@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
@@ -81,93 +82,96 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
 
         private static Rectangle CreateRectangle(ShapeParameters shape, Brush fillColor, Brush strokeColor, double strokeThickness, bool isPreview)
         {
-            var width = shape.Width;
-            var height = shape.Height;
-
-            var rect = new Rectangle
+            if (shape.Geometry is RotatedRect2d rr)
             {
-                Width = width,
-                Height = height,
-                Fill = fillColor,
-                Stroke = strokeColor,
-                StrokeThickness = strokeThickness,
-            };
-
-            // 中心定位（参考ROI编辑器的定位方式）
-            var x = shape.CenterX - width / 2;
-            var y = shape.CenterY - height / 2;
-
-            // 如果是在Canvas上定位，这些值需要外部设置
-            // 这里返回一个带有Tag信息的形状，便于定位
-            rect.Tag = new { X = x, Y = y };
-
-            return rect;
+                var rect = new Rectangle
+                {
+                    Width = rr.Width, Height = rr.Height,
+                    Fill = fillColor, Stroke = strokeColor,
+                    StrokeThickness = strokeThickness,
+                };
+                rect.Tag = new { X = rr.CenterX - rr.Width / 2, Y = rr.CenterY - rr.Height / 2 };
+                return rect;
+            }
+            else if (shape.Geometry is System.Windows.Rect r)
+            {
+                var rect = new Rectangle
+                {
+                    Width = r.Width, Height = r.Height,
+                    Fill = fillColor, Stroke = strokeColor,
+                    StrokeThickness = strokeThickness,
+                };
+                rect.Tag = new { X = r.X, Y = r.Y };
+                return rect;
+            }
+            return null;
         }
 
         private static Ellipse CreateCircle(ShapeParameters shape, Brush fillColor, Brush strokeColor, double strokeThickness, bool isPreview)
         {
-            var radius = shape.Radius;
-
+            if (shape.Geometry is not Circle2d c) return null;
             var ellipse = new Ellipse
             {
-                Width = radius * 2,
-                Height = radius * 2,
-                Fill = fillColor,
-                Stroke = strokeColor,
+                Width = c.Radius * 2, Height = c.Radius * 2,
+                Fill = fillColor, Stroke = strokeColor,
                 StrokeThickness = strokeThickness,
             };
-
-            // 中心定位
-            var x = shape.CenterX - radius;
-            var y = shape.CenterY - radius;
-
-            ellipse.Tag = new { X = x, Y = y };
-
+            ellipse.Tag = new { X = c.Center.X - c.Radius, Y = c.Center.Y - c.Radius };
             return ellipse;
         }
 
         private static Rectangle CreateRotatedRectangle(ShapeParameters shape, Brush fillColor, Brush strokeColor, double strokeThickness, bool isPreview)
         {
-            var width = shape.Width;
-            var height = shape.Height;
-            var rotation = shape.Angle;
-
-            var rect = new Rectangle
+            if (shape.Geometry is RotatedRect2d rr)
             {
-                Width = width,
-                Height = height,
-                Fill = fillColor,
-                Stroke = strokeColor,
-                StrokeThickness = strokeThickness,
-            };
-
-            // 中心定位
-            var x = shape.CenterX - width / 2;
-            var y = shape.CenterY - height / 2;
-
-            rect.Tag = new { X = x, Y = y };
-
-            return rect;
+                var rect = new Rectangle
+                {
+                    Width = rr.Width,
+                    Height = rr.Height,
+                    Fill = fillColor,
+                    Stroke = strokeColor,
+                    StrokeThickness = strokeThickness,
+                };
+                rect.Tag = new { X = rr.CenterX - rr.Width / 2, Y = rr.CenterY - rr.Height / 2 };
+                return rect;
+            }
+            else if (shape.Geometry is System.Windows.Rect r)
+            {
+                var rect = new Rectangle
+                {
+                    Width = r.Width,
+                    Height = r.Height,
+                    Fill = fillColor,
+                    Stroke = strokeColor,
+                    StrokeThickness = strokeThickness,
+                };
+                rect.Tag = new { X = r.X, Y = r.Y };
+                return rect;
+            }
+            return null;
         }
 
         private static Line CreateLine(ShapeParameters shape, Brush strokeColor, double strokeThickness, bool isPreview)
         {
-            var line = new Line
+            if (shape.Geometry is not Line2d l)
+                return new Line();
+
+            var startPt = new System.Windows.Point(l.Point.X, l.Point.Y);
+            var endPt = l.GetPointAt(100);
+            return new Line
             {
-                X1 = shape.StartX,
-                Y1 = shape.StartY,
-                X2 = shape.EndX,
-                Y2 = shape.EndY,
+                X1 = startPt.X,
+                Y1 = startPt.Y,
+                X2 = endPt.X,
+                Y2 = endPt.Y,
                 Stroke = strokeColor,
                 StrokeThickness = strokeThickness
             };
-
-            return line;
         }
 
         private static Polygon CreatePolygon(ShapeParameters shape, Brush fillColor, Brush strokeColor, double strokeThickness, bool isPreview)
         {
-            if (shape.Points.Count < 3) return null;
+            if (shape.Geometry is not Polygon2d poly || poly.Vertices.Length < 3) return null;
 
             var polygon = new Polygon
             {
@@ -178,7 +182,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering
 
             var pointCollection = new PointCollection();
             double minX = double.MaxValue, minY = double.MaxValue;
-            foreach (var pt in shape.Points)
+            foreach (var pt in poly.Vertices)
             {
                 pointCollection.Add(new System.Windows.Point(pt.X, pt.Y));
                 if (pt.X < minX) minX = pt.X;

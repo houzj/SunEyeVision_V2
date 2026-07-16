@@ -8,8 +8,8 @@ using System.Windows.Threading;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
-using SunEyeVision.Plugin.SDK.UI.Controls.Region.Logic;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Logic;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.ViewModels
@@ -216,10 +216,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.ViewModels
         {
             get
             {
-                if (Parameters == null) return 0;
-                var dx = Parameters.EndX - Parameters.StartX;
-                var dy = Parameters.EndY - Parameters.StartY;
-                return Math.Sqrt(dx * dx + dy * dy);
+                if (Parameters?.Geometry is Line2d l)
+                {
+                    var endPt = l.GetPointAt(100);
+                    var dx = endPt.X - l.Point.X;
+                    var dy = endPt.Y - l.Point.Y;
+                    return Math.Sqrt(dx * dx + dy * dy);
+                }
+                return 0;
             }
         }
 
@@ -396,6 +400,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.ViewModels
             // 订阅事件
             _nodeSelector.SelectionConfirmed += OnNodeSelectionConfirmed;
             _parameterPanel.ParamSettingChanged += OnParamSettingChanged;
+            _parameterPanel.WholeRegionChanged += OnWholeRegionChanged;
 
             OnPropertyChanged(nameof(ParameterPanel));
             OnPropertyChanged(nameof(NodeSelector));
@@ -460,21 +465,41 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.ViewModels
         }
 
         /// <summary>
+        /// 整区域选择变更事件处理（写 FixedRegion）
+        /// </summary>
+        private void OnWholeRegionChanged(object? sender, WholeRegionSelectedEventArgs e)
+        {
+            if (SelectedRegion == null) return;
+
+            if (e.Source is NodeOutputSource nos)
+            {
+                SelectedRegion.Parameters = new FixedRegion(nos.NodeId, nos.OutputName, nos.Index);
+                SelectedRegion.MarkModified();
+                RegionChanged?.Invoke(this, new RegionChangedEventArgs(SelectedRegion, RegionChangeType.Modified));
+                StatusMessage = $"已设置订阅源: {nos.OutputName}";
+                return;
+            }
+
+            // 解绑整区域：由固定区域回退为默认几何区域
+            if (SelectedRegion.Parameters is FixedRegion)
+            {
+                SelectedRegion.Parameters = new ComputedRegion
+                {
+                    TargetShapeType = SelectedShapeType ?? ShapeType.Rectangle
+                };
+                SelectedRegion.MarkModified();
+                RegionChanged?.Invoke(this, new RegionChangedEventArgs(SelectedRegion, RegionChangeType.Modified));
+            }
+        }
+
+        /// <summary>
         /// 添加区域
         /// </summary>
         public void AddRegion(ShapeType shapeType)
         {
             var region = RegionData.CreateDrawingRegion(GetNextRegionName(), shapeType);
 
-            // 设置默认参数
-            if (region.Parameters is ShapeParameters shapeDef)
-            {
-                shapeDef.CenterX = 100;
-                shapeDef.CenterY = 100;
-                shapeDef.Width = 100;
-                shapeDef.Height = 100;
-                shapeDef.Radius = 50;
-            }
+            // 设置默认参数（由 CreateDrawingRegion 的 CreateDefaultGeometry 负责）
 
             // 记录编辑历史
             _editHistory.ExecuteAction(new CreateRegionAction(region, this));
@@ -660,26 +685,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.ViewModels
         private ShapeParameters CreateParametersByType(ShapeType shapeType, double centerX, double centerY, double width, double height, double angle)
         {
             var parameters = new ShapeParameters();
-
-            // 为所有属性设置默认值，确保UI控件有合理的初始显示
-            parameters.CenterX = centerX;
-            parameters.CenterY = centerY;
-            parameters.Width = width > 0 ? width : 100;
-            parameters.Height = height > 0 ? height : 100;
-            parameters.Radius = 50;
-            parameters.Angle = angle;
-            parameters.StartX = centerX - (width > 0 ? width : 100) / 2;
-            parameters.StartY = centerY;
-            parameters.EndX = centerX + (width > 0 ? width : 100) / 2;
-            parameters.EndY = centerY;
-
-            // 根据形状类型设置主要参数
-            parameters.ShapeType = shapeType;
-            if (shapeType == ShapeType.Circle)
+            parameters.Geometry = shapeType switch
             {
-                parameters.Radius = Math.Max(width, height) / 2;
-            }
-
+                ShapeType.Circle => new Circle2d(centerX, centerY, Math.Max(width, height) / 2),
+                ShapeType.Line => Line2d.FromTwoPoints(
+                    new System.Windows.Point(centerX - width / 2, centerY),
+                    new System.Windows.Point(centerX + width / 2, centerY)),
+                ShapeType.RotatedRectangle => new RotatedRect2d(centerX, centerY,
+                    width > 0 ? width : 100, height > 0 ? height : 100, angle),
+                _ => new RotatedRect2d(centerX, centerY,
+                    width > 0 ? width : 100, height > 0 ? height : 100, 0),
+            };
             return parameters;
         }
 
@@ -714,17 +730,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.ViewModels
                 SelectedShapeType = null;
             }
 
-            // 更新参数面板
+            // 更新参数面板（LoadFromRegionDefinition 覆盖 Fixed/Computed/Shape 三种）
             if (_parameterPanel != null && SelectedRegion?.Parameters != null)
             {
-                if (SelectedRegion.Parameters is ComputedRegion computedRegion)
-                {
-                    _parameterPanel.LoadFromComputedRegion(computedRegion);
-                }
-                else if (SelectedRegion.Parameters is ShapeParameters definition)
-                {
-                    _parameterPanel.CurrentShapeType = definition.ShapeType;
-                }
+                _parameterPanel.LoadFromRegionDefinition(SelectedRegion.Parameters);
             }
 
             // 通知计算属性变更
@@ -827,6 +836,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.ViewModels
             if (_parameterPanel != null)
             {
                 _parameterPanel.ParamSettingChanged -= OnParamSettingChanged;
+                _parameterPanel.WholeRegionChanged -= OnWholeRegionChanged;
             }
 
             if (_nodeSelector != null)

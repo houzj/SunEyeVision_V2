@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -447,7 +447,7 @@ namespace SunEyeVision.UI.ViewModels
                     return IsBasicType(genericArg); // 无筛选时只显示基本类型（原行为）
                 else
                 {
-                    var paramTypeName = GlobalVariableTypeMapper.ToGlobalVarType(genericArg);
+                    var paramTypeName = SdkTypeVocabulary.ToTypeVocabulary(genericArg);
                     return paramTypeName != null
                         && string.Equals(paramTypeName, targetTypeName, StringComparison.OrdinalIgnoreCase);
                 }
@@ -458,7 +458,7 @@ namespace SunEyeVision.UI.ViewModels
                 return IsBasicType(type);
             else
             {
-                var paramTypeName = GlobalVariableTypeMapper.ToGlobalVarType(type);
+                var paramTypeName = SdkTypeVocabulary.ToTypeVocabulary(type);
                 return paramTypeName != null
                     && string.Equals(paramTypeName, targetTypeName, StringComparison.OrdinalIgnoreCase);
             }

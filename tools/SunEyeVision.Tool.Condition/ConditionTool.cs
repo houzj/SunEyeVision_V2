@@ -6,11 +6,6 @@ using SunEyeVision.Tool.Condition.Models;
 
 namespace SunEyeVision.Tool.Condition
 {
-    /// <summary>
-    /// 条件分支工具 — 作为标准 IToolPlugin，经由 ToolRegistry 注册和管理。
-    /// Run() 评估规则表，输出选中下游节点的 ID (NextNodeId)。
-    /// 工作流引擎读取 NextNodeId 决定执行哪条分支路径。
-    /// </summary>
     [Tool(
         id: "Condition",
         displayName: "条件分支",
@@ -52,7 +47,6 @@ namespace SunEyeVision.Tool.Condition
 
                 parameters.LogInfo($"开始评估条件分支，共 {parameters.Rules.Count} 条规则");
 
-                // 按顺序评估每条规则（第一条匹配即停止）
                 foreach (var rule in parameters.Rules)
                 {
                     if (string.IsNullOrEmpty(rule.ExecutionModuleId))
@@ -61,7 +55,6 @@ namespace SunEyeVision.Tool.Condition
                         continue;
                     }
 
-                    // 从参数绑定获取实际值
                     object? rawValue = null;
                     if (rule.InputBinding?.CurrentValue != null)
                     {
@@ -74,18 +67,10 @@ namespace SunEyeVision.Tool.Condition
                         continue;
                     }
 
-                    // 转换为数值
-                    if (!TryConvertToDouble(rawValue, out double numValue))
-                    {
-                        parameters.LogWarning($"规则 '{rule.Name}' 输入值无法转换为数值: {rawValue}");
-                        continue;
-                    }
+                    // 按类型匹配
+                    bool matched = TryMatchRule(rule, rawValue, parameters);
 
-                    bool inRange = numValue >= rule.MinValue && numValue <= rule.MaxValue;
-                    bool matched = (rule.Judgment == "OK" && inRange) ||
-                                   (rule.Judgment == "NG" && !inRange);
-
-                    parameters.LogInfo($"规则 '{rule.Name}': 输入={numValue}, 范围=[{rule.MinValue},{rule.MaxValue}], 判断={rule.Judgment}, 范围内={inRange}, 匹配={matched}");
+                    parameters.LogInfo($"规则 '{rule.Name}': 输入值类型={rawValue.GetType().Name}, 值={rawValue}, 匹配={matched}");
 
                     if (matched)
                     {
@@ -99,7 +84,6 @@ namespace SunEyeVision.Tool.Condition
                     }
                 }
 
-                // 无规则匹配，使用默认值
                 result.NextNodeId = parameters.DefaultExecutionModuleId;
                 result.MatchedRuleName = result.NextNodeId != null ? "默认" : "无匹配";
                 result.IsMatched = false;
@@ -118,22 +102,39 @@ namespace SunEyeVision.Tool.Condition
             }
         }
 
-        private static bool TryConvertToDouble(object value, out double result)
+        /// <summary>
+        /// 尝试匹配规则，支持数值比较、字符串精确匹配、bool 匹配。
+        /// 不匹配时返回 false（但不会静默吞异常——类型转换失败会向上抛）。
+        /// </summary>
+        private static bool TryMatchRule(ConditionRule rule, object rawValue, ConditionParameters parameters)
         {
-            result = 0;
-            try
+            // 1. 数值匹配（IConvertible → double）
+            if (rawValue is IConvertible convertible)
             {
-                if (value is IConvertible convertible)
-                {
-                    result = convertible.ToDouble(null);
-                    return true;
-                }
-                return false;
+                double numValue = convertible.ToDouble(null);
+                bool inRange = numValue >= rule.MinValue && numValue <= rule.MaxValue;
+                bool matched = (rule.Judgment == "OK" && inRange) ||
+                               (rule.Judgment == "NG" && !inRange);
+                parameters.LogInfo($"规则 '{rule.Name}': 数值匹配, 输入={numValue}, 范围=[{rule.MinValue},{rule.MaxValue}], 判断={rule.Judgment}, 匹配={matched}");
+                return matched;
             }
-            catch
+
+            // 2. 字符串精确匹配
+            if (rawValue is string strValue)
             {
-                return false;
+                string minStr = rule.MinValue.ToString();
+                string maxStr = rule.MaxValue.ToString();
+                bool inRange = string.Compare(strValue, minStr, StringComparison.OrdinalIgnoreCase) >= 0 &&
+                               string.Compare(strValue, maxStr, StringComparison.OrdinalIgnoreCase) <= 0;
+                bool matched = (rule.Judgment == "OK" && inRange) ||
+                               (rule.Judgment == "NG" && !inRange);
+                parameters.LogInfo($"规则 '{rule.Name}': 字符串匹配, 值='{strValue}', 范围=[{minStr},{maxStr}], 匹配={matched}");
+                return matched;
             }
+
+            // 3. 类型不匹配—不再静默返回 false，而是让异常向上传播
+            throw new InvalidOperationException(
+                $"规则 '{rule.Name}' 输入值类型 {rawValue.GetType().Name} 不支持条件比较。支持的类型: 数值、字符串");
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 
@@ -77,6 +78,14 @@ namespace SunEyeVision.Plugin.SDK.Core
 
         /// <summary>结果类型</summary>
         Type ResultType { get; }
+
+        /// <summary>
+        /// 输出变量契约（SSOT）。来自工具定义/参数（设计时已知），
+        /// 变量名 + 类型复用 SdkTypeVocabulary 固定词汇。
+        /// 静态工具由框架基于 ResultType + GetPropertyMap 自动派生；
+        /// 动态工具（脚本/子程序）由实现类从 Parameters 注入。
+        /// </summary>
+        IReadOnlyList<OutputVariable> OutputVariables { get; }
 
         /// <summary>执行工具</summary>
         /// <remarks>
@@ -171,6 +180,9 @@ namespace SunEyeVision.Plugin.SDK.Core
 
         Type IToolPlugin.ParamsType => typeof(TParams);
         Type IToolPlugin.ResultType => typeof(TResult);
+
+        // 静态工具：框架基于 ResultType 的声明性 GetPropertyMap（不依赖运行值）自动派生契约 SSOT。
+        IReadOnlyList<OutputVariable> IToolPlugin.OutputVariables => new TResult().GetOutputVariables();
 
         ToolResults IToolPlugin.Run(ToolParameters parameters)
         {

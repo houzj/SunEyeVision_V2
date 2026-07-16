@@ -87,6 +87,9 @@ namespace SunEyeVision.Tool.Script
                 result.ExecutionTimeMs = lifecycleManager.ExecutionTimeMs;
                 result.LogMessages = lifecycleManager.LogMessages.ToList();
 
+                // 注入输出变量声明（契约 SSOT），供 ScriptResults.GetOutputVariables 派生运行期变量
+                result.OutputConfigs = parameters.Outputs.ToList();
+
                 foreach (var kvp in lifecycleManager.OutputValues)
                 {
                     result.OutputValues[kvp.Key] = kvp.Value;

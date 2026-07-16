@@ -19,6 +19,7 @@ using SunEyeVision.Plugin.SDK.UI.Controls.Region.Logic;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.SDK.Models.Geometry;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 {
@@ -144,7 +145,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 ? "(空)"
                 : string.Join(" | ", regions.Take(5).Select(r =>
                     r.Parameters is ShapeParameters s
-                        ? $"{r.Name}:Type={s.ShapeType} Center=({s.CenterX:F1},{s.CenterY:F1})"
+                        ? $"{r.Name}:Type={s.ShapeType} Center={s.GetCenter()}"
                         : $"{r.Name}:Params={r.Parameters?.GetType().Name ?? "null"}"));
 
             VisionLogger.Instance.Log(LogLevel.Info,
@@ -575,12 +576,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 ClearRubberBand();
                 if (_polygonPoints.Count >= 1 && _currentDrawingRegion != null)
                 {
-                    if (_currentDrawingRegion.Parameters is ShapeParameters shapeDef)
-                    {
-                        shapeDef.Points.Add(new Point2D(_lastMouseImagePosition.X, _lastMouseImagePosition.Y));
-                        RenderRequested?.Invoke();
-                        shapeDef.Points.RemoveAt(shapeDef.Points.Count - 1);
-                    }
+                    RenderRequested?.Invoke();
                 }
                 else if (_polygonPoints.Count == 0)
                     RenderRequested?.Invoke();
@@ -935,23 +931,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                     {
                         case ShapeType.Rectangle:
                         case ShapeType.RotatedRectangle:
-                            shapeDef.CenterX = refPosition.X;
-                            shapeDef.CenterY = refPosition.Y;
-                            shapeDef.Width = 0;
-                            shapeDef.Height = 0;
+                            shapeDef.Geometry = new RotatedRect2d(refPosition.X, refPosition.Y, 0, 0, 0);
                             break;
                         case ShapeType.Circle:
-                            shapeDef.CenterX = refPosition.X;
-                            shapeDef.CenterY = refPosition.Y;
-                            shapeDef.Radius = 0;
-                            shapeDef.Width = 0;
-                            shapeDef.Height = 0;
+                            shapeDef.Geometry = new Circle2d(refPosition.X, refPosition.Y, 0);
                             break;
                         case ShapeType.Line:
-                            shapeDef.StartX = refPosition.X;
-                            shapeDef.StartY = refPosition.Y;
-                            shapeDef.EndX = refPosition.X;
-                            shapeDef.EndY = refPosition.Y;
+                            shapeDef.Geometry = Line2d.FromTwoPoints(
+                                new System.Windows.Point(refPosition.X, refPosition.Y),
+                                new System.Windows.Point(refPosition.X, refPosition.Y));
                             break;
                     }
                 }
@@ -1009,14 +997,34 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                         if (_selectedRegion.Parameters is ShapeParameters shapeDef)
                         {
                             _originalShapeDefinition = shapeDef.Clone() as ShapeParameters;
-                            _originalPosition = new Point(shapeDef.CenterX, shapeDef.CenterY);
-                            _originalSize = new Size(shapeDef.Width, shapeDef.Height);
-                            _originalRotation = shapeDef.Angle;
+                            var ctr = shapeDef.GetCenter();
+                            _originalPosition = new System.Windows.Point(ctr.X, ctr.Y);
+                            _originalSize = shapeDef.Geometry switch
+                            {
+                                Circle2d c => new Size(c.Radius * 2, c.Radius * 2),
+                                RotatedRect2d rr => new Size(rr.Width, rr.Height),
+                                _ => new Size(100, 100),
+                            };
+                            _originalRotation = shapeDef.Geometry switch
+                            {
+                                RotatedRect2d rr => rr.Angle,
+                                _ => 0,
+                            };
 
                             if (hitHandleType == Rendering.HandleType.Rotate)
                             {
-                                _rotateStartAngle = shapeDef.Angle;
-                                var center = new Point(shapeDef.CenterX, shapeDef.CenterY);
+                                _rotateStartAngle = _originalRotation;
+                                var center = new Point(
+                                    shapeDef.Geometry switch
+                                    {
+                                        RotatedRect2d rr => rr.CenterX,
+                                        _ => 0,
+                                    },
+                                    shapeDef.Geometry switch
+                                    {
+                                        RotatedRect2d rr => rr.CenterY,
+                                        _ => 0,
+                                    });
                                 _rotateStartMouseAngle = CalculateMouseAngle(center, refPosition);
                             }
                         }
@@ -1089,9 +1097,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             {
                 if (_currentDrawingRegion.Parameters is ShapeParameters shapeDef)
                 {
-                    shapeDef.Points.Add(new Point2D(_lastMouseImagePosition.X, _lastMouseImagePosition.Y));
                     RenderRequested?.Invoke();
-                    shapeDef.Points.RemoveAt(shapeDef.Points.Count - 1);
                 }
             }
             else if (_polygonPoints.Count == 0)
@@ -1143,24 +1149,25 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 var shapeDef = _currentDrawingRegion.Parameters as ShapeParameters;
                 if (shapeDef != null)
                 {
-                    // 统一使用大尺寸算法，并对长宽增加限制：任意尺寸太小都不生成区域
-                    // 矩形和旋转矩形：最小宽度和高度都是10像素，同时满足面积≥100
                     bool isValid = _currentTool switch
                     {
                         ShapeType.Rectangle or ShapeType.RotatedRectangle =>
-                            shapeDef.Width >= 10 &&
-                            shapeDef.Height >= 10 &&
-                            shapeDef.Width * shapeDef.Height >= 100,
+                            shapeDef.Geometry switch
+                            {
+                                RotatedRect2d rr => rr.Width >= 10 && rr.Height >= 10 && rr.Width * rr.Height >= 100,
+                                System.Windows.Rect r => r.Width >= 10 && r.Height >= 10 && r.Width * r.Height >= 100,
+                                _ => false,
+                            },
                         ShapeType.Circle =>
-                            shapeDef.Radius >= 5.64 && // 面积≥100对应的半径
-                            Math.PI * shapeDef.Radius * shapeDef.Radius >= 100,
+                            shapeDef.Geometry is Circle2d c && c.Radius >= 5.64 &&
+                            Math.PI * c.Radius * c.Radius >= 100,
                         ShapeType.Line => shapeDef.GetLineLength() >= 10,
-                        ShapeType.Polygon => shapeDef.Points.Count >= 3,
+                        ShapeType.Polygon => shapeDef.Geometry is Polygon2d poly && poly.Vertices.Length >= 3,
                         _ => false
                     };
 
                     VisionLogger.Instance.Log(LogLevel.Info,
-                        $"[FinishInteraction] 验证区域尺寸 | InstanceId={_controlInstanceId} | Region={_currentDrawingRegion.Name} | Width={shapeDef.Width:F2} | Height={shapeDef.Height:F2} | IsValid={isValid}",
+                        $"[FinishInteraction] 验证区域尺寸 | InstanceId={_controlInstanceId} | Region={_currentDrawingRegion.Name} | IsValid={isValid}",
                         "RegionEditorControl");
 
                     if (isValid)
@@ -1215,7 +1222,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
         private void UpdateDrawingPreview(Point currentPosition)
         {
-            if (_currentDrawingRegion?.Parameters is not ShapeParameters shapeDef)
+            if (_currentDrawingRegion?.Parameters is not ShapeParameters shapeDef || shapeDef.Geometry == null)
                 return;
 
             // Log preview update (every 10 times)
@@ -1233,43 +1240,40 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             {
                 case ShapeType.Rectangle:
                 case ShapeType.RotatedRectangle:
-                    shapeDef.CenterX = _startPoint.X + dx / 2;
-                    shapeDef.CenterY = _startPoint.Y + dy / 2;
-                    shapeDef.Width = Math.Abs(dx);
-                    shapeDef.Height = Math.Abs(dy);
+                    shapeDef.Geometry = new RotatedRect2d(
+                        _startPoint.X + dx / 2, _startPoint.Y + dy / 2,
+                        Math.Abs(dx), Math.Abs(dy), 0);
                     break;
 
                 case ShapeType.Circle:
                     var radius = Math.Sqrt(dx * dx + dy * dy);
-                    shapeDef.Radius = radius;
-                    shapeDef.Width = radius * 2;
-                    shapeDef.Height = radius * 2;
+                    shapeDef.Geometry = new Circle2d(_startPoint.X, _startPoint.Y, radius);
                     break;
 
                 case ShapeType.Line:
-                    shapeDef.EndX = currentPosition.X;
-                    shapeDef.EndY = currentPosition.Y;
+                    shapeDef.Geometry = Line2d.FromTwoPoints(
+                        new System.Windows.Point(_startPoint.X, _startPoint.Y),
+                        new System.Windows.Point(currentPosition.X, currentPosition.Y));
                     break;
             }
         }
 
         private void MoveRegion(RegionData region, Vector offset)
         {
-            if (region.Parameters is ShapeParameters shapeDef)
+            if (region.Parameters is ShapeParameters shapeDef && shapeDef.Geometry != null)
             {
-                shapeDef.CenterX += offset.X;
-                shapeDef.CenterY += offset.Y;
-                shapeDef.StartX += offset.X;
-                shapeDef.StartY += offset.Y;
-                shapeDef.EndX += offset.X;
-                shapeDef.EndY += offset.Y;
-
-                // 移动多边形顶点
-                for (int i = 0; i < shapeDef.Points.Count; i++)
+                shapeDef.Geometry = shapeDef.Geometry switch
                 {
-                    var pt = shapeDef.Points[i];
-                    shapeDef.Points[i] = new Point2D(pt.X + offset.X, pt.Y + offset.Y);
-                }
+                    Circle2d c => new Circle2d(c.Center.X + offset.X, c.Center.Y + offset.Y, c.Radius),
+                    RotatedRect2d rr => new RotatedRect2d(rr.CenterX + offset.X, rr.CenterY + offset.Y, rr.Width, rr.Height, rr.Angle),
+                    Line2d l => new Line2d(
+                        new System.Windows.Point(l.Point.X + offset.X, l.Point.Y + offset.Y), l.Direction),
+                    System.Windows.Rect r => new System.Windows.Rect(r.X + offset.X, r.Y + offset.Y, r.Width, r.Height),
+                    Polygon2d poly when poly.Vertices.Length > 0 => new Polygon2d(
+                        poly.Vertices.Select(v => new System.Windows.Point(v.X + offset.X, v.Y + offset.Y)).ToArray(),
+                        poly.IsClosed),
+                    _ => shapeDef.Geometry,
+                };
 
                 region.MarkModified();
                 RegionDataChanged?.Invoke(this, region);
@@ -1285,9 +1289,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         {
             if (_currentDrawingRegion?.Parameters is ShapeParameters shapeDef)
             {
-                shapeDef.Points.Clear();
-                foreach (var pt in _polygonPoints)
-                    shapeDef.Points.Add(new Point2D(pt.X, pt.Y));
+                shapeDef.Geometry = new Polygon2d(
+                    _polygonPoints.Select(p => new System.Windows.Point(p.X, p.Y)).ToArray());
             }
         }
 
@@ -1359,22 +1362,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             if (region.Parameters is not ShapeParameters shapeDef)
                 return;
 
-            switch (shapeDef.ShapeType)
-            {
-                case ShapeType.Rectangle:
-                    // 使用ResizeRectangleFromCorner和ResizeRectangleFromEdge方法
-                    // 这些方法在HandleShapeEdit中调用
-                    break;
-                case ShapeType.RotatedRectangle:
-                    // 旋转矩形在HandleShapeEdit中通过HandleRotatedRectangleResize处理
-                    break;
-                case ShapeType.Circle:
-                    UpdateCircleByHandle(shapeDef, handleType, dx, dy);
-                    break;
-                case ShapeType.Line:
-                    UpdateLineByHandle(shapeDef, handleType, dx, dy);
-                    break;
-            }
+            if (shapeDef.Geometry == null) return;
+
+            if (shapeDef.Geometry is Circle2d)
+                UpdateCircleByHandle(shapeDef, handleType, dx, dy);
+            else if (shapeDef.Geometry is Line2d)
+                UpdateLineByHandle(shapeDef, handleType, dx, dy);
+            // Rectangle/RotatedRectangle 通过 HandleShapeEdit 中的 ResizeRectangle* 方法处理
+            // Polygon 通过顶点手柄直接更新
 
             region.MarkModified();
             RegionDataChanged?.Invoke(this, region);
@@ -1405,58 +1400,48 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         /// </summary>
         private void UpdateCircleByHandle(ShapeParameters shapeDef, Rendering.HandleType handleType, double dx, double dy)
         {
+            if (shapeDef.Geometry is not Circle2d c) return;
+
             switch (handleType)
             {
                 case Rendering.HandleType.Center:
-                    // 中心手柄用于拖动整个圆形
-                    shapeDef.CenterX += dx;
-                    shapeDef.CenterY += dy;
+                    shapeDef.Geometry = new Circle2d(c.Center.X + dx, c.Center.Y + dy, c.Radius);
                     break;
                 default:
-                    // 圆形手柄用于调整半径
-                    var delta = Math.Sqrt(dx * dx + dy * dy);
+                    double newRadius = c.Radius;
                     switch (handleType)
                     {
-                        case Rendering.HandleType.Top:
-                            shapeDef.Radius += dy; // 向上拖动减小半径
-                            break;
-                        case Rendering.HandleType.Bottom:
-                            shapeDef.Radius += dy; // 向下拖动增大半径
-                            break;
-                        case Rendering.HandleType.Left:
-                            shapeDef.Radius += dx; // 向左拖动减小半径
-                            break;
-                        case Rendering.HandleType.Right:
-                            shapeDef.Radius += dx; // 向右拖动增大半径
-                            break;
+                        case Rendering.HandleType.Top:    newRadius += dy; break;
+                        case Rendering.HandleType.Bottom: newRadius += dy; break;
+                        case Rendering.HandleType.Left:   newRadius += dx; break;
+                        case Rendering.HandleType.Right:  newRadius += dx; break;
                     }
-
-                    // 确保半径不为负
-                    if (shapeDef.Radius < 5) shapeDef.Radius = 5;
-
-                    // 同步更新 Width 和 Height
-                    shapeDef.Width = shapeDef.Radius * 2;
-                    shapeDef.Height = shapeDef.Radius * 2;
+                    if (newRadius < 5) newRadius = 5;
+                    shapeDef.Geometry = new Circle2d(c.Center.X, c.Center.Y, newRadius);
                     break;
             }
         }
 
-        /// <summary>
-        /// 更新直线形状（通过手柄）
-        /// </summary>
         private void UpdateLineByHandle(ShapeParameters shapeDef, Rendering.HandleType handleType, double dx, double dy)
         {
+            if (shapeDef.Geometry is not Line2d l) return;
+
+            var startPt = new System.Windows.Point(l.Point.X, l.Point.Y);
+            var endPt = l.GetPointAt(100);
+
             switch (handleType)
             {
                 case Rendering.HandleType.LineStart:
-                    shapeDef.StartX += dx;
-                    shapeDef.StartY += dy;
+                    startPt = new System.Windows.Point(startPt.X + dx, startPt.Y + dy);
                     break;
                 case Rendering.HandleType.LineEnd:
-                    shapeDef.EndX += dx;
-                    shapeDef.EndY += dy;
+                    endPt = new System.Windows.Point(endPt.X + dx, endPt.Y + dy);
                     break;
             }
+
+            var dir = endPt - startPt;
+            if (dir.LengthSquared > 1e-20)
+                shapeDef.Geometry = new Line2d(startPt, dir);
         }
 
         /// <summary>
@@ -1468,32 +1453,33 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             var delta = currentPosition - _handleDragStartPoint;
 
             // 多边形顶点拖拽
-            if (shape.ShapeType == ShapeType.Polygon && _activeHandleType == Rendering.HandleType.PolygonVertex)
+            if (shape.Geometry is Polygon2d poly && _activeHandleType == Rendering.HandleType.PolygonVertex)
             {
-                if (_activeVertexIndex >= 0 && _activeVertexIndex < shape.Points.Count)
+                if (_activeVertexIndex >= 0 && _activeVertexIndex < poly.Vertices.Length)
                 {
-                    shape.Points[_activeVertexIndex] = new Point2D(
-                        currentPosition.X, currentPosition.Y);
+                    var verts = poly.Vertices.ToArray();
+                    verts[_activeVertexIndex] = new System.Windows.Point(currentPosition.X, currentPosition.Y);
+                    shape.Geometry = new Polygon2d(verts, poly.IsClosed);
                 }
                 return;
             }
 
             // 直线端点调整
-            if (shape.ShapeType == ShapeType.Line)
+            if (shape.Geometry is Line2d)
             {
                 HandleLineEndpoint(shape, currentPosition);
                 return;
             }
 
             // 圆形半径调整
-            if (shape.ShapeType == ShapeType.Circle)
+            if (shape.Geometry is Circle2d)
             {
                 HandleCircleResize(shape, currentPosition);
                 return;
             }
 
             // 旋转矩形调整
-            if (shape.ShapeType == ShapeType.RotatedRectangle)
+            if (shape.Geometry is RotatedRect2d)
             {
                 if (_activeHandleType == Rendering.HandleType.Rotate)
                 {
@@ -1506,8 +1492,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 return;
             }
 
-            // 普通矩形调整
-            if (shape.ShapeType == ShapeType.Rectangle)
+            // 普通矩形（System.Windows.Rect）调整
+            if (shape.Geometry is System.Windows.Rect)
             {
                 switch (_activeHandleType)
                 {
@@ -1551,23 +1537,19 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         /// </summary>
         private void HandleRotate(ShapeParameters shape, Point currentPosition)
         {
-            var center = new Point(shape.CenterX, shape.CenterY);
+            if (shape.Geometry is not RotatedRect2d rr) return;
+            var center = new Point(rr.CenterX, rr.CenterY);
 
-            // 保存旋转开始时的状态（第一次调用时）
             if (_rotateStartAngle == null)
             {
-                _rotateStartAngle = shape.Angle;
+                _rotateStartAngle = rr.Angle;
                 _rotateStartMouseAngle = CalculateMouseAngle(center, _handleDragStartPoint);
             }
 
-            // 计算当前鼠标角度
             var currentMouseAngle = CalculateMouseAngle(center, currentPosition);
-
-            // 计算角度增量
             var deltaAngle = currentMouseAngle - _rotateStartMouseAngle.Value;
-
-            // 应用角度增量（使用RotatedRectangleHelper.NormalizeAngle）
-            shape.Angle = RotatedRectangleHelper.NormalizeAngle(_rotateStartAngle.Value + deltaAngle);
+            var newAngle = RotatedRectangleHelper.NormalizeAngle(_rotateStartAngle.Value + deltaAngle);
+            shape.Geometry = new RotatedRect2d(rr.CenterX, rr.CenterY, rr.Width, rr.Height, newAngle);
         }
 
         /// <summary>
@@ -1591,26 +1573,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         {
             if (_originalShapeDefinition == null) return;
 
-            // 1. 将世界坐标系的 delta 转换为局部坐标系的 delta
             var localDelta = WorldToLocalDelta(delta, _originalRotation);
-
-            // 2. 计算原始矩形的四个角点（局部坐标，原点在中心）
             var corners = GetLocalCorners(_originalSize.Width, _originalSize.Height);
-
-            // 3. 根据拖动的手柄计算新的角点位置
             var newCorners = CalculateNewCorners(corners, localDelta, _activeHandleType);
-
-            // 4. 从新角点计算新的尺寸和中心
             var (newWidth, newHeight, newCenterLocal) = CalculateFromCorners(newCorners);
-
-            // 5. 将新中心从局部坐标转换回世界坐标
             var newCenterWorld = LocalToWorldPoint(newCenterLocal, _originalPosition, _originalRotation);
 
-            // 6. 应用新的状态
-            shape.Width = newWidth;
-            shape.Height = newHeight;
-            shape.CenterX = newCenterWorld.X;
-            shape.CenterY = newCenterWorld.Y;
+            shape.Geometry = new RotatedRect2d(newCenterWorld.X, newCenterWorld.Y, newWidth, newHeight, _originalRotation);
         }
 
         /// <summary>
@@ -1762,37 +1731,31 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         /// </summary>
         private void HandleCircleResize(ShapeParameters shape, Point currentPosition)
         {
-            var center = new Point(shape.CenterX, shape.CenterY);
+            if (shape.Geometry is not Circle2d c) return;
+            var center = c.Center;
 
-            // 计算从中心到鼠标的距离作为新半径
             var dx = currentPosition.X - center.X;
             var dy = currentPosition.Y - center.Y;
             var newRadius = Math.Sqrt(dx * dx + dy * dy);
-
             if (newRadius < 5) newRadius = 5;
 
-            shape.Radius = newRadius;
-            
-            // 同步更新 Width 和 Height，确保手柄位置正确
-            shape.Width = newRadius * 2;
-            shape.Height = newRadius * 2;
+            shape.Geometry = new Circle2d(center.X, center.Y, newRadius);
         }
 
-        /// <summary>
-        /// 处理直线端点调整（参考ROI编辑器HandleLineResize 1466-1470行）
-        /// </summary>
         private void HandleLineEndpoint(ShapeParameters shape, Point currentPosition)
         {
+            if (shape.Geometry is not Line2d l) return;
+            var startPt = l.Point;
+            var endPt = l.GetPointAt(100);
+
             if (_activeHandleType == Rendering.HandleType.LineStart)
-            {
-                shape.StartX = currentPosition.X;
-                shape.StartY = currentPosition.Y;
-            }
+                startPt = new System.Windows.Point(currentPosition.X, currentPosition.Y);
             else if (_activeHandleType == Rendering.HandleType.LineEnd)
-            {
-                shape.EndX = currentPosition.X;
-                shape.EndY = currentPosition.Y;
-            }
+                endPt = new System.Windows.Point(currentPosition.X, currentPosition.Y);
+
+            var dir = endPt - startPt;
+            if (dir.LengthSquared > 1e-20)
+                shape.Geometry = new Line2d(startPt, dir);
         }
 
         /// <summary>
@@ -1805,9 +1768,22 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
             var original = _originalShapeDefinition;
 
-            // 计算原始矩形的四个角点（局部坐标，原点在中心）
-            var hw = original.Width / 2;
-            var hh = original.Height / 2;
+            // 从原始 Geometry 获取尺寸
+            var origW = original.Geometry switch
+            {
+                RotatedRect2d rr => rr.Width,
+                System.Windows.Rect r => r.Width,
+                _ => 100,
+            };
+            var origH = original.Geometry switch
+            {
+                RotatedRect2d rr => rr.Height,
+                System.Windows.Rect r => r.Height,
+                _ => 100,
+            };
+
+            var hw = origW / 2;
+            var hh = origH / 2;
             var corners = new Point[]
             {
                 new Point(-hw, -hh), // TopLeft
@@ -1874,10 +1850,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 (newCorners[0].Y + newCorners[2].Y) / 2);
 
             // 将局部坐标转换为世界坐标
-            shape.Width = newWidth;
-            shape.Height = newHeight;
-            shape.CenterX = original.CenterX + centerLocal.X;
-            shape.CenterY = original.CenterY + centerLocal.Y;
+            shape.Geometry = new RotatedRect2d(
+                _originalPosition.X + centerLocal.X,
+                _originalPosition.Y + centerLocal.Y,
+                newWidth, newHeight, 0);
         }
 
         /// <summary>
@@ -1891,11 +1867,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         {
             if (_originalShapeDefinition == null) return;
 
-            var original = _originalShapeDefinition;
+            var origW = _originalSize.Width;
+            var origH = _originalSize.Height;
 
-            // 计算原始矩形的四个角点（局部坐标，原点在中心）
-            var hw = original.Width / 2;
-            var hh = original.Height / 2;
+            var hw = origW / 2;
+            var hh = origH / 2;
             var corners = new Point[]
             {
                 new Point(-hw, -hh), // TopLeft
@@ -1962,10 +1938,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 (newCorners[0].Y + newCorners[2].Y) / 2);
 
             // 将局部坐标转换为世界坐标
-            shape.Width = newWidth;
-            shape.Height = newHeight;
-            shape.CenterX = original.CenterX + centerLocal.X;
-            shape.CenterY = original.CenterY + centerLocal.Y;
+            shape.Geometry = new RotatedRect2d(
+                _originalPosition.X + centerLocal.X,
+                _originalPosition.Y + centerLocal.Y,
+                newWidth, newHeight, 0);
         }
 
         /// <summary>
@@ -2035,27 +2011,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         /// </summary>
         private RegionRenderContext CreateRenderContextInternal(RegionData region, ShapeParameters shape, bool isPreview = false)
         {
-            // ★ 诊断：每次渲染都输出位置修正状态
             LogCorrectionStatus($"CreateRenderContext(Region={region.Name})");
-            // 正向变换：参考坐标 → 显示（测试）坐标
-            Point center = _positionCorrectionMatrix != null
-                ? _positionCorrectionMatrix.TransformWpfPoint(new Point(shape.CenterX, shape.CenterY))
-                : new Point(shape.CenterX, shape.CenterY);
-
-            Point lineStart = _positionCorrectionMatrix != null
-                ? _positionCorrectionMatrix.TransformWpfPoint(new Point(shape.StartX, shape.StartY))
-                : new Point(shape.StartX, shape.StartY);
-
-            Point lineEnd = _positionCorrectionMatrix != null
-                ? _positionCorrectionMatrix.TransformWpfPoint(new Point(shape.EndX, shape.EndY))
-                : new Point(shape.EndX, shape.EndY);
-
-            List<Point> polygonPoints = shape.Points?.Select(p =>
-                _positionCorrectionMatrix != null
-                    ? _positionCorrectionMatrix.TransformWpfPoint(new Point(p.X, p.Y))
-                    : new Point(p.X, p.Y)
-            ).ToList() ?? new List<Point>();
-
             var context = new RegionRenderContext
             {
                 Id = region.Id,
@@ -2064,16 +2020,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 IsPreview = isPreview,
                 IsVisible = true,
                 RegionType = region.RegionType,
-
-                // 几何参数（正向变换后的显示坐标）
-                Center = center,
-                Width = shape.Width,
-                Height = shape.Height,
-                Angle = shape.Angle,
-                Radius = shape.Radius,
-                LineStart = lineStart,
-                LineEnd = lineEnd,
-                PolygonPoints = polygonPoints,
 
                 // 样式参数
                 FillColor = Color.FromArgb(
@@ -2091,21 +2037,56 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 StrokeThickness = shape.StrokeThickness,
                 Opacity = shape.Opacity,
 
-                // 标签 - ★ Phase 4: 屏蔽区域加前缀以区分
                 Label = region.RegionType == Models.RegionType.Mask
                     ? $"■ {region.Name}"
                     : $"□ {region.Name}"
             };
 
-            context.CalculateBounds();
+            // 从 Geometry 提取几何参数
+            if (shape.Geometry != null)
+            {
+                Point TransformPoint(double x, double y) =>
+                    _positionCorrectionMatrix != null
+                        ? _positionCorrectionMatrix.TransformWpfPoint(new Point(x, y))
+                        : new Point(x, y);
 
-            // ★ 诊断：数据层坐标变换校验 - 参考坐标 → 显示坐标（正向变换）
-            var matrixSummary = _positionCorrectionMatrix != null
-                ? $"[{_positionCorrectionMatrix.M11:F4},{_positionCorrectionMatrix.M12:F4},{_positionCorrectionMatrix.M21:F4},{_positionCorrectionMatrix.M22:F4},{_positionCorrectionMatrix.OffsetX:F2},{_positionCorrectionMatrix.OffsetY:F2}]"
-                : "null";
-            VisionLogger.Instance.Log(LogLevel.Info,
-                $"[CreateRenderContext] Region={region.Name} | 参考坐标: Center=({shape.CenterX:F1},{shape.CenterY:F1}) W={shape.Width:F1} H={shape.Height:F1} | 显示坐标: Center=({center.X:F1},{center.Y:F1}) | 直线起点=({lineStart.X:F1},{lineStart.Y:F1}) 终点=({lineEnd.X:F1},{lineEnd.Y:F1}) | Matrix={matrixSummary} | isPreview={isPreview}",
-                "RegionEditorControl");
+                if (shape.Geometry is Circle2d c)
+                {
+                    var center = TransformPoint(c.Center.X, c.Center.Y);
+                    context.Center = center;
+                    context.Radius = c.Radius;
+                    context.Width = c.Radius * 2;
+                    context.Height = c.Radius * 2;
+                }
+                else if (shape.Geometry is RotatedRect2d rr)
+                {
+                    var center = TransformPoint(rr.CenterX, rr.CenterY);
+                    context.Center = center;
+                    context.Width = rr.Width;
+                    context.Height = rr.Height;
+                    context.Angle = rr.Angle;
+                }
+                else if (shape.Geometry is Line2d l)
+                {
+                    var startPt = TransformPoint(l.Point.X, l.Point.Y);
+                    var endPt = TransformPoint(l.Point.X + l.Direction.X * 100, l.Point.Y + l.Direction.Y * 100);
+                    context.LineStart = startPt;
+                    context.LineEnd = endPt;
+                }
+                else if (shape.Geometry is Polygon2d poly)
+                {
+                    context.PolygonPoints = poly.Vertices.Select(v => TransformPoint(v.X, v.Y)).ToList();
+                }
+                else if (shape.Geometry is System.Windows.Rect r)
+                {
+                    context.Width = r.Width;
+                    context.Height = r.Height;
+                    var centerPt = TransformPoint(r.X + r.Width / 2, r.Y + r.Height / 2);
+                    context.Center = centerPt;
+                }
+            }
+
+            context.CalculateBounds();
 
             return context;
         }
@@ -2170,57 +2151,38 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         /// </summary>
         private void CreateHandlesForShape(ShapeParameters shape)
         {
-            // 传入zoom，各手柄内部根据类型差异化计算尺寸
             var zoom = CurrentZoom;
 
-            // ★ 关键诊断：记录缩放信息
             VisionLogger.Instance.Log(LogLevel.Info,
                 $"[CreateHandlesForShape] zoom={zoom:F3}, ShapeType={shape.ShapeType}",
                 "RegionEditorControl");
 
-            switch (shape.ShapeType)
+            if (shape.Geometry == null) return;
+
+            if (shape.Geometry is System.Windows.Rect r)
             {
-                case ShapeType.Rectangle:
-                    var bounds = new Rect(
-                        shape.CenterX - shape.Width / 2,
-                        shape.CenterY - shape.Height / 2,
-                        shape.Width,
-                        shape.Height
-                    );
-                    _currentHandles = Rendering.HandleRenderer.CreateRectangleHandles(bounds, zoom);
-                    break;
-
-                case ShapeType.Circle:
-                    var center = new Point(shape.CenterX, shape.CenterY);
-                    _currentHandles = Rendering.HandleRenderer.CreateCircleHandles(center, shape.Radius, zoom);
-                    break;
-
-                case ShapeType.RotatedRectangle:
-                    var rotatedCenter = new Point(shape.CenterX, shape.CenterY);
-                    var corners = RotatedRectangleHelper.GetCorners(
-                        rotatedCenter,
-                        shape.Width,
-                        shape.Height,
-                        shape.Angle
-                    );
-                    _currentHandles = Rendering.HandleRenderer.CreateRotatedRectangleHandles(
-                        corners,
-                        shape.Angle,
-                        rotatedCenter,
-                        zoom,
-                        shape.Width
-                    );
-                    break;
-
-                case ShapeType.Line:
-                    var startPoint = new Point(shape.StartX, shape.StartY);
-                    var endPoint = new Point(shape.EndX, shape.EndY);
-                    _currentHandles = Rendering.HandleRenderer.CreateLineHandles(startPoint, endPoint, zoom);
-                    break;
-
-                case ShapeType.Polygon:
-                    _currentHandles = Rendering.HandleRenderer.CreatePolygonHandles(shape.Points, zoom);
-                    break;
+                _currentHandles = Rendering.HandleRenderer.CreateRectangleHandles(r, zoom);
+            }
+            else if (shape.Geometry is RotatedRect2d rr)
+            {
+                var rotatedCenter = new Point(rr.CenterX, rr.CenterY);
+                var corners = RotatedRectangleHelper.GetCorners(rotatedCenter, rr.Width, rr.Height, rr.Angle);
+                var bottomCenter = new Point((corners[2].X + corners[3].X) / 2, (corners[2].Y + corners[3].Y) / 2);
+                _currentHandles = Rendering.HandleRenderer.CreateRotatedRectangleHandles(corners, rr.Angle, bottomCenter, zoom, rr.Width);
+            }
+            else if (shape.Geometry is Circle2d c)
+            {
+                _currentHandles = Rendering.HandleRenderer.CreateCircleHandles(c.Center, c.Radius, zoom);
+            }
+            else if (shape.Geometry is Line2d l)
+            {
+                var endPoint = l.GetPointAt(100);
+                _currentHandles = Rendering.HandleRenderer.CreateLineHandles(l.Point, endPoint, zoom);
+            }
+            else if (shape.Geometry is Polygon2d poly)
+            {
+                _currentHandles = Rendering.HandleRenderer.CreatePolygonHandles(
+                    poly.Vertices.Select(v => new Point2D(v.X, v.Y)).ToList(), zoom);
             }
         }
 
@@ -2324,30 +2286,28 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             if (region.Parameters is not ShapeParameters shapeDef)
                 return Rect.Empty;
 
-            return shapeDef.ShapeType switch
+            if (shapeDef.Geometry == null) return Rect.Empty;
+
+            if (shapeDef.Geometry is System.Windows.Rect r)
+                return new Rect(r.X, r.Y, r.Width, r.Height);
+            else if (shapeDef.Geometry is RotatedRect2d rr)
+                return rr.BoundingBox;
+            else if (shapeDef.Geometry is Circle2d c)
+                return new Rect(c.Center.X - c.Radius, c.Center.Y - c.Radius, c.Diameter, c.Diameter);
+            else if (shapeDef.Geometry is Line2d l)
             {
-                ShapeType.Rectangle => new Rect(
-                    shapeDef.CenterX - shapeDef.Width / 2,
-                    shapeDef.CenterY - shapeDef.Height / 2,
-                    shapeDef.Width,
-                    shapeDef.Height),
-                ShapeType.RotatedRectangle => new Rect(
-                    shapeDef.CenterX - shapeDef.Width / 2,
-                    shapeDef.CenterY - shapeDef.Height / 2,
-                    shapeDef.Width,
-                    shapeDef.Height),
-                ShapeType.Circle => new Rect(
-                    shapeDef.CenterX - shapeDef.Radius,
-                    shapeDef.CenterY - shapeDef.Radius,
-                    shapeDef.Radius * 2,
-                    shapeDef.Radius * 2),
-                ShapeType.Line => new Rect(
-                    Math.Min(shapeDef.StartX, shapeDef.EndX),
-                    Math.Min(shapeDef.StartY, shapeDef.EndY),
-                    Math.Abs(shapeDef.EndX - shapeDef.StartX),
-                    Math.Abs(shapeDef.EndY - shapeDef.StartY)),
-                _ => Rect.Empty
-            };
+                var startPt = new Point(l.Point.X, l.Point.Y);
+                var endPt = l.GetPointAt(100);
+                return new Rect(
+                    Math.Min(startPt.X, endPt.X),
+                    Math.Min(startPt.Y, endPt.Y),
+                    Math.Abs(endPt.X - startPt.X),
+                    Math.Abs(endPt.Y - startPt.Y));
+            }
+            else if (shapeDef.Geometry is Polygon2d poly)
+                return poly.BoundingBox;
+
+            return Rect.Empty;
         }
 
         #endregion
@@ -2385,79 +2345,59 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
         private bool IsPointInRegion(Point point, RegionData region, double tolerance)
         {
-            if (region.Parameters is not ShapeParameters shapeDef)
+            if (region.Parameters is not ShapeParameters shapeDef || shapeDef.Geometry == null)
                 return false;
 
-            return shapeDef.ShapeType switch
-            {
-                ShapeType.Rectangle => IsPointInRectangle(point, shapeDef, tolerance),
-                ShapeType.RotatedRectangle => IsPointInRotatedRectangle(point, shapeDef, tolerance),
-                ShapeType.Circle => IsPointInCircle(point, shapeDef, tolerance),
-                ShapeType.Line => IsPointNearLine(point, shapeDef, tolerance),
-                ShapeType.Polygon => IsPointInPolygon(point, shapeDef, tolerance),
-                _ => false
-            };
+            var geo = shapeDef.Geometry;
+            if (geo is Circle2d c)
+                return IsPointInCircle(point, c, tolerance);
+            else if (geo is RotatedRect2d rr)
+                return IsPointInRotatedRectangle(point, rr, tolerance);
+            else if (geo is Line2d l)
+                return IsPointNearLine(point, l, tolerance);
+            else if (geo is Polygon2d poly)
+                return IsPointInPolygon(point, poly, tolerance);
+            else if (geo is System.Windows.Rect r)
+                return IsPointInRectangle(point, r, tolerance);
+
+            return false;
         }
 
-        /// <summary>
-        /// 判断点是否在矩形内（支持容差扩展）
-        /// </summary>
-        private bool IsPointInRectangle(Point point, ShapeParameters shapeDef, double tolerance)
+        private bool IsPointInRectangle(Point point, System.Windows.Rect r, double tolerance)
         {
             var bounds = new Rect(
-                shapeDef.CenterX - shapeDef.Width / 2 - tolerance,
-                shapeDef.CenterY - shapeDef.Height / 2 - tolerance,
-                shapeDef.Width + tolerance * 2,
-                shapeDef.Height + tolerance * 2
+                r.X - tolerance, r.Y - tolerance,
+                r.Width + tolerance * 2, r.Height + tolerance * 2
             );
             return bounds.Contains(point);
         }
 
-        /// <summary>
-        /// 判断点是否在圆形内（支持容差扩展）
-        /// </summary>
-        private bool IsPointInCircle(Point point, ShapeParameters shapeDef, double tolerance)
+        private bool IsPointInCircle(Point point, Circle2d c, double tolerance)
         {
-            var distance = Math.Sqrt(
-                Math.Pow(point.X - shapeDef.CenterX, 2) +
-                Math.Pow(point.Y - shapeDef.CenterY, 2));
-            return distance <= shapeDef.Radius + tolerance;
+            var distance = (point - c.Center).Length;
+            return distance <= c.Radius + tolerance;
         }
 
-        /// <summary>
-        /// 判断点是否在直线附近（基础容差10像素 + 额外容差）
-        /// </summary>
-        private bool IsPointNearLine(Point point, ShapeParameters shapeDef, double tolerance)
+        private bool IsPointNearLine(Point point, Line2d l, double tolerance)
         {
             const double baseTolerance = 10.0;
-            return DistanceToLine(point,
-                new Point(shapeDef.StartX, shapeDef.StartY),
-                new Point(shapeDef.EndX, shapeDef.EndY)) < baseTolerance + tolerance;
+            // 用一个足够远的采样点作"终点"
+            var endPt = l.GetPointAt(1000);
+            var startPt = new Point(l.Point.X, l.Point.Y);
+            return DistanceToLine(point, startPt, endPt) < baseTolerance + tolerance;
         }
 
-        /// <summary>
-        /// 判断点是否在旋转矩形内（支持容差扩展）
-        /// </summary>
-        private bool IsPointInRotatedRectangle(Point point, ShapeParameters shapeDef, double tolerance)
+        private bool IsPointInRotatedRectangle(Point point, RotatedRect2d rr, double tolerance)
         {
-            // 1. 将测试点平移到以矩形中心为原点
-            double dx = point.X - shapeDef.CenterX;
-            double dy = point.Y - shapeDef.CenterY;
-
-            // 2. 逆旋转角度（弧度），将点变换到矩形的本地坐标系
-            // 使用数学角度系统：逆时针为正
-            double angleRad = -shapeDef.Angle * Math.PI / 180.0;
+            double dx = point.X - rr.CenterX;
+            double dy = point.Y - rr.CenterY;
+            double angleRad = -rr.Angle * Math.PI / 180.0;
             double cos = Math.Cos(angleRad);
             double sin = Math.Sin(angleRad);
-
-            // 3. 计算本地坐标（旋转后的坐标）
             double localX = dx * cos - dy * sin;
             double localY = dx * sin + dy * cos;
-
-            // 4. 判断是否在轴对齐矩形内（扩展容差）
-            double halfW = shapeDef.Width / 2 + tolerance;
-            double halfH = shapeDef.Height / 2 + tolerance;
-
+            double halfW = rr.Width / 2 + tolerance;
+            double halfH = rr.Height / 2 + tolerance;
             return Math.Abs(localX) <= halfW && Math.Abs(localY) <= halfH;
         }
 
@@ -2466,32 +2406,26 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             var dx = lineEnd.X - lineStart.X;
             var dy = lineEnd.Y - lineStart.Y;
             var length = Math.Sqrt(dx * dx + dy * dy);
-
             if (length < 0.001) return Point.Subtract(point, lineStart).Length;
-
             var t = Math.Max(0, Math.Min(1,
                 ((point.X - lineStart.X) * dx + (point.Y - lineStart.Y) * dy) / (length * length)));
-
             var projection = new Point(lineStart.X + t * dx, lineStart.Y + t * dy);
             return Point.Subtract(point, projection).Length;
         }
 
-        /// <summary>
-        /// 射线法判断点是否在多边形内（支持容差：在多边形边的容差范围内也可命中）
-        /// </summary>
-        private bool IsPointInPolygon(Point point, ShapeParameters shapeDef, double tolerance)
+        private bool IsPointInPolygon(Point point, Polygon2d poly, double tolerance)
         {
-            var points = shapeDef.Points;
-            if (points.Count < 3) return false;
+            var pts = poly.Vertices;
+            if (pts.Length < 3) return false;
 
             // 射线法判断点是否在多边形内部
             bool inside = false;
-            int j = points.Count - 1;
+            int j = pts.Length - 1;
 
-            for (int i = 0; i < points.Count; j = i++)
+            for (int i = 0; i < pts.Length; j = i++)
             {
-                var pi = new Point(points[i].X, points[i].Y);
-                var pj = new Point(points[j].X, points[j].Y);
+                var pi = pts[i];
+                var pj = pts[j];
 
                 if (((pi.Y > point.Y) != (pj.Y > point.Y)) &&
                     (point.X < (pj.X - pi.X) * (point.Y - pi.Y) / (pj.Y - pi.Y) + pi.X))
@@ -2505,10 +2439,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             // 容差检查：点到多边形的任意一条边的距离在容差范围内也视为命中
             if (tolerance > 0)
             {
-                for (int i = 0; i < points.Count; i++)
+                for (int i = 0; i < pts.Length; i++)
                 {
-                    var p1 = new Point(points[i].X, points[i].Y);
-                    var p2 = new Point(points[(i + 1) % points.Count].X, points[(i + 1) % points.Count].Y);
+                    var p1 = pts[i];
+                    var p2 = pts[(i + 1) % pts.Length];
                     if (DistanceToLine(point, p1, p2) <= tolerance)
                         return true;
                 }
@@ -2567,74 +2501,33 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
 
         /// <summary>
         /// 取消形状参数变更订阅
+        /// 多边形顶点订阅已移除（Polygon2d 使用固定数组，非 Observable）
         /// </summary>
         private void UnsubscribeShapeParameters(RegionData? region)
         {
             if (region?.Parameters is ShapeParameters shape)
             {
                 shape.PropertyChanged -= OnShapeParametersChanged;
-                if (shape.ShapeType == ShapeType.Polygon)
-                {
-                    foreach (var pt in shape.Points)
-                        pt.PropertyChanged -= OnPolygonPointPropertyChanged;
-                    shape.Points.CollectionChanged -= OnPolygonPointsCollectionChanged;
-                }
             }
         }
 
         /// <summary>
         /// 订阅形状参数变更（面板→画布自动同步）
-        /// PropertyChanged 处理 CenterX/Width/Radius 等属性，
-        /// Point2D.PropertyChanged + CollectionChanged 处理多边形顶点
+        /// 多边形顶点订阅已移除（Polygon2d 使用固定数组，非 Observable）
         /// </summary>
         private void SubscribeShapeParameters(RegionData? region)
         {
             if (region?.Parameters is ShapeParameters shape)
             {
                 shape.PropertyChanged += OnShapeParametersChanged;
-                if (shape.ShapeType == ShapeType.Polygon)
-                {
-                    foreach (var pt in shape.Points)
-                        pt.PropertyChanged += OnPolygonPointPropertyChanged;
-                    shape.Points.CollectionChanged += OnPolygonPointsCollectionChanged;
-                }
             }
         }
 
         /// <summary>
-        /// 形状参数 PropertyChanged 回调（CenterX, Width, Radius 等 → 画布刷新）
+        /// 形状参数 PropertyChanged 回调（Geometry 变更 → 画布刷新）
         /// </summary>
         private void OnShapeParametersChanged(object? sender, PropertyChangedEventArgs e)
         {
-            RenderRequested?.Invoke();
-        }
-
-        /// <summary>
-        /// 多边形顶点 Point2D.PropertyChanged 回调（X/Y 绑定变更 → 画布刷新）
-        /// </summary>
-        private void OnPolygonPointPropertyChanged(object? sender, PropertyChangedEventArgs e)
-        {
-            RenderRequested?.Invoke();
-        }
-
-        /// <summary>
-        /// 多边形 Points.CollectionChanged 回调（添加/删除/替换顶点后刷新画布 + 重新订阅）
-        /// </summary>
-        private void OnPolygonPointsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-        {
-            // 新项订阅 PropertyChanged
-            if (e.NewItems != null)
-            {
-                foreach (Point2D pt in e.NewItems)
-                    pt.PropertyChanged += OnPolygonPointPropertyChanged;
-            }
-            // 旧项取消订阅
-            if (e.OldItems != null)
-            {
-                foreach (Point2D pt in e.OldItems)
-                    pt.PropertyChanged -= OnPolygonPointPropertyChanged;
-            }
-
             RenderRequested?.Invoke();
         }
 

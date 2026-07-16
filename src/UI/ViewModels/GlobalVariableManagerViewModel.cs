@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -145,7 +145,7 @@ namespace SunEyeVision.UI.ViewModels
         /// <summary>
         /// 类型选项列表（中文显示名 + 英文值，用于 ComboBox 绑定）
         /// </summary>
-        public List<TypeOption> TypeOptions { get; } = GlobalVariableTypeMapper.GetAllTypeOptions();
+        public List<TypeOption> TypeOptions { get; } = SdkTypeVocabulary.GetAllTypeOptions();
 
         public GlobalVariableManagerViewModel(SolutionManager solutionManager)
         {

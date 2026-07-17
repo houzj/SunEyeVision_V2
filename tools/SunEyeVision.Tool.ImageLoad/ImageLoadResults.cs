@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Execution.Results;
@@ -178,21 +178,12 @@ namespace SunEyeVision.Tool.ImageLoad
             var hImage = halImage.Unwrap();
             if (hImage == null || !hImage.IsInitialized()) return;
 
-            try
-            {
-                HOperatorSet.MinMaxGray(hImage, hImage, 0, out var min, out var max, out _);
-                _minPixelValue = min.D;
-                _maxPixelValue = max.D;
+            HOperatorSet.MinMaxGray(hImage, hImage, 0, out var min, out var max, out _);
+            _minPixelValue = min.D;
+            _maxPixelValue = max.D;
 
-                HOperatorSet.Intensity(hImage, hImage, out var mean, out _);
-                _meanPixelValue = mean.D;
-            }
-            catch
-            {
-                _minPixelValue = 0.0;
-                _maxPixelValue = 255.0;
-                _meanPixelValue = 0.0;
-            }
+            HOperatorSet.Intensity(hImage, hImage, out var mean, out _);
+            _meanPixelValue = mean.D;
         }
 
         #endregion
@@ -259,30 +250,6 @@ namespace SunEyeVision.Tool.ImageLoad
             items.Add(ResultItem.Numeric("耗时", ExecutionTimeMs, "ms"));
 
             return items;
-        }
-
-        /// <summary>
-        /// 转换为字典（补充 ToolResults 基类的字典）
-        /// </summary>
-        public override Dictionary<string, object> ToDictionary()
-        {
-            var dict = base.ToDictionary();
-            dict["Width"] = Width;
-            dict["Height"] = Height;
-            dict["Channels"] = Channels;
-            dict["Depth"] = Depth;
-            dict["FilePath"] = FilePath;
-            dict["FileSize"] = FileSize;
-            dict["FileFormat"] = FileFormat;
-            dict["IsColor"] = IsColor;
-            dict["IsGrayscale"] = IsGrayscale;
-            dict["ColorType"] = ColorType;
-            dict["AspectRatio"] = AspectRatio;
-            dict["TotalPixels"] = TotalPixels;
-            dict["MinPixelValue"] = MinPixelValue;
-            dict["MaxPixelValue"] = MaxPixelValue;
-            dict["MeanPixelValue"] = MeanPixelValue;
-            return dict;
         }
 
         #endregion

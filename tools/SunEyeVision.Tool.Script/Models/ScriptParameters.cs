@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 
 namespace SunEyeVision.Tool.Script.Models
@@ -14,7 +18,7 @@ namespace SunEyeVision.Tool.Script.Models
     /// 脚本工具参数 — 包含脚本代码、DLL 引用目录、输入/输出变量定义
     /// </summary>
     [JsonDerivedType(typeof(ScriptParameters), "Script")]
-    public class ScriptParameters : ToolParameters
+    public class ScriptParameters : ToolParameters, IOutputContractProvider, INotifyOutputContractChanged
     {
         /// <summary>
         /// 最简代码模板 — Init + Process 空壳骨架，无示例注释，仅含 null 检查和输出传递。
@@ -52,6 +56,11 @@ namespace SunEyeVision.Tool.Script.Models
         [
             new ScriptOutputConfig { Name = "output1", TypeName = "Image" }
         ];
+
+        public ScriptParameters()
+        {
+            SubscribeOutputsCollection();
+        }
 
         /// <summary>
         /// 脚本方法体代码（不含 class 声明，由 BuildFullCode 自动包裹）
@@ -109,13 +118,55 @@ namespace SunEyeVision.Tool.Script.Models
         }
 
         /// <summary>
+        /// INotifyOutputContractChanged — 输出契约变更时通知 UI 实时刷新模块结果树
+        /// </summary>
+        public event Action? OutputContractChanged;
+
+        private void SubscribeOutputsCollection()
+        {
+            _outputs.CollectionChanged += OnOutputsCollectionChanged;
+            foreach (var item in _outputs)
+                item.PropertyChanged += OnOutputPropertyChanged;
+        }
+
+        private void UnsubscribeOutputsCollection()
+        {
+            _outputs.CollectionChanged -= OnOutputsCollectionChanged;
+            foreach (var item in _outputs)
+                item.PropertyChanged -= OnOutputPropertyChanged;
+        }
+
+        private void OnOutputsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.NewItems != null)
+                foreach (ScriptOutputConfig item in e.NewItems)
+                    item.PropertyChanged += OnOutputPropertyChanged;
+            if (e.OldItems != null)
+                foreach (ScriptOutputConfig item in e.OldItems)
+                    item.PropertyChanged -= OnOutputPropertyChanged;
+            OutputContractChanged?.Invoke();
+        }
+
+        private void OnOutputPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            OutputContractChanged?.Invoke();
+        }
+
+        /// <summary>
         /// 输出变量配置列表（含 Name/TypeName/绑定关系）
         /// </summary>
         [JsonPropertyOrder(4)]
         public ObservableCollection<ScriptOutputConfig> Outputs
         {
             get => _outputs;
-            set => SetProperty(ref _outputs, value, "输出");
+            set
+            {
+                if (_outputs == value) return;
+                UnsubscribeOutputsCollection();
+                SetProperty(ref _outputs, value, "输出");
+                SubscribeOutputsCollection();
+                OutputContractChanged?.Invoke();
+            }
         }
 
         /// <summary>
@@ -158,6 +209,33 @@ namespace SunEyeVision.Tool.Script.Models
             var dir = AssemblyReferenceFullPath;
             var count = Directory.Exists(dir) ? Directory.GetFiles(dir, "*.dll").Length : 0;
             return $"脚本行数: {ScriptCode.Split('\n').Length}, 引用DLL: {count}, 输入: {Inputs.Count}, 输出: {Outputs.Count}";
+        }
+
+        IReadOnlyList<OutputVariable> IOutputContractProvider.GetOutputContract()
+        {
+            var variables = new List<OutputVariable>();
+
+            // 元信息：执行信息分组
+            variables.Add(new OutputVariable { Name = "Status", VariableType = "String", DisplayName = "运行状态", Group = "执行信息", Kind = OutputVariableKind.Data });
+            variables.Add(new OutputVariable { Name = "ExecutionTimeMs", VariableType = "Integer", DisplayName = "执行耗时(ms)", Group = "执行信息", Kind = OutputVariableKind.Data });
+            variables.Add(new OutputVariable { Name = "CompileTimeMs", VariableType = "Integer", DisplayName = "编译耗时(ms)", Group = "执行信息", Kind = OutputVariableKind.Data });
+            variables.Add(new OutputVariable { Name = "LogCount", VariableType = "Integer", DisplayName = "日志条数", Group = "执行信息", Kind = OutputVariableKind.Data });
+            variables.Add(new OutputVariable { Name = "CompileErrorCount", VariableType = "Integer", DisplayName = "编译错误数", Group = "执行信息", Kind = OutputVariableKind.Data });
+
+            // 用户配置的输出
+            foreach (var cfg in Outputs)
+            {
+                variables.Add(new OutputVariable
+                {
+                    Name = cfg.Name,
+                    VariableType = cfg.TypeName,
+                    DisplayName = string.IsNullOrEmpty(cfg.DisplayName) ? cfg.Name : cfg.DisplayName,
+                    Group = string.IsNullOrEmpty(cfg.Group) ? "输出结果" : cfg.Group,
+                    Kind = OutputVariableKind.Data,
+                });
+            }
+
+            return variables;
         }
 
         /// <summary>

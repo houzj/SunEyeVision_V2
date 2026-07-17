@@ -83,7 +83,7 @@ namespace SunEyeVision.Tool.ImageFilter
                 }
 
                 parameters.LogInfo($"开始滤波处理: 图像尺寸 {image.Size.Width}x{image.Size.Height}");
-                result.InputSize = image.Size;
+
 
                 FilterType filterType = parameters.FilterTypeValue.Value;
                 int kernelWidth = parameters.KernelWidth.Value;
@@ -104,7 +104,7 @@ namespace SunEyeVision.Tool.ImageFilter
                 using (grayImage)
                 {
                     // 保存灰度图像中间结果
-                    result.GrayImage = grayImage.Image.Clone();
+                    result.GrayImage = new CvImage(grayImage.Image.Clone(), ownsImage: true);
                     result.InputChannels = image.Channels;
 
                     CvRegion? roiRegion = null;
@@ -206,8 +206,8 @@ namespace SunEyeVision.Tool.ImageFilter
 
                                 using (filteredImage)
                                 {
-                                    result.OutputImage = filteredImage.Image.Clone();
-                                    result.FilterTypeUsed = filterType;
+                                    result.OutputImage = new CvImage(filteredImage.Image.Clone(), ownsImage: true);
+                                    result.FilterTypeUsed = filterType.ToString();
                                     result.KernelWidthUsed = kernelWidth;
                                     result.KernelHeightUsed = kernelHeight;
 
@@ -313,14 +313,15 @@ namespace SunEyeVision.Tool.ImageFilter
             result.OutputStd = stdDev;
 
             // 计算最小最大值
-            if (result.OutputImage != null && !result.OutputImage.Empty())
+            if (result.OutputImage is CvImage cvOutput && cvOutput.Count > 0)
             {
-                Cv2.MinMaxLoc(result.OutputImage, out double minVal, out double maxVal);
+                var outputMat = cvOutput.Image;
+                Cv2.MinMaxLoc(outputMat, out double minVal, out double maxVal);
                 result.OutputMin = minVal;
                 result.OutputMax = maxVal;
 
                 // 通道均值
-                var means = Cv2.Mean(result.OutputImage);
+                var means = Cv2.Mean(outputMat);
                 result.ChannelMeans = new[]
                 {
                     means.Val0, means.Val1, means.Val2, means.Val3
@@ -341,7 +342,7 @@ namespace SunEyeVision.Tool.ImageFilter
 
             if (config.IsEmptyCheckEnabled)
             {
-                if (result.OutputImage == null || result.OutputImage.Empty())
+                if (result.OutputImage == null || result.OutputImage.IsEmpty)
                 {
                     allPassed = false;
                     failReasons.Add("输出图像为空");

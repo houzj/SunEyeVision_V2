@@ -81,6 +81,7 @@ namespace SunEyeVision.Plugin.SDK.Models
         /// 获取类型对应的全局变量类型名称。
         /// 传入单值类型（如 double）自动提升为数组类型（如 "Double"）。
         /// 传入 int/float 等会先规范归并为 long/double（如 int → "Integer"）。
+        /// 支持 List&lt;T&gt; → T[] 自动拆箱，以及 IVisionRegion[] → IVisionRegion 递归归并。
         /// </summary>
         public static string? ToTypeVocabulary(Type? type)
         {
@@ -88,10 +89,26 @@ namespace SunEyeVision.Plugin.SDK.Models
 
             type = NormalizeNumeric(type);
 
+            // Step 1: 直查字典（最快路径）
             if (TypeToString.TryGetValue(type, out var result))
                 return result;
 
-            // 自动提升：单值 T → T[] 查表
+            // Step 2: List<T> → T[] 拆箱后递归
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
+            {
+                var arrayType = type.GetGenericArguments()[0].MakeArrayType();
+                return ToTypeVocabulary(arrayType);
+            }
+
+            // Step 3: 数组类型 → 递归检查元素类型（如 IVisionRegion[] → IVisionRegion → "Region"）
+            if (type.IsArray && type.HasElementType)
+            {
+                var elementType = type.GetElementType();
+                if (elementType != null)
+                    return ToTypeVocabulary(elementType);
+            }
+
+            // Step 4: 自动提升：单值 T → T[] 查表
             if (!type.IsArray)
             {
                 var arrayType = type.MakeArrayType();

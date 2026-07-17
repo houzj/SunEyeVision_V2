@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -291,12 +291,12 @@ namespace SunEyeVision.UI.ViewModels
                         // 未运行也从 _typeCache 显示属性表结构
                         ToolResults? tempResult = null;
 
-                        // ★ 子程序：从 Parameters 构造临时结果展示动态输出端口（设计态）
-                        if (string.Equals(toolId, "Subroutine", StringComparison.OrdinalIgnoreCase)
-                            && value.Parameters is SubroutineParameters sp
-                            && sp.Outputs.Count > 0)
+                        // 动态工具：从 Parameters 输出契约构造临时结果（设计态）
+                        if (value.Parameters is IOutputContractProvider provider)
                         {
-                            tempResult = new SubroutineResults { OutputConfigs = sp.Outputs.ToList() };
+                            var contract = provider.GetOutputContract();
+                            if (contract.Count > 0)
+                                tempResult = new ContractToolResults(contract);
                         }
 
                         UpdateModuleResults(tempResult, value.Name, toolId, value.Id);
@@ -2445,13 +2445,47 @@ SplitterPosition = position;
                 _openDebugWindow = context.CreatedWindow;
                 _openDebugWindow.Title = node.Name;
 
+                // ★ 动态工具（Script）：输出变更时实时刷新模块结果树（类似子程序的 onOutputsChanged 机制）
+                Action? refreshContract = null;
+                if (node.Parameters is INotifyOutputContractChanged contractNotifier)
+                {
+                    refreshContract = () =>
+                    {
+                        _ = System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                        {
+                            if (node.Parameters is IOutputContractProvider provider)
+                            {
+                                var contract = provider.GetOutputContract();
+                                if (contract.Count > 0)
+                                    UpdateModuleResults(new ContractToolResults(contract), node.Name, node.ToolType, node.Id);
+                            }
+                        }), System.Windows.Threading.DispatcherPriority.Background);
+                    };
+                    contractNotifier.OutputContractChanged += refreshContract;
+                }
+
                 _openDebugWindow.Closed += (s, e) =>
                 {
+                    // 清理输出变更订阅
+                    if (refreshContract != null && node.Parameters is INotifyOutputContractChanged notifier)
+                        notifier.OutputContractChanged -= refreshContract;
+
                     _openDebugWindow = null;
                     var imgCtrl = GetMainImageControl?.Invoke();
                     if (imgCtrl != null) imgCtrl.OverlayHitTestVisible = false;
                     if (SelectedNode?.IsSelected == true)
                     {
+                        // 设计态：重新评估输出契约（脚本/子程序输出变更后刷新结果树）
+                        if (SelectedNode.Parameters is IOutputContractProvider provider)
+                        {
+                            var contract = provider.GetOutputContract();
+                            if (contract.Count > 0)
+                            {
+                                var tempResult = new ContractToolResults(contract);
+                                UpdateModuleResults(tempResult, SelectedNode.Name, SelectedNode.ToolType, SelectedNode.Id);
+                            }
+                        }
+
                         var executionResult = CurrentWorkflowContext?.GetNodeResult(SelectedNode.Id);
                         if (executionResult?.Result != null)
                             _nodeResultManager.RefreshResultDisplay(SelectedNode, executionResult.Result);
@@ -3899,9 +3933,6 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
 
                 foreach (var e in group)
                 {
-                    if (e.ClrType != null && IsVisualResultType(e.ClrType))
-                        continue;
-
                     var node = new ModuleResultNode
                     {
                         DisplayName = e.DisplayName,
@@ -4936,5 +4967,17 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         {
             OnPropertyChanged(nameof(VariableBindingDisplay));
         }
+    }
+
+    /// <summary>
+    /// 输出契约包装器 — 动态工具设计态结果展示。
+    /// 将 IOutputContractProvider 返回的 OutputVariable 列表包装为 ToolResults，
+    /// 供 UpdateModuleResults 读取并建树。
+    /// </summary>
+    internal sealed class ContractToolResults : ToolResults
+    {
+        private readonly IReadOnlyList<OutputVariable> _contract;
+        public ContractToolResults(IReadOnlyList<OutputVariable> contract) => _contract = contract;
+        public override IReadOnlyList<OutputVariable> GetOutputVariables() => _contract;
     }
 }

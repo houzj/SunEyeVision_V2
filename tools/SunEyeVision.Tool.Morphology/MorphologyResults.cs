@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using OpenCvSharp;
 using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 
@@ -18,17 +16,17 @@ namespace SunEyeVision.Tool.Morphology
         /// <summary>
         /// 输出图像（形态学处理后的 ComposeDisplay 合成图）
         /// </summary>
-        public Mat? OutputImage { get; set; }
+        public IVisionImage? OutputImage { get; set; }
 
         /// <summary>
         /// 灰度图像中间结果
         /// </summary>
-        public Mat? GrayImage { get; set; }
+        public IVisionImage? GrayImage { get; set; }
 
         /// <summary>
         /// 二值掩码（CV_8UC1, 0/255）
         /// </summary>
-        public Mat? BinaryMask { get; set; }
+        public IVisionImage? BinaryMask { get; set; }
 
         /// <summary>
         /// 获取所有可显示的图像
@@ -36,12 +34,12 @@ namespace SunEyeVision.Tool.Morphology
         public override Dictionary<string, IVisionImage?> GetDisplayImages()
         {
             var images = new Dictionary<string, IVisionImage?>();
-            if (OutputImage != null && !OutputImage.Empty())
-                images["OutputImage"] = VisionImage.FromMat(OutputImage);
-            if (GrayImage != null && !GrayImage.Empty())
-                images["GrayImage"] = VisionImage.FromMat(GrayImage);
-            if (BinaryMask != null && !BinaryMask.Empty())
-                images["BinaryMask"] = VisionImage.FromMat(BinaryMask);
+            if (OutputImage != null && !OutputImage.IsEmpty)
+                images["OutputImage"] = OutputImage;
+            if (GrayImage != null && !GrayImage.IsEmpty)
+                images["GrayImage"] = GrayImage;
+            if (BinaryMask != null && !BinaryMask.IsEmpty)
+                images["BinaryMask"] = BinaryMask;
             return images;
         }
 
@@ -190,7 +188,6 @@ namespace SunEyeVision.Tool.Morphology
                 new("KernelHeightUsed",     "核高度",                 "参数回写"),
                 new("IterationsUsed",       "迭代次数",               "参数回写"),
                 new("OutputRegions",        "形态学区域",             "图形结果"),
-                new("InputSize",            "输入图像尺寸",           "输入信息"),
                 new("InputChannels",        "输入图像通道数",         "输入信息"),
                 new("OutputMean",           "输出图像均值",           "统计"),
                 new("BlobCount",            "Blob数量",               "统计"),
@@ -200,28 +197,6 @@ namespace SunEyeVision.Tool.Morphology
                 new("IsPass",               "是否通过",               "判断"),
                 new("FailReasons",          "失败原因",               "判断"),
             ];
-        }
-
-        /// <summary>
-        /// 转换为字典
-        /// </summary>
-        public override Dictionary<string, object> ToDictionary()
-        {
-            var dict = base.ToDictionary();
-            dict["OperationUsed"] = OperationUsed;
-            dict["KernelShapeUsed"] = KernelShapeUsed;
-            dict["KernelWidthUsed"] = KernelWidthUsed;
-            dict["KernelHeightUsed"] = KernelHeightUsed;
-            dict["IterationsUsed"] = IterationsUsed;
-            dict["InputChannels"] = InputChannels;
-            dict["OutputMean"] = OutputMean;
-            dict["BlobCount"] = BlobCount;
-            dict["TotalArea"] = TotalArea;
-            dict["MaxBlobArea"] = MaxBlobArea;
-            dict["IsPass"] = IsPass;
-            if (FailReasons.Count > 0)
-                dict["FailReasons"] = string.Join("; ", FailReasons);
-            return dict;
         }
 
         #endregion

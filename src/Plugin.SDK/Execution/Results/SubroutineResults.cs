@@ -56,8 +56,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
             var map = new List<PropertyMapEntry>
             {
                 new("SubWorkflowExecutionTimeMs", "\u5b50\u6d41\u7a0b\u8017\u65f6", "\u6267\u884c\u4fe1\u606f"),
-                new("ExecutedNodeCount", "\u6267\u884c\u8282\u70b9\u6570", "\u6267\u884c\u4fe1\u606f"),
-                new("ExecutedAt", "\u6267\u884c\u65f6\u95f4", "\u6267\u884c\u4fe1\u606f")
+                new("ExecutedNodeCount", "\u6267\u884c\u8282\u70b9\u6570", "\u6267\u884c\u4fe1\u606f")
             };
             var keys = ResolvedOutputValues.Count > 0 ? ResolvedOutputValues.Keys : OutputConfigs.Select(c => c.Name);
             foreach (var name in keys)

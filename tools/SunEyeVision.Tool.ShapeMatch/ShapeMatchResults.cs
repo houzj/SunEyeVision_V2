@@ -41,12 +41,6 @@ public class ShapeMatchResults : ToolResults
     /// <summary>最佳匹配项</summary>
     public ShapeMatchResultItem? BestMatch => MatchedItems?.Count > 0 ? MatchedItems[0] : null;
 
-    /// <summary>输入图像尺寸</summary>
-    public System.Drawing.Size InputSize { get; set; }
-
-    /// <summary>处理时间戳</summary>
-    public DateTime ProcessedAt { get; set; } = DateTime.Now;
-
     #region 匹配详细数据（数组类型 — 对齐 BlobAnalysis）
 
     public double[] MatchedScores => MatchedItems.Select(m => m.Score).ToArray();
@@ -181,14 +175,12 @@ public class ShapeMatchResults : ToolResults
             new("JudgmentPassed",        "判断通过",           "判断"),
             new("MatchCount",            "匹配数量",           "结果"),
             new("BestScore",             "最佳得分",           "结果"),
-            new("BestPositionCorrection","最佳位置修正矩阵",   "位置修正"),
             new("CorrectionM11s",        "缩放分量X(M11)",     "位置修正/分量"),
             new("CorrectionM12s",        "旋转分量X(M12)",     "位置修正/分量"),
             new("CorrectionM21s",        "旋转分量Y(M21)",     "位置修正/分量"),
             new("CorrectionM22s",        "缩放分量Y(M22)",     "位置修正/分量"),
             new("CorrectionOffsetXs",    "平移X(OffsetX)",     "位置修正/分量"),
             new("CorrectionOffsetYs",    "平移Y(OffsetY)",     "位置修正/分量"),
-            new("InputSize",             "输入图像尺寸",       "结果"),
             new("MatchedScores",         "得分",               "匹配详细/得分"),
             new("MatchedCenterXs",       "中心X",              "匹配详细/中心"),
             new("MatchedCenterYs",       "中心Y",              "匹配详细/中心"),
@@ -196,22 +188,7 @@ public class ShapeMatchResults : ToolResults
             new("MatchedScales",         "缩放",               "匹配详细/姿态"),
             new("MatchedTemplateIndices","模板索引",           "匹配详细/模板信息"),
             new("MatchedTemplateNames",  "模板名称",           "匹配详细/模板信息"),
-            new("ProcessedAt",           "处理时间戳",         "执行信息"),
         ];
-    }
-
-    public override Dictionary<string, object> ToDictionary()
-    {
-        var dict = base.ToDictionary();
-        dict["JudgmentPassed"] = JudgmentPassed;
-        dict["MatchCount"] = MatchCount;
-        dict["HasMatch"] = HasMatch;
-        dict["BestScore"] = BestScore;
-        dict["BestPositionCorrection"] = BestPositionCorrection;
-        dict["MatchedPositionCorrections"] = MatchedPositionCorrections;
-        dict["InputSize"] = InputSize;
-        dict["ProcessedAt"] = ProcessedAt;
-        return dict;
     }
 }
 

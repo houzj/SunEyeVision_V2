@@ -97,7 +97,7 @@ namespace SunEyeVision.Tool.Threshold.Views
                 OutputArea = thresholdResult.OutputArea;
 
                 var adaptive = thresholdResult.AdaptiveMethodUsed;
-                AdaptiveText = adaptive != AdaptiveMethod.Mean && adaptive != AdaptiveMethod.Gaussian
+                AdaptiveText = adaptive != "Mean" && adaptive != "Gaussian"
                     ? "固定阈值"
                     : $"{adaptive}(块大小:{thresholdResult.BlockSizeUsed})";
 
@@ -111,9 +111,9 @@ namespace SunEyeVision.Tool.Threshold.Views
                 AddItem("实际阈值", thresholdResult.ThresholdUsed.ToString("F0"));
                 AddItem("最大值", thresholdResult.MaxValueUsed.ToString("F0"));
                 AddItem("阈值类型", thresholdResult.TypeUsed.ToString());
-                AddItem("自适应方法", adaptive != AdaptiveMethod.Mean && adaptive != AdaptiveMethod.Gaussian
-                    ? "无" : adaptive.ToString());
-                AddItem("块大小", adaptive != AdaptiveMethod.Mean && adaptive != AdaptiveMethod.Gaussian
+                AddItem("自适应方法", adaptive != "Mean" && adaptive != "Gaussian"
+                    ? "无" : adaptive);
+                AddItem("块大小", adaptive != "Mean" && adaptive != "Gaussian"
                     ? "N/A" : thresholdResult.BlockSizeUsed.ToString());
                 AddItem("输入尺寸", $"{thresholdResult.InputSize.Width}×{thresholdResult.InputSize.Height}");
                 AddItem("输入通道数", thresholdResult.InputChannels.ToString());

@@ -85,7 +85,6 @@ namespace SunEyeVision.Tool.Morphology
                 }
 
                 parameters.LogInfo($"开始形态学处理: 图像尺寸 {image.Size.Width}x{image.Size.Height}");
-                result.InputSize = image.Size;
 
                 var operation = parameters.Operation.Value;
                 var kernelShape = parameters.KernelShape.Value;
@@ -103,7 +102,7 @@ namespace SunEyeVision.Tool.Morphology
 
                 using (grayImage)
                 {
-                    result.GrayImage = grayImage.Image.Clone();
+                    result.GrayImage = new CvImage(grayImage.Image.Clone(), ownsImage: true);
 
                     CvRegion? roiRegion = null;
 
@@ -185,12 +184,12 @@ namespace SunEyeVision.Tool.Morphology
 
                                     // 保存二值掩码
                                     CvOp.RegionToMask(morphRegion, out var binaryMask);
-                                    result.BinaryMask = binaryMask;
+                                    result.BinaryMask = new CvImage(binaryMask, ownsImage: true);
 
                                     // 图形结果输出
                                     result.OutputRegions = new IVisionRegion[] { morphRegion.CopyObj() };
 
-                                    result.OutputImage = outputImage;
+                                    result.OutputImage = new CvImage(outputImage, ownsImage: true);
 
                                     // 参数回写
                                     result.OperationUsed = operation.ToString();
@@ -312,7 +311,7 @@ namespace SunEyeVision.Tool.Morphology
 
             if (config.IsEmptyCheckEnabled)
             {
-                if (result.OutputImage == null || result.OutputImage.Empty())
+                if (result.OutputImage == null || result.OutputImage.IsEmpty)
                 {
                     allPassed = false;
                     failReasons.Add("输出图像为空");

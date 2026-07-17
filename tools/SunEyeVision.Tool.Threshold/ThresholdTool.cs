@@ -84,7 +84,6 @@ namespace SunEyeVision.Tool.Threshold
                 }
 
                 parameters.LogInfo($"开始阈值化处理: 图像尺寸 {image.Size.Width}x{image.Size.Height}");
-                result.InputSize = image.Size;
 
                 double threshold = parameters.Threshold.Value;
                 double maxValue = parameters.MaxValue.Value;
@@ -103,7 +102,7 @@ namespace SunEyeVision.Tool.Threshold
                 using (grayImage)
                 {
                     // 保存灰度图像中间结果
-                    result.GrayImage = grayImage.Image.Clone();
+                    result.GrayImage = new CvImage(grayImage.Image.Clone(), ownsImage: true);
 
                     CvRegion? roiRegion = null;
 
@@ -150,7 +149,7 @@ namespace SunEyeVision.Tool.Threshold
                         using (reducedImage)
                         {
                             // 保存 ReduceDomain 中间结果
-                            result.ReducedImage = reducedImage.Image.Clone();
+                            result.ReducedImage = new CvImage(reducedImage.Image.Clone(), ownsImage: true);
                             // ===== Step 4: 阈值分割 =====
                             stepSw.Restart();
                             var cvThresholdType = (CvThresholdType)type;
@@ -184,16 +183,16 @@ namespace SunEyeVision.Tool.Threshold
 
                                 // 保存二值掩码（从 binaryRegion 提取纯二值 Mat）
                                 CvOp.RegionToMask(binaryRegion, out var binaryMask);
-                                result.BinaryMask = binaryMask;
+                                result.BinaryMask = new CvImage(binaryMask, ownsImage: true);
 
                                 // 图形结果输出
                                 result.OutputRegions = new IVisionRegion[] { binaryRegion.CopyObj() };
 
-                                result.OutputImage = outputImage;
+                                result.OutputImage = new CvImage(outputImage, ownsImage: true);
                                 result.ThresholdUsed = actualThreshold;
                                 result.MaxValueUsed = maxValue;
-                                result.TypeUsed = type;
-                                result.AdaptiveMethodUsed = adaptiveMethod;
+                                result.TypeUsed = type.ToString();
+                                result.AdaptiveMethodUsed = adaptiveMethod.ToString();
                                 result.BlockSizeUsed = blockSize;
                                 result.InputChannels = image.Channels;
 
@@ -332,7 +331,7 @@ namespace SunEyeVision.Tool.Threshold
 
             if (config.IsEmptyCheckEnabled)
             {
-                if (result.OutputImage == null || result.OutputImage.Empty())
+                if (result.OutputImage == null || result.OutputImage.IsEmpty)
                 {
                     allPassed = false;
                     failReasons.Add("输出图像为空");

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using OpenCvSharp;
 using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 
@@ -18,22 +16,22 @@ namespace SunEyeVision.Tool.Threshold
         /// <summary>
         /// 输出图像（阈值化结果 ComposeDisplay 合成图）
         /// </summary>
-        public Mat? OutputImage { get; set; }
+        public IVisionImage? OutputImage { get; set; }
 
         /// <summary>
         /// 灰度图像中间结果（灰度转换后）
         /// </summary>
-        public Mat? GrayImage { get; set; }
+        public IVisionImage? GrayImage { get; set; }
 
         /// <summary>
         /// ReduceDomain 中间结果（ROI限制后的灰度图）
         /// </summary>
-        public Mat? ReducedImage { get; set; }
+        public IVisionImage? ReducedImage { get; set; }
 
         /// <summary>
         /// 二值掩码图像（CV_8UC1, 0/255 纯二值）
         /// </summary>
-        public Mat? BinaryMask { get; set; }
+        public IVisionImage? BinaryMask { get; set; }
 
         /// <summary>
         /// 获取所有可显示的图像
@@ -41,14 +39,14 @@ namespace SunEyeVision.Tool.Threshold
         public override Dictionary<string, IVisionImage?> GetDisplayImages()
         {
             var images = new Dictionary<string, IVisionImage?>();
-            if (OutputImage != null && !OutputImage.Empty())
-                images["OutputImage"] = VisionImage.FromMat(OutputImage);
-            if (GrayImage != null && !GrayImage.Empty())
-                images["GrayImage"] = VisionImage.FromMat(GrayImage);
-            if (ReducedImage != null && !ReducedImage.Empty())
-                images["ReducedImage"] = VisionImage.FromMat(ReducedImage);
-            if (BinaryMask != null && !BinaryMask.Empty())
-                images["BinaryMask"] = VisionImage.FromMat(BinaryMask);
+            if (OutputImage != null && !OutputImage.IsEmpty)
+                images["OutputImage"] = OutputImage;
+            if (GrayImage != null && !GrayImage.IsEmpty)
+                images["GrayImage"] = GrayImage;
+            if (ReducedImage != null && !ReducedImage.IsEmpty)
+                images["ReducedImage"] = ReducedImage;
+            if (BinaryMask != null && !BinaryMask.IsEmpty)
+                images["BinaryMask"] = BinaryMask;
             return images;
         }
 
@@ -69,12 +67,12 @@ namespace SunEyeVision.Tool.Threshold
         /// <summary>
         /// 实际使用的阈值模式
         /// </summary>
-        public ThresholdType TypeUsed { get; set; }
+        public string TypeUsed { get; set; } = string.Empty;
 
         /// <summary>
         /// 实际使用的自适应方法
         /// </summary>
-        public AdaptiveMethod AdaptiveMethodUsed { get; set; }
+        public string AdaptiveMethodUsed { get; set; } = string.Empty;
 
         /// <summary>
         /// 实际使用的块大小
@@ -213,7 +211,6 @@ namespace SunEyeVision.Tool.Threshold
                 new("AdaptiveMethodUsed",   "自适应方法",             "参数回写"),
                 new("BlockSizeUsed",        "块大小",                 "参数回写"),
                 new("OutputRegions",        "二值区域",               "图形结果"),
-                new("InputSize",            "输入图像尺寸",           "输入信息"),
                 new("InputChannels",        "输入图像通道数",         "输入信息"),
                 new("WhitePixelCount",      "白色像素数",             "统计"),
                 new("WhitePixelRatio",      "白色像素比例(%)",        "统计"),
@@ -226,30 +223,6 @@ namespace SunEyeVision.Tool.Threshold
                 new("IsPass",               "是否通过",               "判断"),
                 new("FailReasons",          "失败原因",               "判断"),
             ];
-        }
-
-        /// <summary>
-        /// 转换为字典
-        /// </summary>
-        public override Dictionary<string, object> ToDictionary()
-        {
-            var dict = base.ToDictionary();
-            dict["ThresholdUsed"] = ThresholdUsed;
-            dict["MaxValueUsed"] = MaxValueUsed;
-            dict["TypeUsed"] = TypeUsed.ToString();
-            dict["AdaptiveMethodUsed"] = AdaptiveMethodUsed.ToString();
-            dict["BlockSizeUsed"] = BlockSizeUsed;
-            dict["InputChannels"] = InputChannels;
-            dict["WhitePixelCount"] = WhitePixelCount;
-            dict["WhitePixelRatio"] = WhitePixelRatio;
-            dict["OutputMean"] = OutputMean;
-            dict["OutputArea"] = OutputArea;
-            dict["CentroidX"] = CentroidX;
-            dict["CentroidY"] = CentroidY;
-            dict["IsPass"] = IsPass;
-            if (FailReasons.Count > 0)
-                dict["FailReasons"] = string.Join("; ", FailReasons);
-            return dict;
         }
 
         #endregion

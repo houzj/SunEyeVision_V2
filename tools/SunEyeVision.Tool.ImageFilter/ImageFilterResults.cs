@@ -1,6 +1,5 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using OpenCvSharp;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
@@ -17,12 +16,12 @@ namespace SunEyeVision.Tool.ImageFilter
         /// <summary>
         /// 输出图像（滤波结果）
         /// </summary>
-        public Mat? OutputImage { get; set; }
+        public IVisionImage? OutputImage { get; set; }
 
         /// <summary>
         /// 灰度图像中间结果
         /// </summary>
-        public Mat? GrayImage { get; set; }
+        public IVisionImage? GrayImage { get; set; }
 
         /// <summary>
         /// 获取所有可显示的图像
@@ -30,10 +29,10 @@ namespace SunEyeVision.Tool.ImageFilter
         public override Dictionary<string, IVisionImage?> GetDisplayImages()
         {
             var images = new Dictionary<string, IVisionImage?>();
-            if (OutputImage != null && !OutputImage.Empty())
-                images["OutputImage"] = VisionImage.FromMat(OutputImage);
-            if (GrayImage != null && !GrayImage.Empty())
-                images["GrayImage"] = VisionImage.FromMat(GrayImage);
+            if (OutputImage != null && !OutputImage.IsEmpty)
+                images["OutputImage"] = OutputImage;
+            if (GrayImage != null && !GrayImage.IsEmpty)
+                images["GrayImage"] = GrayImage;
             return images;
         }
 
@@ -44,7 +43,7 @@ namespace SunEyeVision.Tool.ImageFilter
         /// <summary>
         /// 实际使用的滤波类型
         /// </summary>
-        public FilterType FilterTypeUsed { get; set; }
+        public string FilterTypeUsed { get; set; } = string.Empty;
 
         /// <summary>
         /// 实际使用的内核宽度
@@ -159,7 +158,6 @@ namespace SunEyeVision.Tool.ImageFilter
                 new("FilterTypeUsed",       "滤波类型",               "参数回写"),
                 new("KernelWidthUsed",      "内核宽度",               "参数回写"),
                 new("KernelHeightUsed",     "内核高度",               "参数回写"),
-                new("InputSize",            "输入图像尺寸",           "输入信息"),
                 new("InputChannels",        "输入图像通道数",         "输入信息"),
                 new("OutputMean",           "输出均值",               "统计"),
                 new("OutputMin",            "输出最小值",             "统计"),
@@ -169,26 +167,6 @@ namespace SunEyeVision.Tool.ImageFilter
                 new("IsPass",               "是否通过",               "判断"),
                 new("FailReasons",          "失败原因",               "判断"),
             ];
-        }
-
-        /// <summary>
-        /// 转换为字典
-        /// </summary>
-        public override Dictionary<string, object> ToDictionary()
-        {
-            var dict = base.ToDictionary();
-            dict["FilterTypeUsed"] = FilterTypeUsed.ToString();
-            dict["KernelWidthUsed"] = KernelWidthUsed;
-            dict["KernelHeightUsed"] = KernelHeightUsed;
-            dict["InputChannels"] = InputChannels;
-            dict["OutputMean"] = OutputMean;
-            dict["OutputMin"] = OutputMin;
-            dict["OutputMax"] = OutputMax;
-            dict["OutputStd"] = OutputStd;
-            dict["IsPass"] = IsPass;
-            if (FailReasons.Count > 0)
-                dict["FailReasons"] = string.Join("; ", FailReasons);
-            return dict;
         }
 
         #endregion

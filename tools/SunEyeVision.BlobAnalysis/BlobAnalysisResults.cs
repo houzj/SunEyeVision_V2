@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
@@ -56,9 +55,9 @@ namespace SunEyeVision.Tool.BlobAnalysis
         public int MaxValueUsed { get; set; }
 
         /// <summary>
-        /// 使用的阈值类型（0=Binary, 1=Truncate...）
+        /// 使用的阈值类型（如 "Binary", "Truncate"...）
         /// </summary>
-        public int TypeUsed { get; set; }
+        public string TypeUsed { get; set; } = string.Empty;
 
         /// <summary>
         /// 实际使用的阈值（Double 类型，用于参数绑定）
@@ -84,11 +83,6 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// 通道均值
         /// </summary>
         public double[] ChannelMeans { get; set; } = Array.Empty<double>();
-
-        /// <summary>
-        /// 输入图像尺寸
-        /// </summary>
-        public Size InputSize { get; set; }
 
         /// <summary>
         /// 处理时间戳
@@ -224,7 +218,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
             ResultItem.Numeric("平均矩形度", AverageRectangularity),
             ResultItem.Numeric("白色像素比例", WhitePixelRatio, "%"),
             ResultItem.Numeric("实际阈值", ThresholdUsed),
-            ResultItem.Text("阈值类型", TypeUsed.ToString())
+            ResultItem.Text("阈值类型", TypeUsed)
         };
     }
 
@@ -253,7 +247,6 @@ namespace SunEyeVision.Tool.BlobAnalysis
                 new("WhitePixelRatio",          "白色像素比例",           "统计"),
                 new("HistogramData",            "直方图数据",             "统计"),
                 new("ChannelMeans",             "通道均值",               "统计"),
-                new("InputSize",                "输入图像尺寸",           "结果"),
                 // Blob详细数据（支持 / 分隔的层级分组）
                 new("BlobAreas",                "面积",                   "Blob详细"),
                 new("BlobPerimeters",           "周长",                   "Blob详细"),
@@ -264,37 +257,9 @@ namespace SunEyeVision.Tool.BlobAnalysis
                 new("BlobBoundingWidths",       "边框宽",                 "Blob详细/边框"),
                 new("BlobBoundingHeights",      "边框高",                 "Blob详细/边框"),
                 new("BlobBoundingRects",        "边框(文本)",             "Blob详细/边框"),
-                new("ProcessedAt",              "处理时间戳",             "执行信息"),
                 // 图形结果（供下游节点绑定显示）
-                new("BlobBoundingBoxes",         "外接矩形",               "图形结果"),
-                new("BlobContours",              "轮廓",                   "图形结果"),
-                new("BlobCentroids",             "质心",                   "图形结果"),
                 new("OutputRegions",             "连通域区域",             "图形结果"),
             ];
-        }
-
-        /// <summary>
-        /// 转换为字典
-        /// </summary>
-        public override Dictionary<string, object> ToDictionary()
-        {
-            var dict = base.ToDictionary();
-            dict["ThresholdUsed"] = ThresholdUsed;
-            dict["MaxValueUsed"] = MaxValueUsed;
-            dict["TypeUsed"] = TypeUsed.ToString();
-            dict["InvertUsed"] = InvertUsed;
-            dict["JudgmentPassed"] = JudgmentPassed;
-            dict["FilteredBlobCount"] = FilteredBlobCount;
-            dict["FilteredTotalArea"] = FilteredTotalArea;
-            dict["AverageArea"] = AverageArea;
-            dict["AverageCircularity"] = AverageCircularity;
-            dict["AverageRectangularity"] = AverageRectangularity;
-            dict["WhitePixelRatio"] = WhitePixelRatio;
-            dict["ProcessedAt"] = ProcessedAt;
-            dict["BlobBoundingBoxes"] = BlobBoundingBoxes;
-            dict["BlobContours"] = BlobContours;
-            dict["BlobCentroids"] = BlobCentroids;
-            return dict;
         }
     }
 }

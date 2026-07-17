@@ -97,9 +97,9 @@ namespace SunEyeVision.Tool.ImageThreshold.Views
                 var method = thresholdResult.MethodUsed;
                 MethodDetail = method switch
                 {
-                    ThresholdMethod.AdaptiveMean or ThresholdMethod.AdaptiveGaussian
+                    "AdaptiveMean" or "AdaptiveGaussian"
                         => $"{GetMethodDisplayName(method)}",
-                    ThresholdMethod.Otsu or ThresholdMethod.Triangle
+                    "Otsu" or "Triangle"
                         => $"{GetMethodDisplayName(method)}",
                     _ => string.Empty
                 };
@@ -150,21 +150,21 @@ namespace SunEyeVision.Tool.ImageThreshold.Views
             DataItems.Add(new DataItem { Label = label, Value = value });
         }
 
-        private static string GetMethodDisplayName(ThresholdMethod method)
+        private static string GetMethodDisplayName(string method)
         {
             return method switch
             {
-                ThresholdMethod.Binary => "固定阈值",
-                ThresholdMethod.BinaryInv => "反二值化",
-                ThresholdMethod.Trunc => "截断",
-                ThresholdMethod.ToZero => "取零",
-                ThresholdMethod.ToZeroInv => "反取零",
-                ThresholdMethod.Otsu => "大津法(Otsu)",
-                ThresholdMethod.Triangle => "三角形法(Triangle)",
-                ThresholdMethod.AdaptiveMean => "自适应均值",
-                ThresholdMethod.AdaptiveGaussian => "自适应高斯",
-                ThresholdMethod.InRange => "范围阈值",
-                _ => method.ToString()
+                "Binary" => "固定阈值",
+                "BinaryInv" => "反二值化",
+                "Trunc" => "截断",
+                "ToZero" => "取零",
+                "ToZeroInv" => "反取零",
+                "Otsu" => "大津法(Otsu)",
+                "Triangle" => "三角形法(Triangle)",
+                "AdaptiveMean" => "自适应均值",
+                "AdaptiveGaussian" => "自适应高斯",
+                "InRange" => "范围阈值",
+                _ => method
             };
         }
 

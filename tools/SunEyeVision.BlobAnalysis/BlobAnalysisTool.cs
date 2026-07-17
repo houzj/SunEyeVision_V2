@@ -99,7 +99,6 @@ namespace SunEyeVision.Tool.BlobAnalysis
                 int imgWidth = (int)imgW.L;
                 int imgHeight = (int)imgH.L;
                 parameters.LogInfo($"开始Blob分析处理: 图像尺寸 {imgWidth}x{imgHeight}");
-                result.InputSize = new System.Drawing.Size(imgWidth, imgHeight);
 
                 // ===== Step 1: 灰度转换 =====
                 stepSw.Restart();
@@ -349,7 +348,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                         result.ThresholdUsedDouble = actualThreshold;
                                         result.MaxValueUsed = parameters.MaxValue.Value;
                                         result.MaxValueUsedDouble = parameters.MaxValue.Value;
-                                        result.TypeUsed = (int)parameters.Type.Value;
+                                        result.TypeUsed = parameters.Type.Value.ToString();
                                         result.InvertUsed = parameters.Invert;
 
                                         // 图形结果（供下游节点显示绑定）
@@ -398,7 +397,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
 
                                         // ===== Step 11: 结果判断 =====
                                         stepSw.Restart();
-                                        EvaluateJudgments(parameters.ResultConfig, result, new HRegion(binaryRegion), filteredBlobs);
+                                        EvaluateJudgments(parameters.ResultConfig, result, new HRegion(binaryRegion), filteredBlobs, imgWidth, imgHeight);
                                         stepSw.Stop();
                                         stepTimings.Add(("结果判断", stepSw.ElapsedMilliseconds));
 
@@ -524,7 +523,9 @@ namespace SunEyeVision.Tool.BlobAnalysis
             BlobAnalysisResultConfig config,
             BlobAnalysisResults result,
             HRegion binaryRegion,
-            List<BlobResult> filteredBlobs)
+            List<BlobResult> filteredBlobs,
+            int imageWidth,
+            int imageHeight)
         {
             if (config == null) return;
 
@@ -538,7 +539,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
             double minArea = filteredCount > 0 ? filteredBlobs.Min(b => b.Area) : 0;
             double averageCircularity = filteredCount > 0 ? filteredBlobs.Average(b => b.Circularity) : 0;
             double averageRectangularity = filteredCount > 0 ? filteredBlobs.Average(b => b.Rectangularity) : 0;
-            double totalPixels = result.InputSize.Width * result.InputSize.Height;
+            double totalPixels = imageWidth * imageHeight;
 
             HOperatorSet.AreaCenter(binaryRegion, out var whitePixelCount, out _, out _);
             double whitePixelRatio = totalPixels > 0 ? whitePixelCount.L / totalPixels * 100 : 0;

@@ -85,7 +85,6 @@ namespace SunEyeVision.Tool.ImageThreshold
                 }
 
                 parameters.LogInfo($"开始二值化处理: 图像尺寸 {image.Size.Width}x{image.Size.Height}");
-                result.InputSize = image.Size;
                 result.InputChannels = image.Channels;
 
                 var method = parameters.Method.Value;
@@ -106,7 +105,7 @@ namespace SunEyeVision.Tool.ImageThreshold
 
                 using (grayImage)
                 {
-                    result.GrayImage = grayImage.Image.Clone();
+                    result.GrayImage = new CvImage(grayImage.Image.Clone(), ownsImage: true);
 
                     CvRegion? roiRegion = null;
 
@@ -218,18 +217,18 @@ namespace SunEyeVision.Tool.ImageThreshold
                             {
                                 // 合成显示图像
                                 CvOp.ComposeDisplay(reducedImage, null, binaryRegion, out var outputImage);
-                                result.OutputImage = outputImage;
+                                result.OutputImage = new CvImage(outputImage, ownsImage: true);
 
                                 // 提取二值掩码
                                 CvOp.RegionToMask(binaryRegion, out var binaryMask);
-                                result.BinaryMask = binaryMask;
+                                result.BinaryMask = new CvImage(binaryMask, ownsImage: true);
 
                                 // 图形结果输出
                                 result.OutputRegions = new IVisionRegion[] { binaryRegion.CopyObj() };
 
                                 result.ThresholdUsed = actualThreshold;
                                 result.MaxValueUsed = maxValue;
-                                result.MethodUsed = method;
+                                result.MethodUsed = method.ToString();
 
                                 // ===== Step 5: 统计信息 =====
                                 stepSw.Restart();
@@ -351,7 +350,7 @@ namespace SunEyeVision.Tool.ImageThreshold
 
             if (config.IsEmptyCheckEnabled)
             {
-                if (result.OutputImage == null || result.OutputImage.Empty())
+                if (result.OutputImage == null || result.OutputImage.IsEmpty)
                 {
                     allPassed = false;
                     failReasons.Add("输出图像为空");

@@ -78,7 +78,6 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
             HOperatorSet.GetImageSize(hImage, out var imgW, out var imgH);
             int width = (int)imgW.L;
             int height = (int)imgH.L;
-            result.InputSize = new System.Drawing.Size(width, height);
             parameters.LogInfo($"开始轮廓匹配处理: 图像尺寸 {width}x{height}");
             stepSw.Stop();
             stepTimings.Add(("图像获取", stepSw.ElapsedMilliseconds));

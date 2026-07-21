@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Windows;
 using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Core;
+using SunEyeVision.Plugin.SDK.Execution;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
@@ -258,7 +259,6 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                         var filteredBlobs = new List<BlobResult>(candidateCount);
                                         var config = parameters.ResultConfig;
 
-                                        bool tab3FilterArea = parameters.IsAreaFilterEnabled;
                                         bool tab3FilterCircularity = parameters.IsCircularityFilterEnabled;
                                         bool tab3FilterRectangularity = parameters.IsRectangularityFilterEnabled;
 
@@ -298,13 +298,8 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                                 BoundingBox = bbox
                                             };
 
-                                            // ★ Phase A: Tab3 筛选（不通过则丢弃）
+                                            // ★ Phase A: Tab3 筛选（不通过则丢弃；面积已由 Halcon SelectShape 筛过，此处仅补圆度/矩形度）
                                             bool passesTab3Filter = true;
-                                            if (passesTab3Filter && tab3FilterArea)
-                                            {
-                                                if (blob.Area < parameters.FilterAreaMin || blob.Area > parameters.FilterAreaMax)
-                                                    passesTab3Filter = false;
-                                            }
                                             if (passesTab3Filter && tab3FilterCircularity)
                                             {
                                                 if (blob.Circularity < parameters.FilterCircularityMin || blob.Circularity > parameters.FilterCircularityMax)
@@ -359,12 +354,13 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                         result.BlobContours = filteredBlobs
                                             .Where(b => b.HasContour).Select(b => b.Contour!).ToArray();
 
-                                        // 图形结果（通用类型，供下游节点数据绑定）
+                                        // 图形结果（通用类型 RoI，供下游节点数据绑定）：Region→RoI 桥接外发（D8）
                                         result.OutputRegions = filteredBlobs
                                             .Select(b =>
                                             {
                                                 HOperatorSet.SelectObj(shapeFilteredRegions, out var obj, b.Label);
-                                                return (IVisionRegion)new HalRegion(new HRegion(obj));
+                                                using var halRegion = new HalRegion(new HRegion(obj));
+                                                return RegionConverter.RegionToRoi(halRegion, "exact");
                                             }).ToArray();
 
                                         // 二值掩码

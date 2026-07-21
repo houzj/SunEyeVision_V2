@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
+using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 using WpfPoint = System.Windows.Point;
 using WpfRect = System.Windows.Rect;
@@ -198,8 +199,8 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// <summary>所有筛选通过Blob的质心点数组</summary>
         public WpfPoint[] BlobCentroids { get; set; } = Array.Empty<WpfPoint>();
 
-        /// <summary>所有筛选通过Blob的连通域区域集合</summary>
-        public IVisionRegion[] OutputRegions { get; set; } = Array.Empty<IVisionRegion>();
+        /// <summary>所有筛选通过Blob的连通域区域，已桥接为 RoI（多边形）外发，供下游节点绑定/全局变量复用</summary>
+        public ShapeParameters[] OutputRegions { get; set; } = Array.Empty<ShapeParameters>();
 
         #endregion
 

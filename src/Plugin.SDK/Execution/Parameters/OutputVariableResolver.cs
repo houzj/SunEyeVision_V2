@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 
 namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 {
@@ -45,7 +46,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             if (parsedPath.Count == 0)
                 throw new InvalidOperationException($"属性路径为空: '{propertyPath}'");
 
-            var (firstName, firstIndex) = parsedPath[0];
+            var (firstName, firstIndex, firstTypeFilter) = parsedPath[0];
             var variables = result.GetOutputVariables();
             var variable = variables.FirstOrDefault(v =>
                 string.Equals(v.Name, firstName, StringComparison.OrdinalIgnoreCase));
@@ -62,6 +63,12 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 
             object? current = variable.RuntimeValue;
 
+            // 第一段类型过滤（RoI 按图形类型绑定，方案步骤3）
+            if (firstTypeFilter != null)
+            {
+                current = FilterByShapeType(current, firstName, firstTypeFilter);
+            }
+
             // 第一段数组索引处理
             if (firstIndex.HasValue)
             {
@@ -75,7 +82,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                     throw new InvalidOperationException(
                         $"属性路径 '{propertyPath}' 中途遇到 null 值（取到 '{parsedPath[i].propertyName}' 时）");
 
-                var (propName, idx) = parsedPath[i];
+                var (propName, idx, typeFilter) = parsedPath[i];
                 var prop = current.GetType().GetProperty(propName, BindingFlags.Public | BindingFlags.Instance);
                 if (prop == null || !prop.CanRead)
                 {
@@ -92,6 +99,11 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 {
                     throw new InvalidOperationException(
                         $"属性路径 '{propertyPath}' 获取 '{propName}' 失败: {ex.Message}", ex);
+                }
+
+                if (typeFilter != null)
+                {
+                    current = FilterByShapeType(current, propName, typeFilter);
                 }
 
                 if (idx.HasValue)
@@ -114,6 +126,24 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             }
             throw new InvalidOperationException(
                 $"属性 '{name}' 不是数组类型，但指定了索引 [{index}]（实际类型: {current?.GetType().Name ?? "null"}）");
+        }
+
+        private static object? FilterByShapeType(object? current, string name, string typeToken)
+        {
+            if (current is not IEnumerable<ShapeParameters> roi)
+                throw new InvalidOperationException(
+                    $"属性 '{name}' 指定了 [Type={typeToken}] 类型过滤，但运行时值不是 ShapeParameters[]（实际类型: {current?.GetType().Name ?? "null"}）");
+
+            if (!Enum.TryParse<ShapeType>(typeToken, out var targetType))
+                throw new InvalidOperationException(
+                    $"属性 '{name}' 的 [Type={typeToken}] 不是有效的图形类型（可用: Circle/Rectangle/RotatedRectangle/Polygon/Annulus/Arc）");
+
+            var filtered = roi.Where(sp => sp.ShapeType == targetType).ToArray();
+            if (filtered.Length == 0)
+                throw new InvalidOperationException(
+                    $"属性 '{name}' 按 [Type={typeToken}] 过滤后无匹配元素（数组共 {roi.Count()} 项）");
+
+            return filtered;
         }
     }
 }

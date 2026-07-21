@@ -170,6 +170,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.ViewModels
                 ShapeType.Line => "直线",
                 ShapeType.Point => "点",
                 ShapeType.Polygon => "多边形",
+                ShapeType.Annulus => "圆环",
+                ShapeType.Arc => "弧形",
                 _ => shapeType.ToString()
             };
         }

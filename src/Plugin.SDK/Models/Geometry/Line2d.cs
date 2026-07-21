@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using System.Windows;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 
@@ -13,16 +14,19 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
         /// <summary>
         /// 直线上的一点
         /// </summary>
+        [JsonInclude]
         public readonly Point Point;
 
         /// <summary>
         /// 方向向量（单位向量）
         /// </summary>
+        [JsonInclude]
         public readonly Vector Direction;
 
         /// <summary>
         /// 创建直线（点向式）
         /// </summary>
+        [JsonConstructor]
         public Line2d(Point point, Vector direction)
         {
             Point = point;

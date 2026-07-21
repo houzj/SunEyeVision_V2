@@ -13,7 +13,7 @@ namespace SunEyeVision.Plugin.SDK.Models
         /// <summary>
         /// 所有类型只注册数组版本（单值 = 长度为 1 的数组，对齐 Halcon tuple 语义）。
         /// 数值类型归并为规范键：int/int[]/float/float[] → long/long[]、double/double[]，
-        /// 仅保留 7 个核心概念：整型/双精度/字符串/布尔/图像/区域/变换矩阵。
+        /// 仅保留 8 个核心概念：整型/双精度/字符串/布尔/图像/区域/RoI/变换矩阵。
         /// 图像具体实现类型 OpenCvSharp.Mat 映射到 "Image"（词汇表唯一图像入口）；
         /// 下游 ToSystemType("Image") 仍返回 IVisionImage（过滤/绑定用的抽象类型）。
         /// </summary>
@@ -26,7 +26,8 @@ namespace SunEyeVision.Plugin.SDK.Models
             [typeof(AffineMatrix[])]  = "Transform",
             [typeof(IVisionImage)]    = "Image",
             [typeof(Mat)]             = "Image",
-            [typeof(IVisionRegion)]   = "Region",
+            [typeof(IVisionRegion[])] = "Region",
+            [typeof(ShapeParameters[])] = "RoI",
         };
 
         /// <summary>
@@ -42,16 +43,14 @@ namespace SunEyeVision.Plugin.SDK.Models
             ["Double"]    = typeof(double),
             ["Transform"] = typeof(AffineMatrix),
             ["Image"]     = typeof(IVisionImage),
-            ["Region"]    = typeof(IVisionRegion),
+            ["Region"]    = typeof(IVisionRegion[]),
+            ["RoI"]       = typeof(ShapeParameters[]),
             // 存量兼容：历史 JSON 使用 "Xxx[]" 类型名（单值 = 长度 1 数组）。
             ["Integer[]"] = typeof(int[]),
             ["Double[]"]  = typeof(double[]),
             ["String[]"]  = typeof(string[]),
             ["Float[]"]   = typeof(float[]),
             ["Float"]     = typeof(float),
-            // 历史 "Rectangle" 仍映射（旧数据可识别），但实际值无法序列化，
-            // GlobalVariableValueConverter 对此显式报错（rule-015，不静默）。
-            ["Rectangle"] = typeof(ShapeParameters),
         };
 
         public static readonly Dictionary<string, string> ChineseNames = new()
@@ -62,6 +61,7 @@ namespace SunEyeVision.Plugin.SDK.Models
             ["Double"]    = "双精度",
             ["Image"]     = "图像",
             ["Region"]    = "区域",
+            ["RoI"]       = "图形定义",
             ["Transform"] = "变换矩阵",
         };
 

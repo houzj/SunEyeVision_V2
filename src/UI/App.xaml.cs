@@ -101,7 +101,7 @@ public partial class App : Application
         // 5. 初始化解决方案管理器
         ServiceInitializer.InitializeSolutionManager(defaultPath);
 
-        // 5.5 注册全局变量选择事件处理（所有 ParamBinding 实例）
+        // 5.5 注册全局变量选择请求事件处理（点击"全局变量"动作节点 → 打开选择对话框）
         EventManager.RegisterClassHandler(typeof(ParamBinding),
             ParamBinding.GlobalVariableSelectionRequestedEvent,
             new RoutedEventHandler(OnGlobalVariableSelectionRequested));
@@ -423,45 +423,22 @@ public partial class App : Application
     }
 
     /// <summary>
-    /// 全局变量选择请求处理 — 打开选择对话框并完成绑定
+    /// 全局变量选择请求处理 — 点击"全局变量"动作节点时打开选择对话框并完成绑定（消费者侧路径）。
+    /// 对话框提供搜索/分组筛选/表格视图与按参数类型自动过滤等便捷能力。
     /// </summary>
     private static void OnGlobalVariableSelectionRequested(object sender, RoutedEventArgs e)
     {
         if (sender is not ParamBinding paramBinding)
-        {
-            VisionLogger.Instance.Log(LogLevel.Warning,
-                "[监控] OnGlobalVariableSelectionRequested: sender 不是 ParamBinding",
-                "App-Monitor");
             return;
-        }
 
         var solutionManager = ServiceInitializer.SolutionManager;
         if (solutionManager == null)
-        {
-            VisionLogger.Instance.Log(LogLevel.Warning,
-                "[监控] OnGlobalVariableSelectionRequested: SolutionManager 为 null",
-                "App-Monitor");
             return;
-        }
 
-        // ★ 监控日志：拦截入口
-        var logger = VisionLogger.Instance;
-        logger.Log(LogLevel.Info,
-            $"[监控] 进入 OnGlobalVariableSelectionRequested | " +
-            $"sender={sender.GetType().Name} | " +
-            $"ParameterName={paramBinding.ParameterName} | " +
-            $"DataType={paramBinding.DataType?.Name ?? "null"}",
-            "App-Monitor");
-
-        // ★ 使用 SdkTypeVocabulary 将 DataType 映射为 GlobalVariable 类型字符串，用于选择器过滤
+        // 使用 SdkTypeVocabulary 将参数的 DataType 映射为全局变量类型字符串，用于选择器过滤
         var filterType = SdkTypeVocabulary.ToTypeVocabulary(paramBinding.DataType);
 
-        // ★ 监控日志：类型映射结果
-        logger.Log(LogLevel.Info,
-            $"[监控] 类型映射 | DataType={paramBinding.DataType?.Name ?? "null"} → filterType={filterType ?? "null"}",
-            "App-Monitor");
-
-        // ★ 无兜底原则：DataType 已设置但无法映射到任何 GlobalVariable 类型 → 直接报错
+        // 无兜底原则（rule-015）：DataType 已设置但无法映射到任何全局变量通用类型 → 直接报错
         if (filterType == null && paramBinding.DataType != null)
         {
             MessageBox.Show(
@@ -473,29 +450,14 @@ public partial class App : Application
             return;
         }
 
-        // 打开全局变量选择对话框（按数据类型过滤）
+        // 打开全局变量选择对话框（带搜索/分组筛选/表格视图，按数据类型过滤）
         var selectedVariable = GlobalVariableSelectDialog.ShowSelect(solutionManager, filterType);
-
-        // ★ 监控日志：变量选择结果
-        logger.Log(selectedVariable != null ? LogLevel.Success : LogLevel.Info,
-            $"[监控] 全局变量选择结果 | " +
-            $"selected={(selectedVariable != null ? $"Name={selectedVariable.Name}, Type={selectedVariable.Type}, Id={selectedVariable.Id}" : "null")}",
-            "App-Monitor");
-
         if (selectedVariable != null)
         {
             paramBinding.CompleteGlobalVariableBinding(selectedVariable.Name);
-
-            // ★ 监控日志：开始记录 ConsumerBinding
-            logger.Log(LogLevel.Info,
-                $"[监控] 即将调用 RecordConsumerBinding | variableName={selectedVariable.Name}",
-                "App-Monitor");
-
-            // ★ Phase 5: 自动记录 ConsumerBinding
             RecordConsumerBinding(paramBinding, selectedVariable, solutionManager);
         }
 
-        // 标记事件已处理
         e.Handled = true;
     }
 

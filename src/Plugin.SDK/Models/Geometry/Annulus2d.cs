@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using System.Windows;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 
@@ -13,26 +14,31 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
         /// <summary>
         /// 圆心
         /// </summary>
+        [JsonInclude]
         public readonly Point Center;
 
         /// <summary>
         /// 内半径
         /// </summary>
+        [JsonInclude]
         public readonly double InnerRadius;
 
         /// <summary>
         /// 外半径
         /// </summary>
+        [JsonInclude]
         public readonly double OuterRadius;
 
         /// <summary>
         /// 起始角度（弧度）
         /// </summary>
+        [JsonInclude]
         public readonly double StartAngle;
 
         /// <summary>
         /// 终止角度（弧度）
         /// </summary>
+        [JsonInclude]
         public readonly double EndAngle;
 
         /// <summary>
@@ -56,6 +62,7 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
         /// <summary>
         /// 创建圆弧圆环
         /// </summary>
+        [JsonConstructor]
         public Annulus2d(Point center, double innerRadius, double outerRadius,
                         double startAngle, double endAngle)
         {

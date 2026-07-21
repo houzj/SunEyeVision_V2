@@ -135,7 +135,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 NodeId = ds.SourceNodeId,
                 NodeName = ds.SourceNodeName,
                 OutputName = ds.PropertyName,
-                PropertyPath = ds.PropertyName
+                // 保留 [Type=]/[i] 后缀作为运行期解析路径：经 GetPropertyValue → OutputVariableResolver(SSOT) 按图形类型/单元素过滤
+                PropertyPath = propertyFullName
             };
         }
 

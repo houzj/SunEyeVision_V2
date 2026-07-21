@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -6,6 +6,7 @@ using System.Text.Json.Serialization;
 using OpenCvSharp;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 using VisionLogger = SunEyeVision.Plugin.SDK.Logging.VisionLogger;
 using VisionLogLevel = SunEyeVision.Plugin.SDK.Logging.LogLevel;
@@ -18,9 +19,11 @@ namespace SunEyeVision.Workflow;
 /// 类型词汇由 SdkTypeVocabulary 唯一权威定义（SSOT），
 /// 本类不定义任何类型常量，所有类型名通过 SdkTypeVocabulary 解析。
 ///
-/// 序列化格式：{ "Type": "Double", "Value": 3.14 }
-/// 支持的类型（7 个核心概念）：整型(Integer)/双精度(Double)/字符串(String)/布尔(Boolean)/
-/// 图像(Image)/区域(Region)/变换矩阵(Transform)。
+/// 序列化格式：{ "Type": "Double", "Value": [3.14] }
+/// 支持的类型（8 个核心概念）：整型(Integer)/双精度(Double)/字符串(String)/布尔(Boolean)/
+/// 图像(Image)/区域(Region，仅运行时不可序列化)/图形定义(RoI)/变换矩阵(Transform)。
+/// 所有基础类型强制以 T[] 形态存储（填 3.14 → 落盘为 [3.14]，对齐 tuple 语义，方案步骤7）。
+/// 历史标量形态 JSON 重开时由 ParseAdaptive 抛异常，需重新保存升级为 T[]。
 /// 历史存量类型名（Xxx[]、Float、Rectangle）可加载，Byte 及几何类型已删除并 fail-fast（rule-015）。
 /// </summary>
 public class GlobalVariableValueConverter : JsonConverter<object?>
@@ -107,7 +110,8 @@ public class GlobalVariableValueConverter : JsonConverter<object?>
         if (clrType == null)
             throw new NotSupportedException($"不支持的全局变量类型: '{typeName}'。请在 SdkTypeVocabulary 中添加映射。");
 
-        // 基础类型：值形态自适应（标量 = T，数组 = T[]），同一类型名兼容单值与数组。
+        // 基础类型：强制 T[]（方案步骤7）。ParseAdaptive 仅接受数组形态，
+        // 历史标量 JSON 会抛异常（数据需重新保存升级），新写入由 SerializeValue 统一包成数组。
         if (clrType == typeof(long) || clrType == typeof(long[]))
             return ParseAdaptive(valueElement, e => e.GetInt64());
         if (clrType == typeof(string) || clrType == typeof(string[]))
@@ -116,25 +120,50 @@ public class GlobalVariableValueConverter : JsonConverter<object?>
             return ParseAdaptive(valueElement, e => e.GetBoolean());
         if (clrType == typeof(double) || clrType == typeof(double[]))
             return ParseAdaptive(valueElement, e => e.GetDouble());
-        if (clrType == typeof(AffineMatrix) || clrType == typeof(AffineMatrix[]))
+        // 变换矩阵：保持对象形态（非数组），与基础类型的 T[] 强制互不干扰（已知限制：类型对称未统一）。
+        if (clrType == typeof(AffineMatrix))
+            return ParseAffineMatrix(valueElement);
+        if (clrType == typeof(AffineMatrix[]))
             return ParseAdaptive(valueElement, ParseAffineMatrix);
         if (clrType == typeof(IVisionImage))
             return ParseImage(valueElement);
         if (clrType == typeof(IVisionRegion))
             throw new NotSupportedException("区域类型不能序列化为JSON");
 
+        // RoI（图形定义）：数组形态承载，几何多态由 GeometryJsonConverter 处理
+        if (clrType == typeof(ShapeParameters[]))
+            return ParseShapeParameters(valueElement, options);
+
         throw new NotSupportedException($"不支持的类型: '{typeName}' (CLR: {clrType.FullName})");
     }
 
     /// <summary>
-    /// 值形态自适应解析：数组 → T[]，标量 → T。
-    /// 同一个类型名既兼容单值也兼容数组（对齐 Halcon tuple 语义，单值=长度1数组）。
+    /// 值形态解析：数组 → T[]。
+    /// 强制 T[] 契约（方案步骤7 + rule-015 报错优先）：标量 JSON 不再被静默提升为单值，
+    /// 历史以标量形态存储的全局变量（重开旧方案）会直接抛异常，需重新保存升级为 T[] 形态。
+    /// 新写入的值由 <see cref="SerializeValue"/> 统一以数组形态落盘（如 3.14 → [3.14]）。
     /// </summary>
     private static object? ParseAdaptive<T>(JsonElement element, Func<JsonElement, T> selector)
     {
         if (element.ValueKind == JsonValueKind.Array)
             return element.EnumerateArray().Select(selector).ToArray();
-        return (object?)selector(element);
+
+        throw new NotSupportedException(
+            $"全局变量值必须是数组形态 (T[])，但收到标量值。请重新保存该变量以升级为 T[] 存储（对齐 tuple 语义）。");
+    }
+
+    /// <summary>
+    /// 解析 RoI（图形定义）值：数组 → ShapeParameters[]，单值 → 长度 1 数组（tuple 语义）。
+    /// 几何多态由 <see cref="GeometryJsonConverter"/> 在 ShapeParameters.Geometry 属性上处理。
+    /// </summary>
+    private static ShapeParameters[]? ParseShapeParameters(JsonElement element, JsonSerializerOptions options)
+    {
+        if (element.ValueKind == JsonValueKind.Null)
+            return null;
+        if (element.ValueKind == JsonValueKind.Array)
+            return JsonSerializer.Deserialize<ShapeParameters[]>(element.GetRawText(), options);
+        var single = JsonSerializer.Deserialize<ShapeParameters>(element.GetRawText(), options);
+        return single == null ? null : new[] { single };
     }
 
     private (string TypeName, object? SerializedValue) SerializeValue(object value, JsonSerializerOptions options)
@@ -146,20 +175,24 @@ public class GlobalVariableValueConverter : JsonConverter<object?>
 
         return value switch
         {
+            // 强制 T[]（方案步骤7）：标量统一包成长度 1 的数组（填 3.14 → 落盘为 [3.14]），
+            // 与词汇表 tuple 语义一致；历史标量 JSON 重开由 ParseAdaptive 抛异常（需重新保存）。
             // 整型：int/long 统一序列化为 "Integer"（int 提升为 long，避免像素/面积溢出）
-            int intValue    => (typeName, (long)intValue),
-            long longValue  => (typeName, longValue),
+            int intValue    => (typeName, new[] { (long)intValue }),
+            long longValue  => (typeName, new[] { longValue }),
             int[] intArr    => (typeName, intArr.Select(Convert.ToInt64).ToArray()),
             long[] longArr  => (typeName, longArr),
             // 双精度：float/double 统一序列化为 "Double"
-            float fltValue  => (typeName, (double)fltValue),
-            double dblValue => (typeName, dblValue),
+            float fltValue  => (typeName, new[] { (double)fltValue }),
+            double dblValue => (typeName, new[] { dblValue }),
             float[] fltArr  => (typeName, fltArr.Select(Convert.ToDouble).ToArray()),
             double[] dblArr => (typeName, dblArr),
-            string strValue => (typeName, strValue),
+            string strValue => (typeName, new[] { strValue }),
             string[] strArr => (typeName, strArr),
-            bool boolValue  => (typeName, boolValue),
+            bool boolValue  => (typeName, new[] { boolValue }),
             bool[] boolArr  => (typeName, boolArr),
+            ShapeParameters sp  => (typeName, new[] { sp }),
+            ShapeParameters[] sp => (typeName, sp),
             Mat mat         => (typeName, SerializeImage(mat)),
             AffineMatrix m  => (typeName, SerializeAffineMatrix(m)),
             AffineMatrix[] ms => (typeName, ms.Select(SerializeAffineMatrix).ToArray()),

@@ -64,6 +64,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
         /// SDK 几何类型实例。
         /// Circle2d / Line2d / Annulus2d / RotatedRect2d / Polygon2d / Arc2d / Point2D / System.Windows.Rect
         /// </summary>
+        [JsonConverter(typeof(GeometryJsonConverter))]
         public object? Geometry
         {
             get => _geometry;
@@ -275,6 +276,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
         {
             if (_geometry is IMonitorable m)
                 return m.GetMonitorFields();
+
+            // 几何 struct（Circle2d 等）已实现 GetMonitorFields() 但未声明 IMonitorable 接口
+            // （方案原则：不动几何类本身）。鸭子类型调用，使 RoI 字段聚合（步骤6 原则3）能跨元素透视几何字段。
+            if (_geometry != null)
+            {
+                var method = _geometry.GetType().GetMethod("GetMonitorFields", System.Type.EmptyTypes);
+                if (method != null && method.Invoke(_geometry, null) is IReadOnlyList<(string, object?)> fields)
+                    return fields;
+            }
 
             // 兜底
             return _geometry switch

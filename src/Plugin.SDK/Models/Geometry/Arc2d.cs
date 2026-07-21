@@ -1,5 +1,6 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using System.Windows;
 
 namespace SunEyeVision.Plugin.SDK.Models.Geometry
@@ -12,26 +13,31 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
         /// <summary>
         /// 圆心
         /// </summary>
+        [JsonInclude]
         public readonly Point Center;
 
         /// <summary>
         /// 半径
         /// </summary>
+        [JsonInclude]
         public readonly double Radius;
 
         /// <summary>
         /// 起始角度（弧度）
         /// </summary>
+        [JsonInclude]
         public readonly double StartAngle;
 
         /// <summary>
         /// 终止角度（弧度）
         /// </summary>
+        [JsonInclude]
         public readonly double EndAngle;
 
         /// <summary>
         /// 创建弧形
         /// </summary>
+        [JsonConstructor]
         public Arc2d(Point center, double radius, double startAngle, double endAngle)
         {
             Center = center;

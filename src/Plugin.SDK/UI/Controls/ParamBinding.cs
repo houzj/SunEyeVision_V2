@@ -8,6 +8,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls
 {
@@ -214,20 +215,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 typeof(ParamBinding));
 
         /// <summary>
-        /// 全局变量选择请求事件 — 点击"全局变量"动作节点时触发
-        /// </summary>
-        /// <remarks>
-        /// 宿主代码处理此事件，打开全局变量选择对话框，选择完成后调用
-        /// <see cref="CompleteGlobalVariableBinding"/> 设置绑定结果。
-        /// </remarks>
-        public static readonly RoutedEvent GlobalVariableSelectionRequestedEvent =
-            EventManager.RegisterRoutedEvent(
-                nameof(GlobalVariableSelectionRequested),
-                RoutingStrategy.Bubble,
-                typeof(RoutedEventHandler),
-                typeof(ParamBinding));
-
-        /// <summary>
         /// 绑定状态变更事件
         /// </summary>
         public event RoutedEventHandler BindingStateChanged
@@ -244,6 +231,20 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             add => AddHandler(BindingSourceSelectedEvent, value);
             remove => RemoveHandler(BindingSourceSelectedEvent, value);
         }
+
+        /// <summary>
+        /// 全局变量选择请求事件 — 点击"全局变量"动作节点时触发
+        /// </summary>
+        /// <remarks>
+        /// 宿主代码处理此事件，打开全局变量选择对话框，选择完成后调用
+        /// <see cref="CompleteGlobalVariableBinding"/> 设置绑定结果。
+        /// </remarks>
+        public static readonly RoutedEvent GlobalVariableSelectionRequestedEvent =
+            EventManager.RegisterRoutedEvent(
+                nameof(GlobalVariableSelectionRequested),
+                RoutingStrategy.Bubble,
+                typeof(RoutedEventHandler),
+                typeof(ParamBinding));
 
         /// <summary>
         /// 全局变量选择请求事件
@@ -351,7 +352,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 DataSource = null,
             });
 
-            // 始终在末尾追加"全局变量"动作节点（即使无可绑定数据源也能显示）
+            // 始终在末尾追加"全局变量"动作节点（点击打开选择对话框，保留搜索/分组/表格等便捷能力）
             nodes.Add(new TreeNodeData
             {
                 Text = "全局变量",
@@ -454,19 +455,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
                 if (selectedNode.IsSelectable && selectedNode.DataSource != null)
                 {
-                    // 设置绑定源路径（格式：节点ID.属性名）
-                    BindingSource = selectedNode.DataSource.GetBindingPath();
-
-                    // 设置友好显示名称：根据树形结构动态生成
-                    var rootNode = GetRootNode(selectedNode);
-                    var rootName = rootNode?.Text ?? "";
-                    var leafName = GetDisplayLeafName(selectedNode);
-
-                    BindingDisplayText = $"{rootName}.{leafName}";
-
-                    // 触发事件
-                    RaiseEvent(new RoutedEventArgs(BindingSourceSelectedEvent));
-                    IsBound = true;
+                    ApplyDataSourceBinding(selectedNode);
 
                     // 关闭 Popup
                     if (_bindingPopup != null)
@@ -533,26 +522,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
                 if (selectedNode.IsSelectable && selectedNode.DataSource != null)
                 {
-                    // 设置绑定源路径（格式：节点ID.属性名）
-                    BindingSource = selectedNode.DataSource.GetBindingPath();
-
-                    // 设置绑定显示文本：根据树形结构动态生成
-                    // 格式：根节点名称.叶子节点名称
-                    // 例如：图像阈值化4.实际使用的阈值
-
-                    var rootNode = GetRootNode(selectedNode);
-                    var rootName = rootNode?.Text ?? "";
-                    var leafName = GetDisplayLeafName(selectedNode);
-
-                    VisionLogger.Instance.Log(LogLevel.Info,
-                        $"[ParamBinding] 选中节点: {leafName}, 父节点: {selectedNode.Parent?.Text ?? "null"}, 根节点: {rootName}",
-                        "ParamBinding");
-
-                    BindingDisplayText = $"{rootName}.{leafName}";
-
-                    // 触发事件
-                    RaiseEvent(new RoutedEventArgs(BindingSourceSelectedEvent));
-                    IsBound = true;
+                    ApplyDataSourceBinding(selectedNode);
 
                     // 关闭 Popup
                     if (_bindingPopup != null)
@@ -563,6 +533,28 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     RaiseEvent(new RoutedEventArgs(BindingStateChangedEvent));
                 }
             }
+        }
+
+        /// <summary>
+        /// 应用数据源绑定：设置绑定源路径与显示文本，触发绑定事件。
+        /// </summary>
+        private void ApplyDataSourceBinding(TreeNodeData selectedNode)
+        {
+            var ds = selectedNode.DataSource!;
+            BindingSource = ds.GetBindingPath();
+
+            var rootNode = GetRootNode(selectedNode);
+            var rootName = rootNode?.Text ?? "";
+            var leafName = GetDisplayLeafName(selectedNode);
+
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[ParamBinding] 选中节点: {leafName}, 父节点: {selectedNode.Parent?.Text ?? "null"}, 根节点: {rootName}",
+                "ParamBinding");
+
+            BindingDisplayText = $"{rootName}.{leafName}";
+
+            RaiseEvent(new RoutedEventArgs(BindingSourceSelectedEvent));
+            IsBound = true;
         }
 
         /// <summary>
@@ -590,17 +582,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             if (TreeNodes == null || string.IsNullOrEmpty(bindingPath))
                 return null;
 
-            var parts = bindingPath.Split('.');
-            var sourceNodeId = parts[0];
-            var propertyFullName = parts.Length > 1 ? parts[1] : string.Empty;
-
-            // 去掉 [N] 或 []，用纯属性名在树中查找
-            var propertyName = PropertyPathParser.ExtractPropertyName(propertyFullName);
-
-            // 在树中查找对应的节点
+            // 用完整绑定路径（含 [Type=]/[i] 后缀）在树中精确匹配合成 DataSource
             foreach (var rootNode in TreeNodes)
             {
-                var node = FindNodeRecursive(rootNode, sourceNodeId, propertyName);
+                var node = FindNodeRecursive(rootNode, bindingPath);
                 if (node != null)
                     return node;
             }
@@ -609,22 +594,16 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         }
 
         /// <summary>
-        /// 递归查找节点
+        /// 递归查找节点（按 DataSource 完整 GetBindingPath 匹配，含 [Type=]/[i] 后缀）
         /// </summary>
-        private TreeNodeData? FindNodeRecursive(TreeNodeData node, string sourceNodeId, string propertyName)
+        private TreeNodeData? FindNodeRecursive(TreeNodeData node, string fullBindingPath)
         {
-            // 检查当前节点是否匹配
-            if (node.DataSource != null &&
-                node.DataSource.SourceNodeId == sourceNodeId &&
-                node.DataSource.PropertyName == propertyName)
-            {
+            if (node.DataSource != null && node.DataSource.GetBindingPath() == fullBindingPath)
                 return node;
-            }
 
-            // 递归检查子节点
             foreach (var child in node.Children)
             {
-                var found = FindNodeRecursive(child, sourceNodeId, propertyName);
+                var found = FindNodeRecursive(child, fullBindingPath);
                 if (found != null)
                     return found;
             }
@@ -656,7 +635,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             // 从 bindingPath 中提取索引部分，替换默认的 []
             var parts = bindingPath.Split('.');
             var propertyFullName = parts.Length > 1 ? parts[1] : string.Empty;
-            var (_, arrayIndex) = PropertyPathParser.ParsePropertyPart(propertyFullName);
+            var (_, arrayIndex, _) = PropertyPathParser.ParsePropertyPart(propertyFullName);
 
             // 如果有具体索引，替换掉默认的 []
             if (arrayIndex.HasValue && leafName.EndsWith("[]"))
@@ -682,10 +661,30 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// <returns>显示名称，数组类型追加 [] 后缀</returns>
         private static string GetDisplayLeafName(TreeNodeData node)
         {
-            var name = node.Text;
-            if (node.DataSource?.PropertyType?.IsArray == true)
-                name += "[]";
-            return name;
+            var ds = node.DataSource;
+            if (ds == null)
+                return node.Text;
+            if (ds.BindingSuffix != null)
+                return $"{ds.PropertyName}{TranslateBindingSuffix(ds.BindingSuffix)}";
+            if (ds.PropertyType?.IsArray == true)
+                return node.Text + "[]";
+            return node.Text;
+        }
+
+        /// <summary>
+        /// 把绑定后缀翻译为中文短名：<c>[Type=Circle]</c> → <c>[圆]</c>，<c>[0]</c> → <c>[0]</c>。
+        /// </summary>
+        private static string TranslateBindingSuffix(string suffix)
+        {
+            const string marker = "[Type=";
+            if (suffix.StartsWith(marker, StringComparison.OrdinalIgnoreCase) && suffix.EndsWith("]"))
+            {
+                var enumName = suffix.Substring(marker.Length, suffix.Length - marker.Length - 1);
+                if (Enum.TryParse<ShapeType>(enumName, out var st))
+                    return $"[{ArrayTreeFormatter.GetShapeTypeShortName(st)}]";
+                return suffix;
+            }
+            return suffix;
         }
 
         /// <summary>
@@ -715,7 +714,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             var parts = BindingSource.Split('.');
             var nodeId = parts[0];
             var propertyFullName = parts.Length > 1 ? parts[1] : string.Empty;
-            var (propertyName, _) = PropertyPathParser.ParsePropertyPart(propertyFullName);
+            var (propertyName, _, _) = PropertyPathParser.ParsePropertyPart(propertyFullName);
 
             // 构建新的 BindingSource
             if (string.IsNullOrEmpty(indexStr))
@@ -730,6 +729,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             }
             // 无效内容 → 不更新
         }
+
+        #endregion
 
         /// <summary>
         /// 完成全局变量绑定（由宿主代码在处理 <see cref="GlobalVariableSelectionRequestedEvent"/> 后调用）
@@ -760,8 +761,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 $"[ParamBinding] 全局变量绑定: {variableName}, BindingSource={BindingSource}",
                 "ParamBinding");
         }
-
-        #endregion
 
         #region 基类方法实现
 

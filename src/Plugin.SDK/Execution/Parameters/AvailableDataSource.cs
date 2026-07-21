@@ -1,7 +1,8 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using SunEyeVision.Plugin.SDK.Models;
 
 namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 {
@@ -61,6 +62,16 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// 示例: "Radius", "Center.X", "CircleFound.Radius"
         /// </remarks>
         public string PropertyName { get; init; } = string.Empty;
+
+        /// <summary>
+        /// 绑定路径后缀（数组子集过滤，如 "[Type=Circle]" 或 "[0]"）。
+        /// </summary>
+        /// <remarks>
+        /// 用于 RoI(ShapeParameters[]) 在绑定树中按图形类型/按单个图形下钻时，
+        /// 挂到合成 AvailableDataSource 上，使 GetBindingPath 输出 "NodeId.属性名[Type=Circle]"。
+        /// 为空时退回原数组 "[]" 逻辑。
+        /// </remarks>
+        public string? BindingSuffix { get; set; }
 
         /// <summary>
         /// 显示名称
@@ -208,6 +219,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <returns>绑定路径字符串，数组类型追加 []</returns>
         public string GetBindingPath()
         {
+            if (BindingSuffix != null)
+                return $"{SourceNodeId}.{PropertyName}{BindingSuffix}";
             if (PropertyType?.IsArray == true)
                 return $"{SourceNodeId}.{PropertyName}[]";
             return $"{SourceNodeId}.{PropertyName}";

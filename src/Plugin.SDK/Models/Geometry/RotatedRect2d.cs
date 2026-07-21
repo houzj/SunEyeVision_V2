@@ -1,5 +1,6 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using System.Windows;
 
 namespace SunEyeVision.Plugin.SDK.Models.Geometry
@@ -12,26 +13,31 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
         /// <summary>
         /// 中心点
         /// </summary>
+        [JsonInclude]
         public readonly Point Center;
 
         /// <summary>
         /// 宽度
         /// </summary>
+        [JsonInclude]
         public readonly double Width;
 
         /// <summary>
         /// 高度
         /// </summary>
+        [JsonInclude]
         public readonly double Height;
 
         /// <summary>
         /// 旋转角度（度，逆时针为正）
         /// </summary>
+        [JsonInclude]
         public readonly double Angle;
 
         /// <summary>
         /// 创建旋转矩形
         /// </summary>
+        [JsonConstructor]
         public RotatedRect2d(Point center, double width, double height, double angle)
         {
             Center = center;

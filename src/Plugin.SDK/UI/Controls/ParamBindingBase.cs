@@ -8,6 +8,8 @@ using System.Windows.Controls;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls
 {
@@ -120,6 +122,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                         var leafNode = TreeNodeData.CreateDataSourceNode(dataSource);
                         leafNode.Parent = rootNode;
                         leafNode.BindingPath = dataSource.PropertyName;
+                        ApplyArrayDisplay(leafNode, dataSource);
                         rootNode.Children.Add(leafNode);
                     }
                     else
@@ -147,6 +150,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                         var leafNode = TreeNodeData.CreateDataSourceNode(dataSource);
                         leafNode.Parent = currentParent;
                         leafNode.BindingPath = dataSource.PropertyName;
+                        ApplyArrayDisplay(leafNode, dataSource);
                         currentParent.Children.Add(leafNode);
                     }
                 }
@@ -155,6 +159,41 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             }
 
             return rootNodes;
+        }
+
+        /// <summary>
+        /// 数组叶子节点显示增强（方案步骤6 / 〇 原则3）：折叠态单行 `;` 串联，展开态物化子节点。
+        /// 不改动绑定路径，仅影响树中文本与可展开的子节点。
+        /// </summary>
+        private static void ApplyArrayDisplay(TreeNodeData leafNode, AvailableDataSource ds)
+        {
+            if (ds.PropertyType == null || !ds.PropertyType.IsArray)
+                return;
+            if (ds.CurrentValue is not Array arr)
+                return;
+
+            var elementType = ds.PropertyType.GetElementType() ?? typeof(object);
+            var n = arr.Length;
+
+            // RoI(ShapeParameters[])：绑定树按图形类型分组 + 逐元素 [i]，每组/元素可单独绑定
+            if (elementType == typeof(ShapeParameters) && arr is ShapeParameters[] roi)
+            {
+                var roiTypeLabel = (ds.VariableType ?? "RoI") + "[]";
+                var roiSummary = ArrayTreeFormatter.FormatCollapsedSummary(arr);
+                leafNode.Text = $"{ds.DisplayName} ({roiTypeLabel}, {n}项): {roiSummary}";
+                leafNode.Children = new System.Collections.ObjectModel.ObservableCollection<TreeNodeData>(
+                    ArrayTreeFormatter.BuildRoiBindingChildren(ds, roi));
+                return;
+            }
+
+            // 类型标签：词汇名 + "[]"（如 "Region[]" / "Double[]" / "RoI[]"）。
+            // 优先用词汇名（VariableType），否则用元素 CLR 类型名取基础名（避免 "IVisionRegion[][]" 双括号）。
+            var elementName = elementType.Name;
+            var typeLabel = (ds.VariableType ?? elementName) + "[]";
+            var summary = ArrayTreeFormatter.FormatCollapsedSummary(arr);
+            leafNode.Text = $"{ds.DisplayName} ({typeLabel}, {n}项): {summary}";
+            leafNode.Children = new System.Collections.ObjectModel.ObservableCollection<TreeNodeData>(
+                ArrayTreeFormatter.BuildExpansionChildren(arr, elementType));
         }
 
         /// <summary>
@@ -186,6 +225,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             {
                 if (ds.PropertyType == null)
                     return false;
+
+                // 步骤4（方案）：Region 输入（IVisionRegion[]）单向接受 RoI 源（VariableType=="RoI"）
+                if (targetType == typeof(IVisionRegion[]) && ds.VariableType == "RoI")
+                    return true;
 
                 // 规则 1：数组参数 = 只显示数组
                 if (targetType.IsArray)

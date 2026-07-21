@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using System.Windows;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 
@@ -13,16 +14,19 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
         /// <summary>
         /// 圆心
         /// </summary>
+        [JsonInclude]
         public readonly Point Center;
 
         /// <summary>
         /// 半径
         /// </summary>
+        [JsonInclude]
         public readonly double Radius;
 
         /// <summary>
         /// 创建圆形
         /// </summary>
+        [JsonConstructor]
         public Circle2d(Point center, double radius)
         {
             Center = center;

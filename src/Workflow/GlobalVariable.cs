@@ -349,8 +349,8 @@ public class GlobalVariable : ObservableObject
     /// </summary>
     private static bool IsValidType(string type)
     {
-        // 通过 SdkTypeVocabulary 验证类型有效性（SSOT）
-        return SdkTypeVocabulary.ToSystemType(type) != null && type != "Region";
+        // 通过 SdkTypeVocabulary 验证类型有效性（SSOT）。Region 已移出词汇表，不再需要特判。
+        return SdkTypeVocabulary.ToSystemType(type) != null;
     }
 
     /// <summary>

@@ -20,8 +20,9 @@ namespace SunEyeVision.Workflow;
 /// 本类不定义任何类型常量，所有类型名通过 SdkTypeVocabulary 解析。
 ///
 /// 序列化格式：{ "Type": "Double", "Value": [3.14] }
-/// 支持的类型（8 个核心概念）：整型(Integer)/双精度(Double)/字符串(String)/布尔(Boolean)/
-/// 图像(Image)/区域(Region，仅运行时不可序列化)/图形定义(RoI)/变换矩阵(Transform)。
+/// 支持的类型（7 个核心概念）：整型(Integer)/双精度(Double)/字符串(String)/布尔(Boolean)/
+/// 图像(Image)/图形定义(RoI)/变换矩阵(Transform)。
+/// 区域(Region)为算法内部 iconic 数据，禁止序列化，由 RegionConverter 桥接为 RoI 后外发（方案 D8）。
 /// 所有基础类型强制以 T[] 形态存储（填 3.14 → 落盘为 [3.14]，对齐 tuple 语义，方案步骤7）。
 /// 历史标量形态 JSON 重开时由 ParseAdaptive 抛异常，需重新保存升级为 T[]。
 /// 历史存量类型名（Xxx[]、Float、Rectangle）可加载，Byte 及几何类型已删除并 fail-fast（rule-015）。
@@ -127,8 +128,6 @@ public class GlobalVariableValueConverter : JsonConverter<object?>
             return ParseAdaptive(valueElement, ParseAffineMatrix);
         if (clrType == typeof(IVisionImage))
             return ParseImage(valueElement);
-        if (clrType == typeof(IVisionRegion))
-            throw new NotSupportedException("区域类型不能序列化为JSON");
 
         // RoI（图形定义）：数组形态承载，几何多态由 GeometryJsonConverter 处理
         if (clrType == typeof(ShapeParameters[]))
@@ -196,7 +195,6 @@ public class GlobalVariableValueConverter : JsonConverter<object?>
             Mat mat         => (typeName, SerializeImage(mat)),
             AffineMatrix m  => (typeName, SerializeAffineMatrix(m)),
             AffineMatrix[] ms => (typeName, ms.Select(SerializeAffineMatrix).ToArray()),
-            IVisionRegion   => throw new NotSupportedException("区域类型不能序列化为JSON"),
             _ => throw new NotSupportedException(
                 $"类型 '{value.GetType().FullName}' 不是已注册的全局变量类型，请在 SdkTypeVocabulary 中添加映射")
         };

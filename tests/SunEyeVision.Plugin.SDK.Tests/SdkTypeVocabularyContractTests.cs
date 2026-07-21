@@ -13,8 +13,8 @@ namespace SunEyeVision.Plugin.SDK.Tests;
 /// <summary>
 /// 全局变量类型映射 + 序列化往返的契约测试。
 /// 覆盖方案验收标准：数值归并（int/float → long/double）、
-/// 7 核心概念映射、AffineMatrix→Transform、IVisionRegion→Region、
-/// 以及已删除类型（Byte/几何）的 fail-fast 行为。
+/// 7 核心概念映射（Region 已移出词汇表，禁止进入工作流契约）、AffineMatrix→Transform、
+/// 以及已删除类型（Byte/几何/Region）的 fail-fast 行为。
 /// </summary>
 public class SdkTypeVocabularyContractTests
 {
@@ -36,8 +36,6 @@ public class SdkTypeVocabularyContractTests
     [InlineData(typeof(AffineMatrix), "Transform")]
     [InlineData(typeof(AffineMatrix[]), "Transform")]
     [InlineData(typeof(IVisionImage), "Image")]
-    [InlineData(typeof(IVisionRegion), "Region")]
-    [InlineData(typeof(IVisionRegion[]), "Region")]
     [InlineData(typeof(ShapeParameters), "RoI")]
     [InlineData(typeof(ShapeParameters[]), "RoI")]
     public void ToTypeVocabulary_SingleAndArray_ReturnSameName(Type type, string expected)
@@ -73,19 +71,19 @@ public class SdkTypeVocabularyContractTests
     }
 
     [Fact]
-    public void GetAllTypeOptions_OnlyEightCoreConcepts()
+    public void GetAllTypeOptions_OnlySevenCoreConcepts()
     {
         var options = SdkTypeVocabulary.GetAllTypeOptions();
-        Assert.Equal(8, options.Count);
+        Assert.Equal(7, options.Count);
         var values = options.Select(o => o.Value).ToList();
         Assert.Contains("Integer", values);
         Assert.Contains("Double", values);
         Assert.Contains("String", values);
         Assert.Contains("Boolean", values);
         Assert.Contains("Image", values);
-        Assert.Contains("Region", values);
         Assert.Contains("RoI", values);
         Assert.Contains("Transform", values);
+        Assert.DoesNotContain("Region", values);
     }
 
     #endregion
@@ -232,10 +230,10 @@ public class SdkTypeVocabularyContractTests
     #region 契约：方案扩展（RoI 词目 + Region 数组 + tuple 原则）
 
     [Fact]
-    public void ToSystemType_Region_ReturnsRegionArray()
+    public void ToSystemType_Region_RemovedFromVocabulary()
     {
-        // 连线根因修复：Region 反向解析为数组（与上游 IVisionRegion[] 输出 IsArray 一致）
-        Assert.Equal(typeof(IVisionRegion[]), SdkTypeVocabulary.ToSystemType("Region"));
+        // 方案 D8：Region 已移出词汇表，反向解析返回 null（禁止进入工作流契约）
+        Assert.Null(SdkTypeVocabulary.ToSystemType("Region"));
     }
 
     [Fact]
@@ -245,9 +243,10 @@ public class SdkTypeVocabularyContractTests
     }
 
     [Fact]
-    public void ToTypeVocabulary_RegionArray_ReturnsRegion()
+    public void ToTypeVocabulary_RegionArray_ReturnsNull()
     {
-        Assert.Equal("Region", SdkTypeVocabulary.ToTypeVocabulary(typeof(IVisionRegion[])));
+        // 方案 D8：Region 已移出词汇表，正向解析返回 null
+        Assert.Null(SdkTypeVocabulary.ToTypeVocabulary(typeof(IVisionRegion[])));
     }
 
     [Fact]
@@ -262,8 +261,8 @@ public class SdkTypeVocabularyContractTests
         // 〇 原则1：标量 = 长度 1 的 tuple，与数组共享同一词目
         Assert.Equal("Double", SdkTypeVocabulary.ToTypeVocabulary(typeof(double)));
         Assert.Equal("Double", SdkTypeVocabulary.ToTypeVocabulary(typeof(double[])));
-        Assert.Equal("Region", SdkTypeVocabulary.ToTypeVocabulary(typeof(IVisionRegion)));
-        Assert.Equal("Region", SdkTypeVocabulary.ToTypeVocabulary(typeof(IVisionRegion[])));
+        Assert.Null(SdkTypeVocabulary.ToTypeVocabulary(typeof(IVisionRegion)));
+        Assert.Null(SdkTypeVocabulary.ToTypeVocabulary(typeof(IVisionRegion[])));
     }
 
     [Fact]
@@ -276,7 +275,7 @@ public class SdkTypeVocabularyContractTests
                 .GetValue(null)!;
         Assert.False(dict.ContainsKey(typeof(double)));
         Assert.True(dict.ContainsKey(typeof(double[])));
-        Assert.True(dict.ContainsKey(typeof(IVisionRegion[])));
+        Assert.False(dict.ContainsKey(typeof(IVisionRegion[])));
     }
 
     [Fact]

@@ -8,6 +8,7 @@ using OpenCvSharp;
 using SunEyeVision.CvEngine;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Execution;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 using SunEyeVision.Plugin.SDK.Validation;
@@ -223,8 +224,8 @@ namespace SunEyeVision.Tool.ImageThreshold
                                 CvOp.RegionToMask(binaryRegion, out var binaryMask);
                                 result.BinaryMask = new CvImage(binaryMask, ownsImage: true);
 
-                                // 图形结果输出
-                                result.OutputRegions = new IVisionRegion[] { binaryRegion.CopyObj() };
+                                // 图形结果输出：Region→RoI 桥接外发（D8）
+                                result.OutputRegions = new ShapeParameters[] { RegionConverter.RegionToRoi(binaryRegion, "exact") };
 
                                 result.ThresholdUsed = actualThreshold;
                                 result.MaxValueUsed = maxValue;

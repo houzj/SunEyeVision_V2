@@ -185,6 +185,7 @@ namespace SunEyeVision.Tool.Script.Models
             sb.AppendLine("using System.IO;");
             sb.AppendLine("using SunEyeVision.Plugin.SDK.Scripting;");
             sb.AppendLine("using SunEyeVision.Plugin.SDK.VisionAdapters;");
+            sb.AppendLine("using SunEyeVision.Plugin.SDK.Execution;");
             sb.AppendLine();
             sb.AppendLine("public partial class UserScript : Script");
             sb.AppendLine("{");

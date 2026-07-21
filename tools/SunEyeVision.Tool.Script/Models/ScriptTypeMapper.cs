@@ -48,8 +48,6 @@ namespace SunEyeVision.Tool.Script.Models
                 = "SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeParameters",
             [typeof(IVisionImage)]
                 = "IVisionImage",
-            [typeof(IVisionRegion)]
-                = "IVisionRegion",
         };
 
         /// <summary>

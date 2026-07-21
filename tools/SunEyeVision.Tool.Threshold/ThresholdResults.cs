@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
+using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 
 namespace SunEyeVision.Tool.Threshold
@@ -132,9 +133,9 @@ namespace SunEyeVision.Tool.Threshold
         #region 图形结果（供下游节点数据绑定用）
 
         /// <summary>
-        /// 二值区域集合（含1个区域，保持集合格式统一）
+        /// 二值区域集合（已桥接为 RoI 外发，供下游节点绑定/全局变量复用）
         /// </summary>
-        public IVisionRegion[] OutputRegions { get; set; } = Array.Empty<IVisionRegion>();
+        public ShapeParameters[] OutputRegions { get; set; } = Array.Empty<ShapeParameters>();
 
         #endregion
 

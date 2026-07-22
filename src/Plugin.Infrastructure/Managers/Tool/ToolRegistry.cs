@@ -456,7 +456,10 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
                         PropertyName = v.Name,
                         DisplayName = string.IsNullOrEmpty(v.DisplayName) ? v.Name : v.DisplayName,
                         GroupName = v.Group,
-                        PropertyType = varType,
+                        // 对外元数据提升为数组（绑定树据此展开 [i]）；缓存键仍按标量 typeFullName，不破坏存量查询
+                        PropertyType = (v.VariableType == "Image")
+                            ? varType
+                            : (varType.IsArray ? varType : varType.MakeArrayType()),
                         Description = null
                     };
 

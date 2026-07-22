@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -29,27 +29,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
                     images[kvp.Key] = img;
             return images;
         }
-
-        public override IReadOnlyList<ResultItem> GetResultItems()
-        {
-            var items = new List<ResultItem>
-            {
-                ResultItem.Numeric("\u5b50\u6d41\u7a0b\u8017\u65f6(ms)", SubWorkflowExecutionTimeMs),
-                ResultItem.Numeric("\u6267\u884c\u8282\u70b9\u6570", ExecutedNodeCount),
-                ResultItem.Boolean("\u6267\u884c\u6210\u529f", IsSuccess)
-            };
-            foreach (var kvp in ResolvedOutputValues)
-                items.Add(new ResultItem { Name = kvp.Key, Value = kvp.Value, Type = InferResultItemType(kvp.Value) });
-            return items;
-        }
-
-        private static ResultItemType InferResultItemType(object? value) => value switch
-        {
-            double or int or long or float => ResultItemType.Numeric,
-            bool => ResultItemType.Boolean,
-            string => ResultItemType.Text,
-            _ => ResultItemType.Object
-        };
 
         public override List<PropertyMapEntry> GetPropertyMap()
         {
@@ -88,18 +67,20 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
                     DisplayName = entry.DisplayName,
                     Group = entry.GroupName,
                     Kind = OutputVariableKind.Data,
-                    RuntimeValue = prop.GetValue(this)
+                    RuntimeValue = OutputVariableArrayPromoter.Promote(prop.GetValue(this), variableType, prop.PropertyType)
                 });
             }
 
             // 用户声明输出变量（含 DisplayName/Group）
             foreach (var cfg in OutputConfigs)
             {
-                if (SdkTypeVocabulary.ToSystemType(cfg.TypeName) is null)
+                var sysType = SdkTypeVocabulary.ToSystemType(cfg.TypeName);
+                if (sysType is null)
                 {
                     throw new InvalidOperationException(
                         $"子程序输出变量 '{cfg.Name}' 类型 '{cfg.TypeName}' 未在 SdkTypeVocabulary 词汇表注册。");
                 }
+                var rawValue = ResolvedOutputValues.TryGetValue(cfg.Name, out var v) ? v : null;
                 variables.Add(new OutputVariable
                 {
                     Name = cfg.Name,
@@ -107,7 +88,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
                     DisplayName = string.IsNullOrEmpty(cfg.DisplayName) ? cfg.Name : cfg.DisplayName,
                     Group = cfg.Group,
                     Kind = OutputVariableKind.Data,
-                    RuntimeValue = ResolvedOutputValues.TryGetValue(cfg.Name, out var v) ? v : null
+                    RuntimeValue = OutputVariableArrayPromoter.Promote(rawValue, cfg.TypeName, sysType)
                 });
             }
 

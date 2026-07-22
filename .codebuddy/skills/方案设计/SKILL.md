@@ -362,3 +362,4 @@ description: >
 - skill:build-verify — MSBuild 验证辅助
 - skill:cv-engine-builder — 视觉算子封装
 - skill:wpf-vision-dev — WPF 视觉开发
+- skill:doc-save — 方案报告落地保存（rule-006 目录/命名/索引，必须调用）

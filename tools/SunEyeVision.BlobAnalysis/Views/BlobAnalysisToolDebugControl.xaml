@@ -149,11 +149,6 @@
               </ComboBox>
             </controls:LabeledControl>
 
-            <controls:LabeledControl Label="反转结果" ContentHorizontalAlignment="Left" Margin="0,4,0,0">
-              <CheckBox IsChecked="{Binding Invert, Mode=TwoWay}"
-                    Content="反转二值化结果"/>
-            </controls:LabeledControl>
-
             <!-- ===== 形态学处理 ===== -->
             <Separator Margin="0,8,0,4" Background="#E0E0E0" Height="1"/>
             <TextBlock Text="形态学处理" FontWeight="SemiBold" Margin="0,4,0,8"/>

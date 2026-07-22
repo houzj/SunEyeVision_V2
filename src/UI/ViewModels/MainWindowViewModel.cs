@@ -4005,6 +4005,10 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         /// </summary>
         private static string FormatTypedValue(object? value, Type propertyType)
         {
+            // 长度 1 数组解包显示，避免单个 bool[1] 渲染成难看的 "[1个]"（底层仍是 T[1]，决策3）
+            if (value is Array a && a.Length == 1)
+                value = a.GetValue(0);
+
             return value switch
             {
                 null => "--",

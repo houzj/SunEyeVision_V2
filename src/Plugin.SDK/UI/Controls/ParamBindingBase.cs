@@ -226,10 +226,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 if (ds.PropertyType == null)
                     return false;
 
-                // 步骤4（方案）：Region 输入（IVisionRegion[]）单向接受 RoI 源（VariableType=="RoI"）
-                if (targetType == typeof(IVisionRegion[]) && ds.VariableType == "RoI")
-                    return true;
-
                 // 规则 1：数组参数 = 只显示数组
                 if (targetType.IsArray)
                     return ds.PropertyType.IsArray;

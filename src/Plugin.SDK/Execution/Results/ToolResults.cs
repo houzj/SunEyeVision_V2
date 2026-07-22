@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -175,27 +175,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
         }
 
         /// <summary>
-        /// 创建带规格的数值项
-        /// </summary>
-        public static ResultItem NumericWithSpec(string name, double value, double? lowerLimit, double? upperLimit, string? unit = null)
-        {
-            bool isPass = true;
-            if (lowerLimit.HasValue && value < lowerLimit.Value) isPass = false;
-            if (upperLimit.HasValue && value > upperLimit.Value) isPass = false;
-
-            return new ResultItem
-            {
-                Name = name,
-                Value = value,
-                Type = ResultItemType.Numeric,
-                Unit = unit,
-                LowerLimit = lowerLimit,
-                UpperLimit = upperLimit,
-                IsPass = isPass
-            };
-        }
-
-        /// <summary>
         /// 创建文本项
         /// </summary>
         public static ResultItem Text(string name, string value)
@@ -219,45 +198,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
                 Value = value,
                 Type = ResultItemType.Boolean,
                 IsPass = value
-            };
-        }
-
-        /// <summary>
-        /// 创建几何项
-        /// </summary>
-        public static ResultItem Geometry(string name, object geometry)
-        {
-            return new ResultItem
-            {
-                Name = name,
-                Value = geometry,
-                Type = ResultItemType.Geometry
-            };
-        }
-
-        /// <summary>
-        /// 创建点结果
-        /// </summary>
-        public static ResultItem Point(string name, Point point)
-        {
-            return new ResultItem
-            {
-                Name = name,
-                Value = point,
-                Type = ResultItemType.Geometry
-            };
-        }
-
-        /// <summary>
-        /// 创建圆结果
-        /// </summary>
-        public static ResultItem Circle(string name, Circle2d circle)
-        {
-            return new ResultItem
-            {
-                Name = name,
-                Value = circle,
-                Type = ResultItemType.Geometry
             };
         }
 
@@ -317,18 +257,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
     ///             Geometries = new object[] { Center },
     ///             Color = 0xFFFF0000, LineWidth = 5
     ///         });
-    ///     }
-    ///     
-    ///     public override IReadOnlyList&lt;ResultItem&gt; GetResultItems()
-    ///     {
-    ///         return new List&lt;ResultItem&gt;
-    ///         {
-    ///             ResultItem.Point("圆心", Center),
-    ///             ResultItem.Numeric("半径", Radius, "像素"),
-    ///             ResultItem.NumericWithSpec("得分", Score, 0.5, 1.0)
-    ///         };
-    ///     }
-    /// }
+        ///     }
+        /// }
     /// </code>
     /// </remarks>
     public abstract class ToolResults
@@ -407,12 +337,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
         /// 与 AvailableDataSource.PropertyName 匹配。
         /// </remarks>
         public virtual Dictionary<string, IVisionImage?> GetDisplayImages() => new();
-
-        /// <summary>
-        /// 获取结果项（数据面板）
-        /// </summary>
-        /// <returns>结果项只读列表</returns>
-        public virtual IReadOnlyList<ResultItem> GetResultItems() => Array.Empty<ResultItem>();
 
         /// <summary>
         /// 添加警告
@@ -618,7 +542,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
                     DisplayName = entry.DisplayName,
                     Group = entry.GroupName,
                     Kind = OutputVariableKind.Data,
-                    RuntimeValue = runtimeValue
+                    RuntimeValue = OutputVariableArrayPromoter.Promote(runtimeValue, variableType, prop.PropertyType)
                 });
             }
             return variables;
@@ -627,60 +551,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
         #endregion
     }
 
-    /// <summary>
-    /// 结果项集合扩展
-    /// </summary>
-    public static class ResultItemExtensions
-    {
-        /// <summary>
-        /// 添加数值项
-        /// </summary>
-        public static void AddNumeric(this List<ResultItem> items, string name, double value, string? unit = null)
-        {
-            items.Add(ResultItem.Numeric(name, value, unit));
-        }
 
-        /// <summary>
-        /// 添加带规格的数值项
-        /// </summary>
-        public static void AddNumericWithSpec(this List<ResultItem> items, string name, double value,
-            double? lowerLimit, double? upperLimit, string? unit = null)
-        {
-            items.Add(ResultItem.NumericWithSpec(name, value, lowerLimit, upperLimit, unit));
-        }
-
-        /// <summary>
-        /// 添加文本项
-        /// </summary>
-        public static void AddText(this List<ResultItem> items, string name, string value)
-        {
-            items.Add(ResultItem.Text(name, value));
-        }
-
-        /// <summary>
-        /// 添加布尔项
-        /// </summary>
-        public static void AddBoolean(this List<ResultItem> items, string name, bool value)
-        {
-            items.Add(ResultItem.Boolean(name, value));
-        }
-
-        /// <summary>
-        /// 添加点项
-        /// </summary>
-        public static void AddPoint(this List<ResultItem> items, string name, Point point)
-        {
-            items.Add(ResultItem.Point(name, point));
-        }
-
-        /// <summary>
-        /// 添加圆项
-        /// </summary>
-        public static void AddCircle(this List<ResultItem> items, string name, Circle2d circle)
-        {
-            items.Add(ResultItem.Circle(name, circle));
-        }
-    }
 
     /// <summary>
     /// 通用工具结果 - 用于兼容层的具体实现
@@ -701,11 +572,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
                 Type = type
             });
         }
-
-        /// <summary>
-        /// 获取结果项列表（覆盖基类虚方法，供参数解析器从 ResultItems 中查找）
-        /// </summary>
-        public override IReadOnlyList<ResultItem> GetResultItems() => _resultItems.AsReadOnly();
 
         /// <summary>
         /// 从结果项中提取 Mat 图像供 UI 显示

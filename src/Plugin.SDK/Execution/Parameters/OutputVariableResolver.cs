@@ -72,7 +72,14 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             // 第一段数组索引处理
             if (firstIndex.HasValue)
             {
-                current = GetArrayElement(current, firstName, firstIndex.Value);
+                // firstIndex == -1 表示显式 "[]"，保留整个数组，不做任何事
+                if (firstIndex.Value >= 0)
+                    current = GetArrayElement(current, firstName, firstIndex.Value);
+            }
+            else if (firstTypeFilter == null)
+            {
+                // 无索引且非 [Type=] 过滤 → 长度 1 数组默认取 [0]（存量标量绑定兼容，决策3）
+                current = UnwrapLengthOne(current);
             }
 
             // 后续段：在当前运行时值上用反射逐段解析
@@ -108,12 +115,21 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 
                 if (idx.HasValue)
                 {
-                    current = GetArrayElement(current, propName, idx.Value);
+                    // idx == -1 表示显式 "[]"，保留整个数组
+                    if (idx.Value >= 0)
+                        current = GetArrayElement(current, propName, idx.Value);
+                }
+                else if (typeFilter == null)
+                {
+                    current = UnwrapLengthOne(current);
                 }
             }
 
             return current;
         }
+
+        private static object? UnwrapLengthOne(object? current)
+            => current is Array arr && arr.Length == 1 ? arr.GetValue(0) : current;
 
         private static object? GetArrayElement(object? current, string name, int index)
         {

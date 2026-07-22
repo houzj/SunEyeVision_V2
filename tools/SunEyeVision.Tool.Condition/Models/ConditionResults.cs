@@ -21,14 +21,6 @@ namespace SunEyeVision.Tool.Condition.Models
         /// <summary>条件评估结果（true = 有规则匹配，false = 无匹配）</summary>
         public bool IsMatched { get; set; }
 
-        public override IReadOnlyList<ResultItem> GetResultItems()
-        {
-            return new List<ResultItem>
-            {
-                ResultItem.Text("匹配规则", MatchedRuleName ?? "无")
-            };
-        }
-
         public override List<PropertyMapEntry> GetPropertyMap()
         {
             return new List<PropertyMapEntry>

@@ -1380,3 +1380,4 @@ search_content "class .*Parameters" --path "src/Plugin.SDK/Execution/Parameters/
 - skill:build-verify — MSBuild 构建验证辅助
 - skill:cv-engine-builder — 视觉算子封装验证辅助
 - **verification-coverage.json** — `.codebuddy/memory/verification-coverage.json` 验证记忆文件
+- skill:doc-save — 测试报告落地保存（rule-006 目录/命名/索引，必须调用）

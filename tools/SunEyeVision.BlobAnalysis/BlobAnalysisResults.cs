@@ -61,21 +61,6 @@ namespace SunEyeVision.Tool.BlobAnalysis
         public string TypeUsed { get; set; } = string.Empty;
 
         /// <summary>
-        /// 实际使用的阈值（Double 类型，用于参数绑定）
-        /// </summary>
-        public double ThresholdUsedDouble { get; set; }
-
-        /// <summary>
-        /// 最大值（Double 类型，用于参数绑定）
-        /// </summary>
-        public double MaxValueUsedDouble { get; set; }
-
-        /// <summary>
-        /// 是否反转
-        /// </summary>
-        public bool InvertUsed { get; set; }
-
-        /// <summary>
         /// 灰度直方图数据（256个bin）
         /// </summary>
         public double[] HistogramData { get; set; } = Array.Empty<double>();
@@ -205,25 +190,6 @@ namespace SunEyeVision.Tool.BlobAnalysis
         #endregion
 
         /// <summary>
-        /// 获取结果显示项（用于数据面板显示）
-        /// </summary>
-    public override IReadOnlyList<ResultItem> GetResultItems()
-    {
-        return new List<ResultItem>
-        {
-            ResultItem.Boolean("判断通过", JudgmentPassed),
-            ResultItem.Numeric("Blob数量", FilteredBlobCount),
-            ResultItem.Numeric("总面积", FilteredTotalArea, "像素"),
-            ResultItem.Numeric("平均面积", AverageArea, "像素"),
-            ResultItem.Numeric("平均圆度", AverageCircularity),
-            ResultItem.Numeric("平均矩形度", AverageRectangularity),
-            ResultItem.Numeric("白色像素比例", WhitePixelRatio, "%"),
-            ResultItem.Numeric("实际阈值", ThresholdUsed),
-            ResultItem.Text("阈值类型", TypeUsed)
-        };
-    }
-
-        /// <summary>
         /// 获取属性映射表
         /// </summary>
         public override List<PropertyMapEntry> GetPropertyMap()
@@ -235,10 +201,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
                 new("OverlayImage",             "合成显示图像",           null),
                 new("ThresholdUsed",            "实际使用的阈值",         "预处理"),
                 new("MaxValueUsed",             "最大值",                 "预处理"),
-                new("ThresholdUsedDouble",      "实际使用的阈值(Double)", "预处理"),
-                new("MaxValueUsedDouble",       "最大值(Double)",         "预处理"),
                 new("TypeUsed",                 "阈值类型",               "预处理"),
-                new("InvertUsed",               "是否反转",               "预处理"),
                 new("JudgmentPassed",           "判断通过",               "判断"),
                 new("FilteredBlobCount",        "Blob数量",               "统计"),
                 new("FilteredTotalArea",        "总面积",                 "统计"),

@@ -65,31 +65,5 @@ namespace SunEyeVision.Tool.Script.Models
             return variables;
         }
 
-        public override IReadOnlyList<ResultItem> GetResultItems()
-        {
-            var items = new List<ResultItem>();
-            foreach (var kvp in OutputValues)
-            {
-                items.Add(new ResultItem
-                {
-                    Name = kvp.Key,
-                    Value = kvp.Value,
-                    Type = GetResultItemType(kvp.Value)
-                });
-            }
-            return items;
-        }
-
-        private static ResultItemType GetResultItemType(object? value)
-        {
-            if (value == null) return ResultItemType.Object;
-            return value switch
-            {
-                int or long or float or double or decimal => ResultItemType.Numeric,
-                bool => ResultItemType.Boolean,
-                string => ResultItemType.Text,
-                _ => ResultItemType.Object
-            };
-        }
     }
 }

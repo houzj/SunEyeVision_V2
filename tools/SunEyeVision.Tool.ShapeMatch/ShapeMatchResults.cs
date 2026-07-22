@@ -138,33 +138,6 @@ public class ShapeMatchResults : ToolResults
         return images;
     }
 
-    public override IReadOnlyList<ResultItem> GetResultItems()
-    {
-        var items = new List<ResultItem>
-        {
-            ResultItem.Boolean("判断通过", JudgmentPassed),
-            ResultItem.Numeric("匹配数量", MatchCount),
-            ResultItem.Numeric("最佳得分", BestScore)
-        };
-
-        if (MatchedItems != null && MatchedItems.Count > 0)
-        {
-            var tableLines = new List<string>
-            {
-                $"{"序号",4} {"模板",-10} {"分数",8} {"中心X",8} {"中心Y",8} {"角度(°)",8} {"缩放",8} {"判断",4}"
-            };
-            tableLines.Add(new string('-', 58));
-            foreach (var m in MatchedItems.Select((item, idx) => (item, idx)))
-            {
-                tableLines.Add(
-                    $"{m.idx + 1,4} {m.item.TemplateName,-10} {m.item.Score,8:F3} {m.item.CenterX,8:F1} {m.item.CenterY,8:F1} {m.item.Angle,8:F2} {m.item.Scale,8:F4} {(m.item.JudgmentPassed ? "✓" : "✗"),4}");
-            }
-            items.Add(ResultItem.Text("匹配详情", string.Join("\n", tableLines)));
-        }
-
-        return items;
-    }
-
     public override List<PropertyMapEntry> GetPropertyMap()
     {
         return

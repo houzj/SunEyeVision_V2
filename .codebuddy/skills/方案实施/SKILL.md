@@ -396,3 +396,4 @@ Get-ChildItem -Path $PluginPath -Directory
 - **rule-015: 禁止兜底回退原则** — 未映射类型直接报错
 - **rule-016: MSBuild 项目配置规范** — OutDir / 插件部署 / 污染拦截
 - **rule-017: .gitignore 屏蔽目录的文件读取规范** — dev/ 必须用 PowerShell
+- skill:doc-save — 实施完成报告落地保存（rule-006 目录/命名/索引，必须调用）

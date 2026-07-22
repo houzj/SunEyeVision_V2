@@ -37,9 +37,9 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         var propName = part.Substring(0, bracketStart);
         var indexStr = part.Substring(bracketStart + 1, bracketEnd - bracketStart - 1);
 
-        // [] 空括号 → 使用整个数组
+        // [] 空括号 → 显式取整个数组（哨兵 -1，与"无括号"区分开）
         if (string.IsNullOrEmpty(indexStr))
-            return (propName, null, null);
+            return (propName, -1, null);
 
         // [Type=XXX] → 按图形类型过滤（RoI 多图形统一绑定，方案步骤2）
         const string typeMarker = "Type=";

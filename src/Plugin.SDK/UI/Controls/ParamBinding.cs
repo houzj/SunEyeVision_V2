@@ -637,8 +637,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             var propertyFullName = parts.Length > 1 ? parts[1] : string.Empty;
             var (_, arrayIndex, _) = PropertyPathParser.ParsePropertyPart(propertyFullName);
 
-            // 如果有具体索引，替换掉默认的 []
-            if (arrayIndex.HasValue && leafName.EndsWith("[]"))
+            // 如果有具体索引（>=0），替换掉默认的 []；-1 表示显式 "[]" 保留整个数组
+            if (arrayIndex.HasValue && arrayIndex.Value >= 0 && leafName.EndsWith("[]"))
             {
                 leafName = leafName.Substring(0, leafName.Length - 2) + $"[{arrayIndex.Value}]";
             }

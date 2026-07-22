@@ -197,7 +197,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
                             HOperatorSet.Threshold(processingImage, out var binaryRegion,
                                 thresholdMin, thresholdMax);
 
-                            if (parameters.Invert)
+                            if (parameters.Type.Value == ThresholdType.BinaryInv)
                             {
                                 HOperatorSet.Complement(binaryRegion, out var complRegion);
                                 binaryRegion.Dispose();
@@ -340,11 +340,8 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                         result.GrayImage = new HalImage(grayImage.Clone());
                                         result.FilteredBlobs = filteredBlobs;
                                         result.ThresholdUsed = (int)actualThreshold;
-                                        result.ThresholdUsedDouble = actualThreshold;
                                         result.MaxValueUsed = parameters.MaxValue.Value;
-                                        result.MaxValueUsedDouble = parameters.MaxValue.Value;
                                         result.TypeUsed = parameters.Type.Value.ToString();
-                                        result.InvertUsed = parameters.Invert;
 
                                         // 图形结果（供下游节点显示绑定）
                                         result.BlobBoundingBoxes = filteredBlobs

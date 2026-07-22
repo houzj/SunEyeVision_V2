@@ -220,38 +220,6 @@ namespace SunEyeVision.Tool.ImageLoad
             ];
         }
 
-        /// <summary>
-        /// 获取结果项列表
-        /// </summary>
-        public override IReadOnlyList<ResultItem> GetResultItems()
-        {
-            var items = new List<ResultItem>();
-
-            items.Add(ResultItem.Numeric("宽度", Width, "像素"));
-            items.Add(ResultItem.Numeric("高度", Height, "像素"));
-            items.Add(ResultItem.Numeric("通道数", Channels, "通道"));
-            items.Add(ResultItem.Numeric("深度", Depth));
-            items.Add(ResultItem.Text("类型名称", ImageTypeDisplay));
-            items.Add(ResultItem.Boolean("是否彩色", IsColor));
-            items.Add(ResultItem.Boolean("是否灰度", IsGrayscale));
-            items.Add(ResultItem.Text("颜色类型", ColorType));
-            items.Add(ResultItem.Numeric("宽高比", AspectRatio));
-            items.Add(ResultItem.Numeric("总像素数", TotalPixels, "像素"));
-
-            items.Add(ResultItem.Numeric("最小值", MinPixelValue));
-            items.Add(ResultItem.Numeric("最大值", MaxPixelValue));
-            items.Add(ResultItem.Numeric("平均值", MeanPixelValue));
-            items.Add(ResultItem.Text("范围描述", PixelValueRange));
-
-            items.Add(ResultItem.Text("路径", FilePath));
-            items.Add(ResultItem.Numeric("大小", FileSize, "字节"));
-            items.Add(ResultItem.Text("格式", FileFormat));
-
-            items.Add(ResultItem.Numeric("耗时", ExecutionTimeMs, "ms"));
-
-            return items;
-        }
-
         #endregion
     }
 }

@@ -1,67 +1,13 @@
 {
   "version": 1,
-  "lastUpdated": "2026-07-14",
-  "schemeSummary": "Phase C OutputVariable 类型表数组化 (#20-#28)",
+  "lastUpdated": "2026-07-21",
+  "schemeSummary": "区域工具契约统一：删Region词汇, 输出改RoI(D8), 脚本暴露RegionConverter(P6), Blob删面积重复筛选(D6)",
   "tools": {
-    "SunEyeVision.Plugin.SDK": {
-      "lastVerificationDate": "2026-07-20",
-      "lastVerificationType": "partial",
-      "lastModificationDate": "2026-07-20",
-      "parametersHash": "not-computed-no-unit-test-infra",
-      "contractHash": "not-computed-no-unit-test-infra",
-      "result": "pass",
-      "passedChecks": [
-        "构建✅ (dotnet build SunEyeVision.slnx 0 error)",
-        "规则审查✅ (rule-002/008/014/015 无违规)",
-        "dotnet test✅ (SunEyeVision.Plugin.SDK.Tests 40 passed, 0 failed)",
-        "防御机制✅ (契约测试: SdkTypeVocabularyContractTests 覆盖数值归并/AffineMatrix→Transform/IVisionRegion→Region/删除类型fail-fast)",
-        "防御机制✅ (Fail-Forward: GlobalVariableValueConverter.ParseValue 对未知类型 throw NotSupportedException, 不静默)",
-        "治本✅ (词汇表收敛为 7 概念 SSOT + NormalizeNumeric 数值归并)",
-        "治本✅ (IVisionImage 接口去除 WPF ToBitmapSource, 转换唯一路径下沉适配层)",
-        "验收验证✅ (AC-1/2/3/4/8: 类型映射/序列化往返/选项清单/删除类型/历史Float[]兼容)",
-        "【RoI多图形绑定 2026-07-20】构建✅ (slnx 全量 0 error; OutputVariableResolver 所在 SDK 及依赖 Core/Infrastructure/Workflow 0 error)",
-        "【RoI多图形绑定 2026-07-20】规则审查✅ (rule-002/008/015: OutputVariableResolver 无 try-catch 兜底; FilterByShapeType 非法/无匹配类型直接 InvalidOperationException; 无静默回退)",
-        "【RoI多图形绑定 2026-07-20】dotnet test✅ (RoiBindingContractTests 6 passed, 0 failed)",
-        "【RoI多图形绑定 2026-07-20】防御机制✅ (契约测试: BuildRoiBindingChildren 按图形类型分组无字段聚合错位 + 短名映射 圆/矩形/旋转矩形/多边形/圆环/弧形)",
-        "【RoI多图形绑定 2026-07-20】防御机制✅ (解析器单测: OutputVariableResolver.Resolve 对 [Type=Circle] 仅返回圆子集; 无过滤返回全部; [Type=Rectangle] 无匹配抛错; [Type=Invalid] 非法类型抛错)",
-        "【RoI多图形绑定 2026-07-20】治本✅ (RegionSubscribePanel.ResolveNodeOutputInfo 保留 [Type=]/[i] 后缀, 运行期不再剥后缀降维; ParamBinding 按完整 GetBindingPath 含 suffix 精确匹配合成节点)",
-        "【RoI多图形绑定 2026-07-20】验收验证✅ (AC-01 绑定树按图形类型分组标签[圆]/[矩形]可绑定; AC-03 运行期 [Type=Circle] 返回仅圆子集; AC-04 非法/无匹配类型报错)"
-      ],
-      "skippedChecks": [
-        "手动验收 AC-5/6/7 (Threshold长整型显示/ShapeMatch变换矩阵绑定/图像显示) 需启动UI跑图, 逻辑已由契约测试覆盖",
-        "【RoI多图形绑定】手动验收 (端到端冒烟): 启动UI目视确认绑定树三种粒度标签 + 运行期过滤生效, 逻辑已由契约/解析器单测覆盖"
-      ],
-      "reportFile": "chat: 检测区域RoI多图形统一绑定-方案测试报告-2026-07-20"
-    },
-    "SunEyeVision.Tool.Script": {
-      "lastVerificationDate": "2026-07-14",
-      "lastVerificationType": "partial",
-      "lastModificationDate": "2026-07-13",
-      "parametersHash": "not-computed-no-unit-test-infra",
-      "contractHash": "not-computed-no-unit-test-infra",
-      "result": "pass",
-      "passedChecks": [
-        "构建✅ (dotnet build 0 error)",
-        "规则审查✅ (rule-002/008/015 无违规)",
-        "dotnet test✅ (1 passed, 0 failed)",
-        "防御机制✅ (决策1 Coerce 数组→单值检查)",
-        "验收验证✅ (AC-C3/C4: ScriptTypeMapper SDK 委派 + Coerce 注入)"
-      ],
-      "reportFile": "test_report_phase-c-arrayization_2026-07-14.md"
-    },
-    "SunEyeVision.Core": {
-      "lastVerificationDate": "2026-07-14",
-      "lastVerificationType": "partial",
-      "lastModificationDate": "2026-06-29",
-      "parametersHash": "not-computed-no-unit-test-infra",
-      "contractHash": "not-computed-no-unit-test-infra",
-      "result": "pass",
-      "passedChecks": [
-        "构建✅ (dotnet build 0 error)",
-        "dotnet test✅ (1 passed, 0 failed)",
-        "验收验证✅ (AC-C7: 几何数组序列化)"
-      ],
-      "reportFile": "test_report_phase-c-arrayization_2026-07-14.md"
-    }
+    "SunEyeVision.Plugin.SDK": {"lastVerificationDate":"2026-07-21","lastVerificationType":"full","result":"pass","passedChecks":["构建✅","规则审查✅ rule-014/015","dotnet test✅ 74","契约测试✅"]},
+    "SunEyeVision.BlobAnalysis": {"lastVerificationDate":"2026-07-21","lastVerificationType":"full","result":"pass","passedChecks":["构建✅","dotnet test✅ 1","D8输出改RoI✅","D6删冗余筛选✅"]},
+    "SunEyeVision.Tool.Threshold": {"lastVerificationDate":"2026-07-21","lastVerificationType":"full","result":"pass","passedChecks":["构建✅","dotnet test✅ 1","D8输出改RoI✅"]},
+    "SunEyeVision.Tool.Morphology": {"lastVerificationDate":"2026-07-21","lastVerificationType":"full","result":"pass","passedChecks":["构建✅","dotnet test✅ 1","D8输出改RoI✅"]},
+    "SunEyeVision.Tool.ImageThreshold": {"lastVerificationDate":"2026-07-21","lastVerificationType":"full","result":"pass","passedChecks":["构建✅","dotnet test✅ 1","D8输出改RoI✅"]},
+    "SunEyeVision.Tool.Script": {"lastVerificationDate":"2026-07-21","lastVerificationType":"full","result":"pass","passedChecks":["构建✅","dotnet test✅ 1","P6暴露RegionConverter✅"]}
   }
 }

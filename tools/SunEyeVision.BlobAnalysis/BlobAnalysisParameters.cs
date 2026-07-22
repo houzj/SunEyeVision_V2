@@ -131,16 +131,6 @@ namespace SunEyeVision.Tool.BlobAnalysis
         public ParamValue<ThresholdType> Type { get; set; } =
             ParamValue<ThresholdType>.CreateConstant(ThresholdType.Binary, "Type");
 
-        /// <summary>
-        /// 是否反转二值化结果
-        /// </summary>
-        [DisplayName("反转结果")]
-        public bool Invert
-        {
-            get => _invert;
-            set => SetProperty(ref _invert, value, "反转结果");
-        }
-
         #endregion
 
         #region 图像预处理参数
@@ -389,7 +379,6 @@ namespace SunEyeVision.Tool.BlobAnalysis
         [JsonPropertyOrder(17)]
         public string? PositionCorrectionBindingDisplayText { get; set; }
 
-        private bool _invert;
         private bool _isPreprocessingEnabled;
         private bool _isMorphologyEnabled;
         private double _filterAreaMin = 10;

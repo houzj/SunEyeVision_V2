@@ -351,15 +351,6 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                         result.BlobContours = filteredBlobs
                                             .Where(b => b.HasContour).Select(b => b.Contour!).ToArray();
 
-                                        // 图形结果（通用类型 RoI，供下游节点数据绑定）：Region→RoI 桥接外发（D8）
-                                        result.OutputRegions = filteredBlobs
-                                            .Select(b =>
-                                            {
-                                                HOperatorSet.SelectObj(shapeFilteredRegions, out var obj, b.Label);
-                                                using var halRegion = new HalRegion(new HRegion(obj));
-                                                return RegionConverter.RegionToRoi(halRegion, "exact");
-                                            }).ToArray();
-
                                         // 二值掩码
                                         HOperatorSet.RegionToBin(binaryRegion, out var binObj,
                                             255, 0, imgWidth, imgHeight);

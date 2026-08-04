@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text.Json.Serialization;
-using OpenCvSharp;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Metadata;
 using SunEyeVision.Plugin.SDK.Validation;
@@ -22,6 +21,16 @@ namespace SunEyeVision.Tool.Morphology
         Gradient = 4,
         TopHat = 5,
         BlackHat = 6
+    }
+
+    /// <summary>
+    /// 结构元素形状枚举
+    /// </summary>
+    public enum MorphKernelShape
+    {
+        Rect = 0,
+        Cross = 1,
+        Ellipse = 2
     }
 
     /// <summary>
@@ -74,8 +83,8 @@ namespace SunEyeVision.Tool.Morphology
         /// 结构元素形状
         /// </summary>
         [DisplayName("结构元素形状")]
-        public ParamValue<MorphShapes> KernelShape { get; set; } =
-            ParamValue<MorphShapes>.CreateConstant(MorphShapes.Rect, "KernelShape");
+        public ParamValue<MorphKernelShape> KernelShape { get; set; } =
+            ParamValue<MorphKernelShape>.CreateConstant(MorphKernelShape.Rect, "KernelShape");
 
         /// <summary>
         /// 结构元素宽度（像素）
@@ -97,13 +106,6 @@ namespace SunEyeVision.Tool.Morphology
         [DisplayName("迭代次数")]
         public ParamValue<int> Iterations { get; set; } =
             ParamValue<int>.CreateConstant(1, "Iterations");
-
-        /// <summary>
-        /// 边框类型
-        /// </summary>
-        [DisplayName("边框类型")]
-        public ParamValue<BorderTypes> BorderType { get; set; } =
-            ParamValue<BorderTypes>.CreateConstant(BorderTypes.Constant, "BorderType");
 
         #endregion
 

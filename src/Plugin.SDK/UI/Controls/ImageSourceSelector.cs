@@ -6,6 +6,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Input;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Logging;
 
@@ -153,6 +154,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
             _selectorButton.Click += OnSelectorButtonClick;
             _imageSourceList.SelectionChanged += OnImageSourceListSelectionChanged;
+            _imageSourceList.PreviewMouseLeftButtonUp += OnImageSourceListMouseLeftButtonUp;
 
             // 初始化过滤集合
             FilteredImageSources = new ObservableCollection<AvailableDataSource>();
@@ -172,6 +174,28 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         private void OnImageSourceListSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (_imageSourceList.SelectedItem is AvailableDataSource selectedSource)
+            {
+                SelectedDataSource = selectedSource;
+                _popup.IsOpen = false;
+                RaiseEvent(new RoutedEventArgs(ImageSourceChangedEvent));
+            }
+        }
+
+        /// <summary>
+        /// 处理点击已选中项的场景：WPF 的 ListBox 对"点击已选中的项"不触发 SelectionChanged，
+        /// 导致用户无法通过重新点选来确认写入。这里在鼠标抬起时判断是否点击了已选中项，
+        /// 若是则手动触发写入参数并关闭下拉框，保证所见即所得。
+        /// </summary>
+        private void OnImageSourceListMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            var originalSource = e.OriginalSource as DependencyObject;
+            if (originalSource == null) return;
+
+            var container = ItemsControl.ContainerFromElement(_imageSourceList, originalSource) as ListBoxItem;
+            if (container == null || !container.IsSelected) return;
+
+            // 点击了已选中项（SelectionChanged 不触发）→ 手动确认写入并关闭
+            if (container.Content is AvailableDataSource selectedSource)
             {
                 SelectedDataSource = selectedSource;
                 _popup.IsOpen = false;
@@ -269,10 +293,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             if (FilteredImageSources == null || FilteredImageSources.Count == 0)
                 return;
 
-            // 没有选中项，自动选中第一个
+            // 没有选中项，自动选中第一个（走 setter → 触发 TwoWay 绑定写回参数，保证所见即所得）
             if (SelectedDataSource == null)
             {
-                SetCurrentValue(SelectedDataSourceProperty, FilteredImageSources[0]);
+                SelectedDataSource = FilteredImageSources[0];
                 PluginLogger.Info(
                     $"图像源自动选中: {FilteredImageSources[0].DropdownDisplayText}",
                     "ImageSourceSelector");
@@ -285,14 +309,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 var match = FilteredImageSources.First(ds => ds.Equals(SelectedDataSource));
                 if (!ReferenceEquals(match, SelectedDataSource))
                 {
-                    SetCurrentValue(SelectedDataSourceProperty, match);
+                    SelectedDataSource = match;
                 }
                 return;
             }
 
             // 不在列表中（数据源已移除），回退到第一个或清空
-            SetCurrentValue(SelectedDataSourceProperty,
-                FilteredImageSources.Count > 0 ? FilteredImageSources[0] : null);
+            SelectedDataSource = FilteredImageSources.Count > 0 ? FilteredImageSources[0] : null;
         }
     }
 }

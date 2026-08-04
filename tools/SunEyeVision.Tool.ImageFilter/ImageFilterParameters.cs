@@ -322,22 +322,5 @@ namespace SunEyeVision.Tool.ImageFilter
         {
             return new List<string> { "Reflect", "Replicate", "Constant", "Reflect101", "Wrap", "Isolated" };
         }
-
-        /// <summary>
-        /// 边界类型转 OpenCV BorderTypes
-        /// </summary>
-        public static OpenCvSharp.BorderTypes ToCvBorderType(ImageFilter.BorderType borderType)
-        {
-            return borderType switch
-            {
-                ImageFilter.BorderType.Reflect => OpenCvSharp.BorderTypes.Reflect,
-                ImageFilter.BorderType.Replicate => OpenCvSharp.BorderTypes.Replicate,
-                ImageFilter.BorderType.Constant => OpenCvSharp.BorderTypes.Constant,
-                ImageFilter.BorderType.Reflect101 => OpenCvSharp.BorderTypes.Reflect101,
-                ImageFilter.BorderType.Wrap => OpenCvSharp.BorderTypes.Wrap,
-                ImageFilter.BorderType.Isolated => OpenCvSharp.BorderTypes.Isolated,
-                _ => OpenCvSharp.BorderTypes.Reflect101
-            };
-        }
     }
 }

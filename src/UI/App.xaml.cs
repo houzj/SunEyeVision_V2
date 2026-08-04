@@ -444,7 +444,7 @@ public partial class App : Application
             MessageBox.Show(
                 $"参数类型 \"{paramBinding.DataType.Name}\" 不是全局变量支持的通用类型。\n" +
                 $"\n请将工具输出适配为通用类型后再绑定全局变量。\n" +
-                $"支持的通用类型：Integer, Double, String, Boolean, Image, Region, Transform。",
+                $"支持的通用类型：Integer, Double, String, Boolean, Image, RoI, Transform。",
                 "不支持的参数类型", MessageBoxButton.OK, MessageBoxImage.Warning);
             e.Handled = true;
             return;

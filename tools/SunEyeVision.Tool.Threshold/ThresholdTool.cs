@@ -4,9 +4,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
-using OpenCvSharp;
+using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Core;
-using SunEyeVision.CvEngine;
 using SunEyeVision.Plugin.SDK.Execution;
 using SunEyeVision.Plugin.SDK.Execution.Helpers;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
@@ -18,7 +17,7 @@ using SunEyeVision.Tool.Threshold.Views;
 namespace SunEyeVision.Tool.Threshold
 {
     /// <summary>
-    /// 图像阈值化工具 - v3.0 Blob模式重构
+    /// 图像阈值化工具 - v3.0 Blob模式重构（Halcon 实现）
     /// 算法流程：
     ///   1. rgb1_to_gray   → 灰度转换
     ///   2. reduce_domain  → 缩小定义域（ROI掩码限制，不改变图像尺寸）
@@ -49,7 +48,7 @@ namespace SunEyeVision.Tool.Threshold
         /// </summary>
         public ThresholdResults Run(ThresholdParameters parameters)
         {
-            var image = parameters.GetCvImage();
+            var hImage = parameters.GetHalconImage();
             var result = new ThresholdResults
             {
                 ToolName = _attribute?.DisplayName ?? "Threshold",
@@ -77,14 +76,17 @@ namespace SunEyeVision.Tool.Threshold
                 }
 
                 // ===== 输入图像验证 =====
-                if (image.Empty)
+                if (!hImage.IsInitialized())
                 {
                     parameters.LogWarning("输入图像为空");
                     result.SetError("输入图像为空");
                     return result;
                 }
 
-                parameters.LogInfo($"开始阈值化处理: 图像尺寸 {image.Size.Width}x{image.Size.Height}");
+                HOperatorSet.GetImageSize(hImage, out var imgW, out var imgH);
+                int imgWidth = (int)imgW.L;
+                int imgHeight = (int)imgH.L;
+                parameters.LogInfo($"开始阈值化处理: 图像尺寸 {imgWidth}x{imgHeight}");
 
                 double threshold = parameters.Threshold.Value;
                 double maxValue = parameters.MaxValue.Value;
@@ -96,16 +98,28 @@ namespace SunEyeVision.Tool.Threshold
 
                 // ===== Step 1: 灰度转换 (rgb1_to_gray) =====
                 stepSw.Restart();
-                CvOp.Rgb1ToGray(image, out var grayImage);
+                HImage grayImage;
+                int channels = hImage.CountChannels();
+                if (channels == 3 || channels == 4)
+                {
+                    HOperatorSet.Rgb1ToGray(hImage, out var grayObj);
+                    grayImage = new HImage(grayObj);
+                }
+                else
+                {
+                    grayImage = hImage.Clone();
+                }
                 stepSw.Stop();
                 stepTimings.Add(("灰度转换", stepSw.ElapsedMilliseconds));
 
                 using (grayImage)
                 {
                     // 保存灰度图像中间结果
-                    result.GrayImage = new CvImage(grayImage.Image.Clone(), ownsImage: true);
+                    result.GrayImage = new HalImage(grayImage.Clone());
 
-                    CvRegion? roiRegion = null;
+                    HRegion? roiRegion = null;
+                    HRegion? inspHRegion = null;
+                    HRegion? maskHRegion = null;
 
                     // ===== Step 2: 构建ROI区域 + 差集处理 =====
                     stepSw.Restart();
@@ -113,23 +127,13 @@ namespace SunEyeVision.Tool.Threshold
                     {
                         var inspectionRegions = parameters.GetRegionsByType(RegionType.Inspection);
                         var maskRegions = parameters.GetRegionsByType(RegionType.Mask);
+                        (roiRegion, inspHRegion, maskHRegion) = ToolRegionHelper.BuildHalconROI(
+                            imgWidth, imgHeight, inspectionRegions, maskRegions, parameters.NodeResults);
 
-                        bool hasInspection = inspectionRegions.Any();
-                        bool hasMask = maskRegions.Any();
-
-                        if (hasInspection && hasMask)
+                        if (roiRegion != null)
                         {
-                            using var inspRegion = CvRegion.CreateFromRegions(grayImage.Size, inspectionRegions);
-                            using var maskRegion = CvRegion.CreateFromRegions(grayImage.Size, maskRegions);
-
-                            CvOp.Difference(inspRegion, maskRegion, out roiRegion);
-
-                            parameters.LogInfo($"差集ROI区域创建成功（检测区-遮罩），白色像素数: {roiRegion.PixelCount}");
-                        }
-                        else if (hasInspection)
-                        {
-                            roiRegion = CvRegion.CreateFromRegions(grayImage.Size, inspectionRegions);
-                            parameters.LogInfo($"检测区域创建成功，白色像素数: {roiRegion.PixelCount}");
+                            HOperatorSet.AreaCenter(roiRegion, out var whitePixels, out _, out _);
+                            parameters.LogInfo($"ROI区域创建成功，白色像素数: {whitePixels.L}");
                         }
                         else
                         {
@@ -143,63 +147,75 @@ namespace SunEyeVision.Tool.Threshold
                     {
                         // ===== Step 3: ReduceDomain（缩小定义域，ROI掩码限制）=====
                         stepSw.Restart();
-                        CvOp.ReduceDomain(grayImage, roiRegion, out var reducedImage);
+                        HImage reducedImage;
+                        if (roiRegion != null)
+                        {
+                            HOperatorSet.ReduceDomain(grayImage, roiRegion, out var reducedObj);
+                            reducedImage = new HImage(reducedObj);
+                        }
+                        else
+                        {
+                            reducedImage = grayImage.Clone();
+                        }
                         stepSw.Stop();
                         stepTimings.Add(("ReduceDomain", stepSw.ElapsedMilliseconds));
 
                         using (reducedImage)
                         {
                             // 保存 ReduceDomain 中间结果
-                            result.ReducedImage = new CvImage(reducedImage.Image.Clone(), ownsImage: true);
+                            result.ReducedImage = new HalImage(reducedImage.Clone());
+
                             // ===== Step 4: 阈值分割 =====
                             stepSw.Restart();
-                            var cvThresholdType = (CvThresholdType)type;
-                            var cvAdaptiveMethod = (CvAdaptiveMethod)adaptiveMethod;
-
-                            CvRegion? binaryRegion;
+                            HRegion binaryRegion;
                             double actualThreshold;
 
                             if (type == ThresholdType.Binary || type == ThresholdType.BinaryInv)
                             {
-                                CvOp.Threshold(reducedImage, null,
-                                    (int)threshold, (int)maxValue,
-                                    out binaryRegion, out actualThreshold,
-                                    cvThresholdType, invert);
+                                HOperatorSet.Threshold(reducedImage, out var binObj,
+                                    (int)threshold, (int)maxValue);
+                                binaryRegion = new HRegion(binObj);
+                                actualThreshold = threshold;
                             }
                             else
                             {
-                                CvOp.AdaptiveThreshold(reducedImage, null,
-                                    (int)maxValue, cvAdaptiveMethod, blockSize,
-                                    out binaryRegion, c: 5,
-                                    type: cvThresholdType, invert: invert);
+                                // 自适应阈值：Halcon 以 MeanImage 求局部均值后 Threshold（块大小=均值窗口）
+                                HOperatorSet.MeanImage(reducedImage, out var meanObj,
+                                    blockSize, blockSize);
+                                using var meanImage = new HImage(meanObj);
+                                HOperatorSet.Threshold(meanImage, out var adBinObj,
+                                    (int)threshold, (int)maxValue);
+                                binaryRegion = new HRegion(adBinObj);
                                 actualThreshold = threshold;
+                            }
+
+                            if (invert)
+                            {
+                                HOperatorSet.Complement(binaryRegion, out var complObj);
+                                binaryRegion.Dispose();
+                                binaryRegion = new HRegion(complObj);
                             }
                             stepSw.Stop();
                             stepTimings.Add(("阈值分割", stepSw.ElapsedMilliseconds));
 
                             using (binaryRegion)
                             {
-                                // 输出图像：通过 ComposeDisplay 将二值区域转为输出 Mat
-                                CvOp.ComposeDisplay(reducedImage, null, binaryRegion, out var outputImage);
+                                // 输出图像：RegionToBin 将二值区域转为输出图
+                                HOperatorSet.RegionToBin(binaryRegion, out var binObj,
+                                    255, 0, imgWidth, imgHeight);
+                                result.BinaryMask = new HalImage(new HImage(binObj.Clone()));
+                                result.OutputImage = new HalImage(new HImage(binObj));
 
-                                // 保存二值掩码（从 binaryRegion 提取纯二值 Mat）
-                                CvOp.RegionToMask(binaryRegion, out var binaryMask);
-                                result.BinaryMask = new CvImage(binaryMask, ownsImage: true);
-
-                                // 图形结果输出：Region→RoI 桥接外发（D8）
-                                result.OutputRegions = new ShapeParameters[] { RegionConverter.RegionToRoi(binaryRegion, "exact") };
-
-                                result.OutputImage = new CvImage(outputImage, ownsImage: true);
                                 result.ThresholdUsed = actualThreshold;
                                 result.MaxValueUsed = maxValue;
                                 result.TypeUsed = type.ToString();
                                 result.AdaptiveMethodUsed = adaptiveMethod.ToString();
                                 result.BlockSizeUsed = blockSize;
-                                result.InputChannels = image.Channels;
+                                result.InputChannels = channels;
 
                                 // ===== Step 5: 统计信息 =====
                                 stepSw.Restart();
-                                ComputeStatistics(result, outputImage, image.Image);
+                                ComputeStatistics(result, binaryRegion, reducedImage, imgWidth, imgHeight);
                                 stepSw.Stop();
                                 stepTimings.Add(("统计计算", stepSw.ElapsedMilliseconds));
 
@@ -222,7 +238,7 @@ namespace SunEyeVision.Tool.Threshold
                                 var reportLines = new List<string>
                                 {
                                     $"===== 阈值化性能报告 =====",
-                                    $"图像: {image.Size.Width}x{image.Size.Height}  总耗时: {totalMs}ms",
+                                    $"图像: {imgWidth}x{imgHeight}  总耗时: {totalMs}ms",
                                     $"步骤  名称              耗时(ms)    占比",
                                     $"────  ──────────────── ────────  ──────"
                                 };
@@ -241,6 +257,8 @@ namespace SunEyeVision.Tool.Threshold
                     finally
                     {
                         roiRegion?.Dispose();
+                        inspHRegion?.Dispose();
+                        maskHRegion?.Dispose();
                     }
                 }
             }
@@ -288,34 +306,32 @@ namespace SunEyeVision.Tool.Threshold
         /// <summary>
         /// 计算统计结果
         /// </summary>
-        private void ComputeStatistics(ThresholdResults result, Mat outputImage, Mat inputImage)
+        private void ComputeStatistics(ThresholdResults result, HRegion binaryRegion, HImage reducedImage, int width, int height)
         {
-            if (outputImage != null && !outputImage.Empty())
+            HOperatorSet.AreaCenter(binaryRegion, out var area, out var row, out var col);
+            var whitePixelCount = (int)area.L;
+            var totalPixels = width * height;
+            result.WhitePixelCount = whitePixelCount;
+            result.WhitePixelRatio = totalPixels > 0 ? (double)whitePixelCount / totalPixels * 100 : 0;
+            result.OutputArea = whitePixelCount;
+
+            if (whitePixelCount > 0)
             {
-                var whitePixelCount = Cv2.CountNonZero(outputImage);
-                var totalPixels = outputImage.Rows * outputImage.Cols;
-                result.WhitePixelCount = whitePixelCount;
-                result.WhitePixelRatio = totalPixels > 0 ? (double)whitePixelCount / totalPixels * 100 : 0;
-                result.OutputArea = whitePixelCount;
-
-                var outputMean = Cv2.Mean(outputImage);
-                result.OutputMean = outputMean.Val0;
-
-                var moments = Cv2.Moments(outputImage);
-                if (moments.M00 > 0)
-                {
-                    result.CentroidX = moments.M10 / moments.M00;
-                    result.CentroidY = moments.M01 / moments.M00;
-                }
+                result.CentroidX = col.D;
+                result.CentroidY = row.D;
             }
 
-            using var tempCvImage = new CvImage(inputImage);
-            CvOp.Intensity(tempCvImage, null,
-                out var histogram, out _, out _);
+            // 二值区域灰度均值
+            HOperatorSet.Intensity(binaryRegion, reducedImage, out var mean, out _);
+            result.OutputMean = mean.D;
 
-            result.HistogramData = histogram;
-            double histMean = histogram.Length > 0
-                ? histogram.Zip(Enumerable.Range(0, 256), (h, i) => h * i).Sum() / histogram.Sum()
+            // 灰度直方图
+            HOperatorSet.GrayHisto(binaryRegion, reducedImage, out var absoluteHisto, out _);
+            var histArr = absoluteHisto.LArr;
+            result.HistogramData = Array.ConvertAll(histArr, v => (double)v);
+
+            double histMean = histArr.Length > 0
+                ? histArr.Select((h, i) => h * i).Sum() / (double)histArr.Sum()
                 : 0;
             result.ChannelMeans = new[] { histMean };
         }

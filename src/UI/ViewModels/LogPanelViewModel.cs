@@ -32,10 +32,7 @@ namespace SunEyeVision.UI.ViewModels
         private readonly VisionLogger _logger;
         private bool _autoScroll = true;
         private bool _isDiagnosticMode = false;
-        private bool _showInfo = true;
-        private bool _showSuccess = true;
-        private bool _showWarning = true;
-        private bool _showError = true;
+        private string _activeFilter = "All"; // 当前选中的日志级别过滤模式：All/Info/Success/Warning/Error
         private string _searchText = string.Empty;
         private bool _isDisposed = false;
         private bool _isCopying = false; // 防止重复复制
@@ -85,55 +82,65 @@ namespace SunEyeVision.UI.ViewModels
         }
 
         /// <summary>
-        /// 是否显示信息日志
+        /// 是否显示全部级别（单选过滤模式，与 Info/Success/Warning/Error 互斥）
+        /// </summary>
+        public bool ShowAll
+        {
+            get => _activeFilter == "All";
+            set { if (value) SelectLevelFilter("All"); }
+        }
+
+        /// <summary>
+        /// 是否显示信息日志（单选过滤模式）
         /// </summary>
         public bool ShowInfo
         {
-            get => _showInfo;
-            set
-            {
-                if (SetProperty(ref _showInfo, value))
-                    RefreshFilter();
-            }
+            get => _activeFilter == "Info";
+            set { if (value) SelectLevelFilter("Info"); }
         }
 
         /// <summary>
-        /// 是否显示成功日志
+        /// 是否显示成功日志（单选过滤模式）
         /// </summary>
         public bool ShowSuccess
         {
-            get => _showSuccess;
-            set
-            {
-                if (SetProperty(ref _showSuccess, value))
-                    RefreshFilter();
-            }
+            get => _activeFilter == "Success";
+            set { if (value) SelectLevelFilter("Success"); }
         }
 
         /// <summary>
-        /// 是否显示警告日志
+        /// 是否显示警告日志（单选过滤模式）
         /// </summary>
         public bool ShowWarning
         {
-            get => _showWarning;
-            set
-            {
-                if (SetProperty(ref _showWarning, value))
-                    RefreshFilter();
-            }
+            get => _activeFilter == "Warning";
+            set { if (value) SelectLevelFilter("Warning"); }
         }
 
         /// <summary>
-        /// 是否显示错误日志
+        /// 是否显示错误日志（单选过滤模式）
         /// </summary>
         public bool ShowError
         {
-            get => _showError;
-            set
-            {
-                if (SetProperty(ref _showError, value))
-                    RefreshFilter();
-            }
+            get => _activeFilter == "Error";
+            set { if (value) SelectLevelFilter("Error"); }
+        }
+
+        /// <summary>
+        /// 切换当前选中的日志级别过滤模式（5 个级别互斥单选，重复点击已选项不取消）
+        /// </summary>
+        private void SelectLevelFilter(string filter)
+        {
+            if (_activeFilter == filter)
+                return;
+
+            _activeFilter = filter;
+            OnPropertyChanged(nameof(ShowAll));
+            OnPropertyChanged(nameof(ShowInfo));
+            OnPropertyChanged(nameof(ShowSuccess));
+            OnPropertyChanged(nameof(ShowWarning));
+            OnPropertyChanged(nameof(ShowError));
+            RefreshFilter();
         }
 
         /// <summary>
@@ -360,15 +367,15 @@ namespace SunEyeVision.UI.ViewModels
             if (obj is not LogEntry entry)
                 return false;
 
-            // 级别过滤
-            var levelVisible = entry.Level switch
+            // 级别过滤（单选模式：All=全部；Info/Success/Warning/Error=只看该级别）
+            var levelVisible = _activeFilter switch
             {
-                LogLevel.Debug => IsDiagnosticMode,
-                LogLevel.Info => ShowInfo,
-                LogLevel.Success => ShowSuccess,
-                LogLevel.Warning => ShowWarning,
-                LogLevel.Error => ShowError,
-                _ => true
+                "Info" => entry.Level == LogLevel.Info,
+                "Success" => entry.Level == LogLevel.Success,
+                "Warning" => entry.Level == LogLevel.Warning,
+                "Error" => entry.Level == LogLevel.Error,
+                // All：非 Debug 级别全显示，Debug 级别按诊断模式开关
+                _ => entry.Level != LogLevel.Debug || IsDiagnosticMode
             };
 
             if (!levelVisible)

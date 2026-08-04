@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
-using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 
 namespace SunEyeVision.Tool.Morphology
@@ -113,15 +112,6 @@ namespace SunEyeVision.Tool.Morphology
 
         #endregion
 
-        #region 图形结果（供下游节点数据绑定用）
-
-        /// <summary>
-        /// 形态学处理后区域集合（已桥接为 RoI 外发，供下游节点绑定/全局变量复用）
-        /// </summary>
-        public ShapeParameters[] OutputRegions { get; set; } = Array.Empty<ShapeParameters>();
-
-        #endregion
-
         #region 分析数据
 
         /// <summary>
@@ -188,7 +178,6 @@ namespace SunEyeVision.Tool.Morphology
                 new("KernelWidthUsed",      "核宽度",                 "参数回写"),
                 new("KernelHeightUsed",     "核高度",                 "参数回写"),
                 new("IterationsUsed",       "迭代次数",               "参数回写"),
-                new("OutputRegions",        "形态学区域",             "图形结果"),
                 new("InputChannels",        "输入图像通道数",         "输入信息"),
                 new("OutputMean",           "输出图像均值",           "统计"),
                 new("BlobCount",            "Blob数量",               "统计"),

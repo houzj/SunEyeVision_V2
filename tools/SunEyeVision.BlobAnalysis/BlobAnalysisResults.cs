@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
-using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 using WpfPoint = System.Windows.Point;
 using WpfRect = System.Windows.Rect;
@@ -173,7 +172,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
 
         #endregion
 
-        #region 图形结果（供下游节点数据绑定用）
+        #region 图形结果（内部可视化调试用，不进契约）
 
         /// <summary>所有筛选通过Blob的外接矩形数组</summary>
         public WpfRect[] BlobBoundingBoxes { get; set; } = Array.Empty<WpfRect>();
@@ -183,9 +182,6 @@ namespace SunEyeVision.Tool.BlobAnalysis
 
         /// <summary>所有筛选通过Blob的质心点数组</summary>
         public WpfPoint[] BlobCentroids { get; set; } = Array.Empty<WpfPoint>();
-
-        /// <summary>所有筛选通过Blob的连通域区域，已桥接为 RoI（多边形）外发，供下游节点绑定/全局变量复用</summary>
-        public ShapeParameters[] OutputRegions { get; set; } = Array.Empty<ShapeParameters>();
 
         #endregion
 
@@ -221,8 +217,6 @@ namespace SunEyeVision.Tool.BlobAnalysis
                 new("BlobBoundingWidths",       "边框宽",                 "Blob详细/边框"),
                 new("BlobBoundingHeights",      "边框高",                 "Blob详细/边框"),
                 new("BlobBoundingRects",        "边框(文本)",             "Blob详细/边框"),
-                // 图形结果（供下游节点绑定显示）
-                new("OutputRegions",             "连通域区域",             "图形结果"),
             ];
         }
     }

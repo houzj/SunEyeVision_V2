@@ -1,24 +1,23 @@
 using System;
 using System.Globalization;
 using System.Windows.Data;
-using OpenCvSharp;
 
 namespace SunEyeVision.Tool.Morphology.Converters
 {
     /// <summary>
-    /// 结构元素形状转换器 - 支持 ComboBox 与 MorphShapes 枚举的中文双向绑定
+    /// 结构元素形状转换器 - 支持 ComboBox 与 MorphKernelShape 枚举的中文双向绑定
     /// </summary>
     public class MorphShapeConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is MorphShapes shape)
+            if (value is MorphKernelShape shape)
             {
                 return shape switch
                 {
-                    MorphShapes.Rect => "矩形",
-                    MorphShapes.Cross => "十字形",
-                    MorphShapes.Ellipse => "椭圆形",
+                    MorphKernelShape.Rect => "矩形",
+                    MorphKernelShape.Cross => "十字形",
+                    MorphKernelShape.Ellipse => "椭圆形",
                     _ => "矩形"
                 };
             }
@@ -31,13 +30,13 @@ namespace SunEyeVision.Tool.Morphology.Converters
             {
                 return shapeStr switch
                 {
-                    "矩形" => MorphShapes.Rect,
-                    "十字形" => MorphShapes.Cross,
-                    "椭圆形" => MorphShapes.Ellipse,
-                    _ => MorphShapes.Rect
+                    "矩形" => MorphKernelShape.Rect,
+                    "十字形" => MorphKernelShape.Cross,
+                    "椭圆形" => MorphKernelShape.Ellipse,
+                    _ => MorphKernelShape.Rect
                 };
             }
-            return MorphShapes.Rect;
+            return MorphKernelShape.Rect;
         }
     }
 }

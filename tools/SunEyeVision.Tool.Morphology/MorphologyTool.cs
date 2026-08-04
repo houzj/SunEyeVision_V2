@@ -4,11 +4,10 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
-using OpenCvSharp;
-using SunEyeVision.CvEngine;
+using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Core;
+using SunEyeVision.Plugin.SDK.Execution.Helpers;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.Execution;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 using SunEyeVision.Plugin.SDK.Validation;
@@ -18,12 +17,12 @@ using SunEyeVision.Tool.Morphology.Views;
 namespace SunEyeVision.Tool.Morphology
 {
     /// <summary>
-    /// 形态学处理工具 - v1.0
+    /// 形态学处理工具 - v1.0（Halcon 实现）
     /// 算法流程：
     ///   1. rgb1_to_gray   → 灰度转换
     ///   2. reduce_domain  → ROI掩码限制
     ///   3. threshold      → 固定阈值二值化 (128)
-    ///   4. morphology_ex  → 形态学操作
+    ///   4. 形态学操作     → Erosion1/Dilation1/Opening/Closing/TopHat/BottomHat
     ///   5. 区域统计       → Blob计数/面积统计
     ///   6. 结果判断       → OK/NG判定
     /// </summary>
@@ -50,7 +49,7 @@ namespace SunEyeVision.Tool.Morphology
         /// </summary>
         public MorphologyResults Run(MorphologyParameters parameters)
         {
-            var image = parameters.GetCvImage();
+            var hImage = parameters.GetHalconImage();
             var result = new MorphologyResults
             {
                 ToolName = _attribute?.DisplayName ?? "Morphology",
@@ -78,34 +77,48 @@ namespace SunEyeVision.Tool.Morphology
                 }
 
                 // ===== 输入图像验证 =====
-                if (image.Empty)
+                if (!hImage.IsInitialized())
                 {
                     parameters.LogWarning("输入图像为空");
                     result.SetError("输入图像为空");
                     return result;
                 }
 
-                parameters.LogInfo($"开始形态学处理: 图像尺寸 {image.Size.Width}x{image.Size.Height}");
+                HOperatorSet.GetImageSize(hImage, out var imgW, out var imgH);
+                int imgWidth = (int)imgW.L;
+                int imgHeight = (int)imgH.L;
+                parameters.LogInfo($"开始形态学处理: 图像尺寸 {imgWidth}x{imgHeight}");
 
                 var operation = parameters.Operation.Value;
                 var kernelShape = parameters.KernelShape.Value;
                 var kernelWidth = parameters.KernelWidth.Value;
                 var kernelHeight = parameters.KernelHeight.Value;
                 var iterations = parameters.Iterations.Value;
-                var borderType = parameters.BorderType.Value;
                 var isRegionEnabled = parameters.IsRegionEnabled;
 
                 // ===== Step 1: 灰度转换 =====
                 stepSw.Restart();
-                CvOp.Rgb1ToGray(image, out var grayImage);
+                HImage grayImage;
+                int channels = hImage.CountChannels();
+                if (channels == 3 || channels == 4)
+                {
+                    HOperatorSet.Rgb1ToGray(hImage, out var grayObj);
+                    grayImage = new HImage(grayObj);
+                }
+                else
+                {
+                    grayImage = hImage.Clone();
+                }
                 stepSw.Stop();
                 stepTimings.Add(("灰度转换", stepSw.ElapsedMilliseconds));
 
                 using (grayImage)
                 {
-                    result.GrayImage = new CvImage(grayImage.Image.Clone(), ownsImage: true);
+                    result.GrayImage = new HalImage(grayImage.Clone());
 
-                    CvRegion? roiRegion = null;
+                    HRegion? roiRegion = null;
+                    HRegion? inspHRegion = null;
+                    HRegion? maskHRegion = null;
 
                     // ===== Step 2: 构建ROI区域 =====
                     stepSw.Restart();
@@ -113,9 +126,13 @@ namespace SunEyeVision.Tool.Morphology
                     {
                         var inspectionRegions = parameters.GetRegionsByType(RegionType.Inspection);
                         var maskRegions = parameters.GetRegionsByType(RegionType.Mask);
-                        roiRegion = CvRegionHelper.BuildROI(grayImage.Size, inspectionRegions, maskRegions);
+                        (roiRegion, inspHRegion, maskHRegion) = ToolRegionHelper.BuildHalconROI(
+                            imgWidth, imgHeight, inspectionRegions, maskRegions, parameters.NodeResults);
                         if (roiRegion != null)
-                            parameters.LogInfo($"ROI区域创建成功，白色像素数: {roiRegion.PixelCount}");
+                        {
+                            HOperatorSet.AreaCenter(roiRegion, out var whitePixels, out _, out _);
+                            parameters.LogInfo($"ROI区域创建成功，白色像素数: {whitePixels.L}");
+                        }
                     }
                     stepSw.Stop();
                     stepTimings.Add(("ROI构建", stepSw.ElapsedMilliseconds));
@@ -127,8 +144,8 @@ namespace SunEyeVision.Tool.Morphology
                         var bindingSource = parameters.PositionCorrectionBindingSource;
                         if (bindingSource?.CurrentValue is AffineMatrix matrix)
                         {
-                            roiRegion = CvRegionHelper.ApplyPositionCorrection(
-                                roiRegion, matrix, grayImage.Size);
+                            (roiRegion, inspHRegion, maskHRegion) = ToolRegionHelper.ApplyPositionCorrectionHalcon(
+                                roiRegion, inspHRegion, maskHRegion, matrix, imgWidth, imgHeight);
                             parameters.LogInfo($"位置修正已启用, 矩阵: {matrix}");
                         }
                         else if (bindingSource != null &&
@@ -149,7 +166,16 @@ namespace SunEyeVision.Tool.Morphology
                     {
                         // ===== Step 3: ReduceDomain（ROI掩码限制）=====
                         stepSw.Restart();
-                        CvOp.ReduceDomain(grayImage, roiRegion, out var reducedImage);
+                        HImage reducedImage;
+                        if (roiRegion != null)
+                        {
+                            HOperatorSet.ReduceDomain(grayImage, roiRegion, out var reducedObj);
+                            reducedImage = new HImage(reducedObj);
+                        }
+                        else
+                        {
+                            reducedImage = grayImage.Clone();
+                        }
                         stepSw.Stop();
                         stepTimings.Add(("ReduceDomain", stepSw.ElapsedMilliseconds));
 
@@ -157,65 +183,67 @@ namespace SunEyeVision.Tool.Morphology
                         {
                             // ===== Step 4: 固定阈值二值化 =====
                             stepSw.Restart();
-                            var binaryMat = new Mat();
-                            Cv2.Threshold(reducedImage.Image, binaryMat, 128, 255, ThresholdTypes.Binary);
+                            HOperatorSet.Threshold(reducedImage, out var binRegion,
+                                128, 255);
                             stepSw.Stop();
                             stepTimings.Add(("二值化", stepSw.ElapsedMilliseconds));
 
-                            using (binaryMat)
+                            using (binRegion)
                             {
-                                // ===== Step 5: 形态学操作（二值图背景为黑，边框用黑色填充防止白边）=====
+                                // ===== Step 5: 形态学操作 =====
                                 stepSw.Restart();
-                                CvOp.MorphologyEx(binaryMat, out var resultMat,
-                                    (MorphTypes)operation, kernelShape,
-                                    kernelWidth, kernelHeight,
-                                    iterations, borderType,
-                                    borderValue: Scalar.All(0));
+                                HRegion morphRegion;
+                                using (var se = BuildStructuringElement(kernelShape, kernelWidth, kernelHeight))
+                                {
+                                    morphRegion = ApplyMorphology(new HRegion(binRegion), se, operation, iterations);
+                                }
                                 stepSw.Stop();
                                 stepTimings.Add(("形态学操作", stepSw.ElapsedMilliseconds));
 
-                                using (resultMat)
+                                using (morphRegion)
                                 {
                                     // ===== Step 6: 区域转换与统计 =====
                                     stepSw.Restart();
-                                    using var morphRegion = CvRegion.FromMask(resultMat);
 
-                                    // 输出图像：通过 ComposeDisplay 合成
-                                    CvOp.ComposeDisplay(reducedImage, null, morphRegion, out var outputImage);
-
-                                    // 保存二值掩码
-                                    CvOp.RegionToMask(morphRegion, out var binaryMask);
-                                    result.BinaryMask = new CvImage(binaryMask, ownsImage: true);
-
-                                    // 图形结果输出：Region→RoI 桥接外发（D8）
-                                    result.OutputRegions = new ShapeParameters[] { RegionConverter.RegionToRoi(morphRegion, "exact") };
-
-                                    result.OutputImage = new CvImage(outputImage, ownsImage: true);
+                                    // 输出图像：RegionToBin
+                                    HOperatorSet.RegionToBin(morphRegion, out var binObj,
+                                        255, 0, imgWidth, imgHeight);
+                                    result.OutputImage = new HalImage(new HImage(binObj.Clone()));
+                                    result.BinaryMask = new HalImage(new HImage(binObj));
 
                                     // 参数回写
                                     result.OperationUsed = operation.ToString();
                                     result.KernelShapeUsed = kernelShape.ToString();
                                     result.KernelWidthUsed = kernelWidth;
                                     result.KernelHeightUsed = kernelHeight;
-                                    result.InputChannels = image.Channels;
+                                    result.InputChannels = channels;
                                     result.IterationsUsed = iterations;
 
-                                    // 统计：输出均值
-                                    var outputMean = Cv2.Mean(resultMat);
-                                    result.OutputMean = outputMean.Val0;
-
                                     // 连通域分析 → Blob 统计
-                                    CvOp.Connection(morphRegion, out var connectedRegion);
-                                    using (connectedRegion)
+                                    HOperatorSet.Connection(morphRegion, out var connectedObj);
+                                    using var connectedRegion = new HRegion(connectedObj);
+                                    HOperatorSet.CountObj(connectedRegion, out var numObj);
+                                    int blobCount = (int)numObj.L;
+                                    result.BlobCount = blobCount;
+
+                                    if (blobCount > 0)
                                     {
-                                        if (!connectedRegion.IsEmpty)
+                                        HOperatorSet.AreaCenter(connectedRegion, out var areas, out _, out _);
+                                        long totalArea = 0;
+                                        long maxArea = 0;
+                                        for (int i = 0; i < areas.Length; i++)
                                         {
-                                            CvOp.AreaCenter(connectedRegion, out var areaCenters);
-                                            result.BlobCount = areaCenters.Length;
-                                            result.TotalArea = (long)areaCenters.Sum(ac => ac.Area);
-                                            result.MaxBlobArea = areaCenters.Length > 0
-                                                ? areaCenters.Max(ac => ac.Area) : 0;
+                                            long a = areas.LArr[i];
+                                            totalArea += a;
+                                            if (a > maxArea) maxArea = a;
                                         }
+                                        result.TotalArea = totalArea;
+                                        result.MaxBlobArea = maxArea;
+                                    }
+                                    else
+                                    {
+                                        result.TotalArea = 0;
+                                        result.MaxBlobArea = 0;
                                     }
 
                                     stepSw.Stop();
@@ -236,7 +264,7 @@ namespace SunEyeVision.Tool.Morphology
                                     var reportLines = new List<string>
                                     {
                                         $"===== 形态学性能报告 =====",
-                                        $"图像: {image.Size.Width}x{image.Size.Height}  总耗时: {totalMs}ms",
+                                        $"图像: {imgWidth}x{imgHeight}  总耗时: {totalMs}ms",
                                         $"步骤  名称              耗时(ms)    占比",
                                         $"────  ──────────────── ────────  ──────"
                                     };
@@ -256,6 +284,8 @@ namespace SunEyeVision.Tool.Morphology
                     finally
                     {
                         roiRegion?.Dispose();
+                        inspHRegion?.Dispose();
+                        maskHRegion?.Dispose();
                     }
                 }
             }
@@ -299,6 +329,70 @@ namespace SunEyeVision.Tool.Morphology
         }
 
         #region 私有方法
+
+        /// <summary>
+        /// 构建结构元素 HRegion
+        /// </summary>
+        private static HRegion BuildStructuringElement(MorphKernelShape shape, int width, int height)
+        {
+            switch (shape)
+            {
+                case MorphKernelShape.Rect:
+                    HOperatorSet.GenRectangle1(out var rect, 0, 0, height - 1, width - 1);
+                    return new HRegion(rect);
+                case MorphKernelShape.Cross:
+                    // 十字核：中心 + 上下左右
+                    int cx = width / 2;
+                    int cy = height / 2;
+                    HOperatorSet.GenRegionPoints(out var cross,
+                        new HTuple(new int[] { cy, cy, cy, 0, height - 1 }),
+                        new HTuple(new int[] { cx, 0, width - 1, cx, cx }));
+                    return new HRegion(cross);
+                case MorphKernelShape.Ellipse:
+                default:
+                    int radius = Math.Max(width, height) / 2;
+                    radius = Math.Max(radius, 1);
+                    HOperatorSet.GenCircle(out var circle, radius, radius, radius);
+                    return new HRegion(circle);
+            }
+        }
+
+        /// <summary>
+        /// 应用形态学操作
+        /// </summary>
+        private static HRegion ApplyMorphology(HRegion inputRegion, HRegion se, MorphOperation operation, int iterations)
+        {
+            switch (operation)
+            {
+                case MorphOperation.Erode:
+                    HOperatorSet.Erosion1(inputRegion, se, out var erodeObj, iterations);
+                    return new HRegion(erodeObj);
+                case MorphOperation.Dilate:
+                    HOperatorSet.Dilation1(inputRegion, se, out var dilateObj, iterations);
+                    return new HRegion(dilateObj);
+                case MorphOperation.Open:
+                    HOperatorSet.Opening(inputRegion, se, out var openObj);
+                    return new HRegion(openObj);
+                case MorphOperation.Close:
+                    HOperatorSet.Closing(inputRegion, se, out var closeObj);
+                    return new HRegion(closeObj);
+                case MorphOperation.Gradient:
+                    HOperatorSet.Dilation1(inputRegion, se, out var gradDilate, 1);
+                    HOperatorSet.Erosion1(inputRegion, se, out var gradErode, 1);
+                    HOperatorSet.Difference(gradDilate, gradErode, out var gradientObj);
+                    gradDilate.Dispose();
+                    gradErode.Dispose();
+                    return new HRegion(gradientObj);
+                case MorphOperation.TopHat:
+                    HOperatorSet.TopHat(inputRegion, se, out var topHatObj);
+                    return new HRegion(topHatObj);
+                case MorphOperation.BlackHat:
+                    HOperatorSet.BottomHat(inputRegion, se, out var bottomHatObj);
+                    return new HRegion(bottomHatObj);
+                default:
+                    throw new NotSupportedException($"不支持的形态学操作: {operation}");
+            }
+        }
 
         /// <summary>
         /// 执行结果判断

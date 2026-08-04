@@ -554,7 +554,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
 
 
     /// <summary>
-    /// 通用工具结果 - 用于兼容层的具体实现
+    /// 通用工具结果 - 用于动态承载结果项的具体实现
     /// </summary>
     public class GenericToolResults : ToolResults
     {
@@ -571,6 +571,36 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
                 Value = value,
                 Type = type
             });
+        }
+
+        /// <summary>
+        /// 基于输出变量契约派生：把动态 AddResultItem 塞入的结果项暴露为契约变量，
+        /// 使子程序输入端口、全局变量注入等动态结果可被 OutputVariableResolver 按名寻址（SSOT）。
+        /// 类型从运行时值推断并映射到 SdkTypeVocabulary 词汇表；未映射类型直接报错（rule-015）。
+        /// </summary>
+        public override IReadOnlyList<OutputVariable> GetOutputVariables()
+        {
+            var variables = new List<OutputVariable>();
+            foreach (var item in _resultItems)
+            {
+                // 词汇表只注册接口类型（IVisionImage），运行时值可能是具体实现类（CvImage/HalImage），
+                // 故图像类映射到接口类型以命中 "Image" 词汇。
+                var runtimeType = item.Value is IVisionImage ? typeof(IVisionImage) : item.Value?.GetType();
+                var variableType = SunEyeVision.Plugin.SDK.Models.SdkTypeVocabulary.ToTypeVocabulary(runtimeType)
+                    ?? throw new InvalidOperationException(
+                        $"通用结果项 '{item.Name}' 的值类型 '{runtimeType?.Name ?? "null"}' 未注册到 SdkTypeVocabulary 词汇表。");
+
+                variables.Add(new OutputVariable
+                {
+                    Name = item.Name,
+                    VariableType = variableType,
+                    DisplayName = item.DisplayName ?? item.Name,
+                    Group = "结果",
+                    Kind = OutputVariableKind.Data,
+                    RuntimeValue = OutputVariableArrayPromoter.Promote(item.Value, variableType, runtimeType ?? typeof(object))
+                });
+            }
+            return variables;
         }
 
         /// <summary>

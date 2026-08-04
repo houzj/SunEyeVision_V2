@@ -163,20 +163,28 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <!-- 左侧：过滤按钮 -->
+                    <!-- 左侧：过滤按钮（单选互斥，默认全部） -->
                     <StackPanel Grid.Column="0" Orientation="Horizontal">
-                        <ToggleButton Content="信息"
-                                      IsChecked="{Binding ShowInfo, Mode=TwoWay}"
-                                      Style="{StaticResource LogFilterToggleButtonStyle}"/>
-                        <ToggleButton Content="成功"
-                                      IsChecked="{Binding ShowSuccess, Mode=TwoWay}"
-                                      Style="{StaticResource LogFilterToggleButtonStyle}"/>
-                        <ToggleButton Content="警告"
-                                      IsChecked="{Binding ShowWarning, Mode=TwoWay}"
-                                      Style="{StaticResource LogFilterToggleButtonStyle}"/>
-                        <ToggleButton Content="错误"
-                                      IsChecked="{Binding ShowError, Mode=TwoWay}"
-                                      Style="{StaticResource LogFilterToggleButtonStyle}"/>
+                        <RadioButton Content="全部"
+                                     GroupName="LogLevelFilter"
+                                     IsChecked="{Binding ShowAll, Mode=TwoWay}"
+                                     Style="{StaticResource LogFilterToggleButtonStyle}"/>
+                        <RadioButton Content="信息"
+                                     GroupName="LogLevelFilter"
+                                     IsChecked="{Binding ShowInfo, Mode=TwoWay}"
+                                     Style="{StaticResource LogFilterToggleButtonStyle}"/>
+                        <RadioButton Content="成功"
+                                     GroupName="LogLevelFilter"
+                                     IsChecked="{Binding ShowSuccess, Mode=TwoWay}"
+                                     Style="{StaticResource LogFilterToggleButtonStyle}"/>
+                        <RadioButton Content="警告"
+                                     GroupName="LogLevelFilter"
+                                     IsChecked="{Binding ShowWarning, Mode=TwoWay}"
+                                     Style="{StaticResource LogFilterToggleButtonStyle}"/>
+                        <RadioButton Content="错误"
+                                     GroupName="LogLevelFilter"
+                                     IsChecked="{Binding ShowError, Mode=TwoWay}"
+                                     Style="{StaticResource LogFilterToggleButtonStyle}"/>
                     </StackPanel>
 
                     <!-- 中间：搜索框 -->

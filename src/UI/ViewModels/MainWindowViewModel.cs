@@ -3073,6 +3073,7 @@ SplitterPosition = position;
                                 PropertyName = bindingKey,
                                 DisplayName = input.Name,
                                 PropertyType = paramType,
+                                VariableType = SdkTypeVocabulary.ToTypeVocabulary(paramType),
                                 Description = $"子程序输入: {input.Name}",
                             });
                         }

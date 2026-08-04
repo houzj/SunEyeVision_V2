@@ -4,9 +4,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
-using OpenCvSharp;
+using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Core;
-using SunEyeVision.CvEngine;
+using SunEyeVision.Plugin.SDK.Execution.Helpers;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
@@ -17,7 +17,7 @@ using SunEyeVision.Tool.ImageFilter.Views;
 namespace SunEyeVision.Tool.ImageFilter
 {
     /// <summary>
-    /// 图像滤波工具 - 支持5种滤波方式
+    /// 图像滤波工具 - 支持5种滤波方式（Halcon 实现）
     /// 算法流程：
     ///   1. rgb1_to_gray   → 灰度转换
     ///   2. 滤波处理       → 按 FilterType 选择对应滤波算子
@@ -47,7 +47,7 @@ namespace SunEyeVision.Tool.ImageFilter
         /// </summary>
         public ImageFilterResults Run(ImageFilterParameters parameters)
         {
-            var image = parameters.GetCvImage();
+            var hImage = parameters.GetHalconImage();
             var result = new ImageFilterResults
             {
                 ToolName = _attribute?.DisplayName ?? "ImageFilter",
@@ -75,15 +75,17 @@ namespace SunEyeVision.Tool.ImageFilter
                 }
 
                 // ===== 输入图像验证 =====
-                if (image.Empty)
+                if (!hImage.IsInitialized())
                 {
                     parameters.LogWarning("输入图像为空");
                     result.SetError("输入图像为空");
                     return result;
                 }
 
-                parameters.LogInfo($"开始滤波处理: 图像尺寸 {image.Size.Width}x{image.Size.Height}");
-
+                HOperatorSet.GetImageSize(hImage, out var imgW, out var imgH);
+                int imgWidth = (int)imgW.L;
+                int imgHeight = (int)imgH.L;
+                parameters.LogInfo($"开始滤波处理: 图像尺寸 {imgWidth}x{imgHeight}");
 
                 FilterType filterType = parameters.FilterTypeValue.Value;
                 int kernelWidth = parameters.KernelWidth.Value;
@@ -92,22 +94,33 @@ namespace SunEyeVision.Tool.ImageFilter
                 double sigmaY = parameters.SigmaY.Value;
                 double sigmaColor = parameters.SigmaColor.Value;
                 double sigmaSpace = parameters.SigmaSpace.Value;
-                var borderType = ImageFilterParameters.ToCvBorderType(parameters.BorderTypeValue.Value);
                 bool isRegionEnabled = parameters.IsRegionEnabled;
 
                 // ===== Step 1: 灰度转换 (rgb1_to_gray) =====
                 stepSw.Restart();
-                CvOp.Rgb1ToGray(image, out var grayImage);
+                HImage grayImage;
+                int channels = hImage.CountChannels();
+                if (channels == 3 || channels == 4)
+                {
+                    HOperatorSet.Rgb1ToGray(hImage, out var grayObj);
+                    grayImage = new HImage(grayObj);
+                }
+                else
+                {
+                    grayImage = hImage.Clone();
+                }
                 stepSw.Stop();
                 stepTimings.Add(("灰度转换", stepSw.ElapsedMilliseconds));
 
                 using (grayImage)
                 {
                     // 保存灰度图像中间结果
-                    result.GrayImage = new CvImage(grayImage.Image.Clone(), ownsImage: true);
-                    result.InputChannels = image.Channels;
+                    result.GrayImage = new HalImage(grayImage.Clone());
+                    result.InputChannels = channels;
 
-                    CvRegion? roiRegion = null;
+                    HRegion? roiRegion = null;
+                    HRegion? inspHRegion = null;
+                    HRegion? maskHRegion = null;
 
                     // ===== Step 2: 构建ROI区域 =====
                     stepSw.Restart();
@@ -115,9 +128,13 @@ namespace SunEyeVision.Tool.ImageFilter
                     {
                         var inspectionRegions = parameters.GetRegionsByType(RegionType.Inspection);
                         var maskRegions = parameters.GetRegionsByType(RegionType.Mask);
-                        roiRegion = CvRegionHelper.BuildROI(grayImage.Size, inspectionRegions, maskRegions);
+                        (roiRegion, inspHRegion, maskHRegion) = ToolRegionHelper.BuildHalconROI(
+                            imgWidth, imgHeight, inspectionRegions, maskRegions, parameters.NodeResults);
                         if (roiRegion != null)
-                            parameters.LogInfo($"ROI区域创建成功，白色像素数: {roiRegion.PixelCount}");
+                        {
+                            HOperatorSet.AreaCenter(roiRegion, out var whitePixels, out _, out _);
+                            parameters.LogInfo($"ROI区域创建成功，白色像素数: {whitePixels.L}");
+                        }
                     }
                     stepSw.Stop();
                     stepTimings.Add(("ROI构建", stepSw.ElapsedMilliseconds));
@@ -129,8 +146,8 @@ namespace SunEyeVision.Tool.ImageFilter
                         var bindingSource = parameters.PositionCorrectionBindingSource;
                         if (bindingSource?.CurrentValue is AffineMatrix matrix)
                         {
-                            roiRegion = CvRegionHelper.ApplyPositionCorrection(
-                                roiRegion, matrix, grayImage.Size);
+                            (roiRegion, inspHRegion, maskHRegion) = ToolRegionHelper.ApplyPositionCorrectionHalcon(
+                                roiRegion, inspHRegion, maskHRegion, matrix, imgWidth, imgHeight);
                             parameters.LogInfo($"位置修正已启用, 矩阵: {matrix}");
                         }
                         else if (bindingSource != null &&
@@ -151,7 +168,16 @@ namespace SunEyeVision.Tool.ImageFilter
                     {
                         // ===== Step 3: ReduceDomain（缩小定义域，ROI掩码限制）=====
                         stepSw.Restart();
-                        CvOp.ReduceDomain(grayImage, roiRegion, out var reducedImage);
+                        HImage reducedImage;
+                        if (roiRegion != null)
+                        {
+                            HOperatorSet.ReduceDomain(grayImage, roiRegion, out var reducedObj);
+                            reducedImage = new HImage(reducedObj);
+                        }
+                        else
+                        {
+                            reducedImage = grayImage.Clone();
+                        }
                         stepSw.Stop();
                         stepTimings.Add(("ReduceDomain", stepSw.ElapsedMilliseconds));
 
@@ -159,103 +185,95 @@ namespace SunEyeVision.Tool.ImageFilter
                         {
                             // ===== Step 4: 滤波处理 =====
                             stepSw.Restart();
-                            CvImage? filteredImage = null;
+                            HImage filteredImage;
 
-                            try
+                            switch (filterType)
                             {
-                                switch (filterType)
-                                {
-                                    case FilterType.Blur:
-                                        CvOp.MeanImage(reducedImage, kernelWidth, kernelHeight,
-                                            out filteredImage, borderType);
-                                        break;
-                                    case FilterType.Gaussian:
-                                        CvOp.GaussImage(reducedImage, kernelWidth, kernelHeight,
-                                            sigmaX, sigmaY, out filteredImage, borderType);
-                                        break;
-                                    case FilterType.MedianBlur:
-                                        CvOp.MedianImage(reducedImage, kernelWidth,
-                                            out filteredImage);
-                                        break;
-                                    case FilterType.Bilateral:
-                                        CvOp.BilateralFilterImage(reducedImage, kernelWidth,
-                                            sigmaColor, sigmaSpace, out filteredImage, borderType);
-                                        break;
-                                    case FilterType.Filter2D:
-                                        // 默认使用 3x3 锐化核
-                                        using (var sharpenKernel = new Mat(3, 3, MatType.CV_32FC1, Scalar.All(0)))
-                                        {
-                                            sharpenKernel.Set<float>(0, 1, -1);
-                                            sharpenKernel.Set<float>(1, 0, -1); sharpenKernel.Set<float>(1, 1, 5); sharpenKernel.Set<float>(1, 2, -1);
-                                            sharpenKernel.Set<float>(2, 1, -1);
-
-                                            CvOp.ConvolImage(reducedImage, sharpenKernel,
-                                                out filteredImage, borderType);
-                                        }
-                                        break;
-                                }
-                                stepSw.Stop();
-                                stepTimings.Add(("滤波处理", stepSw.ElapsedMilliseconds));
-
-                                if (filteredImage == null || filteredImage.Empty)
-                                {
-                                    parameters.LogWarning("滤波结果为空");
-                                    result.SetError("滤波结果为空");
-                                    return result;
-                                }
-
-                                using (filteredImage)
-                                {
-                                    result.OutputImage = new CvImage(filteredImage.Image.Clone(), ownsImage: true);
-                                    result.FilterTypeUsed = filterType.ToString();
-                                    result.KernelWidthUsed = kernelWidth;
-                                    result.KernelHeightUsed = kernelHeight;
-
-                                    // ===== Step 5: 统计信息 =====
-                                    stepSw.Restart();
-                                    ComputeStatistics(result, filteredImage);
-                                    stepSw.Stop();
-                                    stepTimings.Add(("统计计算", stepSw.ElapsedMilliseconds));
-
-                                    // ===== Step 6: 结果判断 =====
-                                    stepSw.Restart();
-                                    EvaluateResult(result, parameters.ResultConfig);
-                                    stepSw.Stop();
-                                    stepTimings.Add(("结果判断", stepSw.ElapsedMilliseconds));
-
-                                    stopwatch.Stop();
-                                    result.SetSuccess(stopwatch.ElapsedMilliseconds);
-
-                                    // ===== 性能报告 =====
-                                    var totalMs = stopwatch.ElapsedMilliseconds;
-                                    var maxStep = stepTimings.MaxBy(t => t.Ms);
-                                    var reportLines = new List<string>
-                                    {
-                                        $"===== 滤波性能报告 =====",
-                                        $"图像: {image.Size.Width}x{image.Size.Height}  总耗时: {totalMs}ms",
-                                        $"步骤  名称              耗时(ms)    占比",
-                                        $"────  ──────────────── ────────  ──────"
-                                    };
-                                    foreach (var (step, ms) in stepTimings)
-                                    {
-                                        var pct = totalMs > 0 ? (double)ms / totalMs * 100 : 0;
-                                        var marker = step == maxStep.Step ? " ◄瓶颈" : "";
-                                        reportLines.Add($"  {stepTimings.IndexOf((step, ms)) + 1,2}.  {step,-18} {ms,8}  {pct,5:F1}%{marker}");
-                                    }
-                                    reportLines.Add($"──────────────────────────────────");
-                                    reportLines.Add($"结果: 滤波 {filterType}, 内核 {kernelWidth}x{kernelHeight}, 判断 {(result.IsPass ? "OK" : "NG")}, 瓶颈 [{maxStep.Step}]={maxStep.Ms}ms");
-                                    parameters.LogInfo(string.Join("\n", reportLines));
-                                }
+                                case FilterType.Blur:
+                                    HOperatorSet.MeanImage(reducedImage, out var meanImg,
+                                        kernelWidth, kernelHeight);
+                                    filteredImage = new HImage(meanImg);
+                                    break;
+                                case FilterType.Gaussian:
+                                    // Halcon SmoothImage "gauss" 以核尺寸为参数，sigma 仅作保留参数
+                                    HOperatorSet.SmoothImage(reducedImage, out var gaussImg,
+                                        "gauss", Math.Max(kernelWidth, kernelHeight));
+                                    filteredImage = new HImage(gaussImg);
+                                    break;
+                                case FilterType.MedianBlur:
+                                    HOperatorSet.MedianImage(reducedImage, out var medianImg,
+                                        "circle", kernelWidth / 2, "mirrored");
+                                    filteredImage = new HImage(medianImg);
+                                    break;
+                                case FilterType.Bilateral:
+                                    HOperatorSet.BilateralFilter(reducedImage, reducedImage,
+                                        out var bilateralImg, sigmaSpace, sigmaColor,
+                                        new HTuple(), new HTuple());
+                                    filteredImage = new HImage(bilateralImg);
+                                    break;
+                                case FilterType.Filter2D:
+                                    // 默认使用 3x3 锐化核
+                                    var sharpenKernel = new HTuple(
+                                        new double[] { 0, -1, 0, -1, 5, -1, 0, -1, 0 });
+                                    HOperatorSet.ConvolImage(reducedImage, out var convolImg,
+                                        sharpenKernel, "mirrored");
+                                    filteredImage = new HImage(convolImg);
+                                    break;
+                                default:
+                                    throw new NotSupportedException($"不支持的滤波类型: {filterType}");
                             }
-                            finally
+                            stepSw.Stop();
+                            stepTimings.Add(("滤波处理", stepSw.ElapsedMilliseconds));
+
+                            using (filteredImage)
                             {
-                                filteredImage?.Dispose();
+                                result.OutputImage = new HalImage(filteredImage.Clone());
+                                result.FilterTypeUsed = filterType.ToString();
+                                result.KernelWidthUsed = kernelWidth;
+                                result.KernelHeightUsed = kernelHeight;
+
+                                // ===== Step 5: 统计信息 =====
+                                stepSw.Restart();
+                                ComputeStatistics(result, filteredImage, imgWidth, imgHeight);
+                                stepSw.Stop();
+                                stepTimings.Add(("统计计算", stepSw.ElapsedMilliseconds));
+
+                                // ===== Step 6: 结果判断 =====
+                                stepSw.Restart();
+                                EvaluateResult(result, parameters.ResultConfig);
+                                stepSw.Stop();
+                                stepTimings.Add(("结果判断", stepSw.ElapsedMilliseconds));
+
+                                stopwatch.Stop();
+                                result.SetSuccess(stopwatch.ElapsedMilliseconds);
+
+                                // ===== 性能报告 =====
+                                var totalMs = stopwatch.ElapsedMilliseconds;
+                                var maxStep = stepTimings.MaxBy(t => t.Ms);
+                                var reportLines = new List<string>
+                                {
+                                    $"===== 滤波性能报告 =====",
+                                    $"图像: {imgWidth}x{imgHeight}  总耗时: {totalMs}ms",
+                                    $"步骤  名称              耗时(ms)    占比",
+                                    $"────  ──────────────── ────────  ──────"
+                                };
+                                foreach (var (step, ms) in stepTimings)
+                                {
+                                    var pct = totalMs > 0 ? (double)ms / totalMs * 100 : 0;
+                                    var marker = step == maxStep.Step ? " ◄瓶颈" : "";
+                                    reportLines.Add($"  {stepTimings.IndexOf((step, ms)) + 1,2}.  {step,-18} {ms,8}  {pct,5:F1}%{marker}");
+                                }
+                                reportLines.Add($"──────────────────────────────────");
+                                reportLines.Add($"结果: 滤波 {filterType}, 内核 {kernelWidth}x{kernelHeight}, 判断 {(result.IsPass ? "OK" : "NG")}, 瓶颈 [{maxStep.Step}]={maxStep.Ms}ms");
+                                parameters.LogInfo(string.Join("\n", reportLines));
                             }
                         }
                     }
                     finally
                     {
                         roiRegion?.Dispose();
+                        inspHRegion?.Dispose();
+                        maskHRegion?.Dispose();
                     }
                 }
             }
@@ -303,31 +321,20 @@ namespace SunEyeVision.Tool.ImageFilter
         /// <summary>
         /// 计算统计结果
         /// </summary>
-        private void ComputeStatistics(ImageFilterResults result, CvImage filteredImage)
+        private void ComputeStatistics(ImageFilterResults result, HImage filteredImage, int width, int height)
         {
-            // 使用 CvOp.Intensity 计算统计
-            CvOp.Intensity(filteredImage, null,
-                out var histogram, out var mean, out var stdDev);
+            using var fullRegion = new HRegion(0.0, 0.0, (double)height - 1, (double)width - 1);
 
-            result.OutputMean = mean;
-            result.OutputStd = stdDev;
+            HOperatorSet.Intensity(fullRegion, filteredImage, out var mean, out var stdDev);
+            result.OutputMean = mean.D;
+            result.OutputStd = stdDev.D;
 
-            // 计算最小最大值
-            if (result.OutputImage is CvImage cvOutput && cvOutput.Count > 0)
-            {
-                var outputMat = cvOutput.Image;
-                Cv2.MinMaxLoc(outputMat, out double minVal, out double maxVal);
-                result.OutputMin = minVal;
-                result.OutputMax = maxVal;
+            HOperatorSet.MinMaxGray(fullRegion, filteredImage, 0.0, out var minVal, out var maxVal, out _);
+            result.OutputMin = minVal.D;
+            result.OutputMax = maxVal.D;
 
-                // 通道均值
-                var means = Cv2.Mean(outputMat);
-                result.ChannelMeans = new[]
-                {
-                    means.Val0, means.Val1, means.Val2, means.Val3
-                }.Take(result.InputChannels > 0 ? result.InputChannels : 1)
-                 .ToArray();
-            }
+            // 通道均值（Halcon 灰度图像为单通道）
+            result.ChannelMeans = new[] { mean.D };
         }
 
         /// <summary>

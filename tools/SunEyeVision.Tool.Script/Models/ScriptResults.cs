@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models;
@@ -47,11 +47,10 @@ namespace SunEyeVision.Tool.Script.Models
             var variables = new List<OutputVariable>();
             foreach (var cfg in OutputConfigs)
             {
-                if (SdkTypeVocabulary.ToSystemType(cfg.TypeName) is null)
-                {
-                    throw new InvalidOperationException(
+                var sysType = SdkTypeVocabulary.ToSystemType(cfg.TypeName)
+                    ?? throw new InvalidOperationException(
                         $"脚本输出变量 '{cfg.Name}' 类型 '{cfg.TypeName}' 未在 SdkTypeVocabulary 词汇表注册。");
-                }
+                var rawValue = OutputValues.TryGetValue(cfg.Name, out var v) ? v : null;
                 variables.Add(new OutputVariable
                 {
                     Name = cfg.Name,
@@ -59,7 +58,7 @@ namespace SunEyeVision.Tool.Script.Models
                     DisplayName = string.IsNullOrEmpty(cfg.DisplayName) ? cfg.Name : cfg.DisplayName,
                     Group = cfg.Group,
                     Kind = OutputVariableKind.Data,
-                    RuntimeValue = OutputValues.TryGetValue(cfg.Name, out var v) ? v : null
+                    RuntimeValue = OutputVariableArrayPromoter.Promote(rawValue, cfg.TypeName, sysType)
                 });
             }
             return variables;

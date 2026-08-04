@@ -197,21 +197,22 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         }
 
         /// <summary>
-        /// 根据参数类型过滤数据源
+        /// 根据参数类型过滤数据源（统一走词汇表匹配，与 DataSourceQueryService 同口径）
         /// </summary>
         /// <param name="dataSources">数据源集合</param>
         /// <param name="targetType">目标类型</param>
         /// <returns>过滤后的数据源</returns>
         /// <remarks>
-        /// 呈现层严格规则（rule-008 零兼容 + 视觉软件行业标准）：
-        /// 1. 数组参数 = 只显示数组（不显示标量元素，避免"数组字段选了标量"的歧义）
-        /// 2. 标量参数 = 数组不显示（避免"标量字段选了数组"的歧义）
-        /// 3. 数字标量 = 跨类型可见（int 字段能看到 double/long/short 等上游，
-        ///    绑定执行时 ScriptBindingResolver.CoerceValue 会用 Convert.ChangeType 转）
-        /// 4. 其他类型 = 精确类型匹配（ShapeParameters 之间不互通，避免运行时类型错误）
+        /// 呈现层规则（rule-008 零兼容 + 视觉软件行业标准，对齐 DataSourceQueryService）：
+        /// 1. 统一通过 SdkTypeVocabulary.ToTypeVocabulary 把参数类型与数据源类型映射到词汇，
+        ///    标量 T 与数组 T[] 归并到同一词汇（单值 = 长度 1 数组，对齐 Halcon tuple 语义）。
+        /// 2. 词汇相等 → 显示（如 int 参数 → Integer 词汇，能看到上游 long[]/int[] 的 Integer 输出）。
+        /// 3. 数字互通 → 显示（Integer 与 Double 跨类型可见，执行层 Convert.ChangeType 负责转换）。
+        /// 4. 其余词汇（Image/String/RoI/Transform/Boolean）→ 精确匹配，不互通，避免运行时类型错误。
+        /// 5. 参数类型无法映射到词汇（未注册类型）→ 不显示任何上游候选，避免错误绑定。
         ///
         /// 手动路径：客户仍可在 BindingSource 文本框中强行写非筛选项，
-        /// ScriptBindingResolver 会按既定规则做类型转换或抛错。
+        /// 绑定执行层会按既定规则做类型转换或抛错。
         /// </remarks>
         public static List<AvailableDataSource> FilterDataSourcesByType(List<AvailableDataSource> dataSources, Type targetType)
         {
@@ -221,28 +222,38 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 return dataSources;
             }
 
+            var targetVarType = SdkTypeVocabulary.ToTypeVocabulary(targetType);
+
             return dataSources.Where(ds =>
             {
                 if (ds.PropertyType == null)
                     return false;
 
-                // 规则 1：数组参数 = 只显示数组
-                if (targetType.IsArray)
-                    return ds.PropertyType.IsArray;
+                var dsVarType = SdkTypeVocabulary.ToTypeVocabulary(ds.PropertyType);
 
-                // 规则 2：标量参数 = 数组不显示
-                if (ds.PropertyType.IsArray)
+                // 数据源类型无法映射到词汇：不显示（rule-015 未映射类型不静默放行）
+                if (dsVarType == null)
                     return false;
 
-                // 规则 3：数字标量 = 跨类型可见
-                if (NumericTypes.IsNumericType(ds.PropertyType)
-                    && NumericTypes.IsNumericType(targetType))
+                // 参数类型无法映射到词汇：不显示任何候选
+                if (targetVarType == null)
+                    return false;
+
+                // 规则 2：词汇相等 → 显示
+                if (dsVarType == targetVarType)
                     return true;
 
-                // 规则 4：其他 = 精确类型匹配
-                return ds.PropertyType == targetType;
+                // 规则 3：数字互通（Integer ↔ Double）→ 显示
+                if (IsNumericVocabulary(dsVarType) && IsNumericVocabulary(targetVarType))
+                    return true;
+
+                // 规则 4：其余词汇精确匹配（上一步已判等），不互通 → 不显示
+                return false;
             }).ToList();
         }
+
+        private static bool IsNumericVocabulary(string variableType)
+            => variableType == "Integer" || variableType == "Double";
 
         #endregion
 

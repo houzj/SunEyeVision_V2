@@ -2040,6 +2040,9 @@ SplitterPosition = position;
             {
                 engineWf.Nodes.Add(uiNode);
             }
+
+            // ★ 添加节点后自动绑定输入图像源（子程序内部节点默认绑子程序输入图像；主流程无源则跳过）
+            TryAutoBindImageSource(uiNode);
         }
 
         /// <summary>
@@ -2209,9 +2212,11 @@ SplitterPosition = position;
             var imageSourceProp = node.Parameters.GetType().GetProperty("ImageSource");
             if (imageSourceProp == null) return;
 
-            // 已有绑定（用户手动选过），不覆盖
+            // 已有用户手动绑定（非自动默认源），不覆盖
+            // ★ 默认源 __SubroutineInputs__（自动产生）允许被连线绑定覆盖（连线优先）
             if (imageSourceProp.GetValue(node.Parameters) is AvailableDataSource current
-                && !string.IsNullOrEmpty(current.SourceNodeId))
+                && !string.IsNullOrEmpty(current.SourceNodeId)
+                && current.SourceNodeId != "__SubroutineInputs__")
                 return;
 
             if (node is not UI.Models.WorkflowNode uiNode) return;
@@ -2600,6 +2605,14 @@ SplitterPosition = position;
 
             // ★ 同步到 Solution（通过统一入口，和 OnWorkflowAdded 共用同一方法）
             SyncWorkflowToSolution(workflow, node.Name);
+
+            // ★ 默认输入端口：新建子程序自动带 in_1（Image），供内部节点默认绑定（幂等，已有则不重复加）
+            if (node.Parameters is SubroutineParameters subParams
+                && !subParams.Inputs.Any(i => string.Equals(i.Name, "in_1", StringComparison.OrdinalIgnoreCase)))
+            {
+                subParams.Inputs.Add(new SubroutineInputConfig { Name = "in_1", BindingKey = "in_1", TypeName = "Image" });
+                AddLog($"🆕 子程序默认输入端口: in_1 (Image)");
+            }
 
             AddLog($"📝 新建子程序工作流: {node.Name} (ID: {subroutineId})");
 

@@ -103,22 +103,47 @@ namespace SunEyeVision.Tool.Subroutine
                 if (subWorkflowNodeResults.Count > 0)
                 {
                     var outputErrors = new List<string>();
-                    foreach (var output in parameters.Outputs.Where(o => o.Source != null))
+                    foreach (var output in parameters.Outputs.Where(o => o.Source != null || !string.IsNullOrEmpty(o.BindingSource)))
                     {
-                        var source = output.Source!;
+                        string sourceNodeId, sourceProperty;
+                        if (output.Source != null)
+                        {
+                            // 优先使用对象引用（含完整类型信息）
+                            sourceNodeId = output.Source.SourceNodeId;
+                            sourceProperty = output.Source.PropertyName;
+                        }
+                        else
+                        {
+                            // ★ 从 BindingSource 字符串 "NodeId.PropertyName" 解析（对齐 ResolveInputs）
+                            var parts = output.BindingSource.Split('.');
+                            if (parts.Length < 2)
+                            {
+                                outputErrors.Add($"输出 '{output.Name}' BindingSource 格式无效: '{output.BindingSource}'");
+                                continue;
+                            }
+                            sourceNodeId = parts[0];
+                            // 剥离旧数据遗留的 "[]" 后缀（对齐 AvailableDataSourceConverter 的做法）
+                            sourceProperty = parts[1].EndsWith("[]") ? parts[1][..^2] : parts[1];
+                        }
+
+                        // 目标类型优先取对象引用声明的类型，否则用输出声明的 TypeName
+                        var targetType = output.Source?.PropertyType
+                            ?? SdkTypeVocabulary.ToSystemType(output.TypeName)
+                            ?? typeof(object);
+
                         var binding = new ParamSetting
                         {
                             ParameterName = output.Name,
                             BindingType = BindingType.Binding,
-                            SourceNodeId = source.SourceNodeId,
-                            SourceProperty = source.PropertyName,
-                            TargetType = source.PropertyType ?? typeof(object)
+                            SourceNodeId = sourceNodeId,
+                            SourceProperty = sourceProperty,
+                            TargetType = targetType
                         };
                         var resolveResult = resolver.Resolve(binding, subWorkflowNodeResults);
                         if (resolveResult.IsSuccess && resolveResult.Value != null)
                         {
                             result.ResolvedOutputValues[output.Name] = resolveResult.Value;
-                            parameters.LogInfo($"  输出 '{output.Name}' = {source.SourceNodeId}.{source.PropertyName} = {resolveResult.Value}");
+                            parameters.LogInfo($"  输出 '{output.Name}' = {sourceNodeId}.{sourceProperty} = {resolveResult.Value}");
                         }
                         else
                         {
@@ -231,6 +256,24 @@ namespace SunEyeVision.Tool.Subroutine
                 else
                 {
                     errors.Add($"输入 '{input.Name}' 绑定解析失败: {resolveResult.ErrorMessage ?? "值为空"}");
+                }
+            }
+
+            // ★ 默认图像输入：Image 类型输入端口未显式绑定上游时，
+            //    使用子程序节点的输入图像（ResolvedInputImage），保证内部节点默认绑定可解析
+            if (parameters.ResolvedInputImage != null)
+            {
+                foreach (var input in parameters.Inputs.Where(i =>
+                    string.Equals(i.TypeName, "Image", StringComparison.OrdinalIgnoreCase)
+                    && i.Source == null
+                    && string.IsNullOrEmpty(i.BindingSource)))
+                {
+                    var bindingKey = input.BindingKey ?? input.Name;
+                    if (!values.ContainsKey(bindingKey))
+                    {
+                        values[bindingKey] = parameters.ResolvedInputImage;
+                        parameters.LogInfo($"  输入 '{input.Name}' 未显式绑定，默认使用子程序输入图像");
+                    }
                 }
             }
 

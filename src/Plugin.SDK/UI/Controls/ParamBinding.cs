@@ -541,7 +541,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         private void ApplyDataSourceBinding(TreeNodeData selectedNode)
         {
             var ds = selectedNode.DataSource!;
-            BindingSource = ds.GetBindingPath();
+            BindingSource = BuildScalarSafeBindingPath(ds);
 
             var rootNode = GetRootNode(selectedNode);
             var rootName = rootNode?.Text ?? "";
@@ -555,6 +555,26 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
             RaiseEvent(new RoutedEventArgs(BindingSourceSelectedEvent));
             IsBound = true;
+        }
+
+        /// <summary>
+        /// 标量参数选中"数组单值输出"时生成无索引绑定路径。
+        /// </summary>
+        /// <remarks>
+        /// 数据源对外元数据统一提升为数组（单值 = 长度 1 数组，对齐 Halcon tuple 语义），
+        /// 标量参数（DataType 非数组）若绑定默认的 "[]" 路径会保留整个数组，导致执行层类型不匹配。
+        /// 改为无索引路径，让 OutputVariableResolver 自动解包长度 1 数组为单值（决策3 存量兼容）。
+        /// RoI 带 BindingSuffix（[Type=Circle]/[i]）的合成节点不受影响，仍走 GetBindingPath。
+        /// </remarks>
+        private string BuildScalarSafeBindingPath(AvailableDataSource ds)
+        {
+            if (DataType != null && !DataType.IsArray
+                && ds.PropertyType?.IsArray == true
+                && ds.BindingSuffix == null)
+            {
+                return $"{ds.SourceNodeId}.{ds.PropertyName}";
+            }
+            return ds.GetBindingPath();
         }
 
         /// <summary>

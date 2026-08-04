@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using SunEyeVision.Plugin.SDK.Commands;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.UI.Controls;
@@ -88,6 +89,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
 
             // 窗口关闭时清理
             Closed += OnWindowClosed;
+
+            // 窗口关闭前提交/取消所有 DataGrid 编辑事务，
+            // 防止"编辑中直接关窗"导致下次绑定 DeferRefresh 抛异常（防御保底）
+            Closing += OnWindowClosing;
 
             // 监听 Title 属性变化，同步更新标题栏显示
             var dpDescriptor = System.ComponentModel.DependencyPropertyDescriptor.FromProperty(
@@ -529,6 +534,38 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
         private void OnCloseButtonClick(object sender, RoutedEventArgs e)
         {
             Close();
+        }
+
+        /// <summary>
+        /// 窗口关闭前事件处理 - 防御保底
+        /// </summary>
+        /// <remarks>
+        /// 在窗口销毁前提交或取消所有 DataGrid 的编辑事务，防止"编辑中直接关窗"
+        /// 残留 EditItem 事务，导致下次打开同集合绑定的窗口时 DeferRefresh 抛异常。
+        /// DataGrid 不在编辑状态时 CommitEdit 返回 false 且无副作用，对所有工具调试窗口安全。
+        /// </remarks>
+        private void OnWindowClosing(object? sender, System.ComponentModel.CancelEventArgs e)
+        {
+            CommitAllDataGridEdits(ContentHost);
+        }
+
+        /// <summary>
+        /// 递归遍历视觉树，提交或取消所有 DataGrid 的编辑事务
+        /// </summary>
+        private void CommitAllDataGridEdits(DependencyObject root)
+        {
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
+            {
+                var child = VisualTreeHelper.GetChild(root, i);
+                if (child is DataGrid dataGrid)
+                {
+                    if (!dataGrid.CommitEdit(DataGridEditingUnit.Row, true))
+                    {
+                        dataGrid.CancelEdit(DataGridEditingUnit.Row);
+                    }
+                }
+                CommitAllDataGridEdits(child);
+            }
         }
 
         /// <summary>

@@ -93,6 +93,7 @@
 
                         <DataGrid ItemsSource="{Binding Inputs}"
                                   AutoGenerateColumns="False"
+                                  IsReadOnly="True"
                                   CanUserAddRows="False"
                                   CanUserDeleteRows="False"
                                   GridLinesVisibility="None"
@@ -176,6 +177,7 @@
 
                         <DataGrid ItemsSource="{Binding Outputs}"
                                   AutoGenerateColumns="False"
+                                  IsReadOnly="True"
                                   CanUserAddRows="False"
                                   CanUserDeleteRows="False"
                                   GridLinesVisibility="None"
@@ -299,6 +301,7 @@
 
                         <DataGrid ItemsSource="{Binding DisplayItems}"
                                   AutoGenerateColumns="False"
+                                  IsReadOnly="True"
                                   CanUserAddRows="False"
                                   CanUserDeleteRows="False"
                                   GridLinesVisibility="None"

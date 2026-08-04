@@ -3005,33 +3005,10 @@ SplitterPosition = position;
                     return null;
                 }
 
-                // 按 WorkflowId 缓存（GetOrAdd）
+                // 按 WorkflowId 缓存（GetOrAdd）；未命中 → 调用唯一工厂创建（工厂已内置子程序输入端口注入）
                 if (!_workflowDsqsCache.TryGetValue(workflowId, out var queryService))
                 {
-                    // 创建属性元数据提供者
-                    var metadataProvider = new SunEyeVision.Plugin.Infrastructure.Managers.Tool.PropertyMetadataProviderAdapter();
-
-                    // ★ 子程序模式下使用子程序工作流作为连接/节点提供者
-                    var workflow = selectedTab.IsInSubroutine
-                        ? _workflowEngine.GetWorkflow(workflowId)
-                            ?? throw new InvalidOperationException($"子程序工作流未找到: {workflowId}")
-                        : _workflowEngine.CurrentWorkflow ?? throw new InvalidOperationException("当前工作流为空");
-
-                    queryService = new DataSourceQueryService(workflow, workflow, null, metadataProvider);
-
-                    // ★ SSOT 委托：不拷贝结果，直接委托到 WorkflowContext（SSOT 实时读取）
-                    //    GetNodeResult / GetPropertyValue 均通过此委托实时读取，无需本地缓存
-                    queryService.SetSootReader(nodeId =>
-                        CurrentWorkflowContext?.GetNodeResult(nodeId)?.Result);
-
-                    LogInfo($"✓ 创建数据查询服务成功: 工作流 {workflow.Name} (ID: {workflowId})");
-
-                    // ★ 子程序内部节点：注册数据源提供者，动态注入子程序输入端口（仅首次注册）
-                    if (selectedTab.IsInSubroutine)
-                    {
-                        RegisterSubroutineInputProvider(queryService, selectedTab.CurrentWorkflowId);
-                    }
-
+                    queryService = CreateDataSourceQueryService(workflowId);
                     _workflowDsqsCache[workflowId] = queryService;
                 }
 
@@ -3132,6 +3109,14 @@ SplitterPosition = position;
             // SSOT 委托：实时读取 WorkflowContext，无本地缓存拷贝
             queryService.SetSootReader(nodeId =>
                 CurrentWorkflowContext?.GetNodeResult(nodeId)?.Result);
+
+            // ★ 作用域工作流是子程序时，注入其输入端口（__SubroutineInputs__），
+            //    使子程序内部配置数据源时能看到上层子程序的输入（与 GetDataProviderForNode 行为对齐）
+            //    作用域是主流程时 FindParentSubroutineNodeId 返回 null，自动跳过，零影响
+            if (scopeWorkflowId != null)
+            {
+                RegisterSubroutineInputProvider(queryService, scopeWorkflowId);
+            }
 
             return queryService;
         }

@@ -204,9 +204,9 @@ public class ShapeMatchResultItem
     [System.Text.Json.Serialization.JsonIgnore]
     public List<WpfPoint[]>? ContourChains { get; set; }
 
-    /// <summary>仿射变换矩阵（将模型坐标变换到图像坐标）</summary>
+    /// <summary>仿射变换矩阵（将模型坐标变换到图像坐标，SDK 通用类型）</summary>
     [System.Text.Json.Serialization.JsonIgnore]
-    public System.Windows.Media.Matrix TransformMatrix { get; set; }
+    public AffineMatrix TransformMatrix { get; set; } = AffineMatrix.Identity;
 
     /// <summary>模板参考点 X（训练时模板在参考图像中的列坐标）</summary>
     public double ReferencePointX { get; set; }

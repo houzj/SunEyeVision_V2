@@ -1048,53 +1048,6 @@
                                                             </Style>
                                                         </DataGridTextColumn.ElementStyle>
                                                     </DataGridTextColumn>
-
-                                                    <!-- 变量管理列（仅叶子节点显示绑定按钮） -->
-                                                    <DataGridTemplateColumn Width="Auto" MinWidth="90" MaxWidth="160"
-                                                                            Header="变量管理">
-                                                        <DataGridTemplateColumn.CellTemplate>
-                                                            <DataTemplate>
-                                                                <Grid VerticalAlignment="Center" Margin="4,0"
-                                                                      Visibility="{Binding CanBind, Converter={StaticResource BoolToVisibilityConverter}}">
-                                                                    <!-- 未绑定：显示 🔗 绑定按钮（仅可绑定的叶子节点） -->
-                                                                    <Button Content="🔗"
-                                                                            FontSize="14"
-                                                                            Background="Transparent"
-                                                                            BorderThickness="0"
-                                                                            Cursor="Hand"
-                                                                            Padding="4,2"
-                                                                            ToolTip="绑定到全局变量"
-                                                                            Visibility="{Binding IsBoundToGlobalVar, Converter={StaticResource InverseBoolToVisibilityConverter}}"
-                                                                            Command="{Binding DataContext.BindResultToGlobalVarCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                                            CommandParameter="{Binding}"/>
-
-                                                                    <!-- 已绑定：显示变量名+解绑按钮 -->
-                                                                    <StackPanel Orientation="Horizontal"
-                                                                                Visibility="{Binding IsBoundToGlobalVar, Converter={StaticResource BoolToVisibilityConverter}}">
-                                                                        <TextBlock Text="{Binding VariableBindingDisplay}"
-                                                                                   FontSize="11"
-                                                                                   Foreground="#2196F3"
-                                                                                   VerticalAlignment="Center"
-                                                                                   FontWeight="Medium"
-                                                                                   TextTrimming="CharacterEllipsis"
-                                                                                   ToolTip="{Binding VariableBindingDisplay}"/>
-                                                                        <Button Content="✕"
-                                                                                FontSize="10"
-                                                                                FontWeight="Bold"
-                                                                                Foreground="#F44336"
-                                                                                Background="Transparent"
-                                                                                BorderThickness="0"
-                                                                                Cursor="Hand"
-                                                                                Padding="2"
-                                                                                Margin="4,0,0,0"
-                                                                                ToolTip="解绑全局变量"
-                                                                                Command="{Binding DataContext.UnbindResultFromGlobalVarCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                                                CommandParameter="{Binding}"/>
-                                                                    </StackPanel>
-                                                                </Grid>
-                                                            </DataTemplate>
-                                                        </DataGridTemplateColumn.CellTemplate>
-                                                    </DataGridTemplateColumn>
                                                 </DataGrid.Columns>
                                             </DataGrid>
 

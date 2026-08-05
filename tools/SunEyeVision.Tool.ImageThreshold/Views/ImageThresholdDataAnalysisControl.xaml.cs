@@ -114,7 +114,7 @@ namespace SunEyeVision.Tool.ImageThreshold.Views
                 AddItem("阈值方法", GetMethodDisplayName(thresholdResult.MethodUsed));
                 AddItem("实际阈值", thresholdResult.ThresholdUsed.ToString("F0"));
                 AddItem("最大值", thresholdResult.MaxValueUsed.ToString());
-                AddItem("输入尺寸", $"{thresholdResult.InputSize.Width}x{thresholdResult.InputSize.Height}");
+                AddItem("输入尺寸", $"{thresholdResult.InputWidth}x{thresholdResult.InputHeight}");
                 AddItem("输入通道数", thresholdResult.InputChannels.ToString());
                 AddItem("白色像素数", thresholdResult.WhitePixelCount.ToString());
                 AddItem("白色像素比例", $"{thresholdResult.WhitePixelRatio:F1}%");

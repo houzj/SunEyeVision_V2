@@ -428,7 +428,7 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
                     BoundingBox = bbox,
                     ContourPoints = flatModelPoints,
                     ContourChains = modelContours,  // 保持链结构，渲染时逐链独立添加
-                    TransformMatrix = transformMatrix,
+                    TransformMatrix = AffineMatrix.FromWpfMatrix(transformMatrix),
                     ReferencePointX = template.ReferencePointX,
                     ReferencePointY = template.ReferencePointY,
                 });
@@ -573,7 +573,7 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
             {
                 if (chain.Length < 2) continue;
                 display.AddContour(config.TemplateContourStyle,
-                    chain, match.TransformMatrix, match.JudgmentPassed, false);
+                    chain, match.TransformMatrix.ToWpfMatrix(), match.JudgmentPassed, false);
             }
         }
 

@@ -89,6 +89,8 @@ namespace SunEyeVision.Tool.ImageThreshold
                 int imgWidth = (int)imgW.L;
                 int imgHeight = (int)imgH.L;
                 parameters.LogInfo($"开始二值化处理: 图像尺寸 {imgWidth}x{imgHeight}");
+                result.InputWidth = imgWidth;
+                result.InputHeight = imgHeight;
                 result.InputChannels = hImage.CountChannels();
 
                 var method = parameters.Method.Value;

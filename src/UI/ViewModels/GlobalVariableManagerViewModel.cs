@@ -417,7 +417,6 @@ namespace SunEyeVision.UI.ViewModels
                 Description = "",
                 Group = SelectedGroup.Name,
                 Index = variableIndex,
-                ProducerBinding = null,
                 ConsumerBindings = new List<ConsumerBinding>()
             };
 

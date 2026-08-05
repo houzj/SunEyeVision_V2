@@ -216,6 +216,8 @@ namespace SunEyeVision.Tool.Morphology
                                     result.KernelShapeUsed = kernelShape.ToString();
                                     result.KernelWidthUsed = kernelWidth;
                                     result.KernelHeightUsed = kernelHeight;
+                                    result.InputWidth = imgWidth;
+                                    result.InputHeight = imgHeight;
                                     result.InputChannels = channels;
                                     result.IterationsUsed = iterations;
 

@@ -500,20 +500,6 @@
                 <DataGridTextColumn Header="当前值" Binding="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
                                     Width="120" IsReadOnly="False"/>
 
-                <!-- 输入来源（只读显示） -->
-                <DataGridTemplateColumn Header="输入来源" Width="130" IsReadOnly="True">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding InputSourceDisplayText}"
-                                       VerticalAlignment="Center"
-                                       Padding="8,0"
-                                       FontSize="12"
-                                       Foreground="#666666"
-                                       ToolTip="{Binding InputSourceDisplayText}"/>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-
                 <!-- 目标输出（只读显示，点击打开目标参数管理，Tooltip 显示全部消费者路径） -->
                 <DataGridTemplateColumn Header="目标输出" Width="140" IsReadOnly="True">
                     <DataGridTemplateColumn.CellTemplate>

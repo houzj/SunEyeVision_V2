@@ -115,7 +115,7 @@ namespace SunEyeVision.Tool.Threshold.Views
                     ? "无" : adaptive);
                 AddItem("块大小", adaptive != "Mean" && adaptive != "Gaussian"
                     ? "N/A" : thresholdResult.BlockSizeUsed.ToString());
-                AddItem("输入尺寸", $"{thresholdResult.InputSize.Width}×{thresholdResult.InputSize.Height}");
+                AddItem("输入尺寸", $"{thresholdResult.InputWidth}×{thresholdResult.InputHeight}");
                 AddItem("输入通道数", thresholdResult.InputChannels.ToString());
                 AddItem("白色像素数", thresholdResult.WhitePixelCount.ToString());
                 AddItem("白色像素比例", $"{thresholdResult.WhitePixelRatio:F1}%");

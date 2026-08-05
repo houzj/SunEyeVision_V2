@@ -113,7 +113,7 @@ namespace SunEyeVision.Tool.Morphology.Views
                 AddItem("核宽度", morphResult.KernelWidthUsed.ToString());
                 AddItem("核高度", morphResult.KernelHeightUsed.ToString());
                 AddItem("迭代次数", morphResult.IterationsUsed.ToString());
-                AddItem("输入尺寸", $"{morphResult.InputSize.Width}×{morphResult.InputSize.Height}");
+                AddItem("输入尺寸", $"{morphResult.InputWidth}×{morphResult.InputHeight}");
                 AddItem("输入通道数", morphResult.InputChannels.ToString());
                 AddItem("输出均值", morphResult.OutputMean.ToString("F1"));
                 AddItem("Blob数量", morphResult.BlobCount.ToString());

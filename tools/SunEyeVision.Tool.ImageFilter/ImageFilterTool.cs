@@ -116,6 +116,8 @@ namespace SunEyeVision.Tool.ImageFilter
                 {
                     // 保存灰度图像中间结果
                     result.GrayImage = new HalImage(grayImage.Clone());
+                    result.InputWidth = imgWidth;
+                    result.InputHeight = imgHeight;
                     result.InputChannels = channels;
 
                     HRegion? roiRegion = null;

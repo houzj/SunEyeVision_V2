@@ -67,9 +67,14 @@ namespace SunEyeVision.Tool.ImageThreshold
         #region 输入图像信息
 
         /// <summary>
-        /// 输入图像尺寸
+        /// 输入图像宽度
         /// </summary>
-        public OpenCvSharp.Size InputSize { get; set; }
+        public int InputWidth { get; set; }
+
+        /// <summary>
+        /// 输入图像高度
+        /// </summary>
+        public int InputHeight { get; set; }
 
         /// <summary>
         /// 输入图像通道数
@@ -141,7 +146,7 @@ namespace SunEyeVision.Tool.ImageThreshold
         public void BuildDisplayItems()
         {
             _display.Clear();
-            if (InputSize.Width <= 0 || InputSize.Height <= 0) return;
+            if (InputWidth <= 0 || InputHeight <= 0) return;
 
             var resultText = IsPass ? "OK" : "NG";
             _display.AddText(DefaultTextStyle, DefaultTextStyle.PositionX, DefaultTextStyle.PositionY, new[]

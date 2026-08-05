@@ -2,10 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
-using WpfPoint = System.Windows.Point;
-using WpfRect = System.Windows.Rect;
 
 namespace SunEyeVision.Tool.BlobAnalysis
 {
@@ -172,18 +169,12 @@ namespace SunEyeVision.Tool.BlobAnalysis
 
         #endregion
 
-        #region 图形结果（内部可视化调试用，不进契约）
-
-        /// <summary>所有筛选通过Blob的外接矩形数组</summary>
-        public WpfRect[] BlobBoundingBoxes { get; set; } = Array.Empty<WpfRect>();
-
-        /// <summary>所有筛选通过Blob的轮廓点集数组</summary>
-        public WpfPoint[][] BlobContours { get; set; } = Array.Empty<WpfPoint[]>();
-
-        /// <summary>所有筛选通过Blob的质心点数组</summary>
-        public WpfPoint[] BlobCentroids { get; set; } = Array.Empty<WpfPoint>();
-
-        #endregion
+        /// <summary>
+        /// 筛选后所有Blob的区域本体集合（Halcon HRegion，供下游区域运算与图像叠加消费）。
+        /// 不进 GetPropertyMap（符合方案 D8：Region 是 iconic 运行时数据，禁止进工作流契约）。
+        /// 生命周期由结果类统一管理，使用完毕由调用方 Dispose。
+        /// </summary>
+        public IVisionRegion? BlobRegions { get; set; }
 
         /// <summary>
         /// 获取属性映射表

@@ -106,7 +106,7 @@ namespace SunEyeVision.Tool.ImageFilter.Views
                 AddItem("滤波类型", filterResult.FilterTypeUsed.ToString());
                 AddItem("内核宽度", filterResult.KernelWidthUsed.ToString());
                 AddItem("内核高度", filterResult.KernelHeightUsed.ToString());
-                AddItem("输入尺寸", $"{filterResult.InputSize.Width}×{filterResult.InputSize.Height}");
+                AddItem("输入尺寸", $"{filterResult.InputWidth}×{filterResult.InputHeight}");
                 AddItem("输入通道数", filterResult.InputChannels.ToString());
                 AddItem("输出均值", filterResult.OutputMean.ToString("F1"));
                 AddItem("输出标准差", filterResult.OutputStd.ToString("F1"));

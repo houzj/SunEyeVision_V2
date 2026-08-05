@@ -343,13 +343,8 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                         result.MaxValueUsed = parameters.MaxValue.Value;
                                         result.TypeUsed = parameters.Type.Value.ToString();
 
-                                        // 图形结果（供下游节点显示绑定）
-                                        result.BlobBoundingBoxes = filteredBlobs
-                                            .Select(b => b.BoundingBox).ToArray();
-                                        result.BlobCentroids = filteredBlobs
-                                            .Select(b => new WpfPoint(b.CentroidX, b.CentroidY)).ToArray();
-                                        result.BlobContours = filteredBlobs
-                                            .Where(b => b.HasContour).Select(b => b.Contour!).ToArray();
+                                        // 区域本体保留（供下游区域运算/图像叠加消费；不进 GetPropertyMap 契约）
+                                        result.BlobRegions = new HalRegion(shapeFilteredRegions.Clone());
 
                                         // 二值掩码
                                         HOperatorSet.RegionToBin(binaryRegion, out var binObj,

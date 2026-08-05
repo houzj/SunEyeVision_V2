@@ -211,6 +211,8 @@ namespace SunEyeVision.Tool.Threshold
                                 result.TypeUsed = type.ToString();
                                 result.AdaptiveMethodUsed = adaptiveMethod.ToString();
                                 result.BlockSizeUsed = blockSize;
+                                result.InputWidth = imgWidth;
+                                result.InputHeight = imgHeight;
                                 result.InputChannels = channels;
 
                                 // ===== Step 5: 统计信息 =====

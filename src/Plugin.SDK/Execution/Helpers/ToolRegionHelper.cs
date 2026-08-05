@@ -408,20 +408,34 @@ namespace SunEyeVision.Plugin.SDK.Execution.Helpers
         #region 几何提取
 
         /// <summary>
-        /// 从检测区域集合中提取 SDK 几何对象，填充到 result.InspectionGeometries。
+        /// 从检测区域集合中提取 ShapeParameters（RoI），填充到 result.InspectionGeometries。
         /// 仅提取 Drawing 模式的 ShapeParameters（Fixed/Computed 模式的区域需运行期解析）。
+        /// 输出进契约后，下游可四级绑定（整体 / [Type=X] / [i] / [i].Geometry.属性）。
         /// </summary>
         public static void ExtractInspectionGeometries(ToolResults result,
             IEnumerable<RegionData>? regions)
         {
-            result.InspectionGeometries.Clear();
-            if (regions == null) return;
+            result.InspectionGeometries = regions?
+                .Where(r => r.IsEnabled)
+                .Select(r => r.Parameters)
+                .OfType<ShapeParameters>()
+                .Where(sp => sp.Geometry != null)
+                .ToArray() ?? Array.Empty<ShapeParameters>();
+        }
 
-            foreach (var rd in regions.Where(r => r.IsEnabled))
-            {
-                if (rd.Parameters is ShapeParameters sp && sp.Geometry != null)
-                    result.InspectionGeometries.Add(sp.Geometry);
-            }
+        /// <summary>
+        /// 从屏蔽区域集合中提取 ShapeParameters（RoI），填充到 result.MaskGeometries。
+        /// 仅提取 Drawing 模式的 ShapeParameters（Fixed/Computed 模式的区域需运行期解析）。
+        /// </summary>
+        public static void ExtractMaskGeometries(ToolResults result,
+            IEnumerable<RegionData>? regions)
+        {
+            result.MaskGeometries = regions?
+                .Where(r => r.IsEnabled)
+                .Select(r => r.Parameters)
+                .OfType<ShapeParameters>()
+                .Where(sp => sp.Geometry != null)
+                .ToArray() ?? Array.Empty<ShapeParameters>();
         }
 
         #endregion

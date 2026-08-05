@@ -1,6 +1,9 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Windows;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
@@ -188,10 +191,11 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 });
             }
 
-            // 逐元素 [i]
+            // 逐元素 [i]：每个单项节点下挂可绑定的几何属性叶子（[i].Geometry.属性 穿透）
             for (int i = 0; i < roi.Length; i++)
             {
                 var idx = i;
+                var sp = roi[idx];
                 var elemDs = new AvailableDataSource
                 {
                     SourceNodeId = parentDs.SourceNodeId,
@@ -201,18 +205,98 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                     PropertyType = typeof(ShapeParameters),
                     VariableType = parentDs.VariableType,
                     BindingSuffix = $"[{idx}]",
-                    CurrentValue = roi[idx],
+                    CurrentValue = sp,
                 };
-                children.Add(new TreeNodeData
+                var elemNode = new TreeNodeData
                 {
-                    Text = $"[{idx}] {FormatElementSummary(roi[idx])}",
+                    Text = $"[{idx}] {FormatElementSummary(sp)}",
                     IsSelectable = true,
                     DataSource = elemDs,
                     BindingPath = $"{parentDs.PropertyName}[{idx}]",
-                });
+                };
+                // 属性叶子：遍历 sp.Geometry 的具体类型，生成可绑定属性路径
+                elemNode.Children = new System.Collections.ObjectModel.ObservableCollection<TreeNodeData>(
+                    BuildGeometryAttributeLeaves(elemDs, sp, idx));
+                children.Add(elemNode);
             }
 
             return children;
+        }
+
+        /// <summary>
+        /// 为 RoI 单项 [i] 生成几何属性叶子（Geometry 穿透）。
+        /// 遍历 ShapeParameters.Geometry 的具体类型（Circle2d/RotatedRect2d/Point2d/Line2d/Polygon2d/Annulus2d），
+        /// 对标量字段（double/int/bool/string）与 Point/Vector 字段生成可绑定叶子，
+        /// 绑定路径形如 "InspectionGeometries[i].Geometry.Center.X"（方案层级 3b）。
+        /// </summary>
+        private static List<TreeNodeData> BuildGeometryAttributeLeaves(AvailableDataSource elemDs, ShapeParameters sp, int idx)
+        {
+            var leaves = new List<TreeNodeData>();
+            var geometry = sp.Geometry;
+            if (geometry == null) return leaves;
+
+            // 遍历 Geometry 具体类型的公共数据字段（Center/Radius/Width/Height/Angle/Point/Direction/X/Y 等）。
+            // 标量字段直接成叶子；Point/Vector 字段下钻 .X/.Y。
+            var geometryType = geometry.GetType();
+            var fields = geometryType
+                .GetFields(BindingFlags.Public | BindingFlags.Instance)
+                .ToList();
+
+            foreach (var field in fields)
+            {
+                object? fieldValue;
+                try { fieldValue = field.GetValue(geometry); }
+                catch { continue; }
+
+                if (IsScalarType(field.FieldType))
+                {
+                    AddLeaf(leaves, elemDs, idx, field.Name, field.Name, field.FieldType, fieldValue);
+                }
+                else if (field.FieldType == typeof(Point))
+                {
+                    var pt = (Point)(fieldValue ?? default(Point));
+                    AddLeaf(leaves, elemDs, idx, $"{field.Name}.X", $"{field.Name} X", typeof(double), pt.X);
+                    AddLeaf(leaves, elemDs, idx, $"{field.Name}.Y", $"{field.Name} Y", typeof(double), pt.Y);
+                }
+                else if (field.FieldType == typeof(Vector))
+                {
+                    var v = (Vector)(fieldValue ?? default(Vector));
+                    AddLeaf(leaves, elemDs, idx, $"{field.Name}.X", $"{field.Name} X", typeof(double), v.X);
+                    AddLeaf(leaves, elemDs, idx, $"{field.Name}.Y", $"{field.Name} Y", typeof(double), v.Y);
+                }
+                // Point[] / 其他复合类型（如 Polygon2d.Vertices）暂不生成叶子（YAGNI，需时经轮廓工具）
+            }
+
+            return leaves;
+        }
+
+        private static void AddLeaf(List<TreeNodeData> leaves, AvailableDataSource elemDs, int idx,
+            string bindingSuffix, string displayName, Type propertyType, object? value)
+        {
+            leaves.Add(new TreeNodeData
+            {
+                Text = displayName,
+                IsSelectable = true,
+                BindingPath = $"{elemDs.PropertyName}[{idx}].Geometry.{bindingSuffix}",
+                DataSource = new AvailableDataSource
+                {
+                    SourceNodeId = elemDs.SourceNodeId,
+                    SourceNodeName = elemDs.SourceNodeName,
+                    PropertyName = elemDs.PropertyName,
+                    DisplayName = displayName,
+                    PropertyType = propertyType,
+                    VariableType = SunEyeVision.Plugin.SDK.Models.SdkTypeVocabulary.ToTypeVocabulary(propertyType),
+                    BindingSuffix = $"[{idx}].Geometry.{bindingSuffix}",
+                    CurrentValue = value,
+                },
+            });
+        }
+
+        private static bool IsScalarType(Type type)
+        {
+            return type == typeof(double) || type == typeof(int) || type == typeof(long)
+                || type == typeof(float) || type == typeof(bool) || type == typeof(string)
+                || type == typeof(uint) || type == typeof(short) || type == typeof(byte);
         }
 
         /// <summary>

@@ -8,6 +8,7 @@ using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Metadata;
+using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 using SunEyeVision.Plugin.SDK.Validation;
 
 namespace SunEyeVision.Plugin.SDK.Execution.Results
@@ -314,11 +315,18 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
         public object? Tag { get; set; }
 
         /// <summary>
-        /// 检测区域几何输出列表。
-        /// 工具 Run() 中由 ExtractInspectionGeometries() 填充，
-        /// 供下游按 SDK 几何类型（Circle2d/RotatedRect2d/Polygon2d 等）绑定。
+        /// 检测区几何输出（RoI 契约，ShapeParameters[]）。
+        /// 工具 Run() 中由 ExtractInspectionGeometries() 填充用户绘制的检测区 ShapeParameters，
+        /// 进输出契约后，下游可四级绑定：整体 / [Type=X] 按形状 / [i] 单项 / [i].Geometry.属性。
         /// </summary>
-        public List<object?> InspectionGeometries { get; set; } = new();
+        public ShapeParameters[] InspectionGeometries { get; set; } = Array.Empty<ShapeParameters>();
+
+        /// <summary>
+        /// 屏蔽区几何输出（RoI 契约，ShapeParameters[]）。
+        /// 工具 Run() 中由 ExtractMaskGeometries() 填充用户绘制的屏蔽区 ShapeParameters，
+        /// 进输出契约后，下游可四级绑定（与 InspectionGeometries 一致）。
+        /// </summary>
+        public ShapeParameters[] MaskGeometries { get; set; } = Array.Empty<ShapeParameters>();
 
         /// <summary>
         /// 显示收集器（Push 模型）
@@ -545,7 +553,38 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
                     RuntimeValue = OutputVariableArrayPromoter.Promote(runtimeValue, variableType, prop.PropertyType)
                 });
             }
+
+            // 框架级统一输出：检测区/屏蔽区几何（RoI 契约，所有工具自动获得，方案：所有静态工具图形输出优化设计）。
+            // 变量值即 ShapeParameters[]，绑定树按 [Type=X]/[i] 下钻，解析器经 [i].Geometry.属性 穿透。
+            AddRegionContractVariable(variables, nameof(InspectionGeometries), "检测区图形", "输入区域");
+            AddRegionContractVariable(variables, nameof(MaskGeometries), "屏蔽区图形", "输入区域");
+
             return variables;
+        }
+
+        /// <summary>
+        /// 把检测区/屏蔽区几何（RoI 契约）追加为输出变量。
+        /// 仅当结果类型实际存在该属性时追加（框架属性在所有 ToolResults 派生类均存在）。
+        /// </summary>
+        private void AddRegionContractVariable(List<OutputVariable> variables, string propertyName, string displayName, string group)
+        {
+            var prop = GetType().GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
+            if (prop == null) return;
+
+            var runtimeValue = prop.GetValue(this);
+            var variableType = SunEyeVision.Plugin.SDK.Models.SdkTypeVocabulary.ToTypeVocabulary(prop.PropertyType)
+                ?? throw new InvalidOperationException(
+                    $"工具 '{ToolName ?? GetType().Name}' 的 {propertyName} 类型 '{prop.PropertyType.Name}' 不是全局变量支持的通用类型，请检查 SdkTypeVocabulary 词汇表。");
+
+            variables.Add(new OutputVariable
+            {
+                Name = propertyName,
+                VariableType = variableType,
+                DisplayName = displayName,
+                Group = group,
+                Kind = OutputVariableKind.Data,
+                RuntimeValue = OutputVariableArrayPromoter.Promote(runtimeValue, variableType, prop.PropertyType)
+            });
         }
 
         #endregion

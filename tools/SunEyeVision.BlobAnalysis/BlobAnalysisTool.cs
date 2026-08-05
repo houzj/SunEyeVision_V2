@@ -429,6 +429,10 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                         stepSw.Stop();
                                         stepTimings.Add(("显示构建", stepSw.ElapsedMilliseconds));
 
+                                        // 提取检测区/屏蔽区几何输出（RoI 契约：结果树字段聚合 + 下游绑定）
+                                        ToolRegionHelper.ExtractInspectionGeometries(result, parameters.InspectionRegions?.Regions);
+                                        ToolRegionHelper.ExtractMaskGeometries(result, parameters.MaskRegions?.Regions);
+
                                         stopwatch.Stop();
                                         result.SetSuccess(stopwatch.ElapsedMilliseconds);
 

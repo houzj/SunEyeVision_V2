@@ -90,22 +90,31 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                         $"属性路径 '{propertyPath}' 中途遇到 null 值（取到 '{parsedPath[i].propertyName}' 时）");
 
                 var (propName, idx, typeFilter) = parsedPath[i];
-                var prop = current.GetType().GetProperty(propName, BindingFlags.Public | BindingFlags.Instance);
-                if (prop == null || !prop.CanRead)
-                {
-                    var actualType = current.GetType().Name;
-                    throw new InvalidOperationException(
-                        $"属性路径 '{propertyPath}' 中找不到属性 '{propName}'（运行时值类型 '{actualType}' 无此公共实例属性）");
-                }
 
-                try
+                // 属性优先，字段回退（几何类型 Circle2d.Center/Radius 等为 readonly 字段，需支持字段寻址）
+                var prop = current.GetType().GetProperty(propName, BindingFlags.Public | BindingFlags.Instance);
+                if (prop != null && prop.CanRead)
                 {
-                    current = prop.GetValue(current);
+                    try
+                    {
+                        current = prop.GetValue(current);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new InvalidOperationException(
+                            $"属性路径 '{propertyPath}' 获取 '{propName}' 失败: {ex.Message}", ex);
+                    }
                 }
-                catch (Exception ex)
+                else
                 {
-                    throw new InvalidOperationException(
-                        $"属性路径 '{propertyPath}' 获取 '{propName}' 失败: {ex.Message}", ex);
+                    var field = current.GetType().GetField(propName, BindingFlags.Public | BindingFlags.Instance);
+                    if (field == null)
+                    {
+                        var actualType = current.GetType().Name;
+                        throw new InvalidOperationException(
+                            $"属性路径 '{propertyPath}' 中找不到属性或字段 '{propName}'（运行时值类型 '{actualType}' 无此公共实例属性/字段）");
+                    }
+                    current = field.GetValue(current);
                 }
 
                 if (typeFilter != null)

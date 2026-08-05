@@ -299,7 +299,7 @@ namespace SunEyeVision.UI.ViewModels
                                 tempResult = new ContractToolResults(contract);
                         }
 
-                        UpdateModuleResults(tempResult, value.Name, toolId, value.Id);
+                        UpdateModuleResults(tempResult, value.Name, toolId, value.Id, value.Parameters);
 
                         // 清空旧节点残留在图像上的图形覆盖，防止显示错位
                         _nodeResultManager.ClearResultGraphics();
@@ -3845,7 +3845,9 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         /// <param name="nodeName">节点显示名称</param>
         /// <param name="toolId">工具ID，用于从 _typeCache 查询属性元数据</param>
         /// <param name="nodeId">节点ID，用于绑定状态反查</param>
-        public void UpdateModuleResults(ToolResults? result, string? nodeName, string? toolId = null, string? nodeId = null)
+        /// <param name="parameters">工具参数（设计态时用于回退读取检测区/屏蔽区 RoI 结构）</param>
+        public void UpdateModuleResults(ToolResults? result, string? nodeName, string? toolId = null, string? nodeId = null,
+            ToolParameters? parameters = null)
         {
             ModuleResultTree.Clear();
             HasModuleResults = false;
@@ -3873,7 +3875,9 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
             {
                 foreach (var m in ToolRegistry.GetAllPropertyMetadata(toolId))
                 {
-                    entries.Add((m.PropertyName, m.DisplayName, m.GroupName, m.PropertyType, null));
+                    // 设计态 RoI 契约变量：从参数回退读取检测区/屏蔽区结构（值缺失但结构应可见）
+                    var designValue = ResolveRoiDesignValue(m.PropertyName, parameters);
+                    entries.Add((m.PropertyName, m.DisplayName, m.GroupName, m.PropertyType, designValue));
                 }
             }
             else
@@ -3896,7 +3900,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                 IsExpanded = true
             };
 
-            // 按 Group 分组构建树（支持 / 分隔的层级分组），跳过可视化结果类型（图像/区域，由图像显示控件展示）
+            // 按 Group 分组构建树（支持 / 分隔的层级分组）；图像显示摘要、RoI 字段聚合，均作为普通输出变量展示
             var groups = entries
                 .GroupBy(e => e.Group ?? "其他")
                 .OrderBy(g => g.Key);
@@ -3943,7 +3947,8 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                         IsGroup = false
                     };
 
-                    // 几何数组展开：RuntimeValue 为数组且元素实现 IMonitorable → 展开子字段
+                    // 几何数组展开：按形状分组 + 字段聚合（方案：字段聚合防炸，不按 [i] 索引展开树）
+                    // 例：检测区 5 项 → 圆(3项)/旋转矩形(2项) 分组，每字段一行，多值用分号串联
                     if (e.RuntimeValue is System.Collections.IEnumerable enumerable
                         && !(e.RuntimeValue is string)
                         && e.ClrType?.IsArray == true)
@@ -3951,32 +3956,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                         var elementType = e.ClrType.GetElementType();
                         if (elementType != null && typeof(IMonitorable).IsAssignableFrom(elementType))
                         {
-                            node.IsGroup = true;
-                            node.DisplayValue = null;
-                            int index = 0;
-                            foreach (var item in enumerable)
-                            {
-                                if (item is IMonitorable monitorable)
-                                {
-                                    var itemNode = new ModuleResultNode
-                                    {
-                                        DisplayName = $"[{index}]",
-                                        IsGroup = true,
-                                        IsExpanded = false
-                                    };
-                                    foreach (var field in monitorable.GetMonitorFields())
-                                    {
-                                        itemNode.Children.Add(new ModuleResultNode
-                                        {
-                                            DisplayName = field.FieldName,
-                                            DisplayValue = field.FieldValue?.ToString() ?? "--",
-                                            IsGroup = false
-                                        });
-                                    }
-                                    node.Children.Add(itemNode);
-                                    index++;
-                                }
-                            }
+                            BuildMonitorableArrayNodes(node, enumerable);
                         }
                     }
 
@@ -4024,9 +4004,120 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                     ? "--" : string.Join(";", iArr),
                 string[] sArr => sArr.Length == 0
                     ? "--" : string.Join(";", sArr),
+                // 图像类型：显示尺寸摘要，不落类型名（图像值走「图像结果」Tab，结果树仅示占位）
+                IVisionImage image => $"[图像 {image.Width}×{image.Height}]",
                 Array arr => $"[{arr.Length}个]",
                 System.Collections.IEnumerable e when !(e is string) => $"[{e.Cast<object>().Count()}个]",
                 _         => value.ToString() ?? "--"
+            };
+        }
+
+        /// <summary>
+        /// 构建可监视数组的字段聚合节点。
+        /// 按形状分组（ShapeParameters 按 ShapeType），每字段一行，多元素值用分号串联，不按 [i] 索引展开树。
+        /// </summary>
+        private static void BuildMonitorableArrayNodes(ModuleResultNode parent, System.Collections.IEnumerable items)
+        {
+            var list = items.Cast<object>().Where(x => x is IMonitorable).ToList();
+            if (list.Count == 0)
+                return;
+
+            parent.IsGroup = true;
+            parent.DisplayValue = null;
+
+            // RoI 元素（ShapeParameters）：按形状分组后再字段聚合
+            if (list[0] is ShapeParameters)
+            {
+                var shapeGroups = list
+                    .Cast<ShapeParameters>()
+                    .GroupBy(sp => sp.ShapeType)
+                    .OrderBy(g => g.Key);
+
+                foreach (var shapeGroup in shapeGroups)
+                {
+                    var shapeNode = new ModuleResultNode
+                    {
+                        DisplayName = $"{ShapeTypeDisplayName(shapeGroup.Key)} ({shapeGroup.Count()}项)",
+                        IsGroup = true,
+                        IsExpanded = false
+                    };
+                    AppendFieldAggregation(shapeNode, shapeGroup);
+                    parent.Children.Add(shapeNode);
+                }
+                return;
+            }
+
+            // 普通几何数组（如算法产物 RotatedRect2d[]/Point2d[]）：直接字段聚合
+            AppendFieldAggregation(parent, list);
+        }
+
+        /// <summary>
+        /// 把元素集合按字段聚合追加为子节点（每字段一行，值用分号串联）。
+        /// 以第一个元素的字段列表为准，跨所有元素按字段名取值。
+        /// </summary>
+        private static void AppendFieldAggregation(ModuleResultNode parent, System.Collections.IEnumerable items)
+        {
+            var monitorableItems = items.Cast<object>().Where(x => x is IMonitorable).Cast<IMonitorable>().ToList();
+            if (monitorableItems.Count == 0)
+                return;
+
+            var firstFields = monitorableItems[0].GetMonitorFields();
+            foreach (var (fieldName, _) in firstFields)
+            {
+                var fieldValues = monitorableItems.Select(item =>
+                {
+                    var field = item.GetMonitorFields().FirstOrDefault(f => f.FieldName == fieldName);
+                    return FormatTypedValue(field.FieldValue, field.FieldValue?.GetType() ?? typeof(object));
+                });
+                parent.Children.Add(new ModuleResultNode
+                {
+                    DisplayName = $"{fieldName} ({monitorableItems.Count}项)",
+                    DisplayValue = string.Join("; ", fieldValues),
+                    IsGroup = false
+                });
+            }
+        }
+
+        /// <summary>
+        /// 设计态 RoI 契约变量回退：从工具参数读取检测区/屏蔽区结构。
+        /// 结果运行值缺失时，仍应在结果树中展示用户已绘制的区域结构。
+        /// </summary>
+        private static object? ResolveRoiDesignValue(string propertyName, ToolParameters? parameters)
+        {
+            if (parameters is not SunEyeVision.Plugin.SDK.Execution.Parameters.RegionParameters regionParams)
+                return null;
+
+            IEnumerable<RegionData>? regions = propertyName switch
+            {
+                nameof(ToolResults.InspectionGeometries) => regionParams.InspectionRegions?.Regions,
+                nameof(ToolResults.MaskGeometries) => regionParams.MaskRegions?.Regions,
+                _ => null
+            };
+
+            return regions?
+                .Where(r => r.IsEnabled)
+                .Select(r => r.Parameters)
+                .OfType<ShapeParameters>()
+                .Where(sp => sp.Geometry != null)
+                .ToArray();
+        }
+
+        /// <summary>
+        /// ShapeType → 中文显示名（结果树形状分组节点用）
+        /// </summary>
+        private static string ShapeTypeDisplayName(SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeType shapeType)
+        {
+            return shapeType switch
+            {
+                SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeType.Circle => "圆",
+                SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeType.Rectangle => "矩形",
+                SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeType.RotatedRectangle => "旋转矩形",
+                SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeType.Polygon => "多边形",
+                SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeType.Annulus => "圆环",
+                SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeType.Line => "直线",
+                SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeType.Arc => "弧形",
+                SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeType.Point => "点",
+                _ => shapeType.ToString()
             };
         }
 

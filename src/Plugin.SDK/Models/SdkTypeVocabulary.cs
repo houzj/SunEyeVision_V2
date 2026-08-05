@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using OpenCvSharp;
 using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 
@@ -12,29 +13,38 @@ namespace SunEyeVision.Plugin.SDK.Models
     {
         /// <summary>
         /// 所有类型只注册数组版本（单值 = 长度为 1 的数组，对齐 Halcon tuple 语义）。
-        /// 数值类型归并为规范键：int/int[]/float/float[] → long/long[]、double/double[]，
-        /// 仅保留 7 个核心概念：整型/双精度/字符串/布尔/图像/RoI/变换矩阵。
+        /// 数值类型归并为规范键：int/int[]/float/float[] → long/long[]、double/double[]。
+        /// 核心概念：整型/双精度/字符串/布尔/图像/RoI/变换矩阵 + 几何图形
+        /// （Circle/RotatedRect/Point/Polygon/Line/Annulus）。
         /// Region（算法区域，iconic 运行时数据）禁止进入工作流契约，仅活在算法工具内部，
         /// 由 RegionConverter 桥接为 RoI 外发（方案 D8）。
         /// 图像具体实现类型 OpenCvSharp.Mat 映射到 "Image"（词汇表唯一图像入口）；
         /// 下游 ToSystemType("Image") 仍返回 IVisionImage（过滤/绑定用的抽象类型）。
+        /// 几何图形（Circle2d/RotatedRect2d/Point2d/Polygon2d/Line2d/Annulus2d）作为算法产物
+        /// 输出进契约，供下游绑定/下钻属性（方案：所有静态工具图形输出优化设计）。
         /// </summary>
         private static readonly Dictionary<Type, string> TypeToString = new()
         {
-            [typeof(long[])]          = "Integer",
-            [typeof(double[])]        = "Double",
-            [typeof(string[])]        = "String",
-            [typeof(bool[])]          = "Boolean",
-            [typeof(AffineMatrix[])]  = "Transform",
-            [typeof(IVisionImage)]    = "Image",
-            [typeof(Mat)]             = "Image",
+            [typeof(long[])]            = "Integer",
+            [typeof(double[])]          = "Double",
+            [typeof(string[])]          = "String",
+            [typeof(bool[])]            = "Boolean",
+            [typeof(AffineMatrix[])]    = "Transform",
+            [typeof(IVisionImage)]      = "Image",
+            [typeof(Mat)]               = "Image",
             [typeof(ShapeParameters[])] = "RoI",
+            [typeof(Circle2d[])]        = "Circle",
+            [typeof(RotatedRect2d[])]   = "RotatedRect",
+            [typeof(SunEyeVision.Plugin.SDK.Models.Geometry.Point2d[])] = "Point",
+            [typeof(Polygon2d[])]       = "Polygon",
+            [typeof(Line2d[])]          = "Line",
+            [typeof(Annulus2d[])]       = "Annulus",
         };
 
         /// <summary>
         /// 字符串→CLR 类型反向映射。规范键映射到规范类型（数值归并为 long/double）。
         /// 保留历史存量类型名（"Xxx[]"、Float、Rectangle）以便旧方案数据可识别，
-        /// 但 Byte 及 6 几何类型已删除，触发 NotSupportedException 可见（rule-015）。
+        /// 但 Byte 已删除，触发 NotSupportedException 可见（rule-015）。
         /// </summary>
         private static readonly Dictionary<string, Type> StringToType = new(StringComparer.OrdinalIgnoreCase)
         {
@@ -45,6 +55,12 @@ namespace SunEyeVision.Plugin.SDK.Models
             ["Transform"] = typeof(AffineMatrix),
             ["Image"]     = typeof(IVisionImage),
             ["RoI"]       = typeof(ShapeParameters[]),
+            ["Circle"]        = typeof(Circle2d[]),
+            ["RotatedRect"]   = typeof(RotatedRect2d[]),
+            ["Point"]         = typeof(SunEyeVision.Plugin.SDK.Models.Geometry.Point2d[]),
+            ["Polygon"]       = typeof(Polygon2d[]),
+            ["Line"]          = typeof(Line2d[]),
+            ["Annulus"]       = typeof(Annulus2d[]),
             // 存量兼容：历史 JSON 使用 "Xxx[]" 类型名（单值 = 长度 1 数组）。
             ["Integer[]"] = typeof(int[]),
             ["Double[]"]  = typeof(double[]),
@@ -62,6 +78,12 @@ namespace SunEyeVision.Plugin.SDK.Models
             ["Image"]     = "图像",
             ["RoI"]       = "图形定义",
             ["Transform"] = "变换矩阵",
+            ["Circle"]        = "圆",
+            ["RotatedRect"]   = "旋转矩形",
+            ["Point"]         = "点",
+            ["Polygon"]       = "多边形",
+            ["Line"]          = "直线",
+            ["Annulus"]       = "圆环",
         };
 
         /// <summary>

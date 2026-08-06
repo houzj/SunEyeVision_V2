@@ -213,11 +213,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering
 
             if (toRemove.Count > 0)
             {
-                // ★ 诊断日志：详细记录被移除的区域
-                var removedNames = toRemove.Select(id => $"{id:B}").ToList();
-                var visibleNames = visibleIds.Select(id => $"{id:B}").ToList();
+                // 精简日志：仅记录数量，不再拼接 GUID 全列表（避免超长字符串）
                 VisionLogger.Instance.Log(LogLevel.Warning,
-                    $"[RemoveInvisibleRegions] 移除不可见区域 | InstanceId={_rendererInstanceId} | RemoveCount={toRemove.Count} | RemoveIds=[{string.Join(", ", removedNames)}] | VisibleIds=[{string.Join(", ", visibleNames)}] | ShapePool={_shapePool.Count} | LabelPool={_labelPool.Count} | HelperPool={_helperPool.Count}",
+                    $"[RemoveInvisibleRegions] 移除不可见区域 | InstanceId={_rendererInstanceId} | RemoveCount={toRemove.Count} | ShapePool={_shapePool.Count} | LabelPool={_labelPool.Count} | HelperPool={_helperPool.Count}",
                     "WpfShapeRenderer");
             }
 
@@ -262,11 +260,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering
             }
             else
             {
-                // 创建新Shape
-                VisionLogger.Instance.Log(LogLevel.Info,
-                    $"[UpdateOrCreateRegion] 创建新Shape | RegionId={region.Id:B} | ShapeType={region.ShapeType} | IsSelected={region.IsSelected} | IsPreview={region.IsPreview}",
-                    "WpfShapeRenderer");
-
+                // 创建新Shape（仅创建时低频触发）
                 CreateShapeFromContext(region, options);
             }
 
@@ -288,6 +282,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering
         {
                 region.CalculateBounds();
 
+                // 统一日志降频计数器：所有 Create* 方法共用，避免仅在 CreatePolygon 递增导致其他方法降频失效
+                _logCounter++;
+
                 Shape shape = CreateShape(region, options);
                 if (shape == null) return;
 
@@ -302,10 +299,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering
                 // 添加到Canvas和对象池
                 _targetCanvas.Children.Add(shape);
                 _shapePool[region.Id] = shape;
-
-                VisionLogger.Instance.Log(LogLevel.Success,
-                    $"[WpfShapeRenderer.CreateShapeFromContext] 创建新Shape | InstanceId={_rendererInstanceId} | RegionId={region.Id} | ShapeType={region.ShapeType} | IsPreview={region.IsPreview} | Canvas位置=({canvasLeft:F1},{canvasTop:F1}) | 显示中心=({region.Center.X:F1},{region.Center.Y:F1}) | W={region.Width:F1} H={region.Height:F1} | 视口偏移=({_viewportOffset.X:F1},{_viewportOffset.Y:F1}) | 缩放={_viewportScale:F3} | ShapePoolSize={_shapePool.Count}",
-                    "WpfShapeRenderer");
         }
 
         /// <summary>
@@ -329,11 +322,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering
 
                 // 根据形状类型更新尺寸
                 UpdateShapeDimensions(shape, region);
-
-                // ★ 诊断：增量更新时的 Canvas 实际位置（结果层坐标验证）
-                VisionLogger.Instance.Log(LogLevel.Info,
-                    $"[WpfShapeRenderer.UpdateShapeFromContext] 更新Shape | InstanceId={_rendererInstanceId} | RegionId={region.Id} | ShapeType={region.ShapeType} | Canvas位置=({canvasLeft:F1},{canvasTop:F1}) | 显示中心=({region.Center.X:F1},{region.Center.Y:F1}) | W={region.Width:F1} H={region.Height:F1} | 视口偏移=({_viewportOffset.X:F1},{_viewportOffset.Y:F1}) | 缩放={_viewportScale:F3} | IsPreview={region.IsPreview}",
-                    "WpfShapeRenderer");
         }
 
         /// <summary>
@@ -507,8 +495,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering
         {
                 if (region.PolygonPoints.Count < 3) return null;
 
-                // 日志监控（降频）
-                _logCounter++;
+                // 日志监控（降频，计数器在 CreateShapeFromContext 统一递增）
                 if (_logger != null && _logCounter % LogInterval == 0)
                 {
                     _logger.Log(LogLevel.Info, 

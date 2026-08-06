@@ -59,12 +59,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
 
         // 日志监控计数器
         private int _mouseMoveLogCounter = 0;
+        private int _mouseDownLogCounter = 0;
         private int _drawingLogCount = 0;
         private int _previewLogCount = 0;
 
-        // ★ 位置修正诊断计数器
+        // ★ 位置修正诊断计数器（每 100 次渲染输出一次，避免热路径刷日志）
         private int _correctionStatusCount = 0;
-        private const int CORRECTION_LOG_INTERVAL = 1;
+        private const int CORRECTION_LOG_INTERVAL = 100;
 
         // 区域名称索引管理（空洞池策略）
         private int _nextRegionIndex = 1;
@@ -867,9 +868,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
                 ? _inverseMatrix.TransformWpfPoint(position)
                 : position;
 
-            VisionLogger.Instance.Log(LogLevel.Info,
-                $"[ProcessMouseDown] MouseDown事件 | InstanceId={_controlInstanceId} | IsDrawing={_viewModel.IsDrawing} | _isDrawing={_isDrawing} | Tool={_currentTool} | Position={position:F1} | RefPosition={refPosition:F1} | Matrix={(_positionCorrectionMatrix != null ? "set" : "null")} | OverlayCanvas={OverlayCanvas != null}",
-                "RoiEditorControl");
+            // 降频：每 20 次鼠标按下记录一次，避免交互路径刷日志
+            if (_mouseDownLogCounter++ % 20 == 0)
+            {
+                VisionLogger.Instance.Log(LogLevel.Info,
+                    $"[ProcessMouseDown] MouseDown事件 | InstanceId={_controlInstanceId} | IsDrawing={_viewModel.IsDrawing} | _isDrawing={_isDrawing} | Tool={_currentTool} | Position={position:F1} | RefPosition={refPosition:F1} | Matrix={(_positionCorrectionMatrix != null ? "set" : "null")} | OverlayCanvas={OverlayCanvas != null}",
+                    "RoiEditorControl");
+            }
 
             if (OverlayCanvas == null) return false;
 
@@ -1179,10 +1184,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
                         _viewModel.StatusMessage = $"已创建 {_currentTool} 区域";
                         RegionDataChanged?.Invoke(this, _currentDrawingRegion);
 
-                        // 诊断日志：新建区域后的完整状态
-                        var allRegionNames = string.Join(", ", _viewModel.Regions.Select(r => $"{r.Name}(Id={r.Id:B},IsVisible={r.IsVisible})"));
                         VisionLogger.Instance.Log(LogLevel.Success,
-                            $"[FinishInteraction] 区域已添加到集合 | InstanceId={_controlInstanceId} | Region={_currentDrawingRegion.Name}(Id={_currentDrawingRegion.Id:B}) | TotalRegions={_viewModel.Regions.Count} | Regions=[{allRegionNames}]",
+                            $"[FinishInteraction] 区域已添加到集合 | InstanceId={_controlInstanceId} | Region={_currentDrawingRegion.Name}(Id={_currentDrawingRegion.Id:B}) | TotalRegions={_viewModel.Regions.Count}",
                             "RoiEditorControl");
                     }
                     else
@@ -2104,11 +2107,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         /// </summary>
         public void DrawEditHandles(RoiData region)
         {
-            // ★ 诊断日志：手柄绘制入口
-            VisionLogger.Instance.Log(LogLevel.Info,
-                $"[DrawEditHandles] 入口 | Region={region.Name}(Id={region.Id:B}) | Parameters={region.Parameters?.GetType().Name ?? "null"} | IsShapeParams={region.Parameters is ShapeParameters} | OverlayCanvas={OverlayCanvas != null}",
-                "RoiEditorControl");
-
             if (region.Parameters is not ShapeParameters shapeDef || OverlayCanvas == null)
             {
                 VisionLogger.Instance.Log(LogLevel.Warning,
@@ -2160,10 +2158,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         private void CreateHandlesForShape(ShapeParameters shape)
         {
             var zoom = CurrentZoom;
-
-            VisionLogger.Instance.Log(LogLevel.Info,
-                $"[CreateHandlesForShape] zoom={zoom:F3}, ShapeType={shape.ShapeType}",
-                "RoiEditorControl");
 
             if (shape.Geometry == null) return;
 
@@ -2328,11 +2322,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
             Point refPoint = _inverseMatrix != null
                 ? _inverseMatrix.TransformWpfPoint(point)
                 : point;
-
-            // ★ 诊断：命中测试坐标变换 - 屏幕坐标 → 参考坐标
-            VisionLogger.Instance.Log(LogLevel.Info,
-                $"[HitTestRegion] 屏幕坐标=({point.X:F1},{point.Y:F1}) → 参考坐标=({refPoint.X:F1},{refPoint.Y:F1}) | Matrix={(_positionCorrectionMatrix != null ? "inverse" : "null")} | tolerance={tolerance:F1} | RegionCount={_viewModel.Regions.Count}",
-                "RoiEditorControl");
 
             // 从后往前测试（后绘制的在上面）
             foreach (var region in _viewModel.Regions.Reverse())
@@ -2591,12 +2580,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
 
         private void OnRegionChanged(object? sender, RoiChangedEventArgs e)
         {
-            // ★ 诊断日志：RegionChanged 事件详情
-            var currentRegionNames = _viewModel?.Regions != null
-                ? string.Join(", ", _viewModel.Regions.Select(r => $"{r.Name}(Id={r.Id:B},IsVisible={r.IsVisible})"))
-                : "null";
+            // 精简日志：仅记录数量，不再拼接全部区域 GUID 列表（避免超长字符串）
             VisionLogger.Instance.Log(LogLevel.Warning,
-                $"[OnRegionChanged] ViewModel 触发 RegionChanged | InstanceId={_controlInstanceId} | RegionId={e.Region?.Id:B} | RegionName={e.Region?.Name ?? "null"} | ChangeType={e.ChangeType} | Regions.Count={_viewModel?.Regions?.Count ?? -1} | Regions=[{currentRegionNames}]",
+                $"[OnRegionChanged] ViewModel 触发 RegionChanged | InstanceId={_controlInstanceId} | RegionId={e.Region?.Id:B} | RegionName={e.Region?.Name ?? "null"} | ChangeType={e.ChangeType} | Regions.Count={_viewModel?.Regions?.Count ?? -1}",
                 "RoiEditorControl");
 
             try

@@ -1,9 +1,9 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
-using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Workflow;
 using Xunit;

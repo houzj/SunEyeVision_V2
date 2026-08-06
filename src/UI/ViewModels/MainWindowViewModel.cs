@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -36,8 +36,8 @@ using SunEyeVision.UI.Views.Controls.Panels;
 using SunEyeVision.UI.Views.Windows;
 using SunEyeVision.UI.Extensions;
 using SunEyeVision.Plugin.SDK.UI.Controls;
-using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
-using SunEyeVision.Plugin.SDK.UI.Controls.Region.Logic;
+using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Logic;
 using SunEyeVision.UI.Converters.Path;
 using SunEyeVision.UI.Services.Performance;
 using SunEyeVision.UI.Services.Logging;
@@ -4102,10 +4102,10 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         /// </summary>
         private static object? ResolveRoiDesignValue(string propertyName, ToolParameters? parameters)
         {
-            if (parameters is not SunEyeVision.Plugin.SDK.Execution.Parameters.RegionParameters regionParams)
+            if (parameters is not SunEyeVision.Plugin.SDK.Execution.Parameters.RoiParameters regionParams)
                 return null;
 
-            IEnumerable<RegionData>? regions = propertyName switch
+            IEnumerable<RoiData>? regions = propertyName switch
             {
                 nameof(ToolResults.InspectionGeometries) => regionParams.InspectionRegions?.Regions,
                 nameof(ToolResults.MaskGeometries) => regionParams.MaskRegions?.Regions,
@@ -4123,18 +4123,18 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         /// <summary>
         /// ShapeType → 中文显示名（结果树形状分组节点用）
         /// </summary>
-        private static string ShapeTypeDisplayName(SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeType shapeType)
+        private static string ShapeTypeDisplayName(SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models.ShapeType shapeType)
         {
             return shapeType switch
             {
-                SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeType.Circle => "圆",
-                SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeType.Rectangle => "矩形",
-                SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeType.RotatedRectangle => "旋转矩形",
-                SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeType.Polygon => "多边形",
-                SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeType.Annulus => "圆环",
-                SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeType.Line => "直线",
-                SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeType.Arc => "弧形",
-                SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeType.Point => "点",
+                SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models.ShapeType.Circle => "圆",
+                SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models.ShapeType.Rectangle => "矩形",
+                SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models.ShapeType.RotatedRectangle => "旋转矩形",
+                SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models.ShapeType.Polygon => "多边形",
+                SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models.ShapeType.Annulus => "圆环",
+                SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models.ShapeType.Line => "直线",
+                SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models.ShapeType.Arc => "弧形",
+                SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models.ShapeType.Point => "点",
                 _ => shapeType.ToString()
             };
         }

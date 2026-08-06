@@ -29,23 +29,23 @@ namespace SunEyeVision.Tool.Script.Models
             [typeof(float)]  = "double",           // 脚本层用 double 兼容 float
             [typeof(System.Windows.Point)] = "System.Windows.Point",
             [typeof(System.Windows.Size)]  = "System.Windows.Size",
-            [typeof(SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.Point2D)]
-                = "SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.Point2D",
-            [typeof(SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeParameters)]
-                = "SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeParameters",
+            [typeof(SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models.Point2D)]
+                = "SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models.Point2D",
+            [typeof(SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models.ShapeParameters)]
+                = "SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models.ShapeParameters",
             // 几何 readonly struct → 脚本需可写的 ShapeParameters（可设 ShapeType）
             [typeof(SunEyeVision.Plugin.SDK.Models.Geometry.Circle2d)]
-                = "SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeParameters",
+                = "SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models.ShapeParameters",
             [typeof(SunEyeVision.Plugin.SDK.Models.Geometry.Line2d)]
-                = "SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeParameters",
+                = "SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models.ShapeParameters",
             [typeof(SunEyeVision.Plugin.SDK.Models.Geometry.Annulus2d)]
-                = "SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeParameters",
+                = "SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models.ShapeParameters",
             [typeof(SunEyeVision.Plugin.SDK.Models.Geometry.RotatedRect2d)]
-                = "SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeParameters",
+                = "SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models.ShapeParameters",
             [typeof(SunEyeVision.Plugin.SDK.Models.Geometry.Polygon2d)]
-                = "SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeParameters",
+                = "SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models.ShapeParameters",
             [typeof(SunEyeVision.Plugin.SDK.Models.Geometry.Arc2d)]
-                = "SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeParameters",
+                = "SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models.ShapeParameters",
             [typeof(IVisionImage)]
                 = "IVisionImage",
         };
@@ -61,8 +61,8 @@ namespace SunEyeVision.Tool.Script.Models
             typeof(SunEyeVision.Plugin.SDK.Models.Geometry.RotatedRect2d),
             typeof(SunEyeVision.Plugin.SDK.Models.Geometry.Polygon2d),
             typeof(SunEyeVision.Plugin.SDK.Models.Geometry.Arc2d),
-            typeof(SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeParameters),
-            typeof(SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.Point2D),
+            typeof(SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models.ShapeParameters),
+            typeof(SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models.Point2D),
             typeof(System.Windows.Point),
             typeof(System.Windows.Size),
         };
@@ -72,13 +72,13 @@ namespace SunEyeVision.Tool.Script.Models
         /// </summary>
         private static readonly Dictionary<string, string> GeometryFieldDefaults = new()
         {
-            ["Point"]       = "= new SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.Point2D()",
-            ["Rectangle"]   = "= new SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeParameters { Geometry = new SunEyeVision.Plugin.SDK.Models.Geometry.RotatedRect2d(0,0,100,100,0) }",
-            ["Circle"]      = "= new SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeParameters { Geometry = new SunEyeVision.Plugin.SDK.Models.Geometry.Circle2d(0,0,50) }",
-            ["Line"]        = "= new SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeParameters { Geometry = SunEyeVision.Plugin.SDK.Models.Geometry.Line2d.FromTwoPoints(new System.Windows.Point(0,0), new System.Windows.Point(100,100)) }",
-            ["Annulus"]     = "= new SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeParameters { Geometry = new SunEyeVision.Plugin.SDK.Models.Geometry.Annulus2d(0,0,30,80) }",
-            ["RotatedRect"] = "= new SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeParameters { Geometry = new SunEyeVision.Plugin.SDK.Models.Geometry.RotatedRect2d(0,0,100,100,0) }",
-            ["Polygon"]     = "= new SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeParameters { Geometry = new SunEyeVision.Plugin.SDK.Models.Geometry.Polygon2d(new System.Windows.Point[] { new System.Windows.Point(0,0), new System.Windows.Point(100,0), new System.Windows.Point(50,100) }) }",
+            ["Point"]       = "= new SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models.Point2D()",
+            ["Rectangle"]   = "= new SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models.ShapeParameters { Geometry = new SunEyeVision.Plugin.SDK.Models.Geometry.RotatedRect2d(0,0,100,100,0) }",
+            ["Circle"]      = "= new SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models.ShapeParameters { Geometry = new SunEyeVision.Plugin.SDK.Models.Geometry.Circle2d(0,0,50) }",
+            ["Line"]        = "= new SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models.ShapeParameters { Geometry = SunEyeVision.Plugin.SDK.Models.Geometry.Line2d.FromTwoPoints(new System.Windows.Point(0,0), new System.Windows.Point(100,100)) }",
+            ["Annulus"]     = "= new SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models.ShapeParameters { Geometry = new SunEyeVision.Plugin.SDK.Models.Geometry.Annulus2d(0,0,30,80) }",
+            ["RotatedRect"] = "= new SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models.ShapeParameters { Geometry = new SunEyeVision.Plugin.SDK.Models.Geometry.RotatedRect2d(0,0,100,100,0) }",
+            ["Polygon"]     = "= new SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models.ShapeParameters { Geometry = new SunEyeVision.Plugin.SDK.Models.Geometry.Polygon2d(new System.Windows.Point[] { new System.Windows.Point(0,0), new System.Windows.Point(100,0), new System.Windows.Point(50,100) }) }",
         };
 
         private static Type GetClrTypeOrThrow(string typeName)

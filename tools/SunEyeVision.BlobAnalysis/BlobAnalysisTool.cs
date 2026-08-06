@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -11,7 +11,7 @@ using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
-using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using SunEyeVision.Plugin.SDK.Execution.Helpers;
 using SunEyeVision.Plugin.SDK.Validation;
 using SunEyeVision.Tool.BlobAnalysis.Models;
@@ -125,8 +125,8 @@ namespace SunEyeVision.Tool.BlobAnalysis
 
                     // ===== Step 2: 构建ROI =====
                     stepSw.Restart();
-                    var inspectionRegions = parameters.GetRegionsByType(RegionType.Inspection);
-                    var maskRegions = parameters.GetRegionsByType(RegionType.Mask);
+                    var inspectionRegions = parameters.GetRoisByType(RoiType.Inspection);
+                    var maskRegions = parameters.GetRoisByType(RoiType.Mask);
                     (roiRegion, inspHRegion, maskHRegion) = ToolRegionHelper.BuildHalconROI(
                         imgWidth, imgHeight, inspectionRegions, maskRegions, parameters.NodeResults);
                     stepSw.Stop();

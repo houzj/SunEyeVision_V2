@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -10,7 +10,7 @@ using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
-using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using SunEyeVision.Plugin.SDK.Execution.Helpers;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Validation;
@@ -104,8 +104,8 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
             {
                 // ===== ROI 构建 & ReduceDomain =====
                 stepSw.Restart();
-                var inspectionRegions = parameters.GetRegionsByType(RegionType.Inspection);
-                var maskRegions = parameters.GetRegionsByType(RegionType.Mask);
+                var inspectionRegions = parameters.GetRoisByType(RoiType.Inspection);
+                var maskRegions = parameters.GetRoisByType(RoiType.Mask);
 
                 HRegion? roiRegion = null;
                 HRegion? inspHRegion = null;

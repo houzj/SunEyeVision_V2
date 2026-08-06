@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
-using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 
 namespace SunEyeVision.Plugin.SDK.Execution.Parameters

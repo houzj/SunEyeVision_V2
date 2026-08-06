@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using OpenCvSharp;
 using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 
 namespace SunEyeVision.CvEngine
@@ -18,8 +18,8 @@ namespace SunEyeVision.CvEngine
         /// </summary>
         public static CvRegion? BuildROI(
             Size imageSize,
-            IEnumerable<RegionData> inspectionRegions,
-            IEnumerable<RegionData> maskRegions)
+            IEnumerable<RoiData> inspectionRegions,
+            IEnumerable<RoiData> maskRegions)
         {
             bool hasInspection = inspectionRegions.Any();
             bool hasMask = maskRegions.Any();

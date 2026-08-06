@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text.Json.Serialization;
@@ -37,14 +37,14 @@ namespace SunEyeVision.Tool.Morphology
     /// 形态学处理工具参数
     /// </summary>
     /// <remarks>
-    /// 参数类继承 RegionParameters，自带区域管理功能。
+    /// 参数类继承 RoiParameters，自带区域管理功能。
     /// 支持检测区域 + 屏蔽区域，以及位置修正功能。
     ///
     /// 多态序列化（rule-010）：
     /// 使用 [JsonDerivedType] 特性标识参数类型，类型标识符为 "Morphology"。
     /// </remarks>
     [JsonDerivedType(typeof(MorphologyParameters), "Morphology")]
-    public class MorphologyParameters : RegionParameters
+    public class MorphologyParameters : RoiParameters
     {
         #region 常量定义
 

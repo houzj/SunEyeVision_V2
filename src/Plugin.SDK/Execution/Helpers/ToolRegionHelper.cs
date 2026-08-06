@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -6,7 +6,7 @@ using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
-using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 
 namespace SunEyeVision.Plugin.SDK.Execution.Helpers
@@ -55,10 +55,10 @@ namespace SunEyeVision.Plugin.SDK.Execution.Helpers
         }
 
         /// <summary>
-        /// 从 RegionData 集合构建 HRegion（保持 tuple 结构，支持 Drawing/Subscribe 模式）
+        /// 从 RoiData 集合构建 HRegion（保持 tuple 结构，支持 Drawing/Subscribe 模式）
         /// </summary>
         public static HRegion BuildHalconRegion(
-            IEnumerable<RegionData> regions,
+            IEnumerable<RoiData> regions,
             IDictionary<string, ToolResults>? nodeResults = null)
         {
             var context = nodeResults != null ? new NodeResultsParameterContext(nodeResults) : null;
@@ -66,10 +66,10 @@ namespace SunEyeVision.Plugin.SDK.Execution.Helpers
         }
 
         /// <summary>
-        /// 从 RegionData 集合构建 HRegion（内部方法，接受 IParameterContext）
+        /// 从 RoiData 集合构建 HRegion（内部方法，接受 IParameterContext）
         /// </summary>
         private static HRegion BuildHalconRegion(
-            IEnumerable<RegionData> regions,
+            IEnumerable<RoiData> regions,
             IParameterContext? context)
         {
             HRegion? result = null;
@@ -78,11 +78,11 @@ namespace SunEyeVision.Plugin.SDK.Execution.Helpers
                 HRegion? single = region.Parameters switch
                 {
                     ShapeParameters shape => BuildFromShapeParams(shape),
-                    FixedRegion fixedDef when context != null => BuildFromFixedRegion(fixedDef, context),
-                    ComputedRegion computedDef when context != null => BuildFromComputedRegion(computedDef, context),
-                    FixedRegion fixedDef => throw new InvalidOperationException(
+                    FixedRoi fixedDef when context != null => BuildFromFixedRegion(fixedDef, context),
+                    ComputedRoi computedDef when context != null => BuildFromComputedRegion(computedDef, context),
+                    FixedRoi fixedDef => throw new InvalidOperationException(
                         $"无法解析固定区域订阅: 节点 {fixedDef.SourceNodeId}.{fixedDef.OutputName}: 未提供 NodeResults"),
-                    ComputedRegion computedDef => throw new InvalidOperationException(
+                    ComputedRoi computedDef => throw new InvalidOperationException(
                         $"无法解析计算区域: 未提供 NodeResults"),
                     _ => null
                 };
@@ -132,9 +132,9 @@ namespace SunEyeVision.Plugin.SDK.Execution.Helpers
         }
 
         /// <summary>
-        /// 从 FixedRegion 解析并构建 HRegion
+        /// 从 FixedRoi 解析并构建 HRegion
         /// </summary>
-        private static HRegion? BuildFromFixedRegion(FixedRegion fixedDef, IParameterContext context)
+        private static HRegion? BuildFromFixedRegion(FixedRoi fixedDef, IParameterContext context)
         {
             var value = context.GetNodeOutputValue(
                 fixedDef.SourceNodeId,
@@ -153,9 +153,9 @@ namespace SunEyeVision.Plugin.SDK.Execution.Helpers
         }
 
         /// <summary>
-        /// 从 ComputedRegion 解析并构建 HRegion
+        /// 从 ComputedRoi 解析并构建 HRegion
         /// </summary>
-        private static HRegion? BuildFromComputedRegion(ComputedRegion computedDef, IParameterContext context)
+        private static HRegion? BuildFromComputedRegion(ComputedRoi computedDef, IParameterContext context)
         {
             double ResolveParam(string name, double defaultValue)
             {
@@ -247,8 +247,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Helpers
         /// <returns>(roiRegion 用于处理, inspHRegion 用于显示轮廓, maskHRegion 用于显示轮廓)</returns>
         public static (HRegion? Roi, HRegion? Insp, HRegion? Mask) BuildHalconROI(
             int imgWidth, int imgHeight,
-            IEnumerable<RegionData> inspectionRegions,
-            IEnumerable<RegionData> maskRegions,
+            IEnumerable<RoiData> inspectionRegions,
+            IEnumerable<RoiData> maskRegions,
             IDictionary<string, ToolResults>? nodeResults = null)
         {
             var context = nodeResults != null ? new NodeResultsParameterContext(nodeResults) : null;
@@ -413,7 +413,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Helpers
         /// 输出进契约后，下游可四级绑定（整体 / [Type=X] / [i] / [i].Geometry.属性）。
         /// </summary>
         public static void ExtractInspectionGeometries(ToolResults result,
-            IEnumerable<RegionData>? regions)
+            IEnumerable<RoiData>? regions)
         {
             result.InspectionGeometries = regions?
                 .Where(r => r.IsEnabled)
@@ -428,7 +428,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Helpers
         /// 仅提取 Drawing 模式的 ShapeParameters（Fixed/Computed 模式的区域需运行期解析）。
         /// </summary>
         public static void ExtractMaskGeometries(ToolResults result,
-            IEnumerable<RegionData>? regions)
+            IEnumerable<RoiData>? regions)
         {
             result.MaskGeometries = regions?
                 .Where(r => r.IsEnabled)

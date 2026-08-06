@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 using OpenCvSharp;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models;
-using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 using VisionLogger = SunEyeVision.Plugin.SDK.Logging.VisionLogger;
 using VisionLogLevel = SunEyeVision.Plugin.SDK.Logging.LogLevel;

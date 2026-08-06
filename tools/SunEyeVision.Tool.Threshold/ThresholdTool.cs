@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -9,7 +9,7 @@ using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution;
 using SunEyeVision.Plugin.SDK.Execution.Helpers;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using SunEyeVision.Plugin.SDK.Validation;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.Tool.Threshold.Views;
@@ -125,8 +125,8 @@ namespace SunEyeVision.Tool.Threshold
                     stepSw.Restart();
                     if (isRegionEnabled)
                     {
-                        var inspectionRegions = parameters.GetRegionsByType(RegionType.Inspection);
-                        var maskRegions = parameters.GetRegionsByType(RegionType.Mask);
+                        var inspectionRegions = parameters.GetRoisByType(RoiType.Inspection);
+                        var maskRegions = parameters.GetRoisByType(RoiType.Mask);
                         (roiRegion, inspHRegion, maskHRegion) = ToolRegionHelper.BuildHalconROI(
                             imgWidth, imgHeight, inspectionRegions, maskRegions, parameters.NodeResults);
 

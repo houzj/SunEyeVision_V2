@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -15,7 +15,7 @@ using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Metadata;
 using SunEyeVision.Plugin.SDK.UI.Controls;
-using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using SunEyeVision.Tool.ShapeMatch.Models;
 using WpfPoint = System.Windows.Point;
 

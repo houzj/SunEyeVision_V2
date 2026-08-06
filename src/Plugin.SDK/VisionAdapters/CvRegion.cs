@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using OpenCvSharp;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
-using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using WpfRect = System.Windows.Rect;
 using WpfPoint = System.Windows.Point;
 
@@ -65,9 +65,9 @@ namespace SunEyeVision.Plugin.SDK.VisionAdapters
         }
 
         /// <summary>
-        /// From Regions from RegionData collection
+        /// From Regions from RoiData collection
         /// </summary>
-        public static CvRegion CreateFromRegions(Size imageSize, IEnumerable<RegionData> regions)
+        public static CvRegion CreateFromRegions(Size imageSize, IEnumerable<RoiData> regions)
         {
             var enabled = regions.Where(r => r.IsEnabled).ToList();
             if (enabled.Count == 0)

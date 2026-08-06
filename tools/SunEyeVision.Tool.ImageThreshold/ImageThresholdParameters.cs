@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
@@ -28,13 +28,13 @@ namespace SunEyeVision.Tool.ImageThreshold
     /// 图像二值化工具参数
     /// </summary>
     /// <remarks>
-    /// 继承 RegionParameters，自带区域管理功能。
+    /// 继承 RoiParameters，自带区域管理功能。
     /// 使用 ParamValue 包装器，统一管理参数值和绑定配置。
     /// 
     /// 多态序列化（rule-010）：使用 [JsonDerivedType] 标识参数类型。
     /// </remarks>
     [JsonDerivedType(typeof(ImageThresholdParameters), "ImageThreshold")]
-    public class ImageThresholdParameters : RegionParameters
+    public class ImageThresholdParameters : RoiParameters
     {
         /// <summary>
         /// 构造函数 - 注册 Method 变更通知
@@ -86,7 +86,7 @@ namespace SunEyeVision.Tool.ImageThreshold
 
         #endregion
 
-        #region 基本参数（继承自 RegionParameters）
+        #region 基本参数（继承自 RoiParameters）
 
         // ImageSource - 输入图像源（继承）
         // IsRegionEnabled - 启用区域限制（继承）

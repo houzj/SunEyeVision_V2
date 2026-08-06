@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
@@ -36,14 +36,14 @@ namespace SunEyeVision.Tool.ImageFilter
     /// 图像滤波工具参数
     /// </summary>
     /// <remarks>
-    /// 参数类继承 RegionParameters，自带区域管理功能。
+    /// 参数类继承 RoiParameters，自带区域管理功能。
     /// 使用 ParamValue 包装器，统一管理参数值和绑定配置。
     ///
     /// 多态序列化（rule-010: 方案系统实现规范）：
     /// 使用 [JsonDerivedType] 特性标识参数类型，类型标识符为 "ImageFilter"。
     /// </remarks>
     [JsonDerivedType(typeof(ImageFilterParameters), "ImageFilter")]
-    public class ImageFilterParameters : RegionParameters
+    public class ImageFilterParameters : RoiParameters
     {
         /// <summary>
         /// 构造函数 - 注册 FilterTypeValue 变更通知

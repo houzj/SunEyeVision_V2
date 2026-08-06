@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
@@ -32,7 +32,7 @@ namespace SunEyeVision.Tool.Threshold
     /// 图像阈值化工具参数
     /// </summary>
     /// <remarks>
-    /// 参数类继承 RegionParameters，自带区域管理功能。
+    /// 参数类继承 RoiParameters，自带区域管理功能。
     /// 使用 ParamValue 包装器，统一管理参数值和绑定配置。
     /// 算法层直接使用 parameters.Threshold.Value，完全无感。
     /// 
@@ -44,7 +44,7 @@ namespace SunEyeVision.Tool.Threshold
     /// 1. Validate() 方法：完整验证所有约束条件
     /// </remarks>
     [JsonDerivedType(typeof(ThresholdParameters), "Threshold")]
-    public class ThresholdParameters : RegionParameters
+    public class ThresholdParameters : RoiParameters
     {
         #region 常量定义
 

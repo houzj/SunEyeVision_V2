@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -13,7 +13,7 @@ using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.SDK.Execution.Helpers;
-using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Tool.ShapeMatch.Models;
 using WpfPoint = System.Windows.Point;
@@ -47,8 +47,8 @@ public partial class ShapeMatchTemplateEditorDialog : WpfWindow
     public double TemplateScaleMax { get; set; } = 1.1;
 
     // 对话框内部区域数据源
-    public ObservableCollection<RegionData> DialogInspectionRegions { get; } = new();
-    public ObservableCollection<RegionData> DialogMaskRegions { get; } = new();
+    public ObservableCollection<RoiData> DialogInspectionRegions { get; } = new();
+    public ObservableCollection<RoiData> DialogMaskRegions { get; } = new();
 
     private const double DEG2RAD = Math.PI / 180.0;
 
@@ -571,7 +571,7 @@ public partial class ShapeMatchTemplateEditorDialog : WpfWindow
     /// 构建 ROI 区域（检测区域并集 - 屏蔽区域）
     /// 委托给 ToolRegionHelper 统一处理
     /// </summary>
-    private static HRegion? BuildRoiRegion(List<RegionData> inspections, List<RegionData> masks)
+    private static HRegion? BuildRoiRegion(List<RoiData> inspections, List<RoiData> masks)
     {
         var (roi, _, _) = ToolRegionHelper.BuildHalconROI(0, 0, inspections, masks);
         return roi;

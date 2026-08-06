@@ -1,7 +1,7 @@
-﻿using System.Linq;
+using System.Linq;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
-using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using Xunit;
 
 namespace SunEyeVision.Plugin.SDK.Tests;

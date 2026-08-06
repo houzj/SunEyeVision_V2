@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,14 +10,14 @@ using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
-using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
-using SunEyeVision.Plugin.SDK.UI.Controls.Region.Rendering;
+using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering;
 using SunEyeVision.UI.Extensions;
 using SunEyeVision.UI.Services.Vision;
 using SunEyeVision.UI.Services.Performance;
 using WorkflowCore = SunEyeVision.Workflow;
 using SunEyeVision.Workflow;
-using ShapeType = SunEyeVision.Plugin.SDK.UI.Controls.Region.Models.ShapeType;
+using ShapeType = SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models.ShapeType;
 
 namespace SunEyeVision.UI.Services.Workflow
 {
@@ -417,7 +417,7 @@ namespace SunEyeVision.UI.Services.Workflow
 
         private IEnumerable<DisplayItemBase>? BuildRegionItems(WorkflowNodeBase node)
         {
-            if (node.Parameters is not RegionParameters regionParams)
+            if (node.Parameters is not RoiParameters regionParams)
                 return null;
 
             var items = new List<DisplayItemBase>();
@@ -436,7 +436,7 @@ namespace SunEyeVision.UI.Services.Workflow
                 "NodeResultManager");
 
             // 检测区域（蓝色）— 使用参数中的样式实例，UI 的 DispItemColorControl 可绑定控制可见性
-            var enabledRegions = regionParams.InspectionRegions.GetEnabledRegions();
+            var enabledRegions = regionParams.InspectionRegions.GetEnabledRois();
             var inspectionStyle = regionParams.InspectionRegionStyle ?? DefaultRegionStyle;
             foreach (var region in enabledRegions)
             {
@@ -455,7 +455,7 @@ namespace SunEyeVision.UI.Services.Workflow
             }
 
             // 屏蔽区域（橙色）
-            var enabledMasks = regionParams.MaskRegions.GetEnabledRegions();
+            var enabledMasks = regionParams.MaskRegions.GetEnabledRois();
             var maskStyle = regionParams.MaskRegionStyle ?? DefaultMaskRegionStyle;
             foreach (var region in enabledMasks)
             {
@@ -487,7 +487,7 @@ namespace SunEyeVision.UI.Services.Workflow
             return items.Count > 0 ? items : null;
         }
 
-        private static DisplayItemBase? CreateRegionDisplayItem(RegionData region, GraphicsStyle style, AffineMatrix? correctionMatrix = null)
+        private static DisplayItemBase? CreateRegionDisplayItem(RoiData region, GraphicsStyle style, AffineMatrix? correctionMatrix = null)
         {
             if (region?.Parameters is not ShapeParameters shape) return null;
 

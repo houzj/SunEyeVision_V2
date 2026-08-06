@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Windows;
 using SunEyeVision.Plugin.SDK.Execution;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
-using SunEyeVision.Plugin.SDK.UI.Controls.Region.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 using Xunit;
 

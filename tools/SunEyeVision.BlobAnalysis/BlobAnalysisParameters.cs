@@ -1,4 +1,4 @@
-﻿using System.Windows.Media;
+using System.Windows.Media;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text.Json.Serialization;
@@ -85,14 +85,14 @@ namespace SunEyeVision.Tool.BlobAnalysis
     /// Blob分析工具参数
     /// </summary>
     /// <remarks>
-    /// 参数类继承 RegionParameters，自带区域管理功能。
+    /// 参数类继承 RoiParameters，自带区域管理功能。
     /// 使用 ParamValue 包装器，统一管理参数值和绑定配置。
     /// 
     /// 多态序列化（rule-010: 方案系统实现规范）：
     /// 使用 [JsonDerivedType] 特性标识参数类型，类型标识符为 "BlobAnalysis"。
     /// </remarks>
     [JsonDerivedType(typeof(BlobAnalysisParameters), "BlobAnalysis")]
-    public class BlobAnalysisParameters : RegionParameters
+    public class BlobAnalysisParameters : RoiParameters
     {
         #region 常量定义
 

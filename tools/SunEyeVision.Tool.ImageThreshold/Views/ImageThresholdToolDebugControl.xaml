@@ -4,8 +4,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
-        xmlns:region="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Region.Views;assembly=SunEyeVision.Plugin.SDK"
-        xmlns:converters="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Region.Converters;assembly=SunEyeVision.Plugin.SDK"
+        xmlns:region="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views;assembly=SunEyeVision.Plugin.SDK"
+        xmlns:converters="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Roi.Converters;assembly=SunEyeVision.Plugin.SDK"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:localConverters="clr-namespace:SunEyeVision.Tool.ImageThreshold.Converters"
         xmlns:results="clr-namespace:SunEyeVision.Plugin.SDK.Execution.Results;assembly=SunEyeVision.Plugin.SDK"
@@ -46,7 +46,7 @@
 
             <GroupBox Header="区域设置" Margin="0,8,0,0"
                       Visibility="{Binding IsRegionEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
-                <region:RegionEditorManagerControl x:Name="regionManager"
+                <region:RoiEditorManagerControl x:Name="regionManager"
                     InspectionRegionsSource="{Binding InspectionRegions.Regions}"
                     MaskRegionsSource="{Binding MaskRegions.Regions}"/>
             </GroupBox>

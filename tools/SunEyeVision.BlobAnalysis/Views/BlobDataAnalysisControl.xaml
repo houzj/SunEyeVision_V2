@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        xmlns:converters="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Region.Converters;assembly=SunEyeVision.Plugin.SDK"
+        xmlns:converters="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Roi.Converters;assembly=SunEyeVision.Plugin.SDK"
         d:DesignHeight="350" d:DesignWidth="700">
 
     <UserControl.Resources>

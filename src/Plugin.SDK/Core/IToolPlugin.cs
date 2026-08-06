@@ -196,14 +196,4 @@ namespace SunEyeVision.Plugin.SDK.Core
         #endregion
     }
 
-    /// <summary>
-    /// 支持ROI的工具接口
-    /// </summary>
-    public interface IRoiToolPlugin<TParams, TResult> : IToolPlugin<TParams, TResult>
-        where TParams : ToolParameters, new()
-        where TResult : ToolResults, new()
-    {
-        /// <summary>执行工具（指定ROI）</summary>
-        TResult Run(TParams parameters, Models.Roi.IRoi roi);
-    }
 }

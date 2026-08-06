@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -53,6 +54,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
         #region 私有字段
 
         private object? _geometry;
+        private ObservableCollection<Point2D>? _points;
         private uint _fillColorArgb = 0x00000000;
         private uint _strokeColorArgb = 0xFF0000FF;
         private double _strokeThickness = RegionEditorSettings.Default.DefaultStrokeThickness;
@@ -68,7 +70,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
         public object? Geometry
         {
             get => _geometry;
-            set => SetProperty(ref _geometry, value);
+            set
+            {
+                if (SetProperty(ref _geometry, value))
+                {
+                    // Geometry 变化后，同步通知所有扁平参数属性（绘制参数面板的绑定源），实现双向联动
+                    NotifyGeometryDerivedProperties();
+                }
+            }
         }
 
         #region 样式属性
@@ -103,6 +112,234 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
         /// 从 Geometry 推导 ShapeType 枚举（UI 下拉用）
         /// </summary>
         public ShapeType ShapeType => GeometryToShapeType(_geometry);
+
+        #region 扁平参数属性（绘制参数面板绑定源）
+
+        // 以下扁平属性均从 Geometry 实时推导（get）并重建 Geometry 写回（set）。
+        // Geometry 是唯一序列化源，扁平属性为 UI 派生视图，标记 [JsonIgnore] 避免冗余序列化。
+
+        /// <summary>
+        /// 中心 X（矩形/旋转矩形/圆形/多边形共用）
+        /// </summary>
+        [JsonIgnore]
+        public double CenterX
+        {
+            get => GetCenter().X;
+            set
+            {
+                var pt = GetCenter();
+                if (Math.Abs(pt.X - value) < 1e-9) return;
+                SetCenter(new Point2D(value, pt.Y));
+            }
+        }
+
+        /// <summary>
+        /// 中心 Y（矩形/旋转矩形/圆形/多边形共用）
+        /// </summary>
+        [JsonIgnore]
+        public double CenterY
+        {
+            get => GetCenter().Y;
+            set
+            {
+                var pt = GetCenter();
+                if (Math.Abs(pt.Y - value) < 1e-9) return;
+                SetCenter(new Point2D(pt.X, value));
+            }
+        }
+
+        /// <summary>
+        /// 宽度（矩形/旋转矩形）
+        /// </summary>
+        [JsonIgnore]
+        public double Width
+        {
+            get => _geometry switch
+            {
+                RotatedRect2d rr => rr.Width,
+                System.Windows.Rect r => r.Width,
+                _ => 0,
+            };
+            set => SetSize(value, Height);
+        }
+
+        /// <summary>
+        /// 高度（矩形/旋转矩形）
+        /// </summary>
+        [JsonIgnore]
+        public double Height
+        {
+            get => _geometry switch
+            {
+                RotatedRect2d rr => rr.Height,
+                System.Windows.Rect r => r.Height,
+                _ => 0,
+            };
+            set => SetSize(Width, value);
+        }
+
+        /// <summary>
+        /// 半径（圆形）
+        /// </summary>
+        [JsonIgnore]
+        public double Radius
+        {
+            get => _geometry is Circle2d c ? c.Radius : 0;
+            set
+            {
+                if (_geometry is not Circle2d c || Math.Abs(c.Radius - value) < 1e-9) return;
+                _geometry = new Circle2d(c.Center, value);
+                NotifyGeometryDerivedProperties();
+            }
+        }
+
+        /// <summary>
+        /// 旋转角度（度，旋转矩形）
+        /// </summary>
+        [JsonIgnore]
+        public double Angle
+        {
+            get => _geometry is RotatedRect2d rr ? rr.Angle : 0;
+            set
+            {
+                if (_geometry is not RotatedRect2d rr || Math.Abs(rr.Angle - value) < 1e-9) return;
+                _geometry = new RotatedRect2d(rr.Center, rr.Width, rr.Height, value);
+                NotifyGeometryDerivedProperties();
+            }
+        }
+
+        /// <summary>
+        /// 直线起点 X
+        /// </summary>
+        [JsonIgnore]
+        public double StartX
+        {
+            get => GetStartPoint().X;
+            set
+            {
+                var pt = GetStartPoint();
+                if (Math.Abs(pt.X - value) < 1e-9) return;
+                SetStartPoint(new Point2D(value, pt.Y));
+            }
+        }
+
+        /// <summary>
+        /// 直线起点 Y
+        /// </summary>
+        [JsonIgnore]
+        public double StartY
+        {
+            get => GetStartPoint().Y;
+            set
+            {
+                var pt = GetStartPoint();
+                if (Math.Abs(pt.Y - value) < 1e-9) return;
+                SetStartPoint(new Point2D(pt.X, value));
+            }
+        }
+
+        /// <summary>
+        /// 直线终点 X
+        /// </summary>
+        [JsonIgnore]
+        public double EndX
+        {
+            get => GetEndPoint().X;
+            set
+            {
+                var pt = GetEndPoint();
+                if (Math.Abs(pt.X - value) < 1e-9) return;
+                SetEndPoint(new Point2D(value, pt.Y));
+            }
+        }
+
+        /// <summary>
+        /// 直线终点 Y
+        /// </summary>
+        [JsonIgnore]
+        public double EndY
+        {
+            get => GetEndPoint().Y;
+            set
+            {
+                var pt = GetEndPoint();
+                if (Math.Abs(pt.Y - value) < 1e-9) return;
+                SetEndPoint(new Point2D(pt.X, value));
+            }
+        }
+
+        /// <summary>
+        /// 多边形顶点（可编辑集合，顶点变更时重建 Polygon2d）
+        /// </summary>
+        [JsonIgnore]
+        public ObservableCollection<Point2D>? Points
+        {
+            get
+            {
+                if (_geometry is not Polygon2d poly) return null;
+                if (_points == null)
+                {
+                    _points = new ObservableCollection<Point2D>(
+                        poly.Vertices.Select(v => new Point2D(v.X, v.Y)));
+                    _points.CollectionChanged += (_, _) => SyncPolygonFromPoints();
+                    foreach (var pt in _points)
+                        pt.PropertyChanged += (_, _) => SyncPolygonFromPoints();
+                }
+                return _points;
+            }
+        }
+
+        #endregion
+
+        /// <summary>
+        /// 根据宽高重建矩形/旋转矩形几何
+        /// </summary>
+        private void SetSize(double width, double height)
+        {
+            var shapeType = GeometryToShapeType(_geometry);
+            switch (shapeType)
+            {
+                case ShapeType.RotatedRectangle when _geometry is RotatedRect2d rr:
+                    _geometry = new RotatedRect2d(rr.Center, width, height, rr.Angle);
+                    break;
+                case ShapeType.Rectangle when _geometry is System.Windows.Rect r:
+                    _geometry = new System.Windows.Rect(r.X, r.Y, width, height);
+                    break;
+                default:
+                    return;
+            }
+            NotifyGeometryDerivedProperties();
+        }
+
+        /// <summary>
+        /// 从顶点集合同步回 Polygon2d
+        /// </summary>
+        private void SyncPolygonFromPoints()
+        {
+            if (_points == null || _geometry is not Polygon2d poly) return;
+            var vertices = _points.Select(p => new System.Windows.Point(p.X, p.Y)).ToArray();
+            _geometry = new Polygon2d(vertices, poly.IsClosed);
+            NotifyGeometryDerivedProperties();
+        }
+
+        /// <summary>
+        /// 通知所有由 Geometry 推导的扁平属性（面板绑定源）
+        /// </summary>
+        private void NotifyGeometryDerivedProperties()
+        {
+            OnPropertyChanged(nameof(ShapeType));
+            OnPropertyChanged(nameof(CenterX));
+            OnPropertyChanged(nameof(CenterY));
+            OnPropertyChanged(nameof(Width));
+            OnPropertyChanged(nameof(Height));
+            OnPropertyChanged(nameof(Radius));
+            OnPropertyChanged(nameof(Angle));
+            OnPropertyChanged(nameof(StartX));
+            OnPropertyChanged(nameof(StartY));
+            OnPropertyChanged(nameof(EndX));
+            OnPropertyChanged(nameof(EndY));
+            OnPropertyChanged(nameof(Points));
+        }
 
         public ShapeParameters()
         {
@@ -145,6 +382,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
                 _ => _geometry,
             };
             OnPropertyChanged(nameof(Geometry));
+            NotifyGeometryDerivedProperties();
         }
 
         /// <summary>
@@ -167,6 +405,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
                 var dir = l.Direction;
                 _geometry = new Line2d(new System.Windows.Point(point.X, point.Y), dir);
                 OnPropertyChanged(nameof(Geometry));
+                NotifyGeometryDerivedProperties();
             }
         }
 
@@ -197,6 +436,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Models
                 if (dir.LengthSquared > 1e-20)
                     _geometry = new Line2d(startPt, dir);
                 OnPropertyChanged(nameof(Geometry));
+                NotifyGeometryDerivedProperties();
             }
         }
 

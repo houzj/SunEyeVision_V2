@@ -364,6 +364,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                         stepSw.Restart();
                                         HOperatorSet.GrayHisto(binaryRegion, processingImage,
                                             out var absoluteHisto, out _);
+                                        
                                         result.HistogramData = Array.ConvertAll(absoluteHisto.LArr, v => (double)v);
 
                                         HOperatorSet.Intensity(binaryRegion, processingImage,

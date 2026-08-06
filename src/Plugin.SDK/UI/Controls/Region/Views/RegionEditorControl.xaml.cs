@@ -930,6 +930,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                     switch (_currentTool)
                     {
                         case ShapeType.Rectangle:
+                            shapeDef.Geometry = new System.Windows.Rect(refPosition.X, refPosition.Y, 0, 0);
+                            break;
                         case ShapeType.RotatedRectangle:
                             shapeDef.Geometry = new RotatedRect2d(refPosition.X, refPosition.Y, 0, 0, 0);
                             break;
@@ -1239,6 +1241,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
             switch (_currentTool)
             {
                 case ShapeType.Rectangle:
+                    shapeDef.Geometry = new System.Windows.Rect(
+                        Math.Min(_startPoint.X, currentPosition.X),
+                        Math.Min(_startPoint.Y, currentPosition.Y),
+                        Math.Abs(dx), Math.Abs(dy));
+                    break;
+
                 case ShapeType.RotatedRectangle:
                     shapeDef.Geometry = new RotatedRect2d(
                         _startPoint.X + dx / 2, _startPoint.Y + dy / 2,
@@ -1588,7 +1596,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         private Vector WorldToLocalDelta(Vector worldDelta, double rotation)
         {
             // 将角度转换为弧度
-            var angle = -rotation * Math.PI / 180;
+            var angle = rotation * Math.PI / 180;
             var cos = Math.Cos(angle);
             var sin = Math.Sin(angle);
 
@@ -1604,7 +1612,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
         private Point LocalToWorldPoint(Point localPoint, Point center, double rotation)
         {
             // 将角度转换为弧度
-            var angle = -rotation * Math.PI / 180;
+            var angle = rotation * Math.PI / 180;
             var cos = Math.Cos(angle);
             var sin = Math.Sin(angle);
 
@@ -1849,11 +1857,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 (newCorners[0].X + newCorners[2].X) / 2,
                 (newCorners[0].Y + newCorners[2].Y) / 2);
 
-            // 将局部坐标转换为世界坐标
-            shape.Geometry = new RotatedRect2d(
-                _originalPosition.X + centerLocal.X,
-                _originalPosition.Y + centerLocal.Y,
-                newWidth, newHeight, 0);
+            // 将局部坐标转换为世界坐标（左上角 = 中心 - 半宽/半高）
+            shape.Geometry = new System.Windows.Rect(
+                _originalPosition.X + centerLocal.X - newWidth / 2,
+                _originalPosition.Y + centerLocal.Y - newHeight / 2,
+                newWidth, newHeight);
         }
 
         /// <summary>
@@ -1937,11 +1945,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Region.Views
                 (newCorners[0].X + newCorners[2].X) / 2,
                 (newCorners[0].Y + newCorners[2].Y) / 2);
 
-            // 将局部坐标转换为世界坐标
-            shape.Geometry = new RotatedRect2d(
-                _originalPosition.X + centerLocal.X,
-                _originalPosition.Y + centerLocal.Y,
-                newWidth, newHeight, 0);
+            // 将局部坐标转换为世界坐标（左上角 = 中心 - 半宽/半高）
+            shape.Geometry = new System.Windows.Rect(
+                _originalPosition.X + centerLocal.X - newWidth / 2,
+                _originalPosition.Y + centerLocal.Y - newHeight / 2,
+                newWidth, newHeight);
         }
 
         /// <summary>

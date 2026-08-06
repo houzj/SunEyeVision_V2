@@ -61,6 +61,12 @@ namespace SunEyeVision.Tool.Subroutine
                 if (parameters.ExecuteSubWorkflowAsync == null)
                     throw new InvalidOperationException("子工作流执行委托未注入，请确保通过 WorkflowExecutionEngine 执行包含子程序节点的工作流");
 
+                // 子程序至少需要一个输入和一个输出（rule-015 无静默）
+                if (parameters.Inputs.Count == 0)
+                    throw new InvalidOperationException($"子程序 \"{parameters.SubroutineName}\" 至少需要一个输入参数");
+                if (parameters.Outputs.Count == 0)
+                    throw new InvalidOperationException($"子程序 \"{parameters.SubroutineName}\" 至少需要一个输出参数");
+
                 var inputImage = parameters.ResolvedInputImage;
 
                 parameters.LogInfo($"开始执行子程序: {parameters.SubroutineName}, 工作流ID: {parameters.SubroutineId}, 输入图像: {(inputImage != null ? $"{inputImage.Width}x{inputImage.Height}" : "null")}");

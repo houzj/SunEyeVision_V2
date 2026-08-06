@@ -80,6 +80,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
                     ? Visibility.Visible
                     : Visibility.Collapsed;
             }
+            else
+            {
+                // 非单工具执行控件（如子程序调试窗口）："执行/连续执行"路由命令无人接收，
+                // 属于无效按钮，一律隐藏，仅保留"确定"。脚本工具等继承 ToolDebugControlBase 不受影响。
+                RunButton.Visibility = Visibility.Collapsed;
+                ContinuousRunButton.Visibility = Visibility.Collapsed;
+            }
 
             // ★ 修复初始图标：根据窗口实际状态设置正确的按钮图标
             UpdateMaximizeButtonContent();

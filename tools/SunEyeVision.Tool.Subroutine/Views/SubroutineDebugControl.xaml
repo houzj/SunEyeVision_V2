@@ -261,27 +261,7 @@
                 </ScrollViewer>
             </TabItem>
 
-            <!-- Tab 2: 运行参数（预留） -->
-            <TabItem Header="运行参数" Padding="8,4">
-                <StackPanel Margin="16" VerticalAlignment="Center">
-                    <TextBlock Text="子程序运行参数"
-                               FontSize="14" FontWeight="SemiBold"
-                               Foreground="#333333"
-                               HorizontalAlignment="Center"/>
-                    <TextBlock Text="在此统一配置子程序内部节点的运行参数"
-                               FontSize="13" Foreground="#999999"
-                               HorizontalAlignment="Center" Margin="0,8,0,0"/>
-                    <TextBlock Text="点击 [编辑] 选择要暴露的参数"
-                               FontSize="12" Foreground="#BBBBBB"
-                               HorizontalAlignment="Center" Margin="0,4,0,0"/>
-                    <Button Content="编辑" Width="80" Height="28"
-                            Margin="0,12,0,0"
-                            HorizontalAlignment="Center"
-                            IsEnabled="False"/>
-                </StackPanel>
-            </TabItem>
-
-            <!-- Tab 3: 显示设置 -->
+            <!-- Tab 2: 显示设置 -->
             <TabItem Header="显示设置" Padding="8,4">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -403,7 +383,7 @@
                 </Grid>
             </TabItem>
 
-            <!-- Tab 4: 循环设置 -->
+            <!-- Tab 3: 循环设置 -->
             <TabItem Header="循环设置" Padding="8,4">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="12">

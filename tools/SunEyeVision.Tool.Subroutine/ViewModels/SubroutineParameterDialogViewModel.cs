@@ -1,7 +1,8 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Windows;
 using System.Windows.Input;
 using SunEyeVision.Plugin.SDK.Commands;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
@@ -99,7 +100,35 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
             foreach (var output in _parameters.Outputs)
                 output.PropertyChanged += OnOutputPropertyChanged;
 
+            // ★ 子程序至少需要一个输入和一个输出（幂等补齐）
+            EnsureMinimumInputsOutputs();
+
             LoadAvailableSources();
+        }
+
+        /// <summary>
+        /// 子程序至少保留一个输入/输出：集合为空时自动补齐默认项（幂等，重复打开不重复添加）。
+        /// </summary>
+        private void EnsureMinimumInputsOutputs()
+        {
+            if (Inputs.Count == 0)
+            {
+                Inputs.Add(new SubroutineInputConfig
+                {
+                    Name = "in_1",
+                    BindingKey = "in_1",
+                    TypeName = "Image"
+                });
+            }
+
+            if (Outputs.Count == 0)
+            {
+                Outputs.Add(new SubroutineOutputConfig
+                {
+                    Name = "out_1",
+                    TypeName = "Double"
+                });
+            }
         }
 
         private void LoadAvailableSources()
@@ -180,9 +209,27 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
         {
             if (item == null) return;
             if (item is SubroutineInputConfig input)
+            {
+                // 子程序至少保留一个输入
+                if (Inputs.Count <= 1)
+                {
+                    MessageBox.Show("子程序至少需要保留一个输入参数。",
+                        "无法删除", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
                 Inputs.Remove(input);
+            }
             else if (item is SubroutineOutputConfig output)
+            {
+                // 子程序至少保留一个输出
+                if (Outputs.Count <= 1)
+                {
+                    MessageBox.Show("子程序至少需要保留一个输出参数。",
+                        "无法删除", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
                 Outputs.Remove(output);
+            }
         }
 
         public void ExecuteRemoveDisplayItem(SubroutineDisplayItem? item)

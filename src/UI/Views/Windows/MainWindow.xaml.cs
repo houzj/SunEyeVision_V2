@@ -1792,7 +1792,7 @@ namespace SunEyeVision.UI.Views.Windows
             var subQueryService = _viewModel?.CreateDataSourceQueryService(subroutineId);
             var internalSources = subQueryService?.GetWorkflowNodeDataSources() ?? new();
 
-            // 4. 创建实时刷新回调：Outputs 变更时立即更新模块结果树
+            // 4. 创建实时刷新回调：Outputs 变更时立即更新模块结果树 + 主界面图像源下拉
             Action? onOutputsChanged = () =>
             {
                 if (parameters == null) return;
@@ -1801,6 +1801,8 @@ namespace SunEyeVision.UI.Views.Windows
                     OutputConfigs = parameters.Outputs.ToList()
                 };
                 _viewModel?.UpdateModuleResults(tempResults, nodeDispName, "Subroutine", nodeId);
+                // 刷新主界面图像源下拉：子程序输出名变更后立即重建，避免运行后按旧名解析图像失败
+                _viewModel?.RefreshDisplayImageSourcesAfterOutputsChanged();
             };
 
             // 5. 绑定路径校验：输入绑定的源节点必须在父工作流中存在（Fail-Fast）

@@ -2758,6 +2758,22 @@ SplitterPosition = position;
         }
 
         /// <summary>
+        /// 子程序输出/显示配置变更后，刷新主界面图像源下拉（重新读取最新输出名）
+        /// 用于子程序调试窗口内修改输出项名称后，主界面下拉能立即更新，避免运行后按旧名解析失败
+        /// </summary>
+        public void RefreshDisplayImageSourcesAfterOutputsChanged()
+        {
+            var node = _selectedNode as Models.WorkflowNode;
+            if (node == null)
+            {
+                LogWarning($"图像源|RefreshDisplayImageSourcesAfterOutputsChanged: 当前无选中节点, 跳过刷新", "ImageSourceSelector");
+                return;
+            }
+            LogInfo($"图像源|输出配置变更, 刷新图像源下拉: node={node.Name}({node.Id})", "ImageSourceSelector");
+            UpdateDisplayImageSources(node);
+        }
+
+        /// <summary>
         /// 延迟设置 SelectedDisplayImageSourceIndex，确保 WPF 先处理完 ItemsSource 的 CollectionChanged 事件
         /// （Clear + Add × N）后再设置 SelectedIndex，避免 ComboBox 内部因竞态条件选中项丢失
         /// 

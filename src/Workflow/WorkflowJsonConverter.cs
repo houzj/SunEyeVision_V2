@@ -37,6 +37,12 @@ namespace SunEyeVision.Workflow
             // 创建工作流实例
             var workflow = new Workflow(id, name);
 
+            // 恢复子程序标记（防止加载后被子程序当成主工作流创建独立标签页）
+            if (root.TryGetProperty("IsSubroutine", out var isSubroutineProp))
+            {
+                workflow.IsSubroutine = isSubroutineProp.GetBoolean();
+            }
+
             // 直接反序列化节点（无需 Dictionary 转换层）
             // Phase 2：反序列化后通过工厂转换为 WorkflowNode 实例
             if (root.TryGetProperty("Nodes", out var nodesElement))
@@ -113,6 +119,7 @@ namespace SunEyeVision.Workflow
             // 写入基本属性
             writer.WriteString("Id", value.Id);
             writer.WriteString("Name", value.Name);
+            writer.WriteBoolean("IsSubroutine", value.IsSubroutine);
 
             // 直接序列化节点（无需 Dictionary 转换层）
             writer.WritePropertyName("Nodes");

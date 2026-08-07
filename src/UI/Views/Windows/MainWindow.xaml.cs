@@ -509,22 +509,29 @@ namespace SunEyeVision.UI.Views.Windows
                     workflow.Name = tab.Name;
                 }
 
+                // 同步基准取引擎中该标签页根工作流（tab.Id）的节点/连接。
+                // 不能拿 tab.WorkflowNodes / tab.WorkflowConnections，因为它们在下钻子程序时
+                // 会被 NavigateToWorkflowCanvas 整体替换为子程序集合，导致主程序节点被误清空。
+                var rootWorkflow = _viewModel.WorkflowEngine.GetWorkflow(tab.Id);
+                if (rootWorkflow == null)
+                    throw new InvalidOperationException($"SyncWorkflowsToSolution: 引擎中未找到根工作流 (ID: {tab.Id})");
+
                 // 同步节点
-                foreach (var node in tab.WorkflowNodes)
+                foreach (var node in rootWorkflow.Nodes)
                 {
                     if (!workflow.Nodes.Contains(node))
                         workflow.Nodes.Add(node);
                 }
 
                 var nodesToRemove = workflow.Nodes
-                    .Where(n => !tab.WorkflowNodes.Contains(n))
+                    .Where(n => !rootWorkflow.Nodes.Contains(n))
                     .ToList();
                 foreach (var node in nodesToRemove)
                     workflow.Nodes.Remove(node);
 
 
                 // 同步连接（共享引用，直接加载）
-                foreach (var conn in tab.WorkflowConnections)
+                foreach (var conn in rootWorkflow.Connections)
                 {
                     if (!workflow.Connections.Any(c => c.Id == conn.Id))
                     {
@@ -533,7 +540,7 @@ namespace SunEyeVision.UI.Views.Windows
                 }
 
                 var connsToRemove = workflow.Connections
-                    .Where(c => !tab.WorkflowConnections.Any(tc => tc.Id == c.Id))
+                    .Where(c => !rootWorkflow.Connections.Any(tc => tc.Id == c.Id))
                     .ToList();
                 foreach (var conn in connsToRemove)
                     workflow.Connections.Remove(conn);

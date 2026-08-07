@@ -1566,9 +1566,14 @@ SplitterPosition = position;
                     }
                 }
 
-                // 同步节点：将 UI 集合中的节点同步到 Solution.Workflow.Nodes
-                // 只添加 Solution 中不存在的节点（新增的节点通过 AddNodeToWorkflow 已同步）
-                foreach (var node in tab.WorkflowNodes)
+                // 同步节点：将引擎中该标签页根工作流（tab.Id）的节点同步到 Solution.Workflow.Nodes。
+                // 不能拿 tab.WorkflowNodes，因为下钻子程序时它会被整体替换为子程序集合，
+                // 导致主程序原有节点被下方 nodesToRemove 误清空。
+                var rootWorkflow = _workflowEngine.GetWorkflow(tab.Id);
+                if (rootWorkflow == null)
+                    throw new InvalidOperationException($"SaveSolutionData: 引擎中未找到根工作流 (ID: {tab.Id})");
+
+                foreach (var node in rootWorkflow.Nodes)
                 {
                     if (!workflow.Nodes.Contains(node))
                     {
@@ -1615,9 +1620,9 @@ SplitterPosition = position;
                     }
                 }
 
-                // 移除 Solution 中已从 UI 删除的节点
+                // 移除 Solution 中已从引擎根工作流删除的节点
                 var nodesToRemove = workflow.Nodes
-                    .Where(n => !tab.WorkflowNodes.Contains(n))
+                    .Where(n => !rootWorkflow.Nodes.Contains(n))
                     .ToList();
                 foreach (var node in nodesToRemove)
                 {

@@ -21,10 +21,16 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
         [JsonIgnore]
         public List<SubroutineOutputConfig> OutputConfigs { get; set; } = new();
 
+        /// <summary>
+        /// 获取可显示的图像输出。
+        /// 只收集用户声明的 Image 类型输出（ResolvedOutputValues 中的真实值），
+        /// 而非遍历 NodeOutputs（其存的是内部节点结果对象，永远不可能是 IVisionImage）。
+        /// 对齐输出链路：图像只收用户声明的 Image 输出，不自动吞内部节点全部图像。
+        /// </summary>
         public override Dictionary<string, IVisionImage?> GetDisplayImages()
         {
             var images = new Dictionary<string, IVisionImage?>();
-            foreach (var kvp in NodeOutputs)
+            foreach (var kvp in ResolvedOutputValues)
                 if (kvp.Value is IVisionImage img && !img.IsEmpty)
                     images[kvp.Key] = img;
             return images;

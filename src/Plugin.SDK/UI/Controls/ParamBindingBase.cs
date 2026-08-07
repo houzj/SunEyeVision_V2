@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -162,36 +162,40 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         }
 
         /// <summary>
-        /// 数组叶子节点显示增强（方案步骤6 / 〇 原则3）：折叠态单行 `;` 串联，展开态物化子节点。
+        /// 数组叶子节点显示增强（方案步骤6 / 〇 原则3）：折叠态文本统一为 "名称[]"，展开态物化子节点。
         /// 不改动绑定路径，仅影响树中文本与可展开的子节点。
         /// </summary>
         private static void ApplyArrayDisplay(TreeNodeData leafNode, AvailableDataSource ds)
         {
             if (ds.PropertyType == null || !ds.PropertyType.IsArray)
                 return;
-            if (ds.CurrentValue is not Array arr)
-                return;
+
+            // 所有数组节点折叠文本统一为 "名称[]"，不带类型/数量/摘要（用户要求全部无摘要）
+            leafNode.Text = $"{ds.DisplayName}[]";
 
             var elementType = ds.PropertyType.GetElementType() ?? typeof(object);
-            var n = arr.Length;
 
-            // RoI(ShapeParameters[])：绑定树按图形类型分组 + 逐元素 [i]，每组/元素可单独绑定
-            if (elementType == typeof(ShapeParameters) && arr is ShapeParameters[] roi)
+            // RoI(ShapeParameters[])：按图形类型分组。有实际值按真实类型分组 + 逐元素 [i]；
+            // 无值/空（未运行、未绘制）按 ShapeType 枚举生成全部分组（声明式，不依赖绘制数据）。
+            if (elementType == typeof(ShapeParameters))
             {
-                var roiTypeLabel = (ds.VariableType ?? "RoI") + "[]";
-                var roiSummary = ArrayTreeFormatter.FormatCollapsedSummary(arr);
-                leafNode.Text = $"{ds.DisplayName} ({roiTypeLabel}, {n}项): {roiSummary}";
+                var roi = ds.CurrentValue as ShapeParameters[];
                 leafNode.Children = new System.Collections.ObjectModel.ObservableCollection<TreeNodeData>(
-                    ArrayTreeFormatter.BuildRoiBindingChildren(ds, roi));
+                    roi is { Length: > 0 }
+                        ? ArrayTreeFormatter.BuildRoiBindingChildren(ds, roi)
+                        : ArrayTreeFormatter.BuildRoiDesignTimeGroups(ds));
+
+                // 方案B：RoI 数组节点是"纯分组容器"，本身不可整体绑定（避免"可绑定 + 可展开"点击冲突）。
+                // 整体绑定改由子节点"整体"承担（BindingSuffix=null → 路径 "[]"，等价于绑整个数组）。
+                // IsSelectable=false 时点击不触发绑定，展开箭头默认行为正常执行，分组子节点仍可绑定。
+                leafNode.IsSelectable = false;
                 return;
             }
 
-            // 类型标签：词汇名 + "[]"（如 "Region[]" / "Double[]" / "RoI[]"）。
-            // 优先用词汇名（VariableType），否则用元素 CLR 类型名取基础名（避免 "IVisionRegion[][]" 双括号）。
-            var elementName = elementType.Name;
-            var typeLabel = (ds.VariableType ?? elementName) + "[]";
-            var summary = ArrayTreeFormatter.FormatCollapsedSummary(arr);
-            leafNode.Text = $"{ds.DisplayName} ({typeLabel}, {n}项): {summary}";
+            if (ds.CurrentValue is not Array arr)
+                return;
+
+            // 其他数组：逐元素 [i]
             leafNode.Children = new System.Collections.ObjectModel.ObservableCollection<TreeNodeData>(
                 ArrayTreeFormatter.BuildExpansionChildren(arr, elementType));
         }
@@ -208,6 +212,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         ///    标量 T 与数组 T[] 归并到同一词汇（单值 = 长度 1 数组，对齐 Halcon tuple 语义）。
         /// 2. 词汇相等 → 显示（如 int 参数 → Integer 词汇，能看到上游 long[]/int[] 的 Integer 输出）。
         /// 3. 数字互通 → 显示（Integer 与 Double 跨类型可见，执行层 Convert.ChangeType 负责转换）。
+        /// 3.5 目标词汇为几何图形（Circle/RotatedRect/Point/Polygon/Line/Annulus）时，
+        ///     RoI 容器数据源（ShapeParameters[]）放行——其内部按 [Type=X] 分组可下钻到具体图形。
         /// 4. 其余词汇（Image/String/RoI/Transform/Boolean）→ 精确匹配，不互通，避免运行时类型错误。
         /// 5. 参数类型无法映射到词汇（未注册类型）→ 不显示任何上游候选，避免错误绑定。
         ///
@@ -247,6 +253,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 if (IsNumericVocabulary(dsVarType) && IsNumericVocabulary(targetVarType))
                     return true;
 
+                // 规则 3.5：几何图形目标放行 RoI 容器数据源。
+                // Blob 检测区/屏蔽区图形以 RoI（ShapeParameters[]）输出，按 [Type=X] 分组可下钻
+                // 到具体图形（圆/旋转矩形/矩形等）。目标词汇为几何图形时放行 RoI 容器，
+                // 让绑定下拉能展开并精确选中对应图形分组（否则整条数据源被滤掉，用户看不到）。
+                if (dsVarType == "RoI" && GeometryVocabularies.Contains(targetVarType))
+                    return true;
+
                 // 规则 4：其余词汇精确匹配（上一步已判等），不互通 → 不显示
                 return false;
             }).ToList();
@@ -254,6 +267,16 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         private static bool IsNumericVocabulary(string variableType)
             => variableType == "Integer" || variableType == "Double";
+
+        /// <summary>
+        /// 几何图形词汇集合（Circle/RotatedRect/Point/Polygon/Line/Annulus）。
+        /// 当显示项目标词汇是几何图形时，RoI 容器数据源（ShapeParameters[]，词汇 RoI）应放行，
+        /// 因其内部按 [Type=X] 分组可精确下钻到对应图形（Blob 检测区图形 → 圆形/旋转矩形等）。
+        /// </summary>
+        private static readonly HashSet<string> GeometryVocabularies = new(StringComparer.Ordinal)
+        {
+            "Circle", "RotatedRect", "Point", "Polygon", "Line", "Annulus",
+        };
 
         #endregion
 

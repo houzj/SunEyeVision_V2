@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Plugin.SDK.Execution.Results;
@@ -52,29 +52,25 @@ public class SdkTypeVocabularyContractTests
 
     #endregion
 
-    #region 契约：已删除类型 fail-fast（rule-015 不静默）
+    #region 契约：未注册类型 fail-fast（rule-015 不静默）
 
     [Theory]
     [InlineData("Byte")]
-    [InlineData("Point")]
     [InlineData("Size")]
-    [InlineData("Circle")]
-    [InlineData("Line")]
-    [InlineData("Annulus")]
-    [InlineData("RotatedRect")]
-    [InlineData("Polygon")]
     [InlineData("Arc")]
     public void ToSystemType_DeletedTypes_ReturnNull(string deletedType)
     {
-        // 已删除的几何/Byte 类型反向解析返回 null → IsValidType 判定无效，加载时 fail-fast 可见。
+        // 已删除/未注册的类型（Byte/Size/Arc/Region）反向解析返回 null
+        // → IsValidType 判定无效，加载时 fail-fast 可见。
         Assert.Null(SdkTypeVocabulary.ToSystemType(deletedType));
     }
 
     [Fact]
-    public void GetAllTypeOptions_OnlySevenCoreConcepts()
+    public void GetAllTypeOptions_AllRegisteredConcepts()
     {
+        // 词汇表含 7 个基础概念 + 6 个几何图形（几何已恢复进契约，供下游绑定/下钻属性）
         var options = SdkTypeVocabulary.GetAllTypeOptions();
-        Assert.Equal(7, options.Count);
+        Assert.Equal(13, options.Count);
         var values = options.Select(o => o.Value).ToList();
         Assert.Contains("Integer", values);
         Assert.Contains("Double", values);
@@ -83,6 +79,12 @@ public class SdkTypeVocabularyContractTests
         Assert.Contains("Image", values);
         Assert.Contains("RoI", values);
         Assert.Contains("Transform", values);
+        Assert.Contains("Circle", values);
+        Assert.Contains("RotatedRect", values);
+        Assert.Contains("Point", values);
+        Assert.Contains("Polygon", values);
+        Assert.Contains("Line", values);
+        Assert.Contains("Annulus", values);
         Assert.DoesNotContain("Region", values);
     }
 

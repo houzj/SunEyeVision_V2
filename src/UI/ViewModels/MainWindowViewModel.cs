@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -3065,6 +3065,58 @@ SplitterPosition = position;
         }
 
         /// <summary>
+        /// 为数据查询服务注册子程序输出数据源提供者。
+        /// 遍历所有已注册工作流中的子程序节点，把用户声明的输出契约（含 Image 类型）暴露为额外数据源，
+        /// 使主窗口图像下拉框（GetImageDisplaySources 步骤3）与下游绑定能发现子程序的动态输出。
+        /// 输出额外数据源 SourceNodeId = 子程序节点 Id，选中后 GetDisplayImageFromSource 可定位到 SubroutineResults。
+        /// </summary>
+        private void RegisterSubroutineOutputProvider(DataSourceQueryService queryService)
+        {
+            try
+            {
+                var capturedWorkflows = _workflowEngine.GetAllWorkflows().ToList();
+
+                queryService.AddExtraDataSourceProvider(() =>
+                {
+                    var sources = new List<AvailableDataSource>();
+                    foreach (var wf in capturedWorkflows)
+                    {
+                        foreach (var node in wf.Nodes)
+                        {
+                            if (node.Parameters is not SubroutineParameters sp)
+                                continue;
+
+                            var nodeName = node.Name ?? node.DispName ?? "子程序";
+                            foreach (var output in sp.Outputs)
+                            {
+                                if (string.IsNullOrEmpty(output.Name))
+                                    continue;
+
+                                var sysType = SdkTypeVocabulary.ToSystemType(output.TypeName) ?? typeof(object);
+                                sources.Add(new AvailableDataSource
+                                {
+                                    SourceNodeId = node.Id,
+                                    SourceNodeName = nodeName,
+                                    PropertyName = output.Name,
+                                    DisplayName = string.IsNullOrEmpty(output.DisplayName) ? output.Name : output.DisplayName,
+                                    PropertyType = sysType,
+                                    VariableType = output.TypeName,
+                                    GroupName = output.Group,
+                                    Description = $"子程序输出: {output.Name}",
+                                });
+                            }
+                        }
+                    }
+                    return sources;
+                });
+            }
+            catch (Exception ex)
+            {
+                LogWarning($"⚠ 注册子程序输出提供者失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
         /// 创建 DataSourceQueryService（供子程序参数对话框使用，无需特定节点上下文）
         /// </summary>
         /// <param name="scopeWorkflowId">可选：限定到指定工作流的作用域（子程序内部数据源查询用）</param>
@@ -3104,6 +3156,10 @@ SplitterPosition = position;
             {
                 RegisterSubroutineInputProvider(queryService, scopeWorkflowId);
             }
+
+            // ★ 始终注册子程序输出提供者：主流程图像下拉框/下游绑定能发现子程序的动态输出
+            //   （provider 每次查询动态调用，子程序输出配置变化实时生效）
+            RegisterSubroutineOutputProvider(queryService);
 
             return queryService;
         }
@@ -4015,7 +4071,15 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         {
             var list = items.Cast<object>().Where(x => x is IMonitorable).ToList();
             if (list.Count == 0)
+            {
+                // 设计期（未运行/未绘制）：RoI(ShapeParameters[]) 空数组也按 ShapeType 枚举出结构，
+                // 分组下用默认几何实例反射属性名生成属性行（值 --）。声明式，不依赖绘制数据（rule-016）。
+                if (items is ShapeParameters[])
+                {
+                    BuildDesignTimeShapeGroups(parent);
+                }
                 return;
+            }
 
             parent.IsGroup = true;
             parent.DisplayValue = null;
@@ -4044,6 +4108,51 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
 
             // 普通几何数组（如算法产物 RotatedRect2d[]/Point2d[]）：直接字段聚合
             AppendFieldAggregation(parent, list);
+        }
+
+        /// <summary>
+        /// 设计期 RoI 空数组结构：按 ShapeType 枚举出形状分组，分组下用默认几何实例反射属性字段名生成属性行（值 --）。
+        /// 声明式，不读绘制数据（rule-016），创建节点即见完整三层结构；运行后由有值分支收敛为实际形状并填值。
+        /// </summary>
+        private static void BuildDesignTimeShapeGroups(ModuleResultNode parent)
+        {
+            parent.IsGroup = true;
+            parent.DisplayValue = null;
+
+            foreach (var type in Enum.GetValues<ShapeType>())
+            {
+                if (type == ShapeType.None) continue;
+
+                var shapeNode = new ModuleResultNode
+                {
+                    DisplayName = ShapeTypeDisplayName(type),
+                    IsGroup = true,
+                    IsExpanded = false
+                };
+                AppendDesignTimeShapeFields(shapeNode, type);
+                parent.Children.Add(shapeNode);
+            }
+        }
+
+        /// <summary>
+        /// 为设计期形状分组生成属性字段行（默认几何实例经 ShapeParameters.GetMonitorFields，值 --）。
+        /// 与运行期同源：ShapeParameters.GetMonitorFields 对 Rectangle(Rect) 等有字段兜底（RoiDefinition）。
+        /// </summary>
+        private static void AppendDesignTimeShapeFields(ModuleResultNode shapeNode, ShapeType type)
+        {
+            var shape = new ShapeParameters { Geometry = RoiData.CreateDefaultGeometry(type) };
+            if (shape.Geometry == null) return;
+
+            var fields = shape.GetMonitorFields();
+            foreach (var (fieldName, _) in fields)
+            {
+                shapeNode.Children.Add(new ModuleResultNode
+                {
+                    DisplayName = fieldName,
+                    DisplayValue = "--",
+                    IsGroup = false
+                });
+            }
         }
 
         /// <summary>

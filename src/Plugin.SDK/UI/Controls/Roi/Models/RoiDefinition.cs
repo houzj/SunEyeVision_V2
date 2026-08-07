@@ -348,6 +348,29 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models
 
         public override ShapeType? GetShapeType() => GeometryToShapeType(_geometry);
 
+        /// <summary>
+        /// 图形概要（绑定树/结果树/日志可读摘要）。按 Geometry 真实类型输出中文短名。
+        /// </summary>
+        public override string ToString()
+        {
+            return _geometry switch
+            {
+                Circle2d c => $"圆(({c.Center.X:F1},{c.Center.Y:F1}), R={c.Radius:F1})",
+                RotatedRect2d rr => $"旋转矩形(({rr.Center.X:F1},{rr.Center.Y:F1}), {rr.Width:F1}x{rr.Height:F1}, {rr.Angle:F1}°)",
+                System.Windows.Rect r => $"矩形(({r.X:F1},{r.Y:F1}), {r.Width:F1}x{r.Height:F1})",
+                Polygon2d p => $"多边形({p.Vertices.Length}顶点)",
+                Line2d l => $"直线(({l.Point.X:F1},{l.Point.Y:F1}), 方向({l.Direction.X:F1},{l.Direction.Y:F1}))",
+                Annulus2d a => a.IsFullCircle
+                    ? $"圆环(({a.Center.X:F1},{a.Center.Y:F1}), R=[{a.InnerRadius:F1},{a.OuterRadius:F1}])"
+                    : $"圆环(({a.Center.X:F1},{a.Center.Y:F1}), R=[{a.InnerRadius:F1},{a.OuterRadius:F1}], [{a.StartAngle * 180 / Math.PI:F1}°,{a.EndAngle * 180 / Math.PI:F1}°])",
+                Arc2d a => $"弧形(({a.Center.X:F1},{a.Center.Y:F1}), R={a.Radius:F1}, [{a.StartAngle * 180 / Math.PI:F1}°,{a.EndAngle * 180 / Math.PI:F1}°])",
+                Point2D pt => $"点(({pt.X:F1},{pt.Y:F1}))",
+                System.Windows.Point pt => $"点(({pt.X:F1},{pt.Y:F1}))",
+                null => "空图形",
+                _ => $"未知图形({_geometry?.GetType().Name ?? "Null"})",
+            };
+        }
+
         #region 编辑辅助方法
 
         /// <summary>

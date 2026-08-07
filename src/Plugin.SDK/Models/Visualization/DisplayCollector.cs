@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media;
+using SunEyeVision.Plugin.SDK.Models.Geometry;
 
 namespace SunEyeVision.Plugin.SDK.Models.Visualization
 {
@@ -101,6 +102,20 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
                 var contourGeom = new ContourGeometry(contoursList[i], isClosed);
                 AppendGeometry(item, contourGeom, isPass);
             }
+        }
+
+        /// <summary>添加圆（真圆，由 Circle2d 定义圆心与半径，渲染层按 GraphicsType.Circle 绘制椭圆）</summary>
+        public void AddCircle(GraphicsStyle style, Circle2d circle, bool isPass = true)
+        {
+            var item = GetOrCreateGraphicsItem(style, GraphicsType.Circle);
+            AppendGeometry(item, circle, isPass);
+        }
+
+        /// <summary>添加线段（由起点/终点定义，渲染层按 GraphicsType.Line 绘制直线）</summary>
+        public void AddLine(GraphicsStyle style, Point start, Point end, bool isPass = true)
+        {
+            var item = GetOrCreateGraphicsItem(style, GraphicsType.Line);
+            AppendGeometry(item, new LineSegment(start, end), isPass);
         }
 
         // ===== 文本按需收集 =====

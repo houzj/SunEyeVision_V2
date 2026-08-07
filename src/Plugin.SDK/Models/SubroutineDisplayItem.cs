@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Windows.Media;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 
@@ -35,7 +37,11 @@ namespace SunEyeVision.Plugin.SDK.Models
         public SubroutineDisplayType DisplayType
         {
             get => _displayType;
-            set => SetProperty(ref _displayType, value);
+            set
+            {
+                if (SetProperty(ref _displayType, value))
+                    OnPropertyChanged(nameof(ParamType));
+            }
         }
 
         public string MappedSource
@@ -60,7 +66,25 @@ namespace SunEyeVision.Plugin.SDK.Models
             set => SetProperty(ref _isAccumulated, value);
         }
 
-        public Type? ParamType => null;
+        /// <summary>
+        /// 显示项可绑定的数据源类型。绑定控件 ParamBindingBase.FilterDataSourcesByType 依据此类型
+        /// 过滤数据源列表（标量 T 与数组 T[] 经 SdkTypeVocabulary 归并到同一词汇）。
+        /// 圆弧/箭头/坐标系当前渲染不支持，不过滤（返回 null = 显示全部，保持遗留行为）。
+        /// </summary>
+        [JsonIgnore]
+        public Type? ParamType => DisplayType switch
+        {
+            SubroutineDisplayType.Circle => typeof(Circle2d[]),
+            SubroutineDisplayType.Point => typeof(Geometry.Point2d[]),
+            SubroutineDisplayType.Cross => typeof(Geometry.Point2d[]),
+            SubroutineDisplayType.Line => typeof(Line2d[]),
+            SubroutineDisplayType.Polygon => typeof(Polygon2d[]),
+            SubroutineDisplayType.Contour => typeof(Polygon2d[]),
+            SubroutineDisplayType.Rectangle => typeof(RotatedRect2d[]),
+            SubroutineDisplayType.Image => typeof(IVisionImage),
+            SubroutineDisplayType.Text => typeof(double[]),
+            _ => null,
+        };
 
         public string BindingSource
         {
@@ -122,8 +146,6 @@ namespace SunEyeVision.Plugin.SDK.Models
             [SubroutineDisplayType.CoordinateSystem] = "\u5750\u6807\u7cfb",
             [SubroutineDisplayType.Text] = "\u6587\u672c",
             [SubroutineDisplayType.Image] = "\u56fe\u50cf",
-            [SubroutineDisplayType.Text] = "鏂囨湰",
-            [SubroutineDisplayType.Image] = "鍥惧儚",
         };
 
         public static string GetChineseName(this SubroutineDisplayType type)

@@ -687,7 +687,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             if (ds.BindingSuffix != null)
                 return $"{ds.PropertyName}{TranslateBindingSuffix(ds.BindingSuffix)}";
             if (ds.PropertyType?.IsArray == true)
-                return node.Text + "[]";
+                return $"{ds.DisplayName}[]";
             return node.Text;
         }
 

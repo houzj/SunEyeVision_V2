@@ -226,9 +226,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models
         }
 
         /// <summary>
-        /// 根据 ShapeType 创建默认 SDK 几何类型
+        /// 根据 ShapeType 创建默认 SDK 几何类型。
+        /// 公开供结果树/绑定树设计期按类型枚举属性字段（不依赖已绘制的区域）。
         /// </summary>
-        internal static object? CreateDefaultGeometry(ShapeType shapeType)
+        public static object? CreateDefaultGeometry(ShapeType shapeType)
         {
             return shapeType switch
             {

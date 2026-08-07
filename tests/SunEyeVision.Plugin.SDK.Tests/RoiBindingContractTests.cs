@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
@@ -47,8 +47,16 @@ public class RoiBindingContractTests
 
         var children = ArrayTreeFormatter.BuildRoiBindingChildren(ds, roi);
 
-        // 3 个分组 + 5 个单元素 = 8 子节点
-        Assert.Equal(8, children.Count);
+        // 整体 + 3 个分组 + 5 个单元素 = 9 子节点
+        Assert.Equal(9, children.Count);
+
+        // "整体"入口：绑定整个检测区域数组（BindingSuffix=null → 路径 "[]"）
+        var overall = children[0];
+        Assert.Equal("整体", overall.Text);
+        Assert.True(overall.IsSelectable);
+        Assert.NotNull(overall.DataSource);
+        Assert.Null(overall.DataSource!.BindingSuffix);
+        Assert.Equal("Node1.检测区域[]", overall.DataSource.GetBindingPath());
 
         // 分组节点（按 ShapeType 排序：Circle, Polygon, RotatedRectangle）
         var circleGroup = children.First(c => c.Text.Contains("圆 (2项)"));
@@ -128,6 +136,18 @@ public class RoiBindingContractTests
         var results = MakeResults(MakeHeterogeneousRoi());
 
         var resolved = OutputVariableResolver.Resolve(results, "Node1", "检测区域");
+        var arr = Assert.IsType<ShapeParameters[]>(resolved);
+        Assert.Equal(5, arr.Length);
+    }
+
+    [Fact]
+    public void Resolve_OverallArrayBracket_ReturnsAll()
+    {
+        // "整体"入口路径 "检测区域[]"（BindingSuffix=null 的显式 []）：
+        // 运行期保留整个数组，返回全部图形（方案B + 整体入口）。
+        var results = MakeResults(MakeHeterogeneousRoi());
+
+        var resolved = OutputVariableResolver.Resolve(results, "Node1", "检测区域[]");
         var arr = Assert.IsType<ShapeParameters[]>(resolved);
         Assert.Equal(5, arr.Length);
     }

@@ -1,5 +1,6 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
@@ -139,6 +140,35 @@ public class FilterDataSourcesByTypeTests
         var sources = MakeSources(MakeDs("A", typeof(long[])), MakeDs("B", typeof(IVisionImage)));
         var filtered = ParamBindingBase.FilterDataSourcesByType(sources, null!);
         Assert.Equal(2, filtered.Count);
+    }
+
+    #endregion
+
+    #region 契约：几何图形目标放行 RoI 容器数据源（Blob 检测区图形下钻）
+
+    [Theory]
+    [InlineData(typeof(Circle2d[]))]
+    [InlineData(typeof(RotatedRect2d[]))]
+    [InlineData(typeof(Line2d[]))]
+    [InlineData(typeof(Polygon2d[]))]
+    [InlineData(typeof(Point2d[]))]
+    public void GeometryTarget_SeesRoiContainerSource(System.Type geometryTarget)
+    {
+        // 子程序"圆形/旋转矩形"等显示项 ParamType 是具体几何类型（词汇 Circle/RotatedRect...）。
+        // Blob 检测区图形以 RoI（ShapeParameters[]）输出，内部按 [Type=X] 分组可下钻。
+        // 目标词汇为几何图形时必须放行 RoI 容器数据源，否则绑定下拉里看不到 Blob 图形。
+        var sources = MakeSources(MakeDs("检测区图形", typeof(ShapeParameters[])));
+        var filtered = ParamBindingBase.FilterDataSourcesByType(sources, geometryTarget);
+        Assert.Contains(filtered, ds => ds.PropertyName == "检测区图形");
+    }
+
+    [Fact]
+    public void ImageTarget_DoesNotSeeRoiContainerSource()
+    {
+        // 非几何图形目标（如 Image）不放行 RoI 容器数据源，避免错误绑定。
+        var sources = MakeSources(MakeDs("检测区图形", typeof(ShapeParameters[])));
+        var filtered = ParamBindingBase.FilterDataSourcesByType(sources, typeof(IVisionImage));
+        Assert.DoesNotContain(filtered, ds => ds.PropertyName == "检测区图形");
     }
 
     #endregion

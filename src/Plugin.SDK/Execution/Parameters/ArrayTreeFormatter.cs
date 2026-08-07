@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -164,6 +164,9 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             if (roi.Length == 0)
                 return children;
 
+            // 第一个节点为"整体"：绑定整个检测区域数组（BindingSuffix=null → 路径 "[]"）
+            children.Add(CreateRoiOverallNode(parentDs, roi));
+
             // 按图形类型分组
             foreach (var group in roi.GroupBy(sp => sp.ShapeType).OrderBy(g => g.Key.ToString()))
             {
@@ -220,6 +223,46 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 children.Add(elemNode);
             }
 
+            return children;
+        }
+
+        /// <summary>
+        /// 构建 RoI(ShapeParameters[]) 在设计期（未运行/未绘制）的可绑定子节点。
+        /// 第一个节点为"整体"（绑定整个检测区域数组，BindingSuffix=null → 路径 "[]"），
+        /// 其后按 ShapeType 枚举（跳过 None）生成全部分组，每个分组携带 [Type=X] BindingSuffix，
+        /// 不依赖任何实际数据（rule-016 数据驱动优先：结构由类型声明驱动）。
+        /// 运行期由 OutputVariableResolver 按 [Type=X] 过滤真实图形；若检测区无该类型直接报错。
+        /// </summary>
+        public static List<TreeNodeData> BuildRoiDesignTimeGroups(AvailableDataSource parentDs)
+        {
+            var children = new List<TreeNodeData>
+            {
+                CreateRoiOverallNode(parentDs),
+            };
+            foreach (var type in Enum.GetValues<ShapeType>())
+            {
+                if (type == ShapeType.None) continue;
+
+                var enumName = type.ToString();
+                var groupDs = new AvailableDataSource
+                {
+                    SourceNodeId = parentDs.SourceNodeId,
+                    SourceNodeName = parentDs.SourceNodeName,
+                    PropertyName = parentDs.PropertyName,
+                    DisplayName = parentDs.DisplayName,
+                    PropertyType = typeof(ShapeParameters[]),
+                    VariableType = parentDs.VariableType,
+                    BindingSuffix = $"[Type={enumName}]",
+                    CurrentValue = Array.Empty<ShapeParameters>(),
+                };
+                children.Add(new TreeNodeData
+                {
+                    Text = GetShapeTypeShortName(type),
+                    IsSelectable = true,
+                    DataSource = groupDs,
+                    BindingPath = $"{parentDs.PropertyName}[Type={enumName}]",
+                });
+            }
             return children;
         }
 
@@ -297,6 +340,33 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             return type == typeof(double) || type == typeof(int) || type == typeof(long)
                 || type == typeof(float) || type == typeof(bool) || type == typeof(string)
                 || type == typeof(uint) || type == typeof(short) || type == typeof(byte);
+        }
+
+        /// <summary>
+        /// 创建 RoI"整体"绑定节点：绑定整个检测区域数组。
+        /// BindingSuffix=null + PropertyType=ShapeParameters[] → GetBindingPath() 输出 "NodeId.属性名[]"，
+        /// 运行期 OutputVariableResolver 对显式 "[]"（firstIndex=-1）保留整个数组（方案 B + 整体入口）。
+        /// </summary>
+        private static TreeNodeData CreateRoiOverallNode(AvailableDataSource parentDs, ShapeParameters[]? roi = null)
+        {
+            var overallDs = new AvailableDataSource
+            {
+                SourceNodeId = parentDs.SourceNodeId,
+                SourceNodeName = parentDs.SourceNodeName,
+                PropertyName = parentDs.PropertyName,
+                DisplayName = parentDs.DisplayName,
+                PropertyType = typeof(ShapeParameters[]),
+                VariableType = parentDs.VariableType,
+                BindingSuffix = null,
+                CurrentValue = roi,
+            };
+            return new TreeNodeData
+            {
+                Text = "整体",
+                IsSelectable = true,
+                DataSource = overallDs,
+                BindingPath = $"{parentDs.PropertyName}[]",
+            };
         }
 
         /// <summary>

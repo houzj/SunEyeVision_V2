@@ -10,6 +10,8 @@ using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Metadata;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Plugin.SDK.Models.Geometry;
+using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using SunEyeVision.Plugin.SDK.UI.Windows;
 using SunEyeVision.Tool.Subroutine.Views;
 using ExecutionResult = SunEyeVision.Plugin.SDK.Execution.Results.ExecutionResult;
@@ -31,6 +33,12 @@ namespace SunEyeVision.Tool.Subroutine
     )]
     public class SubroutineTool : IToolPlugin<SubroutineParameters, SubroutineResults>
     {
+        /// <summary>
+        /// 无限长直线（Line2d）显示时的单侧截取长度（像素）。
+        /// 数学直线无端点，可视化时以直线上一点为中心沿方向向量截取一段可见线段。
+        /// </summary>
+        private const double DisplayLineHalfLength = 100;
+
         static SubroutineTool()
         {
             SubroutineDebugServiceProvider.Register(new SubroutineDebugServiceImpl());
@@ -452,7 +460,9 @@ namespace SunEyeVision.Tool.Subroutine
 
         /// <summary>
         /// 根据 DisplayConfigs 从子工作流节点结果中提取图形数据，推入 DisplayCollector。
-        /// 对齐普通工具在 Run() 中主动构建显示项的模式。
+        /// 对齐输出项解析：优先使用 BoundDataSource（对象引用，含完整类型），BindingSource 字符串兜底。
+        /// 分发按解析值的真实类型驱动（而非用户手选的 DisplayType 硬转），圆画真圆、矩形画真矩形。
+        /// 不支持的类型直接抛异常（rule-015），不静默跳过。
         /// </summary>
         private static void BuildDisplayItemsFromConfig(
             SubroutineResults result,
@@ -465,74 +475,230 @@ namespace SunEyeVision.Tool.Subroutine
 
             foreach (var displayItem in parameters.DisplayConfigs)
             {
-                if (string.IsNullOrEmpty(displayItem.BindingSource))
-                    continue;
-
-                var parts = displayItem.BindingSource.Split('.');
-                if (parts.Length < 2)
-                    continue;
+                // 绑定源解析：优先对象引用（含完整类型信息），字符串 "NodeId.PropertyName" 兜底
+                string sourceNodeId, sourceProperty;
+                if (displayItem.BoundDataSource != null)
+                {
+                    sourceNodeId = displayItem.BoundDataSource.SourceNodeId;
+                    sourceProperty = displayItem.BoundDataSource.PropertyName;
+                }
+                else
+                {
+                    if (string.IsNullOrEmpty(displayItem.BindingSource))
+                        continue;
+                    var parts = displayItem.BindingSource.Split('.');
+                    if (parts.Length < 2)
+                    {
+                        parameters.LogWarning($"显示项 '{displayItem.DisplayName}' 绑定源格式无效: '{displayItem.BindingSource}'");
+                        continue;
+                    }
+                    sourceNodeId = parts[0];
+                    sourceProperty = parts[1].EndsWith("[]") ? parts[1][..^2] : parts[1];
+                }
 
                 var binding = new ParamSetting
                 {
                     ParameterName = displayItem.DisplayName,
                     BindingType = BindingType.Binding,
-                    SourceNodeId = parts[0],
-                    SourceProperty = parts[1],
+                    SourceNodeId = sourceNodeId,
+                    SourceProperty = sourceProperty,
                     TargetType = typeof(object)
                 };
 
                 var resolveResult = resolver.Resolve(binding, subWorkflowNodeResults);
                 if (!resolveResult.IsSuccess || resolveResult.Value == null)
                 {
-                    parameters.LogWarning($"显示项 '{displayItem.DisplayName}' 绑定解析失败: {resolveResult.ErrorMessage ?? "值为空"}");
-                    continue;
+                    throw new InvalidOperationException(
+                        $"显示项 '{displayItem.DisplayName}' 绑定解析失败: {resolveResult.ErrorMessage ?? "值为空"}");
                 }
 
-                var value = resolveResult.Value;
-                const bool isPass = true; // 子程序不代为评估内部节点通过/失败，显示属于子程序自身结果
-
-                switch (displayItem.DisplayType)
-                {
-                    case SubroutineDisplayType.Point when value is Point pt:
-                        result.Display.AddPoint(displayItem.GraphicsStyle, pt, isPass);
-                        break;
-
-                    case SubroutineDisplayType.Rectangle when value is Rect rect:
-                        result.Display.AddRect(displayItem.GraphicsStyle, rect, isPass);
-                        break;
-
-                    case SubroutineDisplayType.Cross when value is Point crossPt:
-                        result.Display.AddCross(displayItem.GraphicsStyle, crossPt, isPass);
-                        break;
-
-                    case SubroutineDisplayType.Text when displayItem.TextStyle != null:
-                        result.Display.AddText(displayItem.TextStyle,
-                            displayItem.TextStyle.PositionX, displayItem.TextStyle.PositionY,
-                            value.ToString() ?? string.Empty, isPass);
-                        break;
-
-                    case SubroutineDisplayType.Circle:
-                    case SubroutineDisplayType.Line:
-                    case SubroutineDisplayType.Contour:
-                    case SubroutineDisplayType.Polygon:
-                    {
-                        if (value is Point[] pts)
-                        {
-                            bool isClosed = displayItem.DisplayType != SubroutineDisplayType.Line;
-                            result.Display.AddContour(displayItem.GraphicsStyle, pts, isPass, isClosed);
-                        }
-                        break;
-                    }
-
-                    case SubroutineDisplayType.Image:
-                        // Image 由 GetDisplayImages() 处理，不加到 GraphicsDisplay
-                        break;
-
-                    default:
-                        parameters.LogWarning($"显示项 '{displayItem.DisplayName}' 类型 {displayItem.DisplayType} 暂不支持自动映射");
-                        break;
-                }
+                AppendDisplayItem(result, parameters, displayItem, resolveResult.Value);
             }
+        }
+
+        /// <summary>
+        /// 按解析值的真实类型分发到 DisplayCollector。支持单值与数组两种形态
+        /// （内部节点输出契约对齐 Halcon tuple 语义，单值 = 长度 1 数组，解析器会拆箱）。
+        /// </summary>
+        private static void AppendDisplayItem(
+            SubroutineResults result,
+            SubroutineParameters parameters,
+            SubroutineDisplayItem displayItem,
+            object value)
+        {
+            const bool isPass = true; // 子程序不代为评估内部节点通过/失败，显示属于子程序自身结果
+            var style = displayItem.GraphicsStyle;
+            var textStyle = displayItem.TextStyle;
+
+            // 文本显示：数字/字符串等标量统一按文本渲染（依赖样式定位）
+            if (displayItem.DisplayType == SubroutineDisplayType.Text)
+            {
+                if (textStyle == null)
+                    throw new InvalidOperationException($"显示项 '{displayItem.DisplayName}' 为文本类型但未配置 TextStyle");
+                result.Display.AddText(textStyle, textStyle.PositionX, textStyle.PositionY,
+                    value.ToString() ?? string.Empty, isPass);
+                return;
+            }
+
+            // 真实类型分发：优先匹配解析出的运行时类型
+            switch (value)
+            {
+                case Circle2d circle:
+                    result.Display.AddCircle(style, circle, isPass);
+                    break;
+
+                case Circle2d[] circles:
+                    foreach (var c in circles)
+                        result.Display.AddCircle(style, c, isPass);
+                    break;
+
+                case Rect rect:
+                    result.Display.AddRect(style, rect, isPass);
+                    break;
+
+                case Point pt:
+                    AppendPoint(result, displayItem, pt, isPass);
+                    break;
+
+                case Point2d pt2d:
+                    AppendPoint(result, displayItem, new Point(pt2d.X, pt2d.Y), isPass);
+                    break;
+
+                case Point2d[] pts2d:
+                    if (pts2d.Length == 0)
+                        break;
+                    if (displayItem.DisplayType == SubroutineDisplayType.Point ||
+                        displayItem.DisplayType == SubroutineDisplayType.Cross)
+                    {
+                        foreach (var p in pts2d)
+                            AppendPoint(result, displayItem, new Point(p.X, p.Y), isPass);
+                    }
+                    else
+                    {
+                        result.Display.AddContour(style, pts2d.Select(p => new Point(p.X, p.Y)).ToArray(), isPass,
+                            displayItem.DisplayType != SubroutineDisplayType.Line);
+                    }
+                    break;
+
+                case Point[] pts:
+                    if (pts.Length == 0)
+                        break;
+                    if (displayItem.DisplayType == SubroutineDisplayType.Point ||
+                        displayItem.DisplayType == SubroutineDisplayType.Cross)
+                    {
+                        foreach (var p in pts)
+                            AppendPoint(result, displayItem, p, isPass);
+                    }
+                    else
+                    {
+                        result.Display.AddContour(style, pts, isPass,
+                            displayItem.DisplayType != SubroutineDisplayType.Line);
+                    }
+                    break;
+
+                case Line2d line:
+                    result.Display.AddLine(style, line.GetPointAt(-DisplayLineHalfLength), line.GetPointAt(DisplayLineHalfLength), isPass);
+                    break;
+
+                case Line2d[] lines:
+                    foreach (var l in lines)
+                        result.Display.AddLine(style, l.GetPointAt(-DisplayLineHalfLength), l.GetPointAt(DisplayLineHalfLength), isPass);
+                    break;
+
+                case RotatedRect2d rr:
+                    result.Display.AddContour(style, rr.GetCorners(), isPass, true);
+                    break;
+
+                case RotatedRect2d[] rrs:
+                    foreach (var r in rrs)
+                        result.Display.AddContour(style, r.GetCorners(), isPass, true);
+                    break;
+
+                case Polygon2d polygon:
+                    result.Display.AddContour(style, polygon.Vertices, isPass, true);
+                    break;
+
+                case Polygon2d[] polygons:
+                    foreach (var p in polygons)
+                        result.Display.AddContour(style, p.Vertices, isPass, true);
+                    break;
+
+                // RoI（ShapeParameters）：Blob 检测区/屏蔽区等图形定义容器。
+                // 绑定树按 [Type=X] 下钻后运行期解析出 ShapeParameters[]，需按其 Geometry 真实类型绘制。
+                case ShapeParameters sp:
+                    AppendShapeParameter(result, displayItem, sp, isPass);
+                    break;
+
+                case ShapeParameters[] sps:
+                    foreach (var sp in sps)
+                        AppendShapeParameter(result, displayItem, sp, isPass);
+                    break;
+
+                default:
+                    throw new NotSupportedException(
+                        $"显示项 '{displayItem.DisplayName}' 绑定的值类型 '{value.GetType().Name}' 不支持自动图形映射");
+            }
+        }
+
+        /// <summary>
+        /// 按 ShapeParameters.Geometry 的真实类型绘制（RoI 图形定义 → DisplayCollector）。
+        /// 对齐 Blob 检测区图形的几何类型：Circle2d 画真圆、RotatedRect2d 画四角轮廓、
+        /// Rect 画矩形、Polygon2d 画轮廓、Line2d 画线段、Point2D 画点。
+        /// </summary>
+        private static void AppendShapeParameter(
+            SubroutineResults result,
+            SubroutineDisplayItem displayItem,
+            ShapeParameters sp,
+            bool isPass)
+        {
+            var style = displayItem.GraphicsStyle;
+            switch (sp.Geometry)
+            {
+                case Circle2d circle:
+                    result.Display.AddCircle(style, circle, isPass);
+                    break;
+
+                case System.Windows.Rect rect:
+                    result.Display.AddRect(style, rect, isPass);
+                    break;
+
+                case RotatedRect2d rr:
+                    result.Display.AddContour(style, rr.GetCorners(), isPass, true);
+                    break;
+
+                case Polygon2d poly:
+                    result.Display.AddContour(style, poly.Vertices, isPass, true);
+                    break;
+
+                case Line2d line:
+                    result.Display.AddLine(style, line.GetPointAt(-DisplayLineHalfLength), line.GetPointAt(DisplayLineHalfLength), isPass);
+                    break;
+
+                case Point2D pt:
+                    AppendPoint(result, displayItem, new System.Windows.Point(pt.X, pt.Y), isPass);
+                    break;
+
+                case System.Windows.Point pt:
+                    AppendPoint(result, displayItem, pt, isPass);
+                    break;
+
+                default:
+                    throw new NotSupportedException(
+                        $"显示项 '{displayItem.DisplayName}' 绑定的 RoI 图形几何类型 '{sp.Geometry?.GetType().Name ?? "Null"}' 不支持自动图形映射");
+            }
+        }
+
+        /// <summary>按显示类型追加点（十字 → AddCross，否则 AddPoint）</summary>
+        private static void AppendPoint(
+            SubroutineResults result,
+            SubroutineDisplayItem displayItem,
+            Point point,
+            bool isPass)
+        {
+            if (displayItem.DisplayType == SubroutineDisplayType.Cross)
+                result.Display.AddCross(displayItem.GraphicsStyle, point, isPass);
+            else
+                result.Display.AddPoint(displayItem.GraphicsStyle, point, isPass);
         }
     }
 

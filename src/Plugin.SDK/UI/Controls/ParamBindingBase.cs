@@ -180,10 +180,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             if (elementType == typeof(ShapeParameters))
             {
                 var roi = ds.CurrentValue as ShapeParameters[];
-                leafNode.Children = new System.Collections.ObjectModel.ObservableCollection<TreeNodeData>(
+                var roiChildren = new System.Collections.ObjectModel.ObservableCollection<TreeNodeData>(
                     roi is { Length: > 0 }
                         ? ArrayTreeFormatter.BuildRoiBindingChildren(ds, roi)
                         : ArrayTreeFormatter.BuildRoiDesignTimeGroups(ds));
+
+                // P1：给 RoI 子节点统一补 Parent 链，否则 GetRootNode 向上遍历到 null 时把分组
+                // 自身当根（显示名根节点取成"圆"）。递归设置，覆盖整体/分组/单元素及其几何属性叶子。
+                foreach (var child in roiChildren)
+                    AttachParentChain(child, leafNode);
+
+                leafNode.Children = roiChildren;
 
                 // 方案B：RoI 数组节点是"纯分组容器"，本身不可整体绑定（避免"可绑定 + 可展开"点击冲突）。
                 // 整体绑定改由子节点"整体"承担（BindingSuffix=null → 路径 "[]"，等价于绑整个数组）。
@@ -198,6 +205,19 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             // 其他数组：逐元素 [i]
             leafNode.Children = new System.Collections.ObjectModel.ObservableCollection<TreeNodeData>(
                 ArrayTreeFormatter.BuildExpansionChildren(arr, elementType));
+        }
+
+        /// <summary>
+        /// 递归为子节点设置 Parent 引用（P1）。绑定树子节点由 ArrayTreeFormatter 构建时未挂 Parent，
+        /// 导致 GetRootNode 向上遍历到 null 时把分组自身当根。此方法自底向上补齐整条链。
+        /// </summary>
+        private static void AttachParentChain(TreeNodeData node, TreeNodeData parent)
+        {
+            node.Parent = parent;
+            if (node.Children == null)
+                return;
+            foreach (var child in node.Children)
+                AttachParentChain(child, node);
         }
 
         /// <summary>

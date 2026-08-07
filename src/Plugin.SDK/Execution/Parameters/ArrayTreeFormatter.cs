@@ -187,7 +187,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 };
                 children.Add(new TreeNodeData
                 {
-                    Text = $"{displayName} ({items.Count}项)",
+                    // P3：分组节点不显示数量（用户要求简洁，树内外显示名一致：圆）
+                    Text = displayName,
                     IsSelectable = true,
                     DataSource = groupDs,
                     BindingPath = $"{parentDs.PropertyName}[Type={enumName}]",

@@ -150,4 +150,30 @@ public class RoiDesignTimeGroupsContractTests
             Assert.NotNull(g.DataSource);
         });
     }
+
+    [Fact]
+    public void BuildTreeStructure_RoiChildNodes_HaveParentChain()
+    {
+        // P1：RoI 子节点（整体/分组）必须挂上 Parent 链，否则 GetRootNode 向上遍历到 null 时
+        // 把分组自身当根，显示名根节点取错（圆.xxx 而非 Blob分析.xxx）。
+        var ds = MakeEmptyRoiDataSource();
+        var root = ParamBindingBase.BuildTreeStructure(new List<AvailableDataSource> { ds }).Single();
+        var container = root.Children.Single(c => c.Text == "检测区图形[]");
+
+        // 容器 → 根
+        Assert.Same(root, container.Parent);
+        // 整体节点 → 容器
+        Assert.Same(container, container.Children[0].Parent);
+        // 分组节点 → 容器（P3：分组不显示数量，文本即短名）
+        Assert.Same(container, container.Children.First(c => c.Text == "圆").Parent);
+        Assert.Same(container, container.Children.First(c => c.Text == "旋转矩形").Parent);
+
+        // 沿 Parent 链向上能走到根节点（Blob分析）——验证显示名根节点正确
+        var circleGroup = container.Children.First(c => c.Text == "圆");
+        TreeNodeData top = circleGroup;
+        while (top.Parent != null)
+            top = top.Parent;
+        Assert.Same(root, top);
+        Assert.Equal("Blob分析", top.Text);
+    }
 }

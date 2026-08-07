@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -653,8 +653,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             var leafName = GetDisplayLeafName(node);
 
             // 从 bindingPath 中提取索引部分，替换默认的 []
-            var parts = bindingPath.Split('.');
-            var propertyFullName = parts.Length > 1 ? parts[1] : string.Empty;
+            // P6：用 IndexOf('.') 只切第一个点，属性路径含点（[0].Geometry.X）时不被截断。
+            var dotIndex = bindingPath.IndexOf('.');
+            var propertyFullName = dotIndex >= 0 ? bindingPath[(dotIndex + 1)..] : bindingPath;
             var (_, arrayIndex, _) = PropertyPathParser.ParsePropertyPart(propertyFullName);
 
             // 如果有具体索引（>=0），替换掉默认的 []；-1 表示显式 "[]" 保留整个数组
@@ -685,7 +686,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             if (ds == null)
                 return node.Text;
             if (ds.BindingSuffix != null)
+            {
+                // P2：RoI 类型分组（[Type=Circle]）显示名统一为"短名[]"（圆[]），与普通数组"宽度[]"同风格。
+                // 单元素（[i]）保持 "属性名[i]"（检测区域[0]），整体（BindingSuffix=null）走下方数组分支。
+                if (ds.BindingSuffix.StartsWith("[Type=", StringComparison.OrdinalIgnoreCase))
+                    return $"{node.Text}[]";
                 return $"{ds.PropertyName}{TranslateBindingSuffix(ds.BindingSuffix)}";
+            }
             if (ds.PropertyType?.IsArray == true)
                 return $"{ds.DisplayName}[]";
             return node.Text;
@@ -730,24 +737,28 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
             var indexStr = displayText.Substring(bracketStart + 1, bracketEnd - bracketStart - 1);
 
-            // 从当前 BindingSource 提取节点ID和属性名
-            var parts = BindingSource.Split('.');
-            var nodeId = parts[0];
-            var propertyFullName = parts.Length > 1 ? parts[1] : string.Empty;
-            var (propertyName, _, _) = PropertyPathParser.ParsePropertyPart(propertyFullName);
+            // 从当前 BindingSource 提取节点ID和属性名。
+            // P6：用 IndexOf('.') 只切第一个点，属性路径含点（[0].Geometry.X）时不被截断。
+            var dotIndex = BindingSource.IndexOf('.');
+            if (dotIndex < 0)
+                return;
+            var nodeId = BindingSource[..dotIndex];
+            var propertyFullName = BindingSource[(dotIndex + 1)..];
+            // P4：提取类型过滤 token 并保留。RoI 分组绑定 "Node1.检测区域[Type=Circle]"，
+            // 用户改显示名 []→[n] 时若丢掉 [Type=Circle]，会静默取错元素（违反 rule-015）。
+            var (propertyName, _, typeFilter) = PropertyPathParser.ParsePropertyPart(propertyFullName);
 
-            // 构建新的 BindingSource
+            // 构建新的 BindingSource（保留类型过滤，仅替换索引位）
+            string indexPart;
             if (string.IsNullOrEmpty(indexStr))
-            {
-                // [] 空括号 → 整个数组
-                BindingSource = $"{nodeId}.{propertyName}[]";
-            }
+                indexPart = "[]";  // [] 空括号 → 整个数组
             else if (int.TryParse(indexStr, out _))
-            {
-                // [0] [1] 等有效索引
-                BindingSource = $"{nodeId}.{propertyName}[{indexStr}]";
-            }
-            // 无效内容 → 不更新
+                indexPart = $"[{indexStr}]";  // [0] [1] 等有效索引
+            else
+                return;  // 无效内容 → 不更新
+
+            var typePart = typeFilter != null ? $"[Type={typeFilter}]" : "";
+            BindingSource = $"{nodeId}.{propertyName}{typePart}{indexPart}";
         }
 
         #endregion

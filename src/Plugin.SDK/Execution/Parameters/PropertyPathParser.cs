@@ -19,8 +19,12 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     /// <summary>
     /// 解析属性路径片段，提取属性名、数组索引与类型过滤
     /// </summary>
-    /// <param name="part">路径片段，如 "HistogramData", "HistogramData[]", "HistogramData[0]", "RoI[Type=Circle]"</param>
+    /// <param name="part">路径片段，如 "HistogramData", "HistogramData[]", "HistogramData[0]", "RoI[Type=Circle]", "RoI[Type=Circle][2]"</param>
     /// <returns>纯属性名、数组索引（null 表示无索引或空括号）、类型过滤 token（null 表示无类型过滤）</returns>
+    /// <remarks>
+    /// 支持"类型过滤 + 索引"组合（如 "[Type=Circle][2]"）：先按类型过滤出子集，再取第 n 个。
+    /// 顺序固定为 [Type=X][n]（方案 C 组，P5）。
+    /// </remarks>
     public static (string propertyName, int? arrayIndex, string? typeFilter) ParsePropertyPart(string part)
     {
         if (string.IsNullOrEmpty(part))
@@ -30,31 +34,49 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         if (bracketStart < 0)
             return (part, null, null);
 
-        var bracketEnd = part.IndexOf(']', bracketStart);
-        if (bracketEnd < 0)
-            return (part, null, null);
-
         var propName = part.Substring(0, bracketStart);
-        var indexStr = part.Substring(bracketStart + 1, bracketEnd - bracketStart - 1);
+        var rest = part.Substring(bracketStart);
+        int? arrayIndex = null;
+        string? typeFilter = null;
 
-        // [] 空括号 → 显式取整个数组（哨兵 -1，与"无括号"区分开）
-        if (string.IsNullOrEmpty(indexStr))
-            return (propName, -1, null);
-
-        // [Type=XXX] → 按图形类型过滤（RoI 多图形统一绑定，方案步骤2）
-        const string typeMarker = "Type=";
-        if (indexStr.StartsWith(typeMarker, StringComparison.OrdinalIgnoreCase))
+        // 逐对解析括号：首对可为 [Type=X] 或 [n]/[]；后续仅允许 [n]/[]
+        var cursor = 0;
+        while (cursor < rest.Length)
         {
-            var typeToken = indexStr.Substring(typeMarker.Length);
-            return (propName, null, typeToken);
+            var bs = rest.IndexOf('[', cursor);
+            if (bs < 0)
+                break;
+            var be = rest.IndexOf(']', bs);
+            if (be < 0)
+                break;
+
+            var token = rest.Substring(bs + 1, be - bs - 1);
+
+            if (typeFilter == null && token.StartsWith("Type=", StringComparison.OrdinalIgnoreCase))
+            {
+                // 首对 [Type=XXX] → 类型过滤
+                typeFilter = token.Substring("Type=".Length);
+            }
+            else if (token.Length == 0)
+            {
+                // [] 空括号 → 显式取整个数组（哨兵 -1）
+                arrayIndex = -1;
+            }
+            else if (int.TryParse(token, out var idx))
+            {
+                // [n] 具体索引
+                arrayIndex = idx;
+            }
+            else
+            {
+                // 非法 token（非 Type=、非空、非数字）→ 视为无效路径，整段回退为普通属性
+                return (part, null, null);
+            }
+
+            cursor = be + 1;
         }
 
-        // [0] [1] 等具体索引
-        if (int.TryParse(indexStr, out var index))
-            return (propName, index, null);
-
-        // 无效内容 → 当作普通属性
-        return (part, null, null);
+        return (propName, arrayIndex, typeFilter);
     }
 
         /// <summary>

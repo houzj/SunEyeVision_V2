@@ -120,25 +120,18 @@ namespace SunEyeVision.Tool.Subroutine
                     foreach (var output in parameters.Outputs.Where(o => o.Source != null || !string.IsNullOrEmpty(o.BindingSource)))
                     {
                         string sourceNodeId, sourceProperty;
-                        if (output.Source != null)
+                        // P6/P7：统一从完整绑定路径（NodeId.属性路径，属性路径可含 [Type=X][n].Geometry.X）切分。
+                        // 优先对象引用 GetBindingPath()（含 BindingSuffix），字符串兜底保留完整路径（不剥离 []），
+                        // 用 IndexOf('.') 只切第一个点，嵌套路径不被截断。
+                        var fullPath = output.Source != null ? output.Source.GetBindingPath() : output.BindingSource;
+                        var dotIndex = fullPath.IndexOf('.');
+                        if (string.IsNullOrEmpty(fullPath) || dotIndex < 0)
                         {
-                            // 优先使用对象引用（含完整类型信息）
-                            sourceNodeId = output.Source.SourceNodeId;
-                            sourceProperty = output.Source.PropertyName;
+                            outputErrors.Add($"输出 '{output.Name}' BindingSource 格式无效: '{fullPath}'");
+                            continue;
                         }
-                        else
-                        {
-                            // ★ 从 BindingSource 字符串 "NodeId.PropertyName" 解析（对齐 ResolveInputs）
-                            var parts = output.BindingSource.Split('.');
-                            if (parts.Length < 2)
-                            {
-                                outputErrors.Add($"输出 '{output.Name}' BindingSource 格式无效: '{output.BindingSource}'");
-                                continue;
-                            }
-                            sourceNodeId = parts[0];
-                            // 剥离旧数据遗留的 "[]" 后缀（对齐 AvailableDataSourceConverter 的做法）
-                            sourceProperty = parts[1].EndsWith("[]") ? parts[1][..^2] : parts[1];
-                        }
+                        sourceNodeId = fullPath[..dotIndex];
+                        sourceProperty = fullPath[(dotIndex + 1)..];
 
                         // 目标类型优先取对象引用声明的类型，否则用输出声明的 TypeName
                         var targetType = output.Source?.PropertyType
@@ -228,25 +221,26 @@ namespace SunEyeVision.Tool.Subroutine
                 string sourceNodeId, sourceProperty;
                 string sourceNodeName = "?", displayName = "?";
 
+                // P6：统一从完整绑定路径（NodeId.属性路径）切分。
+                // 对象引用 GetBindingPath()（含 BindingSuffix），字符串兜底保留完整路径；
+                // IndexOf('.') 只切第一个点，嵌套路径不截断。
+                var fullPath = input.Source != null ? input.Source.GetBindingPath() : input.BindingSource;
+                var dotIndex = fullPath.IndexOf('.');
+                if (string.IsNullOrEmpty(fullPath) || dotIndex < 0)
+                {
+                    errors.Add($"输入 '{input.Name}' BindingSource 格式无效: '{fullPath}'");
+                    continue;
+                }
+                sourceNodeId = fullPath[..dotIndex];
+                sourceProperty = fullPath[(dotIndex + 1)..];
+
                 if (input.Source != null)
                 {
-                    // 优先使用对象引用（含完整类型信息）
-                    sourceNodeId = input.Source.SourceNodeId;
-                    sourceProperty = input.Source.PropertyName;
                     sourceNodeName = input.Source.SourceNodeName ?? "?";
                     displayName = input.Source.DisplayName ?? sourceProperty;
                 }
                 else
                 {
-                    // ★ 从 BindingSource 字符串 "NodeId.PropertyName" 解析
-                    var parts = input.BindingSource.Split('.');
-                    if (parts.Length < 2)
-                    {
-                        errors.Add($"输入 '{input.Name}' BindingSource 格式无效: '{input.BindingSource}'");
-                        continue;
-                    }
-                    sourceNodeId = parts[0];
-                    sourceProperty = parts[1];
                     sourceNodeName = input.BindingDisplayText?.Split('.') is { Length: >= 2 } displayParts
                         ? displayParts[0] : sourceNodeId;
                     displayName = sourceProperty;
@@ -352,16 +346,17 @@ namespace SunEyeVision.Tool.Subroutine
             if (nodeResults == null)
                 throw new InvalidOperationException($"节点结果为空，无法解析 {displayName} 绑定");
 
-            var parts = bindingPath.Split('.');
-            if (parts.Length < 2)
+            // P6：IndexOf('.') 只切第一个点，属性路径含点（嵌套）不被截断
+            var dotIndex = bindingPath.IndexOf('.');
+            if (dotIndex < 0)
                 throw new InvalidOperationException($"{displayName} 绑定源格式无效: '{bindingPath}'，应为 \"节点ID.属性名\"");
 
             var binding = new ParamSetting
             {
                 ParameterName = displayName,
                 BindingType = BindingType.Binding,
-                SourceNodeId = parts[0],
-                SourceProperty = parts[1],
+                SourceNodeId = bindingPath[..dotIndex],
+                SourceProperty = bindingPath[(dotIndex + 1)..],
                 TargetType = typeof(int)
             };
             var resolveResult = resolver.Resolve(binding, nodeResults);
@@ -384,15 +379,15 @@ namespace SunEyeVision.Tool.Subroutine
             string? sourceStr = null;
             if (!string.IsNullOrEmpty(config.SourceCompareBinding) && iterResult.NodeResults != null)
             {
-                var parts = config.SourceCompareBinding.Split('.');
-                if (parts.Length >= 2)
+                var dotIndex = config.SourceCompareBinding.IndexOf('.');
+                if (dotIndex >= 0)
                 {
                     var binding = new ParamSetting
                     {
                         ParameterName = "源比较值",
                         BindingType = BindingType.Binding,
-                        SourceNodeId = parts[0],
-                        SourceProperty = parts[1],
+                        SourceNodeId = config.SourceCompareBinding[..dotIndex],
+                        SourceProperty = config.SourceCompareBinding[(dotIndex + 1)..],
                         TargetType = typeof(double)
                     };
                     var iterToolResults = iterResult.NodeResults
@@ -415,15 +410,15 @@ namespace SunEyeVision.Tool.Subroutine
             string? targetStr = null;
             if (!string.IsNullOrEmpty(config.TargetCompareBinding) && nodeResults != null)
             {
-                var parts = config.TargetCompareBinding.Split('.');
-                if (parts.Length >= 2)
+                var dotIndex = config.TargetCompareBinding.IndexOf('.');
+                if (dotIndex >= 0)
                 {
                     var binding = new ParamSetting
                     {
                         ParameterName = "目的比较值",
                         BindingType = BindingType.Binding,
-                        SourceNodeId = parts[0],
-                        SourceProperty = parts[1],
+                        SourceNodeId = config.TargetCompareBinding[..dotIndex],
+                        SourceProperty = config.TargetCompareBinding[(dotIndex + 1)..],
                         TargetType = typeof(double)
                     };
                     var resolveResult = resolver.Resolve(binding, nodeResults);
@@ -475,26 +470,21 @@ namespace SunEyeVision.Tool.Subroutine
 
             foreach (var displayItem in parameters.DisplayConfigs)
             {
-                // 绑定源解析：优先对象引用（含完整类型信息），字符串 "NodeId.PropertyName" 兜底
-                string sourceNodeId, sourceProperty;
-                if (displayItem.BoundDataSource != null)
+                // 绑定源解析：优先对象引用 GetBindingPath()（含 BindingSuffix），字符串兜底保留完整路径。
+                // P6/P7：IndexOf('.') 只切第一个点，嵌套路径不截断、整体绑定 [] 不剥离。
+                if (string.IsNullOrEmpty(displayItem.BindingSource) && displayItem.BoundDataSource == null)
+                    continue;
+                var fullPath = displayItem.BoundDataSource != null
+                    ? displayItem.BoundDataSource.GetBindingPath()
+                    : displayItem.BindingSource;
+                var dotIndex = fullPath.IndexOf('.');
+                if (dotIndex < 0)
                 {
-                    sourceNodeId = displayItem.BoundDataSource.SourceNodeId;
-                    sourceProperty = displayItem.BoundDataSource.PropertyName;
+                    parameters.LogWarning($"显示项 '{displayItem.DisplayName}' 绑定源格式无效: '{fullPath}'");
+                    continue;
                 }
-                else
-                {
-                    if (string.IsNullOrEmpty(displayItem.BindingSource))
-                        continue;
-                    var parts = displayItem.BindingSource.Split('.');
-                    if (parts.Length < 2)
-                    {
-                        parameters.LogWarning($"显示项 '{displayItem.DisplayName}' 绑定源格式无效: '{displayItem.BindingSource}'");
-                        continue;
-                    }
-                    sourceNodeId = parts[0];
-                    sourceProperty = parts[1].EndsWith("[]") ? parts[1][..^2] : parts[1];
-                }
+                string sourceNodeId = fullPath[..dotIndex];
+                string sourceProperty = fullPath[(dotIndex + 1)..];
 
                 var binding = new ParamSetting
                 {

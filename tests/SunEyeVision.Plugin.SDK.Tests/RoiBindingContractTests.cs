@@ -58,17 +58,17 @@ public class RoiBindingContractTests
         Assert.Null(overall.DataSource!.BindingSuffix);
         Assert.Equal("Node1.检测区域[]", overall.DataSource.GetBindingPath());
 
-        // 分组节点（按 ShapeType 排序：Circle, Polygon, RotatedRectangle）
-        var circleGroup = children.First(c => c.Text.Contains("圆 (2项)"));
+        // 分组节点（P3：不显示数量，Text 即短名）
+        var circleGroup = children.First(c => c.Text == "圆");
         Assert.True(circleGroup.IsSelectable);
         Assert.NotNull(circleGroup.DataSource);
         Assert.Equal("[Type=Circle]", circleGroup.DataSource!.BindingSuffix);
         Assert.Equal("Node1.检测区域[Type=Circle]", circleGroup.DataSource.GetBindingPath());
 
-        var polygonGroup = children.First(c => c.Text.Contains("多边形 (1项)"));
+        var polygonGroup = children.First(c => c.Text == "多边形");
         Assert.Equal("[Type=Polygon]", polygonGroup.DataSource!.BindingSuffix);
 
-        var rrGroup = children.First(c => c.Text.Contains("旋转矩形 (2项)"));
+        var rrGroup = children.First(c => c.Text == "旋转矩形");
         Assert.Equal("[Type=RotatedRectangle]", rrGroup.DataSource!.BindingSuffix);
 
         // 单元素节点 [0]..[4] 均可选
@@ -166,6 +166,48 @@ public class RoiBindingContractTests
         var results = MakeResults(MakeHeterogeneousRoi());
         Assert.Throws<InvalidOperationException>(() =>
             OutputVariableResolver.Resolve(results, "Node1", "检测区域[Type=Invalid]"));
+    }
+
+    [Fact]
+    public void Resolve_TypeFilterThenIndex_ReturnsNthOfType()
+    {
+        // P5：手动改显示名 [圆] → [圆[2]] 对应路径 [Type=Circle][2]（先过滤圆，再取第 2 个）。
+        // 检测区域有 2 个圆（索引 0、1），取 [2] 应越界抛异常（rule-015 报错优先）。
+        var results = MakeResults(MakeHeterogeneousRoi());
+        Assert.Throws<IndexOutOfRangeException>(() =>
+            OutputVariableResolver.Resolve(results, "Node1", "检测区域[Type=Circle][2]"));
+    }
+
+    [Fact]
+    public void Resolve_TypeFilterThenIndex_ReturnsNthOfType_InRange()
+    {
+        // 2 个圆，[Type=Circle][1] 取第 1 个圆（索引 1 越界判断在过滤后数组上进行）
+        var results = MakeResults(MakeHeterogeneousRoi());
+        var resolved = OutputVariableResolver.Resolve(results, "Node1", "检测区域[Type=Circle][1]");
+        var circle = Assert.IsType<ShapeParameters>(resolved);
+        Assert.Equal(ShapeType.Circle, circle.ShapeType);
+    }
+
+    [Fact]
+    public void ParsePropertyPart_DoubleBracket_TypePlusIndex()
+    {
+        // P5 解析器层：双括号 [Type=X][n] → 同时返回类型过滤 + 索引
+        var (name, index, typeFilter) = PropertyPathParser.ParsePropertyPart("检测区域[Type=Circle][2]");
+        Assert.Equal("检测区域", name);
+        Assert.Equal(2, index);
+        Assert.Equal("Circle", typeFilter);
+
+        // 仅 [Type=X]
+        var (name2, index2, typeFilter2) = PropertyPathParser.ParsePropertyPart("检测区域[Type=Circle]");
+        Assert.Equal("检测区域", name2);
+        Assert.Null(index2);
+        Assert.Equal("Circle", typeFilter2);
+
+        // 仅 [n]
+        var (name3, index3, typeFilter3) = PropertyPathParser.ParsePropertyPart("检测区域[0]");
+        Assert.Equal("检测区域", name3);
+        Assert.Equal(0, index3);
+        Assert.Null(typeFilter3);
     }
 
     #endregion

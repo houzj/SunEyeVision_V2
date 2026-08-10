@@ -25,6 +25,7 @@ using SunEyeVision.UI.Services.Canvas;
 using SunEyeVision.UI.Converters.Path;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 
@@ -1799,17 +1800,12 @@ namespace SunEyeVision.UI.Views.Windows
             var subQueryService = _viewModel?.CreateDataSourceQueryService(subroutineId);
             var internalSources = subQueryService?.GetWorkflowNodeDataSources() ?? new();
 
-            // 4. 创建实时刷新回调：Outputs 变更时立即更新模块结果树 + 主界面图像源下拉
-            Action? onOutputsChanged = () =>
+            // 4. 创建增量刷新回调：Outputs 变更时按变更类型局部更新模块结果树 + 主界面图像源下拉，
+            //    避免每敲一个字就全量重建（架构治本，非去抖）
+            Action<SubroutineOutputChange>? onOutputsChanged = (change) =>
             {
-                if (parameters == null) return;
-                var tempResults = new SubroutineResults
-                {
-                    OutputConfigs = parameters.Outputs.ToList()
-                };
-                _viewModel?.UpdateModuleResults(tempResults, nodeDispName, "Subroutine", nodeId);
-                // 刷新主界面图像源下拉：子程序输出名变更后立即重建，避免运行后按旧名解析图像失败
-                _viewModel?.RefreshDisplayImageSourcesAfterOutputsChanged();
+                if (parameters == null || change == null) return;
+                _viewModel?.ApplySubroutineOutputChange(change, nodeDispName, nodeId);
             };
 
             // 5. 绑定路径校验：输入绑定的源节点必须在父工作流中存在（Fail-Fast）

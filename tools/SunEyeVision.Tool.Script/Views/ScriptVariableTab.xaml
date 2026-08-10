@@ -159,7 +159,7 @@
             <DataGrid x:Name="EditGrid" Grid.Row="0">
                 <DataGrid.Columns>
                         <!-- 变量名 -->
-                        <DataGridTemplateColumn Header="&#x53D8;&#x91CF;&#x540D;" Width="*">
+                        <DataGridTemplateColumn Header="&#x53D8;&#x91CF;&#x540D;" Width="*" MinWidth="90">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"

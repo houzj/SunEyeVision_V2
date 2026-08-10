@@ -2763,19 +2763,278 @@ SplitterPosition = position;
         }
 
         /// <summary>
-        /// 子程序输出/显示配置变更后，刷新主界面图像源下拉（重新读取最新输出名）
-        /// 用于子程序调试窗口内修改输出项名称后，主界面下拉能立即更新，避免运行后按旧名解析失败
+        /// 子程序输出增量更新入口：按变更类型对模块结果树 + 主界面图像源下拉做局部更新，
+        /// 替代原来的"每字符全量重建"。
+        /// - 结果树：仅当主界面当前选中该子程序节点时局部更新（结果树显示的是当前选中节点结果）；
+        /// - 图像下拉：无条件局部更新（下拉含所有工作流的子程序图像输出，与选中节点无关）。
         /// </summary>
-        public void RefreshDisplayImageSourcesAfterOutputsChanged()
+        public void ApplySubroutineOutputChange(
+            SubroutineOutputChange change,
+            string nodeName,
+            string nodeId)
         {
-            var node = _selectedNode as Models.WorkflowNode;
-            if (node == null)
+            if (change?.Output == null) return;
+            var cfg = change.Output;
+            var isImage = string.Equals(cfg.TypeName, "Image", StringComparison.OrdinalIgnoreCase);
+            var isPrevImage = string.Equals(change.PreviousTypeName, "Image", StringComparison.OrdinalIgnoreCase);
+            var isSelectedSubroutine = (_selectedNode as Models.WorkflowNode)?.Id == nodeId;
+
+            // 1. 结果树局部更新：仅当主界面选中该子程序节点时
+            if (isSelectedSubroutine)
             {
-                LogWarning($"图像源|RefreshDisplayImageSourcesAfterOutputsChanged: 当前无选中节点, 跳过刷新", "ImageSourceSelector");
+                switch (change.ChangeType)
+                {
+                    case SubroutineOutputChangeType.Renamed:
+                        ApplyRenameTree(change.PreviousName, cfg.Name, nodeId);
+                        break;
+                    case SubroutineOutputChangeType.TypeChanged:
+                        ApplyTypeChangedTree(change.PreviousName, cfg.Name, isImage, cfg.Group, cfg.TypeName, nodeId);
+                        break;
+                    case SubroutineOutputChangeType.GroupChanged:
+                        ApplyGroupChangedTree(change.PreviousName, cfg.Name, isImage, cfg.Group, cfg.TypeName, nodeId);
+                        break;
+                    case SubroutineOutputChangeType.Added:
+                        AddLeafToTree(cfg.Name, isImage, cfg.Group, cfg.TypeName, nodeId);
+                        break;
+                    case SubroutineOutputChangeType.Removed:
+                        ApplyRemoveFromTree(cfg.Name, nodeId);
+                        break;
+                }
+
+                // 结构变化（类型/分组/增删）会影响结果树层级，需重新扁平化；纯改名只更新对应行。
+                if (change.ChangeType != SubroutineOutputChangeType.Renamed)
+                    BuildFlatRows();
+            }
+
+            // 2. 图像下拉局部更新：无条件（下拉可能含任意子程序的图像输出）
+            ApplyImageSourceIncremental(change, isImage, isPrevImage, nodeId);
+        }
+
+        /// <summary>结果树改名：叶子原位更新显示名与属性路径</summary>
+        private void ApplyRenameTree(string oldName, string newName, string nodeId)
+        {
+            if (string.IsNullOrEmpty(oldName)) return;
+            var root = FindResultRoot(nodeId);
+            if (root == null) return;
+            var leaf = FindResultLeaf(root, nodeId, oldName);
+            if (leaf == null) return;
+            leaf.DisplayName = newName;
+            leaf.PropertyName = newName;
+            leaf.SourcePropertyName = newName;
+
+            // UI 实际绑定 FlatResultRows（DataGrid），必须同步更新对应行，否则改名界面不刷新
+            foreach (var row in FlatResultRows.Where(r => r.SourceNodeId == nodeId && r.SourcePropertyName == oldName))
+            {
+                row.DisplayName = newName;
+                row.SourcePropertyName = newName;
+            }
+        }
+
+        /// <summary>结果树类型变更：移除旧叶子并按新类型移动到正确分组</summary>
+        private void ApplyTypeChangedTree(string oldName, string newName, bool isImage, string? group, string typeName, string nodeId)
+        {
+            if (string.IsNullOrEmpty(oldName)) return;
+            ApplyRemoveFromTree(oldName, nodeId);
+            AddLeafToTree(newName, isImage, group, typeName, nodeId);
+        }
+
+        /// <summary>结果树分组变更：非图像输出按新分组移动（图像固定归「图像」分组，不动）</summary>
+        private void ApplyGroupChangedTree(string oldName, string newName, bool isImage, string? group, string typeName, string nodeId)
+        {
+            if (string.IsNullOrEmpty(oldName) || isImage) return;
+            ApplyRemoveFromTree(oldName, nodeId);
+            AddLeafToTree(newName, isImage, group, typeName, nodeId);
+        }
+
+        /// <summary>图像下拉局部更新：按变更类型做增删改（改名为移除旧条目+新增新名）</summary>
+        private void ApplyImageSourceIncremental(SubroutineOutputChange change, bool isImage, bool isPrevImage, string nodeId)
+        {
+            var cfg = change.Output;
+            switch (change.ChangeType)
+            {
+                case SubroutineOutputChangeType.Renamed:
+                    if (isImage)
+                    {
+                        var oldItem = DisplayImageSources
+                            .FirstOrDefault(s => s.SourceNodeId == nodeId && s.PropertyName == change.PreviousName);
+                        if (oldItem != null)
+                            DisplayImageSources.Remove(oldItem);
+                        AddImageSourceItem(cfg.Name, nodeId);
+                    }
+                    break;
+                case SubroutineOutputChangeType.TypeChanged:
+                    if (isPrevImage)
+                    {
+                        var oldItem = DisplayImageSources
+                            .FirstOrDefault(s => s.SourceNodeId == nodeId && s.PropertyName == change.PreviousName);
+                        if (oldItem != null)
+                            DisplayImageSources.Remove(oldItem);
+                    }
+                    if (isImage)
+                        AddImageSourceItem(cfg.Name, nodeId);
+                    break;
+                case SubroutineOutputChangeType.Added:
+                    if (isImage)
+                        AddImageSourceItem(cfg.Name, nodeId);
+                    break;
+                case SubroutineOutputChangeType.Removed:
+                    if (isImage)
+                    {
+                        var item = DisplayImageSources
+                            .FirstOrDefault(s => s.SourceNodeId == nodeId && s.PropertyName == cfg.Name);
+                        if (item != null)
+                            DisplayImageSources.Remove(item);
+                    }
+                    break;
+                case SubroutineOutputChangeType.GroupChanged:
+                    // 分组字段不影响图像下拉条目（图像输出条目由类型决定，且下拉无分组列），忽略
+                    break;
+            }
+        }
+
+        /// <summary>在图像下拉追加一个子程序图像条目</summary>
+        private void AddImageSourceItem(string name, string nodeId)
+        {
+            var nodeName = ResolveSubroutineNodeName(nodeId);
+            var sysType = SunEyeVision.Plugin.SDK.Models.SdkTypeVocabulary.ToSystemType("Image") ?? typeof(object);
+            DisplayImageSources.Add(new AvailableDataSource
+            {
+                SourceNodeId = nodeId,
+                SourceNodeName = nodeName,
+                PropertyName = name,
+                DisplayName = name,
+                PropertyType = sysType,
+                VariableType = "Image",
+                GroupName = "图像",
+                Description = $"子程序输出: {name}",
+            });
+        }
+
+        /// <summary>解析子程序节点显示名（优先选中节点，其次引擎节点）</summary>
+        private string ResolveSubroutineNodeName(string nodeId)
+        {
+            if (_selectedNode is Models.WorkflowNode selected && selected.Id == nodeId)
+                return selected.Name ?? selected.DispName ?? "子程序";
+            foreach (var wf in _workflowEngine.GetAllWorkflows())
+            {
+                var node = wf.Nodes.FirstOrDefault(n => n.Id == nodeId);
+                if (node != null)
+                    return node.Name ?? node.DispName ?? "子程序";
+            }
+            return "子程序";
+        }
+
+        /// <summary>定位结果树中该子程序的根节点（当前选中节点的结果根）</summary>
+        private ModuleResultNode? FindResultRoot(string nodeId)
+        {
+            foreach (var root in ModuleResultTree)
+            {
+                // 根节点本身带 SourceNodeId 才需要匹配；子程序结果根由 UpdateModuleResults 生成时未设 SourceNodeId，
+                // 因此直接匹配根节点的叶子归属：存在属于该 nodeId 的叶子即认为是该子程序的树。
+                if (ContainsNodeId(root, nodeId))
+                    return root;
+            }
+            return null;
+        }
+
+        private static bool ContainsNodeId(ModuleResultNode node, string nodeId)
+        {
+            if (node.SourceNodeId == nodeId) return true;
+            foreach (var child in node.Children)
+                if (ContainsNodeId(child, nodeId))
+                    return true;
+            return false;
+        }
+
+        /// <summary>递归查找结果树叶子（按 SourceNodeId + SourcePropertyName）</summary>
+        private static ModuleResultNode? FindResultLeaf(ModuleResultNode node, string nodeId, string propertyName)
+        {
+            if (!node.IsGroup && node.SourceNodeId == nodeId && node.SourcePropertyName == propertyName)
+                return node;
+            foreach (var child in node.Children)
+            {
+                var found = FindResultLeaf(child, nodeId, propertyName);
+                if (found != null) return found;
+            }
+            return null;
+        }
+
+        /// <summary>从结果树移除指定叶子，并清理空分组</summary>
+        private void ApplyRemoveFromTree(string name, string nodeId)
+        {
+            var root = FindResultRoot(nodeId);
+            if (root == null) return;
+            RemoveResultLeaf(root, nodeId, name);
+        }
+
+        /// <summary>递归删除叶子；若父分组因此为空则一并移除，并递归向上清理空分组</summary>
+        private static bool RemoveResultLeaf(ModuleResultNode node, string nodeId, string propertyName)
+        {
+            if (!node.IsGroup && node.SourceNodeId == nodeId && node.SourcePropertyName == propertyName)
+                return true;
+
+            for (int i = node.Children.Count - 1; i >= 0; i--)
+            {
+                var child = node.Children[i];
+                if (RemoveResultLeaf(child, nodeId, propertyName))
+                {
+                    node.Children.RemoveAt(i);
+                    // 分组删空后移除（递归向上由调用栈继续处理）
+                    return node.IsGroup && node.Children.Count == 0;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>在结果树中按分组路径添加叶子（分组不存在则创建）</summary>
+        private void AddLeafToTree(string name, bool isImage, string? group, string typeName, string nodeId)
+        {
+            var root = FindResultRoot(nodeId);
+            if (root == null)
+            {
+                LogWarning($"子程序增量|未找到结果树根节点, 跳过新增: {name} (nodeId={nodeId})", "SubroutineIncremental");
                 return;
             }
-            LogInfo($"图像源|输出配置变更, 刷新图像源下拉: node={node.Name}({node.Id})", "ImageSourceSelector");
-            UpdateDisplayImageSources(node);
+
+            var groupName = isImage ? "图像" : (group ?? "其他");
+            var parent = EnsureGroupPath(root, groupName);
+            var clrType = SunEyeVision.Plugin.SDK.Models.SdkTypeVocabulary.ToSystemType(typeName) ?? typeof(object);
+
+            parent.Children.Add(new ModuleResultNode
+            {
+                DisplayName = name,
+                DisplayValue = "--",
+                PropertyName = name,
+                SourceNodeId = nodeId,
+                SourcePropertyName = name,
+                PropertyClrType = clrType,
+                IsGroup = false
+            });
+        }
+
+        /// <summary>确保分组路径存在，返回最终分组节点（支持 "a/b" 层级）</summary>
+        private static ModuleResultNode EnsureGroupPath(ModuleResultNode root, string groupName)
+        {
+            var names = groupName.Split('/');
+            ModuleResultNode current = root;
+            var fullPath = string.Empty;
+            foreach (var part in names)
+            {
+                fullPath = string.IsNullOrEmpty(fullPath) ? part : $"{fullPath}/{part}";
+                var existing = current.Children.FirstOrDefault(c => c.IsGroup && c.DisplayName == part);
+                if (existing == null)
+                {
+                    existing = new ModuleResultNode
+                    {
+                        DisplayName = part,
+                        IsGroup = true,
+                        IsExpanded = true
+                    };
+                    current.Children.Add(existing);
+                }
+                current = existing;
+            }
+            return current;
         }
 
         /// <summary>
@@ -3119,7 +3378,7 @@ SplitterPosition = position;
                                     SourceNodeId = node.Id,
                                     SourceNodeName = nodeName,
                                     PropertyName = output.Name,
-                                    DisplayName = string.IsNullOrEmpty(output.DisplayName) ? output.Name : output.DisplayName,
+                                    DisplayName = output.Name,
                                     PropertyType = sysType,
                                     VariableType = output.TypeName,
                                     GroupName = output.Group,
@@ -4913,9 +5172,14 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
     public class FlatResultRow : ObservableObject
     {
         private bool _isExpanded = true;
+        private string _displayName = string.Empty;
 
         /// <summary>显示名称</summary>
-        public string DisplayName { get; set; } = string.Empty;
+        public string DisplayName
+        {
+            get => _displayName;
+            set => SetProperty(ref _displayName, value);
+        }
 
         /// <summary>显示值（仅叶子节点有值）</summary>
         public string? DisplayValue { get; set; }

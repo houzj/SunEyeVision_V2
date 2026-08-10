@@ -135,7 +135,7 @@ namespace SunEyeVision.Tool.Script.Views
         }
 
         public override bool ShowMaximizeButton => true;
-        public override Size PreferredDebugWindowSize => new Size(1000, 650);
+        public override Size PreferredDebugWindowSize => new Size(1080, 650);
 
         public ScriptDebugControl()
         {

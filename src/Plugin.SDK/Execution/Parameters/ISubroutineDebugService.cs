@@ -1,5 +1,6 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Plugin.SDK.UI.Windows;
 
 namespace SunEyeVision.Plugin.SDK.Execution.Parameters
@@ -14,6 +15,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             IDataSourceQueryService? queryService,
             SubroutineParameters parameters,
             List<AvailableDataSource>? subroutineInternalSources,
-            Action? onOutputsChanged);
+            Action<SubroutineOutputChange>? onOutputsChanged);
     }
 }

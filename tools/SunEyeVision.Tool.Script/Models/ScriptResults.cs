@@ -55,7 +55,7 @@ namespace SunEyeVision.Tool.Script.Models
                 {
                     Name = cfg.Name,
                     VariableType = cfg.TypeName,
-                    DisplayName = string.IsNullOrEmpty(cfg.DisplayName) ? cfg.Name : cfg.DisplayName,
+                    DisplayName = cfg.Name,
                     Group = cfg.Group,
                     Kind = OutputVariableKind.Data,
                     RuntimeValue = OutputVariableArrayPromoter.Promote(rawValue, cfg.TypeName, sysType)

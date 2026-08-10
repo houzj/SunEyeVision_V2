@@ -47,7 +47,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 {
                     Name = cfg.Name,
                     VariableType = cfg.TypeName,
-                    DisplayName = string.IsNullOrEmpty(cfg.DisplayName) ? cfg.Name : cfg.DisplayName,
+                    DisplayName = cfg.Name,
                     Group = string.IsNullOrEmpty(cfg.Group) ? "输出结果" : cfg.Group,
                     Kind = OutputVariableKind.Data,
                 });

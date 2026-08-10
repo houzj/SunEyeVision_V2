@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models;
@@ -12,6 +12,7 @@ namespace SunEyeVision.Tool.Script.Models
     public class ScriptInputConfig : ObservableObject
     {
         private string _name = string.Empty;
+        private string _displayName = string.Empty;
         private string _typeName = "Image";
         private AvailableDataSource? _source;
         private string _bindingSource = string.Empty;

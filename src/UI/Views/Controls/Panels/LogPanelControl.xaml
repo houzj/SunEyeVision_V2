@@ -348,13 +348,19 @@
                                           MinWidth="80"
                                           IsReadOnly="True"
                                           ElementStyle="{StaticResource LogDataTextBlockStyle}"/>
-                    <!-- 消息列 -->
+                    <!-- 消息列（自动换行，长日志完整显示；悬停可看整条原文） -->
                     <DataGridTextColumn Header="消息"
                                           Binding="{Binding DisplayMessage}"
                                           Width="*"
                                           MinWidth="200"
-                                          IsReadOnly="True"
-                                          ElementStyle="{StaticResource LogDataTextBlockStyle}"/>
+                                          IsReadOnly="True">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource LogDataTextBlockStyle}">
+                                <Setter Property="TextWrapping" Value="Wrap"/>
+                                <Setter Property="ToolTip" Value="{Binding DisplayMessage}"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
                 </DataGrid.Columns>
 
                 <!-- 右键菜单 -->

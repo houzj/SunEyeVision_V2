@@ -57,8 +57,11 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 var available = variables.Count > 0
                     ? string.Join(", ", variables.Select(v => v.Name))
                     : "(空)";
+                var renamedHint = variables.Count > 0
+                    ? " 该输出可能已改名或删除，请到源节点重新绑定。"
+                    : " 该节点当前无任何输出，请到源节点检查输出配置。";
                 throw new InvalidOperationException(
-                    $"{nodeLabel} 无输出变量 '{firstName}'（契约中不存在）。可用变量: [{available}]");
+                    $"{nodeLabel} 无输出变量 '{firstName}'（契约中不存在）。可用变量: [{available}]{renamedHint}");
             }
 
             object? current = variable.RuntimeValue;

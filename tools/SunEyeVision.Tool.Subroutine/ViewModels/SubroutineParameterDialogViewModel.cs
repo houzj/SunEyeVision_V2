@@ -19,10 +19,12 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
         private readonly IDataSourceQueryService? _dataSourceQueryService;
         private readonly List<AvailableDataSource>? _subroutineInternalSources;
         private readonly SubroutineParameters _parameters;
-        private readonly Action? _onOutputsChanged;
+        private readonly Action<SubroutineOutputChange>? _onOutputsChanged;
         private string _selectedInputTypeName = "Image";
         private string _selectedOutputTypeName = "Double";
         private SubroutineDisplayType _selectedDisplayType = SubroutineDisplayType.Circle;
+        private bool _isDisposed;
+        private bool _suppressNotifications;
         public string DialogTitle => $"{_subroutineName} - 子程序参数设置";
 
         /// <summary>直接暴露源参数的集合（共享引用，实时同步到 node.Parameters）</summary>
@@ -77,7 +79,7 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
             IDataSourceQueryService? dataSourceQueryService,
             List<AvailableDataSource>? subroutineInternalSources,
             SubroutineParameters parameters,
-            Action? onOutputsChanged = null)
+            Action<SubroutineOutputChange>? onOutputsChanged = null)
         {
             _subroutineId = subroutineId ?? throw new ArgumentNullException(nameof(subroutineId));
             _subroutineName = subroutineName ?? throw new ArgumentNullException(nameof(subroutineName));
@@ -93,17 +95,37 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
             RemoveItemCommand = new RelayCommand<object>(ExecuteRemoveItem);
             RemoveDisplayItemCommand = new RelayCommand<SubroutineDisplayItem>(ExecuteRemoveDisplayItem);
 
-            // ★ 订阅 Outputs 变更 → 实时通知主窗口刷新模块结果树
+            // ★ 订阅 Outputs 变更 → 通知主窗口增量更新模块结果树
             _parameters.Outputs.CollectionChanged += OnOutputsCollectionChanged;
 
-            // ★ 订阅已有输出项的 PropertyChanged（名称/类型修改时刷新）
+            // ★ 子程序至少需要一个输入和一个输出（幂等补齐，补齐不应触发增量通知）
+            _suppressNotifications = true;
+            try
+            {
+                EnsureMinimumInputsOutputs();
+            }
+            finally
+            {
+                _suppressNotifications = false;
+            }
+
+            // ★ 补齐后统一订阅全部输出项的 PropertyChanged（名称/类型/分组修改时增量刷新）
             foreach (var output in _parameters.Outputs)
                 output.PropertyChanged += OnOutputPropertyChanged;
 
-            // ★ 子程序至少需要一个输入和一个输出（幂等补齐）
-            EnsureMinimumInputsOutputs();
-
             LoadAvailableSources();
+        }
+
+        /// <summary>
+        /// 关闭窗口时清理：取消全部事件订阅，杜绝重复打开时幽灵订阅累积。
+        /// </summary>
+        public void Dispose()
+        {
+            if (_isDisposed) return;
+            _isDisposed = true;
+            _parameters.Outputs.CollectionChanged -= OnOutputsCollectionChanged;
+            foreach (var output in _parameters.Outputs)
+                output.PropertyChanged -= OnOutputPropertyChanged;
         }
 
         /// <summary>
@@ -239,36 +261,66 @@ namespace SunEyeVision.Tool.Subroutine.ViewModels
         }
 
         /// <summary>
-        /// Outputs 集合增删时触发回调，通知主窗口实时刷新模块结果树
+        /// Outputs 集合增删时触发回调，通知主窗口增量更新模块结果树
         /// </summary>
         private void OnOutputsCollectionChanged(object? sender,
             System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            // 新加项 → 订阅 PropertyChanged
+            if (_isDisposed || _suppressNotifications) return;
+
+            // 新加项 → 订阅 PropertyChanged，并通知 Added
             if (e.NewItems != null)
             {
                 foreach (var item in e.NewItems.OfType<SubroutineOutputConfig>())
+                {
                     item.PropertyChanged += OnOutputPropertyChanged;
+                    _onOutputsChanged?.Invoke(new SubroutineOutputChange(
+                        SubroutineOutputChangeType.Added, item));
+                }
             }
 
-            // 移除项 → 取消订阅
+            // 移除项 → 取消订阅，并通知 Removed
             if (e.OldItems != null)
             {
                 foreach (var item in e.OldItems.OfType<SubroutineOutputConfig>())
+                {
                     item.PropertyChanged -= OnOutputPropertyChanged;
+                    _onOutputsChanged?.Invoke(new SubroutineOutputChange(
+                        SubroutineOutputChangeType.Removed, item));
+                }
             }
-
-            // 增删 → 触发回调
-            _onOutputsChanged?.Invoke();
         }
 
         /// <summary>
-        /// 输出项属性变更（如名称修改）→ 实时刷新模块结果树
+        /// 输出项属性变更 → 按属性名分流增量通知。
+        /// 只关心影响主窗口显示的属性（Name/TypeName/Group）；
+        /// 订阅（BindingSource/IsAccumulated 等）不影响主窗口显示，零通知。
         /// </summary>
         private void OnOutputPropertyChanged(object? sender,
             System.ComponentModel.PropertyChangedEventArgs e)
         {
-            _onOutputsChanged?.Invoke();
+            if (_isDisposed || sender is not SubroutineOutputConfig output) return;
+
+            switch (e.PropertyName)
+            {
+                case nameof(SubroutineOutputConfig.Name):
+                    _onOutputsChanged?.Invoke(new SubroutineOutputChange(
+                        SubroutineOutputChangeType.Renamed, output, previousName: output.PreviousName));
+                    break;
+                case nameof(SubroutineOutputConfig.TypeName):
+                    _onOutputsChanged?.Invoke(new SubroutineOutputChange(
+                        SubroutineOutputChangeType.TypeChanged, output,
+                        previousTypeName: output.PreviousTypeName));
+                    break;
+                case nameof(SubroutineOutputConfig.Group):
+                    _onOutputsChanged?.Invoke(new SubroutineOutputChange(
+                        SubroutineOutputChangeType.GroupChanged, output,
+                        previousGroup: output.PreviousGroup));
+                    break;
+                default:
+                    // Source/BindingSource/BindingDisplayText/IsAccumulated 等不影响主界面显示，忽略
+                    break;
+            }
         }
 
     }

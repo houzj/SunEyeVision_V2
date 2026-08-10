@@ -79,7 +79,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Grid Margin="0" MaxWidth="520">
+    <Grid Margin="0" MaxWidth="720">
         <!-- TabControl -->
         <TabControl BorderThickness="0" Background="White">
             <!-- Tab 0: 输入设置 -->
@@ -186,7 +186,7 @@
                                   RowHeight="32"
                                   HeadersVisibility="Column">
                             <DataGrid.Columns>
-                                <DataGridTemplateColumn Header="参数名称" Width="*">
+                                <DataGridTemplateColumn Header="参数名称" Width="*" MinWidth="100">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"

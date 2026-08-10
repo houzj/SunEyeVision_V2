@@ -165,6 +165,52 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
             _isFinalized = false;
         }
 
+        /// <summary>
+        /// 将另一个收集器的所有显示项合并到当前收集器（追加语义）。
+        /// 用于循环累积显示：每轮子收集器构建的单轮图形追加到主收集器叠加。
+        /// 相同 Style 的图形/文本自动并入同一条目（追加几何数据）。
+        /// </summary>
+        public void Merge(DisplayCollector other)
+        {
+            if (other == null) return;
+
+            // 合并图形：按 Style + Type 匹配并入，否则新建条目
+            foreach (var (style, srcItem) in other._graphicsAccum)
+            {
+                if (_graphicsAccum.TryGetValue(style, out var destItem))
+                {
+                    // 相同 Style 已存在：追加几何数据（保持原条目类型）
+                    for (int i = 0; i < srcItem.GeometryList.Count; i++)
+                    {
+                        destItem.GeometryList.Add(srcItem.GeometryList[i]);
+                        destItem.PassList.Add(srcItem.PassList[i]);
+                    }
+                }
+                else
+                {
+                    _graphicsAccum[style] = srcItem;
+                    _items.Add(srcItem);
+                }
+            }
+
+            // 合并文本：相同 TextStyle 并入，否则新建条目
+            foreach (var (style, srcItem) in other._textAccum)
+            {
+                if (_textAccum.TryGetValue(style, out var destItem))
+                {
+                    for (int i = 0; i < srcItem.TextList.Count; i++)
+                        destItem.TextList.Add(srcItem.TextList[i]);
+                    for (int i = 0; i < srcItem.PassList.Count; i++)
+                        destItem.PassList.Add(srcItem.PassList[i]);
+                }
+                else
+                {
+                    _textAccum[style] = srcItem;
+                    _items.Add(srcItem);
+                }
+            }
+        }
+
         // ===== 查询 =====
 
         /// <summary>获取所有显示项（自动冻结后返回）</summary>

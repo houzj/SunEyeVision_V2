@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models;
@@ -13,7 +13,6 @@ namespace SunEyeVision.Tool.Script.Models
     {
         private string _name = string.Empty;
         private string _typeName = "Double";
-        private string _displayName = string.Empty;
         private string? _group;
         private AvailableDataSource? _source;
         private bool _isAccumulated;
@@ -25,13 +24,6 @@ namespace SunEyeVision.Tool.Script.Models
         {
             get => _name;
             set => SetProperty(ref _name, value);
-        }
-
-        /// <summary>中文显示名（用于结果面板/绑定下拉展示，空则回退 Name）</summary>
-        public string DisplayName
-        {
-            get => _displayName;
-            set => SetProperty(ref _displayName, value);
         }
 
         /// <summary>分组（用于树形分组，null 表示无分组）</summary>

@@ -24,13 +24,16 @@ namespace SunEyeVision.Tool.Subroutine.Views
             IDataSourceQueryService? dataSourceQueryService,
             List<AvailableDataSource>? subroutineInternalSources,
             SubroutineParameters parameters,
-            Action? onOutputsChanged = null)
+            Action<SubroutineOutputChange>? onOutputsChanged = null)
         {
             InitializeComponent();
 
             ViewModel = new SubroutineParameterDialogViewModel(
                 subroutineId, subroutineName, nodeId, dataSourceQueryService, subroutineInternalSources, parameters, onOutputsChanged);
             DataContext = ViewModel;
+
+            // 窗口关闭必然触发控件 Unloaded → 清理 ViewModel 的事件订阅，杜绝幽灵订阅累积
+            Unloaded += (s, e) => ViewModel.Dispose();
         }
     }
 }

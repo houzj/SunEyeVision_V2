@@ -20,7 +20,7 @@ public class ScriptOutputArrayPromotionTests
             OutputValues = new Dictionary<string, object?> { [name] = value },
             OutputConfigs = new List<ScriptOutputConfig>
             {
-                new() { Name = name, TypeName = typeName, DisplayName = name },
+                new() { Name = name, TypeName = typeName },
             },
         };
         return results;

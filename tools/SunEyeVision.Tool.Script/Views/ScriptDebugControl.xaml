@@ -47,7 +47,7 @@
         <!-- ===== 主内容区域（左：变量面板 | 右：代码编辑器+日志）===== -->
         <Grid Grid.Row="1" Margin="0,4,0,0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="400" />
+                <ColumnDefinition Width="450" />
                 <ColumnDefinition Width="5" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>

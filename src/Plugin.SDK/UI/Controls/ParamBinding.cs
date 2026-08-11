@@ -72,7 +72,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 nameof(BindingSource),
                 typeof(string),
                 typeof(ParamBinding),
-                new FrameworkPropertyMetadata(string.Empty, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+                new FrameworkPropertyMetadata(string.Empty,
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
+                    OnBindingSourceChanged));
 
         public static readonly DependencyProperty AvailableDataSourcesProperty =
             DependencyProperty.Register(
@@ -101,6 +103,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 typeof(CornerRadius),
                 typeof(ParamBinding),
                 new PropertyMetadata(new CornerRadius(4)));
+
+        /// <summary>
+        /// 编辑同步开关（契约 C2）：true 时用户编辑显示文本框的内容全文回写 BindingSource。
+        /// 默认 false（保持现状，仅索引同步），零影响其他工具。条件分支等需要"所见即所存"的控件显式开启。
+        /// </summary>
+        public static readonly DependencyProperty SyncEditingToSourceProperty =
+            DependencyProperty.Register(
+                nameof(SyncEditingToSource),
+                typeof(bool),
+                typeof(ParamBinding),
+                new PropertyMetadata(false));
 
         #endregion
 
@@ -196,6 +209,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             set => SetValue(CornerRadiusProperty, value);
         }
 
+        /// <summary>
+        /// 编辑同步开关（契约 C2）：true 时用户编辑显示文本框的内容全文回写 BindingSource。
+        /// </summary>
+        public bool SyncEditingToSource
+        {
+            get => (bool)GetValue(SyncEditingToSourceProperty);
+            set => SetValue(SyncEditingToSourceProperty, value);
+        }
+
         #endregion
 
         #region 事件
@@ -267,6 +289,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         // 私有字段：保存当前数据源集合的引用
         private System.Collections.ObjectModel.ObservableCollection<AvailableDataSource>? _currentDataSources;
 
+        /// <summary>
+        /// 程序回填显示文本抑制标志：true 时 OnBindingDisplayTextChanged 直接返回，不触发编辑回写。
+        /// 用于区分"程序赋值显示名"（绑定选择/解绑/全局变量/数据源刷新/BindingSource 回调）与"用户编辑"，
+        /// 防止程序回填误覆盖 BindingSource（A2 治本）。
+        /// </summary>
+        private bool _isProgrammaticDisplayUpdate;
+
         #endregion
 
         #region 构造函数
@@ -307,6 +336,29 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     control._currentDataSources = null;
                     control.TreeNodes = new System.Collections.ObjectModel.ObservableCollection<TreeNodeData>();
                 }
+            }
+        }
+
+        /// <summary>
+        /// BindingSource 变更回调（契约 C2，单轨模式）：用绑定路径反查中文显示名回填显示位。
+        /// 程序回填显示名时抑制编辑回写，避免误覆盖绑定源（A2/A3 治本）。
+        /// </summary>
+        private static void OnBindingSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is not ParamBinding control || !control.SyncEditingToSource)
+                return;
+
+            var bindingPath = e.NewValue as string;
+            control._isProgrammaticDisplayUpdate = true;
+            try
+            {
+                control.BindingDisplayText = string.IsNullOrEmpty(bindingPath)
+                    ? string.Empty
+                    : control.GenerateBindingDisplayText(bindingPath);
+            }
+            finally
+            {
+                control._isProgrammaticDisplayUpdate = false;
             }
         }
 
@@ -440,7 +492,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 {
                     e.Handled = true;
                     BindingSource = string.Empty;
-                    BindingDisplayText = string.Empty;
+                    _isProgrammaticDisplayUpdate = true;
+                    try
+                    {
+                        BindingDisplayText = string.Empty;
+                    }
+                    finally
+                    {
+                        _isProgrammaticDisplayUpdate = false;
+                    }
                     IsBound = false;
 
                     if (_bindingPopup != null)
@@ -507,7 +567,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 {
                     e.Handled = true;
                     BindingSource = string.Empty;
-                    BindingDisplayText = string.Empty;
+                    _isProgrammaticDisplayUpdate = true;
+                    try
+                    {
+                        BindingDisplayText = string.Empty;
+                    }
+                    finally
+                    {
+                        _isProgrammaticDisplayUpdate = false;
+                    }
                     IsBound = false;
 
                     if (_bindingPopup != null)
@@ -551,7 +619,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 $"[ParamBinding] 选中节点: {leafName}, 父节点: {selectedNode.Parent?.Text ?? "null"}, 根节点: {rootName}",
                 "ParamBinding");
 
-            BindingDisplayText = $"{rootName}.{leafName}";
+            // 程序回填显示名：包抑制标志，避免触发编辑回写误覆盖 BindingSource（A2 治本）。
+            // 单轨模式下 OnBindingSourceChanged 已回填显示文本，此处再赋值保持一致（双轨工具仍靠这里）。
+            _isProgrammaticDisplayUpdate = true;
+            try
+            {
+                BindingDisplayText = $"{rootName}.{leafName}";
+            }
+            finally
+            {
+                _isProgrammaticDisplayUpdate = false;
+            }
 
             RaiseEvent(new RoutedEventArgs(BindingSourceSelectedEvent));
             IsBound = true;
@@ -715,25 +793,59 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         }
 
         /// <summary>
-        /// 显示文本变更事件处理 — 同步数组索引到 BindingSource
+        /// 显示文本变更事件处理 — 同步数组索引到 BindingSource（契约 C2 编辑同步）。
         /// </summary>
         /// <remarks>
-        /// 用户可能将 "直方图数据[]" 编辑为 "直方图数据[0]"
-        /// 需要同步索引到 BindingSource 中的属性路径
+        /// 默认（SyncEditingToSource=false，现状）：仅当编辑含 [N]/[] 索引时同步到 BindingSource，
+        /// 其余情况不更新（保持历史行为，零影响其他工具）。
+        /// SyncEditingToSource=true（契约 C2，条件分支等"所见即所存"控件）：无绑定输常量、或翻译
+        /// 失败（改成了常量文本如 "123"/"OK" 等无法翻译为绑定路径）→ 原文回写 BindingSource，
+        /// 杜绝"先绑定后改常量仍判绑定"的两轨错位（所见 = 所存 = 所解析）。
+        /// 程序回填显示名时（_isProgrammaticDisplayUpdate=true）直接返回，绝不触发编辑回写。
         /// </remarks>
         private void OnBindingDisplayTextChanged(object sender, TextChangedEventArgs e)
         {
-            if (_bindingDisplay == null || string.IsNullOrEmpty(BindingSource))
+            if (_bindingDisplay == null)
+                return;
+
+            // 程序回填显示名 → 不触发编辑回写（A2 治本，防程序赋值误覆盖 BindingSource）
+            if (_isProgrammaticDisplayUpdate)
                 return;
 
             var displayText = _bindingDisplay.Text;
+            var hasBinding = !string.IsNullOrEmpty(BindingSource);
 
             // 从显示文本提取索引
             var bracketStart = displayText.LastIndexOf('[');
             var bracketEnd = displayText.LastIndexOf(']');
+            var hasBracket = bracketStart >= 0 && bracketEnd > bracketStart;
 
-            if (bracketStart < 0 || bracketEnd <= bracketStart)
-                return;  // 无括号，不需要同步
+            // 契约 C2：SyncEditingToSource=true → 无绑定输常量（A1 治本，去 hasBinding 守卫）、
+            // 或有绑定但翻译失败（无有效索引）时原文回写，让用户手输的常量文本直接成为 BindingSource。
+            if (SyncEditingToSource)
+            {
+                if (!hasBracket || !TrySyncIndexToSource(displayText, bracketStart, bracketEnd))
+                {
+                    BindingSource = displayText;
+                }
+                return;
+            }
+
+            // 现状：仅同步含有效索引的编辑
+            if (!hasBinding || !hasBracket)
+                return;
+
+            TrySyncIndexToSource(displayText, bracketStart, bracketEnd);
+        }
+
+        /// <summary>
+        /// 尝试把显示文本中的索引同步到 BindingSource。
+        /// 成功返回 true；无有效索引内容返回 false（用于契约 C2 原文回写判断）。
+        /// </summary>
+        private bool TrySyncIndexToSource(string displayText, int bracketStart, int bracketEnd)
+        {
+            if (string.IsNullOrEmpty(BindingSource))
+                return false;
 
             var indexStr = displayText.Substring(bracketStart + 1, bracketEnd - bracketStart - 1);
 
@@ -741,7 +853,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             // P6：用 IndexOf('.') 只切第一个点，属性路径含点（[0].Geometry.X）时不被截断。
             var dotIndex = BindingSource.IndexOf('.');
             if (dotIndex < 0)
-                return;
+                return false;
             var nodeId = BindingSource[..dotIndex];
             var propertyFullName = BindingSource[(dotIndex + 1)..];
             // P4：提取类型过滤 token 并保留。RoI 分组绑定 "Node1.检测区域[Type=Circle]"，
@@ -755,10 +867,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             else if (int.TryParse(indexStr, out _))
                 indexPart = $"[{indexStr}]";  // [0] [1] 等有效索引
             else
-                return;  // 无效内容 → 不更新
+                return false;  // 无效内容 → 同步失败
 
             var typePart = typeFilter != null ? $"[Type={typeFilter}]" : "";
             BindingSource = $"{nodeId}.{propertyName}{typePart}{indexPart}";
+            return true;
         }
 
         #endregion
@@ -774,7 +887,16 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
             // 绑定源格式：__GlobalVars__.变量名
             BindingSource = $"__GlobalVars__.{variableName}";
-            BindingDisplayText = $"全局变量.{variableName}";
+            // 程序回填显示名：包抑制标志，避免触发编辑回写误覆盖 BindingSource（A2 治本）
+            _isProgrammaticDisplayUpdate = true;
+            try
+            {
+                BindingDisplayText = $"全局变量.{variableName}";
+            }
+            finally
+            {
+                _isProgrammaticDisplayUpdate = false;
+            }
             IsBound = true;
 
             // 触发事件

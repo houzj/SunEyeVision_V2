@@ -119,7 +119,9 @@
             <!-- 内容区域 -->
             <ContentControl Grid.Row="1"
                            x:Name="ContentHost"
-                           Focusable="False"/>
+                           Focusable="False"
+                           HorizontalContentAlignment="Stretch"
+                           VerticalContentAlignment="Stretch"/>
 
             <!-- 底部按钮栏 -->
             <Border Grid.Row="2"

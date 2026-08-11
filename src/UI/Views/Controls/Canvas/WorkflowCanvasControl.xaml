@@ -8,6 +8,7 @@
              xmlns:convertersNode="clr-namespace:SunEyeVision.UI.Converters.Node"
              xmlns:convertersVisibility="clr-namespace:SunEyeVision.UI.Converters.Visibility"
              xmlns:convertersUI="clr-namespace:SunEyeVision.UI.Converters.UI"
+             xmlns:convertersWorkflow="clr-namespace:SunEyeVision.UI.Converters.Workflow"
              xmlns:common="clr-namespace:SunEyeVision.UI.Views.Controls.Common"
              xmlns:rendering="clr-namespace:SunEyeVision.UI.Services.Rendering"
              mc:Ignorable="d"
@@ -43,6 +44,8 @@
         <SolidColorBrush x:Key="NodeHeaderBackground" Color="#0066CC"/>
         <SolidColorBrush x:Key="NodeFooterBackground" Color="#F0F8FF"/>
         <SolidColorBrush x:Key="NodeTextForeground" Color="#0066CC"/>
+        <convertersWorkflow:NodeIconStatusBackgroundConverter x:Key="NodeIconStatusBackgroundConverter"/>
+        <convertersWorkflow:NodeIconStatusForegroundConverter x:Key="NodeIconStatusForegroundConverter"/>
         <SolidColorBrush x:Key="NodeTimeForeground" Color="#666666"/>
         <SolidColorBrush x:Key="NodeBorderBrush" Color="#CCCCCC"/>
         <SolidColorBrush x:Key="NodeBorderBrushSelected" Color="#0066CC"/>
@@ -265,18 +268,22 @@
 
                                 <!-- 节点类型图标（非子程序）/ 子程序设置按钮 -->
                                 <Grid Grid.Column="0">
-                                    <!-- 图标（对子程序节点隐藏） -->
-                                    <TextBlock Text="{Binding Icon}">
-                                        <TextBlock.Style>
-                                            <Style TargetType="TextBlock" BasedOn="{StaticResource NodeIconStyle}">
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding ToolType}" Value="Subroutine">
-                                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </TextBlock.Style>
-                                    </TextBlock>
+                                    <!-- 图标（对子程序节点隐藏）；方案 §6 三态：OK绿/NG红/待运行透明 -->
+                                    <Border CornerRadius="4" Padding="6,2"
+                                            Background="{Binding Status, Converter={StaticResource NodeIconStatusBackgroundConverter}}">
+                                        <TextBlock Text="{Binding Icon}"
+                                                   Foreground="{Binding Status, Converter={StaticResource NodeIconStatusForegroundConverter}}">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock" BasedOn="{StaticResource NodeIconStyle}">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding ToolType}" Value="Subroutine">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </Border>
 
                                     <!-- 子程序设置按钮（仅 Subroutine 类型节点可见，替换图标显示） -->
                                     <Button Content="⚙"

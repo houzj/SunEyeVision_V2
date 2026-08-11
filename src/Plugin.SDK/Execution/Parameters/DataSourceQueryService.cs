@@ -212,6 +212,39 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         }
 
         /// <inheritdoc/>
+        public List<ParentNodeInfo> GetChildNodes(string nodeId)
+        {
+            var childNodes = new List<ParentNodeInfo>();
+
+            if (_connectionProvider == null)
+            {
+                // 如果没有连接提供者，返回空列表
+                return childNodes;
+            }
+
+            // 获取直接下游节点ID列表（画布连接驱动：Connection.SourceNodeId == 当前节点）
+            var childNodeIds = _connectionProvider.GetChildNodeIds(nodeId);
+
+            int order = 0;
+
+            foreach (var childNodeId in childNodeIds)
+            {
+                var nodeInfo = new ParentNodeInfo
+                {
+                    NodeId = childNodeId,
+                    NodeName = _nodeInfoProvider?.GetNodeName(childNodeId) ?? childNodeId,
+                    NodeType = _nodeInfoProvider?.GetNodeType(childNodeId) ?? "Unknown",
+                    NodeIcon = _nodeInfoProvider?.GetNodeIcon(childNodeId),
+                    ConnectionOrder = order++
+                };
+
+                childNodes.Add(nodeInfo);
+            }
+
+            return childNodes;
+        }
+
+        /// <inheritdoc/>
         public List<AvailableDataSource> GetAvailableDataSources(string nodeId, Type? targetType = null)
         {
             // 获取父节点

@@ -4,86 +4,198 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
-        xmlns:commands="clr-namespace:SunEyeVision.Plugin.SDK.Commands;assembly=SunEyeVision.Plugin.SDK"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:local="clr-namespace:SunEyeVision.Tool.Condition.Views"
         mc:Ignorable="d"
-        d:DesignHeight="300" d:DesignWidth="380"
-        Width="380" Height="300"
-        DataContext="{Binding Parameters, RelativeSource={RelativeSource Self}}">
+        d:DesignHeight="560" d:DesignWidth="960"
+        HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
 
     <controls:ToolDebugControlBase.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.SDK;component/UI/Themes/Generic.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+            <local:ConditionTypeConverter x:Key="ConditionTypeConverter"/>
+            <!-- String 占位符：紧凑居中符号（不撑满列宽），仅 String 规则显示 -->
+            <Style x:Key="StringPlaceholderTextStyle" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="Foreground" Value="#FF9AA0A6"/>
+                <Setter Property="HorizontalAlignment" Value="Center"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="Visibility" Value="Collapsed"/>
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding RuleType}" Value="String">
+                        <Setter Property="Visibility" Value="Visible"/>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+            <Style TargetType="Button">
+                <Setter Property="Padding" Value="6,2"/>
+                <Setter Property="FontSize" Value="12"/>
+                <Setter Property="Cursor" Value="Hand"/>
+            </Style>
+            <Style TargetType="DataGrid">
+                <Setter Property="AutoGenerateColumns" Value="False"/>
+                <Setter Property="CanUserAddRows" Value="False"/>
+                <Setter Property="RowHeaderWidth" Value="0"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+                <Setter Property="HeadersVisibility" Value="Column"/>
+                <Setter Property="FontSize" Value="11"/>
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="RowHeight" Value="34"/>
+            </Style>
+            <Style TargetType="DataGridColumnHeader">
+                <Setter Property="Background" Value="#FFF0F0F0"/>
+                <Setter Property="Foreground" Value="#FF000000"/>
+                <Setter Property="BorderBrush" Value="#FFD0D0D0"/>
+                <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                <Setter Property="Padding" Value="4,2"/>
+                <Setter Property="Height" Value="28"/>
+            </Style>
+            <Style TargetType="DataGridRow">
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="BorderBrush" Value="#FFE8E8E8"/>
+                <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                <Setter Property="MinHeight" Value="34"/>
+            </Style>
+            <Style TargetType="DataGridCell">
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Padding" Value="4,0"/>
+            </Style>
         </ResourceDictionary>
     </controls:ToolDebugControlBase.Resources>
 
-    <Grid Margin="12">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
+    <StackPanel Margin="12">
+        <!-- 规则表格：高度随行数自适应，超过 MaxHeight 后表格内部滚动（表头固定、虚拟化保留） -->
+        <DataGrid ItemsSource="{Binding Parameters.Rules, RelativeSource={RelativeSource AncestorType=controls:ToolDebugControlBase}}"
+                  MaxHeight="450">
+            <DataGrid.Columns>
+                <!-- 名称（只读，圆角标签样式） -->
+                <DataGridTemplateColumn Header="名称" Width="80">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Border Background="#FFE8EFF7" CornerRadius="3" Padding="8,3"
+                                    HorizontalAlignment="Left" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold"
+                                           Foreground="#FF2B579A" FontSize="11"/>
+                            </Border>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <!-- 条件：ParamBinding（绑定/常量，SyncEditingToSource=True 契约 C2） -->
+                <DataGridTemplateColumn Header="条件" Width="200">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <controls:ParamBinding
+                                AvailableDataSources="{Binding RelativeSource={RelativeSource AncestorType=controls:ToolDebugControlBase}, Path=AvailableDataSources}"
+                                DataType="{Binding RuleType, Converter={StaticResource ConditionTypeConverter}}"
+                                BindingSource="{Binding InputText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                SyncEditingToSource="True"
+                                ParameterName="{Binding Name}"
+                                Height="28"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <!-- 有效值范围：RangeInputControl（string 隐藏并显示占位符符号） -->
+                <DataGridTemplateColumn Header="有效值范围" Width="280">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Grid VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal">
+                                    <StackPanel.Style>
+                                        <Style TargetType="StackPanel">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding RuleType}" Value="String">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </StackPanel.Style>
+                                    <controls:RangeInputControl
+                                        MinValue="{Binding MinValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                        MaxValue="{Binding MaxValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                        ShowSlider="False"
+                                        NumericWidth="80"
+                                        Height="28"/>
+                                </StackPanel>
+                                <TextBlock Text="—" Style="{StaticResource StringPlaceholderTextStyle}"/>
+                            </Grid>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <!-- 判断：ParamComboBox OK/NG（string 隐藏并显示占位符符号） -->
+                <DataGridTemplateColumn Header="判断" Width="80">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Grid VerticalAlignment="Center">
+                                <controls:ParamComboBox
+                                    ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=controls:ToolDebugControlBase}, Path=JudgmentOptions}"
+                                    SelectedItem="{Binding Judgment, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    Height="28">
+                                    <controls:ParamComboBox.Style>
+                                        <!-- BasedOn 隐式样式: 保留 SDK 模板, 否则显式 Style 覆盖隐式模板导致控件空白 -->
+                                        <Style TargetType="controls:ParamComboBox"
+                                               BasedOn="{StaticResource {x:Type controls:ParamComboBox}}">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding RuleType}" Value="String">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </controls:ParamComboBox.Style>
+                                </controls:ParamComboBox>
+                                <TextBlock Text="—" Style="{StaticResource StringPlaceholderTextStyle}"/>
+                            </Grid>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <!-- 目标：ParamComboBox（GetChildNodes 画布下游） -->
+                <DataGridTemplateColumn Header="目标" Width="180">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <controls:ParamComboBox
+                                ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=controls:ToolDebugControlBase}, Path=ChildNodeOptions}"
+                                DisplayMemberPath="NodeName"
+                                SelectedValuePath="NodeId"
+                                SelectedValue="{Binding ExecutionModuleId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                Height="28"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <!-- 操作：删除 -->
+                <DataGridTemplateColumn Header="操作" Width="40">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Content="&#x2715;" Click="DeleteRule_Click"
+                                    Width="24" Height="22" Padding="0"
+                                    Background="#FFF0F0F0" Foreground="#FFCC0000"
+                                    BorderThickness="0" FontSize="12"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
 
-        <TextBlock Grid.Row="0" Text="Condition rule configuration" FontWeight="SemiBold" Margin="0,0,0,8"/>
-
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <ItemsControl ItemsSource="{Binding Rules}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Border BorderBrush="#D0D0D0" BorderThickness="1" Margin="0,2" Padding="8" CornerRadius="4" Background="#FAFAFA">
-                            <StackPanel>
-                                <Grid Margin="0,0,0,6">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="Name:" VerticalAlignment="Center" Margin="0,0,6,0" Foreground="#666"/>
-                                    <TextBox Grid.Column="1" Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Height="24"/>
-                                    <ComboBox Grid.Column="2" SelectedItem="{Binding Judgment, Mode=TwoWay}" Width="55" Height="24" Margin="6,0,0,0">
-                                        <sys:String>OK</sys:String>
-                                        <sys:String>NG</sys:String>
-                                    </ComboBox>
-                                </Grid>
-                                <Grid Margin="0,2,0,0">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="Range:" VerticalAlignment="Center" Margin="0,0,6,0" Foreground="#666"/>
-                                    <TextBox Grid.Column="1" Text="{Binding MinValue, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Height="24"/>
-                                    <TextBlock Grid.Column="2" Text=" ~ " VerticalAlignment="Center" Margin="2,0" Foreground="#999"/>
-                                    <TextBox Grid.Column="3" Text="{Binding MaxValue, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Height="24"/>
-                                </Grid>
-                                <Grid Margin="0,4,0,0">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="Target:" VerticalAlignment="Center" Margin="0,0,6,0" Foreground="#666"/>
-                                    <TextBox Grid.Column="1" Text="{Binding ExecutionModuleId, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Height="24"/>
-                                </Grid>
-                            </StackPanel>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ScrollViewer>
-
-        <StackPanel Grid.Row="2" Margin="0,8,0,0">
-            <Separator/>
-            <Grid Margin="0,6,0,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="Default module:" VerticalAlignment="Center" Margin="0,0,6,0" Foreground="#666"/>
-                <TextBox Grid.Column="1" Text="{Binding DefaultExecutionModuleId, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Height="24"/>
-            </Grid>
-        </StackPanel>
-    </Grid>
+        <!-- 底部：类型下拉 + 新增规则（紧跟表格，随表格一起自适应） -->
+        <Border Margin="0,8,0,0"
+                BorderBrush="#D0D0D0" BorderThickness="0,1,0,0"
+                Background="#FAFAFA" Padding="4,4">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="类型:" VerticalAlignment="Center" Foreground="#666" Margin="0,0,6,0"/>
+                <ComboBox x:Name="TypeCombo" Height="26" MinWidth="90" VerticalAlignment="Center">
+                    <sys:String>Int</sys:String>
+                    <sys:String>Double</sys:String>
+                    <sys:String>String</sys:String>
+                </ComboBox>
+                <Button Content="+ 新增规则" Height="26" Margin="6,0,0,0"
+                        Click="AddRule_Click"
+                        Background="#4CAF50" Foreground="White"
+                        BorderThickness="0" FontWeight="Bold" FontSize="12"/>
+            </StackPanel>
+        </Border>
+    </StackPanel>
 </controls:ToolDebugControlBase>

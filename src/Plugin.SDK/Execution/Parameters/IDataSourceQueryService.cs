@@ -116,6 +116,15 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         List<ParentNodeInfo> GetParentNodes(string nodeId);
 
         /// <summary>
+        /// 获取直接下游节点列表（画布连接驱动）。
+        /// 用于条件分支工具"目标节点"下拉：返回 Connection.SourceNodeId == 当前节点的所有 Target 节点。
+        /// 与 GetParentNodes 对称。
+        /// </summary>
+        /// <param name="nodeId">当前节点ID</param>
+        /// <returns>直接下游节点信息列表</returns>
+        List<ParentNodeInfo> GetChildNodes(string nodeId);
+
+        /// <summary>
         /// 获取可用数据源
         /// </summary>
         /// <param name="nodeId">当前节点ID</param>

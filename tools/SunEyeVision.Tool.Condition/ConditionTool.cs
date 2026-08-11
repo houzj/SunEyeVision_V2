@@ -9,11 +9,11 @@ namespace SunEyeVision.Tool.Condition
     [Tool(
         id: "Condition",
         displayName: "条件分支",
-        Description = "根据参数绑定值判断条件，选择执行分支",
+        Description = "根据参数值判断条件，选择执行分支",
         Icon = "\U0001F500",
         Category = "工作流控制",
         Version = "1.0.0",
-        HasDebugWindow = false
+        HasDebugWindow = true
     )]
     public class ConditionTool : IToolPlugin<ConditionParameters, ConditionResults>
     {
@@ -32,109 +32,115 @@ namespace SunEyeVision.Tool.Condition
                 Timestamp = DateTime.Now
             };
 
-            try
+            if (parameters.Rules == null || parameters.Rules.Count == 0)
             {
-                if (parameters.Rules == null || parameters.Rules.Count == 0)
-                {
-                    parameters.LogInfo("条件分支未配置任何规则，所有分支将被跳过");
-                    result.NextNodeId = parameters.DefaultExecutionModuleId;
-                    result.MatchedRuleName = "默认";
-                    result.IsMatched = false;
-                    sw.Stop();
-                    result.SetSuccess(sw.ElapsedMilliseconds);
-                    return result;
-                }
-
-                parameters.LogInfo($"开始评估条件分支，共 {parameters.Rules.Count} 条规则");
-
-                foreach (var rule in parameters.Rules)
-                {
-                    if (string.IsNullOrEmpty(rule.ExecutionModuleId))
-                    {
-                        parameters.LogWarning($"规则 '{rule.Name}' 未配置执行模块ID，跳过");
-                        continue;
-                    }
-
-                    object? rawValue = null;
-                    if (rule.InputBinding?.CurrentValue != null)
-                    {
-                        rawValue = rule.InputBinding.CurrentValue;
-                    }
-
-                    if (rawValue == null)
-                    {
-                        parameters.LogInfo($"规则 '{rule.Name}' 输入值为空，跳过");
-                        continue;
-                    }
-
-                    // 按类型匹配
-                    bool matched = TryMatchRule(rule, rawValue, parameters);
-
-                    parameters.LogInfo($"规则 '{rule.Name}': 输入值类型={rawValue.GetType().Name}, 值={rawValue}, 匹配={matched}");
-
-                    if (matched)
-                    {
-                        result.NextNodeId = rule.ExecutionModuleId;
-                        result.MatchedRuleName = rule.Name;
-                        result.IsMatched = true;
-                        parameters.LogSuccess($"条件匹配: 规则='{rule.Name}', 目标节点ID='{rule.ExecutionModuleId}'");
-                        sw.Stop();
-                        result.SetSuccess(sw.ElapsedMilliseconds);
-                        return result;
-                    }
-                }
-
-                result.NextNodeId = parameters.DefaultExecutionModuleId;
-                result.MatchedRuleName = result.NextNodeId != null ? "默认" : "无匹配";
+                parameters.LogInfo("条件分支未配置任何规则，流程终止（不执行任何分支）");
+                result.NextNodeId = null;
+                result.MatchedRuleName = null;
                 result.IsMatched = false;
-                parameters.LogInfo($"无规则匹配，使用默认执行模块ID: {result.NextNodeId ?? "无（跳过所有分支）"}");
-
                 sw.Stop();
                 result.SetSuccess(sw.ElapsedMilliseconds);
                 return result;
             }
-            catch (Exception ex)
+
+            parameters.LogInfo($"开始评估条件分支，共 {parameters.Rules.Count} 条规则");
+
+            foreach (var rule in parameters.Rules)
             {
-                sw.Stop();
-                parameters.LogError($"条件分支执行异常: {ex.Message}", ex);
-                result.SetError($"条件分支异常: {ex.Message}", ex);
-                return result;
+                if (string.IsNullOrEmpty(rule.ExecutionModuleId))
+                {
+                    parameters.LogWarning($"规则 '{rule.Name}' 未配置目标节点（ExecutionModuleId），跳过");
+                    continue;
+                }
+
+                // 解析输入值：绑定模式委托 OutputVariableResolver，常量模式按 RuleType 转换
+                var inputValue = ConditionInputResolver.Resolve(
+                    rule.InputText, rule.RuleType, rule.Name, parameters.NodeResults);
+
+                var matched = TryMatchRule(rule, inputValue, parameters);
+
+                parameters.LogInfo($"规则 '{rule.Name}': 类型={rule.RuleType}, 输入={inputValue}, 匹配={matched}");
+
+                if (matched)
+                {
+                    result.NextNodeId = rule.ExecutionModuleId;
+                    result.MatchedRuleName = rule.Name;
+                    result.IsMatched = true;
+                    parameters.LogSuccess($"条件匹配: 规则='{rule.Name}', 目标节点ID='{rule.ExecutionModuleId}'");
+                    sw.Stop();
+                    result.SetSuccess(sw.ElapsedMilliseconds);
+                    return result;
+                }
             }
+
+            // 全部未命中 → 流程终止（对齐 VisionMaster，无默认分支）
+            result.NextNodeId = null;
+            result.MatchedRuleName = null;
+            result.IsMatched = false;
+            parameters.LogInfo("无规则匹配，流程终止（不执行任何分支）");
+
+            sw.Stop();
+            result.SetSuccess(sw.ElapsedMilliseconds);
+            return result;
         }
 
         /// <summary>
-        /// 尝试匹配规则，支持数值比较、字符串精确匹配、bool 匹配。
-        /// 不匹配时返回 false（但不会静默吞异常——类型转换失败会向上抛）。
+        /// 按规则类型匹配输入值。
+        /// Int/Double：数值在 [MinValue, MaxValue] 内且 Judgment=OK（或范围外且 NG）→ 命中。
+        /// String：输入值有效（非 null）即命中（忽略范围/判断）。
+        /// 类型不匹配 / 无法转换 → 抛异常（rule-015，不静默）。
         /// </summary>
-        private static bool TryMatchRule(ConditionRule rule, object rawValue, ConditionParameters parameters)
+        private static bool TryMatchRule(ConditionRule rule, object? inputValue, ConditionParameters parameters)
         {
-            // 1. 数值匹配（IConvertible → double）
-            if (rawValue is IConvertible convertible)
+            switch (rule.RuleType)
             {
-                double numValue = convertible.ToDouble(null);
-                bool inRange = numValue >= rule.MinValue && numValue <= rule.MaxValue;
-                bool matched = (rule.Judgment == "OK" && inRange) ||
-                               (rule.Judgment == "NG" && !inRange);
-                parameters.LogInfo($"规则 '{rule.Name}': 数值匹配, 输入={numValue}, 范围=[{rule.MinValue},{rule.MaxValue}], 判断={rule.Judgment}, 匹配={matched}");
-                return matched;
-            }
+                case "Int":
+                case "Double":
+                    if (inputValue == null)
+                    {
+                        parameters.LogInfo($"规则 '{rule.Name}': 输入值为空，不匹配");
+                        return false;
+                    }
+                    // 数值转换：数字类型直接转换，字符串用 InvariantCulture 解析
+                    double numValue;
+                    if (inputValue is IConvertible convertible)
+                    {
+                        numValue = convertible.ToDouble(null);
+                    }
+                    else if (inputValue is string strVal)
+                    {
+                        if (!double.TryParse(strVal, System.Globalization.NumberStyles.Float,
+                            System.Globalization.CultureInfo.InvariantCulture, out numValue))
+                        {
+                            throw new InvalidOperationException(
+                                $"规则 '{rule.Name}' 输入值 \"{strVal}\" 无法转换为数值（RuleType={rule.RuleType}）。");
+                        }
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException(
+                            $"规则 '{rule.Name}' 输入值类型 {inputValue.GetType().Name} 不支持数值比较。支持: 数值、数字字符串。");
+                    }
 
-            // 2. 字符串精确匹配
-            if (rawValue is string strValue)
-            {
-                string minStr = rule.MinValue.ToString();
-                string maxStr = rule.MaxValue.ToString();
-                bool inRange = string.Compare(strValue, minStr, StringComparison.OrdinalIgnoreCase) >= 0 &&
-                               string.Compare(strValue, maxStr, StringComparison.OrdinalIgnoreCase) <= 0;
-                bool matched = (rule.Judgment == "OK" && inRange) ||
-                               (rule.Judgment == "NG" && !inRange);
-                parameters.LogInfo($"规则 '{rule.Name}': 字符串匹配, 值='{strValue}', 范围=[{minStr},{maxStr}], 匹配={matched}");
-                return matched;
-            }
+                    bool inRange = numValue >= rule.MinValue && numValue <= rule.MaxValue;
+                    bool matched = (rule.Judgment == "OK" && inRange) ||
+                                   (rule.Judgment == "NG" && !inRange);
+                    parameters.LogInfo($"规则 '{rule.Name}': 数值匹配, 输入={numValue}, 范围=[{rule.MinValue},{rule.MaxValue}], 判断={rule.Judgment}, 匹配={matched}");
+                    return matched;
 
-            // 3. 类型不匹配—不再静默返回 false，而是让异常向上传播
-            throw new InvalidOperationException(
-                $"规则 '{rule.Name}' 输入值类型 {rawValue.GetType().Name} 不支持条件比较。支持的类型: 数值、字符串");
+                case "String":
+                    if (inputValue == null)
+                    {
+                        parameters.LogInfo($"规则 '{rule.Name}': 字符串输入值为空，不匹配");
+                        return false;
+                    }
+                    parameters.LogInfo($"规则 '{rule.Name}': 字符串规则, 输入值有效='{inputValue}', 命中");
+                    return true;
+
+                default:
+                    throw new NotSupportedException(
+                        $"规则 '{rule.Name}' 的类型 '{rule.RuleType}' 不支持。可用类型: Int / Double / String。");
+            }
         }
     }
 }

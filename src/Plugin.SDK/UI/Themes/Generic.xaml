@@ -4,7 +4,13 @@
                     xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls"
                     xmlns:converters="clr-namespace:SunEyeVision.Plugin.SDK.UI.Converters"
                     xmlns:metadata="clr-namespace:SunEyeVision.Plugin.SDK.Metadata"
-                    xmlns:themes="clr-namespace:SunEyeVision.Plugin.SDK.UI.Themes">
+                    xmlns:themes="clr-namespace:SunEyeVision.Plugin.SDK.UI.Themes"
+                    xmlns:constants="clr-namespace:SunEyeVision.Plugin.SDK.UI.Constants;assembly=SunEyeVision.Plugin.SDK">
+
+    <!-- 颜色/主题资源 - 统一引用 Colors.xaml（ColorConstants.cs 单一事实源） -->
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="Colors.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
 
     <!-- 转换器 -->
     <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
@@ -19,17 +25,24 @@
     <!-- 效果定义 -->
     <DropShadowEffect x:Key="PopupShadowEffect" Color="Black" BlurRadius="6" ShadowDepth="2" Direction="270" Opacity="0.15"/>
 
-    <!-- 颜色定义 -->
-    <SolidColorBrush x:Key="PrimaryBrush" Color="#1890FF"/>
-    <SolidColorBrush x:Key="PrimaryHoverBrush" Color="#40A9FF"/>
-    <SolidColorBrush x:Key="BorderBrush" Color="#D9D9D9"/>
-    <SolidColorBrush x:Key="BackgroundBrush" Color="#FAFAFA"/>
-    <SolidColorBrush x:Key="PanelBackgroundBrush" Color="#FFFFFF"/>
-    <SolidColorBrush x:Key="PanelHoverBrush" Color="#F5F5F5"/>
-    <SolidColorBrush x:Key="LabelBrush" Color="#333333"/>
-    <SolidColorBrush x:Key="LabelSecondaryBrush" Color="#666666"/>
-    <SolidColorBrush x:Key="ErrorBrush" Color="#FF4D4F"/>
-    <SolidColorBrush x:Key="SuccessBrush" Color="#52C41A"/>
+    <!-- ================================================================ -->
+    <!-- 颜色定义补充 - 主色/悬停/边框/背景同名词典由 Colors.xaml 提供      -->
+    <!-- （Primary=#0066CC）。面板/标签语义色对齐 Colors.xaml 词汇表，      -->
+    <!-- 经 x:Static 引用 ColorConstants。禁止在此字典硬编码颜色值。       -->
+    <!-- ================================================================ -->
+
+    <!-- 面板背景（浅灰底，覆盖 merged 的白色 BackgroundBrush） -->
+    <SolidColorBrush x:Key="BackgroundBrush" Color="{x:Static constants:ColorConstants.BackgroundGray}"/>
+    <!-- 面板白底 -->
+    <SolidColorBrush x:Key="PanelBackgroundBrush" Color="{x:Static constants:ColorConstants.Background}"/>
+    <!-- 面板悬停浅灰 -->
+    <SolidColorBrush x:Key="PanelHoverBrush" Color="{x:Static constants:ColorConstants.BackgroundHover}"/>
+    <!-- 正文色（对齐 Colors.xaml TextPrimaryBrush） -->
+    <SolidColorBrush x:Key="LabelBrush" Color="{x:Static constants:ColorConstants.TextPrimary}"/>
+    <!-- 次要文字色（对齐 Colors.xaml TextSecondaryBrush） -->
+    <SolidColorBrush x:Key="LabelSecondaryBrush" Color="{x:Static constants:ColorConstants.TextSecondary}"/>
+    <!-- 主色选中高亮（19% 透明主色，节点选中背景） -->
+    <SolidColorBrush x:Key="PrimarySelectedBrush" Color="{x:Static constants:ColorConstants.Primary}" Opacity="0.19"/>
 
     <!-- 展开图标 Path -->
     <PathGeometry x:Key="TreeExpanderPath"
@@ -592,7 +605,7 @@
         <Setter Property="SwitchHeight" Value="22"/>
         <Setter Property="CornerRadius" Value="11"/>
         <Setter Property="OnBackground" Value="#FF7F00"/>
-        <Setter Property="OffBackground" Value="#D9D9D9"/>
+        <Setter Property="OffBackground" Value="{DynamicResource BorderBrush}"/>
         <Setter Property="ThumbColor" Value="White"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Background" Value="Transparent"/>
@@ -1577,7 +1590,7 @@
                                                                 <!-- 选中效果 -->
                                                                 <Trigger Property="IsSelected" Value="True">
                                                                     <Setter TargetName="ContentBorder" Property="Background" 
-                                                                            Value="#191890FF"/>
+                                                                            Value="{StaticResource PrimarySelectedBrush}"/>
                                                                 </Trigger>
                                                             </ControlTemplate.Triggers>
                                                             </ControlTemplate>

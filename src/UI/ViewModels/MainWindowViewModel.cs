@@ -58,7 +58,7 @@ namespace SunEyeVision.UI.ViewModels
     /// <summary>
     /// 主窗口视图模型
     /// </summary>
-    public class MainWindowViewModel : ViewModelBase
+    public class MainWindowViewModel : ViewModelBase, Services.Workflow.INodeResultSink, Services.IRootCoordinator
     {
         private string _title = "太阳眼视觉";
         private bool _isRunning = false;
@@ -96,11 +96,29 @@ namespace SunEyeVision.UI.ViewModels
         // 执行管理
         private readonly WorkflowExecutionManager _executionManager;
 
-        // 工作流上下文字典（按工作流ID索引，每个工作流独立存储执行结果）
-        private readonly Dictionary<string, WorkflowContext> _workflowContexts = new();
+        // 图像结果子 VM（就近绑定右侧图像结果区）
+        private readonly ViewModels.ImageResultViewModel _imageResult;
 
-        // 运行时参数存储
-        private readonly Dictionary<string, object> _runtimeParameters = new();
+        // 状态栏子 VM（就近绑定底部状态栏）
+        private readonly ViewModels.StatusBarViewModel _statusBar;
+
+        // 顶部标题栏子 VM（就近绑定顶部菜单+工具栏）
+        private readonly ViewModels.ShellTopBarViewModel _topBar;
+
+        // 工作区子 VM（就近绑定中间工作区）
+        private readonly ViewModels.WorkspaceViewModel _workspace;
+
+        // 图像显示数据源集合（与图像结果子 VM 共享同一实例）
+        private readonly ObservableCollection<AvailableDataSource> _displayImageSources = new();
+
+        // 扁平化结果行集合（与图像结果子 VM 共享同一实例）
+        private readonly ObservableCollection<FlatResultRow> _flatResultRows = new();
+
+        // 运行时参数服务（编辑态 UI 层运行时参数）
+        private readonly Services.IRuntimeParameterService _runtimeParameterService;
+
+        // 工作流上下文服务（按工作流ID缓存独立执行上下文）
+        private readonly Services.IWorkflowContextService _workflowContextService;
 
         // 节点结果管理
         private readonly Services.Workflow.NodeResultManager _nodeResultManager;
@@ -163,6 +181,11 @@ namespace SunEyeVision.UI.ViewModels
         }
 
         /// <summary>
+        /// 工作流数量（跨域共享，状态栏显示）
+        /// </summary>
+        public int WorkflowCount => WorkflowTabViewModel?.Tabs?.Count ?? 0;
+
+        /// <summary>
         /// 当前画布类型显示文本
         /// </summary>
         public string CurrentCanvasTypeText
@@ -187,21 +210,44 @@ namespace SunEyeVision.UI.ViewModels
         /// </summary>
         public Models.ImageInputSource? ActiveInputSource
         {
-            get => _activeInputSource;
-            private set
-            {
-                if (ReferenceEquals(_activeInputSource, value))
-                {
-                    return;
-                }
-                SetProperty(ref _activeInputSource, value);
-            }
+            get => _imageResult.ActiveInputSource;
+            private set => _imageResult.ActiveInputSource = value;
         }
 
         /// <summary>
         /// 图像显示控件的数据源（当前节点 + 所有父节点）
         /// </summary>
-        public ObservableCollection<AvailableDataSource> DisplayImageSources { get; }
+        /// <summary>
+        /// 图像结果子 VM（就近绑定右侧图像结果区）
+        /// </summary>
+        public ViewModels.ImageResultViewModel ImageResult => _imageResult;
+
+        /// <summary>
+        /// 状态栏子 VM（就近绑定底部状态栏）
+        /// </summary>
+        public ViewModels.StatusBarViewModel StatusBar => _statusBar;
+
+        /// <summary>
+        /// 顶部标题栏子 VM（就近绑定顶部菜单+工具栏）
+        /// </summary>
+        public ViewModels.ShellTopBarViewModel TopBar => _topBar;
+
+        /// <summary>
+        /// 工作区子 VM（就近绑定中间工作区）
+        /// </summary>
+        public ViewModels.WorkspaceViewModel Workspace => _workspace;
+
+        // ===== IRootCoordinator 显式实现（类型不匹配的成员）=====
+
+        object Services.IRootCoordinator.SelectedTab
+        {
+            get => WorkflowTabViewModel.SelectedTab!;
+            set => WorkflowTabViewModel.SelectedTab = (WorkflowTabViewModel)value;
+        }
+
+        System.Collections.IList Services.IRootCoordinator.Tabs => WorkflowTabViewModel.Tabs;
+
+        public ObservableCollection<AvailableDataSource> DisplayImageSources => _displayImageSources;
 
         /// <summary>
         /// 当前选中的图像显示源索引
@@ -209,22 +255,28 @@ namespace SunEyeVision.UI.ViewModels
         private int _selectedDisplayImageSourceIndex = -1;
 
         /// <summary>
-        /// 当前选中的图像显示源索引
+        /// 当前选中的图像显示源索引（由图像结果子 VM 承载）
         /// </summary>
         public int SelectedDisplayImageSourceIndex
         {
-            get => _selectedDisplayImageSourceIndex;
+            get => _imageResult.SelectedDisplayImageSourceIndex;
             set
             {
-                if (SetProperty(ref _selectedDisplayImageSourceIndex, value))
-                {
-                    var sourceInfo = (value >= 0 && value < DisplayImageSources.Count)
-                        ? DisplayImageSources[value].ToString()
-                        : "无效索引/空集合";
-                    LogInfo($"图像源|SelectedIndex变更: {value} ({sourceInfo}), Count={DisplayImageSources.Count}", "ImageSourceSelector");
-                    UpdateDisplayImageFromCurrentSource();
-                }
+                _selectedDisplayImageSourceIndex = value;
+                _imageResult.SelectedDisplayImageSourceIndex = value;
             }
+        }
+
+        /// <summary>
+        /// 图像显示源索引变化回调（实现 IRootCoordinator，由图像结果子 VM 触发）
+        /// </summary>
+        public void OnSelectedImageSourceIndexChanged(int index)
+        {
+            var sourceInfo = (index >= 0 && index < DisplayImageSources.Count)
+                ? DisplayImageSources[index].ToString()
+                : "无效索引/空集合";
+            LogInfo($"图像源|SelectedIndex变更: {index} ({sourceInfo}), Count={DisplayImageSources.Count}", "ImageSourceSelector");
+            UpdateDisplayImageFromCurrentSource();
         }
 
         // ========== 数据分析控件相关 ==========
@@ -399,20 +451,14 @@ namespace SunEyeVision.UI.ViewModels
         // 图像显示相关
         public BitmapSource? DisplayImage
         {
-            get => _displayImage;
-            set => SetProperty(ref _displayImage, value);
+            get => _imageResult.DisplayImage;
+            set => _imageResult.DisplayImage = value;
         }
 
         public double ImageScale
         {
-            get => _imageScale;
-            set
-            {
-                if (SetProperty(ref _imageScale, value))
-                {
-                    OnPropertyChanged(nameof(DisplayImage));
-                }
-            }
+            get => _imageResult.ImageScale;
+            set => _imageResult.ImageScale = value;
         }
 
 
@@ -421,14 +467,8 @@ namespace SunEyeVision.UI.ViewModels
         /// </summary>
         public bool ShowImagePreview
         {
-            get => _showImagePreview;
-            set
-            {
-if (SetProperty(ref _showImagePreview, value))
-                {
-OnPropertyChanged(nameof(ImagePreviewHeight));
-                }
-            }
+            get => _imageResult.ShowImagePreview;
+            set => _imageResult.ShowImagePreview = value;
         }
 
         /// <summary>
@@ -436,7 +476,7 @@ OnPropertyChanged(nameof(ImagePreviewHeight));
         /// </summary>
         public GridLength ImagePreviewHeight
         {
-            get => ShowImagePreview ? new GridLength(60) : new GridLength(0);
+            get => _imageResult.ImagePreviewHeight;
         }
 
         /// <summary>
@@ -450,17 +490,17 @@ OnPropertyChanged(nameof(ImagePreviewHeight));
         public ObservableCollection<ModuleResultNode> ModuleResultTree { get; } = new();
 
         /// <summary>
-        /// 扁平化结果行列表（用于 DataGrid 绑定）
+        /// 扁平化结果行列表（用于 DataGrid 绑定，与图像结果子 VM 共享同一集合实例）
         /// </summary>
-        public ObservableCollection<FlatResultRow> FlatResultRows { get; } = new();
+        public ObservableCollection<FlatResultRow> FlatResultRows => _flatResultRows;
 
         /// <summary>
         /// 是否有模块结果（用于空状态显示）
         /// </summary>
         public bool HasModuleResults
         {
-            get => _hasModuleResults;
-            internal set => SetProperty(ref _hasModuleResults, value);
+            get => _imageResult.HasModuleResults;
+            set => _imageResult.HasModuleResults = value;
         }
 
         public string LogText
@@ -769,8 +809,22 @@ SplitterPosition = position;
             // 初始化图像集合（优化版）
             ImageCollection = new BatchObservableCollection<ImageInfo>();
 
-            // 初始化图像显示数据源
-            DisplayImageSources = new ObservableCollection<AvailableDataSource>();
+            // 初始化共享基础设施服务
+            _runtimeParameterService = new Services.RuntimeParameterService();
+            _workflowContextService = new Services.WorkflowContextService();
+
+            // 初始化图像结果子 VM（就近绑定右侧图像结果区，共享数据源/结果行集合）
+            _imageResult = new ViewModels.ImageResultViewModel(this);
+            _imageResult.AttachCollections(_displayImageSources, _flatResultRows);
+
+            // 初始化状态栏子 VM（就近绑定底部状态栏）
+            _statusBar = new ViewModels.StatusBarViewModel(this);
+
+            // 初始化顶部标题栏子 VM（就近绑定顶部菜单+工具栏）
+            _topBar = new ViewModels.ShellTopBarViewModel(this);
+
+            // 初始化工作区子 VM（就近绑定中间工作区）
+            _workspace = new ViewModels.WorkspaceViewModel(this);
 
             // 初始化工作流引擎
             _logger = VisionLogger.Instance;
@@ -889,17 +943,7 @@ SplitterPosition = position;
                 var selectedTab = WorkflowTabViewModel?.SelectedTab;
                 if (selectedTab == null) return null;
 
-                if (!_workflowContexts.TryGetValue(selectedTab.Id, out var ctx))
-                {
-                    ctx = new WorkflowContext
-                    {
-                        WorkflowId = selectedTab.Id,
-                        WorkflowName = selectedTab.Name,
-                        ExecutionStartTime = DateTime.Now
-                    };
-                    _workflowContexts[selectedTab.Id] = ctx;
-                }
-                return ctx;
+                return _workflowContextService.GetOrCreate(selectedTab.Id, selectedTab.Name);
             }
         }
 
@@ -1961,7 +2005,7 @@ SplitterPosition = position;
         /// <param name="value">参数值</param>
         public void SetRuntimeParameter<T>(string key, T value)
         {
-            _runtimeParameters[key] = value!;
+            _runtimeParameterService.Set(key, value);
             AddLog($"📝 运行时参数已设置: {key} = {value}");
         }
 
@@ -1973,9 +2017,7 @@ SplitterPosition = position;
         /// <returns>参数值</returns>
         public T? GetRuntimeParameter<T>(string key)
         {
-            if (_runtimeParameters.TryGetValue(key, out var value) && value is T typed)
-                return typed;
-            return default;
+            return _runtimeParameterService.Get<T>(key);
         }
 
         /// <summary>
@@ -1984,7 +2026,7 @@ SplitterPosition = position;
         /// <returns>运行时参数字典</returns>
         public Dictionary<string, object> GetAllRuntimeParameters()
         {
-            return new Dictionary<string, object>(_runtimeParameters);
+            return _runtimeParameterService.GetAll();
         }
 
         /// <summary>
@@ -1992,7 +2034,7 @@ SplitterPosition = position;
         /// </summary>
         public void ClearRuntimeParameters()
         {
-            _runtimeParameters.Clear();
+            _runtimeParameterService.Clear();
         }
 
         #endregion
@@ -3081,15 +3123,15 @@ SplitterPosition = position;
         private void UpdateDisplayImageFromCurrentSource()
         {
             if (_selectedNode == null) return;
-            if (_selectedDisplayImageSourceIndex < 0 ||
-                _selectedDisplayImageSourceIndex >= DisplayImageSources.Count)
+            var index = SelectedDisplayImageSourceIndex;
+            if (index < 0 || index >= DisplayImageSources.Count)
             {
                 // 正常的中间状态（Clear→Deferred 设置期间），最终会被修正
                 return;
             }
 
-            var selectedSource = DisplayImageSources[_selectedDisplayImageSourceIndex];
-            LogInfo($"图像源|应用显示源: index={_selectedDisplayImageSourceIndex}, source={selectedSource.SourceNodeName}.{selectedSource.DisplayName} (SNID={selectedSource.SourceNodeId}, Prop={selectedSource.PropertyName})", "ImageSourceSelector");
+            var selectedSource = DisplayImageSources[index];
+            LogInfo($"图像源|应用显示源: index={index}, source={selectedSource.SourceNodeName}.{selectedSource.DisplayName} (SNID={selectedSource.SourceNodeId}, Prop={selectedSource.PropertyName})", "ImageSourceSelector");
 
             // 持久化：同步到节点的可序列化属性，保存工作流时自动携带
             var workflow = _workflowEngine.CurrentWorkflow;
@@ -3136,10 +3178,10 @@ SplitterPosition = position;
         /// </summary>
         public AvailableDataSource? GetSelectedImageSource()
         {
-            if (_selectedDisplayImageSourceIndex < 0 ||
-                _selectedDisplayImageSourceIndex >= DisplayImageSources.Count)
+            var index = SelectedDisplayImageSourceIndex;
+            if (index < 0 || index >= DisplayImageSources.Count)
                 return null;
-            return DisplayImageSources[_selectedDisplayImageSourceIndex];
+            return DisplayImageSources[index];
         }
 
         /// <summary>
@@ -3148,6 +3190,16 @@ SplitterPosition = position;
         public void SetDisplayImageFromBitmap(BitmapSource bitmapSource)
         {
             DisplayImage = bitmapSource;
+        }
+
+        /// <summary>
+        /// 清空全部结果展示（实现 INodeResultSink）
+        /// </summary>
+        public void ClearResultDisplay()
+        {
+            CalculationResults.Clear();
+            ModuleResultTree.Clear();
+            HasModuleResults = false;
         }
 
         /// <summary>

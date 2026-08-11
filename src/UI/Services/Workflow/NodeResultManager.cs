@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,7 +35,7 @@ namespace SunEyeVision.UI.Services.Workflow
     public class NodeResultManager
     {
         private readonly Func<WorkflowCore.WorkflowContext?> _getContext;
-        private readonly ViewModels.MainWindowViewModel _viewModel;
+        private readonly INodeResultSink _viewModel;
 
         // 结果渲染层引用
         private Plugin.SDK.UI.Controls.ResultRenderLayer? _resultRenderLayer;
@@ -46,7 +46,7 @@ namespace SunEyeVision.UI.Services.Workflow
         // 位置修正矩阵诊断收集（字典 → 单行摘要日志，减少假阳性日志干扰）
         private readonly ConcurrentDictionary<string, string> _correctionDiagnostics = new();
 
-        public NodeResultManager(Func<WorkflowCore.WorkflowContext?> getContext, ViewModels.MainWindowViewModel viewModel)
+        public NodeResultManager(Func<WorkflowCore.WorkflowContext?> getContext, INodeResultSink viewModel)
         {
             _getContext = getContext ?? throw new ArgumentNullException(nameof(getContext));
             _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
@@ -160,9 +160,7 @@ namespace SunEyeVision.UI.Services.Workflow
         /// </summary>
         public void ClearResultDisplay()
         {
-            _viewModel.CalculationResults.Clear();
-            _viewModel.ModuleResultTree.Clear();
-            _viewModel.HasModuleResults = false;
+            _viewModel.ClearResultDisplay();
             _resultRenderLayer?.Clear();
             _resultRenderLayer?.ClearHighlight();
         }

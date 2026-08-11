@@ -211,7 +211,7 @@
                        Text="{Binding SelectedColor, ElementName=ColorPickerDemo, Mode=OneWay, StringFormat=0x{0:X8}}"
                        VerticalAlignment="Center"
                        FontWeight="Medium"
-                       Foreground="#1890FF"/>
+                       Foreground="{StaticResource PrimaryBrush}"/>
                     </Grid>
                 </StackPanel>
             </Border>
@@ -240,7 +240,7 @@
                        Text="{Binding SelectedColor, ElementName=ColorSelectorDemo, Mode=OneWay, StringFormat=0x{0:X8}}"
                        VerticalAlignment="Center"
                        FontWeight="Medium"
-                       Foreground="#1890FF"/>
+                       Foreground="{StaticResource PrimaryBrush}"/>
                     </Grid>
                 </StackPanel>
             </Border>

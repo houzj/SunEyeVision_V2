@@ -29,8 +29,8 @@
     <!-- 圆角半径 - CornerRadius类型（用于Border.CornerRadius） -->
     <CornerRadius x:Key="NodeCornerRadius">6</CornerRadius>
     
-    <!-- 内容边距 -->
-    <Thickness x:Key="NodeContentMargin">12,0,12,0</Thickness>
+    <!-- 内容边距（左 0：让状态色块贴节点左边缘，与参考项目一致） -->
+    <Thickness x:Key="NodeContentMargin">0,0,12,0</Thickness>
     
     <!-- 字体大小 -->
     <sys:Double x:Key="NodeFontSize">13</sys:Double>

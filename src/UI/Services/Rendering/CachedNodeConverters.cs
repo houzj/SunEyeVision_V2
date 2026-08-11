@@ -113,31 +113,22 @@ namespace SunEyeVision.UI.Services.Rendering
     }
 
     /// <summary>
-    /// 缓存版节点边框颜色转换器 - 使用适配器获取边框色，然后使用缓存画刷
+    /// 缓存版节点边框颜色转换器：未选中 → 灰；选中 → 橙。
+    /// 遵循视觉软件行业惯例，默认灰色边框、选中橙色高亮，与虚线选中装饰层一致。
+    /// 绑定源为节点 IsSelected（bool），属性变化自动触发重求值。
     /// </summary>
     public class CachedNodeBorderConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is WorkflowNode node)
-            {
-                // 选中状态使用橙色边框（覆盖适配器设置）
-                if (node.IsSelected)
-                    return CachedBrushes.OrangeBorder;
-
-                // 使用适配器获取边框色
-                var adapter = NodeDisplayAdapterFactory.GetAdapter(node.ToolType);
-                var color = adapter.GetBorderColor(node);
-                
-                // 从缓存中获取对应的画刷
-                return CachedBrushes.GetOrCreateBrush(color);
-            }
-            return CachedBrushes.OrangeBorder;
+            return value is bool isSelected && isSelected
+                ? (Brush)CachedBrushes.OrangeBorder
+                : (Brush)CachedBrushes.GrayBorder;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("CachedNodeBorderConverter 不支持反向转换。");
         }
     }
 }

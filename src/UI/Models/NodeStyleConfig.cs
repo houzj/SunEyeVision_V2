@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Windows;
 using System.Windows.Media;
 
@@ -31,7 +31,7 @@ namespace SunEyeVision.UI.Models
                 _resources["PortSize"] = 10.0;
                 _resources["PortMargin"] = 10.0;
                 _resources["NodeCornerRadius"] = 6.0;
-                _resources["NodeContentMargin"] = new Thickness(12, 0, 12, 0);
+                _resources["NodeContentMargin"] = new Thickness(0, 0, 12, 0);
 }
         }
 

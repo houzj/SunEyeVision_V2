@@ -2,7 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace SunEyeVision.UI.Controls.Helpers
+namespace SunEyeVision.UI.Shell
 {
     /// <summary>
     /// WPF 文件夹浏览器辅助类

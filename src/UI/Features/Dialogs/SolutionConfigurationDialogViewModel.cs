@@ -7,7 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using Microsoft.Win32;
 using SunEyeVision.Plugin.SDK.Models;
-using SunEyeVision.UI.Controls.Helpers;
+using SunEyeVision.UI.Shell;
 using SunEyeVision.UI.Shell.Windows;
 using SunEyeVision.Workflow;
 

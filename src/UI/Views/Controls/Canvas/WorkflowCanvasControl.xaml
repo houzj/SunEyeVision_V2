@@ -176,32 +176,14 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
 
-                        <!-- 箭头 -->
+                        <!-- 箭头（传输中静态橙色，由 StatusColor 转换器控制，无动画） -->
                         <Path Data="{StaticResource ArrowGeometry}"
                               Fill="{Binding StatusColor}"
                               Canvas.Left="{Binding ArrowX}"
                               Canvas.Top="{Binding ArrowY}"
                               RenderTransformOrigin="0,0"
                               Loaded="ArrowPath_Loaded"
-                              x:Name="ArrowPath">
-                            <Path.Style>
-                                <Style TargetType="Path">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Status}" Value="Transmitting">
-                                            <DataTrigger.EnterActions>
-                                                <BeginStoryboard>
-                                                    <Storyboard RepeatBehavior="Forever">
-                                                        <DoubleAnimation Storyboard.TargetProperty="Opacity"
-                                                                       From="1" To="0.3" Duration="0:0:0.5"
-                                                                       AutoReverse="True"/>
-                                                    </Storyboard>
-                                                </BeginStoryboard>
-                                            </DataTrigger.EnterActions>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Path.Style>
-                        </Path>
+                              x:Name="ArrowPath"/>
                     </Canvas>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
@@ -238,8 +220,8 @@
                             <!-- NodeBorder: 视觉显示元素，居中于HitArea -->
                             <Border Width="{DynamicResource NodeWidth}" Height="{DynamicResource NodeHeight}"
                                     CornerRadius="{DynamicResource NodeCornerRadius}"
-                                    BorderThickness="0"
-                                    BorderBrush="Transparent"
+                                    BorderThickness="1.5"
+                                    BorderBrush="{Binding ToolType, Converter={StaticResource NodeBorderColorConverter}}"
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
                                     MouseLeftButtonDown="Node_MouseLeftButtonDown"
@@ -266,24 +248,29 @@
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
 
-                                <!-- 节点类型图标（非子程序）/ 子程序设置按钮 -->
-                                <Grid Grid.Column="0">
-                                    <!-- 图标（对子程序节点隐藏）；方案 §6 三态：OK绿/NG红/待运行透明 -->
-                                    <Border CornerRadius="4" Padding="6,2"
-                                            Background="{Binding Status, Converter={StaticResource NodeIconStatusBackgroundConverter}}">
-                                        <TextBlock Text="{Binding Icon}"
-                                                   Foreground="{Binding Status, Converter={StaticResource NodeIconStatusForegroundConverter}}">
-                                            <TextBlock.Style>
-                                                <Style TargetType="TextBlock" BasedOn="{StaticResource NodeIconStyle}">
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding ToolType}" Value="Subroutine">
-                                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </TextBlock.Style>
-                                        </TextBlock>
-                                    </Border>
+                                <!-- 节点类型图标（非子程序）/ 子程序设置按钮；方案 §6 五态：状态色块 + 图标重叠 -->
+                                <Grid Grid.Column="0" Width="30">
+                                    <!-- 状态色块：固定 24×24 居中，与图标大小匹配（纯静态，无动画） -->
+                                    <Border CornerRadius="4"
+                                            Width="24" Height="24"
+                                            HorizontalAlignment="Center" VerticalAlignment="Center"
+                                            Background="{Binding Status, Converter={StaticResource NodeIconStatusBackgroundConverter}}"/>
+
+                                    <!-- 图标叠上居中；状态时反白；对子程序节点隐藏 -->
+                                    <TextBlock Text="{Binding Icon}"
+                                               Foreground="{Binding Status, Converter={StaticResource NodeIconStatusForegroundConverter}}"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                                               Margin="0">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock" BasedOn="{StaticResource NodeIconStyle}">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ToolType}" Value="Subroutine">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
 
                                     <!-- 子程序设置按钮（仅 Subroutine 类型节点可见，替换图标显示） -->
                                     <Button Content="⚙"
@@ -296,6 +283,7 @@
                                             Cursor="Hand"
                                             ToolTip="子程序参数设置"
                                             Click="SubroutineNodeSettings_Click"
+                                            HorizontalAlignment="Center" VerticalAlignment="Center"
                                             Panel.ZIndex="10">
                                         <Button.Style>
                                             <Style TargetType="Button">

@@ -288,6 +288,32 @@ namespace SunEyeVision.UI.Services.Workflow
                     return;
                 }
 
+                // ★ 订阅节点状态事件：引擎状态 → 画布节点（解决状态断点）
+                //   引擎在 Running/Completed/Failed/Skipped 时发事件，此处映射到 UI 节点 Status。
+                //   找不到节点记日志跳过（Fail-Forward），不中断流程。
+                executionEngine.NodeStatusChanged += (_, e) =>
+                {
+                    var node = FindNodeRecursive(rootEngineWorkflow, e.NodeId);
+                    if (node is Models.WorkflowNode uiNode)
+                    {
+                        InvokeOnUI(() =>
+                        {
+                            uiNode.Status = e.Status switch
+                            {
+                                NodeStatus.Running => "运行中",
+                                NodeStatus.Completed => "成功",
+                                NodeStatus.Failed => "失败",
+                                NodeStatus.Skipped => "跳过",
+                                _ => uiNode.Status
+                            };
+                        });
+                    }
+                    else
+                    {
+                        logger.LogWarning($"节点状态事件找不到画布节点: {e.NodeId}");
+                    }
+                };
+
                 // 记录运行时参数
                 foreach (var param in _runtimeParameters)
                 {

@@ -154,6 +154,7 @@ namespace SunEyeVision.Workflow
                     foreach (var skippedId in group.Where(id => id != forcedNextNodeId))
                     {
                         context.UpdateNodeStatus(skippedId, NodeStatus.Skipped);
+                        NodeStatusChanged?.Invoke(this, new NodeExecutionStatus { NodeId = skippedId, Status = NodeStatus.Skipped });
                     }
                     group = filtered;
                     forcedNextNodeId = null;

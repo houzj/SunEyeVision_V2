@@ -24,10 +24,10 @@
     <sys:Double x:Key="PortMargin">10</sys:Double>
     
     <!-- 圆角半径 - double类型（用于Rectangle.RadiusX/Y） -->
-    <sys:Double x:Key="NodeCornerRadiusDouble">20</sys:Double>
+    <sys:Double x:Key="NodeCornerRadiusDouble">6</sys:Double>
     
     <!-- 圆角半径 - CornerRadius类型（用于Border.CornerRadius） -->
-    <CornerRadius x:Key="NodeCornerRadius">20</CornerRadius>
+    <CornerRadius x:Key="NodeCornerRadius">6</CornerRadius>
     
     <!-- 内容边距 -->
     <Thickness x:Key="NodeContentMargin">12,0,12,0</Thickness>

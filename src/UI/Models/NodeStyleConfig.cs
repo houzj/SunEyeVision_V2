@@ -30,7 +30,7 @@ namespace SunEyeVision.UI.Models
                 _resources["NodeHeight"] = 40.0;
                 _resources["PortSize"] = 10.0;
                 _resources["PortMargin"] = 10.0;
-                _resources["NodeCornerRadius"] = 20.0;
+                _resources["NodeCornerRadius"] = 6.0;
                 _resources["NodeContentMargin"] = new Thickness(12, 0, 12, 0);
 }
         }

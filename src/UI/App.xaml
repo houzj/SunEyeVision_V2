@@ -6,7 +6,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <!-- 应用资源 -->
-                <ResourceDictionary Source="Views/Resources/AppResources.xaml"/>
+                <ResourceDictionary Source="Shell/Resources/AppResources.xaml"/>
                 <!-- 节点样式资源 -->
                 <ResourceDictionary Source="Resources/Styles/NodeStyleResources.xaml"/>
                 <!-- 连接线样式资源 -->

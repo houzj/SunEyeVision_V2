@@ -14,7 +14,7 @@
         <!-- 相机制造商模板选择器 -->
         <ResourceDictionary Source="pack://application:,,,/SunEyeVision.UI;component/Templates/Camera/ManufacturerTemplateSelector.xaml"/>
         
-        <ResourceDictionary Source="/SunEyeVision.UI;component/Views/Controls/Common/SplitterWithToggle.xaml"/>
+        <ResourceDictionary Source="/SunEyeVision.UI;component/Shell/Controls/Common/SplitterWithToggle.xaml"/>
     </ResourceDictionary.MergedDictionaries>
 
     <!-- ========== 转换器 ========== -->

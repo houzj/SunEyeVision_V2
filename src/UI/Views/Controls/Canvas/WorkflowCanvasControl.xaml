@@ -115,6 +115,8 @@
                                     <Setter Property="Stroke" Value="{Binding StatusColor}"/>
                                     <Setter Property="StrokeThickness" Value="2"/>
                                     <Setter Property="StrokeLineJoin" Value="Round"/>
+                                    <Setter Property="StrokeStartLineCap" Value="Round"/>
+                                    <Setter Property="StrokeEndLineCap" Value="Round"/>
                                     <Setter Property="Effect" Value="{x:Null}"/>
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding IsHovered}" Value="True">
@@ -128,6 +130,7 @@
                                         </DataTrigger>
                                         <DataTrigger Binding="{Binding IsSelected}" Value="True">
                                             <Setter Property="Stroke" Value="#FF6600"/>
+                                            <Setter Property="StrokeThickness" Value="3"/>
                                             <Setter Property="Effect">
                                                 <Setter.Value>
                                                     <DropShadowEffect Color="#FF6600" BlurRadius="4" ShadowDepth="0" Opacity="0.8"/>
@@ -176,14 +179,27 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
 
-                        <!-- 箭头（传输中静态橙色，由 StatusColor 转换器控制，无动画） -->
+                        <!-- 箭头（颜色跟随连线状态：悬停蓝、选中橙，其余跟随 StatusColor） -->
                         <Path Data="{StaticResource ArrowGeometry}"
-                              Fill="{Binding StatusColor}"
                               Canvas.Left="{Binding ArrowX}"
                               Canvas.Top="{Binding ArrowY}"
                               RenderTransformOrigin="0,0"
                               Loaded="ArrowPath_Loaded"
-                              x:Name="ArrowPath"/>
+                              x:Name="ArrowPath">
+                            <Path.Style>
+                                <Style TargetType="Path">
+                                    <Setter Property="Fill" Value="{Binding StatusColor}"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsHovered}" Value="True">
+                                            <Setter Property="Fill" Value="#0066CC"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="Fill" Value="#FF6600"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Path.Style>
+                        </Path>
                     </Canvas>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>

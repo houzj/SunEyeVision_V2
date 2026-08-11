@@ -1,9 +1,11 @@
 using System;
 using System.Windows;
 using SunEyeVision.Core.Services.CameraDiscovery;
-using SunEyeVision.UI.ViewModels;
+using SunEyeVision.UI.Core;
 
-namespace SunEyeVision.UI.Views.Windows
+using SunEyeVision.UI.Core;
+
+namespace SunEyeVision.UI.Features.Camera
 {
     /// <summary>
     /// 添加相机引导界面

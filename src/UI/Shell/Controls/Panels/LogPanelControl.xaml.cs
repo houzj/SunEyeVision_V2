@@ -1,13 +1,15 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using SunEyeVision.Plugin.SDK.Logging;
-using SunEyeVision.UI.ViewModels;
+using SunEyeVision.UI.Core;
 
-namespace SunEyeVision.UI.Views.Controls.Panels
+using SunEyeVision.UI.Features.Shell;
+
+namespace SunEyeVision.UI.Shell.Controls.Panels
 {
     /// <summary>
     /// LogPanelControl.xaml 的交互逻辑

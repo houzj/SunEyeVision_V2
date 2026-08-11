@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 using System.Collections.Generic;
 
@@ -18,9 +18,9 @@ using System.Windows.Shapes;
 
 using SunEyeVision.UI.Services.Interaction;
 
-using SunEyeVision.UI.Models;
+using SunEyeVision.UI.Shared;
 
-using SunEyeVision.UI.ViewModels;
+using SunEyeVision.UI.Core;
 
 using SunEyeVision.UI.Services.Connection;
 
@@ -32,7 +32,7 @@ using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.UI.Services.Canvas;
 using SunEyeVision.UI.Converters.Path;
 
-using SunEyeVision.UI.Views.Windows;
+using SunEyeVision.UI.Shell.Windows;
 
 using SunEyeVision.Plugin.SDK.Logging;
 
@@ -40,7 +40,11 @@ using WpfCanvas = System.Windows.Controls.Canvas;
 
 
 
-namespace SunEyeVision.UI.Views.Controls.Canvas
+using SunEyeVision.UI.Features.WorkflowUI;
+
+using SunEyeVision.UI.Features.Shell;
+
+namespace SunEyeVision.UI.Shell.Controls.Canvas
 
 {
 
@@ -350,7 +354,7 @@ namespace SunEyeVision.UI.Views.Controls.Canvas
 
         /// </summary>
 
-        public ViewModels.WorkflowTabViewModel? CurrentWorkflowTab => DataContext as WorkflowTabViewModel;
+        public SunEyeVision.UI.Features.WorkflowUI.WorkflowTabViewModel? CurrentWorkflowTab => DataContext as WorkflowTabViewModel;
 
 
 
@@ -360,7 +364,7 @@ namespace SunEyeVision.UI.Views.Controls.Canvas
 
         /// </summary>
 
-        public Models.WorkflowInfo? CurrentWorkflow
+        public SunEyeVision.UI.Features.WorkflowUI.WorkflowInfo? CurrentWorkflow
 
         {
 
@@ -372,7 +376,7 @@ namespace SunEyeVision.UI.Views.Controls.Canvas
 
                 if (tab == null) return null;
 
-                return new Models.WorkflowInfo { Id = tab.Id, Name = tab.Name };
+                return new SunEyeVision.UI.Features.WorkflowUI.WorkflowInfo { Id = tab.Id, Name = tab.Name };
 
             }
 

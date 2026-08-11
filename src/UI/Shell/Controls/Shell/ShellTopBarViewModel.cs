@@ -1,9 +1,13 @@
-﻿using System.Collections;
+using System.Collections;
 using System.ComponentModel;
 using System.Windows.Input;
 using SunEyeVision.UI.Services;
 
-namespace SunEyeVision.UI.ViewModels
+using SunEyeVision.UI.Features.Shell;
+
+using SunEyeVision.UI.Core;
+
+namespace SunEyeVision.UI.Shell.Controls
 {
     /// <summary>
     /// 顶部标题栏视图模型 - 就近绑定顶部菜单+工具栏。

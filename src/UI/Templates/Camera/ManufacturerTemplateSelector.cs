@@ -1,7 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 
-namespace SunEyeVision.UI.Views.Camera
+namespace SunEyeVision.UI.Features.Camera
 {
     /// <summary>
     /// 厂商模板选择器

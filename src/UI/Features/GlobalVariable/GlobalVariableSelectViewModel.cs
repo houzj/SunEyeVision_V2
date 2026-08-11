@@ -1,10 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
 using SunEyeVision.Workflow;
 
-namespace SunEyeVision.UI.ViewModels
+using SunEyeVision.UI.Core;
+
+namespace SunEyeVision.UI.Features.GlobalVariableManager
 {
     /// <summary>
     /// 全局变量选择 ViewModel（简化版，只读选择，非管理器）

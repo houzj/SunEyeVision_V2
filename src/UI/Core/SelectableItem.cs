@@ -1,6 +1,6 @@
-﻿using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Plugin.SDK.Models;
 
-namespace SunEyeVision.UI.ViewModels.Core
+namespace SunEyeVision.UI.Core.Core
 {
     /// <summary>
     /// 可选中项包装基类

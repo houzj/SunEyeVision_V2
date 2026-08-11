@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using SunEyeVision.UI.Models;
+using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Services.Canvas;
 using SunEyeVision.UI.Services.Rendering;
 using static SunEyeVision.UI.Services.Canvas.CanvasConfig;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
@@ -8,7 +8,9 @@ using SunEyeVision.Core.Services.CameraDiscovery;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Models;
 
-namespace SunEyeVision.UI.ViewModels
+using SunEyeVision.UI.Core;
+
+namespace SunEyeVision.UI.Features.Camera
 {
     /// <summary>
     /// 添加相机 ViewModel

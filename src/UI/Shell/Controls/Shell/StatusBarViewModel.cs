@@ -1,7 +1,9 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using SunEyeVision.UI.Services;
 
-namespace SunEyeVision.UI.ViewModels
+using SunEyeVision.UI.Core;
+
+namespace SunEyeVision.UI.Shell.Controls
 {
     /// <summary>
     /// 状态栏视图模型 - 就近绑定底部状态栏。

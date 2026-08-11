@@ -8,7 +8,9 @@ using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.UI.Services.ParameterSetting;
 using SunEyeVision.UI.Services.Thumbnail;
 
-namespace SunEyeVision.UI.ViewModels
+using SunEyeVision.UI.Core;
+
+namespace SunEyeVision.UI.Features.ParameterSetting
 {
     /// <summary>
     /// 图像参数绑定ViewModel

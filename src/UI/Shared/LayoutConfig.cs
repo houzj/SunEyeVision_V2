@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Text.Json;
 using SunEyeVision.Core.Services.Serialization;
 
-namespace SunEyeVision.UI.Models
+namespace SunEyeVision.UI.Shared
 {
     /// <summary>
     /// 布局配置模型 - 用于保存和恢复主窗口列宽度和面板折叠状态

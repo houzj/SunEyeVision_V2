@@ -1,5 +1,5 @@
-﻿using SunEyeVision.UI.Models;
-using SunEyeVision.UI.Views.Controls.Canvas;
+using SunEyeVision.UI.Shared;
+using SunEyeVision.UI.Shell.Controls.Canvas;
 
 namespace SunEyeVision.UI.Services.Interaction
 {

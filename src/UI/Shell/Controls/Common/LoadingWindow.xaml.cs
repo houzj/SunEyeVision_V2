@@ -1,6 +1,6 @@
 using System.Windows;
 
-namespace SunEyeVision.UI.Views.Controls.Common
+namespace SunEyeVision.UI.Shell.Controls.Common
 {
     /// <summary>
     /// LoadingWindow.xaml 的交互逻辑

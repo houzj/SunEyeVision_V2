@@ -1,3 +1,0 @@
-$output = dotnet build "d:\MyWork\SunEyeVision_V2\src\UI\UI.csproj" --no-restore 2>&1
-$output | Out-String | Write-Output
-$LASTEXITCODE

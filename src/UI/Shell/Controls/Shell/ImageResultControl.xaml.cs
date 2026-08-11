@@ -4,10 +4,14 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.SDK.Logging;
-using SunEyeVision.UI.ViewModels;
-using SunEyeVision.UI.Views.Controls.Panels;
+using SunEyeVision.UI.Core;
+using SunEyeVision.UI.Shell.Controls.Panels;
 
-namespace SunEyeVision.UI.Views.Controls.Shell
+using SunEyeVision.UI.Features.WorkflowUI;
+
+using SunEyeVision.UI.Features.Shell;
+
+namespace SunEyeVision.UI.Shell.Controls.Shell
 {
     /// <summary>
     /// 图像结果区：图像显示 + 模块结果表 + 图像预览。

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -8,13 +8,17 @@ using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.Plugin.SDK.Logging;
-using SunEyeVision.UI.Models;
-using SunEyeVision.UI.ViewModels;
+using SunEyeVision.UI.Shared;
+using SunEyeVision.UI.Core;
 using SunEyeVision.Workflow;
 using SunEyeVision.UI.Infrastructure;
 using SunEyeVision.UI.Services.Workflow;
 using SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
+
+using SunEyeVision.UI.Features.WorkflowUI;
+
+using SunEyeVision.UI.Features.Shell;
 
 namespace SunEyeVision.UI.Services.Workflow
 {
@@ -294,7 +298,7 @@ namespace SunEyeVision.UI.Services.Workflow
                 executionEngine.NodeStatusChanged += (_, e) =>
                 {
                     var node = FindNodeRecursive(rootEngineWorkflow, e.NodeId);
-                    if (node is Models.WorkflowNode uiNode)
+                    if (node is SunEyeVision.UI.Shared.WorkflowNode uiNode)
                     {
                         InvokeOnUI(() =>
                         {
@@ -340,7 +344,7 @@ namespace SunEyeVision.UI.Services.Workflow
                     foreach (var nodeResult in result.NodeResults)
                     {
                         var node = FindNodeRecursive(rootEngineWorkflow, nodeResult.Key);
-                        if (node is Models.WorkflowNode uiNode)
+                        if (node is SunEyeVision.UI.Shared.WorkflowNode uiNode)
                         {
                             // 创建一个包含结果的 ToolResults
                             var toolResults = CreateToolResultsFromNodeResult(nodeResult.Value);
@@ -386,7 +390,7 @@ namespace SunEyeVision.UI.Services.Workflow
         /// 读取当前选中的图像路径，注入到 Parameters.FilePath
         /// </summary>
         /// <remarks>
-        /// 使用 WorkflowNodeBase 基类而非 Models.WorkflowNode，确保子程序工作流中的节点
+        /// 使用 WorkflowNodeBase 基类而非 SunEyeVision.UI.Shared.WorkflowNode，确保子程序工作流中的节点
         /// （类型为 WorkflowNodeBase）也能正确注入路径。
         /// IsImageLoadNode 通过 ToolType 字符串判断（在基类上可访问）。
         /// InputSource 在 WorkflowNodeBase 上为 object?，通过 as 转换访问。
@@ -417,7 +421,7 @@ namespace SunEyeVision.UI.Services.Workflow
                         InjectFilePathFromInputSource(subWorkflow, logger, visitedIds);
                 }
 
-                // 通过 ToolType 判断是否为图像载入节点（基类属性，无需强制转换为 Models.WorkflowNode）
+                // 通过 ToolType 判断是否为图像载入节点（基类属性，无需强制转换为 SunEyeVision.UI.Shared.WorkflowNode）
                 if (!IsImageLoadToolType(wn.ToolType))
                 {
                     logger.LogInfo($"[DIAG]   -> 不是 ImageLoad 类型，跳过");
@@ -473,7 +477,7 @@ namespace SunEyeVision.UI.Services.Workflow
 
         /// <summary>
         /// 判断工具类型是否为图像载入节点（基于 ToolType 字符串匹配）
-        /// 用于 WorkflowNodeBase 基类，无需强制转换为 Models.WorkflowNode
+        /// 用于 WorkflowNodeBase 基类，无需强制转换为 SunEyeVision.UI.Shared.WorkflowNode
         /// </summary>
         private static bool IsImageLoadToolType(string toolType)
         {
@@ -535,7 +539,7 @@ namespace SunEyeVision.UI.Services.Workflow
         /// <summary>
         /// 触发节点执行完成事件
         /// </summary>
-        private void OnNodeExecutionCompleted(Models.WorkflowNode node, ToolResults result)
+        private void OnNodeExecutionCompleted(SunEyeVision.UI.Shared.WorkflowNode node, ToolResults result)
         {
             InvokeOnUI(() => NodeExecutionCompleted?.Invoke(this, new NodeExecutionResultEventArgs(node, result)));
         }
@@ -646,7 +650,7 @@ namespace SunEyeVision.UI.Services.Workflow
         /// <summary>
         /// UI 节点模型
         /// </summary>
-        public Models.WorkflowNode Node { get; }
+        public SunEyeVision.UI.Shared.WorkflowNode Node { get; }
 
         /// <summary>
         /// 执行结果
@@ -658,7 +662,7 @@ namespace SunEyeVision.UI.Services.Workflow
         /// </summary>
         public DateTime Timestamp { get; }
 
-        public NodeExecutionResultEventArgs(Models.WorkflowNode node, ToolResults result)
+        public NodeExecutionResultEventArgs(SunEyeVision.UI.Shared.WorkflowNode node, ToolResults result)
         {
             Node = node;
             Result = result;

@@ -2,7 +2,7 @@ using System;
 using System.Windows;
 using SunEyeVision.UI.Controls.Helpers;
 
-namespace SunEyeVision.UI.Views.Windows;
+namespace SunEyeVision.UI.Shell.Windows;
 
 /// <summary>
 /// NewSolutionDialog.xaml 的交互逻辑

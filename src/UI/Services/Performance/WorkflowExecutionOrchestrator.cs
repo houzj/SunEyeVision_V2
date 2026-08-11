@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using OpenCvSharp;
 using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.UI.Models;
+using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Services.Workflow;
 using SunEyeVision.Workflow;
 
@@ -54,7 +54,7 @@ namespace SunEyeVision.UI.Services.Performance
         /// <param name="cancellationToken">取消令牌</param>
         /// <returns>执行结果</returns>
         public async Task<CachedExecutionResult?> ExecuteAndDisplayAsync(
-            UI.Models.WorkflowNode node,
+            SunEyeVision.UI.Shared.WorkflowNode node,
             string imageSourceId,
             Mat inputMat,
             SunEyeVision.Workflow.Workflow workflow,
@@ -141,7 +141,7 @@ namespace SunEyeVision.UI.Services.Performance
         /// <param name="inputMat">输入图像</param>
         /// <param name="workflow">工作流实例</param>
         public void PreExecute(
-            UI.Models.WorkflowNode node,
+            SunEyeVision.UI.Shared.WorkflowNode node,
             string imageSourceId,
             Mat inputMat,
             SunEyeVision.Workflow.Workflow workflow)
@@ -193,7 +193,7 @@ namespace SunEyeVision.UI.Services.Performance
         /// <param name="node">节点（UI模型）</param>
         /// <param name="imageSourceId">图像源ID</param>
         /// <returns>是否成功切换</returns>
-        public bool QuickSwitchNodeAsync(UI.Models.WorkflowNode node, string imageSourceId)
+        public bool QuickSwitchNodeAsync(SunEyeVision.UI.Shared.WorkflowNode node, string imageSourceId)
         {
             if (_cache.TryGet(node.Id, imageSourceId, out var cachedResult))
             {
@@ -213,7 +213,7 @@ namespace SunEyeVision.UI.Services.Performance
         /// </summary>
         private ToolResults? ExecuteNode(
             WorkflowEngine engine,
-            UI.Models.WorkflowNode node,
+            SunEyeVision.UI.Shared.WorkflowNode node,
             Mat inputMat,
             SunEyeVision.Workflow.Workflow workflow,
             CancellationToken cancellationToken)
@@ -260,7 +260,7 @@ return null;
         /// <summary>
         /// 显示缓存结果
         /// </summary>
-        private void DisplayCachedResult(UI.Models.WorkflowNode node, CachedExecutionResult cachedResult)
+        private void DisplayCachedResult(SunEyeVision.UI.Shared.WorkflowNode node, CachedExecutionResult cachedResult)
         {
             _nodeResultManager.UpdateNodeImageFromCache(node, cachedResult);
         }

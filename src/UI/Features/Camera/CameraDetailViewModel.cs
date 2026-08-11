@@ -1,8 +1,10 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Windows.Input;
 
-namespace SunEyeVision.UI.ViewModels
+using SunEyeVision.UI.Core;
+
+namespace SunEyeVision.UI.Features.Camera
 {
     /// <summary>
     /// 相机详情 ViewModel - 用于 CameraDetailPanel

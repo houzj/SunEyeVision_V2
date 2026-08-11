@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -11,7 +11,9 @@ using SunEyeVision.Plugin.SDK.Validation;
 using SunEyeVision.UI.Services.ParameterSetting;
 using SunEyeVision.UI.Services.Thumbnail;
 
-namespace SunEyeVision.UI.ViewModels
+using SunEyeVision.UI.Core;
+
+namespace SunEyeVision.UI.Features.ParameterSetting
 {
     /// <summary>
     /// 工具ViewModel基类

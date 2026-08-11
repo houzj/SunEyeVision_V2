@@ -1,4 +1,4 @@
-<UserControl x:Class="SunEyeVision.UI.Views.Controls.Canvas.WorkflowCanvasControl"
+<UserControl x:Class="SunEyeVision.UI.Shell.Controls.Canvas.WorkflowCanvasControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -9,7 +9,7 @@
              xmlns:convertersVisibility="clr-namespace:SunEyeVision.UI.Converters.Visibility"
              xmlns:convertersUI="clr-namespace:SunEyeVision.UI.Converters.UI"
              xmlns:convertersWorkflow="clr-namespace:SunEyeVision.UI.Converters.Workflow"
-             xmlns:common="clr-namespace:SunEyeVision.UI.Views.Controls.Common"
+             xmlns:common="clr-namespace:SunEyeVision.UI.Shell.Controls.Common"
              xmlns:rendering="clr-namespace:SunEyeVision.UI.Services.Rendering"
              mc:Ignorable="d"
              d:DesignHeight="800" d:DesignWidth="1000">

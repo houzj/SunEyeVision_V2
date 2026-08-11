@@ -2,9 +2,11 @@ using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using SunEyeVision.UI.Models;
+using SunEyeVision.UI.Shared;
 
-namespace SunEyeVision.UI.ViewModels
+using SunEyeVision.UI.Core;
+
+namespace SunEyeVision.UI.Features.Camera
 {
     /// <summary>
     /// 设备面板视图模型

@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Windows;
 
-namespace SunEyeVision.UI.Views.Windows
+namespace SunEyeVision.UI.Shell.Windows
 {
     /// <summary>
     /// AboutWindow - 关于对话框

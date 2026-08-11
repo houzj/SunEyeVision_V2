@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
 using SunEyeVision.UI.Adapters;
-using SunEyeVision.UI.Models;
+using SunEyeVision.UI.Shared;
 
 namespace SunEyeVision.UI.Converters.Node
 {

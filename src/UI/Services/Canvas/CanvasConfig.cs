@@ -1,5 +1,5 @@
-﻿using System.Windows;
-using SunEyeVision.UI.Models;
+using System.Windows;
+using SunEyeVision.UI.Shared;
 
 namespace SunEyeVision.UI.Services.Canvas
 {

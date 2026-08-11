@@ -5,7 +5,9 @@ using System.Windows.Input;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 
-namespace SunEyeVision.UI.ViewModels
+using SunEyeVision.UI.Core;
+
+namespace SunEyeVision.UI.Features.ParameterSetting
 {
     /// <summary>
     /// 数据源选择ViewModel

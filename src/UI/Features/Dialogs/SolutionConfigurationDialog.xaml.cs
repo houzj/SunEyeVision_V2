@@ -1,8 +1,10 @@
 using System.Windows;
-using SunEyeVision.UI.ViewModels;
+using SunEyeVision.UI.Core;
 using SunEyeVision.Workflow;
 
-namespace SunEyeVision.UI.Views.Windows;
+using SunEyeVision.UI.Core;
+
+namespace SunEyeVision.UI.Features.Dialogs;
 
 /// <summary>
 /// SolutionConfigurationDialog.xaml 的交互逻辑

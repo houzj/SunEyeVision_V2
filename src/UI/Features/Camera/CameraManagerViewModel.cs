@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -7,7 +7,9 @@ using SunEyeVision.Workflow;
 using SunEyeVision.Core.Services.CameraDiscovery;
 using SunEyeVision.Plugin.SDK.Logging;
 
-namespace SunEyeVision.UI.ViewModels
+using SunEyeVision.UI.Core;
+
+namespace SunEyeVision.UI.Features.Camera
 {
     /// <summary>
     /// 相机设备模型
@@ -451,7 +453,7 @@ namespace SunEyeVision.UI.ViewModels
                 );
                 
                 // 打开添加相机对话框
-                var addCameraDialog = new Views.Windows.AddCameraDialog(discoveryAggregator, this);
+                var addCameraDialog = new SunEyeVision.UI.Features.Camera.AddCameraDialog(discoveryAggregator, this);
                 var result = addCameraDialog.ShowDialog();
                 
                 if (result == true)

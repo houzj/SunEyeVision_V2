@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -9,12 +9,16 @@ using System.Windows.Media;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Logging;
 using SubroutineOutputChange = SunEyeVision.Plugin.SDK.Models.SubroutineOutputChange;
-using SunEyeVision.UI.Models;
+using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Services.Canvas;
-using SunEyeVision.UI.ViewModels;
-using SunEyeVision.UI.Views.Controls.Canvas;
+using SunEyeVision.UI.Core;
+using SunEyeVision.UI.Shell.Controls.Canvas;
 
-namespace SunEyeVision.UI.Views.Controls.Shell
+using SunEyeVision.UI.Features.WorkflowUI;
+
+using SunEyeVision.UI.Features.Shell;
+
+namespace SunEyeVision.UI.Shell.Controls.Shell
 {
     /// <summary>
     /// 中间工作区：多流程 Tab 管理 + 画布层。
@@ -685,7 +689,7 @@ namespace SunEyeVision.UI.Views.Controls.Shell
         /// <summary>
         /// 从画布节点双击打开子程序参数设置对话框
         /// </summary>
-        public void OpenSubroutineNodeParameterDialog(Models.WorkflowNode node)
+        public void OpenSubroutineNodeParameterDialog(SunEyeVision.UI.Shared.WorkflowNode node)
         {
             try
             {

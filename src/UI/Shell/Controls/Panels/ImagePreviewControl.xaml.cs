@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -14,13 +14,15 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
-using SunEyeVision.UI.ViewModels;
+using SunEyeVision.UI.Core;
 using SunEyeVision.UI.Services.Thumbnail;
 using SunEyeVision.UI.Services.Performance;
 using SunEyeVision.UI.Services.Thumbnail.Decoders;
 using SunEyeVision.Plugin.SDK.Logging;
 
-namespace SunEyeVision.UI.Views.Controls.Panels
+using SunEyeVision.UI.Features.WorkflowUI;
+
+namespace SunEyeVision.UI.Shell.Controls.Panels
 {
     /// <summary>
     /// 图像运行模式枚举

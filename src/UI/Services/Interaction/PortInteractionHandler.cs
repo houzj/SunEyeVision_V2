@@ -1,13 +1,15 @@
-﻿using System;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
-using SunEyeVision.UI.Models;
-using SunEyeVision.UI.ViewModels;
-using SunEyeVision.UI.Views.Controls.Canvas;
+using SunEyeVision.UI.Shared;
+using SunEyeVision.UI.Core;
+using SunEyeVision.UI.Shell.Controls.Canvas;
 using SunEyeVision.UI.Services.Rendering;
+
+using SunEyeVision.UI.Features.Shell;
 
 namespace SunEyeVision.UI.Services.Interaction
 {

@@ -1,8 +1,10 @@
-﻿using System;
+using System;
 using System.IO;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.UI.Services.Logging;
 using SunEyeVision.Workflow;
+
+using SunEyeVision.UI.Features.Shell;
 
 namespace SunEyeVision.UI.Adapters
 {

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -12,7 +12,9 @@ using SunEyeVision.UI.Services.Logging;
 using SunEyeVision.UI.Adapters;
 using SunEyeVision.Plugin.SDK.Logging;
 
-namespace SunEyeVision.UI.ViewModels
+using SunEyeVision.UI.Core;
+
+namespace SunEyeVision.UI.Features.Shell
 {
     /// <summary>
     /// 日志面板视图模型

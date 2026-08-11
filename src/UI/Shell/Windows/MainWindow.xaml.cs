@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -8,12 +8,12 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
-using SunEyeVision.UI.Views.Controls.Canvas;
-using SunEyeVision.UI.Views.Controls.Panels;
-using SunEyeVision.UI.Views.Controls.Common;
-using SunEyeVision.UI.Models;
+using SunEyeVision.UI.Shell.Controls.Canvas;
+using SunEyeVision.UI.Shell.Controls.Panels;
+using SunEyeVision.UI.Shell.Controls.Common;
+using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Services;
-using SunEyeVision.UI.ViewModels;
+using SunEyeVision.UI.Core;
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 using AIStudio.Wpf.DiagramDesigner;
 using AIStudio.Wpf.DiagramDesigner.ViewModels;
@@ -24,7 +24,11 @@ using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
-namespace SunEyeVision.UI.Views.Windows
+using SunEyeVision.UI.Features.WorkflowUI;
+
+using SunEyeVision.UI.Features.Shell;
+
+namespace SunEyeVision.UI.Shell.Windows
 {
     /// <summary>
     /// MainWindow - 太阳眼视觉风格的主界面窗口
@@ -400,10 +404,10 @@ namespace SunEyeVision.UI.Views.Windows
         /// <summary>
         /// 获取 MainWindowViewModel 中的 NodeResultManager
         /// </summary>
-        private Services.Workflow.NodeResultManager? GetNodeResultManager(ViewModels.MainWindowViewModel viewModel)
+        private Services.Workflow.NodeResultManager? GetNodeResultManager(SunEyeVision.UI.Features.Shell.MainWindowViewModel viewModel)
         {
             // 通过反射获取私有字段
-            var field = typeof(ViewModels.MainWindowViewModel).GetField("_nodeResultManager",
+            var field = typeof(SunEyeVision.UI.Features.Shell.MainWindowViewModel).GetField("_nodeResultManager",
                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             return field?.GetValue(viewModel) as Services.Workflow.NodeResultManager;
         }
@@ -422,7 +426,7 @@ namespace SunEyeVision.UI.Views.Windows
         {
             return WorkspaceHost.GetCurrentWorkflowCanvas();
         }
-        internal void OpenSubroutineNodeParameterDialog(Models.WorkflowNode node)
+        internal void OpenSubroutineNodeParameterDialog(SunEyeVision.UI.Shared.WorkflowNode node)
         {
             WorkspaceHost.OpenSubroutineNodeParameterDialog(node);
         }

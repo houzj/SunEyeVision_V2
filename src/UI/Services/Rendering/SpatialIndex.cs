@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
-using SunEyeVision.UI.Models;
+using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Services.Canvas;
 
 namespace SunEyeVision.UI.Services.Rendering

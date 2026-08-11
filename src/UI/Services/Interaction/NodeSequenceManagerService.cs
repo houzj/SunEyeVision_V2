@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using SunEyeVision.Plugin.SDK.Logging;
-using SunEyeVision.UI.Models;
+using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Services.Canvas;
-using SunEyeVision.UI.Views.Controls.Canvas;
+using SunEyeVision.UI.Shell.Controls.Canvas;
 
 namespace SunEyeVision.UI.Services.Interaction
 {

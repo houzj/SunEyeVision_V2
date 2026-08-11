@@ -1,7 +1,7 @@
 using System;
 using SunEyeVision.Plugin.SDK.Models;
 
-namespace SunEyeVision.UI.Models
+namespace SunEyeVision.UI.Features.Toolbox
 {
     /// <summary>
     /// 工具箱项模型

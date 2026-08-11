@@ -1,6 +1,6 @@
 using System;
 
-namespace SunEyeVision.UI.Models
+namespace SunEyeVision.UI.Features.Camera
 {
     /// <summary>
     /// 设备面板模型

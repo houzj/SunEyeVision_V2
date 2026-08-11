@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -8,10 +8,12 @@ using System.Windows.Input;
 using Microsoft.Win32;
 using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.UI.Controls.Helpers;
-using SunEyeVision.UI.Views.Windows;
+using SunEyeVision.UI.Shell.Windows;
 using SunEyeVision.Workflow;
 
-namespace SunEyeVision.UI.ViewModels
+using SunEyeVision.UI.Core;
+
+namespace SunEyeVision.UI.Features.Dialogs
 {
     /// <summary>
     /// 解决方案配置对话框 ViewModel

@@ -1,6 +1,6 @@
 using System.Windows.Controls;
 
-namespace SunEyeVision.UI.Views.Camera
+namespace SunEyeVision.UI.Features.Camera
 {
     /// <summary>
     /// 相机详情面板控件

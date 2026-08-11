@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Threading;
-using SunEyeVision.UI.Models;
+using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Services.Connection;
+
+using SunEyeVision.UI.Features.WorkflowUI;
 
 namespace SunEyeVision.UI.Services.Connection
 {
@@ -29,7 +31,7 @@ namespace SunEyeVision.UI.Services.Connection
         /// <summary>
         /// 当前活动的WorkflowTab，用于查找连接
         /// </summary>
-        private ViewModels.WorkflowTabViewModel? _currentTab;
+        private SunEyeVision.UI.Features.WorkflowUI.WorkflowTabViewModel? _currentTab;
 
         public ConnectionBatchUpdateManager(ConnectionPathCache pathCache)
         {
@@ -44,7 +46,7 @@ namespace SunEyeVision.UI.Services.Connection
         /// <summary>
         /// 设置当前活动的WorkflowTab
         /// </summary>
-        public void SetCurrentTab(ViewModels.WorkflowTabViewModel? tab)
+        public void SetCurrentTab(SunEyeVision.UI.Features.WorkflowUI.WorkflowTabViewModel? tab)
         {
             _currentTab = tab;
         }

@@ -1,13 +1,15 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Windows.Media.Imaging;
 using SunEyeVision.UI.Services.Thumbnail;
-using SunEyeVision.UI.Views.Controls.Panels;
+using SunEyeVision.UI.Shell.Controls.Panels;
 using SunEyeVision.Plugin.SDK.Models;
 
-namespace SunEyeVision.UI.Models
+using SunEyeVision.UI.Features.WorkflowUI;
+
+namespace SunEyeVision.UI.Shared
 {
     /// <summary>
     /// 图像输入源 - 存储用户选择的图像文件（只读语义）

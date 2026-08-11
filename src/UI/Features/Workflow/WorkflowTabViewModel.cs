@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows;
@@ -8,14 +8,20 @@ using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.UI.Commands;
 using SunEyeVision.UI.Services.Canvas;
-using SunEyeVision.UI.Models;
+using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Services;
-using SunEyeVision.UI.Views.Controls.Canvas;
+using SunEyeVision.UI.Shell.Controls.Canvas;
 using SunEyeVision.UI.Services.Interaction;
 using SunEyeVision.UI.Services.Workflow;
 
 
-namespace SunEyeVision.UI.ViewModels
+using SunEyeVision.UI.Core;
+
+using SunEyeVision.UI.Features.WorkflowUI;
+
+using SunEyeVision.UI.Features.Shell;
+
+namespace SunEyeVision.UI.Features.WorkflowUI
 {
     /// <summary>
     /// 工作流标签页ViewModel
@@ -27,7 +33,7 @@ namespace SunEyeVision.UI.ViewModels
         private bool _isRunning;
         private RunMode _runMode;
         private WorkflowState _state;
-        private ObservableCollection<Models.WorkflowNode> _workflowNodes;
+        private ObservableCollection<SunEyeVision.UI.Shared.WorkflowNode> _workflowNodes;
         private ObservableCollection<WorkflowConnection> _workflowConnections;
         private ScaleTransform _scaleTransform;
         private double _currentScale;
@@ -117,7 +123,7 @@ namespace SunEyeVision.UI.ViewModels
             _name = "工作流"; // 默认名称，可以被外部覆盖
             State = WorkflowState.Stopped;
             RunMode = RunMode.Single;
-            _workflowNodes = new ObservableCollection<Models.WorkflowNode>();
+            _workflowNodes = new ObservableCollection<SunEyeVision.UI.Shared.WorkflowNode>();
             _workflowConnections = new ObservableCollection<WorkflowConnection>();
             CurrentScale = 1.0;
             ScaleTransform = new ScaleTransform(1.0, 1.0);
@@ -286,7 +292,7 @@ namespace SunEyeVision.UI.ViewModels
         /// <summary>
         /// 节点集合
         /// </summary>
-        public ObservableCollection<Models.WorkflowNode> WorkflowNodes
+        public ObservableCollection<SunEyeVision.UI.Shared.WorkflowNode> WorkflowNodes
         {
             get => _workflowNodes;
             set
@@ -310,7 +316,7 @@ namespace SunEyeVision.UI.ViewModels
             {
                 if (e.OldItems != null)
                 {
-                    foreach (Models.WorkflowNode node in e.OldItems)
+                    foreach (SunEyeVision.UI.Shared.WorkflowNode node in e.OldItems)
                     {
                         try
                         {
@@ -397,7 +403,7 @@ namespace SunEyeVision.UI.ViewModels
             _workflowNodes.Clear();
             foreach (var node in nodes)
             {
-                if (node is Models.WorkflowNode uiNode)
+                if (node is SunEyeVision.UI.Shared.WorkflowNode uiNode)
                 {
                     _workflowNodes.Add(uiNode);
                 }
@@ -496,7 +502,7 @@ namespace SunEyeVision.UI.ViewModels
         /// <param name="algorithmType">算法类型</param>
         /// <param name="name">节点名称（可选，默认使用算法名称）</param>
         /// <returns>新创建的节点</returns>
-        public Models.WorkflowNode CreateNode(string algorithmType, string? name = null)
+        public SunEyeVision.UI.Shared.WorkflowNode CreateNode(string algorithmType, string? name = null)
         {
             if (_nodeFactory == null)
             {

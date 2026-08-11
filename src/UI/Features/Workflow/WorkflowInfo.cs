@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.Windows;
 using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.UI.Shared;
 
-namespace SunEyeVision.UI.Models
+namespace SunEyeVision.UI.Features.WorkflowUI
 {
     /// <summary>
     /// 运行模式枚举

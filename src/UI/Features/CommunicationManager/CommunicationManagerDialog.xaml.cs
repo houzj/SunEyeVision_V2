@@ -1,7 +1,7 @@
-﻿using System.Windows;
-using SunEyeVision.UI.ViewModels;
+using System.Windows;
+using SunEyeVision.UI.Core;
 
-namespace SunEyeVision.UI.Views.Windows
+namespace SunEyeVision.UI.Features.CommunicationManager
 {
     /// <summary>
     /// 通讯管理器对话框

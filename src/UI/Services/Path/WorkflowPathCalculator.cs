@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Media;
-using SunEyeVision.UI.Models;
+using SunEyeVision.UI.Shared;
 
 namespace SunEyeVision.UI.Services.Path
 {

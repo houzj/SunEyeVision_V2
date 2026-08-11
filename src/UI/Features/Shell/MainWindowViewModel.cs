@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -11,7 +11,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Microsoft.Win32;
 using AppCommands = SunEyeVision.UI.Commands;
-using SunEyeVision.UI.Models;
+using SunEyeVision.UI.Shared;
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 using SunEyeVision.Workflow.Nodes;
 
@@ -31,9 +31,9 @@ using SunEyeVision.UI.Services.Thumbnail;
 using SunEyeVision.UI.Factories;
 using SunEyeVision.UI.Infrastructure;
 using SunEyeVision.UI.Services.Workflow;
-using SunEyeVision.UI.Views.Controls.Canvas;
-using SunEyeVision.UI.Views.Controls.Panels;
-using SunEyeVision.UI.Views.Windows;
+using SunEyeVision.UI.Shell.Controls.Canvas;
+using SunEyeVision.UI.Shell.Controls.Panels;
+using SunEyeVision.UI.Shell.Windows;
 using SunEyeVision.UI.Extensions;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
@@ -43,7 +43,13 @@ using SunEyeVision.UI.Services.Performance;
 using SunEyeVision.UI.Services.Logging;
 using SunEyeVision.Plugin.SDK.Logging;
 
-namespace SunEyeVision.UI.ViewModels
+using SunEyeVision.UI.Features.Toolbox;
+
+using SunEyeVision.UI.Features.WorkflowUI;
+
+using SunEyeVision.UI.Core;
+
+namespace SunEyeVision.UI.Features.Shell
 {
     /// <summary>
     /// 结果项
@@ -97,16 +103,16 @@ namespace SunEyeVision.UI.ViewModels
         private readonly WorkflowExecutionManager _executionManager;
 
         // 图像结果子 VM（就近绑定右侧图像结果区）
-        private readonly ViewModels.ImageResultViewModel _imageResult;
+        private readonly SunEyeVision.UI.Shell.Controls.ImageResultViewModel _imageResult;
 
         // 状态栏子 VM（就近绑定底部状态栏）
-        private readonly ViewModels.StatusBarViewModel _statusBar;
+        private readonly SunEyeVision.UI.Shell.Controls.StatusBarViewModel _statusBar;
 
         // 顶部标题栏子 VM（就近绑定顶部菜单+工具栏）
-        private readonly ViewModels.ShellTopBarViewModel _topBar;
+        private readonly SunEyeVision.UI.Shell.Controls.ShellTopBarViewModel _topBar;
 
         // 工作区子 VM（就近绑定中间工作区）
-        private readonly ViewModels.WorkspaceViewModel _workspace;
+        private readonly SunEyeVision.UI.Shell.Controls.WorkspaceViewModel _workspace;
 
         // 图像显示数据源集合（与图像结果子 VM 共享同一实例）
         private readonly ObservableCollection<AvailableDataSource> _displayImageSources = new();
@@ -201,14 +207,14 @@ namespace SunEyeVision.UI.ViewModels
         // 确保每个Tab都是独立的
 
         private WorkflowNodeBase? _selectedNode;
-        private Models.ImageInputSource? _activeInputSource; // 活动输入源
+        private SunEyeVision.UI.Shared.ImageInputSource? _activeInputSource; // 活动输入源
         private string? _currentDisplayNodeId = null;  // 记录当前显示的采集节点ID，避免重复切换
 
         /// <summary>
         /// 当前活动输入源，用于绑定到图像预览控件
         /// 输入源存储用户选择的图像文件，执行流程不会修改
         /// </summary>
-        public Models.ImageInputSource? ActiveInputSource
+        public SunEyeVision.UI.Shared.ImageInputSource? ActiveInputSource
         {
             get => _imageResult.ActiveInputSource;
             private set => _imageResult.ActiveInputSource = value;
@@ -220,22 +226,22 @@ namespace SunEyeVision.UI.ViewModels
         /// <summary>
         /// 图像结果子 VM（就近绑定右侧图像结果区）
         /// </summary>
-        public ViewModels.ImageResultViewModel ImageResult => _imageResult;
+        public SunEyeVision.UI.Shell.Controls.ImageResultViewModel ImageResult => _imageResult;
 
         /// <summary>
         /// 状态栏子 VM（就近绑定底部状态栏）
         /// </summary>
-        public ViewModels.StatusBarViewModel StatusBar => _statusBar;
+        public SunEyeVision.UI.Shell.Controls.StatusBarViewModel StatusBar => _statusBar;
 
         /// <summary>
         /// 顶部标题栏子 VM（就近绑定顶部菜单+工具栏）
         /// </summary>
-        public ViewModels.ShellTopBarViewModel TopBar => _topBar;
+        public SunEyeVision.UI.Shell.Controls.ShellTopBarViewModel TopBar => _topBar;
 
         /// <summary>
         /// 工作区子 VM（就近绑定中间工作区）
         /// </summary>
-        public ViewModels.WorkspaceViewModel Workspace => _workspace;
+        public SunEyeVision.UI.Shell.Controls.WorkspaceViewModel Workspace => _workspace;
 
         // ===== IRootCoordinator 显式实现（类型不匹配的成员）=====
 
@@ -324,10 +330,10 @@ namespace SunEyeVision.UI.ViewModels
                     LogInfo($"图像源|节点切换: {(value != null ? $"{value.Name}({value.Id})" : "null")} ← {(oldNode != null ? $"{oldNode.Name}({oldNode.Id})" : "null")}", "ImageSourceSelector");
 
                     // 更新数据分析控件（同步等待异步操作）
-                    UpdateDataAnalysisControl((Models.WorkflowNode?)value).GetAwaiter().GetResult();
+                    UpdateDataAnalysisControl((SunEyeVision.UI.Shared.WorkflowNode?)value).GetAwaiter().GetResult();
 
                     // 先更新图像显示数据源（当前节点 + 父节点），RefreshResultDisplay 依赖正确的数据源
-                    UpdateDisplayImageSources((Models.WorkflowNode?)value);
+                    UpdateDisplayImageSources((SunEyeVision.UI.Shared.WorkflowNode?)value);
 
                     // 刷新结果显示（如果节点有缓存结果）
                     var executionResult = value != null ? CurrentWorkflowContext?.GetNodeResult(value.Id) : null;
@@ -335,7 +341,7 @@ namespace SunEyeVision.UI.ViewModels
 
                     if (executionResult?.Result != null)
                     {
-                        _nodeResultManager.RefreshResultDisplay((Models.WorkflowNode?)value, executionResult.Result);
+                        _nodeResultManager.RefreshResultDisplay((SunEyeVision.UI.Shared.WorkflowNode?)value, executionResult.Result);
                     }
                     else if (value != null)
                     {
@@ -362,7 +368,7 @@ namespace SunEyeVision.UI.ViewModels
                     }
 
                     // 节点选中状态变化时更新图像预览
-                    UpdateImagePreviewVisibility((Models.WorkflowNode?)value);
+                    UpdateImagePreviewVisibility((SunEyeVision.UI.Shared.WorkflowNode?)value);
                 }
             }
         }
@@ -389,10 +395,10 @@ namespace SunEyeVision.UI.ViewModels
                 // ★ 优化：即使引用相同，也只刷新结果，不清空（防止闪烁）
                 if (node?.LastResult != null)
                 {
-                    _nodeResultManager.RefreshResultDisplay((Models.WorkflowNode?)node, (Plugin.SDK.Execution.Results.ToolResults?)node.LastResult);
+                    _nodeResultManager.RefreshResultDisplay((SunEyeVision.UI.Shared.WorkflowNode?)node, (Plugin.SDK.Execution.Results.ToolResults?)node.LastResult);
                 }
-                UpdateDisplayImageSources((Models.WorkflowNode?)node);
-                UpdateImagePreviewVisibility((Models.WorkflowNode?)node);
+                UpdateDisplayImageSources((SunEyeVision.UI.Shared.WorkflowNode?)node);
+                UpdateImagePreviewVisibility((SunEyeVision.UI.Shared.WorkflowNode?)node);
             }
         }
 
@@ -814,17 +820,17 @@ SplitterPosition = position;
             _workflowContextService = new Services.WorkflowContextService();
 
             // 初始化图像结果子 VM（就近绑定右侧图像结果区，共享数据源/结果行集合）
-            _imageResult = new ViewModels.ImageResultViewModel(this);
+            _imageResult = new SunEyeVision.UI.Shell.Controls.ImageResultViewModel(this);
             _imageResult.AttachCollections(_displayImageSources, _flatResultRows);
 
             // 初始化状态栏子 VM（就近绑定底部状态栏）
-            _statusBar = new ViewModels.StatusBarViewModel(this);
+            _statusBar = new SunEyeVision.UI.Shell.Controls.StatusBarViewModel(this);
 
             // 初始化顶部标题栏子 VM（就近绑定顶部菜单+工具栏）
-            _topBar = new ViewModels.ShellTopBarViewModel(this);
+            _topBar = new SunEyeVision.UI.Shell.Controls.ShellTopBarViewModel(this);
 
             // 初始化工作区子 VM（就近绑定中间工作区）
-            _workspace = new ViewModels.WorkspaceViewModel(this);
+            _workspace = new SunEyeVision.UI.Shell.Controls.WorkspaceViewModel(this);
 
             // 初始化工作流引擎
             _logger = VisionLogger.Instance;
@@ -903,7 +909,7 @@ SplitterPosition = position;
             UndoCommand = new RelayCommand(ExecuteUndo, CanExecuteUndo);
             RedoCommand = new RelayCommand(ExecuteRedo, CanExecuteRedo);
             DeleteSelectedNodesCommand = new RelayCommand(ExecuteDeleteSelectedNodes, CanDeleteSelectedNodes);
-            OpenDebugWindowCommand = new RelayCommand<Models.WorkflowNode>(node => ExecuteOpenDebugWindow(node));
+            OpenDebugWindowCommand = new RelayCommand<SunEyeVision.UI.Shared.WorkflowNode>(node => ExecuteOpenDebugWindow(node));
             TogglePathPointsCommand = new RelayCommand(ExecuteTogglePathPoints);
 
             // 所有工作流
@@ -1124,7 +1130,7 @@ SplitterPosition = position;
                 var canvasType = WorkflowTabViewModel.SelectedTab.CanvasType;
             CurrentCanvasTypeText = canvasType switch
             {
-                Views.Controls.Canvas.CanvasType.WorkflowCanvas => "工作流画布",
+                SunEyeVision.UI.Shell.Controls.Canvas.CanvasType.WorkflowCanvas => "工作流画布",
                 _ => "未知类型"
             };
             }
@@ -1441,7 +1447,7 @@ SplitterPosition = position;
 
                     // ✅ 统一使用解决方案管理器的默认目录
                     var defaultPath = solutionManager.SolutionsDirectory;
-                    var dialog = new Views.Windows.NewSolutionDialog(defaultPath)
+                    var dialog = new SunEyeVision.UI.Shell.Windows.NewSolutionDialog(defaultPath)
                     {
                         Owner = System.Windows.Application.Current.MainWindow
                     };
@@ -1738,7 +1744,7 @@ SplitterPosition = position;
             LogInfo($"创建标签页: {workflow.Name}");
 
             // 创建 WorkflowTabViewModel
-            var tabViewModel = new ViewModels.WorkflowTabViewModel();
+            var tabViewModel = new SunEyeVision.UI.Features.WorkflowUI.WorkflowTabViewModel();
             tabViewModel.Id = workflow.Id;
             tabViewModel.Name = workflow.Name;
 
@@ -2048,7 +2054,7 @@ SplitterPosition = position;
                 return;
 
             // Phase 3: 确保节点是 WorkflowNode 实例（消除 FromBase 副本，实现对象级共享）
-            if (node is not Models.WorkflowNode uiNode)
+            if (node is not SunEyeVision.UI.Shared.WorkflowNode uiNode)
             {
                 throw new InvalidOperationException(
                     $"节点必须是 WorkflowNode 实例。节点 {node.Id} 的实际类型为 {node.GetType().Name}");
@@ -2210,7 +2216,7 @@ SplitterPosition = position;
             // 从 DSQS 获取剩余可用图像源，取第一个
             // 没有则清空（null），不兜底回退
             AvailableDataSource? firstImageSource = null;
-            if (targetNode is UI.Models.WorkflowNode uiNode)
+            if (targetNode is SunEyeVision.UI.Shared.WorkflowNode uiNode)
             {
                 var dataProvider = GetDataProviderForNode(uiNode);
                 if (dataProvider is IDataSourceQueryService queryService)
@@ -2253,7 +2259,7 @@ SplitterPosition = position;
                 && current.SourceNodeId != "__SubroutineInputs__")
                 return;
 
-            if (node is not UI.Models.WorkflowNode uiNode) return;
+            if (node is not SunEyeVision.UI.Shared.WorkflowNode uiNode) return;
 
             var dataProvider = GetDataProviderForNode(uiNode);
             if (dataProvider is not IDataSourceQueryService queryService) return;
@@ -2429,7 +2435,7 @@ SplitterPosition = position;
             AddLog($"🗑️ 已删除 {string.Join("和 ", parts)}");
         }
 
-        private async void ExecuteOpenDebugWindow(Models.WorkflowNode? node)
+        private async void ExecuteOpenDebugWindow(SunEyeVision.UI.Shared.WorkflowNode? node)
         {
             if (node == null) return;
 
@@ -2565,7 +2571,7 @@ SplitterPosition = position;
         /// 使用 SubroutineId 属性（而非 ExtraData）关联子程序工作流
         /// </summary>
         /// <param name="node">触发导航的子程序节点</param>
-        private void OpenOrNavigateToSubroutine(Models.WorkflowNode node)
+        private void OpenOrNavigateToSubroutine(SunEyeVision.UI.Shared.WorkflowNode node)
         {
             try
             {
@@ -2626,7 +2632,7 @@ SplitterPosition = position;
         /// <summary>
         /// 为子程序节点创建新的子程序工作流并关联（使用 SubroutineId 属性）
         /// </summary>
-        private string CreateNewSubroutineWorkflow(Models.WorkflowNode node)
+        private string CreateNewSubroutineWorkflow(SunEyeVision.UI.Shared.WorkflowNode node)
         {
             var subroutineId = Guid.NewGuid().ToString();
 
@@ -2713,7 +2719,7 @@ SplitterPosition = position;
         /// 统一使用 DataSourceQueryService.GetImageDisplaySources() 获取数据源，
         /// 与 ImageSourceSelector 共享相同的元数据源
         /// </summary>
-        private void UpdateDisplayImageSources(Models.WorkflowNode? selectedNode)
+        private void UpdateDisplayImageSources(SunEyeVision.UI.Shared.WorkflowNode? selectedNode)
         {
             // ★ 数据已在引擎中（SSOT），无需额外同步
 
@@ -2819,7 +2825,7 @@ SplitterPosition = position;
             var cfg = change.Output;
             var isImage = string.Equals(cfg.TypeName, "Image", StringComparison.OrdinalIgnoreCase);
             var isPrevImage = string.Equals(change.PreviousTypeName, "Image", StringComparison.OrdinalIgnoreCase);
-            var isSelectedSubroutine = (_selectedNode as Models.WorkflowNode)?.Id == nodeId;
+            var isSelectedSubroutine = (_selectedNode as SunEyeVision.UI.Shared.WorkflowNode)?.Id == nodeId;
 
             // 1. 结果树局部更新：仅当主界面选中该子程序节点时
             if (isSelectedSubroutine)
@@ -2955,7 +2961,7 @@ SplitterPosition = position;
         /// <summary>解析子程序节点显示名（优先选中节点，其次引擎节点）</summary>
         private string ResolveSubroutineNodeName(string nodeId)
         {
-            if (_selectedNode is Models.WorkflowNode selected && selected.Id == nodeId)
+            if (_selectedNode is SunEyeVision.UI.Shared.WorkflowNode selected && selected.Id == nodeId)
                 return selected.Name ?? selected.DispName ?? "子程序";
             foreach (var wf in _workflowEngine.GetAllWorkflows())
             {
@@ -3206,7 +3212,7 @@ SplitterPosition = position;
         /// 更新数据分析控件 - 根据选中节点是否提供数据分析控件来显示/隐藏
         /// </summary>
         /// <param name="selectedNode">当前选中的节点</param>
-        private System.Threading.Tasks.Task UpdateDataAnalysisControl(Models.WorkflowNode? selectedNode)
+        private System.Threading.Tasks.Task UpdateDataAnalysisControl(SunEyeVision.UI.Shared.WorkflowNode? selectedNode)
         {
             try
             {
@@ -3303,7 +3309,7 @@ SplitterPosition = position;
         /// </summary>
         /// <param name="node">节点</param>
         /// <returns>数据提供者实例</returns>
-        private IDataSourceQueryService? GetDataProviderForNode(Models.WorkflowNode node)
+        private IDataSourceQueryService? GetDataProviderForNode(SunEyeVision.UI.Shared.WorkflowNode node)
         {
             try
             {
@@ -3519,7 +3525,7 @@ SplitterPosition = position;
         /// </summary>
         /// <param name="target">初始化目标（IToolControlInitializer 或 Window）</param>
         /// <param name="node">当前节点</param>
-        private async System.Threading.Tasks.Task InitializeToolControlAsync(object target, Models.WorkflowNode node)
+        private async System.Threading.Tasks.Task InitializeToolControlAsync(object target, SunEyeVision.UI.Shared.WorkflowNode node)
         {
             // ★ 性能剪口：首次打开调试窗口的完整耗时
             var perfSw = System.Diagnostics.Stopwatch.StartNew();
@@ -3677,7 +3683,7 @@ SplitterPosition = position;
         /// <summary>
         /// 订阅调试窗口的执行完成事件
         /// </summary>
-        private void SubscribeToolExecutionCompleted(System.Windows.Window debugWindow, Models.WorkflowNode node,
+        private void SubscribeToolExecutionCompleted(System.Windows.Window debugWindow, SunEyeVision.UI.Shared.WorkflowNode node,
             IDataSourceQueryService dataProvider)
         {
             var eventInfo = debugWindow.GetType().GetEvent("ToolExecutionCompleted");
@@ -4023,7 +4029,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         /// <summary>
         /// 节点执行完成后的后处理（DSQS 已通过 _ssotReader 委托自动读取 SSOT，无需推送）
         /// </summary>
-        private void OnNodeExecutionPostProcess(Models.WorkflowNode node, Plugin.SDK.Execution.Results.ToolResults? result)
+        private void OnNodeExecutionPostProcess(SunEyeVision.UI.Shared.WorkflowNode node, Plugin.SDK.Execution.Results.ToolResults? result)
         {
             if (result == null || !result.IsSuccess) return;
 
@@ -4727,7 +4733,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         /// - 只在状态真正变化时才更新属性，避免触发不必要的绑定刷新
         /// - 引用相等检测在 ActiveInputSource setter 中处理
         /// </remarks>
-        public void UpdateImagePreviewVisibility(Models.WorkflowNode? selectedNode)
+        public void UpdateImagePreviewVisibility(SunEyeVision.UI.Shared.WorkflowNode? selectedNode)
         {
             // 1.没有选中节点时
             if (selectedNode == null)
@@ -4835,7 +4841,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         /// </summary>
         public void ForceRefreshImagePreview()
         {
-            UpdateImagePreviewVisibility((Models.WorkflowNode?)_selectedNode);
+            UpdateImagePreviewVisibility((SunEyeVision.UI.Shared.WorkflowNode?)_selectedNode);
         }
 
         /// <summary>
@@ -4848,7 +4854,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         /// </remarks>
         /// <param name="node">起始节点</param>
         /// <returns>第一个找到的图像载入节点，未找到返回null</returns>
-        private Models.WorkflowNode? FindUpstreamImageLoadNode(Models.WorkflowNode node)
+        private SunEyeVision.UI.Shared.WorkflowNode? FindUpstreamImageLoadNode(SunEyeVision.UI.Shared.WorkflowNode node)
         {
             var selectedTab = WorkflowTabViewModel?.SelectedTab;
             if (selectedTab == null || selectedTab.WorkflowConnections == null || selectedTab.WorkflowNodes == null)
@@ -4857,7 +4863,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
             }
 
             var visited = new HashSet<string>();
-            var queue = new Queue<Models.WorkflowNode>();
+            var queue = new Queue<SunEyeVision.UI.Shared.WorkflowNode>();
             queue.Enqueue(node);
             visited.Add(node.Id);
 
@@ -4928,7 +4934,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                 LogInfo($"[诊断-打开] 默认解决方案ID: {solutionManager.Settings.DefaultSolutionId ?? "null"}");
                 LogInfo($"[诊断-打开] Settings.CurrentSolutionId: {solutionManager.Settings.CurrentSolutionId ?? "null"}");
 
-                var configDialog = new Views.Windows.SolutionConfigurationDialog(solutionManager);
+                var configDialog = new SunEyeVision.UI.Features.Dialogs.SolutionConfigurationDialog(solutionManager);
 
                 var result = configDialog.ShowDialog();
 
@@ -4990,8 +4996,8 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                     return;
                 }
 
-                var viewModel = new ViewModels.GlobalVariableManagerViewModel(solutionManager);
-                var dialog = new Views.Windows.GlobalVariableManagerDialog(viewModel);
+                var viewModel = new SunEyeVision.UI.Features.GlobalVariableManager.GlobalVariableManagerViewModel(solutionManager);
+                var dialog = new SunEyeVision.UI.Features.GlobalVariableManager.GlobalVariableManagerDialog(viewModel);
 
                 dialog.ShowDialog();
             }
@@ -5056,11 +5062,11 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                 }
 
                 LogInfo("创建 CameraManagerViewModel...");
-                var viewModel = new ViewModels.CameraManagerViewModel(solutionManager);
+                var viewModel = new SunEyeVision.UI.Features.Camera.CameraManagerViewModel(solutionManager);
                 LogInfo($"ViewModel 已创建, 相机数量: {viewModel.Cameras?.Count ?? 0}");
 
                 LogInfo("创建 CameraManagerDialog...");
-                var dialog = new Views.Windows.CameraManagerDialog(viewModel);
+                var dialog = new SunEyeVision.UI.Features.Camera.CameraManagerDialog(viewModel);
 
                 LogInfo("显示对话框...");
                 dialog.ShowDialog();
@@ -5093,8 +5099,8 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                     return;
                 }
 
-                var viewModel = new ViewModels.CommunicationManagerViewModel(solutionManager);
-                var dialog = new Views.Windows.CommunicationManagerDialog(viewModel);
+                var viewModel = new SunEyeVision.UI.Features.CommunicationManager.CommunicationManagerViewModel(solutionManager);
+                var dialog = new SunEyeVision.UI.Features.CommunicationManager.CommunicationManagerDialog(viewModel);
 
                 dialog.ShowDialog();
             }

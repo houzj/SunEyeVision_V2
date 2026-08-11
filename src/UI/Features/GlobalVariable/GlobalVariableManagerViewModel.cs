@@ -10,12 +10,16 @@ using System.Windows.Input;
 using Microsoft.Win32;
 using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.UI.Views.Windows;
+using SunEyeVision.UI.Features.ParameterSetting;
 using SunEyeVision.UI.Events;
 using SunEyeVision.UI.Infrastructure;
 using SunEyeVision.Workflow;
 
-namespace SunEyeVision.UI.ViewModels
+using SunEyeVision.UI.Core;
+
+using SunEyeVision.UI.Features.Shell;
+
+namespace SunEyeVision.UI.Features.GlobalVariableManager
 {
     /// <summary>
     /// 全局变量管理器 ViewModel

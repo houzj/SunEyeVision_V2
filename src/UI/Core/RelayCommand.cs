@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Windows.Input;
 
-namespace SunEyeVision.UI.ViewModels
+namespace SunEyeVision.UI.Core
 {
     /// <summary>
     /// 简洁统一的 RelayCommand 实现

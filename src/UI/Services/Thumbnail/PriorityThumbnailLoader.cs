@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,7 +12,7 @@ using System.Windows.Threading;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.UI.Services.Performance;
 using SunEyeVision.UI.Services.Thumbnail;
-using SunEyeVision.UI.Views.Controls.Panels;
+using SunEyeVision.UI.Shell.Controls.Panels;
 
 namespace SunEyeVision.UI.Services.Thumbnail
 {

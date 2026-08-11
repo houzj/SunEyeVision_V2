@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
-using SunEyeVision.UI.Models;
+using SunEyeVision.UI.Shared;
 
 namespace SunEyeVision.UI.Commands
 {

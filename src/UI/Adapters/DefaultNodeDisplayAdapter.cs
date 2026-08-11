@@ -1,5 +1,5 @@
-﻿using System.Windows.Media;
-using SunEyeVision.UI.Models;
+using System.Windows.Media;
+using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Adapters;
 
 namespace SunEyeVision.UI.Adapters

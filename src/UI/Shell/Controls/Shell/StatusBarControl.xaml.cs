@@ -1,6 +1,6 @@
 using System.Windows.Controls;
 
-namespace SunEyeVision.UI.Views.Controls.Shell
+namespace SunEyeVision.UI.Shell.Controls.Shell
 {
     /// <summary>
     /// 底部状态栏：真实状态、相机状态、运行状态、流程计数。

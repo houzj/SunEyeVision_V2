@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using OpenCvSharp;
-using SunEyeVision.UI.Views.Controls.Panels;
+using SunEyeVision.UI.Shell.Controls.Panels;
 
 namespace SunEyeVision.UI.Services
 {

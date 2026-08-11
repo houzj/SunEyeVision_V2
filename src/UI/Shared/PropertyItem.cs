@@ -1,6 +1,6 @@
 using System.Windows;
 
-namespace SunEyeVision.UI.Models
+namespace SunEyeVision.UI.Shared
 {
     /// <summary>
     /// 属性项

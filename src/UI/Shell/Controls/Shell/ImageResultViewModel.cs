@@ -1,11 +1,15 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Windows.Media.Imaging;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.UI.Models;
+using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Services;
 
-namespace SunEyeVision.UI.ViewModels
+using SunEyeVision.UI.Core;
+
+using SunEyeVision.UI.Features.Shell;
+
+namespace SunEyeVision.UI.Shell.Controls
 {
     /// <summary>
     /// 图像结果视图模型 - 就近绑定右侧图像结果区（图像显示 + 模块结果表 + 图像预览）。
@@ -21,7 +25,7 @@ namespace SunEyeVision.UI.ViewModels
         private bool _hasModuleResults;
         private bool _showImagePreview;
         private double _imageScale = 1.0;
-        private Models.ImageInputSource? _activeInputSource;
+        private SunEyeVision.UI.Shared.ImageInputSource? _activeInputSource;
         private ObservableCollection<AvailableDataSource> _displayImageSources = new();
         private ObservableCollection<FlatResultRow> _flatResultRows = new();
 
@@ -110,7 +114,7 @@ namespace SunEyeVision.UI.ViewModels
         /// <summary>
         /// 当前活动输入源（图像预览器绑定）
         /// </summary>
-        public Models.ImageInputSource? ActiveInputSource
+        public SunEyeVision.UI.Shared.ImageInputSource? ActiveInputSource
         {
             get => _activeInputSource;
             set => SetProperty(ref _activeInputSource, value);

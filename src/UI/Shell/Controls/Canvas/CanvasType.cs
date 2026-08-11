@@ -1,4 +1,4 @@
-namespace SunEyeVision.UI.Views.Controls.Canvas
+namespace SunEyeVision.UI.Shell.Controls.Canvas
 {
     /// <summary>
     /// 画布类型

@@ -1,9 +1,11 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Linq;
 using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Workflow;
 
-namespace SunEyeVision.UI.ViewModels
+using SunEyeVision.UI.Core;
+
+namespace SunEyeVision.UI.Features.GlobalVariableManager
 {
     /// <summary>
     /// 变量分组视图模型

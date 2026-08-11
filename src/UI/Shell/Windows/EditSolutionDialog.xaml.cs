@@ -1,6 +1,6 @@
 using System.Windows;
 
-namespace SunEyeVision.UI.Views.Windows;
+namespace SunEyeVision.UI.Shell.Windows;
 
 /// <summary>
 /// EditSolutionDialog.xaml 的交互逻辑

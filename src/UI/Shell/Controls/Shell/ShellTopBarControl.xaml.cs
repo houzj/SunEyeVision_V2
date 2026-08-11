@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace SunEyeVision.UI.Views.Controls.Shell
+namespace SunEyeVision.UI.Shell.Controls.Shell
 {
     /// <summary>
     /// 顶部标题栏：菜单 + 工具栏。

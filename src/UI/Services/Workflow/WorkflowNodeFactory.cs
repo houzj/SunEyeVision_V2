@@ -1,9 +1,9 @@
-﻿using SunEyeVision.UI.Services.Canvas;
+using SunEyeVision.UI.Services.Canvas;
 using SunEyeVision.UI.Services.Interaction;
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using NodeModel = SunEyeVision.UI.Models.WorkflowNode;
-using WorkflowModel = SunEyeVision.UI.Models;
+using NodeModel = SunEyeVision.UI.Shared.WorkflowNode;
+using WorkflowModel = SunEyeVision.UI.Shared;
 
 namespace SunEyeVision.UI.Services.Workflow
 {

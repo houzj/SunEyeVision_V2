@@ -1,4 +1,4 @@
-﻿<Window x:Class="SunEyeVision.UI.Views.Controls.Common.LoadingWindow"
+<Window x:Class="SunEyeVision.UI.Shell.Controls.Common.LoadingWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         WindowStyle="None"

@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Windows;
 using System.Windows.Controls;
-using SunEyeVision.UI.Views.Controls;
+using SunEyeVision.UI.Shell.Controls;
 using SunEyeVision.UI.Services.Canvas;
 using SunEyeVision.UI.Services.Canvas.Engines;
-using SunEyeVision.UI.ViewModels;
+using SunEyeVision.UI.Core;
 
 namespace SunEyeVision.UI.Services.Canvas
 {

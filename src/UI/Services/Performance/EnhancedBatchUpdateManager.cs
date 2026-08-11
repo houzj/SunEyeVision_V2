@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Threading;
-using SunEyeVision.UI.Models;
+using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Services.Connection;
 using SunEyeVision.UI.Services.Performance;
+
+using SunEyeVision.UI.Features.WorkflowUI;
 
 namespace SunEyeVision.UI.Services.Performance
 {
@@ -27,7 +29,7 @@ namespace SunEyeVision.UI.Services.Performance
         private const int UpdateDelayMs = 16; // 60FPS
 
         private bool _isUpdateScheduled = false;
-        private ViewModels.WorkflowTabViewModel? _currentTab;
+        private SunEyeVision.UI.Features.WorkflowUI.WorkflowTabViewModel? _currentTab;
 
         // 性能统计
         public int TotalUpdatesProcessed { get; private set; }
@@ -49,7 +51,7 @@ namespace SunEyeVision.UI.Services.Performance
         /// <summary>
         /// 设置当前活动的WorkflowTab
         /// </summary>
-        public void SetCurrentTab(ViewModels.WorkflowTabViewModel? tab)
+        public void SetCurrentTab(SunEyeVision.UI.Features.WorkflowUI.WorkflowTabViewModel? tab)
         {
             _currentTab = tab;
         }

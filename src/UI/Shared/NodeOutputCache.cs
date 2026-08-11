@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -8,9 +8,9 @@ using System.Windows.Media.Imaging;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models.Imaging;
 using SunEyeVision.UI.Services.Thumbnail;
-using SunEyeVision.UI.Views.Controls.Panels;
+using SunEyeVision.UI.Shell.Controls.Panels;
 
-namespace SunEyeVision.UI.Models
+namespace SunEyeVision.UI.Shared
 {
     /// <summary>
     /// 节点输出缓存 - 存储执行结果图像和数据

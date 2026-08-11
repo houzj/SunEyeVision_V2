@@ -5,7 +5,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 
-namespace SunEyeVision.UI.Views.Controls.Common
+namespace SunEyeVision.UI.Shell.Controls.Common
 {
     /// <summary>
     /// 带有折叠/展开按钮的GridSplitter

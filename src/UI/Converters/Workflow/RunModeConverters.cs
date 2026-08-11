@@ -3,7 +3,9 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
-using SunEyeVision.UI.Models;
+using SunEyeVision.UI.Shared;
+
+using SunEyeVision.UI.Features.WorkflowUI;
 
 namespace SunEyeVision.UI.Converters.Workflow
 {

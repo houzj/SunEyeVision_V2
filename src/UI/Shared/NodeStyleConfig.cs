@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Windows;
 using System.Windows.Media;
 
-namespace SunEyeVision.UI.Models
+namespace SunEyeVision.UI.Shared
 {
     /// <summary>
     /// 节点样式配置 - 完全解耦样式与逻辑

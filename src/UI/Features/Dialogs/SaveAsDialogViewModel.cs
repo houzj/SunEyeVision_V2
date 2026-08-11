@@ -1,7 +1,9 @@
 using System.Windows.Input;
-using SunEyeVision.UI.ViewModels;
+using SunEyeVision.UI.Core;
 
-namespace SunEyeVision.UI.ViewModels
+using SunEyeVision.UI.Core;
+
+namespace SunEyeVision.UI.Features.Dialogs
 {
     /// <summary>
     /// 另存为对话框的ViewModel

@@ -1,7 +1,11 @@
 using System.Collections;
 using SunEyeVision.UI.Services;
 
-namespace SunEyeVision.UI.ViewModels
+using SunEyeVision.UI.Features.WorkflowUI;
+
+using SunEyeVision.UI.Core;
+
+namespace SunEyeVision.UI.Shell.Controls
 {
     /// <summary>
     /// 工作区视图模型 - 就近绑定中间工作区。

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
@@ -6,9 +6,15 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using SunEyeVision.Core.Events;
 using SunEyeVision.Plugin.SDK.Models;
-using SunEyeVision.UI.Models;
+using SunEyeVision.UI.Shared;
 
-namespace SunEyeVision.UI.ViewModels
+using SunEyeVision.UI.Core;
+
+using SunEyeVision.UI.Features.WorkflowUI;
+
+using SunEyeVision.UI.Features.Shell;
+
+namespace SunEyeVision.UI.Features.WorkflowUI
 {
     /// <summary>
     /// 工作流标签页管理ViewModel

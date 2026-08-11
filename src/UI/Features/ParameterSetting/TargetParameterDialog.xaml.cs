@@ -1,13 +1,15 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Windows;
 using System.Windows.Data;
-using SunEyeVision.UI.ViewModels;
+using SunEyeVision.UI.Core;
 using SunEyeVision.Workflow;
 
-namespace SunEyeVision.UI.Views.Windows
+using SunEyeVision.UI.Core;
+
+namespace SunEyeVision.UI.Features.ParameterSetting
 {
     /// <summary>
     /// 目标参数管理对话框

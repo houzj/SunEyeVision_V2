@@ -5,11 +5,13 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
-using SunEyeVision.UI.Models;
-using SunEyeVision.UI.ViewModels;
-using SunEyeVision.UI.Views.Windows;
+using SunEyeVision.UI.Shared;
+using SunEyeVision.UI.Core;
+using SunEyeVision.UI.Shell.Windows;
 
-namespace SunEyeVision.UI.Views.Controls.Toolbox
+using SunEyeVision.UI.Features.Toolbox;
+
+namespace SunEyeVision.UI.Shell.Controls.Toolbox
 {
     /// <summary>
     /// ToolboxControl.xaml 的交互逻辑（超简化版）

@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using SunEyeVision.UI.Models;
+using SunEyeVision.UI.Shared;
 
 namespace SunEyeVision.UI.Services.Rendering
 {

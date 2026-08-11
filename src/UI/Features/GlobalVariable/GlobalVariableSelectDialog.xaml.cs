@@ -1,9 +1,11 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Windows;
-using SunEyeVision.UI.ViewModels;
+using SunEyeVision.UI.Core;
 using SunEyeVision.Workflow;
 
-namespace SunEyeVision.UI.Views.Windows
+using SunEyeVision.UI.Core;
+
+namespace SunEyeVision.UI.Features.GlobalVariableManager
 {
     /// <summary>
     /// 全局变量选择对话框（简化版，只读选择，非管理器）

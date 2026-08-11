@@ -4,7 +4,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace SunEyeVision.UI.Views.Windows
+namespace SunEyeVision.UI.Shell.Windows
 {
     /// <summary>
     /// 帮助窗口 - 支持显示内容和外部 HTML 文档

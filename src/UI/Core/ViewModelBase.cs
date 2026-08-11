@@ -1,9 +1,9 @@
-﻿using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Plugin.SDK.Logging;
 using System.Collections.ObjectModel;
 using System.Windows;
 
-namespace SunEyeVision.UI.ViewModels
+namespace SunEyeVision.UI.Core
 {
     /// <summary>
     /// UI层 ViewModel 基类 - 继承 SDK 的 ObservableObject

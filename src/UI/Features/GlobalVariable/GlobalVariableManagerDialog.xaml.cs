@@ -1,14 +1,16 @@
-﻿using System;
+using System;
 using System.Collections.Specialized;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
-using SunEyeVision.UI.ViewModels;
+using SunEyeVision.UI.Core;
 using SunEyeVision.Workflow;
 
-namespace SunEyeVision.UI.Views.Windows
+using SunEyeVision.UI.Core;
+
+namespace SunEyeVision.UI.Features.GlobalVariableManager
 {
     /// <summary>
     /// 全局变量管理器对话框

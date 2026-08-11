@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
 using System.Windows;
-using SunEyeVision.UI.Views.Controls.Canvas;
+using SunEyeVision.UI.Shell.Controls.Canvas;
 
 namespace SunEyeVision.UI.Converters.Visibility
 {

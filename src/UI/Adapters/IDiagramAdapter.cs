@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using SunEyeVision.UI.Models;
+using System.Collections.Generic;
+using SunEyeVision.UI.Shared;
 
 namespace SunEyeVision.UI.Adapters
 {

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Windows;
 using System.Windows.Threading;
-using SunEyeVision.UI.Models;
+using SunEyeVision.UI.Shared;
 
 namespace SunEyeVision.UI.Services.Rendering
 {

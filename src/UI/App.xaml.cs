@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
@@ -11,7 +11,7 @@ using System.Windows.Threading;
 using System.Windows.Data;
 using System.Threading;
 using System.Threading.Tasks;
-using SunEyeVision.UI.Views.Windows;
+using SunEyeVision.UI.Shell.Windows;
 using System.Runtime.InteropServices;
 using SunEyeVision.Workflow;
 using SunEyeVision.Plugin.SDK.Models;
@@ -22,9 +22,13 @@ using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.UI.Services.Vision;
 using System.Windows.Media;
-using SunEyeVision.UI.ViewModels;
+using SunEyeVision.UI.Core;
 using SunEyeVision.UI.Infrastructure;
 using SunEyeVision.UI.Events;
+
+using SunEyeVision.UI.Features.Dialogs;
+
+using SunEyeVision.UI.Features.GlobalVariableManager;
 
 namespace SunEyeVision.UI;
 
@@ -93,7 +97,7 @@ public partial class App : Application
         // 3.5 Phase 2: 注册工作流节点类型转换器
         // 确保反序列化时 WorkflowNodeBase 自动转换为 WorkflowNode 实例
         WorkflowNodeFactory.TypeConverter = baseNode =>
-            baseNode is Models.WorkflowNode ? baseNode : Models.WorkflowNode.FromBase(baseNode);
+            baseNode is SunEyeVision.UI.Shared.WorkflowNode ? baseNode : SunEyeVision.UI.Shared.WorkflowNode.FromBase(baseNode);
 
         // 4. 使用默认路径
         var defaultPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);

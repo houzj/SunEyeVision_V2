@@ -6,12 +6,16 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using SunEyeVision.UI.Views.Controls.Common;
-using SunEyeVision.UI.Models;
-using SunEyeVision.UI.ViewModels;
+using SunEyeVision.UI.Shell.Controls.Common;
+using SunEyeVision.UI.Shared;
+using SunEyeVision.UI.Core;
 using SunEyeVision.UI.Services.Canvas;
 using SunEyeVision.UI.Services.Interaction;
-using SunEyeVision.UI.Views.Controls.Canvas;
+using SunEyeVision.UI.Shell.Controls.Canvas;
+
+using SunEyeVision.UI.Features.WorkflowUI;
+
+using SunEyeVision.UI.Features.Shell;
 
 namespace SunEyeVision.UI.Services.Interaction
 {

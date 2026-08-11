@@ -1,7 +1,9 @@
 using System.Windows;
-using SunEyeVision.UI.ViewModels;
+using SunEyeVision.UI.Core;
 
-namespace SunEyeVision.UI.Views.Windows
+using SunEyeVision.UI.Core;
+
+namespace SunEyeVision.UI.Features.Dialogs
 {
     /// <summary>
     /// SaveAsDialog.xaml 的交互逻辑

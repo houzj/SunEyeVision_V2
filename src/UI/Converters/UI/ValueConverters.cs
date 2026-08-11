@@ -1,9 +1,13 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
-using SunEyeVision.UI.Models;
-using SunEyeVision.UI.Views.Controls.Canvas;
+using SunEyeVision.UI.Shared;
+using SunEyeVision.UI.Shell.Controls.Canvas;
+
+using SunEyeVision.UI.Features.Toolbox;
+
+using SunEyeVision.UI.Features.WorkflowUI;
 
 namespace SunEyeVision.UI.Converters.UI
 {

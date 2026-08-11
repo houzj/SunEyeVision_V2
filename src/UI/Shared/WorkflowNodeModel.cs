@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using System.Windows;
@@ -7,7 +7,7 @@ using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Workflow;
 using SunEyeVision.Plugin.SDK.Models;
 
-namespace SunEyeVision.UI.Models
+namespace SunEyeVision.UI.Shared
 {
     /// <summary>
     /// 工作流节点模型 - UI 层扩展属性

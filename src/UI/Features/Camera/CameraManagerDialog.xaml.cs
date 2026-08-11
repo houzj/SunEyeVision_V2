@@ -1,7 +1,9 @@
-﻿using System.Windows;
-using SunEyeVision.UI.ViewModels;
+using System.Windows;
+using SunEyeVision.UI.Core;
 
-namespace SunEyeVision.UI.Views.Windows
+using SunEyeVision.UI.Core;
+
+namespace SunEyeVision.UI.Features.Camera
 {
     /// <summary>
     /// 相机管理器对话框

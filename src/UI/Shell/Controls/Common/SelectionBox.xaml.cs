@@ -1,8 +1,8 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 
-namespace SunEyeVision.UI.Views.Controls.Common
+namespace SunEyeVision.UI.Shell.Controls.Common
 {
     public partial class SelectionBox : UserControl
     {

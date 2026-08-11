@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 using System.Windows.Input;
 using SunEyeVision.Workflow;
 
-namespace SunEyeVision.UI.Commands
+namespace SunEyeVision.UI.Features.WorkflowUI.Commands
 {
     /// <summary>
     /// 添加连接命令

@@ -1,6 +1,6 @@
 using System.Windows.Controls;
 
-namespace SunEyeVision.UI.Diagnostics
+namespace SunEyeVision.UI.Features.WorkflowUI.Diagnostics
 {
     /// <summary>
     /// 共享调试控件

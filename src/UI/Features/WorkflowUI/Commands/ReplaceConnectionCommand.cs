@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 using System.Windows.Input;
 using SunEyeVision.Workflow;
 
-namespace SunEyeVision.UI.Commands
+namespace SunEyeVision.UI.Features.WorkflowUI.Commands
 {
     /// <summary>
     /// 替换连接命令（新连接覆盖旧连接，支持撤销）

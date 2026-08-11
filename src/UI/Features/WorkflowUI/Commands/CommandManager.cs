@@ -5,7 +5,7 @@ using System.Windows.Input;
 using SunEyeVision.UI.Shared;
 using SunEyeVision.Workflow;
 
-namespace SunEyeVision.UI.Commands
+namespace SunEyeVision.UI.Features.WorkflowUI.Commands
 {
     /// <summary>
     /// 命令管理- 用于撤销/重做功能

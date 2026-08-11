@@ -1,6 +1,6 @@
 using System.Windows;
 
-namespace SunEyeVision.UI.Infrastructure
+namespace SunEyeVision.UI.Shell
 {
     /// <summary>
     /// 面板扩展接口

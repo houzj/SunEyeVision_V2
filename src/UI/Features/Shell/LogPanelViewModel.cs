@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
-using SunEyeVision.UI.Commands;
+using SunEyeVision.UI.Features.WorkflowUI.Commands;
 using SunEyeVision.UI.Services.Logging;
 using SunEyeVision.UI.Adapters;
 using SunEyeVision.Plugin.SDK.Logging;

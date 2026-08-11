@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +12,8 @@ using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering;
-using SunEyeVision.UI.Extensions;
+using SunEyeVision.UI.Shared;
+using SunEyeVision.UI.Features.WorkflowUI;
 using SunEyeVision.UI.Services.Vision;
 using SunEyeVision.UI.Services.Performance;
 using WorkflowCore = SunEyeVision.Workflow;

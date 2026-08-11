@@ -3,7 +3,7 @@ using System.Windows;
 using System.Windows.Input;
 using SunEyeVision.UI.Shared;
 
-namespace SunEyeVision.UI.Commands
+namespace SunEyeVision.UI.Features.WorkflowUI.Commands
 {
     /// <summary>
     /// 移动节点命令

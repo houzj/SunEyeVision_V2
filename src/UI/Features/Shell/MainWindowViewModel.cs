@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -10,7 +10,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Microsoft.Win32;
-using AppCommands = SunEyeVision.UI.Commands;
+using AppCommands = SunEyeVision.UI.Features.WorkflowUI.Commands;
 using SunEyeVision.UI.Shared;
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 using SunEyeVision.Workflow.Nodes;
@@ -28,13 +28,17 @@ using SunEyeVision.UI;
 using SunEyeVision.UI.Adapters;
 using SunEyeVision.Workflow;
 using SunEyeVision.UI.Services.Thumbnail;
-using SunEyeVision.UI.Factories;
-using SunEyeVision.UI.Infrastructure;
+using SunEyeVision.UI.Features.WorkflowUI;
+using SunEyeVision.UI.Services.Interaction;
+using SunEyeVision.UI.Shell;
+using SunEyeVision.UI.Core;
+using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Services.Workflow;
 using SunEyeVision.UI.Shell.Controls.Canvas;
 using SunEyeVision.UI.Shell.Controls.Panels;
 using SunEyeVision.UI.Shell.Windows;
-using SunEyeVision.UI.Extensions;
+using SunEyeVision.UI.Shared;
+using SunEyeVision.UI.Features.WorkflowUI;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Logic;
@@ -837,7 +841,7 @@ SplitterPosition = position;
             _workflowEngine = new WorkflowEngine(_logger);
 
             // 初始化执行管理器（传入共享的 WorkflowEngine，子程序工作流已注册在其中）
-            _executionManager = new Services.Workflow.WorkflowExecutionManager(new Infrastructure.DefaultInputProvider(), _workflowEngine);
+            _executionManager = new Services.Workflow.WorkflowExecutionManager(new SunEyeVision.UI.Services.Interaction.DefaultInputProvider(), _workflowEngine);
 
             // 初始化节点结果管理器
             _nodeResultManager = new Services.Workflow.NodeResultManager(() => CurrentWorkflowContext, this);

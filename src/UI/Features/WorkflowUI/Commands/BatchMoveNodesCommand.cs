@@ -5,7 +5,7 @@ using System.Windows.Input;
 using SunEyeVision.UI.Shared;
 using SunEyeVision.Plugin.SDK.Logging;
 
-namespace SunEyeVision.UI.Commands
+namespace SunEyeVision.UI.Features.WorkflowUI.Commands
 {
     /// <summary>
     /// 批量移动节点命令 - 支持拖拽期间的批量通知抑制

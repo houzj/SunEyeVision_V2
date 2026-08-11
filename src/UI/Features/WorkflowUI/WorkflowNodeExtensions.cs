@@ -1,6 +1,6 @@
 using SunEyeVision.Core.Models;
 
-namespace SunEyeVision.UI.Extensions
+namespace SunEyeVision.UI.Features.WorkflowUI
 {
     /// <summary>
     /// WorkflowNode 扩展方法

@@ -5,7 +5,7 @@ using System.Linq;
 using SunEyeVision.UI.Shared;
 using SunEyeVision.Workflow;
 
-namespace SunEyeVision.UI.Commands
+namespace SunEyeVision.UI.Features.WorkflowUI.Commands
 {
     /// <summary>
     /// 原子化删除选中的节点和连接线（合并为一个可撤销命令，消除两步操作的重叠删除问题）

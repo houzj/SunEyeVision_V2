@@ -1,7 +1,10 @@
 using System.Collections.Generic;
-using SunEyeVision.UI.Infrastructure;
+using SunEyeVision.UI.Services.Interaction;
+using SunEyeVision.UI.Shell;
+using SunEyeVision.UI.Core;
+using SunEyeVision.UI.Shared;
 
-namespace SunEyeVision.UI.Infrastructure
+namespace SunEyeVision.UI.Shell
 {
     /// <summary>
     /// 面板管理器

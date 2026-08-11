@@ -1,6 +1,6 @@
 using SunEyeVision.Core.Events;
 
-namespace SunEyeVision.UI.Events
+namespace SunEyeVision.UI.Shared.Events
 {
     /// <summary>
     /// UI 相关事件定义

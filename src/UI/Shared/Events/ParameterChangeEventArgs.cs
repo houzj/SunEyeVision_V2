@@ -1,6 +1,6 @@
 using System;
 
-namespace SunEyeVision.UI.Events
+namespace SunEyeVision.UI.Shared.Events
 {
     /// <summary>
     /// 参数变更类型

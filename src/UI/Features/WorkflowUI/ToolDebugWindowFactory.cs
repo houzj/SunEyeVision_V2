@@ -15,7 +15,7 @@ using SunEyeVision.Plugin.SDK.Validation;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 
-namespace SunEyeVision.UI.Factories
+namespace SunEyeVision.UI.Features.WorkflowUI
 {
     /// <summary>
     /// 工具调试窗口工厂 - 优先使用工具自定义调试窗口

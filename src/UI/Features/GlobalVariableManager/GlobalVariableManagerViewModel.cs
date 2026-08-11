@@ -11,8 +11,11 @@ using Microsoft.Win32;
 using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.UI.Features.ParameterSetting;
-using SunEyeVision.UI.Events;
-using SunEyeVision.UI.Infrastructure;
+using SunEyeVision.UI.Shared.Events;
+using SunEyeVision.UI.Services.Interaction;
+using SunEyeVision.UI.Shell;
+using SunEyeVision.UI.Core;
+using SunEyeVision.UI.Shared;
 using SunEyeVision.Workflow;
 
 using SunEyeVision.UI.Core;

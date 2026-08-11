@@ -5,7 +5,7 @@ using System.Windows.Media.Imaging;
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
 
-namespace SunEyeVision.UI.Extensions
+namespace SunEyeVision.UI.Shared
 {
     /// <summary>
     /// 图像扩展方法

@@ -1,8 +1,11 @@
 using System;
 using System.Threading.Tasks;
-using SunEyeVision.UI.Infrastructure;
+using SunEyeVision.UI.Services.Interaction;
+using SunEyeVision.UI.Shell;
+using SunEyeVision.UI.Core;
+using SunEyeVision.UI.Shared;
 
-namespace SunEyeVision.UI.Infrastructure
+namespace SunEyeVision.UI.Services.Interaction
 {
     /// <summary>
     /// 默认输入图像提供器

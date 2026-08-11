@@ -1,7 +1,10 @@
 using System.Threading.Tasks;
-using SunEyeVision.UI.Infrastructure;
+using SunEyeVision.UI.Services.Interaction;
+using SunEyeVision.UI.Shell;
+using SunEyeVision.UI.Core;
+using SunEyeVision.UI.Shared;
 
-namespace SunEyeVision.UI.Infrastructure
+namespace SunEyeVision.UI.Services.Interaction
 {
     /// <summary>
     /// 图像输入提供者接口。

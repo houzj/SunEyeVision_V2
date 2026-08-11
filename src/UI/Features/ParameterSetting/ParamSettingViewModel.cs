@@ -5,7 +5,7 @@ using System.Windows.Input;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.UI.Controls;
-using SunEyeVision.UI.Events;
+using SunEyeVision.UI.Shared.Events;
 
 using SunEyeVision.UI.Core;
 

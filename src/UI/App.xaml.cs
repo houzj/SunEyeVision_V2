@@ -23,8 +23,11 @@ using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.UI.Services.Vision;
 using System.Windows.Media;
 using SunEyeVision.UI.Core;
-using SunEyeVision.UI.Infrastructure;
-using SunEyeVision.UI.Events;
+using SunEyeVision.UI.Services.Interaction;
+using SunEyeVision.UI.Shell;
+using SunEyeVision.UI.Core;
+using SunEyeVision.UI.Shared;
+using SunEyeVision.UI.Shared.Events;
 
 using SunEyeVision.UI.Features.Dialogs;
 

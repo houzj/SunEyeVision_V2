@@ -1,5 +1,5 @@
 using SunEyeVision.Plugin.SDK.Logging;
-using SunEyeVision.UI.Events;
+using SunEyeVision.UI.Shared.Events;
 
 namespace SunEyeVision.UI.Services.Logging
 {

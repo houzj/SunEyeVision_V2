@@ -1,6 +1,6 @@
 using System.Windows.Input;
 
-namespace SunEyeVision.UI.Commands
+namespace SunEyeVision.UI.Features.WorkflowUI.Commands
 {
     /// <summary>
     /// 可撤销命令接口

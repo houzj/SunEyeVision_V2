@@ -171,7 +171,7 @@ namespace SunEyeVision.UI.Services.Interaction
                     if (delta.X != 0 || delta.Y != 0)
                     {
                         // 创建批量移动命令（新API：只需传入节点列表）
-                        var batchCommand = new Commands.BatchMoveNodesCommand(
+                        var batchCommand = new SunEyeVision.UI.Features.WorkflowUI.Commands.BatchMoveNodesCommand(
                             new List<WorkflowNode>(selectedNodes)
                         );
 

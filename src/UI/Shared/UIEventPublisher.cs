@@ -1,10 +1,13 @@
 using System;
 using SunEyeVision.Core.Events;
 using SunEyeVision.Plugin.SDK.Logging;
-using SunEyeVision.UI.Events;
-using SunEyeVision.UI.Infrastructure;
+using SunEyeVision.UI.Shared.Events;
+using SunEyeVision.UI.Services.Interaction;
+using SunEyeVision.UI.Shell;
+using SunEyeVision.UI.Core;
+using SunEyeVision.UI.Shared;
 
-namespace SunEyeVision.UI.Infrastructure
+namespace SunEyeVision.UI.Shared
 {
     /// <summary>
     /// UI事件发布服务 - 负责发布UI相关的事件。

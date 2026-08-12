@@ -12,11 +12,11 @@ using SubroutineOutputChange = SunEyeVision.Plugin.SDK.Models.SubroutineOutputCh
 using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Services.Canvas;
 using SunEyeVision.UI.Core;
-using SunEyeVision.UI.Shell.Controls.Canvas;
+using SunEyeVision.UI.Features.WorkflowUI.Canvas;
 
 using SunEyeVision.UI.Features.WorkflowUI;
 
-using SunEyeVision.UI.Features.Shell;
+using SunEyeVision.UI.Shell.Windows;
 
 namespace SunEyeVision.UI.Shell.Controls.Shell
 {

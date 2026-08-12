@@ -1,6 +1,6 @@
 using System;
 using System.Windows;
-using SunEyeVision.UI.Shell.Controls.Canvas;
+using SunEyeVision.UI.Features.WorkflowUI.Canvas;
 using SunEyeVision.UI.Services.Canvas;
 using SunEyeVision.UI.Services;
 using SunEyeVision.UI.Services.PathCalculators;

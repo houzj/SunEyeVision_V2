@@ -1,4 +1,4 @@
-namespace SunEyeVision.UI.Shell.Controls.Canvas
+namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 {
     /// <summary>
     /// 画布类型

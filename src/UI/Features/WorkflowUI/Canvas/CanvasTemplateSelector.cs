@@ -2,7 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using SunEyeVision.UI.Core;
 
-namespace SunEyeVision.UI.Shell.Controls.Canvas
+namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 {
     /// <summary>
     /// 画布模板选择器

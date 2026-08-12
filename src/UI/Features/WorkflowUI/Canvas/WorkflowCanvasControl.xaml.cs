@@ -42,9 +42,9 @@ using WpfCanvas = System.Windows.Controls.Canvas;
 
 using SunEyeVision.UI.Features.WorkflowUI;
 
-using SunEyeVision.UI.Features.Shell;
+using SunEyeVision.UI.Shell.Windows;
 
-namespace SunEyeVision.UI.Shell.Controls.Canvas
+namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
 {
 

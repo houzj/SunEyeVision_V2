@@ -14,7 +14,7 @@ using SunEyeVision.Plugin.SDK.Logging;
 
 using SunEyeVision.UI.Core;
 
-namespace SunEyeVision.UI.Features.Shell
+namespace SunEyeVision.UI.Shell.Windows
 {
     /// <summary>
     /// 日志面板视图模型

@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
 using System.Windows;
-using SunEyeVision.UI.Shell.Controls.Canvas;
+using SunEyeVision.UI.Features.WorkflowUI.Canvas;
 
 namespace SunEyeVision.UI.Converters.Visibility
 {

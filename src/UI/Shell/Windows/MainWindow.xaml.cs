@@ -8,7 +8,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
-using SunEyeVision.UI.Shell.Controls.Canvas;
+using SunEyeVision.UI.Features.WorkflowUI.Canvas;
 using SunEyeVision.UI.Shell.Controls.Panels;
 using SunEyeVision.UI.Shell.Controls.Common;
 using SunEyeVision.UI.Shared;
@@ -26,7 +26,7 @@ using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.UI.Features.WorkflowUI;
 
-using SunEyeVision.UI.Features.Shell;
+using SunEyeVision.UI.Shell.Windows;
 
 namespace SunEyeVision.UI.Shell.Windows
 {
@@ -404,10 +404,10 @@ namespace SunEyeVision.UI.Shell.Windows
         /// <summary>
         /// 获取 MainWindowViewModel 中的 NodeResultManager
         /// </summary>
-        private Services.Workflow.NodeResultManager? GetNodeResultManager(SunEyeVision.UI.Features.Shell.MainWindowViewModel viewModel)
+        private Services.Workflow.NodeResultManager? GetNodeResultManager(SunEyeVision.UI.Shell.Windows.MainWindowViewModel viewModel)
         {
             // 通过反射获取私有字段
-            var field = typeof(SunEyeVision.UI.Features.Shell.MainWindowViewModel).GetField("_nodeResultManager",
+            var field = typeof(SunEyeVision.UI.Shell.Windows.MainWindowViewModel).GetField("_nodeResultManager",
                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             return field?.GetValue(viewModel) as Services.Workflow.NodeResultManager;
         }

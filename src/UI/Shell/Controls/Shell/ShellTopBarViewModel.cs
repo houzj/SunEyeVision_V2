@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Windows.Input;
 using SunEyeVision.UI.Services;
 
-using SunEyeVision.UI.Features.Shell;
+using SunEyeVision.UI.Shell.Windows;
 
 using SunEyeVision.UI.Core;
 

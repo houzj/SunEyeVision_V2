@@ -11,7 +11,7 @@
         xmlns:convertersPath="clr-namespace:SunEyeVision.UI.Converters.Path"
         xmlns:convertersNode="clr-namespace:SunEyeVision.UI.Converters.Node"
         xmlns:convertersVisibility="clr-namespace:SunEyeVision.UI.Converters.Visibility"
-        xmlns:canvas="clr-namespace:SunEyeVision.UI.Shell.Controls.Canvas"
+        xmlns:canvas="clr-namespace:SunEyeVision.UI.Features.WorkflowUI.Canvas"
         xmlns:toolbox="clr-namespace:SunEyeVision.UI.Shell.Controls.Toolbox"
         xmlns:shell="clr-namespace:SunEyeVision.UI.Shell.Controls.Shell"
 

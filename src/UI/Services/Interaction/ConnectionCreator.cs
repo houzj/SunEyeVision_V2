@@ -5,11 +5,11 @@ using System.Windows;
 using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Core;
 using SunEyeVision.UI.Services.Connection;
-using SunEyeVision.UI.Shell.Controls.Canvas;
+using SunEyeVision.UI.Features.WorkflowUI.Canvas;
 
 using SunEyeVision.UI.Features.WorkflowUI;
 
-using SunEyeVision.UI.Features.Shell;
+using SunEyeVision.UI.Shell.Windows;
 
 namespace SunEyeVision.UI.Services.Interaction
 {

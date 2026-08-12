@@ -1,5 +1,5 @@
 using SunEyeVision.UI.Shared;
-using SunEyeVision.UI.Shell.Controls.Canvas;
+using SunEyeVision.UI.Features.WorkflowUI.Canvas;
 
 namespace SunEyeVision.UI.Services.Interaction
 {

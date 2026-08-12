@@ -12,7 +12,7 @@ using SunEyeVision.UI.Core;
 
 using SunEyeVision.UI.Features.WorkflowUI;
 
-using SunEyeVision.UI.Features.Shell;
+using SunEyeVision.UI.Shell.Windows;
 
 namespace SunEyeVision.UI.Features.WorkflowUI
 {

@@ -5,7 +5,7 @@ using System.Threading;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Services.Canvas;
-using SunEyeVision.UI.Shell.Controls.Canvas;
+using SunEyeVision.UI.Features.WorkflowUI.Canvas;
 
 namespace SunEyeVision.UI.Services.Interaction
 {

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -34,7 +34,7 @@ using SunEyeVision.UI.Shell;
 using SunEyeVision.UI.Core;
 using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Services.Workflow;
-using SunEyeVision.UI.Shell.Controls.Canvas;
+using SunEyeVision.UI.Features.WorkflowUI.Canvas;
 using SunEyeVision.UI.Shell.Controls.Panels;
 using SunEyeVision.UI.Shell.Windows;
 using SunEyeVision.UI.Shared;
@@ -53,7 +53,7 @@ using SunEyeVision.UI.Features.WorkflowUI;
 
 using SunEyeVision.UI.Core;
 
-namespace SunEyeVision.UI.Features.Shell
+namespace SunEyeVision.UI.Shell.Windows
 {
     /// <summary>
     /// 结果项
@@ -1134,7 +1134,7 @@ SplitterPosition = position;
                 var canvasType = WorkflowTabViewModel.SelectedTab.CanvasType;
             CurrentCanvasTypeText = canvasType switch
             {
-                SunEyeVision.UI.Shell.Controls.Canvas.CanvasType.WorkflowCanvas => "工作流画布",
+                SunEyeVision.UI.Features.WorkflowUI.Canvas.CanvasType.WorkflowCanvas => "工作流画布",
                 _ => "未知类型"
             };
             }

@@ -2,7 +2,7 @@ using System.Windows.Media.Imaging;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 
-using SunEyeVision.UI.Features.Shell;
+using SunEyeVision.UI.Shell.Windows;
 
 namespace SunEyeVision.UI.Services.Workflow
 {

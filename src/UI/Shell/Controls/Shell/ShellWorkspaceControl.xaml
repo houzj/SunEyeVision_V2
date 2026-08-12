@@ -6,7 +6,7 @@
              xmlns:constants="clr-namespace:SunEyeVision.Plugin.SDK.UI.Constants;assembly=SunEyeVision.Plugin.SDK"
              xmlns:converters="clr-namespace:SunEyeVision.UI.Converters"
              xmlns:convertersWorkflow="clr-namespace:SunEyeVision.UI.Converters.Workflow"
-             xmlns:canvas="clr-namespace:SunEyeVision.UI.Shell.Controls.Canvas"
+             xmlns:canvas="clr-namespace:SunEyeVision.UI.Features.WorkflowUI.Canvas"
              mc:Ignorable="d"
              d:DesignHeight="700" d:DesignWidth="900">
 

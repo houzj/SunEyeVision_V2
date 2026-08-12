@@ -6,7 +6,7 @@ using System.Windows.Media.Effects;
 using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Core;
 using SunEyeVision.UI;
-using SunEyeVision.UI.Shell.Controls.Canvas;
+using SunEyeVision.UI.Features.WorkflowUI.Canvas;
 using SunEyeVision.UI.Shell.Windows;
 using SunEyeVision.UI.Services.Canvas;
 using ControlsCanvas = System.Windows.Controls.Canvas;
@@ -15,7 +15,7 @@ using SunEyeVision.UI.Features.Toolbox;
 
 using SunEyeVision.UI.Features.WorkflowUI;
 
-using SunEyeVision.UI.Features.Shell;
+using SunEyeVision.UI.Shell.Windows;
 
 namespace SunEyeVision.UI.Services.Interaction
 {

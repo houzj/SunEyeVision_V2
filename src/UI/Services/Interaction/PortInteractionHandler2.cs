@@ -10,9 +10,9 @@ using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Core;
 using SunEyeVision.UI.Services.Canvas;
 using SunEyeVision.UI.Services.Interaction;
-using SunEyeVision.UI.Shell.Controls.Canvas;
+using SunEyeVision.UI.Features.WorkflowUI.Canvas;
 
-using SunEyeVision.UI.Features.Shell;
+using SunEyeVision.UI.Shell.Windows;
 
 namespace SunEyeVision.UI.Services.Interaction
 {

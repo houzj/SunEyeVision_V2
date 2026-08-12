@@ -4,7 +4,7 @@ using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.UI.Services.Logging;
 using SunEyeVision.Workflow;
 
-using SunEyeVision.UI.Features.Shell;
+using SunEyeVision.UI.Shell.Windows;
 
 namespace SunEyeVision.UI.Adapters
 {

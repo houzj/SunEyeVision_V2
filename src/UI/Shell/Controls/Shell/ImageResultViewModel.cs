@@ -7,7 +7,7 @@ using SunEyeVision.UI.Services;
 
 using SunEyeVision.UI.Core;
 
-using SunEyeVision.UI.Features.Shell;
+using SunEyeVision.UI.Shell.Windows;
 
 namespace SunEyeVision.UI.Shell.Controls
 {

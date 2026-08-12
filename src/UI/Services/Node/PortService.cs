@@ -7,7 +7,7 @@ using System.Windows.Shapes;
 using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Services.Canvas;
 using SunEyeVision.UI.Services.Node;
-using SunEyeVision.UI.Shell.Controls.Canvas;
+using SunEyeVision.UI.Features.WorkflowUI.Canvas;
 
 namespace SunEyeVision.UI.Services.Node
 {

@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SunEyeVision.UI"
+        xmlns:windows="clr-namespace:SunEyeVision.UI.Shell.Windows"
         xmlns:converters="clr-namespace:SunEyeVision.UI.Converters"
         xmlns:constants="clr-namespace:SunEyeVision.Plugin.SDK.UI.Constants;assembly=SunEyeVision.Plugin.SDK"
         xmlns:convertersUI="clr-namespace:SunEyeVision.UI.Converters.UI"
@@ -22,7 +23,10 @@
         Title="太阳眼视觉 - 机器视觉平台" Height="900" Width="1600"
         WindowStartupLocation="CenterScreen"
         WindowState="Maximized"
-        Background="#FFFFFF"
+        WindowStyle="None"
+        ResizeMode="CanResize"
+        WindowChrome.WindowChrome="{x:Static windows:MainWindow.MainWindowChrome}"
+        Background="#2D2D30"
         Loaded="MainWindow_Loaded">
 
     <Window.Resources>
@@ -64,12 +68,12 @@
 
 
             <shell:ShellWorkspaceControl Grid.Column="1" x:Name="WorkspaceHost" DataContext="{Binding Workspace}"/>
-            <!-- 右侧分割器 - 工作区和右侧面板之间 -->
-            <common:SplitterWithToggle Grid.Column="2" Width="8" MinWidth="8"
-                                         ResizeDirection="Columns"
-                                         ToggleDirection="Right"
-                                         x:Name="RightPanelSplitter"
-                                         ToggleClicked="RightPanelSplitter_ToggleClick"/>
+            <!-- 右侧分割器 - 工作区和右侧面板之间（可折叠，折叠逻辑内聚） -->
+            <common:CollapsibleSplitterBox Grid.Column="2" Width="8" MinWidth="8"
+                                           ResizeDirection="Columns"
+                                           CollapseDirection="Right"
+                                           CollapsedSize="0"
+                                           x:Name="RightPanelSplitter"/>
 
             <!-- ========== 右侧面板：图像显示 + 数据分析 + 日志 ========== -->
             <Border Grid.Column="3" Grid.Row="0" Background="#FFFFFF" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0">

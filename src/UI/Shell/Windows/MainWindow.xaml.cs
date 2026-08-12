@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -36,6 +36,19 @@ namespace SunEyeVision.UI.Shell.Windows
     /// </summary>
     public partial class MainWindow : Window
     {
+        /// <summary>
+        /// 自定义无边框窗口 Chrome：CaptionHeight=56（标题栏=ShellTopBarControl，可拖动），
+        /// 菜单/按钮经 WindowChrome.IsHitTestVisibleInChrome=True 在 Caption 区域可点击，边缘可缩放
+        /// </summary>
+        public static System.Windows.Shell.WindowChrome MainWindowChrome { get; } = new System.Windows.Shell.WindowChrome
+        {
+            CaptionHeight = 56,
+            ResizeBorderThickness = new Thickness(6),
+            GlassFrameThickness = new Thickness(0),
+            CornerRadius = new CornerRadius(0),
+            UseAeroCaptionButtons = false
+        };
+
         private readonly MainWindowViewModel _viewModel;
         public MainWindow()
         {
@@ -291,9 +304,22 @@ namespace SunEyeVision.UI.Shell.Windows
         {
             // 取消订阅图像预览事件（经图像结果区退订），防止内存泄漏
             ImageResultHost.Shutdown();
-            // TODO: 清理资源
+            SaveLayoutConfig();
             _viewModel?.StopWorkflowCommand.Execute(null);
             base.OnClosed(e);
+        }
+
+        /// <summary>
+        /// 保存布局配置（右侧面板折叠状态 + 列宽），重启后恢复
+        /// </summary>
+        private void SaveLayoutConfig()
+        {
+            var config = LayoutConfig.Load();
+            config.IsRightPanelCollapsed = RightPanelSplitter.IsCollapsed;
+            config.RightColumnWidth = RightPanelColumn.ActualWidth > 0
+                ? RightPanelColumn.ActualWidth
+                : config.RightColumnWidth;
+            config.Save();
         }
         /// <summary>
         /// 同步UI层的工作流到底层解决方案
@@ -418,7 +444,25 @@ namespace SunEyeVision.UI.Shell.Windows
         /// </summary>
         private void MainContentGrid_Loaded(object sender, RoutedEventArgs e)
         {
-            // 缩放显示由中间工作区 ZoomScaleChanged 事件驱动
+            // 恢复布局配置（右侧面板折叠状态 + 列宽）
+            RestoreLayoutConfig();
+        }
+
+        /// <summary>
+        /// 恢复布局配置（右侧面板折叠状态 + 列宽）
+        /// </summary>
+        private void RestoreLayoutConfig()
+        {
+            var config = LayoutConfig.Load();
+            if (config.IsRightPanelCollapsed)
+            {
+                RightPanelSplitter.IsCollapsed = true;
+                RightPanelSplitter.ToggleCollapsed();
+            }
+            else if (config.RightColumnWidth > 0)
+            {
+                RightPanelColumn.Width = new GridLength(config.RightColumnWidth);
+            }
         }
         #endregion
         #region TabControl 多流程管理事件处理
@@ -431,12 +475,7 @@ namespace SunEyeVision.UI.Shell.Windows
             WorkspaceHost.OpenSubroutineNodeParameterDialog(node);
         }
         #endregion
-        #region SplitterWithToggle 事件处理
-        // 注释：以下代码已废弃，工具箱双模切换功能已完全由ToolboxControl内部按钮实现（2026-02-10）
-        /*
-        private double _originalToolboxWidth = 260;
-        */
-        private double _rightPanelWidth = 500;
+        #region 右侧面板分隔条事件处理
         private double _previousSplitterPosition;
         /// <summary>
         /// 图像-属性分隔条开始拖动
@@ -509,36 +548,6 @@ if (DataContext is MainWindowViewModel viewModel)
             ToolboxSplitter.ToggleDirection = newDirection;
         }
         */
-        /// <summary>
-        /// 右侧面板分割器的折叠/展开事件
-        /// </summary>
-        private void RightPanelSplitter_ToggleClick(object? sender, EventArgs e)
-        {
-            if (_viewModel.IsRightPanelCollapsed)
-            {
-                // 展开整个右侧面板
-                RightPanelColumn.Width = new GridLength(_rightPanelWidth);
-                _viewModel.IsRightPanelCollapsed = false;
-            }
-            else
-            {
-                // 折叠整个右侧面板
-                _rightPanelWidth = RightPanelColumn.ActualWidth;
-                RightPanelColumn.Width = new GridLength(40);
-                _viewModel.IsRightPanelCollapsed = true;
-            }
-            UpdateRightPanelSplitterArrow();
-        }
-        /// <summary>
-        /// 更新右侧面板分割器箭头方向
-        /// </summary>
-        private void UpdateRightPanelSplitterArrow()
-        {
-            var newDirection = _viewModel.IsRightPanelCollapsed
-                ? ToggleDirectionType.Left
-                : ToggleDirectionType.Right;
-            RightPanelSplitter.ToggleDirection = newDirection;
-        }
         #endregion
         #region 画布引擎管理器支持
         /// <summary>

@@ -88,4 +88,12 @@
     <!-- 开关橙色 -->
     <SolidColorBrush x:Key="SwitchOnBackgroundBrush" Color="{x:Static constants:ColorConstants.SwitchOnBackground}"/>
 
+    <!-- ========== 标题栏（一体化深色标题栏） ========== -->
+
+    <!-- 标题栏背景 -->
+    <SolidColorBrush x:Key="TitleBarBackgroundBrush" Color="{x:Static constants:ColorConstants.TitleBarBackground}"/>
+
+    <!-- 标题栏边框 -->
+    <SolidColorBrush x:Key="TitleBarBorderBrush" Color="{x:Static constants:ColorConstants.TitleBarBorder}"/>
+
 </ResourceDictionary>

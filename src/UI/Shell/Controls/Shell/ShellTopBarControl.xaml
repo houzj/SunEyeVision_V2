@@ -3,238 +3,202 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:converters="clr-namespace:SunEyeVision.UI.Converters"
              xmlns:convertersUI="clr-namespace:SunEyeVision.UI.Converters.UI"
-             xmlns:convertersPath="clr-namespace:SunEyeVision.UI.Converters.Path"
-             xmlns:convertersWorkflow="clr-namespace:SunEyeVision.UI.Converters.Workflow"
-             xmlns:convertersVisibility="clr-namespace:SunEyeVision.UI.Converters.Visibility"
              mc:Ignorable="d"
-             d:DesignHeight="70" d:DesignWidth="1600">
+             d:DesignHeight="64" d:DesignWidth="1600">
 
     <UserControl.Resources>
         <convertersUI:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-        <converters:ContinuousRunIconTriangleInLoopConverter x:Key="ContinuousRunIconTriangleInLoopConverter"/>
+
+        <!-- 工具栏按钮样式（含 IsHitTestVisibleInChrome，使按钮在窗口 Caption 区域可点击） -->
+        <Style x:Key="TitleBarButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#E0E0E0"/>
+            <Setter Property="Padding" Value="10,4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}" CornerRadius="3" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#3E3E42"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource PrimaryBrush}"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 菜单按钮样式 -->
+        <Style x:Key="TitleBarMenuButton" TargetType="MenuItem">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#E0E0E0"/>
+            <Setter Property="Padding" Value="12,4"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True"/>
+        </Style>
     </UserControl.Resources>
 
-    <DockPanel>
-        <!-- ========== 顶部菜单栏 (28px) ========== -->
-        <Menu DockPanel.Dock="Top" Height="28" Background="{StaticResource HeaderBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
-            <Menu.Template>
-                <ControlTemplate TargetType="Menu">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <!-- 左侧菜单项 -->
-                        <ItemsPresenter Grid.Column="0"/>
-                        <!-- 右侧当前解决方案显示 -->
-                        <Border Grid.Column="2"
-                                Background="#F8F9FA"
-                                BorderBrush="#E0E0E0"
-                                BorderThickness="1,0,0,0"
-                                Padding="12,0"
-                                Height="28"
-                                VerticalAlignment="Center"
-                                Visibility="{Binding HasCurrentSolution, Converter={StaticResource BoolToVisibilityConverter}}">
-                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock Text="📦" FontSize="14" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                <TextBlock Text="当前解决方案:" FontSize="12" Foreground="#666666" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                <TextBlock Text="{Binding CurrentSolutionName}" FontSize="12" FontWeight="SemiBold" Foreground="#333333" VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </Border>
+    <!-- ========== 一体化标题栏（VisionMaster 风格：菜单行 + 工具栏行，两行紧凑布局） ========== -->
+    <Border Background="{StaticResource TitleBarBackgroundBrush}"
+            BorderBrush="{StaticResource TitleBarBorderBrush}"
+            BorderThickness="0,0,0,1">
+        <Grid Height="64">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="32"/>  <!-- 行1：菜单栏 -->
+                <RowDefinition Height="32"/>  <!-- 行2：工具栏 -->
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>  <!-- Logo -->
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>  <!-- 窗口控制 -->
+            </Grid.ColumnDefinitions>
+
+            <!-- Logo：跨两行，垂直居中，放大 -->
+            <StackPanel Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,0,0,0">
+                <Image Source="/SunEyeVision.UI;component/Icons/app_logo.ico" Width="55" Height="55" VerticalAlignment="Center"/>
+                <TextBlock Text="SunEyeVision" FontSize="14" FontWeight="SemiBold" Foreground="#FFFFFF" VerticalAlignment="Center" Margin="8,0,18,0"/>
+            </StackPanel>
+
+            <!-- 菜单栏（行1） -->
+            <Menu Grid.Row="0" Grid.Column="1" Background="Transparent" BorderThickness="0" VerticalAlignment="Center">
+                <MenuItem Header="文件(_F)" Style="{StaticResource TitleBarMenuButton}">
+                    <MenuItem Header="解决方案配置(_C)" Command="{Binding ShowSolutionConfigurationCommand}" InputGestureText="Ctrl+Alt+S"/>
+                    <Separator/>
+                    <MenuItem Header="保存当前(_S)" Command="{Binding SaveCurrentSolutionCommand}" InputGestureText="Ctrl+S"/>
+                    <Separator/>
+                    <MenuItem Header="退出(_X)" Click="ExitMenu_Click" InputGestureText="Alt+F4"/>
+                </MenuItem>
+                <MenuItem Header="视图(_V)" Style="{StaticResource TitleBarMenuButton}">
+                    <MenuItem Header="显示路径拐点(_P)" InputGestureText="Ctrl+P" Command="{Binding TogglePathPointsCommand}"/>
+                    <Separator/>
+                    <MenuItem Header="全屏(_F)" InputGestureText="F11" Click="ToggleFullscreen_Click"/>
+                </MenuItem>
+                <MenuItem Header="运行(_R)" Style="{StaticResource TitleBarMenuButton}">
+                    <MenuItem Header="运行(_R)" Command="{Binding RunWorkflowCommand}" InputGestureText="F5"/>
+                    <MenuItem Header="停止(_S)" Command="{Binding StopWorkflowCommand}" InputGestureText="Shift+F5"/>
+                </MenuItem>
+                <MenuItem Header="工具(_T)" Style="{StaticResource TitleBarMenuButton}">
+                    <MenuItem Header="全局变量管理(_G)" Command="{Binding ShowGlobalVariableManagerCommand}"/>
+                    <MenuItem Header="相机管理(_C)" Command="{Binding ShowCameraManagerCommand}"/>
+                    <MenuItem Header="通讯管理(_M)" Command="{Binding ShowCommunicationManagerCommand}"/>
+                </MenuItem>
+                <MenuItem Header="帮助(_H)" Style="{StaticResource TitleBarMenuButton}">
+                    <MenuItem Header="用户手册(_M)" InputGestureText="F1" Command="{Binding ShowHelpCommand}"/>
+                    <MenuItem Header="快捷键(_K)" Command="{Binding ShowShortcutsCommand}"/>
+                    <MenuItem Header="关于(_A)" Command="{Binding ShowAboutCommand}"/>
+                </MenuItem>
+            </Menu>
+
+            <!-- 行1/行2 分割线（Logo 右侧起，跨菜单/窗口控制区域） -->
+            <Border Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" Height="1"
+                    Background="#3E3E42" VerticalAlignment="Bottom"/>
+
+            <!-- 行2：工具栏（图标按钮横排，各占一半空间） -->
+            <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="6,0,0,0">
+                <Button ToolTip="解决方案配置 (Ctrl+Alt+S)" Style="{StaticResource TitleBarButton}" Command="{Binding ShowSolutionConfigurationCommand}">
+                    <TextBlock Text="⚙" FontSize="16"/>
+                </Button>
+                <Button ToolTip="保存 (Ctrl+S)" Style="{StaticResource TitleBarButton}" Command="{Binding SaveCurrentSolutionCommand}">
+                    <TextBlock Text="💾" FontSize="15"/>
+                </Button>
+                <Border Width="1" Height="18" Background="#3E3E42" Margin="4,0"/>
+
+                <!-- 运行（单次） -->
+                <Button ToolTip="运行 (F5)" Style="{StaticResource TitleBarButton}" Command="{Binding RunWorkflowCommand}">
+                    <TextBlock Text="▶️" FontSize="16"/>
+                </Button>
+                <!-- 连续运行/停止（切换按钮：点击立即切换，空闲🔁灰色，运行中⏹️红色+主色高亮） -->
+                <ToggleButton x:Name="ContinuousRunToggle"
+                              ToolTip="连续运行全部工作流"
+                              Command="{Binding ToggleContinuousAllCommand}"
+                              IsChecked="False"
+                              Checked="ContinuousRunToggle_Checked"
+                              Unchecked="ContinuousRunToggle_Unchecked"
+                              Padding="10,4" Cursor="Hand"
+                              WindowChrome.IsHitTestVisibleInChrome="True">
+                    <ToggleButton.Style>
+                        <Style TargetType="ToggleButton">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ToggleButton">
+                                        <Border x:Name="Bd" Background="{TemplateBinding Background}" CornerRadius="3" Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Bd" Property="Background" Value="#3E3E42"/>
+                                            </Trigger>
+                                            <Trigger Property="IsChecked" Value="True">
+                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource PrimaryBrush}"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ToggleButton.Style>
+                    <TextBlock x:Name="ContinuousRunIcon" Text="🔁" FontSize="16" Foreground="#E0E0E0" VerticalAlignment="Center"/>
+                </ToggleButton>
+
+                <Border Width="1" Height="18" Background="#3E3E42" Margin="4,0"/>
+
+                <Button ToolTip="相机管理" Style="{StaticResource TitleBarButton}" Command="{Binding ShowCameraManagerCommand}">
+                    <TextBlock Text="📷" FontSize="16"/>
+                </Button>
+                <Button ToolTip="通讯管理" Style="{StaticResource TitleBarButton}" Command="{Binding ShowCommunicationManagerCommand}">
+                    <TextBlock Text="🔌" FontSize="16"/>
+                </Button>
+                <Button ToolTip="全局变量管理" Style="{StaticResource TitleBarButton}" Command="{Binding ShowGlobalVariableManagerCommand}">
+                    <TextBlock Text="🧮" FontSize="16"/>
+                </Button>
+
+                <Border Width="1" Height="18" Background="#3E3E42" Margin="4,0"/>
+
+                <TextBlock Text="工作流:" FontSize="11" Foreground="#B0B0B0" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                <ComboBox Width="150" Height="24" VerticalAlignment="Center"
+                          ItemsSource="{Binding Tabs}"
+                          SelectedItem="{Binding SelectedTab, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                          DisplayMemberPath="Name"
+                          IsSynchronizedWithCurrentItem="True"
+                          WindowChrome.IsHitTestVisibleInChrome="True"
+                          Style="{StaticResource StyledComboBox}"/>
+            </StackPanel>
+
+            <!-- 右侧：项目信息 + 窗口控制（第一行） -->
+            <StackPanel Grid.Row="0" Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,4,0">
+                <Border Background="#3A3A3E" CornerRadius="3" Padding="8,4" Margin="0,0,8,0"
+                        Visibility="{Binding HasCurrentSolution, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="📦" FontSize="11" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                        <TextBlock Text="{Binding CurrentSolutionName}" FontSize="11" FontWeight="SemiBold" Foreground="#FFFFFF" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+                <Button ToolTip="最小化" Style="{StaticResource TitleBarButton}" Click="MinimizeWindow_Click" Padding="10,4">
+                    <Rectangle Width="10" Height="2" Fill="#E0E0E0" VerticalAlignment="Center"/>
+                </Button>
+                <Button ToolTip="向下还原" Style="{StaticResource TitleBarButton}" Click="MaximizeWindow_Click" Padding="10,4">
+                    <Grid Width="12" Height="12" VerticalAlignment="Center">
+                        <!-- 背景矩形（右下） -->
+                        <Rectangle Width="8" Height="8" Stroke="#E0E0E0" StrokeThickness="1" Fill="Transparent" HorizontalAlignment="Right" VerticalAlignment="Bottom"/>
+                        <!-- 前景矩形（左上） -->
+                        <Rectangle Width="8" Height="8" Stroke="#E0E0E0" StrokeThickness="1" Fill="Transparent" HorizontalAlignment="Left" VerticalAlignment="Top"/>
                     </Grid>
-                </ControlTemplate>
-            </Menu.Template>
-            <MenuItem Header="文件(_F)">
-                <MenuItem Header="解决方案配置(_C)" Command="{Binding ShowSolutionConfigurationCommand}" InputGestureText="Ctrl+Alt+S"/>
-                <Separator/>
-                <MenuItem Header="保存当前解决方案(_S)" Command="{Binding SaveCurrentSolutionCommand}" InputGestureText="Ctrl+S"/>
-                <Separator/>
-                <MenuItem Header="退出(_X)" Click="ExitMenu_Click" InputGestureText="Alt+F4"/>
-            </MenuItem>
-            <MenuItem Header="视图(_V)">
-                <MenuItem Header="显示路径拐点(_P)" InputGestureText="Ctrl+P" Command="{Binding TogglePathPointsCommand}"/>
-                <Separator/>
-                <MenuItem Header="全屏(_F)" InputGestureText="F11" Click="ToggleFullscreen_Click"/>
-            </MenuItem>
-            <MenuItem Header="运行(_R)">
-                <MenuItem Header="运行(_R)" Command="{Binding RunWorkflowCommand}" InputGestureText="F5"/>
-                <MenuItem Header="停止(_S)" Command="{Binding StopWorkflowCommand}" InputGestureText="Shift+F5"/>
-            </MenuItem>
-            <MenuItem Header="工具(_T)">
-                <MenuItem Header="全局变量管理(_G)" Command="{Binding ShowGlobalVariableManagerCommand}"/>
-                <MenuItem Header="相机管理(_C)" Command="{Binding ShowCameraManagerCommand}"/>
-                <MenuItem Header="通讯管理(_M)" Command="{Binding ShowCommunicationManagerCommand}"/>
-            </MenuItem>
-            <MenuItem Header="帮助(_H)">
-                <MenuItem Header="用户手册(_M)" InputGestureText="F1" Command="{Binding ShowHelpCommand}"/>
-                <MenuItem Header="快捷键(_K)" Command="{Binding ShowShortcutsCommand}"/>
-                <MenuItem Header="关于(_A)" Command="{Binding ShowAboutCommand}"/>
-            </MenuItem>
-        </Menu>
-
-        <!-- ========== 工具栏 (40px) ========== -->
-        <ToolBar DockPanel.Dock="Top" Height="40" Background="{StaticResource HeaderBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
-            <!-- 解决方案管理组 -->
-            <Button ToolTip="解决方案配置 (Ctrl+Alt+S)" Padding="8,4" Margin="2" Style="{StaticResource SecondaryButton}" Command="{Binding ShowSolutionConfigurationCommand}">
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="⚙️" FontSize="16" VerticalAlignment="Center"/>
-                    <TextBlock Text="解决方案" Margin="5,0,0,0" VerticalAlignment="Center"/>
-                </StackPanel>
-            </Button>
-            <Button ToolTip="保存当前解决方案 (Ctrl+S)" Padding="8,4" Margin="2" Style="{StaticResource SecondaryButton}" Command="{Binding SaveCurrentSolutionCommand}">
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="💾" FontSize="16" VerticalAlignment="Center"/>
-                    <TextBlock Text="保存" Margin="5,0,0,0" VerticalAlignment="Center"/>
-                </StackPanel>
-            </Button>
-            <Separator/>
-
-            <!-- 执行控制组 - 所有工作流控制 -->
-            <Button ToolTip="单次运行全部工作流 (Shift+F5)"
-                    Width="36" Height="36" Margin="2" Padding="0" BorderThickness="0"
-                    Command="{Binding RunAllWorkflowsCommand}">
-                <Button.Background>
-                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                        <GradientStop Color="#4CAF50" Offset="0"/>
-                        <GradientStop Color="#45A049" Offset="1"/>
-                    </LinearGradientBrush>
-                </Button.Background>
-                <Button.Style>
-                    <Style TargetType="Button">
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="Button">
-                                    <Border Background="{TemplateBinding Background}" CornerRadius="6">
-                                        <ContentPresenter Content="{TemplateBinding Content}"
-                                                          HorizontalAlignment="Center"
-                                                          VerticalAlignment="Center"/>
-                                    </Border>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                        <Style.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Opacity" Value="0.9"/>
-                                <Setter Property="Effect">
-                                    <Setter.Value>
-                                        <DropShadowEffect Color="#4CAF50" BlurRadius="8" ShadowDepth="0"/>
-                                    </Setter.Value>
-                                </Setter>
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter Property="Opacity" Value="0.5"/>
-                            </Trigger>
-                        </Style.Triggers>
-                    </Style>
-                </Button.Style>
-                <Path Data="M8,6 L20,12 L8,18 Z" Fill="White" Stretch="Uniform"
-                      Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-            </Button>
-
-            <Button ToolTip="连续运行全部工作流 (Ctrl+Shift+F5)"
-                    Width="36" Height="36" Margin="2" Padding="0" BorderThickness="0"
-                    Command="{Binding ToggleContinuousAllCommand}">
-                <Button.Background>
-                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                        <GradientStop Color="#4CAF50" Offset="0"/>
-                        <GradientStop Color="#45A049" Offset="1"/>
-                    </LinearGradientBrush>
-                </Button.Background>
-                <Button.Style>
-                    <Style TargetType="Button">
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="Button">
-                                    <Border Background="{TemplateBinding Background}" CornerRadius="6">
-                                        <ContentPresenter Content="{TemplateBinding Content}"
-                                                          HorizontalAlignment="Center"
-                                                          VerticalAlignment="Center"/>
-                                    </Border>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding IsAllWorkflowsRunning}" Value="True">
-                                <Setter Property="Background">
-                                    <Setter.Value>
-                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                            <GradientStop Color="#F44336" Offset="0"/>
-                                            <GradientStop Color="#D32F2F" Offset="1"/>
-                                        </LinearGradientBrush>
-                                    </Setter.Value>
-                                </Setter>
-                                <Setter Property="Effect">
-                                    <Setter.Value>
-                                        <DropShadowEffect Color="#F44336" BlurRadius="8" ShadowDepth="0"/>
-                                    </Setter.Value>
-                                </Setter>
-                            </DataTrigger>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Opacity" Value="0.9"/>
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter Property="Opacity" Value="0.5"/>
-                            </Trigger>
-                        </Style.Triggers>
-                    </Style>
-                </Button.Style>
-                <Path Data="{Binding IsAllWorkflowsRunning, Converter={StaticResource ContinuousRunIconTriangleInLoopConverter}}"
-                      Fill="White" Stretch="Uniform"
-                      Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-            </Button>
-
-            <Separator/>
-
-            <!-- 工作流管理组 -->
-            <ComboBox Width="150" Height="32" Margin="8,0,4,0" VerticalAlignment="Center"
-                     ItemsSource="{Binding Tabs}"
-                     SelectedItem="{Binding SelectedTab, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                     DisplayMemberPath="Name"
-                     IsSynchronizedWithCurrentItem="True"
-                     ToolTip="快速切换工作流"
-                     Style="{StaticResource StyledComboBox}"/>
-
-            <Separator/>
-
-            <!-- 设备管理组 -->
-            <Button ToolTip="相机管理" Padding="8,4" Margin="2" Style="{StaticResource SecondaryButton}" Command="{Binding ShowCameraManagerCommand}">
-                <StackPanel Orientation="Horizontal">
-                    <Path Data="M2,8 L6,8 L7,5 L13,5 L14,8 L18,8 L18,17 L2,17 Z M7.5,12.5 A3.5,3.5 0 1,0 14.5,12.5 A3.5,3.5 0 1,0 7.5,12.5 M10,8 L10,6 M12,8 L12,6"
-                          Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
-                          StrokeThickness="1.5" Stretch="Uniform" Width="16" Height="16" VerticalAlignment="Center"/>
-                    <TextBlock Text="相机" Margin="5,0,0,0" VerticalAlignment="Center" FontSize="12"/>
-                </StackPanel>
-            </Button>
-            <Button ToolTip="通讯管理" Padding="8,4" Margin="2" Style="{StaticResource SecondaryButton}" Command="{Binding ShowCommunicationManagerCommand}">
-                <StackPanel Orientation="Horizontal">
-                    <Path Data="M4,12 L12,4 M4,4 L12,12 M2,8 L4,8 M10,8 L14,8 M8,2 L8,4 M8,10 L8,14"
-                          Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
-                          StrokeThickness="2" Stretch="Uniform" Width="16" Height="16" VerticalAlignment="Center"/>
-                    <TextBlock Text="通讯" Margin="5,0,0,0" VerticalAlignment="Center" FontSize="12"/>
-                </StackPanel>
-            </Button>
-            <Button ToolTip="全局变量管理" Padding="8,4" Margin="2" Style="{StaticResource SecondaryButton}" Command="{Binding ShowGlobalVariableManagerCommand}">
-                <StackPanel Orientation="Horizontal">
-                    <Canvas Width="16" Height="14" VerticalAlignment="Center">
-                        <Path Data="M2,2 L14,2 Q16,2 16,4 L16,12 Q16,14 14,14 L2,14 Q0,14 0,12 L0,4 Q0,2 2,2"
-                              Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
-                              Opacity="0.15" Stretch="Uniform" Width="14" Height="12" Canvas.Left="1" Canvas.Top="1"/>
-                        <Path Data="M2,1 L14,1 Q15,1 15,3 L15,11 Q15,13 14,13 L2,13 Q1,13 1,12 L1,3 Q1,1 2,1"
-                              Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
-                              StrokeThickness="1" Fill="Transparent" Stretch="Uniform" Width="16" Height="14"/>
-                        <TextBlock Text="var" FontSize="8" FontWeight="Bold" Canvas.Left="2" Canvas.Top="3"
-                                   Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
-                    </Canvas>
-                    <TextBlock Text="变量" Margin="5,0,0,0" VerticalAlignment="Center" FontSize="12"/>
-                </StackPanel>
-            </Button>
-
-            <Separator/>
-
-            <TextBlock x:Name="ZoomTextBlock" Text="缩放: 100%" VerticalAlignment="Center" Margin="8,0,4,0" FontSize="12" Foreground="#666666"/>
-        </ToolBar>
-    </DockPanel>
+                </Button>
+                <Button ToolTip="关闭" Style="{StaticResource TitleBarButton}" Click="ExitMenu_Click" Padding="10,4">
+                    <TextBlock Text="✕" FontSize="14" FontWeight="Bold" Foreground="#FFFFFF" VerticalAlignment="Center"/>
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Border>
 </UserControl>

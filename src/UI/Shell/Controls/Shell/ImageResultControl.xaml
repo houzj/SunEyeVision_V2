@@ -13,22 +13,88 @@
     <UserControl.Resources>
         <convertersUI:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <convertersVisibility:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
+
+        <!-- 深色 DataGrid 行样式 -->
+        <Style x:Key="DarkDataGridRow" TargetType="DataGridRow">
+            <Setter Property="MinHeight" Value="24"/>
+            <Setter Property="Height" Value="Auto"/>
+            <Setter Property="Background" Value="#2D2D30"/>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
+                    <Setter Property="Foreground" Value="#FFFFFF"/>
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#3E3E42"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- 深色 DataGrid 单元格样式 -->
+        <Style x:Key="DarkDataGridCell" TargetType="DataGridCell">
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="Foreground" Value="#FFFFFF"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- 深色 DataGrid 表头样式 -->
+        <Style x:Key="DarkDataGridHeader" TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="#1E1E1E"/>
+            <Setter Property="Foreground" Value="#B0B0B0"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="BorderThickness" Value="0,0,1,1"/>
+            <Setter Property="BorderBrush" Value="#3E3E42"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
     </UserControl.Resources>
 
-    <Grid>
+    <Grid Background="#2D2D30">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>  <!-- 图像显示模块 -->
             <RowDefinition Height="Auto"/>  <!-- 图像加载及预览模块 -->
         </Grid.RowDefinitions>
 
-        <!-- 图像显示模块 - 使用TabControl -->
+        <!-- 图像显示模块 - 使用TabControl（深色） -->
         <Border Grid.Row="0" BorderThickness="0">
             <TabControl x:Name="ImageDisplayTabControl"
-                        Background="White"
+                        Background="#2D2D30"
                         BorderThickness="0">
+                <TabControl.Resources>
+                    <!-- 深色 TabItem 头样式 -->
+                    <Style TargetType="TabItem">
+                        <Setter Property="Foreground" Value="#B0B0B0"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="TabItem">
+                                    <Border x:Name="Bd" Background="Transparent" BorderThickness="0,0,1,0" BorderBrush="#3E3E42" Padding="12,6">
+                                        <ContentPresenter ContentSource="Header" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter TargetName="Bd" Property="Background" Value="#1E1E1E"/>
+                                            <Setter Property="Foreground" Value="#FFFFFF"/>
+                                        </Trigger>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Bd" Property="Background" Value="#3E3E42"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </TabControl.Resources>
+
                 <!-- 第一个TabItem: 图像结果 -->
                 <TabItem Header="图像结果" Padding="12,6">
-                    <Border Background="Transparent">
+                    <Border Background="#2D2D30">
                         <sdk:ImageControl x:Name="ImageDisplayContent"
                                           SourceImage="{Binding DisplayImage}"
                                           ShowToolBar="True"
@@ -44,17 +110,17 @@
                     </Border>
                 </TabItem>
 
-                <!-- 第二个TabItem: 模块结果 - DataGrid 实现 -->
+                <!-- 第二个TabItem: 模块结果 - 深色DataGrid -->
                 <TabItem Header="模块结果" Padding="12,6">
-                    <Grid Background="White">
+                    <Grid Background="#2D2D30">
                         <DataGrid x:Name="ModuleResultDataGrid"
                                   ItemsSource="{Binding FlatResultRows}"
                                   AutoGenerateColumns="False"
                                   GridLinesVisibility="All"
-                                  VerticalGridLinesBrush="#E5E5E5"
-                                  HorizontalGridLinesBrush="#E5E5E5"
+                                  VerticalGridLinesBrush="#3E3E42"
+                                  HorizontalGridLinesBrush="#3E3E42"
                                   BorderThickness="1"
-                                  BorderBrush="#E0E0E0"
+                                  BorderBrush="#3E3E42"
                                   RowHeaderWidth="0"
                                   IsReadOnly="True"
                                   SelectionMode="Single"
@@ -64,50 +130,17 @@
                                   CanUserResizeRows="False"
                                   CanUserReorderColumns="False"
                                   CanUserSortColumns="False"
-                                  Background="White"
-                                  RowBackground="White"
-                                  AlternatingRowBackground="White"
+                                  Background="#2D2D30"
+                                  RowBackground="#2D2D30"
+                                  AlternatingRowBackground="#2A2A2E"
                                   HeadersVisibility="Column"
+                                  RowStyle="{StaticResource DarkDataGridRow}"
+                                  CellStyle="{StaticResource DarkDataGridCell}"
+                                  ColumnHeaderStyle="{StaticResource DarkDataGridHeader}"
+                                  Foreground="#E0E0E0"
                                   VerticalScrollBarVisibility="Auto"
                                   HorizontalScrollBarVisibility="Disabled"
                                   Visibility="{Binding HasModuleResults, Converter={StaticResource BoolToVisibilityConverter}}">
-                            <DataGrid.Resources>
-                                <Style TargetType="DataGridRow">
-                                    <Setter Property="MinHeight" Value="24"/>
-                                    <Setter Property="Height" Value="Auto"/>
-                                    <Setter Property="Background" Value="{Binding RowBackground}"/>
-                                    <Style.Triggers>
-                                        <Trigger Property="IsSelected" Value="True">
-                                            <Setter Property="Background" Value="#E8F4FD"/>
-                                            <Setter Property="Foreground" Value="#333333"/>
-                                        </Trigger>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="#F0F7FF"/>
-                                        </Trigger>
-                                    </Style.Triggers>
-                                </Style>
-                                <Style TargetType="DataGridCell">
-                                    <Setter Property="BorderThickness" Value="0"/>
-                                    <Setter Property="Padding" Value="0"/>
-                                    <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-                                    <Style.Triggers>
-                                        <Trigger Property="IsSelected" Value="True">
-                                            <Setter Property="Background" Value="Transparent"/>
-                                            <Setter Property="Foreground" Value="#333333"/>
-                                        </Trigger>
-                                    </Style.Triggers>
-                                </Style>
-                                <Style TargetType="DataGridColumnHeader">
-                                    <Setter Property="Background" Value="#F8F9FA"/>
-                                    <Setter Property="Foreground" Value="#333333"/>
-                                    <Setter Property="FontSize" Value="12"/>
-                                    <Setter Property="FontWeight" Value="SemiBold"/>
-                                    <Setter Property="Padding" Value="12,6"/>
-                                    <Setter Property="BorderThickness" Value="0,0,1,1"/>
-                                    <Setter Property="BorderBrush" Value="#E0E0E0"/>
-                                    <Setter Property="VerticalContentAlignment" Value="Center"/>
-                                </Style>
-                            </DataGrid.Resources>
 
                             <DataGrid.Columns>
                                 <DataGridTemplateColumn Width="Auto" MinWidth="140" Header="结果名称">
@@ -118,12 +151,12 @@
                                                         Cursor="Hand"
                                                         MouseLeftButtonDown="ResultExpandIcon_Click">
                                                 <TextBlock Text="{Binding ExpandIcon}"
-                                                           FontSize="10" Foreground="#999999"
+                                                           FontSize="10" Foreground="#666666"
                                                            VerticalAlignment="Center" Margin="0,0,6,0"/>
                                                 <TextBlock Text="{Binding DisplayName}"
                                                            FontSize="12"
                                                            FontWeight="{Binding FontWeight}"
-                                                           Foreground="#333333"
+                                                           Foreground="#E0E0E0"
                                                            VerticalAlignment="Center"/>
                                             </StackPanel>
                                         </DataTemplate>
@@ -135,7 +168,7 @@
                                     <DataGridTextColumn.ElementStyle>
                                         <Style TargetType="TextBlock">
                                             <Setter Property="FontSize" Value="11"/>
-                                            <Setter Property="Foreground" Value="#666666"/>
+                                            <Setter Property="Foreground" Value="#C0C0C0"/>
                                             <Setter Property="VerticalAlignment" Value="Center"/>
                                             <Setter Property="Padding" Value="8,4"/>
                                             <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
@@ -145,7 +178,7 @@
                                                                TextWrapping="Wrap"
                                                                MaxWidth="350"
                                                                FontSize="11"
-                                                               Foreground="#333333"/>
+                                                               Foreground="#E0E0E0"/>
                                                 </Setter.Value>
                                             </Setter>
                                         </Style>
@@ -154,14 +187,14 @@
                             </DataGrid.Columns>
                         </DataGrid>
 
-                        <!-- 空状态 -->
+                        <!-- 空状态（深色） -->
                         <Grid Visibility="{Binding HasModuleResults, Converter={StaticResource InverseBoolToVisibilityConverter}}">
                             <TextBlock Text="📊" FontSize="32"
                                        HorizontalAlignment="Center" VerticalAlignment="Center"
-                                       Foreground="#CCCCCC"/>
-                            <TextBlock Text="暂无计算结果" FontSize="12" Foreground="#999999"
+                                       Foreground="#555555"/>
+                            <TextBlock Text="暂无计算结果" FontSize="12" Foreground="#666666"
                                        HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,40,0,0"/>
-                            <TextBlock Text="请选中已执行的节点查看结果" FontSize="10" Foreground="#CCCCCC"
+                            <TextBlock Text="请选中已执行的节点查看结果" FontSize="10" Foreground="#555555"
                                        HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,52,0,0"/>
                         </Grid>
                     </Grid>
@@ -169,12 +202,10 @@
             </TabControl>
         </Border>
 
-        <!-- 图像加载及预览模块 - 使用现代化的 ImagePreviewControl -->
-        <!-- 绑定到 ActiveInputSource 实现每个采集节点独立的图像预览器 -->
-        <!-- 新架构：使用 InputSource 替代 ImageData，输入源不被执行流程修改 -->
+        <!-- 图像加载及预览模块 - 深色 -->
         <Border Grid.Row="1"
-                Background="#F8F9FA"
-                BorderBrush="#E0E0E0"
+                Background="#1E1E1E"
+                BorderBrush="#3E3E42"
                 BorderThickness="0,1,0,0"
                 Padding="2"
                 Visibility="{Binding ShowImagePreview, Converter={StaticResource BoolToVisibilityConverter}}">

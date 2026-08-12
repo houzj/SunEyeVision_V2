@@ -1,7 +1,7 @@
 using System;
 using System.Windows.Threading;
 
-namespace SunEyeVision.UI.Services.Toolbox
+namespace SunEyeVision.UI.Shell.Controls.Toolbox
 {
     /// <summary>
     /// 交互定时器管理器 - 处理延迟打开和关闭Popup的定时器

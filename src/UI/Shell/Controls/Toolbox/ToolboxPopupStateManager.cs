@@ -1,6 +1,6 @@
 using System;
 
-namespace SunEyeVision.UI.Services.Toolbox
+namespace SunEyeVision.UI.Shell.Controls.Toolbox
 {
     /// <summary>
     /// Popup状态机管理器 - 管理Toolbox Popup的生命周期和状态转换

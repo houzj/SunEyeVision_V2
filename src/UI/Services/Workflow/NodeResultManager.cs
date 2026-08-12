@@ -14,7 +14,7 @@ using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering;
 using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Features.WorkflowUI;
-using SunEyeVision.UI.Services.Vision;
+using SunEyeVision.UI.Converters;
 using SunEyeVision.UI.Services.Performance;
 using WorkflowCore = SunEyeVision.Workflow;
 using SunEyeVision.Workflow;

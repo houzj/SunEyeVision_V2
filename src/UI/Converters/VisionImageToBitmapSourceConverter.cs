@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Windows.Media.Imaging;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 
-namespace SunEyeVision.UI.Services.Vision
+namespace SunEyeVision.UI.Converters
 {
     /// <summary>
     /// IVisionImage → WPF BitmapSource 的统一转换入口（UI 适配层）。

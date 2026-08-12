@@ -5,7 +5,7 @@ using System.Windows.Data;
 using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Features.WorkflowUI.Canvas;
 
-using SunEyeVision.UI.Features.Toolbox;
+using SunEyeVision.UI.Shell.Controls.Toolbox;
 
 using SunEyeVision.UI.Features.WorkflowUI;
 

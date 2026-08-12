@@ -9,7 +9,7 @@ using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Core;
 using SunEyeVision.UI.Shell.Windows;
 
-using SunEyeVision.UI.Features.Toolbox;
+using SunEyeVision.UI.Shell.Controls.Toolbox;
 
 namespace SunEyeVision.UI.Shell.Controls.Toolbox
 {

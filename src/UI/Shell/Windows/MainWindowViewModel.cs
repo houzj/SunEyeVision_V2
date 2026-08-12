@@ -47,7 +47,7 @@ using SunEyeVision.UI.Services.Performance;
 using SunEyeVision.UI.Services.Logging;
 using SunEyeVision.Plugin.SDK.Logging;
 
-using SunEyeVision.UI.Features.Toolbox;
+using SunEyeVision.UI.Shell.Controls.Toolbox;
 
 using SunEyeVision.UI.Features.WorkflowUI;
 

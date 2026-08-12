@@ -11,7 +11,7 @@ using SunEyeVision.UI.Shell.Windows;
 using SunEyeVision.UI.Services.Canvas;
 using ControlsCanvas = System.Windows.Controls.Canvas;
 
-using SunEyeVision.UI.Features.Toolbox;
+using SunEyeVision.UI.Shell.Controls.Toolbox;
 
 using SunEyeVision.UI.Features.WorkflowUI;
 

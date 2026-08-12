@@ -4,11 +4,11 @@ using System.Windows.Input;
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 using SunEyeVision.Plugin.SDK;
 using SunEyeVision.UI.Shared;
-using SunEyeVision.UI.Services.Toolbox;
+
 
 using SunEyeVision.UI.Core;
 
-namespace SunEyeVision.UI.Features.Toolbox
+namespace SunEyeVision.UI.Shell.Controls.Toolbox
 {
     /// <summary>
     /// 工具箱视图模型 - 支持动态插件加载和双模显示（优化版）

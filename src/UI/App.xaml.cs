@@ -20,7 +20,7 @@ using SunEyeVision.UI.Services.Monitoring;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
-using SunEyeVision.UI.Services.Vision;
+using SunEyeVision.UI.Converters;
 using System.Windows.Media;
 using SunEyeVision.UI.Core;
 using SunEyeVision.UI.Services.Interaction;

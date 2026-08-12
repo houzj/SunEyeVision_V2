@@ -3,9 +3,9 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using SunEyeVision.UI.Shared;
 
-using SunEyeVision.UI.Features.Toolbox;
+using SunEyeVision.UI.Shell.Controls.Toolbox;
 
-namespace SunEyeVision.UI.Services.Toolbox
+namespace SunEyeVision.UI.Shell.Controls.Toolbox
 {
     /// <summary>
     /// 工具缓存管理器 - 缓存分类工具列表，避免频繁重新加载

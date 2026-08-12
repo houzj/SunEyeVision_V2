@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -136,6 +136,13 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 Dispatcher.BeginInvoke(new Action(() =>
                 {
                     UpdateZoomDisplay();
+                }), System.Windows.Threading.DispatcherPriority.Loaded);
+
+                // 初始化小地图：渲染缩略图 + 挂接滚动监听
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    AttachMiniMapScrollListener();
+                    RefreshMiniMap();
                 }), System.Windows.Threading.DispatcherPriority.Loaded);
             }
         }
@@ -287,6 +294,8 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 }
                 // 更新缩放显示
                 UpdateZoomDisplay();
+                // 刷新小地图
+                RefreshMiniMap();
             }), System.Windows.Threading.DispatcherPriority.Render);
         }
 
@@ -806,6 +815,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             // 更新显示
             UpdateZoomDisplay();
             UpdateZoomIndicator();
+            UpdateMiniMapViewRect();
             _viewModel.StatusText = $"画布缩放: {Math.Round(workflow.CurrentScale * 100, 0)}%";
         }
 
@@ -936,6 +946,212 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             {
             }
             return null!;
+        }
+
+        #endregion
+
+        #region 小地图
+
+        // 小地图画布尺寸（与 XAML MiniMapCanvas 保持一致）
+        private const double MiniMapWidth = 168;
+        private const double MiniMapHeight = 120;
+
+        /// <summary>
+        /// 刷新小地图：渲染节点缩略图 + 更新红框（根据当前工作流节点与可视区）
+        /// </summary>
+        private void RefreshMiniMap()
+        {
+            var selectedTab = _viewModel?.WorkflowTabViewModel?.SelectedTab;
+            if (selectedTab?.WorkflowNodes == null || MiniMapCanvas == null)
+                return;
+
+            // 挂接节点集合变化监听（添加/删除节点时刷新小地图）
+            selectedTab.WorkflowNodes.CollectionChanged -= MiniMapNodes_CollectionChanged;
+            selectedTab.WorkflowNodes.CollectionChanged += MiniMapNodes_CollectionChanged;
+
+            MiniMapCanvas.Children.Clear();
+
+            // 计算节点边界框，决定自适应比例尺
+            double minX = double.MaxValue, minY = double.MaxValue;
+            double maxX = double.MinValue, maxY = double.MinValue;
+            foreach (var node in selectedTab.WorkflowNodes)
+            {
+                var p = node.Position;
+                double nw = node.Width > 0 ? node.Width : 180;
+                double nh = node.Height > 0 ? node.Height : 60;
+                minX = Math.Min(minX, p.X - nw / 2);
+                minY = Math.Min(minY, p.Y - nh / 2);
+                maxX = Math.Max(maxX, p.X + nw / 2);
+                maxY = Math.Max(maxY, p.Y + nh / 2);
+            }
+
+            if (selectedTab.WorkflowNodes.Count == 0)
+            {
+                MiniMapViewRect.Width = 0;
+                MiniMapViewRect.Height = 0;
+                return;
+            }
+
+            double contentWidth = Math.Max(1, maxX - minX);
+            double contentHeight = Math.Max(1, maxY - minY);
+            double scaleX = (MiniMapWidth - 8) / contentWidth;
+            double scaleY = (MiniMapHeight - 8) / contentHeight;
+            double scale = Math.Min(scaleX, scaleY);
+            double originX = (MiniMapWidth - contentWidth * scale) / 2 - minX * scale;
+            double originY = (MiniMapHeight - contentHeight * scale) / 2 - minY * scale;
+
+            // 绘制节点缩略图（简化矩形）
+            foreach (var node in selectedTab.WorkflowNodes)
+            {
+                double nw = node.Width > 0 ? node.Width : 180;
+                double nh = node.Height > 0 ? node.Height : 60;
+                var rect = new System.Windows.Shapes.Rectangle
+                {
+                    Width = Math.Max(2, nw * scale),
+                    Height = Math.Max(2, nh * scale),
+                    Fill = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0x00, 0x66, 0xCC)),
+                    Opacity = 0.8
+                };
+                Canvas.SetLeft(rect, originX + (node.Position.X - nw / 2) * scale);
+                Canvas.SetTop(rect, originY + (node.Position.Y - nh / 2) * scale);
+                MiniMapCanvas.Children.Add(rect);
+            }
+
+            UpdateMiniMapViewRect();
+        }
+
+        /// <summary>
+        /// 节点集合变化 - 刷新小地图缩略图
+        /// </summary>
+        private void MiniMapNodes_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            Dispatcher.BeginInvoke(new Action(() => RefreshMiniMap()), System.Windows.Threading.DispatcherPriority.Background);
+        }
+
+        /// <summary>
+        /// 更新小地图红框：根据当前 ScrollViewer 可视区（offset/viewport/scale）映射
+        /// </summary>
+        private void UpdateMiniMapViewRect()
+        {
+            var selectedTab = _viewModel?.WorkflowTabViewModel?.SelectedTab;
+            if (selectedTab?.WorkflowNodes == null || MiniMapCanvas == null || MiniMapViewRect == null)
+                return;
+
+            // 空工作流：无节点可映射，隐藏红框避免无穷大计算
+            if (selectedTab.WorkflowNodes.Count == 0)
+            {
+                MiniMapViewRect.Width = 0;
+                MiniMapViewRect.Height = 0;
+                return;
+            }
+
+            // 节点边界框（与 RefreshMiniMap 相同的比例尺计算）
+            double minX = double.MaxValue, minY = double.MaxValue;
+            double maxX = double.MinValue, maxY = double.MinValue;
+            foreach (var node in selectedTab.WorkflowNodes)
+            {
+                double nw = node.Width > 0 ? node.Width : 180;
+                double nh = node.Height > 0 ? node.Height : 60;
+                minX = Math.Min(minX, node.Position.X - nw / 2);
+                minY = Math.Min(minY, node.Position.Y - nh / 2);
+                maxX = Math.Max(maxX, node.Position.X + nw / 2);
+                maxY = Math.Max(maxY, node.Position.Y + nh / 2);
+            }
+            double contentWidth = Math.Max(1, maxX - minX);
+            double contentHeight = Math.Max(1, maxY - minY);
+            double scaleX = (MiniMapWidth - 8) / contentWidth;
+            double scaleY = (MiniMapHeight - 8) / contentHeight;
+            double scale = Math.Min(scaleX, scaleY);
+            double originX = (MiniMapWidth - contentWidth * scale) / 2 - minX * scale;
+            double originY = (MiniMapHeight - contentHeight * scale) / 2 - minY * scale;
+
+            var scrollViewer = GetCurrentScrollViewer();
+            if (scrollViewer == null)
+            {
+                MiniMapViewRect.Width = 0;
+                MiniMapViewRect.Height = 0;
+                return;
+            }
+
+            double currentScale = selectedTab.CurrentScale > 0 ? selectedTab.CurrentScale : 1.0;
+            // 可视区在画布坐标下的范围
+            double viewLeft = scrollViewer.HorizontalOffset / currentScale;
+            double viewTop = scrollViewer.VerticalOffset / currentScale;
+            double viewRight = viewLeft + scrollViewer.ViewportWidth / currentScale;
+            double viewBottom = viewTop + scrollViewer.ViewportHeight / currentScale;
+
+            double left = originX + viewLeft * scale;
+            double top = originY + viewTop * scale;
+            double width = (viewRight - viewLeft) * scale;
+            double height = (viewBottom - viewTop) * scale;
+
+            MiniMapViewRect.Width = Math.Max(3, width);
+            MiniMapViewRect.Height = Math.Max(3, height);
+            Canvas.SetLeft(MiniMapViewRect, left);
+            Canvas.SetTop(MiniMapViewRect, top);
+        }
+
+        /// <summary>
+        /// 挂接画布 ScrollViewer 滚动监听（小地图红框跟随）
+        /// </summary>
+        private void AttachMiniMapScrollListener()
+        {
+            var scrollViewer = GetCurrentScrollViewer();
+            if (scrollViewer == null)
+                return;
+            scrollViewer.ScrollChanged -= MiniMapScrollViewer_ScrollChanged;
+            scrollViewer.ScrollChanged += MiniMapScrollViewer_ScrollChanged;
+        }
+
+        /// <summary>
+        /// ScrollViewer 滚动变化 - 更新小地图红框
+        /// </summary>
+        private void MiniMapScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
+        {
+            UpdateMiniMapViewRect();
+        }
+
+        /// <summary>
+        /// 小地图点击：跳转到对应画布位置
+        /// </summary>
+        private void MiniMap_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            var selectedTab = _viewModel?.WorkflowTabViewModel?.SelectedTab;
+            if (selectedTab?.WorkflowNodes == null || MiniMapCanvas == null || selectedTab.WorkflowNodes.Count == 0)
+                return;
+
+            var pos = e.GetPosition(MiniMapCanvas);
+
+            // 反向映射：节点边界框 → 比例尺
+            double minX = double.MaxValue, minY = double.MaxValue;
+            double maxX = double.MinValue, maxY = double.MinValue;
+            foreach (var node in selectedTab.WorkflowNodes)
+            {
+                double nw = node.Width > 0 ? node.Width : 180;
+                double nh = node.Height > 0 ? node.Height : 60;
+                minX = Math.Min(minX, node.Position.X - nw / 2);
+                minY = Math.Min(minY, node.Position.Y - nh / 2);
+                maxX = Math.Max(maxX, node.Position.X + nw / 2);
+                maxY = Math.Max(maxY, node.Position.Y + nh / 2);
+            }
+            double contentWidth = Math.Max(1, maxX - minX);
+            double contentHeight = Math.Max(1, maxY - minY);
+            double scaleX = (MiniMapWidth - 8) / contentWidth;
+            double scaleY = (MiniMapHeight - 8) / contentHeight;
+            double scale = Math.Min(scaleX, scaleY);
+            double originX = (MiniMapWidth - contentWidth * scale) / 2 - minX * scale;
+            double originY = (MiniMapHeight - contentHeight * scale) / 2 - minY * scale;
+
+            double canvasX = (pos.X - originX) / scale;
+            double canvasY = (pos.Y - originY) / scale;
+
+            var scrollViewer = GetCurrentScrollViewer();
+            if (scrollViewer == null)
+                return;
+            double currentScale = selectedTab.CurrentScale > 0 ? selectedTab.CurrentScale : 1.0;
+            scrollViewer.ScrollToHorizontalOffset(canvasX * currentScale - scrollViewer.ViewportWidth / 2);
+            scrollViewer.ScrollToVerticalOffset(canvasY * currentScale - scrollViewer.ViewportHeight / 2);
+            UpdateMiniMapViewRect();
         }
 
         #endregion

@@ -10,7 +10,9 @@
              mc:Ignorable="d"
              d:DesignHeight="700" d:DesignWidth="900">
 
-    <Border Background="#F5F5F5" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0">
+    <!-- ========== 工作区（含右下角小地图覆盖层） ========== -->
+    <Grid>
+        <Border Background="#F5F5F5" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0">
         <TabControl x:Name="WorkflowTabControl"
                     Background="#F5F5F5"
                     BorderThickness="0"
@@ -490,5 +492,39 @@
                 </DataTemplate>
             </TabControl.ContentTemplate>
         </TabControl>
-    </Border>
+        </Border>
+
+        <!-- ========== 右下角小地图（流程缩略图 + 红框标记当前视图） ========== -->
+        <Border x:Name="MiniMapBorder"
+                HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                Margin="0,0,12,12"
+                Background="#F5F8FC" Opacity="0.95"
+                BorderBrush="#CCCCCC" BorderThickness="1"
+                CornerRadius="4"
+                Panel.ZIndex="100"
+                IsHitTestVisible="True">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="6" ShadowDepth="2" Opacity="0.2"/>
+            </Border.Effect>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid Width="168" Height="120">
+                    <Canvas x:Name="MiniMapCanvas"
+                            Width="168" Height="120"
+                            Background="White"
+                            ClipToBounds="True"
+                            MouseLeftButtonDown="MiniMap_MouseLeftButtonDown"/>
+                    <!-- 当前可视区域红框 -->
+                    <Rectangle x:Name="MiniMapViewRect"
+                               Stroke="#FF0000" StrokeThickness="1.5"
+                               Fill="#20FF0000" IsHitTestVisible="False"/>
+                    <TextBlock Text="小地图" FontSize="9" Foreground="#999999"
+                               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="4,2"/>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
 </UserControl>

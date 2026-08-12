@@ -190,9 +190,9 @@
                 <Button ToolTip="向下还原" Style="{StaticResource TitleBarButton}" Click="MaximizeWindow_Click" Padding="10,4">
                     <Grid Width="12" Height="12" VerticalAlignment="Center">
                         <!-- 背景矩形（右下） -->
-                        <Rectangle Width="8" Height="8" Stroke="#E0E0E0" StrokeThickness="1" Fill="Transparent" HorizontalAlignment="Right" VerticalAlignment="Bottom"/>
+                        <Rectangle Width="12" Height="12" Stroke="#E0E0E0" StrokeThickness="1" Fill="Transparent" HorizontalAlignment="Left" VerticalAlignment="Bottom" />
                         <!-- 前景矩形（左上） -->
-                        <Rectangle Width="8" Height="8" Stroke="#E0E0E0" StrokeThickness="1" Fill="Transparent" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                        <Rectangle Width="8" Height="6" Stroke="#E0E0E0" StrokeThickness="1" Fill="Transparent" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
                     </Grid>
                 </Button>
                 <Button ToolTip="关闭" Style="{StaticResource TitleBarButton}" Click="ExitMenu_Click" Padding="10,4">

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using SunEyeVision.Workflow;
 
-namespace SunEyeVision.UI.Core
+namespace SunEyeVision.UI.Services
 {
     /// <summary>
     /// 工作流上下文服务默认实现 - 基于字典的懒加载缓存。

@@ -125,10 +125,10 @@ namespace SunEyeVision.UI.Shell.Windows
         private readonly ObservableCollection<FlatResultRow> _flatResultRows = new();
 
         // 运行时参数服务（编辑态 UI 层运行时参数）
-        private readonly SunEyeVision.UI.Core.IRuntimeParameterService _runtimeParameterService;
+        private readonly SunEyeVision.UI.Services.IRuntimeParameterService _runtimeParameterService;
 
         // 工作流上下文服务（按工作流ID缓存独立执行上下文）
-        private readonly SunEyeVision.UI.Core.IWorkflowContextService _workflowContextService;
+        private readonly SunEyeVision.UI.Services.IWorkflowContextService _workflowContextService;
 
         // 节点结果管理
         private readonly Services.Workflow.NodeResultManager _nodeResultManager;
@@ -820,8 +820,8 @@ SplitterPosition = position;
             ImageCollection = new BatchObservableCollection<ImageInfo>();
 
             // 初始化共享基础设施服务
-            _runtimeParameterService = new SunEyeVision.UI.Core.RuntimeParameterService();
-            _workflowContextService = new SunEyeVision.UI.Core.WorkflowContextService();
+            _runtimeParameterService = new SunEyeVision.UI.Services.RuntimeParameterService();
+            _workflowContextService = new SunEyeVision.UI.Services.WorkflowContextService();
 
             // 初始化图像结果子 VM（就近绑定右侧图像结果区，共享数据源/结果行集合）
             _imageResult = new SunEyeVision.UI.Shell.Controls.ImageResultViewModel(this);

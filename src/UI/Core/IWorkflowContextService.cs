@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using SunEyeVision.Workflow;
 
-namespace SunEyeVision.UI.Services
+namespace SunEyeVision.UI.Core
 {
     /// <summary>
     /// 工作流上下文服务 - 按工作流ID缓存独立执行上下文。

@@ -1,8 +1,8 @@
 using System;
 using System.Reflection;
-using SunEyeVision.UI.Adapters;
+using SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters;
 
-namespace SunEyeVision.UI.Adapters
+namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
 {
     /// <summary>
     /// 库验证器 - 验证AIStudio.Wpf.DiagramDesigner的API和连接算法

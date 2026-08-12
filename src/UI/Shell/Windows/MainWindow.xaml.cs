@@ -137,7 +137,7 @@ namespace SunEyeVision.UI.Shell.Windows
             try
             {
                 // 检查是否有当前解决方案
-                var solutionManager = Adapters.ServiceInitializer.SolutionManager;
+                var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
                 // ==================== 场景1：没有打开的解决方案 ====================
                 if (solutionManager?.CurrentSolution == null)
                 {
@@ -221,7 +221,7 @@ namespace SunEyeVision.UI.Shell.Windows
         {
             try
             {
-                var solutionManager = Adapters.ServiceInitializer.SolutionManager;
+                var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
                 // ✅ 统一使用解决方案管理器的默认目录
                 var defaultPath = solutionManager.SolutionsDirectory;
                 var newDialog = new NewSolutionDialog(defaultPath)
@@ -306,7 +306,7 @@ namespace SunEyeVision.UI.Shell.Windows
         {
             if (_viewModel?.WorkflowTabViewModel == null || _viewModel?.WorkflowTabViewModel.Tabs == null)
                 return;
-            var solutionManager = Adapters.ServiceInitializer.SolutionManager;
+            var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
             if (solutionManager?.CurrentSolution == null)
                 return;
             var solution = solutionManager.CurrentSolution;

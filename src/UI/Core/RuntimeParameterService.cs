@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace SunEyeVision.UI.Services
+namespace SunEyeVision.UI.Core
 {
     /// <summary>
     /// 运行时参数服务默认实现 - 基于字典的编辑态运行时参数存储。

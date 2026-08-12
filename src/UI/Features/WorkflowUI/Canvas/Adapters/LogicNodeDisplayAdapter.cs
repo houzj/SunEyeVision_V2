@@ -1,8 +1,8 @@
 using System.Windows.Media;
 using SunEyeVision.UI.Shared;
-using SunEyeVision.UI.Adapters;
+using SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters;
 
-namespace SunEyeVision.UI.Adapters
+namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
 {
     /// <summary>
     /// 逻辑节点显示适配器

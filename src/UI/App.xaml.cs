@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Windows;
 using System.IO;
-using SunEyeVision.UI.Adapters;
+using SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters;
 using SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
 using System.Diagnostics;
 using System.Windows.Threading;

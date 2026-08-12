@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace SunEyeVision.UI.Adapters
+namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
 {
     /// <summary>
     /// 节点显示适配器工厂

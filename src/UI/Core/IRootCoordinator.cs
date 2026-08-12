@@ -5,7 +5,7 @@ using SunEyeVision.Plugin.SDK.Logging;
 
 using SunEyeVision.UI.Shell.Windows;
 
-namespace SunEyeVision.UI.Services
+namespace SunEyeVision.UI.Core
 {
     /// <summary>
     /// 根协调器 - 供各域子 ViewModel 访问跨域协调能力的窄接口。

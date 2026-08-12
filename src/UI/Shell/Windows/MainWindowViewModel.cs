@@ -25,7 +25,7 @@ using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.UI;
-using SunEyeVision.UI.Adapters;
+using SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters;
 using SunEyeVision.Workflow;
 using SunEyeVision.UI.Services.Thumbnail;
 using SunEyeVision.UI.Features.WorkflowUI;
@@ -68,7 +68,7 @@ namespace SunEyeVision.UI.Shell.Windows
     /// <summary>
     /// 主窗口视图模型
     /// </summary>
-    public class MainWindowViewModel : ViewModelBase, Services.Workflow.INodeResultSink, Services.IRootCoordinator
+    public class MainWindowViewModel : ViewModelBase, Services.Workflow.INodeResultSink, SunEyeVision.UI.Core.IRootCoordinator
     {
         private string _title = "太阳眼视觉";
         private bool _isRunning = false;
@@ -125,10 +125,10 @@ namespace SunEyeVision.UI.Shell.Windows
         private readonly ObservableCollection<FlatResultRow> _flatResultRows = new();
 
         // 运行时参数服务（编辑态 UI 层运行时参数）
-        private readonly Services.IRuntimeParameterService _runtimeParameterService;
+        private readonly SunEyeVision.UI.Core.IRuntimeParameterService _runtimeParameterService;
 
         // 工作流上下文服务（按工作流ID缓存独立执行上下文）
-        private readonly Services.IWorkflowContextService _workflowContextService;
+        private readonly SunEyeVision.UI.Core.IWorkflowContextService _workflowContextService;
 
         // 节点结果管理
         private readonly Services.Workflow.NodeResultManager _nodeResultManager;
@@ -249,13 +249,13 @@ namespace SunEyeVision.UI.Shell.Windows
 
         // ===== IRootCoordinator 显式实现（类型不匹配的成员）=====
 
-        object Services.IRootCoordinator.SelectedTab
+        object SunEyeVision.UI.Core.IRootCoordinator.SelectedTab
         {
             get => WorkflowTabViewModel.SelectedTab!;
             set => WorkflowTabViewModel.SelectedTab = (WorkflowTabViewModel)value;
         }
 
-        System.Collections.IList Services.IRootCoordinator.Tabs => WorkflowTabViewModel.Tabs;
+        System.Collections.IList SunEyeVision.UI.Core.IRootCoordinator.Tabs => WorkflowTabViewModel.Tabs;
 
         public ObservableCollection<AvailableDataSource> DisplayImageSources => _displayImageSources;
 
@@ -820,8 +820,8 @@ SplitterPosition = position;
             ImageCollection = new BatchObservableCollection<ImageInfo>();
 
             // 初始化共享基础设施服务
-            _runtimeParameterService = new Services.RuntimeParameterService();
-            _workflowContextService = new Services.WorkflowContextService();
+            _runtimeParameterService = new SunEyeVision.UI.Core.RuntimeParameterService();
+            _workflowContextService = new SunEyeVision.UI.Core.WorkflowContextService();
 
             // 初始化图像结果子 VM（就近绑定右侧图像结果区，共享数据源/结果行集合）
             _imageResult = new SunEyeVision.UI.Shell.Controls.ImageResultViewModel(this);
@@ -889,7 +889,7 @@ SplitterPosition = position;
             SubscribeToCurrentCommandManager();
 
             // 监听解决方案变更事件
-            var solutionManager = Adapters.ServiceInitializer.SolutionManager;
+            var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
             solutionManager.CurrentSolutionChanged += OnCurrentSolutionChanged;
 
             // 初始化当前解决方案信息
@@ -1059,7 +1059,7 @@ SplitterPosition = position;
         private void SyncWorkflowToSolution(SunEyeVision.Workflow.Workflow workflow, string? displayName = null)
         {
             if (workflow == null) return;
-            var solutionManager = Adapters.ServiceInitializer.SolutionManager;
+            var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
             var solution = solutionManager?.CurrentSolution;
             if (solution != null && !solution.Workflows.Any(w => w.Id == workflow.Id))
             {
@@ -1079,7 +1079,7 @@ SplitterPosition = position;
             _workflowEngine.DeleteWorkflow(deletedTab.Id);
 
             // 2. 从 Solution 中移除
-            var solutionManager = Adapters.ServiceInitializer.SolutionManager;
+            var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
             if (solutionManager?.CurrentSolution != null)
             {
                 solutionManager.CurrentSolution.RemoveWorkflow(deletedTab.Id);
@@ -1441,7 +1441,7 @@ SplitterPosition = position;
         {
             try
             {
-                var solutionManager = Adapters.ServiceInitializer.SolutionManager;
+                var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
 
                 // 1. 如果没有当前解决方案，弹出新建对话框
                 SolutionMetadata? metadata = null;
@@ -1526,7 +1526,7 @@ SplitterPosition = position;
         {
             try
             {
-                var solutionManager = Adapters.ServiceInitializer.SolutionManager;
+                var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
                 var currentSolution = solutionManager.CurrentSolution;
 
                 if (currentSolution != null)
@@ -1559,7 +1559,7 @@ SplitterPosition = position;
             UpdateCurrentSolutionInfo();
 
             // 加载解决方案到工作流标签页
-            var solutionManager = Adapters.ServiceInitializer.SolutionManager;
+            var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
             var currentSolution = solutionManager?.CurrentSolution;
 
             if (currentSolution != null)
@@ -1949,7 +1949,7 @@ SplitterPosition = position;
                 _executionManager.SetRuntimeParameters(GetAllRuntimeParameters());
 
                 // ★ 传递全局变量到执行管理器（用于 __GlobalVars__ 绑定解析）
-                var solutionManager = Adapters.ServiceInitializer.SolutionManager;
+                var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
                 var globalVars = solutionManager.CurrentSolution?.GlobalVariables?
                     .ToDictionary(gv => gv.Name, gv => gv.Value);
                 _executionManager.SetGlobalVariables(globalVars);
@@ -2403,7 +2403,7 @@ SplitterPosition = position;
                     var subId = node.SubroutineId;
                     _workflowEngine.DeleteWorkflow(subId);
 
-                    var solMgr = Adapters.ServiceInitializer.SolutionManager;
+                    var solMgr = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
                     if (solMgr?.CurrentSolution != null)
                     {
                         solMgr.CurrentSolution.RemoveWorkflow(subId);
@@ -4927,7 +4927,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
             {
                 LogInfo("打开解决方案配置界面");
 
-                var solutionManager = Adapters.ServiceInitializer.SolutionManager;
+                var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
 
                 // [诊断] 记录打开前的状态
                 var currentMetadata = solutionManager.CurrentSolution != null
@@ -4991,7 +4991,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
             {
                 LogInfo("打开全局变量管理器");
 
-                var solutionManager = Adapters.ServiceInitializer.SolutionManager;
+                var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
                 var currentSolution = solutionManager.CurrentSolution;
 
                 if (currentSolution == null)
@@ -5017,7 +5017,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         /// <param name="nodeId">被删除的节点ID</param>
         private void CleanupBindingsForDeletedNode(string nodeId)
         {
-            var solution = Adapters.ServiceInitializer.SolutionManager?.CurrentSolution;
+            var solution = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager?.CurrentSolution;
             if (solution?.GlobalVariables == null)
                 return;
 
@@ -5053,7 +5053,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
             {
                 LogInfo("打开相机管理器");
 
-                var solutionManager = Adapters.ServiceInitializer.SolutionManager;
+                var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
                 LogInfo($"SolutionManager: {solutionManager != null}");
 
                 var currentSolution = solutionManager?.CurrentSolution;
@@ -5094,7 +5094,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
             {
                 LogInfo("打开通讯管理器");
 
-                var solutionManager = Adapters.ServiceInitializer.SolutionManager;
+                var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
                 var currentSolution = solutionManager.CurrentSolution;
 
                 if (currentSolution == null)

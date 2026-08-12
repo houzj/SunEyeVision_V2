@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace SunEyeVision.UI.Services
+namespace SunEyeVision.UI.Core
 {
     /// <summary>
     /// 运行时参数服务（编辑态 UI 层运行时参数）。

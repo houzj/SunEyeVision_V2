@@ -5,9 +5,9 @@ using System.Windows;
 using AIStudio.Wpf.DiagramDesigner.ViewModels;
 using AIStudio.Wpf.DiagramDesigner;
 using SunEyeVision.UI.Shared;
-using SunEyeVision.UI.Adapters;
+using SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters;
 
-namespace SunEyeVision.UI.Adapters
+namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
 {
     /// <summary>
     /// 图表适配器实现

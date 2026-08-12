@@ -1,18 +1,18 @@
 using System.Windows.Media;
 using SunEyeVision.UI.Shared;
-using SunEyeVision.UI.Adapters;
+using SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters;
 
-namespace SunEyeVision.UI.Adapters
+namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
 {
     /// <summary>
-    /// 图像源节点显示适配器
+    /// 识别节点显示适配器
     /// </summary>
-    public class ImageSourceNodeDisplayAdapter : ICategoryDisplayAdapter
+    public class RecognitionNodeDisplayAdapter : ICategoryDisplayAdapter
     {
         /// <summary>
         /// 支持的分类
         /// </summary>
-        public string[] SupportedCategories => new[] { "采集", "输入" };
+        public string[] SupportedCategories => new[] { "识别" };
 
         public string GetDisplayText(WorkflowNode node)
         {
@@ -21,17 +21,17 @@ namespace SunEyeVision.UI.Adapters
 
         public string GetIcon(WorkflowNode node)
         {
-            return "📷";
+            return "🔍";
         }
 
         public Color GetBackgroundColor(WorkflowNode node)
         {
-            return Color.FromRgb(240, 248, 255); // 淡蓝色背景
+            return Color.FromRgb(243, 229, 245); // #F3E5F5
         }
 
         public Color GetBorderColor(WorkflowNode node)
         {
-            return Color.FromRgb(65, 105, 225); // 皇家蓝
+            return Color.FromRgb(123, 31, 162); // #7B1FA2
         }
     }
 }

@@ -1,19 +1,14 @@
 using System.Windows.Media;
 using SunEyeVision.UI.Shared;
-using SunEyeVision.UI.Adapters;
+using SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters;
 
-namespace SunEyeVision.UI.Adapters
+namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
 {
     /// <summary>
-    /// 输出节点显示适配器
+    /// 默认节点显示适配器。
     /// </summary>
-    public class OutputNodeDisplayAdapter : ICategoryDisplayAdapter
+    public class DefaultNodeDisplayAdapter : INodeDisplayAdapter
     {
-        /// <summary>
-        /// 支持的分类
-        /// </summary>
-        public string[] SupportedCategories => new[] { "输出" };
-
         public string GetDisplayText(WorkflowNode node)
         {
             return $"{node.DisplayName}_{node.LocalIndex}";
@@ -21,17 +16,17 @@ namespace SunEyeVision.UI.Adapters
 
         public string GetIcon(WorkflowNode node)
         {
-            return "📤";
+            return node.Icon ?? "?";
         }
 
         public Color GetBackgroundColor(WorkflowNode node)
         {
-            return Color.FromRgb(255, 235, 238); // #FFEBEE
+            return Colors.White;
         }
 
         public Color GetBorderColor(WorkflowNode node)
         {
-            return Color.FromRgb(211, 47, 47); // #D32F2F
+            return Color.FromRgb(255, 149, 0); // #ff9500
         }
     }
 }

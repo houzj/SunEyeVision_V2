@@ -1,8 +1,8 @@
 using System.Windows.Media;
 using SunEyeVision.UI.Shared;
-using SunEyeVision.UI.Adapters;
+using SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters;
 
-namespace SunEyeVision.UI.Adapters
+namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
 {
     /// <summary>
     /// 控制流节点显示适配器（子程序、条件判断等）

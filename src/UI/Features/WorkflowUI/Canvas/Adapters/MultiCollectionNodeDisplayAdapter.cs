@@ -1,13 +1,13 @@
 using System.Windows.Media;
 using SunEyeVision.UI.Shared;
-using SunEyeVision.UI.Adapters;
+using SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters;
 
-namespace SunEyeVision.UI.Adapters
+namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
 {
     /// <summary>
-    /// AI分析节点显示适配器
+    /// 多集合节点显示适配器。
     /// </summary>
-    public class AIAnalysisNodeDisplayAdapter : INodeDisplayAdapter
+    public class MultiCollectionNodeDisplayAdapter : INodeDisplayAdapter
     {
         public string GetDisplayText(WorkflowNode node)
         {
@@ -16,17 +16,17 @@ namespace SunEyeVision.UI.Adapters
 
         public string GetIcon(WorkflowNode node)
         {
-            return "🧠";
+            return "🔄";
         }
 
         public Color GetBackgroundColor(WorkflowNode node)
         {
-            return Color.FromRgb(240, 230, 255); // 淡紫色背景
+            return Color.FromRgb(245, 245, 245); // 淡灰色背景。
         }
 
         public Color GetBorderColor(WorkflowNode node)
         {
-            return Color.FromRgb(138, 43, 226); // 蓝紫色
+            return Color.FromRgb(128, 128, 128); // 灰色
         }
     }
 }

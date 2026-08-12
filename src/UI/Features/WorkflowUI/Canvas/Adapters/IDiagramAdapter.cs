@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using SunEyeVision.UI.Shared;
 
-namespace SunEyeVision.UI.Adapters
+namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
 {
     /// <summary>
     /// 图表适配器接口。

@@ -9,7 +9,7 @@ using System.Windows.Data;
 using System.Windows.Input;
 using SunEyeVision.UI.Features.WorkflowUI.Commands;
 using SunEyeVision.UI.Services.Logging;
-using SunEyeVision.UI.Adapters;
+using SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters;
 using SunEyeVision.Plugin.SDK.Logging;
 
 using SunEyeVision.UI.Core;

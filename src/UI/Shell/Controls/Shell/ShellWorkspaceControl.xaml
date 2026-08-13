@@ -10,10 +10,10 @@
              mc:Ignorable="d"
              d:DesignHeight="700" d:DesignWidth="900">
 
-    <!-- ========== 工作区（含右下角小地图覆盖层） ========== -->
-    <Grid>
-        <Border Background="#F5F5F5" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0">
-        <TabControl x:Name="WorkflowTabControl"
+  <!-- ========== 工作区（含右下角小地图覆盖层） ========== -->
+  <Grid>
+    <Border Background="#F5F5F5" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0">
+      <TabControl x:Name="WorkflowTabControl"
                     Background="#F5F5F5"
                     BorderThickness="0"
                     ItemsSource="{Binding Tabs}"
@@ -22,67 +22,69 @@
                     SelectionChanged="WorkflowTabControl_SelectionChanged"
                     PreviewMouseLeftButtonDown="WorkflowTabControl_PreviewMouseLeftButtonDown"
                     Loaded="WorkflowTabControl_Loaded">
-            <TabControl.Resources>
-                <convertersWorkflow:WorkflowStateToColorConverter x:Key="WorkflowStateToColorConverter"/>
-                <convertersWorkflow:WorkflowStateToTextConverter x:Key="WorkflowStateToTextConverter"/>
-                <convertersWorkflow:ContinuousRunButtonTextConverter x:Key="ContinuousRunButtonTextConverter"/>
-                <convertersWorkflow:ContinuousRunBackgroundConverter x:Key="ContinuousRunBackgroundConverter"/>
-                <convertersWorkflow:ContinuousRunBorderConverter x:Key="ContinuousRunBorderConverter"/>
-                <converters:ContinuousRunIconTriangleInLoopConverter x:Key="ContinuousRunIconTriangleInLoopConverter"/>
-                <converters:ContinuousRunIconColorConverter x:Key="ContinuousRunIconColorConverter"/>
-            </TabControl.Resources>
+        <TabControl.Resources>
+          <convertersWorkflow:WorkflowStateToColorConverter x:Key="WorkflowStateToColorConverter"/>
+          <convertersWorkflow:WorkflowStateToTextConverter x:Key="WorkflowStateToTextConverter"/>
+          <convertersWorkflow:ContinuousRunButtonTextConverter x:Key="ContinuousRunButtonTextConverter"/>
+          <convertersWorkflow:ContinuousRunBackgroundConverter x:Key="ContinuousRunBackgroundConverter"/>
+          <convertersWorkflow:ContinuousRunBorderConverter x:Key="ContinuousRunBorderConverter"/>
+          <converters:ContinuousRunIconTriangleInLoopConverter x:Key="ContinuousRunIconTriangleInLoopConverter"/>
+          <converters:ContinuousRunIconColorConverter x:Key="ContinuousRunIconColorConverter"/>
+        </TabControl.Resources>
 
-            <!-- 自定义TabControl模板,将添加按钮放在TabPanel中 -->
-            <TabControl.Template>
-                <ControlTemplate TargetType="TabControl">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
+        <!-- 自定义TabControl模板,将添加按钮放在TabPanel中 -->
+        <TabControl.Template>
+          <ControlTemplate TargetType="TabControl">
+            <Grid>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+              </Grid.RowDefinitions>
 
-                        <!-- TabPanel区域,分为两列:左侧TabItems可滚动,右侧添加按钮固定 -->
-                        <Border Grid.Row="0" Background="#F5F5F5" BorderThickness="0,0,0,1" BorderBrush="#E0E0E0"
+              <!-- TabPanel区域,分为两列:左侧TabItems可滚动,右侧添加按钮固定 -->
+              <Border Grid.Row="0" Background="#F5F5F5" BorderThickness="0,0,0,1" BorderBrush="#E0E0E0"
                                 ClipToBounds="True">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>  <!-- 左侧:TabItems区域 -->
-                                    <ColumnDefinition Width="Auto"/> <!-- 右侧:添加按钮区域 -->
-                                </Grid.ColumnDefinitions>
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <!-- 左侧:TabItems区域 -->
+                    <ColumnDefinition Width="Auto"/>
+                    <!-- 右侧:添加按钮区域 -->
+                  </Grid.ColumnDefinitions>
 
-                                <!-- 左侧:ScrollViewer包裹TabPanel和可滚动添加按钮 -->
-                                <ScrollViewer Grid.Column="0"
+                  <!-- 左侧:ScrollViewer包裹TabPanel和可滚动添加按钮 -->
+                  <ScrollViewer Grid.Column="0"
                                               x:Name="TabPanelScrollViewer"
                                               HorizontalScrollBarVisibility="Hidden"
                                               VerticalScrollBarVisibility="Disabled"
                                               Focusable="False"
                                               ClipToBounds="True">
-                                    <StackPanel Orientation="Horizontal">
-                                        <TabPanel x:Name="HeaderPanel"
+                    <StackPanel Orientation="Horizontal">
+                      <TabPanel x:Name="HeaderPanel"
                                                   IsItemsHost="True"/>
 
-                                        <!-- 可滚动位置的添加按钮 - 当TabItems多时隐藏 -->
-                                        <Border x:Name="ScrollableAddButtonBorder"
+                      <!-- 可滚动位置的添加按钮 - 当TabItems多时隐藏 -->
+                      <Border x:Name="ScrollableAddButtonBorder"
                                                 Visibility="Collapsed"
                                                 Background="#F5F5F5" Padding="2,2,8,0"
                                                 Margin="4,2,0,0">
-                                            <Button Width="40" Height="40"
+                        <Button Width="40" Height="40"
                                                     Padding="0"
                                                     BorderThickness="1"
                                                     BorderBrush="#4CAF50"
                                                     Background="#F1F8E9"
                                                     Cursor="Hand"
                                                     Click="AddWorkflow_Click">
-                                                <Button.Template>
-                                                    <ControlTemplate TargetType="Button">
-                                                        <Border x:Name="ButtonBorder"
+                          <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                              <Border x:Name="ButtonBorder"
                                                                 Background="{TemplateBinding Background}"
                                                                 BorderBrush="{TemplateBinding BorderBrush}"
                                                                 BorderThickness="{TemplateBinding BorderThickness}"
                                                                 CornerRadius="6"
                                                                 Width="{TemplateBinding Width}"
                                                                 Height="{TemplateBinding Height}">
-                                                            <Path x:Name="ButtonIcon"
+                                <Path x:Name="ButtonIcon"
                                                                   Data="M12,6 L12,18 M6,12 L18,12"
                                                                   Stroke="#4CAF50"
                                                                   StrokeThickness="2.5"
@@ -91,43 +93,43 @@
                                                                   Width="20" Height="20"
                                                                   HorizontalAlignment="Center"
                                                                   VerticalAlignment="Center"/>
-                                                        </Border>
-                                                        <ControlTemplate.Triggers>
-                                                            <Trigger Property="IsMouseOver" Value="True">
-                                                                <Setter TargetName="ButtonBorder" Property="Background" Value="#4CAF50"/>
-                                                                <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="#388E3C"/>
-                                                                <Setter TargetName="ButtonIcon" Property="Stroke" Value="White"/>
-                                                            </Trigger>
-                                                        </ControlTemplate.Triggers>
-                                                    </ControlTemplate>
-                                                </Button.Template>
-                                            </Button>
-                                        </Border>
-                                    </StackPanel>
-                                </ScrollViewer>
+                              </Border>
+                              <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                  <Setter TargetName="ButtonBorder" Property="Background" Value="#4CAF50"/>
+                                  <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="#388E3C"/>
+                                  <Setter TargetName="ButtonIcon" Property="Stroke" Value="White"/>
+                                </Trigger>
+                              </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                          </Button.Template>
+                        </Button>
+                      </Border>
+                    </StackPanel>
+                  </ScrollViewer>
 
-                                <!-- 右侧:固定的添加工作流按钮 - 当TabItems多时显示 -->
-                                <Border Grid.Column="1"
+                  <!-- 右侧:固定的添加工作流按钮 - 当TabItems多时显示 -->
+                  <Border Grid.Column="1"
                                         x:Name="FixedAddButtonBorder"
                                         Visibility="Collapsed"
                                         Background="#F5F5F5" Padding="2,2,8,0">
-                                    <Button Width="40" Height="40"
+                    <Button Width="40" Height="40"
                                             Padding="0"
                                             BorderThickness="1"
                                             BorderBrush="#4CAF50"
                                             Background="#F1F8E9"
                                             Cursor="Hand"
                                             Click="AddWorkflow_Click">
-                                        <Button.Template>
-                                            <ControlTemplate TargetType="Button">
-                                                <Border x:Name="ButtonBorder"
+                      <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                          <Border x:Name="ButtonBorder"
                                                         Background="{TemplateBinding Background}"
                                                         BorderBrush="{TemplateBinding BorderBrush}"
                                                         BorderThickness="{TemplateBinding BorderThickness}"
                                                         CornerRadius="6"
                                                         Width="{TemplateBinding Width}"
                                                         Height="{TemplateBinding Height}">
-                                                    <Path x:Name="ButtonIcon"
+                            <Path x:Name="ButtonIcon"
                                                           Data="M12,6 L12,18 M6,12 L18,12"
                                                           Stroke="#4CAF50"
                                                           StrokeThickness="2.5"
@@ -136,66 +138,66 @@
                                                           Width="20" Height="20"
                                                           HorizontalAlignment="Center"
                                                           VerticalAlignment="Center"/>
-                                                </Border>
-                                                <ControlTemplate.Triggers>
-                                                    <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter TargetName="ButtonBorder" Property="Background" Value="#4CAF50"/>
-                                                        <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="#388E3C"/>
-                                                        <Setter TargetName="ButtonIcon" Property="Stroke" Value="White"/>
-                                                    </Trigger>
-                                                </ControlTemplate.Triggers>
-                                            </ControlTemplate>
-                                        </Button.Template>
-                                    </Button>
-                                </Border>
-                            </Grid>
-                        </Border>
+                          </Border>
+                          <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                              <Setter TargetName="ButtonBorder" Property="Background" Value="#4CAF50"/>
+                              <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="#388E3C"/>
+                              <Setter TargetName="ButtonIcon" Property="Stroke" Value="White"/>
+                            </Trigger>
+                          </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                      </Button.Template>
+                    </Button>
+                  </Border>
+                </Grid>
+              </Border>
 
-                        <!-- TabContent内容区域 -->
-                        <ContentPresenter x:Name="PART_SelectedContentHost"
+              <!-- TabContent内容区域 -->
+              <ContentPresenter x:Name="PART_SelectedContentHost"
                                           Grid.Row="1"
                                           Margin="0"/>
-                    </Grid>
-                </ControlTemplate>
-            </TabControl.Template>
+            </Grid>
+          </ControlTemplate>
+        </TabControl.Template>
 
-            <!-- 自定义TabItem容器样式 -->
-            <TabControl.ItemContainerStyle>
-                <Style TargetType="TabItem">
-                    <Setter Property="Padding" Value="0"/>
-                    <Setter Property="Margin" Value="4,2,0,0"/>
-                    <Setter Property="Height" Value="40"/>
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate TargetType="TabItem">
-                                <Grid>
-                                    <Grid.ContextMenu>
-                                        <ContextMenu Background="#FFFFFF" BorderBrush="#CCCCCC" BorderThickness="1" Padding="4">
-                                            <MenuItem Header="重命名" Click="TabItem_Rename_Click"/>
-                                            <Separator/>
-                                            <MenuItem Header="关闭" Click="TabItem_ContextMenu_Delete_Click"/>
-                                        </ContextMenu>
-                                    </Grid.ContextMenu>
-                                    <Border x:Name="TabBorder"
+        <!-- 自定义TabItem容器样式 -->
+        <TabControl.ItemContainerStyle>
+          <Style TargetType="TabItem">
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="4,2,0,0"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Template">
+              <Setter.Value>
+                <ControlTemplate TargetType="TabItem">
+                  <Grid>
+                    <Grid.ContextMenu>
+                      <ContextMenu Background="#FFFFFF" BorderBrush="#CCCCCC" BorderThickness="1" Padding="4">
+                        <MenuItem Header="重命名" Click="TabItem_Rename_Click"/>
+                        <Separator/>
+                        <MenuItem Header="关闭" Click="TabItem_ContextMenu_Delete_Click"/>
+                      </ContextMenu>
+                    </Grid.ContextMenu>
+                    <Border x:Name="TabBorder"
                                             Background="#FFFFFF"
                                             BorderBrush="#E0E0E0"
                                             BorderThickness="1,1,1,0"
                                             CornerRadius="6,6,0,0"
                                             Padding="0"
                                             Margin="0,0,0,0">
-                                        <Grid Margin="8,0">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
+                      <Grid Margin="8,0">
+                        <Grid.ColumnDefinitions>
+                          <ColumnDefinition Width="Auto"/>
+                          <ColumnDefinition Width="Auto"/>
+                          <ColumnDefinition Width="Auto"/>
+                          <ColumnDefinition Width="Auto"/>
+                          <ColumnDefinition Width="Auto"/>
+                          <ColumnDefinition Width="Auto"/>
+                          <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
 
-                                            <!-- [↩] 返回按钮 - 仅子程序模式下可见 -->
-                                            <Button x:Name="SubroutineBackBtn"
+                        <!-- [↩] 返回按钮 - 仅子程序模式下可见 -->
+                        <Button x:Name="SubroutineBackBtn"
                                                     Grid.Column="0"
                                                     Content="&#x21A9;"
                                                     FontSize="14" FontWeight="Bold"
@@ -207,23 +209,23 @@
                                                     Margin="0,0,4,0"
                                                     ToolTip="返回上层工作流"
                                                     Click="NavigateBack_Click">
-                                                <Button.Style>
-                                                    <Style TargetType="Button">
-                                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding IsInSubroutine}" Value="True">
-                                                                <Setter Property="Visibility" Value="Visible"/>
-                                                            </DataTrigger>
-                                                            <Trigger Property="IsMouseOver" Value="True">
-                                                                <Setter Property="Foreground" Value="#0066CC"/>
-                                                            </Trigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </Button.Style>
-                                            </Button>
+                          <Button.Style>
+                            <Style TargetType="Button">
+                              <Setter Property="Visibility" Value="Collapsed"/>
+                              <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsInSubroutine}" Value="True">
+                                  <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                  <Setter Property="Foreground" Value="#0066CC"/>
+                                </Trigger>
+                              </Style.Triggers>
+                            </Style>
+                          </Button.Style>
+                        </Button>
 
-                                            <!-- [⚙] 设置按钮 - 仅子程序模式下可见 -->
-                                            <Button x:Name="SubroutineSettingsBtn"
+                        <!-- [⚙] 设置按钮 - 仅子程序模式下可见 -->
+                        <Button x:Name="SubroutineSettingsBtn"
                                                     Grid.Column="1"
                                                     Content="&#x2699;"
                                                     FontSize="14" FontWeight="Bold"
@@ -235,30 +237,30 @@
                                                     Margin="0,0,8,0"
                                                     ToolTip="子程序参数设置"
                                                     Click="SubroutineSettings_Click">
-                                                <Button.Style>
-                                                    <Style TargetType="Button">
-                                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding IsInSubroutine}" Value="True">
-                                                                <Setter Property="Visibility" Value="Visible"/>
-                                                            </DataTrigger>
-                                                            <Trigger Property="IsMouseOver" Value="True">
-                                                                <Setter Property="Foreground" Value="#0066CC"/>
-                                                            </Trigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </Button.Style>
-                                            </Button>
+                          <Button.Style>
+                            <Style TargetType="Button">
+                              <Setter Property="Visibility" Value="Collapsed"/>
+                              <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsInSubroutine}" Value="True">
+                                  <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                  <Setter Property="Foreground" Value="#0066CC"/>
+                                </Trigger>
+                              </Style.Triggers>
+                            </Style>
+                          </Button.Style>
+                        </Button>
 
-                                            <!-- 工作流名称（支持行内重命名） -->
-                                            <Grid Grid.Column="2" Margin="0,0,12,0">
-                                                <TextBlock x:Name="TabNameText"
+                        <!-- 工作流名称（支持行内重命名） -->
+                        <Grid Grid.Column="2" Margin="0,0,12,0">
+                          <TextBlock x:Name="TabNameText"
                                                            Text="{Binding EffectiveDisplayName}"
                                                            FontSize="13"
                                                            FontWeight="SemiBold"
                                                            Foreground="#333333"
                                                            VerticalAlignment="Center"/>
-                                                <TextBox x:Name="TabNameEditor"
+                          <TextBox x:Name="TabNameEditor"
                                                          Text="{Binding RenameBuffer, UpdateSourceTrigger=PropertyChanged}"
                                                          FontSize="13"
                                                          FontWeight="SemiBold"
@@ -268,10 +270,10 @@
                                                          Visibility="Collapsed"
                                                          KeyDown="TabRenameTextBox_KeyDown"
                                                          LostFocus="TabRenameTextBox_LostFocus"/>
-                                            </Grid>
+                        </Grid>
 
-                                            <!-- 单次运行按钮 - 仅在选中时显示 -->
-                                            <Button x:Name="SingleRunBtn"
+                        <!-- 单次运行按钮 - 仅在选中时显示 -->
+                        <Button x:Name="SingleRunBtn"
                                                     Grid.Column="3"
                                                     Content="▶"
                                                     Padding="6,4"
@@ -284,44 +286,44 @@
                                                     Cursor="Hand"
                                                     Width="32" Height="32"
                                                     Visibility="Collapsed">
-                                                <Button.Background>
-                                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                                        <GradientStop Color="#4CAF50" Offset="0"/>
-                                                        <GradientStop Color="#45A049" Offset="1"/>
-                                                    </LinearGradientBrush>
-                                                </Button.Background>
-                                                <Button.Style>
-                                                    <Style TargetType="Button">
-                                                        <Setter Property="Template">
-                                                            <Setter.Value>
-                                                                <ControlTemplate TargetType="Button">
-                                                                    <Border Background="{TemplateBinding Background}"
+                          <Button.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                              <GradientStop Color="#4CAF50" Offset="0"/>
+                              <GradientStop Color="#45A049" Offset="1"/>
+                            </LinearGradientBrush>
+                          </Button.Background>
+                          <Button.Style>
+                            <Style TargetType="Button">
+                              <Setter Property="Template">
+                                <Setter.Value>
+                                  <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}"
                                                                             CornerRadius="6"
                                                                             Width="{TemplateBinding Width}"
                                                                             Height="{TemplateBinding Height}">
-                                                                        <ContentPresenter Content="{TemplateBinding Content}"
+                                      <ContentPresenter Content="{TemplateBinding Content}"
                                                                                           HorizontalAlignment="Center"
                                                                                           VerticalAlignment="Center"/>
-                                                                    </Border>
-                                                                </ControlTemplate>
-                                                            </Setter.Value>
-                                                        </Setter>
-                                                        <Style.Triggers>
-                                                            <Trigger Property="IsMouseOver" Value="True">
-                                                                <Setter Property="Opacity" Value="0.9"/>
-                                                                <Setter Property="Effect">
-                                                                    <Setter.Value>
-                                                                        <DropShadowEffect Color="#4CAF50" BlurRadius="8" ShadowDepth="0"/>
-                                                                    </Setter.Value>
-                                                                </Setter>
-                                                            </Trigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </Button.Style>
-                                            </Button>
+                                    </Border>
+                                  </ControlTemplate>
+                                </Setter.Value>
+                              </Setter>
+                              <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                  <Setter Property="Opacity" Value="0.9"/>
+                                  <Setter Property="Effect">
+                                    <Setter.Value>
+                                      <DropShadowEffect Color="#4CAF50" BlurRadius="8" ShadowDepth="0"/>
+                                    </Setter.Value>
+                                  </Setter>
+                                </Trigger>
+                              </Style.Triggers>
+                            </Style>
+                          </Button.Style>
+                        </Button>
 
-                                            <!-- 连续运行/停止按钮 - 仅在选中时显示 -->
-                                            <Button x:Name="ContinuousRunBtn"
+                        <!-- 连续运行/停止按钮 - 仅在选中时显示 -->
+                        <Button x:Name="ContinuousRunBtn"
                                                     Grid.Column="4"
                                                     Padding="6,4"
                                                     Margin="6,0,0,0"
@@ -331,61 +333,61 @@
                                                     Cursor="Hand"
                                                     Width="32" Height="32"
                                                     Visibility="Collapsed">
-                                                <Button.Background>
-                                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                                        <GradientStop Color="{Binding IsRunning, Converter={StaticResource ContinuousRunBackgroundConverter}}" Offset="0"/>
-                                                        <GradientStop Color="{Binding IsRunning, Converter={StaticResource ContinuousRunBackgroundConverter}}" Offset="1"/>
-                                                    </LinearGradientBrush>
-                                                </Button.Background>
-                                                <Button.Style>
-                                                    <Style TargetType="Button">
-                                                        <Setter Property="Template">
-                                                            <Setter.Value>
-                                                                <ControlTemplate TargetType="Button">
-                                                                    <Border Background="{TemplateBinding Background}"
+                          <Button.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                              <GradientStop Color="{Binding IsRunning, Converter={StaticResource ContinuousRunBackgroundConverter}}" Offset="0"/>
+                              <GradientStop Color="{Binding IsRunning, Converter={StaticResource ContinuousRunBackgroundConverter}}" Offset="1"/>
+                            </LinearGradientBrush>
+                          </Button.Background>
+                          <Button.Style>
+                            <Style TargetType="Button">
+                              <Setter Property="Template">
+                                <Setter.Value>
+                                  <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}"
                                                                             CornerRadius="6"
                                                                             Width="{TemplateBinding Width}"
                                                                             Height="{TemplateBinding Height}">
-                                                                        <Path Data="{Binding IsRunning, Converter={StaticResource ContinuousRunIconTriangleInLoopConverter}}"
+                                      <Path Data="{Binding IsRunning, Converter={StaticResource ContinuousRunIconTriangleInLoopConverter}}"
                                                                               Fill="{Binding IsRunning, Converter={StaticResource ContinuousRunIconColorConverter}}"
                                                                               Stretch="Uniform"
                                                                               Width="20" Height="20"
                                                                               HorizontalAlignment="Center"
                                                                               VerticalAlignment="Center"/>
-                                                                    </Border>
-                                                                </ControlTemplate>
-                                                            </Setter.Value>
-                                                        </Setter>
-                                                        <Style.Triggers>
-                                                            <Trigger Property="IsMouseOver" Value="True">
-                                                                <Setter Property="Opacity" Value="0.9"/>
-                                                                <Setter Property="Effect">
-                                                                    <Setter.Value>
-                                                                        <DropShadowEffect BlurRadius="8" ShadowDepth="0"/>
-                                                                    </Setter.Value>
-                                                                </Setter>
-                                                            </Trigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </Button.Style>
-                                            </Button>
+                                    </Border>
+                                  </ControlTemplate>
+                                </Setter.Value>
+                              </Setter>
+                              <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                  <Setter Property="Opacity" Value="0.9"/>
+                                  <Setter Property="Effect">
+                                    <Setter.Value>
+                                      <DropShadowEffect BlurRadius="8" ShadowDepth="0"/>
+                                    </Setter.Value>
+                                  </Setter>
+                                </Trigger>
+                              </Style.Triggers>
+                            </Style>
+                          </Button.Style>
+                        </Button>
 
-                                            <!-- 状态指示器 - 仅在选中时显示 -->
-                                            <Ellipse x:Name="StateIndicator"
+                        <!-- 状态指示器 - 仅在选中时显示 -->
+                        <Ellipse x:Name="StateIndicator"
                                                      Grid.Column="5"
                                                      Width="12" Height="12"
                                                      Fill="{Binding State, Converter={StaticResource WorkflowStateToColorConverter}}"
                                                      VerticalAlignment="Center"
                                                      Margin="12,0,8,0"
                                                      Visibility="Collapsed">
-                                                <Ellipse.Effect>
-                                                    <DropShadowEffect Color="{Binding State, Converter={StaticResource WorkflowStateToColorConverter}}"
+                          <Ellipse.Effect>
+                            <DropShadowEffect Color="{Binding State, Converter={StaticResource WorkflowStateToColorConverter}}"
                                                                       BlurRadius="6" ShadowDepth="0"/>
-                                                </Ellipse.Effect>
-                                            </Ellipse>
+                          </Ellipse.Effect>
+                        </Ellipse>
 
-                                            <!-- 删除按钮 - 仅在选中时显示 -->
-                                            <Button x:Name="DeleteBtn"
+                        <!-- 删除按钮 - 仅在选中时显示 -->
+                        <Button x:Name="DeleteBtn"
                                                     Grid.Column="6"
                                                     Content="✕"
                                                     Padding="0"
@@ -401,130 +403,179 @@
                                                     Width="24" Height="24"
                                                     VerticalAlignment="Center"
                                                     Visibility="Collapsed">
-                                                <Button.Style>
-                                                    <Style TargetType="Button">
-                                                        <Setter Property="Template">
-                                                            <Setter.Value>
-                                                                <ControlTemplate TargetType="Button">
-                                                                    <Border Background="{TemplateBinding Background}"
+                          <Button.Style>
+                            <Style TargetType="Button">
+                              <Setter Property="Template">
+                                <Setter.Value>
+                                  <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}"
                                                                             BorderBrush="{TemplateBinding BorderBrush}"
                                                                             BorderThickness="{TemplateBinding BorderThickness}"
                                                                             CornerRadius="4"
                                                                             Width="{TemplateBinding Width}"
                                                                             Height="{TemplateBinding Height}">
-                                                                        <ContentPresenter Content="{TemplateBinding Content}"
+                                      <ContentPresenter Content="{TemplateBinding Content}"
                                                                                           HorizontalAlignment="Center"
                                                                                           VerticalAlignment="Center"/>
-                                                                    </Border>
-                                                                </ControlTemplate>
-                                                            </Setter.Value>
-                                                        </Setter>
-                                                        <Style.Triggers>
-                                                            <Trigger Property="IsMouseOver" Value="True">
-                                                                <Setter Property="Background" Value="#FFF5F5"/>
-                                                                <Setter Property="BorderBrush" Value="#FF4444"/>
-                                                                <Setter Property="Foreground" Value="#FF4444"/>
-                                                            </Trigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </Button.Style>
-                                            </Button>
-                                        </Grid>
                                     </Border>
-                                </Grid>
-                                <ControlTemplate.Triggers>
-                                    <Trigger Property="IsSelected" Value="True">
-                                        <Setter TargetName="TabBorder" Property="Background" Value="#FFFFFF"/>
-                                        <Setter TargetName="TabBorder" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
-                                        <Setter TargetName="TabBorder" Property="BorderThickness" Value="2,2,2,0"/>
-                                        <Setter TargetName="TabBorder" Property="Effect">
-                                            <Setter.Value>
-                                                <DropShadowEffect Color="{x:Static constants:ColorConstants.Primary}" BlurRadius="12" ShadowDepth="0"/>
-                                            </Setter.Value>
-                                        </Setter>
-                                        <Setter TargetName="SingleRunBtn" Property="Visibility" Value="Visible"/>
-                                        <Setter TargetName="ContinuousRunBtn" Property="Visibility" Value="Visible"/>
-                                        <Setter TargetName="StateIndicator" Property="Visibility" Value="Visible"/>
-                                        <Setter TargetName="DeleteBtn" Property="Visibility" Value="Visible"/>
-                                    </Trigger>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter TargetName="TabBorder" Property="Background" Value="#F8F9FA"/>
-                                        <Setter TargetName="TabBorder" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
-                                    </Trigger>
-                                    <DataTrigger Binding="{Binding IsEditingName}" Value="True">
-                                        <Setter TargetName="TabNameText" Property="Visibility" Value="Collapsed"/>
-                                        <Setter TargetName="TabNameEditor" Property="Visibility" Value="Visible"/>
-                                    </DataTrigger>
-                                    <!-- 子程序模式下隐藏删除按钮 -->
-                                    <DataTrigger Binding="{Binding IsInSubroutine}" Value="True">
-                                        <Setter TargetName="DeleteBtn" Property="Visibility" Value="Collapsed"/>
-                                    </DataTrigger>
-                                </ControlTemplate.Triggers>
-                            </ControlTemplate>
+                                  </ControlTemplate>
+                                </Setter.Value>
+                              </Setter>
+                              <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                  <Setter Property="Background" Value="#FFF5F5"/>
+                                  <Setter Property="BorderBrush" Value="#FF4444"/>
+                                  <Setter Property="Foreground" Value="#FF4444"/>
+                                </Trigger>
+                              </Style.Triggers>
+                            </Style>
+                          </Button.Style>
+                        </Button>
+                      </Grid>
+                    </Border>
+                  </Grid>
+                  <ControlTemplate.Triggers>
+                    <Trigger Property="IsSelected" Value="True">
+                      <Setter TargetName="TabBorder" Property="Background" Value="#FFFFFF"/>
+                      <Setter TargetName="TabBorder" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                      <Setter TargetName="TabBorder" Property="BorderThickness" Value="2,2,2,0"/>
+                      <Setter TargetName="TabBorder" Property="Effect">
+                        <Setter.Value>
+                          <DropShadowEffect Color="{x:Static constants:ColorConstants.Primary}" BlurRadius="12" ShadowDepth="0"/>
                         </Setter.Value>
-                    </Setter>
-                </Style>
-            </TabControl.ItemContainerStyle>
+                      </Setter>
+                      <Setter TargetName="SingleRunBtn" Property="Visibility" Value="Visible"/>
+                      <Setter TargetName="ContinuousRunBtn" Property="Visibility" Value="Visible"/>
+                      <Setter TargetName="StateIndicator" Property="Visibility" Value="Visible"/>
+                      <Setter TargetName="DeleteBtn" Property="Visibility" Value="Visible"/>
+                    </Trigger>
+                    <Trigger Property="IsMouseOver" Value="True">
+                      <Setter TargetName="TabBorder" Property="Background" Value="#F8F9FA"/>
+                      <Setter TargetName="TabBorder" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                    </Trigger>
+                    <DataTrigger Binding="{Binding IsEditingName}" Value="True">
+                      <Setter TargetName="TabNameText" Property="Visibility" Value="Collapsed"/>
+                      <Setter TargetName="TabNameEditor" Property="Visibility" Value="Visible"/>
+                    </DataTrigger>
+                    <!-- 子程序模式下隐藏删除按钮 -->
+                    <DataTrigger Binding="{Binding IsInSubroutine}" Value="True">
+                      <Setter TargetName="DeleteBtn" Property="Visibility" Value="Collapsed"/>
+                    </DataTrigger>
+                  </ControlTemplate.Triggers>
+                </ControlTemplate>
+              </Setter.Value>
+            </Setter>
+          </Style>
+        </TabControl.ItemContainerStyle>
 
-            <!-- TabItem内容 - 使用CanvasTemplateSelector根据画布类型选择不同的控件 -->
-            <TabControl.ContentTemplate>
-                <DataTemplate>
-                    <ContentControl Content="{Binding}">
-                        <ContentControl.ContentTemplateSelector>
-                            <canvas:CanvasTemplateSelector>
-                                <canvas:CanvasTemplateSelector.WorkflowCanvasTemplate>
-                                    <DataTemplate>
-                                        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
+        <!-- TabItem内容 - 使用CanvasTemplateSelector根据画布类型选择不同的控件 -->
+        <TabControl.ContentTemplate>
+          <DataTemplate>
+            <ContentControl Content="{Binding}">
+              <ContentControl.ContentTemplateSelector>
+                <canvas:CanvasTemplateSelector>
+                  <canvas:CanvasTemplateSelector.WorkflowCanvasTemplate>
+                    <DataTemplate>
+                      <ScrollViewer x:Name="CanvasScrollViewer"
+                                                      HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
                                                       PreviewMouseWheel="CanvasScrollViewer_PreviewMouseWheel"
-                                                      Background="#F5F8FC">
-                                            <Grid Width="10000" Height="10000" Background="#FFFFFF">
-                                                <canvas:WorkflowCanvasControl
-                                                    Width="10000" Height="10000"
+                                                      ScrollChanged="CanvasScrollViewer_ScrollChanged"
+                                                      Background="#2B2B2B">
+                        <!-- 画布容器：尺寸 = 画布缩放后尺寸（跟随缩放），滚动范围 = 画布大小（对齐 VM）。
+                             画布外露出 ScrollViewer 深灰工作区；画布左上对齐。 -->
+                        <Grid x:Name="CanvasSizingGrid">
+                          <canvas:WorkflowCanvasControl
+                                                    x:Name="WorkflowCanvasHost"
+                                                    Width="6000" Height="6000"
+                                                    HorizontalAlignment="Left" VerticalAlignment="Top"
                                                     DataContext="{Binding}"
                                                     Loaded="WorkflowCanvasControl_Loaded"/>
-                                            </Grid>
-                                        </ScrollViewer>
-                                    </DataTemplate>
-                                </canvas:CanvasTemplateSelector.WorkflowCanvasTemplate>
-                            </canvas:CanvasTemplateSelector>
-                        </ContentControl.ContentTemplateSelector>
-                    </ContentControl>
-                </DataTemplate>
-            </TabControl.ContentTemplate>
-        </TabControl>
-        </Border>
+                        </Grid>
+                      </ScrollViewer>
+                    </DataTemplate>
+                  </canvas:CanvasTemplateSelector.WorkflowCanvasTemplate>
+                </canvas:CanvasTemplateSelector>
+              </ContentControl.ContentTemplateSelector>
+            </ContentControl>
+          </DataTemplate>
+        </TabControl.ContentTemplate>
+      </TabControl>
+    </Border>
 
-        <!-- ========== 右下角小地图（流程缩略图 + 红框标记当前视图） ========== -->
-        <Border x:Name="MiniMapBorder"
-                HorizontalAlignment="Right" VerticalAlignment="Bottom"
-                Margin="0,0,12,12"
-                Background="#F5F8FC" Opacity="0.95"
-                BorderBrush="#CCCCCC" BorderThickness="1"
-                CornerRadius="4"
-                Panel.ZIndex="100"
-                IsHitTestVisible="True">
-            <Border.Effect>
-                <DropShadowEffect BlurRadius="6" ShadowDepth="2" Opacity="0.2"/>
-            </Border.Effect>
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                <Grid Width="168" Height="120">
-                    <Canvas x:Name="MiniMapCanvas"
-                            Width="168" Height="120"
-                            Background="White"
-                            ClipToBounds="True"
-                            MouseLeftButtonDown="MiniMap_MouseLeftButtonDown"/>
-                    <!-- 当前可视区域红框 -->
-                    <Rectangle x:Name="MiniMapViewRect"
-                               Stroke="#FF0000" StrokeThickness="1.5"
-                               Fill="#20FF0000" IsHitTestVisible="False"/>
-                    <TextBlock Text="小地图" FontSize="9" Foreground="#999999"
-                               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="4,2"/>
-                </Grid>
-            </Grid>
-        </Border>
+    <!-- ========== 右下角小地图（整画布快照 + 黑框标记画布边界，支持最小化/还原） ========== -->
+    <Grid HorizontalAlignment="Right"
+          VerticalAlignment="Bottom"
+          Margin="0,0,35,35"
+          Panel.ZIndex="100">
+      <!-- 状态 A：小地图展开（含右下角收起按钮） -->
+      <Border x:Name="MiniMapBorder"
+                  Width="220" Height="220"
+                  Background="Transparent"
+                  BorderBrush="Black" BorderThickness="1"
+                  IsHitTestVisible="True"
+                  MouseLeftButtonDown="MiniMapBorder_MouseLeftButtonDown"
+                  MouseLeftButtonUp="MiniMapBorder_MouseLeftButtonUp"
+                  MouseMove="MiniMapBorder_MouseMove"
+                  LostMouseCapture="MiniMapBorder_LostMouseCapture">
+        <Grid>
+          <Canvas x:Name="MiniMapCanvas"
+                        Width="220" Height="220"
+                        Background="Transparent"
+                        ClipToBounds="True"/>
+
+          <!-- 右下角收起按钮（右下箭头 ↘，点击把面板收向角落） -->
+          <Button x:Name="MiniMapMinimizeButton"
+                      Width="20" Height="20"
+                      Margin="0,0,3,3"
+                      HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                      Background="Transparent" BorderBrush="Transparent" BorderThickness="0"
+                      ToolTip="最小化小地图"
+                      Click="MiniMapMinimizeButton_Click"
+                      Cursor="Hand">
+            <Button.Style>
+              <Style TargetType="Button">
+                <Setter Property="Opacity" Value="0.85"/>
+                <Style.Triggers>
+                  <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Opacity" Value="1.0"/>
+                  </Trigger>
+                </Style.Triggers>
+              </Style>
+            </Button.Style>
+            <Path Data="M 3,7 L 7,7 L 7,3 M 5,7 L 7,7 L 7,5"
+                  Stroke="#FF8800" StrokeThickness="1.6"
+                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                  HorizontalAlignment="Center" VerticalAlignment="Center"
+                  Width="10" Height="10"/>
+          </Button>
+        </Grid>
+      </Border>
+
+      <!-- 状态 B：还原按钮（小地图收起后显示，左上箭头 ↖，从角落展开） -->
+      <Button x:Name="MiniMapRestoreButton"
+                  Width="24" Height="24"
+                  HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                  Background="Transparent" BorderBrush="Transparent" BorderThickness="0"
+                  Visibility="Collapsed"
+                  ToolTip="展开小地图"
+                  Click="MiniMapRestoreButton_Click"
+                  Cursor="Hand">
+        <Button.Style>
+          <Style TargetType="Button">
+            <Setter Property="Opacity" Value="0.9"/>
+            <Style.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Opacity" Value="1.0"/>
+              </Trigger>
+            </Style.Triggers>
+          </Style>
+        </Button.Style>
+        <Path Data="M 9,3 L 3,3 L 3,9 M 4.5,3 L 3,3 L 3,4.5"
+              Stroke="#FF8800" StrokeThickness="1.6"
+              StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+              HorizontalAlignment="Center" VerticalAlignment="Center"
+              Width="10" Height="10"/>
+      </Button>
     </Grid>
+  </Grid>
 </UserControl>

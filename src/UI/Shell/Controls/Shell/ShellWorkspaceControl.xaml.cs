@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Logging;
 using SubroutineOutputChange = SunEyeVision.Plugin.SDK.Models.SubroutineOutputChange;
@@ -30,10 +31,23 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         private bool _isTabItemClick;  // 标记是否是通过点击TabItem触发的切换
         private WorkflowCanvasControl? _currentWorkflowCanvas;  // 当前显示的WorkflowCanvasControl
         private Window? _openSubroutineDebugWindow;  // 子程序调试窗口单例跟踪
+        private ScrollViewer? _canvasScrollViewer;  // 当前工作流的画布 ScrollViewer（用于视口框 1:1 同步与跳转）
+
+        // 小地图视口拖动状态
+        private bool _isDraggingMiniMapView;  // 是否正在小地图上拖动视口框
+        private Point _miniMapDragOffset;     // 拖动起点处视口框左上角与小地图点击点的偏移
 
         // 缩放相关
-        private const double MinScale = 0.25;  // 25%
-        private const double MaxScale = 3.0;   // 300%
+        private const double MinScale = 0.1;   // 10%
+        private const double MaxScale = 2.0;   // 200%
+
+        // 小地图重绘节流：拖动节点时合并每帧重绘，避免饿死连接线批量更新定时器
+        private readonly System.Windows.Threading.DispatcherTimer _miniMapThrottleTimer;
+        private const double MiniMapThrottleIntervalMs = 40;  // 40ms ≈ 25 帧/秒
+
+        // 画布容器尺寸缓存（值不变时跳过赋值，避免 Extent 变化来回触发 ScrollChanged 死循环）
+        private double _lastCanvasSizingWidth = -1;
+        private double _lastCanvasSizingHeight = -1;
 
         /// <summary>
         /// 缩放比例变化事件（替代 MainWindow 中直接操作工具栏 ZoomTextBlock 的跨区域耦合）
@@ -43,6 +57,17 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         public ShellWorkspaceControl()
         {
             InitializeComponent();
+
+            // 小地图重绘节流定时器：单次触发，Tick 时重绘一次后停止
+            _miniMapThrottleTimer = new System.Windows.Threading.DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(MiniMapThrottleIntervalMs)
+            };
+            _miniMapThrottleTimer.Tick += (s, e) =>
+            {
+                _miniMapThrottleTimer.Stop();
+                DrawMiniMap();
+            };
         }
 
         /// <summary>
@@ -117,6 +142,8 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             if (sender is WorkflowCanvasControl workflowCanvas)
             {
                 _currentWorkflowCanvas = workflowCanvas;
+                // 缓存当前画布对应的 ScrollViewer，用于视口框 1:1 同步与跳转
+                _canvasScrollViewer = FindVisualParent<ScrollViewer>(workflowCanvas);
                 // 检查DataContext
                 var dataContext = workflowCanvas.DataContext;
                 // 如果DataContext为null，手动设置为当前选中的Tab
@@ -138,11 +165,16 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                     UpdateZoomDisplay();
                 }), System.Windows.Threading.DispatcherPriority.Loaded);
 
-                // 初始化小地图：渲染缩略图 + 挂接滚动监听
+                // 初始化小地图：数据驱动绘制画布全景
                 Dispatcher.BeginInvoke(new Action(() =>
                 {
-                    AttachMiniMapScrollListener();
                     RefreshMiniMap();
+                }), System.Windows.Threading.DispatcherPriority.Loaded);
+
+                // 布局完成后再同步画布容器尺寸（此时 Viewport 尺寸才就绪）
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    UpdateCanvasSizingGridSize();
                 }), System.Windows.Threading.DispatcherPriority.Loaded);
             }
         }
@@ -815,8 +847,8 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             // 更新显示
             UpdateZoomDisplay();
             UpdateZoomIndicator();
-            UpdateMiniMapViewRect();
             _viewModel.StatusText = $"画布缩放: {Math.Round(workflow.CurrentScale * 100, 0)}%";
+            UpdateCanvasSizingGridSize();   // 缩放后同步画布容器尺寸，限制滚动范围
         }
 
         /// <summary>
@@ -894,21 +926,21 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             var mousePositionInScrollViewer = e.GetPosition(scrollViewer);
             if (e.Delta > 0)
             {
-                // 向上滚动，放大
+                // 向上滚动，放大（每次 +10%，线性步进）
                 if (workflow.CurrentScale < MaxScale)
                 {
                     var oldScale = workflow.CurrentScale;
-                    var newScale = Math.Min(oldScale * 1.1, MaxScale);
+                    var newScale = Math.Min(Math.Round(oldScale + 0.1, 1), MaxScale);
                     ApplyZoom(oldScale, newScale, mousePositionInScrollViewer, scrollViewer); // 鼠标位置作为缩放中心
                 }
             }
             else
             {
-                // 向下滚动，缩小
+                // 向下滚动，缩小（每次 -10%，线性步进）
                 if (workflow.CurrentScale > MinScale)
                 {
                     var oldScale = workflow.CurrentScale;
-                    var newScale = Math.Max(oldScale / 1.1, MinScale);
+                    var newScale = Math.Max(Math.Round(oldScale - 0.1, 1), MinScale);
                     ApplyZoom(oldScale, newScale, mousePositionInScrollViewer, scrollViewer); // 鼠标位置作为缩放中心
                 }
             }
@@ -952,206 +984,474 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
 
         #region 小地图
 
-        // 小地图画布尺寸（与 XAML MiniMapCanvas 保持一致）
-        private const double MiniMapWidth = 168;
-        private const double MiniMapHeight = 120;
+        // 小地图画布尺寸（与 XAML MiniMapCanvas 保持一致，正方形与画布等比）
+        private const double MiniMapWidth = 220;
+        private const double MiniMapHeight = 220;
+
+        private const double CanvasSize = 6000;
+
+        // 节点缩略图配色（按 ToolType 分类，与主画布节点配色一致）
+        private static readonly Color MiniMapAlgorithmColor = Color.FromRgb(0x00, 0x66, 0xCC);   // 算法-蓝
+        private static readonly Color MiniMapSubroutineColor = Color.FromRgb(0x00, 0x99, 0x66);  // 子程序-绿
+        private static readonly Color MiniMapConditionColor = Color.FromRgb(0xFF, 0x88, 0x00);   // 条件-橙
+        private static readonly Color MiniMapDefaultColor = Color.FromRgb(0x66, 0x66, 0x66);     // 其他-灰
+
+        // 已订阅节点位置变化监听的节点集合（用于在集合变化时增量订阅/退订）
+        private readonly Dictionary<string, WorkflowNode> _miniMapSubscribedNodes = new();
 
         /// <summary>
-        /// 刷新小地图：渲染节点缩略图 + 更新红框（根据当前工作流节点与可视区）
+        /// 刷新小地图：数据驱动双视图（与主画布共享同一数据源，此处绘制全局视角）
+        /// 遍历节点/连线数据画简化缩略图，节点增删/移动时自动重绘
+        /// 触发通道：节点 Position 变化 + 40ms 节流合并，避免 LayoutUpdated 每帧风暴饿死连接线定时器
         /// </summary>
         private void RefreshMiniMap()
         {
             var selectedTab = _viewModel?.WorkflowTabViewModel?.SelectedTab;
-            if (selectedTab?.WorkflowNodes == null || MiniMapCanvas == null)
+            if (selectedTab == null || MiniMapCanvas == null)
                 return;
 
-            // 挂接节点集合变化监听（添加/删除节点时刷新小地图）
-            selectedTab.WorkflowNodes.CollectionChanged -= MiniMapNodes_CollectionChanged;
-            selectedTab.WorkflowNodes.CollectionChanged += MiniMapNodes_CollectionChanged;
+            // 挂接节点/连线集合变化监听（增删时重绘并增量订阅节点位置）
+            selectedTab.WorkflowNodes.CollectionChanged -= MiniMapContent_CollectionChanged;
+            selectedTab.WorkflowNodes.CollectionChanged += MiniMapContent_CollectionChanged;
+            if (selectedTab.WorkflowConnections != null)
+            {
+                selectedTab.WorkflowConnections.CollectionChanged -= MiniMapContent_CollectionChanged;
+                selectedTab.WorkflowConnections.CollectionChanged += MiniMapContent_CollectionChanged;
+            }
+
+            // 订阅当前全部节点的位置变化（节点移动时触发节流重绘）
+            SubscribeMiniMapNodes(selectedTab.WorkflowNodes);
+
+            DrawMiniMap();
+        }
+
+        /// <summary>
+        /// 增量订阅节点位置变化：仅订阅小地图可见的所有节点，节点移除时退订，避免泄漏
+        /// </summary>
+        private void SubscribeMiniMapNodes(IEnumerable<WorkflowNode> nodes)
+        {
+            var currentIds = new HashSet<string>();
+            foreach (var node in nodes)
+            {
+                if (node == null || string.IsNullOrEmpty(node.Id))
+                    continue;
+                currentIds.Add(node.Id);
+                if (!_miniMapSubscribedNodes.ContainsKey(node.Id))
+                {
+                    node.PropertyChanged += MiniMapNode_PropertyChanged;
+                    _miniMapSubscribedNodes[node.Id] = node;
+                }
+            }
+
+            // 退订已不存在的节点
+            var staleIds = _miniMapSubscribedNodes.Keys.Where(id => !currentIds.Contains(id)).ToList();
+            foreach (var id in staleIds)
+            {
+                _miniMapSubscribedNodes[id].PropertyChanged -= MiniMapNode_PropertyChanged;
+                _miniMapSubscribedNodes.Remove(id);
+            }
+        }
+
+        /// <summary>
+        /// 节点位置变化 - 触发节流重绘（不立即重绘，避免每帧风暴）
+        /// </summary>
+        private void MiniMapNode_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName != nameof(WorkflowNode.Position))
+                return;
+            ScheduleMiniMapRedraw();
+        }
+
+        /// <summary>
+        /// 内容集合变化 - 增删节点时重绘小地图并增量订阅位置
+        /// </summary>
+        private void MiniMapContent_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            var selectedTab = _viewModel?.WorkflowTabViewModel?.SelectedTab;
+            if (selectedTab?.WorkflowNodes != null)
+                SubscribeMiniMapNodes(selectedTab.WorkflowNodes);
+            ScheduleMiniMapRedraw();
+        }
+
+        /// <summary>
+        /// 节流调度小地图重绘：40ms 合并高频触发（如拖动节点每帧），保证不饿死连接线批量更新定时器
+        /// </summary>
+        private void ScheduleMiniMapRedraw()
+        {
+            if (!_miniMapThrottleTimer.IsEnabled)
+                _miniMapThrottleTimer.Start();
+        }
+
+        /// <summary>
+        /// 画布容器尺寸跟随缩放：容器 = 画布缩放后尺寸（滚动范围 = 画布大小，对齐 VM）。
+        /// 缩放由画布内部 RenderTransform 实现，故画布控件保持固定 6000×6000 左上对齐，
+        /// 仅容器 Grid 尺寸放大以匹配放大后的画布视觉区域；画布外露出 ScrollViewer 深灰工作区。
+        /// </summary>
+        private void UpdateCanvasSizingGridSize()
+        {
+            var scrollViewer = _canvasScrollViewer;
+            if (scrollViewer?.Content is not Grid sizingGrid)
+                return;
+            double scale = _viewModel?.WorkflowTabViewModel?.SelectedTab?.CurrentScale ?? 1.0;
+            if (scale <= 0 || !double.IsFinite(scale))
+                return;
+            double w = CanvasSize * scale;
+            double h = CanvasSize * scale;
+            if (Math.Abs(w - _lastCanvasSizingWidth) < 0.01 && Math.Abs(h - _lastCanvasSizingHeight) < 0.01)
+                return;
+            _lastCanvasSizingWidth = w;
+            _lastCanvasSizingHeight = h;
+            sizingGrid.Width = w;
+            sizingGrid.Height = h;
+        }
+
+        /// <summary>
+        /// 按节点/连线数据绘制小地图：固定按 10000×10000 画布全景等比例显示（不拉伸、居中）
+        /// 节点按真实坐标与真实宽高比严格 1:1 摆放（不做任何"为了看得清"的尺寸钳制）；
+        /// 连线细线显示流程走向；半透明视口框标出主画布当前可视区域（与真实视口严格 1:1）。
+        /// </summary>
+        private void DrawMiniMap()
+        {
+            var selectedTab = _viewModel?.WorkflowTabViewModel?.SelectedTab;
+            if (selectedTab == null || MiniMapCanvas == null)
+                return;
 
             MiniMapCanvas.Children.Clear();
 
-            // 计算节点边界框，决定自适应比例尺
-            double minX = double.MaxValue, minY = double.MaxValue;
-            double maxX = double.MinValue, maxY = double.MinValue;
-            foreach (var node in selectedTab.WorkflowNodes)
-            {
-                var p = node.Position;
-                double nw = node.Width > 0 ? node.Width : 180;
-                double nh = node.Height > 0 ? node.Height : 60;
-                minX = Math.Min(minX, p.X - nw / 2);
-                minY = Math.Min(minY, p.Y - nh / 2);
-                maxX = Math.Max(maxX, p.X + nw / 2);
-                maxY = Math.Max(maxY, p.Y + nh / 2);
-            }
-
-            if (selectedTab.WorkflowNodes.Count == 0)
-            {
-                MiniMapViewRect.Width = 0;
-                MiniMapViewRect.Height = 0;
+            var nodes = selectedTab.WorkflowNodes;
+            if (nodes == null || nodes.Count == 0)
                 return;
+
+            // 恒定画布全景比例尺：等比例（保持正方形不拉伸），画布在小地图内居中
+            double scale = Math.Min(MiniMapWidth / CanvasSize, MiniMapHeight / CanvasSize);
+            double originX = (MiniMapWidth - CanvasSize * scale) / 2;
+            double originY = (MiniMapHeight - CanvasSize * scale) / 2;
+
+            // 画布边界：透明填充 + 黑色边框（只框不填，透出底下工作区）
+            var canvasRect = new System.Windows.Shapes.Rectangle
+            {
+                Width = CanvasSize * scale,
+                Height = CanvasSize * scale,
+                Fill = Brushes.Transparent,
+                Stroke = new SolidColorBrush(Colors.Black),
+                StrokeThickness = 1
+            };
+            Canvas.SetLeft(canvasRect, originX);
+            Canvas.SetTop(canvasRect, originY);
+            MiniMapCanvas.Children.Add(canvasRect);
+
+            // 节点 ID → 中心点 映射（用于连线绘制；过滤 NaN/∞ 异常坐标，防止污染布局）
+            var centerMap = new Dictionary<string, Point>();
+            foreach (var node in nodes)
+            {
+                double px = node.Position.X;
+                double py = node.Position.Y;
+                if (!double.IsFinite(px) || !double.IsFinite(py))
+                    continue;
+                centerMap[node.Id] = new Point(
+                    originX + px * scale,
+                    originY + py * scale);
             }
 
-            double contentWidth = Math.Max(1, maxX - minX);
-            double contentHeight = Math.Max(1, maxY - minY);
-            double scaleX = (MiniMapWidth - 8) / contentWidth;
-            double scaleY = (MiniMapHeight - 8) / contentHeight;
-            double scale = Math.Min(scaleX, scaleY);
-            double originX = (MiniMapWidth - contentWidth * scale) / 2 - minX * scale;
-            double originY = (MiniMapHeight - contentHeight * scale) / 2 - minY * scale;
-
-            // 绘制节点缩略图（简化矩形）
-            foreach (var node in selectedTab.WorkflowNodes)
+            // 先画连线（在节点下层；细线 0.75px 浅灰，全局视图下看清走向又不抢节点）
+            if (selectedTab.WorkflowConnections != null)
             {
-                double nw = node.Width > 0 ? node.Width : 180;
-                double nh = node.Height > 0 ? node.Height : 60;
+                foreach (var conn in selectedTab.WorkflowConnections)
+                {
+                    if (!centerMap.TryGetValue(conn.SourceNodeId, out var sp) ||
+                        !centerMap.TryGetValue(conn.TargetNodeId, out var tp))
+                        continue;
+                    var line = new System.Windows.Shapes.Line
+                    {
+                        X1 = sp.X, Y1 = sp.Y,
+                        X2 = tp.X, Y2 = tp.Y,
+                        Stroke = new SolidColorBrush(Color.FromRgb(0x99, 0x99, 0x99)),
+                        StrokeThickness = 0.75
+                    };
+                    MiniMapCanvas.Children.Add(line);
+                }
+            }
+
+            // 再画节点（覆盖在连线上层）：真实宽高比严格 1:1，位置按真实坐标映射。
+            // 宽度不钳制（160×0.022≈3.5px 可渲染）；高度不足 1px 时取 1px 作为物理渲染底线
+            // （WPF 画不出亚像素，1px 是像素最小单位，非失真放大，中心位置不偏移）。
+            foreach (var node in nodes)
+            {
+                var r = node.NodeRect;
+                double x = originX + r.Left * scale;
+                double y = originY + r.Top * scale;
+                if (!double.IsFinite(x) || !double.IsFinite(y))
+                    continue;
+                double w = r.Width * scale;
+                double h = Math.Max(1, r.Height * scale);
+                var color = GetMiniMapNodeColor(node);
+
                 var rect = new System.Windows.Shapes.Rectangle
                 {
-                    Width = Math.Max(2, nw * scale),
-                    Height = Math.Max(2, nh * scale),
-                    Fill = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0x00, 0x66, 0xCC)),
-                    Opacity = 0.8
+                    Width = w,
+                    Height = h,
+                    RadiusX = 1,
+                    RadiusY = 1,
+                    Fill = new SolidColorBrush(color),
+                    Stroke = new SolidColorBrush(Colors.White),
+                    StrokeThickness = 0.5
                 };
-                Canvas.SetLeft(rect, originX + (node.Position.X - nw / 2) * scale);
-                Canvas.SetTop(rect, originY + (node.Position.Y - nh / 2) * scale);
+                Canvas.SetLeft(rect, x);
+                Canvas.SetTop(rect, y);
                 MiniMapCanvas.Children.Add(rect);
             }
 
-            UpdateMiniMapViewRect();
+            // 最后画视口框（最上层）：与主画布可视区域严格 1:1
+            DrawMiniMapViewport(scale, originX, originY);
         }
 
         /// <summary>
-        /// 节点集合变化 - 刷新小地图缩略图
+        /// 在主画布可视区域对应的画布坐标矩形映射到小地图上，绘制半透明视口框。
+        /// 与节点/连线共用同一比例尺（scale/origin），故与真实视口严格 1:1。
         /// </summary>
-        private void MiniMapNodes_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        private void DrawMiniMapViewport(double scale, double originX, double originY)
         {
-            Dispatcher.BeginInvoke(new Action(() => RefreshMiniMap()), System.Windows.Threading.DispatcherPriority.Background);
-        }
-
-        /// <summary>
-        /// 更新小地图红框：根据当前 ScrollViewer 可视区（offset/viewport/scale）映射
-        /// </summary>
-        private void UpdateMiniMapViewRect()
-        {
+            var scrollViewer = _canvasScrollViewer;
             var selectedTab = _viewModel?.WorkflowTabViewModel?.SelectedTab;
-            if (selectedTab?.WorkflowNodes == null || MiniMapCanvas == null || MiniMapViewRect == null)
+            if (scrollViewer == null || selectedTab == null)
+                return;
+            double currentScale = selectedTab.CurrentScale;
+            if (currentScale <= 0 || !double.IsFinite(currentScale))
                 return;
 
-            // 空工作流：无节点可映射，隐藏红框避免无穷大计算
-            if (selectedTab.WorkflowNodes.Count == 0)
-            {
-                MiniMapViewRect.Width = 0;
-                MiniMapViewRect.Height = 0;
-                return;
-            }
-
-            // 节点边界框（与 RefreshMiniMap 相同的比例尺计算）
-            double minX = double.MaxValue, minY = double.MaxValue;
-            double maxX = double.MinValue, maxY = double.MinValue;
-            foreach (var node in selectedTab.WorkflowNodes)
-            {
-                double nw = node.Width > 0 ? node.Width : 180;
-                double nh = node.Height > 0 ? node.Height : 60;
-                minX = Math.Min(minX, node.Position.X - nw / 2);
-                minY = Math.Min(minY, node.Position.Y - nh / 2);
-                maxX = Math.Max(maxX, node.Position.X + nw / 2);
-                maxY = Math.Max(maxY, node.Position.Y + nh / 2);
-            }
-            double contentWidth = Math.Max(1, maxX - minX);
-            double contentHeight = Math.Max(1, maxY - minY);
-            double scaleX = (MiniMapWidth - 8) / contentWidth;
-            double scaleY = (MiniMapHeight - 8) / contentHeight;
-            double scale = Math.Min(scaleX, scaleY);
-            double originX = (MiniMapWidth - contentWidth * scale) / 2 - minX * scale;
-            double originY = (MiniMapHeight - contentHeight * scale) / 2 - minY * scale;
-
-            var scrollViewer = GetCurrentScrollViewer();
-            if (scrollViewer == null)
-            {
-                MiniMapViewRect.Width = 0;
-                MiniMapViewRect.Height = 0;
-                return;
-            }
-
-            double currentScale = selectedTab.CurrentScale > 0 ? selectedTab.CurrentScale : 1.0;
-            // 可视区在画布坐标下的范围
+            // 主画布可视区域在"画布原始坐标"（未缩放）中的矩形。
+            // ScrollViewer 滚动偏移与视口尺寸的单位是缩放后像素，除以缩放比例还原到画布原始坐标。
             double viewLeft = scrollViewer.HorizontalOffset / currentScale;
             double viewTop = scrollViewer.VerticalOffset / currentScale;
-            double viewRight = viewLeft + scrollViewer.ViewportWidth / currentScale;
-            double viewBottom = viewTop + scrollViewer.ViewportHeight / currentScale;
+            double viewWidth = scrollViewer.ViewportWidth / currentScale;
+            double viewHeight = scrollViewer.ViewportHeight / currentScale;
 
-            double left = originX + viewLeft * scale;
-            double top = originY + viewTop * scale;
-            double width = (viewRight - viewLeft) * scale;
-            double height = (viewBottom - viewTop) * scale;
+            double mmLeft = originX + viewLeft * scale;
+            double mmTop = originY + viewTop * scale;
+            double mmWidth = viewWidth * scale;
+            double mmHeight = viewHeight * scale;
 
-            MiniMapViewRect.Width = Math.Max(3, width);
-            MiniMapViewRect.Height = Math.Max(3, height);
-            Canvas.SetLeft(MiniMapViewRect, left);
-            Canvas.SetTop(MiniMapViewRect, top);
-        }
+            // 视口框必须裁剪在画布边界内显示（不超出小地图画布可视范围）
+            var canvasMmRect = new Rect(originX, originY, CanvasSize * scale, CanvasSize * scale);
+            var viewMmRect = new Rect(mmLeft, mmTop, mmWidth, mmHeight);
+            viewMmRect.Intersect(canvasMmRect);
 
-        /// <summary>
-        /// 挂接画布 ScrollViewer 滚动监听（小地图红框跟随）
-        /// </summary>
-        private void AttachMiniMapScrollListener()
-        {
-            var scrollViewer = GetCurrentScrollViewer();
-            if (scrollViewer == null)
-                return;
-            scrollViewer.ScrollChanged -= MiniMapScrollViewer_ScrollChanged;
-            scrollViewer.ScrollChanged += MiniMapScrollViewer_ScrollChanged;
-        }
-
-        /// <summary>
-        /// ScrollViewer 滚动变化 - 更新小地图红框
-        /// </summary>
-        private void MiniMapScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
-        {
-            UpdateMiniMapViewRect();
-        }
-
-        /// <summary>
-        /// 小地图点击：跳转到对应画布位置
-        /// </summary>
-        private void MiniMap_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            var selectedTab = _viewModel?.WorkflowTabViewModel?.SelectedTab;
-            if (selectedTab?.WorkflowNodes == null || MiniMapCanvas == null || selectedTab.WorkflowNodes.Count == 0)
+            // 求交后若为空矩形（Rect.Empty 的 Width/Height = -∞），说明视口完全在
+            // 小地图画布边界之外（如布局未就绪/滚动到边界外），此时无可绘制内容，跳过
+            if (viewMmRect.IsEmpty)
                 return;
 
-            var pos = e.GetPosition(MiniMapCanvas);
-
-            // 反向映射：节点边界框 → 比例尺
-            double minX = double.MaxValue, minY = double.MaxValue;
-            double maxX = double.MinValue, maxY = double.MinValue;
-            foreach (var node in selectedTab.WorkflowNodes)
+            var viewRect = new System.Windows.Shapes.Rectangle
             {
-                double nw = node.Width > 0 ? node.Width : 180;
-                double nh = node.Height > 0 ? node.Height : 60;
-                minX = Math.Min(minX, node.Position.X - nw / 2);
-                minY = Math.Min(minY, node.Position.Y - nh / 2);
-                maxX = Math.Max(maxX, node.Position.X + nw / 2);
-                maxY = Math.Max(maxY, node.Position.Y + nh / 2);
-            }
-            double contentWidth = Math.Max(1, maxX - minX);
-            double contentHeight = Math.Max(1, maxY - minY);
-            double scaleX = (MiniMapWidth - 8) / contentWidth;
-            double scaleY = (MiniMapHeight - 8) / contentHeight;
-            double scale = Math.Min(scaleX, scaleY);
-            double originX = (MiniMapWidth - contentWidth * scale) / 2 - minX * scale;
-            double originY = (MiniMapHeight - contentHeight * scale) / 2 - minY * scale;
+                Width = viewMmRect.Width,
+                Height = viewMmRect.Height,
+                Fill = new SolidColorBrush(Color.FromArgb(0x28, 0x00, 0x66, 0xCC)),
+                Stroke = new SolidColorBrush(Color.FromRgb(0x00, 0x66, 0xCC)),
+                StrokeThickness = 1
+            };
+            Canvas.SetLeft(viewRect, viewMmRect.X);
+            Canvas.SetTop(viewRect, viewMmRect.Y);
+            MiniMapCanvas.Children.Add(viewRect);
+        }
 
-            double canvasX = (pos.X - originX) / scale;
-            double canvasY = (pos.Y - originY) / scale;
+        /// <summary>
+        /// 主画布滚动变化 - 同步小地图视口框（1:1 跟随）
+        /// </summary>
+        private void CanvasScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
+        {
+            UpdateCanvasSizingGridSize();   // 视口尺寸变化时同步画布容器尺寸
+            if (_isDraggingMiniMapView)
+                return;  // 拖动跳转期间由跳转逻辑统一重绘，避免拉扯
+            ScheduleMiniMapRedraw();
+        }
 
-            var scrollViewer = GetCurrentScrollViewer();
-            if (scrollViewer == null)
+        /// <summary>
+        /// 小地图鼠标按下：若点在视口框内则开始拖动；否则把主画布中心跳到点击处。
+        /// </summary>
+        private void MiniMapBorder_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (!TryGetMiniMapProjection(out var scale, out var originX, out var originY))
                 return;
-            double currentScale = selectedTab.CurrentScale > 0 ? selectedTab.CurrentScale : 1.0;
-            scrollViewer.ScrollToHorizontalOffset(canvasX * currentScale - scrollViewer.ViewportWidth / 2);
-            scrollViewer.ScrollToVerticalOffset(canvasY * currentScale - scrollViewer.ViewportHeight / 2);
-            UpdateMiniMapViewRect();
+
+            var click = e.GetPosition(MiniMapCanvas);
+            var scrollViewer = _canvasScrollViewer;
+            var selectedTab = _viewModel?.WorkflowTabViewModel?.SelectedTab;
+            if (scrollViewer == null || selectedTab == null || selectedTab.CurrentScale <= 0)
+                return;
+
+            // 当前视口框在小地图上的矩形
+            double viewLeft = scrollViewer.HorizontalOffset / selectedTab.CurrentScale;
+            double viewTop = scrollViewer.VerticalOffset / selectedTab.CurrentScale;
+            double viewWidth = scrollViewer.ViewportWidth / selectedTab.CurrentScale;
+            double viewHeight = scrollViewer.ViewportHeight / selectedTab.CurrentScale;
+            var viewMmRect = new Rect(
+                originX + viewLeft * scale,
+                originY + viewTop * scale,
+                viewWidth * scale,
+                viewHeight * scale);
+
+            // 点击点在视口框内 → 进入拖动模式，记录偏移以便视口框跟手
+            if (viewMmRect.Contains(click))
+            {
+                _isDraggingMiniMapView = true;
+                _miniMapDragOffset = new Point(click.X - viewMmRect.X, click.Y - viewMmRect.Y);
+                MiniMapCanvas.CaptureMouse();
+                e.Handled = true;
+                return;
+            }
+
+            // 点击点在视口框外 → 主画布中心跳到点击处对应的画布坐标
+            CenterMainCanvasOnMiniMapPoint(click, scale, originX, originY);
+        }
+
+        /// <summary>
+        /// 小地图鼠标移动（拖动视口框）：主画布滚动跟随，保持视口框 1:1。
+        /// </summary>
+        private void MiniMapBorder_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (!_isDraggingMiniMapView)
+                return;
+            if (!TryGetMiniMapProjection(out var scale, out var originX, out var originY))
+                return;
+
+            var click = e.GetPosition(MiniMapCanvas);
+            // 视口框左上角应落在 click - dragOffset，据此推算主画布滚动偏移
+            var viewRectLeft = click.X - _miniMapDragOffset.X;
+            var viewRectTop = click.Y - _miniMapDragOffset.Y;
+            var canvasMmLeft = originX;
+            var canvasMmTop = originY;
+            // 转成画布原始坐标
+            double canvasViewLeft = (viewRectLeft - originX) / scale;
+            double canvasViewTop = (viewRectTop - originY) / scale;
+            double canvasViewWidth = _canvasScrollViewer?.ViewportWidth / (_viewModel?.WorkflowTabViewModel?.SelectedTab?.CurrentScale ?? 1.0) ?? 0;
+            double canvasViewHeight = _canvasScrollViewer?.ViewportHeight / (_viewModel?.WorkflowTabViewModel?.SelectedTab?.CurrentScale ?? 1.0) ?? 0;
+
+            // 视口框不能拖出画布边界（避免跳转越界）
+            var maxCanvas = CanvasSize - canvasViewWidth;
+            canvasViewLeft = Math.Max(0, Math.Min(canvasViewLeft, maxCanvas));
+            canvasViewTop = Math.Max(0, Math.Min(canvasViewTop, CanvasSize - canvasViewHeight));
+
+            ScrollToCanvasPosition(canvasViewLeft, canvasViewTop);
+            e.Handled = true;
+        }
+
+        /// <summary>
+        /// 小地图鼠标释放 / 失去鼠标捕获 - 结束拖动
+        /// </summary>
+        private void MiniMapBorder_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            EndMiniMapDrag();
+        }
+
+        private void MiniMapBorder_LostMouseCapture(object sender, MouseEventArgs e)
+        {
+            EndMiniMapDrag();
+        }
+
+        private void EndMiniMapDrag()
+        {
+            if (!_isDraggingMiniMapView)
+                return;
+            _isDraggingMiniMapView = false;
+            if (MiniMapCanvas.IsMouseCaptured)
+                MiniMapCanvas.ReleaseMouseCapture();
+            ScheduleMiniMapRedraw();
+        }
+
+        /// <summary>
+        /// 最小化小地图 → 收起为还原按钮；停止重绘节流，避免隐藏状态下空跑 CPU。
+        /// </summary>
+        private void MiniMapMinimizeButton_Click(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;  // 阻断冒泡，避免误触发小地图视口跳转
+            MiniMapBorder.Visibility = Visibility.Collapsed;
+            MiniMapRestoreButton.Visibility = Visibility.Visible;
+            _miniMapThrottleTimer.Stop();
+        }
+
+        /// <summary>
+        /// 还原小地图 → 重新展开并立即重绘一次，显示当前最新流程（不依赖节流延迟）。
+        /// </summary>
+        private void MiniMapRestoreButton_Click(object sender, RoutedEventArgs e)
+        {
+            MiniMapRestoreButton.Visibility = Visibility.Collapsed;
+            MiniMapBorder.Visibility = Visibility.Visible;
+            RefreshMiniMap();
+        }
+
+        /// <summary>
+        /// 把主画布中心滚动到点击处对应的画布坐标（视口框外点击）
+        /// </summary>
+        private void CenterMainCanvasOnMiniMapPoint(Point click, double scale, double originX, double originY)
+        {
+            var scrollViewer = _canvasScrollViewer;
+            var selectedTab = _viewModel?.WorkflowTabViewModel?.SelectedTab;
+            if (scrollViewer == null || selectedTab == null || selectedTab.CurrentScale <= 0)
+                return;
+
+            double canvasViewWidth = scrollViewer.ViewportWidth / selectedTab.CurrentScale;
+            double canvasViewHeight = scrollViewer.ViewportHeight / selectedTab.CurrentScale;
+
+            // 点击处对应的画布坐标，并让视口中心对准该点
+            double canvasX = (click.X - originX) / scale;
+            double canvasY = (click.Y - originY) / scale;
+            double canvasViewLeft = canvasX - canvasViewWidth / 2;
+            double canvasViewTop = canvasY - canvasViewHeight / 2;
+
+            var maxCanvas = CanvasSize - canvasViewWidth;
+            canvasViewLeft = Math.Max(0, Math.Min(canvasViewLeft, maxCanvas));
+            canvasViewTop = Math.Max(0, Math.Min(canvasViewTop, CanvasSize - canvasViewHeight));
+
+            ScrollToCanvasPosition(canvasViewLeft, canvasViewTop);
+        }
+
+        /// <summary>
+        /// 主画布滚动到指定画布坐标（单位：画布原始坐标），缩放后换算成 ScrollViewer 偏移。
+        /// </summary>
+        private void ScrollToCanvasPosition(double canvasViewLeft, double canvasViewTop)
+        {
+            var scrollViewer = _canvasScrollViewer;
+            var selectedTab = _viewModel?.WorkflowTabViewModel?.SelectedTab;
+            if (scrollViewer == null || selectedTab == null || selectedTab.CurrentScale <= 0)
+                return;
+
+            scrollViewer.ScrollToHorizontalOffset(canvasViewLeft * selectedTab.CurrentScale);
+            scrollViewer.ScrollToVerticalOffset(canvasViewTop * selectedTab.CurrentScale);
+            ScheduleMiniMapRedraw();
+        }
+
+        /// <summary>
+        /// 计算小地图投影参数（比例尺与左上角偏移）；返回 false 表示当前无有效数据
+        /// </summary>
+        private bool TryGetMiniMapProjection(out double scale, out double originX, out double originY)
+        {
+            scale = Math.Min(MiniMapWidth / CanvasSize, MiniMapHeight / CanvasSize);
+            originX = (MiniMapWidth - CanvasSize * scale) / 2;
+            originY = (MiniMapHeight - CanvasSize * scale) / 2;
+            return true;
+        }
+
+        /// <summary>
+        /// 根据节点类型返回缩略图着色（禁用节点灰色、子程序绿色、条件橙色、算法蓝色）
+        /// </summary>
+        private static Color GetMiniMapNodeColor(WorkflowNode node)
+        {
+            if (node.IsEnabled == false)
+                return Color.FromRgb(0xCC, 0xCC, 0xCC);
+            var t = node.ToolType;
+            if (!string.IsNullOrEmpty(t))
+            {
+                if (t.Contains("Subroutine", StringComparison.OrdinalIgnoreCase) ||
+                    t.Contains("子程序", StringComparison.OrdinalIgnoreCase))
+                    return MiniMapSubroutineColor;
+                if (t.Contains("Condition", StringComparison.OrdinalIgnoreCase) ||
+                    t.Contains("条件", StringComparison.OrdinalIgnoreCase) ||
+                    t.Contains("If", StringComparison.OrdinalIgnoreCase) ||
+                    t.Contains("Switch", StringComparison.OrdinalIgnoreCase) ||
+                    t.Contains("逻辑", StringComparison.OrdinalIgnoreCase))
+                    return MiniMapConditionColor;
+            }
+            return MiniMapAlgorithmColor;
         }
 
         #endregion

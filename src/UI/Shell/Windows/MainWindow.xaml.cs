@@ -2,7 +2,9 @@
 using System.IO;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Interop;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
@@ -50,6 +52,55 @@ namespace SunEyeVision.UI.Shell.Windows
         };
 
         private readonly MainWindowViewModel _viewModel;
+
+        /// <summary>Win32 消息：查询窗口最小/最大尺寸限制</summary>
+        private const int WM_GETMINMAXINFO = 0x0024;
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct Win32Point
+        {
+            public int X;
+            public int Y;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct MinMaxInfo
+        {
+            public Win32Point PtReserved;
+            public Win32Point PtMaxSize;
+            public Win32Point PtMaxPosition;
+            public Win32Point PtMinTrackSize;
+            public Win32Point PtMaxTrackSize;
+        }
+
+        /// <summary>窗口句柄创建后挂接 Win32 消息钩子</summary>
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            base.OnSourceInitialized(e);
+            var handle = new WindowInteropHelper(this).Handle;
+            HwndSource.FromHwnd(handle)?.AddHook(WndProc);
+        }
+
+        /// <summary>拦截 WM_GETMINMAXINFO：最大化尺寸限制在任务栏以上可用区，不盖任务栏</summary>
+        private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        {
+            if (msg != WM_GETMINMAXINFO)
+                return IntPtr.Zero;
+
+            var info = Marshal.PtrToStructure<MinMaxInfo>(lParam);
+            var workArea = SystemParameters.WorkArea;
+            var dpiScale = VisualTreeHelper.GetDpi(this);
+
+            info.PtMaxSize.X = (int)(workArea.Width * dpiScale.DpiScaleX);
+            info.PtMaxSize.Y = (int)(workArea.Height * dpiScale.DpiScaleY);
+            info.PtMaxPosition.X = (int)(workArea.Left * dpiScale.DpiScaleX);
+            info.PtMaxPosition.Y = (int)(workArea.Top * dpiScale.DpiScaleY);
+
+            Marshal.StructureToPtr(info, lParam, true);
+            handled = true;
+            return IntPtr.Zero;
+        }
+
         public MainWindow()
         {
             InitializeComponent();
@@ -634,5 +685,10 @@ if (DataContext is MainWindowViewModel viewModel)
             }
         }
         #endregion
+
+        private void WorkspaceHost_Loaded(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }

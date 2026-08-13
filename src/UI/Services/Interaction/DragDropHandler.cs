@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -42,8 +42,8 @@ namespace SunEyeVision.UI.Services.Interaction
 
         // 临时拖拽节点（拖拽工具箱工具时跟随鼠标的视觉元素，完全复刻真实节点外观）
         private Border? _tempDragNode;
-        private const double _tempNodeWidth = 160;   // 匹配 NodeWidth
-        private const double _tempNodeHeight = 40;   // 匹配 NodeHeight
+        private const double _tempNodeWidth = 140;   // 匹配 NodeWidth
+        private const double _tempNodeHeight = 36;   // 匹配 NodeHeight
 
         /// <summary>
         /// 工作流标签页管理器（属性注入，在 Canvas Loaded 后设置）

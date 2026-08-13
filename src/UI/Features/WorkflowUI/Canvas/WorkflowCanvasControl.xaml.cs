@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 using System.Collections.Generic;
 
@@ -4988,7 +4988,7 @@ _viewModel.SelectedNode = targetNode;
 
                 double sourceTop = sourceNode.Position.Y;
 
-                double sourceBottom = sourceNode.Position.Y + 90; // NodeHeight
+                double sourceBottom = sourceNode.Position.Y + 36; // NodeHeight
 
 
 
@@ -4998,7 +4998,7 @@ _viewModel.SelectedNode = targetNode;
 
                 double targetTop = targetNode.Position.Y;
 
-                double targetBottom = targetNode.Position.Y + 90;
+                double targetBottom = targetNode.Position.Y + 36;
 
 
 

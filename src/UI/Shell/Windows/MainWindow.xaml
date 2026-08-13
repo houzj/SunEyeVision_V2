@@ -67,7 +67,7 @@
             </Border>
 
 
-            <shell:ShellWorkspaceControl Grid.Column="1" x:Name="WorkspaceHost" DataContext="{Binding Workspace}"/>
+            <shell:ShellWorkspaceControl Grid.Column="1" x:Name="WorkspaceHost" DataContext="{Binding Workspace}" Loaded="WorkspaceHost_Loaded"/>
             <!-- 右侧分割器 - 工作区和右侧面板之间（可折叠，折叠逻辑内聚） -->
             <common:CollapsibleSplitterBox Grid.Column="2" Width="8" MinWidth="8"
                                            ResizeDirection="Columns"

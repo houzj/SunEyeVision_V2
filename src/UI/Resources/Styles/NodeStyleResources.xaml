@@ -7,10 +7,10 @@
     <!-- ======================================== -->
     
     <!-- 节点尺寸 -->
-    <sys:Double x:Key="NodeWidth">160</sys:Double>
-    <sys:Double x:Key="NodeHeight">40</sys:Double>
-    <sys:Double x:Key="HitAreaWidth">180</sys:Double>
-    <sys:Double x:Key="HitAreaHeight">60</sys:Double>
+    <sys:Double x:Key="NodeWidth">140</sys:Double>
+    <sys:Double x:Key="NodeHeight">36</sys:Double>
+    <sys:Double x:Key="HitAreaWidth">160</sys:Double>
+    <sys:Double x:Key="HitAreaHeight">56</sys:Double>
     
     <!-- 端口尺寸 -->
     <sys:Double x:Key="PortSize">10</sys:Double>

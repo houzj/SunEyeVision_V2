@@ -224,8 +224,8 @@
                 <Style>
         <!-- Position表示HitArea中心点，Canvas.Left/Top需要左上角坐标 -->
         <!-- 左上角 = 中心点 - (HitAreaWidth/2, HitAreaHeight/2) -->
-        <Setter Property="Canvas.Left" Value="{Binding Position.X, Converter={StaticResource PointCenterToOffsetConverter}, ConverterParameter=-90, Mode=OneWay}"/>
-        <Setter Property="Canvas.Top" Value="{Binding Position.Y, Converter={StaticResource PointCenterToOffsetConverter}, ConverterParameter=-30, Mode=OneWay}"/>
+        <Setter Property="Canvas.Left" Value="{Binding Position.X, Converter={StaticResource PointCenterToOffsetConverter}, ConverterParameter=-80, Mode=OneWay}"/>
+        <Setter Property="Canvas.Top" Value="{Binding Position.Y, Converter={StaticResource PointCenterToOffsetConverter}, ConverterParameter=-28, Mode=OneWay}"/>
                 </Style>
             </ItemsControl.ItemContainerStyle>
             <ItemsControl.ItemTemplate>

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
@@ -107,6 +107,9 @@ public partial class App : Application
 
         // 5. 初始化解决方案管理器
         ServiceInitializer.InitializeSolutionManager(defaultPath);
+
+        // 5.2 初始化主题管理器（读回持久化主题并应用语义色板）
+        InitializeThemeManager();
 
         // 5.5 注册全局变量选择请求事件处理（点击"全局变量"动作节点 → 打开选择对话框）
         EventManager.RegisterClassHandler(typeof(ParamBinding),
@@ -403,6 +406,17 @@ public partial class App : Application
         {
             VisionLogger.Instance.Log(LogLevel.Warning, $"文件关联注册失败: {ex.Message}", "App");
         }
+    }
+
+    /// <summary>
+    /// 初始化主题管理器：创建实例、读回持久化主题并应用，注册到服务定位器供顶栏等访问。
+    /// </summary>
+    private void InitializeThemeManager()
+    {
+        var settings = ServiceInitializer.SolutionManager.Settings;
+        var themeManager = new Services.ThemeManager(settings);
+        themeManager.Initialize();
+        ServiceLocator.Instance.Register(themeManager);
     }
 
     /// <summary>

@@ -11,6 +11,12 @@
   -->
 
   <PropertyGroup>
+    <!-- 关键: 在 props 评估早期就设置默认 Configuration。
+         若此处不为空,SDK 到 csproj 阶段才赋默认值(Debug),
+         则下方 Condition="'$(Configuration)'=='Debug'" 的 OutputPath/OutDir 在 props 评估时空值不生效,
+         导致主程序等所有项目 OutputPath 回落 SDK 默认 bin/ 。 -->
+    <Configuration Condition="'$(Configuration)'==''">Debug</Configuration>
+
     <!-- 自动检测当前工作区: main, camera, tool -->
     <WorktreeName Condition="$(MSBuildProjectDirectory.Contains('SunEyeVision_Dev-camera'))">camera</WorktreeName>
     <WorktreeName Condition="$(MSBuildProjectDirectory.Contains('SunEyeVision_Dev-tool'))">tool</WorktreeName>
@@ -22,7 +28,12 @@
     <WorktreeBasePath Condition="'$(WorktreeName)'=='camera'">$(MSBuildProjectDirectory)\..\..\</WorktreeBasePath>
     <WorktreeBasePath Condition="'$(WorktreeName)'=='tool'">$(MSBuildProjectDirectory)\..\..\</WorktreeBasePath>
     
-    <!-- Debug 输出到各 worktree 独立的 dev/Debug/ 目录 -->
+    <!-- Debug 输出到各 worktree 独立的 dev/Debug/ 目录
+         同时设置 OutputPath 与 OutDir：
+         OutputPath 必须在这里(props 早期)设置,SDK 计算 TargetPath/deps.json 时才能跟随,
+         仅设 OutDir 时 TargetPath 仍回落 SDK 默认 bin/ 。 -->
+    <OutputPath Condition="'$(Configuration)'=='Debug'">$(WorktreeBasePath)\dev\Debug\</OutputPath>
+    <OutputPath Condition="'$(Configuration)'=='Release'">$(WorktreeBasePath)\Release\SunEyeVision_v1.0.0\SunEyeVision\</OutputPath>
     <OutDir Condition="'$(Configuration)'=='Debug'">$(WorktreeBasePath)\dev\Debug\</OutDir>
     <OutDir Condition="'$(Configuration)'=='Release'">$(WorktreeBasePath)\Release\SunEyeVision_v1.0.0\SunEyeVision\</OutDir>
 
@@ -35,13 +46,7 @@
     <DebugType Condition="'$(Configuration)'=='Debug'">full</DebugType>
   </PropertyGroup>
 
-  <!-- UI项目特殊配置 -->
-  <PropertyGroup Condition="'$(OutputType)'=='WinExe'">
-    <OutDir Condition="'$(Configuration)'=='Debug'">$(WorktreeBasePath)\dev\Debug\</OutDir>
-    <OutDir Condition="'$(Configuration)'=='Release'">$(WorktreeBasePath)\Release\SunEyeVision_v1.0.0\SunEyeVision\</OutDir>
-  </PropertyGroup>
-
-  <!-- 工具插件特殊配置: OutDir 覆盖必须放在 Directory.Build.targets,
+  <!-- 工具插件特殊配置: OutputPath/OutDir 覆盖必须放在 Directory.Build.targets,
        因为 props 评估时 csproj 的 <IsToolPlugin>true</IsToolPlugin> 尚未生效。 -->
 
 

@@ -4,12 +4,12 @@
                     xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls"
                     xmlns:converters="clr-namespace:SunEyeVision.Plugin.SDK.UI.Converters"
                     xmlns:metadata="clr-namespace:SunEyeVision.Plugin.SDK.Metadata"
-                    xmlns:themes="clr-namespace:SunEyeVision.Plugin.SDK.UI.Themes"
-                    xmlns:constants="clr-namespace:SunEyeVision.Plugin.SDK.UI.Constants;assembly=SunEyeVision.Plugin.SDK">
+                    xmlns:themes="clr-namespace:SunEyeVision.Plugin.SDK.UI.Themes">
 
-    <!-- 颜色/主题资源 - 统一引用 Colors.xaml（ColorConstants.cs 单一事实源） -->
+    <!-- 颜色/主题资源 - 引用 DefaultTheme.xaml（SDK 兜底语义 token，值来自 ColorConstants.cs）。
+         运行时若存在 UI 主题字典（Application.Resources 置顶注入），同名 Theme 前缀 key 会被覆盖，SDK 控件随主题。 -->
     <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="Colors.xaml"/>
+        <ResourceDictionary Source="DefaultTheme.xaml"/>
     </ResourceDictionary.MergedDictionaries>
 
     <!-- 转换器 -->
@@ -26,23 +26,15 @@
     <DropShadowEffect x:Key="PopupShadowEffect" Color="Black" BlurRadius="6" ShadowDepth="2" Direction="270" Opacity="0.15"/>
 
     <!-- ================================================================ -->
-    <!-- 颜色定义补充 - 主色/悬停/边框/背景同名词典由 Colors.xaml 提供      -->
-    <!-- （Primary=#0066CC）。面板/标签语义色对齐 Colors.xaml 词汇表，      -->
-    <!-- 经 x:Static 引用 ColorConstants。禁止在此字典硬编码颜色值。       -->
+    <!-- 颜色定义说明：SDK 控件统一使用 Theme 前缀语义 key（见 DefaultTheme.xaml）。 -->
+    <!-- 无 UI 宿主时由 DefaultTheme.xaml 提供亮色兜底，有 UI 宿主时被 UI 主题覆盖。 -->
+    <!-- 以下仅保留 SDK 内部派生的带透明度笔刷（非 UI 语义 key，不构成同名冲突）。 -->
     <!-- ================================================================ -->
 
-    <!-- 面板背景（浅灰底，覆盖 merged 的白色 BackgroundBrush） -->
-    <SolidColorBrush x:Key="BackgroundBrush" Color="{x:Static constants:ColorConstants.BackgroundGray}"/>
-    <!-- 面板白底 -->
-    <SolidColorBrush x:Key="PanelBackgroundBrush" Color="{x:Static constants:ColorConstants.Background}"/>
-    <!-- 面板悬停浅灰 -->
-    <SolidColorBrush x:Key="PanelHoverBrush" Color="{x:Static constants:ColorConstants.BackgroundHover}"/>
-    <!-- 正文色（对齐 Colors.xaml TextPrimaryBrush） -->
-    <SolidColorBrush x:Key="LabelBrush" Color="{x:Static constants:ColorConstants.TextPrimary}"/>
-    <!-- 次要文字色（对齐 Colors.xaml TextSecondaryBrush） -->
-    <SolidColorBrush x:Key="LabelSecondaryBrush" Color="{x:Static constants:ColorConstants.TextSecondary}"/>
-    <!-- 主色选中高亮（19% 透明主色，节点选中背景） -->
-    <SolidColorBrush x:Key="PrimarySelectedBrush" Color="{x:Static constants:ColorConstants.Primary}" Opacity="0.19"/>
+    <!-- 主色选中高亮（19% 透明主色，节点选中背景），Color 来源 ThemeAccentColor 语义 key（随主题） -->
+    <SolidColorBrush x:Key="PrimarySelectedBrush"
+                     Color="{DynamicResource {x:Static themes:SdkThemeKeys.AccentColor}}"
+                     Opacity="0.19"/>
 
     <!-- 展开图标 Path -->
     <PathGeometry x:Key="TreeExpanderPath"
@@ -53,7 +45,7 @@
         <Setter Property="Height" Value="28"/>
         <Setter Property="Padding" Value="8,0"/>
         <Setter Property="FontSize" Value="13"/>
-        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Background" Value="White"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
@@ -62,7 +54,7 @@
     <!-- 标签样式 -->
     <Style x:Key="LabelStyle" TargetType="TextBlock">
         <Setter Property="FontSize" Value="13"/>
-        <Setter Property="Foreground" Value="{StaticResource LabelBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="Margin" Value="0,0,8,0"/>
     </Style>
@@ -70,7 +62,7 @@
     <!-- 次要标签样式 -->
     <Style x:Key="LabelSecondaryStyle" TargetType="TextBlock">
         <Setter Property="FontSize" Value="12"/>
-        <Setter Property="Foreground" Value="{StaticResource LabelSecondaryBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="Margin" Value="0,4,0,4"/>
     </Style>
@@ -81,7 +73,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type controls:ParamComboBox}">
                     <Border Background="White"
-                            BorderBrush="{StaticResource BorderBrush}"
+                            BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"
                             BorderThickness="1"
                             CornerRadius="4"
                             Padding="8,0"
@@ -263,8 +255,8 @@
                                 Content="⚡"
                                 Width="28" Height="28"
                                 FontSize="14"
-                                Background="{StaticResource BackgroundBrush}"
-                                BorderBrush="{StaticResource BorderBrush}"
+                                Background="{DynamicResource {x:Static themes:SdkThemeKeys.PanelBackgroundBrush}}"
+                                BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"
                                 BorderThickness="1"
                                 Cursor="Hand"
                                 ToolTip="点击切换到绑定模式"/>
@@ -288,7 +280,7 @@
                                 HorizontalContentAlignment="Left"
                                 VerticalContentAlignment="Center"
                                 Background="White"
-                                BorderBrush="{StaticResource BorderBrush}"
+                                BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"
                                 BorderThickness="1"
                                 Padding="8,0">
                                 <Grid>
@@ -299,13 +291,13 @@
                                     <TextBlock Grid.Column="0"
                                                Text="{Binding SelectedDataSource.DropdownDisplayText, RelativeSource={RelativeSource TemplatedParent}}"
                                                VerticalAlignment="Center"
-                                               Foreground="{StaticResource LabelBrush}">
+                                               Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}">
                                         <TextBlock.Style>
                                             <Style TargetType="TextBlock">
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding SelectedDataSource, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Null}">
                                                         <Setter Property="Text" Value="{Binding PlaceholderText, RelativeSource={RelativeSource TemplatedParent}}"/>
-                                                        <Setter Property="Foreground" Value="{StaticResource LabelSecondaryBrush}"/>
+                                                        <Setter Property="Foreground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}"/>
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
@@ -314,7 +306,7 @@
                                     <TextBlock Grid.Column="1"
                                                Text="▼"
                                                FontSize="10"
-                                               Foreground="{StaticResource LabelSecondaryBrush}"
+                                               Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}"
                                                VerticalAlignment="Center"
                                                Margin="8,0,0,0"/>
                                 </Grid>
@@ -329,7 +321,7 @@
                                    MaxHeight="300"
                                    AllowsTransparency="True">
                                 <Border Background="White"
-                                        BorderBrush="{StaticResource BorderBrush}"
+                                        BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"
                                         BorderThickness="1"
                                         CornerRadius="4"
                                         Margin="0,2,0,0"
@@ -342,12 +334,12 @@
 
                                         <!-- 标题栏 -->
                                         <Border Grid.Row="0"
-                                                Background="{StaticResource BackgroundBrush}"
+                                                Background="{DynamicResource {x:Static themes:SdkThemeKeys.PanelBackgroundBrush}}"
                                                 Padding="12,8">
                                             <TextBlock Text="选择图像源"
                                                        FontWeight="Medium"
                                                        FontSize="12"
-                                                       Foreground="{StaticResource LabelBrush}"/>
+                                                       Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"/>
                                         </Border>
 
                                         <!-- 图像源列表 -->
@@ -364,7 +356,7 @@
                                                                Margin="8,6"
                                                                FontWeight="Medium"
                                                                FontSize="13"
-                                                               Foreground="{StaticResource LabelBrush}"
+                                                               Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"
                                                                VerticalAlignment="Center"/>
                                                 </DataTemplate>
                                             </ListBox.ItemTemplate>
@@ -396,7 +388,7 @@
     <!-- ParamGroup 样式 -->
     <Style TargetType="{x:Type controls:ParamGroup}">
         <Setter Property="Background" Value="White"/>
-        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Margin" Value="0,0,0,12"/>
         <Setter Property="Template">
@@ -450,17 +442,17 @@
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsSelected" Value="True">
-                            <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
-                            <Setter TargetName="Border" Property="Background" Value="White"/>
-                            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+                            <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource {x:Static themes:SdkThemeKeys.AccentBrush}}"/>
+                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.PanelBackgroundBrush}}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.AccentBrush}}"/>
                             <Setter Property="FontWeight" Value="Medium"/>
                         </Trigger>
                         <Trigger Property="IsSelected" Value="False">
                             <Setter TargetName="Border" Property="Background" Value="Transparent"/>
-                            <Setter Property="Foreground" Value="{StaticResource LabelSecondaryBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Border" Property="Background" Value="#F5F5F5"/>
+                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ControlHoverBackgroundBrush}}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -478,10 +470,10 @@
                 <ControlTemplate TargetType="{x:Type Slider}">
                     <Grid Height="22" VerticalAlignment="Center">
                         <Border x:Name="TrackBackground" Height="4" Background="#E0E0E0" CornerRadius="2" VerticalAlignment="Center"/>
-                        <Border x:Name="TrackSelection" Height="4" Background="{StaticResource PrimaryBrush}" CornerRadius="2" VerticalAlignment="Center"/>
+                        <Border x:Name="TrackSelection" Height="4" Background="{DynamicResource {x:Static themes:SdkThemeKeys.AccentBrush}}" CornerRadius="2" VerticalAlignment="Center"/>
                         <Track x:Name="PART_Track" VerticalAlignment="Center">
                             <Track.Thumb>
-                                <Thumb Width="14" Height="20" Background="White" BorderBrush="{StaticResource PrimaryBrush}" BorderThickness="2" Cursor="Hand">
+                                <Thumb Width="14" Height="20" Background="White" BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.AccentBrush}}" BorderThickness="2" Cursor="Hand">
                                     <Thumb.Template>
                                         <ControlTemplate TargetType="Thumb">
                                             <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="2"/>
@@ -498,7 +490,7 @@
 
     <Style TargetType="{x:Type controls:NumericUpDown}">
         <Setter Property="FontSize" Value="13"/>
-        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Background" Value="White"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
@@ -532,8 +524,8 @@
 
                                 <!-- 上下按钮 -->
                                 <Border Grid.Column="1"
-                                        Background="{StaticResource BackgroundBrush}"
-                                        BorderBrush="{StaticResource BorderBrush}"
+                                        Background="{DynamicResource {x:Static themes:SdkThemeKeys.PanelBackgroundBrush}}"
+                                        BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"
                                         BorderThickness="1,0,1,1"
                                         CornerRadius="0,4,4,0"
                                         Visibility="{TemplateBinding ShowUpDownButtons, Converter={StaticResource BoolToVisibilityConverter}}">
@@ -566,7 +558,7 @@
                                AllowsTransparency="True"
                                PopupAnimation="Slide">
                             <Border Background="White"
-                                    BorderBrush="{StaticResource BorderBrush}"
+                                    BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"
                                     BorderThickness="1"
                                     CornerRadius="4"
                                     Padding="12,8"
@@ -585,13 +577,13 @@
                     
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsReadOnly" Value="True">
-                            <Setter Property="Background" Value="{StaticResource BackgroundBrush}"/>
+                            <Setter Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.PanelBackgroundBrush}}"/>
                         </Trigger>
                         <Trigger Property="IsFocused" Value="True">
-                            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static themes:SdkThemeKeys.AccentBrush}}"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="BorderBrush" Value="{StaticResource PrimaryHoverBrush}"/>
+                            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ControlHoverBackgroundBrush}}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -604,8 +596,8 @@
         <Setter Property="SwitchWidth" Value="42"/>
         <Setter Property="SwitchHeight" Value="22"/>
         <Setter Property="CornerRadius" Value="11"/>
-        <Setter Property="OnBackground" Value="#FF7F00"/>
-        <Setter Property="OffBackground" Value="{DynamicResource BorderBrush}"/>
+        <Setter Property="OnBackground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.AccentBrush}}"/>
+        <Setter Property="OffBackground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"/>
         <Setter Property="ThumbColor" Value="White"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Background" Value="Transparent"/>
@@ -682,7 +674,7 @@
                         <Border x:Name="PART_RangeFill"
                                 Canvas.Top="9"
                                 Height="4"
-                                Background="{StaticResource PrimaryBrush}"
+                                Background="{DynamicResource {x:Static themes:SdkThemeKeys.AccentBrush}}"
                                 CornerRadius="2"/>
 
                         <!-- 最小值滑块 -->
@@ -691,7 +683,7 @@
                                Width="14"
                                Height="20"
                                Background="White"
-                               BorderBrush="{StaticResource PrimaryBrush}"
+                               BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.AccentBrush}}"
                                BorderThickness="2"
                                Cursor="Hand">
                             <Thumb.Style>
@@ -716,7 +708,7 @@
                                Width="14"
                                Height="20"
                                Background="White"
-                               BorderBrush="{StaticResource PrimaryBrush}"
+                               BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.AccentBrush}}"
                                BorderThickness="2"
                                Cursor="Hand">
                             <Thumb.Style>
@@ -773,7 +765,7 @@
                                        Text="-"
                                        Margin="2,0"
                                        VerticalAlignment="Center"
-                                       Foreground="{StaticResource LabelSecondaryBrush}"/>
+                                       Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}"/>
 
                             <!-- 最大值输入 -->
                             <controls:NumericUpDown x:Name="PART_MaxNumeric"
@@ -793,7 +785,7 @@
                                        Text="{TemplateBinding Unit}"
                                        Margin="4,0,0,0"
                                        VerticalAlignment="Center"
-                                       Foreground="{StaticResource LabelSecondaryBrush}"
+                                       Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}"
                                        Visibility="Visible"/>
                         </Grid>
                         
@@ -804,7 +796,7 @@
                                AllowsTransparency="True"
                                PopupAnimation="Slide">
                             <Border Background="White"
-                                    BorderBrush="{StaticResource BorderBrush}"
+                                    BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"
                                     BorderThickness="1"
                                     CornerRadius="4"
                                     Padding="12,8"
@@ -863,8 +855,8 @@
                 <ControlTemplate TargetType="TabItem">
                     <Grid>
                         <Border x:Name="Border"
-                                Background="{StaticResource PanelBackgroundBrush}"
-                                BorderBrush="{StaticResource BorderBrush}"
+                                Background="{DynamicResource {x:Static themes:SdkThemeKeys.PanelBackgroundBrush}}"
+                                BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"
                                 BorderThickness="0,0,0,2"
                                 Padding="{TemplateBinding Padding}"
                                 CornerRadius="2,2,0,0">
@@ -878,11 +870,11 @@
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsSelected" Value="True">
                             <Setter TargetName="Border" Property="BorderBrush"
-                                    Value="{StaticResource PrimaryBrush}"/>
+                                    Value="{DynamicResource {x:Static themes:SdkThemeKeys.AccentBrush}}"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="Border" Property="Background"
-                                    Value="{StaticResource PanelHoverBrush}"/>
+                                    Value="{DynamicResource {x:Static themes:SdkThemeKeys.ControlHoverBackgroundBrush}}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -905,7 +897,7 @@
                     <ControlTemplate.Triggers>
                         <!-- 悬浮时显示明显的蓝色边框 -->
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                            <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource {x:Static themes:SdkThemeKeys.AccentBrush}}"/>
                             <Setter TargetName="Border" Property="BorderThickness" Value="2"/>
                             <Setter TargetName="Border" Property="Effect">
                                 <Setter.Value>
@@ -930,7 +922,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type controls:ColorPicker}">
                     <Border Background="White"
-                            BorderBrush="{StaticResource BorderBrush}"
+                            BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"
                             BorderThickness="1"
                             CornerRadius="4"
                             Padding="0">
@@ -943,7 +935,7 @@
                                         <!-- 主题颜色 -->
                                         <TextBlock Text="主题颜色"
                                                    FontSize="12"
-                                                   Foreground="{StaticResource LabelSecondaryBrush}"
+                                                   Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}"
                                                    Margin="0,0,0,8"
                                                    TextAlignment="Center"
                                                    Width="198"/>
@@ -956,7 +948,7 @@
                                         <!-- 标准颜色 -->
                                         <TextBlock Text="标准颜色"
                                                    FontSize="12"
-                                                   Foreground="{StaticResource LabelSecondaryBrush}"
+                                                   Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}"
                                                    Margin="0,12,0,8"
                                                    TextAlignment="Center"
                                                    Width="198"/>
@@ -1060,7 +1052,7 @@
                         <Border x:Name="PART_SelectorBorder"
                                 Height="28"
                                     Background="Transparent"
-                                    BorderBrush="{StaticResource BorderBrush}"
+                                    BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"
                                     BorderThickness="1"
                                     CornerRadius="2"
                                     Focusable="True"
@@ -1075,7 +1067,7 @@
                                     <Border x:Name="PART_ColorPreview"
                                             Grid.Column="0"
                                             Width="24" Height="24"
-                                            BorderBrush="{StaticResource BorderBrush}"
+                                            BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"
                                             BorderThickness="1"
                                             CornerRadius="2"
                                             Margin="4,0,8,0"/>
@@ -1085,7 +1077,7 @@
                                                Grid.Column="1"
                                                VerticalAlignment="Center"
                                                FontSize="13"
-                                               Foreground="{StaticResource LabelBrush}"
+                                               Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"
                                                Padding="0,0,4,0"/>
                                 </Grid>
                             </Border>
@@ -1097,7 +1089,7 @@
                                    StaysOpen="False"
                                    AllowsTransparency="True">
                                 <Border Background="White"
-                                        BorderBrush="{StaticResource BorderBrush}"
+                                        BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"
                                         BorderThickness="1"
                                         CornerRadius="4"
                                         Margin="0,6,0,0"
@@ -1114,13 +1106,13 @@
                         <!-- 鼠标悬停 -->
                         <Trigger SourceName="PART_SelectorBorder" Property="IsMouseOver" Value="True">
                             <Setter TargetName="PART_SelectorBorder" Property="BorderBrush"
-                                    Value="{StaticResource PrimaryBrush}"/>
+                                    Value="{DynamicResource {x:Static themes:SdkThemeKeys.AccentBrush}}"/>
                         </Trigger>
                         
                         <!-- 焦点状态 -->
                         <Trigger SourceName="PART_SelectorBorder" Property="IsFocused" Value="True">
                             <Setter TargetName="PART_SelectorBorder" Property="BorderBrush"
-                                    Value="{StaticResource PrimaryBrush}"/>
+                                    Value="{DynamicResource {x:Static themes:SdkThemeKeys.AccentBrush}}"/>
                             <Setter TargetName="PART_SelectorBorder" Property="BorderThickness"
                                     Value="2"/>
                         </Trigger>
@@ -1166,7 +1158,7 @@
                                PlacementTarget="{Binding ElementName=PART_StyleSettingsButton}"
                                Placement="Bottom" StaysOpen="False" AllowsTransparency="True">
                             <Border Background="White"
-                                    BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                                    BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}" BorderThickness="1"
                                     CornerRadius="4" Padding="16" Margin="0,2,0,0" Width="260">
                                 <StackPanel>
                                     <!-- OK颜色 -->
@@ -1254,7 +1246,7 @@
                                PlacementTarget="{Binding ElementName=PART_StyleSettingsButton}"
                                Placement="Bottom" StaysOpen="False" AllowsTransparency="True">
                             <Border Background="White"
-                                    BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                                    BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}" BorderThickness="1"
                                     CornerRadius="4" Padding="16" Margin="0,2,0,0" Width="300">
                                 <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="350"
                                               HorizontalScrollBarVisibility="Disabled">
@@ -1340,7 +1332,7 @@
     <!-- ParamBinding 样式 - 树形结构绑定选择 -->
     <Style TargetType="{x:Type controls:ParamBinding}">
         <Setter Property="Background" Value="White"/>
-        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="CornerRadius" Value="4"/>
         <Setter Property="Height" Value="28"/>
@@ -1367,10 +1359,10 @@
                                          VerticalAlignment="Center"
                                          VerticalContentAlignment="Center"
                                          Text="{Binding BindingDisplayText, RelativeSource={RelativeSource TemplatedParent}, UpdateSourceTrigger=PropertyChanged}"
-                                         Foreground="{StaticResource LabelSecondaryBrush}"
+                                         Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}"
                                          Background="Transparent"
                                          BorderThickness="0"
-                                         CaretBrush="{StaticResource LabelSecondaryBrush}"
+                                         CaretBrush="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}"
                                          IsReadOnly="False"
                                          Visibility="Visible"/>
                             </Grid>
@@ -1407,7 +1399,7 @@
                                    MaxHeight="400"
                                    AllowsTransparency="True">
                                 <Border Background="White"
-                                        BorderBrush="{StaticResource BorderBrush}"
+                                        BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"
                                         BorderThickness="1"
                                         CornerRadius="4"
                                         Margin="0,2,0,0"
@@ -1420,13 +1412,13 @@
 
                                         <!-- 标题栏 -->
                                         <Border Grid.Row="0"
-                                                Background="{StaticResource BackgroundBrush}"
+                                                Background="{DynamicResource {x:Static themes:SdkThemeKeys.PanelBackgroundBrush}}"
                                                 Padding="12,8">
                                             <TextBlock Text="选择绑定源"
                                                        FontWeight="Medium"
                                                        FontSize="12"
                                                        VerticalAlignment="Center"
-                                                       Foreground="{StaticResource LabelBrush}"/>
+                                                       Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"/>
                                         </Border>
 
                                         <!-- TreeView - 使用与ConfigSetting相同的树形结构 -->
@@ -1447,11 +1439,11 @@
                                                                 <Style.Triggers>
                                                                     <DataTrigger Binding="{Binding IsSelectable}" Value="False">
                                                                         <Setter Property="FontWeight" Value="Medium"/>
-                                                                        <Setter Property="Foreground" Value="{StaticResource LabelBrush}"/>
+                                                                        <Setter Property="Foreground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"/>
                                                                     </DataTrigger>
                                                                     <DataTrigger Binding="{Binding IsSelectable}" Value="True">
                                                                         <Setter Property="FontWeight" Value="Normal"/>
-                                                                        <Setter Property="Foreground" Value="{StaticResource LabelSecondaryBrush}"/>
+                                                                        <Setter Property="Foreground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}"/>
                                                                     </DataTrigger>
                                                                 </Style.Triggers>
                                                             </Style>
@@ -1502,7 +1494,7 @@
                                                                                           Width="10"
                                                                                           Height="10"
                                                                                           Data="M 0 0 L 8 5 L 0 10 Z"
-                                                                                          Fill="{StaticResource LabelSecondaryBrush}"
+                                                                                          Fill="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}"
                                                                                           RenderTransformOrigin="0.5,0.5"
                                                                                           HorizontalAlignment="Center"
                                                                                           VerticalAlignment="Center"
@@ -1535,7 +1527,7 @@
                                                                                     </Trigger>
                                                                                     <Trigger Property="IsMouseOver" Value="True">
                                                                                         <Setter TargetName="ExpanderPath" Property="Fill" 
-                                                                                                Value="{StaticResource PrimaryBrush}"/>
+                                                                                                Value="{DynamicResource {x:Static themes:SdkThemeKeys.AccentBrush}}"/>
                                                                                     </Trigger>
                                                                                 </ControlTemplate.Triggers>
                                                                             </ControlTemplate>
@@ -1584,7 +1576,7 @@
                                                                 <!-- 鼠标悬停效果 -->
                                                                 <Trigger Property="IsMouseOver" Value="True">
                                                                     <Setter TargetName="ContentBorder" Property="Background" 
-                                                                            Value="{StaticResource PanelHoverBrush}"/>
+                                                                            Value="{DynamicResource {x:Static themes:SdkThemeKeys.ControlHoverBackgroundBrush}}"/>
                                                                 </Trigger>
                                                                 
                                                                 <!-- 选中效果 -->
@@ -1608,10 +1600,10 @@
                     <!-- 触发器 -->
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="BorderBrush" Value="{StaticResource PrimaryHoverBrush}"/>
+                            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ControlHoverBackgroundBrush}}"/>
                         </Trigger>
                         <Trigger Property="IsFocused" Value="True">
-                            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static themes:SdkThemeKeys.AccentBrush}}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

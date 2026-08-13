@@ -7,6 +7,7 @@
              xmlns:logging="clr-namespace:SunEyeVision.Plugin.SDK.Logging;assembly=SunEyeVision.Plugin.SDK"
              xmlns:converters="clr-namespace:SunEyeVision.UI.Converters"
              xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
+             xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
              mc:Ignorable="d"
              d:DesignHeight="300" d:DesignWidth="600"
              VerticalAlignment="Stretch"
@@ -18,7 +19,7 @@
         <!-- 右键菜单项样式 - 与选中行样式一致 -->
         <Style TargetType="MenuItem" x:Key="ContextMenuMenuItemStyle">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#333333"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
             <Setter Property="BorderBrush" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="8,4,8,4"/>
@@ -27,40 +28,40 @@
             <Style.Triggers>
                 <!-- 鼠标悬停 -->
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#F5F5F5"/>
+                    <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ContextMenuItemHoverBrush}}"/>
                 </Trigger>
                 <!-- 选中状态 - 深蓝色背景 + 白色文字 -->
                 <Trigger Property="IsHighlighted" Value="True">
-                    <Setter Property="Background" Value="#1976D2"/>
-                    <Setter Property="Foreground" Value="#FFFFFF"/>
-                    <Setter Property="BorderBrush" Value="#2196F3"/>
+                    <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowSelectedBackgroundBrush}}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextOnDarkBrush}}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
 
         <!-- 右键菜单容器样式 -->
         <Style TargetType="ContextMenu" x:Key="LogContextMenuStyle">
-            <Setter Property="Background" Value="#FFFFFF"/>
-            <Setter Property="BorderBrush" Value="#CCCCCC"/>
+            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ContextMenuBackgroundBrush}}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.BorderBrush}}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="4"/>
         </Style>
 
         <!-- DataGrid 行样式 -->
         <Style TargetType="DataGridRow" x:Key="LogDataRowStyle">
-            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowBackgroundBrush}}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Margin" Value="0"/>
             <Setter Property="Padding" Value="2"/>
             <Style.Triggers>
                 <!-- 鼠标悬停效果 -->
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#E3F2FD"/>
+                    <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowHoverBackgroundBrush}}"/>
                 </Trigger>
                 <!-- 选中效果 - 深蓝色背景 -->
                 <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="#1976D2"/>
-                    <Setter Property="Foreground" Value="#FFFFFF"/>
+                    <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowSelectedBackgroundBrush}}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextOnDarkBrush}}"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -70,31 +71,44 @@
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="4,2"/>
-            <Setter Property="Foreground" Value="#333333"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
             <Setter Property="FontSize" Value="11"/>
             <Style.Triggers>
                 <!-- 选中时继承行的背景色 -->
                 <Trigger Property="IsSelected" Value="True">
                     <Setter Property="Background" Value="Transparent"/>
-                    <Setter Property="Foreground" Value="#FFFFFF"/>
+                    <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextOnDarkBrush}}"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
 
         <!-- DataGrid 文本块样式（用于 DataGridTextColumn.ElementStyle） -->
         <Style TargetType="TextBlock" x:Key="LogDataTextBlockStyle">
-            <Setter Property="Foreground" Value="#333333"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
             <Setter Property="FontSize" Value="11"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="Margin" Value="4,2"/>
         </Style>
 
+        <!-- DataGrid 列头样式 -->
+        <Style TargetType="DataGridColumnHeader" x:Key="LogDataColumnHeaderStyle">
+            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableHeaderBackgroundBrush}}"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TableHeaderTextBrush}}"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="4,4"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+
         <!-- DataGrid 样式 -->
         <Style TargetType="DataGrid" x:Key="LogDataGridStyle">
-            <Setter Property="Background" Value="#FAFAFA"/>
+            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowBackgroundBrush}}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="GridLinesVisibility" Value="Horizontal"/>
-            <Setter Property="HorizontalGridLinesBrush" Value="#EEEEEE"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}"/>
             <Setter Property="HeadersVisibility" Value="Column"/>
             <Setter Property="AutoGenerateColumns" Value="False"/>
             <Setter Property="SelectionMode" Value="Extended"/>
@@ -105,13 +119,14 @@
             <Setter Property="RowHeaderWidth" Value="0"/>
             <Setter Property="RowStyle" Value="{StaticResource LogDataRowStyle}"/>
             <Setter Property="CellStyle" Value="{StaticResource LogDataCellStyle}"/>
+            <Setter Property="ColumnHeaderStyle" Value="{StaticResource LogDataColumnHeaderStyle}"/>
             <Setter Property="SelectionMode" Value="Extended"/>
         </Style>
 
         <!-- 过滤按钮样式 -->
         <Style TargetType="ToggleButton" x:Key="LogFilterToggleButtonStyle">
-            <Setter Property="Background" Value="#FFFFFF"/>
-            <Setter Property="BorderBrush" Value="#DDDDDD"/>
+            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.InputBackgroundBrush}}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="6,3"/>
             <Setter Property="Margin" Value="0,0,2,0"/>
@@ -133,19 +148,19 @@
             <Style.Triggers>
                 <!-- 鼠标悬停 -->
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#F5F5F5"/>
+                    <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ControlHoverBackgroundBrush}}"/>
                 </Trigger>
                 <!-- 选中状态 -->
                 <Trigger Property="IsChecked" Value="True">
-                    <Setter Property="Background" Value="#E3F2FD"/>
-                    <Setter Property="BorderBrush" Value="#2196F3"/>
+                    <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowHoverBackgroundBrush}}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
                     <Setter Property="FontWeight" Value="SemiBold"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
     </UserControl.Resources>
 
-    <Border Background="#FFFFFF" BorderBrush="#CCCCCC" BorderThickness="0"
+    <Border Background="{DynamicResource {x:Static base:ThemeKeys.ContextMenuBackgroundBrush}}" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.BorderBrush}}" BorderThickness="0"
             VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
         <Grid>
             <Grid.RowDefinitions>
@@ -155,7 +170,7 @@
             </Grid.RowDefinitions>
 
             <!-- 顶部工具栏 -->
-            <Border Grid.Row="0" Background="#F5F5F5" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1" Padding="6,4">
+            <Border Grid.Row="0" Background="{DynamicResource {x:Static base:ThemeKeys.ToolBarBackgroundBrush}}" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.DividerBrushBrush}}" BorderThickness="0,0,0,1" Padding="6,4">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -192,8 +207,8 @@
                     <Border Grid.Column="1"
                             Margin="8,0,8,0"
                             VerticalAlignment="Center"
-                            Background="#FFFFFF"
-                            BorderBrush="#DDDDDD"
+                            Background="{DynamicResource {x:Static base:ThemeKeys.InputBackgroundBrush}}"
+                            BorderBrush="{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}"
                             BorderThickness="1"
                             CornerRadius="3"
                             Height="22">
@@ -208,7 +223,7 @@
                             <TextBlock Grid.Column="0"
                                        Text="🔍"
                                        FontSize="10"
-                                       Foreground="#AAAAAA"
+                                       Foreground="{DynamicResource {x:Static base:ThemeKeys.TextDisabledBrush}}"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Center"
                                        Margin="4,0,0,0"/>
@@ -221,7 +236,8 @@
                                      VerticalAlignment="Center"
                                      Background="Transparent"
                                      BorderThickness="0"
-                                     CaretBrush="#333333"
+                                     Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"
+                                     CaretBrush="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"
                                      Padding="0"
                                      Margin="2,0,0,0"
                                      GotFocus="SearchTextBox_GotFocus"
@@ -231,7 +247,7 @@
                             <TextBlock Grid.Column="1"
                                        x:Name="WatermarkText"
                                        Text="搜索日志..."
-                                       Foreground="#AAAAAA"
+                                       Foreground="{DynamicResource {x:Static base:ThemeKeys.TextDisabledBrush}}"
                                        FontSize="11"
                                        VerticalAlignment="Center"
                                        Margin="2,0,0,0"
@@ -243,7 +259,7 @@
                                        x:Name="ClearSearchButton"
                                        Text="✕"
                                        FontSize="10"
-                                       Foreground="#AAAAAA"
+                                       Foreground="{DynamicResource {x:Static base:ThemeKeys.TextDisabledBrush}}"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Center"
                                        Cursor="Hand"
@@ -256,18 +272,18 @@
                     <StackPanel Grid.Column="2" Orientation="Horizontal">
                         <TextBlock Text="诊断模式"
                                    FontSize="11"
-                                   Foreground="#666666"
+                                   Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"
                                    VerticalAlignment="Center"
                                    Margin="0,0,4,0"/>
                         <controls:ToggleSwitch IsChecked="{Binding IsDiagnosticMode, Mode=TwoWay}"
                                                SwitchWidth="36"
                                                SwitchHeight="18"
-                                               OnBackground="#FF7F00"
+                                               OnBackground="{DynamicResource {x:Static base:ThemeKeys.WarningBrush}}"
                                                ToolTip="开启后显示内部实现细节日志（用于排查问题）"
                                                Margin="0,0,12,0"/>
                         <TextBlock Text="自动滚动"
                                    FontSize="11"
-                                   Foreground="#666666"
+                                   Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"
                                    VerticalAlignment="Center"
                                    Margin="0,0,4,0"/>
                         <controls:ToggleSwitch IsChecked="{Binding AutoScroll, Mode=TwoWay}"
@@ -278,16 +294,16 @@
                                 Padding="8,3"
                                 FontSize="11"
                                 Margin="0,0,4,0"
-                                Background="#FFFFFF"
-                                BorderBrush="#DDDDDD"
+                                Background="{DynamicResource {x:Static base:ThemeKeys.InputBackgroundBrush}}"
+                                BorderBrush="{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}"
                                 BorderThickness="1"
                                 Cursor="Hand"/>
                         <Button Content="复制全部"
                                 Command="{Binding CopyAllCommand}"
                                 Padding="8,3"
                                 FontSize="11"
-                                Background="#FFFFFF"
-                                BorderBrush="#DDDDDD"
+                                Background="{DynamicResource {x:Static base:ThemeKeys.InputBackgroundBrush}}"
+                                BorderBrush="{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}"
                                 BorderThickness="1"
                                 Cursor="Hand"/>
                     </StackPanel>
@@ -318,23 +334,23 @@
                             <Style TargetType="TextBlock" BasedOn="{StaticResource LogDataTextBlockStyle}">
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding Level}" Value="{x:Static logging:LogLevel.Debug}">
-                                        <Setter Property="Foreground" Value="#9E9E9E"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextDisabledBrush}}"/>
                                         <Setter Property="FontWeight" Value="SemiBold"/>
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding Level}" Value="{x:Static logging:LogLevel.Info}">
-                                        <Setter Property="Foreground" Value="#2196F3"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
                                         <Setter Property="FontWeight" Value="SemiBold"/>
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding Level}" Value="{x:Static logging:LogLevel.Success}">
-                                        <Setter Property="Foreground" Value="#4CAF50"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.SuccessBrush}}"/>
                                         <Setter Property="FontWeight" Value="SemiBold"/>
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding Level}" Value="{x:Static logging:LogLevel.Warning}">
-                                        <Setter Property="Foreground" Value="#FF9800"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.WarningBrush}}"/>
                                         <Setter Property="FontWeight" Value="SemiBold"/>
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding Level}" Value="{x:Static logging:LogLevel.Error}">
-                                        <Setter Property="Foreground" Value="#F44336"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.ErrorBrush}}"/>
                                         <Setter Property="FontWeight" Value="SemiBold"/>
                                     </DataTrigger>
                                 </Style.Triggers>
@@ -385,8 +401,8 @@
 
             <!-- 底部状态栏 -->
             <Border Grid.Row="2"
-                    Background="#FAFAFA"
-                    BorderBrush="#E0E0E0"
+                    Background="{DynamicResource {x:Static base:ThemeKeys.ToolBarBackgroundBrush}}"
+                    BorderBrush="{DynamicResource {x:Static base:ThemeKeys.DividerBrushBrush}}"
                     BorderThickness="0,1,0,0"
                     Padding="8,4">
                 <Grid>
@@ -400,7 +416,7 @@
 
                     <TextBlock Grid.Column="0"
                                FontSize="10"
-                               Foreground="#666">
+                               Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}">
                         <Run Text="已记录: "/>
                         <Run Text="{Binding TotalEnqueued, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=OneWay}" FontWeight="Bold"/>
                     </TextBlock>
@@ -408,27 +424,27 @@
                     <TextBlock Grid.Column="1"
                                Text="{Binding TotalCount, RelativeSource={RelativeSource AncestorType=UserControl}, StringFormat='显示: {0}', Mode=OneWay}"
                                FontSize="10"
-                               Foreground="#888"
+                               Foreground="{DynamicResource {x:Static base:ThemeKeys.TextDisabledBrush}}"
                                Margin="8,0,0,0"/>
 
                     <TextBlock Grid.Column="2"
                                Text="{Binding ErrorCount, RelativeSource={RelativeSource AncestorType=UserControl}, StringFormat='错误: {0}', Mode=OneWay}"
                                FontSize="10"
-                               Foreground="#CC0000"
+                               Foreground="{DynamicResource {x:Static base:ThemeKeys.ErrorBrush}}"
                                HorizontalAlignment="Center"
                                Visibility="{Binding ErrorCount, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource IntToVisibilityConverter}}"/>
 
                     <TextBlock Grid.Column="3"
                                Text="{Binding WarningCount, RelativeSource={RelativeSource AncestorType=UserControl}, StringFormat='警告: {0}', Mode=OneWay}"
                                FontSize="10"
-                               Foreground="#CC7700"
+                               Foreground="{DynamicResource {x:Static base:ThemeKeys.WarningBrush}}"
                                HorizontalAlignment="Center"
                                Margin="8,0"
                                Visibility="{Binding WarningCount, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource IntToVisibilityConverter}}"/>
 
                     <TextBlock Grid.Column="4"
                                FontSize="10"
-                               Foreground="#666">
+                               Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}">
                         <Run Text="✅ 零阻塞"/>
                         <Run Text=" | "/>
                         <Run Text="⚡ 批量更新"/>

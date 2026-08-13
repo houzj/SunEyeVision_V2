@@ -1,0 +1,82 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:themes="clr-namespace:SunEyeVision.Plugin.SDK.UI.Themes"
+                    xmlns:constants="clr-namespace:SunEyeVision.Plugin.SDK.UI.Constants">
+
+    <!-- ============================================================ -->
+    <!-- SDK 兜底默认主题（Design Token）                               -->
+    <!-- 值 = ColorConstants.cs 亮色基准，作为无 UI 宿主时的组件默认值。  -->
+    <!-- 运行时若存在 UI 主题字典（Application.Resources 置顶注入），     -->
+    <!-- 同名 Theme 前缀 key 会被 UI 的 Light/Dark 主题覆盖，SDK 控件随主题。-->
+    <!-- key 字符串与 UI 层 ThemeKeys 完全一致（见 SdkThemeKeys.cs）。   -->
+    <!-- ============================================================ -->
+
+    <!-- ============ 品牌主色 ============ -->
+    <x:Static x:Key="{x:Static themes:SdkThemeKeys.AccentColor}"
+              Member="constants:ColorConstants.Primary"/>
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.AccentBrush}"
+                     Color="{x:Static constants:ColorConstants.Primary}"/>
+
+    <!-- ============ 控件底色 ============ -->
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.ControlHoverBackgroundBrush}"
+                     Color="{x:Static constants:ColorConstants.BackgroundHover}"/>
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.ControlSelectedBackgroundBrush}"
+                     Color="{x:Static constants:ColorConstants.Primary}"/>
+
+    <!-- ============ 文字 ============ -->
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.TextPrimaryBrush}"
+                     Color="{x:Static constants:ColorConstants.TextPrimary}"/>
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.TextSecondaryBrush}"
+                     Color="{x:Static constants:ColorConstants.TextSecondary}"/>
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.TextDisabledBrush}"
+                     Color="{x:Static constants:ColorConstants.TextDisabled}"/>
+
+    <!-- ============ 边框 / 分隔 ============ -->
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.BorderBrush}"
+                     Color="{x:Static constants:ColorConstants.Border}"/>
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.DividerBrush}"
+                     Color="{x:Static constants:ColorConstants.BorderLight}"/>
+
+    <!-- ============ 面板 / 背景 ============ -->
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.PanelBackgroundBrush}"
+                     Color="{x:Static constants:ColorConstants.Background}"/>
+
+    <!-- ============ 工具栏 / 输入控件 / 状态栏 ============ -->
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.ToolBarBackgroundBrush}"
+                     Color="{x:Static constants:ColorConstants.BackgroundDark}"/>
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.InputBackgroundBrush}"
+                     Color="{x:Static constants:ColorConstants.Background}"/>
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.InputBorderBrush}"
+                     Color="{x:Static constants:ColorConstants.Border}"/>
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.StatusBarBackgroundBrush}"
+                     Color="{x:Static constants:ColorConstants.BackgroundGray}"/>
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.StatusBarBorderBrush}"
+                     Color="{x:Static constants:ColorConstants.BorderLight}"/>
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.StatusBarTextBrush}"
+                     Color="{x:Static constants:ColorConstants.TextSecondary}"/>
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.ContextMenuBackgroundBrush}"
+                     Color="{x:Static constants:ColorConstants.Background}"/>
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.TextOnDarkBrush}"
+                     Color="{x:Static constants:ColorConstants.Background}"/>
+
+    <!-- ============ 表格 ============ -->
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.TableRowBackgroundBrush}"
+                     Color="{x:Static constants:ColorConstants.Background}"/>
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.TableRowHoverBackgroundBrush}"
+                     Color="{x:Static constants:ColorConstants.BackgroundHover}"/>
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.TableHeaderBackgroundBrush}"
+                     Color="{x:Static constants:ColorConstants.BackgroundGray}"/>
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.TableHeaderTextBrush}"
+                     Color="{x:Static constants:ColorConstants.TextPrimary}"/>
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.TableGridLineBrush}"
+                     Color="{x:Static constants:ColorConstants.BorderLight}"/>
+
+    <!-- ============ 品牌 / 状态色 ============ -->
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.SuccessBrush}"
+                     Color="{x:Static constants:ColorConstants.Success}"/>
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.WarningBrush}"
+                     Color="{x:Static constants:ColorConstants.Warning}"/>
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.ErrorBrush}"
+                     Color="{x:Static constants:ColorConstants.Error}"/>
+
+</ResourceDictionary>

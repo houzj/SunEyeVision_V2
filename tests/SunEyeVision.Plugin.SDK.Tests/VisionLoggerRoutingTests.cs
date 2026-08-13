@@ -86,7 +86,7 @@ public class VisionLoggerRoutingTests
     }
 
     /// <summary>
-    /// 验证 Logger.Info 使用默认 target 时，File/UI/Debug 多个通道的 writer 都能收到。
+    /// 验证 Logger.Info 使用默认 target 时，File/UI 双轨通道的 writer 都能收到。
     /// </summary>
     [Fact]
     public async Task DefaultTarget_All_ReachesAllChannels()
@@ -95,19 +95,16 @@ public class VisionLoggerRoutingTests
         await ResetLoggerAsync(logger);
 
         var fileWriter = new InMemoryLogWriter("FileWriter", LogTarget.File);
-        var debugWriter = new InMemoryLogWriter("DebugWriter", LogTarget.Debug);
-        var consoleWriter = new InMemoryLogWriter("ConsoleWriter", LogTarget.Console);
+        var uiWriter = new InMemoryLogWriter("UIWriter", LogTarget.UI);
         logger.AddWriter(fileWriter);
-        logger.AddWriter(debugWriter);
-        logger.AddWriter(consoleWriter);
+        logger.AddWriter(uiWriter);
 
         logger.Info("Broadcast message");
 
         await FlushAsync(logger);
 
         Assert.Contains(fileWriter.Entries, e => e.Message == "Broadcast message");
-        Assert.Contains(debugWriter.Entries, e => e.Message == "Broadcast message");
-        Assert.Contains(consoleWriter.Entries, e => e.Message == "Broadcast message");
+        Assert.Contains(uiWriter.Entries, e => e.Message == "Broadcast message");
     }
 
     /// <summary>
@@ -141,9 +138,9 @@ public class VisionLoggerRoutingTests
         await ResetLoggerAsync(logger);
 
         var fileWriter = new InMemoryLogWriter("FileWriter", LogTarget.File);
-        var debugWriter = new InMemoryLogWriter("DebugWriter", LogTarget.Debug);
+        var uiWriter = new InMemoryLogWriter("UIWriter", LogTarget.UI);
         logger.AddWriter(fileWriter);
-        logger.AddWriter(debugWriter);
+        logger.AddWriter(uiWriter);
 
         // 通过 PluginLogger 静态方法调用，走默认 target
         PluginLogger.SetProvider(logger);
@@ -152,7 +149,7 @@ public class VisionLoggerRoutingTests
         await FlushAsync(logger);
 
         Assert.Contains(fileWriter.Entries, e => e.Message == "PluginLogger broadcast");
-        Assert.Contains(debugWriter.Entries, e => e.Message == "PluginLogger broadcast");
+        Assert.Contains(uiWriter.Entries, e => e.Message == "PluginLogger broadcast");
     }
 
     /// <summary>

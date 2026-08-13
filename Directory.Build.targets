@@ -14,6 +14,21 @@
        OutDir 用 $[System.IO.Path]::GetFullPath 规范化,避免字面拼接 '..\..\' 在
        后续 Delete/RemoveDir 操作中无法被 SDK 规范化导致路径不匹配。 -->
 
+  <!-- Halcon 托管程序集自动部署:
+       工具插件通过 HintPath=..\..\dev\Debug\halcondotnetxl.dll 引用 Halcon 托管封装。
+       该 dll 源文件位于 libs\halcon\net\,不在构建输出链中,删 dev/Debug 后工具会编译失败。
+       本 Target 在"解析引用前"把源文件复制到 <worktree>/dev/Debug/,
+       保证任何项目编译前 halcondotnetxl.dll 已就位,无需手动部署。
+       SkipUnchangedFiles 保证幂等(已存在且未变则跳过)。 -->
+  <Target Name="EnsureHalconNetAssembly"
+          BeforeTargets="ResolveReferences"
+          Condition="Exists('$(MSBuildThisFileDirectory)libs\halcon\net\halcondotnetxl.dll')">
+    <MakeDir Directories="$(MSBuildThisFileDirectory)dev\Debug\" />
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)libs\halcon\net\halcondotnetxl.dll"
+          DestinationFolder="$(MSBuildThisFileDirectory)dev\Debug\"
+          SkipUnchangedFiles="true" />
+  </Target>
+
   <!-- 工具插件: OutDir 统一覆盖到 plugins/<ToolName>/ 子目录
        不区分特例,所有 IsToolPlugin=true 的 csproj 一律输出到独立子目录,
        避免 AvalonEdit/Roslyn 等重型 NuGet 依赖污染 plugins/ 根。 -->

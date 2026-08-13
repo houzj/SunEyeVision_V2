@@ -15,7 +15,7 @@
 
     <DockPanel>
         <!-- 统计摘要区域（顶部固定） -->
-        <Border DockPanel.Dock="Top" Background="#F0F4F8" BorderBrush="#D0D8E0" BorderThickness="0,0,0,1" Padding="8,6">
+        <Border DockPanel.Dock="Top" Background="{DynamicResource ThemePanelBackgroundBrush}" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="0,0,0,1" Padding="8,6">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -28,28 +28,28 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0" Margin="0,0,12,0" VerticalAlignment="Center" Orientation="Horizontal">
-                    <TextBlock Text="Blob: " Foreground="#666"/>
+                    <TextBlock Text="Blob: " Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
                     <TextBlock Text="{Binding FilteredBlobCount, Mode=OneWay}" FontWeight="Bold" Foreground="#2196F3"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" Margin="0,0,12,0" VerticalAlignment="Center" Orientation="Horizontal">
-                    <TextBlock Text="面积: " Foreground="#666"/>
+                    <TextBlock Text="面积: " Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
                     <TextBlock Text="{Binding FilteredTotalArea, StringFormat='{}{0:F0}', Mode=OneWay}" FontWeight="Bold" Foreground="#4CAF50"/>
-                    <TextBlock Text=" px²" Foreground="#999" FontSize="10"/>
+                    <TextBlock Text=" px²" Foreground="{DynamicResource ThemeTextDisabledBrush}" FontSize="10"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="2" Margin="0,0,12,0" VerticalAlignment="Center" Orientation="Horizontal">
-                    <TextBlock Text="均值: " Foreground="#666"/>
+                    <TextBlock Text="均值: " Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
                     <TextBlock Text="{Binding AverageArea, StringFormat='{}{0:F0}', Mode=OneWay}" Foreground="#FF9800"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="3" Margin="0,0,12,0" VerticalAlignment="Center" Orientation="Horizontal">
-                    <TextBlock Text="最大: " Foreground="#666"/>
+                    <TextBlock Text="最大: " Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
                     <TextBlock Text="{Binding MaxArea, StringFormat='{}{0:F0}', Mode=OneWay}" Foreground="#E91E63"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="4" Margin="0,0,12,0" VerticalAlignment="Center" Orientation="Horizontal">
-                    <TextBlock Text="阈值: " Foreground="#666"/>
+                    <TextBlock Text="阈值: " Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
                     <TextBlock Text="{Binding ThresholdUsed, Mode=OneWay}" FontWeight="Bold" Foreground="#9C27B0"/>
                 </StackPanel>
 
@@ -71,8 +71,20 @@
                   FontSize="11"
                   BorderThickness="0"
                   GridLinesVisibility="Horizontal"
-                  AlternatingRowBackground="#F8F8F8"
+                  Background="{DynamicResource ThemeTableRowBackgroundBrush}"
+                  RowBackground="{DynamicResource ThemeTableRowBackgroundBrush}"
+                  Foreground="{DynamicResource ThemeTextPrimaryBrush}"
+                  AlternatingRowBackground="{DynamicResource ThemeTableRowHoverBackgroundBrush}"
                   SelectionChanged="BlobDataGrid_SelectionChanged">
+            <DataGrid.ColumnHeaderStyle>
+                <Style TargetType="DataGridColumnHeader">
+                    <Setter Property="Background" Value="{DynamicResource ThemeTableHeaderBackgroundBrush}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource ThemeTableHeaderTextBrush}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource ThemeTableGridLineBrush}"/>
+                    <Setter Property="BorderThickness" Value="0,0,1,1"/>
+                    <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                </Style>
+            </DataGrid.ColumnHeaderStyle>
             <DataGrid.Columns>
                 <DataGridTextColumn Header="序号" Binding="{Binding Label}" Width="36"/>
                 <DataGridTextColumn Header="面积" Binding="{Binding Area, StringFormat='{}{0:F0}'}" Width="58"/>

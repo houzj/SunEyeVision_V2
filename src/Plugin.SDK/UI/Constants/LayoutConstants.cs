@@ -184,6 +184,11 @@
         public static readonly System.Windows.Thickness MarginBottomSmall = new System.Windows.Thickness(0, 0, 0, SpacingSmall);
 
         /// <summary>
+        /// 下边距 - 中（12px）
+        /// </summary>
+        public static readonly System.Windows.Thickness MarginBottomMedium = new System.Windows.Thickness(0, 0, 0, SpacingMedium);
+
+        /// <summary>
         /// 水平内边距 - 标准（左右各8px）
         /// </summary>
         public static readonly System.Windows.Thickness PaddingHorizontalStandard = new System.Windows.Thickness(PaddingStandard, 0, PaddingStandard, 0);

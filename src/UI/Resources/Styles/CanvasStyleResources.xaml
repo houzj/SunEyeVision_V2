@@ -22,11 +22,9 @@
     <Color x:Key="CanvasBackgroundColor">#F5F5F5</Color>
     <Color x:Key="CanvasBackgroundAlternateColor">#FAFAFA</Color>
 
-    <!-- 棋盘格参数（与 ImageControl 图像显示控件保持一致） -->
+    <!-- 棋盘格参数（与 ImageControl 图像显示控件保持一致；亮格/暗格跟随主题语义色） -->
     <sys:Double x:Key="CheckerSize">16</sys:Double>
-    <Color x:Key="CheckerLightColor">#FF2D2D2D</Color>
-    <Color x:Key="CheckerDarkColor">#FF3C3C3C</Color>
-    
+
     <!-- 网格颜色 -->
     <Color x:Key="GridMajorLineColor">#CCCCCC</Color>
     <Color x:Key="GridMinorLineColor">#E0E0E0</Color>
@@ -43,10 +41,6 @@
     <SolidColorBrush x:Key="CanvasBackgroundBrush" Color="{DynamicResource CanvasBackgroundColor}"/>
     <SolidColorBrush x:Key="CanvasBackgroundAlternateBrush" Color="{DynamicResource CanvasBackgroundAlternateColor}"/>
 
-    <!-- 棋盘格笔刷 -->
-    <SolidColorBrush x:Key="CheckerLightBrush" Color="{DynamicResource CheckerLightColor}"/>
-    <SolidColorBrush x:Key="CheckerDarkBrush" Color="{DynamicResource CheckerDarkColor}"/>
-    
     <!-- 网格线笔刷 -->
     <SolidColorBrush x:Key="GridMajorLineBrush" Color="{DynamicResource GridMajorLineColor}"/>
     <SolidColorBrush x:Key="GridMinorLineBrush" Color="{DynamicResource GridMinorLineColor}"/>

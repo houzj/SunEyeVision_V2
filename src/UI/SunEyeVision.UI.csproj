@@ -10,7 +10,7 @@
     <RootNamespace>SunEyeVision.UI</RootNamespace>
     <AssemblyName>SunEyeVision.UI</AssemblyName>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\SunEyeVision.UI.xml</DocumentationFile>
+    <DocumentationFile>$(OutDir)SunEyeVision.UI.xml</DocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
     <UseWpfHotReload>false</UseWpfHotReload>
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>

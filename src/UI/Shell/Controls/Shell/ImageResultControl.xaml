@@ -7,6 +7,7 @@
              xmlns:sdk="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
              xmlns:convertersUI="clr-namespace:SunEyeVision.UI.Converters.UI"
              xmlns:convertersVisibility="clr-namespace:SunEyeVision.UI.Converters.Visibility"
+             xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
              mc:Ignorable="d"
              d:DesignHeight="400" d:DesignWidth="700">
 
@@ -14,23 +15,23 @@
         <convertersUI:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <convertersVisibility:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
 
-        <!-- 深色 DataGrid 行样式 -->
+        <!-- DataGrid 行样式 -->
         <Style x:Key="DarkDataGridRow" TargetType="DataGridRow">
             <Setter Property="MinHeight" Value="24"/>
             <Setter Property="Height" Value="Auto"/>
-            <Setter Property="Background" Value="#2D2D30"/>
+            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowBackgroundBrush}}"/>
             <Style.Triggers>
                 <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
-                    <Setter Property="Foreground" Value="#FFFFFF"/>
+                    <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowSelectedBackgroundBrush}}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextOnDarkBrush}}"/>
                 </Trigger>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#3E3E42"/>
+                    <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowHoverBackgroundBrush}}"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
 
-        <!-- 深色 DataGrid 单元格样式 -->
+        <!-- DataGrid 单元格样式 -->
         <Style x:Key="DarkDataGridCell" TargetType="DataGridCell">
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="0"/>
@@ -38,52 +39,53 @@
             <Style.Triggers>
                 <Trigger Property="IsSelected" Value="True">
                     <Setter Property="Background" Value="Transparent"/>
-                    <Setter Property="Foreground" Value="#FFFFFF"/>
+                    <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextOnDarkBrush}}"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
 
-        <!-- 深色 DataGrid 表头样式 -->
+        <!-- DataGrid 表头样式 -->
         <Style x:Key="DarkDataGridHeader" TargetType="DataGridColumnHeader">
-            <Setter Property="Background" Value="#1E1E1E"/>
-            <Setter Property="Foreground" Value="#B0B0B0"/>
+            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableHeaderBackgroundBrush}}"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TableHeaderTextBrush}}"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Padding" Value="12,6"/>
             <Setter Property="BorderThickness" Value="0,0,1,1"/>
-            <Setter Property="BorderBrush" Value="#3E3E42"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
     </UserControl.Resources>
 
-    <Grid Background="#2D2D30">
+    <Grid Background="{DynamicResource {x:Static base:ThemeKeys.ImageAreaBackgroundBrush}}">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>  <!-- 图像显示模块 -->
             <RowDefinition Height="Auto"/>  <!-- 图像加载及预览模块 -->
         </Grid.RowDefinitions>
 
-        <!-- 图像显示模块 - 使用TabControl（深色） -->
+        <!-- 图像显示模块 - 使用TabControl -->
         <Border Grid.Row="0" BorderThickness="0">
             <TabControl x:Name="ImageDisplayTabControl"
-                        Background="#2D2D30"
+                        Background="{DynamicResource {x:Static base:ThemeKeys.ImageAreaBackgroundBrush}}"
                         BorderThickness="0">
                 <TabControl.Resources>
-                    <!-- 深色 TabItem 头样式 -->
+                    <!-- TabItem 头样式 -->
                     <Style TargetType="TabItem">
-                        <Setter Property="Foreground" Value="#B0B0B0"/>
+                        <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"/>
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="TabItem">
-                                    <Border x:Name="Bd" Background="Transparent" BorderThickness="0,0,1,0" BorderBrush="#3E3E42" Padding="12,6">
+                                    <Border x:Name="Bd" Background="Transparent" BorderThickness="0,0,0,2" BorderBrush="Transparent" Padding="12,6">
                                         <ContentPresenter ContentSource="Header" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                     <ControlTemplate.Triggers>
-                                        <Trigger Property="IsSelected" Value="True">
-                                            <Setter TargetName="Bd" Property="Background" Value="#1E1E1E"/>
-                                            <Setter Property="Foreground" Value="#FFFFFF"/>
-                                        </Trigger>
                                         <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="Bd" Property="Background" Value="#3E3E42"/>
+                                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ControlHoverBackgroundBrush}}"/>
+                                            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
+                                        </Trigger>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
+                                            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
                                         </Trigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
@@ -94,7 +96,7 @@
 
                 <!-- 第一个TabItem: 图像结果 -->
                 <TabItem Header="图像结果" Padding="12,6">
-                    <Border Background="#2D2D30">
+                    <Border Background="{DynamicResource {x:Static base:ThemeKeys.ImageAreaBackgroundBrush}}">
                         <sdk:ImageControl x:Name="ImageDisplayContent"
                                           SourceImage="{Binding DisplayImage}"
                                           ShowToolBar="True"
@@ -110,17 +112,17 @@
                     </Border>
                 </TabItem>
 
-                <!-- 第二个TabItem: 模块结果 - 深色DataGrid -->
+                <!-- 第二个TabItem: 模块结果 -->
                 <TabItem Header="模块结果" Padding="12,6">
-                    <Grid Background="#2D2D30">
+                    <Grid Background="{DynamicResource {x:Static base:ThemeKeys.ImageAreaBackgroundBrush}}">
                         <DataGrid x:Name="ModuleResultDataGrid"
                                   ItemsSource="{Binding FlatResultRows}"
                                   AutoGenerateColumns="False"
                                   GridLinesVisibility="All"
-                                  VerticalGridLinesBrush="#3E3E42"
-                                  HorizontalGridLinesBrush="#3E3E42"
+                                  VerticalGridLinesBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}"
+                                  HorizontalGridLinesBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}"
                                   BorderThickness="1"
-                                  BorderBrush="#3E3E42"
+                                  BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}"
                                   RowHeaderWidth="0"
                                   IsReadOnly="True"
                                   SelectionMode="Single"
@@ -130,14 +132,14 @@
                                   CanUserResizeRows="False"
                                   CanUserReorderColumns="False"
                                   CanUserSortColumns="False"
-                                  Background="#2D2D30"
-                                  RowBackground="#2D2D30"
-                                  AlternatingRowBackground="#2A2A2E"
+                                  Background="{DynamicResource {x:Static base:ThemeKeys.TableRowBackgroundBrush}}"
+                                  RowBackground="{DynamicResource {x:Static base:ThemeKeys.TableRowBackgroundBrush}}"
+                                  AlternatingRowBackground="{DynamicResource {x:Static base:ThemeKeys.ThumbnailBackgroundBrush}}"
                                   HeadersVisibility="Column"
                                   RowStyle="{StaticResource DarkDataGridRow}"
                                   CellStyle="{StaticResource DarkDataGridCell}"
                                   ColumnHeaderStyle="{StaticResource DarkDataGridHeader}"
-                                  Foreground="#E0E0E0"
+                                  Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"
                                   VerticalScrollBarVisibility="Auto"
                                   HorizontalScrollBarVisibility="Disabled"
                                   Visibility="{Binding HasModuleResults, Converter={StaticResource BoolToVisibilityConverter}}">
@@ -151,12 +153,12 @@
                                                         Cursor="Hand"
                                                         MouseLeftButtonDown="ResultExpandIcon_Click">
                                                 <TextBlock Text="{Binding ExpandIcon}"
-                                                           FontSize="10" Foreground="#666666"
+                                                           FontSize="10" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"
                                                            VerticalAlignment="Center" Margin="0,0,6,0"/>
                                                 <TextBlock Text="{Binding DisplayName}"
                                                            FontSize="12"
                                                            FontWeight="{Binding FontWeight}"
-                                                           Foreground="#E0E0E0"
+                                                           Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"
                                                            VerticalAlignment="Center"/>
                                             </StackPanel>
                                         </DataTemplate>
@@ -168,7 +170,7 @@
                                     <DataGridTextColumn.ElementStyle>
                                         <Style TargetType="TextBlock">
                                             <Setter Property="FontSize" Value="11"/>
-                                            <Setter Property="Foreground" Value="#C0C0C0"/>
+                                            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"/>
                                             <Setter Property="VerticalAlignment" Value="Center"/>
                                             <Setter Property="Padding" Value="8,4"/>
                                             <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
@@ -178,7 +180,7 @@
                                                                TextWrapping="Wrap"
                                                                MaxWidth="350"
                                                                FontSize="11"
-                                                               Foreground="#E0E0E0"/>
+                                                               Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
                                                 </Setter.Value>
                                             </Setter>
                                         </Style>
@@ -187,14 +189,12 @@
                             </DataGrid.Columns>
                         </DataGrid>
 
-                        <!-- 空状态（深色） -->
+                        <!-- 空状态 -->
                         <Grid Visibility="{Binding HasModuleResults, Converter={StaticResource InverseBoolToVisibilityConverter}}">
-                            <TextBlock Text="📊" FontSize="32"
+              <TextBlock Text="📊" FontSize="32"
                                        HorizontalAlignment="Center" VerticalAlignment="Center"
-                                       Foreground="#555555"/>
-                            <TextBlock Text="暂无计算结果" FontSize="12" Foreground="#666666"
-                                       HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,40,0,0"/>
-                            <TextBlock Text="请选中已执行的节点查看结果" FontSize="10" Foreground="#555555"
+                                       Foreground="{DynamicResource {x:Static base:ThemeKeys.TextDisabledBrush}}"/>
+              <TextBlock Text="请选中已执行的节点查看结果" FontSize="10" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextDisabledBrush}}"
                                        HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,52,0,0"/>
                         </Grid>
                     </Grid>
@@ -202,10 +202,10 @@
             </TabControl>
         </Border>
 
-        <!-- 图像加载及预览模块 - 深色 -->
+        <!-- 图像加载及预览模块 -->
         <Border Grid.Row="1"
-                Background="#1E1E1E"
-                BorderBrush="#3E3E42"
+                Background="{DynamicResource {x:Static base:ThemeKeys.TableHeaderBackgroundBrush}}"
+                BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}"
                 BorderThickness="0,1,0,0"
                 Padding="2"
                 Visibility="{Binding ShowImagePreview, Converter={StaticResource BoolToVisibilityConverter}}">

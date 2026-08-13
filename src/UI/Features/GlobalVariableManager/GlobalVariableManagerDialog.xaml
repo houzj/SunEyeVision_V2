@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SunEyeVision.UI.Converters.Visibility"
+        xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
         mc:Ignorable="d"
         Title="全局变量管理器"
         Width="1000"
@@ -12,13 +13,13 @@
         MinHeight="500"
         WindowStartupLocation="CenterScreen"
         ResizeMode="CanResize"
-        Background="#F5F5F5">
+        Background="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}">
 
     <Window.Resources>
         <!-- 主按钮样式 -->
         <Style x:Key="PrimaryButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="#2196F3"/>
-            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextOnDarkBrush}}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="15,6"/>
             <Setter Property="FontSize" Value="13"/>
@@ -35,10 +36,10 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#1976D2"/>
+                                <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter Property="Background" Value="#BDBDBD"/>
+                                <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TextDisabledBrush}}"/>
                                 <Setter Property="Cursor" Value="Arrow"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -49,8 +50,8 @@
 
         <!-- 次要按钮样式 -->
         <Style x:Key="SecondaryButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="#757575"/>
-            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextOnDarkBrush}}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="15,6"/>
             <Setter Property="FontSize" Value="13"/>
@@ -67,10 +68,10 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#616161"/>
+                                <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter Property="Background" Value="#E0E0E0"/>
+                                <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowHoverBackgroundBrush}}"/>
                                 <Setter Property="Cursor" Value="Arrow"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -82,9 +83,9 @@
         <!-- 工具栏按钮样式 -->
         <Style x:Key="ToolbarButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#424242"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="BorderBrush" Value="#E0E0E0"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}"/>
             <Setter Property="Padding" Value="8,5"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -101,11 +102,11 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#F5F5F5"/>
-                                <Setter Property="BorderBrush" Value="#BDBDBD"/>
+                                <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ControlHoverBackgroundBrush}}"/>
+                                <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.TextDisabledBrush}}"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter Property="Foreground" Value="#BDBDBD"/>
+                                <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextDisabledBrush}}"/>
                                 <Setter Property="Cursor" Value="Arrow"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -116,13 +117,13 @@
 
         <!-- 危险按钮样式 -->
         <Style x:Key="DangerButtonStyle" TargetType="Button" BasedOn="{StaticResource ToolbarButtonStyle}">
-            <Setter Property="Foreground" Value="#F44336"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.ErrorBrush}}"/>
         </Style>
 
         <!-- 分组标签样式 -->
         <Style x:Key="GroupTabStyle" TargetType="RadioButton">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#424242"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
             <Setter Property="BorderThickness" Value="0,0,0,2"/>
             <Setter Property="BorderBrush" Value="Transparent"/>
             <Setter Property="Padding" Value="15,10"/>
@@ -148,12 +149,12 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#F5F5F5"/>
+                                <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ControlHoverBackgroundBrush}}"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter Property="Background" Value="White"/>
-                                <Setter Property="Foreground" Value="#2196F3"/>
-                                <Setter Property="BorderBrush" Value="#2196F3"/>
+                                <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ControlBackgroundBrush}}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
+                                <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
                                 <Setter Property="FontWeight" Value="Medium"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -168,8 +169,8 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="ToggleButton">
                         <Border x:Name="BackgroundBorder"
-                                Background="#BDBDBD"
-                                BorderBrush="#BDBDBD"
+                                Background="{DynamicResource {x:Static base:ThemeKeys.ThumbnailBorderBrush}}"
+                                BorderBrush="{DynamicResource {x:Static base:ThemeKeys.ThumbnailBorderBrush}}"
                                 BorderThickness="0"
                                 CornerRadius="10"
                                 Width="40"
@@ -177,7 +178,7 @@
                             <Rectangle x:Name="SwitchEllipse"
                                        Width="16"
                                        Height="16"
-                                       Fill="White"
+                                       Fill="{DynamicResource {x:Static base:ThemeKeys.TextOnDarkBrush}}"
                                        RadiusX="8"
                                        RadiusY="8"
                                        HorizontalAlignment="Left"
@@ -186,8 +187,8 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="BackgroundBorder" Property="Background" Value="#4CAF50"/>
-                                <Setter TargetName="BackgroundBorder" Property="BorderBrush" Value="#4CAF50"/>
+                                <Setter TargetName="BackgroundBorder" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.SuccessBrush}}"/>
+                                <Setter TargetName="BackgroundBorder" Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.SuccessBrush}}"/>
                                 <Setter TargetName="SwitchEllipse" Property="HorizontalAlignment" Value="Right"/>
                                 <Setter TargetName="SwitchEllipse" Property="Margin" Value="0,0,2,0"/>
                             </Trigger>
@@ -203,23 +204,58 @@
             </Setter>
             <Setter Property="Cursor" Value="Hand"/>
         </Style>
+        <!-- DataGrid 列头样式 -->
+        <Style x:Key="GvDataGridHeaderStyle" TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableHeaderBackgroundBrush}}"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TableHeaderTextBrush}}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}"/>
+            <Setter Property="BorderThickness" Value="0,0,1,1"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+
+        <!-- DataGrid 行样式 -->
+        <Style x:Key="GvDataGridRowStyle" TargetType="DataGridRow">
+            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowBackgroundBrush}}"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowHoverBackgroundBrush}}"/>
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowSelectedBackgroundBrush}}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextOnDarkBrush}}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- DataGrid 单元格样式 -->
+        <Style x:Key="GvDataGridCellStyle" TargetType="DataGridCell">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="8,4"/>
+        </Style>
+
         <!-- 内联编辑 TextBox 样式（与 GroupTabStyle 视觉一致） -->
         <Style x:Key="InlineTabEditStyle" TargetType="TextBox">
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="BorderBrush" Value="#2196F3"/>
+            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.InputBackgroundBrush}}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="15,8"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="MinWidth" Value="80"/>
             <Setter Property="MaxWidth" Value="160"/>
-            <Setter Property="CaretBrush" Value="#2196F3"/>
+            <Setter Property="CaretBrush" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
         </Style>
 
         <!-- 分组 Popup 列表项样式 -->
         <Style x:Key="PopupGroupItemStyle" TargetType="RadioButton">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#424242"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
             <Setter Property="Padding" Value="12,8"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -232,10 +268,10 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#F5F5F5"/>
+                                <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ControlHoverBackgroundBrush}}"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter Property="Foreground" Value="#2196F3"/>
+                                <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
                                 <Setter Property="FontWeight" Value="Medium"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -267,7 +303,7 @@
         </Grid.RowDefinitions>
 
         <!-- 工具栏 -->
-        <Border Grid.Row="0" Background="White" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1" Padding="16,8">
+        <Border Grid.Row="0" Background="{DynamicResource {x:Static base:ThemeKeys.ToolBarBackgroundBrush}}" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}" BorderThickness="0,0,0,1" Padding="16,8">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -304,12 +340,12 @@
                     <TextBox x:Name="SearchTextBox"
                              Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                              VerticalAlignment="Center" Padding="8,5"
-                             Background="White" BorderBrush="#E0E0E0" BorderThickness="1"/>
+                             Background="{DynamicResource {x:Static base:ThemeKeys.InputBackgroundBrush}}" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}" BorderThickness="1"/>
 
                     <!-- 水印：空 + 未聚焦 显示；聚焦或有内容 隐藏 -->
                     <TextBlock IsHitTestVisible="False"
                                VerticalAlignment="Center" Padding="8,5"
-                               Foreground="#9E9E9E" FontSize="12"
+                               Foreground="{DynamicResource {x:Static base:ThemeKeys.TextDisabledBrush}}" FontSize="12"
                                TextTrimming="CharacterEllipsis"
                                Text="🔍 请输入变量名称">
                         <TextBlock.Style>
@@ -332,7 +368,7 @@
         </Border>
 
         <!-- 分组标签栏 (VisionMaster风格 - 水平标签) -->
-        <Border Grid.Row="1" Background="White" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+        <Border Grid.Row="1" Background="{DynamicResource {x:Static base:ThemeKeys.ToolBarBackgroundBrush}}" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}" BorderThickness="0,0,0,1">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -390,7 +426,7 @@
                         <!-- 内部 "+" 按钮（Tab 未溢出时显示，紧跟在最后一个 Tab 右侧） -->
                         <Button x:Name="ScrollableAddButton" Content="+" FontSize="18" FontWeight="Bold"
                                 Width="32" Height="28" Padding="0"
-                                Foreground="#2196F3" Background="Transparent"
+                                Foreground="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}" Background="Transparent"
                                 BorderThickness="0" Cursor="Hand"
                                 Command="{Binding AddGroupCommand}"
                                 ToolTip="新建分组（最多10个）"
@@ -404,7 +440,7 @@
                     <!-- 固定 "+" 按钮（Tab 溢出时显示） -->
                     <Button x:Name="FixedAddButton" Content="+" FontSize="18" FontWeight="Bold"
                             Width="32" Height="28" Padding="0"
-                            Foreground="#2196F3" Background="Transparent"
+                            Foreground="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}" Background="Transparent"
                             BorderThickness="0" Cursor="Hand"
                             Command="{Binding AddGroupCommand}"
                             ToolTip="新建分组（最多10个）"
@@ -413,7 +449,7 @@
                     <ToggleButton x:Name="GroupDropdownButton"
                                   Content="▼" FontSize="12"
                                   Width="28" Height="28" Padding="0"
-                                  Foreground="#757575" Background="Transparent"
+                                  Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}" Background="Transparent"
                                   BorderThickness="0" Cursor="Hand"
                                   ToolTip="快速切换分组"
                                   VerticalAlignment="Bottom" Margin="4,0,0,0"/>
@@ -425,7 +461,7 @@
                        StaysOpen="False"
                        PlacementTarget="{Binding ElementName=GroupDropdownButton}"
                        Placement="Bottom" HorizontalOffset="0" VerticalOffset="2">
-                    <Border Background="White" BorderBrush="#E0E0E0" BorderThickness="1"
+                    <Border Background="{DynamicResource {x:Static base:ThemeKeys.ContextMenuBackgroundBrush}}" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}" BorderThickness="1"
                             CornerRadius="4" Effect="{StaticResource DropShadowEffect}">
                         <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="500">
                             <ItemsControl ItemsSource="{Binding Groups}" MinWidth="150">
@@ -456,12 +492,15 @@
                   SelectionMode="Single"
                   GridLinesVisibility="Horizontal"
                   HeadersVisibility="Column"
-                  Background="White"
-                  BorderBrush="#E0E0E0"
+                  Background="{DynamicResource {x:Static base:ThemeKeys.TableRowBackgroundBrush}}"
+                  BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}"
                   BorderThickness="1"
-                  HorizontalGridLinesBrush="#F0F0F0"
+                  HorizontalGridLinesBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}"
                   RowHeight="28"
                   FontSize="12"
+                  ColumnHeaderStyle="{StaticResource GvDataGridHeaderStyle}"
+                  RowStyle="{StaticResource GvDataGridRowStyle}"
+                  CellStyle="{StaticResource GvDataGridCellStyle}"
                   CellEditEnding="DataGrid_CellEditEnding">
             <DataGrid.Columns>
                 <!-- 序号 -->
@@ -522,7 +561,7 @@
                                 </Button.Template>
                                 <TextBlock Text="{Binding OutputTargetDisplayText}"
                                            FontSize="12"
-                                           Foreground="#2196F3"
+                                           Foreground="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"
                                            TextTrimming="CharacterEllipsis"
                                            TextDecorations="Underline">
                                     <TextBlock.ToolTip>
@@ -533,7 +572,7 @@
                                                         <TextBlock Text="{Binding DisplayPath}"
                                                                    Margin="0,2"
                                                                    FontSize="11"
-                                                                   Foreground="#333333"/>
+                                                                   Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
                                                     </DataTemplate>
                                                 </ItemsControl.ItemTemplate>
                                             </ItemsControl>
@@ -564,7 +603,7 @@
                             <Button Content="✕"
                                     FontSize="13"
                                     FontWeight="Bold"
-                                    Foreground="#F44336"
+                                    Foreground="{DynamicResource {x:Static base:ThemeKeys.ErrorBrush}}"
                                     Background="Transparent"
                                     BorderThickness="0"
                                     Cursor="Hand"
@@ -586,7 +625,7 @@
                                                     </Border>
                                                     <ControlTemplate.Triggers>
                                                         <Trigger Property="IsMouseOver" Value="True">
-                                                            <Setter TargetName="ButtonBorder" Property="Background" Value="#FFEBEE"/>
+                                                            <Setter TargetName="ButtonBorder" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ErrorBrush}}"/>
                                                         </Trigger>
                                                     </ControlTemplate.Triggers>
                                                 </ControlTemplate>
@@ -602,7 +641,7 @@
         </DataGrid>
 
         <!-- 底部按钮 -->
-        <Border Grid.Row="3" Background="White" BorderBrush="#E0E0E0" BorderThickness="0,1,0,0" Padding="16,10">
+        <Border Grid.Row="3" Background="{DynamicResource {x:Static base:ThemeKeys.ToolBarBackgroundBrush}}" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}" BorderThickness="0,1,0,0" Padding="16,10">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button Content="保存" Command="{Binding SaveCommand}"
                         Style="{StaticResource PrimaryButtonStyle}" Width="80" Margin="0,0,10,0"/>

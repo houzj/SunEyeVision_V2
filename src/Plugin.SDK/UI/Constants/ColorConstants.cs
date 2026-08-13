@@ -19,7 +19,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Constants
     /// - Warning: #FF9900（警告色）
     /// - Error: #FF3333（错误色）
     /// - Success: #00CC99（成功色）
-    /// - Accent: #FF6600（强调色，用于高亮、选中装饰）
+    ///
+    /// 说明：SDK 控件已统一改用 Theme 前缀语义 key（见 DefaultTheme.xaml），
+    /// 本类仍作为 SDK 兜底默认主题（DefaultTheme.xaml）的颜色值单一来源。
     /// </remarks>
     public static class ColorConstants
     {
@@ -87,32 +89,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Constants
 
         #endregion
 
-        #region 强调色系统
-
-        /// <summary>
-        /// 强调色 - 橙色（高亮、选中装饰）
-        /// </summary>
-        public const string AccentHex = "#FF6600";
-        public static readonly Color Accent = Color.FromRgb(255, 102, 0);
-        public static readonly SolidColorBrush AccentBrush = CreateFrozenBrush(Accent);
-
-        #endregion
-
         #region 中性色系统
-
-        /// <summary>
-        /// 标题栏背景色 - 深灰色
-        /// </summary>
-        public const string TitleBarBackgroundHex = "#2D2D30";
-        public static readonly Color TitleBarBackground = Color.FromRgb(45, 45, 48);
-        public static readonly SolidColorBrush TitleBarBackgroundBrush = CreateFrozenBrush(TitleBarBackground);
-
-        /// <summary>
-        /// 标题栏边框色 - 更深灰色
-        /// </summary>
-        public const string TitleBarBorderHex = "#1E1E1E";
-        public static readonly Color TitleBarBorder = Color.FromRgb(30, 30, 30);
-        public static readonly SolidColorBrush TitleBarBorderBrush = CreateFrozenBrush(TitleBarBorder);
 
         /// <summary>
         /// 文本主色 - 深灰色

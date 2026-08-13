@@ -15,7 +15,7 @@
 
     <DockPanel>
         <!-- 统计摘要区域（顶部固定） -->
-        <Border DockPanel.Dock="Top" Background="#F0F4F8" BorderBrush="#D0D8E0" BorderThickness="0,0,0,1" Padding="8,6">
+        <Border DockPanel.Dock="Top" Background="{DynamicResource ThemePanelBackgroundBrush}" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="0,0,0,1" Padding="8,6">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -28,32 +28,32 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0" Margin="0,0,12,0" VerticalAlignment="Center" Orientation="Horizontal">
-                    <TextBlock Text="操作: " Foreground="#666"/>
+                    <TextBlock Text="操作: " Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
                     <TextBlock Text="{Binding OperationText, Mode=OneWay}" FontWeight="Bold" Foreground="#2196F3"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" Margin="0,0,12,0" VerticalAlignment="Center" Orientation="Horizontal">
-                    <TextBlock Text="核: " Foreground="#666"/>
+                    <TextBlock Text="核: " Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
                     <TextBlock Text="{Binding KernelText, Mode=OneWay}" FontWeight="Bold" Foreground="#4CAF50"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="2" Margin="0,0,12,0" VerticalAlignment="Center" Orientation="Horizontal">
-                    <TextBlock Text="迭代: " Foreground="#666"/>
+                    <TextBlock Text="迭代: " Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
                     <TextBlock Text="{Binding IterationText, Mode=OneWay}" Foreground="#FF9800"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="3" Margin="0,0,12,0" VerticalAlignment="Center" Orientation="Horizontal">
-                    <TextBlock Text="Blob数: " Foreground="#666"/>
+                    <TextBlock Text="Blob数: " Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
                     <TextBlock Text="{Binding BlobCount, Mode=OneWay}" Foreground="#E91E63"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="4" Margin="0,0,12,0" VerticalAlignment="Center" Orientation="Horizontal">
-                    <TextBlock Text="总面积: " Foreground="#666"/>
+                    <TextBlock Text="总面积: " Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
                     <TextBlock Text="{Binding TotalArea, Mode=OneWay}" Foreground="#9C27B0"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="5" VerticalAlignment="Center" Orientation="Horizontal">
-                    <TextBlock Text="最大Blob: " Foreground="#666" FontSize="11"/>
+                    <TextBlock Text="最大Blob: " Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11"/>
                     <TextBlock Text="{Binding MaxBlobArea, StringFormat='{}{0:F0}', Mode=OneWay}" FontSize="11" Foreground="#607D8B"/>
                 </StackPanel>
             </Grid>
@@ -69,8 +69,8 @@
                                 <ColumnDefinition Width="120"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="{Binding Label}" FontWeight="SemiBold" Foreground="#555" VerticalAlignment="Center"/>
-                            <TextBlock Grid.Column="1" Text="{Binding Value}" Foreground="#333" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="0" Text="{Binding Label}" FontWeight="SemiBold" Foreground="{DynamicResource ThemeTextSecondaryBrush}" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Value}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" VerticalAlignment="Center"/>
                         </Grid>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
@@ -78,7 +78,7 @@
         </ScrollViewer>
 
         <!-- 判断结果面板（底部固定） -->
-        <Border DockPanel.Dock="Bottom" Background="#FFFDE7" BorderBrush="#FFC107" BorderThickness="1,0,0,0" Padding="10,8"
+        <Border DockPanel.Dock="Bottom" Background="{DynamicResource ThemePanelBackgroundBrush}" BorderBrush="{DynamicResource ThemeWarningBrush}" BorderThickness="1,0,0,0" Padding="10,8"
                 Visibility="{Binding HasResultData, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -89,7 +89,7 @@
                     <TextBlock Text="结果: " FontWeight="Bold" Foreground="{Binding IsPassColor, Mode=OneWay}"/>
                     <TextBlock Text="{Binding IsPassText, Mode=OneWay}" FontWeight="Bold" Foreground="{Binding IsPassColor, Mode=OneWay}"/>
                 </StackPanel>
-                <TextBlock Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" Foreground="#5D4037" TextWrapping="NoWrap"
+                <TextBlock Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" Foreground="{DynamicResource ThemeTextSecondaryBrush}" TextWrapping="NoWrap"
                            TextTrimming="CharacterEllipsis" Text="{Binding FailReasonText, Mode=OneWay}"/>
             </Grid>
         </Border>

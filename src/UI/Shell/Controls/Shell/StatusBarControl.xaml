@@ -3,13 +3,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
              mc:Ignorable="d"
              d:DesignHeight="24" d:DesignWidth="800">
 
-    <StatusBar Height="24" Background="{StaticResource HeaderBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0">
+    <StatusBar Height="24" Background="{DynamicResource {x:Static base:ThemeKeys.StatusBarBackgroundBrush}}" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.StatusBarBorderBrush}}" BorderThickness="0,1,0,0">
         <StatusBarItem>
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="●" Foreground="#00CC99" FontSize="10" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                <TextBlock Text="●" Foreground="{DynamicResource {x:Static base:ThemeKeys.StatusBarTextBrush}}" FontSize="10" VerticalAlignment="Center" Margin="0,0,4,0"/>
                 <TextBlock Text="{Binding StatusText}" FontSize="11" VerticalAlignment="Center"/>
             </StackPanel>
         </StatusBarItem>
@@ -17,20 +18,20 @@
         <StatusBarItem>
             <StackPanel Orientation="Horizontal">
                 <TextBlock Text="📷 相机:" FontSize="11" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                <TextBlock Text="{Binding CameraStatus}" FontSize="11" Foreground="#00CC99" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding CameraStatus}" FontSize="11" Foreground="{DynamicResource {x:Static base:ThemeKeys.StatusBarTextBrush}}" VerticalAlignment="Center"/>
             </StackPanel>
         </StatusBarItem>
         <Separator/>
         <StatusBarItem>
             <StackPanel Orientation="Horizontal">
                 <TextBlock Text="流程1:" FontSize="11" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                <TextBlock Text="{Binding IsRunning}" FontSize="11" Foreground="#0066CC" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding IsRunning}" FontSize="11" Foreground="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}" VerticalAlignment="Center"/>
             </StackPanel>
         </StatusBarItem>
         <StatusBarItem HorizontalAlignment="Right">
             <StackPanel Orientation="Horizontal">
                 <TextBlock Text="流程:" FontSize="11" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                <TextBlock Text="{Binding WorkflowCount}" FontSize="11" FontWeight="Bold" Foreground="#00CC99" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding WorkflowCount}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource {x:Static base:ThemeKeys.StatusBarTextBrush}}" VerticalAlignment="Center"/>
             </StackPanel>
         </StatusBarItem>
     </StatusBar>

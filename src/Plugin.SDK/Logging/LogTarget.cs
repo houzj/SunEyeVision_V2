@@ -15,7 +15,7 @@ namespace SunEyeVision.Plugin.SDK.Logging
     /// // 只写UI（默认）
     /// LogInfo("消息");
     /// 
-    /// // 写文件+UI
+    /// // 写文件+UI（双轨制）
     /// LogError("异常", target: LogTarget.File | LogTarget.UI);
     /// 
     /// // 写全部通道
@@ -34,13 +34,7 @@ namespace SunEyeVision.Plugin.SDK.Logging
         /// <summary>磁盘日志文件</summary>
         File = 1 << 1,
 
-        /// <summary>VS调试输出窗口</summary>
-        Debug = 1 << 2,
-
-        /// <summary>控制台输出</summary>
-        Console = 1 << 3,
-
         /// <summary>所有通道</summary>
-        All = UI | File | Debug | Console
+        All = UI | File
     }
 }

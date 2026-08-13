@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.ComponentModel;
 using System.Windows.Input;
 using SunEyeVision.UI.Services;
@@ -18,23 +18,47 @@ namespace SunEyeVision.UI.Shell.Controls
     public class ShellTopBarViewModel : ViewModelBase
     {
         private readonly IRootCoordinator _coordinator;
+        private readonly ThemeManager? _themeManager;
         private bool _isAllWorkflowsRunning;
         private bool _hasCurrentSolution;
         private string _currentSolutionName = string.Empty;
+        private bool _isDarkTheme;
 
         public ShellTopBarViewModel(IRootCoordinator coordinator)
         {
             _coordinator = coordinator;
             _coordinator.PropertyChanged += OnCoordinatorPropertyChanged;
             RefreshState();
+
+            _themeManager = SunEyeVision.UI.Core.ServiceLocator.Instance.GetService<ThemeManager>();
+            _isDarkTheme = _themeManager?.CurrentTheme == AppTheme.Dark;
+            if (_themeManager != null)
+            {
+                _themeManager.ThemeChanged += OnThemeChanged;
+            }
+            ToggleThemeCommand = new RelayCommand(ExecuteToggleTheme, null, "ToggleTheme");
         }
 
         /// <summary>
-        /// 解绑根协调器（窗口关闭时调用）
+        /// 解绑根协调器和主题管理器（窗口关闭时调用）
         /// </summary>
         public void Shutdown()
         {
             _coordinator.PropertyChanged -= OnCoordinatorPropertyChanged;
+            if (_themeManager != null)
+            {
+                _themeManager.ThemeChanged -= OnThemeChanged;
+            }
+        }
+
+        private void OnThemeChanged(AppTheme theme)
+        {
+            IsDarkTheme = theme == AppTheme.Dark;
+        }
+
+        private void ExecuteToggleTheme()
+        {
+            _themeManager?.ToggleTheme();
         }
 
         private void OnCoordinatorPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -98,6 +122,16 @@ namespace SunEyeVision.UI.Shell.Controls
 
         /// <summary>切换全部连续运行命令</summary>
         public ICommand ToggleContinuousAllCommand => _coordinator.ToggleContinuousAllCommand;
+
+        /// <summary>切换亮/暗主题命令</summary>
+        public ICommand ToggleThemeCommand { get; }
+
+        /// <summary>是否暗色主题（顶栏图标切换依据）</summary>
+        public bool IsDarkTheme
+        {
+            get => _isDarkTheme;
+            private set => SetProperty(ref _isDarkTheme, value);
+        }
 
         /// <summary>是否全部工作流正在运行</summary>
         public bool IsAllWorkflowsRunning

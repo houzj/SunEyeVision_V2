@@ -160,6 +160,9 @@ restore_log.txt
 # Build temp directory
 build_temp/
 
+# 主程序 XML 文档产物（由 DocumentationFile=$(OutDir) 生成,不入库）
+src/UI/*.xml
+
 # Temporary files (SunEyeVision specific)
 temp_*.txt
 temp_*.ps1

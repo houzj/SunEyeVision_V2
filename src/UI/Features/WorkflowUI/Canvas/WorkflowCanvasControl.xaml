@@ -11,6 +11,7 @@
              xmlns:convertersWorkflow="clr-namespace:SunEyeVision.UI.Converters.Workflow"
              xmlns:common="clr-namespace:SunEyeVision.UI.Shell.Controls.Common"
              xmlns:rendering="clr-namespace:SunEyeVision.UI.Services.Rendering"
+             xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
              mc:Ignorable="d"
              d:DesignHeight="800" d:DesignWidth="1000">
 
@@ -67,31 +68,9 @@
                 GotFocus="WorkflowCanvas_GotFocus"
                 LostFocus="WorkflowCanvas_LostFocus">
 
-        <!-- 棋盘格背景：2x2 周期（每格 16px），对角填充深灰，露出深色底（与 ImageControl 一致） -->
+        <!-- 棋盘格背景：整体 DrawingBrush（随主题整体替换），DynamicResource 只留在元素属性层，避免 Drawing 冻结导致内部引用失效 -->
         <Canvas.Background>
-            <DrawingBrush ViewportUnits="Absolute" Viewport="0,0,32,32" TileMode="Tile">
-                <DrawingBrush.Drawing>
-                    <DrawingGroup>
-                        <!-- 底色（暗色底） -->
-                        <GeometryDrawing Brush="{StaticResource CheckerLightBrush}">
-                            <GeometryDrawing.Geometry>
-                                <RectangleGeometry Rect="0,0,32,32"/>
-                            </GeometryDrawing.Geometry>
-                        </GeometryDrawing>
-                        <!-- 对角两格：更深的灰 -->
-                        <GeometryDrawing Brush="{StaticResource CheckerDarkBrush}">
-                            <GeometryDrawing.Geometry>
-                                <RectangleGeometry Rect="0,0,16,16"/>
-                            </GeometryDrawing.Geometry>
-                        </GeometryDrawing>
-                        <GeometryDrawing Brush="{StaticResource CheckerDarkBrush}">
-                            <GeometryDrawing.Geometry>
-                                <RectangleGeometry Rect="16,16,16,16"/>
-                            </GeometryDrawing.Geometry>
-                        </GeometryDrawing>
-                    </DrawingGroup>
-                </DrawingBrush.Drawing>
-            </DrawingBrush>
+            <DynamicResource ResourceKey="{x:Static base:ThemeKeys.CheckerboardBackgroundBrush}"/>
         </Canvas.Background>
 
         <!-- 连接线 - 使用智能直角折线 -->

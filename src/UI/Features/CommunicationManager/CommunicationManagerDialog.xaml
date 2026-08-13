@@ -3,13 +3,14 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
         mc:Ignorable="d"
         Title="通讯管理器"
         Width="900"
         Height="600"
         WindowStartupLocation="CenterScreen"
         ResizeMode="CanResize"
-        Background="#F5F5F5">
+        Background="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}">
 
     <Window.Resources>
         <!-- 主按钮样式 -->
@@ -109,7 +110,41 @@
 
         <!-- 删除按钮样式 -->
         <Style x:Key="DangerButtonStyle" TargetType="Button" BasedOn="{StaticResource ToolbarButtonStyle}">
-            <Setter Property="Foreground" Value="#F44336"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.ErrorBrush}}"/>
+        </Style>
+
+        <!-- DataGrid 列头样式 -->
+        <Style x:Key="CommDataGridHeaderStyle" TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableHeaderBackgroundBrush}}"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TableHeaderTextBrush}}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}"/>
+            <Setter Property="BorderThickness" Value="0,0,1,1"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+
+        <!-- DataGrid 行样式 -->
+        <Style x:Key="CommDataGridRowStyle" TargetType="DataGridRow">
+            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowBackgroundBrush}}"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowHoverBackgroundBrush}}"/>
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowSelectedBackgroundBrush}}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextOnDarkBrush}}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- DataGrid 单元格样式 -->
+        <Style x:Key="CommDataGridCellStyle" TargetType="DataGridCell">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="8,4"/>
         </Style>
     </Window.Resources>
 
@@ -121,7 +156,7 @@
         </Grid.RowDefinitions>
 
         <!-- 工具栏 -->
-        <ToolBar Grid.Row="0" Background="White" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+        <ToolBar Grid.Row="0" Background="{DynamicResource {x:Static base:ThemeKeys.ToolBarBackgroundBrush}}" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}" BorderThickness="0,0,0,1">
             <Button Content="+" ToolTip="添加通讯" Command="{Binding AddCommunicationCommand}" Style="{StaticResource ToolbarButtonStyle}"/>
             <Button Content="-" ToolTip="删除通讯" Command="{Binding DeleteCommunicationCommand}" Style="{StaticResource DangerButtonStyle}"/>
             <Button Content="🔗" ToolTip="测试连接" Command="{Binding TestConnectionCommand}" Style="{StaticResource ToolbarButtonStyle}"/>
@@ -140,10 +175,13 @@
                   SelectionMode="Single"
                   GridLinesVisibility="Horizontal"
                   HeadersVisibility="Column"
-                  Background="White"
-                  BorderBrush="#E0E0E0"
+                  Background="{DynamicResource {x:Static base:ThemeKeys.TableRowBackgroundBrush}}"
+                  BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}"
                   BorderThickness="1"
-                  HorizontalGridLinesBrush="#F0F0F0">
+                  HorizontalGridLinesBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}"
+                  ColumnHeaderStyle="{StaticResource CommDataGridHeaderStyle}"
+                  RowStyle="{StaticResource CommDataGridRowStyle}"
+                  CellStyle="{StaticResource CommDataGridCellStyle}">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="名称" Binding="{Binding Name}" Width="1*" IsReadOnly="False"/>
                 <DataGridTextColumn Header="类型" Binding="{Binding ConnectionType}" Width="120" IsReadOnly="False"/>

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.UI.Services.Logging;
@@ -160,19 +160,15 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
             var logger = VisionLogger.Instance;
 
             // 添加默认日志写入器（确保日志从一开始就有输出）
-            // 1. Debug写入器 - 输出到VS调试窗口
-            var debugWriter = new DebugLogWriter();
-            logger.AddWriter(debugWriter);
-
-            // 2. 文件写入器 - 持久化到文件
-            var fileWriter = new FileLogWriter();
+            // 1. 文件写入器 - 持久化到本地（双轨制：UI显示 + 文件落盘）
+            //    日志根目录与 docs/ 平级，位于项目根下 logs/。
+            var logRoot = ResolveProjectRoot() is { } root
+                ? Path.Combine(root, "logs")
+                : Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs");
+            var fileWriter = new FileLogWriter(logRoot);
             logger.AddWriter(fileWriter);
 
-            // 3. 控制台写入器 - 默认关闭（避免命令行窗口刷屏，开发调试时可手动开启）
-            var consoleWriter = new ConsoleLogWriter { IsEnabled = false };
-            logger.AddWriter(consoleWriter);
-
-            // 4. UI写入器 - 通过延迟初始化方法创建，确保全局共享唯一实例
+            // 2. UI写入器 - 通过延迟初始化方法创建，确保全局共享唯一实例
             InitializeUILogWriter();
 
             // 设置 PluginLogger 的提供者
@@ -180,6 +176,24 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
 
             // 测试日志
             logger.Info("日志系统初始化完成", "ServiceInitializer");
+        }
+
+        /// <summary>
+        /// 从程序运行目录逐级向上查找包含 docs/ 子目录的祖先目录，即项目根。
+        /// 使日志根目录 logs/ 与 docs/ 平级。找不到则返回 null（由调用方兜底到运行目录）。
+        /// </summary>
+        private static string? ResolveProjectRoot()
+        {
+            var dir = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
+            while (dir != null)
+            {
+                if (Directory.Exists(Path.Combine(dir.FullName, "docs")))
+                {
+                    return dir.FullName;
+                }
+                dir = dir.Parent;
+            }
+            return null;
         }
     }
 }

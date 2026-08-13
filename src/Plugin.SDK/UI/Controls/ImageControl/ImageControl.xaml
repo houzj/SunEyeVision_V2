@@ -8,7 +8,7 @@
         <!-- 深色工具栏按钮样式 -->
         <Style x:Key="ToolBarButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#B0B0B0"/>
+            <Setter Property="Foreground" Value="{DynamicResource ThemeTextPrimaryBrush}"/>
             <Setter Property="BorderBrush" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Width" Value="32"/>
@@ -43,7 +43,7 @@
                                     VerticalAlignment="Bottom"
                                     HorizontalAlignment="Center"
                                     Width="0"
-                                    Background="{DynamicResource PrimaryBrush}"
+                                    Background="{DynamicResource ThemeAccentBrush}"
                                     CornerRadius="1"
                                     Margin="0,0,0,2"/>
                         </Grid>
@@ -52,15 +52,15 @@
             </Setter>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#3C3C3C"/>
-                    <Setter Property="Foreground" Value="#FFFFFF"/>
+                    <Setter Property="Background" Value="{DynamicResource ThemeControlHoverBackgroundBrush}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource ThemeTextOnDarkBrush}"/>
                 </Trigger>
                 <Trigger Property="IsPressed" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
-                    <Setter Property="Foreground" Value="#FFFFFF"/>
+                    <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource ThemeTextOnDarkBrush}"/>
                 </Trigger>
                 <Trigger Property="IsEnabled" Value="False">
-                    <Setter Property="Foreground" Value="#505050"/>
+                    <Setter Property="Foreground" Value="{DynamicResource ThemeTextDisabledBrush}"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -68,7 +68,7 @@
         <!-- 工具栏分隔线样式 -->
         <Style x:Key="ToolBarSeparator" TargetType="Border">
             <Setter Property="Width" Value="1"/>
-            <Setter Property="Background" Value="#404040"/>
+            <Setter Property="Background" Value="{DynamicResource ThemeDividerBrushBrush}"/>
             <Setter Property="Margin" Value="8,4"/>
             <Setter Property="Height" Value="16"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
@@ -76,9 +76,9 @@
         
         <!-- 工具栏下拉框样式 - 黑底白字 -->
         <Style x:Key="ToolBarComboBoxStyle" TargetType="ComboBox">
-            <Setter Property="Background" Value="#1E1E1E"/>
-            <Setter Property="Foreground" Value="#FFFFFF"/>
-            <Setter Property="BorderBrush" Value="#555555"/>
+            <Setter Property="Background" Value="{DynamicResource ThemeInputBackgroundBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource ThemeTextPrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource ThemeInputBorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="6,2"/>
             <Setter Property="Height" Value="24"/>
@@ -117,13 +117,13 @@
                                                                                   Content="{TemplateBinding Content}"
                                                                                   ContentTemplate="{Binding ItemTemplate, RelativeSource={RelativeSource AncestorType=ComboBox}}"
                                                                                   VerticalAlignment="Center"
-                                                                                  TextElement.Foreground="White"
+                                                                                  TextElement.Foreground="{DynamicResource ThemeTextPrimaryBrush}"
                                                                                   TextElement.FontSize="12"/>
                                                             <Path Grid.Column="1"
                                                                   Margin="6,0,4,0"
                                                                   VerticalAlignment="Center"
                                                                   Data="M 0 0 L 4 4 L 8 0 Z"
-                                                                  Fill="#AAAAAA"
+                                                                  Fill="{DynamicResource ThemeTextSecondaryBrush}"
                                                                   Stretch="Uniform"
                                                                   Width="8" Height="5"
                                                                   x:Name="Arrow"/>
@@ -131,10 +131,10 @@
                                                     </Border>
                                                     <ControlTemplate.Triggers>
                                                         <Trigger Property="IsMouseOver" Value="True">
-                                                            <Setter TargetName="Bd" Property="Background" Value="#333333"/>
+                                                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource ThemeControlHoverBackgroundBrush}"/>
                                                         </Trigger>
                                                         <Trigger Property="IsChecked" Value="True">
-                                                            <Setter TargetName="Bd" Property="Background" Value="#2A2A2A"/>
+                                                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource ThemeControlSelectedBackgroundBrush}"/>
                                                             <Setter TargetName="Arrow" Property="RenderTransform">
                                                                 <Setter.Value><ScaleTransform ScaleY="-1"/></Setter.Value>
                                                             </Setter>
@@ -158,8 +158,8 @@
                                 <Border x:Name="DropDownBorder"
                                         MinWidth="{TemplateBinding ActualWidth}"
                                         MaxHeight="200"
-                                        Background="#1E1E1E"
-                                        BorderBrush="#555555"
+                                        Background="{DynamicResource ThemeContextMenuBackgroundBrush}"
+                                        BorderBrush="{DynamicResource ThemeInputBorderBrush}"
                                         BorderThickness="1"
                                         CornerRadius="3"
                                         SnapsToDevicePixels="True">
@@ -182,10 +182,10 @@
             </Setter>
         </Style>
 
-        <!-- 下拉列表项样式 - 黑底白字 -->
+        <!-- 下拉列表项样式 -->
         <Style TargetType="ComboBoxItem">
-            <Setter Property="Background" Value="#1E1E1E"/>
-            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="Background" Value="{DynamicResource ThemeContextMenuBackgroundBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource ThemeTextPrimaryBrush}"/>
             <Setter Property="Padding" Value="8,4"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -202,11 +202,11 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="#3A3A3A"/>
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource ThemeControlHoverBackgroundBrush}"/>
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource PrimaryBrush}"/>
-                                <Setter Property="Foreground" Value="White"/>
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource ThemeAccentBrush}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource ThemeTextOnDarkBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -222,12 +222,12 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- 工具栏 - 深色主题 -->
+        <!-- 工具栏 -->
         <Border x:Name="ToolBar" Grid.Row="0" 
-                Background="#2D2D2D" 
+                Background="{DynamicResource ThemeToolBarBackgroundBrush}" 
                 Padding="4,2" 
                 Height="32"
-                BorderBrush="#404040"
+                BorderBrush="{DynamicResource ThemeDividerBrushBrush}"
                 BorderThickness="0,0,0,1">
             <Grid>
                 <!-- 左侧：图像源选择 -->
@@ -279,30 +279,8 @@
 
         <!-- 图像显示区域 - 使用Canvas实现平移缩放 -->
         <Grid Grid.Row="1">
-            <!-- 棋盘格背景层 - 透明度指示 -->
-            <Grid x:Name="ChessboardLayer">
-                <Grid.Background>
-                    <DrawingBrush TileMode="Tile" Viewport="0,0,32,32" ViewportUnits="Absolute">
-                        <DrawingBrush.Drawing>
-                            <DrawingGroup>
-                                <GeometryDrawing Brush="#FF2D2D2D">
-                                    <GeometryDrawing.Geometry>
-                                        <RectangleGeometry Rect="0,0,32,32"/>
-                                    </GeometryDrawing.Geometry>
-                                </GeometryDrawing>
-                                <GeometryDrawing Brush="#FF3C3C3C">
-                                    <GeometryDrawing.Geometry>
-                                        <GeometryGroup>
-                                            <RectangleGeometry Rect="0,0,16,16"/>
-                                            <RectangleGeometry Rect="16,16,16,16"/>
-                                        </GeometryGroup>
-                                    </GeometryDrawing.Geometry>
-                                </GeometryDrawing>
-                            </DrawingGroup>
-                        </DrawingBrush.Drawing>
-                    </DrawingBrush>
-                </Grid.Background>
-            </Grid>
+            <!-- 棋盘格背景层 - 透明度指示：整体 DrawingBrush（随主题整体替换），SDK 层用字符串 key 引用 UI 主题字典 -->
+            <Grid x:Name="ChessboardLayer" Background="{DynamicResource ThemeCheckerboardBackgroundBrush}"/>
 
             <Canvas x:Name="MainCanvas"
                     Background="Transparent"
@@ -343,30 +321,30 @@
         </Canvas>
         </Grid>
 
-        <!-- 状态栏 - 深色主题 -->
+        <!-- 状态栏 -->
         <StatusBar x:Name="StatusBar" Grid.Row="2" 
-                   Background="#252525" 
+                   Background="{DynamicResource ThemeStatusBarBackgroundBrush}" 
                    Padding="8,2"
-                   BorderBrush="#404040"
+                   BorderBrush="{DynamicResource ThemeStatusBarBorderBrush}"
                    BorderThickness="0,1,0,0">
             <StatusBarItem>
                 <TextBlock x:Name="PositionText" 
                            Text="位置: (0, 0)" 
-                           Foreground="#909090"
+                           Foreground="{DynamicResource ThemeTextPrimaryBrush}"
                            FontSize="11"/>
             </StatusBarItem>
-            <Separator Background="#404040"/>
+            <Separator Background="{DynamicResource ThemeStatusBarBorderBrush}"/>
             <StatusBarItem>
                 <TextBlock x:Name="ImageSizeText" 
                            Text="图像: -" 
-                           Foreground="#909090"
+                           Foreground="{DynamicResource ThemeTextPrimaryBrush}"
                            FontSize="11"/>
             </StatusBarItem>
-            <Separator Background="#404040"/>
+            <Separator Background="{DynamicResource ThemeStatusBarBorderBrush}"/>
             <StatusBarItem>
                 <TextBlock x:Name="PixelValueText" 
                            Text="灰度: -" 
-                           Foreground="#909090"
+                           Foreground="{DynamicResource ThemeTextPrimaryBrush}"
                            FontSize="11"/>
             </StatusBarItem>
         </StatusBar>

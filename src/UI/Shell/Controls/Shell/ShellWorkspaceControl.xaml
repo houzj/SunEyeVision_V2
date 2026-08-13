@@ -7,14 +7,15 @@
              xmlns:converters="clr-namespace:SunEyeVision.UI.Converters"
              xmlns:convertersWorkflow="clr-namespace:SunEyeVision.UI.Converters.Workflow"
              xmlns:canvas="clr-namespace:SunEyeVision.UI.Features.WorkflowUI.Canvas"
+             xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
              mc:Ignorable="d"
              d:DesignHeight="700" d:DesignWidth="900">
 
   <!-- ========== 工作区（含右下角小地图覆盖层） ========== -->
   <Grid>
-    <Border Background="#F5F5F5" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0">
+    <Border Background="{DynamicResource {x:Static base:ThemeKeys.TabStripBackgroundBrush}}" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.BorderBrush}}" BorderThickness="0">
       <TabControl x:Name="WorkflowTabControl"
-                    Background="#F5F5F5"
+                    Background="{DynamicResource {x:Static base:ThemeKeys.TabStripBackgroundBrush}}"
                     BorderThickness="0"
                     ItemsSource="{Binding Tabs}"
                     SelectedItem="{Binding SelectedTab, Mode=TwoWay}"
@@ -42,7 +43,7 @@
               </Grid.RowDefinitions>
 
               <!-- TabPanel区域,分为两列:左侧TabItems可滚动,右侧添加按钮固定 -->
-              <Border Grid.Row="0" Background="#F5F5F5" BorderThickness="0,0,0,1" BorderBrush="#E0E0E0"
+              <Border Grid.Row="0" Background="{DynamicResource {x:Static base:ThemeKeys.TabStripBackgroundBrush}}" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TabItemBorderBrush}}"
                                 ClipToBounds="True">
                 <Grid>
                   <Grid.ColumnDefinitions>
@@ -66,13 +67,13 @@
                       <!-- 可滚动位置的添加按钮 - 当TabItems多时隐藏 -->
                       <Border x:Name="ScrollableAddButtonBorder"
                                                 Visibility="Collapsed"
-                                                Background="#F5F5F5" Padding="2,2,8,0"
+                                                Background="{DynamicResource {x:Static base:ThemeKeys.TabStripBackgroundBrush}}" Padding="2,2,8,0"
                                                 Margin="4,2,0,0">
                         <Button Width="40" Height="40"
                                                     Padding="0"
                                                     BorderThickness="1"
-                                                    BorderBrush="#4CAF50"
-                                                    Background="#F1F8E9"
+                                                    BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TabAddButtonBorderBrush}}"
+                                                    Background="{DynamicResource {x:Static base:ThemeKeys.TabAddButtonBgBrush}}"
                                                     Cursor="Hand"
                                                     Click="AddWorkflow_Click">
                           <Button.Template>
@@ -86,7 +87,7 @@
                                                                 Height="{TemplateBinding Height}">
                                 <Path x:Name="ButtonIcon"
                                                                   Data="M12,6 L12,18 M6,12 L18,12"
-                                                                  Stroke="#4CAF50"
+                                                                  Stroke="{DynamicResource {x:Static base:ThemeKeys.TabAddButtonBorderBrush}}"
                                                                   StrokeThickness="2.5"
                                                                   Fill="Transparent"
                                                                   Stretch="Uniform"
@@ -96,8 +97,8 @@
                               </Border>
                               <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                  <Setter TargetName="ButtonBorder" Property="Background" Value="#4CAF50"/>
-                                  <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="#388E3C"/>
+                                  <Setter TargetName="ButtonBorder" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TabAddButtonHoverBrush}}"/>
+                                  <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.TabAddButtonHoverBrush}}"/>
                                   <Setter TargetName="ButtonIcon" Property="Stroke" Value="White"/>
                                 </Trigger>
                               </ControlTemplate.Triggers>
@@ -112,12 +113,12 @@
                   <Border Grid.Column="1"
                                         x:Name="FixedAddButtonBorder"
                                         Visibility="Collapsed"
-                                        Background="#F5F5F5" Padding="2,2,8,0">
+                                        Background="{DynamicResource {x:Static base:ThemeKeys.TabStripBackgroundBrush}}" Padding="2,2,8,0">
                     <Button Width="40" Height="40"
                                             Padding="0"
                                             BorderThickness="1"
-                                            BorderBrush="#4CAF50"
-                                            Background="#F1F8E9"
+                                            BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TabAddButtonBorderBrush}}"
+                                            Background="{DynamicResource {x:Static base:ThemeKeys.TabAddButtonBgBrush}}"
                                             Cursor="Hand"
                                             Click="AddWorkflow_Click">
                       <Button.Template>
@@ -131,7 +132,7 @@
                                                         Height="{TemplateBinding Height}">
                             <Path x:Name="ButtonIcon"
                                                           Data="M12,6 L12,18 M6,12 L18,12"
-                                                          Stroke="#4CAF50"
+                                                          Stroke="{DynamicResource {x:Static base:ThemeKeys.TabAddButtonBorderBrush}}"
                                                           StrokeThickness="2.5"
                                                           Fill="Transparent"
                                                           Stretch="Uniform"
@@ -141,8 +142,8 @@
                           </Border>
                           <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                              <Setter TargetName="ButtonBorder" Property="Background" Value="#4CAF50"/>
-                              <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="#388E3C"/>
+                              <Setter TargetName="ButtonBorder" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TabAddButtonHoverBrush}}"/>
+                              <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.TabAddButtonHoverBrush}}"/>
                               <Setter TargetName="ButtonIcon" Property="Stroke" Value="White"/>
                             </Trigger>
                           </ControlTemplate.Triggers>
@@ -172,15 +173,15 @@
                 <ControlTemplate TargetType="TabItem">
                   <Grid>
                     <Grid.ContextMenu>
-                      <ContextMenu Background="#FFFFFF" BorderBrush="#CCCCCC" BorderThickness="1" Padding="4">
+                      <ContextMenu Background="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.BorderBrush}}" BorderThickness="1" Padding="4">
                         <MenuItem Header="重命名" Click="TabItem_Rename_Click"/>
                         <Separator/>
                         <MenuItem Header="关闭" Click="TabItem_ContextMenu_Delete_Click"/>
                       </ContextMenu>
                     </Grid.ContextMenu>
                     <Border x:Name="TabBorder"
-                                            Background="#FFFFFF"
-                                            BorderBrush="#E0E0E0"
+                                            Background="{DynamicResource {x:Static base:ThemeKeys.TabItemBackgroundBrush}}"
+                                            BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TabItemBorderBrush}}"
                                             BorderThickness="1,1,1,0"
                                             CornerRadius="6,6,0,0"
                                             Padding="0"
@@ -201,7 +202,7 @@
                                                     Grid.Column="0"
                                                     Content="&#x21A9;"
                                                     FontSize="14" FontWeight="Bold"
-                                                    Foreground="#666666"
+                                                    Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"
                                                     Background="Transparent"
                                                     BorderThickness="0"
                                                     Padding="6,2"
@@ -217,7 +218,7 @@
                                   <Setter Property="Visibility" Value="Visible"/>
                                 </DataTrigger>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                  <Setter Property="Foreground" Value="#0066CC"/>
+                                  <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
                                 </Trigger>
                               </Style.Triggers>
                             </Style>
@@ -229,7 +230,7 @@
                                                     Grid.Column="1"
                                                     Content="&#x2699;"
                                                     FontSize="14" FontWeight="Bold"
-                                                    Foreground="#888888"
+                                                    Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"
                                                     Background="Transparent"
                                                     BorderThickness="0"
                                                     Padding="6,2"
@@ -245,7 +246,7 @@
                                   <Setter Property="Visibility" Value="Visible"/>
                                 </DataTrigger>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                  <Setter Property="Foreground" Value="#0066CC"/>
+                                  <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
                                 </Trigger>
                               </Style.Triggers>
                             </Style>
@@ -258,7 +259,7 @@
                                                            Text="{Binding EffectiveDisplayName}"
                                                            FontSize="13"
                                                            FontWeight="SemiBold"
-                                                           Foreground="#333333"
+                                                           Foreground="{DynamicResource {x:Static base:ThemeKeys.TabItemTextBrush}}"
                                                            VerticalAlignment="Center"/>
                           <TextBox x:Name="TabNameEditor"
                                                          Text="{Binding RenameBuffer, UpdateSourceTrigger=PropertyChanged}"
@@ -436,8 +437,8 @@
                   </Grid>
                   <ControlTemplate.Triggers>
                     <Trigger Property="IsSelected" Value="True">
-                      <Setter TargetName="TabBorder" Property="Background" Value="#FFFFFF"/>
-                      <Setter TargetName="TabBorder" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                      <Setter TargetName="TabBorder" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TabItemBackgroundBrush}}"/>
+                      <Setter TargetName="TabBorder" Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
                       <Setter TargetName="TabBorder" Property="BorderThickness" Value="2,2,2,0"/>
                       <Setter TargetName="TabBorder" Property="Effect">
                         <Setter.Value>
@@ -450,8 +451,8 @@
                       <Setter TargetName="DeleteBtn" Property="Visibility" Value="Visible"/>
                     </Trigger>
                     <Trigger Property="IsMouseOver" Value="True">
-                      <Setter TargetName="TabBorder" Property="Background" Value="#F8F9FA"/>
-                      <Setter TargetName="TabBorder" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                      <Setter TargetName="TabBorder" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TabItemHoverBrush}}"/>
+                      <Setter TargetName="TabBorder" Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
                     </Trigger>
                     <DataTrigger Binding="{Binding IsEditingName}" Value="True">
                       <Setter TargetName="TabNameText" Property="Visibility" Value="Collapsed"/>

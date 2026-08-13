@@ -4,6 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:convertersUI="clr-namespace:SunEyeVision.UI.Converters.UI"
+             xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
              mc:Ignorable="d"
              d:DesignHeight="64" d:DesignWidth="1600">
 
@@ -13,7 +14,7 @@
         <!-- 工具栏按钮样式（含 IsHitTestVisibleInChrome，使按钮在窗口 Caption 区域可点击） -->
         <Style x:Key="TitleBarButton" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#E0E0E0"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TitleBarIconBrush}}"/>
             <Setter Property="Padding" Value="10,4"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True"/>
@@ -25,12 +26,12 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="#3E3E42"/>
-                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TitleBarButtonHoverBrush}}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TitleBarIconHoverBrush}}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource PrimaryBrush}"/>
-                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TitleBarIconHoverBrush}}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -41,7 +42,7 @@
         <!-- 菜单按钮样式 -->
         <Style x:Key="TitleBarMenuButton" TargetType="MenuItem">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#E0E0E0"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TitleBarIconBrush}}"/>
             <Setter Property="Padding" Value="12,4"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True"/>
@@ -49,8 +50,8 @@
     </UserControl.Resources>
 
     <!-- ========== 一体化标题栏（VisionMaster 风格：菜单行 + 工具栏行，两行紧凑布局） ========== -->
-    <Border Background="{StaticResource TitleBarBackgroundBrush}"
-            BorderBrush="{StaticResource TitleBarBorderBrush}"
+    <Border Background="{DynamicResource ThemeTitleBarBackgroundBrush}"
+            BorderBrush="{DynamicResource ThemeDividerBrushBrush}"
             BorderThickness="0,0,0,1">
         <Grid Height="64">
             <Grid.RowDefinitions>
@@ -66,7 +67,7 @@
             <!-- Logo：跨两行，垂直居中，放大 -->
             <StackPanel Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,0,0,0">
                 <Image Source="/SunEyeVision.UI;component/Icons/app_logo.ico" Width="55" Height="55" VerticalAlignment="Center"/>
-                <TextBlock Text="SunEyeVision" FontSize="14" FontWeight="SemiBold" Foreground="#FFFFFF" VerticalAlignment="Center" Margin="8,0,18,0"/>
+                <TextBlock Text="SunEyeVision" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource {x:Static base:ThemeKeys.TitleBarTextBrush}}" VerticalAlignment="Center" Margin="8,0,18,0"/>
             </StackPanel>
 
             <!-- 菜单栏（行1） -->
@@ -101,7 +102,7 @@
 
             <!-- 行1/行2 分割线（Logo 右侧起，跨菜单/窗口控制区域） -->
             <Border Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" Height="1"
-                    Background="#3E3E42" VerticalAlignment="Bottom"/>
+                    Background="{DynamicResource {x:Static base:ThemeKeys.TitleBarDividerBrush}}" VerticalAlignment="Bottom"/>
 
             <!-- 行2：工具栏（图标按钮横排，各占一半空间） -->
             <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="6,0,0,0">
@@ -111,7 +112,7 @@
                 <Button ToolTip="保存 (Ctrl+S)" Style="{StaticResource TitleBarButton}" Command="{Binding SaveCurrentSolutionCommand}">
                     <TextBlock Text="💾" FontSize="15"/>
                 </Button>
-                <Border Width="1" Height="18" Background="#3E3E42" Margin="4,0"/>
+                <Border Width="1" Height="18" Background="{DynamicResource {x:Static base:ThemeKeys.TitleBarDividerBrush}}" Margin="4,0"/>
 
                 <!-- 运行（单次） -->
                 <Button ToolTip="运行 (F5)" Style="{StaticResource TitleBarButton}" Command="{Binding RunWorkflowCommand}">
@@ -137,10 +138,10 @@
                                         </Border>
                                         <ControlTemplate.Triggers>
                                             <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="Bd" Property="Background" Value="#3E3E42"/>
+                                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TitleBarButtonHoverBrush}}"/>
                                             </Trigger>
                                             <Trigger Property="IsChecked" Value="True">
-                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource PrimaryBrush}"/>
+                                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
                                             </Trigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
@@ -148,10 +149,10 @@
                             </Setter>
                         </Style>
                     </ToggleButton.Style>
-                    <TextBlock x:Name="ContinuousRunIcon" Text="🔁" FontSize="16" Foreground="#E0E0E0" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="ContinuousRunIcon" Text="🔁" FontSize="16" Foreground="{DynamicResource {x:Static base:ThemeKeys.TitleBarIconBrush}}" VerticalAlignment="Center"/>
                 </ToggleButton>
 
-                <Border Width="1" Height="18" Background="#3E3E42" Margin="4,0"/>
+                <Border Width="1" Height="18" Background="{DynamicResource {x:Static base:ThemeKeys.TitleBarDividerBrush}}" Margin="4,0"/>
 
                 <Button ToolTip="相机管理" Style="{StaticResource TitleBarButton}" Command="{Binding ShowCameraManagerCommand}">
                     <TextBlock Text="📷" FontSize="16"/>
@@ -163,9 +164,27 @@
                     <TextBlock Text="🧮" FontSize="16"/>
                 </Button>
 
-                <Border Width="1" Height="18" Background="#3E3E42" Margin="4,0"/>
+                <Border Width="1" Height="18" Background="{DynamicResource {x:Static base:ThemeKeys.TitleBarDividerBrush}}" Margin="4,0"/>
 
-                <TextBlock Text="工作流:" FontSize="11" Foreground="#B0B0B0" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                <!-- 主题切换按钮：亮色显示太阳☀️，暗色显示月亮🌙（点击切换并记住） -->
+                <Button ToolTip="切换亮/暗主题" Style="{StaticResource TitleBarButton}" Command="{Binding ToggleThemeCommand}">
+                    <TextBlock FontSize="15">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Text" Value="☀️"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsDarkTheme}" Value="True">
+                                        <Setter Property="Text" Value="🌙"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Button>
+
+                <Border Width="1" Height="18" Background="{DynamicResource {x:Static base:ThemeKeys.TitleBarDividerBrush}}" Margin="4,0"/>
+
+                <TextBlock Text="工作流:" FontSize="11" Foreground="{DynamicResource {x:Static base:ThemeKeys.TitleBarTextSecondaryBrush}}" VerticalAlignment="Center" Margin="0,0,6,0"/>
                 <ComboBox Width="150" Height="24" VerticalAlignment="Center"
                           ItemsSource="{Binding Tabs}"
                           SelectedItem="{Binding SelectedTab, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -177,26 +196,26 @@
 
             <!-- 右侧：项目信息 + 窗口控制（第一行） -->
             <StackPanel Grid.Row="0" Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,4,0">
-                <Border Background="#3A3A3E" CornerRadius="3" Padding="8,4" Margin="0,0,8,0"
+                <Border Background="{DynamicResource {x:Static base:ThemeKeys.TitleBarProjectInfoBgBrush}}" CornerRadius="3" Padding="8,4" Margin="0,0,8,0"
                         Visibility="{Binding HasCurrentSolution, Converter={StaticResource BoolToVisibilityConverter}}">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="📦" FontSize="11" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                        <TextBlock Text="{Binding CurrentSolutionName}" FontSize="11" FontWeight="SemiBold" Foreground="#FFFFFF" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding CurrentSolutionName}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource {x:Static base:ThemeKeys.TitleBarTextBrush}}" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Border>
                 <Button ToolTip="最小化" Style="{StaticResource TitleBarButton}" Click="MinimizeWindow_Click" Padding="10,4">
-                    <Rectangle Width="10" Height="2" Fill="#E0E0E0" VerticalAlignment="Center"/>
+                    <Rectangle Width="10" Height="2" Fill="{DynamicResource {x:Static base:ThemeKeys.TitleBarIconBrush}}" VerticalAlignment="Center"/>
                 </Button>
                 <Button ToolTip="向下还原" Style="{StaticResource TitleBarButton}" Click="MaximizeWindow_Click" Padding="10,4">
                     <Grid Width="12" Height="12" VerticalAlignment="Center">
                         <!-- 背景矩形（右下） -->
-                        <Rectangle Width="12" Height="12" Stroke="#E0E0E0" StrokeThickness="1" Fill="Transparent" HorizontalAlignment="Left" VerticalAlignment="Bottom" />
+                        <Rectangle Width="12" Height="12" Stroke="{DynamicResource {x:Static base:ThemeKeys.TitleBarIconBrush}}" StrokeThickness="1" Fill="Transparent" HorizontalAlignment="Left" VerticalAlignment="Bottom" />
                         <!-- 前景矩形（左上） -->
-                        <Rectangle Width="8" Height="6" Stroke="#E0E0E0" StrokeThickness="1" Fill="Transparent" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
+                        <Rectangle Width="8" Height="6" Stroke="{DynamicResource {x:Static base:ThemeKeys.TitleBarIconBrush}}" StrokeThickness="1" Fill="Transparent" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
                     </Grid>
                 </Button>
                 <Button ToolTip="关闭" Style="{StaticResource TitleBarButton}" Click="ExitMenu_Click" Padding="10,4">
-                    <TextBlock Text="✕" FontSize="14" FontWeight="Bold" Foreground="#FFFFFF" VerticalAlignment="Center"/>
+                    <TextBlock Text="✕" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource {x:Static base:ThemeKeys.TitleBarTextBrush}}" VerticalAlignment="Center"/>
                 </Button>
             </StackPanel>
         </Grid>

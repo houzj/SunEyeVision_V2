@@ -19,6 +19,7 @@
         xmlns:common="clr-namespace:SunEyeVision.UI.Shell.Controls.Common"
         xmlns:panels="clr-namespace:SunEyeVision.UI.Shell.Controls.Panels"
         xmlns:sdk="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
+        xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
         mc:Ignorable="d"
         Title="太阳眼视觉 - 机器视觉平台" Height="900" Width="1600"
         WindowStartupLocation="CenterScreen"
@@ -26,7 +27,7 @@
         WindowStyle="None"
         ResizeMode="CanResize"
         WindowChrome.WindowChrome="{x:Static windows:MainWindow.MainWindowChrome}"
-        Background="#2D2D30"
+        Background="{DynamicResource ThemeWindowBackgroundBrush}"
         Loaded="MainWindow_Loaded">
 
     <Window.Resources>
@@ -62,7 +63,7 @@
             </Grid.RowDefinitions>
 
             <!-- ========== 左侧工具箱 - 使用双模ToolboxControl ========== -->
-            <Border Grid.Column="0" Background="#F5F5F5" BorderBrush="#E0E0E0" BorderThickness="0,0,1,0">
+            <Border Grid.Column="0" Background="{DynamicResource ThemeWorkspaceBackgroundBrush}" BorderBrush="{DynamicResource ThemeDividerBrushBrush}" BorderThickness="0,0,1,0">
                 <toolbox:ToolboxControl DataContext="{Binding Toolbox}" x:Name="ToolboxContent"/>
             </Border>
 
@@ -76,7 +77,7 @@
                                            x:Name="RightPanelSplitter"/>
 
             <!-- ========== 右侧面板：图像显示 + 数据分析 + 日志 ========== -->
-            <Border Grid.Column="3" Grid.Row="0" Background="#FFFFFF" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0">
+            <Border Grid.Column="3" Grid.Row="0" Background="{DynamicResource ThemePanelBackgroundBrush}" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="0">
                 <Grid x:Name="RightPanelGrid">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*" MinHeight="40" MaxHeight="1000"/>  <!-- Row 0: 图像显示区域（自适应） -->
@@ -90,7 +91,7 @@
                     <!-- 右侧面板内部分隔器 - 支持拖动调整并保存 -->
                     <GridSplitter Grid.Row="1" Height="4" Width="Auto"
                                  ResizeDirection="Rows"
-                                 Background="#DDDDDD"
+                                 Background="{DynamicResource {x:Static base:ThemeKeys.SplitterBackgroundBrush}}"
                                  ShowsPreview="False"
                                  ResizeBehavior="PreviousAndNext"
                                  HorizontalAlignment="Stretch"
@@ -102,7 +103,7 @@
                             <Style TargetType="GridSplitter">
                                 <Style.Triggers>
                                     <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="#4CAF50"/>
+                                        <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.SplitterHoverBrush}}"/>
                                     </Trigger>
                                 </Style.Triggers>
                             </Style>
@@ -110,14 +111,45 @@
                     </GridSplitter>
 
                     <!-- ========== Row 2: 数据分析和日志 ========== -->
-                    <Border Grid.Row="2" Background="#FFFFFF" BorderThickness="0">
+                    <Border Grid.Row="2" Background="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}" BorderThickness="0">
                         <TabControl x:Name="BottomPanelTabControl"
-                                    Background="White"
+                                    Background="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}"
                                     BorderThickness="0">
+                            <TabControl.Resources>
+                                <!-- TabItem 头样式（随主题：未选中灰字 / 悬停有底 / 选中主题色指示线） -->
+                                <Style TargetType="TabItem">
+                                    <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="TabItem">
+                                                <Border x:Name="Bd"
+                                                        Background="Transparent"
+                                                        BorderThickness="0,0,0,2"
+                                                        BorderBrush="Transparent"
+                                                        Padding="12,6">
+                                                    <ContentPresenter ContentSource="Header"
+                                                                      HorizontalAlignment="Center"
+                                                                      VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ControlHoverBackgroundBrush}}"/>
+                                                        <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
+                                                    </Trigger>
+                                                    <Trigger Property="IsSelected" Value="True">
+                                                        <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
+                                                        <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </TabControl.Resources>
                             <!-- 第一个TabItem: 数据分析（动态显示） -->
                             <TabItem Header="数据分析" Padding="12,6"
                                      Visibility="{Binding HasDataAnalysisControl, Converter={StaticResource BoolToVisibilityConverter}}">
-                                <Grid Background="White">
+                                <Grid Background="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}">
                                     <!-- 数据分析用户控件容器 -->
                                     <ContentControl Content="{Binding SelectedNodeDataAnalysisControl}"
                                                    HorizontalAlignment="Stretch"

@@ -12,7 +12,7 @@ namespace SunEyeVision.Plugin.SDK.Logging
     /// <remarks>
     /// 特性：
     /// - 异步批量写入
-    /// - 自动日志轮转（按日期）
+    /// - 按 年/月/日 目录分层，文件名带时分秒
     /// - 缓冲区优化
     /// - 线程安全
     /// </remarks>
@@ -21,18 +21,16 @@ namespace SunEyeVision.Plugin.SDK.Logging
         #region 常量
 
         private const int BufferSize = 8192;
-        private const long MaxFileSize = 10 * 1024 * 1024; // 10MB
 
         #endregion
 
         #region 私有字段
 
-        private readonly string _logDirectory;
+        private readonly string _logRootDirectory;
         private readonly object _lockObject = new();
         private StreamWriter? _writer;
         private string? _currentLogFile;
         private DateTime _currentLogFileDate;
-        private long _currentFileSize;
         private bool _isDisposed;
 
         #endregion
@@ -60,10 +58,9 @@ namespace SunEyeVision.Plugin.SDK.Logging
 
         #region 构造函数
 
-        public FileLogWriter(string? logDirectory = null)
+        public FileLogWriter(string? logRootDirectory = null)
         {
-            _logDirectory = logDirectory ?? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs");
-            EnsureLogDirectory();
+            _logRootDirectory = logRootDirectory ?? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs");
         }
 
         #endregion
@@ -83,19 +80,10 @@ namespace SunEyeVision.Plugin.SDK.Logging
 
                     var line = FormatEntry(entry);
                     _writer?.WriteLine(line);
-                    _currentFileSize += Encoding.UTF8.GetByteCount(line);
-
-                    // 检查文件大小
-                    if (_currentFileSize > MaxFileSize)
-                    {
-                        RotateLogFile();
-                    }
                 }
-                catch (Exception ex)
+                catch
                 {
-#if DEBUG
-                    System.Diagnostics.Debug.WriteLine($"[FileLogWriter] 写入错误: {ex.Message}");
-#endif
+                    // 文件写入失败不阻断日志队列（写入器内部异常不影响主流程）
                 }
             }
         }
@@ -117,23 +105,14 @@ namespace SunEyeVision.Plugin.SDK.Logging
                         if (entry.Level >= MinLevel)
                         {
                             sb.AppendLine(FormatEntry(entry));
-                            _currentFileSize += Encoding.UTF8.GetByteCount(sb.ToString());
                         }
                     }
 
                     _writer?.Write(sb.ToString());
-
-                    // 检查文件大小
-                    if (_currentFileSize > MaxFileSize)
-                    {
-                        RotateLogFile();
-                    }
                 }
-                catch (Exception ex)
+                catch
                 {
-#if DEBUG
-                    System.Diagnostics.Debug.WriteLine($"[FileLogWriter] 批量写入错误: {ex.Message}");
-#endif
+                    // 文件写入失败不阻断日志队列（写入器内部异常不影响主流程）
                 }
             }
         }
@@ -163,28 +142,36 @@ namespace SunEyeVision.Plugin.SDK.Logging
 
         #region 私有方法
 
-        private void EnsureLogDirectory()
+        /// <summary>
+        /// 按 年/月/日 构建日志子目录：logs/{yyyy}/{MM}/{dd}
+        /// </summary>
+        private string GetLogDirectory(DateTime date)
         {
-            if (!Directory.Exists(_logDirectory))
+            var dir = Path.Combine(
+                _logRootDirectory,
+                date.ToString("yyyy"),
+                date.ToString("MM"),
+                date.ToString("dd"));
+            if (!Directory.Exists(dir))
             {
-                Directory.CreateDirectory(_logDirectory);
+                Directory.CreateDirectory(dir);
             }
+            return dir;
         }
 
         private void EnsureWriter()
         {
             var today = DateTime.Today;
 
-            // 检查是否需要创建新文件（日期变化）
+            // 日期变化时切换到新的 年/月/日 子目录
             if (_writer == null || _currentLogFileDate != today)
             {
                 _writer?.Dispose();
-                
+
                 _currentLogFileDate = today;
-                var dateStr = today.ToString("yyyyMMdd");
+                var dir = GetLogDirectory(today);
                 var timeStr = DateTime.Now.ToString("HHmmss");
-                _currentLogFile = Path.Combine(_logDirectory, $"SunEyeVision_{dateStr}_{timeStr}.log");
-                _currentFileSize = 0;
+                _currentLogFile = Path.Combine(dir, $"SunEyeVision_{timeStr}.txt");
 
                 _writer = new StreamWriter(_currentLogFile, true, Encoding.UTF8, BufferSize)
                 {
@@ -194,23 +181,6 @@ namespace SunEyeVision.Plugin.SDK.Logging
                 // 写入文件头
                 _writer.WriteLine($"=== SunEyeVision Log Started at {DateTime.Now:yyyy-MM-dd HH:mm:ss} ===");
             }
-        }
-
-        private void RotateLogFile()
-        {
-            _writer?.Dispose();
-            
-            var timeStr = DateTime.Now.ToString("HHmmss");
-            var dateStr = _currentLogFileDate.ToString("yyyyMMdd");
-            _currentLogFile = Path.Combine(_logDirectory, $"SunEyeVision_{dateStr}_{timeStr}.log");
-            _currentFileSize = 0;
-
-            _writer = new StreamWriter(_currentLogFile, true, Encoding.UTF8, BufferSize)
-            {
-                AutoFlush = false
-            };
-
-            _writer.WriteLine($"=== Log Rotated at {DateTime.Now:yyyy-MM-dd HH:mm:ss} ===");
         }
 
         private string FormatEntry(LogEntry entry)

@@ -1,0 +1,231 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base">
+
+    <!-- ============================================================ -->
+    <!-- 亮色主题：语义色板（Design Token）                              -->
+    <!-- 值 = 当前界面原值，保证切换到亮色时肉眼零变化。                  -->
+    <!-- 每个 Key 成对定义 Color（底层）+ SolidColorBrush（DynamicResource 引用）。 -->
+    <!-- ============================================================ -->
+
+    <!-- ============ 窗口 / 面板底色 ============ -->
+    <Color x:Key="{x:Static base:ThemeKeys.WindowBackground}">#2D2D30</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.TitleBarBackground}">#F5F5F5</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.PanelBackground}">#FFFFFF</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.WorkspaceBackground}">#F5F5F5</Color>
+
+    <!-- ============ 控件底色 ============ -->
+    <Color x:Key="{x:Static base:ThemeKeys.ControlBackground}">#FFFFFF</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.ControlHoverBackground}">#E8F4F8</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.ControlSelectedBackground}">#0066CC</Color>
+
+    <!-- ============ 文字 ============ -->
+    <Color x:Key="{x:Static base:ThemeKeys.TextPrimary}">#FF333333</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.TextSecondary}">#FF666666</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.TextOnDark}">#FFFFFFFF</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.TextDisabled}">#FF9E9E9E</Color>
+
+    <!-- ============ 边框 / 分隔 ============ -->
+    <Color x:Key="{x:Static base:ThemeKeys.BorderBrushKey}">#FFCCCCCC</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.DividerBrush}">#FFE0E0E0</Color>
+
+    <!-- ============ 品牌 / 状态 ============ -->
+    <Color x:Key="{x:Static base:ThemeKeys.AccentColor}">#FF0066CC</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.SuccessColor}">#FF00CC99</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.WarningColor}">#FFFF9900</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.ErrorColor}">#FFFF3333</Color>
+
+    <!-- ============ 画布专属 ============ -->
+    <Color x:Key="{x:Static base:ThemeKeys.CanvasBackground}">#F5F5F5</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.CanvasGridMajor}">#FFCCCCCC</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.CanvasGridMinor}">#FFE0E0E0</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.CanvasNodeBorder}">#FF0066CC</Color>
+
+    <!-- ============ 图像区 / 缩略图（批次2） ============ -->
+    <Color x:Key="{x:Static base:ThemeKeys.ImageAreaBackground}">#FFFFFFFF</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.ThumbnailBackground}">#FFFFFFFF</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.ThumbnailBorder}">#FFE0E0E0</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.ThumbnailSelectedBorder}">#FF4CAF50</Color>
+
+    <!-- ============ 表格（批次2） ============ -->
+    <Color x:Key="{x:Static base:ThemeKeys.TableRowBackground}">#FFFFFFFF</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.TableRowHoverBackground}">#FFE3F2FD</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.TableRowSelectedBackground}">#FF1976D2</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.TableHeaderBackground}">#FFF5F5F5</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.TableHeaderText}">#FF333333</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.TableGridLine}">#FFEEEEEE</Color>
+
+    <!-- ============ 工具栏 / 菜单 / 面板表头（批次2） ============ -->
+    <Color x:Key="{x:Static base:ThemeKeys.ToolBarBackground}">#FFFFFFFF</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.ContextMenuBackground}">#FFFFFFFF</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.ContextMenuItemHover}">#FFF0F0F0</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.PanelHeaderBackground}">#FFF5F5F5</Color>
+
+    <!-- ============ 输入控件（批次2，参数模板） ============ -->
+    <Color x:Key="{x:Static base:ThemeKeys.InputBackground}">#FFFFFFFF</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.InputBorder}">#FFDDDDDD</Color>
+
+    <!-- ============ 滚动条（批次2） ============ -->
+    <Color x:Key="{x:Static base:ThemeKeys.ScrollBarBackground}">#FFF0F0F0</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.ScrollBarThumb}">#FFC0C0C0</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.ScrollBarThumbHover}">#FFA0A0A0</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.ScrollBarThumbPressed}">#FF808080</Color>
+
+    <!-- ============ 状态栏 ============ -->
+    <Color x:Key="{x:Static base:ThemeKeys.StatusBarBackground}">#FFFFFFFF</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.StatusBarBorder}">#FFCCCCCC</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.StatusBarText}">#FF00CC99</Color>
+
+    <!-- ============ 顶栏 / 标题栏（亮色主题浅底深字） ============ -->
+    <Color x:Key="{x:Static base:ThemeKeys.TitleBarIcon}">#FF333333</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.TitleBarIconHover}">#FF0066CC</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.TitleBarButtonHover}">#FFE0E0E0</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.TitleBarDivider}">#FFE0E0E0</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.TitleBarProjectInfoBg}">#FFE8F0F8</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.TitleBarTextSecondary}">#FF666666</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.TitleBarText}">#FF333333</Color>
+
+    <!-- ============ 工作区 Tab 标签条 ============ -->
+    <Color x:Key="{x:Static base:ThemeKeys.TabStripBackground}">#FFF5F5F5</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.TabItemBackground}">#FFFFFFFF</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.TabItemHover}">#FFF8F9FA</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.TabItemBorder}">#FFE0E0E0</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.TabItemText}">#FF333333</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.TabAddButtonBg}">#FFF1F8E9</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.TabAddButtonBorder}">#FF4CAF50</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.TabAddButtonHover}">#FF388E3C</Color>
+
+    <!-- ============ 分割器 ============ -->
+    <Color x:Key="{x:Static base:ThemeKeys.SplitterBackground}">#FFDDDDDD</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.SplitterHover}">#FF4CAF50</Color>
+
+    <!-- ============ 工具箱 ============ -->
+    <Color x:Key="{x:Static base:ThemeKeys.ToolboxBackground}">#FFF5F5F5</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.ToolboxCategoryBg}">#FFFAFAFA</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.ToolboxCategoryHover}">#FFF0F0F0</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.ToolboxItemBg}">#FFFFFFFF</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.ToolboxItemBorder}">#FFE0E0E0</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.ToolboxItemHover}">#FFF5F8FF</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.ToolboxTextPrimary}">#FF333333</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.ToolboxTextSecondary}">#FF666666</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.ToolboxTextTertiary}">#FF999999</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.ToolboxToggleBg}">#FFDDDDDD</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.ToolboxToggleBorder}">#FFCCCCCC</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.ToolboxBadge}">#FFFF4444</Color>
+
+    <!-- ============ Brush 层（DynamicResource 引用 Color，切换时跟随） ============ -->
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.WindowBackgroundBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.WindowBackground}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.TitleBarBackgroundBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.TitleBarBackground}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.PanelBackgroundBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.PanelBackground}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.WorkspaceBackgroundBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.WorkspaceBackground}}"/>
+
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ControlBackgroundBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ControlBackground}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ControlHoverBackgroundBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ControlHoverBackground}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ControlSelectedBackgroundBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ControlSelectedBackground}}"/>
+
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.TextPrimaryBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.TextPrimary}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.TextSecondaryBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.TextSecondary}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.TextOnDarkBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.TextOnDark}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.TextDisabledBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.TextDisabled}}"/>
+
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.BorderBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.BorderBrushKey}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.DividerBrushBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.DividerBrush}}"/>
+
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.AccentBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.AccentColor}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.SuccessBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.SuccessColor}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.WarningBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.WarningColor}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ErrorBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ErrorColor}}"/>
+
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.CanvasBackgroundBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.CanvasBackground}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.CanvasGridMajorBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.CanvasGridMajor}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.CanvasGridMinorBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.CanvasGridMinor}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.CanvasNodeBorderBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.CanvasNodeBorder}}"/>
+
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ImageAreaBackgroundBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ImageAreaBackground}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ThumbnailBackgroundBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ThumbnailBackground}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ThumbnailBorderBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ThumbnailBorder}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ThumbnailSelectedBorderBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ThumbnailSelectedBorder}}"/>
+
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.TableRowBackgroundBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.TableRowBackground}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.TableRowHoverBackgroundBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.TableRowHoverBackground}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.TableRowSelectedBackgroundBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.TableRowSelectedBackground}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.TableHeaderBackgroundBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.TableHeaderBackground}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.TableHeaderTextBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.TableHeaderText}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.TableGridLineBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.TableGridLine}}"/>
+
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ToolBarBackgroundBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ToolBarBackground}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ContextMenuBackgroundBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ContextMenuBackground}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ContextMenuItemHoverBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ContextMenuItemHover}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.PanelHeaderBackgroundBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.PanelHeaderBackground}}"/>
+
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.InputBackgroundBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.InputBackground}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.InputBorderBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.InputBorder}}"/>
+
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ScrollBarBackgroundBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ScrollBarBackground}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ScrollBarThumbBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ScrollBarThumb}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ScrollBarThumbHoverBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ScrollBarThumbHover}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ScrollBarThumbPressedBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ScrollBarThumbPressed}}"/>
+
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.StatusBarBackgroundBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.StatusBarBackground}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.StatusBarBorderBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.StatusBarBorder}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.StatusBarTextBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.StatusBarText}}"/>
+
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.TitleBarIconBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.TitleBarIcon}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.TitleBarIconHoverBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.TitleBarIconHover}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.TitleBarButtonHoverBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.TitleBarButtonHover}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.TitleBarDividerBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.TitleBarDivider}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.TitleBarProjectInfoBgBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.TitleBarProjectInfoBg}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.TitleBarTextSecondaryBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.TitleBarTextSecondary}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.TitleBarTextBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.TitleBarText}}"/>
+
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.TabStripBackgroundBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.TabStripBackground}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.TabItemBackgroundBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.TabItemBackground}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.TabItemHoverBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.TabItemHover}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.TabItemBorderBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.TabItemBorder}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.TabItemTextBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.TabItemText}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.TabAddButtonBgBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.TabAddButtonBg}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.TabAddButtonBorderBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.TabAddButtonBorder}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.TabAddButtonHoverBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.TabAddButtonHover}}"/>
+
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.SplitterBackgroundBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.SplitterBackground}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.SplitterHoverBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.SplitterHover}}"/>
+
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ToolboxBackgroundBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ToolboxBackground}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ToolboxCategoryBgBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ToolboxCategoryBg}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ToolboxCategoryHoverBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ToolboxCategoryHover}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ToolboxItemBgBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ToolboxItemBg}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ToolboxItemBorderBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ToolboxItemBorder}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ToolboxItemHoverBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ToolboxItemHover}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ToolboxTextPrimaryBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ToolboxTextPrimary}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ToolboxTextSecondaryBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ToolboxTextSecondary}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ToolboxTextTertiaryBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ToolboxTextTertiary}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ToolboxToggleBgBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ToolboxToggleBg}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ToolboxToggleBorderBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ToolboxToggleBorder}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ToolboxBadgeBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ToolboxBadge}}"/>
+
+    <!-- ============ 画布棋盘格背景（整体 DrawingBrush，随主题整体替换） ============ -->
+    <!-- 内部用 StaticResource 引用同字典笔刷（Color 层在主题切换时整体替换，StaticResource 也能取到新值） -->
+    <DrawingBrush x:Key="{x:Static base:ThemeKeys.CheckerboardBackgroundBrush}"
+                  TileMode="Tile" Viewport="0,0,32,32" ViewportUnits="Absolute">
+        <DrawingBrush.Drawing>
+            <DrawingGroup>
+                <!-- 底色（亮格） -->
+                <GeometryDrawing Brush="{StaticResource {x:Static base:ThemeKeys.CanvasBackgroundBrush}}">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="0,0,32,32"/>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <!-- 对角两暗格 -->
+                <GeometryDrawing Brush="{StaticResource {x:Static base:ThemeKeys.CanvasGridMinorBrush}}">
+                    <GeometryDrawing.Geometry>
+                        <GeometryGroup>
+                            <RectangleGeometry Rect="0,0,16,16"/>
+                            <RectangleGeometry Rect="16,16,16,16"/>
+                        </GeometryGroup>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+            </DrawingGroup>
+        </DrawingBrush.Drawing>
+    </DrawingBrush>
+
+</ResourceDictionary>

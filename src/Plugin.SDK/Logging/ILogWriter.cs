@@ -8,10 +8,7 @@ namespace SunEyeVision.Plugin.SDK.Logging
     /// <remarks>
     /// 实现此接口可将日志输出到不同目标：
     /// - 文件（FileLogWriter）
-    /// - 控制台（ConsoleLogWriter）
-    /// - 调试输出（DebugLogWriter）
     /// - UI界面（UILogWriter）
-    /// - 远程服务（RemoteLogWriter）
     /// </remarks>
     public interface ILogWriter
     {

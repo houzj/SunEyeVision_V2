@@ -9,14 +9,6 @@
         Background="#FFFFFF"
         Loaded="Window_Loaded">
 
-    <Window.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="../Resources/AppResources.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </Window.Resources>
-
     <Grid>
         <!-- 右侧内容 -->
         <Border Padding="40">

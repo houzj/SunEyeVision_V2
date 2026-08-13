@@ -32,7 +32,7 @@
         // ============ 边框 / 分隔 ============
         /// <summary>常规边框，对应 UI ThemeKeys.BorderBrush</summary>
         public const string BorderBrush = "ThemeBorderBrush";
-        /// <summary>浅色分隔线，对应 UI ThemeKeys.DividerBrushBrush</summary>
+        /// <summary>浅色分隔线（Brush 层），对应 UI ThemeKeys.DividerBrushBrush（值类型为 Brush，用于 BorderBrush 等）</summary>
         public const string DividerBrush = "ThemeDividerBrushBrush";
 
         // ============ 面板 / 背景 ============

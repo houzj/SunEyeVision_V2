@@ -18,10 +18,6 @@
 
     <controls:ToolDebugControlBase.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.SDK;component/UI/Themes/Generic.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
             <localConverters:SortModeConverter x:Key="SortModeConverter"/>
             <localConverters:MultiTemplateModeConverter x:Key="MultiTemplateModeConverter"/>

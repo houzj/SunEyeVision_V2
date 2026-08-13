@@ -6,11 +6,11 @@
                     xmlns:metadata="clr-namespace:SunEyeVision.Plugin.SDK.Metadata"
                     xmlns:themes="clr-namespace:SunEyeVision.Plugin.SDK.UI.Themes">
 
-    <!-- 颜色/主题资源 - 引用 DefaultTheme.xaml（SDK 兜底语义 token，值来自 ColorConstants.cs）。
-         运行时若存在 UI 主题字典（Application.Resources 置顶注入），同名 Theme 前缀 key 会被覆盖，SDK 控件随主题。 -->
-    <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="DefaultTheme.xaml"/>
-    </ResourceDictionary.MergedDictionaries>
+    <!-- 颜色/主题资源说明：
+         SDK 兜底语义 token（DefaultTheme.xaml）不再由本样式库合并，改由宿主 Application 级（AppResources.xaml）显式合入。
+         原因：本样式库被 SDK 控件局部合入（如 Roi 编辑器），若在此合并 DefaultTheme 会把固定亮色值带到控件级，
+         遮蔽 Application 级主题字典。拆出后控件合入本库只拿样式（内部全用 DynamicResource 向上查找），
+         主题字典能正常覆盖；脱离 UI 宿主时由宿主 Application 级 DefaultTheme 提供兜底。 -->
 
     <!-- 转换器 -->
     <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
@@ -26,8 +26,9 @@
     <DropShadowEffect x:Key="PopupShadowEffect" Color="Black" BlurRadius="6" ShadowDepth="2" Direction="270" Opacity="0.15"/>
 
     <!-- ================================================================ -->
-    <!-- 颜色定义说明：SDK 控件统一使用 Theme 前缀语义 key（见 DefaultTheme.xaml）。 -->
-    <!-- 无 UI 宿主时由 DefaultTheme.xaml 提供亮色兜底，有 UI 宿主时被 UI 主题覆盖。 -->
+    <!-- 颜色定义说明：SDK 控件统一使用 Theme 前缀语义 key（定义见 DefaultTheme.xaml）。 -->
+    <!-- DefaultTheme 由宿主 Application 级（AppResources.xaml）合入，本库不再合并，
+         避免控件局部合入本库时把固定亮色值带到控件级遮蔽主题。 -->
     <!-- 以下仅保留 SDK 内部派生的带透明度笔刷（非 UI 语义 key，不构成同名冲突）。 -->
     <!-- ================================================================ -->
 

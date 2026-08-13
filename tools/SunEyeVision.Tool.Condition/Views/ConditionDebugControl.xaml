@@ -12,9 +12,6 @@
 
     <controls:ToolDebugControlBase.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.SDK;component/UI/Themes/Generic.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
             <local:ConditionTypeConverter x:Key="ConditionTypeConverter"/>
             <!-- String 占位符：紧凑居中符号（不撑满列宽），仅 String 规则显示 -->
             <Style x:Key="StringPlaceholderTextStyle" TargetType="TextBlock">

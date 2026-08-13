@@ -15,10 +15,6 @@
 
     <controls:ToolDebugControlBase.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.SDK;component/UI/Themes/Generic.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
             <localConverters:ThresholdMethodConverter x:Key="ThresholdMethodConverter"/>
         </ResourceDictionary>

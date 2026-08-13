@@ -10,7 +10,7 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/SunEyeVision.UI;component/Views/Resources/AppResources.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/SunEyeVision.UI;component/Shell/Resources/AppResources.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
             <!-- Tab按钮样式 -->

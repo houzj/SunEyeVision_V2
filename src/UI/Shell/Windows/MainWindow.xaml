@@ -32,9 +32,6 @@
 
     <Window.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="../Resources/AppResources.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
             <convertersUI:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
             <convertersPath:SmartPathConverter x:Key="SmartPathConverter"/>
             <converters:ContinuousRunIconTriangleInLoopConverter x:Key="ContinuousRunIconTriangleInLoopConverter"/>

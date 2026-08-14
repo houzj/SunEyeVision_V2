@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
@@ -111,7 +111,7 @@ namespace SunEyeVision.UI.Shell.Controls.Common
                 {
                     FontSize = 12,
                     FontWeight = FontWeights.Bold,
-                    Foreground = new SolidColorBrush(Color.FromRgb(102, 102, 102)),
+                    Foreground = (Brush?)TryFindResource(SunEyeVision.UI.Themes.Base.ThemeKeys.TextSecondaryBrush) ?? Brushes.Gray,
                     TextAlignment = TextAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center
                 };

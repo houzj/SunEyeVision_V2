@@ -15,6 +15,8 @@
                 <ResourceDictionary Source="Resources/Styles/CanvasStyleResources.xaml"/>
                 <!-- 通用样式资源 -->
                 <ResourceDictionary Source="Resources/Styles/CommonStyleResources.xaml"/>
+                <!-- 菜单样式资源（主题化菜单弹出框，跟随亮/暗主题） -->
+                <ResourceDictionary Source="Resources/Styles/MenuStyleResources.xaml"/>
                 <!-- 语义主题字典由 ThemeManager 在运行时注入并置顶（见 Themes/Light/Dark） -->
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>

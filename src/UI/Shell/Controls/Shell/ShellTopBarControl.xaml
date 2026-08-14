@@ -40,11 +40,22 @@
         </Style>
 
         <!-- 菜单按钮样式 -->
-        <Style x:Key="TitleBarMenuButton" TargetType="MenuItem">
+        <Style x:Key="TitleBarMenuButton" TargetType="MenuItem" BasedOn="{StaticResource ThemeMenuItemStyle}">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TitleBarIconBrush}}"/>
             <Setter Property="Padding" Value="12,4"/>
             <Setter Property="FontSize" Value="12"/>
+            <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True"/>
+        </Style>
+
+        <!-- 工作流选择下拉框样式（受主题系统管理，替代 StyledComboBox 的硬编码亮色） -->
+        <Style x:Key="WorkflowComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
+            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.InputBackgroundBrush}}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}"/>
+            <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True"/>
         </Style>
     </UserControl.Resources>
@@ -190,8 +201,7 @@
                           SelectedItem="{Binding SelectedTab, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                           DisplayMemberPath="Name"
                           IsSynchronizedWithCurrentItem="True"
-                          WindowChrome.IsHitTestVisibleInChrome="True"
-                          Style="{StaticResource StyledComboBox}"/>
+                          Style="{StaticResource WorkflowComboBoxStyle}"/>
             </StackPanel>
 
             <!-- 右侧：项目信息 + 窗口控制（第一行） -->

@@ -215,7 +215,9 @@
                             Tag="{Binding}"
                             x:Name="HitAreaBorder">
                         <Border.ContextMenu>
-                            <ContextMenu Background="#FFFFFF" BorderBrush="#CCCCCC" BorderThickness="1" Padding="4">
+                            <ContextMenu Background="{DynamicResource {x:Static base:ThemeKeys.ContextMenuBackgroundBrush}}"
+                                         BorderBrush="{DynamicResource {x:Static base:ThemeKeys.BorderBrush}}"
+                                         BorderThickness="1" Padding="4">
                                 <MenuItem Header="重命名" Click="NodeContextMenu_Rename_Click"/>
                             </ContextMenu>
                         </Border.ContextMenu>

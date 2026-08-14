@@ -1,9 +1,10 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:local="clr-namespace:SunEyeVision.UI.Shell.Controls.Common">
+                    xmlns:local="clr-namespace:SunEyeVision.UI.Shell.Controls.Common"
+                    xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base">
 
     <Style TargetType="{x:Type local:CollapsibleSplitterBox}" BasedOn="{StaticResource {x:Type GridSplitter}}">
-        <Setter Property="Background" Value="#DDDDDD"/>
+        <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.SplitterBackgroundBrush}}"/>
         <Setter Property="ShowsPreview" Value="False"/>
         <Setter Property="ResizeBehavior" Value="PreviousAndNext"/>
         <Setter Property="Template">
@@ -18,9 +19,8 @@
                                 Width="16"
                                 Height="16"
                                 Padding="0"
-                                Background="#DDDDDD"
-                                BorderBrush="#CCCCCC"
-                                BorderThickness="1"
+                                Background="Transparent"
+                                BorderThickness="0"
                                 Cursor="Hand"
                                 ToolTip="点击折叠/展开"
                                 Panel.ZIndex="100"

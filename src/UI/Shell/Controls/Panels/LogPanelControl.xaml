@@ -126,6 +126,7 @@
         <!-- 过滤按钮样式 -->
         <Style TargetType="ToggleButton" x:Key="LogFilterToggleButtonStyle">
             <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.InputBackgroundBrush}}"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="6,3"/>
@@ -157,6 +158,43 @@
                     <Setter Property="FontWeight" Value="SemiBold"/>
                 </Trigger>
             </Style.Triggers>
+        </Style>
+
+        <!-- 工具栏操作按钮样式（清空/复制全部），带暗色主题适配的悬停效果 -->
+        <Style TargetType="Button" x:Key="LogToolbarButtonStyle">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
+            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.InputBackgroundBrush}}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,3"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}"
+                                CornerRadius="3">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ControlHoverBackgroundBrush}}"/>
+                                <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.TextDisabledBrush}}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ControlSelectedBackgroundBrush}}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextDisabledBrush}}"/>
+                                <Setter Property="Cursor" Value="Arrow"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
     </UserControl.Resources>
 
@@ -291,21 +329,11 @@
                                                SwitchHeight="18"/>
                         <Button Content="清空"
                                 Command="{Binding ClearCommand}"
-                                Padding="8,3"
-                                FontSize="11"
                                 Margin="0,0,4,0"
-                                Background="{DynamicResource {x:Static base:ThemeKeys.InputBackgroundBrush}}"
-                                BorderBrush="{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}"
-                                BorderThickness="1"
-                                Cursor="Hand"/>
+                                Style="{StaticResource LogToolbarButtonStyle}"/>
                         <Button Content="复制全部"
                                 Command="{Binding CopyAllCommand}"
-                                Padding="8,3"
-                                FontSize="11"
-                                Background="{DynamicResource {x:Static base:ThemeKeys.InputBackgroundBrush}}"
-                                BorderBrush="{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}"
-                                BorderThickness="1"
-                                Cursor="Hand"/>
+                                Style="{StaticResource LogToolbarButtonStyle}"/>
                     </StackPanel>
                 </Grid>
             </Border>

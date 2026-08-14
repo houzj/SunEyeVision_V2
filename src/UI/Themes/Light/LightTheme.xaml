@@ -9,7 +9,7 @@
     <!-- ============================================================ -->
 
     <!-- ============ 窗口 / 面板底色 ============ -->
-    <Color x:Key="{x:Static base:ThemeKeys.WindowBackground}">#2D2D30</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.WindowBackground}">#F5F5F5</Color>
     <Color x:Key="{x:Static base:ThemeKeys.TitleBarBackground}">#F5F5F5</Color>
     <Color x:Key="{x:Static base:ThemeKeys.PanelBackground}">#FFFFFF</Color>
     <Color x:Key="{x:Static base:ThemeKeys.WorkspaceBackground}">#F5F5F5</Color>
@@ -17,7 +17,7 @@
     <!-- ============ 控件底色 ============ -->
     <Color x:Key="{x:Static base:ThemeKeys.ControlBackground}">#FFFFFF</Color>
     <Color x:Key="{x:Static base:ThemeKeys.ControlHoverBackground}">#E8F4F8</Color>
-    <Color x:Key="{x:Static base:ThemeKeys.ControlSelectedBackground}">#0066CC</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.ControlSelectedBackground}">#FFD6EAF8</Color>
 
     <!-- ============ 文字 ============ -->
     <Color x:Key="{x:Static base:ThemeKeys.TextPrimary}">#FF333333</Color>
@@ -50,7 +50,7 @@
     <!-- ============ 表格（批次2） ============ -->
     <Color x:Key="{x:Static base:ThemeKeys.TableRowBackground}">#FFFFFFFF</Color>
     <Color x:Key="{x:Static base:ThemeKeys.TableRowHoverBackground}">#FFE3F2FD</Color>
-    <Color x:Key="{x:Static base:ThemeKeys.TableRowSelectedBackground}">#FF1976D2</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.TableRowSelectedBackground}">#FFD6EAF8</Color>
     <Color x:Key="{x:Static base:ThemeKeys.TableHeaderBackground}">#FFF5F5F5</Color>
     <Color x:Key="{x:Static base:ThemeKeys.TableHeaderText}">#FF333333</Color>
     <Color x:Key="{x:Static base:ThemeKeys.TableGridLine}">#FFEEEEEE</Color>

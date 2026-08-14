@@ -623,29 +623,31 @@ public class SolutionManager
     }
 
     /// <summary>
-    /// 删除解决方案（仅删除元数据，不删除实际文件）
+    /// 删除解决方案
     /// </summary>
     /// <param name="solutionId">解决方案ID</param>
+    /// <param name="deleteFile">是否同时删除磁盘上的解决方案文件</param>
+    /// <returns>是否成功。删文件失败且文件仍存在时返回 false。</returns>
     /// <remarks>
     /// 优化（2026-03-23）：
     /// 1. 区分当前解决方案和未打开解决方案
     /// 2. 如果是当前解决方案，先自动关闭再删除元数据
-    /// 3. 仅删除元数据，保留实际解决方案文件
+    /// 3. deleteFile 为 true 时，关闭后删除磁盘文件（删除失败且文件仍存在则中止，条目保留）
     /// 4. 删除后确保 CurrentSolutionId 被清除（如果是当前解决方案）
-    /// 5. 提供清晰的日志记录，区分两种删除场景
+    /// 5. 提供清晰的日志记录，区分删除场景
     /// </remarks>
-    public void DeleteSolution(string solutionId)
+    public bool DeleteSolution(string solutionId, bool deleteFile = false)
     {
         if (string.IsNullOrEmpty(solutionId))
         {
             _logger.Log(LogLevel.Warning, "删除解决方案失败：解决方案ID为空", "SolutionManager");
-            return;
+            return false;
         }
 
         // 检查是否是当前打开的解决方案
         bool isCurrentSolution = CurrentSolution?.Id == solutionId;
 
-        // 如果是当前解决方案，先关闭
+        // 如果是当前解决方案，先关闭（释放文件句柄，避免后续删文件被占用）
         if (isCurrentSolution)
         {
             _logger.Log(LogLevel.Info, $"删除当前打开的解决方案: Id={solutionId}", "SolutionManager");
@@ -661,12 +663,31 @@ public class SolutionManager
         if (metadata == null)
         {
             _logger.Log(LogLevel.Warning, $"删除解决方案失败：元数据不存在: {solutionId}", "SolutionManager");
-            return;
+            return false;
         }
 
-        // ✅ 优化：仅删除元数据，不删除实际解决方案文件
-        // 保留文件，用户可以手动删除或在需要时重新打开
-        _logger.Log(LogLevel.Info, $"仅删除元数据，保留解决方案文件: {metadata.FilePath}", "SolutionManager");
+        // 按需删除磁盘文件
+        if (deleteFile)
+        {
+            string filePath = metadata.FilePath;
+
+            if (!string.IsNullOrEmpty(filePath) && _repository.Exists(filePath))
+            {
+                bool fileDeleted = _repository.Delete(filePath);
+                if (!fileDeleted && _repository.Exists(filePath))
+                {
+                    // rule-015：删文件失败且文件仍存在，不静默继续，中止并保留条目
+                    _logger.Log(LogLevel.Error, $"删除解决方案失败：无法删除源文件，已中止: {filePath}", "SolutionManager");
+                    return false;
+                }
+            }
+
+            _logger.Log(LogLevel.Success, $"删除解决方案及源文件: {filePath}", "SolutionManager");
+        }
+        else
+        {
+            _logger.Log(LogLevel.Info, $"仅删除元数据，保留解决方案文件: {metadata.FilePath}", "SolutionManager");
+        }
 
         // 从注册表移除
         _registry.Unregister(solutionId);
@@ -693,7 +714,8 @@ public class SolutionManager
         };
         SolutionRemoved?.Invoke(this, removedArgs);
 
-        _logger.Log(LogLevel.Success, $"删除解决方案元数据成功: {metadata.Name} (Id={solutionId})", "SolutionManager");
+        _logger.Log(LogLevel.Success, $"删除解决方案成功: {metadata.Name} (Id={solutionId})", "SolutionManager");
+        return true;
     }
 
     /// <summary>

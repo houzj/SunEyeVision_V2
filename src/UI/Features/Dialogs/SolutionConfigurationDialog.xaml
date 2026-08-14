@@ -175,20 +175,20 @@
                     <Image Source="/SunEyeVision.UI;component/Icons/app_logo.ico" Width="40" Height="40" VerticalAlignment="Center"/>
                     <StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="12,0,0,0">
                         <TextBlock Text="太阳眼视觉" FontSize="16" FontWeight="Bold"
-                                   Foreground="{DynamicResource {x:Static base:ThemeKeys.TextOnDarkBrush}}"/>
+                                   Foreground="{DynamicResource {x:Static base:ThemeKeys.TitleBarTextBrush}}"/>
                         <TextBlock Text="SunEyeVision" FontSize="11" Opacity="0.8"
-                                   Foreground="{DynamicResource {x:Static base:ThemeKeys.TextOnDarkBrush}}"/>
+                                   Foreground="{DynamicResource {x:Static base:ThemeKeys.TitleBarTextBrush}}"/>
                     </StackPanel>
                 </StackPanel>
 
                 <!-- 版本号 -->
                 <TextBlock x:Name="VersionTextBlock" Grid.Column="1" VerticalAlignment="Center"
                            HorizontalAlignment="Center" FontSize="12" Opacity="0.6"
-                           Foreground="{DynamicResource {x:Static base:ThemeKeys.TextOnDarkBrush}}"/>
+                           Foreground="{DynamicResource {x:Static base:ThemeKeys.TitleBarTextBrush}}"/>
 
                 <!-- 右上控件：启动时跳过 + 关闭 -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,8,0">
-                    <CheckBox x:Name="SkipCheckBox" Content="启动时跳过" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextOnDarkBrush}}"
+                    <CheckBox x:Name="SkipCheckBox" Content="启动时跳过" Foreground="{DynamicResource {x:Static base:ThemeKeys.TitleBarTextBrush}}"
                               IsChecked="{Binding SkipStartupConfig}" VerticalAlignment="Center"
                               Margin="0,0,16,0" FontSize="12"
                               WindowChrome.IsHitTestVisibleInChrome="True"/>
@@ -199,7 +199,7 @@
                             <ControlTemplate TargetType="Button">
                                 <Border x:Name="Bd" Background="Transparent" CornerRadius="4">
                                     <TextBlock Text="✕" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"
-                                               Foreground="{DynamicResource {x:Static base:ThemeKeys.TextOnDarkBrush}}"/>
+                                               Foreground="{DynamicResource {x:Static base:ThemeKeys.TitleBarTextBrush}}"/>
                                 </Border>
                                 <ControlTemplate.Triggers>
                                     <Trigger Property="IsMouseOver" Value="True">
@@ -451,7 +451,7 @@
                                                                         <Binding Path="DataContext.SelectedMetadataId" RelativeSource="{RelativeSource AncestorType=Window}"/>
                                                                     </MultiBinding>
                                                                 </DataTrigger.Binding>
-                                                                <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
+                                                                <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
                                                                 <Setter Property="FontWeight" Value="Bold"/>
                                                             </DataTrigger>
                                                         </Style.Triggers>
@@ -494,6 +494,31 @@
                                                 <Run Text="{Binding ModifiedTime, StringFormat='{}{0:MM-dd HH:mm}'}" FontWeight="Medium"/>
                                             </TextBlock>
                                         </StackPanel>
+
+                                        <!-- "已打开"徽章：卡片右下角，仅当 Id == CurrentSolutionId 时显示（受主题管理） -->
+                                        <Border Grid.RowSpan="4" CornerRadius="3" Padding="6,2"
+                                                HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,0,4"
+                                                Background="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"
+                                                IsHitTestVisible="False">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Value="True">
+                                                            <DataTrigger.Binding>
+                                                                <MultiBinding Converter="{StaticResource EqualityConverter}">
+                                                                    <Binding Path="Id"/>
+                                                                    <Binding Path="DataContext.CurrentSolutionId" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                                                </MultiBinding>
+                                                            </DataTrigger.Binding>
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <TextBlock Text="已打开" FontSize="10" FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource {x:Static base:ThemeKeys.TextOnDarkBrush}}"/>
+                                        </Border>
                                     </Grid>
 
                                     <!-- 选中命令绑定 -->

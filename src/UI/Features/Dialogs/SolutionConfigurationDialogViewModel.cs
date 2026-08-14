@@ -580,62 +580,55 @@ namespace SunEyeVision.UI.Features.Dialogs
             // 检查是否是当前打开的解决方案
             bool isCurrentSolution = SelectedMetadata.Id == CurrentSolutionId;
 
-            // ✅ 根据是否是当前解决方案显示不同的提示信息
-            string message;
-            if (isCurrentSolution)
+            // 打开主题化确认框，让用户选择是否同时删除源文件
+            var dialog = new DeleteSolutionDialog(SelectedMetadata.Name)
             {
-                message = $"解决方案「{SelectedMetadata.Name}」当前正在使用中。\n\n" +
-                         $"删除此解决方案将会：\n" +
-                         $"• 自动关闭当前解决方案\n" +
-                         $"• 仅删除元数据，保留解决方案文件\n" +
-                         $"• 当前将处于无打开解决方案的状态\n\n" +
-                         $"确定要删除吗？";
-            }
-            else
-            {
-                message = $"确定要删除解决方案「{SelectedMetadata.Name}」吗？\n\n" +
-                         $"此操作将会：\n" +
-                         $"• 仅删除元数据，保留解决方案文件\n" +
-                         $"• 解决方案文件仍可手动打开\n\n" +
-                         $"此操作不可恢复！";
-            }
+                Owner = _ownerWindow
+            };
 
-            var result = MessageBox.Show(
-                message,
-                "确认删除",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
+            if (dialog.ShowDialog() != true) return;
 
-            if (result == MessageBoxResult.Yes)
+            try
             {
-                try
+                var solutionToDelete = SelectedMetadata;
+                bool deleteFile = dialog.DeleteFile;
+
+                // 从列表中移除（在删除前先移除，避免事件触发时找不到）
+                SolutionMetadatas.Remove(solutionToDelete);
+
+                // 从SolutionManager中删除（会自动关闭当前解决方案，如果需要）
+                bool deleted = _solutionManager.DeleteSolution(solutionToDelete.Id, deleteFile);
+
+                if (!deleted)
                 {
-                    var solutionToDelete = SelectedMetadata;
-
-                    // 从列表中移除（在删除前先移除，避免事件触发时找不到）
-                    SolutionMetadatas.Remove(solutionToDelete);
-
-                    // 从SolutionManager中删除（会自动关闭当前解决方案，如果需要）
-                    _solutionManager.DeleteSolution(solutionToDelete.Id);
-
-                    // 清除选中状态
-                    SelectedMetadata = null;
-
-                    // ✅ 根据删除场景记录不同的日志
-                    if (isCurrentSolution)
-                    {
-                        LogSuccess($"删除当前打开的解决方案: {solutionToDelete.Name} (已自动关闭)");
-                    }
-                    else
-                    {
-                        LogSuccess($"删除未打开的解决方案: {solutionToDelete.Name}");
-                    }
+                    // 删除失败（如删源文件被占用），回滚列表项
+                    SolutionMetadatas.Add(solutionToDelete);
+                    LogError($"删除解决方案失败: {solutionToDelete.Name}");
+                    MessageBox.Show("删除解决方案失败，请重试。", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
                 }
-                catch (Exception ex)
+
+                // 清除选中状态
+                SelectedMetadata = null;
+
+                // ✅ 根据删除场景记录不同的日志
+                if (deleteFile)
                 {
-                    LogError($"删除解决方案失败: {ex.Message}");
-                    MessageBox.Show($"删除解决方案失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    LogSuccess($"删除解决方案及源文件: {solutionToDelete.Name}");
                 }
+                else if (isCurrentSolution)
+                {
+                    LogSuccess($"删除当前打开的解决方案: {solutionToDelete.Name} (已自动关闭)");
+                }
+                else
+                {
+                    LogSuccess($"删除未打开的解决方案: {solutionToDelete.Name}");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError($"删除解决方案失败: {ex.Message}");
+                MessageBox.Show($"删除解决方案失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

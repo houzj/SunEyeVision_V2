@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using SunEyeVision.UI.Services;
 
 using SunEyeVision.UI.Features.WorkflowUI;
@@ -16,11 +16,25 @@ namespace SunEyeVision.UI.Shell.Controls
     public class WorkspaceViewModel : ViewModelBase
     {
         private readonly IRootCoordinator _coordinator;
-        private object? _selectedTab;
 
         public WorkspaceViewModel(IRootCoordinator coordinator)
         {
-            _coordinator = coordinator;
+            _coordinator = coordinator ?? throw new ArgumentNullException(nameof(coordinator));
+            // 订阅根 VM 选中变化事件，保持 UI 绑定与真相源同步（对齐 ShellTopBarViewModel 纯代理模式）
+            _coordinator.SelectedTabChanged += OnSelectedTabChanged;
+        }
+
+        /// <summary>
+        /// 解绑根协调器事件（窗口关闭时调用）
+        /// </summary>
+        public void Shutdown()
+        {
+            _coordinator.SelectedTabChanged -= OnSelectedTabChanged;
+        }
+
+        private void OnSelectedTabChanged(object? sender, EventArgs e)
+        {
+            OnPropertyChanged(nameof(SelectedTab));
         }
 
         /// <summary>
@@ -33,10 +47,10 @@ namespace SunEyeVision.UI.Shell.Controls
         /// </summary>
         public object? SelectedTab
         {
-            get => _selectedTab;
+            get => _coordinator.SelectedTab;
             set
             {
-                if (SetProperty(ref _selectedTab, value))
+                if (!ReferenceEquals(_coordinator.SelectedTab, value))
                 {
                     _coordinator.SelectedTab = value!;
                 }

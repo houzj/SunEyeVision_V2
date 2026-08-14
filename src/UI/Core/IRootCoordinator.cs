@@ -145,6 +145,11 @@ namespace SunEyeVision.UI.Core
         object SelectedTab { get; set; }
 
         /// <summary>
+        /// 当前选中工作流标签页变化事件（代码路径切换 Tab 时通知子 VM 刷新绑定）
+        /// </summary>
+        event EventHandler? SelectedTabChanged;
+
+        /// <summary>
         /// 工作流标签页集合（顶栏下拉框）
         /// </summary>
         System.Collections.IList Tabs { get; }

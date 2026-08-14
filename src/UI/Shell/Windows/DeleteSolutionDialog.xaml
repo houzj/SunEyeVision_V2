@@ -1,0 +1,126 @@
+<Window x:Class="SunEyeVision.UI.Shell.Windows.DeleteSolutionDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
+        mc:Ignorable="d"
+        Title="删除解决方案"
+        Width="360"
+        SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        WindowStyle="None"
+        Background="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}">
+
+    <Window.Resources>
+        <!-- 圆点单选样式（避免系统默认 RadioButton 样式透出，选中态用主题主色） -->
+        <Style x:Key="RadioOptionStyle" TargetType="RadioButton">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <StackPanel Orientation="Horizontal" Background="Transparent">
+                            <Grid Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,8,0">
+                                <Ellipse x:Name="OuterRing"
+                                         Stroke="{DynamicResource {x:Static base:ThemeKeys.TextDisabledBrush}}"
+                                         StrokeThickness="1.5"
+                                         Width="16" Height="16"/>
+                                <Ellipse x:Name="InnerDot"
+                                         Fill="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"
+                                         Width="8" Height="8"
+                                         Visibility="Collapsed"/>
+                            </Grid>
+                            <ContentPresenter VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="OuterRing" Property="Stroke"
+                                        Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="OuterRing" Property="Stroke"
+                                        Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
+                                <Setter TargetName="InnerDot" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Border BorderBrush="{DynamicResource {x:Static base:ThemeKeys.BorderBrush}}"
+            BorderThickness="1"
+            CornerRadius="6">
+        <Grid Margin="20,18">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- 问句 -->
+            <TextBlock x:Name="PromptTextBlock"
+                       Grid.Row="0"
+                       FontSize="14"
+                       FontWeight="Medium"
+                       TextWrapping="Wrap"
+                       Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"
+                       Margin="0,0,0,16"/>
+
+            <!-- 选项 -->
+            <StackPanel Grid.Row="1">
+                <RadioButton x:Name="RemoveOnlyRadio"
+                             GroupName="DeleteOption"
+                             IsChecked="True"
+                             Content="仅从列表移除"
+                             Style="{StaticResource RadioOptionStyle}"
+                             Margin="0,0,0,12"/>
+                <RadioButton x:Name="DeleteFileRadio"
+                             GroupName="DeleteOption"
+                             Content="同时删除源文件"
+                             Style="{StaticResource RadioOptionStyle}"
+                             Margin="0,0,0,16"/>
+            </StackPanel>
+
+            <!-- 警示 -->
+            <TextBlock Grid.Row="2"
+                       Text="⚠ 此操作不可恢复"
+                       FontSize="12"
+                       Foreground="{DynamicResource {x:Static base:ThemeKeys.WarningBrush}}"
+                       Margin="0,0,0,18"/>
+
+            <!-- 按钮 -->
+            <StackPanel Grid.Row="3"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right">
+                <Button Content="取消"
+                        Width="80"
+                        Height="34"
+                        Margin="0,0,8,0"
+                        Padding="0"
+                        FontSize="13"
+                        Cursor="Hand"
+                        Click="OnCancelButtonClick"
+                        Background="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"
+                        Foreground="{DynamicResource {x:Static base:ThemeKeys.TextOnDarkBrush}}"
+                        BorderThickness="0"/>
+                <Button Content="删除"
+                        Width="80"
+                        Height="34"
+                        Padding="0"
+                        FontSize="13"
+                        Cursor="Hand"
+                        Click="OnDeleteButtonClick"
+                        Background="{DynamicResource {x:Static base:ThemeKeys.ErrorBrush}}"
+                        Foreground="{DynamicResource {x:Static base:ThemeKeys.TextOnDarkBrush}}"
+                        BorderThickness="0"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

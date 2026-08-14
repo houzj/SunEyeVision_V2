@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -410,6 +410,11 @@ namespace SunEyeVision.UI.Shell.Windows
 
         // 工作流标签页
         public WorkflowTabControlViewModel WorkflowTabViewModel { get; }
+
+        /// <summary>
+        /// 当前选中工作流标签页变化事件（代码路径切换 Tab 时通知子 VM 刷新绑定，如 WorkspaceViewModel）
+        /// </summary>
+        public event EventHandler? SelectedTabChanged;
 
         /// <summary>
         /// 当前选中的工作流标签页的命令管理器
@@ -1001,6 +1006,9 @@ SplitterPosition = position;
             SelectedConnection = null;
             ClearNodeSelections();
             ClearConnectionSelections();
+
+            // 广播选中变化（子 VM 订阅后刷新绑定，如 WorkspaceViewModel/ShellTopBarViewModel）
+            SelectedTabChanged?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -1574,6 +1582,8 @@ SplitterPosition = position;
                 {
                     WorkflowTabViewModel.ResetToDefault();
                     LogInfo("已重置为默认状态（解决方案已关闭）");
+                    // ResetToDefault 为静默切换（suppressEvent），需手动广播选中变化让子 VM 刷新绑定
+                    SelectedTabChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
         }

@@ -28,6 +28,7 @@ namespace SunEyeVision.UI.Shell.Controls
         {
             _coordinator = coordinator;
             _coordinator.PropertyChanged += OnCoordinatorPropertyChanged;
+            _coordinator.SelectedTabChanged += OnSelectedTabChanged;
             RefreshState();
 
             _themeManager = SunEyeVision.UI.Core.ServiceLocator.Instance.GetService<ThemeManager>();
@@ -45,6 +46,7 @@ namespace SunEyeVision.UI.Shell.Controls
         public void Shutdown()
         {
             _coordinator.PropertyChanged -= OnCoordinatorPropertyChanged;
+            _coordinator.SelectedTabChanged -= OnSelectedTabChanged;
             if (_themeManager != null)
             {
                 _themeManager.ThemeChanged -= OnThemeChanged;
@@ -59,6 +61,11 @@ namespace SunEyeVision.UI.Shell.Controls
         private void ExecuteToggleTheme()
         {
             _themeManager?.ToggleTheme();
+        }
+
+        private void OnSelectedTabChanged(object? sender, EventArgs e)
+        {
+            OnPropertyChanged(nameof(SelectedTab));
         }
 
         private void OnCoordinatorPropertyChanged(object? sender, PropertyChangedEventArgs e)

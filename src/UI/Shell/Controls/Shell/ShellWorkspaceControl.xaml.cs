@@ -171,10 +171,11 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                     RefreshMiniMap();
                 }), System.Windows.Threading.DispatcherPriority.Loaded);
 
-                // 布局完成后再同步画布容器尺寸（此时 Viewport 尺寸才就绪）
+                // 布局完成后再同步画布容器尺寸并自动定位到节点（此时 Viewport 尺寸才就绪）
                 Dispatcher.BeginInvoke(new Action(() =>
                 {
                     UpdateCanvasSizingGridSize();
+                    CenterOnWorkflowNodes();
                 }), System.Windows.Threading.DispatcherPriority.Loaded);
             }
         }
@@ -1103,6 +1104,50 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             _lastCanvasSizingHeight = h;
             sizingGrid.Width = w;
             sizingGrid.Height = h;
+        }
+
+        /// <summary>
+        /// 打开工作流后自动滚动到节点包围盒中心（仅调整滚动位置，不改变缩放）。
+        /// 让用户打开即见节点，无需手动拖动滚动条。空画布或无有效节点时保持左上角 (0,0)。
+        /// </summary>
+        private void CenterOnWorkflowNodes()
+        {
+            var scrollViewer = _canvasScrollViewer;
+            var selectedTab = _viewModel?.WorkflowTabViewModel?.SelectedTab;
+            if (scrollViewer == null || selectedTab == null || selectedTab.CurrentScale <= 0)
+                return;
+            var nodes = selectedTab.WorkflowNodes;
+            if (nodes == null || nodes.Count == 0)
+                return;
+
+            // 计算节点包围盒（过滤无效坐标）
+            double minX = double.MaxValue, minY = double.MaxValue;
+            double maxX = double.MinValue, maxY = double.MinValue;
+            bool hasValid = false;
+            foreach (var node in nodes)
+            {
+                if (!double.IsFinite(node.Position.X) || !double.IsFinite(node.Position.Y))
+                    continue;
+                minX = Math.Min(minX, node.Position.X);
+                minY = Math.Min(minY, node.Position.Y);
+                maxX = Math.Max(maxX, node.Position.X);
+                maxY = Math.Max(maxY, node.Position.Y);
+                hasValid = true;
+            }
+            if (!hasValid)
+                return;
+
+            double scale = selectedTab.CurrentScale;
+            // 节点包围盒中心（画布坐标）→ 视口居中所需的滚动偏移（缩放后像素）
+            double targetX = (minX + maxX) / 2.0 * scale - scrollViewer.ViewportWidth / 2.0;
+            double targetY = (minY + maxY) / 2.0 * scale - scrollViewer.ViewportHeight / 2.0;
+            // clamp 到合法滚动范围（防滚出画布）
+            targetX = Math.Max(0, Math.Min(targetX, scrollViewer.ScrollableWidth));
+            targetY = Math.Max(0, Math.Min(targetY, scrollViewer.ScrollableHeight));
+
+            scrollViewer.ScrollToHorizontalOffset(targetX);
+            scrollViewer.ScrollToVerticalOffset(targetY);
+            ScheduleMiniMapRedraw();
         }
 
         /// <summary>

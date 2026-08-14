@@ -67,9 +67,10 @@
 
     <!-- ============ 滚动条（批次2） ============ -->
     <Color x:Key="{x:Static base:ThemeKeys.ScrollBarBackground}">#FF1E1E1E</Color>
-    <Color x:Key="{x:Static base:ThemeKeys.ScrollBarThumb}">#FF3C3C3C</Color>
-    <Color x:Key="{x:Static base:ThemeKeys.ScrollBarThumbHover}">#FF4A4A4A</Color>
-    <Color x:Key="{x:Static base:ThemeKeys.ScrollBarThumbPressed}">#FF555555</Color>
+    <!-- 滑块颜色提亮到 #FF888888（之前 #FF3C3C3C 在深色棋盘格画布背景上几乎不可见，用户"看不到滚动条变化"的真因之一） -->
+    <Color x:Key="{x:Static base:ThemeKeys.ScrollBarThumb}">#FF888888</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.ScrollBarThumbHover}">#FFA0A0A0</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.ScrollBarThumbPressed}">#FFFFFFFF</Color>
 
     <!-- ============ 状态栏 ============ -->
     <Color x:Key="{x:Static base:ThemeKeys.StatusBarBackground}">#FF1E1E1E</Color>

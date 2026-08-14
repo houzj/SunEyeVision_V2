@@ -67,9 +67,10 @@
 
     <!-- ============ 滚动条（批次2） ============ -->
     <Color x:Key="{x:Static base:ThemeKeys.ScrollBarBackground}">#FFF0F0F0</Color>
-    <Color x:Key="{x:Static base:ThemeKeys.ScrollBarThumb}">#FFC0C0C0</Color>
-    <Color x:Key="{x:Static base:ThemeKeys.ScrollBarThumbHover}">#FFA0A0A0</Color>
-    <Color x:Key="{x:Static base:ThemeKeys.ScrollBarThumbPressed}">#FF808080</Color>
+    <!-- 滑块颜色加深到 #FF808080（之前 #FFC0C0C0 太浅，滑块对比度不足） -->
+    <Color x:Key="{x:Static base:ThemeKeys.ScrollBarThumb}">#FF808080</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.ScrollBarThumbHover}">#FF606060</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.ScrollBarThumbPressed}">#FF404040</Color>
 
     <!-- ============ 状态栏 ============ -->
     <Color x:Key="{x:Static base:ThemeKeys.StatusBarBackground}">#FFFFFFFF</Color>

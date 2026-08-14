@@ -481,7 +481,7 @@
                                                       HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
                                                       PreviewMouseWheel="CanvasScrollViewer_PreviewMouseWheel"
                                                       ScrollChanged="CanvasScrollViewer_ScrollChanged"
-                                                      Background="#2B2B2B">
+                                                      Background="{DynamicResource {x:Static base:ThemeKeys.WorkspaceBackgroundBrush}}">
                         <!-- 画布容器：尺寸 = 画布缩放后尺寸（跟随缩放），滚动范围 = 画布大小（对齐 VM）。
                              画布外露出 ScrollViewer 深灰工作区；画布左上对齐。 -->
                         <Grid x:Name="CanvasSizingGrid">

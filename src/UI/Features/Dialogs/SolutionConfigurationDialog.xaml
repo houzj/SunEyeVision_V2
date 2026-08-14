@@ -4,13 +4,19 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:converters="clr-namespace:SunEyeVision.UI.Converters"
+        xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
+        xmlns:dialogs="clr-namespace:SunEyeVision.UI.Features.Dialogs"
         mc:Ignorable="d"
         Title="太阳眼视觉 - 打开解决方案"
-        Width="880"
-        Height="600"
+        Width="960"
+        Height="640"
+        MinWidth="800"
+        MinHeight="520"
         WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
         ResizeMode="CanResize"
-        Background="#F5F5F5">
+        WindowChrome.WindowChrome="{x:Static dialogs:SolutionConfigurationDialog.DialogChrome}"
+        Background="{DynamicResource {x:Static base:ThemeKeys.WindowBackgroundBrush}}">
 
     <Window.Resources>
         <!-- 转换器 -->
@@ -19,8 +25,8 @@
 
         <!-- 主按钮样式 -->
         <Style x:Key="PrimaryButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="#2196F3"/>
-            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextOnDarkBrush}}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="20,8"/>
             <Setter Property="FontSize" Value="13"/>
@@ -37,10 +43,10 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#1976D2"/>
+                                <Setter Property="Opacity" Value="0.9"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter Property="Background" Value="#BDBDBD"/>
+                                <Setter Property="Opacity" Value="0.5"/>
                                 <Setter Property="Cursor" Value="Arrow"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -49,547 +55,462 @@
             </Setter>
         </Style>
 
-        <!-- 次要按钮样式 -->
-        <Style x:Key="SecondaryButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="#9E9E9E"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="20,8"/>
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="FontWeight" Value="Medium"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}"
-                                CornerRadius="4"
-                                Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center"
-                                            VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#757575"/>
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter Property="Background" Value="#E0E0E0"/>
-                                <Setter Property="Cursor" Value="Arrow"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- 工具栏按钮样式 -->
+        <!-- 工具栏文字按钮样式（工程化） -->
         <Style x:Key="ToolbarButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#424242"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Width" Value="36"/>
-            <Setter Property="Height" Value="36"/>
-            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.BorderBrush}}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="FontSize" Value="12"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border Background="{TemplateBinding Background}"
-                                CornerRadius="4">
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="3"
+                                Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center"
                                             VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#E0E0E0"/>
+                                <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ControlHoverBackgroundBrush}}"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter Property="Foreground" Value="#BDBDBD"/>
+                                <Setter Property="Opacity" Value="0.5"/>
                                 <Setter Property="Cursor" Value="Arrow"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
-        </Style>
-
-        <!-- 主要操作按钮样式 -->
-        <Style x:Key="SuccessButtonStyle" TargetType="Button" BasedOn="{StaticResource ToolbarButtonStyle}">
-            <Setter Property="Foreground" Value="#4CAF50"/>
         </Style>
 
         <!-- 危险操作按钮样式 -->
         <Style x:Key="DangerButtonStyle" TargetType="Button" BasedOn="{StaticResource ToolbarButtonStyle}">
-            <Setter Property="Foreground" Value="#F44336"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.ErrorBrush}}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.ErrorBrush}}"/>
+        </Style>
+
+        <!-- 卡片图标按钮样式：透明 + 主题悬停，避免系统默认样式透出卡片选中深色 -->
+        <Style x:Key="CardIconButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="2"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background"
+                                        Value="{DynamicResource {x:Static base:ThemeKeys.ControlHoverBackgroundBrush}}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 最近打开列表项样式 -->
+        <Style x:Key="RecentItemStyle" TargetType="ListBoxItem">
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="Bd" Background="Transparent" CornerRadius="4" Padding="{TemplateBinding Padding}">
+                            <Border.InputBindings>
+                                <MouseBinding Gesture="LeftClick"
+                                              Command="{Binding DataContext.SelectCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                              CommandParameter="{Binding}"/>
+                                <MouseBinding Gesture="LeftDoubleClick"
+                                              Command="{Binding DataContext.LaunchCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                              CommandParameter="{Binding}"/>
+                            </Border.InputBindings>
+                            <ContentPresenter/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowHoverBackgroundBrush}}"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowSelectedBackgroundBrush}}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
     </Window.Resources>
 
-    <Grid Margin="0">
+    <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>  <!-- 自绘标题栏 -->
+            <RowDefinition Height="*"/>     <!-- 主内容 -->
         </Grid.RowDefinitions>
 
-        <!-- 主内容区域：单列布局 -->
-        <Grid Grid.Row="0" Margin="16">
+        <!-- ========== 自绘标题栏（VM 风格深色） ========== -->
+        <Border Grid.Row="0" Height="64"
+                Background="{DynamicResource {x:Static base:ThemeKeys.TitleBarBackgroundBrush}}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Logo + 双行标题 -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="14,0,0,0">
+                    <Image Source="/SunEyeVision.UI;component/Icons/app_logo.ico" Width="40" Height="40" VerticalAlignment="Center"/>
+                    <StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="12,0,0,0">
+                        <TextBlock Text="太阳眼视觉" FontSize="16" FontWeight="Bold"
+                                   Foreground="{DynamicResource {x:Static base:ThemeKeys.TextOnDarkBrush}}"/>
+                        <TextBlock Text="SunEyeVision" FontSize="11" Opacity="0.8"
+                                   Foreground="{DynamicResource {x:Static base:ThemeKeys.TextOnDarkBrush}}"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- 版本号 -->
+                <TextBlock x:Name="VersionTextBlock" Grid.Column="1" VerticalAlignment="Center"
+                           HorizontalAlignment="Center" FontSize="12" Opacity="0.6"
+                           Foreground="{DynamicResource {x:Static base:ThemeKeys.TextOnDarkBrush}}"/>
+
+                <!-- 右上控件：启动时跳过 + 关闭 -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,8,0">
+                    <CheckBox x:Name="SkipCheckBox" Content="启动时跳过" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextOnDarkBrush}}"
+                              IsChecked="{Binding SkipStartupConfig}" VerticalAlignment="Center"
+                              Margin="0,0,16,0" FontSize="12"
+                              WindowChrome.IsHitTestVisibleInChrome="True"/>
+                    <Button x:Name="CloseButton" Width="34" Height="34" Background="Transparent" BorderThickness="0"
+                            Cursor="Hand" Click="CloseButton_Click"
+                            WindowChrome.IsHitTestVisibleInChrome="True">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="Bd" Background="Transparent" CornerRadius="4">
+                                    <TextBlock Text="✕" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                               Foreground="{DynamicResource {x:Static base:ThemeKeys.TextOnDarkBrush}}"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ErrorBrush}}"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ========== 主内容：左右分栏 ========== -->
+        <Grid Grid.Row="1" Margin="16,12,16,16">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="230"/>  <!-- 最近打开 -->
+                <ColumnDefinition Width="*"/>    <!-- 全部方案 -->
             </Grid.ColumnDefinitions>
 
-            <!-- 解决方案列表（占满整个宽度） -->
-            <GroupBox Grid.Column="0" BorderBrush="#E0E0E0" BorderThickness="1" Margin="0">
-                <GroupBox.Header>
-                    <Grid Margin="5,0">
-                        <TextBlock Text="解决方案列表" FontSize="14" FontWeight="Medium" Foreground="#424242"/>
-                    </Grid>
-                </GroupBox.Header>
-
-                <Grid Margin="4">
+            <!-- 左侧：最近打开 -->
+            <Border Grid.Column="0" Background="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}"
+                    BorderBrush="{DynamicResource {x:Static base:ThemeKeys.BorderBrush}}" BorderThickness="1" CornerRadius="4"
+                    Margin="0,0,12,0">
+                <Grid Margin="10">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <!-- 顶部工具栏 -->
-                    <Border Grid.Row="0" Background="#FAFAFA" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1" Padding="10,5">
-                        <DockPanel LastChildFill="True">
-                            <!-- 左侧操作按钮 -->
-                            <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
-                                <!-- 新建按钮 -->
-                                <Button Style="{StaticResource SuccessButtonStyle}"
-                                        Command="{Binding NewSolutionCommand}"
-                                        ToolTip="新建解决方案">
-                                    ➕
-                                </Button>
-                                <!-- 载入按钮 -->
-                                <Button Style="{StaticResource SuccessButtonStyle}"
-                                        Command="{Binding OpenSolutionCommand}"
-                                        ToolTip="载入解决方案"
-                                        Margin="5,0,0,0">
-                                    📂
-                                </Button>
-                                <!-- 另存按钮 -->
-                                <Button Style="{StaticResource SuccessButtonStyle}"
-                                        Command="{Binding SaveSolutionAsCommand}"
-                                        ToolTip="另存解决方案"
-                                        Margin="5,0,0,0">
-                                    💾
-                                </Button>
-                                <!-- 复制按钮 -->
-                                <Button Style="{StaticResource SuccessButtonStyle}"
-                                        Command="{Binding CopySolutionCommand}"
-                                        ToolTip="复制解决方案"
-                                        Margin="5,0,0,0">
-                                    📋
-                                </Button>
-                                <!-- 删除按钮 -->
-                                <Button Style="{StaticResource DangerButtonStyle}"
-                                        Command="{Binding DeleteSolutionCommand}"
-                                        ToolTip="删除解决方案"
-                                        Margin="5,0,0,0">
-                                    🗑️
-                                </Button>
-                            </StackPanel>
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
+                        <TextBlock Text="最近打开" FontSize="14" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
+                        <TextBlock Text="{Binding RecentSolutions.Count, StringFormat=' ({0})'}" FontSize="12"
+                                   Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"
+                                   VerticalAlignment="Center" Margin="6,0,0,0"/>
+                    </StackPanel>
 
-                            <!-- ✅ 新增：右侧切换默认按钮 -->
-                            <Button Content="{Binding ToggleDefaultButtonText}"
-                                    Command="{Binding ToggleDefaultCommand}"
-                                    ToolTip="{Binding ToggleDefaultButtonToolTip}"
-                                    DockPanel.Dock="Right"
-                                    Padding="8,4"
-                                    FontSize="11"
-                                    Cursor="Hand"
-                                    MaxWidth="100"
-                                    HorizontalAlignment="Right">
-                                <Button.Style>
-                                    <Style TargetType="Button">
-                                        <Setter Property="Background" Value="Transparent"/>
-                                        <Setter Property="Foreground" Value="#4CAF50"/>
-                                        <Setter Property="BorderBrush" Value="#4CAF50"/>
-                                        <Setter Property="BorderThickness" Value="1"/>
-                                        <Setter Property="Padding" Value="8,4"/>
-                                        <Setter Property="FontSize" Value="11"/>
-                                        <Setter Property="Cursor" Value="Hand"/>
-                                        <Setter Property="Template">
-                                            <Setter.Value>
-                                                <ControlTemplate TargetType="Button">
-                                                    <Border Background="{TemplateBinding Background}"
-                                                            BorderBrush="{TemplateBinding BorderBrush}"
-                                                            BorderThickness="{TemplateBinding BorderThickness}"
-                                                            CornerRadius="4"
-                                                            Padding="{TemplateBinding Padding}">
-                                                        <ContentPresenter HorizontalAlignment="Center"
-                                                                        VerticalAlignment="Center"/>
-                                                    </Border>
-                                                    <ControlTemplate.Triggers>
-                                                        <Trigger Property="IsMouseOver" Value="True">
-                                                            <Setter Property="Background" Value="#E8F5E9"/>
-                                                        </Trigger>
-                                                        <Trigger Property="IsEnabled" Value="False">
-                                                            <Setter Property="Foreground" Value="#BDBDBD"/>
-                                                            <Setter Property="BorderBrush" Value="#BDBDBD"/>
-                                                            <Setter Property="Cursor" Value="Arrow"/>
-                                                        </Trigger>
-                                                    </ControlTemplate.Triggers>
-                                                </ControlTemplate>
-                                            </Setter.Value>
-                                        </Setter>
+                    <!-- 最近打开列表 -->
+                    <ListBox Grid.Row="1" ItemsSource="{Binding RecentSolutions}"
+                             SelectedItem="{Binding SelectedMetadata}"
+                             BorderThickness="0"
+                             Background="Transparent" ItemContainerStyle="{StaticResource RecentItemStyle}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"
+                                               TextTrimming="CharacterEllipsis" MaxWidth="150"/>
+                                    <TextBlock FontSize="10"
+                                               Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"
+                                               VerticalAlignment="Center" Margin="8,1,0,0"
+                                               Text="{Binding LastAccessTime, StringFormat='{}{0:MM-dd HH:mm}'}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <!-- 底部：全部解决方案入口 -->
+                    <Button Grid.Row="2" Style="{StaticResource ToolbarButtonStyle}" Margin="0,10,0,0"
+                            Command="{Binding ShowAllCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="全部解决方案" FontSize="12"
+                                       Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
+                            <TextBlock Text="{Binding AllSolutionsCount, StringFormat=' ({0})'}" FontSize="12"
+                                       Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}" Margin="4,0,0,0"/>
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- 右侧：全部方案卡片区 -->
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- 工具栏：工程化文字按钮 + 搜索框（带水印） -->
+                <Border Grid.Row="0" Background="{DynamicResource {x:Static base:ThemeKeys.ToolBarBackgroundBrush}}"
+                        BorderBrush="{DynamicResource {x:Static base:ThemeKeys.BorderBrush}}" BorderThickness="1"
+                        CornerRadius="4" Padding="8,6" Margin="0,0,0,8">
+                    <DockPanel LastChildFill="True">
+                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
+                            <Button Content="新建" Style="{StaticResource ToolbarButtonStyle}" Command="{Binding NewSolutionCommand}"/>
+                            <Button Content="载入" Style="{StaticResource ToolbarButtonStyle}" Command="{Binding OpenSolutionCommand}" Margin="6,0,0,0"/>
+                            <Button Content="另存" Style="{StaticResource ToolbarButtonStyle}" Command="{Binding SaveSolutionAsCommand}" Margin="6,0,0,0"/>
+                            <Button Content="复制" Style="{StaticResource ToolbarButtonStyle}" Command="{Binding CopySolutionCommand}" Margin="6,0,0,0"/>
+                            <Button Content="删除" Style="{StaticResource DangerButtonStyle}" Command="{Binding DeleteSolutionCommand}" Margin="6,0,0,0"/>
+                            <Button Content="{Binding ToggleDefaultButtonText}" Style="{StaticResource ToolbarButtonStyle}"
+                                    Command="{Binding ToggleDefaultCommand}" Margin="6,0,0,0"/>
+                        </StackPanel>
+
+                        <!-- 搜索框（带水印，占右侧剩余空间） -->
+                        <Grid DockPanel.Dock="Right" Width="220" VerticalAlignment="Center" Margin="10,0,0,0">
+                            <TextBox x:Name="SearchTextBox"
+                                     Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                     VerticalAlignment="Center" Padding="8,5" FontSize="12"
+                                     Background="{DynamicResource {x:Static base:ThemeKeys.InputBackgroundBrush}}"
+                                     BorderBrush="{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}"
+                                     BorderThickness="1"
+                                     Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"
+                                     CaretBrush="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
+
+                            <!-- 水印：空 + 未聚焦 显示；聚焦或有内容 隐藏 -->
+                            <TextBlock IsHitTestVisible="False"
+                                       VerticalAlignment="Center" Padding="8,5"
+                                       Foreground="{DynamicResource {x:Static base:ThemeKeys.TextDisabledBrush}}" FontSize="12"
+                                       TextTrimming="CharacterEllipsis"
+                                       Text="输入名称/描述/路径过滤...">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding Text, ElementName=SearchTextBox}" Value=""/>
+                                                    <Condition Binding="{Binding IsKeyboardFocused, ElementName=SearchTextBox}" Value="False"/>
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </MultiDataTrigger>
+                                        </Style.Triggers>
                                     </Style>
-                                </Button.Style>
-                            </Button>
-                        </DockPanel>
-                    </Border>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                    </DockPanel>
+                </Border>
 
-                    <!-- 搜索框 -->
-                    <Border Grid.Row="1" Background="#FAFAFA" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1" Padding="10,5,10,10">
-                        <TextBox Text="🔍 搜索解决方案..."
-                                 FontSize="12"
-                                 Foreground="Gray"
-                                 Padding="8,4"
-                                 Background="White"
-                                 BorderBrush="#E0E0E0"
-                                 BorderThickness="1"/>
-                    </Border>
+                <!-- 解决方案卡片列表 -->
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                              CanContentScroll="False"
+                              Background="{DynamicResource {x:Static base:ThemeKeys.WorkspaceBackgroundBrush}}">
+                    <ItemsControl ItemsSource="{Binding FilteredMetadatas}">
+                        <!-- 自动换行布局 -->
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
 
-                    <!-- 解决方案列表（卡片模式 + WrapPanel自动换行 + 滚动条支持） -->
-                    <ScrollViewer Grid.Row="2"
-                                  VerticalScrollBarVisibility="Auto"
-                                  HorizontalScrollBarVisibility="Disabled"
-                                  Background="White"
-                                  CanContentScroll="False">
-                        <ItemsControl ItemsSource="{Binding SolutionMetadatas}"
-                                      Background="white">
+                        <!-- 卡片样式模板 -->
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Width="240" Height="150" Margin="0,0,10,10" CornerRadius="6" Cursor="Hand">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}"/>
+                                            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.BorderBrush}}"/>
+                                            <Setter Property="BorderThickness" Value="1"/>
+                                            <Style.Triggers>
+                                                <!-- 悬停效果（未选中时） -->
+                                                <MultiDataTrigger>
+                                                    <MultiDataTrigger.Conditions>
+                                                        <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True"/>
+                                                        <Condition Value="False">
+                                                            <Condition.Binding>
+                                                                <MultiBinding Converter="{StaticResource EqualityConverter}">
+                                                                    <Binding Path="Id"/>
+                                                                    <Binding Path="DataContext.SelectedMetadataId" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                                                </MultiBinding>
+                                                            </Condition.Binding>
+                                                        </Condition>
+                                                    </MultiDataTrigger.Conditions>
+                                                    <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
+                                                    <Setter Property="BorderThickness" Value="2"/>
+                                                </MultiDataTrigger>
+                                                <!-- 选中效果 -->
+                                                <DataTrigger Value="True">
+                                                    <DataTrigger.Binding>
+                                                        <MultiBinding Converter="{StaticResource EqualityConverter}">
+                                                            <Binding Path="Id"/>
+                                                            <Binding Path="DataContext.SelectedMetadataId" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                                        </MultiBinding>
+                                                    </DataTrigger.Binding>
+                                                    <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowSelectedBackgroundBrush}}"/>
+                                                    <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
+                                                    <Setter Property="BorderThickness" Value="2"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
 
-                            <!-- 自动换行布局 -->
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel Orientation="Horizontal"/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
+                                    <!-- 卡片内容 -->
+                                    <Grid Margin="12,10,12,10">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="*"/>
+                                        </Grid.RowDefinitions>
 
-                            <!-- 卡片样式模板 - Visual Studio风格 + 简约专业设计 -->
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <!-- 解决方案卡片 -->
-                                    <Border Width="240"
-                                            Height="150"
-                                            Margin="8,8,8,8"
-                                            Background="White"
-                                            BorderBrush="#E0E0E0"
-                                            BorderThickness="1"
-                                            CornerRadius="4"
-                                            Cursor="Hand">
-                                        <Border.Style>
-                                            <Style TargetType="Border">
-                                                <!-- 默认状态 -->
-                                                <Setter Property="Background" Value="White"/>
-                                                <Setter Property="BorderBrush" Value="#E0E0E0"/>
-                                                <Setter Property="BorderThickness" Value="1"/>
-                                                <Setter Property="Margin" Value="8,8,8,8"/>
-                                                <Setter Property="Effect">
-                                                    <Setter.Value>
-                                                        <DropShadowEffect Color="#000000" BlurRadius="2" ShadowDepth="1" Opacity="0.1"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                                
-                                                <Style.Triggers>
-                                                    <!-- 悬停效果：上移 + 阴影增强（仅未选中时） -->
-                                                    <MultiDataTrigger>
-                                                        <MultiDataTrigger.Conditions>
-                                                            <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True"/>
-                                                            <Condition Value="False">
-                                                                <Condition.Binding>
-                                                                    <MultiBinding Converter="{StaticResource EqualityConverter}">
-                                                                        <Binding Path="Id"/>
-                                                                        <Binding Path="DataContext.SelectedMetadataId" RelativeSource="{RelativeSource AncestorType=Window}"/>
-                                                                    </MultiBinding>
-                                                                </Condition.Binding>
-                                                            </Condition>
-                                                        </MultiDataTrigger.Conditions>
-                                                        <Setter Property="Margin" Value="8,4,8,12"/>
-                                                        <Setter Property="BorderBrush" Value="#0066CC"/>
-                                                        <Setter Property="BorderThickness" Value="2"/>
-                                                        <Setter Property="Effect">
-                                                            <Setter.Value>
-                                                                <DropShadowEffect Color="#0066CC" BlurRadius="8" ShadowDepth="3" Opacity="0.2"/>
-                                                            </Setter.Value>
-                                                        </Setter>
-                                                    </MultiDataTrigger>
-                                                    
-                                                    <!-- 选中效果：Visual Studio 风格 -->
-                                                    <DataTrigger Value="True">
-                                                        <DataTrigger.Binding>
-                                                            <MultiBinding Converter="{StaticResource EqualityConverter}">
-                                                                <Binding Path="Id"/>
-                                                                <Binding Path="DataContext.SelectedMetadataId" RelativeSource="{RelativeSource AncestorType=Window}"/>
-                                                            </MultiBinding>
-                                                        </DataTrigger.Binding>
-                                                        <Setter Property="Background" Value="#F8FBFF"/>
-                                                        <Setter Property="BorderBrush" Value="#0066CC"/>
-                                                        <Setter Property="BorderThickness" Value="2"/>
-                                                        <Setter Property="Effect">
-                                                            <Setter.Value>
-                                                                <DropShadowEffect Color="#0066CC" BlurRadius="12" ShadowDepth="0" Opacity="0.25"/>
-                                                            </Setter.Value>
-                                                        </Setter>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Border.Style>
-                                        
-                                        <!-- 卡片内容容器 -->
-                                        <Grid>
-                                            <!-- 顶部标识条 -->
-                                            <Border Height="3"
-                                                    VerticalAlignment="Top"
-                                                    CornerRadius="4,4,0,0">
-                                                <Border.Style>
-                                                    <Style TargetType="Border">
-                                                        <Setter Property="Background" Value="Transparent"/>
-                                                        <Style.Triggers>
-                                                            <!-- 悬停时显示浅蓝色 -->
-                                                            <MultiDataTrigger>
-                                                                <MultiDataTrigger.Conditions>
-                                                                    <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=Border}}" Value="True"/>
-                                                                    <Condition Value="False">
-                                                                        <Condition.Binding>
-                                                                            <MultiBinding Converter="{StaticResource EqualityConverter}">
-                                                                                <Binding Path="Id"/>
-                                                                                <Binding Path="DataContext.SelectedMetadataId" RelativeSource="{RelativeSource AncestorType=Window}"/>
-                                                                            </MultiBinding>
-                                                                        </Condition.Binding>
-                                                                    </Condition>
-                                                                </MultiDataTrigger.Conditions>
-                                                                <Setter Property="Background" Value="#B3D9FF"/>
-                                                            </MultiDataTrigger>
-                                                            
-                                                            <!-- 选中时显示深蓝色 -->
-                                                            <DataTrigger Value="True">
-                                                                <DataTrigger.Binding>
-                                                                    <MultiBinding Converter="{StaticResource EqualityConverter}">
-                                                                        <Binding Path="Id"/>
-                                                                        <Binding Path="DataContext.SelectedMetadataId" RelativeSource="{RelativeSource AncestorType=Window}"/>
-                                                                    </MultiBinding>
-                                                                </DataTrigger.Binding>
-                                                                <Setter Property="Background" Value="#0066CC"/>
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </Border.Style>
-                                            </Border>
-                                            
-                                            <!-- 右下角"打开"状态角标（方案1+方案4组合） -->
-                                            <Border HorizontalAlignment="Right" VerticalAlignment="Bottom"
-                                                    Margin="0,0,-4,-4"
-                                                    Width="52" Height="20"
-                                                    CornerRadius="10"
-                                                    Background="#2196F3"
-                                                    BorderBrush="White"
-                                                    BorderThickness="2">
-                                                <Border.Style>
-                                                    <Style TargetType="Border">
-                                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                                        <Setter Property="Effect">
-                                                            <Setter.Value>
-                                                                <DropShadowEffect Color="#000000" BlurRadius="4" ShadowDepth="2" Opacity="0.3"/>
-                                                            </Setter.Value>
-                                                        </Setter>
-                                                        <Style.Triggers>
-                                                            <!-- 当前打开的解决方案 -->
-                                                            <DataTrigger Value="True">
-                                                                <DataTrigger.Binding>
-                                                                    <MultiBinding Converter="{StaticResource EqualityConverter}">
-                                                                        <Binding Path="Id"/>
-                                                                        <Binding Path="DataContext.CurrentSolutionId" RelativeSource="{RelativeSource AncestorType=Window}"/>
-                                                                    </MultiBinding>
-                                                                </DataTrigger.Binding>
-                                                                <Setter Property="Visibility" Value="Visible"/>
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </Border.Style>
+                                        <!-- 第一行：品牌图标占位 + 名称 + 编辑按钮 -->
+                                        <Grid Grid.Row="0" Height="28">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="30"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="28"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <!-- 品牌色图标占位（默认态显示对号 / 非默认态显示圆点） -->
+                                            <Border Grid.Column="0" Width="24" Height="24" CornerRadius="4"
+                                                    Background="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}" VerticalAlignment="Center">
                                                 <Grid>
-                                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                                        <TextBlock Text="📂" FontSize="9" Margin="3,0,1,0"/>
-                                                        <TextBlock Text="打开" FontSize="9" Foreground="White" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                                                    </StackPanel>
-                                                </Grid>
-                                            </Border>
-                                            
-                                            <!-- 主内容区域 -->
-                                            <Grid Margin="12,10,12,10">
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition Height="Auto"/>
-                                                    <RowDefinition Height="Auto"/>
-                                                    <RowDefinition Height="Auto"/>
-                                                    <RowDefinition Height="*"/>
-                                                </Grid.RowDefinitions>
-                                                
-                                                <!-- 第一行：勾选图标 + 名称 + 编辑按钮 -->
-                                                <Grid Grid.Row="0" Height="24">
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="24"/>
-                                                        <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="28"/>
-                                                    </Grid.ColumnDefinitions>
-
-                                                    <!-- ✅ 修改：勾选图标表示默认状态（而非选中状态） -->
-                                                    <Grid Grid.Column="0" Width="20" Height="20">
-                                                        <Grid.Style>
-                                                            <Style TargetType="Grid">
+                                                    <!-- 默认解决方案：对号 -->
+                                                    <TextBlock Text="✓" FontSize="14" FontWeight="Bold" Foreground="White"
+                                                               HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
                                                                 <Setter Property="Visibility" Value="Collapsed"/>
                                                                 <Style.Triggers>
-                                                                    <!-- ✅ 修改：默认解决方案时显示 -->
                                                                     <DataTrigger Binding="{Binding IsDefault}" Value="True">
                                                                         <Setter Property="Visibility" Value="Visible"/>
                                                                     </DataTrigger>
                                                                 </Style.Triggers>
                                                             </Style>
-                                                        </Grid.Style>
-                                                        <!-- 绿色椭圆 -->
-                                                        <Ellipse Stroke="#4CAF50" StrokeThickness="1.5" Fill="#4CAF50"/>
-                                                        <!-- 白色对号 -->
-                                                        <TextBlock Text="✓" FontSize="13" FontWeight="Bold" Foreground="White"
-                                                                  HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                    </Grid>
-
-                                                    <!-- 名称 - 自动填充中间空间 -->
-                                                    <TextBlock Grid.Column="1"
-                                                              Text="{Binding Name}"
-                                                              FontSize="14"
-                                                              VerticalAlignment="Center"
-                                                              Margin="4,0,8,0"
-                                                              TextTrimming="CharacterEllipsis">
-                                                        <TextBlock.Style>
-                                                            <Style TargetType="TextBlock">
-                                                                <Setter Property="FontWeight" Value="SemiBold"/>
-                                                                <Setter Property="Foreground" Value="#424242"/>
-                                                                <Style.Triggers>
-                                                                    <DataTrigger Value="True">
-                                                                        <DataTrigger.Binding>
-                                                                            <MultiBinding Converter="{StaticResource EqualityConverter}">
-                                                                                <Binding Path="Id"/>
-                                                                                <Binding Path="DataContext.SelectedMetadataId" RelativeSource="{RelativeSource AncestorType=Window}"/>
-                                                                            </MultiBinding>
-                                                                        </DataTrigger.Binding>
-                                                                        <Setter Property="FontWeight" Value="Bold"/>
-                                                                        <Setter Property="Foreground" Value="#0066CC"/>
-                                                                    </DataTrigger>
-                                                                </Style.Triggers>
-                                                            </Style>
                                                         </TextBlock.Style>
                                                     </TextBlock>
-
-                                                    <!-- 编辑按钮（选中时显示） -->
-                                                    <Button Grid.Column="2"
-                                                            Width="24" Height="24" Padding="0" Background="Transparent"
-                                                            HorizontalAlignment="Right" VerticalAlignment="Center"
-                                                            Command="{Binding DataContext.EditSolutionCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                            CommandParameter="{Binding}">
-                                                        <Button.Style>
-                                                            <Style TargetType="Button">
-                                                                <Setter Property="Background" Value="Transparent"/>
-                                                                <Setter Property="BorderThickness" Value="0"/>
-                                                                <Setter Property="Cursor" Value="Hand"/>
-                                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                                                <Setter Property="Template">
-                                                                    <Setter.Value>
-                                                                        <ControlTemplate TargetType="Button">
-                                                                            <Border Background="{TemplateBinding Background}"
-                                                                                    CornerRadius="3"
-                                                                                    Padding="4">
-                                                                                <ContentPresenter HorizontalAlignment="Center" 
-                                                                                                VerticalAlignment="Center"/>
-                                                                            </Border>
-                                                                        </ControlTemplate>
-                                                                    </Setter.Value>
-                                                                </Setter>
+                                                    <!-- 非默认方案：圆点 -->
+                                                    <Ellipse Width="8" Height="8" Fill="{DynamicResource {x:Static base:ThemeKeys.TextOnDarkBrush}}"
+                                                             HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                        <Ellipse.Style>
+                                                            <Style TargetType="Ellipse">
+                                                                <Setter Property="Visibility" Value="Visible"/>
                                                                 <Style.Triggers>
-                                                                    <DataTrigger Value="True">
-                                                                        <DataTrigger.Binding>
-                                                                            <MultiBinding Converter="{StaticResource EqualityConverter}">
-                                                                                <Binding Path="Id"/>
-                                                                                <Binding Path="DataContext.SelectedMetadataId" RelativeSource="{RelativeSource AncestorType=Window}"/>
-                                                                            </MultiBinding>
-                                                                        </DataTrigger.Binding>
-                                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                                    <DataTrigger Binding="{Binding IsDefault}" Value="True">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
                                                                     </DataTrigger>
-                                                                    <Trigger Property="IsMouseOver" Value="True">
-                                                                        <Setter Property="Background" Value="#E8F4FF"/>
-                                                                    </Trigger>
                                                                 </Style.Triggers>
                                                             </Style>
-                                                        </Button.Style>
-                                                        <TextBlock Text="✏️" FontSize="11"/>
-                                                    </Button>
+                                                        </Ellipse.Style>
+                                                    </Ellipse>
                                                 </Grid>
-                                                
-                                                <!-- 第二行：文件路径 -->
-                                                <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,8,0,0">
-                                                    <TextBlock Text="📄" FontSize="10" Margin="0,0,4,0" VerticalAlignment="Center"/>
-                                                    <TextBlock Text="{Binding FilePath, Converter={StaticResource PathToFileNameConverter}}"
-                                                              FontSize="10" Foreground="#9E9E9E" TextTrimming="CharacterEllipsis"
-                                                              ToolTip="{Binding FilePath}"/>
-                                                </StackPanel>
-                                                
-                                                <!-- 第三行：描述 -->
-                                                <TextBlock Grid.Row="2" Text="{Binding Description}" 
-                                                          FontSize="11" Foreground="#757575" 
-                                                          TextTrimming="CharacterEllipsis"
-                                                          Margin="0,6,0,0" 
-                                                          ToolTip="{Binding Description}"/>
-                                                
-                                                <!-- 第四行：时间信息 -->
-                                                <StackPanel Grid.Row="3" VerticalAlignment="Bottom">
-                                                    <TextBlock FontSize="10" Foreground="#90A4AE" Margin="0,6,0,0">
-                                                        <Run Text="🕐 最近打开: "/>
-                                                        <Run Text="{Binding LastAccessTime, StringFormat='{}{0:MM-dd HH:mm}'}" FontWeight="Medium"/>
-                                                    </TextBlock>
-                                                    <TextBlock FontSize="10" Foreground="#90A4AE" Margin="0,2,0,0">
-                                                        <Run Text="✏️ 修改: "/>
-                                                        <Run Text="{Binding ModifiedTime, StringFormat='{}{0:MM-dd HH:mm}'}" FontWeight="Medium"/>
-                                                    </TextBlock>
-                                                </StackPanel>
-                                            </Grid>
+                                            </Border>
+
+                                            <!-- 名称 -->
+                                            <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="13" FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"
+                                                       VerticalAlignment="Center" Margin="6,0,4,0" TextTrimming="CharacterEllipsis">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Value="True">
+                                                                <DataTrigger.Binding>
+                                                                    <MultiBinding Converter="{StaticResource EqualityConverter}">
+                                                                        <Binding Path="Id"/>
+                                                                        <Binding Path="DataContext.SelectedMetadataId" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                                                    </MultiBinding>
+                                                                </DataTrigger.Binding>
+                                                                <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
+                                                                <Setter Property="FontWeight" Value="Bold"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+
+                                            <!-- 编辑按钮 -->
+                                            <Button Grid.Column="2" Width="24" Height="24" Padding="0"
+                                                    Style="{StaticResource CardIconButtonStyle}"
+                                                    Command="{Binding DataContext.EditSolutionCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}" Cursor="Hand">
+                                                <TextBlock Text="✏️" FontSize="11"
+                                                           Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
+                                            </Button>
                                         </Grid>
-                                        
-                                        <!-- 选中命令绑定 -->
-                                        <Border.InputBindings>
-                                            <MouseBinding Gesture="LeftClick"
-                                                          Command="{Binding DataContext.SelectCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                          CommandParameter="{Binding}"/>
-                                            <MouseBinding Gesture="LeftDoubleClick"
-                                                          Command="{Binding DataContext.LaunchCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                          CommandParameter="{Binding}"/>
-                                        </Border.InputBindings>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
-                </Grid>
-            </GroupBox>
+
+                                        <!-- 第二行：文件路径 -->
+                                        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,6,0,0">
+                                            <TextBlock Text="📄" FontSize="10" Margin="0,0,4,0" VerticalAlignment="Center"
+                                                       Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"/>
+                                            <TextBlock Text="{Binding FilePath, Converter={StaticResource PathToFileNameConverter}}"
+                                                       FontSize="10" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"
+                                                       TextTrimming="CharacterEllipsis" ToolTip="{Binding FilePath}"/>
+                                        </StackPanel>
+
+                                        <!-- 第三行：描述 -->
+                                        <TextBlock Grid.Row="2" Text="{Binding Description}" FontSize="11"
+                                                   Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"
+                                                   TextTrimming="CharacterEllipsis" Margin="0,5,0,0" ToolTip="{Binding Description}"/>
+
+                                        <!-- 第四行：时间信息 -->
+                                        <StackPanel Grid.Row="3" VerticalAlignment="Bottom">
+                                            <TextBlock FontSize="10" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}" Margin="0,4,0,0">
+                                                <Run Text="最近打开: "/>
+                                                <Run Text="{Binding LastAccessTime, StringFormat='{}{0:MM-dd HH:mm}'}" FontWeight="Medium"/>
+                                            </TextBlock>
+                                            <TextBlock FontSize="10" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}" Margin="0,2,0,0">
+                                                <Run Text="修改: "/>
+                                                <Run Text="{Binding ModifiedTime, StringFormat='{}{0:MM-dd HH:mm}'}" FontWeight="Medium"/>
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <!-- 选中命令绑定 -->
+                                    <Border.InputBindings>
+                                        <MouseBinding Gesture="LeftClick"
+                                                      Command="{Binding DataContext.SelectCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                      CommandParameter="{Binding}"/>
+                                        <MouseBinding Gesture="LeftDoubleClick"
+                                                      Command="{Binding DataContext.LaunchCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                      CommandParameter="{Binding}"/>
+                                    </Border.InputBindings>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
         </Grid>
-
-        <!-- 底部按钮栏 -->
-        <Border Grid.Row="1" Background="White" BorderBrush="#E0E0E0" BorderThickness="0,1,0,0" Padding="20,15">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <!-- 启动时跳过配置 -->
-                <CheckBox Content="启动时跳过配置界面"
-                          IsChecked="{Binding SkipStartupConfig}"
-                          VerticalAlignment="Center"
-                          Margin="0,0,20,0"
-                          FontSize="13"
-                          Foreground="#424242"/>
-
-                <Button Content="跳过配置"
-                        Command="{Binding SkipCommand}"
-                        Style="{StaticResource SecondaryButtonStyle}"
-                        Margin="0,0,8,0"/>
-                <Button Content="启动解决方案"
-                        Command="{Binding LaunchCommand}"
-                        Style="{StaticResource PrimaryButtonStyle}"/>
-            </StackPanel>
-        </Border>
     </Grid>
 </Window>

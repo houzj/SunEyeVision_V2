@@ -1,8 +1,7 @@
+using System.Reflection;
 using System.Windows;
 using SunEyeVision.UI.Core;
 using SunEyeVision.Workflow;
-
-using SunEyeVision.UI.Core;
 
 namespace SunEyeVision.UI.Features.Dialogs;
 
@@ -12,6 +11,18 @@ namespace SunEyeVision.UI.Features.Dialogs;
 public partial class SolutionConfigurationDialog : Window
 {
     private readonly SolutionConfigurationDialogViewModel _viewModel;
+
+    /// <summary>
+    /// 自定义无边框窗口 Chrome：CaptionHeight 覆盖标题栏高度，边缘可缩放
+    /// </summary>
+    public static System.Windows.Shell.WindowChrome DialogChrome { get; } = new System.Windows.Shell.WindowChrome
+    {
+        CaptionHeight = 64,
+        ResizeBorderThickness = new Thickness(6),
+        GlassFrameThickness = new Thickness(0),
+        CornerRadius = new CornerRadius(0),
+        UseAeroCaptionButtons = false
+    };
 
     /// <summary>
     /// 获取启动结果
@@ -37,6 +48,18 @@ public partial class SolutionConfigurationDialog : Window
 
         // 设置所有者窗口，使双击时能正确关闭
         _viewModel.SetOwnerWindow(this);
+
+        // 标题栏版本号
+        VersionTextBlock.Text = "v" + (Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.0.0");
+    }
+
+    /// <summary>
+    /// 标题栏关闭按钮：仅关闭对话框（由调用方决定退出或回主窗口）
+    /// </summary>
+    private void CloseButton_Click(object sender, RoutedEventArgs e)
+    {
+        DialogResult = false;
+        Close();
     }
 
     /// <summary>
@@ -57,18 +80,6 @@ public partial class SolutionConfigurationDialog : Window
 
         // 保存当前解决方案（确保修改的名称和描述被保存）
         _viewModel.SaveCurrentSolution();
-
-        // 如果用户没有点击启动或跳过，确认是否关闭
-        var result = MessageBox.Show(
-            "确定要关闭配置界面吗？",
-            "确认",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Question);
-
-        if (result == MessageBoxResult.No)
-        {
-            e.Cancel = true;
-        }
 
         base.OnClosing(e);
     }

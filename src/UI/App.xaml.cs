@@ -275,10 +275,10 @@ public partial class App : Application
         }
         else
         {
-            // 用户点击跳过或取消
+            // 未选择解决方案：不提供空主界面入口，直接退出程序
             logger.Log(SunEyeVision.Plugin.SDK.Logging.LogLevel.Info,
-                "用户跳过或取消配置对话框", "App");
-            mainWindow.Show();
+                "用户关闭配置对话框且未启动解决方案，退出程序", "App");
+            Application.Current.Shutdown();
         }
     }
 

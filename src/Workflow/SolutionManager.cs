@@ -1538,6 +1538,7 @@ public class SolutionManager
                 metadata.Description = knownMetadata.Description;
                 metadata.CreatedTime = knownMetadata.CreatedTime;
                 metadata.ModifiedTime = knownMetadata.ModifiedTime;
+                metadata.LastAccessTime = knownMetadata.LastAccessTime;
 
                 _logger.Log(LogLevel.Info,
                     $"从 KnownSolutions 补充元数据: {metadata.Name} (Id={metadata.Id})",

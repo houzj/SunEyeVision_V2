@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -30,6 +30,28 @@ namespace SunEyeVision.UI.Features.Dialogs
 
         // 状态1：元数据列表（轻量级，仅用于显示和配置）
         public ObservableCollection<SolutionMetadata> SolutionMetadatas { get; } = new();
+
+        // 最近打开列表（按 LastAccessTime 倒序取前 N）
+        public ObservableCollection<SolutionMetadata> RecentSolutions { get; } = new();
+
+        // 右侧卡片显示集合（搜索时过滤 SolutionMetadatas）
+        public ObservableCollection<SolutionMetadata> FilteredMetadatas { get; } = new();
+
+        private string _searchText = "";
+        /// <summary>
+        /// 搜索关键字（过滤右侧全部方案卡片）
+        /// </summary>
+        public string SearchText
+        {
+            get => _searchText;
+            set
+            {
+                if (SetProperty(ref _searchText, value))
+                {
+                    ApplyFilter();
+                }
+            }
+        }
 
         // 状态2：选中的元数据（轻量级）
         private SolutionMetadata? _selectedMetadata;
@@ -165,16 +187,6 @@ namespace SunEyeVision.UI.Features.Dialogs
         #region 解决方案相关
 
         /// <summary>
-        /// 解决方案元数据列表（轻量级，仅用于显示和配置）
-        /// </summary>
-        // public ObservableCollection<SolutionMetadata> SolutionMetadatas { get; } = new();  // 已在构造函数前定义
-
-        /// <summary>
-        /// 选中的完整解决方案（懒加载）
-        /// </summary>
-        // public Solution? SelectedSolution { get; private set; }  // 已在构造函数前定义
-
-        /// <summary>
         /// 切换默认按钮文本
         /// </summary>
         public string ToggleDefaultButtonText
@@ -263,6 +275,11 @@ namespace SunEyeVision.UI.Features.Dialogs
         /// </summary>
         public ICommand ToggleDefaultCommand { get; private set; } = null!;
 
+        /// <summary>
+        /// 显示全部解决方案命令（清除搜索并选中第一个）
+        /// </summary>
+        public ICommand ShowAllCommand { get; private set; } = null!;
+
         private void InitializeCommands()
         {
             NewSolutionCommand = new RelayCommand(NewSolution, () => true);
@@ -281,10 +298,23 @@ namespace SunEyeVision.UI.Features.Dialogs
             // ✅ 新增：切换默认解决方案命令
             ToggleDefaultCommand = new RelayCommand(ExecuteToggleDefault, CanToggleDefault);
 
-            SkipCommand = new RelayCommand(Skip, () => true);
-
             // ✅ 使用公共版本：有参方法 + 无参 canExecute
             LaunchCommand = new RelayCommand(Launch, _ => true);
+
+            // 全部解决方案：清除搜索，选中第一个
+            ShowAllCommand = new RelayCommand(ShowAll, _ => true);
+        }
+
+        /// <summary>
+        /// 显示全部解决方案（清除搜索并选中第一个）
+        /// </summary>
+        private void ShowAll(object? parameter)
+        {
+            SearchText = "";
+            if (FilteredMetadatas.Count > 0)
+            {
+                SelectedMetadata = FilteredMetadatas[0];
+            }
         }
 
         /// <summary>
@@ -772,11 +802,6 @@ namespace SunEyeVision.UI.Features.Dialogs
         }
 
         /// <summary>
-        /// 跳过命令
-        /// </summary>
-        public ICommand SkipCommand { get; private set; } = null!;
-
-        /// <summary>
         /// 启动命令
         /// </summary>
         public ICommand LaunchCommand { get; private set; } = null!;
@@ -823,15 +848,6 @@ namespace SunEyeVision.UI.Features.Dialogs
             return SelectedMetadata != null;
         }
 
-        private void Skip()
-        {
-            if (_ownerWindow != null)
-            {
-                _ownerWindow.DialogResult = false;
-                _ownerWindow.Close();
-            }
-        }
-
         private void Launch(object? parameter)
         {
             // 获取要启动的元数据
@@ -860,6 +876,10 @@ namespace SunEyeVision.UI.Features.Dialogs
                 {
                     SelectedSolution = fullSolution;
                     LogInfo($"加载完整解决方案对象: Id={fullSolution.Id}");
+
+                    // ✅ 记录打开时间（RegisterKnownSolution → AddKnownSolution → UpdateLastAccessTime）
+                    // 使"最近打开"排序和打开时间显示在下次打开对话框时生效
+                    _solutionManager.RegisterKnownSolution(metadataToLaunch);
 
                     // ✅ 仅设置启动结果，不调用 SetCurrentSolutionSilently
                     // 由调用方（App.xaml.cs 或 ExecuteShowSolutionConfiguration）决定如何处理
@@ -933,7 +953,65 @@ namespace SunEyeVision.UI.Features.Dialogs
                 SolutionMetadatas.Add(metadata);
             }
 
+            // 刷新最近打开列表（按 LastAccessTime 倒序取前 6）
+            RefreshRecentSolutions();
+
+            // 刷新右侧卡片过滤集合
+            ApplyFilter();
+
             LogInfo($"加载 {metadataList.Count} 个解决方案（元数据模式 + 缓存优化）");
+        }
+
+        /// <summary>
+        /// 刷新最近打开列表（按 LastAccessTime 倒序）
+        /// </summary>
+        private void RefreshRecentSolutions()
+        {
+            RecentSolutions.Clear();
+            var recent = SolutionMetadatas
+                .Where(m => !string.IsNullOrEmpty(m.FilePath))
+                .OrderByDescending(m => m.LastAccessTime)
+                .Take(6);
+            foreach (var metadata in recent)
+            {
+                RecentSolutions.Add(metadata);
+            }
+            OnPropertyChanged(nameof(HasRecentSolutions));
+            OnPropertyChanged(nameof(AllSolutionsCount));
+        }
+
+        /// <summary>
+        /// 是否最近打开列表有记录
+        /// </summary>
+        public bool HasRecentSolutions => RecentSolutions.Count > 0;
+
+        /// <summary>
+        /// 全部解决方案数量
+        /// </summary>
+        public int AllSolutionsCount => SolutionMetadatas.Count;
+
+        /// <summary>
+        /// 应用搜索过滤（按名称/描述/路径）
+        /// </summary>
+        private void ApplyFilter()
+        {
+            FilteredMetadatas.Clear();
+            var keyword = _searchText?.Trim() ?? "";
+            IEnumerable<SolutionMetadata> query = SolutionMetadatas;
+            if (!string.IsNullOrEmpty(keyword))
+            {
+                query = query.Where(m =>
+                    (m.Name?.Contains(keyword, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                    (m.Description?.Contains(keyword, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                    (m.FilePath?.Contains(keyword, StringComparison.OrdinalIgnoreCase) ?? false));
+            }
+            // 按最近访问时间倒序 + 名称升序作次级排序，保证显示顺序稳定可预期
+            // （与 RefreshRecentSolutions 的排序规则保持一致）
+            query = query.OrderByDescending(m => m.LastAccessTime).ThenBy(m => m.Name);
+            foreach (var metadata in query)
+            {
+                FilteredMetadatas.Add(metadata);
+            }
         }
 
         /// <summary>
@@ -951,6 +1029,8 @@ namespace SunEyeVision.UI.Features.Dialogs
                 if (!SolutionMetadatas.Any(s => s.Id == e.Metadata.Id))
                 {
                     SolutionMetadatas.Add(e.Metadata);
+                    RefreshRecentSolutions();
+                    ApplyFilter();
                     LogInfo($"添加解决方案到列表: {e.Metadata.Name}");
                 }
                 else
@@ -972,6 +1052,8 @@ namespace SunEyeVision.UI.Features.Dialogs
             if (toRemove != null)
             {
                 SolutionMetadatas.Remove(toRemove);
+                RefreshRecentSolutions();
+                ApplyFilter();
                 LogInfo($"从列表移除解决方案: {toRemove.Name}");
             }
         }
@@ -991,6 +1073,7 @@ namespace SunEyeVision.UI.Features.Dialogs
                 toUpdate.FilePath = e.Metadata.FilePath;
                 toUpdate.DirectoryPath = e.Metadata.DirectoryPath;
                 toUpdate.ModifiedTime = e.Metadata.ModifiedTime;
+                ApplyFilter();
                 LogInfo($"重命名解决方案: {e.OldName} → {e.NewName}");
             }
         }
@@ -1009,6 +1092,7 @@ namespace SunEyeVision.UI.Features.Dialogs
                 toUpdate.Name = e.Metadata.Name;
                 toUpdate.Description = e.Metadata.Description;
                 toUpdate.ModifiedTime = e.Metadata.ModifiedTime;
+                ApplyFilter();
                 LogInfo($"更新解决方案元数据: {e.Metadata.Name}");
             }
         }

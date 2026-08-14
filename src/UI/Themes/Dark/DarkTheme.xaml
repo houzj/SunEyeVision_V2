@@ -83,7 +83,7 @@
     <Color x:Key="{x:Static base:ThemeKeys.TitleBarButtonHover}">#FF3E3E42</Color>
     <Color x:Key="{x:Static base:ThemeKeys.TitleBarDivider}">#FF3E3E42</Color>
     <Color x:Key="{x:Static base:ThemeKeys.TitleBarProjectInfoBg}">#FF3A3A3E</Color>
-    <Color x:Key="{x:Static base:ThemeKeys.TitleBarTextSecondary}">#FF9E9E9E</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.TitleBarTextSecondary}">#FFC0C0C0</Color>
     <Color x:Key="{x:Static base:ThemeKeys.TitleBarText}">#FFFFFFFF</Color>
 
     <!-- ============ 工作区 Tab 标签条 ============ -->

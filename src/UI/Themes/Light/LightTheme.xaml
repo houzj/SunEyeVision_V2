@@ -92,9 +92,6 @@
     <Color x:Key="{x:Static base:ThemeKeys.TabItemHover}">#FFF8F9FA</Color>
     <Color x:Key="{x:Static base:ThemeKeys.TabItemBorder}">#FFE0E0E0</Color>
     <Color x:Key="{x:Static base:ThemeKeys.TabItemText}">#FF333333</Color>
-    <Color x:Key="{x:Static base:ThemeKeys.TabAddButtonBg}">#FFF1F8E9</Color>
-    <Color x:Key="{x:Static base:ThemeKeys.TabAddButtonBorder}">#FF4CAF50</Color>
-    <Color x:Key="{x:Static base:ThemeKeys.TabAddButtonHover}">#FF388E3C</Color>
 
     <!-- ============ 分割器 ============ -->
     <Color x:Key="{x:Static base:ThemeKeys.SplitterBackground}">#FFDDDDDD</Color>
@@ -184,9 +181,6 @@
     <SolidColorBrush x:Key="{x:Static base:ThemeKeys.TabItemHoverBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.TabItemHover}}"/>
     <SolidColorBrush x:Key="{x:Static base:ThemeKeys.TabItemBorderBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.TabItemBorder}}"/>
     <SolidColorBrush x:Key="{x:Static base:ThemeKeys.TabItemTextBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.TabItemText}}"/>
-    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.TabAddButtonBgBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.TabAddButtonBg}}"/>
-    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.TabAddButtonBorderBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.TabAddButtonBorder}}"/>
-    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.TabAddButtonHoverBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.TabAddButtonHover}}"/>
 
     <SolidColorBrush x:Key="{x:Static base:ThemeKeys.SplitterBackgroundBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.SplitterBackground}}"/>
     <SolidColorBrush x:Key="{x:Static base:ThemeKeys.SplitterHoverBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.SplitterHover}}"/>

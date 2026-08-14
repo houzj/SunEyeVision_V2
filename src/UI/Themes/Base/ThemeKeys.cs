@@ -209,15 +209,6 @@
         /// <summary>Tab 标签项文字</summary>
         public const string TabItemText = "ThemeTabItemText";
         public const string TabItemTextBrush = "ThemeTabItemTextBrush";
-        /// <summary>Tab 添加按钮背景</summary>
-        public const string TabAddButtonBg = "ThemeTabAddButtonBg";
-        public const string TabAddButtonBgBrush = "ThemeTabAddButtonBgBrush";
-        /// <summary>Tab 添加按钮边框 / 图标</summary>
-        public const string TabAddButtonBorder = "ThemeTabAddButtonBorder";
-        public const string TabAddButtonBorderBrush = "ThemeTabAddButtonBorderBrush";
-        /// <summary>Tab 添加按钮悬停背景</summary>
-        public const string TabAddButtonHover = "ThemeTabAddButtonHover";
-        public const string TabAddButtonHoverBrush = "ThemeTabAddButtonHoverBrush";
 
         // ============ 分割器 ============
         /// <summary>面板分割器背景</summary>

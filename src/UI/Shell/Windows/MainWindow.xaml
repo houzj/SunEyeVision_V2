@@ -5,7 +5,6 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SunEyeVision.UI"
         xmlns:windows="clr-namespace:SunEyeVision.UI.Shell.Windows"
-        xmlns:converters="clr-namespace:SunEyeVision.UI.Converters"
         xmlns:constants="clr-namespace:SunEyeVision.Plugin.SDK.UI.Constants;assembly=SunEyeVision.Plugin.SDK"
         xmlns:convertersUI="clr-namespace:SunEyeVision.UI.Converters.UI"
         xmlns:convertersWorkflow="clr-namespace:SunEyeVision.UI.Converters.Workflow"
@@ -34,7 +33,6 @@
         <ResourceDictionary>
             <convertersUI:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
             <convertersPath:SmartPathConverter x:Key="SmartPathConverter"/>
-            <converters:ContinuousRunIconTriangleInLoopConverter x:Key="ContinuousRunIconTriangleInLoopConverter"/>
             <convertersVisibility:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
             <convertersUI:ExpandIconConverter x:Key="ExpandIconConverter"/>
             <convertersVisibility:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>

@@ -532,17 +532,6 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         }
 
         /// <summary>
-        /// TabItem 删除点击事件
-        /// </summary>
-        private void TabItem_Delete_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button button && button.Tag is WorkflowTabViewModel workflow)
-            {
-                DeleteWorkflowWithConfirm(workflow);
-            }
-        }
-
-        /// <summary>
         /// 右键菜单 - 重命名工作流
         /// </summary>
         private void TabItem_Rename_Click(object sender, RoutedEventArgs e)
@@ -598,7 +587,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         }
 
         /// <summary>
-        /// 右键菜单 - 关闭工作流
+        /// 右键菜单 - 删除工作流
         /// </summary>
         private void TabItem_ContextMenu_Delete_Click(object sender, RoutedEventArgs e)
         {

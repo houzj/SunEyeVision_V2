@@ -3,9 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:constants="clr-namespace:SunEyeVision.Plugin.SDK.UI.Constants;assembly=SunEyeVision.Plugin.SDK"
-             xmlns:converters="clr-namespace:SunEyeVision.UI.Converters"
-             xmlns:convertersWorkflow="clr-namespace:SunEyeVision.UI.Converters.Workflow"
              xmlns:canvas="clr-namespace:SunEyeVision.UI.Features.WorkflowUI.Canvas"
              xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
              mc:Ignorable="d"
@@ -23,15 +20,7 @@
                     SelectionChanged="WorkflowTabControl_SelectionChanged"
                     PreviewMouseLeftButtonDown="WorkflowTabControl_PreviewMouseLeftButtonDown"
                     Loaded="WorkflowTabControl_Loaded">
-        <TabControl.Resources>
-          <convertersWorkflow:WorkflowStateToColorConverter x:Key="WorkflowStateToColorConverter"/>
-          <convertersWorkflow:WorkflowStateToTextConverter x:Key="WorkflowStateToTextConverter"/>
-          <convertersWorkflow:ContinuousRunButtonTextConverter x:Key="ContinuousRunButtonTextConverter"/>
-          <convertersWorkflow:ContinuousRunBackgroundConverter x:Key="ContinuousRunBackgroundConverter"/>
-          <convertersWorkflow:ContinuousRunBorderConverter x:Key="ContinuousRunBorderConverter"/>
-          <converters:ContinuousRunIconTriangleInLoopConverter x:Key="ContinuousRunIconTriangleInLoopConverter"/>
-          <converters:ContinuousRunIconColorConverter x:Key="ContinuousRunIconColorConverter"/>
-        </TabControl.Resources>
+
 
         <!-- 自定义TabControl模板,将添加按钮放在TabPanel中 -->
         <TabControl.Template>
@@ -67,39 +56,36 @@
                       <!-- 可滚动位置的添加按钮 - 当TabItems多时隐藏 -->
                       <Border x:Name="ScrollableAddButtonBorder"
                                                 Visibility="Collapsed"
-                                                Background="{DynamicResource {x:Static base:ThemeKeys.TabStripBackgroundBrush}}" Padding="2,2,8,0"
-                                                Margin="4,2,0,0">
-                        <Button Width="40" Height="40"
+                                                Background="Transparent" Padding="0,1,6,0"
+                                                Margin="2,1,0,0"
+                                                VerticalAlignment="Center">
+                        <Button Width="26" Height="26"
                                                     Padding="0"
-                                                    BorderThickness="1"
-                                                    BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TabAddButtonBorderBrush}}"
-                                                    Background="{DynamicResource {x:Static base:ThemeKeys.TabAddButtonBgBrush}}"
+                                                    BorderThickness="0"
+                                                    Background="Transparent"
                                                     Cursor="Hand"
+                                                    VerticalAlignment="Center"
+                                                    Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"
+                                                    ToolTip="添加工作流"
                                                     Click="AddWorkflow_Click">
                           <Button.Template>
                             <ControlTemplate TargetType="Button">
                               <Border x:Name="ButtonBorder"
-                                                                Background="{TemplateBinding Background}"
-                                                                BorderBrush="{TemplateBinding BorderBrush}"
-                                                                BorderThickness="{TemplateBinding BorderThickness}"
-                                                                CornerRadius="6"
+                                                                Background="Transparent"
+                                                                CornerRadius="4"
                                                                 Width="{TemplateBinding Width}"
                                                                 Height="{TemplateBinding Height}">
-                                <Path x:Name="ButtonIcon"
-                                                                  Data="M12,6 L12,18 M6,12 L18,12"
-                                                                  Stroke="{DynamicResource {x:Static base:ThemeKeys.TabAddButtonBorderBrush}}"
-                                                                  StrokeThickness="2.5"
-                                                                  Fill="Transparent"
-                                                                  Stretch="Uniform"
-                                                                  Width="20" Height="20"
-                                                                  HorizontalAlignment="Center"
-                                                                  VerticalAlignment="Center"/>
+                                <!-- 与 TopBar emoji 图标语言一致：➕ -->
+                                <TextBlock x:Name="IconText"
+                                                                      Text="➕"
+                                                                      FontSize="14"
+                                                                      HorizontalAlignment="Center"
+                                                                      VerticalAlignment="Center"/>
                               </Border>
                               <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                  <Setter TargetName="ButtonBorder" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TabAddButtonHoverBrush}}"/>
-                                  <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.TabAddButtonHoverBrush}}"/>
-                                  <Setter TargetName="ButtonIcon" Property="Stroke" Value="White"/>
+                                  <Setter TargetName="ButtonBorder" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TabItemHoverBrush}}"/>
+                                  <Setter TargetName="IconText" Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
                                 </Trigger>
                               </ControlTemplate.Triggers>
                             </ControlTemplate>
@@ -113,38 +99,35 @@
                   <Border Grid.Column="1"
                                         x:Name="FixedAddButtonBorder"
                                         Visibility="Collapsed"
-                                        Background="{DynamicResource {x:Static base:ThemeKeys.TabStripBackgroundBrush}}" Padding="2,2,8,0">
-                    <Button Width="40" Height="40"
+                                        Background="Transparent" Padding="0,1,6,0"
+                                        VerticalAlignment="Center">
+                    <Button Width="26" Height="26"
                                             Padding="0"
-                                            BorderThickness="1"
-                                            BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TabAddButtonBorderBrush}}"
-                                            Background="{DynamicResource {x:Static base:ThemeKeys.TabAddButtonBgBrush}}"
+                                            BorderThickness="0"
+                                            Background="Transparent"
                                             Cursor="Hand"
+                                            VerticalAlignment="Center"
+                                            Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"
+                                            ToolTip="添加工作流"
                                             Click="AddWorkflow_Click">
                       <Button.Template>
                         <ControlTemplate TargetType="Button">
                           <Border x:Name="ButtonBorder"
-                                                        Background="{TemplateBinding Background}"
-                                                        BorderBrush="{TemplateBinding BorderBrush}"
-                                                        BorderThickness="{TemplateBinding BorderThickness}"
-                                                        CornerRadius="6"
+                                                        Background="Transparent"
+                                                        CornerRadius="4"
                                                         Width="{TemplateBinding Width}"
                                                         Height="{TemplateBinding Height}">
-                            <Path x:Name="ButtonIcon"
-                                                          Data="M12,6 L12,18 M6,12 L18,12"
-                                                          Stroke="{DynamicResource {x:Static base:ThemeKeys.TabAddButtonBorderBrush}}"
-                                                          StrokeThickness="2.5"
-                                                          Fill="Transparent"
-                                                          Stretch="Uniform"
-                                                          Width="20" Height="20"
+                            <!-- 与 TopBar emoji 图标语言一致：➕ -->
+                            <TextBlock x:Name="IconText"
+                                                          Text="➕"
+                                                          FontSize="14"
                                                           HorizontalAlignment="Center"
                                                           VerticalAlignment="Center"/>
                           </Border>
                           <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                              <Setter TargetName="ButtonBorder" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TabAddButtonHoverBrush}}"/>
-                              <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.TabAddButtonHoverBrush}}"/>
-                              <Setter TargetName="ButtonIcon" Property="Stroke" Value="White"/>
+                              <Setter TargetName="ButtonBorder" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TabItemHoverBrush}}"/>
+                              <Setter TargetName="IconText" Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
                             </Trigger>
                           </ControlTemplate.Triggers>
                         </ControlTemplate>
@@ -166,30 +149,37 @@
         <TabControl.ItemContainerStyle>
           <Style TargetType="TabItem">
             <Setter Property="Padding" Value="0"/>
-            <Setter Property="Margin" Value="4,2,0,0"/>
-            <Setter Property="Height" Value="40"/>
+            <Setter Property="Margin" Value="4,1,0,0"/>
+            <Setter Property="Height" Value="32"/>
             <Setter Property="Template">
               <Setter.Value>
                 <ControlTemplate TargetType="TabItem">
                   <Grid>
                     <Grid.ContextMenu>
-                      <ContextMenu Background="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.BorderBrush}}" BorderThickness="1" Padding="4">
+                      <ContextMenu>
                         <MenuItem Header="重命名" Click="TabItem_Rename_Click"/>
                         <Separator/>
-                        <MenuItem Header="关闭" Click="TabItem_ContextMenu_Delete_Click"/>
+                        <MenuItem Header="删除" Click="TabItem_ContextMenu_Delete_Click"/>
                       </ContextMenu>
                     </Grid.ContextMenu>
                     <Border x:Name="TabBorder"
-                                            Background="{DynamicResource {x:Static base:ThemeKeys.TabItemBackgroundBrush}}"
-                                            BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TabItemBorderBrush}}"
-                                            BorderThickness="1,1,1,0"
-                                            CornerRadius="6,6,0,0"
-                                            Padding="0"
-                                            Margin="0,0,0,0">
-                      <Grid Margin="8,0">
+                                          Background="{DynamicResource {x:Static base:ThemeKeys.TabItemBackgroundBrush}}"
+                                          BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TabItemBorderBrush}}"
+                                          BorderThickness="1,1,1,0"
+                                          CornerRadius="6,6,0,0"
+                                          Padding="0"
+                                          Margin="0,0,0,0"
+                                          ClipToBounds="True">
+                    <Grid>
+                      <!-- 选中态顶部指示条：平时隐藏，选中时显示 1px 主题色条（VS Code 风格） -->
+                      <Rectangle x:Name="SelectedIndicator"
+                                                 Height="2"
+                                                 Margin="6,0,6,0"
+                                                 VerticalAlignment="Top"
+                                                 Fill="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"
+                                                 Visibility="Collapsed"/>
+                      <Grid Margin="6,0">
                         <Grid.ColumnDefinitions>
-                          <ColumnDefinition Width="Auto"/>
-                          <ColumnDefinition Width="Auto"/>
                           <ColumnDefinition Width="Auto"/>
                           <ColumnDefinition Width="Auto"/>
                           <ColumnDefinition Width="Auto"/>
@@ -254,7 +244,7 @@
                         </Button>
 
                         <!-- 工作流名称（支持行内重命名） -->
-                        <Grid Grid.Column="2" Margin="0,0,12,0">
+                        <Grid Grid.Column="2" Margin="0,0,8,0">
                           <TextBlock x:Name="TabNameText"
                                                            Text="{Binding EffectiveDisplayName}"
                                                            FontSize="13"
@@ -273,57 +263,45 @@
                                                          LostFocus="TabRenameTextBox_LostFocus"/>
                         </Grid>
 
-                        <!-- 单次运行按钮 - 仅在选中时显示 -->
+                        <!-- 单次运行按钮 - 仅在选中时显示（克制风格：透明底，hover 才高亮） -->
                         <Button x:Name="SingleRunBtn"
                                                     Grid.Column="3"
-                                                    Content="▶"
                                                     Padding="6,4"
                                                     Margin="0"
                                                     BorderThickness="0"
-                                                    FontSize="12"
-                                                    Foreground="White"
                                                     Tag="{Binding}"
                                                     Click="TabItem_SingleRun_Click"
                                                     Cursor="Hand"
-                                                    Width="32" Height="32"
+                                                    Width="26" Height="26"
+                                                    VerticalAlignment="Center"
+                                                    Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"
+                                                    ToolTip="单次运行"
                                                     Visibility="Collapsed">
-                          <Button.Background>
-                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                              <GradientStop Color="#4CAF50" Offset="0"/>
-                              <GradientStop Color="#45A049" Offset="1"/>
-                            </LinearGradientBrush>
-                          </Button.Background>
-                          <Button.Style>
-                            <Style TargetType="Button">
-                              <Setter Property="Template">
-                                <Setter.Value>
-                                  <ControlTemplate TargetType="Button">
-                                    <Border Background="{TemplateBinding Background}"
-                                                                            CornerRadius="6"
-                                                                            Width="{TemplateBinding Width}"
-                                                                            Height="{TemplateBinding Height}">
-                                      <ContentPresenter Content="{TemplateBinding Content}"
-                                                                                          HorizontalAlignment="Center"
-                                                                                          VerticalAlignment="Center"/>
-                                    </Border>
-                                  </ControlTemplate>
-                                </Setter.Value>
-                              </Setter>
-                              <Style.Triggers>
+                          <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                              <Border x:Name="Bd"
+                                                                Background="Transparent"
+                                                                CornerRadius="4"
+                                                                Width="{TemplateBinding Width}"
+                                                                Height="{TemplateBinding Height}">
+                                <!-- 与 TopBar 单次运行图标保持一致：▶️ emoji -->
+                                <TextBlock x:Name="IconText"
+                                                                      Text="▶️"
+                                                                      FontSize="13"
+                                                                      HorizontalAlignment="Center"
+                                                                      VerticalAlignment="Center"/>
+                              </Border>
+                              <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                  <Setter Property="Opacity" Value="0.9"/>
-                                  <Setter Property="Effect">
-                                    <Setter.Value>
-                                      <DropShadowEffect Color="#4CAF50" BlurRadius="8" ShadowDepth="0"/>
-                                    </Setter.Value>
-                                  </Setter>
+                                  <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TabItemHoverBrush}}"/>
+                                  <Setter TargetName="IconText" Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
                                 </Trigger>
-                              </Style.Triggers>
-                            </Style>
-                          </Button.Style>
+                              </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                          </Button.Template>
                         </Button>
 
-                        <!-- 连续运行/停止按钮 - 仅在选中时显示 -->
+                        <!-- 连续运行/停止按钮 - 仅在选中时显示（克制风格：透明底，运行中图标高亮） -->
                         <Button x:Name="ContinuousRunBtn"
                                                     Grid.Column="4"
                                                     Padding="6,4"
@@ -332,135 +310,65 @@
                                                     Tag="{Binding}"
                                                     Click="TabItem_ContinuousRun_Click"
                                                     Cursor="Hand"
-                                                    Width="32" Height="32"
-                                                    Visibility="Collapsed">
-                          <Button.Background>
-                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                              <GradientStop Color="{Binding IsRunning, Converter={StaticResource ContinuousRunBackgroundConverter}}" Offset="0"/>
-                              <GradientStop Color="{Binding IsRunning, Converter={StaticResource ContinuousRunBackgroundConverter}}" Offset="1"/>
-                            </LinearGradientBrush>
-                          </Button.Background>
-                          <Button.Style>
-                            <Style TargetType="Button">
-                              <Setter Property="Template">
-                                <Setter.Value>
-                                  <ControlTemplate TargetType="Button">
-                                    <Border Background="{TemplateBinding Background}"
-                                                                            CornerRadius="6"
-                                                                            Width="{TemplateBinding Width}"
-                                                                            Height="{TemplateBinding Height}">
-                                      <Path Data="{Binding IsRunning, Converter={StaticResource ContinuousRunIconTriangleInLoopConverter}}"
-                                                                              Fill="{Binding IsRunning, Converter={StaticResource ContinuousRunIconColorConverter}}"
-                                                                              Stretch="Uniform"
-                                                                              Width="20" Height="20"
-                                                                              HorizontalAlignment="Center"
-                                                                              VerticalAlignment="Center"/>
-                                    </Border>
-                                  </ControlTemplate>
-                                </Setter.Value>
-                              </Setter>
-                              <Style.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                  <Setter Property="Opacity" Value="0.9"/>
-                                  <Setter Property="Effect">
-                                    <Setter.Value>
-                                      <DropShadowEffect BlurRadius="8" ShadowDepth="0"/>
-                                    </Setter.Value>
-                                  </Setter>
-                                </Trigger>
-                              </Style.Triggers>
-                            </Style>
-                          </Button.Style>
-                        </Button>
-
-                        <!-- 状态指示器 - 仅在选中时显示 -->
-                        <Ellipse x:Name="StateIndicator"
-                                                     Grid.Column="5"
-                                                     Width="12" Height="12"
-                                                     Fill="{Binding State, Converter={StaticResource WorkflowStateToColorConverter}}"
-                                                     VerticalAlignment="Center"
-                                                     Margin="12,0,8,0"
-                                                     Visibility="Collapsed">
-                          <Ellipse.Effect>
-                            <DropShadowEffect Color="{Binding State, Converter={StaticResource WorkflowStateToColorConverter}}"
-                                                                      BlurRadius="6" ShadowDepth="0"/>
-                          </Ellipse.Effect>
-                        </Ellipse>
-
-                        <!-- 删除按钮 - 仅在选中时显示 -->
-                        <Button x:Name="DeleteBtn"
-                                                    Grid.Column="6"
-                                                    Content="✕"
-                                                    Padding="0"
-                                                    Margin="0"
-                                                    Background="Transparent"
-                                                    BorderThickness="1"
-                                                    BorderBrush="Transparent"
-                                                    FontSize="16"
-                                                    Foreground="#999999"
-                                                    Tag="{Binding}"
-                                                    Click="TabItem_Delete_Click"
-                                                    Cursor="Hand"
-                                                    Width="24" Height="24"
+                                                    Width="26" Height="26"
                                                     VerticalAlignment="Center"
+                                                    Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"
+                                                    ToolTip="连续运行 / 停止"
                                                     Visibility="Collapsed">
                           <Button.Style>
                             <Style TargetType="Button">
                               <Setter Property="Template">
                                 <Setter.Value>
                                   <ControlTemplate TargetType="Button">
-                                    <Border Background="{TemplateBinding Background}"
-                                                                            BorderBrush="{TemplateBinding BorderBrush}"
-                                                                            BorderThickness="{TemplateBinding BorderThickness}"
-                                                                            CornerRadius="4"
-                                                                            Width="{TemplateBinding Width}"
-                                                                            Height="{TemplateBinding Height}">
-                                      <ContentPresenter Content="{TemplateBinding Content}"
-                                                                                          HorizontalAlignment="Center"
-                                                                                          VerticalAlignment="Center"/>
+                                    <Border x:Name="Bd"
+                                                            Background="Transparent"
+                                                            CornerRadius="4"
+                                                            Width="{TemplateBinding Width}"
+                                                            Height="{TemplateBinding Height}">
+                                      <!-- 与 TopBar 连续运行图标保持一致：🔁 emoji，运行中切换为 ⏹ -->
+                                      <!-- 图标颜色不再从按钮一次性取值(TemplateBinding)，改为触发器直接给 IconText 上色，绕开局部值优先级坑 -->
+                                      <TextBlock x:Name="IconText"
+                                                                    Text="🔁"
+                                                                    FontSize="13"
+                                                                    HorizontalAlignment="Center"
+                                                                    VerticalAlignment="Center"/>
                                     </Border>
+                                    <ControlTemplate.Triggers>
+                                      <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TabItemHoverBrush}}"/>
+                                        <Setter TargetName="IconText" Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
+                                      </Trigger>
+                                      <DataTrigger Binding="{Binding IsRunning}" Value="True">
+                                        <Setter TargetName="IconText" Property="Text" Value="⏹"/>
+                                        <Setter TargetName="Bd" Property="Background" Value="Transparent"/>
+                                        <!-- 与 TopBar 一致：运行中图标变红色 #FF5252（直接给图标上色，绕开局部值优先级坑） -->
+                                        <Setter TargetName="IconText" Property="Foreground" Value="#FF5252"/>
+                                      </DataTrigger>
+                                    </ControlTemplate.Triggers>
                                   </ControlTemplate>
                                 </Setter.Value>
                               </Setter>
-                              <Style.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                  <Setter Property="Background" Value="#FFF5F5"/>
-                                  <Setter Property="BorderBrush" Value="#FF4444"/>
-                                  <Setter Property="Foreground" Value="#FF4444"/>
-                                </Trigger>
-                              </Style.Triggers>
                             </Style>
                           </Button.Style>
                         </Button>
+
+                      </Grid>
                       </Grid>
                     </Border>
                   </Grid>
                   <ControlTemplate.Triggers>
                     <Trigger Property="IsSelected" Value="True">
                       <Setter TargetName="TabBorder" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TabItemBackgroundBrush}}"/>
-                      <Setter TargetName="TabBorder" Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
-                      <Setter TargetName="TabBorder" Property="BorderThickness" Value="2,2,2,0"/>
-                      <Setter TargetName="TabBorder" Property="Effect">
-                        <Setter.Value>
-                          <DropShadowEffect Color="{x:Static constants:ColorConstants.Primary}" BlurRadius="12" ShadowDepth="0"/>
-                        </Setter.Value>
-                      </Setter>
+                      <Setter TargetName="SelectedIndicator" Property="Visibility" Value="Visible"/>
                       <Setter TargetName="SingleRunBtn" Property="Visibility" Value="Visible"/>
                       <Setter TargetName="ContinuousRunBtn" Property="Visibility" Value="Visible"/>
-                      <Setter TargetName="StateIndicator" Property="Visibility" Value="Visible"/>
-                      <Setter TargetName="DeleteBtn" Property="Visibility" Value="Visible"/>
                     </Trigger>
                     <Trigger Property="IsMouseOver" Value="True">
                       <Setter TargetName="TabBorder" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TabItemHoverBrush}}"/>
-                      <Setter TargetName="TabBorder" Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
                     </Trigger>
                     <DataTrigger Binding="{Binding IsEditingName}" Value="True">
                       <Setter TargetName="TabNameText" Property="Visibility" Value="Collapsed"/>
                       <Setter TargetName="TabNameEditor" Property="Visibility" Value="Visible"/>
-                    </DataTrigger>
-                    <!-- 子程序模式下隐藏删除按钮 -->
-                    <DataTrigger Binding="{Binding IsInSubroutine}" Value="True">
-                      <Setter TargetName="DeleteBtn" Property="Visibility" Value="Collapsed"/>
                     </DataTrigger>
                   </ControlTemplate.Triggers>
                 </ControlTemplate>

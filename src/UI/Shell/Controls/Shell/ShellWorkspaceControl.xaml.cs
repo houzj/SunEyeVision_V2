@@ -13,6 +13,7 @@ using SubroutineOutputChange = SunEyeVision.Plugin.SDK.Models.SubroutineOutputCh
 using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Services.Canvas;
 using SunEyeVision.UI.Core;
+using SunEyeVision.UI.Features.Dialogs;
 using SunEyeVision.UI.Features.WorkflowUI.Canvas;
 
 using SunEyeVision.UI.Features.WorkflowUI;
@@ -1510,20 +1511,23 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// </summary>
         private void DeleteWorkflowWithConfirm(WorkflowTabViewModel workflow)
         {
+            var owner = Window.GetWindow(this);
             if (workflow.IsRunning)
             {
-                System.Windows.MessageBox.Show(
+                ThemeMessageDialog.Show(
                     "请先停止该工作流",
                     "提示",
                     System.Windows.MessageBoxButton.OK,
-                    System.Windows.MessageBoxImage.Warning);
+                    ThemeMessageDialog.MessageIcon.Warning,
+                    owner);
                 return;
             }
-            var result = System.Windows.MessageBox.Show(
+            var result = ThemeMessageDialog.Show(
                 $"确定要删除工作流 '{workflow.Name}' 吗?",
                 "确认删除",
                 System.Windows.MessageBoxButton.YesNo,
-                System.Windows.MessageBoxImage.Question);
+                ThemeMessageDialog.MessageIcon.Question,
+                owner);
             if (result == System.Windows.MessageBoxResult.Yes)
             {
                 if (_viewModel.WorkflowTabViewModel.DeleteWorkflow(workflow))
@@ -1532,11 +1536,12 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 }
                 else
                 {
-                    System.Windows.MessageBox.Show(
+                    ThemeMessageDialog.Show(
                         "至少需要保留一个工作流",
                         "提示",
                         System.Windows.MessageBoxButton.OK,
-                        System.Windows.MessageBoxImage.Warning);
+                        ThemeMessageDialog.MessageIcon.Warning,
+                        owner);
                 }
             }
         }

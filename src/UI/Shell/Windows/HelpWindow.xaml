@@ -1,8 +1,9 @@
-<Window x:Class="SunEyeVision.UI.Shell.Windows.HelpWindow"
+<themeWindows:ThemeDialogWindow x:Class="SunEyeVision.UI.Shell.Windows.HelpWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:themeWindows="clr-namespace:SunEyeVision.UI.Shell.Windows"
         mc:Ignorable="d"
         Title="太阳眼视觉 - 用户手册" Height="600" Width="900"
         WindowStartupLocation="CenterOwner"
@@ -141,4 +142,4 @@
             </ScrollViewer>
         </Border>
     </Grid>
-</Window>
+</themeWindows:ThemeDialogWindow>

@@ -37,8 +37,19 @@
     <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.DividerBrush}"
                      Color="{x:Static constants:ColorConstants.BorderLight}"/>
 
+    <!-- ============ 顶栏 / 标题栏 ============ -->
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.TitleBarBackgroundBrush}"
+                     Color="{x:Static constants:ColorConstants.BackgroundGray}"/>
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.TitleBarTextBrush}"
+                     Color="{x:Static constants:ColorConstants.TextPrimary}"/>
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.TitleBarButtonHoverBrush}"
+                     Color="{x:Static constants:ColorConstants.BackgroundHover}"/>
+
     <!-- ============ 面板 / 背景 ============ -->
     <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.PanelBackgroundBrush}"
+                     Color="{x:Static constants:ColorConstants.Background}"/>
+    <!-- ============ 控件默认背景（按钮等） ============ -->
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.ControlBackgroundBrush}"
                      Color="{x:Static constants:ColorConstants.Background}"/>
 
     <!-- ============ 工具栏 / 输入控件 / 状态栏 ============ -->

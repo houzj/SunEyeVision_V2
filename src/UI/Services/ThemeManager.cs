@@ -75,6 +75,7 @@ namespace SunEyeVision.UI.Services
             }
 
             ApplyThemeDictionary(_currentTheme);
+            WindowTitleBarThemer.UpdateTheme(_currentTheme == AppTheme.Dark);
             _logger.Log(LogLevel.Info, $"主题系统初始化完成，当前主题: {_currentTheme}", "ThemeManager");
         }
 
@@ -90,6 +91,8 @@ namespace SunEyeVision.UI.Services
 
             _currentTheme = theme;
             ApplyThemeDictionary(theme);
+            // 刷新所有已打开弹窗的系统标题栏（切主题瞬间即时跟随）
+            WindowTitleBarThemer.UpdateTheme(theme == AppTheme.Dark);
 
             // 持久化用户选择
             try

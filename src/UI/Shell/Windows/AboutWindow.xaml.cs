@@ -7,7 +7,7 @@ namespace SunEyeVision.UI.Shell.Windows
     /// <summary>
     /// AboutWindow - 关于对话框
     /// </summary>
-    public partial class AboutWindow : Window
+    public partial class AboutWindow : ThemeDialogWindow
     {
         public AboutWindow()
         {

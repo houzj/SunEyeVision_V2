@@ -15,11 +15,21 @@
         /// <summary>品牌主色 / 强调色（Brush 层），对应 UI ThemeKeys.AccentBrush</summary>
         public const string AccentBrush = "ThemeAccentBrush";
 
+        // ============ 顶栏 / 标题栏 ============
+        /// <summary>标题栏背景，对应 UI ThemeKeys.TitleBarBackgroundBrush</summary>
+        public const string TitleBarBackgroundBrush = "ThemeTitleBarBackgroundBrush";
+        /// <summary>标题栏文字，对应 UI ThemeKeys.TitleBarTextBrush</summary>
+        public const string TitleBarTextBrush = "ThemeTitleBarTextBrush";
+        /// <summary>标题栏按钮悬停背景，对应 UI ThemeKeys.TitleBarButtonHoverBrush</summary>
+        public const string TitleBarButtonHoverBrush = "ThemeTitleBarButtonHoverBrush";
+
         // ============ 控件底色 ============
         /// <summary>控件悬停背景，对应 UI ThemeKeys.ControlHoverBackgroundBrush</summary>
         public const string ControlHoverBackgroundBrush = "ThemeControlHoverBackgroundBrush";
         /// <summary>控件按下 / 选中背景，对应 UI ThemeKeys.ControlSelectedBackgroundBrush</summary>
         public const string ControlSelectedBackgroundBrush = "ThemeControlSelectedBackgroundBrush";
+        /// <summary>控件默认背景（按钮/输入框等），对应 UI ThemeKeys.ControlBackgroundBrush</summary>
+        public const string ControlBackgroundBrush = "ThemeControlBackgroundBrush";
 
         // ============ 文字 ============
         /// <summary>主文字，对应 UI ThemeKeys.TextPrimaryBrush</summary>

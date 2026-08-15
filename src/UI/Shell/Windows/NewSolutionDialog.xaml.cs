@@ -7,7 +7,7 @@ namespace SunEyeVision.UI.Shell.Windows;
 /// <summary>
 /// NewSolutionDialog.xaml 的交互逻辑
 /// </summary>
-public partial class NewSolutionDialog : Window
+public partial class NewSolutionDialog : ThemeDialogWindow
 {
     /// <summary>
     /// 解决方案名称

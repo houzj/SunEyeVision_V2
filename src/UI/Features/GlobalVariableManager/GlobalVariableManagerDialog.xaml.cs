@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using SunEyeVision.UI.Core;
+using SunEyeVision.UI.Shell.Windows;
 using SunEyeVision.Workflow;
 
 using SunEyeVision.UI.Core;
@@ -15,7 +16,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
     /// <summary>
     /// 全局变量管理器对话框
     /// </summary>
-    public partial class GlobalVariableManagerDialog : Window
+    public partial class GlobalVariableManagerDialog : ThemeDialogWindow
     {
         public GlobalVariableManagerDialog(GlobalVariableManagerViewModel viewModel)
         {

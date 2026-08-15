@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Windows;
 using SunEyeVision.UI.Core;
+using SunEyeVision.UI.Shell.Windows;
 using SunEyeVision.Workflow;
 
 using SunEyeVision.UI.Core;
@@ -10,7 +11,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
     /// <summary>
     /// 全局变量选择对话框（简化版，只读选择，非管理器）
     /// </summary>
-    public partial class GlobalVariableSelectDialog : Window
+    public partial class GlobalVariableSelectDialog : ThemeDialogWindow
     {
         private readonly GlobalVariableSelectViewModel _viewModel;
 

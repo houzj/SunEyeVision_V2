@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Data;
 using SunEyeVision.UI.Core;
+using SunEyeVision.UI.Shell.Windows;
 using SunEyeVision.Workflow;
 
 using SunEyeVision.UI.Core;
@@ -14,7 +15,7 @@ namespace SunEyeVision.UI.Features.ParameterSetting
     /// <summary>
     /// 目标参数管理对话框
     /// </summary>
-    public partial class TargetParameterDialog : Window
+    public partial class TargetParameterDialog : ThemeDialogWindow
     {
         private readonly TargetParameterViewModel _viewModel;
         private bool _isSaved;

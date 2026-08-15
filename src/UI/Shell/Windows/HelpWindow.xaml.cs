@@ -9,7 +9,7 @@ namespace SunEyeVision.UI.Shell.Windows
     /// <summary>
     /// 帮助窗口 - 支持显示内容和外部 HTML 文档
     /// </summary>
-    public partial class HelpWindow : Window
+    public partial class HelpWindow : ThemeDialogWindow
     {
         private readonly string _helpDirectory;
 

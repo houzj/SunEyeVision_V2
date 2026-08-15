@@ -1,5 +1,6 @@
 using System.Windows;
 using SunEyeVision.UI.Core;
+using SunEyeVision.UI.Shell.Windows;
 
 using SunEyeVision.UI.Core;
 
@@ -8,7 +9,7 @@ namespace SunEyeVision.UI.Features.Dialogs
     /// <summary>
     /// SaveAsDialog.xaml 的交互逻辑
     /// </summary>
-    public partial class SaveAsDialog : Window
+    public partial class SaveAsDialog : ThemeDialogWindow
     {
         public SaveAsDialogViewModel ViewModel { get; }
 

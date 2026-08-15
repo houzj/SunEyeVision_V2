@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Plugin.SDK.UI.Themes;
 
 namespace SunEyeVision.Plugin.SDK.UI.Windows
 {
@@ -80,11 +81,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
             // 创建外层 Border（圆角 + 阴影）
             _windowBorder = new Border
             {
-                Background = (Brush)FindResource("SurfaceBrush"),
                 CornerRadius = new CornerRadius(8),
-                BorderBrush = (Brush)FindResource("BorderBrush"),
                 BorderThickness = new Thickness(1)
             };
+            // 语义键 + 动态绑定（等价 XAML DynamicResource：主题切换自动刷新，键缺失不构造崩溃）
+            _windowBorder.SetResourceReference(BackgroundProperty, SdkThemeKeys.PanelBackgroundBrush);
+            _windowBorder.SetResourceReference(BorderBrushProperty, SdkThemeKeys.BorderBrush);
 
             // 添加阴影效果
             var effect = new System.Windows.Media.Effects.DropShadowEffect

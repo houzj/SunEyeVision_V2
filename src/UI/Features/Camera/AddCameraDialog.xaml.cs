@@ -2,6 +2,7 @@ using System;
 using System.Windows;
 using SunEyeVision.Core.Services.CameraDiscovery;
 using SunEyeVision.UI.Core;
+using SunEyeVision.UI.Shell.Windows;
 
 using SunEyeVision.UI.Core;
 
@@ -10,7 +11,7 @@ namespace SunEyeVision.UI.Features.Camera
     /// <summary>
     /// 添加相机引导界面
     /// </summary>
-    public partial class AddCameraDialog : Window
+    public partial class AddCameraDialog : ThemeDialogWindow
     {
         private readonly AddCameraViewModel _viewModel;
         

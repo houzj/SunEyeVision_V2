@@ -10,28 +10,28 @@
     <StatusBar Height="24" Background="{DynamicResource {x:Static base:ThemeKeys.StatusBarBackgroundBrush}}" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.StatusBarBorderBrush}}" BorderThickness="0,1,0,0">
         <StatusBarItem>
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="●" Foreground="{DynamicResource {x:Static base:ThemeKeys.StatusBarTextBrush}}" FontSize="10" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                <TextBlock Text="{Binding StatusText}" FontSize="11" VerticalAlignment="Center"/>
+                <TextBlock Text="●" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}" FontSize="10" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                <TextBlock Text="{Binding StatusText}" FontSize="11" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}" VerticalAlignment="Center"/>
             </StackPanel>
         </StatusBarItem>
         <Separator/>
         <StatusBarItem>
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="📷 相机:" FontSize="11" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                <TextBlock Text="{Binding CameraStatus}" FontSize="11" Foreground="{DynamicResource {x:Static base:ThemeKeys.StatusBarTextBrush}}" VerticalAlignment="Center"/>
+                <TextBlock Text="📷 相机:" FontSize="11" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                <TextBlock Text="{Binding CameraStatus}" FontSize="11" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}" VerticalAlignment="Center"/>
             </StackPanel>
         </StatusBarItem>
         <Separator/>
         <StatusBarItem>
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="流程1:" FontSize="11" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                <TextBlock Text="{Binding IsRunning}" FontSize="11" Foreground="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}" VerticalAlignment="Center"/>
+                <TextBlock Text="流程1:" FontSize="11" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                <TextBlock Text="{Binding IsRunning, Converter={StaticResource BoolToRunningTextConverter}}" FontSize="11" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}" VerticalAlignment="Center"/>
             </StackPanel>
         </StatusBarItem>
         <StatusBarItem HorizontalAlignment="Right">
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="流程:" FontSize="11" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                <TextBlock Text="{Binding WorkflowCount}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource {x:Static base:ThemeKeys.StatusBarTextBrush}}" VerticalAlignment="Center"/>
+                <TextBlock Text="流程:" FontSize="11" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                <TextBlock Text="{Binding WorkflowCount}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}" VerticalAlignment="Center"/>
             </StackPanel>
         </StatusBarItem>
     </StatusBar>

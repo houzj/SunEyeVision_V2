@@ -75,7 +75,7 @@
     <!-- ============ 状态栏 ============ -->
     <Color x:Key="{x:Static base:ThemeKeys.StatusBarBackground}">#FF1E1E1E</Color>
     <Color x:Key="{x:Static base:ThemeKeys.StatusBarBorder}">#FF3C3C3C</Color>
-    <Color x:Key="{x:Static base:ThemeKeys.StatusBarText}">#FF00CC99</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.StatusBarText}">#FFCCCCCC</Color>
 
     <!-- ============ 顶栏 / 标题栏 ============ -->
     <Color x:Key="{x:Static base:ThemeKeys.TitleBarIcon}">#FFC0C0C0</Color>

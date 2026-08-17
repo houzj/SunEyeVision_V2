@@ -262,18 +262,34 @@ if ($matchedId) {
 
 # ---------- 未匹配 → 临时任务池 ----------
 if (-not $matchedId) {
-    Write-Host "未匹配到计划内模块 → 记入临时任务池" -ForegroundColor Yellow
-    Ensure-Property $plan "tempTasks" @()
-    $tempTask = [pscustomobject]@{
-        id       = "TMP-$($CommitHash.Substring(0,7))"
-        message  = $CommitMsg
-        date     = $CommitTime
-        commit   = $CommitHash
-        files    = $Files
-        status   = "in_progress"
+    # 治本：判断是否"纯计划系统自我更新"（无业务代码改动，如提交只是 plan.json 入库）
+    # 这类提交会触发 hook → hook 又记临时任务 → plan.json 变脏 → 再提交 → 无限循环。
+    # 仅当改动文件含业务路径（src/tools/tests/docs 等）才记临时任务，纯 plans/.codebuddy 更新跳过。
+    $businessPrefixes = @("src/", "tools/", "tests/", "docs/", "libs/", "PluginDevKit/", "Help/")
+    $hasBusinessChange = $false
+    foreach ($f in $Files) {
+        foreach ($bp in $businessPrefixes) {
+            if ($f.StartsWith($bp)) { $hasBusinessChange = $true; break }
+        }
+        if ($hasBusinessChange) { break }
     }
-    $plan.tempTasks = @($plan.tempTasks) + $tempTask
-    Write-Host "临时任务已加入: $($tempTask.id) - $CommitMsg" -ForegroundColor Yellow
+
+    if (-not $hasBusinessChange) {
+        Write-Host "纯计划系统自我更新（无业务代码改动），跳过临时任务池，避免自我更新污染" -ForegroundColor DarkGray
+    } else {
+        Write-Host "未匹配到计划内模块 → 记入临时任务池" -ForegroundColor Yellow
+        Ensure-Property $plan "tempTasks" @()
+        $tempTask = [pscustomobject]@{
+            id       = "TMP-$($CommitHash.Substring(0,7))"
+            message  = $CommitMsg
+            date     = $CommitTime
+            commit   = $CommitHash
+            files    = $Files
+            status   = "in_progress"
+        }
+        $plan.tempTasks = @($plan.tempTasks) + $tempTask
+        Write-Host "临时任务已加入: $($tempTask.id) - $CommitMsg" -ForegroundColor Yellow
+    }
 }
 
 # ---------- 保存 plan.json（保持格式） ----------

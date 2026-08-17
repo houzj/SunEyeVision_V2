@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Plugin.SDK.UI.Constants;
 using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using SunEyeVision.Plugin.SDK.UI.Controls.Roi.ViewModels;
 using SunEyeVision.Plugin.SDK.UI.Controls;
@@ -242,13 +243,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         }
 
         /// <summary>
-        /// 区域类型标题颜色（检测区域=蓝色 #4488FF，屏蔽区域=橙色 #FFA500）
+        /// 区域类型标题颜色（检测区域=蓝色，屏蔽区域=橙色；ROI 语义内容色，固定不随主题切换）
         /// </summary>
         public static readonly DependencyProperty RegionTypeTitleBrushProperty =
             DependencyProperty.Register(nameof(RegionTypeTitleBrush),
                 typeof(Brush),
                 typeof(RoiEditorControl),
-                new PropertyMetadata(new SolidColorBrush((Color)ColorConverter.ConvertFromString("#4488FF"))));
+                new PropertyMetadata(ColorConstants.InspectionBlueBrush));
 
         public Brush RegionTypeTitleBrush
         {
@@ -263,8 +264,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
                 var newType = (RoiType)e.NewValue;
                 control.RegionTypeTitle = newType == RoiType.Inspection ? "检测区域" : "屏蔽区域";
                 control.RegionTypeTitleBrush = newType == RoiType.Inspection
-                    ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#4488FF"))
-                    : new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFA500"));
+                    ? ColorConstants.InspectionBlueBrush
+                    : ColorConstants.MaskOrangeBrush;
             }
         }
 
@@ -1328,7 +1329,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
             {
                 X1 = displayLastPoint.X, Y1 = displayLastPoint.Y,
                 X2 = mousePosition.X, Y2 = mousePosition.Y,
-                Stroke = Brushes.DodgerBlue,
+                Stroke = ColorConstants.InspectionBlueBrush,
                 StrokeThickness = 2.0 / zoom,
                 Tag = RubberBandTag
             };
@@ -1340,7 +1341,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
             var dot = new Ellipse
             {
                 Width = dotSize, Height = dotSize,
-                Fill = Brushes.DodgerBlue, Tag = RubberBandTag
+                Fill = ColorConstants.InspectionBlueBrush, Tag = RubberBandTag
             };
             Canvas.SetLeft(dot, mousePosition.X - dotSize / 2);
             Canvas.SetTop(dot, mousePosition.Y - dotSize / 2);
@@ -2124,9 +2125,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
                 var zoom = CurrentZoom;
                 var handleColor = region.RoiType switch
                 {
-                    Models.RoiType.Mask => new SolidColorBrush(Color.FromArgb(255, 255, 165, 0)),   // 橙色
-                    Models.RoiType.Inspection => new SolidColorBrush(Color.FromArgb(255, 0, 120, 215)), // 蓝色
-                    _ => Brushes.Orange
+                    Models.RoiType.Mask => ColorConstants.MaskOrangeBrush,
+                    Models.RoiType.Inspection => ColorConstants.InspectionBlueBrush,
+                    _ => ColorConstants.MaskOrangeBrush
                 };
 
                 // 正向变换手柄位置到测试坐标系（OverlayCanvas 在测试坐标系中）
@@ -2267,7 +2268,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
                 Text = region.Name,
                 FontSize = 12,
                 Foreground = Brushes.White,
-                Background = new SolidColorBrush(Color.FromArgb(180, 0, 0, 0)),
+                Background = new SolidColorBrush(ColorConstants.LabelBackground),
                 Padding = new Thickness(4, 2, 4, 2),
                 Tag = region.Id
             };

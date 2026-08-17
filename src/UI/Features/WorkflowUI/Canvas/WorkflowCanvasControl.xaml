@@ -215,8 +215,8 @@
                             Tag="{Binding}"
                             x:Name="HitAreaBorder">
                         <Border.ContextMenu>
-                            <ContextMenu Background="{DynamicResource {x:Static base:ThemeKeys.ContextMenuBackgroundBrush}}"
-                                         BorderBrush="{DynamicResource {x:Static base:ThemeKeys.BorderBrush}}"
+                            <ContextMenu Background="#FFFFFFFF"
+                                         BorderBrush="#FFCCCCCC"
                                          BorderThickness="1" Padding="4">
                                 <MenuItem Header="重命名" Click="NodeContextMenu_Rename_Click"/>
                             </ContextMenu>
@@ -276,29 +276,37 @@
                                         </TextBlock.Style>
                                     </TextBlock>
 
-                                    <!-- 子程序设置按钮（仅 Subroutine 类型节点可见，替换图标显示） -->
-                                    <Button Content="⚙"
-                                            Width="20" Height="20"
-                                            FontSize="12"
-                                            Foreground="#888888"
-                                            Background="Transparent"
+                                    <!-- 子程序设置按钮（仅 Subroutine 类型节点可见，替换图标显示）
+                                         治本：原 Content="{Binding Icon}" (emoji 🔁 U+1F501) 走 Segoe UI Emoji 字体路径，
+                                         Foreground 主题色对 emoji 无效 + emoji 自带紫色在浅色卡片背景上对比度低 →
+                                         暗色主题下肉眼不可见（用户实测截图）。改用 ⚙ (U+2699 BLACK GEAR)：
+                                         1. 标准几何符号，显式指定 IconFontFamily(Segoe UI Symbol) 必含该字形，
+                                            主字体路径渲染（不走 emoji 字体），不依赖 WPF 字体回退链
+                                         2. 纯黑白字形，Foreground 完全可控，亮/暗主题都清晰可见
+                                         3. 与本控件"返回"按钮(↩ U+21A9)设计语言一致 -->
+                                    <Button Background="Transparent"
                                             BorderThickness="0"
                                             Padding="0"
                                             Cursor="Hand"
                                             ToolTip="子程序参数设置"
                                             Click="SubroutineNodeSettings_Click"
+                                            Loaded="SubroutineNodeSettings_Loaded"
                                             HorizontalAlignment="Center" VerticalAlignment="Center"
                                             Panel.ZIndex="10">
+                                        <TextBlock Text="&#x2699;"
+                                                   FontFamily="{StaticResource IconFontFamily}"
+                                                   FontSize="24" FontWeight="Bold"
+                                                   Foreground="#FF333333"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                         <Button.Style>
                                             <Style TargetType="Button">
                                                 <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Setter Property="Margin" Value="0,0,8,0"/>
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding ToolType}" Value="Subroutine">
                                                         <Setter Property="Visibility" Value="Visible"/>
                                                     </DataTrigger>
-                                                    <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter Property="Foreground" Value="#0066CC"/>
-                                                    </Trigger>
+                                                    <!-- 悬停变色已删除：所有主题/所有状态统一 #FF333333 -->
                                                 </Style.Triggers>
                                             </Style>
                                         </Button.Style>

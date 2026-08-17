@@ -7,9 +7,14 @@
              xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls"
              xmlns:converters="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Roi.Converters"
              xmlns:va="clr-namespace:SunEyeVision.Plugin.SDK.VisionAdapters"
+             xmlns:themes="clr-namespace:SunEyeVision.Plugin.SDK.UI.Themes"
              mc:Ignorable="d" d:DesignHeight="500" d:DesignWidth="300">
     <UserControl.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <Style TargetType="GroupBox">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"/>
+        </Style>
     </UserControl.Resources>
 
     <!-- 根 Grid 直接继承父级 DataContext（ParameterPanel），修复旧版自绑 SubscribeViewModel 导致的接线断裂 -->

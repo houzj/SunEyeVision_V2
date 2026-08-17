@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Plugin.SDK.UI.Constants;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls
 {
@@ -139,7 +140,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         #region OnBackground - 开启状态背景色
 
         /// <summary>
-        /// 开启状态背景色（默认：橙色 #FF7F00）
+        /// 开启状态背景色。
+        /// 默认值取 ColorConstants 兜底（无 UI 宿主时），有 UI 宿主时由 Generic.xaml 样式
+        /// Setter 用主题语义 key 覆盖（AccentBrush），随明/暗主题切换。
         /// </summary>
         public static readonly DependencyProperty OnBackgroundProperty =
             DependencyProperty.Register(
@@ -147,7 +150,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 typeof(Brush),
                 typeof(ToggleSwitch),
                 new FrameworkPropertyMetadata(
-                    new SolidColorBrush(Color.FromRgb(0xFF, 0x7F, 0x00))));
+                    ColorConstants.SwitchOnBackgroundBrush));
 
         public Brush OnBackground
         {
@@ -160,7 +163,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         #region OffBackground - 关闭状态背景色
 
         /// <summary>
-        /// 关闭状态背景色（默认：灰色 #D9D9D9）
+        /// 关闭状态背景色。
+        /// 默认值取 ColorConstants 兜底（无 UI 宿主时），有 UI 宿主时由 Generic.xaml 样式
+        /// Setter 用主题语义 key 覆盖（ToggleOffBackgroundBrush），随明/暗主题切换。
         /// </summary>
         public static readonly DependencyProperty OffBackgroundProperty =
             DependencyProperty.Register(
@@ -168,7 +173,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 typeof(Brush),
                 typeof(ToggleSwitch),
                 new FrameworkPropertyMetadata(
-                    new SolidColorBrush(Color.FromRgb(0xD9, 0xD9, 0xD9))));
+                    ColorConstants.SwitchOffBackgroundBrush));
 
         public Brush OffBackground
         {
@@ -181,7 +186,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         #region ThumbColor - 滑块颜色
 
         /// <summary>
-        /// 滑块颜色（默认：白色）
+        /// 滑块颜色。
+        /// 默认值取 ColorConstants 兜底（无 UI 宿主时），有 UI 宿主时由 Generic.xaml 样式
+        /// Setter 用主题语义 key 覆盖（TextOnDarkBrush，明暗主题均为白色滑块），随明/暗主题切换。
         /// </summary>
         public static readonly DependencyProperty ThumbColorProperty =
             DependencyProperty.Register(
@@ -189,7 +196,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 typeof(Brush),
                 typeof(ToggleSwitch),
                 new FrameworkPropertyMetadata(
-                    new SolidColorBrush(Colors.White)));
+                    ColorConstants.BackgroundBrush));
 
         public Brush ThumbColor
         {
@@ -256,31 +263,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             get => (bool)GetValue(ShowTextProperty);
             set => SetValue(ShowTextProperty, value);
         }
-
-        #endregion
-
-        #region IsDarkTheme - 是否使用深色主题
-
-        /// <summary>
-        /// 是否使用深色主题（默认：浅色主题）
-        /// </summary>
-        /// <remarks>
-        /// 深色主题：关闭状态背景为 #555555
-        /// 浅色主题：关闭状态背景为 #D9D9D9
-        /// </remarks>
-        public static readonly DependencyProperty IsDarkThemeProperty =
-            DependencyProperty.Register(
-                nameof(IsDarkTheme),
-                typeof(bool),
-                typeof(ToggleSwitch),
-                new FrameworkPropertyMetadata(false));
-
-        public bool IsDarkTheme
-        {
-            get => (bool)GetValue(IsDarkThemeProperty);
-            set => SetValue(IsDarkThemeProperty, value);
-        }
-
 
         #endregion
 

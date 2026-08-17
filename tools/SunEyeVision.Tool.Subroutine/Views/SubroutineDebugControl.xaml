@@ -5,14 +5,10 @@
         xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
         xmlns:converters="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Roi.Converters;assembly=SunEyeVision.Plugin.SDK"
         xmlns:local="clr-namespace:SunEyeVision.Tool.Subroutine.Views"
-        Background="#F0F2F5">
+        Background="{DynamicResource ThemePanelBackgroundBrush}">
 
     <UserControl.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/SunEyeVision.UI;component/Shell/Resources/AppResources.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-
             <!-- Tab按钮样式 -->
             <Style x:Key="TabHeaderButton" TargetType="Button">
                 <Setter Property="Width" Value="28"/>
@@ -25,12 +21,12 @@
                     <Setter.Value>
                         <ControlTemplate TargetType="Button">
                             <Border x:Name="border" Background="{TemplateBinding Background}"
-                                    BorderBrush="#D0D0D0" BorderThickness="1" CornerRadius="4">
+                                    BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1" CornerRadius="4">
                                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="border" Property="Background" Value="#E8E8E8"/>
+                                    <Setter TargetName="border" Property="Background" Value="{DynamicResource ThemeControlHoverBackgroundBrush}"/>
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
@@ -40,8 +36,8 @@
 
             <!-- 添加按钮样式 -->
             <Style x:Key="AddButton" TargetType="Button">
-                <Setter Property="Background" Value="#4CAF50"/>
-                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="Background" Value="{DynamicResource ThemeSuccessBrush}"/>
+                <Setter Property="Foreground" Value="{DynamicResource ThemeTextOnDarkBrush}"/>
                 <Setter Property="BorderThickness" Value="0"/>
                 <Setter Property="Padding" Value="6,4"/>
                 <Setter Property="FontSize" Value="12"/>
@@ -58,30 +54,31 @@
                 </Setter>
             </Style>
 
-            <!-- 标签列样式 -->
-            <Style x:Key="TagColumnStyle" TargetType="DataGridColumnHeader">
-                <Setter Property="Background" Value="#F5F5F5"/>
+            <!-- 列头隐式样式（自动套用主题色，深色/浅色主题均生效） -->
+            <Style TargetType="DataGridColumnHeader">
+                <Setter Property="Background" Value="{DynamicResource ThemeTableHeaderBackgroundBrush}"/>
                 <Setter Property="FontWeight" Value="SemiBold"/>
-                <Setter Property="Foreground" Value="#333333"/>
-                <Setter Property="BorderBrush" Value="#E0E0E0"/>
+                <Setter Property="Foreground" Value="{DynamicResource ThemeTableHeaderTextBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource ThemeTableGridLineBrush}"/>
                 <Setter Property="Height" Value="30"/>
             </Style>
 
             <Style TargetType="DataGridCell">
                 <Setter Property="VerticalAlignment" Value="Center"/>
                 <Setter Property="BorderThickness" Value="0,0,1,1"/>
-                <Setter Property="BorderBrush" Value="#E0E0E0"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource ThemeTableGridLineBrush}"/>
                 <Setter Property="Padding" Value="6,3"/>
-                <Setter Property="Background" Value="White"/>
+                <Setter Property="Background" Value="{DynamicResource ThemeTableRowBackgroundBrush}"/>
             </Style>
 
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+            <local:SubroutineTypeDisplayConverter x:Key="TypeDisplayConverter"/>
         </ResourceDictionary>
     </UserControl.Resources>
 
     <Grid Margin="0" MaxWidth="720">
         <!-- TabControl -->
-        <TabControl BorderThickness="0" Background="White">
+        <TabControl BorderThickness="0" Background="{DynamicResource ThemePanelBackgroundBrush}">
             <!-- Tab 0: 输入设置 -->
             <TabItem Header="输入设置" Padding="8,4">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -107,7 +104,7 @@
                                         <DataTemplate>
                                             <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
                                                      VerticalContentAlignment="Center"
-                                                     BorderBrush="#D0D0D0" BorderThickness="1" Padding="4,2"/>
+                                                     BorderBrush="{DynamicResource ThemeInputBorderBrush}" BorderThickness="1" Padding="4,2"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
@@ -115,10 +112,8 @@
                                 <DataGridTemplateColumn Header="类型" Width="60">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBox Text="{Binding TypeName}" IsReadOnly="True"
-                                                     VerticalContentAlignment="Center"
-                                                     BorderBrush="#D0D0D0" BorderThickness="1" Padding="4,2"
-                                                     Background="#F5F5F5"/>
+                                            <TextBlock Text="{Binding TypeName, Converter={StaticResource TypeDisplayConverter}}"
+                                                       VerticalAlignment="Center" Margin="4,0"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
@@ -148,14 +143,19 @@
                             </DataGrid.Columns>
                         </DataGrid>
 
-                        <Border Grid.Row="1" BorderBrush="#D0D0D0" BorderThickness="0,1,0,0"
-                                Background="#FAFAFA" Padding="4,4">
+                        <Border Grid.Row="1" BorderBrush="{DynamicResource ThemeStatusBarBorderBrush}" BorderThickness="0,1,0,0"
+                                Background="{DynamicResource ThemeStatusBarBackgroundBrush}" Padding="4,4">
                             <StackPanel Orientation="Horizontal">
                                 <ComboBox ItemsSource="{Binding AvailableTypes}"
-                                          DisplayMemberPath="DisplayName"
                                           SelectedValuePath="Value"
                                           SelectedValue="{Binding SelectedInputTypeName}"
-                                          Height="26" MinWidth="120" VerticalAlignment="Center"/>
+                                          Height="26" MinWidth="120" VerticalAlignment="Center">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding DisplayName}"/>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
                                 <Button Content="+" Height="26" Margin="4,0,0,0"
                                         Style="{StaticResource AddButton}"
                                         Command="{Binding AddInputCommand}"
@@ -191,7 +191,7 @@
                                         <DataTemplate>
                                             <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
                                                      VerticalContentAlignment="Center"
-                                                     BorderBrush="#D0D0D0" BorderThickness="1" Padding="4,2"/>
+                                                     BorderBrush="{DynamicResource ThemeInputBorderBrush}" BorderThickness="1" Padding="4,2"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
@@ -199,10 +199,8 @@
                                 <DataGridTemplateColumn Header="类型" Width="60">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBox Text="{Binding TypeName}" IsReadOnly="True"
-                                                     VerticalContentAlignment="Center"
-                                                     BorderBrush="#D0D0D0" BorderThickness="1" Padding="4,2"
-                                                     Background="#F5F5F5"/>
+                                            <TextBlock Text="{Binding TypeName, Converter={StaticResource TypeDisplayConverter}}"
+                                                       VerticalAlignment="Center" Margin="4,0"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
@@ -243,14 +241,19 @@
                             </DataGrid.Columns>
                         </DataGrid>
 
-                        <Border Grid.Row="1" BorderBrush="#D0D0D0" BorderThickness="0,1,0,0"
-                                Background="#FAFAFA" Padding="4,4">
+                        <Border Grid.Row="1" BorderBrush="{DynamicResource ThemeStatusBarBorderBrush}" BorderThickness="0,1,0,0"
+                                Background="{DynamicResource ThemeStatusBarBackgroundBrush}" Padding="4,4">
                             <StackPanel Orientation="Horizontal">
                                 <ComboBox ItemsSource="{Binding AvailableTypes}"
-                                          DisplayMemberPath="DisplayName"
                                           SelectedValuePath="Value"
                                           SelectedValue="{Binding SelectedOutputTypeName}"
-                                          Height="26" MinWidth="120" VerticalAlignment="Center"/>
+                                          Height="26" MinWidth="120" VerticalAlignment="Center">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding DisplayName}"/>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
                                 <Button Content="+" Height="26" Margin="4,0,0,0"
                                         Style="{StaticResource AddButton}"
                                         Command="{Binding AddOutputCommand}"
@@ -271,7 +274,7 @@
 
                     <TextBlock Grid.Row="0" Text="图像显示"
                                FontSize="13" FontWeight="SemiBold"
-                               Foreground="#333" Margin="8,6,8,0"/>
+                               Foreground="{DynamicResource ThemeTextPrimaryBrush}" Margin="8,6,8,0"/>
 
                     <Grid Grid.Row="1">
                         <Grid.RowDefinitions>
@@ -296,7 +299,7 @@
                                         <DataTemplate>
                                             <TextBox Text="{Binding DisplayName, UpdateSourceTrigger=PropertyChanged}"
                                                      VerticalContentAlignment="Center"
-                                                     BorderBrush="#D0D0D0" BorderThickness="1" Padding="4,2"/>
+                                                     BorderBrush="{DynamicResource ThemeInputBorderBrush}" BorderThickness="1" Padding="4,2"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
@@ -304,10 +307,8 @@
                                 <DataGridTemplateColumn Header="类型" Width="60">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBox Text="{Binding DisplayType}" IsReadOnly="True"
-                                                     VerticalContentAlignment="Center"
-                                                     BorderBrush="#D0D0D0" BorderThickness="1" Padding="4,2"
-                                                     Background="#F5F5F5"/>
+                                            <TextBlock Text="{Binding DisplayType, Converter={StaticResource TypeDisplayConverter}}"
+                                                       VerticalAlignment="Center" Margin="4,0"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
@@ -365,14 +366,19 @@
                             </DataGrid.Columns>
                         </DataGrid>
 
-                        <Border Grid.Row="1" BorderBrush="#D0D0D0" BorderThickness="0,1,0,0"
-                                Background="#FAFAFA" Padding="4,4">
+                        <Border Grid.Row="1" BorderBrush="{DynamicResource ThemeStatusBarBorderBrush}" BorderThickness="0,1,0,0"
+                                Background="{DynamicResource ThemeStatusBarBackgroundBrush}" Padding="4,4">
                             <StackPanel Orientation="Horizontal">
                                 <ComboBox ItemsSource="{Binding AvailableDisplayTypes}"
-                                          DisplayMemberPath="DisplayName"
                                           SelectedValuePath="Value"
                                           SelectedValue="{Binding SelectedDisplayType}"
-                                          Height="26" MinWidth="120" VerticalAlignment="Center"/>
+                                          Height="26" MinWidth="120" VerticalAlignment="Center">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding DisplayName}"/>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
                                 <Button Content="+" Height="26" Margin="4,0,0,0"
                                         Style="{StaticResource AddButton}"
                                         Command="{Binding AddDisplayItemCommand}"
@@ -394,14 +400,14 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0" Text="循环使能:" VerticalAlignment="Center"
-                                       FontSize="13" Foreground="#333333" Margin="0,0,12,0"/>
+                                       FontSize="13" Foreground="{DynamicResource ThemeTextPrimaryBrush}" Margin="0,0,12,0"/>
                             <controls:ToggleSwitch Grid.Column="1"
                                                    IsChecked="{Binding LoopConfig.EnableLoop}"
                                                    SwitchWidth="42" SwitchHeight="22"/>
                         </Grid>
 
                         <!-- 循环参数区域：仅在 EnableLoop=True 时可见 -->
-                        <Border BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="4"
+                        <Border BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1" CornerRadius="4"
                                 Padding="12" Visibility="{Binding LoopConfig.EnableLoop, Converter={StaticResource BoolToVisibilityConverter}}">
                             <StackPanel>
                                 <!-- 循环起始值 -->
@@ -474,7 +480,7 @@
 
                                     <!-- 循环中断条件标题 -->
                                     <TextBlock Text="循环中断条件" FontSize="13" FontWeight="SemiBold"
-                                               Foreground="#555555" Margin="0,0,0,8"/>
+                                               Foreground="{DynamicResource ThemeTextSecondaryBrush}" Margin="0,0,0,8"/>
 
                                     <!-- 源比较值 -->
                                     <Grid Margin="0,0,0,8">

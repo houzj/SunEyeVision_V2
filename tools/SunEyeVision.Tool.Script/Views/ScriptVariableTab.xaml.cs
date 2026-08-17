@@ -155,8 +155,6 @@ namespace SunEyeVision.Tool.Script.Views
         private void PopulateTypeCombo()
         {
             TypeCombo.ItemsSource = AvailableTypes;
-            TypeCombo.DisplayMemberPath = "DisplayName";
-            TypeCombo.SelectedValuePath = "Value";
             TypeCombo.SelectedIndex = 0;
         }
 

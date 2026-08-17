@@ -65,6 +65,11 @@
     <Color x:Key="{x:Static base:ThemeKeys.InputBackground}">#FF2D2D2D</Color>
     <Color x:Key="{x:Static base:ThemeKeys.InputBorder}">#FF3C3C3C</Color>
 
+    <!-- ============ SDK 控件补充（批次3，SDK 样式库 Token 化） ============ -->
+    <Color x:Key="{x:Static base:ThemeKeys.SliderTrackBackground}">#FF3C3C3C</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.ToggleOffBackground}">#FF555555</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.SuccessLightBackground}">#FF1F3D2A</Color>
+
     <!-- ============ 滚动条（批次2） ============ -->
     <Color x:Key="{x:Static base:ThemeKeys.ScrollBarBackground}">#FF1E1E1E</Color>
     <!-- 滑块颜色提亮到 #FF888888（之前 #FF3C3C3C 在深色棋盘格画布背景上几乎不可见，用户"看不到滚动条变化"的真因之一） -->
@@ -158,6 +163,10 @@
 
     <SolidColorBrush x:Key="{x:Static base:ThemeKeys.InputBackgroundBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.InputBackground}}"/>
     <SolidColorBrush x:Key="{x:Static base:ThemeKeys.InputBorderBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.InputBorder}}"/>
+
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.SliderTrackBackgroundBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.SliderTrackBackground}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ToggleOffBackgroundBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ToggleOffBackground}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.SuccessLightBackgroundBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.SuccessLightBackground}}"/>
 
     <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ScrollBarBackgroundBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ScrollBarBackground}}"/>
     <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ScrollBarThumbBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ScrollBarThumb}}"/>

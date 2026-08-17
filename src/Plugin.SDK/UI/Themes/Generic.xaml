@@ -41,6 +41,9 @@
     <PathGeometry x:Key="TreeExpanderPath"
                   Figures="M 0 0 L 6 4 L 0 8 Z"/>
 
+    <!-- 绑定图标 Path（链形，随主题变色） -->
+    <Geometry x:Key="LinkIconPath">M3.9,12C3.9,10.29 5.29,8.9 7,8.9H11V7H7C4.24,7 2,9.24 2,12C2,14.76 4.24,17 7,17H11V15.1H7C5.29,15.1 3.9,13.71 3.9,12M8,13H16V11H8V13M17,7H13V8.9H17C18.71,8.9 20.1,10.29 20.1,12C20.1,13.71 18.71,15.1 17,15.1H13V17H17C19.76,17 22,14.76 22,12C22,9.24 19.76,7 17,7Z</Geometry>
+
     <!-- 基础样式：输入控件 -->
     <Style x:Key="BaseInputStyle" TargetType="Control">
         <Setter Property="Height" Value="28"/>
@@ -48,7 +51,7 @@
         <Setter Property="FontSize" Value="13"/>
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"/>
         <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="Background" Value="White"/>
+        <Setter Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.InputBackgroundBrush}}"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
     </Style>
 
@@ -73,7 +76,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type controls:ParamComboBox}">
-                    <Border Background="White"
+                    <Border Background="{DynamicResource {x:Static themes:SdkThemeKeys.InputBackgroundBrush}}"
                             BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"
                             BorderThickness="1"
                             CornerRadius="4"
@@ -256,6 +259,7 @@
                                 Content="⚡"
                                 Width="28" Height="28"
                                 FontSize="14"
+                                Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"
                                 Background="{DynamicResource {x:Static themes:SdkThemeKeys.PanelBackgroundBrush}}"
                                 BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"
                                 BorderThickness="1"
@@ -280,7 +284,7 @@
                                 Height="28"
                                 HorizontalContentAlignment="Left"
                                 VerticalContentAlignment="Center"
-                                Background="White"
+                                Background="{DynamicResource {x:Static themes:SdkThemeKeys.InputBackgroundBrush}}"
                                 BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"
                                 BorderThickness="1"
                                 Padding="8,0">
@@ -321,7 +325,7 @@
                                    Width="{Binding ActualWidth, ElementName=PART_SelectorButton}"
                                    MaxHeight="300"
                                    AllowsTransparency="True">
-                                <Border Background="White"
+                                <Border Background="{DynamicResource {x:Static themes:SdkThemeKeys.ContextMenuBackgroundBrush}}"
                                         BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"
                                         BorderThickness="1"
                                         CornerRadius="4"
@@ -368,10 +372,10 @@
                                                     <Setter Property="BorderThickness" Value="0"/>
                                                     <Style.Triggers>
                                                         <Trigger Property="IsMouseOver" Value="True">
-                                                            <Setter Property="Background" Value="#F0F7FF"/>
+                                                            <Setter Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ControlHoverBackgroundBrush}}"/>
                                                         </Trigger>
                                                         <Trigger Property="IsSelected" Value="True">
-                                                            <Setter Property="Background" Value="#E6F7FF"/>
+                                                            <Setter Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ControlSelectedBackgroundBrush}}"/>
                                                         </Trigger>
                                                     </Style.Triggers>
                                                 </Style>
@@ -388,7 +392,7 @@
 
     <!-- ParamGroup 样式 -->
     <Style TargetType="{x:Type controls:ParamGroup}">
-        <Setter Property="Background" Value="White"/>
+        <Setter Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.PanelBackgroundBrush}}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Margin" Value="0,0,0,12"/>
@@ -461,6 +465,12 @@
         </Setter>
     </Style>
 
+    <!-- GroupBox 隐式样式（系统默认模板，仅主题化标题文字与边框，背景继承父级随主题） -->
+    <Style TargetType="GroupBox">
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"/>
+    </Style>
+
     <!-- NumericUpDown 样式 - Popup优化版 -->
     <!-- Slider统一样式（用于NumericUpDown的滑块） -->
     <Style x:Key="SliderStyle" TargetType="{x:Type Slider}">
@@ -470,11 +480,11 @@
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Slider}">
                     <Grid Height="22" VerticalAlignment="Center">
-                        <Border x:Name="TrackBackground" Height="4" Background="#E0E0E0" CornerRadius="2" VerticalAlignment="Center"/>
+                        <Border x:Name="TrackBackground" Height="4" Background="{DynamicResource {x:Static themes:SdkThemeKeys.SliderTrackBackgroundBrush}}" CornerRadius="2" VerticalAlignment="Center"/>
                         <Border x:Name="TrackSelection" Height="4" Background="{DynamicResource {x:Static themes:SdkThemeKeys.AccentBrush}}" CornerRadius="2" VerticalAlignment="Center"/>
                         <Track x:Name="PART_Track" VerticalAlignment="Center">
                             <Track.Thumb>
-                                <Thumb Width="14" Height="20" Background="White" BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.AccentBrush}}" BorderThickness="2" Cursor="Hand">
+                                <Thumb Width="14" Height="20" Background="{DynamicResource {x:Static themes:SdkThemeKeys.ControlBackgroundBrush}}" BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.AccentBrush}}" BorderThickness="2" Cursor="Hand">
                                     <Thumb.Template>
                                         <ControlTemplate TargetType="Thumb">
                                             <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="2"/>
@@ -493,7 +503,7 @@
         <Setter Property="FontSize" Value="13"/>
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"/>
         <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="Background" Value="White"/>
+        <Setter Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.InputBackgroundBrush}}"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="HorizontalContentAlignment" Value="Left"/>
         <Setter Property="Template">
@@ -535,6 +545,7 @@
                                                       Content="▲"
                                                       Width="18" Height="13"
                                                       FontSize="8"
+                                                      Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}"
                                                       Background="Transparent"
                                                       BorderThickness="0"
                                                       Padding="0"
@@ -543,6 +554,7 @@
                                                       Content="▼"
                                                       Width="18" Height="13"
                                                       FontSize="8"
+                                                      Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}"
                                                       Background="Transparent"
                                                       BorderThickness="0"
                                                       Padding="0"
@@ -558,7 +570,7 @@
                                StaysOpen="True"
                                AllowsTransparency="True"
                                PopupAnimation="Slide">
-                            <Border Background="White"
+                            <Border Background="{DynamicResource {x:Static themes:SdkThemeKeys.ContextMenuBackgroundBrush}}"
                                     BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"
                                     BorderThickness="1"
                                     CornerRadius="4"
@@ -598,8 +610,8 @@
         <Setter Property="SwitchHeight" Value="22"/>
         <Setter Property="CornerRadius" Value="11"/>
         <Setter Property="OnBackground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.AccentBrush}}"/>
-        <Setter Property="OffBackground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"/>
-        <Setter Property="ThumbColor" Value="White"/>
+        <Setter Property="OffBackground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ToggleOffBackgroundBrush}}"/>
+        <Setter Property="ThumbColor" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TextOnDarkBrush}}"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Template">
@@ -637,15 +649,6 @@
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="SwitchBorder" Property="Opacity" Value="0.5"/>
                         </Trigger>
-                        <!-- 深色主题 - 关闭状态 -->
-                        <MultiTrigger>
-                            <MultiTrigger.Conditions>
-                                <Condition Property="IsDarkTheme" Value="True"/>
-                                <Condition Property="IsChecked" Value="False"/>
-                            </MultiTrigger.Conditions>
-                            <Setter TargetName="SwitchBorder" Property="Background" Value="#555555"/>
-                            <Setter TargetName="SwitchBorder" Property="BorderBrush" Value="#555555"/>
-                        </MultiTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
@@ -668,7 +671,7 @@
                                 Canvas.Top="9"
                                 Height="4"
                                 Width="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
-                                Background="#E0E0E0"
+                                Background="{DynamicResource {x:Static themes:SdkThemeKeys.SliderTrackBackgroundBrush}}"
                                 CornerRadius="2"/>
 
                         <!-- 选中范围填充 -->
@@ -683,7 +686,7 @@
                                Canvas.Top="1"
                                Width="14"
                                Height="20"
-                               Background="White"
+                               Background="{DynamicResource {x:Static themes:SdkThemeKeys.ControlBackgroundBrush}}"
                                BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.AccentBrush}}"
                                BorderThickness="2"
                                Cursor="Hand">
@@ -708,7 +711,7 @@
                                Canvas.Top="1"
                                Width="14"
                                Height="20"
-                               Background="White"
+                               Background="{DynamicResource {x:Static themes:SdkThemeKeys.ControlBackgroundBrush}}"
                                BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.AccentBrush}}"
                                BorderThickness="2"
                                Cursor="Hand">
@@ -796,7 +799,7 @@
                                StaysOpen="True"
                                AllowsTransparency="True"
                                PopupAnimation="Slide">
-                            <Border Background="White"
+                            <Border Background="{DynamicResource {x:Static themes:SdkThemeKeys.ContextMenuBackgroundBrush}}"
                                     BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"
                                     BorderThickness="1"
                                     CornerRadius="4"
@@ -922,7 +925,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type controls:ColorPicker}">
-                    <Border Background="White"
+                    <Border Background="{DynamicResource {x:Static themes:SdkThemeKeys.InputBackgroundBrush}}"
                             BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"
                             BorderThickness="1"
                             CornerRadius="4"
@@ -1089,7 +1092,7 @@
                                    Placement="Bottom"
                                    StaysOpen="False"
                                    AllowsTransparency="True">
-                                <Border Background="White"
+                                <Border Background="{DynamicResource {x:Static themes:SdkThemeKeys.ContextMenuBackgroundBrush}}"
                                         BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"
                                         BorderThickness="1"
                                         CornerRadius="4"
@@ -1141,7 +1144,7 @@
                                 Tag="{Binding Item.IsVisible, RelativeSource={RelativeSource TemplatedParent}, FallbackValue=True}">
                             <Viewbox Width="18" Height="18" Stretch="Uniform">
                                 <Path x:Name="PART_VisibilityIcon"
-                                      Stroke="Black" StrokeThickness="1.2" Fill="Transparent"
+                                      Stroke="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}" StrokeThickness="1.2" Fill="Transparent"
                                       Data="M2 10C4 6 7 4 10 4C13 4 16 6 18 10C16 14 13 16 10 16C7 16 4 14 2 10ZM10 13C11.7 13 13 11.7 13 10C13 8.3 11.7 7 10 7C8.3 7 7 8.3 7 10C7 11.7 8.3 13 10 13Z"/>
                             </Viewbox>
                         </Button>
@@ -1151,14 +1154,17 @@
                                 Width="28" Height="28"
                                 Background="Transparent" BorderThickness="0"
                                 Cursor="Hand" ToolTip="样式设置" Margin="0">
-                            <TextBlock Text="🖌️" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            <Viewbox Width="16" Height="16" Stretch="Uniform">
+                                <Path Fill="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"
+                                      Data="M3,17.25V21H6.75L17.81,9.94L14.06,6.19L3,17.25M20.71,7.04C21.1,6.65 21.1,6.02 20.71,5.63L18.37,3.29C17.98,2.9 17.35,2.9 16.96,3.29L15.13,5.12L18.87,8.87L20.71,7.04Z"/>
+                            </Viewbox>
                         </Button>
 
                         <!-- 样式设置Popup：OK/NG 颜色 + 线宽 + 透明度 -->
                         <Popup x:Name="PART_StyleSettingsPopup"
                                PlacementTarget="{Binding ElementName=PART_StyleSettingsButton}"
                                Placement="Bottom" StaysOpen="False" AllowsTransparency="True">
-                            <Border Background="White"
+                            <Border Background="{DynamicResource {x:Static themes:SdkThemeKeys.ContextMenuBackgroundBrush}}"
                                     BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}" BorderThickness="1"
                                     CornerRadius="4" Padding="16" Margin="0,2,0,0" Width="260">
                                 <StackPanel>
@@ -1229,7 +1235,7 @@
                                 Tag="{Binding Item.IsVisible, RelativeSource={RelativeSource TemplatedParent}, FallbackValue=True}">
                             <Viewbox Width="18" Height="18" Stretch="Uniform">
                                 <Path x:Name="PART_VisibilityIcon"
-                                      Stroke="Black" StrokeThickness="1.2" Fill="Transparent"
+                                      Stroke="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}" StrokeThickness="1.2" Fill="Transparent"
                                       Data="M2 10C4 6 7 4 10 4C13 4 16 6 18 10C16 14 13 16 10 16C7 16 4 14 2 10ZM10 13C11.7 13 13 11.7 13 10C13 8.3 11.7 7 10 7C8.3 7 7 8.3 7 10C7 11.7 8.3 13 10 13Z"/>
                             </Viewbox>
                         </Button>
@@ -1239,14 +1245,17 @@
                                 Width="28" Height="28"
                                 Background="Transparent" BorderThickness="0"
                                 Cursor="Hand" ToolTip="样式设置" Margin="0">
-                            <TextBlock Text="🖌️" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            <Viewbox Width="16" Height="16" Stretch="Uniform">
+                                <Path Fill="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"
+                                      Data="M3,17.25V21H6.75L17.81,9.94L14.06,6.19L3,17.25M20.71,7.04C21.1,6.65 21.1,6.02 20.71,5.63L18.37,3.29C17.98,2.9 17.35,2.9 16.96,3.29L15.13,5.12L18.87,8.87L20.71,7.04Z"/>
+                            </Viewbox>
                         </Button>
 
                         <!-- 样式设置Popup：OK/NG 颜色 + 字号 + 加粗 + 位置X/Y(ParamBinding) -->
                         <Popup x:Name="PART_StyleSettingsPopup"
                                PlacementTarget="{Binding ElementName=PART_StyleSettingsButton}"
                                Placement="Bottom" StaysOpen="False" AllowsTransparency="True">
-                            <Border Background="White"
+                            <Border Background="{DynamicResource {x:Static themes:SdkThemeKeys.ContextMenuBackgroundBrush}}"
                                     BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}" BorderThickness="1"
                                     CornerRadius="4" Padding="16" Margin="0,2,0,0" Width="300">
                                 <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="350"
@@ -1332,7 +1341,7 @@
 
     <!-- ParamBinding 样式 - 树形结构绑定选择 -->
     <Style TargetType="{x:Type controls:ParamBinding}">
-        <Setter Property="Background" Value="White"/>
+        <Setter Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.InputBackgroundBrush}}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="CornerRadius" Value="4"/>
@@ -1385,10 +1394,10 @@
                                         </Style.Triggers>
                                     </Style>
                                 </Button.Style>
-                                <TextBlock Text="{Binding IconSymbol, RelativeSource={RelativeSource TemplatedParent}}" 
-                                           FontSize="14" 
-                                           VerticalAlignment="Center" 
-                                           HorizontalAlignment="Center"/>
+                                <Viewbox Width="16" Height="16" Stretch="Uniform">
+                                    <Path Fill="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"
+                                          Data="{StaticResource LinkIconPath}"/>
+                                </Viewbox>
                             </Button>
 
                             <!-- 绑定源选择 Popup - 树形结构 -->
@@ -1399,7 +1408,7 @@
                                    Width="300"
                                    MaxHeight="400"
                                    AllowsTransparency="True">
-                                <Border Background="White"
+                                <Border Background="{DynamicResource {x:Static themes:SdkThemeKeys.ContextMenuBackgroundBrush}}"
                                         BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"
                                         BorderThickness="1"
                                         CornerRadius="4"
@@ -1622,7 +1631,7 @@
         <Setter Property="Height" Value="42"/>
         <Setter Property="Margin" Value="2"/>
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="BorderBrush" Value="#E0E0E0"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Template">
@@ -1638,21 +1647,17 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Border" Property="Background" Value="#E8F4FC"/>
-                            <Setter TargetName="Border" Property="BorderBrush" Value="#0066CC"/>
+                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ControlHoverBackgroundBrush}}"/>
+                            <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource {x:Static themes:SdkThemeKeys.AccentBrush}}"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="Border" Property="Background" Value="#CCE4F7"/>
+                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ControlSelectedBackgroundBrush}}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
-
-    <!-- 形状图标画笔 -->
-    <SolidColorBrush x:Key="ShapeIconBrush" Color="#555"/>
-    <SolidColorBrush x:Key="ShapeIconActiveBrush" Color="#0066CC"/>
 
     <!-- 分段按钮样式（模式切换使用） -->
     <Style x:Key="SegmentedToggleStyle" TargetType="RadioButton">
@@ -1672,25 +1677,397 @@
                                    Text="{TemplateBinding Content}"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"
-                                   Foreground="#999"
+                                   Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextDisabledBrush}}"
                                    FontSize="{TemplateBinding FontSize}"/>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="Border" Property="Background" Value="White"/>
+                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.PanelBackgroundBrush}}"/>
                             <Setter TargetName="Border" Property="BorderThickness" Value="1"/>
-                            <Setter TargetName="Border" Property="BorderBrush" Value="#D0D0D0"/>
-                            <Setter TargetName="ContentText" Property="Foreground" Value="#0066CC"/>
+                            <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"/>
+                            <Setter TargetName="ContentText" Property="Foreground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.AccentBrush}}"/>
                             <Setter TargetName="ContentText" Property="FontWeight" Value="Bold"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Border" Property="Background" Value="#E0E0E0"/>
-                            <Setter TargetName="ContentText" Property="Foreground" Value="#666"/>
+                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ControlHoverBackgroundBrush}}"/>
+                            <Setter TargetName="ContentText" Property="Foreground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <!-- ================================================================ -->
+    <!-- 标准控件隐式样式（主题化收官：一次消灭标准控件白底整类问题）          -->
+    <!-- 这些样式作为兜底层，控件级显式 Style/局部 ItemContainerStyle 优先，互不冲突。 -->
+    <!-- ================================================================ -->
+
+    <!-- TextBlock 隐式默认色：兜底解决裸文字/字符继承链断在系统黑。显式 Foreground 优先（WPF 规则），不覆盖已设色文字。 -->
+    <Style TargetType="{x:Type TextBlock}">
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"/>
+    </Style>
+
+    <!-- Slider：现有 key 样式保留（NumericUpDown 内部仍 StaticResource 引用），另加隐式样式使其全局生效 -->
+    <Style TargetType="{x:Type Slider}"
+           BasedOn="{StaticResource SliderStyle}"/>
+
+    <!-- ScrollBar：完整模板化（默认模板不受 token 控制），消费激活的 4 个 ScrollBar token -->
+    <Style TargetType="{x:Type ScrollBar}">
+        <Setter Property="Width" Value="14"/>
+        <Setter Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ScrollBarBackgroundBrush}}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ScrollBar}">
+                    <Grid Background="{TemplateBinding Background}">
+                        <Track x:Name="PART_Track" IsDirectionReversed="True">
+                            <Track.DecreaseRepeatButton>
+                                <RepeatButton Command="{x:Static ScrollBar.PageUpCommand}" Opacity="0" Focusable="False"/>
+                            </Track.DecreaseRepeatButton>
+                            <Track.Thumb>
+                                <Thumb>
+                                    <Thumb.Template>
+                                        <ControlTemplate TargetType="{x:Type Thumb}">
+                                            <Border x:Name="ThumbBorder"
+                                                    Background="{DynamicResource {x:Static themes:SdkThemeKeys.ScrollBarThumbBrush}}"
+                                                    CornerRadius="7" Margin="2"/>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="ThumbBorder" Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ScrollBarThumbHoverBrush}}"/>
+                                                </Trigger>
+                                                <Trigger Property="IsDragging" Value="True">
+                                                    <Setter TargetName="ThumbBorder" Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ScrollBarThumbPressedBrush}}"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Thumb.Template>
+                                </Thumb>
+                            </Track.Thumb>
+                            <Track.IncreaseRepeatButton>
+                                <RepeatButton Command="{x:Static ScrollBar.PageDownCommand}" Opacity="0" Focusable="False"/>
+                            </Track.IncreaseRepeatButton>
+                        </Track>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ListBox：深底列表 + 主题化选中/悬停项 -->
+    <Style TargetType="{x:Type ListBox}">
+        <Setter Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ContextMenuBackgroundBrush}}"/>
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+    </Style>
+    <Style TargetType="{x:Type ListBoxItem}">
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"/>
+        <Setter Property="Padding" Value="6,3"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                    <Border x:Name="ItemBorder" Background="Transparent" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ControlHoverBackgroundBrush}}"/>
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ControlSelectedBackgroundBrush}}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TextOnDarkBrush}}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ComboBox：输入框风格 + 下拉列表整体主题化 -->
+    <Style TargetType="{x:Type ComboBox}">
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"/>
+        <Setter Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.InputBackgroundBrush}}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static themes:SdkThemeKeys.InputBorderBrush}}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="6,3"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="ScrollViewer.CanContentScroll" Value="True"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ComboBox}">
+                    <Grid>
+                        <ToggleButton x:Name="ToggleButton"
+                                      Focusable="False"
+                                      ClickMode="Press"
+                                      IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
+                            <ToggleButton.Template>
+                                <ControlTemplate TargetType="{x:Type ToggleButton}">
+                                    <Border Background="{DynamicResource {x:Static themes:SdkThemeKeys.InputBackgroundBrush}}"
+                                            BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.InputBorderBrush}}"
+                                            BorderThickness="1" CornerRadius="4">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="18"/>
+                                            </Grid.ColumnDefinitions>
+                                            <ContentPresenter Grid.Column="0"
+                                                              Margin="{TemplateBinding Padding}"
+                                                              VerticalAlignment="Center"
+                                                              Content="{Binding SelectionBoxItem, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ComboBox}}}"
+                                                              ContentTemplate="{Binding SelectionBoxItemTemplate, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ComboBox}}}"/>
+                                            <Path Grid.Column="1"
+                                                  Width="8" Height="5"
+                                                  Margin="0,0,6,0"
+                                                  Stretch="Fill"
+                                                  VerticalAlignment="Center"
+                                                  HorizontalAlignment="Right"
+                                                  Data="M 0 0 L 4 4 L 8 0 Z"
+                                                  Fill="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}"/>
+                                        </Grid>
+                                    </Border>
+                                </ControlTemplate>
+                            </ToggleButton.Template>
+                        </ToggleButton>
+                        <Popup x:Name="PART_Popup"
+                               Placement="Bottom"
+                               IsOpen="{TemplateBinding IsDropDownOpen}"
+                               AllowsTransparency="True"
+                               PopupAnimation="Slide"
+                               VerticalOffset="2">
+                            <Border Background="{DynamicResource {x:Static themes:SdkThemeKeys.ContextMenuBackgroundBrush}}"
+                                    BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"
+                                    BorderThickness="1" CornerRadius="4"
+                                    MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}">
+                                <ScrollViewer MaxHeight="{TemplateBinding MaxDropDownHeight}">
+                                    <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained"/>
+                                </ScrollViewer>
+                            </Border>
+                        </Popup>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="{x:Type ComboBoxItem}">
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"/>
+        <Setter Property="Padding" Value="6,3"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ComboBoxItem}">
+                    <Border x:Name="ItemBorder" Background="Transparent" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ControlHoverBackgroundBrush}}"/>
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ControlSelectedBackgroundBrush}}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TextOnDarkBrush}}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- TextBox：主题底 + 主题光标/选中块 -->
+    <Style TargetType="{x:Type TextBox}">
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"/>
+        <Setter Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.InputBackgroundBrush}}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static themes:SdkThemeKeys.InputBorderBrush}}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="4,2"/>
+        <Setter Property="CaretBrush" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"/>
+        <Setter Property="SelectionBrush" Value="{DynamicResource {x:Static themes:SdkThemeKeys.AccentBrush}}"/>
+        <Setter Property="SelectionOpacity" Value="0.35"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type TextBox}">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="3">
+                        <ScrollViewer x:Name="PART_ContentHost"
+                                      Margin="{TemplateBinding Padding}"
+                                      Focusable="False"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- CheckBox：主题文字 + AccentBrush 勾选盒 -->
+    <Style TargetType="{x:Type CheckBox}">
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type CheckBox}">
+                    <StackPanel Orientation="Horizontal" Background="Transparent">
+                        <Border x:Name="MarkBorder"
+                                Width="16" Height="16"
+                                Background="{DynamicResource {x:Static themes:SdkThemeKeys.InputBackgroundBrush}}"
+                                BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.InputBorderBrush}}"
+                                BorderThickness="1" CornerRadius="3"
+                                VerticalAlignment="Center">
+                            <Path x:Name="Mark"
+                                  Data="M 3,8 L 6,11 L 12,5"
+                                  Stroke="{DynamicResource {x:Static themes:SdkThemeKeys.TextOnDarkBrush}}"
+                                  StrokeThickness="2"
+                                  Visibility="Collapsed"/>
+                        </Border>
+                        <ContentPresenter Margin="6,0,0,0" VerticalAlignment="Center" RecognizesAccessKey="True"/>
+                    </StackPanel>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="MarkBorder" Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.AccentBrush}}"/>
+                            <Setter TargetName="Mark" Property="Visibility" Value="Visible"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="MarkBorder" Property="BorderBrush" Value="{DynamicResource {x:Static themes:SdkThemeKeys.AccentBrush}}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.5"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- RadioButton：主题文字 + AccentBrush 圆点 -->
+    <Style TargetType="{x:Type RadioButton}">
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type RadioButton}">
+                    <StackPanel Orientation="Horizontal" Background="Transparent">
+                        <Grid Width="16" Height="16" VerticalAlignment="Center">
+                            <Ellipse Stroke="{DynamicResource {x:Static themes:SdkThemeKeys.InputBorderBrush}}"
+                                     StrokeThickness="1"
+                                     Fill="{DynamicResource {x:Static themes:SdkThemeKeys.InputBackgroundBrush}}"/>
+                            <Ellipse x:Name="Mark"
+                                     Width="8" Height="8"
+                                     Fill="{DynamicResource {x:Static themes:SdkThemeKeys.AccentBrush}}"
+                                     Visibility="Collapsed"/>
+                        </Grid>
+                        <ContentPresenter Margin="6,0,0,0" VerticalAlignment="Center" RecognizesAccessKey="True"/>
+                    </StackPanel>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Mark" Property="Visibility" Value="Visible"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Mark" Property="Visibility" Value="Visible"/>
+                            <Setter Property="Opacity" Value="0.8"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.5"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- TreeView / TreeViewItem：背景透明 + 主题化选中/悬停（隐式兜底，局部复杂模板优先） -->
+    <Style TargetType="{x:Type TreeView}">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+    </Style>
+    <Style TargetType="{x:Type TreeViewItem}">
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type TreeViewItem}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Border x:Name="RowBorder"
+                                Background="Transparent"
+                                Padding="2,2"
+                                CornerRadius="3">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="16"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <ToggleButton x:Name="Expander"
+                                              Grid.Column="0"
+                                              Width="14" Height="14"
+                                              ClickMode="Press"
+                                              IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
+                                    <ToggleButton.Template>
+                                        <ControlTemplate TargetType="{x:Type ToggleButton}">
+                                            <Path x:Name="ExpanderPath"
+                                                  Data="{StaticResource TreeExpanderPath}"
+                                                  Fill="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}"
+                                                  RenderTransformOrigin="0.5,0.5">
+                                                <Path.RenderTransform>
+                                                    <RotateTransform x:Name="ExpanderRotate" Angle="0"/>
+                                                </Path.RenderTransform>
+                                            </Path>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsChecked" Value="True">
+                                                    <Trigger.EnterActions>
+                                                        <BeginStoryboard>
+                                                            <Storyboard>
+                                                                <DoubleAnimation Storyboard.TargetName="ExpanderRotate"
+                                                                                 Storyboard.TargetProperty="Angle"
+                                                                                 To="90" Duration="0:0:0.15"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </Trigger.EnterActions>
+                                                    <Trigger.ExitActions>
+                                                        <BeginStoryboard>
+                                                            <Storyboard>
+                                                                <DoubleAnimation Storyboard.TargetName="ExpanderRotate"
+                                                                                 Storyboard.TargetProperty="Angle"
+                                                                                 To="0" Duration="0:0:0.15"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </Trigger.ExitActions>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </ToggleButton.Template>
+                                </ToggleButton>
+                                <ContentPresenter Grid.Column="1" ContentSource="Header"/>
+                            </Grid>
+                        </Border>
+                        <ItemsPresenter Grid.Row="1"/>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="RowBorder" Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ControlHoverBackgroundBrush}}"/>
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="RowBorder" Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ControlSelectedBackgroundBrush}}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TextOnDarkBrush}}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Expander：头部文字主题色（隐式兜底，局部模板优先） -->
+    <Style TargetType="{x:Type Expander}">
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"/>
     </Style>
 
 </ResourceDictionary>

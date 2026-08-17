@@ -34,12 +34,25 @@ namespace SunEyeVision.UI.Converters.Node
     /// </summary>
     public class NodeBackgroundColorConverter : IValueConverter
     {
+        private static string? _lastBackgroundLogKey;
+
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is WorkflowNode node)
             {
                 var adapter = NodeDisplayAdapterFactory.GetAdapter(node.ToolType);
-                return new SolidColorBrush(adapter.GetBackgroundColor(node));
+                var color = adapter.GetBackgroundColor(node);
+                // 节流日志：确认节点背景色（暗色主题下是否仍为浅色，判定图标对比度来源）
+                var logKey = $"{node.ToolType}→{color}";
+                if (_lastBackgroundLogKey != logKey)
+                {
+                    _lastBackgroundLogKey = logKey;
+                    Plugin.SDK.Logging.VisionLogger.Instance?.Log(
+                        Plugin.SDK.Logging.LogLevel.Info,
+                        $"节点背景色解析: {logKey}",
+                        "NodeBackgroundColorConverter");
+                }
+                return new SolidColorBrush(color);
             }
             return new SolidColorBrush(Colors.White);
         }

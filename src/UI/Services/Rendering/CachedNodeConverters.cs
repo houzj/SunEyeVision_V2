@@ -95,12 +95,26 @@ namespace SunEyeVision.UI.Services.Rendering
     /// </summary>
     public class CachedNodeBackgroundConverter : IValueConverter
     {
+        private static string? _lastBackgroundLogKey;
+
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is WorkflowNode node)
             {
                 var adapter = NodeDisplayAdapterFactory.GetAdapter(node.ToolType);
                 var color = adapter.GetBackgroundColor(node);
+                // 节流日志（全链诊断）：节点卡片背景实际颜色，判定齿轮 #333333 叠什么底。
+                // 注：画布 XAML 实际绑定本缓存转换器（x:Key="NodeBackgroundColorConverter"），
+                // 而非 NodeDisplayConverter.cs 中带日志的非缓存版本（未挂到画布上，勿改）。
+                var logKey = $"{node.ToolType}→{color}";
+                if (_lastBackgroundLogKey != logKey)
+                {
+                    _lastBackgroundLogKey = logKey;
+                    SunEyeVision.Plugin.SDK.Logging.VisionLogger.Instance?.Log(
+                        SunEyeVision.Plugin.SDK.Logging.LogLevel.Info,
+                        $"节点背景色解析(缓存转换器): {logKey}",
+                        "CachedNodeBackgroundConverter");
+                }
                 return CachedBrushes.GetOrCreateBrush(color);
             }
             return CachedBrushes.White;

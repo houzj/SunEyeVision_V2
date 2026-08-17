@@ -16,7 +16,7 @@
             <!-- String 占位符：紧凑居中符号（不撑满列宽），仅 String 规则显示 -->
             <Style x:Key="StringPlaceholderTextStyle" TargetType="TextBlock">
                 <Setter Property="FontSize" Value="14"/>
-                <Setter Property="Foreground" Value="#FF9AA0A6"/>
+                <Setter Property="Foreground" Value="{DynamicResource ThemeTextDisabledBrush}"/>
                 <Setter Property="HorizontalAlignment" Value="Center"/>
                 <Setter Property="VerticalAlignment" Value="Center"/>
                 <Setter Property="Visibility" Value="Collapsed"/>
@@ -43,16 +43,16 @@
                 <Setter Property="RowHeight" Value="34"/>
             </Style>
             <Style TargetType="DataGridColumnHeader">
-                <Setter Property="Background" Value="#FFF0F0F0"/>
-                <Setter Property="Foreground" Value="#FF000000"/>
-                <Setter Property="BorderBrush" Value="#FFD0D0D0"/>
+                <Setter Property="Background" Value="{DynamicResource ThemeTableHeaderBackgroundBrush}"/>
+                <Setter Property="Foreground" Value="{DynamicResource ThemeTableHeaderTextBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource ThemeTableGridLineBrush}"/>
                 <Setter Property="BorderThickness" Value="0,0,0,1"/>
                 <Setter Property="Padding" Value="4,2"/>
                 <Setter Property="Height" Value="28"/>
             </Style>
             <Style TargetType="DataGridRow">
                 <Setter Property="Background" Value="Transparent"/>
-                <Setter Property="BorderBrush" Value="#FFE8E8E8"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource ThemeTableGridLineBrush}"/>
                 <Setter Property="BorderThickness" Value="0,0,0,1"/>
                 <Setter Property="MinHeight" Value="34"/>
             </Style>
@@ -73,10 +73,10 @@
                 <DataGridTemplateColumn Header="名称" Width="80">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <Border Background="#FFE8EFF7" CornerRadius="3" Padding="8,3"
+                            <Border Background="{DynamicResource ThemeTableRowHoverBackgroundBrush}" CornerRadius="3" Padding="8,3"
                                     HorizontalAlignment="Left" VerticalAlignment="Center">
                                 <TextBlock Text="{Binding Name}" FontWeight="SemiBold"
-                                           Foreground="#FF2B579A" FontSize="11"/>
+                                           Foreground="{DynamicResource ThemeAccentBrush}" FontSize="11"/>
                             </Border>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
@@ -169,7 +169,7 @@
                         <DataTemplate>
                             <Button Content="&#x2715;" Click="DeleteRule_Click"
                                     Width="24" Height="22" Padding="0"
-                                    Background="#FFF0F0F0" Foreground="#FFCC0000"
+                                    Background="{DynamicResource ThemeControlBackgroundBrush}" Foreground="{DynamicResource ThemeErrorBrush}"
                                     BorderThickness="0" FontSize="12"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
@@ -179,10 +179,10 @@
 
         <!-- 底部：类型下拉 + 新增规则（紧跟表格，随表格一起自适应） -->
         <Border Margin="0,8,0,0"
-                BorderBrush="#D0D0D0" BorderThickness="0,1,0,0"
-                Background="#FAFAFA" Padding="4,4">
+                BorderBrush="{DynamicResource ThemeStatusBarBorderBrush}" BorderThickness="0,1,0,0"
+                Background="{DynamicResource ThemeStatusBarBackgroundBrush}" Padding="4,4">
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="类型:" VerticalAlignment="Center" Foreground="#666" Margin="0,0,6,0"/>
+                <TextBlock Text="类型:" VerticalAlignment="Center" Foreground="{DynamicResource ThemeTextSecondaryBrush}" Margin="0,0,6,0"/>
                 <ComboBox x:Name="TypeCombo" Height="26" MinWidth="90" VerticalAlignment="Center">
                     <sys:String>Int</sys:String>
                     <sys:String>Double</sys:String>
@@ -190,7 +190,7 @@
                 </ComboBox>
                 <Button Content="+ 新增规则" Height="26" Margin="6,0,0,0"
                         Click="AddRule_Click"
-                        Background="#4CAF50" Foreground="White"
+                        Background="{DynamicResource ThemeSuccessBrush}" Foreground="{DynamicResource ThemeTextOnDarkBrush}"
                         BorderThickness="0" FontWeight="Bold" FontSize="12"/>
             </StackPanel>
         </Border>

@@ -526,12 +526,17 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <ComboBox ItemsSource="{Binding DataContext.TypeOptions, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                      DisplayMemberPath="DisplayName"
                                       SelectedValuePath="Value"
                                       SelectedValue="{Binding Type, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
                                       BorderThickness="0"
                                       IsSynchronizedWithCurrentItem="False"
-                                      PreviewMouseDown="TypeComboBox_PreviewMouseDown"/>
+                                      PreviewMouseDown="TypeComboBox_PreviewMouseDown">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding DisplayName}"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>

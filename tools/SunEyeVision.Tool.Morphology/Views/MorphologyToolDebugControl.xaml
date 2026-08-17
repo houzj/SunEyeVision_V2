@@ -153,30 +153,30 @@
             <!-- 参数说明（默认折叠） -->
             <controls:ParamGroup Header="参数说明" IsExpanded="False" Margin="0,12,0,0">
                 <StackPanel Margin="8,4">
-                    <TextBlock TextWrapping="Wrap" Foreground="#666666" FontSize="12" FontWeight="SemiBold" Text="形态学操作说明"/>
-                    <TextBlock TextWrapping="Wrap" Foreground="#555555" FontSize="11" Margin="0,2,0,0"
+                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="12" FontWeight="SemiBold" Text="形态学操作说明"/>
+                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" Margin="0,2,0,0"
                                Text="● 腐蚀(Erode): 结构元素取最小值替换锚点，消除细小凸起，断开窄连接"/>
-                    <TextBlock TextWrapping="Wrap" Foreground="#555555" FontSize="11" Margin="0,1,0,0"
+                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" Margin="0,1,0,0"
                                Text="● 膨胀(Dilate): 结构元素取最大值替换锚点，填补空洞，连接断裂区域"/>
-                    <TextBlock TextWrapping="Wrap" Foreground="#555555" FontSize="11" Margin="0,1,0,0"
+                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" Margin="0,1,0,0"
                                Text="● 开运算(Open): 先腐蚀后膨胀，消除细小亮点，断开窄连接，面积大致不变"/>
-                    <TextBlock TextWrapping="Wrap" Foreground="#555555" FontSize="11" Margin="0,1,0,0"
+                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" Margin="0,1,0,0"
                                Text="● 闭运算(Close): 先膨胀后腐蚀，填补细小暗洞，连接窄断裂，面积大致不变"/>
-                    <TextBlock TextWrapping="Wrap" Foreground="#555555" FontSize="11" Margin="0,1,0,0"
+                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" Margin="0,1,0,0"
                                Text="● 梯度(Gradient): 膨胀结果减腐蚀结果，提取目标边缘轮廓"/>
-                    <TextBlock TextWrapping="Wrap" Foreground="#555555" FontSize="11" Margin="0,1,0,0"
+                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" Margin="0,1,0,0"
                                Text="● 顶帽(TopHat): 原图减开运算，提取比结构元素小的亮区域"/>
-                    <TextBlock TextWrapping="Wrap" Foreground="#555555" FontSize="11" Margin="0,1,0,0"
+                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" Margin="0,1,0,0"
                                Text="● 黑帽(BlackHat): 闭运算减原图，提取比结构元素小的暗区域"/>
 
-                    <TextBlock TextWrapping="Wrap" Foreground="#666666" FontSize="12" FontWeight="SemiBold" Margin="0,12,0,0" Text="参数详解"/>
-                    <TextBlock TextWrapping="Wrap" Foreground="#555555" FontSize="11" Margin="0,2,0,0"
+                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="12" FontWeight="SemiBold" Margin="0,12,0,0" Text="参数详解"/>
+                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" Margin="0,2,0,0"
                                Text="结构形状: Rect矩形(通用)、Cross十字形(线状)、Ellipse椭圆形(圆形)"/>
-                    <TextBlock TextWrapping="Wrap" Foreground="#555555" FontSize="11" Margin="0,1,0,0"
+                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" Margin="0,1,0,0"
                                Text="核宽高: 结构元素的尺寸，必须为奇数，越大操作越强"/>
-                    <TextBlock TextWrapping="Wrap" Foreground="#555555" FontSize="11" Margin="0,1,0,0"
+                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" Margin="0,1,0,0"
                                Text="迭代次数: 操作重复执行次数，多次迭代效果叠加"/>
-                    <TextBlock TextWrapping="Wrap" Foreground="#555555" FontSize="11" Margin="0,1,0,0"
+                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" Margin="0,1,0,0"
                                Text="边界类型: Constant(黑色填充)推荐，Reflect(镜像反射)，Replicate(复制边界)"/>
                 </StackPanel>
             </controls:ParamGroup>
@@ -187,7 +187,7 @@
 
       <!-- Tab3: 结果显示 -->
       <TabItem Header="结果显示">
-        <Grid Background="#F5F5F5">
+        <Grid Background="{DynamicResource ThemePanelBackgroundBrush}">
           <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
@@ -198,10 +198,10 @@
               <!-- 结果判断分组 -->
               <Expander Header="结果判断"
                                       IsExpanded="True"
-                                      BorderBrush="#E0E0E0"
+                                      BorderBrush="{DynamicResource ThemeBorderBrush}"
                                       BorderThickness="1"
                                       Margin="0,0,0,8"
-                                      Background="White">
+                                      Background="{DynamicResource ThemePanelBackgroundBrush}">
                 <StackPanel Margin="16,8">
                   <!-- 输出为空判断 -->
                   <controls:LabeledControl Label="输出为空判断" ContentHorizontalAlignment="Left">

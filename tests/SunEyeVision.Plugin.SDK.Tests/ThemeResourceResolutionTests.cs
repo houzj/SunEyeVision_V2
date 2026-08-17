@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Media;
 using SunEyeVision.Plugin.SDK.UI.Themes;
 using Xunit;
@@ -21,6 +21,9 @@ public class ThemeResourceResolutionTests
 {
     private static readonly string SdkGenericUri =
         "pack://application:,,,/SunEyeVision.Plugin.SDK;component/UI/Themes/Generic.xaml";
+
+    private static readonly string DefaultThemeUri =
+        "pack://application:,,,/SunEyeVision.Plugin.SDK;component/UI/Themes/DefaultTheme.xaml";
 
     /// <summary>
     /// 构造与真实场景一致的 Application.Resources：
@@ -55,8 +58,11 @@ public class ThemeResourceResolutionTests
     }
 
     /// <summary>
-    /// 对照组：主题字典若被放到了最前（旧实现 Insert(0)），是否会被 DefaultTheme 兜底遮蔽。
-    /// 用于证明"必须放到末尾"这一修复方向。
+    /// 对照组：兜底字典若被放到了最后（DefaultTheme 在末尾），是否会被它遮蔽主题字典深色。
+    /// 用于证明"主题字典必须放到末尾（最高优先级）"这一修复方向。
+    ///
+    /// 说明：DefaultTheme 已从 Generic.xaml 拆出，由宿主 Application 级（AppResources）显式合入，
+    /// 故此处显式加载 DefaultTheme.xaml 作为兜底字典，而非依赖 Generic.xaml 内含。
     /// </summary>
     [Fact]
     public void ThemeDictionary_AtFront_IsShadowedBySdkDefaultTheme()
@@ -66,8 +72,9 @@ public class ThemeResourceResolutionTests
 
         // 主题字典放最前（模拟旧 Insert(0)）
         app.Resources.MergedDictionaries.Add(BuildDarkThemeDictionary());
+        // DefaultTheme 兜底放最后 → 遮蔽主题字典（验证"必须把主题字典放末尾"）
         app.Resources.MergedDictionaries.Add(
-            new ResourceDictionary { Source = new Uri(SdkGenericUri, UriKind.Absolute) });
+            new ResourceDictionary { Source = new Uri(DefaultThemeUri, UriKind.Absolute) });
 
         var toolbarBrush = (SolidColorBrush)app.Resources["ThemeToolBarBackgroundBrush"];
 

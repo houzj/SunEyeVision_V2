@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -51,6 +53,37 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             else
             {
                 Application.Current.Shutdown();
+            }
+        }
+
+        /// <summary>
+        /// 打开开发计划看板（plans/plan.html）。
+        /// 从当前执行目录向上查找解决方案根的 plans/ 目录（适配 Debug/Release 输出路径），
+        /// 用系统默认浏览器打开。
+        /// </summary>
+        private void OpenPlan_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // 从运行目录逐级向上查找 plans/plan.html（dev/Debug → 解决方案根）
+                var dir = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
+                for (int i = 0; i < 6 && dir != null; i++, dir = dir.Parent)
+                {
+                    var candidate = Path.Combine(dir.FullName, "plans", "plan.html");
+                    if (File.Exists(candidate))
+                    {
+                        Process.Start(new ProcessStartInfo(candidate) { UseShellExecute = true });
+                        return;
+                    }
+                }
+
+                MessageBox.Show("未找到开发计划文档 plans/plan.html。\n请确认计划文件存在于解决方案根目录的 plans/ 文件夹中。",
+                    "开发计划", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"打开开发计划失败: {ex.Message}",
+                    "开发计划", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 

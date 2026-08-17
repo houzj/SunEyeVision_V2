@@ -116,9 +116,9 @@
                 </controls:LabeledControl>
                 <controls:ParamGroup Header="参数说明" IsExpanded="False">
                     <StackPanel Margin="8,4">
-                        <TextBlock TextWrapping="Wrap" Foreground="#666666" FontSize="12"
+                        <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="12"
                                    Text="THRESH_BINARY: 像素值 > 阈值 → 最大值, 否则 → 0"/>
-                        <TextBlock TextWrapping="Wrap" Foreground="#888888" FontSize="11"
+                        <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11"
                                    Margin="0,6,0,0"
                                    Text="阈值决定二值化临界点；最大值通常设为255表示白色"/>
                     </StackPanel>
@@ -153,9 +153,9 @@
                 </controls:LabeledControl>
                 <controls:ParamGroup Header="参数说明" IsExpanded="False">
                     <StackPanel Margin="8,4">
-                        <TextBlock TextWrapping="Wrap" Foreground="#666666" FontSize="12"
+                        <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="12"
                                    Text="THRESH_BINARY_INV: 像素值 > 阈值 → 0, 否则 → 最大值"/>
-                        <TextBlock TextWrapping="Wrap" Foreground="#888888" FontSize="11"
+                        <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11"
                                    Margin="0,6,0,0"
                                    Text="与Binary相反，亮区变暗、暗区变亮"/>
                     </StackPanel>
@@ -187,9 +187,9 @@
                 </controls:LabeledControl>
                 <controls:ParamGroup Header="参数说明" IsExpanded="False">
                     <StackPanel Margin="8,4">
-                        <TextBlock TextWrapping="Wrap" Foreground="#666666" FontSize="12"
+                        <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="12"
                                    Text="THRESH_TRUNC: 像素值 > 阈值 → 截断为最大值, 其余不变"/>
-                        <TextBlock TextWrapping="Wrap" Foreground="#888888" FontSize="11"
+                        <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11"
                                    Margin="0,6,0,0"
                                    Text="只裁剪高亮度区域，低于阈值的保持原值"/>
                     </StackPanel>
@@ -221,9 +221,9 @@
                 </controls:LabeledControl>
                 <controls:ParamGroup Header="参数说明" IsExpanded="False">
                     <StackPanel Margin="8,4">
-                        <TextBlock TextWrapping="Wrap" Foreground="#666666" FontSize="12"
+                        <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="12"
                                    Text="THRESH_TOZERO: 像素值 &lt; 阈值 → 0, 其余不变"/>
-                        <TextBlock TextWrapping="Wrap" Foreground="#888888" FontSize="11"
+                        <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11"
                                    Margin="0,6,0,0"
                                    Text="将暗区置零，亮区保持原值"/>
                     </StackPanel>
@@ -255,9 +255,9 @@
                 </controls:LabeledControl>
                 <controls:ParamGroup Header="参数说明" IsExpanded="False">
                     <StackPanel Margin="8,4">
-                        <TextBlock TextWrapping="Wrap" Foreground="#666666" FontSize="12"
+                        <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="12"
                                    Text="THRESH_TOZERO_INV: 像素值 > 阈值 → 0, 其余不变"/>
-                        <TextBlock TextWrapping="Wrap" Foreground="#888888" FontSize="11"
+                        <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11"
                                    Margin="0,6,0,0"
                                    Text="将亮区置零，暗区保持原值"/>
                     </StackPanel>
@@ -283,9 +283,9 @@
                 </controls:LabeledControl>
                 <controls:ParamGroup Header="参数说明" IsExpanded="False">
                     <StackPanel Margin="8,4">
-                        <TextBlock TextWrapping="Wrap" Foreground="#666666" FontSize="12"
+                        <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="12"
                                    Text="THRESH_OTSU: 自动计算最优阈值(类间方差最大法)"/>
-                        <TextBlock TextWrapping="Wrap" Foreground="#888888" FontSize="11"
+                        <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11"
                                    Margin="0,6,0,0"
                                    Text="无需手动设阈值，适用于双峰直方图图像"/>
                     </StackPanel>
@@ -311,9 +311,9 @@
                 </controls:LabeledControl>
                 <controls:ParamGroup Header="参数说明" IsExpanded="False">
                     <StackPanel Margin="8,4">
-                        <TextBlock TextWrapping="Wrap" Foreground="#666666" FontSize="12"
+                        <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="12"
                                    Text="THRESH_TRIANGLE: 自动计算最优阈值(直方图三角法)"/>
-                        <TextBlock TextWrapping="Wrap" Foreground="#888888" FontSize="11"
+                        <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11"
                                    Margin="0,6,0,0"
                                    Text="适合单峰偏态分布的直方图"/>
                     </StackPanel>
@@ -354,9 +354,9 @@
                 </controls:LabeledControl>
                 <controls:ParamGroup Header="参数说明" IsExpanded="False">
                     <StackPanel Margin="8,4">
-                        <TextBlock TextWrapping="Wrap" Foreground="#666666" FontSize="12"
+                        <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="12"
                                    Text="ADAPTIVE_THRESH_MEAN_C: 局部邻域均值 - C 作为阈值"/>
-                        <TextBlock TextWrapping="Wrap" Foreground="#888888" FontSize="11"
+                        <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11"
                                    Margin="0,6,0,0"
                                    Text="适应光照不均，BlockSize越大越平滑"/>
                     </StackPanel>
@@ -397,9 +397,9 @@
                 </controls:LabeledControl>
                 <controls:ParamGroup Header="参数说明" IsExpanded="False">
                     <StackPanel Margin="8,4">
-                        <TextBlock TextWrapping="Wrap" Foreground="#666666" FontSize="12"
+                        <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="12"
                                    Text="ADAPTIVE_THRESH_GAUSSIAN_C: 局部高斯加权均值 - C 作为阈值"/>
-                        <TextBlock TextWrapping="Wrap" Foreground="#888888" FontSize="11"
+                        <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11"
                                    Margin="0,6,0,0"
                                    Text="比Mean方法权重更合理，抗噪更好"/>
                     </StackPanel>
@@ -431,9 +431,9 @@
                 </controls:LabeledControl>
                 <controls:ParamGroup Header="参数说明" IsExpanded="False">
                     <StackPanel Margin="8,4">
-                        <TextBlock TextWrapping="Wrap" Foreground="#666666" FontSize="12"
+                        <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="12"
                                    Text="像素值在 [Min, Max] 范围内的保留，其余置0"/>
-                        <TextBlock TextWrapping="Wrap" Foreground="#888888" FontSize="11"
+                        <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11"
                                    Margin="0,6,0,0"
                                    Text="用于HSV颜色空间提取特定颜色范围"/>
                     </StackPanel>
@@ -446,7 +446,7 @@
 
       <!-- Tab3: Results Display -->
       <TabItem Header="结果显示">
-        <Grid Background="#F5F5F5">
+        <Grid Background="{DynamicResource ThemePanelBackgroundBrush}">
           <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
@@ -456,10 +456,10 @@
             <StackPanel>
               <Expander Header="结果判断"
                                       IsExpanded="True"
-                                      BorderBrush="#E0E0E0"
+                                      BorderBrush="{DynamicResource ThemeBorderBrush}"
                                       BorderThickness="1"
                                       Margin="0,0,0,8"
-                                      Background="White">
+                                      Background="{DynamicResource ThemePanelBackgroundBrush}">
                 <StackPanel Margin="16,8">
                   <controls:LabeledControl Label="输出为空判断" ContentHorizontalAlignment="Left">
                     <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsEmptyCheckEnabled, Mode=TwoWay}"/>

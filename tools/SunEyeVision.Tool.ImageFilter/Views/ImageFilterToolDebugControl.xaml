@@ -130,9 +130,9 @@
                 </controls:LabeledControl>
             <controls:ParamGroup Header="参数说明" IsExpanded="False">
                 <StackPanel Margin="8,4">
-                    <TextBlock TextWrapping="Wrap" Foreground="#666666" FontSize="12" 
+                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="12" 
                                Text="均值滤波(BOX_FILTER)：邻域内所有像素取算术平均值"/>
-                    <TextBlock TextWrapping="Wrap" Foreground="#888888" FontSize="11" 
+                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" 
                                Margin="0,6,0,0"
                                Text="内核越大越模糊但速度越慢；边界类型建议Reflect或Default"/>
                 </StackPanel>
@@ -200,9 +200,9 @@
                 </controls:LabeledControl>
             <controls:ParamGroup Header="参数说明" IsExpanded="False">
                 <StackPanel Margin="8,4">
-                    <TextBlock TextWrapping="Wrap" Foreground="#666666" FontSize="12" 
+                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="12" 
                                Text="高斯滤波(GAUSSIAN_BLUR)：使用高斯核对图像进行加权平均"/>
-                    <TextBlock TextWrapping="Wrap" Foreground="#888888" FontSize="11" 
+                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" 
                                Margin="0,6,0,0"
                                Text="距离中心近的权重大；Sigma=0时自动按内核大小计算；边缘保留优于均值滤波"/>
                 </StackPanel>
@@ -227,9 +227,9 @@
                 </controls:LabeledControl>
             <controls:ParamGroup Header="参数说明" IsExpanded="False">
                 <StackPanel Margin="8,4">
-                    <TextBlock TextWrapping="Wrap" Foreground="#666666" FontSize="12" 
+                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="12" 
                                Text="中值滤波(MEDIAN_BLUR)：邻域像素排序后取中值替换中心像素"/>
-                    <TextBlock TextWrapping="Wrap" Foreground="#888888" FontSize="11" 
+                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" 
                                Margin="0,6,0,0"
                                Text="对椒盐噪声效果极佳；不会模糊边缘；直径不宜过大以免丢失细节"/>
                 </StackPanel>
@@ -288,9 +288,9 @@
                 </controls:LabeledControl>
             <controls:ParamGroup Header="参数说明" IsExpanded="False">
                 <StackPanel Margin="8,4">
-                    <TextBlock TextWrapping="Wrap" Foreground="#666666" FontSize="12" 
+                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="12" 
                                Text="双边滤波(BILATERAL_FILTER)：空间距离+像素差异联合加权去噪"/>
-                    <TextBlock TextWrapping="Wrap" Foreground="#888888" FontSize="11" 
+                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" 
                                Margin="0,6,0,0"
                                Text="同时考虑几何距离和颜色相似性；SigmaColor控制颜色模糊程度；SigmaSpace控制空间模糊程度"/>
                 </StackPanel>
@@ -316,9 +316,9 @@
                 </controls:LabeledControl>
             <controls:ParamGroup Header="参数说明" IsExpanded="False">
                 <StackPanel Margin="8,4">
-                    <TextBlock TextWrapping="Wrap" Foreground="#666666" FontSize="12" 
+                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="12" 
                                Text="自定义卷积(FILTER_2D)：通过用户自定义卷积核实现任意线性滤波"/>
-                    <TextBlock TextWrapping="Wrap" Foreground="#888888" FontSize="11" 
+                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" 
                                Margin="0,6,0,0"
                                Text="卷积核由用户在运行配置中设置；可实现锐化、浮雕等效果"/>
                 </StackPanel>
@@ -331,7 +331,7 @@
 
       <!-- Tab3: 结果显示 -->
       <TabItem Header="结果显示">
-        <Grid Background="#F5F5F5">
+        <Grid Background="{DynamicResource ThemePanelBackgroundBrush}">
           <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
@@ -342,10 +342,10 @@
               <!-- 结果判断分组 -->
               <Expander Header="结果判断"
                                       IsExpanded="True"
-                                      BorderBrush="#E0E0E0"
+                                      BorderBrush="{DynamicResource ThemeBorderBrush}"
                                       BorderThickness="1"
                                       Margin="0,0,0,8"
-                                      Background="White">
+                                      Background="{DynamicResource ThemePanelBackgroundBrush}">
                 <StackPanel Margin="16,8">
                   <!-- 输出为空判断 -->
                   <controls:LabeledControl Label="输出为空判断" ContentHorizontalAlignment="Left">

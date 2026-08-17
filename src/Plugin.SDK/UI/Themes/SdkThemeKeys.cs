@@ -48,6 +48,8 @@
         // ============ 面板 / 背景 ============
         /// <summary>右侧属性面板 / 常规面板背景，对应 UI ThemeKeys.PanelBackgroundBrush</summary>
         public const string PanelBackgroundBrush = "ThemePanelBackgroundBrush";
+        /// <summary>面板标题栏背景，对应 UI ThemeKeys.PanelHeaderBackgroundBrush</summary>
+        public const string PanelHeaderBackgroundBrush = "ThemePanelHeaderBackgroundBrush";
 
         // ============ 工具栏 / 输入控件 / 状态栏（主题管控扩展） ============
         /// <summary>面板 / 工具栏背景，对应 UI ThemeKeys.ToolBarBackgroundBrush</summary>
@@ -86,5 +88,23 @@
         public const string WarningBrush = "ThemeWarningBrush";
         /// <summary>错误 / 运行中状态，对应 UI ThemeKeys.ErrorBrush</summary>
         public const string ErrorBrush = "ThemeErrorBrush";
+
+        // ============ SDK 控件补充（批次3，SDK 样式库 Token 化） ============
+        /// <summary>滑块/范围滑块轨道背景，对应 UI ThemeKeys.SliderTrackBackgroundBrush</summary>
+        public const string SliderTrackBackgroundBrush = "ThemeSliderTrackBackgroundBrush";
+        /// <summary>开关控件关闭态背景，对应 UI ThemeKeys.ToggleOffBackgroundBrush</summary>
+        public const string ToggleOffBackgroundBrush = "ThemeToggleOffBackgroundBrush";
+        /// <summary>成功状态浅底色（类型匹配标签），对应 UI ThemeKeys.SuccessLightBackgroundBrush</summary>
+        public const string SuccessLightBackgroundBrush = "ThemeSuccessLightBackgroundBrush";
+
+        // ============ 滚动条（标准控件，激活 UI 已定义但无人消费的死 token） ============
+        /// <summary>滚动条轨道背景，对应 UI ThemeKeys.ScrollBarBackgroundBrush</summary>
+        public const string ScrollBarBackgroundBrush = "ThemeScrollBarBackgroundBrush";
+        /// <summary>滚动条滑块（默认态），对应 UI ThemeKeys.ScrollBarThumbBrush</summary>
+        public const string ScrollBarThumbBrush = "ThemeScrollBarThumbBrush";
+        /// <summary>滚动条滑块（悬停态），对应 UI ThemeKeys.ScrollBarThumbHoverBrush</summary>
+        public const string ScrollBarThumbHoverBrush = "ThemeScrollBarThumbHoverBrush";
+        /// <summary>滚动条滑块（按下态），对应 UI ThemeKeys.ScrollBarThumbPressedBrush</summary>
+        public const string ScrollBarThumbPressedBrush = "ThemeScrollBarThumbPressedBrush";
     }
 }

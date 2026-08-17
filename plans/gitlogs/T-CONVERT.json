@@ -1,0 +1,12 @@
+[
+  {
+    "hash": "64e8708",
+    "date": "2026-04-11",
+    "message": "fix: 修复InverseBoolToVisibilityConverter命名空间引用错误"
+  },
+  {
+    "hash": "647b10a",
+    "date": "2026-07-21",
+    "message": "feat: 区域工具(Threshold/Morphology/ImageThreshold)输出契约Region→RoI + 脚本运行时暴露RegionConverter (D8/P6)"
+  }
+]

@@ -1,0 +1,57 @@
+[
+  {
+    "hash": "31443fb",
+    "date": "2026-06-17",
+    "message": "fix(script): CopyScriptRefs.ps1 自动探测 .NET 运行时版本，复制 System.Private.CoreLib.dll 等 BCL 核心程序集修复 Roslyn 成员补全"
+  },
+  {
+    "hash": "27a4855",
+    "date": "2026-06-22",
+    "message": "refactor(ScriptTool): 开放 partial class 到用户脚本内容"
+  },
+  {
+    "hash": "9a6948b",
+    "date": "2026-06-22",
+    "message": "fix(ScriptCompiler): 添加 Microsoft.CodeAnalysis.Emit using 修复编译错误"
+  },
+  {
+    "hash": "13919fe",
+    "date": "2026-06-22",
+    "message": "feat(Script): 完善脚本调试功能和语法高亮"
+  },
+  {
+    "hash": "ea3ce50",
+    "date": "2026-06-24",
+    "message": "chore: 提交当前脚本工具修改（变量Tab/调试控制）"
+  },
+  {
+    "hash": "7805164",
+    "date": "2026-06-25",
+    "message": "feat(ScriptTemplate): Halcon 5-scenario demo template"
+  },
+  {
+    "hash": "35d1da7",
+    "date": "2026-06-29",
+    "message": "feat(ScriptTool): 性能优化 P0+P1+P2+P3"
+  },
+  {
+    "hash": "c899b24",
+    "date": "2026-07-13",
+    "message": "feat(script): 脚本编辑器 Roslyn 语义高亮(SemanticColorizer) + 方案技能协作优化"
+  },
+  {
+    "hash": "9eaa727",
+    "date": "2026-07-13",
+    "message": "脚本工具：移除 Roslyn 语义着色器，简化语法高亮实现"
+  },
+  {
+    "hash": "031f0c8",
+    "date": "2026-07-13",
+    "message": "脚本工具：完善参数模型和沙箱引用提供机制"
+  },
+  {
+    "hash": "7cf76c7",
+    "date": "2026-07-13",
+    "message": "feat: 脚本工具完善 + Skill 体系优化"
+  }
+]

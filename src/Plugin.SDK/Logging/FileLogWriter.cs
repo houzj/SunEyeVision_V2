@@ -22,6 +22,12 @@ namespace SunEyeVision.Plugin.SDK.Logging
 
         private const int BufferSize = 8192;
 
+        /// <summary>
+        /// 自动落盘间隔（毫秒）：日志写入后距上次落盘超过该间隔则强制 Flush，
+        /// 保证运行中日志可实时观测、且进程异常退出时不丢失缓冲日志。
+        /// </summary>
+        private const int AutoFlushIntervalMs = 2000;
+
         #endregion
 
         #region 私有字段
@@ -31,6 +37,7 @@ namespace SunEyeVision.Plugin.SDK.Logging
         private StreamWriter? _writer;
         private string? _currentLogFile;
         private DateTime _currentLogFileDate;
+        private DateTime _lastFlushTime = DateTime.MinValue;
         private bool _isDisposed;
 
         #endregion
@@ -80,6 +87,7 @@ namespace SunEyeVision.Plugin.SDK.Logging
 
                     var line = FormatEntry(entry);
                     _writer?.WriteLine(line);
+                    TryAutoFlush();
                 }
                 catch
                 {
@@ -109,6 +117,7 @@ namespace SunEyeVision.Plugin.SDK.Logging
                     }
 
                     _writer?.Write(sb.ToString());
+                    TryAutoFlush();
                 }
                 catch
                 {
@@ -133,8 +142,23 @@ namespace SunEyeVision.Plugin.SDK.Logging
             _isDisposed = true;
             lock (_lockObject)
             {
+                _writer?.Flush();
                 _writer?.Dispose();
                 _writer = null;
+            }
+        }
+
+        /// <summary>
+        /// 距上次落盘超过 AutoFlushIntervalMs 时强制 Flush，保证日志实时可观测。
+        /// 必须在 _lockObject 锁内调用。
+        /// </summary>
+        private void TryAutoFlush()
+        {
+            var now = DateTime.Now;
+            if ((now - _lastFlushTime).TotalMilliseconds >= AutoFlushIntervalMs)
+            {
+                _lastFlushTime = now;
+                _writer?.Flush();
             }
         }
 

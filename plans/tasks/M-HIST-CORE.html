@@ -1,0 +1,393 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M-HIST-CORE 视觉基础框架（已完成） · 开发管理</title>
+<style>
+:root { --font: "Microsoft YaHei", "Segoe UI", sans-serif; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px; }
+.container { max-width:980px; margin:0 auto; }
+.back { display:inline-block; margin-bottom:14px; font-size:13px; color:#185FA5; text-decoration:none; }
+.back:hover { text-decoration:underline; }
+.header { background:#fff; border-radius:14px; padding:22px 26px; margin-bottom:18px; border:1px solid #e8eaed; border-top:4px solid #185FA5; }
+.header .id-line { display:flex; align-items:center; gap:10px; margin-bottom:6px; flex-wrap:wrap; }
+.mod-id { font-family:Consolas,monospace; font-size:13px; color:#888; }
+.type-tag { font-size:12px; padding:2px 10px; border-radius:10px; border:1px solid #185FA5; color:#185FA5; }
+.header h1 { font-size:20px; font-weight:600; margin-bottom:6px; }
+.meta-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:10px; margin-top:12px; }
+.meta-item { background:#f7f8fa; border-radius:8px; padding:8px 12px; }
+.meta-item .k { font-size:11px; color:#999; }
+.meta-item .v { font-size:13px; font-weight:500; margin-top:2px; }
+.card { background:#fff; border-radius:14px; padding:20px 24px; margin-bottom:18px; border:1px solid #e8eaed; }
+.card h2 { font-size:15px; font-weight:600; margin-bottom:12px; color:#333; }
+.goal-box { background:#f0f7ff; border:1px solid #cfe4f7; border-radius:10px; padding:12px 16px; font-size:13px; color:#185FA5; margin-bottom:14px; line-height:1.6; }
+.progress-bar { height:10px; background:#eef0f2; border-radius:6px; overflow:hidden; }
+.progress-fill { height:100%; background:#185FA5; border-radius:6px; }
+.progress-wrap { display:flex; align-items:center; gap:10px; }
+.progress-wrap .pct { font-size:16px; font-weight:700; color:#185FA5; }
+.status { display:inline-block; font-size:11px; padding:2px 8px; border-radius:10px; white-space:nowrap; }
+.st-todo { background:#f1efea; color:#888; }
+.st-progress { background:#e6f1fb; color:#185FA5; }
+.st-done { background:#e1f5ee; color:#0F6E56; }
+.st-blocked { background:#fcebeb; color:#A32D2D; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th { text-align:left; font-size:12px; color:#888; font-weight:500; padding:8px 10px; border-bottom:2px solid #eef0f2; }
+td { padding:9px 10px; border-bottom:1px solid #f0f1f3; vertical-align:middle; }
+tr:hover td { background:#f8fafc; }
+.td-id { font-family:Consolas,monospace; font-size:12px; color:#888; white-space:nowrap; }
+.td-name { font-weight:500; }
+.phase { font-size:11px; padding:2px 8px; border-radius:4px; white-space:nowrap; }
+.ph-algo { background:#e6f1fb; color:#185FA5; }
+.ph-ui { background:#faeeda; color:#854F0B; }
+.ph-test { background:#e1f5ee; color:#0F6E56; }
+.acc-list { padding-left:20px; font-size:13px; line-height:2; }
+.muted { color:#aaa; font-size:13px; }
+.doc-list { padding-left:20px; font-size:13px; line-height:2; }
+.doc-list a { color:#185FA5; text-decoration:none; }
+.doc-list a:hover { text-decoration:underline; }
+.log-item { display:flex; gap:14px; padding:8px 0; border-bottom:1px solid #f0f1f3; font-size:13px; }
+.log-item:last-child { border-bottom:none; }
+.log-date { font-family:Consolas,monospace; font-size:12px; color:#888; white-space:nowrap; flex-shrink:0; }
+.log-note { color:#444; line-height:1.6; }
+.git-log { display:flex; flex-direction:column; max-height:420px; overflow-y:auto; border:1px solid #e8eaed; border-radius:8px; }
+.git-log-item { display:flex; gap:10px; padding:6px 10px; border-bottom:1px solid #f0f1f3; font-size:12px; align-items:baseline; }
+.git-log-item:last-child { border-bottom:none; }
+.git-log-item:hover { background:#f7f9fc; }
+.git-hash { font-family:Consolas,monospace; color:#185FA5; width:60px; flex-shrink:0; }
+.git-date { font-family:Consolas,monospace; color:#888; width:80px; flex-shrink:0; }
+.git-msg { color:#333; line-height:1.5; }
+.wk-total { font-size:13px; color:#185FA5; font-weight:500; margin-bottom:8px; }
+.wk-chips { display:flex; flex-wrap:wrap; gap:6px; }
+.wk-chip { font-size:11px; font-family:Consolas,monospace; background:#eef4fb; color:#185FA5; border-radius:8px; padding:2px 8px; }
+.wk-cell { font-size:11px; font-family:Consolas,monospace; background:#eef4fb; color:#185FA5; border-radius:6px; padding:2px 6px; white-space:nowrap; }
+.pw-list { display:flex; flex-direction:column; gap:6px; }
+.pw-row { display:flex; align-items:flex-start; gap:12px; padding:8px 0; border-bottom:1px solid #f0f1f3; }
+.pw-row:last-child { border-bottom:none; }
+.pw-label { width:100px; font-family:Consolas,monospace; font-size:12px; color:#444; font-weight:500; flex-shrink:0; padding-top:3px; }
+.pw-tasks { flex:1; display:flex; flex-wrap:wrap; gap:6px; }
+.pw-hours { font-size:12px; font-weight:600; color:#185FA5; white-space:nowrap; padding-top:3px; }
+.footer { text-align:center; font-size:12px; color:#aaa; padding:16px 0 8px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <a class="back" href="../plan.html">&larr; 返回主控看板</a>
+
+  <div class="header">
+    <div class="id-line">
+      <span class="mod-id">M-HIST-CORE</span>
+      <span class="type-tag">源码层 · 功能模块</span>
+      <span class="status st-progress">补测试中</span>
+    </div>
+    <h1>视觉基础框架（已完成）</h1>
+    <div class="goal-box"><strong>目标：</strong>分层架构 + 插件系统 + 核心服务（已交付）</div>
+    <div class="progress-wrap">
+      <span class="pct">92%</span>
+      <div class="progress-bar" style="flex:1"><div class="progress-fill" style="width:92%"></div></div>
+    </div>
+    <div class="meta-grid">
+      <div class="meta-item"><div class="k">所属阶段</div><div class="v">历史开发（已完成，2026-01~07）</div></div>
+      <div class="meta-item"><div class="k">计划周期</div><div class="v">2026-01-21 ~ 2026-02-28</div></div>
+      <div class="meta-item"><div class="k">开发子任务</div><div class="v">12/@(            ).Count 完成</div></div>
+      <div class="meta-item"><div class="k">总工时</div><div class="v">324h</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>验收标准（Acceptance）</h2>
+    <ul class='acc-list'><li>分层架构：Core / Plugin.Abstractions / Plugin.Infrastructure / UI 依赖方向正确</li><li>插件系统：工具箱按插件自动加载，插件独立开发调试（PluginDevKit）</li><li>核心服务：日志/配置/文件访问管理/事件总线可用</li><li>【待做】架构层缓存机制优化（用户当前路线第 2 步）</li></ul>
+  </div>
+
+  <div class="card">
+    <h2>开发子任务</h2>
+    <table>
+      <thead><tr><th>ID</th><th>任务</th><th>维度</th><th>工时</th><th>周排期</th><th>状态</th></tr></thead>
+      <tbody>            <tr>
+              <td class="td-id">HIST-CORE-1</td>
+              <td class="td-name">初始搭建：解决方案结构 + UI 主界面 + 帮助文档（b6e78cd/82537b0）</td>
+              <td><span class="phase ph-algo">算法实现</span></td>
+              <td>40h</td>
+              <td><span class='wk-cell' title='2026-W35'>第 35/53 周 · 08-24~08-30</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">HIST-CORE-2</td>
+              <td class="td-name">插件系统：工具箱按插件自动加载 + 插件系统重构（0b9e3c8）</td>
+              <td><span class="phase ph-algo">算法实现</span></td>
+              <td>30h</td>
+              <td><span class='wk-cell' title='2026-W35'>第 35/53 周 · 08-24~08-30</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">HIST-CORE-3</td>
+              <td class="td-name">主界面解耦 + 三区域可调/折叠（c846e55）</td>
+              <td><span class="phase ph-ui">UI 交互</span></td>
+              <td>20h</td>
+              <td><span class='wk-cell' title='2026-W35'>第 35/53 周 · 08-24~08-30</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">HIST-CORE-4</td>
+              <td class="td-name">文件结构整合 + WorkflowCanvasControl 控件化重构（ea176b0/18753ed/bd4d912）</td>
+              <td><span class="phase ph-algo">算法实现</span></td>
+              <td>30h</td>
+              <td><span class='wk-cell' title='2026-W35'>第 35/53 周 · 08-24~08-30</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">HIST-CORE-5</td>
+              <td class="td-name">分层架构：Plugin.Abstractions 抽离 + Plugin.Infrastructure（c66624a/66c9795/3080f11）</td>
+              <td><span class="phase ph-algo">算法实现</span></td>
+              <td>40h</td>
+              <td><span class='wk-cell' title='2026-W36'>第 36/53 周 · 08-31~09-06</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">HIST-CORE-6</td>
+              <td class="td-name">SDK 接口 + 数据类型定义重构（c5ddea1/a03161d）</td>
+              <td><span class="phase ph-algo">算法实现</span></td>
+              <td>30h</td>
+              <td><span class='wk-cell' title='2026-W36'>第 36/53 周 · 08-31~09-06</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">HIST-CORE-7</td>
+              <td class="td-name">插件开发工具包 PluginDevKit + 插件运行时（7276351/0d9d987）</td>
+              <td><span class="phase ph-algo">算法实现</span></td>
+              <td>30h</td>
+              <td><span class='wk-cell' title='2026-W36'>第 36/53 周 · 08-31~09-06</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">HIST-CORE-8</td>
+              <td class="td-name">日志系统优化（CPU -30~50% / 双轨制）</td>
+              <td><span class="phase ph-algo">算法实现</span></td>
+              <td>20h</td>
+              <td><span class='wk-cell' title='2026-W36'>第 36/53 周 · 08-31~09-06</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">HIST-CORE-9</td>
+              <td class="td-name">文件访问管理器 + 引用计数延迟删除（cc30921）</td>
+              <td><span class="phase ph-algo">算法实现</span></td>
+              <td>15h</td>
+              <td><span class='wk-cell' title='2026-W36'>第 36/53 周 · 08-31~09-06</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">HIST-CORE-10</td>
+              <td class="td-name">节点缓存池 + 渲染调度器（6bbd2bd）</td>
+              <td><span class="phase ph-algo">算法实现</span></td>
+              <td>20h</td>
+              <td><span class='wk-cell' title='2026-W36'>第 36/53 周 · 08-31~09-06</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">HIST-CORE-T1</td>
+              <td class="td-name">框架构建验证（build_and_run 批处理）+ 运行回归</td>
+              <td><span class="phase ph-test">测试验证</span></td>
+              <td>15h</td>
+              <td><span class='wk-cell' title='2026-W36'>第 36/53 周 · 08-31~09-06</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">HIST-CORE-T2</td>
+              <td class="td-name">插件系统测试（工具箱自动加载/插件独立调试）</td>
+              <td><span class="phase ph-test">测试验证</span></td>
+              <td>10h</td>
+              <td><span class='wk-cell' title='2026-W36'>第 36/53 周 · 08-31~09-06</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">HIST-CORE-C1</td>
+              <td class="td-name">架构层缓存机制优化（图像缓存/节点缓存池/渲染调度缓存/批量更新机制）</td>
+              <td><span class="phase ph-algo">算法实现</span></td>
+              <td>24h</td>
+              <td><span class='wk-cell' title='2026-W35'>第 35/53 周 · 08-24~08-30</span></td>
+              <td><span class="status st-todo">计划中</span></td>
+            </tr></tbody>
+    </table>
+  </div>
+
+    <div class="card">
+    <h2>周计划（本模块任务排期）</h2>
+    <div class="pw-list">
+                  <div class="pw-row">
+              <div class="pw-label" title="2026-W35">第 35/53 周 · 08-24~08-30</div>
+              <div class="pw-tasks"><span class='wk-task'><span class='wk-task-id'>HIST-CORE-1</span>初始搭建：解决方案结构 + UI 主界面 + 帮助文档（b6e78cd/82537b0） <span class='wk-task-h'>40h</span> <span class='status st-done' style='font-size:10px'>已完成</span></span><span class='wk-task'><span class='wk-task-id'>HIST-CORE-2</span>插件系统：工具箱按插件自动加载 + 插件系统重构（0b9e3c8） <span class='wk-task-h'>30h</span> <span class='status st-done' style='font-size:10px'>已完成</span></span><span class='wk-task'><span class='wk-task-id'>HIST-CORE-3</span>主界面解耦 + 三区域可调/折叠（c846e55） <span class='wk-task-h'>20h</span> <span class='status st-done' style='font-size:10px'>已完成</span></span><span class='wk-task'><span class='wk-task-id'>HIST-CORE-4</span>文件结构整合 + WorkflowCanvasControl 控件化重构（ea176b0/18753ed/bd4d912） <span class='wk-task-h'>30h</span> <span class='status st-done' style='font-size:10px'>已完成</span></span><span class='wk-task'><span class='wk-task-id'>HIST-CORE-C1</span>架构层缓存机制优化（图像缓存/节点缓存池/渲染调度缓存/批量更新机制） <span class='wk-task-h'>24h</span> <span class='status st-todo' style='font-size:10px'>计划中</span></span></div>
+              <div class="pw-hours">144 h</div>
+            </div>            <div class="pw-row">
+              <div class="pw-label" title="2026-W36">第 36/53 周 · 08-31~09-06</div>
+              <div class="pw-tasks"><span class='wk-task'><span class='wk-task-id'>HIST-CORE-5</span>分层架构：Plugin.Abstractions 抽离 + Plugin.Infrastructure（c66624a/66c9795/3080f11） <span class='wk-task-h'>40h</span> <span class='status st-done' style='font-size:10px'>已完成</span></span><span class='wk-task'><span class='wk-task-id'>HIST-CORE-6</span>SDK 接口 + 数据类型定义重构（c5ddea1/a03161d） <span class='wk-task-h'>30h</span> <span class='status st-done' style='font-size:10px'>已完成</span></span><span class='wk-task'><span class='wk-task-id'>HIST-CORE-7</span>插件开发工具包 PluginDevKit + 插件运行时（7276351/0d9d987） <span class='wk-task-h'>30h</span> <span class='status st-done' style='font-size:10px'>已完成</span></span><span class='wk-task'><span class='wk-task-id'>HIST-CORE-8</span>日志系统优化（CPU -30~50% / 双轨制） <span class='wk-task-h'>20h</span> <span class='status st-done' style='font-size:10px'>已完成</span></span><span class='wk-task'><span class='wk-task-id'>HIST-CORE-9</span>文件访问管理器 + 引用计数延迟删除（cc30921） <span class='wk-task-h'>15h</span> <span class='status st-done' style='font-size:10px'>已完成</span></span><span class='wk-task'><span class='wk-task-id'>HIST-CORE-10</span>节点缓存池 + 渲染调度器（6bbd2bd） <span class='wk-task-h'>20h</span> <span class='status st-done' style='font-size:10px'>已完成</span></span><span class='wk-task'><span class='wk-task-id'>HIST-CORE-T1</span>框架构建验证（build_and_run 批处理）+ 运行回归 <span class='wk-task-h'>15h</span> <span class='status st-done' style='font-size:10px'>已完成</span></span><span class='wk-task'><span class='wk-task-id'>HIST-CORE-T2</span>插件系统测试（工具箱自动加载/插件独立调试） <span class='wk-task-h'>10h</span> <span class='status st-done' style='font-size:10px'>已完成</span></span></div>
+              <div class="pw-hours">180 h</div>
+            </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>关联文档</h2>
+    <ul class='doc-list'><li><a href='../../../docs/05-框架架构/2026/02/框架重构方案-20260222.md' target='_blank'>框架重构方案-20260222.md</a></li><li><a href='../../../docs/06-指南参考/guides/2026/02/插件开发指南-20260405.md' target='_blank'>插件开发指南-20260405.md</a></li></ul>
+  </div>
+
+  <div class="card">
+    <h2>开发日志（git 提交追溯，真实开发用时）</h2>
+                <div class='git-log'>
+              <div class='git-log-item'>
+                <span class='git-hash'>23bd9c7</span>
+                <span class='git-date'>2026-06-29</span>
+                <span class='git-msg'>chore(gitignore): 屏蔽工具临时文件</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>1f54100</span>
+                <span class='git-date'>2026-06-29</span>
+                <span class='git-msg'>chore(wip): 历史遗留修改合入 (Plugin.SDK 迁移 + Script 工具完善)</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>39ca2aa</span>
+                <span class='git-date'>2026-06-23</span>
+                <span class='git-msg'>feat(Script): 添加脚本变量监视面板及删除废弃的 ScriptIoDialog</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>702bb33</span>
+                <span class='git-date'>2026-06-12</span>
+                <span class='git-msg'>refactor(script): 优化脚本工具架构 - 重命名 ScriptApi-&gt;ScriptContext / ScriptBase-&gt;Script；新增 CompletitionWindow 自动补全（类型/标识符/成员）；新增 AssemblyReferenceDialog 引用管理界面；新增 LogEntry 模型；修复文档更新方式并移除静默 catch；添加 CSharpDark.xshd 语法高亮主题</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>fc6e3a4</span>
+                <span class='git-date'>2026-04-21</span>
+                <span class='git-msg'>﻿局部优化主界面</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>359699d</span>
+                <span class='git-date'>2026-04-20</span>
+                <span class='git-msg'>﻿1.修复了日志显示器水印的遮挡问题 2.实现了日志显示的自动滚动功能</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>740f52e</span>
+                <span class='git-date'>2026-04-20</span>
+                <span class='git-msg'>﻿优化之日系统，可以指定写入到什么地方</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>d19e8a4</span>
+                <span class='git-date'>2026-04-13</span>
+                <span class='git-msg'>﻿优化了部分UI，后面要进行大重构，先提交代码 便于回退</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>001090f</span>
+                <span class='git-date'>2026-04-08</span>
+                <span class='git-msg'>docs: 添加ThresholdTool分析文档</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>e87ee7f</span>
+                <span class='git-date'>2026-04-05</span>
+                <span class='git-msg'>﻿1.之前通过重构UI集成方案，实现了工具层UI的可预览编程 但是无法实现声明式编程，重构后支持声明式编程，其他问题还需测试优化</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>4046029</span>
+                <span class='git-date'>2026-03-10</span>
+                <span class='git-msg'>﻿更新渲染器，从bitmap到wpf 重新设计渲染框架 目前性能还可以 但是数量过多时 会卡顿 当前测试300-400  会有影响 但是还是可以用的 暂时先这样  更高性能的渲染器 需要等到 后续的需求 再做优化</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>ace00ac</span>
+                <span class='git-date'>2026-03-10</span>
+                <span class='git-msg'>﻿继续清理无用日志</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>25719da</span>
+                <span class='git-date'>2026-03-10</span>
+                <span class='git-msg'>﻿添加性能日志监控</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>9024efb</span>
+                <span class='git-date'>2026-03-08</span>
+                <span class='git-msg'>添加调试窗口打开过程的日志追踪</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>0082a20</span>
+                <span class='git-date'>2026-03-08</span>
+                <span class='git-msg'>完善参数源日志监控，添加参数获取过程追踪</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>3080f11</span>
+                <span class='git-date'>2026-02-22</span>
+                <span class='git-msg'>1.删除了源码层的工具项目，改为直接在插件层编译工具项目。 2.修改了插件管理器的实现，改为直接加载插件层的工具项目编译结果。 3.修改了工具窗口的实现，改为直接加载插件层的工具项目编译结果。 4.完成了在新的架构下对插件工具的支持。 5.下一步就是在新的架构下重新设计源码层的工具接口</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>66c9795</span>
+                <span class='git-date'>2026-02-22</span>
+                <span class='git-msg'>完成了工具插件的重构</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>cc30921</span>
+                <span class='git-date'>2026-02-21</span>
+                <span class='git-msg'>1. 添加文件访问管理器 2. 修改了图像预览控件以使用新的文件访问管理器 3. 更新了图像解码器以支持新的文件访问机制 4. 修改了主窗口和相关视图模型以适应新的文件访问逻辑</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>9aa2f0d</span>
+                <span class='git-date'>2026-02-10</span>
+                <span class='git-msg'>删除了工具箱在优化过程中的日志信息，避免对后续的开发产生干扰，可运行版本</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>9f84520</span>
+                <span class='git-date'>2026-02-10</span>
+                <span class='git-msg'>工具箱双模完全实现且完成测试，切记谨慎使用屏幕坐标系</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>7788e68</span>
+                <span class='git-date'>2026-02-10</span>
+                <span class='git-msg'>取消了主界面左侧分隔条  把模式切换放到了工具箱底部</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>844f38f</span>
+                <span class='git-date'>2026-02-10</span>
+                <span class='git-msg'>增加了工具箱的双模显示，但是还有些问题需要完善</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>04c743b</span>
+                <span class='git-date'>2026-02-07</span>
+                <span class='git-msg'>大重构 一。工具插件 1. 重构PluginSystem.Base 2. 重构PluginSystem.Infrastructure 3. 重构PluginSystem.Tools 二。工作流执行引擎执行逻辑管理 1. 重构WorkflowEngine.Base 2. 重构WorkflowEngine.Infrastructure 3. 重构WorkflowEngine.Workflows 三。工作流执行引擎UI管理 1. 重构WorkflowEngine.UI.Base 2. 重构WorkflowEngine.UI.Infrastructure 3. 重构WorkflowEngine.UI.Workflows</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>8f0a6a4</span>
+                <span class='git-date'>2026-02-07</span>
+                <span class='git-msg'>refactor: 清理 PluginSystem 目录结构</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>179b544</span>
+                <span class='git-date'>2026-02-07</span>
+                <span class='git-msg'>重构PluginSystem UI目录结构 - 方案3实施</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>045a5f6</span>
+                <span class='git-date'>2026-02-07</span>
+                <span class='git-msg'>工具插件重构及工具文件结构重构前的代码备份  不能运行  未调试</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>9a3c011</span>
+                <span class='git-date'>2026-02-06</span>
+                <span class='git-msg'>工作流插件系统  部分开发 未调试版本</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>7198875</span>
+                <span class='git-date'>2026-01-27</span>
+                <span class='git-msg'>trae重构回退后可运行的版本</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>033a514</span>
+                <span class='git-date'>2026-01-21</span>
+                <span class='git-msg'># SunEyeVision视觉软件 - 开发日志</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>0b9e3c8</span>
+                <span class='git-date'>2026-01-21</span>
+                <span class='git-msg'>1.更新了工具箱加载工具的方式为根据插件自动加载 2.重构了插件系统，便于工具箱工具的自动加载</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>82537b0</span>
+                <span class='git-date'>2026-01-21</span>
+                <span class='git-msg'>1.初步矿建搭建 2.UI界面完成 3.帮助文档实现 4.工具到流程编辑区的拖拽</span>
+              </div>
+            </div>
+            
+
+  </div>
+
+  <div class="card">
+    <h2>真实开发周分布（git 提交追溯）</h2>
+    <p class='muted'>无周追溯数据（模块未匹配到提交）</p>
+  </div>
+
+  <div class="footer">由 generate_plan.ps1 v3.0 自动生成 · 子页面 · SunEyeVision</div>
+</div>
+</body>
+</html>

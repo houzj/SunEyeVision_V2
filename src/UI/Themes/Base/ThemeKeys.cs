@@ -70,6 +70,17 @@
         public const string ErrorColor = "ThemeErrorColor";
         public const string ErrorBrush = "ThemeErrorBrush";
 
+        // ============ SDK 控件补充（批次3，SDK 样式库 Token 化） ============
+        /// <summary>滑块/范围滑块轨道背景</summary>
+        public const string SliderTrackBackground = "ThemeSliderTrackBackground";
+        public const string SliderTrackBackgroundBrush = "ThemeSliderTrackBackgroundBrush";
+        /// <summary>开关控件关闭态背景</summary>
+        public const string ToggleOffBackground = "ThemeToggleOffBackground";
+        public const string ToggleOffBackgroundBrush = "ThemeToggleOffBackgroundBrush";
+        /// <summary>成功状态浅底色（类型匹配标签）</summary>
+        public const string SuccessLightBackground = "ThemeSuccessLightBackground";
+        public const string SuccessLightBackgroundBrush = "ThemeSuccessLightBackgroundBrush";
+
         // ============ 画布专属 ============
         /// <summary>画布背景</summary>
         public const string CanvasBackground = "ThemeCanvasBackground";

@@ -191,6 +191,7 @@
                         <Button x:Name="SubroutineBackBtn"
                                                     Grid.Column="0"
                                                     Content="&#x21A9;"
+                                                    FontFamily="{StaticResource IconFontFamily}"
                                                     FontSize="14" FontWeight="Bold"
                                                     Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"
                                                     Background="Transparent"
@@ -215,10 +216,19 @@
                           </Button.Style>
                         </Button>
 
-                        <!-- [⚙] 设置按钮 - 仅子程序模式下可见 -->
+                        <!-- [⚙] 设置按钮 - 仅子程序模式下可见。
+                             治本（双管齐下）：
+                             1. 内容：原 Content="{Binding SubroutineIcon}" (emoji 🔁 U+1F501) 走 Segoe UI Emoji 字体路径，
+                                Foreground 主题色对 emoji 无效、暗色主题下肉眼不可见（用户实测截图）。
+                                改用 ⚙ (U+2699 BLACK GEAR) 标准几何符号 + IconFontFamily(Segoe UI Symbol) 必含该字形。
+                             2. 前景色：必须跟随主题用 TextSecondaryBrush（暗色下=亮灰 #C0C0C0），
+                                与本控件"返回"按钮(↩ U+21A9)一致。不能写死 #333333——
+                                暗色下 TabItemBackground=#2D2D2D，深灰叠深灰对比度极低几乎不可见（真因）。
+                                悬停用主题 AccentBrush 高亮。 -->
                         <Button x:Name="SubroutineSettingsBtn"
                                                     Grid.Column="1"
                                                     Content="&#x2699;"
+                                                    FontFamily="{StaticResource IconFontFamily}"
                                                     FontSize="14" FontWeight="Bold"
                                                     Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"
                                                     Background="Transparent"

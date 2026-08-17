@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Plugin.SDK.UI.Constants;
 using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering
@@ -341,13 +342,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering
                     switch (region.RoiType)
                     {
                         case Models.RoiType.Mask:
-                            fillColor = Color.FromArgb(30, 255, 165, 0);   // 半透明橙色
-                            strokeColor = Color.FromArgb(255, 255, 165, 0); // 橙色边框
+                            fillColor = ColorConstants.MaskFill;
+                            strokeColor = ColorConstants.MaskOrange;
                             break;
                         case Models.RoiType.Inspection:
                         default:
-                            fillColor = Color.FromArgb(30, 0, 120, 215);   // 半透明蓝
-                            strokeColor = Color.FromArgb(255, 0, 120, 215); // 蓝色边框
+                            fillColor = ColorConstants.InspectionFill;
+                            strokeColor = ColorConstants.InspectionBlue;
                             break;
                     }
                 }
@@ -623,7 +624,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering
                                     Text = region.Label,
                                     FontSize = scaledFontSize,
                                     Foreground = Brushes.White,
-                                    Background = new SolidColorBrush(Color.FromArgb(180, 0, 0, 0)),
+                                    Background = new SolidColorBrush(ColorConstants.LabelBackground),
                                     Padding = new Thickness(scaledPaddingH, scaledPaddingV, scaledPaddingH, scaledPaddingV)
                                 };
                                 _targetCanvas.Children.Add(label);

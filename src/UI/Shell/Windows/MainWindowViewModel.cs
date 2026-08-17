@@ -2625,7 +2625,7 @@ SplitterPosition = position;
                 var workflowDisplayName = node.Name;
 
                 // 下钻导航
-                selectedTab.NavigateToSubroutine(subroutineId, workflowDisplayName);
+                selectedTab.NavigateToSubroutine(subroutineId, workflowDisplayName, node.Icon);
 
                 // 加载子程序画布内容（从引擎获取子程序工作流的节点/连接）
                 NavigateToWorkflowCanvas(subroutineId);

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows;
@@ -56,6 +56,21 @@ namespace SunEyeVision.UI.Features.WorkflowUI
         /// 当前显示的工作流名称（下钻时为子程序名，根层次为 Tab.Name）
         /// </summary>
         private string _currentWorkflowName;
+
+        /// <summary>
+        /// 当前子程序节点的工具图标（Tab 栏设置按钮显示用，与画布节点图标一致）
+        /// </summary>
+        private string? _subroutineIcon;
+
+        /// <summary>
+        /// 当前子程序节点的工具图标（Tab 栏设置按钮显示用）
+        /// 非子程序模式下为 null，设置按钮隐藏
+        /// </summary>
+        public string? SubroutineIcon
+        {
+            get => _subroutineIcon;
+            set => SetProperty(ref _subroutineIcon, value);
+        }
 
         /// <summary>
         /// 是否处于子程序下钻模式
@@ -568,7 +583,8 @@ namespace SunEyeVision.UI.Features.WorkflowUI
         /// </summary>
         /// <param name="subroutineWorkflowId">子程序工作流ID</param>
         /// <param name="displayName">Tab显示名称</param>
-        public void NavigateToSubroutine(string subroutineWorkflowId, string displayName)
+        /// <param name="subroutineIcon">子程序节点的工具图标（Tab 栏设置按钮显示用）</param>
+        public void NavigateToSubroutine(string subroutineWorkflowId, string displayName, string? subroutineIcon = null)
         {
             // 保存当前工作流ID到栈
             _navigationStack.Push(_currentWorkflowId);
@@ -576,6 +592,11 @@ namespace SunEyeVision.UI.Features.WorkflowUI
             // 切换到子程序工作流
             _currentWorkflowId = subroutineWorkflowId;
             _currentWorkflowName = displayName;
+            SubroutineIcon = subroutineIcon;
+
+            VisionLogger.Instance?.Log(LogLevel.Info,
+                $"子程序下钻: workflowId={subroutineWorkflowId}, displayName={displayName}, subroutineIcon={(string.IsNullOrEmpty(subroutineIcon) ? "(空)" : $"'{subroutineIcon}' ({subroutineIcon.Length}字符)")}",
+                "WorkflowTabViewModel");
 
             // 通知UI更新
             OnPropertyChanged(nameof(IsInSubroutine));
@@ -595,6 +616,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI
             _currentWorkflowId = _navigationStack.Pop();
 
             // _currentWorkflowName 由外部在调用 SetCurrentWorkflowName 时设置
+            SubroutineIcon = null;
             OnPropertyChanged(nameof(IsInSubroutine));
             OnPropertyChanged(nameof(EffectiveDisplayName));
             OnPropertyChanged(nameof(CurrentWorkflowId));
@@ -610,6 +632,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI
             _navigationStack.Clear();
             _currentWorkflowId = _id;
             _currentWorkflowName = _name;
+            SubroutineIcon = null;
 
             OnPropertyChanged(nameof(IsInSubroutine));
             OnPropertyChanged(nameof(EffectiveDisplayName));

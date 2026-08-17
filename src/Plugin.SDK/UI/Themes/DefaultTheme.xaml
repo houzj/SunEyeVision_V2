@@ -48,6 +48,8 @@
     <!-- ============ 面板 / 背景 ============ -->
     <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.PanelBackgroundBrush}"
                      Color="{x:Static constants:ColorConstants.Background}"/>
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.PanelHeaderBackgroundBrush}"
+                     Color="{x:Static constants:ColorConstants.BackgroundHover}"/>
     <!-- ============ 控件默认背景（按钮等） ============ -->
     <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.ControlBackgroundBrush}"
                      Color="{x:Static constants:ColorConstants.Background}"/>
@@ -89,5 +91,23 @@
                      Color="{x:Static constants:ColorConstants.Warning}"/>
     <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.ErrorBrush}"
                      Color="{x:Static constants:ColorConstants.Error}"/>
+
+    <!-- ============ SDK 控件补充（批次3） ============ -->
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.SliderTrackBackgroundBrush}"
+                     Color="{x:Static constants:ColorConstants.TrackBackground}"/>
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.ToggleOffBackgroundBrush}"
+                     Color="{x:Static constants:ColorConstants.SwitchOffBackground}"/>
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.SuccessLightBackgroundBrush}"
+                     Color="{x:Static constants:ColorConstants.SuccessLightBackground}"/>
+
+    <!-- ============ 滚动条（标准控件，激活 UI 死 token） ============ -->
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.ScrollBarBackgroundBrush}"
+                     Color="{x:Static constants:ColorConstants.ScrollBarBackground}"/>
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.ScrollBarThumbBrush}"
+                     Color="{x:Static constants:ColorConstants.ScrollBarThumb}"/>
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.ScrollBarThumbHoverBrush}"
+                     Color="{x:Static constants:ColorConstants.ScrollBarThumbHover}"/>
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.ScrollBarThumbPressedBrush}"
+                     Color="{x:Static constants:ColorConstants.ScrollBarThumbPressed}"/>
 
 </ResourceDictionary>

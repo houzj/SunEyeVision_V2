@@ -69,15 +69,15 @@
 
       <!-- Tab2: 模板管理 -->
       <TabItem Header="模板管理">
-        <Grid Background="#FAFAFA">
+        <Grid Background="{DynamicResource ThemePanelBackgroundBrush}">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="140"/>
           </Grid.ColumnDefinitions>
 
           <DockPanel Grid.Column="0">
-            <Border DockPanel.Dock="Top" Background="#F5F5F5" Padding="10,8"
-                    BorderBrush="#EEEEEE" BorderThickness="0,0,0,1">
+            <Border DockPanel.Dock="Top" Background="{DynamicResource ThemePanelBackgroundBrush}" Padding="10,8"
+                    BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="0,0,0,1">
               <StackPanel Orientation="Horizontal">
                 <Button Content="+ 创建" Width="65" Height="28" Margin="0,0,8,0"
                         Click="OnCreateTemplateClick" FontSize="12"/>
@@ -114,7 +114,7 @@
                           <Button Content="▼" Width="24" Height="22" FontSize="9" Padding="0"
                                   Click="OnMoveDownClick" Tag="{Binding}" ToolTip="下移"/>
                           <Button Content="⊗" Width="24" Height="22" FontSize="9" Padding="0"
-                                  Foreground="#D32F2F" Click="OnDeleteTemplateClick" Tag="{Binding}" ToolTip="删除"/>
+                                  Foreground="{DynamicResource ThemeErrorBrush}" Click="OnDeleteTemplateClick" Tag="{Binding}" ToolTip="删除"/>
                         </StackPanel>
                       </DataTemplate>
                     </GridViewColumn.CellTemplate>
@@ -139,16 +139,16 @@
                 <Image x:Name="previewImage" Stretch="Uniform" />
                 <TextBlock x:Name="previewPlaceholder" Text="预览"
                            HorizontalAlignment="Center" VerticalAlignment="Center"
-                           Foreground="#888" FontSize="11"/>
+                           Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11"/>
               </Grid>
             </Border>
 
             <StackPanel Grid.Row="1" Margin="0,4,0,0">
-              <TextBlock x:Name="rightStatusText" FontSize="10" Foreground="#888" TextWrapping="Wrap"
+              <TextBlock x:Name="rightStatusText" FontSize="10" Foreground="{DynamicResource ThemeTextSecondaryBrush}" TextWrapping="Wrap"
                          Text="--"/>
-              <TextBlock x:Name="rightPointCountText" FontSize="10" Foreground="#888" Margin="0,1,0,0"
+              <TextBlock x:Name="rightPointCountText" FontSize="10" Foreground="{DynamicResource ThemeTextSecondaryBrush}" Margin="0,1,0,0"
                          Text="--"/>
-              <TextBlock x:Name="rightSizeText" FontSize="10" Foreground="#888" Margin="0,1,0,0"
+              <TextBlock x:Name="rightSizeText" FontSize="10" Foreground="{DynamicResource ThemeTextSecondaryBrush}" Margin="0,1,0,0"
                          Text="--"/>
             </StackPanel>
 
@@ -157,7 +157,7 @@
                     Click="OnEditTemplateClick"/>
 
             <Button Grid.Row="3" x:Name="btnDeleteAllTemplates" Content="删除所有" Width="90" Height="24"
-                    HorizontalAlignment="Left" Foreground="#D32F2F" FontSize="10"
+                    HorizontalAlignment="Left" Foreground="{DynamicResource ThemeErrorBrush}" FontSize="10"
                     Click="OnDeleteAllTemplatesClick"/>
 
             <Border Grid.Row="4"/>
@@ -276,8 +276,8 @@
 
             <!-- 高级设置 -->
             <Expander Header="高级设置" IsExpanded="False"
-                      BorderBrush="#E0E0E0" BorderThickness="1"
-                      Margin="0,8,0,0" Background="White">
+                      BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1"
+                      Margin="0,8,0,0" Background="{DynamicResource ThemePanelBackgroundBrush}">
               <StackPanel Margin="16,8">
                 <!-- 结果过滤 -->
                 <GroupBox Header="结果过滤" Margin="0,0,0,8">
@@ -434,7 +434,7 @@
 
       <!-- Tab4: 结果显示 -->
       <TabItem Header="结果显示">
-        <Grid Background="#F5F5F5">
+        <Grid Background="{DynamicResource ThemePanelBackgroundBrush}">
           <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
           </Grid.RowDefinitions>
@@ -444,10 +444,10 @@
               <!-- 结果判断 -->
               <Expander Header="结果判断"
                                       IsExpanded="True"
-                                      BorderBrush="#E0E0E0"
+                                      BorderBrush="{DynamicResource ThemeBorderBrush}"
                                       BorderThickness="1"
                                       Margin="0,0,0,8"
-                                      Background="White">
+                                      Background="{DynamicResource ThemePanelBackgroundBrush}">
                 <StackPanel Margin="16,8">
                   <controls:LabeledControl Label="匹配数量判断" ContentHorizontalAlignment="Left">
                     <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsMatchCountCheckEnabled, Mode=TwoWay}"/>
@@ -483,10 +483,10 @@
               <!-- 图形显示 -->
               <Expander Header="图形显示"
                                       IsExpanded="True"
-                                      BorderBrush="#E0E0E0"
+                                      BorderBrush="{DynamicResource ThemeBorderBrush}"
                                       BorderThickness="1"
                                       Margin="0,0,0,8"
-                                      Background="White">
+                                      Background="{DynamicResource ThemePanelBackgroundBrush}">
                 <StackPanel Margin="16,8">
                   <controls:LabeledControl Label="匹配框" ContentHorizontalAlignment="Left">
                     <controls:DispItemColorControl Item="{Binding ResultConfig.MatchBoxStyle, Mode=TwoWay}" ContentHorizontalAlignment="Left"/>
@@ -507,10 +507,10 @@
               <!-- 文本显示 -->
               <Expander Header="文本显示"
                                       IsExpanded="True"
-                                      BorderBrush="#E0E0E0"
+                                      BorderBrush="{DynamicResource ThemeBorderBrush}"
                                       BorderThickness="1"
                                       Margin="0,0,0,8"
-                                      Background="White">
+                                      Background="{DynamicResource ThemePanelBackgroundBrush}">
                 <StackPanel Margin="16,8">
                   <controls:LabeledControl Label="匹配标注" ContentHorizontalAlignment="Left">
                     <controls:DispTextColorControl

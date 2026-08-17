@@ -58,7 +58,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 nameof(IsBound),
                 typeof(bool),
                 typeof(ParamBinding),
-                new FrameworkPropertyMetadata(false, OnIsBoundChanged));
+                new FrameworkPropertyMetadata(false));
 
         public static readonly DependencyProperty BindingDisplayTextProperty =
             DependencyProperty.Register(
@@ -89,13 +89,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 typeof(System.Collections.ObjectModel.ObservableCollection<TreeNodeData>),
                 typeof(ParamBinding),
                 new PropertyMetadata(null));
-
-        public static readonly DependencyProperty IconSymbolProperty =
-            DependencyProperty.Register(
-                nameof(IconSymbol),
-                typeof(string),
-                typeof(ParamBinding),
-                new PropertyMetadata("🔗"));
 
         public static readonly DependencyProperty CornerRadiusProperty =
             DependencyProperty.Register(
@@ -189,15 +182,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         {
             get => (System.Collections.ObjectModel.ObservableCollection<TreeNodeData>?)GetValue(TreeNodesProperty);
             set => SetValue(TreeNodesProperty, value);
-        }
-
-        /// <summary>
-        /// 图标符号
-        /// </summary>
-        public string IconSymbol
-        {
-            get => (string)GetValue(IconSymbolProperty);
-            set => SetValue(IconSymbolProperty, value);
         }
 
         /// <summary>
@@ -310,17 +294,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         public ParamBinding()
         {
             TreeNodes = new System.Collections.ObjectModel.ObservableCollection<TreeNodeData>();
-            IconSymbol = "🔗"; // 固定图标，不随绑定状态切换
         }
 
         #endregion
 
         #region 回调方法
-
-        private static void OnIsBoundChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            // 图标固定为 🔗，不随绑定状态切换
-        }
 
         private static void OnAvailableDataSourcesChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {

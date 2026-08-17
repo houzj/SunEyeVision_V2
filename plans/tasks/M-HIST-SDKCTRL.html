@@ -1,0 +1,299 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M-HIST-SDKCTRL SDK 层控件开发（已完成） · 开发管理</title>
+<style>
+:root { --font: "Microsoft YaHei", "Segoe UI", sans-serif; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px; }
+.container { max-width:980px; margin:0 auto; }
+.back { display:inline-block; margin-bottom:14px; font-size:13px; color:#185FA5; text-decoration:none; }
+.back:hover { text-decoration:underline; }
+.header { background:#fff; border-radius:14px; padding:22px 26px; margin-bottom:18px; border:1px solid #e8eaed; border-top:4px solid #185FA5; }
+.header .id-line { display:flex; align-items:center; gap:10px; margin-bottom:6px; flex-wrap:wrap; }
+.mod-id { font-family:Consolas,monospace; font-size:13px; color:#888; }
+.type-tag { font-size:12px; padding:2px 10px; border-radius:10px; border:1px solid #185FA5; color:#185FA5; }
+.header h1 { font-size:20px; font-weight:600; margin-bottom:6px; }
+.meta-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:10px; margin-top:12px; }
+.meta-item { background:#f7f8fa; border-radius:8px; padding:8px 12px; }
+.meta-item .k { font-size:11px; color:#999; }
+.meta-item .v { font-size:13px; font-weight:500; margin-top:2px; }
+.card { background:#fff; border-radius:14px; padding:20px 24px; margin-bottom:18px; border:1px solid #e8eaed; }
+.card h2 { font-size:15px; font-weight:600; margin-bottom:12px; color:#333; }
+.goal-box { background:#f0f7ff; border:1px solid #cfe4f7; border-radius:10px; padding:12px 16px; font-size:13px; color:#185FA5; margin-bottom:14px; line-height:1.6; }
+.progress-bar { height:10px; background:#eef0f2; border-radius:6px; overflow:hidden; }
+.progress-fill { height:100%; background:#185FA5; border-radius:6px; }
+.progress-wrap { display:flex; align-items:center; gap:10px; }
+.progress-wrap .pct { font-size:16px; font-weight:700; color:#185FA5; }
+.status { display:inline-block; font-size:11px; padding:2px 8px; border-radius:10px; white-space:nowrap; }
+.st-todo { background:#f1efea; color:#888; }
+.st-progress { background:#e6f1fb; color:#185FA5; }
+.st-done { background:#e1f5ee; color:#0F6E56; }
+.st-blocked { background:#fcebeb; color:#A32D2D; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th { text-align:left; font-size:12px; color:#888; font-weight:500; padding:8px 10px; border-bottom:2px solid #eef0f2; }
+td { padding:9px 10px; border-bottom:1px solid #f0f1f3; vertical-align:middle; }
+tr:hover td { background:#f8fafc; }
+.td-id { font-family:Consolas,monospace; font-size:12px; color:#888; white-space:nowrap; }
+.td-name { font-weight:500; }
+.phase { font-size:11px; padding:2px 8px; border-radius:4px; white-space:nowrap; }
+.ph-algo { background:#e6f1fb; color:#185FA5; }
+.ph-ui { background:#faeeda; color:#854F0B; }
+.ph-test { background:#e1f5ee; color:#0F6E56; }
+.acc-list { padding-left:20px; font-size:13px; line-height:2; }
+.muted { color:#aaa; font-size:13px; }
+.doc-list { padding-left:20px; font-size:13px; line-height:2; }
+.doc-list a { color:#185FA5; text-decoration:none; }
+.doc-list a:hover { text-decoration:underline; }
+.log-item { display:flex; gap:14px; padding:8px 0; border-bottom:1px solid #f0f1f3; font-size:13px; }
+.log-item:last-child { border-bottom:none; }
+.log-date { font-family:Consolas,monospace; font-size:12px; color:#888; white-space:nowrap; flex-shrink:0; }
+.log-note { color:#444; line-height:1.6; }
+.git-log { display:flex; flex-direction:column; max-height:420px; overflow-y:auto; border:1px solid #e8eaed; border-radius:8px; }
+.git-log-item { display:flex; gap:10px; padding:6px 10px; border-bottom:1px solid #f0f1f3; font-size:12px; align-items:baseline; }
+.git-log-item:last-child { border-bottom:none; }
+.git-log-item:hover { background:#f7f9fc; }
+.git-hash { font-family:Consolas,monospace; color:#185FA5; width:60px; flex-shrink:0; }
+.git-date { font-family:Consolas,monospace; color:#888; width:80px; flex-shrink:0; }
+.git-msg { color:#333; line-height:1.5; }
+.wk-total { font-size:13px; color:#185FA5; font-weight:500; margin-bottom:8px; }
+.wk-chips { display:flex; flex-wrap:wrap; gap:6px; }
+.wk-chip { font-size:11px; font-family:Consolas,monospace; background:#eef4fb; color:#185FA5; border-radius:8px; padding:2px 8px; }
+.wk-cell { font-size:11px; font-family:Consolas,monospace; background:#eef4fb; color:#185FA5; border-radius:6px; padding:2px 6px; white-space:nowrap; }
+.pw-list { display:flex; flex-direction:column; gap:6px; }
+.pw-row { display:flex; align-items:flex-start; gap:12px; padding:8px 0; border-bottom:1px solid #f0f1f3; }
+.pw-row:last-child { border-bottom:none; }
+.pw-label { width:100px; font-family:Consolas,monospace; font-size:12px; color:#444; font-weight:500; flex-shrink:0; padding-top:3px; }
+.pw-tasks { flex:1; display:flex; flex-wrap:wrap; gap:6px; }
+.pw-hours { font-size:12px; font-weight:600; color:#185FA5; white-space:nowrap; padding-top:3px; }
+.footer { text-align:center; font-size:12px; color:#aaa; padding:16px 0 8px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <a class="back" href="../plan.html">&larr; 返回主控看板</a>
+
+  <div class="header">
+    <div class="id-line">
+      <span class="mod-id">M-HIST-SDKCTRL</span>
+      <span class="type-tag">源码层 · 功能模块</span>
+      <span class="status st-done">已完成</span>
+    </div>
+    <h1>SDK 层控件开发（已完成）</h1>
+    <div class="goal-box"><strong>目标：</strong>SDK 可复用 UI 控件体系：Roi 编辑器 / ParamBinding 绑定控件 / 基础控件库（已交付 86 文件 27,695 行）</div>
+    <div class="progress-wrap">
+      <span class="pct">100%</span>
+      <div class="progress-bar" style="flex:1"><div class="progress-fill" style="width:100%"></div></div>
+    </div>
+    <div class="meta-grid">
+      <div class="meta-item"><div class="k">所属阶段</div><div class="v">历史开发（已完成，2026-01~07）</div></div>
+      <div class="meta-item"><div class="k">计划周期</div><div class="v">2026-02-15 ~ 2026-08-15</div></div>
+      <div class="meta-item"><div class="k">开发子任务</div><div class="v">5/@(    ).Count 完成</div></div>
+      <div class="meta-item"><div class="k">总工时</div><div class="v">175h</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>验收标准（Acceptance）</h2>
+    <ul class='acc-list'><li>Roi 编辑器控件家族（12,822 行：形状绘制/编辑/序列化/显示）</li><li>ParamBinding 绑定控件（1,370 行：常量/绑定双模式/索引支持）</li><li>基础控件库：ImageControl/ColorPicker/NumericUpDown/ToggleSwitch/RangeSlider 等</li><li>ToolDebugControlBase + 数据分析控件接口（IToolControlDataAnalysis）</li><li>SDK 主题资源 + 预览页（AllControlsPreview）</li></ul>
+  </div>
+
+  <div class="card">
+    <h2>开发子任务</h2>
+    <table>
+      <thead><tr><th>ID</th><th>任务</th><th>维度</th><th>工时</th><th>周排期</th><th>状态</th></tr></thead>
+      <tbody>            <tr>
+              <td class="td-id">SDKCTRL-1</td>
+              <td class="td-name">Roi 编辑器控件家族（绘制/编辑/工具栏/序列化/显示，12,822 行）</td>
+              <td><span class="phase ph-ui">UI 交互</span></td>
+              <td>80h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">SDKCTRL-2</td>
+              <td class="td-name">ParamBinding/ParamComboBox/ParamTextBox 绑定控件（1,370 行）</td>
+              <td><span class="phase ph-ui">UI 交互</span></td>
+              <td>30h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">SDKCTRL-3</td>
+              <td class="td-name">基础控件库（ImageControl/ColorPicker/NumericUpDown/ToggleSwitch/RangeSlider/LabeledControl）</td>
+              <td><span class="phase ph-ui">UI 交互</span></td>
+              <td>30h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">SDKCTRL-4</td>
+              <td class="td-name">ToolDebugControlBase + IToolControlDataAnalysis 数据分析接口</td>
+              <td><span class="phase ph-ui">UI 交互</span></td>
+              <td>20h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">SDKCTRL-5</td>
+              <td class="td-name">SDK 主题资源（SdkThemeKeys/Generic.xaml/DefaultTheme）+ AllControlsPreview</td>
+              <td><span class="phase ph-ui">UI 交互</span></td>
+              <td>15h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr></tbody>
+    </table>
+  </div>
+
+  
+
+  <div class="card">
+    <h2>关联文档</h2>
+    <p class='muted'>暂无关联文档</p>
+  </div>
+
+  <div class="card">
+    <h2>开发日志（git 提交追溯，真实开发用时）</h2>
+                <div class='git-log'>
+              <div class='git-log-item'>
+                <span class='git-hash'>f690464</span>
+                <span class='git-date'>2026-06-25</span>
+                <span class='git-msg'>feat(Script): 引入 IMonitorable 监视协议 + NumericTypes 单一来源 + 变量 Tab 全面升级</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>a6316d8</span>
+                <span class='git-date'>2026-05-18</span>
+                <span class='git-msg'>﻿优化了统一显示模式下 大数据量显示的显示性能</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>e0038f8</span>
+                <span class='git-date'>2026-05-08</span>
+                <span class='git-msg'>﻿1.修复了结果显示层多边形  不封闭显示的bug</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>63ac86a</span>
+                <span class='git-date'>2026-05-06</span>
+                <span class='git-msg'>﻿优化图像显示控件 图像选择器 combobox的样式</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>5adba0b</span>
+                <span class='git-date'>2026-05-02</span>
+                <span class='git-msg'>﻿添加多变形区域编辑功能，右键删除还有点bug，先提交，便于回退</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>77510b7</span>
+                <span class='git-date'>2026-05-02</span>
+                <span class='git-msg'>﻿1.修复了ParamBindingBase.cs中ParamBindingBase.GetValue()方法的bug 2.基类静态回调改为派发到 protected virtual 实例方法，子类通过覆写来响应 DataType 变化。</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>c071ec0</span>
+                <span class='git-date'>2026-04-22</span>
+                <span class='git-msg'>﻿基于 幂律公式：screenSize = 10 / zoom^0.15，Clamp [8, 12] px 优化了手柄的尺寸和区域名称的尺寸</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>5393a52</span>
+                <span class='git-date'>2026-04-22</span>
+                <span class='git-msg'>﻿线宽和手柄保持缩放下屏幕尺寸一致</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>a033570</span>
+                <span class='git-date'>2026-04-20</span>
+                <span class='git-msg'>﻿基于数据绑定的UI和实际的绑定路径 都对索引进行了支持</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>bcfe2cf</span>
+                <span class='git-date'>2026-04-20</span>
+                <span class='git-msg'>﻿1.重构了绑定控件的下拉数据的生成逻辑，之前通过拆解Fullname表达式的方式来生成， 现在通过属性映射来管理，这样可以避免Fullname表达式解析的性能问题， 同时也避免了Fullname表达式解析的复杂性。</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>8cb0e82</span>
+                <span class='git-date'>2026-04-15</span>
+                <span class='git-msg'>﻿优化了区域编辑器的事件及渲染器的生命周期管理，取消了对于视觉树对于事件的影响</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>96850b2</span>
+                <span class='git-date'>2026-04-13</span>
+                <span class='git-msg'>﻿删除了区域编辑器无用的UI 但是参数绑定内的控件可见性还需要优化</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>e03b338</span>
+                <span class='git-date'>2026-04-13</span>
+                <span class='git-msg'>﻿重构数据缓存的设计，现在的方式是通过反射结果的属性，根据属性的类型自动 生成对应类型的缓存池，确保和业务逻辑解耦。</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>86c0e14</span>
+                <span class='git-date'>2026-04-12</span>
+                <span class='git-msg'>﻿完成了参数设置控件的重构，把数据绑定解构到ParamBindingBase中</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>e7f3c2c</span>
+                <span class='git-date'>2026-04-12</span>
+                <span class='git-msg'>﻿绑定控件重名为ConfigSetting，新建ParamBinding的UI 下一步迁移绑定功能</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>d28f873</span>
+                <span class='git-date'>2026-04-08</span>
+                <span class='git-msg'>﻿后面要开始agent的team模式开发，先提交代码，便于回退</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>38fe6b2</span>
+                <span class='git-date'>2026-04-07</span>
+                <span class='git-msg'>﻿颜色选择器的行为正确性 先优化到这里</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>dc8c65d</span>
+                <span class='git-date'>2026-04-07</span>
+                <span class='git-msg'>﻿ColorPicker的样式先优化到这里，后面开始修复行为Bug</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>f5503c7</span>
+                <span class='git-date'>2026-04-07</span>
+                <span class='git-msg'>﻿补充上一次的提交</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>ff5a00c</span>
+                <span class='git-date'>2026-04-07</span>
+                <span class='git-msg'>﻿优化了numric控件的范围输入的样式 优化了colorpicker的样式  还需要进一步优化及修复行为bug</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>69388e9</span>
+                <span class='git-date'>2026-04-03</span>
+                <span class='git-msg'>﻿完善了工具层SDK控件的事件和命令，在工具层通过声明来绑定即可，不需要在后台代码中手动处理 目前的主要问题是当前的框架设计，导致在工具层UI无法直接预览，对工具开发者对于 UI的开发很不友好，下一步准备重新设计，提交代码，便于回退</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>ad91f0a</span>
+                <span class='git-date'>2026-04-02</span>
+                <span class='git-msg'>﻿部分未提交  完整提交</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>3268468</span>
+                <span class='git-date'>2026-04-01</span>
+                <span class='git-msg'>﻿1.新增RangeInputControl控件 2.新增RangeSlider控件 3.新增ToggleSwitch控件 4.新增ThresholdDisplayConfig类 5.新增ThresholdResultConfig类 6.新增ThresholdParameters类 7.新增ThresholdToolDebugWindow类</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>863e886</span>
+                <span class='git-date'>2026-03-10</span>
+                <span class='git-msg'>﻿修复鼠标事件的重复订阅问题</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>476cb7f</span>
+                <span class='git-date'>2026-03-08</span>
+                <span class='git-msg'>修复编译错误：PluginLogger是静态类，使用PluginLogger.Logger获取实例</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>2955a9a</span>
+                <span class='git-date'>2026-03-05</span>
+                <span class='git-msg'>﻿1.优化了图像预览器切换延迟较大的问题 2.解决了全屏再退出全屏后显示不更新的问题 3.现在切换还是有延时 感觉和日志系统的设计有关系 4.下一步重构日志系统 再测试看看</span>
+              </div>
+            </div>
+            
+
+  </div>
+
+  <div class="card">
+    <h2>真实开发周分布（git 提交追溯）</h2>
+    <p class='muted'>无周追溯数据（模块未匹配到提交）</p>
+  </div>
+
+  <div class="footer">由 generate_plan.ps1 v3.0 自动生成 · 子页面 · SunEyeVision</div>
+</div>
+</body>
+</html>

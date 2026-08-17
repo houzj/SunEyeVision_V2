@@ -176,18 +176,91 @@ namespace SunEyeVision.Plugin.SDK.UI.Constants
         public static readonly SolidColorBrush TrackBackgroundBrush = CreateFrozenBrush(TrackBackground);
 
         /// <summary>
-        /// 深色主题控件背景 - 深灰色（深色主题）
-        /// </summary>
-        public const string DarkThemeControlBackgroundHex = "#555555";
-        public static readonly Color DarkThemeControlBackground = Color.FromRgb(85, 85, 85);
-        public static readonly SolidColorBrush DarkThemeControlBackgroundBrush = CreateFrozenBrush(DarkThemeControlBackground);
-
-        /// <summary>
         /// 橙色 - 开关开启状态
         /// </summary>
         public const string SwitchOnBackgroundHex = "#FF7F00";
         public static readonly Color SwitchOnBackground = Color.FromRgb(255, 127, 0);
         public static readonly SolidColorBrush SwitchOnBackgroundBrush = CreateFrozenBrush(SwitchOnBackground);
+
+        /// <summary>
+        /// 开关关闭状态背景（浅色基准 #D9D9D9）
+        /// </summary>
+        public const string SwitchOffBackgroundHex = "#D9D9D9";
+        public static readonly Color SwitchOffBackground = Color.FromRgb(217, 217, 217);
+        public static readonly SolidColorBrush SwitchOffBackgroundBrush = CreateFrozenBrush(SwitchOffBackground);
+
+        /// <summary>
+        /// 滚动条轨道背景（浅色基准 #F0F0F0，对齐 UI Light ScrollBarBackground）
+        /// </summary>
+        public const string ScrollBarBackgroundHex = "#F0F0F0";
+        public static readonly Color ScrollBarBackground = Color.FromRgb(240, 240, 240);
+        public static readonly SolidColorBrush ScrollBarBackgroundBrush = CreateFrozenBrush(ScrollBarBackground);
+
+        /// <summary>
+        /// 滚动条滑块默认态（浅色基准 #808080，对齐 UI Light ScrollBarThumb）
+        /// </summary>
+        public const string ScrollBarThumbHex = "#808080";
+        public static readonly Color ScrollBarThumb = Color.FromRgb(128, 128, 128);
+        public static readonly SolidColorBrush ScrollBarThumbBrush = CreateFrozenBrush(ScrollBarThumb);
+
+        /// <summary>
+        /// 滚动条滑块悬停态（浅色基准 #606060，对齐 UI Light ScrollBarThumbHover）
+        /// </summary>
+        public const string ScrollBarThumbHoverHex = "#606060";
+        public static readonly Color ScrollBarThumbHover = Color.FromRgb(96, 96, 96);
+        public static readonly SolidColorBrush ScrollBarThumbHoverBrush = CreateFrozenBrush(ScrollBarThumbHover);
+
+        /// <summary>
+        /// 滚动条滑块按下态（浅色基准 #404040，对齐 UI Light ScrollBarThumbPressed）
+        /// </summary>
+        public const string ScrollBarThumbPressedHex = "#404040";
+        public static readonly Color ScrollBarThumbPressed = Color.FromRgb(64, 64, 64);
+        public static readonly SolidColorBrush ScrollBarThumbPressedBrush = CreateFrozenBrush(ScrollBarThumbPressed);
+
+        /// <summary>
+        /// 成功状态浅底色（类型匹配标签，浅色基准 #E8F5E9）
+        /// </summary>
+        public const string SuccessLightBackgroundHex = "#E8F5E9";
+        public static readonly Color SuccessLightBackground = Color.FromRgb(232, 245, 233);
+        public static readonly SolidColorBrush SuccessLightBackgroundBrush = CreateFrozenBrush(SuccessLightBackground);
+
+        #endregion
+
+        #region ROI 渲染内容色（固定语义色，叠加在图像上，不随主题切换）
+
+        /// <summary>
+        /// 检测区域（Inspection）边界色 - 蓝色 #4488FF
+        /// 叠加在图像上保证与图像内容对比度，固定不随主题切换。
+        /// </summary>
+        public const string InspectionBlueHex = "#4488FF";
+        public static readonly Color InspectionBlue = Color.FromRgb(68, 136, 255);
+        public static readonly SolidColorBrush InspectionBlueBrush = CreateFrozenBrush(InspectionBlue);
+
+        /// <summary>
+        /// 屏蔽区域（Mask）边界色 - 橙色 #FFA500
+        /// 叠加在图像上保证与图像内容对比度，固定不随主题切换。
+        /// </summary>
+        public const string MaskOrangeHex = "#FFA500";
+        public static readonly Color MaskOrange = Color.FromRgb(255, 165, 0);
+        public static readonly SolidColorBrush MaskOrangeBrush = CreateFrozenBrush(MaskOrange);
+
+        /// <summary>
+        /// 检测区域（Inspection）半透明填充 - 蓝 (A=30, R=0, G=120, B=215)
+        /// 与 strokeColor #4488FF 配套的浅蓝填充。
+        /// </summary>
+        public static readonly Color InspectionFill = Color.FromArgb(30, 0, 120, 215);
+
+        /// <summary>
+        /// 屏蔽区域（Mask）半透明填充 - 橙 (A=30, R=255, G=165, B=0)
+        /// 与 strokeColor #FFA500 配套的浅橙填充。
+        /// </summary>
+        public static readonly Color MaskFill = Color.FromArgb(30, 255, 165, 0);
+
+        /// <summary>
+        /// 区域名称标签背景 - 半透明黑 (A=180, R=0, G=0, B=0)
+        /// 叠加在图像上，保证白色文字可读。
+        /// </summary>
+        public static readonly Color LabelBackground = Color.FromArgb(180, 0, 0, 0);
 
         #endregion
 

@@ -5,6 +5,7 @@
              xmlns:models="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models"
              xmlns:converters="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Roi.Converters"
              xmlns:uiConverters="clr-namespace:SunEyeVision.Plugin.SDK.UI.Converters"
+             xmlns:themes="clr-namespace:SunEyeVision.Plugin.SDK.UI.Themes"
              Width="280">
     <!--
     方案2：修复绑定路径
@@ -16,6 +17,10 @@
         <converters:ShapeTypeToVisibilityConverter x:Key="ShapeTypeToVisibilityConverter"/>
         <uiConverters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
         <uiConverters:UIntToBrushConverter x:Key="UIntToBrushConverter"/>
+        <Style TargetType="GroupBox">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"/>
+        </Style>
     </UserControl.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
@@ -23,7 +28,7 @@
             <!-- 无选中项提示 -->
             <TextBlock Text="未选中任何区域"
                        FontStyle="Italic"
-                       Foreground="Gray"
+                       Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}"
                        HorizontalAlignment="Center"
                        Margin="0,20,0,0"
                        Visibility="{Binding HasSelection, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>

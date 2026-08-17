@@ -9,8 +9,8 @@
              xmlns:views="clr-namespace:SunEyeVision.Tool.Script.Views"
              mc:Ignorable="d"
              d:DesignHeight="700" d:DesignWidth="1200"
-             Background="#FFF5F5F5"
-             Foreground="#FF333333">
+             Background="{DynamicResource ThemePanelBackgroundBrush}"
+             Foreground="{DynamicResource ThemeTextPrimaryBrush}">
 
     <Grid Margin="4">
         <Grid.RowDefinitions>
@@ -19,28 +19,28 @@
         </Grid.RowDefinitions>
 
         <!-- ===== 工具栏 ===== -->
-        <ToolBar Grid.Row="0" Background="#FFF0F0F0" BorderBrush="#FFE0E0E0" Height="32">
+        <ToolBar Grid.Row="0" Background="{DynamicResource ThemeToolBarBackgroundBrush}" BorderBrush="{DynamicResource ThemeBorderBrush}" Height="32">
             <!-- 执行由基窗口 DefaultDebugWindow 底部的统一按钮提供 -->
             <Button x:Name="ClearResultButton" Content="清空结果" Click="ClearResultButton_Click"
-                    Background="#FFF0F0F0" Foreground="#FF333333" BorderThickness="0"
+                    Background="{DynamicResource ThemeToolBarBackgroundBrush}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" BorderThickness="0"
                     Padding="8,3" Margin="2,0" FontSize="12" />
             <Separator />
             <Button x:Name="DemoCodeButton" Content="Demo示例"
                     Click="DemoCodeButton_Click"
-                    Background="#FFF0F0F0" Foreground="#FF333333" BorderThickness="0"
+                    Background="{DynamicResource ThemeToolBarBackgroundBrush}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" BorderThickness="0"
                     Padding="8,3" Margin="2,0" FontSize="12" />
             <Button x:Name="ResetCodeButton" Content="复位最简"
                     Click="ResetCodeButton_Click"
-                    Background="#FFF0F0F0" Foreground="#FF333333" BorderThickness="0"
+                    Background="{DynamicResource ThemeToolBarBackgroundBrush}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" BorderThickness="0"
                     Padding="8,3" Margin="2,0" FontSize="12" />
             <Separator />
             <Button x:Name="AssemblyRefButton" Content="引用程序集"
                     Click="AssemblyRefButton_Click"
-                    Background="#FFF0F0F0" Foreground="#FF333333" BorderThickness="0"
+                    Background="{DynamicResource ThemeToolBarBackgroundBrush}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" BorderThickness="0"
                     Padding="8,3" Margin="2,0" FontSize="12" />
             <Separator />
-            <Label Content="状态:" Foreground="#FF666666" FontSize="12" VerticalAlignment="Center" Padding="4,0" />
-            <Label x:Name="StatusLabel" Content="就绪" Foreground="#FF107C10" FontSize="12"
+            <Label Content="状态:" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="12" VerticalAlignment="Center" Padding="4,0" />
+            <Label x:Name="StatusLabel" Content="就绪" Foreground="{DynamicResource ThemeSuccessBrush}" FontSize="12"
                    VerticalAlignment="Center" Padding="4,0" FontWeight="Bold" />
         </ToolBar>
 
@@ -56,13 +56,13 @@
             <Grid.Resources>
                 <ResourceDictionary>
                     <Style TargetType="TabPanel">
-                        <Setter Property="Background" Value="#FFF0F0F0" />
+                        <Setter Property="Background" Value="{DynamicResource ThemeToolBarBackgroundBrush}" />
                     </Style>
 
                     <Style TargetType="TabItem">
-                        <Setter Property="Background" Value="#FFF0F0F0" />
-                        <Setter Property="Foreground" Value="#FF555555" />
-                        <Setter Property="BorderBrush" Value="#FFD0D0D0" />
+                        <Setter Property="Background" Value="{DynamicResource ThemeToolBarBackgroundBrush}" />
+                        <Setter Property="Foreground" Value="{DynamicResource ThemeTextSecondaryBrush}" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderBrush}" />
                         <Setter Property="BorderThickness" Value="0" />
                         <Setter Property="Padding" Value="8,4" />
                         <Setter Property="FontSize" Value="12" />
@@ -81,11 +81,11 @@
                                     </Border>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsSelected" Value="True">
-                                            <Setter TargetName="Border" Property="Background" Value="#FFFFFFFF" />
-                                            <Setter Property="Foreground" Value="#FF000000" />
+                                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource ThemePanelBackgroundBrush}" />
+                                            <Setter Property="Foreground" Value="{DynamicResource ThemeTextPrimaryBrush}" />
                                         </Trigger>
                                         <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="Border" Property="Background" Value="#FFE8E8E8" />
+                                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource ThemeControlHoverBackgroundBrush}" />
                                         </Trigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
@@ -95,39 +95,39 @@
 
                     <!-- DataGrid 浅色样式 -->
                     <Style TargetType="DataGridColumnHeader">
-                        <Setter Property="Background" Value="#FFF0F0F0" />
-                        <Setter Property="Foreground" Value="#FF000000" />
-                        <Setter Property="BorderBrush" Value="#FFD0D0D0" />
+                        <Setter Property="Background" Value="{DynamicResource ThemeTableHeaderBackgroundBrush}" />
+                        <Setter Property="Foreground" Value="{DynamicResource ThemeTableHeaderTextBrush}" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource ThemeTableGridLineBrush}" />
                         <Setter Property="BorderThickness" Value="0,0,0,1" />
                         <Setter Property="Padding" Value="4,2" />
                     </Style>
 
                     <Style TargetType="DataGridRow">
-                        <Setter Property="Background" Value="#FFFAFAFA" />
-                        <Setter Property="Foreground" Value="#FF000000" />
-                        <Setter Property="BorderBrush" Value="#FFE8E8E8" />
+                        <Setter Property="Background" Value="{DynamicResource ThemeTableRowBackgroundBrush}" />
+                        <Setter Property="Foreground" Value="{DynamicResource ThemeTextPrimaryBrush}" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource ThemeTableGridLineBrush}" />
                         <Setter Property="BorderThickness" Value="0,0,0,1" />
                         <Style.Triggers>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter Property="Background" Value="#FF007ACC" />
-                                <Setter Property="Foreground" Value="White" />
+                                <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush}" />
+                                <Setter Property="Foreground" Value="{DynamicResource ThemeTextOnDarkBrush}" />
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#FFF5F5F5" />
+                                <Setter Property="Background" Value="{DynamicResource ThemeTableRowHoverBackgroundBrush}" />
                             </Trigger>
                         </Style.Triggers>
                     </Style>
 
                     <Style TargetType="DataGridCell">
                         <Setter Property="Background" Value="Transparent" />
-                        <Setter Property="Foreground" Value="#FF000000" />
-                        <Setter Property="BorderBrush" Value="#FFE8E8E8" />
+                        <Setter Property="Foreground" Value="{DynamicResource ThemeTextPrimaryBrush}" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource ThemeTableGridLineBrush}" />
                         <Setter Property="BorderThickness" Value="0" />
                         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
                         <Style.Triggers>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter Property="Background" Value="#FF007ACC" />
-                                <Setter Property="Foreground" Value="White" />
+                                <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush}" />
+                                <Setter Property="Foreground" Value="{DynamicResource ThemeTextOnDarkBrush}" />
                             </Trigger>
                         </Style.Triggers>
                     </Style>
@@ -135,7 +135,7 @@
             </Grid.Resources>
 
             <!-- ===== 左侧面板：输入/输出/显示 Tab（无外层嵌套）===== -->
-            <TabControl Grid.Column="0" Background="#FFFAFAFA" BorderThickness="0"
+            <TabControl Grid.Column="0" Background="{DynamicResource ThemePanelBackgroundBrush}" BorderThickness="0"
                        Padding="0" Margin="0">
                 <TabItem Header="输入设置" FontSize="12" Padding="8,4">
                     <views:ScriptVariableTab x:Name="InputTabControl" />
@@ -145,15 +145,15 @@
                 </TabItem>
                 <TabItem Header="显示设置" FontSize="12" Padding="8,4">
                     <TextBlock Text="显示设置（占位）" Margin="12,20"
-                               Foreground="#FF888888"/>
+                               Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
                 </TabItem>
             </TabControl>
 
-            <GridSplitter Grid.Column="1" Width="5" Background="#FFD0D0D0"
+            <GridSplitter Grid.Column="1" Width="5" Background="{DynamicResource ThemeBorderBrush}"
                           HorizontalAlignment="Stretch" />
 
             <!-- ===== 右侧面板：代码编辑器 + 下方日志 ===== -->
-            <Grid Grid.Column="2" Background="#FFFFFFFF">
+            <Grid Grid.Column="2" Background="{DynamicResource ThemePanelBackgroundBrush}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
@@ -161,53 +161,53 @@
                     <RowDefinition Height="200" MinHeight="80" />
                 </Grid.RowDefinitions>
 
-                <Border Grid.Row="0" Background="#FFF8F8F8" Padding="6,4">
+                <Border Grid.Row="0" Background="{DynamicResource ThemePanelBackgroundBrush}" Padding="6,4">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="脚本代码 (C#)" Foreground="#FF0066CC" FontSize="13" FontWeight="Bold" />
+                        <TextBlock Grid.Column="0" Text="脚本代码 (C#)" Foreground="{DynamicResource ThemeAccentBrush}" FontSize="13" FontWeight="Bold" />
                         <Label x:Name="CodeInfoLabel" Grid.Column="1"
-                               Content="就绪" Foreground="#FF666666" FontSize="11"
+                               Content="就绪" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11"
                                VerticalAlignment="Center" Padding="4,0" />
                     </Grid>
                 </Border>
 
                 <avalonedit:TextEditor Grid.Row="1" x:Name="CodeEditor"
                                         FontFamily="Consolas" FontSize="12"
-                                        Background="#FFFFFFFF"
-                                        Foreground="#FF000000"
-                                        LineNumbersForeground="#FF888888"
+                                        Background="{DynamicResource ThemePanelBackgroundBrush}"
+                                        Foreground="{DynamicResource ThemeTextPrimaryBrush}"
+                                        LineNumbersForeground="{DynamicResource ThemeTextSecondaryBrush}"
                                         WordWrap="False"
                                         ShowLineNumbers="True"
                                         HorizontalScrollBarVisibility="Auto"
                                         VerticalScrollBarVisibility="Visible" />
 
-                <GridSplitter Grid.Row="2" Height="3" Background="#FFD0D0D0"
+                <GridSplitter Grid.Row="2" Height="3" Background="{DynamicResource ThemeBorderBrush}"
                               HorizontalAlignment="Stretch" />
 
                 <!-- 日志输出（在代码编辑器下方） -->
-                <Grid Grid.Row="3" Background="#FFFAFAFA" Margin="0,2,0,0">
+                <Grid Grid.Row="3" Background="{DynamicResource ThemePanelBackgroundBrush}" Margin="0,2,0,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <Grid Grid.Row="0" Background="#FFF8F8F8" Margin="6,4,6,4">
+                    <Grid Grid.Row="0" Background="{DynamicResource ThemePanelBackgroundBrush}" Margin="6,4,6,4">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="输出" Foreground="#FF000000" FontSize="12" FontWeight="Bold" />
+                        <TextBlock Grid.Column="0" Text="输出" Foreground="{DynamicResource ThemeTextPrimaryBrush}" FontSize="12" FontWeight="Bold" />
                         <StackPanel Grid.Column="1" Orientation="Horizontal">
-                            <Label x:Name="CompileTimeLabel" Content="" Foreground="#FF0066CC" FontSize="11" Padding="4,0" />
-                            <Label x:Name="ExecTimeLabel" Content="" Foreground="#FF107C10" FontSize="11" Padding="4,0" />
+                            <Label x:Name="CompileTimeLabel" Content="" Foreground="{DynamicResource ThemeAccentBrush}" FontSize="11" Padding="4,0" />
+                            <Label x:Name="ExecTimeLabel" Content="" Foreground="{DynamicResource ThemeSuccessBrush}" FontSize="11" Padding="4,0" />
                         </StackPanel>
                     </Grid>
 
                     <ListBox Grid.Row="1" x:Name="LogListBox"
-                             Background="#FFFAFAFA" Foreground="#FF333333"
+                             Background="{DynamicResource ThemePanelBackgroundBrush}" Foreground="{DynamicResource ThemeTextPrimaryBrush}"
                              BorderThickness="0" FontSize="11"
                              SelectionMode="Extended"
                              VirtualizingPanel.ScrollUnit="Pixel"
@@ -232,10 +232,10 @@
                                 <Setter Property="Padding" Value="2,1" />
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding IsError}" Value="True">
-                                        <Setter Property="Foreground" Value="#FFCC0000" />
+                                        <Setter Property="Foreground" Value="{DynamicResource ThemeErrorBrush}" />
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding IsError}" Value="False">
-                                        <Setter Property="Foreground" Value="#FF333333" />
+                                        <Setter Property="Foreground" Value="{DynamicResource ThemeTextPrimaryBrush}" />
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>

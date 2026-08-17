@@ -1,0 +1,266 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M-HIST-SCRIPT 脚本工具基础（已完成） · 开发管理</title>
+<style>
+:root { --font: "Microsoft YaHei", "Segoe UI", sans-serif; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px; }
+.container { max-width:980px; margin:0 auto; }
+.back { display:inline-block; margin-bottom:14px; font-size:13px; color:#185FA5; text-decoration:none; }
+.back:hover { text-decoration:underline; }
+.header { background:#fff; border-radius:14px; padding:22px 26px; margin-bottom:18px; border:1px solid #e8eaed; border-top:4px solid #185FA5; }
+.header .id-line { display:flex; align-items:center; gap:10px; margin-bottom:6px; flex-wrap:wrap; }
+.mod-id { font-family:Consolas,monospace; font-size:13px; color:#888; }
+.type-tag { font-size:12px; padding:2px 10px; border-radius:10px; border:1px solid #185FA5; color:#185FA5; }
+.header h1 { font-size:20px; font-weight:600; margin-bottom:6px; }
+.meta-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:10px; margin-top:12px; }
+.meta-item { background:#f7f8fa; border-radius:8px; padding:8px 12px; }
+.meta-item .k { font-size:11px; color:#999; }
+.meta-item .v { font-size:13px; font-weight:500; margin-top:2px; }
+.card { background:#fff; border-radius:14px; padding:20px 24px; margin-bottom:18px; border:1px solid #e8eaed; }
+.card h2 { font-size:15px; font-weight:600; margin-bottom:12px; color:#333; }
+.goal-box { background:#f0f7ff; border:1px solid #cfe4f7; border-radius:10px; padding:12px 16px; font-size:13px; color:#185FA5; margin-bottom:14px; line-height:1.6; }
+.progress-bar { height:10px; background:#eef0f2; border-radius:6px; overflow:hidden; }
+.progress-fill { height:100%; background:#185FA5; border-radius:6px; }
+.progress-wrap { display:flex; align-items:center; gap:10px; }
+.progress-wrap .pct { font-size:16px; font-weight:700; color:#185FA5; }
+.status { display:inline-block; font-size:11px; padding:2px 8px; border-radius:10px; white-space:nowrap; }
+.st-todo { background:#f1efea; color:#888; }
+.st-progress { background:#e6f1fb; color:#185FA5; }
+.st-done { background:#e1f5ee; color:#0F6E56; }
+.st-blocked { background:#fcebeb; color:#A32D2D; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th { text-align:left; font-size:12px; color:#888; font-weight:500; padding:8px 10px; border-bottom:2px solid #eef0f2; }
+td { padding:9px 10px; border-bottom:1px solid #f0f1f3; vertical-align:middle; }
+tr:hover td { background:#f8fafc; }
+.td-id { font-family:Consolas,monospace; font-size:12px; color:#888; white-space:nowrap; }
+.td-name { font-weight:500; }
+.phase { font-size:11px; padding:2px 8px; border-radius:4px; white-space:nowrap; }
+.ph-algo { background:#e6f1fb; color:#185FA5; }
+.ph-ui { background:#faeeda; color:#854F0B; }
+.ph-test { background:#e1f5ee; color:#0F6E56; }
+.acc-list { padding-left:20px; font-size:13px; line-height:2; }
+.muted { color:#aaa; font-size:13px; }
+.doc-list { padding-left:20px; font-size:13px; line-height:2; }
+.doc-list a { color:#185FA5; text-decoration:none; }
+.doc-list a:hover { text-decoration:underline; }
+.log-item { display:flex; gap:14px; padding:8px 0; border-bottom:1px solid #f0f1f3; font-size:13px; }
+.log-item:last-child { border-bottom:none; }
+.log-date { font-family:Consolas,monospace; font-size:12px; color:#888; white-space:nowrap; flex-shrink:0; }
+.log-note { color:#444; line-height:1.6; }
+.git-log { display:flex; flex-direction:column; max-height:420px; overflow-y:auto; border:1px solid #e8eaed; border-radius:8px; }
+.git-log-item { display:flex; gap:10px; padding:6px 10px; border-bottom:1px solid #f0f1f3; font-size:12px; align-items:baseline; }
+.git-log-item:last-child { border-bottom:none; }
+.git-log-item:hover { background:#f7f9fc; }
+.git-hash { font-family:Consolas,monospace; color:#185FA5; width:60px; flex-shrink:0; }
+.git-date { font-family:Consolas,monospace; color:#888; width:80px; flex-shrink:0; }
+.git-msg { color:#333; line-height:1.5; }
+.wk-total { font-size:13px; color:#185FA5; font-weight:500; margin-bottom:8px; }
+.wk-chips { display:flex; flex-wrap:wrap; gap:6px; }
+.wk-chip { font-size:11px; font-family:Consolas,monospace; background:#eef4fb; color:#185FA5; border-radius:8px; padding:2px 8px; }
+.wk-cell { font-size:11px; font-family:Consolas,monospace; background:#eef4fb; color:#185FA5; border-radius:6px; padding:2px 6px; white-space:nowrap; }
+.pw-list { display:flex; flex-direction:column; gap:6px; }
+.pw-row { display:flex; align-items:flex-start; gap:12px; padding:8px 0; border-bottom:1px solid #f0f1f3; }
+.pw-row:last-child { border-bottom:none; }
+.pw-label { width:100px; font-family:Consolas,monospace; font-size:12px; color:#444; font-weight:500; flex-shrink:0; padding-top:3px; }
+.pw-tasks { flex:1; display:flex; flex-wrap:wrap; gap:6px; }
+.pw-hours { font-size:12px; font-weight:600; color:#185FA5; white-space:nowrap; padding-top:3px; }
+.footer { text-align:center; font-size:12px; color:#aaa; padding:16px 0 8px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <a class="back" href="../plan.html">&larr; 返回主控看板</a>
+
+  <div class="header">
+    <div class="id-line">
+      <span class="mod-id">M-HIST-SCRIPT</span>
+      <span class="type-tag">源码层 · 功能模块</span>
+      <span class="status st-done">已完成</span>
+    </div>
+    <h1>脚本工具基础（已完成）</h1>
+    <div class="goal-box"><strong>目标：</strong>脚本工具基础能力（语法高亮/补全/调试，已交付）</div>
+    <div class="progress-wrap">
+      <span class="pct">100%</span>
+      <div class="progress-bar" style="flex:1"><div class="progress-fill" style="width:100%"></div></div>
+    </div>
+    <div class="meta-grid">
+      <div class="meta-item"><div class="k">所属阶段</div><div class="v">历史开发（已完成，2026-01~07）</div></div>
+      <div class="meta-item"><div class="k">计划周期</div><div class="v">2026-06-01 ~ 2026-06-30</div></div>
+      <div class="meta-item"><div class="k">开发子任务</div><div class="v">11/@(          ).Count 完成</div></div>
+      <div class="meta-item"><div class="k">总工时</div><div class="v">180h</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>验收标准（Acceptance）</h2>
+    <ul class='acc-list'><li>Roslyn 编译缓存 + 语法高亮 + 自动补全（CompletitionWindow）</li><li>变量监视面板（IMonitorable 协议）+ 调试功能</li><li>BCL 程序集注入修复（CS0518）</li></ul>
+  </div>
+
+  <div class="card">
+    <h2>开发子任务</h2>
+    <table>
+      <thead><tr><th>ID</th><th>任务</th><th>维度</th><th>工时</th><th>周排期</th><th>状态</th></tr></thead>
+      <tbody>            <tr>
+              <td class="td-id">HIST-SCRIPT-1</td>
+              <td class="td-name">脚本架构重构（ScriptApi→ScriptContext / ScriptBase→Script）</td>
+              <td><span class="phase ph-algo">算法实现</span></td>
+              <td>25h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">HIST-SCRIPT-2</td>
+              <td class="td-name">语法高亮（CSharpDark.xshd + SemanticColorizer）</td>
+              <td><span class="phase ph-ui">UI 交互</span></td>
+              <td>15h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">HIST-SCRIPT-3</td>
+              <td class="td-name">自动补全（CompletitionWindow：类型/标识符/成员）</td>
+              <td><span class="phase ph-algo">算法实现</span></td>
+              <td>20h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">HIST-SCRIPT-4</td>
+              <td class="td-name">引用管理（AssemblyReferenceDialog）+ 沙箱优化</td>
+              <td><span class="phase ph-algo">算法实现</span></td>
+              <td>15h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">HIST-SCRIPT-5</td>
+              <td class="td-name">编译缓存 + 错误行号导航（中文正则）</td>
+              <td><span class="phase ph-algo">算法实现</span></td>
+              <td>15h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">HIST-SCRIPT-6</td>
+              <td class="td-name">变量监视面板（IMonitorable 协议 + NumericTypes 单一来源）</td>
+              <td><span class="phase ph-algo">算法实现</span></td>
+              <td>20h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">HIST-SCRIPT-7</td>
+              <td class="td-name">Roslyn BCL 注入修复（CS0518/ALC/TPA）</td>
+              <td><span class="phase ph-test">测试验证</span></td>
+              <td>15h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">HIST-SCRIPT-8</td>
+              <td class="td-name">调试功能 + 性能优化 P0-P4</td>
+              <td><span class="phase ph-algo">算法实现</span></td>
+              <td>20h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">HIST-SCRIPT-9</td>
+              <td class="td-name">Subroutine 模型迁移 Plugin.SDK + Script 模板</td>
+              <td><span class="phase ph-algo">算法实现</span></td>
+              <td>15h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">HIST-SCRIPT-T2</td>
+              <td class="td-name">脚本编译/执行测试（Roslyn 集成 + 编译缓存）</td>
+              <td><span class="phase ph-test">测试验证</span></td>
+              <td>10h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">HIST-SCRIPT-T3</td>
+              <td class="td-name">脚本运行时测试（BCL 注入/监视协议/模板场景）</td>
+              <td><span class="phase ph-test">测试验证</span></td>
+              <td>10h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr></tbody>
+    </table>
+  </div>
+
+  
+
+  <div class="card">
+    <h2>关联文档</h2>
+    <p class='muted'>暂无关联文档</p>
+  </div>
+
+  <div class="card">
+    <h2>开发日志（git 提交追溯，真实开发用时）</h2>
+                <div class='git-log'>
+              <div class='git-log-item'>
+                <span class='git-hash'>c899b24</span>
+                <span class='git-date'>2026-07-13</span>
+                <span class='git-msg'>feat(script): 脚本编辑器 Roslyn 语义高亮(SemanticColorizer) + 方案技能协作优化</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>9eaa727</span>
+                <span class='git-date'>2026-07-13</span>
+                <span class='git-msg'>脚本工具：移除 Roslyn 语义着色器，简化语法高亮实现</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>031f0c8</span>
+                <span class='git-date'>2026-07-13</span>
+                <span class='git-msg'>脚本工具：完善参数模型和沙箱引用提供机制</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>7cf76c7</span>
+                <span class='git-date'>2026-07-13</span>
+                <span class='git-msg'>feat: 脚本工具完善 + Skill 体系优化</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>35d1da7</span>
+                <span class='git-date'>2026-06-29</span>
+                <span class='git-msg'>feat(ScriptTool): 性能优化 P0+P1+P2+P3</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>7805164</span>
+                <span class='git-date'>2026-06-25</span>
+                <span class='git-msg'>feat(ScriptTemplate): Halcon 5-scenario demo template</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>ea3ce50</span>
+                <span class='git-date'>2026-06-24</span>
+                <span class='git-msg'>chore: 提交当前脚本工具修改（变量Tab/调试控制）</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>27a4855</span>
+                <span class='git-date'>2026-06-22</span>
+                <span class='git-msg'>refactor(ScriptTool): 开放 partial class 到用户脚本内容</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>9a6948b</span>
+                <span class='git-date'>2026-06-22</span>
+                <span class='git-msg'>fix(ScriptCompiler): 添加 Microsoft.CodeAnalysis.Emit using 修复编译错误</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>13919fe</span>
+                <span class='git-date'>2026-06-22</span>
+                <span class='git-msg'>feat(Script): 完善脚本调试功能和语法高亮</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>31443fb</span>
+                <span class='git-date'>2026-06-17</span>
+                <span class='git-msg'>fix(script): CopyScriptRefs.ps1 自动探测 .NET 运行时版本，复制 System.Private.CoreLib.dll 等 BCL 核心程序集修复 Roslyn 成员补全</span>
+              </div>
+            </div>
+            
+
+  </div>
+
+  <div class="card">
+    <h2>真实开发周分布（git 提交追溯）</h2>
+    <p class='muted'>无周追溯数据（模块未匹配到提交）</p>
+  </div>
+
+  <div class="footer">由 generate_plan.ps1 v3.0 自动生成 · 子页面 · SunEyeVision</div>
+</div>
+</body>
+</html>

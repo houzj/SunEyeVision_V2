@@ -7,7 +7,7 @@
         Width="1200" Height="800"
         WindowStartupLocation="CenterOwner"
         ResizeMode="CanResizeWithGrip"
-        Background="#F5F5F5">
+        Background="{DynamicResource ThemePanelBackgroundBrush}">
 
   <Grid Margin="8">
     <Grid.RowDefinitions>
@@ -17,7 +17,7 @@
     </Grid.RowDefinitions>
 
     <!-- 模版名称 + 图像源选择 -->
-    <Border Grid.Row="0" Background="White" Padding="12,8" Margin="0,0,0,6" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="2">
+    <Border Grid.Row="0" Background="{DynamicResource ThemePanelBackgroundBrush}" Padding="12,8" Margin="0,0,0,6" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1" CornerRadius="2">
       <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
         <TextBlock Text="模版名称:" VerticalAlignment="Center" FontSize="13" FontWeight="SemiBold"/>
         <TextBox x:Name="templateNameTextBox" Width="220" Margin="8,0,12,0" VerticalContentAlignment="Center"
@@ -25,11 +25,11 @@
         <TextBlock Text="图像源:" VerticalAlignment="Center" FontSize="12" FontWeight="SemiBold" Margin="0,0,4,0"/>
         <ComboBox x:Name="imageSourceCombo" Width="100" Height="26" FontSize="11"
                   SelectionChanged="OnImageSourceSelectionChanged"/>
-        <Rectangle Width="1" Fill="#D0D0D0" Margin="0,2,8,2"/>
+        <Rectangle Width="1" Fill="{DynamicResource ThemeBorderBrush}" Margin="0,2,8,2"/>
         <Button x:Name="btnExtractContour" Content="提取模板" Width="70" Height="26" Click="OnExtractClick" FontSize="11" Margin="0,0,6,0"/>
         <ComboBox x:Name="cmbPyramidLevel" Width="120" Height="26" FontSize="11" Margin="0,0,6,0"
                   SelectionChanged="OnPyramidLevelSelected" IsEnabled="False"/>
-        <Button x:Name="btnClearContour" Content="🗑 清除" Width="70" Height="26" Click="OnClearClick" FontSize="11" Foreground="#D32F2F"/>
+        <Button x:Name="btnClearContour" Content="🗑 清除" Width="70" Height="26" Click="OnClearClick" FontSize="11" Foreground="{DynamicResource ThemeErrorBrush}"/>
       </StackPanel>
     </Border>
 
@@ -41,7 +41,7 @@
       </Grid.ColumnDefinitions>
 
       <!-- 左侧栏 — 图像显示 -->
-      <Border Grid.Column="0" Background="White" Margin="0,0,3,0" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="2">
+      <Border Grid.Column="0" Background="{DynamicResource ThemePanelBackgroundBrush}" Margin="0,0,3,0" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1" CornerRadius="2">
         <controls:ImageControl x:Name="dialogImageControl"
                                ShowToolBar="True"
                                ShowImageSourceSelector="False"
@@ -55,17 +55,17 @@
       <ScrollViewer Grid.Column="1" Margin="3,0,0,0" VerticalScrollBarVisibility="Auto">
         <StackPanel>
           <!-- 区域编辑管理器 -->
-          <Border Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="2">
+          <Border Background="{DynamicResource ThemePanelBackgroundBrush}" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1" CornerRadius="2">
             <region:RoiEditorManagerControl x:Name="dialogRegionManager"
                                                 InspectionRegionsSource="{Binding DialogInspectionRegions}"
                                                 MaskRegionsSource="{Binding DialogMaskRegions}"/>
           </Border>
 
           <!-- 模板创建参数 -->
-          <GroupBox Header="模板创建参数" Margin="0,6,0,0" Padding="8" Background="White" BorderBrush="#E0E0E0">
+          <GroupBox Header="模板创建参数" Margin="0,6,0,0" Padding="8" Background="{DynamicResource ThemePanelBackgroundBrush}" BorderBrush="{DynamicResource ThemeBorderBrush}">
             <StackPanel Margin="0,4">
               <!-- 金字塔 -->
-              <TextBlock Text="金字塔" FontSize="12" FontWeight="SemiBold" Foreground="#1976D2" Margin="0,4,0,2"/>
+              <TextBlock Text="金字塔" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource ThemeAccentBrush}" Margin="0,4,0,2"/>
               <controls:LabeledControl Label="模式:" LabelWidth="80">
                 <ComboBox x:Name="cmbPyramidMode" Height="26" FontSize="11"/>
               </controls:LabeledControl>
@@ -76,7 +76,7 @@
               </controls:LabeledControl>
 
               <!-- 对比度 -->
-              <TextBlock Text="对比度" FontSize="12" FontWeight="SemiBold" Foreground="#1976D2" Margin="0,8,0,2"/>
+              <TextBlock Text="对比度" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource ThemeAccentBrush}" Margin="0,8,0,2"/>
               <controls:LabeledControl Label="模式:" LabelWidth="80">
                 <ComboBox x:Name="cmbContrastMode" Height="26" FontSize="11"/>
               </controls:LabeledControl>
@@ -87,7 +87,7 @@
               </controls:LabeledControl>
 
               <!-- 最小对比度 -->
-              <TextBlock Text="最小对比度" FontSize="12" FontWeight="SemiBold" Foreground="#1976D2" Margin="0,8,0,2"/>
+              <TextBlock Text="最小对比度" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource ThemeAccentBrush}" Margin="0,8,0,2"/>
               <controls:LabeledControl Label="模式:" LabelWidth="80">
                 <ComboBox x:Name="cmbMinContrastMode" Height="26" FontSize="11"/>
               </controls:LabeledControl>
@@ -99,7 +99,7 @@
               </controls:LabeledControl>
 
               <!-- 角度 -->
-              <TextBlock Text="角度" FontSize="12" FontWeight="SemiBold" Foreground="#1976D2" Margin="0,8,0,2"/>
+              <TextBlock Text="角度" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource ThemeAccentBrush}" Margin="0,8,0,2"/>
               <controls:LabeledControl Label="步长模式:" LabelWidth="80">
                 <ComboBox x:Name="cmbAngleStepMode" Height="26" FontSize="11"/>
               </controls:LabeledControl>
@@ -111,7 +111,7 @@
               </controls:LabeledControl>
 
               <!-- 缩放 -->
-              <TextBlock Text="缩放" FontSize="12" FontWeight="SemiBold" Foreground="#1976D2" Margin="0,8,0,2"/>
+              <TextBlock Text="缩放" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource ThemeAccentBrush}" Margin="0,8,0,2"/>
               <controls:LabeledControl Label="步长模式:" LabelWidth="80">
                 <ComboBox x:Name="cmbScaleStepMode" Height="26" FontSize="11"/>
               </controls:LabeledControl>
@@ -123,7 +123,7 @@
               </controls:LabeledControl>
 
               <!-- 高级 -->
-              <TextBlock Text="高级" FontSize="12" FontWeight="SemiBold" Foreground="#1976D2" Margin="0,8,0,2"/>
+              <TextBlock Text="高级" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource ThemeAccentBrush}" Margin="0,8,0,2"/>
               <controls:LabeledControl Label="极性匹配:" LabelWidth="80">
                 <ComboBox x:Name="cmbMetricMode" Height="26" FontSize="11"/>
               </controls:LabeledControl>
@@ -135,111 +135,111 @@
           </GroupBox>
 
           <!-- 模板信息 -->
-          <GroupBox Header="模板信息" Margin="0,6,0,0" Padding="8" Background="White" BorderBrush="#E0E0E0">
+          <GroupBox Header="模板信息" Margin="0,6,0,0" Padding="8" Background="{DynamicResource ThemePanelBackgroundBrush}" BorderBrush="{DynamicResource ThemeBorderBrush}">
             <StackPanel>
               <Grid Margin="0,2">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="Auto"/>
                   <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Text="状态:" Grid.Column="0" FontSize="11" VerticalAlignment="Center" Foreground="#666"/>
+                <TextBlock Text="状态:" Grid.Column="0" FontSize="11" VerticalAlignment="Center" Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
                 <TextBlock x:Name="txtResultStatus" Grid.Column="1" FontSize="11" VerticalAlignment="Center"
-                           Foreground="#999" Text="--"/>
+                           Foreground="{DynamicResource ThemeTextSecondaryBrush}" Text="--"/>
               </Grid>
               <Grid Margin="0,2">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="Auto"/>
                   <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Text="当前层级:" Grid.Column="0" FontSize="11" VerticalAlignment="Center" Foreground="#666"/>
+                <TextBlock Text="当前层级:" Grid.Column="0" FontSize="11" VerticalAlignment="Center" Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
                 <TextBlock x:Name="txtCurrentLevel" Grid.Column="1" FontSize="11" VerticalAlignment="Center"
-                           Foreground="#1976D2" Text="--"/>
+                           Foreground="{DynamicResource ThemeAccentBrush}" Text="--"/>
               </Grid>
               <Grid Margin="0,2">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="Auto"/>
                   <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Text="轮廓点数:" Grid.Column="0" FontSize="11" VerticalAlignment="Center" Foreground="#666"/>
+                <TextBlock Text="轮廓点数:" Grid.Column="0" FontSize="11" VerticalAlignment="Center" Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
                 <TextBlock x:Name="txtPointCount" Grid.Column="1" FontSize="11" VerticalAlignment="Center"
-                           Foreground="#999" Text="--"/>
+                           Foreground="{DynamicResource ThemeTextSecondaryBrush}" Text="--"/>
               </Grid>
               <Grid Margin="0,2">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="Auto"/>
                   <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Text="轮廓链数:" Grid.Column="0" FontSize="11" VerticalAlignment="Center" Foreground="#666"/>
+                <TextBlock Text="轮廓链数:" Grid.Column="0" FontSize="11" VerticalAlignment="Center" Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
                 <TextBlock x:Name="txtContourChainCount" Grid.Column="1" FontSize="11" VerticalAlignment="Center"
-                           Foreground="#999" Text="--"/>
+                           Foreground="{DynamicResource ThemeTextSecondaryBrush}" Text="--"/>
               </Grid>
               <Grid Margin="0,2">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="Auto"/>
                   <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Text="包围矩形:" Grid.Column="0" FontSize="11" VerticalAlignment="Center" Foreground="#666"/>
+                <TextBlock Text="包围矩形:" Grid.Column="0" FontSize="11" VerticalAlignment="Center" Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
                 <TextBlock x:Name="txtBoundingRect" Grid.Column="1" FontSize="11" VerticalAlignment="Center"
-                           Foreground="#999" Text="--"/>
+                           Foreground="{DynamicResource ThemeTextSecondaryBrush}" Text="--"/>
               </Grid>
               <Grid Margin="0,2">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="Auto"/>
                   <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Text="中心点:" Grid.Column="0" FontSize="11" VerticalAlignment="Center" Foreground="#666"/>
+                <TextBlock Text="中心点:" Grid.Column="0" FontSize="11" VerticalAlignment="Center" Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
                 <TextBlock x:Name="txtCenterPoint" Grid.Column="1" FontSize="11" VerticalAlignment="Center"
-                           Foreground="#999" Text="--"/>
+                           Foreground="{DynamicResource ThemeTextSecondaryBrush}" Text="--"/>
               </Grid>
               <Grid Margin="0,2">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="Auto"/>
                   <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Text="实际对比度:" Grid.Column="0" FontSize="11" VerticalAlignment="Center" Foreground="#666"/>
+                <TextBlock Text="实际对比度:" Grid.Column="0" FontSize="11" VerticalAlignment="Center" Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
                 <TextBlock x:Name="txtActualContrast" Grid.Column="1" FontSize="11" VerticalAlignment="Center"
-                           Foreground="#999" Text="--"/>
+                           Foreground="{DynamicResource ThemeTextSecondaryBrush}" Text="--"/>
               </Grid>
               <Grid Margin="0,2">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="Auto"/>
                   <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Text="金字塔层数:" Grid.Column="0" FontSize="11" VerticalAlignment="Center" Foreground="#666"/>
+                <TextBlock Text="金字塔层数:" Grid.Column="0" FontSize="11" VerticalAlignment="Center" Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
                 <TextBlock x:Name="txtActualLevels" Grid.Column="1" FontSize="11" VerticalAlignment="Center"
-                           Foreground="#999" Text="--"/>
+                           Foreground="{DynamicResource ThemeTextSecondaryBrush}" Text="--"/>
               </Grid>
               <Grid Margin="0,2">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="Auto"/>
                   <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Text="实际角度步长:" Grid.Column="0" FontSize="11" VerticalAlignment="Center" Foreground="#666"/>
+                <TextBlock Text="实际角度步长:" Grid.Column="0" FontSize="11" VerticalAlignment="Center" Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
                 <TextBlock x:Name="txtActualAngleStep" Grid.Column="1" FontSize="11" VerticalAlignment="Center"
-                           Foreground="#999" Text="--"/>
+                           Foreground="{DynamicResource ThemeTextSecondaryBrush}" Text="--"/>
               </Grid>
               <Grid Margin="0,2">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="Auto"/>
                   <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Text="实际缩放步长:" Grid.Column="0" FontSize="11" VerticalAlignment="Center" Foreground="#666"/>
+                <TextBlock Text="实际缩放步长:" Grid.Column="0" FontSize="11" VerticalAlignment="Center" Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
                 <TextBlock x:Name="txtActualScaleStep" Grid.Column="1" FontSize="11" VerticalAlignment="Center"
-                           Foreground="#999" Text="--"/>
+                           Foreground="{DynamicResource ThemeTextSecondaryBrush}" Text="--"/>
               </Grid>
               <Grid Margin="0,2">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="Auto"/>
                   <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Text="实际最小对比度:" Grid.Column="0" FontSize="11" VerticalAlignment="Center" Foreground="#666"/>
+                <TextBlock Text="实际最小对比度:" Grid.Column="0" FontSize="11" VerticalAlignment="Center" Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
                 <TextBlock x:Name="txtActualMinContrast" Grid.Column="1" FontSize="11" VerticalAlignment="Center"
-                           Foreground="#999" Text="--"/>
+                           Foreground="{DynamicResource ThemeTextSecondaryBrush}" Text="--"/>
               </Grid>
-              <Rectangle Height="1" Fill="#E0E0E0" Margin="0,4,0,2"/>
-              <TextBlock x:Name="txtFilterStats" Grid.ColumnSpan="2" FontSize="11" Foreground="#666"
+              <Rectangle Height="1" Fill="{DynamicResource ThemeBorderBrush}" Margin="0,4,0,2"/>
+              <TextBlock x:Name="txtFilterStats" Grid.ColumnSpan="2" FontSize="11" Foreground="{DynamicResource ThemeTextSecondaryBrush}"
                          TextWrapping="Wrap" Visibility="Collapsed" Margin="0,2,0,0"/>
-              <TextBlock x:Name="txtLevelAdvice" Grid.ColumnSpan="2" FontSize="11" Foreground="#E65100"
+              <TextBlock x:Name="txtLevelAdvice" Grid.ColumnSpan="2" FontSize="11" Foreground="{DynamicResource ThemeWarningBrush}"
                          TextWrapping="Wrap" Visibility="Collapsed" Margin="0,2,0,0"/>
             </StackPanel>
           </GroupBox>
@@ -248,7 +248,7 @@
     </Grid>
 
     <!-- 底部按钮栏 -->
-    <Border Grid.Row="2" Background="#F0F0F0" Padding="16,10" Margin="0,6,0,0" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="2">
+    <Border Grid.Row="2" Background="{DynamicResource ThemeToolBarBackgroundBrush}" Padding="16,10" Margin="0,6,0,0" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1" CornerRadius="2">
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
         <Button x:Name="btnOk" Content="✓ 确定" Width="80" Height="30" Click="OnOkClick" FontSize="13" FontWeight="SemiBold" Margin="0,0,10,0"/>
         <Button x:Name="btnCancel" Content="取消" Width="80" Height="30" Click="OnCancelClick" FontSize="13"/>

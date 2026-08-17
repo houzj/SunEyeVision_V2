@@ -100,7 +100,7 @@
                         Content="反转二值化结果"/>
             </controls:LabeledControl>
 
-            <Separator Margin="0,8,0,4" Background="#E0E0E0" Height="1"/>
+            <Separator Margin="0,8,0,4" Background="{DynamicResource ThemeDividerBrushBrush}" Height="1"/>
             <TextBlock Text="自适应阈值" FontWeight="SemiBold" Margin="0,4,0,0"/>
 
             <controls:LabeledControl Label="自适应方法">
@@ -131,7 +131,7 @@
 
       <!-- Tab3: 结果显示 -->
       <TabItem Header="结果显示">
-        <Grid Background="#F5F5F5">
+        <Grid Background="{DynamicResource ThemePanelBackgroundBrush}">
           <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
@@ -142,10 +142,10 @@
               <!-- 结果判断分组 -->
               <Expander Header="结果判断"
                                       IsExpanded="True"
-                                      BorderBrush="#E0E0E0"
+                                      BorderBrush="{DynamicResource ThemeBorderBrush}"
                                       BorderThickness="1"
                                       Margin="0,0,0,8"
-                                      Background="White">
+                                      Background="{DynamicResource ThemePanelBackgroundBrush}">
                 <StackPanel Margin="16,8">
                   <!-- 输出为空判断 -->
                   <controls:LabeledControl Label="输出为空判断" ContentHorizontalAlignment="Left">

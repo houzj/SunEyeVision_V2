@@ -1,0 +1,503 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M-HIST-CANVAS 画布与工作流编辑器（已完成） · 开发管理</title>
+<style>
+:root { --font: "Microsoft YaHei", "Segoe UI", sans-serif; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px; }
+.container { max-width:980px; margin:0 auto; }
+.back { display:inline-block; margin-bottom:14px; font-size:13px; color:#185FA5; text-decoration:none; }
+.back:hover { text-decoration:underline; }
+.header { background:#fff; border-radius:14px; padding:22px 26px; margin-bottom:18px; border:1px solid #e8eaed; border-top:4px solid #185FA5; }
+.header .id-line { display:flex; align-items:center; gap:10px; margin-bottom:6px; flex-wrap:wrap; }
+.mod-id { font-family:Consolas,monospace; font-size:13px; color:#888; }
+.type-tag { font-size:12px; padding:2px 10px; border-radius:10px; border:1px solid #185FA5; color:#185FA5; }
+.header h1 { font-size:20px; font-weight:600; margin-bottom:6px; }
+.meta-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:10px; margin-top:12px; }
+.meta-item { background:#f7f8fa; border-radius:8px; padding:8px 12px; }
+.meta-item .k { font-size:11px; color:#999; }
+.meta-item .v { font-size:13px; font-weight:500; margin-top:2px; }
+.card { background:#fff; border-radius:14px; padding:20px 24px; margin-bottom:18px; border:1px solid #e8eaed; }
+.card h2 { font-size:15px; font-weight:600; margin-bottom:12px; color:#333; }
+.goal-box { background:#f0f7ff; border:1px solid #cfe4f7; border-radius:10px; padding:12px 16px; font-size:13px; color:#185FA5; margin-bottom:14px; line-height:1.6; }
+.progress-bar { height:10px; background:#eef0f2; border-radius:6px; overflow:hidden; }
+.progress-fill { height:100%; background:#185FA5; border-radius:6px; }
+.progress-wrap { display:flex; align-items:center; gap:10px; }
+.progress-wrap .pct { font-size:16px; font-weight:700; color:#185FA5; }
+.status { display:inline-block; font-size:11px; padding:2px 8px; border-radius:10px; white-space:nowrap; }
+.st-todo { background:#f1efea; color:#888; }
+.st-progress { background:#e6f1fb; color:#185FA5; }
+.st-done { background:#e1f5ee; color:#0F6E56; }
+.st-blocked { background:#fcebeb; color:#A32D2D; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th { text-align:left; font-size:12px; color:#888; font-weight:500; padding:8px 10px; border-bottom:2px solid #eef0f2; }
+td { padding:9px 10px; border-bottom:1px solid #f0f1f3; vertical-align:middle; }
+tr:hover td { background:#f8fafc; }
+.td-id { font-family:Consolas,monospace; font-size:12px; color:#888; white-space:nowrap; }
+.td-name { font-weight:500; }
+.phase { font-size:11px; padding:2px 8px; border-radius:4px; white-space:nowrap; }
+.ph-algo { background:#e6f1fb; color:#185FA5; }
+.ph-ui { background:#faeeda; color:#854F0B; }
+.ph-test { background:#e1f5ee; color:#0F6E56; }
+.acc-list { padding-left:20px; font-size:13px; line-height:2; }
+.muted { color:#aaa; font-size:13px; }
+.doc-list { padding-left:20px; font-size:13px; line-height:2; }
+.doc-list a { color:#185FA5; text-decoration:none; }
+.doc-list a:hover { text-decoration:underline; }
+.log-item { display:flex; gap:14px; padding:8px 0; border-bottom:1px solid #f0f1f3; font-size:13px; }
+.log-item:last-child { border-bottom:none; }
+.log-date { font-family:Consolas,monospace; font-size:12px; color:#888; white-space:nowrap; flex-shrink:0; }
+.log-note { color:#444; line-height:1.6; }
+.git-log { display:flex; flex-direction:column; max-height:420px; overflow-y:auto; border:1px solid #e8eaed; border-radius:8px; }
+.git-log-item { display:flex; gap:10px; padding:6px 10px; border-bottom:1px solid #f0f1f3; font-size:12px; align-items:baseline; }
+.git-log-item:last-child { border-bottom:none; }
+.git-log-item:hover { background:#f7f9fc; }
+.git-hash { font-family:Consolas,monospace; color:#185FA5; width:60px; flex-shrink:0; }
+.git-date { font-family:Consolas,monospace; color:#888; width:80px; flex-shrink:0; }
+.git-msg { color:#333; line-height:1.5; }
+.wk-total { font-size:13px; color:#185FA5; font-weight:500; margin-bottom:8px; }
+.wk-chips { display:flex; flex-wrap:wrap; gap:6px; }
+.wk-chip { font-size:11px; font-family:Consolas,monospace; background:#eef4fb; color:#185FA5; border-radius:8px; padding:2px 8px; }
+.wk-cell { font-size:11px; font-family:Consolas,monospace; background:#eef4fb; color:#185FA5; border-radius:6px; padding:2px 6px; white-space:nowrap; }
+.pw-list { display:flex; flex-direction:column; gap:6px; }
+.pw-row { display:flex; align-items:flex-start; gap:12px; padding:8px 0; border-bottom:1px solid #f0f1f3; }
+.pw-row:last-child { border-bottom:none; }
+.pw-label { width:100px; font-family:Consolas,monospace; font-size:12px; color:#444; font-weight:500; flex-shrink:0; padding-top:3px; }
+.pw-tasks { flex:1; display:flex; flex-wrap:wrap; gap:6px; }
+.pw-hours { font-size:12px; font-weight:600; color:#185FA5; white-space:nowrap; padding-top:3px; }
+.footer { text-align:center; font-size:12px; color:#aaa; padding:16px 0 8px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <a class="back" href="../plan.html">&larr; 返回主控看板</a>
+
+  <div class="header">
+    <div class="id-line">
+      <span class="mod-id">M-HIST-CANVAS</span>
+      <span class="type-tag">源码层 · 功能模块</span>
+      <span class="status st-done">已完成</span>
+    </div>
+    <h1>画布与工作流编辑器（已完成）</h1>
+    <div class="goal-box"><strong>目标：</strong>画布编辑器完整：节点/连线/缩放/多选/撤销重做（已交付）</div>
+    <div class="progress-wrap">
+      <span class="pct">100%</span>
+      <div class="progress-bar" style="flex:1"><div class="progress-fill" style="width:100%"></div></div>
+    </div>
+    <div class="meta-grid">
+      <div class="meta-item"><div class="k">所属阶段</div><div class="v">历史开发（已完成，2026-01~07）</div></div>
+      <div class="meta-item"><div class="k">计划周期</div><div class="v">2026-01-21 ~ 2026-03-15</div></div>
+      <div class="meta-item"><div class="k">开发子任务</div><div class="v">17/@(                ).Count 完成</div></div>
+      <div class="meta-item"><div class="k">总工时</div><div class="v">345h</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>验收标准（Acceptance）</h2>
+    <ul class='acc-list'><li>节点系统：四向连接点/悬停显示/多选批量移动删除</li><li>连线：直角折线/贝塞尔/样式跟随状态/批量选中删除</li><li>画布：缩放10%-200%/平移/边界限制/独立缩放体系/撤销重做</li><li>命中测试：节点/连线/框选正确</li><li>右下角小地图：流程节点缩略图 + 红框标记当前可视区域</li><li>小地图支持滚动/缩放/Tab 切换同步、点击跳转、节点增删自动刷新</li></ul>
+  </div>
+
+  <div class="card">
+    <h2>开发子任务</h2>
+    <table>
+      <thead><tr><th>ID</th><th>任务</th><th>维度</th><th>工时</th><th>周排期</th><th>状态</th></tr></thead>
+      <tbody>            <tr>
+              <td class="td-id">HIST-CANVAS-1</td>
+              <td class="td-name">多工作流管理 + TabItem 样式（0b40675/408bb5f）</td>
+              <td><span class="phase ph-ui">UI 交互</span></td>
+              <td>25h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">HIST-CANVAS-2</td>
+              <td class="td-name">工作流下拉器 + TabItem 滚动修复（3cb64bb 系列 8 提交）</td>
+              <td><span class="phase ph-ui">UI 交互</span></td>
+              <td>25h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">HIST-CANVAS-3</td>
+              <td class="td-name">画布缩放：鼠标/视野中心 + 独立缩放体系（e42f865/5944a25/2920e71）</td>
+              <td><span class="phase ph-ui">UI 交互</span></td>
+              <td>25h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">HIST-CANVAS-4</td>
+              <td class="td-name">画布撤销/重做（2225a49）</td>
+              <td><span class="phase ph-algo">算法实现</span></td>
+              <td>15h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">HIST-CANVAS-5</td>
+              <td class="td-name">节点多选 + 批量移动删除（e8a1da0）</td>
+              <td><span class="phase ph-ui">UI 交互</span></td>
+              <td>15h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">HIST-CANVAS-6</td>
+              <td class="td-name">连接点四向 + 悬停显示（6e1bdaf/302d024）</td>
+              <td><span class="phase ph-ui">UI 交互</span></td>
+              <td>15h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">HIST-CANVAS-7</td>
+              <td class="td-name">连线方式演进：贝塞尔→直角折线→拖拽连接（ac9e5cb/16d92b7/5a6cdba）</td>
+              <td><span class="phase ph-algo">算法实现</span></td>
+              <td>30h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">HIST-CANVAS-8</td>
+              <td class="td-name">连接命中优化 + 依赖分析器（5bc66ef/c34d902/f31dfd8）</td>
+              <td><span class="phase ph-algo">算法实现</span></td>
+              <td>20h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">HIST-CANVAS-9</td>
+              <td class="td-name">连线路径计算服务化 + 路径策略（bdf5c86/d9f135d/830aed6）</td>
+              <td><span class="phase ph-algo">算法实现</span></td>
+              <td>25h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">HIST-CANVAS-10</td>
+              <td class="td-name">画布虚拟化 + 性能优化（7bc8d45：虚拟化 50-100x/HitTest 5-10x/批量 5-10x）</td>
+              <td><span class="phase ph-algo">算法实现</span></td>
+              <td>30h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">HIST-CANVAS-11</td>
+              <td class="td-name">画布边界/视口限制（14e8eff/cf41d14）</td>
+              <td><span class="phase ph-ui">UI 交互</span></td>
+              <td>15h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">HIST-CANVAS-12</td>
+              <td class="td-name">批量框选 + 连接线批量选中删除（35b7bf1/a8135f3/f18a6e2）</td>
+              <td><span class="phase ph-ui">UI 交互</span></td>
+              <td>20h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">HIST-CANVAS-13</td>
+              <td class="td-name">节点样式重构 + 命中逻辑（8867f2f/98c3463/4c8abe0）</td>
+              <td><span class="phase ph-ui">UI 交互</span></td>
+              <td>20h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">HIST-CANVAS-14</td>
+              <td class="td-name">工作流同步机制重构：共享 solution 资源（f5939f2/8befe54）</td>
+              <td><span class="phase ph-algo">算法实现</span></td>
+              <td>20h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">HIST-CANVAS-15</td>
+              <td class="td-name">工作区右下角小地图（ac74fd9：节点缩略图+红框可视区+滚动缩放同步+点击跳转+空节点-∞修复）</td>
+              <td><span class="phase ph-ui">UI 交互</span></td>
+              <td>20h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">HIST-CANVAS-T1</td>
+              <td class="td-name">画布交互测试（框选/多选/撤销/批量操作测试OK 提交）</td>
+              <td><span class="phase ph-test">测试验证</span></td>
+              <td>15h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">HIST-CANVAS-T2</td>
+              <td class="td-name">命中测试与性能验证（100 节点 HitTest 5-10x）</td>
+              <td><span class="phase ph-test">测试验证</span></td>
+              <td>10h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr></tbody>
+    </table>
+  </div>
+
+  
+
+  <div class="card">
+    <h2>关联文档</h2>
+    <p class='muted'>暂无关联文档</p>
+  </div>
+
+  <div class="card">
+    <h2>开发日志（git 提交追溯，真实开发用时）</h2>
+                <div class='git-log'>
+              <div class='git-log-item'>
+                <span class='git-hash'>0a917ab</span>
+                <span class='git-date'>2026-08-15</span>
+                <span class='git-msg'>修复关闭/删除确认弹窗不跟随主题，且关闭时无确认弹窗</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>535227b</span>
+                <span class='git-date'>2026-08-14</span>
+                <span class='git-msg'>﻿修复右键菜单白色块并清理连续运行图标相关废弃代码</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>80ec8fd</span>
+                <span class='git-date'>2026-08-14</span>
+                <span class='git-msg'>修复打开方案后列表与打开时间不更新</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>5e3ba37</span>
+                <span class='git-date'>2026-08-14</span>
+                <span class='git-msg'>修复画布滚动条显示与交互问题，并优化打开工作流自动定位节点</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>40d43bd</span>
+                <span class='git-date'>2026-08-14</span>
+                <span class='git-msg'>暗色主题适配系列（1-5）：日志面板按钮、topbar工作流下拉、分隔条、折叠按钮与菜单样式</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>1918c0f</span>
+                <span class='git-date'>2026-08-13</span>
+                <span class='git-msg'>主界面重构: 画布跟随缩放 + 缩放范围10%-200% + 画布扩至6000</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>ac74fd9</span>
+                <span class='git-date'>2026-08-12</span>
+                <span class='git-msg'>工作区新增右下角小地图，移除流程管理条</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>99ad183</span>
+                <span class='git-date'>2026-08-12</span>
+                <span class='git-msg'>重构(UI): Core/Services/Adapters 三目录错位治理</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>23d3147</span>
+                <span class='git-date'>2026-08-11</span>
+                <span class='git-msg'>重构(UI): Views层目录改名为Shell以对齐功能模块布局</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>69c4f42</span>
+                <span class='git-date'>2026-08-11</span>
+                <span class='git-msg'>feat(canvas): 工作流画布背景改为棋盘格，与图像显示控件样式保持一致</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>2b4b431</span>
+                <span class='git-date'>2026-08-11</span>
+                <span class='git-msg'>优化连线样式：圆角线帽、选中加粗、箭头跟随状态</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>aabae1b</span>
+                <span class='git-date'>2026-08-11</span>
+                <span class='git-msg'>节点外观优化：色块撑满第一列贴边，边框未选中灰色/选中橙色</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>6086159</span>
+                <span class='git-date'>2026-08-11</span>
+                <span class='git-msg'>节点样式优化：圆角6、边框按类型着色、状态五态(运行/成功/失败/跳过)、跳过状态通知</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>01c88b7</span>
+                <span class='git-date'>2026-08-07</span>
+                <span class='git-msg'>修复：子程序状态下保存方案导致主程序节点被清空</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>38e4e0a</span>
+                <span class='git-date'>2026-06-26</span>
+                <span class='git-msg'>提交当前修改：MainWindowViewModel、TargetParameterDialog、GlobalVariable</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>d11b33a</span>
+                <span class='git-date'>2026-06-26</span>
+                <span class='git-msg'>fix(MainWindowViewModel): 修复双实例漂移 — OnWorkflowAdded 复用引擎共享实例</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>5e754e2</span>
+                <span class='git-date'>2026-06-22</span>
+                <span class='git-msg'>feat: 优化编译缓存和补全性能</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>ce47771</span>
+                <span class='git-date'>2026-06-22</span>
+                <span class='git-msg'>修复编译错误行号导航：中文正则匹配 &amp; 引用对话框/沙箱优化</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>214b746</span>
+                <span class='git-date'>2026-06-12</span>
+                <span class='git-msg'>feat: 合并主工作区代码 + Script 工具插件初次提交</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>b949a1e</span>
+                <span class='git-date'>2026-06-11</span>
+                <span class='git-msg'>feat: 子程序嵌套执行架构 + 调试导航UI + 结果显示修复</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>51188f9</span>
+                <span class='git-date'>2026-06-10</span>
+                <span class='git-msg'>fix: 修复拖拽连接时端口间歇性命中失败的问题</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>8445cf1</span>
+                <span class='git-date'>2026-06-10</span>
+                <span class='git-msg'>Reapply "feat: 拖拽临时节点可视化 + 子程序显示类型中文美化"</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>f4a4209</span>
+                <span class='git-date'>2026-06-10</span>
+                <span class='git-msg'>Revert "feat: 拖拽临时节点可视化 + 子程序显示类型中文美化"</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>5446aa2</span>
+                <span class='git-date'>2026-06-10</span>
+                <span class='git-msg'>feat: 拖拽临时节点可视化 + 子程序显示类型中文美化</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>bf560a6</span>
+                <span class='git-date'>2026-06-08</span>
+                <span class='git-msg'>refactor(subroutine): 使用 ISubWorkflowExecutor 委托注入替代静态引擎注入</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>12d1256</span>
+                <span class='git-date'>2026-06-02</span>
+                <span class='git-msg'>feat: 连接创建统一入口 &amp; 子程序重构 &amp; 执行引擎优化</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>f06e774</span>
+                <span class='git-date'>2026-06-01</span>
+                <span class='git-msg'>feat: 整理并提交当前版本优化</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>8673803</span>
+                <span class='git-date'>2026-05-21</span>
+                <span class='git-msg'>﻿全链修复基于多工作流框架设计的设计问题，主要是对于工作流引擎的管理以及对于工作流上下文的管理的设计优化 暂时测试没有太大问题，先提交，待后续更多的测试</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>6f17561</span>
+                <span class='git-date'>2026-05-18</span>
+                <span class='git-msg'>﻿把形状选择解耦成toolbar，并优化了布局及提高了屏蔽区域的命中优先级</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>9157cf7</span>
+                <span class='git-date'>2026-05-06</span>
+                <span class='git-msg'>﻿更改图像显示的设计模式，显示图像独立控制  不再有结果输出来控制 可以在不同的图像上查看结果图形  来分析参数设置的合理性</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>6420ea8</span>
+                <span class='git-date'>2026-05-05</span>
+                <span class='git-msg'>﻿增加节点重命名功能</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>8c2921a</span>
+                <span class='git-date'>2026-05-04</span>
+                <span class='git-msg'>﻿增加工作流重命名功能，修复工作流切换报错的bug</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>f0b76fa</span>
+                <span class='git-date'>2026-05-04</span>
+                <span class='git-msg'>﻿修复 新建工作流 编号计算Bug</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>c8b6ac6</span>
+                <span class='git-date'>2026-05-04</span>
+                <span class='git-msg'>﻿修复手柄无法命中的问题，主要是路由时序的问题。</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>50ecd3f</span>
+                <span class='git-date'>2026-05-03</span>
+                <span class='git-msg'>﻿增加命中容差，先提交 现在的命中测试有问题，准备回退版本看看之前版本的行为</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>713db77</span>
+                <span class='git-date'>2026-05-03</span>
+                <span class='git-msg'>﻿修复手柄的显示问题</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>bf35400</span>
+                <span class='git-date'>2026-04-24</span>
+                <span class='git-msg'>﻿可以正确的通过绑定解析正确的值，但是模式切换还有问题 先提交，便于回退</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>3a72cff</span>
+                <span class='git-date'>2026-04-23</span>
+                <span class='git-msg'>﻿1.清理临时文件和过期文件 2.优化技能和规则，尽量减低方案设计的上下文调度，减低不必要的token用量</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>6eed1f6</span>
+                <span class='git-date'>2026-04-22</span>
+                <span class='git-msg'>﻿调整显示的线宽和颜色</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>0ff12cb</span>
+                <span class='git-date'>2026-04-20</span>
+                <span class='git-msg'>﻿1.修复了区域删除逻辑会删除节点的bug 2.修复无法删除选中区域的bug 3.修复删除最后一个节点 还显示手柄的bug</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>4343b2c</span>
+                <span class='git-date'>2026-04-20</span>
+                <span class='git-msg'>﻿优化了日志系统，增加了诊断模式  如下是各种日志级别 及诊断模式下的日志输出设计 日志级别	非诊断模式	诊断模式	适用内容 Debug	不输出	输出	实现细节、内部状态、步骤追踪 Info	输出	输出	状态变更、过程开始、中间状态 Success	输出	输出	任务完成、结果达标、操作完成 Warning	输出	输出	有问题但能继续运行 Error	输出	输出	失败/异常，需要处理 Fatal	输出	输出	程序无法继续运行</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>b53d8c9</span>
+                <span class='git-date'>2026-04-18</span>
+                <span class='git-msg'>﻿优化了区域的同步和序列化问题，反序列化还需要优化，先提交</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>36d69fe</span>
+                <span class='git-date'>2026-04-14</span>
+                <span class='git-msg'>﻿1.删除了ConfigSetting和ParamBinding控件中的部分冗余日志 2.添加了解决解决方案序列化和反序列化的部分日志，便于调试新的区域管理方案下的 数据同步，序列化化和反序列化问题 以及编辑区域的生命周期管理的问题</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>7e20b75</span>
+                <span class='git-date'>2026-04-14</span>
+                <span class='git-msg'>﻿删除序列化和反序列化是的回退机制避免干分析</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>98e6050</span>
+                <span class='git-date'>2026-04-13</span>
+                <span class='git-msg'>﻿删除了GetResultItems方法，改为GetResultItemsAsync方法</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>7e00bab</span>
+                <span class='git-date'>2026-04-13</span>
+                <span class='git-msg'>﻿工具UI进行了局部调整优化，先提交，便于回退</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>21dba9c</span>
+                <span class='git-date'>2026-04-12</span>
+                <span class='git-msg'>﻿对参数绑定控件进行重命名</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>6242c5e</span>
+                <span class='git-date'>2026-04-11</span>
+                <span class='git-msg'>fix: 修复TextBlock中单位文本的XAML语法错误 - 使用Run元素分别显示值和单位</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>2322d4f</span>
+                <span class='git-date'>2026-04-11</span>
+                <span class='git-msg'>﻿UI简单优化</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>23ac71b</span>
+                <span class='git-date'>2026-04-11</span>
+                <span class='git-msg'>﻿1.完全重构了工具的数据源管理，包括工具的数据源查询、数据源绑定、数据源选择、 数据源选择器等，并对工具的数据源管理进行了优化，包括数据源的缓存、数据源的过滤、数据源的排序等。 2.现在用分类缓存来管理绑定控件（图像绑定控件，数据绑定控件） 下一步的工作： 当前的正向映射，目前是对的  反向解析还没有做  从绑定数据解析成运输时属性 一些UI行为还不对 也需要尽快解决</span>
+              </div>
+            </div>
+            <p class='muted'>仅显示最近 50 条 / 共 100 条</p>
+
+  </div>
+
+  <div class="card">
+    <h2>真实开发周分布（git 提交追溯）</h2>
+    <p class='muted'>无周追溯数据（模块未匹配到提交）</p>
+  </div>
+
+  <div class="footer">由 generate_plan.ps1 v3.0 自动生成 · 子页面 · SunEyeVision</div>
+</div>
+</body>
+</html>

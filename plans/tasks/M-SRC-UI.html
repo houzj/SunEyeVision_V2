@@ -1,0 +1,257 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M-SRC-UI 源码层 UI 项目优化 · 开发管理</title>
+<style>
+:root { --font: "Microsoft YaHei", "Segoe UI", sans-serif; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px; }
+.container { max-width:980px; margin:0 auto; }
+.back { display:inline-block; margin-bottom:14px; font-size:13px; color:#185FA5; text-decoration:none; }
+.back:hover { text-decoration:underline; }
+.header { background:#fff; border-radius:14px; padding:22px 26px; margin-bottom:18px; border:1px solid #e8eaed; border-top:4px solid #185FA5; }
+.header .id-line { display:flex; align-items:center; gap:10px; margin-bottom:6px; flex-wrap:wrap; }
+.mod-id { font-family:Consolas,monospace; font-size:13px; color:#888; }
+.type-tag { font-size:12px; padding:2px 10px; border-radius:10px; border:1px solid #185FA5; color:#185FA5; }
+.header h1 { font-size:20px; font-weight:600; margin-bottom:6px; }
+.meta-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:10px; margin-top:12px; }
+.meta-item { background:#f7f8fa; border-radius:8px; padding:8px 12px; }
+.meta-item .k { font-size:11px; color:#999; }
+.meta-item .v { font-size:13px; font-weight:500; margin-top:2px; }
+.card { background:#fff; border-radius:14px; padding:20px 24px; margin-bottom:18px; border:1px solid #e8eaed; }
+.card h2 { font-size:15px; font-weight:600; margin-bottom:12px; color:#333; }
+.goal-box { background:#f0f7ff; border:1px solid #cfe4f7; border-radius:10px; padding:12px 16px; font-size:13px; color:#185FA5; margin-bottom:14px; line-height:1.6; }
+.progress-bar { height:10px; background:#eef0f2; border-radius:6px; overflow:hidden; }
+.progress-fill { height:100%; background:#185FA5; border-radius:6px; }
+.progress-wrap { display:flex; align-items:center; gap:10px; }
+.progress-wrap .pct { font-size:16px; font-weight:700; color:#185FA5; }
+.status { display:inline-block; font-size:11px; padding:2px 8px; border-radius:10px; white-space:nowrap; }
+.st-todo { background:#f1efea; color:#888; }
+.st-progress { background:#e6f1fb; color:#185FA5; }
+.st-done { background:#e1f5ee; color:#0F6E56; }
+.st-blocked { background:#fcebeb; color:#A32D2D; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th { text-align:left; font-size:12px; color:#888; font-weight:500; padding:8px 10px; border-bottom:2px solid #eef0f2; }
+td { padding:9px 10px; border-bottom:1px solid #f0f1f3; vertical-align:middle; }
+tr:hover td { background:#f8fafc; }
+.td-id { font-family:Consolas,monospace; font-size:12px; color:#888; white-space:nowrap; }
+.td-name { font-weight:500; }
+.phase { font-size:11px; padding:2px 8px; border-radius:4px; white-space:nowrap; }
+.ph-algo { background:#e6f1fb; color:#185FA5; }
+.ph-ui { background:#faeeda; color:#854F0B; }
+.ph-test { background:#e1f5ee; color:#0F6E56; }
+.acc-list { padding-left:20px; font-size:13px; line-height:2; }
+.muted { color:#aaa; font-size:13px; }
+.doc-list { padding-left:20px; font-size:13px; line-height:2; }
+.doc-list a { color:#185FA5; text-decoration:none; }
+.doc-list a:hover { text-decoration:underline; }
+.log-item { display:flex; gap:14px; padding:8px 0; border-bottom:1px solid #f0f1f3; font-size:13px; }
+.log-item:last-child { border-bottom:none; }
+.log-date { font-family:Consolas,monospace; font-size:12px; color:#888; white-space:nowrap; flex-shrink:0; }
+.log-note { color:#444; line-height:1.6; }
+.git-log { display:flex; flex-direction:column; max-height:420px; overflow-y:auto; border:1px solid #e8eaed; border-radius:8px; }
+.git-log-item { display:flex; gap:10px; padding:6px 10px; border-bottom:1px solid #f0f1f3; font-size:12px; align-items:baseline; }
+.git-log-item:last-child { border-bottom:none; }
+.git-log-item:hover { background:#f7f9fc; }
+.git-hash { font-family:Consolas,monospace; color:#185FA5; width:60px; flex-shrink:0; }
+.git-date { font-family:Consolas,monospace; color:#888; width:80px; flex-shrink:0; }
+.git-msg { color:#333; line-height:1.5; }
+.wk-total { font-size:13px; color:#185FA5; font-weight:500; margin-bottom:8px; }
+.wk-chips { display:flex; flex-wrap:wrap; gap:6px; }
+.wk-chip { font-size:11px; font-family:Consolas,monospace; background:#eef4fb; color:#185FA5; border-radius:8px; padding:2px 8px; }
+.wk-cell { font-size:11px; font-family:Consolas,monospace; background:#eef4fb; color:#185FA5; border-radius:6px; padding:2px 6px; white-space:nowrap; }
+.pw-list { display:flex; flex-direction:column; gap:6px; }
+.pw-row { display:flex; align-items:flex-start; gap:12px; padding:8px 0; border-bottom:1px solid #f0f1f3; }
+.pw-row:last-child { border-bottom:none; }
+.pw-label { width:100px; font-family:Consolas,monospace; font-size:12px; color:#444; font-weight:500; flex-shrink:0; padding-top:3px; }
+.pw-tasks { flex:1; display:flex; flex-wrap:wrap; gap:6px; }
+.pw-hours { font-size:12px; font-weight:600; color:#185FA5; white-space:nowrap; padding-top:3px; }
+.footer { text-align:center; font-size:12px; color:#aaa; padding:16px 0 8px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <a class="back" href="../plan.html">&larr; 返回主控看板</a>
+
+  <div class="header">
+    <div class="id-line">
+      <span class="mod-id">M-SRC-UI</span>
+      <span class="type-tag">源码层 · 功能模块</span>
+      <span class="status st-progress">进行中</span>
+    </div>
+    <h1>源码层 UI 项目优化</h1>
+    <div class="goal-box"><strong>目标：</strong>UI 层结构重构 + 全控件主题化 + View/VM 就近共生，双主题（亮/暗）切换正确</div>
+    <div class="progress-wrap">
+      <span class="pct">67%</span>
+      <div class="progress-bar" style="flex:1"><div class="progress-fill" style="width:67%"></div></div>
+    </div>
+    <div class="meta-grid">
+      <div class="meta-item"><div class="k">所属阶段</div><div class="v">源码层 UI 项目优化（进行中）</div></div>
+      <div class="meta-item"><div class="k">计划周期</div><div class="v">2026-08-11 ~ 2026-08-22</div></div>
+      <div class="meta-item"><div class="k">开发子任务</div><div class="v">6/@(        ).Count 完成</div></div>
+      <div class="meta-item"><div class="k">总工时</div><div class="v">220h</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>验收标准（Acceptance）</h2>
+    <ul class='acc-list'><li>UI 层按功能模块目录组织，无按层组织残留</li><li>View/ViewModel 就近共生，命名空间与目录对齐</li><li>SDK 层全部控件接入主题系统（Token 化），无硬编码色</li><li>亮/暗双主题切换正确，无遮蔽/白色块问题</li><li>283 个文件重构后构建通过、回归无回归</li></ul>
+  </div>
+
+  <div class="card">
+    <h2>开发子任务</h2>
+    <table>
+      <thead><tr><th>ID</th><th>任务</th><th>维度</th><th>工时</th><th>周排期</th><th>状态</th></tr></thead>
+      <tbody>            <tr>
+              <td class="td-id">UI-1</td>
+              <td class="td-name">UI 层结构重构：按功能模块目录组织（11 个重构提交）</td>
+              <td><span class="phase ph-ui">UI 交互</span></td>
+              <td>56h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">UI-2</td>
+              <td class="td-name">View/VM 就近共生 + 命名空间与目录对齐（根治两层皮）</td>
+              <td><span class="phase ph-ui">UI 交互</span></td>
+              <td>24h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">UI-3</td>
+              <td class="td-name">主题系统架构（主题系统+日志双轨制、资源加载重构）</td>
+              <td><span class="phase ph-ui">UI 交互</span></td>
+              <td>24h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">UI-4</td>
+              <td class="td-name">节点/连线/画布样式优化（圆角/状态五态/棋盘格背景）</td>
+              <td><span class="phase ph-ui">UI 交互</span></td>
+              <td>16h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">UI-5</td>
+              <td class="td-name">主界面重构（画布跟随缩放/小地图/标题栏布局）</td>
+              <td><span class="phase ph-ui">UI 交互</span></td>
+              <td>20h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">UI-6</td>
+              <td class="td-name">主题适配修复系列（弹窗/右键菜单/下拉框/滚动条等）</td>
+              <td><span class="phase ph-ui">UI 交互</span></td>
+              <td>20h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">UI-7</td>
+              <td class="td-name">SDK 层 UI 控件全面主题化（Token 化改造，51 文件未提交）</td>
+              <td><span class="phase ph-ui">UI 交互</span></td>
+              <td>32h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-progress">进行中</span></td>
+            </tr>            <tr>
+              <td class="td-id">UI-8</td>
+              <td class="td-name">工具调试界面硬编码色主题化收敛</td>
+              <td><span class="phase ph-ui">UI 交互</span></td>
+              <td>16h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-progress">进行中</span></td>
+            </tr>            <tr>
+              <td class="td-id">UI-9</td>
+              <td class="td-name">构建验证 + 双主题回归测试</td>
+              <td><span class="phase ph-test">测试验证</span></td>
+              <td>12h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-todo">计划中</span></td>
+            </tr></tbody>
+    </table>
+  </div>
+
+  
+
+  <div class="card">
+    <h2>关联文档</h2>
+    <ul class='doc-list'><li><a href='../../../docs/01-方案设计/2026/08/15/SDK层UI主题化收官方案-20260815-143355.md' target='_blank'>SDK层UI主题化收官方案-20260815-143355.md</a></li><li><a href='../../../docs/01-方案设计/2026/08/15/工具调试界面硬编码色主题化收敛方案-20260815-151429.md' target='_blank'>工具调试界面硬编码色主题化收敛方案-20260815-151429.md</a></li><li><a href='../../../docs/01-方案设计/2026/08/13/主题系统架构优化方案-20260813-164212.md' target='_blank'>主题系统架构优化方案-20260813-164212.md</a></li><li><a href='../../../docs/01-方案设计/2026/08/11/主界面产品级重构方案-最终版-20260811-134458.md' target='_blank'>主界面产品级重构方案-最终版-20260811-134458.md</a></li></ul>
+  </div>
+
+  <div class="card">
+    <h2>开发日志（git 提交追溯，真实开发用时）</h2>
+                <div class='git-log'>
+              <div class='git-log-item'>
+                <span class='git-hash'>9d29561</span>
+                <span class='git-date'>2026-08-15</span>
+                <span class='git-msg'>状态栏配色工程化适配双主题</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>66b1577</span>
+                <span class='git-date'>2026-08-14</span>
+                <span class='git-msg'>修复工作流下拉框主题切换失效问题</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>baffb91</span>
+                <span class='git-date'>2026-08-12</span>
+                <span class='git-msg'>标题栏（ShellTopBarControl）布局与图标优化</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>f69b792</span>
+                <span class='git-date'>2026-08-12</span>
+                <span class='git-msg'>重构(UI): Core 层清理 - 服务归位 + 删除死代码</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>0210060</span>
+                <span class='git-date'>2026-08-12</span>
+                <span class='git-msg'>﻿重构(UI): 全修结构不合理点 - Toolbox就近 + 薄Services目录合并</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>5b56aad</span>
+                <span class='git-date'>2026-08-11</span>
+                <span class='git-msg'>﻿重构(UI): 清理名不副实的 Controls/ 目录 - 归位辅助类、删除孤立渲染代码</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>d3a4753</span>
+                <span class='git-date'>2026-08-11</span>
+                <span class='git-msg'>重构(UI): 阶段一+阶段二 - SDK主题收敛 与 VM就近化改造</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>8c46765</span>
+                <span class='git-date'>2026-05-26</span>
+                <span class='git-msg'>fix: 区分文本位置来源，样式驱动文本实时同步锚点</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>3005025</span>
+                <span class='git-date'>2026-05-04</span>
+                <span class='git-msg'>﻿优化模块结果的显示样式为datagrid</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>6c2f9ce</span>
+                <span class='git-date'>2026-04-09</span>
+                <span class='git-msg'>﻿继续提交完整的相机管理器UI优化</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>24fa08a</span>
+                <span class='git-date'>2026-03-30</span>
+                <span class='git-msg'>﻿把样式分离到资源字典中统一管理  整个行为没有变化</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>408bb5f</span>
+                <span class='git-date'>2026-01-23</span>
+                <span class='git-msg'>1.实现了多流程管理 2.优化了tebitem的样式</span>
+              </div>
+            </div>
+            
+
+  </div>
+
+  <div class="card">
+    <h2>真实开发周分布（git 提交追溯）</h2>
+    <p class='muted'>无周追溯数据（模块未匹配到提交）</p>
+  </div>
+
+  <div class="footer">由 generate_plan.ps1 v3.0 自动生成 · 子页面 · SunEyeVision</div>
+</div>
+</body>
+</html>

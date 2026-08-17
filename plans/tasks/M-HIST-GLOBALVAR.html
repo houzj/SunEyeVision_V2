@@ -1,0 +1,201 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M-HIST-GLOBALVAR 全局变量管理（已完成基础，测试待补） · 开发管理</title>
+<style>
+:root { --font: "Microsoft YaHei", "Segoe UI", sans-serif; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px; }
+.container { max-width:980px; margin:0 auto; }
+.back { display:inline-block; margin-bottom:14px; font-size:13px; color:#185FA5; text-decoration:none; }
+.back:hover { text-decoration:underline; }
+.header { background:#fff; border-radius:14px; padding:22px 26px; margin-bottom:18px; border:1px solid #e8eaed; border-top:4px solid #185FA5; }
+.header .id-line { display:flex; align-items:center; gap:10px; margin-bottom:6px; flex-wrap:wrap; }
+.mod-id { font-family:Consolas,monospace; font-size:13px; color:#888; }
+.type-tag { font-size:12px; padding:2px 10px; border-radius:10px; border:1px solid #185FA5; color:#185FA5; }
+.header h1 { font-size:20px; font-weight:600; margin-bottom:6px; }
+.meta-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:10px; margin-top:12px; }
+.meta-item { background:#f7f8fa; border-radius:8px; padding:8px 12px; }
+.meta-item .k { font-size:11px; color:#999; }
+.meta-item .v { font-size:13px; font-weight:500; margin-top:2px; }
+.card { background:#fff; border-radius:14px; padding:20px 24px; margin-bottom:18px; border:1px solid #e8eaed; }
+.card h2 { font-size:15px; font-weight:600; margin-bottom:12px; color:#333; }
+.goal-box { background:#f0f7ff; border:1px solid #cfe4f7; border-radius:10px; padding:12px 16px; font-size:13px; color:#185FA5; margin-bottom:14px; line-height:1.6; }
+.progress-bar { height:10px; background:#eef0f2; border-radius:6px; overflow:hidden; }
+.progress-fill { height:100%; background:#185FA5; border-radius:6px; }
+.progress-wrap { display:flex; align-items:center; gap:10px; }
+.progress-wrap .pct { font-size:16px; font-weight:700; color:#185FA5; }
+.status { display:inline-block; font-size:11px; padding:2px 8px; border-radius:10px; white-space:nowrap; }
+.st-todo { background:#f1efea; color:#888; }
+.st-progress { background:#e6f1fb; color:#185FA5; }
+.st-done { background:#e1f5ee; color:#0F6E56; }
+.st-blocked { background:#fcebeb; color:#A32D2D; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th { text-align:left; font-size:12px; color:#888; font-weight:500; padding:8px 10px; border-bottom:2px solid #eef0f2; }
+td { padding:9px 10px; border-bottom:1px solid #f0f1f3; vertical-align:middle; }
+tr:hover td { background:#f8fafc; }
+.td-id { font-family:Consolas,monospace; font-size:12px; color:#888; white-space:nowrap; }
+.td-name { font-weight:500; }
+.phase { font-size:11px; padding:2px 8px; border-radius:4px; white-space:nowrap; }
+.ph-algo { background:#e6f1fb; color:#185FA5; }
+.ph-ui { background:#faeeda; color:#854F0B; }
+.ph-test { background:#e1f5ee; color:#0F6E56; }
+.acc-list { padding-left:20px; font-size:13px; line-height:2; }
+.muted { color:#aaa; font-size:13px; }
+.doc-list { padding-left:20px; font-size:13px; line-height:2; }
+.doc-list a { color:#185FA5; text-decoration:none; }
+.doc-list a:hover { text-decoration:underline; }
+.log-item { display:flex; gap:14px; padding:8px 0; border-bottom:1px solid #f0f1f3; font-size:13px; }
+.log-item:last-child { border-bottom:none; }
+.log-date { font-family:Consolas,monospace; font-size:12px; color:#888; white-space:nowrap; flex-shrink:0; }
+.log-note { color:#444; line-height:1.6; }
+.git-log { display:flex; flex-direction:column; max-height:420px; overflow-y:auto; border:1px solid #e8eaed; border-radius:8px; }
+.git-log-item { display:flex; gap:10px; padding:6px 10px; border-bottom:1px solid #f0f1f3; font-size:12px; align-items:baseline; }
+.git-log-item:last-child { border-bottom:none; }
+.git-log-item:hover { background:#f7f9fc; }
+.git-hash { font-family:Consolas,monospace; color:#185FA5; width:60px; flex-shrink:0; }
+.git-date { font-family:Consolas,monospace; color:#888; width:80px; flex-shrink:0; }
+.git-msg { color:#333; line-height:1.5; }
+.wk-total { font-size:13px; color:#185FA5; font-weight:500; margin-bottom:8px; }
+.wk-chips { display:flex; flex-wrap:wrap; gap:6px; }
+.wk-chip { font-size:11px; font-family:Consolas,monospace; background:#eef4fb; color:#185FA5; border-radius:8px; padding:2px 8px; }
+.wk-cell { font-size:11px; font-family:Consolas,monospace; background:#eef4fb; color:#185FA5; border-radius:6px; padding:2px 6px; white-space:nowrap; }
+.pw-list { display:flex; flex-direction:column; gap:6px; }
+.pw-row { display:flex; align-items:flex-start; gap:12px; padding:8px 0; border-bottom:1px solid #f0f1f3; }
+.pw-row:last-child { border-bottom:none; }
+.pw-label { width:100px; font-family:Consolas,monospace; font-size:12px; color:#444; font-weight:500; flex-shrink:0; padding-top:3px; }
+.pw-tasks { flex:1; display:flex; flex-wrap:wrap; gap:6px; }
+.pw-hours { font-size:12px; font-weight:600; color:#185FA5; white-space:nowrap; padding-top:3px; }
+.footer { text-align:center; font-size:12px; color:#aaa; padding:16px 0 8px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <a class="back" href="../plan.html">&larr; 返回主控看板</a>
+
+  <div class="header">
+    <div class="id-line">
+      <span class="mod-id">M-HIST-GLOBALVAR</span>
+      <span class="type-tag">源码层 · 功能模块</span>
+      <span class="status st-progress">补测试中</span>
+    </div>
+    <h1>全局变量管理（已完成基础，测试待补）</h1>
+    <div class="goal-box"><strong>目标：</strong>全局变量系统重构完成（2518 行）；消费者绑定追踪/重命名联动已实现；测试待补</div>
+    <div class="progress-wrap">
+      <span class="pct">83%</span>
+      <div class="progress-bar" style="flex:1"><div class="progress-fill" style="width:83%"></div></div>
+    </div>
+    <div class="meta-grid">
+      <div class="meta-item"><div class="k">所属阶段</div><div class="v">历史开发（已完成，2026-01~07）</div></div>
+      <div class="meta-item"><div class="k">计划周期</div><div class="v">2026-05-01 ~ 2026-05-31</div></div>
+      <div class="meta-item"><div class="k">开发子任务</div><div class="v">5/@(     ).Count 完成</div></div>
+      <div class="meta-item"><div class="k">总工时</div><div class="v">114h</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>验收标准（Acceptance）</h2>
+    <ul class='acc-list'><li>全局变量管理器（929 行 VM + 659 行对话框）：分组/级联删除/内联编辑</li><li>全局变量选择器（GlobalVariableSelectViewModel 179 行）</li><li>全局变量重命名自动更新绑定引用与结果显示（57ad126）</li><li>消费者绑定追踪：实时从视觉树解析节点信息（ec34d5c Phase 5）</li><li>【待补】全局变量管理专项测试</li></ul>
+  </div>
+
+  <div class="card">
+    <h2>开发子任务</h2>
+    <table>
+      <thead><tr><th>ID</th><th>任务</th><th>维度</th><th>工时</th><th>周排期</th><th>状态</th></tr></thead>
+      <tbody>            <tr>
+              <td class="td-id">GVAR-1</td>
+              <td class="td-name">全局变量系统重构 + 参数绑定增强（0799286）</td>
+              <td><span class="phase ph-algo">算法实现</span></td>
+              <td>30h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">GVAR-2</td>
+              <td class="td-name">全局变量管理器 UI（分组/内联编辑/级联删除/VisionMaster 风格）</td>
+              <td><span class="phase ph-ui">UI 交互</span></td>
+              <td>25h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">GVAR-3</td>
+              <td class="td-name">全局变量选择器（GlobalVariableSelectDialog）</td>
+              <td><span class="phase ph-ui">UI 交互</span></td>
+              <td>15h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">GVAR-4</td>
+              <td class="td-name">消费者绑定追踪（Phase 5：实时视觉树解析）</td>
+              <td><span class="phase ph-algo">算法实现</span></td>
+              <td>20h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">GVAR-5</td>
+              <td class="td-name">重命名自动更新绑定引用 + 结果显示联动（57ad126）</td>
+              <td><span class="phase ph-algo">算法实现</span></td>
+              <td>12h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-done">已完成</span></td>
+            </tr>            <tr>
+              <td class="td-id">GVAR-6</td>
+              <td class="td-name">全局变量管理专项测试（增删改/分组/重命名联动/绑定追踪）</td>
+              <td><span class="phase ph-test">测试验证</span></td>
+              <td>12h</td>
+              <td><span class='muted'>-</span></td>
+              <td><span class="status st-todo">计划中</span></td>
+            </tr></tbody>
+    </table>
+  </div>
+
+  
+
+  <div class="card">
+    <h2>关联文档</h2>
+    <p class='muted'>暂无关联文档</p>
+  </div>
+
+  <div class="card">
+    <h2>开发日志（git 提交追溯，真实开发用时）</h2>
+                <div class='git-log'>
+              <div class='git-log-item'>
+                <span class='git-hash'>52028a0</span>
+                <span class='git-date'>2026-08-14</span>
+                <span class='git-msg'>方案管理界面优化：删除解决方案支持连源文件删除、标题栏主题适配、工作流标签页选中同步</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>9702cef</span>
+                <span class='git-date'>2026-08-12</span>
+                <span class='git-msg'>重构(UI): 修复 Shell 与 Features 的分离/重复问题，贯彻 View 与 VM 就近共生</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>a08bbfb</span>
+                <span class='git-date'>2026-08-11</span>
+                <span class='git-msg'>重构(UI): 合并过度细分的顶层目录到功能/共享归属</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>92d3624</span>
+                <span class='git-date'>2026-05-27</span>
+                <span class='git-msg'>优化全局变量管理器：内联编辑分组名、级联删除、VisionMaster风格UI</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>a1bff27</span>
+                <span class='git-date'>2026-03-31</span>
+                <span class='git-msg'>﻿关于解决放哪管理的相关优化暂时到这里 后面再回到工作流 开始优化工作流的相关内容 主要方向有以下几个 1.工作流数据绑定传递 包括节点之间和节点和全局变量之间 2.验证和优化工作流执行引擎  对工作流驱动的正确性 单工作流 多工作流 工作流的单次运行  连续运行  总控  单次运行  连续运行 3.节点UI优化  节点数据模型定义 参数  结果  判断  显示  等再工具的组织形式要确定下来 4.ROI  区域编辑 基于单窗口编辑的 生命周期管理 5.节点结果显示和数据显示的 数据模型定义确认 6.数据模型和UI的绑定模型确认</span>
+              </div>
+            </div>
+            
+
+  </div>
+
+  <div class="card">
+    <h2>真实开发周分布（git 提交追溯）</h2>
+    <p class='muted'>无周追溯数据（模块未匹配到提交）</p>
+  </div>
+
+  <div class="footer">由 generate_plan.ps1 v3.0 自动生成 · 子页面 · SunEyeVision</div>
+</div>
+</body>
+</html>

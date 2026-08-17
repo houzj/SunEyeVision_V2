@@ -161,14 +161,19 @@ tr:hover td { background:#f8fafc; }
     <h2>开发日志（git 提交追溯，真实开发用时）</h2>
                 <div class='git-log'>
               <div class='git-log-item'>
-                <span class='git-hash'>47255f5</span>
-                <span class='git-date'>2026-06-12</span>
-                <span class='git-msg'>refactor(dsqs): DSQS 架构重构 - 删除本地缓存，SSOT 委托实时读取</span>
+                <span class='git-hash'>bf8ef3a</span>
+                <span class='git-date'>2026-08-10</span>
+                <span class='git-msg'>子程序循环+命名治理：改名实时刷新模块结果树</span>
               </div>
               <div class='git-log-item'>
-                <span class='git-hash'>be567f4</span>
-                <span class='git-date'>2026-06-12</span>
-                <span class='git-msg'>refactor(subroutine): 子程序工具完善 + DSQS/ImageSourceSelector 优化</span>
+                <span class='git-hash'>57bf5c3</span>
+                <span class='git-date'>2026-08-05</span>
+                <span class='git-msg'>feat: RoI 契约变量（检测区/屏蔽区图形）统一注入与结果树设计态回退</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>7e8991a</span>
+                <span class='git-date'>2026-07-17</span>
+                <span class='git-msg'>feat: 模块结果树递归生成 &amp; 输出变量契约收敛</span>
               </div>
               <div class='git-log-item'>
                 <span class='git-hash'>836ed62</span>
@@ -181,14 +186,14 @@ tr:hover td { background:#f8fafc; }
                 <span class='git-msg'>﻿优化图像显示控件的下拉内容的组织方式 保持和ImageSourceSelector 一致，并且同源</span>
               </div>
               <div class='git-log-item'>
-                <span class='git-hash'>0b4c712</span>
-                <span class='git-date'>2026-05-02</span>
-                <span class='git-msg'>﻿1.修复了圆形和多变项图形到参数无法双向同步的问题</span>
-              </div>
-              <div class='git-log-item'>
                 <span class='git-hash'>98994e1</span>
                 <span class='git-date'>2026-05-02</span>
                 <span class='git-msg'>﻿修复了blob分析工具  阈值 最大值  绑定模式切户常量模式时  数值更新的bug</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>bf35400</span>
+                <span class='git-date'>2026-04-24</span>
+                <span class='git-msg'>﻿可以正确的通过绑定解析正确的值，但是模式切换还有问题 先提交，便于回退</span>
               </div>
               <div class='git-log-item'>
                 <span class='git-hash'>43300ea</span>
@@ -196,14 +201,9 @@ tr:hover td { background:#f8fafc; }
                 <span class='git-msg'>﻿后面要对现实模式重新设计，先提交代码，便于回退</span>
               </div>
               <div class='git-log-item'>
-                <span class='git-hash'>952345f</span>
-                <span class='git-date'>2026-04-21</span>
-                <span class='git-msg'>﻿优化了图像传递的逻辑，打开是自动填充第一个</span>
-              </div>
-              <div class='git-log-item'>
-                <span class='git-hash'>18b68b0</span>
-                <span class='git-date'>2026-04-18</span>
-                <span class='git-msg'>﻿修复了区域反序列化到区域重绘的逻辑问题，现在可以正常反序列化，并显示正确的区域了。</span>
+                <span class='git-hash'>a033570</span>
+                <span class='git-date'>2026-04-20</span>
+                <span class='git-msg'>﻿基于数据绑定的UI和实际的绑定路径 都对索引进行了支持</span>
               </div>
               <div class='git-log-item'>
                 <span class='git-hash'>3b1671b</span>
@@ -216,9 +216,9 @@ tr:hover td { background:#f8fafc; }
                 <span class='git-msg'>﻿重构了参数类，重构目的是 一个参数就可以适配常量模式和绑定模式 这样的话，在工具层的核心算法，只需要对参数进行使用，完全不用关系，使用的 参数是通过绑定表达式解析过来的，还是通过常量模式直接设置的</span>
               </div>
               <div class='git-log-item'>
-                <span class='git-hash'>0a2bea1</span>
+                <span class='git-hash'>e03b338</span>
                 <span class='git-date'>2026-04-13</span>
-                <span class='git-msg'>﻿对RegionSubscribePanel.xaml进行修改</span>
+                <span class='git-msg'>﻿重构数据缓存的设计，现在的方式是通过反射结果的属性，根据属性的类型自动 生成对应类型的缓存池，确保和业务逻辑解耦。</span>
               </div>
               <div class='git-log-item'>
                 <span class='git-hash'>c69443d</span>
@@ -231,24 +231,29 @@ tr:hover td { background:#f8fafc; }
                 <span class='git-msg'>﻿友好名称表现正确，后面要记性控件样式大调整，先提交，便于回退</span>
               </div>
               <div class='git-log-item'>
-                <span class='git-hash'>defbaa9</span>
-                <span class='git-date'>2026-04-11</span>
-                <span class='git-msg'>﻿要进行大数据处理优化，先提交，便于回退</span>
+                <span class='git-hash'>cd899ba</span>
+                <span class='git-date'>2026-04-10</span>
+                <span class='git-msg'>﻿1.重新设计了基于设计时的数据绑定框架，不在使用反射，而是使用变量池的方式来实现 2.属性面板大更新，不再显示选中节点的属性，因为功能和调试窗口的功能重叠了 3.增加了数据分析选项，架构层已经设计，工具层还没有实现 当前状态： 1.图像源选择控件可以看到所有父节点的输出，但是格式还不对 2.参数绑定控件在UI层实现了，基于显示名称表达式生成树状结构，但是在数据绑定层没有实现 3.基于绑定表达式的解析支持运行还没有实现</span>
               </div>
               <div class='git-log-item'>
-                <span class='git-hash'>025e9a5</span>
-                <span class='git-date'>2026-04-08</span>
-                <span class='git-msg'>fix: 修复 MainWindowViewModel 编译错误</span>
+                <span class='git-hash'>d6a8f97</span>
+                <span class='git-date'>2026-04-10</span>
+                <span class='git-msg'>﻿后面要大重构结果输出架构，先提交代码，便于回退</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>6c2109a</span>
+                <span class='git-date'>2026-04-09</span>
+                <span class='git-msg'>﻿基于重构进行优化测试  目前传递链还有点问题，先提交，后续继续解决传递链的问题</span>
+              </div>
+              <div class='git-log-item'>
+                <span class='git-hash'>4d8dc66</span>
+                <span class='git-date'>2026-04-09</span>
+                <span class='git-msg'>﻿重构基于绑定模型的数据传递模型，还未验证，先提交</span>
               </div>
               <div class='git-log-item'>
                 <span class='git-hash'>29f034d</span>
                 <span class='git-date'>2026-04-08</span>
                 <span class='git-msg'>fix: 修复 DataSourceQueryService 类型不匹配错误</span>
-              </div>
-              <div class='git-log-item'>
-                <span class='git-hash'>f742edb</span>
-                <span class='git-date'>2026-04-01</span>
-                <span class='git-msg'>﻿参数系统重新设计 接下来需要集成和验证  先提交</span>
               </div>
             </div>
             
@@ -257,7 +262,7 @@ tr:hover td { background:#f8fafc; }
 
   <div class="card">
     <h2>真实开发周分布（git 提交追溯）</h2>
-    <p class='wk-total'>共 18 提交 / 7 周</p><div class='wk-chips'><span class='wk-chip'>2026-W14 ×1</span><span class='wk-chip'>2026-W15 ×5</span><span class='wk-chip'>2026-W16 ×4</span><span class='wk-chip'>2026-W17 ×2</span><span class='wk-chip'>2026-W18 ×2</span><span class='wk-chip'>2026-W19 ×1</span><span class='wk-chip'>2026-W24 ×3</span></div>
+    <p class='wk-total'>共 19 提交 / 9 周</p><div class='wk-chips'><span class='wk-chip'>2026-W15 ×7</span><span class='wk-chip'>2026-W16 ×3</span><span class='wk-chip'>2026-W17 ×3</span><span class='wk-chip'>2026-W18 ×1</span><span class='wk-chip'>2026-W19 ×1</span><span class='wk-chip'>2026-W24 ×1</span><span class='wk-chip'>2026-W29 ×1</span><span class='wk-chip'>2026-W32 ×1</span><span class='wk-chip'>2026-W33 ×1</span></div>
   </div>
 
   <div class="footer">由 generate_plan.ps1 v3.0 自动生成 · 子页面 · SunEyeVision</div>

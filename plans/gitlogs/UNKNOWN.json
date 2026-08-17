@@ -1,38 +1,8 @@
 [
   {
-    "hash": "b6e78cd",
-    "date": "2026-01-21",
-    "message": "Initial commit"
-  },
-  {
     "hash": "56cee67",
     "date": "2026-01-22",
     "message": "下拉器实现有问题的版本"
-  },
-  {
-    "hash": "16d92b7",
-    "date": "2026-01-25",
-    "message": "连接点的连接方式从点击方式连接改为拖拽方式连接"
-  },
-  {
-    "hash": "f31dfd8",
-    "date": "2026-01-26",
-    "message": "新增文件 DependencyAnalyzer.cs - 依赖分析器"
-  },
-  {
-    "hash": "2b798e0",
-    "date": "2026-01-27",
-    "message": "清除无效代码 并且经过调试可以运行"
-  },
-  {
-    "hash": "ea176b0",
-    "date": "2026-01-28",
-    "message": "重新整合了文件结构,并可以调试运行"
-  },
-  {
-    "hash": "5bd7c85",
-    "date": "2026-02-05",
-    "message": "目前为止，最纯净的、功能回归最完整、后续开发的基础版"
   },
   {
     "hash": "afe19c4",
@@ -40,19 +10,9 @@
     "message": "清理部分本地文件  删除libavoid相关文件"
   },
   {
-    "hash": "eb51382",
-    "date": "2026-02-05",
-    "message": "回退版本后的第一个可用版本呢"
-  },
-  {
     "hash": "800784c",
     "date": "2026-02-06",
     "message": "还未完成测试用例，先提交已完成的部分"
-  },
-  {
-    "hash": "fa17263",
-    "date": "2026-02-10",
-    "message": "更改失败版本"
   },
   {
     "hash": "034a865",
@@ -65,29 +25,9 @@
     "message": "﻿修复了旋转矩形的角度以及编辑异常，直线的起点还没有修复"
   },
   {
-    "hash": "b8b77de",
-    "date": "2026-03-09",
-    "message": "﻿ 把没有通过继承ObservableObject实现属性更改通知的类，都继承ObservableObject 所有需要观察对象基类 - 项目中所有属性变化通知的唯一源头"
-  },
-  {
-    "hash": "9f57a50",
-    "date": "2026-03-14",
-    "message": "docs: 更新实施进度报告和编译错误分析"
-  },
-  {
-    "hash": "f990e0c",
-    "date": "2026-03-30",
-    "message": "清理临时文件"
-  },
-  {
     "hash": "5584b9f",
     "date": "2026-04-01",
     "message": "﻿提交未完成的修复  现在的提交是完整的修复后的"
-  },
-  {
-    "hash": "2fe0ea2",
-    "date": "2026-04-01",
-    "message": "Save solution file changes before restructuring"
   },
   {
     "hash": "562eccd",
@@ -128,20 +68,5 @@
     "hash": "11c06b0",
     "date": "2026-04-21",
     "message": "﻿修复迁移bug"
-  },
-  {
-    "hash": "88c48ea",
-    "date": "2026-04-23",
-    "message": "﻿修改线宽为2"
-  },
-  {
-    "hash": "4c30d17",
-    "date": "2026-05-02",
-    "message": "﻿旋转矩形的角度控件用nunric代替"
-  },
-  {
-    "hash": "96535d4",
-    "date": "2026-06-29",
-    "message": "docs(rules): rule-018 Skill 优先级 + 治理规则/SKILL.md 标识更新"
   }
 ]

@@ -1,95 +1,78 @@
 {
   "generated": "2026-08-17",
-  "totalCommits": 459,
+  "totalCommits": 376,
   "weeks": [
     {
       "week": "2026-W04",
-      "commits": 28,
+      "commits": 3,
       "modules": {
-        "M-HIST-CANVAS": 21,
-        "UNKNOWN": 3,
-        "M-HIST-CORE": 3,
-        "M-SRC-UI": 1
+        "M-HIST-CORE": 2,
+        "UNKNOWN": 1
       }
     },
     {
       "week": "2026-W05",
-      "commits": 22,
+      "commits": 9,
       "modules": {
-        "M-HIST-CANVAS": 16,
-        "UNKNOWN": 3,
-        "M-SRC-INTEG": 2,
+        "M-HIST-CANVAS": 7,
+        "M-SRC-INTEG": 1,
         "M-HIST-CORE": 1
       }
     },
     {
       "week": "2026-W06",
-      "commits": 22,
+      "commits": 10,
       "modules": {
-        "M-HIST-CANVAS": 9,
-        "M-HIST-CORE": 5,
-        "UNKNOWN": 4,
+        "M-HIST-CANVAS": 3,
+        "M-HIST-CORE": 3,
         "M-SRC-RUNUI": 2,
-        "M-SRC-INTEG": 2
+        "UNKNOWN": 2
       }
     },
     {
       "week": "2026-W07",
-      "commits": 23,
+      "commits": 4,
       "modules": {
-        "M-HIST-PREVIEW": 14,
-        "M-HIST-CORE": 4,
-        "M-HIST-CANVAS": 3,
-        "UNKNOWN": 1,
+        "M-HIST-PREVIEW": 2,
+        "M-HIST-CANVAS": 1,
         "M-SRC-CAM": 1
       }
     },
     {
       "week": "2026-W08",
-      "commits": 13,
+      "commits": 6,
       "modules": {
-        "M-HIST-CANVAS": 7,
-        "M-HIST-CORE": 3,
-        "M-HIST-PATH": 1,
-        "M-SRC-TEST": 1,
-        "M-HIST-PREVIEW": 1
+        "M-HIST-CANVAS": 3,
+        "M-HIST-CORE": 2,
+        "M-HIST-PATH": 1
       }
     },
     {
       "week": "2026-W09",
       "commits": 8,
       "modules": {
-        "M-HIST-CANVAS": 5,
-        "M-SRC-TEST": 2,
+        "M-HIST-CANVAS": 6,
+        "M-SRC-UI": 1,
         "M-HIST-PATH": 1
       }
     },
     {
       "week": "2026-W10",
-      "commits": 22,
+      "commits": 21,
       "modules": {
-        "M-HIST-REGION": 11,
+        "M-SRC-UI": 11,
+        "M-HIST-REGION": 6,
         "UNKNOWN": 2,
-        "M-HIST-CORE": 2,
-        "M-HIST-SDKCTRL": 2,
-        "M-SRC-INTEG": 1,
-        "M-HIST-SOLUTION": 1,
-        "M-SRC-TEST": 1,
-        "M-HIST-RESULTTREE": 1,
-        "M-HIST-CANVAS": 1
+        "M-HIST-CORE": 1,
+        "M-HIST-RESULTTREE": 1
       }
     },
     {
       "week": "2026-W11",
-      "commits": 19,
+      "commits": 18,
       "modules": {
-        "M-HIST-CANVAS": 8,
-        "M-HIST-CORE": 3,
-        "UNKNOWN": 2,
-        "M-SRC-TEST": 2,
-        "M-HIST-REGION": 2,
-        "M-HIST-SDKCTRL": 1,
-        "M-HIST-PARAM": 1
+        "M-SRC-UI": 10,
+        "M-HIST-CANVAS": 8
       }
     },
     {
@@ -97,7 +80,8 @@
       "commits": 14,
       "modules": {
         "M-HIST-CANVAS": 11,
-        "M-SRC-TEST": 3
+        "M-SRC-TEST": 2,
+        "M-SRC-UI": 1
       }
     },
     {
@@ -110,139 +94,122 @@
     },
     {
       "week": "2026-W14",
-      "commits": 25,
+      "commits": 23,
       "modules": {
-        "M-HIST-CANVAS": 12,
-        "UNKNOWN": 4,
-        "M-HIST-SDKCTRL": 3,
-        "M-HIST-CORE": 1,
-        "M-HIST-DATAMODEL": 1,
+        "M-HIST-CANVAS": 10,
+        "M-SRC-UI": 9,
+        "UNKNOWN": 2,
         "M-HIST-SOLUTION": 1,
-        "M-HIST-REGION": 1,
-        "M-HIST-GLOBALVAR": 1,
-        "M-SRC-UI": 1
+        "M-HIST-GLOBALVAR": 1
       }
     },
     {
       "week": "2026-W15",
-      "commits": 46,
+      "commits": 45,
       "modules": {
-        "M-HIST-CANVAS": 12,
+        "M-SRC-UI": 17,
         "M-SRC-CAM": 9,
-        "M-HIST-SDKCTRL": 7,
+        "M-HIST-DATAMODEL": 7,
         "UNKNOWN": 6,
-        "M-HIST-DATAMODEL": 5,
-        "M-HIST-REGION": 2,
-        "T-CONVERT": 1,
-        "T-CONDITION": 1,
-        "M-SRC-UI": 1,
-        "M-HIST-CORE": 1,
-        "M-HIST-PARAM": 1
+        "M-HIST-CANVAS": 5,
+        "T-CONVERT": 1
       }
     },
     {
       "week": "2026-W16",
       "commits": 19,
       "modules": {
-        "M-HIST-CANVAS": 5,
-        "M-HIST-DATAMODEL": 4,
-        "M-HIST-PARAM": 3,
-        "M-HIST-SDKCTRL": 3,
+        "M-SRC-UI": 9,
+        "M-HIST-CANVAS": 3,
+        "M-HIST-DATAMODEL": 3,
         "M-HIST-REGION": 3,
-        "M-HIST-CORE": 1
+        "M-HIST-PARAM": 1
       }
     },
     {
       "week": "2026-W17",
       "commits": 23,
       "modules": {
-        "T-BLOB": 6,
-        "M-HIST-CANVAS": 5,
-        "M-HIST-SDKCTRL": 4,
-        "M-HIST-CORE": 3,
-        "UNKNOWN": 2,
-        "M-HIST-DATAMODEL": 2,
-        "M-HIST-REGION": 1
+        "M-SRC-UI": 9,
+        "T-BLOB": 4,
+        "M-HIST-CORE": 4,
+        "M-HIST-DATAMODEL": 3,
+        "M-HIST-CVENGINE": 1,
+        "M-HIST-CANVAS": 1,
+        "UNKNOWN": 1
       }
     },
     {
       "week": "2026-W18",
       "commits": 21,
       "modules": {
-        "T-BLOB": 7,
+        "M-SRC-UI": 11,
+        "T-BLOB": 4,
         "M-HIST-RESULTTREE": 3,
-        "M-HIST-CANVAS": 2,
-        "M-HIST-DATAMODEL": 2,
-        "M-HIST-SDKCTRL": 2,
-        "M-HIST-REGION": 1,
-        "UNKNOWN": 1,
-        "M-HIST-PREVIEW": 1,
-        "M-HIST-PARAM": 1,
-        "M-HIST-SOLUTION": 1
+        "M-HIST-DATAMODEL": 1,
+        "M-HIST-CANVAS": 1,
+        "M-HIST-CVENGINE": 1
       }
     },
     {
       "week": "2026-W19",
       "commits": 23,
       "modules": {
-        "M-HIST-CANVAS": 5,
+        "M-SRC-UI": 6,
         "T-BLOB": 5,
+        "M-HIST-CANVAS": 4,
         "T-SHAPEMATCH": 3,
-        "M-HIST-RESULTTREE": 3,
-        "M-HIST-SDKCTRL": 2,
+        "M-HIST-RESULTTREE": 2,
         "M-HIST-PREVIEW": 1,
         "M-HIST-CVENGINE": 1,
-        "M-HIST-DATAMODEL": 1,
-        "M-SRC-UI": 1,
-        "M-HIST-REGION": 1
+        "M-HIST-DATAMODEL": 1
       }
     },
     {
       "week": "2026-W20",
       "commits": 3,
       "modules": {
-        "T-SHAPEMATCH": 3
+        "T-SHAPEMATCH": 2,
+        "M-HIST-CVENGINE": 1
       }
     },
     {
       "week": "2026-W21",
       "commits": 10,
       "modules": {
-        "T-SHAPEMATCH": 5,
-        "M-HIST-CANVAS": 2,
-        "T-BLOB": 1,
-        "M-HIST-REGION": 1,
-        "M-HIST-SDKCTRL": 1
+        "T-SHAPEMATCH": 4,
+        "M-SRC-UI": 3,
+        "T-BLOB": 2,
+        "M-HIST-CANVAS": 1
       }
     },
     {
       "week": "2026-W22",
       "commits": 11,
       "modules": {
-        "T-SHAPEMATCH": 6,
-        "T-BLOB": 2,
-        "M-HIST-PARAM": 1,
+        "T-SHAPEMATCH": 4,
+        "M-SRC-UI": 4,
+        "M-HIST-CANVAS": 1,
         "M-HIST-GLOBALVAR": 1,
-        "M-SRC-UI": 1
+        "T-BLOB": 1
       }
     },
     {
       "week": "2026-W23",
       "commits": 4,
       "modules": {
-        "M-HIST-CANVAS": 2,
-        "T-SHAPEMATCH": 1,
-        "M-HIST-RESULTTREE": 1
+        "M-HIST-CANVAS": 3,
+        "M-SRC-UI": 1
       }
     },
     {
       "week": "2026-W24",
       "commits": 16,
       "modules": {
-        "M-HIST-CANVAS": 7,
-        "T-SHAPEMATCH": 4,
-        "M-HIST-DATAMODEL": 3,
-        "M-HIST-CORE": 1,
+        "M-HIST-CANVAS": 8,
+        "M-SRC-UI": 3,
+        "T-SHAPEMATCH": 3,
+        "M-HIST-DATAMODEL": 1,
         "T-BLOB": 1
       }
     },
@@ -257,21 +224,19 @@
       "week": "2026-W26",
       "commits": 13,
       "modules": {
+        "M-HIST-CANVAS": 5,
         "M-HIST-SCRIPT": 5,
-        "M-HIST-CANVAS": 4,
         "M-HIST-CONTRACT": 1,
-        "M-HIST-SDKCTRL": 1,
-        "T-SHAPEMATCH": 1,
+        "M-SRC-UI": 1,
         "M-HIST-CORE": 1
       }
     },
     {
       "week": "2026-W27",
-      "commits": 4,
+      "commits": 2,
       "modules": {
-        "M-HIST-CORE": 2,
-        "M-HIST-SCRIPT": 1,
-        "UNKNOWN": 1
+        "M-HIST-CORE": 1,
+        "M-HIST-SCRIPT": 1
       }
     },
     {
@@ -279,115 +244,158 @@
       "commits": 8,
       "modules": {
         "M-HIST-SCRIPT": 4,
-        "M-SRC-TEST": 3,
-        "T-SHAPEMATCH": 1
+        "M-SRC-TEST": 2,
+        "M-HIST-DATAMODEL": 1,
+        "M-SRC-UI": 1
       }
     },
     {
       "week": "2026-W30",
       "commits": 5,
       "modules": {
-        "M-SRC-TEST": 3,
+        "T-BLOB": 2,
         "T-CONVERT": 1,
-        "T-BLOB": 1
+        "M-SRC-TEST": 1,
+        "M-SRC-UI": 1
       }
     },
     {
       "week": "2026-W32",
-      "commits": 15,
+      "commits": 14,
       "modules": {
-        "M-SRC-TEST": 6,
-        "T-SUBROUTINE": 3,
-        "M-HIST-PARAM": 2,
+        "M-SRC-UI": 5,
+        "M-SRC-TEST": 4,
         "M-HIST-CANVAS": 1,
+        "T-SUBROUTINE": 1,
         "M-HIST-REGION": 1,
-        "T-BLOB": 1,
-        "T-SHAPEMATCH": 1
+        "M-HIST-DATAMODEL": 1,
+        "M-HIST-PARAM": 1
       }
     },
     {
       "week": "2026-W33",
       "commits": 32,
       "modules": {
-        "M-HIST-CANVAS": 13,
-        "M-SRC-UI": 7,
-        "M-SRC-CAM": 4,
-        "M-HIST-GLOBALVAR": 3,
-        "M-SRC-TEST": 3,
-        "T-SHAPEMATCH": 1,
-        "M-HIST-PATH": 1
+        "M-SRC-UI": 21,
+        "M-HIST-CANVAS": 6,
+        "M-HIST-PARAM": 1,
+        "M-SRC-CAM": 1,
+        "M-SRC-TEST": 1,
+        "M-HIST-PATH": 1,
+        "M-HIST-DATAMODEL": 1
+      }
+    },
+    {
+      "week": "2026-W34",
+      "commits": 1,
+      "modules": {
+        "M-SRC-UI": 1
       }
     }
   ],
   "moduleWeeks": {
     "M-SRC-UI": [
       {
-        "week": "2026-W04",
+        "week": "2026-W09",
+        "commits": 1
+      },
+      {
+        "week": "2026-W10",
+        "commits": 11
+      },
+      {
+        "week": "2026-W11",
+        "commits": 10
+      },
+      {
+        "week": "2026-W12",
         "commits": 1
       },
       {
         "week": "2026-W14",
-        "commits": 1
-      },
-      {
-        "week": "2026-W15",
-        "commits": 1
-      },
-      {
-        "week": "2026-W19",
-        "commits": 1
-      },
-      {
-        "week": "2026-W22",
-        "commits": 1
-      },
-      {
-        "week": "2026-W33",
-        "commits": 7
-      }
-    ],
-    "M-SRC-CAM": [
-      {
-        "week": "2026-W07",
-        "commits": 1
-      },
-      {
-        "week": "2026-W15",
         "commits": 9
       },
       {
-        "week": "2026-W33",
+        "week": "2026-W15",
+        "commits": 17
+      },
+      {
+        "week": "2026-W16",
+        "commits": 9
+      },
+      {
+        "week": "2026-W17",
+        "commits": 9
+      },
+      {
+        "week": "2026-W18",
+        "commits": 11
+      },
+      {
+        "week": "2026-W19",
+        "commits": 6
+      },
+      {
+        "week": "2026-W21",
+        "commits": 3
+      },
+      {
+        "week": "2026-W22",
         "commits": 4
+      },
+      {
+        "week": "2026-W23",
+        "commits": 1
+      },
+      {
+        "week": "2026-W24",
+        "commits": 3
+      },
+      {
+        "week": "2026-W26",
+        "commits": 1
+      },
+      {
+        "week": "2026-W29",
+        "commits": 1
+      },
+      {
+        "week": "2026-W30",
+        "commits": 1
+      },
+      {
+        "week": "2026-W32",
+        "commits": 5
+      },
+      {
+        "week": "2026-W33",
+        "commits": 21
+      },
+      {
+        "week": "2026-W34",
+        "commits": 1
       }
     ],
     "M-HIST-CANVAS": [
       {
-        "week": "2026-W04",
-        "commits": 21
-      },
-      {
         "week": "2026-W05",
-        "commits": 16
-      },
-      {
-        "week": "2026-W06",
-        "commits": 9
-      },
-      {
-        "week": "2026-W07",
-        "commits": 3
-      },
-      {
-        "week": "2026-W08",
         "commits": 7
       },
       {
-        "week": "2026-W09",
-        "commits": 5
+        "week": "2026-W06",
+        "commits": 3
       },
       {
-        "week": "2026-W10",
+        "week": "2026-W07",
         "commits": 1
+      },
+      {
+        "week": "2026-W08",
+        "commits": 3
+      },
+      {
+        "week": "2026-W09",
+        "commits": 6
       },
       {
         "week": "2026-W11",
@@ -403,43 +411,47 @@
       },
       {
         "week": "2026-W14",
-        "commits": 12
+        "commits": 10
       },
       {
         "week": "2026-W15",
-        "commits": 12
+        "commits": 5
       },
       {
         "week": "2026-W16",
-        "commits": 5
+        "commits": 3
       },
       {
         "week": "2026-W17",
-        "commits": 5
+        "commits": 1
       },
       {
         "week": "2026-W18",
-        "commits": 2
+        "commits": 1
       },
       {
         "week": "2026-W19",
-        "commits": 5
+        "commits": 4
       },
       {
         "week": "2026-W21",
-        "commits": 2
+        "commits": 1
+      },
+      {
+        "week": "2026-W22",
+        "commits": 1
       },
       {
         "week": "2026-W23",
-        "commits": 2
+        "commits": 3
       },
       {
         "week": "2026-W24",
-        "commits": 7
+        "commits": 8
       },
       {
         "week": "2026-W26",
-        "commits": 4
+        "commits": 5
       },
       {
         "week": "2026-W32",
@@ -447,59 +459,31 @@
       },
       {
         "week": "2026-W33",
-        "commits": 13
-      }
-    ],
-    "M-HIST-GLOBALVAR": [
-      {
-        "week": "2026-W14",
-        "commits": 1
-      },
-      {
-        "week": "2026-W22",
-        "commits": 1
-      },
-      {
-        "week": "2026-W33",
-        "commits": 3
-      }
-    ],
-    "T-SHAPEMATCH": [
-      {
-        "week": "2026-W19",
-        "commits": 3
-      },
-      {
-        "week": "2026-W20",
-        "commits": 3
-      },
-      {
-        "week": "2026-W21",
-        "commits": 5
-      },
-      {
-        "week": "2026-W22",
         "commits": 6
-      },
+      }
+    ],
+    "M-HIST-PARAM": [
       {
-        "week": "2026-W23",
-        "commits": 1
-      },
-      {
-        "week": "2026-W24",
-        "commits": 4
-      },
-      {
-        "week": "2026-W26",
-        "commits": 1
-      },
-      {
-        "week": "2026-W29",
+        "week": "2026-W16",
         "commits": 1
       },
       {
         "week": "2026-W32",
         "commits": 1
+      },
+      {
+        "week": "2026-W33",
+        "commits": 1
+      }
+    ],
+    "M-SRC-CAM": [
+      {
+        "week": "2026-W07",
+        "commits": 1
+      },
+      {
+        "week": "2026-W15",
+        "commits": 9
       },
       {
         "week": "2026-W33",
@@ -508,40 +492,24 @@
     ],
     "M-SRC-TEST": [
       {
-        "week": "2026-W08",
-        "commits": 1
-      },
-      {
-        "week": "2026-W09",
-        "commits": 2
-      },
-      {
-        "week": "2026-W10",
-        "commits": 1
-      },
-      {
-        "week": "2026-W11",
-        "commits": 2
-      },
-      {
         "week": "2026-W12",
-        "commits": 3
+        "commits": 2
       },
       {
         "week": "2026-W29",
-        "commits": 3
+        "commits": 2
       },
       {
         "week": "2026-W30",
-        "commits": 3
+        "commits": 1
       },
       {
         "week": "2026-W32",
-        "commits": 6
+        "commits": 4
       },
       {
         "week": "2026-W33",
-        "commits": 3
+        "commits": 1
       }
     ],
     "M-HIST-PATH": [
@@ -562,54 +530,10 @@
         "commits": 1
       }
     ],
-    "M-HIST-PARAM": [
-      {
-        "week": "2026-W11",
-        "commits": 1
-      },
+    "M-HIST-DATAMODEL": [
       {
         "week": "2026-W15",
-        "commits": 1
-      },
-      {
-        "week": "2026-W16",
-        "commits": 3
-      },
-      {
-        "week": "2026-W18",
-        "commits": 1
-      },
-      {
-        "week": "2026-W22",
-        "commits": 1
-      },
-      {
-        "week": "2026-W32",
-        "commits": 2
-      }
-    ],
-    "T-SUBROUTINE": [
-      {
-        "week": "2026-W32",
-        "commits": 3
-      }
-    ],
-    "M-HIST-REGION": [
-      {
-        "week": "2026-W10",
-        "commits": 11
-      },
-      {
-        "week": "2026-W11",
-        "commits": 2
-      },
-      {
-        "week": "2026-W14",
-        "commits": 1
-      },
-      {
-        "week": "2026-W15",
-        "commits": 2
+        "commits": 7
       },
       {
         "week": "2026-W16",
@@ -617,7 +541,7 @@
       },
       {
         "week": "2026-W17",
-        "commits": 1
+        "commits": 3
       },
       {
         "week": "2026-W18",
@@ -628,8 +552,36 @@
         "commits": 1
       },
       {
-        "week": "2026-W21",
+        "week": "2026-W24",
         "commits": 1
+      },
+      {
+        "week": "2026-W29",
+        "commits": 1
+      },
+      {
+        "week": "2026-W32",
+        "commits": 1
+      },
+      {
+        "week": "2026-W33",
+        "commits": 1
+      }
+    ],
+    "T-SUBROUTINE": [
+      {
+        "week": "2026-W32",
+        "commits": 1
+      }
+    ],
+    "M-HIST-REGION": [
+      {
+        "week": "2026-W10",
+        "commits": 6
+      },
+      {
+        "week": "2026-W16",
+        "commits": 3
       },
       {
         "week": "2026-W32",
@@ -639,11 +591,11 @@
     "T-BLOB": [
       {
         "week": "2026-W17",
-        "commits": 6
+        "commits": 4
       },
       {
         "week": "2026-W18",
-        "commits": 7
+        "commits": 4
       },
       {
         "week": "2026-W19",
@@ -651,11 +603,11 @@
       },
       {
         "week": "2026-W21",
-        "commits": 1
+        "commits": 2
       },
       {
         "week": "2026-W22",
-        "commits": 2
+        "commits": 1
       },
       {
         "week": "2026-W24",
@@ -663,11 +615,7 @@
       },
       {
         "week": "2026-W30",
-        "commits": 1
-      },
-      {
-        "week": "2026-W32",
-        "commits": 1
+        "commits": 2
       }
     ],
     "T-CONVERT": [
@@ -701,7 +649,7 @@
     "M-HIST-CORE": [
       {
         "week": "2026-W04",
-        "commits": 3
+        "commits": 2
       },
       {
         "week": "2026-W05",
@@ -709,92 +657,22 @@
       },
       {
         "week": "2026-W06",
-        "commits": 5
-      },
-      {
-        "week": "2026-W07",
-        "commits": 4
+        "commits": 3
       },
       {
         "week": "2026-W08",
-        "commits": 3
-      },
-      {
-        "week": "2026-W10",
         "commits": 2
       },
       {
-        "week": "2026-W11",
-        "commits": 3
-      },
-      {
-        "week": "2026-W14",
-        "commits": 1
-      },
-      {
-        "week": "2026-W15",
-        "commits": 1
-      },
-      {
-        "week": "2026-W16",
+        "week": "2026-W10",
         "commits": 1
       },
       {
         "week": "2026-W17",
-        "commits": 3
-      },
-      {
-        "week": "2026-W24",
-        "commits": 1
+        "commits": 4
       },
       {
         "week": "2026-W26",
-        "commits": 1
-      },
-      {
-        "week": "2026-W27",
-        "commits": 2
-      }
-    ],
-    "UNKNOWN": [
-      {
-        "week": "2026-W04",
-        "commits": 3
-      },
-      {
-        "week": "2026-W05",
-        "commits": 3
-      },
-      {
-        "week": "2026-W06",
-        "commits": 4
-      },
-      {
-        "week": "2026-W07",
-        "commits": 1
-      },
-      {
-        "week": "2026-W10",
-        "commits": 2
-      },
-      {
-        "week": "2026-W11",
-        "commits": 2
-      },
-      {
-        "week": "2026-W14",
-        "commits": 4
-      },
-      {
-        "week": "2026-W15",
-        "commits": 6
-      },
-      {
-        "week": "2026-W17",
-        "commits": 2
-      },
-      {
-        "week": "2026-W18",
         "commits": 1
       },
       {
@@ -808,76 +686,64 @@
         "commits": 1
       }
     ],
-    "M-HIST-SDKCTRL": [
-      {
-        "week": "2026-W10",
-        "commits": 2
-      },
-      {
-        "week": "2026-W11",
-        "commits": 1
-      },
-      {
-        "week": "2026-W14",
-        "commits": 3
-      },
-      {
-        "week": "2026-W15",
-        "commits": 7
-      },
-      {
-        "week": "2026-W16",
-        "commits": 3
-      },
-      {
-        "week": "2026-W17",
-        "commits": 4
-      },
-      {
-        "week": "2026-W18",
-        "commits": 2
-      },
+    "T-SHAPEMATCH": [
       {
         "week": "2026-W19",
+        "commits": 3
+      },
+      {
+        "week": "2026-W20",
         "commits": 2
       },
       {
         "week": "2026-W21",
-        "commits": 1
+        "commits": 4
       },
       {
-        "week": "2026-W26",
-        "commits": 1
+        "week": "2026-W22",
+        "commits": 4
+      },
+      {
+        "week": "2026-W24",
+        "commits": 3
       }
     ],
-    "M-HIST-DATAMODEL": [
+    "M-HIST-GLOBALVAR": [
       {
         "week": "2026-W14",
         "commits": 1
       },
       {
-        "week": "2026-W15",
-        "commits": 5
-      },
-      {
-        "week": "2026-W16",
-        "commits": 4
-      },
+        "week": "2026-W22",
+        "commits": 1
+      }
+    ],
+    "M-HIST-CVENGINE": [
       {
         "week": "2026-W17",
-        "commits": 2
+        "commits": 1
       },
       {
         "week": "2026-W18",
-        "commits": 2
+        "commits": 1
       },
       {
         "week": "2026-W19",
         "commits": 1
       },
       {
-        "week": "2026-W24",
-        "commits": 3
+        "week": "2026-W20",
+        "commits": 1
+      }
+    ],
+    "M-HIST-PREVIEW": [
+      {
+        "week": "2026-W07",
+        "commits": 2
+      },
+      {
+        "week": "2026-W19",
+        "commits": 1
       }
     ],
     "M-HIST-RESULTTREE": [
@@ -891,61 +757,13 @@
       },
       {
         "week": "2026-W19",
-        "commits": 3
-      },
-      {
-        "week": "2026-W23",
-        "commits": 1
-      }
-    ],
-    "M-HIST-PREVIEW": [
-      {
-        "week": "2026-W07",
-        "commits": 14
-      },
-      {
-        "week": "2026-W08",
-        "commits": 1
-      },
-      {
-        "week": "2026-W18",
-        "commits": 1
-      },
-      {
-        "week": "2026-W19",
-        "commits": 1
-      }
-    ],
-    "M-HIST-CVENGINE": [
-      {
-        "week": "2026-W19",
-        "commits": 1
-      }
-    ],
-    "M-HIST-SOLUTION": [
-      {
-        "week": "2026-W10",
-        "commits": 1
-      },
-      {
-        "week": "2026-W14",
-        "commits": 1
-      },
-      {
-        "week": "2026-W18",
-        "commits": 1
-      }
-    ],
-    "T-CONDITION": [
-      {
-        "week": "2026-W15",
-        "commits": 1
-      }
-    ],
-    "M-SRC-INTEG": [
-      {
-        "week": "2026-W05",
         "commits": 2
+      }
+    ],
+    "UNKNOWN": [
+      {
+        "week": "2026-W04",
+        "commits": 1
       },
       {
         "week": "2026-W06",
@@ -953,6 +771,24 @@
       },
       {
         "week": "2026-W10",
+        "commits": 2
+      },
+      {
+        "week": "2026-W14",
+        "commits": 2
+      },
+      {
+        "week": "2026-W15",
+        "commits": 6
+      },
+      {
+        "week": "2026-W17",
+        "commits": 1
+      }
+    ],
+    "M-HIST-SOLUTION": [
+      {
+        "week": "2026-W14",
         "commits": 1
       }
     ],
@@ -961,19 +797,105 @@
         "week": "2026-W06",
         "commits": 2
       }
+    ],
+    "M-SRC-INTEG": [
+      {
+        "week": "2026-W05",
+        "commits": 1
+      }
     ]
   },
   "moduleCommits": {
     "M-SRC-UI": [
       {
-        "hash": "408bb5f",
-        "date": "2026-01-23",
-        "message": "1.实现了多流程管理 2.优化了tebitem的样式"
+        "hash": "3268468",
+        "date": "2026-04-01",
+        "message": "﻿1.新增RangeInputControl控件 2.新增RangeSlider控件 3.新增ToggleSwitch控件 4.新增ThresholdDisplayConfig类 5.新增ThresholdResultConfig类 6.新增ThresholdParameters类 7.新增ThresholdToolDebugWindow类"
       },
       {
-        "hash": "24fa08a",
-        "date": "2026-03-30",
-        "message": "﻿把样式分离到资源字典中统一管理  整个行为没有变化"
+        "hash": "f742edb",
+        "date": "2026-04-01",
+        "message": "﻿参数系统重新设计 接下来需要集成和验证  先提交"
+      },
+      {
+        "hash": "ad91f0a",
+        "date": "2026-04-02",
+        "message": "﻿部分未提交  完整提交"
+      },
+      {
+        "hash": "69388e9",
+        "date": "2026-04-03",
+        "message": "﻿完善了工具层SDK控件的事件和命令，在工具层通过声明来绑定即可，不需要在后台代码中手动处理 目前的主要问题是当前的框架设计，导致在工具层UI无法直接预览，对工具开发者对于 UI的开发很不友好，下一步准备重新设计，提交代码，便于回退"
+      },
+      {
+        "hash": "e87ee7f",
+        "date": "2026-04-05",
+        "message": "﻿1.之前通过重构UI集成方案，实现了工具层UI的可预览编程 但是无法实现声明式编程，重构后支持声明式编程，其他问题还需测试优化"
+      },
+      {
+        "hash": "e8e8db2",
+        "date": "2026-04-05",
+        "message": "﻿优化框架更新，变化比较大需要分两次提交"
+      },
+      {
+        "hash": "578bfe0",
+        "date": "2026-04-05",
+        "message": "﻿2.重构调试窗口调佣的框架设计，之前的框架，在工具层无法预览变成， 具体的参考文档-》调试窗口框架设计文档-20260404.md 3.优化了调试窗口的样式 下一步工作内容： 基于新的架构，优化实际运行的正确性，现在工具层的集成还有很多问题，需要进一步的优化"
+      },
+      {
+        "hash": "2a6ebcc",
+        "date": "2026-04-06",
+        "message": "﻿重构了区域编辑器，修复了之前存在的各种bug，目前主要功能已经没有太大问题，一些小的优化后期再做 下一步开始优化工具的模型的其他功能"
+      },
+      {
+        "hash": "a783128",
+        "date": "2026-04-06",
+        "message": "﻿修复区域编辑器的部分bug  未完成版本   先提交便于回退"
+      },
+      {
+        "hash": "80e26f5",
+        "date": "2026-04-07",
+        "message": "﻿修复颜色选择器的绑定bug，现在可以正确的绑定默认颜色了 下一步 实现 图像显示控制器控件  以便于对图像显示对象进行控制"
+      },
+      {
+        "hash": "38fe6b2",
+        "date": "2026-04-07",
+        "message": "﻿颜色选择器的行为正确性 先优化到这里"
+      },
+      {
+        "hash": "dc8c65d",
+        "date": "2026-04-07",
+        "message": "﻿ColorPicker的样式先优化到这里，后面开始修复行为Bug"
+      },
+      {
+        "hash": "f5503c7",
+        "date": "2026-04-07",
+        "message": "﻿补充上一次的提交"
+      },
+      {
+        "hash": "ff5a00c",
+        "date": "2026-04-07",
+        "message": "﻿优化了numric控件的范围输入的样式 优化了colorpicker的样式  还需要进一步优化及修复行为bug"
+      },
+      {
+        "hash": "025e9a5",
+        "date": "2026-04-08",
+        "message": "fix: 修复 MainWindowViewModel 编译错误"
+      },
+      {
+        "hash": "001090f",
+        "date": "2026-04-08",
+        "message": "docs: 添加ThresholdTool分析文档"
+      },
+      {
+        "hash": "718ec36",
+        "date": "2026-04-08",
+        "message": "优化 ColorPicker 和 ThresholdTool 控件"
+      },
+      {
+        "hash": "d28f873",
+        "date": "2026-04-08",
+        "message": "﻿后面要开始agent的team模式开发，先提交代码，便于回退"
       },
       {
         "hash": "6c2f9ce",
@@ -981,9 +903,224 @@
         "message": "﻿继续提交完整的相机管理器UI优化"
       },
       {
+        "hash": "defbaa9",
+        "date": "2026-04-11",
+        "message": "﻿要进行大数据处理优化，先提交，便于回退"
+      },
+      {
+        "hash": "23ac71b",
+        "date": "2026-04-11",
+        "message": "﻿1.完全重构了工具的数据源管理，包括工具的数据源查询、数据源绑定、数据源选择、 数据源选择器等，并对工具的数据源管理进行了优化，包括数据源的缓存、数据源的过滤、数据源的排序等。 2.现在用分类缓存来管理绑定控件（图像绑定控件，数据绑定控件） 下一步的工作： 当前的正向映射，目前是对的  反向解析还没有做  从绑定数据解析成运输时属性 一些UI行为还不对 也需要尽快解决"
+      },
+      {
+        "hash": "86c0e14",
+        "date": "2026-04-12",
+        "message": "﻿完成了参数设置控件的重构，把数据绑定解构到ParamBindingBase中"
+      },
+      {
+        "hash": "e7f3c2c",
+        "date": "2026-04-12",
+        "message": "﻿绑定控件重名为ConfigSetting，新建ParamBinding的UI 下一步迁移绑定功能"
+      },
+      {
+        "hash": "21dba9c",
+        "date": "2026-04-12",
+        "message": "﻿对参数绑定控件进行重命名"
+      },
+      {
+        "hash": "d19e8a4",
+        "date": "2026-04-13",
+        "message": "﻿优化了部分UI，后面要进行大重构，先提交代码 便于回退"
+      },
+      {
+        "hash": "96850b2",
+        "date": "2026-04-13",
+        "message": "﻿删除了区域编辑器无用的UI 但是参数绑定内的控件可见性还需要优化"
+      },
+      {
+        "hash": "8282c57",
+        "date": "2026-04-13",
+        "message": "﻿修复了参数订阅控件的数据传递问题 ，可以通过参数订阅控件的数据源来获取参数值"
+      },
+      {
+        "hash": "0a2bea1",
+        "date": "2026-04-13",
+        "message": "﻿对RegionSubscribePanel.xaml进行修改"
+      },
+      {
+        "hash": "36d69fe",
+        "date": "2026-04-14",
+        "message": "﻿1.删除了ConfigSetting和ParamBinding控件中的部分冗余日志 2.添加了解决解决方案序列化和反序列化的部分日志，便于调试新的区域管理方案下的 数据同步，序列化化和反序列化问题 以及编辑区域的生命周期管理的问题"
+      },
+      {
+        "hash": "8cb0e82",
+        "date": "2026-04-15",
+        "message": "﻿优化了区域编辑器的事件及渲染器的生命周期管理，取消了对于视觉树对于事件的影响"
+      },
+      {
+        "hash": "31c8840",
+        "date": "2026-04-16",
+        "message": "﻿参数订阅控件可以根据继承方式显示对应的绑定控件"
+      },
+      {
+        "hash": "18b68b0",
+        "date": "2026-04-18",
+        "message": "﻿修复了区域反序列化到区域重绘的逻辑问题，现在可以正常反序列化，并显示正确的区域了。"
+      },
+      {
+        "hash": "b53d8c9",
+        "date": "2026-04-18",
+        "message": "﻿优化了区域的同步和序列化问题，反序列化还需要优化，先提交"
+      },
+      {
+        "hash": "0ff12cb",
+        "date": "2026-04-20",
+        "message": "﻿1.修复了区域删除逻辑会删除节点的bug 2.修复无法删除选中区域的bug 3.修复删除最后一个节点 还显示手柄的bug"
+      },
+      {
+        "hash": "f59450f",
+        "date": "2026-04-20",
+        "message": "﻿优化了区域的名称生成逻辑 使用空洞填充的算法来实现"
+      },
+      {
+        "hash": "bcfe2cf",
+        "date": "2026-04-20",
+        "message": "﻿1.重构了绑定控件的下拉数据的生成逻辑，之前通过拆解Fullname表达式的方式来生成， 现在通过属性映射来管理，这样可以避免Fullname表达式解析的性能问题， 同时也避免了Fullname表达式解析的复杂性。"
+      },
+      {
+        "hash": "952345f",
+        "date": "2026-04-21",
+        "message": "﻿优化了图像传递的逻辑，打开是自动填充第一个"
+      },
+      {
+        "hash": "64bd9dc",
+        "date": "2026-04-21",
+        "message": "﻿把图像阈值工具改为Blob分析工具"
+      },
+      {
+        "hash": "c071ec0",
+        "date": "2026-04-22",
+        "message": "﻿基于 幂律公式：screenSize = 10 / zoom^0.15，Clamp [8, 12] px 优化了手柄的尺寸和区域名称的尺寸"
+      },
+      {
+        "hash": "5393a52",
+        "date": "2026-04-22",
+        "message": "﻿线宽和手柄保持缩放下屏幕尺寸一致"
+      },
+      {
+        "hash": "6eed1f6",
+        "date": "2026-04-22",
+        "message": "﻿调整显示的线宽和颜色"
+      },
+      {
+        "hash": "88c48ea",
+        "date": "2026-04-23",
+        "message": "﻿修改线宽为2"
+      },
+      {
+        "hash": "4c30d17",
+        "date": "2026-05-02",
+        "message": "﻿旋转矩形的角度控件用nunric代替"
+      },
+      {
+        "hash": "0b4c712",
+        "date": "2026-05-02",
+        "message": "﻿1.修复了圆形和多变项图形到参数无法双向同步的问题"
+      },
+      {
+        "hash": "1f794c4",
+        "date": "2026-05-02",
+        "message": "﻿修复多边形右键预览图像的生成逻辑，鼠标移动 预览多边形不再跳变"
+      },
+      {
+        "hash": "5adba0b",
+        "date": "2026-05-02",
+        "message": "﻿添加多变形区域编辑功能，右键删除还有点bug，先提交，便于回退"
+      },
+      {
+        "hash": "2ee443b",
+        "date": "2026-05-02",
+        "message": "﻿DispTextColorControl的行为基本都正确了 但是阈值和最大值 绑定模式切回常量模式 还是会用解析值赋给常量值"
+      },
+      {
+        "hash": "b1d21b5",
+        "date": "2026-05-02",
+        "message": "﻿修复了DispTextColorControl绑定模式的数据同步 和序列化及反序列化的问题"
+      },
+      {
+        "hash": "77510b7",
+        "date": "2026-05-02",
+        "message": "﻿1.修复了ParamBindingBase.cs中ParamBindingBase.GetValue()方法的bug 2.基类静态回调改为派发到 protected virtual 实例方法，子类通过覆写来响应 DataType 变化。"
+      },
+      {
+        "hash": "50ecd3f",
+        "date": "2026-05-03",
+        "message": "﻿增加命中容差，先提交 现在的命中测试有问题，准备回退版本看看之前版本的行为"
+      },
+      {
+        "hash": "713db77",
+        "date": "2026-05-03",
+        "message": "﻿修复手柄的显示问题"
+      },
+      {
+        "hash": "8af8589",
+        "date": "2026-05-03",
+        "message": "﻿检测区域和屏蔽区域整合未完整提交，进行补充提交"
+      },
+      {
+        "hash": "edf63bd",
+        "date": "2026-05-03",
+        "message": "﻿优化了区域编辑器的布局"
+      },
+      {
+        "hash": "b2df90f",
+        "date": "2026-05-04",
+        "message": "﻿修复切换节点渲染遗留的问题"
+      },
+      {
         "hash": "3005025",
         "date": "2026-05-04",
         "message": "﻿优化模块结果的显示样式为datagrid"
+      },
+      {
+        "hash": "36c2f9f",
+        "date": "2026-05-04",
+        "message": "﻿修复无法新架构下无法删除选中区域的bug"
+      },
+      {
+        "hash": "c8b6ac6",
+        "date": "2026-05-04",
+        "message": "﻿修复手柄无法命中的问题，主要是路由时序的问题。"
+      },
+      {
+        "hash": "63ac86a",
+        "date": "2026-05-06",
+        "message": "﻿优化图像显示控件 图像选择器 combobox的样式"
+      },
+      {
+        "hash": "e0038f8",
+        "date": "2026-05-08",
+        "message": "﻿1.修复了结果显示层多边形  不封闭显示的bug"
+      },
+      {
+        "hash": "6f17561",
+        "date": "2026-05-18",
+        "message": "﻿把形状选择解耦成toolbar，并优化了布局及提高了屏蔽区域的命中优先级"
+      },
+      {
+        "hash": "94a4ad6",
+        "date": "2026-05-18",
+        "message": "﻿优化了区域编辑器的编辑行为  不再需要选择和编辑模式手动切换了"
+      },
+      {
+        "hash": "a6316d8",
+        "date": "2026-05-18",
+        "message": "﻿优化了统一显示模式下 大数据量显示的显示性能"
+      },
+      {
+        "hash": "42f4807",
+        "date": "2026-05-25",
+        "message": "refactor: SSOT数据传递架构重构"
       },
       {
         "hash": "8c46765",
@@ -991,14 +1128,99 @@
         "message": "fix: 区分文本位置来源，样式驱动文本实时同步锚点"
       },
       {
+        "hash": "49c5bf4",
+        "date": "2026-05-26",
+        "message": "feat: 旋转矩形角度系修复 + 结果层方向箭头 + 箭头头部尺寸调整"
+      },
+      {
+        "hash": "ddeff11",
+        "date": "2026-05-30",
+        "message": "fix: ParamBinding ParameterName 传播 & RecordConsumerBinding 监控增强"
+      },
+      {
+        "hash": "57ad126",
+        "date": "2026-06-01",
+        "message": "feat: 全局变量重命名后自动更新绑定引用与结果显示"
+      },
+      {
+        "hash": "702bb33",
+        "date": "2026-06-12",
+        "message": "refactor(script): 优化脚本工具架构 - 重命名 ScriptApi->ScriptContext / ScriptBase->Script；新增 CompletitionWindow 自动补全（类型/标识符/成员）；新增 AssemblyReferenceDialog 引用管理界面；新增 LogEntry 模型；修复文档更新方式并移除静默 catch；添加 CSharpDark.xshd 语法高亮主题"
+      },
+      {
+        "hash": "47255f5",
+        "date": "2026-06-12",
+        "message": "refactor(dsqs): DSQS 架构重构 - 删除本地缓存，SSOT 委托实时读取"
+      },
+      {
+        "hash": "be567f4",
+        "date": "2026-06-12",
+        "message": "refactor(subroutine): 子程序工具完善 + DSQS/ImageSourceSelector 优化"
+      },
+      {
+        "hash": "f690464",
+        "date": "2026-06-25",
+        "message": "feat(Script): 引入 IMonitorable 监视协议 + NumericTypes 单一来源 + 变量 Tab 全面升级"
+      },
+      {
+        "hash": "46b0f31",
+        "date": "2026-07-16",
+        "message": "sdk类型系统收敛: GlobalVariableTypeMapper重命名为SdkTypeVocabulary + 几何类型分离 + 输出变量契约 + SubroutineInput/OutputConfig重构"
+      },
+      {
+        "hash": "e6106d8",
+        "date": "2026-07-21",
+        "message": "feat: 输出变量契约与RoI绑定基础设施收敛"
+      },
+      {
+        "hash": "5721e5a",
+        "date": "2026-08-04",
+        "message": "fix(subroutine): 修复子程序调试窗口编辑中关窗再打开报 DeferRefresh 异常"
+      },
+      {
+        "hash": "64d31a8",
+        "date": "2026-08-04",
+        "message": "子程序输入图像开箱即用 + 参数绑定类型映射重构"
+      },
+      {
+        "hash": "3f467ae",
+        "date": "2026-08-06",
+        "message": "优化子程序调试窗口：删除运行参数假页，约束至少一个输入输出，隐藏无效执行按钮"
+      },
+      {
+        "hash": "36355cb",
+        "date": "2026-08-06",
+        "message": "迁移 Region 概念为 RoI：完成 Region 到 RoI 概念对齐"
+      },
+      {
+        "hash": "4b21afa",
+        "date": "2026-08-06",
+        "message": "feat(区域): ShapeParameters 添加扁平参数属性，修复矩形绘制/缩放与旋转缩放方向"
+      },
+      {
         "hash": "5b56aad",
         "date": "2026-08-11",
         "message": "﻿重构(UI): 清理名不副实的 Controls/ 目录 - 归位辅助类、删除孤立渲染代码"
       },
       {
+        "hash": "bd64034",
+        "date": "2026-08-11",
+        "message": "重构(UI): 命名空间与功能模块目录对齐(根治两层皮)"
+      },
+      {
+        "hash": "23d3147",
+        "date": "2026-08-11",
+        "message": "重构(UI): Views层目录改名为Shell以对齐功能模块布局"
+      },
+      {
         "hash": "d3a4753",
         "date": "2026-08-11",
         "message": "重构(UI): 阶段一+阶段二 - SDK主题收敛 与 VM就近化改造"
+      },
+      {
+        "hash": "ac74fd9",
+        "date": "2026-08-12",
+        "message": "工作区新增右下角小地图，移除流程管理条"
       },
       {
         "hash": "baffb91",
@@ -1016,89 +1238,162 @@
         "message": "﻿重构(UI): 全修结构不合理点 - Toolbox就近 + 薄Services目录合并"
       },
       {
+        "hash": "9702cef",
+        "date": "2026-08-12",
+        "message": "重构(UI): 修复 Shell 与 Features 的分离/重复问题，贯彻 View 与 VM 就近共生"
+      },
+      {
+        "hash": "99a6998",
+        "date": "2026-08-13",
+        "message": "修复主题系统遮蔽问题并重构主题资源加载"
+      },
+      {
+        "hash": "73ae4ce",
+        "date": "2026-08-13",
+        "message": "主题系统+日志双轨制+构建输出优化"
+      },
+      {
+        "hash": "1918c0f",
+        "date": "2026-08-13",
+        "message": "主界面重构: 画布跟随缩放 + 缩放范围10%-200% + 画布扩至6000"
+      },
+      {
+        "hash": "535227b",
+        "date": "2026-08-14",
+        "message": "﻿修复右键菜单白色块并清理连续运行图标相关废弃代码"
+      },
+      {
+        "hash": "52028a0",
+        "date": "2026-08-14",
+        "message": "方案管理界面优化：删除解决方案支持连源文件删除、标题栏主题适配、工作流标签页选中同步"
+      },
+      {
+        "hash": "80ec8fd",
+        "date": "2026-08-14",
+        "message": "修复打开方案后列表与打开时间不更新"
+      },
+      {
         "hash": "66b1577",
         "date": "2026-08-14",
         "message": "修复工作流下拉框主题切换失效问题"
       },
       {
+        "hash": "5e3ba37",
+        "date": "2026-08-14",
+        "message": "修复画布滚动条显示与交互问题，并优化打开工作流自动定位节点"
+      },
+      {
+        "hash": "40d43bd",
+        "date": "2026-08-14",
+        "message": "暗色主题适配系列（1-5）：日志面板按钮、topbar工作流下拉、分隔条、折叠按钮与菜单样式"
+      },
+      {
         "hash": "9d29561",
         "date": "2026-08-15",
         "message": "状态栏配色工程化适配双主题"
-      }
-    ],
-    "M-SRC-CAM": [
-      {
-        "hash": "881e38e",
-        "date": "2026-02-09",
-        "message": "✅ 离线批处理 (同步模式) ✅ 实时相机处理 (异步模式) ✅ 多相机并行 (事件总线) ✅ 触发式采集 (触发器管理) ✅ 高频数据处理 (队列缓冲)"
-      },
-      {
-        "hash": "1f0b8bf",
-        "date": "2026-04-09",
-        "message": "﻿相机管理器设计UI优化万层，还没有测试，先提交"
-      },
-      {
-        "hash": "2c7a156",
-        "date": "2026-04-09",
-        "message": "修复命名空间和删除Camera.local目录"
-      },
-      {
-        "hash": "1d795c1",
-        "date": "2026-04-09",
-        "message": "修复CameraManagerViewModel和AddCameraViewModel的命名空间"
-      },
-      {
-        "hash": "daa3e64",
-        "date": "2026-04-09",
-        "message": "修复CameraDiscovery的using语句，使用正确的命名空间SunEyeVision.Plugin.SDK.Logging"
-      },
-      {
-        "hash": "fa1cfa4",
-        "date": "2026-04-09",
-        "message": "修复CameraDiscovery的using语句，使用正确的命名空间SunEyeVision.Plugin.SDK.Logging"
-      },
-      {
-        "hash": "54a2e1b",
-        "date": "2026-04-09",
-        "message": "添加相机自动发现功能"
-      },
-      {
-        "hash": "85b251a",
-        "date": "2026-04-09",
-        "message": "合并main分支：相机自动发现功能（解决冲突）"
-      },
-      {
-        "hash": "403a9db",
-        "date": "2026-04-09",
-        "message": "修复AddCameraViewModel的using语句，添加ObservableObject命名空间引用"
-      },
-      {
-        "hash": "4029e14",
-        "date": "2026-04-11",
-        "message": "fix: 修复CameraDetailPanel.xaml命名空间问题 - 恢复完整版本"
-      },
-      {
-        "hash": "bd64034",
-        "date": "2026-08-11",
-        "message": "重构(UI): 命名空间与功能模块目录对齐(根治两层皮)"
-      },
-      {
-        "hash": "dafe347",
-        "date": "2026-08-11",
-        "message": "重构(UI): 对话框视图归位到对应功能模块目录"
-      },
-      {
-        "hash": "fdfcdd0",
-        "date": "2026-08-11",
-        "message": "重构(UI): UI层从按层组织改为按功能模块目录"
       },
       {
         "hash": "b603467",
         "date": "2026-08-15",
         "message": "弹窗标题栏与SDK调试窗口接入主题系统"
+      },
+      {
+        "hash": "0a917ab",
+        "date": "2026-08-15",
+        "message": "修复关闭/删除确认弹窗不跟随主题，且关闭时无确认弹窗"
+      },
+      {
+        "hash": "7605075",
+        "date": "2026-08-17",
+        "message": "SDK层UI主题化改造与视觉图标修复"
       }
     ],
     "M-HIST-CANVAS": [
+      {
+        "hash": "bd4d912",
+        "date": "2026-01-27",
+        "message": "WorkflowCanvasControl 工作流画布控件进来重构  并可以调试运行"
+      },
+      {
+        "hash": "7bc8d45",
+        "date": "2026-01-27",
+        "message": "1. 日志系统优化 - CPU 降低 30-50% 2. 节点查找优化 - 连接线渲染提升 10-20x 3. HitTest 优化 - 100 节点时提升 5-10x 4. 批量更新机制 - 批量操作提升 5-10x 1. 画布虚拟化 - 1000 节点时提升 50-100x 2. 连接线路径缓存 - 连接线渲染提升 3-5x 3. DrawingContext 渲染 - 渲染提升 2-3x 4. 连接线几何优化 - 连接线渲染提升 2-4x 1. 更新 CanvasConfig 配置 2. 修改 WorkflowCanvasControl.xaml.cs 3. 修改 WorkflowCanvasControl.xaml 4. 实现自动切换逻辑 5. 项目构建成功"
+      },
+      {
+        "hash": "95b2802",
+        "date": "2026-01-27",
+        "message": "Revert \"重构了连线架构，将路径计算逻辑从 UI 层分离到服务层，\""
+      },
+      {
+        "hash": "bdf5c86",
+        "date": "2026-01-27",
+        "message": "重构了连线架构，将路径计算逻辑从 UI 层分离到服务层， 目前还没有测试，先提交一下代码，后续再测试。"
+      },
+      {
+        "hash": "4c8abe0",
+        "date": "2026-01-28",
+        "message": "修改了节点样式，  并调试了其行为"
+      },
+      {
+        "hash": "98c3463",
+        "date": "2026-01-29",
+        "message": "优化了节点架构，与其他代码层实现了解耦，避免了节点样式优化对其他代码层影响"
+      },
+      {
+        "hash": "d9f135d",
+        "date": "2026-01-31",
+        "message": "1.优化了路径策略   优化了水平优先还是垂直优先的选择策略 2.测试策略优化后的部分正确性  还需要继续测试和优化"
+      },
+      {
+        "hash": "8d17ca9",
+        "date": "2026-02-03",
+        "message": "1.重构了画布架构，便于测试更多的画布库 2.重构了路径算法架构，便于兼容测试更多的路径算法"
+      },
+      {
+        "hash": "61777d9",
+        "date": "2026-02-04",
+        "message": "路径拖拽优化"
+      },
+      {
+        "hash": "ed8fc5d",
+        "date": "2026-02-08",
+        "message": "1.删除了无用的代码机文件 2.优化了workFlow工作流引擎的执行逻辑，引入了基于拓扑排序的并行组执行方法，替代了原有的基于工作流特征的执行策略选择器和混合执行计划。 3.在执行链和执行组的日志中增加了节点显示名称，提升日志的可读性。 4.增加了日志输出，记录层级分组和执行组的详细信息，帮助调试和分析执行过程。 5.测试了工作流引擎的并行组执行功能，验证了其正确性。目前基于单个工作流的并行组执行功能已完成，后续将继续优化和完善。"
+      },
+      {
+        "hash": "95fe1d0",
+        "date": "2026-02-13",
+        "message": "首屏显示感觉已经优化到极限，后台缓存和滚动显示还需要优化"
+      },
+      {
+        "hash": "f1656b9",
+        "date": "2026-02-22",
+        "message": "1.对源码层文件结构及依赖关系进行了大重构 2.解决了重构后的部分bug，还有bug待修复 3.对UI进行了文件结构的大重构，按照职责进行了分文件夹组织，还未验证正确性，先提交一下 4.更新了说明文档，架构说明、依赖关系说明、文件结构说明等"
+      },
+      {
+        "hash": "451c3af",
+        "date": "2026-02-22",
+        "message": "1.解决了重构后的部分bug，还有bug待修复"
+      },
+      {
+        "hash": "c66624a",
+        "date": "2026-02-22",
+        "message": "1.由于工具插件层的设计无法进行独立开发，对工具插件层进行重构，将其抽离成独立的插件抽象层（Plugin.Abstractions），并将原工具插件层重命名为插件基础设施层（Plugin.Infrastructure）。重构后，工具插件层的接口和相关模型被移至插件抽象层，插件基础设施层则负责实现这些接口并提供相关服务。这种分离使得工具插件的开发可以独立于具体的实现细节，提高了系统的模块化和可维护性。 2.重构后的项目结构更加清晰，插件抽象层（Plugin.Abstractions）专注于定义工具插件的接口和相关模型，而插件基础设施层（Plugin.Infrastructure）则专注于实现这些接口并提供相关服务。这种分离使得工具插件的开发可以独立于具体的实现细节，提高了系统的模块化和可维护性。 3.重构过程中，删除了原工具插件层中的一些接口和模型，并在新的插件抽象层中重新定义了这些接口和模型。同时，更新了相关的项目文件和解决方案文件，以反映新的项目结构。 4.重构后，工具插件的开发者可以直接引用插件抽象层（Plugin.Abstractions）来实现工具插件，而不需要关心插件基础设施层（Plugin.Infrastructure）的具体实现细节。这种设计提高了系统的灵活性和可扩展性，使得未来添加新的工具插件变得更加容易。 5.重构还包括一些其他的改动，如添加了新的批处理脚本（build_and_run.bat）和一些新的文档文件，这些改动旨在提高开发效率和项目的可维护性。 6.重构后的代码结构更加清晰，模块之间的依赖关系更加明确，有助于提高代码的可读性和可维护性。同时，这种分离也有助于促进团队协作，使得不同的开发者可以专注于不同的模块，提高了开发效率。 7.重构过程中，确保了所有的功能都得到了保留，并且没有引入新的错误。通过重构，项目的整体结构得到了优化，使得未来的开发和维护工作更加高效和便捷。 8.重构后的项目结构如下： - src   - Core   - DeviceDriver   - Plugin.Abstractions   - Plugin.Infrastructure   - Tools   - UI   - SunEyeVision.sln   工具插件还没有重构，先提交当前的重构结果，后续再进行工具插件的重构。"
+      },
+      {
+        "hash": "c5ddea1",
+        "date": "2026-02-24",
+        "message": "1.尝试重构sdk层接口 2.尝试重构sdk层数据类型定义 3.尝试基于SDK定义数据绑定模型 4.还有大量工作没有完成，下一步建立完整的绑定数据模型，先提交"
+      },
+      {
+        "hash": "a03161d",
+        "date": "2026-02-24",
+        "message": "优化了sdk层的工具接口和图像处理接口，现在只是行为暂时正确，接口内容还需要优化"
+      },
+      {
+        "hash": "7276351",
+        "date": "2026-02-25",
+        "message": "1.继续修复编码错误 2.恢复丢失文件 3.初步实现了插件开发工具包PluginDevKit，可以让开发者完全独立的进行插件开发及调试 后续工作 1.需要继续测试并修复大重构后所带来的功能及性能变化 2.开始进行实战式的SDK开发，包括API设计、文档编写、示例代码等"
+      },
       {
         "hash": "a868fb0",
         "date": "2026-02-25",
@@ -1110,14 +1405,14 @@
         "message": "修复重构后节点拖拽卡顿的问题，重构了节点创建和渲染的逻辑 2.引入了节点缓存池和渲染调度器，优化了节点的创建和渲染过程"
       },
       {
-        "hash": "1582d73",
-        "date": "2026-03-04",
-        "message": "﻿要对图像预览器及整个图像管理进行重构，解决切换闪烁的问题"
+        "hash": "0d9d987",
+        "date": "2026-02-27",
+        "message": "﻿1.重构接口，简化插件开发  工具只要实现Run方法即可 2.新增插件模板，简化插件开发，提供插件模板项目，插件开发者只需要关注业务逻辑即可，不成熟，后续会完善 3.新增插件运行时，简化插件运行，插件运行时会自动加载插件，调用插件的Run方法 4.新增插件调试工具，简化插件调试，插件调试工具会自动加载插件，调用插件的Run方法，方便插件开发者调试插件"
       },
       {
-        "hash": "3c0c6f1",
-        "date": "2026-03-10",
-        "message": "﻿解决重复订阅鼠标事件的问题 但是性能问题还没有解决"
+        "hash": "833c9a1",
+        "date": "2026-03-11",
+        "message": "﻿1.解决方案系统实现 2.文件结构重构"
       },
       {
         "hash": "1f78845",
@@ -1155,6 +1450,11 @@
         "message": "﻿1.系统管理   项目距空间+项目的方式  暂时提交  尝试实现单解决方案系统 这个版本暂时提交保留"
       },
       {
+        "hash": "93c5a95",
+        "date": "2026-03-16",
+        "message": "﻿重构  重构  重构 解决方案系统 越来越接近真相  但是现在还有很多问题"
+      },
+      {
         "hash": "a0044c7",
         "date": "2026-03-17",
         "message": "﻿1.目前解决方案的编辑逻辑还有问题 其他 复制 删除 另存为等代码  还需继续测试优化"
@@ -1173,11 +1473,6 @@
         "hash": "406bc77",
         "date": "2026-03-18",
         "message": "﻿1.继续优化及修复解决方案管理器，进一步剥离解决方案元数据与实际解决方案的耦合关系 2.添加角标  用于区分选中的解决方案和打开的解决方案 3.修复双击选项卡双击的bug及解决方案的启动流程 4.待修复 复制  另存为 关闭  跳过等行为的正确性"
-      },
-      {
-        "hash": "f5d0412",
-        "date": "2026-03-19",
-        "message": "﻿1.修复解决方案及配方更新机制 目前还有变异问题 先提交"
       },
       {
         "hash": "001fcf7",
@@ -1300,16 +1595,6 @@
         "message": "﻿优化了节点元数据和工具元数据 同步到所有的工具中保持一致性"
       },
       {
-        "hash": "e8e8db2",
-        "date": "2026-04-05",
-        "message": "﻿优化框架更新，变化比较大需要分两次提交"
-      },
-      {
-        "hash": "578bfe0",
-        "date": "2026-04-05",
-        "message": "﻿2.重构调试窗口调佣的框架设计，之前的框架，在工具层无法预览变成， 具体的参考文档-》调试窗口框架设计文档-20260404.md 3.优化了调试窗口的样式 下一步工作内容： 基于新的架构，优化实际运行的正确性，现在工具层的集成还有很多问题，需要进一步的优化"
-      },
-      {
         "hash": "cbfaf99",
         "date": "2026-04-08",
         "message": "fix: 修复 Workflow 和 ThresholdTool 编译错误"
@@ -1320,34 +1605,9 @@
         "message": "refactor: 优化ThresholdTool参数系统"
       },
       {
-        "hash": "718ec36",
-        "date": "2026-04-08",
-        "message": "优化 ColorPicker 和 ThresholdTool 控件"
-      },
-      {
-        "hash": "6c2109a",
-        "date": "2026-04-09",
-        "message": "﻿基于重构进行优化测试  目前传递链还有点问题，先提交，后续继续解决传递链的问题"
-      },
-      {
-        "hash": "4d8dc66",
-        "date": "2026-04-09",
-        "message": "﻿重构基于绑定模型的数据传递模型，还未验证，先提交"
-      },
-      {
         "hash": "17eda05",
         "date": "2026-04-09",
         "message": "实施相机自动发现与添加功能"
-      },
-      {
-        "hash": "cd899ba",
-        "date": "2026-04-10",
-        "message": "﻿1.重新设计了基于设计时的数据绑定框架，不在使用反射，而是使用变量池的方式来实现 2.属性面板大更新，不再显示选中节点的属性，因为功能和调试窗口的功能重叠了 3.增加了数据分析选项，架构层已经设计，工具层还没有实现 当前状态： 1.图像源选择控件可以看到所有父节点的输出，但是格式还不对 2.参数绑定控件在UI层实现了，基于显示名称表达式生成树状结构，但是在数据绑定层没有实现 3.基于绑定表达式的解析支持运行还没有实现"
-      },
-      {
-        "hash": "d6a8f97",
-        "date": "2026-04-10",
-        "message": "﻿后面要大重构结果输出架构，先提交代码，便于回退"
       },
       {
         "hash": "6242c5e",
@@ -1360,16 +1620,6 @@
         "message": "﻿UI简单优化"
       },
       {
-        "hash": "23ac71b",
-        "date": "2026-04-11",
-        "message": "﻿1.完全重构了工具的数据源管理，包括工具的数据源查询、数据源绑定、数据源选择、 数据源选择器等，并对工具的数据源管理进行了优化，包括数据源的缓存、数据源的过滤、数据源的排序等。 2.现在用分类缓存来管理绑定控件（图像绑定控件，数据绑定控件） 下一步的工作： 当前的正向映射，目前是对的  反向解析还没有做  从绑定数据解析成运输时属性 一些UI行为还不对 也需要尽快解决"
-      },
-      {
-        "hash": "21dba9c",
-        "date": "2026-04-12",
-        "message": "﻿对参数绑定控件进行重命名"
-      },
-      {
         "hash": "98e6050",
         "date": "2026-04-13",
         "message": "﻿删除了GetResultItems方法，改为GetResultItemsAsync方法"
@@ -1380,34 +1630,9 @@
         "message": "﻿工具UI进行了局部调整优化，先提交，便于回退"
       },
       {
-        "hash": "36d69fe",
-        "date": "2026-04-14",
-        "message": "﻿1.删除了ConfigSetting和ParamBinding控件中的部分冗余日志 2.添加了解决解决方案序列化和反序列化的部分日志，便于调试新的区域管理方案下的 数据同步，序列化化和反序列化问题 以及编辑区域的生命周期管理的问题"
-      },
-      {
         "hash": "7e20b75",
         "date": "2026-04-14",
         "message": "﻿删除序列化和反序列化是的回退机制避免干分析"
-      },
-      {
-        "hash": "b53d8c9",
-        "date": "2026-04-18",
-        "message": "﻿优化了区域的同步和序列化问题，反序列化还需要优化，先提交"
-      },
-      {
-        "hash": "0ff12cb",
-        "date": "2026-04-20",
-        "message": "﻿1.修复了区域删除逻辑会删除节点的bug 2.修复无法删除选中区域的bug 3.修复删除最后一个节点 还显示手柄的bug"
-      },
-      {
-        "hash": "4343b2c",
-        "date": "2026-04-20",
-        "message": "﻿优化了日志系统，增加了诊断模式  如下是各种日志级别 及诊断模式下的日志输出设计 日志级别\t非诊断模式\t诊断模式\t适用内容 Debug\t不输出\t输出\t实现细节、内部状态、步骤追踪 Info\t输出\t输出\t状态变更、过程开始、中间状态 Success\t输出\t输出\t任务完成、结果达标、操作完成 Warning\t输出\t输出\t有问题但能继续运行 Error\t输出\t输出\t失败/异常，需要处理 Fatal\t输出\t输出\t程序无法继续运行"
-      },
-      {
-        "hash": "6eed1f6",
-        "date": "2026-04-22",
-        "message": "﻿调整显示的线宽和颜色"
       },
       {
         "hash": "3a72cff",
@@ -1415,19 +1640,9 @@
         "message": "﻿1.清理临时文件和过期文件 2.优化技能和规则，尽量减低方案设计的上下文调度，减低不必要的token用量"
       },
       {
-        "hash": "bf35400",
-        "date": "2026-04-24",
-        "message": "﻿可以正确的通过绑定解析正确的值，但是模式切换还有问题 先提交，便于回退"
-      },
-      {
-        "hash": "50ecd3f",
-        "date": "2026-05-03",
-        "message": "﻿增加命中容差，先提交 现在的命中测试有问题，准备回退版本看看之前版本的行为"
-      },
-      {
-        "hash": "713db77",
-        "date": "2026-05-03",
-        "message": "﻿修复手柄的显示问题"
+        "hash": "8b29283",
+        "date": "2026-05-01",
+        "message": "﻿文本显示位置 绑定模式可以正确解析绑定值，还有数据同步和反序列化不正确的问题，先 提交当前优化，便于回退"
       },
       {
         "hash": "8c2921a",
@@ -1440,11 +1655,6 @@
         "message": "﻿修复 新建工作流 编号计算Bug"
       },
       {
-        "hash": "c8b6ac6",
-        "date": "2026-05-04",
-        "message": "﻿修复手柄无法命中的问题，主要是路由时序的问题。"
-      },
-      {
         "hash": "6420ea8",
         "date": "2026-05-05",
         "message": "﻿增加节点重命名功能"
@@ -1455,14 +1665,14 @@
         "message": "﻿更改图像显示的设计模式，显示图像独立控制  不再有结果输出来控制 可以在不同的图像上查看结果图形  来分析参数设置的合理性"
       },
       {
-        "hash": "6f17561",
-        "date": "2026-05-18",
-        "message": "﻿把形状选择解耦成toolbar，并优化了布局及提高了屏蔽区域的命中优先级"
-      },
-      {
         "hash": "8673803",
         "date": "2026-05-21",
         "message": "﻿全链修复基于多工作流框架设计的设计问题，主要是对于工作流引擎的管理以及对于工作流上下文的管理的设计优化 暂时测试没有太大问题，先提交，待后续更多的测试"
+      },
+      {
+        "hash": "0799286",
+        "date": "2026-05-28",
+        "message": "feat: 全局变量系统重构 + 参数绑定增强 + 工具结果属性分组优化"
       },
       {
         "hash": "f06e774",
@@ -1475,9 +1685,19 @@
         "message": "feat: 连接创建统一入口 & 子程序重构 & 执行引擎优化"
       },
       {
+        "hash": "1adb023",
+        "date": "2026-06-06",
+        "message": "refactor: 工作流架构优化与Blob图形输出修复"
+      },
+      {
         "hash": "bf560a6",
         "date": "2026-06-08",
         "message": "refactor(subroutine): 使用 ISubWorkflowExecutor 委托注入替代静态引擎注入"
+      },
+      {
+        "hash": "dbbb754",
+        "date": "2026-06-09",
+        "message": "refactor: 删除冗余 ShapeResult 类型，打通区域订阅运行时链路"
       },
       {
         "hash": "51188f9",
@@ -1520,6 +1740,11 @@
         "message": "修复编译错误行号导航：中文正则匹配 & 引用对话框/沙箱优化"
       },
       {
+        "hash": "367c0f5",
+        "date": "2026-06-24",
+        "message": "feat(ScriptTool): 重构监视面板 + 迁移 Subroutine 模型到 Plugin.SDK + 纳入 halcon libs"
+      },
+      {
         "hash": "38e4e0a",
         "date": "2026-06-26",
         "message": "提交当前修改：MainWindowViewModel、TargetParameterDialog、GlobalVariable"
@@ -1535,9 +1760,9 @@
         "message": "修复：子程序状态下保存方案导致主程序节点被清空"
       },
       {
-        "hash": "23d3147",
+        "hash": "a08bbfb",
         "date": "2026-08-11",
-        "message": "重构(UI): Views层目录改名为Shell以对齐功能模块布局"
+        "message": "重构(UI): 合并过度细分的顶层目录到功能/共享归属"
       },
       {
         "hash": "69c4f42",
@@ -1560,241 +1785,86 @@
         "message": "节点样式优化：圆角6、边框按类型着色、状态五态(运行/成功/失败/跳过)、跳过状态通知"
       },
       {
-        "hash": "ac74fd9",
-        "date": "2026-08-12",
-        "message": "工作区新增右下角小地图，移除流程管理条"
-      },
-      {
         "hash": "99ad183",
         "date": "2026-08-12",
         "message": "重构(UI): Core/Services/Adapters 三目录错位治理"
-      },
-      {
-        "hash": "1918c0f",
-        "date": "2026-08-13",
-        "message": "主界面重构: 画布跟随缩放 + 缩放范围10%-200% + 画布扩至6000"
-      },
-      {
-        "hash": "535227b",
-        "date": "2026-08-14",
-        "message": "﻿修复右键菜单白色块并清理连续运行图标相关废弃代码"
-      },
-      {
-        "hash": "80ec8fd",
-        "date": "2026-08-14",
-        "message": "修复打开方案后列表与打开时间不更新"
-      },
-      {
-        "hash": "5e3ba37",
-        "date": "2026-08-14",
-        "message": "修复画布滚动条显示与交互问题，并优化打开工作流自动定位节点"
-      },
-      {
-        "hash": "40d43bd",
-        "date": "2026-08-14",
-        "message": "暗色主题适配系列（1-5）：日志面板按钮、topbar工作流下拉、分隔条、折叠按钮与菜单样式"
-      },
-      {
-        "hash": "0a917ab",
-        "date": "2026-08-15",
-        "message": "修复关闭/删除确认弹窗不跟随主题，且关闭时无确认弹窗"
       }
     ],
-    "M-HIST-GLOBALVAR": [
+    "M-HIST-PARAM": [
       {
-        "hash": "a1bff27",
-        "date": "2026-03-31",
-        "message": "﻿关于解决放哪管理的相关优化暂时到这里 后面再回到工作流 开始优化工作流的相关内容 主要方向有以下几个 1.工作流数据绑定传递 包括节点之间和节点和全局变量之间 2.验证和优化工作流执行引擎  对工作流驱动的正确性 单工作流 多工作流 工作流的单次运行  连续运行  总控  单次运行  连续运行 3.节点UI优化  节点数据模型定义 参数  结果  判断  显示  等再工具的组织形式要确定下来 4.ROI  区域编辑 基于单窗口编辑的 生命周期管理 5.节点结果显示和数据显示的 数据模型定义确认 6.数据模型和UI的绑定模型确认"
+        "hash": "1136f47",
+        "date": "2026-04-16",
+        "message": "﻿参数订阅控件的数据绑定控件  可以正常的访问到上游数据源"
       },
       {
-        "hash": "92d3624",
-        "date": "2026-05-27",
-        "message": "优化全局变量管理器：内联编辑分组名、级联删除、VisionMaster风格UI"
+        "hash": "7f57156",
+        "date": "2026-08-04",
+        "message": "refactor(main): 收敛数据查询服务创建逻辑到 CreateDataSourceQueryService 工厂"
       },
       {
-        "hash": "a08bbfb",
+        "hash": "dafe347",
         "date": "2026-08-11",
-        "message": "重构(UI): 合并过度细分的顶层目录到功能/共享归属"
-      },
-      {
-        "hash": "9702cef",
-        "date": "2026-08-12",
-        "message": "重构(UI): 修复 Shell 与 Features 的分离/重复问题，贯彻 View 与 VM 就近共生"
-      },
-      {
-        "hash": "52028a0",
-        "date": "2026-08-14",
-        "message": "方案管理界面优化：删除解决方案支持连源文件删除、标题栏主题适配、工作流标签页选中同步"
+        "message": "重构(UI): 对话框视图归位到对应功能模块目录"
       }
     ],
-    "T-SHAPEMATCH": [
+    "M-SRC-CAM": [
       {
-        "hash": "4294f36",
-        "date": "2026-05-08",
-        "message": "﻿增加了轮廓匹配工具，还有很多功能需要测试和优化，先提交，便于回退"
+        "hash": "881e38e",
+        "date": "2026-02-09",
+        "message": "✅ 离线批处理 (同步模式) ✅ 实时相机处理 (异步模式) ✅ 多相机并行 (事件总线) ✅ 触发式采集 (触发器管理) ✅ 高频数据处理 (队列缓冲)"
       },
       {
-        "hash": "006eef0",
-        "date": "2026-05-09",
-        "message": "﻿尝试优化模版匹配的算法 及实现框架，当前是一个失败的版本  无法正确匹配，且匹配时间特别长 先提交  便于回退"
+        "hash": "1f0b8bf",
+        "date": "2026-04-09",
+        "message": "﻿相机管理器设计UI优化万层，还没有测试，先提交"
       },
       {
-        "hash": "a576df3",
-        "date": "2026-05-09",
-        "message": "﻿1.图像显示控件 增加灰度显示  自动识别图像格式  显示对应的灰度值 2.轮廓匹配的模版轮廓点格式  改为二维数组  更好的支持序列化和反序列化"
+        "hash": "2c7a156",
+        "date": "2026-04-09",
+        "message": "修复命名空间和删除Camera.local目录"
       },
       {
-        "hash": "2ee357c",
-        "date": "2026-05-13",
-        "message": "﻿1.可以大致正确匹配，还有匹配误差，主要是整型位置输出截断了亚像素匹配结果，先提交优化 便于回退"
+        "hash": "1d795c1",
+        "date": "2026-04-09",
+        "message": "修复CameraManagerViewModel和AddCameraViewModel的命名空间"
       },
       {
-        "hash": "ecbb00d",
-        "date": "2026-05-13",
-        "message": "﻿继续优化魔棒创建，参考halcon的实现方式，提取轮廓点，匹配还需要优化，先提交，便于回退"
+        "hash": "daa3e64",
+        "date": "2026-04-09",
+        "message": "修复CameraDiscovery的using语句，使用正确的命名空间SunEyeVision.Plugin.SDK.Logging"
       },
       {
-        "hash": "1fa3bd5",
-        "date": "2026-05-15",
-        "message": "﻿模版创建和匹配继续优化 但是 现在还有大量的问题 后面可能要大重构，先提交，便于回退 目前的问题如下，有精度   逻辑  和性能三个方面的问题 B1 链长过滤不对称\t精度+1~3%\t所有图像\t✅ B2 梯度阈值统一\t精度稳定\t所有图像\t✅ 响应图内存优化\t构建-70%\t大图显著\t✅ 粗层步长增大\t粗层-60%\t大图显著\t✅ 候选NMS去重\t精化-75%\t候选多时显著\t✅ 显示降采样\t渲染-90%\t所有模板\t✅ 角度LUT\t累加-5~10%\t所有场景\t✅ 多模板并行\t模板数倍\t多模板场景\t✅"
+        "hash": "fa1cfa4",
+        "date": "2026-04-09",
+        "message": "修复CameraDiscovery的using语句，使用正确的命名空间SunEyeVision.Plugin.SDK.Logging"
       },
       {
-        "hash": "b63566d",
-        "date": "2026-05-19",
-        "message": "框架层 HalAdapter/CvEngine 更新 + 移除 libs/ Halcon 运行库本地管理"
+        "hash": "54a2e1b",
+        "date": "2026-04-09",
+        "message": "添加相机自动发现功能"
       },
       {
-        "hash": "e288f0a",
-        "date": "2026-05-21",
-        "message": "﻿修复轮廓匹配的部分显示错误，先提交 便于回退"
+        "hash": "85b251a",
+        "date": "2026-04-09",
+        "message": "合并main分支：相机自动发现功能（解决冲突）"
       },
       {
-        "hash": "198ccf5",
-        "date": "2026-05-21",
-        "message": "﻿1.全链优化适配器，除了工具内部使用具体的算法类对象，框架层都是通用类型"
+        "hash": "403a9db",
+        "date": "2026-04-09",
+        "message": "修复AddCameraViewModel的using语句，添加ObservableObject命名空间引用"
       },
       {
-        "hash": "4806ffc",
-        "date": "2026-05-23",
-        "message": "﻿修复了轮廓匹配对下游节点的位置修正不起作用的问题，还没有做全场景测试， 先提交便于回退"
+        "hash": "4029e14",
+        "date": "2026-04-11",
+        "message": "fix: 修复CameraDetailPanel.xaml命名空间问题 - 恢复完整版本"
       },
       {
-        "hash": "eea14e1",
-        "date": "2026-05-23",
-        "message": "﻿1.迁移到基于适配器框架后，对Blob分析工具和模版匹配工具做了适配，测试和优化， 主要行为都是正确的，但是轮廓匹配对于其他工具的位置修正还有问题，先提交，便于回退 后面有责解析器的框架层优化"
-      },
-      {
-        "hash": "49c5bf4",
-        "date": "2026-05-26",
-        "message": "feat: 旋转矩形角度系修复 + 结果层方向箭头 + 箭头头部尺寸调整"
-      },
-      {
-        "hash": "6670af0",
-        "date": "2026-05-26",
-        "message": "fix(position-correction): 修复位置修正绑定源序列化/反序列化丢失问题"
-      },
-      {
-        "hash": "0799286",
-        "date": "2026-05-28",
-        "message": "feat: 全局变量系统重构 + 参数绑定增强 + 工具结果属性分组优化"
-      },
-      {
-        "hash": "ec34d5c",
-        "date": "2026-05-29",
-        "message": "[Phase 5] 全局变量消费者绑定追踪：实时从视觉树解析节点信息"
-      },
-      {
-        "hash": "77e0197",
-        "date": "2026-05-29",
-        "message": "feat: ShapeMatch 轮廓匹配增强 — 数据分析控件 + 多实例绑定 + 参数同步"
-      },
-      {
-        "hash": "b1a8151",
-        "date": "2026-05-30",
-        "message": "fix: 位置修正多项修复 - ConfigSetting全局变量解绑事件 App.xaml.cs订阅清理 NodeResultManager支持普通bool ShapeMatch实时查询矩阵"
-      },
-      {
-        "hash": "1adb023",
-        "date": "2026-06-06",
-        "message": "refactor: 工作流架构优化与Blob图形输出修复"
-      },
-      {
-        "hash": "dbbb754",
-        "date": "2026-06-09",
-        "message": "refactor: 删除冗余 ShapeResult 类型，打通区域订阅运行时链路"
-      },
-      {
-        "hash": "f83365d",
-        "date": "2026-06-09",
-        "message": "feat: 图形结果输出与传递 — ShapeResult + OutputRegions/OutputShapes"
-      },
-      {
-        "hash": "b407c69",
-        "date": "2026-06-09",
-        "message": "refactor: Workflow 架构重构 + 工具引擎无关改造 + Subroutine 重构"
-      },
-      {
-        "hash": "7aa1d16",
-        "date": "2026-06-12",
-        "message": "fix(build): 清理 dev/Debug 输出目录，防止框架 DLL 复制到 plugins/"
-      },
-      {
-        "hash": "367c0f5",
-        "date": "2026-06-24",
-        "message": "feat(ScriptTool): 重构监视面板 + 迁移 Subroutine 模型到 Plugin.SDK + 纳入 halcon libs"
-      },
-      {
-        "hash": "7e8991a",
-        "date": "2026-07-17",
-        "message": "feat: 模块结果树递归生成 & 输出变量契约收敛"
-      },
-      {
-        "hash": "57bf5c3",
-        "date": "2026-08-05",
-        "message": "feat: RoI 契约变量（检测区/屏蔽区图形）统一注入与结果树设计态回退"
-      },
-      {
-        "hash": "99a6998",
-        "date": "2026-08-13",
-        "message": "修复主题系统遮蔽问题并重构主题资源加载"
+        "hash": "fdfcdd0",
+        "date": "2026-08-11",
+        "message": "重构(UI): UI层从按层组织改为按功能模块目录"
       }
     ],
     "M-SRC-TEST": [
-      {
-        "hash": "c66624a",
-        "date": "2026-02-22",
-        "message": "1.由于工具插件层的设计无法进行独立开发，对工具插件层进行重构，将其抽离成独立的插件抽象层（Plugin.Abstractions），并将原工具插件层重命名为插件基础设施层（Plugin.Infrastructure）。重构后，工具插件层的接口和相关模型被移至插件抽象层，插件基础设施层则负责实现这些接口并提供相关服务。这种分离使得工具插件的开发可以独立于具体的实现细节，提高了系统的模块化和可维护性。 2.重构后的项目结构更加清晰，插件抽象层（Plugin.Abstractions）专注于定义工具插件的接口和相关模型，而插件基础设施层（Plugin.Infrastructure）则专注于实现这些接口并提供相关服务。这种分离使得工具插件的开发可以独立于具体的实现细节，提高了系统的模块化和可维护性。 3.重构过程中，删除了原工具插件层中的一些接口和模型，并在新的插件抽象层中重新定义了这些接口和模型。同时，更新了相关的项目文件和解决方案文件，以反映新的项目结构。 4.重构后，工具插件的开发者可以直接引用插件抽象层（Plugin.Abstractions）来实现工具插件，而不需要关心插件基础设施层（Plugin.Infrastructure）的具体实现细节。这种设计提高了系统的灵活性和可扩展性，使得未来添加新的工具插件变得更加容易。 5.重构还包括一些其他的改动，如添加了新的批处理脚本（build_and_run.bat）和一些新的文档文件，这些改动旨在提高开发效率和项目的可维护性。 6.重构后的代码结构更加清晰，模块之间的依赖关系更加明确，有助于提高代码的可读性和可维护性。同时，这种分离也有助于促进团队协作，使得不同的开发者可以专注于不同的模块，提高了开发效率。 7.重构过程中，确保了所有的功能都得到了保留，并且没有引入新的错误。通过重构，项目的整体结构得到了优化，使得未来的开发和维护工作更加高效和便捷。 8.重构后的项目结构如下： - src   - Core   - DeviceDriver   - Plugin.Abstractions   - Plugin.Infrastructure   - Tools   - UI   - SunEyeVision.sln   工具插件还没有重构，先提交当前的重构结果，后续再进行工具插件的重构。"
-      },
-      {
-        "hash": "0d9d987",
-        "date": "2026-02-27",
-        "message": "﻿1.重构接口，简化插件开发  工具只要实现Run方法即可 2.新增插件模板，简化插件开发，提供插件模板项目，插件开发者只需要关注业务逻辑即可，不成熟，后续会完善 3.新增插件运行时，简化插件运行，插件运行时会自动加载插件，调用插件的Run方法 4.新增插件调试工具，简化插件调试，插件调试工具会自动加载插件，调用插件的Run方法，方便插件开发者调试插件"
-      },
-      {
-        "hash": "0ba550e",
-        "date": "2026-03-01",
-        "message": "﻿1.基于图像编辑器，实现了roi区域的编辑功能 2.支持图像缩放、平移 3.支持区域编辑功能，包括添加、删除、移动、缩放等操作 4.支持区域编辑历史记录功能，用户可以 Undo/Redo 区域编辑操作 5.后面需要做图像显示用户控件，便于复用，并把用户控件集成到区域编辑器进行验证"
-      },
-      {
-        "hash": "03706bc",
-        "date": "2026-03-08",
-        "message": "1.重构了日志系统，对操作和运行进行了监控，架构已经打通，还没有实现全流程日志监控，只是添加了层级监控和主要流程监控 2.区域编辑器完成了部分迁移，正在调试和优化"
-      },
-      {
-        "hash": "098ed69",
-        "date": "2026-03-09",
-        "message": "﻿区域参数和区域编辑器 参数传递正确   参数绑定正确  可以正常调试 但是现在区域编辑器还有很多工作需要优化"
-      },
-      {
-        "hash": "833c9a1",
-        "date": "2026-03-11",
-        "message": "﻿1.解决方案系统实现 2.文件结构重构"
-      },
-      {
-        "hash": "93c5a95",
-        "date": "2026-03-16",
-        "message": "﻿重构  重构  重构 解决方案系统 越来越接近真相  但是现在还有很多问题"
-      },
       {
         "hash": "5d68328",
         "date": "2026-03-19",
@@ -1816,29 +1886,9 @@
         "message": "fix(script): 修复 Roslyn CS0518 预定义类型缺失，改用运行时 ALC/TPA 注入 BCL"
       },
       {
-        "hash": "46b0f31",
-        "date": "2026-07-16",
-        "message": "sdk类型系统收敛: GlobalVariableTypeMapper重命名为SdkTypeVocabulary + 几何类型分离 + 输出变量契约 + SubroutineInput/OutputConfig重构"
-      },
-      {
         "hash": "d1d746b",
         "date": "2026-07-21",
         "message": "feat: 工作流契约删除Region词汇, 新增RegionConverter桥接与契约测试 (D8/rule-008)"
-      },
-      {
-        "hash": "e6106d8",
-        "date": "2026-07-21",
-        "message": "feat: 输出变量契约与RoI绑定基础设施收敛"
-      },
-      {
-        "hash": "9ea2378",
-        "date": "2026-07-22",
-        "message": "refactor: 输出变量契约收敛与文档体系重组(rule-006 doc-save/索引)"
-      },
-      {
-        "hash": "64d31a8",
-        "date": "2026-08-04",
-        "message": "子程序输入图像开箱即用 + 参数绑定类型映射重构"
       },
       {
         "hash": "6391c76",
@@ -1851,11 +1901,6 @@
         "message": "feat(结果树): 图像输出归入\" 图像\\分组并展开宽度/高度/通道数元数据"
       },
       {
-        "hash": "36355cb",
-        "date": "2026-08-06",
-        "message": "迁移 Region 概念为 RoI：完成 Region 到 RoI 概念对齐"
-      },
-      {
         "hash": "5e2cd85",
         "date": "2026-08-07",
         "message": "重构绑定树显示名↔路径双轨模型"
@@ -1866,19 +1911,9 @@
         "message": "绑定树显示名与路径双轨模型方案及RoI数组绑定修复"
       },
       {
-        "hash": "bf8ef3a",
-        "date": "2026-08-10",
-        "message": "子程序循环+命名治理：改名实时刷新模块结果树"
-      },
-      {
         "hash": "9cd263d",
         "date": "2026-08-11",
         "message": "条件分支工具完善: 修复规则列持久化, 支持条件输入解析与序列化契约"
-      },
-      {
-        "hash": "73ae4ce",
-        "date": "2026-08-13",
-        "message": "主题系统+日志双轨制+构建输出优化"
       }
     ],
     "M-HIST-PATH": [
@@ -1903,64 +1938,104 @@
         "message": "docs: 文档保存路径细化到天,文件名带时分秒"
       }
     ],
-    "M-HIST-PARAM": [
+    "M-HIST-DATAMODEL": [
       {
-        "hash": "4a51e89",
-        "date": "2026-03-10",
-        "message": "﻿1.绘制卡顿问题已经解决，根本原因已经找到 我嘞个骚刚，一个数据源绑定错误，让我监控了整个数据执行链和UI执行链，Fu。。🖕。。K"
+        "hash": "29f034d",
+        "date": "2026-04-08",
+        "message": "fix: 修复 DataSourceQueryService 类型不匹配错误"
       },
       {
-        "hash": "80e26f5",
-        "date": "2026-04-07",
-        "message": "﻿修复颜色选择器的绑定bug，现在可以正确的绑定默认颜色了 下一步 实现 图像显示控制器控件  以便于对图像显示对象进行控制"
+        "hash": "6c2109a",
+        "date": "2026-04-09",
+        "message": "﻿基于重构进行优化测试  目前传递链还有点问题，先提交，后续继续解决传递链的问题"
       },
       {
-        "hash": "8282c57",
+        "hash": "4d8dc66",
+        "date": "2026-04-09",
+        "message": "﻿重构基于绑定模型的数据传递模型，还未验证，先提交"
+      },
+      {
+        "hash": "cd899ba",
+        "date": "2026-04-10",
+        "message": "﻿1.重新设计了基于设计时的数据绑定框架，不在使用反射，而是使用变量池的方式来实现 2.属性面板大更新，不再显示选中节点的属性，因为功能和调试窗口的功能重叠了 3.增加了数据分析选项，架构层已经设计，工具层还没有实现 当前状态： 1.图像源选择控件可以看到所有父节点的输出，但是格式还不对 2.参数绑定控件在UI层实现了，基于显示名称表达式生成树状结构，但是在数据绑定层没有实现 3.基于绑定表达式的解析支持运行还没有实现"
+      },
+      {
+        "hash": "d6a8f97",
+        "date": "2026-04-10",
+        "message": "﻿后面要大重构结果输出架构，先提交代码，便于回退"
+      },
+      {
+        "hash": "c69443d",
+        "date": "2026-04-11",
+        "message": "﻿要准备合并工具分支了"
+      },
+      {
+        "hash": "6a0f7a2",
+        "date": "2026-04-11",
+        "message": "﻿友好名称表现正确，后面要记性控件样式大调整，先提交，便于回退"
+      },
+      {
+        "hash": "c83e1e2",
         "date": "2026-04-13",
-        "message": "﻿修复了参数订阅控件的数据传递问题 ，可以通过参数订阅控件的数据源来获取参数值"
+        "message": "﻿重构了参数类，重构目的是 一个参数就可以适配常量模式和绑定模式 这样的话，在工具层的核心算法，只需要对参数进行使用，完全不用关系，使用的 参数是通过绑定表达式解析过来的，还是通过常量模式直接设置的"
       },
       {
-        "hash": "1136f47",
-        "date": "2026-04-16",
-        "message": "﻿参数订阅控件的数据绑定控件  可以正常的访问到上游数据源"
+        "hash": "e03b338",
+        "date": "2026-04-13",
+        "message": "﻿重构数据缓存的设计，现在的方式是通过反射结果的属性，根据属性的类型自动 生成对应类型的缓存池，确保和业务逻辑解耦。"
       },
       {
-        "hash": "31c8840",
-        "date": "2026-04-16",
-        "message": "﻿参数订阅控件可以根据继承方式显示对应的绑定控件"
+        "hash": "3b1671b",
+        "date": "2026-04-14",
+        "message": "﻿区域管理系统优化方案  实施完成，可以基于这个版本开始测试和优化"
       },
       {
-        "hash": "2ee443b",
+        "hash": "a033570",
+        "date": "2026-04-20",
+        "message": "﻿基于数据绑定的UI和实际的绑定路径 都对索引进行了支持"
+      },
+      {
+        "hash": "43300ea",
+        "date": "2026-04-21",
+        "message": "﻿后面要对现实模式重新设计，先提交代码，便于回退"
+      },
+      {
+        "hash": "bf35400",
+        "date": "2026-04-24",
+        "message": "﻿可以正确的通过绑定解析正确的值，但是模式切换还有问题 先提交，便于回退"
+      },
+      {
+        "hash": "98994e1",
         "date": "2026-05-02",
-        "message": "﻿DispTextColorControl的行为基本都正确了 但是阈值和最大值 绑定模式切回常量模式 还是会用解析值赋给常量值"
+        "message": "﻿修复了blob分析工具  阈值 最大值  绑定模式切户常量模式时  数值更新的bug"
       },
       {
-        "hash": "ddeff11",
-        "date": "2026-05-30",
-        "message": "fix: ParamBinding ParameterName 传播 & RecordConsumerBinding 监控增强"
+        "hash": "8f418c1",
+        "date": "2026-05-06",
+        "message": "﻿优化图像显示控件的下拉内容的组织方式 保持和ImageSourceSelector 一致，并且同源"
       },
       {
-        "hash": "7f57156",
-        "date": "2026-08-04",
-        "message": "refactor(main): 收敛数据查询服务创建逻辑到 CreateDataSourceQueryService 工厂"
+        "hash": "836ed62",
+        "date": "2026-06-10",
+        "message": "feat: 子程序输入端口作为数据源注入DSQS"
       },
       {
-        "hash": "c76f0e1",
-        "date": "2026-08-07",
-        "message": "更新验证覆盖率: 绑定树显示名↔路径双轨模型验证通过"
+        "hash": "7e8991a",
+        "date": "2026-07-17",
+        "message": "feat: 模块结果树递归生成 & 输出变量契约收敛"
+      },
+      {
+        "hash": "57bf5c3",
+        "date": "2026-08-05",
+        "message": "feat: RoI 契约变量（检测区/屏蔽区图形）统一注入与结果树设计态回退"
+      },
+      {
+        "hash": "bf8ef3a",
+        "date": "2026-08-10",
+        "message": "子程序循环+命名治理：改名实时刷新模块结果树"
       }
     ],
     "T-SUBROUTINE": [
-      {
-        "hash": "5721e5a",
-        "date": "2026-08-04",
-        "message": "fix(subroutine): 修复子程序调试窗口编辑中关窗再打开报 DeferRefresh 异常"
-      },
-      {
-        "hash": "3f467ae",
-        "date": "2026-08-06",
-        "message": "优化子程序调试窗口：删除运行参数假页，约束至少一个输入输出，隐藏无效执行按钮"
-      },
       {
         "hash": "5e6ec91",
         "date": "2026-08-07",
@@ -1968,31 +2043,6 @@
       }
     ],
     "M-HIST-REGION": [
-      {
-        "hash": "2c3491d",
-        "date": "2026-03-02",
-        "message": "﻿1.1.添加了旋转矩形的角度转换功能以及旋转矩形的角度显示 2.新增NumericUpDown控件，用于旋转矩形的角度输入，支持int、double类型 3.集成到ROIImageEditor中，用于旋转矩形的角度输入和显示"
-      },
-      {
-        "hash": "e4bfdf0",
-        "date": "2026-03-02",
-        "message": "﻿1.添加了旋转矩形的角度转换功能以及旋转矩形的角度显示 2.目前区域编辑时使用的是数学角度系统，在做图像图像处理时需要转换为opencv的角度系统 这一点需要后期再图像处理时进行验证和优化，暂时只能保证UI层的行为正确性。"
-      },
-      {
-        "hash": "eec8065",
-        "date": "2026-03-02",
-        "message": "﻿优化了图像显示的器的布局和样式"
-      },
-      {
-        "hash": "fd3ef80",
-        "date": "2026-03-08",
-        "message": "添加区域参数传递监控日志"
-      },
-      {
-        "hash": "cd799a2",
-        "date": "2026-03-08",
-        "message": "﻿修复编辑区域跳变的问题"
-      },
       {
         "hash": "a65c146",
         "date": "2026-03-08",
@@ -2024,31 +2074,6 @@
         "message": "修复直线起点手柄位置计算错误"
       },
       {
-        "hash": "3b14c66",
-        "date": "2026-03-09",
-        "message": "﻿1.添加给则文件"
-      },
-      {
-        "hash": "c33656d",
-        "date": "2026-03-10",
-        "message": "﻿1.清理监控日志 开始区域编辑器的后续优化"
-      },
-      {
-        "hash": "756b236",
-        "date": "2026-03-31",
-        "message": "﻿开始着手优化工具的区域编辑器的布局 部分优化已完成  先提交"
-      },
-      {
-        "hash": "2a6ebcc",
-        "date": "2026-04-06",
-        "message": "﻿重构了区域编辑器，修复了之前存在的各种bug，目前主要功能已经没有太大问题，一些小的优化后期再做 下一步开始优化工具的模型的其他功能"
-      },
-      {
-        "hash": "a783128",
-        "date": "2026-04-06",
-        "message": "﻿修复区域编辑器的部分bug  未完成版本   先提交便于回退"
-      },
-      {
         "hash": "66f047d",
         "date": "2026-04-13",
         "message": "﻿确定了# 区域管理参数优化设计方案，编写方案到本地"
@@ -2062,26 +2087,6 @@
         "hash": "f4a3129",
         "date": "2026-04-14",
         "message": "﻿区域管理系统优化方案_完整版  最终确定  下面要开始实施"
-      },
-      {
-        "hash": "f59450f",
-        "date": "2026-04-20",
-        "message": "﻿优化了区域的名称生成逻辑 使用空洞填充的算法来实现"
-      },
-      {
-        "hash": "edf63bd",
-        "date": "2026-05-03",
-        "message": "﻿优化了区域编辑器的布局"
-      },
-      {
-        "hash": "36c2f9f",
-        "date": "2026-05-04",
-        "message": "﻿修复无法新架构下无法删除选中区域的bug"
-      },
-      {
-        "hash": "94a4ad6",
-        "date": "2026-05-18",
-        "message": "﻿优化了区域编辑器的编辑行为  不再需要选择和编辑模式手动切换了"
       },
       {
         "hash": "cfe0984",
@@ -2101,11 +2106,6 @@
         "message": "﻿整合图像阈值工具和Blob分析工具"
       },
       {
-        "hash": "64bd9dc",
-        "date": "2026-04-21",
-        "message": "﻿把图像阈值工具改为Blob分析工具"
-      },
-      {
         "hash": "6aaa79e",
         "date": "2026-04-24",
         "message": "﻿实现了数据分析的数据绑定，还需要测试和优化，先提交，便于回退"
@@ -2114,16 +2114,6 @@
         "hash": "96bbafe",
         "date": "2026-04-24",
         "message": "﻿1.Configsetting  模式切换 问题修复 2.修复了下拉型控件 选项不同步和不序列化的问题 但是绑定模式的反序列化  还有问题  需要修复"
-      },
-      {
-        "hash": "8188712",
-        "date": "2026-04-24",
-        "message": "﻿1.添加CvEngine项目，用于封装cv相关的功能，具体设计可以参考CvEngineBuilder 技能描述 2.添加CvEngineBuilder技能，后期需要封装可以直接使用封装技能 3.工具层实现封装集成  还没有完全测试，先提交便于回退"
-      },
-      {
-        "hash": "1247681",
-        "date": "2026-04-29",
-        "message": "﻿再次重构了CvEngine，对齐halcon对数组的输入的方式 2.用status+c#提高查询效率 先提交 ，便于回退 继续测试 优化"
       },
       {
         "hash": "fedf19c",
@@ -2139,16 +2129,6 @@
         "hash": "fa7efc0",
         "date": "2026-04-30",
         "message": "﻿继续优化显示逻辑  及测试数据传递的正确性，先提交，便于回退"
-      },
-      {
-        "hash": "8b29283",
-        "date": "2026-05-01",
-        "message": "﻿文本显示位置 绑定模式可以正确解析绑定值，还有数据同步和反序列化不正确的问题，先 提交当前优化，便于回退"
-      },
-      {
-        "hash": "8af8589",
-        "date": "2026-05-03",
-        "message": "﻿检测区域和屏蔽区域整合未完整提交，进行补充提交"
       },
       {
         "hash": "5e58bc5",
@@ -2181,14 +2161,14 @@
         "message": "﻿修复imagecontrol的combobox切换选项 图像显示不更新的问题"
       },
       {
+        "hash": "b63566d",
+        "date": "2026-05-19",
+        "message": "框架层 HalAdapter/CvEngine 更新 + 移除 libs/ Halcon 运行库本地管理"
+      },
+      {
         "hash": "e76eea8",
         "date": "2026-05-22",
         "message": "﻿1.修复字体和缩放倍率不匹配的问题 2.修复blob分析工具 执行完成数据分析不实施更新的问题 3.修复多个区域之间有连线的问题 4.修复 执行完成  选择 数据分析选项 不更新选中显示UI的问题"
-      },
-      {
-        "hash": "42f4807",
-        "date": "2026-05-25",
-        "message": "refactor: SSOT数据传递架构重构"
       },
       {
         "hash": "cb9b92b",
@@ -2206,9 +2186,9 @@
         "message": "feat(Blob): 输出契约Region→RoI桥接外发, 删除面积重复筛选 (D8/D6)"
       },
       {
-        "hash": "4b21afa",
-        "date": "2026-08-06",
-        "message": "feat(区域): ShapeParameters 添加扁平参数属性，修复矩形绘制/缩放与旋转缩放方向"
+        "hash": "9ea2378",
+        "date": "2026-07-22",
+        "message": "refactor: 输出变量契约收敛与文档体系重组(rule-006 doc-save/索引)"
       }
     ],
     "T-CONVERT": [
@@ -2282,11 +2262,6 @@
     ],
     "M-HIST-CORE": [
       {
-        "hash": "033a514",
-        "date": "2026-01-21",
-        "message": "# SunEyeVision视觉软件 - 开发日志"
-      },
-      {
         "hash": "0b9e3c8",
         "date": "2026-01-21",
         "message": "1.更新了工具箱加载工具的方式为根据插件自动加载 2.重构了插件系统，便于工具箱工具的自动加载"
@@ -2312,44 +2287,9 @@
         "message": "大重构 一。工具插件 1. 重构PluginSystem.Base 2. 重构PluginSystem.Infrastructure 3. 重构PluginSystem.Tools 二。工作流执行引擎执行逻辑管理 1. 重构WorkflowEngine.Base 2. 重构WorkflowEngine.Infrastructure 3. 重构WorkflowEngine.Workflows 三。工作流执行引擎UI管理 1. 重构WorkflowEngine.UI.Base 2. 重构WorkflowEngine.UI.Infrastructure 3. 重构WorkflowEngine.UI.Workflows"
       },
       {
-        "hash": "8f0a6a4",
-        "date": "2026-02-07",
-        "message": "refactor: 清理 PluginSystem 目录结构"
-      },
-      {
-        "hash": "179b544",
-        "date": "2026-02-07",
-        "message": "重构PluginSystem UI目录结构 - 方案3实施"
-      },
-      {
         "hash": "045a5f6",
         "date": "2026-02-07",
         "message": "工具插件重构及工具文件结构重构前的代码备份  不能运行  未调试"
-      },
-      {
-        "hash": "9aa2f0d",
-        "date": "2026-02-10",
-        "message": "删除了工具箱在优化过程中的日志信息，避免对后续的开发产生干扰，可运行版本"
-      },
-      {
-        "hash": "9f84520",
-        "date": "2026-02-10",
-        "message": "工具箱双模完全实现且完成测试，切记谨慎使用屏幕坐标系"
-      },
-      {
-        "hash": "7788e68",
-        "date": "2026-02-10",
-        "message": "取消了主界面左侧分隔条  把模式切换放到了工具箱底部"
-      },
-      {
-        "hash": "844f38f",
-        "date": "2026-02-10",
-        "message": "增加了工具箱的双模显示，但是还有些问题需要完善"
-      },
-      {
-        "hash": "cc30921",
-        "date": "2026-02-21",
-        "message": "1. 添加文件访问管理器 2. 修改了图像预览控件以使用新的文件访问管理器 3. 更新了图像解码器以支持新的文件访问机制 4. 修改了主窗口和相关视图模型以适应新的文件访问逻辑"
       },
       {
         "hash": "3080f11",
@@ -2367,44 +2307,14 @@
         "message": "添加调试窗口打开过程的日志追踪"
       },
       {
-        "hash": "0082a20",
-        "date": "2026-03-08",
-        "message": "完善参数源日志监控，添加参数获取过程追踪"
-      },
-      {
-        "hash": "4046029",
-        "date": "2026-03-10",
-        "message": "﻿更新渲染器，从bitmap到wpf 重新设计渲染框架 目前性能还可以 但是数量过多时 会卡顿 当前测试300-400  会有影响 但是还是可以用的 暂时先这样  更高性能的渲染器 需要等到 后续的需求 再做优化"
-      },
-      {
-        "hash": "ace00ac",
-        "date": "2026-03-10",
-        "message": "﻿继续清理无用日志"
-      },
-      {
-        "hash": "25719da",
-        "date": "2026-03-10",
-        "message": "﻿添加性能日志监控"
-      },
-      {
-        "hash": "e87ee7f",
-        "date": "2026-04-05",
-        "message": "﻿1.之前通过重构UI集成方案，实现了工具层UI的可预览编程 但是无法实现声明式编程，重构后支持声明式编程，其他问题还需测试优化"
-      },
-      {
-        "hash": "001090f",
-        "date": "2026-04-08",
-        "message": "docs: 添加ThresholdTool分析文档"
-      },
-      {
-        "hash": "d19e8a4",
-        "date": "2026-04-13",
-        "message": "﻿优化了部分UI，后面要进行大重构，先提交代码 便于回退"
-      },
-      {
         "hash": "359699d",
         "date": "2026-04-20",
         "message": "﻿1.修复了日志显示器水印的遮挡问题 2.实现了日志显示的自动滚动功能"
+      },
+      {
+        "hash": "4343b2c",
+        "date": "2026-04-20",
+        "message": "﻿优化了日志系统，增加了诊断模式  如下是各种日志级别 及诊断模式下的日志输出设计 日志级别\t非诊断模式\t诊断模式\t适用内容 Debug\t不输出\t输出\t实现细节、内部状态、步骤追踪 Info\t输出\t输出\t状态变更、过程开始、中间状态 Success\t输出\t输出\t任务完成、结果达标、操作完成 Warning\t输出\t输出\t有问题但能继续运行 Error\t输出\t输出\t失败/异常，需要处理 Fatal\t输出\t输出\t程序无法继续运行"
       },
       {
         "hash": "740f52e",
@@ -2417,19 +2327,9 @@
         "message": "﻿局部优化主界面"
       },
       {
-        "hash": "702bb33",
-        "date": "2026-06-12",
-        "message": "refactor(script): 优化脚本工具架构 - 重命名 ScriptApi->ScriptContext / ScriptBase->Script；新增 CompletitionWindow 自动补全（类型/标识符/成员）；新增 AssemblyReferenceDialog 引用管理界面；新增 LogEntry 模型；修复文档更新方式并移除静默 catch；添加 CSharpDark.xshd 语法高亮主题"
-      },
-      {
         "hash": "39ca2aa",
         "date": "2026-06-23",
         "message": "feat(Script): 添加脚本变量监视面板及删除废弃的 ScriptIoDialog"
-      },
-      {
-        "hash": "23bd9c7",
-        "date": "2026-06-29",
-        "message": "chore(gitignore): 屏蔽工具临时文件"
       },
       {
         "hash": "1f54100",
@@ -2437,41 +2337,183 @@
         "message": "chore(wip): 历史遗留修改合入 (Plugin.SDK 迁移 + Script 工具完善)"
       }
     ],
-    "UNKNOWN": [
+    "M-HIST-CONTRACT": [
       {
-        "hash": "b6e78cd",
-        "date": "2026-01-21",
-        "message": "Initial commit"
+        "hash": "25bf17c",
+        "date": "2026-06-25",
+        "message": "chore(gitignore): 排除 libs/halcon/runtime/ build_output/ runtime/ 大型二进制"
+      }
+    ],
+    "T-SHAPEMATCH": [
+      {
+        "hash": "4294f36",
+        "date": "2026-05-08",
+        "message": "﻿增加了轮廓匹配工具，还有很多功能需要测试和优化，先提交，便于回退"
       },
+      {
+        "hash": "006eef0",
+        "date": "2026-05-09",
+        "message": "﻿尝试优化模版匹配的算法 及实现框架，当前是一个失败的版本  无法正确匹配，且匹配时间特别长 先提交  便于回退"
+      },
+      {
+        "hash": "a576df3",
+        "date": "2026-05-09",
+        "message": "﻿1.图像显示控件 增加灰度显示  自动识别图像格式  显示对应的灰度值 2.轮廓匹配的模版轮廓点格式  改为二维数组  更好的支持序列化和反序列化"
+      },
+      {
+        "hash": "2ee357c",
+        "date": "2026-05-13",
+        "message": "﻿1.可以大致正确匹配，还有匹配误差，主要是整型位置输出截断了亚像素匹配结果，先提交优化 便于回退"
+      },
+      {
+        "hash": "ecbb00d",
+        "date": "2026-05-13",
+        "message": "﻿继续优化魔棒创建，参考halcon的实现方式，提取轮廓点，匹配还需要优化，先提交，便于回退"
+      },
+      {
+        "hash": "e288f0a",
+        "date": "2026-05-21",
+        "message": "﻿修复轮廓匹配的部分显示错误，先提交 便于回退"
+      },
+      {
+        "hash": "198ccf5",
+        "date": "2026-05-21",
+        "message": "﻿1.全链优化适配器，除了工具内部使用具体的算法类对象，框架层都是通用类型"
+      },
+      {
+        "hash": "4806ffc",
+        "date": "2026-05-23",
+        "message": "﻿修复了轮廓匹配对下游节点的位置修正不起作用的问题，还没有做全场景测试， 先提交便于回退"
+      },
+      {
+        "hash": "eea14e1",
+        "date": "2026-05-23",
+        "message": "﻿1.迁移到基于适配器框架后，对Blob分析工具和模版匹配工具做了适配，测试和优化， 主要行为都是正确的，但是轮廓匹配对于其他工具的位置修正还有问题，先提交，便于回退 后面有责解析器的框架层优化"
+      },
+      {
+        "hash": "6670af0",
+        "date": "2026-05-26",
+        "message": "fix(position-correction): 修复位置修正绑定源序列化/反序列化丢失问题"
+      },
+      {
+        "hash": "ec34d5c",
+        "date": "2026-05-29",
+        "message": "[Phase 5] 全局变量消费者绑定追踪：实时从视觉树解析节点信息"
+      },
+      {
+        "hash": "77e0197",
+        "date": "2026-05-29",
+        "message": "feat: ShapeMatch 轮廓匹配增强 — 数据分析控件 + 多实例绑定 + 参数同步"
+      },
+      {
+        "hash": "b1a8151",
+        "date": "2026-05-30",
+        "message": "fix: 位置修正多项修复 - ConfigSetting全局变量解绑事件 App.xaml.cs订阅清理 NodeResultManager支持普通bool ShapeMatch实时查询矩阵"
+      },
+      {
+        "hash": "f83365d",
+        "date": "2026-06-09",
+        "message": "feat: 图形结果输出与传递 — ShapeResult + OutputRegions/OutputShapes"
+      },
+      {
+        "hash": "b407c69",
+        "date": "2026-06-09",
+        "message": "refactor: Workflow 架构重构 + 工具引擎无关改造 + Subroutine 重构"
+      },
+      {
+        "hash": "7aa1d16",
+        "date": "2026-06-12",
+        "message": "fix(build): 清理 dev/Debug 输出目录，防止框架 DLL 复制到 plugins/"
+      }
+    ],
+    "M-HIST-GLOBALVAR": [
+      {
+        "hash": "a1bff27",
+        "date": "2026-03-31",
+        "message": "﻿关于解决放哪管理的相关优化暂时到这里 后面再回到工作流 开始优化工作流的相关内容 主要方向有以下几个 1.工作流数据绑定传递 包括节点之间和节点和全局变量之间 2.验证和优化工作流执行引擎  对工作流驱动的正确性 单工作流 多工作流 工作流的单次运行  连续运行  总控  单次运行  连续运行 3.节点UI优化  节点数据模型定义 参数  结果  判断  显示  等再工具的组织形式要确定下来 4.ROI  区域编辑 基于单窗口编辑的 生命周期管理 5.节点结果显示和数据显示的 数据模型定义确认 6.数据模型和UI的绑定模型确认"
+      },
+      {
+        "hash": "92d3624",
+        "date": "2026-05-27",
+        "message": "优化全局变量管理器：内联编辑分组名、级联删除、VisionMaster风格UI"
+      }
+    ],
+    "M-HIST-CVENGINE": [
+      {
+        "hash": "8188712",
+        "date": "2026-04-24",
+        "message": "﻿1.添加CvEngine项目，用于封装cv相关的功能，具体设计可以参考CvEngineBuilder 技能描述 2.添加CvEngineBuilder技能，后期需要封装可以直接使用封装技能 3.工具层实现封装集成  还没有完全测试，先提交便于回退"
+      },
+      {
+        "hash": "1247681",
+        "date": "2026-04-29",
+        "message": "﻿再次重构了CvEngine，对齐halcon对数组的输入的方式 2.用status+c#提高查询效率 先提交 ，便于回退 继续测试 优化"
+      },
+      {
+        "hash": "188aa6f",
+        "date": "2026-05-06",
+        "message": "﻿增加图像滤波工具、图像阈值工具、形态学工具，并简要测试"
+      },
+      {
+        "hash": "1fa3bd5",
+        "date": "2026-05-15",
+        "message": "﻿模版创建和匹配继续优化 但是 现在还有大量的问题 后面可能要大重构，先提交，便于回退 目前的问题如下，有精度   逻辑  和性能三个方面的问题 B1 链长过滤不对称\t精度+1~3%\t所有图像\t✅ B2 梯度阈值统一\t精度稳定\t所有图像\t✅ 响应图内存优化\t构建-70%\t大图显著\t✅ 粗层步长增大\t粗层-60%\t大图显著\t✅ 候选NMS去重\t精化-75%\t候选多时显著\t✅ 显示降采样\t渲染-90%\t所有模板\t✅ 角度LUT\t累加-5~10%\t所有场景\t✅ 多模板并行\t模板数倍\t多模板场景\t✅"
+      }
+    ],
+    "M-HIST-PREVIEW": [
+      {
+        "hash": "b57646d",
+        "date": "2026-02-11",
+        "message": "优化了图像预览器的布局和部分样式，删除了不必要的属性和事件，简化了代码结构，提高了代码的可读性和维护性。"
+      },
+      {
+        "hash": "7746e50",
+        "date": "2026-02-14",
+        "message": "基于WIC解码器的GPU加速版本 暂时搁置开始测试ImageSharp的GPU加速功能"
+      },
+      {
+        "hash": "5cf7f56",
+        "date": "2026-05-08",
+        "message": "﻿1.优化了图像预览器，加载图像更快了  增加  删除  文件夹添加图像 功能也都修复了"
+      }
+    ],
+    "M-HIST-RESULTTREE": [
+      {
+        "hash": "180ce7c",
+        "date": "2026-03-05",
+        "message": "﻿图像管理器已经重构完成，目前感觉闪烁问题有所改善，感觉现在在数据传递上的问题不是很大，可能和| 显示逻辑有关系，下一步进行验证和优化"
+      },
+      {
+        "hash": "6db92d1",
+        "date": "2026-04-29",
+        "message": "﻿修复提交后的版本bug"
+      },
+      {
+        "hash": "876937e",
+        "date": "2026-04-29",
+        "message": "﻿补充上次提交未完成的部分"
+      },
+      {
+        "hash": "d989f90",
+        "date": "2026-05-03",
+        "message": "﻿修复检测区域没有旋转矩形角度的bug"
+      },
+      {
+        "hash": "43abb16",
+        "date": "2026-05-04",
+        "message": "﻿优化模块结果的样式 图像载入重写GetResultItems  是模块结果显示对应的结果"
+      },
+      {
+        "hash": "c368d46",
+        "date": "2026-05-04",
+        "message": "﻿修复了结果显示层不显示屏蔽区域的bug"
+      }
+    ],
+    "UNKNOWN": [
       {
         "hash": "56cee67",
         "date": "2026-01-22",
         "message": "下拉器实现有问题的版本"
-      },
-      {
-        "hash": "16d92b7",
-        "date": "2026-01-25",
-        "message": "连接点的连接方式从点击方式连接改为拖拽方式连接"
-      },
-      {
-        "hash": "f31dfd8",
-        "date": "2026-01-26",
-        "message": "新增文件 DependencyAnalyzer.cs - 依赖分析器"
-      },
-      {
-        "hash": "2b798e0",
-        "date": "2026-01-27",
-        "message": "清除无效代码 并且经过调试可以运行"
-      },
-      {
-        "hash": "ea176b0",
-        "date": "2026-01-28",
-        "message": "重新整合了文件结构,并可以调试运行"
-      },
-      {
-        "hash": "5bd7c85",
-        "date": "2026-02-05",
-        "message": "目前为止，最纯净的、功能回归最完整、后续开发的基础版"
       },
       {
         "hash": "afe19c4",
@@ -2479,19 +2521,9 @@
         "message": "清理部分本地文件  删除libavoid相关文件"
       },
       {
-        "hash": "eb51382",
-        "date": "2026-02-05",
-        "message": "回退版本后的第一个可用版本呢"
-      },
-      {
         "hash": "800784c",
         "date": "2026-02-06",
         "message": "还未完成测试用例，先提交已完成的部分"
-      },
-      {
-        "hash": "fa17263",
-        "date": "2026-02-10",
-        "message": "更改失败版本"
       },
       {
         "hash": "034a865",
@@ -2504,29 +2536,9 @@
         "message": "﻿修复了旋转矩形的角度以及编辑异常，直线的起点还没有修复"
       },
       {
-        "hash": "b8b77de",
-        "date": "2026-03-09",
-        "message": "﻿ 把没有通过继承ObservableObject实现属性更改通知的类，都继承ObservableObject 所有需要观察对象基类 - 项目中所有属性变化通知的唯一源头"
-      },
-      {
-        "hash": "9f57a50",
-        "date": "2026-03-14",
-        "message": "docs: 更新实施进度报告和编译错误分析"
-      },
-      {
-        "hash": "f990e0c",
-        "date": "2026-03-30",
-        "message": "清理临时文件"
-      },
-      {
         "hash": "5584b9f",
         "date": "2026-04-01",
         "message": "﻿提交未完成的修复  现在的提交是完整的修复后的"
-      },
-      {
-        "hash": "2fe0ea2",
-        "date": "2026-04-01",
-        "message": "Save solution file changes before restructuring"
       },
       {
         "hash": "562eccd",
@@ -2567,439 +2579,13 @@
         "hash": "11c06b0",
         "date": "2026-04-21",
         "message": "﻿修复迁移bug"
-      },
-      {
-        "hash": "88c48ea",
-        "date": "2026-04-23",
-        "message": "﻿修改线宽为2"
-      },
-      {
-        "hash": "4c30d17",
-        "date": "2026-05-02",
-        "message": "﻿旋转矩形的角度控件用nunric代替"
-      },
-      {
-        "hash": "96535d4",
-        "date": "2026-06-29",
-        "message": "docs(rules): rule-018 Skill 优先级 + 治理规则/SKILL.md 标识更新"
-      }
-    ],
-    "M-HIST-CONTRACT": [
-      {
-        "hash": "25bf17c",
-        "date": "2026-06-25",
-        "message": "chore(gitignore): 排除 libs/halcon/runtime/ build_output/ runtime/ 大型二进制"
-      }
-    ],
-    "M-HIST-SDKCTRL": [
-      {
-        "hash": "2955a9a",
-        "date": "2026-03-05",
-        "message": "﻿1.优化了图像预览器切换延迟较大的问题 2.解决了全屏再退出全屏后显示不更新的问题 3.现在切换还是有延时 感觉和日志系统的设计有关系 4.下一步重构日志系统 再测试看看"
-      },
-      {
-        "hash": "476cb7f",
-        "date": "2026-03-08",
-        "message": "修复编译错误：PluginLogger是静态类，使用PluginLogger.Logger获取实例"
-      },
-      {
-        "hash": "863e886",
-        "date": "2026-03-10",
-        "message": "﻿修复鼠标事件的重复订阅问题"
-      },
-      {
-        "hash": "3268468",
-        "date": "2026-04-01",
-        "message": "﻿1.新增RangeInputControl控件 2.新增RangeSlider控件 3.新增ToggleSwitch控件 4.新增ThresholdDisplayConfig类 5.新增ThresholdResultConfig类 6.新增ThresholdParameters类 7.新增ThresholdToolDebugWindow类"
-      },
-      {
-        "hash": "ad91f0a",
-        "date": "2026-04-02",
-        "message": "﻿部分未提交  完整提交"
-      },
-      {
-        "hash": "69388e9",
-        "date": "2026-04-03",
-        "message": "﻿完善了工具层SDK控件的事件和命令，在工具层通过声明来绑定即可，不需要在后台代码中手动处理 目前的主要问题是当前的框架设计，导致在工具层UI无法直接预览，对工具开发者对于 UI的开发很不友好，下一步准备重新设计，提交代码，便于回退"
-      },
-      {
-        "hash": "38fe6b2",
-        "date": "2026-04-07",
-        "message": "﻿颜色选择器的行为正确性 先优化到这里"
-      },
-      {
-        "hash": "dc8c65d",
-        "date": "2026-04-07",
-        "message": "﻿ColorPicker的样式先优化到这里，后面开始修复行为Bug"
-      },
-      {
-        "hash": "f5503c7",
-        "date": "2026-04-07",
-        "message": "﻿补充上一次的提交"
-      },
-      {
-        "hash": "ff5a00c",
-        "date": "2026-04-07",
-        "message": "﻿优化了numric控件的范围输入的样式 优化了colorpicker的样式  还需要进一步优化及修复行为bug"
-      },
-      {
-        "hash": "d28f873",
-        "date": "2026-04-08",
-        "message": "﻿后面要开始agent的team模式开发，先提交代码，便于回退"
-      },
-      {
-        "hash": "86c0e14",
-        "date": "2026-04-12",
-        "message": "﻿完成了参数设置控件的重构，把数据绑定解构到ParamBindingBase中"
-      },
-      {
-        "hash": "e7f3c2c",
-        "date": "2026-04-12",
-        "message": "﻿绑定控件重名为ConfigSetting，新建ParamBinding的UI 下一步迁移绑定功能"
-      },
-      {
-        "hash": "96850b2",
-        "date": "2026-04-13",
-        "message": "﻿删除了区域编辑器无用的UI 但是参数绑定内的控件可见性还需要优化"
-      },
-      {
-        "hash": "e03b338",
-        "date": "2026-04-13",
-        "message": "﻿重构数据缓存的设计，现在的方式是通过反射结果的属性，根据属性的类型自动 生成对应类型的缓存池，确保和业务逻辑解耦。"
-      },
-      {
-        "hash": "8cb0e82",
-        "date": "2026-04-15",
-        "message": "﻿优化了区域编辑器的事件及渲染器的生命周期管理，取消了对于视觉树对于事件的影响"
-      },
-      {
-        "hash": "a033570",
-        "date": "2026-04-20",
-        "message": "﻿基于数据绑定的UI和实际的绑定路径 都对索引进行了支持"
-      },
-      {
-        "hash": "bcfe2cf",
-        "date": "2026-04-20",
-        "message": "﻿1.重构了绑定控件的下拉数据的生成逻辑，之前通过拆解Fullname表达式的方式来生成， 现在通过属性映射来管理，这样可以避免Fullname表达式解析的性能问题， 同时也避免了Fullname表达式解析的复杂性。"
-      },
-      {
-        "hash": "c071ec0",
-        "date": "2026-04-22",
-        "message": "﻿基于 幂律公式：screenSize = 10 / zoom^0.15，Clamp [8, 12] px 优化了手柄的尺寸和区域名称的尺寸"
-      },
-      {
-        "hash": "5393a52",
-        "date": "2026-04-22",
-        "message": "﻿线宽和手柄保持缩放下屏幕尺寸一致"
-      },
-      {
-        "hash": "5adba0b",
-        "date": "2026-05-02",
-        "message": "﻿添加多变形区域编辑功能，右键删除还有点bug，先提交，便于回退"
-      },
-      {
-        "hash": "77510b7",
-        "date": "2026-05-02",
-        "message": "﻿1.修复了ParamBindingBase.cs中ParamBindingBase.GetValue()方法的bug 2.基类静态回调改为派发到 protected virtual 实例方法，子类通过覆写来响应 DataType 变化。"
-      },
-      {
-        "hash": "63ac86a",
-        "date": "2026-05-06",
-        "message": "﻿优化图像显示控件 图像选择器 combobox的样式"
-      },
-      {
-        "hash": "e0038f8",
-        "date": "2026-05-08",
-        "message": "﻿1.修复了结果显示层多边形  不封闭显示的bug"
-      },
-      {
-        "hash": "a6316d8",
-        "date": "2026-05-18",
-        "message": "﻿优化了统一显示模式下 大数据量显示的显示性能"
-      },
-      {
-        "hash": "f690464",
-        "date": "2026-06-25",
-        "message": "feat(Script): 引入 IMonitorable 监视协议 + NumericTypes 单一来源 + 变量 Tab 全面升级"
-      }
-    ],
-    "M-HIST-DATAMODEL": [
-      {
-        "hash": "f742edb",
-        "date": "2026-04-01",
-        "message": "﻿参数系统重新设计 接下来需要集成和验证  先提交"
-      },
-      {
-        "hash": "025e9a5",
-        "date": "2026-04-08",
-        "message": "fix: 修复 MainWindowViewModel 编译错误"
-      },
-      {
-        "hash": "29f034d",
-        "date": "2026-04-08",
-        "message": "fix: 修复 DataSourceQueryService 类型不匹配错误"
-      },
-      {
-        "hash": "c69443d",
-        "date": "2026-04-11",
-        "message": "﻿要准备合并工具分支了"
-      },
-      {
-        "hash": "6a0f7a2",
-        "date": "2026-04-11",
-        "message": "﻿友好名称表现正确，后面要记性控件样式大调整，先提交，便于回退"
-      },
-      {
-        "hash": "defbaa9",
-        "date": "2026-04-11",
-        "message": "﻿要进行大数据处理优化，先提交，便于回退"
-      },
-      {
-        "hash": "c83e1e2",
-        "date": "2026-04-13",
-        "message": "﻿重构了参数类，重构目的是 一个参数就可以适配常量模式和绑定模式 这样的话，在工具层的核心算法，只需要对参数进行使用，完全不用关系，使用的 参数是通过绑定表达式解析过来的，还是通过常量模式直接设置的"
-      },
-      {
-        "hash": "0a2bea1",
-        "date": "2026-04-13",
-        "message": "﻿对RegionSubscribePanel.xaml进行修改"
-      },
-      {
-        "hash": "3b1671b",
-        "date": "2026-04-14",
-        "message": "﻿区域管理系统优化方案  实施完成，可以基于这个版本开始测试和优化"
-      },
-      {
-        "hash": "18b68b0",
-        "date": "2026-04-18",
-        "message": "﻿修复了区域反序列化到区域重绘的逻辑问题，现在可以正常反序列化，并显示正确的区域了。"
-      },
-      {
-        "hash": "43300ea",
-        "date": "2026-04-21",
-        "message": "﻿后面要对现实模式重新设计，先提交代码，便于回退"
-      },
-      {
-        "hash": "952345f",
-        "date": "2026-04-21",
-        "message": "﻿优化了图像传递的逻辑，打开是自动填充第一个"
-      },
-      {
-        "hash": "0b4c712",
-        "date": "2026-05-02",
-        "message": "﻿1.修复了圆形和多变项图形到参数无法双向同步的问题"
-      },
-      {
-        "hash": "98994e1",
-        "date": "2026-05-02",
-        "message": "﻿修复了blob分析工具  阈值 最大值  绑定模式切户常量模式时  数值更新的bug"
-      },
-      {
-        "hash": "8f418c1",
-        "date": "2026-05-06",
-        "message": "﻿优化图像显示控件的下拉内容的组织方式 保持和ImageSourceSelector 一致，并且同源"
-      },
-      {
-        "hash": "836ed62",
-        "date": "2026-06-10",
-        "message": "feat: 子程序输入端口作为数据源注入DSQS"
-      },
-      {
-        "hash": "47255f5",
-        "date": "2026-06-12",
-        "message": "refactor(dsqs): DSQS 架构重构 - 删除本地缓存，SSOT 委托实时读取"
-      },
-      {
-        "hash": "be567f4",
-        "date": "2026-06-12",
-        "message": "refactor(subroutine): 子程序工具完善 + DSQS/ImageSourceSelector 优化"
-      }
-    ],
-    "M-HIST-RESULTTREE": [
-      {
-        "hash": "180ce7c",
-        "date": "2026-03-05",
-        "message": "﻿图像管理器已经重构完成，目前感觉闪烁问题有所改善，感觉现在在数据传递上的问题不是很大，可能和| 显示逻辑有关系，下一步进行验证和优化"
-      },
-      {
-        "hash": "6db92d1",
-        "date": "2026-04-29",
-        "message": "﻿修复提交后的版本bug"
-      },
-      {
-        "hash": "876937e",
-        "date": "2026-04-29",
-        "message": "﻿补充上次提交未完成的部分"
-      },
-      {
-        "hash": "d989f90",
-        "date": "2026-05-03",
-        "message": "﻿修复检测区域没有旋转矩形角度的bug"
-      },
-      {
-        "hash": "b2df90f",
-        "date": "2026-05-04",
-        "message": "﻿修复切换节点渲染遗留的问题"
-      },
-      {
-        "hash": "43abb16",
-        "date": "2026-05-04",
-        "message": "﻿优化模块结果的样式 图像载入重写GetResultItems  是模块结果显示对应的结果"
-      },
-      {
-        "hash": "c368d46",
-        "date": "2026-05-04",
-        "message": "﻿修复了结果显示层不显示屏蔽区域的bug"
-      },
-      {
-        "hash": "57ad126",
-        "date": "2026-06-01",
-        "message": "feat: 全局变量重命名后自动更新绑定引用与结果显示"
-      }
-    ],
-    "M-HIST-PREVIEW": [
-      {
-        "hash": "609fe0b",
-        "date": "2026-02-10",
-        "message": "图像预览功能完善可用版本"
-      },
-      {
-        "hash": "551bc33",
-        "date": "2026-02-10",
-        "message": "优化图像预览功能，添加加载动画，修复部分UI显示问题。"
-      },
-      {
-        "hash": "eefbf67",
-        "date": "2026-02-10",
-        "message": "优化布局，更便于后期工具调试，增加了图像加载及预览模块"
-      },
-      {
-        "hash": "3beaa30",
-        "date": "2026-02-11",
-        "message": "图像预览器加载性能再次提升，1000+仅需0.5s 暂时就先这样，等待整理无用代码，及一些小的bug"
-      },
-      {
-        "hash": "997a493",
-        "date": "2026-02-11",
-        "message": "更新了图像预览控件加载图片的性能，更快了，但是还是感觉不够快，继续优化"
-      },
-      {
-        "hash": "ea59390",
-        "date": "2026-02-11",
-        "message": "预览控件  缩略图加载性能达优化 还有优化方案 先提交这一版 开始测试其他方案"
-      },
-      {
-        "hash": "b57646d",
-        "date": "2026-02-11",
-        "message": "优化了图像预览器的布局和部分样式，删除了不必要的属性和事件，简化了代码结构，提高了代码的可读性和维护性。"
-      },
-      {
-        "hash": "e0cf000",
-        "date": "2026-02-12",
-        "message": "图像预览控件  加载先优化到这里吧  拖拽的性能还需优化"
-      },
-      {
-        "hash": "7dbe088",
-        "date": "2026-02-12",
-        "message": "纯Gpu加速的图像预览性能测试，无缓存方案，感觉也就那样"
-      },
-      {
-        "hash": "e2e77b3",
-        "date": "2026-02-12",
-        "message": "基于伪GPU缓存的图片预览控件，性能还凑活，滚动显示性能还有待优化"
-      },
-      {
-        "hash": "a8407d6",
-        "date": "2026-02-12",
-        "message": "优化了图像预览器的布局，更紧凑了一点"
-      },
-      {
-        "hash": "5907b2c",
-        "date": "2026-02-12",
-        "message": "修复了在某些情况下，删除图像后再次选择同一图像时缩略图不显示的问题。现在在删除图像时会清除SmartLoader的缓存，确保下次加载时能够正确显示缩略图。"
-      },
-      {
-        "hash": "d910394",
-        "date": "2026-02-12",
-        "message": "删除按钮组容器组删除选中的相关代码,现在通过缩略图右上角删除按钮进行选中删除"
-      },
-      {
-        "hash": "7746e50",
-        "date": "2026-02-14",
-        "message": "基于WIC解码器的GPU加速版本 暂时搁置开始测试ImageSharp的GPU加速功能"
-      },
-      {
-        "hash": "651eb46",
-        "date": "2026-02-21",
-        "message": "1.修复了在某些情况下，缩略图加载失败的问题。 2.优化了缩略图加载的性能，提升了用户体验。"
-      },
-      {
-        "hash": "1f794c4",
-        "date": "2026-05-02",
-        "message": "﻿修复多边形右键预览图像的生成逻辑，鼠标移动 预览多边形不再跳变"
-      },
-      {
-        "hash": "5cf7f56",
-        "date": "2026-05-08",
-        "message": "﻿1.优化了图像预览器，加载图像更快了  增加  删除  文件夹添加图像 功能也都修复了"
-      }
-    ],
-    "M-HIST-CVENGINE": [
-      {
-        "hash": "188aa6f",
-        "date": "2026-05-06",
-        "message": "﻿增加图像滤波工具、图像阈值工具、形态学工具，并简要测试"
       }
     ],
     "M-HIST-SOLUTION": [
       {
-        "hash": "ae40c7e",
-        "date": "2026-03-08",
-        "message": "修复解决方案文件格式错误，从备份恢复"
-      },
-      {
         "hash": "468e697",
         "date": "2026-04-01",
         "message": "﻿1.由于加密系统，导致通过git管理代码的时候出现了解决方案乱码， 现在已经复原，现在备份提交 开始后续的开发优化"
-      },
-      {
-        "hash": "b1d21b5",
-        "date": "2026-05-02",
-        "message": "﻿修复了DispTextColorControl绑定模式的数据同步 和序列化及反序列化的问题"
-      }
-    ],
-    "T-CONDITION": [
-      {
-        "hash": "590ba10",
-        "date": "2026-04-11",
-        "message": "docs: 添加合并文档和更新分支状态"
-      }
-    ],
-    "M-SRC-INTEG": [
-      {
-        "hash": "4f6f863",
-        "date": "2026-01-28",
-        "message": "对重构的helper类集成到了工作流画布中 实现了工作流画布的解耦"
-      },
-      {
-        "hash": "fb04e6e",
-        "date": "2026-01-28",
-        "message": "集成 WorkflowDragDropHandler"
-      },
-      {
-        "hash": "7873b82",
-        "date": "2026-02-03",
-        "message": "AIstudio集成完成"
-      },
-      {
-        "hash": "1a05228",
-        "date": "2026-02-06",
-        "message": "把工作流引擎集成到框架中，可以开始第一次工作流引擎的测试"
-      },
-      {
-        "hash": "0c1d459",
-        "date": "2026-03-08",
-        "message": "﻿集成Region区域编辑器 目前编辑绘制和编辑行为正常，还有参数绑定，生命周期管理，UI优化及很多的Bug要修复"
       }
     ],
     "M-SRC-RUNUI": [
@@ -3012,6 +2598,13 @@
         "hash": "82e5a12",
         "date": "2026-02-08",
         "message": "1.优化了工作流执行引擎，删除了过时的执行策略选择器和相关测试代码，改为基于拓扑排序的并行组执行方法，提高了执行效率和稳定性。 2.调整了工具节点的类型定义，将开始节点和算法节点区分开来，优化了节点接口工厂的逻辑，使得不同类型的节点能够使用更合适的界面进行编辑和调试。 3.更新了图像捕获工具和图像保存工具的元数据，明确了它们的节点类型，并确保它们具有调试界面，以便在工作流中更好地使用和调试。 4.修改了主窗口和相关视图模型，优化了工作流节点的扩展方法，提升了用户界面的交互体验和功能性。 5.删除了不再使用的执行策略选择器、测试运行器和相关测试代码，简化了代码库，减少了维护负担。"
+      }
+    ],
+    "M-SRC-INTEG": [
+      {
+        "hash": "fb04e6e",
+        "date": "2026-01-28",
+        "message": "集成 WorkflowDragDropHandler"
       }
     ]
   }

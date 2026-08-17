@@ -398,6 +398,53 @@ while ($tickDate -le $projEnd -and $tickIdx -lt 30) {
     $tickIdx++
 }
 
+# ---------- 主控：最近提交追溯（全局最近 N 次提交，快速跳转） ----------
+$recentCount = 2   # 保留最近提交次数
+$recentHtml = ""
+if ($weekly -and $weekly.moduleCommits) {
+    $allCommits = @()
+    foreach ($midProp in $weekly.moduleCommits.PSObject.Properties) {
+        $modId = $midProp.Name
+        foreach ($cm in @($midProp.Value)) {
+            $allCommits += [pscustomobject]@{
+                modId = $modId
+                hash  = $cm.hash
+                date  = $cm.date
+                msg   = $cm.message
+            }
+        }
+    }
+    if ($allCommits.Count -gt 0) {
+        $sorted = @($allCommits | Sort-Object date -Descending | Select-Object -First $recentCount)
+        $recentRows = ""
+        foreach ($c in $sorted) {
+            $modName = $weekModuleName[$c.modId]
+            if (-not $modName) { $modName = $c.modId }
+            if ($c.modId -eq "UNKNOWN") {
+                $href = "#temp-pool"
+                $target = "临时任务池"
+            } else {
+                $href = "tasks/$($c.modId).html"
+                $target = $modName
+            }
+            $recentRows += @"
+            <div class="recent-item">
+              <span class="recent-hash">$($c.hash)</span>
+              <span class="recent-date">$($c.date)</span>
+              <span class="recent-msg">$($c.msg)</span>
+              <a class="recent-link" href="$href">跳转 → $target</a>
+            </div>
+"@
+        }
+        $recentHtml = @"
+  <div class="card recent-card">
+    <h2>最近提交追溯（最近 $recentCount 次 · 点击快速跳转）</h2>
+    $recentRows
+  </div>
+"@
+    }
+}
+
 # ---------- 主控：临时任务池 ----------
 $tempHtml = ""
 if ($plan.tempTasks) {
@@ -419,7 +466,7 @@ if ($plan.tempTasks) {
 "@
         }
         $tempHtml = @"
-  <div class="card temp-card">
+  <div class="card temp-card" id="temp-pool">
     <h2>临时任务池（$($tempList.Count) 个 · 提交自动收录，未归入正式计划）</h2>
     $tempRows
   </div>
@@ -608,6 +655,14 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
 .ms-desc { font-size:12px; color:#888; margin-top:2px; }
 .footer { text-align:center; font-size:12px; color:#aaa; padding:16px 0 8px; }
 .note { background:#fdf9ec; border:1px solid #f3e2b6; border-radius:10px; padding:12px 16px; font-size:12px; color:#7a5b1e; margin-bottom:20px; line-height:1.7; }
+.recent-card { border-left:3px solid #2563eb; }
+.recent-item { padding:10px 0; border-bottom:1px solid #f0f1f3; display:flex; align-items:center; gap:12px; font-size:13px; flex-wrap:wrap; }
+.recent-item:last-child { border-bottom:none; }
+.recent-hash { font-family:Consolas,monospace; font-size:11px; color:#2563eb; background:#e8effd; padding:2px 8px; border-radius:4px; }
+.recent-date { font-size:11px; color:#999; }
+.recent-msg { font-weight:500; flex:1; min-width:200px; }
+.recent-link { font-size:12px; color:#2563eb; text-decoration:none; font-weight:500; }
+.recent-link:hover { text-decoration:underline; }
 .temp-card { border-left:3px solid #993556; }
 .temp-item { padding:10px 0; border-bottom:1px solid #f0f1f3; }
 .temp-item:last-child { border-bottom:none; }
@@ -711,6 +766,10 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
     </div>
   </div>
 
+  $recentHtml
+
+  $tempHtml
+
   <div class="card">
     <h2>功能模块与工具（$($modules.Count) 个）</h2>
     <div class="view-toggle">
@@ -763,8 +822,6 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
   $weeklyHtml
 
   $planWeeklyHtml
-
-  $tempHtml
 
   <div class="card">
     <h2>里程碑</h2>

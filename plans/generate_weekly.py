@@ -116,7 +116,7 @@ pathMap = [
     (["src/Workflow"], "M-HIST-CANVAS"),
     (["src/Plugin.SDK/Logging", "src/Core/Services/Logging"], "M-HIST-CORE"),
     (["src/Plugin.SDK/UI/Controls/Roi"], "M-HIST-REGION"),
-    (["src/UI/Themes", "src/UI/Shell"], "M-SRC-UI"),
+    (["src/UI/Themes", "src/UI/Shell", "src/Plugin.SDK/UI"], "M-SRC-UI"),
     (["src/UI/Features/Dialogs", "src/UI/Features/ParameterSetting"], "M-HIST-PARAM"),
     (["src/UI/Features/WorkflowUI/Canvas"], "M-HIST-CANVAS"),
     # 补充：SDK 控件 / 数据结构 / 结果树 / 路径算法（v5.11+）
@@ -126,13 +126,25 @@ pathMap = [
     (["src/Plugin.SDK/Execution/Parameters", "src/Plugin.SDK/Models/SubroutineOutputConfig"], "M-HIST-DATAMODEL"),
 ]
 
-def match_module(msg, files):    # 路径匹配优先（文件证据比提交信息更可靠）
+def match_module(msg, files):
+    # 路径匹配：按「命中文件数」选归属，而非「先到先得」。
+    # 修复 bug：7605075 主要改 UI（src/ 32 + tools/ 13）但顺带改 tests/(3)，
+    # 原逻辑 tests/ 规则排在前面，抢先归到 M-SRC-TEST，导致 UI 提交被错记。
+    # 现改为统计每个模块命中多少个文件，选命中最多者；平局取 pathMap 靠前者。
+    best_mid = None
+    best_count = 0
     for paths, mid in pathMap:
+        cnt = 0
         for p in paths:
             for f in files:
                 if p.lower() in f.lower():
-                    return mid
-    # 关键词匹配
+                    cnt += 1
+        if cnt > best_count:
+            best_count = cnt
+            best_mid = mid
+    if best_mid and best_count > 0:
+        return best_mid
+    # 关键词匹配（仅当无路径命中时兜底）
     for kws, mid in keywordMap:
         for k in kws:
             if k.lower() in msg.lower():
@@ -149,6 +161,13 @@ def _finalize_commit(cur, weeks, module_weeks, module_commits):
         return
     iso = d.isocalendar()
     week = f"{iso[0]}-W{iso[1]:02d}"
+
+    # 纯计划系统自我更新提交（无业务代码改动）跳过，与 sync_plan.ps1 的跳过逻辑一致。
+    # 避免这类提交进入 moduleCommits/UNKNOWN，污染「最近提交追溯」。
+    _business_prefixes = ("src/", "tools/", "tests/", "docs/", "libs/", "PluginDevKit/", "Help/")
+    _has_biz = any(f.lower().startswith(_business_prefixes) for f in files)
+    if not _has_biz:
+        return
 
     mid = match_module(subject, files)
 
@@ -242,6 +261,10 @@ def main():
     # 拆分模块提交日志到独立文件（供 PowerShell 简单读取，避免深层 JSON 问题）
     gitlog_dir = os.path.join(REPO, "plans", "gitlogs")
     os.makedirs(gitlog_dir, exist_ok=True)
+    # 先清空旧的 gitlogs 文件（.html/.json），避免模块归属调整后残留过时记录
+    for stale in os.listdir(gitlog_dir):
+        if stale.endswith(".html") or stale.endswith(".json"):
+            os.remove(os.path.join(gitlog_dir, stale))
     for mid, commits in module_commits_sorted.items():
         with io.open(os.path.join(gitlog_dir, f"{mid}.json"), "w", encoding="utf-8", newline="\n") as f:
             json.dump(commits, f, ensure_ascii=False, indent=2)

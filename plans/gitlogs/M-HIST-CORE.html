@@ -1,10 +1,5 @@
             <div class='git-log'>
               <div class='git-log-item'>
-                <span class='git-hash'>23bd9c7</span>
-                <span class='git-date'>2026-06-29</span>
-                <span class='git-msg'>chore(gitignore): 屏蔽工具临时文件</span>
-              </div>
-              <div class='git-log-item'>
                 <span class='git-hash'>1f54100</span>
                 <span class='git-date'>2026-06-29</span>
                 <span class='git-msg'>chore(wip): 历史遗留修改合入 (Plugin.SDK 迁移 + Script 工具完善)</span>
@@ -13,11 +8,6 @@
                 <span class='git-hash'>39ca2aa</span>
                 <span class='git-date'>2026-06-23</span>
                 <span class='git-msg'>feat(Script): 添加脚本变量监视面板及删除废弃的 ScriptIoDialog</span>
-              </div>
-              <div class='git-log-item'>
-                <span class='git-hash'>702bb33</span>
-                <span class='git-date'>2026-06-12</span>
-                <span class='git-msg'>refactor(script): 优化脚本工具架构 - 重命名 ScriptApi-&gt;ScriptContext / ScriptBase-&gt;Script；新增 CompletitionWindow 自动补全（类型/标识符/成员）；新增 AssemblyReferenceDialog 引用管理界面；新增 LogEntry 模型；修复文档更新方式并移除静默 catch；添加 CSharpDark.xshd 语法高亮主题</span>
               </div>
               <div class='git-log-item'>
                 <span class='git-hash'>fc6e3a4</span>
@@ -30,49 +20,19 @@
                 <span class='git-msg'>﻿1.修复了日志显示器水印的遮挡问题 2.实现了日志显示的自动滚动功能</span>
               </div>
               <div class='git-log-item'>
+                <span class='git-hash'>4343b2c</span>
+                <span class='git-date'>2026-04-20</span>
+                <span class='git-msg'>﻿优化了日志系统，增加了诊断模式  如下是各种日志级别 及诊断模式下的日志输出设计 日志级别	非诊断模式	诊断模式	适用内容 Debug	不输出	输出	实现细节、内部状态、步骤追踪 Info	输出	输出	状态变更、过程开始、中间状态 Success	输出	输出	任务完成、结果达标、操作完成 Warning	输出	输出	有问题但能继续运行 Error	输出	输出	失败/异常，需要处理 Fatal	输出	输出	程序无法继续运行</span>
+              </div>
+              <div class='git-log-item'>
                 <span class='git-hash'>740f52e</span>
                 <span class='git-date'>2026-04-20</span>
                 <span class='git-msg'>﻿优化之日系统，可以指定写入到什么地方</span>
               </div>
               <div class='git-log-item'>
-                <span class='git-hash'>d19e8a4</span>
-                <span class='git-date'>2026-04-13</span>
-                <span class='git-msg'>﻿优化了部分UI，后面要进行大重构，先提交代码 便于回退</span>
-              </div>
-              <div class='git-log-item'>
-                <span class='git-hash'>001090f</span>
-                <span class='git-date'>2026-04-08</span>
-                <span class='git-msg'>docs: 添加ThresholdTool分析文档</span>
-              </div>
-              <div class='git-log-item'>
-                <span class='git-hash'>e87ee7f</span>
-                <span class='git-date'>2026-04-05</span>
-                <span class='git-msg'>﻿1.之前通过重构UI集成方案，实现了工具层UI的可预览编程 但是无法实现声明式编程，重构后支持声明式编程，其他问题还需测试优化</span>
-              </div>
-              <div class='git-log-item'>
-                <span class='git-hash'>4046029</span>
-                <span class='git-date'>2026-03-10</span>
-                <span class='git-msg'>﻿更新渲染器，从bitmap到wpf 重新设计渲染框架 目前性能还可以 但是数量过多时 会卡顿 当前测试300-400  会有影响 但是还是可以用的 暂时先这样  更高性能的渲染器 需要等到 后续的需求 再做优化</span>
-              </div>
-              <div class='git-log-item'>
-                <span class='git-hash'>ace00ac</span>
-                <span class='git-date'>2026-03-10</span>
-                <span class='git-msg'>﻿继续清理无用日志</span>
-              </div>
-              <div class='git-log-item'>
-                <span class='git-hash'>25719da</span>
-                <span class='git-date'>2026-03-10</span>
-                <span class='git-msg'>﻿添加性能日志监控</span>
-              </div>
-              <div class='git-log-item'>
                 <span class='git-hash'>9024efb</span>
                 <span class='git-date'>2026-03-08</span>
                 <span class='git-msg'>添加调试窗口打开过程的日志追踪</span>
-              </div>
-              <div class='git-log-item'>
-                <span class='git-hash'>0082a20</span>
-                <span class='git-date'>2026-03-08</span>
-                <span class='git-msg'>完善参数源日志监控，添加参数获取过程追踪</span>
               </div>
               <div class='git-log-item'>
                 <span class='git-hash'>3080f11</span>
@@ -85,44 +45,9 @@
                 <span class='git-msg'>完成了工具插件的重构</span>
               </div>
               <div class='git-log-item'>
-                <span class='git-hash'>cc30921</span>
-                <span class='git-date'>2026-02-21</span>
-                <span class='git-msg'>1. 添加文件访问管理器 2. 修改了图像预览控件以使用新的文件访问管理器 3. 更新了图像解码器以支持新的文件访问机制 4. 修改了主窗口和相关视图模型以适应新的文件访问逻辑</span>
-              </div>
-              <div class='git-log-item'>
-                <span class='git-hash'>9aa2f0d</span>
-                <span class='git-date'>2026-02-10</span>
-                <span class='git-msg'>删除了工具箱在优化过程中的日志信息，避免对后续的开发产生干扰，可运行版本</span>
-              </div>
-              <div class='git-log-item'>
-                <span class='git-hash'>9f84520</span>
-                <span class='git-date'>2026-02-10</span>
-                <span class='git-msg'>工具箱双模完全实现且完成测试，切记谨慎使用屏幕坐标系</span>
-              </div>
-              <div class='git-log-item'>
-                <span class='git-hash'>7788e68</span>
-                <span class='git-date'>2026-02-10</span>
-                <span class='git-msg'>取消了主界面左侧分隔条  把模式切换放到了工具箱底部</span>
-              </div>
-              <div class='git-log-item'>
-                <span class='git-hash'>844f38f</span>
-                <span class='git-date'>2026-02-10</span>
-                <span class='git-msg'>增加了工具箱的双模显示，但是还有些问题需要完善</span>
-              </div>
-              <div class='git-log-item'>
                 <span class='git-hash'>04c743b</span>
                 <span class='git-date'>2026-02-07</span>
                 <span class='git-msg'>大重构 一。工具插件 1. 重构PluginSystem.Base 2. 重构PluginSystem.Infrastructure 3. 重构PluginSystem.Tools 二。工作流执行引擎执行逻辑管理 1. 重构WorkflowEngine.Base 2. 重构WorkflowEngine.Infrastructure 3. 重构WorkflowEngine.Workflows 三。工作流执行引擎UI管理 1. 重构WorkflowEngine.UI.Base 2. 重构WorkflowEngine.UI.Infrastructure 3. 重构WorkflowEngine.UI.Workflows</span>
-              </div>
-              <div class='git-log-item'>
-                <span class='git-hash'>8f0a6a4</span>
-                <span class='git-date'>2026-02-07</span>
-                <span class='git-msg'>refactor: 清理 PluginSystem 目录结构</span>
-              </div>
-              <div class='git-log-item'>
-                <span class='git-hash'>179b544</span>
-                <span class='git-date'>2026-02-07</span>
-                <span class='git-msg'>重构PluginSystem UI目录结构 - 方案3实施</span>
               </div>
               <div class='git-log-item'>
                 <span class='git-hash'>045a5f6</span>
@@ -138,11 +63,6 @@
                 <span class='git-hash'>7198875</span>
                 <span class='git-date'>2026-01-27</span>
                 <span class='git-msg'>trae重构回退后可运行的版本</span>
-              </div>
-              <div class='git-log-item'>
-                <span class='git-hash'>033a514</span>
-                <span class='git-date'>2026-01-21</span>
-                <span class='git-msg'># SunEyeVision视觉软件 - 开发日志</span>
               </div>
               <div class='git-log-item'>
                 <span class='git-hash'>0b9e3c8</span>

@@ -3576,6 +3576,18 @@
                                         "plans/tasks/T-SUBROUTINE.html"
                                     ],
                           "status":  "in_progress"
+                      },
+                      {
+                          "id":  "TMP-746aeb9",
+                          "message":  "清理开发计划同步的重复临时任务记录",
+                          "date":  "2026-08-17",
+                          "commit":  "746aeb9a5dcba68530f3ac0486c131f003530c4c",
+                          "files":  [
+                                        "plans/.last_synced_commit",
+                                        "plans/plan.html",
+                                        "plans/plan.json"
+                                    ],
+                          "status":  "in_progress"
                       }
                   ]
 }

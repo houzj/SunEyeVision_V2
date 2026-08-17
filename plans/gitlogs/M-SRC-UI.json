@@ -1,10 +1,5 @@
 [
   {
-    "hash": "3268468",
-    "date": "2026-04-01",
-    "message": "﻿1.新增RangeInputControl控件 2.新增RangeSlider控件 3.新增ToggleSwitch控件 4.新增ThresholdDisplayConfig类 5.新增ThresholdResultConfig类 6.新增ThresholdParameters类 7.新增ThresholdToolDebugWindow类"
-  },
-  {
     "hash": "f742edb",
     "date": "2026-04-01",
     "message": "﻿参数系统重新设计 接下来需要集成和验证  先提交"
@@ -493,6 +488,11 @@
     "hash": "0a917ab",
     "date": "2026-08-15",
     "message": "修复关闭/删除确认弹窗不跟随主题，且关闭时无确认弹窗"
+  },
+  {
+    "hash": "537a439",
+    "date": "2026-08-17",
+    "message": "暗色主题边框提亮并清理表格分割线"
   },
   {
     "hash": "7605075",

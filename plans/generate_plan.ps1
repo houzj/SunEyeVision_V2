@@ -398,8 +398,10 @@ while ($tickDate -le $projEnd -and $tickIdx -lt 30) {
     $tickIdx++
 }
 
-# ---------- 主控：最近提交追溯（全局最近 N 次提交，快速跳转） ----------
-$recentCount = 2   # 保留最近提交次数
+# ---------- 主控：最近提交追溯（最近 7 天所有提交，快速跳转；汇报以周为单位） ----------
+# 按滚动 7 天（含今天）过滤 weekly.moduleCommits 中 date 在最近一周内的所有提交，不再用固定条数
+$recentStart = (Get-Date).AddDays(-6).ToString("yyyy-MM-dd")
+$recentEnd = (Get-Date).ToString("yyyy-MM-dd")
 $recentHtml = ""
 if ($weekly -and $weekly.moduleCommits) {
     $allCommits = @()
@@ -414,10 +416,10 @@ if ($weekly -and $weekly.moduleCommits) {
             }
         }
     }
-    if ($allCommits.Count -gt 0) {
-        $sorted = @($allCommits | Sort-Object date -Descending | Select-Object -First $recentCount)
+    $weekCommits = @($allCommits | Where-Object { $_.date -ge $recentStart } | Sort-Object date -Descending)
+    if ($weekCommits.Count -gt 0) {
         $recentRows = ""
-        foreach ($c in $sorted) {
+        foreach ($c in $weekCommits) {
             $modName = $weekModuleName[$c.modId]
             if (-not $modName) { $modName = $c.modId }
             if ($c.modId -eq "UNKNOWN") {
@@ -438,22 +440,68 @@ if ($weekly -and $weekly.moduleCommits) {
         }
         $recentHtml = @"
   <div class="card recent-card">
-    <h2>最近提交追溯（最近 $recentCount 次 · 点击快速跳转）</h2>
+    <h2>最近提交追溯（$recentStart ~ $recentEnd · 最近 7 天 · 共 $($weekCommits.Count) 次 · 点击快速跳转）</h2>
     $recentRows
   </div>
 "@
     }
 }
 
-# ---------- 主控：临时任务池 ----------
+# ---------- 主控：临时任务池（最近 7 天 · 无归属提交自动收录，保留一周） ----------
+# 数据源：plan.json.tempTasks（hook 逐提交收录）+ weekly.moduleCommits.UNKNOWN（未归类提交）
+# 只显示最近 7 天条目；UNKNOWN 并入去重（按短 hash 比对），保证"最近提交追溯"里 UNKNOWN 可跳转到此
 $tempHtml = ""
-if ($plan.tempTasks) {
-    $tempList = @($plan.tempTasks)
-    if ($tempList.Count -gt 0) {
-        $tempRows = ""
-        foreach ($tp in $tempList) {
-            $ts = $statusMap[$tp.status]
-            $tempRows += @"
+$tempItems = @()
+
+if ($recentStart) {
+    # 1) plan.tempTasks 最近 7 天条目
+    if ($plan.tempTasks) {
+        foreach ($tp in @($plan.tempTasks)) {
+            if ($tp.date -ge $recentStart) {
+                $tempItems += [pscustomobject]@{
+                    id      = $tp.id
+                    message = $tp.message
+                    date    = $tp.date
+                    commit  = $tp.commit
+                    files   = @($tp.files)
+                    status  = $tp.status
+                    src     = "temp"
+                }
+            }
+        }
+    }
+    # 2) weekly 的 UNKNOWN 提交并入（去重：与 tempItems 的 commit 短 hash 比对）
+    if ($weekly -and $weekly.moduleCommits -and $weekly.moduleCommits.UNKNOWN) {
+        foreach ($cm in @($weekly.moduleCommits.UNKNOWN)) {
+            if ($cm.date -lt $recentStart) { continue }
+            $short = if ($cm.hash.Length -ge 7) { $cm.hash.Substring(0,7) } else { $cm.hash }
+            $dup = $false
+            foreach ($ti in $tempItems) {
+                $ci = $ti.commit
+                if ($ci.Length -ge 7) { $ci = $ci.Substring(0,7) }
+                if ($ci -eq $short) { $dup = $true; break }
+            }
+            if (-not $dup) {
+                $tempItems += [pscustomobject]@{
+                    id      = "TMP-$short"
+                    message = $cm.message
+                    date    = $cm.date
+                    commit  = $short
+                    files   = @()
+                    status  = "in_progress"
+                    src     = "unknown"
+                }
+            }
+        }
+    }
+}
+
+if ($tempItems.Count -gt 0) {
+    $tempRows = ""
+    foreach ($tp in ($tempItems | Sort-Object date -Descending)) {
+        $ts = $statusMap[$tp.status]
+        $filesTxt = if ($tp.files.Count -gt 0) { ($tp.files | Select-Object -First 3) -join ' · ' } else { "（未归类提交）" }
+        $tempRows += @"
             <div class="temp-item">
               <div class="temp-head">
                 <span class="temp-id">$($tp.id)</span>
@@ -461,17 +509,16 @@ if ($plan.tempTasks) {
                 <span class="temp-date">$($tp.date)</span>
                 <span class="status $($ts.cls)">$($ts.label)</span>
               </div>
-              <div class="temp-files">$((@($tp.files) | Select-Object -First 3) -join ' · ')</div>
+              <div class="temp-files">$filesTxt</div>
             </div>
 "@
-        }
-        $tempHtml = @"
+    }
+    $tempHtml = @"
   <div class="card temp-card" id="temp-pool">
-    <h2>临时任务池（$($tempList.Count) 个 · 提交自动收录，未归入正式计划）</h2>
+    <h2>临时任务池（$recentStart ~ $recentEnd · 最近 7 天 · 共 $($tempItems.Count) 个 · 无归属提交自动收录，仅保留一周）</h2>
     $tempRows
   </div>
 "@
-    }
 }
 
 # ---------- 主控：周维度开发追溯 ----------

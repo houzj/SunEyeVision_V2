@@ -292,6 +292,22 @@ if (-not $matchedId) {
     }
 }
 
+# ---------- 临时任务池按周清理（保留最近 7 天，滚动） ----------
+# 汇报以周为单位：超过最近 7 天的临时任务过期，直接移出池子，避免无限累积。
+# 与看板"最近提交追溯/临时任务池"的滚动 7 天语义保持一致（generate_plan.ps1）。
+if ($plan.PSObject.Properties['tempTasks'] -and @($plan.tempTasks).Count -gt 0) {
+    try {
+        $recentStart = (Get-Date).AddDays(-6).ToString("yyyy-MM-dd")
+        $kept = @($plan.tempTasks | Where-Object { $_.date -ge $recentStart })
+        if ($kept.Count -ne @($plan.tempTasks).Count) {
+            $plan.tempTasks = $kept
+            Write-Host "临时任务池按周清理: 保留最近 7 天起 $($kept.Count) 条" -ForegroundColor DarkGray
+        }
+    } catch {
+        Write-Host "临时任务池清理失败（跳过）: $($_.Exception.Message)" -ForegroundColor Yellow
+    }
+}
+
 # ---------- 保存 plan.json（保持格式） ----------
 $json = $plan | ConvertTo-Json -Depth 20
 # 转换后 null 数组清理（可选，保持兼容即可）
@@ -300,6 +316,30 @@ Write-Host "plan.json 已保存" -ForegroundColor Green
 
 # 记录已同步提交（幂等标记）
 [System.IO.File]::WriteAllText($MarkerPath, $CommitHash, [System.Text.UTF8Encoding]::new($false))
+
+# ---------- 刷新周追溯数据（weekly.json） ----------
+# 关键：weekly.json 由 generate_weekly.py 独立生成，若不随提交刷新，看板"最近提交追溯"会缺最新提交。
+# 这里在每次提交同步后自动重跑，保证最近提交追溯跟得上（同时重建各模块 gitlogs/）。
+$WeeklyGen = Join-Path $PlanDir "generate_weekly.py"
+if (Test-Path $WeeklyGen) {
+    $py = $null
+    foreach ($cand in @("py", "python")) {
+        if (Get-Command $cand -ErrorAction SilentlyContinue) { $py = $cand; break }
+    }
+    if ($py) {
+        Write-Host "刷新周追溯数据 (generate_weekly.py)..." -ForegroundColor Cyan
+        try {
+            & $py $WeeklyGen 2>&1 | Out-Null
+            Write-Host "周追溯数据已刷新" -ForegroundColor Green
+        } catch {
+            Write-Host "周追溯数据刷新失败（跳过）: $($_.Exception.Message)" -ForegroundColor Yellow
+        }
+    } else {
+        Write-Host "警告: 未找到 py/python，跳过周追溯数据刷新" -ForegroundColor Yellow
+    }
+} else {
+    Write-Host "警告: 未找到 generate_weekly.py，跳过周追溯数据刷新" -ForegroundColor Yellow
+}
 
 # ---------- 重新生成 HTML 看板 ----------
 if (Test-Path $GenScript) {

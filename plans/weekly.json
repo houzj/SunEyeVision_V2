@@ -1,6 +1,6 @@
 {
   "generated": "2026-08-17",
-  "totalCommits": 376,
+  "totalCommits": 378,
   "weeks": [
     {
       "week": "2026-W04",
@@ -287,13 +287,28 @@
     },
     {
       "week": "2026-W34",
-      "commits": 1,
+      "commits": 3,
       "modules": {
-        "M-SRC-UI": 1
+        "M-SRC-UI": 2,
+        "M-HIST-GLOBALVAR": 1
       }
     }
   ],
   "moduleWeeks": {
+    "M-HIST-GLOBALVAR": [
+      {
+        "week": "2026-W14",
+        "commits": 1
+      },
+      {
+        "week": "2026-W22",
+        "commits": 1
+      },
+      {
+        "week": "2026-W34",
+        "commits": 1
+      }
+    ],
     "M-SRC-UI": [
       {
         "week": "2026-W09",
@@ -373,7 +388,7 @@
       },
       {
         "week": "2026-W34",
-        "commits": 1
+        "commits": 2
       }
     ],
     "M-HIST-CANVAS": [
@@ -708,16 +723,6 @@
         "commits": 3
       }
     ],
-    "M-HIST-GLOBALVAR": [
-      {
-        "week": "2026-W14",
-        "commits": 1
-      },
-      {
-        "week": "2026-W22",
-        "commits": 1
-      }
-    ],
     "M-HIST-CVENGINE": [
       {
         "week": "2026-W17",
@@ -806,12 +811,24 @@
     ]
   },
   "moduleCommits": {
-    "M-SRC-UI": [
+    "M-HIST-GLOBALVAR": [
       {
-        "hash": "3268468",
-        "date": "2026-04-01",
-        "message": "﻿1.新增RangeInputControl控件 2.新增RangeSlider控件 3.新增ToggleSwitch控件 4.新增ThresholdDisplayConfig类 5.新增ThresholdResultConfig类 6.新增ThresholdParameters类 7.新增ThresholdToolDebugWindow类"
+        "hash": "a1bff27",
+        "date": "2026-03-31",
+        "message": "﻿关于解决放哪管理的相关优化暂时到这里 后面再回到工作流 开始优化工作流的相关内容 主要方向有以下几个 1.工作流数据绑定传递 包括节点之间和节点和全局变量之间 2.验证和优化工作流执行引擎  对工作流驱动的正确性 单工作流 多工作流 工作流的单次运行  连续运行  总控  单次运行  连续运行 3.节点UI优化  节点数据模型定义 参数  结果  判断  显示  等再工具的组织形式要确定下来 4.ROI  区域编辑 基于单窗口编辑的 生命周期管理 5.节点结果显示和数据显示的 数据模型定义确认 6.数据模型和UI的绑定模型确认"
       },
+      {
+        "hash": "92d3624",
+        "date": "2026-05-27",
+        "message": "优化全局变量管理器：内联编辑分组名、级联删除、VisionMaster风格UI"
+      },
+      {
+        "hash": "7cda17e",
+        "date": "2026-08-17",
+        "message": "全局变量管理器样式对齐子程序输入输出表"
+      }
+    ],
+    "M-SRC-UI": [
       {
         "hash": "f742edb",
         "date": "2026-04-01",
@@ -1301,6 +1318,11 @@
         "hash": "0a917ab",
         "date": "2026-08-15",
         "message": "修复关闭/删除确认弹窗不跟随主题，且关闭时无确认弹窗"
+      },
+      {
+        "hash": "537a439",
+        "date": "2026-08-17",
+        "message": "暗色主题边框提亮并清理表格分割线"
       },
       {
         "hash": "7605075",
@@ -2424,18 +2446,6 @@
         "hash": "7aa1d16",
         "date": "2026-06-12",
         "message": "fix(build): 清理 dev/Debug 输出目录，防止框架 DLL 复制到 plugins/"
-      }
-    ],
-    "M-HIST-GLOBALVAR": [
-      {
-        "hash": "a1bff27",
-        "date": "2026-03-31",
-        "message": "﻿关于解决放哪管理的相关优化暂时到这里 后面再回到工作流 开始优化工作流的相关内容 主要方向有以下几个 1.工作流数据绑定传递 包括节点之间和节点和全局变量之间 2.验证和优化工作流执行引擎  对工作流驱动的正确性 单工作流 多工作流 工作流的单次运行  连续运行  总控  单次运行  连续运行 3.节点UI优化  节点数据模型定义 参数  结果  判断  显示  等再工具的组织形式要确定下来 4.ROI  区域编辑 基于单窗口编辑的 生命周期管理 5.节点结果显示和数据显示的 数据模型定义确认 6.数据模型和UI的绑定模型确认"
-      },
-      {
-        "hash": "92d3624",
-        "date": "2026-05-27",
-        "message": "优化全局变量管理器：内联编辑分组名、级联删除、VisionMaster风格UI"
       }
     ],
     "M-HIST-CVENGINE": [

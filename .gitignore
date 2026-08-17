@@ -191,3 +191,6 @@ runtime/
 # 工具运行时状态 (方案实施 STATE.md 每次实施会重写,不入库)
 .codebuddy/skills/方案实施/STATE.md
 
+# 开发计划 hook 运行时状态 (记录上次同步的提交 hash,每次提交都变,不入库)
+plans/.last_synced_commit
+

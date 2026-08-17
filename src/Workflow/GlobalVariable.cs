@@ -139,6 +139,31 @@ public class GlobalVariable : ObservableObject
     }
 
     /// <summary>
+    /// 是否为复杂类型（图像/图形/矩阵等），此类「当前值」只读占位显示，不可编辑
+    /// </summary>
+    /// <remarks>
+    /// 文本可编辑类型为 Integer/String/Boolean/Double，其余（Image/RoI/Transform/Circle/
+    /// RotatedRect/Point/Polygon/Line/Annulus）为复杂类型，仅显示占位（如 [图像]）。
+    /// </remarks>
+    [JsonIgnore]
+    public bool IsComplexValue
+    {
+        get
+        {
+            switch (Type)
+            {
+                case "Integer":
+                case "String":
+                case "Boolean":
+                case "Double":
+                    return false;
+                default:
+                    return true;
+            }
+        }
+    }
+
+    /// <summary>
     /// 消费者绑定列表：哪些参数绑定到此变量
     /// </summary>
     /// <remarks>

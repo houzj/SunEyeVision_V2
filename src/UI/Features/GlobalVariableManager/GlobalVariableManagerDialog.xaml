@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SunEyeVision.UI.Converters.Visibility"
+        xmlns:gv="clr-namespace:SunEyeVision.UI.Features.GlobalVariableManager"
         xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
         xmlns:themeWindows="clr-namespace:SunEyeVision.UI.Shell.Windows"
         mc:Ignorable="d"
@@ -213,12 +214,12 @@
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Padding" Value="8,6"/>
             <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}"/>
-            <Setter Property="BorderThickness" Value="0,0,1,1"/>
+            <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
 
-        <!-- DataGrid 行样式 -->
+        <!-- DataGrid 行样式：选中/失焦统一主题色，杜绝系统默认高亮 -->
         <Style x:Key="GvDataGridRowStyle" TargetType="DataGridRow">
             <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowBackgroundBrush}}"/>
             <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
@@ -230,14 +231,38 @@
                     <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowSelectedBackgroundBrush}}"/>
                     <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
                 </Trigger>
+                <!-- 失焦仍保留选中主题色（而非系统灰） -->
+                <MultiTrigger>
+                    <MultiTrigger.Conditions>
+                        <Condition Property="IsSelected" Value="True"/>
+                        <Condition Property="IsKeyboardFocusWithin" Value="False"/>
+                    </MultiTrigger.Conditions>
+                    <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowSelectedBackgroundBrush}}"/>
+                </MultiTrigger>
             </Style.Triggers>
         </Style>
 
-        <!-- DataGrid 单元格样式 -->
+        <!-- DataGrid 单元格样式：选中/失焦与行一致，避免系统默认高亮叠加 -->
         <Style x:Key="GvDataGridCellStyle" TargetType="DataGridCell">
             <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
+            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowBackgroundBrush}}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowSelectedBackgroundBrush}}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
+                </Trigger>
+                <!-- 失焦仍保留选中主题色 -->
+                <MultiTrigger>
+                    <MultiTrigger.Conditions>
+                        <Condition Property="IsSelected" Value="True"/>
+                        <Condition Property="IsKeyboardFocusWithin" Value="False"/>
+                    </MultiTrigger.Conditions>
+                    <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.TableRowSelectedBackgroundBrush}}"/>
+                </MultiTrigger>
+            </Style.Triggers>
         </Style>
 
         <!-- 内联编辑 TextBox 样式（与 GroupTabStyle 视觉一致） -->
@@ -289,6 +314,7 @@
         <!-- ====== 转换器 ====== -->
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <local:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
+        <gv:GlobalVariableValueTextConverter x:Key="ValueTextConverter"/>
     </Window.Resources>
 
     <Grid Margin="0">
@@ -491,35 +517,56 @@
                   CanUserAddRows="False"
                   CanUserDeleteRows="False"
                   SelectionMode="Single"
-                  GridLinesVisibility="Horizontal"
+                  IsReadOnly="True"
+                  GridLinesVisibility="None"
                   HeadersVisibility="Column"
                   Background="{DynamicResource {x:Static base:ThemeKeys.TableRowBackgroundBrush}}"
-                  BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}"
-                  BorderThickness="1"
-                  HorizontalGridLinesBrush="{DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}"
-                  RowHeight="28"
+                  BorderThickness="0"
+                  RowHeight="32"
                   FontSize="12"
                   ColumnHeaderStyle="{StaticResource GvDataGridHeaderStyle}"
                   RowStyle="{StaticResource GvDataGridRowStyle}"
-                  CellStyle="{StaticResource GvDataGridCellStyle}"
-                  CellEditEnding="DataGrid_CellEditEnding">
+                  CellStyle="{StaticResource GvDataGridCellStyle}">
             <DataGrid.Columns>
-                <!-- 序号 -->
-                <DataGridTextColumn Header="序号" Binding="{Binding Index}" Width="50" IsReadOnly="True">
-                    <DataGridTextColumn.ElementStyle>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="HorizontalAlignment" Value="Center"/>
-                        </Style>
-                    </DataGridTextColumn.ElementStyle>
-                </DataGridTextColumn>
+                <!-- 序号（只读输入框，对齐子程序输入输出表） -->
+                <DataGridTemplateColumn Header="序号" Width="50" IsReadOnly="True">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding Index}"
+                                     IsReadOnly="True"
+                                     TextAlignment="Center"
+                                     VerticalContentAlignment="Center"
+                                     BorderBrush="{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}"
+                                     BorderThickness="1" Padding="4,2"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
 
-                <!-- 名称 -->
-                <DataGridTextColumn Header="名称" Binding="{Binding Name}"
-                                    Width="120" IsReadOnly="False"/>
+                <!-- 名称（可编辑输入框，单击即改，失焦校验重名） -->
+                <DataGridTemplateColumn Header="名称" Width="120">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding Name}"
+                                     VerticalContentAlignment="Center"
+                                     BorderBrush="{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}"
+                                     BorderThickness="1" Padding="4,2"
+                                     GotKeyboardFocus="VariableNameTextBox_GotKeyboardFocus"
+                                     LostFocus="VariableNameTextBox_LostFocus"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
 
-                <!-- 注释 -->
-                <DataGridTextColumn Header="注释" Binding="{Binding Description, UpdateSourceTrigger=PropertyChanged}"
-                                    Width="150" IsReadOnly="False"/>
+                <!-- 注释（可编辑输入框，单击即改） -->
+                <DataGridTemplateColumn Header="注释" Width="150">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}"
+                                     VerticalContentAlignment="Center"
+                                     BorderBrush="{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}"
+                                     BorderThickness="1" Padding="4,2"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
 
                 <!-- 类型（DataGridTemplateColumn + PreviewMouseDown + 中文显示名 + 英文值） -->
                 <DataGridTemplateColumn Header="类型" Width="100">
@@ -528,7 +575,8 @@
                             <ComboBox ItemsSource="{Binding DataContext.TypeOptions, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                       SelectedValuePath="Value"
                                       SelectedValue="{Binding Type, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
-                                      BorderThickness="0"
+                                      BorderBrush="{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}"
+                                      BorderThickness="1"
                                       IsSynchronizedWithCurrentItem="False"
                                       PreviewMouseDown="TypeComboBox_PreviewMouseDown">
                                 <ComboBox.ItemTemplate>
@@ -541,9 +589,20 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
-                <!-- 当前值 -->
-                <DataGridTextColumn Header="当前值" Binding="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
-                                    Width="120" IsReadOnly="False"/>
+                <!-- 当前值（真实值显示 + 文本类可编辑，失焦解析写回） -->
+                <DataGridTemplateColumn Header="当前值" Width="120">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding Value, Converter={StaticResource ValueTextConverter}, Mode=OneWay}"
+                                     IsReadOnly="{Binding IsComplexValue}"
+                                     VerticalContentAlignment="Center"
+                                     BorderBrush="{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}"
+                                     BorderThickness="1" Padding="4,2"
+                                     LostFocus="VariableValueTextBox_LostFocus"
+                                     ToolTip="{Binding Value, Converter={StaticResource ValueTextConverter}}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
 
                 <!-- 目标输出（只读显示，点击打开目标参数管理，Tooltip 显示全部消费者路径） -->
                 <DataGridTemplateColumn Header="目标输出" Width="140" IsReadOnly="True">

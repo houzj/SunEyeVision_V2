@@ -519,10 +519,14 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
         }
 
         /// <summary>
-        /// 确认变量重命名（DataGrid CellEditEnding 时调用）
+        /// 确认变量重命名（名称列 TextBox 失焦时调用）
         /// </summary>
-        /// <returns>true=通过，false=弹窗提示并取消编辑</returns>
-        public bool ConfirmVariableRename(GlobalVariable variable, string newName)
+        /// <param name="variable">目标变量</param>
+        /// <param name="newName">编辑后的新名称</param>
+        /// <param name="oldName">编辑前名称（TextBox 绑定实时写回，进入此处时 variable.Name 可能已是 newName，
+        /// 故以显式传入的 oldName 判断是否发生改名，避免绑定时序导致传播被跳过）</param>
+        /// <returns>true=通过，false=弹窗提示且调用方需还原旧值</returns>
+        public bool ConfirmVariableRename(GlobalVariable variable, string newName, string oldName)
         {
             if (string.IsNullOrWhiteSpace(newName))
             {
@@ -542,12 +546,8 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
             }
 
             // 名称已变更 → 执行重命名并传播
-            if (variable.Name != newName)
+            if (!string.Equals(oldName, newName, StringComparison.Ordinal))
             {
-                var oldName = variable.Name;
-
-                // ★ 在 ConfirmVariableRename 中提前设置 Name（早于绑定写回），
-                // 后续绑定写回同名值，PropertyChanged 再次触发但值相同，无副作用
                 variable.Name = newName;
 
                 // ★ 传播到所有引用处（节点参数 BindingConfig + 模块结果行）

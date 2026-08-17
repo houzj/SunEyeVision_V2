@@ -1,15 +1,19 @@
-using System;
+﻿using System;
 using System.Collections.Specialized;
 using System.Globalization;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
+using OpenCvSharp;
+using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.SDK.Models.Geometry;
+using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.UI.Core;
 using SunEyeVision.UI.Shell.Windows;
 using SunEyeVision.Workflow;
-
-using SunEyeVision.UI.Core;
 
 namespace SunEyeVision.UI.Features.GlobalVariableManager
 {
@@ -228,47 +232,128 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
         }
 
         /// <summary>
-        /// DataGrid 单元格编辑结束 — 拦截变量重命名重名
+        /// 名称 TextBox 获得焦点时记录编辑前名称（Tag），用于失焦校验失败时还原
         /// </summary>
-        private void DataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
+        private void VariableNameTextBox_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
         {
-            if (e.Column.Header is string header && header == "名称")
+            if (sender is TextBox textBox)
+                textBox.Tag = textBox.Text;
+        }
+
+        /// <summary>
+        /// 名称 TextBox 失焦时提交重命名校验（空名/重名 → 弹窗并还原）
+        /// 名称列改为内嵌可编辑 TextBox（单击即编辑），校验从 DataGrid CellEditEnding 迁移到此。
+        /// </summary>
+        private void VariableNameTextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (sender is not TextBox textBox || textBox.DataContext is not GlobalVariable variable)
+                return;
+            if (DataContext is not GlobalVariableManagerViewModel viewModel)
+                return;
+
+            var newName = textBox.Text.Trim();
+            var oldName = textBox.Tag as string ?? variable.Name;
+            if (string.Equals(oldName, newName, StringComparison.Ordinal))
+                return;
+
+            if (!viewModel.ConfirmVariableRename(variable, newName, oldName))
             {
-                var editingElement = e.EditingElement as TextBox;
-                if (editingElement == null) return;
-
-                var variable = e.Row.Item as GlobalVariable;
-                var viewModel = DataContext as GlobalVariableManagerViewModel;
-                if (variable == null || viewModel == null) return;
-
-                var newName = editingElement.Text.Trim();
-
-                // 名称未变 → 直接通过
-                if (newName == variable.Name)
-                    return;
-
-                if (!viewModel.ConfirmVariableRename(variable, newName))
-                {
-                    e.Cancel = true;
-                }
+                // 校验失败：还原名称（绑定实时写回，需手动恢复）
+                variable.Name = oldName;
+                textBox.Text = oldName;
             }
+            textBox.Tag = null;
+        }
+
+        /// <summary>
+        /// 当前值 TextBox 失焦时按变量类型解析文本并写回
+        /// 仅文本类（整型/双精度/字符串/布尔）可编辑，图像/图形/矩阵等只读占位不解析。
+        /// </summary>
+        private void VariableValueTextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (sender is not TextBox textBox || textBox.DataContext is not GlobalVariable variable)
+                return;
+            if (textBox.IsReadOnly)
+                return;
+
+            var newValue = GlobalVariableValueTextConverter.ParseText(textBox.Text, variable.Type);
+            if (newValue == null)
+            {
+                MessageBox.Show($"请输入有效的{variable.Type}值（如 128 / 3.14 / True）",
+                    "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                // 不写回：刷新绑定显示旧值
+                textBox.GetBindingExpression(TextBox.TextProperty)?.UpdateTarget();
+                return;
+            }
+            variable.Value = newValue;
         }
     }
 
     /// <summary>
-    /// 布尔值反向转换器：true→Collapsed, false→Visible
+    /// 全局变量当前值显示转换器：把 object 值（基础类型数组/图像/图形/矩阵）格式化为可读文本。
+    /// 只负责显示（Convert），回写由 VariableValueTextBox_LostFocus 按 Type 解析。
     /// </summary>
-    public class InverseBoolToVisibilityConverter : IValueConverter
+    public class GlobalVariableValueTextConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            bool boolValue = value is bool b && b;
-            return boolValue ? Visibility.Collapsed : Visibility.Visible;
+            if (value == null) return string.Empty;
+
+            return value switch
+            {
+                long[] arr   => string.Join(", ", arr),
+                double[] arr => string.Join(", ", arr.Select(v => v.ToString(CultureInfo.InvariantCulture))),
+                string[] arr => string.Join(", ", arr),
+                bool[] arr   => string.Join(", ", arr),
+                long l       => l.ToString(CultureInfo.InvariantCulture),
+                double d     => d.ToString(CultureInfo.InvariantCulture),
+                string s     => s,
+                bool b       => b.ToString(),
+                _ => FormatComplex(value)
+            };
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => Binding.DoNothing;
+
+        private static string FormatComplex(object value) => value switch
         {
-            return value is Visibility v && v == Visibility.Collapsed;
+            Mat => "[图像]",
+            IVisionImage => "[图像]",
+            AffineMatrix => "[变换矩阵]",
+            ShapeParameters[] => "[图形定义]",
+            Circle2d[] => "[圆]",
+            RotatedRect2d[] => "[旋转矩形]",
+            SunEyeVision.Plugin.SDK.Models.Geometry.Point2d[] => "[点]",
+            Polygon2d[] => "[多边形]",
+            Line2d[] => "[直线]",
+            Annulus2d[] => "[圆环]",
+            _ => value.ToString() ?? string.Empty
+        };
+
+        /// <summary>
+        /// 按变量类型把文本解析回值（数组形态，对齐反序列化契约）。解析失败返回 null。
+        /// </summary>
+        public static object? ParseText(string? text, string typeName)
+        {
+            switch (typeName)
+            {
+                case "Integer":
+                    if (long.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var l))
+                        return new[] { l };
+                    break;
+                case "Double":
+                    if (double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var d))
+                        return new[] { d };
+                    break;
+                case "Boolean":
+                    if (bool.TryParse(text, out var b))
+                        return new[] { b };
+                    break;
+                case "String":
+                    return new[] { text ?? string.Empty };
+            }
+            return null;
         }
     }
 }

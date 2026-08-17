@@ -3539,10 +3539,10 @@
                    ],
     "tempTasks":  [
                       {
-                          "id":  "TMP-db8ad93",
+                          "id":  "TMP-384563d",
                           "message":  "开发计划归类系统完善与智能校准",
                           "date":  "2026-08-17",
-                          "commit":  "db8ad9389b8e8aacb82a5d82fef8879d9c3acf81",
+                          "commit":  "384563d58357621ce0493bf4a47f728de3be9416",
                           "files":  [
                                         ".codebuddy/rules/02-development-process/plan-task-classify.mdc",
                                         ".codebuddy/skills/plan-sync/SKILL.md",

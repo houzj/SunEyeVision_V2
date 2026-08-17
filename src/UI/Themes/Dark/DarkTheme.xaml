@@ -26,7 +26,8 @@
     <Color x:Key="{x:Static base:ThemeKeys.TextDisabled}">#FF6E6E6E</Color>
 
     <!-- ============ 边框 / 分隔 ============ -->
-    <Color x:Key="{x:Static base:ThemeKeys.BorderBrushKey}">#FF3C3C3C</Color>
+    <!-- 边框提亮：#4E4E4E 比控件底 #2D2D2D 亮 33 级，保证 1px 边线在深色背景上可辨识（之前 #3C3C3C 差 15 级几乎不可见） -->
+    <Color x:Key="{x:Static base:ThemeKeys.BorderBrushKey}">#FF4E4E4E</Color>
     <Color x:Key="{x:Static base:ThemeKeys.DividerBrush}">#FF333333</Color>
 
     <!-- ============ 品牌 / 状态 ============ -->
@@ -62,8 +63,9 @@
     <Color x:Key="{x:Static base:ThemeKeys.PanelHeaderBackground}">#FF252526</Color>
 
     <!-- ============ 输入控件（批次2，参数模板） ============ -->
+    <!-- 输入框边框提亮：#5A5A5A 比输入框底 #2D2D2D 亮 45 级，输入区边界清晰可辨（之前 #3C3C3C 差 15 级几乎不可见） -->
     <Color x:Key="{x:Static base:ThemeKeys.InputBackground}">#FF2D2D2D</Color>
-    <Color x:Key="{x:Static base:ThemeKeys.InputBorder}">#FF3C3C3C</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.InputBorder}">#FF5A5A5A</Color>
 
     <!-- ============ SDK 控件补充（批次3，SDK 样式库 Token 化） ============ -->
     <Color x:Key="{x:Static base:ThemeKeys.SliderTrackBackground}">#FF3C3C3C</Color>

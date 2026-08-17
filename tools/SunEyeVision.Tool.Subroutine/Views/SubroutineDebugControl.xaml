@@ -60,14 +60,19 @@
                 <Setter Property="FontWeight" Value="SemiBold"/>
                 <Setter Property="Foreground" Value="{DynamicResource ThemeTableHeaderTextBrush}"/>
                 <Setter Property="BorderBrush" Value="{DynamicResource ThemeTableGridLineBrush}"/>
+                <Setter Property="BorderThickness" Value="0"/>
                 <Setter Property="Height" Value="30"/>
             </Style>
 
             <Style TargetType="DataGridCell">
                 <Setter Property="VerticalAlignment" Value="Center"/>
-                <Setter Property="BorderThickness" Value="0,0,1,1"/>
-                <Setter Property="BorderBrush" Value="{DynamicResource ThemeTableGridLineBrush}"/>
+                <Setter Property="BorderThickness" Value="0"/>
                 <Setter Property="Padding" Value="6,3"/>
+                <Setter Property="Background" Value="{DynamicResource ThemeTableRowBackgroundBrush}"/>
+            </Style>
+
+            <!-- 行样式：填满整行背景，遮住 DataGrid 自身的白色背景，避免去线后出现白色间隙 -->
+            <Style TargetType="DataGridRow">
                 <Setter Property="Background" Value="{DynamicResource ThemeTableRowBackgroundBrush}"/>
             </Style>
 
@@ -95,7 +100,7 @@
                                   CanUserDeleteRows="False"
                                   GridLinesVisibility="None"
                                   BorderThickness="0"
-                                  Background="Transparent"
+                                  Background="{DynamicResource ThemeTableRowBackgroundBrush}"
                                   RowHeight="32"
                                   HeadersVisibility="Column">
                             <DataGrid.Columns>
@@ -112,8 +117,10 @@
                                 <DataGridTemplateColumn Header="类型" Width="60">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding TypeName, Converter={StaticResource TypeDisplayConverter}}"
-                                                       VerticalAlignment="Center" Margin="4,0"/>
+                                            <TextBox Text="{Binding TypeName, Converter={StaticResource TypeDisplayConverter}}"
+                                                     IsReadOnly="True"
+                                                     VerticalContentAlignment="Center"
+                                                     BorderBrush="{DynamicResource ThemeInputBorderBrush}" BorderThickness="1" Padding="4,2"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
@@ -182,7 +189,7 @@
                                   CanUserDeleteRows="False"
                                   GridLinesVisibility="None"
                                   BorderThickness="0"
-                                  Background="Transparent"
+                                  Background="{DynamicResource ThemeTableRowBackgroundBrush}"
                                   RowHeight="32"
                                   HeadersVisibility="Column">
                             <DataGrid.Columns>
@@ -199,8 +206,10 @@
                                 <DataGridTemplateColumn Header="类型" Width="60">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding TypeName, Converter={StaticResource TypeDisplayConverter}}"
-                                                       VerticalAlignment="Center" Margin="4,0"/>
+                                            <TextBox Text="{Binding TypeName, Converter={StaticResource TypeDisplayConverter}}"
+                                                     IsReadOnly="True"
+                                                     VerticalContentAlignment="Center"
+                                                     BorderBrush="{DynamicResource ThemeInputBorderBrush}" BorderThickness="1" Padding="4,2"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
@@ -307,8 +316,10 @@
                                 <DataGridTemplateColumn Header="类型" Width="60">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding DisplayType, Converter={StaticResource TypeDisplayConverter}}"
-                                                       VerticalAlignment="Center" Margin="4,0"/>
+                                            <TextBox Text="{Binding DisplayType, Converter={StaticResource TypeDisplayConverter}}"
+                                                     IsReadOnly="True"
+                                                     VerticalContentAlignment="Center"
+                                                     BorderBrush="{DynamicResource ThemeInputBorderBrush}" BorderThickness="1" Padding="4,2"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>

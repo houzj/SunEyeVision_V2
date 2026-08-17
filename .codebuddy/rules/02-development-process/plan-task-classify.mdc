@@ -1,0 +1,78 @@
+---
+id: rule-020
+title: 开发计划任务归类校准规范
+category: development-process
+priority: high
+alwaysApply: true
+enabled: true
+version: "1.0"
+updatedAt: 2026-08-17
+---
+
+# rule-020: 开发计划任务归类校准规范
+
+## 触发条件
+
+当 Agent 完成一个开发任务、准备 `git commit` 时，或用户要求"更新计划/同步看板/归类任务"时，本规则自动生效。
+
+本规则作用于 `plans/` 开发计划自动同步系统（git post-commit hook + `sync_plan.ps1` 机械归类）。
+
+## 背景：为什么需要人工校准
+
+`sync_plan.ps1` 在每次提交后自动把提交归类到 `plans/plan.json` 的模块/工具（用关键词查表 + 文件路径匹配）。它不智能，存在三类归错风险：
+
+| 风险 | 例子 | 后果 |
+|------|------|------|
+| 关键词太宽泛 | `"相机"` 关键词把"相机UI主题"归到 M-SRC-CAM，实际是 M-SRC-UI | 模块进度失真 |
+| 路径竞态 | `tests/` → M-SRC-TEST 与 `tools/...` → T-xxx 抢同一提交 | 归到不相关模块 |
+| 状态靠猜 | "修复了已完成模块的回归bug"被猜成 in_progress | 状态错 |
+
+## 硬性约束
+
+### 1. 提交前校准（主动）
+
+Agent 在完成开发任务、准备提交时，**必须**先读取本次改动对应模块在 `plans/plan.json` 中的归属，按**语义真实归属**（不是关键词命中）判断，并在 commit message 中写入能正确归类的关键词（参考 `sync_plan.ps1` 的 `$keywordMap`）。
+
+若本次改动横跨多模块（如同时改了工具 + 测试），commit message 应体现主改动模块，次要模块由 Agent 后续手动补记。
+
+### 2. 提交后校验（被动）
+
+每次 `git commit` 后，若 Agent 仍在本会话中，**必须**检查 `plans/sync.log` 末尾的归类结果，确认：
+- hook 是否把提交归到了正确的模块（核对 `匹配模块: X` 行）
+- 状态推断是否正确（`推断状态: done/in_progress/log`）
+- 是否有提交被误记入"临时任务池"（本应归入正式模块）
+
+### 3. 修正动作必须可见
+
+发现归类错误时，Agent **必须**直接修正 `plans/plan.json`（改模块/任务状态、补日志），并重新生成看板，**禁止**静默忽略（遵循 rule-015 禁止兜底回退）。
+
+修正后应在回复中向用户说明："上次提交 hook 归到了 X，但真实属于 Y，已改过来。"
+
+### 4. 校准手段（推荐用 plan-sync 技能）
+
+复杂归类（多模块、跨层、语义模糊）**必须**使用 `plan-sync` 技能执行：技能会读本次改动文件清单 + `plan.json` 模块语义，给出真实归属建议，并直接落盘 `plan.json`。
+
+简单归类（单模块、关键词明确）可直接手动改 `plan.json`。
+
+## 正确/错误示例
+
+### 错误（❌ 依赖机械匹配，不校准）
+> commit message 写"修复设置按钮颜色" → hook 关键词 `"主题"` 未命中，`"相机"` 也未命中，
+> 路径 `src/UI/Shell` 命中 M-SRC-UI，但提交同时改了 `tests/`，被 `tests/` 规则抢先归到 M-SRC-TEST。
+> Agent 未检查，M-SRC-TEST 进度虚增。
+
+### 正确（✅ Agent 语义校准）
+> commit 同时改 UI 和测试 → Agent 判断主改动是 UI（M-SRC-UI），commit message 明确写"主题化修复"，
+> hook 归到 M-SRC-UI。Agent 提交后查 sync.log 确认归对；若被归到 M-SRC-TEST，手动改回 M-SRC-UI，
+> 并在测试模块日志补记一条"附 UI 测试更新"。
+
+## 与现有机制的关系
+
+- git hook（`.git/hooks/post-commit`）：机械兜底，任何提交都自动归类，保证任务不丢。
+- 本规则 + `plan-sync` 技能：Agent 智能校准，修正机械匹配的盲区。两者是"兜底 + 精修"关系，**不互相替代**。
+- hook 不进版本库（机器本地），换机/clone 后需重建 hook，本规则不受影响。
+
+## 适用边界
+
+- 本规则只约束"计划归类"动作，不约束代码开发本身。
+- `plan.json` 的结构、`sync_plan.ps1` 的匹配逻辑由 `plans/` 系统维护，本规则不要求改动它们。

@@ -43,10 +43,12 @@ $weekly = $null
 $WeeklyPath = Join-Path $PlanDir "weekly.json"
 if (Test-Path $WeeklyPath) {
     try {
-        $weekly = Get-Content -Path $WeeklyPath -Raw -Encoding UTF8 | ConvertFrom-Json -Depth 10
+        # 注意：不用 ConvertFrom-Json -Depth（PowerShell 5.1 不支持该参数，会抛错）。
+        # weekly.json 结构深度 < 10，默认深度足够。
+        $weekly = Get-Content -Path $WeeklyPath -Raw -Encoding UTF8 | ConvertFrom-Json
         Write-Host "周追溯数据: $($weekly.totalCommits) 提交 / $($weekly.weeks.Count) 周 / commits: $(@($weekly.moduleCommits.PSObject.Properties).Count) 模块" -ForegroundColor DarkGray
     } catch {
-        Write-Host "周追溯数据解析失败（忽略）: $($_.Exception.Message)" -ForegroundColor DarkGray
+        Write-Host "周追溯数据解析失败: $($_.Exception.Message)（将跳过周追溯区块）" -ForegroundColor Yellow
     }
 }
 # 模块名映射（weekly 的 ID → 名称）

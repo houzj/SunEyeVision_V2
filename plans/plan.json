@@ -1546,6 +1546,10 @@
                                     {
                                         "date":  "2026-08-17",
                                         "note":  "[537a439a6ee8441d0c186ff66a53fb2ccb0f04b7] 暗色主题边框提亮并清理表格分割线"
+                                    },
+                                    {
+                                        "date":  "2026-08-18",
+                                        "note":  "[63f5d0d9c69d8f1bd40ffb1f8740f2c8d9e6f1a4] 修复清空图像源后运行时仍读旧图（WorkflowExecutionManager 空 InputSource 时清空 FilePath），校准：hook 误判入临时任务池，实为 M-SRC-UI 执行链路修复"
                                     }
                                 ]
                     },

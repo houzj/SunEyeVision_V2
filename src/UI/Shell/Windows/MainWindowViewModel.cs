@@ -211,7 +211,6 @@ namespace SunEyeVision.UI.Shell.Windows
         // 确保每个Tab都是独立的
 
         private WorkflowNodeBase? _selectedNode;
-        private SunEyeVision.UI.Shared.ImageInputSource? _activeInputSource; // 活动输入源
         private string? _currentDisplayNodeId = null;  // 记录当前显示的采集节点ID，避免重复切换
 
         /// <summary>
@@ -1592,7 +1591,7 @@ SplitterPosition = position;
         /// 同步UI数据到Solution对象
         /// </summary>
         /// <param name="solutionManager">解决方案管理器</param>
-        private void SaveSolutionData(SolutionManager solutionManager)
+        public void SaveSolutionData(SolutionManager solutionManager)
         {
             if (solutionManager.CurrentSolution == null)
             {
@@ -1642,21 +1641,6 @@ SplitterPosition = position;
                     if (!workflow.Nodes.Contains(node))
                     {
                         workflow.Nodes.Add(node);
-                    }
-
-                    // 输入源持久化：把运行时 InputSource（ImageInputSource）转为可序列化配置随方案保存
-                    if (node is WorkflowNode wfNode && wfNode.InputSource is ImageInputSource inputSource)
-                    {
-                        wfNode.ImageSourceConfig = inputSource.ToConfig();
-                        LogInfo($"[SaveSolutionData] 图像源已持久化 | Node={node.Name} | FilePaths={wfNode.ImageSourceConfig?.FilePaths.Count} | " +
-                            $"CurrentIndex={wfNode.ImageSourceConfig?.CurrentIndex}", "MainWindowViewModel");
-                    }
-                    else
-                    {
-                        // 诊断日志：输入源未持久化的原因（节点类型 / InputSource 状态）
-                        var nodeType = node.GetType().Name;
-                        var inputType = node is WorkflowNode wn ? (wn.InputSource?.GetType().Name ?? "null") : "non-WorkflowNode";
-                        LogInfo($"[SaveSolutionData] 图像源未持久化 | Node={node.Name} | NodeType={nodeType} | InputSource={inputType}", "MainWindowViewModel");
                     }
 
                     // 关键日志：追踪区域数据序列化问题

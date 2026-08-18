@@ -271,7 +271,9 @@ namespace SunEyeVision.UI.Shell.Windows
                     case MessageBoxResult.Yes:
                         try
                         {
-                            SyncWorkflowsToSolution();
+                            // ★ 统一保存入口：与工具栏保存共用 MainWindowViewModel.SaveSolutionData（完整同步逻辑），
+                            // 确保图像源（ImageSourceConfig 实时同步）、参数、全局变量、节点、连接全部一致持久化。
+                            _viewModel?.SaveSolutionData(solutionManager);
                             solutionManager.SaveSolution();
                             _viewModel?.AddLog(LogLevel.Success, "关闭前已保存解决方案", LogSource.UIOperation);
                             // 保持 _isClosingPromptInProgress=true，让 Close() 触发的 OnClosing 放行关闭
@@ -407,65 +409,6 @@ namespace SunEyeVision.UI.Shell.Windows
                 ? RightPanelColumn.ActualWidth
                 : config.RightColumnWidth;
             config.Save();
-        }
-        /// <summary>
-        /// 同步UI层的工作流到底层解决方案
-        /// </summary>
-        /// <remarks>
-        /// 节点已直接引用 Solution.Workflow.Nodes，无需重建 Workflow。
-        /// 与 MainWindowViewModel.SaveSolutionData 保持一致的同步逻辑。
-        /// </remarks>
-        private void SyncWorkflowsToSolution()
-        {
-            if (_viewModel?.WorkflowTabViewModel == null || _viewModel?.WorkflowTabViewModel.Tabs == null)
-                return;
-            var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
-            if (solutionManager?.CurrentSolution == null)
-                return;
-            var solution = solutionManager.CurrentSolution;
-            foreach (var tab in _viewModel.WorkflowTabViewModel.Tabs)
-            {
-                var workflow = solution.Workflows.FirstOrDefault(w => w.Id == tab.Id);
-                if (workflow == null)
-                {
-                    workflow = new SunEyeVision.Workflow.Workflow(tab.Id, tab.Name);
-                    solution.Workflows.Add(workflow);
-                }
-                else if (workflow.Name != tab.Name)
-                {
-                    workflow.Name = tab.Name;
-                }
-                // 同步基准取引擎中该标签页根工作流（tab.Id）的节点/连接。
-                // 不能拿 tab.WorkflowNodes / tab.WorkflowConnections，因为它们在下钻子程序时
-                // 会被 NavigateToWorkflowCanvas 整体替换为子程序集合，导致主程序节点被误清空。
-                var rootWorkflow = _viewModel.WorkflowEngine.GetWorkflow(tab.Id);
-                if (rootWorkflow == null)
-                    throw new InvalidOperationException($"SyncWorkflowsToSolution: 引擎中未找到根工作流 (ID: {tab.Id})");
-                // 同步节点
-                foreach (var node in rootWorkflow.Nodes)
-                {
-                    if (!workflow.Nodes.Contains(node))
-                        workflow.Nodes.Add(node);
-                }
-                var nodesToRemove = workflow.Nodes
-                    .Where(n => !rootWorkflow.Nodes.Contains(n))
-                    .ToList();
-                foreach (var node in nodesToRemove)
-                    workflow.Nodes.Remove(node);
-                // 同步连接（共享引用，直接加载）
-                foreach (var conn in rootWorkflow.Connections)
-                {
-                    if (!workflow.Connections.Any(c => c.Id == conn.Id))
-                    {
-                        workflow.Connections.Add(conn);
-                    }
-                }
-                var connsToRemove = workflow.Connections
-                    .Where(c => !rootWorkflow.Connections.Any(tc => tc.Id == c.Id))
-                    .ToList();
-                foreach (var conn in connsToRemove)
-                    workflow.Connections.Remove(conn);
-            }
         }
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {

@@ -57,6 +57,7 @@ namespace SunEyeVision.UI.Shared
                     OnPropertyChanged();
                     OnPropertyChanged(nameof(CurrentImage));
                     CurrentImageChanged?.Invoke(this, value);
+                    NotifyConfigChanged();
                 }
             }
         }
@@ -92,6 +93,7 @@ namespace SunEyeVision.UI.Shared
                     _runMode = value;
                     OnPropertyChanged();
                     OnPropertyChanged(nameof(GetSelectedImages));
+                    NotifyConfigChanged();
                 }
             }
         }
@@ -102,7 +104,13 @@ namespace SunEyeVision.UI.Shared
         public bool AutoSwitchEnabled
         {
             get => _autoSwitchEnabled;
-            set => SetProperty(ref _autoSwitchEnabled, value);
+            set
+            {
+                if (SetProperty(ref _autoSwitchEnabled, value))
+                {
+                    NotifyConfigChanged();
+                }
+            }
         }
 
         /// <summary>
@@ -118,6 +126,21 @@ namespace SunEyeVision.UI.Shared
         /// 当前图像变化事件
         /// </summary>
         public event EventHandler<int>? CurrentImageChanged;
+
+        /// <summary>
+        /// 配置同步回调：每次状态变更（加/删/清/切图、模式切换）时把最新配置写回父节点。
+        /// 内存实时同步：父节点据此更新 ImageSourceConfig（Solution 共享对象），保存时自动带出，
+        /// 避免"保存入口各自转换"导致的漂移（与全局变量/参数实时同步模式对齐）。
+        /// </summary>
+        public Action<ImageSourceConfig>? ConfigChanged { get; set; }
+
+        /// <summary>
+        /// 触发配置同步：把当前状态转成可序列化配置并通知父节点。
+        /// </summary>
+        private void NotifyConfigChanged()
+        {
+            ConfigChanged?.Invoke(ToConfig());
+        }
 
         /// <summary>
         /// 图像集合变化事件
@@ -150,6 +173,7 @@ namespace SunEyeVision.UI.Shared
             OnPropertyChanged(nameof(Count));
             OnPropertyChanged(nameof(HasImages));
             OnPropertyChanged(nameof(GetSelectedImages));
+            NotifyConfigChanged();
         }
 
         /// <summary>
@@ -164,6 +188,7 @@ namespace SunEyeVision.UI.Shared
             OnPropertyChanged(nameof(Count));
             OnPropertyChanged(nameof(HasImages));
             OnPropertyChanged(nameof(GetSelectedImages));
+            NotifyConfigChanged();
         }
 
         /// <summary>
@@ -182,6 +207,7 @@ namespace SunEyeVision.UI.Shared
             OnPropertyChanged(nameof(Count));
             OnPropertyChanged(nameof(HasImages));
             OnPropertyChanged(nameof(GetSelectedImages));
+            NotifyConfigChanged();
         }
 
         /// <summary>
@@ -197,6 +223,7 @@ namespace SunEyeVision.UI.Shared
             OnPropertyChanged(nameof(Count));
             OnPropertyChanged(nameof(HasImages));
             OnPropertyChanged(nameof(GetSelectedImages));
+            NotifyConfigChanged();
         }
 
         /// <summary>

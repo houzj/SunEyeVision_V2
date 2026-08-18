@@ -15,6 +15,7 @@ using System.Windows.Threading;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.UI.Core;
 using SunEyeVision.UI.Services.Thumbnail;
+using SunEyeVision.UI.Shared;
 
 namespace SunEyeVision.UI.Shell.Controls.Panels
 {
@@ -353,6 +354,14 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
             DependencyProperty.Register("ImageCollection", typeof(BatchObservableCollection<ImageInfo>), typeof(ImagePreviewControl),
                 new PropertyMetadata(null, OnImageCollectionChanged));
 
+        /// <summary>
+        /// 绑定的活动输入源（真相源）。AppendFiles 直接写 ImageInputSource._images，
+        /// 不依赖 ImageCollection 绑定回写（Images 是只读属性，TwoWay 绑定无法建立）。
+        /// </summary>
+        public static readonly DependencyProperty ActiveInputSourceProperty =
+            DependencyProperty.Register(nameof(ActiveInputSource), typeof(ImageInputSource), typeof(ImagePreviewControl),
+                new PropertyMetadata(null));
+
         public static readonly DependencyProperty ImageRunModeProperty =
             DependencyProperty.Register("ImageRunMode", typeof(ImageRunMode), typeof(ImagePreviewControl),
                 new PropertyMetadata(ImageRunMode.运行全部, OnImageRunModeChanged));
@@ -382,6 +391,15 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
         {
             get => (BatchObservableCollection<ImageInfo>)GetValue(ImageCollectionProperty);
             set => SetValue(ImageCollectionProperty, value);
+        }
+
+        /// <summary>
+        /// 绑定的活动输入源（真相源，添加图像时直接写回 ImageInputSource._images）
+        /// </summary>
+        public ImageInputSource? ActiveInputSource
+        {
+            get => (ImageInputSource?)GetValue(ActiveInputSourceProperty);
+            set => SetValue(ActiveInputSourceProperty, value);
         }
 
         /// <summary>
@@ -646,15 +664,25 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
 
         /// <summary>
         /// 追加文件到图像集合（触发后台线程解码缩略图，缓存命中秒出）。
-        /// 去重：以当前绑定的 ImageCollection 为准（忽略大小写）——避免同一文件夹加载两次导致图片翻倍。
-        /// ★ 用 ImageCollection 而非实例字段：ImagePreviewControl 是共享单例，切换节点时
-        /// ImageCollection 重新绑定为另一节点的集合，以集合自身去重天然实现"节点间路径隔离"，
-        /// 不会把节点 A 的路径误带到节点 B（对齐 ImageGlass 数据层 PhotoManager 去重）。
+        /// ★ 治本：直接写 ImageInputSource（真相源）而非 ImageCollection（DP 绑定目标）。
+        /// ImageInputSource.Images 是只读属性，TwoWay 绑定无法建立，往 ImageCollection 加图不会写回 _images，
+        /// 导致 ToConfig() 保存的 FilePaths 为空 → 重启后不恢复（图像源数量空）。
+        /// 改用 ActiveInputSource.AddImages() 写 _images，UI 通过 OneWay 绑定自动刷新。
+        /// 去重以真相源为准（忽略大小写）：ImagePreviewControl 是共享单例，切换节点时 ActiveInputSource
+        /// 重新绑定为另一节点的实例，以实例自身去重天然实现"节点间路径隔离"。
         /// </summary>
         private void AppendFiles(string[] fileNames)
         {
+            var source = ActiveInputSource;
+            if (source == null)
+            {
+                VisionLogger.Instance.Log(LogLevel.Warning,
+                    $"无法添加图像：活动输入源为空", "ImagePreviewControl");
+                return;
+            }
+
             var existing = new HashSet<string>(
-                ImageCollection.Select(x => x.FilePath),
+                source.Images.Select(x => x.FilePath),
                 StringComparer.OrdinalIgnoreCase);
 
             var allImages = fileNames
@@ -667,10 +695,11 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
                 })
                 .ToArray();
 
-            ImageCollection.AddRange(allImages);
-            if (ImageCollection.Count > 0)
+            // 写真相源 _images（触发 CollectionChanged → OneWay 绑定自动刷新 ImageCollection）
+            source.AddImages(allImages);
+            if (source.Count > 0)
             {
-                CurrentImageIndex = ImageCollection.Count - allImages.Length;
+                CurrentImageIndex = source.Count - allImages.Length;
             }
 
             // 缩略图由虚拟化容器 Loaded 事件 + 主动刷新（RefreshVisibleThumbnails）双驱动按需解码，
@@ -707,18 +736,24 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
         {
             if (imageInfo == null) return;
 
-            int index = ImageCollection.IndexOf(imageInfo);
+            // ★ 走真相源 ActiveInputSource.RemoveImage：改 ImageInputSource._images（与 ImageCollection 同实例，
+            // OneWay 绑定自动刷新 UI），并触发 ConfigChanged 实时写回节点 ImageSourceConfig。
+            var source = ActiveInputSource;
+            if (source == null) return;
+
+            int index = source.Images.IndexOf(imageInfo);
             if (index < 0) return;
 
-            ImageCollection.RemoveAt(index);
+            source.RemoveImage(imageInfo);
 
-            if (ImageCollection.Count == 0)
+            // 同步控件选中索引（RemoveImage 内部已修正 CurrentIndex，此处同步 DP）
+            if (source.Count == 0)
             {
                 CurrentImageIndex = -1;
             }
-            else if (CurrentImageIndex >= ImageCollection.Count)
+            else if (CurrentImageIndex >= source.Count)
             {
-                CurrentImageIndex = ImageCollection.Count - 1;
+                CurrentImageIndex = source.Count - 1;
             }
             else if (CurrentImageIndex > index)
             {
@@ -740,7 +775,16 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
 
             if (result == MessageBoxResult.Yes)
             {
-                ImageCollection.Clear();
+                // ★ 走真相源 ActiveInputSource.ClearImages：清 _images 并触发 ConfigChanged 实时写回节点。
+                var source = ActiveInputSource;
+                if (source != null)
+                {
+                    source.ClearImages();
+                }
+                else
+                {
+                    ImageCollection.Clear();
+                }
                 CurrentImageIndex = -1;
             }
         }

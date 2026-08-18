@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 using System.Windows;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Workflow;
 using SunEyeVision.Plugin.SDK.Models;
 
@@ -45,7 +46,23 @@ namespace SunEyeVision.UI.Shared
         public new ImageInputSource? InputSource
         {
             get => base.InputSource as ImageInputSource;
-            set => base.InputSource = value;
+            set
+            {
+                // 解除旧输入源的回调，避免切换节点后残留旧引用
+                if (base.InputSource is ImageInputSource oldSource)
+                {
+                    oldSource.ConfigChanged = null;
+                }
+
+                base.InputSource = value;
+
+                // ★ 内存实时同步：InputSource 任何变更（加/删/清/切图、模式）立即写回 ImageSourceConfig，
+                // 与全局变量/参数实时同步模式对齐；保存时序列化 ImageSourceConfig 即得最新状态。
+                if (value != null)
+                {
+                    value.ConfigChanged = cfg => ImageSourceConfig = cfg;
+                }
+            }
         }
 
         /// <summary>
@@ -202,6 +219,9 @@ namespace SunEyeVision.UI.Shared
             {
                 var input = node.EnsureInputSource();
                 input.LoadFromConfig(node.ImageSourceConfig);
+                VisionLogger.Instance.Log(LogLevel.Info,
+                    $"[FromBase] 已从Config恢复图像源 | Node={node.Name} | 恢复后Count={input.Count}",
+                    "WorkflowNodeModel");
             }
 
             return node;

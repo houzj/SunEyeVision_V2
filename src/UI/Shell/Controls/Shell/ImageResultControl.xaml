@@ -210,6 +210,7 @@
                 Padding="2"
                 Visibility="{Binding ShowImagePreview, Converter={StaticResource BoolToVisibilityConverter}}">
             <panels:ImagePreviewControl x:Name="ImagePreviewContent"
+                                         ActiveInputSource="{Binding ActiveInputSource}"
                                          AutoSwitchEnabled="{Binding ActiveInputSource.AutoSwitchEnabled, Mode=TwoWay}"
                                          CurrentImageIndex="{Binding ActiveInputSource.CurrentIndex, Mode=TwoWay}"
                                          ImageCollection="{Binding ActiveInputSource.Images}"

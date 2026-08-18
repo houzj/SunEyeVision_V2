@@ -403,78 +403,45 @@ namespace SunEyeVision.UI.Services.Workflow
         {
             if (workflow == null || !visitedIds.Add(workflow.Id)) return;
 
-            logger.LogInfo($"[DIAG] InjectFilePath 遍历工作流: '{workflow.Name}'({workflow.Id}), Nodes.Count={workflow.Nodes.Count}");
-
             foreach (var wn in workflow.Nodes)
             {
-                // ★ 使用 WorkflowNodeBase 基类，同时兼容 WorkflowNode 和纯 WorkflowNodeBase
-                if (wn == null) { logger.LogWarning("[DIAG] wn is null"); continue; }
-
-                logger.LogInfo($"[DIAG] 节点: '{wn.Name}', Id={wn.Id}, ToolType={wn.ToolType}, " +
-                    $"Type={wn.GetType().Name}, SubroutineId={wn.SubroutineId ?? "(null)"}");
+                if (wn == null) continue;
 
                 // ★ 递归优先：子工作流遍历必须在 IsImageLoadToolType 判断之前，
                 //   确保 Subroutine 节点（非 ImageLoad 类型）也能触发子工作流递归
                 if (!string.IsNullOrEmpty(wn.SubroutineId))
                 {
-                    logger.LogInfo($"[DIAG]   -> 递归处理子工作流: SubroutineId={wn.SubroutineId}");
                     var subWorkflow = _workflowEngine.GetWorkflow(wn.SubroutineId);
-                    logger.LogInfo($"[DIAG]   -> GetWorkflow 结果: {(subWorkflow == null ? "null" : $"'{subWorkflow.Name}'({subWorkflow.Id}), Nodes.Count={subWorkflow.Nodes.Count}")}");
                     if (subWorkflow != null)
                         InjectFilePathFromInputSource(subWorkflow, logger, visitedIds);
                 }
 
                 // 通过 ToolType 判断是否为图像载入节点（基类属性，无需强制转换为 SunEyeVision.UI.Shared.WorkflowNode）
                 if (!IsImageLoadToolType(wn.ToolType))
-                {
-                    logger.LogInfo($"[DIAG]   -> 不是 ImageLoad 类型，跳过");
                     continue;
-                }
 
-                // ★ 诊断：记录 InputSource 的所有状态信息
-                var inputSource = wn.InputSource as ImageInputSource;
-                logger.LogInfo($"[DIAG]   -> InputSource(as ImageInputSource) = {(inputSource == null ? "null" : $"Count={inputSource.Count}, CurrentIndex={inputSource.CurrentIndex}")}");
-
-                if (inputSource == null)
-                {
-                    // ★ 关键诊断：InputSource 的原始运行时类型和值
-                    logger.LogInfo($"[DIAG]   -> wn.InputSource(raw) Type={wn.InputSource?.GetType().FullName ?? "null"}, Value={wn.InputSource ?? "null"}");
-                    logger.LogInfo($"[DIAG]   -> 跳过该节点 (InputSource 为空)");
-                    continue;
-                }
-
-                if (inputSource.Count <= 0)
-                {
-                    logger.LogInfo($"[DIAG]   -> InputSource.Count <= 0，跳过");
-                    continue;
-                }
-
-                if (inputSource.CurrentIndex < 0)
-                {
-                    logger.LogInfo($"[DIAG]   -> InputSource.CurrentIndex < 0，跳过");
-                    continue;
-                }
-
-                var currentImage = inputSource.CurrentImage;
-                logger.LogInfo($"[DIAG]   -> CurrentImage = {(currentImage == null ? "null" : $"FilePath='{currentImage.FilePath ?? "(empty)"}'")}");
-
-                if (currentImage == null || string.IsNullOrEmpty(currentImage.FilePath))
-                {
-                    logger.LogInfo($"[DIAG]   -> CurrentImage 无效，跳过");
-                    continue;
-                }
-
-                var prop = wn.Parameters.GetType().GetProperty("FilePath");
-                logger.LogInfo($"[DIAG]   -> FilePath property exists={prop != null}, CanWrite={prop?.CanWrite}");
-
+                // 解析节点参数中的 FilePath 属性（ImageLoadParameters.FilePath）
+                var prop = wn.Parameters?.GetType().GetProperty("FilePath");
                 if (prop == null || !prop.CanWrite)
-                {
-                    logger.LogInfo($"[DIAG]   -> 无法写入 FilePath，跳过");
                     continue;
-                }
 
-                prop.SetValue(wn.Parameters, currentImage.FilePath);
-                logger.LogInfo($"★ 从 InputSource 注入路径: '{wn.Name}' -> '{currentImage.FilePath}'");
+                var inputSource = wn.InputSource as ImageInputSource;
+                var currentImage = inputSource?.CurrentImage;
+
+                // InputSource 有当前图 → 注入其路径到 Parameters.FilePath
+                if (currentImage != null && !string.IsNullOrEmpty(currentImage.FilePath))
+                {
+                    prop.SetValue(wn.Parameters, currentImage.FilePath);
+                    logger.LogInfo($"从 InputSource 注入路径: '{wn.Name}' -> '{currentImage.FilePath}'");
+                }
+                else
+                {
+                    // ★ 治本（rule-015 报错优先）：InputSource 为空/被清空时，显式清空节点参数 FilePath，
+                    // 防止运行时读到上次残留的旧路径，导致"清空图像源后运行仍读到旧图"。
+                    // ImageLoadTool.Run 检测到 FilePath 为空会返回"文件路径为空"错误，用户明确感知图像源为空。
+                    prop.SetValue(wn.Parameters, string.Empty);
+                    logger.LogWarning($"InputSource 无有效图像，已清空 '{wn.Name}' 的 FilePath，运行时将报文件路径为空");
+                }
             }
         }
 

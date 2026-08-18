@@ -88,6 +88,11 @@ if ($Files.Count -gt 0) {
 # ---------- 读取 plan.json ----------
 $plan = Get-Content -Path $JsonPath -Raw -Encoding UTF8 | ConvertFrom-Json
 
+# plan.json 幂等写入标志：仅当本次同步真实修改了 plan 内容时才写文件。
+# 避免"纯计划自我更新提交"（改 .gitignore/脚本等，不匹配业务模块）触发 hook 后，
+# 因 ConvertTo-Json 重排/假变更而无意义地重写 plan.json → 产生 git diff → 再触发 hook 无限循环。
+$planChanged = $false
+
 # ---------- 匹配规则表 ----------
 # 关键词 → 模块 ID（顺序优先，先匹配先命中）
 $keywordMap = @(
@@ -274,6 +279,7 @@ if ($matchedId) {
         $log = [pscustomobject]@{ date = $CommitTime; note = $logNote }
         Ensure-Property $mod "log" @()
         $mod.log = @($mod.log) + $log
+        $planChanged = $true   # 模块日志已追加，plan.json 需要保存
 
         Write-Host "已更新模块 $($mod.name): 状态=$($mod.status), 日志+1" -ForegroundColor Green
     } else {
@@ -310,6 +316,7 @@ if (-not $matchedId) {
             status   = "in_progress"
         }
         $plan.tempTasks = @($plan.tempTasks) + $tempTask
+        $planChanged = $true   # 临时任务已追加，plan.json 需要保存
         Write-Host "临时任务已加入: $($tempTask.id) - $CommitMsg" -ForegroundColor Yellow
     }
 }
@@ -330,11 +337,14 @@ if ($plan.PSObject.Properties['tempTasks'] -and @($plan.tempTasks).Count -gt 0) 
     }
 }
 
-# ---------- 保存 plan.json（保持格式） ----------
-$json = $plan | ConvertTo-Json -Depth 20
-# 转换后 null 数组清理（可选，保持兼容即可）
-[System.IO.File]::WriteAllText($JsonPath, $json, [System.Text.UTF8Encoding]::new($false))
-Write-Host "plan.json 已保存" -ForegroundColor Green
+# ---------- 保存 plan.json（幂等：仅当真实修改才写） ----------
+if ($planChanged) {
+    $json = $plan | ConvertTo-Json -Depth 20
+    [System.IO.File]::WriteAllText($JsonPath, $json, [System.Text.UTF8Encoding]::new($false))
+    Write-Host "plan.json 已保存" -ForegroundColor Green
+} else {
+    Write-Host "plan.json 无变更，跳过写入（幂等，避免循环）" -ForegroundColor DarkGray
+}
 
 # 记录已同步提交（幂等标记）
 [System.IO.File]::WriteAllText($MarkerPath, $CommitHash, [System.Text.UTF8Encoding]::new($false))

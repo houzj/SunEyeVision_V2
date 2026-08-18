@@ -1,7 +1,0 @@
-[
-  {
-    "hash": "25bf17c",
-    "date": "2026-06-25",
-    "message": "chore(gitignore): 排除 libs/halcon/runtime/ build_output/ runtime/ 大型二进制"
-  }
-]

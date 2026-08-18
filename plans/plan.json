@@ -3343,6 +3343,285 @@
                                         "note":  "按真实路线调整：OPC UA 优先开发，TCP/Modbus/串口后置"
                                     }
                                 ]
+                    },
+                    {
+                        "id":  "T-IMAGELOAD",
+                        "name":  "图像加载工具",
+                        "type":  "tool",
+                        "layer":  "tool",
+                        "stage":  "HIST",
+                        "status":  "done",
+                        "start":  "2026-02-27",
+                        "end":  "2026-07-22",
+                        "goal":  "图像加载工具可用（已有实现，纳入计划登记）",
+                        "acceptance":  [
+                                           "支持文件/路径加载图像",
+                                           "输出变量契约与类型映射",
+                                           "调试控件预览可用"
+                                       ],
+                        "tasks":  [
+                                      {
+                                          "id":  "IMAGELOAD-1",
+                                          "name":  "图像加载核心（ImageLoad/参数/类型映射）",
+                                          "phase":  "算法实现",
+                                          "hours":  16,
+                                          "status":  "done",
+                                          "week":  "2026-W01"
+                                      },
+                                      {
+                                          "id":  "IMAGELOAD-2",
+                                          "name":  "图像加载工具调试控件（ROI/参数交互）",
+                                          "phase":  "UI交互",
+                                          "hours":  12,
+                                          "status":  "done",
+                                          "week":  "2026-W01"
+                                      },
+                                      {
+                                          "id":  "IMAGELOAD-3",
+                                          "name":  "图像加载工具测试",
+                                          "phase":  "测试验证",
+                                          "hours":  8,
+                                          "status":  "done",
+                                          "week":  "2026-W01"
+                                      }
+                                  ],
+                        "docs":  [
+
+                                 ],
+                        "log":  [
+                                    {
+                                        "date":  "2026-02-27",
+                                        "note":  "现状核实：图像加载工具已实现（3 个 .cs 文件，31 次提交）。首次提交 0d9d987 ﻿1.重构接口，简化插件开发  工具只要实现Run方法即可 2.新增插件模板，简化插件开发，提供插件模板项目，插件开发者只需要关注业务逻辑即可，不成熟，后续会完善 3.新增插件运行时，简化插件运行，插件运行时会自动加载插件，调用插件的Run方法 4.新增插件调试工具，简化插件调试，插件调试工具会自动加载插件，调用插件的Run方法，方便插件开发者调试插件"
+                                    },
+                                    {
+                                        "date":  "2026-07-22",
+                                        "note":  "最近提交 9ea2378 refactor: 输出变量契约收敛与文档体系重组(rule-006 doc-save/索引) —— 工具持续维护中（同步登记）"
+                                    },
+                                    {
+                                        "date":  "2026-08-18",
+                                        "note":  "[6607fbbc0f1cd6dde112a1d1505c0cff1f9d5348] 图像预览器节点化优化：并发节流/滚动取消/主动驱动刷新/去重/死代码清理（hook 误归 M-HIST-CANVAS，语义校准到图像加载工具）"
+                                    }
+                                ]
+                    },
+                    {
+                        "id":  "T-THRESHOLD",
+                        "name":  "阈值工具",
+                        "type":  "tool",
+                        "layer":  "tool",
+                        "stage":  "HIST",
+                        "status":  "done",
+                        "start":  "2026-02-22",
+                        "end":  "2026-08-17",
+                        "goal":  "阈值工具可用（已有实现，纳入计划登记）",
+                        "acceptance":  [
+                                           "阈值分割核心算法",
+                                           "阈值类型/参数调试控件",
+                                           "输出契约与测试"
+                                       ],
+                        "tasks":  [
+                                      {
+                                          "id":  "THRESHOLD-1",
+                                          "name":  "阈值核心（Threshold/类型/参数）",
+                                          "phase":  "算法实现",
+                                          "hours":  16,
+                                          "status":  "done",
+                                          "week":  "2026-W01"
+                                      },
+                                      {
+                                          "id":  "THRESHOLD-2",
+                                          "name":  "阈值工具调试控件（ROI/参数交互）",
+                                          "phase":  "UI交互",
+                                          "hours":  12,
+                                          "status":  "done",
+                                          "week":  "2026-W01"
+                                      },
+                                      {
+                                          "id":  "THRESHOLD-3",
+                                          "name":  "阈值工具测试",
+                                          "phase":  "测试验证",
+                                          "hours":  8,
+                                          "status":  "done",
+                                          "week":  "2026-W01"
+                                      }
+                                  ],
+                        "docs":  [
+
+                                 ],
+                        "log":  [
+                                    {
+                                        "date":  "2026-02-22",
+                                        "note":  "现状核实：阈值工具已实现（7 个 .cs 文件，90 次提交）。首次提交 66c9795 完成了工具插件的重构"
+                                    },
+                                    {
+                                        "date":  "2026-08-17",
+                                        "note":  "最近提交 7605075 SDK层UI主题化改造与视觉图标修复 —— 工具持续维护中（同步登记）"
+                                    }
+                                ]
+                    },
+                    {
+                        "id":  "T-IMAGEFILTER",
+                        "name":  "图像滤波工具",
+                        "type":  "tool",
+                        "layer":  "tool",
+                        "stage":  "HIST",
+                        "status":  "done",
+                        "start":  "2026-05-06",
+                        "end":  "2026-08-17",
+                        "goal":  "图像滤波工具可用（已有实现，纳入计划登记）",
+                        "acceptance":  [
+                                           "滤波核心算法（模糊/锐化等）",
+                                           "滤波参数调试控件",
+                                           "输出契约与测试"
+                                       ],
+                        "tasks":  [
+                                      {
+                                          "id":  "IMAGEFILTER-1",
+                                          "name":  "图像滤波核心（ImageFilter/参数）",
+                                          "phase":  "算法实现",
+                                          "hours":  16,
+                                          "status":  "done",
+                                          "week":  "2026-W01"
+                                      },
+                                      {
+                                          "id":  "IMAGEFILTER-2",
+                                          "name":  "图像滤波工具调试控件（ROI/参数交互）",
+                                          "phase":  "UI交互",
+                                          "hours":  12,
+                                          "status":  "done",
+                                          "week":  "2026-W01"
+                                      },
+                                      {
+                                          "id":  "IMAGEFILTER-3",
+                                          "name":  "图像滤波工具测试",
+                                          "phase":  "测试验证",
+                                          "hours":  8,
+                                          "status":  "done",
+                                          "week":  "2026-W01"
+                                      }
+                                  ],
+                        "docs":  [
+
+                                 ],
+                        "log":  [
+                                    {
+                                        "date":  "2026-05-06",
+                                        "note":  "现状核实：图像滤波工具已实现（8 个 .cs 文件，18 次提交）。首次提交 188aa6f ﻿增加图像滤波工具、图像阈值工具、形态学工具，并简要测试"
+                                    },
+                                    {
+                                        "date":  "2026-08-17",
+                                        "note":  "最近提交 7605075 SDK层UI主题化改造与视觉图标修复 —— 工具持续维护中（同步登记）"
+                                    }
+                                ]
+                    },
+                    {
+                        "id":  "T-IMAGETHRESHOLD",
+                        "name":  "图像阈值工具",
+                        "type":  "tool",
+                        "layer":  "tool",
+                        "stage":  "HIST",
+                        "status":  "done",
+                        "start":  "2026-05-06",
+                        "end":  "2026-08-17",
+                        "goal":  "图像阈值工具可用（已有实现，纳入计划登记）",
+                        "acceptance":  [
+                                           "图像阈值分割核心算法",
+                                           "阈值方法调试控件",
+                                           "输出契约与测试"
+                                       ],
+                        "tasks":  [
+                                      {
+                                          "id":  "IMAGETHRESHOLD-1",
+                                          "name":  "图像阈值核心（ImageThreshold/方法）",
+                                          "phase":  "算法实现",
+                                          "hours":  16,
+                                          "status":  "done",
+                                          "week":  "2026-W01"
+                                      },
+                                      {
+                                          "id":  "IMAGETHRESHOLD-2",
+                                          "name":  "图像阈值工具调试控件（ROI/参数交互）",
+                                          "phase":  "UI交互",
+                                          "hours":  12,
+                                          "status":  "done",
+                                          "week":  "2026-W01"
+                                      },
+                                      {
+                                          "id":  "IMAGETHRESHOLD-3",
+                                          "name":  "图像阈值工具测试",
+                                          "phase":  "测试验证",
+                                          "hours":  8,
+                                          "status":  "done",
+                                          "week":  "2026-W01"
+                                      }
+                                  ],
+                        "docs":  [
+
+                                 ],
+                        "log":  [
+                                    {
+                                        "date":  "2026-05-06",
+                                        "note":  "现状核实：图像阈值工具已实现（7 个 .cs 文件，20 次提交）。首次提交 188aa6f ﻿增加图像滤波工具、图像阈值工具、形态学工具，并简要测试"
+                                    },
+                                    {
+                                        "date":  "2026-08-17",
+                                        "note":  "最近提交 7605075 SDK层UI主题化改造与视觉图标修复 —— 工具持续维护中（同步登记）"
+                                    }
+                                ]
+                    },
+                    {
+                        "id":  "T-MORPHOLOGY",
+                        "name":  "形态学工具",
+                        "type":  "tool",
+                        "layer":  "tool",
+                        "stage":  "HIST",
+                        "status":  "done",
+                        "start":  "2026-05-06",
+                        "end":  "2026-08-17",
+                        "goal":  "形态学工具可用（已有实现，纳入计划登记）",
+                        "acceptance":  [
+                                           "形态学运算核心（腐蚀/膨胀/开闭）",
+                                           "结构元素/参数调试控件",
+                                           "输出契约与测试"
+                                       ],
+                        "tasks":  [
+                                      {
+                                          "id":  "MORPHOLOGY-1",
+                                          "name":  "形态学核心（Morphology/运算/结构元素）",
+                                          "phase":  "算法实现",
+                                          "hours":  16,
+                                          "status":  "done",
+                                          "week":  "2026-W01"
+                                      },
+                                      {
+                                          "id":  "MORPHOLOGY-2",
+                                          "name":  "形态学工具调试控件（ROI/参数交互）",
+                                          "phase":  "UI交互",
+                                          "hours":  12,
+                                          "status":  "done",
+                                          "week":  "2026-W01"
+                                      },
+                                      {
+                                          "id":  "MORPHOLOGY-3",
+                                          "name":  "形态学工具测试",
+                                          "phase":  "测试验证",
+                                          "hours":  8,
+                                          "status":  "done",
+                                          "week":  "2026-W01"
+                                      }
+                                  ],
+                        "docs":  [
+
+                                 ],
+                        "log":  [
+                                    {
+                                        "date":  "2026-05-06",
+                                        "note":  "现状核实：形态学工具已实现（8 个 .cs 文件，20 次提交）。首次提交 188aa6f ﻿增加图像滤波工具、图像阈值工具、形态学工具，并简要测试"
+                                    },
+                                    {
+                                        "date":  "2026-08-17",
+                                        "note":  "最近提交 7605075 SDK层UI主题化改造与视觉图标修复 —— 工具持续维护中（同步登记）"
+                                    }
+                                ]
                     }
                 ],
     "stages":  [

@@ -32,6 +32,19 @@ $plan = Get-Content -Path $JsonPath -Raw -Encoding UTF8 | ConvertFrom-Json
 $proj = $plan.project
 $layers = $plan.layers
 $modules = @($plan.modules)
+# 排序副本：先按层级（功能模块 source 在前，工具 tool 在后），同层内按 start 日期升序，再按 id
+# 解决"53 个模块/工具排序不合理"：原顺序为原始 JSON 顺序，导致新增工具甩到末尾、HIST 与计划项交错
+$layerRank = @{ source = 0; tool = 1 }
+$modulesSorted = @($modules | Sort-Object `
+    @{Expression={ if ($layerRank.ContainsKey($_.layer)) { $layerRank[$_.layer] } else { 99 } }},
+    @{Expression={ try { [datetime]::ParseExact($_.start, "yyyy-MM-dd", $null) } catch { [datetime]::MaxValue } }},
+    @{Expression={ $_.id }})
+# 各层级数量（用于分组标题）
+$layerCounts = @{}
+foreach ($m in $modulesSorted) {
+    if (-not $layerCounts.ContainsKey($m.layer)) { $layerCounts[$m.layer] = 0 }
+    $layerCounts[$m.layer]++
+}
 $stages = @($plan.stages)
 $milestones = @($plan.milestones)
 
@@ -300,7 +313,17 @@ $routeOverviewHtml = @"
 
 # ---------- 主控：模块/工具列表（汇报用，一屏看全） ----------
 $moduleRows = ""
-foreach ($m in $modules) {
+$prevLayer = ""
+foreach ($m in $modulesSorted) {
+    # 层级分组分隔行
+    if ($m.layer -ne $prevLayer) {
+        $sepName = $layerName[$m.layer]
+        $sepCnt  = if ($layerCounts.ContainsKey($m.layer)) { $layerCounts[$m.layer] } else { 0 }
+        $moduleRows += @"
+            <tr class="layer-sep"><td colspan="9">$sepName<span class="layer-sep-cnt">（$sepCnt 个）</span></td></tr>
+"@
+        $prevLayer = $m.layer
+    }
     $lc = $layerColor[$m.layer]
     $ln = $layerName[$m.layer]
     $infStatus = Get-InferredStatus $m
@@ -333,7 +356,17 @@ foreach ($m in $modules) {
 
 
 $moduleCards = ""
-foreach ($m in $modules) {
+$prevLayer = ""
+foreach ($m in $modulesSorted) {
+    # 层级分组标题（卡片网格内跨整行）
+    if ($m.layer -ne $prevLayer) {
+        $sepName = $layerName[$m.layer]
+        $sepCnt  = if ($layerCounts.ContainsKey($m.layer)) { $layerCounts[$m.layer] } else { 0 }
+        $moduleCards += @"
+        <div class="mod-group-sep">$sepName<span class="layer-sep-cnt">（$sepCnt 个）</span></div>
+"@
+        $prevLayer = $m.layer
+    }
     $lc = $layerColor[$m.layer]
     $ln = $layerName[$m.layer]
     $infStatus = Get-InferredStatus $m
@@ -531,21 +564,33 @@ if ($weekly) {
         $barW = if ($maxCommits -gt 0) { [math]::Round($w.commits / $maxCommits * 100) } else { 0 }
         $mods = ""
         $modCount = 0
+        $otherSum = 0
+        $otherCount = 0
+        $unknownSum = 0
         foreach ($kv in $w.modules.PSObject.Properties) {
-            if ($modCount -ge 3) { break }
             $mid = $kv.Name
             $mname = if ($weekModuleName.ContainsKey($mid)) { $weekModuleName[$mid] } else { $mid }
-            if ($mid -ne "UNKNOWN") {
+            if ($mid -eq "UNKNOWN") { $unknownSum += $kv.Value; continue }
+            if ($modCount -lt 3) {
                 $mods += "<span class='wk-mod'>$mname ×$($kv.Value)</span>"
                 $modCount++
+            } else {
+                $otherSum += $kv.Value
+                $otherCount++
             }
         }
+        # 汇总未显示部分，保证与提交总数对账：前3模块 + 其他 + 未归类 = 总数
+        if ($otherCount -gt 0) { $mods += "<span class='wk-mod wk-other'>其他 $otherCount 模块 ×$otherSum</span>" }
+        if ($unknownSum -gt 0) { $mods += "<span class='wk-mod muted'>未归类 ×$unknownSum</span>" }
         if ($mods -eq "") { $mods = "<span class='wk-mod muted'>未归类</span>" }
         $weekRows += @"
             <div class="wk-row">
-              <div class="wk-label" title="$($w.week)">$(Get-WeekLabel $w.week)</div>
-              <div class="wk-bar-wrap">
-                <div class="wk-bar" style="width:$barW%"><span class="wk-count">$($w.commits)</span></div>
+              <div class="wk-row-main">
+                <div class="wk-label" title="$($w.week)">$(Get-WeekLabel $w.week)</div>
+                <div class="wk-bar-wrap">
+                  <div class="wk-bar" style="width:$barW%"></div>
+                  <span class="wk-count">$($w.commits)</span>
+                </div>
               </div>
               <div class="wk-mods">$mods</div>
             </div>
@@ -735,16 +780,21 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
 .row-pct { font-size:12px; font-weight:600; color:#185FA5; width:36px; text-align:right; white-space:nowrap; }
 .td-sub { font-size:12px; color:#888; white-space:nowrap; text-align:center; }
 .td-hours { font-size:12px; color:#888; white-space:nowrap; text-align:right; }
+.layer-sep td { background:#f4f7fb; color:#185FA5; font-weight:600; font-size:12px; padding:7px 10px; border-bottom:2px solid #e3e8ef; letter-spacing:.5px; }
+.layer-sep-cnt { color:#8aa0b8; font-weight:500; margin-left:6px; }
+.mod-group-sep { grid-column:1 / -1; font-size:13px; font-weight:700; color:#185FA5; padding:8px 2px 3px; margin-top:6px; border-bottom:2px solid #e3e8ef; }
 .row-go { font-size:12px; color:#185FA5; text-decoration:none; white-space:nowrap; }
 .row-go:hover { text-decoration:underline; }
-.wk-list { display:flex; flex-direction:column; gap:4px; }
-.wk-row { display:flex; align-items:center; gap:10px; font-size:12px; }
-.wk-label { width:86px; font-family:Consolas,monospace; color:#888; white-space:nowrap; }
-.wk-bar-wrap { width:120px; flex-shrink:0; }
-.wk-bar { background:#185FA5; border-radius:3px; height:16px; min-width:4px; position:relative; }
-.wk-count { position:absolute; right:4px; top:1px; font-size:10px; color:#fff; }
-.wk-mods { display:flex; gap:8px; flex-wrap:wrap; flex:1; }
+.wk-list { display:flex; flex-direction:column; gap:6px; }
+.wk-row { display:flex; flex-direction:column; gap:3px; font-size:12px; }
+.wk-row-main { display:flex; align-items:center; gap:10px; }
+.wk-label { width:150px; flex-shrink:0; font-family:Consolas,monospace; color:#888; white-space:nowrap; }
+.wk-bar-wrap { width:150px; flex-shrink:0; display:flex; align-items:center; gap:6px; }
+.wk-bar { flex:0 0 auto; background:#185FA5; border-radius:3px; height:16px; min-width:0; }
+.wk-count { flex-shrink:0; width:26px; font-size:11px; font-weight:600; color:#185FA5; font-family:Consolas,monospace; text-align:right; }
+.wk-mods { display:flex; gap:6px; flex-wrap:wrap; padding-left:160px; }
 .wk-mod { font-size:11px; background:#eef4fb; color:#185FA5; border-radius:8px; padding:1px 8px; white-space:nowrap; }
+.wk-mod.wk-other { background:#eef4fb; color:#5b7c99; border:1px dashed #b9cfe4; }
 .wk-mod.muted { background:#f1efea; color:#aaa; }
 .wk-note { font-size:11px; color:#aaa; margin-top:10px; }
 .pw-list { display:flex; flex-direction:column; gap:6px; }
@@ -818,7 +868,7 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
   $tempHtml
 
   <div class="card">
-    <h2>功能模块与工具（$($modules.Count) 个）</h2>
+    <h2>功能模块与工具（$($modules.Count) 个：$($layerCounts['source']) 功能模块 · $($layerCounts['tool']) 工具）</h2>
     <div class="view-toggle">
       <button class="view-btn active" id="btnCard" onclick="switchView('card')">卡片视图</button>
       <button class="view-btn" id="btnList" onclick="switchView('list')">列表视图（汇报）</button>

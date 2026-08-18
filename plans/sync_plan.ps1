@@ -98,6 +98,11 @@ $keywordMap = @(
     @{ kw = @("弧形卡尺", "ArcCaliper");                    id = "T-ARCCALIPER" },
     @{ kw = @("轮廓匹配", "ShapeMatch", "形状匹配", "亚像素"); id = "T-SHAPEMATCH" },
     @{ kw = @("Blob", "质心", "连通域");                    id = "T-BLOB" },
+    @{ kw = @("图像加载", "ImageLoad", "图像读取");          id = "T-IMAGELOAD" },
+    @{ kw = @("图像滤波", "ImageFilter", "滤波");            id = "T-IMAGEFILTER" },
+    @{ kw = @("图像阈值", "ImageThreshold");                id = "T-IMAGETHRESHOLD" },
+    @{ kw = @("阈值工具", "Threshold", "阈值分割");          id = "T-THRESHOLD" },
+    @{ kw = @("形态学", "Morphology", "形态");               id = "T-MORPHOLOGY" },
     @{ kw = @("点点", "PointToPoint", "P2P");               id = "T-P2P" },
     @{ kw = @("点线", "PointToLine", "P2L");                id = "T-P2L" },
     @{ kw = @("点圆", "PointToCircle", "P2C");              id = "T-P2C" },
@@ -145,6 +150,11 @@ $pathMap = @(
     @{ path = @("tools/SunEyeVision.Tool.ArcCaliper");   id = "T-ARCCALIPER" },
     @{ path = @("tools/SunEyeVision.Tool.ShapeMatch");   id = "T-SHAPEMATCH" },
     @{ path = @("tools/SunEyeVision.BlobAnalysis");      id = "T-BLOB" },
+    @{ path = @("tools/SunEyeVision.Tool.ImageLoad");     id = "T-IMAGELOAD" },
+    @{ path = @("tools/SunEyeVision.Tool.Threshold");     id = "T-THRESHOLD" },
+    @{ path = @("tools/SunEyeVision.Tool.ImageFilter");   id = "T-IMAGEFILTER" },
+    @{ path = @("tools/SunEyeVision.Tool.ImageThreshold"); id = "T-IMAGETHRESHOLD" },
+    @{ path = @("tools/SunEyeVision.Tool.Morphology");    id = "T-MORPHOLOGY" },
     @{ path = @("tools/SunEyeVision.Tool.PointToPoint"); id = "T-P2P" },
     @{ path = @("tools/SunEyeVision.Tool.PointToLine");  id = "T-P2L" },
     @{ path = @("tools/SunEyeVision.Tool.PointToCircle"); id = "T-P2C" },
@@ -178,18 +188,30 @@ $startWords = @("开始", "着手", "开发中", "进行中", "start", "wip", "i
 $logOnlyWords = @("修复", "优化", "调整", "重构", "改进", "fix", "refactor", "update", "改善", "适配")
 
 function Match-ModuleId([string]$msg, [string[]]$files) {
-    # 1. 关键词匹配（提交信息）
+    # 1. 工具目录路径优先（文件在哪个工具目录就归哪个模块，避免提交信息关键词串模块）
+    foreach ($rule in $pathMap) {
+        if ($rule.id -like "T-*") {
+            foreach ($p in $rule.path) {
+                foreach ($f in $files) {
+                    if ($f -like "*$p*") { return $rule.id }
+                }
+            }
+        }
+    }
+    # 2. 源码层路径（src/ 精确目录）
+    foreach ($rule in $pathMap) {
+        if ($rule.id -notlike "T-*") {
+            foreach ($p in $rule.path) {
+                foreach ($f in $files) {
+                    if ($f -like "*$p*") { return $rule.id }
+                }
+            }
+        }
+    }
+    # 3. 关键词兜底（无路径命中时按提交信息意图归类）
     foreach ($rule in $keywordMap) {
         foreach ($k in $rule.kw) {
             if ($msg -match [regex]::Escape($k)) { return $rule.id }
-        }
-    }
-    # 2. 文件路径匹配
-    foreach ($rule in $pathMap) {
-        foreach ($p in $rule.path) {
-            foreach ($f in $files) {
-                if ($f -like "*$p*") { return $rule.id }
-            }
         }
     }
     return ""

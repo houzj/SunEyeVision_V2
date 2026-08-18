@@ -94,16 +94,21 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
 .row-pct { font-size:12px; font-weight:600; color:#185FA5; width:36px; text-align:right; white-space:nowrap; }
 .td-sub { font-size:12px; color:#888; white-space:nowrap; text-align:center; }
 .td-hours { font-size:12px; color:#888; white-space:nowrap; text-align:right; }
+.layer-sep td { background:#f4f7fb; color:#185FA5; font-weight:600; font-size:12px; padding:7px 10px; border-bottom:2px solid #e3e8ef; letter-spacing:.5px; }
+.layer-sep-cnt { color:#8aa0b8; font-weight:500; margin-left:6px; }
+.mod-group-sep { grid-column:1 / -1; font-size:13px; font-weight:700; color:#185FA5; padding:8px 2px 3px; margin-top:6px; border-bottom:2px solid #e3e8ef; }
 .row-go { font-size:12px; color:#185FA5; text-decoration:none; white-space:nowrap; }
 .row-go:hover { text-decoration:underline; }
-.wk-list { display:flex; flex-direction:column; gap:4px; }
-.wk-row { display:flex; align-items:center; gap:10px; font-size:12px; }
-.wk-label { width:86px; font-family:Consolas,monospace; color:#888; white-space:nowrap; }
-.wk-bar-wrap { width:120px; flex-shrink:0; }
-.wk-bar { background:#185FA5; border-radius:3px; height:16px; min-width:4px; position:relative; }
-.wk-count { position:absolute; right:4px; top:1px; font-size:10px; color:#fff; }
-.wk-mods { display:flex; gap:8px; flex-wrap:wrap; flex:1; }
+.wk-list { display:flex; flex-direction:column; gap:6px; }
+.wk-row { display:flex; flex-direction:column; gap:3px; font-size:12px; }
+.wk-row-main { display:flex; align-items:center; gap:10px; }
+.wk-label { width:150px; flex-shrink:0; font-family:Consolas,monospace; color:#888; white-space:nowrap; }
+.wk-bar-wrap { width:150px; flex-shrink:0; display:flex; align-items:center; gap:6px; }
+.wk-bar { flex:0 0 auto; background:#185FA5; border-radius:3px; height:16px; min-width:0; }
+.wk-count { flex-shrink:0; width:26px; font-size:11px; font-weight:600; color:#185FA5; font-family:Consolas,monospace; text-align:right; }
+.wk-mods { display:flex; gap:6px; flex-wrap:wrap; padding-left:160px; }
 .wk-mod { font-size:11px; background:#eef4fb; color:#185FA5; border-radius:8px; padding:1px 8px; white-space:nowrap; }
+.wk-mod.wk-other { background:#eef4fb; color:#5b7c99; border:1px dashed #b9cfe4; }
 .wk-mod.muted { background:#f1efea; color:#aaa; }
 .wk-note { font-size:11px; color:#aaa; margin-top:10px; }
 .pw-list { display:flex; flex-direction:column; gap:6px; }
@@ -150,16 +155,16 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
       <span>版本: v5.3.0</span>
       <span>计划周期: 2026-08-11 ~ 2027-05-14</span>
       <span>负责人: houzhongjie</span>
-      <span>更新: 2026-08-17</span>
-      <span>模块/工具: 48</span>
-      <span>子任务: 261</span>
+      <span>更新: 2026-08-18</span>
+      <span>模块/工具: 53</span>
+      <span>子任务: 276</span>
     </div>
     <div class="overall">
-      <div class="pct-big">56%</div>
+      <div class="pct-big">58%</div>
       <div class="bar-wrap">
-        <div class="progress-bar"><div class="progress-fill" style="width:56%"></div></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:58%"></div></div>
       </div>
-      <div style="font-size:12px;color:#888;white-space:nowrap">已完成 146 / 261 子任务</div>
+      <div style="font-size:12px;color:#888;white-space:nowrap">已完成 161 / 276 子任务</div>
     </div>
   </div>
 
@@ -194,38 +199,58 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
             <div class="route-stage">HIST</div>
           </div>          <div class="route-step done">
             <div class="route-num">7</div>
-            <div class="route-name">解决方案系统</div>
+            <div class="route-name">阈值工具</div>
             <div class="route-stage">HIST</div>
           </div>          <div class="route-step done">
             <div class="route-num">8</div>
-            <div class="route-name">数据绑定树与模块结果树</div>
+            <div class="route-name">图像加载工具</div>
             <div class="route-stage">HIST</div>
           </div>          <div class="route-step done">
             <div class="route-num">9</div>
-            <div class="route-name">参数绑定系统</div>
+            <div class="route-name">解决方案系统</div>
             <div class="route-stage">HIST</div>
           </div>          <div class="route-step done">
             <div class="route-num">10</div>
-            <div class="route-name">CvEngine 算法引擎</div>
+            <div class="route-name">数据绑定树与模块结果树</div>
             <div class="route-stage">HIST</div>
           </div>          <div class="route-step done">
             <div class="route-num">11</div>
-            <div class="route-name">区域与 RoI 系统</div>
+            <div class="route-name">参数绑定系统</div>
             <div class="route-stage">HIST</div>
           </div>          <div class="route-step done">
             <div class="route-num">12</div>
-            <div class="route-name">全局变量管理</div>
+            <div class="route-name">区域与 RoI 系统</div>
             <div class="route-stage">HIST</div>
           </div>          <div class="route-step done">
             <div class="route-num">13</div>
-            <div class="route-name">ShapeMatch 轮廓匹配</div>
+            <div class="route-name">CvEngine 算法引擎</div>
             <div class="route-stage">HIST</div>
           </div>          <div class="route-step done">
             <div class="route-num">14</div>
-            <div class="route-name">脚本工具基础</div>
+            <div class="route-name">全局变量管理</div>
             <div class="route-stage">HIST</div>
           </div>          <div class="route-step done">
             <div class="route-num">15</div>
+            <div class="route-name">ShapeMatch 轮廓匹配</div>
+            <div class="route-stage">HIST</div>
+          </div>          <div class="route-step done">
+            <div class="route-num">16</div>
+            <div class="route-name">图像滤波工具</div>
+            <div class="route-stage">HIST</div>
+          </div>          <div class="route-step done">
+            <div class="route-num">17</div>
+            <div class="route-name">图像阈值工具</div>
+            <div class="route-stage">HIST</div>
+          </div>          <div class="route-step done">
+            <div class="route-num">18</div>
+            <div class="route-name">形态学工具</div>
+            <div class="route-stage">HIST</div>
+          </div>          <div class="route-step done">
+            <div class="route-num">19</div>
+            <div class="route-name">脚本工具基础</div>
+            <div class="route-stage">HIST</div>
+          </div>          <div class="route-step done">
+            <div class="route-num">20</div>
             <div class="route-name">输出变量契约与 SDK 类型系统</div>
             <div class="route-stage">HIST</div>
           </div>
@@ -304,18 +329,23 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
               <div class="layer-stat-head">
                 <span class="layer-dot" style="background:#0F6E56"></span>
                 <strong>工具层</strong>
-                <span class="layer-count">11 / 77 子任务</span>
-                <span class="layer-pct">14%</span>
+                <span class="layer-count">26 / 92 子任务</span>
+                <span class="layer-pct">28%</span>
               </div>
-              <div class="progress-bar"><div class="progress-fill" style="width:14%;background:#0F6E56"></div></div>
+              <div class="progress-bar"><div class="progress-fill" style="width:28%;background:#0F6E56"></div></div>
               <div class="layer-desc">tools/ 工具插件开发（定位/测量/标定/通信工具，IToolPlugin 四件套）</div>
             </div>
     </div>
   </div>
 
     <div class="card recent-card">
-    <h2>最近提交追溯（2026-08-11 ~ 2026-08-17 · 最近 7 天 · 共 33 次 · 点击快速跳转）</h2>
+    <h2>最近提交追溯（2026-08-12 ~ 2026-08-18 · 最近 7 天 · 共 22 次 · 点击快速跳转）</h2>
                 <div class="recent-item">
+              <span class="recent-hash">6607fbb</span>
+              <span class="recent-date">2026-08-18</span>
+              <span class="recent-msg">图像预览器节点化优化：并发节流/滚动取消/主动驱动刷新/去重/死代码清理</span>
+              <a class="recent-link" href="tasks/M-SRC-TEST.html">跳转 → 测试体系完善（消除假测试/补覆盖/建分层）</a>
+            </div>            <div class="recent-item">
               <span class="recent-hash">537a439</span>
               <span class="recent-date">2026-08-17</span>
               <span class="recent-msg">暗色主题边框提亮并清理表格分割线</span>
@@ -346,19 +376,14 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
               <span class="recent-msg">修复关闭/删除确认弹窗不跟随主题，且关闭时无确认弹窗</span>
               <a class="recent-link" href="tasks/M-SRC-UI.html">跳转 → 源码层 UI 项目优化</a>
             </div>            <div class="recent-item">
+              <span class="recent-hash">66b1577</span>
+              <span class="recent-date">2026-08-14</span>
+              <span class="recent-msg">修复工作流下拉框主题切换失效问题</span>
+              <a class="recent-link" href="tasks/M-SRC-UI.html">跳转 → 源码层 UI 项目优化</a>
+            </div>            <div class="recent-item">
               <span class="recent-hash">80ec8fd</span>
               <span class="recent-date">2026-08-14</span>
               <span class="recent-msg">修复打开方案后列表与打开时间不更新</span>
-              <a class="recent-link" href="tasks/M-SRC-UI.html">跳转 → 源码层 UI 项目优化</a>
-            </div>            <div class="recent-item">
-              <span class="recent-hash">52028a0</span>
-              <span class="recent-date">2026-08-14</span>
-              <span class="recent-msg">方案管理界面优化：删除解决方案支持连源文件删除、标题栏主题适配、工作流标签页选中同步</span>
-              <a class="recent-link" href="tasks/M-SRC-UI.html">跳转 → 源码层 UI 项目优化</a>
-            </div>            <div class="recent-item">
-              <span class="recent-hash">535227b</span>
-              <span class="recent-date">2026-08-14</span>
-              <span class="recent-msg">﻿修复右键菜单白色块并清理连续运行图标相关废弃代码</span>
               <a class="recent-link" href="tasks/M-SRC-UI.html">跳转 → 源码层 UI 项目优化</a>
             </div>            <div class="recent-item">
               <span class="recent-hash">40d43bd</span>
@@ -371,9 +396,14 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
               <span class="recent-msg">修复画布滚动条显示与交互问题，并优化打开工作流自动定位节点</span>
               <a class="recent-link" href="tasks/M-SRC-UI.html">跳转 → 源码层 UI 项目优化</a>
             </div>            <div class="recent-item">
-              <span class="recent-hash">66b1577</span>
+              <span class="recent-hash">52028a0</span>
               <span class="recent-date">2026-08-14</span>
-              <span class="recent-msg">修复工作流下拉框主题切换失效问题</span>
+              <span class="recent-msg">方案管理界面优化：删除解决方案支持连源文件删除、标题栏主题适配、工作流标签页选中同步</span>
+              <a class="recent-link" href="tasks/M-SRC-UI.html">跳转 → 源码层 UI 项目优化</a>
+            </div>            <div class="recent-item">
+              <span class="recent-hash">535227b</span>
+              <span class="recent-date">2026-08-14</span>
+              <span class="recent-msg">﻿修复右键菜单白色块并清理连续运行图标相关废弃代码</span>
               <a class="recent-link" href="tasks/M-SRC-UI.html">跳转 → 源码层 UI 项目优化</a>
             </div>            <div class="recent-item">
               <span class="recent-hash">99a6998</span>
@@ -420,71 +450,11 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
               <span class="recent-date">2026-08-12</span>
               <span class="recent-msg">重构(UI): Core 层清理 - 服务归位 + 删除死代码</span>
               <a class="recent-link" href="tasks/M-SRC-UI.html">跳转 → 源码层 UI 项目优化</a>
-            </div>            <div class="recent-item">
-              <span class="recent-hash">aabae1b</span>
-              <span class="recent-date">2026-08-11</span>
-              <span class="recent-msg">节点外观优化：色块撑满第一列贴边，边框未选中灰色/选中橙色</span>
-              <a class="recent-link" href="tasks/M-HIST-CANVAS.html">跳转 → 画布与工作流编辑器（已完成）</a>
-            </div>            <div class="recent-item">
-              <span class="recent-hash">6086159</span>
-              <span class="recent-date">2026-08-11</span>
-              <span class="recent-msg">节点样式优化：圆角6、边框按类型着色、状态五态(运行/成功/失败/跳过)、跳过状态通知</span>
-              <a class="recent-link" href="tasks/M-HIST-CANVAS.html">跳转 → 画布与工作流编辑器（已完成）</a>
-            </div>            <div class="recent-item">
-              <span class="recent-hash">9cd263d</span>
-              <span class="recent-date">2026-08-11</span>
-              <span class="recent-msg">条件分支工具完善: 修复规则列持久化, 支持条件输入解析与序列化契约</span>
-              <a class="recent-link" href="tasks/M-SRC-TEST.html">跳转 → 测试体系完善（消除假测试/补覆盖/建分层）</a>
-            </div>            <div class="recent-item">
-              <span class="recent-hash">fdfcdd0</span>
-              <span class="recent-date">2026-08-11</span>
-              <span class="recent-msg">重构(UI): UI层从按层组织改为按功能模块目录</span>
-              <a class="recent-link" href="tasks/M-SRC-CAM.html">跳转 → 相机管理</a>
-            </div>            <div class="recent-item">
-              <span class="recent-hash">dafe347</span>
-              <span class="recent-date">2026-08-11</span>
-              <span class="recent-msg">重构(UI): 对话框视图归位到对应功能模块目录</span>
-              <a class="recent-link" href="tasks/M-HIST-PARAM.html">跳转 → 参数绑定系统（已完成）</a>
-            </div>            <div class="recent-item">
-              <span class="recent-hash">2b4b431</span>
-              <span class="recent-date">2026-08-11</span>
-              <span class="recent-msg">优化连线样式：圆角线帽、选中加粗、箭头跟随状态</span>
-              <a class="recent-link" href="tasks/M-HIST-CANVAS.html">跳转 → 画布与工作流编辑器（已完成）</a>
-            </div>            <div class="recent-item">
-              <span class="recent-hash">bd64034</span>
-              <span class="recent-date">2026-08-11</span>
-              <span class="recent-msg">重构(UI): 命名空间与功能模块目录对齐(根治两层皮)</span>
-              <a class="recent-link" href="tasks/M-SRC-UI.html">跳转 → 源码层 UI 项目优化</a>
-            </div>            <div class="recent-item">
-              <span class="recent-hash">23d3147</span>
-              <span class="recent-date">2026-08-11</span>
-              <span class="recent-msg">重构(UI): Views层目录改名为Shell以对齐功能模块布局</span>
-              <a class="recent-link" href="tasks/M-SRC-UI.html">跳转 → 源码层 UI 项目优化</a>
-            </div>            <div class="recent-item">
-              <span class="recent-hash">d3a4753</span>
-              <span class="recent-date">2026-08-11</span>
-              <span class="recent-msg">重构(UI): 阶段一+阶段二 - SDK主题收敛 与 VM就近化改造</span>
-              <a class="recent-link" href="tasks/M-SRC-UI.html">跳转 → 源码层 UI 项目优化</a>
-            </div>            <div class="recent-item">
-              <span class="recent-hash">69c4f42</span>
-              <span class="recent-date">2026-08-11</span>
-              <span class="recent-msg">feat(canvas): 工作流画布背景改为棋盘格，与图像显示控件样式保持一致</span>
-              <a class="recent-link" href="tasks/M-HIST-CANVAS.html">跳转 → 画布与工作流编辑器（已完成）</a>
-            </div>            <div class="recent-item">
-              <span class="recent-hash">a08bbfb</span>
-              <span class="recent-date">2026-08-11</span>
-              <span class="recent-msg">重构(UI): 合并过度细分的顶层目录到功能/共享归属</span>
-              <a class="recent-link" href="tasks/M-HIST-CANVAS.html">跳转 → 画布与工作流编辑器（已完成）</a>
-            </div>            <div class="recent-item">
-              <span class="recent-hash">5b56aad</span>
-              <span class="recent-date">2026-08-11</span>
-              <span class="recent-msg">﻿重构(UI): 清理名不副实的 Controls/ 目录 - 归位辅助类、删除孤立渲染代码</span>
-              <a class="recent-link" href="tasks/M-SRC-UI.html">跳转 → 源码层 UI 项目优化</a>
             </div>
   </div>
 
     <div class="card temp-card" id="temp-pool">
-    <h2>临时任务池（2026-08-11 ~ 2026-08-17 · 最近 7 天 · 共 3 个 · 无归属提交自动收录，仅保留一周）</h2>
+    <h2>临时任务池（2026-08-12 ~ 2026-08-18 · 最近 7 天 · 共 3 个 · 无归属提交自动收录，仅保留一周）</h2>
                 <div class="temp-item">
               <div class="temp-head">
                 <span class="temp-id">TMP-f4e42be</span>
@@ -513,29 +483,13 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
   </div>
 
   <div class="card">
-    <h2>功能模块与工具（48 个）</h2>
+    <h2>功能模块与工具（53 个：25 功能模块 · 28 工具）</h2>
     <div class="view-toggle">
       <button class="view-btn active" id="btnCard" onclick="switchView('card')">卡片视图</button>
       <button class="view-btn" id="btnList" onclick="switchView('list')">列表视图（汇报）</button>
     </div>
     <div class="cards" id="viewCard">
-              <a class="mod-card" href="tasks/M-HIST-CORE.html" style="border-top-color:#185FA5">
-          <div class="mod-head">
-            <span class="mod-id">M-HIST-CORE</span>
-            
-            <span class="layer-tag" style="color:#185FA5;border-color:#185FA5">源码层 · 模块</span>
-          </div>
-          <div class="mod-name">视觉基础框架（已完成）</div>
-          <div class="mod-stage">历史开发（已完成，2026-01~07） · 2026-01-21 ~ 2026-02-28</div>
-          <div class="mod-progress">
-            <div class="progress-bar"><div class="progress-fill" style="width:92%;background:#185FA5"></div></div>
-            <span class="pct-text">92%</span>
-          </div>
-          <div class="mod-foot">
-            <span class="status st-progress">补测试中</span>
-            <span class="mod-sub">12/13 子任务</span>
-          </div>
-        </a>        <a class="mod-card" href="tasks/M-HIST-CANVAS.html" style="border-top-color:#185FA5">
+              <div class="mod-group-sep">源码层<span class="layer-sep-cnt">（25 个）</span></div>        <a class="mod-card" href="tasks/M-HIST-CANVAS.html" style="border-top-color:#185FA5">
           <div class="mod-head">
             <span class="mod-id">M-HIST-CANVAS</span>
             
@@ -550,6 +504,22 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
           <div class="mod-foot">
             <span class="status st-done">已完成</span>
             <span class="mod-sub">17/17 子任务</span>
+          </div>
+        </a>        <a class="mod-card" href="tasks/M-HIST-CORE.html" style="border-top-color:#185FA5">
+          <div class="mod-head">
+            <span class="mod-id">M-HIST-CORE</span>
+            
+            <span class="layer-tag" style="color:#185FA5;border-color:#185FA5">源码层 · 模块</span>
+          </div>
+          <div class="mod-name">视觉基础框架（已完成）</div>
+          <div class="mod-stage">历史开发（已完成，2026-01~07） · 2026-01-21 ~ 2026-02-28</div>
+          <div class="mod-progress">
+            <div class="progress-bar"><div class="progress-fill" style="width:92%;background:#185FA5"></div></div>
+            <span class="pct-text">92%</span>
+          </div>
+          <div class="mod-foot">
+            <span class="status st-progress">补测试中</span>
+            <span class="mod-sub">12/13 子任务</span>
           </div>
         </a>        <a class="mod-card" href="tasks/M-HIST-PATH.html" style="border-top-color:#185FA5">
           <div class="mod-head">
@@ -583,6 +553,38 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
             <span class="status st-done">已完成</span>
             <span class="mod-sub">8/8 子任务</span>
           </div>
+        </a>        <a class="mod-card" href="tasks/M-HIST-SDKCTRL.html" style="border-top-color:#185FA5">
+          <div class="mod-head">
+            <span class="mod-id">M-HIST-SDKCTRL</span>
+            
+            <span class="layer-tag" style="color:#185FA5;border-color:#185FA5">源码层 · 模块</span>
+          </div>
+          <div class="mod-name">SDK 层控件开发（已完成）</div>
+          <div class="mod-stage">历史开发（已完成，2026-01~07） · 2026-02-15 ~ 2026-08-15</div>
+          <div class="mod-progress">
+            <div class="progress-bar"><div class="progress-fill" style="width:100%;background:#185FA5"></div></div>
+            <span class="pct-text">100%</span>
+          </div>
+          <div class="mod-foot">
+            <span class="status st-done">已完成</span>
+            <span class="mod-sub">5/5 子任务</span>
+          </div>
+        </a>        <a class="mod-card" href="tasks/M-HIST-DATAMODEL.html" style="border-top-color:#185FA5">
+          <div class="mod-head">
+            <span class="mod-id">M-HIST-DATAMODEL</span>
+            
+            <span class="layer-tag" style="color:#185FA5;border-color:#185FA5">源码层 · 模块</span>
+          </div>
+          <div class="mod-name">源码层数据结构优化（已完成）</div>
+          <div class="mod-stage">历史开发（已完成，2026-01~07） · 2026-02-20 ~ 2026-08-15</div>
+          <div class="mod-progress">
+            <div class="progress-bar"><div class="progress-fill" style="width:100%;background:#185FA5"></div></div>
+            <span class="pct-text">100%</span>
+          </div>
+          <div class="mod-foot">
+            <span class="status st-done">已完成</span>
+            <span class="mod-sub">6/6 子任务</span>
+          </div>
         </a>        <a class="mod-card" href="tasks/M-HIST-SOLUTION.html" style="border-top-color:#185FA5">
           <div class="mod-head">
             <span class="mod-id">M-HIST-SOLUTION</span>
@@ -598,6 +600,22 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
           <div class="mod-foot">
             <span class="status st-done">已完成</span>
             <span class="mod-sub">10/10 子任务</span>
+          </div>
+        </a>        <a class="mod-card" href="tasks/M-HIST-RESULTTREE.html" style="border-top-color:#185FA5">
+          <div class="mod-head">
+            <span class="mod-id">M-HIST-RESULTTREE</span>
+            
+            <span class="layer-tag" style="color:#185FA5;border-color:#185FA5">源码层 · 模块</span>
+          </div>
+          <div class="mod-name">数据绑定树与模块结果树（已完成）</div>
+          <div class="mod-stage">历史开发（已完成，2026-01~07） · 2026-03-15 ~ 2026-08-15</div>
+          <div class="mod-progress">
+            <div class="progress-bar"><div class="progress-fill" style="width:100%;background:#185FA5"></div></div>
+            <span class="pct-text">100%</span>
+          </div>
+          <div class="mod-foot">
+            <span class="status st-done">已完成</span>
+            <span class="mod-sub">7/7 子任务</span>
           </div>
         </a>        <a class="mod-card" href="tasks/M-HIST-CVENGINE.html" style="border-top-color:#185FA5">
           <div class="mod-head">
@@ -631,22 +649,6 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
             <span class="status st-done">已完成</span>
             <span class="mod-sub">6/6 子任务</span>
           </div>
-        </a>        <a class="mod-card" href="tasks/M-HIST-RESULTTREE.html" style="border-top-color:#185FA5">
-          <div class="mod-head">
-            <span class="mod-id">M-HIST-RESULTTREE</span>
-            
-            <span class="layer-tag" style="color:#185FA5;border-color:#185FA5">源码层 · 模块</span>
-          </div>
-          <div class="mod-name">数据绑定树与模块结果树（已完成）</div>
-          <div class="mod-stage">历史开发（已完成，2026-01~07） · 2026-03-15 ~ 2026-08-15</div>
-          <div class="mod-progress">
-            <div class="progress-bar"><div class="progress-fill" style="width:100%;background:#185FA5"></div></div>
-            <span class="pct-text">100%</span>
-          </div>
-          <div class="mod-foot">
-            <span class="status st-done">已完成</span>
-            <span class="mod-sub">7/7 子任务</span>
-          </div>
         </a>        <a class="mod-card" href="tasks/M-HIST-REGION.html" style="border-top-color:#185FA5">
           <div class="mod-head">
             <span class="mod-id">M-HIST-REGION</span>
@@ -662,6 +664,22 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
           <div class="mod-foot">
             <span class="status st-done">已完成</span>
             <span class="mod-sub">8/8 子任务</span>
+          </div>
+        </a>        <a class="mod-card" href="tasks/M-HIST-GLOBALVAR.html" style="border-top-color:#185FA5">
+          <div class="mod-head">
+            <span class="mod-id">M-HIST-GLOBALVAR</span>
+            
+            <span class="layer-tag" style="color:#185FA5;border-color:#185FA5">源码层 · 模块</span>
+          </div>
+          <div class="mod-name">全局变量管理（已完成基础，测试待补）</div>
+          <div class="mod-stage">历史开发（已完成，2026-01~07） · 2026-05-01 ~ 2026-05-31</div>
+          <div class="mod-progress">
+            <div class="progress-bar"><div class="progress-fill" style="width:83%;background:#185FA5"></div></div>
+            <span class="pct-text">83%</span>
+          </div>
+          <div class="mod-foot">
+            <span class="status st-progress">补测试中</span>
+            <span class="mod-sub">5/6 子任务</span>
           </div>
         </a>        <a class="mod-card" href="tasks/M-HIST-MATCH.html" style="border-top-color:#185FA5">
           <div class="mod-head">
@@ -711,38 +729,6 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
             <span class="status st-done">已完成</span>
             <span class="mod-sub">9/9 子任务</span>
           </div>
-        </a>        <a class="mod-card" href="tasks/M-HIST-SDKCTRL.html" style="border-top-color:#185FA5">
-          <div class="mod-head">
-            <span class="mod-id">M-HIST-SDKCTRL</span>
-            
-            <span class="layer-tag" style="color:#185FA5;border-color:#185FA5">源码层 · 模块</span>
-          </div>
-          <div class="mod-name">SDK 层控件开发（已完成）</div>
-          <div class="mod-stage">历史开发（已完成，2026-01~07） · 2026-02-15 ~ 2026-08-15</div>
-          <div class="mod-progress">
-            <div class="progress-bar"><div class="progress-fill" style="width:100%;background:#185FA5"></div></div>
-            <span class="pct-text">100%</span>
-          </div>
-          <div class="mod-foot">
-            <span class="status st-done">已完成</span>
-            <span class="mod-sub">5/5 子任务</span>
-          </div>
-        </a>        <a class="mod-card" href="tasks/M-HIST-DATAMODEL.html" style="border-top-color:#185FA5">
-          <div class="mod-head">
-            <span class="mod-id">M-HIST-DATAMODEL</span>
-            
-            <span class="layer-tag" style="color:#185FA5;border-color:#185FA5">源码层 · 模块</span>
-          </div>
-          <div class="mod-name">源码层数据结构优化（已完成）</div>
-          <div class="mod-stage">历史开发（已完成，2026-01~07） · 2026-02-20 ~ 2026-08-15</div>
-          <div class="mod-progress">
-            <div class="progress-bar"><div class="progress-fill" style="width:100%;background:#185FA5"></div></div>
-            <span class="pct-text">100%</span>
-          </div>
-          <div class="mod-foot">
-            <span class="status st-done">已完成</span>
-            <span class="mod-sub">6/6 子任务</span>
-          </div>
         </a>        <a class="mod-card mod-current" href="tasks/M-SRC-UI.html" style="border-top-color:#185FA5">
           <div class="mod-head">
             <span class="mod-id">M-SRC-UI</span>
@@ -759,37 +745,21 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
             <span class="status st-progress">进行中</span>
             <span class="mod-sub">8/9 子任务</span>
           </div>
-        </a>        <a class="mod-card" href="tasks/M-HIST-GLOBALVAR.html" style="border-top-color:#185FA5">
+        </a>        <a class="mod-card" href="tasks/M-SRC-TEST.html" style="border-top-color:#185FA5">
           <div class="mod-head">
-            <span class="mod-id">M-HIST-GLOBALVAR</span>
+            <span class="mod-id">M-SRC-TEST</span>
             
             <span class="layer-tag" style="color:#185FA5;border-color:#185FA5">源码层 · 模块</span>
           </div>
-          <div class="mod-name">全局变量管理（已完成基础，测试待补）</div>
-          <div class="mod-stage">历史开发（已完成，2026-01~07） · 2026-05-01 ~ 2026-05-31</div>
-          <div class="mod-progress">
-            <div class="progress-bar"><div class="progress-fill" style="width:83%;background:#185FA5"></div></div>
-            <span class="pct-text">83%</span>
-          </div>
-          <div class="mod-foot">
-            <span class="status st-progress">补测试中</span>
-            <span class="mod-sub">5/6 子任务</span>
-          </div>
-        </a>        <a class="mod-card" href="tasks/M-SRC-CAM.html" style="border-top-color:#185FA5">
-          <div class="mod-head">
-            <span class="mod-id">M-SRC-CAM</span>
-            
-            <span class="layer-tag" style="color:#185FA5;border-color:#185FA5">源码层 · 模块</span>
-          </div>
-          <div class="mod-name">相机管理</div>
-          <div class="mod-stage">相机管理与通讯管理 · 2026-10-26 ~ 2026-11-13</div>
+          <div class="mod-name">测试体系完善（消除假测试/补覆盖/建分层）</div>
+          <div class="mod-stage">测试体系完善 · 2026-08-17 ~ 2026-12-31</div>
           <div class="mod-progress">
             <div class="progress-bar"><div class="progress-fill" style="width:0%;background:#185FA5"></div></div>
             <span class="pct-text">0%</span>
           </div>
           <div class="mod-foot">
-            <span class="status st-todo">计划中</span>
-            <span class="mod-sub">0/4 子任务</span>
+            <span class="status st-progress">进行中</span>
+            <span class="mod-sub">0/7 子任务</span>
           </div>
         </a>        <a class="mod-card" href="tasks/M-SRC-CAL.html" style="border-top-color:#185FA5">
           <div class="mod-head">
@@ -823,6 +793,38 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
             <span class="status st-todo">计划中</span>
             <span class="mod-sub">0/3 子任务</span>
           </div>
+        </a>        <a class="mod-card" href="tasks/M-SRC-CAM.html" style="border-top-color:#185FA5">
+          <div class="mod-head">
+            <span class="mod-id">M-SRC-CAM</span>
+            
+            <span class="layer-tag" style="color:#185FA5;border-color:#185FA5">源码层 · 模块</span>
+          </div>
+          <div class="mod-name">相机管理</div>
+          <div class="mod-stage">相机管理与通讯管理 · 2026-10-26 ~ 2026-11-13</div>
+          <div class="mod-progress">
+            <div class="progress-bar"><div class="progress-fill" style="width:0%;background:#185FA5"></div></div>
+            <span class="pct-text">0%</span>
+          </div>
+          <div class="mod-foot">
+            <span class="status st-todo">计划中</span>
+            <span class="mod-sub">0/4 子任务</span>
+          </div>
+        </a>        <a class="mod-card" href="tasks/M-SRC-COMM.html" style="border-top-color:#185FA5">
+          <div class="mod-head">
+            <span class="mod-id">M-SRC-COMM</span>
+            
+            <span class="layer-tag" style="color:#185FA5;border-color:#185FA5">源码层 · 模块</span>
+          </div>
+          <div class="mod-name">通讯管理</div>
+          <div class="mod-stage">相机管理与通讯管理 · 2026-11-16 ~ 2026-12-04</div>
+          <div class="mod-progress">
+            <div class="progress-bar"><div class="progress-fill" style="width:0%;background:#185FA5"></div></div>
+            <span class="pct-text">0%</span>
+          </div>
+          <div class="mod-foot">
+            <span class="status st-todo">计划中</span>
+            <span class="mod-sub">0/4 子任务</span>
+          </div>
         </a>        <a class="mod-card" href="tasks/M-SRC-POSE.html" style="border-top-color:#185FA5">
           <div class="mod-head">
             <span class="mod-id">M-SRC-POSE</span>
@@ -839,14 +841,14 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
             <span class="status st-todo">计划中</span>
             <span class="mod-sub">0/2 子任务</span>
           </div>
-        </a>        <a class="mod-card" href="tasks/M-SRC-COMM.html" style="border-top-color:#185FA5">
+        </a>        <a class="mod-card" href="tasks/M-SRC-INTEG.html" style="border-top-color:#185FA5">
           <div class="mod-head">
-            <span class="mod-id">M-SRC-COMM</span>
+            <span class="mod-id">M-SRC-INTEG</span>
             
             <span class="layer-tag" style="color:#185FA5;border-color:#185FA5">源码层 · 模块</span>
           </div>
-          <div class="mod-name">通讯管理</div>
-          <div class="mod-stage">相机管理与通讯管理 · 2026-11-16 ~ 2026-12-04</div>
+          <div class="mod-name">端到端联调</div>
+          <div class="mod-stage"> · 2027-02-08 ~ 2027-02-26</div>
           <div class="mod-progress">
             <div class="progress-bar"><div class="progress-fill" style="width:0%;background:#185FA5"></div></div>
             <span class="pct-text">0%</span>
@@ -871,38 +873,6 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
             <span class="status st-todo">计划中</span>
             <span class="mod-sub">0/6 子任务</span>
           </div>
-        </a>        <a class="mod-card" href="tasks/M-SRC-INTEG.html" style="border-top-color:#185FA5">
-          <div class="mod-head">
-            <span class="mod-id">M-SRC-INTEG</span>
-            
-            <span class="layer-tag" style="color:#185FA5;border-color:#185FA5">源码层 · 模块</span>
-          </div>
-          <div class="mod-name">端到端联调</div>
-          <div class="mod-stage"> · 2027-02-08 ~ 2027-02-26</div>
-          <div class="mod-progress">
-            <div class="progress-bar"><div class="progress-fill" style="width:0%;background:#185FA5"></div></div>
-            <span class="pct-text">0%</span>
-          </div>
-          <div class="mod-foot">
-            <span class="status st-todo">计划中</span>
-            <span class="mod-sub">0/4 子任务</span>
-          </div>
-        </a>        <a class="mod-card" href="tasks/M-SRC-TEST.html" style="border-top-color:#185FA5">
-          <div class="mod-head">
-            <span class="mod-id">M-SRC-TEST</span>
-            
-            <span class="layer-tag" style="color:#185FA5;border-color:#185FA5">源码层 · 模块</span>
-          </div>
-          <div class="mod-name">测试体系完善（消除假测试/补覆盖/建分层）</div>
-          <div class="mod-stage">测试体系完善 · 2026-08-17 ~ 2026-12-31</div>
-          <div class="mod-progress">
-            <div class="progress-bar"><div class="progress-fill" style="width:0%;background:#185FA5"></div></div>
-            <span class="pct-text">0%</span>
-          </div>
-          <div class="mod-foot">
-            <span class="status st-progress">进行中</span>
-            <span class="mod-sub">0/7 子任务</span>
-          </div>
         </a>        <a class="mod-card" href="tasks/M-SRC-DELIVERY.html" style="border-top-color:#185FA5">
           <div class="mod-head">
             <span class="mod-id">M-SRC-DELIVERY</span>
@@ -913,6 +883,134 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
           <div class="mod-stage">交付与上线 · 2027-03-29 ~ 2027-04-09</div>
           <div class="mod-progress">
             <div class="progress-bar"><div class="progress-fill" style="width:0%;background:#185FA5"></div></div>
+            <span class="pct-text">0%</span>
+          </div>
+          <div class="mod-foot">
+            <span class="status st-todo">计划中</span>
+            <span class="mod-sub">0/3 子任务</span>
+          </div>
+        </a>        <div class="mod-group-sep">工具层<span class="layer-sep-cnt">（28 个）</span></div>        <a class="mod-card" href="tasks/T-THRESHOLD.html" style="border-top-color:#0F6E56">
+          <div class="mod-head">
+            <span class="mod-id">T-THRESHOLD</span>
+            
+            <span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层 · 工具</span>
+          </div>
+          <div class="mod-name">阈值工具</div>
+          <div class="mod-stage">历史开发（已完成，2026-01~07） · 2026-02-22 ~ 2026-08-17</div>
+          <div class="mod-progress">
+            <div class="progress-bar"><div class="progress-fill" style="width:100%;background:#0F6E56"></div></div>
+            <span class="pct-text">100%</span>
+          </div>
+          <div class="mod-foot">
+            <span class="status st-done">已完成</span>
+            <span class="mod-sub">3/3 子任务</span>
+          </div>
+        </a>        <a class="mod-card" href="tasks/T-IMAGELOAD.html" style="border-top-color:#0F6E56">
+          <div class="mod-head">
+            <span class="mod-id">T-IMAGELOAD</span>
+            
+            <span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层 · 工具</span>
+          </div>
+          <div class="mod-name">图像加载工具</div>
+          <div class="mod-stage">历史开发（已完成，2026-01~07） · 2026-02-27 ~ 2026-07-22</div>
+          <div class="mod-progress">
+            <div class="progress-bar"><div class="progress-fill" style="width:100%;background:#0F6E56"></div></div>
+            <span class="pct-text">100%</span>
+          </div>
+          <div class="mod-foot">
+            <span class="status st-done">已完成</span>
+            <span class="mod-sub">3/3 子任务</span>
+          </div>
+        </a>        <a class="mod-card" href="tasks/T-IMAGEFILTER.html" style="border-top-color:#0F6E56">
+          <div class="mod-head">
+            <span class="mod-id">T-IMAGEFILTER</span>
+            
+            <span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层 · 工具</span>
+          </div>
+          <div class="mod-name">图像滤波工具</div>
+          <div class="mod-stage">历史开发（已完成，2026-01~07） · 2026-05-06 ~ 2026-08-17</div>
+          <div class="mod-progress">
+            <div class="progress-bar"><div class="progress-fill" style="width:100%;background:#0F6E56"></div></div>
+            <span class="pct-text">100%</span>
+          </div>
+          <div class="mod-foot">
+            <span class="status st-done">已完成</span>
+            <span class="mod-sub">3/3 子任务</span>
+          </div>
+        </a>        <a class="mod-card" href="tasks/T-IMAGETHRESHOLD.html" style="border-top-color:#0F6E56">
+          <div class="mod-head">
+            <span class="mod-id">T-IMAGETHRESHOLD</span>
+            
+            <span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层 · 工具</span>
+          </div>
+          <div class="mod-name">图像阈值工具</div>
+          <div class="mod-stage">历史开发（已完成，2026-01~07） · 2026-05-06 ~ 2026-08-17</div>
+          <div class="mod-progress">
+            <div class="progress-bar"><div class="progress-fill" style="width:100%;background:#0F6E56"></div></div>
+            <span class="pct-text">100%</span>
+          </div>
+          <div class="mod-foot">
+            <span class="status st-done">已完成</span>
+            <span class="mod-sub">3/3 子任务</span>
+          </div>
+        </a>        <a class="mod-card" href="tasks/T-MORPHOLOGY.html" style="border-top-color:#0F6E56">
+          <div class="mod-head">
+            <span class="mod-id">T-MORPHOLOGY</span>
+            
+            <span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层 · 工具</span>
+          </div>
+          <div class="mod-name">形态学工具</div>
+          <div class="mod-stage">历史开发（已完成，2026-01~07） · 2026-05-06 ~ 2026-08-17</div>
+          <div class="mod-progress">
+            <div class="progress-bar"><div class="progress-fill" style="width:100%;background:#0F6E56"></div></div>
+            <span class="pct-text">100%</span>
+          </div>
+          <div class="mod-foot">
+            <span class="status st-done">已完成</span>
+            <span class="mod-sub">3/3 子任务</span>
+          </div>
+        </a>        <a class="mod-card" href="tasks/T-CONDITION.html" style="border-top-color:#0F6E56">
+          <div class="mod-head">
+            <span class="mod-id">T-CONDITION</span>
+            
+            <span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层 · 工具</span>
+          </div>
+          <div class="mod-name">条件分支工具（流程控制）</div>
+          <div class="mod-stage">条件分支工具完善与测试 · 2026-09-07 ~ 2026-09-11</div>
+          <div class="mod-progress">
+            <div class="progress-bar"><div class="progress-fill" style="width:67%;background:#0F6E56"></div></div>
+            <span class="pct-text">67%</span>
+          </div>
+          <div class="mod-foot">
+            <span class="status st-progress">进行中</span>
+            <span class="mod-sub">4/6 子任务</span>
+          </div>
+        </a>        <a class="mod-card" href="tasks/T-P2P.html" style="border-top-color:#0F6E56">
+          <div class="mod-head">
+            <span class="mod-id">T-P2P</span>
+            
+            <span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层 · 工具</span>
+          </div>
+          <div class="mod-name">点点测量工具</div>
+          <div class="mod-stage">测量工具链（提前开发） · 2026-09-14 ~ 2026-09-18</div>
+          <div class="mod-progress">
+            <div class="progress-bar"><div class="progress-fill" style="width:0%;background:#0F6E56"></div></div>
+            <span class="pct-text">0%</span>
+          </div>
+          <div class="mod-foot">
+            <span class="status st-todo">计划中</span>
+            <span class="mod-sub">0/3 子任务</span>
+          </div>
+        </a>        <a class="mod-card" href="tasks/T-P2L.html" style="border-top-color:#0F6E56">
+          <div class="mod-head">
+            <span class="mod-id">T-P2L</span>
+            
+            <span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层 · 工具</span>
+          </div>
+          <div class="mod-name">点线测量工具</div>
+          <div class="mod-stage">测量工具链（提前开发） · 2026-09-21 ~ 2026-09-25</div>
+          <div class="mod-progress">
+            <div class="progress-bar"><div class="progress-fill" style="width:0%;background:#0F6E56"></div></div>
             <span class="pct-text">0%</span>
           </div>
           <div class="mod-foot">
@@ -935,6 +1033,54 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
             <span class="status st-todo">计划中</span>
             <span class="mod-sub">0/3 子任务</span>
           </div>
+        </a>        <a class="mod-card" href="tasks/T-P2C.html" style="border-top-color:#0F6E56">
+          <div class="mod-head">
+            <span class="mod-id">T-P2C</span>
+            
+            <span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层 · 工具</span>
+          </div>
+          <div class="mod-name">点圆测量工具</div>
+          <div class="mod-stage">测量工具链（提前开发） · 2026-09-28 ~ 2026-10-02</div>
+          <div class="mod-progress">
+            <div class="progress-bar"><div class="progress-fill" style="width:0%;background:#0F6E56"></div></div>
+            <span class="pct-text">0%</span>
+          </div>
+          <div class="mod-foot">
+            <span class="status st-todo">计划中</span>
+            <span class="mod-sub">0/3 子任务</span>
+          </div>
+        </a>        <a class="mod-card" href="tasks/T-L2L.html" style="border-top-color:#0F6E56">
+          <div class="mod-head">
+            <span class="mod-id">T-L2L</span>
+            
+            <span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层 · 工具</span>
+          </div>
+          <div class="mod-name">线线测量工具</div>
+          <div class="mod-stage">测量工具链（提前开发） · 2026-10-05 ~ 2026-10-09</div>
+          <div class="mod-progress">
+            <div class="progress-bar"><div class="progress-fill" style="width:0%;background:#0F6E56"></div></div>
+            <span class="pct-text">0%</span>
+          </div>
+          <div class="mod-foot">
+            <span class="status st-todo">计划中</span>
+            <span class="mod-sub">0/3 子任务</span>
+          </div>
+        </a>        <a class="mod-card" href="tasks/T-L2C.html" style="border-top-color:#0F6E56">
+          <div class="mod-head">
+            <span class="mod-id">T-L2C</span>
+            
+            <span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层 · 工具</span>
+          </div>
+          <div class="mod-name">线圆测量工具</div>
+          <div class="mod-stage">测量工具链（提前开发） · 2026-10-12 ~ 2026-10-16</div>
+          <div class="mod-progress">
+            <div class="progress-bar"><div class="progress-fill" style="width:0%;background:#0F6E56"></div></div>
+            <span class="pct-text">0%</span>
+          </div>
+          <div class="mod-foot">
+            <span class="status st-todo">计划中</span>
+            <span class="mod-sub">0/3 子任务</span>
+          </div>
         </a>        <a class="mod-card" href="tasks/T-UNDIST.html" style="border-top-color:#0F6E56">
           <div class="mod-head">
             <span class="mod-id">T-UNDIST</span>
@@ -943,6 +1089,22 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
           </div>
           <div class="mod-name">畸变校正工具</div>
           <div class="mod-stage">相机标定（内参/畸变） · 2026-10-12 ~ 2026-10-16</div>
+          <div class="mod-progress">
+            <div class="progress-bar"><div class="progress-fill" style="width:0%;background:#0F6E56"></div></div>
+            <span class="pct-text">0%</span>
+          </div>
+          <div class="mod-foot">
+            <span class="status st-todo">计划中</span>
+            <span class="mod-sub">0/3 子任务</span>
+          </div>
+        </a>        <a class="mod-card" href="tasks/T-C2C.html" style="border-top-color:#0F6E56">
+          <div class="mod-head">
+            <span class="mod-id">T-C2C</span>
+            
+            <span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层 · 工具</span>
+          </div>
+          <div class="mod-name">圆圆测量工具</div>
+          <div class="mod-stage">测量工具链（提前开发） · 2026-10-19 ~ 2026-10-23</div>
           <div class="mod-progress">
             <div class="progress-bar"><div class="progress-fill" style="width:0%;background:#0F6E56"></div></div>
             <span class="pct-text">0%</span>
@@ -1047,6 +1209,22 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
             <span class="status st-todo">计划中</span>
             <span class="mod-sub">0/3 子任务</span>
           </div>
+        </a>        <a class="mod-card" href="tasks/T-IMGCAPTURE.html" style="border-top-color:#0F6E56">
+          <div class="mod-head">
+            <span class="mod-id">T-IMGCAPTURE</span>
+            
+            <span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层 · 工具</span>
+          </div>
+          <div class="mod-name">相机采集工具（工作流图像源）</div>
+          <div class="mod-stage">图像源与通信工具 · 2026-12-07 ~ 2026-12-18</div>
+          <div class="mod-progress">
+            <div class="progress-bar"><div class="progress-fill" style="width:0%;background:#0F6E56"></div></div>
+            <span class="pct-text">0%</span>
+          </div>
+          <div class="mod-foot">
+            <span class="status st-todo">计划中</span>
+            <span class="mod-sub">0/3 子任务</span>
+          </div>
         </a>        <a class="mod-card" href="tasks/T-SHAPEMATCH.html" style="border-top-color:#0F6E56">
           <div class="mod-head">
             <span class="mod-id">T-SHAPEMATCH</span>
@@ -1079,133 +1257,21 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
             <span class="status st-todo">计划中</span>
             <span class="mod-sub">0/3 子任务</span>
           </div>
-        </a>        <a class="mod-card" href="tasks/T-P2P.html" style="border-top-color:#0F6E56">
+        </a>        <a class="mod-card" href="tasks/T-COMMTOOL.html" style="border-top-color:#0F6E56">
           <div class="mod-head">
-            <span class="mod-id">T-P2P</span>
+            <span class="mod-id">T-COMMTOOL</span>
             
             <span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层 · 工具</span>
           </div>
-          <div class="mod-name">点点测量工具</div>
-          <div class="mod-stage">测量工具链（提前开发） · 2026-09-14 ~ 2026-09-18</div>
+          <div class="mod-name">通用通信工具（OPC UA 优先）</div>
+          <div class="mod-stage">图像源与通信工具 · 2026-12-21 ~ 2027-01-15</div>
           <div class="mod-progress">
             <div class="progress-bar"><div class="progress-fill" style="width:0%;background:#0F6E56"></div></div>
             <span class="pct-text">0%</span>
           </div>
           <div class="mod-foot">
             <span class="status st-todo">计划中</span>
-            <span class="mod-sub">0/3 子任务</span>
-          </div>
-        </a>        <a class="mod-card" href="tasks/T-P2L.html" style="border-top-color:#0F6E56">
-          <div class="mod-head">
-            <span class="mod-id">T-P2L</span>
-            
-            <span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层 · 工具</span>
-          </div>
-          <div class="mod-name">点线测量工具</div>
-          <div class="mod-stage">测量工具链（提前开发） · 2026-09-21 ~ 2026-09-25</div>
-          <div class="mod-progress">
-            <div class="progress-bar"><div class="progress-fill" style="width:0%;background:#0F6E56"></div></div>
-            <span class="pct-text">0%</span>
-          </div>
-          <div class="mod-foot">
-            <span class="status st-todo">计划中</span>
-            <span class="mod-sub">0/3 子任务</span>
-          </div>
-        </a>        <a class="mod-card" href="tasks/T-P2C.html" style="border-top-color:#0F6E56">
-          <div class="mod-head">
-            <span class="mod-id">T-P2C</span>
-            
-            <span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层 · 工具</span>
-          </div>
-          <div class="mod-name">点圆测量工具</div>
-          <div class="mod-stage">测量工具链（提前开发） · 2026-09-28 ~ 2026-10-02</div>
-          <div class="mod-progress">
-            <div class="progress-bar"><div class="progress-fill" style="width:0%;background:#0F6E56"></div></div>
-            <span class="pct-text">0%</span>
-          </div>
-          <div class="mod-foot">
-            <span class="status st-todo">计划中</span>
-            <span class="mod-sub">0/3 子任务</span>
-          </div>
-        </a>        <a class="mod-card" href="tasks/T-L2L.html" style="border-top-color:#0F6E56">
-          <div class="mod-head">
-            <span class="mod-id">T-L2L</span>
-            
-            <span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层 · 工具</span>
-          </div>
-          <div class="mod-name">线线测量工具</div>
-          <div class="mod-stage">测量工具链（提前开发） · 2026-10-05 ~ 2026-10-09</div>
-          <div class="mod-progress">
-            <div class="progress-bar"><div class="progress-fill" style="width:0%;background:#0F6E56"></div></div>
-            <span class="pct-text">0%</span>
-          </div>
-          <div class="mod-foot">
-            <span class="status st-todo">计划中</span>
-            <span class="mod-sub">0/3 子任务</span>
-          </div>
-        </a>        <a class="mod-card" href="tasks/T-L2C.html" style="border-top-color:#0F6E56">
-          <div class="mod-head">
-            <span class="mod-id">T-L2C</span>
-            
-            <span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层 · 工具</span>
-          </div>
-          <div class="mod-name">线圆测量工具</div>
-          <div class="mod-stage">测量工具链（提前开发） · 2026-10-12 ~ 2026-10-16</div>
-          <div class="mod-progress">
-            <div class="progress-bar"><div class="progress-fill" style="width:0%;background:#0F6E56"></div></div>
-            <span class="pct-text">0%</span>
-          </div>
-          <div class="mod-foot">
-            <span class="status st-todo">计划中</span>
-            <span class="mod-sub">0/3 子任务</span>
-          </div>
-        </a>        <a class="mod-card" href="tasks/T-C2C.html" style="border-top-color:#0F6E56">
-          <div class="mod-head">
-            <span class="mod-id">T-C2C</span>
-            
-            <span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层 · 工具</span>
-          </div>
-          <div class="mod-name">圆圆测量工具</div>
-          <div class="mod-stage">测量工具链（提前开发） · 2026-10-19 ~ 2026-10-23</div>
-          <div class="mod-progress">
-            <div class="progress-bar"><div class="progress-fill" style="width:0%;background:#0F6E56"></div></div>
-            <span class="pct-text">0%</span>
-          </div>
-          <div class="mod-foot">
-            <span class="status st-todo">计划中</span>
-            <span class="mod-sub">0/3 子任务</span>
-          </div>
-        </a>        <a class="mod-card" href="tasks/T-SUBROUTINE.html" style="border-top-color:#0F6E56">
-          <div class="mod-head">
-            <span class="mod-id">T-SUBROUTINE</span>
-            
-            <span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层 · 工具</span>
-          </div>
-          <div class="mod-name">子程序工具（流程控制）</div>
-          <div class="mod-stage"> · 2027-01-04 ~ 2027-01-15</div>
-          <div class="mod-progress">
-            <div class="progress-bar"><div class="progress-fill" style="width:100%;background:#0F6E56"></div></div>
-            <span class="pct-text">100%</span>
-          </div>
-          <div class="mod-foot">
-            <span class="status st-done">已完成</span>
-            <span class="mod-sub">4/4 子任务</span>
-          </div>
-        </a>        <a class="mod-card" href="tasks/T-CONDITION.html" style="border-top-color:#0F6E56">
-          <div class="mod-head">
-            <span class="mod-id">T-CONDITION</span>
-            
-            <span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层 · 工具</span>
-          </div>
-          <div class="mod-name">条件分支工具（流程控制）</div>
-          <div class="mod-stage">条件分支工具完善与测试 · 2026-09-07 ~ 2026-09-11</div>
-          <div class="mod-progress">
-            <div class="progress-bar"><div class="progress-fill" style="width:67%;background:#0F6E56"></div></div>
-            <span class="pct-text">67%</span>
-          </div>
-          <div class="mod-foot">
-            <span class="status st-progress">进行中</span>
-            <span class="mod-sub">4/6 子任务</span>
+            <span class="mod-sub">0/7 子任务</span>
           </div>
         </a>        <a class="mod-card" href="tasks/T-SCRIPT.html" style="border-top-color:#0F6E56">
           <div class="mod-head">
@@ -1222,6 +1288,22 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
           <div class="mod-foot">
             <span class="status st-done">已完成</span>
             <span class="mod-sub">3/3 子任务</span>
+          </div>
+        </a>        <a class="mod-card" href="tasks/T-SUBROUTINE.html" style="border-top-color:#0F6E56">
+          <div class="mod-head">
+            <span class="mod-id">T-SUBROUTINE</span>
+            
+            <span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层 · 工具</span>
+          </div>
+          <div class="mod-name">子程序工具（流程控制）</div>
+          <div class="mod-stage"> · 2027-01-04 ~ 2027-01-15</div>
+          <div class="mod-progress">
+            <div class="progress-bar"><div class="progress-fill" style="width:100%;background:#0F6E56"></div></div>
+            <span class="pct-text">100%</span>
+          </div>
+          <div class="mod-foot">
+            <span class="status st-done">已完成</span>
+            <span class="mod-sub">4/4 子任务</span>
           </div>
         </a>        <a class="mod-card" href="tasks/T-CONVERT.html" style="border-top-color:#0F6E56">
           <div class="mod-head">
@@ -1255,38 +1337,6 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
             <span class="status st-todo">计划中</span>
             <span class="mod-sub">0/3 子任务</span>
           </div>
-        </a>        <a class="mod-card" href="tasks/T-IMGCAPTURE.html" style="border-top-color:#0F6E56">
-          <div class="mod-head">
-            <span class="mod-id">T-IMGCAPTURE</span>
-            
-            <span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层 · 工具</span>
-          </div>
-          <div class="mod-name">相机采集工具（工作流图像源）</div>
-          <div class="mod-stage">图像源与通信工具 · 2026-12-07 ~ 2026-12-18</div>
-          <div class="mod-progress">
-            <div class="progress-bar"><div class="progress-fill" style="width:0%;background:#0F6E56"></div></div>
-            <span class="pct-text">0%</span>
-          </div>
-          <div class="mod-foot">
-            <span class="status st-todo">计划中</span>
-            <span class="mod-sub">0/3 子任务</span>
-          </div>
-        </a>        <a class="mod-card" href="tasks/T-COMMTOOL.html" style="border-top-color:#0F6E56">
-          <div class="mod-head">
-            <span class="mod-id">T-COMMTOOL</span>
-            
-            <span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层 · 工具</span>
-          </div>
-          <div class="mod-name">通用通信工具（OPC UA 优先）</div>
-          <div class="mod-stage">图像源与通信工具 · 2026-12-21 ~ 2027-01-15</div>
-          <div class="mod-progress">
-            <div class="progress-bar"><div class="progress-fill" style="width:0%;background:#0F6E56"></div></div>
-            <span class="pct-text">0%</span>
-          </div>
-          <div class="mod-foot">
-            <span class="status st-todo">计划中</span>
-            <span class="mod-sub">0/7 子任务</span>
-          </div>
         </a>
     </div>
     <div class="view-hidden" id="viewList">
@@ -1295,22 +1345,7 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
           <tr><th>ID</th><th>名称</th><th>层级</th><th>阶段</th><th>状态</th><th>进度</th><th>子任务</th><th>总工时</th><th></th></tr>
         </thead>
         <tbody>
-                      <tr>
-              <td class="td-id">M-HIST-CORE</td>
-              <td class="td-name"><a href="tasks/M-HIST-CORE.html" class="row-link">视觉基础框架（已完成）</a></td>
-              <td><span class="layer-tag" style="color:#185FA5;border-color:#185FA5">源码层</span> <span class="type-tag2">模块</span></td>
-              <td class="td-stage">历史开发（已完成，2026-01~07）</td>
-              <td><span class="status st-progress">补测试中</span></td>
-              <td>
-                <div class="row-progress">
-                  <div class="progress-bar" style="flex:1;min-width:60px"><div class="progress-fill" style="width:92%;background:#185FA5"></div></div>
-                  <span class="row-pct">92%</span>
-                </div>
-              </td>
-              <td class="td-sub">12/13</td>
-              <td class="td-hours">324h</td>
-              <td class="td-dep"><a class="row-go" href="tasks/M-HIST-CORE.html">打开 →</a></td>
-            </tr>            <tr>
+                      <tr class="layer-sep"><td colspan="9">源码层<span class="layer-sep-cnt">（25 个）</span></td></tr>            <tr>
               <td class="td-id">M-HIST-CANVAS</td>
               <td class="td-name"><a href="tasks/M-HIST-CANVAS.html" class="row-link">画布与工作流编辑器（已完成）</a></td>
               <td><span class="layer-tag" style="color:#185FA5;border-color:#185FA5">源码层</span> <span class="type-tag2">模块</span></td>
@@ -1325,6 +1360,21 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
               <td class="td-sub">17/17</td>
               <td class="td-hours">345h</td>
               <td class="td-dep"><a class="row-go" href="tasks/M-HIST-CANVAS.html">打开 →</a></td>
+            </tr>            <tr>
+              <td class="td-id">M-HIST-CORE</td>
+              <td class="td-name"><a href="tasks/M-HIST-CORE.html" class="row-link">视觉基础框架（已完成）</a></td>
+              <td><span class="layer-tag" style="color:#185FA5;border-color:#185FA5">源码层</span> <span class="type-tag2">模块</span></td>
+              <td class="td-stage">历史开发（已完成，2026-01~07）</td>
+              <td><span class="status st-progress">补测试中</span></td>
+              <td>
+                <div class="row-progress">
+                  <div class="progress-bar" style="flex:1;min-width:60px"><div class="progress-fill" style="width:92%;background:#185FA5"></div></div>
+                  <span class="row-pct">92%</span>
+                </div>
+              </td>
+              <td class="td-sub">12/13</td>
+              <td class="td-hours">324h</td>
+              <td class="td-dep"><a class="row-go" href="tasks/M-HIST-CORE.html">打开 →</a></td>
             </tr>            <tr>
               <td class="td-id">M-HIST-PATH</td>
               <td class="td-name"><a href="tasks/M-HIST-PATH.html" class="row-link">工作流路径算法开发（已完成）</a></td>
@@ -1356,6 +1406,36 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
               <td class="td-hours">155h</td>
               <td class="td-dep"><a class="row-go" href="tasks/M-HIST-PREVIEW.html">打开 →</a></td>
             </tr>            <tr>
+              <td class="td-id">M-HIST-SDKCTRL</td>
+              <td class="td-name"><a href="tasks/M-HIST-SDKCTRL.html" class="row-link">SDK 层控件开发（已完成）</a></td>
+              <td><span class="layer-tag" style="color:#185FA5;border-color:#185FA5">源码层</span> <span class="type-tag2">模块</span></td>
+              <td class="td-stage">历史开发（已完成，2026-01~07）</td>
+              <td><span class="status st-done">已完成</span></td>
+              <td>
+                <div class="row-progress">
+                  <div class="progress-bar" style="flex:1;min-width:60px"><div class="progress-fill" style="width:100%;background:#185FA5"></div></div>
+                  <span class="row-pct">100%</span>
+                </div>
+              </td>
+              <td class="td-sub">5/5</td>
+              <td class="td-hours">175h</td>
+              <td class="td-dep"><a class="row-go" href="tasks/M-HIST-SDKCTRL.html">打开 →</a></td>
+            </tr>            <tr>
+              <td class="td-id">M-HIST-DATAMODEL</td>
+              <td class="td-name"><a href="tasks/M-HIST-DATAMODEL.html" class="row-link">源码层数据结构优化（已完成）</a></td>
+              <td><span class="layer-tag" style="color:#185FA5;border-color:#185FA5">源码层</span> <span class="type-tag2">模块</span></td>
+              <td class="td-stage">历史开发（已完成，2026-01~07）</td>
+              <td><span class="status st-done">已完成</span></td>
+              <td>
+                <div class="row-progress">
+                  <div class="progress-bar" style="flex:1;min-width:60px"><div class="progress-fill" style="width:100%;background:#185FA5"></div></div>
+                  <span class="row-pct">100%</span>
+                </div>
+              </td>
+              <td class="td-sub">6/6</td>
+              <td class="td-hours">150h</td>
+              <td class="td-dep"><a class="row-go" href="tasks/M-HIST-DATAMODEL.html">打开 →</a></td>
+            </tr>            <tr>
               <td class="td-id">M-HIST-SOLUTION</td>
               <td class="td-name"><a href="tasks/M-HIST-SOLUTION.html" class="row-link">解决方案系统（已完成）</a></td>
               <td><span class="layer-tag" style="color:#185FA5;border-color:#185FA5">源码层</span> <span class="type-tag2">模块</span></td>
@@ -1370,6 +1450,21 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
               <td class="td-sub">10/10</td>
               <td class="td-hours">180h</td>
               <td class="td-dep"><a class="row-go" href="tasks/M-HIST-SOLUTION.html">打开 →</a></td>
+            </tr>            <tr>
+              <td class="td-id">M-HIST-RESULTTREE</td>
+              <td class="td-name"><a href="tasks/M-HIST-RESULTTREE.html" class="row-link">数据绑定树与模块结果树（已完成）</a></td>
+              <td><span class="layer-tag" style="color:#185FA5;border-color:#185FA5">源码层</span> <span class="type-tag2">模块</span></td>
+              <td class="td-stage">历史开发（已完成，2026-01~07）</td>
+              <td><span class="status st-done">已完成</span></td>
+              <td>
+                <div class="row-progress">
+                  <div class="progress-bar" style="flex:1;min-width:60px"><div class="progress-fill" style="width:100%;background:#185FA5"></div></div>
+                  <span class="row-pct">100%</span>
+                </div>
+              </td>
+              <td class="td-sub">7/7</td>
+              <td class="td-hours">129h</td>
+              <td class="td-dep"><a class="row-go" href="tasks/M-HIST-RESULTTREE.html">打开 →</a></td>
             </tr>            <tr>
               <td class="td-id">M-HIST-CVENGINE</td>
               <td class="td-name"><a href="tasks/M-HIST-CVENGINE.html" class="row-link">CvEngine 算法引擎（基础完成，Halcon 对标进行中）</a></td>
@@ -1401,21 +1496,6 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
               <td class="td-hours">105h</td>
               <td class="td-dep"><a class="row-go" href="tasks/M-HIST-PARAM.html">打开 →</a></td>
             </tr>            <tr>
-              <td class="td-id">M-HIST-RESULTTREE</td>
-              <td class="td-name"><a href="tasks/M-HIST-RESULTTREE.html" class="row-link">数据绑定树与模块结果树（已完成）</a></td>
-              <td><span class="layer-tag" style="color:#185FA5;border-color:#185FA5">源码层</span> <span class="type-tag2">模块</span></td>
-              <td class="td-stage">历史开发（已完成，2026-01~07）</td>
-              <td><span class="status st-done">已完成</span></td>
-              <td>
-                <div class="row-progress">
-                  <div class="progress-bar" style="flex:1;min-width:60px"><div class="progress-fill" style="width:100%;background:#185FA5"></div></div>
-                  <span class="row-pct">100%</span>
-                </div>
-              </td>
-              <td class="td-sub">7/7</td>
-              <td class="td-hours">129h</td>
-              <td class="td-dep"><a class="row-go" href="tasks/M-HIST-RESULTTREE.html">打开 →</a></td>
-            </tr>            <tr>
               <td class="td-id">M-HIST-REGION</td>
               <td class="td-name"><a href="tasks/M-HIST-REGION.html" class="row-link">区域与 RoI 系统（已完成）</a></td>
               <td><span class="layer-tag" style="color:#185FA5;border-color:#185FA5">源码层</span> <span class="type-tag2">模块</span></td>
@@ -1430,6 +1510,21 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
               <td class="td-sub">8/8</td>
               <td class="td-hours">110h</td>
               <td class="td-dep"><a class="row-go" href="tasks/M-HIST-REGION.html">打开 →</a></td>
+            </tr>            <tr>
+              <td class="td-id">M-HIST-GLOBALVAR</td>
+              <td class="td-name"><a href="tasks/M-HIST-GLOBALVAR.html" class="row-link">全局变量管理（已完成基础，测试待补）</a></td>
+              <td><span class="layer-tag" style="color:#185FA5;border-color:#185FA5">源码层</span> <span class="type-tag2">模块</span></td>
+              <td class="td-stage">历史开发（已完成，2026-01~07）</td>
+              <td><span class="status st-progress">补测试中</span></td>
+              <td>
+                <div class="row-progress">
+                  <div class="progress-bar" style="flex:1;min-width:60px"><div class="progress-fill" style="width:83%;background:#185FA5"></div></div>
+                  <span class="row-pct">83%</span>
+                </div>
+              </td>
+              <td class="td-sub">5/6</td>
+              <td class="td-hours">114h</td>
+              <td class="td-dep"><a class="row-go" href="tasks/M-HIST-GLOBALVAR.html">打开 →</a></td>
             </tr>            <tr>
               <td class="td-id">M-HIST-MATCH</td>
               <td class="td-name"><a href="tasks/M-HIST-MATCH.html" class="row-link">ShapeMatch 轮廓匹配（已完成基础）</a></td>
@@ -1476,36 +1571,6 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
               <td class="td-hours">120h</td>
               <td class="td-dep"><a class="row-go" href="tasks/M-HIST-CONTRACT.html">打开 →</a></td>
             </tr>            <tr>
-              <td class="td-id">M-HIST-SDKCTRL</td>
-              <td class="td-name"><a href="tasks/M-HIST-SDKCTRL.html" class="row-link">SDK 层控件开发（已完成）</a></td>
-              <td><span class="layer-tag" style="color:#185FA5;border-color:#185FA5">源码层</span> <span class="type-tag2">模块</span></td>
-              <td class="td-stage">历史开发（已完成，2026-01~07）</td>
-              <td><span class="status st-done">已完成</span></td>
-              <td>
-                <div class="row-progress">
-                  <div class="progress-bar" style="flex:1;min-width:60px"><div class="progress-fill" style="width:100%;background:#185FA5"></div></div>
-                  <span class="row-pct">100%</span>
-                </div>
-              </td>
-              <td class="td-sub">5/5</td>
-              <td class="td-hours">175h</td>
-              <td class="td-dep"><a class="row-go" href="tasks/M-HIST-SDKCTRL.html">打开 →</a></td>
-            </tr>            <tr>
-              <td class="td-id">M-HIST-DATAMODEL</td>
-              <td class="td-name"><a href="tasks/M-HIST-DATAMODEL.html" class="row-link">源码层数据结构优化（已完成）</a></td>
-              <td><span class="layer-tag" style="color:#185FA5;border-color:#185FA5">源码层</span> <span class="type-tag2">模块</span></td>
-              <td class="td-stage">历史开发（已完成，2026-01~07）</td>
-              <td><span class="status st-done">已完成</span></td>
-              <td>
-                <div class="row-progress">
-                  <div class="progress-bar" style="flex:1;min-width:60px"><div class="progress-fill" style="width:100%;background:#185FA5"></div></div>
-                  <span class="row-pct">100%</span>
-                </div>
-              </td>
-              <td class="td-sub">6/6</td>
-              <td class="td-hours">150h</td>
-              <td class="td-dep"><a class="row-go" href="tasks/M-HIST-DATAMODEL.html">打开 →</a></td>
-            </tr>            <tr>
               <td class="td-id">M-SRC-UI</td>
               <td class="td-name"><a href="tasks/M-SRC-UI.html" class="row-link">源码层 UI 项目优化</a></td>
               <td><span class="layer-tag" style="color:#185FA5;border-color:#185FA5">源码层</span> <span class="type-tag2">模块</span></td>
@@ -1521,35 +1586,20 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
               <td class="td-hours">220h</td>
               <td class="td-dep"><a class="row-go" href="tasks/M-SRC-UI.html">打开 →</a></td>
             </tr>            <tr>
-              <td class="td-id">M-HIST-GLOBALVAR</td>
-              <td class="td-name"><a href="tasks/M-HIST-GLOBALVAR.html" class="row-link">全局变量管理（已完成基础，测试待补）</a></td>
+              <td class="td-id">M-SRC-TEST</td>
+              <td class="td-name"><a href="tasks/M-SRC-TEST.html" class="row-link">测试体系完善（消除假测试/补覆盖/建分层）</a></td>
               <td><span class="layer-tag" style="color:#185FA5;border-color:#185FA5">源码层</span> <span class="type-tag2">模块</span></td>
-              <td class="td-stage">历史开发（已完成，2026-01~07）</td>
-              <td><span class="status st-progress">补测试中</span></td>
-              <td>
-                <div class="row-progress">
-                  <div class="progress-bar" style="flex:1;min-width:60px"><div class="progress-fill" style="width:83%;background:#185FA5"></div></div>
-                  <span class="row-pct">83%</span>
-                </div>
-              </td>
-              <td class="td-sub">5/6</td>
-              <td class="td-hours">114h</td>
-              <td class="td-dep"><a class="row-go" href="tasks/M-HIST-GLOBALVAR.html">打开 →</a></td>
-            </tr>            <tr>
-              <td class="td-id">M-SRC-CAM</td>
-              <td class="td-name"><a href="tasks/M-SRC-CAM.html" class="row-link">相机管理</a></td>
-              <td><span class="layer-tag" style="color:#185FA5;border-color:#185FA5">源码层</span> <span class="type-tag2">模块</span></td>
-              <td class="td-stage">相机管理与通讯管理</td>
-              <td><span class="status st-todo">计划中</span></td>
+              <td class="td-stage">测试体系完善</td>
+              <td><span class="status st-progress">进行中</span></td>
               <td>
                 <div class="row-progress">
                   <div class="progress-bar" style="flex:1;min-width:60px"><div class="progress-fill" style="width:0%;background:#185FA5"></div></div>
                   <span class="row-pct">0%</span>
                 </div>
               </td>
-              <td class="td-sub">0/4</td>
-              <td class="td-hours">60h</td>
-              <td class="td-dep"><a class="row-go" href="tasks/M-SRC-CAM.html">打开 →</a></td>
+              <td class="td-sub">0/7</td>
+              <td class="td-hours">100h</td>
+              <td class="td-dep"><a class="row-go" href="tasks/M-SRC-TEST.html">打开 →</a></td>
             </tr>            <tr>
               <td class="td-id">M-SRC-CAL</td>
               <td class="td-name"><a href="tasks/M-SRC-CAL.html" class="row-link">相机标定服务</a></td>
@@ -1581,10 +1631,10 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
               <td class="td-hours">48h</td>
               <td class="td-dep"><a class="row-go" href="tasks/M-SRC-HECAL.html">打开 →</a></td>
             </tr>            <tr>
-              <td class="td-id">M-SRC-POSE</td>
-              <td class="td-name"><a href="tasks/M-SRC-POSE.html" class="row-link">位姿输出契约</a></td>
+              <td class="td-id">M-SRC-CAM</td>
+              <td class="td-name"><a href="tasks/M-SRC-CAM.html" class="row-link">相机管理</a></td>
               <td><span class="layer-tag" style="color:#185FA5;border-color:#185FA5">源码层</span> <span class="type-tag2">模块</span></td>
-              <td class="td-stage">定位工具链</td>
+              <td class="td-stage">相机管理与通讯管理</td>
               <td><span class="status st-todo">计划中</span></td>
               <td>
                 <div class="row-progress">
@@ -1592,9 +1642,9 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
                   <span class="row-pct">0%</span>
                 </div>
               </td>
-              <td class="td-sub">0/2</td>
-              <td class="td-hours">20h</td>
-              <td class="td-dep"><a class="row-go" href="tasks/M-SRC-POSE.html">打开 →</a></td>
+              <td class="td-sub">0/4</td>
+              <td class="td-hours">60h</td>
+              <td class="td-dep"><a class="row-go" href="tasks/M-SRC-CAM.html">打开 →</a></td>
             </tr>            <tr>
               <td class="td-id">M-SRC-COMM</td>
               <td class="td-name"><a href="tasks/M-SRC-COMM.html" class="row-link">通讯管理</a></td>
@@ -1611,10 +1661,10 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
               <td class="td-hours">76h</td>
               <td class="td-dep"><a class="row-go" href="tasks/M-SRC-COMM.html">打开 →</a></td>
             </tr>            <tr>
-              <td class="td-id">M-SRC-RUNUI</td>
-              <td class="td-name"><a href="tasks/M-SRC-RUNUI.html" class="row-link">可配置运行 UI</a></td>
+              <td class="td-id">M-SRC-POSE</td>
+              <td class="td-name"><a href="tasks/M-SRC-POSE.html" class="row-link">位姿输出契约</a></td>
               <td><span class="layer-tag" style="color:#185FA5;border-color:#185FA5">源码层</span> <span class="type-tag2">模块</span></td>
-              <td class="td-stage">可配置运行 UI</td>
+              <td class="td-stage">定位工具链</td>
               <td><span class="status st-todo">计划中</span></td>
               <td>
                 <div class="row-progress">
@@ -1622,9 +1672,9 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
                   <span class="row-pct">0%</span>
                 </div>
               </td>
-              <td class="td-sub">0/6</td>
-              <td class="td-hours">120h</td>
-              <td class="td-dep"><a class="row-go" href="tasks/M-SRC-RUNUI.html">打开 →</a></td>
+              <td class="td-sub">0/2</td>
+              <td class="td-hours">20h</td>
+              <td class="td-dep"><a class="row-go" href="tasks/M-SRC-POSE.html">打开 →</a></td>
             </tr>            <tr>
               <td class="td-id">M-SRC-INTEG</td>
               <td class="td-name"><a href="tasks/M-SRC-INTEG.html" class="row-link">端到端联调</a></td>
@@ -1641,20 +1691,20 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
               <td class="td-hours">68h</td>
               <td class="td-dep"><a class="row-go" href="tasks/M-SRC-INTEG.html">打开 →</a></td>
             </tr>            <tr>
-              <td class="td-id">M-SRC-TEST</td>
-              <td class="td-name"><a href="tasks/M-SRC-TEST.html" class="row-link">测试体系完善（消除假测试/补覆盖/建分层）</a></td>
+              <td class="td-id">M-SRC-RUNUI</td>
+              <td class="td-name"><a href="tasks/M-SRC-RUNUI.html" class="row-link">可配置运行 UI</a></td>
               <td><span class="layer-tag" style="color:#185FA5;border-color:#185FA5">源码层</span> <span class="type-tag2">模块</span></td>
-              <td class="td-stage">测试体系完善</td>
-              <td><span class="status st-progress">进行中</span></td>
+              <td class="td-stage">可配置运行 UI</td>
+              <td><span class="status st-todo">计划中</span></td>
               <td>
                 <div class="row-progress">
                   <div class="progress-bar" style="flex:1;min-width:60px"><div class="progress-fill" style="width:0%;background:#185FA5"></div></div>
                   <span class="row-pct">0%</span>
                 </div>
               </td>
-              <td class="td-sub">0/7</td>
-              <td class="td-hours">100h</td>
-              <td class="td-dep"><a class="row-go" href="tasks/M-SRC-TEST.html">打开 →</a></td>
+              <td class="td-sub">0/6</td>
+              <td class="td-hours">120h</td>
+              <td class="td-dep"><a class="row-go" href="tasks/M-SRC-RUNUI.html">打开 →</a></td>
             </tr>            <tr>
               <td class="td-id">M-SRC-DELIVERY</td>
               <td class="td-name"><a href="tasks/M-SRC-DELIVERY.html" class="row-link">交付与上线</a></td>
@@ -1670,6 +1720,126 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
               <td class="td-sub">0/3</td>
               <td class="td-hours">36h</td>
               <td class="td-dep"><a class="row-go" href="tasks/M-SRC-DELIVERY.html">打开 →</a></td>
+            </tr>            <tr class="layer-sep"><td colspan="9">工具层<span class="layer-sep-cnt">（28 个）</span></td></tr>            <tr>
+              <td class="td-id">T-THRESHOLD</td>
+              <td class="td-name"><a href="tasks/T-THRESHOLD.html" class="row-link">阈值工具</a></td>
+              <td><span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层</span> <span class="type-tag2">工具</span></td>
+              <td class="td-stage">历史开发（已完成，2026-01~07）</td>
+              <td><span class="status st-done">已完成</span></td>
+              <td>
+                <div class="row-progress">
+                  <div class="progress-bar" style="flex:1;min-width:60px"><div class="progress-fill" style="width:100%;background:#0F6E56"></div></div>
+                  <span class="row-pct">100%</span>
+                </div>
+              </td>
+              <td class="td-sub">3/3</td>
+              <td class="td-hours">36h</td>
+              <td class="td-dep"><a class="row-go" href="tasks/T-THRESHOLD.html">打开 →</a></td>
+            </tr>            <tr>
+              <td class="td-id">T-IMAGELOAD</td>
+              <td class="td-name"><a href="tasks/T-IMAGELOAD.html" class="row-link">图像加载工具</a></td>
+              <td><span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层</span> <span class="type-tag2">工具</span></td>
+              <td class="td-stage">历史开发（已完成，2026-01~07）</td>
+              <td><span class="status st-done">已完成</span></td>
+              <td>
+                <div class="row-progress">
+                  <div class="progress-bar" style="flex:1;min-width:60px"><div class="progress-fill" style="width:100%;background:#0F6E56"></div></div>
+                  <span class="row-pct">100%</span>
+                </div>
+              </td>
+              <td class="td-sub">3/3</td>
+              <td class="td-hours">36h</td>
+              <td class="td-dep"><a class="row-go" href="tasks/T-IMAGELOAD.html">打开 →</a></td>
+            </tr>            <tr>
+              <td class="td-id">T-IMAGEFILTER</td>
+              <td class="td-name"><a href="tasks/T-IMAGEFILTER.html" class="row-link">图像滤波工具</a></td>
+              <td><span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层</span> <span class="type-tag2">工具</span></td>
+              <td class="td-stage">历史开发（已完成，2026-01~07）</td>
+              <td><span class="status st-done">已完成</span></td>
+              <td>
+                <div class="row-progress">
+                  <div class="progress-bar" style="flex:1;min-width:60px"><div class="progress-fill" style="width:100%;background:#0F6E56"></div></div>
+                  <span class="row-pct">100%</span>
+                </div>
+              </td>
+              <td class="td-sub">3/3</td>
+              <td class="td-hours">36h</td>
+              <td class="td-dep"><a class="row-go" href="tasks/T-IMAGEFILTER.html">打开 →</a></td>
+            </tr>            <tr>
+              <td class="td-id">T-IMAGETHRESHOLD</td>
+              <td class="td-name"><a href="tasks/T-IMAGETHRESHOLD.html" class="row-link">图像阈值工具</a></td>
+              <td><span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层</span> <span class="type-tag2">工具</span></td>
+              <td class="td-stage">历史开发（已完成，2026-01~07）</td>
+              <td><span class="status st-done">已完成</span></td>
+              <td>
+                <div class="row-progress">
+                  <div class="progress-bar" style="flex:1;min-width:60px"><div class="progress-fill" style="width:100%;background:#0F6E56"></div></div>
+                  <span class="row-pct">100%</span>
+                </div>
+              </td>
+              <td class="td-sub">3/3</td>
+              <td class="td-hours">36h</td>
+              <td class="td-dep"><a class="row-go" href="tasks/T-IMAGETHRESHOLD.html">打开 →</a></td>
+            </tr>            <tr>
+              <td class="td-id">T-MORPHOLOGY</td>
+              <td class="td-name"><a href="tasks/T-MORPHOLOGY.html" class="row-link">形态学工具</a></td>
+              <td><span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层</span> <span class="type-tag2">工具</span></td>
+              <td class="td-stage">历史开发（已完成，2026-01~07）</td>
+              <td><span class="status st-done">已完成</span></td>
+              <td>
+                <div class="row-progress">
+                  <div class="progress-bar" style="flex:1;min-width:60px"><div class="progress-fill" style="width:100%;background:#0F6E56"></div></div>
+                  <span class="row-pct">100%</span>
+                </div>
+              </td>
+              <td class="td-sub">3/3</td>
+              <td class="td-hours">36h</td>
+              <td class="td-dep"><a class="row-go" href="tasks/T-MORPHOLOGY.html">打开 →</a></td>
+            </tr>            <tr>
+              <td class="td-id">T-CONDITION</td>
+              <td class="td-name"><a href="tasks/T-CONDITION.html" class="row-link">条件分支工具（流程控制）</a></td>
+              <td><span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层</span> <span class="type-tag2">工具</span></td>
+              <td class="td-stage">条件分支工具完善与测试</td>
+              <td><span class="status st-progress">进行中</span></td>
+              <td>
+                <div class="row-progress">
+                  <div class="progress-bar" style="flex:1;min-width:60px"><div class="progress-fill" style="width:67%;background:#0F6E56"></div></div>
+                  <span class="row-pct">67%</span>
+                </div>
+              </td>
+              <td class="td-sub">4/6</td>
+              <td class="td-hours">88h</td>
+              <td class="td-dep"><a class="row-go" href="tasks/T-CONDITION.html">打开 →</a></td>
+            </tr>            <tr>
+              <td class="td-id">T-P2P</td>
+              <td class="td-name"><a href="tasks/T-P2P.html" class="row-link">点点测量工具</a></td>
+              <td><span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层</span> <span class="type-tag2">工具</span></td>
+              <td class="td-stage">测量工具链（提前开发）</td>
+              <td><span class="status st-todo">计划中</span></td>
+              <td>
+                <div class="row-progress">
+                  <div class="progress-bar" style="flex:1;min-width:60px"><div class="progress-fill" style="width:0%;background:#0F6E56"></div></div>
+                  <span class="row-pct">0%</span>
+                </div>
+              </td>
+              <td class="td-sub">0/3</td>
+              <td class="td-hours">28h</td>
+              <td class="td-dep"><a class="row-go" href="tasks/T-P2P.html">打开 →</a></td>
+            </tr>            <tr>
+              <td class="td-id">T-P2L</td>
+              <td class="td-name"><a href="tasks/T-P2L.html" class="row-link">点线测量工具</a></td>
+              <td><span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层</span> <span class="type-tag2">工具</span></td>
+              <td class="td-stage">测量工具链（提前开发）</td>
+              <td><span class="status st-todo">计划中</span></td>
+              <td>
+                <div class="row-progress">
+                  <div class="progress-bar" style="flex:1;min-width:60px"><div class="progress-fill" style="width:0%;background:#0F6E56"></div></div>
+                  <span class="row-pct">0%</span>
+                </div>
+              </td>
+              <td class="td-sub">0/3</td>
+              <td class="td-hours">28h</td>
+              <td class="td-dep"><a class="row-go" href="tasks/T-P2L.html">打开 →</a></td>
             </tr>            <tr>
               <td class="td-id">T-CALIBPLATE</td>
               <td class="td-name"><a href="tasks/T-CALIBPLATE.html" class="row-link">标定板工具</a></td>
@@ -1686,6 +1856,51 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
               <td class="td-hours">36h</td>
               <td class="td-dep"><a class="row-go" href="tasks/T-CALIBPLATE.html">打开 →</a></td>
             </tr>            <tr>
+              <td class="td-id">T-P2C</td>
+              <td class="td-name"><a href="tasks/T-P2C.html" class="row-link">点圆测量工具</a></td>
+              <td><span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层</span> <span class="type-tag2">工具</span></td>
+              <td class="td-stage">测量工具链（提前开发）</td>
+              <td><span class="status st-todo">计划中</span></td>
+              <td>
+                <div class="row-progress">
+                  <div class="progress-bar" style="flex:1;min-width:60px"><div class="progress-fill" style="width:0%;background:#0F6E56"></div></div>
+                  <span class="row-pct">0%</span>
+                </div>
+              </td>
+              <td class="td-sub">0/3</td>
+              <td class="td-hours">28h</td>
+              <td class="td-dep"><a class="row-go" href="tasks/T-P2C.html">打开 →</a></td>
+            </tr>            <tr>
+              <td class="td-id">T-L2L</td>
+              <td class="td-name"><a href="tasks/T-L2L.html" class="row-link">线线测量工具</a></td>
+              <td><span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层</span> <span class="type-tag2">工具</span></td>
+              <td class="td-stage">测量工具链（提前开发）</td>
+              <td><span class="status st-todo">计划中</span></td>
+              <td>
+                <div class="row-progress">
+                  <div class="progress-bar" style="flex:1;min-width:60px"><div class="progress-fill" style="width:0%;background:#0F6E56"></div></div>
+                  <span class="row-pct">0%</span>
+                </div>
+              </td>
+              <td class="td-sub">0/3</td>
+              <td class="td-hours">28h</td>
+              <td class="td-dep"><a class="row-go" href="tasks/T-L2L.html">打开 →</a></td>
+            </tr>            <tr>
+              <td class="td-id">T-L2C</td>
+              <td class="td-name"><a href="tasks/T-L2C.html" class="row-link">线圆测量工具</a></td>
+              <td><span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层</span> <span class="type-tag2">工具</span></td>
+              <td class="td-stage">测量工具链（提前开发）</td>
+              <td><span class="status st-todo">计划中</span></td>
+              <td>
+                <div class="row-progress">
+                  <div class="progress-bar" style="flex:1;min-width:60px"><div class="progress-fill" style="width:0%;background:#0F6E56"></div></div>
+                  <span class="row-pct">0%</span>
+                </div>
+              </td>
+              <td class="td-sub">0/3</td>
+              <td class="td-hours">28h</td>
+              <td class="td-dep"><a class="row-go" href="tasks/T-L2C.html">打开 →</a></td>
+            </tr>            <tr>
               <td class="td-id">T-UNDIST</td>
               <td class="td-name"><a href="tasks/T-UNDIST.html" class="row-link">畸变校正工具</a></td>
               <td><span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层</span> <span class="type-tag2">工具</span></td>
@@ -1700,6 +1915,21 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
               <td class="td-sub">0/3</td>
               <td class="td-hours">30h</td>
               <td class="td-dep"><a class="row-go" href="tasks/T-UNDIST.html">打开 →</a></td>
+            </tr>            <tr>
+              <td class="td-id">T-C2C</td>
+              <td class="td-name"><a href="tasks/T-C2C.html" class="row-link">圆圆测量工具</a></td>
+              <td><span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层</span> <span class="type-tag2">工具</span></td>
+              <td class="td-stage">测量工具链（提前开发）</td>
+              <td><span class="status st-todo">计划中</span></td>
+              <td>
+                <div class="row-progress">
+                  <div class="progress-bar" style="flex:1;min-width:60px"><div class="progress-fill" style="width:0%;background:#0F6E56"></div></div>
+                  <span class="row-pct">0%</span>
+                </div>
+              </td>
+              <td class="td-sub">0/3</td>
+              <td class="td-hours">28h</td>
+              <td class="td-dep"><a class="row-go" href="tasks/T-C2C.html">打开 →</a></td>
             </tr>            <tr>
               <td class="td-id">T-HECAP</td>
               <td class="td-name"><a href="tasks/T-HECAP.html" class="row-link">手眼标定采集工具</a></td>
@@ -1791,6 +2021,21 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
               <td class="td-hours">38h</td>
               <td class="td-dep"><a class="row-go" href="tasks/T-ARCCALIPER.html">打开 →</a></td>
             </tr>            <tr>
+              <td class="td-id">T-IMGCAPTURE</td>
+              <td class="td-name"><a href="tasks/T-IMGCAPTURE.html" class="row-link">相机采集工具（工作流图像源）</a></td>
+              <td><span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层</span> <span class="type-tag2">工具</span></td>
+              <td class="td-stage">图像源与通信工具</td>
+              <td><span class="status st-todo">计划中</span></td>
+              <td>
+                <div class="row-progress">
+                  <div class="progress-bar" style="flex:1;min-width:60px"><div class="progress-fill" style="width:0%;background:#0F6E56"></div></div>
+                  <span class="row-pct">0%</span>
+                </div>
+              </td>
+              <td class="td-sub">0/3</td>
+              <td class="td-hours">44h</td>
+              <td class="td-dep"><a class="row-go" href="tasks/T-IMGCAPTURE.html">打开 →</a></td>
+            </tr>            <tr>
               <td class="td-id">T-SHAPEMATCH</td>
               <td class="td-name"><a href="tasks/T-SHAPEMATCH.html" class="row-link">ShapeMatch 亚像素增强</a></td>
               <td><span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层</span> <span class="type-tag2">工具</span></td>
@@ -1821,10 +2066,10 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
               <td class="td-hours">28h</td>
               <td class="td-dep"><a class="row-go" href="tasks/T-BLOB.html">打开 →</a></td>
             </tr>            <tr>
-              <td class="td-id">T-P2P</td>
-              <td class="td-name"><a href="tasks/T-P2P.html" class="row-link">点点测量工具</a></td>
+              <td class="td-id">T-COMMTOOL</td>
+              <td class="td-name"><a href="tasks/T-COMMTOOL.html" class="row-link">通用通信工具（OPC UA 优先）</a></td>
               <td><span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层</span> <span class="type-tag2">工具</span></td>
-              <td class="td-stage">测量工具链（提前开发）</td>
+              <td class="td-stage">图像源与通信工具</td>
               <td><span class="status st-todo">计划中</span></td>
               <td>
                 <div class="row-progress">
@@ -1832,114 +2077,9 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
                   <span class="row-pct">0%</span>
                 </div>
               </td>
-              <td class="td-sub">0/3</td>
-              <td class="td-hours">28h</td>
-              <td class="td-dep"><a class="row-go" href="tasks/T-P2P.html">打开 →</a></td>
-            </tr>            <tr>
-              <td class="td-id">T-P2L</td>
-              <td class="td-name"><a href="tasks/T-P2L.html" class="row-link">点线测量工具</a></td>
-              <td><span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层</span> <span class="type-tag2">工具</span></td>
-              <td class="td-stage">测量工具链（提前开发）</td>
-              <td><span class="status st-todo">计划中</span></td>
-              <td>
-                <div class="row-progress">
-                  <div class="progress-bar" style="flex:1;min-width:60px"><div class="progress-fill" style="width:0%;background:#0F6E56"></div></div>
-                  <span class="row-pct">0%</span>
-                </div>
-              </td>
-              <td class="td-sub">0/3</td>
-              <td class="td-hours">28h</td>
-              <td class="td-dep"><a class="row-go" href="tasks/T-P2L.html">打开 →</a></td>
-            </tr>            <tr>
-              <td class="td-id">T-P2C</td>
-              <td class="td-name"><a href="tasks/T-P2C.html" class="row-link">点圆测量工具</a></td>
-              <td><span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层</span> <span class="type-tag2">工具</span></td>
-              <td class="td-stage">测量工具链（提前开发）</td>
-              <td><span class="status st-todo">计划中</span></td>
-              <td>
-                <div class="row-progress">
-                  <div class="progress-bar" style="flex:1;min-width:60px"><div class="progress-fill" style="width:0%;background:#0F6E56"></div></div>
-                  <span class="row-pct">0%</span>
-                </div>
-              </td>
-              <td class="td-sub">0/3</td>
-              <td class="td-hours">28h</td>
-              <td class="td-dep"><a class="row-go" href="tasks/T-P2C.html">打开 →</a></td>
-            </tr>            <tr>
-              <td class="td-id">T-L2L</td>
-              <td class="td-name"><a href="tasks/T-L2L.html" class="row-link">线线测量工具</a></td>
-              <td><span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层</span> <span class="type-tag2">工具</span></td>
-              <td class="td-stage">测量工具链（提前开发）</td>
-              <td><span class="status st-todo">计划中</span></td>
-              <td>
-                <div class="row-progress">
-                  <div class="progress-bar" style="flex:1;min-width:60px"><div class="progress-fill" style="width:0%;background:#0F6E56"></div></div>
-                  <span class="row-pct">0%</span>
-                </div>
-              </td>
-              <td class="td-sub">0/3</td>
-              <td class="td-hours">28h</td>
-              <td class="td-dep"><a class="row-go" href="tasks/T-L2L.html">打开 →</a></td>
-            </tr>            <tr>
-              <td class="td-id">T-L2C</td>
-              <td class="td-name"><a href="tasks/T-L2C.html" class="row-link">线圆测量工具</a></td>
-              <td><span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层</span> <span class="type-tag2">工具</span></td>
-              <td class="td-stage">测量工具链（提前开发）</td>
-              <td><span class="status st-todo">计划中</span></td>
-              <td>
-                <div class="row-progress">
-                  <div class="progress-bar" style="flex:1;min-width:60px"><div class="progress-fill" style="width:0%;background:#0F6E56"></div></div>
-                  <span class="row-pct">0%</span>
-                </div>
-              </td>
-              <td class="td-sub">0/3</td>
-              <td class="td-hours">28h</td>
-              <td class="td-dep"><a class="row-go" href="tasks/T-L2C.html">打开 →</a></td>
-            </tr>            <tr>
-              <td class="td-id">T-C2C</td>
-              <td class="td-name"><a href="tasks/T-C2C.html" class="row-link">圆圆测量工具</a></td>
-              <td><span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层</span> <span class="type-tag2">工具</span></td>
-              <td class="td-stage">测量工具链（提前开发）</td>
-              <td><span class="status st-todo">计划中</span></td>
-              <td>
-                <div class="row-progress">
-                  <div class="progress-bar" style="flex:1;min-width:60px"><div class="progress-fill" style="width:0%;background:#0F6E56"></div></div>
-                  <span class="row-pct">0%</span>
-                </div>
-              </td>
-              <td class="td-sub">0/3</td>
-              <td class="td-hours">28h</td>
-              <td class="td-dep"><a class="row-go" href="tasks/T-C2C.html">打开 →</a></td>
-            </tr>            <tr>
-              <td class="td-id">T-SUBROUTINE</td>
-              <td class="td-name"><a href="tasks/T-SUBROUTINE.html" class="row-link">子程序工具（流程控制）</a></td>
-              <td><span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层</span> <span class="type-tag2">工具</span></td>
-              <td class="td-stage"></td>
-              <td><span class="status st-done">已完成</span></td>
-              <td>
-                <div class="row-progress">
-                  <div class="progress-bar" style="flex:1;min-width:60px"><div class="progress-fill" style="width:100%;background:#0F6E56"></div></div>
-                  <span class="row-pct">100%</span>
-                </div>
-              </td>
-              <td class="td-sub">4/4</td>
-              <td class="td-hours">84h</td>
-              <td class="td-dep"><a class="row-go" href="tasks/T-SUBROUTINE.html">打开 →</a></td>
-            </tr>            <tr>
-              <td class="td-id">T-CONDITION</td>
-              <td class="td-name"><a href="tasks/T-CONDITION.html" class="row-link">条件分支工具（流程控制）</a></td>
-              <td><span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层</span> <span class="type-tag2">工具</span></td>
-              <td class="td-stage">条件分支工具完善与测试</td>
-              <td><span class="status st-progress">进行中</span></td>
-              <td>
-                <div class="row-progress">
-                  <div class="progress-bar" style="flex:1;min-width:60px"><div class="progress-fill" style="width:67%;background:#0F6E56"></div></div>
-                  <span class="row-pct">67%</span>
-                </div>
-              </td>
-              <td class="td-sub">4/6</td>
-              <td class="td-hours">88h</td>
-              <td class="td-dep"><a class="row-go" href="tasks/T-CONDITION.html">打开 →</a></td>
+              <td class="td-sub">0/7</td>
+              <td class="td-hours">112h</td>
+              <td class="td-dep"><a class="row-go" href="tasks/T-COMMTOOL.html">打开 →</a></td>
             </tr>            <tr>
               <td class="td-id">T-SCRIPT</td>
               <td class="td-name"><a href="tasks/T-SCRIPT.html" class="row-link">脚本工具（流程控制）</a></td>
@@ -1955,6 +2095,21 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
               <td class="td-sub">3/3</td>
               <td class="td-hours">48h</td>
               <td class="td-dep"><a class="row-go" href="tasks/T-SCRIPT.html">打开 →</a></td>
+            </tr>            <tr>
+              <td class="td-id">T-SUBROUTINE</td>
+              <td class="td-name"><a href="tasks/T-SUBROUTINE.html" class="row-link">子程序工具（流程控制）</a></td>
+              <td><span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层</span> <span class="type-tag2">工具</span></td>
+              <td class="td-stage"></td>
+              <td><span class="status st-done">已完成</span></td>
+              <td>
+                <div class="row-progress">
+                  <div class="progress-bar" style="flex:1;min-width:60px"><div class="progress-fill" style="width:100%;background:#0F6E56"></div></div>
+                  <span class="row-pct">100%</span>
+                </div>
+              </td>
+              <td class="td-sub">4/4</td>
+              <td class="td-hours">84h</td>
+              <td class="td-dep"><a class="row-go" href="tasks/T-SUBROUTINE.html">打开 →</a></td>
             </tr>            <tr>
               <td class="td-id">T-CONVERT</td>
               <td class="td-name"><a href="tasks/T-CONVERT.html" class="row-link">坐标转换工具</a></td>
@@ -1985,36 +2140,6 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
               <td class="td-sub">0/3</td>
               <td class="td-hours">36h</td>
               <td class="td-dep"><a class="row-go" href="tasks/T-ROBOTCOMM.html">打开 →</a></td>
-            </tr>            <tr>
-              <td class="td-id">T-IMGCAPTURE</td>
-              <td class="td-name"><a href="tasks/T-IMGCAPTURE.html" class="row-link">相机采集工具（工作流图像源）</a></td>
-              <td><span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层</span> <span class="type-tag2">工具</span></td>
-              <td class="td-stage">图像源与通信工具</td>
-              <td><span class="status st-todo">计划中</span></td>
-              <td>
-                <div class="row-progress">
-                  <div class="progress-bar" style="flex:1;min-width:60px"><div class="progress-fill" style="width:0%;background:#0F6E56"></div></div>
-                  <span class="row-pct">0%</span>
-                </div>
-              </td>
-              <td class="td-sub">0/3</td>
-              <td class="td-hours">44h</td>
-              <td class="td-dep"><a class="row-go" href="tasks/T-IMGCAPTURE.html">打开 →</a></td>
-            </tr>            <tr>
-              <td class="td-id">T-COMMTOOL</td>
-              <td class="td-name"><a href="tasks/T-COMMTOOL.html" class="row-link">通用通信工具（OPC UA 优先）</a></td>
-              <td><span class="layer-tag" style="color:#0F6E56;border-color:#0F6E56">工具层</span> <span class="type-tag2">工具</span></td>
-              <td class="td-stage">图像源与通信工具</td>
-              <td><span class="status st-todo">计划中</span></td>
-              <td>
-                <div class="row-progress">
-                  <div class="progress-bar" style="flex:1;min-width:60px"><div class="progress-fill" style="width:0%;background:#0F6E56"></div></div>
-                  <span class="row-pct">0%</span>
-                </div>
-              </td>
-              <td class="td-sub">0/7</td>
-              <td class="td-hours">112h</td>
-              <td class="td-dep"><a class="row-go" href="tasks/T-COMMTOOL.html">打开 →</a></td>
             </tr>
         </tbody>
       </table>
@@ -2120,191 +2245,282 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
   </div>
 
     <div class="card">
-    <h2>周维度开发追溯（378 提交 · 29 周 · 真实 git 用时）</h2>
+    <h2>周维度开发追溯（379 提交 · 29 周 · 真实 git 用时）</h2>
     <div class="wk-list">
                   <div class="wk-row">
-              <div class="wk-label" title="2026-W04">第 4/53 周 · 01-19~01-25</div>
-              <div class="wk-bar-wrap">
-                <div class="wk-bar" style="width:7%"><span class="wk-count">3</span></div>
+              <div class="wk-row-main">
+                <div class="wk-label" title="2026-W04">第 4/53 周 · 01-19~01-25</div>
+                <div class="wk-bar-wrap">
+                  <div class="wk-bar" style="width:7%"></div>
+                  <span class="wk-count">3</span>
+                </div>
               </div>
-              <div class="wk-mods"><span class='wk-mod'>视觉基础框架（已完成） ×2</span></div>
+              <div class="wk-mods"><span class='wk-mod'>视觉基础框架（已完成） ×2</span><span class='wk-mod muted'>未归类 ×1</span></div>
             </div>            <div class="wk-row">
-              <div class="wk-label" title="2026-W05">第 5/53 周 · 01-26~02-01</div>
-              <div class="wk-bar-wrap">
-                <div class="wk-bar" style="width:20%"><span class="wk-count">9</span></div>
+              <div class="wk-row-main">
+                <div class="wk-label" title="2026-W05">第 5/53 周 · 01-26~02-01</div>
+                <div class="wk-bar-wrap">
+                  <div class="wk-bar" style="width:20%"></div>
+                  <span class="wk-count">9</span>
+                </div>
               </div>
               <div class="wk-mods"><span class='wk-mod'>画布与工作流编辑器（已完成） ×7</span><span class='wk-mod'>端到端联调 ×1</span><span class='wk-mod'>视觉基础框架（已完成） ×1</span></div>
             </div>            <div class="wk-row">
-              <div class="wk-label" title="2026-W06">第 6/53 周 · 02-02~02-08</div>
-              <div class="wk-bar-wrap">
-                <div class="wk-bar" style="width:22%"><span class="wk-count">10</span></div>
+              <div class="wk-row-main">
+                <div class="wk-label" title="2026-W06">第 6/53 周 · 02-02~02-08</div>
+                <div class="wk-bar-wrap">
+                  <div class="wk-bar" style="width:22%"></div>
+                  <span class="wk-count">10</span>
+                </div>
               </div>
-              <div class="wk-mods"><span class='wk-mod'>画布与工作流编辑器（已完成） ×3</span><span class='wk-mod'>视觉基础框架（已完成） ×3</span><span class='wk-mod'>可配置运行 UI ×2</span></div>
+              <div class="wk-mods"><span class='wk-mod'>画布与工作流编辑器（已完成） ×3</span><span class='wk-mod'>视觉基础框架（已完成） ×3</span><span class='wk-mod'>可配置运行 UI ×2</span><span class='wk-mod muted'>未归类 ×2</span></div>
             </div>            <div class="wk-row">
-              <div class="wk-label" title="2026-W07">第 7/53 周 · 02-09~02-15</div>
-              <div class="wk-bar-wrap">
-                <div class="wk-bar" style="width:9%"><span class="wk-count">4</span></div>
+              <div class="wk-row-main">
+                <div class="wk-label" title="2026-W07">第 7/53 周 · 02-09~02-15</div>
+                <div class="wk-bar-wrap">
+                  <div class="wk-bar" style="width:9%"></div>
+                  <span class="wk-count">4</span>
+                </div>
               </div>
               <div class="wk-mods"><span class='wk-mod'>图像预览与渲染（已完成） ×2</span><span class='wk-mod'>画布与工作流编辑器（已完成） ×1</span><span class='wk-mod'>相机管理 ×1</span></div>
             </div>            <div class="wk-row">
-              <div class="wk-label" title="2026-W08">第 8/53 周 · 02-16~02-22</div>
-              <div class="wk-bar-wrap">
-                <div class="wk-bar" style="width:13%"><span class="wk-count">6</span></div>
+              <div class="wk-row-main">
+                <div class="wk-label" title="2026-W08">第 8/53 周 · 02-16~02-22</div>
+                <div class="wk-bar-wrap">
+                  <div class="wk-bar" style="width:13%"></div>
+                  <span class="wk-count">6</span>
+                </div>
               </div>
               <div class="wk-mods"><span class='wk-mod'>画布与工作流编辑器（已完成） ×3</span><span class='wk-mod'>视觉基础框架（已完成） ×2</span><span class='wk-mod'>工作流路径算法开发（已完成） ×1</span></div>
             </div>            <div class="wk-row">
-              <div class="wk-label" title="2026-W09">第 9/53 周 · 02-23~03-01</div>
-              <div class="wk-bar-wrap">
-                <div class="wk-bar" style="width:18%"><span class="wk-count">8</span></div>
+              <div class="wk-row-main">
+                <div class="wk-label" title="2026-W09">第 9/53 周 · 02-23~03-01</div>
+                <div class="wk-bar-wrap">
+                  <div class="wk-bar" style="width:18%"></div>
+                  <span class="wk-count">8</span>
+                </div>
               </div>
               <div class="wk-mods"><span class='wk-mod'>画布与工作流编辑器（已完成） ×6</span><span class='wk-mod'>源码层 UI 项目优化 ×1</span><span class='wk-mod'>工作流路径算法开发（已完成） ×1</span></div>
             </div>            <div class="wk-row">
-              <div class="wk-label" title="2026-W10">第 10/53 周 · 03-02~03-08</div>
-              <div class="wk-bar-wrap">
-                <div class="wk-bar" style="width:47%"><span class="wk-count">21</span></div>
+              <div class="wk-row-main">
+                <div class="wk-label" title="2026-W10">第 10/53 周 · 03-02~03-08</div>
+                <div class="wk-bar-wrap">
+                  <div class="wk-bar" style="width:47%"></div>
+                  <span class="wk-count">21</span>
+                </div>
               </div>
-              <div class="wk-mods"><span class='wk-mod'>源码层 UI 项目优化 ×11</span><span class='wk-mod'>区域与 RoI 系统（已完成） ×6</span><span class='wk-mod'>视觉基础框架（已完成） ×1</span></div>
+              <div class="wk-mods"><span class='wk-mod'>源码层 UI 项目优化 ×11</span><span class='wk-mod'>区域与 RoI 系统（已完成） ×6</span><span class='wk-mod'>视觉基础框架（已完成） ×1</span><span class='wk-mod wk-other'>其他 1 模块 ×1</span><span class='wk-mod muted'>未归类 ×2</span></div>
             </div>            <div class="wk-row">
-              <div class="wk-label" title="2026-W11">第 11/53 周 · 03-09~03-15</div>
-              <div class="wk-bar-wrap">
-                <div class="wk-bar" style="width:40%"><span class="wk-count">18</span></div>
+              <div class="wk-row-main">
+                <div class="wk-label" title="2026-W11">第 11/53 周 · 03-09~03-15</div>
+                <div class="wk-bar-wrap">
+                  <div class="wk-bar" style="width:40%"></div>
+                  <span class="wk-count">18</span>
+                </div>
               </div>
               <div class="wk-mods"><span class='wk-mod'>源码层 UI 项目优化 ×10</span><span class='wk-mod'>画布与工作流编辑器（已完成） ×8</span></div>
             </div>            <div class="wk-row">
-              <div class="wk-label" title="2026-W12">第 12/53 周 · 03-16~03-22</div>
-              <div class="wk-bar-wrap">
-                <div class="wk-bar" style="width:31%"><span class="wk-count">14</span></div>
+              <div class="wk-row-main">
+                <div class="wk-label" title="2026-W12">第 12/53 周 · 03-16~03-22</div>
+                <div class="wk-bar-wrap">
+                  <div class="wk-bar" style="width:31%"></div>
+                  <span class="wk-count">14</span>
+                </div>
               </div>
               <div class="wk-mods"><span class='wk-mod'>画布与工作流编辑器（已完成） ×11</span><span class='wk-mod'>测试体系完善（消除假测试/补覆盖/建分层） ×2</span><span class='wk-mod'>源码层 UI 项目优化 ×1</span></div>
             </div>            <div class="wk-row">
-              <div class="wk-label" title="2026-W13">第 13/53 周 · 03-23~03-29</div>
-              <div class="wk-bar-wrap">
-                <div class="wk-bar" style="width:20%"><span class="wk-count">9</span></div>
+              <div class="wk-row-main">
+                <div class="wk-label" title="2026-W13">第 13/53 周 · 03-23~03-29</div>
+                <div class="wk-bar-wrap">
+                  <div class="wk-bar" style="width:20%"></div>
+                  <span class="wk-count">9</span>
+                </div>
               </div>
               <div class="wk-mods"><span class='wk-mod'>画布与工作流编辑器（已完成） ×8</span><span class='wk-mod'>工作流路径算法开发（已完成） ×1</span></div>
             </div>            <div class="wk-row">
-              <div class="wk-label" title="2026-W14">第 14/53 周 · 03-30~04-05</div>
-              <div class="wk-bar-wrap">
-                <div class="wk-bar" style="width:51%"><span class="wk-count">23</span></div>
+              <div class="wk-row-main">
+                <div class="wk-label" title="2026-W14">第 14/53 周 · 03-30~04-05</div>
+                <div class="wk-bar-wrap">
+                  <div class="wk-bar" style="width:51%"></div>
+                  <span class="wk-count">23</span>
+                </div>
               </div>
-              <div class="wk-mods"><span class='wk-mod'>画布与工作流编辑器（已完成） ×10</span><span class='wk-mod'>源码层 UI 项目优化 ×9</span><span class='wk-mod'>解决方案系统（已完成） ×1</span></div>
+              <div class="wk-mods"><span class='wk-mod'>画布与工作流编辑器（已完成） ×10</span><span class='wk-mod'>源码层 UI 项目优化 ×9</span><span class='wk-mod'>解决方案系统（已完成） ×1</span><span class='wk-mod wk-other'>其他 1 模块 ×1</span><span class='wk-mod muted'>未归类 ×2</span></div>
             </div>            <div class="wk-row">
-              <div class="wk-label" title="2026-W15">第 15/53 周 · 04-06~04-12</div>
-              <div class="wk-bar-wrap">
-                <div class="wk-bar" style="width:100%"><span class="wk-count">45</span></div>
+              <div class="wk-row-main">
+                <div class="wk-label" title="2026-W15">第 15/53 周 · 04-06~04-12</div>
+                <div class="wk-bar-wrap">
+                  <div class="wk-bar" style="width:100%"></div>
+                  <span class="wk-count">45</span>
+                </div>
               </div>
-              <div class="wk-mods"><span class='wk-mod'>源码层 UI 项目优化 ×17</span><span class='wk-mod'>相机管理 ×9</span><span class='wk-mod'>源码层数据结构优化（已完成） ×7</span></div>
+              <div class="wk-mods"><span class='wk-mod'>源码层 UI 项目优化 ×17</span><span class='wk-mod'>相机管理 ×9</span><span class='wk-mod'>源码层数据结构优化（已完成） ×7</span><span class='wk-mod wk-other'>其他 2 模块 ×6</span><span class='wk-mod muted'>未归类 ×6</span></div>
             </div>            <div class="wk-row">
-              <div class="wk-label" title="2026-W16">第 16/53 周 · 04-13~04-19</div>
-              <div class="wk-bar-wrap">
-                <div class="wk-bar" style="width:42%"><span class="wk-count">19</span></div>
+              <div class="wk-row-main">
+                <div class="wk-label" title="2026-W16">第 16/53 周 · 04-13~04-19</div>
+                <div class="wk-bar-wrap">
+                  <div class="wk-bar" style="width:42%"></div>
+                  <span class="wk-count">19</span>
+                </div>
               </div>
-              <div class="wk-mods"><span class='wk-mod'>源码层 UI 项目优化 ×9</span><span class='wk-mod'>画布与工作流编辑器（已完成） ×3</span><span class='wk-mod'>源码层数据结构优化（已完成） ×3</span></div>
+              <div class="wk-mods"><span class='wk-mod'>源码层 UI 项目优化 ×9</span><span class='wk-mod'>画布与工作流编辑器（已完成） ×3</span><span class='wk-mod'>源码层数据结构优化（已完成） ×3</span><span class='wk-mod wk-other'>其他 2 模块 ×4</span></div>
             </div>            <div class="wk-row">
-              <div class="wk-label" title="2026-W17">第 17/53 周 · 04-20~04-26</div>
-              <div class="wk-bar-wrap">
-                <div class="wk-bar" style="width:51%"><span class="wk-count">23</span></div>
+              <div class="wk-row-main">
+                <div class="wk-label" title="2026-W17">第 17/53 周 · 04-20~04-26</div>
+                <div class="wk-bar-wrap">
+                  <div class="wk-bar" style="width:51%"></div>
+                  <span class="wk-count">23</span>
+                </div>
               </div>
-              <div class="wk-mods"><span class='wk-mod'>源码层 UI 项目优化 ×9</span><span class='wk-mod'>Blob 质心增强 ×4</span><span class='wk-mod'>视觉基础框架（已完成） ×4</span></div>
+              <div class="wk-mods"><span class='wk-mod'>源码层 UI 项目优化 ×9</span><span class='wk-mod'>Blob 质心增强 ×4</span><span class='wk-mod'>视觉基础框架（已完成） ×4</span><span class='wk-mod wk-other'>其他 3 模块 ×5</span><span class='wk-mod muted'>未归类 ×1</span></div>
             </div>            <div class="wk-row">
-              <div class="wk-label" title="2026-W18">第 18/53 周 · 04-27~05-03</div>
-              <div class="wk-bar-wrap">
-                <div class="wk-bar" style="width:47%"><span class="wk-count">21</span></div>
+              <div class="wk-row-main">
+                <div class="wk-label" title="2026-W18">第 18/53 周 · 04-27~05-03</div>
+                <div class="wk-bar-wrap">
+                  <div class="wk-bar" style="width:47%"></div>
+                  <span class="wk-count">21</span>
+                </div>
               </div>
-              <div class="wk-mods"><span class='wk-mod'>源码层 UI 项目优化 ×11</span><span class='wk-mod'>Blob 质心增强 ×4</span><span class='wk-mod'>数据绑定树与模块结果树（已完成） ×3</span></div>
+              <div class="wk-mods"><span class='wk-mod'>源码层 UI 项目优化 ×11</span><span class='wk-mod'>Blob 质心增强 ×4</span><span class='wk-mod'>数据绑定树与模块结果树（已完成） ×3</span><span class='wk-mod wk-other'>其他 3 模块 ×3</span></div>
             </div>            <div class="wk-row">
-              <div class="wk-label" title="2026-W19">第 19/53 周 · 05-04~05-10</div>
-              <div class="wk-bar-wrap">
-                <div class="wk-bar" style="width:51%"><span class="wk-count">23</span></div>
+              <div class="wk-row-main">
+                <div class="wk-label" title="2026-W19">第 19/53 周 · 05-04~05-10</div>
+                <div class="wk-bar-wrap">
+                  <div class="wk-bar" style="width:51%"></div>
+                  <span class="wk-count">23</span>
+                </div>
               </div>
-              <div class="wk-mods"><span class='wk-mod'>源码层 UI 项目优化 ×6</span><span class='wk-mod'>Blob 质心增强 ×5</span><span class='wk-mod'>画布与工作流编辑器（已完成） ×4</span></div>
+              <div class="wk-mods"><span class='wk-mod'>源码层 UI 项目优化 ×6</span><span class='wk-mod'>Blob 质心增强 ×5</span><span class='wk-mod'>画布与工作流编辑器（已完成） ×4</span><span class='wk-mod wk-other'>其他 5 模块 ×8</span></div>
             </div>            <div class="wk-row">
-              <div class="wk-label" title="2026-W20">第 20/53 周 · 05-11~05-17</div>
-              <div class="wk-bar-wrap">
-                <div class="wk-bar" style="width:7%"><span class="wk-count">3</span></div>
+              <div class="wk-row-main">
+                <div class="wk-label" title="2026-W20">第 20/53 周 · 05-11~05-17</div>
+                <div class="wk-bar-wrap">
+                  <div class="wk-bar" style="width:7%"></div>
+                  <span class="wk-count">3</span>
+                </div>
               </div>
               <div class="wk-mods"><span class='wk-mod'>ShapeMatch 亚像素增强 ×2</span><span class='wk-mod'>CvEngine 算法引擎（基础完成，Halcon 对标进行中） ×1</span></div>
             </div>            <div class="wk-row">
-              <div class="wk-label" title="2026-W21">第 21/53 周 · 05-18~05-24</div>
-              <div class="wk-bar-wrap">
-                <div class="wk-bar" style="width:22%"><span class="wk-count">10</span></div>
+              <div class="wk-row-main">
+                <div class="wk-label" title="2026-W21">第 21/53 周 · 05-18~05-24</div>
+                <div class="wk-bar-wrap">
+                  <div class="wk-bar" style="width:22%"></div>
+                  <span class="wk-count">10</span>
+                </div>
               </div>
-              <div class="wk-mods"><span class='wk-mod'>ShapeMatch 亚像素增强 ×4</span><span class='wk-mod'>源码层 UI 项目优化 ×3</span><span class='wk-mod'>Blob 质心增强 ×2</span></div>
+              <div class="wk-mods"><span class='wk-mod'>ShapeMatch 亚像素增强 ×4</span><span class='wk-mod'>源码层 UI 项目优化 ×3</span><span class='wk-mod'>Blob 质心增强 ×2</span><span class='wk-mod wk-other'>其他 1 模块 ×1</span></div>
             </div>            <div class="wk-row">
-              <div class="wk-label" title="2026-W22">第 22/53 周 · 05-25~05-31</div>
-              <div class="wk-bar-wrap">
-                <div class="wk-bar" style="width:24%"><span class="wk-count">11</span></div>
+              <div class="wk-row-main">
+                <div class="wk-label" title="2026-W22">第 22/53 周 · 05-25~05-31</div>
+                <div class="wk-bar-wrap">
+                  <div class="wk-bar" style="width:24%"></div>
+                  <span class="wk-count">11</span>
+                </div>
               </div>
-              <div class="wk-mods"><span class='wk-mod'>ShapeMatch 亚像素增强 ×4</span><span class='wk-mod'>源码层 UI 项目优化 ×4</span><span class='wk-mod'>画布与工作流编辑器（已完成） ×1</span></div>
+              <div class="wk-mods"><span class='wk-mod'>ShapeMatch 亚像素增强 ×4</span><span class='wk-mod'>源码层 UI 项目优化 ×4</span><span class='wk-mod'>画布与工作流编辑器（已完成） ×1</span><span class='wk-mod wk-other'>其他 2 模块 ×2</span></div>
             </div>            <div class="wk-row">
-              <div class="wk-label" title="2026-W23">第 23/53 周 · 06-01~06-07</div>
-              <div class="wk-bar-wrap">
-                <div class="wk-bar" style="width:9%"><span class="wk-count">4</span></div>
+              <div class="wk-row-main">
+                <div class="wk-label" title="2026-W23">第 23/53 周 · 06-01~06-07</div>
+                <div class="wk-bar-wrap">
+                  <div class="wk-bar" style="width:9%"></div>
+                  <span class="wk-count">4</span>
+                </div>
               </div>
               <div class="wk-mods"><span class='wk-mod'>画布与工作流编辑器（已完成） ×3</span><span class='wk-mod'>源码层 UI 项目优化 ×1</span></div>
             </div>            <div class="wk-row">
-              <div class="wk-label" title="2026-W24">第 24/53 周 · 06-08~06-14</div>
-              <div class="wk-bar-wrap">
-                <div class="wk-bar" style="width:36%"><span class="wk-count">16</span></div>
+              <div class="wk-row-main">
+                <div class="wk-label" title="2026-W24">第 24/53 周 · 06-08~06-14</div>
+                <div class="wk-bar-wrap">
+                  <div class="wk-bar" style="width:36%"></div>
+                  <span class="wk-count">16</span>
+                </div>
               </div>
-              <div class="wk-mods"><span class='wk-mod'>画布与工作流编辑器（已完成） ×8</span><span class='wk-mod'>源码层 UI 项目优化 ×3</span><span class='wk-mod'>ShapeMatch 亚像素增强 ×3</span></div>
+              <div class="wk-mods"><span class='wk-mod'>画布与工作流编辑器（已完成） ×8</span><span class='wk-mod'>源码层 UI 项目优化 ×3</span><span class='wk-mod'>ShapeMatch 亚像素增强 ×3</span><span class='wk-mod wk-other'>其他 2 模块 ×2</span></div>
             </div>            <div class="wk-row">
-              <div class="wk-label" title="2026-W25">第 25/53 周 · 06-15~06-21</div>
-              <div class="wk-bar-wrap">
-                <div class="wk-bar" style="width:2%"><span class="wk-count">1</span></div>
+              <div class="wk-row-main">
+                <div class="wk-label" title="2026-W25">第 25/53 周 · 06-15~06-21</div>
+                <div class="wk-bar-wrap">
+                  <div class="wk-bar" style="width:2%"></div>
+                  <span class="wk-count">1</span>
+                </div>
               </div>
               <div class="wk-mods"><span class='wk-mod'>脚本工具基础（已完成） ×1</span></div>
             </div>            <div class="wk-row">
-              <div class="wk-label" title="2026-W26">第 26/53 周 · 06-22~06-28</div>
-              <div class="wk-bar-wrap">
-                <div class="wk-bar" style="width:29%"><span class="wk-count">13</span></div>
+              <div class="wk-row-main">
+                <div class="wk-label" title="2026-W26">第 26/53 周 · 06-22~06-28</div>
+                <div class="wk-bar-wrap">
+                  <div class="wk-bar" style="width:29%"></div>
+                  <span class="wk-count">13</span>
+                </div>
               </div>
-              <div class="wk-mods"><span class='wk-mod'>画布与工作流编辑器（已完成） ×5</span><span class='wk-mod'>脚本工具基础（已完成） ×5</span><span class='wk-mod'>输出变量契约与 SDK 类型系统（已完成） ×1</span></div>
+              <div class="wk-mods"><span class='wk-mod'>画布与工作流编辑器（已完成） ×5</span><span class='wk-mod'>脚本工具基础（已完成） ×5</span><span class='wk-mod'>输出变量契约与 SDK 类型系统（已完成） ×1</span><span class='wk-mod wk-other'>其他 2 模块 ×2</span></div>
             </div>            <div class="wk-row">
-              <div class="wk-label" title="2026-W27">第 27/53 周 · 06-29~07-05</div>
-              <div class="wk-bar-wrap">
-                <div class="wk-bar" style="width:4%"><span class="wk-count">2</span></div>
+              <div class="wk-row-main">
+                <div class="wk-label" title="2026-W27">第 27/53 周 · 06-29~07-05</div>
+                <div class="wk-bar-wrap">
+                  <div class="wk-bar" style="width:4%"></div>
+                  <span class="wk-count">2</span>
+                </div>
               </div>
               <div class="wk-mods"><span class='wk-mod'>视觉基础框架（已完成） ×1</span><span class='wk-mod'>脚本工具基础（已完成） ×1</span></div>
             </div>            <div class="wk-row">
-              <div class="wk-label" title="2026-W29">第 29/53 周 · 07-13~07-19</div>
-              <div class="wk-bar-wrap">
-                <div class="wk-bar" style="width:18%"><span class="wk-count">8</span></div>
+              <div class="wk-row-main">
+                <div class="wk-label" title="2026-W29">第 29/53 周 · 07-13~07-19</div>
+                <div class="wk-bar-wrap">
+                  <div class="wk-bar" style="width:18%"></div>
+                  <span class="wk-count">8</span>
+                </div>
               </div>
-              <div class="wk-mods"><span class='wk-mod'>脚本工具基础（已完成） ×4</span><span class='wk-mod'>测试体系完善（消除假测试/补覆盖/建分层） ×2</span><span class='wk-mod'>源码层数据结构优化（已完成） ×1</span></div>
+              <div class="wk-mods"><span class='wk-mod'>脚本工具基础（已完成） ×4</span><span class='wk-mod'>测试体系完善（消除假测试/补覆盖/建分层） ×2</span><span class='wk-mod'>源码层数据结构优化（已完成） ×1</span><span class='wk-mod wk-other'>其他 1 模块 ×1</span></div>
             </div>            <div class="wk-row">
-              <div class="wk-label" title="2026-W30">第 30/53 周 · 07-20~07-26</div>
-              <div class="wk-bar-wrap">
-                <div class="wk-bar" style="width:11%"><span class="wk-count">5</span></div>
+              <div class="wk-row-main">
+                <div class="wk-label" title="2026-W30">第 30/53 周 · 07-20~07-26</div>
+                <div class="wk-bar-wrap">
+                  <div class="wk-bar" style="width:11%"></div>
+                  <span class="wk-count">5</span>
+                </div>
               </div>
-              <div class="wk-mods"><span class='wk-mod'>Blob 质心增强 ×2</span><span class='wk-mod'>坐标转换工具 ×1</span><span class='wk-mod'>测试体系完善（消除假测试/补覆盖/建分层） ×1</span></div>
+              <div class="wk-mods"><span class='wk-mod'>Blob 质心增强 ×2</span><span class='wk-mod'>坐标转换工具 ×1</span><span class='wk-mod'>测试体系完善（消除假测试/补覆盖/建分层） ×1</span><span class='wk-mod wk-other'>其他 1 模块 ×1</span></div>
             </div>            <div class="wk-row">
-              <div class="wk-label" title="2026-W32">第 32/53 周 · 08-03~08-09</div>
-              <div class="wk-bar-wrap">
-                <div class="wk-bar" style="width:31%"><span class="wk-count">14</span></div>
+              <div class="wk-row-main">
+                <div class="wk-label" title="2026-W32">第 32/53 周 · 08-03~08-09</div>
+                <div class="wk-bar-wrap">
+                  <div class="wk-bar" style="width:31%"></div>
+                  <span class="wk-count">14</span>
+                </div>
               </div>
-              <div class="wk-mods"><span class='wk-mod'>源码层 UI 项目优化 ×5</span><span class='wk-mod'>测试体系完善（消除假测试/补覆盖/建分层） ×4</span><span class='wk-mod'>画布与工作流编辑器（已完成） ×1</span></div>
+              <div class="wk-mods"><span class='wk-mod'>源码层 UI 项目优化 ×5</span><span class='wk-mod'>测试体系完善（消除假测试/补覆盖/建分层） ×4</span><span class='wk-mod'>画布与工作流编辑器（已完成） ×1</span><span class='wk-mod wk-other'>其他 4 模块 ×4</span></div>
             </div>            <div class="wk-row">
-              <div class="wk-label" title="2026-W33">第 33/53 周 · 08-10~08-16</div>
-              <div class="wk-bar-wrap">
-                <div class="wk-bar" style="width:71%"><span class="wk-count">32</span></div>
+              <div class="wk-row-main">
+                <div class="wk-label" title="2026-W33">第 33/53 周 · 08-10~08-16</div>
+                <div class="wk-bar-wrap">
+                  <div class="wk-bar" style="width:71%"></div>
+                  <span class="wk-count">32</span>
+                </div>
               </div>
-              <div class="wk-mods"><span class='wk-mod'>源码层 UI 项目优化 ×21</span><span class='wk-mod'>画布与工作流编辑器（已完成） ×6</span><span class='wk-mod'>参数绑定系统（已完成） ×1</span></div>
+              <div class="wk-mods"><span class='wk-mod'>源码层 UI 项目优化 ×21</span><span class='wk-mod'>画布与工作流编辑器（已完成） ×6</span><span class='wk-mod'>参数绑定系统（已完成） ×1</span><span class='wk-mod wk-other'>其他 4 模块 ×4</span></div>
             </div>            <div class="wk-row">
-              <div class="wk-label" title="2026-W34">第 34/53 周 · 08-17~08-23</div>
-              <div class="wk-bar-wrap">
-                <div class="wk-bar" style="width:7%"><span class="wk-count">3</span></div>
+              <div class="wk-row-main">
+                <div class="wk-label" title="2026-W34">第 34/53 周 · 08-17~08-23</div>
+                <div class="wk-bar-wrap">
+                  <div class="wk-bar" style="width:9%"></div>
+                  <span class="wk-count">4</span>
+                </div>
               </div>
-              <div class="wk-mods"><span class='wk-mod'>源码层 UI 项目优化 ×2</span><span class='wk-mod'>全局变量管理（已完成基础，测试待补） ×1</span></div>
+              <div class="wk-mods"><span class='wk-mod'>源码层 UI 项目优化 ×2</span><span class='wk-mod'>测试体系完善（消除假测试/补覆盖/建分层） ×1</span><span class='wk-mod'>全局变量管理（已完成基础，测试待补） ×1</span></div>
             </div>
     </div>
     <div class="wk-note">按提交时间统计，路径优先于关键词匹配（UNKNOWN 为未归类提交）· 由 generate_weekly.py 生成</div>
   </div>
 
     <div class="card">
-    <h2>每周计划（33 周 · 按任务周排期 · 初版自动摊排可微调）</h2>
+    <h2>每周计划（34 周 · 按任务周排期 · 初版自动摊排可微调）</h2>
     <div class="pw-list">
                   <div class="pw-row">
+              <div class="pw-label" title="2026-W01">第 1/53 周 · 12-29~01-04 </div>
+              <div class="pw-tasks"><span class='wk-task'><span class='wk-task-id'>IMAGELOAD-1</span>图像加载核心（ImageLoad/参数/类型映射） <span class='wk-task-h'>16h</span> <span class='status st-done' style='font-size:10px'>已完成</span></span><span class='wk-task'><span class='wk-task-id'>IMAGELOAD-2</span>图像加载工具调试控件（ROI/参数交互） <span class='wk-task-h'>12h</span> <span class='status st-done' style='font-size:10px'>已完成</span></span><span class='wk-task'><span class='wk-task-id'>IMAGELOAD-3</span>图像加载工具测试 <span class='wk-task-h'>8h</span> <span class='status st-done' style='font-size:10px'>已完成</span></span><span class='wk-task'><span class='wk-task-id'>THRESHOLD-1</span>阈值核心（Threshold/类型/参数） <span class='wk-task-h'>16h</span> <span class='status st-done' style='font-size:10px'>已完成</span></span><span class='wk-task'><span class='wk-task-id'>THRESHOLD-2</span>阈值工具调试控件（ROI/参数交互） <span class='wk-task-h'>12h</span> <span class='status st-done' style='font-size:10px'>已完成</span></span><span class='wk-task'><span class='wk-task-id'>THRESHOLD-3</span>阈值工具测试 <span class='wk-task-h'>8h</span> <span class='status st-done' style='font-size:10px'>已完成</span></span><span class='wk-task'><span class='wk-task-id'>IMAGEFILTER-1</span>图像滤波核心（ImageFilter/参数） <span class='wk-task-h'>16h</span> <span class='status st-done' style='font-size:10px'>已完成</span></span><span class='wk-task'><span class='wk-task-id'>IMAGEFILTER-2</span>图像滤波工具调试控件（ROI/参数交互） <span class='wk-task-h'>12h</span> <span class='status st-done' style='font-size:10px'>已完成</span></span><span class='wk-task'><span class='wk-task-id'>IMAGEFILTER-3</span>图像滤波工具测试 <span class='wk-task-h'>8h</span> <span class='status st-done' style='font-size:10px'>已完成</span></span><span class='wk-task'><span class='wk-task-id'>IMAGETHRESHOLD-1</span>图像阈值核心（ImageThreshold/方法） <span class='wk-task-h'>16h</span> <span class='status st-done' style='font-size:10px'>已完成</span></span><span class='wk-task'><span class='wk-task-id'>IMAGETHRESHOLD-2</span>图像阈值工具调试控件（ROI/参数交互） <span class='wk-task-h'>12h</span> <span class='status st-done' style='font-size:10px'>已完成</span></span><span class='wk-task'><span class='wk-task-id'>IMAGETHRESHOLD-3</span>图像阈值工具测试 <span class='wk-task-h'>8h</span> <span class='status st-done' style='font-size:10px'>已完成</span></span><span class='wk-task'><span class='wk-task-id'>MORPHOLOGY-1</span>形态学核心（Morphology/运算/结构元素） <span class='wk-task-h'>16h</span> <span class='status st-done' style='font-size:10px'>已完成</span></span><span class='wk-task'><span class='wk-task-id'>MORPHOLOGY-2</span>形态学工具调试控件（ROI/参数交互） <span class='wk-task-h'>12h</span> <span class='status st-done' style='font-size:10px'>已完成</span></span><span class='wk-task'><span class='wk-task-id'>MORPHOLOGY-3</span>形态学工具测试 <span class='wk-task-h'>8h</span> <span class='status st-done' style='font-size:10px'>已完成</span></span></div>
+              <div class="pw-hours">180 h</div>
+            </div>            <div class="pw-row">
               <div class="pw-label" title="2026-W35">第 35/53 周 · 08-24~08-30 </div>
               <div class="pw-tasks"><span class='wk-task'><span class='wk-task-id'>HIST-CORE-1</span>初始搭建：解决方案结构 + UI 主界面 + 帮助文档（b6e78cd/82537b0） <span class='wk-task-h'>40h</span> <span class='status st-done' style='font-size:10px'>已完成</span></span><span class='wk-task'><span class='wk-task-id'>HIST-CORE-2</span>插件系统：工具箱按插件自动加载 + 插件系统重构（0b9e3c8） <span class='wk-task-h'>30h</span> <span class='status st-done' style='font-size:10px'>已完成</span></span><span class='wk-task'><span class='wk-task-id'>HIST-CORE-3</span>主界面解耦 + 三区域可调/折叠（c846e55） <span class='wk-task-h'>20h</span> <span class='status st-done' style='font-size:10px'>已完成</span></span><span class='wk-task'><span class='wk-task-id'>HIST-CORE-4</span>文件结构整合 + WorkflowCanvasControl 控件化重构（ea176b0/18753ed/bd4d912） <span class='wk-task-h'>30h</span> <span class='status st-done' style='font-size:10px'>已完成</span></span><span class='wk-task'><span class='wk-task-id'>HIST-CORE-C1</span>架构层缓存机制优化（图像缓存/节点缓存池/渲染调度缓存/批量更新机制） <span class='wk-task-h'>24h</span> <span class='status st-todo' style='font-size:10px'>计划中</span></span></div>
               <div class="pw-hours">144 h</div>

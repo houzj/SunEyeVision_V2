@@ -42,7 +42,6 @@
     <PackageReference Include="Msagl" Version="1.2.1" />
     <PackageReference Include="Msagl.Drawing" Version="1.2.1" />
     <PackageReference Include="Msagl.WpfGraphControl" Version="1.2.1" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
   </ItemGroup>
 
   <ItemGroup>
@@ -51,6 +50,11 @@
     <ProjectReference Include="..\Plugin.SDK\SunEyeVision.Plugin.SDK.csproj" />
     <ProjectReference Include="..\Plugin.Infrastructure\SunEyeVision.Plugin.Infrastructure.csproj" />
     <!-- HalAdapter removed, types moved to Plugin.SDK -->
+  </ItemGroup>
+
+  <!-- 测试项目可访问 internal（对齐 Plugin.SDK.csproj:52 既有做法，仅测试基础设施，不改业务代码） -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="SunEyeVision.UI.Tests" />
   </ItemGroup>
 
   <ItemGroup>

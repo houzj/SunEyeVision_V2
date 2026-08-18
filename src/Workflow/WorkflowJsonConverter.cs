@@ -63,6 +63,12 @@ namespace SunEyeVision.Workflow
                         // 调用反序列化后回调
                         node.OnDeserialized();
 
+                        // 诊断日志：追踪输入源持久化恢复情况
+                        VisionLogger.Instance.Log(LogLevel.Info,
+                            $"节点反序列化 | Name={node.Name} | Type={node.GetType().Name} | " +
+                            $"ImageSourceConfig={node.ImageSourceConfig?.FilePaths.Count ?? -1}",
+                            "WorkflowJsonConverter");
+
                         workflow.Nodes.Add(node);
                     }
                 }

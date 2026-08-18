@@ -262,6 +262,16 @@ namespace SunEyeVision.Workflow
         }
 
         /// <summary>
+        /// 图像输入源持久化配置（随方案文件保存/恢复）
+        /// </summary>
+        /// <remarks>
+        /// 运行时 InputSource 为 UI 层 ImageInputSource（[JsonIgnore]，不序列化）。
+        /// 此属性存路径与状态（可序列化，Workflow 层无 UI 依赖），
+        /// 保存方案时 UI 层写入，打开方案时 UI 层据此重建 InputSource。
+        /// </remarks>
+        public ImageSourceConfig? ImageSourceConfig { get; set; }
+
+        /// <summary>
         /// 最近一次执行结果（UI 层专用，不序列化）
         /// </summary>
         [JsonIgnore]

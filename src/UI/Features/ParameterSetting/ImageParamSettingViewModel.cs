@@ -1,12 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Input;
-using System.Windows.Media.Imaging;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.UI.Services.ParameterSetting;
-using SunEyeVision.UI.Services.Thumbnail;
 
 using SunEyeVision.UI.Core;
 
@@ -42,12 +39,9 @@ namespace SunEyeVision.UI.Features.ParameterSetting
 
         private readonly IDataSourceQueryService _dataSourceQueryService;
         private readonly ImageDataSourceService _imageDataSourceService;
-        private readonly SmartThumbnailLoader? _thumbnailLoader;
         private ParamSetting _setting;
         private BindingType _selectedBindingType;
         private AvailableDataSource? _selectedImageDataSource;
-        private BitmapImage? _previewThumbnail;
-        private bool _isLoadingThumbnail;
         private bool _isDataSourceLoading;
         private string _currentNodeId = string.Empty;
 
@@ -143,9 +137,6 @@ namespace SunEyeVision.UI.Features.ParameterSetting
                     OnPropertyChanged(nameof(HasSelection));
                     OnPropertyChanged(nameof(SelectionInfo));
 
-                    // 异步加载预览缩略图
-                    _ = LoadPreviewThumbnailAsync();
-
                     Validate();
                 }
             }
@@ -184,24 +175,6 @@ namespace SunEyeVision.UI.Features.ParameterSetting
                        $"属性: {SelectedImageDataSource.DisplayName}\n" +
                        $"类型: {SelectedImageDataSource.TypeName}";
             }
-        }
-
-        /// <summary>
-        /// 预览缩略图
-        /// </summary>
-        public BitmapImage? PreviewThumbnail
-        {
-            get => _previewThumbnail;
-            private set => SetProperty(ref _previewThumbnail, value);
-        }
-
-        /// <summary>
-        /// 是否正在加载缩略图
-        /// </summary>
-        public bool IsLoadingThumbnail
-        {
-            get => _isLoadingThumbnail;
-            private set => SetProperty(ref _isLoadingThumbnail, value);
         }
 
         /// <summary>
@@ -253,7 +226,6 @@ namespace SunEyeVision.UI.Features.ParameterSetting
             string parameterName,
             string displayName,
             IDataSourceQueryService dataSourceQueryService,
-            SmartThumbnailLoader? thumbnailLoader = null,
             Type? parameterType = null,
             string? description = null)
         {
@@ -261,7 +233,6 @@ namespace SunEyeVision.UI.Features.ParameterSetting
             Description = description;
             ParameterType = parameterType ?? typeof(object);
             _dataSourceQueryService = dataSourceQueryService ?? throw new ArgumentNullException(nameof(dataSourceQueryService));
-            _thumbnailLoader = thumbnailLoader;
 
             _imageDataSourceService = new ImageDataSourceService(_dataSourceQueryService);
 
@@ -373,64 +344,11 @@ namespace SunEyeVision.UI.Features.ParameterSetting
         private void ExecuteClearSelection()
         {
             SelectedImageDataSource = null;
-            PreviewThumbnail = null;
         }
 
         private void ExecuteToggleBindingMode()
         {
             SelectedBindingType = IsDynamicMode ? BindingType.Constant : BindingType.Binding;
-        }
-
-        private async Task LoadPreviewThumbnailAsync()
-        {
-            PreviewThumbnail = null;
-
-            if (_thumbnailLoader == null || SelectedImageDataSource == null)
-                return;
-
-            // 尝试从CurrentValue获取文件路径
-            var currentValue = SelectedImageDataSource.CurrentValue;
-            string? filePath = null;
-
-            // 检查CurrentValue是否为文件路径字符串
-            if (currentValue is string path && System.IO.File.Exists(path))
-            {
-                filePath = path;
-            }
-            // 检查CurrentValue是否有FilePath属性
-            else if (currentValue != null)
-            {
-                var filePathProp = currentValue.GetType().GetProperty("FilePath");
-                if (filePathProp != null)
-                {
-                    filePath = filePathProp.GetValue(currentValue) as string;
-                }
-            }
-
-            if (string.IsNullOrEmpty(filePath) || !System.IO.File.Exists(filePath))
-                return;
-
-            IsLoadingThumbnail = true;
-
-            try
-            {
-                await Task.Run(() =>
-                {
-                    var thumbnail = _thumbnailLoader.LoadThumbnail(filePath, 64, isHighPriority: true);
-
-                    if (thumbnail != null)
-                    {
-                        System.Windows.Application.Current?.Dispatcher.Invoke(() =>
-                        {
-                            PreviewThumbnail = thumbnail;
-                        });
-                    }
-                });
-            }
-            finally
-            {
-                IsLoadingThumbnail = false;
-            }
         }
 
         private void Validate()

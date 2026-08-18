@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
@@ -6,6 +6,7 @@ using System.Windows.Media.Imaging;
 using SunEyeVision.UI.Services.Thumbnail;
 using SunEyeVision.UI.Shell.Controls.Panels;
 using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Workflow;
 
 using SunEyeVision.UI.Features.WorkflowUI;
 
@@ -240,6 +241,65 @@ namespace SunEyeVision.UI.Shared
                 image.Thumbnail = null;
             }
             return count;
+        }
+
+        /// <summary>
+        /// 转为可序列化配置（保存方案时调用）
+        /// </summary>
+        /// <remarks>
+        /// 只导出路径与状态，不导出图片；对齐参考项目 VisionMaster 只存路径的持久化模式。
+        /// </remarks>
+        public ImageSourceConfig ToConfig()
+        {
+            return new ImageSourceConfig
+            {
+                NodeId = NodeId,
+                FilePaths = GetFilePaths().ToList(),
+                CurrentIndex = CurrentIndex,
+                AutoSwitchEnabled = AutoSwitchEnabled,
+                RunMode = (int)RunMode,
+                ForRunPaths = _images.Where(img => img.IsForRun).Select(img => img.FilePath).ToList()
+            };
+        }
+
+        /// <summary>
+        /// 从配置恢复输入源（打开方案时调用）
+        /// </summary>
+        /// <remarks>
+        /// 依据 FilePaths 重建 ImageInfo（保留勾选路径），并恢复当前索引/运行模式/自动切换状态。
+        /// </remarks>
+        public void LoadFromConfig(ImageSourceConfig config)
+        {
+            if (config == null) throw new ArgumentNullException(nameof(config));
+
+            var infos = config.FilePaths
+                .Where(p => !string.IsNullOrEmpty(p))
+                .Select(p => new ImageInfo
+                {
+                    FilePath = p,
+                    Name = System.IO.Path.GetFileName(p),
+                    IsForRun = config.ForRunPaths?.Contains(p) == true
+                })
+                .ToList();
+
+            _images.Clear();
+            if (infos.Count > 0)
+            {
+                _images.AddRange(infos);
+            }
+
+            CurrentIndex = config.CurrentIndex >= 0 && config.CurrentIndex < _images.Count
+                ? config.CurrentIndex
+                : -1;
+            AutoSwitchEnabled = config.AutoSwitchEnabled;
+            RunMode = config.RunMode == 1 ? ImageRunMode.运行选择 : ImageRunMode.运行全部;
+
+            // 缩略图由虚拟化容器 Loaded 事件按需解码（OnItemLoaded），恢复路径无需全量触发，
+            // 避免海量图片同时排队解码导致首屏/远端延迟。
+
+            OnPropertyChanged(nameof(Count));
+            OnPropertyChanged(nameof(HasImages));
+            OnPropertyChanged(nameof(GetSelectedImages));
         }
     }
 }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using System.Windows;
@@ -26,7 +26,10 @@ namespace SunEyeVision.UI.Shared
     {
         /// <summary>
         /// 节点输出缓存（UI 层专用，强类型）
+        /// 基类属性已 [JsonIgnore]，此处 new 隐藏属性必须显式 [JsonIgnore]，
+        /// 否则按运行时类型序列化 WorkflowNode 时会把强类型对象带进 JSON。
         /// </summary>
+        [JsonIgnore]
         public new NodeOutputCache? OutputCache
         {
             get => base.OutputCache as NodeOutputCache;
@@ -35,7 +38,10 @@ namespace SunEyeVision.UI.Shared
 
         /// <summary>
         /// 节点输入源（UI 层专用，强类型）
+        /// 基类属性已 [JsonIgnore]，此处 new 隐藏属性必须显式 [JsonIgnore]，
+        /// 否则 ImageInputSource（含 BitmapImage）会被序列化进 JSON。
         /// </summary>
+        [JsonIgnore]
         public new ImageInputSource? InputSource
         {
             get => base.InputSource as ImageInputSource;
@@ -44,7 +50,9 @@ namespace SunEyeVision.UI.Shared
 
         /// <summary>
         /// 最近一次执行结果（UI 层专用，强类型）
+        /// 基类属性已 [JsonIgnore]，此处 new 隐藏属性必须显式 [JsonIgnore]。
         /// </summary>
+        [JsonIgnore]
         public new ToolResults? LastResult
         {
             get => base.LastResult as ToolResults;
@@ -185,8 +193,16 @@ namespace SunEyeVision.UI.Shared
                 IsEnabled = baseNode.IsEnabled,
                 Parameters = baseNode.Parameters,
                 SelectedDisplaySource = baseNode.SelectedDisplaySource,
-                SubroutineId = baseNode.SubroutineId    // ★ SSOT
+                SubroutineId = baseNode.SubroutineId,    // ★ SSOT
+                ImageSourceConfig = baseNode.ImageSourceConfig   // ★ 输入源持久化
             };
+
+            // 若反序列化了输入源配置，则据此重建运行时 InputSource（ImageInputSource）
+            if (node.ImageSourceConfig != null && node.ImageSourceConfig.FilePaths.Count > 0)
+            {
+                var input = node.EnsureInputSource();
+                input.LoadFromConfig(node.ImageSourceConfig);
+            }
 
             return node;
         }

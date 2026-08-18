@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -9,7 +9,6 @@ using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Metadata;
 using SunEyeVision.Plugin.SDK.Validation;
 using SunEyeVision.UI.Services.ParameterSetting;
-using SunEyeVision.UI.Services.Thumbnail;
 
 using SunEyeVision.UI.Core;
 
@@ -33,9 +32,8 @@ namespace SunEyeVision.UI.Features.ParameterSetting
     /// {
     ///     public GaussianBlurViewModel(
     ///         ToolMetadata metadata,
-    ///         IDataSourceQueryService dataSourceQueryService,
-    ///         SmartThumbnailLoader thumbnailLoader)
-    ///         : base(metadata, dataSourceQueryService, thumbnailLoader)
+    ///         IDataSourceQueryService dataSourceQueryService)
+    ///         : base(metadata, dataSourceQueryService)
     ///     {
     ///     }
     ///     
@@ -51,7 +49,6 @@ namespace SunEyeVision.UI.Features.ParameterSetting
         #region 字段
 
         private readonly IDataSourceQueryService? _dataSourceQueryService;
-        private readonly SmartThumbnailLoader? _thumbnailLoader;
         private readonly ImageDataSourceService? _imageDataSourceService;
         private string _nodeId = string.Empty;
         private string _nodeName = string.Empty;
@@ -243,12 +240,10 @@ namespace SunEyeVision.UI.Features.ParameterSetting
         /// </summary>
         protected ToolViewModelBase(
             ToolMetadata metadata,
-            IDataSourceQueryService? dataSourceQueryService = null,
-            SmartThumbnailLoader? thumbnailLoader = null)
+            IDataSourceQueryService? dataSourceQueryService = null)
         {
             Metadata = metadata ?? throw new ArgumentNullException(nameof(metadata));
             _dataSourceQueryService = dataSourceQueryService;
-            _thumbnailLoader = thumbnailLoader;
 
             if (dataSourceQueryService != null)
             {
@@ -412,7 +407,6 @@ namespace SunEyeVision.UI.Features.ParameterSetting
                 name,
                 displayName,
                 _dataSourceQueryService!,
-                _thumbnailLoader,
                 type,
                 description);
         }
@@ -504,9 +498,8 @@ namespace SunEyeVision.UI.Features.ParameterSetting
 
         protected ToolViewModelBase(
             ToolMetadata metadata,
-            IDataSourceQueryService? dataSourceQueryService = null,
-            SmartThumbnailLoader? thumbnailLoader = null)
-            : base(metadata, dataSourceQueryService, thumbnailLoader)
+            IDataSourceQueryService? dataSourceQueryService = null)
+            : base(metadata, dataSourceQueryService)
         {
         }
 

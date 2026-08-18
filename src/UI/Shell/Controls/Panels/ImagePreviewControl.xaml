@@ -12,8 +12,6 @@
     <UserControl.Resources>
         <!-- 样式转换器 -->
         <local:ImageRunModeDisplayConverter x:Key="ImageRunModeDisplayConverter"/>
-        <local:BooleanToBrushConverter x:Key="BooleanToBrushConverter"/>
-        <local:NullToOpacityConverter x:Key="NullToOpacityConverter"/>
         <local:RunModeToVisibilityConverter x:Key="RunModeToVisibilityConverter"/>
 
         <!-- 图标按钮样式 -->
@@ -228,8 +226,6 @@
             <local:ImageRunMode>运行选择</local:ImageRunMode>
         </x:Array>
 
-        <!-- 反向布尔转换器 -->
-        <local:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
     </UserControl.Resources>
 
     <!-- 主容器 -->
@@ -347,6 +343,10 @@
                      HorizontalContentAlignment="Stretch"
                      ScrollViewer.HorizontalScrollBarVisibility="Auto"
                      ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                     ScrollViewer.CanContentScroll="True"
+                     VirtualizingPanel.IsVirtualizing="True"
+                     VirtualizingPanel.VirtualizationMode="Recycling"
+                     VirtualizingPanel.IsVirtualizingWhenGrouping="True"
                      ScrollViewer.ScrollChanged="OnScrollChanged"
                     SelectionChanged="OnThumbnailListBoxSelectionChanged">
                 <ListBox.ItemsPanel>
@@ -407,21 +407,58 @@
                                         Padding="2"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center">
-                                    <Grid>
+                                    <Grid Width="60" Height="60">
+                                        <!-- 缩略图由 ImageInfo.EnsureThumbnail 后台线程解码 + 静态缓存（DecodePixelWidth=100 + Freeze），
+                                             滚动时缓存命中秒出。三态反馈：加载中灰底 / 成功图 / 失败占位（rule-015 失败可见） -->
+
+                                        <!-- 加载中 / 未请求：灰底占位 -->
+                                        <Border Background="#333333" CornerRadius="2">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding ThumbnailState}" Value="Loading">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding ThumbnailState}" Value="Pending">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                        </Border>
+
+                                        <!-- 成功：已冻结缩略图 -->
                                         <Image Source="{Binding Thumbnail}"
-                                               Width="60"
-                                               Height="60"
                                                Stretch="Uniform"
-                                               RenderOptions.BitmapScalingMode="HighQuality"/>
-                                        <Border Background="{DynamicResource {x:Static base:ThemeKeys.ImageAreaBackgroundBrush}}" CornerRadius="2"
-                                                Opacity="{Binding Thumbnail, Converter={StaticResource NullToOpacityConverter}}"
-                                                Width="60" Height="60"
-                                                HorizontalAlignment="Center" VerticalAlignment="Center">
-                                            <TextBlock Text="..."
-                                                       FontSize="16"
-                                                       Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"
-                                                       HorizontalAlignment="Center"
-                                                       VerticalAlignment="Center"/>
+                                               RenderOptions.BitmapScalingMode="LowQuality">
+                                            <Image.Style>
+                                                <Style TargetType="Image">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding ThumbnailState}" Value="Loaded">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Image.Style>
+                                        </Image>
+
+                                        <!-- 失败：破图占位 -->
+                                        <Border Background="#552222" CornerRadius="2">
+                                            <TextBlock Text="✕" Foreground="#FF8888"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                       FontSize="18"/>
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding ThumbnailState}" Value="Failed">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
                                         </Border>
                                     </Grid>
                                 </Border>
@@ -515,6 +552,12 @@
                                 </ControlTemplate>
                             </Setter.Value>
                         </Setter>
+                        <!-- 容器被虚拟化物化（进入可视区域）时触发缩略图解码。
+                             这是业界成熟做法：由虚拟化系统决定"哪些项可见"，无需手算视口/索引，
+                             对项宽变化、DPI、滚动位置完全免疫。 -->
+                        <EventSetter Event="Loaded" Handler="OnItemLoaded"/>
+                        <!-- 容器滚出可视区域（虚拟化回收）时取消进行中的解码，省 CPU 给当前视口（对齐 ImageGlass 不可见即取消） -->
+                        <EventSetter Event="Unloaded" Handler="OnItemUnloaded"/>
                     </Style>
                 </ListBox.ItemContainerStyle>
             </ListBox>

@@ -1,6 +1,6 @@
 {
   "generated": "2026-08-18",
-  "totalCommits": 379,
+  "totalCommits": 380,
   "weeks": [
     {
       "week": "2026-W04",
@@ -287,15 +287,30 @@
     },
     {
       "week": "2026-W34",
-      "commits": 4,
+      "commits": 5,
       "modules": {
         "M-SRC-UI": 2,
+        "M-HIST-PREVIEW": 1,
         "M-SRC-TEST": 1,
         "M-HIST-GLOBALVAR": 1
       }
     }
   ],
   "moduleWeeks": {
+    "M-HIST-PREVIEW": [
+      {
+        "week": "2026-W07",
+        "commits": 2
+      },
+      {
+        "week": "2026-W19",
+        "commits": 1
+      },
+      {
+        "week": "2026-W34",
+        "commits": 1
+      }
+    ],
     "M-SRC-TEST": [
       {
         "week": "2026-W12",
@@ -746,16 +761,6 @@
         "commits": 1
       }
     ],
-    "M-HIST-PREVIEW": [
-      {
-        "week": "2026-W07",
-        "commits": 2
-      },
-      {
-        "week": "2026-W19",
-        "commits": 1
-      }
-    ],
     "M-HIST-RESULTTREE": [
       {
         "week": "2026-W10",
@@ -816,6 +821,28 @@
     ]
   },
   "moduleCommits": {
+    "M-HIST-PREVIEW": [
+      {
+        "hash": "b57646d",
+        "date": "2026-02-11",
+        "message": "优化了图像预览器的布局和部分样式，删除了不必要的属性和事件，简化了代码结构，提高了代码的可读性和维护性。"
+      },
+      {
+        "hash": "7746e50",
+        "date": "2026-02-14",
+        "message": "基于WIC解码器的GPU加速版本 暂时搁置开始测试ImageSharp的GPU加速功能"
+      },
+      {
+        "hash": "5cf7f56",
+        "date": "2026-05-08",
+        "message": "﻿1.优化了图像预览器，加载图像更快了  增加  删除  文件夹添加图像 功能也都修复了"
+      },
+      {
+        "hash": "9586518",
+        "date": "2026-08-18",
+        "message": "docs: 图像预览器优化方案文档沉淀（对标 ImageGlass + 源码实证校准）"
+      }
+    ],
     "M-SRC-TEST": [
       {
         "hash": "5d68328",
@@ -2478,23 +2505,6 @@
         "hash": "1fa3bd5",
         "date": "2026-05-15",
         "message": "﻿模版创建和匹配继续优化 但是 现在还有大量的问题 后面可能要大重构，先提交，便于回退 目前的问题如下，有精度   逻辑  和性能三个方面的问题 B1 链长过滤不对称\t精度+1~3%\t所有图像\t✅ B2 梯度阈值统一\t精度稳定\t所有图像\t✅ 响应图内存优化\t构建-70%\t大图显著\t✅ 粗层步长增大\t粗层-60%\t大图显著\t✅ 候选NMS去重\t精化-75%\t候选多时显著\t✅ 显示降采样\t渲染-90%\t所有模板\t✅ 角度LUT\t累加-5~10%\t所有场景\t✅ 多模板并行\t模板数倍\t多模板场景\t✅"
-      }
-    ],
-    "M-HIST-PREVIEW": [
-      {
-        "hash": "b57646d",
-        "date": "2026-02-11",
-        "message": "优化了图像预览器的布局和部分样式，删除了不必要的属性和事件，简化了代码结构，提高了代码的可读性和维护性。"
-      },
-      {
-        "hash": "7746e50",
-        "date": "2026-02-14",
-        "message": "基于WIC解码器的GPU加速版本 暂时搁置开始测试ImageSharp的GPU加速功能"
-      },
-      {
-        "hash": "5cf7f56",
-        "date": "2026-05-08",
-        "message": "﻿1.优化了图像预览器，加载图像更快了  增加  删除  文件夹添加图像 功能也都修复了"
       }
     ],
     "M-HIST-RESULTTREE": [

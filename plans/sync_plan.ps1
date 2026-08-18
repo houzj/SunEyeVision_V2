@@ -85,6 +85,25 @@ if ($Files.Count -gt 0) {
     $Files | Select-Object -First 5 | ForEach-Object { Write-Host "  $_" -ForegroundColor DarkGray }
 }
 
+# ---------- 纯计划系统自我更新 → 全局短路 ----------
+# 治本：提交只改动计划系统文件（plans/、.codebuddy/ 等，不含任何业务路径）时，
+# 无论 commit message 是否命中业务模块关键词，都直接跳过整个归类（不读不写 plan.json）。
+# 否则这类提交会因 message 命中 M-HIST-SOLUTION（"持久化"/"解决方案"等宽泛词）被归入业务模块，
+# 追加日志 → 写回 plan.json → 产生 git diff → 再触发 hook → 无限循环。
+# 此前判断只放在"未匹配模块"分支（$matchedId 为空）里，命中业务模块时走不到，导致防呆失效。
+$businessPrefixes = @("src/", "tools/", "tests/", "docs/", "libs/", "PluginDevKit/", "Help/")
+$hasBusinessChange = $false
+foreach ($f in $Files) {
+    foreach ($bp in $businessPrefixes) {
+        if ($f.StartsWith($bp)) { $hasBusinessChange = $true; break }
+    }
+    if ($hasBusinessChange) { break }
+}
+if (-not $hasBusinessChange) {
+    Write-Host "纯计划系统自我更新（仅改动 plans/.codebuddy 等，无业务代码），跳过整个归类，防止 hook 自我更新死循环" -ForegroundColor DarkGray
+    exit 0
+}
+
 # ---------- 读取 plan.json ----------
 $plan = Get-Content -Path $JsonPath -Raw -Encoding UTF8 | ConvertFrom-Json
 

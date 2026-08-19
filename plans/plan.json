@@ -3119,6 +3119,10 @@
                                     {
                                         "date":  "2026-08-17",
                                         "note":  "现状核实：Script 工具已实现（20 文件，ScriptTool 127 行 + ScriptTypeMapper/ScriptVariableTab），7 个测试"
+                                    },
+                                    {
+                                        "date":  "2026-08-19",
+                                        "note":  "[be3860670f79b76e8145f60b1cd71f914b22f4ed] 脚本工具性能优化与引用治理"
                                     }
                                 ]
                     },

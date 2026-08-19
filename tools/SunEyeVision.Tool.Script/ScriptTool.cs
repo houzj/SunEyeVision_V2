@@ -22,6 +22,14 @@ namespace SunEyeVision.Tool.Script
     )]
     public class ScriptTool : IToolPlugin<ScriptParameters, ScriptResults>
     {
+        // ★ 应用启动阶段后台预热补全引擎（MEF + Workspace），对齐新版 RoslynPad 启动初始化。
+        //   静态构造在 LoadPlugins 实例化工具时触发，fire-and-forget 不阻塞启动；
+        //   首次打开脚本工具时补全立即可用（MEF 已预热缓存命中）。
+        static ScriptTool()
+        {
+            ScriptDebugControl.WarmupForStartup();
+        }
+
         public ScriptResults Run(ScriptParameters parameters)
         {
             var result = new ScriptResults

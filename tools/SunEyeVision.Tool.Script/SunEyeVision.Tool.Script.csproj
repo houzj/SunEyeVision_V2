@@ -29,6 +29,17 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.Features" Version="4.12.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" Version="4.12.0" />
+    <PackageReference Include="OpenCvSharp4" Version="4.13.0.20260222" PrivateAssets="All" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- 宿主 API 编译期引用：脚本编译/补全需解析 HOperatorSet / Mat 类型元数据（类型锚定）。
+         halcon 用 libs\halcon\net\ 源路径（对齐 Plugin.SDK，比 dev/Debug 稳定，不依赖构建顺序）；
+         OpenCvSharp 用 NuGet（对齐主程序 UI 版本）。
+         Private=false：宿主统一加载，不复制到 plugins/（rule-016 纯净）。 -->
+    <Reference Include="halcondotnetxl">
+      <HintPath>..\..\libs\halcon\net\halcondotnetxl.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Plugin.SDK\SunEyeVision.Plugin.SDK.csproj">

@@ -47,16 +47,18 @@ namespace SunEyeVision.Tool.Script.Views
         private ScriptTool? _scriptTool;
 
         // Roslyn completion workspace
-        private AdhocWorkspace? _workspace;
+        private ScriptWorkspace? _workspace;
         private DocumentId? _documentId;                              // 生成的字段声明文档 ID（不可变，仅 RebuildWorkspace 赋值）
         private DocumentId? _userDocumentId;                          // 用户代码文档 ID（不可变，仅 RebuildWorkspace 赋值）
+        private AvalonEditTextContainer? _userTextContainer;         // 用户文档增量文本通道（SourceTextContainer），随 RebuildWorkspace 重建
         private CompletionWindow? _completionWindow;
         private CompletionItem[] _currentItems;                        // 唯一数据源（单层，无后台刷新）
-        private CancellationTokenSource? _throttleCts;                // 50ms 节流令牌
+        private CancellationTokenSource? _throttleCts;                // 补全查询取消令牌（新查询取消旧查询）
 
         // Phase 1: 实时诊断
         private CancellationTokenSource? _diagnosticsCts;             // 500ms 诊断节流
         private IReadOnlyList<Diagnostic> _currentDiagnostics = [];   // 当前错误列表
+        private IReadOnlyDictionary<int, IReadOnlyList<Diagnostic>>? _diagnosticsByLine;  // 按行索引（滚动渲染用）
         private string? _lastDiagnosedCode;                            // 上次已诊断的代码，用于跳过不变代码
 
         // 初始化阶段抑制诊断（避免 TextChanged 在 workspace 就绪前触发诊断，
@@ -65,14 +67,24 @@ namespace SunEyeVision.Tool.Script.Views
 
         // Phase 2b: Roslyn 语义高亮
         private CancellationTokenSource? _semanticCts;             // 100ms 语义着色节流
-        private IReadOnlyList<SemanticSpan>? _semanticSpans;        // 当前语义着色区间（offset / length / brush），供 SemanticColorizer 读取
+        // 当前语义着色区间按行号索引（行号 → spans），供 SemanticColorizer 按行 O(1) 查缓存。
+        // 相比扁平列表，ColorizeLine 渲染每行不再线性扫全部 spans，消除连续打字/删除/换行的逐帧卡顿。
+        private IReadOnlyDictionary<int, IReadOnlyList<SemanticSpan>>? _semanticSpansByLine;
 
         // 进程生命周期内共享的 MefHostServices（首次初始化慢，后续缓存命中快）
         private static MefHostServices? _sharedMefHost;
         private static object _mefLock = new();
 
-        // 预热 AdhocWorkspace 缓存（工具注册时创建，SetParameters 中复用）
-        private static AdhocWorkspace? _preWarmedWorkspace;
+        // 预热 ScriptWorkspace 缓存（工具注册时创建，SetParameters 中复用）
+        private static ScriptWorkspace? _preWarmedWorkspace;
+
+        // 补全引擎就绪标志（MEF + Workspace 预热完成后置 true）。
+        // 应用启动后台预热（ScriptTool 静态构造 → WarmupForStartup）通常已就绪；
+        // 用户在启动瞬间极速打开工具时，SetParameters 据此决定"立即重建 or 等待预热完成"。
+        private static volatile bool _completionReady;
+
+        // 补全就绪回调（预热完成时通知等待中的 SetParameters 重建 workspace）
+        private static Action? _onCompletionReady;
 
         /// <summary>
         /// 线程安全地获取共享 MefHostServices（LazyInitializer 消除预热与主线程的竞态）。
@@ -91,13 +103,45 @@ namespace SunEyeVision.Tool.Script.Views
         }
 
         /// <summary>
+        /// 应用启动后台预热补全引擎（MEF + Workspace），对齐新版 RoslynPad 的 Task.Run 启动初始化。
+        /// ScriptTool 静态构造调用（应用启动 LoadPlugins 实例化时自动触发），fire-and-forget 不阻塞启动。
+        /// 幂等：双重检查锁保证进程内只预热一次；完成后置 _completionReady 并通知等待中的 SetParameters。
+        /// </summary>
+        internal static void WarmupForStartup()
+        {
+            lock (_warmupLock)
+            {
+                if (_warmupStarted) return;     // 幂等：进程内只预热一次
+                _warmupStarted = true;
+            }
+
+            _ = Task.Run(async () =>
+            {
+                var sw = System.Diagnostics.Stopwatch.StartNew();
+                PluginLogger.Info("[补全] 启动后台预热 Roslyn 开始...", nameof(ScriptDebugControl));
+                await WarmupRoslynAsync();
+                await WarmupWorkspaceAsync();
+                sw.Stop();
+                _completionReady = true;
+                PluginLogger.Info($"[补全] 启动后台预热完成: {sw.ElapsedMilliseconds}ms", nameof(ScriptDebugControl));
+
+                // 通知等待中的 SetParameters（启动瞬间打开工具场景）重建 workspace
+                var cb = Interlocked.Exchange(ref _onCompletionReady, null);
+                cb?.Invoke();
+            });
+        }
+
+        private static bool _warmupStarted;
+        private static readonly object _warmupLock = new();
+
+        /// <summary>
         /// 后台预热 Roslyn MefHostServices（线程安全，消除预热与主线程的竞态）。
         /// 预热结果存入静态缓存，SetParameters 中 RebuildWorkspace 可直接复用，
         /// 首次弹出不再阻塞 UI 线程。
         /// </summary>
-        private static async Task WarmupRoslynAsync()
+        private static Task WarmupRoslynAsync()
         {
-            await Task.Run(() =>
+            return Task.Run(() =>
             {
                 var sw = System.Diagnostics.Stopwatch.StartNew();
                 PluginLogger.Info("[补全] 后台预热 Roslyn 开始...", nameof(ScriptDebugControl));
@@ -108,18 +152,19 @@ namespace SunEyeVision.Tool.Script.Views
         }
 
         /// <summary>
-        /// 后台预热 AdhocWorkspace（创建空项目骨架），
+        /// 后台预热 ScriptWorkspace（创建空项目骨架），
         /// SetParameters 中 RebuildWorkspace 直接复用，节省 ~200-500ms。
         /// </summary>
-        private static async Task WarmupWorkspaceAsync()
+        private static Task WarmupWorkspaceAsync()
         {
-            await Task.Run(() =>
+            return Task.Run(() =>
             {
                 var sw = System.Diagnostics.Stopwatch.StartNew();
                 PluginLogger.Info("[补全] 后台预热 Workspace 开始...", nameof(ScriptDebugControl));
                 var host = GetSharedMefHost();
-                var ws = new AdhocWorkspace(host);
-                ws.AddProject("ScriptCompletion", LanguageNames.CSharp);
+                var ws = new ScriptWorkspace(host);
+                ws.TryApplyChanges(ws.CurrentSolution.AddProject(
+                    ProjectInfo.Create(ProjectId.CreateNewId(), VersionStamp.Create(), "ScriptCompletion", "ScriptCompletion", LanguageNames.CSharp)));
                 Interlocked.Exchange(ref _preWarmedWorkspace, ws);
                 sw.Stop();
                 PluginLogger.Info($"[补全] 后台预热 Workspace 完成: {sw.ElapsedMilliseconds}ms", nameof(ScriptDebugControl));
@@ -151,13 +196,13 @@ namespace SunEyeVision.Tool.Script.Views
             LoadCustomHighlighting();
 
             // Layer 2a: 实时错误标记着色器（浅红背景标记编译错误行，保留语法颜色）
-            var errorMarker = new ErrorMarkerColorizer(() => _currentDiagnostics, false);
+            var errorMarker = new ErrorMarkerColorizer(() => _diagnosticsByLine, false);
             CodeEditor.TextArea.TextView.LineTransformers.Add(errorMarker);
             PluginLogger.Info("[Highlighting] 已加载实时错误标记着色器", typeName);
 
             // Layer 2b: Roslyn 语义高亮着色器（基于 SemanticModel，对类型=青/方法·属性=紫/字段=金 上色，与 xshd 互补）
             //   ColorizeLine 覆盖前景色，与 Layer 2a 的背景标记互不干扰
-            var semanticColorizer = new SemanticColorizer(() => _semanticSpans);
+            var semanticColorizer = new SemanticColorizer(() => _semanticSpansByLine);
             CodeEditor.TextArea.TextView.LineTransformers.Add(semanticColorizer);
             PluginLogger.Info("[Highlighting] 已加载 Roslyn 语义高亮着色器", typeName);
 
@@ -173,8 +218,8 @@ namespace SunEyeVision.Tool.Script.Views
             CodeEditor.TextChanged += OnCodeEditorTextChanged;
 
             // Phase 2: 后台预热 Roslyn 补全（MEF + 程序集引用，窗口立即弹出，不阻塞 UI）
-            _ = WarmupRoslynAsync();
-            _ = WarmupWorkspaceAsync();
+            // 幂等：应用启动已由 ScriptTool 静态构造触发 WarmupForStartup，此处仅兜底（独立打开工具场景）
+            WarmupForStartup();
 
             // 自动补全事件
             CodeEditor.TextArea.TextEntered += TextArea_TextEntered;
@@ -186,6 +231,8 @@ namespace SunEyeVision.Tool.Script.Views
                 CodeEditor.TextArea.TextEntered -= TextArea_TextEntered;
                 CodeEditor.TextArea.TextEntering -= TextArea_TextEntering;
                 CodeEditor.TextChanged -= OnCodeEditorTextChanged;
+                _userTextContainer?.Dispose();
+                _userTextContainer = null;
                 _workspace?.Dispose();
                 _diagnosticsCts?.Cancel();
                 _diagnosticsCts?.Dispose();
@@ -246,22 +293,48 @@ namespace SunEyeVision.Tool.Script.Views
                 }
 
                 InitializeTabs();
-                // ★ 后台异步执行：窗口先显示，补全引擎和诊断在后台就绪。
-                //   用户先看到编辑器，3-4s 后 IntelliSense 可用（对齐 VS Code 的标准行为）。
-                _ = Dispatcher.InvokeAsync(() =>
+                // ★ 补全就绪则立即重建 workspace；未就绪（启动瞬间极速打开工具）则先显示代码，
+                //   注册就绪回调，预热完成后自动重建。绝不阻塞 UI 线程等 MEF 初始化锁（防竞态）。
+                if (_completionReady)
                 {
-                    var perfSw = System.Diagnostics.Stopwatch.StartNew();
-                    RebuildWorkspace();
-                    PluginLogger.Info($"[Perf] RebuildWorkspace: {perfSw.ElapsedMilliseconds}ms", GetType().Name);
-                    _suppressDiagnostic = false;    // workspace 就绪，开放诊断
-                    ScheduleDiagnosticAsync();
-                    ScheduleSemanticAsync(0);       // 首次打开立即着色（0ms）
-                }, DispatcherPriority.Background);
+                    ScheduleRebuildForOpen();
+                }
+                else
+                {
+                    // 就绪前先显示代码（词法着色已由 xshd 生效，可编辑），状态栏提示就绪中
+                    UpdateStatus("补全引擎就绪中...");
+                    var capturedControl = this;
+                    Interlocked.Exchange(ref _onCompletionReady, () =>
+                    {
+                        if (capturedControl.Dispatcher.CheckAccess())
+                            capturedControl.ScheduleRebuildForOpen();
+                        else
+                            capturedControl.Dispatcher.BeginInvoke(capturedControl.ScheduleRebuildForOpen, DispatcherPriority.Background);
+                    });
+                }
 
                 // ★ 参数注入完成 → 状态从"初始化中..."切到"就绪"
                 //   此时编辑器代码已加载、Roslyn 预热已发起，对用户而言工具已就绪
-                UpdateStatus("就绪");
+                if (_completionReady)
+                    UpdateStatus("就绪");
             }
+        }
+
+        /// <summary>
+        /// 后台执行 workspace 重建 + 诊断/语义调度（补全就绪后调用）。
+        /// 从 UI 线程 Dispatcher.Background 执行，重建不阻塞界面。
+        /// </summary>
+        private void ScheduleRebuildForOpen()
+        {
+            _ = Dispatcher.InvokeAsync(() =>
+            {
+                var perfSw = System.Diagnostics.Stopwatch.StartNew();
+                RebuildWorkspace();
+                PluginLogger.Info($"[Perf] RebuildWorkspace: {perfSw.ElapsedMilliseconds}ms", GetType().Name);
+                _suppressDiagnostic = false;    // workspace 就绪，开放诊断
+                ScheduleDiagnosticAsync();
+                ScheduleSemanticAsync(0);       // 首次打开立即着色（0ms）
+            }, DispatcherPriority.Background);
         }
 
         /// <summary>
@@ -738,8 +811,8 @@ namespace SunEyeVision.Tool.Script.Views
             }
             else
             {
-                _workspace = new AdhocWorkspace(host);
-                PluginLogger.Info("[补全] AdhocWorkspace 实例已创建", typeName);
+                _workspace = new ScriptWorkspace(host);
+                PluginLogger.Info("[补全] ScriptWorkspace 实例已创建", typeName);
             }
 
             sw.Restart();
@@ -753,8 +826,9 @@ namespace SunEyeVision.Tool.Script.Views
             }
             else
             {
-                project = _workspace.AddProject("ScriptCompletion", LanguageNames.CSharp);
-                project = project.WithCompilationOptions(
+                var projectInfo = ProjectInfo.Create(ProjectId.CreateNewId(), VersionStamp.Create(), "ScriptCompletion", "ScriptCompletion", LanguageNames.CSharp);
+                var newSolution = _workspace.CurrentSolution.AddProject(projectInfo);
+                project = newSolution.GetProject(projectInfo.Id)!.WithCompilationOptions(
                     new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
                         .WithAllowUnsafe(true));
                 PluginLogger.Info($"[补全] 项目创建完成: {sw.ElapsedMilliseconds}ms", typeName);
@@ -808,22 +882,40 @@ namespace SunEyeVision.Tool.Script.Views
             PluginLogger.Info($"[补全] 已添加 {refCount} 个 MetadataReference: {sw.ElapsedMilliseconds}ms", typeName);
 
             sw.Restart();
-            if (!_workspace.TryApplyChanges(project.Solution))
-            {
-                PluginLogger.Warning("[补全] TryApplyChanges 失败: 无法应用项目变更到 workspace", typeName);
-            }
-            PluginLogger.Info($"[补全] TryApplyChanges: {sw.ElapsedMilliseconds}ms", typeName);
+            // 用 SetCurrentSolution 直接替换（对齐 RoslynPad SetSubmissionDocument），
+            // 接受 AddProject + AddMetadataReference 全部变化，避免 TryApplyChanges 钩子链异常。
+            _workspace.SetCurrentSolution(project.Solution);
+            PluginLogger.Info($"[补全] SetCurrentSolution(项目+引用): {sw.ElapsedMilliseconds}ms", typeName);
 
             sw.Restart();
 
-            // ★ 添加两个文档：字段声明 partial class + 用户完整 partial class
-            var genDoc = _workspace.AddDocument(project.Id, "ScriptGenerated.cs",
-                SourceText.From(generatedCode));
-            _documentId = genDoc.Id;
+            // ★ 添加两个文档：字段声明 partial class + 用户完整 partial class。
+            //    Workspace 基类无 AddDocument 便捷方法，用 Solution.AddDocument(DocumentInfo) + TryApplyChanges 推进。
+            var genDocId = DocumentId.CreateNewId(project.Id);
+            var userDocId = DocumentId.CreateNewId(project.Id);
 
-            var userDoc = _workspace.AddDocument(project.Id, "ScriptUser.cs",
-                SourceText.From(userCode));
-            _userDocumentId = userDoc.Id;
+            var solution = project.Solution
+                .AddDocument(DocumentInfo.Create(genDocId, "ScriptGenerated.cs", folders: null,
+                    sourceCodeKind: SourceCodeKind.Regular))
+                .AddDocument(DocumentInfo.Create(userDocId, "ScriptUser.cs", folders: null,
+                    sourceCodeKind: SourceCodeKind.Regular));
+
+            // 先以当前 generatedCode 文本同步 generated 文档（后续由 RunDiagnosticAsync 用 WithDocumentText 更新）
+            solution = solution.WithDocumentText(genDocId, SourceText.From(generatedCode));
+
+            // 用 SetCurrentSolution 直接替换（对齐 RoslynPad SetSubmissionDocument）：
+            // TryApplyChanges 对 AddDocument 走 OnDocumentAdded 钩子链，在 Workspace 基类下会抛异常
+            // 且被上层静默吞掉，导致 _userDocumentId 永不赋值、补全跳过。
+            // SetCurrentSolution 无脑替换整个 solution，接受 AddDocument+ChangeDocument 全部变化。
+            _workspace.SetCurrentSolution(solution);
+            _documentId = genDocId;
+
+            // 用户文档绑定 SourceTextContainer 增量通道：容器每次编辑事件携带局部 TextChangeRange，
+            // 经 ScriptWorkspace.OpenDocument 注册，Roslyn 只重解析受影响区域（对齐 RoslynPad workspace.OpenDocument 模式）。
+            _userTextContainer?.Dispose();                          // 重建前释放旧容器事件订阅
+            _userTextContainer = new AvalonEditTextContainer(CodeEditor.Document);
+            _workspace.OpenDocument(userDocId, _userTextContainer);  // ★ 增量通道注册
+            _userDocumentId = userDocId;
 
             PluginLogger.Info($"[补全] 文档添加完成: genDocId={_documentId}, userDocId={_userDocumentId}: {sw.ElapsedMilliseconds}ms", typeName);
 
@@ -834,7 +926,7 @@ namespace SunEyeVision.Tool.Script.Views
         }
 
         /// <summary>
-        /// 统一入口：字母 / 小数点 → 50ms 节流 → 单次 Roslyn 解析 → 单层弹窗
+        /// 统一入口：字母 / 小数点 → 取消旧查询 → 单次 Roslyn 解析 → 单层弹窗
         /// 窗口打开期间：AvalonEdit CompletionList 接管客户端过滤（内置质量评分算法）
         /// </summary>
         private async void TextArea_TextEntered(object? sender, TextCompositionEventArgs e)
@@ -857,7 +949,7 @@ namespace SunEyeVision.Tool.Script.Views
 
             PluginLogger.Info($"[补全] TextEntered 触发: text='{e.Text}', caretOffset={CodeEditor.TextArea.Caret.Offset}", typeName);
 
-            // 取消上一次节流，重新计时
+            // 新查询取消旧查询（对齐 RoslynPad：TextEntered 直接查询，无节流滞后感）
             _throttleCts?.Cancel();
             _throttleCts?.Dispose();
             _throttleCts = new CancellationTokenSource();
@@ -865,19 +957,12 @@ namespace SunEyeVision.Tool.Script.Views
 
             try
             {
-                await Task.Delay(50, token);     // 50ms 节流：快速连击停手后才解析
-                if (token.IsCancellationRequested)
-                {
-                    PluginLogger.Info("[补全] 节流已被取消，不执行补全查询", typeName);
-                    return;
-                }
-
                 bool isDot = e.Text == ".";
 
                 if (isDot)
                 {
                     PluginLogger.Info("[补全] '.' 触发成员补全 Re-query", typeName);
-                    await ThrottledRefreshAndShow('.');
+                    await ThrottledRefreshAndShow('.', token);
                     return;
                 }
 
@@ -887,7 +972,7 @@ namespace SunEyeVision.Tool.Script.Views
                 PluginLogger.Info($"[补全] 字母触发: text='{e.Text}', windowActive={windowActive}, currentItems={_currentItems.Length}", typeName);
                 if (!windowActive)
                 {
-                    await ThrottledRefreshAndShow(e.Text[0]);
+                    await ThrottledRefreshAndShow(e.Text[0], token);
                 }
             }
             catch (TaskCanceledException)
@@ -947,24 +1032,30 @@ namespace SunEyeVision.Tool.Script.Views
         }
 
         /// <summary>
-        /// 在 '.' 手动插入后，直接触发成员补全查询（不再需要同步 workspace，
-        /// FetchFreshCompletions 使用 WithText 避免竞态）
+        /// 在 '.' 手动插入后，直接触发成员补全查询。
+        /// 用户文档已绑定 SourceTextContainer 增量通道，workspace 文本随编辑器实时同步。
         /// </summary>
         private async Task TriggerMemberCompletionAfterDot()
         {
-            await ThrottledRefreshAndShow('.');
+            // '.' 是独立触发动作（非连续打字路径），无竞态需取消，用 CancellationToken.None 免分配 CTS
+            await ThrottledRefreshAndShow('.', CancellationToken.None);
         }
 
         /// <summary>
         /// 单次 Roslyn 解析 + 弹窗/更新窗口（仅从 ThrottledRefreshAndShow 调用）
         /// 窗口打开期间永远不会再次执行此方法
         /// </summary>
-        private async Task ThrottledRefreshAndShow(char triggerChar = '\0')
+        private async Task ThrottledRefreshAndShow(char triggerChar, CancellationToken token)
         {
             var typeName = GetType().Name;
             PluginLogger.Info($"[补全] ThrottledRefreshAndShow 开始: triggerChar='{(triggerChar == '\0' ? "\\0" : triggerChar.ToString())}', caretOffset={CodeEditor.TextArea.Caret.Offset}", typeName);
 
-            var items = await FetchFreshCompletions(triggerChar);
+            var items = await FetchFreshCompletions(triggerChar, token);
+            if (token.IsCancellationRequested)
+            {
+                PluginLogger.Info("[补全] 查询已被新输入取消，丢弃结果", typeName);
+                return;
+            }
             if (items.IsDefault || items.Length == 0)
             {
                 PluginLogger.Warning($"[补全] Roslyn 未返回补全结果, caretOffset={CodeEditor.TextArea.Caret.Offset}, items.IsDefault={items.IsDefault}, items.Length={items.Length}", typeName);
@@ -1062,10 +1153,11 @@ namespace SunEyeVision.Tool.Script.Views
 
         /// <summary>
         /// 从 Roslyn 获取最新补全结果的原始 CompletionItem 列表
-        /// 使用 document.WithText() 避免与诊断线程的 TryApplyChanges 竞态
+        /// 用户文档已绑定 SourceTextContainer 增量通道，workspace 取实时文本（无需 WithText 重建）
         /// 使用 _userDocumentId 保证补全在用户代码空间内
         /// </summary>
-        private async Task<ImmutableArray<CompletionItem>> FetchFreshCompletions(char triggerChar = '\0')
+        private async Task<ImmutableArray<CompletionItem>> FetchFreshCompletions(
+            char triggerChar, CancellationToken token)
         {
             var typeName = GetType().Name;
 
@@ -1093,7 +1185,8 @@ namespace SunEyeVision.Tool.Script.Views
 
             try
             {
-                // 从 workspace 获取用户文档，使用局部 doc，不修改任何字段
+                // 从 workspace 获取用户文档。文档已绑定 SourceTextContainer 增量通道，
+                // 文本与编辑器实时增量同步，无需 WithText 全量重建（消除连续打字卡顿）。
                 var sw = System.Diagnostics.Stopwatch.StartNew();
                 var doc = _workspace.CurrentSolution.GetDocument(_userDocumentId);
                 if (doc == null)
@@ -1101,8 +1194,7 @@ namespace SunEyeVision.Tool.Script.Views
                     PluginLogger.Warning($"[补全] workspace 中找不到 user document: {_userDocumentId}", typeName);
                     return default;
                 }
-                doc = doc.WithText(SourceText.From(code));
-                PluginLogger.Info($"[补全] WithText 完成: {sw.ElapsedMilliseconds}ms", typeName);
+                PluginLogger.Info($"[补全] 取 workspace 实时文档: {sw.ElapsedMilliseconds}ms", typeName);
 
                 sw.Restart();
                 var completionService = CompletionService.GetService(doc);
@@ -1121,8 +1213,14 @@ namespace SunEyeVision.Tool.Script.Views
                 sw.Restart();
                 PluginLogger.Info($"[补全] 调用 GetCompletionsAsync: triggerType={trigger.Kind}, triggerChar='{(triggerChar == '\0' ? "\\0" : triggerChar.ToString())}'", typeName);
 
+                // 对齐 RoslynPad：GetCompletionsAsync 3 参调用；竞态由下方 token.IsCancellationRequested 丢弃过期结果守护
                 var results = await completionService.GetCompletionsAsync(doc, caretOffset, trigger);
 
+                if (token.IsCancellationRequested)
+                {
+                    PluginLogger.Info("[补全] 查询已被新输入取消，丢弃结果", typeName);
+                    return default;
+                }
                 if (results == null)
                 {
                     PluginLogger.Warning($"[补全] GetCompletionsAsync 返回 null: {sw.ElapsedMilliseconds}ms", typeName);
@@ -1134,6 +1232,11 @@ namespace SunEyeVision.Tool.Script.Views
                 PluginLogger.Info($"[补全] GetCompletionsAsync 返回 {items.Length} 个结果: {sw.ElapsedMilliseconds}ms, 前5项=[{string.Join(", ", topItems)}]", typeName);
 
                 return items;
+            }
+            catch (OperationCanceledException)
+            {
+                PluginLogger.Info("[补全] 查询被取消（新输入接管）", typeName);
+                return default;
             }
             catch (Exception ex)
             {
@@ -1215,10 +1318,10 @@ namespace SunEyeVision.Tool.Script.Views
 
             try
             {
-                // 1. 更新 workspace 文本：双文档同步更新
+                // 1. 更新 workspace 文本：仅 generated 文档需手动更新（用户代码变化少，通常为默认模板）。
+                //    user 文档已绑定 SourceTextContainer 增量通道，文本随编辑器实时增量同步，不再 WithDocumentText 覆盖。
                 var newSolution = _workspace.CurrentSolution
-                    .WithDocumentText(_documentId, SourceText.From(generatedCode))
-                    .WithDocumentText(_userDocumentId, SourceText.From(userCode));
+                    .WithDocumentText(_documentId, SourceText.From(generatedCode));
                 if (!_workspace.TryApplyChanges(newSolution))
                 {
                     PluginLogger.Warning("[Diagnostic] TryApplyChanges 失败", typeName);
@@ -1244,6 +1347,10 @@ namespace SunEyeVision.Tool.Script.Views
                         && d.Location.SourceTree == userSyntaxTree)
                     .ToImmutableArray();
                 _currentDiagnostics = diagnostics;
+                // 建按行索引：ErrorMarkerColorizer 滚动渲染时按行 O(1) 取，避免每行全量线性扫诊断
+                _diagnosticsByLine = diagnostics
+                    .GroupBy(d => d.Location.GetLineSpan().StartLinePosition.Line + 1)
+                    .ToDictionary(g => g.Key, g => (IReadOnlyList<Diagnostic>)g.ToArray());
 
                 PluginLogger.Info($"[Diagnostic] Errors={diagnostics.Length}", typeName);
                 // 完整输出诊断详情（不限量），辅助排查编译错误
@@ -1281,7 +1388,7 @@ namespace SunEyeVision.Tool.Script.Views
 
         /// <summary>
         /// 编辑/重建后调度语义着色：独立 100ms 节流（首次打开传 0 立即着色）。
-        /// 与诊断线程（500ms）互不干扰：本方法使用 doc.WithText 局部快照，不修改 workspace 共享状态。
+        /// 与诊断线程（500ms）互不干扰：用户文档经容器实时同步，从 workspace 取最新文本。
         /// </summary>
         private void ScheduleSemanticAsync(int delayMs = 100)
         {
@@ -1305,7 +1412,7 @@ namespace SunEyeVision.Tool.Script.Views
         /// <summary>
         /// 基于 SemanticModel 对标识符上色：类型=青、方法/事件=紫、属性=紫、字段=金。
         /// 与 xshd 语法高亮互补（xshd 仅覆盖 BCL 类型名与声明/调用，本类覆盖所有符号含用户类型）。
-        /// 着色结果缓存到 _semanticSpans，由 SemanticColorizer.ColorizeLine 按行消费。
+        /// 着色结果按行归类缓存到 _semanticSpansByLine，由 SemanticColorizer.ColorizeLine 按行 O(1) 消费。
         /// </summary>
         private async Task RunSemanticAsync(CancellationToken token)
         {
@@ -1320,7 +1427,7 @@ namespace SunEyeVision.Tool.Script.Views
             var code = _parameters.ScriptCode;
             if (string.IsNullOrEmpty(code))
             {
-                _semanticSpans = [];
+                _semanticSpansByLine = new Dictionary<int, IReadOnlyList<SemanticSpan>>();
                 await Dispatcher.InvokeAsync(() => CodeEditor.TextArea.TextView.Redraw(), DispatcherPriority.Background, token);
                 return;
             }
@@ -1333,7 +1440,7 @@ namespace SunEyeVision.Tool.Script.Views
                     PluginLogger.Warning("[Semantic] workspace 中找不到 user document", typeName);
                     return;
                 }
-                doc = doc.WithText(SourceText.From(code));
+                // 文档已绑定 SourceTextContainer 增量通道，文本与编辑器实时增量同步，无需 WithText 全量重建。
 
                 var root = await doc.GetSyntaxRootAsync(token);
                 var model = await doc.GetSemanticModelAsync(token);
@@ -1347,8 +1454,15 @@ namespace SunEyeVision.Tool.Script.Views
                         spans.Add(new SemanticSpan(syntaxToken.SpanStart, syntaxToken.Span.Length, brush));
                 }
 
-                _semanticSpans = spans;
-                PluginLogger.Info($"[Semantic] 已生成 {spans.Count} 个语义着色区间", typeName);
+                // 按行归类：span.Start → 行号。ColorizeLine 按行 O(1) 查缓存，
+                // 渲染每行不再线性扫全部 spans（消除逐帧卡顿）。
+                var sourceText = await doc.GetTextAsync(token);
+                var byLine = new Dictionary<int, IReadOnlyList<SemanticSpan>>();
+                var lineGroups = spans.GroupBy(s => sourceText.Lines.GetLineFromPosition(s.Start).LineNumber);
+                foreach (var group in lineGroups)
+                    byLine[group.Key] = group.ToArray();
+                _semanticSpansByLine = byLine;
+                PluginLogger.Info($"[Semantic] 已生成 {spans.Count} 个语义着色区间, 覆盖 {byLine.Count} 行", typeName);
 
                 if (!token.IsCancellationRequested)
                     await Dispatcher.InvokeAsync(() => CodeEditor.TextArea.TextView.Redraw(), DispatcherPriority.Background, token);
@@ -1453,23 +1567,68 @@ namespace SunEyeVision.Tool.Script.Views
     }
 
     /// <summary>
+    /// 支持打开文档的 Workspace（对齐 RoslynPad RoslynWorkspace.CanOpenDocuments）。
+    /// AdhocWorkspace 是 sealed 且 CanOpenDocuments=false，无法派生；故继承 Workspace 基类。
+    /// 用户文档经 AvalonEditTextContainer（SourceTextContainer）注册到 OpenDocument，
+    /// Roslyn 走增量文本通道，仅重解析受影响语法树区域（替代 TextLoader 全量通道，消除打字卡顿）。
+    /// </summary>
+    public sealed class ScriptWorkspace : Workspace
+    {
+        public ScriptWorkspace(MefHostServices host) : base(host, WorkspaceKind.Host) { }
+
+        public override bool CanOpenDocuments => true;
+
+        // RebuildWorkspace 运行期重建 workspace：加项目、加元数据引用、加文档；
+        // 后续诊断更新 generated 文档文本（ChangeDocument）。全部放行，
+        // 否则 TryApplyChanges 对不支持的变化类型抛 NotSupportedException 导致 workspace 半初始化。
+        public override bool CanApplyChange(ApplyChangesKind feature)
+            => feature is ApplyChangesKind.AddProject
+                or ApplyChangesKind.AddMetadataReference
+                or ApplyChangesKind.AddDocument
+                or ApplyChangesKind.ChangeDocument;
+
+        /// <summary>将编辑器文档（SourceTextContainer）注册为增量文本通道。</summary>
+        public void OpenDocument(DocumentId documentId, SourceTextContainer textContainer)
+        {
+            OnDocumentOpened(documentId, textContainer);
+            OnDocumentContextUpdated(documentId);
+        }
+
+        /// <summary>
+        /// 直接替换整个 solution（暴露基类 protected SetCurrentSolution，对齐 RoslynPad RoslynWorkspace）。
+        /// RebuildWorkspace 用它一次性接受 AddProject/AddMetadataReference/AddDocument/WithDocumentText 全部变化，
+        /// 不走 TryApplyChanges 的 OnProjectAdded/OnDocumentAdded 钩子链（Workspace 基类下这些钩子可能抛异常）。
+        /// </summary>
+        public void SetCurrentSolution(Microsoft.CodeAnalysis.Solution solution)
+            => base.SetCurrentSolution(solution);
+
+        protected override void ApplyDocumentTextChanged(DocumentId document, SourceText newText)
+            => OnDocumentTextChanged(document, newText, PreservationMode.PreserveIdentity);
+    }
+
+    /// <summary>
     /// Roslyn 语义高亮着色器：根据 SemanticModel 将标识符（类型/方法/属性/字段）着色为对应前景色。
     /// 运行在 xshd 语法高亮之后，通过 DocumentColorizingTransformer 增量覆盖前景，
     /// 与 ErrorMarkerColorizer（背景）互补，互不干扰。
     /// </summary>
     internal sealed class SemanticColorizer : DocumentColorizingTransformer
     {
-        private readonly Func<IReadOnlyList<SemanticSpan>?> _getSpans;
+        // 按行号索引的语义着色区间。ColorizeLine 只查当前行，不做全量线性扫描，
+        // 避免每次渲染每行遍历全部 spans（连续打字/删除/换行的逐帧卡顿根因）。
+        private readonly Func<IReadOnlyDictionary<int, IReadOnlyList<SemanticSpan>>?> _getSpansByLine;
 
-        public SemanticColorizer(Func<IReadOnlyList<SemanticSpan>?> getSpans)
+        public SemanticColorizer(Func<IReadOnlyDictionary<int, IReadOnlyList<SemanticSpan>>?> getSpansByLine)
         {
-            _getSpans = getSpans;
+            _getSpansByLine = getSpansByLine;
         }
 
         protected override void ColorizeLine(DocumentLine line)
         {
-            var spans = _getSpans();
-            if (spans == null || spans.Count == 0) return;
+            var byLine = _getSpansByLine();
+            if (byLine == null || byLine.Count == 0) return;
+
+            // 按当前行号 O(1) 取该行 spans（仅遍历本行区间，非全量）
+            if (!byLine.TryGetValue(line.LineNumber, out var spans) || spans == null || spans.Count == 0) return;
 
             var lineStart = line.Offset;
             var lineEnd = line.EndOffset;
@@ -1505,22 +1664,24 @@ namespace SunEyeVision.Tool.Script.Views
     /// </summary>
     internal sealed class ErrorMarkerColorizer : DocumentColorizingTransformer
     {
-        private readonly Func<IReadOnlyList<Diagnostic>> _getDiagnostics;
+        private readonly Func<IReadOnlyDictionary<int, IReadOnlyList<Diagnostic>>?> _getDiagnosticsByLine;
         private static readonly Brush ErrorBgBrush = FrozenBrush(0xFF, 0xE0, 0xE0);      // 浅红背景
         private static readonly Brush DarkErrorBgBrush = FrozenBrush(0x5C, 0x00, 0x00);  // 深红背景（暗色主题）
 
         private readonly bool _isDark;
 
-        public ErrorMarkerColorizer(Func<IReadOnlyList<Diagnostic>> getDiagnostics, bool isDark)
+        public ErrorMarkerColorizer(Func<IReadOnlyDictionary<int, IReadOnlyList<Diagnostic>>?> getDiagnosticsByLine, bool isDark)
         {
-            _getDiagnostics = getDiagnostics;
+            _getDiagnosticsByLine = getDiagnosticsByLine;
             _isDark = isDark;
         }
 
         protected override void ColorizeLine(DocumentLine line)
         {
-            var diagnostics = _getDiagnostics();
-            if (diagnostics == null || diagnostics.Count == 0) return;
+            // 按行 O(1) 查索引，避免每行全量线性扫诊断（对齐 SemanticColorizer 的 _semanticSpansByLine 模式）
+            var byLine = _getDiagnosticsByLine();
+            if (byLine == null || byLine.Count == 0) return;
+            if (!byLine.TryGetValue(line.LineNumber, out var diagnostics) || diagnostics.Count == 0) return;
 
             var brush = _isDark ? DarkErrorBgBrush : ErrorBgBrush;
             var lineStart = line.Offset;

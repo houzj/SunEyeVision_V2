@@ -14,6 +14,7 @@ using System.Windows.Threading;
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Collections.Immutable;
+using System.Composition.Hosting;
 using System.Runtime.InteropServices;
 using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.CodeCompletion;
@@ -26,13 +27,16 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Completion;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Host.Mef;
+using Microsoft.CodeAnalysis.SignatureHelp;
 using Microsoft.CodeAnalysis.Text;
 
+using SunEyeVision.Tool.Script.Completion;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Logging;
 using LogEntry = SunEyeVision.Tool.Script.Models.LogEntry;
 using SunEyeVision.Plugin.SDK.UI.Controls;
+using SunEyeVision.Plugin.SDK.UI.Themes;
 using SunEyeVision.Tool.Script.Models;
 using SunEyeVision.Tool.Script.ScriptEngine;
 using SunEyeVision.Workflow;
@@ -54,6 +58,12 @@ namespace SunEyeVision.Tool.Script.Views
         private CompletionWindow? _completionWindow;
         private CompletionItem[] _currentItems;                        // 唯一数据源（单层，无后台刷新）
         private CancellationTokenSource? _throttleCts;                // 补全查询取消令牌（新查询取消旧查询）
+        private OverloadInsightWindow? _insightWindow;                // 签名帮助浮窗（参数提示，复用实例）
+
+        // 签名帮助：用公开语法树 + IMethodSymbol 定位方法调用（见 ShowSignatureHelpAsync）。
+        // Roslyn 4.12 的 SignatureHelpService/ISignatureHelpProvider/Items 全是 internal（CS0122），
+        // RoslynPad 靠 IgnoresAccessChecksTo 硬闯；我们不引入该包（保持插件目录纯净，rule-016），
+        // 改用公开 API 自定位，对嵌套括号 GetImageSize(((HalImage)input1) 天然免疫。
 
         // Phase 1: 实时诊断
         private CancellationTokenSource? _diagnosticsCts;             // 500ms 诊断节流
@@ -941,6 +951,20 @@ namespace SunEyeVision.Tool.Script.Views
 
             bool isTriggerChar = e.Text == "." ||
                 (!string.IsNullOrEmpty(e.Text) && (char.IsLetterOrDigit(e.Text[0]) || e.Text[0] == '_'));
+            // 签名帮助：输入 '(' / ',' / ')' 都触发 Roslyn 内置 SignatureHelpService 查询。
+            // 对齐 RoslynPad：定位/嵌套括号/参数索引/重载选择全由 Roslyn 内部 ISignatureHelpProvider 完成，
+            // 查询返回 null（调用已闭合 / 非方法调用）时自动关闭浮窗。
+            if (e.Text is "(" or "," or ")")
+            {
+                PluginLogger.Info($"[签名帮助] '{e.Text}' 触发 Roslyn 查询, caretOffset=" + CodeEditor.TextArea.Caret.Offset, typeName);
+                _throttleCts?.Cancel();
+                _throttleCts?.Dispose();
+                _throttleCts = new CancellationTokenSource();
+                var sigToken = _throttleCts.Token;
+                await ShowSignatureHelpAsync(CodeEditor.TextArea.Caret.Offset, e.Text[0], sigToken);
+                return;
+            }
+
             if (!isTriggerChar)
             {
                 PluginLogger.Info($"[补全] TextEntered 非触发字符: '{e.Text}'", typeName);
@@ -1095,7 +1119,19 @@ namespace SunEyeVision.Tool.Script.Views
             PluginLogger.Info($"[补全] 创建新 CompletionWindow: startOffset={startOffset}, endOffset={endOffset}, prefix='{prefix}'", typeName);
 
             // 创建新窗口，IsFiltering=true 为默认值，AvalonEdit 自动做智能过滤
-            var window = new CompletionWindow(CodeEditor.TextArea) { StartOffset = startOffset, EndOffset = endOffset };
+            // 主题化：CompletionWindow 是 Popup，不走可视化树 DynamicResource，需手动取主题刷子（对齐 RoslynPad 设 CompletionBackground）
+            var window = new CompletionWindow(CodeEditor.TextArea)
+            {
+                StartOffset = startOffset,
+                EndOffset = endOffset,
+                Background = ThemeResource.GetBrush(SdkThemeKeys.PanelBackgroundBrush),
+                Foreground = ThemeResource.GetBrush(SdkThemeKeys.TextPrimaryBrush),
+            };
+            // 列表项背景/选中高亮也跟主题（ListBox 模板内资源）
+            window.CompletionList.Background = ThemeResource.GetBrush(SdkThemeKeys.PanelBackgroundBrush);
+            window.CompletionList.Foreground = ThemeResource.GetBrush(SdkThemeKeys.TextPrimaryBrush);
+            window.CompletionList.ListBox.Background = ThemeResource.GetBrush(SdkThemeKeys.PanelBackgroundBrush);
+            window.CompletionList.ListBox.Foreground = ThemeResource.GetBrush(SdkThemeKeys.TextPrimaryBrush);
             PopulateData(window.CompletionList.CompletionData, items);
 
             window.Closed += (_, _) =>
@@ -1117,9 +1153,11 @@ namespace SunEyeVision.Tool.Script.Views
         private void PopulateData(IList<ICompletionData> data,
             ImmutableArray<CompletionItem> items)
         {
+            // 取当前 workspace 文档，供 RoslynCompletionData 延迟加载描述（GetDescriptionAsync）与图标推断
+            var doc = _workspace.CurrentSolution.GetDocument(_userDocumentId);
             data.Clear();
             foreach (var item in items)
-                data.Add(new RoslynCompletionData(item, null));
+                data.Add(new RoslynCompletionData(item, doc));
         }
 
         /// <summary>
@@ -1242,6 +1280,255 @@ namespace SunEyeVision.Tool.Script.Views
             {
                 PluginLogger.Warning($"[补全] FetchCompletions 异常: {ex.GetType().Name}: {ex.Message}\n{ex.StackTrace}", typeName);
                 return default;
+            }
+        }
+
+        // =======================================================
+        // Phase 0: 签名帮助（语法树定位 InvocationExpression → OverloadInsightWindow 参数提示）
+        // =======================================================
+
+        /// <summary>
+        /// 输入 '(' / ',' / ')' 后，用 Roslyn 内置签名帮助服务（SignatureHelpService）定位光标处方法调用并显示参数提示。
+        /// 对齐 RoslynPad 最佳实践：签名帮助的定位（ApplicableSpan）、嵌套括号、参数索引、重载选择全部由 Roslyn 内部
+        /// ISignatureHelpProvider 聚合完成，语法树与语义模型在 provider 内部保持一致（根治手写拆分导致版本错位、
+        /// GetSymbolInfo 返回 null 的问题）。Roslyn 4.12 的 SignatureHelpService 是 internal，靠 IgnoresAccessChecksTo
+        /// 编译期包访问（PrivateAssets=All，不污染插件输出目录）。
+        /// 触发频率低（仅括号字符）+ 复用浮窗 + 取消竞态，无性能问题。
+        /// </summary>
+        private async Task ShowSignatureHelpAsync(int position, char triggerChar, CancellationToken token)
+        {
+            var typeName = GetType().Name;
+            if (_workspace == null || _userDocumentId == null) return;
+
+            var doc = _workspace.CurrentSolution.GetDocument(_userDocumentId);
+            if (doc == null) return;
+
+            // 触发原因：'(' 首次触发 → TypeCharCommand；',' / ')' 为补全中途续触发 → RetriggerCommand。
+            var reason = triggerChar == '('
+                ? SignatureHelpTriggerReason.TypeCharCommand
+                : SignatureHelpTriggerReason.RetriggerCommand;
+            var triggerInfo = new SignatureHelpTriggerInfo(reason, triggerChar);
+
+            SignatureHelpItems? items = null;
+            try
+            {
+                // 手写聚合全部 C# ISignatureHelpProvider（复制 RoslynPad AggregateSignatureHelpProvider.GetItemsAsync：
+                // 取 ApplicableSpan 覆盖光标且最靠近光标的那组），不用 SignatureHelpService（其 API 在 4.12 不稳定）。
+                var providers = GetSignatureHelpProviders();
+                Microsoft.CodeAnalysis.SignatureHelp.SignatureHelpItems? best = null;
+                foreach (var provider in providers)
+                {
+                    token.ThrowIfCancellationRequested();
+                    var current = await provider.GetItemsAsync(doc, position, triggerInfo, default, token).ConfigureAwait(false);
+                    if (current != null && current.ApplicableSpan.IntersectsWith(position))
+                    {
+                        if (best == null || current.ApplicableSpan.Start > best.ApplicableSpan.Start)
+                            best = current;
+                    }
+                }
+                items = best;
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
+            catch (Exception ex)
+            {
+                PluginLogger.Warning($"[签名帮助] Roslyn 查询异常: {ex.GetType().Name}: {ex.Message}", typeName);
+                return;
+            }
+
+            if (token.IsCancellationRequested) return;
+
+            // 返回 null：光标不在任何可签名帮助的方法调用内（如调用已闭合、参数内部无调用）。
+            // 此时关闭已打开的浮窗（对齐 RoslynPad：overloadProvider == null 时不显示签名帮助）。
+            if (items == null || items.Items.Count == 0)
+            {
+                PluginLogger.Info($"[签名帮助] 无适用方法调用，关闭浮窗: triggerChar='{triggerChar}'", typeName);
+                _insightWindow?.Close();
+                return;
+            }
+
+            PluginLogger.Info($"[签名帮助] 返回 {items.Items.Count} 个重载, SemanticParameterIndex={items.SemanticParameterIndex}", typeName);
+
+            // 复用浮窗实例（对齐 RoslynPad _insightWindow 复用）
+            if (_insightWindow == null)
+            {
+                _insightWindow = new OverloadInsightWindow(CodeEditor.TextArea)
+                {
+                    Background = ThemeResource.GetBrush(SdkThemeKeys.PanelBackgroundBrush),
+                    Foreground = ThemeResource.GetBrush(SdkThemeKeys.TextPrimaryBrush),
+                };
+                _insightWindow.Closed += (_, _) => { _insightWindow = null; };
+            }
+            if (_insightWindow.Provider is ScriptOverloadProvider existing)
+            {
+                existing.Update(items);
+            }
+            else
+            {
+                _insightWindow.Provider = new ScriptOverloadProvider(items);
+            }
+            _insightWindow.Show();
+        }
+
+        /// <summary>线程安全地获取全部 C# ISignatureHelpProvider（MEF 组合，进程内一次构建）。</summary>
+        private static ImmutableArray<ISignatureHelpProvider> _signatureHelpProviders;
+        private static readonly object _signatureHelpLock = new();
+
+        private static ImmutableArray<ISignatureHelpProvider> GetSignatureHelpProviders()
+        {
+            if (!_signatureHelpProviders.IsDefault) return _signatureHelpProviders;
+            lock (_signatureHelpLock)
+            {
+                if (!_signatureHelpProviders.IsDefault) return _signatureHelpProviders;
+
+                var sw = System.Diagnostics.Stopwatch.StartNew();
+                // 从 Roslyn 默认 MEF 程序集构建组合容器，枚举所有 [Export(ISignatureHelpProvider)] 的 C# 提供器
+                //（对齐 RoslynPad RoslynHost 的 MEF composition）。
+                // 关键：排除 Pythia 相关 part。Roslyn 4.12 的 PythiaSignatureHelpProvider 是 IDE/AI 场景的壳，
+                // 它 [Import] IPythiaSignatureHelpProviderImplementation（由 VS Pythia 集成层导出，独立工具没有）。
+                // 若不过滤，MEF 激活该 provider 时抛 CompositionFailedException，导致整个枚举失败（实测 19:22 日志）。
+                // 过滤后 C# 标准签名帮助 provider 完全不受影响（它们不依赖 Pythia）。
+                var partTypes = MefHostServices.DefaultAssemblies
+                    .SelectMany(a => a.DefinedTypes)
+                    .Select(t => t.AsType())
+                    .Where(t => !t.Name.Contains("Pythia"))
+                    .ToArray();
+                using var container = new ContainerConfiguration().WithParts(partTypes).CreateContainer();
+                var providers = container
+                    .GetExports<Lazy<ISignatureHelpProvider, OrderableLanguageMetadata>>()
+                    .Where(p => p.Metadata.Language == LanguageNames.CSharp)
+                    .Select(p => p.Value)
+                    .ToImmutableArray();
+                sw.Stop();
+                PluginLogger.Info($"[签名帮助] ISignatureHelpProvider 聚合初始化: {providers.Length} 个提供器, {sw.ElapsedMilliseconds}ms", typeof(ScriptDebugControl).Name);
+
+                _signatureHelpProviders = providers;
+                return _signatureHelpProviders;
+            }
+        }
+
+        /// <summary>
+        /// 把 Roslyn SignatureHelpItems 适配为 AvalonEdit IOverloadProvider（OverloadInsightWindow 数据源）。
+        /// 对齐 RoslynPad RoslynOverloadProvider：Header 用 TaggedText 拼方法签名（当前参数加粗），
+        /// Content 显示方法文档 + 当前参数文档（DocumentationFactory 惰性求值）。
+        /// </summary>
+        private sealed class ScriptOverloadProvider : System.ComponentModel.INotifyPropertyChanged, IOverloadProvider
+        {
+            private SignatureHelpItems _signatureHelp;
+            private IList<SignatureHelpItem> _items;
+            private int _selectedIndex;
+
+            public ScriptOverloadProvider(SignatureHelpItems signatureHelp)
+            {
+                _signatureHelp = signatureHelp;
+                _items = signatureHelp.Items;
+                _selectedIndex = signatureHelp.SelectedItemIndex ?? 0;
+            }
+
+            public void Update(SignatureHelpItems signatureHelp)
+            {
+                _signatureHelp = signatureHelp;
+                _items = signatureHelp.Items;
+                _selectedIndex = Math.Clamp(signatureHelp.SelectedItemIndex ?? _selectedIndex, 0, Math.Max(0, _items.Count - 1));
+                RaisePropertyChanged(nameof(CurrentIndexText));
+                RaisePropertyChanged(nameof(CurrentHeader));
+                RaisePropertyChanged(nameof(CurrentContent));
+            }
+
+            public int Count => _items.Count;
+
+            public int SelectedIndex
+            {
+                get => _selectedIndex;
+                set
+                {
+                    if (_selectedIndex != value && value >= 0 && value < _items.Count)
+                    {
+                        _selectedIndex = value;
+                        RaisePropertyChanged(nameof(SelectedIndex));
+                        RaisePropertyChanged(nameof(CurrentIndexText));
+                        RaisePropertyChanged(nameof(CurrentHeader));
+                        RaisePropertyChanged(nameof(CurrentContent));
+                    }
+                }
+            }
+
+            public string CurrentIndexText => $"{_selectedIndex + 1}/{Count}";
+
+            public object CurrentHeader => BuildHeader();
+
+            public object CurrentContent => BuildContent();
+
+            public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+
+            private void RaisePropertyChanged(string name)
+                => PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(name));
+
+            private object BuildHeader()
+            {
+                var item = _items[_selectedIndex];
+                var header = new System.Windows.Controls.WrapPanel
+                {
+                    Orientation = System.Windows.Controls.Orientation.Horizontal,
+                };
+                header.Children.Add(item.PrefixDisplayParts.ToTextBlock());
+                if (!item.Parameters.IsDefault)
+                {
+                    for (var i = 0; i < item.Parameters.Length; i++)
+                    {
+                        var param = item.Parameters[i];
+                        var isSelected = i == _signatureHelp.SemanticParameterIndex;
+                        header.Children.Add(param.DisplayParts.ToTextBlock(isBold: isSelected));
+                        if (i != item.Parameters.Length - 1)
+                            header.Children.Add(item.SeparatorDisplayParts.ToTextBlock());
+                    }
+                }
+                header.Children.Add(item.SuffixDisplayParts.ToTextBlock());
+                return header;
+            }
+
+            private object BuildContent()
+            {
+                var item = _items[_selectedIndex];
+                var content = new System.Windows.Controls.StackPanel();
+                // 方法文档（惰性求值）
+                var methodDoc = item.DocumentationFactory(System.Threading.CancellationToken.None).ToTextBlock();
+                if (methodDoc.Inlines.Count > 0)
+                    content.Children.Add(methodDoc);
+                // 当前参数文档 + 参数名
+                if (!item.Parameters.IsDefault)
+                {
+                    var index = _signatureHelp.SemanticParameterIndex;
+                    if (index >= 0 && index < item.Parameters.Length)
+                    {
+                        var param = item.Parameters[index];
+                        var paramDoc = param.DocumentationFactory(System.Threading.CancellationToken.None).ToTextBlock();
+                        if (paramDoc.Inlines.Count > 0)
+                        {
+                            content.Children.Add(new System.Windows.Controls.WrapPanel
+                            {
+                                Orientation = System.Windows.Controls.Orientation.Horizontal,
+                                Children =
+                                {
+                                    new System.Windows.Controls.TextBlock
+                                    {
+                                        Text = param.Name + ": ",
+                                        FontWeight = System.Windows.FontWeights.Bold,
+                                    },
+                                    paramDoc,
+                                },
+                            });
+                        }
+                    }
+                }
+                if (content.Children.Count == 0)
+                {
+                    content.Children.Add(new System.Windows.Controls.TextBlock
+                    { Text = "无参数", TextWrapping = System.Windows.TextWrapping.Wrap });
+                }
+                return content;
             }
         }
 
@@ -1509,13 +1796,45 @@ namespace SunEyeVision.Tool.Script.Views
         /// </summary>
         private sealed class RoslynCompletionData(CompletionItem item, Document? document) : ICompletionData
         {
-            public System.Windows.Media.ImageSource? Image => null;
+            private System.Windows.Media.ImageSource? _image;
+            private object? _description;
+            private bool _loadingDescription;
+
+            public System.Windows.Media.ImageSource? Image => _image ??= item.GetGlyph().ToImageSource();
 
             public string Text => item.FilterText;
 
             public object Content => item.DisplayText;
 
-            public object? Description => item.InlineDescription;
+            public object? Description
+            {
+                get
+                {
+                    // 延迟加载签名/文档描述：首次访问异步填充，未就绪时回退内联描述（不阻塞弹窗）
+                    if (!_loadingDescription)
+                    {
+                        _loadingDescription = true;
+                        _ = LoadDescriptionAsync();
+                    }
+                    return _description ?? item.InlineDescription;
+                }
+            }
+
+            private async Task LoadDescriptionAsync()
+            {
+                if (document == null) return;
+                try
+                {
+                    var description = await CompletionService.GetService(document)
+                        .GetDescriptionAsync(document, item).ConfigureAwait(true);
+                    _description = string.Join(" ", description.TaggedParts.Select(p => p.Text));
+                }
+                catch
+                {
+                    // 描述加载失败保持 InlineDescription（UI 提示降级，不阻塞补全）
+                    _description = item.InlineDescription;
+                }
+            }
 
             public double Priority => 0;
 
@@ -1564,6 +1883,21 @@ namespace SunEyeVision.Tool.Script.Views
         public int Start { get; } = start;
         public int Length { get; } = length;
         public Brush Brush { get; } = brush;
+    }
+
+    /// <summary>
+    /// 从 Application.Resources 取主题刷子（补全弹窗/签名帮助浮窗是 Popup，不走可视化树，
+    /// 无法靠 DynamicResource 自动解析，需手动按 SdkThemeKeys 从 App.Resources 取）。
+    /// 取不到时返回 null，调用方回退 AvalonEdit 默认（不崩）。
+    /// </summary>
+    internal static class ThemeResource
+    {
+        public static Brush? GetBrush(string key)
+        {
+            var res = Application.Current?.Resources;
+            if (res == null || string.IsNullOrEmpty(key)) return null;
+            return res[key] as Brush;
+        }
     }
 
     /// <summary>
@@ -1719,6 +2053,50 @@ namespace SunEyeVision.Tool.Script.Views
             return brush;
         }
     }
+
+    /// <summary>
+    /// Roslyn TaggedText → WPF TextBlock（签名帮助 Header/Content 渲染）。
+    /// 对齐 RoslynPad SymbolDisplayPartExtensions.ToTextBlock：逐段 TaggedText 生成 Run，
+    /// 支持 isBold 高亮当前参数，按文本标签着色。
+    /// 必须是顶层静态类（扩展方法不能定义在嵌套类中，rule-002/rule-008）。
+    /// </summary>
+    internal static class TaggedTextExtensions
+    {
+        public static System.Windows.Controls.TextBlock ToTextBlock(this IEnumerable<TaggedText> text, bool isBold = false)
+        {
+            var result = new System.Windows.Controls.TextBlock { TextWrapping = TextWrapping.Wrap };
+            foreach (var part in text)
+            {
+                result.Inlines.Add(part.ToRun(isBold));
+            }
+            return result;
+        }
+
+        public static System.Windows.Documents.Run ToRun(this TaggedText text, bool isBold = false)
+        {
+            var run = new System.Windows.Documents.Run(text.Text);
+            if (isBold) run.FontWeight = FontWeights.Bold;
+
+            // 对齐 RoslynPad：关键词蓝、类型青（签名帮助浮窗为辅助 Popup，直接用固定 Brushes 色，
+            // 不依赖 ScriptDebugControl 内部主题类，保证本顶层类可独立编译）。
+            switch (text.Tag)
+            {
+                case TextTags.Keyword:
+                    run.Foreground = Brushes.Blue;
+                    break;
+                case TextTags.Struct:
+                case TextTags.Enum:
+                case TextTags.TypeParameter:
+                case TextTags.Class:
+                case TextTags.Delegate:
+                case TextTags.Interface:
+                    run.Foreground = Brushes.Teal;
+                    break;
+            }
+            return run;
+        }
+    }
+
 }
 
 

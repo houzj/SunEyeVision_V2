@@ -10,6 +10,9 @@
     <AssemblyName>SunEyeVision.Tool.Script</AssemblyName>
     <IsToolPlugin>true</IsToolPlugin>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <!-- 放开对 Roslyn.Features 的 internal 访问（对齐 RoslynPad，编译期生效，不复制 DLL 到输出）：
+         签名帮助所需的 SignatureHelpService/ISignatureHelpProvider/Items 都是 internal -->
+    <InternalsAssemblyNames>Microsoft.CodeAnalysis.Features;Microsoft.CodeAnalysis.Workspaces</InternalsAssemblyNames>
   </PropertyGroup>
   <ItemGroup>
     <!-- 将 xshd 语法高亮文件复制到输出目录的 Resources 子文件夹 -->
@@ -30,6 +33,10 @@
     <PackageReference Include="Microsoft.CodeAnalysis.Features" Version="4.12.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" Version="4.12.0" />
     <PackageReference Include="OpenCvSharp4" Version="4.13.0.20260222" PrivateAssets="All" />
+    <!-- 编译期访问 Roslyn internal SignatureHelp 类型（对齐 RoslynPad 同款包）。
+         PrivateAssets=All：仅在编译期生成 IgnoresAccessChecksTo 属性，不复制任何 DLL 到输出，
+         插件目录依旧只含工具主程序集 + pdb（rule-016 §5.2 纯净）。 -->
+    <PackageReference Include="IgnoresAccessChecksToGenerator" Version="0.4.0" PrivateAssets="All" />
   </ItemGroup>
   <ItemGroup>
     <!-- 宿主 API 编译期引用：脚本编译/补全需解析 HOperatorSet / Mat 类型元数据（类型锚定）。

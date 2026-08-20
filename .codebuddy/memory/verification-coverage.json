@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "lastUpdated": "2026-08-07",
-  "schemeSummary": "绑定树显示名↔路径双轨模型：RoI整体/分组去数量, Parent链, 双括号[Type=X][n]解析, 编辑索引保留类型过滤, SubroutineTool改IndexOf切首点",
+  "lastUpdated": "2026-08-20",
+  "schemeSummary": "脚本编辑器语义着色+诊断改进：行号基准+1治本、GetDeclaredSymbol声明着色、波浪线替代色块、Error/Warning分级+悬停ToolTip、暗色主题、删日志埋点",
   "tools": {
     "SunEyeVision.Plugin.SDK": {"lastVerificationDate":"2026-08-07","lastVerificationType":"full","result":"pass","passedChecks":["构建✅","rule-014/015审查✅","dotnet test✅ 136","契约测试✅ ParamBindingDisplay/RoiBinding/RoiDesignTimeGroups"]},
     "SunEyeVision.Tool.Subroutine": {"lastVerificationDate":"2026-08-07","lastVerificationType":"full","result":"pass","passedChecks":["构建✅","dotnet test✅ 8","IndexOf切首点不截断嵌套路径✅","对象引用GetBindingPath✅"]},
@@ -9,6 +9,6 @@
     "SunEyeVision.Tool.Threshold": {"lastVerificationDate":"2026-07-21","lastVerificationType":"full","result":"pass","passedChecks":["构建✅","dotnet test✅ 1","D8输出改RoI✅"]},
     "SunEyeVision.Tool.Morphology": {"lastVerificationDate":"2026-07-21","lastVerificationType":"full","result":"pass","passedChecks":["构建✅","dotnet test✅ 1","D8输出改RoI✅"]},
     "SunEyeVision.Tool.ImageThreshold": {"lastVerificationDate":"2026-07-21","lastVerificationType":"full","result":"pass","passedChecks":["构建✅","dotnet test✅ 1","D8输出改RoI✅"]},
-    "SunEyeVision.Tool.Script": {"lastVerificationDate":"2026-08-07","lastVerificationType":"full","result":"fail_env","passedChecks":["构建✅","dotnet test 6通过/1环境失败","MSB3030复制DLL失败(IsToolPlugin OutDir重定向与测试项目冲突,非本次改动,本次未改Script任何文件)"]}
+    "SunEyeVision.Tool.Script": {"lastVerificationDate":"2026-08-20","lastVerificationType":"partial","result":"pass","passedChecks":["构建✅ slnx 0错误","dotnet test✅ 18","rule-014/015/008/002/003审查✅","治本验证✅ 行号+1统一无同类潜伏点","删CS0246过滤补丁✅ 波浪线精准span","插件输出纯净✅"],"skippedChecks":["手动目视：类型青色/波浪线/ToolTip/暗色主题（UI视觉需重启主程序目视）"]}
   }
 }

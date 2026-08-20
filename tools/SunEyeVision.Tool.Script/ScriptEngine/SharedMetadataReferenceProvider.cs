@@ -75,6 +75,16 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
         }
 
         /// <summary>
+        /// 失效 ScriptRefs 引用缓存（用户增删 DLL 后调用），强制下次 GetScriptRefs 重载目录。
+        /// </summary>
+        public static void InvalidateScriptRefs(string refDir)
+        {
+            _cachedScriptRefs = null;
+            _lastRefDir = null;
+            PluginLogger.Info($"[SharedMetadataRef] ScriptRefs 缓存已失效: {refDir}", nameof(SharedMetadataReferenceProvider));
+        }
+
+        /// <summary>
         /// 判断 DLL 是否为有效托管程序集（跳过原生 C++ DLL，避免 Roslyn 编译报 CS0006）。
         /// 使用 AssemblyName.GetAssemblyName：既能排除原生 C++ DLL，也能排除无有效 .NET 元数据的文件。
         /// </summary>

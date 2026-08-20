@@ -26,6 +26,7 @@ using ICSharpCode.AvalonEdit.Rendering;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Completion;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.SignatureHelp;
 using Microsoft.CodeAnalysis.Text;
@@ -52,6 +53,7 @@ namespace SunEyeVision.Tool.Script.Views
 
         // Roslyn completion workspace
         private ScriptWorkspace? _workspace;
+        private bool _workspaceInitialized;                           // 实例 workspace 是否已建（含引用/项目/文档骨架），用于实例级复用
         private DocumentId? _documentId;                              // 生成的字段声明文档 ID（不可变，仅 RebuildWorkspace 赋值）
         private DocumentId? _userDocumentId;                          // 用户代码文档 ID（不可变，仅 RebuildWorkspace 赋值）
         private AvalonEditTextContainer? _userTextContainer;         // 用户文档增量文本通道（SourceTextContainer），随 RebuildWorkspace 重建
@@ -67,19 +69,21 @@ namespace SunEyeVision.Tool.Script.Views
 
         // Phase 1: 实时诊断
         private CancellationTokenSource? _diagnosticsCts;             // 500ms 诊断节流
-        private IReadOnlyList<Diagnostic> _currentDiagnostics = [];   // 当前错误列表
-        private IReadOnlyDictionary<int, IReadOnlyList<Diagnostic>>? _diagnosticsByLine;  // 按行索引（滚动渲染用）
+        private IReadOnlyList<Diagnostic> _currentDiagnostics = [];   // 当前错误/警告列表（波浪线 + ToolTip 消费）
         private string? _lastDiagnosedCode;                            // 上次已诊断的代码，用于跳过不变代码
+        private string? _lastGeneratedCode;                            // 上次已同步到 workspace 的 GeneratedCode，用于跳过无意义的 solution 重建
+        private System.Windows.Controls.ToolTip? _diagnosticToolTip;   // 诊断悬停详情浮窗（Error/Warning 消息）
+        private int _lastDiagToolTipOffset = -1;                       // 上次已显示 ToolTip 的诊断偏移（防 MouseMove 闪烁）
 
         // 初始化阶段抑制诊断（避免 TextChanged 在 workspace 就绪前触发诊断，
         // 消除 "[Diagnostic] 跳过: workspace=False" 日志噪声）
         private bool _suppressDiagnostic;
 
-        // Phase 2b: Roslyn 语义高亮
-        private CancellationTokenSource? _semanticCts;             // 100ms 语义着色节流
-        // 当前语义着色区间按行号索引（行号 → spans），供 SemanticColorizer 按行 O(1) 查缓存。
-        // 相比扁平列表，ColorizeLine 渲染每行不再线性扫全部 spans，消除连续打字/删除/换行的逐帧卡顿。
-        private IReadOnlyDictionary<int, IReadOnlyList<SemanticSpan>>? _semanticSpansByLine;
+        // Phase 2b: Roslyn 语义高亮（IHighlighter 架构，生命周期由 RoslynHighlightingColorizer 管理）。
+        // 保存 colorizer 引用用于文档就绪后触发语义模型预热（RebuildWorkspace 完成后调用 Warmup）。
+        // 挂载标志：构造函数只创建不挂载（workspace 未就绪），RebuildWorkspace 完成后首次挂载（对齐参考时序）。
+        private RoslynHighlightingColorizer? _semanticColorizer;
+        private bool _semanticColorizerMounted;
 
         // 进程生命周期内共享的 MefHostServices（首次初始化慢，后续缓存命中快）
         private static MefHostServices? _sharedMefHost;
@@ -205,16 +209,22 @@ namespace SunEyeVision.Tool.Script.Views
             // Layer 1: 从输出目录加载自定义 xshd（含 BCL 类型关键词），失败则回退到内置 C# 高亮
             LoadCustomHighlighting();
 
-            // Layer 2a: 实时错误标记着色器（浅红背景标记编译错误行，保留语法颜色）
-            var errorMarker = new ErrorMarkerColorizer(() => _diagnosticsByLine, false);
-            CodeEditor.TextArea.TextView.LineTransformers.Add(errorMarker);
-            PluginLogger.Info("[Highlighting] 已加载实时错误标记着色器", typeName);
+            // Layer 2a: 实时诊断标记着色器（错误/警告在 span 下画波浪线，随主题，保留语法颜色）
+            var errorMarker = new ErrorMarkerColorizer(() => _currentDiagnostics, ThemeResource.IsDarkTheme());
+            CodeEditor.TextArea.TextView.BackgroundRenderers.Add(errorMarker);
+            PluginLogger.Info("[Highlighting] 已加载实时诊断波浪线着色器", typeName);
 
-            // Layer 2b: Roslyn 语义高亮着色器（基于 SemanticModel，对类型=青/方法·属性=紫/字段=金 上色，与 xshd 互补）
-            //   ColorizeLine 覆盖前景色，与 Layer 2a 的背景标记互不干扰
-            var semanticColorizer = new SemanticColorizer(() => _semanticSpansByLine);
-            CodeEditor.TextArea.TextView.LineTransformers.Add(semanticColorizer);
-            PluginLogger.Info("[Highlighting] 已加载 Roslyn 语义高亮着色器", typeName);
+            // Layer 2b: Roslyn 语义高亮着色器（IHighlighter 架构：按需逐行 + 防闪烁，对齐 RoslynPad）。
+            //   AvalonEdit 只对可视行调 HighlightLine，命中行缓存直接复用（不闪烁）；未命中先用旧色平移再异步重算。
+            //   类型=青/方法·属性=紫/字段=基础色，与 xshd 互补。生命周期由 RoslynHighlightingColorizer 自动管理。
+            //   ★ 设计迁移（对齐参考项目时序）：不在构造函数挂载！构造函数里 workspace 尚未建（要等
+            //   RebuildWorkspace 才建），此时挂载会导致首帧渲染 worker 拿到 document==null 丢弃可视行、
+            //   缓存白行永不重分类（"打开白、编辑才变青"根因）。改为 RebuildWorkspace 完成后（UI线程）挂载，
+            //   此时 workspace/文档已就绪，worker 首帧即可正确分类——与 RoslynPad 先 AddDocument 后挂 colorizer 一致。
+            _semanticColorizer = new RoslynHighlightingColorizer(
+                CodeEditor.Document,
+                () => _workspace?.CurrentSolution.GetDocument(_userDocumentId),
+                new ClassificationHighlightColors());
 
             // 当前行高亮：光标所在行浅蓝色背景，替代纯光标闪烁（提升代码定位体验）
             CodeEditor.Options.HighlightCurrentLine = true;
@@ -235,19 +245,23 @@ namespace SunEyeVision.Tool.Script.Views
             CodeEditor.TextArea.TextEntered += TextArea_TextEntered;
             CodeEditor.TextArea.TextEntering += TextArea_TextEntering;
 
+            // 诊断悬停详情：鼠标移到错误/警告 span 上显示消息（MouseMove 命中诊断 + MouseLeave 关闭）
+            CodeEditor.TextArea.MouseMove += TextArea_MouseMove;
+            CodeEditor.TextArea.MouseLeave += TextArea_MouseLeave;
+
             // 控件卸载时清理
             Unloaded += (_, _) =>
             {
                 CodeEditor.TextArea.TextEntered -= TextArea_TextEntered;
                 CodeEditor.TextArea.TextEntering -= TextArea_TextEntering;
+                CodeEditor.TextArea.MouseMove -= TextArea_MouseMove;
+                CodeEditor.TextArea.MouseLeave -= TextArea_MouseLeave;
                 CodeEditor.TextChanged -= OnCodeEditorTextChanged;
                 _userTextContainer?.Dispose();
                 _userTextContainer = null;
                 _workspace?.Dispose();
                 _diagnosticsCts?.Cancel();
                 _diagnosticsCts?.Dispose();
-                _semanticCts?.Cancel();
-                _semanticCts?.Dispose();
             };
 
             // 初始化变量配置面板（输入/输出 Tab）
@@ -342,8 +356,24 @@ namespace SunEyeVision.Tool.Script.Views
                 RebuildWorkspace();
                 PluginLogger.Info($"[Perf] RebuildWorkspace: {perfSw.ElapsedMilliseconds}ms", GetType().Name);
                 _suppressDiagnostic = false;    // workspace 就绪，开放诊断
+
+                // ★ 设计迁移（对齐参考项目时序）：workspace/文档已就绪，此刻才挂载语义高亮器。
+                //   此时 worker 首帧渲染 _getUserDocument() 必非 null，可视行直接正确分类，
+                //   根治"打开白、编辑才变青"（根因：构造函数挂载→首帧 document==null 丢弃可视行）。
+                if (!_semanticColorizerMounted)
+                {
+                    CodeEditor.TextArea.TextView.LineTransformers.Add(_semanticColorizer);
+                    _semanticColorizerMounted = true;
+                    PluginLogger.Info("[Highlighting] 已挂载 Roslyn 语义高亮着色器（workspace 就绪后，对齐参考时序）", GetType().Name);
+                }
+                _semanticColorizer?.Warmup();   // 触发语义模型预热（TriggerWarmup 幂等）
+
                 ScheduleDiagnosticAsync();
-                ScheduleSemanticAsync(0);       // 首次打开立即着色（0ms）
+                ScheduleSemanticAsync();        // 首次打开：清缓存并重绘，可见行按需立即着色
+
+                // 补全预热：后台跑一次 Roslyn GetCompletionsAsync 让 CompletionService 缓存命中，
+                // 避免用户首次按键时 CompletionService 冷启动导致弹窗延迟。
+                _ = WarmupCompletionAsync();
             }, DispatcherPriority.Background);
         }
 
@@ -745,7 +775,10 @@ namespace SunEyeVision.Tool.Script.Views
             {
                 var newFiles = new HashSet<string>(Directory.EnumerateFiles(refDir, "*.dll"), StringComparer.OrdinalIgnoreCase);
                 if (!oldFiles.SetEquals(newFiles))
-                    RebuildWorkspace();
+                {
+                    SharedMetadataReferenceProvider.InvalidateScriptRefs(refDir);  // 失效引用缓存，强制重载新增 DLL
+                    RebuildWorkspace(refreshReferences: true);
+                }
             }
         }
 
@@ -792,11 +825,23 @@ namespace SunEyeVision.Tool.Script.Views
         // =======================================================
 
         /// <summary>
-        /// 动态重建工作区（构造函数/SetParameters/用户增删 DLL/修改变量后调用）
-        /// 添加两个文档：生成的字段声明 partial class + 用户完整 partial class，通过 Roslyn 自动合并
+        /// 重建/复用工作区（构造函数/SetParameters/用户增删 DLL/修改变量后调用）。
+        /// ★ 实例级复用（对齐 RoslynPad 单文档语义）：workspace 首次建好后（含引用/项目/文档骨架），
+        ///   后续 SetParameters / 文本变化不再 Dispose 重建，只更新文档文本；不同工具实例各持各的 workspace，零干扰。
         /// </summary>
-        private void RebuildWorkspace()
+        /// <param name="refreshReferences">用户增删 DLL 时传 true，强制刷新引用并完整重建；默认 false 走复用路径。</param>
+        private void RebuildWorkspace(bool refreshReferences = false)
         {
+            // 实例级复用：workspace 已建且非强制刷新引用 → 只更新 generated 文档文本（user 文档由增量容器自动同步）
+            if (_workspaceInitialized && !refreshReferences)
+            {
+                var genCode = _parameters.GeneratedCode;
+                _workspace!.SetCurrentSolution(_workspace.CurrentSolution
+                    .WithDocumentText(_documentId!, SourceText.From(genCode)));
+                _currentItems = [];   // 清空补全缓存
+                return;
+            }
+
             var generatedCode = _parameters.GeneratedCode;
             var userCode = _parameters.ScriptCode;
             var typeName = GetType().Name;
@@ -931,6 +976,8 @@ namespace SunEyeVision.Tool.Script.Views
 
             _currentItems = [];   // 清空缓存，下次输入触发全新解析
 
+            _workspaceInitialized = true;   // 引用/项目/文档骨架已就绪，后续 SetParameters 走实例级复用路径
+
             var refs = _workspace.CurrentSolution.Projects.First().MetadataReferences;
             PluginLogger.Info($"[补全] Workspace 重建完成: {refs.Count} 个引用, 总耗时={totalSw.ElapsedMilliseconds}ms", typeName);
         }
@@ -967,11 +1014,8 @@ namespace SunEyeVision.Tool.Script.Views
 
             if (!isTriggerChar)
             {
-                PluginLogger.Info($"[补全] TextEntered 非触发字符: '{e.Text}'", typeName);
                 return;
             }
-
-            PluginLogger.Info($"[补全] TextEntered 触发: text='{e.Text}', caretOffset={CodeEditor.TextArea.Caret.Offset}", typeName);
 
             // 新查询取消旧查询（对齐 RoslynPad：TextEntered 直接查询，无节流滞后感）
             _throttleCts?.Cancel();
@@ -985,7 +1029,6 @@ namespace SunEyeVision.Tool.Script.Views
 
                 if (isDot)
                 {
-                    PluginLogger.Info("[补全] '.' 触发成员补全 Re-query", typeName);
                     await ThrottledRefreshAndShow('.', token);
                     return;
                 }
@@ -993,7 +1036,6 @@ namespace SunEyeVision.Tool.Script.Views
                 // 字母数字：窗口已开 → 沉默，AvalonEdit CompletionList 自动过滤（内置质量评分）
                 // 无窗口 → 首次 Roslyn 查询
                 bool windowActive = _completionWindow != null && _currentItems.Length > 0;
-                PluginLogger.Info($"[补全] 字母触发: text='{e.Text}', windowActive={windowActive}, currentItems={_currentItems.Length}", typeName);
                 if (!windowActive)
                 {
                     await ThrottledRefreshAndShow(e.Text[0], token);
@@ -1071,22 +1113,15 @@ namespace SunEyeVision.Tool.Script.Views
         /// </summary>
         private async Task ThrottledRefreshAndShow(char triggerChar, CancellationToken token)
         {
-            var typeName = GetType().Name;
-            PluginLogger.Info($"[补全] ThrottledRefreshAndShow 开始: triggerChar='{(triggerChar == '\0' ? "\\0" : triggerChar.ToString())}', caretOffset={CodeEditor.TextArea.Caret.Offset}", typeName);
-
             var items = await FetchFreshCompletions(triggerChar, token);
             if (token.IsCancellationRequested)
             {
-                PluginLogger.Info("[补全] 查询已被新输入取消，丢弃结果", typeName);
                 return;
             }
             if (items.IsDefault || items.Length == 0)
             {
-                PluginLogger.Warning($"[补全] Roslyn 未返回补全结果, caretOffset={CodeEditor.TextArea.Caret.Offset}, items.IsDefault={items.IsDefault}, items.Length={items.Length}", typeName);
                 return;
             }
-
-            PluginLogger.Info($"[补全] 获取到 {items.Length} 个补全项，准备弹窗", typeName);
 
             // ★ 唯一数据源写入点：只有这里会修改 _currentItems ★
             _currentItems = items.ToArray();
@@ -1100,23 +1135,18 @@ namespace SunEyeVision.Tool.Script.Views
         /// </summary>
         private void ShowCompletionWindow(ImmutableArray<CompletionItem> items)
         {
-            var typeName = GetType().Name;
             var caretOffset = CodeEditor.TextArea.Caret.Offset;
             var prefix = GetPrefixFromCaret();
-
-            PluginLogger.Info($"[补全] ShowCompletionWindow: items={items.Length}, caretOffset={caretOffset}, prefix='{prefix}'", typeName);
 
             if (_completionWindow != null)
             {
                 // 已有窗口 → 更新数据源（Roslyn 刷新场景）
-                PluginLogger.Info($"[补全] 复用已有 CompletionWindow，更新 {items.Length} 项", typeName);
                 PopulateData(_completionWindow.CompletionList.CompletionData, items);
                 return;
             }
 
             var startOffset = caretOffset - prefix.Length;
             var endOffset = FindEndOfWord(caretOffset);
-            PluginLogger.Info($"[补全] 创建新 CompletionWindow: startOffset={startOffset}, endOffset={endOffset}, prefix='{prefix}'", typeName);
 
             // 创建新窗口，IsFiltering=true 为默认值，AvalonEdit 自动做智能过滤
             // 主题化：CompletionWindow 是 Popup，不走可视化树 DynamicResource，需手动取主题刷子（对齐 RoslynPad 设 CompletionBackground）
@@ -1136,14 +1166,13 @@ namespace SunEyeVision.Tool.Script.Views
 
             window.Closed += (_, _) =>
             {
-                PluginLogger.Info($"[补全] CompletionWindow 已关闭，清空 _currentItems", typeName);
+                
                 _completionWindow = null;
                 _currentItems = [];    // 窗口关闭 → 数据作废，下次重新解析
             };
 
-            var sw = System.Diagnostics.Stopwatch.StartNew();
             window.Show();
-            PluginLogger.Info($"[补全] CompletionWindow.Show() 完成: {sw.ElapsedMilliseconds}ms", typeName);
+
             _completionWindow = window;
         }
 
@@ -1208,8 +1237,6 @@ namespace SunEyeVision.Tool.Script.Views
             var code = CodeEditor.Text;
             var caretOffset = CodeEditor.TextArea.Caret.Offset;
 
-            PluginLogger.Info($"[补全] FetchFreshCompletions 进入: codeLen={code.Length}, caretOffset={caretOffset}, triggerChar='{(triggerChar == '\0' ? "\\0" : triggerChar.ToString())}'", typeName);
-
             if (string.IsNullOrEmpty(code))
             {
                 PluginLogger.Warning("[补全] FetchFreshCompletions 跳过: 代码为空", typeName);
@@ -1232,31 +1259,24 @@ namespace SunEyeVision.Tool.Script.Views
                     PluginLogger.Warning($"[补全] workspace 中找不到 user document: {_userDocumentId}", typeName);
                     return default;
                 }
-                PluginLogger.Info($"[补全] 取 workspace 实时文档: {sw.ElapsedMilliseconds}ms", typeName);
 
-                sw.Restart();
                 var completionService = CompletionService.GetService(doc);
                 if (completionService == null)
                 {
                     PluginLogger.Warning($"[补全] CompletionService 不可用, caretOffset={caretOffset}", typeName);
                     return default;
                 }
-                PluginLogger.Info($"[补全] GetService 完成: {sw.ElapsedMilliseconds}ms", typeName);
 
                 // ★ 传入精确的 CompletionTrigger（激活成员补全 Provider）
                 var trigger = triggerChar != '\0'
                     ? CompletionTrigger.CreateInsertionTrigger(triggerChar)
                     : CompletionTrigger.Default;
 
-                sw.Restart();
-                PluginLogger.Info($"[补全] 调用 GetCompletionsAsync: triggerType={trigger.Kind}, triggerChar='{(triggerChar == '\0' ? "\\0" : triggerChar.ToString())}'", typeName);
-
                 // 对齐 RoslynPad：GetCompletionsAsync 3 参调用；竞态由下方 token.IsCancellationRequested 丢弃过期结果守护
                 var results = await completionService.GetCompletionsAsync(doc, caretOffset, trigger);
 
                 if (token.IsCancellationRequested)
                 {
-                    PluginLogger.Info("[补全] 查询已被新输入取消，丢弃结果", typeName);
                     return default;
                 }
                 if (results == null)
@@ -1265,11 +1285,7 @@ namespace SunEyeVision.Tool.Script.Views
                     return default;
                 }
 
-                var items = results.ItemsList.ToImmutableArray();
-                var topItems = items.Take(5).Select(i => i.DisplayText);
-                PluginLogger.Info($"[补全] GetCompletionsAsync 返回 {items.Length} 个结果: {sw.ElapsedMilliseconds}ms, 前5项=[{string.Join(", ", topItems)}]", typeName);
-
-                return items;
+                return results.ItemsList.ToImmutableArray();
             }
             catch (OperationCanceledException)
             {
@@ -1281,6 +1297,30 @@ namespace SunEyeVision.Tool.Script.Views
                 PluginLogger.Warning($"[补全] FetchCompletions 异常: {ex.GetType().Name}: {ex.Message}\n{ex.StackTrace}", typeName);
                 return default;
             }
+        }
+
+        /// <summary>
+        /// 补全预热：后台对 user 文档跑一次 GetCompletionsAsync（光标在文档末尾，trigger='a'），
+        /// 让 CompletionService 缓存命中。避免用户首次按键时 CompletionService 冷启动导致弹窗延迟。
+        /// </summary>
+        private async Task WarmupCompletionAsync()
+        {
+            try
+            {
+                if (_workspace == null || _userDocumentId == null) return;
+                var doc = _workspace.CurrentSolution.GetDocument(_userDocumentId);
+                if (doc == null) return;
+
+                var caretOffset = CodeEditor.Text.Length;   // 文档末尾，触发完整 symbol 查询
+                var completionService = CompletionService.GetService(doc);
+                if (completionService == null) return;
+
+                var trigger = CompletionTrigger.CreateInsertionTrigger('a');
+                // 后台预热：不显示窗口、不写 _currentItems，只为命中 CompletionService 缓存
+                await completionService.GetCompletionsAsync(doc, caretOffset, trigger)
+                    .ConfigureAwait(false);
+            }
+            catch { /* 预热失败不阻塞主流程 */ }
         }
 
         // =======================================================
@@ -1319,6 +1359,8 @@ namespace SunEyeVision.Tool.Script.Views
                 foreach (var provider in providers)
                 {
                     token.ThrowIfCancellationRequested();
+                    // 对齐 RoslynPad：查询在后台线程执行（ConfigureAwait(false)），不卡 UI；
+                    // 后续创建 OverloadInsightWindow 等 UI 操作单独用 Dispatcher 切回 UI 线程。
                     var current = await provider.GetItemsAsync(doc, position, triggerInfo, default, token).ConfigureAwait(false);
                     if (current != null && current.ApplicableSpan.IntersectsWith(position))
                     {
@@ -1340,36 +1382,41 @@ namespace SunEyeVision.Tool.Script.Views
 
             if (token.IsCancellationRequested) return;
 
-            // 返回 null：光标不在任何可签名帮助的方法调用内（如调用已闭合、参数内部无调用）。
-            // 此时关闭已打开的浮窗（对齐 RoslynPad：overloadProvider == null 时不显示签名帮助）。
-            if (items == null || items.Items.Count == 0)
+            // 对齐 RoslynPad（CodeTextEditor.ShowCompletion 用 ConfigureAwait(true)）：查询在后台线程
+            // 完成（上面 ConfigureAwait(false)），所有 UI 操作（创建/更新/显示 OverloadInsightWindow）
+            // 必须切回 UI 线程（WPF 控件需 STA），否则非 STA 线程创建控件抛 InvalidOperationException。
+            await CodeEditor.Dispatcher.InvokeAsync(() =>
             {
-                PluginLogger.Info($"[签名帮助] 无适用方法调用，关闭浮窗: triggerChar='{triggerChar}'", typeName);
-                _insightWindow?.Close();
-                return;
-            }
-
-            PluginLogger.Info($"[签名帮助] 返回 {items.Items.Count} 个重载, SemanticParameterIndex={items.SemanticParameterIndex}", typeName);
-
-            // 复用浮窗实例（对齐 RoslynPad _insightWindow 复用）
-            if (_insightWindow == null)
-            {
-                _insightWindow = new OverloadInsightWindow(CodeEditor.TextArea)
+                // 返回 null：光标不在任何可签名帮助的方法调用内（如调用已闭合、参数内部无调用）。
+                // 此时关闭已打开的浮窗（对齐 RoslynPad：overloadProvider == null 时不显示签名帮助）。
+                if (items == null || items.Items.Count == 0)
                 {
-                    Background = ThemeResource.GetBrush(SdkThemeKeys.PanelBackgroundBrush),
-                    Foreground = ThemeResource.GetBrush(SdkThemeKeys.TextPrimaryBrush),
-                };
-                _insightWindow.Closed += (_, _) => { _insightWindow = null; };
-            }
-            if (_insightWindow.Provider is ScriptOverloadProvider existing)
-            {
-                existing.Update(items);
-            }
-            else
-            {
-                _insightWindow.Provider = new ScriptOverloadProvider(items);
-            }
-            _insightWindow.Show();
+                    PluginLogger.Info($"[签名帮助] 无适用方法调用，关闭浮窗: triggerChar='{triggerChar}'", typeName);
+                    _insightWindow?.Close();
+                    return;
+                }
+
+                PluginLogger.Info($"[签名帮助] 返回 {items.Items.Count} 个重载, SemanticParameterIndex={items.SemanticParameterIndex}", typeName);
+
+                // 复用浮窗实例（对齐 RoslynPad _insightWindow 复用）
+                if (_insightWindow == null)
+                {
+                    _insightWindow = new OverloadInsightWindow(CodeEditor.TextArea);
+                    _insightWindow.Closed += (_, _) => { _insightWindow = null; };
+                }
+                // 每次显示前刷新主题色（Popup 不走可视化树 DynamicResource，切主题后复用实例必须重取）
+                _insightWindow.Background = ThemeResource.GetBrush(SdkThemeKeys.PanelBackgroundBrush);
+                _insightWindow.Foreground = ThemeResource.GetBrush(SdkThemeKeys.TextPrimaryBrush);
+                if (_insightWindow.Provider is ScriptOverloadProvider existing)
+                {
+                    existing.Update(items);
+                }
+                else
+                {
+                    _insightWindow.Provider = new ScriptOverloadProvider(items);
+                }
+                _insightWindow.Show();
+            });
         }
 
         /// <summary>线程安全地获取全部 C# ISignatureHelpProvider（MEF 组合，进程内一次构建）。</summary>
@@ -1605,14 +1652,19 @@ namespace SunEyeVision.Tool.Script.Views
 
             try
             {
-                // 1. 更新 workspace 文本：仅 generated 文档需手动更新（用户代码变化少，通常为默认模板）。
-                //    user 文档已绑定 SourceTextContainer 增量通道，文本随编辑器实时增量同步，不再 WithDocumentText 覆盖。
-                var newSolution = _workspace.CurrentSolution
-                    .WithDocumentText(_documentId, SourceText.From(generatedCode));
-                if (!_workspace.TryApplyChanges(newSolution))
+                // 1. 更新 generated 文档文本：仅当 GeneratedCode 实际变化才 WithDocumentText。
+                //    user 文档已绑定 SourceTextContainer 增量通道，随编辑器实时增量同步，不再 WithDocumentText 覆盖。
+                //    ★ 避免每次编辑都重建 solution（generated 模板通常不变，重建会击穿 Roslyn 增量缓存）。
+                if (generatedCode != _lastGeneratedCode)
                 {
-                    PluginLogger.Warning("[Diagnostic] TryApplyChanges 失败", typeName);
-                    return;
+                    var newSolution = _workspace.CurrentSolution
+                        .WithDocumentText(_documentId, SourceText.From(generatedCode));
+                    if (!_workspace.TryApplyChanges(newSolution))
+                    {
+                        PluginLogger.Warning("[Diagnostic] TryApplyChanges 失败", typeName);
+                        return;
+                    }
+                    _lastGeneratedCode = generatedCode;
                 }
 
                 var userDoc = _workspace.CurrentSolution.GetDocument(_userDocumentId);
@@ -1628,39 +1680,39 @@ namespace SunEyeVision.Tool.Script.Views
 
                 if (token.IsCancellationRequested) return;
 
-                // 诊断 — 只取用户文档中的错误（行号直接对应编辑器行）
+                // 诊断 — 取用户文档中的错误与警告（Error 红波浪 / Warning 蓝波浪，行号直接对应编辑器行）
+                // 波浪线 + ToolTip 均消费扁平 _currentDiagnostics，span 精准定位，不污染整行。
                 var diagnostics = model!.GetDiagnostics(cancellationToken: token)
-                    .Where(d => d.Severity == DiagnosticSeverity.Error
+                    .Where(d => d.Severity is DiagnosticSeverity.Error or DiagnosticSeverity.Warning
                         && d.Location.SourceTree == userSyntaxTree)
                     .ToImmutableArray();
                 _currentDiagnostics = diagnostics;
-                // 建按行索引：ErrorMarkerColorizer 滚动渲染时按行 O(1) 取，避免每行全量线性扫诊断
-                _diagnosticsByLine = diagnostics
-                    .GroupBy(d => d.Location.GetLineSpan().StartLinePosition.Line + 1)
-                    .ToDictionary(g => g.Key, g => (IReadOnlyList<Diagnostic>)g.ToArray());
 
-                PluginLogger.Info($"[Diagnostic] Errors={diagnostics.Length}", typeName);
-                // 完整输出诊断详情（不限量），辅助排查编译错误
-                var hasMissingRef = false;
-                foreach (var diag in diagnostics)
-                {
-                    var loc = diag.Location.GetLineSpan();
-                PluginLogger.Info(
-                    $"[Diagnostic]   {diag.Id} @ line {loc.StartLinePosition.Line + 1}: {diag.GetMessage()}",
-                    typeName);
-                    if (diag.Id == "CS0518") hasMissingRef = true;
-                }
+                PluginLogger.Info($"[Diagnostic] Errors+Warnings={diagnostics.Length}", typeName);
 
-                // 检测到 CS0518（预定义类型缺失）时输出 Warning 级汇总提示
-                if (hasMissingRef)
+                // 检测到 CS0518（预定义类型缺失）时输出 Warning 级汇总提示（仅一次，非逐条刷屏）
+                if (diagnostics.Any(d => d.Id == "CS0518"))
                 {
                     PluginLogger.Warning(
                         $"[Diagnostic] ⚠ 检测到 CS0518（预定义类型缺失），可能原因：运行时 BCL 引用（System.Private.CoreLib / System.Runtime）未正确加载，请检查 [MetadataRef] 初始化日志。",
                         typeName);
                 }
 
-                // 4. UI 线程重绘（红色错误标记）
-                await Dispatcher.InvokeAsync(() => CodeEditor.TextArea.TextView.Redraw(), DispatcherPriority.Background, token);
+                // 4. UI 线程重绘诊断波浪线：只重绘有诊断的行（不全量，避免连累语义着色行重绘导致闪烁）。
+                //    ErrorMarkerColorizer 是 IBackgroundRenderer，波浪线随可视区渲染自动绘制，重绘诊断行即生效。
+                var diag = diagnostics;
+                await Dispatcher.InvokeAsync(() =>
+                {
+                    var textView = CodeEditor.TextArea.TextView;
+                    var lineCount = CodeEditor.Document.LineCount;
+                    foreach (var n in diag
+                        .Select(d => d.Location.GetLineSpan().StartLinePosition.Line + 1)
+                        .Distinct()
+                        .Where(n => n >= 1 && n <= lineCount))
+                    {
+                        textView.Redraw(n, n, DispatcherPriority.Background);
+                    }
+                }, DispatcherPriority.Background, token);
             }
             catch (OperationCanceledException) { }
             catch (Exception ex)
@@ -1670,120 +1722,30 @@ namespace SunEyeVision.Tool.Script.Views
         }
 
         // =======================================================
-        // Phase 2b: Roslyn 语义高亮（SemanticModel → 类型/方法/属性/字段 着色）
+        // Phase 2b: Roslyn 语义高亮（IHighlighter 按行渲染）
         // =======================================================
 
         /// <summary>
-        /// 编辑/重建后调度语义着色：独立 100ms 节流（首次打开传 0 立即着色）。
-        /// 与诊断线程（500ms）互不干扰：用户文档经容器实时同步，从 workspace 取最新文本。
+        /// 编辑/重建后调度语义着色：只重绘当前可见行（不全量）。
+        /// IHighlighter 架构下，AvalonEdit 对可见行调 HighlightLine，内部用 CompareAge 自动判断
+        /// "行没变就复用旧缓存（不闪烁）、变了才重算"，无需手动清缓存。
         /// </summary>
-        private void ScheduleSemanticAsync(int delayMs = 100)
+        private void ScheduleSemanticAsync()
         {
-            _semanticCts?.Cancel();
-            _semanticCts?.Dispose();
-            _semanticCts = new CancellationTokenSource();
-            var token = _semanticCts.Token;
+            if (CodeEditor == null) return;
 
-            _ = Task.Run(async () =>
+            var textView = CodeEditor.TextArea.TextView;
+            if (textView.VisualLinesValid && textView.VisualLines.Count > 0)
             {
-                try
-                {
-                    await Task.Delay(delayMs, token);
-                    if (!token.IsCancellationRequested)
-                        await RunSemanticAsync(token);
-                }
-                catch (OperationCanceledException) { }
-            });
-        }
-
-        /// <summary>
-        /// 基于 SemanticModel 对标识符上色：类型=青、方法/事件=紫、属性=紫、字段=金。
-        /// 与 xshd 语法高亮互补（xshd 仅覆盖 BCL 类型名与声明/调用，本类覆盖所有符号含用户类型）。
-        /// 着色结果按行归类缓存到 _semanticSpansByLine，由 SemanticColorizer.ColorizeLine 按行 O(1) 消费。
-        /// </summary>
-        private async Task RunSemanticAsync(CancellationToken token)
-        {
-            var typeName = GetType().Name;
-
-            if (_workspace == null || _userDocumentId == null)
-            {
-                PluginLogger.Warning($"[Semantic] 跳过: workspace={_workspace != null}, userDocumentId={_userDocumentId != null}", typeName);
-                return;
+                // 只重绘当前可见行范围（对齐 RoslynPad 按可视行按需渲染，不全量 Redraw）
+                var first = textView.VisualLines.First().FirstDocumentLine.LineNumber;
+                var last = textView.VisualLines.Last().LastDocumentLine.LineNumber;
+                textView.Redraw(first, last, DispatcherPriority.Background);
             }
-
-            var code = _parameters.ScriptCode;
-            if (string.IsNullOrEmpty(code))
+            else
             {
-                _semanticSpansByLine = new Dictionary<int, IReadOnlyList<SemanticSpan>>();
-                await Dispatcher.InvokeAsync(() => CodeEditor.TextArea.TextView.Redraw(), DispatcherPriority.Background, token);
-                return;
+                textView.Redraw(DispatcherPriority.Background);
             }
-
-            try
-            {
-                var doc = _workspace.CurrentSolution.GetDocument(_userDocumentId);
-                if (doc == null)
-                {
-                    PluginLogger.Warning("[Semantic] workspace 中找不到 user document", typeName);
-                    return;
-                }
-                // 文档已绑定 SourceTextContainer 增量通道，文本与编辑器实时增量同步，无需 WithText 全量重建。
-
-                var root = await doc.GetSyntaxRootAsync(token);
-                var model = await doc.GetSemanticModelAsync(token);
-                if (root == null || model == null || token.IsCancellationRequested) return;
-
-                var spans = new List<SemanticSpan>();
-                foreach (var syntaxToken in root.DescendantTokens())
-                {
-                    var brush = ClassifyToken(syntaxToken, model);
-                    if (brush != null)
-                        spans.Add(new SemanticSpan(syntaxToken.SpanStart, syntaxToken.Span.Length, brush));
-                }
-
-                // 按行归类：span.Start → 行号。ColorizeLine 按行 O(1) 查缓存，
-                // 渲染每行不再线性扫全部 spans（消除逐帧卡顿）。
-                var sourceText = await doc.GetTextAsync(token);
-                var byLine = new Dictionary<int, IReadOnlyList<SemanticSpan>>();
-                var lineGroups = spans.GroupBy(s => sourceText.Lines.GetLineFromPosition(s.Start).LineNumber);
-                foreach (var group in lineGroups)
-                    byLine[group.Key] = group.ToArray();
-                _semanticSpansByLine = byLine;
-                PluginLogger.Info($"[Semantic] 已生成 {spans.Count} 个语义着色区间, 覆盖 {byLine.Count} 行", typeName);
-
-                if (!token.IsCancellationRequested)
-                    await Dispatcher.InvokeAsync(() => CodeEditor.TextArea.TextView.Redraw(), DispatcherPriority.Background, token);
-            }
-            catch (OperationCanceledException) { }
-            catch (Exception ex)
-            {
-                PluginLogger.Warning($"[Semantic] 着色异常: {ex.Message}", typeName);
-            }
-        }
-
-        /// <summary>
-        /// 根据标识符的语义符号返回前景色，无语义意义（局部变量/参数/命名空间）返回 null 保持默认色。
-        /// </summary>
-        private static Brush? ClassifyToken(SyntaxToken token, SemanticModel model)
-        {
-            if (!token.IsKind(SyntaxKind.IdentifierToken)) return null;
-            var node = token.Parent;
-            if (node == null) return null;
-
-            var symbol = model.GetSymbolInfo(node).Symbol;
-            if (symbol == null)
-                symbol = model.GetTypeInfo(node).Type;
-            if (symbol == null) return null;
-
-            return symbol.Kind switch
-            {
-                SymbolKind.NamedType => SemanticBrushes.Type,
-                SymbolKind.Method => SemanticBrushes.Method,
-                SymbolKind.Property => SemanticBrushes.Property,
-                SymbolKind.Field => SemanticBrushes.Field,
-                SymbolKind.Event => SemanticBrushes.Method,
-                _ => null
-            };
         }
 
         // =======================================================
@@ -1858,33 +1820,6 @@ namespace SunEyeVision.Tool.Script.Views
     // =======================================================
 
     /// <summary>
-    /// 语义着色调色板（与 CSharpLight.xshd 对齐：Type=#267F99 青，Method=#6F42C1 紫）。
-    /// </summary>
-    private static class SemanticBrushes
-    {
-        public static readonly Brush Type = FrozenSolidBrush(0x26, 0x7F, 0x99);   // 类型：青
-        public static readonly Brush Method = FrozenSolidBrush(0x6F, 0x42, 0xC1); // 方法/事件：紫
-        public static readonly Brush Property = FrozenSolidBrush(0x6F, 0x42, 0xC1); // 属性：紫（对齐 VS）
-        public static readonly Brush Field = FrozenSolidBrush(0x79, 0x5E, 0x26);  // 字段：金
-
-        private static Brush FrozenSolidBrush(byte r, byte g, byte b)
-        {
-            var brush = new SolidColorBrush(Color.FromRgb(r, g, b));
-            if (brush.CanFreeze) brush.Freeze();
-            return brush;
-        }
-    }
-
-    /// <summary>
-    /// 单个语义着色区间（文档绝对偏移 + 长度 + 前景色）。
-    /// </summary>
-    internal sealed class SemanticSpan(int start, int length, Brush brush)
-    {
-        public int Start { get; } = start;
-        public int Length { get; } = length;
-        public Brush Brush { get; } = brush;
-    }
-
     /// <summary>
     /// 从 Application.Resources 取主题刷子（补全弹窗/签名帮助浮窗是 Popup，不走可视化树，
     /// 无法靠 DynamicResource 自动解析，需手动按 SdkThemeKeys 从 App.Resources 取）。
@@ -1897,6 +1832,22 @@ namespace SunEyeVision.Tool.Script.Views
             var res = Application.Current?.Resources;
             if (res == null || string.IsNullOrEmpty(key)) return null;
             return res[key] as Brush;
+        }
+
+        /// <summary>判断当前是否暗色主题：扫描 MergedDictionaries 是否含 DarkTheme 字典（工具插件不引用 UI 层，靠 URI 识别）。</summary>
+        public static bool IsDarkTheme()
+        {
+            var res = Application.Current?.Resources;
+            if (res == null) return false;
+            foreach (var dict in res.MergedDictionaries)
+            {
+                if (dict.Source != null &&
+                    dict.Source.OriginalString.Contains("Themes/Dark/DarkTheme.xaml", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 
@@ -1940,110 +1891,149 @@ namespace SunEyeVision.Tool.Script.Views
             => OnDocumentTextChanged(document, newText, PreservationMode.PreserveIdentity);
     }
 
-    /// <summary>
-    /// Roslyn 语义高亮着色器：根据 SemanticModel 将标识符（类型/方法/属性/字段）着色为对应前景色。
-    /// 运行在 xshd 语法高亮之后，通过 DocumentColorizingTransformer 增量覆盖前景，
-    /// 与 ErrorMarkerColorizer（背景）互补，互不干扰。
-    /// </summary>
-    internal sealed class SemanticColorizer : DocumentColorizingTransformer
+    /// <summary>鼠标移到诊断 span 上：显示错误/警告消息（对齐 RoslynPad TextMarkerToolTipProvider）。</summary>
+    private void TextArea_MouseMove(object? sender, MouseEventArgs e)
     {
-        // 按行号索引的语义着色区间。ColorizeLine 只查当前行，不做全量线性扫描，
-        // 避免每次渲染每行遍历全部 spans（连续打字/删除/换行的逐帧卡顿根因）。
-        private readonly Func<IReadOnlyDictionary<int, IReadOnlyList<SemanticSpan>>?> _getSpansByLine;
+        if (_currentDiagnostics.Count == 0) return;
 
-        public SemanticColorizer(Func<IReadOnlyDictionary<int, IReadOnlyList<SemanticSpan>>?> getSpansByLine)
+        TextViewPosition? position;
+        try
         {
-            _getSpansByLine = getSpansByLine;
+            position = CodeEditor.TextArea.TextView.GetPositionFloor(
+                e.GetPosition(CodeEditor.TextArea.TextView) + CodeEditor.TextArea.TextView.ScrollOffset);
         }
+        catch (ArgumentOutOfRangeException) { return; }
 
-        protected override void ColorizeLine(DocumentLine line)
+        if (!position.HasValue || position.Value.Location.IsEmpty) return;
+
+        var offset = CodeEditor.Document.GetOffset(position.Value.Location);
+        // 同一诊断内移动不重复刷新（防 MouseMove 高频闪烁）
+        if (_diagnosticToolTip?.IsOpen == true && offset == _lastDiagToolTipOffset) return;
+
+        var diag = _currentDiagnostics.FirstOrDefault(d =>
+            d.Location.SourceSpan.Start <= offset && offset < d.Location.SourceSpan.End);
+        if (diag == null) return;
+
+        if (_diagnosticToolTip == null)
         {
-            var byLine = _getSpansByLine();
-            if (byLine == null || byLine.Count == 0) return;
-
-            // 按当前行号 O(1) 取该行 spans（仅遍历本行区间，非全量）
-            if (!byLine.TryGetValue(line.LineNumber, out var spans) || spans == null || spans.Count == 0) return;
-
-            var lineStart = line.Offset;
-            var lineEnd = line.EndOffset;
-
-            foreach (var span in spans)
+            _diagnosticToolTip = new System.Windows.Controls.ToolTip
             {
-                if (span.Start >= lineEnd) continue;
-                if (span.Start + span.Length <= lineStart) continue;
-
-                var start = Math.Max(span.Start, lineStart);
-                var end = Math.Min(span.Start + span.Length, lineEnd);
-                if (start >= end) continue;
-
-                ChangeLinePart(start, end, e =>
-                {
-                    if (e.TextRunProperties is VisualLineElementTextRunProperties tp)
-                        tp.SetForegroundBrush(span.Brush);
-                });
-            }
+                MaxWidth = 480,
+                PlacementTarget = CodeEditor.TextArea,
+                Content = diag.GetMessage(),
+            };
+            _diagnosticToolTip.Closed += (_, _) => _diagnosticToolTip = null;
         }
+        else
+        {
+            _diagnosticToolTip.Content = diag.GetMessage();
+        }
+        _lastDiagToolTipOffset = offset;
+        _diagnosticToolTip.IsOpen = true;
+    }
+
+    /// <summary>鼠标移开编辑区：关闭诊断悬停详情浮窗。</summary>
+    private void TextArea_MouseLeave(object? sender, MouseEventArgs e)
+    {
+        if (_diagnosticToolTip != null)
+            _diagnosticToolTip.IsOpen = false;
+        _lastDiagToolTipOffset = -1;
     }
 
     }
 
     // =======================================================
-    // Phase 1: 实时诊断着色器 — 编译错误行标记为红色背景
+    // Phase 1: 实时诊断着色器 — 编译错误/警告在 span 下画波浪线
     // =======================================================
 
     /// <summary>
-    /// 编译错误标记着色器：将 _currentDiagnostics 中的错误位置标记为浅红背景。
-    /// 仅设置背景色，不覆盖 xshd 语法颜色（保留关键字蓝、类型青、方法紫）。
-    /// 运行在 Layer 1 内置高亮之后，通过 DocumentColorizingTransformer 增量覆盖。
+    /// 编译诊断标记着色器：在错误/警告 span 底部绘制波浪线（对齐 RoslynPad TextMarkerService）。
+    /// 采用 IBackgroundRenderer 绘制在文字下层，精准 span 不污染整行、不覆盖 xshd 语法颜色。
+    /// 分级着色：Error 红 / Warning 蓝，颜色随暗色主题。运行在 KnownLayer.Selection 层。
     /// </summary>
-    internal sealed class ErrorMarkerColorizer : DocumentColorizingTransformer
+    internal sealed class ErrorMarkerColorizer : IBackgroundRenderer
     {
-        private readonly Func<IReadOnlyDictionary<int, IReadOnlyList<Diagnostic>>?> _getDiagnosticsByLine;
-        private static readonly Brush ErrorBgBrush = FrozenBrush(0xFF, 0xE0, 0xE0);      // 浅红背景
-        private static readonly Brush DarkErrorBgBrush = FrozenBrush(0x5C, 0x00, 0x00);  // 深红背景（暗色主题）
-
+        private readonly Func<IReadOnlyList<Diagnostic>> _getDiagnostics;
         private readonly bool _isDark;
 
-        public ErrorMarkerColorizer(Func<IReadOnlyDictionary<int, IReadOnlyList<Diagnostic>>?> getDiagnosticsByLine, bool isDark)
+        // 浅色主题：Error 红 / Warning 蓝
+        private static readonly Brush ErrorBrush = FrozenBrush(0xFF, 0x00, 0x00);
+        private static readonly Brush WarningBrush = FrozenBrush(0x1E, 0x90, 0xFF);
+        // 暗色主题：Error 亮红 / Warning 亮蓝（深色底上更清晰）
+        private static readonly Brush DarkErrorBrush = FrozenBrush(0xFF, 0x5F, 0x5F);
+        private static readonly Brush DarkWarningBrush = FrozenBrush(0x64, 0xBE, 0xFF);
+
+        private const double WaveOffset = 2.5;   // 波浪间距（像素）
+        private const double WavePenWidth = 1.0; // 波浪线宽
+
+        public ErrorMarkerColorizer(Func<IReadOnlyList<Diagnostic>> getDiagnostics, bool isDark)
         {
-            _getDiagnosticsByLine = getDiagnosticsByLine;
+            _getDiagnostics = getDiagnostics;
             _isDark = isDark;
         }
 
-        protected override void ColorizeLine(DocumentLine line)
-        {
-            // 按行 O(1) 查索引，避免每行全量线性扫诊断（对齐 SemanticColorizer 的 _semanticSpansByLine 模式）
-            var byLine = _getDiagnosticsByLine();
-            if (byLine == null || byLine.Count == 0) return;
-            if (!byLine.TryGetValue(line.LineNumber, out var diagnostics) || diagnostics.Count == 0) return;
+        public KnownLayer Layer => KnownLayer.Selection;
 
-            var brush = _isDark ? DarkErrorBgBrush : ErrorBgBrush;
-            var lineStart = line.Offset;
-            var lineEnd = line.EndOffset;
+        public void Draw(TextView textView, DrawingContext drawingContext)
+        {
+            var diagnostics = _getDiagnostics();
+            if (diagnostics.Count == 0 || !textView.VisualLinesValid) return;
+
+            var visualLines = textView.VisualLines;
+            if (visualLines.Count == 0) return;
+
+            // 可视区偏移范围：只画可见行的诊断，滚动时按需绘制
+            var viewStart = visualLines.First().FirstDocumentLine.Offset;
+            var viewEnd = visualLines.Last().LastDocumentLine.EndOffset;
 
             foreach (var diag in diagnostics)
             {
-                // 过滤"引用缺失导致的级联误报"：缺 using/缺引用的错误不应让整行变红
-                // CS0246: 找不到类型/命名空间  CS0234: 类型或命名空间不存在  CS0103: 名称不存在于当前上下文
-                if (diag.Id is "CS0246" or "CS0234" or "CS0103") continue;
-
                 var span = diag.Location.SourceSpan;
-                if (span.Start >= lineEnd) continue;
-                if (span.End <= lineStart) continue;
+                if (span.Start >= viewEnd || span.End <= viewStart) continue;
 
-                var start = Math.Max(span.Start, lineStart);
-                var end = Math.Min(span.End, lineEnd);
-                if (start >= end) continue;
-
-                ChangeLinePart(start, end, e =>
-                {
-                    if (e.TextRunProperties is VisualLineElementTextRunProperties tp)
-                    {
-                        // ★ 背景色覆盖，保留 xshd 语法前景色
-                        tp.SetBackgroundBrush(brush);
-                    }
-                });
+                var brush = GetSeverityBrush(diag.Severity);
+                DrawWaveLine(drawingContext, textView, span.Start, span.Length, brush);
             }
+        }
+
+        private Brush GetSeverityBrush(DiagnosticSeverity severity)
+            => severity switch
+            {
+                DiagnosticSeverity.Warning => _isDark ? DarkWarningBrush : WarningBrush,
+                _ => _isDark ? DarkErrorBrush : ErrorBrush
+            };
+
+        /// <summary>沿 span 文字底部画一排小三角折线（波浪线），对齐 RoslynPad TextMarkerService.CreatePoints。</summary>
+        private void DrawWaveLine(DrawingContext dc, TextView textView, int startOffset, int length, Brush brush)
+        {
+            var segment = new TextSegment { StartOffset = startOffset, Length = length };
+            var rects = BackgroundGeometryBuilder.GetRectsForSegment(textView, segment);
+
+            var geometry = new StreamGeometry();
+            using (var ctx = geometry.Open())
+            {
+                foreach (var rect in rects)
+                {
+                    var bottomLeft = rect.BottomLeft;
+                    var count = Math.Max((int)((rect.BottomRight.X - bottomLeft.X) / WaveOffset) + 1, 4);
+                    ctx.BeginFigure(bottomLeft, isFilled: false, isClosed: false);
+                    ctx.PolyLineTo(CreateWavePoints(bottomLeft, count), isStroked: true, isSmoothJoin: false);
+                }
+            }
+            geometry.Freeze();
+
+            var pen = new Pen(brush, WavePenWidth);
+            pen.Freeze();
+            dc.DrawGeometry(Brushes.Transparent, pen, geometry);
+        }
+
+        /// <summary>自底向上生成波浪点序列：每格交替上浮 offset 与回落，形成锯齿。</summary>
+        private static List<Point> CreateWavePoints(Point bottomLeft, int count)
+        {
+            var points = new List<Point>(count);
+            for (var i = 0; i < count; i++)
+                points.Add(new Point(bottomLeft.X + i * WaveOffset, bottomLeft.Y - ((i + 1) % 2 == 0 ? WaveOffset : 0)));
+            return points;
         }
 
         private static Brush FrozenBrush(byte r, byte g, byte b)

@@ -3123,6 +3123,10 @@
                                     {
                                         "date":  "2026-08-19",
                                         "note":  "[be3860670f79b76e8145f60b1cd71f914b22f4ed] 脚本工具性能优化与引用治理"
+                                    },
+                                    {
+                                        "date":  "2026-08-20",
+                                        "note":  "[65d68792ea69084c9c8050b70bcb41e3558ab0a2] Script工具：签名帮助改为Roslyn内置provider，补全图标对齐RoslynPad"
                                     }
                                 ]
                     },

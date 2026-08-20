@@ -1,0 +1,46 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base">
+
+    <!-- 全局 ToolTip 隐式样式：去除 WPF 默认 Aero2 模板硬编码的白底/黑字，跟随亮暗主题。
+         治本要点（对齐 MenuStyleResources 的 ContextMenu 模式）：
+         WPF 默认 ToolTip 模板内部硬编码 SystemColors，仅设 Background 会被模板忽略，
+         必须用完整 ControlTemplate 重写模板，并用 DynamicResource 语义 key 让 ToolTip
+         （Popup 不在可视化树上，但 ToolTip 内容通过 ContentPresenter 走模板绑定，
+         而 Border 的 Background 用 DynamicResource 可跟随主题字典切换）。 -->
+    <Style TargetType="ToolTip">
+        <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}"/>
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.BorderBrush}}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="8,5"/>
+        <Setter Property="MaxWidth" Value="480"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToolTip">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Padding="{TemplateBinding Padding}"
+                            CornerRadius="3"
+                            SnapsToDevicePixels="True">
+                        <ContentPresenter Margin="0,0,0,0"
+                                          VerticalAlignment="Center"
+                                          ContentSource="Content"
+                                          TextBlock.Foreground="{TemplateBinding Foreground}">
+                            <!-- 让 ToolTip 内容里的 TextBlock（含字符串渲染的默认 TextBlock）自动换行，
+                                 长内容在 MaxWidth=480 内换行，不横向溢出超出窗口 -->
+                            <ContentPresenter.Resources>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="TextWrapping" Value="Wrap"/>
+                                </Style>
+                            </ContentPresenter.Resources>
+                        </ContentPresenter>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

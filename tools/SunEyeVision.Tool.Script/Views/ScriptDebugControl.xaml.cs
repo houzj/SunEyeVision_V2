@@ -21,7 +21,6 @@ using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Editing;
 using ICSharpCode.AvalonEdit.Highlighting;
-using ICSharpCode.AvalonEdit.Highlighting.Xshd;
 using ICSharpCode.AvalonEdit.Rendering;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Completion;
@@ -73,9 +72,8 @@ namespace SunEyeVision.Tool.Script.Views
             LogListBox.ItemsSource = _logEntries;
             UpdateStatus("初始化中...");
 
-            // 编辑器能力（语法高亮/语义高亮/补全/签名/诊断/workspace）全部封装在公共内核 ScriptEditorCore。
-            // 本控件仅注入工具特有的引用/代码/图标/语法高亮来源，内核自动完成编辑器功能。
-            EditorCore.SetSyntaxHighlightingProvider(LoadCustomHighlighting);
+            // 编辑器能力（语义高亮/补全/签名/诊断/workspace）全部封装在公共内核 ScriptEditorCore。
+            // 本控件仅注入工具特有的引用/代码/图标来源，内核自动完成编辑器功能。
             EditorCore.SetCompletionIconProvider(item => item.GetGlyph().ToImageSource());
             EditorCore.SetReferenceProvider(BuildReferences);
             EditorCore.SetCodeSource(() => _parameters.GeneratedCode, () => EditorCore.GetCode());
@@ -88,36 +86,6 @@ namespace SunEyeVision.Tool.Script.Views
 
             perfSw.Stop();
             PluginLogger.Info($"[Perf] ScriptDebugControl 构造函数: {perfSw.ElapsedMilliseconds}ms", GetType().Name);
-        }
-
-        /// <summary>
-        /// 从输出目录 Resources 子文件夹加载自定义 xshd 语法定义（含 BCL 类型关键词）。
-        /// 返回 null 时内核回退内置 C# 高亮（rule-008 不允许静默兜底，但语法高亮属可降级 UI 能力）。
-        /// </summary>
-        private IHighlightingDefinition? LoadCustomHighlighting()
-        {
-            var assemblyDir = Path.GetDirectoryName(typeof(ScriptDebugControl).Assembly.Location);
-            var xshdPath = Path.Combine(assemblyDir ?? AppContext.BaseDirectory, "Resources", "CSharpLight.xshd");
-
-            if (!File.Exists(xshdPath))
-            {
-                PluginLogger.Warning($"[Highlighting] xshd 文件不存在: {xshdPath}，回退到内置 C# 高亮", GetType().Name);
-                return null;
-            }
-
-            try
-            {
-                using var stream = File.OpenRead(xshdPath);
-                using var reader = XmlReader.Create(stream);
-                var def = HighlightingLoader.Load(reader, HighlightingManager.Instance);
-                PluginLogger.Info($"[Highlighting] 已加载自定义 xshd: {xshdPath}, Name={def.Name}", GetType().Name);
-                return def;
-            }
-            catch (Exception ex)
-            {
-                PluginLogger.Warning($"[Highlighting] xshd 加载失败: {ex.Message}，回退到内置 C# 高亮", GetType().Name);
-                return null;
-            }
         }
 
         /// <summary>

@@ -69,15 +69,6 @@ public partial class ScriptEditorCore : UserControl
     }
 
     /// <summary>
-    /// 注入语法高亮定义来源（Layer 1 xshd）。调用方从自身资源加载 IHighlightingDefinition 返回；
-    /// 返回 null 时内核回退内置 C# 高亮。不注入时同样回退内置 C#。
-    /// </summary>
-    public void SetSyntaxHighlightingProvider(Func<IHighlightingDefinition?> getSyntaxHighlighting)
-    {
-        _syntaxHighlightingProvider = getSyntaxHighlighting ?? throw new ArgumentNullException(nameof(getSyntaxHighlighting));
-    }
-
-    /// <summary>
     /// 注入补全项图标提供者。工具层传"根据 CompletionItem 渲染 ImageSource"的函数
     /// （内部走 GlyphMapping + Glyphs.xaml 资源）。未注入时补全项无图标（列表仍可用）。
     /// </summary>
@@ -119,9 +110,6 @@ public partial class ScriptEditorCore : UserControl
     private DocumentId? _documentId;                       // 生成的字段声明文档 ID
     private DocumentId? _userDocumentId;                   // 用户代码文档 ID
     private AvalonEditTextContainer? _userTextContainer;   // 用户文档增量文本通道
-
-    // 语法高亮（Layer 1：xshd）：由调用方注入加载函数（工具层从自身 Resources 加载）
-    private Func<IHighlightingDefinition?>? _syntaxHighlightingProvider;
 
     // 语义高亮（Layer 2b：Roslyn 分类着色）。生命周期由 RoslynHighlightingColorizer 管理。
     // 挂载标志：构造函数只创建不挂载（workspace 未就绪），RebuildWorkspace 完成后首次挂载（对齐参考时序）。
@@ -264,8 +252,9 @@ public partial class ScriptEditorCore : UserControl
     /// </summary>
     private void InitializeEditor()
     {
-        // Layer 1: 语法高亮（xshd 或内置 C# 回退）
-        LoadCustomHighlighting();
+        // 对齐 RoslynPad 新版：不使用 xshd 语法高亮，仅由 Roslyn 语义分类器统一着色。
+        // CodeEditor.SyntaxHighlighting 保持 null，未就绪行由编辑器默认前景（主题色）兜底，
+        // 语义模型就绪后 DoHighlightLine 同步分类（含语法 fallback），单一色板无跳变。
 
         // Layer 2a: 实时诊断标记着色器（错误/警告在 span 下画波浪线，随主题，保留语法颜色）
         var errorMarker = new ErrorMarkerColorizer(() => _currentDiagnostics, ThemeResource.IsDarkTheme());
@@ -308,36 +297,6 @@ public partial class ScriptEditorCore : UserControl
             _throttleCts?.Dispose();
             _completionWindow?.Close();
         };
-    }
-
-    /// <summary>
-    /// 从调用方注入的提供者加载自定义 xshd 语法高亮（含 BCL 类型关键词）；
-    /// 提供者未注入或返回 null 时回退内置 C# 高亮，不抛异常。
-    /// </summary>
-    private void LoadCustomHighlighting()
-    {
-        if (_syntaxHighlightingProvider == null)
-        {
-            CodeEditor.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("C#");
-            return;
-        }
-
-        try
-        {
-            var definition = _syntaxHighlightingProvider();
-            if (definition == null)
-            {
-                CodeEditor.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("C#");
-                return;
-            }
-            CodeEditor.SyntaxHighlighting = definition;
-            PluginLogger.Info($"[Highlighting] 已加载自定义 xshd: Name={definition.Name}", typeName);
-        }
-        catch (Exception ex)
-        {
-            PluginLogger.Warning($"[Highlighting] xshd 加载失败: {ex.Message}，回退到内置 C# 高亮", typeName);
-            CodeEditor.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("C#");
-        }
     }
 
     /// <summary>

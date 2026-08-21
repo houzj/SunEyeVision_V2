@@ -15,10 +15,6 @@
     <InternalsAssemblyNames>Microsoft.CodeAnalysis.Features;Microsoft.CodeAnalysis.Workspaces</InternalsAssemblyNames>
   </PropertyGroup>
   <ItemGroup>
-    <!-- 将 xshd 语法高亮文件复制到输出目录的 Resources 子文件夹 -->
-    <None Include="Resources\CSharpLight.xshd">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <!-- 嵌入式资源：代码模板（由 ScriptParameters.LoadEmbeddedResource 加载） -->
     <EmbeddedResource Include="Resources\MinimalCode.txt" />
     <EmbeddedResource Include="Resources\DemoCode.txt" />

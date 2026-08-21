@@ -156,6 +156,35 @@ internal sealed class RoslynSemanticHighlighter : IHighlighter
             }
         }
 
+        // ★ 对齐新版 RoslynPad（Roslyn SemanticColorizer）：语义模型就绪时同步分类可视行，
+        //   行一进可视区即返回最终语义色，消除"先 xshd/旧色→异步覆盖语义色"的跳变（滚动/文本变化）。
+        //   语义模型未就绪（初始打开 workspace 构建中）才走异步 worker + 平移兜底。
+        var document = _getUserDocument();
+        if (document != null && document.TryGetSemanticModel(out _))
+        {
+            try
+            {
+                var spans = GetClassifiedSpansAsync(document, documentLine).GetAwaiter().GetResult();
+                line.Sections.Clear();
+                foreach (var classifiedSpan in spans)
+                {
+                    if (IsOutsideLine(classifiedSpan, documentLine)) continue;
+                    line.Sections.Add(new HighlightedSection
+                    {
+                        Color = _highlightColors.GetBrush(classifiedSpan.ClassificationType),
+                        Offset = classifiedSpan.TextSpan.Start,
+                        Length = classifiedSpan.TextSpan.Length,
+                    });
+                }
+                CacheLine(line);
+                return line;
+            }
+            catch
+            {
+                // 同步分类异常（罕见）→ 落空，交给异步 worker 兜底
+            }
+        }
+
         // since we don't want to block the UI thread, enqueue and process asynchronously
         EnqueueLine(line);
 
@@ -441,6 +470,8 @@ internal sealed class ClassificationHighlightColors
     private readonly System.Windows.Media.Color _stringColor;
     private readonly System.Windows.Media.Color _commentColor;
     private readonly System.Windows.Media.Color _numberColor;
+    private readonly System.Windows.Media.Color _identifierColor;
+    private readonly System.Windows.Media.Color _preprocessorColor;
 
     public ClassificationHighlightColors(bool isDarkTheme)
     {
@@ -455,6 +486,8 @@ internal sealed class ClassificationHighlightColors
             _stringColor = MakeColor("#CE9178");        // 字符串：橙（VS Dark）
             _commentColor = MakeColor("#6A9955");       // 注释：绿（VS Dark）
             _numberColor = MakeColor("#B5CEA8");        // 数字：浅绿灰（VS Dark）
+            _identifierColor = MakeColor("#D4D4D4");    // 普通标识符：默认文本色（VS Dark）
+            _preprocessorColor = MakeColor("#9A9A9A");  // 预处理指令：灰（VS Dark）
         }
         else
         {
@@ -466,6 +499,8 @@ internal sealed class ClassificationHighlightColors
             _stringColor = MakeColor("#A31515");        // 字符串：深红（VS Light）
             _commentColor = MakeColor("#008000");       // 注释：绿（VS Light）
             _numberColor = MakeColor("#000080");        // 数字：深蓝（VS Light）
+            _identifierColor = MakeColor("#000000");    // 普通标识符：默认文本色（VS Light）
+            _preprocessorColor = MakeColor("#888888");  // 预处理指令：灰（VS Light）
         }
     }
 
@@ -513,6 +548,14 @@ internal sealed class ClassificationHighlightColors
                 break;
             case ClassificationTypeNames.NumericLiteral:
                 color.Foreground = new SimpleHighlightingBrush(_numberColor);
+                break;
+            case ClassificationTypeNames.Identifier:
+                // 普通标识符：主题默认文本色（对齐 RoslynPad 分类继承链 fallback 到默认前景）
+                color.Foreground = new SimpleHighlightingBrush(_identifierColor);
+                break;
+            case ClassificationTypeNames.PreprocessorKeyword:
+            case ClassificationTypeNames.PreprocessorText:
+                color.Foreground = new SimpleHighlightingBrush(_preprocessorColor);
                 break;
         }
         return color;

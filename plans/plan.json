@@ -3139,6 +3139,10 @@
                                     {
                                         "date":  "2026-08-21",
                                         "note":  "[09b296b2d37522b0db08cbe8e2360048ec36259a] 脚本工具编辑器内核抽离（CommonControl） + 语义高亮 VS 配色对齐"
+                                    },
+                                    {
+                                        "date":  "2026-08-21",
+                                        "note":  "[fd69d5d69fcdbf40a3fa7bf832cc8ad1f91c814d] 脚本编辑器语义高亮重构：移除 xshd，单一 Roslyn 语义分类器（对齐 RoslynPad 新版）"
                                     }
                                 ]
                     },

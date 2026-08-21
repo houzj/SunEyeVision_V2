@@ -113,8 +113,9 @@ namespace SunEyeVision.Tool.Script.Views
                 EditorCore.LoadCode(_parameters.ScriptCode);
                 InitializeTabs();
 
-                // 立即重建 workspace（内核 MEF 已由 ScriptEditorCore.WarmupForStartup 预热）
-                ScheduleRebuildForOpen();
+                // workspace 重建 + 语义预热改由 InitializeAsync（窗口 Show 前被 await）统一触发，
+                // 实现"打开即着色、无白色过渡"。此处不再异步后置。
+                // 注意：调试模式（无 InitializeAsync 调用路径）仍需显式初始化，见调试入口处。
 
                 // 参数注入完成 → 状态切到"就绪"
                 UpdateStatus("就绪");
@@ -122,14 +123,12 @@ namespace SunEyeVision.Tool.Script.Views
         }
 
         /// <summary>
-        /// 后台执行 workspace 重建 + 诊断/语义/补全调度（内核统一编排，从 UI 线程 Dispatcher.Background 执行）。
+        /// 异步初始化（窗口 Show 前由宿主 await）：重建 workspace + 完成语义预热，
+        /// 实现"打开即着色、无白色过渡"。覆盖基类空实现。
         /// </summary>
-        private void ScheduleRebuildForOpen()
+        public override async Task InitializeAsync()
         {
-            _ = Dispatcher.InvokeAsync(() =>
-            {
-                EditorCore.InitializeWorkspace();
-            }, DispatcherPriority.Background);
+            await EditorCore.InitializeAndWaitAsync();
         }
 
         /// <summary>

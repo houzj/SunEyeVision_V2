@@ -3143,6 +3143,10 @@
                                     {
                                         "date":  "2026-08-21",
                                         "note":  "[fd69d5d69fcdbf40a3fa7bf832cc8ad1f91c814d] 脚本编辑器语义高亮重构：移除 xshd，单一 Roslyn 语义分类器（对齐 RoslynPad 新版）"
+                                    },
+                                    {
+                                        "date":  "2026-08-21",
+                                        "note":  "[0bfcde8f24ab064922aab0d3dea4ad8bce87eac9] 修复脚本编辑器内核诊断链路（对齐参考项目异步架构）"
                                     }
                                 ]
                     },

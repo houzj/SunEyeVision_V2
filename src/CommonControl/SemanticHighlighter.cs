@@ -73,10 +73,21 @@ internal sealed class RoslynSemanticHighlighter : IHighlighter
         var cts = _cts;
         if (cts == null) return;
         if (Interlocked.Exchange(ref _warmupRequested, 1) != 0) return; // 幂等：进程内只预热一次
-        _ = Task.Run(() => WarmupAsync(maxLines: 50, cts.Token), cts.Token);
+        // 全文预热：覆盖所有行，最大化/滚动时无未缓存白行（避免"变白再着色"闪烁）
+        var fullLineCount = _document.LineCount;
+        _ = Task.Run(() => WarmupAsync(maxLines: fullLineCount, cts.Token), cts.Token);
     }
 
     private int _warmupRequested;
+
+    // 预热完成信号：供"打开前预热"等待（窗口显示前完成语义着色，消除白色过渡）
+    private readonly TaskCompletionSource _warmupTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+    /// <summary>
+    /// 语义预热完成的异步信号。WarmupAsync 完成（前 N 行已分类写缓存）后置位。
+    /// 供 ScriptEditorCore.InitializeAndWaitAsync 在窗口显示前等待，实现"打开即着色"。
+    /// </summary>
+    public Task WarmupCompletion => _warmupTcs.Task;
 
     public IDocument Document => _document;
 
@@ -232,8 +243,14 @@ internal sealed class RoslynSemanticHighlighter : IHighlighter
 
             // 预热完成触发重绘（AvalonEdit 对受影响行重画，命中缓存显示分类色）
             HighlightingStateChanged?.Invoke(1, lineCount);
+            _warmupTcs.TrySetResult();
         }
         catch { /* 预热失败不阻塞主流程 */ }
+        finally
+        {
+            // 无论是否成功，都置位预热完成信号（避免等待方永久挂起）
+            _warmupTcs.TrySetResult();
+        }
     }
 
     private async Task Worker(CancellationToken cancellationToken)
@@ -427,6 +444,11 @@ internal sealed class RoslynHighlightingColorizer : HighlightingColorizer
     /// 则 CreateHighlighter 已自动触发预热，此处调用为冗余但无害。
     /// </summary>
     public void Warmup() => _highlighter?.TriggerWarmup();
+
+    /// <summary>
+    /// 语义预热完成信号（供"打开前预热"等待）。highlighter 创建后指向其 WarmupCompletion。
+    /// </summary>
+    public Task WarmupCompletion => _highlighter?.WarmupCompletion ?? Task.CompletedTask;
 }
 
 /// <summary>

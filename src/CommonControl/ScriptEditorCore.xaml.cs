@@ -333,6 +333,31 @@ public partial class ScriptEditorCore : UserControl
     }
 
     /// <summary>
+    /// 打开前预热：重建 workspace + 完成语义着色，供窗口显示前调用（对齐"打开即着色，无白色过渡"）。
+    /// 在 InitializeAsync（窗口 Show 前被 await）中调用，同步完成 RebuildWorkspace + 挂载高亮，
+    /// 再等待语义模型构建 + 可视区前 N 行分类完成。
+    /// </summary>
+    public async Task InitializeAndWaitAsync()
+    {
+        InitializeWorkspace();
+        await WaitForInitialHighlightAsync();
+    }
+
+    /// <summary>
+    /// 等待语义高亮预热完成：确保 highlighter 已创建（触发一次布局），再等其 WarmupCompletion。
+    /// </summary>
+    private async Task WaitForInitialHighlightAsync()
+    {
+        if (_semanticColorizer == null) return;
+
+        // 确保 highlighter 已创建（AvalonEdit 布局时才 CreateHighlighter + TriggerWarmup）
+        if (CodeEditor.TextArea.TextView.VisualLinesValid)
+            _ = CodeEditor.TextArea.TextView.VisualLines;
+
+        await _semanticColorizer.WarmupCompletion;
+    }
+
+    /// <summary>
     /// 编辑/重建后调度语义着色：只重绘当前可见行（不全量）。
     /// IHighlighter 架构下，AvalonEdit 对可见行调 HighlightLine，内部用 CompareAge 自动判断
     /// "行没变就复用旧缓存（不闪烁）、变了才重算"，无需手动清缓存。

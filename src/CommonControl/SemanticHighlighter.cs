@@ -14,7 +14,7 @@ using SunEyeVision.Plugin.SDK.Logging;
 // TextDocument 在 Microsoft.CodeAnalysis（Roslyn 文档）与 AvalonEdit（编辑器文档）中同名冲突，用别名消歧
 using AvalonTextDocument = ICSharpCode.AvalonEdit.Document.TextDocument;
 
-namespace SunEyeVision.Tool.Script.Views;
+namespace CommonControl;
 
 /// <summary>
 /// Roslyn 语义高亮器（IHighlighter）：按需逐行渲染 + 防闪烁，对齐 RoslynPad-avalonedit RoslynSemanticHighlighter。
@@ -425,22 +425,48 @@ internal sealed class RoslynHighlightingColorizer : HighlightingColorizer
 }
 
 /// <summary>
-/// 分类颜色映射：Roslyn ClassificationTypeNames → HighlightingColor/Brush（对齐参考 IClassificationHighlightColors）。
-/// 语义着色：类型=青、方法/属性=紫；字段=基础色（对齐 Roslyn 语法分类的固有行为——
-/// 声明处由语法分类直接给色、引用处依赖语义模型解析，两处行为不一致会导致"有的金有的白"，
-/// 故字段不映射、统一落基础色，从根上消除变色感知）。
+/// 分类颜色映射：Roslyn ClassificationTypeNames → HighlightingColor/Brush（对齐 VS Dark / VS Light 的 C# 语义着色标准）。
+/// 暗色主题（VS Dark）：关键字 #569CD6、类型 #4EC9B0、方法/属性 #DCDCAA、字段/局部/参数/常量 #9CDCFE、字符串 #CE9178、注释 #6A9955。
+/// 浅色主题（VS Light）：关键字 #0000FF、类型 #2B91AF、方法/属性 #74531F、字段/局部/参数/常量 #001080、字符串 #A31515、注释 #008000。
+/// 语义分类对字段声明/引用稳定产出 FieldName（无 005b712 当初担心的"声明/引用变色抖动"问题）。
 /// </summary>
 internal sealed class ClassificationHighlightColors
 {
+    private readonly bool _isDark;
+    private readonly System.Windows.Media.Color _keywordColor;
     private readonly System.Windows.Media.Color _typeColor;
     private readonly System.Windows.Media.Color _methodColor;
     private readonly System.Windows.Media.Color _propertyColor;
+    private readonly System.Windows.Media.Color _fieldLocalColor;
+    private readonly System.Windows.Media.Color _stringColor;
+    private readonly System.Windows.Media.Color _commentColor;
+    private readonly System.Windows.Media.Color _numberColor;
 
-    public ClassificationHighlightColors()
+    public ClassificationHighlightColors(bool isDarkTheme)
     {
-        _typeColor = MakeColor("#267F99");       // 青（类型）
-        _methodColor = MakeColor("#9B4F96");     // 紫（方法）
-        _propertyColor = MakeColor("#9B4F96");   // 紫（属性）
+        _isDark = isDarkTheme;
+        if (isDarkTheme)
+        {
+            _keywordColor = MakeColor("#569CD6");       // 关键字：蓝（VS Dark）
+            _typeColor = MakeColor("#4EC9B0");          // 类型：蓝绿/青（VS Dark）
+            _methodColor = MakeColor("#DCDCAA");        // 方法：黄（VS Dark）
+            _propertyColor = MakeColor("#DCDCAA");      // 属性：黄（VS Dark）
+            _fieldLocalColor = MakeColor("#9CDCFE");    // 字段/局部/参数/常量：浅蓝（VS Dark）
+            _stringColor = MakeColor("#CE9178");        // 字符串：橙（VS Dark）
+            _commentColor = MakeColor("#6A9955");       // 注释：绿（VS Dark）
+            _numberColor = MakeColor("#B5CEA8");        // 数字：浅绿灰（VS Dark）
+        }
+        else
+        {
+            _keywordColor = MakeColor("#0000FF");       // 关键字：蓝（VS Light）
+            _typeColor = MakeColor("#267F99");          // 类型：蓝青（VS Light）
+            _methodColor = MakeColor("#74531F");        // 方法：棕（VS Light）
+            _propertyColor = MakeColor("#74531F");      // 属性：棕（VS Light）
+            _fieldLocalColor = MakeColor("#001080");    // 字段/局部/参数/常量：深蓝（VS Light）
+            _stringColor = MakeColor("#A31515");        // 字符串：深红（VS Light）
+            _commentColor = MakeColor("#008000");       // 注释：绿（VS Light）
+            _numberColor = MakeColor("#000080");        // 数字：深蓝（VS Light）
+        }
     }
 
     public HighlightingColor DefaultBrush => null!;
@@ -463,6 +489,30 @@ internal sealed class ClassificationHighlightColors
                 break;
             case ClassificationTypeNames.PropertyName:
                 color.Foreground = new SimpleHighlightingBrush(_propertyColor);
+                break;
+            case ClassificationTypeNames.FieldName:
+            case ClassificationTypeNames.ParameterName:
+            case ClassificationTypeNames.ConstantName:
+                color.Foreground = new SimpleHighlightingBrush(_fieldLocalColor);
+                break;
+            case ClassificationTypeNames.LocalName:
+                // 对齐 VS Light：局部变量黑色不额外染色（落默认色）；暗色主题下局部变量用浅蓝（VS Dark）保证可见
+                if (_isDark)
+                    color.Foreground = new SimpleHighlightingBrush(_fieldLocalColor);
+                break;
+            case ClassificationTypeNames.Keyword:
+            case ClassificationTypeNames.ControlKeyword:
+                color.Foreground = new SimpleHighlightingBrush(_keywordColor);
+                break;
+            case ClassificationTypeNames.StringLiteral:
+            case ClassificationTypeNames.VerbatimStringLiteral:
+                color.Foreground = new SimpleHighlightingBrush(_stringColor);
+                break;
+            case ClassificationTypeNames.Comment:
+                color.Foreground = new SimpleHighlightingBrush(_commentColor);
+                break;
+            case ClassificationTypeNames.NumericLiteral:
+                color.Foreground = new SimpleHighlightingBrush(_numberColor);
                 break;
         }
         return color;

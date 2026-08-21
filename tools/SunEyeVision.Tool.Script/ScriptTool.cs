@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
+using CommonControl;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
@@ -27,7 +28,8 @@ namespace SunEyeVision.Tool.Script
         //   首次打开脚本工具时补全立即可用（MEF 已预热缓存命中）。
         static ScriptTool()
         {
-            ScriptDebugControl.WarmupForStartup();
+            // 编辑器内核统一预热补全引擎（MEF + Workspace），对齐新版 RoslynPad 启动初始化。
+            ScriptEditorCore.WarmupForStartup();
         }
 
         public ScriptResults Run(ScriptParameters parameters)

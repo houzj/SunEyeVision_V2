@@ -49,6 +49,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\CommonControl\CommonControl.csproj">
+      <Private>false</Private>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\Plugin.SDK\SunEyeVision.Plugin.SDK.csproj">
       <Private>false</Private>
     </ProjectReference>

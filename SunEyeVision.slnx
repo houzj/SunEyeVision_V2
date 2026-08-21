@@ -1,5 +1,8 @@
 <Solution>
   <Folder Name="/Src/" />
+  <Folder Name="/Src/CommonControl/">
+    <Project Path="Src/CommonControl/CommonControl.csproj" />
+  </Folder>
   <Folder Name="/Src/Core/">
     <Project Path="Src/Core/SunEyeVision.Core.csproj" />
   </Folder>

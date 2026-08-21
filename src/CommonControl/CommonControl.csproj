@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>CommonControl</RootNamespace>
+    <AssemblyName>CommonControl</AssemblyName>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+    <!-- 放开对 Roslyn.Features 的 internal 访问（对齐 RoslynPad，签名帮助所需类型 internal）：
+         ScriptEditorCore 的签名帮助需访问 SignatureHelpService/ISignatureHelpProvider/Items -->
+    <InternalsAssemblyNames>Microsoft.CodeAnalysis.Features;Microsoft.CodeAnalysis.Workspaces</InternalsAssemblyNames>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- 代码编辑器（AvalonEdit）与 Roslyn 语义分析（补全/诊断/高亮/签名帮助）。
+         运行时由主程序 SunEyeVision.UI 统一加载（声明同名 PackageReference），
+         Directory.Build.targets Step 1.2 拦截不复制到 plugins/，工具目录保持纯净（rule-016）。 -->
+    <PackageReference Include="AvalonEdit" Version="6.3.1.120" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Features" Version="4.12.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" Version="4.12.0" />
+    <!-- 编译期访问 Roslyn internal SignatureHelp 类型（对齐 RoslynPad 同款包）。
+         PrivateAssets=All：仅在编译期生成 IgnoresAccessChecksTo 属性，不复制 DLL 到输出。 -->
+    <PackageReference Include="IgnoresAccessChecksToGenerator" Version="0.4.0" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Plugin.SDK\SunEyeVision.Plugin.SDK.csproj" />
+  </ItemGroup>
+
+  <!-- 过渡期：脚本工具 ScriptDebugControl 的补全/签名帮助逻辑尚未完全迁入内核，
+       仍需访问内核 internal 类型（ThemeResource/TaggedTextExtensions）。S3 完成迁移后收紧。 -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="SunEyeVision.Tool.Script" />
+  </ItemGroup>
+</Project>

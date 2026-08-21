@@ -7,6 +7,7 @@
              xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
              xmlns:models="clr-namespace:SunEyeVision.Tool.Script.Models"
              xmlns:views="clr-namespace:SunEyeVision.Tool.Script.Views"
+             xmlns:cc="clr-namespace:CommonControl;assembly=CommonControl"
              mc:Ignorable="d"
              d:DesignHeight="700" d:DesignWidth="1200"
              Background="{DynamicResource ThemePanelBackgroundBrush}"
@@ -174,15 +175,8 @@
                     </Grid>
                 </Border>
 
-                <avalonedit:TextEditor Grid.Row="1" x:Name="CodeEditor"
-                                        FontFamily="Consolas" FontSize="12"
-                                        Background="{DynamicResource ThemePanelBackgroundBrush}"
-                                        Foreground="{DynamicResource ThemeTextPrimaryBrush}"
-                                        LineNumbersForeground="{DynamicResource ThemeTextSecondaryBrush}"
-                                        WordWrap="False"
-                                        ShowLineNumbers="True"
-                                        HorizontalScrollBarVisibility="Auto"
-                                        VerticalScrollBarVisibility="Visible" />
+                <!-- 代码编辑器（公共内核 ScriptEditorCore）：语义高亮/补全/诊断/workspace 全部封装在内核 -->
+                <cc:ScriptEditorCore Grid.Row="1" x:Name="EditorCore" />
 
                 <GridSplitter Grid.Row="2" Height="3" Background="{DynamicResource ThemeBorderBrush}"
                               HorizontalAlignment="Stretch" />

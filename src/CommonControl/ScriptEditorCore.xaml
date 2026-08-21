@@ -1,0 +1,24 @@
+<!--
+  公共代码编辑器内核：AvalonEdit 编辑区（不含工具栏/变量面板/日志面板，这些由各调用方自行提供）。
+  语义高亮 / 补全 / 签名帮助 / 诊断波浪线 / workspace 管理 / 增量桥 全部封装在 ScriptEditorCore 内部。
+  脚本工具编辑器（tools/SunEyeVision.Tool.Script）与全局脚本编辑器（src/UI）组合本控件，
+  复用同一套编辑器能力，避免维护两套系统。
+-->
+<UserControl x:Class="CommonControl.ScriptEditorCore"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit">
+
+    <Grid Background="{DynamicResource ThemePanelBackgroundBrush}">
+        <!-- 代码编辑器（AvalonEdit）：语义高亮 / 补全 / 诊断波浪线由 ScriptEditorCore.xaml.cs 挂载 -->
+        <avalonedit:TextEditor x:Name="CodeEditor"
+                               FontFamily="Consolas" FontSize="12"
+                               Background="{DynamicResource ThemePanelBackgroundBrush}"
+                               Foreground="{DynamicResource ThemeTextPrimaryBrush}"
+                               LineNumbersForeground="{DynamicResource ThemeTextSecondaryBrush}"
+                               WordWrap="False"
+                               ShowLineNumbers="True"
+                               HorizontalScrollBarVisibility="Auto"
+                               VerticalScrollBarVisibility="Visible" />
+    </Grid>
+</UserControl>

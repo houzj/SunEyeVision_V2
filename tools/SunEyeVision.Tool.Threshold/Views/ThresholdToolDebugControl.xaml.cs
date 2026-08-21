@@ -199,7 +199,8 @@ namespace SunEyeVision.Tool.Threshold.Views
 
             if (!_dataProvider.HasNodeExecuted(imageSource.SourceNodeId))
             {
-                throw new InvalidOperationException("图像源节点尚未执行，请先执行前驱节点");
+                throw new InvalidOperationException(
+                    $"当前工具缺少输入图像：图像源 '{imageSource.SourceNodeId}.{imageSource.PropertyName}' 没有值");
             }
 
             var imageVision = _dataProvider.GetPropertyValue(

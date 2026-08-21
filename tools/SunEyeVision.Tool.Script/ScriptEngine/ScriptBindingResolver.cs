@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -100,9 +100,8 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                     if (nodeResults == null)
                     {
                         throw new InvalidOperationException(
-                            $"脚本输入 '{input.Name}' 绑定了节点属性 '{input.BindingSource}'，" +
-                            $"但当前执行上下文未注入上游节点结果。" +
-                            $"请确保上游节点已执行后再运行脚本工具。");
+                            $"当前工具输入 '{input.Name}' 绑定的数据源 '{input.BindingSource}' 没有值，" +
+                            $"请确认输入图像源/数据源已正确配置并产生数据。");
                     }
 
                     result[input.Name] = ResolveNodeProperty(

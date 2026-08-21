@@ -382,13 +382,17 @@ public partial class ScriptEditorCore : UserControl
         _diagnosticsCts = new CancellationTokenSource();
         var token = _diagnosticsCts.Token;
 
+        // ★ 治本（rule-008）：在 UI 线程捕获用户代码快照，避免后台线程访问 CodeEditor.Text（WPF UI 对象）
+        //   触发跨线程 InvalidOperationException（诊断波浪线失效的真因）。RunDiagnosticAsync 只消费这份快照。
+        var userCodeSnapshot = _getUserCode?.Invoke() ?? CodeEditor.Text;
+
         _ = Task.Run(async () =>
         {
             try
             {
                 await Task.Delay(500, token);
                 if (!token.IsCancellationRequested)
-                    await RunDiagnosticAsync(token);
+                    await RunDiagnosticAsync(userCodeSnapshot, token);
             }
             catch (OperationCanceledException) { }
         });
@@ -398,7 +402,7 @@ public partial class ScriptEditorCore : UserControl
     /// 更新 workspace 文本（双文档） → 获取诊断 → 波浪线重绘 + 抛 DiagnosticsUpdated。
     /// user 文档已绑定增量通道，随编辑器实时同步；generated 文档仅在实际变化时 WithDocumentText 更新。
     /// </summary>
-    private async Task RunDiagnosticAsync(CancellationToken token)
+    private async Task RunDiagnosticAsync(string userCodeSnapshot, CancellationToken token)
     {
         if (_workspace == null || _userDocumentId == null)
         {
@@ -407,15 +411,14 @@ public partial class ScriptEditorCore : UserControl
         }
 
         var generatedCode = _getGeneratedCode?.Invoke() ?? string.Empty;
-        var userCode = _getUserCode?.Invoke() ?? CodeEditor.Text;
 
         // 代码未变则跳过诊断（避免同段代码重复 Roslyn 分析）
-        if (userCode == _lastDiagnosedCode)
+        if (userCodeSnapshot == _lastDiagnosedCode)
         {
             PluginLogger.Info("[Diagnostic] 代码未变，跳过诊断", typeName);
             return;
         }
-        _lastDiagnosedCode = userCode;
+        _lastDiagnosedCode = userCodeSnapshot;
 
         try
         {
@@ -447,13 +450,37 @@ public partial class ScriptEditorCore : UserControl
             if (token.IsCancellationRequested) return;
 
             // 诊断 — 取用户文档中的错误与警告（Error 红波浪 / Warning 蓝波浪，行号直接对应编辑器行）
-            var diagnostics = model!.GetDiagnostics(cancellationToken: token)
+            var rawDiagnostics = model!.GetDiagnostics(cancellationToken: token)
                 .Where(d => d.Severity is DiagnosticSeverity.Error or DiagnosticSeverity.Warning
                     && d.Location.SourceTree == userSyntaxTree)
                 .ToImmutableArray();
-            _currentDiagnostics = diagnostics;
 
-            PluginLogger.Info($"[Diagnostic] Errors+Warnings={diagnostics.Length}", typeName);
+            // 修正 CS1002（缺分号）的蔓延位置：
+            // 多错误恢复时，Roslyn 会把缺分号的错误 span 标到"下一行的 token"上（如 var / LogInfo），
+            // 导致波浪线画在下一行。真正的缺分号位置 = 该 token 的前一个 token 的末尾。
+            // 对齐参考项目"位置精确"的体验，纯 public API（SyntaxTree.FindToken / GetPreviousToken）。
+            var root = await userSyntaxTree.GetRootAsync(token);
+            var diagnostics = new List<Diagnostic>(rawDiagnostics.Length);
+            foreach (var d in rawDiagnostics)
+            {
+                var span = d.Location.SourceSpan;
+                if (d.Id == "CS1002" && span.Length > 0)
+                {
+                    var spreadToken = root.FindToken(span.Start);
+                    var prevToken = spreadToken.GetPreviousToken();
+                    // 仅当 prevToken 在 span 之前（确认为蔓延到下一个 token）时才修正
+                    if (prevToken.Span.End <= span.Start)
+                    {
+                        var correctedLoc = Location.Create(userSyntaxTree, new TextSpan(prevToken.Span.End, 0));
+                        diagnostics.Add(Diagnostic.Create(d.Descriptor, correctedLoc, d.GetMessage()));
+                        continue;
+                    }
+                }
+                diagnostics.Add(d);
+            }
+            _currentDiagnostics = diagnostics.ToImmutableArray();
+
+            PluginLogger.Info($"[Diagnostic] Errors+Warnings={rawDiagnostics.Length}", typeName);
 
             // 检测到 CS0518（预定义类型缺失）时输出 Warning 级汇总提示（仅一次，非逐条刷屏）
             if (diagnostics.Any(d => d.Id == "CS0518"))
@@ -507,9 +534,21 @@ public partial class ScriptEditorCore : UserControl
         // 同一诊断内移动不重复刷新（防 MouseMove 高频闪烁）
         if (_diagnosticToolTip?.IsOpen == true && offset == _lastDiagToolTipOffset) return;
 
+        // 命中判断：正常 span 用区间；零长度 span（缺分号 CS1002）用精确点命中
         var diag = _currentDiagnostics.FirstOrDefault(d =>
-            d.Location.SourceSpan.Start <= offset && offset < d.Location.SourceSpan.End);
-        if (diag == null) return;
+        {
+            var s = d.Location.SourceSpan;
+            return s.Length > 0
+                ? (s.Start <= offset && offset < s.End)
+                : (s.Start == offset);
+        });
+        if (diag == null)
+        {
+            // 鼠标移出诊断区：关闭已打开的提示（防弹窗赖着不隐藏）
+            if (_diagnosticToolTip?.IsOpen == true)
+                _diagnosticToolTip.IsOpen = false;
+            return;
+        }
 
         if (_diagnosticToolTip == null)
         {

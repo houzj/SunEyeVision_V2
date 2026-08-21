@@ -156,36 +156,12 @@ internal sealed class RoslynSemanticHighlighter : IHighlighter
             }
         }
 
-        // ★ 对齐新版 RoslynPad（Roslyn SemanticColorizer）：语义模型就绪时同步分类可视行，
-        //   行一进可视区即返回最终语义色，消除"先 xshd/旧色→异步覆盖语义色"的跳变（滚动/文本变化）。
-        //   语义模型未就绪（初始打开 workspace 构建中）才走异步 worker + 平移兜底。
-        var document = _getUserDocument();
-        if (document != null && document.TryGetSemanticModel(out _))
-        {
-            try
-            {
-                var spans = GetClassifiedSpansAsync(document, documentLine).GetAwaiter().GetResult();
-                line.Sections.Clear();
-                foreach (var classifiedSpan in spans)
-                {
-                    if (IsOutsideLine(classifiedSpan, documentLine)) continue;
-                    line.Sections.Add(new HighlightedSection
-                    {
-                        Color = _highlightColors.GetBrush(classifiedSpan.ClassificationType),
-                        Offset = classifiedSpan.TextSpan.Start,
-                        Length = classifiedSpan.TextSpan.Length,
-                    });
-                }
-                CacheLine(line);
-                return line;
-            }
-            catch
-            {
-                // 同步分类异常（罕见）→ 落空，交给异步 worker 兜底
-            }
-        }
-
-        // since we don't want to block the UI thread, enqueue and process asynchronously
+        // ★ 对齐新版 RoslynPad（Roslyn SemanticColorizer）的异步架构：语义计算一律放后台线程，
+        //   UI 线程绝不阻塞（零同步 GetAwaiter().GetResult()）。AvalonEdit 的 IHighlighter.HighlightLine
+        //   是渲染管线强制的同步调用，无法返回异步结果，故此处只做"旧 sections 平移 + 入队异步重算"：
+        //   语义模型由后台 worker 的 GetClassifiedSpansAsync（ConfigureAwait(false)）计算，结果经
+        //   _syncContext.Post 切回 UI 线程更新 line.Sections（对齐新版 BatchedTagsChanged → UIThread.Post）。
+        //   彻底消除同步分类导致的 UI 卡死（诊断波浪线因此失联的根因）。
         EnqueueLine(line);
 
         CacheLine(line);

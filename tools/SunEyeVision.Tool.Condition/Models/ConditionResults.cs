@@ -23,10 +23,11 @@ namespace SunEyeVision.Tool.Condition.Models
 
         public override List<PropertyMapEntry> GetPropertyMap()
         {
-            return new List<PropertyMapEntry>
-            {
+            return
+            [
+                .. base.GetPropertyMap(),   // 合并基类：ExecutionTimeMs → 执行耗时/执行信息
                 new("MatchedRuleName", "匹配规则", "结果")
-            };
+            ];
         }
     }
 }

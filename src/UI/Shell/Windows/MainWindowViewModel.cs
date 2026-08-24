@@ -4297,9 +4297,11 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
             };
 
             // 按 Group 分组构建树（支持 / 分隔的层级分组）；图像显示摘要、RoI 字段聚合，均作为普通输出变量展示
+            // 排序规则：固定分组优先级（执行信息/基本信息/输入信息置顶，工具特有分组按名排序，未知分组排最后），保证各节点一致
             var groups = entries
                 .GroupBy(e => e.Group ?? "其他")
-                .OrderBy(g => g.Key);
+                .OrderBy(g => GroupOrderIndex(g.Key))
+                .ThenBy(g => g.Key);
 
             var groupNodeCache = new Dictionary<string, ModuleResultNode>();
 
@@ -4379,6 +4381,27 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                 HasModuleResults = true;
                 BuildFlatRows();
             }
+        }
+
+        /// <summary>
+        /// 模块结果分组固定顺序（索引越小越靠前）。
+        /// 执行信息/基本信息/输入信息等通用信息置顶，保证各工具节点一致。
+        /// </summary>
+        private static readonly string[] ModuleResultGroupOrder =
+        [
+            "执行信息",
+            "基本信息",
+            "输入信息",
+            "参数回写",
+        ];
+
+        /// <summary>
+        /// 分组排序索引：已知分组返回其固定索引，未知分组返回 int.MaxValue（排最后，再按名排序）
+        /// </summary>
+        private static int GroupOrderIndex(string groupName)
+        {
+            var idx = Array.IndexOf(ModuleResultGroupOrder, groupName);
+            return idx < 0 ? int.MaxValue : idx;
         }
 
         /// <summary>

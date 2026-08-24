@@ -158,6 +158,7 @@ namespace SunEyeVision.Tool.ImageFilter
         {
             return
             [
+                .. base.GetPropertyMap(),   // 合并基类：ExecutionTimeMs → 执行耗时/执行信息
                 new("OutputImage",          "输出图像",               null),
                 new("GrayImage",            "灰度图像",               null),
                 new("FilterTypeUsed",       "滤波类型",               "参数回写"),

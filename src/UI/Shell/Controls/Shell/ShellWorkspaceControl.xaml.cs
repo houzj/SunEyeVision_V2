@@ -987,8 +987,8 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         private static readonly Color MiniMapConditionColor = Color.FromRgb(0xFF, 0x88, 0x00);   // 条件-橙
         private static readonly Color MiniMapDefaultColor = Color.FromRgb(0x66, 0x66, 0x66);     // 其他-灰
 
-        // 已订阅节点位置变化监听的节点集合（用于在集合变化时增量订阅/退订）
-        private readonly Dictionary<string, WorkflowNode> _miniMapSubscribedNodes = new();
+        // 已订阅节点位置变化监听的节点集合（用于在集合变化时增量订阅/退订）— 基类引用，元素为 WorkflowNodeBase
+        private readonly Dictionary<string, WorkflowNodeBase> _miniMapSubscribedNodes = new();
 
         /// <summary>
         /// 刷新小地图：数据驱动双视图（与主画布共享同一数据源，此处绘制全局视角）
@@ -1019,7 +1019,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// <summary>
         /// 增量订阅节点位置变化：仅订阅小地图可见的所有节点，节点移除时退订，避免泄漏
         /// </summary>
-        private void SubscribeMiniMapNodes(IEnumerable<WorkflowNode> nodes)
+        private void SubscribeMiniMapNodes(IEnumerable<WorkflowNodeBase> nodes)
         {
             var currentIds = new HashSet<string>();
             foreach (var node in nodes)
@@ -1153,8 +1153,9 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
 
             MiniMapCanvas.Children.Clear();
 
-            var nodes = selectedTab.WorkflowNodes;
-            if (nodes == null || nodes.Count == 0)
+            // 小地图绘制需 WorkflowNode 特有成员（NodeRect/着色），运行时元素均为 WorkflowNode，安全转型
+            IEnumerable<WorkflowNode> nodes = selectedTab.WorkflowNodes.OfType<WorkflowNode>().ToList();
+            if (!nodes.Any())
                 return;
 
             // 恒定画布全景比例尺：等比例（保持正方形不拉伸），画布在小地图内居中

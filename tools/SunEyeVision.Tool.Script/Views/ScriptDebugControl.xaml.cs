@@ -89,15 +89,19 @@ namespace SunEyeVision.Tool.Script.Views
         }
 
         /// <summary>
-        /// 构建 workspace 引用来源：宿主 API 引用（BCL + Script/IVisionImage/LogInfo 等）+ 用户 ScriptRefs 目录引用。
-        /// 对齐原 RebuildWorkspace 的引用注入，供内核 ScriptEditorCore.SetReferenceProvider 使用。
+        /// 构建 workspace 引用来源：按当前节点 AssemblyReferences（唯一真相源）组装，
+        /// 经 ResolveAssemblyPath 逐个解析（BCL/宿主锚定/ScriptRefs），与编译引用保持一致。
+        /// 供内核 ScriptEditorCore.SetReferenceProvider 使用。
         /// </summary>
         private IEnumerable<MetadataReference> BuildReferences()
         {
             var refDir = _parameters.AssemblyReferenceFullPath;
-            var list = MetadataReferenceProvider.GetHostReferences().ToList();
-            if (!string.IsNullOrEmpty(refDir))
-                list.AddRange(SharedMetadataReferenceProvider.GetScriptRefs(refDir));
+            var list = new List<MetadataReference>();
+            foreach (var name in _parameters.AssemblyReferences)
+            {
+                if (string.IsNullOrWhiteSpace(name)) continue;
+                list.Add(MetadataReferenceProvider.ResolveAssemblyPath(name.Trim(), refDir));
+            }
             return list;
         }
 
@@ -116,6 +120,9 @@ namespace SunEyeVision.Tool.Script.Views
                 // workspace 重建 + 语义预热改由 InitializeAsync（窗口 Show 前被 await）统一触发，
                 // 实现"打开即着色、无白色过渡"。此处不再异步后置。
                 // 注意：调试模式（无 InitializeAsync 调用路径）仍需显式初始化，见调试入口处。
+
+                // 迁移保障：代码引用了 Halcon 但引用列表缺 halcondotnetxl → 提示补引用（rule-015 不静默）
+                CheckHalconReference();
 
                 // 参数注入完成 → 状态切到"就绪"
                 UpdateStatus("就绪");
@@ -377,6 +384,34 @@ namespace SunEyeVision.Tool.Script.Views
         }
 
         /// <summary>
+        /// 迁移保障：检测代码引用了 Halcon（HOperatorSet/using HalconDotNet）但当前节点引用列表缺 halcondotnetxl。
+        /// 缺失 → 黄字日志提示补引用（rule-015 不静默），不自动添加（用户决定是否启用 halcon）。
+        /// </summary>
+        private void CheckHalconReference()
+        {
+            if (_parameters == null) return;
+            var code = _parameters.ScriptCode ?? string.Empty;
+
+            // 引用列表含 halcondotnetxl 则无需提示
+            bool hasHalconRef = _parameters.AssemblyReferences.Any(n =>
+                n.Equals("halcondotnetxl", StringComparison.OrdinalIgnoreCase));
+            if (hasHalconRef) return;
+
+            // 代码是否用到了 Halcon（粗检：HOperatorSet 或 using HalconDotNet）
+            bool usesHalcon = code.Contains("HOperatorSet", StringComparison.Ordinal)
+                || code.Contains("using HalconDotNet", StringComparison.Ordinal)
+                || code.Contains("HalImage", StringComparison.Ordinal);
+
+            if (usesHalcon)
+            {
+                PluginLogger.Warning(
+                    "脚本代码引用了 Halcon 算子（HOperatorSet/HalImage），但当前节点的程序集引用列表未包含 halcondotnetxl。" +
+                    "请点击\"引用程序集\"勾选 halcondotnetxl 后重新编译。",
+                    nameof(ScriptDebugControl));
+            }
+        }
+
+        /// <summary>
         /// 过滤掉值为类型默认值的条目（未赋值的输出字段显示"无结果"）
         /// </summary>
         private static Dictionary<string, object?> FilterDefaultValues(Dictionary<string, object?> raw)
@@ -510,26 +545,31 @@ namespace SunEyeVision.Tool.Script.Views
         }
 
         /// <summary>
-        /// 引用程序集按钮点击 — 弹出对话框管理引用目录下的 DLL
+        /// 引用程序集按钮点击 — 弹出对话框管理当前节点的程序集引用勾选列表。
+        /// 勾选变化写回当前节点 AssemblyReferences（唯一真相源），保存后失效缓存 + 重建 workspace。
         /// </summary>
         private void AssemblyRefButton_Click(object sender, RoutedEventArgs e)
         {
             var refDir = _parameters.AssemblyReferenceFullPath;
             Directory.CreateDirectory(refDir);
 
-            var oldFiles = new HashSet<string>(Directory.EnumerateFiles(refDir, "*.dll"), StringComparer.OrdinalIgnoreCase);
+            // 记录勾选前引用列表，用于检测是否变化
+            var oldRefs = _parameters.AssemblyReferences.ToList();
 
-            var dialog = new AssemblyReferenceDialog(refDir)
+            var dialog = new AssemblyReferenceDialog(refDir, _parameters.AssemblyReferences)
             {
                 Owner = Window.GetWindow(this)
             };
 
             if (dialog.ShowDialog() == true)
             {
-                var newFiles = new HashSet<string>(Directory.EnumerateFiles(refDir, "*.dll"), StringComparer.OrdinalIgnoreCase);
-                if (!oldFiles.SetEquals(newFiles))
+                var refsChanged = !oldRefs.SequenceEqual(
+                    _parameters.AssemblyReferences, StringComparer.OrdinalIgnoreCase);
+
+                // ScriptRefs 目录 DLL 变化 → 失效引用缓存；引用列表变化 → 重建 workspace
+                if (refsChanged)
                 {
-                    SharedMetadataReferenceProvider.InvalidateScriptRefs(refDir);  // 失效引用缓存，强制重载新增 DLL
+                    SharedMetadataReferenceProvider.InvalidateScriptRefs(refDir);
                     EditorCore.RebuildWorkspace(refreshReferences: true);
                 }
             }

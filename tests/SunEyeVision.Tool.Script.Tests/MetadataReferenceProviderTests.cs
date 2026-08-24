@@ -9,12 +9,12 @@ using Xunit;
 namespace SunEyeVision.Tool.Script.Tests;
 
 /// <summary>
-/// MetadataReferenceProvider 引用三层分离契约测试（UT-REF-01 ~ UT-REF-04）。
-/// 守护 L1 引用白名单化的完整性：
-///   - 引用总数从全量 287 降至显式核心（BCL 白名单 ~33 + 宿主 3），杜绝全量 TPA/ALC 扫描
+/// MetadataReferenceProvider 引用契约测试（UT-REF-01 ~ UT-REF-06）。
+/// 守护引用管理（每节点 AssemblyReferences 唯一真相源 + 基线最小化）的完整性：
+///   - 引用总数从全量 287 降至显式核心（BCL 白名单 ~33 + SDK 1），杜绝全量 TPA/ALC 扫描
 ///   - BCL 白名单覆盖脚本模板（DemoCode/GeneratedCode）用到的所有命名空间
-///   - 宿主 API（Plugin.SDK / halcon / OpenCvSharp）锚定可用
-///   - ScriptRefs 用户增量不受影响
+///   - 宿主 API（Script 基类）锚定可用；halcon/OpenCvSharp 不再无条件入基线（按需 ResolveAssemblyPath）
+///   - ResolveAssemblyPath 未知名 → 抛异常（rule-015）
 /// </summary>
 public class MetadataReferenceProviderTests
 {
@@ -99,16 +99,59 @@ public class MetadataReferenceProviderTests
     }
 
     /// <summary>
-    /// UT-REF-02: 宿主 API 锚定 — Plugin.SDK / halcon / OpenCvSharp 均在引用中。
+    /// UT-REF-02: 宿主 API 锚定 — 仅 Plugin.SDK（Script 基类）在引用中（基线最小化）。
+    /// halcon（halcondotnetxl）/ OpenCvSharp 已从无条件基线移除，改为按需勾选（ResolveAssemblyPath 解析）。
     /// </summary>
     [Fact]
-    public void GetHostReferences_ContainsHostApi_Anchored()
+    public void GetHostReferences_ContainsOnlySdk_NotHalcon()
     {
         var (_, paths) = GetHostReferences();
-        foreach (var expected in new[] { "SunEyeVision.Plugin.SDK.dll", "halcondotnetxl.dll", "OpenCvSharp.dll" })
-        {
-            Assert.Contains(paths, p => string.Equals(p, expected, StringComparison.OrdinalIgnoreCase));
-        }
+        // Script 基类所在 SDK 必须引用
+        Assert.Contains(paths, p => string.Equals(p, "SunEyeVision.Plugin.SDK.dll", StringComparison.OrdinalIgnoreCase));
+        // halcon / OpenCvSharp 不再无条件注入基线（基线最小化）
+        Assert.DoesNotContain(paths, p => string.Equals(p, "halcondotnetxl.dll", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(paths, p => string.Equals(p, "OpenCvSharp.dll", StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
+    /// UT-REF-05: ResolveAssemblyPath 按名解析可选宿主（halcon/OpenCvSharp）— 勾选后引用含它们。
+    /// </summary>
+    [Fact]
+    public void ResolveAssemblyPath_ResolvesHalcon_WhenEnabled()
+    {
+        EnsureToolDllLoaded();
+        var toolAsm = AssemblyLoadContext.Default.Assemblies
+            .First(a => a.GetName().Name == "SunEyeVision.Tool.Script");
+        var type = toolAsm
+            .GetType("SunEyeVision.Tool.Script.ScriptEngine.MetadataReferenceProvider")
+            ?? throw new InvalidOperationException("MetadataReferenceProvider 类型未找到");
+        var method = type.GetMethod("ResolveAssemblyPath", BindingFlags.Public | BindingFlags.Static)
+            ?? throw new InvalidOperationException("ResolveAssemblyPath 方法未找到");
+
+        // halcon 可选宿主可解析（不抛异常）
+        var halconRef = method.Invoke(null, new object?[] { "halcondotnetxl", null });
+        Assert.NotNull(halconRef);
+        var halconPath = (string?)halconRef!.GetType().GetProperty("FilePath")?.GetValue(halconRef);
+        Assert.Contains("halcondotnetxl", halconPath ?? string.Empty, StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// UT-REF-06: ResolveAssemblyPath 未知名程序集 → 抛异常（rule-015 禁止静默回退）。
+    /// </summary>
+    [Fact]
+    public void ResolveAssemblyPath_UnknownAssembly_Throws()
+    {
+        EnsureToolDllLoaded();
+        var toolAsm = AssemblyLoadContext.Default.Assemblies
+            .First(a => a.GetName().Name == "SunEyeVision.Tool.Script");
+        var type = toolAsm
+            .GetType("SunEyeVision.Tool.Script.ScriptEngine.MetadataReferenceProvider")
+            ?? throw new InvalidOperationException("MetadataReferenceProvider 类型未找到");
+        var method = type.GetMethod("ResolveAssemblyPath", BindingFlags.Public | BindingFlags.Static)
+            ?? throw new InvalidOperationException("ResolveAssemblyPath 方法未找到");
+
+        Assert.Throws<TargetInvocationException>(() =>
+            method.Invoke(null, new object?[] { "NoSuchAssembly_XYZ.dll", null }));
     }
 
     /// <summary>

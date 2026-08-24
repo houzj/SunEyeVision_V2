@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Windows;
 using SunEyeVision.Plugin.SDK.Models;
@@ -29,7 +29,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI
         {
             Id = Guid.NewGuid().ToString();
             Name = "新工作流";
-            Nodes = new ObservableCollection<WorkflowNode>();
+            Nodes = new ObservableCollection<WorkflowNodeBase>();
             Connections = new ObservableCollection<WorkflowConnection>();
             RunMode = RunMode.Single;
         }
@@ -71,9 +71,9 @@ namespace SunEyeVision.UI.Features.WorkflowUI
         }
 
         /// <summary>
-        /// 节点集合
+        /// 节点集合 — 引擎 Workflow.Nodes 直绑引用（单一数据源）
         /// </summary>
-        public ObservableCollection<WorkflowNode> Nodes { get; set; }
+        public ObservableCollection<WorkflowNodeBase> Nodes { get; set; }
 
         /// <summary>
         /// 连接线集合?

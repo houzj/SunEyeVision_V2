@@ -582,6 +582,20 @@ namespace SunEyeVision.Workflow
                 _logger.LogInfo($"[DEBUG ConvertNodesForExecution] 节点[{i}]: Id={n.Id}, Name={n.Name}, ToolType={n.ToolType}, NodeType={n.NodeType}");
             }
 
+            // Fail-Forward 防御：校验连接引用的节点确实存在于节点集合。
+            // 若存在"连接引用了缺失节点"（历史上曾因 UI/引擎双数据源不同步导致节点静默消失），
+            // 直接报错而非静默忽略，避免执行结果不完整且无任何提示。
+            var nodeIds = new HashSet<string>(source.Nodes.Select(n => n.Id));
+            foreach (var conn in source.Connections)
+            {
+                if (!nodeIds.Contains(conn.SourceNodeId) || !nodeIds.Contains(conn.TargetNodeId))
+                {
+                    throw new InvalidOperationException(
+                        $"工作流数据不一致：连接 {conn.SourceNodeId} → {conn.TargetNodeId} 引用了不存在的节点。" +
+                        "请重新保存/加载方案，或检查节点集合是否完整。");
+                }
+            }
+
             foreach (var node in source.Nodes)
             {
                 // 所有节点（含 Condition、Subroutine）统一作为 AlgorithmNode + IToolPlugin 执行

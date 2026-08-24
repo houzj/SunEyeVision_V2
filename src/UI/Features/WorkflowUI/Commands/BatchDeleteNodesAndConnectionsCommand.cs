@@ -12,15 +12,15 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Commands
     /// </summary>
     public class BatchDeleteNodesAndConnectionsCommand : IUndoableCommand
     {
-        private readonly ObservableCollection<WorkflowNode> _nodes;
+        private readonly ObservableCollection<WorkflowNodeBase> _nodes;
         private readonly ObservableCollection<WorkflowConnection> _connections;
-        private readonly List<(WorkflowNode node, int index)> _deletedNodes;
+        private readonly List<(WorkflowNodeBase node, int index)> _deletedNodes;
         private readonly List<(WorkflowConnection connection, int index)> _deletedConnections;
 
         public BatchDeleteNodesAndConnectionsCommand(
-            ObservableCollection<WorkflowNode> nodes,
+            ObservableCollection<WorkflowNodeBase> nodes,
             ObservableCollection<WorkflowConnection> connections,
-            List<WorkflowNode> nodesToDelete,
+            List<WorkflowNodeBase> nodesToDelete,
             List<WorkflowConnection> connectionsToDelete)
         {
             _nodes = nodes;

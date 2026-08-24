@@ -15,9 +15,9 @@ namespace SunEyeVision.UI.Converters.Path
     public class SmartPathConverter : IValueConverter
     {
         /// <summary>
-        /// 节点集合（静态）
+        /// 节点集合（静态）— 引擎 Workflow.Nodes 的直绑引用（单一数据源）
         /// </summary>
-        public static ObservableCollection<WorkflowNode>? Nodes { get; set; }
+        public static ObservableCollection<WorkflowNodeBase>? Nodes { get; set; }
 
         /// <summary>
         /// 连接集合（静态）

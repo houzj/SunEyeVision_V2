@@ -1785,7 +1785,8 @@ SplitterPosition = position;
             // 初始化空洞池（从现有节点恢复索引池）
             if (tabViewModel.SequenceManager != null)
             {
-                tabViewModel.SequenceManager.InitializeHolePoolsFromNodes(tabViewModel.Id, tabViewModel.WorkflowNodes);
+                // WorkflowNodes 为基类集合，序列管理需 WorkflowNode，运行时元素均为 WorkflowNode，安全转型
+                tabViewModel.SequenceManager.InitializeHolePoolsFromNodes(tabViewModel.Id, tabViewModel.WorkflowNodes.OfType<WorkflowNode>());
             }
 
             // 将工作流注册到 WorkflowEngine.Workflows 字典
@@ -2083,16 +2084,10 @@ SplitterPosition = position;
                 AddLog($"🆕 自动创建子程序工作流: {uiNode.DispName} (ID: {uiNode.SubroutineId})");
             }
 
-            // 添加到 UI 集合
+            // 添加到节点集合。WorkflowNodes 与引擎 Workflow.Nodes 为同一集合实例（单一数据源），
+            // 节点经 AddNodeCommand 加入后引擎立即可见，无需再手动同步。
             var command = new AppCommands.AddNodeCommand(WorkflowTabViewModel.SelectedTab.WorkflowNodes, uiNode);
             WorkflowTabViewModel.SelectedTab.CommandManager.Execute(command);
-
-            // 同步到引擎工作流（导航时 NavigateToWorkflowCanvas 从引擎读取，必须双向同步）
-            var engineWf = _workflowEngine.GetWorkflow(WorkflowTabViewModel.SelectedTab.CurrentWorkflowId);
-            if (engineWf != null && !engineWf.Nodes.Contains(uiNode))
-            {
-                engineWf.Nodes.Add(uiNode);
-            }
 
             // ★ 添加节点后自动绑定输入图像源（子程序内部节点默认绑子程序输入图像；主流程无源则跳过）
             TryAutoBindImageSource(uiNode);
@@ -2571,7 +2566,7 @@ SplitterPosition = position;
         private void OnControlFlowNodeOpen(WorkflowNodeBase workflowNode)
         {
             var uiNode = WorkflowTabViewModel?.SelectedTab?.WorkflowNodes
-                ?.FirstOrDefault(n => n.Id == workflowNode.Id);
+                ?.OfType<WorkflowNode>().FirstOrDefault(n => n.Id == workflowNode.Id);
             if (uiNode != null)
             {
                 AddLog($"↪️ 双击子程序节点: {uiNode.Name}");
@@ -4922,7 +4917,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                         continue;
                     }
 
-                    var upstreamNode = selectedTab.WorkflowNodes.FirstOrDefault(n => n.Id == upstreamNodeId);
+                    var upstreamNode = selectedTab.WorkflowNodes.OfType<WorkflowNode>().FirstOrDefault(n => n.Id == upstreamNodeId);
                     if (upstreamNode == null)
                     {
                         continue;

@@ -48,10 +48,11 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
         /// </summary>
         /// <param name="generatedCode">系统生成的字段声明 partial class 代码</param>
         /// <param name="userCode">用户编写的完整 partial class 代码</param>
-        /// <param name="assemblyRefDir">程序集引用目录路径（目录下所有 *.dll 均为引用）</param>
+        /// <param name="assemblyRefDir">程序集引用目录路径（用户 DLL ScriptRefs 来源）</param>
         /// <param name="getGlobalValue">获取全局变量委托</param>
         /// <param name="setGlobalValue">设置全局变量委托</param>
         /// <param name="inputValues">输入字段值映射（名称→值，反射设置到脚本实例字段）</param>
+        /// <param name="assemblyNames">每节点启用的程序集引用列表（唯一真相源）；不提供则编译回退到宿主引用+ScriptRefs</param>
         /// <returns>编译和执行错误信息列表</returns>
         public List<string> Execute(
             string generatedCode,
@@ -59,7 +60,8 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             string? assemblyRefDir,
             Func<string, object?>? getGlobalValue,
             Action<string, object?>? setGlobalValue,
-            Dictionary<string, object?>? inputValues = null)
+            Dictionary<string, object?>? inputValues = null,
+            IReadOnlyList<string>? assemblyNames = null)
         {
             var errors = new List<string>();
 
@@ -89,7 +91,7 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             // 1. 编译（双语法树：系统生成的字段声明 + 用户完整 partial class）
             var compileSw = Stopwatch.StartNew();
             var compileResult = _compiler.Compile(
-                [generatedCode, userCode], assemblyName, assemblyRefDir);
+                [generatedCode, userCode], assemblyName, assemblyRefDir, assemblyNames);
             compileSw.Stop();
             _compileTimeMs = compileSw.ElapsedMilliseconds;
 

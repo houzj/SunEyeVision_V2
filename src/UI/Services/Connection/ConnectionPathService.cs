@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -61,7 +61,7 @@ namespace SunEyeVision.UI.Services.Connection
     public class ConnectionPathService : IConnectionPathService
     {
         private readonly ConnectionPathCache _pathCache;
-        private readonly ObservableCollection<WorkflowNode> _nodes;
+        private readonly ObservableCollection<WorkflowNodeBase> _nodes;
 
         /// <summary>
         /// 路径计算策略模式
@@ -89,7 +89,7 @@ namespace SunEyeVision.UI.Services.Connection
         /// </summary>
         public PathStrategy Strategy { get; set; } = PathStrategy.Adaptive;
 
-        public ConnectionPathService(ConnectionPathCache pathCache, ObservableCollection<WorkflowNode> nodes)
+        public ConnectionPathService(ConnectionPathCache pathCache, ObservableCollection<WorkflowNodeBase> nodes)
         {
             _pathCache = pathCache ?? throw new ArgumentNullException(nameof(pathCache));
             _nodes = nodes ?? throw new ArgumentNullException(nameof(nodes));

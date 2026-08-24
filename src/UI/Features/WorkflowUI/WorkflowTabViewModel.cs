@@ -33,7 +33,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI
         private bool _isRunning;
         private RunMode _runMode;
         private WorkflowState _state;
-        private ObservableCollection<SunEyeVision.UI.Shared.WorkflowNode> _workflowNodes;
+        private ObservableCollection<WorkflowNodeBase> _workflowNodes;
         private ObservableCollection<WorkflowConnection> _workflowConnections;
         private ScaleTransform _scaleTransform;
         private double _currentScale;
@@ -138,7 +138,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI
             _name = "工作流"; // 默认名称，可以被外部覆盖
             State = WorkflowState.Stopped;
             RunMode = RunMode.Single;
-            _workflowNodes = new ObservableCollection<SunEyeVision.UI.Shared.WorkflowNode>();
+            _workflowNodes = new ObservableCollection<WorkflowNodeBase>();
             _workflowConnections = new ObservableCollection<WorkflowConnection>();
             CurrentScale = 1.0;
             ScaleTransform = new ScaleTransform(1.0, 1.0);
@@ -307,7 +307,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI
         /// <summary>
         /// 节点集合
         /// </summary>
-        public ObservableCollection<SunEyeVision.UI.Shared.WorkflowNode> WorkflowNodes
+        public ObservableCollection<WorkflowNodeBase> WorkflowNodes
         {
             get => _workflowNodes;
             set
@@ -408,25 +408,20 @@ namespace SunEyeVision.UI.Features.WorkflowUI
         }
 
         /// <summary>
-        /// 设置节点集合 — 直接绑定引擎中的同一对象实例
+        /// 设置节点集合 — 直接绑定引擎中的同一对象实例（单一数据源）
+        /// 与 SetConnections 对齐：UI 与引擎共享同一集合，节点增删自动双向同步。
         /// </summary>
         public void SetNodes(ObservableCollection<WorkflowNodeBase> nodes)
         {
             if (nodes == null)
                 throw new ArgumentNullException(nameof(nodes));
 
-            _workflowNodes.Clear();
-            foreach (var node in nodes)
+            // 直接赋值引擎工作流的节点集合，消除 UI/引擎两套集合的同步问题。
+            if (!ReferenceEquals(_workflowNodes, nodes))
             {
-                if (node is SunEyeVision.UI.Shared.WorkflowNode uiNode)
-                {
-                    _workflowNodes.Add(uiNode);
-                }
-                else
-                {
-                    throw new InvalidOperationException(
-                        $"所有节点必须是 WorkflowNode 实例。节点 {node.Id} 的实际类型为 {node.GetType().Name}");
-                }
+                _workflowNodes.CollectionChanged -= OnWorkflowNodesChanged;
+                _workflowNodes = nodes;
+                _workflowNodes.CollectionChanged += OnWorkflowNodesChanged;
             }
 
             OnPropertyChanged(nameof(WorkflowNodes));

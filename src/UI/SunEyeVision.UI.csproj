@@ -76,6 +76,8 @@
 
   <ItemGroup>
     <Content Include="生成光之眼-Logo-_1__副本.ico" />
+    <!-- 启动页 Logo（SplashScreen.xaml 用 pack URI 引用） -->
+    <Resource Include="Icons/app_logo.ico" />
   </ItemGroup>
 
   

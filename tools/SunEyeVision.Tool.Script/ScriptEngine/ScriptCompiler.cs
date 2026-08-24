@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.Loader;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
@@ -21,6 +22,65 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
     /// </summary>
     internal sealed class ScriptCompiler
     {
+        private static volatile bool _warmupStarted;
+        private static readonly object _warmupLock = new();
+
+        /// <summary>
+        /// 启动预热 Roslyn Emit 引擎（代码无关）。
+        /// 原理：Emit 耗时大头是编译器引擎首次初始化（IL 生成器/元数据写入器冷启动，实测 ~947ms），
+        /// 与编译什么代码无关。启动时后台编译一次最小模板，引擎热起来后，用户编译任意脚本
+        /// Emit 都从 ~947ms 降到 ~29ms（代码改动不影响，热的是引擎不是结果）。
+        /// 幂等：进程内只预热一次；失败仅告警不阻塞（fire-and-forget）。
+        /// </summary>
+        public static void Warmup()
+        {
+            lock (_warmupLock)
+            {
+                if (_warmupStarted) return;
+                _warmupStarted = true;
+            }
+
+            _ = Task.Run(() =>
+            {
+                var sw = Stopwatch.StartNew();
+                try
+                {
+                    // 最小模板：继承 Script 基类，仅触发完整编译管线（含 Emit 引擎初始化）
+                    const string warmupCode = @"
+using SunEyeVision.Plugin.SDK.Scripting;
+public partial class WarmupScript : Script
+{
+    public override void Init() { }
+    public override void Process() { }
+}";
+                    var result = new ScriptCompiler().Compile(
+                        ["", warmupCode],
+                        "ScriptWarmup",
+                        null,
+                        MetadataReferenceProvider.RequiredAssemblyNames);
+                    sw.Stop();
+                    if (result.Success)
+                    {
+                        PluginLogger.Info(
+                            $"[ScriptCompiler] 启动预热 Emit 引擎完成: {sw.ElapsedMilliseconds}ms",
+                            nameof(ScriptCompiler));
+                    }
+                    else
+                    {
+                        PluginLogger.Warning(
+                            $"[ScriptCompiler] 启动预热 Emit 引擎编译失败: {string.Join(";", result.Diagnostics)}",
+                            nameof(ScriptCompiler));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    sw.Stop();
+                    PluginLogger.Warning(
+                        $"[ScriptCompiler] 启动预热 Emit 引擎异常: {ex.Message}",
+                        nameof(ScriptCompiler));
+                }
+            });
+        }
 
         /// <summary>
         /// 编译结果
@@ -68,12 +128,15 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
         /// </summary>
         /// <param name="codeParts">多个 C# 代码段（如 [generatedCode, userCode]）</param>
         /// <param name="assemblyName">程序集名称（每次不同，避免 ALC 缓存冲突）</param>
-        /// <param name="assemblyRefDir">程序集引用目录路径，目录下所有 *.dll 均为引用</param>
+        /// <param name="assemblyRefDir">程序集引用目录路径（用户 DLL ScriptRefs 来源）</param>
+        /// <param name="assemblyNames">每节点启用的程序集引用列表（唯一真相源）。提供时按此列表组装引用；
+        /// 不提供则回退到 GetHostReferences() + ScriptRefs 目录全部 DLL。</param>
         /// <returns>编译结果</returns>
         public CompileResult Compile(
             IReadOnlyList<string> codeParts,
             string assemblyName,
-            string? assemblyRefDir = null)
+            string? assemblyRefDir = null,
+            IReadOnlyList<string>? assemblyNames = null)
         {
             var totalSw = Stopwatch.StartNew();
             var result = new CompileResult();
@@ -88,11 +151,12 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             // 合并所有代码段用于缓存哈希 + 类名提取
             var combinedCode = string.Join("\n", codeParts);
 
-            // 0a. 检查编译缓存（相同代码 + 宿主程序集指纹）
-            // 缓存键包含宿主已加载程序集的版本指纹：宿主 DLL（SunEyeVision.*/halcon/OpenCvSharp）
-            // 升级后指纹变化，自动触发重新编译，避免用旧元数据编译出的 IL 引用已变更的类型。
+            // 0a. 检查编译缓存（相同代码 + 宿主程序集指纹 + 引用列表指纹）
+            // 缓存键包含宿主已加载程序集版本指纹（升级自动重编译）与引用列表指纹
+            // （勾选/取消程序集后缓存键变化，自动重新编译，杜绝错误命中）。
             var codeHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(combinedCode)));
-            var cacheKey = $"{codeHash}|{ComputeHostFingerprint()}";
+            var refListFingerprint = ComputeRefListFingerprint(assemblyNames);
+            var cacheKey = $"{codeHash}|{ComputeHostFingerprint()}|{refListFingerprint}";
             if (_compileCache.TryGetValue(cacheKey, out var cached))
             {
                 PluginLogger.Info(
@@ -119,28 +183,39 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             }
             parseSw.Stop();
 
-            // 3. 获取元数据引用：宿主已加载程序集（运行时 ALC / TPA，含 BCL 与宿主 API）
-            //    + ScriptRefs（用户自定义第三方 DLL）。
-            //    BCL（System.Private.CoreLib / System.Runtime / netstandard）由运行时 TPA 保证提供，
-            //    不再依赖 .NET SDK RefPack（部署环境可能缺失，且曾错误排除 System.Private.CoreLib 导致 CS0518）。
+            // 3. 获取元数据引用：按每节点引用列表（唯一真相源）组装。
+            //    assemblyNames 提供时，遍历列表经 ResolveAssemblyPath 逐个解析（BCL/宿主锚定/ScriptRefs），
+            //    找不到抛异常（rule-015）。不提供则回退到 GetHostReferences + ScriptRefs 目录全部 DLL。
             var refSw = Stopwatch.StartNew();
             var metadataReferences = new List<MetadataReference>();
             var addedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             int hostRefCount = 0, scriptRefCount = 0;
 
-            foreach (var mdRef in MetadataReferenceProvider.GetHostReferences())
+            if (assemblyNames != null && assemblyNames.Count > 0)
             {
-                if (TryAddMetadataRef(metadataReferences, addedPaths, mdRef)) hostRefCount++;
-            }
-
-            // 3b. ScriptRefs 目录（仅用户自定义第三方 DLL），通过共享缓存加载
-            if (!string.IsNullOrEmpty(assemblyRefDir))
-            {
-                var sharedRefs = SharedMetadataReferenceProvider.GetScriptRefs(assemblyRefDir);
-                scriptRefCount = sharedRefs.Count;
-                foreach (var mdRef in sharedRefs)
+                // 按节点引用列表组装：每个名称经 ResolveAssemblyPath 解析，找不到直接抛错
+                foreach (var name in assemblyNames)
                 {
-                    TryAddMetadataRef(metadataReferences, addedPaths, mdRef);
+                    if (string.IsNullOrWhiteSpace(name)) continue;
+                    var mdRef = MetadataReferenceProvider.ResolveAssemblyPath(name.Trim(), assemblyRefDir);
+                    if (TryAddMetadataRef(metadataReferences, addedPaths, mdRef)) hostRefCount++;
+                }
+            }
+            else
+            {
+                foreach (var mdRef in MetadataReferenceProvider.GetHostReferences())
+                {
+                    if (TryAddMetadataRef(metadataReferences, addedPaths, mdRef)) hostRefCount++;
+                }
+                // 3b. ScriptRefs 目录（仅用户自定义第三方 DLL），通过共享缓存加载
+                if (!string.IsNullOrEmpty(assemblyRefDir))
+                {
+                    var sharedRefs = SharedMetadataReferenceProvider.GetScriptRefs(assemblyRefDir);
+                    scriptRefCount = sharedRefs.Count;
+                    foreach (var mdRef in sharedRefs)
+                    {
+                        TryAddMetadataRef(metadataReferences, addedPaths, mdRef);
+                    }
                 }
             }
             refSw.Stop();
@@ -290,6 +365,20 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                 sb.Append($"{name.Name}:{name.Version}|");
             }
 
+            return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(sb.ToString())))[..16];
+        }
+
+        /// <summary>
+        /// 计算引用列表指纹（用于编译缓存键）。引用列表变化（勾选/取消程序集）→ 指纹变化 → 缓存自动失效。
+        /// 空/未提供列表返回固定占位符（保持与旧缓存兼容路径一致）。
+        /// </summary>
+        private static string ComputeRefListFingerprint(IReadOnlyList<string>? assemblyNames)
+        {
+            if (assemblyNames == null || assemblyNames.Count == 0)
+                return "none";
+            var sb = new StringBuilder();
+            foreach (var name in assemblyNames.OrderBy(n => n, StringComparer.OrdinalIgnoreCase))
+                sb.Append($"{name}|");
             return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(sb.ToString())))[..16];
         }
 

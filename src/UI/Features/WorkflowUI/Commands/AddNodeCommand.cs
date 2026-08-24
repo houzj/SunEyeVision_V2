@@ -10,10 +10,10 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Commands
     /// </summary>
     public class AddNodeCommand : IUndoableCommand
     {
-        private readonly ObservableCollection<WorkflowNode> _nodes;
-        private readonly WorkflowNode _node;
+        private readonly ObservableCollection<WorkflowNodeBase> _nodes;
+        private readonly WorkflowNodeBase _node;
 
-        public AddNodeCommand(ObservableCollection<WorkflowNode> nodes, WorkflowNode node)
+        public AddNodeCommand(ObservableCollection<WorkflowNodeBase> nodes, WorkflowNodeBase node)
         {
             _nodes = nodes;
             _node = node;

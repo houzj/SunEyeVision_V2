@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -116,7 +116,7 @@ namespace SunEyeVision.UI.Services.Connection
     /// </summary>
     public class ConnectionService : IConnectionService
     {
-        private readonly ObservableCollection<WorkflowNode> _nodes;
+        private readonly ObservableCollection<WorkflowNodeBase> _nodes;
         private readonly IConnectionPathService _pathService;
 
         public ObservableCollection<WorkflowConnection> Connections { get; } = new ObservableCollection<WorkflowConnection>();
@@ -125,7 +125,7 @@ namespace SunEyeVision.UI.Services.Connection
         public event EventHandler<ConnectionEventArgs> ConnectionDeleted;
 
         public ConnectionService(
-            ObservableCollection<WorkflowNode> nodes,
+            ObservableCollection<WorkflowNodeBase> nodes,
             IConnectionPathService pathService)
         {
             _nodes = nodes ?? throw new ArgumentNullException(nameof(nodes));

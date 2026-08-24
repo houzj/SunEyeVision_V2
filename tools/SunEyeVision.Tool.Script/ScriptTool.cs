@@ -30,6 +30,11 @@ namespace SunEyeVision.Tool.Script
         {
             // 编辑器内核统一预热补全引擎（MEF + Workspace），对齐新版 RoslynPad 启动初始化。
             ScriptEditorCore.WarmupForStartup();
+
+            // 预热 Roslyn Emit 引擎（代码无关）：启动时后台编译一次最小模板，
+            // 让 Emit 初始化（~947ms）提前完成，用户首次执行脚本 Emit 降到 ~29ms。
+            // fire-and-forget 不阻塞启动；失败仅告警（ScriptCompiler.Warmup 内部处理）。
+            ScriptCompiler.Warmup();
         }
 
         public ScriptResults Run(ScriptParameters parameters)
@@ -90,7 +95,8 @@ namespace SunEyeVision.Tool.Script
                     parameters.AssemblyReferenceFullPath,
                     getGlobal,
                     setGlobal,
-                    inputValues);
+                    inputValues,
+                    parameters.AssemblyReferences);
 
                 result.CompileErrors = errors;
                 result.CompileTimeMs = lifecycleManager.CompileTimeMs;

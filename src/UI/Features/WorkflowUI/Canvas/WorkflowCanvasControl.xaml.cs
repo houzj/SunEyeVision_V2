@@ -494,7 +494,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
                         // 订阅节点集合变化事件
 
-                        if (workflowTab.WorkflowNodes is ObservableCollection<WorkflowNode> nodesCollection)
+                        if (workflowTab.WorkflowNodes is ObservableCollection<WorkflowNodeBase> nodesCollection)
 
                         {
 
@@ -514,7 +514,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
                                     {
 
-                                        foreach (WorkflowNode node in args.NewItems)
+                                        foreach (WorkflowNodeBase node in args.NewItems)
 
                                         {
 
@@ -1750,6 +1750,8 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
                 // 5A: 获取所有选中节点
 
                 var selectedNodes = _viewModel?.WorkflowTabViewModel.SelectedTab?.WorkflowNodes
+                    // 拖动需 WorkflowNode 特有成员，运行时元素均为 WorkflowNode，安全转型
+                    .OfType<WorkflowNode>()
 
                     .Where(n => n.IsSelected)
 
@@ -3489,7 +3491,7 @@ _viewModel.SelectedNode = targetNode;
 
 
 
-                foreach (var node in _viewModel.WorkflowTabViewModel.SelectedTab.WorkflowNodes)
+                foreach (var node in _viewModel.WorkflowTabViewModel.SelectedTab.WorkflowNodes.OfType<WorkflowNode>())
 
                 {
 
@@ -4971,7 +4973,7 @@ _viewModel.SelectedNode = targetNode;
 
                 {
 
-                    sourceNode = CurrentWorkflowTab.WorkflowNodes.FirstOrDefault(n => n.Id == BoundingSourceNodeId);
+                    sourceNode = CurrentWorkflowTab.WorkflowNodes.OfType<WorkflowNode>().FirstOrDefault(n => n.Id == BoundingSourceNodeId);
 
                 }
 
@@ -4981,7 +4983,7 @@ _viewModel.SelectedNode = targetNode;
 
                 {
 
-                    targetNode = CurrentWorkflowTab.WorkflowNodes.FirstOrDefault(n => n.Id == BoundingTargetNodeId);
+                    targetNode = CurrentWorkflowTab.WorkflowNodes.OfType<WorkflowNode>().FirstOrDefault(n => n.Id == BoundingTargetNodeId);
 
                 }
 

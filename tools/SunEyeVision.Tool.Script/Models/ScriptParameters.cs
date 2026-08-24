@@ -27,17 +27,17 @@ namespace SunEyeVision.Tool.Script.Models
         public static string MinimalCode => LoadEmbeddedResource("Resources.MinimalCode.txt");
 
         /// <summary>
-        /// Demo 示例代码 — Halcon 算子风格，覆盖 5 个核心视觉处理场景。
+        /// Demo 示例代码 — 纯 IVisionImage 通用接口风格，覆盖图像信息/拷贝/像素数据/全局变量读写。
         /// 用户可通过工具栏"Demo示例"按钮加载此代码进行学习和测试。
+        /// 默认引用（系统必需项）即可编译，无需额外勾选 Halcon 引用。
         /// </summary>
         /// <remarks>
-        /// 场景1: 图像信息查询（GetImageSize + 通道数）
-        /// 场景2: 彩色转灰度（高层封装 CreateGrayFromColor + 底层 Rgb1ToGray）
-        /// 场景3: 阈值分割（Threshold + AreaCenter）
-        /// 场景4: Blob 分析（Connection + SelectShape + 遍历输出）
-        /// 场景5: 全局变量读写（GetGlobal/SetGlobal）
-        /// 注意：input1/output1 类型为 IVisionImage，强制转换 ((HalImage)input1).Unwrap() 拿到 HImage。
-        /// 场景5 演示了全局变量读写的通用接口优先原则：用 IVisionImage 拿上游图像，需 Halcon 算子时再 is 断言。
+        /// 场景1: 图像信息查询（IVisionImage.Width/Height/Channels/IsEmpty）
+        /// 场景2: 图像拷贝与像素数据访问（Clone/GetPixelData）
+        /// 场景3: 输出传递
+        /// 场景4: 全局变量读写（GetGlobal/SetGlobal，通用接口优先）
+        /// 注意：input1/output1 类型为 IVisionImage（通用接口，不涉及 HalImage 具体类型）；
+        ///       需 Halcon 底层算子时，通过"程序集引用"勾选 halcondotnetxl 后自行扩展。
         /// </remarks>
         public static string DemoCode => LoadEmbeddedResource("Resources.DemoCode.txt");
 
@@ -59,6 +59,9 @@ namespace SunEyeVision.Tool.Script.Models
 
         public ScriptParameters()
         {
+            // 默认引用系统必需项（BCL + Script 基类）— 编译基线最小化，halcon/OpenCvSharp 按需勾选
+            _assemblyReferences = new ObservableCollection<string>(
+                SunEyeVision.Tool.Script.ScriptEngine.MetadataReferenceProvider.RequiredAssemblyNames);
             SubscribeOutputsCollection();
         }
 
@@ -80,6 +83,20 @@ namespace SunEyeVision.Tool.Script.Models
         {
             get => _assemblyReferenceDir;
             set => SetProperty(ref _assemblyReferenceDir, value, "程序集引用目录");
+        }
+
+        private ObservableCollection<string> _assemblyReferences;
+
+        /// <summary>
+        /// 每节点启用的程序集引用列表（唯一真相源）— 编译只引用此列表里的程序集。
+        /// 序列化保存到节点配置，随方案加载/保存，各脚本节点独立。
+        /// 新节点默认预置系统必需项（BCL + Script 基类），编译基线最小化。
+        /// </summary>
+        [JsonPropertyOrder(5)]
+        public ObservableCollection<string> AssemblyReferences
+        {
+            get => _assemblyReferences;
+            set => SetProperty(ref _assemblyReferences, value, "程序集引用");
         }
 
         /// <summary>

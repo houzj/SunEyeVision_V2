@@ -153,7 +153,9 @@ namespace SunEyeVision.UI.Services.Interaction
 
             if (_viewModel?.WorkflowTabViewModel.SelectedTab != null)
             {
+                // 集合为基类，批量移动命令需 WorkflowNode，运行时元素均为 WorkflowNode，安全转型
                 var selectedNodes = _viewModel.WorkflowTabViewModel.SelectedTab.WorkflowNodes
+                    .OfType<WorkflowNode>()
                     .Where(n => n.IsSelected)
                     .ToList();
 

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Media;
@@ -18,7 +18,7 @@ namespace SunEyeVision.UI.Services.Connection
     {
         private readonly Dictionary<string, CachedPath> _pathCache;
         private readonly Dictionary<string, bool> _dirtyFlags;
-        private readonly ObservableCollection<WorkflowNode> _nodes;
+        private readonly ObservableCollection<WorkflowNodeBase> _nodes;
         private readonly object _lockObj;
         private readonly IPathCalculator _pathCalculator;
 
@@ -48,7 +48,7 @@ namespace SunEyeVision.UI.Services.Connection
             ? (double)CacheHits / (CacheHits + CacheMisses)
             : 0;
 
-        public ConnectionPathCache(ObservableCollection<WorkflowNode> nodes, IPathCalculator? pathCalculator = null)
+        public ConnectionPathCache(ObservableCollection<WorkflowNodeBase> nodes, IPathCalculator? pathCalculator = null)
         {
             _pathCache = [];
             _dirtyFlags = [];
@@ -257,8 +257,9 @@ namespace SunEyeVision.UI.Services.Connection
 
         private PathGeometry CalculatePath(WorkflowConnection connection)
         {
-            var sourceNode = _nodes.FirstOrDefault(n => n.Id == connection.SourceNodeId);
-            var targetNode = _nodes.FirstOrDefault(n => n.Id == connection.TargetNodeId);
+            // 路径计算需要 WorkflowNode 特有成员（StyleConfigTyped/端口），运行时元素均为 WorkflowNode，安全转型。
+            var sourceNode = _nodes.OfType<WorkflowNode>().FirstOrDefault(n => n.Id == connection.SourceNodeId);
+            var targetNode = _nodes.OfType<WorkflowNode>().FirstOrDefault(n => n.Id == connection.TargetNodeId);
 
             if (sourceNode == null || targetNode == null)
                 return new PathGeometry();
@@ -283,8 +284,8 @@ namespace SunEyeVision.UI.Services.Connection
                 targetNode.StyleConfigTyped.NodeWidth,
                 targetNode.StyleConfigTyped.NodeHeight);
 
-            // 计算所有节点边界（用于碰撞检测）
-            var allNodeRects = _nodes.Select(n => new Rect(
+            // 计算所有节点边界（用于碰撞检测）— 需要 WorkflowNode 特有成员，安全转型
+            var allNodeRects = _nodes.OfType<WorkflowNode>().Select(n => new Rect(
                 n.Position.X,
                 n.Position.Y,
                 n.StyleConfigTyped.NodeWidth,

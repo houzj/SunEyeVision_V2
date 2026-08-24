@@ -61,6 +61,18 @@ namespace SunEyeVision.Tool.Script.Models
                     RuntimeValue = OutputVariableArrayPromoter.Promote(rawValue, cfg.TypeName, sysType)
                 });
             }
+
+            // 统一附加执行耗时（工具执行信息，固定归入"执行信息"分组，置顶展示）
+            variables.Add(new OutputVariable
+            {
+                Name = "ExecutionTimeMs",
+                VariableType = "Integer",
+                DisplayName = "执行耗时",
+                Group = "执行信息",
+                Kind = OutputVariableKind.Data,
+                RuntimeValue = ExecutionTimeMs
+            });
+
             return variables;
         }
 

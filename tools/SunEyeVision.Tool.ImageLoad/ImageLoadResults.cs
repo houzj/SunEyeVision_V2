@@ -197,6 +197,7 @@ namespace SunEyeVision.Tool.ImageLoad
         {
             return
             [
+                .. base.GetPropertyMap(),   // 合并基类：ExecutionTimeMs → 执行耗时/执行信息
                 new("OutputImage",          "输出图像",     null),
                 new("GrayImage",            "灰度图像",     null),
                 new("Width",                "宽度",         "图像"),
@@ -216,7 +217,6 @@ namespace SunEyeVision.Tool.ImageLoad
                 new("FilePath",             "路径",         "文件"),
                 new("FileSize",             "大小",         "文件"),
                 new("FileFormat",           "格式",         "文件"),
-                new("ExecutionTimeMs",      "耗时",         "执行"),
             ];
         }
 

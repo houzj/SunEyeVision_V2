@@ -197,6 +197,7 @@ namespace SunEyeVision.Tool.Threshold
         {
             return
             [
+                .. base.GetPropertyMap(),   // 合并基类：ExecutionTimeMs → 执行耗时/执行信息
                 new("OutputImage",          "输出图像",               null),
                 new("GrayImage",            "灰度图像",               null),
                 new("ReducedImage",         "ROI缩减图像",            null),

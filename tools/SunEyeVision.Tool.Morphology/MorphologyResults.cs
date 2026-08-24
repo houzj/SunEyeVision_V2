@@ -175,6 +175,7 @@ namespace SunEyeVision.Tool.Morphology
         {
             return
             [
+                .. base.GetPropertyMap(),   // 合并基类：ExecutionTimeMs → 执行耗时/执行信息
                 new("OutputImage",          "输出图像",               null),
                 new("GrayImage",            "灰度图像",               null),
                 new("BinaryMask",           "二值掩码",               null),

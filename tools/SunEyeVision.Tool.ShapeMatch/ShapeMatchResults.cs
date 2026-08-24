@@ -142,6 +142,7 @@ public class ShapeMatchResults : ToolResults
     {
         return
         [
+            .. base.GetPropertyMap(),   // 合并基类：ExecutionTimeMs → 执行耗时/执行信息
             new("OutputImage",      "输出图像",        null),
             new("GrayImage",        "灰度图像",        null),
             new("SearchRegionMask", "搜索区域掩码",    null),

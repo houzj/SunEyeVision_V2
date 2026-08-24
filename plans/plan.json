@@ -2549,7 +2549,7 @@
                         "type":  "tool",
                         "layer":  "tool",
                         "stage":  "P4",
-                        "status":  "todo",
+                        "status":  "in_progress",
                         "start":  "2026-12-14",
                         "end":  "2026-12-18",
                         "goal":  "轮廓匹配亚像素位姿输出",
@@ -2564,7 +2564,7 @@
                                           "name":  "亚像素位姿输出增强",
                                           "phase":  "算法实现",
                                           "hours":  16,
-                                          "status":  "todo",
+                                          "status":  "in_progress",
                                           "week":  "2026-W51"
                                       },
                                       {
@@ -2572,7 +2572,7 @@
                                           "name":  "位姿输出与 Pose 契约集成",
                                           "phase":  "算法实现",
                                           "hours":  12,
-                                          "status":  "todo",
+                                          "status":  "in_progress",
                                           "week":  "2026-W51"
                                       },
                                       {
@@ -2589,6 +2589,14 @@
                                      "docs/04-工具设计/查找工具/2026/05/轮廓匹配工具核心算法设计方案-20260508.md"
                                  ],
                         "log":  [
+                                    {
+                                        "date":  "2026-08-24",
+                                        "note":  "[e4a59f85a2ce63b84e7cbb126fd182eaea3223cb] feat(results): 缁熶竴鎵ц鑰楁椂杈撳嚭濂戠害 - 鍚勫伐鍏?Results 鍚堝苟鍩虹被 ExecutionTimeMs"
+                                    },
+                                    {
+                                        "date":  "2026-08-24",
+                                        "note":  "[23d47623e8b8c451c8fef142cac9f82befd8fb00] feat(results): 统一执行耗时输出契约 - 各工具 Results 合并基类 ExecutionTimeMs"
+                                    }
                                 ]
                     },
                     {
@@ -3880,68 +3888,6 @@
                        }
                    ],
     "tempTasks":  [
-                      {
-                          "id":  "TMP-384563d",
-                          "message":  "开发计划归类系统完善与智能校准",
-                          "date":  "2026-08-17",
-                          "commit":  "384563d58357621ce0493bf4a47f728de3be9416",
-                          "files":  [
-                                        ".codebuddy/rules/02-development-process/plan-task-classify.mdc",
-                                        ".codebuddy/skills/plan-sync/SKILL.md",
-                                        "plans/.last_synced_commit",
-                                        "plans/generate_plan.ps1",
-                                        "plans/plan.html",
-                                        "plans/plan.json",
-                                        "plans/tasks/M-HIST-CANVAS.html",
-                                        "plans/tasks/M-HIST-CONTRACT.html",
-                                        "plans/tasks/M-HIST-CORE.html",
-                                        "plans/tasks/M-HIST-CVENGINE.html",
-                                        "plans/tasks/M-HIST-DATAMODEL.html",
-                                        "plans/tasks/M-HIST-GLOBALVAR.html",
-                                        "plans/tasks/M-HIST-PARAM.html",
-                                        "plans/tasks/M-HIST-PATH.html",
-                                        "plans/tasks/M-HIST-PREVIEW.html",
-                                        "plans/tasks/M-HIST-REGION.html",
-                                        "plans/tasks/M-HIST-RESULTTREE.html",
-                                        "plans/tasks/M-HIST-SCRIPT.html",
-                                        "plans/tasks/M-HIST-SDKCTRL.html",
-                                        "plans/tasks/M-HIST-SOLUTION.html",
-                                        "plans/tasks/M-SRC-CAM.html",
-                                        "plans/tasks/M-SRC-INTEG.html",
-                                        "plans/tasks/M-SRC-RUNUI.html",
-                                        "plans/tasks/M-SRC-TEST.html",
-                                        "plans/tasks/M-SRC-UI.html",
-                                        "plans/tasks/T-BLOB.html",
-                                        "plans/tasks/T-CONDITION.html",
-                                        "plans/tasks/T-CONVERT.html",
-                                        "plans/tasks/T-SHAPEMATCH.html",
-                                        "plans/tasks/T-SUBROUTINE.html"
-                                    ],
-                          "status":  "in_progress"
-                      },
-                      {
-                          "id":  "TMP-746aeb9",
-                          "message":  "清理开发计划同步的重复临时任务记录",
-                          "date":  "2026-08-17",
-                          "commit":  "746aeb9a5dcba68530f3ac0486c131f003530c4c",
-                          "files":  [
-                                        "plans/.last_synced_commit",
-                                        "plans/plan.html",
-                                        "plans/plan.json"
-                                    ],
-                          "status":  "in_progress"
-                      },
-                      {
-                          "id":  "TMP-f4e42be",
-                          "message":  "补录清理提交的 hook 同步记录入库",
-                          "date":  "2026-08-17",
-                          "commit":  "f4e42bee9b739695b72b47d0a8a166ef7412711c",
-                          "files":  [
-                                        "plans/.last_synced_commit",
-                                        "plans/plan.html",
-                                        "plans/plan.json"
-                                    ],
-                          "status":  "in_progress"
-                      }
+
                   ]
 }

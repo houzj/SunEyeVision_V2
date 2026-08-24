@@ -7,10 +7,10 @@ description: 视觉工具构建技能。用于创建新的视觉检测工具插�
 
 ## ⚠️ 工具输出目录读取
 
-工具编译后验证 `dev/Debug/plugins/<ToolName>/` 目录内容时，**禁止**用 `search_file` / `list_dir`（被 .gitignore 屏蔽，会漏读）。**必须**用 `execute_command` + PowerShell（见 rule-017）：
+工具编译后验证 `dev/Debug/plugins/<ToolName>/` 目录内容时，**禁止**用 `search_file` / `list_dir`（被 .gitignore 屏蔽，会漏读）。**必须**用 `execute_command` + PowerShell：
 
 ```powershell
-Get-ChildItem -Path "d:\MyWork\SunEyeVision_V2-script\dev\Debug\plugins\SunEyeVision.Tool.XXX" -File
+Get-ChildItem -Path "d:\MyWork\SunEyeVision_V2\dev\Debug\plugins\SunEyeVision.Tool.XXX" -File
 ```
 
 ## 触发场景
@@ -69,14 +69,14 @@ public class {ToolName}Tool : IToolPlugin<{ToolName}Parameters, {ToolName}Result
         return result;
     }
 
-    // 可选：创建调试控件
-    public override FrameworkElement? CreateDebugControl()
+    // 可选：创建调试控件（注意：签名带 IToolPlugin tool 参数）
+    public FrameworkElement? CreateDebugControl(IToolPlugin tool)
     {
         return new {ToolName}ToolDebugControl(this);
     }
 
-    // 可选：创建数据分析控件（右下角Tab）
-    public override FrameworkElement? CreateDataAnalysisControl()
+    // 可选：创建数据分析控件（主界面右下角 Tab，无参）
+    public FrameworkElement? CreateDataAnalysisControl()
     {
         return new {ToolName}DataAnalysisControl();
     }
@@ -89,6 +89,8 @@ public class {ToolName}Tool : IToolPlugin<{ToolName}Parameters, {ToolName}Result
 - **必须**实现 `IToolPlugin<TParams, TResult>` 泛型接口
 - **必须**在 Parameters 类上标记 `[JsonDerivedType]`
 - 图像输入通过 `parameters.ResolvedInputImage` 获取，不作为 Run() 参数传递
+- `CreateDebugControl(IToolPlugin tool)` — **带参数**，双击节点弹出的调参窗口
+- `CreateDataAnalysisControl()` — **无参**，右下角数据分析 Tab
 - `[Tool]` 的 `HasDebugWindow` 控制是否可双击打开调试窗口
 - `[Tool]` 的 `DebugWindowStyle` 控制窗口类型（None/Default/Custom）
 
@@ -118,7 +120,7 @@ public class {ToolName}Parameters : ToolParameters
 
 ### 带区域的参数
 
-需要 ROI 支持的工具继承 `RegionParameters`：
+需要 RoI 支持的工具继承 `RegionParameters`：
 
 ```csharp
 [JsonDerivedType(typeof({ToolName}Parameters), "{ToolName}")]
@@ -160,7 +162,7 @@ public ParamValue<double> MinArea
 
 ## 3. 结果类（Results）
 
-### 基本模板
+### 基本模板（必须合并基类执行耗时）
 
 ```csharp
 using OpenCvSharp;
@@ -183,6 +185,8 @@ public class {ToolName}Results : ToolResults
     {
         return
         [
+            // ⚠️ 必须合并基类，获得"执行耗时/执行信息"分组（rule: 统一执行耗时契约）
+            .. base.GetPropertyMap(),
             new("OutputImage", "输出图像", null),
             new("ExampleValue", "示例值", "结果"),
         ];
@@ -203,7 +207,7 @@ public class {ToolName}Results : ToolResults
 
 - 继承 `ToolResults`
 - `OutputImage` 属性名固定，框架自动识别
-- `GetPropertyMap()` 提供中文显示名和分组
+- `GetPropertyMap()` **必须用 `.. base.GetPropertyMap()` 合并基类**（统一暴露"执行耗时"），禁止重新声明 ExecutionTimeMs
 - `GetVisualElements()` 返回图像叠加可视化
 - `ResultItem` 工厂方法：`Numeric()`, `Text()`, `Boolean()`, `Point()`, `Circle()`
 - `SetSuccess()` / `SetError()` 管理执行状态
@@ -224,7 +228,7 @@ public partial class {ToolName}ToolDebugControl : ToolDebugControlBase
 
 ### 调试控件接口
 
-- `ToolDebugControlBase` 提供基类功能
+- `ToolDebugControlBase` 提供基类功能（继承后实现 ExecuteTool/CanExecuteTool）
 - `IToolControlInitializer` 支持延迟初始化
 - `IToolControlDataAnalysis` 标记数据分析控件
 
@@ -266,24 +270,24 @@ public partial class {ToolName}ToolDebugControl : ToolDebugControlBase
 
 | 类 | 路径 | 行号 | 用途 |
 |---|---|---|---|
-| `IToolPlugin` | `src/Plugin.SDK/Core/IToolPlugin.cs` | L73 | 非泛型接口（框架层入口） |
-| `IToolPlugin<TParams, TResult>` | 同上 | L154 | 泛型接口（工具开发者入口） |
+| `IToolPlugin` | `src/Plugin.SDK/Core/IToolPlugin.cs` | L74 | 非泛型接口（框架层入口） |
+| `IToolPlugin<TParams, TResult>` | 同上 | L165 | 泛型接口（工具开发者入口） |
 | `ToolAttribute` | `src/Plugin.SDK/Core/ToolAttribute.cs` | L32 | 工具元数据特性 |
-| `ToolParameters` | `src/Plugin.SDK/Execution/Parameters/ToolParameters.cs` | L53 | 参数基类 |
-| `ToolResults` | `src/Plugin.SDK/Execution/Results/ToolResults.cs` | L323 | 结果基类 |
+| `ToolParameters` | `src/Plugin.SDK/Execution/Parameters/ToolParameters.cs` | L54 | 参数基类 |
+| `ToolResults` | `src/Plugin.SDK/Execution/Results/ToolResults.cs` | L265 | 结果基类 |
 | `ToolExecutor` | `src/Plugin.SDK/Core/ToolExecutor.cs` | L41 | 执行器（统一执行入口） |
 | `ObservableObject` | `src/Plugin.SDK/Models/ObservableObject.cs` | L192 | 属性通知基类 |
 
 ### Plugin SDK 控件（工具开发者用）
 
-| 类 | 路径 | 行号 | 工具开发者视角 |
-|---|---|---|---|
-| `ToolDebugControlBase` | `src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs` | L122 | 创建调试控件时继承 |
-| `ImageControl` | `src/Plugin.SDK/UI/Controls/ImageControl/ImageControl.xaml.cs` | L20 | 在调试控件中显示图像 |
-| `ParamBinding` | `src/Plugin.SDK/UI/Controls/ParamBinding.cs` | L24 | 参数绑定交互 |
-| `ConfigSetting` | `src/Plugin.SDK/UI/Controls/ConfigSetting.cs` | L35 | 参数配置 UI |
-| `RegionEditorControl` | `src/Plugin.SDK/UI/Controls/Region/Views/RegionEditorControl.xaml.cs` | L27 | ROI 交互 |
-| `DefaultDebugWindow` | `src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml.cs` | L35 | 调试窗口宿主 |
+| 类 | 路径 | 工具开发者视角 |
+|---|---|---|
+| `ToolDebugControlBase` | `src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs` | 创建调试控件时继承（实现 ExecuteTool/CanExecuteTool） |
+| `ImageControl` | `src/Plugin.SDK/UI/Controls/ImageControl/ImageControl.xaml.cs` | 在调试控件中显示图像 |
+| `ParamBinding` | `src/Plugin.SDK/UI/Controls/ParamBinding.cs` | 参数绑定交互 |
+| `ConfigSetting` | `src/Plugin.SDK/UI/Controls/ConfigSetting.cs` | 参数配置 UI |
+| `RoiEditorControl` | `src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorControl.xaml.cs` | RoI 交互（Region→RoI 迁移后） |
+| `DefaultDebugWindow` | `src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml` | 调试窗口宿主 |
 
 ## 约束
 
@@ -291,3 +295,4 @@ public partial class {ToolName}ToolDebugControl : ToolDebugControlBase
 - 必须使用 `[JsonPolymorphic]` + `[JsonDerivedType]` 支持多态
 - JSON 使用 PascalCase 命名
 - 命名遵循 PascalCase 规范，禁止缩写
+- 结果类 `GetPropertyMap()` 必须 `.. base.GetPropertyMap()` 合并基类，禁止重复声明 ExecutionTimeMs

@@ -2179,6 +2179,52 @@ SplitterPosition = position;
 
             // ★ 添加节点后自动绑定输入图像源（子程序内部节点默认绑子程序输入图像；主流程无源则跳过）
             TryAutoBindImageSource(uiNode);
+
+            // ★ 新添加节点若是可预编译工具（脚本工具），异步预编译 + 沙箱预热，
+            //   避免首次执行现场编译+建沙箱冷启动（40-60ms），实现首次与后续执行时间一致。
+            PrecompileNodeIfNeeded(uiNode);
+        }
+
+        /// <summary>
+        /// 单个节点预编译 + 沙箱预热：新添加的可预编译工具（脚本工具）异步预编译，
+        /// 消除首次执行冷启动（现场编译+建沙箱 40-60ms）。与方案加载后全量预编译
+        /// （<see cref="PreCompileScriptNodes"/>）共用 <see cref="IPrecompilableTool.PreCompile"/> 通道。
+        /// 防御：非可预编译工具/参数为空/预编译异常 → 静默跳过，不阻塞节点添加。
+        /// </summary>
+        /// <param name="node">新添加的工作流节点</param>
+        private void PrecompileNodeIfNeeded(WorkflowNodeBase node)
+        {
+            try
+            {
+                if (node.Parameters == null)
+                    return;
+
+                var tool = ToolRegistry.CreateToolInstance(node.ToolType);
+                if (tool is not IPrecompilableTool precompilable)
+                    return;
+
+                _logger?.LogInfo($"[预编译] 新添加节点=[{node.Name}] 异步预编译", nameof(MainWindowViewModel));
+                System.Threading.Tasks.Task.Run(() =>
+                {
+                    try
+                    {
+                        var errors = precompilable.PreCompile(node.Parameters!);
+                        _logger?.LogInfo(
+                            $"[预编译] 新添加节点=[{node.Name}] 预编译完成, 诊断数={errors.Count}" +
+                            (errors.Count > 0 ? $", 诊断=[{string.Join("; ", errors.Take(2))}]" : ""),
+                            nameof(MainWindowViewModel));
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger?.LogError($"[预编译] 新添加节点=[{node.Name}] 预编译异常: {ex.Message}",
+                            nameof(MainWindowViewModel));
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError($"[预编译] 新添加节点预编译失败: {ex.Message}", nameof(MainWindowViewModel));
+            }
         }
 
         /// <summary>

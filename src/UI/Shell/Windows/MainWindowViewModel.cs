@@ -1912,6 +1912,10 @@ SplitterPosition = position;
 
                     LogSuccess($"标签页创建成功，当前标签页: {WorkflowTabViewModel.SelectedTab?.Name ?? "（无）"}");
                 }
+
+                // ★ 脚本预编译（编译与执行解耦）：方案加载后全量预热可预编译工具的编译缓存，
+                //   保证首次执行命中缓存零编译。通过 IPrecompilableTool 接口调用，不依赖具体工具类型。
+                PreCompileScriptNodes(solution);
             }
             catch (Exception ex)
             {
@@ -1919,6 +1923,65 @@ SplitterPosition = position;
                 LogError($"堆栈跟踪: {ex.StackTrace}");
                 throw;
             }
+        }
+
+        /// <summary>
+        /// 方案加载后预编译所有可预编译工具节点（如脚本工具）。
+        /// 编译与执行解耦：提前编译入工具进程级缓存，保证首次执行命中缓存零编译。
+        /// 通过 <see cref="IPrecompilableTool"/> 接口调用，不依赖具体工具类型；
+        /// 并行执行（半核，不抢占启动其他任务）；失败仅记录告警，不阻塞打开工作区。
+        /// </summary>
+        /// <param name="solution">已加载的解决方案（含主工作流与子程序工作流）</param>
+        private void PreCompileScriptNodes(Solution solution)
+        {
+            if (solution?.Workflows == null)
+            {
+                return;
+            }
+
+            var precompilableNodes = solution.Workflows
+                .SelectMany(w => w.Nodes)
+                .Where(n => n.Parameters != null)
+                .Select(n => new
+                {
+                    Node = n,
+                    Tool = ToolRegistry.CreateToolInstance(n.ToolType)
+                })
+                .Where(x => x.Tool is IPrecompilableTool && x.Node.Parameters != null)
+                .ToList();
+
+            if (precompilableNodes.Count == 0)
+            {
+                return;
+            }
+
+            LogInfo($"开始并行预编译 {precompilableNodes.Count} 个可预编译工具节点...");
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+
+            var options = new ParallelOptions
+            {
+                MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount / 2)
+            };
+
+            Parallel.ForEach(precompilableNodes, options, x =>
+            {
+                try
+                {
+                    var tool = (IPrecompilableTool)x.Tool!;
+                    var errors = tool.PreCompile(x.Node.Parameters!);
+                    if (errors.Count > 0)
+                    {
+                        LogWarning($"  预编译告警 [{x.Node.Name}]: {string.Join("; ", errors.Take(2))}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogWarning($"  预编译失败 [{x.Node.Name}]: {ex.Message}");
+                }
+            });
+
+            sw.Stop();
+            LogSuccess($"预编译完成: {precompilableNodes.Count} 个节点, 耗时 {sw.ElapsedMilliseconds}ms");
         }
 
         private async System.Threading.Tasks.Task ExecuteRunWorkflow()

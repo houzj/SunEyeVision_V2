@@ -230,6 +230,34 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
         }
 
         /// <summary>
+        /// 仅编译并预热缓存（命中缓存则跳过，未命中则编译并入缓存），不创建沙箱/实例。
+        /// 用于预编译场景：方案加载后/代码变化后预热脚本编译结果，保证后续执行命中缓存零编译。
+        /// 编译结果写入 <see cref="ScriptCompiler"/> 的进程级静态缓存，工具调试与工作流执行共用。
+        /// </summary>
+        /// <param name="generatedCode">系统生成的字段声明 partial class 代码</param>
+        /// <param name="userCode">用户编写的完整 partial class 代码</param>
+        /// <param name="assemblyRefDir">程序集引用目录路径（用户 DLL ScriptRefs 来源）</param>
+        /// <param name="assemblyNames">每节点启用的程序集引用列表（唯一真相源）</param>
+        /// <returns>编译诊断列表（空 = 编译成功）；调用方仅用于诊断，不阻塞</returns>
+        public List<string> CompileOnly(
+            string generatedCode,
+            string userCode,
+            string? assemblyRefDir,
+            IReadOnlyList<string>? assemblyNames = null)
+        {
+            if (string.IsNullOrWhiteSpace(generatedCode) && string.IsNullOrWhiteSpace(userCode))
+            {
+                return ["脚本代码为空"];
+            }
+
+            var assemblyName = $"ScriptPreCompile_{Guid.NewGuid():N}";
+            var result = _compiler.Compile(
+                [generatedCode, userCode], assemblyName, assemblyRefDir, assemblyNames);
+
+            return result.Success ? [] : result.Diagnostics;
+        }
+
+        /// <summary>
         /// 类型转换：将 object? 值转换到目标字段类型
         /// </summary>
         private static object? ConvertType(object? value, Type targetType)

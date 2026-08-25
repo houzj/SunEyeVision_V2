@@ -21,7 +21,7 @@ namespace SunEyeVision.Tool.Script
         Version = "2.0.0",
         HasDebugWindow = true
     )]
-    public class ScriptTool : IToolPlugin<ScriptParameters, ScriptResults>
+    public class ScriptTool : IToolPlugin<ScriptParameters, ScriptResults>, IPrecompilableTool
     {
         // ★ 应用启动阶段后台预热补全引擎（MEF + Workspace），对齐新版 RoslynPad 启动初始化。
         //   静态构造在 LoadPlugins 实例化工具时触发，fire-and-forget 不阻塞启动；
@@ -133,6 +133,44 @@ namespace SunEyeVision.Tool.Script
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// 仅编译并预热脚本编译缓存，不执行脚本、不创建沙箱/实例。
+        /// 用于预编译场景：方案加载后/代码变化后预热编译结果，保证后续执行命中缓存零编译。
+        /// 编译结果写入 <see cref="ScriptCompiler"/> 进程级静态缓存，工具调试与工作流执行共用。
+        /// 参数非 <see cref="ScriptParameters"/> 或代码为空时直接返回（不阻塞、不抛异常）。
+        /// </summary>
+        /// <param name="parameters">工具参数（运行时为 <see cref="ScriptParameters"/>）</param>
+        /// <returns>编译诊断列表；空 = 编译成功</returns>
+        public IReadOnlyList<string> PreCompile(ToolParameters parameters)
+        {
+            if (parameters is not ScriptParameters scriptParams || string.IsNullOrWhiteSpace(scriptParams.ScriptCode))
+            {
+                return [];
+            }
+
+            try
+            {
+                using var lifecycleManager = new ScriptLifecycleManager();
+                var errors = lifecycleManager.CompileOnly(
+                    scriptParams.GeneratedCode,
+                    scriptParams.ScriptCode,
+                    scriptParams.AssemblyReferenceFullPath,
+                    scriptParams.AssemblyReferences);
+
+                if (errors.Count > 0)
+                {
+                    scriptParams.LogWarning($"[ScriptTool] 预编译发现错误: {string.Join("; ", errors.Take(3))}");
+                }
+
+                return errors;
+            }
+            catch (Exception ex)
+            {
+                scriptParams.LogWarning($"[ScriptTool] 预编译异常: {ex.Message}");
+                return [ex.Message];
+            }
         }
 
         public FrameworkElement? CreateDebugControl(IToolPlugin tool)

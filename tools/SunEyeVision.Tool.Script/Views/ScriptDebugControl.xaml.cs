@@ -84,8 +84,37 @@ namespace SunEyeVision.Tool.Script.Views
             // 上游节点数据源在 SetDataProvider 中通过基类缓存桥接（避免此处硬编码 null）
             InitializeTabs();
 
+            // 关闭埋点：窗口关闭（含 X 关闭）时控件卸载，记录当前是否已同步代码。
+            // 用于定位"修改后未执行直接关闭 → 重新打开代码丢失"的根因。
+            Unloaded += OnControlUnloaded;
+
             perfSw.Stop();
             PluginLogger.Info($"[Perf] ScriptDebugControl 构造函数: {perfSw.ElapsedMilliseconds}ms", GetType().Name);
+        }
+
+        /// <summary>
+        /// 控件卸载（窗口关闭）时统一同步代码（含 X 关闭路径）。
+        /// 修复：X 关闭不触发 OnConfirmCommand/ExecuteTool，导致编辑器最新代码未写回节点参数，
+        /// 重新打开调试窗口时读到旧代码丢失。此处兜底同步，保证任何关闭方式都保存最新代码。
+        /// </summary>
+        private void OnControlUnloaded(object sender, RoutedEventArgs e)
+        {
+            var editorLen = EditorCore.GetCode()?.Length ?? 0;
+            var paramLen = _parameters.ScriptCode?.Length ?? 0;
+            var synced = editorLen == paramLen;
+            PluginLogger.Info(
+                $"[关闭路径] 控件卸载(窗口关闭) | 编辑器代码长度={editorLen}, 参数代码长度={paramLen}, 已同步={synced}",
+                GetType().Name);
+
+            // 未同步则补同步：编辑器最新代码写回节点参数，避免关闭后代码丢失
+            if (!synced)
+            {
+                SyncCodeToParameters();
+                PluginLogger.Info($"[关闭路径] X关闭补同步代码: 长度={EditorCore.GetCode()?.Length ?? 0}", GetType().Name);
+            }
+
+            // 关闭时预编译最新代码：保证之后工作流执行命中缓存零编译（编译与执行解耦）
+            PreCompileLatestCode();
         }
 
         /// <summary>
@@ -185,7 +214,11 @@ namespace SunEyeVision.Tool.Script.Views
 
         protected override void OnConfirmCommand(object sender, ExecutedRoutedEventArgs e)
         {
+            // 确定按钮路径：确认关闭前保存最新代码
+            PluginLogger.Info("[关闭路径] 确定按钮 OnConfirmCommand 触发，先同步代码", GetType().Name);
             SyncCodeToParameters();
+            // 确认关闭前预编译：代码变化后的最新代码编译入缓存，保证之后工作流执行命中缓存零编译
+            PreCompileLatestCode();
             ExitEditMode();
             base.OnConfirmCommand(sender, e);
         }
@@ -193,6 +226,8 @@ namespace SunEyeVision.Tool.Script.Views
         protected override object ExecuteTool()
         {
             SyncCodeToParameters();
+            // 执行前预编译：保证本次执行及后续工作流执行命中缓存零编译
+            PreCompileLatestCode();
             _logEntries.Clear();
             // 清除所有监视数据（输入 + 输出）
             ClearAllMonitorValues();
@@ -606,7 +641,28 @@ namespace SunEyeVision.Tool.Script.Views
         /// </summary>
         private void SyncCodeToParameters()
         {
-            _parameters.ScriptCode = EditorCore.GetCode();
+            var newCode = EditorCore.GetCode();
+            _parameters.ScriptCode = newCode;
+            PluginLogger.Info($"[SyncCodeToParameters] 已同步代码: 长度={newCode?.Length ?? 0}", GetType().Name);
+        }
+
+        /// <summary>
+        /// 预编译最新代码（编译与执行解耦）：代码变化后的最新代码编译入缓存，
+        /// 保证之后工作流执行命中缓存零编译。失败仅记录告警，不阻塞执行/关闭。
+        /// </summary>
+        private void PreCompileLatestCode()
+        {
+            try
+            {
+                _scriptTool ??= new ScriptTool();
+                var errors = _scriptTool.PreCompile(_parameters);
+                PluginLogger.Info($"[预编译] 已执行 | 代码长度={_parameters.ScriptCode?.Length ?? 0}, 诊断={errors.Count}",
+                    GetType().Name);
+            }
+            catch (Exception ex)
+            {
+                PluginLogger.Warning($"[{nameof(ScriptDebugControl)}] 预编译失败: {ex.Message}", nameof(ScriptDebugControl));
+            }
         }
 
 

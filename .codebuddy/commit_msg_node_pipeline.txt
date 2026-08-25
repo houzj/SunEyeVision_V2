@@ -1,8 +1,0 @@
-fix(workflow): 节点添加统一受控管道 + 新节点预编译
-
-- 拖放节点删除回退分支(DragDropHandler), 强制走 AddNodeToWorkflow 统一管道
-  (日志/命令/绑定/预编译), 消除首次执行冷启动(40-60ms → 2-5ms)
-- GetCachedViewModel 改为遍历所有窗口找主窗口(规避 Application.MainWindow 时序脆弱性),
-  获取失败抛异常暴露根因(rule-015 不静默回退)
-- MainWindowViewModel.AddNodeToWorkflow 新节点添加后异步预编译+沙箱预热
-- 新增方案文档: 节点添加路径统一架构优化方案

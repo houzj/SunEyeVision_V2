@@ -1550,6 +1550,10 @@
                                     {
                                         "date":  "2026-08-18",
                                         "note":  "[63f5d0d9c69d8f1bd40ffb1f8740f2c8d9e6f1a4] 修复清空图像源后运行时仍读旧图（WorkflowExecutionManager 空 InputSource 时清空 FilePath），校准：hook 误判入临时任务池，实为 M-SRC-UI 执行链路修复"
+                                    },
+                                    {
+                                        "date":  "2026-08-25",
+                                        "note":  "[1e4aa6afe6e1646742b68284d76d99ab9669a913] fix(workflow): 节点添加统一受控管道 + 新节点预编译"
                                     }
                                 ]
                     },

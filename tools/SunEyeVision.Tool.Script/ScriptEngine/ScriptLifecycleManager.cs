@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Scripting;
 using ScriptBase = SunEyeVision.Plugin.SDK.Scripting.Script;
 
@@ -107,8 +109,10 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                 return errors;
             }
 
-            // 2. 在沙箱中加载并执行（传递 refDir 预加载 ScriptRefs 用户 DLL）
-            using var sandbox = new ScriptSandbox($"ScriptSandbox_{_runCounter}", assemblyRefDir);
+            // 2. 在沙箱中加载并执行（从常驻池获取，复用 ALC + 程序集 + JIT 缓存）。
+            //    沙箱按编译缓存键分组：相同代码+引用复用，代码变化自动建新沙箱（旧沙箱由池 LRU 淘汰）。
+            var combinedCode = string.Join("\n", new[] { generatedCode, userCode });
+            var sandbox = ScriptSandboxPool.GetOrCreate(ScriptCompiler.ComputeCacheKey(combinedCode, assemblyNames), assemblyRefDir);
             Exception? loadError = null;
 
             try
@@ -255,6 +259,65 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                 [generatedCode, userCode], assemblyName, assemblyRefDir, assemblyNames);
 
             return result.Success ? [] : result.Diagnostics;
+        }
+
+        /// <summary>
+        /// 预热执行环境（沙箱 + 程序集加载 + 用户代码 JIT），供预编译成功后调用。
+        /// 原理：预编译已把实际编译产物写入进程级编译缓存，此处按同一缓存键
+        /// 复用该产物完成沙箱常驻池就位、程序集加载、实例化与 PrepareMethod 预编译
+        /// 方法体（只 JIT 不执行，无副作用）。这样首次执行不再承担沙箱创建/
+        /// 程序集加载/用户代码 JIT 的冷启动开销，实现"首次与后续执行时间一致"。
+        /// 防御：编译结果缺失/代码为空/预热异常均仅告警返回，不抛异常不阻塞。
+        /// </summary>
+        /// <param name="generatedCode">系统生成的字段声明 partial class 代码</param>
+        /// <param name="userCode">用户编写的完整 partial class 代码</param>
+        /// <param name="assemblyRefDir">程序集引用目录路径（用户 DLL ScriptRefs 来源）</param>
+        /// <param name="assemblyNames">每节点启用的程序集引用列表（唯一真相源）</param>
+        public void WarmupSandbox(
+            string generatedCode,
+            string userCode,
+            string? assemblyRefDir,
+            IReadOnlyList<string>? assemblyNames = null)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(generatedCode) && string.IsNullOrWhiteSpace(userCode))
+                {
+                    return;
+                }
+
+                var combinedCode = string.Join("\n", new[] { generatedCode, userCode });
+                var cacheKey = ScriptCompiler.ComputeCacheKey(combinedCode, assemblyNames);
+                var compileResult = ScriptCompiler.GetCachedResult(cacheKey);
+                if (compileResult?.Success != true || compileResult.AssemblyBytes == null
+                    || compileResult.EntryClassName == null)
+                {
+                    // 编译结果未入缓存（含编译失败场景），无可预热的实际产物，静默跳过
+                    return;
+                }
+
+                // 1. 常驻沙箱按实际缓存键就位（后续执行 GetOrCreate 命中，跳过创建）
+                var sandbox = ScriptSandboxPool.GetOrCreate(cacheKey, assemblyRefDir);
+
+                // 2. 加载实际程序集（后续执行 LoadAssembly 命中，跳过加载）
+                sandbox.LoadAssembly(compileResult.AssemblyBytes, compileResult.SymbolBytes);
+
+                // 3. 实例化触发构造函数 JIT + PrepareMethod 预编译方法体（不执行，无副作用）
+                var instance = sandbox.CreateScriptInstance(compileResult.EntryClassName);
+                foreach (var methodName in new[] { "Init", "Process", "Release" })
+                {
+                    var method = instance.GetType().GetMethod(
+                        methodName, BindingFlags.Public | BindingFlags.Instance);
+                    if (method != null)
+                    {
+                        RuntimeHelpers.PrepareMethod(method.MethodHandle);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                PluginLogger.Warning($"[Sandbox预热] 失败: {ex.Message}", nameof(ScriptLifecycleManager));
+            }
         }
 
         /// <summary>

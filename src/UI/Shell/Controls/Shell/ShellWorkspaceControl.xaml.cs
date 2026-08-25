@@ -301,6 +301,15 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// </summary>
         private void WorkflowTabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            // 退订旧 Tab 的小地图属性订阅（Tab 切换时清理，防内存泄漏）
+            foreach (var removed in e.RemovedItems)
+            {
+                if (removed is WorkflowTabViewModel oldTab)
+                {
+                    oldTab.PropertyChanged -= MiniMapTab_PropertyChanged;
+                }
+            }
+
             // 用户切换 Tab 时通过唯一写入口 SetSelectedTab 更新，避免双向绑定回写重入
             if (e.AddedItems.Count > 0
                 && !ReferenceEquals(_viewModel.WorkflowTabViewModel.SelectedTab, e.AddedItems[0]))
@@ -1008,6 +1017,11 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             if (selectedTab == null || MiniMapCanvas == null)
                 return;
 
+            // 订阅 SelectedTab 属性变化：SetNodes/SetConnections 整体替换集合引用时
+            // （子程序导航/返回路径），重挂接小地图并重绘，不依赖 Tab 切换事件。
+            selectedTab.PropertyChanged -= MiniMapTab_PropertyChanged;
+            selectedTab.PropertyChanged += MiniMapTab_PropertyChanged;
+
             // 挂接节点/连线集合变化监听（增删时重绘并增量订阅节点位置）
             selectedTab.WorkflowNodes.CollectionChanged -= MiniMapContent_CollectionChanged;
             selectedTab.WorkflowNodes.CollectionChanged += MiniMapContent_CollectionChanged;
@@ -1021,6 +1035,20 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             SubscribeMiniMapNodes(selectedTab.WorkflowNodes);
 
             DrawMiniMap();
+        }
+
+        /// <summary>
+        /// SelectedTab 属性变化 - 节点/连接集合被整体替换（SetNodes/SetConnections，
+        /// 即子程序导航与返回路径）时重新挂接小地图并重绘。
+        /// 数据驱动双视图的核心：小地图始终跟随当前集合，不依赖 Tab 切换事件。
+        /// </summary>
+        private void MiniMapTab_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(WorkflowTabViewModel.WorkflowNodes)
+                || e.PropertyName == nameof(WorkflowTabViewModel.WorkflowConnections))
+            {
+                RefreshMiniMap();
+            }
         }
 
         /// <summary>

@@ -154,13 +154,11 @@ public partial class WarmupScript : Script
             // 0a. 检查编译缓存（相同代码 + 宿主程序集指纹 + 引用列表指纹）
             // 缓存键包含宿主已加载程序集版本指纹（升级自动重编译）与引用列表指纹
             // （勾选/取消程序集后缓存键变化，自动重新编译，杜绝错误命中）。
-            var codeHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(combinedCode)));
-            var refListFingerprint = ComputeRefListFingerprint(assemblyNames);
-            var cacheKey = $"{codeHash}|{ComputeHostFingerprint()}|{refListFingerprint}";
+            var cacheKey = ComputeCacheKey(combinedCode, assemblyNames);
             if (_compileCache.TryGetValue(cacheKey, out var cached))
             {
                 PluginLogger.Info(
-                    $"[ScriptCompiler] 编译缓存命中: hash={codeHash[..8]}..., 代码长度={combinedCode.Length}",
+                    $"[ScriptCompiler] 编译缓存命中: hash={cacheKey[..8]}..., 代码长度={combinedCode.Length}",
                     nameof(ScriptCompiler));
                 return new CompileResult
                 {
@@ -342,9 +340,23 @@ public partial class WarmupScript : Script
         /// 计算宿主程序集版本指纹（用于编译缓存键）。
         /// 仅关注脚本实际依赖的宿主 DLL（SunEyeVision.* / halcondotnetxl / OpenCvSharp / System.Windows.Forms），
         /// 这些 DLL 升级会改变 API 表面，必须触发脚本重新编译。
+        /// <summary>
+        /// 计算编译缓存键（供编译缓存与沙箱池分组共用）。
+        /// 键 = 代码哈希 | 宿主程序集指纹 | 引用列表指纹。相同键表示编译产物与沙箱环境一致。
+        /// </summary>
+        /// <param name="combinedCode">合并后的代码段（系统生成字段声明 + 用户代码）</param>
+        /// <param name="assemblyNames">每节点启用的程序集引用列表</param>
+        /// <returns>缓存键</returns>
+        internal static string ComputeCacheKey(string combinedCode, IReadOnlyList<string>? assemblyNames)
+        {
+            var codeHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(combinedCode)));
+            var refListFingerprint = ComputeRefListFingerprint(assemblyNames);
+            return $"{codeHash}|{ComputeHostFingerprint()}|{refListFingerprint}";
+        }
+
         /// BCL 程序集版本在进程生命周期内不变，不计入指纹以保证缓存命中率。
         /// </summary>
-        private static string ComputeHostFingerprint()
+        internal static string ComputeHostFingerprint()
         {
             var nativeHostNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
@@ -372,7 +384,7 @@ public partial class WarmupScript : Script
         /// 计算引用列表指纹（用于编译缓存键）。引用列表变化（勾选/取消程序集）→ 指纹变化 → 缓存自动失效。
         /// 空/未提供列表返回固定占位符（保持与旧缓存兼容路径一致）。
         /// </summary>
-        private static string ComputeRefListFingerprint(IReadOnlyList<string>? assemblyNames)
+        internal static string ComputeRefListFingerprint(IReadOnlyList<string>? assemblyNames)
         {
             if (assemblyNames == null || assemblyNames.Count == 0)
                 return "none";
@@ -380,6 +392,18 @@ public partial class WarmupScript : Script
             foreach (var name in assemblyNames.OrderBy(n => n, StringComparer.OrdinalIgnoreCase))
                 sb.Append($"{name}|");
             return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(sb.ToString())))[..16];
+        }
+
+        /// <summary>
+        /// 按缓存键读取已编译结果（不含缓存写入逻辑）。
+        /// 供预编译后的沙箱预热读取实际编译产物，与执行路径共用同一缓存键与编译产物。
+        /// 未命中返回 null（由调用方决定是否回退，不抛异常）。
+        /// </summary>
+        /// <param name="cacheKey">编译缓存键（由 <see cref="ComputeCacheKey"/> 生成）</param>
+        /// <returns>已缓存的编译结果；未命中返回 null</returns>
+        internal static CompileResult? GetCachedResult(string cacheKey)
+        {
+            return _compileCache.TryGetValue(cacheKey, out var cached) ? cached : null;
         }
 
     }

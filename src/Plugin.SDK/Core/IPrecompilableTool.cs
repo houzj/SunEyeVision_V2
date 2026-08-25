@@ -16,8 +16,9 @@ namespace SunEyeVision.Plugin.SDK.Core
     public interface IPrecompilableTool
     {
         /// <summary>
-        /// 仅编译并预热缓存，不执行工具逻辑、不创建运行时实例。
-        /// 编译结果写入工具自身进程级缓存，供后续执行命中。
+        /// 预编译并预热执行环境：编译结果写入工具自身进程级缓存（命中则跳过编译），
+        /// 编译成功后由工具按需预热运行所需资源（如沙箱常驻池、程序集加载、JIT）。
+        /// 不执行工具逻辑、不产生副作用。保证后续执行命中缓存零编译 + 零冷启动。
         /// </summary>
         /// <param name="parameters">工具参数（节点参数运行时类型由各工具自行转换）</param>
         /// <returns>编译诊断列表；空 = 编译成功（仅用于日志，不阻塞）</returns>

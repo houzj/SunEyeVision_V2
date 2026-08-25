@@ -137,9 +137,10 @@ namespace SunEyeVision.Tool.Script
         }
 
         /// <summary>
-        /// 仅编译并预热脚本编译缓存，不执行脚本、不创建沙箱/实例。
-        /// 用于预编译场景：方案加载后/代码变化后预热编译结果，保证后续执行命中缓存零编译。
-        /// 编译结果写入 <see cref="ScriptCompiler"/> 进程级静态缓存，工具调试与工作流执行共用。
+        /// 预编译并预热执行环境：编译结果写入 <see cref="ScriptCompiler"/> 进程级静态缓存
+        /// （命中缓存则跳过编译），编译成功后用同一缓存键预热沙箱常驻池（程序集加载 + 用户代码 JIT）。
+        /// 不执行脚本逻辑，无副作用。用于方案加载后/代码变化后预热，保证后续执行
+        /// 命中缓存零编译 + 零沙箱/JIT 冷启动（首次与后续执行时间一致）。
         /// 参数非 <see cref="ScriptParameters"/> 或代码为空时直接返回（不阻塞、不抛异常）。
         /// </summary>
         /// <param name="parameters">工具参数（运行时为 <see cref="ScriptParameters"/>）</param>
@@ -172,6 +173,16 @@ namespace SunEyeVision.Tool.Script
                 if (errors.Count > 0)
                 {
                     scriptParams.LogWarning($"[ScriptTool] 预编译发现错误: {string.Join("; ", errors.Take(3))}");
+                }
+                else
+                {
+                    // 编译成功 → 预热执行环境（沙箱 + 程序集加载 + 用户代码 JIT）：
+                    // 用同一缓存键复用刚入缓存的编译产物，首次执行命中常驻沙箱零冷启动。
+                    lifecycleManager.WarmupSandbox(
+                        scriptParams.GeneratedCode,
+                        scriptParams.ScriptCode,
+                        scriptParams.AssemblyReferenceFullPath,
+                        scriptParams.AssemblyReferences);
                 }
 
                 return errors;

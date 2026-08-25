@@ -5,6 +5,7 @@ using System.Windows;
 using CommonControl;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Tool.Script.Models;
 using SunEyeVision.Tool.Script.ScriptEngine;
@@ -145,8 +146,17 @@ namespace SunEyeVision.Tool.Script
         /// <returns>编译诊断列表；空 = 编译成功</returns>
         public IReadOnlyList<string> PreCompile(ToolParameters parameters)
         {
-            if (parameters is not ScriptParameters scriptParams || string.IsNullOrWhiteSpace(scriptParams.ScriptCode))
+            if (parameters is not ScriptParameters scriptParams)
             {
+                PluginLogger.Warning("[ScriptTool] PreCompile 参数非 ScriptParameters, 跳过", nameof(ScriptTool));
+                return [];
+            }
+
+            PluginLogger.Info($"[ScriptTool] PreCompile 开始 | ScriptCode长度={scriptParams.ScriptCode?.Length ?? -1}, GeneratedCode长度={scriptParams.GeneratedCode?.Length ?? -1}, 引用数={scriptParams.AssemblyReferences?.Count ?? -1}", nameof(ScriptTool));
+
+            if (string.IsNullOrWhiteSpace(scriptParams.ScriptCode))
+            {
+                PluginLogger.Warning("[ScriptTool] PreCompile ScriptCode 为空, 跳过", nameof(ScriptTool));
                 return [];
             }
 

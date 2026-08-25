@@ -301,6 +301,13 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// </summary>
         private void WorkflowTabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            // 用户切换 Tab 时通过唯一写入口 SetSelectedTab 更新，避免双向绑定回写重入
+            if (e.AddedItems.Count > 0
+                && !ReferenceEquals(_viewModel.WorkflowTabViewModel.SelectedTab, e.AddedItems[0]))
+            {
+                _viewModel.SetSelectedTab(e.AddedItems[0]);
+            }
+
             // 获取选中的Tab
             var selectedTab = _viewModel.WorkflowTabViewModel.SelectedTab;
             // 优化：更新WorkflowCanvasControl的DataContext（ObservableCollection会自动通知UI更新）
@@ -511,8 +518,8 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         {
             if (sender is Button button && button.Tag is WorkflowTabViewModel workflow)
             {
-                // 设置选中的工作流
-                _viewModel.WorkflowTabViewModel.SelectedTab = workflow;
+                // 设置选中的工作流（唯一写入口，避免双向绑定回写重入）
+                _viewModel.SetSelectedTab(workflow);
                 // 触发 RunWorkflowCommand 的 Execute 方法
                 _viewModel.RunWorkflowCommand.Execute(null);
                 _viewModel.StatusText = $"单次运行: {workflow.Name}";

@@ -15,7 +15,7 @@
                     Background="{DynamicResource {x:Static base:ThemeKeys.TabStripBackgroundBrush}}"
                     BorderThickness="0"
                     ItemsSource="{Binding Tabs}"
-                    SelectedItem="{Binding SelectedTab, Mode=TwoWay}"
+                    SelectedItem="{Binding SelectedTab, Mode=OneWay}"
                     IsSynchronizedWithCurrentItem="True"
                     SelectionChanged="WorkflowTabControl_SelectionChanged"
                     PreviewMouseLeftButtonDown="WorkflowTabControl_PreviewMouseLeftButtonDown"

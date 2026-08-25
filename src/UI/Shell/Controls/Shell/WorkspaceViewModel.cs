@@ -43,18 +43,14 @@ namespace SunEyeVision.UI.Shell.Controls
         public IList Tabs => _coordinator.Tabs;
 
         /// <summary>
-        /// 当前选中的工作流标签页（TabControl 双向绑定）
+        /// 当前选中的工作流标签页（TabControl 单向绑定，只读）
         /// </summary>
-        public object? SelectedTab
-        {
-            get => _coordinator.SelectedTab;
-            set
-            {
-                if (!ReferenceEquals(_coordinator.SelectedTab, value))
-                {
-                    _coordinator.SelectedTab = value!;
-                }
-            }
-        }
+        public object? SelectedTab => _coordinator.SelectedTab;
+
+        /// <summary>
+        /// 用户切换工作区 Tab 选中项时调用 — 通过协调器唯一写入口设置选中，避免双向绑定回写重入。
+        /// </summary>
+        /// <param name="tab">目标标签页</param>
+        public void SetSelectedTab(object? tab) => _coordinator.SetSelectedTab(tab);
     }
 }

@@ -62,6 +62,7 @@ namespace SunEyeVision.Tool.Script.Models
             // 默认引用系统必需项（BCL + Script 基类）— 编译基线最小化，halcon/OpenCvSharp 按需勾选
             _assemblyReferences = new ObservableCollection<string>(
                 SunEyeVision.Tool.Script.ScriptEngine.MetadataReferenceProvider.RequiredAssemblyNames);
+            SubscribeInputsCollection();
             SubscribeOutputsCollection();
         }
 
@@ -131,13 +132,55 @@ namespace SunEyeVision.Tool.Script.Models
         public ObservableCollection<ScriptInputConfig> Inputs
         {
             get => _inputs;
-            set => SetProperty(ref _inputs, value, "输入");
+            set
+            {
+                if (_inputs == value) return;
+                UnsubscribeInputsCollection();
+                SetProperty(ref _inputs, value, "输入");
+                SubscribeInputsCollection();
+                InputContractChanged?.Invoke();
+            }
         }
+
+        /// <summary>
+        /// 输入契约变更通知（新增/删除/重命名/改类型等）— 供编辑器重建 workspace，保证诊断用最新字段类型。
+        /// </summary>
+        public event Action? InputContractChanged;
 
         /// <summary>
         /// INotifyOutputContractChanged — 输出契约变更时通知 UI 实时刷新模块结果树
         /// </summary>
         public event Action? OutputContractChanged;
+
+        private void SubscribeInputsCollection()
+        {
+            _inputs.CollectionChanged += OnInputsCollectionChanged;
+            foreach (var item in _inputs)
+                item.PropertyChanged += OnInputPropertyChanged;
+        }
+
+        private void UnsubscribeInputsCollection()
+        {
+            _inputs.CollectionChanged -= OnInputsCollectionChanged;
+            foreach (var item in _inputs)
+                item.PropertyChanged -= OnInputPropertyChanged;
+        }
+
+        private void OnInputsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.NewItems != null)
+                foreach (ScriptInputConfig item in e.NewItems)
+                    item.PropertyChanged += OnInputPropertyChanged;
+            if (e.OldItems != null)
+                foreach (ScriptInputConfig item in e.OldItems)
+                    item.PropertyChanged -= OnInputPropertyChanged;
+            InputContractChanged?.Invoke();
+        }
+
+        private void OnInputPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            InputContractChanged?.Invoke();
+        }
 
         private void SubscribeOutputsCollection()
         {

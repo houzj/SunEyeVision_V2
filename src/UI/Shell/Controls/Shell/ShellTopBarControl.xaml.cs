@@ -39,6 +39,21 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         }
 
         /// <summary>
+        /// 顶栏工作流下拉框选中项变化 — 通过 ViewModel 的唯一写入口 SetSelectedTab 更新，
+        /// 避免 WPF 双向绑定回写 SelectedTab setter 造成重入（单向数据流）。
+        /// 仅当选中项与当前 VM 状态不同才写入，防止初始化绑定触发重复回写。
+        /// </summary>
+        private void WorkflowComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (DataContext is ShellTopBarViewModel vm
+                && e.AddedItems.Count > 0
+                && !ReferenceEquals(vm.SelectedTab, e.AddedItems[0]))
+            {
+                vm.SetSelectedTab(e.AddedItems[0]);
+            }
+        }
+
+        /// <summary>
         /// 退出菜单点击 / 关闭按钮 - 关闭应用。
         /// 不能直接用 Application.Current.Shutdown()——它会绕过主窗口 OnClosing 的拦截（强制关闭、跳过保存/确认弹窗）。
         /// 改为调用主窗口 Close()，走正常的 OnClosing 确认流程（用户确认后才真正关闭）。

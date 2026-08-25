@@ -248,11 +248,15 @@ namespace SunEyeVision.UI.Shell.Windows
 
         // ===== IRootCoordinator 显式实现（类型不匹配的成员）=====
 
-        object SunEyeVision.UI.Core.IRootCoordinator.SelectedTab
-        {
-            get => WorkflowTabViewModel.SelectedTab!;
-            set => WorkflowTabViewModel.SelectedTab = (WorkflowTabViewModel)value;
-        }
+        object? SunEyeVision.UI.Core.IRootCoordinator.SelectedTab => WorkflowTabViewModel.SelectedTab;
+
+        /// <summary>
+        /// 设置当前选中工作流标签页（唯一写入口，实现 IRootCoordinator）。
+        /// 用户操作与代码路径统一经此方法变更，避免 SelectedTab 双向绑定回写造成重入。
+        /// </summary>
+        /// <param name="tab">目标标签页（WorkflowTabViewModel 实例）</param>
+        public void SetSelectedTab(object? tab)
+            => WorkflowTabViewModel.SelectedTab = tab as WorkflowTabViewModel;
 
         System.Collections.IList SunEyeVision.UI.Core.IRootCoordinator.Tabs => WorkflowTabViewModel.Tabs;
 
@@ -1901,8 +1905,9 @@ SplitterPosition = position;
                 }
                 else
                 {
-                    // 设置第一个标签页为选中标签页
-                    WorkflowTabViewModel.SelectedTab = WorkflowTabViewModel.Tabs[0];
+                    // 设置第一个标签页为选中标签页（触发 OnSelectedTabChanged 初始化引擎当前工作流上下文，
+                    // 修复加载后选中节点时图像源为空的问题。单向数据流重构后无重入风险）
+                    WorkflowTabViewModel.SetSelectedTab(WorkflowTabViewModel.Tabs[0]);
                     LogInfo($"已设置选中标签页: {WorkflowTabViewModel.SelectedTab.Name}");
 
                     // 初始化SmartPathConverter（用于连接线渲染）
@@ -1939,8 +1944,17 @@ SplitterPosition = position;
                 return;
             }
 
-            var precompilableNodes = solution.Workflows
-                .SelectMany(w => w.Nodes)
+            var allNodes = solution.Workflows.SelectMany(w => w.Nodes).ToList();
+            _logger?.LogInfo($"[预编译] 遍历到节点总数={allNodes.Count}, Workflows={solution.Workflows.Count}", nameof(MainWindowViewModel));
+            foreach (var n in allNodes)
+            {
+                var tool = ToolRegistry.CreateToolInstance(n.ToolType);
+                _logger?.LogInfo(
+                    $"[预编译] 节点=[{n.Name}] ToolType=[{n.ToolType}] ParamsType=[{n.Parameters?.GetType().Name ?? "null"}] Tool=[{tool?.GetType().Name ?? "null"}] IsPrecompilable=[{tool is IPrecompilableTool}]",
+                    nameof(MainWindowViewModel));
+            }
+
+            var precompilableNodes = allNodes
                 .Where(n => n.Parameters != null)
                 .Select(n => new
                 {
@@ -1950,35 +1964,46 @@ SplitterPosition = position;
                 .Where(x => x.Tool is IPrecompilableTool && x.Node.Parameters != null)
                 .ToList();
 
+            _logger?.LogInfo($"[预编译] 可预编译节点数={precompilableNodes.Count}", nameof(MainWindowViewModel));
+
             if (precompilableNodes.Count == 0)
             {
+                _logger?.LogInfo("[预编译] 无可预编译节点，跳过", nameof(MainWindowViewModel));
                 return;
             }
 
-            LogInfo($"开始并行预编译 {precompilableNodes.Count} 个可预编译工具节点...");
             var sw = System.Diagnostics.Stopwatch.StartNew();
 
-            var options = new ParallelOptions
+            _logger?.LogInfo($"[预编译] 开始预编译, 节点数={precompilableNodes.Count}", nameof(MainWindowViewModel));
+
+            // 后台 Task 并行预编译：
+            // - 并行任务在线程池执行（无 UI 同步上下文），避免在 UI 线程直接调 Parallel.ForEach 的调度死锁
+            // - 多脚本并行，启动时间不随脚本数成倍增加
+            // - UI 线程同步等待完成（主窗口 Show 前预编译结束，确保所见即所得：打开工作区后脚本已编译）
+            var parallelOptions = new ParallelOptions
             {
                 MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount / 2)
             };
 
-            Parallel.ForEach(precompilableNodes, options, x =>
+            var snapshot = precompilableNodes.ToList();
+            System.Threading.Tasks.Task.Run(() =>
             {
-                try
+                Parallel.ForEach(snapshot, parallelOptions, x =>
                 {
-                    var tool = (IPrecompilableTool)x.Tool!;
-                    var errors = tool.PreCompile(x.Node.Parameters!);
-                    if (errors.Count > 0)
+                    try
                     {
-                        LogWarning($"  预编译告警 [{x.Node.Name}]: {string.Join("; ", errors.Take(2))}");
+                        var tool = (IPrecompilableTool)x.Tool!;
+                        var errors = tool.PreCompile(x.Node.Parameters!);
+                        _logger?.LogInfo(
+                            $"[预编译] 节点=[{x.Node.Name}] 预编译完成, 诊断数={errors.Count}" + (errors.Count > 0 ? $", 诊断=[{string.Join("; ", errors.Take(2))}]" : ""),
+                            nameof(MainWindowViewModel));
                     }
-                }
-                catch (Exception ex)
-                {
-                    LogWarning($"  预编译失败 [{x.Node.Name}]: {ex.Message}");
-                }
-            });
+                    catch (Exception ex)
+                    {
+                        _logger?.LogError($"[预编译] 节点=[{x.Node.Name}] 预编译异常: {ex.Message}", nameof(MainWindowViewModel));
+                    }
+                });
+            }).GetAwaiter().GetResult();
 
             sw.Stop();
             LogSuccess($"预编译完成: {precompilableNodes.Count} 个节点, 耗时 {sw.ElapsedMilliseconds}ms");

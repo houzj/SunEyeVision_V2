@@ -141,6 +141,11 @@ namespace SunEyeVision.Tool.Script.Views
             {
                 _parameters = scriptParams;
 
+                // 订阅输入/输出契约变化：改输入输出类型/增删变量后重建 workspace，
+                // 让诊断器用最新字段类型（修复"改类型后诊断仍报旧类型错误"）。
+                scriptParams.InputContractChanged += OnContractChanged;
+                scriptParams.OutputContractChanged += OnContractChanged;
+
                 // 加载代码到内核编辑器（补全/诊断/workspace 由内核统一处理）
                 EditorCore.SetSuppressDiagnostic(true);   // 加载代码时抑制诊断
                 EditorCore.LoadCode(_parameters.ScriptCode);
@@ -644,6 +649,25 @@ namespace SunEyeVision.Tool.Script.Views
             var newCode = EditorCore.GetCode();
             _parameters.ScriptCode = newCode;
             PluginLogger.Info($"[SyncCodeToParameters] 已同步代码: 长度={newCode?.Length ?? 0}", GetType().Name);
+        }
+
+        /// <summary>
+        /// 输入/输出契约变化（改类型/增删变量）时重建编辑器 workspace 并重新诊断。
+        /// 保证诊断器使用最新字段类型，修复"改类型后仍报旧类型错误、需重新键入才恢复"的问题。
+        /// </summary>
+        private void OnContractChanged()
+        {
+            try
+            {
+                EditorCore.RebuildWorkspace();
+                EditorCore.ScheduleDiagnosticAsync();
+                EditorCore.RedrawVisibleLines();
+                PluginLogger.Info("[契约变化] 输入/输出契约变更，已重建 workspace 并重新诊断", GetType().Name);
+            }
+            catch (Exception ex)
+            {
+                PluginLogger.Warning($"[{nameof(ScriptDebugControl)}] 契约变化重建 workspace 失败: {ex.Message}", nameof(ScriptDebugControl));
+            }
         }
 
         /// <summary>

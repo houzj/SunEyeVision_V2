@@ -182,6 +182,12 @@ namespace SunEyeVision.Workflow
 
                 if (!groupResult.Success)
                 {
+                    // ★ 失败也要保留已执行节点的结果（如脚本节点失败前，上游节点结果已写入 context）。
+                    //   否则 UI 收不到任何节点结果，调试窗口输入数据源丢失（表现为"脚本报错影响输入"假象）。
+                    foreach (var kvp in context.GetAllNodeResults())
+                    {
+                        groupResult.NodeResults[kvp.Key] = kvp.Value;
+                    }
                     _currentState = WorkflowExecutionState.Error;
                     return groupResult;
                 }

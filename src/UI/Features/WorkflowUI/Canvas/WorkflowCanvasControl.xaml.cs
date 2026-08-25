@@ -399,9 +399,19 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
         {
 
+            // 退订旧 Tab 的画布内容变更订阅（Tab 切换时清理，防内存泄漏）
+            if (e.OldValue is WorkflowTabViewModel oldWorkflowTab)
+            {
+                oldWorkflowTab.WorkflowContentChanged -= WorkflowTab_WorkflowContentChanged;
+            }
+
             if (DataContext is WorkflowTabViewModel workflowTab)
 
             {
+                // 订阅画布内容变更：SetNodes/SetConnections 整体替换集合引用时
+                // （子程序导航/返回路径），重建连接线系统并重算路径。
+                workflowTab.WorkflowContentChanged += WorkflowTab_WorkflowContentChanged;
+
                 // 将WorkflowCanvas的RenderTransform绑定到ViewModel的ScaleTransform
 
                 var binding = new System.Windows.Data.Binding("ScaleTransform")
@@ -763,7 +773,45 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
         }
 
+        /// <summary>
+        /// 画布内容变更 - SetNodes/SetConnections 整体替换集合引用（子程序导航/返回路径）
+        /// 时重建连接线系统并重算全部路径。数据驱动：连接线始终跟随当前集合，不依赖 Tab 切换事件。
+        /// </summary>
+        private void WorkflowTab_WorkflowContentChanged(object? sender, EventArgs e)
+        {
+            if (sender is WorkflowTabViewModel workflowTab)
+            {
+                RebindConnectionSystem(workflowTab);
+            }
+        }
 
+        /// <summary>
+        /// 重建连接线系统：用当前集合重建 ConnectionPathCache（内部订阅新集合）、
+        /// 更新 SmartPathConverter 静态引用、重建 BatchUpdateManager、重算全部路径。
+        /// 修复子程序导航/返回后连接线丢失（缓存引用旧集合）问题。
+        /// </summary>
+        private void RebindConnectionSystem(WorkflowTabViewModel workflowTab)
+        {
+            try
+            {
+                var calculator = Services.PathCalculators.PathCalculatorFactory.CreateCalculator();
+                _connectionPathCache = new ConnectionPathCache(workflowTab.WorkflowNodes, calculator);
+                SmartPathConverter.PathCache = _connectionPathCache;
+                SmartPathConverter.Nodes = workflowTab.WorkflowNodes;
+                SmartPathConverter.Connections = workflowTab.WorkflowConnections;
+
+                _batchUpdateManager = new ConnectionBatchUpdateManager(_connectionPathCache);
+                _batchUpdateManager.SetCurrentTab(workflowTab);
+
+                _connectionPathCache.WarmUp(workflowTab.WorkflowConnections);
+                RefreshAllConnectionPaths();
+            }
+            catch (Exception ex)
+            {
+                VisionLogger.Instance?.Log(LogLevel.Error,
+                    $"重新绑定连接系统失败: {ex.Message}", "WorkflowCanvasControl", ex);
+            }
+        }
 
         /// <summary>
 

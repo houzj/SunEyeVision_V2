@@ -118,6 +118,13 @@ namespace SunEyeVision.UI.Features.WorkflowUI
         /// </summary>
         public AppCommands.CommandManager CommandManager { get; private set; }
 
+        /// <summary>
+        /// 画布内容变更事件 — SetNodes/SetConnections 整体替换集合引用时触发。
+        /// 所有依赖画布数据的组件（小地图、连接线系统等）统一订阅此事件，
+        /// 集合替换后重绑，避免各自监听 PropertyChanged 造成遗漏。
+        /// </summary>
+        public event EventHandler? WorkflowContentChanged;
+
         public WorkflowTabViewModel() : this(new NodeSequenceManager())
         {
         }
@@ -385,6 +392,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI
 
             OnPropertyChanged(nameof(WorkflowConnections));
             CommandManager = new CommandManager(_workflowNodes, _workflowConnections);
+            WorkflowContentChanged?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -426,6 +434,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI
 
             OnPropertyChanged(nameof(WorkflowNodes));
             CommandManager = new CommandManager(_workflowNodes, _workflowConnections);
+            WorkflowContentChanged?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>

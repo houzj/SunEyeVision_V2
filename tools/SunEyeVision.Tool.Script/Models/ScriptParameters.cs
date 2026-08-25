@@ -108,6 +108,14 @@ namespace SunEyeVision.Tool.Script.Models
         public Dictionary<string, object?>? ResolvedInputValues { get; set; }
 
         /// <summary>
+        /// 调试模式标志（运行时填充，不序列化）— 脚本调试窗口点"执行"时置 true。
+        /// 为 true 时工具执行摘要（Script complete/failed）写入 <see cref="ScriptResults.LogMessages"/>
+        /// 供调试窗口日志区展示，不写主界面日志（避免调试噪音）；工作流执行为 false 时保持写主界面。
+        /// </summary>
+        [JsonIgnore]
+        public bool IsDebugMode { get; set; }
+
+        /// <summary>
         /// 获取引用目录的完整路径（基于工具自身 Assembly.Location 解析，
         /// 跟随 OutDir 迁移，不依赖主程序 AppDomain.BaseDirectory）。
         /// 注：typeof(ScriptParameters).Assembly.Location = 工具 DLL 所在目录

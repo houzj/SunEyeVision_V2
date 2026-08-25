@@ -170,6 +170,45 @@ namespace SunEyeVision.Tool.Script.Views
         public override async Task InitializeAsync()
         {
             await EditorCore.InitializeAndWaitAsync();
+
+            // ★ 打开调试窗口即预填充输入监视：若上游已有值（工作流执行过/失败保留），
+            //   无需点击执行即可看到输入值。防御：无上游/无 DataProvider/解析异常 → 静默跳过。
+            TryPrefillInputMonitor();
+        }
+
+        /// <summary>
+        /// 打开调试窗口时主动解析一次输入绑定，将已存在的上游值（如工作流执行后保留的节点结果）
+        /// 填充到输入监视面板（监控模式），无需点击执行即可看到输入值。
+        /// 防御：无输入配置/无上游节点结果/解析异常 → 静默跳过（执行时仍会正常解析）。
+        /// </summary>
+        private void TryPrefillInputMonitor()
+        {
+            try
+            {
+                if (_parameters == null || _parameters.Inputs == null || _parameters.Inputs.Count == 0)
+                    return;
+
+                var nodeResults = BuildNodeResultsContext();
+                if (nodeResults == null)
+                    return;   // 无上游节点结果，输入绑定无值可解析，跳过
+
+                var globalVars = GetDebugModeGlobalVariables();
+                var resolved = ScriptBindingResolver.Resolve(
+                    _parameters.Inputs,
+                    globalVars,
+                    nodeResults);
+
+                _parameters.ResolvedInputValues = resolved;
+                InputTabControl.ValueSource = resolved;
+                PluginLogger.Info($"[{nameof(ScriptDebugControl)}] 输入预填充 {resolved.Count} 个值",
+                    nameof(ScriptDebugControl));
+            }
+            catch (Exception ex)
+            {
+                // 预填充失败不阻塞打开窗口（rule-003 日志不抛）；执行时仍会走完整解析并报错
+                PluginLogger.Info($"[{nameof(ScriptDebugControl)}] 输入预填充跳过: {ex.Message}",
+                    nameof(ScriptDebugControl));
+            }
         }
 
         /// <summary>
@@ -252,6 +291,9 @@ namespace SunEyeVision.Tool.Script.Views
 
             var globalVars = GetDebugModeGlobalVariables();
             _parameters.NodeResults = nodeResults;
+            // 调试模式：工具执行摘要（Script complete/failed）写入 result.LogMessages 供调试窗口展示，
+            // 不写主界面日志（避免调试噪音）；工作流执行时保持写主界面。
+            _parameters.IsDebugMode = true;
             _parameters.SetExecutionContext(new ScriptExecutionContext(
                 logger: PluginLogger.Logger,
                 toolName: "Script",

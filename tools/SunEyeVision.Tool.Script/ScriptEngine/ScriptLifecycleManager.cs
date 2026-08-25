@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using SunEyeVision.Plugin.SDK.Logging;
@@ -206,11 +207,11 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             }
             catch (Exception ex)
             {
-                errors.Add($"脚本执行异常: {ex.Message}");
-                lock (_lock)
-                {
-                    _logMessages.Add($"[错误] 脚本执行异常: {ex.Message}");
-                }
+                // 提取用户脚本栈帧（含行号），精确匹配用户类，便于快速定位；无脚本帧则回退完整堆栈文本。
+                // 只写 errors（→ CompileErrors → UI 红色展示一次）；不写 _logMessages
+                // （用户脚本 LogError 已通过 ScriptContext 回调进日志，避免同一异常重复报告）。
+                var detail = ExtractUserScriptFrame(ex, compileResult.EntryClassName!);
+                errors.Add($"脚本执行异常: {detail}");
             }
             runSw.Stop();
             _executionTimeMs = runSw.ElapsedMilliseconds;
@@ -318,6 +319,33 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             {
                 PluginLogger.Warning($"[Sandbox预热] 失败: {ex.Message}", nameof(ScriptLifecycleManager));
             }
+        }
+
+        /// <summary>
+        /// 从异常堆栈中提取用户脚本栈帧（类名+方法名+行号），便于用户快速定位出错行。
+        /// 程序集编译带 PortablePdb（SymbolBytes），运行时 StackTrace 可解析行号。
+        /// 仅匹配用户脚本类名（EntryClassName），避免框架帧（如 ScriptLifecycleManager）被误收。
+        /// 未命中用户脚本帧时返回完整堆栈文本（Fail-Forward，不丢失定位线索）。
+        /// </summary>
+        /// <param name="ex">用户脚本执行时抛出的异常</param>
+        /// <param name="className">用户脚本类名（EntryClassName），仅匹配该类帧</param>
+        /// <returns>用户脚本栈帧文本；无脚本帧时返回完整堆栈文本</returns>
+        private static string ExtractUserScriptFrame(Exception ex, string className)
+        {
+            var trace = ex.StackTrace;
+            if (string.IsNullOrWhiteSpace(trace))
+                return ex.ToString();
+
+            // StackTrace 形如 "at UserScript.Process() in <anonymous> :line 25"
+            // 提取包含用户脚本类名的帧，优先展示含行号的脚本调用点。
+            var lines = trace.Split('\n');
+            var scriptLines = lines
+                .Where(l => l.Contains(className, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            return scriptLines.Count > 0
+                ? string.Join("\n", scriptLines)
+                : trace;
         }
 
         /// <summary>

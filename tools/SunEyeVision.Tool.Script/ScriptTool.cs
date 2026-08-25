@@ -52,12 +52,17 @@ namespace SunEyeVision.Tool.Script
             {
                 if (string.IsNullOrWhiteSpace(parameters.ScriptCode))
                 {
-                    parameters.LogWarning("Script code is empty");
+                    if (parameters.IsDebugMode)
+                        result.LogMessages.Add("Script code is empty");   // 调试模式：写调试窗口
+                    else
+                        parameters.LogWarning("Script code is empty");     // 工作流执行：写主界面
                     result.SetError("Script code is empty");
                     return result;
                 }
 
-                parameters.LogInfo($"Executing script (lines: {parameters.ScriptCode.Split('\n').Length})");
+                // 调试模式下不写主界面（摘要进 result.LogMessages 由调试窗口展示），工作流执行保持写主界面。
+                if (!parameters.IsDebugMode)
+                    parameters.LogInfo($"Executing script (lines: {parameters.ScriptCode.Split('\n').Length})");
 
                 using var lifecycleManager = new ScriptLifecycleManager();
 
@@ -83,7 +88,7 @@ namespace SunEyeVision.Tool.Script
                 // ★ 捕获解析后的输入值（供调试监视面板显示）
                 parameters.ResolvedInputValues = inputValues;
 
-                if (parameters.Inputs.Count > 0)
+                if (parameters.Inputs.Count > 0 && !parameters.IsDebugMode)
                 {
                     parameters.LogInfo($"  解析了 {inputValues.Count} 个输入绑定: " +
                         $"全局变量可用={parameters.Context?.GlobalVariables?.Count ?? 0}, " +
@@ -115,21 +120,32 @@ namespace SunEyeVision.Tool.Script
                 if (errors.Count == 0)
                 {
                     result.SetSuccess(lifecycleManager.ExecutionTimeMs);
-                    parameters.LogSuccess(
+                    var summary =
                         $"Script complete | Compile: {lifecycleManager.CompileTimeMs}ms | Exec: {lifecycleManager.ExecutionTimeMs}ms | " +
-                        $"Outputs: {result.OutputValues.Count} | Logs: {result.LogMessages.Count}");
+                        $"Outputs: {result.OutputValues.Count} | Logs: {result.LogMessages.Count}";
+                    if (parameters.IsDebugMode)
+                        result.LogMessages.Add(summary);   // 调试模式：写调试窗口日志区，不写主界面
+                    else
+                        parameters.LogSuccess(summary);     // 工作流执行：写主界面
                 }
                 else
                 {
                     var errorMsg = string.Join("; ", errors.Take(3));
                     if (errors.Count > 3) errorMsg += "...";
-                    parameters.LogError($"Script failed: {errorMsg}");
+                    if (parameters.IsDebugMode)
+                        result.LogMessages.Add($"Script failed: {errorMsg}");   // 调试模式：写调试窗口
+                    else
+                        parameters.LogError($"Script failed: {errorMsg}");       // 工作流执行：写主界面
                     result.SetError(errorMsg);
                 }
             }
             catch (Exception ex)
             {
-                parameters.LogError($"Script exception: {ex.Message}", ex);
+                // 调试模式：写调试窗口日志区，不写主界面；工作流执行：写主界面（与摘要分流一致）。
+                if (parameters.IsDebugMode)
+                    result.LogMessages.Add($"Script exception: {ex.Message}");
+                else
+                    parameters.LogError($"Script exception: {ex.Message}", ex);
                 result.SetError($"Script exception: {ex.Message}", ex);
             }
 

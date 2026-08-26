@@ -193,9 +193,11 @@ namespace SunEyeVision.Workflow
                     return groupResult;
                 }
 
-                // ★ 检查本轮是否有节点输出流程控制信号（条件分支）
-                var (hasSignal, controlNodeId, nextNodeIds) = TryExtractControlSignal(workflow, executable, context);
-                if (hasSignal)
+                // ★ 收集本组所有条件分支的控制信号（可能有多个同组并行）。
+                //   必须逐一处理每个信号：一组多条件分支时，只取第一个会导致其余条件分支
+                //   的剪枝（命中/未命中）被忽略，其下游不剪枝 → "无规则时下游全执行" bug。
+                var controlSignals = TryExtractControlSignals(workflow, executable, context);
+                foreach (var (controlNodeId, nextNodeIds) in controlSignals)
                 {
                     // 命中：保留目标节点的整条上游链（防止剪掉目标必经的中间层，保证数据链不断）
                     protectedNodeIds = ComputeProtectedNodes(workflow, nextNodeIds);
@@ -664,15 +666,17 @@ namespace SunEyeVision.Workflow
         }
 
         /// <summary>
-        /// 检查刚执行的节点组中是否有节点输出流程控制信号（条件分支）。
-        /// 返回 (hasSignal, 控制节点ID, 命中目标节点列表)。
+        /// 收集刚执行的节点组中所有节点输出的流程控制信号（条件分支）。
+        /// 返回 (控制节点ID, 命中目标节点列表) 列表。一组可能有多个条件分支并行，
+        /// 必须全部收集（逐一处理），否则后面的条件分支被忽略，其剪枝不生效。
         /// HasControlSignal 区分"未命中终止"（true 且目标空）与"普通节点无信号"（false）。
         /// </summary>
-        private (bool hasSignal, string controlNodeId, List<string> nextNodeIds) TryExtractControlSignal(
+        private List<(string controlNodeId, List<string> nextNodeIds)> TryExtractControlSignals(
             Workflow workflow,
             List<string> executedGroupNodeIds,
             WorkflowContext context)
         {
+            var signals = new List<(string, List<string>)>();
             foreach (var nodeId in executedGroupNodeIds)
             {
                 var nodeResult = context.GetNodeResult(nodeId);
@@ -685,10 +689,10 @@ namespace SunEyeVision.Workflow
                     _logger.LogInfo(targets.Count > 0
                         ? $"节点 {nodeId} 输出控制信号，命中目标 [{string.Join(", ", targets)}]"
                         : $"节点 {nodeId} 输出控制信号，未命中（将剪枝该分支）", nodeId);
-                    return (true, nodeId, targets);
+                    signals.Add((nodeId, targets));
                 }
             }
-            return (false, string.Empty, new List<string>());
+            return signals;
         }
 
         /// <summary>

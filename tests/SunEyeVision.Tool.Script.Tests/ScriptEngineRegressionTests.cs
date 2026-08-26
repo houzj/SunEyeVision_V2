@@ -79,9 +79,11 @@ public class ScriptEngineRegressionTests
             List<string> errors;
             try
             {
+                // Execute 第 7 参数 = 每节点引用列表（默认系统必需项），验证默认基线即可编译
+                var assemblyRefs = (System.Collections.IEnumerable)paramsType.GetProperty("AssemblyReferences")!.GetValue(parameters)!;
                 errors = (List<string>)execute.Invoke(mgr, new object?[]
                 {
-                    generatedCode, scriptCode, scriptRefs, null, null, null
+                    generatedCode, scriptCode, scriptRefs, null, null, null, assemblyRefs
                 })!;
             }
             catch (TargetInvocationException ex)

@@ -301,6 +301,22 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// </summary>
         private void WorkflowTabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            // 退订旧 Tab 的小地图内容订阅（Tab 切换时清理，防内存泄漏）
+            foreach (var removed in e.RemovedItems)
+            {
+                if (removed is WorkflowTabViewModel oldTab)
+                {
+                    oldTab.WorkflowContentChanged -= MiniMap_WorkflowContentChanged;
+                }
+            }
+
+            // 用户切换 Tab 时通过唯一写入口 SetSelectedTab 更新，避免双向绑定回写重入
+            if (e.AddedItems.Count > 0
+                && !ReferenceEquals(_viewModel.WorkflowTabViewModel.SelectedTab, e.AddedItems[0]))
+            {
+                _viewModel.SetSelectedTab(e.AddedItems[0]);
+            }
+
             // 获取选中的Tab
             var selectedTab = _viewModel.WorkflowTabViewModel.SelectedTab;
             // 优化：更新WorkflowCanvasControl的DataContext（ObservableCollection会自动通知UI更新）
@@ -511,8 +527,8 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         {
             if (sender is Button button && button.Tag is WorkflowTabViewModel workflow)
             {
-                // 设置选中的工作流
-                _viewModel.WorkflowTabViewModel.SelectedTab = workflow;
+                // 设置选中的工作流（唯一写入口，避免双向绑定回写重入）
+                _viewModel.SetSelectedTab(workflow);
                 // 触发 RunWorkflowCommand 的 Execute 方法
                 _viewModel.RunWorkflowCommand.Execute(null);
                 _viewModel.StatusText = $"单次运行: {workflow.Name}";
@@ -987,8 +1003,8 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         private static readonly Color MiniMapConditionColor = Color.FromRgb(0xFF, 0x88, 0x00);   // 条件-橙
         private static readonly Color MiniMapDefaultColor = Color.FromRgb(0x66, 0x66, 0x66);     // 其他-灰
 
-        // 已订阅节点位置变化监听的节点集合（用于在集合变化时增量订阅/退订）
-        private readonly Dictionary<string, WorkflowNode> _miniMapSubscribedNodes = new();
+        // 已订阅节点位置变化监听的节点集合（用于在集合变化时增量订阅/退订）— 基类引用，元素为 WorkflowNodeBase
+        private readonly Dictionary<string, WorkflowNodeBase> _miniMapSubscribedNodes = new();
 
         /// <summary>
         /// 刷新小地图：数据驱动双视图（与主画布共享同一数据源，此处绘制全局视角）
@@ -1000,6 +1016,11 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             var selectedTab = _viewModel?.WorkflowTabViewModel?.SelectedTab;
             if (selectedTab == null || MiniMapCanvas == null)
                 return;
+
+            // 订阅画布内容变更：SetNodes/SetConnections 整体替换集合引用时
+            // （子程序导航/返回路径），重挂接小地图并重绘，不依赖 Tab 切换事件。
+            selectedTab.WorkflowContentChanged -= MiniMap_WorkflowContentChanged;
+            selectedTab.WorkflowContentChanged += MiniMap_WorkflowContentChanged;
 
             // 挂接节点/连线集合变化监听（增删时重绘并增量订阅节点位置）
             selectedTab.WorkflowNodes.CollectionChanged -= MiniMapContent_CollectionChanged;
@@ -1017,9 +1038,19 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         }
 
         /// <summary>
+        /// 画布内容变更 - 节点/连接集合被整体替换（SetNodes/SetConnections，
+        /// 即子程序导航与返回路径）时重新挂接小地图并重绘。
+        /// 数据驱动双视图的核心：小地图始终跟随当前集合，不依赖 Tab 切换事件。
+        /// </summary>
+        private void MiniMap_WorkflowContentChanged(object? sender, EventArgs e)
+        {
+            RefreshMiniMap();
+        }
+
+        /// <summary>
         /// 增量订阅节点位置变化：仅订阅小地图可见的所有节点，节点移除时退订，避免泄漏
         /// </summary>
-        private void SubscribeMiniMapNodes(IEnumerable<WorkflowNode> nodes)
+        private void SubscribeMiniMapNodes(IEnumerable<WorkflowNodeBase> nodes)
         {
             var currentIds = new HashSet<string>();
             foreach (var node in nodes)
@@ -1153,8 +1184,9 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
 
             MiniMapCanvas.Children.Clear();
 
-            var nodes = selectedTab.WorkflowNodes;
-            if (nodes == null || nodes.Count == 0)
+            // 小地图绘制需 WorkflowNode 特有成员（NodeRect/着色），运行时元素均为 WorkflowNode，安全转型
+            IEnumerable<WorkflowNode> nodes = selectedTab.WorkflowNodes.OfType<WorkflowNode>().ToList();
+            if (!nodes.Any())
                 return;
 
             // 恒定画布全景比例尺：等比例（保持正方形不拉伸），画布在小地图内居中

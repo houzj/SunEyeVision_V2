@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
+using System.Windows.Shell;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.UI.Themes;
 
@@ -31,6 +31,19 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
         private readonly UserControl _control;
         private Border? _windowBorder;
 
+        /// <summary>
+        /// 自定义无边框窗口 Chrome：CaptionHeight 覆盖标题栏（可拖动），边缘可缩放，圆角。
+        /// 用 WindowChrome 而非 AllowsTransparency，保证 Owner 层叠正常（不被主窗口遮挡）。
+        /// </summary>
+        public static System.Windows.Shell.WindowChrome DebugWindowChrome { get; } = new System.Windows.Shell.WindowChrome
+        {
+            CaptionHeight = 32,
+            ResizeBorderThickness = new Thickness(6),
+            GlassFrameThickness = new Thickness(0),
+            CornerRadius = new CornerRadius(8),
+            UseAeroCaptionButtons = false
+        };
+
         #endregion
 
         #region 构造函数
@@ -52,10 +65,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
             ResizeMode = ResizeMode.CanResize;
             
-            // 无边框样式
+            // 无边框样式（用 WindowChrome 而非 AllowsTransparency：
+            // 保证 Owner 层叠正常，不被主窗口遮挡——分层窗口无法保证 Owner 子窗口层叠）
             WindowStyle = WindowStyle.None;
-            AllowsTransparency = true;
-            Background = Brushes.Transparent;
+            WindowChrome.SetWindowChrome(this, DebugWindowChrome);
 
             // 创建窗口容器
             CreateWindowContainer();
@@ -88,28 +101,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
             _windowBorder.SetResourceReference(BackgroundProperty, SdkThemeKeys.PanelBackgroundBrush);
             _windowBorder.SetResourceReference(BorderBrushProperty, SdkThemeKeys.BorderBrush);
 
-            // 添加阴影效果
-            var effect = new System.Windows.Media.Effects.DropShadowEffect
-            {
-                Color = Colors.Black,
-                Opacity = 0.3,
-                ShadowDepth = 0,
-                BlurRadius = 20
-            };
-            _windowBorder.Effect = effect;
-
-            // 设置控件为内容
+            // 设置控件为内容（WindowChrome 接管标题栏拖拽，移除手动 DragMove）
             _windowBorder.Child = _control;
             Content = _windowBorder;
-
-            // 支持拖拽
-            _windowBorder.MouseLeftButtonDown += (s, e) =>
-            {
-                if (e.ButtonState == System.Windows.Input.MouseButtonState.Pressed)
-                {
-                    DragMove();
-                }
-            };
         }
 
         /// <summary>

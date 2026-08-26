@@ -14,10 +14,10 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Commands
     {
         private readonly Stack<IUndoableCommand> _undoStack = new Stack<IUndoableCommand>();
         private readonly Stack<IUndoableCommand> _redoStack = new Stack<IUndoableCommand>();
-        private readonly ObservableCollection<WorkflowNode> _nodes;
+        private readonly ObservableCollection<WorkflowNodeBase> _nodes;
         private readonly ObservableCollection<WorkflowConnection> _connections;
 
-        public CommandManager(ObservableCollection<WorkflowNode> nodes, ObservableCollection<WorkflowConnection> connections)
+        public CommandManager(ObservableCollection<WorkflowNodeBase> nodes, ObservableCollection<WorkflowConnection> connections)
         {
             _nodes = nodes;
             _connections = connections;

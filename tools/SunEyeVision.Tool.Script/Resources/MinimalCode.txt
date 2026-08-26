@@ -1,5 +1,4 @@
 using System;
-using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Scripting;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 

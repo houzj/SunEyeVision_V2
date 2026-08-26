@@ -164,11 +164,13 @@ namespace SunEyeVision.UI.Shell.Controls
         /// <summary>工作流标签页集合（顶栏下拉框）</summary>
         public IList Tabs => _coordinator.Tabs;
 
-        /// <summary>当前选中工作流标签页（顶栏下拉框）</summary>
-        public object SelectedTab
-        {
-            get => _coordinator.SelectedTab;
-            set => _coordinator.SelectedTab = value;
-        }
+        /// <summary>当前选中工作流标签页（顶栏下拉框，只读单向绑定）</summary>
+        public object? SelectedTab => _coordinator.SelectedTab;
+
+        /// <summary>
+        /// 用户切换顶栏下拉框选中项时调用 — 通过协调器唯一写入口设置选中，避免双向绑定回写重入。
+        /// </summary>
+        /// <param name="tab">目标标签页</param>
+        public void SetSelectedTab(object? tab) => _coordinator.SetSelectedTab(tab);
     }
 }

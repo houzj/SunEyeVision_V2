@@ -287,26 +287,66 @@
                                     <Button Background="Transparent"
                                             BorderThickness="0"
                                             Padding="0"
+                                            Width="24" Height="24"
                                             Cursor="Hand"
                                             ToolTip="子程序参数设置"
                                             Click="SubroutineNodeSettings_Click"
-                                            Loaded="SubroutineNodeSettings_Loaded"
                                             HorizontalAlignment="Center" VerticalAlignment="Center"
                                             Panel.ZIndex="10">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <!-- 背景恒透明：悬停/按下不出现背景色块（避免与状态色块混色出杂色）。
+                                                     点击热区=按钮自身 24x24。 -->
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                        <!-- 齿轮前景全部在 TextBlock.Style 内控制（Setter+Triggers），不依赖 Binding Setter：
+                                             ★ 基础色跟随节点运行状态(与普通类型图标同一转换器的色值)：
+                                               待运行→#333333(浅卡片可见)；运行中/成功/失败/跳过→白色(on实色状态色块)。
+                                             ★ 悬停变主题蓝提示可点(按钮语义)。Style Trigger 优先级>Style Setter，
+                                               且悬停 Trigger 放最后 → 悬停时覆盖状态色。 -->
                                         <TextBlock Text="&#x2699;"
                                                    FontFamily="{StaticResource IconFontFamily}"
-                                                   FontSize="24" FontWeight="Bold"
-                                                   Foreground="#FF333333"
-                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                   FontSize="{DynamicResource NodeIconFontSize}" FontWeight="Bold"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Foreground" Value="#FF333333"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Status}" Value="运行中">
+                                                            <Setter Property="Foreground" Value="#FFFFFFFF"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Status}" Value="成功">
+                                                            <Setter Property="Foreground" Value="#FFFFFFFF"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Status}" Value="OK">
+                                                            <Setter Property="Foreground" Value="#FFFFFFFF"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Status}" Value="失败">
+                                                            <Setter Property="Foreground" Value="#FFFFFFFF"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Status}" Value="NG">
+                                                            <Setter Property="Foreground" Value="#FFFFFFFF"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Status}" Value="跳过">
+                                                            <Setter Property="Foreground" Value="#FFFFFFFF"/>
+                                                        </DataTrigger>
+                                                        <!-- 悬停变节点端口同款悬停色(橙 #FF6600)：与端口交互反馈一致，
+                                                             且橙在绿/蓝/红/灰/浅底上都足够明显。放最后，覆盖状态色 -->
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="Foreground" Value="{DynamicResource PortHoverBrush}"/>
+                                                        </Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
                                         <Button.Style>
                                             <Style TargetType="Button">
                                                 <Setter Property="Visibility" Value="Collapsed"/>
-                                                <Setter Property="Margin" Value="0,0,8,0"/>
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding ToolType}" Value="Subroutine">
                                                         <Setter Property="Visibility" Value="Visible"/>
                                                     </DataTrigger>
-                                                    <!-- 悬停变色已删除：所有主题/所有状态统一 #FF333333 -->
                                                 </Style.Triggers>
                                             </Style>
                                         </Button.Style>

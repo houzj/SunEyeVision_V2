@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -112,14 +112,14 @@ namespace SunEyeVision.UI.Services.Node
     /// </summary>
     public class NodeSelectionService : INodeSelectionService
     {
-        private readonly ObservableCollection<WorkflowNode> _allNodes;
+        private readonly ObservableCollection<WorkflowNodeBase> _allNodes;
         private readonly Dictionary<string, Point> _initialPositions = new Dictionary<string, Point>();
 
         public ObservableCollection<WorkflowNode> SelectedNodes { get; } = new ObservableCollection<WorkflowNode>();
 
         public event EventHandler<SelectionChangedEventArgs> SelectionChanged;
 
-        public NodeSelectionService(ObservableCollection<WorkflowNode> allNodes)
+        public NodeSelectionService(ObservableCollection<WorkflowNodeBase> allNodes)
         {
             _allNodes = allNodes ?? throw new ArgumentNullException(nameof(allNodes));
         }
@@ -286,12 +286,16 @@ namespace SunEyeVision.UI.Services.Node
                 return;
             }
 
-            var nodesInRect = _allNodes.Where(node =>
-            {
-                // 使用节点的NodeRect（Position为HitArea中心点）
-                var nodeRect = node.NodeRect;
-                return selectionRect.IntersectsWith(nodeRect);
-            }).ToList();
+            // _allNodes 为基类集合（引擎单一数据源），框选需要 WorkflowNode 的 NodeRect，
+            // 运行时元素均为 WorkflowNode，安全转型。
+            var nodesInRect = _allNodes.OfType<WorkflowNode>()
+                .Where(node =>
+                {
+                    // 使用节点的NodeRect（Position为HitArea中心点）
+                    var nodeRect = node.NodeRect;
+                    return selectionRect.IntersectsWith(nodeRect);
+                })
+                .ToList();
 
             SelectNodes(nodesInRect, true);
         }

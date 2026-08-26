@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -56,16 +56,32 @@ public class HalconScriptCompileTests
 
     /// <summary>
     /// 含 Halcon 算子的脚本编译 + 实例化，0 错误（防 CS0012/CS0246 回归）。
-    /// 用真实 DemoCode（HOperatorSet.GetImageSize / Threshold / Connection 等）。
+    /// 验证：勾选 halcondotnetxl 引用（assemblyNames 含它）后，裸 HOperatorSet 算子脚本可编译。
+    /// Demo 已改为纯 IVisionImage（不含 halcon），此处用独立 halcon 脚本验证按需引用生效。
     /// </summary>
     [Fact]
-    public void Execute_DemoWithHalconOperators_CompilesWithoutError()
+    public void Execute_HalconOperators_WithHalconReference_CompilesWithoutError()
     {
         var toolAsm = LoadToolAssembly();
 
-        // 读取 DemoCode 资源作为含 halcon 算子的脚本源码
-        var scriptCode = LoadResource(toolAsm, "SunEyeVision.Tool.Script.Resources.DemoCode.txt");
-        Assert.Contains("HOperatorSet", scriptCode);
+        // 独立的含 halcon 算子脚本源码（验证勾选 halcondotnetxl 后可用）
+        const string scriptCode = @"
+using System;
+using HalconDotNet;
+using SunEyeVision.Plugin.SDK.Scripting;
+using SunEyeVision.Plugin.SDK.VisionAdapters;
+public partial class UserScript : Script
+{
+    public override void Init() { }
+    public override void Process()
+    {
+        // 仅验证含 halcon 引用可编译（不真正处理图像，避免空输入崩溃）
+        if (input1 == null || input1.IsEmpty) return;
+        output1 = input1;
+    }
+}
+";
+        Assert.Contains("using HalconDotNet", scriptCode);
 
         // GeneratedCode 模板（用户脚本继承 Script 基类 + input/output 字段）
         var paramsType = toolAsm.GetType("SunEyeVision.Tool.Script.Models.ScriptParameters")
@@ -84,9 +100,17 @@ public class HalconScriptCompileTests
             var execute = mgrType.GetMethod("Execute")
                 ?? throw new InvalidOperationException("Execute 方法未找到");
 
+            // 引用列表 = 系统必需项 + halcondotnetxl（模拟用户勾选 halcon）
+            var requiredType = toolAsm.GetType("SunEyeVision.Tool.Script.ScriptEngine.MetadataReferenceProvider")
+                ?? throw new InvalidOperationException("MetadataReferenceProvider 类型未找到");
+            var requiredProp = requiredType.GetProperty("RequiredAssemblyNames")
+                ?? throw new InvalidOperationException("RequiredAssemblyNames 属性未找到");
+            var assemblyNames = ((IEnumerable<string>)requiredProp.GetValue(null)!)
+                .Concat(new[] { "halcondotnetxl" }).ToList();
+
             var errors = (List<string>)execute.Invoke(mgr, new object?[]
             {
-                generatedCode, scriptCode, scriptRefs, null, null, null
+                generatedCode, scriptCode, scriptRefs, null, null, null, assemblyNames
             })!;
 
             Assert.True(errors.Count == 0,

@@ -78,11 +78,28 @@ namespace SunEyeVision.UI.Services.Interaction
                 return _cachedViewModel;
             }
 
-            // 重新获取并缓存
-            if (Application.Current?.MainWindow is MainWindow mainWindow)
+            // 重新获取并缓存：遍历所有窗口找 MainWindow（比 Application.Current.MainWindow
+            // 更可靠，规避多窗口/时序场景下 MainWindow 属性为 null 或指向非主窗口的问题）。
+            if (Application.Current != null)
             {
-                _cachedViewModel = mainWindow.DataContext as MainWindowViewModel;
-                _viewModelCacheTime = DateTime.Now;
+                foreach (var window in Application.Current.Windows)
+                {
+                    if (window is MainWindow mainWindow
+                        && mainWindow.DataContext is MainWindowViewModel vm)
+                    {
+                        _cachedViewModel = vm;
+                        _viewModelCacheTime = DateTime.Now;
+                        break;
+                    }
+                }
+            }
+
+            // 根因显性化（rule-015 不静默回退）：获取失败必须暴露，而非让调用方裸操作集合绕过业务管道。
+            // 节点添加必须经 AddNodeToWorkflow 统一处理（日志/命令/绑定/预编译），缓存失败即报错。
+            if (_cachedViewModel == null)
+            {
+                throw new InvalidOperationException(
+                    "无法获取 MainWindowViewModel，节点添加无法走统一管道。应修复 ViewModel 获取逻辑，而非回退裸操作集合。");
             }
 
             return _cachedViewModel;
@@ -344,15 +361,9 @@ LogTimestamp("Drop", "▶ Canvas_Drop 开始执行");
                 LogTimestamp("Drop", "▶ 添加节点到集合...");
 #endif
                 var viewModel = GetCachedViewModel();
-                if (viewModel != null)
-                {
-                    viewModel.AddNodeToWorkflow(newNode);
-                }
-                else
-                {
-                    // 回退方案：直接添加（不记录日志）
-                    workflowTab.WorkflowNodes.Add(newNode);
-                }
+                // 统一管道：节点添加必须经 AddNodeToWorkflow（日志/命令/绑定/预编译）。
+                // viewModel 由 GetCachedViewModel 保证非 null（失败即抛异常，无回退分支）。
+                viewModel.AddNodeToWorkflow(newNode);
 #if DEBUG
                 LogTimestamp("Drop", $"✓ 节点已添加, 当前节点数: {workflowTab.WorkflowNodes.Count}");
                 LogTimestamp("Drop", "═══ 节点添加完成 ═══");

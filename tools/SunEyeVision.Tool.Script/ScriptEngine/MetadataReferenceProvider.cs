@@ -170,26 +170,156 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
         }
 
         /// <summary>
-        /// 宿主 API 锚定 — 注入 Plugin.SDK / halcon / OpenCvSharp 三个脚本核心宿主程序集。
-        /// 纯类型锚定：typeof(X).Assembly 反查程序集 Location，程序集路径由 csproj 显式声明
-        /// （halcon 用 libs\halcon\net\ 的 HintPath，OpenCvSharp 用 NuGet），编译期确定、
-        /// 不依赖运行时 ALC 加载状态。与 ScriptCompiler 共享统一服务，保证 IntelliSense 与编译引用一致，
-        /// 脚本继承的 Script 基类类型身份与运行时一致。
+        /// 宿主 API 锚定 — 仅注入 Plugin.SDK 的 Script 基类程序集（系统必需，脚本继承用）。
+        /// halcon（HOperatorSet）/ OpenCvSharp（Mat）不再无条件注入编译基线，
+        /// 改为按需：用户通过"程序集引用"勾选后，由 <see cref="ResolveAssemblyPath"/> 解析。
+        /// 纯类型锚定：typeof(Script).Assembly 反查程序集 Location，编译期确定、不依赖运行时 ALC 加载状态，
+        /// 保证脚本继承的 Script 基类类型身份与运行时一致。
         /// </summary>
         private static int AddHostApiAnchored(Dictionary<string, MetadataReference> refs)
         {
-            int added = 0;
-            foreach (var anchorType in new[]
-                     {
-                         typeof(SunEyeVision.Plugin.SDK.Scripting.Script),
-                         typeof(HOperatorSet),
-                         typeof(Mat),
-                     })
+            var location = typeof(SunEyeVision.Plugin.SDK.Scripting.Script).Assembly.Location;
+            if (!string.IsNullOrEmpty(location) && TryAddRef(refs, location)) return 1;
+            return 0;
+        }
+
+        /// <summary>
+        /// 系统必需引用清单 — 脚本编译的基础依赖（C# 预定义类型 + Script 基类），不可移除。
+        /// 仅包含真实存在于 TPA（可信平台程序集）的 BCL + Script 基类所在 SDK 程序集，
+        /// 保证默认引用列表每个程序集都能解析到路径（rule-015：找不到直接报错，而非静默跳过）。
+        /// 供新节点默认引用列表、UI 系统必需项锁定、编译引用组装使用。
+        /// </summary>
+        public static IReadOnlyList<string> RequiredAssemblyNames
+        {
+            get
             {
-                var location = anchorType.Assembly.Location;
-                if (!string.IsNullOrEmpty(location) && TryAddRef(refs, location)) added++;
+                var names = new List<string>();
+
+                // BCL 白名单中真实存在于 TPA 的项（过滤 TPA 精简环境下不存在的 BCL）
+                var tpa = AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES") as string;
+                var tpaNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                if (!string.IsNullOrEmpty(tpa))
+                {
+                    foreach (var raw in tpa.Split(Path.PathSeparator))
+                    {
+                        var path = raw.Trim();
+                        if (path.Length == 0 || !path.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)) continue;
+                        tpaNames.Add(Path.GetFileNameWithoutExtension(path));
+                    }
+                }
+                foreach (var bcl in CoreBclAssemblyNames)
+                {
+                    if (tpaNames.Contains(bcl)) names.Add(bcl);
+                }
+                // mscorlib 不在 TPA（.NET Core facade），单独从运行时目录显式引用
+                var mscorlibPath = Path.Combine(
+                    System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory(), "mscorlib.dll");
+                if (File.Exists(mscorlibPath) && !names.Contains("mscorlib"))
+                    names.Add("mscorlib");
+
+                // Script 基类所在 SDK 程序集
+                var sdkName = typeof(SunEyeVision.Plugin.SDK.Scripting.Script).Assembly.GetName().Name;
+                if (!string.IsNullOrEmpty(sdkName) && !names.Contains(sdkName))
+                    names.Add(sdkName);
+                return names;
             }
-            return added;
+        }
+
+        /// <summary>
+        /// 可选宿主程序集候选（halcon / OpenCvSharp）— 供"程序集引用"对话框候选库。
+        /// 类型锚定拿路径（typeof(HOperatorSet)/typeof(Mat).Assembly.Location），不依赖运行时 ALC 加载状态。
+        /// </summary>
+        public static IReadOnlyDictionary<string, string> GetAvailableApis()
+        {
+            var apis = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var anchor in new[] { (typeof(HOperatorSet), "halcondotnetxl"), (typeof(Mat), "OpenCvSharp") })
+            {
+                var location = anchor.Item1.Assembly.Location;
+                if (!string.IsNullOrEmpty(location))
+                    apis[anchor.Item2] = location;
+            }
+            return apis;
+        }
+
+        /// <summary>
+        /// 解析程序集名称 → 元数据引用（唯一真相源：每节点 AssemblyReferences 里的程序集名）。
+        /// 按名解析来源：
+        ///   1. BCL 白名单 → TPA 精确匹配路径
+        ///   2. 宿主 API（Script 基类 / halcon / OpenCvSharp）→ 类型锚定路径
+        ///   3. 用户 DLL → ScriptRefs 目录（<paramref name="userRefDir"/>）
+        /// 找不到 → 抛异常（rule-015 禁止静默回退）。
+        /// </summary>
+        public static MetadataReference ResolveAssemblyPath(string name, string? userRefDir = null)
+        {
+            // 1. BCL 白名单：从 TPA 精确匹配
+            var bclPath = ResolveBclPath(name);
+            if (bclPath != null)
+            {
+                return MetadataReference.CreateFromFile(bclPath);
+            }
+
+            // 2. 宿主 API：类型锚定（Script 基类 / halcon / OpenCvSharp）
+            var hostPath = ResolveHostApiPath(name);
+            if (hostPath != null)
+            {
+                return MetadataReference.CreateFromFile(hostPath);
+            }
+
+            // 3. 用户 DLL：ScriptRefs 目录
+            if (!string.IsNullOrEmpty(userRefDir))
+            {
+                var userPath = Path.Combine(userRefDir, name);
+                if (File.Exists(userPath))
+                    return MetadataReference.CreateFromFile(userPath);
+            }
+
+            throw new InvalidOperationException(
+                $"脚本引用的程序集 '{name}' 无法解析到路径。请通过\"程序集引用\"添加，或确认 ScriptRefs 目录存在该 DLL。");
+        }
+
+        /// <summary>
+        /// 从 TPA 白名单精确匹配 BCL 程序集路径；不在白名单返回 null。
+        /// </summary>
+        private static string? ResolveBclPath(string name)
+        {
+            var tpa = AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES") as string;
+            if (string.IsNullOrEmpty(tpa)) return null;
+            var whitelist = new HashSet<string>(CoreBclAssemblyNames, StringComparer.OrdinalIgnoreCase);
+            if (!whitelist.Contains(name)) return null;
+            foreach (var raw in tpa.Split(Path.PathSeparator))
+            {
+                var path = raw.Trim();
+                if (path.Length == 0 || !path.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)) continue;
+                if (Path.GetFileNameWithoutExtension(path).Equals(name, StringComparison.OrdinalIgnoreCase))
+                    return path;
+            }
+            // mscorlib 不在 TPA，从运行时目录显式找 facade
+            if (name.Equals("mscorlib", StringComparison.OrdinalIgnoreCase))
+            {
+                var mscorlibPath = Path.Combine(
+                    System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory(), "mscorlib.dll");
+                return File.Exists(mscorlibPath) ? mscorlibPath : null;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// 从宿主 API 类型锚定解析程序集路径（Script 基类 / halcon / OpenCvSharp）；未知返回 null。
+        /// </summary>
+        private static string? ResolveHostApiPath(string name)
+        {
+            var anchors = new Dictionary<string, Type>(StringComparer.OrdinalIgnoreCase)
+            {
+                { Path.GetFileNameWithoutExtension(typeof(SunEyeVision.Plugin.SDK.Scripting.Script).Assembly.Location), typeof(SunEyeVision.Plugin.SDK.Scripting.Script) },
+                { "halcondotnetxl", typeof(HOperatorSet) },
+                { "OpenCvSharp", typeof(Mat) },
+            };
+            if (anchors.TryGetValue(name, out var type))
+            {
+                var location = type.Assembly.Location;
+                return string.IsNullOrEmpty(location) ? null : location;
+            }
+            return null;
         }
 
         /// <summary>

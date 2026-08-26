@@ -1042,7 +1042,7 @@ namespace SunEyeVision.Tool.Subroutine
             return new DefaultDebugWindow(control)
             {
                 Owner = owner,
-                Width = 720,
+                Width = 520,
                 Height = 600
             };
         }

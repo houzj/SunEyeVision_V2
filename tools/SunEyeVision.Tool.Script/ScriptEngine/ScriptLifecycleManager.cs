@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Scripting;
 using ScriptBase = SunEyeVision.Plugin.SDK.Scripting.Script;
 
@@ -48,10 +51,11 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
         /// </summary>
         /// <param name="generatedCode">系统生成的字段声明 partial class 代码</param>
         /// <param name="userCode">用户编写的完整 partial class 代码</param>
-        /// <param name="assemblyRefDir">程序集引用目录路径（目录下所有 *.dll 均为引用）</param>
+        /// <param name="assemblyRefDir">程序集引用目录路径（用户 DLL ScriptRefs 来源）</param>
         /// <param name="getGlobalValue">获取全局变量委托</param>
         /// <param name="setGlobalValue">设置全局变量委托</param>
         /// <param name="inputValues">输入字段值映射（名称→值，反射设置到脚本实例字段）</param>
+        /// <param name="assemblyNames">每节点启用的程序集引用列表（唯一真相源）；不提供则编译回退到宿主引用+ScriptRefs</param>
         /// <returns>编译和执行错误信息列表</returns>
         public List<string> Execute(
             string generatedCode,
@@ -59,7 +63,8 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             string? assemblyRefDir,
             Func<string, object?>? getGlobalValue,
             Action<string, object?>? setGlobalValue,
-            Dictionary<string, object?>? inputValues = null)
+            Dictionary<string, object?>? inputValues = null,
+            IReadOnlyList<string>? assemblyNames = null)
         {
             var errors = new List<string>();
 
@@ -89,7 +94,7 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             // 1. 编译（双语法树：系统生成的字段声明 + 用户完整 partial class）
             var compileSw = Stopwatch.StartNew();
             var compileResult = _compiler.Compile(
-                [generatedCode, userCode], assemblyName, assemblyRefDir);
+                [generatedCode, userCode], assemblyName, assemblyRefDir, assemblyNames);
             compileSw.Stop();
             _compileTimeMs = compileSw.ElapsedMilliseconds;
 
@@ -105,8 +110,10 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                 return errors;
             }
 
-            // 2. 在沙箱中加载并执行（传递 refDir 预加载 ScriptRefs 用户 DLL）
-            using var sandbox = new ScriptSandbox($"ScriptSandbox_{_runCounter}", assemblyRefDir);
+            // 2. 在沙箱中加载并执行（从常驻池获取，复用 ALC + 程序集 + JIT 缓存）。
+            //    沙箱按编译缓存键分组：相同代码+引用复用，代码变化自动建新沙箱（旧沙箱由池 LRU 淘汰）。
+            var combinedCode = string.Join("\n", new[] { generatedCode, userCode });
+            var sandbox = ScriptSandboxPool.GetOrCreate(ScriptCompiler.ComputeCacheKey(combinedCode, assemblyNames), assemblyRefDir);
             Exception? loadError = null;
 
             try
@@ -200,11 +207,11 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             }
             catch (Exception ex)
             {
-                errors.Add($"脚本执行异常: {ex.Message}");
-                lock (_lock)
-                {
-                    _logMessages.Add($"[错误] 脚本执行异常: {ex.Message}");
-                }
+                // 提取用户脚本栈帧（含行号），精确匹配用户类，便于快速定位；无脚本帧则回退完整堆栈文本。
+                // 只写 errors（→ CompileErrors → UI 红色展示一次）；不写 _logMessages
+                // （用户脚本 LogError 已通过 ScriptContext 回调进日志，避免同一异常重复报告）。
+                var detail = ExtractUserScriptFrame(ex, compileResult.EntryClassName!);
+                errors.Add($"脚本执行异常: {detail}");
             }
             runSw.Stop();
             _executionTimeMs = runSw.ElapsedMilliseconds;
@@ -225,6 +232,120 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
             }
 
             return errors;
+        }
+
+        /// <summary>
+        /// 仅编译并预热缓存（命中缓存则跳过，未命中则编译并入缓存），不创建沙箱/实例。
+        /// 用于预编译场景：方案加载后/代码变化后预热脚本编译结果，保证后续执行命中缓存零编译。
+        /// 编译结果写入 <see cref="ScriptCompiler"/> 的进程级静态缓存，工具调试与工作流执行共用。
+        /// </summary>
+        /// <param name="generatedCode">系统生成的字段声明 partial class 代码</param>
+        /// <param name="userCode">用户编写的完整 partial class 代码</param>
+        /// <param name="assemblyRefDir">程序集引用目录路径（用户 DLL ScriptRefs 来源）</param>
+        /// <param name="assemblyNames">每节点启用的程序集引用列表（唯一真相源）</param>
+        /// <returns>编译诊断列表（空 = 编译成功）；调用方仅用于诊断，不阻塞</returns>
+        public List<string> CompileOnly(
+            string generatedCode,
+            string userCode,
+            string? assemblyRefDir,
+            IReadOnlyList<string>? assemblyNames = null)
+        {
+            if (string.IsNullOrWhiteSpace(generatedCode) && string.IsNullOrWhiteSpace(userCode))
+            {
+                return ["脚本代码为空"];
+            }
+
+            var assemblyName = $"ScriptPreCompile_{Guid.NewGuid():N}";
+            var result = _compiler.Compile(
+                [generatedCode, userCode], assemblyName, assemblyRefDir, assemblyNames);
+
+            return result.Success ? [] : result.Diagnostics;
+        }
+
+        /// <summary>
+        /// 预热执行环境（沙箱 + 程序集加载 + 用户代码 JIT），供预编译成功后调用。
+        /// 原理：预编译已把实际编译产物写入进程级编译缓存，此处按同一缓存键
+        /// 复用该产物完成沙箱常驻池就位、程序集加载、实例化与 PrepareMethod 预编译
+        /// 方法体（只 JIT 不执行，无副作用）。这样首次执行不再承担沙箱创建/
+        /// 程序集加载/用户代码 JIT 的冷启动开销，实现"首次与后续执行时间一致"。
+        /// 防御：编译结果缺失/代码为空/预热异常均仅告警返回，不抛异常不阻塞。
+        /// </summary>
+        /// <param name="generatedCode">系统生成的字段声明 partial class 代码</param>
+        /// <param name="userCode">用户编写的完整 partial class 代码</param>
+        /// <param name="assemblyRefDir">程序集引用目录路径（用户 DLL ScriptRefs 来源）</param>
+        /// <param name="assemblyNames">每节点启用的程序集引用列表（唯一真相源）</param>
+        public void WarmupSandbox(
+            string generatedCode,
+            string userCode,
+            string? assemblyRefDir,
+            IReadOnlyList<string>? assemblyNames = null)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(generatedCode) && string.IsNullOrWhiteSpace(userCode))
+                {
+                    return;
+                }
+
+                var combinedCode = string.Join("\n", new[] { generatedCode, userCode });
+                var cacheKey = ScriptCompiler.ComputeCacheKey(combinedCode, assemblyNames);
+                var compileResult = ScriptCompiler.GetCachedResult(cacheKey);
+                if (compileResult?.Success != true || compileResult.AssemblyBytes == null
+                    || compileResult.EntryClassName == null)
+                {
+                    // 编译结果未入缓存（含编译失败场景），无可预热的实际产物，静默跳过
+                    return;
+                }
+
+                // 1. 常驻沙箱按实际缓存键就位（后续执行 GetOrCreate 命中，跳过创建）
+                var sandbox = ScriptSandboxPool.GetOrCreate(cacheKey, assemblyRefDir);
+
+                // 2. 加载实际程序集（后续执行 LoadAssembly 命中，跳过加载）
+                sandbox.LoadAssembly(compileResult.AssemblyBytes, compileResult.SymbolBytes);
+
+                // 3. 实例化触发构造函数 JIT + PrepareMethod 预编译方法体（不执行，无副作用）
+                var instance = sandbox.CreateScriptInstance(compileResult.EntryClassName);
+                foreach (var methodName in new[] { "Init", "Process", "Release" })
+                {
+                    var method = instance.GetType().GetMethod(
+                        methodName, BindingFlags.Public | BindingFlags.Instance);
+                    if (method != null)
+                    {
+                        RuntimeHelpers.PrepareMethod(method.MethodHandle);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                PluginLogger.Warning($"[Sandbox预热] 失败: {ex.Message}", nameof(ScriptLifecycleManager));
+            }
+        }
+
+        /// <summary>
+        /// 从异常堆栈中提取用户脚本栈帧（类名+方法名+行号），便于用户快速定位出错行。
+        /// 程序集编译带 PortablePdb（SymbolBytes），运行时 StackTrace 可解析行号。
+        /// 仅匹配用户脚本类名（EntryClassName），避免框架帧（如 ScriptLifecycleManager）被误收。
+        /// 未命中用户脚本帧时返回完整堆栈文本（Fail-Forward，不丢失定位线索）。
+        /// </summary>
+        /// <param name="ex">用户脚本执行时抛出的异常</param>
+        /// <param name="className">用户脚本类名（EntryClassName），仅匹配该类帧</param>
+        /// <returns>用户脚本栈帧文本；无脚本帧时返回完整堆栈文本</returns>
+        private static string ExtractUserScriptFrame(Exception ex, string className)
+        {
+            var trace = ex.StackTrace;
+            if (string.IsNullOrWhiteSpace(trace))
+                return ex.ToString();
+
+            // StackTrace 形如 "at UserScript.Process() in <anonymous> :line 25"
+            // 提取包含用户脚本类名的帧，优先展示含行号的脚本调用点。
+            var lines = trace.Split('\n');
+            var scriptLines = lines
+                .Where(l => l.Contains(className, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            return scriptLines.Count > 0
+                ? string.Join("\n", scriptLines)
+                : trace;
         }
 
         /// <summary>

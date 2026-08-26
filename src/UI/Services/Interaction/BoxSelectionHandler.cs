@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -212,7 +212,8 @@ namespace SunEyeVision.UI.Services.Interaction
                 return;
             }
 
-            CanvasHelper.ClearSelection(_viewModel.WorkflowTabViewModel.SelectedTab.WorkflowNodes);
+            // 集合为基类，ClearSelection 需 WorkflowNode，运行时元素均为 WorkflowNode，安全转型
+            CanvasHelper.ClearSelection(_viewModel.WorkflowTabViewModel.SelectedTab.WorkflowNodes.OfType<WorkflowNode>());
         }
 
         /// <summary>
@@ -227,7 +228,7 @@ namespace SunEyeVision.UI.Services.Interaction
 
             int selectedCount = 0;
 
-            foreach (var node in _viewModel.WorkflowTabViewModel.SelectedTab.WorkflowNodes)
+            foreach (var node in _viewModel.WorkflowTabViewModel.SelectedTab.WorkflowNodes.OfType<WorkflowNode>())
             {
                 var nodeBounds = CanvasHelper.GetNodeBounds(node);
                 bool isSelected = selectionRect.IntersectsWith(nodeBounds);

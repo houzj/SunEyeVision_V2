@@ -11,6 +11,34 @@
     <UserControl.Resources>
         <convertersUI:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
 
+        <!-- VS 同款即时提示样式（ScreenTip）：仅窗口控制按钮（最小化/最大化/关闭）使用。
+             即时显示（无延迟）+ 无箭头纯文本框（VS 标题栏按钮提示风格） -->
+        <Style x:Key="WindowControlScreenTip" TargetType="ToolTip">
+            <Setter Property="ToolTipService.InitialShowDelay" Value="0"/>
+            <Setter Property="ToolTipService.BetweenShowDelay" Value="0"/>
+            <Setter Property="ToolTipService.ShowDuration" Value="10000"/>
+            <Setter Property="Placement" Value="Bottom"/>
+            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.BorderBrush}}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,5"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToolTip">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}"
+                                CornerRadius="2">
+                            <ContentPresenter ContentSource="Content"
+                                              TextBlock.Foreground="{TemplateBinding Foreground}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <!-- 工具栏按钮样式（含 IsHitTestVisibleInChrome，使按钮在窗口 Caption 区域可点击） -->
         <Style x:Key="TitleBarButton" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
@@ -256,7 +284,8 @@
 
                 <!-- 运行（单次） -->
                 <Button ToolTip="运行 (F5)" Style="{StaticResource TitleBarButton}" Command="{Binding RunWorkflowCommand}">
-                    <TextBlock Text="▶️" FontSize="16"/>
+                    <TextBlock Text="&#xE768;" FontSize="16" FontFamily="{StaticResource Mdl2IconFont}"
+                               Foreground="{DynamicResource {x:Static base:ThemeKeys.TitleBarIconBrush}}"/>
                 </Button>
                 <!-- 连续运行/停止（切换按钮：点击立即切换，空闲🔁灰色，运行中⏹️红色+主色高亮） -->
                 <ToggleButton x:Name="ContinuousRunToggle"
@@ -289,7 +318,9 @@
                             </Setter>
                         </Style>
                     </ToggleButton.Style>
-                    <TextBlock x:Name="ContinuousRunIcon" Text="🔁" FontSize="16" Foreground="{DynamicResource {x:Static base:ThemeKeys.TitleBarIconBrush}}" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="ContinuousRunIcon"
+                               Text="&#xEF3B;" FontSize="16" FontFamily="{StaticResource Mdl2IconFont}"
+                               Foreground="{DynamicResource {x:Static base:ThemeKeys.TitleBarIconBrush}}" VerticalAlignment="Center"/>
                 </ToggleButton>
 
                 <Border Width="1" Height="18" Background="{DynamicResource {x:Static base:ThemeKeys.TitleBarDividerBrush}}" Margin="4,0"/>
@@ -306,15 +337,16 @@
 
                 <Border Width="1" Height="18" Background="{DynamicResource {x:Static base:ThemeKeys.TitleBarDividerBrush}}" Margin="4,0"/>
 
-                <!-- 主题切换按钮：亮色显示太阳☀️，暗色显示月亮🌙（点击切换并记住） -->
+                <!-- 主题切换按钮：亮色显示太阳，暗色显示月亮（MDL2 图标，Foreground 可控且主题适配） -->
                 <Button ToolTip="切换亮/暗主题" Style="{StaticResource TitleBarButton}" Command="{Binding ToggleThemeCommand}">
-                    <TextBlock FontSize="16">
+                    <TextBlock FontSize="16" FontFamily="{StaticResource Mdl2IconFont}"
+                               Foreground="{DynamicResource {x:Static base:ThemeKeys.TitleBarIconBrush}}">
                         <TextBlock.Style>
                             <Style TargetType="TextBlock">
-                                <Setter Property="Text" Value="☀️"/>
+                                <Setter Property="Text" Value="&#xE706;"/>  <!-- 太阳 Sun -->
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding IsDarkTheme}" Value="True">
-                                        <Setter Property="Text" Value="🌙"/>
+                                        <Setter Property="Text" Value="&#xE708;"/>  <!-- 月亮 Moon -->
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
@@ -327,7 +359,8 @@
                 <TextBlock Text="工作流:" FontSize="11" Foreground="{DynamicResource {x:Static base:ThemeKeys.TitleBarTextSecondaryBrush}}" VerticalAlignment="Center" Margin="0,0,6,0"/>
                 <ComboBox Width="150" Height="24" VerticalAlignment="Center"
                           ItemsSource="{Binding Tabs}"
-                          SelectedItem="{Binding SelectedTab, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                          SelectedItem="{Binding SelectedTab, Mode=OneWay}"
+                          SelectionChanged="WorkflowComboBox_SelectionChanged"
                           IsSynchronizedWithCurrentItem="True"
                           Style="{StaticResource WorkflowComboBoxStyle}">
                     <ComboBox.ItemTemplate>
@@ -349,18 +382,36 @@
                         <TextBlock Text="{Binding CurrentSolutionName}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource {x:Static base:ThemeKeys.TitleBarTextBrush}}" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Border>
-                <Button ToolTip="最小化" Style="{StaticResource TitleBarButton}" Click="MinimizeWindow_Click" Padding="10,4">
+                <Button ToolTip="最小化" ToolTipService.InitialShowDelay="0"
+                        ToolTipService.ShowDuration="10000" ToolTipService.Placement="Bottom"
+                        Style="{StaticResource TitleBarButton}" Click="MinimizeWindow_Click" Padding="10,4">
+                    <Button.Resources>
+                        <Style TargetType="ToolTip" BasedOn="{StaticResource WindowControlScreenTip}"/>
+                    </Button.Resources>
                     <Rectangle Width="10" Height="2" Fill="{DynamicResource {x:Static base:ThemeKeys.TitleBarIconBrush}}" VerticalAlignment="Center"/>
                 </Button>
-                <Button ToolTip="向下还原" Style="{StaticResource TitleBarButton}" Click="MaximizeWindow_Click" Padding="10,4">
-                    <Grid Width="12" Height="12" VerticalAlignment="Center">
-                        <!-- 背景矩形（右下） -->
-                        <Rectangle Width="12" Height="12" Stroke="{DynamicResource {x:Static base:ThemeKeys.TitleBarIconBrush}}" StrokeThickness="1" Fill="Transparent" HorizontalAlignment="Left" VerticalAlignment="Bottom" />
-                        <!-- 前景矩形（左上） -->
-                        <Rectangle Width="8" Height="6" Stroke="{DynamicResource {x:Static base:ThemeKeys.TitleBarIconBrush}}" StrokeThickness="1" Fill="Transparent" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
-                    </Grid>
+                <Button x:Name="MaximizeButton" ToolTipService.InitialShowDelay="0"
+                        ToolTipService.ShowDuration="10000" ToolTipService.Placement="Bottom"
+                        Style="{StaticResource TitleBarButton}" Click="MaximizeWindow_Click" Padding="10,4"
+                        WindowChrome.IsHitTestVisibleInChrome="True">
+                    <!-- VS 同款图标：Segoe MDL2 Assets 字体，字形由代码按 Window.State 切换
+                         (\uE739=最大化方框, \uE923=还原/两个窗口)；ToolTip 由代码随状态设置 -->
+                    <Button.Resources>
+                        <Style TargetType="ToolTip" BasedOn="{StaticResource WindowControlScreenTip}"/>
+                    </Button.Resources>
+                    <TextBlock x:Name="MaximizeGlyph"
+                               FontFamily="Segoe MDL2 Assets"
+                               FontSize="10"
+                               Text="&#xE739;"
+                               Foreground="{DynamicResource {x:Static base:ThemeKeys.TitleBarIconBrush}}"
+                               VerticalAlignment="Center"/>
                 </Button>
-                <Button ToolTip="关闭" Style="{StaticResource TitleBarButton}" Click="ExitMenu_Click" Padding="10,4">
+                <Button ToolTip="关闭" ToolTipService.InitialShowDelay="0"
+                        ToolTipService.ShowDuration="10000" ToolTipService.Placement="Bottom"
+                        Style="{StaticResource TitleBarButton}" Click="ExitMenu_Click" Padding="10,4">
+                    <Button.Resources>
+                        <Style TargetType="ToolTip" BasedOn="{StaticResource WindowControlScreenTip}"/>
+                    </Button.Resources>
                     <TextBlock Text="✕" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource {x:Static base:ThemeKeys.TitleBarTextBrush}}" VerticalAlignment="Center"/>
                 </Button>
             </StackPanel>

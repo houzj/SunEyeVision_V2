@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -18,9 +18,9 @@ namespace SunEyeVision.UI.Services.Node
         private readonly object _lockObj;
 
         /// <summary>
-        /// 节点集合
+        /// 节点集合 — 引擎 Workflow.Nodes 直绑引用（单一数据源）
         /// </summary>
-        public ObservableCollection<WorkflowNode> Nodes { get; }
+        public ObservableCollection<WorkflowNodeBase> Nodes { get; }
 
         /// <summary>
         /// 连接集合
@@ -38,7 +38,7 @@ namespace SunEyeVision.UI.Services.Node
         public int ConnectionCount => Connections.Count;
 
         public NodeIndexManager(
-            ObservableCollection<WorkflowNode> nodes,
+            ObservableCollection<WorkflowNodeBase> nodes,
             ObservableCollection<WorkflowConnection> connections)
         {
             _nodeIndex = new Dictionary<string, WorkflowNode>();
@@ -162,7 +162,8 @@ namespace SunEyeVision.UI.Services.Node
             _sourceConnectionIndex.Clear();
             _targetConnectionIndex.Clear();
 
-            foreach (var node in Nodes)
+            // Nodes 为基类集合，索引需 WorkflowNode（运行时元素均为 WorkflowNode，安全转型）
+            foreach (var node in Nodes.OfType<WorkflowNode>())
             {
                 _nodeIndex[node.Id] = node;
             }

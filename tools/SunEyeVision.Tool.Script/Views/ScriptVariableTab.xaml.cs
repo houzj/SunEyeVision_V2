@@ -55,6 +55,41 @@ namespace SunEyeVision.Tool.Script.Views
         }
 
         /// <summary>
+        /// 变量监视值的显示颜色（主题感知）：有值且暗色主题 → 浅灰（黑字在暗底不可见），
+        /// 有值且浅色主题 → 黑；无值 → 灰（两主题对比度均可）。
+        /// 避免固定 Brushes.Black 在暗色主题下值不可见。
+        /// </summary>
+        /// <param name="hasValue">该节点是否有实际值</param>
+        /// <returns>适配当前主题的显示刷</returns>
+        private static Brush GetValueBrush(bool hasValue)
+        {
+            if (!hasValue)
+                return Brushes.Gray;
+            return IsDarkTheme() ? Brushes.LightGray : Brushes.Black;
+        }
+
+        /// <summary>
+        /// 判断当前是否暗色主题：扫描应用 MergedDictionaries 是否含 DarkTheme 字典（按 URI 识别）。
+        /// 与 CommonControl.ThemeResource.IsDarkTheme 同逻辑（该 internal 类工具层不可访问），
+        /// 本地实现避免跨程序集引用。纯资源扫描，不依赖具体程序集。
+        /// </summary>
+        /// <returns>true = 当前暗色主题</returns>
+        private static bool IsDarkTheme()
+        {
+            var res = System.Windows.Application.Current?.Resources;
+            if (res == null)
+                return false;
+            foreach (var dict in res.MergedDictionaries)
+            {
+                if (dict.Source != null &&
+                    dict.Source.OriginalString.Contains(
+                        "Themes/Dark/DarkTheme.xaml", StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+            return false;
+        }
+
+        /// <summary>
         /// 声明式数据源依赖属性。外部设置此属性后，内部自动同步所有监视节点的值。
         /// 数据驱动替代之前的过程式 SetMonitorValue 逐项调用。
         /// </summary>
@@ -115,7 +150,7 @@ namespace SunEyeVision.Tool.Script.Views
                     continue;
                 }
 
-                node.ValueBrush = value != null ? Brushes.Black : Brushes.Gray;
+                node.ValueBrush = GetValueBrush(value != null);
                 node.ClearChildren();
 
                 if (value != null)
@@ -262,7 +297,7 @@ namespace SunEyeVision.Tool.Script.Views
             {
                 if (node.Name == name)
                 {
-                    node.ValueBrush = hasResult ? Brushes.Black : Brushes.Gray;
+                    node.ValueBrush = GetValueBrush(hasResult);
                     node.ClearChildren();
 
                     if (rawValue != null)
@@ -287,7 +322,7 @@ namespace SunEyeVision.Tool.Script.Views
                         {
                             Name = "",                                              // 子节点不显示 Name（值就是值，没有"名字"）
                             DisplayValue = rawValue?.ToString() ?? "(null)",         // 值显示在 DisplayValue（XAML 模板的叶子节点位置）
-                            ValueBrush = hasResult ? Brushes.Black : Brushes.Gray
+                            ValueBrush = GetValueBrush(hasResult)
                         };
                         node.AddChild(vc);
                     }
@@ -321,7 +356,7 @@ namespace SunEyeVision.Tool.Script.Views
                     var child = new MonitorNode
                     {
                         Name = fieldName,
-                        ValueBrush = fieldValue != null ? Brushes.Black : Brushes.Gray,
+                        ValueBrush = GetValueBrush(fieldValue != null),
                     };
                     SetChildValue(child, fieldValue);
                     parent.AddChild(child);
@@ -407,7 +442,7 @@ namespace SunEyeVision.Tool.Script.Views
             {
                 Name = name,
                 DisplayValue = FormatScalar(value),
-                ValueBrush = Brushes.Black,
+                ValueBrush = GetValueBrush(true),
             };
             parent.AddChild(child);
         }
@@ -452,7 +487,7 @@ namespace SunEyeVision.Tool.Script.Views
                     var child = new MonitorNode
                     {
                         Name = fieldName,
-                        ValueBrush = fieldValue != null ? Brushes.Black : Brushes.Gray,
+                        ValueBrush = GetValueBrush(fieldValue != null),
                     };
                     SetChildValue(child, fieldValue);
                     node.AddChild(child);

@@ -33,7 +33,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI
         private bool _isRunning;
         private RunMode _runMode;
         private WorkflowState _state;
-        private ObservableCollection<SunEyeVision.UI.Shared.WorkflowNode> _workflowNodes;
+        private ObservableCollection<WorkflowNodeBase> _workflowNodes;
         private ObservableCollection<WorkflowConnection> _workflowConnections;
         private ScaleTransform _scaleTransform;
         private double _currentScale;
@@ -118,6 +118,13 @@ namespace SunEyeVision.UI.Features.WorkflowUI
         /// </summary>
         public AppCommands.CommandManager CommandManager { get; private set; }
 
+        /// <summary>
+        /// 画布内容变更事件 — SetNodes/SetConnections 整体替换集合引用时触发。
+        /// 所有依赖画布数据的组件（小地图、连接线系统等）统一订阅此事件，
+        /// 集合替换后重绑，避免各自监听 PropertyChanged 造成遗漏。
+        /// </summary>
+        public event EventHandler? WorkflowContentChanged;
+
         public WorkflowTabViewModel() : this(new NodeSequenceManager())
         {
         }
@@ -138,7 +145,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI
             _name = "工作流"; // 默认名称，可以被外部覆盖
             State = WorkflowState.Stopped;
             RunMode = RunMode.Single;
-            _workflowNodes = new ObservableCollection<SunEyeVision.UI.Shared.WorkflowNode>();
+            _workflowNodes = new ObservableCollection<WorkflowNodeBase>();
             _workflowConnections = new ObservableCollection<WorkflowConnection>();
             CurrentScale = 1.0;
             ScaleTransform = new ScaleTransform(1.0, 1.0);
@@ -307,7 +314,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI
         /// <summary>
         /// 节点集合
         /// </summary>
-        public ObservableCollection<SunEyeVision.UI.Shared.WorkflowNode> WorkflowNodes
+        public ObservableCollection<WorkflowNodeBase> WorkflowNodes
         {
             get => _workflowNodes;
             set
@@ -385,6 +392,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI
 
             OnPropertyChanged(nameof(WorkflowConnections));
             CommandManager = new CommandManager(_workflowNodes, _workflowConnections);
+            WorkflowContentChanged?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -408,29 +416,25 @@ namespace SunEyeVision.UI.Features.WorkflowUI
         }
 
         /// <summary>
-        /// 设置节点集合 — 直接绑定引擎中的同一对象实例
+        /// 设置节点集合 — 直接绑定引擎中的同一对象实例（单一数据源）
+        /// 与 SetConnections 对齐：UI 与引擎共享同一集合，节点增删自动双向同步。
         /// </summary>
         public void SetNodes(ObservableCollection<WorkflowNodeBase> nodes)
         {
             if (nodes == null)
                 throw new ArgumentNullException(nameof(nodes));
 
-            _workflowNodes.Clear();
-            foreach (var node in nodes)
+            // 直接赋值引擎工作流的节点集合，消除 UI/引擎两套集合的同步问题。
+            if (!ReferenceEquals(_workflowNodes, nodes))
             {
-                if (node is SunEyeVision.UI.Shared.WorkflowNode uiNode)
-                {
-                    _workflowNodes.Add(uiNode);
-                }
-                else
-                {
-                    throw new InvalidOperationException(
-                        $"所有节点必须是 WorkflowNode 实例。节点 {node.Id} 的实际类型为 {node.GetType().Name}");
-                }
+                _workflowNodes.CollectionChanged -= OnWorkflowNodesChanged;
+                _workflowNodes = nodes;
+                _workflowNodes.CollectionChanged += OnWorkflowNodesChanged;
             }
 
             OnPropertyChanged(nameof(WorkflowNodes));
             CommandManager = new CommandManager(_workflowNodes, _workflowConnections);
+            WorkflowContentChanged?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -525,7 +529,9 @@ namespace SunEyeVision.UI.Features.WorkflowUI
             }
 
             // ✅ 直接使用工厂创建节点，内部会自动获取局部索引（优先从空洞池获取）
-            var node = _nodeFactory.CreateNode(algorithmType, name, Id);
+            // ★ 用 CurrentWorkflowId 而非 Id：子程序下钻时，新节点局部索引须归属当前子程序工作流，
+            //   否则与主工作流同类型节点共享序号、跨画布重名冲突。
+            var node = _nodeFactory.CreateNode(algorithmType, name, CurrentWorkflowId);
 
             VisionLogger.Instance.Log(
                 LogLevel.Info,
@@ -544,7 +550,9 @@ namespace SunEyeVision.UI.Features.WorkflowUI
             if (node == null || node.LocalIndex < 0)
                 return;
 
-            _sequenceManager.ReleaseLocalIndex(Id, node.ToolType ?? string.Empty, node.LocalIndex);
+            // ★ 用 CurrentWorkflowId 而非 Id：与创建节点(CreateNode)的归属工作流保持一致，
+            //   确保子程序内节点重命名释放的序号进入正确的子程序上下文，不污染主工作流空洞池。
+            _sequenceManager.ReleaseLocalIndex(CurrentWorkflowId, node.ToolType ?? string.Empty, node.LocalIndex);
 
             VisionLogger.Instance.Log(
                 LogLevel.Info,

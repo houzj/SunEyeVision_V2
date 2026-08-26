@@ -41,8 +41,9 @@
     <PathGeometry x:Key="TreeExpanderPath"
                   Figures="M 0 0 L 6 4 L 0 8 Z"/>
 
-    <!-- 绑定图标 Path（链形，随主题变色） -->
-    <Geometry x:Key="LinkIconPath">M3.9,12C3.9,10.29 5.29,8.9 7,8.9H11V7H7C4.24,7 2,9.24 2,12C2,14.76 4.24,17 7,17H11V15.1H7C5.29,15.1 3.9,13.71 3.9,12M8,13H16V11H8V13M17,7H13V8.9H17C18.71,8.9 20.1,10.29 20.1,12C20.1,13.71 18.71,15.1 17,15.1H13V17H17C19.76,17 22,14.76 22,12C22,9.24 19.76,7 17,7Z</Geometry>
+    <!-- 绑定图标 Path（MD Material "link" 细线条交叉链环，随主题变色）。
+         用户反馈原 link-variant(偏粗) 不美观，改用 Material 标准 link：两个交叉链环 + 中横，更简洁精致 -->
+    <Geometry x:Key="LinkIconPath">M17,7H13V8.9H17C18.71,8.9 20.1,10.29 20.1,12C20.1,13.71 18.71,15.1 17,15.1H13V17H17C19.76,17 22,14.76 22,12C22,9.24 19.76,7 17,7M16,11H8V13H16V11M7,7H11V8.9H7C5.29,8.9 3.9,10.29 3.9,12C3.9,13.71 5.29,15.1 7,15.1H11V17H7C4.24,17 2,14.76 2,12C2,9.24 4.24,7 7,7Z</Geometry>
 
     <!-- 基础样式：输入控件 -->
     <Style x:Key="BaseInputStyle" TargetType="Control">
@@ -264,7 +265,28 @@
                                 BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"
                                 BorderThickness="1"
                                 Cursor="Hand"
-                                ToolTip="点击切换到绑定模式"/>
+                                ToolTip="点击切换到绑定模式">
+                            <!-- ★ 自定义模板：悬停背景走主题 ControlHoverBackgroundBrush，避免系统默认悬停蓝在暗色下突兀 -->
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="Bd"
+                                            Background="{TemplateBinding Background}"
+                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                            CornerRadius="3">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ControlHoverBackgroundBrush}}"/>
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ControlSelectedBackgroundBrush}}"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
@@ -541,24 +563,63 @@
                                         CornerRadius="0,4,4,0"
                                         Visibility="{TemplateBinding ShowUpDownButtons, Converter={StaticResource BoolToVisibilityConverter}}">
                                     <StackPanel Orientation="Vertical">
+                                        <!-- ★ 上下箭头自定义模板：悬停/按下背景走主题，避免系统默认悬停色在暗色下突兀 -->
                                         <RepeatButton x:Name="PART_IncreaseButton"
-                                                      Content="▲"
+                                                      Content="&#x25B2;"
                                                       Width="18" Height="13"
                                                       FontSize="8"
                                                       Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}"
                                                       Background="Transparent"
                                                       BorderThickness="0"
                                                       Padding="0"
-                                                      Cursor="Hand"/>
+                                                      Cursor="Hand">
+                                            <RepeatButton.Template>
+                                                <ControlTemplate TargetType="RepeatButton">
+                                                    <Border x:Name="Bd" Background="Transparent" CornerRadius="0">
+                                                        <!-- TextElement.Foreground 显式绑定：箭头字符需继承 RepeatButton.Foreground(TextSecondaryBrush)，
+                                                             否则 ContentPresenter 会用默认黑前景，悬停深灰背景下不可见 -->
+                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                                          Content="{TemplateBinding Content}"
+                                                                          TextElement.Foreground="{TemplateBinding Foreground}"/>
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ControlHoverBackgroundBrush}}"/>
+                                                        </Trigger>
+                                                        <Trigger Property="IsPressed" Value="True">
+                                                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ControlSelectedBackgroundBrush}}"/>
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </RepeatButton.Template>
+                                        </RepeatButton>
                                         <RepeatButton x:Name="PART_DecreaseButton"
-                                                      Content="▼"
+                                                      Content="&#x25BC;"
                                                       Width="18" Height="13"
                                                       FontSize="8"
                                                       Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}"
                                                       Background="Transparent"
                                                       BorderThickness="0"
                                                       Padding="0"
-                                                      Cursor="Hand"/>
+                                                      Cursor="Hand">
+                                            <RepeatButton.Template>
+                                                <ControlTemplate TargetType="RepeatButton">
+                                                    <Border x:Name="Bd" Background="Transparent" CornerRadius="0">
+                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                                          Content="{TemplateBinding Content}"
+                                                                          TextElement.Foreground="{TemplateBinding Foreground}"/>
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ControlHoverBackgroundBrush}}"/>
+                                                        </Trigger>
+                                                        <Trigger Property="IsPressed" Value="True">
+                                                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ControlSelectedBackgroundBrush}}"/>
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </RepeatButton.Template>
+                                        </RepeatButton>
                                     </StackPanel>
                                 </Border>
                             </Grid>
@@ -1394,7 +1455,29 @@
                                         </Style.Triggers>
                                     </Style>
                                 </Button.Style>
-                                <Viewbox Width="16" Height="16" Stretch="Uniform">
+                                <!-- 绑定图标按钮：Path 矢量(LinkIconPath=MD Material link 细线条链环)，主题适配。
+                                     旋转45°呈菱形链环，视觉更精致。
+                                     自定义模板：悬停背景走主题 ControlHoverBackgroundBrush，避免系统默认悬停色突兀。 -->
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="Bd" Background="Transparent" CornerRadius="3">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ControlHoverBackgroundBrush}}"/>
+                                            </Trigger>
+                                            <Trigger Property="IsPressed" Value="True">
+                                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ControlSelectedBackgroundBrush}}"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                                <Viewbox Width="16" Height="16" Stretch="Uniform"
+                                         RenderTransformOrigin="0.5,0.5">
+                                    <Viewbox.RenderTransform>
+                                        <RotateTransform Angle="-45"/>
+                                    </Viewbox.RenderTransform>
                                     <Path Fill="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"
                                           Data="{StaticResource LinkIconPath}"/>
                                 </Viewbox>

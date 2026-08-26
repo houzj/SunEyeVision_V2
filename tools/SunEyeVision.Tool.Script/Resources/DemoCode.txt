@@ -1,13 +1,11 @@
-using System;
+﻿using System;
 using System.Linq;
-using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Scripting;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 
 public partial class UserScript : Script
 {
     private int _invokeCount;
-    private double _lastMean;
 
     public override void Init()
     {
@@ -19,65 +17,34 @@ public partial class UserScript : Script
     {
         _invokeCount++;
 
-        // === 场景1: 图像信息查询 ===
+        // === 场景1: 输入图像信息（通用 IVisionImage 接口，不依赖具体引擎）===
         if (input1 == null || input1.IsEmpty)
         {
             LogError("输入图像 input1 为空，请在上游绑定图像源");
             return;
         }
 
-        // 使用 Halcon 算子查询图像尺寸
-        HOperatorSet.GetImageSize(((HalImage)input1).Unwrap(), out var imgW, out var imgH);
-        LogInfo($"[{_invokeCount}] 输入图像: {imgW.I}×{imgH.I}, 通道数={input1.Channels}");
+        LogInfo($"[{_invokeCount}] 输入图像: {input1.Width}×{input1.Height}, 通道数={input1.Channels}");
 
-        // === 场景2: 彩色转灰度（高层封装 + 底层算子对比）===
-        var grayImage = HalImage.CreateGrayFromColor(input1);
-        output1 = grayImage;
-
-        // 底层算子方式（演示两种调用风格）
-        HOperatorSet.Rgb1ToGray(((HalImage)input1).Unwrap(), out var grayObj);
-        using var grayH = new HImage(grayObj);
-        LogInfo("灰度转换完成");
-
-        // === 场景3: 阈值分割 ===
-        HOperatorSet.Threshold(grayImage.Unwrap(), out var thresholdRegion, 100.0, 255.0);
-        HOperatorSet.AreaCenter(thresholdRegion, out var thresholdArea, out _, out _);
-        LogInfo($"阈值分割区域={thresholdArea.I} 像素");
-
-        // === 场景4: Blob 分析（连通域 + 面积筛选 + 遍历输出）===
-        HOperatorSet.Connection(thresholdRegion, out var connectedRegions);
-        HOperatorSet.SelectShape(connectedRegions, out var bigBlobs, "area", "and", 500.0, 99999.0);
-
-        var blobCount = bigBlobs.CountObj();
-        LogInfo($"筛选后 Blob 数量: {blobCount}");
-
-        for (int i = 1; i <= blobCount; i++)
+        // === 场景2: 图像拷贝与像素数据（通用接口）===
+        using (var clone = input1.Clone())
         {
-            HOperatorSet.SelectObj(bigBlobs, out var singleBlob, i);
-            HOperatorSet.AreaCenter(singleBlob, out var area, out var row, out var col);
-            LogInfo($"  Blob#{i}: 面积={area.I}, 中心=({col.D:F1}, {row.D:F1})");
+            var pixelData = clone.GetPixelData();
+            LogInfo($"图像拷贝像素数据: {pixelData.Length} 字节");
         }
 
-        // === 场景5: 全局变量读写（通用接口优先，引擎特定能力再断言）===
-        // 5a. 用通用接口拿上游图像，不受引擎类型限制
+        // === 场景3: 输出传递 ===
+        output1 = input1;
+
+        // === 场景4: 全局变量读写（通用接口优先）===
+        // 4a. 用通用接口拿上游图像，不受引擎类型限制
         var upstream = GetGlobal<IVisionImage>("upstreamImage");
         if (upstream != null)
             LogInfo($"上游图像可用: {upstream.Width}×{upstream.Height}, 通道数={upstream.Channels}");
 
-        // 5b. 需要用 Halcon 算子时，显式断言引擎类型
-        if (upstream is HalImage halUpstream)
-        {
-            HOperatorSet.GetImageSize(halUpstream.Unwrap(), out var w, out var h);
-            LogInfo($"[Halcon] 解析尺寸: {w.I}×{h.I}");
-        }
-        else if (upstream != null)
-        {
-            LogWarning($"[非Halcon] 上游类型 {upstream.GetType().Name}, 无法用 HOperatorSet 算子");
-        }
-
-        // 5c. 推荐用通用接口类型 SetGlobal
+        // 4b. 推荐用通用接口类型 SetGlobal
         SetGlobal("lastImage", upstream);
-        SetGlobal("lastBlobCount", blobCount);
+        SetGlobal("lastWidth", input1.Width);
         SetGlobal("lastInvokeCount", _invokeCount);
     }
 }

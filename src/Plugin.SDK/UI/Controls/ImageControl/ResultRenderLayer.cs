@@ -786,13 +786,16 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             (byte)((argb >> 24) & 0xFF), (byte)((argb >> 16) & 0xFF),
             (byte)((argb >> 8) & 0xFF), (byte)(argb & 0xFF));
 
-        private static FormattedText CreateFormattedText(string text, Color color, double fontSize, bool isBold)
+        private FormattedText CreateFormattedText(string text, Color color, double fontSize, bool isBold)
         {
             var typeface = new Typeface(new FontFamily("Segoe UI"),
                 FontStyles.Normal, isBold ? FontWeights.Bold : FontWeights.Normal, FontStretches.Normal);
+            // 使用自身实例的 DPI，而非依赖 Application.Current.MainWindow。
+            // 依赖 MainWindow 在脚本工具/独立上下文渲染时可能为 null，导致 VisualTreeHelper.GetDpi(null) 抛 NullReferenceException。
+            // GetDpi(this) 即使本元素尚未连接可视树也不会抛异常，返回默认 96 DPI。
+            var pixelsPerDip = VisualTreeHelper.GetDpi(this).PixelsPerDip;
             return new FormattedText(text, System.Globalization.CultureInfo.CurrentCulture,
-                FlowDirection.LeftToRight, typeface, fontSize, new SolidColorBrush(color),
-                VisualTreeHelper.GetDpi(Application.Current.MainWindow).PixelsPerDip);
+                FlowDirection.LeftToRight, typeface, fontSize, new SolidColorBrush(color), pixelsPerDip);
         }
 
         private static StreamGeometry CreateArcGeometry(ArcGeometry arc)

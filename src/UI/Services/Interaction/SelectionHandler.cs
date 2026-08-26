@@ -166,7 +166,7 @@ namespace SunEyeVision.UI.Services.Interaction
             if (_canvasControl.CurrentWorkflowTab == null)
                 return positions;
 
-            foreach (var node in _canvasControl.CurrentWorkflowTab.WorkflowNodes)
+            foreach (var node in _canvasControl.CurrentWorkflowTab.WorkflowNodes.OfType<WorkflowNode>())
             {
                 if (node.IsSelected)
                 {

@@ -392,7 +392,7 @@
                                           MinWidth="80"
                                           IsReadOnly="True"
                                           ElementStyle="{StaticResource LogDataTextBlockStyle}"/>
-                    <!-- 消息列（自动换行，长日志完整显示；悬停可看整条原文） -->
+                    <!-- 消息列（不换行，单行显示；悬停 ToolTip 看完整原文） -->
                     <DataGridTextColumn Header="消息"
                                           Binding="{Binding DisplayMessage}"
                                           Width="*"
@@ -400,7 +400,7 @@
                                           IsReadOnly="True">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock" BasedOn="{StaticResource LogDataTextBlockStyle}">
-                                <Setter Property="TextWrapping" Value="Wrap"/>
+                                <Setter Property="TextWrapping" Value="NoWrap"/>
                                 <Setter Property="ToolTip" Value="{Binding DisplayMessage}"/>
                             </Style>
                         </DataGridTextColumn.ElementStyle>

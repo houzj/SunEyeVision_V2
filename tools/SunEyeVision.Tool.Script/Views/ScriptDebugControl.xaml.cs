@@ -84,20 +84,53 @@ namespace SunEyeVision.Tool.Script.Views
             // 上游节点数据源在 SetDataProvider 中通过基类缓存桥接（避免此处硬编码 null）
             InitializeTabs();
 
+            // 关闭埋点：窗口关闭（含 X 关闭）时控件卸载，记录当前是否已同步代码。
+            // 用于定位"修改后未执行直接关闭 → 重新打开代码丢失"的根因。
+            Unloaded += OnControlUnloaded;
+
             perfSw.Stop();
             PluginLogger.Info($"[Perf] ScriptDebugControl 构造函数: {perfSw.ElapsedMilliseconds}ms", GetType().Name);
         }
 
         /// <summary>
-        /// 构建 workspace 引用来源：宿主 API 引用（BCL + Script/IVisionImage/LogInfo 等）+ 用户 ScriptRefs 目录引用。
-        /// 对齐原 RebuildWorkspace 的引用注入，供内核 ScriptEditorCore.SetReferenceProvider 使用。
+        /// 控件卸载（窗口关闭）时统一同步代码（含 X 关闭路径）。
+        /// 修复：X 关闭不触发 OnConfirmCommand/ExecuteTool，导致编辑器最新代码未写回节点参数，
+        /// 重新打开调试窗口时读到旧代码丢失。此处兜底同步，保证任何关闭方式都保存最新代码。
+        /// </summary>
+        private void OnControlUnloaded(object sender, RoutedEventArgs e)
+        {
+            var editorLen = EditorCore.GetCode()?.Length ?? 0;
+            var paramLen = _parameters.ScriptCode?.Length ?? 0;
+            var synced = editorLen == paramLen;
+            PluginLogger.Info(
+                $"[关闭路径] 控件卸载(窗口关闭) | 编辑器代码长度={editorLen}, 参数代码长度={paramLen}, 已同步={synced}",
+                GetType().Name);
+
+            // 未同步则补同步：编辑器最新代码写回节点参数，避免关闭后代码丢失
+            if (!synced)
+            {
+                SyncCodeToParameters();
+                PluginLogger.Info($"[关闭路径] X关闭补同步代码: 长度={EditorCore.GetCode()?.Length ?? 0}", GetType().Name);
+            }
+
+            // 关闭时预编译最新代码：保证之后工作流执行命中缓存零编译（编译与执行解耦）
+            PreCompileLatestCode();
+        }
+
+        /// <summary>
+        /// 构建 workspace 引用来源：按当前节点 AssemblyReferences（唯一真相源）组装，
+        /// 经 ResolveAssemblyPath 逐个解析（BCL/宿主锚定/ScriptRefs），与编译引用保持一致。
+        /// 供内核 ScriptEditorCore.SetReferenceProvider 使用。
         /// </summary>
         private IEnumerable<MetadataReference> BuildReferences()
         {
             var refDir = _parameters.AssemblyReferenceFullPath;
-            var list = MetadataReferenceProvider.GetHostReferences().ToList();
-            if (!string.IsNullOrEmpty(refDir))
-                list.AddRange(SharedMetadataReferenceProvider.GetScriptRefs(refDir));
+            var list = new List<MetadataReference>();
+            foreach (var name in _parameters.AssemblyReferences)
+            {
+                if (string.IsNullOrWhiteSpace(name)) continue;
+                list.Add(MetadataReferenceProvider.ResolveAssemblyPath(name.Trim(), refDir));
+            }
             return list;
         }
 
@@ -108,6 +141,11 @@ namespace SunEyeVision.Tool.Script.Views
             {
                 _parameters = scriptParams;
 
+                // 订阅输入/输出契约变化：改输入输出类型/增删变量后重建 workspace，
+                // 让诊断器用最新字段类型（修复"改类型后诊断仍报旧类型错误"）。
+                scriptParams.InputContractChanged += OnContractChanged;
+                scriptParams.OutputContractChanged += OnContractChanged;
+
                 // 加载代码到内核编辑器（补全/诊断/workspace 由内核统一处理）
                 EditorCore.SetSuppressDiagnostic(true);   // 加载代码时抑制诊断
                 EditorCore.LoadCode(_parameters.ScriptCode);
@@ -116,6 +154,9 @@ namespace SunEyeVision.Tool.Script.Views
                 // workspace 重建 + 语义预热改由 InitializeAsync（窗口 Show 前被 await）统一触发，
                 // 实现"打开即着色、无白色过渡"。此处不再异步后置。
                 // 注意：调试模式（无 InitializeAsync 调用路径）仍需显式初始化，见调试入口处。
+
+                // 迁移保障：代码引用了 Halcon 但引用列表缺 halcondotnetxl → 提示补引用（rule-015 不静默）
+                CheckHalconReference();
 
                 // 参数注入完成 → 状态切到"就绪"
                 UpdateStatus("就绪");
@@ -129,6 +170,78 @@ namespace SunEyeVision.Tool.Script.Views
         public override async Task InitializeAsync()
         {
             await EditorCore.InitializeAndWaitAsync();
+
+            // ★ 打开调试窗口即预填充输入监视：若上游已有值（工作流执行过/失败保留），
+            //   无需点击执行即可看到输入值。防御：无上游/无 DataProvider/解析异常 → 静默跳过。
+            TryPrefillInputMonitor();
+
+            // ★ 打开调试窗口即预填充输出监视：若当前节点已有执行结果（工作流执行过），
+            //   输出变量直接显示值，无需点击执行。防御：无结果/查询异常 → 静默跳过。
+            TryPrefillOutputMonitor();
+        }
+
+        /// <summary>
+        /// 打开调试窗口时主动查询当前节点已保存的执行结果（SSOT），填充输出监视面板。
+        /// 与 <see cref="OnExternalResultArrived"/> 复用同一查询链路，避免打开窗口时输出空白
+        /// （输入有预填充、输出没有 → 两者不对称）。防御：无节点 ID/无 DataProvider/结果为空/异常 → 静默跳过。
+        /// </summary>
+        private void TryPrefillOutputMonitor()
+        {
+            try
+            {
+                var nodeId = GetNodeIdFromCurrentNode();
+                if (string.IsNullOrEmpty(nodeId) || DataProvider is not IDataSourceQueryService queryService)
+                    return;
+
+                var context = queryService.GetNodeContext(nodeId);
+                if (context?.Result is ScriptResults result)
+                {
+                    OutputTabControl.ValueSource = FilterDefaultValues(result.OutputValues);
+                    PluginLogger.Info($"[{nameof(ScriptDebugControl)}] 输出预填充 {result.OutputValues.Count} 个值",
+                        nameof(ScriptDebugControl));
+                }
+            }
+            catch (Exception ex)
+            {
+                // 预填充失败不阻塞打开窗口（rule-003 日志不抛）；执行时仍会走完整逻辑
+                PluginLogger.Info($"[{nameof(ScriptDebugControl)}] 输出预填充跳过: {ex.Message}",
+                    nameof(ScriptDebugControl));
+            }
+        }
+
+        /// <summary>
+        /// 打开调试窗口时主动解析一次输入绑定，将已存在的上游值（如工作流执行后保留的节点结果）
+        /// 填充到输入监视面板（监控模式），无需点击执行即可看到输入值。
+        /// 防御：无输入配置/无上游节点结果/解析异常 → 静默跳过（执行时仍会正常解析）。
+        /// </summary>
+        private void TryPrefillInputMonitor()
+        {
+            try
+            {
+                if (_parameters == null || _parameters.Inputs == null || _parameters.Inputs.Count == 0)
+                    return;
+
+                var nodeResults = BuildNodeResultsContext();
+                if (nodeResults == null)
+                    return;   // 无上游节点结果，输入绑定无值可解析，跳过
+
+                var globalVars = GetDebugModeGlobalVariables();
+                var resolved = ScriptBindingResolver.Resolve(
+                    _parameters.Inputs,
+                    globalVars,
+                    nodeResults);
+
+                _parameters.ResolvedInputValues = resolved;
+                InputTabControl.ValueSource = resolved;
+                PluginLogger.Info($"[{nameof(ScriptDebugControl)}] 输入预填充 {resolved.Count} 个值",
+                    nameof(ScriptDebugControl));
+            }
+            catch (Exception ex)
+            {
+                // 预填充失败不阻塞打开窗口（rule-003 日志不抛）；执行时仍会走完整解析并报错
+                PluginLogger.Info($"[{nameof(ScriptDebugControl)}] 输入预填充跳过: {ex.Message}",
+                    nameof(ScriptDebugControl));
+            }
         }
 
         /// <summary>
@@ -178,7 +291,11 @@ namespace SunEyeVision.Tool.Script.Views
 
         protected override void OnConfirmCommand(object sender, ExecutedRoutedEventArgs e)
         {
+            // 确定按钮路径：确认关闭前保存最新代码
+            PluginLogger.Info("[关闭路径] 确定按钮 OnConfirmCommand 触发，先同步代码", GetType().Name);
             SyncCodeToParameters();
+            // 确认关闭前预编译：代码变化后的最新代码编译入缓存，保证之后工作流执行命中缓存零编译
+            PreCompileLatestCode();
             ExitEditMode();
             base.OnConfirmCommand(sender, e);
         }
@@ -186,6 +303,8 @@ namespace SunEyeVision.Tool.Script.Views
         protected override object ExecuteTool()
         {
             SyncCodeToParameters();
+            // 执行前预编译：保证本次执行及后续工作流执行命中缓存零编译
+            PreCompileLatestCode();
             _logEntries.Clear();
             // 清除所有监视数据（输入 + 输出）
             ClearAllMonitorValues();
@@ -205,6 +324,9 @@ namespace SunEyeVision.Tool.Script.Views
 
             var globalVars = GetDebugModeGlobalVariables();
             _parameters.NodeResults = nodeResults;
+            // 调试模式：工具执行摘要（Script complete/failed）写入 result.LogMessages 供调试窗口展示，
+            // 不写主界面日志（避免调试噪音）；工作流执行时保持写主界面。
+            _parameters.IsDebugMode = true;
             _parameters.SetExecutionContext(new ScriptExecutionContext(
                 logger: PluginLogger.Logger,
                 toolName: "Script",
@@ -377,6 +499,34 @@ namespace SunEyeVision.Tool.Script.Views
         }
 
         /// <summary>
+        /// 迁移保障：检测代码引用了 Halcon（HOperatorSet/using HalconDotNet）但当前节点引用列表缺 halcondotnetxl。
+        /// 缺失 → 黄字日志提示补引用（rule-015 不静默），不自动添加（用户决定是否启用 halcon）。
+        /// </summary>
+        private void CheckHalconReference()
+        {
+            if (_parameters == null) return;
+            var code = _parameters.ScriptCode ?? string.Empty;
+
+            // 引用列表含 halcondotnetxl 则无需提示
+            bool hasHalconRef = _parameters.AssemblyReferences.Any(n =>
+                n.Equals("halcondotnetxl", StringComparison.OrdinalIgnoreCase));
+            if (hasHalconRef) return;
+
+            // 代码是否用到了 Halcon（粗检：HOperatorSet 或 using HalconDotNet）
+            bool usesHalcon = code.Contains("HOperatorSet", StringComparison.Ordinal)
+                || code.Contains("using HalconDotNet", StringComparison.Ordinal)
+                || code.Contains("HalImage", StringComparison.Ordinal);
+
+            if (usesHalcon)
+            {
+                PluginLogger.Warning(
+                    "脚本代码引用了 Halcon 算子（HOperatorSet/HalImage），但当前节点的程序集引用列表未包含 halcondotnetxl。" +
+                    "请点击\"引用程序集\"勾选 halcondotnetxl 后重新编译。",
+                    nameof(ScriptDebugControl));
+            }
+        }
+
+        /// <summary>
         /// 过滤掉值为类型默认值的条目（未赋值的输出字段显示"无结果"）
         /// </summary>
         private static Dictionary<string, object?> FilterDefaultValues(Dictionary<string, object?> raw)
@@ -510,26 +660,31 @@ namespace SunEyeVision.Tool.Script.Views
         }
 
         /// <summary>
-        /// 引用程序集按钮点击 — 弹出对话框管理引用目录下的 DLL
+        /// 引用程序集按钮点击 — 弹出对话框管理当前节点的程序集引用勾选列表。
+        /// 勾选变化写回当前节点 AssemblyReferences（唯一真相源），保存后失效缓存 + 重建 workspace。
         /// </summary>
         private void AssemblyRefButton_Click(object sender, RoutedEventArgs e)
         {
             var refDir = _parameters.AssemblyReferenceFullPath;
             Directory.CreateDirectory(refDir);
 
-            var oldFiles = new HashSet<string>(Directory.EnumerateFiles(refDir, "*.dll"), StringComparer.OrdinalIgnoreCase);
+            // 记录勾选前引用列表，用于检测是否变化
+            var oldRefs = _parameters.AssemblyReferences.ToList();
 
-            var dialog = new AssemblyReferenceDialog(refDir)
+            var dialog = new AssemblyReferenceDialog(refDir, _parameters.AssemblyReferences)
             {
                 Owner = Window.GetWindow(this)
             };
 
             if (dialog.ShowDialog() == true)
             {
-                var newFiles = new HashSet<string>(Directory.EnumerateFiles(refDir, "*.dll"), StringComparer.OrdinalIgnoreCase);
-                if (!oldFiles.SetEquals(newFiles))
+                var refsChanged = !oldRefs.SequenceEqual(
+                    _parameters.AssemblyReferences, StringComparer.OrdinalIgnoreCase);
+
+                // ScriptRefs 目录 DLL 变化 → 失效引用缓存；引用列表变化 → 重建 workspace
+                if (refsChanged)
                 {
-                    SharedMetadataReferenceProvider.InvalidateScriptRefs(refDir);  // 失效引用缓存，强制重载新增 DLL
+                    SharedMetadataReferenceProvider.InvalidateScriptRefs(refDir);
                     EditorCore.RebuildWorkspace(refreshReferences: true);
                 }
             }
@@ -566,7 +721,47 @@ namespace SunEyeVision.Tool.Script.Views
         /// </summary>
         private void SyncCodeToParameters()
         {
-            _parameters.ScriptCode = EditorCore.GetCode();
+            var newCode = EditorCore.GetCode();
+            _parameters.ScriptCode = newCode;
+            PluginLogger.Info($"[SyncCodeToParameters] 已同步代码: 长度={newCode?.Length ?? 0}", GetType().Name);
+        }
+
+        /// <summary>
+        /// 输入/输出契约变化（改类型/增删变量）时重建编辑器 workspace 并重新诊断。
+        /// 保证诊断器使用最新字段类型，修复"改类型后仍报旧类型错误、需重新键入才恢复"的问题。
+        /// </summary>
+        private void OnContractChanged()
+        {
+            try
+            {
+                EditorCore.RebuildWorkspace();
+                EditorCore.ScheduleDiagnosticAsync();
+                EditorCore.RedrawVisibleLines();
+                PluginLogger.Info("[契约变化] 输入/输出契约变更，已重建 workspace 并重新诊断", GetType().Name);
+            }
+            catch (Exception ex)
+            {
+                PluginLogger.Warning($"[{nameof(ScriptDebugControl)}] 契约变化重建 workspace 失败: {ex.Message}", nameof(ScriptDebugControl));
+            }
+        }
+
+        /// <summary>
+        /// 预编译最新代码（编译与执行解耦）：代码变化后的最新代码编译入缓存，
+        /// 保证之后工作流执行命中缓存零编译。失败仅记录告警，不阻塞执行/关闭。
+        /// </summary>
+        private void PreCompileLatestCode()
+        {
+            try
+            {
+                _scriptTool ??= new ScriptTool();
+                var errors = _scriptTool.PreCompile(_parameters);
+                PluginLogger.Info($"[预编译] 已执行 | 代码长度={_parameters.ScriptCode?.Length ?? 0}, 诊断={errors.Count}",
+                    GetType().Name);
+            }
+            catch (Exception ex)
+            {
+                PluginLogger.Warning($"[{nameof(ScriptDebugControl)}] 预编译失败: {ex.Message}", nameof(ScriptDebugControl));
+            }
         }
 
 

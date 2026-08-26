@@ -1,0 +1,20 @@
+<Solution>
+  <Project Path="Src/CommonControl/CommonControl.csproj" />
+  <Project Path="Src/Core/SunEyeVision.Core.csproj" />
+  <Project Path="Src/Plugin.Infrastructure/SunEyeVision.Plugin.Infrastructure.csproj" />
+  <Project Path="Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj" />
+  <Project Path="Src/SunEyeVision.CvEngine/SunEyeVision.CvEngine.csproj" />
+  <Project Path="Src/DeviceDriver/SunEyeVision.DeviceDriver.csproj" />
+  <Project Path="Src/UI/SunEyeVision.UI.csproj" />
+  <Project Path="Src/Workflow/SunEyeVision.Workflow.csproj" />
+  <Project Path="tools/SunEyeVision.BlobAnalysis/SunEyeVision.Tool.BlobAnalysis.csproj" />
+  <Project Path="tools/SunEyeVision.Tool.Threshold/SunEyeVision.Tool.Threshold.csproj" />
+  <Project Path="tools/SunEyeVision.Tool.ImageLoad/SunEyeVision.Tool.ImageLoad.csproj" />
+  <Project Path="tools/SunEyeVision.Tool.ImageThreshold/SunEyeVision.Tool.ImageThreshold.csproj" />
+  <Project Path="tools/SunEyeVision.Tool.ImageFilter/SunEyeVision.Tool.ImageFilter.csproj" />
+  <Project Path="tools/SunEyeVision.Tool.Morphology/SunEyeVision.Tool.Morphology.csproj" />
+  <Project Path="tools/SunEyeVision.Tool.ShapeMatch/SunEyeVision.Tool.ShapeMatch.csproj" />
+  <Project Path="tools/SunEyeVision.Tool.Subroutine/SunEyeVision.Tool.Subroutine.csproj" />
+  <Project Path="tools/SunEyeVision.Tool.Condition/SunEyeVision.Tool.Condition.csproj" />
+  <Project Path="tools/SunEyeVision.Tool.Script/SunEyeVision.Tool.Script.csproj" />
+</Solution>

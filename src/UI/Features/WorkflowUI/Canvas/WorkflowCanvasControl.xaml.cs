@@ -62,12 +62,6 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
         private MainWindowViewModel? _viewModel;
 
-        // 已注册的子程序齿轮按钮（主题切换时重新诊断，用于两主题可见性对比）
-        private readonly List<Button> _gearButtons = new();
-
-        // 主题切换诊断（两主题对比用），由构造函数订阅/取消
-        private SunEyeVision.UI.Services.ThemeManager? _themeManagerForGearDiagnosis;
-
         // 辅助类
 
         private WorkflowDragDropHandler? _dragDropHandler;
@@ -399,9 +393,19 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
         {
 
+            // 退订旧 Tab 的画布内容变更订阅（Tab 切换时清理，防内存泄漏）
+            if (e.OldValue is WorkflowTabViewModel oldWorkflowTab)
+            {
+                oldWorkflowTab.WorkflowContentChanged -= WorkflowTab_WorkflowContentChanged;
+            }
+
             if (DataContext is WorkflowTabViewModel workflowTab)
 
             {
+                // 订阅画布内容变更：SetNodes/SetConnections 整体替换集合引用时
+                // （子程序导航/返回路径），重建连接线系统并重算路径。
+                workflowTab.WorkflowContentChanged += WorkflowTab_WorkflowContentChanged;
+
                 // 将WorkflowCanvas的RenderTransform绑定到ViewModel的ScaleTransform
 
                 var binding = new System.Windows.Data.Binding("ScaleTransform")
@@ -494,7 +498,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
                         // 订阅节点集合变化事件
 
-                        if (workflowTab.WorkflowNodes is ObservableCollection<WorkflowNode> nodesCollection)
+                        if (workflowTab.WorkflowNodes is ObservableCollection<WorkflowNodeBase> nodesCollection)
 
                         {
 
@@ -514,7 +518,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
                                     {
 
-                                        foreach (WorkflowNode node in args.NewItems)
+                                        foreach (WorkflowNodeBase node in args.NewItems)
 
                                         {
 
@@ -763,7 +767,45 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
         }
 
+        /// <summary>
+        /// 画布内容变更 - SetNodes/SetConnections 整体替换集合引用（子程序导航/返回路径）
+        /// 时重建连接线系统并重算全部路径。数据驱动：连接线始终跟随当前集合，不依赖 Tab 切换事件。
+        /// </summary>
+        private void WorkflowTab_WorkflowContentChanged(object? sender, EventArgs e)
+        {
+            if (sender is WorkflowTabViewModel workflowTab)
+            {
+                RebindConnectionSystem(workflowTab);
+            }
+        }
 
+        /// <summary>
+        /// 重建连接线系统：用当前集合重建 ConnectionPathCache（内部订阅新集合）、
+        /// 更新 SmartPathConverter 静态引用、重建 BatchUpdateManager、重算全部路径。
+        /// 修复子程序导航/返回后连接线丢失（缓存引用旧集合）问题。
+        /// </summary>
+        private void RebindConnectionSystem(WorkflowTabViewModel workflowTab)
+        {
+            try
+            {
+                var calculator = Services.PathCalculators.PathCalculatorFactory.CreateCalculator();
+                _connectionPathCache = new ConnectionPathCache(workflowTab.WorkflowNodes, calculator);
+                SmartPathConverter.PathCache = _connectionPathCache;
+                SmartPathConverter.Nodes = workflowTab.WorkflowNodes;
+                SmartPathConverter.Connections = workflowTab.WorkflowConnections;
+
+                _batchUpdateManager = new ConnectionBatchUpdateManager(_connectionPathCache);
+                _batchUpdateManager.SetCurrentTab(workflowTab);
+
+                _connectionPathCache.WarmUp(workflowTab.WorkflowConnections);
+                RefreshAllConnectionPaths();
+            }
+            catch (Exception ex)
+            {
+                VisionLogger.Instance?.Log(LogLevel.Error,
+                    $"重新绑定连接系统失败: {ex.Message}", "WorkflowCanvasControl", ex);
+            }
+        }
 
         /// <summary>
 
@@ -955,16 +997,6 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
 
             Loaded += WorkflowCanvasControl_Loaded;
-
-            Unloaded += WorkflowCanvasControl_Unloaded;
-
-            // 主题切换时对已有子程序齿轮重新诊断，支持两主题可见性对比
-            _themeManagerForGearDiagnosis = SunEyeVision.UI.Core.ServiceLocator.Instance
-                .GetService<SunEyeVision.UI.Services.ThemeManager>();
-            if (_themeManagerForGearDiagnosis != null)
-            {
-                _themeManagerForGearDiagnosis.ThemeChanged += OnThemeChangedForGearDiagnosis;
-            }
 
             // 初始化临时连接线
 
@@ -1750,6 +1782,8 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
                 // 5A: 获取所有选中节点
 
                 var selectedNodes = _viewModel?.WorkflowTabViewModel.SelectedTab?.WorkflowNodes
+                    // 拖动需 WorkflowNode 特有成员，运行时元素均为 WorkflowNode，安全转型
+                    .OfType<WorkflowNode>()
 
                     .Where(n => n.IsSelected)
 
@@ -3489,7 +3523,7 @@ _viewModel.SelectedNode = targetNode;
 
 
 
-                foreach (var node in _viewModel.WorkflowTabViewModel.SelectedTab.WorkflowNodes)
+                foreach (var node in _viewModel.WorkflowTabViewModel.SelectedTab.WorkflowNodes.OfType<WorkflowNode>())
 
                 {
 
@@ -4971,7 +5005,7 @@ _viewModel.SelectedNode = targetNode;
 
                 {
 
-                    sourceNode = CurrentWorkflowTab.WorkflowNodes.FirstOrDefault(n => n.Id == BoundingSourceNodeId);
+                    sourceNode = CurrentWorkflowTab.WorkflowNodes.OfType<WorkflowNode>().FirstOrDefault(n => n.Id == BoundingSourceNodeId);
 
                 }
 
@@ -4981,7 +5015,7 @@ _viewModel.SelectedNode = targetNode;
 
                 {
 
-                    targetNode = CurrentWorkflowTab.WorkflowNodes.FirstOrDefault(n => n.Id == BoundingTargetNodeId);
+                    targetNode = CurrentWorkflowTab.WorkflowNodes.OfType<WorkflowNode>().FirstOrDefault(n => n.Id == BoundingTargetNodeId);
 
                 }
 
@@ -5203,222 +5237,6 @@ _viewModel.SelectedNode = targetNode;
             }
         }
 
-        /// <summary>
-        /// 子程序设置齿轮按钮加载诊断（全链埋点，两主题对比）：
-        /// 记录影响齿轮可见性的完整链路，供亮/暗主题下图标不可见问题排查。
-        /// 覆盖维度：当前主题、ToolType(DataTrigger)、按钮可见性状态、节点背景、
-        /// 状态色块底、齿轮 Foreground/FontFamily/FontSize/FontWeight、实际对比度。
-        /// 排障完成后删除本方法、XAML 中 Loaded="SubroutineNodeSettings_Loaded" 及相关辅助代码。
-        /// </summary>
-        private void SubroutineNodeSettings_Loaded(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button gearButton && gearButton.DataContext is WorkflowNode node)
-            {
-                // 注册按钮以便主题切换时重新诊断（去重）
-                if (!_gearButtons.Contains(gearButton))
-                {
-                    _gearButtons.Add(gearButton);
-                }
-                LogGearDiagnosis(gearButton, node, "加载");
-            }
-            else
-            {
-                VisionLogger.Instance?.Log(LogLevel.Warning,
-                    $"齿轮诊断: DataContext 不是 WorkflowNode (实际={sender.GetType().Name}), 齿轮可能不会显示",
-                    "WorkflowCanvasControl");
-            }
-        }
-
-        /// <summary>
-        /// 控件卸载时退订主题切换诊断事件，避免内存泄漏。
-        /// </summary>
-        private void WorkflowCanvasControl_Unloaded(object sender, RoutedEventArgs e)
-        {
-            if (_themeManagerForGearDiagnosis != null)
-            {
-                _themeManagerForGearDiagnosis.ThemeChanged -= OnThemeChangedForGearDiagnosis;
-                _themeManagerForGearDiagnosis = null;
-            }
-            _gearButtons.Clear();
-        }
-
-        /// <summary>
-        /// 主题切换后，对画布上所有已注册的子程序齿轮重新输出完整诊断，
-        /// 从而在同一份日志里对比亮/暗两种主题下的可见性链路。
-        /// </summary>
-        private void OnThemeChangedForGearDiagnosis(SunEyeVision.UI.Services.AppTheme theme)
-        {
-            foreach (var gearButton in _gearButtons.ToList())
-            {
-                if (gearButton.DataContext is WorkflowNode node)
-                {
-                    LogGearDiagnosis(gearButton, node, "主题切换");
-                }
-            }
-        }
-
-        /// <summary>
-        /// 输出齿轮按钮的完整可见性诊断（单次）。
-        /// </summary>
-        private static void LogGearDiagnosis(Button gearButton, WorkflowNode node, string reason)
-        {
-            try
-            {
-                // 1. 当前主题（两主题对比的关键维度）
-                var theme = SunEyeVision.UI.Core.ServiceLocator.Instance
-                    .GetService<SunEyeVision.UI.Services.ThemeManager>()?.CurrentTheme.ToString() ?? "未知";
-
-                // 2. 节点卡片背景色（设计值，适配器写死浅色）
-                var adapter = NodeDisplayAdapterFactory.GetAdapter(node.ToolType);
-                var nodeBg = adapter.GetBackgroundColor(node);
-
-                // 3. 状态色块背景色（设计值）
-                var statusBg = GetNodeStatusColor(node.Status);
-
-                // 4. 设计有效底
-                var effectiveBg = statusBg.A == 0 ? (Color)nodeBg : statusBg;
-
-                // 5. 齿轮按钮可见性状态
-                var fg = gearButton.Foreground as SolidColorBrush;
-                var fgColor = fg?.Color ?? Colors.Black;
-                var fontFamily = gearButton.FontFamily?.Source ?? "null";
-
-                // 6. WCAG 对比度（基于"设计值"叠色，仅供快速判断；真正判断看下面的"实际渲染对比度"）
-                var designContrast = ComputeContrastRatio(fgColor, effectiveBg);
-
-                // === A. 实际渲染链路（关键诊断维度，从视觉树读取 WPF 实际使用的值） ===
-
-                // A1. 节点卡片 Border (x:Name="NodeBorder") 的实际 Background
-                Color actualNodeCardBg = ReadActualBackground(gearButton, b => b.Name == "NodeBorder");
-
-                // A2. 状态色块 Border 的实际 Background。
-                //    状态色块是齿轮的兄弟节点（同父 Grid，CornerRadius="6,0,0,6"），
-                //    从齿轮的父级 Grid 遍历子元素精确定位，读取真实渲染色。
-                Color actualStatusBlockBg = ReadStatusBlockBackground(gearButton);
-
-                // A3. 真正"实际"的有效底：状态色块不透明则取色块，否则取节点卡片实际背景
-                var actualEffectiveBg = actualStatusBlockBg.A > 0 ? actualStatusBlockBg : actualNodeCardBg;
-
-                // A4. 真正对比度：齿轮 Foreground vs 实际叠的底
-                var actualContrast = ComputeContrastRatio(fgColor, actualEffectiveBg);
-                var actuallyLegible = actualContrast >= 3.0;
-
-                VisionLogger.Instance?.Log(LogLevel.Info,
-                    $"齿轮诊断[{reason}]: 主题={theme}, ToolType={node.ToolType}, " +
-                    $"按钮Visibility={gearButton.Visibility}, IsVisible={gearButton.IsVisible}, " +
-                    $"IsEnabled={gearButton.IsEnabled}, Opacity={gearButton.Opacity:F2}, " +
-                    $"[设计]节点背景={nodeBg}, 状态色块底={statusBg}, 有效底={effectiveBg}, " +
-                    $"设计对比度={designContrast:F2}, " +
-                    $"[实际]节点卡片Border背景={actualNodeCardBg}, 状态色块Border背景={actualStatusBlockBg}, " +
-                    $"实际有效底={actualEffectiveBg}, 实际对比度={actualContrast:F2}({(actuallyLegible ? "可辨识" : "不可辨识")}), " +
-                    $"齿轮Foreground={fgColor}, FontFamily={fontFamily}, FontSize={gearButton.FontSize}, " +
-                    $"FontWeight={gearButton.FontWeight}, 节点显示名={node.DisplayName}",
-                    "WorkflowCanvasControl");
-            }
-            catch (Exception ex)
-            {
-                VisionLogger.Instance?.Log(LogLevel.Warning,
-                    $"齿轮诊断[{reason}] 异常: {ex.GetType().Name}: {ex.Message}",
-                    "WorkflowCanvasControl");
-            }
-        }
-
-        /// <summary>
-        /// 从齿轮按钮向上遍历视觉树，按指定谓词查找祖先 Border，并读取其实际渲染的 Background 颜色。
-        /// 找不到返回 #00FFFFFF（透明，便于上层判断"未找到"）。
-        /// </summary>
-        private static Color ReadActualBackground(DependencyObject start, Func<Border, bool> predicate)
-        {
-            DependencyObject? current = start;
-            int depth = 0;
-            while (current != null && depth < 20)
-            {
-                if (current is Border border && predicate(border))
-                {
-                    if (border.Background is SolidColorBrush scb)
-                    {
-                        return scb.Color;
-                    }
-                    return Colors.Magenta; // 命中但 Background 非纯色，用 Magenta 标识
-                }
-                current = VisualTreeHelper.GetParent(current);
-                depth++;
-            }
-            return Color.FromArgb(0, 255, 255, 255);
-        }
-
-        /// <summary>
-        /// 定位齿轮所在图标列（Column 0）内的状态色块 Border（CornerRadius="6,0,0,6"）并读取其实际 Background。
-        /// 从齿轮的父级 Grid 遍历子元素（状态色块是齿轮的兄弟节点）。
-        /// 找不到返回 #00FFFFFF（透明）。
-        /// </summary>
-        private static Color ReadStatusBlockBackground(DependencyObject gearButton)
-        {
-            // 找到齿轮所在的父级 Grid（图标列 Column 0）
-            DependencyObject? parent = VisualTreeHelper.GetParent(gearButton);
-            if (parent is not Grid iconColumnGrid)
-            {
-                return Color.FromArgb(0, 255, 255, 255);
-            }
-
-            // 遍历该 Grid 的子元素，找 CornerRadius 为 (6,0,0,6) 的状态色块 Border
-            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(iconColumnGrid); i++)
-            {
-                if (VisualTreeHelper.GetChild(iconColumnGrid, i) is Border border)
-                {
-                    var cr = border.CornerRadius;
-                    bool isStatusBlock = Math.Abs(cr.TopLeft - 6) < 0.1
-                                         && Math.Abs(cr.TopRight) < 0.1
-                                         && Math.Abs(cr.BottomRight) < 0.1
-                                         && Math.Abs(cr.BottomLeft) < 0.1;
-                    if (isStatusBlock)
-                    {
-                        if (border.Background is SolidColorBrush scb)
-                        {
-                            return scb.Color;
-                        }
-                        return Colors.Magenta; // 命中但背景非纯色
-                    }
-                }
-            }
-
-            return Color.FromArgb(0, 255, 255, 255);
-        }
-
-        /// <summary>
-        /// 根据节点状态映射状态色块背景色（与 NodeIconStatusBackgroundConverter 同步）。
-        /// </summary>
-        private static Color GetNodeStatusColor(string? status)
-        {
-            return status switch
-            {
-                "运行中" => Color.FromRgb(33, 150, 243),   // #2196F3
-                "成功" or "OK" => Color.FromRgb(76, 175, 80),  // #4CAF50
-                "失败" or "NG" => Color.FromRgb(244, 67, 54),  // #F44336
-                "跳过" => Color.FromRgb(158, 158, 158),   // #9E9E9E
-                _ => Colors.Transparent
-            };
-        }
-
-        /// <summary>
-        /// 计算两个颜色的 WCAG 对比度（1~21），≥3.0 视为图标可辨识。
-        /// </summary>
-        private static double ComputeContrastRatio(Color fg, Color bg)
-        {
-            double L(double c)
-            {
-                var srgb = c / 255.0;
-                return srgb <= 0.03928
-                    ? srgb / 12.92
-                    : Math.Pow((srgb + 0.055) / 1.055, 2.4);
-            }
-
-            var lFg = 0.2126 * L(fg.R) + 0.7152 * L(fg.G) + 0.0722 * L(fg.B);
-            var lBg = 0.2126 * L(bg.R) + 0.7152 * L(bg.G) + 0.0722 * L(bg.B);
-            var lighter = Math.Max(lFg, lBg);
-            var darker = Math.Min(lFg, lBg);
-            return (lighter + 0.05) / (darker + 0.05);
-        }
 
         #endregion
 

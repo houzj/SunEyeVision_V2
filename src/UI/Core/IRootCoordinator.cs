@@ -140,9 +140,17 @@ namespace SunEyeVision.UI.Core
         string CurrentSolutionName { get; }
 
         /// <summary>
-        /// 当前选中工作流标签页（顶栏下拉框）
+        /// 当前选中工作流标签页（只读，供 View 单向绑定）
+        /// 变更一律通过 <see cref="SetSelectedTab"/> 命令入口，避免双向绑定回写造成重入。
         /// </summary>
-        object SelectedTab { get; set; }
+        object? SelectedTab { get; }
+
+        /// <summary>
+        /// 设置当前选中工作流标签页（唯一写入口）。
+        /// 用户操作（顶栏下拉框/TabControl 切换）与代码路径均通过此方法变更，保证单向数据流。
+        /// </summary>
+        /// <param name="tab">目标标签页</param>
+        void SetSelectedTab(object? tab);
 
         /// <summary>
         /// 当前选中工作流标签页变化事件（代码路径切换 Tab 时通知子 VM 刷新绑定）

@@ -61,5 +61,12 @@ namespace SunEyeVision.UI.Services.Interaction
         /// <param name="workflowId">工作流ID</param>
         /// <param name="nodes">现有节点列表</param>
         void InitializeHolePoolsFromNodes(string workflowId, IEnumerable<WorkflowNode> nodes);
+
+        /// <summary>
+        /// 初始化指定工作流的局部空洞池（不重置全局索引，用于子程序/主工作流导航加载时）
+        /// </summary>
+        /// <param name="workflowId">工作流ID</param>
+        /// <param name="nodes">该工作流的现有节点列表</param>
+        void InitializeLocalHolePool(string workflowId, IEnumerable<WorkflowNode> nodes);
     }
 }

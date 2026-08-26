@@ -48,6 +48,10 @@ public partial class App : Application
     private DispatcherTimer? _monitorTimer;
     private int _monitorReportInterval = 30; // 每30秒报告一次
 
+    // 启动页（OnStartup 创建，HandleStartupDecision 关闭）。
+    // 用全限定名避免与 System.Windows.SplashScreen（WPF 官方类）冲突。
+    private SunEyeVision.UI.Shell.Windows.SplashScreen? _splashScreen;
+
     static App()
     {
         // 只记录警告和错误级别的绑定信息，避免性能问题
@@ -61,7 +65,21 @@ public partial class App : Application
 
         // P0优化：预热线程池，消除首次加载延迟
         PrewarmThreadPool();
-        
+
+        // 启动页：在插件加载/服务初始化/解决方案加载等耗时阶段提供品牌反馈（含进度+耗时+动画）。
+        // 显示失败不阻塞启动（try-catch 跳过，仅告警）。
+        try
+        {
+            _splashScreen = new SunEyeVision.UI.Shell.Windows.SplashScreen();
+            _splashScreen.Show();
+            _splashScreen.UpdateStatus("正在初始化...");
+        }
+        catch (Exception splashEx)
+        {
+            _splashScreen = null;
+            VisionLogger.Instance.Log(LogLevel.Warning, $"启动页显示失败（不影响启动）: {splashEx.Message}", "App");
+        }
+
         // 添加FirstChanceException处理 - 捕获RPC异常避免调试器中断
         AppDomain.CurrentDomain.FirstChanceException += OnFirstChanceException;
 
@@ -80,11 +98,14 @@ public partial class App : Application
         // 解决：在任何可能触发序列化操作之前加载插件
 
         // 1. 初始化插件管理器（在任何其他初始化之前）
+        _splashScreen?.UpdateStatus("正在加载模块...");
+        _splashScreen?.UpdateProgress(10);
         var pluginManager = new PluginManager(VisionLogger.Instance);
         string pluginsPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "plugins");
         pluginManager.LoadPlugins(pluginsPath);
 
         // 2. 标记插件已加载（全局状态）
+        _splashScreen?.UpdateProgress(35);
         PluginLoader.MarkAsLoaded();
 
         // 2.5 初始化视觉图像加载入口
@@ -92,6 +113,8 @@ public partial class App : Application
         // 使用 VisionImage.FromFile / VisionImage.FromBitmapSource 直接加载图像
 
         // 3. 初始化服务（包括节点显示适配器）
+        _splashScreen?.UpdateStatus("正在初始化服务...");
+        _splashScreen?.UpdateProgress(50);
         ServiceInitializer.InitializeServices();
 
         // 3.1 注册 IVisionImage → BitmapSource 显示桥（SDK 层通过 VisionImageConverterLocator 调用）
@@ -106,6 +129,7 @@ public partial class App : Application
         var defaultPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
 
         // 5. 初始化解决方案管理器
+        _splashScreen?.UpdateStatus("正在初始化解决方案...");
         ServiceInitializer.InitializeSolutionManager(defaultPath);
 
         // 5.2 初始化主题管理器（读回持久化主题并应用语义色板）
@@ -144,6 +168,11 @@ public partial class App : Application
         var decision = startupDecisionService.GetStartupDecision();
 
         var mainWindow = new MainWindow();
+        // ★ 显式注册为主窗口：SplashScreen 先创建会抢占 Application.Current.MainWindow，
+        //   不显式赋值则调试窗口 Owner 指向已关闭的 SplashScreen（无效），无法显示在主窗口上方。
+        Application.Current.MainWindow = mainWindow;
+        _splashScreen?.UpdateStatus("正在打开工作区...");
+        _splashScreen?.UpdateProgress(75);
 
         switch (decision)
         {
@@ -183,6 +212,8 @@ public partial class App : Application
                                 $"当前解决方案设置完成: CurrentSolution.Id={solutionManager.CurrentSolution?.Id}, CurrentFilePath={solutionManager.CurrentFilePath}", "App");
                             
                             mainWindow.Show();
+                            _splashScreen?.UpdateProgress(100);
+                            _splashScreen?.CloseWithFade();
                             logger.Log(SunEyeVision.Plugin.SDK.Logging.LogLevel.Success,
                                 $"主窗口已显示，自动打开默认解决方案完成: {defaultMetadata.Name}", "App");
                         }
@@ -192,6 +223,8 @@ public partial class App : Application
                             logger.Log(SunEyeVision.Plugin.SDK.Logging.LogLevel.Error,
                                 $"默认解决方案加载失败: {defaultMetadata.Name} (LoadSolutionOnly 返回 null)", "App");
                             mainWindow.Show();
+                            _splashScreen?.UpdateProgress(100);
+                            _splashScreen?.CloseWithFade();
                         }
                     }
                     else
@@ -200,6 +233,8 @@ public partial class App : Application
                         logger.Log(SunEyeVision.Plugin.SDK.Logging.LogLevel.Warning,
                             "未找到默认解决方案元数据，将显示空白主界面", "App");
                         mainWindow.Show();
+                        _splashScreen?.UpdateProgress(100);
+                        _splashScreen?.CloseWithFade();
                     }
                 }
                 catch (Exception ex)
@@ -209,6 +244,8 @@ public partial class App : Application
                     MessageBox.Show($"自动打开默认解决方案失败: {ex.Message}",
                         "提示", MessageBoxButton.OK, MessageBoxImage.Information);
                     mainWindow.Show();
+                    _splashScreen?.UpdateProgress(100);
+                    _splashScreen?.CloseWithFade();
                 }
                 break;
 
@@ -255,6 +292,8 @@ public partial class App : Application
                         $"当前解决方案设置完成: CurrentSolution.Id={solutionManager.CurrentSolution?.Id}, CurrentFilePath={solutionManager.CurrentFilePath}", "App");
                     
                     mainWindow.Show();
+                    _splashScreen?.UpdateProgress(100);
+                    _splashScreen?.CloseWithFade();
                     logger.Log(SunEyeVision.Plugin.SDK.Logging.LogLevel.Success,
                         "主窗口已显示，从配置对话框启动完成", "App");
                 }
@@ -264,6 +303,8 @@ public partial class App : Application
                         $"设置当前解决方案失败: {ex.Message}\n堆栈: {ex.StackTrace}", "App", ex);
                     MessageBox.Show($"加载解决方案失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                     mainWindow.Show();
+                    _splashScreen?.UpdateProgress(100);
+                    _splashScreen?.CloseWithFade();
                 }
             }
             else
@@ -271,6 +312,8 @@ public partial class App : Application
                 logger.Log(SunEyeVision.Plugin.SDK.Logging.LogLevel.Warning,
                     "配置对话框返回的 LaunchResult 为 null", "App");
                 mainWindow.Show();
+                _splashScreen?.UpdateProgress(100);
+                _splashScreen?.CloseWithFade();
             }
         }
         else

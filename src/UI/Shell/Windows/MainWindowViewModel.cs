@@ -248,11 +248,15 @@ namespace SunEyeVision.UI.Shell.Windows
 
         // ===== IRootCoordinator 显式实现（类型不匹配的成员）=====
 
-        object SunEyeVision.UI.Core.IRootCoordinator.SelectedTab
-        {
-            get => WorkflowTabViewModel.SelectedTab!;
-            set => WorkflowTabViewModel.SelectedTab = (WorkflowTabViewModel)value;
-        }
+        object? SunEyeVision.UI.Core.IRootCoordinator.SelectedTab => WorkflowTabViewModel.SelectedTab;
+
+        /// <summary>
+        /// 设置当前选中工作流标签页（唯一写入口，实现 IRootCoordinator）。
+        /// 用户操作与代码路径统一经此方法变更，避免 SelectedTab 双向绑定回写造成重入。
+        /// </summary>
+        /// <param name="tab">目标标签页（WorkflowTabViewModel 实例）</param>
+        public void SetSelectedTab(object? tab)
+            => WorkflowTabViewModel.SelectedTab = tab as WorkflowTabViewModel;
 
         System.Collections.IList SunEyeVision.UI.Core.IRootCoordinator.Tabs => WorkflowTabViewModel.Tabs;
 
@@ -1785,7 +1789,8 @@ SplitterPosition = position;
             // 初始化空洞池（从现有节点恢复索引池）
             if (tabViewModel.SequenceManager != null)
             {
-                tabViewModel.SequenceManager.InitializeHolePoolsFromNodes(tabViewModel.Id, tabViewModel.WorkflowNodes);
+                // WorkflowNodes 为基类集合，序列管理需 WorkflowNode，运行时元素均为 WorkflowNode，安全转型
+                tabViewModel.SequenceManager.InitializeHolePoolsFromNodes(tabViewModel.Id, tabViewModel.WorkflowNodes.OfType<WorkflowNode>());
             }
 
             // 将工作流注册到 WorkflowEngine.Workflows 字典
@@ -1900,8 +1905,9 @@ SplitterPosition = position;
                 }
                 else
                 {
-                    // 设置第一个标签页为选中标签页
-                    WorkflowTabViewModel.SelectedTab = WorkflowTabViewModel.Tabs[0];
+                    // 设置第一个标签页为选中标签页（触发 OnSelectedTabChanged 初始化引擎当前工作流上下文，
+                    // 修复加载后选中节点时图像源为空的问题。单向数据流重构后无重入风险）
+                    WorkflowTabViewModel.SetSelectedTab(WorkflowTabViewModel.Tabs[0]);
                     LogInfo($"已设置选中标签页: {WorkflowTabViewModel.SelectedTab.Name}");
 
                     // 初始化SmartPathConverter（用于连接线渲染）
@@ -1911,6 +1917,10 @@ SplitterPosition = position;
 
                     LogSuccess($"标签页创建成功，当前标签页: {WorkflowTabViewModel.SelectedTab?.Name ?? "（无）"}");
                 }
+
+                // ★ 脚本预编译（编译与执行解耦）：方案加载后全量预热可预编译工具的编译缓存，
+                //   保证首次执行命中缓存零编译。通过 IPrecompilableTool 接口调用，不依赖具体工具类型。
+                PreCompileScriptNodes(solution);
             }
             catch (Exception ex)
             {
@@ -1918,6 +1928,85 @@ SplitterPosition = position;
                 LogError($"堆栈跟踪: {ex.StackTrace}");
                 throw;
             }
+        }
+
+        /// <summary>
+        /// 方案加载后预编译所有可预编译工具节点（如脚本工具）。
+        /// 编译与执行解耦：提前编译入工具进程级缓存，保证首次执行命中缓存零编译。
+        /// 通过 <see cref="IPrecompilableTool"/> 接口调用，不依赖具体工具类型；
+        /// 并行执行（半核，不抢占启动其他任务）；失败仅记录告警，不阻塞打开工作区。
+        /// </summary>
+        /// <param name="solution">已加载的解决方案（含主工作流与子程序工作流）</param>
+        private void PreCompileScriptNodes(Solution solution)
+        {
+            if (solution?.Workflows == null)
+            {
+                return;
+            }
+
+            var allNodes = solution.Workflows.SelectMany(w => w.Nodes).ToList();
+            _logger?.LogInfo($"[预编译] 遍历到节点总数={allNodes.Count}, Workflows={solution.Workflows.Count}", nameof(MainWindowViewModel));
+            foreach (var n in allNodes)
+            {
+                var tool = ToolRegistry.CreateToolInstance(n.ToolType);
+                _logger?.LogInfo(
+                    $"[预编译] 节点=[{n.Name}] ToolType=[{n.ToolType}] ParamsType=[{n.Parameters?.GetType().Name ?? "null"}] Tool=[{tool?.GetType().Name ?? "null"}] IsPrecompilable=[{tool is IPrecompilableTool}]",
+                    nameof(MainWindowViewModel));
+            }
+
+            var precompilableNodes = allNodes
+                .Where(n => n.Parameters != null)
+                .Select(n => new
+                {
+                    Node = n,
+                    Tool = ToolRegistry.CreateToolInstance(n.ToolType)
+                })
+                .Where(x => x.Tool is IPrecompilableTool && x.Node.Parameters != null)
+                .ToList();
+
+            _logger?.LogInfo($"[预编译] 可预编译节点数={precompilableNodes.Count}", nameof(MainWindowViewModel));
+
+            if (precompilableNodes.Count == 0)
+            {
+                _logger?.LogInfo("[预编译] 无可预编译节点，跳过", nameof(MainWindowViewModel));
+                return;
+            }
+
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+
+            _logger?.LogInfo($"[预编译] 开始预编译, 节点数={precompilableNodes.Count}", nameof(MainWindowViewModel));
+
+            // 后台 Task 并行预编译：
+            // - 并行任务在线程池执行（无 UI 同步上下文），避免在 UI 线程直接调 Parallel.ForEach 的调度死锁
+            // - 多脚本并行，启动时间不随脚本数成倍增加
+            // - UI 线程同步等待完成（主窗口 Show 前预编译结束，确保所见即所得：打开工作区后脚本已编译）
+            var parallelOptions = new ParallelOptions
+            {
+                MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount / 2)
+            };
+
+            var snapshot = precompilableNodes.ToList();
+            System.Threading.Tasks.Task.Run(() =>
+            {
+                Parallel.ForEach(snapshot, parallelOptions, x =>
+                {
+                    try
+                    {
+                        var tool = (IPrecompilableTool)x.Tool!;
+                        var errors = tool.PreCompile(x.Node.Parameters!);
+                        _logger?.LogInfo(
+                            $"[预编译] 节点=[{x.Node.Name}] 预编译完成, 诊断数={errors.Count}" + (errors.Count > 0 ? $", 诊断=[{string.Join("; ", errors.Take(2))}]" : ""),
+                            nameof(MainWindowViewModel));
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger?.LogError($"[预编译] 节点=[{x.Node.Name}] 预编译异常: {ex.Message}", nameof(MainWindowViewModel));
+                    }
+                });
+            }).GetAwaiter().GetResult();
+
+            sw.Stop();
+            LogSuccess($"预编译完成: {precompilableNodes.Count} 个节点, 耗时 {sw.ElapsedMilliseconds}ms");
         }
 
         private async System.Threading.Tasks.Task ExecuteRunWorkflow()
@@ -2083,19 +2172,59 @@ SplitterPosition = position;
                 AddLog($"🆕 自动创建子程序工作流: {uiNode.DispName} (ID: {uiNode.SubroutineId})");
             }
 
-            // 添加到 UI 集合
+            // 添加到节点集合。WorkflowNodes 与引擎 Workflow.Nodes 为同一集合实例（单一数据源），
+            // 节点经 AddNodeCommand 加入后引擎立即可见，无需再手动同步。
             var command = new AppCommands.AddNodeCommand(WorkflowTabViewModel.SelectedTab.WorkflowNodes, uiNode);
             WorkflowTabViewModel.SelectedTab.CommandManager.Execute(command);
 
-            // 同步到引擎工作流（导航时 NavigateToWorkflowCanvas 从引擎读取，必须双向同步）
-            var engineWf = _workflowEngine.GetWorkflow(WorkflowTabViewModel.SelectedTab.CurrentWorkflowId);
-            if (engineWf != null && !engineWf.Nodes.Contains(uiNode))
-            {
-                engineWf.Nodes.Add(uiNode);
-            }
-
             // ★ 添加节点后自动绑定输入图像源（子程序内部节点默认绑子程序输入图像；主流程无源则跳过）
             TryAutoBindImageSource(uiNode);
+
+            // ★ 新添加节点若是可预编译工具（脚本工具），异步预编译 + 沙箱预热，
+            //   避免首次执行现场编译+建沙箱冷启动（40-60ms），实现首次与后续执行时间一致。
+            PrecompileNodeIfNeeded(uiNode);
+        }
+
+        /// <summary>
+        /// 单个节点预编译 + 沙箱预热：新添加的可预编译工具（脚本工具）异步预编译，
+        /// 消除首次执行冷启动（现场编译+建沙箱 40-60ms）。与方案加载后全量预编译
+        /// （<see cref="PreCompileScriptNodes"/>）共用 <see cref="IPrecompilableTool.PreCompile"/> 通道。
+        /// 防御：非可预编译工具/参数为空/预编译异常 → 静默跳过，不阻塞节点添加。
+        /// </summary>
+        /// <param name="node">新添加的工作流节点</param>
+        private void PrecompileNodeIfNeeded(WorkflowNodeBase node)
+        {
+            try
+            {
+                if (node.Parameters == null)
+                    return;
+
+                var tool = ToolRegistry.CreateToolInstance(node.ToolType);
+                if (tool is not IPrecompilableTool precompilable)
+                    return;
+
+                _logger?.LogInfo($"[预编译] 新添加节点=[{node.Name}] 异步预编译", nameof(MainWindowViewModel));
+                System.Threading.Tasks.Task.Run(() =>
+                {
+                    try
+                    {
+                        var errors = precompilable.PreCompile(node.Parameters!);
+                        _logger?.LogInfo(
+                            $"[预编译] 新添加节点=[{node.Name}] 预编译完成, 诊断数={errors.Count}" +
+                            (errors.Count > 0 ? $", 诊断=[{string.Join("; ", errors.Take(2))}]" : ""),
+                            nameof(MainWindowViewModel));
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger?.LogError($"[预编译] 新添加节点=[{node.Name}] 预编译异常: {ex.Message}",
+                            nameof(MainWindowViewModel));
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError($"[预编译] 新添加节点预编译失败: {ex.Message}", nameof(MainWindowViewModel));
+            }
         }
 
         /// <summary>
@@ -2571,7 +2700,7 @@ SplitterPosition = position;
         private void OnControlFlowNodeOpen(WorkflowNodeBase workflowNode)
         {
             var uiNode = WorkflowTabViewModel?.SelectedTab?.WorkflowNodes
-                ?.FirstOrDefault(n => n.Id == workflowNode.Id);
+                ?.OfType<WorkflowNode>().FirstOrDefault(n => n.Id == workflowNode.Id);
             if (uiNode != null)
             {
                 AddLog($"↪️ 双击子程序节点: {uiNode.Name}");
@@ -2701,6 +2830,15 @@ SplitterPosition = position;
             // 直接绑定引擎中的节点和连接集合到 Tab
             selectedTab.SetNodes(workflow.Nodes);
             selectedTab.SetConnections(workflow.Connections);
+
+            // ★ 子程序/主工作流导航加载时，重建该工作流的局部空洞池（仅局部索引，不动全局）
+            //   解决：子程序工作流加载后，其节点序号未进空洞池，新建节点序号从 1 重新分配而冲突。
+            if (selectedTab.SequenceManager != null)
+            {
+                selectedTab.SequenceManager.InitializeLocalHolePool(
+                    workflowId,
+                    workflow.Nodes.OfType<SunEyeVision.UI.Shared.WorkflowNode>());
+            }
 
             AddLog($"📋 已加载画布: 工作流={workflow.Name}, 节点={workflow.Nodes.Count}, 连接={workflow.Connections.Count}");
         }
@@ -4922,7 +5060,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                         continue;
                     }
 
-                    var upstreamNode = selectedTab.WorkflowNodes.FirstOrDefault(n => n.Id == upstreamNodeId);
+                    var upstreamNode = selectedTab.WorkflowNodes.OfType<WorkflowNode>().FirstOrDefault(n => n.Id == upstreamNodeId);
                     if (upstreamNode == null)
                     {
                         continue;

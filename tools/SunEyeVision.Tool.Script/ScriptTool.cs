@@ -5,6 +5,7 @@ using System.Windows;
 using CommonControl;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Tool.Script.Models;
 using SunEyeVision.Tool.Script.ScriptEngine;
@@ -21,7 +22,7 @@ namespace SunEyeVision.Tool.Script
         Version = "2.0.0",
         HasDebugWindow = true
     )]
-    public class ScriptTool : IToolPlugin<ScriptParameters, ScriptResults>
+    public class ScriptTool : IToolPlugin<ScriptParameters, ScriptResults>, IPrecompilableTool
     {
         // ★ 应用启动阶段后台预热补全引擎（MEF + Workspace），对齐新版 RoslynPad 启动初始化。
         //   静态构造在 LoadPlugins 实例化工具时触发，fire-and-forget 不阻塞启动；
@@ -30,6 +31,11 @@ namespace SunEyeVision.Tool.Script
         {
             // 编辑器内核统一预热补全引擎（MEF + Workspace），对齐新版 RoslynPad 启动初始化。
             ScriptEditorCore.WarmupForStartup();
+
+            // 预热 Roslyn Emit 引擎（代码无关）：启动时后台编译一次最小模板，
+            // 让 Emit 初始化（~947ms）提前完成，用户首次执行脚本 Emit 降到 ~29ms。
+            // fire-and-forget 不阻塞启动；失败仅告警（ScriptCompiler.Warmup 内部处理）。
+            ScriptCompiler.Warmup();
         }
 
         public ScriptResults Run(ScriptParameters parameters)
@@ -46,12 +52,17 @@ namespace SunEyeVision.Tool.Script
             {
                 if (string.IsNullOrWhiteSpace(parameters.ScriptCode))
                 {
-                    parameters.LogWarning("Script code is empty");
+                    if (parameters.IsDebugMode)
+                        result.LogMessages.Add("Script code is empty");   // 调试模式：写调试窗口
+                    else
+                        parameters.LogWarning("Script code is empty");     // 工作流执行：写主界面
                     result.SetError("Script code is empty");
                     return result;
                 }
 
-                parameters.LogInfo($"Executing script (lines: {parameters.ScriptCode.Split('\n').Length})");
+                // 调试模式下不写主界面（摘要进 result.LogMessages 由调试窗口展示），工作流执行保持写主界面。
+                if (!parameters.IsDebugMode)
+                    parameters.LogInfo($"Executing script (lines: {parameters.ScriptCode.Split('\n').Length})");
 
                 using var lifecycleManager = new ScriptLifecycleManager();
 
@@ -77,7 +88,7 @@ namespace SunEyeVision.Tool.Script
                 // ★ 捕获解析后的输入值（供调试监视面板显示）
                 parameters.ResolvedInputValues = inputValues;
 
-                if (parameters.Inputs.Count > 0)
+                if (parameters.Inputs.Count > 0 && !parameters.IsDebugMode)
                 {
                     parameters.LogInfo($"  解析了 {inputValues.Count} 个输入绑定: " +
                         $"全局变量可用={parameters.Context?.GlobalVariables?.Count ?? 0}, " +
@@ -90,7 +101,8 @@ namespace SunEyeVision.Tool.Script
                     parameters.AssemblyReferenceFullPath,
                     getGlobal,
                     setGlobal,
-                    inputValues);
+                    inputValues,
+                    parameters.AssemblyReferences);
 
                 result.CompileErrors = errors;
                 result.CompileTimeMs = lifecycleManager.CompileTimeMs;
@@ -108,25 +120,94 @@ namespace SunEyeVision.Tool.Script
                 if (errors.Count == 0)
                 {
                     result.SetSuccess(lifecycleManager.ExecutionTimeMs);
-                    parameters.LogSuccess(
+                    var summary =
                         $"Script complete | Compile: {lifecycleManager.CompileTimeMs}ms | Exec: {lifecycleManager.ExecutionTimeMs}ms | " +
-                        $"Outputs: {result.OutputValues.Count} | Logs: {result.LogMessages.Count}");
+                        $"Outputs: {result.OutputValues.Count} | Logs: {result.LogMessages.Count}";
+                    if (parameters.IsDebugMode)
+                        result.LogMessages.Add(summary);   // 调试模式：写调试窗口日志区，不写主界面
+                    else
+                        parameters.LogSuccess(summary);     // 工作流执行：写主界面
                 }
                 else
                 {
                     var errorMsg = string.Join("; ", errors.Take(3));
                     if (errors.Count > 3) errorMsg += "...";
-                    parameters.LogError($"Script failed: {errorMsg}");
+                    if (parameters.IsDebugMode)
+                        result.LogMessages.Add($"Script failed: {errorMsg}");   // 调试模式：写调试窗口
+                    else
+                        parameters.LogError($"Script failed: {errorMsg}");       // 工作流执行：写主界面
                     result.SetError(errorMsg);
                 }
             }
             catch (Exception ex)
             {
-                parameters.LogError($"Script exception: {ex.Message}", ex);
+                // 调试模式：写调试窗口日志区，不写主界面；工作流执行：写主界面（与摘要分流一致）。
+                if (parameters.IsDebugMode)
+                    result.LogMessages.Add($"Script exception: {ex.Message}");
+                else
+                    parameters.LogError($"Script exception: {ex.Message}", ex);
                 result.SetError($"Script exception: {ex.Message}", ex);
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// 预编译并预热执行环境：编译结果写入 <see cref="ScriptCompiler"/> 进程级静态缓存
+        /// （命中缓存则跳过编译），编译成功后用同一缓存键预热沙箱常驻池（程序集加载 + 用户代码 JIT）。
+        /// 不执行脚本逻辑，无副作用。用于方案加载后/代码变化后预热，保证后续执行
+        /// 命中缓存零编译 + 零沙箱/JIT 冷启动（首次与后续执行时间一致）。
+        /// 参数非 <see cref="ScriptParameters"/> 或代码为空时直接返回（不阻塞、不抛异常）。
+        /// </summary>
+        /// <param name="parameters">工具参数（运行时为 <see cref="ScriptParameters"/>）</param>
+        /// <returns>编译诊断列表；空 = 编译成功</returns>
+        public IReadOnlyList<string> PreCompile(ToolParameters parameters)
+        {
+            if (parameters is not ScriptParameters scriptParams)
+            {
+                PluginLogger.Warning("[ScriptTool] PreCompile 参数非 ScriptParameters, 跳过", nameof(ScriptTool));
+                return [];
+            }
+
+            PluginLogger.Info($"[ScriptTool] PreCompile 开始 | ScriptCode长度={scriptParams.ScriptCode?.Length ?? -1}, GeneratedCode长度={scriptParams.GeneratedCode?.Length ?? -1}, 引用数={scriptParams.AssemblyReferences?.Count ?? -1}", nameof(ScriptTool));
+
+            if (string.IsNullOrWhiteSpace(scriptParams.ScriptCode))
+            {
+                PluginLogger.Warning("[ScriptTool] PreCompile ScriptCode 为空, 跳过", nameof(ScriptTool));
+                return [];
+            }
+
+            try
+            {
+                using var lifecycleManager = new ScriptLifecycleManager();
+                var errors = lifecycleManager.CompileOnly(
+                    scriptParams.GeneratedCode,
+                    scriptParams.ScriptCode,
+                    scriptParams.AssemblyReferenceFullPath,
+                    scriptParams.AssemblyReferences);
+
+                if (errors.Count > 0)
+                {
+                    scriptParams.LogWarning($"[ScriptTool] 预编译发现错误: {string.Join("; ", errors.Take(3))}");
+                }
+                else
+                {
+                    // 编译成功 → 预热执行环境（沙箱 + 程序集加载 + 用户代码 JIT）：
+                    // 用同一缓存键复用刚入缓存的编译产物，首次执行命中常驻沙箱零冷启动。
+                    lifecycleManager.WarmupSandbox(
+                        scriptParams.GeneratedCode,
+                        scriptParams.ScriptCode,
+                        scriptParams.AssemblyReferenceFullPath,
+                        scriptParams.AssemblyReferences);
+                }
+
+                return errors;
+            }
+            catch (Exception ex)
+            {
+                scriptParams.LogWarning($"[ScriptTool] 预编译异常: {ex.Message}");
+                return [ex.Message];
+            }
         }
 
         public FrameworkElement? CreateDebugControl(IToolPlugin tool)

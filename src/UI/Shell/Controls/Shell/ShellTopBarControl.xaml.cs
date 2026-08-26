@@ -19,6 +19,47 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         public ShellTopBarControl()
         {
             InitializeComponent();
+
+            // 加载完成后订阅窗口状态变化，切换最大化/还原图标（VS 风格）。
+            // 用代码监听而非 XAML DataTrigger——UserControl 内 RelativeSource AncestorType=Window
+            // 绑定 Window.State 在初始化时可能求值失败，导致图标不切换。
+            Loaded += (_, _) =>
+            {
+                var window = Window.GetWindow(this);
+                if (window == null) return;
+                window.StateChanged += OnWindowStateChanged;
+                UpdateWindowIcon(window.WindowState);
+            };
+            Unloaded += (_, _) =>
+            {
+                var window = Window.GetWindow(this);
+                if (window != null)
+                    window.StateChanged -= OnWindowStateChanged;
+            };
+        }
+
+        /// <summary>
+        /// 窗口状态变化 - 切换最大化/还原图标（VS 风格）。
+        /// </summary>
+        private void OnWindowStateChanged(object? sender, EventArgs e)
+        {
+            if (sender is Window window)
+                UpdateWindowIcon(window.WindowState);
+        }
+
+        /// <summary>
+        /// 按窗口状态切换字形与 ToolTip（VS 同款）：最大化显示还原图标(\uE923/两个窗口) + "向下还原"，
+        /// 正常显示最大化图标(\uE739/方框) + "最大化"。
+        /// 只设置 MaximizeButton 自身的 ToolTip（设置 UserControl 的 ToolTip 会污染文件/视图/运行菜单）。
+        /// </summary>
+        /// <param name="state">当前窗口状态</param>
+        private void UpdateWindowIcon(WindowState state)
+        {
+            bool isMaximized = state == WindowState.Maximized;
+            if (MaximizeGlyph != null)
+                MaximizeGlyph.Text = isMaximized ? "\uE923" : "\uE739";
+            if (MaximizeButton != null)
+                MaximizeButton.ToolTip = isMaximized ? "向下还原" : "最大化";
         }
 
         /// <summary>
@@ -36,6 +77,21 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         private void ToggleFullscreen_Click(object sender, RoutedEventArgs e)
         {
             FullscreenRequested?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <summary>
+        /// 顶栏工作流下拉框选中项变化 — 通过 ViewModel 的唯一写入口 SetSelectedTab 更新，
+        /// 避免 WPF 双向绑定回写 SelectedTab setter 造成重入（单向数据流）。
+        /// 仅当选中项与当前 VM 状态不同才写入，防止初始化绑定触发重复回写。
+        /// </summary>
+        private void WorkflowComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (DataContext is ShellTopBarViewModel vm
+                && e.AddedItems.Count > 0
+                && !ReferenceEquals(vm.SelectedTab, e.AddedItems[0]))
+            {
+                vm.SetSelectedTab(e.AddedItems[0]);
+            }
         }
 
         /// <summary>
@@ -118,7 +174,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// </summary>
         private void ContinuousRunToggle_Checked(object sender, RoutedEventArgs e)
         {
-            ContinuousRunIcon.Text = "⏹️";
+            ContinuousRunIcon.Text = "\uE71A";
             ContinuousRunIcon.Foreground = new System.Windows.Media.SolidColorBrush(
                 System.Windows.Media.Color.FromRgb(0xFF, 0x52, 0x52));
         }
@@ -128,7 +184,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// </summary>
         private void ContinuousRunToggle_Unchecked(object sender, RoutedEventArgs e)
         {
-            ContinuousRunIcon.Text = "🔁";
+            ContinuousRunIcon.Text = "\uEF3B";
             ContinuousRunIcon.Foreground = new System.Windows.Media.SolidColorBrush(
                 System.Windows.Media.Color.FromRgb(0xE0, 0xE0, 0xE0));
         }

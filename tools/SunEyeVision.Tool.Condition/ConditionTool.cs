@@ -35,8 +35,6 @@ namespace SunEyeVision.Tool.Condition
             if (parameters.Rules == null || parameters.Rules.Count == 0)
             {
                 parameters.LogInfo("条件分支未配置任何规则，流程终止（不执行任何分支）");
-                result.NextNodeId = null;
-                result.MatchedRuleName = null;
                 result.IsMatched = false;
                 sw.Stop();
                 result.SetSuccess(sw.ElapsedMilliseconds);
@@ -45,6 +43,8 @@ namespace SunEyeVision.Tool.Condition
 
             parameters.LogInfo($"开始评估条件分支，共 {parameters.Rules.Count} 条规则");
 
+            // ★ 多选并行：遍历所有规则，收集所有命中的目标节点（不遇命中即 return）。
+            //   未命中的规则不产生目标；全部未命中则 NextNodeIds 为空 → 引擎剪枝终止该分支。
             foreach (var rule in parameters.Rules)
             {
                 if (string.IsNullOrEmpty(rule.ExecutionModuleId))
@@ -63,21 +63,18 @@ namespace SunEyeVision.Tool.Condition
 
                 if (matched)
                 {
-                    result.NextNodeId = rule.ExecutionModuleId;
-                    result.MatchedRuleName = rule.Name;
+                    result.NextNodeIds.Add(rule.ExecutionModuleId);
+                    result.MatchedRuleNames.Add(rule.Name);
                     result.IsMatched = true;
                     parameters.LogSuccess($"条件匹配: 规则='{rule.Name}', 目标节点ID='{rule.ExecutionModuleId}'");
-                    sw.Stop();
-                    result.SetSuccess(sw.ElapsedMilliseconds);
-                    return result;
                 }
             }
 
-            // 全部未命中 → 流程终止（对齐 VisionMaster，无默认分支）
-            result.NextNodeId = null;
-            result.MatchedRuleName = null;
-            result.IsMatched = false;
-            parameters.LogInfo("无规则匹配，流程终止（不执行任何分支）");
+            // 全部未命中 → NextNodeIds 为空 → 引擎剪枝终止该分支（对齐 VisionMaster，无默认分支）
+            if (!result.IsMatched)
+            {
+                parameters.LogInfo("无规则匹配，该分支流程终止（后续节点不执行）");
+            }
 
             sw.Stop();
             result.SetSuccess(sw.ElapsedMilliseconds);

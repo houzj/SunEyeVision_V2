@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Tool.Condition.Models;
@@ -63,8 +63,8 @@ namespace SunEyeVision.Tool.Condition.Tests
 
             var result = new ConditionTool().Run(parameters);
             Assert.True(result.IsMatched);
-            Assert.Equal("TargetNode1", result.NextNodeId);
-            Assert.Equal("int0", result.MatchedRuleName);
+            Assert.Equal(new[] { "TargetNode1" }, result.NextNodeIds);
+            Assert.Contains("int0", result.MatchedRuleNames);
         }
 
         [Fact]
@@ -86,7 +86,7 @@ namespace SunEyeVision.Tool.Condition.Tests
 
             var result = new ConditionTool().Run(parameters);
             Assert.False(result.IsMatched);
-            Assert.Null(result.NextNodeId);
+            Assert.Empty(result.NextNodeIds);
         }
 
         [Fact]
@@ -108,7 +108,7 @@ namespace SunEyeVision.Tool.Condition.Tests
 
             var result = new ConditionTool().Run(parameters);
             Assert.True(result.IsMatched);
-            Assert.Equal("TargetNode1", result.NextNodeId);
+            Assert.Equal(new[] { "TargetNode1" }, result.NextNodeIds);
         }
 
         #endregion
@@ -144,7 +144,7 @@ namespace SunEyeVision.Tool.Condition.Tests
 
             var result = new ConditionTool().Run(parameters);
             Assert.False(result.IsMatched);
-            Assert.Null(result.NextNodeId);
+            Assert.Empty(result.NextNodeIds);
         }
 
         #endregion
@@ -181,7 +181,7 @@ namespace SunEyeVision.Tool.Condition.Tests
 
             var result = new ConditionTool().Run(parameters);
             Assert.True(result.IsMatched);
-            Assert.Equal("TargetNode1", result.NextNodeId);
+            Assert.Equal(new[] { "TargetNode1" }, result.NextNodeIds);
         }
 
         [Fact]
@@ -238,7 +238,7 @@ namespace SunEyeVision.Tool.Condition.Tests
 
             var result = new ConditionTool().Run(parameters);
             Assert.True(result.IsMatched);
-            Assert.Equal("TargetNode1", result.NextNodeId);
+            Assert.Equal(new[] { "TargetNode1" }, result.NextNodeIds);
         }
 
         #endregion
@@ -285,10 +285,10 @@ namespace SunEyeVision.Tool.Condition.Tests
 
         #endregion
 
-        #region UT-COND-01 多规则顺序评估：命中第一条即返回
+        #region UT-COND-01 多规则命中：收集所有命中目标（多选并行）
 
         [Fact]
-        public void MultipleRules_FirstMatch_Wins()
+        public void MultipleRules_AllMatches_Collected()
         {
             var parameters = CreateParameters(rules: new[]
             {
@@ -316,8 +316,12 @@ namespace SunEyeVision.Tool.Condition.Tests
 
             var result = new ConditionTool().Run(parameters);
             Assert.True(result.IsMatched);
-            Assert.Equal("TargetNode1", result.NextNodeId);
-            Assert.Equal("int0", result.MatchedRuleName);
+            Assert.Equal(2, result.NextNodeIds.Count);
+            Assert.Contains("TargetNode1", result.NextNodeIds);
+            Assert.Contains("TargetNode2", result.NextNodeIds);
+            Assert.Equal(2, result.MatchedRuleNames.Count);
+            Assert.Contains("int0", result.MatchedRuleNames);
+            Assert.Contains("int1", result.MatchedRuleNames);
         }
 
         #endregion

@@ -529,7 +529,9 @@ namespace SunEyeVision.UI.Features.WorkflowUI
             }
 
             // ✅ 直接使用工厂创建节点，内部会自动获取局部索引（优先从空洞池获取）
-            var node = _nodeFactory.CreateNode(algorithmType, name, Id);
+            // ★ 用 CurrentWorkflowId 而非 Id：子程序下钻时，新节点局部索引须归属当前子程序工作流，
+            //   否则与主工作流同类型节点共享序号、跨画布重名冲突。
+            var node = _nodeFactory.CreateNode(algorithmType, name, CurrentWorkflowId);
 
             VisionLogger.Instance.Log(
                 LogLevel.Info,
@@ -548,7 +550,9 @@ namespace SunEyeVision.UI.Features.WorkflowUI
             if (node == null || node.LocalIndex < 0)
                 return;
 
-            _sequenceManager.ReleaseLocalIndex(Id, node.ToolType ?? string.Empty, node.LocalIndex);
+            // ★ 用 CurrentWorkflowId 而非 Id：与创建节点(CreateNode)的归属工作流保持一致，
+            //   确保子程序内节点重命名释放的序号进入正确的子程序上下文，不污染主工作流空洞池。
+            _sequenceManager.ReleaseLocalIndex(CurrentWorkflowId, node.ToolType ?? string.Empty, node.LocalIndex);
 
             VisionLogger.Instance.Log(
                 LogLevel.Info,

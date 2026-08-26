@@ -284,7 +284,8 @@
 
                 <!-- 运行（单次） -->
                 <Button ToolTip="运行 (F5)" Style="{StaticResource TitleBarButton}" Command="{Binding RunWorkflowCommand}">
-                    <TextBlock Text="▶️" FontSize="16"/>
+                    <TextBlock Text="&#xE768;" FontSize="16" FontFamily="{StaticResource Mdl2IconFont}"
+                               Foreground="{DynamicResource {x:Static base:ThemeKeys.TitleBarIconBrush}}"/>
                 </Button>
                 <!-- 连续运行/停止（切换按钮：点击立即切换，空闲🔁灰色，运行中⏹️红色+主色高亮） -->
                 <ToggleButton x:Name="ContinuousRunToggle"
@@ -317,7 +318,9 @@
                             </Setter>
                         </Style>
                     </ToggleButton.Style>
-                    <TextBlock x:Name="ContinuousRunIcon" Text="🔁" FontSize="16" Foreground="{DynamicResource {x:Static base:ThemeKeys.TitleBarIconBrush}}" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="ContinuousRunIcon"
+                               Text="&#xEF3B;" FontSize="16" FontFamily="{StaticResource Mdl2IconFont}"
+                               Foreground="{DynamicResource {x:Static base:ThemeKeys.TitleBarIconBrush}}" VerticalAlignment="Center"/>
                 </ToggleButton>
 
                 <Border Width="1" Height="18" Background="{DynamicResource {x:Static base:ThemeKeys.TitleBarDividerBrush}}" Margin="4,0"/>

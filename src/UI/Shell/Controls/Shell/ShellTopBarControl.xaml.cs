@@ -174,7 +174,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// </summary>
         private void ContinuousRunToggle_Checked(object sender, RoutedEventArgs e)
         {
-            ContinuousRunIcon.Text = "⏹️";
+            ContinuousRunIcon.Text = "\uE71A";
             ContinuousRunIcon.Foreground = new System.Windows.Media.SolidColorBrush(
                 System.Windows.Media.Color.FromRgb(0xFF, 0x52, 0x52));
         }
@@ -184,7 +184,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// </summary>
         private void ContinuousRunToggle_Unchecked(object sender, RoutedEventArgs e)
         {
-            ContinuousRunIcon.Text = "🔁";
+            ContinuousRunIcon.Text = "\uEF3B";
             ContinuousRunIcon.Foreground = new System.Windows.Media.SolidColorBrush(
                 System.Windows.Media.Color.FromRgb(0xE0, 0xE0, 0xE0));
         }

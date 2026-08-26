@@ -294,10 +294,10 @@
                                                                 CornerRadius="4"
                                                                 Width="{TemplateBinding Width}"
                                                                 Height="{TemplateBinding Height}">
-                                <!-- 与 TopBar 单次运行图标保持一致：▶️ emoji -->
+                                <!-- 与 TopBar 单次运行图标保持一致：Segoe MDL2 播放 E768 -->
                                 <TextBlock x:Name="IconText"
-                                                                      Text="▶️"
-                                                                      FontSize="13"
+                                                                      Text="&#xE768;"
+                                                                      FontSize="13" FontFamily="{StaticResource Mdl2IconFont}"
                                                                       HorizontalAlignment="Center"
                                                                       VerticalAlignment="Center"/>
                               </Border>
@@ -335,11 +335,11 @@
                                                             CornerRadius="4"
                                                             Width="{TemplateBinding Width}"
                                                             Height="{TemplateBinding Height}">
-                                      <!-- 与 TopBar 连续运行图标保持一致：🔁 emoji，运行中切换为 ⏹ -->
+                                      <!-- 与 TopBar 连续运行图标保持一致：Segoe MDL2 循环播放 EF3B，运行中切换为 E71A 停止 -->
                                       <!-- 图标颜色不再从按钮一次性取值(TemplateBinding)，改为触发器直接给 IconText 上色，绕开局部值优先级坑 -->
                                       <TextBlock x:Name="IconText"
-                                                                    Text="🔁"
-                                                                    FontSize="13"
+                                                                    Text="&#xEF3B;"
+                                                                    FontSize="13" FontFamily="{StaticResource Mdl2IconFont}"
                                                                     HorizontalAlignment="Center"
                                                                     VerticalAlignment="Center"/>
                                     </Border>
@@ -349,7 +349,7 @@
                                         <Setter TargetName="IconText" Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
                                       </Trigger>
                                       <DataTrigger Binding="{Binding IsRunning}" Value="True">
-                                        <Setter TargetName="IconText" Property="Text" Value="⏹"/>
+                                        <Setter TargetName="IconText" Property="Text" Value="&#xE71A;"/>
                                         <Setter TargetName="Bd" Property="Background" Value="Transparent"/>
                                         <!-- 与 TopBar 一致：运行中图标变红色 #FF5252（直接给图标上色，绕开局部值优先级坑） -->
                                         <Setter TargetName="IconText" Property="Foreground" Value="#FF5252"/>

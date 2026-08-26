@@ -12,6 +12,12 @@
          新增几何符号图标时统一引用本资源，不散落硬编码字体。 -->
     <FontFamily x:Key="IconFontFamily">Segoe UI Symbol</FontFamily>
 
+    <!-- MDL2 图标字体：Windows 内置 Segoe MDL2 Assets，与参考项目 VisionMaster 图标体系一致。
+         用于 E7xx/EF3B 等私有区字形（运行/停止/删除/保存/缩放等原生图标）。
+         参考项目按钮图标来源：FontIconButton FontFamily=Segoe MDL2 Assets，如运行=&#xEF3B;(U+EF3B)。
+         注意：U+EF3B 不在 Segoe UI Symbol(IconFontFamily) 中，必须用本字体资源。 -->
+    <FontFamily x:Key="Mdl2IconFont">Segoe MDL2 Assets</FontFamily>
+
     <!-- ======================================== -->
     <!-- 按钮样式 -->
     <!-- ======================================== -->

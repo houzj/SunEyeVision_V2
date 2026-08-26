@@ -2831,6 +2831,15 @@ SplitterPosition = position;
             selectedTab.SetNodes(workflow.Nodes);
             selectedTab.SetConnections(workflow.Connections);
 
+            // ★ 子程序/主工作流导航加载时，重建该工作流的局部空洞池（仅局部索引，不动全局）
+            //   解决：子程序工作流加载后，其节点序号未进空洞池，新建节点序号从 1 重新分配而冲突。
+            if (selectedTab.SequenceManager != null)
+            {
+                selectedTab.SequenceManager.InitializeLocalHolePool(
+                    workflowId,
+                    workflow.Nodes.OfType<SunEyeVision.UI.Shared.WorkflowNode>());
+            }
+
             AddLog($"📋 已加载画布: 工作流={workflow.Name}, 节点={workflow.Nodes.Count}, 连接={workflow.Connections.Count}");
         }
 

@@ -289,5 +289,59 @@ namespace SunEyeVision.UI.Services.Interaction
                 VisionLogger.Instance.Log(LogLevel.Success, "空洞池初始化完成", "NodeSequenceManager");
             }
         }
+
+        /// <summary>
+        /// 初始化指定工作流的局部空洞池（仅局部索引，不影响全局索引）
+        /// </summary>
+        /// <remarks>
+        /// 用于子程序/主工作流导航加载：只重建该 workflowId 下的各工具类型局部空洞池，
+        /// 不复位全局索引（全局由 InitializeHolePoolsFromNodes 统一初始化一次）。
+        /// </remarks>
+        public void InitializeLocalHolePool(string workflowId, IEnumerable<WorkflowNode> nodes)
+        {
+            lock (_lockObject)
+            {
+                if (string.IsNullOrEmpty(workflowId) || nodes == null)
+                    return;
+
+                // 移除该工作流现有上下文，重建
+                var keysToRemove = _workflowContexts.Keys
+                    .Where(key => key.StartsWith($"{workflowId}#"))
+                    .ToList();
+                foreach (var key in keysToRemove)
+                {
+                    _workflowContexts.Remove(key);
+                }
+
+                // 收集该工作流下各工具类型已占用的局部索引
+                var usedLocalIndices = new Dictionary<string, HashSet<int>>();
+                foreach (var node in nodes)
+                {
+                    if (!string.IsNullOrEmpty(node.ToolType) && node.LocalIndex >= 0)
+                    {
+                        if (!usedLocalIndices.ContainsKey(node.ToolType))
+                            usedLocalIndices[node.ToolType] = new HashSet<int>();
+                        usedLocalIndices[node.ToolType].Add(node.LocalIndex);
+                    }
+                }
+
+                foreach (var kvp in usedLocalIndices)
+                {
+                    int maxLocalIndex = kvp.Value.Max();
+                    var context = new WorkflowIndexContext { MaxIndex = maxLocalIndex };
+                    for (int i = 1; i <= maxLocalIndex; i++)
+                    {
+                        if (!kvp.Value.Contains(i))
+                            context.HolePool.Add(i);
+                    }
+                    string key = BuildContextKey(workflowId, kvp.Key);
+                    _workflowContexts[key] = context;
+                    VisionLogger.Instance.Log(
+                        LogLevel.Success,
+                        $"局部空洞池初始化: 工作流={workflowId}, 工具类型={kvp.Key}, 最大索引={maxLocalIndex}, 空洞数={context.HolePool.Count}",
+                        "NodeSequenceManager");
+                }
+            }
+        }
     }
 }

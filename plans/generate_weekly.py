@@ -107,6 +107,10 @@ pathMap = [
     (["tools/SunEyeVision.Tool.HECap"], "T-HECAP"),
     (["tools/SunEyeVision.Tool.CoordinateConvert"], "T-CONVERT"),
     (["tools/SunEyeVision.Tool.RobotComm"], "T-ROBOTCOMM"),
+    # ★ 补充：脚本 / 子程序 / 条件 工具路径（此前缺失，导致这些提交被按文件数误归到 M-SRC-UI/M-HIST-CANVAS）
+    (["tools/SunEyeVision.Tool.Script"], "T-SCRIPT"),
+    (["tools/SunEyeVision.Tool.Subroutine"], "T-SUBROUTINE"),
+    (["tools/SunEyeVision.Tool.Condition"], "T-CONDITION"),
     (["src/DeviceDriver/Cameras", "src/UI/Features/Camera"], "M-SRC-CAM"),
     (["src/UI/Features/CommunicationManager", "src/Workflow/Communication"], "M-SRC-COMM"),
     (["src/UI/Features/GlobalVariableManager"], "M-HIST-GLOBALVAR"),
@@ -127,6 +131,18 @@ pathMap = [
 ]
 
 def match_module(msg, files):
+    # ★ 优先：工具专属路径精确匹配（tools/SunEyeVision.Tool.X → T-X）。
+    #   工具提交核心改动通常在 tools/ 下，即使顺带改若干 src/UI 附带文件，
+    #   也应归到对应工具模块，而非按「文件数统计」误归到宽泛的 M-SRC-UI。
+    #   例：e8ab1af 改 ScriptVariableTab(tools/Script)+DarkTheme(src/UI/Themes)，
+    #       原逻辑按文件数归到 M-SRC-UI；修正后 tools/Script 优先归 T-SCRIPT。
+    for paths, mid in pathMap:
+        if not mid.startswith("T-"):
+            continue
+        for p in paths:
+            for f in files:
+                if p.lower() in f.lower():
+                    return mid
     # 路径匹配：按「命中文件数」选归属，而非「先到先得」。
     # 修复 bug：7605075 主要改 UI（src/ 32 + tools/ 13）但顺带改 tests/(3)，
     # 原逻辑 tests/ 规则排在前面，抢先归到 M-SRC-TEST，导致 UI 提交被错记。

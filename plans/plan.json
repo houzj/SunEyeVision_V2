@@ -1558,6 +1558,10 @@
                                     {
                                         "date":  "2026-08-26",
                                         "note":  "[15490727b59c0aad1a840cd252de7fed301ee7e1] fix(ui): 运行按钮图标统一为 Segoe MDL2；修复子程序节点索引管理（校准：hook 误归 M-HIST-PATH，实为源码层 UI 优化）"
+                                    },
+                                    {
+                                        "date":  "2026-08-26",
+                                        "note":  "[d18fef7b64e1d09a6dd5bcfda2bb3e205e34ea96] fix(sdk): SDK 控件悬停样式主题适配 + 顶栏主题图标/方案卡片优化 + 计划看板归类修正"
                                     }
                                 ]
                     },

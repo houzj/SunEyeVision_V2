@@ -3091,6 +3091,10 @@
                                     {
                                         "date":  "2026-08-17",
                                         "note":  "现状核实：核心已实现（Run 引擎/解析器 C1-C3/16 测试）。但用户实测目标节点下拉仍有问题：ChildNodeOptions 是普通 List 无通知、仅打开时刷新一次（连线变化不更新）、DataProvider 非 DataSourceQueryService 时下拉为空"
+                                    },
+                                    {
+                                        "date":  "2026-08-26",
+                                        "note":  "[652101ccafedd962c5571a2b4b1e6367dcd9877b] fix(condition): 条件分支调试窗口样式优化"
                                     }
                                 ]
                     },

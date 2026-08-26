@@ -317,6 +317,10 @@
                                     {
                                         "date":  "2026-08-18",
                                         "note":  "[d7cf074dbcdc13da46df7141c202acb4997dc5f7] 计划系统同步：记录计划系统与文档提交日志，清理画布编辑器模块历史日志"
+                                    },
+                                    {
+                                        "date":  "2026-08-26",
+                                        "note":  "[0d0d13e8e97607513521986dcda1be993ff82564] Unify run button icons to Segoe MDL2 and fix subroutine index management"
                                     }
                                 ]
                     },

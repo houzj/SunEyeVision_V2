@@ -81,7 +81,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Grid Margin="0" MaxWidth="720">
+    <Grid Margin="0" MaxWidth="520">
         <!-- TabControl -->
         <TabControl BorderThickness="0" Background="{DynamicResource ThemePanelBackgroundBrush}">
             <!-- Tab 0: 输入设置 -->

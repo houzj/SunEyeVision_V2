@@ -84,7 +84,8 @@ namespace SunEyeVision.Tool.Condition
         /// <summary>
         /// 按规则类型匹配输入值。
         /// Int/Double：数值在 [MinValue, MaxValue] 内且 Judgment=OK（或范围外且 NG）→ 命中。
-        /// String：输入值有效（非 null）即命中（忽略范围/判断）。
+        /// String：配置期望值 ExpectedText 时，OK=相等 / NG=不相等（区分大小写）才命中；
+        ///         未配置期望值时，输入值有效（非 null）即命中（旧行为向后兼容）。
         /// 类型不匹配 / 无法转换 → 抛异常（rule-015，不静默）。
         /// </summary>
         private static bool TryMatchRule(ConditionRule rule, object? inputValue, ConditionParameters parameters)
@@ -131,8 +132,18 @@ namespace SunEyeVision.Tool.Condition
                         parameters.LogInfo($"规则 '{rule.Name}': 字符串输入值为空，不匹配");
                         return false;
                     }
-                    parameters.LogInfo($"规则 '{rule.Name}': 字符串规则, 输入值有效='{inputValue}', 命中");
-                    return true;
+                    // 未配置期望值：保持旧"非空即命中"行为（向后兼容旧数据）
+                    if (string.IsNullOrEmpty(rule.ExpectedText))
+                    {
+                        parameters.LogInfo($"规则 '{rule.Name}': 字符串规则, 输入值有效='{inputValue}', 命中");
+                        return true;
+                    }
+                    // 配置了期望值：OK=相等（区分大小写），NG=不相等
+                    bool eqStr = string.Equals(
+                        inputValue.ToString(), rule.ExpectedText, StringComparison.Ordinal);
+                    bool strMatched = (rule.Judgment == "OK" && eqStr) || (rule.Judgment == "NG" && !eqStr);
+                    parameters.LogInfo($"规则 '{rule.Name}': 字符串比较, 输入='{inputValue}', 期望='{rule.ExpectedText}', 判断={rule.Judgment}, 匹配={strMatched}");
+                    return strMatched;
 
                 default:
                     throw new NotSupportedException(

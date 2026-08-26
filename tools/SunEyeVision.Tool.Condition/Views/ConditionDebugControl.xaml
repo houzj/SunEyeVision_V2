@@ -13,19 +13,6 @@
     <controls:ToolDebugControlBase.Resources>
         <ResourceDictionary>
             <local:ConditionTypeConverter x:Key="ConditionTypeConverter"/>
-            <!-- String 占位符：紧凑居中符号（不撑满列宽），仅 String 规则显示 -->
-            <Style x:Key="StringPlaceholderTextStyle" TargetType="TextBlock">
-                <Setter Property="FontSize" Value="14"/>
-                <Setter Property="Foreground" Value="{DynamicResource ThemeTextDisabledBrush}"/>
-                <Setter Property="HorizontalAlignment" Value="Center"/>
-                <Setter Property="VerticalAlignment" Value="Center"/>
-                <Setter Property="Visibility" Value="Collapsed"/>
-                <Style.Triggers>
-                    <DataTrigger Binding="{Binding RuleType}" Value="String">
-                        <Setter Property="Visibility" Value="Visible"/>
-                    </DataTrigger>
-                </Style.Triggers>
-            </Style>
             <Style TargetType="Button">
                 <Setter Property="Padding" Value="6,2"/>
                 <Setter Property="FontSize" Value="12"/>
@@ -127,8 +114,8 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <!-- 有效值范围：RangeInputControl（string 隐藏并显示占位符符号） -->
-                <DataGridTemplateColumn Header="有效值范围" Width="200">
+                <!-- 有效值范围 / 期望值：数值类型显示 Min/Max 输入框，String 类型显示期望值 TextBox -->
+                <DataGridTemplateColumn Header="范围 / 期望值" Width="200">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Grid VerticalAlignment="Center">
@@ -150,32 +137,31 @@
                                         NumericWidth="90"
                                         Height="28"/>
                                 </StackPanel>
-                                <TextBlock Text="—" Style="{StaticResource StringPlaceholderTextStyle}"/>
+                                <TextBox Text="{Binding ExpectedText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         Height="28" FontSize="11" VerticalContentAlignment="Center"
+                                         Margin="0,0,4,0">
+                                    <TextBox.Style>
+                                        <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding RuleType}" Value="String">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBox.Style>
+                                </TextBox>
                             </Grid>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <!-- 判断：普通 ComboBox OK/NG（无外层 Border，简洁下拉；string 隐藏并显示占位符符号） -->
+                <!-- 判断：OK/NG 下拉（Int/Double=范围内/范围外，String=相等/不相等） -->
                 <DataGridTemplateColumn Header="判断" Width="70">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <Grid VerticalAlignment="Center">
-                                <ComboBox ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=controls:ToolDebugControlBase}, Path=JudgmentOptions}"
-                                          SelectedItem="{Binding Judgment, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                          Height="28" FontSize="11" VerticalContentAlignment="Center">
-                                    <ComboBox.Style>
-                                        <Style TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding RuleType}" Value="String">
-                                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </ComboBox.Style>
-                                </ComboBox>
-                                <TextBlock Text="—" Style="{StaticResource StringPlaceholderTextStyle}"/>
-                            </Grid>
+                            <ComboBox ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=controls:ToolDebugControlBase}, Path=JudgmentOptions}"
+                                      SelectedItem="{Binding Judgment, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      Height="28" FontSize="11" VerticalContentAlignment="Center"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>

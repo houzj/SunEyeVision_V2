@@ -119,6 +119,7 @@ public partial class ScriptEditorCore : UserControl
     // 实时诊断（Phase 1）：波浪线 + ToolTip + DiagnosticsUpdated 事件
     private CancellationTokenSource? _diagnosticsCts;             // 500ms 诊断节流
     private IReadOnlyList<Diagnostic> _currentDiagnostics = [];   // 当前错误/警告列表（波浪线 + ToolTip 消费）
+    private HashSet<int> _lastDiagnosedLines = [];                // 上次有诊断的行号集合（诊断清空时重绘旧行，清除残留波浪线）
     private string? _lastDiagnosedCode;                           // 上次已诊断的代码，用于跳过不变代码
     private string? _lastGeneratedCode;                           // 上次已同步到 workspace 的 GeneratedCode，用于跳过无意义的 solution 重建
     private System.Windows.Controls.ToolTip? _diagnosticToolTip;  // 诊断悬停详情浮窗
@@ -518,18 +519,41 @@ public partial class ScriptEditorCore : UserControl
             // 通过事件抛出诊断结果（内核不绑死显示方式，由调用方决定如何展示）
             DiagnosticsUpdated?.Invoke(diagnostics);
 
-            // 2. UI 线程重绘诊断波浪线：只重绘有诊断的行（不全量，避免连累语义着色行重绘导致闪烁）。
+            // 2. UI 线程重绘诊断波浪线：重绘"旧诊断行 ∪ 新诊断行"。
+            //    ★ 诊断清空（错误已修复）时只重绘新行会漏掉旧行，旧波浪线像素残留直到
+            //      点击/移动才触发重绘。用并集确保"从有到无"也立即清除残留波浪线。
             var diag = diagnostics;
             await Dispatcher.InvokeAsync(() =>
             {
                 var textView = CodeEditor.TextArea.TextView;
                 var lineCount = CodeEditor.Document.LineCount;
-                foreach (var n in diag
+
+                var newLines = diag
                     .Select(d => d.Location.GetLineSpan().StartLinePosition.Line + 1)
                     .Distinct()
-                    .Where(n => n >= 1 && n <= lineCount))
+                    .Where(n => n >= 1 && n <= lineCount)
+                    .ToHashSet();
+
+                var redrawLines = new HashSet<int>(_lastDiagnosedLines);
+                redrawLines.UnionWith(newLines);
+                foreach (var n in redrawLines)
                 {
                     textView.Redraw(n, n, DispatcherPriority.Background);
+                }
+
+                _lastDiagnosedLines = newLines;   // 更新"上次有诊断的行"
+
+                // ★ 诊断更新后：若鼠标位置已无诊断（含诊断清空），关闭残留 ToolTip。
+                //   修复代码后鼠标未移动，TextArea_MouseMove 不触发，需此处兜底；
+                //   否则 ToolTip 赖着不消失，直到编辑器失焦。
+                if (_diagnosticToolTip?.IsOpen == true)
+                {
+                    var hasDiagUnderMouse = HasDiagnosticAtMousePosition();
+                    if (!hasDiagUnderMouse)
+                    {
+                        _diagnosticToolTip.IsOpen = false;
+                        _lastDiagToolTipOffset = -1;
+                    }
                 }
             }, DispatcherPriority.Background, token);
         }
@@ -543,7 +567,14 @@ public partial class ScriptEditorCore : UserControl
     /// <summary>鼠标移到诊断 span 上：显示错误/警告消息（对齐 RoslynPad TextMarkerToolTipProvider）。</summary>
     private void TextArea_MouseMove(object? sender, MouseEventArgs e)
     {
-        if (_currentDiagnostics.Count == 0) return;
+        if (_currentDiagnostics.Count == 0)
+        {
+            // 诊断已清空（修复后无诊断区）：关闭残留 ToolTip，否则赖着不消失。
+            if (_diagnosticToolTip?.IsOpen == true)
+                _diagnosticToolTip.IsOpen = false;
+            _lastDiagToolTipOffset = -1;
+            return;
+        }
 
         TextViewPosition? position;
         try
@@ -599,6 +630,40 @@ public partial class ScriptEditorCore : UserControl
         if (_diagnosticToolTip != null)
             _diagnosticToolTip.IsOpen = false;
         _lastDiagToolTipOffset = -1;
+    }
+
+    /// <summary>
+    /// 判断鼠标当前位置是否命中诊断 span。
+    /// 供诊断更新后兜底关闭 ToolTip：修复代码后鼠标未移动（MouseMove 不触发），
+    /// 诊断区已消失，若鼠标位置无诊断则关闭残留 ToolTip。
+    /// </summary>
+    /// <returns>true = 鼠标位置命中诊断；false = 无诊断（应关闭 ToolTip）</returns>
+    private bool HasDiagnosticAtMousePosition()
+    {
+        if (_currentDiagnostics.Count == 0)
+            return false;
+
+        try
+        {
+            var mousePos = Mouse.GetPosition(CodeEditor.TextArea.TextView)
+                + CodeEditor.TextArea.TextView.ScrollOffset;
+            var position = CodeEditor.TextArea.TextView.GetPositionFloor(mousePos);
+            if (!position.HasValue || position.Value.Location.IsEmpty)
+                return false;
+
+            var offset = CodeEditor.Document.GetOffset(position.Value.Location);
+            return _currentDiagnostics.Any(d =>
+            {
+                var s = d.Location.SourceSpan;
+                return s.Length > 0
+                    ? (s.Start <= offset && offset < s.End)
+                    : (s.Start == offset);
+            });
+        }
+        catch (Exception)
+        {
+            return false;   // 位置解析失败视为无诊断，安全关闭
+        }
     }
 
     /// <summary>设置是否抑制诊断（初始化/参数加载期间调用方应置 true）。</summary>

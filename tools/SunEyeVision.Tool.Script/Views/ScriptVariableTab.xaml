@@ -43,6 +43,15 @@
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="4,0"/>
+            <Setter Property="Foreground" Value="{DynamicResource ThemeTextPrimaryBrush}"/>
+            <Style.Triggers>
+                <!-- 选中/失焦选中主题适配：覆盖系统默认 InactiveSelectionHighlight 样式，
+                     暗色主题下避免选中行文字因系统默认前景色不可见 -->
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource ThemeTableRowHoverBackgroundBrush}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource ThemeTextPrimaryBrush}"/>
+                </Trigger>
+            </Style.Triggers>
         </Style>
     </UserControl.Resources>
 
@@ -165,7 +174,8 @@
                                     <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
                                              VerticalContentAlignment="Center"
                                              BorderBrush="{DynamicResource ThemeInputBorderBrush}" BorderThickness="0"
-                                             Background="Transparent" Padding="2,0"/>
+                                             Background="Transparent" Padding="2,0"
+                                             Foreground="{DynamicResource ThemeTextPrimaryBrush}"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
@@ -177,7 +187,8 @@
                                               SelectedValuePath="Value"
                                               SelectedValue="{Binding TypeName, UpdateSourceTrigger=PropertyChanged}"
                                               IsEditable="False" Margin="1,0"
-                                              BorderThickness="0" Background="Transparent">
+                                              BorderThickness="0" Background="Transparent"
+                                              Foreground="{DynamicResource ThemeTextPrimaryBrush}">
                                         <ComboBox.ItemTemplate>
                                             <DataTemplate>
                                                 <TextBlock Text="{Binding DisplayName}"/>
@@ -232,7 +243,8 @@
                 <StackPanel Orientation="Horizontal">
                     <ComboBox x:Name="TypeCombo" Height="26" MinWidth="110"
                               VerticalAlignment="Center"
-                              SelectedValuePath="Value">
+                              SelectedValuePath="Value"
+                              Foreground="{DynamicResource ThemeTextPrimaryBrush}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding DisplayName}"/>

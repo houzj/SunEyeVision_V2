@@ -174,6 +174,39 @@ namespace SunEyeVision.Tool.Script.Views
             // ★ 打开调试窗口即预填充输入监视：若上游已有值（工作流执行过/失败保留），
             //   无需点击执行即可看到输入值。防御：无上游/无 DataProvider/解析异常 → 静默跳过。
             TryPrefillInputMonitor();
+
+            // ★ 打开调试窗口即预填充输出监视：若当前节点已有执行结果（工作流执行过），
+            //   输出变量直接显示值，无需点击执行。防御：无结果/查询异常 → 静默跳过。
+            TryPrefillOutputMonitor();
+        }
+
+        /// <summary>
+        /// 打开调试窗口时主动查询当前节点已保存的执行结果（SSOT），填充输出监视面板。
+        /// 与 <see cref="OnExternalResultArrived"/> 复用同一查询链路，避免打开窗口时输出空白
+        /// （输入有预填充、输出没有 → 两者不对称）。防御：无节点 ID/无 DataProvider/结果为空/异常 → 静默跳过。
+        /// </summary>
+        private void TryPrefillOutputMonitor()
+        {
+            try
+            {
+                var nodeId = GetNodeIdFromCurrentNode();
+                if (string.IsNullOrEmpty(nodeId) || DataProvider is not IDataSourceQueryService queryService)
+                    return;
+
+                var context = queryService.GetNodeContext(nodeId);
+                if (context?.Result is ScriptResults result)
+                {
+                    OutputTabControl.ValueSource = FilterDefaultValues(result.OutputValues);
+                    PluginLogger.Info($"[{nameof(ScriptDebugControl)}] 输出预填充 {result.OutputValues.Count} 个值",
+                        nameof(ScriptDebugControl));
+                }
+            }
+            catch (Exception ex)
+            {
+                // 预填充失败不阻塞打开窗口（rule-003 日志不抛）；执行时仍会走完整逻辑
+                PluginLogger.Info($"[{nameof(ScriptDebugControl)}] 输出预填充跳过: {ex.Message}",
+                    nameof(ScriptDebugControl));
+            }
         }
 
         /// <summary>

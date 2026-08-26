@@ -179,15 +179,21 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <!-- 目标：普通 ComboBox（GetChildNodes 画布下游，无外层 Border，简洁下拉） -->
+                <!-- 目标：普通 ComboBox（GetChildNodes 画布下游，无外层 Border，简洁下拉）
+                     ★ ItemTemplate 统一关闭态/下拉项显示（避免关闭态回退到 ToString() 渲染"6 Script2 (Script)"） -->
                 <DataGridTemplateColumn Header="目标" Width="140">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <ComboBox ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=controls:ToolDebugControlBase}, Path=ChildNodeOptions}"
-                                      DisplayMemberPath="NodeName"
                                       SelectedValuePath="NodeId"
                                       SelectedValue="{Binding ExecutionModuleId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                      Height="28" FontSize="11" VerticalContentAlignment="Center"/>
+                                      Height="28" FontSize="11" VerticalContentAlignment="Center">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding NodeName}"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>

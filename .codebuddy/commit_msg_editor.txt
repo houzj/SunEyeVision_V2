@@ -1,7 +1,0 @@
-fix(script): 编辑器诊断波浪线残留 + ToolTip 关闭 + 暗色主题值颜色 + 输出预填充
-
-- ScriptEditorCore: 诊断波浪线重绘旧诊断行并集, 修复错误修复后波浪线残留需点击才消失
-- ScriptEditorCore: 诊断更新后关闭鼠标位置无诊断的 ToolTip, 修复提示赖着不消失需失焦
-- ScriptVariableTab: 值颜色主题感知(GetValueBrush+IsDarkTheme), 暗色主题下下钻属性值可见
-- ScriptVariableTab: 编辑模式选中失焦样式适配主题, TextBox/ComboBox 主题前景色
-- ScriptDebugControl: 打开窗口预填充输出监视, 输出变量打开即显示(与输入对称)

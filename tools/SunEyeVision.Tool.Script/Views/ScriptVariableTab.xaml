@@ -34,10 +34,28 @@
             <Setter Property="Height" Value="28"/>
         </Style>
         <Style TargetType="DataGridRow">
-            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Background" Value="{DynamicResource ThemeTableRowBackgroundBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource ThemeTextPrimaryBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource ThemeTableGridLineBrush}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="MinHeight" Value="28"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource ThemeTableRowHoverBackgroundBrush}"/>
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource ThemeTableRowSelectedBackgroundBrush}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource ThemeTextPrimaryBrush}"/>
+                </Trigger>
+                <!-- 失焦仍保留选中主题色，而非系统默认灰 -->
+                <MultiTrigger>
+                    <MultiTrigger.Conditions>
+                        <Condition Property="IsSelected" Value="True"/>
+                        <Condition Property="IsKeyboardFocusWithin" Value="False"/>
+                    </MultiTrigger.Conditions>
+                    <Setter Property="Background" Value="{DynamicResource ThemeTableRowSelectedBackgroundBrush}"/>
+                </MultiTrigger>
+            </Style.Triggers>
         </Style>
         <Style TargetType="DataGridCell">
             <Setter Property="VerticalAlignment" Value="Center"/>
@@ -48,9 +66,17 @@
                 <!-- 选中/失焦选中主题适配：覆盖系统默认 InactiveSelectionHighlight 样式，
                      暗色主题下避免选中行文字因系统默认前景色不可见 -->
                 <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource ThemeTableRowHoverBackgroundBrush}"/>
+                    <Setter Property="Background" Value="{DynamicResource ThemeTableRowSelectedBackgroundBrush}"/>
                     <Setter Property="Foreground" Value="{DynamicResource ThemeTextPrimaryBrush}"/>
                 </Trigger>
+                <!-- 失焦仍保留选中主题色 -->
+                <MultiTrigger>
+                    <MultiTrigger.Conditions>
+                        <Condition Property="IsSelected" Value="True"/>
+                        <Condition Property="IsKeyboardFocusWithin" Value="False"/>
+                    </MultiTrigger.Conditions>
+                    <Setter Property="Background" Value="{DynamicResource ThemeTableRowSelectedBackgroundBrush}"/>
+                </MultiTrigger>
             </Style.Triggers>
         </Style>
     </UserControl.Resources>
@@ -173,9 +199,9 @@
                                 <DataTemplate>
                                     <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
                                              VerticalContentAlignment="Center"
-                                             BorderBrush="{DynamicResource ThemeInputBorderBrush}" BorderThickness="0"
-                                             Background="Transparent" Padding="2,0"
-                                             Foreground="{DynamicResource ThemeTextPrimaryBrush}"/>
+                                             BorderBrush="{DynamicResource ThemeInputBorderBrush}"
+                                             BorderThickness="1" Padding="4,2"
+                                             Height="28" Margin="2,2"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
@@ -186,8 +212,9 @@
                                     <ComboBox ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=AvailableTypes}"
                                               SelectedValuePath="Value"
                                               SelectedValue="{Binding TypeName, UpdateSourceTrigger=PropertyChanged}"
-                                              IsEditable="False" Margin="1,0"
-                                              BorderThickness="0" Background="Transparent"
+                                              IsEditable="False" Height="28" Margin="2,2"
+                                              BorderBrush="{DynamicResource ThemeInputBorderBrush}" BorderThickness="1"
+                                              Background="{DynamicResource ThemeInputBackgroundBrush}"
                                               Foreground="{DynamicResource ThemeTextPrimaryBrush}">
                                         <ComboBox.ItemTemplate>
                                             <DataTemplate>
@@ -208,7 +235,7 @@
                                         BindingSource="{Binding BindingSource, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                         BindingDisplayText="{Binding BindingDisplayText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                         ParameterName="{Binding Name}"
-                                        Height="26"/>
+                                        Height="28"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
@@ -218,16 +245,16 @@
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                         <Button Content="&#x2191;" Click="MoveUp_Click"
-                                                Width="22" Height="22" Padding="0" Margin="1,0"
+                                                Width="26" Height="28" Padding="0" Margin="1,2"
                                                 Background="{DynamicResource ThemeControlBackgroundBrush}" Foreground="{DynamicResource ThemeTextSecondaryBrush}"
                                                 BorderThickness="0" FontSize="12"/>
                                         <Button Content="&#x2193;" Click="MoveDown_Click"
-                                                Width="22" Height="22" Padding="0" Margin="1,0"
+                                                Width="26" Height="28" Padding="0" Margin="1,2"
                                                 Background="{DynamicResource ThemeControlBackgroundBrush}" Foreground="{DynamicResource ThemeTextSecondaryBrush}"
                                                 BorderThickness="0" FontSize="12"/>
                                         <Button x:Name="DeleteButton" Content="&#x2715;"
                                                 Click="DeleteItem_Click"
-                                                Width="22" Height="22" Padding="0" Margin="1,0"
+                                                Width="26" Height="28" Padding="0" Margin="1,2"
                                                 Background="{DynamicResource ThemeControlBackgroundBrush}" Foreground="{DynamicResource ThemeErrorBrush}"
                                                 BorderThickness="0" FontSize="12"/>
                                     </StackPanel>

@@ -168,6 +168,9 @@ public partial class App : Application
         var decision = startupDecisionService.GetStartupDecision();
 
         var mainWindow = new MainWindow();
+        // ★ 显式注册为主窗口：SplashScreen 先创建会抢占 Application.Current.MainWindow，
+        //   不显式赋值则调试窗口 Owner 指向已关闭的 SplashScreen（无效），无法显示在主窗口上方。
+        Application.Current.MainWindow = mainWindow;
         _splashScreen?.UpdateStatus("正在打开工作区...");
         _splashScreen?.UpdateProgress(75);
 

@@ -53,6 +53,20 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
         private bool _isContinuousRunning;
         private bool _isExecuting;
 
+        /// <summary>
+        /// 自定义无边框窗口 Chrome：CaptionHeight=32（标题栏高度，可拖动），边缘可缩放。
+        /// 用 WindowChrome 而非 AllowsTransparency，保证 Owner 层叠正常（调试窗口不被主窗口遮挡——
+        /// AllowsTransparency=True 的分层窗口无法保证 Owner 子窗口始终在 Owner 之上，是 WPF 已知限制）。
+        /// </summary>
+        public static System.Windows.Shell.WindowChrome DebugWindowChrome { get; } = new System.Windows.Shell.WindowChrome
+        {
+            CaptionHeight = 32,
+            ResizeBorderThickness = new Thickness(6),
+            GlassFrameThickness = new Thickness(0),
+            CornerRadius = new CornerRadius(0),
+            UseAeroCaptionButtons = false
+        };
+
         #endregion
 
         #region 构造函数
@@ -486,14 +500,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Windows
         #region 窗口事件处理
 
         /// <summary>
-        /// 标题栏鼠标左键按下（支持拖拽）
+        /// 标题栏鼠标左键按下（WindowChrome CaptionHeight 已处理拖拽，此处仅保留双击检测）
         /// </summary>
         private void OnTitleBarMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.ButtonState == MouseButtonState.Pressed)
-            {
-                DragMove();
-            }
+            // WindowChrome 的 CaptionHeight=32 已接管标题栏拖拽；不再调用 DragMove()
+            //（手动 DragMove 与 WindowChrome 冲突，且窗口未激活时可能抛异常）。
         }
 
         /// <summary>

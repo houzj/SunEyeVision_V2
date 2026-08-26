@@ -51,7 +51,8 @@
     <!-- ============ 表格（批次2） ============ -->
     <Color x:Key="{x:Static base:ThemeKeys.TableRowBackground}">#FF2D2D30</Color>
     <Color x:Key="{x:Static base:ThemeKeys.TableRowHoverBackground}">#FF3E3E42</Color>
-    <Color x:Key="{x:Static base:ThemeKeys.TableRowSelectedBackground}">#FF0E639C</Color>
+    <!-- 选中行用低调浅灰提亮（比悬停亮一档，去掉饱和蓝 #0E639C，暗色下不刺眼、与主题更搭） -->
+    <Color x:Key="{x:Static base:ThemeKeys.TableRowSelectedBackground}">#FF4A4A50</Color>
     <Color x:Key="{x:Static base:ThemeKeys.TableHeaderBackground}">#FF1E1E1E</Color>
     <Color x:Key="{x:Static base:ThemeKeys.TableHeaderText}">#FFB0B0B0</Color>
     <Color x:Key="{x:Static base:ThemeKeys.TableGridLine}">#FF3E3E42</Color>
@@ -63,9 +64,9 @@
     <Color x:Key="{x:Static base:ThemeKeys.PanelHeaderBackground}">#FF252526</Color>
 
     <!-- ============ 输入控件（批次2，参数模板） ============ -->
-    <!-- 输入框边框提亮：#5A5A5A 比输入框底 #2D2D2D 亮 45 级，输入区边界清晰可辨（之前 #3C3C3C 差 15 级几乎不可见） -->
+    <!-- 输入框边框提亮：#6E6E6E 比输入框底 #2D2D2D 亮 65 级，输入区边界清晰可辨（#5A5A5A 在四列控件并排时仍偏暗，再提亮一档） -->
     <Color x:Key="{x:Static base:ThemeKeys.InputBackground}">#FF2D2D2D</Color>
-    <Color x:Key="{x:Static base:ThemeKeys.InputBorder}">#FF5A5A5A</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.InputBorder}">#FF6E6E6E</Color>
 
     <!-- ============ SDK 控件补充（批次3，SDK 样式库 Token 化） ============ -->
     <Color x:Key="{x:Static base:ThemeKeys.SliderTrackBackground}">#FF3C3C3C</Color>

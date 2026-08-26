@@ -3,14 +3,14 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:commands="clr-namespace:SunEyeVision.Plugin.SDK.Commands"
         xmlns:themes="clr-namespace:SunEyeVision.Plugin.SDK.UI.Themes"
+        xmlns:local="clr-namespace:SunEyeVision.Plugin.SDK.UI.Windows"
         Title="工具调试窗口"
         WindowStartupLocation="CenterScreen"
         WindowStyle="None"
-        AllowsTransparency="True"
-        Background="Transparent"
         ResizeMode="CanResize"
         MinWidth="300" MinHeight="450"
-        Width="400" Height="550">
+        Width="400" Height="550"
+        WindowChrome.WindowChrome="{x:Static local:DefaultDebugWindow.DebugWindowChrome}">
 
     <!-- 窗口命令绑定 -->
     <Window.CommandBindings>
@@ -24,19 +24,12 @@
                         CanExecute="CanExecuteCommand"/>
     </Window.CommandBindings>
 
-    <!-- 外层容器：白色背景 + 阴影 -->
+    <!-- 外层容器：主题化背景 + 边框（无外阴影——原生窗口 WindowChrome 下 DropShadowEffect 不渲染） -->
     <Border Background="{DynamicResource {x:Static themes:SdkThemeKeys.PanelBackgroundBrush}}"
             CornerRadius="0"
             BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"
             BorderThickness="1">
         
-        <Border.Effect>
-            <DropShadowEffect Color="Black"
-                             Opacity="0.2"
-                             ShadowDepth="2"
-                             BlurRadius="8"/>
-        </Border.Effect>
-
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>  <!-- 标题栏 -->
@@ -68,7 +61,7 @@
                               VerticalAlignment="Center"
                               FontSize="13"/>
 
-                    <!-- 最大化/还原按钮 -->
+                    <!-- 最大化/还原按钮（WindowChrome Caption 区域内可点击） -->
                     <Button Grid.Column="1"
                             x:Name="MaximizeButton"
                             Width="32"
@@ -79,6 +72,7 @@
                             FontFamily="Segoe MDL2 Assets"
                             FontSize="12"
                             Cursor="Hand"
+                            WindowChrome.IsHitTestVisibleInChrome="True"
                             Click="OnMaximizeButtonClick">
                         <Button.Style>
                             <Style TargetType="Button">
@@ -93,7 +87,7 @@
                         </Button.Style>
                     </Button>
 
-                    <!-- 关闭按钮 -->
+                    <!-- 关闭按钮（WindowChrome.IsHitTestVisibleInChrome=True：Caption 区域内可点击） -->
                     <Button Grid.Column="2"
                             Content="✕"
                             Width="32"
@@ -103,6 +97,7 @@
                             BorderThickness="0"
                             FontSize="14"
                             Cursor="Hand"
+                            WindowChrome.IsHitTestVisibleInChrome="True"
                             Click="OnCloseButtonClick">
                         <Button.Style>
                             <Style TargetType="Button">

@@ -19,6 +19,47 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         public ShellTopBarControl()
         {
             InitializeComponent();
+
+            // 加载完成后订阅窗口状态变化，切换最大化/还原图标（VS 风格）。
+            // 用代码监听而非 XAML DataTrigger——UserControl 内 RelativeSource AncestorType=Window
+            // 绑定 Window.State 在初始化时可能求值失败，导致图标不切换。
+            Loaded += (_, _) =>
+            {
+                var window = Window.GetWindow(this);
+                if (window == null) return;
+                window.StateChanged += OnWindowStateChanged;
+                UpdateWindowIcon(window.WindowState);
+            };
+            Unloaded += (_, _) =>
+            {
+                var window = Window.GetWindow(this);
+                if (window != null)
+                    window.StateChanged -= OnWindowStateChanged;
+            };
+        }
+
+        /// <summary>
+        /// 窗口状态变化 - 切换最大化/还原图标（VS 风格）。
+        /// </summary>
+        private void OnWindowStateChanged(object? sender, EventArgs e)
+        {
+            if (sender is Window window)
+                UpdateWindowIcon(window.WindowState);
+        }
+
+        /// <summary>
+        /// 按窗口状态切换字形与 ToolTip（VS 同款）：最大化显示还原图标(\uE923/两个窗口) + "向下还原"，
+        /// 正常显示最大化图标(\uE739/方框) + "最大化"。
+        /// 只设置 MaximizeButton 自身的 ToolTip（设置 UserControl 的 ToolTip 会污染文件/视图/运行菜单）。
+        /// </summary>
+        /// <param name="state">当前窗口状态</param>
+        private void UpdateWindowIcon(WindowState state)
+        {
+            bool isMaximized = state == WindowState.Maximized;
+            if (MaximizeGlyph != null)
+                MaximizeGlyph.Text = isMaximized ? "\uE923" : "\uE739";
+            if (MaximizeButton != null)
+                MaximizeButton.ToolTip = isMaximized ? "向下还原" : "最大化";
         }
 
         /// <summary>

@@ -337,15 +337,16 @@
 
                 <Border Width="1" Height="18" Background="{DynamicResource {x:Static base:ThemeKeys.TitleBarDividerBrush}}" Margin="4,0"/>
 
-                <!-- 主题切换按钮：亮色显示太阳☀️，暗色显示月亮🌙（点击切换并记住） -->
+                <!-- 主题切换按钮：亮色显示太阳，暗色显示月亮（MDL2 图标，Foreground 可控且主题适配） -->
                 <Button ToolTip="切换亮/暗主题" Style="{StaticResource TitleBarButton}" Command="{Binding ToggleThemeCommand}">
-                    <TextBlock FontSize="16">
+                    <TextBlock FontSize="16" FontFamily="{StaticResource Mdl2IconFont}"
+                               Foreground="{DynamicResource {x:Static base:ThemeKeys.TitleBarIconBrush}}">
                         <TextBlock.Style>
                             <Style TargetType="TextBlock">
-                                <Setter Property="Text" Value="☀️"/>
+                                <Setter Property="Text" Value="&#xE706;"/>  <!-- 太阳 Sun -->
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding IsDarkTheme}" Value="True">
-                                        <Setter Property="Text" Value="🌙"/>
+                                        <Setter Property="Text" Value="&#xE708;"/>  <!-- 月亮 Moon -->
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>

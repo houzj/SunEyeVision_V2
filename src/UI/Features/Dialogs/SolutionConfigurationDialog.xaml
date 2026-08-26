@@ -345,7 +345,10 @@
                         <!-- 卡片样式模板 -->
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border Width="240" Height="150" Margin="0,0,10,10" CornerRadius="6" Cursor="Hand">
+                                <!-- ★ 卡片宽 210：右侧卡片区可用约 686px，3×(210+10)=660 ≤ 686，
+                                     一行排 3 个卡片，消除之前"一行 2 个 + 大片空置"的问题。
+                                     (原 240 时 3×250=750 > 686 放不下第3个) -->
+                                <Border Width="210" Height="150" Margin="0,0,10,10" CornerRadius="6" Cursor="Hand">
                                     <Border.Style>
                                         <Style TargetType="Border">
                                             <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}"/>

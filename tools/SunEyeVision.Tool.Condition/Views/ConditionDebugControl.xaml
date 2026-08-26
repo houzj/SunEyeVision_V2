@@ -52,14 +52,46 @@
             </Style>
             <Style TargetType="DataGridRow">
                 <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Foreground" Value="{DynamicResource ThemeTextPrimaryBrush}"/>
                 <Setter Property="BorderBrush" Value="{DynamicResource ThemeTableGridLineBrush}"/>
                 <Setter Property="BorderThickness" Value="0"/>
                 <Setter Property="MinHeight" Value="34"/>
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="{DynamicResource ThemeTableRowHoverBackgroundBrush}"/>
+                    </Trigger>
+                    <Trigger Property="IsSelected" Value="True">
+                        <Setter Property="Background" Value="{DynamicResource ThemeTableRowSelectedBackgroundBrush}"/>
+                        <Setter Property="Foreground" Value="{DynamicResource ThemeTextPrimaryBrush}"/>
+                    </Trigger>
+                    <!-- 失焦仍保留选中主题色，而非系统默认灰 -->
+                    <MultiTrigger>
+                        <MultiTrigger.Conditions>
+                            <Condition Property="IsSelected" Value="True"/>
+                            <Condition Property="IsKeyboardFocusWithin" Value="False"/>
+                        </MultiTrigger.Conditions>
+                        <Setter Property="Background" Value="{DynamicResource ThemeTableRowSelectedBackgroundBrush}"/>
+                    </MultiTrigger>
+                </Style.Triggers>
             </Style>
             <Style TargetType="DataGridCell">
                 <Setter Property="VerticalAlignment" Value="Center"/>
                 <Setter Property="BorderThickness" Value="0"/>
                 <Setter Property="Padding" Value="4,0"/>
+                <Setter Property="Foreground" Value="{DynamicResource ThemeTextPrimaryBrush}"/>
+                <Style.Triggers>
+                    <Trigger Property="IsSelected" Value="True">
+                        <Setter Property="Background" Value="{DynamicResource ThemeTableRowSelectedBackgroundBrush}"/>
+                        <Setter Property="Foreground" Value="{DynamicResource ThemeTextPrimaryBrush}"/>
+                    </Trigger>
+                    <MultiTrigger>
+                        <MultiTrigger.Conditions>
+                            <Condition Property="IsSelected" Value="True"/>
+                            <Condition Property="IsKeyboardFocusWithin" Value="False"/>
+                        </MultiTrigger.Conditions>
+                        <Setter Property="Background" Value="{DynamicResource ThemeTableRowSelectedBackgroundBrush}"/>
+                    </MultiTrigger>
+                </Style.Triggers>
             </Style>
         </ResourceDictionary>
     </controls:ToolDebugControlBase.Resources>
@@ -69,20 +101,20 @@
         <DataGrid ItemsSource="{Binding Parameters.Rules, RelativeSource={RelativeSource AncestorType=controls:ToolDebugControlBase}}"
                   MaxHeight="450">
             <DataGrid.Columns>
-                <!-- 名称（只读，圆角标签样式） -->
-                <DataGridTemplateColumn Header="名称" Width="80">
+                <!-- 名称（只读，圆角标签样式，文字用主题主色） -->
+                <DataGridTemplateColumn Header="名称" Width="60">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Border Background="{DynamicResource ThemeTableRowHoverBackgroundBrush}" CornerRadius="3" Padding="8,3"
                                     HorizontalAlignment="Left" VerticalAlignment="Center">
                                 <TextBlock Text="{Binding Name}" FontWeight="SemiBold"
-                                           Foreground="{DynamicResource ThemeAccentBrush}" FontSize="11"/>
+                                           Foreground="{DynamicResource ThemeTextPrimaryBrush}" FontSize="11"/>
                             </Border>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
                 <!-- 条件：ParamBinding（绑定/常量，SyncEditingToSource=True 契约 C2） -->
-                <DataGridTemplateColumn Header="条件" Width="200">
+                <DataGridTemplateColumn Header="条件" Width="150">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <controls:ParamBinding
@@ -96,7 +128,7 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
                 <!-- 有效值范围：RangeInputControl（string 隐藏并显示占位符符号） -->
-                <DataGridTemplateColumn Header="有效值范围" Width="280">
+                <DataGridTemplateColumn Header="有效值范围" Width="200">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Grid VerticalAlignment="Center">
@@ -115,7 +147,7 @@
                                         MinValue="{Binding MinValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                         MaxValue="{Binding MaxValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                         ShowSlider="False"
-                                        NumericWidth="80"
+                                        NumericWidth="90"
                                         Height="28"/>
                                 </StackPanel>
                                 <TextBlock Text="—" Style="{StaticResource StringPlaceholderTextStyle}"/>
@@ -123,19 +155,16 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <!-- 判断：ParamComboBox OK/NG（string 隐藏并显示占位符符号） -->
-                <DataGridTemplateColumn Header="判断" Width="80">
+                <!-- 判断：普通 ComboBox OK/NG（无外层 Border，简洁下拉；string 隐藏并显示占位符符号） -->
+                <DataGridTemplateColumn Header="判断" Width="70">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Grid VerticalAlignment="Center">
-                                <controls:ParamComboBox
-                                    ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=controls:ToolDebugControlBase}, Path=JudgmentOptions}"
-                                    SelectedItem="{Binding Judgment, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                    Height="28">
-                                    <controls:ParamComboBox.Style>
-                                        <!-- BasedOn 隐式样式: 保留 SDK 模板, 否则显式 Style 覆盖隐式模板导致控件空白 -->
-                                        <Style TargetType="controls:ParamComboBox"
-                                               BasedOn="{StaticResource {x:Type controls:ParamComboBox}}">
+                                <ComboBox ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=controls:ToolDebugControlBase}, Path=JudgmentOptions}"
+                                          SelectedItem="{Binding Judgment, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          Height="28" FontSize="11" VerticalContentAlignment="Center">
+                                    <ComboBox.Style>
+                                        <Style TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
                                             <Setter Property="Visibility" Value="Visible"/>
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding RuleType}" Value="String">
@@ -143,32 +172,31 @@
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
-                                    </controls:ParamComboBox.Style>
-                                </controls:ParamComboBox>
+                                    </ComboBox.Style>
+                                </ComboBox>
                                 <TextBlock Text="—" Style="{StaticResource StringPlaceholderTextStyle}"/>
                             </Grid>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <!-- 目标：ParamComboBox（GetChildNodes 画布下游） -->
-                <DataGridTemplateColumn Header="目标" Width="180">
+                <!-- 目标：普通 ComboBox（GetChildNodes 画布下游，无外层 Border，简洁下拉） -->
+                <DataGridTemplateColumn Header="目标" Width="140">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <controls:ParamComboBox
-                                ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=controls:ToolDebugControlBase}, Path=ChildNodeOptions}"
-                                DisplayMemberPath="NodeName"
-                                SelectedValuePath="NodeId"
-                                SelectedValue="{Binding ExecutionModuleId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                Height="28"/>
+                            <ComboBox ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=controls:ToolDebugControlBase}, Path=ChildNodeOptions}"
+                                      DisplayMemberPath="NodeName"
+                                      SelectedValuePath="NodeId"
+                                      SelectedValue="{Binding ExecutionModuleId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      Height="28" FontSize="11" VerticalContentAlignment="Center"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
                 <!-- 操作：删除 -->
-                <DataGridTemplateColumn Header="操作" Width="40">
+                <DataGridTemplateColumn Header="操作" Width="36">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Button Content="&#x2715;" Click="DeleteRule_Click"
-                                    Width="24" Height="22" Padding="0"
+                                    Width="26" Height="28" Padding="0"
                                     Background="{DynamicResource ThemeControlBackgroundBrush}" Foreground="{DynamicResource ThemeErrorBrush}"
                                     BorderThickness="0" FontSize="12"/>
                         </DataTemplate>

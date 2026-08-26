@@ -107,7 +107,7 @@
                                 </TextBlock.Style>
                             </TextBlock>
                             
-                            <!-- 下拉框 -->
+                            <!-- 下拉框：去内层边框/背景（外层 Border 已提供单边框，避免双边框） -->
                             <ComboBox Grid.Column="1"
                                       ItemsSource="{TemplateBinding ItemsSource}"
                                       SelectedItem="{Binding SelectedItem, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
@@ -118,6 +118,8 @@
                                       IsEditable="{TemplateBinding IsEditable}"
                                       Text="{Binding Text, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                                       Height="28"
+                                      BorderThickness="0"
+                                      Background="Transparent"
                                       VerticalContentAlignment="Center"
                                       HorizontalAlignment="Stretch"/>
                         </Grid>

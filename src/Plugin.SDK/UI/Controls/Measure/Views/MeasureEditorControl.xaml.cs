@@ -1,21 +1,27 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
+using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.SDK.UI.Controls.Measure.Models;
 using SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering;
-using SunEyeVision.Plugin.SDK.UI.Controls;
+using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
 {
     /// <summary>
-    /// 测量引导几何交互宿主 - 承载引导几何的绘制/编辑/方向交互
+    /// 测量引导几何交互宿主 - 承载引导几何的绘制/选中/手柄编辑/移动/删除交互
     /// </summary>
     /// <remarks>
-    /// 对齐 RoiEditorControl 的"宿主状态机"模式（SDK 通用控件，工具层只组装）：
+    /// 对齐 RoiEditorControl 的完整交互状态机模式（SDK 通用控件，工具层只组装）：
     /// - 绘制模式：在图像上拖动创建引导几何（Line/Circle/Arc）
-    /// - 编辑模式：拖动整体平移引导几何
-    /// - 方向反转：翻转检测方向（当前支持 Line）
+    /// - 选择模式：绘制完成自动进入，显示编辑手柄
+    /// - 手柄编辑：端点/半径/角度（复用 HandleRenderer 静态手柄系统）
+    /// - 命中优先级：①手柄 ②引导主体 ③卡尺测量带，命中即编辑/移动
+    /// - Delete 删除引导几何
+    /// - 绘制过程中只显示引导几何预览，松开完成后再显示测量带
     /// - Fail-Forward：未绑定 ImageControl 时安全跳过，不崩溃
     /// 通过 GuideGeometryChanged 事件通知宿主同步工具参数。
     /// </remarks>
@@ -30,6 +36,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         /// <summary>当前主界面图像控件</summary>
         private ImageControl? _imageControl;
 
+        /// <summary>叠加画布（手柄渲染目标）</summary>
+        private Canvas? _overlayCanvas;
+
         /// <summary>卡尺宽度（法线方向全宽）</summary>
         private double _bandWidth = 40.0;
 
@@ -39,8 +48,23 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         /// <summary>测量带数量</summary>
         private int _measureCount = 10;
 
-        /// <summary>检测方向是否翻转（Line 用）</summary>
-        private bool _directionFlipped;
+        // 交互状态（对齐 RoiEditorControl 三态）
+        private bool _isDragging;
+        private bool _isDraggingHandle;
+        private HandleType _activeHandleType = HandleType.None;
+        private Point _lastMouse;
+
+        /// <summary>引导直线当前起点（用于渲染/端点编辑，保留拖拽长度）</summary>
+        private Point _lineStart;
+
+        /// <summary>引导直线当前终点（用于渲染/端点编辑，保留拖拽长度）</summary>
+        private Point _lineEnd;
+
+        /// <summary>当前编辑手柄数组（选中态渲染）</summary>
+        private EditHandle[]? _currentHandles;
+
+        /// <summary>视口缩放（用于手柄尺寸）</summary>
+        private double _zoom = 1.0;
 
         /// <summary>
         /// 引导几何变更事件
@@ -56,6 +80,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
             InitializeComponent();
         }
 
+        #region 公开 API
+
         /// <summary>
         /// 绑定主界面图像控件（null 表示解除，Fail-Forward 安全）
         /// </summary>
@@ -66,11 +92,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
 
             if (imageControl != null)
             {
-                _overlay = new MeasureBandOverlay(imageControl.InteractionOverlayCanvasControl);
+                _overlayCanvas = imageControl.InteractionOverlayCanvasControl;
+                _overlay = new MeasureBandOverlay(_overlayCanvas);
                 SubscribeEvents();
             }
             else
             {
+                _overlayCanvas = null;
                 _overlay = null;
             }
 
@@ -95,6 +123,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         {
             _model.Mode = MeasureInteractionMode.Draw;
             _model.IsDrawing = false;
+            _model.IsSelected = false;
             _geometryType = geometryType;
         }
 
@@ -104,6 +133,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         public void SetGuide(Line2d line)
         {
             _model.SetLine(line);
+            _lineStart = line.Point;
+            _lineEnd = line.Point + line.Direction * 200.0;
             Render();
         }
 
@@ -126,25 +157,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         }
 
         /// <summary>
-        /// 进入编辑模式（平移引导几何）
-        /// </summary>
-        public void StartEdit()
-        {
-            _model.Mode = MeasureInteractionMode.Edit;
-            _model.IsDrawing = false;
-        }
-
-        /// <summary>
         /// 反转检测方向（当前支持 Line）
         /// </summary>
         public void ReverseDirection()
         {
             if (_model.EditingLine.HasValue)
             {
+                (_lineStart, _lineEnd) = (_lineEnd, _lineStart);
                 var line = _model.EditingLine.Value;
-                var flipped = new Line2d(line.Point + line.Direction, -line.Direction);
-                _model.SetLine(flipped);
-                _directionFlipped = !_directionFlipped;
+                _model.SetLine(Line2d.FromTwoPoints(_lineStart, _lineEnd));
                 Render();
                 NotifyGuideChanged();
             }
@@ -156,7 +177,28 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         public void ClearGuide()
         {
             _model.Clear();
+            _currentHandles = null;
             Render();
+        }
+
+        /// <summary>
+        /// 删除当前选中的引导几何（Delete 键）
+        /// </summary>
+        public void HandleDelete()
+        {
+            if (!_model.IsSelected) return;
+            _model.Clear();
+            _currentHandles = null;
+            Render();
+            NotifyGuideChanged();
+        }
+
+        /// <summary>
+        /// 设置视口缩放（用于手柄尺寸自适应）
+        /// </summary>
+        public void SetZoom(double zoom)
+        {
+            _zoom = zoom;
         }
 
         /// <summary>
@@ -164,23 +206,68 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         /// </summary>
         public bool HasGuide => _model.HasGuide;
 
+        /// <summary>
+        /// 当前是否正在交互（供宿主路由判断）
+        /// </summary>
+        public bool IsAnyInteractionInProgress => _model.IsDrawing || _isDragging || _isDraggingHandle;
+
+        #endregion
+
         #region 鼠标事件
 
         private void OnGuideMouseDown(object sender, ImageMouseEventArgs e)
         {
+            var pos = e.ImagePosition;
+
+            // 绘制模式：创建引导几何
             if (_model.Mode == MeasureInteractionMode.Draw)
             {
-                var pos = e.ImagePosition;
                 _model.DrawStart = pos;
                 _model.IsDrawing = true;
                 e.Handled = true;
+                return;
             }
-            else if (_model.Mode == MeasureInteractionMode.Edit)
+
+            // 选择/编辑模式：命中优先级 ①手柄 ②引导主体 ③卡尺
+            if (_model.HasGuide)
             {
-                _lastMouse = e.ImagePosition;
-                _isDragging = _model.HasGuide;
-                e.Handled = true;
+                // ① 手柄命中
+                if (_currentHandles != null)
+                {
+                    var hitType = HandleRenderer.HitTestHandle(pos, _currentHandles);
+                    if (hitType != HandleType.None)
+                    {
+                        BeginHandleDrag(hitType, pos);
+                        e.Handled = true;
+                        return;
+                    }
+                }
+
+                // ② 引导主体命中 → 移动
+                if (HitTestGuide(pos, _guideHitTolerance))
+                {
+                    _model.IsSelected = true;
+                    _isDragging = true;
+                    _lastMouse = pos;
+                    e.Handled = true;
+                    return;
+                }
+
+                // ③ 卡尺测量带命中 → 移动
+                if (HitTestBand(pos))
+                {
+                    _model.IsSelected = true;
+                    _isDragging = true;
+                    _lastMouse = pos;
+                    e.Handled = true;
+                    return;
+                }
             }
+
+            // 未命中任何交互对象 → 取消选中
+            _model.Deselect();
+            _currentHandles = null;
+            Render();
         }
 
         private void OnGuideMouseMove(object sender, ImageMouseEventArgs e)
@@ -189,37 +276,278 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
 
             var pos = e.ImagePosition;
 
-            if (_model.Mode == MeasureInteractionMode.Draw && _model.IsDrawing)
+            // 拖动手柄 → 编辑引导几何
+            if (_isDraggingHandle)
             {
-                UpdateDrawPreview(pos);
+                HandleShapeEdit(pos);
                 e.Handled = true;
+                return;
             }
-            else if (_model.Mode == MeasureInteractionMode.Edit && _isDragging)
+
+            // 拖动移动
+            if (_isDragging)
             {
                 var delta = pos - _lastMouse;
                 if (delta.Length > 1e-9)
                 {
                     _model.Translate(delta);
+                    if (_model.EditingLine.HasValue)
+                    {
+                        _lineStart += delta;
+                        _lineEnd += delta;
+                    }
                     _lastMouse = pos;
                     Render();
                     NotifyGuideChanged();
-                    e.Handled = true;
                 }
+                e.Handled = true;
+                return;
+            }
+
+            // 绘制预览（只画引导几何，不画测量带）
+            if (_model.Mode == MeasureInteractionMode.Draw && _model.IsDrawing)
+            {
+                UpdateDrawPreview(pos);
+                e.Handled = true;
             }
         }
 
         private void OnGuideMouseUp(object sender, ImageMouseEventArgs e)
         {
-            if (_model.Mode == MeasureInteractionMode.Draw && _model.IsDrawing)
+            if (_model.IsDrawing)
             {
                 _model.IsDrawing = false;
                 CompleteDraw(e.ImagePosition);
                 e.Handled = true;
+                return;
             }
-            else if (_model.Mode == MeasureInteractionMode.Edit)
+
+            if (_isDraggingHandle || _isDragging)
             {
+                _isDraggingHandle = false;
                 _isDragging = false;
+                _activeHandleType = HandleType.None;
                 e.Handled = true;
+            }
+        }
+
+        #endregion
+
+        #region 命中测试
+
+        /// <summary>引导主体命中容差（像素）</summary>
+        private const double _guideHitTolerance = 12.0;
+
+        /// <summary>卡尺命中容差（像素）</summary>
+        private const double _bandHitTolerance = 6.0;
+
+        /// <summary>
+        /// 引导主体命中测试（线附近/圆环/弧线，容差）
+        /// </summary>
+        private bool HitTestGuide(Point point, double tolerance)
+        {
+            if (_model.EditingLine.HasValue)
+            {
+                return DistanceToSegment(point, _lineStart, _lineEnd) <= tolerance;
+            }
+
+            if (_model.EditingCircle.HasValue)
+            {
+                var c = _model.EditingCircle.Value;
+                var dist = Math.Abs((point - c.Center).Length - c.Radius);
+                return dist <= tolerance;
+            }
+
+            if (_model.EditingArc.HasValue && !_model.EditingArc.Value.IsEmpty)
+            {
+                var a = _model.EditingArc.Value;
+                var dist = Math.Abs((point - a.Center).Length - a.Radius);
+                if (dist > tolerance) return false;
+                // 角度范围判断
+                double angle = Math.Atan2(point.Y - a.Center.Y, point.X - a.Center.X);
+                return AngleInRange(angle, a.StartAngle, a.EndAngle, tolerance / a.Radius);
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// 卡尺测量带命中测试（兜底：命中任意测量带矩形 → 移动）
+        /// </summary>
+        /// <remarks>
+        /// 根据引导几何 + 卡尺参数计算各测量带中心，检测点是否落在带内。
+        /// 实际测量带位置与 MeasureBandOverlay 渲染一致。
+        /// </remarks>
+        private bool HitTestBand(Point point)
+        {
+            if (_measureCount <= 0) return false;
+
+            var halfBand = _bandLength / 2;
+            var halfWidth = _bandWidth / 2;
+
+            if (_model.EditingLine.HasValue)
+            {
+                var seg = _lineEnd - _lineStart;
+                var totalLen = seg.Length;
+                if (totalLen < 1e-6) return false;
+                var dir = seg / totalLen;
+                var normal = new Vector(-dir.Y, dir.X);
+                double step = totalLen / _measureCount;
+                for (int i = 0; i < _measureCount; i++)
+                {
+                    var center = _lineStart + dir * ((i + 0.5) * step);
+                    if (PointInQuad(point, center - dir * halfBand - normal * halfWidth,
+                        center + dir * halfBand - normal * halfWidth,
+                        center + dir * halfBand + normal * halfWidth,
+                        center - dir * halfBand + normal * halfWidth))
+                        return true;
+                }
+                return false;
+            }
+
+            if (_model.EditingCircle.HasValue)
+            {
+                var c = _model.EditingCircle.Value;
+                double stepAngle = Math.PI * 2 / _measureCount;
+                for (int i = 0; i < _measureCount; i++)
+                {
+                    double angle = i * stepAngle;
+                    var dir = new Vector(Math.Cos(angle), Math.Sin(angle));
+                    var normal = new Vector(-dir.Y, dir.X);
+                    var center = c.Center + dir * c.Radius;
+                    if (PointInQuad(point, center - dir * halfWidth - normal * halfBand,
+                        center + dir * halfWidth - normal * halfBand,
+                        center + dir * halfWidth + normal * halfBand,
+                        center - dir * halfWidth + normal * halfBand))
+                        return true;
+                }
+                return false;
+            }
+
+            if (_model.EditingArc.HasValue && !_model.EditingArc.Value.IsEmpty)
+            {
+                var a = _model.EditingArc.Value;
+                double span = a.AngularSpan;
+                double stepAngle = span / _measureCount;
+                for (int i = 0; i < _measureCount; i++)
+                {
+                    double angle = a.StartAngle + (i + 0.5) * stepAngle;
+                    var dir = new Vector(Math.Cos(angle), Math.Sin(angle));
+                    var normal = new Vector(-dir.Y, dir.X);
+                    var center = a.Center + dir * a.Radius;
+                    if (PointInQuad(point, center - dir * halfWidth - normal * halfBand,
+                        center + dir * halfWidth - normal * halfBand,
+                        center + dir * halfWidth + normal * halfBand,
+                        center - dir * halfWidth + normal * halfBand))
+                        return true;
+                }
+                return false;
+            }
+
+            return false;
+        }
+
+        /// <summary>点到线段的最短距离</summary>
+        private static double DistanceToSegment(Point p, Point a, Point b)
+        {
+            var ab = b - a;
+            var ap = p - a;
+            var lenSq = ab.LengthSquared;
+            if (lenSq < 1e-12) return (p - a).Length;
+            double t = Math.Clamp(Vector.Multiply(ap, ab) / lenSq, 0.0, 1.0);
+            var proj = a + ab * t;
+            return (p - proj).Length;
+        }
+
+        /// <summary>角度是否在 [start, end] 范围内（含容差）</summary>
+        private static bool AngleInRange(double angle, double start, double end, double tolerance)
+        {
+            // 规范化角度比较（处理跨 0 情况）
+            double span = end - start;
+            double normalized = ((angle - start) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+            return normalized <= span + tolerance || normalized >= 2 * Math.PI - tolerance;
+        }
+
+        /// <summary>点是否在四边形内（叉积法）</summary>
+        private static bool PointInQuad(Point p, Point a, Point b, Point c, Point d)
+        {
+            return Sign(p, a, b) >= 0 && Sign(p, b, c) >= 0 &&
+                   Sign(p, c, d) >= 0 && Sign(p, d, a) >= 0;
+        }
+
+        private static double Sign(Point p1, Point p2, Point p3)
+        {
+            return (p1.X - p3.X) * (p2.Y - p3.Y) - (p2.X - p3.X) * (p1.Y - p3.Y);
+        }
+
+        #endregion
+
+        #region 手柄编辑
+
+        /// <summary>
+        /// 开始手柄拖拽（记录初始状态）
+        /// </summary>
+        private void BeginHandleDrag(HandleType handleType, Point position)
+        {
+            _isDraggingHandle = true;
+            _activeHandleType = handleType;
+            _lastMouse = position;
+            _model.IsSelected = true;
+        }
+
+        /// <summary>
+        /// 手柄拖拽编辑（按几何类型 + 手柄类型分发）
+        /// </summary>
+        private void HandleShapeEdit(Point current)
+        {
+            bool changed = false;
+
+            switch (_geometryType)
+            {
+                case MeasureGeometryType.Line:
+                    if (_activeHandleType == HandleType.LineStart)
+                    {
+                        _lineStart = current;
+                        changed = _model.UpdateLineEndpoints(_lineStart, _lineEnd);
+                    }
+                    else if (_activeHandleType == HandleType.LineEnd)
+                    {
+                        _lineEnd = current;
+                        changed = _model.UpdateLineEndpoints(_lineStart, _lineEnd);
+                    }
+                    break;
+
+                case MeasureGeometryType.Circle:
+                    if (_activeHandleType == HandleType.Left || _activeHandleType == HandleType.Right ||
+                        _activeHandleType == HandleType.Top || _activeHandleType == HandleType.Bottom)
+                    {
+                        if (_model.EditingCircle.HasValue)
+                        {
+                            var center = _model.EditingCircle.Value.Center;
+                            changed = _model.UpdateCircleRadius((current - center).Length);
+                        }
+                    }
+                    break;
+
+                case MeasureGeometryType.Arc:
+                    if (_model.EditingArc.HasValue && !_model.EditingArc.Value.IsEmpty)
+                    {
+                        var a = _model.EditingArc.Value;
+                        double angle = Math.Atan2(current.Y - a.Center.Y, current.X - a.Center.X);
+                        if (_activeHandleType == HandleType.LineStart)
+                            changed = _model.UpdateArcAngle(true, angle);
+                        else if (_activeHandleType == HandleType.LineEnd)
+                            changed = _model.UpdateArcAngle(false, angle);
+                        else if (_activeHandleType == HandleType.Right)
+                            changed = _model.UpdateCircleRadius((current - a.Center).Length);
+                    }
+                    break;
+            }
+
+            if (changed)
+            {
+                Render();
+                NotifyGuideChanged();
             }
         }
 
@@ -228,7 +556,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         #region 绘制逻辑
 
         /// <summary>
-        /// 实时更新绘制预览
+        /// 实时更新绘制预览（只画引导几何，不画测量带）
         /// </summary>
         private void UpdateDrawPreview(Point current)
         {
@@ -238,6 +566,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                 case MeasureGeometryType.Line:
                     if ((current - start).Length > 1e-6)
                     {
+                        _lineStart = start;
+                        _lineEnd = current;
                         _model.SetLine(Line2d.FromTwoPoints(start, current));
                     }
                     break;
@@ -267,20 +597,22 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         }
 
         /// <summary>
-        /// 完成绘制（防退化）
+        /// 完成绘制（防退化 + 自动进选择模式）
         /// </summary>
         private void CompleteDraw(Point current)
         {
             var start = _model.DrawStart;
+            bool created = false;
 
             switch (_geometryType)
             {
                 case MeasureGeometryType.Line:
                     if ((current - start).Length > 1e-3)
                     {
+                        _lineStart = start;
+                        _lineEnd = current;
                         _model.SetLine(Line2d.FromTwoPoints(start, current));
-                        Render();
-                        NotifyGuideChanged();
+                        created = true;
                     }
                     break;
 
@@ -290,8 +622,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                     if (radius > 1e-3)
                     {
                         _model.SetCircle(new Circle2d(start, radius));
-                        Render();
-                        NotifyGuideChanged();
+                        created = true;
                     }
                     break;
                 }
@@ -303,38 +634,133 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                     {
                         double endAngle = Math.Atan2(current.Y - start.Y, current.X - start.X);
                         _model.SetArc(new Arc2d(start, radius, 0, endAngle));
-                        Render();
-                        NotifyGuideChanged();
+                        created = true;
                     }
                     break;
                 }
+            }
+
+            if (created)
+            {
+                // 绘制完成自动进选择模式：选中 + 显示手柄
+                _model.IsSelected = true;
+                _model.Mode = MeasureInteractionMode.Select;
+                UpdateHandles();
+                Render();
+                NotifyGuideChanged();
             }
         }
 
         #endregion
 
-        #region 渲染与通知
+        #region 渲染
 
         /// <summary>
-        /// 渲染当前引导几何 + 测量带
+        /// 渲染当前引导几何 + 测量带（绘制中只画引导几何）
         /// </summary>
         private void Render()
         {
             if (_overlay == null) return;
             _overlay.Clear();
 
+            // 绘制中只画引导几何预览，不画测量带
+            bool drawBands = !_model.IsDrawing;
+
             if (_model.EditingLine.HasValue)
             {
-                _overlay.RenderLine(_model.EditingLine.Value, _bandWidth, _bandLength, _measureCount);
+                _overlay.RenderLine(_lineStart, _lineEnd, _bandWidth, _bandLength, _measureCount, drawBands);
             }
             else if (_model.EditingCircle.HasValue)
             {
-                _overlay.RenderCircle(_model.EditingCircle.Value, _bandWidth, _bandLength, _measureCount);
+                _overlay.RenderCircle(_model.EditingCircle.Value, _bandWidth, _bandLength, _measureCount, drawBands);
             }
             else if (_model.EditingArc.HasValue && !_model.EditingArc.Value.IsEmpty)
             {
-                _overlay.RenderArc(_model.EditingArc.Value, _bandWidth, _bandLength, _measureCount);
+                _overlay.RenderArc(_model.EditingArc.Value, _bandWidth, _bandLength, _measureCount, drawBands);
             }
+
+            // 选中态绘制手柄
+            if (_model.IsSelected && _model.HasGuide)
+            {
+                DrawHandles();
+            }
+            else
+            {
+                _currentHandles = null;
+            }
+        }
+
+        /// <summary>
+        /// 更新手柄数组（按几何类型）
+        /// </summary>
+        private void UpdateHandles()
+        {
+            if (!_model.HasGuide)
+            {
+                _currentHandles = null;
+                return;
+            }
+
+            switch (_geometryType)
+            {
+                case MeasureGeometryType.Line:
+                    _currentHandles = HandleRenderer.CreateLineHandles(_lineStart, _lineEnd, _zoom);
+                    break;
+
+                case MeasureGeometryType.Circle:
+                    if (_model.EditingCircle.HasValue)
+                    {
+                        var c = _model.EditingCircle.Value;
+                        _currentHandles = HandleRenderer.CreateCircleHandles(c.Center, c.Radius, _zoom);
+                    }
+                    break;
+
+                case MeasureGeometryType.Arc:
+                    if (_model.EditingArc.HasValue && !_model.EditingArc.Value.IsEmpty)
+                    {
+                        _currentHandles = CreateArcHandles(_model.EditingArc.Value);
+                    }
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// 创建圆弧手柄（起止角 2 个 + 半径 1 个，无 Center）
+        /// </summary>
+        private EditHandle[] CreateArcHandles(Arc2d arc)
+        {
+            var size = HandleRenderer.GetScaledHandleSize(_zoom);
+            var startPt = arc.GetPointOnArc(arc.StartAngle);
+            var endPt = arc.GetPointOnArc(arc.EndAngle);
+            double midAngle = arc.StartAngle + arc.AngularSpan / 2;
+            var radiusPt = arc.Center + new Vector(Math.Cos(midAngle), Math.Sin(midAngle)) * arc.Radius;
+
+            var handles = new List<EditHandle>
+            {
+                new() { Type = HandleType.LineStart, Position = startPt, HandleSize = size, Cursor = System.Windows.Input.Cursors.SizeAll },
+                new() { Type = HandleType.LineEnd, Position = endPt, HandleSize = size, Cursor = System.Windows.Input.Cursors.SizeAll },
+                new() { Type = HandleType.Right, Position = radiusPt, HandleSize = size, Cursor = System.Windows.Input.Cursors.SizeAll },
+            };
+
+            foreach (var h in handles)
+            {
+                h.Bounds = new Rect(h.Position.X - size / 2, h.Position.Y - size / 2, size, size);
+            }
+            return handles.ToArray();
+        }
+
+        /// <summary>
+        /// 绘制手柄到叠加画布
+        /// </summary>
+        private void DrawHandles()
+        {
+            if (_overlayCanvas == null || _currentHandles == null) return;
+            var shapeType = _geometryType switch
+            {
+                MeasureGeometryType.Line => ShapeType.Line,
+                _ => ShapeType.Circle,
+            };
+            HandleRenderer.DrawHandles(_overlayCanvas, _currentHandles, shapeType, _zoom);
         }
 
         /// <summary>
@@ -370,8 +796,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         #region 字段
 
         private MeasureGeometryType _geometryType = MeasureGeometryType.Line;
-        private Point _lastMouse;
-        private bool _isDragging;
 
         #endregion
     }

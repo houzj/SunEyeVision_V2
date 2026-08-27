@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Windows;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 
@@ -15,8 +15,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Models
         /// <summary>绘制模式（在图像上拖动创建引导几何）</summary>
         Draw,
 
-        /// <summary>编辑模式（移动/旋转/缩放引导几何）</summary>
-        Edit,
+        /// <summary>选择/编辑模式（绘制完成后，显示手柄可编辑/移动）</summary>
+        Select,
     }
 
     /// <summary>
@@ -44,6 +44,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Models
 
         /// <summary>是否正处于绘制过程中（按下未松开）</summary>
         public bool IsDrawing { get; set; }
+
+        /// <summary>当前引导几何是否被选中（显示编辑手柄）</summary>
+        public bool IsSelected { get; set; }
 
         /// <summary>绘制起点</summary>
         public Point DrawStart { get; set; }
@@ -98,35 +101,58 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Models
             EditingCircle = null;
             EditingArc = null;
             IsDrawing = false;
+            IsSelected = false;
         }
 
         /// <summary>
-        /// 更新当前编辑中的直线（保持类型不变）
+        /// 取消选中（保留引导几何，仅清除选中态）
         /// </summary>
-        public bool TryUpdateLine(Line2d line)
+        public void Deselect()
+        {
+            IsSelected = false;
+        }
+
+        /// <summary>
+        /// 更新直线端点（保持类型不变）
+        /// </summary>
+        /// <param name="start">新起点</param>
+        /// <param name="end">新终点</param>
+        /// <returns>是否更新成功（无引导直线或端点重合时 false）</returns>
+        public bool UpdateLineEndpoints(Point start, Point end)
         {
             if (!EditingLine.HasValue) return false;
-            EditingLine = line;
+            var dir = end - start;
+            if (dir.LengthSquared < 1e-20) return false;
+            EditingLine = new Line2d(start, dir);
             return true;
         }
 
         /// <summary>
-        /// 更新当前编辑中的圆（保持类型不变）
+        /// 更新圆半径（保持圆心与类型不变）
         /// </summary>
-        public bool TryUpdateCircle(Circle2d circle)
+        /// <returns>是否更新成功（无引导圆时 false）</returns>
+        public bool UpdateCircleRadius(double radius)
         {
             if (!EditingCircle.HasValue) return false;
-            EditingCircle = circle;
+            var c = EditingCircle.Value;
+            EditingCircle = new Circle2d(c.Center, Math.Max(1.0, radius));
             return true;
         }
 
         /// <summary>
-        /// 更新当前编辑中的圆弧（保持类型不变）
+        /// 更新圆弧角度（保持圆心/半径与类型不变）
         /// </summary>
-        public bool TryUpdateArc(Arc2d arc)
+        /// <param name="isStart">true=更新起始角，false=更新终止角</param>
+        /// <param name="angle">新角度（弧度）</param>
+        /// <returns>是否更新成功（无引导圆弧时 false）</returns>
+        public bool UpdateArcAngle(bool isStart, double angle)
         {
-            if (!EditingArc.HasValue) return false;
-            EditingArc = arc;
+            if (!EditingArc.HasValue || EditingArc.Value.IsEmpty) return false;
+            var a = EditingArc.Value;
+            var newStart = isStart ? angle : a.StartAngle;
+            var newEnd = isStart ? a.EndAngle : angle;
+            if (Math.Abs(newEnd - newStart) < 1e-6) return false;
+            EditingArc = new Arc2d(a.Center, a.Radius, newStart, newEnd);
             return true;
         }
 

@@ -56,23 +56,27 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
         /// <summary>
         /// 渲染引导直线 + 测量带（数量参数化）
         /// </summary>
-        public void RenderLine(Line2d line, double bandWidth, double bandLength, int measureCount)
+        /// <param name="start">线段起点（用户拖拽起点）</param>
+        /// <param name="end">线段终点（用户拖拽终点）</param>
+        /// <param name="bandWidth">卡尺宽度（法线方向全宽）</param>
+        /// <param name="bandLength">卡尺长度（切线方向全长）</param>
+        /// <param name="measureCount">测量带数量</param>
+        /// <param name="drawBands">是否绘制测量带（false=只画引导几何预览）</param>
+        public void RenderLine(Point start, Point end, double bandWidth, double bandLength, int measureCount, bool drawBands = true)
         {
             Clear();
-
-            if (measureCount <= 0) return;
-
-            var start = line.Point;
-            var end = line.GetPointAt(1.0);
-            var dir = line.Direction;
-            var normal = line.Normal;
-            var totalLen = (end - start).Length;
-            if (totalLen < 1e-6) return;
 
             // 引导线（白色实线）
             AddLine(start, end, Colors.White, 2.0);
 
-            // 测量带阵列：沿引导线方向等间距分布，垂直引导线
+            if (!drawBands || measureCount <= 0) return;
+
+            var seg = end - start;
+            var totalLen = seg.Length;
+            if (totalLen < 1e-6) return;
+
+            var dir = seg / totalLen;   // 归一化方向
+            var normal = new Vector(-dir.Y, dir.X);
             double step = totalLen / measureCount;
             var halfBand = bandLength / 2;
             var halfWidth = bandWidth / 2;
@@ -106,14 +110,19 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
         /// <summary>
         /// 渲染引导圆 + 环形测量带（数量参数化）
         /// </summary>
-        public void RenderCircle(Circle2d circle, double bandWidth, double bandLength, int measureCount)
+        /// <param name="circle">引导圆</param>
+        /// <param name="bandWidth">卡尺宽度（径向全宽）</param>
+        /// <param name="bandLength">卡尺长度（切向全长）</param>
+        /// <param name="measureCount">测量带数量</param>
+        /// <param name="drawBands">是否绘制测量带（false=只画引导几何预览）</param>
+        public void RenderCircle(Circle2d circle, double bandWidth, double bandLength, int measureCount, bool drawBands = true)
         {
             Clear();
 
-            if (measureCount <= 0 || circle.Radius <= 0) return;
-
             // 引导圆（白色实线）
             AddEllipse(circle.Center, circle.Radius, Colors.White, 2.0);
+
+            if (!drawBands || measureCount <= 0 || circle.Radius <= 0) return;
 
             // 环形测量带：沿圆周等间距分布，径向为宽度
             double stepAngle = Math.PI * 2 / measureCount;
@@ -151,14 +160,19 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
         /// <summary>
         /// 渲染引导圆弧 + 环形测量带（数量参数化）
         /// </summary>
-        public void RenderArc(Arc2d arc, double bandWidth, double bandLength, int measureCount)
+        /// <param name="arc">引导圆弧</param>
+        /// <param name="bandWidth">卡尺宽度（径向全宽）</param>
+        /// <param name="bandLength">卡尺长度（切向全长）</param>
+        /// <param name="measureCount">测量带数量</param>
+        /// <param name="drawBands">是否绘制测量带（false=只画引导几何预览）</param>
+        public void RenderArc(Arc2d arc, double bandWidth, double bandLength, int measureCount, bool drawBands = true)
         {
             Clear();
 
-            if (measureCount <= 0 || arc.Radius <= 0 || arc.AngularSpan <= 1e-6) return;
-
             // 引导弧（白色实线）
             AddArc(arc, Colors.White, 2.0);
+
+            if (!drawBands || measureCount <= 0 || arc.Radius <= 0 || arc.AngularSpan <= 1e-6) return;
 
             // 环形测量带：沿弧方向等间距分布，径向为宽度
             double span = arc.AngularSpan;

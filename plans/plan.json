@@ -3955,6 +3955,30 @@
                                         "libs/halcon/net/halcondotnetxl.xml"
                                     ],
                           "status":  "in_progress"
+                      },
+                      {
+                          "id":  "TMP-da4a4a0",
+                          "message":  "feat(edge-detect): 新增边缘检测工具（Halcon 2D Metrology）+ SDK 测量工具栏",
+                          "date":  "2026-08-27",
+                          "commit":  "da4a4a0024e86f1b82da8f124d12c80f3bd909a0",
+                          "files":  [
+                                        "SunEyeVision.slnx",
+                                        "\"docs/04-\\345\\267\\245\\345\\205\\267\\350\\256\\276\\350\\256\\241/\\346\\237\\245\\346\\211\\276\\345\\267\\245\\345\\205\\267/2026/08/24/\\350\\276\\271\\347\\274\\230\\346\\243\\200\\346\\265\\213\\345\\267\\245\\345\\205\\267\\350\\256\\276\\350\\256\\241\\346\\226\\271\\346\\241\\210-20260824-093820.md\"",
+                                        "src/Plugin.SDK/Models/SdkTypeVocabulary.cs",
+                                        "src/Plugin.SDK/UI/Controls/Measure/MeasureToolIconFactory.cs",
+                                        "src/Plugin.SDK/UI/Controls/Measure/Models/MeasureToolItem.cs",
+                                        "src/Plugin.SDK/UI/Controls/Measure/Rendering/MeasureBandOverlay.cs",
+                                        "src/Plugin.SDK/UI/Controls/Measure/Views/MeasureToolBar.xaml",
+                                        "src/Plugin.SDK/UI/Controls/Measure/Views/MeasureToolBar.xaml.cs",
+                                        "tools/SunEyeVision.Tool.EdgeDetect/EdgeDetectParameters.cs",
+                                        "tools/SunEyeVision.Tool.EdgeDetect/EdgeDetectResults.cs",
+                                        "tools/SunEyeVision.Tool.EdgeDetect/EdgeDetectTool.cs",
+                                        "tools/SunEyeVision.Tool.EdgeDetect/SunEyeVision.Tool.EdgeDetect.csproj",
+                                        "tools/SunEyeVision.Tool.EdgeDetect/Views/EdgeDetectResultConfig.cs",
+                                        "tools/SunEyeVision.Tool.EdgeDetect/Views/EdgeDetectToolDebugControl.xaml",
+                                        "tools/SunEyeVision.Tool.EdgeDetect/Views/EdgeDetectToolDebugControl.xaml.cs"
+                                    ],
+                          "status":  "in_progress"
                       }
                   ]
 }

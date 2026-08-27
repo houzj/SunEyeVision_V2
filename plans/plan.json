@@ -2122,6 +2122,10 @@
                                     {
                                         "date":  "2026-08-17",
                                         "note":  "现状核实：13 测试项目/33 文件/162 用例；Plugin.SDK 121 用例但工具层平均 1-2 个；8 个 Assert.True(true) 占位假测试（Core/CvEngine/ImageLoad/ImageFilter/Morphology/Threshold/Blob/ShapeMatch）；无集成测试层"
+                                    },
+                                    {
+                                        "date":  "2026-08-27",
+                                        "note":  "[7ee34a756a8d316f0996c04a2de27b25d156738b] feat(measure): 测量工具栏优化 - 引导几何交互宿主与测量带可视化"
                                     }
                                 ]
                     },

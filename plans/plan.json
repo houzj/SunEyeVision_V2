@@ -2077,7 +2077,7 @@
                                           "name":  "ShapeMatch 核心算法补测（亚像素精度/旋转/缩放/无匹配/多实例）",
                                           "phase":  "测试验证",
                                           "hours":  20,
-                                          "status":  "todo"
+                                          "status":  "in_progress"
                                       },
                                       {
                                           "id":  "TEST-3",
@@ -2130,6 +2130,10 @@
                                     {
                                         "date":  "2026-08-27",
                                         "note":  "[23610e9a145ec4d6937a4e50a9d7e9b137774cfb] feat(measure): 测量引导交互完整化 - 手柄编辑/命中优先级/绘制优化"
+                                    },
+                                    {
+                                        "date":  "2026-08-27",
+                                        "note":  "[7d0298f6c28bc9ac0e16f4bbce84c1de6fbf9b56] feat(measure): 圆弧引导两点参数化 - 起点+终点+半径+方向"
                                     }
                                 ]
                     },

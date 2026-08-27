@@ -2091,7 +2091,7 @@
                                           "name":  "阈值/滤波/形态学补测（边界值/异常参数/8bit16bit图像）",
                                           "phase":  "测试验证",
                                           "hours":  12,
-                                          "status":  "todo"
+                                          "status":  "in_progress"
                                       },
                                       {
                                           "id":  "TEST-5",
@@ -2138,6 +2138,10 @@
                                     {
                                         "date":  "2026-08-27",
                                         "note":  "[84a07b36ab12efb9f89bf987eff02fb626f3e052] feat(measure): 直线两点参数化与交互完善"
+                                    },
+                                    {
+                                        "date":  "2026-08-27",
+                                        "note":  "[d2df22c530ad1672f042b4e7007a2edd16648a04] feat(measure): 圆弧三点定弧模型 - P1/P2/P3 独立参数点"
                                     }
                                 ]
                     },

@@ -4011,6 +4011,16 @@
                                         "tools/SunEyeVision.Tool.EdgeDetect/Views/EdgeDetectToolDebugControl.xaml.cs"
                                     ],
                           "status":  "in_progress"
+                      },
+                      {
+                          "id":  "TMP-fad5df1",
+                          "message":  "fix(measure): 圆弧半径手柄增量法 - 半径跟随鼠标径向位移",
+                          "date":  "2026-08-27",
+                          "commit":  "fad5df18040c083431ff3602ff8020d0ba0e2be4",
+                          "files":  [
+                                        "src/Plugin.SDK/UI/Controls/Measure/Views/MeasureEditorControl.xaml.cs"
+                                    ],
+                          "status":  "in_progress"
                       }
                   ]
 }

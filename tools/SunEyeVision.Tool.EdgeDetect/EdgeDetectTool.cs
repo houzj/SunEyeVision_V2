@@ -172,11 +172,16 @@ namespace SunEyeVision.Tool.EdgeDetect
         }
 
         /// <summary>
-        /// 构建 Halcon 通用参数名
+        /// 构建 Halcon 通用参数名（measure_distance 与 num_measures 互斥，间距优先）
         /// </summary>
         private HTuple BuildGenParamName(EdgeDetectParameters parameters)
         {
-            var names = new[] { "measure_distance", "measure_transition", "measure_select" };
+            var names = new[]
+            {
+                parameters.MeasureDistance > 0 ? "measure_distance" : "num_measures",
+                "measure_transition",
+                "measure_select",
+            };
             if (parameters.GeometryType != GeometryType.Line)
             {
                 Array.Resize(ref names, names.Length + 2);
@@ -193,7 +198,7 @@ namespace SunEyeVision.Tool.EdgeDetect
         {
             var values = new object[]
             {
-                parameters.MeasureDistance,
+                parameters.MeasureDistance > 0 ? parameters.MeasureDistance : parameters.NumMeasures,
                 TransitionToHalcon(parameters.Transition),
                 SelectToHalcon(parameters.Select),
             };

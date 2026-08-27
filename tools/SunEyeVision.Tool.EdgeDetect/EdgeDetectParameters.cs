@@ -102,6 +102,7 @@ namespace SunEyeVision.Tool.EdgeDetect
         private double _measureLength1 = 20.0;
         private double _measureLength2 = 5.0;
         private double _measureDistance = 10.0;
+        private int _numMeasures = 10;
         private double _sigma = 1.0;
         private double _threshold = 30.0;
         private EdgeTransition _transition = EdgeTransition.Positive;
@@ -130,12 +131,21 @@ namespace SunEyeVision.Tool.EdgeDetect
         }
 
         /// <summary>
-        /// 测量带间距（与数量互斥）
+        /// 测量带间距（与数量互斥，间距优先）
         /// </summary>
         public double MeasureDistance
         {
             get => _measureDistance;
             set => SetProperty(ref _measureDistance, value, "测量带间距");
+        }
+
+        /// <summary>
+        /// 测量带数量（与间距互斥，间距优先）
+        /// </summary>
+        public int NumMeasures
+        {
+            get => _numMeasures;
+            set => SetProperty(ref _numMeasures, Math.Max(1, value), "测量带数量");
         }
 
         /// <summary>

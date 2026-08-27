@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
@@ -9,16 +9,38 @@ using SunEyeVision.Plugin.SDK.Models.Geometry;
 namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
 {
     /// <summary>
-    /// 测量带叠加渲染器 - 在主界面图像叠加画布上绘制引导几何 + 测量带
+    /// 测量带叠加渲染器 - 在主界面图像叠加画布上绘制引导几何 + 测量带阵列
     /// </summary>
     /// <remarks>
     /// 用于边缘检测等检测工具的引导几何可视化：
     /// - 引导几何（直线/圆/圆弧）
-    /// - 等间距测量带阵列（卡尺）
+    /// - 等间距测量带阵列（卡尺），其中**主卡尺高亮**（其余半透明）
+    /// - 主卡尺上的**检测方向箭头**
     /// 通过 ImageControl.AddOverlay 添加到主界面图像上。
+    ///
+    /// 主卡尺语义（对齐 VisionPro 搜索区域）：
+    /// - Line：中间那条测量带
+    /// - Circle：0°（正右方）那条测量带
+    /// - Arc：弧起止角中点那条测量带
+    /// 主卡尺高亮显示，其余测量带半透明（背景参照）。
     /// </remarks>
     public class MeasureBandOverlay
     {
+        /// <summary>普通测量带填充色（半透明）</summary>
+        private static readonly Color BandFillColor = Color.FromArgb(60, 100, 200, 255);
+
+        /// <summary>普通测量带描边色</summary>
+        private static readonly Color BandStrokeColor = Colors.SteelBlue;
+
+        /// <summary>主卡尺填充色（更不透明，高亮）</summary>
+        private static readonly Color MainBandFillColor = Color.FromArgb(140, 255, 200, 80);
+
+        /// <summary>主卡尺描边色（橙色，突出）</summary>
+        private static readonly Color MainBandStrokeColor = Color.FromArgb(255, 220, 140, 40);
+
+        /// <summary>方向箭头颜色</summary>
+        private static readonly Color DirectionColor = Colors.LimeGreen;
+
         private readonly Canvas _overlayCanvas;
         private readonly List<FrameworkElement> _elements = new();
 
@@ -32,7 +54,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
         }
 
         /// <summary>
-        /// 渲染引导直线 + 测量带
+        /// 渲染引导直线 + 测量带（数量参数化）
         /// </summary>
         public void RenderLine(Line2d line, double bandWidth, double bandLength, int measureCount)
         {
@@ -40,38 +62,49 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
 
             if (measureCount <= 0) return;
 
-            // 引导线（白色实线）
             var start = line.Point;
             var end = line.GetPointAt(1.0);
-            AddLine(start, end, Colors.White, 2.0);
-
-            // 测量带阵列：沿引导线方向等间距分布，垂直引导线
             var dir = line.Direction;
             var normal = line.Normal;
             var totalLen = (end - start).Length;
-            if (totalLen < 1e-6 || measureCount < 1) return;
+            if (totalLen < 1e-6) return;
 
+            // 引导线（白色实线）
+            AddLine(start, end, Colors.White, 2.0);
+
+            // 测量带阵列：沿引导线方向等间距分布，垂直引导线
             double step = totalLen / measureCount;
             var halfBand = bandLength / 2;
             var halfWidth = bandWidth / 2;
+            int mainIndex = measureCount / 2; // 主卡尺 = 中间条
 
             for (int i = 0; i < measureCount; i++)
             {
                 double t = (i + 0.5) * step;
                 var center = start + dir * t;
 
-                // 测量带矩形：中心在引导线上，法线方向为宽度，引导方向为长度
                 var p1 = center - dir * halfBand - normal * halfWidth;
                 var p2 = center + dir * halfBand - normal * halfWidth;
                 var p3 = center + dir * halfBand + normal * halfWidth;
                 var p4 = center - dir * halfBand + normal * halfWidth;
 
-                AddQuad(p1, p2, p3, p4, Color.FromArgb(60, 100, 200, 255), Colors.SteelBlue, 1.0);
+                bool isMain = i == mainIndex;
+                AddQuad(p1, p2, p3, p4,
+                    isMain ? MainBandFillColor : BandFillColor,
+                    isMain ? MainBandStrokeColor : BandStrokeColor,
+                    1.0, isMain ? 1.2 : 0.8);
+
+                // 主卡尺上绘制检测方向箭头（沿法线方向）
+                if (isMain)
+                {
+                    var arrowBase = center - dir * halfBand * 0.3;
+                    AddDirectionArrow(arrowBase, normal, bandWidth * 0.6);
+                }
             }
         }
 
         /// <summary>
-        /// 渲染引导圆 + 环形测量带
+        /// 渲染引导圆 + 环形测量带（数量参数化）
         /// </summary>
         public void RenderCircle(Circle2d circle, double bandWidth, double bandLength, int measureCount)
         {
@@ -100,7 +133,65 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
                 var p3 = center + dir * halfWidth + normal * halfBand;
                 var p4 = center - dir * halfWidth + normal * halfBand;
 
-                AddQuad(p1, p2, p3, p4, Color.FromArgb(60, 100, 200, 255), Colors.SteelBlue, 1.0);
+                bool isMain = i == 0; // 主卡尺 = 0°（正右方）条
+                AddQuad(p1, p2, p3, p4,
+                    isMain ? MainBandFillColor : BandFillColor,
+                    isMain ? MainBandStrokeColor : BandStrokeColor,
+                    1.0, isMain ? 1.2 : 0.8);
+
+                // 主卡尺上绘制检测方向箭头（沿径向向外）
+                if (isMain)
+                {
+                    var arrowBase = center - dir * halfWidth * 0.3;
+                    AddDirectionArrow(arrowBase, dir, bandWidth * 0.6);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 渲染引导圆弧 + 环形测量带（数量参数化）
+        /// </summary>
+        public void RenderArc(Arc2d arc, double bandWidth, double bandLength, int measureCount)
+        {
+            Clear();
+
+            if (measureCount <= 0 || arc.Radius <= 0 || arc.AngularSpan <= 1e-6) return;
+
+            // 引导弧（白色实线）
+            AddArc(arc, Colors.White, 2.0);
+
+            // 环形测量带：沿弧方向等间距分布，径向为宽度
+            double span = arc.AngularSpan;
+            double stepAngle = span / measureCount;
+            var halfBand = bandLength / 2;
+            var halfWidth = bandWidth / 2;
+            double mainAngle = arc.StartAngle + span / 2; // 主卡尺 = 弧中点
+
+            for (int i = 0; i < measureCount; i++)
+            {
+                double angle = arc.StartAngle + (i + 0.5) * stepAngle;
+                var dir = new Vector(Math.Cos(angle), Math.Sin(angle));   // 径向方向
+                var normal = new Vector(-dir.Y, dir.X);                   // 切向方向
+
+                var center = arc.Center + dir * arc.Radius;
+
+                var p1 = center - dir * halfWidth - normal * halfBand;
+                var p2 = center + dir * halfWidth - normal * halfBand;
+                var p3 = center + dir * halfWidth + normal * halfBand;
+                var p4 = center - dir * halfWidth + normal * halfBand;
+
+                bool isMain = Math.Abs(angle - mainAngle) < stepAngle * 0.51;
+                AddQuad(p1, p2, p3, p4,
+                    isMain ? MainBandFillColor : BandFillColor,
+                    isMain ? MainBandStrokeColor : BandStrokeColor,
+                    1.0, isMain ? 1.2 : 0.8);
+
+                // 主卡尺上绘制检测方向箭头（沿径向向外）
+                if (isMain)
+                {
+                    var arrowBase = center - dir * halfWidth * 0.3;
+                    AddDirectionArrow(arrowBase, dir, bandWidth * 0.6);
+                }
             }
         }
 
@@ -154,9 +245,37 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
         }
 
         /// <summary>
+        /// 添加圆弧（Path 方式绘制弧段）
+        /// </summary>
+        private void AddArc(Arc2d arc, Color color, double thickness)
+        {
+            var points = arc.GetSamplePoints(48);
+            if (points.Length < 2) return;
+
+            var figure = new PathFigure { StartPoint = points[0], IsClosed = false, IsFilled = false };
+            for (int i = 1; i < points.Length; i++)
+            {
+                figure.Segments.Add(new LineSegment { Point = points[i] });
+            }
+
+            var geometry = new PathGeometry();
+            geometry.Figures.Add(figure);
+
+            var path = new Path
+            {
+                Data = geometry,
+                Stroke = new SolidColorBrush(color),
+                StrokeThickness = thickness,
+                Fill = null,
+            };
+            _overlayCanvas.Children.Add(path);
+            _elements.Add(path);
+        }
+
+        /// <summary>
         /// 添加四边形（测量带）
         /// </summary>
-        private void AddQuad(Point p1, Point p2, Point p3, Point p4, Color fill, Color stroke, double thickness)
+        private void AddQuad(Point p1, Point p2, Point p3, Point p4, Color fill, Color stroke, double thickness, double opacity)
         {
             var polygon = new Polygon
             {
@@ -164,9 +283,34 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
                 Fill = new SolidColorBrush(fill),
                 Stroke = new SolidColorBrush(stroke),
                 StrokeThickness = thickness,
+                Opacity = opacity,
             };
             _overlayCanvas.Children.Add(polygon);
             _elements.Add(polygon);
+        }
+
+        /// <summary>
+        /// 添加检测方向箭头（线段 + 三角箭头，沿 direction 方向）
+        /// </summary>
+        private void AddDirectionArrow(Point basePoint, Vector direction, double length)
+        {
+            if (direction.Length < 1e-9) return;
+
+            var dir = direction;
+            dir.Normalize();
+            var tip = basePoint + dir * length;
+
+            // 箭头主干
+            AddLine(basePoint, tip, DirectionColor, 2.0);
+
+            // 箭头两翼
+            double wing = length * 0.25;
+            var perp = new Vector(-dir.Y, dir.X);
+            var wing1 = tip - dir * wing + perp * wing * 0.5;
+            var wing2 = tip - dir * wing - perp * wing * 0.5;
+
+            AddLine(tip, wing1, DirectionColor, 2.0);
+            AddLine(tip, wing2, DirectionColor, 2.0);
         }
 
         #endregion

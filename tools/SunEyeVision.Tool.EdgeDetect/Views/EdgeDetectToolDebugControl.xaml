@@ -28,13 +28,11 @@
                         <GroupBox Header="引导几何" Margin="0,0,0,8">
                             <StackPanel>
                                 <TextBlock x:Name="GuideInfoText"
-                                           Text="直线卡尺：绘制引导直线（起点 → 终点）"
+                                           Text="在主界面图像上按住鼠标左键拖动绘制引导直线"
                                            Foreground="Gray"
                                            Margin="0,4,0,4"/>
-                                <TextBlock Text="（引导几何绘制与测量带显示将在 MeasureBandOverlay 中实现）"
-                                           FontSize="11"
-                                           Foreground="Gray"
-                                           Margin="0,4,0,0"/>
+                                <measure:MeasureEditorControl x:Name="MeasureEditorControl"
+                                                              Visibility="Collapsed"/>
                             </StackPanel>
                         </GroupBox>
                     </StackPanel>

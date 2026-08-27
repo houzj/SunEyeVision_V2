@@ -48,17 +48,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Models
         /// <summary>引导圆弧（Arc 模式，由三点/两点派生）</summary>
         public Arc2d? EditingArc { get; private set; }
 
-        /// <summary>圆弧起点（端点+半径参数化）</summary>
+        /// <summary>圆弧起点（三点定弧）</summary>
         public Point ArcPoint1 { get; private set; }
 
-        /// <summary>圆弧终点（端点+半径参数化）</summary>
+        /// <summary>圆弧终点（三点定弧）</summary>
         public Point ArcPoint2 { get; private set; }
 
-        /// <summary>圆弧半径（端点+半径参数化）</summary>
-        public double ArcRadius { get; private set; }
-
-        /// <summary>圆弧方向（true=顺时针，false=逆时针）</summary>
-        public bool ArcClockwise { get; private set; }
+        /// <summary>圆弧上一点（三点定弧，决定弯曲方向与半径）</summary>
+        public Point ArcPoint3 { get; private set; }
 
         /// <summary>是否正处于绘制过程中（按下未松开）</summary>
         public bool IsDrawing { get; set; }
@@ -121,11 +118,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Models
             EditingCircle = null;
             if (!arc.IsEmpty)
             {
-                // 从弧端点同步两点+半径参数
+                // 从弧端点派生三点（P3 = 弧中点）
                 ArcPoint1 = arc.GetPointOnArc(arc.StartAngle);
                 ArcPoint2 = arc.GetPointOnArc(arc.EndAngle);
-                ArcRadius = arc.Radius;
-                ArcClockwise = arc.AngularSpan < 0;
+                ArcPoint3 = arc.GetPointOnArc(arc.StartAngle + arc.AngularSpan / 2);
             }
         }
 
@@ -179,16 +175,18 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Models
         }
 
         /// <summary>
-        /// 从起点 + 终点创建圆弧（默认半径 = 弦长）
+        /// 从起点 + 终点创建圆弧（默认生成 P3 = 弧中点）
         /// </summary>
         /// <returns>是否创建成功（两点重合时 false）</returns>
-        public bool SetArcFromEndpoints(Point point1, Point point2, bool clockwise = false)
+        public bool SetArcFromEndpoints(Point point1, Point point2)
         {
             ArcPoint1 = point1;
             ArcPoint2 = point2;
-            ArcRadius = (point2 - point1).Length;
-            ArcClockwise = clockwise;
-            var arc = Arc2d.FromTwoPointsDefault(point1, point2, clockwise);
+            // 用默认半径 = 弦长（60° 弧）生成弧，P3 取弧中点
+            var baseArc = Arc2d.FromTwoPointsDefault(point1, point2);
+            if (baseArc.IsEmpty) return false;
+            ArcPoint3 = baseArc.GetPointOnArc(baseArc.StartAngle + baseArc.AngularSpan / 2);
+            var arc = Arc2d.FromThreePoints(point1, point2, ArcPoint3);
             if (arc.IsEmpty) return false;
             EditingArc = arc;
             EditingLine = null;
@@ -197,46 +195,28 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Models
         }
 
         /// <summary>
-        /// 更新圆弧端点（半径与圆心保持不变，端点沿当前圆滑动）
+        /// 更新圆弧端点（P1/P2 移动，P3 不动，三点定圆重算圆心/弧长）
         /// </summary>
-        /// <returns>是否更新成功（无圆弧或端点与圆心重合时 false）</returns>
+        /// <returns>是否更新成功（无圆弧或三点共线时 false）</returns>
         public bool UpdateArcEndpoint(bool isStart, Point point)
         {
             if (!EditingArc.HasValue || EditingArc.Value.IsEmpty) return false;
-            var a = EditingArc.Value;
-            var center = a.Center;
-            var radius = a.Radius;
-
-            // 将鼠标位置投影到当前圆上（保持圆心 + 半径不变）
-            var dir = point - center;
-            if (dir.LengthSquared < 1e-9) return false;
-            dir.Normalize();
-            var newPt = center + dir * radius;
-
-            if (isStart) ArcPoint1 = newPt; else ArcPoint2 = newPt;
-
-            // 重新计算起止角（仅端点沿圆滑动）
-            double newStart = Math.Atan2(ArcPoint1.Y - center.Y, ArcPoint1.X - center.X);
-            double newEnd = Math.Atan2(ArcPoint2.Y - center.Y, ArcPoint2.X - center.X);
-            double endAngle = newEnd;
-            if (ArcClockwise && endAngle > newStart)
-                endAngle -= 2 * Math.PI;   // 顺时针：结束角度在起始角度之前
-            else if (!ArcClockwise && endAngle < newStart)
-                endAngle += 2 * Math.PI;   // 逆时针：结束角度在起始角度之后
-
-            EditingArc = new Arc2d(center, radius, newStart, endAngle);
+            if (isStart) ArcPoint1 = point; else ArcPoint2 = point;
+            var arc = Arc2d.FromThreePoints(ArcPoint1, ArcPoint2, ArcPoint3);
+            if (arc.IsEmpty) return false;
+            EditingArc = arc;
             return true;
         }
 
         /// <summary>
-        /// 更新圆弧半径（保持两端点不变，圆心沿中垂线滑动）
+        /// 更新圆弧上点 P3（P3 移动，P1/P2 不动，三点定圆重算圆心/半径/弧长）
         /// </summary>
-        /// <returns>是否更新成功（无圆弧或半径过小 false）</returns>
-        public bool UpdateArcRadius(double radius)
+        /// <returns>是否更新成功（无圆弧或三点共线时 false）</returns>
+        public bool UpdateArcPoint3(Point point)
         {
-            if (!EditingArc.HasValue) return false;
-            ArcRadius = radius;
-            var arc = Arc2d.FromEndpointsAndRadius(ArcPoint1, ArcPoint2, radius, ArcClockwise);
+            if (!EditingArc.HasValue || EditingArc.Value.IsEmpty) return false;
+            ArcPoint3 = point;
+            var arc = Arc2d.FromThreePoints(ArcPoint1, ArcPoint2, ArcPoint3);
             if (arc.IsEmpty) return false;
             EditingArc = arc;
             return true;
@@ -258,10 +238,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Models
             }
             else if (EditingArc.HasValue && !EditingArc.Value.IsEmpty)
             {
-                // 用端点平移重算，保持半径/方向
+                // 三点整体平移
                 ArcPoint1 += delta;
                 ArcPoint2 += delta;
-                EditingArc = Arc2d.FromEndpointsAndRadius(ArcPoint1, ArcPoint2, ArcRadius, ArcClockwise);
+                ArcPoint3 += delta;
+                EditingArc = Arc2d.FromThreePoints(ArcPoint1, ArcPoint2, ArcPoint3);
             }
         }
     }

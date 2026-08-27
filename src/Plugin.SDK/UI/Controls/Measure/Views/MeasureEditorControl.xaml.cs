@@ -55,11 +55,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         private HandleType _activeHandleType = HandleType.None;
         private Point _lastMouse;
 
-        // 半径手柄拖动增量法：记录拖动初始状态（圆心/半径/径向方向），用鼠标径向位移驱动半径
-        private Point _dragCenter;
-        private double _dragStartRadius;
-        private Vector _dragRadialDir;
-
         /// <summary>引导直线当前起点（用于渲染/端点编辑，保留拖拽长度）</summary>
         private Point _lineStart;
 
@@ -530,18 +525,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
             _activeHandleType = handleType;
             _lastMouse = position;
             _model.IsSelected = true;
-
-            // 记录半径手柄拖动初始状态（增量法：用鼠标径向位移驱动半径，圆心派生）
-            if (handleType == HandleType.Right && _model.EditingArc.HasValue && !_model.EditingArc.Value.IsEmpty)
-            {
-                var a = _model.EditingArc.Value;
-                _dragCenter = a.Center;
-                _dragStartRadius = a.Radius;
-                var hPos = a.GetPointOnArc(a.StartAngle + a.AngularSpan / 2);
-                var radial = hPos - a.Center;
-                radial.Normalize();
-                _dragRadialDir = radial;
-            }
         }
 
         /// <summary>
@@ -581,19 +564,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                 case MeasureGeometryType.Arc:
                     if (_model.EditingArc.HasValue && !_model.EditingArc.Value.IsEmpty)
                     {
+                        // 三点定弧：拖哪个点，该点 = 鼠标位置，其他两点不动，三点定圆重算
                         if (_activeHandleType == HandleType.LineStart)
-                            changed = _model.UpdateArcEndpoint(true, current);
+                            changed = _model.UpdateArcEndpoint(true, current);   // P1 移动
                         else if (_activeHandleType == HandleType.LineEnd)
-                            changed = _model.UpdateArcEndpoint(false, current);
+                            changed = _model.UpdateArcEndpoint(false, current);  // P2 移动
                         else if (_activeHandleType == HandleType.Right)
-                        {
-                            // 拖半径手柄：只有半径参数变（两端点 P1/P2 不动，圆心派生）
-                            // 增量法：newRadius = 初始半径 + 鼠标沿径向位移（拖离圆心→大，拖向圆心→小）
-                            var startHandle = _dragCenter + _dragRadialDir * _dragStartRadius;
-                            double delta = Vector.Multiply(current - startHandle, _dragRadialDir);
-                            double newRadius = Math.Max(_dragStartRadius + delta, 1.0);
-                            changed = _model.UpdateArcRadius(newRadius);
-                        }
+                            changed = _model.UpdateArcPoint3(current);           // P3 移动
+
                     }
                     break;
             }
@@ -777,21 +755,21 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         }
 
         /// <summary>
-        /// 创建圆弧手柄（起点 + 终点 + 半径 3 个，无 Center）
+        /// 创建圆弧手柄（三点定弧：P1 起点 + P2 终点 + P3 弧上点，无 Center）
         /// </summary>
         private EditHandle[] CreateArcHandles(Arc2d arc)
         {
             var size = HandleRenderer.GetScaledHandleSize(_zoom);
-            var startPt = arc.GetPointOnArc(arc.StartAngle);   // 弧起点
-            var endPt = arc.GetPointOnArc(arc.EndAngle);       // 弧终点
-            double midAngle = arc.StartAngle + arc.AngularSpan / 2;
-            var radiusPt = arc.Center + new Vector(Math.Cos(midAngle), Math.Sin(midAngle)) * arc.Radius;
+            // 三点定弧：手柄 = 三个参数点，天然跟随鼠标（P1/P2/P3 都是独立参数）
+            var p1 = _model.ArcPoint1;
+            var p2 = _model.ArcPoint2;
+            var p3 = _model.ArcPoint3;
 
             var handles = new List<EditHandle>
             {
-                new() { Type = HandleType.LineStart, Position = startPt, HandleSize = size, Cursor = System.Windows.Input.Cursors.SizeAll },
-                new() { Type = HandleType.LineEnd, Position = endPt, HandleSize = size, Cursor = System.Windows.Input.Cursors.SizeAll },
-                new() { Type = HandleType.Right, Position = radiusPt, HandleSize = size, Cursor = System.Windows.Input.Cursors.SizeAll },
+                new() { Type = HandleType.LineStart, Position = p1, HandleSize = size, Cursor = System.Windows.Input.Cursors.SizeAll },
+                new() { Type = HandleType.LineEnd, Position = p2, HandleSize = size, Cursor = System.Windows.Input.Cursors.SizeAll },
+                new() { Type = HandleType.Right, Position = p3, HandleSize = size, Cursor = System.Windows.Input.Cursors.SizeAll },
             };
 
             foreach (var h in handles)

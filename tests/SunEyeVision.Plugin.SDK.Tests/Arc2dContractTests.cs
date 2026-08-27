@@ -82,4 +82,26 @@ public class Arc2dContractTests
 
         Assert.True(arc.IsEmpty);
     }
+
+    [Fact]
+    public void FromThreePoints_PassesThroughAllPoints()
+    {
+        // 三点 (0,0),(10,0),(5,20) 定圆
+        var arc = Arc2d.FromThreePoints(new Point(0, 0), new Point(10, 0), new Point(5, 20));
+
+        Assert.False(arc.IsEmpty);
+        // 三点到圆心距离都等于半径
+        Assert.True(Math.Abs((arc.GetPointOnArc(arc.StartAngle) - new Point(0, 0)).Length) < 1e-3);
+        Assert.True(Math.Abs((arc.GetPointOnArc(arc.EndAngle) - new Point(10, 0)).Length) < 1e-3);
+        Assert.True(Math.Abs((new Point(5, 20) - arc.Center).Length - arc.Radius) < 1e-3);
+    }
+
+    [Fact]
+    public void FromThreePoints_Collinear_ReturnsEmpty()
+    {
+        // 三点共线 → 无法定圆
+        var arc = Arc2d.FromThreePoints(new Point(0, 0), new Point(10, 0), new Point(5, 0));
+
+        Assert.True(arc.IsEmpty);
+    }
 }

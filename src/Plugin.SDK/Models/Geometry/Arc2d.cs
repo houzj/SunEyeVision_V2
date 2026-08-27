@@ -113,6 +113,54 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
         }
 
         /// <summary>
+        /// 从三个点创建圆弧（三点定弧，外接圆）
+        /// </summary>
+        /// <param name="p1">弧起点</param>
+        /// <param name="p2">弧终点</param>
+        /// <param name="p3">弧上一点（决定弯曲方向与半径）</param>
+        /// <returns>经过三点的圆弧；三点共线或退化时返回 <see cref="Empty"/></returns>
+        public static Arc2d FromThreePoints(Point p1, Point p2, Point p3)
+        {
+            // 外接圆圆心：两条中垂线交点
+            double ax = p1.X - p2.X, ay = p1.Y - p2.Y;
+            double bx = p3.X - p2.X, by = p3.Y - p2.Y;
+            double det = 2 * (ax * by - ay * bx);
+            if (Math.Abs(det) < 1e-9)
+                return Empty; // 三点共线，无法定弧
+
+            double a2 = ax * ax + ay * ay;
+            double b2 = bx * bx + by * by;
+            double ux = (by * a2 - ay * b2) / det;
+            double uy = (ax * b2 - bx * a2) / det;
+            var center = new Point(p2.X + ux, p2.Y + uy);
+
+            double radius = Math.Sqrt(ux * ux + uy * uy);
+            if (radius < 1e-6)
+                return Empty;
+
+            double a1 = Math.Atan2(p1.Y - center.Y, p1.X - center.X);
+            double a2m = Math.Atan2(p2.Y - center.Y, p2.X - center.X);
+            double a3 = Math.Atan2(p3.Y - center.Y, p3.X - center.X);
+
+            // 判断弧方向：从 p1 到 p2 的弧（p1→a1, p2→a2m），弧上点 p3 决定经过的弧段
+            double span = (a2m - a1) % (2 * Math.PI);
+            if (span < 0) span += 2 * Math.PI;
+            double pos = (a3 - a1) % (2 * Math.PI);
+            if (pos < 0) pos += 2 * Math.PI;
+
+            if (pos <= span)
+            {
+                // p3 在逆时针弧内
+                return new Arc2d(center, radius, a1, a2m);
+            }
+            else
+            {
+                // p3 在顺时针侧，弧走优弧（终止角 = a2m - 2π）
+                return new Arc2d(center, radius, a1, a2m - 2 * Math.PI);
+            }
+        }
+
+        /// <summary>
         /// 是否为空
         /// </summary>
         public bool IsEmpty => Radius <= 0 || StartAngle == EndAngle;

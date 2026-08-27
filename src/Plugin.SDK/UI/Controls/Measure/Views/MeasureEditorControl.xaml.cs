@@ -55,6 +55,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         private HandleType _activeHandleType = HandleType.None;
         private Point _lastMouse;
 
+        // 半径手柄拖动增量法：记录拖动初始状态（圆心/半径/径向方向），用鼠标径向位移驱动半径
+        private Point _dragCenter;
+        private double _dragStartRadius;
+        private Vector _dragRadialDir;
+
         /// <summary>引导直线当前起点（用于渲染/端点编辑，保留拖拽长度）</summary>
         private Point _lineStart;
 
@@ -525,6 +530,18 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
             _activeHandleType = handleType;
             _lastMouse = position;
             _model.IsSelected = true;
+
+            // 记录半径手柄拖动初始状态（增量法：用鼠标径向位移驱动半径，圆心派生）
+            if (handleType == HandleType.Right && _model.EditingArc.HasValue && !_model.EditingArc.Value.IsEmpty)
+            {
+                var a = _model.EditingArc.Value;
+                _dragCenter = a.Center;
+                _dragStartRadius = a.Radius;
+                var hPos = a.GetPointOnArc(a.StartAngle + a.AngularSpan / 2);
+                var radial = hPos - a.Center;
+                radial.Normalize();
+                _dragRadialDir = radial;
+            }
         }
 
         /// <summary>
@@ -570,23 +587,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                             changed = _model.UpdateArcEndpoint(false, current);
                         else if (_activeHandleType == HandleType.Right)
                         {
-                            // 半径手柄拖动：R = sqrt(h² + (L/2)²)，h = 鼠标在弦中垂线方向的投影
-                            // 避免用"鼠标到圆心距离"（圆心随半径滑动，反馈不稳定）
-                            var p1 = _model.ArcPoint1;
-                            var p2 = _model.ArcPoint2;
-                            var chord = p2 - p1;
-                            var halfLen = chord.Length / 2;
-                            if (halfLen > 1e-6)
-                            {
-                                var chordDir = chord / (halfLen * 2);
-                                var normal = _model.ArcClockwise
-                                    ? new Vector(chordDir.Y, -chordDir.X)
-                                    : new Vector(-chordDir.Y, chordDir.X);
-                                var mid = new Point((p1.X + p2.X) / 2, (p1.Y + p2.Y) / 2);
-                                double h = Vector.Multiply(current - mid, normal);
-                                double newRadius = Math.Sqrt(h * h + halfLen * halfLen);
-                                changed = _model.UpdateArcRadius(newRadius);
-                            }
+                            // 拖半径手柄：只有半径参数变（两端点 P1/P2 不动，圆心派生）
+                            // 增量法：newRadius = 初始半径 + 鼠标沿径向位移（拖离圆心→大，拖向圆心→小）
+                            var startHandle = _dragCenter + _dragRadialDir * _dragStartRadius;
+                            double delta = Vector.Multiply(current - startHandle, _dragRadialDir);
+                            double newRadius = Math.Max(_dragStartRadius + delta, 1.0);
+                            changed = _model.UpdateArcRadius(newRadius);
                         }
                     }
                     break;

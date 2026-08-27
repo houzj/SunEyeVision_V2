@@ -58,6 +58,61 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
         public static readonly Arc2d Empty = new Arc2d(0, 0, 0, 0, 0);
 
         /// <summary>
+        /// 从起点 + 终点 + 半径创建圆弧（圆心由几何计算）
+        /// </summary>
+        /// <param name="startPoint">弧起点</param>
+        /// <param name="endPoint">弧终点</param>
+        /// <param name="radius">半径（需 ≥ 弦长/2，否则无解）</param>
+        /// <param name="clockwise">true=顺时针（圆心在弦一侧），false=逆时针（圆心在弦另一侧，默认劣弧方向）</param>
+        /// <returns>圆弧；半径过小或两点重合时返回 <see cref="Empty"/></returns>
+        public static Arc2d FromEndpointsAndRadius(Point startPoint, Point endPoint, double radius, bool clockwise)
+        {
+            var chord = endPoint - startPoint;
+            var halfChord = chord.Length / 2;
+            if (halfChord < 1e-6) return Empty;
+
+            // 半径必须 ≥ 弦长/2，否则不存在经过两点的圆弧
+            if (radius < halfChord) return Empty;
+
+            // 弦中垂线方向单位向量
+            // 圆心在弧凸起的一侧：逆时针（默认）圆心在弦的"左前"方向（使弧为劣弧）
+            var chordDir = chord / (halfChord * 2);
+            var normal = clockwise
+                ? new Vector(chordDir.Y, -chordDir.X)   // 顺时针：圆心在弦的"右后"方向
+                : new Vector(-chordDir.Y, chordDir.X);  // 逆时针：圆心在弦的"左前"方向
+
+            // 圆心距弦中点距离（勾股定理）
+            double h = Math.Sqrt(radius * radius - halfChord * halfChord);
+            var mid = new Point((startPoint.X + endPoint.X) / 2, (startPoint.Y + endPoint.Y) / 2);
+            var center = mid + normal * h;
+
+            double a1 = Math.Atan2(startPoint.Y - center.Y, startPoint.X - center.X);
+            double a3 = Math.Atan2(endPoint.Y - center.Y, endPoint.X - center.X);
+
+            // 根据方向调整终止角，使 AngularSpan 符号与方向一致
+            double endAngle = a3;
+            if (clockwise && endAngle > a1)
+                endAngle -= 2 * Math.PI;   // 顺时针：结束角度在起始角度之前
+            else if (!clockwise && endAngle < a1)
+                endAngle += 2 * Math.PI;   // 逆时针：结束角度在起始角度之后
+
+            return new Arc2d(center, radius, a1, endAngle);
+        }
+
+        /// <summary>
+        /// 从起点 + 终点创建圆弧（默认半径 = 弦长，张角 60°）
+        /// </summary>
+        /// <param name="startPoint">弧起点</param>
+        /// <param name="endPoint">弧终点</param>
+        /// <param name="clockwise">true=顺时针，false=逆时针（默认逆时针）</param>
+        /// <returns>圆弧；两点重合时返回 <see cref="Empty"/></returns>
+        public static Arc2d FromTwoPointsDefault(Point startPoint, Point endPoint, bool clockwise = false)
+        {
+            double radius = (endPoint - startPoint).Length;
+            return FromEndpointsAndRadius(startPoint, endPoint, radius, clockwise);
+        }
+
+        /// <summary>
         /// 是否为空
         /// </summary>
         public bool IsEmpty => Radius <= 0 || StartAngle == EndAngle;

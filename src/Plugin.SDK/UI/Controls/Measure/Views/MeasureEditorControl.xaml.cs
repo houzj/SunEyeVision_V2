@@ -532,14 +532,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                 case MeasureGeometryType.Arc:
                     if (_model.EditingArc.HasValue && !_model.EditingArc.Value.IsEmpty)
                     {
-                        var a = _model.EditingArc.Value;
-                        double angle = Math.Atan2(current.Y - a.Center.Y, current.X - a.Center.X);
                         if (_activeHandleType == HandleType.LineStart)
-                            changed = _model.UpdateArcAngle(true, angle);
+                            changed = _model.UpdateArcEndpoint(true, current);
                         else if (_activeHandleType == HandleType.LineEnd)
-                            changed = _model.UpdateArcAngle(false, angle);
+                            changed = _model.UpdateArcEndpoint(false, current);
                         else if (_activeHandleType == HandleType.Right)
-                            changed = _model.UpdateCircleRadius((current - a.Center).Length);
+                        {
+                            var a = _model.EditingArc.Value;
+                            changed = _model.UpdateArcRadius((current - a.Center).Length);
+                        }
                     }
                     break;
             }
@@ -584,11 +585,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
 
                 case MeasureGeometryType.Arc:
                 {
-                    var radius = (current - start).Length;
-                    if (radius > 1e-6)
+                    // 按下=P1（起点），拖动=P2（终点），圆心/半径自动计算（默认半径=弦长）
+                    if ((current - start).Length > 1e-6)
                     {
-                        double endAngle = Math.Atan2(current.Y - start.Y, current.X - start.X);
-                        _model.SetArc(new Arc2d(start, radius, 0, endAngle));
+                        _model.SetArcFromEndpoints(start, current);
                     }
                     break;
                 }
@@ -629,12 +629,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
 
                 case MeasureGeometryType.Arc:
                 {
-                    var radius = (current - start).Length;
-                    if (radius > 1e-3)
+                    // 按下=P1（起点），松开=P2（终点），默认半径=弦长（60°弧）
+                    if ((current - start).Length > 1e-3)
                     {
-                        double endAngle = Math.Atan2(current.Y - start.Y, current.X - start.X);
-                        _model.SetArc(new Arc2d(start, radius, 0, endAngle));
-                        created = true;
+                        created = _model.SetArcFromEndpoints(start, current);
                     }
                     break;
                 }
@@ -679,9 +677,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                 _overlay.RenderArc(_model.EditingArc.Value, _bandWidth, _bandLength, _measureCount, drawBands);
             }
 
-            // 选中态绘制手柄
+            // 选中态绘制手柄（先按当前几何重建位置，确保手柄随编辑随动）
             if (_model.IsSelected && _model.HasGuide)
             {
+                UpdateHandles();
                 DrawHandles();
             }
             else
@@ -725,13 +724,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         }
 
         /// <summary>
-        /// 创建圆弧手柄（起止角 2 个 + 半径 1 个，无 Center）
+        /// 创建圆弧手柄（起点 + 终点 + 半径 3 个，无 Center）
         /// </summary>
         private EditHandle[] CreateArcHandles(Arc2d arc)
         {
             var size = HandleRenderer.GetScaledHandleSize(_zoom);
-            var startPt = arc.GetPointOnArc(arc.StartAngle);
-            var endPt = arc.GetPointOnArc(arc.EndAngle);
+            var startPt = arc.GetPointOnArc(arc.StartAngle);   // 弧起点
+            var endPt = arc.GetPointOnArc(arc.EndAngle);       // 弧终点
             double midAngle = arc.StartAngle + arc.AngularSpan / 2;
             var radiusPt = arc.Center + new Vector(Math.Cos(midAngle), Math.Sin(midAngle)) * arc.Radius;
 

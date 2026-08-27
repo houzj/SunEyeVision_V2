@@ -118,27 +118,61 @@ public class MeasureInteractionModelContractTests
     }
 
     [Fact]
-    public void UpdateArcAngle_ChangesStartAngle()
+    public void SetArcFromEndpoints_DefaultRadiusEqualsChord()
     {
         var model = new MeasureInteractionModel();
-        model.SetArc(new Arc2d(0, 0, 5, 0, Math.PI));
-
-        // 更新起始角到 π/2
-        Assert.True(model.UpdateArcAngle(true, Math.PI / 2));
+        // 默认半径 = 弦长（对齐 VM）
+        Assert.True(model.SetArcFromEndpoints(new Point(0, 0), new Point(10, 0)));
         Assert.True(model.EditingArc.HasValue);
-        Assert.Equal(Math.PI / 2, model.EditingArc.Value.StartAngle, 3);
-        Assert.Equal(Math.PI, model.EditingArc.Value.EndAngle, 3);
+        Assert.Equal(10, model.ArcRadius, 3);              // 半径 = 弦长
+        Assert.Equal(10, model.EditingArc.Value.Radius, 3);
     }
 
     [Fact]
-    public void UpdateArcAngle_RejectsZeroSpan()
+    public void UpdateArcEndpoint_RecomputesArc()
     {
         var model = new MeasureInteractionModel();
-        model.SetArc(new Arc2d(0, 0, 5, 0, Math.PI));
+        Assert.True(model.SetArcFromEndpoints(new Point(0, 0), new Point(10, 0)));
 
-        // 起止角重合 → 更新失败（防退化）
-        Assert.False(model.UpdateArcAngle(true, Math.PI));
+        // 拖终点到 (0,10)，保持半径/起点，圆心/弧重算
+        Assert.True(model.UpdateArcEndpoint(false, new Point(0, 10)));
         Assert.True(model.EditingArc.HasValue);
+        Assert.Equal(10, model.ArcRadius, 3);
+        Assert.Equal(new Point(0, 10), model.ArcPoint2);
+    }
+
+    [Fact]
+    public void UpdateArcRadius_ChangesRadiusKeepsEndpoints()
+    {
+        var model = new MeasureInteractionModel();
+        Assert.True(model.SetArcFromEndpoints(new Point(0, 0), new Point(10, 0)));
+
+        // 半径改为 20（> 弦长/2=5，合法）
+        Assert.True(model.UpdateArcRadius(20));
+        Assert.True(model.EditingArc.HasValue);
+        Assert.Equal(20, model.EditingArc.Value.Radius, 3);
+        Assert.Equal(new Point(0, 0), model.ArcPoint1);
+        Assert.Equal(new Point(10, 0), model.ArcPoint2);
+    }
+
+    [Fact]
+    public void UpdateArcRadius_RejectsTooSmall()
+    {
+        var model = new MeasureInteractionModel();
+        Assert.True(model.SetArcFromEndpoints(new Point(0, 0), new Point(10, 0)));
+
+        // 半径 2 < 弦长/2=5 → 更新失败（防退化）
+        Assert.False(model.UpdateArcRadius(2));
+        Assert.True(model.EditingArc.HasValue);
+    }
+
+    [Fact]
+    public void SetArcFromEndpoints_RejectsCoincident()
+    {
+        var model = new MeasureInteractionModel();
+        // 两点重合 → 创建失败
+        Assert.False(model.SetArcFromEndpoints(new Point(5, 5), new Point(5, 5)));
+        Assert.Null(model.EditingArc);
     }
 
     [Fact]

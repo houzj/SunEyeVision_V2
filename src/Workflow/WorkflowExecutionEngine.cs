@@ -134,34 +134,35 @@ namespace SunEyeVision.Workflow
             _logger.LogInfo($"=====================================================");
 
             // 按组顺序执行
-            string? forcedNextNodeId = null; // ★ 条件分支控制信号
+            // ★ 剪枝集合：被跳过的节点（条件分支非命中分支 / 未命中整条分支）。
+            //   分组仍用拓扑 BFS 分层（谁先谁后不变），条件分支只负责给不该跑的节点"贴标签"，
+            //   执行时跳过贴标签节点。剪枝传播规则：一个节点被剪 ⟺ 其所有前驱都被剪。
+            var prunedNodeIds = new HashSet<string>();
+            // 条件分支的目标节点（命中时保留其整条上游链）
+            HashSet<string> protectedNodeIds = new();
 
             for (int groupIndex = 0; groupIndex < parallelGroups.Count; groupIndex++)
             {
                 var group = parallelGroups[groupIndex];
 
-                // ★ 如果上一轮产生了 NextNodeId，过滤本组只保留目标节点
-                if (forcedNextNodeId != null)
+                // ★ 本组内已被剪枝的节点：标记 Skipped，不执行。
+                //   剪枝发生在条件分支评估后（后续组），这些节点尚未执行（Pending），直接标记 Skipped；
+                //   UpdateNodeStatus 幂等，重复标记安全。
+                var toSkip = group.Where(id => prunedNodeIds.Contains(id)).ToList();
+                foreach (var skippedId in toSkip)
                 {
-                    var filtered = group.Where(id => id == forcedNextNodeId).ToList();
-                    if (filtered.Count == 0)
-                    {
-                        _logger.LogInfo($"条件分支目标节点 {forcedNextNodeId} 不在当前组中，跳过本组执行");
-                        forcedNextNodeId = null;
-                        continue;
-                    }
-                    // 将非选中分支节点标记为 Skipped
-                    foreach (var skippedId in group.Where(id => id != forcedNextNodeId))
-                    {
-                        context.UpdateNodeStatus(skippedId, NodeStatus.Skipped);
-                        NodeStatusChanged?.Invoke(this, new NodeExecutionStatus { NodeId = skippedId, Status = NodeStatus.Skipped });
-                    }
-                    group = filtered;
-                    forcedNextNodeId = null;
+                    context.UpdateNodeStatus(skippedId, NodeStatus.Skipped);
+                    NodeStatusChanged?.Invoke(this, new NodeExecutionStatus { NodeId = skippedId, Status = NodeStatus.Skipped });
+                }
+                var executable = group.Where(id => !prunedNodeIds.Contains(id)).ToList();
+                if (executable.Count == 0)
+                {
+                    _logger.LogInfo($"组 {groupIndex + 1} 全部被剪枝，跳过执行");
+                    continue;
                 }
 
                 _logger.LogInfo($"");
-                _logger.LogInfo($"========== 执行组 {groupIndex + 1}/{parallelGroups.Count} ({group.Count}个节点) ==========");
+                _logger.LogInfo($"========== 执行组 {groupIndex + 1}/{parallelGroups.Count} ({executable.Count}个节点) ==========");
 
                 if (_cancellationTokenSource?.IsCancellationRequested == true)
                 {
@@ -172,10 +173,10 @@ namespace SunEyeVision.Workflow
                 var groupStartTime = DateTime.Now;
                 var groupResult = await ExecuteNodesInParallel(
                     workflow,
-                    group,
+                    executable,
                     context);
 
-                totalExecutedNodes += groupResult.Success ? group.Count : 0;
+                totalExecutedNodes += groupResult.Success ? executable.Count : 0;
 
                 var groupDuration = (DateTime.Now - groupStartTime).TotalMilliseconds;
                 _logger.LogInfo($"组 {groupIndex + 1} 执行完成, 耗时: {groupDuration:F2}ms, 成功节点: {groupResult.Success}");
@@ -192,11 +193,23 @@ namespace SunEyeVision.Workflow
                     return groupResult;
                 }
 
-                // ★ 检查本轮是否有节点输出了 NextNodeId（控制信号）
-                forcedNextNodeId = TryExtractNextNodeId(workflow, group, context);
-                if (forcedNextNodeId != null)
+                // ★ 收集本组所有条件分支的控制信号（可能有多个同组并行）。
+                //   必须逐一处理每个信号：一组多条件分支时，只取第一个会导致其余条件分支
+                //   的剪枝（命中/未命中）被忽略，其下游不剪枝 → "无规则时下游全执行" bug。
+                var controlSignals = TryExtractControlSignals(workflow, executable, context);
+                foreach (var (controlNodeId, nextNodeIds) in controlSignals)
                 {
-                    _logger.LogInfo($"条件分支控制: NextNodeId = {forcedNextNodeId}");
+                    // 命中：保留目标节点的整条上游链（防止剪掉目标必经的中间层，保证数据链不断）
+                    protectedNodeIds = ComputeProtectedNodes(workflow, nextNodeIds);
+                    // 计算剪枝：非目标分支（命中）或全部下游（未命中）
+                    var newlyPruned = ComputePrunedNodes(workflow, controlNodeId, nextNodeIds, protectedNodeIds, prunedNodeIds);
+                    foreach (var id in newlyPruned)
+                    {
+                        prunedNodeIds.Add(id);
+                    }
+                    _logger.LogInfo(nextNodeIds.Count > 0
+                        ? $"条件分支控制: 命中 {nextNodeIds.Count} 个目标 [{string.Join(", ", nextNodeIds)}]，剪枝 {newlyPruned.Count} 个节点"
+                        : $"条件分支控制: 未命中，剪枝 {newlyPruned.Count} 个节点（该分支终止）");
                 }
             }
 
@@ -653,24 +666,102 @@ namespace SunEyeVision.Workflow
         }
 
         /// <summary>
-        /// 检查刚执行的节点组中是否有节点输出了 NextNodeId 控制信号。
-        /// 用于条件分支工具：Run() 返回 ConditionResults（实现 IControlFlowResult），引擎强类型读取 NextNodeId 决定下一个执行分支。
+        /// 收集刚执行的节点组中所有节点输出的流程控制信号（条件分支）。
+        /// 返回 (控制节点ID, 命中目标节点列表) 列表。一组可能有多个条件分支并行，
+        /// 必须全部收集（逐一处理），否则后面的条件分支被忽略，其剪枝不生效。
+        /// HasControlSignal 区分"未命中终止"（true 且目标空）与"普通节点无信号"（false）。
         /// </summary>
-        private string? TryExtractNextNodeId(Workflow workflow, List<string> executedGroupNodeIds, WorkflowContext context)
+        private List<(string controlNodeId, List<string> nextNodeIds)> TryExtractControlSignals(
+            Workflow workflow,
+            List<string> executedGroupNodeIds,
+            WorkflowContext context)
         {
+            var signals = new List<(string, List<string>)>();
             foreach (var nodeId in executedGroupNodeIds)
             {
                 var nodeResult = context.GetNodeResult(nodeId);
                 if (nodeResult?.Result == null) continue;
 
-                // 强类型读取流程控制信号，取代反射 GetProperty("NextNodeId")
-                if (nodeResult.Result is IControlFlowResult cfr && !string.IsNullOrEmpty(cfr.NextNodeId))
+                // 强类型读取流程控制信号：HasControlSignal 为 true 才视为控制节点
+                if (nodeResult.Result is IControlFlowResult cfr && cfr.HasControlSignal)
                 {
-                    _logger.LogInfo($"节点 {nodeId} 输出控制信号 NextNodeId = {cfr.NextNodeId}", nodeId);
-                    return cfr.NextNodeId;
+                    var targets = cfr.NextNodeIds?.ToList() ?? new List<string>();
+                    _logger.LogInfo(targets.Count > 0
+                        ? $"节点 {nodeId} 输出控制信号，命中目标 [{string.Join(", ", targets)}]"
+                        : $"节点 {nodeId} 输出控制信号，未命中（将剪枝该分支）", nodeId);
+                    signals.Add((nodeId, targets));
                 }
             }
-            return null;
+            return signals;
+        }
+
+        /// <summary>
+        /// 计算"受保护节点"：命中目标节点及其整条上游链（沿反向连接）。
+        /// 这些节点即使前驱被剪也不剪——保证目标节点执行时上游数据链完整。
+        /// </summary>
+        private HashSet<string> ComputeProtectedNodes(Workflow workflow, List<string> nextNodeIds)
+        {
+            var protectedSet = new HashSet<string>();
+            var queue = new Queue<string>(nextNodeIds);
+            while (queue.Count > 0)
+            {
+                var id = queue.Dequeue();
+                if (!protectedSet.Add(id)) continue;
+                // 找上游
+                foreach (var conn in workflow.Connections.Where(c => c.TargetNodeId == id))
+                {
+                    if (!protectedSet.Contains(conn.SourceNodeId))
+                        queue.Enqueue(conn.SourceNodeId);
+                }
+            }
+            return protectedSet;
+        }
+
+        /// <summary>
+        /// 计算条件分支应剪枝的节点集合。
+        /// 规则（图不动点）：一个节点被剪 ⟺ 其所有前驱都被剪。
+        /// - 未命中（nextNodeIds 空）：条件分支全部下游传播剪枝
+        /// - 命中：条件分支下游中不属于命中目标（且不受保护）的传播剪枝
+        /// 受保护节点（命中目标的上游链）永不剪，保证目标数据链完整。
+        /// </summary>
+        private HashSet<string> ComputePrunedNodes(
+            Workflow workflow,
+            string controlNodeId,
+            List<string> nextNodeIds,
+            HashSet<string> protectedNodeIds,
+            HashSet<string> alreadyPruned)
+        {
+            var pruned = new HashSet<string>(alreadyPruned);
+            pruned.Add(controlNodeId);  // 控制节点自身作为剪枝源
+
+            // 从控制节点直接下游开始 BFS 传播
+            var queue = new Queue<string>(
+                workflow.Connections
+                    .Where(c => c.SourceNodeId == controlNodeId)
+                    .Select(c => c.TargetNodeId));
+
+            while (queue.Count > 0)
+            {
+                var id = queue.Dequeue();
+                if (pruned.Contains(id)) continue;
+                // 命中目标或其上游链受保护 → 保留
+                if (protectedNodeIds.Contains(id)) continue;
+                // 前驱全剪才剪
+                var allPredsPruned = workflow.Connections
+                    .Where(c => c.TargetNodeId == id)
+                    .All(c => pruned.Contains(c.SourceNodeId));
+                if (allPredsPruned)
+                {
+                    pruned.Add(id);
+                    foreach (var conn in workflow.Connections.Where(c => c.SourceNodeId == id))
+                    {
+                        if (!pruned.Contains(conn.TargetNodeId))
+                            queue.Enqueue(conn.TargetNodeId);
+                    }
+                }
+            }
+
+            return pruned;
         }
 
         /// <summary>

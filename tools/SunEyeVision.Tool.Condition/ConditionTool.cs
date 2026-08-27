@@ -35,8 +35,6 @@ namespace SunEyeVision.Tool.Condition
             if (parameters.Rules == null || parameters.Rules.Count == 0)
             {
                 parameters.LogInfo("条件分支未配置任何规则，流程终止（不执行任何分支）");
-                result.NextNodeId = null;
-                result.MatchedRuleName = null;
                 result.IsMatched = false;
                 sw.Stop();
                 result.SetSuccess(sw.ElapsedMilliseconds);
@@ -45,6 +43,8 @@ namespace SunEyeVision.Tool.Condition
 
             parameters.LogInfo($"开始评估条件分支，共 {parameters.Rules.Count} 条规则");
 
+            // ★ 多选并行：遍历所有规则，收集所有命中的目标节点（不遇命中即 return）。
+            //   未命中的规则不产生目标；全部未命中则 NextNodeIds 为空 → 引擎剪枝终止该分支。
             foreach (var rule in parameters.Rules)
             {
                 if (string.IsNullOrEmpty(rule.ExecutionModuleId))
@@ -63,21 +63,18 @@ namespace SunEyeVision.Tool.Condition
 
                 if (matched)
                 {
-                    result.NextNodeId = rule.ExecutionModuleId;
-                    result.MatchedRuleName = rule.Name;
+                    result.NextNodeIds.Add(rule.ExecutionModuleId);
+                    result.MatchedRuleNames.Add(rule.Name);
                     result.IsMatched = true;
                     parameters.LogSuccess($"条件匹配: 规则='{rule.Name}', 目标节点ID='{rule.ExecutionModuleId}'");
-                    sw.Stop();
-                    result.SetSuccess(sw.ElapsedMilliseconds);
-                    return result;
                 }
             }
 
-            // 全部未命中 → 流程终止（对齐 VisionMaster，无默认分支）
-            result.NextNodeId = null;
-            result.MatchedRuleName = null;
-            result.IsMatched = false;
-            parameters.LogInfo("无规则匹配，流程终止（不执行任何分支）");
+            // 全部未命中 → NextNodeIds 为空 → 引擎剪枝终止该分支（对齐 VisionMaster，无默认分支）
+            if (!result.IsMatched)
+            {
+                parameters.LogInfo("无规则匹配，该分支流程终止（后续节点不执行）");
+            }
 
             sw.Stop();
             result.SetSuccess(sw.ElapsedMilliseconds);
@@ -87,7 +84,8 @@ namespace SunEyeVision.Tool.Condition
         /// <summary>
         /// 按规则类型匹配输入值。
         /// Int/Double：数值在 [MinValue, MaxValue] 内且 Judgment=OK（或范围外且 NG）→ 命中。
-        /// String：输入值有效（非 null）即命中（忽略范围/判断）。
+        /// String：配置期望值 ExpectedText 时，OK=相等 / NG=不相等（区分大小写）才命中；
+        ///         未配置期望值时，输入值有效（非 null）即命中（旧行为向后兼容）。
         /// 类型不匹配 / 无法转换 → 抛异常（rule-015，不静默）。
         /// </summary>
         private static bool TryMatchRule(ConditionRule rule, object? inputValue, ConditionParameters parameters)
@@ -134,8 +132,18 @@ namespace SunEyeVision.Tool.Condition
                         parameters.LogInfo($"规则 '{rule.Name}': 字符串输入值为空，不匹配");
                         return false;
                     }
-                    parameters.LogInfo($"规则 '{rule.Name}': 字符串规则, 输入值有效='{inputValue}', 命中");
-                    return true;
+                    // 未配置期望值：保持旧"非空即命中"行为（向后兼容旧数据）
+                    if (string.IsNullOrEmpty(rule.ExpectedText))
+                    {
+                        parameters.LogInfo($"规则 '{rule.Name}': 字符串规则, 输入值有效='{inputValue}', 命中");
+                        return true;
+                    }
+                    // 配置了期望值：OK=相等（区分大小写），NG=不相等
+                    bool eqStr = string.Equals(
+                        inputValue.ToString(), rule.ExpectedText, StringComparison.Ordinal);
+                    bool strMatched = (rule.Judgment == "OK" && eqStr) || (rule.Judgment == "NG" && !eqStr);
+                    parameters.LogInfo($"规则 '{rule.Name}': 字符串比较, 输入='{inputValue}', 期望='{rule.ExpectedText}', 判断={rule.Judgment}, 匹配={strMatched}");
+                    return strMatched;
 
                 default:
                     throw new NotSupportedException(

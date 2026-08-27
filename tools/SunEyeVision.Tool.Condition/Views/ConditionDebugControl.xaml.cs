@@ -37,8 +37,8 @@ namespace SunEyeVision.Tool.Condition.Views
         /// <summary>画布连接的直接下游节点（目标下拉数据源）</summary>
         public List<ParentNodeInfo> ChildNodeOptions { get; } = new();
 
-        /// <summary>调试窗口首选尺寸（固定列合计约 860px + 控件边距，条件列不再弹性）</summary>
-        public override Size PreferredDebugWindowSize => new Size(920, 600);
+        /// <summary>调试窗口首选尺寸（列合计约 656px + 控件边距，收窄避免过宽）</summary>
+        public override Size PreferredDebugWindowSize => new Size(720, 600);
 
         #endregion
 

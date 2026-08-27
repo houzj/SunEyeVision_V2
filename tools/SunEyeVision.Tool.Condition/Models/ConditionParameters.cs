@@ -37,6 +37,7 @@ namespace SunEyeVision.Tool.Condition.Models
         private double _minValue;
         private double _maxValue = 1000.0;
         private string _judgment = "OK";
+        private string _expectedText = string.Empty;
         private string _executionModuleId = string.Empty;
 
         /// <summary>规则名称（如 int0, int1）</summary>
@@ -79,6 +80,13 @@ namespace SunEyeVision.Tool.Condition.Models
         {
             get => _judgment;
             set => SetProperty(ref _judgment, value, "判断");
+        }
+
+        /// <summary>期望字符串值（String 规则的目标值，做完全相等匹配；为空时保持旧"非空即命中"行为）</summary>
+        public string ExpectedText
+        {
+            get => _expectedText;
+            set => SetProperty(ref _expectedText, value, "期望值");
         }
 
         /// <summary>条件满足时执行的下游节点ID（★ 引擎根据此ID决定分支路径）</summary>

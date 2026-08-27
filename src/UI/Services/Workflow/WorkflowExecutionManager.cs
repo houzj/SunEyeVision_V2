@@ -353,10 +353,10 @@ namespace SunEyeVision.UI.Services.Workflow
                             var toolResults = CreateToolResultsFromNodeResult(nodeResult.Value);
                             // 方案 §6 画布三态：流程控制结果 → node.Status（OK=命中/NG=未命中）。
                             // 用 SDK 层 IControlFlowResult 接口判断（UI 不直接引用工具项目），
-                            // NextNodeId 非空 = 命中 → OK；null = 未命中 → NG。
+                            // NextNodeIds 非空 = 命中 → OK；空 = 未命中 → NG。
                             if (toolResults is IControlFlowResult flowResult)
                             {
-                                uiNode.Status = flowResult.NextNodeId != null ? "OK" : "NG";
+                                uiNode.Status = flowResult.NextNodeIds != null && flowResult.NextNodeIds.Count > 0 ? "OK" : "NG";
                             }
                             OnNodeExecutionCompleted(uiNode, toolResults);
                         }

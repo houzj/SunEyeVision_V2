@@ -317,6 +317,10 @@
                                     {
                                         "date":  "2026-08-18",
                                         "note":  "[d7cf074dbcdc13da46df7141c202acb4997dc5f7] 计划系统同步：记录计划系统与文档提交日志，清理画布编辑器模块历史日志"
+                                    },
+                                    {
+                                        "date":  "2026-08-26",
+                                        "note":  "[81c0e122998e7bdc5910a4c3155c94569e50d241] fix(condition): 同组多个条件分支并行时剪枝漏处理"
                                     }
                                 ]
                     },
@@ -3080,7 +3084,7 @@
                                           "name":  "下拉交互回归测试（连线变化/多规则/空状态）",
                                           "phase":  "测试验证",
                                           "hours":  8,
-                                          "status":  "todo",
+                                          "status":  "in_progress",
                                           "week":  "2027-W02"
                                       }
                                   ],
@@ -3091,6 +3095,18 @@
                                     {
                                         "date":  "2026-08-17",
                                         "note":  "现状核实：核心已实现（Run 引擎/解析器 C1-C3/16 测试）。但用户实测目标节点下拉仍有问题：ChildNodeOptions 是普通 List 无通知、仅打开时刷新一次（连线变化不更新）、DataProvider 非 DataSourceQueryService 时下拉为空"
+                                    },
+                                    {
+                                        "date":  "2026-08-26",
+                                        "note":  "[652101ccafedd962c5571a2b4b1e6367dcd9877b] fix(condition): 条件分支调试窗口样式优化"
+                                    },
+                                    {
+                                        "date":  "2026-08-26",
+                                        "note":  "[3e7d1084300b373018e862cb8f5e95d4dec5631f] fix(condition): 目标节点下拉关闭态与下拉项显示一致"
+                                    },
+                                    {
+                                        "date":  "2026-08-26",
+                                        "note":  "[f39f9f725b5198a635bce1c76529dc506d3b81c3] feat(condition): 条件分支多选并行 + 整条剪枝执行"
                                     }
                                 ]
                     },

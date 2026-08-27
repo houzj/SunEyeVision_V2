@@ -172,18 +172,23 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
             // 引导弧（白色实线）
             AddArc(arc, Colors.White, 2.0);
 
-            if (!drawBands || measureCount <= 0 || arc.Radius <= 0 || arc.AngularSpan <= 1e-6) return;
+            if (!drawBands || measureCount <= 0 || arc.Radius <= 0 || Math.Abs(arc.AngularSpan) <= 1e-6) return;
 
             // 环形测量带：沿弧方向等间距分布，径向为宽度
+            // 支持负 AngularSpan（顺时针弧，P3 过弦后方向翻转）
             double span = arc.AngularSpan;
-            double stepAngle = span / measureCount;
+            double stepAngle = span / measureCount;   // 保留符号：顺时针 stepAngle 为负 → 角度递减
             var halfBand = bandLength / 2;
             var halfWidth = bandWidth / 2;
             double mainAngle = arc.StartAngle + span / 2; // 主卡尺 = 弧中点
+            // 与 angle 保持一致的规范化（跨 0° 边界时防止 isMain 判定失效导致箭头丢失）
+            mainAngle = ((mainAngle + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
 
             for (int i = 0; i < measureCount; i++)
             {
                 double angle = arc.StartAngle + (i + 0.5) * stepAngle;
+                // 角度规范化到 [-π, π]，避免跨 0° 边界时 cos/sin 大角度误差
+                angle = ((angle + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
                 var dir = new Vector(Math.Cos(angle), Math.Sin(angle));   // 径向方向
                 var normal = new Vector(-dir.Y, dir.X);                   // 切向方向
 

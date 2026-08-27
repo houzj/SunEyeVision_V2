@@ -64,8 +64,9 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
         /// <param name="endPoint">弧终点</param>
         /// <param name="radius">半径（需 ≥ 弦长/2，否则无解）</param>
         /// <param name="clockwise">true=顺时针（圆心在弦一侧），false=逆时针（圆心在弦另一侧，默认劣弧方向）</param>
+        /// <param name="majorArc">true=大弧（张角 &gt; 180°），false=小弧（张角 &lt;= 180°）；决定起始/终止角互补到优弧</param>
         /// <returns>圆弧；半径过小或两点重合时返回 <see cref="Empty"/></returns>
-        public static Arc2d FromEndpointsAndRadius(Point startPoint, Point endPoint, double radius, bool clockwise)
+        public static Arc2d FromEndpointsAndRadius(Point startPoint, Point endPoint, double radius, bool clockwise, bool majorArc = false)
         {
             var chord = endPoint - startPoint;
             var halfChord = chord.Length / 2;
@@ -96,6 +97,14 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
             else if (!clockwise && endAngle < a1)
                 endAngle += 2 * Math.PI;   // 逆时针：结束角度在起始角度之后
 
+            // 大小弧状态：小弧（默认）保持当前终止角；大弧将终止角互补到 2π - 小弧跨度
+            if (majorArc)
+            {
+                double smallSpan = Math.Abs(endAngle - a1);   // 当前小弧跨度（< π）
+                double majorSpan = 2 * Math.PI - smallSpan;    // 大弧跨度（> π）
+                endAngle = clockwise ? a1 - majorSpan : a1 + majorSpan;
+            }
+
             return new Arc2d(center, radius, a1, endAngle);
         }
 
@@ -105,11 +114,12 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
         /// <param name="startPoint">弧起点</param>
         /// <param name="endPoint">弧终点</param>
         /// <param name="clockwise">true=顺时针，false=逆时针（默认逆时针）</param>
+        /// <param name="majorArc">true=大弧，false=小弧（默认小弧）</param>
         /// <returns>圆弧；两点重合时返回 <see cref="Empty"/></returns>
-        public static Arc2d FromTwoPointsDefault(Point startPoint, Point endPoint, bool clockwise = false)
+        public static Arc2d FromTwoPointsDefault(Point startPoint, Point endPoint, bool clockwise = false, bool majorArc = false)
         {
             double radius = (endPoint - startPoint).Length;
-            return FromEndpointsAndRadius(startPoint, endPoint, radius, clockwise);
+            return FromEndpointsAndRadius(startPoint, endPoint, radius, clockwise, majorArc);
         }
 
         /// <summary>
@@ -117,10 +127,15 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
         /// </summary>
         /// <param name="p1">弧起点</param>
         /// <param name="p2">弧终点</param>
-        /// <param name="p3">弧上一点（决定弯曲方向与半径）</param>
+        /// <param name="p3">弧上一点（决定弯曲方向、大小弧与半径）</param>
+        /// <param name="clockwise">输出弧方向（true=顺时针，false=逆时针）</param>
+        /// <param name="majorArc">输出是否为大弧（张角 &gt; 180°）</param>
         /// <returns>经过三点的圆弧；三点共线或退化时返回 <see cref="Empty"/></returns>
-        public static Arc2d FromThreePoints(Point p1, Point p2, Point p3)
+        public static Arc2d FromThreePoints(Point p1, Point p2, Point p3, out bool clockwise, out bool majorArc)
         {
+            clockwise = false;
+            majorArc = false;
+
             // 外接圆圆心：两条中垂线交点
             double ax = p1.X - p2.X, ay = p1.Y - p2.Y;
             double bx = p3.X - p2.X, by = p3.Y - p2.Y;
@@ -142,22 +157,38 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
             double a2m = Math.Atan2(p2.Y - center.Y, p2.X - center.X);
             double a3 = Math.Atan2(p3.Y - center.Y, p3.X - center.X);
 
-            // 判断弧方向：从 p1 到 p2 的弧（p1→a1, p2→a2m），弧上点 p3 决定经过的弧段
-            double span = (a2m - a1) % (2 * Math.PI);
-            if (span < 0) span += 2 * Math.PI;
-            double pos = (a3 - a1) % (2 * Math.PI);
-            if (pos < 0) pos += 2 * Math.PI;
+            // p2 相对 p1 的逆时针距离（0~2π）与 p3 相对 p1 的逆时针位置（0~2π）
+            double ccwToP2 = (a2m - a1) % (2 * Math.PI);
+            if (ccwToP2 < 0) ccwToP2 += 2 * Math.PI;
+            double ccwToP3 = (a3 - a1) % (2 * Math.PI);
+            if (ccwToP3 < 0) ccwToP3 += 2 * Math.PI;
 
-            if (pos <= span)
+            // 判断弧方向：p3 是否落在 p1→p2 的逆时针弧段内
+            // 若落在逆时针弧段 → 逆时针弧；否则 → 顺时针弧（p3 在互补的顺时针弧段内）
+            if (ccwToP3 <= ccwToP2)
             {
-                // p3 在逆时针弧内
-                return new Arc2d(center, radius, a1, a2m);
+                // 逆时针弧：起点 a1，终点沿逆时针走 ccwToP2；跨度 = ccwToP2
+                clockwise = false;
+                majorArc = ccwToP2 > Math.PI;
+                double end = a1 + ccwToP2;
+                return new Arc2d(center, radius, a1, end);
             }
             else
             {
-                // p3 在顺时针侧，弧走优弧（终止角 = a2m - 2π）
-                return new Arc2d(center, radius, a1, a2m - 2 * Math.PI);
+                // 顺时针弧：起点 a1，终点沿顺时针走 (2π - ccwToP2)；跨度 = -(2π - ccwToP2)
+                clockwise = true;
+                majorArc = (2 * Math.PI - ccwToP2) > Math.PI;
+                double end = a1 + ccwToP2 - 2 * Math.PI;
+                return new Arc2d(center, radius, a1, end);
             }
+        }
+
+        /// <summary>
+        /// 从三个点创建圆弧（三点定弧，外接圆）——兼容旧签名，自动提取方向/大小弧
+        /// </summary>
+        public static Arc2d FromThreePoints(Point p1, Point p2, Point p3)
+        {
+            return FromThreePoints(p1, p2, p3, out _, out _);
         }
 
         /// <summary>

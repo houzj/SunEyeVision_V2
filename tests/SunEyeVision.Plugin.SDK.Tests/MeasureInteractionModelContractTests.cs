@@ -118,54 +118,57 @@ public class MeasureInteractionModelContractTests
     }
 
     [Fact]
-    public void SetArcFromEndpoints_GeneratesDefaultP3()
+    public void SetArcFromEndpoints_DefaultRadiusEqualsChord()
     {
         var model = new MeasureInteractionModel();
-        // 默认 P3 = 弧中点（半径=弦长，60° 弧），且三点定圆经过 P1/P2
+        // 默认半径 = 弦长（60° 弧，对齐 VM）
         Assert.True(model.SetArcFromEndpoints(new Point(0, 0), new Point(10, 0)));
         Assert.True(model.EditingArc.HasValue);
-        Assert.True((model.ArcPoint3 - model.EditingArc.Value.GetPointOnArc(
-            model.EditingArc.Value.StartAngle + model.EditingArc.Value.AngularSpan / 2)).Length < 1e-3);
+        Assert.Equal(10, model.ArcRadius, 3);
+        Assert.Equal(10, model.EditingArc.Value.Radius, 3);
+        Assert.Equal(new Point(0, 0), model.ArcPoint1);
+        Assert.Equal(new Point(10, 0), model.ArcPoint2);
     }
 
     [Fact]
-    public void UpdateArcEndpoint_RecomputesCenter()
+    public void UpdateArcEndpoint_KeepsRadius()
     {
         var model = new MeasureInteractionModel();
         Assert.True(model.SetArcFromEndpoints(new Point(0, 0), new Point(10, 0)));
-        var beforeCenter = model.EditingArc.Value.Center;
+        var beforeRadius = model.ArcRadius;
 
-        // 拖 P2 到 (0,10)，P1/P3 不动，三点定圆重算圆心（圆心变）
+        // 拖 P2 到 (0,10)：半径/方向不变，弧重算（圆心/弧长派生变）
         Assert.True(model.UpdateArcEndpoint(false, new Point(0, 10)));
         Assert.True(model.EditingArc.HasValue);
         Assert.Equal(new Point(0, 10), model.ArcPoint2);      // P2 = 鼠标位置
-        Assert.Equal(new Point(0, 0), model.ArcPoint1);       // P1 不动
-        Assert.NotEqual(beforeCenter, model.EditingArc.Value.Center); // 圆心派生变
+        Assert.Equal(beforeRadius, model.ArcRadius, 3);       // 半径不变
     }
 
     [Fact]
-    public void UpdateArcPoint3_KeepsEndpoints()
+    public void UpdateArcRadiusFromPoint_RecomputesArc()
     {
         var model = new MeasureInteractionModel();
         Assert.True(model.SetArcFromEndpoints(new Point(0, 0), new Point(10, 0)));
 
-        // 拖 P3 到 (5, 20)：P1/P2 不动，三点定圆重算（半径变）
-        Assert.True(model.UpdateArcPoint3(new Point(5, 20)));
+        // 拖 P3 到 (5, 20)：三点定圆保证弧过鼠标，提取新半径
+        Assert.True(model.UpdateArcRadiusFromPoint(new Point(5, 20)));
         Assert.True(model.EditingArc.HasValue);
         Assert.Equal(new Point(0, 0), model.ArcPoint1);       // P1 不动
         Assert.Equal(new Point(10, 0), model.ArcPoint2);      // P2 不动
-        Assert.Equal(new Point(5, 20), model.ArcPoint3);      // P3 = 鼠标位置
         Assert.True(model.EditingArc.Value.Radius > 10);      // 半径变大
+        // 鼠标点 (5,20) 在弧上（弧经过鼠标）
+        Assert.True(Math.Abs((new Point(5, 20) - model.EditingArc.Value.Center).Length
+            - model.EditingArc.Value.Radius) < 1e-3);
     }
 
     [Fact]
-    public void UpdateArcPoint3_RejectsCollinear()
+    public void UpdateArcRadiusFromPoint_RejectsCollinear()
     {
         var model = new MeasureInteractionModel();
         Assert.True(model.SetArcFromEndpoints(new Point(0, 0), new Point(10, 0)));
 
-        // P3 拖到与 P1/P2 共线（y=0）→ 更新失败（防退化）
-        Assert.False(model.UpdateArcPoint3(new Point(5, 0)));
+        // 鼠标拖到与 P1/P2 共线（y=0）→ 更新失败（防退化）
+        Assert.False(model.UpdateArcRadiusFromPoint(new Point(5, 0)));
         Assert.True(model.EditingArc.HasValue);
     }
 
@@ -227,5 +230,57 @@ public class MeasureInteractionModelContractTests
         model.SetArc(Arc2d.Empty);
 
         Assert.False(model.HasGuide);
+    }
+
+    [Fact]
+    public void FromEndpointsAndRadius_MajorArc_KeepsSpanGreaterThanPi()
+    {
+        // 弦长 10（P1=(0,0), P2=(10,0)），半径 10，小弧 60°
+        var minor = Arc2d.FromEndpointsAndRadius(new Point(0, 0), new Point(10, 0), 10, false, false);
+        Assert.False(minor.IsEmpty);
+        Assert.True(Math.Abs(minor.AngularSpan) <= Math.PI);
+
+        // 相同参数 + majorArc=true → 大弧，张角补到 2π-60°=300°
+        var major = Arc2d.FromEndpointsAndRadius(new Point(0, 0), new Point(10, 0), 10, false, true);
+        Assert.False(major.IsEmpty);
+        Assert.True(Math.Abs(major.AngularSpan) > Math.PI);
+        Assert.Equal(2 * Math.PI - Math.Abs(minor.AngularSpan), Math.Abs(major.AngularSpan), 3);
+    }
+
+    [Fact]
+    public void UpdateArcRadiusFromPoint_DraggingHighAbove_FlipsToMajorArc()
+    {
+        var model = new MeasureInteractionModel();
+        Assert.True(model.SetArcFromEndpoints(new Point(0, 0), new Point(10, 0)));
+        Assert.False(model.ArcClockwise);   // 初始逆时针小弧
+        Assert.False(model.ArcMajorArc);
+
+        // 拖 P3 到弦上方远处 (5, 100)：三点定圆弧段选择优弧 → 顺时针大弧（方向+大小弧同步变化）
+        Assert.True(model.UpdateArcRadiusFromPoint(new Point(5, 100)));
+        Assert.True(model.ArcClockwise);
+        Assert.True(model.ArcMajorArc);
+        var arc = model.EditingArc;
+        Assert.True(arc.HasValue && Math.Abs(arc.Value.AngularSpan) > Math.PI);
+    }
+
+    [Fact]
+    public void UpdateArcEndpoint_KeepsMajorArcState()
+    {
+        var model = new MeasureInteractionModel();
+        Assert.True(model.SetArcFromEndpoints(new Point(0, 0), new Point(10, 0)));
+
+        // 拖 P3 到 (5, 100) 制造大弧（顺时针大弧）
+        Assert.True(model.UpdateArcRadiusFromPoint(new Point(5, 100)));
+        Assert.True(model.ArcMajorArc, "前置条件：应已变为大弧");
+        Assert.True(model.ArcClockwise);
+        var arcBefore = model.EditingArc;
+        Assert.True(arcBefore.HasValue && Math.Abs(arcBefore.Value.AngularSpan) > Math.PI);
+
+        // 拖 P2 到 (8, 2)：大弧状态应保持，张角仍 > π
+        Assert.True(model.UpdateArcEndpoint(false, new Point(8, 2)));
+        Assert.True(model.ArcMajorArc, "拖 P2 后大弧状态应保持");
+        Assert.True(model.ArcClockwise, "拖 P2 后方向应保持");
+        var arcAfter = model.EditingArc;
+        Assert.True(arcAfter.HasValue && Math.Abs(arcAfter.Value.AngularSpan) > Math.PI);
     }
 }

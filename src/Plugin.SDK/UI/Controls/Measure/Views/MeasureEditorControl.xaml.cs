@@ -232,10 +232,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
             // 选择/编辑模式：命中优先级 ①手柄 ②引导主体 ③卡尺
             if (_model.HasGuide)
             {
-                // ① 手柄命中
+                // ① 手柄命中（优先级最高：命中半径带保底下限，确保与卡尺/引导线重叠时优先命中手柄）
                 if (_currentHandles != null)
                 {
-                    var hitType = HandleRenderer.HitTestHandle(pos, _currentHandles);
+                    var hitType = HitTestHandles(pos);
                     if (hitType != HandleType.None)
                     {
                         BeginHandleDrag(hitType, pos);
@@ -324,9 +324,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         {
             if (_overlayCanvas == null) return;
 
-            // ① 手柄 → 手（编辑）
-            if (_currentHandles != null &&
-                HandleRenderer.HitTestHandle(pos, _currentHandles) != HandleType.None)
+            // ① 手柄 → 手（编辑，优先级最高）
+            if (_currentHandles != null && HitTestHandles(pos) != HandleType.None)
             {
                 Mouse.OverrideCursor = Cursors.Hand;
                 return;
@@ -372,6 +371,41 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
 
         /// <summary>卡尺命中容差（像素）</summary>
         private const double _bandHitTolerance = 6.0;
+
+        /// <summary>
+        /// 手柄命中测试（优先级最高）：命中半径 = max(自适应手柄半径, 保底下限)
+        /// </summary>
+        /// <remarks>
+        /// 手柄命中半径必须 ≥ 引导线/卡尺的命中范围，否则与卡尺带/引导线重叠时
+        /// 手柄会被卡尺/引导线"抢走"，导致无法编辑。保底下限保证高缩放（手柄视觉变小）
+        /// 时仍能稳定命中。
+        /// </remarks>
+        private const double _handleHitToleranceFloor = 24.0;
+
+        /// <summary>手柄命中测试（命中半径带保底下限，确保优先级高于卡尺与引导线）</summary>
+        private HandleType HitTestHandles(Point point)
+        {
+            if (_currentHandles == null) return HandleType.None;
+
+            // 保底命中半径：比引导线容差(12) 与卡尺半带(20) 更大，保证重叠时手柄优先
+            double floor = _handleHitToleranceFloor;
+            EditHandle? closest = null;
+            double closestDist = double.MaxValue;
+            foreach (var handle in _currentHandles)
+            {
+                double dx = point.X - handle.Position.X;
+                double dy = point.Y - handle.Position.Y;
+                double dist = Math.Sqrt(dx * dx + dy * dy);
+                // 命中半径 = max(自适应手柄半径, 保底下限)
+                double hitRadius = Math.Max(handle.HandleSize, floor);
+                if (dist <= hitRadius && dist < closestDist)
+                {
+                    closestDist = dist;
+                    closest = handle;
+                }
+            }
+            return closest?.Type ?? HandleType.None;
+        }
 
         /// <summary>
         /// 引导主体命中测试（线附近/圆环/弧线，容差）
@@ -564,13 +598,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                 case MeasureGeometryType.Arc:
                     if (_model.EditingArc.HasValue && !_model.EditingArc.Value.IsEmpty)
                     {
-                        // 三点定弧：拖哪个点，该点 = 鼠标位置，其他两点不动，三点定圆重算
+                        // 两端点+半径+方向：拖 P1/P2 半径不变（FromEndpointsAndRadius），拖 P3 三点定圆提取半径
                         if (_activeHandleType == HandleType.LineStart)
-                            changed = _model.UpdateArcEndpoint(true, current);   // P1 移动
+                            changed = _model.UpdateArcEndpoint(true, current);   // 拖 P1（半径/方向不变）
                         else if (_activeHandleType == HandleType.LineEnd)
-                            changed = _model.UpdateArcEndpoint(false, current);  // P2 移动
+                            changed = _model.UpdateArcEndpoint(false, current);  // 拖 P2（半径/方向不变）
                         else if (_activeHandleType == HandleType.Right)
-                            changed = _model.UpdateArcPoint3(current);           // P3 移动
+                            changed = _model.UpdateArcRadiusFromPoint(current);  // 拖 P3：三点定圆提取半径+方向
 
                     }
                     break;
@@ -755,15 +789,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         }
 
         /// <summary>
-        /// 创建圆弧手柄（三点定弧：P1 起点 + P2 终点 + P3 弧上点，无 Center）
+        /// 创建圆弧手柄（P1 起点 + P2 终点 + P3 弧中点，无 Center）
         /// </summary>
         private EditHandle[] CreateArcHandles(Arc2d arc)
         {
             var size = HandleRenderer.GetScaledHandleSize(_zoom);
-            // 三点定弧：手柄 = 三个参数点，天然跟随鼠标（P1/P2/P3 都是独立参数）
+            // 两端点 + 半径模型：P3 手柄 = 派生弧中点（拖 P3 三点定圆提取半径）
             var p1 = _model.ArcPoint1;
             var p2 = _model.ArcPoint2;
-            var p3 = _model.ArcPoint3;
+            var p3 = arc.GetPointOnArc(arc.StartAngle + arc.AngularSpan / 2);
 
             var handles = new List<EditHandle>
             {

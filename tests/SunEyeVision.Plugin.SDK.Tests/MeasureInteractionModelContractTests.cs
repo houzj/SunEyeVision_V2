@@ -129,16 +129,48 @@ public class MeasureInteractionModelContractTests
     }
 
     [Fact]
-    public void UpdateArcEndpoint_RecomputesArc()
+    public void UpdateArcEndpoint_KeepsRadiusAndCenter()
+    {
+        var model = new MeasureInteractionModel();
+        Assert.True(model.SetArcFromEndpoints(new Point(0, 0), new Point(10, 0)));
+        var before = model.EditingArc.Value;
+
+        // 拖终点到 (0,10)：半径与圆心保持不变，端点沿圆滑动
+        Assert.True(model.UpdateArcEndpoint(false, new Point(0, 10)));
+        Assert.True(model.EditingArc.HasValue);
+
+        var after = model.EditingArc.Value;
+        Assert.Equal(before.Radius, after.Radius, 3);          // 半径不变
+        Assert.Equal(before.Center.X, after.Center.X, 3);      // 圆心不变
+        Assert.Equal(before.Center.Y, after.Center.Y, 3);
+        Assert.Equal(before.Radius, model.ArcRadius, 3);       // 参数半径不变
+        // 新终点投影到当前圆上
+        Assert.True(Math.Abs((model.ArcPoint2 - after.Center).Length - after.Radius) < 1e-3);
+    }
+
+    [Fact]
+    public void UpdateArcEndpoint_RejectsCenterCoincident()
     {
         var model = new MeasureInteractionModel();
         Assert.True(model.SetArcFromEndpoints(new Point(0, 0), new Point(10, 0)));
 
-        // 拖终点到 (0,10)，保持半径/起点，圆心/弧重算
-        Assert.True(model.UpdateArcEndpoint(false, new Point(0, 10)));
+        // 拖终点到圆心 → 投影失败（防退化）
+        var center = model.EditingArc.Value.Center;
+        Assert.False(model.UpdateArcEndpoint(false, center));
         Assert.True(model.EditingArc.HasValue);
-        Assert.Equal(10, model.ArcRadius, 3);
-        Assert.Equal(new Point(0, 10), model.ArcPoint2);
+    }
+
+    [Fact]
+    public void UpdateLineEndpoints_SyncsEndpointParams()
+    {
+        var model = new MeasureInteractionModel();
+        model.SetLine(Line2d.FromTwoPoints(new Point(0, 0), new Point(10, 0)), new Point(0, 0), new Point(10, 0));
+
+        // 拖端点后，LineStartPoint/LineEndPoint 应同步
+        Assert.True(model.UpdateLineEndpoints(new Point(2, 3), new Point(12, 3)));
+        Assert.Equal(new Point(2, 3), model.LineStartPoint);
+        Assert.Equal(new Point(12, 3), model.LineEndPoint);
+        Assert.True(model.EditingLine.HasValue);
     }
 
     [Fact]

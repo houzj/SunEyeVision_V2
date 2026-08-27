@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text.Json.Serialization;
+using System.Windows;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 
@@ -65,8 +66,9 @@ namespace SunEyeVision.Tool.EdgeDetect
         #region 引导几何类型
 
         private GeometryType _geometryType = GeometryType.Line;
-        private Line2d? _guideLine;
         private Circle2d? _guideCircle;
+        private Point _lineStartPoint;
+        private Point _lineEndPoint;
 
         /// <summary>
         /// 几何类型
@@ -78,12 +80,21 @@ namespace SunEyeVision.Tool.EdgeDetect
         }
 
         /// <summary>
-        /// 引导直线（Line 模式）
+        /// 引导直线起点（Line 模式，对齐 VisionMaster 两点参数化）
         /// </summary>
-        public Line2d? GuideLine
+        public Point LineStartPoint
         {
-            get => _guideLine;
-            set => SetProperty(ref _guideLine, value, "引导直线");
+            get => _lineStartPoint;
+            set => SetProperty(ref _lineStartPoint, value, "引导直线起点");
+        }
+
+        /// <summary>
+        /// 引导直线终点（Line 模式，对齐 VisionMaster 两点参数化）
+        /// </summary>
+        public Point LineEndPoint
+        {
+            get => _lineEndPoint;
+            set => SetProperty(ref _lineEndPoint, value, "引导直线终点");
         }
 
         /// <summary>

@@ -36,6 +36,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Models
         /// <summary>引导直线（Line 模式，编辑中）</summary>
         public Line2d? EditingLine { get; private set; }
 
+        /// <summary>引导直线起点（端点参数化，保留线段长度）</summary>
+        public Point LineStartPoint { get; private set; }
+
+        /// <summary>引导直线终点（端点参数化，保留线段长度）</summary>
+        public Point LineEndPoint { get; private set; }
+
         /// <summary>引导圆（Circle 模式，编辑中）</summary>
         public Circle2d? EditingCircle { get; private set; }
 
@@ -75,13 +81,24 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Models
         }
 
         /// <summary>
-        /// 设置编辑中的引导直线（自动清空其他类型）
+        /// 设置编辑中的引导直线（自动清空其他类型，同步端点参数）
         /// </summary>
-        public void SetLine(Line2d line)
+        public void SetLine(Line2d line, Point? start = null, Point? end = null)
         {
             EditingLine = line;
             EditingCircle = null;
             EditingArc = null;
+            if (start.HasValue && end.HasValue)
+            {
+                LineStartPoint = start.Value;
+                LineEndPoint = end.Value;
+            }
+            else
+            {
+                // 无显式端点时用固定默认长度（仅回填场景）
+                LineStartPoint = line.Point;
+                LineEndPoint = line.Point + line.Direction * 200.0;
+            }
         }
 
         /// <summary>
@@ -144,6 +161,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Models
             var dir = end - start;
             if (dir.LengthSquared < 1e-20) return false;
             EditingLine = new Line2d(start, dir);
+            LineStartPoint = start;
+            LineEndPoint = end;
             return true;
         }
 
@@ -178,16 +197,34 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Models
         }
 
         /// <summary>
-        /// 更新圆弧端点（保持另一端 + 半径不变，圆心重算）
+        /// 更新圆弧端点（半径与圆心保持不变，端点沿当前圆滑动）
         /// </summary>
-        /// <returns>是否更新成功（无圆弧或退化时 false）</returns>
+        /// <returns>是否更新成功（无圆弧或端点与圆心重合时 false）</returns>
         public bool UpdateArcEndpoint(bool isStart, Point point)
         {
-            if (!EditingArc.HasValue) return false;
-            if (isStart) ArcPoint1 = point; else ArcPoint2 = point;
-            var arc = Arc2d.FromEndpointsAndRadius(ArcPoint1, ArcPoint2, ArcRadius, ArcClockwise);
-            if (arc.IsEmpty) return false;
-            EditingArc = arc;
+            if (!EditingArc.HasValue || EditingArc.Value.IsEmpty) return false;
+            var a = EditingArc.Value;
+            var center = a.Center;
+            var radius = a.Radius;
+
+            // 将鼠标位置投影到当前圆上（保持圆心 + 半径不变）
+            var dir = point - center;
+            if (dir.LengthSquared < 1e-9) return false;
+            dir.Normalize();
+            var newPt = center + dir * radius;
+
+            if (isStart) ArcPoint1 = newPt; else ArcPoint2 = newPt;
+
+            // 重新计算起止角（仅端点沿圆滑动）
+            double newStart = Math.Atan2(ArcPoint1.Y - center.Y, ArcPoint1.X - center.X);
+            double newEnd = Math.Atan2(ArcPoint2.Y - center.Y, ArcPoint2.X - center.X);
+            double endAngle = newEnd;
+            if (ArcClockwise && endAngle > newStart)
+                endAngle -= 2 * Math.PI;   // 顺时针：结束角度在起始角度之前
+            else if (!ArcClockwise && endAngle < newStart)
+                endAngle += 2 * Math.PI;   // 逆时针：结束角度在起始角度之后
+
+            EditingArc = new Arc2d(center, radius, newStart, endAngle);
             return true;
         }
 

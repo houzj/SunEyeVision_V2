@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.SDK.UI.Controls.Measure.Models;
@@ -133,8 +134,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         public void SetGuide(Line2d line)
         {
             _model.SetLine(line);
-            _lineStart = line.Point;
-            _lineEnd = line.Point + line.Direction * 200.0;
+            _lineStart = _model.LineStartPoint;
+            _lineEnd = _model.LineEndPoint;
             Render();
         }
 
@@ -165,7 +166,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
             {
                 (_lineStart, _lineEnd) = (_lineEnd, _lineStart);
                 var line = _model.EditingLine.Value;
-                _model.SetLine(Line2d.FromTwoPoints(_lineStart, _lineEnd));
+                _model.SetLine(Line2d.FromTwoPoints(_lineStart, _lineEnd), _lineStart, _lineEnd);
                 Render();
                 NotifyGuideChanged();
             }
@@ -309,7 +310,38 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
             {
                 UpdateDrawPreview(pos);
                 e.Handled = true;
+                return;
             }
+
+            // 悬停光标反馈：手柄=手（编辑），引导线/卡尺=十字（移动），空白=箭头
+            UpdateHoverCursor(pos);
+        }
+
+        /// <summary>
+        /// 悬停光标反馈：按命中对象切换光标（手柄=编辑/手，引导线/卡尺=移动/十字，空白=箭头）
+        /// </summary>
+        private void UpdateHoverCursor(Point pos)
+        {
+            if (_overlayCanvas == null) return;
+
+            // ① 手柄 → 手（编辑）
+            if (_currentHandles != null &&
+                HandleRenderer.HitTestHandle(pos, _currentHandles) != HandleType.None)
+            {
+                Mouse.OverrideCursor = Cursors.Hand;
+                return;
+            }
+
+            // ② 引导主体 或 ③ 卡尺测量带 → 十字（移动）
+            if (_model.HasGuide &&
+                (HitTestGuide(pos, _guideHitTolerance) || HitTestBand(pos)))
+            {
+                Mouse.OverrideCursor = Cursors.SizeAll;
+                return;
+            }
+
+            // 空白 → 箭头
+            Mouse.OverrideCursor = Cursors.Arrow;
         }
 
         private void OnGuideMouseUp(object sender, ImageMouseEventArgs e)
@@ -538,8 +570,23 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                             changed = _model.UpdateArcEndpoint(false, current);
                         else if (_activeHandleType == HandleType.Right)
                         {
-                            var a = _model.EditingArc.Value;
-                            changed = _model.UpdateArcRadius((current - a.Center).Length);
+                            // 半径手柄拖动：R = sqrt(h² + (L/2)²)，h = 鼠标在弦中垂线方向的投影
+                            // 避免用"鼠标到圆心距离"（圆心随半径滑动，反馈不稳定）
+                            var p1 = _model.ArcPoint1;
+                            var p2 = _model.ArcPoint2;
+                            var chord = p2 - p1;
+                            var halfLen = chord.Length / 2;
+                            if (halfLen > 1e-6)
+                            {
+                                var chordDir = chord / (halfLen * 2);
+                                var normal = _model.ArcClockwise
+                                    ? new Vector(chordDir.Y, -chordDir.X)
+                                    : new Vector(-chordDir.Y, chordDir.X);
+                                var mid = new Point((p1.X + p2.X) / 2, (p1.Y + p2.Y) / 2);
+                                double h = Vector.Multiply(current - mid, normal);
+                                double newRadius = Math.Sqrt(h * h + halfLen * halfLen);
+                                changed = _model.UpdateArcRadius(newRadius);
+                            }
                         }
                     }
                     break;
@@ -569,7 +616,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                     {
                         _lineStart = start;
                         _lineEnd = current;
-                        _model.SetLine(Line2d.FromTwoPoints(start, current));
+                        _model.SetLine(Line2d.FromTwoPoints(start, current), start, current);
                     }
                     break;
 
@@ -611,7 +658,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                     {
                         _lineStart = start;
                         _lineEnd = current;
-                        _model.SetLine(Line2d.FromTwoPoints(start, current));
+                        _model.SetLine(Line2d.FromTwoPoints(start, current), start, current);
                         created = true;
                     }
                     break;

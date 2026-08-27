@@ -144,13 +144,14 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
         }
 
         /// <summary>
-        /// 获取弧上的采样点
+        /// 获取弧上的采样点（首尾采样点精确落在 StartAngle 与 EndAngle）
         /// </summary>
         public Point[] GetSamplePoints(int pointCount)
         {
             if (pointCount <= 0) return Array.Empty<Point>();
+            if (pointCount == 1) return new[] { GetPointOnArc(StartAngle) };
             Point[] points = new Point[pointCount];
-            double step = AngularSpan / pointCount;
+            double step = AngularSpan / (pointCount - 1);
             for (int i = 0; i < pointCount; i++)
             {
                 double angle = StartAngle + i * step;

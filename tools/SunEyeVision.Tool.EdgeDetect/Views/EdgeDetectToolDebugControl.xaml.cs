@@ -147,9 +147,10 @@ namespace SunEyeVision.Tool.EdgeDetect.Views
                 case MeasureGeometryType.Line:
                     if (model.EditingLine.HasValue)
                     {
-                        Parameters.GuideLine = model.EditingLine.Value;
+                        Parameters.LineStartPoint = model.LineStartPoint;
+                        Parameters.LineEndPoint = model.LineEndPoint;
                         Parameters.LogInfo(
-                            $"引导直线已绘制: ({model.EditingLine.Value.Point.X:F1}, {model.EditingLine.Value.Point.Y:F1})");
+                            $"引导直线已绘制: 起点({model.LineStartPoint.X:F1}, {model.LineStartPoint.Y:F1})");
                     }
                     break;
 
@@ -185,8 +186,10 @@ namespace SunEyeVision.Tool.EdgeDetect.Views
             switch (Parameters.GeometryType)
             {
                 case GeometryType.Line:
-                    if (Parameters.GuideLine.HasValue)
-                        MeasureEditorControl.SetGuide(Parameters.GuideLine.Value);
+                    var lineLen = (Parameters.LineEndPoint - Parameters.LineStartPoint).Length;
+                    if (lineLen > 1e-6)
+                        MeasureEditorControl.SetGuide(
+                            Line2d.FromTwoPoints(Parameters.LineStartPoint, Parameters.LineEndPoint));
                     break;
                 case GeometryType.Circle:
                     if (Parameters.GuideCircle.HasValue)

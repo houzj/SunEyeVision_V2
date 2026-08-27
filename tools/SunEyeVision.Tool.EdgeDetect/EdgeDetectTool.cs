@@ -85,8 +85,9 @@ namespace SunEyeVision.Tool.EdgeDetect
                 switch (parameters.GeometryType)
                 {
                     case GeometryType.Line:
-                        var startP = parameters.GuideLine!.Value.Point;
-                        var endP = parameters.GuideLine.Value.GetPointAt(1.0);
+                        // 用真实两端点（对齐 Halcon add_metrology_object_line_measure 的 Start/End 语义）
+                        var startP = parameters.LineStartPoint;
+                        var endP = parameters.LineEndPoint;
                         objectIndex = metrologyModel.AddMetrologyObjectLineMeasure(
                             startP.Y, startP.X, endP.Y, endP.X,
                             parameters.MeasureLength1, parameters.MeasureLength2,
@@ -145,9 +146,10 @@ namespace SunEyeVision.Tool.EdgeDetect
             switch (parameters.GeometryType)
             {
                 case GeometryType.Line:
-                    if (parameters.GuideLine == null)
+                    var lineLen = (parameters.LineEndPoint - parameters.LineStartPoint).Length;
+                    if (lineLen < 1e-6)
                     {
-                        errorMsg = "引导直线未设置，请先绘制引导直线";
+                        errorMsg = "引导直线未设置或长度无效，请先绘制引导直线";
                         return false;
                     }
                     break;

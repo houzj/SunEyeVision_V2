@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using OpenCvSharp;
@@ -39,6 +39,7 @@ namespace SunEyeVision.Plugin.SDK.Models
             [typeof(Polygon2d[])]       = "Polygon",
             [typeof(Line2d[])]          = "Line",
             [typeof(Annulus2d[])]       = "Annulus",
+            [typeof(Arc2d[])]           = "Arc",
         };
 
         /// <summary>
@@ -61,6 +62,7 @@ namespace SunEyeVision.Plugin.SDK.Models
             ["Polygon"]       = typeof(Polygon2d[]),
             ["Line"]          = typeof(Line2d[]),
             ["Annulus"]       = typeof(Annulus2d[]),
+            ["Arc"]           = typeof(Arc2d[]),
             // 存量兼容：历史 JSON 使用 "Xxx[]" 类型名（单值 = 长度 1 数组）。
             ["Integer[]"] = typeof(int[]),
             ["Double[]"]  = typeof(double[]),

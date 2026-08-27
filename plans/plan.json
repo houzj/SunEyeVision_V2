@@ -2084,7 +2084,7 @@
                                           "name":  "Blob 补测（多目标/面积过滤/圆度/空图/单目标）",
                                           "phase":  "测试验证",
                                           "hours":  12,
-                                          "status":  "todo"
+                                          "status":  "in_progress"
                                       },
                                       {
                                           "id":  "TEST-4",
@@ -2134,6 +2134,10 @@
                                     {
                                         "date":  "2026-08-27",
                                         "note":  "[7d0298f6c28bc9ac0e16f4bbce84c1de6fbf9b56] feat(measure): 圆弧引导两点参数化 - 起点+终点+半径+方向"
+                                    },
+                                    {
+                                        "date":  "2026-08-27",
+                                        "note":  "[84a07b36ab12efb9f89bf987eff02fb626f3e052] feat(measure): 直线两点参数化与交互完善"
                                     }
                                 ]
                     },

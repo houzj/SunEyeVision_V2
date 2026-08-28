@@ -1,18 +1,21 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
+using SunEyeVision.Plugin.SDK.UI.Controls.Common.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.Common.Views;
 using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.ViewModels;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
 {
     /// <summary>
-    /// 形状工具栏控件 - 数据驱动的形状工具选择栏
-    /// 所有形状的数据（图标、名称、可见性、快捷键）由 ShapeToolItem 集合驱动
-    /// 每个形状的可见性/启用状态可单独控制
+    /// 形状工具栏 - 通用 ToolBarControl 的薄封装
     /// </summary>
+    /// <remarks>
+    /// 仅做类型化适配：将通用工具栏的 object? SelectedValue 映射为 ShapeType?，
+    /// 保留宿主既有事件签名（ShapeSelectionChanged）与 API（SetSelectedShape/ClearSelection），
+    /// 所有 UI/交互逻辑收敛到 ToolBarControl。
+    /// </remarks>
     public partial class ShapeToolBar : UserControl
     {
         #region 依赖属性
@@ -24,22 +27,16 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
             DependencyProperty.Register(nameof(ShapeTools),
                 typeof(ObservableCollection<ShapeToolItem>),
                 typeof(ShapeToolBar),
-                new PropertyMetadata(null));
+                new PropertyMetadata(null, OnShapeToolsChanged));
 
+        /// <summary>
+        /// 形状工具项集合
+        /// </summary>
         public ObservableCollection<ShapeToolItem>? ShapeTools
         {
             get => (ObservableCollection<ShapeToolItem>?)GetValue(ShapeToolsProperty);
             set => SetValue(ShapeToolsProperty, value);
         }
-
-        #endregion
-
-        #region 命令
-
-        /// <summary>
-        /// 形状选择命令（绑定到每个形状按钮的 Command）
-        /// </summary>
-        public ICommand SelectShapeCommand { get; }
 
         #endregion
 
@@ -56,7 +53,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         public ShapeToolBar()
         {
             InitializeComponent();
-            SelectShapeCommand = new RelayCommand<ShapeToolItem>(OnShapeButtonClick);
         }
 
         /// <summary>
@@ -65,41 +61,30 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         /// </summary>
         public void SetSelectedShape(ShapeType? shapeType)
         {
-            if (ShapeTools == null) return;
-
-            foreach (var item in ShapeTools)
-            {
-                item.IsSelected = item.ShapeType == shapeType;
-            }
+            InnerToolBar.SetSelectedValue(shapeType);
         }
 
         /// <summary>
-        /// 清除所有选中状态
+        /// 清除所有选中状态（不触发 ShapeSelectionChanged 事件）
         /// </summary>
         public void ClearSelection()
         {
-            SetSelectedShape(null);
+            InnerToolBar.ClearSelection();
         }
 
-        /// <summary>
-        /// 形状按钮点击处理
-        /// </summary>
-        private void OnShapeButtonClick(ShapeToolItem? clickedItem)
+        #region 内部转发
+
+        private static void OnShapeToolsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (clickedItem == null) return;
-
-            // Toggle 行为：点击已选中的形状 → 取消选中
-            if (clickedItem.IsSelected)
-            {
-                ClearSelection();
-                ShapeSelectionChanged?.Invoke(this, null);
-                return;
-            }
-
-            // 选中新形状
-            ClearSelection();
-            clickedItem.IsSelected = true;
-            ShapeSelectionChanged?.Invoke(this, clickedItem.ShapeType);
+            var control = (ShapeToolBar)d;
+            control.InnerToolBar.ItemsSource = e.NewValue as System.Collections.Generic.IEnumerable<ToolItem>;
         }
+
+        private void OnInnerSelectionChanged(object? sender, object? value)
+        {
+            ShapeSelectionChanged?.Invoke(this, value as ShapeType?);
+        }
+
+        #endregion
     }
 }

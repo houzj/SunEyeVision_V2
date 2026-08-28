@@ -1,63 +1,9 @@
 <UserControl x:Class="SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views.MeasureToolBar"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:models="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Measure.Models"
-             xmlns:themes="clr-namespace:SunEyeVision.Plugin.SDK.UI.Themes">
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.SDK;component/UI/Themes/Generic.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-        </ResourceDictionary>
-    </UserControl.Resources>
-    <WrapPanel HorizontalAlignment="Center" Orientation="Horizontal">
-        <ItemsControl ItemsSource="{Binding MeasureTools, RelativeSource={RelativeSource AncestorType=UserControl}}">
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <WrapPanel Orientation="Horizontal"/>
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ItemsControl.ItemTemplate>
-                <DataTemplate DataType="models:MeasureToolItem">
-                    <Button ToolTip="{Binding ToolTip}"
-                            Visibility="{Binding IsVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
-                            IsEnabled="{Binding IsEnabled}"
-                            Command="{Binding SelectMeasureCommand,
-                                RelativeSource={RelativeSource AncestorType=UserControl}}"
-                            CommandParameter="{Binding}">
-                        <Button.Style>
-                            <Style TargetType="Button" BasedOn="{StaticResource ShapeButtonStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                                        <Setter Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ControlHoverBackgroundBrush}}"/>
-                                        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static themes:SdkThemeKeys.AccentBrush}}"/>
-                                        <Setter Property="BorderThickness" Value="1.5"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-                        <Path Width="20" Height="20"
-                              Stroke="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}"
-                              StrokeThickness="1.5"
-                              Fill="Transparent"
-                              Data="{Binding IconGeometry}"
-                              Stretch="Uniform"
-                              HorizontalAlignment="Center"
-                              VerticalAlignment="Center">
-                            <Path.Style>
-                                <Style TargetType="Path">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                                            <Setter Property="Stroke" Value="{DynamicResource {x:Static themes:SdkThemeKeys.AccentBrush}}"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Path.Style>
-                        </Path>
-                    </Button>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
-    </WrapPanel>
+             xmlns:common="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Common.Views">
+    <!-- 测量工具栏 - 通用 ToolBarControl 薄封装（组合，仅做类型化事件映射） -->
+    <common:ToolBarControl x:Name="InnerToolBar"
+                           HorizontalAlignment="Center"
+                           SelectionChanged="OnInnerSelectionChanged"/>
 </UserControl>

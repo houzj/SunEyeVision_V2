@@ -2,17 +2,20 @@
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
-using SunEyeVision.Plugin.SDK.Commands;
+using SunEyeVision.Plugin.SDK.UI.Controls.Common.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.Common.Views;
 using SunEyeVision.Plugin.SDK.UI.Controls.Measure.Models;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
 {
     /// <summary>
-    /// 测量工具栏控件 - 数据驱动的检测引导几何选择栏
-    /// 复用 ShapeToolBar 的数据驱动模式（图标 + 名称 + 快捷键 + 选中态）
-    /// 用于边缘检测等工具的引导几何类型选择（直线/圆/圆弧）
+    /// 测量工具栏 - 通用 ToolBarControl 的薄封装
     /// </summary>
+    /// <remarks>
+    /// 仅做类型化适配：将通用工具栏的 object? SelectedValue 映射为 MeasureGeometryType?，
+    /// 保留宿主既有事件签名（MeasureSelectionChanged）与 API（SetSelectedType/ClearSelection），
+    /// 所有 UI/交互逻辑收敛到 ToolBarControl。
+    /// </remarks>
     public partial class MeasureToolBar : UserControl
     {
         #region 依赖属性
@@ -24,22 +27,16 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
             DependencyProperty.Register(nameof(MeasureTools),
                 typeof(ObservableCollection<MeasureToolItem>),
                 typeof(MeasureToolBar),
-                new PropertyMetadata(null));
+                new PropertyMetadata(null, OnMeasureToolsChanged));
 
+        /// <summary>
+        /// 测量工具项集合
+        /// </summary>
         public ObservableCollection<MeasureToolItem>? MeasureTools
         {
             get => (ObservableCollection<MeasureToolItem>?)GetValue(MeasureToolsProperty);
             set => SetValue(MeasureToolsProperty, value);
         }
-
-        #endregion
-
-        #region 命令
-
-        /// <summary>
-        /// 几何类型选择命令（绑定到每个按钮的 Command）
-        /// </summary>
-        public ICommand SelectMeasureCommand { get; }
 
         #endregion
 
@@ -56,7 +53,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         public MeasureToolBar()
         {
             InitializeComponent();
-            SelectMeasureCommand = new RelayCommand<MeasureToolItem>(OnMeasureButtonClick);
         }
 
         /// <summary>
@@ -64,41 +60,30 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         /// </summary>
         public void SetSelectedType(MeasureGeometryType? geometryType)
         {
-            if (MeasureTools == null) return;
-
-            foreach (var item in MeasureTools)
-            {
-                item.IsSelected = item.GeometryType == geometryType;
-            }
+            InnerToolBar.SetSelectedValue(geometryType);
         }
 
         /// <summary>
-        /// 清除所有选中状态
+        /// 清除所有选中状态（不触发 MeasureSelectionChanged 事件）
         /// </summary>
         public void ClearSelection()
         {
-            SetSelectedType(null);
+            InnerToolBar.ClearSelection();
         }
 
-        /// <summary>
-        /// 几何类型按钮点击处理
-        /// </summary>
-        private void OnMeasureButtonClick(MeasureToolItem? clickedItem)
+        #region 内部转发
+
+        private static void OnMeasureToolsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (clickedItem == null) return;
-
-            // Toggle 行为：点击已选中的类型 → 取消选中
-            if (clickedItem.IsSelected)
-            {
-                ClearSelection();
-                MeasureSelectionChanged?.Invoke(this, null);
-                return;
-            }
-
-            // 选中新类型
-            ClearSelection();
-            clickedItem.IsSelected = true;
-            MeasureSelectionChanged?.Invoke(this, clickedItem.GeometryType);
+            var control = (MeasureToolBar)d;
+            control.InnerToolBar.ItemsSource = e.NewValue as System.Collections.Generic.IEnumerable<ToolItem>;
         }
+
+        private void OnInnerSelectionChanged(object? sender, object? value)
+        {
+            MeasureSelectionChanged?.Invoke(this, value as MeasureGeometryType?);
+        }
+
+        #endregion
     }
 }

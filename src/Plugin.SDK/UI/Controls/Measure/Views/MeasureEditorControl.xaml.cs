@@ -6,6 +6,8 @@ using System.Windows.Input;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.SDK.UI.Controls.Measure.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.Common.Geometry;
+using SunEyeVision.Plugin.SDK.UI.Controls.Measure.Interactions;
 using SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering;
 using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering;
@@ -55,17 +57,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         private HandleType _activeHandleType = HandleType.None;
         private Point _lastMouse;
 
-        /// <summary>引导直线当前起点（用于渲染/端点编辑，保留拖拽长度）</summary>
-        private Point _lineStart;
-
-        /// <summary>引导直线当前终点（用于渲染/端点编辑，保留拖拽长度）</summary>
-        private Point _lineEnd;
-
         /// <summary>当前编辑手柄数组（选中态渲染）</summary>
         private EditHandle[]? _currentHandles;
 
         /// <summary>视口缩放（用于手柄尺寸）</summary>
         private double _zoom = 1.0;
+
+        /// <summary>当前几何交互策略（按几何类型路由）</summary>
+        private IGuideGeometryInteraction _interaction = GuideInteractionFactory.Get(MeasureGeometryType.Line);
 
         /// <summary>
         /// 引导几何变更事件
@@ -126,6 +125,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
             _model.IsDrawing = false;
             _model.IsSelected = false;
             _geometryType = geometryType;
+            _interaction = GuideInteractionFactory.Get(geometryType);
         }
 
         /// <summary>
@@ -134,8 +134,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         public void SetGuide(Line2d line)
         {
             _model.SetLine(line);
-            _lineStart = _model.LineStartPoint;
-            _lineEnd = _model.LineEndPoint;
             Render();
         }
 
@@ -164,9 +162,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         {
             if (_model.EditingLine.HasValue)
             {
-                (_lineStart, _lineEnd) = (_lineEnd, _lineStart);
-                var line = _model.EditingLine.Value;
-                _model.SetLine(Line2d.FromTwoPoints(_lineStart, _lineEnd), _lineStart, _lineEnd);
+                var s = _model.LineStartPoint;
+                var e = _model.LineEndPoint;
+                _model.SetLine(Line2d.FromTwoPoints(e, s), e, s);
                 Render();
                 NotifyGuideChanged();
             }
@@ -292,11 +290,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                 if (delta.Length > 1e-9)
                 {
                     _model.Translate(delta);
-                    if (_model.EditingLine.HasValue)
-                    {
-                        _lineStart += delta;
-                        _lineEnd += delta;
-                    }
                     _lastMouse = pos;
                     Render();
                     NotifyGuideChanged();
@@ -408,33 +401,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         }
 
         /// <summary>
-        /// 引导主体命中测试（线附近/圆环/弧线，容差）
+        /// 引导主体命中测试（委托给当前几何交互策略：线附近/圆环/弧线，容差）
         /// </summary>
         private bool HitTestGuide(Point point, double tolerance)
         {
-            if (_model.EditingLine.HasValue)
-            {
-                return DistanceToSegment(point, _lineStart, _lineEnd) <= tolerance;
-            }
-
-            if (_model.EditingCircle.HasValue)
-            {
-                var c = _model.EditingCircle.Value;
-                var dist = Math.Abs((point - c.Center).Length - c.Radius);
-                return dist <= tolerance;
-            }
-
-            if (_model.EditingArc.HasValue && !_model.EditingArc.Value.IsEmpty)
-            {
-                var a = _model.EditingArc.Value;
-                var dist = Math.Abs((point - a.Center).Length - a.Radius);
-                if (dist > tolerance) return false;
-                // 角度范围判断
-                double angle = Math.Atan2(point.Y - a.Center.Y, point.X - a.Center.X);
-                return AngleInRange(angle, a.StartAngle, a.EndAngle, tolerance / a.Radius);
-            }
-
-            return false;
+            return _interaction.HitTestGuide(_model, point, tolerance);
         }
 
         /// <summary>
@@ -453,7 +424,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
 
             if (_model.EditingLine.HasValue)
             {
-                var seg = _lineEnd - _lineStart;
+                var seg = _model.LineEndPoint - _model.LineStartPoint;
                 var totalLen = seg.Length;
                 if (totalLen < 1e-6) return false;
                 var dir = seg / totalLen;
@@ -461,8 +432,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                 double step = totalLen / _measureCount;
                 for (int i = 0; i < _measureCount; i++)
                 {
-                    var center = _lineStart + dir * ((i + 0.5) * step);
-                    if (PointInQuad(point, center - dir * halfBand - normal * halfWidth,
+                    var center = _model.LineStartPoint + dir * ((i + 0.5) * step);
+                    if (GeometryToolkit.PointInQuad(point, center - dir * halfBand - normal * halfWidth,
                         center + dir * halfBand - normal * halfWidth,
                         center + dir * halfBand + normal * halfWidth,
                         center - dir * halfBand + normal * halfWidth))
@@ -481,7 +452,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                     var dir = new Vector(Math.Cos(angle), Math.Sin(angle));
                     var normal = new Vector(-dir.Y, dir.X);
                     var center = c.Center + dir * c.Radius;
-                    if (PointInQuad(point, center - dir * halfWidth - normal * halfBand,
+                    if (GeometryToolkit.PointInQuad(point, center - dir * halfWidth - normal * halfBand,
                         center + dir * halfWidth - normal * halfBand,
                         center + dir * halfWidth + normal * halfBand,
                         center - dir * halfWidth + normal * halfBand))
@@ -501,7 +472,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                     var dir = new Vector(Math.Cos(angle), Math.Sin(angle));
                     var normal = new Vector(-dir.Y, dir.X);
                     var center = a.Center + dir * a.Radius;
-                    if (PointInQuad(point, center - dir * halfWidth - normal * halfBand,
+                    if (GeometryToolkit.PointInQuad(point, center - dir * halfWidth - normal * halfBand,
                         center + dir * halfWidth - normal * halfBand,
                         center + dir * halfWidth + normal * halfBand,
                         center - dir * halfWidth + normal * halfBand))
@@ -511,39 +482,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
             }
 
             return false;
-        }
-
-        /// <summary>点到线段的最短距离</summary>
-        private static double DistanceToSegment(Point p, Point a, Point b)
-        {
-            var ab = b - a;
-            var ap = p - a;
-            var lenSq = ab.LengthSquared;
-            if (lenSq < 1e-12) return (p - a).Length;
-            double t = Math.Clamp(Vector.Multiply(ap, ab) / lenSq, 0.0, 1.0);
-            var proj = a + ab * t;
-            return (p - proj).Length;
-        }
-
-        /// <summary>角度是否在 [start, end] 范围内（含容差）</summary>
-        private static bool AngleInRange(double angle, double start, double end, double tolerance)
-        {
-            // 规范化角度比较（处理跨 0 情况）
-            double span = end - start;
-            double normalized = ((angle - start) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
-            return normalized <= span + tolerance || normalized >= 2 * Math.PI - tolerance;
-        }
-
-        /// <summary>点是否在四边形内（叉积法）</summary>
-        private static bool PointInQuad(Point p, Point a, Point b, Point c, Point d)
-        {
-            return Sign(p, a, b) >= 0 && Sign(p, b, c) >= 0 &&
-                   Sign(p, c, d) >= 0 && Sign(p, d, a) >= 0;
-        }
-
-        private static double Sign(Point p1, Point p2, Point p3)
-        {
-            return (p1.X - p3.X) * (p2.Y - p3.Y) - (p2.X - p3.X) * (p1.Y - p3.Y);
         }
 
         #endregion
@@ -562,55 +500,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         }
 
         /// <summary>
-        /// 手柄拖拽编辑（按几何类型 + 手柄类型分发）
+        /// 手柄拖拽编辑（委托给当前几何交互策略）
         /// </summary>
         private void HandleShapeEdit(Point current)
         {
-            bool changed = false;
-
-            switch (_geometryType)
-            {
-                case MeasureGeometryType.Line:
-                    if (_activeHandleType == HandleType.LineStart)
-                    {
-                        _lineStart = current;
-                        changed = _model.UpdateLineEndpoints(_lineStart, _lineEnd);
-                    }
-                    else if (_activeHandleType == HandleType.LineEnd)
-                    {
-                        _lineEnd = current;
-                        changed = _model.UpdateLineEndpoints(_lineStart, _lineEnd);
-                    }
-                    break;
-
-                case MeasureGeometryType.Circle:
-                    if (_activeHandleType == HandleType.Left || _activeHandleType == HandleType.Right ||
-                        _activeHandleType == HandleType.Top || _activeHandleType == HandleType.Bottom)
-                    {
-                        if (_model.EditingCircle.HasValue)
-                        {
-                            var center = _model.EditingCircle.Value.Center;
-                            changed = _model.UpdateCircleRadius((current - center).Length);
-                        }
-                    }
-                    break;
-
-                case MeasureGeometryType.Arc:
-                    if (_model.EditingArc.HasValue && !_model.EditingArc.Value.IsEmpty)
-                    {
-                        // 两端点+半径+方向：拖 P1/P2 半径不变（FromEndpointsAndRadius），拖 P3 三点定圆提取半径
-                        if (_activeHandleType == HandleType.LineStart)
-                            changed = _model.UpdateArcEndpoint(true, current);   // 拖 P1（半径/方向不变）
-                        else if (_activeHandleType == HandleType.LineEnd)
-                            changed = _model.UpdateArcEndpoint(false, current);  // 拖 P2（半径/方向不变）
-                        else if (_activeHandleType == HandleType.Right)
-                            changed = _model.UpdateArcRadiusFromPoint(current);  // 拖 P3：三点定圆提取半径+方向
-
-                    }
-                    break;
-            }
-
-            if (changed)
+            if (_interaction.EditHandle(_model, _activeHandleType, current))
             {
                 Render();
                 NotifyGuideChanged();
@@ -622,87 +516,20 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         #region 绘制逻辑
 
         /// <summary>
-        /// 实时更新绘制预览（只画引导几何，不画测量带）
+        /// 实时更新绘制预览（委托给当前几何交互策略，只画引导几何不画测量带）
         /// </summary>
         private void UpdateDrawPreview(Point current)
         {
-            var start = _model.DrawStart;
-            switch (_geometryType)
-            {
-                case MeasureGeometryType.Line:
-                    if ((current - start).Length > 1e-6)
-                    {
-                        _lineStart = start;
-                        _lineEnd = current;
-                        _model.SetLine(Line2d.FromTwoPoints(start, current), start, current);
-                    }
-                    break;
-
-                case MeasureGeometryType.Circle:
-                {
-                    var radius = (current - start).Length;
-                    if (radius > 1e-6)
-                    {
-                        _model.SetCircle(new Circle2d(start, radius));
-                    }
-                    break;
-                }
-
-                case MeasureGeometryType.Arc:
-                {
-                    // 按下=P1（起点），拖动=P2（终点），圆心/半径自动计算（默认半径=弦长）
-                    if ((current - start).Length > 1e-6)
-                    {
-                        _model.SetArcFromEndpoints(start, current);
-                    }
-                    break;
-                }
-            }
+            _interaction.UpdatePreview(_model, _model.DrawStart, current);
             Render();
         }
 
         /// <summary>
-        /// 完成绘制（防退化 + 自动进选择模式）
+        /// 完成绘制（委托给当前几何交互策略：防退化 + 自动进选择模式）
         /// </summary>
         private void CompleteDraw(Point current)
         {
-            var start = _model.DrawStart;
-            bool created = false;
-
-            switch (_geometryType)
-            {
-                case MeasureGeometryType.Line:
-                    if ((current - start).Length > 1e-3)
-                    {
-                        _lineStart = start;
-                        _lineEnd = current;
-                        _model.SetLine(Line2d.FromTwoPoints(start, current), start, current);
-                        created = true;
-                    }
-                    break;
-
-                case MeasureGeometryType.Circle:
-                {
-                    var radius = (current - start).Length;
-                    if (radius > 1e-3)
-                    {
-                        _model.SetCircle(new Circle2d(start, radius));
-                        created = true;
-                    }
-                    break;
-                }
-
-                case MeasureGeometryType.Arc:
-                {
-                    // 按下=P1（起点），松开=P2（终点），默认半径=弦长（60°弧）
-                    if ((current - start).Length > 1e-3)
-                    {
-                        created = _model.SetArcFromEndpoints(start, current);
-                    }
-                    break;
-                }
-            }
-
+            bool created = _interaction.Complete(_model, _model.DrawStart, current);
             if (created)
             {
                 // 绘制完成自动进选择模式：选中 + 显示手柄
@@ -731,7 +558,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
 
             if (_model.EditingLine.HasValue)
             {
-                _overlay.RenderLine(_lineStart, _lineEnd, _bandWidth, _bandLength, _measureCount, drawBands);
+                _overlay.RenderLine(_model.LineStartPoint, _model.LineEndPoint, _bandWidth, _bandLength, _measureCount, drawBands);
             }
             else if (_model.EditingCircle.HasValue)
             {
@@ -755,62 +582,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         }
 
         /// <summary>
-        /// 更新手柄数组（按几何类型）
+        /// 更新手柄数组（委托给当前几何交互策略）
         /// </summary>
         private void UpdateHandles()
         {
-            if (!_model.HasGuide)
-            {
-                _currentHandles = null;
-                return;
-            }
-
-            switch (_geometryType)
-            {
-                case MeasureGeometryType.Line:
-                    _currentHandles = HandleRenderer.CreateLineHandles(_lineStart, _lineEnd, _zoom);
-                    break;
-
-                case MeasureGeometryType.Circle:
-                    if (_model.EditingCircle.HasValue)
-                    {
-                        var c = _model.EditingCircle.Value;
-                        _currentHandles = HandleRenderer.CreateCircleHandles(c.Center, c.Radius, _zoom);
-                    }
-                    break;
-
-                case MeasureGeometryType.Arc:
-                    if (_model.EditingArc.HasValue && !_model.EditingArc.Value.IsEmpty)
-                    {
-                        _currentHandles = CreateArcHandles(_model.EditingArc.Value);
-                    }
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// 创建圆弧手柄（P1 起点 + P2 终点 + P3 弧中点，无 Center）
-        /// </summary>
-        private EditHandle[] CreateArcHandles(Arc2d arc)
-        {
-            var size = HandleRenderer.GetScaledHandleSize(_zoom);
-            // 两端点 + 半径模型：P3 手柄 = 派生弧中点（拖 P3 三点定圆提取半径）
-            var p1 = _model.ArcPoint1;
-            var p2 = _model.ArcPoint2;
-            var p3 = arc.GetPointOnArc(arc.StartAngle + arc.AngularSpan / 2);
-
-            var handles = new List<EditHandle>
-            {
-                new() { Type = HandleType.LineStart, Position = p1, HandleSize = size, Cursor = System.Windows.Input.Cursors.SizeAll },
-                new() { Type = HandleType.LineEnd, Position = p2, HandleSize = size, Cursor = System.Windows.Input.Cursors.SizeAll },
-                new() { Type = HandleType.Right, Position = p3, HandleSize = size, Cursor = System.Windows.Input.Cursors.SizeAll },
-            };
-
-            foreach (var h in handles)
-            {
-                h.Bounds = new Rect(h.Position.X - size / 2, h.Position.Y - size / 2, size, size);
-            }
-            return handles.ToArray();
+            _currentHandles = _model.HasGuide
+                ? _interaction.CreateHandles(_model, _zoom)
+                : null;
         }
 
         /// <summary>

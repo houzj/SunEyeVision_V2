@@ -988,6 +988,10 @@
                                     {
                                         "date":  "2026-08-06",
                                         "note":  "Region→RoI 概念对齐迁移方案（V1.0）"
+                                    },
+                                    {
+                                        "date":  "2026-08-28",
+                                        "note":  "[db00c07f1837b1455116781493dfd4d796261d66] 工具栏与交互状态机通用化重构：通用薄壳 + 几何工具集复用"
                                     }
                                 ]
                     },
@@ -2070,7 +2074,7 @@
                                           "name":  "消除 8 个占位假测试（Core/CvEngine/ImageLoad/ImageFilter/Morphology/Threshold/Blob/ShapeMatch）",
                                           "phase":  "测试验证",
                                           "hours":  16,
-                                          "status":  "in_progress"
+                                          "status":  "done"
                                       },
                                       {
                                           "id":  "TEST-2",
@@ -2098,7 +2102,7 @@
                                           "name":  "全部工具参数序列化往返契约测试",
                                           "phase":  "测试验证",
                                           "hours":  12,
-                                          "status":  "todo"
+                                          "status":  "in_progress"
                                       },
                                       {
                                           "id":  "TEST-6",
@@ -2142,6 +2146,18 @@
                                     {
                                         "date":  "2026-08-27",
                                         "note":  "[d2df22c530ad1672f042b4e7007a2edd16648a04] feat(measure): 圆弧三点定弧模型 - P1/P2/P3 独立参数点"
+                                    },
+                                    {
+                                        "date":  "2026-08-27",
+                                        "note":  "[9dfe599fedfe15f515a030fb8d8fe098aea4cea3] 浼樺寲鍦嗗姬寮曞浜や簰锛氬ぇ灏忓姬鐘舵€佹寔涔呭寲 + 鎵嬫焺鍛戒腑浼樺厛绾? - Arc2d: FromEndpointsAndRadius/FromTwoPointsDefault 澧炲姞 majorArc 鍙傛暟鏀寔澶у姬锛?  FromThreePoints 閲嶆瀯锛宱ut 杈撳嚭鏂瑰悜涓庡ぇ灏忓姬锛屽姬蹇呰繃涓夌偣 - MeasureInteractionModel: 鏂板 ArcMajorArc 鐘舵€侊紝鎷?P1/P2/P3 鍚庡ぇ灏忓姬涓庢柟鍚戝潎淇濇寔 - MeasureEditorControl: 鎵嬫焺鍛戒腑鍔犱繚搴曚笅闄?24px)锛屼紭鍏堢骇楂樹簬鍗″昂涓庡紩瀵肩嚎 - MeasureBandOverlay: 鏀寔璐?AngularSpan(椤烘椂閽堝姬) 娴嬮噺甯︽覆鏌撲笌瑙掑害瑙勮寖鍖?- 濂戠害娴嬭瘯: 鏂板澶у皬寮т繚鎸?鏂瑰悜缈昏浆/澶у姬娓叉煋娴嬭瘯"
+                                    },
+                                    {
+                                        "date":  "2026-08-28",
+                                        "note":  "[63f04a8ca09bb11fc26ce51f7c3feb6d4b5e9f8e] 优化圆弧引导交互：大小弧状态持久化 + 手柄命中优先级"
+                                    },
+                                    {
+                                        "date":  "2026-08-28",
+                                        "note":  "[a67b5f7e079256e5d107eb55c1a7505078e8cd67] 测量引导几何策略化：几何交互从编辑器解耦 - 新增 Interactions 策略层：IGuideGeometryInteraction 接口 + Line/Circle/Arc 3 策略类 + GuideInteractionFactory 工厂（未注册类型直接报错，rule-015） - MeasureEditorControl 改为策略路由：HandleShapeEdit/UpdateDrawPreview/CompleteDraw/UpdateHandles/HitTestGuide 删除 switch，委托策略 - 删除 CreateArcHandles 与 _lineStart/_lineEnd 字段（迁入策略，统一用模型属性） - 编辑器减少约276行，几何交互全部下沉策略类，加新几何只需新增策略类+注册 - 圆弧策略保留 P1/P2/P3 手柄 + 大小弧/方向状态"
                                     }
                                 ]
                     },
@@ -4022,6 +4038,21 @@
                           "date":  "2026-08-27",
                           "commit":  "fad5df18040c083431ff3602ff8020d0ba0e2be4",
                           "files":  [
+                                        "src/Plugin.SDK/UI/Controls/Measure/Views/MeasureEditorControl.xaml.cs"
+                                    ],
+                          "status":  "in_progress"
+                      },
+                      {
+                          "id":  "TMP-bbc6f26",
+                          "message":  "测量引导几何策略化：几何交互从编辑器解耦",
+                          "date":  "2026-08-28",
+                          "commit":  "bbc6f263c7c879890b4c2baad261f9c05918d902",
+                          "files":  [
+                                        "src/Plugin.SDK/UI/Controls/Measure/Interactions/ArcGuideInteraction.cs",
+                                        "src/Plugin.SDK/UI/Controls/Measure/Interactions/CircleGuideInteraction.cs",
+                                        "src/Plugin.SDK/UI/Controls/Measure/Interactions/GuideInteractionFactory.cs",
+                                        "src/Plugin.SDK/UI/Controls/Measure/Interactions/IGuideGeometryInteraction.cs",
+                                        "src/Plugin.SDK/UI/Controls/Measure/Interactions/LineGuideInteraction.cs",
                                         "src/Plugin.SDK/UI/Controls/Measure/Views/MeasureEditorControl.xaml.cs"
                                     ],
                           "status":  "in_progress"

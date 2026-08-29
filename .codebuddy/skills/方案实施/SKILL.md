@@ -387,8 +387,8 @@ Get-ChildItem -Path $PluginPath -Directory
 
 - skill:方案设计 — 方案报告来源（必读，治本验证的来源）
 - skill:方案测试 — 实施完成后移交验证
-- skill:build-verify — MSBuild 构建验证辅助
-- skill:code-legacy-cleanup — Phase 2 Step E Purify 参考（模式 B：轻量文件级净化）
+- skill:构建验证 — MSBuild 构建验证辅助
+- skill:遗留代码清理 — Phase 2 Step E Purify 参考（模式 B：轻量文件级净化）
 - **rule-003: 日志系统使用规范** — LogInfo/LogError，禁止 Console.WriteLine
 - **rule-008: 开发与代码纯净原则** — 零兼容/报错优先/YAGNI/KISS
 - **rule-013: 文件编码与写入规范** — 优先 replace_in_file，中文用 UTF-8 无 BOM
@@ -396,4 +396,4 @@ Get-ChildItem -Path $PluginPath -Directory
 - **rule-015: 禁止兜底回退原则** — 未映射类型直接报错
 - **rule-016: MSBuild 项目配置规范** — OutDir / 插件部署 / 污染拦截
 - **rule-017: .gitignore 屏蔽目录的文件读取规范** — dev/ 必须用 PowerShell
-- skill:doc-save — 实施完成报告落地保存（rule-006 目录/命名/索引，必须调用）
+- skill:文档保存 — 实施完成报告落地保存（rule-006 目录/命名/索引，必须调用）

@@ -84,9 +84,16 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Interactions
             var a = model.EditingArc.Value;
             var dist = Math.Abs((point - a.Center).Length - a.Radius);
             if (dist > tolerance) return false;
-            // 角度范围判断（含跨 0）
+            // 角度范围判断（基于带符号 AngularSpan 扫掠，覆盖大小弧/跨 0）
             double angle = Math.Atan2(point.Y - a.Center.Y, point.X - a.Center.X);
-            return GeometryToolkit.AngleInRange(angle, a.StartAngle, a.EndAngle, tolerance / a.Radius);
+            double offset = angle - a.StartAngle;
+            // 将 offset 归一化到扫掠起点同侧（[-π, π]）
+            offset = ((offset + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
+            // 落在扫掠跨度（含正负）内即命中
+            double span = a.AngularSpan;
+            return span >= 0
+                ? offset >= 0 && offset <= span + tolerance / a.Radius
+                : offset <= 0 && offset >= span - tolerance / a.Radius;
         }
     }
 }

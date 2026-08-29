@@ -24,9 +24,9 @@
 
 | 技能 | 用途 | 触发场景 |
 |------|------|---------|
-| code-legacy-cleanup | 遗留代码清理 | Recipe→Solution迁移残留、删除孤立类、重命名过时概念 |
-| vision-tool-builder | 视觉工具构建 | 创建新工具、工具三件套(Tool+Parameters+Results)、调试控件 |
-| wpf-vision-dev | WPF 视觉开发 | 画布编辑器、节点渲染、连接绘制、ROI编辑、图像预览、参数绑定 |
+| 遗留代码清理 | 遗留代码清理 | Recipe→Solution迁移残留、删除孤立类、重命名过时概念 |
+| 视觉工具构建 | 视觉工具构建 | 创建新工具、工具三件套(Tool+Parameters+Results)、调试控件 |
+| WPF视觉开发 | WPF 视觉开发 | 画布编辑器、节点渲染、连接绘制、ROI编辑、图像预览、参数绑定 |
 
 ## 文件结构
 

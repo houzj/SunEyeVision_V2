@@ -359,7 +359,7 @@ description: >
 - **rule-017: .gitignore 屏蔽目录的文件读取规范** — dev/ 用 PowerShell
 - skill:方案实施 — 方案通过后移交实施
 - skill:方案测试 — 实施完成后全链路验证
-- skill:build-verify — MSBuild 验证辅助
-- skill:cv-engine-builder — 视觉算子封装
-- skill:wpf-vision-dev — WPF 视觉开发
-- skill:doc-save — 方案报告落地保存（rule-006 目录/命名/索引，必须调用）
+- skill:构建验证 — MSBuild 验证辅助
+- skill:CV引擎封装 — 视觉算子封装
+- skill:WPF视觉开发 — WPF 视觉开发
+- skill:文档保存 — 方案报告落地保存（rule-006 目录/命名/索引，必须调用）

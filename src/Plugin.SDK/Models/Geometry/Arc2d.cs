@@ -35,22 +35,39 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
         public readonly double EndAngle;
 
         /// <summary>
+        /// 大小弧标志（true=大弧（张角 &gt; 180°），false=小弧（张角 &lt;= 180°））
+        /// </summary>
+        /// <remarks>
+        /// 治本设计：EndAngle 永远 = 终点 P2 的物理角度，不再用"跨 2π 补偿"编码大小弧。
+        /// 大小弧/方向/跨度全部由本标志与 AngularSpan 派生，消除"EndAngle 一个字段两个语义"的缺陷。
+        /// </remarks>
+        [JsonInclude]
+        public readonly bool IsMajorArc;
+
+        /// <summary>
         /// 创建弧形
         /// </summary>
         [JsonConstructor]
         public Arc2d(Point center, double radius, double startAngle, double endAngle)
+            : this(center, radius, startAngle, endAngle, false) { }
+
+        /// <summary>
+        /// 创建弧形
+        /// </summary>
+        public Arc2d(Point center, double radius, double startAngle, double endAngle, bool isMajorArc)
         {
             Center = center;
             Radius = radius;
             StartAngle = startAngle;
             EndAngle = endAngle;
+            IsMajorArc = isMajorArc;
         }
 
         /// <summary>
         /// 创建弧形
         /// </summary>
         public Arc2d(double centerX, double centerY, double radius, double startAngle, double endAngle)
-            : this(new Point(centerX, centerY), radius, startAngle, endAngle) { }
+            : this(new Point(centerX, centerY), radius, startAngle, endAngle, false) { }
 
         /// <summary>
         /// 空弧（无效弧）
@@ -64,7 +81,7 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
         /// <param name="endPoint">弧终点</param>
         /// <param name="radius">半径（需 ≥ 弦长/2，否则无解）</param>
         /// <param name="clockwise">true=顺时针（圆心在弦一侧），false=逆时针（圆心在弦另一侧，默认劣弧方向）</param>
-        /// <param name="majorArc">true=大弧（张角 &gt; 180°），false=小弧（张角 &lt;= 180°）；决定起始/终止角互补到优弧</param>
+        /// <param name="majorArc">true=大弧（张角 &gt; 180°），false=小弧（张角 &lt;= 180°）</param>
         /// <returns>圆弧；半径过小或两点重合时返回 <see cref="Empty"/></returns>
         public static Arc2d FromEndpointsAndRadius(Point startPoint, Point endPoint, double radius, bool clockwise, bool majorArc = false)
         {
@@ -76,36 +93,26 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
             if (radius < halfChord) return Empty;
 
             // 弦中垂线方向单位向量
-            // 圆心在弧凸起的一侧：逆时针（默认）圆心在弦的"左前"方向（使弧为劣弧）
+            // 圆心侧选择 = clockwise XOR majorArc：
+            // 小弧：圆心在"渲染方向"对应侧；大弧：圆心必须落另一侧（大弧渲染方向与圆心侧相反）。
+            // 例：逆时针圆心 → 小弧逆时针/大弧顺时针；顺时针圆心 → 小弧顺时针/大弧逆时针。
             var chordDir = chord / (halfChord * 2);
-            var normal = clockwise
-                ? new Vector(chordDir.Y, -chordDir.X)   // 顺时针：圆心在弦的"右后"方向
-                : new Vector(-chordDir.Y, chordDir.X);  // 逆时针：圆心在弦的"左前"方向
+            bool useCcwCenter = clockwise == majorArc;   // true=逆时针圆心（弦"左前"），false=顺时针圆心（弦"右后"）
+            var normal = useCcwCenter
+                ? new Vector(-chordDir.Y, chordDir.X)   // 逆时针圆心：弦的"左前"
+                : new Vector(chordDir.Y, -chordDir.X);  // 顺时针圆心：弦的"右后"
 
             // 圆心距弦中点距离（勾股定理）
             double h = Math.Sqrt(radius * radius - halfChord * halfChord);
             var mid = new Point((startPoint.X + endPoint.X) / 2, (startPoint.Y + endPoint.Y) / 2);
             var center = mid + normal * h;
 
+            // 治本设计：StartAngle/EndAngle 永远 = 起点/终点的物理角度（不再跨 2π 补偿大小弧）。
+            // 大小弧/方向由 AngularSpan 派生（本方法入参已提供，此处无需再校正角度）。
             double a1 = Math.Atan2(startPoint.Y - center.Y, startPoint.X - center.X);
             double a3 = Math.Atan2(endPoint.Y - center.Y, endPoint.X - center.X);
 
-            // 根据方向调整终止角，使 AngularSpan 符号与方向一致
-            double endAngle = a3;
-            if (clockwise && endAngle > a1)
-                endAngle -= 2 * Math.PI;   // 顺时针：结束角度在起始角度之前
-            else if (!clockwise && endAngle < a1)
-                endAngle += 2 * Math.PI;   // 逆时针：结束角度在起始角度之后
-
-            // 大小弧状态：小弧（默认）保持当前终止角；大弧将终止角互补到 2π - 小弧跨度
-            if (majorArc)
-            {
-                double smallSpan = Math.Abs(endAngle - a1);   // 当前小弧跨度（< π）
-                double majorSpan = 2 * Math.PI - smallSpan;    // 大弧跨度（> π）
-                endAngle = clockwise ? a1 - majorSpan : a1 + majorSpan;
-            }
-
-            return new Arc2d(center, radius, a1, endAngle);
+            return new Arc2d(center, radius, a1, a3, majorArc);
         }
 
         /// <summary>
@@ -167,19 +174,17 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
             // 若落在逆时针弧段 → 逆时针弧；否则 → 顺时针弧（p3 在互补的顺时针弧段内）
             if (ccwToP3 <= ccwToP2)
             {
-                // 逆时针弧：起点 a1，终点沿逆时针走 ccwToP2；跨度 = ccwToP2
+                // 逆时针弧：EndAngle 永远 = P2 物理角度 a2m；大小弧由三点张角判定
                 clockwise = false;
                 majorArc = ccwToP2 > Math.PI;
-                double end = a1 + ccwToP2;
-                return new Arc2d(center, radius, a1, end);
+                return new Arc2d(center, radius, a1, a2m, majorArc);
             }
             else
             {
-                // 顺时针弧：起点 a1，终点沿顺时针走 (2π - ccwToP2)；跨度 = -(2π - ccwToP2)
+                // 顺时针弧：EndAngle 永远 = P2 物理角度 a2m；大小弧由互补张角判定
                 clockwise = true;
                 majorArc = (2 * Math.PI - ccwToP2) > Math.PI;
-                double end = a1 + ccwToP2 - 2 * Math.PI;
-                return new Arc2d(center, radius, a1, end);
+                return new Arc2d(center, radius, a1, a2m, majorArc);
             }
         }
 
@@ -197,9 +202,32 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
         public bool IsEmpty => Radius <= 0 || StartAngle == EndAngle;
 
         /// <summary>
-        /// 角度跨度（弧度）
+        /// 有向角度跨度（弧度），符号=旋转方向（正=逆时针，负=顺时针）
         /// </summary>
-        public double AngularSpan => EndAngle - StartAngle;
+        /// <remarks>
+        /// 治本设计：EndAngle 始终 = 终点物理角度。本属性把小弧/大弧映射为带符号扫掠角：
+        /// 小弧 → 归一化小张角（带方向符号）；大弧 → 反向绕一整圈（2π - 小张角，符号翻转）。
+        /// </remarks>
+        public double AngularSpan
+        {
+            get
+            {
+                // 归一化 EndAngle-StartAngle 到 (-π, π]：得到小弧有向张角 delta（带方向符号）
+                double delta = EndAngle - StartAngle;
+                delta = ((delta + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
+                // 半圆（|delta| == π）无大小弧歧义，直接返回
+                if (Math.Abs(delta) >= Math.PI - 1e-9) return delta;
+                if (!IsMajorArc) return delta;
+                // 大弧：反向绕一整圈，跨度 = 2π - 小张角，方向与 delta 相反
+                double sign = delta >= 0 ? -1 : 1;
+                return sign * (2 * Math.PI - Math.Abs(delta));
+            }
+        }
+
+        /// <summary>
+        /// 是否为顺时针（true=顺时针，false=逆时针）
+        /// </summary>
+        public bool IsClockwise => AngularSpan < 0;
 
         /// <summary>
         /// 弧长
@@ -280,14 +308,15 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
             Center.Equals(other.Center) &&
             Radius.Equals(other.Radius) &&
             StartAngle.Equals(other.StartAngle) &&
-            EndAngle.Equals(other.EndAngle);
+            EndAngle.Equals(other.EndAngle) &&
+            IsMajorArc == other.IsMajorArc;
 
         public override bool Equals(object? obj) => obj is Arc2d other && Equals(other);
 
-        public override int GetHashCode() => HashCode.Combine(Center, Radius, StartAngle, EndAngle);
+        public override int GetHashCode() => HashCode.Combine(Center, Radius, StartAngle, EndAngle, IsMajorArc);
 
         public override string ToString() =>
-            $"Arc2d(Center={Center}, R={Radius:F2}, Angle=[{StartAngle:F2}, {EndAngle:F2}])";
+            $"Arc2d(Center={Center}, R={Radius:F2}, Angle=[{StartAngle:F2}, {EndAngle:F2}], {(IsMajorArc ? "大弧" : "小弧")})";
 
         public IReadOnlyList<(string FieldName, object? FieldValue)> GetMonitorFields()
         {
@@ -298,6 +327,7 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
                 ("半径", Radius),
                 ("起始角度", StartAngle),
                 ("结束角度", EndAngle),
+                ("大小弧", IsMajorArc ? "大弧" : "小弧"),
             };
         }
 

@@ -36,9 +36,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         /// <summary>测量带渲染器（绑定图像控件后创建）</summary>
         private MeasureBandOverlay? _overlay;
 
-        /// <summary>当前主界面图像控件</summary>
-        private ImageControl? _imageControl;
-
         /// <summary>叠加画布（手柄渲染目标）</summary>
         private Canvas? _overlayCanvas;
 
@@ -78,30 +75,46 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         public MeasureEditorControl()
         {
             InitializeComponent();
+            InitializeCaliberTools();
         }
+
+        #region 卡尺工具项
+
+        /// <summary>卡尺工具项集合（驱动内置卡尺类型工具栏，对齐 RoiEditorControl 内置形状工具栏）</summary>
+        public System.Collections.ObjectModel.ObservableCollection<MeasureToolItem> CaliberTools { get; } = new();
+
+        /// <summary>
+        /// 初始化卡尺工具项（Line/Circle/Arc，图标来自 MeasureToolIconFactory）
+        /// </summary>
+        private void InitializeCaliberTools()
+        {
+            CaliberTools.Add(new MeasureToolItem(MeasureGeometryType.Line, "直线卡尺", MeasureToolIconFactory.LineIcon, Key.L));
+            CaliberTools.Add(new MeasureToolItem(MeasureGeometryType.Circle, "圆卡尺", MeasureToolIconFactory.CircleIcon, Key.C));
+            CaliberTools.Add(new MeasureToolItem(MeasureGeometryType.Arc, "圆弧卡尺", MeasureToolIconFactory.ArcIcon, Key.A));
+            MeasureToolBarControl.MeasureTools = CaliberTools;
+        }
+
+        /// <summary>
+        /// 卡尺类型选择 → 进入绘制模式（内置工具栏事件）
+        /// </summary>
+        private void OnMeasureSelectionChanged(object? sender, MeasureGeometryType? type)
+        {
+            if (type == null) return;
+            StartDraw(type.Value);
+        }
+
+        #endregion
 
         #region 公开 API
 
         /// <summary>
-        /// 绑定主界面图像控件（null 表示解除，Fail-Forward 安全）
+        /// 设置叠加画布（由管理器统一路由事件后调用，无头模式，对齐 RoiEditorControl）
         /// </summary>
-        public void SetMainImageControl(ImageControl? imageControl)
+        /// <param name="overlayCanvas">叠加画布（null 表示解除，Fail-Forward 安全）</param>
+        public void SetOverlayCanvas(Canvas? overlayCanvas)
         {
-            UnsubscribeEvents();
-            _imageControl = imageControl;
-
-            if (imageControl != null)
-            {
-                _overlayCanvas = imageControl.InteractionOverlayCanvasControl;
-                _overlay = new MeasureBandOverlay(_overlayCanvas);
-                SubscribeEvents();
-            }
-            else
-            {
-                _overlayCanvas = null;
-                _overlay = null;
-            }
-
+            _overlayCanvas = overlayCanvas;
+            _overlay = overlayCanvas != null ? new MeasureBandOverlay(overlayCanvas) : null;
             Render();
         }
 
@@ -126,6 +139,29 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
             _model.IsSelected = false;
             _geometryType = geometryType;
             _interaction = GuideInteractionFactory.Get(geometryType);
+        }
+
+        /// <summary>
+        /// 清除内置卡尺类型工具栏选中状态（绘制完成后对齐 Roi，回到选择模式）
+        /// </summary>
+        public void ClearCaliberSelection()
+        {
+            MeasureToolBarControl.ClearSelection();
+        }
+
+        /// <summary>
+        /// 取消当前绘制/选中（由管理器在互斥时调用，让另一个编辑器可响应，避免弧冲突）
+        /// </summary>
+        public void CancelDrawing()
+        {
+            if (_model.Mode == MeasureInteractionMode.Draw)
+            {
+                _model.Mode = MeasureInteractionMode.Select;
+                _model.IsDrawing = false;
+            }
+            _model.Deselect();
+            _currentHandles = null;
+            Render();
         }
 
         /// <summary>
@@ -206,25 +242,36 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         public bool HasGuide => _model.HasGuide;
 
         /// <summary>
+        /// 触发引导渲染（由管理器在统一渲染时调用，无头模式）
+        /// </summary>
+        public void RenderForManager() => Render();
+
+        /// <summary>
         /// 当前是否正在交互（供宿主路由判断）
         /// </summary>
         public bool IsAnyInteractionInProgress => _model.IsDrawing || _isDragging || _isDraggingHandle;
+
+        /// <summary>
+        /// 当前是否处于绘制模式（供管理器路由：绘制模式优先）
+        /// </summary>
+        public bool IsDrawingMode => _model.Mode == MeasureInteractionMode.Draw;
 
         #endregion
 
         #region 鼠标事件
 
-        private void OnGuideMouseDown(object sender, ImageMouseEventArgs e)
+        /// <summary>
+        /// 处理鼠标按下（由管理器统一路由，无头模式）
+        /// </summary>
+        /// <returns>是否消费该事件（false 表示未命中任何交互对象，交给其他编辑器）</returns>
+        public bool ProcessMouseDown(Point pos)
         {
-            var pos = e.ImagePosition;
-
             // 绘制模式：创建引导几何
             if (_model.Mode == MeasureInteractionMode.Draw)
             {
                 _model.DrawStart = pos;
                 _model.IsDrawing = true;
-                e.Handled = true;
-                return;
+                return true;
             }
 
             // 选择/编辑模式：命中优先级 ①手柄 ②引导主体 ③卡尺
@@ -237,8 +284,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                     if (hitType != HandleType.None)
                     {
                         BeginHandleDrag(hitType, pos);
-                        e.Handled = true;
-                        return;
+                        return true;
                     }
                 }
 
@@ -248,8 +294,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                     _model.IsSelected = true;
                     _isDragging = true;
                     _lastMouse = pos;
-                    e.Handled = true;
-                    return;
+                    return true;
                 }
 
                 // ③ 卡尺测量带命中 → 移动
@@ -258,28 +303,28 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                     _model.IsSelected = true;
                     _isDragging = true;
                     _lastMouse = pos;
-                    e.Handled = true;
-                    return;
+                    return true;
                 }
             }
 
-            // 未命中任何交互对象 → 取消选中
+            // 未命中任何交互对象 → 取消选中（返回 false，允许其他编辑器处理）
             _model.Deselect();
             _currentHandles = null;
             Render();
+            return false;
         }
 
-        private void OnGuideMouseMove(object sender, ImageMouseEventArgs e)
+        /// <summary>
+        /// 处理鼠标移动（由管理器统一路由，无头模式）
+        /// </summary>
+        public void ProcessMouseMove(Point pos)
         {
             if (_overlay == null) return;
-
-            var pos = e.ImagePosition;
 
             // 拖动手柄 → 编辑引导几何
             if (_isDraggingHandle)
             {
                 HandleShapeEdit(pos);
-                e.Handled = true;
                 return;
             }
 
@@ -294,15 +339,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                     Render();
                     NotifyGuideChanged();
                 }
-                e.Handled = true;
                 return;
             }
 
             // 绘制预览（只画引导几何，不画测量带）
             if (_model.Mode == MeasureInteractionMode.Draw && _model.IsDrawing)
             {
+                _lastMouse = pos;
                 UpdateDrawPreview(pos);
-                e.Handled = true;
                 return;
             }
 
@@ -336,13 +380,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
             Mouse.OverrideCursor = Cursors.Arrow;
         }
 
-        private void OnGuideMouseUp(object sender, ImageMouseEventArgs e)
+        /// <summary>
+        /// 处理鼠标抬起（由管理器统一路由，无头模式；完成位置用最后记录的鼠标位置）
+        /// </summary>
+        public void ProcessMouseUp()
         {
             if (_model.IsDrawing)
             {
                 _model.IsDrawing = false;
-                CompleteDraw(e.ImagePosition);
-                e.Handled = true;
+                CompleteDraw(_lastMouse);
                 return;
             }
 
@@ -351,7 +397,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                 _isDraggingHandle = false;
                 _isDragging = false;
                 _activeHandleType = HandleType.None;
-                e.Handled = true;
             }
         }
 
@@ -537,7 +582,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                 _model.Mode = MeasureInteractionMode.Select;
                 UpdateHandles();
                 Render();
-                NotifyGuideChanged();
+                // 标记"来自绘制流程"，宿主据此清除工具栏选中（对齐 Roi）
+                NotifyGuideChanged(isDrawing: true);
             }
         }
 
@@ -608,29 +654,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         /// <summary>
         /// 通知宿主引导几何已变更
         /// </summary>
-        private void NotifyGuideChanged()
+        /// <param name="isDrawing">是否来自绘制流程（true=绘制完成，宿主应清除工具栏选中，对齐 Roi）</param>
+        private void NotifyGuideChanged(bool isDrawing = false)
         {
-            GuideGeometryChanged?.Invoke(this, new GuideGeometryChangedEventArgs(_model, _geometryType));
-        }
-
-        #endregion
-
-        #region 事件订阅
-
-        private void SubscribeEvents()
-        {
-            if (_imageControl == null) return;
-            _imageControl.CanvasMouseLeftButtonDown += OnGuideMouseDown;
-            _imageControl.CanvasMouseLeftButtonUp += OnGuideMouseUp;
-            _imageControl.ImageMouseMove += OnGuideMouseMove;
-        }
-
-        private void UnsubscribeEvents()
-        {
-            if (_imageControl == null) return;
-            _imageControl.CanvasMouseLeftButtonDown -= OnGuideMouseDown;
-            _imageControl.CanvasMouseLeftButtonUp -= OnGuideMouseUp;
-            _imageControl.ImageMouseMove -= OnGuideMouseMove;
+            GuideGeometryChanged?.Invoke(this, new GuideGeometryChangedEventArgs(_model, _geometryType, isDrawing));
         }
 
         #endregion

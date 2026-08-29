@@ -113,4 +113,4 @@ Get-ChildItem -Path $RefPack -Filter "mscorlib.dll"  # 验证 ref pack 路径
 
 - rule-013：文件编码与写入规范（PowerShell + UTF-8 无 BOM 读取模式）
 - rule-016：MSBuild 项目配置规范（`dev/Debug/plugins/` 部署验证）
-- `.codebuddy/skills/build-verify/SKILL.md`：构建验证工作流（已用 PowerShell 处理此问题）
+- `.codebuddy/skills/构建验证/SKILL.md`：构建验证工作流（已用 PowerShell 处理此问题）

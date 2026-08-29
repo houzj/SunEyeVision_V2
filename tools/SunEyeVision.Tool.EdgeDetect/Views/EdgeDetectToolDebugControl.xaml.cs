@@ -7,8 +7,9 @@ using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.UI.Controls;
-using SunEyeVision.Plugin.SDK.UI.Controls.Measure.Models;
 using SunEyeVision.Plugin.SDK.UI.Controls.Measure;
+using SunEyeVision.Plugin.SDK.UI.Controls.Measure.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views;
 
 namespace SunEyeVision.Tool.EdgeDetect.Views
 {
@@ -17,11 +18,11 @@ namespace SunEyeVision.Tool.EdgeDetect.Views
     /// </summary>
     /// <remarks>
     /// 3 Tab 布局（对齐 Threshold/ImageFilter）：
-    /// - Tab1 基本参数：卡尺类型（MeasureToolBar）+ 引导几何（MeasureEditorControl）
+    /// - Tab1 基本参数：卡尺类型（MeasureToolBar）+ 引导几何（GuideEditor）
     /// - Tab2 运行参数：卡尺参数 + 拟合筛选（Expander 分组）
     /// - Tab3 结果显示：拟合结果 + RMSE + 边缘点数
     ///
-    /// 引导几何绘制/编辑交互由 SDK 通用控件 MeasureEditorControl 承载，
+    /// 引导几何绘制/编辑交互由 SDK 通用控件 GuideEditor 承载，
     /// 本工具只负责组装 + 参数同步（对齐 RoiEditorManagerControl 复用模式）。
     /// </remarks>
     public partial class EdgeDetectToolDebugControl : ToolDebugControlBase
@@ -40,9 +41,6 @@ namespace SunEyeVision.Tool.EdgeDetect.Views
             get => (EdgeDetectParameters)GetValue(ParametersProperty);
             set => SetValue(ParametersProperty, value);
         }
-
-        /// <summary>卡尺工具项集合（驱动 MeasureToolBar）</summary>
-        public ObservableCollection<MeasureToolItem> MeasureTools { get; } = new();
 
         /// <summary>结果显示文本</summary>
         public string ResultText
@@ -78,42 +76,25 @@ namespace SunEyeVision.Tool.EdgeDetect.Views
         {
             InitializeComponent();
             Parameters = new EdgeDetectParameters();
-            InitializeMeasureTools();
             HookCaliberEditor();
         }
 
         #endregion
 
-        #region MeasureToolBar 初始化
+        #region GuideEditor 集成
 
         /// <summary>
-        /// 初始化卡尺工具栏（带卡尺特征图标，与区域编辑区分）
+        /// 测量卡尺引导编辑器（通过 MeasurementEditorManager 访问，屏蔽区域由 Manager 编排）
         /// </summary>
-        private void InitializeMeasureTools()
-        {
-            MeasureTools.Add(new MeasureToolItem(
-                MeasureGeometryType.Line, "直线卡尺", MeasureToolIconFactory.LineIcon, Key.L));
-            MeasureTools.Add(new MeasureToolItem(
-                MeasureGeometryType.Circle, "圆卡尺", MeasureToolIconFactory.CircleIcon, Key.C));
-            MeasureTools.Add(new MeasureToolItem(
-                MeasureGeometryType.Arc, "圆弧卡尺", MeasureToolIconFactory.ArcIcon, Key.A));
-
-            // 默认选中直线
-            MeasureToolBarControl.SetSelectedType(MeasureGeometryType.Line);
-            Parameters.GeometryType = GeometryType.Line;
-        }
-
-        #endregion
-
-        #region MeasureEditorControl 集成
+        private MeasureEditorControl GuideEditor => MeasurementManager.GuideEditor;
 
         /// <summary>
         /// 订阅引导几何交互宿主的事件 + 参数联动
         /// </summary>
         private void HookCaliberEditor()
         {
-            if (MeasureEditorControl == null) return;
-            MeasureEditorControl.GuideGeometryChanged += OnGuideGeometryChanged;
+            if (GuideEditor == null) return;
+            GuideEditor.GuideGeometryChanged += OnGuideGeometryChanged;
             Parameters.PropertyChanged += OnParameterChanged;
         }
 
@@ -122,12 +103,12 @@ namespace SunEyeVision.Tool.EdgeDetect.Views
         /// </summary>
         private void OnParameterChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (Parameters == null || MeasureEditorControl == null) return;
+            if (Parameters == null || GuideEditor == null) return;
             if (e.PropertyName == nameof(EdgeDetectParameters.MeasureLength1) ||
                 e.PropertyName == nameof(EdgeDetectParameters.MeasureLength2) ||
                 e.PropertyName == nameof(EdgeDetectParameters.NumMeasures))
             {
-                MeasureEditorControl.SetCaliberParams(
+                GuideEditor.SetCaliberParams(
                     Parameters.MeasureLength1 * 2,
                     Parameters.MeasureLength2 * 2,
                     Parameters.NumMeasures);
@@ -174,6 +155,12 @@ namespace SunEyeVision.Tool.EdgeDetect.Views
                     }
                     break;
             }
+
+            // 绘制流程完成 → 清除工具栏选中，回到选择模式（对齐 RoiEditorControl 绘制完成 ClearSelection）
+            if (e.IsDrawing)
+            {
+                GuideEditor.ClearCaliberSelection();
+            }
         }
 
         /// <summary>
@@ -181,23 +168,23 @@ namespace SunEyeVision.Tool.EdgeDetect.Views
         /// </summary>
         private void RestoreGuideFromParameters()
         {
-            if (MeasureEditorControl == null || Parameters == null) return;
+            if (GuideEditor == null || Parameters == null) return;
 
             switch (Parameters.GeometryType)
             {
                 case GeometryType.Line:
                     var lineLen = (Parameters.LineEndPoint - Parameters.LineStartPoint).Length;
                     if (lineLen > 1e-6)
-                        MeasureEditorControl.SetGuide(
+                        GuideEditor.SetGuide(
                             Line2d.FromTwoPoints(Parameters.LineStartPoint, Parameters.LineEndPoint));
                     break;
                 case GeometryType.Circle:
                     if (Parameters.GuideCircle.HasValue)
-                        MeasureEditorControl.SetGuide(Parameters.GuideCircle.Value);
+                        GuideEditor.SetGuide(Parameters.GuideCircle.Value);
                     break;
                 case GeometryType.Arc:
                     if (Parameters.GuideCircle.HasValue)
-                        MeasureEditorControl.SetGuide(new Arc2d(
+                        GuideEditor.SetGuide(new Arc2d(
                             Parameters.GuideCircle.Value.Center,
                             Parameters.GuideCircle.Value.Radius,
                             Parameters.StartAngle,
@@ -220,7 +207,12 @@ namespace SunEyeVision.Tool.EdgeDetect.Views
                     $"边缘检测节点参数类型异常（期望 EdgeDetectParameters，实际 {parameters?.GetType().Name ?? "null"}）。");
             }
             Parameters = edgeParams;
-            SyncToolBarFromParameters();
+
+            // 屏蔽区域：绑定到 MeasurementEditorManager（MaskRegionsSource → maskEditor）
+            if (MeasurementManager != null)
+            {
+                MeasurementManager.MaskRegionsSource = Parameters.MaskRegions.Regions;
+            }
         }
 
         protected override object ExecuteTool()
@@ -240,65 +232,13 @@ namespace SunEyeVision.Tool.EdgeDetect.Views
         }
 
         /// <summary>
-        /// 设置主界面图像控件（委托给 MeasureEditorControl 承载交互）
+        /// 设置主界面图像控件（委托给 GuideEditor 承载交互）
         /// </summary>
         public override void SetMainImageControl(ImageControl? imageControl)
         {
             base.SetMainImageControl(imageControl);
-            MeasureEditorControl?.SetMainImageControl(imageControl);
+            MeasurementManager?.SetMainImageControl(imageControl);
             RestoreGuideFromParameters();
-        }
-
-        #endregion
-
-        #region 工具栏 ↔ 参数同步
-
-        /// <summary>
-        /// 卡尺类型选择 → 同步工具参数 + 进入绘制模式
-        /// </summary>
-        private void OnMeasureSelectionChanged(object? sender, MeasureGeometryType? type)
-        {
-            if (type == null) return;
-            Parameters.GeometryType = type switch
-            {
-                MeasureGeometryType.Line   => GeometryType.Line,
-                MeasureGeometryType.Circle => GeometryType.Circle,
-                MeasureGeometryType.Arc    => GeometryType.Arc,
-                _ => GeometryType.Line,
-            };
-            MeasureEditorControl?.StartDraw(type.Value);
-            UpdateGuidePanel();
-        }
-
-        /// <summary>
-        /// 从工具参数同步工具栏选中状态
-        /// </summary>
-        private void SyncToolBarFromParameters()
-        {
-            var uiType = Parameters.GeometryType switch
-            {
-                GeometryType.Line   => MeasureGeometryType.Line,
-                GeometryType.Circle => MeasureGeometryType.Circle,
-                GeometryType.Arc    => MeasureGeometryType.Arc,
-                _ => MeasureGeometryType.Line,
-            };
-            MeasureToolBarControl.SetSelectedType(uiType);
-            UpdateGuidePanel();
-        }
-
-        /// <summary>
-        /// 更新引导几何提示（按卡尺类型切换）
-        /// </summary>
-        private void UpdateGuidePanel()
-        {
-            if (GuideInfoText == null) return;
-            GuideInfoText.Text = Parameters.GeometryType switch
-            {
-                GeometryType.Line   => "在主界面图像上按住鼠标左键拖动绘制引导直线",
-                GeometryType.Circle => "在主界面图像上按住鼠标左键拖动绘制引导圆",
-                GeometryType.Arc    => "在主界面图像上按住鼠标左键拖动绘制引导圆弧",
-                _ => "",
-            };
         }
 
         #endregion

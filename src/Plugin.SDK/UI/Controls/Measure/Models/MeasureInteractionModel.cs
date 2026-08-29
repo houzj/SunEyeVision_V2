@@ -128,8 +128,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Models
                 ArcPoint1 = arc.GetPointOnArc(arc.StartAngle);
                 ArcPoint2 = arc.GetPointOnArc(arc.EndAngle);
                 ArcRadius = arc.Radius;
-                ArcClockwise = arc.AngularSpan < 0;
-                ArcMajorArc = Math.Abs(arc.AngularSpan) > Math.PI;
+                ArcClockwise = arc.IsClockwise;
+                ArcMajorArc = arc.IsMajorArc;
             }
         }
 
@@ -202,37 +202,60 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Models
         }
 
         /// <summary>
-        /// 更新圆弧端点（P1/P2 移动，半径/方向不变，弧重算；超限时自动放大半径）
+        /// 更新圆弧端点（P1/P2 移动）：锚定弧中点 P3，三点定圆重算，半径/方向/大小弧全部自适应，拖动无跳变
         /// </summary>
-        /// <returns>是否更新成功（无圆弧或端点重合时 false）</returns>
+        /// <remarks>
+        /// 治本设计：不再锁死半径/方向/大小弧（避免旧值绑架导致跳变），而是锚定当前弧中点 P3，
+        /// 用 三点定圆 从几何实时算出半径/方向/大小弧；P3 作为连续性锚点，拖动端点时弧始终过它。
+        /// </remarks>
+        /// <returns>是否更新成功（无圆弧或三点退化时 false，保持原弧）</returns>
         public bool UpdateArcEndpoint(bool isStart, Point point)
         {
             if (!EditingArc.HasValue || EditingArc.Value.IsEmpty) return false;
-            if (isStart) ArcPoint1 = point; else ArcPoint2 = point;
-            // 方案 A：若弦长 > 2×半径，自动放大半径到弦长/2（保证可拖，弧趋近直线）
-            double chordLen = (ArcPoint2 - ArcPoint1).Length;
-            if (ArcRadius < chordLen / 2)
-                ArcRadius = chordLen / 2;
-            var arc = Arc2d.FromEndpointsAndRadius(ArcPoint1, ArcPoint2, ArcRadius, ArcClockwise, ArcMajorArc);
-            if (arc.IsEmpty) return false;
+
+            // 锚点 P3 = 当前弧的中点（拖端点时保持不动，保证弧始终过它）
+            var a = EditingArc.Value;
+            var p3 = a.GetPointOnArc(a.StartAngle + a.AngularSpan / 2);
+
+            var p1 = isStart ? point : ArcPoint1;
+            var p2 = isStart ? ArcPoint2 : point;
+
+            // 三点定圆：大小弧/方向/半径由三点几何自然算出，180° 处平滑切换，永不跳变
+            var arc = Arc2d.FromThreePoints(p1, p2, p3, out bool clockwise, out bool majorArc);
+            if (arc.IsEmpty) return false;   // 三点共线退化：保持原弧，等待下帧恢复
+
+            ArcPoint1 = p1;
+            ArcPoint2 = p2;
+            ArcRadius = arc.Radius;
+            ArcClockwise = clockwise;
+            ArcMajorArc = majorArc;
             EditingArc = arc;
             return true;
         }
 
         /// <summary>
-        /// 拖 P3（弧中点手柄）改半径：用三点定圆保证弧过鼠标，提取新半径/方向/大小弧
+        /// 拖 P3（弧中点手柄）改半径/方向/大小弧：三点定圆保证弧过鼠标；三点共线（P3 过弦）用近直线过渡弧保持连续
         /// </summary>
-        /// <returns>是否更新成功（无圆弧或三点共线时 false）</returns>
+        /// <returns>是否更新成功（无圆弧时 false；共线时以过渡弧平滑衔接）</returns>
         public bool UpdateArcRadiusFromPoint(Point mousePoint)
         {
             if (!EditingArc.HasValue || EditingArc.Value.IsEmpty) return false;
-            // 三点定圆（P1, P2, 鼠标位置）→ 弧过鼠标，提取新半径/方向/大小弧
+
             var arc = Arc2d.FromThreePoints(ArcPoint1, ArcPoint2, mousePoint, out bool clockwise, out bool majorArc);
-            if (arc.IsEmpty) return false;
-            ArcRadius = arc.Radius;
-            ArcClockwise = clockwise;
-            ArcMajorArc = majorArc;
-            EditingArc = arc;
+            if (!arc.IsEmpty)
+            {
+                ArcRadius = arc.Radius;
+                ArcClockwise = clockwise;
+                ArcMajorArc = majorArc;
+                EditingArc = arc;
+                return true;
+            }
+
+            // 三点共线（P3 过弦瞬间）：构造"接近直线"的大半径过渡弧，避免弧卡住后猛翻跳变
+            const double degenerateRadius = 1e6;
+            var transitional = Arc2d.FromEndpointsAndRadius(ArcPoint1, ArcPoint2, degenerateRadius, ArcClockwise, ArcMajorArc);
+            if (transitional.IsEmpty) return false;
+            EditingArc = transitional;
             return true;
         }
 

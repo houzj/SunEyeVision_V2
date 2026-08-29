@@ -1,5 +1,5 @@
 ---
-name: cv-engine-builder
+name: CV引擎封装
 description: CV引擎封装技能。用于将OpenCV Cv2调用封装到CvEngine层，对齐Halcon算子。触发场景：发现工具层重复的Cv2调用、需要封装新的Halcon算子对应方法、优化CvRegion多区域数据模型。
 ---
 

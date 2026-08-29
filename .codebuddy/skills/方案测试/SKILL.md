@@ -95,8 +95,8 @@ tests/
                           └──────────┘
 
 关联技能：
-  build-verify (MSBuild 配置 + 插件部署验证)
-  cv-engine-builder (视觉算子封装验证)
+  构建验证 (MSBuild 配置 + 插件部署验证)
+  CV引擎封装 (视觉算子封装验证)
 
 Phase 0:   就绪检查 + 治本验证清单
 Phase 0.1: 验证覆盖扫描 (Discovery)          ← 代码自发现 + git 历史比对
@@ -573,7 +573,7 @@ Get-ChildItem -Path $PluginPath -Directory -Filter "runtimes"
 
 ```
 构建失败 → 分析错误 → 分类：
-  ├── MSBuild 配置错误 (MSB4xxx/MSB5xxx) → 通知 build-verify 或方案实施修复
+  ├── MSBuild 配置错误 (MSB4xxx/MSB5xxx) → 通知 构建验证 或方案实施修复
   ├── 业务代码错误 (CS0xxx) → 通知方案实施修复
   └── 未知错误 → 输出错误详情，暂停验证
 ```
@@ -1377,7 +1377,7 @@ search_content "class .*Parameters" --path "src/Plugin.SDK/Execution/Parameters/
 - **rule-015: 禁止兜底回退原则** — 未映射类型直接报错
 - **rule-016: MSBuild 项目配置规范** — OutDir/插件部署/污染拦截
 - **rule-017: .gitignore 屏蔽目录的文件读取规范** — dev/ 用 PowerShell
-- skill:build-verify — MSBuild 构建验证辅助
-- skill:cv-engine-builder — 视觉算子封装验证辅助
+- skill:构建验证 — MSBuild 构建验证辅助
+- skill:CV引擎封装 — 视觉算子封装验证辅助
 - **verification-coverage.json** — `.codebuddy/memory/verification-coverage.json` 验证记忆文件
-- skill:doc-save — 测试报告落地保存（rule-006 目录/命名/索引，必须调用）
+- skill:文档保存 — 测试报告落地保存（rule-006 目录/命名/索引，必须调用）

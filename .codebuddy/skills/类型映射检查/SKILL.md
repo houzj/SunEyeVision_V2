@@ -1,5 +1,5 @@
 ---
-name: type-mapping-check
+name: 类型映射检查
 description: 类型映射合规检查技能。用于检查 GlobalVariableTypeMapper 类型映射是否正确，确保未映射类型直接报错而非静默回退。触发场景：类型映射修改、类型适配检查、全局变量绑定调试。
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: wpf-vision-dev
+name: WPF视觉开发
 description: WPF视觉开发技能。用于WPF/MVVM界面开发、工作流画布编辑器、节点系统、RoI编辑器、图像显示控件开发。触发场景：WPF开发、画布交互、节点渲染、连接绘制、RoI编辑、图像预览。
 ---
 

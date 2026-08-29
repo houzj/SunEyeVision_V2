@@ -1,0 +1,28 @@
+<UserControl x:Class="SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views.MeasurementEditorManagerControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:constants="clr-namespace:SunEyeVision.Plugin.SDK.UI.Constants"
+             xmlns:region="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views"
+             xmlns:measure="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.SDK;component/UI/Themes/Generic.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <StackPanel>
+        <!-- 测量卡尺引导 -->
+        <Border CornerRadius="8" BorderThickness="1" BorderBrush="{x:Static constants:ColorConstants.InspectionBlueBrush}" Padding="8" Margin="0,0,0,8">
+            <measure:MeasureEditorControl x:Name="guideEditor"/>
+        </Border>
+
+        <!-- 屏蔽区域 - 橙色主题（复用 RoiEditorControl 多 ROI 能力） -->
+        <Border CornerRadius="8" BorderThickness="1" BorderBrush="{x:Static constants:ColorConstants.MaskOrangeBrush}" Padding="8">
+            <region:RoiEditorControl x:Name="maskEditor"
+                                     DefaultRegionType="Mask"
+                                     VerticalContentAlignment="Stretch"
+                                     Height="auto"/>
+        </Border>
+    </StackPanel>
+</UserControl>

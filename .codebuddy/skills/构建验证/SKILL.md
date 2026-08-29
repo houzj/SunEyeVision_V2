@@ -1,4 +1,9 @@
-# build-verify
+---
+name: 构建验证
+description: MSBuild 构建验证技能。用于验证 csproj/slnx 的 MSBuild 配置正确性，区分 MSBuild 配置错误与业务代码错误。触发场景：项目配置重构后验证、csproj 改动后验证、新工具 csproj 创建后验证。
+---
+
+# 构建验证
 
 ## 描述
 

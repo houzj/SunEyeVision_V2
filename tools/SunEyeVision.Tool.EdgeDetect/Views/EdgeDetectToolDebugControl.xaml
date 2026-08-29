@@ -15,25 +15,8 @@
             <TabItem Header="基本参数">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="8">
-                        <GroupBox Header="卡尺类型" Margin="0,0,0,8">
-                            <StackPanel>
-                                <measure:MeasureToolBar x:Name="MeasureToolBarControl"
-                                                        MeasureTools="{Binding MeasureTools, RelativeSource={RelativeSource AncestorType=controls:ToolDebugControlBase}}"
-                                                        MeasureSelectionChanged="OnMeasureSelectionChanged"
-                                                        HorizontalAlignment="Center"
-                                                        Margin="0,4"/>
-                            </StackPanel>
-                        </GroupBox>
-
-                        <GroupBox Header="引导几何" Margin="0,0,0,8">
-                            <StackPanel>
-                                <TextBlock x:Name="GuideInfoText"
-                                           Text="在主界面图像上按住鼠标左键拖动绘制引导直线"
-                                           Foreground="Gray"
-                                           Margin="0,4,0,4"/>
-                                <measure:MeasureEditorControl x:Name="MeasureEditorControl"
-                                                              Visibility="Collapsed"/>
-                            </StackPanel>
+                        <GroupBox Header="区域设置" Margin="0,0,0,8">
+                            <measure:MeasurementEditorManagerControl x:Name="MeasurementManager"/>
                         </GroupBox>
                     </StackPanel>
                 </ScrollViewer>

@@ -3559,52 +3559,6 @@ SplitterPosition = position;
         /// 使主窗口图像下拉框（GetImageDisplaySources 步骤3）与下游绑定能发现子程序的动态输出。
         /// 输出额外数据源 SourceNodeId = 子程序节点 Id，选中后 GetDisplayImageFromSource 可定位到 SubroutineResults。
         /// </summary>
-        private void RegisterSubroutineOutputProvider(DataSourceQueryService queryService)
-        {
-            try
-            {
-                var capturedWorkflows = _workflowEngine.GetAllWorkflows().ToList();
-
-                queryService.AddExtraDataSourceProvider(() =>
-                {
-                    var sources = new List<AvailableDataSource>();
-                    foreach (var wf in capturedWorkflows)
-                    {
-                        foreach (var node in wf.Nodes)
-                        {
-                            if (node.Parameters is not SubroutineParameters sp)
-                                continue;
-
-                            var nodeName = node.Name ?? node.DispName ?? "子程序";
-                            foreach (var output in sp.Outputs)
-                            {
-                                if (string.IsNullOrEmpty(output.Name))
-                                    continue;
-
-                                var sysType = SdkTypeVocabulary.ToSystemType(output.TypeName) ?? typeof(object);
-                                sources.Add(new AvailableDataSource
-                                {
-                                    SourceNodeId = node.Id,
-                                    SourceNodeName = nodeName,
-                                    PropertyName = output.Name,
-                                    DisplayName = output.Name,
-                                    PropertyType = sysType,
-                                    VariableType = output.TypeName,
-                                    GroupName = output.Group,
-                                    Description = $"子程序输出: {output.Name}",
-                                });
-                            }
-                        }
-                    }
-                    return sources;
-                });
-            }
-            catch (Exception ex)
-            {
-                LogWarning($"⚠ 注册子程序输出提供者失败: {ex.Message}");
-            }
-        }
-
         /// <summary>
         /// 创建 DataSourceQueryService（供子程序参数对话框使用，无需特定节点上下文）
         /// </summary>
@@ -3646,10 +3600,8 @@ SplitterPosition = position;
                 RegisterSubroutineInputProvider(queryService, scopeWorkflowId);
             }
 
-            // ★ 始终注册子程序输出提供者：主流程图像下拉框/下游绑定能发现子程序的动态输出
-            //   （provider 每次查询动态调用，子程序输出配置变化实时生效）
-            RegisterSubroutineOutputProvider(queryService);
-
+            // 子程序输出已通过 GetNodeOutputProperties（IOutputContractProvider）走正常通道，
+            // 受连线约束（未连线不可见）。此处不再注册广播输出 provider。
             return queryService;
         }
 

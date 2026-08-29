@@ -311,6 +311,8 @@ public class Workflow : ObservableObject, IWorkflowConnectionProvider, INodeInfo
         public string? GetNodeIcon(string nodeId) => GetNode(nodeId)?.Icon;
         public bool NodeExists(string nodeId) => Nodes?.Any(n => n.Id == nodeId) ?? false;
 
+        public ToolParameters? GetParameters(string nodeId) => GetNode(nodeId)?.Parameters;
+
         public Type? GetResultType(string nodeId)
         {
             var node = GetNode(nodeId);

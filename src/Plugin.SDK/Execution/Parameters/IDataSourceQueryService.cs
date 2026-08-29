@@ -49,6 +49,11 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         public Type? ResultType { get; set; }
 
         /// <summary>
+        /// 节点参数（用于动态输出契约 IOutputContractProvider 查询）
+        /// </summary>
+        public ToolParameters? Parameters { get; set; }
+
+        /// <summary>
         /// 执行状态
         /// </summary>
         public ExecutionStatus ExecutionStatus => Result?.Status ?? ExecutionStatus.NotExecuted;

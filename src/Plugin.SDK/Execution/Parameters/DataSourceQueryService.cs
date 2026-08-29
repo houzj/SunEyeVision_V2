@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -411,6 +411,50 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 return properties;
             }
 
+            // 动态输出契约优先：节点参数实现 IOutputContractProvider（如子程序）时，
+            // 输出属性由 GetOutputContract() 提供（含用户动态配置的 Outputs），走正常通道受连线约束
+            if (context.Parameters is IOutputContractProvider contractProvider)
+            {
+                foreach (var output in contractProvider.GetOutputContract())
+                {
+                    var propertyType = SdkTypeVocabulary.ToSystemType(output.VariableType);
+                    var variableType = string.IsNullOrEmpty(output.VariableType)
+                        ? (propertyType != null ? SdkTypeVocabulary.ToTypeVocabulary(propertyType) : null)
+                        : output.VariableType;
+
+                    var dataSource = new AvailableDataSource
+                    {
+                        SourceNodeId = parentNodeId,
+                        SourceNodeName = context.NodeName,
+                        SourceNodeType = context.NodeType,
+                        PropertyName = output.Name,
+                        DisplayName = string.IsNullOrEmpty(output.DisplayName) ? output.Name : output.DisplayName,
+                        PropertyType = propertyType,
+                        VariableType = variableType,
+                        CurrentValue = output.RuntimeValue,
+                        GroupName = output.Group,
+                        Description = output.Kind == OutputVariableKind.ControlSignal ? "流程控制信号" : null,
+                    };
+
+                    // 运行期值：从 SSOT 结果解析
+                    if (context.Result != null && output.Name != null)
+                    {
+                        try
+                        {
+                            dataSource.CurrentValue = OutputVariableResolver.Resolve(context.Result, output.Name);
+                        }
+                        catch
+                        {
+                            // 契约未命中不抛（设计期预期行为）
+                        }
+                    }
+
+                    properties.Add(dataSource);
+                }
+
+                return properties;
+            }
+
             // 从变量池获取属性元数据（不再反射）
             var metadataList = _metadataProvider?.GetAllPropertyMetadata(context.NodeType);
 
@@ -520,7 +564,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 NodeType = _nodeInfoProvider.GetNodeType(nodeId) ?? "Unknown",
                 NodeIcon = _nodeInfoProvider.GetNodeIcon(nodeId),
                 Result = _ssotReader?.Invoke(nodeId),
-                ResultType = _nodeInfoProvider.GetResultType(nodeId)
+                ResultType = _nodeInfoProvider.GetResultType(nodeId),
+                Parameters = _nodeInfoProvider.GetParameters(nodeId)
             };
         }
 
@@ -642,5 +687,12 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <param name="nodeId">节点ID</param>
         /// <returns>结果类型，如果无法获取则返回 null</returns>
         Type? GetResultType(string nodeId);
+
+        /// <summary>
+        /// 获取节点参数对象（用于动态输出契约 IOutputContractProvider 查询）
+        /// </summary>
+        /// <param name="nodeId">节点ID</param>
+        /// <returns>节点参数，无法获取则返回 null</returns>
+        ToolParameters? GetParameters(string nodeId);
     }
 }

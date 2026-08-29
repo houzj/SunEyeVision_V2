@@ -2657,7 +2657,7 @@
                         "type":  "tool",
                         "layer":  "tool",
                         "stage":  "P4",
-                        "status":  "todo",
+                        "status":  "in_progress",
                         "start":  "2026-12-21",
                         "end":  "2026-12-25",
                         "goal":  "多目标质心定位增强",
@@ -2672,7 +2672,7 @@
                                           "name":  "多目标质心定位增强",
                                           "phase":  "算法实现",
                                           "hours":  12,
-                                          "status":  "todo",
+                                          "status":  "in_progress",
                                           "week":  "2026-W52"
                                       },
                                       {
@@ -2696,7 +2696,10 @@
 
                                  ],
                         "log":  [
-
+                                    {
+                                        "date":  "2026-08-29",
+                                        "note":  "[e27dd22047ebe79ecd9fc5906cae7ff2ae15e57f] 直线查找与圆查找工具拆分 + 位置修正全链路"
+                                    }
                                 ]
                     },
                     {

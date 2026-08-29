@@ -334,50 +334,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
 
         #endregion
 
-        #region 位置修正
-
-        /// <summary>
-        /// 是否启用位置修正
-        /// </summary>
-        [DisplayName("启用位置修正")]
-        public bool IsPositionCorrectionEnabled
-        {
-            get => _isPositionCorrectionEnabled;
-            set => SetProperty(ref _isPositionCorrectionEnabled, value, "启用位置修正");
-        }
-
-        /// <summary>
-        /// 位置修正绑定源（运行时，不序列化）
-        /// </summary>
-        [JsonIgnore]
-        public AvailableDataSource? PositionCorrectionBindingSource
-        {
-            get => _positionCorrectionBindingSource;
-            set
-            {
-                if (SetProperty(ref _positionCorrectionBindingSource, value, "位置修正绑定源"))
-                {
-                    _positionCorrectionSource = ImageSourceReference.FromDataSource(value);
-                }
-            }
-        }
-
-        /// <summary>
-        /// 位置修正绑定源（序列化引用）
-        /// </summary>
-        [JsonPropertyOrder(16)]
-        [JsonPropertyName("positionCorrectionSource")]
-        public ImageSourceReference? PositionCorrectionSource
-        {
-            get => _positionCorrectionSource;
-            set => _positionCorrectionSource = value;
-        }
-
-        /// <summary>
-        /// 位置修正绑定源显示文本
-        /// </summary>
-        [JsonPropertyOrder(17)]
-        public string? PositionCorrectionBindingDisplayText { get; set; }
+        #region 字段（预处理/形态学/滤波，位置修正字段已上提基类 RoiParameters）
 
         private bool _isPreprocessingEnabled;
         private bool _isMorphologyEnabled;
@@ -390,27 +347,6 @@ namespace SunEyeVision.Tool.BlobAnalysis
         private bool _isAreaFilterEnabled = true;
         private bool _isCircularityFilterEnabled;
         private bool _isRectangularityFilterEnabled;
-        private bool _isPositionCorrectionEnabled;
-        private AvailableDataSource? _positionCorrectionBindingSource;
-        private ImageSourceReference? _positionCorrectionSource;
-
-        /// <summary>
-        /// 从 AvailableDataSources 列表恢复 PositionCorrectionBindingSource
-        /// </summary>
-        public bool RestorePositionCorrectionSource(IEnumerable<AvailableDataSource>? dataSources)
-        {
-            if (_positionCorrectionSource == null || dataSources == null)
-                return false;
-
-            var matched = _positionCorrectionSource.MatchDataSource(dataSources);
-            if (matched != null)
-            {
-                _positionCorrectionBindingSource = matched;
-                OnPropertyChanged(nameof(PositionCorrectionBindingSource));
-                return true;
-            }
-            return false;
-        }
 
         #endregion
 

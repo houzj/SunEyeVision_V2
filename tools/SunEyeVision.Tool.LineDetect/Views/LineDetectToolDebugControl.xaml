@@ -1,0 +1,253 @@
+<controls:ToolDebugControlBase x:Class="SunEyeVision.Tool.LineDetect.Views.LineDetectToolDebugControl"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
+        xmlns:converters="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Roi.Converters;assembly=SunEyeVision.Plugin.SDK"
+        xmlns:measure="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views;assembly=SunEyeVision.Plugin.SDK"
+        xmlns:results="clr-namespace:SunEyeVision.Plugin.SDK.Execution.Results;assembly=SunEyeVision.Plugin.SDK"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        mc:Ignorable="d"
+        d:DesignHeight="550" d:DesignWidth="400"
+        HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+        DataContext="{Binding Parameters, RelativeSource={RelativeSource Self}}">
+
+    <controls:ToolDebugControlBase.Resources>
+        <ResourceDictionary>
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        </ResourceDictionary>
+    </controls:ToolDebugControlBase.Resources>
+
+    <Grid Margin="5">
+        <TabControl>
+            <!-- ===== Tab1 基本参数（输入图像 + 直线引导 + 位置修正） ===== -->
+            <TabItem Header="基本参数">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12">
+                    <StackPanel>
+                        <controls:LabeledControl Label="输入图像" HorizontalAlignment="Left">
+                            <controls:ImageSourceSelector
+                                PlaceholderText="请选择输入图像源" Width="250"
+                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"
+                                SelectedDataSource="{Binding ImageSource, Mode=TwoWay}"/>
+                        </controls:LabeledControl>
+
+                        <GroupBox Header="区域设置" Margin="0,8,0,0">
+                            <measure:MeasurementEditorManagerControl x:Name="MeasurementManager"/>
+                        </GroupBox>
+
+                        <controls:LabeledControl Label="位置修正" Margin="0,8,0,0" HorizontalAlignment="Left">
+                            <controls:ToggleSwitch
+                                IsChecked="{Binding IsPositionCorrectionEnabled, Mode=TwoWay}"
+                                SwitchWidth="48" SwitchHeight="24"/>
+                        </controls:LabeledControl>
+                        <controls:LabeledControl Label="修正信息" Margin="0,4,0,0" HorizontalAlignment="Left"
+                            Visibility="{Binding IsPositionCorrectionEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <controls:ParamBinding
+                                x:Name="positionCorrectionBinding"
+                                DataType="{x:Type results:AffineMatrix}"
+                                ParameterName="位置修正" Width="200"
+                                BindingSource="{Binding PositionCorrectionBindingSource, Mode=TwoWay}"
+                                BindingDisplayText="{Binding PositionCorrectionBindingDisplayText, Mode=TwoWay}"
+                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                        </controls:LabeledControl>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ===== Tab2 运行参数（卡尺参数 + 拟合筛选，Blob 范式） ===== -->
+            <TabItem Header="运行参数">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12">
+                    <StackPanel>
+                        <!-- ===== 卡尺参数 ===== -->
+                        <Separator Margin="0,0,0,4" Background="{DynamicResource ThemeDividerBrushBrush}" Height="1"/>
+                        <TextBlock Text="卡尺参数" FontWeight="SemiBold" Margin="0,4,0,8"/>
+
+                        <controls:LabeledControl Label="测量带宽度" Margin="0,0,0,4">
+                            <controls:ConfigSetting
+                                ParameterName="MeasureLength1"
+                                DataType="{x:Type sys:Double}"
+                                Value="{Binding MeasureLength1, Mode=TwoWay}"
+                                Minimum="1" Maximum="200"
+                                SmallChange="1" LargeChange="5"
+                                Width="250"
+                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                        </controls:LabeledControl>
+
+                        <controls:LabeledControl Label="测量带长度" Margin="0,0,0,4">
+                            <controls:ConfigSetting
+                                ParameterName="MeasureLength2"
+                                DataType="{x:Type sys:Double}"
+                                Value="{Binding MeasureLength2, Mode=TwoWay}"
+                                Minimum="1" Maximum="100"
+                                SmallChange="1" LargeChange="5"
+                                Width="250"
+                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                        </controls:LabeledControl>
+
+                        <controls:LabeledControl Label="测量带间距" Margin="0,0,0,4">
+                            <controls:ConfigSetting
+                                ParameterName="MeasureDistance"
+                                DataType="{x:Type sys:Double}"
+                                Value="{Binding MeasureDistance, Mode=TwoWay}"
+                                Minimum="1" Maximum="200"
+                                SmallChange="1" LargeChange="5"
+                                Width="250"
+                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                        </controls:LabeledControl>
+
+                        <controls:LabeledControl Label="平滑 Sigma" Margin="0,0,0,4">
+                            <controls:ConfigSetting
+                                ParameterName="Sigma"
+                                DataType="{x:Type sys:Double}"
+                                Value="{Binding Sigma, Mode=TwoWay}"
+                                Minimum="0.5" Maximum="10"
+                                SmallChange="0.1" LargeChange="0.5"
+                                Width="250"
+                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                        </controls:LabeledControl>
+
+                        <controls:LabeledControl Label="边缘阈值" Margin="0,0,0,4">
+                            <controls:ConfigSetting
+                                ParameterName="Threshold"
+                                DataType="{x:Type sys:Double}"
+                                Value="{Binding Threshold, Mode=TwoWay}"
+                                Minimum="0" Maximum="255"
+                                SmallChange="1" LargeChange="10"
+                                ShowSlider="True" Width="250"
+                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                        </controls:LabeledControl>
+
+                        <controls:LabeledControl Label="边缘极性" Margin="0,0,0,4">
+                            <ComboBox x:Name="TransitionCombo"
+                                      SelectionChanged="TransitionCombo_SelectionChanged"
+                                      Width="250" HorizontalAlignment="Left" Height="32" VerticalContentAlignment="Center">
+                                <ComboBoxItem Content="全部"/>
+                                <ComboBoxItem Content="正极性"/>
+                                <ComboBoxItem Content="负极性"/>
+                            </ComboBox>
+                        </controls:LabeledControl>
+
+                        <controls:LabeledControl Label="选取模式" Margin="0,0,0,4">
+                            <ComboBox x:Name="SelectCombo"
+                                      SelectionChanged="SelectCombo_SelectionChanged"
+                                      Width="250" HorizontalAlignment="Left" Height="32" VerticalContentAlignment="Center">
+                                <ComboBoxItem Content="全部"/>
+                                <ComboBoxItem Content="第一个"/>
+                                <ComboBoxItem Content="最后一个"/>
+                            </ComboBox>
+                        </controls:LabeledControl>
+
+                        <!-- ===== 拟合筛选 ===== -->
+                        <Separator Margin="0,8,0,4" Background="{DynamicResource ThemeDividerBrushBrush}" Height="1"/>
+                        <TextBlock Text="拟合筛选" FontWeight="SemiBold" Margin="0,4,0,8"/>
+
+                        <controls:LabeledControl Label="最小边缘点数" Margin="0,0,0,4">
+                            <controls:ConfigSetting
+                                ParameterName="MinEdgePoints"
+                                DataType="{x:Type sys:Int32}"
+                                Value="{Binding MinEdgePoints, Mode=TwoWay}"
+                                Minimum="1" Maximum="1000"
+                                SmallChange="1" LargeChange="5"
+                                Width="250"
+                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                        </controls:LabeledControl>
+
+                        <controls:LabeledControl Label="最大残差 RMSE" Margin="0,0,0,4">
+                            <controls:ConfigSetting
+                                ParameterName="MaxRMSE"
+                                DataType="{x:Type sys:Double}"
+                                Value="{Binding MaxRMSE, Mode=TwoWay}"
+                                Minimum="0" Maximum="100"
+                                SmallChange="0.1" LargeChange="1"
+                                Width="250"
+                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                        </controls:LabeledControl>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ===== Tab3 结果显示（Blob 范式：结果判断 + 图形显示 + 文本显示） ===== -->
+            <TabItem Header="结果显示">
+                <Grid Background="{DynamicResource ThemePanelBackgroundBrush}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <ScrollViewer Grid.Row="0" Padding="3">
+                        <StackPanel>
+                            <!-- 结果判断分组（对齐 VM 直线查找：匹配点数/角度/拟合误差） -->
+                            <Expander Header="结果判断" IsExpanded="True"
+                                      BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1"
+                                      Margin="0,0,0,8" Background="{DynamicResource ThemePanelBackgroundBrush}">
+                                <StackPanel Margin="16,8">
+                                    <controls:LabeledControl Label="匹配点数判断" ContentHorizontalAlignment="Left">
+                                        <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsEdgePointCountEnabled, Mode=TwoWay}"/>
+                                    </controls:LabeledControl>
+                                    <controls:LabeledControl Label="匹配点数范围" ContentHorizontalAlignment="Left" Margin="0,2,0,0"
+                                        Visibility="{Binding ResultConfig.IsEdgePointCountEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
+                                        <controls:RangeInputControl Unit="个" Minimum="1" Maximum="1000" DecimalPlaces="0"
+                                            MinValue="{Binding ResultConfig.EdgePointCountMin, Mode=TwoWay}"
+                                            MaxValue="{Binding ResultConfig.EdgePointCountMax, Mode=TwoWay}"
+                                            NumericWidth="120"/>
+                                    </controls:LabeledControl>
+
+                                    <controls:LabeledControl Label="角度判断" ContentHorizontalAlignment="Left" Margin="0,2,0,0">
+                                        <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsAngleEnabled, Mode=TwoWay}"/>
+                                    </controls:LabeledControl>
+                                    <controls:LabeledControl Label="角度范围" ContentHorizontalAlignment="Left" Margin="0,2,0,0"
+                                        Visibility="{Binding ResultConfig.IsAngleEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
+                                        <controls:RangeInputControl Unit="°" Minimum="-180" Maximum="180" DecimalPlaces="1"
+                                            MinValue="{Binding ResultConfig.AngleMin, Mode=TwoWay}"
+                                            MaxValue="{Binding ResultConfig.AngleMax, Mode=TwoWay}"
+                                            NumericWidth="120"/>
+                                    </controls:LabeledControl>
+
+                                    <controls:LabeledControl Label="拟合误差判断" ContentHorizontalAlignment="Left" Margin="0,2,0,0">
+                                        <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsRMSEEnabled, Mode=TwoWay}"/>
+                                    </controls:LabeledControl>
+                                    <controls:LabeledControl Label="误差范围" ContentHorizontalAlignment="Left" Margin="0,2,0,0"
+                                        Visibility="{Binding ResultConfig.IsRMSEEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
+                                        <controls:RangeInputControl Unit="px" Minimum="0" Maximum="100" DecimalPlaces="2"
+                                            MinValue="{Binding ResultConfig.RMSEMin, Mode=TwoWay}"
+                                            MaxValue="{Binding ResultConfig.RMSEMax, Mode=TwoWay}"
+                                            NumericWidth="120"/>
+                                    </controls:LabeledControl>
+                                </StackPanel>
+                            </Expander>
+
+                            <!-- 图形显示分组（轮廓点 + 拟合直线） -->
+                            <Expander Header="图形显示" IsExpanded="True"
+                                      BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1"
+                                      Margin="0,0,0,8" Background="{DynamicResource ThemePanelBackgroundBrush}">
+                                <StackPanel Margin="16,8">
+                                    <controls:LabeledControl Label="轮廓点" ContentHorizontalAlignment="Left">
+                                        <controls:DispItemColorControl Item="{Binding ContourPointStyle, Mode=TwoWay}"/>
+                                    </controls:LabeledControl>
+                                    <controls:LabeledControl Label="拟合直线" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
+                                        <controls:DispItemColorControl Item="{Binding FitResultStyle, Mode=TwoWay}"/>
+                                    </controls:LabeledControl>
+                                </StackPanel>
+                            </Expander>
+
+                            <!-- 文本显示分组（中点坐标 + 直线角度） -->
+                            <Expander Header="文本显示" IsExpanded="True"
+                                      BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1"
+                                      Margin="0,0,0,8" Background="{DynamicResource ThemePanelBackgroundBrush}">
+                                <StackPanel Margin="16,8">
+                                    <controls:LabeledControl Label="中点坐标" ContentHorizontalAlignment="Left">
+                                        <controls:DispTextColorControl Item="{Binding CenterTextStyle, Mode=TwoWay}"/>
+                                    </controls:LabeledControl>
+                                    <controls:LabeledControl Label="直线角度" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
+                                        <controls:DispTextColorControl Item="{Binding AngleTextStyle, Mode=TwoWay}"/>
+                                    </controls:LabeledControl>
+                                </StackPanel>
+                            </Expander>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</controls:ToolDebugControlBase>

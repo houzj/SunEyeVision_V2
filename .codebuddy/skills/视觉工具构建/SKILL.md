@@ -223,6 +223,42 @@ description: 视觉工具构建技能。用于批量生成视觉算法工具插�
 </controls:ToolDebugControlBase>
 ```
 
+**A1.1 UI 绑定铁律（三则，缺一则绑定失效）**：
+
+1. **XAML 根必须有 `DataContext`**：
+   ```xaml
+   <controls:ToolDebugControlBase x:Class="..."
+       DataContext="{Binding Parameters, RelativeSource={RelativeSource Self}}">
+   ```
+   缺此 → 所有 `X` 绑定（无 `Parameters.` 前缀）静默失败（DataContext 为 null/父级）。绑定路径 = `ResultConfig.IsXxx`（DataContext 已是 Parameters），**禁用** `Parameters.ResultConfig.IsXxx`。
+
+2. **converter 必须在 Resources 声明**：
+   ```xaml
+   <controls:ToolDebugControlBase.Resources>
+     <ResourceDictionary>
+       <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+     </ResourceDictionary>
+   </controls:ToolDebugControlBase.Resources>
+   ```
+   需 `xmlns:converters="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Roi.Converters;assembly=SunEyeVision.Plugin.SDK"`。
+
+3. **开关必须控制下方参数可见性**（每个判定 = ToggleSwitch + 范围输入联动）：
+   ```xaml
+   <!-- 开关 -->
+   <controls:LabeledControl Label="面积判断">
+     <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsTotalAreaCheckEnabled, Mode=TwoWay}"/>
+   </controls:LabeledControl>
+   <!-- 范围输入（可见性绑定开关，关闭则隐藏） -->
+   <controls:LabeledControl Label="面积范围 (px²)"
+       Visibility="{Binding ResultConfig.IsTotalAreaCheckEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
+     <controls:RangeInputControl Unit="px²" Minimum="0" Maximum="10000000"
+         MinValue="{Binding ResultConfig.TotalAreaMin, Mode=TwoWay}"
+         MaxValue="{Binding ResultConfig.TotalAreaMax, Mode=TwoWay}"
+         NumericWidth="120"/>
+   </controls:LabeledControl>
+   ```
+   > **范式要求**：范围输入必须带 `Visibility` 绑定到对应开关，开关关闭 → 范围隐藏。
+
 #### A2. Code-Behind 骨架（出处 `EdgeDetectToolDebugControl.xaml.cs`）
 
 ```

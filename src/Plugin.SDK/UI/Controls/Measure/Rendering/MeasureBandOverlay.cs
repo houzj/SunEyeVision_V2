@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
@@ -62,9 +63,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
         /// <param name="bandLength">卡尺长度（切线方向全长）</param>
         /// <param name="measureCount">测量带数量</param>
         /// <param name="drawBands">是否绘制测量带（false=只画引导几何预览）</param>
-        public void RenderLine(Point start, Point end, double bandWidth, double bandLength, int measureCount, bool drawBands = true)
+        /// <param name="matrix">位置修正矩阵（参考坐标→当前图像坐标；null=不修正）</param>
+        public void RenderLine(Point start, Point end, double bandWidth, double bandLength, int measureCount, bool drawBands = true, AffineMatrix? matrix = null)
         {
             Clear();
+
+            // 位置修正：参考坐标 → 当前图像坐标
+            if (matrix != null)
+            {
+                start = matrix.TransformWpfPoint(start);
+                end = matrix.TransformWpfPoint(end);
+            }
 
             // 引导线（白色实线）
             AddLine(start, end, Colors.White, 2.0);
@@ -115,19 +124,30 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
         /// <param name="bandLength">卡尺长度（切向全长）</param>
         /// <param name="measureCount">测量带数量</param>
         /// <param name="drawBands">是否绘制测量带（false=只画引导几何预览）</param>
-        public void RenderCircle(Circle2d circle, double bandWidth, double bandLength, int measureCount, bool drawBands = true)
+        /// <param name="matrix">位置修正矩阵（参考坐标→当前图像坐标；null=不修正）</param>
+        public void RenderCircle(Circle2d circle, double bandWidth, double bandLength, int measureCount, bool drawBands = true, AffineMatrix? matrix = null)
         {
             Clear();
+
+            // 位置修正：圆心变换 + 半径缩放（含缩放时）
+            double radiusScale = 1.0;
+            if (matrix != null)
+            {
+                circle = new Circle2d(
+                    matrix.TransformWpfPoint(circle.Center),
+                    circle.Radius * matrix.ScaleFactor());
+                radiusScale = matrix.ScaleFactor();
+            }
 
             // 引导圆（白色实线）
             AddEllipse(circle.Center, circle.Radius, Colors.White, 2.0);
 
             if (!drawBands || measureCount <= 0 || circle.Radius <= 0) return;
 
-            // 环形测量带：沿圆周等间距分布，径向为宽度
+            // 环形测量带：沿圆周等间距分布，径向为宽度（卡尺宽度随矩阵缩放）
             double stepAngle = Math.PI * 2 / measureCount;
-            var halfBand = bandLength / 2;
-            var halfWidth = bandWidth / 2;
+            var halfBand = bandLength / 2 * radiusScale;
+            var halfWidth = bandWidth / 2 * radiusScale;
 
             for (int i = 0; i < measureCount; i++)
             {
@@ -165,21 +185,33 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
         /// <param name="bandLength">卡尺长度（切向全长）</param>
         /// <param name="measureCount">测量带数量</param>
         /// <param name="drawBands">是否绘制测量带（false=只画引导几何预览）</param>
-        public void RenderArc(Arc2d arc, double bandWidth, double bandLength, int measureCount, bool drawBands = true)
+        /// <param name="matrix">位置修正矩阵（参考坐标→当前图像坐标；null=不修正）</param>
+        public void RenderArc(Arc2d arc, double bandWidth, double bandLength, int measureCount, bool drawBands = true, AffineMatrix? matrix = null)
         {
             Clear();
+
+            // 位置修正：圆心变换 + 半径缩放（含缩放时）；角度范围不变（刚体变换）
+            double radiusScale = 1.0;
+            if (matrix != null)
+            {
+                arc = new Arc2d(
+                    matrix.TransformWpfPoint(arc.Center),
+                    arc.Radius * matrix.ScaleFactor(),
+                    arc.StartAngle, arc.EndAngle, arc.IsMajorArc);
+                radiusScale = matrix.ScaleFactor();
+            }
 
             // 引导弧（白色实线）
             AddArc(arc, Colors.White, 2.0);
 
             if (!drawBands || measureCount <= 0 || arc.Radius <= 0 || Math.Abs(arc.AngularSpan) <= 1e-6) return;
 
-            // 环形测量带：沿弧方向等间距分布，径向为宽度
+            // 环形测量带：沿弧方向等间距分布，径向为宽度（卡尺宽度随矩阵缩放）
             // 支持负 AngularSpan（顺时针弧，P3 过弦后方向翻转）
             double span = arc.AngularSpan;
             double stepAngle = span / measureCount;   // 保留符号：顺时针 stepAngle 为负 → 角度递减
-            var halfBand = bandLength / 2;
-            var halfWidth = bandWidth / 2;
+            var halfBand = bandLength / 2 * radiusScale;
+            var halfWidth = bandWidth / 2 * radiusScale;
             double mainAngle = arc.StartAngle + span / 2; // 主卡尺 = 弧中点
             // 与 angle 保持一致的规范化（跨 0° 边界时防止 isMain 判定失效导致箭头丢失）
             mainAngle = ((mainAngle + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;

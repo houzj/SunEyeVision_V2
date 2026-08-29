@@ -37,6 +37,11 @@ public class AffineMatrix
     public static AffineMatrix FromWpfMatrix(System.Windows.Media.Matrix m) =>
         new(m.M11, m.M12, m.M21, m.M22, m.OffsetX, m.OffsetY);
 
+    /// <summary>
+    /// 矩阵缩放因子（列向量模长，几何半径/尺寸随矩阵缩放的比例）
+    /// </summary>
+    public double ScaleFactor() => Math.Sqrt(M11 * M11 + M21 * M21);
+
     /// <summary>Construct from center, angle (radians), and scale</summary>
     public static AffineMatrix FromCenterAngleScale(
         double centerX, double centerY, double angleRad, double scale)

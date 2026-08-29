@@ -87,6 +87,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         /// <summary>测量卡尺编辑器（供宿主设置引导/卡尺参数/进入绘制）</summary>
         public MeasureEditorControl GuideEditor => guideEditor;
 
+        /// <summary>
+        /// 设置位置修正矩阵（作用于引导几何 + 屏蔽区域，显示/交互/算法全修正）
+        /// </summary>
+        public void SetPositionCorrectionMatrix(Execution.Results.AffineMatrix? matrix)
+        {
+            guideEditor.SetPositionCorrectionMatrix(matrix);
+            maskEditor.SetPositionCorrectionMatrix(matrix);
+        }
+
         #endregion
 
         #region 生命周期：绑定 / 解绑

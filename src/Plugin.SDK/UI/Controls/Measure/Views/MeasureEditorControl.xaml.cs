@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.SDK.UI.Controls.Measure.Models;
@@ -59,6 +60,35 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
 
         /// <summary>视口缩放（用于手柄尺寸）</summary>
         private double _zoom = 1.0;
+
+        /// <summary>位置修正矩阵（正向：参考坐标→当前图像坐标；null=不修正）</summary>
+        private AffineMatrix? _positionCorrectionMatrix;
+
+        /// <summary>位置修正逆矩阵（当前图像坐标→参考坐标）</summary>
+        private AffineMatrix? _inverseMatrix;
+
+        /// <summary>
+        /// 设置位置修正矩阵。显示正向变换，编辑逆变换，存储不变（始终存参考坐标系）。
+        /// 对齐 RoiEditorControl 的同名机制。
+        /// </summary>
+        public void SetPositionCorrectionMatrix(AffineMatrix? matrix)
+        {
+            _positionCorrectionMatrix = matrix;
+            _inverseMatrix = matrix?.Inverse();
+            RenderForManager();
+        }
+
+        /// <summary>
+        /// 正向变换参考系坐标到当前图像坐标（矩阵为空时原样返回）
+        /// </summary>
+        private Point ToDisplay(Point reference) =>
+            _positionCorrectionMatrix != null ? _positionCorrectionMatrix.TransformWpfPoint(reference) : reference;
+
+        /// <summary>
+        /// 逆变换当前图像坐标到参考系坐标（矩阵为空时原样返回）
+        /// </summary>
+        private Point ToReference(Point display) =>
+            _inverseMatrix != null ? _inverseMatrix.TransformWpfPoint(display) : display;
 
         /// <summary>当前几何交互策略（按几何类型路由）</summary>
         private IGuideGeometryInteraction _interaction = GuideInteractionFactory.Get(MeasureGeometryType.Line);
@@ -266,6 +296,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         /// <returns>是否消费该事件（false 表示未命中任何交互对象，交给其他编辑器）</returns>
         public bool ProcessMouseDown(Point pos)
         {
+            // 位置修正：鼠标显示坐标 → 参考系坐标（几何始终存参考系）
+            pos = ToReference(pos);
+
             // 绘制模式：创建引导几何
             if (_model.Mode == MeasureInteractionMode.Draw)
             {
@@ -321,6 +354,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         {
             if (_overlay == null) return;
 
+            // 位置修正：鼠标显示坐标 → 参考系坐标
+            pos = ToReference(pos);
+
             // 拖动手柄 → 编辑引导几何
             if (_isDraggingHandle)
             {
@@ -360,6 +396,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         private void UpdateHoverCursor(Point pos)
         {
             if (_overlayCanvas == null) return;
+
+            // 位置修正：鼠标显示坐标 → 参考系坐标
+            pos = ToReference(pos);
 
             // ① 手柄 → 手（编辑，优先级最高）
             if (_currentHandles != null && HitTestHandles(pos) != HandleType.None)
@@ -599,20 +638,23 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
             if (_overlay == null) return;
             _overlay.Clear();
 
+            // 位置修正矩阵：参考系几何 → 当前图像坐标（overlay 内部变换）
+            var matrix = _positionCorrectionMatrix;
+
             // 绘制中只画引导几何预览，不画测量带
             bool drawBands = !_model.IsDrawing;
 
             if (_model.EditingLine.HasValue)
             {
-                _overlay.RenderLine(_model.LineStartPoint, _model.LineEndPoint, _bandWidth, _bandLength, _measureCount, drawBands);
+                _overlay.RenderLine(_model.LineStartPoint, _model.LineEndPoint, _bandWidth, _bandLength, _measureCount, drawBands, matrix);
             }
             else if (_model.EditingCircle.HasValue)
             {
-                _overlay.RenderCircle(_model.EditingCircle.Value, _bandWidth, _bandLength, _measureCount, drawBands);
+                _overlay.RenderCircle(_model.EditingCircle.Value, _bandWidth, _bandLength, _measureCount, drawBands, matrix);
             }
             else if (_model.EditingArc.HasValue && !_model.EditingArc.Value.IsEmpty)
             {
-                _overlay.RenderArc(_model.EditingArc.Value, _bandWidth, _bandLength, _measureCount, drawBands);
+                _overlay.RenderArc(_model.EditingArc.Value, _bandWidth, _bandLength, _measureCount, drawBands, matrix);
             }
 
             // 选中态绘制手柄（先按当前几何重建位置，确保手柄随编辑随动）
@@ -648,6 +690,26 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                 MeasureGeometryType.Line => ShapeType.Line,
                 _ => ShapeType.Circle,
             };
+            // 位置修正：手柄参考系坐标 → 当前图像坐标（绘制用副本，不污染 _currentHandles）
+            if (_positionCorrectionMatrix != null)
+            {
+                var displayHandles = new EditHandle[_currentHandles.Length];
+                for (int i = 0; i < _currentHandles.Length; i++)
+                {
+                    var h = _currentHandles[i];
+                    displayHandles[i] = new EditHandle
+                    {
+                        Type = h.Type,
+                        Position = ToDisplay(h.Position),
+                        Bounds = h.Bounds,
+                        Cursor = h.Cursor,
+                        HandleSize = h.HandleSize,
+                        VertexIndex = h.VertexIndex,
+                    };
+                }
+                HandleRenderer.DrawHandles(_overlayCanvas, displayHandles, shapeType, _zoom);
+                return;
+            }
             HandleRenderer.DrawHandles(_overlayCanvas, _currentHandles, shapeType, _zoom);
         }
 

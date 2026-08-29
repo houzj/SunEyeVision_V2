@@ -7,85 +7,78 @@
         xmlns:themeWindows="clr-namespace:SunEyeVision.UI.Shell.Windows"
         mc:Ignorable="d"
         Title="编辑解决方案"
-        Width="450"
-        Height="380"
+        Width="500"
+        Height="350"
+        MinHeight="320"
+        MinWidth="450"
+        ResizeMode="CanResize"
         WindowStartupLocation="CenterOwner"
-        ResizeMode="NoResize"
         Background="{DynamicResource {x:Static base:ThemeKeys.WindowBackgroundBrush}}">
 
-    <Grid Margin="20">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-
-        <!-- 标题 -->
-        <TextBlock Grid.Row="0" Text="编辑解决方案" FontSize="20" FontWeight="Bold"
-                   Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}" Margin="0,0,0,20"/>
-
-        <!-- 解决方案名称 -->
-        <TextBlock Grid.Row="1" Text="解决方案名称" FontSize="13" FontWeight="Medium"
-                   Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}" Margin="0,0,0,8"/>
-        <TextBox Grid.Row="2"
-                 Name="SolutionNameTextBox"
-                 FontSize="13"
-                 Padding="8,6"
-                 Background="{DynamicResource {x:Static base:ThemeKeys.InputBackgroundBrush}}"
-                 BorderBrush="{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}"
-                 Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"
-                 CaretBrush="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"
-                 BorderThickness="1"
-                 Margin="0,0,0,15"
-                 TextChanged="OnSolutionNameTextChanged"/>
-
-        <!-- 描述 -->
-        <TextBlock Grid.Row="3" Text="描述（可选）" FontSize="13" FontWeight="Medium"
-                   Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}" Margin="0,0,0,8"/>
-        <TextBox Grid.Row="4"
-                 Name="DescriptionTextBox"
-                 TextWrapping="Wrap"
-                 AcceptsReturn="True"
-                 Height="80"
-                 FontSize="13"
-                 Padding="8,6"
-                 Background="{DynamicResource {x:Static base:ThemeKeys.InputBackgroundBrush}}"
-                 BorderBrush="{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}"
-                 Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"
-                 CaretBrush="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"
-                 BorderThickness="1"
-                 VerticalScrollBarVisibility="Auto"
-                 Margin="0,0,0,15"/>
-
-        <!-- 按钮区域 -->
-        <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+    <DockPanel Margin="20">
+        <!-- 按钮区：Dock 到底部，永不被内容挤出 -->
+        <StackPanel DockPanel.Dock="Bottom"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Margin="0,16,0,0">
             <Button Content="取消"
-                    Width="100"
-                    Height="36"
+                    Width="100" Height="36"
                     Margin="0,0,8,0"
-                    Padding="0"
-                    FontSize="13"
-                    Click="OnCancelButtonClick"
-                    Cursor="Hand"
-                    Background="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"
-                    Foreground="{DynamicResource {x:Static base:ThemeKeys.TextOnDarkBrush}}"
-                    BorderThickness="0"/>
+                    Style="{StaticResource SecondaryButtonStyle}"
+                    Click="OnCancelButtonClick"/>
             <Button Name="SaveButton"
                     Content="保存"
-                    Width="100"
-                    Height="36"
-                    Margin="0,0,0,0"
-                    Padding="0"
-                    FontSize="13"
+                    Width="100" Height="36"
+                    Style="{StaticResource PrimaryButtonStyle}"
                     Click="OnSaveButtonClick"
-                    IsEnabled="False"
-                    Cursor="Hand"
-                    Background="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"
-                    Foreground="{DynamicResource {x:Static base:ThemeKeys.TextOnDarkBrush}}"
-                    BorderThickness="0"/>
+                    IsEnabled="False"/>
         </StackPanel>
-    </Grid>
+
+        <!-- 内容区 -->
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- 标题 -->
+            <TextBlock Grid.Row="0" Text="编辑解决方案" FontSize="20" FontWeight="Bold"
+                       Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}" Margin="0,0,0,16"/>
+
+            <!-- 解决方案名称 -->
+            <TextBlock Grid.Row="1" Text="解决方案名称" FontSize="13" FontWeight="Medium"
+                       Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}" Margin="0,0,0,6"/>
+            <TextBox Grid.Row="2"
+                     Name="SolutionNameTextBox"
+                     FontSize="13"
+                     Padding="8,6"
+                     Background="{DynamicResource {x:Static base:ThemeKeys.InputBackgroundBrush}}"
+                     BorderBrush="{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}"
+                     Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"
+                     CaretBrush="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"
+                     BorderThickness="1"
+                     Margin="0,0,0,12"
+                     TextChanged="OnSolutionNameTextChanged"/>
+
+            <!-- 描述（溢出可滚动） -->
+            <TextBlock Grid.Row="3" Text="描述（可选）" FontSize="13" FontWeight="Medium"
+                       Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}" Margin="0,0,0,6"/>
+            <TextBox Grid.Row="4"
+                     Name="DescriptionTextBox"
+                     TextWrapping="Wrap"
+                     AcceptsReturn="True"
+                     MinHeight="70"
+                     FontSize="13"
+                     Padding="8,6"
+                     Background="{DynamicResource {x:Static base:ThemeKeys.InputBackgroundBrush}}"
+                     BorderBrush="{DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}"
+                     Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"
+                     CaretBrush="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}"
+                     BorderThickness="1"
+                     VerticalScrollBarVisibility="Auto"/>
+        </Grid>
+    </DockPanel>
 </themeWindows:ThemeDialogWindow>

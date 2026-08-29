@@ -364,7 +364,8 @@ namespace SunEyeVision.UI.Features.Dialogs
                         if (newMetadata == null)
                         {
                             LogError("SolutionManager.CreateNewSolution 返回了 null");
-                            MessageBox.Show("创建解决方案失败: 返回了 null", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                            ThemeMessageDialog.Show("创建解决方案失败: 返回了 null", "错误",
+                                MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
                             return;
                         }
 
@@ -381,7 +382,8 @@ namespace SunEyeVision.UI.Features.Dialogs
                     catch (Exception ex)
                     {
                         LogError($"创建解决方案失败: {ex.Message}");
-                        MessageBox.Show($"创建解决方案失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                        ThemeMessageDialog.Show($"创建解决方案失败: {ex.Message}", "错误",
+                            MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
                     }
                 }
                 else if (result == true)
@@ -396,7 +398,8 @@ namespace SunEyeVision.UI.Features.Dialogs
             catch (Exception ex)
             {
                 LogError($"打开新建对话框失败: {ex.Message}");
-                MessageBox.Show($"打开新建对话框失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                ThemeMessageDialog.Show($"打开新建对话框失败: {ex.Message}", "错误",
+                    MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
             }
         }
 
@@ -428,7 +431,8 @@ namespace SunEyeVision.UI.Features.Dialogs
                 var solution = _solutionManager.LoadSolutionOnly(filePath);
                 if (solution == null)
                 {
-                    MessageBox.Show("加载解决方案文件失败", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    ThemeMessageDialog.Show("加载解决方案文件失败", "错误",
+                        MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
                     return;
                 }
 
@@ -469,7 +473,8 @@ namespace SunEyeVision.UI.Features.Dialogs
             catch (Exception ex)
             {
                 LogError($"打开解决方案失败: {ex.Message}");
-                MessageBox.Show($"打开解决方案失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                ThemeMessageDialog.Show($"打开解决方案失败: {ex.Message}", "错误",
+                    MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
             }
         }
 
@@ -518,7 +523,8 @@ namespace SunEyeVision.UI.Features.Dialogs
             catch (Exception ex)
             {
                 LogError($"另存为失败: {ex.Message}");
-                MessageBox.Show($"另存为失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                ThemeMessageDialog.Show($"另存为失败: {ex.Message}", "错误",
+                    MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
             }
         }
 
@@ -541,7 +547,8 @@ namespace SunEyeVision.UI.Features.Dialogs
             }
             else
             {
-                MessageBox.Show("另存为失败", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                ThemeMessageDialog.Show("另存为失败", "错误",
+                    MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
             }
         }
 
@@ -564,7 +571,8 @@ namespace SunEyeVision.UI.Features.Dialogs
             }
             else
             {
-                MessageBox.Show("另存为失败", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                ThemeMessageDialog.Show("另存为失败", "错误",
+                    MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
             }
         }
 
@@ -604,7 +612,8 @@ namespace SunEyeVision.UI.Features.Dialogs
                     // 删除失败（如删源文件被占用），回滚列表项
                     SolutionMetadatas.Add(solutionToDelete);
                     LogError($"删除解决方案失败: {solutionToDelete.Name}");
-                    MessageBox.Show("删除解决方案失败，请重试。", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    ThemeMessageDialog.Show("删除解决方案失败，请重试。", "错误",
+                        MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
                     return;
                 }
 
@@ -628,7 +637,8 @@ namespace SunEyeVision.UI.Features.Dialogs
             catch (Exception ex)
             {
                 LogError($"删除解决方案失败: {ex.Message}");
-                MessageBox.Show($"删除解决方案失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                ThemeMessageDialog.Show($"删除解决方案失败: {ex.Message}", "错误",
+                    MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
             }
         }
 
@@ -666,13 +676,15 @@ namespace SunEyeVision.UI.Features.Dialogs
                 else
                 {
                     LogError("复制解决方案失败: SolutionManager.CopySolution 返回了 null");
-                    MessageBox.Show("复制解决方案失败", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    ThemeMessageDialog.Show("复制解决方案失败", "错误",
+                        MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
                 }
             }
             catch (Exception ex)
             {
                 LogError($"复制解决方案失败: {ex.Message}");
-                MessageBox.Show($"复制解决方案失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                ThemeMessageDialog.Show($"复制解决方案失败: {ex.Message}", "错误",
+                    MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
             }
         }
 
@@ -723,7 +735,8 @@ namespace SunEyeVision.UI.Features.Dialogs
                     if (!renameSuccess)
                     {
                         LogError($"重命名解决方案失败: {oldName} → {dialog.SolutionName}");
-                        MessageBox.Show("重命名解决方案失败", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                        ThemeMessageDialog.Show("重命名解决方案失败", "错误",
+                            MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
                         return;
                     }
 
@@ -749,7 +762,8 @@ namespace SunEyeVision.UI.Features.Dialogs
             catch (Exception ex)
             {
                 LogError($"编辑解决方案失败: {ex.Message}");
-                MessageBox.Show($"编辑解决方案失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                ThemeMessageDialog.Show($"编辑解决方案失败: {ex.Message}", "错误",
+                    MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
             }
         }
 
@@ -892,7 +906,8 @@ namespace SunEyeVision.UI.Features.Dialogs
                 else
                 {
                     LogError($"加载解决方案失败: {metadataToLaunch.Name}");
-                    MessageBox.Show($"加载解决方案失败: {metadataToLaunch.Name}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    ThemeMessageDialog.Show($"加载解决方案失败: {metadataToLaunch.Name}", "错误",
+                        MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
                 }
             }
         }

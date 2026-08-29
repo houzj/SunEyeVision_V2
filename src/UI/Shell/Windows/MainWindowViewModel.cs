@@ -26,6 +26,7 @@ using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.UI;
 using SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters;
+using SunEyeVision.UI.Features.Dialogs;
 using SunEyeVision.Workflow;
 using SunEyeVision.UI.Services.Thumbnail;
 using SunEyeVision.UI.Features.WorkflowUI;
@@ -1239,8 +1240,8 @@ SplitterPosition = position;
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"撤销失败: {ex.Message}", "错误",
-                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                ThemeMessageDialog.Show($"撤销失败: {ex.Message}", "错误",
+                    MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
             }
         }
 
@@ -1259,8 +1260,8 @@ SplitterPosition = position;
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"重做失败: {ex.Message}", "错误",
-                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                ThemeMessageDialog.Show($"重做失败: {ex.Message}", "错误",
+                    MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
             }
         }
 
@@ -2480,13 +2481,14 @@ SplitterPosition = position;
             if (selectedNodes.Count > 0) parts.Add($"{selectedNodes.Count} 个节点");
             if (selectedConnections.Count > 0) parts.Add($"{selectedConnections.Count} 条连接线");
 
-            var result = System.Windows.MessageBox.Show(
+            var result = ThemeMessageDialog.Show(
                 $"确定要删除选中的 {string.Join("和 ", parts)} 吗？",
                 "确认删除",
-                System.Windows.MessageBoxButton.YesNo,
-                System.Windows.MessageBoxImage.Question);
+                MessageBoxButton.YesNo,
+                ThemeMessageDialog.MessageIcon.Question,
+                owner: null);
 
-            if (result != System.Windows.MessageBoxResult.Yes)
+            if (result != MessageBoxResult.Yes)
                 return;
 
             // 执行前预计算所有将会被删除的连接（显式选中 + 与待删节点关联的，去重）
@@ -2614,13 +2616,13 @@ SplitterPosition = position;
                 // 调试窗口单例管理
                 if (_openDebugWindow?.IsLoaded == true)
                 {
-                    var result = System.Windows.MessageBox.Show(
+                    var result = ThemeMessageDialog.Show(
                         $"调试窗口已打开（{_openDebugWindow.Title}）\n\n是否关闭当前窗口并打开新的调试窗口？",
                         "调试窗口已存在",
-                        System.Windows.MessageBoxButton.YesNo,
-                        System.Windows.MessageBoxImage.Question);
+                        MessageBoxButton.YesNo,
+                        ThemeMessageDialog.MessageIcon.Question);
 
-                    if (result != System.Windows.MessageBoxResult.Yes)
+                    if (result != MessageBoxResult.Yes)
                     {
                         _openDebugWindow.Activate();
                         _openDebugWindow.Focus();
@@ -2686,11 +2688,11 @@ SplitterPosition = position;
             catch (Exception ex)
             {
                 AddLog($"打开节点失败: {ex.Message}");
-                System.Windows.MessageBox.Show(
+                ThemeMessageDialog.Show(
                     $"打开节点失败: {ex.Message}",
                     "错误",
-                    System.Windows.MessageBoxButton.OK,
-                    System.Windows.MessageBoxImage.Error);
+                    MessageBoxButton.OK,
+                    ThemeMessageDialog.MessageIcon.Error);
             }
         }
 
@@ -2762,11 +2764,11 @@ SplitterPosition = position;
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show(
+                ThemeMessageDialog.Show(
                     $"导航到子程序失败: {ex.Message}",
                     "错误",
-                    System.Windows.MessageBoxButton.OK,
-                    System.Windows.MessageBoxImage.Error);
+                    MessageBoxButton.OK,
+                    ThemeMessageDialog.MessageIcon.Error);
                 AddLog($"❌ 子程序导航失败: {ex.Message}");
             }
         }
@@ -5090,11 +5092,11 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                     catch (Exception ex)
                     {
                         LogError($"加载解决方案失败: {ex.Message}", null, ex);
-                        MessageBox.Show(
+                        ThemeMessageDialog.Show(
                             $"加载解决方案失败: {ex.Message}",
                             "错误",
                             MessageBoxButton.OK,
-                            MessageBoxImage.Error);
+                            ThemeMessageDialog.MessageIcon.Error);
                     }
                 }
             }
@@ -5118,7 +5120,8 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
 
                 if (currentSolution == null)
                 {
-                    MessageBox.Show("请先打开一个解决方案", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                    ThemeMessageDialog.Show("请先打开一个解决方案", "提示",
+                        MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Info);
                     return;
                 }
 
@@ -5183,7 +5186,8 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
 
                 if (currentSolution == null)
                 {
-                    MessageBox.Show("请先打开一个解决方案", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                    ThemeMessageDialog.Show("请先打开一个解决方案", "提示",
+                        MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Info);
                     return;
                 }
 
@@ -5203,7 +5207,8 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
             {
                 LogError($"打开相机管理器失败: {ex.Message}");
                 LogError($"堆栈跟踪: {ex.StackTrace}");
-                MessageBox.Show($"打开相机管理器失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                ThemeMessageDialog.Show($"打开相机管理器失败: {ex.Message}", "错误",
+                    MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
             }
         }
 
@@ -5221,7 +5226,8 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
 
                 if (currentSolution == null)
                 {
-                    MessageBox.Show("请先打开一个解决方案", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                    ThemeMessageDialog.Show("请先打开一个解决方案", "提示",
+                        MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Info);
                     return;
                 }
 

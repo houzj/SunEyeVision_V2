@@ -377,7 +377,8 @@ namespace SunEyeVision.UI.Shell.Windows
                 bool saveSuccess = solutionManager.SaveSolutionDirect(solution, filePath, metadata);
                 if (!saveSuccess)
                 {
-                    System.Windows.MessageBox.Show("保存解决方案失败", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    ThemeMessageDialog.Show("保存解决方案失败", "错误",
+                        MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
                     return false;
                 }
                 _viewModel?.AddLog(LogLevel.Success, $"已创建并保存新解决方案: {metadata.Name} -> {filePath}", LogSource.UIOperation);
@@ -385,7 +386,8 @@ namespace SunEyeVision.UI.Shell.Windows
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"创建解决方案失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                ThemeMessageDialog.Show($"创建解决方案失败: {ex.Message}", "错误",
+                    MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
                 return false;
             }
         }
@@ -450,11 +452,11 @@ namespace SunEyeVision.UI.Shell.Windows
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show(
+                ThemeMessageDialog.Show(
                     $"加载工具插件时出错: {ex.Message}",
                     "加载失败",
-                    System.Windows.MessageBoxButton.OK,
-                    System.Windows.MessageBoxImage.Warning);
+                    MessageBoxButton.OK,
+                    ThemeMessageDialog.MessageIcon.Warning);
             }
         }
         /// <summary>

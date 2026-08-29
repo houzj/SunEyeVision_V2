@@ -1,6 +1,7 @@
-using System.Linq;
+﻿using System.Linq;
 using System.Windows;
 using SunEyeVision.UI.Core;
+using SunEyeVision.UI.Features.Dialogs;
 using SunEyeVision.UI.Shell.Windows;
 using SunEyeVision.Workflow;
 
@@ -66,8 +67,8 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
             var variables = solutionManager.CurrentSolution?.GlobalVariables;
             if (variables == null || variables.Count == 0)
             {
-                MessageBox.Show("当前解决方案中没有全局变量。\n请在\"全局变量管理器\"中添加后重试。", "提示",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                ThemeMessageDialog.Show("当前解决方案中没有全局变量。\n请在\"全局变量管理器\"中添加后重试。", "提示",
+                    MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Info);
                 return null;
             }
 
@@ -78,8 +79,8 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
         {
             if (_viewModel.SelectedVariable == null)
             {
-                MessageBox.Show("请先选择一个变量。", "提示",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                ThemeMessageDialog.Show("请先选择一个变量。", "提示",
+                    MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Warning);
                 return;
             }
 

@@ -1,6 +1,7 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Windows;
+using SunEyeVision.UI.Features.Dialogs;
 
 namespace SunEyeVision.UI.Shell.Windows
 {
@@ -22,7 +23,8 @@ namespace SunEyeVision.UI.Shell.Windows
         private void CheckUpdate_Click(object sender, RoutedEventArgs e)
         {
             // TODO: 实现检查更新功能
-            MessageBox.Show("已是最新版本！", "检查更新", MessageBoxButton.OK, MessageBoxImage.Information);
+            ThemeMessageDialog.Show("已是最新版本！", "检查更新",
+                MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Info);
         }
 
         private void HelpManual_Click(object sender, RoutedEventArgs e)
@@ -46,7 +48,8 @@ namespace SunEyeVision.UI.Shell.Windows
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"无法打开网站：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                ThemeMessageDialog.Show($"无法打开网站：{ex.Message}", "错误",
+                    MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
             }
         }
     }

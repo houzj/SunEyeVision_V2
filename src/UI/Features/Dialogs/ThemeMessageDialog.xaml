@@ -11,6 +11,46 @@
         ShowInTaskbar="False"
         Background="{DynamicResource {x:Static base:ThemeKeys.WindowBackgroundBrush}}">
 
+    <Window.Resources>
+        <!-- 弹窗按钮样式：统一不分主次；悬停/按下背景高亮并适配主题；
+             前景色用主题按钮文字色，保证文字/图标在悬停高亮下不被盖住 -->
+        <Style x:Key="MessageDialogButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="84"/>
+            <Setter Property="Height" Value="34"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ButtonBackgroundBrush}}"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.ButtonTextBrush}}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ButtonHoverBackgroundBrush}}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ButtonPressedBackgroundBrush}}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.5"/>
+                                <Setter Property="Cursor" Value="Arrow"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
     <Border BorderBrush="{DynamicResource {x:Static base:ThemeKeys.BorderBrush}}"
             BorderThickness="1"
             CornerRadius="6">
@@ -60,44 +100,26 @@
                         HorizontalAlignment="Right">
                 <Button x:Name="CancelButton"
                         Content="取消"
-                        Width="84" Height="34"
-                        Margin="0,0,8,0" Padding="0"
-                        FontSize="13" Cursor="Hand"
+                        Margin="0,0,8,0"
+                        Style="{StaticResource MessageDialogButtonStyle}"
                         Visibility="Collapsed"
-                        Click="OnCancelClick"
-                        Background="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"
-                        Foreground="{DynamicResource {x:Static base:ThemeKeys.TextOnDarkBrush}}"
-                        BorderThickness="0"/>
+                        Click="OnCancelClick"/>
                 <Button x:Name="NoButton"
                         Content="否"
-                        Width="84" Height="34"
-                        Margin="0,0,8,0" Padding="0"
-                        FontSize="13" Cursor="Hand"
+                        Margin="0,0,8,0"
+                        Style="{StaticResource MessageDialogButtonStyle}"
                         Visibility="Collapsed"
-                        Click="OnNoClick"
-                        Background="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"
-                        Foreground="{DynamicResource {x:Static base:ThemeKeys.TextOnDarkBrush}}"
-                        BorderThickness="0"/>
+                        Click="OnNoClick"/>
                 <Button x:Name="YesButton"
                         Content="是"
-                        Width="84" Height="34"
-                        Padding="0"
-                        FontSize="13" Cursor="Hand"
+                        Style="{StaticResource MessageDialogButtonStyle}"
                         Visibility="Collapsed"
-                        Click="OnYesClick"
-                        Background="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"
-                        Foreground="{DynamicResource {x:Static base:ThemeKeys.TextOnDarkBrush}}"
-                        BorderThickness="0"/>
+                        Click="OnYesClick"/>
                 <Button x:Name="OkButton"
                         Content="确定"
-                        Width="84" Height="34"
-                        Padding="0"
-                        FontSize="13" Cursor="Hand"
+                        Style="{StaticResource MessageDialogButtonStyle}"
                         Visibility="Collapsed"
-                        Click="OnOkClick"
-                        Background="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"
-                        Foreground="{DynamicResource {x:Static base:ThemeKeys.TextOnDarkBrush}}"
-                        BorderThickness="0"/>
+                        Click="OnOkClick"/>
             </StackPanel>
         </Grid>
     </Border>

@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.UI.Features.Dialogs;
 using SunEyeVision.UI.Core;
 using SunEyeVision.UI.Services.Thumbnail;
 using SunEyeVision.UI.Shared;
@@ -623,8 +624,8 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"添加图像失败: {ex.Message}", "错误",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                ThemeMessageDialog.Show($"添加图像失败: {ex.Message}", "错误",
+                    MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
             }
         }
 
@@ -647,8 +648,8 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
 
                     if (imageFiles.Length == 0)
                     {
-                        MessageBox.Show("所选文件夹中没有找到图像文件", "提示",
-                            MessageBoxButton.OK, MessageBoxImage.Information);
+                        ThemeMessageDialog.Show("所选文件夹中没有找到图像文件", "提示",
+                            MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Info);
                         return;
                     }
 
@@ -657,8 +658,8 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"添加文件夹失败: {ex.Message}", "错误",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                ThemeMessageDialog.Show($"添加文件夹失败: {ex.Message}", "错误",
+                    MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
             }
         }
 
@@ -767,11 +768,11 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
         {
             if (ImageCollection.Count == 0) return;
 
-            var result = MessageBox.Show(
+            var result = ThemeMessageDialog.Show(
                 $"确定要清除所有 {ImageCollection.Count} 张图像吗？",
                 "确认清除",
                 MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
+                ThemeMessageDialog.MessageIcon.Question);
 
             if (result == MessageBoxResult.Yes)
             {

@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using SunEyeVision.UI.Features.Dialogs;
 
 namespace SunEyeVision.UI.Shell.Controls.Shell
 {
@@ -133,13 +134,13 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                     }
                 }
 
-                MessageBox.Show("未找到开发计划文档 plans/plan.html。\n请确认计划文件存在于解决方案根目录的 plans/ 文件夹中。",
-                    "开发计划", MessageBoxButton.OK, MessageBoxImage.Information);
+                ThemeMessageDialog.Show("未找到开发计划文档 plans/plan.html。\n请确认计划文件存在于解决方案根目录的 plans/ 文件夹中。",
+                    "开发计划", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Info);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"打开开发计划失败: {ex.Message}",
-                    "开发计划", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ThemeMessageDialog.Show($"打开开发计划失败: {ex.Message}",
+                    "开发计划", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Warning);
             }
         }
 

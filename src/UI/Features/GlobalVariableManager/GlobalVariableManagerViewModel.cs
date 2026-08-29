@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -11,6 +11,7 @@ using Microsoft.Win32;
 using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.UI.Features.ParameterSetting;
+using SunEyeVision.UI.Features.Dialogs;
 using SunEyeVision.UI.Shared.Events;
 using SunEyeVision.UI.Services.Interaction;
 using SunEyeVision.UI.Shell;
@@ -530,7 +531,8 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
         {
             if (string.IsNullOrWhiteSpace(newName))
             {
-                MessageBox.Show("变量名称不能为空", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ThemeMessageDialog.Show("变量名称不能为空", "提示",
+                    MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Warning);
                 return false;
             }
 
@@ -540,8 +542,8 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
 
             if (GlobalVariable.IsNameDuplicate(allVariables, newName, variable.Id))
             {
-                MessageBox.Show($"变量名称 '{newName}' 已存在，请使用其他名称",
-                    "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ThemeMessageDialog.Show($"变量名称 '{newName}' 已存在，请使用其他名称",
+                    "提示", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Warning);
                 return false;
             }
 

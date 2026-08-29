@@ -100,26 +100,14 @@
                         Orientation="Horizontal"
                         HorizontalAlignment="Right">
                 <Button Content="取消"
-                        Width="80"
-                        Height="34"
+                        Width="80" Height="34"
                         Margin="0,0,8,0"
-                        Padding="0"
-                        FontSize="13"
-                        Cursor="Hand"
-                        Click="OnCancelButtonClick"
-                        Background="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"
-                        Foreground="{DynamicResource {x:Static base:ThemeKeys.TextOnDarkBrush}}"
-                        BorderThickness="0"/>
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Click="OnCancelButtonClick"/>
                 <Button Content="删除"
-                        Width="80"
-                        Height="34"
-                        Padding="0"
-                        FontSize="13"
-                        Cursor="Hand"
-                        Click="OnDeleteButtonClick"
-                        Background="{DynamicResource {x:Static base:ThemeKeys.ErrorBrush}}"
-                        Foreground="{DynamicResource {x:Static base:ThemeKeys.TextOnDarkBrush}}"
-                        BorderThickness="0"/>
+                        Width="80" Height="34"
+                        Style="{StaticResource DangerButtonStyle}"
+                        Click="OnDeleteButtonClick"/>
             </StackPanel>
         </Grid>
     </Border>

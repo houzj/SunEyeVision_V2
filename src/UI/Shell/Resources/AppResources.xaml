@@ -2,7 +2,8 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="clr-namespace:System;assembly=mscorlib"
                     xmlns:converters="clr-namespace:SunEyeVision.UI.Converters"
-                    xmlns:controls="clr-namespace:SunEyeVision.UI.Shell.Controls">
+                    xmlns:controls="clr-namespace:SunEyeVision.UI.Shell.Controls"
+                    xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base">
 
     <ResourceDictionary.MergedDictionaries>
         <!-- SDK DefaultTheme.xaml - SDK 兜底语义 token（无 UI 宿主时的亮色基准）。
@@ -68,11 +69,49 @@
     <sys:Double x:Key="FontSizeXLarge">16</sys:Double>
     <sys:Double x:Key="FontSizeXXLarge">18</sys:Double>
 
-    <!-- ========== 按钮样式 ========== -->
+    <!-- ========== 按钮样式（形态族：命名样式显式引用，不设全局隐式模板） ========== -->
+
+    <!-- 全局隐式 Button（统一悬停/主题色）：中性模板不强制 Padding/边框，
+         元素级属性（如透明图标按钮的 BorderThickness=0/Background=Transparent）优先，
+         不裁剪内容；特例按钮显式加 Key 样式覆盖。 -->
+    <Style TargetType="Button">
+        <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ButtonBackgroundBrush}}"/>
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.ButtonTextBrush}}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.ButtonBorderBrush}}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="3">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                        Margin="{TemplateBinding Padding}"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ButtonHoverBackgroundBrush}}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.ButtonHoverBorderBrush}}"/>
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+                <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ButtonPressedBackgroundBrush}}"/>
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextDisabledBrush}}"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- 形态族：主按钮（完整模板，主题 token，悬停高对比） -->
     <Style x:Key="PrimaryButton" TargetType="Button">
-        <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
-        <Setter Property="Foreground" Value="White"/>
-        <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.PrimaryButtonBackgroundBrush}}"/>
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.PrimaryButtonTextBrush}}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.PrimaryButtonBackgroundBrush}}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Padding" Value="12,6"/>
         <Setter Property="FontWeight" Value="Normal"/>
@@ -92,22 +131,24 @@
         </Setter>
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="#0055AA"/>
+                <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.PrimaryButtonHoverBackgroundBrush}}"/>
             </Trigger>
             <Trigger Property="IsPressed" Value="True">
-                <Setter Property="Background" Value="#004488"/>
+                <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.PrimaryButtonPressedBackgroundBrush}}"/>
             </Trigger>
             <Trigger Property="IsEnabled" Value="False">
-                <Setter Property="Background" Value="#CCCCCC"/>
-                <Setter Property="BorderBrush" Value="#CCCCCC"/>
+                <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ButtonDisabledBackgroundBrush}}"/>
+                <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextDisabledBrush}}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.ButtonBorderBrush}}"/>
             </Trigger>
         </Style.Triggers>
     </Style>
 
+    <!-- 形态族：次级按钮（完整模板，描边形态） -->
     <Style x:Key="SecondaryButton" TargetType="Button">
-        <Setter Property="Background" Value="White"/>
-        <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ButtonBackgroundBrush}}"/>
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.AccentBrush}}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Padding" Value="12,6"/>
         <Setter Property="Cursor" Value="Hand"/>
@@ -126,15 +167,16 @@
         </Setter>
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="{StaticResource PrimaryLightBrush}"/>
+                <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ButtonHoverBackgroundBrush}}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.ButtonHoverBorderBrush}}"/>
             </Trigger>
             <Trigger Property="IsPressed" Value="True">
-                <Setter Property="Background" Value="#D0E8F0"/>
+                <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ButtonPressedBackgroundBrush}}"/>
             </Trigger>
             <Trigger Property="IsEnabled" Value="False">
-                <Setter Property="Background" Value="#F0F0F0"/>
-                <Setter Property="BorderBrush" Value="#CCCCCC"/>
-                <Setter Property="Foreground" Value="#999999"/>
+                <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ButtonDisabledBackgroundBrush}}"/>
+                <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextDisabledBrush}}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.ButtonBorderBrush}}"/>
             </Trigger>
         </Style.Triggers>
     </Style>

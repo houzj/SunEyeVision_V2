@@ -19,6 +19,19 @@
     <Color x:Key="{x:Static base:ThemeKeys.ControlHoverBackground}">#FF3C3C3C</Color>
     <Color x:Key="{x:Static base:ThemeKeys.ControlSelectedBackground}">#FF0E639C</Color>
 
+    <!-- ============ 按钮（暗色：悬停背景显著提亮 + 文字高对比） ============ -->
+    <Color x:Key="{x:Static base:ThemeKeys.ButtonBackground}">#FF2D2D2D</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.ButtonHoverBackground}">#FF4E5A66</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.ButtonPressedBackground}">#FF5A6878</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.ButtonBorder}">#FF555555</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.ButtonHoverBorder}">#FF6A7A8A</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.ButtonText}">#FFE8E8E8</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.ButtonDisabledBackground}">#FF3A3A3A</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.PrimaryButtonBackground}">#FF1565C0</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.PrimaryButtonHoverBackground}">#FF1F8BEB</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.PrimaryButtonPressedBackground}">#FF0F62A8</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.PrimaryButtonText}">#FFFFFFFF</Color>
+
     <!-- ============ 文字 ============ -->
     <Color x:Key="{x:Static base:ThemeKeys.TextPrimary}">#FFE8E8E8</Color>
     <Color x:Key="{x:Static base:ThemeKeys.TextSecondary}">#FFC0C0C0</Color>
@@ -128,6 +141,18 @@
     <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ControlBackgroundBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ControlBackground}}"/>
     <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ControlHoverBackgroundBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ControlHoverBackground}}"/>
     <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ControlSelectedBackgroundBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ControlSelectedBackground}}"/>
+
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ButtonBackgroundBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ButtonBackground}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ButtonHoverBackgroundBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ButtonHoverBackground}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ButtonPressedBackgroundBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ButtonPressedBackground}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ButtonBorderBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ButtonBorder}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ButtonHoverBorderBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ButtonHoverBorder}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ButtonTextBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ButtonText}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ButtonDisabledBackgroundBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ButtonDisabledBackground}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.PrimaryButtonBackgroundBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.PrimaryButtonBackground}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.PrimaryButtonHoverBackgroundBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.PrimaryButtonHoverBackground}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.PrimaryButtonPressedBackgroundBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.PrimaryButtonPressedBackground}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.PrimaryButtonTextBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.PrimaryButtonText}}"/>
 
     <SolidColorBrush x:Key="{x:Static base:ThemeKeys.TextPrimaryBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.TextPrimary}}"/>
     <SolidColorBrush x:Key="{x:Static base:ThemeKeys.TextSecondaryBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.TextSecondary}}"/>

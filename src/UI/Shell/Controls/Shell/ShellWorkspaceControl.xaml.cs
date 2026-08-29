@@ -688,8 +688,8 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                         var msg = $"子程序输入 '{input.Name}' 绑定的源节点 '{parts[0]}' 在父工作流中不存在。\n" +
                                   $"请检查是否删除了上游节点或绑定的节点 ID 已变更。\n" +
                                   $"(子程序: {nodeDispName})";
-                        System.Windows.MessageBox.Show(msg, "绑定路径错误",
-                            System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                        ThemeMessageDialog.Show(msg, "绑定路径错误",
+                            MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Warning);
                         return; // 不打开调试窗口
                     }
                 }
@@ -725,11 +725,11 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show(
+                ThemeMessageDialog.Show(
                     $"打开子程序参数设置失败: {ex.Message}",
                     "错误",
-                    System.Windows.MessageBoxButton.OK,
-                    System.Windows.MessageBoxImage.Error);
+                    MessageBoxButton.OK,
+                    ThemeMessageDialog.MessageIcon.Error);
                 _viewModel?.AddLog(LogLevel.Error, $"打开子程序参数设置失败: {ex.Message}", LogSource.UIOperation);
             }
         }
@@ -753,11 +753,11 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show(
+                ThemeMessageDialog.Show(
                     $"打开子程序参数设置失败: {ex.Message}",
                     "错误",
-                    System.Windows.MessageBoxButton.OK,
-                    System.Windows.MessageBoxImage.Error);
+                    MessageBoxButton.OK,
+                    ThemeMessageDialog.MessageIcon.Error);
                 _viewModel?.AddLog(LogLevel.Error, $"打开子程序参数设置失败: {ex.Message}", LogSource.UIOperation);
             }
         }

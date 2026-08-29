@@ -5,6 +5,7 @@ using System.Windows.Media;
 using System.Windows.Media.Effects;
 using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Core;
+using SunEyeVision.UI.Features.Dialogs;
 using SunEyeVision.UI;
 using SunEyeVision.UI.Features.WorkflowUI.Canvas;
 using SunEyeVision.UI.Shell.Windows;
@@ -331,7 +332,8 @@ LogTimestamp("Drop", "▶ Canvas_Drop 开始执行");
 #if DEBUG
                     LogTimestamp("Drop", "✗ 无法获取当前工作流Tab");
 #endif
-                    MessageBox.Show("无法获取当前工作流，请确保已打开工作流标签页", "错误", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ThemeMessageDialog.Show("无法获取当前工作流，请确保已打开工作流标签页", "错误",
+                        MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Warning);
                     return;
                 }
 #if DEBUG
@@ -374,7 +376,8 @@ LogTimestamp("Drop", "▶ Canvas_Drop 开始执行");
 #if DEBUG
                 LogTimestamp("Drop", $"✗✗✗ 异常: {ex.Message}");
 #endif
-                MessageBox.Show($"拖放节点失败: {ex.Message}\n\n类型: {ex.GetType().Name}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                ThemeMessageDialog.Show($"拖放节点失败: {ex.Message}\n\n类型: {ex.GetType().Name}", "错误",
+                    MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
             }
         }
 

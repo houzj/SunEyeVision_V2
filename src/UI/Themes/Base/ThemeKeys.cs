@@ -34,6 +34,41 @@
         public const string ControlSelectedBackground = "ThemeControlSelectedBackground";
         public const string ControlSelectedBackgroundBrush = "ThemeControlSelectedBackgroundBrush";
 
+        // ============ 按钮（通用按钮分层样式） ============
+        /// <summary>按钮默认背景</summary>
+        public const string ButtonBackground = "ThemeButtonBackground";
+        public const string ButtonBackgroundBrush = "ThemeButtonBackgroundBrush";
+        /// <summary>按钮悬停背景</summary>
+        public const string ButtonHoverBackground = "ThemeButtonHoverBackground";
+        public const string ButtonHoverBackgroundBrush = "ThemeButtonHoverBackgroundBrush";
+        /// <summary>按钮按下背景</summary>
+        public const string ButtonPressedBackground = "ThemeButtonPressedBackground";
+        public const string ButtonPressedBackgroundBrush = "ThemeButtonPressedBackgroundBrush";
+        /// <summary>按钮边框</summary>
+        public const string ButtonBorder = "ThemeButtonBorder";
+        public const string ButtonBorderBrush = "ThemeButtonBorderBrush";
+        /// <summary>按钮悬停边框</summary>
+        public const string ButtonHoverBorder = "ThemeButtonHoverBorder";
+        public const string ButtonHoverBorderBrush = "ThemeButtonHoverBorderBrush";
+        /// <summary>按钮文字（高对比）</summary>
+        public const string ButtonText = "ThemeButtonText";
+        public const string ButtonTextBrush = "ThemeButtonTextBrush";
+        /// <summary>按钮禁用背景</summary>
+        public const string ButtonDisabledBackground = "ThemeButtonDisabledBackground";
+        public const string ButtonDisabledBackgroundBrush = "ThemeButtonDisabledBackgroundBrush";
+        /// <summary>主按钮背景</summary>
+        public const string PrimaryButtonBackground = "ThemePrimaryButtonBackground";
+        public const string PrimaryButtonBackgroundBrush = "ThemePrimaryButtonBackgroundBrush";
+        /// <summary>主按钮悬停背景</summary>
+        public const string PrimaryButtonHoverBackground = "ThemePrimaryButtonHoverBackground";
+        public const string PrimaryButtonHoverBackgroundBrush = "ThemePrimaryButtonHoverBackgroundBrush";
+        /// <summary>主按钮按下背景</summary>
+        public const string PrimaryButtonPressedBackground = "ThemePrimaryButtonPressedBackground";
+        public const string PrimaryButtonPressedBackgroundBrush = "ThemePrimaryButtonPressedBackgroundBrush";
+        /// <summary>主按钮文字</summary>
+        public const string PrimaryButtonText = "ThemePrimaryButtonText";
+        public const string PrimaryButtonTextBrush = "ThemePrimaryButtonTextBrush";
+
         // ============ 文字 ============
         /// <summary>主文字</summary>
         public const string TextPrimary = "ThemeTextPrimary";

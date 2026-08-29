@@ -54,6 +54,20 @@
     <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.ControlBackgroundBrush}"
                      Color="{x:Static constants:ColorConstants.Background}"/>
 
+    <!-- ============ 按钮（SDK 统一悬停，亮色兜底） ============ -->
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.ButtonBackgroundBrush}"
+                     Color="{x:Static constants:ColorConstants.Background}"/>
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.ButtonHoverBackgroundBrush}"
+                     Color="{x:Static constants:ColorConstants.BackgroundHover}"/>
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.ButtonPressedBackgroundBrush}"
+                     Color="{x:Static constants:ColorConstants.BackgroundHoverSelected}"/>
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.ButtonBorderBrush}"
+                     Color="{x:Static constants:ColorConstants.Border}"/>
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.ButtonTextBrush}"
+                     Color="{x:Static constants:ColorConstants.TextPrimary}"/>
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.ButtonDisabledBackgroundBrush}"
+                     Color="{x:Static constants:ColorConstants.BackgroundHover}"/>
+
     <!-- ============ 工具栏 / 输入控件 / 状态栏 ============ -->
     <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.ToolBarBackgroundBrush}"
                      Color="{x:Static constants:ColorConstants.BackgroundDark}"/>

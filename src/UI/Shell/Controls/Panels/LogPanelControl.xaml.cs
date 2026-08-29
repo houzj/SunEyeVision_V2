@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows;
@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.UI.Core;
+using SunEyeVision.UI.Features.Dialogs;
 
 using SunEyeVision.UI.Shell.Windows;
 
@@ -139,8 +140,8 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
             catch (InvalidOperationException ex)
             {
                 // 如果 UILogWriter 未初始化，记录错误
-                MessageBox.Show($"日志面板初始化失败: {ex.Message}\n\n请确保在 App.xaml.cs 中正确调用 ServiceInitializer.InitializeServices()",
-                    "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                ThemeMessageDialog.Show($"日志面板初始化失败: {ex.Message}\n\n请确保在 App.xaml.cs 中正确调用 ServiceInitializer.InitializeServices()",
+                    "错误", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
             }
             catch (Exception ex)
             {

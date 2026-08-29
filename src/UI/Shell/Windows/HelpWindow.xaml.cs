@@ -1,8 +1,9 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using SunEyeVision.UI.Features.Dialogs;
 
 namespace SunEyeVision.UI.Shell.Windows
 {
@@ -63,12 +64,14 @@ namespace SunEyeVision.UI.Shell.Windows
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"无法打开帮助文档:\n{ex.Message}\n\n{message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    ThemeMessageDialog.Show($"无法打开帮助文档:\n{ex.Message}\n\n{message}", "错误",
+                        MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
                 }
             }
             else
             {
-                MessageBox.Show($"帮助文档未找到!\n{indexPath}\n\n请确保 Help 文件夹存在并包含帮助文档\n\n{message}", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                ThemeMessageDialog.Show($"帮助文档未找到!\n{indexPath}\n\n请确保 Help 文件夹存在并包含帮助文档\n\n{message}", "提示",
+                    MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Info);
             }
         }
 
@@ -111,7 +114,8 @@ namespace SunEyeVision.UI.Shell.Windows
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"无法打开 CHM 文档: {ex.Message}\n将使用 HTML 文档。", "警告", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ThemeMessageDialog.Show($"无法打开 CHM 文档: {ex.Message}\n将使用 HTML 文档。", "警告",
+                    MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Warning);
                 ShowHtmlHelp();
             }
         }
@@ -138,7 +142,8 @@ namespace SunEyeVision.UI.Shell.Windows
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"无法打开 HTML 文档: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    ThemeMessageDialog.Show($"无法打开 HTML 文档: {ex.Message}", "错误",
+                        MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
                     ShowFallbackHelp();
                 }
             }

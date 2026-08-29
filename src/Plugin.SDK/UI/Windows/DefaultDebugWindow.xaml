@@ -24,6 +24,44 @@
                         CanExecute="CanExecuteCommand"/>
     </Window.CommandBindings>
 
+    <!-- 调试窗口底部按钮样式：显式引用，带主题悬停触发器（元素级 Background 优先级高于样式触发器，故用显式样式统一管理） -->
+    <Window.Resources>
+        <Style x:Key="DebugToolbarButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ButtonBackgroundBrush}}"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ButtonTextBrush}}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ButtonBorderBrush}}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12,3"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="3">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                            Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ButtonHoverBackgroundBrush}}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ButtonHoverBackgroundBrush}}"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ButtonPressedBackgroundBrush}}"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Foreground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TextDisabledBrush}}"/>
+                    <Setter Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ButtonDisabledBackgroundBrush}}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
     <!-- 外层容器：主题化背景 + 边框（无外阴影——原生窗口 WindowChrome 下 DropShadowEffect 不渲染） -->
     <Border Background="{DynamicResource {x:Static themes:SdkThemeKeys.PanelBackgroundBrush}}"
             CornerRadius="0"
@@ -34,7 +72,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>  <!-- 标题栏 -->
                 <RowDefinition Height="*"/>     <!-- 内容区 -->
-                <RowDefinition Height="40"/>    <!-- 底部按钮栏 -->
+                <RowDefinition Height="Auto"/>  <!-- 底部按钮栏（自适应内容，避免按钮下边框被裁切） -->
             </Grid.RowDefinitions>
 
             <!-- 标题栏 -->
@@ -137,11 +175,7 @@
                             Width="100"
                             Height="28"
                             Margin="0,0,8,0"
-                            Cursor="Hand"
-                            Background="{DynamicResource {x:Static themes:SdkThemeKeys.ControlBackgroundBrush}}"
-                            Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"
-                            BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"
-                            BorderThickness="1"
+                            Style="{StaticResource DebugToolbarButtonStyle}"
                             Command="commands:ToolCommands.ContinuousExecute"/>
 
                     <!-- 执行按钮 -->
@@ -150,11 +184,7 @@
                             Width="100"
                             Height="28"
                             Margin="0,0,8,0"
-                            Cursor="Hand"
-                            Background="{DynamicResource {x:Static themes:SdkThemeKeys.ControlBackgroundBrush}}"
-                            Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"
-                            BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"
-                            BorderThickness="1"
+                            Style="{StaticResource DebugToolbarButtonStyle}"
                             Command="commands:ToolCommands.Execute"/>
 
                     <!-- 确定按钮 -->
@@ -162,11 +192,7 @@
                             Content="确定"
                             Width="100"
                             Height="28"
-                            Cursor="Hand"
-                            Background="{DynamicResource {x:Static themes:SdkThemeKeys.ControlBackgroundBrush}}"
-                            Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"
-                            BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"
-                            BorderThickness="1"
+                            Style="{StaticResource DebugToolbarButtonStyle}"
                             Command="commands:ToolCommands.Confirm"/>
                 </StackPanel>
             </Border>

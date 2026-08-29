@@ -12,6 +12,7 @@ using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.UI.Core;
+using SunEyeVision.UI.Features.Dialogs;
 using SunEyeVision.UI.Shell.Windows;
 using SunEyeVision.Workflow;
 
@@ -125,11 +126,11 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
                 // 级联删除确认（允许删除非空分组）
                 if (groupVM.Variables.Count > 0)
                 {
-                    var result = MessageBox.Show(
+                    var result = ThemeMessageDialog.Show(
                         $"分组 '{groupVM.Name}' 中有 {groupVM.Variables.Count} 个变量，\n删除分组将同时删除这些变量。\n\n是否继续？",
                         "确认删除",
                         MessageBoxButton.YesNo,
-                        MessageBoxImage.Warning);
+                        ThemeMessageDialog.MessageIcon.Warning);
 
                     if (result != MessageBoxResult.Yes)
                         return;
@@ -279,8 +280,8 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
             var newValue = GlobalVariableValueTextConverter.ParseText(textBox.Text, variable.Type);
             if (newValue == null)
             {
-                MessageBox.Show($"请输入有效的{variable.Type}值（如 128 / 3.14 / True）",
-                    "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ThemeMessageDialog.Show($"请输入有效的{variable.Type}值（如 128 / 3.14 / True）",
+                    "提示", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Warning);
                 // 不写回：刷新绑定显示旧值
                 textBox.GetBindingExpression(TextBox.TextProperty)?.UpdateTarget();
                 return;

@@ -24,8 +24,8 @@
 
     <!-- 主按钮样式 -->
     <Style x:Key="PrimaryButtonStyle" TargetType="Button">
-        <Setter Property="Background" Value="#2196F3"/>
-        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.PrimaryButtonBackgroundBrush}}"/>
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.PrimaryButtonTextBrush}}"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Padding" Value="16,8"/>
         <Setter Property="FontSize" Value="14"/>
@@ -42,10 +42,11 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" Value="#1976D2"/>
+                            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.PrimaryButtonHoverBackgroundBrush}}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Background" Value="#BDBDBD"/>
+                            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ButtonDisabledBackgroundBrush}}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextDisabledBrush}}"/>
                             <Setter Property="Cursor" Value="Arrow"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -56,9 +57,10 @@
 
     <!-- 次要按钮样式 -->
     <Style x:Key="SecondaryButtonStyle" TargetType="Button">
-        <Setter Property="Background" Value="#757575"/>
-        <Setter Property="Foreground" Value="White"/>
-        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ButtonBackgroundBrush}}"/>
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.ButtonBorderBrush}}"/>
+        <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Padding" Value="16,8"/>
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="FontWeight" Value="Medium"/>
@@ -67,6 +69,8 @@
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
                     <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
                             CornerRadius="4"
                             Padding="{TemplateBinding Padding}">
                         <ContentPresenter HorizontalAlignment="Center"
@@ -74,10 +78,15 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" Value="#616161"/>
+                            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ButtonHoverBackgroundBrush}}"/>
+                            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.ButtonHoverBorderBrush}}"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ButtonPressedBackgroundBrush}}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Background" Value="#E0E0E0"/>
+                            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ButtonDisabledBackgroundBrush}}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextDisabledBrush}}"/>
                             <Setter Property="Cursor" Value="Arrow"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -88,10 +97,10 @@
 
     <!-- 工具按钮样式 -->
     <Style x:Key="ToolButtonStyle" TargetType="Button">
-        <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="#333333"/>
+        <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ButtonBackgroundBrush}}"/>
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.ButtonTextBrush}}"/>
         <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="BorderBrush" Value="#E0E0E0"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.ButtonBorderBrush}}"/>
         <Setter Property="Padding" Value="12,6"/>
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="Cursor" Value="Hand"/>
@@ -108,13 +117,34 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" Value="#F0F0F0"/>
-                            <Setter Property="BorderBrush" Value="#BDBDBD"/>
+                            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ButtonHoverBackgroundBrush}}"/>
+                            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.ButtonHoverBorderBrush}}"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.ButtonPressedBackgroundBrush}}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextDisabledBrush}}"/>
+                            <Setter Property="Cursor" Value="Arrow"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <!-- 危险操作按钮样式：继承工具按钮模板，前景/边框改为错误色 -->
+    <Style x:Key="DangerButtonStyle" TargetType="Button" BasedOn="{StaticResource ToolButtonStyle}">
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.ErrorBrush}}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.ErrorBrush}}"/>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.ErrorBrush}}"/>
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Foreground" Value="{DynamicResource {x:Static base:ThemeKeys.TextDisabledBrush}}"/>
+            </Trigger>
+        </Style.Triggers>
     </Style>
 
     <!-- ======================================== -->

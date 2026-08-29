@@ -1,6 +1,7 @@
-using System;
+﻿using System;
 using System.Windows;
 using SunEyeVision.UI.Shell;
+using SunEyeVision.UI.Features.Dialogs;
 
 namespace SunEyeVision.UI.Shell.Windows;
 
@@ -99,13 +100,15 @@ public partial class NewSolutionDialog : ThemeDialogWindow
     {
         if (string.IsNullOrWhiteSpace(SolutionNameTextBox?.Text?.Trim()))
         {
-            MessageBox.Show("请输入解决方案名称", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            ThemeMessageDialog.Show("请输入解决方案名称", "提示",
+                MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Info);
             return;
         }
 
         if (string.IsNullOrWhiteSpace(SolutionPathTextBox?.Text))
         {
-            MessageBox.Show("请选择存储路径", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            ThemeMessageDialog.Show("请选择存储路径", "提示",
+                MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Info);
             return;
         }
 

@@ -12,6 +12,7 @@ using System.Windows.Data;
 using System.Threading;
 using System.Threading.Tasks;
 using SunEyeVision.UI.Shell.Windows;
+using SunEyeVision.UI.Features.Dialogs;
 using System.Runtime.InteropServices;
 using SunEyeVision.Workflow;
 using SunEyeVision.Plugin.SDK.Models;
@@ -134,6 +135,9 @@ public partial class App : Application
 
         // 5.2 初始化主题管理器（读回持久化主题并应用语义色板）
         InitializeThemeManager();
+
+        // 5.2.5 调试：全局 Button 悬停埋点，确认悬停触发器是否触发（排查暗色主题悬停无反应）
+        RegisterButtonHoverTrace();
 
         // 5.5 注册全局变量选择请求事件处理（点击"全局变量"动作节点 → 打开选择对话框）
         EventManager.RegisterClassHandler(typeof(ParamBinding),
@@ -463,6 +467,44 @@ public partial class App : Application
     }
 
     /// <summary>
+    /// 调试：全局 Button 悬停埋点。确认悬停事件是否触发、IsMouseOver 触发器是否改变 Background。
+    /// 用于排查"暗色主题下按钮悬停无反应"（触发器未触发 vs 颜色变化太微弱）。
+    /// </summary>
+    private static void RegisterButtonHoverTrace()
+    {
+        try
+        {
+            EventManager.RegisterClassHandler(typeof(System.Windows.Controls.Button),
+                System.Windows.Controls.Control.MouseEnterEvent,
+                new System.Windows.Input.MouseEventHandler((sender, e) =>
+                {
+                    if (sender is not System.Windows.Controls.Button btn) return;
+                    var bg = btn.Background;
+                    VisionLogger.Instance.Log(LogLevel.Info,
+                        $"[按钮悬停] MouseEnter | Name={btn.Name} | Content={btn.Content} | " +
+                        $"Background={(bg as SolidColorBrush)?.Color.ToString() ?? bg?.ToString() ?? "null"} | " +
+                        $"HasStyle={(btn.Style != null)} | StyleKey={(btn.Style?.GetType().Name ?? "null")}",
+                        "App-BtnHover");
+                }), true);
+
+            EventManager.RegisterClassHandler(typeof(System.Windows.Controls.Button),
+                System.Windows.Controls.Control.MouseLeaveEvent,
+                new System.Windows.Input.MouseEventHandler((sender, e) =>
+                {
+                    if (sender is not System.Windows.Controls.Button btn) return;
+                    var bg = btn.Background;
+                    VisionLogger.Instance.Log(LogLevel.Info,
+                        $"[按钮悬停] MouseLeave | Name={btn.Name} | Background={(bg as SolidColorBrush)?.Color.ToString() ?? "null"}",
+                        "App-BtnHover");
+                }), true);
+        }
+        catch (Exception ex)
+        {
+            VisionLogger.Instance.Log(LogLevel.Warning, $"按钮悬停埋点注册失败: {ex.Message}", "App-BtnHover");
+        }
+    }
+
+    /// <summary>
     /// 初始化监控
     /// </summary>
     private void InitializeMonitoring()
@@ -505,11 +547,11 @@ public partial class App : Application
         // 无兜底原则（rule-015）：DataType 已设置但无法映射到任何全局变量通用类型 → 直接报错
         if (filterType == null && paramBinding.DataType != null)
         {
-            MessageBox.Show(
+            ThemeMessageDialog.Show(
                 $"参数类型 \"{paramBinding.DataType.Name}\" 不是全局变量支持的通用类型。\n" +
                 $"\n请将工具输出适配为通用类型后再绑定全局变量。\n" +
                 $"支持的通用类型：Integer, Double, String, Boolean, Image, RoI, Transform。",
-                "不支持的参数类型", MessageBoxButton.OK, MessageBoxImage.Warning);
+                "不支持的参数类型", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Warning);
             e.Handled = true;
             return;
         }

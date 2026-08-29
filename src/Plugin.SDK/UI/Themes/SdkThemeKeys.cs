@@ -31,6 +31,20 @@
         /// <summary>控件默认背景（按钮/输入框等），对应 UI ThemeKeys.ControlBackgroundBrush</summary>
         public const string ControlBackgroundBrush = "ThemeControlBackgroundBrush";
 
+        // ============ 按钮（SDK 统一悬停） ============
+        /// <summary>按钮默认背景，对应 UI ThemeKeys.ButtonBackgroundBrush</summary>
+        public const string ButtonBackgroundBrush = "ThemeButtonBackgroundBrush";
+        /// <summary>按钮悬停背景，对应 UI ThemeKeys.ButtonHoverBackgroundBrush</summary>
+        public const string ButtonHoverBackgroundBrush = "ThemeButtonHoverBackgroundBrush";
+        /// <summary>按钮按下背景，对应 UI ThemeKeys.ButtonPressedBackgroundBrush</summary>
+        public const string ButtonPressedBackgroundBrush = "ThemeButtonPressedBackgroundBrush";
+        /// <summary>按钮边框，对应 UI ThemeKeys.ButtonBorderBrush</summary>
+        public const string ButtonBorderBrush = "ThemeButtonBorderBrush";
+        /// <summary>按钮文字，对应 UI ThemeKeys.ButtonTextBrush</summary>
+        public const string ButtonTextBrush = "ThemeButtonTextBrush";
+        /// <summary>按钮禁用背景，对应 UI ThemeKeys.ButtonDisabledBackgroundBrush</summary>
+        public const string ButtonDisabledBackgroundBrush = "ThemeButtonDisabledBackgroundBrush";
+
         // ============ 文字 ============
         /// <summary>主文字，对应 UI ThemeKeys.TextPrimaryBrush</summary>
         public const string TextPrimaryBrush = "ThemeTextPrimaryBrush";

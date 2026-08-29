@@ -26,6 +26,44 @@
     <DropShadowEffect x:Key="PopupShadowEffect" Color="Black" BlurRadius="6" ShadowDepth="2" Direction="270" Opacity="0.15"/>
 
     <!-- ================================================================ -->
+    <!-- 全局隐式 Button（SDK 统一悬停）：中性模板（TemplateBinding 跟随元素级属性，
+         不裁剪图标按钮内容），悬停/按下用主题 token，使 SDK 控件内按钮（调试窗口
+         底部运行/确定、DispItem 可见性/编辑按钮等）统一获得主题适配悬停。
+         特例按钮可在具体样式里覆盖。 -->
+    <Style TargetType="Button">
+        <Setter Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ButtonBackgroundBrush}}"/>
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ButtonTextBrush}}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ButtonBorderBrush}}"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="3">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                        Margin="{TemplateBinding Padding}"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ButtonHoverBackgroundBrush}}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ButtonHoverBackgroundBrush}}"/>
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+                <Setter Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ButtonPressedBackgroundBrush}}"/>
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Foreground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TextDisabledBrush}}"/>
+                <Setter Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ButtonDisabledBackgroundBrush}}"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- ================================================================ -->
     <!-- 颜色定义说明：SDK 控件统一使用 Theme 前缀语义 key（定义见 DefaultTheme.xaml）。 -->
     <!-- DefaultTheme 由宿主 Application 级（AppResources.xaml）合入，本库不再合并，
          避免控件局部合入本库时把固定亮色值带到控件级遮蔽主题。 -->
@@ -1276,6 +1314,14 @@
                                     Value="M2 10C4 6 7 4 10 4C13 4 16 6 18 10C16 14 13 16 10 16C7 16 4 14 2 10ZM10 13C11.7 13 13 11.7 13 10C13 8.3 11.7 7 10 7C8.3 7 7 8.3 7 10C7 11.7 8.3 13 10 13ZM3 17L17 3"/>
                             <Setter TargetName="PART_VisibilityIcon" Property="Opacity" Value="0.5"/>
                         </DataTrigger>
+                        <!-- 悬停反馈：图标按钮悬停时图标提亮 + 浅背景圆角 -->
+                        <Trigger SourceName="PART_VisibilityButton" Property="IsMouseOver" Value="True">
+                            <Setter TargetName="PART_VisibilityButton" Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ButtonHoverBackgroundBrush}}"/>
+                            <Setter TargetName="PART_VisibilityIcon" Property="Opacity" Value="1.0"/>
+                        </Trigger>
+                        <Trigger SourceName="PART_StyleSettingsButton" Property="IsMouseOver" Value="True">
+                            <Setter TargetName="PART_StyleSettingsButton" Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ButtonHoverBackgroundBrush}}"/>
+                        </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
@@ -1396,6 +1442,14 @@
                                     Value="M2 10C4 6 7 4 10 4C13 4 16 6 18 10C16 14 13 16 10 16C7 16 4 14 2 10ZM10 13C11.7 13 13 11.7 13 10C13 8.3 11.7 7 10 7C8.3 7 7 8.3 7 10C7 11.7 8.3 13 10 13ZM3 17L17 3"/>
                             <Setter TargetName="PART_VisibilityIcon" Property="Opacity" Value="0.5"/>
                         </DataTrigger>
+                        <!-- 悬停反馈：图标按钮悬停时浅背景 + 图标提亮 -->
+                        <Trigger SourceName="PART_VisibilityButton" Property="IsMouseOver" Value="True">
+                            <Setter TargetName="PART_VisibilityButton" Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ButtonHoverBackgroundBrush}}"/>
+                            <Setter TargetName="PART_VisibilityIcon" Property="Opacity" Value="1.0"/>
+                        </Trigger>
+                        <Trigger SourceName="PART_StyleSettingsButton" Property="IsMouseOver" Value="True">
+                            <Setter TargetName="PART_StyleSettingsButton" Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ButtonHoverBackgroundBrush}}"/>
+                        </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>

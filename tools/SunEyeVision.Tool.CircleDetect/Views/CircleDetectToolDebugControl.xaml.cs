@@ -257,6 +257,9 @@ namespace SunEyeVision.Tool.CircleDetect.Views
             MeasurementManager?.SetMainImageControl(imageControl);
             // 锁定引导类型为圆（工具固定为圆查找）
             MeasurementManager?.GuideEditor.StartDraw(MeasureGeometryType.Circle);
+            // 工具栏只显示圆/圆弧卡尺（隐藏直线卡尺）
+            MeasurementManager?.GuideEditor.SetAllowedGeometryTypes(
+                MeasureGeometryType.Circle, MeasureGeometryType.Arc);
             RestoreGuideFromParameters();
         }
 

@@ -1574,6 +1574,10 @@
                                     {
                                         "date":  "2026-08-26",
                                         "note":  "[d18fef7b64e1d09a6dd5bcfda2bb3e205e34ea96] fix(sdk): SDK 控件悬停样式主题适配 + 顶栏主题图标/方案卡片优化 + 计划看板归类修正"
+                                    },
+                                    {
+                                        "date":  "2026-08-29",
+                                        "note":  "[78db9c9c00c722cb7d525968d28f0ec917c63794] theme dialog buttons and converge MessageBox to ThemeMessageDialog（校准：hook 误归 M-SRC-COMM，实为 UI 主题化收敛）"
                                     }
                                 ]
                     },

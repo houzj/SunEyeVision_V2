@@ -260,6 +260,8 @@ namespace SunEyeVision.Tool.LineDetect.Views
             MeasurementManager?.SetMainImageControl(imageControl);
             // 锁定引导类型为直线（工具固定为直线查找）
             MeasurementManager?.GuideEditor.StartDraw(MeasureGeometryType.Line);
+            // 工具栏只显示直线卡尺（隐藏圆/圆弧卡尺）
+            MeasurementManager?.GuideEditor.SetAllowedGeometryTypes(MeasureGeometryType.Line);
             RestoreGuideFromParameters();
         }
 

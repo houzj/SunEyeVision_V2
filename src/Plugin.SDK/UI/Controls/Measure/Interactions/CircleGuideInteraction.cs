@@ -56,7 +56,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Interactions
         {
             if (!model.EditingCircle.HasValue) return false;
             var c = model.EditingCircle.Value;
-            return Math.Abs((point - c.Center).Length - c.Radius) <= tolerance;
+            // 对齐 Roi 编辑器 IsPointInCircle：命中整个圆形区域（含内部），而非仅圆周
+            return (point - c.Center).Length <= c.Radius + tolerance;
         }
     }
 }

@@ -17,6 +17,13 @@
             <measure:MeasureEditorControl x:Name="guideEditor"/>
         </Border>
 
+        <!-- 引导几何参数面板（选中引导几何时显示，与画布双向同步） -->
+        <Expander Header="引导几何参数" IsExpanded="True" Margin="0,0,0,8"
+                  BorderBrush="{x:Static constants:ColorConstants.InspectionBlueBrush}" BorderThickness="1">
+            <measure:MeasureGuideParameterPanel x:Name="guideParameterPanel"
+                                                Editor="{Binding GuideEditor, RelativeSource={RelativeSource AncestorType=measure:MeasurementEditorManagerControl}}"/>
+        </Expander>
+
         <!-- 屏蔽区域 - 橙色主题（复用 RoiEditorControl 多 ROI 能力） -->
         <Border CornerRadius="8" BorderThickness="1" BorderBrush="{x:Static constants:ColorConstants.MaskOrangeBrush}" Padding="8">
             <region:RoiEditorControl x:Name="maskEditor"

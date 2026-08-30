@@ -35,7 +35,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering
         LineStart,
         LineEnd,
         // 多边形顶点手柄
-        PolygonVertex
+        PolygonVertex,
+        // 主卡尺缩放手柄（测量卡尺宽/高联合编辑，拖拽对角缩放）
+        CaliberResize
     }
 
     /// <summary>

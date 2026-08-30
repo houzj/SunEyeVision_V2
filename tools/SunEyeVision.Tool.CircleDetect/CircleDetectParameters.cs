@@ -94,6 +94,26 @@ namespace SunEyeVision.Tool.CircleDetect
             set => SetProperty(ref _endAngle, value, "终止角");
         }
 
+        private bool _isMajorArc;
+        /// <summary>
+        /// 是否大弧（张角 &gt; 180°，圆弧模式有效）
+        /// </summary>
+        public bool IsMajorArc
+        {
+            get => _isMajorArc;
+            set => SetProperty(ref _isMajorArc, value, "大弧/小弧");
+        }
+
+        private bool _isClockwise;
+        /// <summary>
+        /// 圆弧方向（true=顺时针，false=逆时针，圆弧模式有效）
+        /// </summary>
+        public bool IsClockwise
+        {
+            get => _isClockwise;
+            set => SetProperty(ref _isClockwise, value, "圆弧方向");
+        }
+
         #endregion
 
         #region 测量带参数（对齐 Halcon 2D Metrology）

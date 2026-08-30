@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.SDK.UI.Controls.Measure.Models;
@@ -100,6 +102,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         public event EventHandler<GuideGeometryChangedEventArgs>? GuideGeometryChanged;
 
         /// <summary>
+        /// 卡尺参数变更事件（面板/主卡尺手柄编辑后触发，宿主据此回写工具参数）
+        /// </summary>
+        public event EventHandler<CaliberParamsChangedEventArgs>? CaliberParamsChanged;
+
+        /// <summary>
         /// 创建测量引导几何交互宿主
         /// </summary>
         public MeasureEditorControl()
@@ -153,10 +160,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         /// </summary>
         public void SetCaliberParams(double width, double length, int count)
         {
-            _bandWidth = width;
-            _bandLength = length;
+            _bandWidth = Math.Max(1.0, width);
+            _bandLength = Math.Max(1.0, length);
             _measureCount = Math.Max(1, count);
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[Diag] SetCaliberParams W={_bandWidth:F2} H={_bandLength:F2} C={_measureCount} overlay={_overlay != null} drawing={_model.IsDrawing} hasGuide={_model.HasGuide}",
+                "MeasureEditorControl");
             Render();
+            CaliberParamsChanged?.Invoke(this, new CaliberParamsChangedEventArgs(_bandWidth, _bandLength, _measureCount));
         }
 
         /// <summary>
@@ -181,6 +192,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
             _model.Mode = MeasureInteractionMode.Draw;
             _model.IsDrawing = false;
             _model.IsSelected = false;
+            _geometryType = geometryType;
+            _interaction = GuideInteractionFactory.Get(geometryType);
+        }
+
+        /// <summary>
+        /// 仅锁定几何类型（不进入绘制模式）。
+        /// 用于工具打开时绑定类型：设置交互策略但不让编辑器处于"待绘制"状态，
+        /// 用户需主动点击工具栏卡尺按钮才会开始绘制。
+        /// </summary>
+        public void LockGeometryType(MeasureGeometryType geometryType)
+        {
             _geometryType = geometryType;
             _interaction = GuideInteractionFactory.Get(geometryType);
         }
@@ -284,6 +306,45 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         /// 当前是否有有效引导几何
         /// </summary>
         public bool HasGuide => _model.HasGuide;
+
+        /// <summary>
+        /// 当前引导几何是否被选中（供参数面板显示）
+        /// </summary>
+        public bool IsGuideSelected => _model.IsSelected;
+
+        /// <summary>
+        /// 当前编辑中的引导直线（null=非直线模式）
+        /// </summary>
+        public Line2d? EditingLine => _model.EditingLine;
+
+        /// <summary>
+        /// 当前编辑中的引导圆（null=非圆模式）
+        /// </summary>
+        public Circle2d? EditingCircle => _model.EditingCircle;
+
+        /// <summary>
+        /// 当前编辑中的引导圆弧（null=非圆弧模式）
+        /// </summary>
+        public Arc2d? EditingArc => _model.EditingArc;
+
+        /// <summary>
+        /// 当前引导几何类型
+        /// </summary>
+        public MeasureGeometryType GuideGeometryType => _geometryType;
+
+        /// <summary>
+        /// 当前引导几何（用于参数面板双向同步）
+        /// </summary>
+        public MeasureInteractionModel InteractionModel => _model;
+
+        /// <summary>卡尺宽度（法线方向全宽，供参数面板显示）</summary>
+        public double CaliberWidth => _bandWidth;
+
+        /// <summary>卡尺长度（切线方向全长，供参数面板显示）</summary>
+        public double CaliberHeight => _bandLength;
+
+        /// <summary>卡尺数量（供参数面板显示）</summary>
+        public int CaliberCount => _measureCount;
 
         /// <summary>
         /// 触发引导渲染（由管理器在统一渲染时调用，无头模式）
@@ -414,11 +475,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
             // 位置修正：鼠标显示坐标 → 参考系坐标
             pos = ToReference(pos);
 
-            // ① 手柄 → 手（编辑，优先级最高）
-            if (_currentHandles != null && HitTestHandles(pos) != HandleType.None)
+            // ① 手柄 → 按手柄类型显示不同光标（优先级最高）
+            if (_currentHandles != null)
             {
-                Mouse.OverrideCursor = Cursors.Hand;
-                return;
+                var handleType = HitTestHandles(pos);
+                if (handleType != HandleType.None)
+                {
+                    Mouse.OverrideCursor = CursorForHandle(handleType, _geometryType);
+                    return;
+                }
             }
 
             // ② 引导主体 或 ③ 卡尺测量带 → 十字（移动）
@@ -431,6 +496,37 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
 
             // 空白 → 箭头
             Mouse.OverrideCursor = Cursors.Arrow;
+        }
+
+        /// <summary>
+        /// 手柄类型 → 光标映射（不同命中目标显示不同光标）
+        /// </summary>
+        /// <param name="handleType">手柄类型</param>
+        /// <param name="geometryType">当前引导几何类型（圆弧的 Right 手柄是 P3 弧中点，非水平缩放）</param>
+        private Cursor CursorForHandle(HandleType handleType, MeasureGeometryType geometryType)
+        {
+            // 圆弧的 Right 手柄 = P3 弧中点（三点定圆改半径/方向/大小弧）→ 编辑手形，非水平缩放
+            if (geometryType == MeasureGeometryType.Arc && handleType == HandleType.Right)
+                return Cursors.Hand;
+
+            return handleType switch
+            {
+                // 中心手柄 → 整体移动
+                HandleType.Center => Cursors.SizeAll,
+                // 上下缩放手柄 → 垂直缩放
+                HandleType.Top or HandleType.Bottom => Cursors.SizeNS,
+                // 左右缩放手柄 → 水平缩放
+                HandleType.Left or HandleType.Right => Cursors.SizeWE,
+                // 角落缩放手柄 → 对角缩放
+                HandleType.TopLeft or HandleType.BottomRight => Cursors.SizeNWSE,
+                HandleType.TopRight or HandleType.BottomLeft => Cursors.SizeNESW,
+                // 主卡尺缩放手柄 → 对角缩放（同时编辑宽/高）
+                HandleType.CaliberResize => Cursors.SizeNWSE,
+                // 旋转手柄
+                HandleType.Rotate => Cursors.Hand,
+                // 直线端点 / 多边形顶点 / 其他 → 默认手（编辑）
+                _ => Cursors.Hand,
+            };
         }
 
         /// <summary>
@@ -599,9 +695,31 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
 
         /// <summary>
         /// 手柄拖拽编辑（委托给当前几何交互策略）
+        /// 中心手柄（Center）走整体平移，其余手柄按几何类型分发编辑
         /// </summary>
         private void HandleShapeEdit(Point current)
         {
+            // 主卡尺缩放手柄：同时编辑卡尺宽/高（拖拽对角缩放，从初始半宽/半长恢复基准）
+            if (_activeHandleType == HandleType.CaliberResize)
+            {
+                EditCaliberResize(current);
+                return;
+            }
+
+            // 中心手柄：整体移动（拖动整个圆/矩形，对齐 Roi 中心手柄语义）
+            if (_activeHandleType == HandleType.Center)
+            {
+                var delta = current - _lastMouse;
+                if (delta.Length > 1e-9)
+                {
+                    _model.Translate(delta);
+                    _lastMouse = current;
+                    Render();
+                    NotifyGuideChanged();
+                }
+                return;
+            }
+
             if (_interaction.EditHandle(_model, _activeHandleType, current))
             {
                 Render();
@@ -684,13 +802,130 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         }
 
         /// <summary>
-        /// 更新手柄数组（委托给当前几何交互策略）
+        /// 更新手柄数组（引导几何手柄 + 主卡尺缩放手柄）
         /// </summary>
         private void UpdateHandles()
         {
             _currentHandles = _model.HasGuide
                 ? _interaction.CreateHandles(_model, _zoom)
                 : null;
+
+            // 追加主卡尺缩放手柄（一个手柄同时编辑宽/高，需引导几何存在）
+            if (_currentHandles != null && !_model.IsDrawing)
+            {
+                var caliberHandle = CreateCaliberResizeHandle();
+                if (caliberHandle != null)
+                {
+                    _currentHandles = _currentHandles.Append(caliberHandle).ToArray();
+                }
+            }
+        }
+
+        /// <summary>
+        /// 创建主卡尺缩放手柄（位于主卡尺右上角，拖拽对角缩放同时编辑卡尺宽/高）
+        /// </summary>
+        private EditHandle? CreateCaliberResizeHandle()
+        {
+            if (_overlay == null || !_model.HasGuide) return null;
+            var frame = GetMainCaliberFrame();
+            if (frame == null) return null;
+
+            // 右上角 = 中心 + 长轴*半长 + 宽轴*半宽
+            var corner = frame.Value.Center
+                + frame.Value.LongAxis * (_bandLength / 2)
+                + frame.Value.WidthAxis * (_bandWidth / 2);
+
+            return new EditHandle
+            {
+                Type = HandleType.CaliberResize,
+                Position = corner,
+                HandleSize = HandleRenderer.GetScaledHandleSize(_zoom),
+                Cursor = Cursors.SizeNWSE,
+            };
+        }
+
+        /// <summary>
+        /// 主卡尺几何帧（中心 + 长轴/宽轴方向基）
+        /// </summary>
+        private readonly record struct CaliberFrame(Point Center, Vector LongAxis, Vector WidthAxis);
+
+        /// <summary>
+        /// 计算主卡尺（中间测量带）的几何帧
+        /// </summary>
+        /// <remarks>
+        /// 与 MeasureBandOverlay 渲染的主卡尺定义一致：
+        /// - Line：measureCount/2 索引（中间条）；长轴=引导线方向（切向），宽轴=法线
+        /// - Circle：0°（正右方）条；长轴=切向，宽轴=径向
+        /// - Arc：measureCount/2 索引（弧中点条）；长轴=切向，宽轴=径向
+        /// </remarks>
+        private CaliberFrame? GetMainCaliberFrame()
+        {
+            int mainIndex = _measureCount / 2;
+
+            if (_model.EditingLine.HasValue)
+            {
+                var seg = _model.LineEndPoint - _model.LineStartPoint;
+                var totalLen = seg.Length;
+                if (totalLen < 1e-6) return null;
+                var dir = seg / totalLen;
+                double step = totalLen / Math.Max(1, _measureCount);
+                var center = _model.LineStartPoint + dir * ((mainIndex + 0.5) * step);
+                return new CaliberFrame(center, dir, new Vector(-dir.Y, dir.X));
+            }
+
+            if (_model.EditingCircle.HasValue)
+            {
+                var c = _model.EditingCircle.Value;
+                if (c.Radius <= 0) return null;
+                // 主卡尺 = 0°（正右方）条；径向=宽轴(+X)，切向=长轴(+Y)
+                var center = c.Center + new Vector(1, 0) * c.Radius;
+                return new CaliberFrame(center, new Vector(0, 1), new Vector(1, 0));
+            }
+
+            if (_model.EditingArc.HasValue && !_model.EditingArc.Value.IsEmpty)
+            {
+                var a = _model.EditingArc.Value;
+                if (a.Radius <= 0 || Math.Abs(a.AngularSpan) <= 1e-6) return null;
+                double span = a.AngularSpan;
+                double stepAngle = span / Math.Max(1, _measureCount);
+                double angle = a.StartAngle + (mainIndex + 0.5) * stepAngle;
+                // 角度规范化到 [-π, π]，避免跨 0° 边界时 cos/sin 大角度误差
+                angle = ((angle + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
+                var radial = new Vector(Math.Cos(angle), Math.Sin(angle));  // 径向=宽轴
+                var center = a.Center + radial * a.Radius;
+                return new CaliberFrame(center, new Vector(-radial.Y, radial.X), radial);
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// 主卡尺缩放手柄拖拽编辑：同时更新卡尺宽/高
+        /// </summary>
+        /// <remarks>
+        /// 以主卡尺中心为锚点，鼠标偏移在长轴/宽轴的投影决定新的半长/半宽。
+        /// 单手柄对角缩放：长轴投影 → 卡尺长，宽轴投影 → 卡尺宽（含下限保护）。
+        /// </remarks>
+        private void EditCaliberResize(Point current)
+        {
+            if (!_model.HasGuide) return;
+
+            var frame = GetMainCaliberFrame();
+            if (frame == null) return;
+            var anchor = frame.Value.Center;
+            var longAxis = frame.Value.LongAxis;
+            var widthAxis = frame.Value.WidthAxis;
+
+            // 鼠标相对锚点偏移在长轴/宽轴的投影（带下限保护）
+            var v = current - anchor;
+            double halfLength = Math.Abs(v.X * longAxis.X + v.Y * longAxis.Y);
+            double halfWidth = Math.Abs(v.X * widthAxis.X + v.Y * widthAxis.Y);
+
+            const double minHalf = 1.0;
+            halfLength = Math.Max(minHalf, halfLength);
+            halfWidth = Math.Max(minHalf, halfWidth);
+
+            SetCaliberParams(halfWidth * 2, halfLength * 2, _measureCount);
         }
 
         /// <summary>

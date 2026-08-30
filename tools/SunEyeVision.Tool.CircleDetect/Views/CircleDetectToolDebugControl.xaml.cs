@@ -4,6 +4,7 @@ using System.Windows;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Metadata;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.UI.Controls;
@@ -28,6 +29,12 @@ namespace SunEyeVision.Tool.CircleDetect.Views
     /// </remarks>
     public partial class CircleDetectToolDebugControl : ToolDebugControlBase
     {
+        /// <summary>正在从编辑器同步卡尺参数（防止 参数→编辑器→参数 回写死循环）</summary>
+        private bool _syncingCaliberFromEditor;
+
+        /// <summary>卡尺编辑器事件是否已订阅（幂等标志，构造 + Loaded 只订阅一次）</summary>
+        private bool _caliberHooked;
+
         #region Properties
 
         public static readonly DependencyProperty ParametersProperty =
@@ -75,7 +82,37 @@ namespace SunEyeVision.Tool.CircleDetect.Views
         {
             InitializeComponent();
             Parameters = new CircleDetectParameters();
+            // 构造时先尝试订阅（XAML 命名元素可能已就绪）；若未就绪由 Loaded 补订阅
             HookCaliberEditor();
+
+            // 窗口关闭时清理主图像测量叠加层（对齐 Threshold/Blob 范式）
+            Loaded += (s, e) =>
+            {
+                // 确保 XAML 完全加载后订阅成功（防止构造函数时序导致事件漏订阅）
+                HookCaliberEditor();
+                var window = System.Windows.Window.GetWindow(this);
+                if (window != null)
+                {
+                    window.Closing += OnWindowClosing;
+                }
+            };
+        }
+
+        #endregion
+
+        #region 资源清理
+
+        /// <summary>
+        /// 清理主图像测量引导叠加层（关闭调试窗口时防止残留）
+        /// </summary>
+        public void Cleanup()
+        {
+            MeasurementManager?.ClearMainOverlay();
+        }
+
+        private void OnWindowClosing(object? sender, System.ComponentModel.CancelEventArgs e)
+        {
+            Cleanup();
         }
 
         #endregion
@@ -88,13 +125,21 @@ namespace SunEyeVision.Tool.CircleDetect.Views
         private MeasureEditorControl GuideEditor => MeasurementManager.GuideEditor;
 
         /// <summary>
-        /// 订阅引导几何交互宿主的事件 + 参数联动
+        /// 订阅引导几何交互宿主的事件 + 参数联动（幂等：构造 + Loaded 双调用只订阅一次）
         /// </summary>
         private void HookCaliberEditor()
         {
-            if (GuideEditor == null) return;
+            if (GuideEditor == null)
+            {
+                VisionLogger.Instance.Log(LogLevel.Warning, "[Diag] HookCaliberEditor GuideEditor=null 订阅失败", "CircleDetectToolDebugControl");
+                return;
+            }
+            if (_caliberHooked) return;
+            _caliberHooked = true;
             GuideEditor.GuideGeometryChanged += OnGuideGeometryChanged;
+            GuideEditor.CaliberParamsChanged += OnCaliberParamsChanged;
             Parameters.PropertyChanged += OnParameterChanged;
+            VisionLogger.Instance.Log(LogLevel.Info, "[Diag] HookCaliberEditor 订阅成功", "CircleDetectToolDebugControl");
         }
 
         /// <summary>
@@ -107,11 +152,38 @@ namespace SunEyeVision.Tool.CircleDetect.Views
                 e.PropertyName == nameof(CircleDetectParameters.MeasureLength2) ||
                 e.PropertyName == nameof(CircleDetectParameters.NumMeasures))
             {
-                GuideEditor.SetCaliberParams(
-                    Parameters.MeasureLength1 * 2,
-                    Parameters.MeasureLength2 * 2,
-                    Parameters.NumMeasures);
+                VisionLogger.Instance.Log(LogLevel.Info,
+                    $"[Diag] OnParameterChanged prop={e.PropertyName} L1={Parameters.MeasureLength1:F2} L2={Parameters.MeasureLength2:F2} N={Parameters.NumMeasures}",
+                    "CircleDetectToolDebugControl");
+                _syncingCaliberFromEditor = true;
+                try
+                {
+                    GuideEditor.SetCaliberParams(
+                        Parameters.MeasureLength1 * 2,
+                        Parameters.MeasureLength2 * 2,
+                        Parameters.NumMeasures);
+                }
+                finally
+                {
+                    _syncingCaliberFromEditor = false;
+                }
             }
+        }
+
+        /// <summary>
+        /// 卡尺参数变更（主卡尺手柄/面板编辑）→ 回写工具参数
+        /// </summary>
+        private void OnCaliberParamsChanged(object? sender, CaliberParamsChangedEventArgs e)
+        {
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[Diag] OnCaliberParamsChanged W={e.Width:F2} L={e.Length:F2} C={e.Count} syncing={_syncingCaliberFromEditor}",
+                "CircleDetectToolDebugControl");
+            if (Parameters == null || _syncingCaliberFromEditor) return;
+            Parameters.MeasureLength1 = e.Width / 2;
+            Parameters.MeasureLength2 = e.Length / 2;
+            Parameters.NumMeasures = e.Count;
+            // 数量优先：用户编辑数量后清零间距，避免 Halcon 执行时"间距优先"压制数量
+            Parameters.MeasureDistance = 0;
         }
 
         /// <summary>
@@ -127,6 +199,13 @@ namespace SunEyeVision.Tool.CircleDetect.Views
                 Parameters.GuideCircle = model.EditingCircle.Value;
                 Parameters.LogInfo(
                     $"引导圆已绘制: 圆心({model.EditingCircle.Value.Center.X:F1}, {model.EditingCircle.Value.Center.Y:F1})");
+            }
+
+            // 圆弧模式：同步大弧/方向参数（来自交互模型）
+            if (Parameters.IsArc && model.EditingArc.HasValue)
+            {
+                Parameters.IsMajorArc = model.EditingArc.Value.IsMajorArc;
+                Parameters.IsClockwise = model.EditingArc.Value.IsClockwise;
             }
 
             // 绘制流程完成 → 清除工具栏选中，回到选择模式
@@ -255,8 +334,8 @@ namespace SunEyeVision.Tool.CircleDetect.Views
         {
             base.SetMainImageControl(imageControl);
             MeasurementManager?.SetMainImageControl(imageControl);
-            // 锁定引导类型为圆（工具固定为圆查找）
-            MeasurementManager?.GuideEditor.StartDraw(MeasureGeometryType.Circle);
+            // 锁定引导类型为圆（工具固定为圆查找，不自动进入绘制模式）
+            MeasurementManager?.GuideEditor.LockGeometryType(MeasureGeometryType.Circle);
             // 工具栏只显示圆/圆弧卡尺（隐藏直线卡尺）
             MeasurementManager?.GuideEditor.SetAllowedGeometryTypes(
                 MeasureGeometryType.Circle, MeasureGeometryType.Arc);

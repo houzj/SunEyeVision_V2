@@ -4,6 +4,7 @@ using System.Windows;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Metadata;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.UI.Controls;
@@ -28,6 +29,12 @@ namespace SunEyeVision.Tool.LineDetect.Views
     /// </remarks>
     public partial class LineDetectToolDebugControl : ToolDebugControlBase
     {
+        /// <summary>正在从编辑器同步卡尺参数（防止 参数→编辑器→参数 回写死循环）</summary>
+        private bool _syncingCaliberFromEditor;
+
+        /// <summary>卡尺编辑器事件是否已订阅（幂等标志，构造 + Loaded 只订阅一次）</summary>
+        private bool _caliberHooked;
+
         #region Properties
 
         public static readonly DependencyProperty ParametersProperty =
@@ -75,7 +82,37 @@ namespace SunEyeVision.Tool.LineDetect.Views
         {
             InitializeComponent();
             Parameters = new LineDetectParameters();
+            // 构造时先尝试订阅（XAML 命名元素可能已就绪）；若未就绪由 Loaded 补订阅
             HookCaliberEditor();
+
+            // 窗口关闭时清理主图像测量叠加层（对齐 Threshold/Blob 范式）
+            Loaded += (s, e) =>
+            {
+                // 确保 XAML 完全加载后订阅成功（防止构造函数时序导致事件漏订阅）
+                HookCaliberEditor();
+                var window = System.Windows.Window.GetWindow(this);
+                if (window != null)
+                {
+                    window.Closing += OnWindowClosing;
+                }
+            };
+        }
+
+        #endregion
+
+        #region 资源清理
+
+        /// <summary>
+        /// 清理主图像测量引导叠加层（关闭调试窗口时防止残留）
+        /// </summary>
+        public void Cleanup()
+        {
+            MeasurementManager?.ClearMainOverlay();
+        }
+
+        private void OnWindowClosing(object? sender, System.ComponentModel.CancelEventArgs e)
+        {
+            Cleanup();
         }
 
         #endregion
@@ -92,9 +129,17 @@ namespace SunEyeVision.Tool.LineDetect.Views
         /// </summary>
         private void HookCaliberEditor()
         {
-            if (GuideEditor == null) return;
+            if (GuideEditor == null)
+            {
+                VisionLogger.Instance.Log(LogLevel.Warning, "[Diag] HookCaliberEditor GuideEditor=null 订阅失败", "LineDetectToolDebugControl");
+                return;
+            }
+            if (_caliberHooked) return;
+            _caliberHooked = true;
             GuideEditor.GuideGeometryChanged += OnGuideGeometryChanged;
+            GuideEditor.CaliberParamsChanged += OnCaliberParamsChanged;
             Parameters.PropertyChanged += OnParameterChanged;
+            VisionLogger.Instance.Log(LogLevel.Info, "[Diag] HookCaliberEditor 订阅成功", "LineDetectToolDebugControl");
         }
 
         /// <summary>
@@ -107,11 +152,38 @@ namespace SunEyeVision.Tool.LineDetect.Views
                 e.PropertyName == nameof(LineDetectParameters.MeasureLength2) ||
                 e.PropertyName == nameof(LineDetectParameters.NumMeasures))
             {
-                GuideEditor.SetCaliberParams(
-                    Parameters.MeasureLength1 * 2,
-                    Parameters.MeasureLength2 * 2,
-                    Parameters.NumMeasures);
+                VisionLogger.Instance.Log(LogLevel.Info,
+                    $"[Diag] OnParameterChanged prop={e.PropertyName} L1={Parameters.MeasureLength1:F2} L2={Parameters.MeasureLength2:F2} N={Parameters.NumMeasures}",
+                    "LineDetectToolDebugControl");
+                _syncingCaliberFromEditor = true;
+                try
+                {
+                    GuideEditor.SetCaliberParams(
+                        Parameters.MeasureLength1 * 2,
+                        Parameters.MeasureLength2 * 2,
+                        Parameters.NumMeasures);
+                }
+                finally
+                {
+                    _syncingCaliberFromEditor = false;
+                }
             }
+        }
+
+        /// <summary>
+        /// 卡尺参数变更（主卡尺手柄/面板编辑）→ 回写工具参数
+        /// </summary>
+        private void OnCaliberParamsChanged(object? sender, CaliberParamsChangedEventArgs e)
+        {
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[Diag] OnCaliberParamsChanged W={e.Width:F2} L={e.Length:F2} C={e.Count} syncing={_syncingCaliberFromEditor}",
+                "LineDetectToolDebugControl");
+            if (Parameters == null || _syncingCaliberFromEditor) return;
+            Parameters.MeasureLength1 = e.Width / 2;
+            Parameters.MeasureLength2 = e.Length / 2;
+            Parameters.NumMeasures = e.Count;
+            // 数量优先：用户编辑数量后清零间距，避免 Halcon 执行时"间距优先"压制数量
+            Parameters.MeasureDistance = 0;
         }
 
         /// <summary>
@@ -258,8 +330,8 @@ namespace SunEyeVision.Tool.LineDetect.Views
         {
             base.SetMainImageControl(imageControl);
             MeasurementManager?.SetMainImageControl(imageControl);
-            // 锁定引导类型为直线（工具固定为直线查找）
-            MeasurementManager?.GuideEditor.StartDraw(MeasureGeometryType.Line);
+            // 锁定引导类型为直线（工具固定为直线查找，不自动进入绘制模式）
+            MeasurementManager?.GuideEditor.LockGeometryType(MeasureGeometryType.Line);
             // 工具栏只显示直线卡尺（隐藏圆/圆弧卡尺）
             MeasurementManager?.GuideEditor.SetAllowedGeometryTypes(MeasureGeometryType.Line);
             RestoreGuideFromParameters();

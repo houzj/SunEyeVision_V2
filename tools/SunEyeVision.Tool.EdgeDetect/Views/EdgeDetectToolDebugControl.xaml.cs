@@ -77,6 +77,33 @@ namespace SunEyeVision.Tool.EdgeDetect.Views
             InitializeComponent();
             Parameters = new EdgeDetectParameters();
             HookCaliberEditor();
+
+            // 窗口关闭时清理主图像测量叠加层（对齐 Threshold/Blob 范式）
+            Loaded += (s, e) =>
+            {
+                var window = System.Windows.Window.GetWindow(this);
+                if (window != null)
+                {
+                    window.Closing += OnWindowClosing;
+                }
+            };
+        }
+
+        #endregion
+
+        #region 资源清理
+
+        /// <summary>
+        /// 清理主图像测量引导叠加层（关闭调试窗口时防止残留）
+        /// </summary>
+        public void Cleanup()
+        {
+            MeasurementManager?.ClearMainOverlay();
+        }
+
+        private void OnWindowClosing(object? sender, System.ComponentModel.CancelEventArgs e)
+        {
+            Cleanup();
         }
 
         #endregion
@@ -151,6 +178,8 @@ namespace SunEyeVision.Tool.EdgeDetect.Views
                             model.EditingArc.Value.Center, model.EditingArc.Value.Radius);
                         Parameters.StartAngle = model.EditingArc.Value.StartAngle;
                         Parameters.EndAngle = model.EditingArc.Value.EndAngle;
+                        Parameters.IsMajorArc = model.EditingArc.Value.IsMajorArc;
+                        Parameters.IsClockwise = model.EditingArc.Value.IsClockwise;
                         Parameters.LogInfo($"引导圆弧已绘制: 圆心({model.EditingArc.Value.Center.X:F1}, {model.EditingArc.Value.Center.Y:F1})");
                     }
                     break;

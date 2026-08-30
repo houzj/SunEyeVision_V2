@@ -6,6 +6,7 @@ using System.Windows.Media;
 using System.Windows.Shapes;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
+using SunEyeVision.Plugin.SDK.UI.Constants;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
 {
@@ -27,20 +28,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
     /// </remarks>
     public class MeasureBandOverlay
     {
-        /// <summary>普通测量带填充色（半透明）</summary>
-        private static readonly Color BandFillColor = Color.FromArgb(60, 100, 200, 255);
-
-        /// <summary>普通测量带描边色</summary>
-        private static readonly Color BandStrokeColor = Colors.SteelBlue;
-
-        /// <summary>主卡尺填充色（更不透明，高亮）</summary>
-        private static readonly Color MainBandFillColor = Color.FromArgb(140, 255, 200, 80);
-
-        /// <summary>主卡尺描边色（橙色，突出）</summary>
-        private static readonly Color MainBandStrokeColor = Color.FromArgb(255, 220, 140, 40);
-
-        /// <summary>方向箭头颜色</summary>
-        private static readonly Color DirectionColor = Colors.LimeGreen;
+        /// <summary>统一描边色 - 检测蓝（与 Blob 检测区域一致，ColorConstants 单一来源）</summary>
+        private static readonly Color StrokeColor = ColorConstants.InspectionBlue;
 
         private readonly Canvas _overlayCanvas;
         private readonly List<FrameworkElement> _elements = new();
@@ -75,8 +64,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
                 end = matrix.TransformWpfPoint(end);
             }
 
-            // 引导线（白色实线）
-            AddLine(start, end, Colors.White, 2.0);
+            // 引导线（检测蓝）
+            AddLine(start, end, StrokeColor, 2.0);
 
             if (!drawBands || measureCount <= 0) return;
 
@@ -102,10 +91,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
                 var p4 = center - dir * halfBand + normal * halfWidth;
 
                 bool isMain = i == mainIndex;
-                AddQuad(p1, p2, p3, p4,
-                    isMain ? MainBandFillColor : BandFillColor,
-                    isMain ? MainBandStrokeColor : BandStrokeColor,
-                    1.0, isMain ? 1.2 : 0.8);
+                // 卡尺无填充，全检测蓝，粗细/透明度统一
+                AddQuad(p1, p2, p3, p4, Colors.Transparent, StrokeColor, 1.0, 1.0);
 
                 // 主卡尺上绘制检测方向箭头（沿法线方向）
                 if (isMain)
@@ -139,8 +126,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
                 radiusScale = matrix.ScaleFactor();
             }
 
-            // 引导圆（白色实线）
-            AddEllipse(circle.Center, circle.Radius, Colors.White, 2.0);
+            // 引导圆（检测蓝）
+            AddEllipse(circle.Center, circle.Radius, StrokeColor, 2.0);
 
             if (!drawBands || measureCount <= 0 || circle.Radius <= 0) return;
 
@@ -163,10 +150,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
                 var p4 = center - dir * halfWidth + normal * halfBand;
 
                 bool isMain = i == 0; // 主卡尺 = 0°（正右方）条
-                AddQuad(p1, p2, p3, p4,
-                    isMain ? MainBandFillColor : BandFillColor,
-                    isMain ? MainBandStrokeColor : BandStrokeColor,
-                    1.0, isMain ? 1.2 : 0.8);
+                // 卡尺无填充，全检测蓝，粗细/透明度统一
+                AddQuad(p1, p2, p3, p4, Colors.Transparent, StrokeColor, 1.0, 1.0);
 
                 // 主卡尺上绘制检测方向箭头（沿径向向外）
                 if (isMain)
@@ -201,8 +186,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
                 radiusScale = matrix.ScaleFactor();
             }
 
-            // 引导弧（白色实线）
-            AddArc(arc, Colors.White, 2.0);
+            // 引导弧（检测蓝）
+            AddArc(arc, StrokeColor, 2.0);
 
             if (!drawBands || measureCount <= 0 || arc.Radius <= 0 || Math.Abs(arc.AngularSpan) <= 1e-6) return;
 
@@ -212,9 +197,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
             double stepAngle = span / measureCount;   // 保留符号：顺时针 stepAngle 为负 → 角度递减
             var halfBand = bandLength / 2 * radiusScale;
             var halfWidth = bandWidth / 2 * radiusScale;
-            double mainAngle = arc.StartAngle + span / 2; // 主卡尺 = 弧中点
-            // 与 angle 保持一致的规范化（跨 0° 边界时防止 isMain 判定失效导致箭头丢失）
-            mainAngle = ((mainAngle + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
+            // 主卡尺 = 弧中点对应的卡尺索引（固定索引判定，与 RenderLine 一致；
+            // 避免"角度差比较"在顺时针/跨±π/大小弧时判定失效导致方向箭头丢失）
+            int mainIndex = measureCount / 2;
 
             for (int i = 0; i < measureCount; i++)
             {
@@ -231,11 +216,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
                 var p3 = center + dir * halfWidth + normal * halfBand;
                 var p4 = center - dir * halfWidth + normal * halfBand;
 
-                bool isMain = Math.Abs(angle - mainAngle) < stepAngle * 0.51;
-                AddQuad(p1, p2, p3, p4,
-                    isMain ? MainBandFillColor : BandFillColor,
-                    isMain ? MainBandStrokeColor : BandStrokeColor,
-                    1.0, isMain ? 1.2 : 0.8);
+                bool isMain = i == mainIndex;
+                // 卡尺无填充，全检测蓝，粗细/透明度统一
+                AddQuad(p1, p2, p3, p4, Colors.Transparent, StrokeColor, 1.0, 1.0);
 
                 // 主卡尺上绘制检测方向箭头（沿径向向外）
                 if (isMain)
@@ -352,7 +335,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
             var tip = basePoint + dir * length;
 
             // 箭头主干
-            AddLine(basePoint, tip, DirectionColor, 2.0);
+            AddLine(basePoint, tip, StrokeColor, 2.0);
 
             // 箭头两翼
             double wing = length * 0.25;
@@ -360,8 +343,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
             var wing1 = tip - dir * wing + perp * wing * 0.5;
             var wing2 = tip - dir * wing - perp * wing * 0.5;
 
-            AddLine(tip, wing1, DirectionColor, 2.0);
-            AddLine(tip, wing2, DirectionColor, 2.0);
+            AddLine(tip, wing1, StrokeColor, 2.0);
+            AddLine(tip, wing2, StrokeColor, 2.0);
         }
 
         #endregion

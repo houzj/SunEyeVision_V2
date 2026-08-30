@@ -229,9 +229,18 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
 
             // 只路由给正在交互的编辑器
             if (guideEditor.IsAnyInteractionInProgress)
+            {
                 guideEditor.ProcessMouseMove(pos);
+            }
             else if (maskEditor.IsAnyInteractionInProgress)
+            {
                 maskEditor.ProcessMouseMove(pos);
+            }
+            else
+            {
+                // 无交互悬停：仍路由给引导编辑器更新悬停光标（手柄/引导/卡尺不同光标）
+                guideEditor.ProcessMouseMove(pos);
+            }
 
             RenderAll();
         }

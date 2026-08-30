@@ -1,0 +1,224 @@
+<UserControl x:Class="SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views.MeasureGuideParameterPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:themes="clr-namespace:SunEyeVision.Plugin.SDK.UI.Themes"
+             xmlns:ctrl="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls"
+             xmlns:measure="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.SDK;component/UI/Themes/Generic.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Margin="8,4">
+
+                <!-- ===== 直线卡尺参数 ===== -->
+                <StackPanel x:Name="LinePanel" Visibility="Collapsed">
+                    <TextBlock Text="引导直线"
+                               FontWeight="Bold" FontSize="13"
+                               Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"
+                               Margin="8,4,8,4"/>
+                    <Grid Margin="4,2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="70"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="起点 X:" VerticalAlignment="Center" Margin="4,2"
+                                   Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}" FontSize="12"/>
+                        <ctrl:NumericUpDown Grid.Column="1" x:Name="LineStartX"
+                                            Minimum="-100000" Maximum="100000" DecimalPlaces="2"
+                                            SmallChange="1" LargeChange="10" Width="110" HorizontalAlignment="Left" Margin="2,2"/>
+                        <TextBlock Grid.Column="2" Text="Y:" VerticalAlignment="Center" Margin="8,2,4,2"
+                                   Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}" FontSize="12"/>
+                        <ctrl:NumericUpDown Grid.Column="3" x:Name="LineStartY"
+                                            Minimum="-100000" Maximum="100000" DecimalPlaces="2"
+                                            SmallChange="1" LargeChange="10" Width="110" HorizontalAlignment="Left" Margin="2,2"/>
+                    </Grid>
+                    <Grid Margin="4,2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="70"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="终点 X:" VerticalAlignment="Center" Margin="4,2"
+                                   Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}" FontSize="12"/>
+                        <ctrl:NumericUpDown Grid.Column="1" x:Name="LineEndX"
+                                            Minimum="-100000" Maximum="100000" DecimalPlaces="2"
+                                            SmallChange="1" LargeChange="10" Width="110" HorizontalAlignment="Left" Margin="2,2"/>
+                        <TextBlock Grid.Column="2" Text="Y:" VerticalAlignment="Center" Margin="8,2,4,2"
+                                   Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}" FontSize="12"/>
+                        <ctrl:NumericUpDown Grid.Column="3" x:Name="LineEndY"
+                                            Minimum="-100000" Maximum="100000" DecimalPlaces="2"
+                                            SmallChange="1" LargeChange="10" Width="110" HorizontalAlignment="Left" Margin="2,2"/>
+                    </Grid>
+                </StackPanel>
+
+                <!-- ===== 圆卡尺参数 ===== -->
+                <StackPanel x:Name="CirclePanel" Visibility="Collapsed">
+                    <TextBlock Text="引导圆"
+                               FontWeight="Bold" FontSize="13"
+                               Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"
+                               Margin="8,4,8,4"/>
+                    <Grid Margin="4,2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="70"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="圆心 X:" VerticalAlignment="Center" Margin="4,2"
+                                   Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}" FontSize="12"/>
+                        <ctrl:NumericUpDown Grid.Column="1" x:Name="CircleCenterX"
+                                            Minimum="-100000" Maximum="100000" DecimalPlaces="2"
+                                            SmallChange="1" LargeChange="10" Width="110" HorizontalAlignment="Left" Margin="2,2"/>
+                        <TextBlock Grid.Column="2" Text="Y:" VerticalAlignment="Center" Margin="8,2,4,2"
+                                   Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}" FontSize="12"/>
+                        <ctrl:NumericUpDown Grid.Column="3" x:Name="CircleCenterY"
+                                            Minimum="-100000" Maximum="100000" DecimalPlaces="2"
+                                            SmallChange="1" LargeChange="10" Width="110" HorizontalAlignment="Left" Margin="2,2"/>
+                    </Grid>
+                    <Grid Margin="4,2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="70"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="半径:" VerticalAlignment="Center" Margin="4,2"
+                                   Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}" FontSize="12"/>
+                        <ctrl:NumericUpDown Grid.Column="1" x:Name="CircleRadius"
+                                            Minimum="0" Maximum="100000" DecimalPlaces="2"
+                                            SmallChange="1" LargeChange="10" Width="110" HorizontalAlignment="Left" Margin="2,2"/>
+                    </Grid>
+                </StackPanel>
+
+                <!-- ===== 圆弧卡尺参数 ===== -->
+                <StackPanel x:Name="ArcPanel" Visibility="Collapsed">
+                    <TextBlock Text="引导圆弧"
+                               FontWeight="Bold" FontSize="13"
+                               Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"
+                               Margin="8,4,8,4"/>
+                    <Grid Margin="4,2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="70"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="起点 X:" VerticalAlignment="Center" Margin="4,2"
+                                   Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}" FontSize="12"/>
+                        <ctrl:NumericUpDown Grid.Column="1" x:Name="ArcStartX"
+                                            Minimum="-100000" Maximum="100000" DecimalPlaces="2"
+                                            SmallChange="1" LargeChange="10" Width="110" HorizontalAlignment="Left" Margin="2,2"/>
+                        <TextBlock Grid.Column="2" Text="Y:" VerticalAlignment="Center" Margin="8,2,4,2"
+                                   Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}" FontSize="12"/>
+                        <ctrl:NumericUpDown Grid.Column="3" x:Name="ArcStartY"
+                                            Minimum="-100000" Maximum="100000" DecimalPlaces="2"
+                                            SmallChange="1" LargeChange="10" Width="110" HorizontalAlignment="Left" Margin="2,2"/>
+                    </Grid>
+                    <Grid Margin="4,2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="70"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="终点 X:" VerticalAlignment="Center" Margin="4,2"
+                                   Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}" FontSize="12"/>
+                        <ctrl:NumericUpDown Grid.Column="1" x:Name="ArcEndX"
+                                            Minimum="-100000" Maximum="100000" DecimalPlaces="2"
+                                            SmallChange="1" LargeChange="10" Width="110" HorizontalAlignment="Left" Margin="2,2"/>
+                        <TextBlock Grid.Column="2" Text="Y:" VerticalAlignment="Center" Margin="8,2,4,2"
+                                   Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}" FontSize="12"/>
+                        <ctrl:NumericUpDown Grid.Column="3" x:Name="ArcEndY"
+                                            Minimum="-100000" Maximum="100000" DecimalPlaces="2"
+                                            SmallChange="1" LargeChange="10" Width="110" HorizontalAlignment="Left" Margin="2,2"/>
+                    </Grid>
+                    <Grid Margin="4,2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="70"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="半径:" VerticalAlignment="Center" Margin="4,2"
+                                   Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}" FontSize="12"/>
+                        <ctrl:NumericUpDown Grid.Column="1" x:Name="ArcRadius"
+                                            Minimum="0" Maximum="100000" DecimalPlaces="2"
+                                            SmallChange="1" LargeChange="10" Width="110" HorizontalAlignment="Left" Margin="2,2"/>
+                    </Grid>
+                    <Grid Margin="4,2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="70"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="方向:" VerticalAlignment="Center" Margin="4,2"
+                                   Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}" FontSize="12"/>
+                        <ComboBox Grid.Column="1" x:Name="ArcDirection" Width="110" HorizontalAlignment="Left" Margin="2,2"
+                                  SelectionChanged="ArcDirection_SelectionChanged">
+                            <ComboBoxItem Content="逆时针"/>
+                            <ComboBoxItem Content="顺时针"/>
+                        </ComboBox>
+                        <TextBlock Grid.Column="2" Text="大小弧:" VerticalAlignment="Center" Margin="8,2,4,2"
+                                   Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}" FontSize="12"/>
+                        <ComboBox Grid.Column="3" x:Name="ArcMajor" Width="110" HorizontalAlignment="Left" Margin="2,2"
+                                  SelectionChanged="ArcMajor_SelectionChanged">
+                            <ComboBoxItem Content="小弧"/>
+                            <ComboBoxItem Content="大弧"/>
+                        </ComboBox>
+                    </Grid>
+                </StackPanel>
+
+                <!-- ===== 卡尺通用参数（数量/高/宽） ===== -->
+                <StackPanel x:Name="CaliberPanel" Visibility="Collapsed" Margin="0,8,0,0">
+                    <Border BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.DividerBrush}}" BorderThickness="0,1" Padding="0,4"/>
+                    <TextBlock Text="卡尺"
+                               FontWeight="Bold" FontSize="13"
+                               Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"
+                               Margin="8,8,8,4"/>
+                    <Grid Margin="4,2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="70"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="卡尺数量:" VerticalAlignment="Center" Margin="4,2"
+                                   Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}" FontSize="12"/>
+                        <ctrl:NumericUpDown Grid.Column="1" x:Name="CaliberCount"
+                                            Minimum="1" Maximum="1000" Value="10"
+                                            SmallChange="1" LargeChange="5" Width="110" HorizontalAlignment="Left" Margin="2,2"/>
+                    </Grid>
+                    <Grid Margin="4,2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="70"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="卡尺高:" VerticalAlignment="Center" Margin="4,2"
+                                   Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}" FontSize="12"/>
+                        <ctrl:NumericUpDown Grid.Column="1" x:Name="CaliberHeight"
+                                            Minimum="1" Maximum="1000" DecimalPlaces="2"
+                                            SmallChange="1" LargeChange="5" Width="110" HorizontalAlignment="Left" Margin="2,2"/>
+                    </Grid>
+                    <Grid Margin="4,2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="70"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="卡尺宽:" VerticalAlignment="Center" Margin="4,2"
+                                   Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}" FontSize="12"/>
+                        <ctrl:NumericUpDown Grid.Column="1" x:Name="CaliberWidth"
+                                            Minimum="1" Maximum="1000" DecimalPlaces="2"
+                                            SmallChange="1" LargeChange="5" Width="110" HorizontalAlignment="Left" Margin="2,2"/>
+                    </Grid>
+                </StackPanel>
+
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

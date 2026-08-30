@@ -157,6 +157,10 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
             {
                 regionManager.ClearMainOverlay();
             }
+
+            // ★ 防御性清理：同时清空主窗口结果层，避免 Blob 结果轮廓/矩形/十字/文本残留
+            //   （主窗口 ImageControl 的结果渲染层是独立于交互层的第二通道）
+            _mainImageControl?.ResultRenderLayerControl?.Clear();
         }
 
         private void OnWindowClosing(object? sender, System.ComponentModel.CancelEventArgs e)

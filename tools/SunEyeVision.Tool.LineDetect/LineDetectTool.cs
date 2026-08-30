@@ -110,13 +110,12 @@ namespace SunEyeVision.Tool.LineDetect
                 var allParam = metrologyModel.GetMetrologyObjectResult(
                     objectIndex.I, "all", "result_type", "all_param");
 
-                // 获取拟合残差 RMSE
-                var rms = metrologyModel.GetMetrologyObjectResult(
-                    objectIndex.I, "all", "result_type", "rms");
+                // ★ 修复：rms / num_measures 不是 get_metrology_object_result 的
+                //   result_type 合法值（会导致 HALCON #1305），须用 get_metrology_object_param 查询。
+                var rms = metrologyModel.GetMetrologyObjectParam(objectIndex.I, "rms");
 
                 // 获取测量带数量
-                var numMeasures = metrologyModel.GetMetrologyObjectResult(
-                    objectIndex.I, "all", "result_type", "num_measures");
+                var numMeasures = metrologyModel.GetMetrologyObjectParam(objectIndex.I, "num_measures");
 
                 // ===== 结果填充 =====
                 FillResult(result, allParam, rms, numMeasures, objectIndex, metrologyModel);
@@ -175,12 +174,16 @@ namespace SunEyeVision.Tool.LineDetect
         /// </summary>
         private HTuple BuildGenParamValue(LineDetectParameters parameters)
         {
-            return new HTuple(new object[]
-            {
-                parameters.MeasureDistance > 0 ? parameters.MeasureDistance : parameters.NumMeasures,
-                TransitionToHalcon(parameters.Transition),
-                SelectToHalcon(parameters.Select),
-            });
+            // ★ 修复：间距模式传 double（measure_distance），数量模式必须传 int（num_measures）。
+            //   原实现用三元表达式，数量模式下 int 被提升为 double，导致 HALCON #1210 类型错误。
+            var values = new object[3];
+            values[0] = parameters.MeasureDistance > 0
+                ? (object)parameters.MeasureDistance   // double → measure_distance
+                : (object)parameters.NumMeasures;     // int    → num_measures
+            values[1] = TransitionToHalcon(parameters.Transition);
+            values[2] = SelectToHalcon(parameters.Select);
+
+            return new HTuple(values);
         }
 
         /// <summary>

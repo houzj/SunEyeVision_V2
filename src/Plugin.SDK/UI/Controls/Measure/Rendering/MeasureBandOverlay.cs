@@ -53,7 +53,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
         /// <param name="measureCount">测量带数量</param>
         /// <param name="drawBands">是否绘制测量带（false=只画引导几何预览）</param>
         /// <param name="matrix">位置修正矩阵（参考坐标→当前图像坐标；null=不修正）</param>
-        public void RenderLine(Point start, Point end, double bandWidth, double bandLength, int measureCount, bool drawBands = true, AffineMatrix? matrix = null)
+        /// <param name="zoom">视口缩放（线宽反除缩放，对齐 Blob 检测区域：线宽=2/zoom，视觉恒定）</param>
+        public void RenderLine(Point start, Point end, double bandWidth, double bandLength, int measureCount, bool drawBands = true, AffineMatrix? matrix = null, double zoom = 1.0)
         {
             Clear();
 
@@ -64,8 +65,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
                 end = matrix.TransformWpfPoint(end);
             }
 
-            // 引导线（检测蓝）
-            AddLine(start, end, StrokeColor, 2.0);
+            double stroke = StrokeWidthFor(zoom);
+            double bandStroke = BandStrokeWidthFor(zoom);
+
+            // 引导线（检测蓝，与 Blob 检测区域一致线宽）
+            AddLine(start, end, StrokeColor, stroke);
 
             if (!drawBands || measureCount <= 0) return;
 
@@ -91,14 +95,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
                 var p4 = center - dir * halfBand + normal * halfWidth;
 
                 bool isMain = i == mainIndex;
-                // 卡尺无填充，全检测蓝，粗细/透明度统一
-                AddQuad(p1, p2, p3, p4, Colors.Transparent, StrokeColor, 1.0, 1.0);
+                // 卡尺无填充，全检测蓝，粗细/透明度统一（线宽与 Blob 检测区域一致）
+                AddQuad(p1, p2, p3, p4, Colors.Transparent, StrokeColor, bandStroke, 1.0);
 
                 // 主卡尺上绘制检测方向箭头（沿法线方向）
                 if (isMain)
                 {
                     var arrowBase = center - dir * halfBand * 0.3;
-                    AddDirectionArrow(arrowBase, normal, bandWidth * 0.6);
+                    AddDirectionArrow(arrowBase, normal, bandWidth * 0.6, bandStroke);
                 }
             }
         }
@@ -112,7 +116,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
         /// <param name="measureCount">测量带数量</param>
         /// <param name="drawBands">是否绘制测量带（false=只画引导几何预览）</param>
         /// <param name="matrix">位置修正矩阵（参考坐标→当前图像坐标；null=不修正）</param>
-        public void RenderCircle(Circle2d circle, double bandWidth, double bandLength, int measureCount, bool drawBands = true, AffineMatrix? matrix = null)
+        /// <param name="zoom">视口缩放（线宽反除缩放，对齐 Blob 检测区域：线宽=2/zoom，视觉恒定）</param>
+        public void RenderCircle(Circle2d circle, double bandWidth, double bandLength, int measureCount, bool drawBands = true, AffineMatrix? matrix = null, double zoom = 1.0)
         {
             Clear();
 
@@ -126,8 +131,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
                 radiusScale = matrix.ScaleFactor();
             }
 
-            // 引导圆（检测蓝）
-            AddEllipse(circle.Center, circle.Radius, StrokeColor, 2.0);
+            double stroke = StrokeWidthFor(zoom);
+            double bandStroke = BandStrokeWidthFor(zoom);
+
+            // 引导圆（检测蓝，与 Blob 检测区域一致线宽）
+            AddEllipse(circle.Center, circle.Radius, StrokeColor, stroke);
 
             if (!drawBands || measureCount <= 0 || circle.Radius <= 0) return;
 
@@ -150,14 +158,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
                 var p4 = center - dir * halfWidth + normal * halfBand;
 
                 bool isMain = i == 0; // 主卡尺 = 0°（正右方）条
-                // 卡尺无填充，全检测蓝，粗细/透明度统一
-                AddQuad(p1, p2, p3, p4, Colors.Transparent, StrokeColor, 1.0, 1.0);
+                // 卡尺无填充，全检测蓝，粗细/透明度统一（线宽与 Blob 检测区域一致）
+                AddQuad(p1, p2, p3, p4, Colors.Transparent, StrokeColor, bandStroke, 1.0);
 
                 // 主卡尺上绘制检测方向箭头（沿径向向外）
                 if (isMain)
                 {
                     var arrowBase = center - dir * halfWidth * 0.3;
-                    AddDirectionArrow(arrowBase, dir, bandWidth * 0.6);
+                    AddDirectionArrow(arrowBase, dir, bandWidth * 0.6, bandStroke);
                 }
             }
         }
@@ -171,7 +179,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
         /// <param name="measureCount">测量带数量</param>
         /// <param name="drawBands">是否绘制测量带（false=只画引导几何预览）</param>
         /// <param name="matrix">位置修正矩阵（参考坐标→当前图像坐标；null=不修正）</param>
-        public void RenderArc(Arc2d arc, double bandWidth, double bandLength, int measureCount, bool drawBands = true, AffineMatrix? matrix = null)
+        /// <param name="zoom">视口缩放（线宽反除缩放，对齐 Blob 检测区域：线宽=2/zoom，视觉恒定）</param>
+        public void RenderArc(Arc2d arc, double bandWidth, double bandLength, int measureCount, bool drawBands = true, AffineMatrix? matrix = null, double zoom = 1.0)
         {
             Clear();
 
@@ -186,8 +195,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
                 radiusScale = matrix.ScaleFactor();
             }
 
-            // 引导弧（检测蓝）
-            AddArc(arc, StrokeColor, 2.0);
+            double stroke = StrokeWidthFor(zoom);
+            double bandStroke = BandStrokeWidthFor(zoom);
+
+            // 引导弧（检测蓝，与 Blob 检测区域一致线宽）
+            AddArc(arc, StrokeColor, stroke);
 
             if (!drawBands || measureCount <= 0 || arc.Radius <= 0 || Math.Abs(arc.AngularSpan) <= 1e-6) return;
 
@@ -217,14 +229,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
                 var p4 = center - dir * halfWidth + normal * halfBand;
 
                 bool isMain = i == mainIndex;
-                // 卡尺无填充，全检测蓝，粗细/透明度统一
-                AddQuad(p1, p2, p3, p4, Colors.Transparent, StrokeColor, 1.0, 1.0);
+                // 卡尺无填充，全检测蓝，粗细/透明度统一（线宽与 Blob 检测区域一致）
+                AddQuad(p1, p2, p3, p4, Colors.Transparent, StrokeColor, bandStroke, 1.0);
 
                 // 主卡尺上绘制检测方向箭头（沿径向向外）
                 if (isMain)
                 {
                     var arrowBase = center - dir * halfWidth * 0.3;
-                    AddDirectionArrow(arrowBase, dir, bandWidth * 0.6);
+                    AddDirectionArrow(arrowBase, dir, bandWidth * 0.6, bandStroke);
                 }
             }
         }
@@ -326,7 +338,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
         /// <summary>
         /// 添加检测方向箭头（线段 + 三角箭头，沿 direction 方向）
         /// </summary>
-        private void AddDirectionArrow(Point basePoint, Vector direction, double length)
+        /// <param name="basePoint">箭头起点</param>
+        /// <param name="direction">箭头方向</param>
+        /// <param name="length">箭头长度</param>
+        /// <param name="thickness">线宽（反除缩放，与 Blob 检测区域一致）</param>
+        private void AddDirectionArrow(Point basePoint, Vector direction, double length, double thickness)
         {
             if (direction.Length < 1e-9) return;
 
@@ -335,7 +351,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
             var tip = basePoint + dir * length;
 
             // 箭头主干
-            AddLine(basePoint, tip, StrokeColor, 2.0);
+            AddLine(basePoint, tip, StrokeColor, thickness);
 
             // 箭头两翼
             double wing = length * 0.25;
@@ -343,9 +359,19 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
             var wing1 = tip - dir * wing + perp * wing * 0.5;
             var wing2 = tip - dir * wing - perp * wing * 0.5;
 
-            AddLine(tip, wing1, StrokeColor, 2.0);
-            AddLine(tip, wing2, StrokeColor, 2.0);
+            AddLine(tip, wing1, StrokeColor, thickness);
+            AddLine(tip, wing2, StrokeColor, thickness);
         }
+
+        /// <summary>
+        /// 引导几何线宽（反除缩放，对齐 Blob 检测区域默认线宽 2.0）
+        /// </summary>
+        private static double StrokeWidthFor(double zoom) => 2.0 / Math.Max(zoom, 0.01);
+
+        /// <summary>
+        /// 测量带线宽（与 Blob 检测区域边框线宽一致；单像素保底避免高倍缩放消失）
+        /// </summary>
+        private static double BandStrokeWidthFor(double zoom) => Math.Max(2.0 / Math.Max(zoom, 0.01), 1.0);
 
         #endregion
     }

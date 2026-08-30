@@ -2675,9 +2675,10 @@ SplitterPosition = position;
                             }
                         }
 
-                        var executionResult = CurrentWorkflowContext?.GetNodeResult(SelectedNode.Id);
-                        if (executionResult?.Result != null)
-                            _nodeResultManager.RefreshResultDisplay(SelectedNode, executionResult.Result);
+                        // ★ 修复：关闭调试窗口时清空主窗口结果层几何（算法结果轮廓/矩形/十字/文本
+                        //   + 检测/屏蔽区域），避免残留"不可编辑的区域"。原 RefreshResultDisplay 会
+                        //   把 result.Display 重新画到结果层，导致 Blob 等工具关闭窗口后轮廓残留。
+                        _nodeResultManager.ClearResultGraphics();
                     }
                     AddLog($"🔧 关闭调试窗口: {node.Name}");
                 };

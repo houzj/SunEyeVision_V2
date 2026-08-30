@@ -229,11 +229,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Constants
         #region ROI 渲染内容色（固定语义色，叠加在图像上，不随主题切换）
 
         /// <summary>
-        /// 检测区域（Inspection）边界色 - 蓝色 #4488FF
+        /// 检测区域（Inspection）边界色 - 纯蓝 #0000FF
+        /// 与 ShapeParameters 默认边框色一致，检测区域/卡尺/手柄/橡皮筋统一使用。
         /// 叠加在图像上保证与图像内容对比度，固定不随主题切换。
         /// </summary>
-        public const string InspectionBlueHex = "#4488FF";
-        public static readonly Color InspectionBlue = Color.FromRgb(68, 136, 255);
+        public const string InspectionBlueHex = "#0000FF";
+        public static readonly Color InspectionBlue = Color.FromRgb(0, 0, 255);
         public static readonly SolidColorBrush InspectionBlueBrush = CreateFrozenBrush(InspectionBlue);
 
         /// <summary>

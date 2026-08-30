@@ -778,15 +778,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
 
             if (_model.EditingLine.HasValue)
             {
-                _overlay.RenderLine(_model.LineStartPoint, _model.LineEndPoint, _bandWidth, _bandLength, _measureCount, drawBands, matrix);
+                _overlay.RenderLine(_model.LineStartPoint, _model.LineEndPoint, _bandWidth, _bandLength, _measureCount, drawBands, matrix, _zoom);
             }
             else if (_model.EditingCircle.HasValue)
             {
-                _overlay.RenderCircle(_model.EditingCircle.Value, _bandWidth, _bandLength, _measureCount, drawBands, matrix);
+                _overlay.RenderCircle(_model.EditingCircle.Value, _bandWidth, _bandLength, _measureCount, drawBands, matrix, _zoom);
             }
             else if (_model.EditingArc.HasValue && !_model.EditingArc.Value.IsEmpty)
             {
-                _overlay.RenderArc(_model.EditingArc.Value, _bandWidth, _bandLength, _measureCount, drawBands, matrix);
+                _overlay.RenderArc(_model.EditingArc.Value, _bandWidth, _bandLength, _measureCount, drawBands, matrix, _zoom);
             }
 
             // 选中态绘制手柄（先按当前几何重建位置，确保手柄随编辑随动）

@@ -119,7 +119,8 @@ namespace SunEyeVision.Tool.LineDetect
                 var numMeasures = metrologyModel.GetMetrologyObjectParam(objectIndex.I, "num_measures");
 
                 // ===== 结果填充 =====
-                FillResult(result, allParam, rms, numMeasures, objectIndex, metrologyModel);
+                FillResult(result, parameters, allParam, rms, numMeasures, objectIndex, metrologyModel,
+                    TransitionToHalcon(parameters.Transition));
 
                 // ===== 结果判断（对齐 VisionMaster：匹配点数/角度/拟合误差） =====
                 var isOk = EvaluateResult(result, parameters);
@@ -158,7 +159,7 @@ namespace SunEyeVision.Tool.LineDetect
         }
 
         /// <summary>
-        /// 构建 Halcon 通用参数名（产品决策：只支持数量主导）
+        /// 构建 Halcon 通用参数名（数量主导 + RANSAC 拟合高级参数 min_score/distance_threshold）
         /// </summary>
         private HTuple BuildGenParamName(LineDetectParameters parameters)
         {
@@ -167,6 +168,8 @@ namespace SunEyeVision.Tool.LineDetect
                 "num_measures",
                 "measure_transition",
                 "measure_select",
+                "min_score",
+                "distance_threshold",
             });
         }
 
@@ -180,6 +183,8 @@ namespace SunEyeVision.Tool.LineDetect
                 parameters.NumMeasures,             // int → num_measures
                 TransitionToHalcon(parameters.Transition),
                 SelectToHalcon(parameters.Select),
+                parameters.MinScore,                 // double → min_score（RANSAC 分数门槛）
+                parameters.DistanceThreshold,        // double → distance_threshold（RANSAC 距离阈值）
             });
         }
 
@@ -214,8 +219,9 @@ namespace SunEyeVision.Tool.LineDetect
         /// <summary>
         /// 填充结果（拟合直线/线段/测量点/中心/角度）
         /// </summary>
-        private void FillResult(LineDetectResults result, HTuple allParam, HTuple rms, HTuple numMeasures,
-            HTuple objectIndex, HMetrologyModel metrologyModel)
+        private void FillResult(LineDetectResults result, LineDetectParameters parameters,
+            HTuple allParam, HTuple rms, HTuple numMeasures,
+            HTuple objectIndex, HMetrologyModel metrologyModel, string transition)
         {
             // RMSE 和边缘点数（HTuple 长度检查，避免空结果访问）
             result.RMSE = rms.Length > 0 ? rms[0].D : 0;
@@ -234,8 +240,17 @@ namespace SunEyeVision.Tool.LineDetect
                     result.Line = new[] { Line2d.FromTwoPoints(start, end) };
                 }
 
-                // 轮廓点（每个卡尺提取的拟合点，用于拟合）
+                // 轮廓点（used_edges → 实际参与拟合的边缘点，主显示）
                 result.MeasurementPoints = ExtractMeasurementPoints(objectIndex, metrologyModel);
+
+                // 诊断检测点（GetMetrologyObjectMeasures → 检测到的全部边缘点，与拟合结果无关）
+                result.DiagnosticPoints = ExtractDiagnosticPoints(objectIndex, metrologyModel, transition);
+
+                // HALCON 实际测量带（MeasureContour XLD 轮廓 → 四边形点集，诊断卡尺对齐用，默认不显示）
+                result.HalconMeasureBands = ExtractHalconMeasureBands(objectIndex, metrologyModel, transition);
+
+                // ★ 诊断埋点：HALCON 测量带中心 vs 本地计算中心 vs 提取点坐标对比（定位卡尺对齐）
+                LogMeasureBandAlignmentDiagnostics(result, parameters, transition);
             }
             catch (Exception ex)
             {
@@ -244,9 +259,71 @@ namespace SunEyeVision.Tool.LineDetect
         }
 
         /// <summary>
+        /// 输出测量带对齐诊断日志：HALCON 实际测量带中心 vs 本地 BuildLineBands 计算中心 vs 提取点坐标。
+        /// 通过首条/末条中心对比，判断是相位（step）还是坐标变换问题。
+        /// </summary>
+        private static void LogMeasureBandAlignmentDiagnostics(
+            LineDetectResults result, LineDetectParameters parameters, string transition)
+        {
+            try
+            {
+                // 本地计算中心（与 BuildLineBands 同一公式：N 条带分 N-1 段，首条在起点）
+                var localStart = parameters.LineStartPoint;
+                var localEnd = parameters.LineEndPoint;
+                if (parameters.IsPositionCorrectionEnabled &&
+                    parameters.PositionCorrectionBindingSource?.CurrentValue is AffineMatrix m)
+                {
+                    localStart = m.TransformWpfPoint(localStart);
+                    localEnd = m.TransformWpfPoint(localEnd);
+                }
+                var seg = localEnd - localStart;
+                var totalLen = seg.Length;
+                var dir = seg / totalLen;
+                double step = parameters.NumMeasures > 1 ? totalLen / (parameters.NumMeasures - 1) : totalLen;
+
+                string localCenters = "";
+                for (int i = 0; i < Math.Min(parameters.NumMeasures, 3); i++)
+                {
+                    var c = localStart + dir * (i * step);
+                    localCenters += $"[{i}]({c.X:F1},{c.Y:F1}) ";
+                }
+
+                // HALCON 实际测量带中心（轮廓点均值）
+                string halconCenters = "";
+                if (result.HalconMeasureBands.Length > 0)
+                {
+                    int show = Math.Min(result.HalconMeasureBands.Length, 3);
+                    for (int i = 0; i < show; i++)
+                    {
+                        var pts = result.HalconMeasureBands[i];
+                        if (pts == null || pts.Length == 0) { halconCenters += $"[{i}](null) "; continue; }
+                        double sx = 0, sy = 0;
+                        foreach (var p in pts) { sx += p.X; sy += p.Y; }
+                        halconCenters += $"[{i}]({sx / pts.Length:F1},{sy / pts.Length:F1}) ";
+                    }
+                }
+
+                // 提取点前 3 个
+                string edgePts = "";
+                for (int i = 0; i < Math.Min(result.MeasurementPoints.Length, 3); i++)
+                    edgePts += $"[{i}]({result.MeasurementPoints[i].X:F1},{result.MeasurementPoints[i].Y:F1}) ";
+
+                parameters.LogInfo(
+                    $"[Diag] 卡尺对齐: N={parameters.NumMeasures} transition={transition}\n" +
+                    $"  引导线起终点=({parameters.LineStartPoint.X:F1},{parameters.LineStartPoint.Y:F1})→({parameters.LineEndPoint.X:F1},{parameters.LineEndPoint.Y:F1})\n" +
+                    $"  本地计算中心: {localCenters}\n" +
+                    $"  HALCON测量带中心: {halconCenters}\n" +
+                    $"  提取点(used_edges): {edgePts}");
+            }
+            catch (Exception ex)
+            {
+                parameters.LogInfo($"[Diag] 卡尺对齐诊断异常: {ex.Message}");
+            }
+        }
+
+        /// <summary>
         /// 提取拟合点（used_edges → 实际参与拟合的边缘点，每测量带一个）。
-        /// 与官方 measure_stamping_part 示例一致；get_metrology_object_measures 的
-        /// Row/Column 顺序未定义且无法归属到具体测量带，不适合作为拟合点显示。
+        /// 与官方 measure_stamping_part 示例一致。
         /// </summary>
         private Point2d[] ExtractMeasurementPoints(HTuple objectIndex, HMetrologyModel metrologyModel)
         {
@@ -265,6 +342,73 @@ namespace SunEyeVision.Tool.LineDetect
             catch
             {
                 return Array.Empty<Point2d>();
+            }
+        }
+
+        /// <summary>
+        /// 提取诊断检测点（GetMetrologyObjectMeasures → 指定 transition 下检测到的全部边缘点）。
+        /// 与拟合结果解耦：拟合失败时也有数据，便于定位原因。
+        /// </summary>
+        private static Point2d[] ExtractDiagnosticPoints(
+            HTuple objectIndex, HMetrologyModel metrologyModel, string transition)
+        {
+            try
+            {
+                var contour = metrologyModel.GetMetrologyObjectMeasures(
+                    objectIndex, transition, out var row, out var col);
+                contour?.Dispose();
+                if (row.Length == 0) return Array.Empty<Point2d>();
+                var pts = new Point2d[row.Length];
+                for (int i = 0; i < row.Length; i++)
+                    pts[i] = new Point2d(col[i].D, row[i].D);
+                return pts;
+            }
+            catch
+            {
+                return Array.Empty<Point2d>();
+            }
+        }
+
+        /// <summary>
+        /// 提取 HALCON 实际测量带轮廓（MeasureContour XLD → 每段轮廓的点集）。
+        /// 用于诊断卡尺对齐：与本地计算的卡尺（BuildLineBands）叠加对比，定位相位/步长偏差。
+        /// </summary>
+        private static System.Windows.Point[][] ExtractHalconMeasureBands(
+            HTuple objectIndex, HMetrologyModel metrologyModel, string transition)
+        {
+            try
+            {
+                var contour = metrologyModel.GetMetrologyObjectMeasures(
+                    objectIndex, transition, out var _, out var _);
+                if (contour == null) return Array.Empty<System.Windows.Point[]>();
+
+                try
+                {
+                    int count = contour.CountObj();
+                    if (count <= 0) return Array.Empty<System.Windows.Point[]>();
+
+                    var bands = new System.Windows.Point[count][];
+                    for (int i = 1; i <= count; i++)
+                    {
+                        var single = contour.SelectObj(i);
+                        single.GetContourXld(out var row, out var col);
+                        if (row.Length == 0) { single?.Dispose(); continue; }
+                        var pts = new System.Windows.Point[row.Length];
+                        for (int j = 0; j < row.Length; j++)
+                            pts[j] = new System.Windows.Point(col[j].D, row[j].D);
+                        bands[i - 1] = pts;
+                        single?.Dispose();
+                    }
+                    return bands;
+                }
+                finally
+                {
+                    contour.Dispose();
+                }
+            }
+            catch
+            {
+                return Array.Empty<System.Windows.Point[]>();
             }
         }
 

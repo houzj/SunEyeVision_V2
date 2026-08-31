@@ -33,9 +33,21 @@ namespace SunEyeVision.Tool.LineDetect
         public Point LineEndPoint { get; set; }
 
         /// <summary>
-        /// 轮廓点（每个卡尺提取的拟合点）
+        /// 轮廓点（每个卡尺提取的拟合点，实际参与拟合 = used_edges）
         /// </summary>
         public Point2d[] MeasurementPoints { get; set; } = Array.Empty<Point2d>();
+
+        /// <summary>
+        /// 诊断检测点（GetMetrologyObjectMeasures 检测到的全部边缘点，与拟合结果无关）。
+        /// 默认不显示，Tab3 勾选"诊断检测点"后用于定位拟合失败原因。
+        /// </summary>
+        public Point2d[] DiagnosticPoints { get; set; } = Array.Empty<Point2d>();
+
+        /// <summary>
+        /// HALCON 实际测量带轮廓（MeasureContour XLD → 每段轮廓点集）。
+        /// 默认不显示，Tab3 勾选"HALCON测量带"后与本地卡尺叠加对比对齐偏差。
+        /// </summary>
+        public System.Windows.Point[][] HalconMeasureBands { get; set; } = Array.Empty<System.Windows.Point[]>();
 
         /// <summary>
         /// 拟合残差（RMSE，来自 Halcon 'rms'）
@@ -78,13 +90,28 @@ namespace SunEyeVision.Tool.LineDetect
         {
             _display.Clear();
 
-            // 轮廓点
+            // 轮廓点（实际参与拟合的点）
             if (MeasurementPoints.Length > 0)
             {
                 var pts = new System.Windows.Point[MeasurementPoints.Length];
                 for (int i = 0; i < MeasurementPoints.Length; i++)
                     pts[i] = new System.Windows.Point(MeasurementPoints[i].X, MeasurementPoints[i].Y);
                 _display.AddPoints(parameters.ContourPointStyle, pts);
+            }
+
+            // 诊断检测点（GetMetrologyObjectMeasures 全部检测点，默认不显示，Tab3 可控）
+            if (parameters.DiagnosticPointStyle.IsVisible && DiagnosticPoints.Length > 0)
+            {
+                var diagPts = new System.Windows.Point[DiagnosticPoints.Length];
+                for (int i = 0; i < DiagnosticPoints.Length; i++)
+                    diagPts[i] = new System.Windows.Point(DiagnosticPoints[i].X, DiagnosticPoints[i].Y);
+                _display.AddPoints(parameters.DiagnosticPointStyle, diagPts);
+            }
+
+            // HALCON 实际测量带（诊断卡尺对齐，默认不显示，Tab3 可控）
+            if (parameters.HalconBandStyle.IsVisible && HalconMeasureBands.Length > 0)
+            {
+                _display.AddContours(parameters.HalconBandStyle, HalconMeasureBands, isClosed: true);
             }
 
             // 拟合直线（线段起点/终点）

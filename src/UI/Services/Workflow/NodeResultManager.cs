@@ -472,6 +472,14 @@ namespace SunEyeVision.UI.Services.Workflow
                 }
             }
 
+            // 测量引导显示（引导线 + 卡尺，与检测/屏蔽区域同通道；测量工具重写 BuildMeasureGuideItems）
+            if (regionParams.HasMeasureGuide)
+            {
+                var guideItems = regionParams.BuildMeasureGuideItems(correctionMatrix);
+                if (guideItems != null)
+                    items.AddRange(guideItems.Where(i => i != null));
+            }
+
             // 输出位置修正诊断摘要（单行日志，减少假阳性干扰）
             if (_correctionDiagnostics.Count > 0)
             {

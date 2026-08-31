@@ -631,10 +631,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                 if (totalLen < 1e-6) return false;
                 var dir = seg / totalLen;
                 var normal = new Vector(-dir.Y, dir.X);
-                double step = totalLen / _measureCount;
+                // ★ 与 MeasureBandOverlay.BuildLineBands 渲染位置一致：
+                //   首条"起点边"对齐起点，中心偏移半个测量带长度；否则命中错位导致无法整体移动
+                double usable = totalLen - 2 * halfBand;
+                if (usable < 1e-6) usable = totalLen;
+                double step = _measureCount > 1 ? usable / (_measureCount - 1) : usable;
                 for (int i = 0; i < _measureCount; i++)
                 {
-                    var center = _model.LineStartPoint + dir * ((i + 0.5) * step);
+                    var center = _model.LineStartPoint + dir * (halfBand + i * step);
                     if (GeometryToolkit.PointInQuad(point, center - dir * halfBand - normal * halfWidth,
                         center + dir * halfBand - normal * halfWidth,
                         center + dir * halfBand + normal * halfWidth,
@@ -667,11 +671,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
             {
                 var a = _model.EditingArc.Value;
                 double span = a.AngularSpan;
-                double stepAngle = span / _measureCount;
+                // ★ 与 BuildArcBands 渲染位置一致：首条起点边对齐 start_phi，中心偏移半个测量带弧长
+                double halfBandAngle = (_bandLength / 2) / a.Radius;
+                double usableSpan = span - 2 * halfBandAngle;
+                if (Math.Abs(usableSpan) < 1e-6) usableSpan = span;
+                double stepAngle = _measureCount > 1 ? usableSpan / (_measureCount - 1) : usableSpan;
                 for (int i = 0; i < _measureCount; i++)
                 {
-                    // ★ 分布相位与 Halcon 对齐：第一条卡尺中心在 start_phi（无半格偏移）
-                    double angle = a.StartAngle + i * stepAngle;
+                    double angle = a.StartAngle + halfBandAngle + i * stepAngle;
                     var dir = new Vector(Math.Cos(angle), Math.Sin(angle));
                     var normal = new Vector(-dir.Y, dir.X);
                     var center = a.Center + dir * a.Radius;
@@ -877,8 +884,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                 var totalLen = seg.Length;
                 if (totalLen < 1e-6) return null;
                 var dir = seg / totalLen;
-                double step = totalLen / Math.Max(1, _measureCount);
-                var center = _model.LineStartPoint + dir * ((mainIndex + 0.5) * step);
+                // ★ 与 BuildLineBands 一致：首条起点边对齐起点，中心偏移半个测量带长度；主卡尺 = 中间条
+                var halfBand = _bandLength / 2;
+                double usable = totalLen - 2 * halfBand;
+                if (usable < 1e-6) usable = totalLen;
+                double step = _measureCount > 1 ? usable / (_measureCount - 1) : usable;
+                var center = _model.LineStartPoint + dir * (halfBand + mainIndex * step);
                 return new CaliberFrame(center, dir, new Vector(-dir.Y, dir.X));
             }
 
@@ -896,9 +907,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                 var a = _model.EditingArc.Value;
                 if (a.Radius <= 0 || Math.Abs(a.AngularSpan) <= 1e-6) return null;
                 double span = a.AngularSpan;
-                double stepAngle = span / Math.Max(1, _measureCount);
-                // ★ 分布相位与 Halcon 对齐：第一条卡尺中心在 start_phi（无半格偏移）
-                double angle = a.StartAngle + mainIndex * stepAngle;
+                // ★ 与 BuildArcBands 一致：首条起点边对齐 start_phi，中心偏移半个测量带弧长；主卡尺 = 中间条
+                double halfBandAngle = (_bandLength / 2) / a.Radius;
+                double usableSpan = span - 2 * halfBandAngle;
+                if (Math.Abs(usableSpan) < 1e-6) usableSpan = span;
+                double stepAngle = _measureCount > 1 ? usableSpan / (_measureCount - 1) : usableSpan;
+                double angle = a.StartAngle + halfBandAngle + mainIndex * stepAngle;
                 // 角度规范化到 [-π, π]，避免跨 0° 边界时 cos/sin 大角度误差
                 angle = ((angle + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
                 var radial = new Vector(Math.Cos(angle), Math.Sin(angle));  // 径向=宽轴

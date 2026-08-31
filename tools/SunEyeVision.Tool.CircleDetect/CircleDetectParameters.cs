@@ -1,9 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Serialization;
+using System.Windows;
 using System.Windows.Media;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
+using SunEyeVision.Plugin.SDK.UI.Constants;
+using SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering;
 using SunEyeVision.Tool.CircleDetect.Models;
 
 namespace SunEyeVision.Tool.CircleDetect
@@ -125,6 +131,8 @@ namespace SunEyeVision.Tool.CircleDetect
         private double _threshold = 30.0;
         private EdgeTransition _transition = EdgeTransition.All;
         private EdgeSelect _select = EdgeSelect.All;
+        private double _minScore = 0.5;
+        private double _distanceThreshold = 5.0;
 
         /// <summary>
         /// 测量带法线方向半长（宽度）
@@ -189,29 +197,22 @@ namespace SunEyeVision.Tool.CircleDetect
             set => SetProperty(ref _select, value, "选取模式");
         }
 
-        #endregion
-
-        #region 拟合筛选
-
-        private int _minEdgePoints = 5;
-        private double _maxRMSE = 1.0;
-
         /// <summary>
-        /// 最小边缘点数（拟合筛选）
+        /// RANSAC 拟合分数门槛（min_score：内点数 ÷ 测量带数，低于则判定无有效几何，默认 0.7）
         /// </summary>
-        public int MinEdgePoints
+        public double MinScore
         {
-            get => _minEdgePoints;
-            set => SetProperty(ref _minEdgePoints, value, "最小边缘点数");
+            get => _minScore;
+            set => SetProperty(ref _minScore, Math.Clamp(value, 0.1, 1.0), "拟合分数门槛");
         }
 
         /// <summary>
-        /// 最大残差 RMSE（拟合筛选）
+        /// RANSAC 距离阈值（distance_threshold：边缘点到拟合几何的最大距离，默认 3.5px）
         /// </summary>
-        public double MaxRMSE
+        public double DistanceThreshold
         {
-            get => _maxRMSE;
-            set => SetProperty(ref _maxRMSE, value, "最大残差");
+            get => _distanceThreshold;
+            set => SetProperty(ref _distanceThreshold, Math.Max(0.1, value), "距离阈值");
         }
 
         #endregion
@@ -241,6 +242,24 @@ namespace SunEyeVision.Tool.CircleDetect
             CrossSize = 5.0,
         };
 
+        /// <summary>诊断检测点显示样式（青，默认不显示，用于定位拟合失败原因）</summary>
+        public GraphicsStyle DiagnosticPointStyle { get; set; } = new()
+        {
+            Name = "诊断检测点",
+            IsVisible = false,
+            OkColor = System.Windows.Media.Colors.Cyan,
+            CrossSize = 4.0,
+        };
+
+        /// <summary>HALCON 实际测量带诊断样式（橙红，默认不显示，与本地卡尺叠加对比对齐）</summary>
+        public GraphicsStyle HalconBandStyle { get; set; } = new()
+        {
+            Name = "HALCON测量带",
+            IsVisible = false,
+            OkColor = ColorConstants.MaskOrange,
+            LineWidth = 1.5,
+        };
+
         /// <summary>拟合结果显示样式（绿）</summary>
         public GraphicsStyle FitResultStyle { get; set; } = new()
         {
@@ -256,6 +275,93 @@ namespace SunEyeVision.Tool.CircleDetect
             IsVisible = true,
             OkColor = System.Windows.Media.Colors.Cyan,
         };
+
+        #endregion
+
+        #region 测量引导显示（与检测/屏蔽区域同通道走结果层，对齐 RoiParameters 虚成员）
+
+        private GraphicsStyle _guideStyle = new()
+        {
+            Name = "引导线",
+            IsVisible = true,
+            OkColor = ColorConstants.InspectionBlue,
+            LineWidth = 2.0,
+        };
+
+        private GraphicsStyle _caliberStyle = new()
+        {
+            Name = "卡尺",
+            IsVisible = true,
+            OkColor = ColorConstants.InspectionBlue,
+            LineWidth = 1.0,
+        };
+
+        /// <summary>是否包含测量引导几何（引导圆 + 卡尺）显示到结果层</summary>
+        public override bool HasMeasureGuide => true;
+
+        /// <summary>引导线显示样式（基类虚属性，供 BuildRegionItems 统一读取与 Tab3 双向绑定）</summary>
+        public override GraphicsStyle? GuideStyle
+        {
+            get => _guideStyle;
+            set { if (value != null) _guideStyle = value; }
+        }
+
+        /// <summary>卡尺显示样式（基类虚属性，供 BuildRegionItems 统一读取与 Tab3 双向绑定）</summary>
+        public override GraphicsStyle? CaliberStyle
+        {
+            get => _caliberStyle;
+            set { if (value != null) _caliberStyle = value; }
+        }
+
+        /// <summary>
+        /// 构建引导圆 + 环形测量带显示项（与 MeasureBandOverlay 交互层共用同一几何计算）。
+        /// 未绘制引导圆或引导圆样式/卡尺样式均隐藏时返回空。
+        /// </summary>
+        public override IEnumerable<DisplayItemBase> BuildMeasureGuideItems(AffineMatrix? correctionMatrix)
+        {
+            if (!GuideCircle.HasValue) yield break;
+            var circle = GuideCircle.Value;
+
+            // 位置修正：圆心变换 + 半径缩放（对齐 Run 中算法 + RenderCircle 内部逻辑）
+            double radiusScale = 1.0;
+            if (correctionMatrix != null)
+            {
+                circle = new Circle2d(
+                    correctionMatrix.TransformWpfPoint(circle.Center),
+                    circle.Radius * correctionMatrix.ScaleFactor());
+                radiusScale = correctionMatrix.ScaleFactor();
+            }
+
+            // 引导圆
+            if (GuideStyle.IsVisible)
+            {
+                yield return new GraphicsDisplayItem
+                {
+                    Style = GuideStyle,
+                    Type = GraphicsType.Circle,
+                    Geometries = new object[] { circle },
+                    RenderMode = DisplayRenderMode.Unified,
+                };
+            }
+
+            // 环形测量带（卡尺）
+            if (CaliberStyle.IsVisible)
+            {
+                var bands = new List<System.Windows.Point[]>();
+                foreach (var quad in MeasureBandOverlay.BuildCircleBands(
+                             circle, MeasureLength1 * 2, MeasureLength2 * 2, NumMeasures))
+                {
+                    bands.Add(quad);
+                }
+                yield return new GraphicsDisplayItem
+                {
+                    Style = CaliberStyle,
+                    Type = GraphicsType.Polygon,
+                    Geometries = bands.Cast<object>().ToArray(),
+                    RenderMode = DisplayRenderMode.Unified,
+                };
+            }
+        }
 
         #endregion
     }

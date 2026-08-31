@@ -160,31 +160,35 @@
                                 AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                         </controls:LabeledControl>
 
-                        <!-- ===== 拟合筛选 ===== -->
-                        <Separator Margin="0,8,0,4" Background="{DynamicResource ThemeDividerBrushBrush}" Height="1"/>
-                        <TextBlock Text="拟合筛选" FontWeight="SemiBold" Margin="0,4,0,8"/>
+                        <!-- ===== 高级参数（RANSAC 拟合，默认折叠） ===== -->
+                        <Expander Header="高级参数（RANSAC 拟合）" IsExpanded="False" Margin="0,8,0,0"
+                                  BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1"
+                                  Background="{DynamicResource ThemePanelBackgroundBrush}">
+                            <StackPanel Margin="16,8">
+                                <controls:LabeledControl Label="拟合分数门槛" Margin="0,0,0,4">
+                                    <controls:ConfigSetting
+                                        ParameterName="MinScore"
+                                        DataType="{x:Type sys:Double}"
+                                        Value="{Binding MinScore, Mode=TwoWay}"
+                                        Minimum="0.1" Maximum="1.0"
+                                        SmallChange="0.05" LargeChange="0.1"
+                                        ShowSlider="True"
+                                        HorizontalAlignment="Stretch"
+                                        AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                                </controls:LabeledControl>
 
-                        <controls:LabeledControl Label="最小边缘点数" Margin="0,0,0,4">
-                            <controls:ConfigSetting
-                                ParameterName="MinEdgePoints"
-                                DataType="{x:Type sys:Int32}"
-                                Value="{Binding MinEdgePoints, Mode=TwoWay}"
-                                Minimum="1" Maximum="1000"
-                                SmallChange="1" LargeChange="5"
-                                Width="250"
-                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                        </controls:LabeledControl>
-
-                        <controls:LabeledControl Label="最大残差 RMSE" Margin="0,0,0,4">
-                            <controls:ConfigSetting
-                                ParameterName="MaxRMSE"
-                                DataType="{x:Type sys:Double}"
-                                Value="{Binding MaxRMSE, Mode=TwoWay}"
-                                Minimum="0" Maximum="100"
-                                SmallChange="0.1" LargeChange="1"
-                                Width="250"
-                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                        </controls:LabeledControl>
+                                <controls:LabeledControl Label="距离阈值" Margin="0,0,0,4">
+                                    <controls:ConfigSetting
+                                        ParameterName="DistanceThreshold"
+                                        DataType="{x:Type sys:Double}"
+                                        Value="{Binding DistanceThreshold, Mode=TwoWay}"
+                                        Minimum="0.5" Maximum="20"
+                                        SmallChange="0.5" LargeChange="1"
+                                        HorizontalAlignment="Stretch"
+                                        AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                                </controls:LabeledControl>
+                            </StackPanel>
+                        </Expander>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
@@ -271,6 +275,18 @@
                                     </controls:LabeledControl>
                                     <controls:LabeledControl Label="拟合圆" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
                                         <controls:DispItemColorControl Item="{Binding FitResultStyle, Mode=TwoWay}"/>
+                                    </controls:LabeledControl>
+                                    <controls:LabeledControl Label="引导线" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
+                                        <controls:DispItemColorControl Item="{Binding GuideStyle, Mode=TwoWay}"/>
+                                    </controls:LabeledControl>
+                                    <controls:LabeledControl Label="卡尺" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
+                                        <controls:DispItemColorControl Item="{Binding CaliberStyle, Mode=TwoWay}"/>
+                                    </controls:LabeledControl>
+                                    <controls:LabeledControl Label="诊断检测点" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
+                                        <controls:DispItemColorControl Item="{Binding DiagnosticPointStyle, Mode=TwoWay}"/>
+                                    </controls:LabeledControl>
+                                    <controls:LabeledControl Label="HALCON测量带" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
+                                        <controls:DispItemColorControl Item="{Binding HalconBandStyle, Mode=TwoWay}"/>
                                     </controls:LabeledControl>
                                 </StackPanel>
                             </Expander>

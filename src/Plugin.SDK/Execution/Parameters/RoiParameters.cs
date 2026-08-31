@@ -1,10 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Windows.Media;
+using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Metadata;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
@@ -75,6 +76,26 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <remarks>
         /// 支持常量模式（用户直接绘制）和绑定模式（订阅其他节点输出）
         /// </remarks>
+        /// <summary>
+        /// 是否包含测量引导几何（引导线 + 卡尺测量带）需要显示到结果层。
+        /// 测量查找工具（圆/直线/边缘检测）重写为 true；普通区域工具默认 false，零影响。
+        /// </summary>
+        public virtual bool HasMeasureGuide => false;
+
+        /// <summary>引导线显示样式（Tab3 可控制；测量工具重写提供，默认 null）</summary>
+        public virtual GraphicsStyle? GuideStyle { get; set; }
+
+        /// <summary>卡尺测量带显示样式（Tab3 可控制；测量工具重写提供，默认 null）</summary>
+        public virtual GraphicsStyle? CaliberStyle { get; set; }
+
+        /// <summary>
+        /// 构建引导线 + 卡尺测量带的显示项（与检测/屏蔽区域同通道走结果层）。
+        /// 测量工具重写返回引导几何与测量带；默认返回空。
+        /// </summary>
+        /// <param name="correctionMatrix">位置修正矩阵（参考坐标→当前图像坐标；null=不修正）</param>
+        public virtual System.Collections.Generic.IEnumerable<DisplayItemBase> BuildMeasureGuideItems(
+            AffineMatrix? correctionMatrix)
+            => System.Array.Empty<DisplayItemBase>();
         [JsonPropertyOrder(11)]
         public RoiCollectionParameter MaskRegions
         {

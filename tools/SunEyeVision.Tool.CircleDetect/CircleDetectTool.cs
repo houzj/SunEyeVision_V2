@@ -103,28 +103,68 @@ namespace SunEyeVision.Tool.CircleDetect
                     guideCenter = matrix.TransformWpfPoint(guideCenter);
                     guideRadius *= matrix.ScaleFactor();
                 }
+
+                // ★ 日志埋点（诊断边缘极性/选取模式组合问题）：
+                //   记录参数枚举 → HALCON 字符串映射 + 完整 genParam 名称/值 + 引导圆/图像信息
+                var genParamName = BuildGenParamName(parameters);
+                var genParamValue = BuildGenParamValue(parameters);
+                parameters.LogInfo(
+                    $"[Diag] 参数埋点: 图像={width.L}x{height.L}, " +
+                    $"引导圆=中心({guideCenter.X:F2},{guideCenter.Y:F2}) 半径={guideRadius:F2}, " +
+                    $"MeasureLength1={parameters.MeasureLength1:F2} MeasureLength2={parameters.MeasureLength2:F2}, " +
+                    $"Sigma={parameters.Sigma} Threshold={parameters.Threshold}");
+                parameters.LogInfo(
+                    $"[Diag] 极性/选取映射: Transition={parameters.Transition}→\"{TransitionToHalcon(parameters.Transition)}\", " +
+                    $"Select={parameters.Select}→\"{SelectToHalcon(parameters.Select)}\"");
+                parameters.LogInfo(
+                    $"[Diag] genParamName={genParamName} genParamValue={genParamValue}");
+
                 HTuple objectIndex = metrologyModel.AddMetrologyObjectCircleMeasure(
                     guideCenter.Y,
                     guideCenter.X,
                     guideRadius,
                     parameters.MeasureLength1, parameters.MeasureLength2,
                     parameters.Sigma, parameters.Threshold,
-                    BuildGenParamName(parameters), BuildGenParamValue(parameters));
+                    genParamName, genParamValue);
+                parameters.LogInfo($"[Diag] AddMetrologyObjectCircleMeasure 成功, objectIndex={objectIndex.I}");
 
                 // 执行测量（逐测量带取点 + 拟合）
                 metrologyModel.ApplyMetrologyModel(hImage);
+                parameters.LogInfo("[Diag] ApplyMetrologyModel 完成");
+
+                // ★ 诊断埋点：分别按"当前 select"与"all"查询测量点，
+                //   区分 first/last 失败是"检测到了但被过滤"还是"压根没检测到"
+                try
+                {
+                    // 实例方法 GetMetrologyObjectMeasures(index, transition, out row, out col)
+                    // 封装版固定 select="all"，返回该 transition 下检测到的全部测量点
+                    var selContour = metrologyModel.GetMetrologyObjectMeasures(
+                        objectIndex, TransitionToHalcon(parameters.Transition),
+                        out var selRow, out var selCol);
+                    selContour?.Dispose();
+                    parameters.LogInfo(
+                        $"[Diag] 测量点统计: transition={TransitionToHalcon(parameters.Transition)} " +
+                        $"all点数={selRow.Length}");
+                }
+                catch (Exception diagEx)
+                {
+                    parameters.LogInfo($"[Diag] GetMetrologyObjectMeasures 诊断异常: {diagEx.Message}");
+                }
 
                 // 获取拟合圆参数（all_param = [Row, Col, Radius]）
                 var allParam = metrologyModel.GetMetrologyObjectResult(
                     objectIndex.I, "all", "result_type", "all_param");
+                parameters.LogInfo($"[Diag] all_param 长度={allParam.Length}, 内容={allParam}");
 
                 // ★ 修复：rms 不是 get_metrology_object_param 的合法 GenParamName（#1303），
                 //   也不是 get_metrology_object_result 的合法 result_type（#1305）。
                 //   官方 measure_stamping_part 示例：用 used_edges 取实际参与拟合的点，自算点到圆距离的均方根。
                 var rms = ComputeRmsFromUsedEdges(metrologyModel, objectIndex.I, allParam);
+                parameters.LogInfo($"[Diag] rms={rms.D:F3}");
 
                 // 获取测量带数量（num_measures 是 get_metrology_object_param 的合法 GenParamName）
                 var numMeasures = metrologyModel.GetMetrologyObjectParam(objectIndex.I, "num_measures");
+                parameters.LogInfo($"[Diag] num_measures={numMeasures.I}");
 
                 // ===== 结果填充 =====
                 FillResult(result, parameters, allParam, rms, numMeasures, objectIndex, metrologyModel);
@@ -188,7 +228,8 @@ namespace SunEyeVision.Tool.CircleDetect
         }
 
         /// <summary>
-        /// 构建 Halcon 通用参数名（产品决策：只支持数量主导；圆/圆弧带 start_phi/end_phi）
+        /// 构建 Halcon 通用参数名（产品决策：只支持数量主导；圆/圆弧带 start_phi/end_phi；
+        /// RANSAC 拟合高级参数 min_score/distance_threshold 开放给用户）
         /// </summary>
         private HTuple BuildGenParamName(CircleDetectParameters parameters)
         {
@@ -199,6 +240,8 @@ namespace SunEyeVision.Tool.CircleDetect
                 "measure_select",
                 "start_phi",
                 "end_phi",
+                "min_score",
+                "distance_threshold",
             });
         }
 
@@ -214,6 +257,8 @@ namespace SunEyeVision.Tool.CircleDetect
                 SelectToHalcon(parameters.Select),
                 parameters.StartAngle,
                 parameters.EndAngle,
+                parameters.MinScore,                 // double → min_score（RANSAC 分数门槛）
+                parameters.DistanceThreshold,        // double → distance_threshold（RANSAC 距离阈值）
             });
         }
 
@@ -276,8 +321,17 @@ namespace SunEyeVision.Tool.CircleDetect
                     }
                 }
 
-                // 轮廓点（每个卡尺提取的拟合点，用于拟合）
+                // 轮廓点（used_edges → 实际参与拟合的边缘点，主显示）
                 result.MeasurementPoints = ExtractMeasurementPoints(objectIndex, metrologyModel);
+
+                // 诊断检测点（GetMetrologyObjectMeasures → 检测到的全部边缘点，与拟合结果无关，
+                // 默认不显示，Tab3 勾选后用于定位拟合失败原因）
+                result.DiagnosticPoints = ExtractDiagnosticPoints(
+                    objectIndex, metrologyModel, TransitionToHalcon(parameters.Transition));
+
+                // HALCON 实际测量带（MeasureContour XLD 轮廓 → 四边形点集，诊断卡尺对齐用，默认不显示）
+                result.HalconMeasureBands = ExtractHalconMeasureBands(
+                    objectIndex, metrologyModel, TransitionToHalcon(parameters.Transition));
             }
             catch (Exception ex)
             {
@@ -287,8 +341,7 @@ namespace SunEyeVision.Tool.CircleDetect
 
         /// <summary>
         /// 提取拟合点（used_edges → 实际参与拟合的边缘点，每测量带一个）。
-        /// 与官方 measure_stamping_part 示例一致；get_metrology_object_measures 的
-        /// Row/Column 顺序未定义且无法归属到具体测量带，不适合作为拟合点显示。
+        /// 与官方 measure_stamping_part 示例一致。
         /// </summary>
         private Point2d[] ExtractMeasurementPoints(HTuple objectIndex, HMetrologyModel metrologyModel)
         {
@@ -307,6 +360,74 @@ namespace SunEyeVision.Tool.CircleDetect
             catch
             {
                 return Array.Empty<Point2d>();
+            }
+        }
+
+        /// <summary>
+        /// 提取诊断检测点（GetMetrologyObjectMeasures → 指定 transition 下检测到的全部边缘点）。
+        /// 与拟合结果解耦：拟合失败（all_param 空）时也有数据，便于定位"点在哪、为什么不共圆"。
+        /// </summary>
+        private static Point2d[] ExtractDiagnosticPoints(
+            HTuple objectIndex, HMetrologyModel metrologyModel, string transition)
+        {
+            try
+            {
+                var contour = metrologyModel.GetMetrologyObjectMeasures(
+                    objectIndex, transition, out var row, out var col);
+                contour?.Dispose();
+                if (row.Length == 0) return Array.Empty<Point2d>();
+                var pts = new Point2d[row.Length];
+                for (int i = 0; i < row.Length; i++)
+                    pts[i] = new Point2d(col[i].D, row[i].D);
+                return pts;
+            }
+            catch
+            {
+                return Array.Empty<Point2d>();
+            }
+        }
+
+        /// <summary>
+        /// 提取 HALCON 实际测量带轮廓（MeasureContour XLD → 每段轮廓的点集）。
+        /// 用于诊断卡尺对齐：与本地计算的卡尺（BuildCircleBands）叠加对比，定位相位/步长偏差。
+        /// 每个 XLD 轮廓可能为矩形（4 点）或采样多段线，统一取全部点作为轮廓显示。
+        /// </summary>
+        private static System.Windows.Point[][] ExtractHalconMeasureBands(
+            HTuple objectIndex, HMetrologyModel metrologyModel, string transition)
+        {
+            try
+            {
+                var contour = metrologyModel.GetMetrologyObjectMeasures(
+                    objectIndex, transition, out var _, out var _);
+                if (contour == null) return Array.Empty<System.Windows.Point[]>();
+
+                try
+                {
+                    int count = contour.CountObj();
+                    if (count <= 0) return Array.Empty<System.Windows.Point[]>();
+
+                    var bands = new System.Windows.Point[count][];
+                    for (int i = 1; i <= count; i++)
+                    {
+                        var single = contour.SelectObj(i);
+                        single.GetContourXld(out var row, out var col);
+                        if (row.Length == 0) { single?.Dispose(); continue; }
+                        var pts = new System.Windows.Point[row.Length];
+                        for (int j = 0; j < row.Length; j++)
+                            pts[j] = new System.Windows.Point(col[j].D, row[j].D);
+                        bands[i - 1] = pts;
+                        single?.Dispose();
+                    }
+                    return bands;
+                }
+                finally
+                {
+                    contour.Dispose();
+                }
+            }
+            catch
+            {
+                return Array.Empty<System.Windows.Point[]>();
             }
         }
 

@@ -4139,6 +4139,30 @@
                                         "tools/SunEyeVision.Tool.LineDetect/Views/LineDetectToolDebugControl.xaml.cs"
                                     ],
                           "status":  "in_progress"
+                      },
+                      {
+                          "id":  "TMP-a68aca2",
+                          "message":  "测量工具调试交互收敛与修复",
+                          "date":  "2026-08-31",
+                          "commit":  "a68aca23b86e096dd55bb359f52d38d142724014",
+                          "files":  [
+                                        "plans/plan.json",
+                                        "src/Plugin.SDK/UI/Controls/Measure/Models/MeasureInteractionModel.cs",
+                                        "src/Plugin.SDK/UI/Controls/Measure/Views/MeasureEditorControl.xaml.cs",
+                                        "src/Plugin.SDK/UI/Controls/Measure/Views/MeasureGuideParameterPanel.xaml.cs",
+                                        "src/Plugin.SDK/UI/Controls/Measure/Views/MeasurementEditorManagerControl.xaml",
+                                        "src/Plugin.SDK/UI/Controls/Measure/Views/MeasurementEditorManagerControl.xaml.cs",
+                                        "tools/SunEyeVision.Tool.CircleDetect/CircleDetectParameters.cs",
+                                        "tools/SunEyeVision.Tool.CircleDetect/Views/CircleDetectToolDebugControl.xaml",
+                                        "tools/SunEyeVision.Tool.CircleDetect/Views/CircleDetectToolDebugControl.xaml.cs",
+                                        "tools/SunEyeVision.Tool.EdgeDetect/EdgeDetectParameters.cs",
+                                        "tools/SunEyeVision.Tool.EdgeDetect/Views/EdgeDetectToolDebugControl.xaml",
+                                        "tools/SunEyeVision.Tool.EdgeDetect/Views/EdgeDetectToolDebugControl.xaml.cs",
+                                        "tools/SunEyeVision.Tool.LineDetect/LineDetectParameters.cs",
+                                        "tools/SunEyeVision.Tool.LineDetect/Views/LineDetectToolDebugControl.xaml",
+                                        "tools/SunEyeVision.Tool.LineDetect/Views/LineDetectToolDebugControl.xaml.cs"
+                                    ],
+                          "status":  "in_progress"
                       }
                   ]
 }

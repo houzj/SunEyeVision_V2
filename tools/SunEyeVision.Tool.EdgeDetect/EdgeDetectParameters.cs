@@ -1,8 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Serialization;
 using System.Windows;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
+using SunEyeVision.Plugin.SDK.Models.Visualization;
+using SunEyeVision.Plugin.SDK.UI.Constants;
+using SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering;
 
 namespace SunEyeVision.Tool.EdgeDetect
 {
@@ -119,8 +125,6 @@ namespace SunEyeVision.Tool.EdgeDetect
         private EdgeSelect _select = EdgeSelect.All;
         private double _startAngle = 0.0;
         private double _endAngle = Math.PI * 2;
-        private int _minEdgePoints = 5;
-        private double _maxRMSE = 1.0;
 
         /// <summary>
         /// 测量带法线方向半长（宽度）
@@ -223,22 +227,160 @@ namespace SunEyeVision.Tool.EdgeDetect
             set => SetProperty(ref _isClockwise, value, "圆弧方向");
         }
 
-        /// <summary>
-        /// 最小边缘点数（拟合筛选）
-        /// </summary>
-        public int MinEdgePoints
+        #endregion
+
+        #region 测量引导显示（与检测/屏蔽区域同通道走结果层，对齐 RoiParameters 虚成员）
+
+        private GraphicsStyle _guideStyle = new()
         {
-            get => _minEdgePoints;
-            set => SetProperty(ref _minEdgePoints, value, "最小边缘点数");
+            Name = "引导线",
+            IsVisible = true,
+            OkColor = ColorConstants.InspectionBlue,
+            LineWidth = 2.0,
+        };
+
+        private GraphicsStyle _caliberStyle = new()
+        {
+            Name = "卡尺",
+            IsVisible = true,
+            OkColor = ColorConstants.InspectionBlue,
+            LineWidth = 1.0,
+        };
+
+        /// <summary>是否包含测量引导几何（引导 + 卡尺）显示到结果层</summary>
+        public override bool HasMeasureGuide => true;
+
+        /// <summary>引导线显示样式（基类虚属性，供 BuildRegionItems 统一读取与 Tab3 双向绑定）</summary>
+        public override GraphicsStyle? GuideStyle
+        {
+            get => _guideStyle;
+            set { if (value != null) _guideStyle = value; }
+        }
+
+        /// <summary>卡尺显示样式（基类虚属性，供 BuildRegionItems 统一读取与 Tab3 双向绑定）</summary>
+        public override GraphicsStyle? CaliberStyle
+        {
+            get => _caliberStyle;
+            set { if (value != null) _caliberStyle = value; }
         }
 
         /// <summary>
-        /// 最大残差 RMSE（拟合筛选）
+        /// 构建引导几何 + 测量带显示项（与 MeasureBandOverlay 交互层共用同一几何计算）。
+        /// 按 GeometryType 分派：Line → 引导直线+测量带；Circle/Arc → 引导圆/弧+环形测量带。
+        /// 引导/卡尺样式均隐藏或引导几何未设置时返回空。
         /// </summary>
-        public double MaxRMSE
+        public override IEnumerable<DisplayItemBase> BuildMeasureGuideItems(AffineMatrix? correctionMatrix)
         {
-            get => _maxRMSE;
-            set => SetProperty(ref _maxRMSE, value, "最大残差");
+            var items = new List<DisplayItemBase>();
+            switch (GeometryType)
+            {
+                case GeometryType.Line:
+                    AddIfNotNull(items, BuildLineGuide(correctionMatrix));
+                    break;
+                case GeometryType.Circle:
+                    AddIfNotNull(items, BuildCircleGuide(correctionMatrix, isArc: false));
+                    break;
+                case GeometryType.Arc:
+                    AddIfNotNull(items, BuildCircleGuide(correctionMatrix, isArc: true));
+                    break;
+            }
+            return items;
+        }
+
+        private static void AddIfNotNull(List<DisplayItemBase> items, DisplayItemBase? item)
+        {
+            if (item != null) items.Add(item);
+        }
+
+        private DisplayItemBase? BuildLineGuide(AffineMatrix? correctionMatrix)
+        {
+            var start = LineStartPoint;
+            var end = LineEndPoint;
+            if (correctionMatrix != null)
+            {
+                start = correctionMatrix.TransformWpfPoint(start);
+                end = correctionMatrix.TransformWpfPoint(end);
+            }
+
+            if (GuideStyle.IsVisible)
+            {
+                return new GraphicsDisplayItem
+                {
+                    Style = GuideStyle,
+                    Type = GraphicsType.Line,
+                    Geometries = new object[] { new LineSegment(start, end) },
+                    RenderMode = DisplayRenderMode.Unified,
+                };
+            }
+
+            if (CaliberStyle.IsVisible)
+            {
+                return new GraphicsDisplayItem
+                {
+                    Style = CaliberStyle,
+                    Type = GraphicsType.Polygon,
+                    Geometries = MeasureBandOverlay.BuildLineBands(
+                        start, end, MeasureLength1 * 2, MeasureLength2 * 2, NumMeasures).Cast<object>().ToArray(),
+                    RenderMode = DisplayRenderMode.Unified,
+                };
+            }
+
+            return null;
+        }
+
+        private DisplayItemBase? BuildCircleGuide(AffineMatrix? correctionMatrix, bool isArc)
+        {
+            if (!GuideCircle.HasValue) return null;
+
+            var circle = GuideCircle.Value;
+            double radiusScale = 1.0;
+            if (correctionMatrix != null)
+            {
+                circle = new Circle2d(
+                    correctionMatrix.TransformWpfPoint(circle.Center),
+                    circle.Radius * correctionMatrix.ScaleFactor());
+                radiusScale = correctionMatrix.ScaleFactor();
+            }
+
+            if (GuideStyle.IsVisible)
+            {
+                return new GraphicsDisplayItem
+                {
+                    Style = GuideStyle,
+                    Type = isArc ? GraphicsType.Arc : GraphicsType.Circle,
+                    Geometries = new object[] { circle },
+                    RenderMode = DisplayRenderMode.Unified,
+                };
+            }
+
+            if (CaliberStyle.IsVisible)
+            {
+                var bands = new List<System.Windows.Point[]>();
+                if (isArc)
+                {
+                    var arc = new Arc2d(new Point(circle.Center.X, circle.Center.Y), circle.Radius,
+                        StartAngle, EndAngle, IsMajorArc);
+                    foreach (var quad in MeasureBandOverlay.BuildArcBands(
+                                 arc, MeasureLength1 * 2, MeasureLength2 * 2, NumMeasures, radiusScale))
+                        bands.Add(quad);
+                }
+                else
+                {
+                    foreach (var quad in MeasureBandOverlay.BuildCircleBands(
+                                 circle, MeasureLength1 * 2, MeasureLength2 * 2, NumMeasures))
+                        bands.Add(quad);
+                }
+
+                return new GraphicsDisplayItem
+                {
+                    Style = CaliberStyle,
+                    Type = GraphicsType.Polygon,
+                    Geometries = bands.Cast<object>().ToArray(),
+                    RenderMode = DisplayRenderMode.Unified,
+                };
+            }
+
+            return null;
         }
 
         #endregion

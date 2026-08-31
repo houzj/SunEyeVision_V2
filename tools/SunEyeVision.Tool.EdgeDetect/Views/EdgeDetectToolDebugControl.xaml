@@ -74,22 +74,6 @@
                                 </DockPanel>
                             </StackPanel>
                         </Expander>
-
-                        <Expander Header="拟合筛选" IsExpanded="True">
-                            <StackPanel Margin="8,4">
-                                <DockPanel Margin="0,4">
-                                    <TextBlock Text="最小边缘点数" Width="110" VerticalAlignment="Center"/>
-                                    <TextBox Text="{Binding Parameters.MinEdgePoints, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                             Width="80" HorizontalAlignment="Left"/>
-                                </DockPanel>
-                                <DockPanel Margin="0,4">
-                                    <TextBlock Text="最大残差 RMSE" Width="110" VerticalAlignment="Center"/>
-                                    <TextBox Text="{Binding Parameters.MaxRMSE, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                             Width="80" HorizontalAlignment="Left"/>
-                                    <TextBlock Text="px" Foreground="Gray" VerticalAlignment="Center" Margin="8,0,0,0"/>
-                                </DockPanel>
-                            </StackPanel>
-                        </Expander>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
@@ -116,6 +100,16 @@
                                     <TextBlock Text="{Binding ResultEdgePointCount, RelativeSource={RelativeSource AncestorType=controls:ToolDebugControlBase}}"
                                                FontWeight="Bold"/>
                                 </DockPanel>
+                            </StackPanel>
+                        </Expander>
+                        <Expander Header="图形显示" IsExpanded="True">
+                            <StackPanel Margin="8,4">
+                                <controls:LabeledControl Label="引导线" ContentHorizontalAlignment="Left">
+                                    <controls:DispItemColorControl Item="{Binding Parameters.GuideStyle, Mode=TwoWay}"/>
+                                </controls:LabeledControl>
+                                <controls:LabeledControl Label="卡尺" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
+                                    <controls:DispItemColorControl Item="{Binding Parameters.CaliberStyle, Mode=TwoWay}"/>
+                                </controls:LabeledControl>
                             </StackPanel>
                         </Expander>
                     </StackPanel>

@@ -73,19 +73,43 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
 
             if (!drawBands || measureCount <= 0) return;
 
+            // 测量带四边形（与结果层共用同一几何计算，保证两层显示一致）
+            foreach (var quad in BuildLineBands(start, end, bandWidth, bandLength, measureCount, matrix))
+            {
+                // 卡尺无填充，全检测蓝，粗细/透明度统一（线宽与 Blob 检测区域一致）
+                AddQuad(quad[0], quad[1], quad[2], quad[3], Colors.Transparent, StrokeColor, bandStroke, 1.0);
+                // 注：不绘制方向箭头——measure_transition 只有暗→亮/亮→暗极性，无空间方向语义
+            }
+        }
+
+        /// <summary>
+        /// 计算直线引导测量带四边形（供交互层渲染与结果层显示共用，保证几何一致）。
+        /// 输入为已做位置修正的坐标；matrix 非空时用于二次变换（兼容调用方已变换的场景）。
+        /// ★ 与 Halcon 对齐：N 条测量带覆盖 [起点, 终点]，首条"起点边"对齐引导线起点、
+        ///   末条"终点边"对齐引导线终点。中心偏移半个测量带长度（= halfBand）。
+        ///   公式：中心_i = 起点 + dir×(halfBand + i×step)，step = (totalLen − 2×halfBand)/(N−1)。
+        /// </summary>
+        public static System.Collections.Generic.IEnumerable<System.Windows.Point[]> BuildLineBands(
+            Point start, Point end, double bandWidth, double bandLength, int measureCount, AffineMatrix? matrix = null)
+        {
+            if (measureCount <= 0) yield break;
+
             var seg = end - start;
             var totalLen = seg.Length;
-            if (totalLen < 1e-6) return;
+            if (totalLen < 1e-6) yield break;
 
             var dir = seg / totalLen;   // 归一化方向
             var normal = new Vector(-dir.Y, dir.X);
-            double step = totalLen / measureCount;
             var halfBand = bandLength / 2;
             var halfWidth = bandWidth / 2;
+            // 可用跨度：首末测量带各占半个，中间等分
+            double usable = totalLen - 2 * halfBand;
+            if (usable < 1e-6) usable = totalLen;
+            double step = measureCount > 1 ? usable / (measureCount - 1) : usable;
 
             for (int i = 0; i < measureCount; i++)
             {
-                double t = (i + 0.5) * step;
+                double t = halfBand + i * step;   // 首条起点边在起点，末条终点边在终点
                 var center = start + dir * t;
 
                 var p1 = center - dir * halfBand - normal * halfWidth;
@@ -93,9 +117,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
                 var p3 = center + dir * halfBand + normal * halfWidth;
                 var p4 = center - dir * halfBand + normal * halfWidth;
 
-                // 卡尺无填充，全检测蓝，粗细/透明度统一（线宽与 Blob 检测区域一致）
-                AddQuad(p1, p2, p3, p4, Colors.Transparent, StrokeColor, bandStroke, 1.0);
-                // 注：不绘制方向箭头——measure_transition 只有暗→亮/亮→暗极性，无空间方向语义（P4 移除误导）
+                if (matrix != null)
+                {
+                    p1 = matrix.TransformWpfPoint(p1);
+                    p2 = matrix.TransformWpfPoint(p2);
+                    p3 = matrix.TransformWpfPoint(p3);
+                    p4 = matrix.TransformWpfPoint(p4);
+                }
+
+                yield return new[] { p1, p2, p3, p4 };
             }
         }
 
@@ -131,10 +161,28 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
 
             if (!drawBands || measureCount <= 0 || circle.Radius <= 0) return;
 
-            // 环形测量带：沿圆周等间距分布，径向为宽度（卡尺宽度随矩阵缩放）
+            // 环形测量带（与结果层共用同一几何计算）
+            foreach (var quad in BuildCircleBands(circle, bandWidth, bandLength, measureCount))
+            {
+                // 卡尺无填充，全检测蓝，粗细/透明度统一（线宽与 Blob 检测区域一致）
+                AddQuad(quad[0], quad[1], quad[2], quad[3], Colors.Transparent, StrokeColor, bandStroke, 1.0);
+                // 注：不绘制方向箭头——measure_transition 只有暗→亮/亮→暗极性，无空间方向语义
+            }
+        }
+
+        /// <summary>
+        /// 计算圆引导环形测量带四边形（供交互层渲染与结果层显示共用）。
+        /// 调用方需先对 circle 应用位置修正（圆心变换 + 半径缩放），与 RenderCircle 内部逻辑一致。
+        /// </summary>
+        public static System.Collections.Generic.IEnumerable<System.Windows.Point[]> BuildCircleBands(
+            Circle2d circle, double bandWidth, double bandLength, int measureCount)
+        {
+            if (measureCount <= 0 || circle.Radius <= 0) yield break;
+
+            // 环形测量带：沿圆周等间距分布，径向为宽度
             double stepAngle = Math.PI * 2 / measureCount;
-            var halfBand = bandLength / 2 * radiusScale;
-            var halfWidth = bandWidth / 2 * radiusScale;
+            var halfBand = bandLength / 2;
+            var halfWidth = bandWidth / 2;
 
             for (int i = 0; i < measureCount; i++)
             {
@@ -149,9 +197,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
                 var p3 = center + dir * halfWidth + normal * halfBand;
                 var p4 = center - dir * halfWidth + normal * halfBand;
 
-                // 卡尺无填充，全检测蓝，粗细/透明度统一（线宽与 Blob 检测区域一致）
-                AddQuad(p1, p2, p3, p4, Colors.Transparent, StrokeColor, bandStroke, 1.0);
-                // 注：不绘制方向箭头——measure_transition 只有暗→亮/亮→暗极性，无空间方向语义（P4 移除误导）
+                yield return new[] { p1, p2, p3, p4 };
             }
         }
 
@@ -188,17 +234,42 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
 
             if (!drawBands || measureCount <= 0 || arc.Radius <= 0 || Math.Abs(arc.AngularSpan) <= 1e-6) return;
 
-            // 环形测量带：沿弧方向等间距分布，径向为宽度（卡尺宽度随矩阵缩放）
+            // 环形测量带（与结果层共用同一几何计算）
+            foreach (var quad in BuildArcBands(arc, bandWidth, bandLength, measureCount, radiusScale))
+            {
+                // 卡尺无填充，全检测蓝，粗细/透明度统一（线宽与 Blob 检测区域一致）
+                AddQuad(quad[0], quad[1], quad[2], quad[3], Colors.Transparent, StrokeColor, bandStroke, 1.0);
+                // 注：不绘制方向箭头——measure_transition 只有暗→亮/亮→暗极性，无空间方向语义
+            }
+        }
+
+        /// <summary>
+        /// 计算圆弧引导环形测量带四边形（供交互层渲染与结果层显示共用）。
+        /// 调用方需先对 arc 应用位置修正（圆心变换 + 半径缩放，角度不变），与 RenderArc 内部逻辑一致。
+        /// </summary>
+        /// <param name="radiusScale">位置修正半径缩放系数（无修正时传 1.0）</param>
+        public static System.Collections.Generic.IEnumerable<System.Windows.Point[]> BuildArcBands(
+            Arc2d arc, double bandWidth, double bandLength, int measureCount, double radiusScale = 1.0)
+        {
+            if (measureCount <= 0 || arc.Radius <= 0 || Math.Abs(arc.AngularSpan) <= 1e-6) yield break;
+
+            // 环形测量带：沿弧方向等间距分布，径向为宽度
             // 支持负 AngularSpan（顺时针弧，P3 过弦后方向翻转）
-            // ★ 分布相位与 Halcon 对齐：第一条卡尺中心在 start_phi（无半格偏移）。
+            // ★ 与 Halcon 对齐：N 条测量带覆盖 [start_phi, end_phi]，首条"起点边"对齐 start_phi、
+            //   末条"终点边"对齐 end_phi（与直线"首条起点边对齐起点"同一逻辑）。
+            //   中心偏移半个测量带弧长：角度_i = start_phi + sign×(halfBandAngle + i×stepAngle)
             double span = arc.AngularSpan;
-            double stepAngle = span / measureCount;   // 保留符号：顺时针 stepAngle 为负 → 角度递减
-            var halfBand = bandLength / 2 * radiusScale;
-            var halfWidth = bandWidth / 2 * radiusScale;
+            double halfBand = bandLength / 2 * radiusScale;
+            double halfWidth = bandWidth / 2 * radiusScale;
+            // 可用角度跨度：首末测量带各占半个测量带弧长，中间等分（按弧长比例折算角度）
+            double halfBandAngle = halfBand / arc.Radius;
+            double usableSpan = span - 2 * halfBandAngle;
+            if (Math.Abs(usableSpan) < 1e-6) usableSpan = span;
+            double stepAngle = measureCount > 1 ? usableSpan / (measureCount - 1) : usableSpan;   // 保留符号：顺时针为负 → 角度递减
 
             for (int i = 0; i < measureCount; i++)
             {
-                double angle = arc.StartAngle + i * stepAngle;
+                double angle = arc.StartAngle + halfBandAngle + i * stepAngle;
                 // 角度规范化到 [-π, π]，避免跨 0° 边界时 cos/sin 大角度误差
                 angle = ((angle + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
                 var dir = new Vector(Math.Cos(angle), Math.Sin(angle));   // 径向方向
@@ -211,9 +282,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
                 var p3 = center + dir * halfWidth + normal * halfBand;
                 var p4 = center - dir * halfWidth + normal * halfBand;
 
-                // 卡尺无填充，全检测蓝，粗细/透明度统一（线宽与 Blob 检测区域一致）
-                AddQuad(p1, p2, p3, p4, Colors.Transparent, StrokeColor, bandStroke, 1.0);
-                // 注：不绘制方向箭头——measure_transition 只有暗→亮/亮→暗极性，无空间方向语义（P4 移除误导）
+                yield return new[] { p1, p2, p3, p4 };
             }
         }
 

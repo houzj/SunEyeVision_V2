@@ -113,8 +113,8 @@ namespace SunEyeVision.Tool.LineDetect
                 new("Line",             "拟合直线",   "拟合结果"),
                 new("RMSE",             "拟合残差",   "拟合结果"),
                 new("EdgePointCount",   "边缘点数",   "拟合结果"),
-                new("CenterPoint",      "中点坐标",   "拟合结果"),
                 new("Angle",            "直线角度",   "拟合结果"),
+                // 注：CenterPoint（WPF Point）仅供显示文本，不作为输出变量（中点可由 Line 端点计算）
             ];
         }
     }

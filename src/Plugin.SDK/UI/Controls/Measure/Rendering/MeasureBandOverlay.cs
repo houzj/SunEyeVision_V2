@@ -82,7 +82,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
             double step = totalLen / measureCount;
             var halfBand = bandLength / 2;
             var halfWidth = bandWidth / 2;
-            int mainIndex = measureCount / 2; // 主卡尺 = 中间条
 
             for (int i = 0; i < measureCount; i++)
             {
@@ -94,16 +93,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
                 var p3 = center + dir * halfBand + normal * halfWidth;
                 var p4 = center - dir * halfBand + normal * halfWidth;
 
-                bool isMain = i == mainIndex;
                 // 卡尺无填充，全检测蓝，粗细/透明度统一（线宽与 Blob 检测区域一致）
                 AddQuad(p1, p2, p3, p4, Colors.Transparent, StrokeColor, bandStroke, 1.0);
-
-                // 主卡尺上绘制检测方向箭头（沿法线方向）
-                if (isMain)
-                {
-                    var arrowBase = center - dir * halfBand * 0.3;
-                    AddDirectionArrow(arrowBase, normal, bandWidth * 0.6, bandStroke);
-                }
+                // 注：不绘制方向箭头——measure_transition 只有暗→亮/亮→暗极性，无空间方向语义（P4 移除误导）
             }
         }
 
@@ -157,16 +149,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
                 var p3 = center + dir * halfWidth + normal * halfBand;
                 var p4 = center - dir * halfWidth + normal * halfBand;
 
-                bool isMain = i == 0; // 主卡尺 = 0°（正右方）条
                 // 卡尺无填充，全检测蓝，粗细/透明度统一（线宽与 Blob 检测区域一致）
                 AddQuad(p1, p2, p3, p4, Colors.Transparent, StrokeColor, bandStroke, 1.0);
-
-                // 主卡尺上绘制检测方向箭头（沿径向向外）
-                if (isMain)
-                {
-                    var arrowBase = center - dir * halfWidth * 0.3;
-                    AddDirectionArrow(arrowBase, dir, bandWidth * 0.6, bandStroke);
-                }
+                // 注：不绘制方向箭头——measure_transition 只有暗→亮/亮→暗极性，无空间方向语义（P4 移除误导）
             }
         }
 
@@ -205,17 +190,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
 
             // 环形测量带：沿弧方向等间距分布，径向为宽度（卡尺宽度随矩阵缩放）
             // 支持负 AngularSpan（顺时针弧，P3 过弦后方向翻转）
+            // ★ 分布相位与 Halcon 对齐：第一条卡尺中心在 start_phi（无半格偏移）。
             double span = arc.AngularSpan;
             double stepAngle = span / measureCount;   // 保留符号：顺时针 stepAngle 为负 → 角度递减
             var halfBand = bandLength / 2 * radiusScale;
             var halfWidth = bandWidth / 2 * radiusScale;
-            // 主卡尺 = 弧中点对应的卡尺索引（固定索引判定，与 RenderLine 一致；
-            // 避免"角度差比较"在顺时针/跨±π/大小弧时判定失效导致方向箭头丢失）
-            int mainIndex = measureCount / 2;
 
             for (int i = 0; i < measureCount; i++)
             {
-                double angle = arc.StartAngle + (i + 0.5) * stepAngle;
+                double angle = arc.StartAngle + i * stepAngle;
                 // 角度规范化到 [-π, π]，避免跨 0° 边界时 cos/sin 大角度误差
                 angle = ((angle + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
                 var dir = new Vector(Math.Cos(angle), Math.Sin(angle));   // 径向方向
@@ -228,16 +211,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
                 var p3 = center + dir * halfWidth + normal * halfBand;
                 var p4 = center - dir * halfWidth + normal * halfBand;
 
-                bool isMain = i == mainIndex;
                 // 卡尺无填充，全检测蓝，粗细/透明度统一（线宽与 Blob 检测区域一致）
                 AddQuad(p1, p2, p3, p4, Colors.Transparent, StrokeColor, bandStroke, 1.0);
-
-                // 主卡尺上绘制检测方向箭头（沿径向向外）
-                if (isMain)
-                {
-                    var arrowBase = center - dir * halfWidth * 0.3;
-                    AddDirectionArrow(arrowBase, dir, bandWidth * 0.6, bandStroke);
-                }
+                // 注：不绘制方向箭头——measure_transition 只有暗→亮/亮→暗极性，无空间方向语义（P4 移除误导）
             }
         }
 
@@ -333,34 +309,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
             };
             _overlayCanvas.Children.Add(polygon);
             _elements.Add(polygon);
-        }
-
-        /// <summary>
-        /// 添加检测方向箭头（线段 + 三角箭头，沿 direction 方向）
-        /// </summary>
-        /// <param name="basePoint">箭头起点</param>
-        /// <param name="direction">箭头方向</param>
-        /// <param name="length">箭头长度</param>
-        /// <param name="thickness">线宽（反除缩放，与 Blob 检测区域一致）</param>
-        private void AddDirectionArrow(Point basePoint, Vector direction, double length, double thickness)
-        {
-            if (direction.Length < 1e-9) return;
-
-            var dir = direction;
-            dir.Normalize();
-            var tip = basePoint + dir * length;
-
-            // 箭头主干
-            AddLine(basePoint, tip, StrokeColor, thickness);
-
-            // 箭头两翼
-            double wing = length * 0.25;
-            var perp = new Vector(-dir.Y, dir.X);
-            var wing1 = tip - dir * wing + perp * wing * 0.5;
-            var wing2 = tip - dir * wing - perp * wing * 0.5;
-
-            AddLine(tip, wing1, StrokeColor, thickness);
-            AddLine(tip, wing2, StrokeColor, thickness);
         }
 
         /// <summary>

@@ -182,8 +182,6 @@ namespace SunEyeVision.Tool.CircleDetect.Views
             Parameters.MeasureLength1 = e.Width / 2;
             Parameters.MeasureLength2 = e.Length / 2;
             Parameters.NumMeasures = e.Count;
-            // 数量优先：用户编辑数量后清零间距，避免 Halcon 执行时"间距优先"压制数量
-            Parameters.MeasureDistance = 0;
         }
 
         /// <summary>

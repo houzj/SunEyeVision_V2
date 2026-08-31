@@ -113,13 +113,13 @@ namespace SunEyeVision.Tool.EdgeDetect
                 var allParam = metrologyModel.GetMetrologyObjectResult(
                     objectIndex.I, "all", "result_type", "all_param");
 
-                // 获取拟合残差 RMSE
-                var rms = metrologyModel.GetMetrologyObjectResult(
-                    objectIndex.I, "all", "result_type", "rms");
+                // ★ 修复：rms 不是 get_metrology_object_result 的合法 result_type（#1305），
+                //   也不是 get_metrology_object_param 的合法 GenParamName（#1303），必须自算。
+                //   num_measures 是 get_metrology_object_param 的合法 GenParamName。
+                var rms = ComputeRmsFromUsedEdges(metrologyModel, objectIndex.I, allParam, parameters.GeometryType);
 
-                // 获取测量带数量
-                var numMeasures = metrologyModel.GetMetrologyObjectResult(
-                    objectIndex.I, "all", "result_type", "num_measures");
+                // 获取测量带数量（num_measures 是 get_metrology_object_param 的合法 GenParamName）
+                var numMeasures = metrologyModel.GetMetrologyObjectParam(objectIndex.I, "num_measures");
 
                 // ===== 结果填充 =====
                 FillResult(result, parameters, allParam, rms, numMeasures);
@@ -174,13 +174,13 @@ namespace SunEyeVision.Tool.EdgeDetect
         }
 
         /// <summary>
-        /// 构建 Halcon 通用参数名（measure_distance 与 num_measures 互斥，间距优先）
+        /// 构建 Halcon 通用参数名（产品决策：只支持数量主导；圆/圆弧带 start_phi/end_phi）
         /// </summary>
         private HTuple BuildGenParamName(EdgeDetectParameters parameters)
         {
             var names = new[]
             {
-                parameters.MeasureDistance > 0 ? "measure_distance" : "num_measures",
+                "num_measures",
                 "measure_transition",
                 "measure_select",
             };
@@ -194,13 +194,13 @@ namespace SunEyeVision.Tool.EdgeDetect
         }
 
         /// <summary>
-        /// 构建 Halcon 通用参数值
+        /// 构建 Halcon 通用参数值（数量主导：num_measures 必须传 int，避免 HALCON #1210 类型错误）
         /// </summary>
         private HTuple BuildGenParamValue(EdgeDetectParameters parameters)
         {
             var values = new object[]
             {
-                parameters.MeasureDistance > 0 ? parameters.MeasureDistance : parameters.NumMeasures,
+                parameters.NumMeasures,             // int → num_measures
                 TransitionToHalcon(parameters.Transition),
                 SelectToHalcon(parameters.Select),
             };
@@ -287,6 +287,67 @@ namespace SunEyeVision.Tool.EdgeDetect
             catch (Exception ex)
             {
                 throw new InvalidOperationException($"解析 Halcon 几何结果失败: {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// 自算拟合残差 RMSE（按几何类型分型）。
+        /// HALCON 中 rms 既不是 get_metrology_object_result 的合法 result_type（#1305），
+        /// 也不是 get_metrology_object_param 的合法 GenParamName（#1303），必须自行计算。
+        /// 参考官方 measure_stamping_part 示例：用 used_edges 取实际参与拟合的边缘点，
+        /// 直线：点到直线距离（法向量点积）；圆/弧：点到圆心距离 − 半径。
+        /// </summary>
+        /// <param name="metrologyModel">计量模型</param>
+        /// <param name="objectIndex">测量对象索引</param>
+        /// <param name="allParam">拟合参数（直线 [Row1,Col1,Row2,Col2,Nr,Nc,Dist]；圆 [Row,Col,Radius]）</param>
+        /// <param name="geometryType">几何类型（Line / Circle / Arc）</param>
+        /// <returns>RMSE 值（无拟合点时为 0）</returns>
+        private static HTuple ComputeRmsFromUsedEdges(HMetrologyModel metrologyModel, int objectIndex,
+            HTuple allParam, GeometryType geometryType)
+        {
+            try
+            {
+                var idx = new HTuple(objectIndex);
+                var usedRow = metrologyModel.GetMetrologyObjectResult(
+                    idx, new HTuple("all"), new HTuple("used_edges"), new HTuple("row"));
+                var usedCol = metrologyModel.GetMetrologyObjectResult(
+                    idx, new HTuple("all"), new HTuple("used_edges"), new HTuple("column"));
+                if (usedRow.Length == 0)
+                    return new HTuple(0.0);
+
+                double sumSq = 0;
+                if (geometryType == GeometryType.Line)
+                {
+                    if (allParam.Length < 7) return new HTuple(0.0);
+                    var r1 = allParam[0].D;   // Row1（线上一点）
+                    var c1 = allParam[1].D;   // Col1
+                    var nr = allParam[4].D;   // 单位法向量分量 Nr
+                    var nc = allParam[5].D;   // 单位法向量分量 Nc
+                    for (int i = 0; i < usedRow.Length; i++)
+                    {
+                        // 点到直线距离 = |Nr·(r−Row1) + Nc·(c−Col1)|（(Row1,Col1) 在直线上）
+                        var dist = nr * (usedRow[i].D - r1) + nc * (usedCol[i].D - c1);
+                        sumSq += dist * dist;
+                    }
+                }
+                else
+                {
+                    if (allParam.Length < 3) return new HTuple(0.0);
+                    var cRow = allParam[0].D;
+                    var cCol = allParam[1].D;
+                    var radius = allParam[2].D;
+                    for (int i = 0; i < usedRow.Length; i++)
+                    {
+                        var dist = Math.Sqrt(Math.Pow(usedRow[i].D - cRow, 2) + Math.Pow(usedCol[i].D - cCol, 2)) - radius;
+                        sumSq += dist * dist;
+                    }
+                }
+
+                return new HTuple(Math.Sqrt(sumSq / usedRow.Length));
+            }
+            catch
+            {
+                return new HTuple(0.0);
             }
         }
 

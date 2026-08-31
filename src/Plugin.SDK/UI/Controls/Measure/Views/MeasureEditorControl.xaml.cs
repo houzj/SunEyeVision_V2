@@ -662,7 +662,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                 double stepAngle = span / _measureCount;
                 for (int i = 0; i < _measureCount; i++)
                 {
-                    double angle = a.StartAngle + (i + 0.5) * stepAngle;
+                    // ★ 分布相位与 Halcon 对齐：第一条卡尺中心在 start_phi（无半格偏移）
+                    double angle = a.StartAngle + i * stepAngle;
                     var dir = new Vector(Math.Cos(angle), Math.Sin(angle));
                     var normal = new Vector(-dir.Y, dir.X);
                     var center = a.Center + dir * a.Radius;
@@ -888,7 +889,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                 if (a.Radius <= 0 || Math.Abs(a.AngularSpan) <= 1e-6) return null;
                 double span = a.AngularSpan;
                 double stepAngle = span / Math.Max(1, _measureCount);
-                double angle = a.StartAngle + (mainIndex + 0.5) * stepAngle;
+                // ★ 分布相位与 Halcon 对齐：第一条卡尺中心在 start_phi（无半格偏移）
+                double angle = a.StartAngle + mainIndex * stepAngle;
                 // 角度规范化到 [-π, π]，避免跨 0° 边界时 cos/sin 大角度误差
                 angle = ((angle + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
                 var radial = new Vector(Math.Cos(angle), Math.Sin(angle));  // 径向=宽轴

@@ -118,11 +118,12 @@ namespace SunEyeVision.Tool.CircleDetect
                 var allParam = metrologyModel.GetMetrologyObjectResult(
                     objectIndex.I, "all", "result_type", "all_param");
 
-                // ★ 修复：rms / num_measures 不是 get_metrology_object_result 的
-                //   result_type 合法值（会导致 HALCON #1305），须用 get_metrology_object_param 查询。
-                var rms = metrologyModel.GetMetrologyObjectParam(objectIndex.I, "rms");
+                // ★ 修复：rms 不是 get_metrology_object_param 的合法 GenParamName（#1303），
+                //   也不是 get_metrology_object_result 的合法 result_type（#1305）。
+                //   官方 measure_stamping_part 示例：用 used_edges 取实际参与拟合的点，自算点到圆距离的均方根。
+                var rms = ComputeRmsFromUsedEdges(metrologyModel, objectIndex.I, allParam);
 
-                // 获取测量带数量
+                // 获取测量带数量（num_measures 是 get_metrology_object_param 的合法 GenParamName）
                 var numMeasures = metrologyModel.GetMetrologyObjectParam(objectIndex.I, "num_measures");
 
                 // ===== 结果填充 =====
@@ -187,13 +188,13 @@ namespace SunEyeVision.Tool.CircleDetect
         }
 
         /// <summary>
-        /// 构建 Halcon 通用参数名（圆/圆弧带 start_phi/end_phi）
+        /// 构建 Halcon 通用参数名（产品决策：只支持数量主导；圆/圆弧带 start_phi/end_phi）
         /// </summary>
         private HTuple BuildGenParamName(CircleDetectParameters parameters)
         {
             return new HTuple(new[]
             {
-                parameters.MeasureDistance > 0 ? "measure_distance" : "num_measures",
+                "num_measures",
                 "measure_transition",
                 "measure_select",
                 "start_phi",
@@ -202,27 +203,18 @@ namespace SunEyeVision.Tool.CircleDetect
         }
 
         /// <summary>
-        /// 构建 Halcon 通用参数值
+        /// 构建 Halcon 通用参数值（数量主导：num_measures 必须传 int，避免 HALCON #1210 类型错误）
         /// </summary>
         private HTuple BuildGenParamValue(CircleDetectParameters parameters)
         {
-            // ★ 修复：间距模式传 double（measure_distance），数量模式必须传 int（num_measures）。
-            //   原实现用三元表达式，数量模式下 int 被提升为 double，导致 HALCON #1210 类型错误。
-            var paramValues = new object[]
+            return new HTuple(new object[]
             {
+                parameters.NumMeasures,             // int → num_measures
                 TransitionToHalcon(parameters.Transition),
                 SelectToHalcon(parameters.Select),
                 parameters.StartAngle,
                 parameters.EndAngle,
-            };
-
-            var values = new object[paramValues.Length + 1];
-            values[0] = parameters.MeasureDistance > 0
-                ? (object)parameters.MeasureDistance   // double → measure_distance
-                : (object)parameters.NumMeasures;     // int    → num_measures
-            Array.Copy(paramValues, 0, values, 1, paramValues.Length);
-
-            return new HTuple(values);
+            });
         }
 
         /// <summary>
@@ -294,22 +286,71 @@ namespace SunEyeVision.Tool.CircleDetect
         }
 
         /// <summary>
-        /// 提取测量点（get_metrology_object_measures → 每个卡尺的拟合点）
+        /// 提取拟合点（used_edges → 实际参与拟合的边缘点，每测量带一个）。
+        /// 与官方 measure_stamping_part 示例一致；get_metrology_object_measures 的
+        /// Row/Column 顺序未定义且无法归属到具体测量带，不适合作为拟合点显示。
         /// </summary>
         private Point2d[] ExtractMeasurementPoints(HTuple objectIndex, HMetrologyModel metrologyModel)
         {
             try
             {
-                metrologyModel.GetMetrologyObjectMeasures(objectIndex, "all", out var row, out var col);
-                if (row.Length == 0) return Array.Empty<Point2d>();
-                var pts = new Point2d[row.Length];
-                for (int i = 0; i < row.Length; i++)
-                    pts[i] = new Point2d(col[i].D, row[i].D);
+                var usedRow = metrologyModel.GetMetrologyObjectResult(
+                    objectIndex, new HTuple("all"), new HTuple("used_edges"), new HTuple("row"));
+                var usedCol = metrologyModel.GetMetrologyObjectResult(
+                    objectIndex, new HTuple("all"), new HTuple("used_edges"), new HTuple("column"));
+                if (usedRow.Length == 0) return Array.Empty<Point2d>();
+                var pts = new Point2d[usedRow.Length];
+                for (int i = 0; i < usedRow.Length; i++)
+                    pts[i] = new Point2d(usedCol[i].D, usedRow[i].D);
                 return pts;
             }
             catch
             {
                 return Array.Empty<Point2d>();
+            }
+        }
+
+        /// <summary>
+        /// 自算拟合残差 RMSE。
+        /// HALCON 中 rms 既不是 get_metrology_object_param 的合法 GenParamName（#1303），
+        /// 也不是 get_metrology_object_result 的合法 result_type（#1305），必须自行计算。
+        /// 参考官方 measure_stamping_part 示例：用 used_edges 取实际参与拟合的边缘点，
+        /// 计算每个点到拟合圆（|点到圆心| − 半径）的距离，取均方根。
+        /// </summary>
+        /// <param name="metrologyModel">计量模型</param>
+        /// <param name="objectIndex">测量对象索引</param>
+        /// <param name="allParam">拟合参数 [Row, Col, Radius]</param>
+        /// <returns>RMSE 值（无拟合点时为 0）</returns>
+        private static HTuple ComputeRmsFromUsedEdges(HMetrologyModel metrologyModel, int objectIndex, HTuple allParam)
+        {
+            try
+            {
+                if (allParam.Length < 3)
+                    return new HTuple(0.0);
+
+                var idx = new HTuple(objectIndex);
+                var usedRow = metrologyModel.GetMetrologyObjectResult(
+                    idx, new HTuple("all"), new HTuple("used_edges"), new HTuple("row"));
+                var usedCol = metrologyModel.GetMetrologyObjectResult(
+                    idx, new HTuple("all"), new HTuple("used_edges"), new HTuple("column"));
+                if (usedRow.Length == 0)
+                    return new HTuple(0.0);
+
+                var cRow = allParam[0].D;
+                var cCol = allParam[1].D;
+                var radius = allParam[2].D;
+
+                double sumSq = 0;
+                for (int i = 0; i < usedRow.Length; i++)
+                {
+                    var dist = Math.Sqrt(Math.Pow(usedRow[i].D - cRow, 2) + Math.Pow(usedCol[i].D - cCol, 2)) - radius;
+                    sumSq += dist * dist;
+                }
+                return new HTuple(Math.Sqrt(sumSq / usedRow.Length));
+            }
+            catch
+            {
+                return new HTuple(0.0);
             }
         }
 

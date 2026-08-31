@@ -1,0 +1,10 @@
+测量工具链优化：rms自算+废弃间距模式+拟合点used_edges+卡尺相位对齐
+
+- 修复 HALCON rms 获取错误（#1303/#1305）：rms 无直读算子，改为 used_edges 取点自算（圆/直线/分型）
+- 只支持数量主导卡尺（num_measures），废弃 measure_distance 间距模式（11处）
+- 拟合点改 used_edges：每测量带一个实际参与拟合的点，与官方 demo 一致
+- 圆弧卡尺分布相位对齐 Halcon（start_phi 起，去半格偏移）
+- 移除卡尺方向箭头（Halcon 无方向语义，纯误导）
+- 极性文案改客户语言：正/负极性 改为 黑到白/白到黑
+- 修复 CenterPoint(WPF Point) 契约映射异常：移出 GetPropertyMap 输出变量
+- 修复 GetMetrologyObjectResult 重载二义性（int+HTuple 显式转换）

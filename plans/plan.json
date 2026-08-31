@@ -1875,7 +1875,7 @@
                         "type":  "module",
                         "layer":  "source",
                         "stage":  "CD",
-                        "status":  "todo",
+                        "status":  "in_progress",
                         "start":  "2026-11-16",
                         "end":  "2026-12-04",
                         "goal":  "通讯管理真实可用：TCP 驱动收发数据，位姿成功下发机器人",
@@ -1891,7 +1891,7 @@
                                           "name":  "通信驱动抽象层（ICommunicationDriver：TCP/UDP/串口）",
                                           "phase":  "算法实现",
                                           "hours":  16,
-                                          "status":  "todo",
+                                          "status":  "in_progress",
                                           "week":  "2027-W03"
                                       },
                                       {
@@ -1926,6 +1926,10 @@
                                     {
                                         "date":  "2026-08-17",
                                         "note":  "现状盘点：TestConnection 仅为 Sleep(500)+日志占位，无真实客户端实现"
+                                    },
+                                    {
+                                        "date":  "2026-08-29",
+                                        "note":  "[78db9c9c00c722cb7d525968d28f0ec917c63794] theme dialog buttons and converge MessageBox to ThemeMessageDialog"
                                     }
                                 ]
                     },

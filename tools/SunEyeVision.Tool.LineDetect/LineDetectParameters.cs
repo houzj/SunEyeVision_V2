@@ -79,7 +79,6 @@ namespace SunEyeVision.Tool.LineDetect
 
         private double _measureLength1 = 20.0;
         private double _measureLength2 = 5.0;
-        private double _measureDistance = 10.0;
         private int _numMeasures = 10;
         private double _sigma = 1.0;
         private double _threshold = 30.0;
@@ -105,16 +104,7 @@ namespace SunEyeVision.Tool.LineDetect
         }
 
         /// <summary>
-        /// 测量带间距（与数量互斥，间距优先）
-        /// </summary>
-        public double MeasureDistance
-        {
-            get => _measureDistance;
-            set => SetProperty(ref _measureDistance, value, "测量带间距");
-        }
-
-        /// <summary>
-        /// 测量带数量（与间距互斥，间距优先）
+        /// 测量带数量（产品决策：只支持数量主导，废弃间距模式）
         /// </summary>
         public int NumMeasures
         {

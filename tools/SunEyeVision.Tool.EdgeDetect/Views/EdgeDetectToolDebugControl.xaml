@@ -41,12 +41,6 @@
                                     <TextBlock Text="px（切线方向）" Foreground="Gray" VerticalAlignment="Center" Margin="8,0,0,0"/>
                                 </DockPanel>
                                 <DockPanel Margin="0,4">
-                                    <TextBlock Text="测量带间距" Width="110" VerticalAlignment="Center"/>
-                                    <TextBox Text="{Binding Parameters.MeasureDistance, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                             Width="80" HorizontalAlignment="Left"/>
-                                    <TextBlock Text="px" Foreground="Gray" VerticalAlignment="Center" Margin="8,0,0,0"/>
-                                </DockPanel>
-                                <DockPanel Margin="0,4">
                                     <TextBlock Text="平滑 Sigma" Width="110" VerticalAlignment="Center"/>
                                     <TextBox Text="{Binding Parameters.Sigma, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                              Width="80" HorizontalAlignment="Left"/>
@@ -62,8 +56,8 @@
                                               SelectionChanged="TransitionCombo_SelectionChanged"
                                               Width="120" HorizontalAlignment="Left">
                                         <ComboBoxItem Content="全部"/>
-                                        <ComboBoxItem Content="正极性"/>
-                                        <ComboBoxItem Content="负极性"/>
+                                        <ComboBoxItem Content="黑到白"/>
+                                        <ComboBoxItem Content="白到黑"/>
                                     </ComboBox>
                                 </DockPanel>
                                 <DockPanel Margin="0,4">

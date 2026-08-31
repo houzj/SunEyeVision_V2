@@ -85,17 +85,6 @@
                                 AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                         </controls:LabeledControl>
 
-                        <controls:LabeledControl Label="测量带间距" Margin="0,0,0,4">
-                            <controls:ConfigSetting
-                                ParameterName="MeasureDistance"
-                                DataType="{x:Type sys:Double}"
-                                Value="{Binding MeasureDistance, Mode=TwoWay}"
-                                Minimum="1" Maximum="200"
-                                SmallChange="1" LargeChange="5"
-                                Width="250"
-                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                        </controls:LabeledControl>
-
                         <controls:LabeledControl Label="平滑 Sigma" Margin="0,0,0,4">
                             <controls:ConfigSetting
                                 ParameterName="Sigma"
@@ -123,8 +112,8 @@
                                       SelectionChanged="TransitionCombo_SelectionChanged"
                                       Width="250" HorizontalAlignment="Left" Height="32" VerticalContentAlignment="Center">
                                 <ComboBoxItem Content="全部"/>
-                                <ComboBoxItem Content="正极性"/>
-                                <ComboBoxItem Content="负极性"/>
+                                <ComboBoxItem Content="黑到白"/>
+                                <ComboBoxItem Content="白到黑"/>
                             </ComboBox>
                         </controls:LabeledControl>
 

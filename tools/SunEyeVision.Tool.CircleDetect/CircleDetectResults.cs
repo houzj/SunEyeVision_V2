@@ -118,7 +118,7 @@ namespace SunEyeVision.Tool.CircleDetect
                 new("Arc",              "拟合圆弧", "拟合结果"),
                 new("RMSE",             "拟合残差", "拟合结果"),
                 new("EdgePointCount",   "边缘点数", "拟合结果"),
-                new("CenterPoint",      "圆心坐标", "拟合结果"),
+                // 注：CenterPoint（WPF Point）仅供显示文本，不作为输出变量（圆心已在 Circle/Arc 几何内）
             ];
         }
     }

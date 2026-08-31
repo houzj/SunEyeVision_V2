@@ -107,12 +107,20 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         public event EventHandler<CaliberParamsChangedEventArgs>? CaliberParamsChanged;
 
         /// <summary>
+        /// 选中状态变更事件（true=选中，false=取消选中；对齐 Roi 端选中即显示参数）
+        /// </summary>
+        public event EventHandler<bool>? SelectionChanged;
+
+        /// <summary>
         /// 创建测量引导几何交互宿主
         /// </summary>
         public MeasureEditorControl()
         {
             InitializeComponent();
             InitializeCaliberTools();
+
+            // ★ 选中状态变化转发（模型 → 宿主，宿主 → 管理器/参数面板）
+            _model.SelectionChanged += selected => SelectionChanged?.Invoke(this, selected);
         }
 
         #region 卡尺工具项

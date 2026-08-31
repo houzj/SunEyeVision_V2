@@ -27,6 +27,9 @@ namespace SunEyeVision.Tool.EdgeDetect.Views
     /// </remarks>
     public partial class EdgeDetectToolDebugControl : ToolDebugControlBase
     {
+        /// <summary>正在从编辑器同步卡尺参数（防止 参数→编辑器→参数 回写死循环）</summary>
+        private bool _syncingCaliberFromEditor;
+
         #region Properties
 
         public static readonly DependencyProperty ParametersProperty =
@@ -220,6 +223,21 @@ namespace SunEyeVision.Tool.EdgeDetect.Views
                             Parameters.EndAngle));
                     break;
             }
+
+            // ★ 修复持久化：卡尺参数从 Parameters 回填到编辑器（宽度/长度/数量）
+            //   SetCaliberParams 会触发 CaliberParamsChanged，用同步标志避免回写循环
+            _syncingCaliberFromEditor = true;
+            try
+            {
+                GuideEditor.SetCaliberParams(
+                    Parameters.MeasureLength1 * 2,
+                    Parameters.MeasureLength2 * 2,
+                    Parameters.NumMeasures);
+            }
+            finally
+            {
+                _syncingCaliberFromEditor = false;
+            }
         }
 
         #endregion
@@ -242,6 +260,12 @@ namespace SunEyeVision.Tool.EdgeDetect.Views
             {
                 MeasurementManager.MaskRegionsSource = Parameters.MaskRegions.Regions;
             }
+
+            // ★ 修复持久化：打开调试窗口即回填引导几何 + 卡尺参数到编辑器
+            RestoreGuideFromParameters();
+
+            // ★ 同步 ComboBox 选中（反序列化时按已保存值显示）
+            SyncEnumsFromParameters();
         }
 
         protected override object ExecuteTool()
@@ -273,6 +297,32 @@ namespace SunEyeVision.Tool.EdgeDetect.Views
         #endregion
 
         #region 枚举下拉处理
+
+        /// <summary>
+        /// <summary>
+        /// 从 Parameters 同步 ComboBox 选中（反序列化时按已保存值显示）
+        /// </summary>
+        private void SyncEnumsFromParameters()
+        {
+            if (TransitionCombo != null)
+            {
+                TransitionCombo.SelectedIndex = Parameters.Transition switch
+                {
+                    EdgeTransition.Positive => 1,
+                    EdgeTransition.Negative => 2,
+                    _ => 0,
+                };
+            }
+            if (SelectCombo != null)
+            {
+                SelectCombo.SelectedIndex = Parameters.Select switch
+                {
+                    EdgeSelect.First => 1,
+                    EdgeSelect.Last => 2,
+                    _ => 0,
+                };
+            }
+        }
 
         /// <summary>
         /// 边缘极性选择变更

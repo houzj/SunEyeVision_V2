@@ -50,6 +50,16 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
 
             // 订阅子编辑器渲染请求（屏蔽区域经 RenderRequested 触发统一渲染）
             maskEditor.RenderRequested += OnMaskRenderRequested;
+
+            // ★ 修复：引导几何参数面板 Editor 直接关联（XAML Binding GuideEditor 会解析到
+            //   DataContext 而非控件属性，导致 Editor 恒为 null、面板空白）。
+            //   命名元素同控件内直接关联，绕开 Binding 路径。
+            guideParameterPanel.Editor = guideEditor;
+
+            // ★ 对齐 ROI 端 HasParametersVisible：选中引导几何时显示参数折叠框，
+            //   取消选中即隐藏（选中/取消/绘制完成/删除全链路刷新）
+            guideEditor.SelectionChanged += (s, selected) => GuideGeometryVisible = selected && guideEditor.HasGuide;
+            GuideGeometryVisible = guideEditor.IsGuideSelected;
         }
 
         #region Dependency Properties
@@ -78,6 +88,22 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
             {
                 control.maskEditor?.SetRegionsSource(source);
             }
+        }
+
+        /// <summary>
+        /// 是否有引导几何（对齐 ROI 端 HasParametersVisible：有引导几何时显示参数折叠框）
+        /// </summary>
+        public static readonly DependencyProperty GuideGeometryVisibleProperty =
+            DependencyProperty.Register(nameof(GuideGeometryVisible), typeof(bool),
+                typeof(MeasurementEditorManagerControl), new PropertyMetadata(false));
+
+        /// <summary>
+        /// 是否有引导几何（有引导几何时显示参数折叠框）
+        /// </summary>
+        public bool GuideGeometryVisible
+        {
+            get => (bool)GetValue(GuideGeometryVisibleProperty);
+            set => SetValue(GuideGeometryVisibleProperty, value);
         }
 
         #endregion

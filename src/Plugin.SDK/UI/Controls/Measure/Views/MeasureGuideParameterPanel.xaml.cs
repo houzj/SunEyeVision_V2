@@ -79,13 +79,25 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
             {
                 oldEditor.GuideGeometryChanged -= panel.OnGuideGeometryChanged;
                 oldEditor.CaliberParamsChanged -= panel.OnCaliberParamsChanged;
+                oldEditor.SelectionChanged -= panel.OnSelectionChanged;
             }
             if (e.NewValue is MeasureEditorControl newEditor)
             {
                 newEditor.GuideGeometryChanged += panel.OnGuideGeometryChanged;
                 newEditor.CaliberParamsChanged += panel.OnCaliberParamsChanged;
+                newEditor.SelectionChanged += panel.OnSelectionChanged;
                 panel.RefreshFromEditor();
             }
+        }
+
+        /// <summary>
+        /// 选中状态变化：选中时立即刷新参数（对齐 Roi 端"选中即显示参数"，
+        /// 无需拖拽手柄才刷新）；取消选中时由管理器隐藏折叠框，无需处理。
+        /// </summary>
+        private void OnSelectionChanged(object? sender, bool selected)
+        {
+            if (selected)
+                RefreshFromEditor();
         }
 
         /// <summary>

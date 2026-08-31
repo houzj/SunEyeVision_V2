@@ -66,8 +66,22 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Models
         /// <summary>是否正处于绘制过程中（按下未松开）</summary>
         public bool IsDrawing { get; set; }
 
+        private bool _isSelected;
+
         /// <summary>当前引导几何是否被选中（显示编辑手柄）</summary>
-        public bool IsSelected { get; set; }
+        public bool IsSelected
+        {
+            get => _isSelected;
+            set
+            {
+                if (_isSelected == value) return;
+                _isSelected = value;
+                SelectionChanged?.Invoke(value);
+            }
+        }
+
+        /// <summary>选中状态变化事件（true=选中，false=取消选中；对齐 Roi 端 HasParametersVisible 通知机制）</summary>
+        public event Action<bool>? SelectionChanged;
 
         /// <summary>绘制起点</summary>
         public Point DrawStart { get; set; }

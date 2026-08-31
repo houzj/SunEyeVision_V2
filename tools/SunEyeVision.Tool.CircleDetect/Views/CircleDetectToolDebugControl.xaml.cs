@@ -222,6 +222,21 @@ namespace SunEyeVision.Tool.CircleDetect.Views
 
             if (Parameters.GuideCircle.HasValue)
                 GuideEditor.SetGuide(Parameters.GuideCircle.Value);
+
+            // ★ 修复持久化：卡尺参数从 Parameters 回填到编辑器（宽度/长度/数量）
+            //   SetCaliberParams 会触发 CaliberParamsChanged，用同步标志避免回写循环
+            _syncingCaliberFromEditor = true;
+            try
+            {
+                GuideEditor.SetCaliberParams(
+                    Parameters.MeasureLength1 * 2,
+                    Parameters.MeasureLength2 * 2,
+                    Parameters.NumMeasures);
+            }
+            finally
+            {
+                _syncingCaliberFromEditor = false;
+            }
         }
 
         #endregion
@@ -247,6 +262,14 @@ namespace SunEyeVision.Tool.CircleDetect.Views
             {
                 MeasurementManager.MaskRegionsSource = Parameters.MaskRegions.Regions;
             }
+
+            // ★ 修复持久化：打开调试窗口即回填引导几何 + 卡尺参数到编辑器
+            //   （原实现只在 SetMainImageControl（窗口显示后）调用且不回填卡尺，
+            //    导致关闭重开时编辑器显示默认值）。
+            RestoreGuideFromParameters();
+
+            // ★ 同步 ComboBox 选中（反序列化时按已保存值显示）
+            SyncEnumsFromParameters();
         }
 
         public override void SetDataProvider(object dataProvider)
@@ -343,6 +366,31 @@ namespace SunEyeVision.Tool.CircleDetect.Views
         #endregion
 
         #region 枚举下拉处理
+
+        /// <summary>
+        /// 从 Parameters 同步 ComboBox 选中（反序列化时按已保存值显示）
+        /// </summary>
+        private void SyncEnumsFromParameters()
+        {
+            if (TransitionCombo != null)
+            {
+                TransitionCombo.SelectedIndex = Parameters.Transition switch
+                {
+                    EdgeTransition.Positive => 1,
+                    EdgeTransition.Negative => 2,
+                    _ => 0,
+                };
+            }
+            if (SelectCombo != null)
+            {
+                SelectCombo.SelectedIndex = Parameters.Select switch
+                {
+                    EdgeSelect.First => 1,
+                    EdgeSelect.Last => 2,
+                    _ => 0,
+                };
+            }
+        }
 
         /// <summary>
         /// 边缘极性选择变更

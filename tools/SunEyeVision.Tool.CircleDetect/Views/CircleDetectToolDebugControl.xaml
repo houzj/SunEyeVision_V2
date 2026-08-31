@@ -109,6 +109,7 @@
 
                         <controls:LabeledControl Label="边缘极性" Margin="0,0,0,4">
                             <ComboBox x:Name="TransitionCombo"
+                                      SelectedIndex="0"
                                       SelectionChanged="TransitionCombo_SelectionChanged"
                                       Width="250" HorizontalAlignment="Left" Height="32" VerticalContentAlignment="Center">
                                 <ComboBoxItem Content="全部"/>
@@ -119,6 +120,7 @@
 
                         <controls:LabeledControl Label="选取模式" Margin="0,0,0,4">
                             <ComboBox x:Name="SelectCombo"
+                                      SelectedIndex="0"
                                       SelectionChanged="SelectCombo_SelectionChanged"
                                       Width="250" HorizontalAlignment="Left" Height="32" VerticalContentAlignment="Center">
                                 <ComboBoxItem Content="全部"/>

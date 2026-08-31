@@ -123,7 +123,7 @@ namespace SunEyeVision.Tool.CircleDetect
         private int _numMeasures = 10;
         private double _sigma = 1.0;
         private double _threshold = 30.0;
-        private EdgeTransition _transition = EdgeTransition.Positive;
+        private EdgeTransition _transition = EdgeTransition.All;
         private EdgeSelect _select = EdgeSelect.All;
 
         /// <summary>

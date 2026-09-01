@@ -799,6 +799,34 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         #region 鼠标事件处理
 
         /// <summary>
+        /// 悬停光标查询（QueryCursor 被动回答）：手柄命中显示手柄光标，区域主体显示移动十字，空白返回 null。
+        /// 由管理器路由调用，元素级自动恢复，无全局覆盖泄漏。
+        /// </summary>
+        /// <param name="displayPos">鼠标在 MainCanvas 的显示坐标</param>
+        public Cursor? QueryCursor(Point displayPos)
+        {
+            if (OverlayCanvas == null) return null;
+
+            var refPosition = _inverseMatrix != null
+                ? _inverseMatrix.TransformWpfPoint(displayPos)
+                : displayPos;
+
+            // ① 手柄命中（复用 HandleRenderer.HitTestHandleDetail，EditHandle 自带光标）
+            if (_selectedRegion != null && _currentHandles != null)
+            {
+                var hit = Rendering.HandleRenderer.HitTestHandleDetail(refPosition, _currentHandles);
+                if (hit != null)
+                    return hit.Cursor;
+            }
+
+            // ② 区域主体命中 → 移动十字（HitTestRegion 内部自行反变换，需传原始显示坐标）
+            if (HitTestRegion(displayPos) != null)
+                return Cursors.SizeAll;
+
+            return null;
+        }
+
+        /// <summary>
         /// 处理鼠标移动（由Manager路由）
         /// </summary>
         public void ProcessMouseMove(Point position)
@@ -958,10 +986,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
             {
                 if (_currentHandles != null)
                 {
-                    var hitHandleType = Rendering.HandleRenderer.HitTestHandle(refPosition, _currentHandles);
-
-                    if (hitHandleType != Rendering.HandleType.None)
+                    // ★ 复用 HandleRenderer.HitTestHandleDetail：一次命中即拿到 Type + VertexIndex，删除内联距离循环
+                    var hitHandle = Rendering.HandleRenderer.HitTestHandleDetail(refPosition, _currentHandles);
+                    if (hitHandle != null)
                     {
+                        var hitHandleType = hitHandle.Type;
+
                         if (hitHandleType == Rendering.HandleType.Center)
                         {
                             _isDragging = true;
@@ -975,23 +1005,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
                             _isDraggingHandle = true;
                             _activeHandleType = hitHandleType;
                             _handleDragStartPoint = refPosition;
-                            _activeVertexIndex = -1;
-                            if (_currentHandles != null)
-                            {
-                                foreach (var h in _currentHandles)
-                                {
-                                    if (h.Type == Rendering.HandleType.PolygonVertex && h.VertexIndex >= 0)
-                                    {
-                                        var dx = refPosition.X - h.Position.X;
-                                        var dy = refPosition.Y - h.Position.Y;
-                                        if (Math.Sqrt(dx * dx + dy * dy) < h.HandleSize)
-                                        {
-                                            _activeVertexIndex = h.VertexIndex;
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
+                            _activeVertexIndex = hitHandle.VertexIndex;
                             if (_selectedRegion?.Parameters is ShapeParameters polyShape)
                                 _originalShapeDefinition = polyShape.Clone() as ShapeParameters;
                             _viewModel.StatusMessage = "正在拖拽多边形顶点";

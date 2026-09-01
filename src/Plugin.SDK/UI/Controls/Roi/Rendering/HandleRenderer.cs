@@ -561,7 +561,20 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering
         /// <param name="point">测试点（图像坐标）</param>
         /// <param name="handles">手柄列表</param>
         /// <param name="toleranceRatio">容差比例：命中半径 = handleSize * (0.5 + toleranceRatio)，默认0.5表示命中范围比视觉半径大100%</param>
+        /// <returns>命中的手柄类型；未命中返回 <see cref="HandleType.None"/></returns>
         public static HandleType HitTestHandle(Point point, EditHandle[] handles, double toleranceRatio = 0.5)
+        {
+            return HitTestHandleDetail(point, handles, toleranceRatio)?.Type ?? HandleType.None;
+        }
+
+        /// <summary>
+        /// 命中测试（返回命中的手柄对象，保留 VertexIndex 等详情；命中公式与 <see cref="HitTestHandle"/> 完全一致）
+        /// </summary>
+        /// <param name="point">测试点（图像坐标）</param>
+        /// <param name="handles">手柄列表</param>
+        /// <param name="toleranceRatio">容差比例：命中半径 = handleSize * (0.5 + toleranceRatio)，默认0.5表示命中范围比视觉半径大100%</param>
+        /// <returns>命中的手柄对象（含 VertexIndex）；未命中返回 null</returns>
+        public static EditHandle? HitTestHandleDetail(Point point, EditHandle[] handles, double toleranceRatio = 0.5)
         {
             EditHandle? closestHandle = null;
             var closestDistance = double.MaxValue;
@@ -572,10 +585,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering
                 var dx = point.X - handle.Position.X;
                 var dy = point.Y - handle.Position.Y;
                 var distance = Math.Sqrt(dx * dx + dy * dy);
-                
+
                 // 命中半径 = handleSize * (0.5 + toleranceRatio)，即比视觉半径大 toleranceRatio
                 var hitRadius = handle.HandleSize * (0.5 + toleranceRatio);
-                
+
                 if (distance <= hitRadius && distance < closestDistance)
                 {
                     closestDistance = distance;
@@ -583,7 +596,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering
                 }
             }
 
-            return closestHandle?.Type ?? HandleType.None;
+            return closestHandle;
         }
     }
 }

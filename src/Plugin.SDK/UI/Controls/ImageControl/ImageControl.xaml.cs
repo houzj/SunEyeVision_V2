@@ -434,6 +434,23 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             InitializeComponent();
         }
 
+        /// <summary>
+        /// 设置悬停光标（元素级，供编辑器管理器按命中结果驱动）。
+        /// 鼠标离开 MainCanvas 自动恢复默认光标；平移中保持平移光标不覆盖。
+        /// </summary>
+        /// <remarks>
+        /// 采用元素级 Cursor 而非 Mouse.OverrideCursor：局部生效、离开自动恢复，无应用级覆盖泄漏。
+        /// 不采用 QueryCursor：该事件仅在"命中元素变化/捕获变化"时触发，鼠标在同一元素内移动不重新
+        /// 查询，无法支持"画布内按位置动态切换光标"；故由调用方（编辑器管理器）在 MouseMove 路由中
+        /// 按命中结果显式传入光标。
+        /// </remarks>
+        /// <param name="cursor">应显示的光标；null=恢复默认（箭头）</param>
+        public void SetHoverCursor(Cursor? cursor)
+        {
+            if (_isPanning) return;   // 平移中保持 MainCanvas.Cursor=SizeAll，不覆盖
+            MainCanvas.Cursor = cursor;
+        }
+
         #endregion
 
         #region 公共方法

@@ -239,6 +239,31 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
 
         #region 事件路由（引导 vs 屏蔽，异质）
 
+        #region 悬停光标统一管理（MouseMove 驱动元素级 Cursor）
+
+        /// <summary>
+        /// 统一悬停光标路由：命中优先级对齐鼠标按下（绘制模式 → 交互中 → 屏蔽区域命中 → 引导主体）
+        /// </summary>
+        /// <param name="pos">鼠标图像坐标（ImagePosition，与编辑器命中链路一致）</param>
+        /// <returns>应显示的光标；null=恢复默认（箭头）</returns>
+        private Cursor? QueryEditorCursor(Point pos)
+        {
+            // 绘制模式优先（互斥）
+            if (guideEditor.IsDrawingMode) return guideEditor.QueryCursor(pos);
+            if (maskEditor.ViewModel.IsDrawing) return maskEditor.QueryCursor(pos);
+
+            // 交互中（拖动/编辑手柄）
+            if (guideEditor.IsAnyInteractionInProgress) return guideEditor.QueryCursor(pos);
+            if (maskEditor.IsAnyInteractionInProgress) return maskEditor.QueryCursor(pos);
+
+            // 选择模式：屏蔽区域视觉上层优先；其余交给引导编辑器（主体/卡尺/手柄）
+            if (maskEditor.HitTestRegion(pos, tolerance: 8.0) != null)
+                return maskEditor.QueryCursor(pos);
+            return guideEditor.QueryCursor(pos);
+        }
+
+        #endregion
+
         /// <summary>
         /// 获取当前正在交互的子编辑器
         /// </summary>
@@ -269,6 +294,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
             }
 
             RenderAll();
+
+            // ★ 悬停光标：MouseMove 直接驱动元素级 Cursor（ImageControl.SetHoverCursor）。
+            //   不采用 QueryCursor（同一元素内移动不重新触发）；坐标用 e.ImagePosition，
+            //   与编辑器命中链路（ToReference/_inverseMatrix）一致。
+            _mainImageControl?.SetHoverCursor(QueryEditorCursor(pos));
         }
 
         private void OnCanvasMouseLeftButtonDown(object? sender, ImageMouseEventArgs e)

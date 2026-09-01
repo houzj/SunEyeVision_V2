@@ -403,7 +403,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
             // 选择/编辑模式：命中优先级 ①手柄 ②引导主体 ③卡尺
             if (_model.HasGuide)
             {
-                // ① 手柄命中（优先级最高：命中半径带保底下限，确保与卡尺/引导线重叠时优先命中手柄）
+                // ① 手柄命中（优先级最高，复用 ROI HitTestHandle 公式）
                 if (_currentHandles != null)
                 {
                     var hitType = HitTestHandles(pos);
@@ -415,7 +415,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                 }
 
                 // ② 引导主体命中 → 移动
-                if (HitTestGuide(pos, _guideHitTolerance))
+                if (HitTestGuide(pos, GuideBodyHitTolerance))
                 {
                     _model.IsSelected = true;
                     _isDragging = true;
@@ -479,41 +479,38 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                 return;
             }
 
-            // 悬停光标反馈：手柄=手（编辑），引导线/卡尺=十字（移动），空白=箭头
-            UpdateHoverCursor(pos);
+            // 悬停光标反馈由 Manager 的 QueryCursor 路由统一驱动（ImageControl 元素级，自动恢复）
         }
 
         /// <summary>
-        /// 悬停光标反馈：按命中对象切换光标（手柄=编辑/手，引导线/卡尺=移动/十字，空白=箭头）
+        /// 悬停光标查询（QueryCursor 被动回答）：返回当前命中对象对应的光标；空白返回 null（默认箭头）。
+        /// 由 Manager 路由调用，不再使用 Mouse.OverrideCursor（避免应用级全局覆盖泄漏）。
         /// </summary>
-        private void UpdateHoverCursor(Point pos)
+        /// <param name="displayPos">鼠标在 MainCanvas 的显示坐标</param>
+        public Cursor? QueryCursor(Point displayPos)
         {
-            if (_overlayCanvas == null) return;
+            if (_overlayCanvas == null || _overlay == null) return null;
 
             // 位置修正：鼠标显示坐标 → 参考系坐标
-            pos = ToReference(pos);
+            var pos = ToReference(displayPos);
 
             // ① 手柄 → 按手柄类型显示不同光标（优先级最高）
             if (_currentHandles != null)
             {
                 var handleType = HitTestHandles(pos);
                 if (handleType != HandleType.None)
-                {
-                    Mouse.OverrideCursor = CursorForHandle(handleType, _geometryType);
-                    return;
-                }
+                    return CursorForHandle(handleType, _geometryType);
             }
 
             // ② 引导主体 或 ③ 卡尺测量带 → 十字（移动）
             if (_model.HasGuide &&
-                (HitTestGuide(pos, _guideHitTolerance) || HitTestBand(pos)))
+                (HitTestGuide(pos, GuideBodyHitTolerance) || HitTestBand(pos)))
             {
-                Mouse.OverrideCursor = Cursors.SizeAll;
-                return;
+                return Cursors.SizeAll;
             }
 
-            // 空白 → 箭头
-            Mouse.OverrideCursor = Cursors.Arrow;
+            // 空白 → null（默认箭头）
+            return null;
         }
 
         /// <summary>
@@ -571,45 +568,20 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
 
         #region 命中测试
 
-        /// <summary>引导主体命中容差（像素）</summary>
-        private const double _guideHitTolerance = 12.0;
-
-        /// <summary>卡尺命中容差（像素）</summary>
-        private const double _bandHitTolerance = 6.0;
+        /// <summary>
+        /// 引导主体命中容差 = 卡尺高度（法线方向全宽）的一半。
+        /// 与卡尺测量带覆盖范围一致：点击落在测量带高度内即可移动引导主体。
+        /// </summary>
+        private double GuideBodyHitTolerance => _bandWidth / 2;
 
         /// <summary>
-        /// 手柄命中测试（优先级最高）：命中半径 = max(自适应手柄半径, 保底下限)
+        /// 手柄命中测试（优先级最高，复用 ROI HandleRenderer.HitTestHandle）：
+        /// 命中半径 = handleSize * (0.5 + toleranceRatio)，默认 toleranceRatio=0.5 即半径=视觉半径的 2 倍
         /// </summary>
-        /// <remarks>
-        /// 手柄命中半径必须 ≥ 引导线/卡尺的命中范围，否则与卡尺带/引导线重叠时
-        /// 手柄会被卡尺/引导线"抢走"，导致无法编辑。保底下限保证高缩放（手柄视觉变小）
-        /// 时仍能稳定命中。
-        /// </remarks>
-        private const double _handleHitToleranceFloor = 24.0;
-
-        /// <summary>手柄命中测试（命中半径带保底下限，确保优先级高于卡尺与引导线）</summary>
         private HandleType HitTestHandles(Point point)
         {
             if (_currentHandles == null) return HandleType.None;
-
-            // 保底命中半径：比引导线容差(12) 与卡尺半带(20) 更大，保证重叠时手柄优先
-            double floor = _handleHitToleranceFloor;
-            EditHandle? closest = null;
-            double closestDist = double.MaxValue;
-            foreach (var handle in _currentHandles)
-            {
-                double dx = point.X - handle.Position.X;
-                double dy = point.Y - handle.Position.Y;
-                double dist = Math.Sqrt(dx * dx + dy * dy);
-                // 命中半径 = max(自适应手柄半径, 保底下限)
-                double hitRadius = Math.Max(handle.HandleSize, floor);
-                if (dist <= hitRadius && dist < closestDist)
-                {
-                    closestDist = dist;
-                    closest = handle;
-                }
-            }
-            return closest?.Type ?? HandleType.None;
+            return HandleRenderer.HitTestHandle(point, _currentHandles);
         }
 
         /// <summary>

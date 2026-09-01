@@ -216,7 +216,13 @@ namespace SunEyeVision.Tool.LineDetect.Views
 
             var lineLen = (Parameters.LineEndPoint - Parameters.LineStartPoint).Length;
             if (lineLen > 1e-6)
-                GuideEditor.SetGuide(Line2d.FromTwoPoints(Parameters.LineStartPoint, Parameters.LineEndPoint));
+            {
+                // ★ 修复持久化：显式传入端点，避免 SetLine 用默认 200px 长度推导导致端点与保存值不一致
+                GuideEditor.SetGuide(
+                    Line2d.FromTwoPoints(Parameters.LineStartPoint, Parameters.LineEndPoint),
+                    Parameters.LineStartPoint,
+                    Parameters.LineEndPoint);
+            }
 
             // ★ 修复持久化：卡尺参数从 Parameters 回填到编辑器（宽度/长度/数量）
             //   SetCaliberParams 会触发 CaliberParamsChanged，用同步标志避免回写循环

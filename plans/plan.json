@@ -4163,6 +4163,31 @@
                                         "tools/SunEyeVision.Tool.LineDetect/Views/LineDetectToolDebugControl.xaml.cs"
                                     ],
                           "status":  "in_progress"
+                      },
+                      {
+                          "id":  "TMP-f6ed4d3",
+                          "message":  "测量工具结果层显示增强与卡尺对齐修复",
+                          "date":  "2026-08-31",
+                          "commit":  "f6ed4d3d9295dfde9241ab35936d36730b90e8b0",
+                          "files":  [
+                                        "_commit_msg.txt",
+                                        "plans/plan.json",
+                                        "src/Plugin.SDK/Execution/Parameters/RoiParameters.cs",
+                                        "src/Plugin.SDK/UI/Controls/Measure/Rendering/MeasureBandOverlay.cs",
+                                        "src/Plugin.SDK/UI/Controls/Measure/Views/MeasureEditorControl.xaml.cs",
+                                        "src/UI/Services/Workflow/NodeResultManager.cs",
+                                        "tools/SunEyeVision.Tool.CircleDetect/CircleDetectParameters.cs",
+                                        "tools/SunEyeVision.Tool.CircleDetect/CircleDetectResults.cs",
+                                        "tools/SunEyeVision.Tool.CircleDetect/CircleDetectTool.cs",
+                                        "tools/SunEyeVision.Tool.CircleDetect/Views/CircleDetectToolDebugControl.xaml",
+                                        "tools/SunEyeVision.Tool.EdgeDetect/EdgeDetectParameters.cs",
+                                        "tools/SunEyeVision.Tool.EdgeDetect/Views/EdgeDetectToolDebugControl.xaml",
+                                        "tools/SunEyeVision.Tool.LineDetect/LineDetectParameters.cs",
+                                        "tools/SunEyeVision.Tool.LineDetect/LineDetectResults.cs",
+                                        "tools/SunEyeVision.Tool.LineDetect/LineDetectTool.cs",
+                                        "tools/SunEyeVision.Tool.LineDetect/Views/LineDetectToolDebugControl.xaml"
+                                    ],
+                          "status":  "in_progress"
                       }
                   ]
 }

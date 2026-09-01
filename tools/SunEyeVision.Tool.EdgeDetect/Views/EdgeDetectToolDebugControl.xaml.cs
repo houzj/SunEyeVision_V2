@@ -207,8 +207,13 @@ namespace SunEyeVision.Tool.EdgeDetect.Views
                 case GeometryType.Line:
                     var lineLen = (Parameters.LineEndPoint - Parameters.LineStartPoint).Length;
                     if (lineLen > 1e-6)
+                    {
+                        // ★ 修复持久化：显式传入端点，避免 SetLine 用默认 200px 长度推导导致端点与保存值不一致
                         GuideEditor.SetGuide(
-                            Line2d.FromTwoPoints(Parameters.LineStartPoint, Parameters.LineEndPoint));
+                            Line2d.FromTwoPoints(Parameters.LineStartPoint, Parameters.LineEndPoint),
+                            Parameters.LineStartPoint,
+                            Parameters.LineEndPoint);
+                    }
                     break;
                 case GeometryType.Circle:
                     if (Parameters.GuideCircle.HasValue)

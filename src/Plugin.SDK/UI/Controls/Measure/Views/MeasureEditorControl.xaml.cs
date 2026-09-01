@@ -239,11 +239,21 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         }
 
         /// <summary>
-        /// 直接设置引导直线（用于从参数回填渲染，不触发绘制交互）
+        /// 直接设置引导直线（用于从参数回填渲染，不触发绘制交互）。
+        /// 无显式端点时端点由模型推导（默认长度 200px），仅用于无精确端点信息的兜底。
         /// </summary>
         public void SetGuide(Line2d line)
         {
             _model.SetLine(line);
+            Render();
+        }
+
+        /// <summary>
+        /// 直接设置引导直线 + 显式端点（用于从参数回填渲染，保证端点与持久化参数一致）。
+        /// </summary>
+        public void SetGuide(Line2d line, Point start, Point end)
+        {
+            _model.SetLine(line, start, end);
             Render();
         }
 

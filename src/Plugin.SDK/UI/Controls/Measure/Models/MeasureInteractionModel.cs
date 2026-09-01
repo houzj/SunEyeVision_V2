@@ -281,6 +281,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Models
             if (EditingLine.HasValue)
             {
                 EditingLine = new Line2d(EditingLine.Value.Point + delta, EditingLine.Value.Direction);
+                // ★ 修复拖动无效：渲染/命中测试基于端点参数化（LineStartPoint/LineEndPoint），
+                //   整体平移必须同步端点，否则引导线视觉不动
+                LineStartPoint += delta;
+                LineEndPoint += delta;
             }
             else if (EditingCircle.HasValue)
             {

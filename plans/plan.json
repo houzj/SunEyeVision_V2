@@ -2186,6 +2186,14 @@
                                     {
                                         "date":  "2026-09-02",
                                         "note":  "[a5682922b5612d380571e90cade6bfdc67fd565a] fix(measure): 卡尺几何 Halcon 对齐与引导线同步优化"
+                                    },
+                                    {
+                                        "date":  "2026-09-02",
+                                        "note":  "[d3bdf2f16ae037c9c7df922f3c2ac77fa9432aaf] feat(measure): 卡尺几何 Halcon 对齐 — 适配层 + 真值定标 + 大弧命中修复"
+                                    },
+                                    {
+                                        "date":  "2026-09-02",
+                                        "note":  "[9aa4e39c0f71d320f84285e29a6d3d408202b183] refactor(measure): 清理定标诊断并固化 HALCON 实测契约（A7）"
                                     }
                                 ]
                     },

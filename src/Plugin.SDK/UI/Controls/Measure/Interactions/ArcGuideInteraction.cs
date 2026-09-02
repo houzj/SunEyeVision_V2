@@ -82,18 +82,20 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Interactions
         {
             if (!model.EditingArc.HasValue || model.EditingArc.Value.IsEmpty) return false;
             var a = model.EditingArc.Value;
-            var dist = Math.Abs((point - a.Center).Length - a.Radius);
-            if (dist > tolerance) return false;
-            // 角度范围判断（基于带符号 AngularSpan 扫掠，覆盖大小弧/跨 0）
-            double angle = Math.Atan2(point.Y - a.Center.Y, point.X - a.Center.X);
-            double offset = angle - a.StartAngle;
-            // 将 offset 归一化到扫掠起点同侧（[-π, π]）
-            offset = ((offset + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
-            // 落在扫掠跨度（含正负）内即命中
+            if (Math.Abs((point - a.Center).Length - a.Radius) > tolerance) return false;
+
+            // ★ 角度范围判断：用"从弧起点沿数学正方向的角距 ccw ∈ [0, 2π)"，不折叠到 (-π, π]。
+            //   折叠到 (-π, π] 会让大弧（|span| > π）判定失真——offset 永远满足下界，导致半个圆都算命中。
+            //   与 Annulus2d.NormalizeAngle 同模式：相对参考角规范化，保持相对差不变。
+            double twoPi = 2.0 * Math.PI;
+            double ccw = (Math.Atan2(point.Y - a.Center.Y, point.X - a.Center.X) - a.StartAngle) % twoPi;
+            if (ccw < 0) ccw += twoPi;
+
             double span = a.AngularSpan;
+            double tol = tolerance / a.Radius;
             return span >= 0
-                ? offset >= 0 && offset <= span + tolerance / a.Radius
-                : offset <= 0 && offset >= span - tolerance / a.Radius;
+                ? ccw <= span + tol                                   // 沿数学正方向扫掠 span
+                : ccw >= twoPi + span - tol || ccw <= tol;            // 沿数学负方向扫掠 |span|（twoPi+span = 2π-|span|）
         }
     }
 }

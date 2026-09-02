@@ -651,7 +651,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                 double stepAngle = Math.PI * 2 / _measureCount;
                 for (int i = 0; i < _measureCount; i++)
                 {
-                    double angle = (i + 0.5) * stepAngle;   // ★ 与 BuildCircleBands 同构：覆盖段中点（相位半格）
+                    double angle = i * stepAngle;   // ★ 与 BuildCircleBands 同构：整圆等分（格点）
                     var dir = new Vector(Math.Cos(angle), Math.Sin(angle));
                     var normal = new Vector(-dir.Y, dir.X);
                     var center = c.Center + dir * c.Radius;
@@ -901,7 +901,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                 // 主卡尺 = 第 mainIndex 条（整圆取第一格，中心角 = (i+0.5)×2π/N，与 BuildCircleBands 同构）；
                 // 径向=宽轴，切向=长轴
                 double stepAngle = Math.PI * 2 / _measureCount;
-                double angle = (mainIndex + 0.5) * stepAngle;
+                double angle = mainIndex * stepAngle;   // 整圆等分（格点），与 BuildCircleBands 同构
                 var radial = new Vector(Math.Cos(angle), Math.Sin(angle));
                 var center = c.Center + radial * c.Radius;
                 return new CaliberFrame(center, new Vector(-radial.Y, radial.X), radial);

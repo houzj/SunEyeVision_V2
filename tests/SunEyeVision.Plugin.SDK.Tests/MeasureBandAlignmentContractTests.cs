@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Windows;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
@@ -70,18 +70,22 @@ public class MeasureBandAlignmentContractTests
     }
 
     [Fact]
-    public void BuildCircleBands_CenterOnSegmentMidpoint_HalfStepPhase()
+    public void BuildCircleBands_FullCircle_EqualDivision_GridPhase()
     {
-        // 整圆闭环：8 条带 → 每条覆盖 π/4，首条中心应在半格 π/8 处（而非 0° 正右）
+        // 整圆闭合：N 条带等分整圈，第 i 条中心 = start + i×(2π/N)（格点，首条在 start=0 处）。
+        // 实测依据（HALCON get_metrology_object_measures）：相邻带角差恒为 2π/N，首条落在 start_phi。
         var circle = new Circle2d(new Point(0, 0), 100);
-        var quads = MeasureBandOverlay.BuildCircleBands(circle, 40, 10, 8).ToList();
+        int n = 8;
+        var quads = MeasureBandOverlay.BuildCircleBands(circle, 40, 10, n).ToList();
 
-        var stepAngle = Math.PI * 2 / 8;
-        var expectedFirst = new Point(100 * Math.Cos(stepAngle / 2), 100 * Math.Sin(stepAngle / 2));
-        var first = BandCenter(quads[0]);
-
-        Assert.True((first - expectedFirst).Length < 1e-6,
-            $"首带中心应在半格(π/8)而非 0°，偏差 {(first - expectedFirst).Length}");
+        var stepAngle = Math.PI * 2 / n;
+        for (int i = 0; i < n; i++)
+        {
+            var expected = new Point(100 * Math.Cos(i * stepAngle), 100 * Math.Sin(i * stepAngle));
+            var actual = BandCenter(quads[i]);
+            Assert.True((actual - expected).Length < 1e-6,
+                $"第 {i} 条中心应在格点 {i}×2π/{n}，偏差 {(actual - expected).Length}");
+        }
     }
 
     [Fact]

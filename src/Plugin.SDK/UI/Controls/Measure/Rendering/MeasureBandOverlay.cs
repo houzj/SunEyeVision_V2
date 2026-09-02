@@ -175,24 +175,25 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
         /// <summary>
         /// 计算圆引导环形测量带四边形（供交互层渲染与结果层显示共用）。
         /// 调用方需先对 circle 应用位置修正（圆心变换 + 半径缩放），与 RenderCircle 内部逻辑一致。
-        /// ★ 与 Halcon 对齐（相位半格）：整圆被 N 条测量带等分成 N 段，每条带中心落在其覆盖段的
-        ///   中点 = start + (i + 0.5)×(2π/N)。若放格点 i×(2π/N)，带会"骑"在段分界上
-        ///   （= 上一版"WPF 首条中心在起点中心、Halcon 不在"的相位偏差）。
-        ///   整圆闭环：半格偏移对起始方向不敏感，任意 start 等价。
+        /// ★ 与 Halcon 对齐（整圆 = 等分，格点相位）：
+        ///   整圆闭合，HALCON 用 N 条测量带把整圈等分，第 i 条中心 = start + i×(2π/N)，
+        ///   首条落在 start_phi 上，末条不与首条重叠（不存在"首末带贴端点"的约束）。
+        ///   实测依据（get_metrology_object_measures 回读真值）：
+        ///   相邻带角差恒为 2π/N；本地若用半格 (i+0.5)×2π/N 会整体偏 step/2。
         /// </summary>
         public static System.Collections.Generic.IEnumerable<System.Windows.Point[]> BuildCircleBands(
             Circle2d circle, double bandWidth, double bandLength, int measureCount)
         {
             if (measureCount <= 0 || circle.Radius <= 0) yield break;
 
-            // 环形测量带：沿圆周等间距分布，径向为宽度；中心落在每段中点（相位半格）
+            // 环形测量带：沿圆周等分（闭合，末条不与首条重叠），径向为宽度
             double stepAngle = Math.PI * 2 / measureCount;
             var halfBand = bandLength / 2;
             var halfWidth = bandWidth / 2;
 
             for (int i = 0; i < measureCount; i++)
             {
-                double angle = (i + 0.5) * stepAngle;   // ★ 半格：覆盖段中点
+                double angle = i * stepAngle;   // ★ 格点：第 i 条中心 = start + i×(2π/N)
                 var dir = new Vector(Math.Cos(angle), Math.Sin(angle));   // 径向方向
                 var normal = new Vector(-dir.Y, dir.X);                   // 切向方向
 

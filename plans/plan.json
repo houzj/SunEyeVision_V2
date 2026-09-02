@@ -2182,6 +2182,10 @@
                                     {
                                         "date":  "2026-08-28",
                                         "note":  "[a67b5f7e079256e5d107eb55c1a7505078e8cd67] 测量引导几何策略化：几何交互从编辑器解耦 - 新增 Interactions 策略层：IGuideGeometryInteraction 接口 + Line/Circle/Arc 3 策略类 + GuideInteractionFactory 工厂（未注册类型直接报错，rule-015） - MeasureEditorControl 改为策略路由：HandleShapeEdit/UpdateDrawPreview/CompleteDraw/UpdateHandles/HitTestGuide 删除 switch，委托策略 - 删除 CreateArcHandles 与 _lineStart/_lineEnd 字段（迁入策略，统一用模型属性） - 编辑器减少约276行，几何交互全部下沉策略类，加新几何只需新增策略类+注册 - 圆弧策略保留 P1/P2/P3 手柄 + 大小弧/方向状态"
+                                    },
+                                    {
+                                        "date":  "2026-09-02",
+                                        "note":  "[a5682922b5612d380571e90cade6bfdc67fd565a] fix(measure): 卡尺几何 Halcon 对齐与引导线同步优化"
                                     }
                                 ]
                     },

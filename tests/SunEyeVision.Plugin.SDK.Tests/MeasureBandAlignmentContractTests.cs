@@ -45,6 +45,30 @@ public class MeasureBandAlignmentContractTests
             $"首带中心应=弧起点内侧半带处，偏差 {(first - expectedFirst).Length}");
         Assert.True((last - expectedLast).Length < 1e-6,
             $"末带中心应=弧终点内侧半带处，偏差 {(last - expectedLast).Length}");
+
+        // 步长：HALCON 实测（get_metrology_object_measures 回读）相邻带中心角差
+        //   = (|span| - 2×halfBandAngle)/(N-1) —— 即"首末带边贴端点"的分布，
+        //   与整圆的 2π/N 等分不同（整圆闭合，无端点约束）。
+        if (measureCount > 1)
+        {
+            double expectedStep = (Math.Abs(span) - 2 * halfBandAngle) / (measureCount - 1);
+            for (int i = 1; i < quads.Count; i++)
+            {
+                double actualStep = AngleBetween(
+                    BandCenter(quads[i - 1]), BandCenter(quads[i]), arc.Center);
+                Assert.True(Math.Abs(actualStep - expectedStep) < 1e-6,
+                    $"第 {i} 条与第 {i - 1} 条的角差应为 {expectedStep:F6}，实际 {actualStep:F6}");
+            }
+        }
+    }
+
+    /// <summary>两点相对同一圆心的夹角（取 [0, π] 的最小夹角）</summary>
+    private static double AngleBetween(Point a, Point b, Point center)
+    {
+        double a1 = Math.Atan2(a.Y - center.Y, a.X - center.X);
+        double a2 = Math.Atan2(b.Y - center.Y, b.X - center.X);
+        double d = ((a2 - a1) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+        return d > Math.PI ? 2 * Math.PI - d : d;
     }
 
     [Fact]

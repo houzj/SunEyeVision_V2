@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Reflection;
 using System.Text.Json.Serialization;
 using System.Windows;
@@ -8,7 +7,6 @@ using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
-using SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.Tool.CircleDetect.Models;
 using SunEyeVision.Tool.CircleDetect.Views;
@@ -170,9 +168,6 @@ namespace SunEyeVision.Tool.CircleDetect
 
                 // ===== 结果填充 =====
                 FillResult(result, parameters, allParam, rms, numMeasures, objectIndex, metrologyModel);
-
-                // ★ 卡尺定标诊断（临时，A7 阶段删除）
-                LogCalibrationDiagnostics(result, parameters);
 
                 // ===== 结果判断（对齐 VisionMaster：半径/中心X/中心Y/拟合误差/匹配点数） =====
                 var isOk = EvaluateResult(result, parameters);
@@ -337,124 +332,6 @@ namespace SunEyeVision.Tool.CircleDetect
                 EdgeSelect.Last => "last",
                 _ => "all",
             };
-        }
-
-        /// <summary>
-        /// ★ 卡尺定标诊断（临时，A7 阶段删除）。
-        /// 目的：让"WPF 画出的卡尺"与"HALCON 实际采样的 measure regions"逐条重合（所见即所得）。
-        /// 做法：用 get_metrology_object_measures 取 HALCON 真实测量带，与本地 BuildCircleBands/BuildArcBands 比对，输出：
-        ///   ① 逐条中心偏差（max/avg，目标 &lt; 0.5px）
-        ///   ② 首条相位差 delta（0 = 格点 / step/2 = 半格 / 其它 = 固定偏移）
-        ///   ③ 首带中心到弧起点距离 d0（0 = 中心贴端点 / halfBand = 边贴端点）
-        ///   ④ 首带两条边长在径向/切向的投影（验证 MeasureLength1/2 的方向映射是否搞反）
-        /// </summary>
-        private static void LogCalibrationDiagnostics(CircleDetectResults result, CircleDetectParameters parameters)
-        {
-            var halconBands = result.HalconMeasureBands;
-            if (halconBands == null || halconBands.Length == 0) return;
-            if (!parameters.GuideCircle.HasValue) return;
-
-            var circle = parameters.GuideCircle.Value;
-            double twoPi = 2.0 * Math.PI;
-
-            // 本地卡尺（与结果显示同源）
-            System.Windows.Point[][] localBands = parameters.IsArc
-                ? MeasureBandOverlay.BuildArcBands(
-                    new Arc2d(circle.Center, circle.Radius, parameters.StartAngle, parameters.EndAngle, parameters.IsMajorArc),
-                    parameters.MeasureLength1 * 2, parameters.MeasureLength2 * 2, parameters.NumMeasures).ToArray()
-                : MeasureBandOverlay.BuildCircleBands(
-                    circle, parameters.MeasureLength1 * 2, parameters.MeasureLength2 * 2, parameters.NumMeasures).ToArray();
-
-            if (localBands.Length == 0) return;
-
-            // ① 配对：对每条 HALCON 带找"最近的本地带"（避免按索引配对受编号顺序/方向影响而误判）
-            double maxNearest = 0, sumNearest = 0;
-            for (int i = 0; i < halconBands.Length; i++)
-            {
-                var h = BandCenter(halconBands[i]);
-                double best = double.MaxValue;
-                foreach (var lb in localBands)
-                {
-                    double d = (h - BandCenter(lb)).Length;
-                    if (d < best) best = d;
-                }
-                maxNearest = Math.Max(maxNearest, best);
-                sumNearest += best;
-            }
-
-            // ② 首带半径：验证 HALCON measure region 中心是否落在引导圆边界上
-            var h0 = BandCenter(halconBands[0]);
-            var w0 = BandCenter(localBands[0]);
-            double rHalcon = (h0 - circle.Center).Length;
-            double rLocal = (w0 - circle.Center).Length;
-
-            // ③ 首条相位差（0 = 格点 / step/2 = 半格 / 其它 = 固定偏移）
-            double phiH = Math.Atan2(h0.Y - circle.Center.Y, h0.X - circle.Center.X);
-            double phiW = Math.Atan2(w0.Y - circle.Center.Y, w0.X - circle.Center.X);
-            double step = twoPi / parameters.NumMeasures;
-            double delta = ((phiH - phiW) % twoPi + twoPi) % twoPi;
-
-            // ④ HALCON 相邻带中心角差：判断编号方向与步长（排除"顺序相反"导致的巨大偏差）
-            string stepInfo = "n/a";
-            if (halconBands.Length >= 2)
-            {
-                var h1 = BandCenter(halconBands[1]);
-                double phiH1 = Math.Atan2(h1.Y - circle.Center.Y, h1.X - circle.Center.X);
-                double d01 = ((phiH1 - phiH) % twoPi + twoPi) % twoPi;
-                stepInfo = $"相邻带角差={d01:F4}(step={step:F4}) 编号方向={(d01 <= Math.PI ? "屏角增" : "屏角减")}";
-            }
-
-            // ⑤ 首带两条边长在径向/切向的投影（验证 MeasureLength1/2 方向映射）
-            var radial = new Vector(h0.X - circle.Center.X, h0.Y - circle.Center.Y);
-            if (radial.Length > 1e-9) radial.Normalize();
-            var tangential = new Vector(-radial.Y, radial.X);
-            string edgeInfo = "n/a";
-            if (halconBands[0].Length >= 3)
-            {
-                var e1 = halconBands[0][1] - halconBands[0][0];
-                var e2 = halconBands[0][2] - halconBands[0][1];
-                edgeInfo = $"边1={e1.Length:F1}(径向{Math.Abs(e1 * radial):F1}/切向{Math.Abs(e1 * tangential):F1}) " +
-                           $"边2={e2.Length:F1}(径向{Math.Abs(e2 * radial):F1}/切向{Math.Abs(e2 * tangential):F1}) " +
-                           $"[L1*2={parameters.MeasureLength1 * 2:F1} L2*2={parameters.MeasureLength2 * 2:F1}]";
-            }
-
-            string endpoints = "整圆";
-            if (parameters.IsArc)
-            {
-                var arc = new Arc2d(circle.Center, circle.Radius, parameters.StartAngle, parameters.EndAngle, parameters.IsMajorArc);
-                var startPt = arc.GetPointOnArc(arc.StartAngle);
-                var endPt = arc.GetPointOnArc(arc.StartAngle + arc.AngularSpan);
-                var lastH = BandCenter(halconBands[halconBands.Length - 1]);
-                endpoints = $"弧首带距起点={(h0 - startPt).Length:F2} 末带距终点={(lastH - endPt).Length:F2} " +
-                            $"(半带长={parameters.MeasureLength2:F2}, 期望: 0=中心贴端点 / 半带长=边贴端点)";
-            }
-
-            parameters.LogInfo(
-                $"[Calib] 卡尺定标: 模式={(parameters.IsArc ? "弧" : "整圆")} 数量=HALCON {halconBands.Length}/本地 {localBands.Length} | " +
-                $"最近邻偏差 max={maxNearest:F3} avg={(halconBands.Length > 0 ? sumNearest / halconBands.Length : 0):F3} px | " +
-                $"首带半径 HALCON={rHalcon:F2} 本地={rLocal:F2} 引导R={circle.Radius:F2} | " +
-                $"首条相位 delta={delta:F4} (step={step:F4}, step/2={step / 2:F4}) | {stepInfo} | {endpoints} | {edgeInfo}");
-        }
-
-        /// <summary>
-        /// 测量带轮廓的中心（包围盒中心）。
-        /// ★ 不能用"顶点均值"：HALCON 返回的是闭合轮廓（首点会重复一次），
-        ///   均值会被重复的角点带偏 √(L1²+L2²)/5 —— 实测正好 7.62px，会伪装成"卡尺对不齐"。
-        /// </summary>
-        private static Point BandCenter(System.Windows.Point[] pts)
-        {
-            if (pts == null || pts.Length == 0) return new Point(0, 0);
-
-            double minX = double.MaxValue, minY = double.MaxValue;
-            double maxX = double.MinValue, maxY = double.MinValue;
-            foreach (var p in pts)
-            {
-                if (p.X < minX) minX = p.X;
-                if (p.Y < minY) minY = p.Y;
-                if (p.X > maxX) maxX = p.X;
-                if (p.Y > maxY) maxY = p.Y;
-            }
-            return new Point((minX + maxX) / 2, (minY + maxY) / 2);
         }
 
         /// <summary>

@@ -88,7 +88,10 @@ namespace SunEyeVision.Tool.CircleDetect
                 var pts = new System.Windows.Point[MeasurementPoints.Length];
                 for (int i = 0; i < MeasurementPoints.Length; i++)
                     pts[i] = new System.Windows.Point(MeasurementPoints[i].X, MeasurementPoints[i].Y);
-                _display.AddPoints(parameters.ContourPointStyle, pts);
+                // ★ 修复：AddPoints → AddCrosses。拟合点是十字标记，须走 GraphicsType.Cross 渲染
+                //   （RenderCrosses 尊重 style.CrossSize）；AddPoints 走 RenderPoints 十字尺寸硬编码 2.5，
+                //   导致拟合点十字远小于 Blob 质心（Blob 用 AddCross + CrossSize=8）。
+                _display.AddCrosses(parameters.ContourPointStyle, pts);
             }
 
             // 诊断检测点（GetMetrologyObjectMeasures 全部检测点，默认不显示，Tab3 可控）
@@ -97,7 +100,7 @@ namespace SunEyeVision.Tool.CircleDetect
                 var diagPts = new System.Windows.Point[DiagnosticPoints.Length];
                 for (int i = 0; i < DiagnosticPoints.Length; i++)
                     diagPts[i] = new System.Windows.Point(DiagnosticPoints[i].X, DiagnosticPoints[i].Y);
-                _display.AddPoints(parameters.DiagnosticPointStyle, diagPts);
+                _display.AddCrosses(parameters.DiagnosticPointStyle, diagPts);
             }
 
             // HALCON 实际测量带（诊断卡尺对齐，默认不显示，Tab3 可控）

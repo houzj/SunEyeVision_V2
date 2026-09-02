@@ -129,37 +129,6 @@
                             </ComboBox>
                         </controls:LabeledControl>
 
-                        <!-- ===== 圆弧参数 ===== -->
-                        <Separator Margin="0,8,0,4" Background="{DynamicResource ThemeDividerBrushBrush}" Height="1"/>
-                        <TextBlock Text="圆弧参数" FontWeight="SemiBold" Margin="0,4,0,8"/>
-
-                        <controls:LabeledControl Label="圆弧模式" ContentHorizontalAlignment="Left" Margin="0,0,0,4">
-                            <CheckBox IsChecked="{Binding IsArc, Mode=TwoWay}"
-                                      Content="仅检测圆弧（不勾选 = 整圆）" VerticalAlignment="Center"/>
-                        </controls:LabeledControl>
-                        <controls:LabeledControl Label="起始角" Margin="0,0,0,4"
-                            Visibility="{Binding IsArc, Converter={StaticResource BoolToVisibilityConverter}}">
-                            <controls:ConfigSetting
-                                ParameterName="StartAngle"
-                                DataType="{x:Type sys:Double}"
-                                Value="{Binding StartAngle, Mode=TwoWay}"
-                                Minimum="0" Maximum="6.28318530718"
-                                SmallChange="0.1" LargeChange="0.5"
-                                Width="250"
-                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                        </controls:LabeledControl>
-                        <controls:LabeledControl Label="终止角" Margin="0,0,0,4"
-                            Visibility="{Binding IsArc, Converter={StaticResource BoolToVisibilityConverter}}">
-                            <controls:ConfigSetting
-                                ParameterName="EndAngle"
-                                DataType="{x:Type sys:Double}"
-                                Value="{Binding EndAngle, Mode=TwoWay}"
-                                Minimum="0" Maximum="6.28318530718"
-                                SmallChange="0.1" LargeChange="0.5"
-                                Width="250"
-                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                        </controls:LabeledControl>
-
                         <!-- ===== 高级参数（RANSAC 拟合，默认折叠） ===== -->
                         <Expander Header="高级参数（RANSAC 拟合）" IsExpanded="False" Margin="0,8,0,0"
                                   BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1"

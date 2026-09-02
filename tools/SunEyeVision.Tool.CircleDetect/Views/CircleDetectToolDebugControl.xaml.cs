@@ -194,16 +194,28 @@ namespace SunEyeVision.Tool.CircleDetect.Views
             var model = e.Model;
             if (e.GeometryType == MeasureGeometryType.Circle && model.EditingCircle.HasValue)
             {
+                // ★ 几何驱动：画圆 = 整圆检测（强制 IsArc=false，消除手动开关与几何脱节）
+                Parameters.IsArc = false;
                 Parameters.GuideCircle = model.EditingCircle.Value;
+                Parameters.StartAngle = 0.0;
+                Parameters.EndAngle = 2.0 * Math.PI;
                 Parameters.LogInfo(
                     $"引导圆已绘制: 圆心({model.EditingCircle.Value.Center.X:F1}, {model.EditingCircle.Value.Center.Y:F1})");
             }
 
-            // 圆弧模式：同步大弧/方向参数（来自交互模型）
-            if (Parameters.IsArc && model.EditingArc.HasValue)
+            // 圆弧：完整回写几何（圆心/半径/起始角/终止角/大弧/方向），
+            //   并自动置 IsArc=true（编辑器引导为弧即圆弧模式）
+            if (model.EditingArc.HasValue)
             {
-                Parameters.IsMajorArc = model.EditingArc.Value.IsMajorArc;
-                Parameters.IsClockwise = model.EditingArc.Value.IsClockwise;
+                var arc = model.EditingArc.Value;
+                Parameters.IsArc = true;
+                Parameters.GuideCircle = new Circle2d(arc.Center, arc.Radius);
+                Parameters.StartAngle = arc.StartAngle;
+                Parameters.EndAngle = arc.EndAngle;
+                Parameters.IsMajorArc = arc.IsMajorArc;
+                Parameters.IsClockwise = arc.IsClockwise;
+                Parameters.LogInfo(
+                    $"引导圆弧已绘制: 圆心({arc.Center.X:F1}, {arc.Center.Y:F1}) 半径({arc.Radius:F1}) 角度({arc.StartAngle:F2}~{arc.EndAngle:F2})");
             }
 
             // 绘制流程完成 → 清除工具栏选中，回到选择模式
@@ -220,8 +232,20 @@ namespace SunEyeVision.Tool.CircleDetect.Views
         {
             if (GuideEditor == null || Parameters == null) return;
 
-            if (Parameters.GuideCircle.HasValue)
+            // ★ 修复圆弧持久化：圆弧模式回填 Arc2d（SetGuide 自动同步 Arc 交互策略），
+            //   否则编辑器只显示整圆、角度/方向/大弧全部丢失
+            if (Parameters.IsArc && Parameters.GuideCircle.HasValue)
+            {
+                var c = Parameters.GuideCircle.Value;
+                GuideEditor.SetGuide(new Arc2d(
+                    c.Center, c.Radius,
+                    Parameters.StartAngle, Parameters.EndAngle,
+                    Parameters.IsMajorArc));
+            }
+            else if (Parameters.GuideCircle.HasValue)
+            {
                 GuideEditor.SetGuide(Parameters.GuideCircle.Value);
+            }
 
             // ★ 修复持久化：卡尺参数从 Parameters 回填到编辑器（宽度/长度/数量）
             //   SetCaliberParams 会触发 CaliberParamsChanged，用同步标志避免回写循环

@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.UI.Constants;
 
@@ -85,9 +86,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
         /// <summary>
         /// 计算直线引导测量带四边形（供交互层渲染与结果层显示共用，保证几何一致）。
         /// 输入为已做位置修正的坐标；matrix 非空时用于二次变换（兼容调用方已变换的场景）。
-        /// ★ 与 Halcon 对齐：N 条测量带覆盖 [起点, 终点]，首条"起点边"对齐引导线起点、
-        ///   末条"终点边"对齐引导线终点。中心偏移半个测量带长度（= halfBand）。
+        /// ★ 与 Halcon 对齐（首末带"外边缘"贴端点，中心向内偏移半带）：
+        ///   首条带中心 = 起点 + dir×halfBand（带起点边精确落在起点）、
+        ///   末条带中心 = 终点 − dir×halfBand（带终点边精确落在终点）。
         ///   公式：中心_i = 起点 + dir×(halfBand + i×step)，step = (totalLen − 2×halfBand)/(N−1)。
+        ///   N=1 时单带中心取线段中点。
         /// </summary>
         public static System.Collections.Generic.IEnumerable<System.Windows.Point[]> BuildLineBands(
             Point start, Point end, double bandWidth, double bandLength, int measureCount, AffineMatrix? matrix = null)
@@ -102,14 +105,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
             var normal = new Vector(-dir.Y, dir.X);
             var halfBand = bandLength / 2;
             var halfWidth = bandWidth / 2;
-            // 可用跨度：首末测量带各占半个，中间等分
             double usable = totalLen - 2 * halfBand;
             if (usable < 1e-6) usable = totalLen;
             double step = measureCount > 1 ? usable / (measureCount - 1) : usable;
 
             for (int i = 0; i < measureCount; i++)
             {
-                double t = halfBand + i * step;   // 首条起点边在起点，末条终点边在终点
+                double t = measureCount > 1 ? halfBand + i * step : totalLen / 2;
                 var center = start + dir * t;
 
                 var p1 = center - dir * halfBand - normal * halfWidth;
@@ -173,20 +175,24 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
         /// <summary>
         /// 计算圆引导环形测量带四边形（供交互层渲染与结果层显示共用）。
         /// 调用方需先对 circle 应用位置修正（圆心变换 + 半径缩放），与 RenderCircle 内部逻辑一致。
+        /// ★ 与 Halcon 对齐（相位半格）：整圆被 N 条测量带等分成 N 段，每条带中心落在其覆盖段的
+        ///   中点 = start + (i + 0.5)×(2π/N)。若放格点 i×(2π/N)，带会"骑"在段分界上
+        ///   （= 上一版"WPF 首条中心在起点中心、Halcon 不在"的相位偏差）。
+        ///   整圆闭环：半格偏移对起始方向不敏感，任意 start 等价。
         /// </summary>
         public static System.Collections.Generic.IEnumerable<System.Windows.Point[]> BuildCircleBands(
             Circle2d circle, double bandWidth, double bandLength, int measureCount)
         {
             if (measureCount <= 0 || circle.Radius <= 0) yield break;
 
-            // 环形测量带：沿圆周等间距分布，径向为宽度
+            // 环形测量带：沿圆周等间距分布，径向为宽度；中心落在每段中点（相位半格）
             double stepAngle = Math.PI * 2 / measureCount;
             var halfBand = bandLength / 2;
             var halfWidth = bandWidth / 2;
 
             for (int i = 0; i < measureCount; i++)
             {
-                double angle = i * stepAngle;
+                double angle = (i + 0.5) * stepAngle;   // ★ 半格：覆盖段中点
                 var dir = new Vector(Math.Cos(angle), Math.Sin(angle));   // 径向方向
                 var normal = new Vector(-dir.Y, dir.X);                   // 切向方向
 
@@ -253,25 +259,27 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
         {
             if (measureCount <= 0 || arc.Radius <= 0 || Math.Abs(arc.AngularSpan) <= 1e-6) yield break;
 
-            // 环形测量带：沿弧方向等间距分布，径向为宽度
-            // 支持负 AngularSpan（顺时针弧，P3 过弦后方向翻转）
-            // ★ 与 Halcon 对齐：N 条测量带覆盖 [start_phi, end_phi]，首条"起点边"对齐 start_phi、
-            //   末条"终点边"对齐 end_phi（与直线"首条起点边对齐起点"同一逻辑）。
-            //   中心偏移半个测量带弧长：角度_i = start_phi + sign×(halfBandAngle + i×stepAngle)
+            // 环形测量带：带中心沿弧"连续扫掠坐标"均匀分布，径向为宽度
+            // ★ 与 Halcon 对齐（首末带外边缘贴弧端点、中心向内偏移半带 + 连续扫掠）：
+            //   首条中心 = StartAngle + direction×halfBandAngle（带起点边精确落在弧起点）
+            //   末条中心 = sweepEnd − direction×halfBandAngle（带终点边精确落在弧终点）
+            //   其中 sweepEnd = StartAngle + AngularSpan（连续，可跨 2π）——不用 EndAngle 原值！
+            //   大弧跨 2π 时 EndAngle 与 sweepEnd 差整周期，用它会导致整排带反向。
+            //   step 由 (last−first)/(N−1) 得出，符号自然与弧方向一致（顺/逆时针均正确）。
+            //   N=1 时单带中心取弧中点。
             double span = arc.AngularSpan;
             double halfBand = bandLength / 2 * radiusScale;
             double halfWidth = bandWidth / 2 * radiusScale;
-            // 可用角度跨度：首末测量带各占半个测量带弧长，中间等分（按弧长比例折算角度）
             double halfBandAngle = halfBand / arc.Radius;
-            double usableSpan = span - 2 * halfBandAngle;
-            if (Math.Abs(usableSpan) < 1e-6) usableSpan = span;
-            double stepAngle = measureCount > 1 ? usableSpan / (measureCount - 1) : usableSpan;   // 保留符号：顺时针为负 → 角度递减
+            double direction = span >= 0 ? 1.0 : -1.0;
+            double sweepEnd = arc.StartAngle + span;
+            double firstAngle = arc.StartAngle + direction * halfBandAngle;
+            double lastAngle = sweepEnd - direction * halfBandAngle;
+            double stepAngle = measureCount > 1 ? (lastAngle - firstAngle) / (measureCount - 1) : 0.0;
 
             for (int i = 0; i < measureCount; i++)
             {
-                double angle = arc.StartAngle + halfBandAngle + i * stepAngle;
-                // 角度规范化到 [-π, π]，避免跨 0° 边界时 cos/sin 大角度误差
-                angle = ((angle + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
+                double angle = measureCount > 1 ? firstAngle + i * stepAngle : arc.StartAngle + span / 2;
                 var dir = new Vector(Math.Cos(angle), Math.Sin(angle));   // 径向方向
                 var normal = new Vector(-dir.Y, dir.X);                   // 切向方向
 

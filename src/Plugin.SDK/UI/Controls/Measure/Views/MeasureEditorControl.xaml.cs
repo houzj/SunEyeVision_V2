@@ -245,6 +245,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         public void SetGuide(Line2d line)
         {
             _model.SetLine(line);
+            SetGeometryStrategy(MeasureGeometryType.Line);
             Render();
         }
 
@@ -254,6 +255,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         public void SetGuide(Line2d line, Point start, Point end)
         {
             _model.SetLine(line, start, end);
+            SetGeometryStrategy(MeasureGeometryType.Line);
             Render();
         }
 
@@ -263,16 +265,28 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         public void SetGuide(Circle2d circle)
         {
             _model.SetCircle(circle);
+            SetGeometryStrategy(MeasureGeometryType.Circle);
             Render();
         }
 
         /// <summary>
-        /// 直接设置引导圆弧（用于从参数回填渲染，不触发绘制交互）
+        /// 直接设置引导圆弧（用于从参数回填渲染，不触发绘制交互）。
+        /// 同步几何类型与交互策略，确保回填后圆弧命中/手柄走 Arc 策略而非圆策略。
         /// </summary>
         public void SetGuide(Arc2d arc)
         {
             _model.SetArc(arc);
+            SetGeometryStrategy(MeasureGeometryType.Arc);
             Render();
+        }
+
+        /// <summary>
+        /// 同步几何类型与对应交互策略（命中/手柄/绘制行为按几何类型路由）
+        /// </summary>
+        private void SetGeometryStrategy(MeasureGeometryType geometryType)
+        {
+            _geometryType = geometryType;
+            _interaction = GuideInteractionFactory.Get(geometryType);
         }
 
         /// <summary>
@@ -613,14 +627,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                 if (totalLen < 1e-6) return false;
                 var dir = seg / totalLen;
                 var normal = new Vector(-dir.Y, dir.X);
-                // ★ 与 MeasureBandOverlay.BuildLineBands 渲染位置一致：
-                //   首条"起点边"对齐起点，中心偏移半个测量带长度；否则命中错位导致无法整体移动
+                // ★ 与 MeasureBandOverlay.BuildLineBands 渲染位置同构（Halcon 边贴端点）：
+                //   首条中心=起点+dir×halfBand、末条中心=终点−dir×halfBand；N=1 取线段中点。
                 double usable = totalLen - 2 * halfBand;
                 if (usable < 1e-6) usable = totalLen;
                 double step = _measureCount > 1 ? usable / (_measureCount - 1) : usable;
                 for (int i = 0; i < _measureCount; i++)
                 {
-                    var center = _model.LineStartPoint + dir * (halfBand + i * step);
+                    double t = _measureCount > 1 ? halfBand + i * step : totalLen / 2;
+                    var center = _model.LineStartPoint + dir * t;
                     if (GeometryToolkit.PointInQuad(point, center - dir * halfBand - normal * halfWidth,
                         center + dir * halfBand - normal * halfWidth,
                         center + dir * halfBand + normal * halfWidth,
@@ -636,7 +651,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                 double stepAngle = Math.PI * 2 / _measureCount;
                 for (int i = 0; i < _measureCount; i++)
                 {
-                    double angle = i * stepAngle;
+                    double angle = (i + 0.5) * stepAngle;   // ★ 与 BuildCircleBands 同构：覆盖段中点（相位半格）
                     var dir = new Vector(Math.Cos(angle), Math.Sin(angle));
                     var normal = new Vector(-dir.Y, dir.X);
                     var center = c.Center + dir * c.Radius;
@@ -653,14 +668,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
             {
                 var a = _model.EditingArc.Value;
                 double span = a.AngularSpan;
-                // ★ 与 BuildArcBands 渲染位置一致：首条起点边对齐 start_phi，中心偏移半个测量带弧长
+                // ★ 与 MeasureBandOverlay.BuildArcBands 渲染位置同构（Halcon 边贴端点 + 连续扫掠）：
+                //   首条中心=Start+dir×halfBandAngle、末条中心=(Start+span)−dir×halfBandAngle；N=1 取弧中点。
                 double halfBandAngle = (_bandLength / 2) / a.Radius;
-                double usableSpan = span - 2 * halfBandAngle;
-                if (Math.Abs(usableSpan) < 1e-6) usableSpan = span;
-                double stepAngle = _measureCount > 1 ? usableSpan / (_measureCount - 1) : usableSpan;
+                double direction = span >= 0 ? 1.0 : -1.0;
+                double sweepEnd = a.StartAngle + span;
+                double firstAngle = a.StartAngle + direction * halfBandAngle;
+                double lastAngle = sweepEnd - direction * halfBandAngle;
+                double stepAngle = _measureCount > 1 ? (lastAngle - firstAngle) / (_measureCount - 1) : 0.0;
                 for (int i = 0; i < _measureCount; i++)
                 {
-                    double angle = a.StartAngle + halfBandAngle + i * stepAngle;
+                    double angle = _measureCount > 1 ? firstAngle + i * stepAngle : a.StartAngle + span / 2;
                     var dir = new Vector(Math.Cos(angle), Math.Sin(angle));
                     var normal = new Vector(-dir.Y, dir.X);
                     var center = a.Center + dir * a.Radius;
@@ -866,12 +884,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                 var totalLen = seg.Length;
                 if (totalLen < 1e-6) return null;
                 var dir = seg / totalLen;
-                // ★ 与 BuildLineBands 一致：首条起点边对齐起点，中心偏移半个测量带长度；主卡尺 = 中间条
+                // ★ 与 BuildLineBands 渲染同构（Halcon 边贴端点）：主卡尺 = 第 mainIndex 条（中心=起点+halfBand+mainIndex*step）；N=1 取中点
                 var halfBand = _bandLength / 2;
                 double usable = totalLen - 2 * halfBand;
                 if (usable < 1e-6) usable = totalLen;
                 double step = _measureCount > 1 ? usable / (_measureCount - 1) : usable;
-                var center = _model.LineStartPoint + dir * (halfBand + mainIndex * step);
+                double t = _measureCount > 1 ? halfBand + mainIndex * step : totalLen / 2;
+                var center = _model.LineStartPoint + dir * t;
                 return new CaliberFrame(center, dir, new Vector(-dir.Y, dir.X));
             }
 
@@ -879,9 +898,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
             {
                 var c = _model.EditingCircle.Value;
                 if (c.Radius <= 0) return null;
-                // 主卡尺 = 0°（正右方）条；径向=宽轴(+X)，切向=长轴(+Y)
-                var center = c.Center + new Vector(1, 0) * c.Radius;
-                return new CaliberFrame(center, new Vector(0, 1), new Vector(1, 0));
+                // 主卡尺 = 第 mainIndex 条（整圆取第一格，中心角 = (i+0.5)×2π/N，与 BuildCircleBands 同构）；
+                // 径向=宽轴，切向=长轴
+                double stepAngle = Math.PI * 2 / _measureCount;
+                double angle = (mainIndex + 0.5) * stepAngle;
+                var radial = new Vector(Math.Cos(angle), Math.Sin(angle));
+                var center = c.Center + radial * c.Radius;
+                return new CaliberFrame(center, new Vector(-radial.Y, radial.X), radial);
             }
 
             if (_model.EditingArc.HasValue && !_model.EditingArc.Value.IsEmpty)
@@ -889,14 +912,16 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                 var a = _model.EditingArc.Value;
                 if (a.Radius <= 0 || Math.Abs(a.AngularSpan) <= 1e-6) return null;
                 double span = a.AngularSpan;
-                // ★ 与 BuildArcBands 一致：首条起点边对齐 start_phi，中心偏移半个测量带弧长；主卡尺 = 中间条
+                // ★ 与 MeasureBandOverlay.BuildArcBands 渲染同构（Halcon 边贴端点 + 连续扫掠）：
+                //   主卡尺 = 第 mainIndex 条（中心角 = firstAngle + mainIndex×stepAngle）；N=1 取弧中点。
+                //   cos/sin 为 2π 周期函数，跨 2π 无需归一化。
                 double halfBandAngle = (_bandLength / 2) / a.Radius;
-                double usableSpan = span - 2 * halfBandAngle;
-                if (Math.Abs(usableSpan) < 1e-6) usableSpan = span;
-                double stepAngle = _measureCount > 1 ? usableSpan / (_measureCount - 1) : usableSpan;
-                double angle = a.StartAngle + halfBandAngle + mainIndex * stepAngle;
-                // 角度规范化到 [-π, π]，避免跨 0° 边界时 cos/sin 大角度误差
-                angle = ((angle + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
+                double direction = span >= 0 ? 1.0 : -1.0;
+                double sweepEnd = a.StartAngle + span;
+                double firstAngle = a.StartAngle + direction * halfBandAngle;
+                double lastAngle = sweepEnd - direction * halfBandAngle;
+                double stepAngle = _measureCount > 1 ? (lastAngle - firstAngle) / (_measureCount - 1) : 0.0;
+                double angle = _measureCount > 1 ? firstAngle + mainIndex * stepAngle : a.StartAngle + span / 2;
                 var radial = new Vector(Math.Cos(angle), Math.Sin(angle));  // 径向=宽轴
                 var center = a.Center + radial * a.Radius;
                 return new CaliberFrame(center, new Vector(-radial.Y, radial.X), radial);

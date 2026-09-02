@@ -396,14 +396,40 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         {
             for (int i = 0; i < item.Geometries.Length; i++)
             {
-                if (item.Geometries[i] is ArcGeometry arc)
+                bool isPass = item.IsPassArray.Length > i ? item.IsPassArray[i] : true;
+                var effectivePen = isPass ? defaultPen : GetPen(item.Style!.GetEffectiveColorArgb(false), GetScaledLineWidth(item.Style.LineWidth));
+                if (item.Geometries[i] is Arc2d arc2d)
                 {
-                    bool isPass = item.IsPassArray.Length > i ? item.IsPassArray[i] : true;
-                    var effectivePen = isPass ? defaultPen : GetPen(item.Style!.GetEffectiveColorArgb(false), GetScaledLineWidth(item.Style.LineWidth));
+                    // ★ Arc2d（弧度 + IsMajorArc/IsClockwise 连续模型）：按 AngularSpan 连续采样折线，
+                    //   与交互层 MeasureBandOverlay.AddArc 同源，兼容大/小弧、顺/逆时针、跨 2π。
+                    dc.DrawGeometry(null, effectivePen, CreateArc2dGeometry(arc2d));
+                }
+                else if (item.Geometries[i] is ArcGeometry arc)
+                {
                     var geometry = CreateArcGeometry(arc);
                     dc.DrawGeometry(null, effectivePen, geometry);
                 }
             }
+        }
+
+        /// <summary>
+        /// 创建 Arc2d 的采样折线几何（沿 AngularSpan 连续扫掠，首尾精确落在弧端点）
+        /// </summary>
+        private static Geometry CreateArc2dGeometry(Arc2d arc)
+        {
+            var points = arc.GetSamplePoints(48);
+            if (points.Length < 2) return Geometry.Empty;
+            var geometry = new StreamGeometry();
+            using (var ctx = geometry.Open())
+            {
+                ctx.BeginFigure(points[0], false, false);
+                for (int i = 1; i < points.Length; i++)
+                {
+                    ctx.LineTo(points[i], true, true);
+                }
+            }
+            geometry.Freeze();
+            return geometry;
         }
 
         private void RenderPolygons(DrawingContext dc, GraphicsDisplayItem item, GraphicsStyle style, SolidColorBrush defaultBrush, Pen defaultPen)

@@ -240,6 +240,7 @@ namespace SunEyeVision.Tool.CircleDetect
                 "measure_select",
                 "start_phi",
                 "end_phi",
+                "point_order",                        // ★ Halcon 圆弧方向（'positive'=数学逆时针/'negative'=数学顺时针）
                 "min_score",
                 "distance_threshold",
             });
@@ -248,15 +249,59 @@ namespace SunEyeVision.Tool.CircleDetect
         /// <summary>
         /// 构建 Halcon 通用参数值（数量主导：num_measures 必须传 int，避免 HALCON #1210 类型错误）
         /// </summary>
+        /// <remarks>
+        /// ★ 圆弧方向/大小弧适配：Halcon add_metrology_object_circle_measure 用 point_order 控制方向，
+        ///   start_phi/end_phi 定义弧的物理起止角，弧长 = 从 start_phi 沿 point_order 方向到 end_phi 的距离
+        ///   （大弧 = 该方向距离 > π）。我方 Arc2d 采用"物理角度 + 显式 IsMajorArc + 派生 IsClockwise"，
+        ///   WPF Y 向下坐标系下 Arc2d IsClockwise（屏角减小）= 视觉逆时针 = Halcon 'positive'。统一适配：
+        ///   - start_phi = Arc2d.StartAngle（弧起点物理角）
+        ///   - end_phi   = Arc2d.EndAngle（弧终点物理角）
+        ///   - point_order = IsClockwise ? 'positive' : 'negative'
+        ///   end_phi 必须用物理终点而非 start+|span|：大弧时 start+|span| 数值落在屏角减方向的小弧侧，
+        ///   会被 Halcon 按互补小弧渲染（大小弧错误）。
+        /// </remarks>
         private HTuple BuildGenParamValue(CircleDetectParameters parameters)
         {
+            // 由参数重建 Arc2d 取带符号 AngularSpan（整圆时 span=0，start/end 相等 → Halcon 视为整圆）
+            var arc = new Arc2d(
+                parameters.GuideCircle.Value.Center,
+                parameters.GuideCircle.Value.Radius,
+                parameters.StartAngle,
+                parameters.EndAngle,
+                parameters.IsMajorArc);
+            double span = arc.AngularSpan;
+
+            // ★ Halcon phi = -WPF 屏角：WPF atan2(dy,dx) Y 向下（屏角增大=视觉顺时针），
+            //   Halcon phi Y 向上（phi 增大=视觉逆时针），两者相差一个符号，必须取负
+            // ★ end_phi 恒落在 point_order 方向前方（不依赖 Halcon 绕圈）：
+            //   顺（negative，phi 减）end = start - |span|；逆（positive，phi 增）end = start + |span|
+            double startPhi = -arc.StartAngle;                       // ★ 弧起点（Halcon 坐标系）
+            double absSpan = Math.Abs(span);
+            double endPhi = arc.IsClockwise ? startPhi + absSpan : startPhi - absSpan;
+            // ★ 方向：WPF Y 向下坐标系下，Arc2d IsClockwise（屏角减小）= 视觉逆时针 = Halcon 'positive'
+            //   !IsClockwise（屏角增大）= 视觉顺时针 = Halcon 'negative'
+            string pointOrder = arc.IsClockwise ? "positive" : "negative";
+            // ★ 全链路诊断：WPF 弧状态 + Parameters 原始 flag（验证回写一致）+ 两端点物理坐标（与图上测量带端点对比）
+            var p1 = new Point(
+                arc.Center.X + arc.Radius * Math.Cos(arc.StartAngle),
+                arc.Center.Y + arc.Radius * Math.Sin(arc.StartAngle));
+            var p2 = new Point(
+                arc.Center.X + arc.Radius * Math.Cos(arc.EndAngle),
+                arc.Center.Y + arc.Radius * Math.Sin(arc.EndAngle));
+            parameters.LogInfo(
+                $"[Diag] 圆弧适配: Arc2d(start={arc.StartAngle:F3}, end={arc.EndAngle:F3}, span={span:F3}, major={arc.IsMajorArc}, cw={arc.IsClockwise}) " +
+                $"param(major={parameters.IsMajorArc}, cw={parameters.IsClockwise}) " +
+                $"P1=({p1.X:F1},{p1.Y:F1}) P2=({p2.X:F1},{p2.Y:F1}) " +
+                $"→ Halcon(start_phi={startPhi:F3}, end_phi={endPhi:F3}, point_order={pointOrder})");
+
             return new HTuple(new object[]
             {
                 parameters.NumMeasures,             // int → num_measures
                 TransitionToHalcon(parameters.Transition),
                 SelectToHalcon(parameters.Select),
-                parameters.StartAngle,
-                parameters.EndAngle,
+                startPhi,                            // ★ 弧起点物理角度
+                endPhi,                              // ★ 弧终点物理角度
+                pointOrder,                          // ★ 方向参数（positive=视觉逆时针/negative=视觉顺时针）
                 parameters.MinScore,                 // double → min_score（RANSAC 分数门槛）
                 parameters.DistanceThreshold,        // double → distance_threshold（RANSAC 距离阈值）
             });
@@ -311,9 +356,11 @@ namespace SunEyeVision.Tool.CircleDetect
 
                     if (parameters.IsArc)
                     {
+                        // ★ 补 isMajorArc：4 参构造恒为小弧，与检测弧的大/小弧不一致导致结果显示失真
                         result.Arc = new[] { new Arc2d(
-                            center.X, center.Y, allParam[2].D,
-                            parameters.StartAngle, parameters.EndAngle) };
+                            new Point(center.X, center.Y), allParam[2].D,
+                            parameters.StartAngle, parameters.EndAngle,
+                            parameters.IsMajorArc) };
                     }
                     else
                     {

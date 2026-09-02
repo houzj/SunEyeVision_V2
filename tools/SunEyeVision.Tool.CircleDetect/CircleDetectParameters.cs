@@ -314,7 +314,7 @@ namespace SunEyeVision.Tool.CircleDetect
         }
 
         /// <summary>
-        /// 构建引导圆 + 环形测量带显示项（与 MeasureBandOverlay 交互层共用同一几何计算）。
+        /// 构建引导圆/圆弧 + 测量带显示项（与 MeasureBandOverlay 交互层共用同一几何计算）。
         /// 未绘制引导圆或引导圆样式/卡尺样式均隐藏时返回空。
         /// </summary>
         public override IEnumerable<DisplayItemBase> BuildMeasureGuideItems(AffineMatrix? correctionMatrix)
@@ -322,7 +322,7 @@ namespace SunEyeVision.Tool.CircleDetect
             if (!GuideCircle.HasValue) yield break;
             var circle = GuideCircle.Value;
 
-            // 位置修正：圆心变换 + 半径缩放（对齐 Run 中算法 + RenderCircle 内部逻辑）
+            // 位置修正：圆心变换 + 半径缩放（对齐 Run 中算法 + RenderCircle/RenderArc 内部逻辑）
             double radiusScale = 1.0;
             if (correctionMatrix != null)
             {
@@ -332,34 +332,70 @@ namespace SunEyeVision.Tool.CircleDetect
                 radiusScale = correctionMatrix.ScaleFactor();
             }
 
-            // 引导圆
-            if (GuideStyle.IsVisible)
+            if (IsArc)
             {
-                yield return new GraphicsDisplayItem
-                {
-                    Style = GuideStyle,
-                    Type = GraphicsType.Circle,
-                    Geometries = new object[] { circle },
-                    RenderMode = DisplayRenderMode.Unified,
-                };
-            }
+                // ★ 圆弧模式：与交互层一致（圆弧引导 + 圆弧卡尺），避免结果层画整圆与交互层圆弧重叠
+                var arc = new Arc2d(circle.Center, circle.Radius, StartAngle, EndAngle, IsMajorArc);
 
-            // 环形测量带（卡尺）
-            if (CaliberStyle.IsVisible)
-            {
-                var bands = new List<System.Windows.Point[]>();
-                foreach (var quad in MeasureBandOverlay.BuildCircleBands(
-                             circle, MeasureLength1 * 2, MeasureLength2 * 2, NumMeasures))
+                if (GuideStyle.IsVisible)
                 {
-                    bands.Add(quad);
+                    // ★ 用 GraphicsType.Arc + Arc2d 真弧渲染，避免 Polygon 采样首尾闭合成"直径+弧"
+                    yield return new GraphicsDisplayItem
+                    {
+                        Style = GuideStyle,
+                        Type = GraphicsType.Arc,
+                        Geometries = new object[] { arc },
+                        RenderMode = DisplayRenderMode.Unified,
+                    };
                 }
-                yield return new GraphicsDisplayItem
+
+                if (CaliberStyle.IsVisible)
                 {
-                    Style = CaliberStyle,
-                    Type = GraphicsType.Polygon,
-                    Geometries = bands.Cast<object>().ToArray(),
-                    RenderMode = DisplayRenderMode.Unified,
-                };
+                    var bands = new List<System.Windows.Point[]>();
+                    foreach (var quad in MeasureBandOverlay.BuildArcBands(
+                                 arc, MeasureLength1 * 2, MeasureLength2 * 2, NumMeasures, radiusScale))
+                    {
+                        bands.Add(quad);
+                    }
+                    yield return new GraphicsDisplayItem
+                    {
+                        Style = CaliberStyle,
+                        Type = GraphicsType.Polygon,
+                        Geometries = bands.Cast<object>().ToArray(),
+                        RenderMode = DisplayRenderMode.Unified,
+                    };
+                }
+            }
+            else
+            {
+                // 整圆：引导圆 + 环形测量带
+                if (GuideStyle.IsVisible)
+                {
+                    yield return new GraphicsDisplayItem
+                    {
+                        Style = GuideStyle,
+                        Type = GraphicsType.Circle,
+                        Geometries = new object[] { circle },
+                        RenderMode = DisplayRenderMode.Unified,
+                    };
+                }
+
+                if (CaliberStyle.IsVisible)
+                {
+                    var bands = new List<System.Windows.Point[]>();
+                    foreach (var quad in MeasureBandOverlay.BuildCircleBands(
+                                 circle, MeasureLength1 * 2, MeasureLength2 * 2, NumMeasures))
+                    {
+                        bands.Add(quad);
+                    }
+                    yield return new GraphicsDisplayItem
+                    {
+                        Style = CaliberStyle,
+                        Type = GraphicsType.Polygon,
+                        Geometries = bands.Cast<object>().ToArray(),
+                        RenderMode = DisplayRenderMode.Unified,
+                    };
+                }
             }
         }
 

@@ -344,11 +344,16 @@ namespace SunEyeVision.Tool.EdgeDetect
 
             if (GuideStyle.IsVisible)
             {
+                // ★ 弧模式引导线必须传 Arc2d（含 Start/End/IsMajorArc），与卡尺 BuildArcBands 同源；
+                //   若传 Circle2d 会画整圆。ResultRenderLayer.RenderArcs 已支持 Arc2d 连续扫掠渲染。
+                object guide = isArc
+                    ? (object)new Arc2d(circle.Center, circle.Radius, StartAngle, EndAngle, IsMajorArc)
+                    : circle;
                 return new GraphicsDisplayItem
                 {
                     Style = GuideStyle,
                     Type = isArc ? GraphicsType.Arc : GraphicsType.Circle,
-                    Geometries = new object[] { circle },
+                    Geometries = new[] { guide },
                     RenderMode = DisplayRenderMode.Unified,
                 };
             }
@@ -358,8 +363,7 @@ namespace SunEyeVision.Tool.EdgeDetect
                 var bands = new List<System.Windows.Point[]>();
                 if (isArc)
                 {
-                    var arc = new Arc2d(new Point(circle.Center.X, circle.Center.Y), circle.Radius,
-                        StartAngle, EndAngle, IsMajorArc);
+                    var arc = new Arc2d(circle.Center, circle.Radius, StartAngle, EndAngle, IsMajorArc);
                     foreach (var quad in MeasureBandOverlay.BuildArcBands(
                                  arc, MeasureLength1 * 2, MeasureLength2 * 2, NumMeasures, radiusScale))
                         bands.Add(quad);

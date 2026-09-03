@@ -4,66 +4,43 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Shapes;
 using SunEyeVision.Plugin.SDK.Logging;
-using SunEyeVision.Plugin.SDK.UI.Constants;
 using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering
 {
     /// <summary>
-    /// WPF Shape渲染器 - 兼容模式
-    /// 使用对象池和增量更新优化现有WPF Shape渲染
-    /// 性能优势：
-    /// - 对象池减少90%的对象创建开销
-    /// - 增量更新只更新变化的区域
-    /// - 支持与现有RegionEditorControl无缝切换
+    /// ROI 区域渲染器（轻量版）：
+    /// 以单个 RoiVisualHost（UIElement）承载"每区域一个 DrawingVisual"，替代旧的三池 UIElement 对象树，
+    /// 使大量区域（数百~数千）不再物化为控件，消除布局/命中/渲染的对象树成本（ROI 渲染轻量化方案）。
+    /// - 视觉由 RegionDcPainter 单一实现（形状/方向箭头/标签全在 DC）
+    /// - 增量语义保留：Render 时按区域数据快照做 diff，只重画实际变化的区域
+    /// - 命中与交互均为数学命中，与本渲染器无关；接口语义与旧版完全一致，调用方无感知
     /// </summary>
     public class WpfShapeRenderer : IRoiRenderer
     {
-        #region 私有字段
+        private sealed class RegionVisual
+        {
+            public DrawingVisual Visual = new();
+            public RoiRenderContext? Last;
+        }
 
         private readonly Canvas _targetCanvas;
         private readonly ILogger? _logger;
-        private readonly string _rendererInstanceId = Guid.NewGuid().ToString("N").Substring(0, 8);  // 实例ID，用于区分不同的渲染器
+        private readonly string _rendererInstanceId = Guid.NewGuid().ToString("N").Substring(0, 8);
+        private readonly RoiVisualHost _host = new();
+        private readonly Dictionary<Guid, RegionVisual> _regions = new();
 
-        // 对象池：缓存已创建的Shape和TextBlock
-        private readonly Dictionary<Guid, Shape> _shapePool = new();
-        private readonly Dictionary<Guid, TextBlock> _labelPool = new();
-
-        // 辅助元素池：方向箭头等辅助渲染元素
-        private readonly Dictionary<Guid, List<Shape>> _helperPool = new();
-
-        // 日志降频计数器
-        private int _logCounter = 0;
-        private const int LogInterval = 10; // 每10次输出一次日志
-
-        // 视口变换参数
         private double _viewportScale = 1.0;
-        private Point _viewportOffset = new Point(0, 0);
-
-        #endregion
-
-        #region 属性
-
-        /// <summary>
-        /// 渲染目标（兼容模式不使用ImageSource）
-        /// </summary>
-        public ImageSource? RenderTarget => null;
+        private Point _viewportOffset = new(0, 0);
+        private bool _forceAllRedraw;
+        private double _pixelsPerDip = 1.0;
 
         private int _width;
-        public int Width
-        {
-            get => _width;
-            set => _width = value;
-        }
+        public int Width { get => _width; set => _width = value; }
 
         private int _height;
-        public int Height
-        {
-            get => _height;
-            set => _height = value;
-        }
+        public int Height { get => _height; set => _height = value; }
 
         private double _dpiScale = 1.0;
         public double DpiScale
@@ -72,699 +49,177 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering
             set => _dpiScale = Math.Max(0.1, value);
         }
 
-        #endregion
-
-        #region 构造函数
+        public ImageSource? RenderTarget => null;
 
         public WpfShapeRenderer(Canvas targetCanvas, ILogger? logger = null)
         {
             _targetCanvas = targetCanvas ?? throw new ArgumentNullException(nameof(targetCanvas));
             _logger = logger;
 
+            // 唯一常驻 UIElement：视觉宿主
+            _targetCanvas.Children.Add(_host);
+
             VisionLogger.Instance.Log(LogLevel.Success,
-                $"[WpfShapeRenderer.ctor] 渲染器已创建 | InstanceId={_rendererInstanceId} | Canvas={targetCanvas.GetType().Name}",
+                $"[WpfShapeRenderer.ctor] 轻量渲染器已创建 | InstanceId={_rendererInstanceId} | Canvas={targetCanvas.GetType().Name}",
                 "WpfShapeRenderer");
         }
 
-        #endregion
-
-        // Drawing flow log counter (for monitoring rendering)
-        private int _updateLogCount = 0;
-
-        #region IRoiRenderer 实现
-
-        /// <summary>
-        /// 渲染所有区域（使用对象池和增量更新）
-        /// </summary>
         public void Render(IEnumerable<RoiRenderContext> regions, RoiRenderOptions? options = null)
         {
             options ??= new RoiRenderOptions();
 
-            // 获取当前可见区域的ID集合
-            var visibleRegions = new List<RoiRenderContext>();
+            var visible = new List<RoiRenderContext>();
             foreach (var region in regions)
             {
                 if (!region.IsVisible) continue;
                 if (options.ClipRect.HasValue && !options.ClipRect.Value.IntersectsWith(region.Bounds))
                     continue;
-                visibleRegions.Add(region);
+                visible.Add(region);
             }
 
-            var visibleIds = new HashSet<Guid>(visibleRegions.Select(r => r.Id));
-
-            // 1. 移除不再可见的区域
+            var visibleIds = new HashSet<Guid>(visible.Select(r => r.Id));
             RemoveInvisibleRegions(visibleIds);
 
-            // 2. 更新或创建可见区域
-            foreach (var region in visibleRegions)
-            {
-                UpdateOrCreateRegion(region, options);
-            }
-
+            foreach (var region in visible)
+                RedrawIfChanged(region);
         }
 
-        /// <summary>
-        /// 增量更新指定区域
-        /// </summary>
         public void UpdateRegion(RoiRenderContext region)
         {
-            // Log rendering update (every 10 times)
-            if (_updateLogCount++ % 10 == 0)
-            {
-                var shapeExists = _shapePool.TryGetValue(region.Id, out _);
-                _logger?.Log(LogLevel.Info,
-                    $"[WpfShapeRenderer.UpdateRegion] Count={_updateLogCount} | RegionId={region.Id} | IsPreview={region.IsPreview} | ShapeExists={shapeExists} | CanvasChildren={_targetCanvas.Children.Count}",
-                    "RegionRenderer");
-            }
-
-            if (_shapePool.TryGetValue(region.Id, out var existingShape))
-            {
-                UpdateShapeFromContext(existingShape, region);
-            }
-            else
-            {
-                CreateShapeFromContext(region, new RoiRenderOptions());
-            }
-
-            UpdateLabel(region);
-            UpdateHelpers(region);  // 更新箭头等辅助元素
+            var rv = GetOrCreateVisual(region.Id);
+            Redraw(rv, region);
         }
 
-        /// <summary>
-        /// 清空渲染内容
-        /// </summary>
         public void Clear()
         {
-            int shapeCount = _shapePool.Count;
-            int labelCount = _labelPool.Count;
-            int helperCount = _helperPool.Sum(h => h.Value.Count);
-            int totalChildren = _targetCanvas.Children.Count;
+            _host.Clear();
+            _regions.Clear();
+            _forceAllRedraw = false;
 
             VisionLogger.Instance.Log(LogLevel.Warning,
-                $"[WpfShapeRenderer.Clear] 清空渲染器 | InstanceId={_rendererInstanceId} | Shapes={shapeCount} | Labels={labelCount} | Helpers={helperCount} | CanvasChildren={totalChildren}",
-                "WpfShapeRenderer");
-
-            _targetCanvas.Children.Clear();
-            _shapePool.Clear();
-            _labelPool.Clear();
-            _helperPool.Clear();
-
-            VisionLogger.Instance.Log(LogLevel.Success,
-                $"[WpfShapeRenderer.Clear] 清空完成 | InstanceId={_rendererInstanceId} | CanvasChildren={_targetCanvas.Children.Count}",
+                $"[WpfShapeRenderer.Clear] 清空渲染器 | InstanceId={_rendererInstanceId} | RegionVisuals={_regions.Count}",
                 "WpfShapeRenderer");
         }
 
-        /// <summary>
-        /// 设置视口变换（缩放、平移）
-        /// </summary>
         public void SetViewportTransform(double scale, Point offset)
         {
-            // ★ 关键诊断：仅当缩放值实际变化时记录（低频）
-            if (Math.Abs(_viewportScale - scale) > 0.001)
-            {
-                VisionLogger.Instance.Log(LogLevel.Info,
-                    $"[SetViewportTransform] _viewportScale={_viewportScale:F3} → {scale:F3} | offset=({offset.X},{offset.Y}) | 后续StrokeThickness将除以此值",
-                    "WpfShapeRenderer");
-            }
-
+            bool scaleChanged = Math.Abs(_viewportScale - scale) > 0.001;
             _viewportScale = scale;
             _viewportOffset = offset;
-
-            // 视口变化时需要更新所有Shape的位置（简化处理：全量重绘）
-        }
-
-        #endregion
-
-        #region 私有方法 - 对象池管理
-
-        /// <summary>
-        /// 移除不再可见的区域
-        /// </summary>
-        private void RemoveInvisibleRegions(HashSet<Guid> visibleIds)
-        {
-            var toRemove = new List<Guid>();
-
-            foreach (var id in _shapePool.Keys)
+            if (scaleChanged)
             {
-                if (!visibleIds.Contains(id))
-                {
-                    toRemove.Add(id);
-                }
-            }
-
-            if (toRemove.Count > 0)
-            {
-                // 精简日志：仅记录数量，不再拼接 GUID 全列表（避免超长字符串）
-                VisionLogger.Instance.Log(LogLevel.Warning,
-                    $"[RemoveInvisibleRegions] 移除不可见区域 | InstanceId={_rendererInstanceId} | RemoveCount={toRemove.Count} | ShapePool={_shapePool.Count} | LabelPool={_labelPool.Count} | HelperPool={_helperPool.Count}",
-                    "WpfShapeRenderer");
-            }
-
-            foreach (var id in toRemove)
-            {
-                if (_shapePool.TryGetValue(id, out var shape))
-                {
-                    _targetCanvas.Children.Remove(shape);
-                    _shapePool.Remove(id);
-                }
-
-                if (_labelPool.TryGetValue(id, out var label))
-                {
-                    _targetCanvas.Children.Remove(label);
-                    _labelPool.Remove(id);
-                }
-
-                // 清理辅助元素
-                if (_helperPool.TryGetValue(id, out var helpers))
-                {
-                    foreach (var helper in helpers)
-                    {
-                        _targetCanvas.Children.Remove(helper);
-                    }
-                    _helperPool.Remove(id);
-                }
+                // 缩放变化影响线宽/字号反除 → 全量重画一次（低频）
+                _forceAllRedraw = true;
+                VisionLogger.Instance.Log(LogLevel.Info,
+                    $"[SetViewportTransform] _viewportScale={_viewportScale:F3} → 触发全量重画", "WpfShapeRenderer");
             }
         }
-
-        /// <summary>
-        /// 更新或创建区域
-        /// </summary>
-        private void UpdateOrCreateRegion(RoiRenderContext region, RoiRenderOptions options)
-        {
-            if (_shapePool.TryGetValue(region.Id, out var existingShape))
-            {
-                // 更新现有Shape
-                UpdateShapeFromContext(existingShape, region);
-
-                // 更新ZIndex
-                Canvas.SetZIndex(existingShape, region.IsSelected ? 100 : 0);
-            }
-            else
-            {
-                // 创建新Shape（仅创建时低频触发）
-                CreateShapeFromContext(region, options);
-            }
-
-            // 更新或创建标签
-            UpdateLabel(region);
-            
-            // 更新或创建辅助元素（方向箭头等）
-            UpdateHelpers(region);
-        }
-
-        #endregion
-
-        #region 私有方法 - Shape创建和更新
-
-        /// <summary>
-        /// 从渲染上下文创建Shape
-        /// </summary>
-        private void CreateShapeFromContext(RoiRenderContext region, RoiRenderOptions options)
-        {
-                region.CalculateBounds();
-
-                // 统一日志降频计数器：所有 Create* 方法共用，避免仅在 CreatePolygon 递增导致其他方法降频失效
-                _logCounter++;
-
-                Shape shape = CreateShape(region, options);
-                if (shape == null) return;
-
-                // 设置位置
-                var position = GetShapePosition(region);
-                var canvasLeft = position.X + _viewportOffset.X;
-                var canvasTop = position.Y + _viewportOffset.Y;
-                Canvas.SetLeft(shape, canvasLeft);
-                Canvas.SetTop(shape, canvasTop);
-                Canvas.SetZIndex(shape, region.IsSelected ? 100 : 0);
-
-                // 添加到Canvas和对象池
-                _targetCanvas.Children.Add(shape);
-                _shapePool[region.Id] = shape;
-        }
-
-        /// <summary>
-        /// 从渲染上下文更新Shape
-        /// </summary>
-        private void UpdateShapeFromContext(Shape shape, RoiRenderContext region)
-        {
-                region.CalculateBounds();
-
-                // 更新位置
-                var position = GetShapePosition(region);
-                var canvasLeft = position.X + _viewportOffset.X;
-                var canvasTop = position.Y + _viewportOffset.Y;
-                Canvas.SetLeft(shape, canvasLeft);
-                Canvas.SetTop(shape, canvasTop);
-
-                // 更新填充和边框
-                shape.Fill = new SolidColorBrush(region.FillColor) { Opacity = region.Opacity };
-                shape.Stroke = new SolidColorBrush(region.StrokeColor);
-                shape.StrokeThickness = ViewportScaling.InvScale(_viewportScale, region.StrokeThickness);
-
-                // 根据形状类型更新尺寸
-                UpdateShapeDimensions(shape, region);
-        }
-
-        /// <summary>
-        /// 创建Shape
-        /// </summary>
-        private Shape CreateShape(RoiRenderContext region, RoiRenderOptions options)
-        {
-                // 声明局部变量
-                Color fillColor = region.FillColor;
-                Color strokeColor = region.StrokeColor;
-                double strokeThickness = region.StrokeThickness;
-
-                // 预览状态使用类型差异色
-                if (region.IsPreview)
-                {
-                    // ★ Phase 4: 根据区域类型使用差异色，避免无法区分检测/屏蔽
-                    switch (region.RoiType)
-                    {
-                        case Models.RoiType.Mask:
-                            fillColor = ColorConstants.MaskFill;
-                            strokeColor = ColorConstants.MaskOrange;
-                            break;
-                        case Models.RoiType.Inspection:
-                        default:
-                            fillColor = ColorConstants.InspectionFill;
-                            strokeColor = ColorConstants.InspectionBlue;
-                            break;
-                    }
-                }
-
-                // 选中状态增加边框宽度
-                if (region.IsSelected)
-                {
-                                strokeThickness = RoiEditorSettings.Default.SelectedStrokeThickness;
-                }
-
-                // 反除缩放：使线宽在屏幕上视觉恒定，不受图像分辨率/Zoom影响
-                strokeThickness = ViewportScaling.InvScale(_viewportScale, strokeThickness);
-
-                Shape shape = null;
-
-                switch (region.ShapeType)
-                {
-                                case ShapeType.Rectangle:
-                                                shape = CreateRectangle(region, fillColor, strokeColor, strokeThickness);
-                                                break;
-
-                                case ShapeType.Circle:
-                                                shape = CreateCircle(region, fillColor, strokeColor, strokeThickness);
-                                                break;
-
-                                case ShapeType.RotatedRectangle:
-                                                shape = CreateRotatedRectangle(region, fillColor, strokeColor, strokeThickness);
-                                                break;
-
-                                case ShapeType.Line:
-                                                shape = CreateLine(region, strokeColor, strokeThickness);
-                                                break;
-
-                                case ShapeType.Polygon:
-                                                shape = CreatePolygon(region, fillColor, strokeColor, strokeThickness);
-                                                break;
-                }
-
-                return shape;
-        }
-
-        /// <summary>
-        /// 创建矩形
-        /// </summary>
-        private Shape CreateRectangle(RoiRenderContext region, Color fillColor, Color strokeColor, double strokeThickness)
-        {
-                // 日志监控（降频）
-                if (_logger != null && _logCounter % LogInterval == 0)
-                {
-                    _logger.Log(LogLevel.Info, 
-                        $"[CreateRectangle] IsPreview={region.IsPreview}", 
-                        "WpfShapeRenderer");
-                }
-
-                return new Rectangle
-                {
-                    Width = region.Width,
-                    Height = region.Height,
-                    Fill = new SolidColorBrush(fillColor) { Opacity = region.Opacity },
-                    Stroke = new SolidColorBrush(strokeColor),
-                    StrokeThickness = strokeThickness
-                };
-        }
-
-        /// <summary>
-        /// 创建圆形
-        /// </summary>
-        private Shape CreateCircle(RoiRenderContext region, Color fillColor, Color strokeColor, double strokeThickness)
-        {
-                // 日志监控（降频）
-                if (_logger != null && _logCounter % LogInterval == 0)
-                {
-                    _logger.Log(LogLevel.Info, 
-                        $"[CreateCircle] IsPreview={region.IsPreview}", 
-                        "WpfShapeRenderer");
-                }
-
-                return new Ellipse
-                {
-                    Width = region.Radius * 2,
-                    Height = region.Radius * 2,
-                    Fill = new SolidColorBrush(fillColor) { Opacity = region.Opacity },
-                    Stroke = new SolidColorBrush(strokeColor),
-                    StrokeThickness = strokeThickness
-                };
-        }
-
-        /// <summary>
-        /// 创建旋转矩形
-        /// </summary>
-        private Shape CreateRotatedRectangle(RoiRenderContext region, Color fillColor, Color strokeColor, double strokeThickness)
-        {
-                // 日志监控（降频）
-                if (_logger != null && _logCounter % LogInterval == 0)
-                {
-                    _logger.Log(LogLevel.Info, 
-                        $"[CreateRotatedRectangle] IsPreview={region.IsPreview}", 
-                        "WpfShapeRenderer");
-                }
-
-                var rect = new Rectangle
-                {
-                    Width = region.Width,
-                    Height = region.Height,
-                    Fill = new SolidColorBrush(fillColor) { Opacity = region.Opacity },
-                    Stroke = new SolidColorBrush(strokeColor),
-                    StrokeThickness = strokeThickness,
-                    RenderTransform = new RotateTransform(region.Angle, region.Width / 2, region.Height / 2)
-                    {
-                        // 屏幕角度系：顺时针为正，0°向右
-                        // 与方向箭头/旋转手柄保持一致
-                        Angle = region.Angle
-                    }
-                };
-
-                return rect;
-        }
-        /// <summary>
-        /// 创建直线
-        /// </summary>
-        private Shape CreateLine(RoiRenderContext region, Color strokeColor, double strokeThickness)
-        {
-                // 日志监控（降频）
-                if (_logger != null && _logCounter % LogInterval == 0)
-                {
-                    _logger.Log(LogLevel.Info, 
-                        $"[CreateLine] IsPreview={region.IsPreview}", 
-                        "WpfShapeRenderer");
-                }
-
-                return new Line
-                {
-                    X1 = 0,
-                    Y1 = 0,
-                    X2 = region.LineEnd.X - region.LineStart.X,
-                    Y2 = region.LineEnd.Y - region.LineStart.Y,
-                    Stroke = new SolidColorBrush(strokeColor),
-                    StrokeThickness = strokeThickness
-                };
-        }
-        /// <summary>
-        /// 创建多边形
-        /// </summary>
-        private Shape CreatePolygon(RoiRenderContext region, Color fillColor, Color strokeColor, double strokeThickness)
-        {
-                if (region.PolygonPoints.Count < 3) return null;
-
-                // 日志监控（降频，计数器在 CreateShapeFromContext 统一递增）
-                if (_logger != null && _logCounter % LogInterval == 0)
-                {
-                    _logger.Log(LogLevel.Info, 
-                        $"[CreatePolygon] IsPreview={region.IsPreview}, Points={region.PolygonPoints.Count}", 
-                        "WpfShapeRenderer");
-                }
-
-                var polygon = new Polygon
-                {
-                    Fill = new SolidColorBrush(fillColor) { Opacity = region.Opacity },
-                    Stroke = new SolidColorBrush(strokeColor),
-                    StrokeThickness = strokeThickness
-                };
-
-                // 设置点集
-                var pointCollection = new PointCollection();
-                foreach (var point in region.PolygonPoints)
-                {
-                    pointCollection.Add(point);
-                }
-                polygon.Points = pointCollection;
-
-                return polygon;
-        }
-        /// <summary>
-        /// 获取Shape的位置
-        /// </summary>
-        private Point GetShapePosition(RoiRenderContext region)
-        {
-            return region.ShapeType switch
-            {
-                ShapeType.Rectangle or ShapeType.Circle or ShapeType.RotatedRectangle 
-                    => new Point(region.Center.X - region.Width / 2, region.Center.Y - region.Height / 2),
-                ShapeType.Line => new Point(region.LineStart.X, region.LineStart.Y),
-                // Polygon 使用绝对坐标定位，Canvas.Left/Top 设为 (0,0)
-                ShapeType.Polygon => new Point(0, 0),
-                _ => new Point(region.Center.X, region.Center.Y)
-            };
-        }
-        /// <summary>
-        /// 更新Shape的尺寸
-        /// </summary>
-        private void UpdateShapeDimensions(Shape shape, RoiRenderContext region)
-        {
-                switch (region.ShapeType)
-                {
-                                case ShapeType.Rectangle:
-                                case ShapeType.RotatedRectangle:
-                                                shape.Width = region.Width;
-                                                shape.Height = region.Height;
-                                                if (shape is Rectangle rect && region.ShapeType == ShapeType.RotatedRectangle)
-                                                {
-                                                rect.RenderTransform = new RotateTransform(region.Angle, region.Width / 2, region.Height / 2)
-                                                {
-                                                    // 屏幕角度系：顺时针为正，0°向右
-                                                    Angle = region.Angle
-                                                };
-                                                }
-                                                break;
-
-                                case ShapeType.Circle:
-                                                shape.Width = region.Radius * 2;
-                                                shape.Height = region.Radius * 2;
-                                                break;
-
-                                case ShapeType.Line:
-                                                if (shape is Line line)
-                                                {
-                                                    line.X1 = 0;
-                                                    line.Y1 = 0;
-                                                    line.X2 = region.LineEnd.X - region.LineStart.X;
-                                                    line.Y2 = region.LineEnd.Y - region.LineStart.Y;
-                                                }
-                                                break;
-
-                                case ShapeType.Polygon:
-                                                if (shape is Polygon polygon)
-                                                {
-                                                    polygon.Points.Clear();
-                                                    foreach (var pt in region.PolygonPoints)
-                                                        polygon.Points.Add(pt);
-                                                }
-                                                break;
-                }
-        }
-
-        #endregion
-
-        #region 私有方法 - 标签渲染
-
-        /// <summary>
-        /// 更新或创建标签
-        /// </summary>
-        private void UpdateLabel(RoiRenderContext region)
-        {
-                if (string.IsNullOrEmpty(region.Label))
-                {
-                                // 移除标签
-                                if (_labelPool.TryGetValue(region.Id, out var oldLabel))
-                                {
-                                    _targetCanvas.Children.Remove(oldLabel);
-                                    _labelPool.Remove(region.Id);
-                                }
-                                return;
-                }
-
-                // 自适应标签字体大小（与手柄同策略的幂律缩放）
-                var scaledFontSize = HandleRenderer.GetScaledLabelFontSize(_viewportScale);
-                var scaledPaddingH = ViewportScaling.InvScale(_viewportScale, 4.0);  // 水平内边距
-                var scaledPaddingV = ViewportScaling.InvScale(_viewportScale, 2.0);  // 垂直内边距
-
-                TextBlock label;
-                if (_labelPool.TryGetValue(region.Id, out var existingLabel))
-                {
-                                label = existingLabel;
-                                label.Text = region.Label;
-                                // 同步更新缩放相关属性（视口缩放变化时需要刷新）
-                                label.FontSize = scaledFontSize;
-                                label.Padding = new Thickness(scaledPaddingH, scaledPaddingV, scaledPaddingH, scaledPaddingV);
-                }
-                else
-                {
-                                label = new TextBlock
-                                {
-                                    Text = region.Label,
-                                    FontSize = scaledFontSize,
-                                    Foreground = Brushes.White,
-                                    Background = new SolidColorBrush(ColorConstants.LabelBackground),
-                                    Padding = new Thickness(scaledPaddingH, scaledPaddingV, scaledPaddingH, scaledPaddingV)
-                                };
-                                _targetCanvas.Children.Add(label);
-                                _labelPool[region.Id] = label;
-                }
-
-                // 计算标签位置（偏移量也使用自适应缩放）
-                label.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-                double labelWidth = label.DesiredSize.Width;
-                double labelLeft = region.Bounds.Left + (region.Bounds.Width - labelWidth) / 2 + _viewportOffset.X;
-                // 标签偏移使用幂律缩放，保证屏幕上偏移量合理
-                var labelOffset = HandleRenderer.GetScaledLabelFontSize(_viewportScale) * 1.5;
-                double labelTop = region.Bounds.Top - labelOffset + _viewportOffset.Y;
-                if (labelTop < 0) labelTop = region.Bounds.Bottom + scaledPaddingV + _viewportOffset.Y;
-
-                // ★ Phase 4: 屏蔽区域标签轻微下移，避免与检测区域标签重叠
-                if (region.RoiType == Models.RoiType.Mask)
-                {
-                    labelTop += HandleRenderer.GetScaledLabelFontSize(_viewportScale) * 1.2;
-                }
-
-                Canvas.SetLeft(label, labelLeft);
-                Canvas.SetTop(label, labelTop);
-                Canvas.SetZIndex(label, 200);
-        }
-        #endregion
-
-        #region 私有方法 - 辅助元素渲染
-
-        /// <summary>
-        /// 更新或创建辅助元素（方向箭头等）
-        /// </summary>
-        private void UpdateHelpers(RoiRenderContext region)
-        {
-            // 旋转矩形的方向箭头
-            if (region.ShapeType == ShapeType.RotatedRectangle)
-            {
-                var helpers = CreateOrUpdateDirectionArrow(region);
-                
-                // 存储到辅助元素池
-                if (!_helperPool.ContainsKey(region.Id))
-                {
-                    _helperPool[region.Id] = new List<Shape>();
-                }
-                
-                // 更新辅助元素池（避免重复添加）
-                foreach (var helper in helpers)
-                {
-                    if (!_helperPool[region.Id].Contains(helper))
-                    {
-                        _helperPool[region.Id].Add(helper);
-                    }
-                }
-            }
-            else
-            {
-                // 非旋转矩形，移除辅助元素
-                if (_helperPool.TryGetValue(region.Id, out var helpers))
-                {
-                    foreach (var helper in helpers)
-                    {
-                        _targetCanvas.Children.Remove(helper);
-                    }
-                    _helperPool.Remove(region.Id);
-                }
-            }
-        }
-
-        /// <summary>
-        /// 创建或更新方向箭头
-        /// </summary>
-        private List<Shape> CreateOrUpdateDirectionArrow(RoiRenderContext region)
-        {
-            // 先清理旧的辅助元素
-            if (_helperPool.TryGetValue(region.Id, out var oldHelpers))
-            {
-                foreach (var helper in oldHelpers)
-                {
-                    _targetCanvas.Children.Remove(helper);
-                }
-            }
-
-            // 创建新的辅助元素列表
-            var helpers = new List<Shape>();
-
-            // 计算方向箭头的位置和角度
-            var center = region.Center;
-            var height = region.Height;
-            var rotation = region.Angle;
-
-            // 计算箭头几何
-            var arrow = RotatedRectangleHelper.GetDirectionArrow(center, region.Width, rotation);
-
-            // 确定箭头颜色（选中时为蓝色，否则使用区域颜色）
-            var arrowColor = region.IsSelected
-                ? Brushes.Blue
-                : new SolidColorBrush(region.StrokeColor);
-
-            // 记录添加前的子元素数量
-            var childCountBefore = _targetCanvas.Children.Count;
-
-            // 使用 RotatedRectangleHelper 绘制箭头（包含主线和两翼）
-            RotatedRectangleHelper.DrawDirectionArrow(_targetCanvas, arrow.Start, arrow.End, arrowColor, _viewportScale);
-
-            // 收集新添加的箭头形状
-            for (int i = childCountBefore; i < _targetCanvas.Children.Count; i++)
-            {
-                if (_targetCanvas.Children[i] is Shape shape &&
-                    shape.Tag as string == RotatedRectangleHelper.DirectionArrowTag)
-                {
-                    Canvas.SetZIndex(shape, 150); // 确保箭头在形状之上
-                    helpers.Add(shape);
-                }
-            }
-
-            return helpers;
-        }
-
-        #endregion
-
-        #region IDisposable
 
         public void Dispose()
         {
-            int shapeCount = _shapePool.Count;
-            int labelCount = _labelPool.Count;
-            int helperCount = _helperPool.Sum(h => h.Value.Count);
-
-            VisionLogger.Instance.Log(LogLevel.Warning,
-                $"[WpfShapeRenderer.Dispose] 渲染器销毁 | InstanceId={_rendererInstanceId} | Shapes={shapeCount} | Labels={labelCount} | Helpers={helperCount}",
-                "WpfShapeRenderer");
-
-            _shapePool.Clear();
-            _labelPool.Clear();
-            _helperPool.Clear();
+            _host.Clear();
+            _regions.Clear();
+            if (_targetCanvas.Children.Contains(_host))
+                _targetCanvas.Children.Remove(_host);
 
             VisionLogger.Instance.Log(LogLevel.Success,
-                $"[WpfShapeRenderer.Dispose] 销毁完成 | InstanceId={_rendererInstanceId}",
+                $"[WpfShapeRenderer.Dispose] 销毁完成 | InstanceId={_rendererInstanceId}", "WpfShapeRenderer");
+        }
+
+        #region 私有实现
+
+        private void RemoveInvisibleRegions(HashSet<Guid> visibleIds)
+        {
+            if (_regions.Count == 0) return;
+            var toRemove = _regions.Where(kv => !visibleIds.Contains(kv.Key)).Select(kv => kv.Key).ToList();
+            if (toRemove.Count == 0) return;
+
+            foreach (var id in toRemove)
+            {
+                if (_regions.Remove(id, out var rv))
+                    _host.Remove(rv.Visual);
+            }
+
+            VisionLogger.Instance.Log(LogLevel.Warning,
+                $"[WpfShapeRenderer] 移除不可见区域 | InstanceId={_rendererInstanceId} | RemoveCount={toRemove.Count} | Remaining={_regions.Count}",
                 "WpfShapeRenderer");
         }
+
+        private RegionVisual GetOrCreateVisual(Guid id)
+        {
+            if (_regions.TryGetValue(id, out var rv))
+                return rv;
+
+            rv = new RegionVisual();
+            _regions[id] = rv;
+            _host.Add(rv.Visual);
+            return rv;
+        }
+
+        /// <summary>区域级 diff：仅在数据变化或强制全量时重画该区域 visual。</summary>
+        private void RedrawIfChanged(RoiRenderContext region)
+        {
+            var rv = GetOrCreateVisual(region.Id);
+            if (_forceAllRedraw || rv.Last == null || !SnapshotsEqual(rv.Last, region))
+                Redraw(rv, region);
+        }
+
+        private void Redraw(RegionVisual rv, RoiRenderContext region)
+        {
+            using (var dc = rv.Visual.RenderOpen())
+            {
+                RegionDcPainter.DrawRegion(dc, region, _viewportScale, RefreshPixelsPerDip());
+            }
+
+            // 选中区域置顶（对齐旧版 Canvas.ZIndex(selected)=100）
+            if (region.IsSelected)
+                _host.MoveToTop(rv.Visual);
+
+            rv.Last = region;
+        }
+
+        private double RefreshPixelsPerDip()
+        {
+            if (_host.IsLoaded || VisualTreeHelper.GetParent(_host) != null)
+                _pixelsPerDip = Math.Max(1.0, VisualTreeHelper.GetDpi(_host).PixelsPerDip);
+            return _pixelsPerDip;
+        }
+
+        /// <summary>比较两次渲染上下文是否视觉等价（决定是否需要重画）。</summary>
+        private static bool SnapshotsEqual(RoiRenderContext a, RoiRenderContext b)
+        {
+            if (a.ShapeType != b.ShapeType || a.RoiType != b.RoiType) return false;
+            if (a.IsSelected != b.IsSelected || a.IsPreview != b.IsPreview) return false;
+            if (a.FillColor != b.FillColor || a.StrokeColor != b.StrokeColor) return false;
+            if (a.Opacity != b.Opacity || a.StrokeThickness != b.StrokeThickness) return false;
+            if (!string.Equals(a.Label, b.Label, StringComparison.Ordinal)) return false;
+
+            switch (a.ShapeType)
+            {
+                case ShapeType.Rectangle:
+                case ShapeType.RotatedRectangle:
+                    return PointsEqual(a.Center, b.Center) && a.Width == b.Width && a.Height == b.Height
+                        && (a.ShapeType != ShapeType.RotatedRectangle || a.Angle == b.Angle);
+
+                case ShapeType.Circle:
+                    return PointsEqual(a.Center, b.Center) && a.Radius == b.Radius;
+
+                case ShapeType.Line:
+                    return PointsEqual(a.LineStart, b.LineStart) && PointsEqual(a.LineEnd, b.LineEnd);
+
+                case ShapeType.Polygon:
+                    if (a.PolygonPoints.Count != b.PolygonPoints.Count) return false;
+                    for (int i = 0; i < a.PolygonPoints.Count; i++)
+                        if (!PointsEqual(a.PolygonPoints[i], b.PolygonPoints[i]))
+                            return false;
+                    return true;
+
+                default:
+                    return false;
+            }
+        }
+
+        private static bool PointsEqual(Point a, Point b) => a.X == b.X && a.Y == b.Y;
 
         #endregion
     }

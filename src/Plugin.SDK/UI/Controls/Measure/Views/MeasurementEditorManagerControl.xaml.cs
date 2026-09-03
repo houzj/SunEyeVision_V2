@@ -154,8 +154,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                 _maskRenderer?.Dispose();
                 _maskRenderer = new WpfShapeRenderer(overlayCanvas, VisionLogger.Instance);
 
-                // 初始缩放同步
+                // 初始缩放同步（渲染器线宽反除需真实 zoom，缺省会放大变粗）
                 _viewportZoom = _mainImageControl.Zoom;
+                _maskRenderer.SetViewportTransform(_viewportZoom, new Point(0, 0));
                 guideEditor.SetZoom(_viewportZoom);
                 maskEditor.CurrentZoom = _viewportZoom;
 
@@ -423,6 +424,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         private void OnViewTransformed(object? sender, ViewTransformEventArgs e)
         {
             _viewportZoom = e.Zoom;
+            _maskRenderer?.SetViewportTransform(_viewportZoom, new Point(0, 0));
             guideEditor.SetZoom(_viewportZoom);
             maskEditor.CurrentZoom = _viewportZoom;
             RenderAll();

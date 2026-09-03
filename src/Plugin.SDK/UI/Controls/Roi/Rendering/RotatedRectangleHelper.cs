@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Windows;
 using System.Windows.Media;
 
@@ -149,7 +149,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering
             if (center.X == topCenter.X && center.Y == topCenter.Y) return;
 
             // 反除缩放：使线宽在屏幕上视觉恒定，不受图像分辨率/Zoom影响
-            var lineThickness = 3 / scale;
+            var lineThickness = ViewportScaling.InvScale(scale, 3);
 
             // 绘制主箭头线（从中心到顶边中点）
             var arrowLine = new System.Windows.Shapes.Line
@@ -175,7 +175,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering
             var uy = dy / length;
 
             // 箭头参数（反除缩放，保持视觉恒定）
-            var arrowSize = 10 / scale;
+            var arrowSize = ViewportScaling.InvScale(scale, 10);
             var arrowAngle = 25 * Math.PI / 180; // 箭头夹角25°
 
             // 计算箭头两翼的端点
@@ -243,8 +243,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering
                 X2 = rotateHandlePos.X,
                 Y2 = rotateHandlePos.Y,
                 Stroke = Brushes.Blue,
-                StrokeThickness = 1 / scale,
-                StrokeDashArray = new DoubleCollection { 3 / Math.Max(scale, 0.01), 2 / Math.Max(scale, 0.01) },
+                StrokeThickness = ViewportScaling.InvScale(scale, 1),
+                StrokeDashArray = new DoubleCollection { ViewportScaling.InvScale(scale, 3), ViewportScaling.InvScale(scale, 2) },
                 Tag = DirectionArrowTag
             };
             canvas.Children.Add(connectorLine);

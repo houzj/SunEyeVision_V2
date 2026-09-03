@@ -319,7 +319,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering
                 // 更新填充和边框
                 shape.Fill = new SolidColorBrush(region.FillColor) { Opacity = region.Opacity };
                 shape.Stroke = new SolidColorBrush(region.StrokeColor);
-                shape.StrokeThickness = region.StrokeThickness / _viewportScale;
+                shape.StrokeThickness = ViewportScaling.InvScale(_viewportScale, region.StrokeThickness);
 
                 // 根据形状类型更新尺寸
                 UpdateShapeDimensions(shape, region);
@@ -360,7 +360,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering
                 }
 
                 // 反除缩放：使线宽在屏幕上视觉恒定，不受图像分辨率/Zoom影响
-                strokeThickness = strokeThickness / _viewportScale;
+                strokeThickness = ViewportScaling.InvScale(_viewportScale, strokeThickness);
 
                 Shape shape = null;
 
@@ -605,8 +605,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering
 
                 // 自适应标签字体大小（与手柄同策略的幂律缩放）
                 var scaledFontSize = HandleRenderer.GetScaledLabelFontSize(_viewportScale);
-                var scaledPaddingH = 4.0 / _viewportScale;  // 水平内边距
-                var scaledPaddingV = 2.0 / _viewportScale;  // 垂直内边距
+                var scaledPaddingH = ViewportScaling.InvScale(_viewportScale, 4.0);  // 水平内边距
+                var scaledPaddingV = ViewportScaling.InvScale(_viewportScale, 2.0);  // 垂直内边距
 
                 TextBlock label;
                 if (_labelPool.TryGetValue(region.Id, out var existingLabel))

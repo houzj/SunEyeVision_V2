@@ -1344,14 +1344,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
                 X1 = displayLastPoint.X, Y1 = displayLastPoint.Y,
                 X2 = mousePosition.X, Y2 = mousePosition.Y,
                 Stroke = ColorConstants.InspectionBlueBrush,
-                StrokeThickness = 2.0 / zoom,
+                StrokeThickness = ViewportScaling.LineWidth(zoom),
                 Tag = RubberBandTag
             };
             Canvas.SetZIndex(line, 50);
             canvas.Children.Add(line);
 
             // 小圆点：鼠标位置
-            var dotSize = 6.0 / zoom;
+            var dotSize = ViewportScaling.InvScale(zoom, 6.0);
             var dot = new Ellipse
             {
                 Width = dotSize, Height = dotSize,

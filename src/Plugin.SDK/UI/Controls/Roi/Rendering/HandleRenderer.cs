@@ -72,19 +72,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering
         /// </summary>
         /// <param name="scale">当前视口缩放值(zoom)</param>
         /// <returns>WPF坐标系中的字体大小（经ScaleTransform放大后达到屏幕目标尺寸）</returns>
-        public static double GetScaledLabelFontSize(double scale)
-        {
-            scale = Math.Max(scale, 0.01);
-            const double A = 12.0;
-            const double p = 0.15;
-            var screenSize = A / Math.Pow(scale, p);
-            screenSize = Math.Clamp(screenSize, 9.0, 12.0);
-            return screenSize / scale;
-        }
+        public static double GetScaledLabelFontSize(double scale) => ViewportScaling.LabelFontSize(scale);
 
         /// <summary>
         /// 计算自适应手柄大小（强自适应，统一尺寸）
-        /// 幂律公式：screenSize = 10 / zoom^0.15，Clamp [8, 12] px
+        /// 幂律公式：screenSize = 10 / zoom^0.15，Clamp [10, 12] px
         ///
         /// 缩放行为：
         ///   低zoom(看全局) → 手柄大(~12px) → 易于点击
@@ -93,25 +85,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering
         /// </summary>
         /// <param name="scale">当前视口缩放值(zoom)</param>
         /// <returns>WPF坐标系中的手柄尺寸（经ScaleTransform放大后达到屏幕目标尺寸）</returns>
-        public static double GetScaledHandleSize(double scale)
-        {
-            // 安全下限，防止除零或负数
-            scale = Math.Max(scale, 0.01);
-
-            // 幂律公式：screenSize = A / scale^p
-            // 锚点：zoom=0.1→10.9px, zoom=1.0→10.0px（基准值）, 最小10px
-            // 解得 A=10, p≈0.15
-            const double A = 10.0;
-            const double p = 0.15;
-
-            var screenSize = A / Math.Pow(scale, p);
-
-            // Clamp [10, 12]
-            screenSize = Math.Clamp(screenSize, 10.0, 12.0);
-
-            // 反除缩放 → WPF坐标（WPF渲染时再乘以 scale 得到屏幕像素）
-            return screenSize / scale;
-        }
+        public static double GetScaledHandleSize(double scale) => ViewportScaling.HandleSize(scale);
 
         /// <summary>
         /// 计算自适应虚线间隔（与手柄同策略的幂律缩放）
@@ -126,13 +100,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering
         /// <param name="baseInterval">基准间隔（WPF坐标下zoom=1时的屏幕像素值），默认4.0</param>
         /// <returns>WPF坐标系中的虚线间隔（经ScaleTransform放大后达到屏幕目标尺寸）</returns>
         public static double GetScaledDashInterval(double scale, double baseInterval = 4.0)
-        {
-            scale = Math.Max(scale, 0.01);
-            const double p = 0.15;
-            var screenSize = baseInterval / Math.Pow(scale, p);
-            screenSize = Math.Clamp(screenSize, baseInterval, baseInterval * 1.5);
-            return screenSize / scale;
-        }
+            => ViewportScaling.DashInterval(scale, baseInterval);
 
         /// <summary>
         /// 创建矩形手柄（参考ROI编辑器CreateRectangleHandles 1071-1097行）

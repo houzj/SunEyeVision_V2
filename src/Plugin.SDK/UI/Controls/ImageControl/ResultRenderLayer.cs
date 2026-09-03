@@ -146,7 +146,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         }
 
         private double GetScaledLineWidth(double rawWidth, double power = 1.0) =>
-            _viewportScale > 0.001 ? rawWidth / Math.Pow(_viewportScale, power) : rawWidth;
+            ViewportScaling.Power(_viewportScale, rawWidth, power);
 
         #endregion
 
@@ -245,8 +245,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         private void RenderPoints(DrawingContext dc, GraphicsDisplayItem item, GraphicsStyle style, Pen defaultPen)
         {
             bool isUnified = item.RenderMode == DisplayRenderMode.Unified;
-            double s = GetScaledLineWidth(2.5, 0.7);
-            double crossThickness = GetScaledLineWidth(1.0, 0.7);
+            double s = GetScaledLineWidth(2.5, ViewportScaling.MarkerPower);
+            double crossThickness = GetScaledLineWidth(1.0, ViewportScaling.MarkerPower);
             var defaultColorArgb = style.GetEffectiveColorArgb(true);
             var crossPen = GetPen(defaultColorArgb, crossThickness);
 
@@ -569,7 +569,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             var scale = GetScaledLineWidth(style.LineWidth);
             var ngColorArgb = style.GetEffectiveColorArgb(false);
             var ngPen = GetPen(ngColorArgb, scale);
-            var s = GetScaledLineWidth(style.CrossSize, 0.7);
+            var s = GetScaledLineWidth(style.CrossSize, ViewportScaling.MarkerPower);
 
             int totalCount = item.Geometries.Length;
 
@@ -676,7 +676,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     Math.Abs(t.X - texts[0].X) > 0.001 ||
                     Math.Abs(t.Y - texts[0].Y) > 0.001);
 
-                var scaledFontSize = _viewportScale > 0.001 ? style.FontSize / _viewportScale : style.FontSize;
+                var scaledFontSize = ViewportScaling.InvScale(_viewportScale, style.FontSize);
                 var lineHeight = scaledFontSize * 1.4;
 
                 if (useIndividualPositions)

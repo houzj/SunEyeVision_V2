@@ -455,31 +455,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
         }
 
         /// <summary>
-        /// 方向箭头：从 center 沿 dir 延伸 arrowLength（主线 + 尖端实心三角）。
-        /// </summary>
-        private void AddDirectionArrow(Point center, Vector dir, double arrowLength, Color color, double thickness)
-        {
-            var tip = center + dir * arrowLength;
-            AddLine(center, tip, color, thickness);
-
-            // 尖端等腰三角（实心，沿 dir）
-            var normal = new Vector(-dir.Y, dir.X);
-            double wingLen = Math.Max(arrowLength * 0.5, thickness * 2.0);
-            double halfSpan = wingLen * 0.55;
-            var w1 = tip - dir * wingLen + normal * halfSpan;
-            var w2 = tip - dir * wingLen - normal * halfSpan;
-            AddPolygon(new[] { tip, w1, w2 }, color, color, thickness, 1.0);
-        }
-
-        /// <summary>
         /// 引导几何线宽（反除缩放，对齐 Blob 检测区域默认线宽 2.0）
         /// </summary>
-        private static double StrokeWidthFor(double zoom) => 2.0 / Math.Max(zoom, 0.01);
+        private static double StrokeWidthFor(double zoom) => ViewportScaling.LineWidth(zoom);
 
         /// <summary>
         /// 测量带线宽（与 Blob 检测区域边框线宽一致；单像素保底避免高倍缩放消失）
         /// </summary>
-        private static double BandStrokeWidthFor(double zoom) => Math.Max(2.0 / Math.Max(zoom, 0.01), 1.0);
+        private static double BandStrokeWidthFor(double zoom) => Math.Max(ViewportScaling.LineWidth(zoom), 1.0);
 
         #endregion
     }

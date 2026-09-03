@@ -59,6 +59,16 @@ namespace SunEyeVision.Tool.LineDetect
                 return result;
             }
 
+            // ===== 诊断日志：执行参数快照（定位拟合失败第一步：确认实际传给 Halcon 的参数） =====
+            parameters.LogInfo(
+                $"[Diag] 直线查找参数: 引导线=({parameters.LineStartPoint.X:F1},{parameters.LineStartPoint.Y:F1})→" +
+                $"({parameters.LineEndPoint.X:F1},{parameters.LineEndPoint.Y:F1}) len={lineLen:F1}px | " +
+                $"带L1(宽)={parameters.MeasureLength1:F2} L2(长)={parameters.MeasureLength2:F2} N={parameters.NumMeasures} | " +
+                $"Sigma={parameters.Sigma:F2} Threshold={parameters.Threshold:F1} | " +
+                $"极性={TransitionToHalcon(parameters.Transition)}({parameters.Transition}) 选取={SelectToHalcon(parameters.Select)} | " +
+                $"min_score={parameters.MinScore:F2} distance_threshold={parameters.DistanceThreshold:F2} | " +
+                $"位置修正={(parameters.IsPositionCorrectionEnabled ? "启用" : "未启用")}");
+
             // ===== 获取输入图像 =====
             HImage? hImage;
             try
@@ -87,6 +97,7 @@ namespace SunEyeVision.Tool.LineDetect
             {
                 HOperatorSet.GetImageSize(hImage, out var width, out var height);
                 metrologyModel.SetMetrologyModelImageSize((int)width.L, (int)height.L);
+                parameters.LogInfo($"[Diag] 图像尺寸: {width.L} x {height.L}");
 
                 // 位置修正：引导直线按矩阵变换到当前图像坐标（卡尺作用到修正后位置）
                 var startP = parameters.LineStartPoint;
@@ -96,19 +107,52 @@ namespace SunEyeVision.Tool.LineDetect
                 {
                     startP = matrix.TransformWpfPoint(startP);
                     endP = matrix.TransformWpfPoint(endP);
+                    parameters.LogInfo(
+                        $"[Diag] 位置修正已应用: 引导线 ({parameters.LineStartPoint.X:F1},{parameters.LineStartPoint.Y:F1})→" +
+                        $"({parameters.LineEndPoint.X:F1},{parameters.LineEndPoint.Y:F1}) " +
+                        $"→ 修正后 ({startP.X:F1},{startP.Y:F1})→({endP.X:F1},{endP.Y:F1})");
                 }
                 HTuple objectIndex = metrologyModel.AddMetrologyObjectLineMeasure(
                     startP.Y, startP.X, endP.Y, endP.X,
                     parameters.MeasureLength1, parameters.MeasureLength2,
                     parameters.Sigma, parameters.Threshold,
                     BuildGenParamName(parameters), BuildGenParamValue(parameters));
+                parameters.LogInfo($"[Diag] 已添加测量对象 objectIndex={objectIndex.I}");
 
                 // 执行测量（逐测量带取点 + 拟合）
                 metrologyModel.ApplyMetrologyModel(hImage);
+                parameters.LogInfo("[Diag] ApplyMetrologyModel 执行完成（无异常）");
+
+                // 诊断日志：按极性检测到的全部边缘点数（= DiagnosticPoints 来源，不等同于拟合点数）
+                try
+                {
+                    var diagContour = metrologyModel.GetMetrologyObjectMeasures(
+                        objectIndex.I, TransitionToHalcon(parameters.Transition), out var diagRow, out var diagCol);
+                    diagContour?.Dispose();
+                    parameters.LogInfo(
+                        $"[Diag] 检测点(GetMetrologyObjectMeasures)={diagRow.Length} 个 " +
+                        $"| 极性={TransitionToHalcon(parameters.Transition)} | 带内0点→说明极性反/阈值过高/带未覆盖边缘");
+                }
+                catch (Exception diagEx)
+                {
+                    parameters.LogWarning($"[Diag] 查询检测点失败: {diagEx.Message}");
+                }
 
                 // 获取拟合直线参数（all_param = [Row1, Col1, Row2, Col2, Nr, Nc, Dist]）
                 var allParam = metrologyModel.GetMetrologyObjectResult(
                     objectIndex.I, "all", "result_type", "all_param");
+                if (allParam.Length < 4)
+                {
+                    parameters.LogWarning(
+                        $"[Diag] 拟合无有效输出: all_param 长度={allParam.Length}（<4，无拟合直线）。" +
+                        "可能原因: 检测点数不足 / min_score 过高 / distance_threshold 过小 / 点不共线");
+                }
+                else
+                {
+                    parameters.LogInfo(
+                        $"[Diag] 拟合直线 all_param 长度={allParam.Length}: " +
+                        $"Row1={allParam[0].D:F2} Col1={allParam[1].D:F2} Row2={allParam[2].D:F2} Col2={allParam[3].D:F2}");
+                }
 
                 // ★ 修复：rms 不是 get_metrology_object_param 的合法 GenParamName（#1303），
                 //   也不是 get_metrology_object_result 的合法 result_type（#1305）。
@@ -117,15 +161,32 @@ namespace SunEyeVision.Tool.LineDetect
 
                 // 获取测量带数量（num_measures 是 get_metrology_object_param 的合法 GenParamName）
                 var numMeasures = metrologyModel.GetMetrologyObjectParam(objectIndex.I, "num_measures");
+                parameters.LogInfo(
+                    $"[Diag] Halcon 实际测量带数 num_measures={(numMeasures.Length > 0 ? numMeasures[0].I : -1)} " +
+                    $"(用户配置 N={parameters.NumMeasures})");
 
                 // ===== 结果填充 =====
                 FillResult(result, parameters, allParam, rms, numMeasures, objectIndex, metrologyModel,
                     TransitionToHalcon(parameters.Transition));
 
+                // ===== 诊断日志：结果概要（拟合线有无/参与拟合点/诊断点/角度） =====
+                parameters.LogInfo(
+                    $"[Diag] 结果概要: 拟合直线={(result.Line is { Length: > 0 } ? $"({result.LineStartPoint.X:F1},{result.LineStartPoint.Y:F1})→({result.LineEndPoint.X:F1},{result.LineEndPoint.Y:F1})" : "无")} | " +
+                    $"参与拟合点 used_edges={result.MeasurementPoints.Length} | " +
+                    $"诊断点={result.DiagnosticPoints.Length} | 中点=({result.CenterPoint.X:F1},{result.CenterPoint.Y:F1}) | Angle={result.Angle:F1}° | RMSE={result.RMSE:F3}px");
+
                 // ===== 结果判断（对齐 VisionMaster：匹配点数/角度/拟合误差） =====
                 var isOk = EvaluateResult(result, parameters);
                 result.IsPass = isOk;
                 result.FillDisplay(isOk, parameters);
+                if (!isOk)
+                {
+                    var cfg = parameters.ResultConfig;
+                    parameters.LogWarning(
+                        $"[Diag] 判定 NG 明细: 匹配点数判断={(cfg.IsEdgePointCountEnabled ? $"{result.EdgePointCount} 不在 [{cfg.EdgePointCountMin},{cfg.EdgePointCountMax}]" : "未启用")} | " +
+                        $"角度判断={(cfg.IsAngleEnabled ? $"{result.Angle:F1}° 不在 [{cfg.AngleMin:F1},{cfg.AngleMax:F1}]" : "未启用")} | " +
+                        $"拟合误差判断={(cfg.IsRMSEEnabled ? $"{result.RMSE:F3}px 不在 [{cfg.RMSEMin:F3},{cfg.RMSEMax:F3}]" : "未启用")}");
+                }
 
                 result.SetSuccess();
                 parameters.LogInfo(

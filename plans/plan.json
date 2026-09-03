@@ -1020,6 +1020,10 @@
                                     {
                                         "date":  "2026-09-03",
                                         "note":  "[8c7b6589412d665a79c86568772fe34ce7a2778c] fix(measure): 旋转光标清晰度与尺寸幂律自适应 + 弧/直线端点改小手"
+                                    },
+                                    {
+                                        "date":  "2026-09-03",
+                                        "note":  "[572b29d03a59c083018db77bdcf49d69984895b8] feat(render): 鍙屾覆鏌撳眰骞傚緥缂╂斁娌荤悊 - ViewportScaling 鍏紡鍞竴婧愬綊鍙?+ 濂戠害娴嬭瘯"
                                     }
                                 ]
                     },
@@ -4200,6 +4204,18 @@
                                         "tools/SunEyeVision.Tool.CircleDetect/CircleDetectParameters.cs",
                                         "tools/SunEyeVision.Tool.CircleDetect/CircleDetectResults.cs",
                                         "tools/SunEyeVision.Tool.CircleDetect/Views/CircleDetectToolDebugControl.xaml"
+                                    ],
+                          "status":  "in_progress"
+                      },
+                      {
+                          "id":  "TMP-5c3619b",
+                          "message":  "feat(measure): 涓诲崱灏烘瀬鎬ф柟鍚戞爣璁扮粨鏋滃眰涓庝氦浜掑眰鍚屾 + 缂╂斁鎵嬫焺鏂瑰悜淇",
+                          "date":  "2026-09-03",
+                          "commit":  "5c3619ba3362c8c9f0747054fedeb1b6357f4ee8",
+                          "files":  [
+                                        "src/Plugin.SDK/UI/Controls/Measure/Rendering/MeasureBandOverlay.cs",
+                                        "src/Plugin.SDK/UI/Controls/Measure/Views/MeasureEditorControl.xaml.cs",
+                                        "tools/SunEyeVision.Tool.LineDetect/LineDetectParameters.cs"
                                     ],
                           "status":  "in_progress"
                       }

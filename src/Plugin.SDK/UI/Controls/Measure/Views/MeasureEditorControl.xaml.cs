@@ -553,15 +553,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                         else if (_model.EditingArc.HasValue && !_model.EditingArc.Value.IsEmpty)
                             center = _model.EditingArc.Value.Center;
                         if (center.HasValue)
-                            return RotatedCursor.GetBidirectional(Atan2Deg(handlePos, center.Value));
+                            return RotatedCursor.GetBidirectional(Atan2Deg(handlePos, center.Value), _zoom);
                         // 无几何时回退固定屏幕方向
                         return handleType is HandleType.Top or HandleType.Bottom ? Cursors.SizeNS : Cursors.SizeWE;
                     }
 
-                // 弧端点（P1/P2）→ 移动端点
+                // 弧/直线端点（P1/P2）→ 小手（移动端点）
                 case HandleType.LineStart:
                 case HandleType.LineEnd:
-                    return Cursors.SizeAll;
+                    return Cursors.Hand;
 
                 // 角落缩放手柄 → 对角缩放
                 case HandleType.TopLeft:
@@ -578,7 +578,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                         if (frame.HasValue)
                         {
                             var diag = frame.Value.LongAxis + frame.Value.WidthAxis;
-                            return RotatedCursor.GetBidirectional(Math.Atan2(diag.Y, diag.X) * 180.0 / Math.PI);
+                            return RotatedCursor.GetBidirectional(Math.Atan2(diag.Y, diag.X) * 180.0 / Math.PI, _zoom);
                         }
                         return Cursors.SizeNWSE;
                     }

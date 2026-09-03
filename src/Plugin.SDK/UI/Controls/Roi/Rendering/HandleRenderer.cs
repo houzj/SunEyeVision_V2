@@ -317,7 +317,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering
                     Type = handleTypes[i],
                     Position = positions[i],
                     HandleSize = GetScaledHandleSize(scale),
-                    Cursor = RotatedCursor.GetBidirectional(angleDeg)
+                    Cursor = RotatedCursor.GetBidirectional(angleDeg, scale)
                 });
             }
 

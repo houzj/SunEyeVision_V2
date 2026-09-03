@@ -109,25 +109,23 @@ namespace SunEyeVision.Tool.CircleDetect
                 _display.AddContours(parameters.HalconBandStyle, HalconMeasureBands, isClosed: true);
             }
 
-            // 拟合圆/圆弧
+            // 拟合圆/圆弧 → 结果层统一画完整拟合圆（弧模式也不画弧）
             if (Circle is { Length: > 0 })
             {
                 _display.AddCircle(parameters.FitResultStyle, Circle[0], isOk);
             }
             else if (Arc is { Length: > 0 })
             {
-                // 圆弧用轮廓点近似（Arc2d 采样）
                 var arc = Arc[0];
-                var pts = new System.Windows.Point[48];
-                for (int i = 0; i < 48; i++)
-                {
-                    double t = (double)i / 48;
-                    double angle = arc.StartAngle + arc.AngularSpan * t;
-                    pts[i] = new System.Windows.Point(
-                        arc.Center.X + arc.Radius * Math.Cos(angle),
-                        arc.Center.Y + arc.Radius * Math.Sin(angle));
-                }
-                _display.AddContour(parameters.FitResultStyle, pts, isOk, false);
+                _display.AddCircle(parameters.FitResultStyle,
+                    new Circle2d(arc.Center, arc.Radius), isOk);
+            }
+
+            // 圆心标记（十字）
+            if (parameters.CenterPointStyle.IsVisible &&
+                (Circle is { Length: > 0 } || Arc is { Length: > 0 }))
+            {
+                _display.AddCross(parameters.CenterPointStyle, CenterPoint, isOk);
             }
 
             // 圆心坐标文本

@@ -245,6 +245,9 @@
                                     <controls:LabeledControl Label="拟合圆" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
                                         <controls:DispItemColorControl Item="{Binding FitResultStyle, Mode=TwoWay}"/>
                                     </controls:LabeledControl>
+                                    <controls:LabeledControl Label="圆心标记" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
+                                        <controls:DispItemColorControl Item="{Binding CenterPointStyle, Mode=TwoWay}"/>
+                                    </controls:LabeledControl>
                                     <controls:LabeledControl Label="引导线" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
                                         <controls:DispItemColorControl Item="{Binding GuideStyle, Mode=TwoWay}"/>
                                     </controls:LabeledControl>

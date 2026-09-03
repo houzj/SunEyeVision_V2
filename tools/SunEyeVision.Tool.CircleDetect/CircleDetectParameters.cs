@@ -276,6 +276,15 @@ namespace SunEyeVision.Tool.CircleDetect
             OkColor = System.Windows.Media.Colors.Cyan,
         };
 
+        /// <summary>圆心标记显示样式（十字）</summary>
+        public GraphicsStyle CenterPointStyle { get; set; } = new()
+        {
+            Name = "圆心标记",
+            IsVisible = true,
+            OkColor = System.Windows.Media.Colors.LimeGreen,
+            CrossSize = 8.0,
+        };
+
         #endregion
 
         #region 测量引导显示（与检测/屏蔽区域同通道走结果层，对齐 RoiParameters 虚成员）

@@ -1028,6 +1028,10 @@
                                     {
                                         "date":  "2026-09-03",
                                         "note":  "[e1aaa20fedc7aa31ee529bc8c550216593f7ec15] feat(roi): ring-style rotate cursor with isolated cache + handles layered above arrows"
+                                    },
+                                    {
+                                        "date":  "2026-09-03",
+                                        "note":  "[2d0d1eff8c6d92f6781694d6a3bcbe0865ad4980] feat(roi): lightweight region rendering via per-region DrawingVisual host + label placement fix + mask renderer zoom sync"
                                     }
                                 ]
                     },
@@ -2470,7 +2474,7 @@
                         "type":  "tool",
                         "layer":  "tool",
                         "stage":  "P4",
-                        "status":  "todo",
+                        "status":  "in_progress",
                         "start":  "2026-11-16",
                         "end":  "2026-11-20",
                         "goal":  "找线：角度/偏移，docs/04 方案落地",
@@ -2485,7 +2489,7 @@
                                           "name":  "直线查找核心算法",
                                           "phase":  "算法实现",
                                           "hours":  20,
-                                          "status":  "todo",
+                                          "status":  "in_progress",
                                           "week":  "2026-W47"
                                       },
                                       {
@@ -2510,7 +2514,10 @@
                                      "docs/04-工具设计/查找工具/2026/05/直线查找工具核心算法设计方案-20260508.md"
                                  ],
                         "log":  [
-
+                                    {
+                                        "date":  "2026-09-03",
+                                        "note":  "[505d71fa046606966b3a7823ed04c25d4a8d0207] feat(line-detect): 直线查找全链路诊断日志定位拟合失败"
+                                    }
                                 ]
                     },
                     {

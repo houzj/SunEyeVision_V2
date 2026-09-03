@@ -571,13 +571,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                 case HandleType.BottomLeft:
                     return Cursors.SizeNESW;
 
-                // 主卡尺缩放手柄 → 沿长轴+宽轴对角缩放，光标跟随主卡尺几何旋转
+                // 主卡尺缩放手柄 → 光标方向跟随手柄位置（方向视角右上 = -LongAxis + WidthAxis）
                 case HandleType.CaliberResize:
                     {
                         var frame = GetMainCaliberFrame();
                         if (frame.HasValue)
                         {
-                            var diag = frame.Value.LongAxis + frame.Value.WidthAxis;
+                            var diag = -frame.Value.LongAxis + frame.Value.WidthAxis;
                             return RotatedCursor.GetBidirectional(Math.Atan2(diag.Y, diag.X) * 180.0 / Math.PI, _zoom);
                         }
                         return Cursors.SizeNWSE;
@@ -877,7 +877,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         }
 
         /// <summary>
-        /// 创建主卡尺缩放手柄（位于主卡尺右上角，拖拽对角缩放同时编辑卡尺宽/高）
+        /// 创建主卡尺缩放手柄（位于主卡尺"方向视角右上角"：法向(+normal)为"上"时，
+        ///  视觉右侧 = normal 顺时针 90° = -LongAxis，故切向项取负）
         /// </summary>
         private EditHandle? CreateCaliberResizeHandle()
         {
@@ -885,9 +886,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
             var frame = GetMainCaliberFrame();
             if (frame == null) return null;
 
-            // 右上角 = 中心 + 长轴*半长 + 宽轴*半宽
+            // 方向视角右上 = 中心 - 长轴*切向半长 + 宽轴*法向半宽
             var corner = frame.Value.Center
-                + frame.Value.LongAxis * (_bandLength / 2)
+                - frame.Value.LongAxis * (_bandLength / 2)
                 + frame.Value.WidthAxis * (_bandWidth / 2);
 
             return new EditHandle

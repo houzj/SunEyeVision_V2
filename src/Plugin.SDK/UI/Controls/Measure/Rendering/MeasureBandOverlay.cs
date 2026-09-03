@@ -79,8 +79,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
             {
                 // 卡尺无填充，全检测蓝，粗细/透明度统一（线宽与 Blob 检测区域一致）
                 AddQuad(quad[0], quad[1], quad[2], quad[3], Colors.Transparent, StrokeColor, bandStroke, 1.0);
-                // 注：不绘制方向箭头——measure_transition 只有暗→亮/亮→暗极性，无空间方向语义
             }
+
+            // 主卡尺极性方向标记（交互层实时显示，与结果层 BuildMeasureGuideItems 同步）。
+            // 在主卡尺法向两条边（顶边/底边）上各画一个朝 normal 的小箭头。
+            AddMainCaliberEdgeDirectionArrows(start, end, bandWidth, bandLength, measureCount, StrokeColor, bandStroke);
         }
 
         /// <summary>
@@ -387,6 +390,85 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
             };
             _overlayCanvas.Children.Add(polygon);
             _elements.Add(polygon);
+        }
+
+        /// <summary>
+        /// 添加多边形（任意顶点，填充 + 描边）
+        /// </summary>
+        private void AddPolygon(IReadOnlyList<Point> points, Color fill, Color stroke, double thickness, double opacity = 1.0)
+        {
+            var polygon = new Polygon
+            {
+                Points = new PointCollection(points),
+                Fill = new SolidColorBrush(fill),
+                Stroke = new SolidColorBrush(stroke),
+                StrokeThickness = thickness,
+                Opacity = opacity,
+            };
+            _overlayCanvas.Children.Add(polygon);
+            _elements.Add(polygon);
+        }
+
+        /// <summary>
+        /// 主卡尺极性方向标记：把主卡尺与引导线垂直的两条竖直长边（左/右）当"箭杆"，
+        /// 在两条竖边沿法向 4/3 全长处各加一个朝 normal 的**纯三角尖端（无杆）**。
+        /// ★ 方向 = normal = (-dir.Y, dir.X)，即引导线方向顺时针 90°（屏幕坐标）。
+        ///   实验定标（Halcon line measure）：扫描方向取该法向，
+        ///   'positive' = 沿该方向暗→亮、'negative' = 亮→暗。
+        /// 主卡尺位置与 BuildLineBands / GetMainCaliberFrame 同构（首条贴起点，半带偏移）。
+        /// </summary>
+        private void AddMainCaliberEdgeDirectionArrows(Point start, Point end, double bandWidth, double bandLength,
+            int measureCount, Color color, double thickness)
+        {
+            var seg = end - start;
+            var totalLen = seg.Length;
+            if (totalLen < 1e-6 || measureCount <= 0) return;
+
+            var dir = seg / totalLen;                        // 引导线方向（Halcon RowBegin→RowEnd）
+            var normal = new Vector(-dir.Y, dir.X);          // ★ 极性/测量扫描方向（法向）
+            int mainIndex = measureCount / 2;
+            double halfBand = bandLength / 2;                // 切向半长（主卡尺沿线半宽）
+            double usable = totalLen - 2 * halfBand;
+            if (usable < 1e-6) usable = totalLen;
+            double step = measureCount > 1 ? usable / (measureCount - 1) : usable;
+            double t = measureCount > 1 ? halfBand + mainIndex * step : totalLen / 2;
+            var center = start + dir * t;
+
+            // ★ 位置 = 竖边中点沿 normal 方向走 法向全长×1/4；大小 = 独立指定的三角尺寸
+            var midL = center - dir * (bandLength / 2);    // 左竖直边中点
+            var midR = center + dir * (bandLength / 2);    // 右竖直边中点
+            double posOffset = bandWidth * 0.25;           // 位置沿 normal 走 1/4
+            double triHeight = Math.Max(bandWidth * 0.15, 4.0);    // 三角高（指定大小，独立）
+            double triHalfWidth = Math.Max(bandWidth * 0.07, 2.0); // 三角底半宽（指定大小）
+
+            // 左三角：尖端锚在竖边中点 +normal×1/4 处，尖端朝 +normal
+            var tipL = midL + normal * posOffset;
+            var bL1 = tipL - normal * triHeight - dir * triHalfWidth;
+            var bL2 = tipL - normal * triHeight + dir * triHalfWidth;
+            AddPolygon(new[] { tipL, bL1, bL2 }, color, color, thickness, 1.0);
+
+            // 右三角
+            var tipR = midR + normal * posOffset;
+            var bR1 = tipR - normal * triHeight - dir * triHalfWidth;
+            var bR2 = tipR - normal * triHeight + dir * triHalfWidth;
+            AddPolygon(new[] { tipR, bR1, bR2 }, color, color, thickness, 1.0);
+        }
+
+        /// <summary>
+        /// 方向箭头：从 center 沿 dir 延伸 arrowLength（主线 + 尖端实心三角）。
+        /// </summary>
+        private void AddDirectionArrow(Point center, Vector dir, double arrowLength, Color color, double thickness)
+        {
+            var tip = center + dir * arrowLength;
+            AddLine(center, tip, color, thickness);
+
+            // 尖端等腰三角（实心，沿 dir）
+            var normal = new Vector(-dir.Y, dir.X);
+            double wingLen = Math.Max(arrowLength * 0.5, thickness * 2.0);
+            double halfSpan = wingLen * 0.55;
+            var w1 = tip - dir * wingLen + normal * halfSpan;
+            var w2 = tip - dir * wingLen - normal * halfSpan;
+            AddPolygon(new[] { tip, w1, w2 }, color, color, thickness, 1.0);
         }
 
         /// <summary>

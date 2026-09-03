@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -288,6 +288,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering
         {
             var handles = new System.Collections.Generic.List<EditHandle>();
 
+            // 矩形中心（缩放方向 = 手柄相对中心的方向）
+            var rectCenter = new Point((corners[0].X + corners[2].X) / 2, (corners[0].Y + corners[2].Y) / 2);
+
             // 8个缩放手柄（4个角点 + 4个边中点）
             var handleTypes = new HandleType[]
             {
@@ -305,19 +308,20 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering
             // 角点和边中点位置
             var positions = new[] { corners[0], topCenter, corners[1], rightCenter, corners[2], bottomCenterRect, corners[3], leftCenter };
 
+            // ★ 旋转光标：缩放方向 = 手柄相对中心的方向（屏幕角），双向箭头跟随旋转，不依赖 rotation 正负约定
             for (int i = 0; i < 8; i++)
             {
+                double angleDeg = Math.Atan2(positions[i].Y - rectCenter.Y, positions[i].X - rectCenter.X) * 180.0 / Math.PI;
                 handles.Add(new EditHandle
                 {
                     Type = handleTypes[i],
                     Position = positions[i],
                     HandleSize = GetScaledHandleSize(scale),
-                    Cursor = GetRotatedCursor(handleTypes[i], rotation)
+                    Cursor = RotatedCursor.GetBidirectional(angleDeg)
                 });
             }
 
             // 旋转手柄
-            var rectCenter = new Point((corners[0].X + corners[2].X) / 2, (corners[0].Y + corners[2].Y) / 2);
             var rotateHandlePos = CalculateRotationHandlePosition(rectCenter, rotation, scale, width);
             var rotateHandleSize = GetScaledHandleSize(scale);
             handles.Add(new EditHandle
@@ -514,46 +518,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering
             return new Point(handleX, handleY);
         }
 
-        /// <summary>
-        /// 根据旋转角度获取手柄光标（参考ROI编辑器GetCursorForRotatedHandle 1242-1269行）
-        /// </summary>
-        private static Cursor GetRotatedCursor(HandleType handleType, double rotation)
-        {
-            // 将旋转角度归一化到0-360
-            rotation = ((rotation % 360) + 360) % 360;
 
-            // 根据手柄类型和旋转角度计算光标
-            // 角落手柄
-            if (handleType == HandleType.TopLeft || handleType == HandleType.BottomRight)
-            {
-                return GetRotatedCursor(rotation, 45, Cursors.SizeNWSE, Cursors.SizeNESW);
-            }
-            if (handleType == HandleType.TopRight || handleType == HandleType.BottomLeft)
-            {
-                return GetRotatedCursor(rotation, 45, Cursors.SizeNESW, Cursors.SizeNWSE);
-            }
-
-            // 边中点手柄
-            if (handleType == HandleType.Top || handleType == HandleType.Bottom)
-            {
-                return GetRotatedCursor(rotation, 45, Cursors.SizeNS, Cursors.SizeWE);
-            }
-            if (handleType == HandleType.Left || handleType == HandleType.Right)
-            {
-                return GetRotatedCursor(rotation, 45, Cursors.SizeWE, Cursors.SizeNS);
-            }
-
-            return Cursors.SizeAll;
-        }
-
-        /// <summary>
-        /// 获取旋转后的光标
-        /// </summary>
-        private static Cursor GetRotatedCursor(double rotation, double threshold, Cursor cursor1, Cursor cursor2)
-        {
-            var normalizedRotation = ((rotation % 90) + 90) % 90;
-            return normalizedRotation < threshold || normalizedRotation > (90 - threshold) ? cursor1 : cursor2;
-        }
 
         /// <summary>
         /// 命中测试（圆形距离检测，确保命中范围与手柄视觉大小一致）

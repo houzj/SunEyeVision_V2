@@ -1008,6 +1008,10 @@
                                     {
                                         "date":  "2026-09-01",
                                         "note":  "[88f845655d57d1a0f19169bb2fe6fb71204b679d] refactor(measure): 命中逻辑统一收敛 + 光标管理元素级收口"
+                                    },
+                                    {
+                                        "date":  "2026-09-03",
+                                        "note":  "[86d37b08bc983c2dbc69edf81ffb5aaf34ed5506] feat(measure): 旋转光标统一 - ROI与卡尺改尺寸手柄光标跟随几何旋转"
                                     }
                                 ]
                     },
@@ -2417,7 +2421,7 @@
                                           "name":  "圆查找调试控件（ROI 交互/结果叠加）",
                                           "phase":  "UI交互",
                                           "hours":  16,
-                                          "status":  "todo",
+                                          "status":  "in_progress",
                                           "week":  "2026-W46"
                                       },
                                       {
@@ -2437,6 +2441,10 @@
                                     {
                                         "date":  "2026-08-30",
                                         "note":  "[cb7c1c98e9bb243e847a3f2a7aaf06899b4853b1] 测量工具栏类型过滤：圆查找仅显示圆/圆弧卡尺，直线查找仅显示直线卡尺"
+                                    },
+                                    {
+                                        "date":  "2026-09-03",
+                                        "note":  "[424878db4d26be29253feac6285aa03dc914a839] 圆查找: 结果层弧/圆统一显示完整拟合圆并增加圆心标记"
                                     }
                                 ]
                     },
@@ -4035,40 +4043,6 @@
                    ],
     "tempTasks":  [
                       {
-                          "id":  "TMP-da4a4a0",
-                          "message":  "feat(edge-detect): 新增边缘检测工具（Halcon 2D Metrology）+ SDK 测量工具栏",
-                          "date":  "2026-08-27",
-                          "commit":  "da4a4a0024e86f1b82da8f124d12c80f3bd909a0",
-                          "files":  [
-                                        "SunEyeVision.slnx",
-                                        "\"docs/04-\\345\\267\\245\\345\\205\\267\\350\\256\\276\\350\\256\\241/\\346\\237\\245\\346\\211\\276\\345\\267\\245\\345\\205\\267/2026/08/24/\\350\\276\\271\\347\\274\\230\\346\\243\\200\\346\\265\\213\\345\\267\\245\\345\\205\\267\\350\\256\\276\\350\\256\\241\\346\\226\\271\\346\\241\\210-20260824-093820.md\"",
-                                        "src/Plugin.SDK/Models/SdkTypeVocabulary.cs",
-                                        "src/Plugin.SDK/UI/Controls/Measure/MeasureToolIconFactory.cs",
-                                        "src/Plugin.SDK/UI/Controls/Measure/Models/MeasureToolItem.cs",
-                                        "src/Plugin.SDK/UI/Controls/Measure/Rendering/MeasureBandOverlay.cs",
-                                        "src/Plugin.SDK/UI/Controls/Measure/Views/MeasureToolBar.xaml",
-                                        "src/Plugin.SDK/UI/Controls/Measure/Views/MeasureToolBar.xaml.cs",
-                                        "tools/SunEyeVision.Tool.EdgeDetect/EdgeDetectParameters.cs",
-                                        "tools/SunEyeVision.Tool.EdgeDetect/EdgeDetectResults.cs",
-                                        "tools/SunEyeVision.Tool.EdgeDetect/EdgeDetectTool.cs",
-                                        "tools/SunEyeVision.Tool.EdgeDetect/SunEyeVision.Tool.EdgeDetect.csproj",
-                                        "tools/SunEyeVision.Tool.EdgeDetect/Views/EdgeDetectResultConfig.cs",
-                                        "tools/SunEyeVision.Tool.EdgeDetect/Views/EdgeDetectToolDebugControl.xaml",
-                                        "tools/SunEyeVision.Tool.EdgeDetect/Views/EdgeDetectToolDebugControl.xaml.cs"
-                                    ],
-                          "status":  "in_progress"
-                      },
-                      {
-                          "id":  "TMP-fad5df1",
-                          "message":  "fix(measure): 圆弧半径手柄增量法 - 半径跟随鼠标径向位移",
-                          "date":  "2026-08-27",
-                          "commit":  "fad5df18040c083431ff3602ff8020d0ba0e2be4",
-                          "files":  [
-                                        "src/Plugin.SDK/UI/Controls/Measure/Views/MeasureEditorControl.xaml.cs"
-                                    ],
-                          "status":  "in_progress"
-                      },
-                      {
                           "id":  "TMP-bbc6f26",
                           "message":  "测量引导几何策略化：几何交互从编辑器解耦",
                           "date":  "2026-08-28",
@@ -4206,6 +4180,18 @@
                                         "tools/SunEyeVision.Tool.LineDetect/LineDetectResults.cs",
                                         "tools/SunEyeVision.Tool.LineDetect/LineDetectTool.cs",
                                         "tools/SunEyeVision.Tool.LineDetect/Views/LineDetectToolDebugControl.xaml"
+                                    ],
+                          "status":  "in_progress"
+                      },
+                      {
+                          "id":  "TMP-591c8c1",
+                          "message":  "鍦嗘煡鎵? 缁撴灉灞傚姬/鍦嗙粺涓€鏄剧ず瀹屾暣鎷熷悎鍦嗗苟澧炲姞鍦嗗績鏍囪",
+                          "date":  "2026-09-03",
+                          "commit":  "591c8c152455cf09c15e3293c4f4a5edcc9adc44",
+                          "files":  [
+                                        "tools/SunEyeVision.Tool.CircleDetect/CircleDetectParameters.cs",
+                                        "tools/SunEyeVision.Tool.CircleDetect/CircleDetectResults.cs",
+                                        "tools/SunEyeVision.Tool.CircleDetect/Views/CircleDetectToolDebugControl.xaml"
                                     ],
                           "status":  "in_progress"
                       }

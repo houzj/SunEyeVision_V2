@@ -508,12 +508,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
             // 位置修正：鼠标显示坐标 → 参考系坐标
             var pos = ToReference(displayPos);
 
-            // ① 手柄 → 按手柄类型显示不同光标（优先级最高）
+            // ① 手柄 → 按手柄类型 + 位置显示不同光标（优先级最高）
             if (_currentHandles != null)
             {
-                var handleType = HitTestHandles(pos);
-                if (handleType != HandleType.None)
-                    return CursorForHandle(handleType, _geometryType);
+                var hit = HandleRenderer.HitTestHandleDetail(pos, _currentHandles);
+                if (hit != null)
+                    return CursorForHandle(hit.Type, hit.Position);
             }
 
             // ② 引导主体 或 ③ 卡尺测量带 → 十字（移动）
@@ -528,35 +528,74 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         }
 
         /// <summary>
-        /// 手柄类型 → 光标映射（不同命中目标显示不同光标）
+        /// 手柄类型 + 位置 → 光标映射（不同命中目标显示不同光标）。
+        /// 圆/弧的改半径手柄光标跟随径向方向旋转，实现"所见即所得"。
         /// </summary>
         /// <param name="handleType">手柄类型</param>
-        /// <param name="geometryType">当前引导几何类型（圆弧的 Right 手柄是 P3 弧中点，非水平缩放）</param>
-        private Cursor CursorForHandle(HandleType handleType, MeasureGeometryType geometryType)
+        /// <param name="handlePos">命中的手柄位置（参考系坐标，用于计算径向方向）</param>
+        private Cursor CursorForHandle(HandleType handleType, Point handlePos)
         {
-            // 圆弧的 Right 手柄 = P3 弧中点（三点定圆改半径/方向/大小弧）→ 编辑手形，非水平缩放
-            if (geometryType == MeasureGeometryType.Arc && handleType == HandleType.Right)
-                return Cursors.Hand;
-
-            return handleType switch
+            switch (handleType)
             {
                 // 中心手柄 → 整体移动
-                HandleType.Center => Cursors.SizeAll,
-                // 上下缩放手柄 → 垂直缩放
-                HandleType.Top or HandleType.Bottom => Cursors.SizeNS,
-                // 左右缩放手柄 → 水平缩放
-                HandleType.Left or HandleType.Right => Cursors.SizeWE,
+                case HandleType.Center:
+                    return Cursors.SizeAll;
+
+                // 圆/弧改半径手柄（圆：Top/Bottom/Left/Right；弧：Right=P3 弧中点）→ 径向缩放光标
+                case HandleType.Top:
+                case HandleType.Bottom:
+                case HandleType.Left:
+                case HandleType.Right:
+                    {
+                        Point? center = null;
+                        if (_model.EditingCircle.HasValue)
+                            center = _model.EditingCircle.Value.Center;
+                        else if (_model.EditingArc.HasValue && !_model.EditingArc.Value.IsEmpty)
+                            center = _model.EditingArc.Value.Center;
+                        if (center.HasValue)
+                            return RotatedCursor.GetBidirectional(Atan2Deg(handlePos, center.Value));
+                        // 无几何时回退固定屏幕方向
+                        return handleType is HandleType.Top or HandleType.Bottom ? Cursors.SizeNS : Cursors.SizeWE;
+                    }
+
+                // 弧端点（P1/P2）→ 移动端点
+                case HandleType.LineStart:
+                case HandleType.LineEnd:
+                    return Cursors.SizeAll;
+
                 // 角落缩放手柄 → 对角缩放
-                HandleType.TopLeft or HandleType.BottomRight => Cursors.SizeNWSE,
-                HandleType.TopRight or HandleType.BottomLeft => Cursors.SizeNESW,
-                // 主卡尺缩放手柄 → 对角缩放（同时编辑宽/高）
-                HandleType.CaliberResize => Cursors.SizeNWSE,
+                case HandleType.TopLeft:
+                case HandleType.BottomRight:
+                    return Cursors.SizeNWSE;
+                case HandleType.TopRight:
+                case HandleType.BottomLeft:
+                    return Cursors.SizeNESW;
+
+                // 主卡尺缩放手柄 → 沿长轴+宽轴对角缩放，光标跟随主卡尺几何旋转
+                case HandleType.CaliberResize:
+                    {
+                        var frame = GetMainCaliberFrame();
+                        if (frame.HasValue)
+                        {
+                            var diag = frame.Value.LongAxis + frame.Value.WidthAxis;
+                            return RotatedCursor.GetBidirectional(Math.Atan2(diag.Y, diag.X) * 180.0 / Math.PI);
+                        }
+                        return Cursors.SizeNWSE;
+                    }
+
                 // 旋转手柄
-                HandleType.Rotate => Cursors.Hand,
-                // 直线端点 / 多边形顶点 / 其他 → 默认手（编辑）
-                _ => Cursors.Hand,
-            };
+                case HandleType.Rotate:
+                    return Cursors.Hand;
+
+                // 直线端点 / 多边形顶点 / 其他 → 移动
+                default:
+                    return Cursors.SizeAll;
+            }
         }
+
+        /// <summary>手柄位置相对中心的屏幕方向角（度，0=水平向右，顺时针为正）。</summary>
+        private static double Atan2Deg(Point p, Point center) =>
+            Math.Atan2(p.Y - center.Y, p.X - center.X) * 180.0 / Math.PI;
 
         /// <summary>
         /// 处理鼠标抬起（由管理器统一路由，无头模式；完成位置用最后记录的鼠标位置）

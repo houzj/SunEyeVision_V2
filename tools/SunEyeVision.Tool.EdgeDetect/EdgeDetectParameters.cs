@@ -278,10 +278,10 @@ namespace SunEyeVision.Tool.EdgeDetect
                     AddIfNotNull(items, BuildLineGuide(correctionMatrix));
                     break;
                 case GeometryType.Circle:
-                    AddIfNotNull(items, BuildCircleGuide(correctionMatrix, isArc: false));
+                    AppendCircleGuide(items, correctionMatrix, isArc: false);
                     break;
                 case GeometryType.Arc:
-                    AddIfNotNull(items, BuildCircleGuide(correctionMatrix, isArc: true));
+                    AppendCircleGuide(items, correctionMatrix, isArc: true);
                     break;
             }
             return items;
@@ -328,9 +328,9 @@ namespace SunEyeVision.Tool.EdgeDetect
             return null;
         }
 
-        private DisplayItemBase? BuildCircleGuide(AffineMatrix? correctionMatrix, bool isArc)
+        private void AppendCircleGuide(List<DisplayItemBase> items, AffineMatrix? correctionMatrix, bool isArc)
         {
-            if (!GuideCircle.HasValue) return null;
+            if (!GuideCircle.HasValue) return;
 
             var circle = GuideCircle.Value;
             double radiusScale = 1.0;
@@ -349,13 +349,13 @@ namespace SunEyeVision.Tool.EdgeDetect
                 object guide = isArc
                     ? (object)new Arc2d(circle.Center, circle.Radius, StartAngle, EndAngle, IsMajorArc)
                     : circle;
-                return new GraphicsDisplayItem
+                items.Add(new GraphicsDisplayItem
                 {
                     Style = GuideStyle,
                     Type = isArc ? GraphicsType.Arc : GraphicsType.Circle,
                     Geometries = new[] { guide },
                     RenderMode = DisplayRenderMode.Unified,
-                };
+                });
             }
 
             if (CaliberStyle.IsVisible)
@@ -367,24 +367,64 @@ namespace SunEyeVision.Tool.EdgeDetect
                     foreach (var quad in MeasureBandOverlay.BuildArcBands(
                                  arc, MeasureLength1 * 2, MeasureLength2 * 2, NumMeasures, radiusScale))
                         bands.Add(quad);
+
+                    items.Add(new GraphicsDisplayItem
+                    {
+                        Style = CaliberStyle,
+                        Type = GraphicsType.Polygon,
+                        Geometries = bands.Cast<object>().ToArray(),
+                        RenderMode = DisplayRenderMode.Unified,
+                    });
+
+                    // 主卡尺极性方向三角（Halcon circle/arc 扫描方向 = 圆内侧→外侧；几何与交互层共用）
+                    double spanArc = arc.AngularSpan;
+                    double halfBandAngleArc = (MeasureLength2 * 2 / 2 * radiusScale) / arc.Radius;
+                    double directionArc = spanArc >= 0 ? 1.0 : -1.0;
+                    double sweepEndArc = arc.StartAngle + spanArc;
+                    double firstAngleArc = arc.StartAngle + directionArc * halfBandAngleArc;
+                    double lastAngleArc = sweepEndArc - directionArc * halfBandAngleArc;
+                    double mainAngleArc = NumMeasures > 1
+                        ? firstAngleArc + (NumMeasures / 2) * ((lastAngleArc - firstAngleArc) / (NumMeasures - 1))
+                        : arc.StartAngle + spanArc / 2;
+                    var arcTriangles = MeasureBandOverlay.BuildRadialDirectionArrowTriangles(
+                        arc.Center, arc.Radius, mainAngleArc, MeasureLength1 * 2, MeasureLength2 * 2 * radiusScale, zoom: 1.0);
+                    items.Add(new GraphicsDisplayItem
+                    {
+                        Style = CaliberStyle,
+                        Type = GraphicsType.Polygon,
+                        Geometries = arcTriangles.Cast<object>().ToArray(),
+                        RenderMode = DisplayRenderMode.Unified,
+                        IsFixedScreenSize = true,
+                    });
                 }
                 else
                 {
                     foreach (var quad in MeasureBandOverlay.BuildCircleBands(
                                  circle, MeasureLength1 * 2, MeasureLength2 * 2, NumMeasures))
                         bands.Add(quad);
+
+                    items.Add(new GraphicsDisplayItem
+                    {
+                        Style = CaliberStyle,
+                        Type = GraphicsType.Polygon,
+                        Geometries = bands.Cast<object>().ToArray(),
+                        RenderMode = DisplayRenderMode.Unified,
+                    });
+
+                    // 主卡尺极性方向三角（Halcon circle/arc 扫描方向 = 圆内侧→外侧；几何与交互层共用）
+                    double mainAngle = (NumMeasures / 2) * (Math.PI * 2 / NumMeasures);
+                    var circleTriangles = MeasureBandOverlay.BuildRadialDirectionArrowTriangles(
+                        circle.Center, circle.Radius, mainAngle, MeasureLength1 * 2, MeasureLength2 * 2, zoom: 1.0);
+                    items.Add(new GraphicsDisplayItem
+                    {
+                        Style = CaliberStyle,
+                        Type = GraphicsType.Polygon,
+                        Geometries = circleTriangles.Cast<object>().ToArray(),
+                        RenderMode = DisplayRenderMode.Unified,
+                        IsFixedScreenSize = true,
+                    });
                 }
-
-                return new GraphicsDisplayItem
-                {
-                    Style = CaliberStyle,
-                    Type = GraphicsType.Polygon,
-                    Geometries = bands.Cast<object>().ToArray(),
-                    RenderMode = DisplayRenderMode.Unified,
-                };
             }
-
-            return null;
         }
 
         #endregion

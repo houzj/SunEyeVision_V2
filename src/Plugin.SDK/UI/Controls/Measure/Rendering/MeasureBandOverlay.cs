@@ -171,8 +171,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
             {
                 // 卡尺无填充，全检测蓝，粗细/透明度统一（线宽与 Blob 检测区域一致）
                 AddQuad(quad[0], quad[1], quad[2], quad[3], Colors.Transparent, StrokeColor, bandStroke, 1.0);
-                // 注：不绘制方向箭头——measure_transition 只有暗→亮/亮→暗极性，无空间方向语义
             }
+
+            // 主卡尺极性方向标记：Halcon circle/arc 测量扫描方向 = 圆内侧→外侧（官方定义），
+            // 主卡尺（中间条，圆心角 = mainIndex×2π/N）上画朝 +radial（径向外）的小箭头。
+            double mainAngle = (measureCount / 2) * (Math.PI * 2 / measureCount);
+            AddMainCaliberRadialDirectionArrows(circle.Center, circle.Radius, bandWidth, bandLength, mainAngle,
+                StrokeColor, bandStroke, zoom);
         }
 
         /// <summary>
@@ -249,8 +254,21 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
             {
                 // 卡尺无填充，全检测蓝，粗细/透明度统一（线宽与 Blob 检测区域一致）
                 AddQuad(quad[0], quad[1], quad[2], quad[3], Colors.Transparent, StrokeColor, bandStroke, 1.0);
-                // 注：不绘制方向箭头——measure_transition 只有暗→亮/亮→暗极性，无空间方向语义
             }
+
+            // 主卡尺极性方向标记：Halcon circle/arc 测量扫描方向 = 圆内侧→外侧（官方定义），
+            // 主卡尺（弧中点条，中心角 = firstAngle + mainIndex×stepAngle）上画朝 +radial（径向外）的小箭头。
+            double span = arc.AngularSpan;
+            double halfBandAngle = (bandLength / 2 * radiusScale) / arc.Radius;
+            double direction = span >= 0 ? 1.0 : -1.0;
+            double sweepEnd = arc.StartAngle + span;
+            double firstAngle = arc.StartAngle + direction * halfBandAngle;
+            double lastAngle = sweepEnd - direction * halfBandAngle;
+            double mainAngle = measureCount > 1
+                ? firstAngle + (measureCount / 2) * ((lastAngle - firstAngle) / (measureCount - 1))
+                : arc.StartAngle + span / 2;
+            AddMainCaliberRadialDirectionArrows(arc.Center, arc.Radius, bandWidth, bandLength * radiusScale, mainAngle,
+                StrokeColor, bandStroke, zoom);
         }
 
         /// <summary>
@@ -453,6 +471,60 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
             var bR1 = tipR - normal * triHeight - dir * triHalfWidth;
             var bR2 = tipR - normal * triHeight + dir * triHalfWidth;
             AddPolygon(new[] { tipR, bR1, bR2 }, color, color, thickness, 1.0);
+        }
+
+        /// <summary>
+        /// 圆/弧主卡尺极性方向标记（交互层入口）。
+        /// ★ Halcon 官方方向语义（set_metrology_object_param）：
+        ///   circle/ellipse/rectangle 测量方向 = 圆内侧→外侧（径向外）。
+        ///   故主卡尺两端的箭头尖端朝 +radial（远离圆心）。
+        /// </summary>
+        /// <param name="center">圆心（位置修正后）</param>
+        /// <param name="radius">半径（位置修正后）</param>
+        /// <param name="bandWidth">卡尺宽度（径向全宽）</param>
+        /// <param name="bandLength">卡尺长度（切向全长）</param>
+        /// <param name="mainAngle">主卡尺中心角（弧度，圆=mainIndex×2π/N；弧=first+mainIndex×step）</param>
+        private void AddMainCaliberRadialDirectionArrows(Point center, double radius, double bandWidth, double bandLength,
+            double mainAngle, Color color, double thickness, double zoom = 1.0)
+        {
+            if (radius <= 0 || bandWidth <= 0) return;
+            foreach (var tri in BuildRadialDirectionArrowTriangles(center, radius, mainAngle, bandWidth, bandLength, zoom))
+            {
+                AddPolygon(tri, color, color, thickness, 1.0);
+            }
+        }
+
+        /// <summary>
+        /// 计算圆/弧主卡尺极性方向三角顶点（供交互层与结果层共用，保证两层显示一致）。
+        /// 主卡尺 = 中间条（圆心角 = mainAngle）；三角尖端朝 +radial（径向外 = Halcon 扫描方向）。
+        /// 尺寸屏幕恒定（反除 zoom，与直线三角一致），锚点贴主卡尺两端沿径向 1/4 处。
+        /// </summary>
+        public static System.Collections.Generic.IEnumerable<System.Windows.Point[]> BuildRadialDirectionArrowTriangles(
+            Point center, double radius, double mainAngle, double bandWidth, double bandLength, double zoom = 1.0)
+        {
+            if (radius <= 0 || bandWidth <= 0) yield break;
+
+            var radial = new Vector(Math.Cos(mainAngle), Math.Sin(mainAngle));   // 径向方向（圆心→外）
+            var tangent = new Vector(-radial.Y, radial.X);                       // 切向方向
+            var calCenter = center + radial * radius;                            // 主卡尺中心（在圆上）
+            var mid1 = calCenter - tangent * (bandLength / 2);                   // 切向一端中点
+            var mid2 = calCenter + tangent * (bandLength / 2);                   // 切向另一端中点
+
+            double posOffset = bandWidth * 0.25;                                  // 锚点沿径向走 1/4（贴图）
+            double triHeight = ViewportScaling.Power(zoom, Math.Max(bandWidth * 0.15, 4.0), 1.0);
+            double triHalfWidth = ViewportScaling.Power(zoom, Math.Max(bandWidth * 0.07, 2.0), 1.0);
+
+            // 左三角：尖端朝 +radial
+            var tip1 = mid1 + radial * posOffset;
+            yield return new[] { tip1,
+                tip1 - radial * triHeight - tangent * triHalfWidth,
+                tip1 - radial * triHeight + tangent * triHalfWidth };
+
+            // 右三角
+            var tip2 = mid2 + radial * posOffset;
+            yield return new[] { tip2,
+                tip2 - radial * triHeight - tangent * triHalfWidth,
+                tip2 - radial * triHeight + tangent * triHalfWidth };
         }
 
         /// <summary>

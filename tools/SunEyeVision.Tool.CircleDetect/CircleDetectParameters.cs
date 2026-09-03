@@ -373,6 +373,27 @@ namespace SunEyeVision.Tool.CircleDetect
                         Geometries = bands.Cast<object>().ToArray(),
                         RenderMode = DisplayRenderMode.Unified,
                     };
+
+                    // 主卡尺极性方向三角（Halcon circle/arc 扫描方向 = 圆内侧→外侧；几何与交互层共用）
+                    double spanArc = arc.AngularSpan;
+                    double halfBandAngleArc = (MeasureLength2 * 2 / 2 * radiusScale) / arc.Radius;
+                    double directionArc = spanArc >= 0 ? 1.0 : -1.0;
+                    double sweepEndArc = arc.StartAngle + spanArc;
+                    double firstAngleArc = arc.StartAngle + directionArc * halfBandAngleArc;
+                    double lastAngleArc = sweepEndArc - directionArc * halfBandAngleArc;
+                    double mainAngleArc = NumMeasures > 1
+                        ? firstAngleArc + (NumMeasures / 2) * ((lastAngleArc - firstAngleArc) / (NumMeasures - 1))
+                        : arc.StartAngle + spanArc / 2;
+                    var arcTriangles = MeasureBandOverlay.BuildRadialDirectionArrowTriangles(
+                        arc.Center, arc.Radius, mainAngleArc, MeasureLength1 * 2, MeasureLength2 * 2 * radiusScale, zoom: 1.0);
+                    yield return new GraphicsDisplayItem
+                    {
+                        Style = CaliberStyle,
+                        Type = GraphicsType.Polygon,
+                        Geometries = arcTriangles.Cast<object>().ToArray(),
+                        RenderMode = DisplayRenderMode.Unified,
+                        IsFixedScreenSize = true,
+                    };
                 }
             }
             else
@@ -403,6 +424,19 @@ namespace SunEyeVision.Tool.CircleDetect
                         Type = GraphicsType.Polygon,
                         Geometries = bands.Cast<object>().ToArray(),
                         RenderMode = DisplayRenderMode.Unified,
+                    };
+
+                    // 主卡尺极性方向三角（Halcon circle/arc 扫描方向 = 圆内侧→外侧；几何与交互层共用）
+                    double mainAngle = (NumMeasures / 2) * (Math.PI * 2 / NumMeasures);
+                    var circleTriangles = MeasureBandOverlay.BuildRadialDirectionArrowTriangles(
+                        circle.Center, circle.Radius, mainAngle, MeasureLength1 * 2, MeasureLength2 * 2, zoom: 1.0);
+                    yield return new GraphicsDisplayItem
+                    {
+                        Style = CaliberStyle,
+                        Type = GraphicsType.Polygon,
+                        Geometries = circleTriangles.Cast<object>().ToArray(),
+                        RenderMode = DisplayRenderMode.Unified,
+                        IsFixedScreenSize = true,
                     };
                 }
             }

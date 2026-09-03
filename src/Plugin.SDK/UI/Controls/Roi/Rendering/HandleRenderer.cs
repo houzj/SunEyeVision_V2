@@ -298,7 +298,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering
                 Position = rotateHandlePos,
                 HandleSize = rotateHandleSize,
                 Bounds = new Rect(rotateHandlePos.X - rotateHandleSize / 2, rotateHandlePos.Y - rotateHandleSize / 2, rotateHandleSize, rotateHandleSize),
-                Cursor = Cursors.Hand
+                // 旋转语义光标（双箭头环，任意方向适用，尺寸随缩放幂律自适应）
+                Cursor = RotatedCursor.GetRotate(scale)
             });
 
             // 中心手柄
@@ -444,9 +445,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering
                     (byte)(((Color)defaultFill.GetValue(SolidColorBrush.ColorProperty)).B / 2)))
                 : Brushes.DarkOrange;
 
+            // 手柄必须位于所有几何/箭头之上（箭头 ZIndex=150），否则放大后箭头会遮挡手柄
+            const int HandleZIndex = 180;
+
             foreach (var handle in handles)
             {
-                var strokeThickness = 1.5 / Math.Max(scale, 0.01);
+                var strokeThickness = ViewportScaling.InvScale(scale, 1.5);
 
                 // 旋转手柄独立颜色
                 var isRotateHandle = handle.Type == HandleType.Rotate;
@@ -462,6 +466,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering
 
                 Canvas.SetLeft(handleShape, handle.Position.X - handle.HandleSize / 2);
                 Canvas.SetTop(handleShape, handle.Position.Y - handle.HandleSize / 2);
+                Canvas.SetZIndex(handleShape, HandleZIndex);
                 canvas.Children.Add(handleShape);
             }
         }

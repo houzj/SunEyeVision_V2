@@ -29,6 +29,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering
 
         private static readonly Dictionary<(int Size, int Angle), Cursor> Cache = new();
 
+        /// <summary>旋转光标独立缓存（键仅为尺寸档；不得并入主 Cache，否则与 0°/180° 双向箭头键冲突）。</summary>
+        private static readonly Dictionary<int, Cursor> RotateCache = new();
+
         /// <summary>
         /// 获取指向指定屏幕方向的双向缩放箭头光标。
         /// </summary>
@@ -45,6 +48,22 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering
             using var bmp = DrawArrow(angle, size);
             var cursor = BitmapToCursor(bmp);
             Cache[key] = cursor;
+            return cursor;
+        }
+
+        /// <summary>
+        /// 获取旋转手柄光标：双箭头环形（缺一小口 + 双向箭头），任意角度旋转操作均适用。
+        /// 黑色主体 + 白色描边（深浅背景均清晰），尺寸随视口缩放幂律自适应（与手柄一致）。
+        /// </summary>
+        public static Cursor GetRotate(double scale = 1.0)
+        {
+            int size = QuantizeSize(scale);
+            if (RotateCache.TryGetValue(size, out var cached))
+                return cached;
+
+            using var bmp = DrawRotate(size);
+            var cursor = BitmapToCursor(bmp);
+            RotateCache[size] = cursor;
             return cursor;
         }
 
@@ -112,6 +131,65 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering
                 g.DrawLine(pen, c - half + head, c, c + half - head, c);
             }
             return bmp;
+        }
+
+        /// <summary>
+        /// 绘制旋转光标：完整圆环 + 右下 45° 处一个粗壮箭头沿切向伸出（顺时针旋转语义）。
+        /// 与系统加载/旋转图标同构，黑色主体 + 白色描边，深浅背景均清晰。
+        /// </summary>
+        private static Bitmap DrawRotate(int sizePx)
+        {
+            var bmp = new Bitmap(CanvasSize, CanvasSize, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            using (var g = Graphics.FromImage(bmp))
+            {
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+                g.Clear(Color.Transparent);
+
+                float c = CanvasSize / 2f;
+                float ringR = Math.Max(5f, sizePx * 0.62f);   // 环半径（足尺寸，清晰可辨）
+                float penW = Math.Max(3f, sizePx * 0.34f);    // 环粗细（加粗，缩略图也不失真）
+
+                // 完整圆环（白色外描边 + 黑色主体）
+                using (var white = new Pen(Color.White, penW + 3f))
+                using (var black = new Pen(Color.Black, penW))
+                {
+                    g.DrawEllipse(white, c - ringR, c - ringR, ringR * 2, ringR * 2);
+                    g.DrawEllipse(black, c - ringR, c - ringR, ringR * 2, ringR * 2);
+                }
+
+                // 右下 45° 处切向箭头：绕中心顺时针旋转的语义
+                const float arrowAngle = 45f;
+                double rad = arrowAngle * Math.PI / 180;
+                // 顺时针切向（角度增大方向）：dir = (-sin, cos)（屏幕 y 向下）
+                float tx = (float)(-Math.Sin(rad));
+                float ty = (float)(Math.Cos(rad));
+                float px = (float)(c + ringR * Math.Cos(rad));
+                float py = (float)(c + ringR * Math.Sin(rad));
+
+                float arrowLen = Math.Max(5f, sizePx * 0.7f);  // 箭头伸出长度（明显）
+                float halfW = Math.Max(2.5f, sizePx * 0.30f);  // 箭头底半宽
+                float headBack = 1.5f;                          // 底边微缩回，让箭头更立体
+
+                // 箭头底边两侧端点（垂直于切向）
+                float perpX = ty;
+                float perpY = -tx;
+                var tip = new PointF(px + tx * arrowLen, py + ty * arrowLen);
+                var b1 = new PointF(px + perpX * halfW - tx * headBack, py + perpY * halfW - ty * headBack);
+                var b2 = new PointF(px - perpX * halfW - tx * headBack, py - perpY * halfW - ty * headBack);
+
+                using var fill = new SolidBrush(Color.Black);
+                using var stroke = new Pen(Color.White, 1.8f);
+                g.FillPolygon(fill, new[] { tip, b1, b2 });
+                g.DrawPolygon(stroke, new[] { tip, b1, b2 });
+            }
+            return bmp;
+        }
+
+        /// <summary>屏幕角度系（0=右，顺时针为正）圆上一点。</summary>
+        private static PointF RingPoint(float c, float r, float deg)
+        {
+            double rad = deg * Math.PI / 180;
+            return new PointF(c + r * (float)Math.Cos(rad), c + r * (float)Math.Sin(rad));
         }
 
         /// <summary>Bitmap → WPF Cursor（HICON → CreateIconIndirect → CursorInteropHelper.Create）。</summary>

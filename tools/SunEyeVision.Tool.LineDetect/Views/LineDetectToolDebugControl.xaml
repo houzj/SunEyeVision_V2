@@ -235,6 +235,9 @@
                                     <controls:LabeledControl Label="HALCON测量带" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
                                         <controls:DispItemColorControl Item="{Binding HalconBandStyle, Mode=TwoWay}"/>
                                     </controls:LabeledControl>
+                                    <controls:LabeledControl Label="被屏蔽剔除点" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
+                                        <controls:DispItemColorControl Item="{Binding ExcludedPointStyle, Mode=TwoWay}"/>
+                                    </controls:LabeledControl>
                                 </StackPanel>
                             </Expander>
 

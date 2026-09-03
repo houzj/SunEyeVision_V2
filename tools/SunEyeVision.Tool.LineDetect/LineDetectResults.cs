@@ -44,6 +44,11 @@ namespace SunEyeVision.Tool.LineDetect
         public Point2d[] DiagnosticPoints { get; set; } = Array.Empty<Point2d>();
 
         /// <summary>
+        /// 被屏蔽区剔除的采样点（不参与拟合；默认不显示，Tab3 勾选"被屏蔽剔除点"后调试屏蔽效果）
+        /// </summary>
+        public Point2d[] ExcludedPoints { get; set; } = Array.Empty<Point2d>();
+
+        /// <summary>
         /// HALCON 实际测量带轮廓（MeasureContour XLD → 每段轮廓点集）。
         /// 默认不显示，Tab3 勾选"HALCON测量带"后与本地卡尺叠加对比对齐偏差。
         /// </summary>
@@ -80,7 +85,7 @@ namespace SunEyeVision.Tool.LineDetect
         [JsonIgnore]
         public string GeometryDescription =>
             Line is { Length: > 0 }
-                ? $"拟合直线: 中点({CenterPoint.X:F1}, {CenterPoint.Y:F1}) 角度 {Angle:F1}°"
+                ? $"拟合直线: 中点({CenterPoint.X:F1}, {CenterPoint.Y:F1}) 角度 {Angle:G3}°"
                 : "未生成拟合结果";
 
         /// <summary>
@@ -111,6 +116,15 @@ namespace SunEyeVision.Tool.LineDetect
                 _display.AddCrosses(parameters.DiagnosticPointStyle, diagPts);
             }
 
+            // 被屏蔽剔除点（屏蔽区内的采样点，默认不显示，Tab3 可控）
+            if (parameters.ExcludedPointStyle.IsVisible && ExcludedPoints.Length > 0)
+            {
+                var exclPts = new System.Windows.Point[ExcludedPoints.Length];
+                for (int i = 0; i < ExcludedPoints.Length; i++)
+                    exclPts[i] = new System.Windows.Point(ExcludedPoints[i].X, ExcludedPoints[i].Y);
+                _display.AddCrosses(parameters.ExcludedPointStyle, exclPts);
+            }
+
             // HALCON 实际测量带（诊断卡尺对齐，默认不显示，Tab3 可控）
             if (parameters.HalconBandStyle.IsVisible && HalconMeasureBands.Length > 0)
             {
@@ -129,7 +143,7 @@ namespace SunEyeVision.Tool.LineDetect
                     $"中点 ({CenterPoint.X:F1}, {CenterPoint.Y:F1})", isOk);
             if (parameters.AngleTextStyle.IsVisible)
                 _display.AddText(parameters.AngleTextStyle, CenterPoint.X, CenterPoint.Y - 20,
-                    $"角度 {Angle:F1}°", isOk);
+                    $"角度 {Angle:G3}°", isOk);
         }
 
         /// <summary>

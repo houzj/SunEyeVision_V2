@@ -346,6 +346,175 @@ namespace SunEyeVision.Plugin.SDK.Execution.Helpers
 
         #endregion
 
+        #region 屏蔽点集过滤（测量工具：屏蔽区在采样点进入拟合前生效，纯几何判定）
+
+        /// <summary>
+        /// 测量点屏蔽区空间过滤：落在任意启用的屏蔽区域内的点被剔除（不参与后续拟合）。
+        /// 纯 C# 几何判定（无 Halcon 引擎依赖），供圆查找/直线查找等在拟合前剔除屏蔽区内的坏点。
+        /// </summary>
+        /// <param name="points">测量点集（图像坐标，X=列、Y=行）</param>
+        /// <param name="maskRegions">屏蔽区域集合（仅支持直接绘制的 ShapeParameters；绑定/计算模式显式报错）</param>
+        /// <param name="correctionMatrix">位置修正矩阵（参考坐标 → 当前图像坐标），null=不修正</param>
+        /// <returns>保留点（屏蔽区外）与被剔除点（屏蔽区内）</returns>
+        public static (Point2d[] Kept, Point2d[] Excluded) FilterPointsOutOfMaskRegions(
+            IEnumerable<Point2d> points,
+            IEnumerable<RoiData>? maskRegions,
+            AffineMatrix? correctionMatrix)
+        {
+            var src = (points ?? Array.Empty<Point2d>()).ToArray();
+            var masks = (maskRegions ?? Array.Empty<RoiData>())
+                .Where(r => r.IsEnabled)
+                .ToArray();
+            if (masks.Length == 0)
+                return (src, Array.Empty<Point2d>());
+
+            var shapes = masks.Select(m => ParseMaskShape(m, correctionMatrix)).ToArray();
+            var kept = new List<Point2d>(src.Length);
+            var excluded = new List<Point2d>(Math.Min(src.Length, 32));
+
+            foreach (var p in src)
+            {
+                if (shapes.Any(s => s.Contains(p.X, p.Y)))
+                    excluded.Add(p);
+                else
+                    kept.Add(p);
+            }
+
+            return (kept.ToArray(), excluded.ToArray());
+        }
+
+        /// <summary>
+        /// 将屏蔽 RoiData 解析为几何判定器（位置修正统一在此应用）。
+        /// </summary>
+        private static MaskShape ParseMaskShape(RoiData mask, AffineMatrix? correctionMatrix)
+        {
+            if (mask.Parameters is not ShapeParameters shape)
+                throw new NotSupportedException(
+                    $"屏蔽区域 '{mask.Name}' 仅支持直接绘制模式，当前绑定/计算模式不被测量工具支持（请在参数中改用直接绘制的屏蔽区域）");
+
+            double scale = correctionMatrix?.ScaleFactor() ?? 1.0;
+            switch (shape.Geometry)
+            {
+                case Circle2d c:
+                    var cc = correctionMatrix != null ? correctionMatrix.TransformWpfPoint(c.Center) : c.Center;
+                    return new CircleMaskShape(cc.X, cc.Y, c.Radius * scale);
+
+                case Annulus2d a:
+                    if (!a.IsFullCircle)
+                        throw new NotSupportedException(
+                            $"屏蔽区域 '{mask.Name}' 的圆环必须是完整圆环，部分扇环暂不支持点过滤");
+                    var ac = correctionMatrix != null ? correctionMatrix.TransformWpfPoint(a.Center) : a.Center;
+                    return new AnnulusMaskShape(ac.X, ac.Y, a.InnerRadius * scale, a.OuterRadius * scale);
+
+                case RotatedRect2d rr:
+                    return new PolygonMaskShape(TransformPoints(rr.GetCorners(), correctionMatrix));
+
+                case Polygon2d poly:
+                    return new PolygonMaskShape(TransformPoints(poly.Vertices, correctionMatrix));
+
+                case Rect rect:
+                    return new PolygonMaskShape(TransformPoints(
+                        new[] { rect.TopLeft, rect.TopRight, rect.BottomRight, rect.BottomLeft },
+                        correctionMatrix));
+
+                default:
+                    throw new NotSupportedException(
+                        $"屏蔽区域 '{mask.Name}' 的几何类型 {shape.Geometry?.GetType().Name ?? "null"} 不支持用于测量屏蔽" +
+                        "（支持：圆/圆环/旋转矩形/多边形/矩形）");
+            }
+        }
+
+        private static Point[] TransformPoints(IEnumerable<Point> points, AffineMatrix? matrix)
+        {
+            if (matrix == null)
+                return points.ToArray();
+            return points.Select(matrix.TransformWpfPoint).ToArray();
+        }
+
+        /// <summary>
+        /// 几何掩膜判定器（屏蔽形状对单点做包含测试）。
+        /// </summary>
+        private abstract class MaskShape
+        {
+            public abstract bool Contains(double x, double y);
+        }
+
+        private sealed class CircleMaskShape : MaskShape
+        {
+            private readonly double _cx;
+            private readonly double _cy;
+            private readonly double _r2;
+
+            public CircleMaskShape(double cx, double cy, double radius)
+            {
+                _cx = cx;
+                _cy = cy;
+                _r2 = radius * radius;
+            }
+
+            public override bool Contains(double x, double y)
+            {
+                var dx = x - _cx;
+                var dy = y - _cy;
+                return dx * dx + dy * dy <= _r2;
+            }
+        }
+
+        private sealed class AnnulusMaskShape : MaskShape
+        {
+            private readonly double _cx;
+            private readonly double _cy;
+            private readonly double _innerR2;
+            private readonly double _outerR2;
+
+            public AnnulusMaskShape(double cx, double cy, double innerRadius, double outerRadius)
+            {
+                _cx = cx;
+                _cy = cy;
+                _innerR2 = innerRadius * innerRadius;
+                _outerR2 = outerRadius * outerRadius;
+            }
+
+            public override bool Contains(double x, double y)
+            {
+                var dx = x - _cx;
+                var dy = y - _cy;
+                var d2 = dx * dx + dy * dy;
+                return d2 >= _innerR2 && d2 <= _outerR2;
+            }
+        }
+
+        private sealed class PolygonMaskShape : MaskShape
+        {
+            private readonly Point[] _polygon;
+
+            public PolygonMaskShape(Point[] polygon) => _polygon = polygon;
+
+            public override bool Contains(double x, double y)
+            {
+                if (_polygon.Length < 3)
+                    return false;
+
+                bool inside = false;
+                for (int i = 0, j = _polygon.Length - 1; i < _polygon.Length; j = i++)
+                {
+                    var xi = _polygon[i].X;
+                    var yi = _polygon[i].Y;
+                    var xj = _polygon[j].X;
+                    var yj = _polygon[j].Y;
+
+                    if ((yi > y) != (yj > y) &&
+                        x < (xj - xi) * (y - yi) / (yj - yi) + xi)
+                    {
+                        inside = !inside;
+                    }
+                }
+                return inside;
+            }
+        }
+
+        #endregion
+
         #region NodeResults 参数上下文适配器
 
         /// <summary>

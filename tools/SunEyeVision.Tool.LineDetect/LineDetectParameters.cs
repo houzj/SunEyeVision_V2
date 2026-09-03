@@ -209,6 +209,15 @@ namespace SunEyeVision.Tool.LineDetect
             CrossSize = 4.0,
         };
 
+        /// <summary>被屏蔽剔除点显示样式（灰，默认不显示，调试"屏蔽区是否挡对了点"）</summary>
+        public GraphicsStyle ExcludedPointStyle { get; set; } = new()
+        {
+            Name = "被屏蔽剔除点",
+            IsVisible = false,
+            OkColor = System.Windows.Media.Colors.Gray,
+            CrossSize = 4.0,
+        };
+
         /// <summary>HALCON 实际测量带诊断样式（橙红，默认不显示，与本地卡尺叠加对比对齐）</summary>
         public GraphicsStyle HalconBandStyle { get; set; } = new()
         {

@@ -39,6 +39,11 @@ namespace SunEyeVision.Tool.CircleDetect
         public Point2d[] DiagnosticPoints { get; set; } = Array.Empty<Point2d>();
 
         /// <summary>
+        /// 被屏蔽区剔除的采样点（不参与拟合；默认不显示，Tab3 勾选"被屏蔽剔除点"后调试屏蔽效果）
+        /// </summary>
+        public Point2d[] ExcludedPoints { get; set; } = Array.Empty<Point2d>();
+
+        /// <summary>
         /// HALCON 实际测量带轮廓（MeasureContour XLD → 每段轮廓点集）。
         /// 默认不显示，Tab3 勾选"HALCON测量带"后与本地卡尺叠加对比对齐偏差。
         /// </summary>
@@ -101,6 +106,15 @@ namespace SunEyeVision.Tool.CircleDetect
                 for (int i = 0; i < DiagnosticPoints.Length; i++)
                     diagPts[i] = new System.Windows.Point(DiagnosticPoints[i].X, DiagnosticPoints[i].Y);
                 _display.AddCrosses(parameters.DiagnosticPointStyle, diagPts);
+            }
+
+            // 被屏蔽剔除点（屏蔽区内的采样点，默认不显示，Tab3 可控）
+            if (parameters.ExcludedPointStyle.IsVisible && ExcludedPoints.Length > 0)
+            {
+                var exclPts = new System.Windows.Point[ExcludedPoints.Length];
+                for (int i = 0; i < ExcludedPoints.Length; i++)
+                    exclPts[i] = new System.Windows.Point(ExcludedPoints[i].X, ExcludedPoints[i].Y);
+                _display.AddCrosses(parameters.ExcludedPointStyle, exclPts);
             }
 
             // HALCON 实际测量带（诊断卡尺对齐，默认不显示，Tab3 可控）

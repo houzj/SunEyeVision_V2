@@ -1,12 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text.Json.Serialization;
 using System.Windows;
 using HalconDotNet;
+using SunEyeVision.Plugin.SDK.Execution.Helpers;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
+using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.Tool.LineDetect.Models;
 using SunEyeVision.Tool.LineDetect.Views;
@@ -138,42 +142,53 @@ namespace SunEyeVision.Tool.LineDetect
                     parameters.LogWarning($"[Diag] 查询检测点失败: {diagEx.Message}");
                 }
 
-                // 获取拟合直线参数（all_param = [Row1, Col1, Row2, Col2, Nr, Nc, Dist]）
-                var allParam = metrologyModel.GetMetrologyObjectResult(
-                    objectIndex.I, "all", "result_type", "all_param");
-                if (allParam.Length < 4)
+                // ===== 结果填充 =====
+                // 有启用的屏蔽区 → 屏蔽区点集过滤 + 全点鲁棒拟合（屏蔽区内的点不参与拟合，VisionMaster 语义）
+                // 无屏蔽区 → 沿用 HALCON 引擎拟合（快路径，行为与旧版完全一致）
+                bool hasEnabledMask = parameters.GetRoisByType(RoiType.Mask).Any();
+                if (hasEnabledMask)
                 {
-                    parameters.LogWarning(
-                        $"[Diag] 拟合无有效输出: all_param 长度={allParam.Length}（<4，无拟合直线）。" +
-                        "可能原因: 检测点数不足 / min_score 过高 / distance_threshold 过小 / 点不共线");
+                    FillResultWithMask(result, parameters, objectIndex, metrologyModel,
+                        TransitionToHalcon(parameters.Transition));
                 }
                 else
                 {
+                    // 获取拟合直线参数（all_param = [Row1, Col1, Row2, Col2, Nr, Nc, Dist]）
+                    var allParam = metrologyModel.GetMetrologyObjectResult(
+                        objectIndex.I, "all", "result_type", "all_param");
+                    if (allParam.Length < 4)
+                    {
+                        parameters.LogWarning(
+                            $"[Diag] 拟合无有效输出: all_param 长度={allParam.Length}（<4，无拟合直线）。" +
+                            "可能原因: 检测点数不足 / min_score 过高 / distance_threshold 过小 / 点不共线");
+                    }
+                    else
+                    {
+                        parameters.LogInfo(
+                            $"[Diag] 拟合直线 all_param 长度={allParam.Length}: " +
+                            $"Row1={allParam[0].D:F2} Col1={allParam[1].D:F2} Row2={allParam[2].D:F2} Col2={allParam[3].D:F2}");
+                    }
+
+                    // ★ 修复：rms 不是 get_metrology_object_param 的合法 GenParamName（#1303），
+                    //   也不是 get_metrology_object_result 的合法 result_type（#1305）。
+                    //   官方 measure_stamping_part 示例：用 used_edges 取实际参与拟合的点，自算点到直线距离的均方根。
+                    var rms = ComputeRmsFromUsedEdges(metrologyModel, objectIndex.I, allParam);
+
+                    // 获取测量带数量（num_measures 是 get_metrology_object_param 的合法 GenParamName）
+                    var numMeasures = metrologyModel.GetMetrologyObjectParam(objectIndex.I, "num_measures");
                     parameters.LogInfo(
-                        $"[Diag] 拟合直线 all_param 长度={allParam.Length}: " +
-                        $"Row1={allParam[0].D:F2} Col1={allParam[1].D:F2} Row2={allParam[2].D:F2} Col2={allParam[3].D:F2}");
+                        $"[Diag] Halcon 实际测量带数 num_measures={(numMeasures.Length > 0 ? numMeasures[0].I : -1)} " +
+                        $"(用户配置 N={parameters.NumMeasures})");
+
+                    FillResult(result, parameters, allParam, rms, numMeasures, objectIndex, metrologyModel,
+                        TransitionToHalcon(parameters.Transition));
                 }
-
-                // ★ 修复：rms 不是 get_metrology_object_param 的合法 GenParamName（#1303），
-                //   也不是 get_metrology_object_result 的合法 result_type（#1305）。
-                //   官方 measure_stamping_part 示例：用 used_edges 取实际参与拟合的点，自算点到直线距离的均方根。
-                var rms = ComputeRmsFromUsedEdges(metrologyModel, objectIndex.I, allParam);
-
-                // 获取测量带数量（num_measures 是 get_metrology_object_param 的合法 GenParamName）
-                var numMeasures = metrologyModel.GetMetrologyObjectParam(objectIndex.I, "num_measures");
-                parameters.LogInfo(
-                    $"[Diag] Halcon 实际测量带数 num_measures={(numMeasures.Length > 0 ? numMeasures[0].I : -1)} " +
-                    $"(用户配置 N={parameters.NumMeasures})");
-
-                // ===== 结果填充 =====
-                FillResult(result, parameters, allParam, rms, numMeasures, objectIndex, metrologyModel,
-                    TransitionToHalcon(parameters.Transition));
 
                 // ===== 诊断日志：结果概要（拟合线有无/参与拟合点/诊断点/角度） =====
                 parameters.LogInfo(
                     $"[Diag] 结果概要: 拟合直线={(result.Line is { Length: > 0 } ? $"({result.LineStartPoint.X:F1},{result.LineStartPoint.Y:F1})→({result.LineEndPoint.X:F1},{result.LineEndPoint.Y:F1})" : "无")} | " +
                     $"参与拟合点 used_edges={result.MeasurementPoints.Length} | " +
-                    $"诊断点={result.DiagnosticPoints.Length} | 中点=({result.CenterPoint.X:F1},{result.CenterPoint.Y:F1}) | Angle={result.Angle:F1}° | RMSE={result.RMSE:F3}px");
+                    $"诊断点={result.DiagnosticPoints.Length} | 中点=({result.CenterPoint.X:F1},{result.CenterPoint.Y:F1}) | Angle={result.Angle:G3}° | RMSE={result.RMSE:F3}px");
 
                 // ===== 结果判断（对齐 VisionMaster：匹配点数/角度/拟合误差） =====
                 var isOk = EvaluateResult(result, parameters);
@@ -184,7 +199,7 @@ namespace SunEyeVision.Tool.LineDetect
                     var cfg = parameters.ResultConfig;
                     parameters.LogWarning(
                         $"[Diag] 判定 NG 明细: 匹配点数判断={(cfg.IsEdgePointCountEnabled ? $"{result.EdgePointCount} 不在 [{cfg.EdgePointCountMin},{cfg.EdgePointCountMax}]" : "未启用")} | " +
-                        $"角度判断={(cfg.IsAngleEnabled ? $"{result.Angle:F1}° 不在 [{cfg.AngleMin:F1},{cfg.AngleMax:F1}]" : "未启用")} | " +
+                        $"角度判断={(cfg.IsAngleEnabled ? $"{result.Angle:G3}° 不在 [{cfg.AngleMin:G3},{cfg.AngleMax:G3}]" : "未启用")} | " +
                         $"拟合误差判断={(cfg.IsRMSEEnabled ? $"{result.RMSE:F3}px 不在 [{cfg.RMSEMin:F3},{cfg.RMSEMax:F3}]" : "未启用")}");
                 }
 
@@ -278,6 +293,135 @@ namespace SunEyeVision.Tool.LineDetect
         }
 
         /// <summary>
+        /// 屏蔽路径结果填充：取全部测量点 → 屏蔽区空间过滤 → 全点鲁棒拟合。
+        /// 屏蔽区内的点不参与拟合，也不作为"拟合点"显示（VisionMaster 屏蔽语义）。
+        /// </summary>
+        private void FillResultWithMask(LineDetectResults result, LineDetectParameters parameters,
+            HTuple objectIndex, HMetrologyModel metrologyModel, string transition)
+        {
+            // 1. 取采样点（transition 过滤后的全部测量点）
+            var measures = ExtractDiagnosticPoints(objectIndex, metrologyModel, transition);
+
+            // 2. 屏蔽区空间过滤：剔除落在屏蔽区内的点
+            var correction = parameters.PositionCorrectionBindingSource?.CurrentValue as AffineMatrix;
+            var (kept, excluded) = ToolRegionHelper.FilterPointsOutOfMaskRegions(
+                measures, parameters.GetRoisByType(RoiType.Mask), correction);
+            parameters.LogInfo(
+                $"[Diag] 屏蔽过滤: 采样点={measures.Length}, 保留={kept.Length}, 屏蔽剔除={excluded.Length}");
+
+            // 3. 保底：有效点数不足以拟合直线 → 明确报错，不硬拟合
+            if (kept.Length < 2)
+                throw new InvalidOperationException($"屏蔽后有效测量点不足({kept.Length} < 2)，无法拟合直线");
+
+            // 4. 全点鲁棒拟合（tukey 预拟合 → 按距离阈值划内点 → min_score 比例校验 → 内点精化）
+            var (start, end, inliers) = FitLineRobust(kept, parameters);
+
+            var center = new Point((start.X + end.X) / 2, (start.Y + end.Y) / 2);
+            result.LineStartPoint = start;
+            result.LineEndPoint = end;
+            result.CenterPoint = center;
+            result.Line = new[] { Line2d.FromTwoPoints(start, end) };
+            result.Angle = ComputeLineAngle(start, end);
+            result.RMSE = ComputeLineRmse(inliers, start, end);
+            result.EdgePointCount = inliers.Length;
+            result.MeasurementPoints = inliers;
+            result.ExcludedPoints = excluded;
+            result.DiagnosticPoints = measures;
+            result.HalconMeasureBands = ExtractHalconMeasureBands(objectIndex, metrologyModel, transition);
+        }
+
+        /// <summary>
+        /// 全点鲁棒拟合直线：tukey 预拟合剔除离群 → 按 distance_threshold 划内点
+        /// → 内点比例低于 min_score 判定结果不可靠 → 内点 geometric 精化提高精度。
+        /// </summary>
+        private static (Point Start, Point End, Point2d[] Inliers) FitLineRobust(
+            IReadOnlyList<Point2d> points, LineDetectParameters parameters)
+        {
+            var (s0, e0) = FitLineCore(points, "tukey");
+
+            var inliers = points
+                .Where(p => DistancePointToLine(p, s0, e0) <= parameters.DistanceThreshold)
+                .ToArray();
+
+            if (inliers.Length < 2)
+                throw new InvalidOperationException(
+                    $"拟合内点不足({inliers.Length} < 2)：distance_threshold={parameters.DistanceThreshold:F1} 过小或引导偏差过大");
+
+            double ratio = (double)inliers.Length / points.Count;
+            if (ratio < parameters.MinScore)
+                throw new InvalidOperationException(
+                    $"拟合内点比例不足({ratio:P0} < min_score {parameters.MinScore:P0})，拟合结果不可靠");
+
+            var (start, end) = inliers.Length == points.Count
+                ? (s0, e0)
+                : FitLineCore(inliers, "geometric");
+
+            return (start, end, inliers);
+        }
+
+        /// <summary>
+        /// 用指定算法对点集拟合直线（点集包成多边形 XLD 后调用 fit_line_contour_xld）。
+        /// </summary>
+        private static (Point Start, Point End) FitLineCore(
+            IReadOnlyList<Point2d> points, string algorithm)
+        {
+            var rows = new HTuple(points.Select(p => (double)p.Y).ToArray());
+            var cols = new HTuple(points.Select(p => (double)p.X).ToArray());
+            HOperatorSet.GenContourPolygonXld(out var contour, rows, cols);
+            try
+            {
+                HOperatorSet.FitLineContourXld(contour, algorithm, -1, 0, 3, 2.0,
+                    out var rowBegin, out var colBegin, out var rowEnd, out var colEnd, out _, out _, out _);
+                if (rowBegin.Length < 1 || colBegin.Length < 1 || rowEnd.Length < 1 || colEnd.Length < 1)
+                    throw new InvalidOperationException($"直线拟合失败(algorithm={algorithm})：未返回有效结果");
+                return (new Point(colBegin[0].D, rowBegin[0].D), new Point(colEnd[0].D, rowEnd[0].D));
+            }
+            finally
+            {
+                contour.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// 点 (p) 到过 (a)-(b) 无限直线的垂直距离。
+        /// </summary>
+        private static double DistancePointToLine(Point2d p, Point a, Point b)
+        {
+            var abx = b.X - a.X;
+            var aby = b.Y - a.Y;
+            var len = Math.Sqrt(abx * abx + aby * aby);
+            if (len < 1e-9)
+                return Math.Sqrt((p.X - a.X) * (p.X - a.X) + (p.Y - a.Y) * (p.Y - a.Y));
+            return Math.Abs(abx * (p.Y - a.Y) - aby * (p.X - a.X)) / len;
+        }
+
+        /// <summary>
+        /// 计算点到拟合直线的均方根残差（RMSE）。
+        /// </summary>
+        private static double ComputeLineRmse(IReadOnlyList<Point2d> points, Point start, Point end)
+        {
+            if (points.Count == 0) return 0.0;
+            double sumSq = 0;
+            foreach (var p in points)
+            {
+                var dist = DistancePointToLine(p, start, end);
+                sumSq += dist * dist;
+            }
+            return Math.Sqrt(sumSq / points.Count);
+        }
+
+        /// <summary>
+        /// 计算线段方向角度（度，-180~180，与结果口径一致）。
+        /// </summary>
+        private static double ComputeLineAngle(Point start, Point end)
+        {
+            var dir = end - start;
+            return dir.LengthSquared > 1e-12
+                ? Math.Atan2(dir.Y, dir.X) * 180.0 / Math.PI
+                : 0.0;
+        }
+
+        /// <summary>
         /// 填充结果（拟合直线/线段/测量点/中心/角度）
         /// </summary>
         private void FillResult(LineDetectResults result, LineDetectParameters parameters,
@@ -299,6 +443,14 @@ namespace SunEyeVision.Tool.LineDetect
                     result.LineEndPoint = end;
                     result.CenterPoint = new Point((start.X + end.X) / 2, (start.Y + end.Y) / 2);
                     result.Line = new[] { Line2d.FromTwoPoints(start, end) };
+
+                    // ★ 修复：补算直线角度（度）。此前 result.Angle 从未赋值，恒为 0。
+                    //   口径：拟合直线方向(start→end)与 X 轴夹角，ArcTan 弧度转度，范围 [-180,180]，
+                    //   与 UI 角度判断范围 [AngleMin, AngleMax]=[-180,180] 及结果显示口径一致。
+                    var dir = end - start;
+                    result.Angle = dir.LengthSquared > 1e-12
+                        ? Math.Atan2(dir.Y, dir.X) * 180.0 / Math.PI
+                        : 0.0;
                 }
 
                 // 轮廓点（used_edges → 实际参与拟合的边缘点，主显示）

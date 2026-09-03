@@ -1,12 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text.Json.Serialization;
 using System.Windows;
 using HalconDotNet;
+using SunEyeVision.Plugin.SDK.Execution.Helpers;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
+using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using SunEyeVision.Plugin.SDK.VisionAdapters;
 using SunEyeVision.Tool.CircleDetect.Models;
 using SunEyeVision.Tool.CircleDetect.Views;
@@ -151,23 +155,33 @@ namespace SunEyeVision.Tool.CircleDetect
                     parameters.LogInfo($"[Diag] GetMetrologyObjectMeasures 诊断异常: {diagEx.Message}");
                 }
 
-                // 获取拟合圆参数（all_param = [Row, Col, Radius]）
-                var allParam = metrologyModel.GetMetrologyObjectResult(
-                    objectIndex.I, "all", "result_type", "all_param");
-                parameters.LogInfo($"[Diag] all_param 长度={allParam.Length}, 内容={allParam}");
-
-                // ★ 修复：rms 不是 get_metrology_object_param 的合法 GenParamName（#1303），
-                //   也不是 get_metrology_object_result 的合法 result_type（#1305）。
-                //   官方 measure_stamping_part 示例：用 used_edges 取实际参与拟合的点，自算点到圆距离的均方根。
-                var rms = ComputeRmsFromUsedEdges(metrologyModel, objectIndex.I, allParam);
-                parameters.LogInfo($"[Diag] rms={rms.D:F3}");
-
-                // 获取测量带数量（num_measures 是 get_metrology_object_param 的合法 GenParamName）
-                var numMeasures = metrologyModel.GetMetrologyObjectParam(objectIndex.I, "num_measures");
-                parameters.LogInfo($"[Diag] num_measures={numMeasures.I}");
-
                 // ===== 结果填充 =====
-                FillResult(result, parameters, allParam, rms, numMeasures, objectIndex, metrologyModel);
+                // 有启用的屏蔽区 → 屏蔽区点集过滤 + 全点鲁棒拟合（屏蔽区内的点不参与拟合，VisionMaster 语义）
+                // 无屏蔽区 → 沿用 HALCON 引擎拟合（快路径，行为与旧版完全一致）
+                bool hasEnabledMask = parameters.GetRoisByType(RoiType.Mask).Any();
+                if (hasEnabledMask)
+                {
+                    FillResultWithMask(result, parameters, objectIndex, metrologyModel);
+                }
+                else
+                {
+                    // 获取拟合圆参数（all_param = [Row, Col, Radius]）
+                    var allParam = metrologyModel.GetMetrologyObjectResult(
+                        objectIndex.I, "all", "result_type", "all_param");
+                    parameters.LogInfo($"[Diag] all_param 长度={allParam.Length}, 内容={allParam}");
+
+                    // ★ 修复：rms 不是 get_metrology_object_param 的合法 GenParamName（#1303），
+                    //   也不是 get_metrology_object_result 的合法 result_type（#1305）。
+                    //   官方 measure_stamping_part 示例：用 used_edges 取实际参与拟合的点，自算点到圆距离的均方根。
+                    var rms = ComputeRmsFromUsedEdges(metrologyModel, objectIndex.I, allParam);
+                    parameters.LogInfo($"[Diag] rms={rms.D:F3}");
+
+                    // 获取测量带数量（num_measures 是 get_metrology_object_param 的合法 GenParamName）
+                    var numMeasures = metrologyModel.GetMetrologyObjectParam(objectIndex.I, "num_measures");
+                    parameters.LogInfo($"[Diag] num_measures={numMeasures.I}");
+
+                    FillResult(result, parameters, allParam, rms, numMeasures, objectIndex, metrologyModel);
+                }
 
                 // ===== 结果判断（对齐 VisionMaster：半径/中心X/中心Y/拟合误差/匹配点数） =====
                 var isOk = EvaluateResult(result, parameters);
@@ -332,6 +346,121 @@ namespace SunEyeVision.Tool.CircleDetect
                 EdgeSelect.Last => "last",
                 _ => "all",
             };
+        }
+
+        /// <summary>
+        /// 屏蔽路径结果填充：取全部测量点 → 屏蔽区空间过滤 → 全点鲁棒拟合。
+        /// 屏蔽区内的点不参与拟合，也不作为"拟合点"显示（VisionMaster 屏蔽语义）。
+        /// </summary>
+        private void FillResultWithMask(CircleDetectResults result, CircleDetectParameters parameters,
+            HTuple objectIndex, HMetrologyModel metrologyModel)
+        {
+            // 1. 取采样点（transition 过滤后的全部测量点）
+            var measures = ExtractDiagnosticPoints(
+                objectIndex, metrologyModel, TransitionToHalcon(parameters.Transition));
+
+            // 2. 屏蔽区空间过滤：剔除落在屏蔽区内的点
+            var correction = parameters.PositionCorrectionBindingSource?.CurrentValue as AffineMatrix;
+            var (kept, excluded) = ToolRegionHelper.FilterPointsOutOfMaskRegions(
+                measures, parameters.GetRoisByType(RoiType.Mask), correction);
+            parameters.LogInfo(
+                $"[Diag] 屏蔽过滤: 采样点={measures.Length}, 保留={kept.Length}, 屏蔽剔除={excluded.Length}");
+
+            // 3. 保底：有效点数不足以拟合圆 → 明确报错，不硬拟合
+            if (kept.Length < 3)
+                throw new InvalidOperationException($"屏蔽后有效测量点不足({kept.Length} < 3)，无法拟合圆");
+
+            // 4. 全点鲁棒拟合（tukey 预拟合 → 按距离阈值划内点 → min_score 比例校验 → 内点精化）
+            var (center, radius, inliers) = FitCircleRobust(kept, parameters);
+            result.CenterPoint = center;
+            result.RMSE = ComputeCircleRmse(inliers, center, radius);
+            result.EdgePointCount = inliers.Length;
+            result.MeasurementPoints = inliers;
+            result.ExcludedPoints = excluded;
+            result.DiagnosticPoints = measures;
+            result.HalconMeasureBands = ExtractHalconMeasureBands(
+                objectIndex, metrologyModel, TransitionToHalcon(parameters.Transition));
+
+            if (parameters.IsArc)
+            {
+                result.Arc = new[] { new Arc2d(
+                    new Point(center.X, center.Y), radius,
+                    parameters.StartAngle, parameters.EndAngle, parameters.IsMajorArc) };
+            }
+            else
+            {
+                result.Circle = new[] { new Circle2d(center.X, center.Y, radius) };
+            }
+        }
+
+        /// <summary>
+        /// 全点鲁棒拟合圆：tukey 预拟合剔除离群 → 按 distance_threshold 划内点（测量点）
+        /// → 内点比例低于 min_score 判定结果不可靠 → 内点 geometric 精化提高精度。
+        /// </summary>
+        private static (Point Center, double Radius, Point2d[] Inliers) FitCircleRobust(
+            IReadOnlyList<Point2d> points, CircleDetectParameters parameters)
+        {
+            var (c0, r0) = FitCircleCore(points, "tukey");
+
+            var inliers = points
+                .Where(p => Math.Abs(
+                    Math.Sqrt((p.X - c0.X) * (p.X - c0.X) + (p.Y - c0.Y) * (p.Y - c0.Y)) - r0)
+                    <= parameters.DistanceThreshold)
+                .ToArray();
+
+            if (inliers.Length < 3)
+                throw new InvalidOperationException(
+                    $"拟合内点不足({inliers.Length} < 3)：distance_threshold={parameters.DistanceThreshold:F1} 过小或引导偏差过大");
+
+            double ratio = (double)inliers.Length / points.Count;
+            if (ratio < parameters.MinScore)
+                throw new InvalidOperationException(
+                    $"拟合内点比例不足({ratio:P0} < min_score {parameters.MinScore:P0})，拟合结果不可靠");
+
+            var (center, radius) = inliers.Length == points.Count
+                ? (c0, r0)
+                : FitCircleCore(inliers, "geometric");
+
+            return (center, radius, inliers);
+        }
+
+        /// <summary>
+        /// 用指定算法对点集拟合圆（点集包成多边形 XLD 后调用 fit_circle_contour_xld）。
+        /// </summary>
+        private static (Point Center, double Radius) FitCircleCore(
+            IReadOnlyList<Point2d> points, string algorithm)
+        {
+            var rows = new HTuple(points.Select(p => (double)p.Y).ToArray());
+            var cols = new HTuple(points.Select(p => (double)p.X).ToArray());
+            HOperatorSet.GenContourPolygonXld(out var contour, rows, cols);
+            try
+            {
+                HOperatorSet.FitCircleContourXld(contour, algorithm, -1, 0.0, 0, 3, 2.0,
+                    out var row, out var col, out var radius, out _, out _, out _);
+                if (row.Length < 1 || col.Length < 1 || radius.Length < 1)
+                    throw new InvalidOperationException($"圆拟合失败(algorithm={algorithm})：未返回有效结果");
+                return (new Point(col[0].D, row[0].D), radius[0].D);
+            }
+            finally
+            {
+                contour.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// 计算点到拟合圆的均方根残差（RMSE）。
+        /// </summary>
+        private static double ComputeCircleRmse(IReadOnlyList<Point2d> points, Point center, double radius)
+        {
+            if (points.Count == 0) return 0.0;
+            double sumSq = 0;
+            foreach (var p in points)
+            {
+                var dist = Math.Sqrt((p.X - center.X) * (p.X - center.X) + (p.Y - center.Y) * (p.Y - center.Y));
+                var diff = dist - radius;
+                sumSq += diff * diff;
+            }
+            return Math.Sqrt(sumSq / points.Count);
         }
 
         /// <summary>

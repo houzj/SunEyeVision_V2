@@ -4242,6 +4242,18 @@
                                         "tools/SunEyeVision.Tool.LineDetect/LineDetectParameters.cs"
                                     ],
                           "status":  "in_progress"
+                      },
+                      {
+                          "id":  "TMP-30606bb",
+                          "message":  "feat(measure): 圆/弧卡尺主卡尺绘制扫描方向箭头（径向外，两层显示同步）",
+                          "date":  "2026-09-03",
+                          "commit":  "30606bb08e47687807fdd4d3242b32f2d066e721",
+                          "files":  [
+                                        "src/Plugin.SDK/UI/Controls/Measure/Rendering/MeasureBandOverlay.cs",
+                                        "tools/SunEyeVision.Tool.CircleDetect/CircleDetectParameters.cs",
+                                        "tools/SunEyeVision.Tool.EdgeDetect/EdgeDetectParameters.cs"
+                                    ],
+                          "status":  "in_progress"
                       }
                   ]
 }

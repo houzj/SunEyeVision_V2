@@ -1024,6 +1024,10 @@
                                     {
                                         "date":  "2026-09-03",
                                         "note":  "[572b29d03a59c083018db77bdcf49d69984895b8] feat(render): 鍙屾覆鏌撳眰骞傚緥缂╂斁娌荤悊 - ViewportScaling 鍏紡鍞竴婧愬綊鍙?+ 濂戠害娴嬭瘯"
+                                    },
+                                    {
+                                        "date":  "2026-09-03",
+                                        "note":  "[e1aaa20fedc7aa31ee529bc8c550216593f7ec15] feat(roi): ring-style rotate cursor with isolated cache + handles layered above arrows"
                                     }
                                 ]
                     },
@@ -4215,6 +4219,19 @@
                           "files":  [
                                         "src/Plugin.SDK/UI/Controls/Measure/Rendering/MeasureBandOverlay.cs",
                                         "src/Plugin.SDK/UI/Controls/Measure/Views/MeasureEditorControl.xaml.cs",
+                                        "tools/SunEyeVision.Tool.LineDetect/LineDetectParameters.cs"
+                                    ],
+                          "status":  "in_progress"
+                      },
+                      {
+                          "id":  "TMP-22dfd28",
+                          "message":  "feat(measure): screen-constant polarity triangles on both layers + fix band stroke power-law",
+                          "date":  "2026-09-03",
+                          "commit":  "22dfd28a7ed363a822c5c9b66366c328ad8800ed",
+                          "files":  [
+                                        "src/Plugin.SDK/Models/Visualization/GraphicsDisplayItem.cs",
+                                        "src/Plugin.SDK/UI/Controls/ImageControl/ResultRenderLayer.cs",
+                                        "src/Plugin.SDK/UI/Controls/Measure/Rendering/MeasureBandOverlay.cs",
                                         "tools/SunEyeVision.Tool.LineDetect/LineDetectParameters.cs"
                                     ],
                           "status":  "in_progress"

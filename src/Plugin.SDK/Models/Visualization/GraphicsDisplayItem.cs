@@ -66,6 +66,14 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
         /// <summary>渲染模式：独立颜色(Individual)或统一颜色(Unified)</summary>
         public DisplayRenderMode RenderMode { get; set; } = DisplayRenderMode.Individual;
 
+        /// <summary>
+        /// 屏幕恒定标记（运行时渲染提示，不序列化）：
+        /// 该 item 的多边形以「首顶点为锚点」贴图定位，其余顶点在渲染时相对锚点按
+        /// 视口缩放反除，使图形（如方向三角）屏幕尺寸恒定——几何数据存 zoom=1 基准形态。
+        /// </summary>
+        [JsonIgnore]
+        public bool IsFixedScreenSize { get; set; }
+
         /// <summary>临时几何数据列表（构造期间积累，Freeze 后转为数组）</summary>
         [JsonIgnore]
         internal List<object> GeometryList { get; } = new();

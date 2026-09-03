@@ -83,7 +83,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
 
             // 主卡尺极性方向标记（交互层实时显示，与结果层 BuildMeasureGuideItems 同步）。
             // 在主卡尺法向两条边（顶边/底边）上各画一个朝 normal 的小箭头。
-            AddMainCaliberEdgeDirectionArrows(start, end, bandWidth, bandLength, measureCount, StrokeColor, bandStroke);
+            AddMainCaliberEdgeDirectionArrows(start, end, bandWidth, bandLength, measureCount, StrokeColor, bandStroke, zoom);
         }
 
         /// <summary>
@@ -418,7 +418,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
         /// 主卡尺位置与 BuildLineBands / GetMainCaliberFrame 同构（首条贴起点，半带偏移）。
         /// </summary>
         private void AddMainCaliberEdgeDirectionArrows(Point start, Point end, double bandWidth, double bandLength,
-            int measureCount, Color color, double thickness)
+            int measureCount, Color color, double thickness, double zoom = 1.0)
         {
             var seg = end - start;
             var totalLen = seg.Length;
@@ -434,12 +434,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
             double t = measureCount > 1 ? halfBand + mainIndex * step : totalLen / 2;
             var center = start + dir * t;
 
-            // ★ 位置 = 竖边中点沿 normal 方向走 法向全长×1/4；大小 = 独立指定的三角尺寸
+            // ★ 锚点贴图（与结果层同几何，位置不漂移）+ 尺寸屏幕恒定（反除 zoom，像手柄）：
+            //   锚点 = 竖边中点沿 normal 走 法向全长×1/4（贴图）；三角高/半宽 = 带宽比例 + 下限，反除 zoom
             var midL = center - dir * (bandLength / 2);    // 左竖直边中点
             var midR = center + dir * (bandLength / 2);    // 右竖直边中点
-            double posOffset = bandWidth * 0.25;           // 位置沿 normal 走 1/4
-            double triHeight = Math.Max(bandWidth * 0.15, 4.0);    // 三角高（指定大小，独立）
-            double triHalfWidth = Math.Max(bandWidth * 0.07, 2.0); // 三角底半宽（指定大小）
+            double posOffset = bandWidth * 0.25;           // 锚点沿 normal 走 1/4（贴图）
+            double triHeight = ViewportScaling.Power(zoom, Math.Max(bandWidth * 0.15, 4.0), 1.0);    // 三角高（屏幕恒定）
+            double triHalfWidth = ViewportScaling.Power(zoom, Math.Max(bandWidth * 0.07, 2.0), 1.0); // 三角底半宽（屏幕恒定）
 
             // 左三角：尖端锚在竖边中点 +normal×1/4 处，尖端朝 +normal
             var tipL = midL + normal * posOffset;
@@ -460,9 +461,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
         private static double StrokeWidthFor(double zoom) => ViewportScaling.LineWidth(zoom);
 
         /// <summary>
-        /// 测量带线宽（与 Blob 检测区域边框线宽一致；单像素保底避免高倍缩放消失）
+        /// 测量带线宽（与引导线一致：2/zoom 屏幕恒定；不再设逻辑像素下限——
+        /// 旧 min1.0 导致 zoom≥2 时屏幕线宽随放大变粗，违反幂律屏幕恒定语义）
         /// </summary>
-        private static double BandStrokeWidthFor(double zoom) => Math.Max(ViewportScaling.LineWidth(zoom), 1.0);
+        private static double BandStrokeWidthFor(double zoom) => ViewportScaling.LineWidth(zoom);
 
         #endregion
     }

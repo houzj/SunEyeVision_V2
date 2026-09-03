@@ -360,6 +360,7 @@ namespace SunEyeVision.Tool.LineDetect
                             tipL - normal * triHeight - dir * triHalfWidth,
                             tipL - normal * triHeight + dir * triHalfWidth } },
                         RenderMode = DisplayRenderMode.Unified,
+                        IsFixedScreenSize = true,
                     };
 
                     // 右三角
@@ -372,6 +373,7 @@ namespace SunEyeVision.Tool.LineDetect
                             tipR - normal * triHeight - dir * triHalfWidth,
                             tipR - normal * triHeight + dir * triHalfWidth } },
                         RenderMode = DisplayRenderMode.Unified,
+                        IsFixedScreenSize = true,
                     };
                 }
             }

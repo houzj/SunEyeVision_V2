@@ -446,7 +446,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 for (int i = 0; i < item.Geometries.Length; i++)
                 {
                     if (item.Geometries[i] is Point[] points && points.Length >= 2)
-                        allPoints.Add(points);
+                        allPoints.Add(item.IsFixedScreenSize ? ScaleScreenStable(points) : points);
                 }
                 DrawMultipleFigures(dc, allPoints, item.IsFilled ? defaultBrush : null, defaultPen, true);
             }
@@ -460,6 +460,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     if (item.Geometries[i] is Point[] points && points.Length >= 2)
                     {
                         bool isPass = item.IsPassArray.Length > i ? item.IsPassArray[i] : true;
+                        if (item.IsFixedScreenSize) points = ScaleScreenStable(points);
                         if (isPass)
                             okPoints.Add(points);
                         else
@@ -469,6 +470,21 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 DrawMultipleFigures(dc, okPoints, item.IsFilled ? defaultBrush : null, defaultPen, true);
                 DrawMultipleFigures(dc, ngPoints, ngBrush, ngPen, true);
             }
+        }
+
+        /// <summary>
+        /// 屏幕恒定标记反除：锚点（首顶点）贴图定位，其余顶点相对锚点按 viewportScale 反除缩放。
+        /// 用于方向标记/三角等装饰，使图形屏幕尺寸恒定（几何数据存 zoom=1 基准形态）。
+        /// </summary>
+        private Point[] ScaleScreenStable(Point[] points)
+        {
+            double s = Math.Max(_viewportScale, 0.001);
+            var anchor = points[0];
+            var scaled = new Point[points.Length];
+            scaled[0] = anchor;
+            for (int i = 1; i < points.Length; i++)
+                scaled[i] = anchor + (points[i] - anchor) / s;
+            return scaled;
         }
 
         private void RenderContours(DrawingContext dc, GraphicsDisplayItem item, GraphicsStyle style, SolidColorBrush defaultBrush, Pen defaultPen)

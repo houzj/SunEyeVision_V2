@@ -134,18 +134,6 @@
                                   BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1"
                                   Background="{DynamicResource ThemePanelBackgroundBrush}">
                             <StackPanel Margin="16,8">
-                                <controls:LabeledControl Label="拟合分数门槛" Margin="0,0,0,4">
-                                    <controls:ConfigSetting
-                                        ParameterName="MinScore"
-                                        DataType="{x:Type sys:Double}"
-                                        Value="{Binding MinScore, Mode=TwoWay}"
-                                        Minimum="0.1" Maximum="1.0"
-                                        SmallChange="0.05" LargeChange="0.1"
-                                        ShowSlider="True"
-                                        HorizontalAlignment="Stretch"
-                                        AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                                </controls:LabeledControl>
-
                                 <controls:LabeledControl Label="距离阈值" Margin="0,0,0,4">
                                     <controls:ConfigSetting
                                         ParameterName="DistanceThreshold"

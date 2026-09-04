@@ -131,7 +131,6 @@ namespace SunEyeVision.Tool.CircleDetect
         private double _threshold = 30.0;
         private EdgeTransition _transition = EdgeTransition.All;
         private EdgeSelect _select = EdgeSelect.All;
-        private double _minScore = 0.5;
         private double _distanceThreshold = 5.0;
 
         /// <summary>
@@ -195,15 +194,6 @@ namespace SunEyeVision.Tool.CircleDetect
         {
             get => _select;
             set => SetProperty(ref _select, value, "选取模式");
-        }
-
-        /// <summary>
-        /// RANSAC 拟合分数门槛（min_score：内点数 ÷ 测量带数，低于则判定无有效几何，默认 0.7）
-        /// </summary>
-        public double MinScore
-        {
-            get => _minScore;
-            set => SetProperty(ref _minScore, Math.Clamp(value, 0.1, 1.0), "拟合分数门槛");
         }
 
         /// <summary>

@@ -70,7 +70,7 @@ namespace SunEyeVision.Tool.LineDetect
                 $"带L1(宽)={parameters.MeasureLength1:F2} L2(长)={parameters.MeasureLength2:F2} N={parameters.NumMeasures} | " +
                 $"Sigma={parameters.Sigma:F2} Threshold={parameters.Threshold:F1} | " +
                 $"极性={TransitionToHalcon(parameters.Transition)}({parameters.Transition}) 选取={SelectToHalcon(parameters.Select)} | " +
-                $"min_score={parameters.MinScore:F2} distance_threshold={parameters.DistanceThreshold:F2} | " +
+                $"distance_threshold={parameters.DistanceThreshold:F2} | " +
                 $"位置修正={(parameters.IsPositionCorrectionEnabled ? "启用" : "未启用")}");
 
             // ===== 获取输入图像 =====
@@ -142,52 +142,18 @@ namespace SunEyeVision.Tool.LineDetect
                     parameters.LogWarning($"[Diag] 查询检测点失败: {diagEx.Message}");
                 }
 
-                // ===== 结果填充 =====
-                // 有启用的屏蔽区 → 屏蔽区点集过滤 + 全点鲁棒拟合（屏蔽区内的点不参与拟合，VisionMaster 语义）
-                // 无屏蔽区 → 沿用 HALCON 引擎拟合（快路径，行为与旧版完全一致）
+                // ===== 结果填充（统一管线：取全部检测点 → 屏蔽区空间过滤(可选) → 全点鲁棒拟合）=====
+                // ★ 架构统一：有/无屏蔽区走同一条拟合路径。屏蔽只影响输入点集（剔除屏蔽区内点），
+                //   不改变核心拟合算法。Halcon 2D Metrology 原生拟合不支持屏蔽区概念，
+                //   屏蔽过滤必须在拟合前完成，故统一走自研鲁棒拟合（fit_line_contour_xld）。
                 bool hasEnabledMask = parameters.GetRoisByType(RoiType.Mask).Any();
-                if (hasEnabledMask)
-                {
-                    FillResultWithMask(result, parameters, objectIndex, metrologyModel,
-                        TransitionToHalcon(parameters.Transition));
-                }
-                else
-                {
-                    // 获取拟合直线参数（all_param = [Row1, Col1, Row2, Col2, Nr, Nc, Dist]）
-                    var allParam = metrologyModel.GetMetrologyObjectResult(
-                        objectIndex.I, "all", "result_type", "all_param");
-                    if (allParam.Length < 4)
-                    {
-                        parameters.LogWarning(
-                            $"[Diag] 拟合无有效输出: all_param 长度={allParam.Length}（<4，无拟合直线）。" +
-                            "可能原因: 检测点数不足 / min_score 过高 / distance_threshold 过小 / 点不共线");
-                    }
-                    else
-                    {
-                        parameters.LogInfo(
-                            $"[Diag] 拟合直线 all_param 长度={allParam.Length}: " +
-                            $"Row1={allParam[0].D:F2} Col1={allParam[1].D:F2} Row2={allParam[2].D:F2} Col2={allParam[3].D:F2}");
-                    }
-
-                    // ★ 修复：rms 不是 get_metrology_object_param 的合法 GenParamName（#1303），
-                    //   也不是 get_metrology_object_result 的合法 result_type（#1305）。
-                    //   官方 measure_stamping_part 示例：用 used_edges 取实际参与拟合的点，自算点到直线距离的均方根。
-                    var rms = ComputeRmsFromUsedEdges(metrologyModel, objectIndex.I, allParam);
-
-                    // 获取测量带数量（num_measures 是 get_metrology_object_param 的合法 GenParamName）
-                    var numMeasures = metrologyModel.GetMetrologyObjectParam(objectIndex.I, "num_measures");
-                    parameters.LogInfo(
-                        $"[Diag] Halcon 实际测量带数 num_measures={(numMeasures.Length > 0 ? numMeasures[0].I : -1)} " +
-                        $"(用户配置 N={parameters.NumMeasures})");
-
-                    FillResult(result, parameters, allParam, rms, numMeasures, objectIndex, metrologyModel,
-                        TransitionToHalcon(parameters.Transition));
-                }
+                FillResultWithMask(result, parameters, objectIndex, metrologyModel,
+                    TransitionToHalcon(parameters.Transition), hasEnabledMask);
 
                 // ===== 诊断日志：结果概要（拟合线有无/参与拟合点/诊断点/角度） =====
                 parameters.LogInfo(
                     $"[Diag] 结果概要: 拟合直线={(result.Line is { Length: > 0 } ? $"({result.LineStartPoint.X:F1},{result.LineStartPoint.Y:F1})→({result.LineEndPoint.X:F1},{result.LineEndPoint.Y:F1})" : "无")} | " +
-                    $"参与拟合点 used_edges={result.MeasurementPoints.Length} | " +
+                    $"参与拟合点(内点)={result.MeasurementPoints.Length} | " +
                     $"诊断点={result.DiagnosticPoints.Length} | 中点=({result.CenterPoint.X:F1},{result.CenterPoint.Y:F1}) | Angle={result.Angle:G3}° | RMSE={result.RMSE:F3}px");
 
                 // ===== 结果判断（对齐 VisionMaster：匹配点数/角度/拟合误差） =====
@@ -235,7 +201,7 @@ namespace SunEyeVision.Tool.LineDetect
         }
 
         /// <summary>
-        /// 构建 Halcon 通用参数名（数量主导 + RANSAC 拟合高级参数 min_score/distance_threshold）
+        /// 构建 Halcon 通用参数名（数量主导 + 拟合距离阈值 distance_threshold）
         /// </summary>
         private HTuple BuildGenParamName(LineDetectParameters parameters)
         {
@@ -244,7 +210,6 @@ namespace SunEyeVision.Tool.LineDetect
                 "num_measures",
                 "measure_transition",
                 "measure_select",
-                "min_score",
                 "distance_threshold",
             });
         }
@@ -259,8 +224,7 @@ namespace SunEyeVision.Tool.LineDetect
                 parameters.NumMeasures,             // int → num_measures
                 TransitionToHalcon(parameters.Transition),
                 SelectToHalcon(parameters.Select),
-                parameters.MinScore,                 // double → min_score（RANSAC 分数门槛）
-                parameters.DistanceThreshold,        // double → distance_threshold（RANSAC 距离阈值）
+                parameters.DistanceThreshold,        // double → distance_threshold（拟合距离阈值）
             });
         }
 
@@ -293,27 +257,40 @@ namespace SunEyeVision.Tool.LineDetect
         }
 
         /// <summary>
-        /// 屏蔽路径结果填充：取全部测量点 → 屏蔽区空间过滤 → 全点鲁棒拟合。
-        /// 屏蔽区内的点不参与拟合，也不作为"拟合点"显示（VisionMaster 屏蔽语义）。
+        /// 统一结果填充（有/无屏蔽共用）：取全部测量点 → 屏蔽区空间过滤(可选) → 全点鲁棒拟合。
+        /// 屏蔽区内的点不参与拟合，也不作为"拟合点"显示（VisionMaster 屏蔽语义）；
+        /// 无屏蔽区时全量点参与拟合（与屏蔽路径完全同一套核心拟合逻辑）。
         /// </summary>
         private void FillResultWithMask(LineDetectResults result, LineDetectParameters parameters,
-            HTuple objectIndex, HMetrologyModel metrologyModel, string transition)
+            HTuple objectIndex, HMetrologyModel metrologyModel, string transition, bool hasEnabledMask)
         {
             // 1. 取采样点（transition 过滤后的全部测量点）
             var measures = ExtractDiagnosticPoints(objectIndex, metrologyModel, transition);
 
-            // 2. 屏蔽区空间过滤：剔除落在屏蔽区内的点
-            var correction = parameters.PositionCorrectionBindingSource?.CurrentValue as AffineMatrix;
-            var (kept, excluded) = ToolRegionHelper.FilterPointsOutOfMaskRegions(
-                measures, parameters.GetRoisByType(RoiType.Mask), correction);
-            parameters.LogInfo(
-                $"[Diag] 屏蔽过滤: 采样点={measures.Length}, 保留={kept.Length}, 屏蔽剔除={excluded.Length}");
+            // 2. 屏蔽区空间过滤：仅在有屏蔽区时剔除落在屏蔽区内的点；无屏蔽区 = 全量点保留
+            Point2d[] kept;
+            Point2d[] excluded;
+            if (hasEnabledMask)
+            {
+                var correction = parameters.PositionCorrectionBindingSource?.CurrentValue as AffineMatrix;
+                (kept, excluded) = ToolRegionHelper.FilterPointsOutOfMaskRegions(
+                    measures, parameters.GetRoisByType(RoiType.Mask), correction);
+                parameters.LogInfo(
+                    $"[Diag] 屏蔽过滤: 采样点={measures.Length}, 保留={kept.Length}, 屏蔽剔除={excluded.Length}");
+            }
+            else
+            {
+                kept = measures;
+                excluded = Array.Empty<Point2d>();
+                parameters.LogInfo(
+                    $"[Diag] 无屏蔽区: 全量测量点={measures.Length} 全部参与拟合（与屏蔽路径同一套鲁棒拟合）");
+            }
 
             // 3. 保底：有效点数不足以拟合直线 → 明确报错，不硬拟合
             if (kept.Length < 2)
-                throw new InvalidOperationException($"屏蔽后有效测量点不足({kept.Length} < 2)，无法拟合直线");
+                throw new InvalidOperationException($"有效测量点不足({kept.Length} < 2)，无法拟合直线");
 
-            // 4. 全点鲁棒拟合（tukey 预拟合 → 按距离阈值划内点 → min_score 比例校验 → 内点精化）
+            // 4. 全点鲁棒拟合（tukey 预拟合 → 按距离阈值划内点 → 内点精化）
             var (start, end, inliers) = FitLineRobust(kept, parameters);
 
             var center = new Point((start.X + end.X) / 2, (start.Y + end.Y) / 2);
@@ -332,7 +309,10 @@ namespace SunEyeVision.Tool.LineDetect
 
         /// <summary>
         /// 全点鲁棒拟合直线：tukey 预拟合剔除离群 → 按 distance_threshold 划内点
-        /// → 内点比例低于 min_score 判定结果不可靠 → 内点 geometric 精化提高精度。
+        /// → 内点 regression 最小二乘精化。
+        /// ★ 无分数门槛：Halcon min_score 依赖"每测量带一点"归一化，自研取点是带内全候选点
+        ///   （无法按带归属），套用分数门槛会误杀可用拟合。鲁棒拟合本身已剔除离群，
+        ///   质量由 RMSE / EdgePointCount 判定窗口把关。
         /// </summary>
         private static (Point Start, Point End, Point2d[] Inliers) FitLineRobust(
             IReadOnlyList<Point2d> points, LineDetectParameters parameters)
@@ -347,14 +327,9 @@ namespace SunEyeVision.Tool.LineDetect
                 throw new InvalidOperationException(
                     $"拟合内点不足({inliers.Length} < 2)：distance_threshold={parameters.DistanceThreshold:F1} 过小或引导偏差过大");
 
-            double ratio = (double)inliers.Length / points.Count;
-            if (ratio < parameters.MinScore)
-                throw new InvalidOperationException(
-                    $"拟合内点比例不足({ratio:P0} < min_score {parameters.MinScore:P0})，拟合结果不可靠");
-
             var (start, end) = inliers.Length == points.Count
                 ? (s0, e0)
-                : FitLineCore(inliers, "geometric");
+                : FitLineCore(inliers, "regression");
 
             return (start, end, inliers);
         }
@@ -421,142 +396,7 @@ namespace SunEyeVision.Tool.LineDetect
                 : 0.0;
         }
 
-        /// <summary>
-        /// 填充结果（拟合直线/线段/测量点/中心/角度）
-        /// </summary>
-        private void FillResult(LineDetectResults result, LineDetectParameters parameters,
-            HTuple allParam, HTuple rms, HTuple numMeasures,
-            HTuple objectIndex, HMetrologyModel metrologyModel, string transition)
-        {
-            // RMSE 和边缘点数（HTuple 长度检查，避免空结果访问）
-            result.RMSE = rms.Length > 0 ? rms[0].D : 0;
-            result.EdgePointCount = numMeasures.Length > 0 ? numMeasures[0].I : 0;
 
-            try
-            {
-                // all_param = [Row1, Col1, Row2, Col2, Nr, Nc, Dist]
-                if (allParam.Length >= 4)
-                {
-                    var start = new Point(allParam[1].D, allParam[0].D);
-                    var end = new Point(allParam[3].D, allParam[2].D);
-                    result.LineStartPoint = start;
-                    result.LineEndPoint = end;
-                    result.CenterPoint = new Point((start.X + end.X) / 2, (start.Y + end.Y) / 2);
-                    result.Line = new[] { Line2d.FromTwoPoints(start, end) };
-
-                    // ★ 修复：补算直线角度（度）。此前 result.Angle 从未赋值，恒为 0。
-                    //   口径：拟合直线方向(start→end)与 X 轴夹角，ArcTan 弧度转度，范围 [-180,180]，
-                    //   与 UI 角度判断范围 [AngleMin, AngleMax]=[-180,180] 及结果显示口径一致。
-                    var dir = end - start;
-                    result.Angle = dir.LengthSquared > 1e-12
-                        ? Math.Atan2(dir.Y, dir.X) * 180.0 / Math.PI
-                        : 0.0;
-                }
-
-                // 轮廓点（used_edges → 实际参与拟合的边缘点，主显示）
-                result.MeasurementPoints = ExtractMeasurementPoints(objectIndex, metrologyModel);
-
-                // 诊断检测点（GetMetrologyObjectMeasures → 检测到的全部边缘点，与拟合结果无关）
-                result.DiagnosticPoints = ExtractDiagnosticPoints(objectIndex, metrologyModel, transition);
-
-                // HALCON 实际测量带（MeasureContour XLD 轮廓 → 四边形点集，诊断卡尺对齐用，默认不显示）
-                result.HalconMeasureBands = ExtractHalconMeasureBands(objectIndex, metrologyModel, transition);
-
-                // ★ 诊断埋点：HALCON 测量带中心 vs 本地计算中心 vs 提取点坐标对比（定位卡尺对齐）
-                LogMeasureBandAlignmentDiagnostics(result, parameters, transition);
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"解析 Halcon 直线结果失败: {ex.Message}", ex);
-            }
-        }
-
-        /// <summary>
-        /// 输出测量带对齐诊断日志：HALCON 实际测量带中心 vs 本地 BuildLineBands 计算中心 vs 提取点坐标。
-        /// 通过首条/末条中心对比，判断是相位（step）还是坐标变换问题。
-        /// </summary>
-        private static void LogMeasureBandAlignmentDiagnostics(
-            LineDetectResults result, LineDetectParameters parameters, string transition)
-        {
-            try
-            {
-                // 本地计算中心（与 BuildLineBands 同一公式：N 条带分 N-1 段，首条在起点）
-                var localStart = parameters.LineStartPoint;
-                var localEnd = parameters.LineEndPoint;
-                if (parameters.IsPositionCorrectionEnabled &&
-                    parameters.PositionCorrectionBindingSource?.CurrentValue is AffineMatrix m)
-                {
-                    localStart = m.TransformWpfPoint(localStart);
-                    localEnd = m.TransformWpfPoint(localEnd);
-                }
-                var seg = localEnd - localStart;
-                var totalLen = seg.Length;
-                var dir = seg / totalLen;
-                double step = parameters.NumMeasures > 1 ? totalLen / (parameters.NumMeasures - 1) : totalLen;
-
-                string localCenters = "";
-                for (int i = 0; i < Math.Min(parameters.NumMeasures, 3); i++)
-                {
-                    var c = localStart + dir * (i * step);
-                    localCenters += $"[{i}]({c.X:F1},{c.Y:F1}) ";
-                }
-
-                // HALCON 实际测量带中心（轮廓点均值）
-                string halconCenters = "";
-                if (result.HalconMeasureBands.Length > 0)
-                {
-                    int show = Math.Min(result.HalconMeasureBands.Length, 3);
-                    for (int i = 0; i < show; i++)
-                    {
-                        var pts = result.HalconMeasureBands[i];
-                        if (pts == null || pts.Length == 0) { halconCenters += $"[{i}](null) "; continue; }
-                        double sx = 0, sy = 0;
-                        foreach (var p in pts) { sx += p.X; sy += p.Y; }
-                        halconCenters += $"[{i}]({sx / pts.Length:F1},{sy / pts.Length:F1}) ";
-                    }
-                }
-
-                // 提取点前 3 个
-                string edgePts = "";
-                for (int i = 0; i < Math.Min(result.MeasurementPoints.Length, 3); i++)
-                    edgePts += $"[{i}]({result.MeasurementPoints[i].X:F1},{result.MeasurementPoints[i].Y:F1}) ";
-
-                parameters.LogInfo(
-                    $"[Diag] 卡尺对齐: N={parameters.NumMeasures} transition={transition}\n" +
-                    $"  引导线起终点=({parameters.LineStartPoint.X:F1},{parameters.LineStartPoint.Y:F1})→({parameters.LineEndPoint.X:F1},{parameters.LineEndPoint.Y:F1})\n" +
-                    $"  本地计算中心: {localCenters}\n" +
-                    $"  HALCON测量带中心: {halconCenters}\n" +
-                    $"  提取点(used_edges): {edgePts}");
-            }
-            catch (Exception ex)
-            {
-                parameters.LogInfo($"[Diag] 卡尺对齐诊断异常: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// 提取拟合点（used_edges → 实际参与拟合的边缘点，每测量带一个）。
-        /// 与官方 measure_stamping_part 示例一致。
-        /// </summary>
-        private Point2d[] ExtractMeasurementPoints(HTuple objectIndex, HMetrologyModel metrologyModel)
-        {
-            try
-            {
-                var usedRow = metrologyModel.GetMetrologyObjectResult(
-                    objectIndex, new HTuple("all"), new HTuple("used_edges"), new HTuple("row"));
-                var usedCol = metrologyModel.GetMetrologyObjectResult(
-                    objectIndex, new HTuple("all"), new HTuple("used_edges"), new HTuple("column"));
-                if (usedRow.Length == 0) return Array.Empty<Point2d>();
-                var pts = new Point2d[usedRow.Length];
-                for (int i = 0; i < usedRow.Length; i++)
-                    pts[i] = new Point2d(usedCol[i].D, usedRow[i].D);
-                return pts;
-            }
-            catch
-            {
-                return Array.Empty<Point2d>();
-            }
-        }
 
         /// <summary>
         /// 提取诊断检测点（GetMetrologyObjectMeasures → 指定 transition 下检测到的全部边缘点）。
@@ -622,52 +462,6 @@ namespace SunEyeVision.Tool.LineDetect
             catch
             {
                 return Array.Empty<System.Windows.Point[]>();
-            }
-        }
-
-        /// <summary>
-        /// 自算拟合残差 RMSE。
-        /// HALCON 中 rms 既不是 get_metrology_object_param 的合法 GenParamName（#1303），
-        /// 也不是 get_metrology_object_result 的合法 result_type（#1305），必须自行计算。
-        /// 参考官方 measure_stamping_part 示例：用 used_edges 取实际参与拟合的边缘点，
-        /// 计算每个点到拟合直线的距离（直线法向量点积），取均方根。
-        /// </summary>
-        /// <param name="metrologyModel">计量模型</param>
-        /// <param name="objectIndex">测量对象索引</param>
-        /// <param name="allParam">拟合参数 [Row1, Col1, Row2, Col2, Nr, Nc, Dist]</param>
-        /// <returns>RMSE 值（无拟合点时为 0）</returns>
-        private static HTuple ComputeRmsFromUsedEdges(HMetrologyModel metrologyModel, int objectIndex, HTuple allParam)
-        {
-            try
-            {
-                if (allParam.Length < 7)
-                    return new HTuple(0.0);
-
-                var idx = new HTuple(objectIndex);
-                var usedRow = metrologyModel.GetMetrologyObjectResult(
-                    idx, new HTuple("all"), new HTuple("used_edges"), new HTuple("row"));
-                var usedCol = metrologyModel.GetMetrologyObjectResult(
-                    idx, new HTuple("all"), new HTuple("used_edges"), new HTuple("column"));
-                if (usedRow.Length == 0)
-                    return new HTuple(0.0);
-
-                var r1 = allParam[0].D;   // Row1（线上一点）
-                var c1 = allParam[1].D;   // Col1
-                var nr = allParam[4].D;   // 单位法向量分量 Nr
-                var nc = allParam[5].D;   // 单位法向量分量 Nc
-
-                double sumSq = 0;
-                for (int i = 0; i < usedRow.Length; i++)
-                {
-                    // 点到直线距离 = |Nr·(r−Row1) + Nc·(c−Col1)|（(Row1,Col1) 在直线上）
-                    var dist = nr * (usedRow[i].D - r1) + nc * (usedCol[i].D - c1);
-                    sumSq += dist * dist;
-                }
-                return new HTuple(Math.Sqrt(sumSq / usedRow.Length));
-            }
-            catch
-            {
-                return new HTuple(0.0);
             }
         }
 

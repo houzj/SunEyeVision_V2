@@ -155,33 +155,12 @@ namespace SunEyeVision.Tool.CircleDetect
                     parameters.LogInfo($"[Diag] GetMetrologyObjectMeasures 诊断异常: {diagEx.Message}");
                 }
 
-                // ===== 结果填充 =====
-                // 有启用的屏蔽区 → 屏蔽区点集过滤 + 全点鲁棒拟合（屏蔽区内的点不参与拟合，VisionMaster 语义）
-                // 无屏蔽区 → 沿用 HALCON 引擎拟合（快路径，行为与旧版完全一致）
+                // ===== 结果填充（统一管线：取全部检测点 → 屏蔽区空间过滤(可选) → 全点鲁棒拟合）=====
+                // ★ 架构统一：有/无屏蔽区走同一条拟合路径。屏蔽只影响输入点集（剔除屏蔽区内点），
+                //   不改变核心拟合算法。Halcon 2D Metrology 原生拟合不支持屏蔽区概念，
+                //   屏蔽过滤必须在拟合前完成，故统一走自研鲁棒拟合（fit_circle_contour_xld）。
                 bool hasEnabledMask = parameters.GetRoisByType(RoiType.Mask).Any();
-                if (hasEnabledMask)
-                {
-                    FillResultWithMask(result, parameters, objectIndex, metrologyModel);
-                }
-                else
-                {
-                    // 获取拟合圆参数（all_param = [Row, Col, Radius]）
-                    var allParam = metrologyModel.GetMetrologyObjectResult(
-                        objectIndex.I, "all", "result_type", "all_param");
-                    parameters.LogInfo($"[Diag] all_param 长度={allParam.Length}, 内容={allParam}");
-
-                    // ★ 修复：rms 不是 get_metrology_object_param 的合法 GenParamName（#1303），
-                    //   也不是 get_metrology_object_result 的合法 result_type（#1305）。
-                    //   官方 measure_stamping_part 示例：用 used_edges 取实际参与拟合的点，自算点到圆距离的均方根。
-                    var rms = ComputeRmsFromUsedEdges(metrologyModel, objectIndex.I, allParam);
-                    parameters.LogInfo($"[Diag] rms={rms.D:F3}");
-
-                    // 获取测量带数量（num_measures 是 get_metrology_object_param 的合法 GenParamName）
-                    var numMeasures = metrologyModel.GetMetrologyObjectParam(objectIndex.I, "num_measures");
-                    parameters.LogInfo($"[Diag] num_measures={numMeasures.I}");
-
-                    FillResult(result, parameters, allParam, rms, numMeasures, objectIndex, metrologyModel);
-                }
+                FillResultWithMask(result, parameters, objectIndex, metrologyModel, hasEnabledMask);
 
                 // ===== 结果判断（对齐 VisionMaster：半径/中心X/中心Y/拟合误差/匹配点数） =====
                 var isOk = EvaluateResult(result, parameters);
@@ -243,7 +222,7 @@ namespace SunEyeVision.Tool.CircleDetect
 
         /// <summary>
         /// 构建 Halcon 通用参数名（产品决策：只支持数量主导；圆/圆弧带 start_phi/end_phi；
-        /// RANSAC 拟合高级参数 min_score/distance_threshold 开放给用户）
+        /// 拟合距离阈值 distance_threshold）
         /// </summary>
         private HTuple BuildGenParamName(CircleDetectParameters parameters)
         {
@@ -255,7 +234,6 @@ namespace SunEyeVision.Tool.CircleDetect
                 "start_phi",
                 "end_phi",
                 "point_order",                        // ★ Halcon 圆弧方向（'positive'=数学逆时针/'negative'=数学顺时针）
-                "min_score",
                 "distance_threshold",
             });
         }
@@ -315,8 +293,7 @@ namespace SunEyeVision.Tool.CircleDetect
                 startPhi,                            // ★ 弧起点（HALCON 区间 [0, 2π]）
                 endPhi,                              // ★ 弧终点（HALCON 区间 [0, 2π]）
                 pointOrder,                          // ★ 方向（positive=逆时针 / negative=顺时针）
-                parameters.MinScore,                 // double → min_score（RANSAC 分数门槛）
-                parameters.DistanceThreshold,        // double → distance_threshold（RANSAC 距离阈值）
+                parameters.DistanceThreshold,        // double → distance_threshold（拟合距离阈值）
             });
         }
 
@@ -349,28 +326,41 @@ namespace SunEyeVision.Tool.CircleDetect
         }
 
         /// <summary>
-        /// 屏蔽路径结果填充：取全部测量点 → 屏蔽区空间过滤 → 全点鲁棒拟合。
-        /// 屏蔽区内的点不参与拟合，也不作为"拟合点"显示（VisionMaster 屏蔽语义）。
+        /// 统一结果填充（有/无屏蔽共用）：取全部测量点 → 屏蔽区空间过滤(可选) → 全点鲁棒拟合。
+        /// 屏蔽区内的点不参与拟合，也不作为"拟合点"显示（VisionMaster 屏蔽语义）；
+        /// 无屏蔽区时全量点参与拟合（与屏蔽路径完全同一套核心拟合逻辑）。
         /// </summary>
         private void FillResultWithMask(CircleDetectResults result, CircleDetectParameters parameters,
-            HTuple objectIndex, HMetrologyModel metrologyModel)
+            HTuple objectIndex, HMetrologyModel metrologyModel, bool hasEnabledMask)
         {
             // 1. 取采样点（transition 过滤后的全部测量点）
             var measures = ExtractDiagnosticPoints(
                 objectIndex, metrologyModel, TransitionToHalcon(parameters.Transition));
 
-            // 2. 屏蔽区空间过滤：剔除落在屏蔽区内的点
-            var correction = parameters.PositionCorrectionBindingSource?.CurrentValue as AffineMatrix;
-            var (kept, excluded) = ToolRegionHelper.FilterPointsOutOfMaskRegions(
-                measures, parameters.GetRoisByType(RoiType.Mask), correction);
-            parameters.LogInfo(
-                $"[Diag] 屏蔽过滤: 采样点={measures.Length}, 保留={kept.Length}, 屏蔽剔除={excluded.Length}");
+            // 2. 屏蔽区空间过滤：仅在有屏蔽区时剔除落在屏蔽区内的点；无屏蔽区 = 全量点保留
+            Point2d[] kept;
+            Point2d[] excluded;
+            if (hasEnabledMask)
+            {
+                var correction = parameters.PositionCorrectionBindingSource?.CurrentValue as AffineMatrix;
+                (kept, excluded) = ToolRegionHelper.FilterPointsOutOfMaskRegions(
+                    measures, parameters.GetRoisByType(RoiType.Mask), correction);
+                parameters.LogInfo(
+                    $"[Diag] 屏蔽过滤: 采样点={measures.Length}, 保留={kept.Length}, 屏蔽剔除={excluded.Length}");
+            }
+            else
+            {
+                kept = measures;
+                excluded = Array.Empty<Point2d>();
+                parameters.LogInfo(
+                    $"[Diag] 无屏蔽区: 全量测量点={measures.Length} 全部参与拟合（与屏蔽路径同一套鲁棒拟合）");
+            }
 
             // 3. 保底：有效点数不足以拟合圆 → 明确报错，不硬拟合
             if (kept.Length < 3)
-                throw new InvalidOperationException($"屏蔽后有效测量点不足({kept.Length} < 3)，无法拟合圆");
+                throw new InvalidOperationException($"有效测量点不足({kept.Length} < 3)，无法拟合圆");
 
-            // 4. 全点鲁棒拟合（tukey 预拟合 → 按距离阈值划内点 → min_score 比例校验 → 内点精化）
+            // 4. 全点鲁棒拟合（geotukey 预拟合 → 按距离阈值划内点 → 内点精化）
             var (center, radius, inliers) = FitCircleRobust(kept, parameters);
             result.CenterPoint = center;
             result.RMSE = ComputeCircleRmse(inliers, center, radius);
@@ -394,13 +384,18 @@ namespace SunEyeVision.Tool.CircleDetect
         }
 
         /// <summary>
-        /// 全点鲁棒拟合圆：tukey 预拟合剔除离群 → 按 distance_threshold 划内点（测量点）
-        /// → 内点比例低于 min_score 判定结果不可靠 → 内点 geometric 精化提高精度。
+        /// 全点鲁棒拟合圆：geotukey 预拟合剔除离群 → 按 distance_threshold 划内点（测量点）
+        /// → 内点 geometric 精化提高精度。
+        /// ★ fit_circle_contour_xld 无 'tukey'（官方 List: ahuber/algebraic/atukey/geohuber/geometric/geotukey），
+        ///   取几何 Tukey 'geotukey'（与直线 tukey 同族的几何加权鲁棒算法）。
+        /// ★ 无分数门槛：Halcon min_score 依赖"每测量带一点"归一化，自研取点是带内全候选点
+        ///   （无法按带归属），套用分数门槛会误杀可用拟合。鲁棒拟合本身已剔除离群，
+        ///   质量由 RMSE / EdgePointCount 判定窗口把关。
         /// </summary>
         private static (Point Center, double Radius, Point2d[] Inliers) FitCircleRobust(
             IReadOnlyList<Point2d> points, CircleDetectParameters parameters)
         {
-            var (c0, r0) = FitCircleCore(points, "tukey");
+            var (c0, r0) = FitCircleCore(points, "geotukey");
 
             var inliers = points
                 .Where(p => Math.Abs(
@@ -411,11 +406,6 @@ namespace SunEyeVision.Tool.CircleDetect
             if (inliers.Length < 3)
                 throw new InvalidOperationException(
                     $"拟合内点不足({inliers.Length} < 3)：distance_threshold={parameters.DistanceThreshold:F1} 过小或引导偏差过大");
-
-            double ratio = (double)inliers.Length / points.Count;
-            if (ratio < parameters.MinScore)
-                throw new InvalidOperationException(
-                    $"拟合内点比例不足({ratio:P0} < min_score {parameters.MinScore:P0})，拟合结果不可靠");
 
             var (center, radius) = inliers.Length == points.Count
                 ? (c0, r0)
@@ -461,81 +451,6 @@ namespace SunEyeVision.Tool.CircleDetect
                 sumSq += diff * diff;
             }
             return Math.Sqrt(sumSq / points.Count);
-        }
-
-        /// <summary>
-        /// 填充结果（拟合圆/圆心/测量点）
-        /// </summary>
-        private void FillResult(CircleDetectResults result, CircleDetectParameters parameters,
-            HTuple allParam, HTuple rms, HTuple numMeasures,
-            HTuple objectIndex, HMetrologyModel metrologyModel)
-        {
-            // RMSE 和边缘点数（HTuple 长度检查，避免空结果访问）
-            result.RMSE = rms.Length > 0 ? rms[0].D : 0;
-            result.EdgePointCount = numMeasures.Length > 0 ? numMeasures[0].I : 0;
-
-            try
-            {
-                // all_param = [Row, Col, Radius]
-                if (allParam.Length >= 3)
-                {
-                    var center = new Point(allParam[1].D, allParam[0].D);
-                    result.CenterPoint = center;
-
-                    if (parameters.IsArc)
-                    {
-                        // ★ 补 isMajorArc：4 参构造恒为小弧，与检测弧的大/小弧不一致导致结果显示失真
-                        result.Arc = new[] { new Arc2d(
-                            new Point(center.X, center.Y), allParam[2].D,
-                            parameters.StartAngle, parameters.EndAngle,
-                            parameters.IsMajorArc) };
-                    }
-                    else
-                    {
-                        result.Circle = new[] { new Circle2d(center.X, center.Y, allParam[2].D) };
-                    }
-                }
-
-                // 轮廓点（used_edges → 实际参与拟合的边缘点，主显示）
-                result.MeasurementPoints = ExtractMeasurementPoints(objectIndex, metrologyModel);
-
-                // 诊断检测点（GetMetrologyObjectMeasures → 检测到的全部边缘点，与拟合结果无关，
-                // 默认不显示，Tab3 勾选后用于定位拟合失败原因）
-                result.DiagnosticPoints = ExtractDiagnosticPoints(
-                    objectIndex, metrologyModel, TransitionToHalcon(parameters.Transition));
-
-                // HALCON 实际测量带（MeasureContour XLD 轮廓 → 四边形点集，诊断卡尺对齐用，默认不显示）
-                result.HalconMeasureBands = ExtractHalconMeasureBands(
-                    objectIndex, metrologyModel, TransitionToHalcon(parameters.Transition));
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"解析 Halcon 圆结果失败: {ex.Message}", ex);
-            }
-        }
-
-        /// <summary>
-        /// 提取拟合点（used_edges → 实际参与拟合的边缘点，每测量带一个）。
-        /// 与官方 measure_stamping_part 示例一致。
-        /// </summary>
-        private Point2d[] ExtractMeasurementPoints(HTuple objectIndex, HMetrologyModel metrologyModel)
-        {
-            try
-            {
-                var usedRow = metrologyModel.GetMetrologyObjectResult(
-                    objectIndex, new HTuple("all"), new HTuple("used_edges"), new HTuple("row"));
-                var usedCol = metrologyModel.GetMetrologyObjectResult(
-                    objectIndex, new HTuple("all"), new HTuple("used_edges"), new HTuple("column"));
-                if (usedRow.Length == 0) return Array.Empty<Point2d>();
-                var pts = new Point2d[usedRow.Length];
-                for (int i = 0; i < usedRow.Length; i++)
-                    pts[i] = new Point2d(usedCol[i].D, usedRow[i].D);
-                return pts;
-            }
-            catch
-            {
-                return Array.Empty<Point2d>();
-            }
         }
 
         /// <summary>
@@ -603,50 +518,6 @@ namespace SunEyeVision.Tool.CircleDetect
             catch
             {
                 return Array.Empty<System.Windows.Point[]>();
-            }
-        }
-
-        /// <summary>
-        /// 自算拟合残差 RMSE。
-        /// HALCON 中 rms 既不是 get_metrology_object_param 的合法 GenParamName（#1303），
-        /// 也不是 get_metrology_object_result 的合法 result_type（#1305），必须自行计算。
-        /// 参考官方 measure_stamping_part 示例：用 used_edges 取实际参与拟合的边缘点，
-        /// 计算每个点到拟合圆（|点到圆心| − 半径）的距离，取均方根。
-        /// </summary>
-        /// <param name="metrologyModel">计量模型</param>
-        /// <param name="objectIndex">测量对象索引</param>
-        /// <param name="allParam">拟合参数 [Row, Col, Radius]</param>
-        /// <returns>RMSE 值（无拟合点时为 0）</returns>
-        private static HTuple ComputeRmsFromUsedEdges(HMetrologyModel metrologyModel, int objectIndex, HTuple allParam)
-        {
-            try
-            {
-                if (allParam.Length < 3)
-                    return new HTuple(0.0);
-
-                var idx = new HTuple(objectIndex);
-                var usedRow = metrologyModel.GetMetrologyObjectResult(
-                    idx, new HTuple("all"), new HTuple("used_edges"), new HTuple("row"));
-                var usedCol = metrologyModel.GetMetrologyObjectResult(
-                    idx, new HTuple("all"), new HTuple("used_edges"), new HTuple("column"));
-                if (usedRow.Length == 0)
-                    return new HTuple(0.0);
-
-                var cRow = allParam[0].D;
-                var cCol = allParam[1].D;
-                var radius = allParam[2].D;
-
-                double sumSq = 0;
-                for (int i = 0; i < usedRow.Length; i++)
-                {
-                    var dist = Math.Sqrt(Math.Pow(usedRow[i].D - cRow, 2) + Math.Pow(usedCol[i].D - cCol, 2)) - radius;
-                    sumSq += dist * dist;
-                }
-                return new HTuple(Math.Sqrt(sumSq / usedRow.Length));
-            }
-            catch
-            {
-                return new HTuple(0.0);
             }
         }
 

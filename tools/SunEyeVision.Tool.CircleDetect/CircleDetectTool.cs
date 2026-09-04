@@ -99,20 +99,32 @@ namespace SunEyeVision.Tool.CircleDetect
                 HOperatorSet.GetImageSize(hImage, out var width, out var height);
                 metrologyModel.SetMetrologyModelImageSize((int)width.L, (int)height.L);
 
-                // 位置修正：引导圆按矩阵变换到当前图像坐标（圆心变换 + 半径缩放）
+                // 位置修正：引导圆按矩阵变换到当前图像坐标（圆心变换 + 半径缩放；
+                // 弧为有向形状，起止角随矩阵旋转，与交互层 RenderArc 同口径，保证交互/执行/结果三层一致）
                 var guideCenter = parameters.GuideCircle.Value.Center;
                 var guideRadius = parameters.GuideCircle.Value.Radius;
+                AffineMatrix? guideMatrix = null;
                 if (parameters.IsPositionCorrectionEnabled &&
                     PositionCorrectionResolver.ResolveFirstMatrix(parameters.PositionCorrectionBindingSource) is { } matrix)
                 {
+                    guideMatrix = matrix;
                     guideCenter = matrix.TransformWpfPoint(guideCenter);
                     guideRadius *= matrix.ScaleFactor();
+                }
+                // 弧模式：显示系弧（角度随矩阵旋转），作为 genParam 与结果回显的角度源
+                Arc2d? guideDisplayArc = null;
+                if (parameters.IsArc)
+                {
+                    guideDisplayArc = new Arc2d(guideCenter, guideRadius,
+                        RotateWpfAngle(guideMatrix, parameters.StartAngle),
+                        RotateWpfAngle(guideMatrix, parameters.EndAngle),
+                        parameters.IsMajorArc);
                 }
 
                 // ★ 日志埋点（诊断边缘极性/选取模式组合问题）：
                 //   记录参数枚举 → HALCON 字符串映射 + 完整 genParam 名称/值 + 引导圆/图像信息
                 var genParamName = BuildGenParamName(parameters);
-                var genParamValue = BuildGenParamValue(parameters);
+                var genParamValue = BuildGenParamValue(parameters, guideDisplayArc);
                 parameters.LogInfo(
                     $"[Diag] 参数埋点: 图像={width.L}x{height.L}, " +
                     $"引导圆=中心({guideCenter.X:F2},{guideCenter.Y:F2}) 半径={guideRadius:F2}, " +
@@ -161,7 +173,7 @@ namespace SunEyeVision.Tool.CircleDetect
                 //   不改变核心拟合算法。Halcon 2D Metrology 原生拟合不支持屏蔽区概念，
                 //   屏蔽过滤必须在拟合前完成，故统一走自研鲁棒拟合（fit_circle_contour_xld）。
                 bool hasEnabledMask = parameters.GetRoisByType(RoiType.Mask).Any();
-                FillResultWithMask(result, parameters, objectIndex, metrologyModel, hasEnabledMask);
+                FillResultWithMask(result, parameters, objectIndex, metrologyModel, hasEnabledMask, guideDisplayArc);
 
                 // ===== 结果判断（对齐 VisionMaster：半径/中心X/中心Y/拟合误差/匹配点数） =====
                 var isOk = EvaluateResult(result, parameters);
@@ -247,7 +259,7 @@ namespace SunEyeVision.Tool.CircleDetect
         ///   不在本方法内自行推导，避免"整圆退化成零长弧""跨 0° 边界方向错"等跨层语义问题。
         ///   整圆与圆弧规则不同，必须分派（HALCON 文档：闭合圆 = start_phi 0 + end_phi 2π + positive）。
         /// </remarks>
-        private HTuple BuildGenParamValue(CircleDetectParameters parameters)
+        private HTuple BuildGenParamValue(CircleDetectParameters parameters, Arc2d? displayArc = null)
         {
             double startPhi;
             double endPhi;
@@ -255,7 +267,7 @@ namespace SunEyeVision.Tool.CircleDetect
 
             if (parameters.IsArc)
             {
-                var arc = new Arc2d(
+                var arc = displayArc ?? new Arc2d(
                     parameters.GuideCircle.Value.Center,
                     parameters.GuideCircle.Value.Radius,
                     parameters.StartAngle,
@@ -327,12 +339,20 @@ namespace SunEyeVision.Tool.CircleDetect
         }
 
         /// <summary>
+        /// WPF 参考系弧度角 → 显示系弧度角（有向形状完整跟随位置修正旋转；无矩阵时原样返回）。
+        /// </summary>
+        private static double RotateWpfAngle(AffineMatrix? matrix, double angleRad)
+            => matrix != null
+                ? PositionCorrectionResolver.DisplayAngleDeg(matrix, angleRad * 180.0 / Math.PI) * Math.PI / 180.0
+                : angleRad;
+
+        /// <summary>
         /// 统一结果填充（有/无屏蔽共用）：取全部测量点 → 屏蔽区空间过滤(可选) → 全点鲁棒拟合。
         /// 屏蔽区内的点不参与拟合，也不作为"拟合点"显示（VisionMaster 屏蔽语义）；
         /// 无屏蔽区时全量点参与拟合（与屏蔽路径完全同一套核心拟合逻辑）。
         /// </summary>
         private void FillResultWithMask(CircleDetectResults result, CircleDetectParameters parameters,
-            HTuple objectIndex, HMetrologyModel metrologyModel, bool hasEnabledMask)
+            HTuple objectIndex, HMetrologyModel metrologyModel, bool hasEnabledMask, Arc2d? displayArc)
         {
             // 1. 取采样点（transition 过滤后的全部测量点）
             var measures = ExtractDiagnosticPoints(
@@ -374,9 +394,12 @@ namespace SunEyeVision.Tool.CircleDetect
 
             if (parameters.IsArc)
             {
+                // 角度源 = 显示系弧（位置修正旋转后）；无修正时与参考角一致
+                double sA = displayArc?.StartAngle ?? parameters.StartAngle;
+                double eA = displayArc?.EndAngle ?? parameters.EndAngle;
                 result.Arc = new[] { new Arc2d(
                     new Point(center.X, center.Y), radius,
-                    parameters.StartAngle, parameters.EndAngle, parameters.IsMajorArc) };
+                    sA, eA, parameters.IsMajorArc) };
             }
             else
             {

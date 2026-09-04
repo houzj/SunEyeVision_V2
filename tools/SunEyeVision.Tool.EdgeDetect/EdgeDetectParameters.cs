@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -333,13 +333,11 @@ namespace SunEyeVision.Tool.EdgeDetect
             if (!GuideCircle.HasValue) return;
 
             var circle = GuideCircle.Value;
-            double radiusScale = 1.0;
             if (correctionMatrix != null)
             {
                 circle = new Circle2d(
                     correctionMatrix.TransformWpfPoint(circle.Center),
                     circle.Radius * correctionMatrix.ScaleFactor());
-                radiusScale = correctionMatrix.ScaleFactor();
             }
 
             if (GuideStyle.IsVisible)
@@ -365,7 +363,7 @@ namespace SunEyeVision.Tool.EdgeDetect
                 {
                     var arc = new Arc2d(circle.Center, circle.Radius, StartAngle, EndAngle, IsMajorArc);
                     foreach (var quad in MeasureBandOverlay.BuildArcBands(
-                                 arc, MeasureLength1 * 2, MeasureLength2 * 2, NumMeasures, radiusScale))
+                                 arc, MeasureLength1 * 2, MeasureLength2 * 2, NumMeasures))
                         bands.Add(quad);
 
                     items.Add(new GraphicsDisplayItem
@@ -378,7 +376,7 @@ namespace SunEyeVision.Tool.EdgeDetect
 
                     // 主卡尺极性方向三角（Halcon circle/arc 扫描方向 = 圆内侧→外侧；几何与交互层共用）
                     double spanArc = arc.AngularSpan;
-                    double halfBandAngleArc = (MeasureLength2 * 2 / 2 * radiusScale) / arc.Radius;
+                    double halfBandAngleArc = MeasureLength2 / arc.Radius;
                     double directionArc = spanArc >= 0 ? 1.0 : -1.0;
                     double sweepEndArc = arc.StartAngle + spanArc;
                     double firstAngleArc = arc.StartAngle + directionArc * halfBandAngleArc;
@@ -387,7 +385,7 @@ namespace SunEyeVision.Tool.EdgeDetect
                         ? firstAngleArc + (NumMeasures / 2) * ((lastAngleArc - firstAngleArc) / (NumMeasures - 1))
                         : arc.StartAngle + spanArc / 2;
                     var arcTriangles = MeasureBandOverlay.BuildRadialDirectionArrowTriangles(
-                        arc.Center, arc.Radius, mainAngleArc, MeasureLength1 * 2, MeasureLength2 * 2 * radiusScale, zoom: 1.0);
+                        arc.Center, arc.Radius, mainAngleArc, MeasureLength1 * 2, MeasureLength2 * 2, zoom: 1.0);
                     items.Add(new GraphicsDisplayItem
                     {
                         Style = CaliberStyle,

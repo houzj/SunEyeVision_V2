@@ -58,7 +58,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
         /// <param name="zoom">视口缩放（线宽反除缩放，对齐 Blob 检测区域：线宽=2/zoom，视觉恒定）</param>
         public void RenderLine(Point start, Point end, double bandWidth, double bandLength, int measureCount, bool drawBands = true, AffineMatrix? matrix = null, double zoom = 1.0)
         {
-            double scale = matrix != null ? matrix.ScaleFactor() : 1.0;
             Clear();
 
             // 位置修正：参考坐标 → 当前图像坐标
@@ -68,9 +67,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
                 end = matrix.TransformWpfPoint(end);
             }
 
-            // Caliber size scales with position-correction matrix (same as RenderCircle/RenderArc radiusScale)
-            double scaleWidth = bandWidth * scale;
-            double scaleLength = bandLength * scale;
             double stroke = StrokeWidthFor(zoom);
             double bandStroke = BandStrokeWidthFor(zoom);
 
@@ -80,7 +76,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
             if (!drawBands || measureCount <= 0) return;
 
             // 测量带四边形（与结果层共用同一几何计算，保证两层显示一致）
-            foreach (var quad in BuildLineBands(start, end, scaleWidth, scaleLength, measureCount, null))
+            foreach (var quad in BuildLineBands(start, end, bandWidth, bandLength, measureCount, null))
             {
                 // 卡尺无填充，全检测蓝，粗细/透明度统一（线宽与 Blob 检测区域一致）
                 AddQuad(quad[0], quad[1], quad[2], quad[3], Colors.Transparent, StrokeColor, bandStroke, 1.0);
@@ -88,7 +84,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
 
             // 主卡尺极性方向标记（交互层实时显示，与结果层 BuildMeasureGuideItems 同步）。
             // 在主卡尺法向两条边（顶边/底边）上各画一个朝 normal 的小箭头。
-            AddMainCaliberEdgeDirectionArrows(start, end, scaleWidth, scaleLength, measureCount, StrokeColor, bandStroke, zoom);
+            AddMainCaliberEdgeDirectionArrows(start, end, bandWidth, bandLength, measureCount, StrokeColor, bandStroke, zoom);
         }
 
         /// <summary>
@@ -237,7 +233,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
 
             // 位置修正：圆弧为有向形状，完整仿射跟随——圆心变换、半径缩放，
             // 且起止角叠加矩阵旋转（DisplayAngleDeg 向量法，避免符号错误导致弧主体与手柄分离）。
-            double radiusScale = 1.0;
             if (matrix != null)
             {
                 var startDisp = PositionCorrectionResolver.DisplayAngleDeg(matrix, arc.StartAngle * 180.0 / Math.PI) * Math.PI / 180.0;
@@ -246,7 +241,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
                     matrix.TransformWpfPoint(arc.Center),
                     arc.Radius * matrix.ScaleFactor(),
                     startDisp, endDisp, arc.IsMajorArc);
-                radiusScale = matrix.ScaleFactor();
             }
 
             double stroke = StrokeWidthFor(zoom);
@@ -258,7 +252,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
             if (!drawBands || measureCount <= 0 || arc.Radius <= 0 || Math.Abs(arc.AngularSpan) <= 1e-6) return;
 
             // 环形测量带（与结果层共用同一几何计算）
-            foreach (var quad in BuildArcBands(arc, bandWidth, bandLength, measureCount, radiusScale))
+            foreach (var quad in BuildArcBands(arc, bandWidth, bandLength, measureCount))
             {
                 // 卡尺无填充，全检测蓝，粗细/透明度统一（线宽与 Blob 检测区域一致）
                 AddQuad(quad[0], quad[1], quad[2], quad[3], Colors.Transparent, StrokeColor, bandStroke, 1.0);
@@ -267,7 +261,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
             // 主卡尺极性方向标记：Halcon circle/arc 测量扫描方向 = 圆内侧→外侧（官方定义），
             // 主卡尺（弧中点条，中心角 = firstAngle + mainIndex×stepAngle）上画朝 +radial（径向外）的小箭头。
             double span = arc.AngularSpan;
-            double halfBandAngle = (bandLength / 2 * radiusScale) / arc.Radius;
+            double halfBandAngle = (bandLength / 2) / arc.Radius;
             double direction = span >= 0 ? 1.0 : -1.0;
             double sweepEnd = arc.StartAngle + span;
             double firstAngle = arc.StartAngle + direction * halfBandAngle;
@@ -275,7 +269,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
             double mainAngle = measureCount > 1
                 ? firstAngle + (measureCount / 2) * ((lastAngle - firstAngle) / (measureCount - 1))
                 : arc.StartAngle + span / 2;
-            AddMainCaliberRadialDirectionArrows(arc.Center, arc.Radius, bandWidth, bandLength * radiusScale, mainAngle,
+            AddMainCaliberRadialDirectionArrows(arc.Center, arc.Radius, bandWidth, bandLength, mainAngle,
                 StrokeColor, bandStroke, zoom);
         }
 
@@ -283,9 +277,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
         /// 计算圆弧引导环形测量带四边形（供交互层渲染与结果层显示共用）。
         /// 调用方需先对 arc 应用位置修正（圆心变换 + 半径缩放，角度不变），与 RenderArc 内部逻辑一致。
         /// </summary>
-        /// <param name="radiusScale">位置修正半径缩放系数（无修正时传 1.0）</param>
         public static System.Collections.Generic.IEnumerable<System.Windows.Point[]> BuildArcBands(
-            Arc2d arc, double bandWidth, double bandLength, int measureCount, double radiusScale = 1.0)
+            Arc2d arc, double bandWidth, double bandLength, int measureCount)
         {
             if (measureCount <= 0 || arc.Radius <= 0 || Math.Abs(arc.AngularSpan) <= 1e-6) yield break;
 
@@ -298,8 +291,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
             //   step 由 (last−first)/(N−1) 得出，符号自然与弧方向一致（顺/逆时针均正确）。
             //   N=1 时单带中心取弧中点。
             double span = arc.AngularSpan;
-            double halfBand = bandLength / 2 * radiusScale;
-            double halfWidth = bandWidth / 2 * radiusScale;
+            double halfBand = bandLength / 2;
+            double halfWidth = bandWidth / 2;
             double halfBandAngle = halfBand / arc.Radius;
             double direction = span >= 0 ? 1.0 : -1.0;
             double sweepEnd = arc.StartAngle + span;

@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Windows;
 using System.Windows.Media;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Execution.Helpers;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
@@ -331,19 +332,21 @@ namespace SunEyeVision.Tool.CircleDetect
             var circle = GuideCircle.Value;
 
             // 位置修正：圆心变换 + 半径缩放（对齐 Run 中算法 + RenderCircle/RenderArc 内部逻辑）
-            double radiusScale = 1.0;
             if (correctionMatrix != null)
             {
                 circle = new Circle2d(
                     correctionMatrix.TransformWpfPoint(circle.Center),
                     circle.Radius * correctionMatrix.ScaleFactor());
-                radiusScale = correctionMatrix.ScaleFactor();
             }
 
             if (IsArc)
             {
                 // ★ 圆弧模式：与交互层一致（圆弧引导 + 圆弧卡尺），避免结果层画整圆与交互层圆弧重叠
-                var arc = new Arc2d(circle.Center, circle.Radius, StartAngle, EndAngle, IsMajorArc);
+                // 弧为有向形状：起止角随位置修正矩阵旋转（与交互层 RenderArc / 执行层同口径）
+                double ArcDeg(double rad) => correctionMatrix != null
+                    ? PositionCorrectionResolver.DisplayAngleDeg(correctionMatrix, rad * 180.0 / Math.PI) * Math.PI / 180.0
+                    : rad;
+                var arc = new Arc2d(circle.Center, circle.Radius, ArcDeg(StartAngle), ArcDeg(EndAngle), IsMajorArc);
 
                 if (GuideStyle.IsVisible)
                 {
@@ -361,7 +364,7 @@ namespace SunEyeVision.Tool.CircleDetect
                 {
                     var bands = new List<System.Windows.Point[]>();
                     foreach (var quad in MeasureBandOverlay.BuildArcBands(
-                                 arc, MeasureLength1 * 2, MeasureLength2 * 2, NumMeasures, radiusScale))
+                                 arc, MeasureLength1 * 2, MeasureLength2 * 2, NumMeasures))
                     {
                         bands.Add(quad);
                     }
@@ -375,7 +378,7 @@ namespace SunEyeVision.Tool.CircleDetect
 
                     // 主卡尺极性方向三角（Halcon circle/arc 扫描方向 = 圆内侧→外侧；几何与交互层共用）
                     double spanArc = arc.AngularSpan;
-                    double halfBandAngleArc = (MeasureLength2 * 2 / 2 * radiusScale) / arc.Radius;
+                    double halfBandAngleArc = MeasureLength2 / arc.Radius;
                     double directionArc = spanArc >= 0 ? 1.0 : -1.0;
                     double sweepEndArc = arc.StartAngle + spanArc;
                     double firstAngleArc = arc.StartAngle + directionArc * halfBandAngleArc;
@@ -384,7 +387,7 @@ namespace SunEyeVision.Tool.CircleDetect
                         ? firstAngleArc + (NumMeasures / 2) * ((lastAngleArc - firstAngleArc) / (NumMeasures - 1))
                         : arc.StartAngle + spanArc / 2;
                     var arcTriangles = MeasureBandOverlay.BuildRadialDirectionArrowTriangles(
-                        arc.Center, arc.Radius, mainAngleArc, MeasureLength1 * 2, MeasureLength2 * 2 * radiusScale, zoom: 1.0);
+                        arc.Center, arc.Radius, mainAngleArc, MeasureLength1 * 2, MeasureLength2 * 2, zoom: 1.0);
                     yield return new GraphicsDisplayItem
                     {
                         Style = CaliberStyle,

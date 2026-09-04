@@ -3371,6 +3371,10 @@
                                     {
                                         "date":  "2026-09-05",
                                         "note":  "[67d6ecd7fc08c5139a5c491a23b86ec29c57848b] fix(script): 脚本模板适配层命名空间迁移（VisionAdapters→Vision.Contracts）"
+                                    },
+                                    {
+                                        "date":  "2026-09-05",
+                                        "note":  "[6adb8a1376b3a2bfcf7b3da96f5487223c198467] feat(script): 程序集引用候选纳入 HalAdapter/CvAdapter 适配层"
                                     }
                                 ]
                     },

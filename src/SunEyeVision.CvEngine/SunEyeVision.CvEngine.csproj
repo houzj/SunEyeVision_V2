@@ -12,16 +12,10 @@
     <NoWarn>$(NoWarn);1591</NoWarn>
   </PropertyGroup>
 
+  <!-- 算法库层：仅依赖 OpenCvSharp。不引用 SDK —— SDK 接口适配由 CvAdapter 提供（对称架构，见方案 AC-9） -->
   <ItemGroup>
     <PackageReference Include="OpenCvSharp4" Version="4.13.0.20260222" />
     <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.13.0.20260222" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Plugin.SDK\SunEyeVision.Plugin.SDK.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Using Include="SunEyeVision.Plugin.SDK.VisionAdapters" />
-  </ItemGroup>
 </Project>

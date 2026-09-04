@@ -1,15 +1,133 @@
-{
-  "version": 1,
-  "lastUpdated": "2026-09-03",
-  "schemeSummary": "双渲染层幂律缩放治理：ViewportScaling 公式唯一源 + 幂律管控表（结果层/交互层归口）",
-  "tools": {
-    "SunEyeVision.Plugin.SDK": {"lastVerificationDate":"2026-08-07","lastVerificationType":"full","result":"pass","passedChecks":["构建✅","rule-014/015审查✅","dotnet test✅ 136","契约测试✅ ParamBindingDisplay/RoiBinding/RoiDesignTimeGroups"]},
-    "SunEyeVision.Tool.Subroutine": {"lastVerificationDate":"2026-08-07","lastVerificationType":"full","result":"pass","passedChecks":["构建✅","dotnet test✅ 8","IndexOf切首点不截断嵌套路径✅","对象引用GetBindingPath✅"]},
-    "SunEyeVision.BlobAnalysis": {"lastVerificationDate":"2026-07-21","lastVerificationType":"full","result":"pass","passedChecks":["构建✅","dotnet test✅ 1","D8输出改RoI✅","D6删冗余筛选✅"]},
-    "SunEyeVision.Tool.Threshold": {"lastVerificationDate":"2026-07-21","lastVerificationType":"full","result":"pass","passedChecks":["构建✅","dotnet test✅ 1","D8输出改RoI✅"]},
-    "SunEyeVision.Tool.Morphology": {"lastVerificationDate":"2026-07-21","lastVerificationType":"full","result":"pass","passedChecks":["构建✅","dotnet test✅ 1","D8输出改RoI✅"]},
-    "SunEyeVision.Tool.ImageThreshold": {"lastVerificationDate":"2026-07-21","lastVerificationType":"full","result":"pass","passedChecks":["构建✅","dotnet test✅ 1","D8输出改RoI✅"]},
-    "SunEyeVision.Tool.Script": {"lastVerificationDate":"2026-08-20","lastVerificationType":"partial","result":"pass","passedChecks":["构建✅ slnx 0错误","dotnet test✅ 18","rule-014/015/008/002/003审查✅","治本验证✅ 行号+1统一无同类潜伏点","删CS0246过滤补丁✅ 波浪线精准span","插件输出纯净✅"],"skippedChecks":["手动目视：类型青色/波浪线/ToolTip/暗色主题（UI视觉需重启主程序目视）"]},
-    "SunEyeVision.Plugin.SDK.UI": {"lastVerificationDate":"2026-09-03","lastVerificationType":"partial","result":"pass","passedChecks":["构建✅ slnx 0错误","dotnet test✅ SDK 231/234（3存量失败为Arc模型，baseline复现确认非本方案引入）","契约测试✅ ViewportScalingContractTests 24","rule-008/002/003审查✅","同类pattern扫描✅ 补RoiEditorControl橡皮筋归口","净化✅ 残留0","治本验证✅ 公式唯一源+幂律管控表落地"],"skippedChecks":["手动目视：结果层/交互层 zoom 缩放视觉一致性（需重启主程序）"]}
-  }
+﻿{
+    "version":  1,
+    "lastUpdated":  "2026-09-04",
+    "schemeSummary":  "LineDetect/CircleDetect unified robust fitting",
+    "tools":  {
+                  "SunEyeVision.Plugin.SDK":  {
+                                                  "lastVerificationDate":  "2026-08-07",
+                                                  "lastVerificationType":  "full",
+                                                  "result":  "pass",
+                                                  "passedChecks":  [
+                                                                       "构建✅",
+                                                                       "rule-014/015审查✅",
+                                                                       "dotnet test✅ 136",
+                                                                       "契约测试✅ ParamBindingDisplay/RoiBinding/RoiDesignTimeGroups"
+                                                                   ]
+                                              },
+                  "SunEyeVision.Tool.Subroutine":  {
+                                                       "lastVerificationDate":  "2026-08-07",
+                                                       "lastVerificationType":  "full",
+                                                       "result":  "pass",
+                                                       "passedChecks":  [
+                                                                            "构建✅",
+                                                                            "dotnet test✅ 8",
+                                                                            "IndexOf切首点不截断嵌套路径✅",
+                                                                            "对象引用GetBindingPath✅"
+                                                                        ]
+                                                   },
+                  "SunEyeVision.BlobAnalysis":  {
+                                                    "lastVerificationDate":  "2026-07-21",
+                                                    "lastVerificationType":  "full",
+                                                    "result":  "pass",
+                                                    "passedChecks":  [
+                                                                         "构建✅",
+                                                                         "dotnet test✅ 1",
+                                                                         "D8输出改RoI✅",
+                                                                         "D6删冗余筛选✅"
+                                                                     ]
+                                                },
+                  "SunEyeVision.Tool.Threshold":  {
+                                                      "lastVerificationDate":  "2026-07-21",
+                                                      "lastVerificationType":  "full",
+                                                      "result":  "pass",
+                                                      "passedChecks":  [
+                                                                           "构建✅",
+                                                                           "dotnet test✅ 1",
+                                                                           "D8输出改RoI✅"
+                                                                       ]
+                                                  },
+                  "SunEyeVision.Tool.Morphology":  {
+                                                       "lastVerificationDate":  "2026-07-21",
+                                                       "lastVerificationType":  "full",
+                                                       "result":  "pass",
+                                                       "passedChecks":  [
+                                                                            "构建✅",
+                                                                            "dotnet test✅ 1",
+                                                                            "D8输出改RoI✅"
+                                                                        ]
+                                                   },
+                  "SunEyeVision.Tool.ImageThreshold":  {
+                                                           "lastVerificationDate":  "2026-07-21",
+                                                           "lastVerificationType":  "full",
+                                                           "result":  "pass",
+                                                           "passedChecks":  [
+                                                                                "构建✅",
+                                                                                "dotnet test✅ 1",
+                                                                                "D8输出改RoI✅"
+                                                                            ]
+                                                       },
+                  "SunEyeVision.Tool.Script":  {
+                                                   "lastVerificationDate":  "2026-08-20",
+                                                   "lastVerificationType":  "partial",
+                                                   "result":  "pass",
+                                                   "passedChecks":  [
+                                                                        "构建✅ slnx 0错误",
+                                                                        "dotnet test✅ 18",
+                                                                        "rule-014/015/008/002/003审查✅",
+                                                                        "治本验证✅ 行号+1统一无同类潜伏点",
+                                                                        "删CS0246过滤补丁✅ 波浪线精准span",
+                                                                        "插件输出纯净✅"
+                                                                    ],
+                                                   "skippedChecks":  [
+                                                                         "手动目视：类型青色/波浪线/ToolTip/暗色主题（UI视觉需重启主程序目视）"
+                                                                     ]
+                                               },
+                  "SunEyeVision.Plugin.SDK.UI":  {
+                                                     "lastVerificationDate":  "2026-09-03",
+                                                     "lastVerificationType":  "partial",
+                                                     "result":  "pass",
+                                                     "passedChecks":  [
+                                                                          "构建✅ slnx 0错误",
+                                                                          "dotnet test✅ SDK 231/234（3存量失败为Arc模型，baseline复现确认非本方案引入）",
+                                                                          "契约测试✅ ViewportScalingContractTests 24",
+                                                                          "rule-008/002/003审查✅",
+                                                                          "同类pattern扫描✅ 补RoiEditorControl橡皮筋归口",
+                                                                          "净化✅ 残留0",
+                                                                          "治本验证✅ 公式唯一源+幂律管控表落地"
+                                                                      ],
+                                                     "skippedChecks":  [
+                                                                           "手动目视：结果层/交互层 zoom 缩放视觉一致性（需重启主程序）"
+                                                                       ]
+                                                 },
+                  "SunEyeVision.Tool.LineDetect":  {
+                                                       "lastVerificationDate":  "2026-09-04",
+                                                       "lastVerificationType":  "partial",
+                                                       "result":  "pass",
+                                                       "passedChecks":  [
+                                                                            "build 0 errors (LineDetect csproj)",
+                                                                            "dotnet test 1 (new test project)",
+                                                                            "double-path unified - no hasEnabledMask if/else remaining",
+                                                                            "fit_line algorithm compliant - tukey/regression only",
+                                                                            "dead code removed - ComputeRmsFromUsedEdges/FillResult/ExtractMeasurementPoints/LogMeasureBandAlignmentDiagnostics"
+                                                                        ],
+                                                       "skippedChecks":  [
+                                                                             "manual image run: mask/no-mask real fitting acceptance (requires restarting host app)"
+                                                                         ]
+                                                   },
+                  "SunEyeVision.Tool.CircleDetect":  {
+                                                         "lastVerificationDate":  "2026-09-04",
+                                                         "lastVerificationType":  "partial",
+                                                         "result":  "pass",
+                                                         "passedChecks":  [
+                                                                              "build 0 errors (CircleDetect csproj)",
+                                                                              "dotnet test 1 (new test project)",
+                                                                              "double-path unified - no hasEnabledMask if/else remaining",
+                                                                              "fit_circle #1301 fixed - geotukey prefitting (official list compliant)",
+                                                                              "dead code removed - ComputeRmsFromUsedEdges/FillResult/ExtractMeasurementPoints"
+                                                                          ],
+                                                         "skippedChecks":  [
+                                                                               "manual image run: masked circle no longer throws #1301 (requires restarting host app)"
+                                                                           ]
+                                                     }
+              }
 }

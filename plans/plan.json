@@ -2706,7 +2706,7 @@
                                           "name":  "ShapeMatch 测试（位姿精度）",
                                           "phase":  "测试验证",
                                           "hours":  8,
-                                          "status":  "todo",
+                                          "status":  "in_progress",
                                           "week":  "2026-W51"
                                       }
                                   ],
@@ -2726,6 +2726,10 @@
                                     {
                                         "date":  "2026-09-04",
                                         "note":  "[97823234f54e80fff31a118ab5eca51627c828a8] refactor(shape-match): 轮廓匹配治理——句柄缓存/矩阵工厂/参数清理/判定修复"
+                                    },
+                                    {
+                                        "date":  "2026-09-04",
+                                        "note":  "[a3ad4fc05a4ca86c469c2d8465be9a5674692473] feat(shape-match): 位置修正矩阵本体注册为输出，绑定下拉与结果树可见"
                                     }
                                 ]
                     },

@@ -41,18 +41,24 @@ namespace SunEyeVision.Tool.ShapeMatch
 
         /// <summary>
         /// 由匹配矩阵与模板参考点构造"参考图 → 测试图"位置修正矩阵。
-        /// 平移量扣除模板参考点：下游把参考图上 ROI 坐标直接 TransformPoint 即得测试图位置。
+        /// 平移量扣除的是"参考点被匹配矩阵旋转后的位置"：保证对参考图任意点 p，
+        /// M_pc(p) = R·(p − ref) + t（= 模型坐标→测试图一致），下游 ROI 坐标直接 TransformPoint 即落测试图。
+        /// 旧实现直接 t − ref 未对参考点做旋转，θ=0 时看似正确（R=I），
+        /// θ≠0 时漏掉旋转分量 → 大角度矩形脱离目标（修复点）。
         /// </summary>
         /// <param name="matchMatrix">FromMatchPose 产出的匹配矩阵</param>
         /// <param name="refX">模板参考点 X（模板训练时记录）</param>
         /// <param name="refY">模板参考点 Y</param>
         public static AffineMatrix ToPositionCorrection(AffineMatrix matchMatrix, double refX, double refY)
         {
+            // 先按 matchMatrix 线性部分旋转参考点，再从平移中扣除。
+            double rotatedRefX = matchMatrix.M11 * refX + matchMatrix.M21 * refY;
+            double rotatedRefY = matchMatrix.M12 * refX + matchMatrix.M22 * refY;
             return new AffineMatrix(
                 matchMatrix.M11, matchMatrix.M12,
                 matchMatrix.M21, matchMatrix.M22,
-                matchMatrix.OffsetX - refX,
-                matchMatrix.OffsetY - refY);
+                matchMatrix.OffsetX - rotatedRefX,
+                matchMatrix.OffsetY - rotatedRefY);
         }
     }
 }

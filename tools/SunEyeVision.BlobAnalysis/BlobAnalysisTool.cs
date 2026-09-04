@@ -7,6 +7,7 @@ using System.Windows;
 using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution;
+using SunEyeVision.Plugin.SDK.Execution.Helpers;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
@@ -127,21 +128,14 @@ namespace SunEyeVision.Tool.BlobAnalysis
                     stepSw.Restart();
                     var inspectionRegions = parameters.GetRoisByType(RoiType.Inspection);
                     var maskRegions = parameters.GetRoisByType(RoiType.Mask);
-                    (roiRegion, inspHRegion, maskHRegion) = ToolRegionHelper.BuildHalconROI(
-                        imgWidth, imgHeight, inspectionRegions, maskRegions, parameters.NodeResults);
-                    stepSw.Stop();
-                    stepTimings.Add(("ROI构建", stepSw.ElapsedMilliseconds));
-
-                    // ===== Step 2.5: 位置修正（正向变换 ROI） =====
+                    AffineMatrix? correctionMatrix = null;
                     if (parameters.IsPositionCorrectionEnabled)
                     {
-                        stepSw.Restart();
                         var bindingSource = parameters.PositionCorrectionBindingSource;
-                        if (bindingSource?.CurrentValue is AffineMatrix matrix)
+                        if (PositionCorrectionResolver.ResolveFirstMatrix(bindingSource) is { } matrix)
                         {
+                            correctionMatrix = matrix;
                             parameters.LogInfo($"位置修正已启用, 矩阵: {matrix}");
-                            (roiRegion, inspHRegion, maskHRegion) = ToolRegionHelper.ApplyPositionCorrectionHalcon(
-                                roiRegion, inspHRegion, maskHRegion, matrix, imgWidth, imgHeight);
                         }
                         else if (bindingSource != null &&
                                  !string.IsNullOrEmpty(bindingSource.SourceNodeId) &&
@@ -155,9 +149,14 @@ namespace SunEyeVision.Tool.BlobAnalysis
                             // 未配置绑定源：发出警告但不阻断执行（用户可能忘记配置绑定源）
                             parameters.LogWarning("位置修正已启用但未配置绑定源，跳过位置修正");
                         }
-                        stepSw.Stop();
-                        stepTimings.Add(("位置修正", stepSw.ElapsedMilliseconds));
                     }
+
+                    // 位置修正按形状有向性并入 ROI 构建（无向剥转 / 有向完整，对齐 UI 语义）
+                    (roiRegion, inspHRegion, maskHRegion) = ToolRegionHelper.BuildHalconROI(
+                        imgWidth, imgHeight, inspectionRegions, maskRegions,
+                        parameters.NodeResults, correctionMatrix);
+                    stepSw.Stop();
+                    stepTimings.Add(("ROI构建", stepSw.ElapsedMilliseconds));
 
                     try
                     {

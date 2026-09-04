@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using HalconDotNet;
+using SunEyeVision.Plugin.SDK.Execution.Helpers;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
@@ -62,15 +63,19 @@ namespace SunEyeVision.HalAdapter
             IDictionary<string, ToolResults>? nodeResults = null)
         {
             var context = nodeResults != null ? new NodeResultsParameterContext(nodeResults) : null;
-            return BuildHalconRegion(regions, context);
+            return BuildHalconRegion(regions, context, correctionMatrix: null);
         }
 
         /// <summary>
-        /// 从 RoiData 集合构建 HRegion（内部方法，接受 IParameterContext）
+        /// 从 RoiData 集合构建 HRegion（内部方法，接受 IParameterContext；可带位置修正矩阵）。
+        /// 位置修正按"形状有向性"逐 RoiData 应用（对齐 UI 显示语义）：
+        ///   - 直接绘制的无向形状（轴对齐矩形/圆/圆环）→ 剥转矩阵（平移+均匀缩放）；
+        ///   - 有向形状（旋转矩形/多边形/直线）与绑定/计算模式区域 → 完整矩阵（跟随旋转）。
         /// </summary>
         private static HRegion BuildHalconRegion(
             IEnumerable<RoiData> regions,
-            IParameterContext? context)
+            IParameterContext? context,
+            AffineMatrix? correctionMatrix)
         {
             HRegion? result = null;
             foreach (var region in regions.Where(r => r.IsEnabled))
@@ -89,6 +94,20 @@ namespace SunEyeVision.HalAdapter
 
                 if (single != null)
                 {
+                    if (correctionMatrix != null)
+                    {
+                        var resolved = region.Parameters is ShapeParameters shapeDef && shapeDef.Geometry != null
+                            ? PositionCorrectionResolver.ResolveForShape(shapeDef.Geometry, correctionMatrix)
+                            : correctionMatrix; // 绑定/计算模式无显式几何 → 完整矩阵（跟随旋转）
+                        if (resolved != null)
+                        {
+                            HOperatorSet.AffineTransRegion(single, out var trans,
+                                new HTuple(resolved.ToHalconArray()), "nearest_neighbor");
+                            single.Dispose();
+                            single = new HRegion(trans);
+                        }
+                    }
+
                     if (result == null)
                         result = single;
                     else
@@ -249,7 +268,8 @@ namespace SunEyeVision.HalAdapter
             int imgWidth, int imgHeight,
             IEnumerable<RoiData> inspectionRegions,
             IEnumerable<RoiData> maskRegions,
-            IDictionary<string, ToolResults>? nodeResults = null)
+            IDictionary<string, ToolResults>? nodeResults = null,
+            AffineMatrix? correctionMatrix = null)
         {
             var context = nodeResults != null ? new NodeResultsParameterContext(nodeResults) : null;
 
@@ -263,10 +283,10 @@ namespace SunEyeVision.HalAdapter
             if (!hasInspection && !hasMask)
                 return (null, null, null);
 
-            // 构建检测区域（未设置时 = 全图）
+            // 构建检测区域（未设置时 = 全图）；位置修正按形状有向性在逐区域构建时应用
             if (hasInspection)
             {
-                inspHRegion = BuildHalconRegion(inspectionRegions, context); // 保持 tuple 供独立轮廓渲染
+                inspHRegion = BuildHalconRegion(inspectionRegions, context, correctionMatrix); // 保持 tuple 供独立轮廓渲染
 
                 HOperatorSet.Union1(inspHRegion, out var unionRegion); // 合并为单一处理域
                 roiRegion = new HRegion(unionRegion);
@@ -279,66 +299,11 @@ namespace SunEyeVision.HalAdapter
             if (hasMask)
             {
                 using var diffTarget = roiRegion;
-                maskHRegion = BuildHalconRegion(maskRegions, context); // 保持 tuple 供独立轮廓渲染
+                maskHRegion = BuildHalconRegion(maskRegions, context, correctionMatrix); // 保持 tuple 供独立轮廓渲染
                 HOperatorSet.Union1(maskHRegion, out var maskUnion); // 合并后再做差集
                 HOperatorSet.Difference(diffTarget, maskUnion, out var diffObj);
                 maskUnion.Dispose();
                 roiRegion = new HRegion(diffObj);
-            }
-
-            return (roiRegion, inspHRegion, maskHRegion);
-        }
-
-        /// <summary>
-        /// 对 Halcon ROI 应用位置修正（正向变换）
-        /// </summary>
-        /// <returns>(变换后的 roiRegion, 变换后的 inspHRegion, 变换后的 maskHRegion)</returns>
-        public static (HRegion? Roi, HRegion? Insp, HRegion? Mask) ApplyPositionCorrectionHalcon(
-            HRegion? roiRegion, HRegion? inspHRegion, HRegion? maskHRegion,
-            AffineMatrix matrix, int imgWidth, int imgHeight)
-        {
-            var halconArr = matrix.ToHalconArray();
-            var homMat2D = new HTuple(halconArr);
-
-            if (inspHRegion != null)
-            {
-                HOperatorSet.AffineTransRegion(inspHRegion, out var transInsp,
-                    homMat2D, "nearest_neighbor");
-                inspHRegion.Dispose();
-                inspHRegion = new HRegion(transInsp);
-            }
-
-            if (maskHRegion != null)
-            {
-                HOperatorSet.AffineTransRegion(maskHRegion, out var transMask,
-                    homMat2D, "nearest_neighbor");
-                maskHRegion.Dispose();
-                maskHRegion = new HRegion(transMask);
-            }
-
-            // 重新构建 roiRegion = insp - mask
-            if (roiRegion != null)
-            {
-                roiRegion.Dispose();
-                if (inspHRegion != null && maskHRegion != null)
-                {
-                    HOperatorSet.Union1(inspHRegion, out var inspUnion);
-                    HOperatorSet.Union1(maskHRegion, out var maskUnion);
-                    HOperatorSet.Difference(inspUnion, maskUnion, out var diffObj);
-                    inspUnion.Dispose();
-                    maskUnion.Dispose();
-                    roiRegion = new HRegion(diffObj);
-                }
-                else if (inspHRegion != null)
-                {
-                    HOperatorSet.Union1(inspHRegion, out var inspUnion);
-                    roiRegion = new HRegion(inspUnion);
-                    inspUnion.Dispose();
-                }
-                else
-                {
-                    roiRegion = new HRegion(0.0, 0.0, (double)imgHeight - 1, (double)imgWidth - 1);
-                }
             }
 
             return (roiRegion, inspHRegion, maskHRegion);
@@ -384,7 +349,7 @@ namespace SunEyeVision.HalAdapter
         }
 
         /// <summary>
-        /// 将屏蔽 RoiData 解析为几何判定器（位置修正统一在此应用）。
+        /// 将屏蔽 RoiData 解析为几何判定器（位置修正统一在此应用，按形状有向性解析矩阵）。
         /// </summary>
         private static MaskShape ParseMaskShape(RoiData mask, AffineMatrix? correctionMatrix)
         {
@@ -392,30 +357,33 @@ namespace SunEyeVision.HalAdapter
                 throw new NotSupportedException(
                     $"屏蔽区域 '{mask.Name}' 仅支持直接绘制模式，当前绑定/计算模式不被测量工具支持（请在参数中改用直接绘制的屏蔽区域）");
 
-            double scale = correctionMatrix?.ScaleFactor() ?? 1.0;
+            // 无向形状（轴对齐矩形/圆/圆环）剥转 / 有向形状完整跟随（对齐 ROI 构建与 UI 显示语义）
+            var resolvedMatrix = PositionCorrectionResolver.ResolveForShape(shape.Geometry, correctionMatrix);
+
+            double scale = resolvedMatrix?.ScaleFactor() ?? 1.0;
             switch (shape.Geometry)
             {
                 case Circle2d c:
-                    var cc = correctionMatrix != null ? correctionMatrix.TransformWpfPoint(c.Center) : c.Center;
+                    var cc = resolvedMatrix != null ? resolvedMatrix.TransformWpfPoint(c.Center) : c.Center;
                     return new CircleMaskShape(cc.X, cc.Y, c.Radius * scale);
 
                 case Annulus2d a:
                     if (!a.IsFullCircle)
                         throw new NotSupportedException(
                             $"屏蔽区域 '{mask.Name}' 的圆环必须是完整圆环，部分扇环暂不支持点过滤");
-                    var ac = correctionMatrix != null ? correctionMatrix.TransformWpfPoint(a.Center) : a.Center;
+                    var ac = resolvedMatrix != null ? resolvedMatrix.TransformWpfPoint(a.Center) : a.Center;
                     return new AnnulusMaskShape(ac.X, ac.Y, a.InnerRadius * scale, a.OuterRadius * scale);
 
                 case RotatedRect2d rr:
-                    return new PolygonMaskShape(TransformPoints(rr.GetCorners(), correctionMatrix));
+                    return new PolygonMaskShape(TransformPoints(rr.GetCorners(), resolvedMatrix));
 
                 case Polygon2d poly:
-                    return new PolygonMaskShape(TransformPoints(poly.Vertices, correctionMatrix));
+                    return new PolygonMaskShape(TransformPoints(poly.Vertices, resolvedMatrix));
 
                 case Rect rect:
                     return new PolygonMaskShape(TransformPoints(
                         new[] { rect.TopLeft, rect.TopRight, rect.BottomRight, rect.BottomLeft },
-                        correctionMatrix));
+                        resolvedMatrix));
 
                 default:
                     throw new NotSupportedException(

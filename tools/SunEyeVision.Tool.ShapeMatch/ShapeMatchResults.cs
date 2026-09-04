@@ -57,31 +57,22 @@ public class ShapeMatchResults : ToolResults
 
     /// <summary>
     /// 位置修正矩阵（参考图像→测试图像方向）
-    /// 已扣除模板参考点偏移，下游工具直接正向使用
+    /// 收敛到 <see cref="ShapeMatchTransformFactory.ToPositionCorrection"/>（参考点经旋转后扣除），
+    /// 保证大角度时下游 ROI 仍精确落在目标上。
     /// </summary>
     public AffineMatrix BestPositionCorrection =>
         BestMatch != null
-            ? new AffineMatrix(
-                BestMatch.TransformMatrix.M11,
-                BestMatch.TransformMatrix.M12,
-                BestMatch.TransformMatrix.M21,
-                BestMatch.TransformMatrix.M22,
-                BestMatch.TransformMatrix.OffsetX - BestMatch.ReferencePointX,
-                BestMatch.TransformMatrix.OffsetY - BestMatch.ReferencePointY)
+            ? ShapeMatchTransformFactory.ToPositionCorrection(
+                BestMatch.TransformMatrix, BestMatch.ReferencePointX, BestMatch.ReferencePointY)
             : AffineMatrix.Identity;
 
     /// <summary>
     /// 所有匹配的位置修正矩阵列表（工作流多实例绑定用）
-    /// 已扣除模板参考点偏移
+    /// 收敛到 <see cref="ShapeMatchTransformFactory.ToPositionCorrection"/>。
     /// </summary>
     public AffineMatrix[] MatchedPositionCorrections =>
-        MatchedItems?.Select(m => new AffineMatrix(
-            m.TransformMatrix.M11,
-            m.TransformMatrix.M12,
-            m.TransformMatrix.M21,
-            m.TransformMatrix.M22,
-            m.TransformMatrix.OffsetX - m.ReferencePointX,
-            m.TransformMatrix.OffsetY - m.ReferencePointY)).ToArray()
+        MatchedItems?.Select(m => ShapeMatchTransformFactory.ToPositionCorrection(
+            m.TransformMatrix, m.ReferencePointX, m.ReferencePointY)).ToArray()
         ?? Array.Empty<AffineMatrix>();
 
     /// <summary>位置修正矩阵 缩放分量X（M11）数组</summary>

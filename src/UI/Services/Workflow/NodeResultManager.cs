@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Media.Imaging;
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
+using SunEyeVision.Plugin.SDK.Execution.Helpers;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
@@ -397,7 +398,11 @@ namespace SunEyeVision.UI.Services.Workflow
                     return null;
                 }
 
-                var matrix = parentResult.Result.GetOutputValue<AffineMatrix>(dataSource.PropertyName);
+                // 兼容上游输出数组（如 ShapeMatch 的 MatchedPositionCorrections）：数组输入取第一个（[0]=最佳）
+                var matrix = parentResult.Result.GetOutputValue<AffineMatrix>(dataSource.PropertyName)
+                    ?? (parentResult.Result.GetOutputValue<AffineMatrix[]>(dataSource.PropertyName) is { Length: > 0 } arr
+                        ? arr[0]
+                        : null);
                 _correctionDiagnostics["矩阵"] = matrix?.ToString() ?? "null";
                 _correctionDiagnostics["状态"] = matrix != null ? "已应用" : "父节点输出无矩阵";
 
@@ -443,14 +448,10 @@ namespace SunEyeVision.UI.Services.Workflow
                 var regionItem = CreateRegionDisplayItem(region, inspectionStyle, correctionMatrix);
                 if (regionItem != null) items.Add(regionItem);
 
-                // 旋转矩形附加方向箭头
+                // 旋转矩形附加方向箭头（完整矩阵跟随，方向随矩阵旋转）
                 if (region.Parameters is ShapeParameters rShape && rShape.Geometry is RotatedRect2d)
                 {
-                    var arrowCenter = correctionMatrix != null
-                        ? correctionMatrix.TransformWpfPoint(new System.Windows.Point(((RotatedRect2d)rShape.Geometry).CenterX, ((RotatedRect2d)rShape.Geometry).CenterY))
-                        : new System.Windows.Point(((RotatedRect2d)rShape.Geometry).CenterX, ((RotatedRect2d)rShape.Geometry).CenterY);
-
-                    items.Add(BuildDirectionArrowItem(rShape, arrowCenter));
+                    items.Add(BuildDirectionArrowItem(rShape, correctionMatrix));
                 }
             }
 
@@ -462,14 +463,10 @@ namespace SunEyeVision.UI.Services.Workflow
                 var regionItem = CreateRegionDisplayItem(region, maskStyle, correctionMatrix);
                 if (regionItem != null) items.Add(regionItem);
 
-                // 旋转矩形附加方向箭头
+                // 旋转矩形附加方向箭头（完整矩阵跟随，方向随矩阵旋转）
                 if (region.Parameters is ShapeParameters mShape && mShape.Geometry is RotatedRect2d)
                 {
-                    var arrowCenter = correctionMatrix != null
-                        ? correctionMatrix.TransformWpfPoint(new System.Windows.Point(((RotatedRect2d)mShape.Geometry).CenterX, ((RotatedRect2d)mShape.Geometry).CenterY))
-                        : new System.Windows.Point(((RotatedRect2d)mShape.Geometry).CenterX, ((RotatedRect2d)mShape.Geometry).CenterY);
-
-                    items.Add(BuildDirectionArrowItem(mShape, arrowCenter));
+                    items.Add(BuildDirectionArrowItem(mShape, correctionMatrix));
                 }
             }
 
@@ -495,111 +492,117 @@ namespace SunEyeVision.UI.Services.Workflow
             return items.Count > 0 ? items : null;
         }
 
+        /// <summary>
+        /// 结果层区域显示：按形状有向性应用位置修正（无向剥转 / 有向完整），
+        /// 使结果层轮廓与交互层、与算法处理区域空间一致（所见即所得）。
+        /// </summary>
         private static DisplayItemBase? CreateRegionDisplayItem(RoiData region, GraphicsStyle style, AffineMatrix? correctionMatrix = null)
         {
-            if (region?.Parameters is not ShapeParameters shape) return null;
+            if (region?.Parameters is not ShapeParameters shape || shape.Geometry == null) return null;
 
-            System.Windows.Point GetCorrectionPoint(double x, double y) =>
-                correctionMatrix != null
-                    ? correctionMatrix.TransformWpfPoint(new System.Windows.Point(x, y))
-                    : new System.Windows.Point(x, y);
+            // 位置修正按形状有向性解析（对齐 RoiEditorControl 交互层语义）
+            var matrix = PositionCorrectionResolver.ResolveForShape(shape.Geometry, correctionMatrix);
+            double scale = matrix?.ScaleFactor() ?? 1.0;
 
-            System.Windows.Point center = new(0, 0);
-            System.Windows.Point lineStart = new(0, 0);
-            System.Windows.Point lineEnd = new(0, 0);
-            List<System.Windows.Point>? polygonPoints = null;
+            System.Windows.Point TransformPoint(System.Windows.Point p) =>
+                matrix != null ? matrix.TransformWpfPoint(p) : p;
 
-            if (shape.Geometry != null)
+            switch (shape.Geometry)
             {
-                if (shape.Geometry is Circle2d c)
-                    center = GetCorrectionPoint(c.Center.X, c.Center.Y);
-                else if (shape.Geometry is RotatedRect2d rr)
-                    center = GetCorrectionPoint(rr.CenterX, rr.CenterY);
-                else if (shape.Geometry is Line2d l)
-                {
-                    lineStart = GetCorrectionPoint(l.Point.X, l.Point.Y);
-                    lineEnd = GetCorrectionPoint(l.GetPointAt(100).X, l.GetPointAt(100).Y);
-                }
-                else if (shape.Geometry is System.Windows.Rect r)
-                    center = GetCorrectionPoint(r.X + r.Width / 2, r.Y + r.Height / 2);
-                else if (shape.Geometry is Polygon2d poly)
-                    polygonPoints = poly.Vertices.Select(v => GetCorrectionPoint(v.X, v.Y)).ToList();
-            }
-
-            if (shape.Geometry == null) return null;
-
-            if (shape.Geometry is Circle2d circleVal)
-            {
-                return new GraphicsDisplayItem
-                {
-                    Style = style, Type = GraphicsType.Circle,
-                    Geometries = new object[] { new Circle2d(circleVal.Center.X, circleVal.Center.Y, circleVal.Radius) }
-                };
-            }
-            else if (shape.Geometry is RotatedRect2d rr)
-            {
-                return new GraphicsDisplayItem
-                {
-                    Style = style, Type = GraphicsType.Polygon,
-                    Geometries = new object[]
+                case Circle2d c:
+                    return new GraphicsDisplayItem
                     {
-                        RotatedRectangleHelper.GetCorners(
-                            new System.Windows.Point(rr.CenterX, rr.CenterY), rr.Width, rr.Height, rr.Angle)
-                    }
-                };
-            }
-            else if (shape.Geometry is Annulus2d a)
-            {
-                return new GraphicsDisplayItem
-                {
-                    Style = style, Type = GraphicsType.Circle,
-                    Geometries = new object[]
-                    {
-                        new Circle2d(a.Center.X, a.Center.Y, a.OuterRadius),
-                        new Circle2d(a.Center.X, a.Center.Y, a.InnerRadius)
-                    },
-                    IsPassArray = new bool[2]
-                };
-            }
-            else if (shape.Geometry is Polygon2d poly && poly.Vertices.Length >= 3)
-            {
-                return new GraphicsDisplayItem
-                {
-                    Style = style, Type = GraphicsType.Polygon,
-                    Geometries = new object[] { poly.Vertices.Select(v => new System.Windows.Point(v.X, v.Y)).ToArray() }
-                };
-            }
-            else if (shape.Geometry is System.Windows.Rect r)
-            {
-                return new GraphicsDisplayItem
-                {
-                    Style = style, Type = GraphicsType.Rectangle,
-                    Geometries = new object[] { r }
-                };
-            }
-            else if (shape.Geometry is Line2d l)
-            {
-                return new GraphicsDisplayItem
-                {
-                    Style = style, Type = GraphicsType.Line,
-                    Geometries = new object[] { new LineSegment(l.Point, l.GetPointAt(100)) }
-                };
-            }
+                        Style = style, Type = GraphicsType.Circle,
+                        Geometries = new object[] { new Circle2d(TransformPoint(c.Center), c.Radius * scale) }
+                    };
 
-            return null;
+                case Annulus2d a:
+                    return new GraphicsDisplayItem
+                    {
+                        Style = style, Type = GraphicsType.Circle,
+                        Geometries = new object[]
+                        {
+                            new Circle2d(TransformPoint(a.Center), a.OuterRadius * scale),
+                            new Circle2d(TransformPoint(a.Center), a.InnerRadius * scale)
+                        },
+                        IsPassArray = new bool[2]
+                    };
+
+                case RotatedRect2d rr:
+                    return new GraphicsDisplayItem
+                    {
+                        Style = style, Type = GraphicsType.Polygon,
+                        Geometries = new object[]
+                        {
+                            RotatedRectangleHelper.GetCorners(
+                                new System.Windows.Point(rr.CenterX, rr.CenterY), rr.Width, rr.Height, rr.Angle)
+                                .Select(TransformPoint).ToArray()
+                        }
+                    };
+
+                case Polygon2d poly when poly.Vertices.Length >= 3:
+                    return new GraphicsDisplayItem
+                    {
+                        Style = style, Type = GraphicsType.Polygon,
+                        Geometries = new object[]
+                        {
+                            poly.Vertices.Select(v => TransformPoint(new System.Windows.Point(v.X, v.Y))).ToArray()
+                        }
+                    };
+
+                case System.Windows.Rect r:
+                    var center = TransformPoint(new System.Windows.Point(r.X + r.Width / 2, r.Y + r.Height / 2));
+                    var displayRect = new System.Windows.Rect(
+                        center.X - r.Width * scale / 2, center.Y - r.Height * scale / 2,
+                        r.Width * scale, r.Height * scale);
+                    return new GraphicsDisplayItem
+                    {
+                        Style = style, Type = GraphicsType.Rectangle,
+                        Geometries = new object[] { displayRect }
+                    };
+
+                case Line2d l:
+                    return new GraphicsDisplayItem
+                    {
+                        Style = style, Type = GraphicsType.Line,
+                        Geometries = new object[]
+                        {
+                            new LineSegment(TransformPoint(l.Point), TransformPoint(l.GetPointAt(100)))
+                        }
+                    };
+
+                default:
+                    return null;
+            }
         }
 
         /// <summary>
-        /// 结果显示层旋转矩形轮廓样式（与交互层 RegionEditor 一致）
+        /// 构建旋转矩形方向箭头显示项（线宽与轮廓一致，箭杆到矩形边界；端点随位置修正矩阵变换）。
         /// </summary>
-        private static readonly GraphicsStyle ResultRotatedRegionStyle = new()
+        private static GraphicsDisplayItem BuildDirectionArrowItem(ShapeParameters shape, AffineMatrix? matrix)
         {
-            Name = "ResultRotatedRegion",
-            OkColor = System.Windows.Media.Color.FromRgb(0, 0, 255),
-            NgColor = System.Windows.Media.Color.FromRgb(0, 0, 255),
-            LineWidth = 2.0,
-            Opacity = 0.7
-        };
+            double arrowLength = 50;
+            double angleRad = 0;
+            System.Windows.Point centerRef = new(0, 0);
+            if (shape.Geometry is RotatedRect2d rr)
+            {
+                centerRef = new System.Windows.Point(rr.CenterX, rr.CenterY);
+                arrowLength = rr.Width / 2;
+                angleRad = rr.Angle * Math.PI / 180;
+            }
+            var endRef = new System.Windows.Point(
+                centerRef.X + arrowLength * Math.Cos(angleRad),
+                centerRef.Y + arrowLength * Math.Sin(angleRad));
+            var center = matrix?.TransformWpfPoint(centerRef) ?? centerRef;
+            var end = matrix?.TransformWpfPoint(endRef) ?? endRef;
+
+            return new GraphicsDisplayItem
+            {
+                Style = ResultArrowStyle,
+                Type = GraphicsType.Arrow,
+                Geometries = new object[] { new LineSegment(center, end) }
+            };
+        }
 
         /// <summary>
         /// 结果显示层旋转矩形方向箭头专用样式（LineWidth=2.0 → 配合 arrowSize=thickness×6，头部=12px）
@@ -612,29 +615,5 @@ namespace SunEyeVision.UI.Services.Workflow
             LineWidth = 2.0,
             Opacity = 0.7
         };
-
-        /// <summary>
-        /// 构建旋转矩形方向箭头显示项（线宽与轮廓一致，箭杆到矩形边界）
-        /// </summary>
-        private static GraphicsDisplayItem BuildDirectionArrowItem(ShapeParameters shape, System.Windows.Point center)
-        {
-            double arrowLength = 50;
-            double angleRad = 0;
-            if (shape.Geometry is RotatedRect2d rr)
-            {
-                arrowLength = rr.Width / 2;
-                angleRad = rr.Angle * Math.PI / 180;
-            }
-            var arrowEnd = new System.Windows.Point(
-                center.X + arrowLength * Math.Cos(angleRad),
-                center.Y + arrowLength * Math.Sin(angleRad));
-
-            return new GraphicsDisplayItem
-            {
-                Style = ResultArrowStyle,
-                Type = GraphicsType.Arrow,
-                Geometries = new object[] { new LineSegment(center, arrowEnd) }
-            };
-        }
     }
 }

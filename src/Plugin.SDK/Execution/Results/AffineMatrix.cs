@@ -114,6 +114,33 @@ public class AffineMatrix
     }
 
     /// <summary>
+    /// 判断矩阵是否保形（conformal）：仅含旋转 + 均匀缩放，无斜切、无各向异性、无镜像。
+    /// 保形是"矩形/圆经矩阵作用后仍保持原形状类别"的前提：
+    ///   - 保形矩阵作用轴对齐矩形 → 仍是矩形（仅姿态变化）；
+    ///   - 非保形矩阵作用矩形 → 一般平行四边形（WPF 旋转矩形模型无法表达，需降级为四边形）。
+    /// 判定条件（M 可写为 [a −b; b a] 形式）：M11==M22、M12==−M21、det>0。
+    /// </summary>
+    public bool IsConformal(double relativeTolerance = 1e-6)
+    {
+        double s = Math.Max(ScaleFactor(), 1e-9);
+        double det = M11 * M22 - M12 * M21;
+        return det > 0
+            && Math.Abs(M11 - M22) <= relativeTolerance * s
+            && Math.Abs(M12 + M21) <= relativeTolerance * s;
+    }
+
+    /// <summary>
+    /// 剥离旋转分量，仅保留平移 + 均匀缩放（s = <see cref="ScaleFactor"/>）。
+    /// 位置修正对"无向形状"（轴对齐矩形/圆）的语义：只搬运位置与等比缩放，不旋转。
+    /// 调用方应先用 <see cref="IsConformal"/> 确认矩阵保形，否则结果仅近似。
+    /// </summary>
+    public AffineMatrix StripRotation()
+    {
+        double s = ScaleFactor();
+        return new AffineMatrix(s, 0, 0, s, OffsetX, OffsetY);
+    }
+
+    /// <summary>
     /// 转为 Halcon hom_mat2D 数组顺序
     /// Halcon affine_trans_region: r' = H[0]*r + H[1]*c + H[2]
     ///                              c' = H[3]*r + H[4]*c + H[5]

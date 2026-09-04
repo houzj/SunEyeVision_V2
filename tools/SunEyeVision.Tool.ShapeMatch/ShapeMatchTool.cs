@@ -14,6 +14,7 @@ using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using SunEyeVision.HalAdapter;
+using SunEyeVision.Plugin.SDK.Execution.Helpers;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Validation;
 using SunEyeVision.Tool.ShapeMatch.Models;
@@ -172,36 +173,14 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
                 HRegion? inspHRegion = null;
                 HRegion? maskHRegion = null;
 
-                (roiRegion, inspHRegion, maskHRegion) = ToolRegionHelper.BuildHalconROI(
-                    width, height, inspectionRegions, maskRegions, parameters.NodeResults);
-
-                // 保存搜索区域掩码
-                if (roiRegion != null)
-                {
-                    HOperatorSet.RegionToBin(roiRegion!, out var maskObj, 255, 0, width, height);
-                    result.SearchRegionMask = new HalImage(new HImage(maskObj));
-                }
-                stepSw.Stop();
-                stepTimings.Add(("ROI构建", stepSw.ElapsedMilliseconds));
-
-                // ===== Step 2.5: 位置修正（正向变换 ROI） =====
+                AffineMatrix? correctionMatrix = null;
                 if (parameters.IsPositionCorrectionEnabled)
                 {
-                    stepSw.Restart();
                     var bindingSource = parameters.PositionCorrectionBindingSource;
-                    if (bindingSource?.CurrentValue is AffineMatrix matrix)
+                    if (PositionCorrectionResolver.ResolveFirstMatrix(bindingSource) is { } matrix)
                     {
+                        correctionMatrix = matrix;
                         parameters.LogInfo($"位置修正已启用, 矩阵: {matrix}");
-                        (roiRegion, inspHRegion, maskHRegion) = ToolRegionHelper.ApplyPositionCorrectionHalcon(
-                            roiRegion, inspHRegion, maskHRegion, matrix, width, height);
-
-                        // 更新搜索区域掩码
-                        result.SearchRegionMask?.Dispose();
-                        if (roiRegion != null)
-                        {
-                            HOperatorSet.RegionToBin(roiRegion!, out var maskObj, 255, 0, width, height);
-                            result.SearchRegionMask = new HalImage(new HImage(maskObj));
-                        }
                     }
                     else if (bindingSource != null &&
                              !string.IsNullOrEmpty(bindingSource.SourceNodeId) &&
@@ -213,9 +192,21 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
                     {
                         parameters.LogWarning("位置修正已启用但未配置绑定源，跳过位置修正");
                     }
-                    stepSw.Stop();
-                    stepTimings.Add(("位置修正", stepSw.ElapsedMilliseconds));
                 }
+
+                // 位置修正按形状有向性并入 ROI 构建（无向剥转 / 有向完整，对齐 UI 语义）
+                (roiRegion, inspHRegion, maskHRegion) = ToolRegionHelper.BuildHalconROI(
+                    width, height, inspectionRegions, maskRegions,
+                    parameters.NodeResults, correctionMatrix);
+
+                // 保存搜索区域掩码（已含位置修正结果）
+                if (roiRegion != null)
+                {
+                    HOperatorSet.RegionToBin(roiRegion!, out var maskObj, 255, 0, width, height);
+                    result.SearchRegionMask = new HalImage(new HImage(maskObj));
+                }
+                stepSw.Stop();
+                stepTimings.Add(("ROI构建", stepSw.ElapsedMilliseconds));
 
                 try
                 {

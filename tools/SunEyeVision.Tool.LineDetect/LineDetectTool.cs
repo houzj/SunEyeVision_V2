@@ -6,6 +6,7 @@ using System.Text.Json.Serialization;
 using System.Windows;
 using HalconDotNet;
 using SunEyeVision.HalAdapter;
+using SunEyeVision.Plugin.SDK.Execution.Helpers;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
@@ -107,7 +108,7 @@ namespace SunEyeVision.Tool.LineDetect
                 var startP = parameters.LineStartPoint;
                 var endP = parameters.LineEndPoint;
                 if (parameters.IsPositionCorrectionEnabled &&
-                    parameters.PositionCorrectionBindingSource?.CurrentValue is AffineMatrix matrix)
+                    PositionCorrectionResolver.ResolveFirstMatrix(parameters.PositionCorrectionBindingSource) is { } matrix)
                 {
                     startP = matrix.TransformWpfPoint(startP);
                     endP = matrix.TransformWpfPoint(endP);
@@ -272,7 +273,7 @@ namespace SunEyeVision.Tool.LineDetect
             Point2d[] excluded;
             if (hasEnabledMask)
             {
-                var correction = parameters.PositionCorrectionBindingSource?.CurrentValue as AffineMatrix;
+                var correction = PositionCorrectionResolver.ResolveFirstMatrix(parameters.PositionCorrectionBindingSource);
                 (kept, excluded) = ToolRegionHelper.FilterPointsOutOfMaskRegions(
                     measures, parameters.GetRoisByType(RoiType.Mask), correction);
                 parameters.LogInfo(

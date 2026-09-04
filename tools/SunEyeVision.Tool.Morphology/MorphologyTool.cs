@@ -7,6 +7,7 @@ using System.Windows;
 using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.HalAdapter;
+using SunEyeVision.Plugin.SDK.Execution.Helpers;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
@@ -126,8 +127,31 @@ namespace SunEyeVision.Tool.Morphology
                     {
                         var inspectionRegions = parameters.GetRoisByType(RoiType.Inspection);
                         var maskRegions = parameters.GetRoisByType(RoiType.Mask);
+                        AffineMatrix? correctionMatrix = null;
+                        if (parameters.IsPositionCorrectionEnabled)
+                        {
+                            var bindingSource = parameters.PositionCorrectionBindingSource;
+                            if (PositionCorrectionResolver.ResolveFirstMatrix(bindingSource) is { } matrix)
+                            {
+                                correctionMatrix = matrix;
+                                parameters.LogInfo($"位置修正已启用, 矩阵: {matrix}");
+                            }
+                            else if (bindingSource != null &&
+                                     !string.IsNullOrEmpty(bindingSource.SourceNodeId) &&
+                                     !string.IsNullOrEmpty(bindingSource.PropertyName))
+                            {
+                                parameters.LogInfo("位置修正已启用，但绑定源当前无有效矩阵，跳过位置修正");
+                            }
+                            else
+                            {
+                                parameters.LogWarning("位置修正已启用但未配置绑定源，跳过位置修正");
+                            }
+                        }
+
+                        // 位置修正按形状有向性并入 ROI 构建（无向剥转 / 有向完整，对齐 UI 语义）
                         (roiRegion, inspHRegion, maskHRegion) = ToolRegionHelper.BuildHalconROI(
-                            imgWidth, imgHeight, inspectionRegions, maskRegions, parameters.NodeResults);
+                            imgWidth, imgHeight, inspectionRegions, maskRegions,
+                            parameters.NodeResults, correctionMatrix);
                         if (roiRegion != null)
                         {
                             HOperatorSet.AreaCenter(roiRegion, out var whitePixels, out _, out _);
@@ -136,31 +160,6 @@ namespace SunEyeVision.Tool.Morphology
                     }
                     stepSw.Stop();
                     stepTimings.Add(("ROI构建", stepSw.ElapsedMilliseconds));
-
-                    // ===== Step 2.5: 位置修正（正向变换 ROI 掩码） =====
-                    if (parameters.IsPositionCorrectionEnabled)
-                    {
-                        stepSw.Restart();
-                        var bindingSource = parameters.PositionCorrectionBindingSource;
-                        if (bindingSource?.CurrentValue is AffineMatrix matrix)
-                        {
-                            (roiRegion, inspHRegion, maskHRegion) = ToolRegionHelper.ApplyPositionCorrectionHalcon(
-                                roiRegion, inspHRegion, maskHRegion, matrix, imgWidth, imgHeight);
-                            parameters.LogInfo($"位置修正已启用, 矩阵: {matrix}");
-                        }
-                        else if (bindingSource != null &&
-                                 !string.IsNullOrEmpty(bindingSource.SourceNodeId) &&
-                                 !string.IsNullOrEmpty(bindingSource.PropertyName))
-                        {
-                            parameters.LogInfo("位置修正已启用，但绑定源当前无有效矩阵，跳过位置修正");
-                        }
-                        else
-                        {
-                            parameters.LogWarning("位置修正已启用但未配置绑定源，跳过位置修正");
-                        }
-                        stepSw.Stop();
-                        stepTimings.Add(("位置修正", stepSw.ElapsedMilliseconds));
-                    }
 
                     try
                     {

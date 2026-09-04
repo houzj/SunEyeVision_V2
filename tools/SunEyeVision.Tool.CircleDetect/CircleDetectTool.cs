@@ -6,6 +6,7 @@ using System.Text.Json.Serialization;
 using System.Windows;
 using HalconDotNet;
 using SunEyeVision.HalAdapter;
+using SunEyeVision.Plugin.SDK.Execution.Helpers;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
@@ -102,7 +103,7 @@ namespace SunEyeVision.Tool.CircleDetect
                 var guideCenter = parameters.GuideCircle.Value.Center;
                 var guideRadius = parameters.GuideCircle.Value.Radius;
                 if (parameters.IsPositionCorrectionEnabled &&
-                    parameters.PositionCorrectionBindingSource?.CurrentValue is AffineMatrix matrix)
+                    PositionCorrectionResolver.ResolveFirstMatrix(parameters.PositionCorrectionBindingSource) is { } matrix)
                 {
                     guideCenter = matrix.TransformWpfPoint(guideCenter);
                     guideRadius *= matrix.ScaleFactor();
@@ -342,7 +343,7 @@ namespace SunEyeVision.Tool.CircleDetect
             Point2d[] excluded;
             if (hasEnabledMask)
             {
-                var correction = parameters.PositionCorrectionBindingSource?.CurrentValue as AffineMatrix;
+                var correction = PositionCorrectionResolver.ResolveFirstMatrix(parameters.PositionCorrectionBindingSource);
                 (kept, excluded) = ToolRegionHelper.FilterPointsOutOfMaskRegions(
                     measures, parameters.GetRoisByType(RoiType.Mask), correction);
                 parameters.LogInfo(

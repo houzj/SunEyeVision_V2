@@ -20,6 +20,7 @@ using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Logic;
 using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.SDK.Execution.Helpers;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
@@ -121,6 +122,51 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
 
             RenderRequested?.Invoke();
         }
+
+        /// <summary>
+        /// 按几何有向性解析位置修正矩阵（形状语义唯一源，对齐 SDK 契约）：
+        /// 无向形状（轴对齐矩形/圆/圆环）→ 剥离旋转（仅平移+均匀缩放）；
+        /// 有向形状 / 未知 → 完整矩阵（跟随旋转）。
+        /// </summary>
+        private AffineMatrix? CorrectionFor(object? geometry) =>
+            PositionCorrectionResolver.ResolveForShape(geometry, _positionCorrectionMatrix);
+
+        /// <summary>
+        /// 显示坐标 → 参考坐标：按几何类型选择对应修正矩阵的逆矩阵。
+        /// 编辑/命中始终在参考坐标系进行，无向形状用剥转矩阵逆（无旋转分量），
+        /// 保证手柄显示位置与命中位置一致。
+        /// </summary>
+        private Point ToReferencePoint(Point display, object? geometry)
+        {
+            var matrix = PositionCorrectionResolver.ResolveForShape(geometry, _positionCorrectionMatrix);
+            return matrix != null ? matrix.Inverse().TransformWpfPoint(display) : display;
+        }
+
+        /// <summary>
+        /// 当前交互几何：优先正在编辑的选中区域，其次正在绘制的新区域。
+        /// 用于命中/拖拽时选择与形状一致的修正矩阵。
+        /// </summary>
+        private object? CurrentInteractionGeometry()
+        {
+            if (_selectedRegion?.Parameters is ShapeParameters sShape)
+                return sShape.Geometry;
+            if (_currentDrawingRegion?.Parameters is ShapeParameters dShape)
+                return dShape.Geometry;
+            return null;
+        }
+
+        /// <summary>
+        /// 新建形状的模板几何（值无意义，仅用于按工具类型判定形状有向性）。
+        /// </summary>
+        private static object? TemplateGeometryForTool(ShapeType tool) => tool switch
+        {
+            ShapeType.Rectangle => new Rect(0, 0, 0, 0),
+            ShapeType.Circle => new Circle2d(0, 0, 0),
+            ShapeType.RotatedRectangle => new RotatedRect2d(0, 0, 0, 0, 0),
+            ShapeType.Line => new Line2d(new Point(0, 0), new Vector(1, 0)),
+            ShapeType.Polygon => new Polygon2d(Array.Empty<Point>()),
+            _ => null,
+        };
 
         /// <summary>
         /// 输出位置修正状态汇总日志（收集-总结模式）。
@@ -807,9 +853,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         {
             if (OverlayCanvas == null) return null;
 
-            var refPosition = _inverseMatrix != null
-                ? _inverseMatrix.TransformWpfPoint(displayPos)
-                : displayPos;
+            var refPosition = ToReferencePoint(displayPos,
+                _selectedRegion?.Parameters is ShapeParameters selShape ? selShape.Geometry : null);
 
             // ① 手柄命中（复用 HandleRenderer.HitTestHandleDetail，EditHandle 自带光标）
             if (_selectedRegion != null && _currentHandles != null)
@@ -833,10 +878,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         {
             if (OverlayCanvas == null) return;
 
-            // 逆变换到参考坐标系用于形状编辑，保留原始（测试）坐标用于橡皮筋渲染
-            Point refPosition = _inverseMatrix != null
-                ? _inverseMatrix.TransformWpfPoint(position)
-                : position;
+            // 逆变换到参考坐标系用于形状编辑（矩阵按当前交互形状有向性解析）
+            Point refPosition = ToReferencePoint(position, CurrentInteractionGeometry());
 
             _lastMouseImagePosition = refPosition;
 
@@ -892,10 +935,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         /// <returns>true=事件已消费（区域操作），false=空白处点击（允许平移）</returns>
         public bool ProcessMouseDown(Point position)
         {
-            // 逆变换到参考坐标系（内部状态始终使用参考坐标）
-            Point refPosition = _inverseMatrix != null
-                ? _inverseMatrix.TransformWpfPoint(position)
-                : position;
+            // 逆变换到参考坐标系（内部状态始终使用参考坐标；矩阵按当前形状有向性解析）
+            Point refPosition = ToReferencePoint(position,
+                _selectedRegion?.Parameters is ShapeParameters selShape ? selShape.Geometry : null);
 
             // 降频：每 20 次鼠标按下记录一次，避免交互路径刷日志
             if (_mouseDownLogCounter++ % 20 == 0)
@@ -953,6 +995,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
                 }
 
                 _isDrawing = true;
+                // 新建形状起点：按工具类型有向性选择修正矩阵（Rectangle/Circle 无向 → 剥转）
+                refPosition = ToReferencePoint(position, TemplateGeometryForTool(_currentTool));
                 _startPoint = refPosition;
 
                 _currentDrawingRegion = RoiData.CreateDrawingRegion(
@@ -2068,29 +2112,34 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
                     : $"□ {region.Name}"
             };
 
-            // 从 Geometry 提取几何参数
+            // 从 Geometry 提取几何参数（按形状有向性选择修正矩阵：无向剥转 / 有向完整）
+            var resolvedMatrix = CorrectionFor(shape.Geometry);
             if (shape.Geometry != null)
             {
                 Point TransformPoint(double x, double y) =>
-                    _positionCorrectionMatrix != null
-                        ? _positionCorrectionMatrix.TransformWpfPoint(new Point(x, y))
+                    resolvedMatrix != null
+                        ? resolvedMatrix.TransformWpfPoint(new Point(x, y))
                         : new Point(x, y);
+
+                double scale = resolvedMatrix?.ScaleFactor() ?? 1.0;
 
                 if (shape.Geometry is Circle2d c)
                 {
                     var center = TransformPoint(c.Center.X, c.Center.Y);
                     context.Center = center;
-                    context.Radius = c.Radius;
-                    context.Width = c.Radius * 2;
-                    context.Height = c.Radius * 2;
+                    context.Radius = c.Radius * scale;
+                    context.Width = c.Radius * 2 * scale;
+                    context.Height = c.Radius * 2 * scale;
                 }
                 else if (shape.Geometry is RotatedRect2d rr)
                 {
                     var center = TransformPoint(rr.CenterX, rr.CenterY);
                     context.Center = center;
-                    context.Width = rr.Width;
-                    context.Height = rr.Height;
-                    context.Angle = rr.Angle;
+                    context.Width = rr.Width * scale;
+                    context.Height = rr.Height * scale;
+                    context.Angle = resolvedMatrix != null
+                        ? PositionCorrectionResolver.DisplayAngleDeg(resolvedMatrix, rr.Angle)
+                        : rr.Angle;
                 }
                 else if (shape.Geometry is Line2d l)
                 {
@@ -2105,8 +2154,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
                 }
                 else if (shape.Geometry is System.Windows.Rect r)
                 {
-                    context.Width = r.Width;
-                    context.Height = r.Height;
+                    context.Width = r.Width * scale;
+                    context.Height = r.Height * scale;
                     var centerPt = TransformPoint(r.X + r.Width / 2, r.Y + r.Height / 2);
                     context.Center = centerPt;
                 }
@@ -2144,13 +2193,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
                     _ => ColorConstants.MaskOrangeBrush
                 };
 
-                // 正向变换手柄位置到测试坐标系（OverlayCanvas 在测试坐标系中）
+                // 正向变换手柄位置到测试坐标系（OverlayCanvas 在测试坐标系中；矩阵按形状有向性解析）
                 var displayHandles = _currentHandles;
-                if (_positionCorrectionMatrix != null)
+                var resolvedMatrix = CorrectionFor(shapeDef.Geometry);
+                if (resolvedMatrix != null)
                 {
                     displayHandles = _currentHandles.Select(h =>
                     {
-                        var displayPos = _positionCorrectionMatrix.TransformWpfPoint(h.Position);
+                        var displayPos = resolvedMatrix.TransformWpfPoint(h.Position);
                         return new Rendering.EditHandle
                         {
                             Type = h.Type,
@@ -2333,15 +2383,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
 
         public RoiData? HitTestRegion(Point point, double tolerance = 0)
         {
-            // 逆变换到参考坐标系（ShapeParameters 存的是参考坐标）
-            Point refPoint = _inverseMatrix != null
-                ? _inverseMatrix.TransformWpfPoint(point)
-                : point;
-
-            // 从后往前测试（后绘制的在上面）
+            // 从后往前测试（后绘制的在上面）；逐区域按形状有向性反变换到参考坐标系
             foreach (var region in _viewModel.Regions.Reverse())
             {
                 if (!region.IsVisible) continue;
+                if (region.Parameters is not ShapeParameters regionShape || regionShape.Geometry == null)
+                    continue;
+
+                Point refPoint = ToReferencePoint(point, regionShape.Geometry);
 
                 if (IsPointInRegion(refPoint, region, tolerance))
                 {

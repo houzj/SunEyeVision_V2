@@ -2,6 +2,7 @@
 using System.IO;
 using System.Reflection;
 using System.Runtime.Loader;
+using SunEyeVision.TestShared;
 using Xunit;
 
 namespace SunEyeVision.Tool.Script.Tests;
@@ -25,16 +26,9 @@ public class ScriptEngineRegressionTests
     [Fact]
     public void Execute_DefaultTemplate_WithoutHostDllsInScriptRefs_InstantiatesSuccessfully()
     {
-        var testAsmDir = Path.GetDirectoryName(typeof(ScriptEngineRegressionTests).Assembly.Location)
-            ?? throw new InvalidOperationException("无法获取测试程序集路径");
-        // 宿主 DLL 部署在 dev/Debug 根目录；测试程序集位于 dev/Debug/... 下，向上查找包含 SunEyeVision.Plugin.SDK.dll 的目录
-        var debugDir = testAsmDir;
-        while (debugDir != null && !File.Exists(Path.Combine(debugDir, "SunEyeVision.Plugin.SDK.dll")))
-        {
-            debugDir = Path.GetDirectoryName(debugDir);
-        }
-        if (debugDir == null)
-            throw new InvalidOperationException("未找到宿主构建目录 dev/Debug（请先完成完整构建）");
+        // 宿主根 dev/Debug 由共享 Loader 的 AssemblyMetadata(HostDebugRoot) 注入提供
+        // （Directory.Build.targets），不再从测试程序集位置向上探测——测试已独立输出到 bin。
+        var debugDir = ToolPluginTestLoader.HostDebugRoot;
 
         // 复刻宿主运行期状态：宿主 DLL 已在默认 ALC 加载，脚本编译直接复用其类型元数据。
         // 缺失则明确报错（rule-008 报错优先，不静默跳过）。

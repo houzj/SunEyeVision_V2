@@ -1,8 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Runtime.Loader;
+using SunEyeVision.TestShared;
 using Xunit;
 
 namespace SunEyeVision.Tool.Script.Tests;
@@ -23,17 +24,11 @@ public class HalconScriptCompileTests
     /// </summary>
     private static Assembly LoadToolAssembly()
     {
-        var testAsmDir = Path.GetDirectoryName(typeof(HalconScriptCompileTests).Assembly.Location)
-            ?? throw new InvalidOperationException("无法获取测试程序集路径");
-        var debugDir = testAsmDir;
-        while (debugDir != null && !File.Exists(Path.Combine(debugDir, "SunEyeVision.Plugin.SDK.dll")))
-        {
-            debugDir = Path.GetDirectoryName(debugDir);
-        }
-        if (debugDir == null)
-            throw new InvalidOperationException("未找到宿主构建目录 dev/Debug（请先完成完整构建）");
+        // 宿主根 dev/Debug 由共享 Loader 的 AssemblyMetadata(HostDebugRoot) 注入提供
+        // （Directory.Build.targets），不再从测试程序集位置向上探测——测试已独立输出到 bin。
+        var debugDir = ToolPluginTestLoader.HostDebugRoot;
 
-        // 宿主 DLL 已在默认 ALC（由 ScriptEngineRegressionTests 或主程序加载），此处确保 halcon 就位
+        // 宿主 DLL 已在默认 ALC（由共享 Loader Resolving 兜底或 ScriptEngineRegressionTests 加载），此处确保 halcon 就位
         foreach (var dll in new[] { "halcondotnetxl.dll" })
         {
             var path = Path.Combine(debugDir, dll);

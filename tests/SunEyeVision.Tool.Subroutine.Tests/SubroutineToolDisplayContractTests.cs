@@ -20,18 +20,6 @@ namespace SunEyeVision.Tool.Subroutine.Tests;
 /// </summary>
 public class SubroutineToolDisplayContractTests
 {
-    static SubroutineToolDisplayContractTests()
-    {
-        // 子程序工具是 IsToolPlugin 插件，输出部署到 dev/Debug/plugins/<Name>/，
-        // 测试输出目录不包含工具 DLL。运行时从插件目录显式加载（工具插件测试的通用解法）。
-        AppDomain.CurrentDomain.AssemblyResolve += (_, args) =>
-        {
-            var name = new System.Reflection.AssemblyName(args.Name).Name;
-            var pluginDll = Path.Combine(AppContext.BaseDirectory, "plugins", "SunEyeVision.Tool.Subroutine", $"{name}.dll");
-            return File.Exists(pluginDll) ? System.Reflection.Assembly.LoadFrom(pluginDll) : null;
-        };
-    }
-
     private static SubroutineParameters MakeParams(Action<SubroutineParameters> configure, GenericToolResults internalResult)
     {
         // 源节点必须标记为执行成功，ParameterResolver 才会返回其属性值（IsSuccess 检查）

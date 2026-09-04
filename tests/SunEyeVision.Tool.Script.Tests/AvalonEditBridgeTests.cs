@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Runtime.Loader;
 using System.Threading.Tasks;
 using ICSharpCode.AvalonEdit.Document;
+using SunEyeVision.TestShared;
 using Xunit;
 
 namespace SunEyeVision.Tool.Script.Tests;
@@ -17,15 +18,9 @@ public class AvalonEditBridgeTests
 {
     private static Type LoadContainerType()
     {
-        var testAsmDir = Path.GetDirectoryName(typeof(AvalonEditBridgeTests).Assembly.Location)
-            ?? throw new InvalidOperationException("无法获取测试程序集路径");
-        var debugDir = testAsmDir;
-        while (debugDir != null && !File.Exists(Path.Combine(debugDir, "SunEyeVision.Plugin.SDK.dll")))
-        {
-            debugDir = Path.GetDirectoryName(debugDir);
-        }
-        if (debugDir == null)
-            throw new InvalidOperationException("未找到宿主构建目录 dev/Debug");
+        // 宿主根 dev/Debug 由共享 Loader 的 AssemblyMetadata(HostDebugRoot) 注入提供
+        // （Directory.Build.targets），不再从测试程序集位置向上探测——测试已独立输出到 bin。
+        var debugDir = ToolPluginTestLoader.HostDebugRoot;
 
         var toolDll = Path.Combine(debugDir, "plugins", "SunEyeVision.Tool.Script", "SunEyeVision.Tool.Script.dll");
         if (!File.Exists(toolDll))

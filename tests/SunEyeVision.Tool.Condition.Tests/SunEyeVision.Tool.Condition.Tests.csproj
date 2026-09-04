@@ -22,20 +22,14 @@
     <PackageReference Include="NSubstitute" Version="5.*" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="../../tools/SunEyeVision.Tool.Condition/SunEyeVision.Tool.Condition.csproj" />
+    <ProjectReference Include="../../tools/SunEyeVision.Tool.Condition/SunEyeVision.Tool.Condition.csproj">
+      <Private>false</Private>
+    </ProjectReference>
     <!-- 序列化往返契约测试：依赖 ParameterTypeRegistry 的多态注册 -->
     <ProjectReference Include="../../src/Core/SunEyeVision.Core.csproj" />
   </ItemGroup>
-  <!-- 工具项目 IsToolPlugin=true，OutDir 在 plugins/<ToolName>/（Directory.Build.targets 覆盖），
-       ProjectReference 不会复制工具 DLL 到测试输出目录，测试运行时找不到程序集。
-       构建后从 dev/Debug/plugins/<ToolName>/ 复制工具 DLL + PDB 到测试输出目录根供加载。
-       $(OutDir)=dev/Debug/，plugins 在 $(OutDir)plugins/ 下。 -->
-  <Target Name="CopyToolAssemblyForTest" AfterTargets="Build">
-    <ItemGroup>
-      <_ToolTestDll Include="$(OutDir)plugins\SunEyeVision.Tool.Condition\SunEyeVision.Tool.Condition.dll" />
-      <_ToolTestPdb Include="$(OutDir)plugins\SunEyeVision.Tool.Condition\SunEyeVision.Tool.Condition.pdb" />
-    </ItemGroup>
-    <Copy SourceFiles="@(_ToolTestDll)" DestinationFolder="$(OutDir)" Condition="Exists('%(Identity)')" />
-    <Copy SourceFiles="@(_ToolTestPdb)" DestinationFolder="$(OutDir)" Condition="Exists('%(Identity)')" />
-  </Target>
+  <!-- 工具插件测试共享加载器：ModuleInitializer 从 plugins/<Tool>/ 加载最新工具 dll -->
+  <ItemGroup>
+    <Compile Include="..\_shared\ToolPluginTestLoader.cs" Link="_shared\ToolPluginTestLoader.cs" />
+  </ItemGroup>
 </Project>

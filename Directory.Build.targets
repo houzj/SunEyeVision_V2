@@ -148,14 +148,35 @@
     <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)utilities\Remove-WpfTempDir.ps1&quot; -Path &quot;$(_WpfTempPath)&quot; -Filter &quot;$(_WpfTempFilter)&quot;" ContinueOnError="true" />
   </Target>
 
-  <!-- Step 9: 复制 Halcon native dll 到主程序输出目录(绿色部署)
+  <!-- 测试项目独立输出(rule: 测试输出独立化):
+       测试项目(IsTestProject=true)统一输出到共享目录 tests\bin\<Configuration>\
+       (见 Directory.Build.props), 与主程序 dev/Debug 完全隔离,
+       不污染开发运行目录与 Release 发布包; 宿主依赖经各测试 copy-local
+       到同一共享目录自然去重为一份(含 halcon native/OpenCvSharp runtimes/语言资源)。
+       共享 Loader(见 tests/_shared/ToolPluginTestLoader.cs)经 HostDebugRoot 定位
+       工具插件宿主根 dev/Debug(工具 dll 唯一部署在 plugins\<Tool>\, 由主程序加载语义)。 -->
+  <PropertyGroup Condition="'$(IsTestProject)'=='true'">
+    <!-- 宿主根绝对路径: 供 AssemblyMetadata 注入到测试程序集,共享 Loader 运行时读取。
+         Debug→dev/Debug(工具 Debug 部署处); Release→Release 发布目录(工具 Release 部署处)。 -->
+    <HostDebugRoot Condition="'$(Configuration)'=='Debug'">$([System.IO.Path]::GetFullPath('$(WorktreeBasePath)dev\Debug\'))</HostDebugRoot>
+    <HostDebugRoot Condition="'$(Configuration)'=='Release'">$([System.IO.Path]::GetFullPath('$(WorktreeBasePath)Release\SunEyeVision_v1.0.0\SunEyeVision\'))</HostDebugRoot>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(IsTestProject)'=='true'">
+    <AssemblyMetadata Include="HostDebugRoot" Value="$(HostDebugRoot)" />
+  </ItemGroup>
+
+  <!-- Step 9: 复制 Halcon native dll 到输出目录(绿色部署)
        libs/halcon/runtime/x64-win64/ 下的 25 个 native dll(halconxl.dll 等)
        是 halcondotnetxl.dll 的 P/Invoke 目标,必须与 halcondotnetxl 同目录才能加载。
-       仅在主程序场景(IsToolPlugin!=true)复制,工具插件目录由主程序 AppDomain
-       在 dev/Debug/ 根目录统一解析 native 依赖。
+       适用场景:
+       - 主程序/框架项目(IsToolPlugin!=true): 复制到 dev/Debug 根(宿主统一提供);
+       - 测试项目(IsTestProject=true): 复制到共享输出 tests\bin\<Config>\ —— 所有测试
+         项目 OutDir 相同, lock 文件去重保证 native 只复制一份, 供全部测试共享,
+         halcondotnetxl 与 native 同目录可正常 P/Invoke(测试真正跑 halcon 算子时必备)。
+       工具插件(IsToolPlugin=true)不复制: 工具目录纯净, native 由宿主/测试根提供。
        Halcon 目录不存在直接报错(rule-008 报错优先),不静默跳过。
        去重: 用 $(OutDir) 路径作为 Key 防止 sln 多 csproj 链式构建时重复执行
-       (Plugin.SDK/Core/Workflow 都会触发本 Target, SkipUnchangedFiles 仅跳过 IO 不会跳过 Target 自身,
+       (Plugin.SDK/Core/Workflow/各测试项目 都会触发本 Target, SkipUnchangedFiles 仅跳过 IO 不会跳过 Target 自身,
        首个 csproj 完成复制后其余 csproj 因 .lock 文件存在直接 return)。-->
   <Target Name="CopyHalconNativeRuntimes" AfterTargets="Build" Condition="'$(IsToolPlugin)'!='true'">
     <PropertyGroup>

@@ -21,6 +21,13 @@
     <PackageReference Include="NSubstitute" Version="5.*" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="../../tools/SunEyeVision.Tool.ImageLoad/SunEyeVision.Tool.ImageLoad.csproj" />
+    <!-- 工具插件真实部署在 plugins/<Tool>/，不 copy-local 到测试输出目录（共享 Loader 从 plugins 加载） -->
+    <ProjectReference Include="../../tools/SunEyeVision.Tool.ImageLoad/SunEyeVision.Tool.ImageLoad.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+  </ItemGroup>
+  <!-- 工具插件测试共享加载器：ModuleInitializer 从 plugins/<Tool>/ 加载最新工具 dll -->
+  <ItemGroup>
+    <Compile Include="..\_shared\ToolPluginTestLoader.cs" Link="_shared\ToolPluginTestLoader.cs" />
   </ItemGroup>
 </Project>

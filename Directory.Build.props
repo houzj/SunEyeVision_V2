@@ -31,11 +31,29 @@
     <!-- Debug 输出到各 worktree 独立的 dev/Debug/ 目录
          同时设置 OutputPath 与 OutDir：
          OutputPath 必须在这里(props 早期)设置,SDK 计算 TargetPath/deps.json 时才能跟随,
-         仅设 OutDir 时 TargetPath 仍回落 SDK 默认 bin/ 。 -->
-    <OutputPath Condition="'$(Configuration)'=='Debug'">$(WorktreeBasePath)\dev\Debug\</OutputPath>
-    <OutputPath Condition="'$(Configuration)'=='Release'">$(WorktreeBasePath)\Release\SunEyeVision_v1.0.0\SunEyeVision\</OutputPath>
-    <OutDir Condition="'$(Configuration)'=='Debug'">$(WorktreeBasePath)\dev\Debug\</OutDir>
-    <OutDir Condition="'$(Configuration)'=='Release'">$(WorktreeBasePath)\Release\SunEyeVision_v1.0.0\SunEyeVision\</OutDir>
+         仅设 OutDir 时 TargetPath 仍回落 SDK 默认 bin/ 。
+
+         测试项目(文件名 *.Tests)统一输出到 tests\bin\<Configuration>\<TargetFramework>\
+         (非各自 bin、非 dev/Debug 根) —— 所有测试项目共享同一输出目录:
+         * 主程序 dev/Debug 与 Release 发布目录零测试污染;
+         * 宿主依赖(框架 dll / halcon native / OpenCvSharp runtimes / 语言资源)
+           由各测试项目 copy-local 到同一共享目录自然合并去重, 只有一份, 不随工具数量膨胀;
+         * 测试运行目录自足完整, 不依赖从 dev/Debug 根补齐 (宿主依赖不都在根,
+           native 在 runtimes\win-x64\native\ 等子目录)。
+         props 阶段 IsTestProject 尚不可知(在 csproj 内定义), 用 MSBuildProjectName 以
+         .Tests 结尾可靠判定 —— 全部测试项目 csproj 均以 .Tests.csproj 命名, 普通项目无此后缀。
+         (说明: $(MSBuildProjectDirectory)\..\ = worktree\tests\, 故 ..\bin = worktree\tests\bin) -->
+    <OutputPath Condition="'$(Configuration)'=='Debug' And !$(MSBuildProjectName.EndsWith('.Tests'))">$(WorktreeBasePath)\dev\Debug\</OutputPath>
+    <OutputPath Condition="'$(Configuration)'=='Release' And !$(MSBuildProjectName.EndsWith('.Tests'))">$(WorktreeBasePath)\Release\SunEyeVision_v1.0.0\SunEyeVision\</OutputPath>
+    <OutDir Condition="'$(Configuration)'=='Debug' And !$(MSBuildProjectName.EndsWith('.Tests'))">$(WorktreeBasePath)\dev\Debug\</OutDir>
+    <OutDir Condition="'$(Configuration)'=='Release' And !$(MSBuildProjectName.EndsWith('.Tests'))">$(WorktreeBasePath)\Release\SunEyeVision_v1.0.0\SunEyeVision\</OutDir>
+
+    <OutputPath Condition="'$(Configuration)'=='Debug' And $(MSBuildProjectName.EndsWith('.Tests'))">$(MSBuildProjectDirectory)\..\bin\Debug\</OutputPath>
+    <OutputPath Condition="'$(Configuration)'=='Release' And $(MSBuildProjectName.EndsWith('.Tests'))">$(MSBuildProjectDirectory)\..\bin\Release\</OutputPath>
+    <OutDir Condition="'$(Configuration)'=='Debug' And $(MSBuildProjectName.EndsWith('.Tests'))">$(MSBuildProjectDirectory)\..\bin\Debug\</OutDir>
+    <OutDir Condition="'$(Configuration)'=='Release' And $(MSBuildProjectName.EndsWith('.Tests'))">$(MSBuildProjectDirectory)\..\bin\Release\</OutDir>
+    <!-- 共享输出目录要求所有文件(含 deps.json/runtimeconfig)落在同一层, 关闭 SDK 自动追加 TFM 子目录 -->
+    <AppendTargetFrameworkToOutputPath Condition="$(MSBuildProjectName.EndsWith('.Tests'))">false</AppendTargetFrameworkToOutputPath>
 
     <!-- 中间目录也独立到各 worktree -->
     <IntermediateOutputPath>$(WorktreeBasePath)\build_temp\obj\$(MSBuildProjectName)\$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>

@@ -149,6 +149,12 @@ public class ShapeMatchResults : ToolResults
             new("JudgmentPassed",        "判断通过",           "判断"),
             new("MatchCount",            "匹配数量",           "结果"),
             new("BestScore",             "最佳得分",           "结果"),
+            // ★ 位置修正矩阵本体输出（AffineMatrix[] → Transform 词汇）——此前只注册了 M11..OffsetY
+            //   分量（double[]），矩阵本体未注册，下游「位置修正」绑定下拉（DataType=AffineMatrix）
+            //   按 Transform 词汇过滤后无候选、看不到上游矩阵。补注册后矩阵可整绑定。
+            //   命名精简：分组「位置修正」承担上下文，叶子只叫「矩阵」，不重复前缀；
+            //   匹配 N 个即 N 个元素，不单设"最佳"输出（最佳 = [0]，契约单值=长度1数组）。
+            new("MatchedPositionCorrections", "矩阵", "位置修正"),
             new("CorrectionM11s",        "缩放分量X(M11)",     "位置修正/分量"),
             new("CorrectionM12s",        "旋转分量X(M12)",     "位置修正/分量"),
             new("CorrectionM21s",        "旋转分量Y(M21)",     "位置修正/分量"),

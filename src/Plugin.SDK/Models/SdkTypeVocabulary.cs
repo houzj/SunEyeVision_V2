@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using OpenCvSharp;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
@@ -18,8 +18,10 @@ namespace SunEyeVision.Plugin.SDK.Models
         /// （Circle/RotatedRect/Point/Polygon/Line/Annulus）。
         /// Region（算法区域，iconic 运行时数据）禁止进入工作流契约，仅活在算法工具内部，
         /// 由 RegionConverter 桥接为 RoI 外发（方案 D8）。
-        /// 图像具体实现类型 OpenCvSharp.Mat 映射到 "Image"（词汇表唯一图像入口）；
-        /// 下游 ToSystemType("Image") 仍返回 IVisionImage（过滤/绑定用的抽象类型）。
+        /// 图像词目以接口 IVisionImage 为唯一入口；算法库具体实现类型
+        /// （如 OpenCvSharp.Mat、HalconDotNet.HImage）由各自引擎启动时经
+        /// RegisterType 注册到 "Image"（契约 JSON 不变，下游 ToSystemType("Image")
+        /// 仍返回 IVisionImage，过滤/绑定用的抽象类型）。
         /// 几何图形（Circle2d/RotatedRect2d/Point2d/Polygon2d/Line2d/Annulus2d）作为算法产物
         /// 输出进契约，供下游绑定/下钻属性（方案：所有静态工具图形输出优化设计）。
         /// </summary>
@@ -31,7 +33,6 @@ namespace SunEyeVision.Plugin.SDK.Models
             [typeof(bool[])]            = "Boolean",
             [typeof(AffineMatrix[])]    = "Transform",
             [typeof(IVisionImage)]      = "Image",
-            [typeof(Mat)]               = "Image",
             [typeof(ShapeParameters[])] = "RoI",
             [typeof(Circle2d[])]        = "Circle",
             [typeof(RotatedRect2d[])]   = "RotatedRect",
@@ -41,6 +42,42 @@ namespace SunEyeVision.Plugin.SDK.Models
             [typeof(Annulus2d[])]       = "Annulus",
             [typeof(Arc2d[])]           = "Arc",
         };
+
+        /// <summary>
+        /// 动态注册表：算法库（CvEngine/HalAdapter）启动时把引擎具体图像类型
+        /// （如 typeof(Mat)/typeof(HImage)）注册到契约词目 "Image"。
+        /// 静态 TypeToString 保持只读契约（零引擎依赖），动态注册不污染静态表。
+        /// </summary>
+        private static readonly ConcurrentDictionary<Type, string> RegisteredTypeToString = new();
+
+        /// <summary>
+        /// 动态注册类型→词目映射（如 CvEngine 启动注册 typeof(Mat) → "Image"）。
+        /// 仅允许注册到契约 StringToType 已收录的词目；重复注册幂等覆盖（同类型同词目）。
+        /// 新增词目应视为契约演进（需同步 StringToType/ChineseNames），不允许经注册表静默引入。
+        /// </summary>
+        public static void RegisterType(Type type, string typeName)
+        {
+            if (type == null) throw new ArgumentNullException(nameof(type));
+            if (string.IsNullOrWhiteSpace(typeName)) throw new ArgumentException("typeName 不能为空", nameof(typeName));
+
+            // 词目必须是契约反向表已收录的规范键（rule-015：不允许正向能解析、反向解析不了的"单行道"词目）。
+            if (!StringToType.ContainsKey(typeName))
+                throw new ArgumentException(
+                    $"词目 '{typeName}' 未收录于 SdkTypeVocabulary 契约反向表，禁止经 RegisterType 静默注册。", nameof(typeName));
+
+            type = NormalizeNumeric(type);
+            RegisteredTypeToString[type] = typeName;
+        }
+
+        /// <summary>
+        /// 查询类型对应词目：先静态契约表，再动态注册表。
+        /// </summary>
+        private static bool TryGetTypeName(Type type, out string? name)
+        {
+            if (TypeToString.TryGetValue(type, out name))
+                return true;
+            return RegisteredTypeToString.TryGetValue(type, out name);
+        }
 
         /// <summary>
         /// 字符串→CLR 类型反向映射。规范键映射到规范类型（数值归并为 long/double）。
@@ -112,8 +149,8 @@ namespace SunEyeVision.Plugin.SDK.Models
 
             type = NormalizeNumeric(type);
 
-            // Step 1: 直查字典（最快路径）
-            if (TypeToString.TryGetValue(type, out var result))
+            // Step 1: 直查字典（静态契约表 + 动态注册表）
+            if (TryGetTypeName(type, out var result))
                 return result;
 
             // Step 2: List<T> → T[] 拆箱后递归
@@ -135,7 +172,7 @@ namespace SunEyeVision.Plugin.SDK.Models
             if (!type.IsArray)
             {
                 var arrayType = type.MakeArrayType();
-                if (TypeToString.TryGetValue(arrayType, out result))
+                if (TryGetTypeName(arrayType, out result))
                     return result;
             }
 

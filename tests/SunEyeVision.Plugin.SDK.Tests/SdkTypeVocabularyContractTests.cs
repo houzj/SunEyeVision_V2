@@ -57,11 +57,11 @@ public class SdkTypeVocabularyContractTests
     [Theory]
     [InlineData("Byte")]
     [InlineData("Size")]
-    [InlineData("Arc")]
     public void ToSystemType_DeletedTypes_ReturnNull(string deletedType)
     {
-        // 已删除/未注册的类型（Byte/Size/Arc/Region）反向解析返回 null
+        // 已删除/未注册的类型（Byte/Size/Region）反向解析返回 null
         // → IsValidType 判定无效，加载时 fail-fast 可见。
+        // 注意：Arc 已随 Arc2d 恢复进契约（正/反向映射均含），不属于删除类型，故不在此列。
         Assert.Null(SdkTypeVocabulary.ToSystemType(deletedType));
     }
 

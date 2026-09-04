@@ -9,6 +9,13 @@ namespace SunEyeVision.Plugin.SDK.VisionAdapters
         public static IVisionImage FromFile(string path)
         {
             ArgumentNullException.ThrowIfNull(path);
+
+            // S1 解耦接缝：优先经注册工厂加载（算法库/适配层注入），
+            // 未注册回退 SDK 内默认 Halcon 路径（过渡期行为，S4 摘除引擎后由工厂独占）。
+            var factory = VisionImageFactoryLocator.Current;
+            if (factory != null && factory.CanCreateFromFile(path))
+                return factory.CreateFromFile(path);
+
             return HalImage.CreateFromFile(path);
         }
 

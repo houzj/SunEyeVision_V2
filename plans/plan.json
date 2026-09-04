@@ -2722,6 +2722,10 @@
                                     {
                                         "date":  "2026-08-24",
                                         "note":  "[23d47623e8b8c451c8fef142cac9f82befd8fb00] feat(results): 统一执行耗时输出契约 - 各工具 Results 合并基类 ExecutionTimeMs"
+                                    },
+                                    {
+                                        "date":  "2026-09-04",
+                                        "note":  "[97823234f54e80fff31a118ab5eca51627c828a8] refactor(shape-match): 轮廓匹配治理——句柄缓存/矩阵工厂/参数清理/判定修复"
                                     }
                                 ]
                     },

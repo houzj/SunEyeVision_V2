@@ -2164,7 +2164,7 @@
                                           "name":  "CI 接入：dotnet test 全量跑通 + 覆盖率报告",
                                           "phase":  "测试验证",
                                           "hours":  12,
-                                          "status":  "todo"
+                                          "status":  "in_progress"
                                       }
                                   ],
                         "docs":  [
@@ -2222,6 +2222,10 @@
                                     {
                                         "date":  "2026-09-04",
                                         "note":  "[bc63c6cd66e06868c71d428691d46f853ba0755b] feat(measure): 圆/直线查找拟合统一为自研鲁棒拟合 + 删除 MinScore 分数门槛"
+                                    },
+                                    {
+                                        "date":  "2026-09-04",
+                                        "note":  "[05ea4cf5d6461889d75e874503b441becdb8d401] build(tests): 测试输出独立化到共享 tests/bin，构建配置与共享加载器改造"
                                     }
                                 ]
                     },

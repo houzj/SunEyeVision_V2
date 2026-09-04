@@ -3367,6 +3367,10 @@
                                     {
                                         "date":  "2026-08-26",
                                         "note":  "[e8ab1af977cd32a5064608f8ea5327337643996c] style(script): 统一脚本编辑器输入输出变量表样式；暗色主题选中行与输入框边框提亮"
+                                    },
+                                    {
+                                        "date":  "2026-09-05",
+                                        "note":  "[67d6ecd7fc08c5139a5c491a23b86ec29c57848b] fix(script): 脚本模板适配层命名空间迁移（VisionAdapters→Vision.Contracts）"
                                     }
                                 ]
                     },

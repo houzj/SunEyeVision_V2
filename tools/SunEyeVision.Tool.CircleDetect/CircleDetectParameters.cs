@@ -414,9 +414,13 @@ namespace SunEyeVision.Tool.CircleDetect
 
                 if (CaliberStyle.IsVisible)
                 {
+                    // 整圆卡尺阵列起始相位随位置修正旋转（与屏蔽区/内容同口径；无修正=0）
+                    double startPhase = correctionMatrix != null
+                        ? PositionCorrectionResolver.DisplayAngleDeg(correctionMatrix, 0.0) * Math.PI / 180.0
+                        : 0.0;
                     var bands = new List<System.Windows.Point[]>();
                     foreach (var quad in MeasureBandOverlay.BuildCircleBands(
-                                 circle, MeasureLength1 * 2, MeasureLength2 * 2, NumMeasures))
+                                 circle, MeasureLength1 * 2, MeasureLength2 * 2, NumMeasures, startPhase))
                     {
                         bands.Add(quad);
                     }
@@ -429,7 +433,7 @@ namespace SunEyeVision.Tool.CircleDetect
                     };
 
                     // 主卡尺极性方向三角（Halcon circle/arc 扫描方向 = 圆内侧→外侧；几何与交互层共用）
-                    double mainAngle = (NumMeasures / 2) * (Math.PI * 2 / NumMeasures);
+                    double mainAngle = startPhase + (NumMeasures / 2) * (Math.PI * 2 / NumMeasures);
                     var circleTriangles = MeasureBandOverlay.BuildRadialDirectionArrowTriangles(
                         circle.Center, circle.Radius, mainAngle, MeasureLength1 * 2, MeasureLength2 * 2, zoom: 1.0);
                     yield return new GraphicsDisplayItem

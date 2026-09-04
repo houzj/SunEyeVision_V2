@@ -167,16 +167,22 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
 
             if (!drawBands || measureCount <= 0 || circle.Radius <= 0) return;
 
+            // 整圆无极性但卡尺阵列有起始相位：起始相位随位置修正旋转（与屏蔽区/内容同口径），
+            // 均分间距不变，仅整体平移起始角；无修正时 startPhase = 0（与现状一致）。
+            double startPhase = matrix != null
+                ? PositionCorrectionResolver.DisplayAngleDeg(matrix, 0.0) * Math.PI / 180.0
+                : 0.0;
+
             // 环形测量带（与结果层共用同一几何计算）
-            foreach (var quad in BuildCircleBands(circle, bandWidth, bandLength, measureCount))
+            foreach (var quad in BuildCircleBands(circle, bandWidth, bandLength, measureCount, startPhase))
             {
                 // 卡尺无填充，全检测蓝，粗细/透明度统一（线宽与 Blob 检测区域一致）
                 AddQuad(quad[0], quad[1], quad[2], quad[3], Colors.Transparent, StrokeColor, bandStroke, 1.0);
             }
 
             // 主卡尺极性方向标记：Halcon circle/arc 测量扫描方向 = 圆内侧→外侧（官方定义），
-            // 主卡尺（中间条，圆心角 = mainIndex×2π/N）上画朝 +radial（径向外）的小箭头。
-            double mainAngle = (measureCount / 2) * (Math.PI * 2 / measureCount);
+            // 主卡尺（中间条，圆心角 = startPhase + mainIndex×2π/N）上画朝 +radial（径向外）的小箭头。
+            double mainAngle = startPhase + (measureCount / 2) * (Math.PI * 2 / measureCount);
             AddMainCaliberRadialDirectionArrows(circle.Center, circle.Radius, bandWidth, bandLength, mainAngle,
                 StrokeColor, bandStroke, zoom);
         }
@@ -185,24 +191,25 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
         /// 计算圆引导环形测量带四边形（供交互层渲染与结果层显示共用）。
         /// 调用方需先对 circle 应用位置修正（圆心变换 + 半径缩放），与 RenderCircle 内部逻辑一致。
         /// ★ 与 Halcon 对齐（整圆 = 等分，格点相位）：
-        ///   整圆闭合，HALCON 用 N 条测量带把整圈等分，第 i 条中心 = start + i×(2π/N)，
-        ///   首条落在 start_phi 上，末条不与首条重叠（不存在"首末带贴端点"的约束）。
+        ///   整圆闭合，HALCON 用 N 条测量带把整圈等分，第 i 条中心 = startAngle + i×(2π/N)，
+        ///   首条落在 startAngle（位置修正旋转后的起始相位）上，末条不与首条重叠。
         ///   实测依据（get_metrology_object_measures 回读真值）：
         ///   相邻带角差恒为 2π/N；本地若用半格 (i+0.5)×2π/N 会整体偏 step/2。
         /// </summary>
+        /// <param name="startAngle">卡尺阵列起始相位（弧度，显示系；位置修正旋转后首条所在角，无修正传 0）</param>
         public static System.Collections.Generic.IEnumerable<System.Windows.Point[]> BuildCircleBands(
-            Circle2d circle, double bandWidth, double bandLength, int measureCount)
+            Circle2d circle, double bandWidth, double bandLength, int measureCount, double startAngle = 0.0)
         {
             if (measureCount <= 0 || circle.Radius <= 0) yield break;
 
-            // 环形测量带：沿圆周等分（闭合，末条不与首条重叠），径向为宽度
+            // 环形测量带：沿圆周等分（闭合，末条不与首条重叠），径向为宽度；均分间距不变
             double stepAngle = Math.PI * 2 / measureCount;
             var halfBand = bandLength / 2;
             var halfWidth = bandWidth / 2;
 
             for (int i = 0; i < measureCount; i++)
             {
-                double angle = i * stepAngle;   // ★ 格点：第 i 条中心 = start + i×(2π/N)
+                double angle = startAngle + i * stepAngle;   // ★ 格点：第 i 条中心 = startAngle + i×(2π/N)
                 var dir = new Vector(Math.Cos(angle), Math.Sin(angle));   // 径向方向
                 var normal = new Vector(-dir.Y, dir.X);                   // 切向方向
 

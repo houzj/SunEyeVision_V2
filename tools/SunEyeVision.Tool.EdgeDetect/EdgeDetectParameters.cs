@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Windows;
+using SunEyeVision.Plugin.SDK.Execution.Helpers;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
@@ -397,8 +398,12 @@ namespace SunEyeVision.Tool.EdgeDetect
                 }
                 else
                 {
+                    // 整圆卡尺阵列起始相位随位置修正旋转（与屏蔽区/内容同口径；无修正=0）
+                    double startPhase = correctionMatrix != null
+                        ? PositionCorrectionResolver.DisplayAngleDeg(correctionMatrix, 0.0) * Math.PI / 180.0
+                        : 0.0;
                     foreach (var quad in MeasureBandOverlay.BuildCircleBands(
-                                 circle, MeasureLength1 * 2, MeasureLength2 * 2, NumMeasures))
+                                 circle, MeasureLength1 * 2, MeasureLength2 * 2, NumMeasures, startPhase))
                         bands.Add(quad);
 
                     items.Add(new GraphicsDisplayItem
@@ -410,7 +415,7 @@ namespace SunEyeVision.Tool.EdgeDetect
                     });
 
                     // 主卡尺极性方向三角（Halcon circle/arc 扫描方向 = 圆内侧→外侧；几何与交互层共用）
-                    double mainAngle = (NumMeasures / 2) * (Math.PI * 2 / NumMeasures);
+                    double mainAngle = startPhase + (NumMeasures / 2) * (Math.PI * 2 / NumMeasures);
                     var circleTriangles = MeasureBandOverlay.BuildRadialDirectionArrowTriangles(
                         circle.Center, circle.Radius, mainAngle, MeasureLength1 * 2, MeasureLength2 * 2, zoom: 1.0);
                     items.Add(new GraphicsDisplayItem

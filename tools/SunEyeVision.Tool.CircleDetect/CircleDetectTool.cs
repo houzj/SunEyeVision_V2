@@ -120,11 +120,13 @@ namespace SunEyeVision.Tool.CircleDetect
                         RotateWpfAngle(guideMatrix, parameters.EndAngle),
                         parameters.IsMajorArc);
                 }
+                // 整圆卡尺阵列起始相位（参考系首条在 0°，位置修正含旋转时随矩阵转到旋转角；无修正 = null）
+                double? circleStartRadWpf = guideMatrix != null ? RotateWpfAngle(guideMatrix, 0.0) : (double?)null;
 
                 // ★ 日志埋点（诊断边缘极性/选取模式组合问题）：
                 //   记录参数枚举 → HALCON 字符串映射 + 完整 genParam 名称/值 + 引导圆/图像信息
                 var genParamName = BuildGenParamName(parameters);
-                var genParamValue = BuildGenParamValue(parameters, guideDisplayArc);
+                var genParamValue = BuildGenParamValue(parameters, guideDisplayArc, circleStartRadWpf);
                 parameters.LogInfo(
                     $"[Diag] 参数埋点: 图像={width.L}x{height.L}, " +
                     $"引导圆=中心({guideCenter.X:F2},{guideCenter.Y:F2}) 半径={guideRadius:F2}, " +
@@ -259,7 +261,7 @@ namespace SunEyeVision.Tool.CircleDetect
         ///   不在本方法内自行推导，避免"整圆退化成零长弧""跨 0° 边界方向错"等跨层语义问题。
         ///   整圆与圆弧规则不同，必须分派（HALCON 文档：闭合圆 = start_phi 0 + end_phi 2π + positive）。
         /// </remarks>
-        private HTuple BuildGenParamValue(CircleDetectParameters parameters, Arc2d? displayArc = null)
+        private HTuple BuildGenParamValue(CircleDetectParameters parameters, Arc2d? displayArc = null, double? circleStartRadWpf = null)
         {
             double startPhi;
             double endPhi;
@@ -291,7 +293,15 @@ namespace SunEyeVision.Tool.CircleDetect
             }
             else
             {
-                (startPhi, endPhi, pointOrder) = HalconArcAdapter.FromFullCircle();
+                // 整圆无极性但卡尺阵列有起始相位：起始相位随位置修正旋转（与屏蔽区/内容同口径，
+                // 参考系首条在 0°，修正后首条在矩阵旋转角处；均分间距不变，无修正时等效旧 (0, 2π)）。
+                double startWpfRad = circleStartRadWpf ?? 0.0;
+                const double TwoPi = 2.0 * Math.PI;
+                double phi = (-startWpfRad) % TwoPi;
+                if (phi < 0) phi += TwoPi;
+                startPhi = phi;
+                endPhi = phi + TwoPi;      // 闭合圆：end = start + 2π（HALCON 官方语义）
+                pointOrder = "positive";
                 parameters.LogInfo(
                     $"[Diag] 整圆适配: 中心({parameters.GuideCircle.Value.Center.X:F1}," +
                     $"{parameters.GuideCircle.Value.Center.Y:F1}) 半径={parameters.GuideCircle.Value.Radius:F1} " +

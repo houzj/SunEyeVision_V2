@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Windows;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
@@ -109,6 +109,25 @@ public class MeasureBandAlignmentContractTests
             var actual = BandCenter(quads[i]);
             Assert.True((actual - expected).Length < 1e-6,
                 $"第 {i} 条中心应在格点 {i}×2π/{n}，偏差 {(actual - expected).Length}");
+        }
+    }
+
+    [Fact]
+    public void BuildCircleBands_StartAngle_RotatesGridPhase()
+    {
+        // 整圆卡尺阵列起始相位可平移（位置修正旋转时首条落在矩阵旋转角处，均分间距不变）
+        var circle = new Circle2d(new Point(0, 0), 100);
+        int n = 8;
+        double startAngle = Math.PI / 6;   // 30°
+        var quads = MeasureBandOverlay.BuildCircleBands(circle, 40, 10, n, startAngle).ToList();
+
+        var stepAngle = Math.PI * 2 / n;
+        for (int i = 0; i < n; i++)
+        {
+            var expected = new Point(100 * Math.Cos(startAngle + i * stepAngle), 100 * Math.Sin(startAngle + i * stepAngle));
+            var actual = BandCenter(quads[i]);
+            Assert.True((actual - expected).Length < 1e-6,
+                $"第 {i} 条中心应在格点 startAngle + {i}×2π/{n}，偏差 {(actual - expected).Length}");
         }
     }
 

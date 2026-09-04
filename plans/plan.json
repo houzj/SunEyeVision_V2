@@ -4210,6 +4210,17 @@
                                         "tools/SunEyeVision.Tool.EdgeDetect/EdgeDetectParameters.cs"
                                     ],
                           "status":  "in_progress"
+                      },
+                      {
+                          "id":  "TMP-b3f20b7",
+                          "message":  "fix(measure): 位置修正交互层按几何有向性对齐，修复直线测量带二次变换",
+                          "date":  "2026-09-05",
+                          "commit":  "b3f20b7a39018c424d7b95ce701e77d5adb7d54a",
+                          "files":  [
+                                        "src/Plugin.SDK/UI/Controls/Measure/Rendering/MeasureBandOverlay.cs",
+                                        "src/Plugin.SDK/UI/Controls/Measure/Views/MeasureEditorControl.xaml.cs"
+                                    ],
+                          "status":  "in_progress"
                       }
                   ]
 }

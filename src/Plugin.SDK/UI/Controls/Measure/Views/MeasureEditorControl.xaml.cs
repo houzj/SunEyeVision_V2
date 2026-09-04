@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using SunEyeVision.Plugin.SDK.Execution.Helpers;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
@@ -66,8 +67,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         /// <summary>位置修正矩阵（正向：参考坐标→当前图像坐标；null=不修正）</summary>
         private AffineMatrix? _positionCorrectionMatrix;
 
-        /// <summary>位置修正逆矩阵（当前图像坐标→参考坐标）</summary>
-        private AffineMatrix? _inverseMatrix;
 
         /// <summary>
         /// 设置位置修正矩阵。显示正向变换，编辑逆变换，存储不变（始终存参考坐标系）。
@@ -76,21 +75,47 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         public void SetPositionCorrectionMatrix(AffineMatrix? matrix)
         {
             _positionCorrectionMatrix = matrix;
-            _inverseMatrix = matrix?.Inverse();
             RenderForManager();
         }
 
-        /// <summary>
-        /// 正向变换参考系坐标到当前图像坐标（矩阵为空时原样返回）
+                /// <summary>
+        /// 当前交互几何的形状语义解析目标：
+        /// 圆形引导（无向）返回 Circle2d 标记（位置修正剥转：中心完整修正、手柄保持四向不旋转）；
+        /// 直线/圆弧（有向）返回 null（完整矩阵跟随旋转）。
         /// </summary>
-        private Point ToDisplay(Point reference) =>
-            _positionCorrectionMatrix != null ? _positionCorrectionMatrix.TransformWpfPoint(reference) : reference;
+        private object? CorrectionGeometry()
+        {
+            if (_model.EditingCircle.HasValue)
+                return _model.EditingCircle.Value;
+            if (_model.Mode == MeasureInteractionMode.Draw && _geometryType == MeasureGeometryType.Circle)
+                return new Circle2d(0, 0, 0);
+            return null;
+        }
 
         /// <summary>
-        /// 逆变换当前图像坐标到参考系坐标（矩阵为空时原样返回）
+        /// 按当前几何有向性解析位置修正矩阵（对齐 RoiEditorControl / SDK 契约）：
+        /// 无向（圆）→ 中心完整修正 + 朝向不旋转；有向（直线/圆弧）→ 完整矩阵。
         /// </summary>
-        private Point ToReference(Point display) =>
-            _inverseMatrix != null ? _inverseMatrix.TransformWpfPoint(display) : display;
+        private AffineMatrix? ResolvedMatrix() =>
+            PositionCorrectionResolver.ResolveForShape(CorrectionGeometry(), _positionCorrectionMatrix);
+
+        /// <summary>
+        /// 正向变换参考系坐标到当前图像坐标（按当前几何有向性；矩阵为空时原样返回）
+        /// </summary>
+        private Point ToDisplay(Point reference)
+        {
+            var matrix = ResolvedMatrix();
+            return matrix != null ? matrix.TransformWpfPoint(reference) : reference;
+        }
+
+        /// <summary>
+        /// 逆变换当前图像坐标到参考系坐标（按当前几何有向性；矩阵为空时原样返回）
+        /// </summary>
+        private Point ToReference(Point display)
+        {
+            var matrix = ResolvedMatrix();
+            return matrix != null ? matrix.Inverse().TransformWpfPoint(display) : display;
+        }
 
         /// <summary>当前几何交互策略（按几何类型路由）</summary>
         private IGuideGeometryInteraction _interaction = GuideInteractionFactory.Get(MeasureGeometryType.Line);

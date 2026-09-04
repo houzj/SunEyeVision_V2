@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using SunEyeVision.Plugin.SDK.Execution.Helpers;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
@@ -57,6 +58,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
         /// <param name="zoom">视口缩放（线宽反除缩放，对齐 Blob 检测区域：线宽=2/zoom，视觉恒定）</param>
         public void RenderLine(Point start, Point end, double bandWidth, double bandLength, int measureCount, bool drawBands = true, AffineMatrix? matrix = null, double zoom = 1.0)
         {
+            double scale = matrix != null ? matrix.ScaleFactor() : 1.0;
             Clear();
 
             // 位置修正：参考坐标 → 当前图像坐标
@@ -66,6 +68,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
                 end = matrix.TransformWpfPoint(end);
             }
 
+            // Caliber size scales with position-correction matrix (same as RenderCircle/RenderArc radiusScale)
+            double scaleWidth = bandWidth * scale;
+            double scaleLength = bandLength * scale;
             double stroke = StrokeWidthFor(zoom);
             double bandStroke = BandStrokeWidthFor(zoom);
 
@@ -75,7 +80,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
             if (!drawBands || measureCount <= 0) return;
 
             // 测量带四边形（与结果层共用同一几何计算，保证两层显示一致）
-            foreach (var quad in BuildLineBands(start, end, bandWidth, bandLength, measureCount, matrix))
+            foreach (var quad in BuildLineBands(start, end, scaleWidth, scaleLength, measureCount, null))
             {
                 // 卡尺无填充，全检测蓝，粗细/透明度统一（线宽与 Blob 检测区域一致）
                 AddQuad(quad[0], quad[1], quad[2], quad[3], Colors.Transparent, StrokeColor, bandStroke, 1.0);
@@ -83,7 +88,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
 
             // 主卡尺极性方向标记（交互层实时显示，与结果层 BuildMeasureGuideItems 同步）。
             // 在主卡尺法向两条边（顶边/底边）上各画一个朝 normal 的小箭头。
-            AddMainCaliberEdgeDirectionArrows(start, end, bandWidth, bandLength, measureCount, StrokeColor, bandStroke, zoom);
+            AddMainCaliberEdgeDirectionArrows(start, end, scaleWidth, scaleLength, measureCount, StrokeColor, bandStroke, zoom);
         }
 
         /// <summary>
@@ -226,18 +231,21 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
         /// <param name="drawBands">是否绘制测量带（false=只画引导几何预览）</param>
         /// <param name="matrix">位置修正矩阵（参考坐标→当前图像坐标；null=不修正）</param>
         /// <param name="zoom">视口缩放（线宽反除缩放，对齐 Blob 检测区域：线宽=2/zoom，视觉恒定）</param>
-        public void RenderArc(Arc2d arc, double bandWidth, double bandLength, int measureCount, bool drawBands = true, AffineMatrix? matrix = null, double zoom = 1.0)
+                public void RenderArc(Arc2d arc, double bandWidth, double bandLength, int measureCount, bool drawBands = true, AffineMatrix? matrix = null, double zoom = 1.0)
         {
             Clear();
 
-            // 位置修正：圆心变换 + 半径缩放（含缩放时）；角度范围不变（刚体变换）
+            // 位置修正：圆弧为有向形状，完整仿射跟随——圆心变换、半径缩放，
+            // 且起止角叠加矩阵旋转（DisplayAngleDeg 向量法，避免符号错误导致弧主体与手柄分离）。
             double radiusScale = 1.0;
             if (matrix != null)
             {
+                var startDisp = PositionCorrectionResolver.DisplayAngleDeg(matrix, arc.StartAngle * 180.0 / Math.PI) * Math.PI / 180.0;
+                var endDisp = PositionCorrectionResolver.DisplayAngleDeg(matrix, arc.EndAngle * 180.0 / Math.PI) * Math.PI / 180.0;
                 arc = new Arc2d(
                     matrix.TransformWpfPoint(arc.Center),
                     arc.Radius * matrix.ScaleFactor(),
-                    arc.StartAngle, arc.EndAngle, arc.IsMajorArc);
+                    startDisp, endDisp, arc.IsMajorArc);
                 radiusScale = matrix.ScaleFactor();
             }
 

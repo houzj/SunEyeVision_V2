@@ -46,5 +46,15 @@ public partial class UserScript : Script
         SetGlobal("lastImage", upstream);
         SetGlobal("lastWidth", input1.Width);
         SetGlobal("lastInvokeCount", _invokeCount);
+
+        // === 场景5: 通用→算法类型转换（需在"程序集引用"中勾选对应引擎/适配层后取消注释使用）===
+        // 方式一（推荐）：SDK 跨后端提取器 + 引擎类型。需勾选 halcondotnetxl 并 using HalconDotNet：
+        //   // using SunEyeVision.Plugin.SDK.Vision.Hosting;
+        //   // var hImage = VisionBackendExtractorLocator.ToHalcon?.Invoke(input1) as HImage;
+        //   // if (hImage != null && hImage.IsInitialized()) { /* HOperatorSet.*/ }
+        // 方式二：OpenCvSharp Mat。需勾选 OpenCvSharp 并 using OpenCvSharp：
+        //   // var mat = VisionBackendExtractorLocator.ToOpenCv?.Invoke(input1) as Mat;
+        // 方式三：适配层载体。需勾选 SunEyeVision.HalAdapter / SunEyeVision.CvAdapter 后：
+        //   // if (input1 is SunEyeVision.HalAdapter.HalImage hal) { var h = hal.Unwrap(); }
     }
 }

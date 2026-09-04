@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
@@ -232,7 +232,13 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
         public static IReadOnlyDictionary<string, string> GetAvailableApis()
         {
             var apis = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var anchor in new[] { (typeof(HOperatorSet), "halcondotnetxl"), (typeof(Mat), "OpenCvSharp") })
+            foreach (var anchor in new[]
+            {
+                (typeof(HOperatorSet), "halcondotnetxl"),
+                (typeof(Mat), "OpenCvSharp"),
+                (typeof(SunEyeVision.HalAdapter.HalImage), "SunEyeVision.HalAdapter"),
+                (typeof(SunEyeVision.CvAdapter.CvImageFactory), "SunEyeVision.CvAdapter"),
+            })
             {
                 var location = anchor.Item1.Assembly.Location;
                 if (!string.IsNullOrEmpty(location))
@@ -313,6 +319,8 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                 { Path.GetFileNameWithoutExtension(typeof(SunEyeVision.Plugin.SDK.Scripting.Script).Assembly.Location), typeof(SunEyeVision.Plugin.SDK.Scripting.Script) },
                 { "halcondotnetxl", typeof(HOperatorSet) },
                 { "OpenCvSharp", typeof(Mat) },
+                { "SunEyeVision.HalAdapter", typeof(SunEyeVision.HalAdapter.HalImage) },
+                { "SunEyeVision.CvAdapter", typeof(SunEyeVision.CvAdapter.CvImageFactory) },
             };
             if (anchors.TryGetValue(name, out var type))
             {

@@ -20,13 +20,6 @@ public enum SortMode
     YThenXAscending = 6
 }
 
-public enum MultiTemplateMode
-{
-    Sequential = 0,
-    ParallelIndependent = 1,
-    ParallelShared = 2
-}
-
 public enum TemplateExtractionStatus
 {
     NotExtracted = 0,

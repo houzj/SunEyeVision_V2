@@ -20,7 +20,6 @@
         <ResourceDictionary>
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
             <localConverters:SortModeConverter x:Key="SortModeConverter"/>
-            <localConverters:MultiTemplateModeConverter x:Key="MultiTemplateModeConverter"/>
             <localConverters:ExtractionStatusConverter x:Key="ExtractionStatusConverter"/>
         </ResourceDictionary>
     </controls:ToolDebugControlBase.Resources>
@@ -212,25 +211,6 @@
                                     AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                 </controls:LabeledControl>
 
-                <!-- 最小对比度（两行：模式 + 数值） -->
-                <controls:LabeledControl Label="最小对比度" Margin="0,8,0,0">
-                  <StackPanel>
-                    <ComboBox x:Name="cmbMinContrastMode" Height="26" VerticalContentAlignment="Center" Width="200"
-                              SelectionChanged="OnMinContrastModeChanged" Margin="0,0,0,4">
-                      <sys:String>自动</sys:String>
-                      <sys:String>手动</sys:String>
-                    </ComboBox>
-                    <controls:ConfigSetting x:Name="minContrastConfig"
-                                    ParameterName="MinContrast"
-                                    DataType="{x:Type sys:Double}"
-                                    Value="{Binding MinContrast.Value, Mode=TwoWay}"
-                                    Minimum="1" Maximum="255"
-                                    SmallChange="1" LargeChange="10"
-                                    Width="200" DecimalPlaces="0"
-                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                  </StackPanel>
-                </controls:LabeledControl>
-
                 <controls:LabeledControl Label="角度范围" ToolTip="单位: °, 范围: -360~360" Margin="0,8,0,0">
                   <controls:RangeInputControl
                                     Width="200"
@@ -317,28 +297,10 @@
                   </StackPanel>
                 </GroupBox>
 
-                <!-- 引擎调优 -->
+                <!-- 引擎调优（仅保留搜索阶段真实生效的亚像素；MetricMode/OptimizationMode 属模板创建期参数已移除） -->
                 <GroupBox Header="引擎调优" Margin="0,0,0,8">
                   <StackPanel>
-                    <controls:LabeledControl Label="极性匹配">
-                      <ComboBox SelectedItem="{Binding MetricMode.Value, Mode=TwoWay}"
-                                Height="32" VerticalContentAlignment="Center" Width="220">
-                        <models:MetricMode>UsePolarity</models:MetricMode>
-                        <models:MetricMode>IgnoreGlobalPolarity</models:MetricMode>
-                        <models:MetricMode>IgnoreLocalPolarity</models:MetricMode>
-                      </ComboBox>
-                    </controls:LabeledControl>
-                    <controls:LabeledControl Label="优化模式" Margin="0,4,0,0">
-                      <ComboBox SelectedItem="{Binding OptimizationMode.Value, Mode=TwoWay}"
-                                Height="32" VerticalContentAlignment="Center" Width="220">
-                        <models:OptimizationMode>Auto</models:OptimizationMode>
-                        <models:OptimizationMode>None</models:OptimizationMode>
-                        <models:OptimizationMode>PointReductionLow</models:OptimizationMode>
-                        <models:OptimizationMode>PointReductionMedium</models:OptimizationMode>
-                        <models:OptimizationMode>PointReductionHigh</models:OptimizationMode>
-                      </ComboBox>
-                    </controls:LabeledControl>
-                    <controls:LabeledControl Label="亚像素" Margin="0,4,0,0">
+                    <controls:LabeledControl Label="亚像素">
                       <ComboBox SelectedItem="{Binding SubPixelMode.Value, Mode=TwoWay}"
                                 Height="32" VerticalContentAlignment="Center" Width="220">
                         <models:SubPixelMode>None</models:SubPixelMode>
@@ -351,32 +313,10 @@
                   </StackPanel>
                 </GroupBox>
 
-                <!-- 搜索精度 -->
+                <!-- 搜索精度（AngleStep/ScaleStep 属模板创建期参数已移除；保留搜索层级区间） -->
                 <GroupBox Header="搜索精度" Margin="0,0,0,8">
                   <StackPanel>
-                    <controls:LabeledControl Label="角度步长" ToolTip="0=自动，单位: °">
-                      <controls:ConfigSetting
-                                        ParameterName="AngleStep"
-                                        DataType="{x:Type sys:Double}"
-                                        Value="{Binding AngleStep.Value, Mode=TwoWay}"
-                                        Minimum="0" Maximum="90"
-                                        SmallChange="0.1" LargeChange="10"
-                                        Width="200" DecimalPlaces="1"
-                                        AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                    </controls:LabeledControl>
-
-                    <controls:LabeledControl Label="缩放步长" ToolTip="0=自动">
-                      <controls:ConfigSetting
-                                        ParameterName="ScaleStep"
-                                        DataType="{x:Type sys:Double}"
-                                        Value="{Binding ScaleStep.Value, Mode=TwoWay}"
-                                        Minimum="0" Maximum="1.0"
-                                        SmallChange="0.001" LargeChange="0.01"
-                                        Width="200" DecimalPlaces="3"
-                                        AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                    </controls:LabeledControl>
-
-                    <controls:LabeledControl Label="搜索层级" ToolTip="起始层和结束层">
+                    <controls:LabeledControl Label="搜索层级" ToolTip="[起始层(粗), 结束层(细)]，Halcon 语义 start≥end，0=全层">
                       <StackPanel Orientation="Horizontal">
                         <controls:ConfigSetting
                                         ParameterName="SearchLevelStart"
@@ -398,34 +338,6 @@
                   </StackPanel>
                 </GroupBox>
 
-                <!-- 多模板 -->
-                <GroupBox Header="多模板" Margin="0,0,0,0">
-                  <StackPanel>
-                    <controls:LabeledControl Label="多模板模式">
-                      <ComboBox Height="32" VerticalContentAlignment="Center" Width="220"
-                              SelectedItem="{Binding MultiMode.Value, Mode=TwoWay}">
-                        <ComboBox.ItemTemplate>
-                          <DataTemplate>
-                            <TextBlock Text="{Binding Converter={StaticResource MultiTemplateModeConverter}}"/>
-                          </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                        <models:MultiTemplateMode>Sequential</models:MultiTemplateMode>
-                        <models:MultiTemplateMode>ParallelIndependent</models:MultiTemplateMode>
-                        <models:MultiTemplateMode>ParallelShared</models:MultiTemplateMode>
-                      </ComboBox>
-                    </controls:LabeledControl>
-
-                    <controls:LabeledControl Label="最大并行度" ToolTip="0=自动" Margin="0,4,0,0">
-                      <controls:ConfigSetting
-                                        ParameterName="MaxParallelism"
-                                        DataType="{x:Type sys:Int32}"
-                                        Value="{Binding MaxParallelism.Value, Mode=TwoWay}"
-                                        Minimum="0" Maximum="16"
-                                        SmallChange="1" Width="200"
-                                        AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                    </controls:LabeledControl>
-                  </StackPanel>
-                </GroupBox>
               </StackPanel>
             </Expander>
           </StackPanel>

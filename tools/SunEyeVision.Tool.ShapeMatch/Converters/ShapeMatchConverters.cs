@@ -47,32 +47,6 @@ public class SortModeConverter : IValueConverter
     }
 }
 
-[ValueConversion(typeof(MultiTemplateMode), typeof(string))]
-public class MultiTemplateModeConverter : IValueConverter
-{
-    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
-    {
-        if (value is MultiTemplateMode mode)
-        {
-            return mode switch
-            {
-                MultiTemplateMode.Sequential => "顺序执行",
-                MultiTemplateMode.ParallelIndependent => "并行独立",
-                MultiTemplateMode.ParallelShared => "并行共享",
-                _ => mode.ToString()
-            };
-        }
-        return value?.ToString();
-    }
-
-    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
-    {
-        if (value is string text)
-            return Enum.Parse(typeof(MultiTemplateMode), text);
-        return MultiTemplateMode.ParallelShared;
-    }
-}
-
 [ValueConversion(typeof(TemplateExtractionStatus), typeof(string))]
 public class ExtractionStatusConverter : IValueConverter
 {

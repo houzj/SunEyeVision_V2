@@ -10,6 +10,16 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results;
 /// Aligned with Halcon hom_mat2d semantics: P' = M \u00b7 P
 /// Rendering and position correction share the same matrix with same direction (model to image).
 /// </summary>
+/// <remarks>
+/// 坐标系约定（框架唯一事实源，两端只读不产生）：
+///   本矩阵定义于 WPF 屏幕坐标系（X 向右、Y 向下），行向量乘法：
+///     P'x = Px*M11 + Py*M21 + OffsetX
+///     P'y = Px*M12 + Py*M22 + OffsetY
+///   θ 正方向 = 视觉顺时针（WPF Matrix 惯例，y 向下）。
+///   矩阵数值由算法权威侧（如各工具工厂）构造，框架内只流通本类型；
+///   Halcon 边界经 ToHalconArray() 适配，WPF 边界经 ToWpfMatrix() 适配，
+///   禁止在类型外自行补符号或改坐标系（对齐 Geometry 层 HalconArcAdapter 范式）。
+/// </remarks>
 public class AffineMatrix
 {
     public double M11 { get; set; } = 1;
@@ -43,15 +53,23 @@ public class AffineMatrix
     public double ScaleFactor() => Math.Sqrt(M11 * M11 + M21 * M21);
 
     /// <summary>Construct from center, angle (radians), and scale</summary>
+    /// <remarks>
+    /// 对齐 Halcon `vector_angle_to_rigid(0,0,0,row,col,angle)`:
+    ///   iRow = cos·r − sin·c + row
+    ///   iCol = sin·r + cos·c + col
+    ///   即 (M11, M12, M21, M22) = (cos, −sin, sin, cos)，与 WPF Matrix.Rotate 一致（视觉顺时针 θ）。
+    ///   历史 bug：原 M12=+sin / M21=−sin 与 Halcon 不兼容，致轮廓错位（AC-2 方向契约首版测试断言写反，
+    ///   误把 bug 固化为期望值，方向契约测试因此"通过"但实际渲染偏移）。
+    /// </remarks>
     public static AffineMatrix FromCenterAngleScale(
         double centerX, double centerY, double angleRad, double scale)
     {
         double cos = Math.Cos(angleRad);
         double sin = Math.Sin(angleRad);
         return new AffineMatrix(
-            scale * cos,  scale * sin,
-           -scale * sin,  scale * cos,
-            centerX,      centerY);
+            scale * cos,  -scale * sin,
+            scale * sin,   scale * cos,
+            centerX,       centerY);
     }
 
     public static AffineMatrix Identity => new(1, 0, 0, 1, 0, 0);

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -123,7 +123,6 @@ public partial class ShapeMatchToolDebugControl
             Parameters = shapeParams;
             int templateCount = shapeParams.Templates?.Count ?? 0;
             PluginLogger.Info($"[SetParameters] 参数注入完成 | Templates={templateCount}", "ShapeMatchTool");
-            SyncMinContrastMode();
         }
         else
         {
@@ -636,31 +635,6 @@ public partial class ShapeMatchToolDebugControl
 
     #endregion
 
-    #region 最小对比度模式同步
-
-    private void SyncMinContrastMode()
-    {
-        if (Parameters == null || cmbMinContrastMode == null) return;
-        bool isAuto = Parameters.IsMinContrastAuto;
-        cmbMinContrastMode.SelectedIndex = isAuto ? 0 : 1;
-        SyncMinContrastEnabled();
-    }
-
-    private void OnMinContrastModeChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (Parameters == null) return;
-        Parameters.IsMinContrastAuto = cmbMinContrastMode.SelectedIndex == 0;
-        SyncMinContrastEnabled();
-    }
-
-    private void SyncMinContrastEnabled()
-    {
-        if (minContrastConfig == null || cmbMinContrastMode == null) return;
-        minContrastConfig.IsEnabled = cmbMinContrastMode.SelectedIndex != 0;
-    }
-
-    #endregion
-
     #region 外部结果到达 & 位置修正矩阵
 
     /// <summary>
@@ -668,13 +642,14 @@ public partial class ShapeMatchToolDebugControl
     /// </summary>
     public override void OnExternalResultArrived()
     {
-        PluginLogger.Info("[OnExternalResultArrived] 外部结果到达，刷新位置修正矩阵", "ShapeMatchTool");
-
-        PluginLogger.Info($"[OnExternalResultArrived] 前置检查 | " +
-            $"IsEnabled={Parameters?.IsPositionCorrectionEnabled} | " +
-            $"DataProvider={_dataProvider != null} | " +
-            $"BindingSource={Parameters?.PositionCorrectionBindingSource != null}",
-            "ShapeMatchTool");
+        // ★ 调用前先看是否启用 + 已配置绑定源，避免每轮调度都打调试日志刷屏
+        //   （未启用位置修正时此通知与工具匹配无关，直接静默返回）。
+        if (Parameters?.IsPositionCorrectionEnabled != true
+            || _dataProvider == null
+            || Parameters.PositionCorrectionBindingSource == null)
+        {
+            return;
+        }
 
         UpdatePositionCorrectionMatrix();
     }
@@ -685,38 +660,31 @@ public partial class ShapeMatchToolDebugControl
     /// </summary>
     internal void UpdatePositionCorrectionMatrix()
     {
-        PluginLogger.Info("[UpdatePositionCorrectionMatrix] 开始查询矩阵", "ShapeMatchTool");
+        // ★ 修复误报：未启用 / 无数据源 / 未配置绑定源 → 全部视为"非工作状态"，静默 return
+        //   此前不分场景一律打 Warning 造成误报（用户没启用时也会刷"矩阵为null"）。
+        if (Parameters?.IsPositionCorrectionEnabled != true) return;
+        if (_dataProvider == null) return;
+        if (Parameters.PositionCorrectionBindingSource == null) return;
 
-        if (Parameters?.IsPositionCorrectionEnabled == true
-            && _dataProvider != null
-            && Parameters.PositionCorrectionBindingSource != null)
+        var source = Parameters.PositionCorrectionBindingSource;
+
+        var matrix = _dataProvider.GetPropertyValue(
+            source.SourceNodeId, source.PropertyName) as AffineMatrix;
+
+        if (matrix != null)
         {
-            var source = Parameters.PositionCorrectionBindingSource;
-
-            PluginLogger.Info($"[UpdatePositionCorrectionMatrix] 查询参数 | " +
-                $"SourceNodeId={source.SourceNodeId} | PropertyName={source.PropertyName}",
-                "ShapeMatchTool");
-
-            var matrix = _dataProvider.GetPropertyValue(
-                source.SourceNodeId, source.PropertyName) as AffineMatrix;
-
-            var matrixValues = matrix != null
-                ? $"[{matrix.M11:F4},{matrix.M12:F4},{matrix.M21:F4},{matrix.M22:F4},{matrix.OffsetX:F2},{matrix.OffsetY:F2}]"
-                : "null";
-            PluginLogger.Info($"[UpdatePositionCorrectionMatrix] 查询结果 | Matrix={matrixValues}", "ShapeMatchTool");
-
-            if (matrix != null)
-            {
-                Parameters.LogInfo($"设置位置修正矩阵到 ROI 编辑器 (实时查询): {matrix}");
-                regionManager?.SetPositionCorrectionMatrix(matrix);
-                return;
-            }
-        }
-        if (_dataProvider == null)
+            var matrixValues = $"[{matrix.M11:F4},{matrix.M12:F4},{matrix.M21:F4},{matrix.M22:F4},{matrix.OffsetX:F2},{matrix.OffsetY:F2}]";
+            PluginLogger.Info($"[UpdatePositionCorrectionMatrix] 矩阵查询成功 | Matrix={matrixValues}", "ShapeMatchTool");
+            Parameters.LogInfo($"设置位置修正矩阵到 ROI 编辑器 (实时查询): {matrix}");
+            regionManager?.SetPositionCorrectionMatrix(matrix);
             return;
+        }
 
-        PluginLogger.Warning("[UpdatePositionCorrectionMatrix] 矩阵为null，清空区域变换", "ShapeMatchTool");
-        regionManager?.SetPositionCorrectionMatrix(null);
+        // 启用 + 已配置绑定源 + 但绑定源未产出矩阵 → 降级为 Info（是上游就绪的预期等待状态，不是错误）
+        PluginLogger.Info(
+            $"[UpdatePositionCorrectionMatrix] 绑定源暂未产出矩阵 | " +
+            $"SourceNodeId={source.SourceNodeId} | PropertyName={source.PropertyName}",
+            "ShapeMatchTool");
     }
 
     #endregion

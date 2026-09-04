@@ -1,8 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
 using System.Windows;
 using System.Windows.Media;
 using HalconDotNet;
@@ -38,6 +40,65 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
     private readonly ToolAttribute? _attribute;
 
     private const double DEG2RAD = Math.PI / 180.0;
+
+    // ===== 模板模型句柄缓存 =====
+    // ★ 修复：此前每次 Run 都写临时文件 + ReadShapeModel 重建句柄（磁盘 IO + 反序列化开销）。
+    //   shape_model 句柄只依赖 ModelData（模板内容），不依赖搜索图像，进程内可安全复用。
+    //   缓存键 = 模板 Id（同一模板重训后 ModelData 变化），再以内容 SHA256 校验是否需重建。
+    //   同一 Id 重训时替换旧句柄并释放，避免缓存无界增长。
+    //   Halcon 句柄非线程安全，用锁保护（Halcon 官方建议同一句柄勿并发访问）。
+    private static readonly object _modelCacheLock = new();
+    private static readonly Dictionary<string, (string ContentKey, HTuple Handle)> _modelCache = new();
+
+    /// <summary>取得模板句柄（命中缓存且内容未变则复用，否则读模型并缓存）</summary>
+    private static HTuple GetOrLoadModelHandle(TemplateModel template)
+    {
+        var contentKey = ComputeContentKey(template.ModelData);
+        lock (_modelCacheLock)
+        {
+            if (_modelCache.TryGetValue(template.Id, out var cached))
+            {
+                if (cached.ContentKey == contentKey)
+                    return cached.Handle;
+
+                // 模板被重训：替换并释放旧句柄
+                cached.Handle.Dispose();
+                _modelCache.Remove(template.Id);
+            }
+
+            var handle = ReadModelHandle(template);
+            _modelCache[template.Id] = (contentKey, handle);
+            return handle;
+        }
+    }
+
+    private static string ComputeContentKey(byte[]? modelData)
+    {
+        if (modelData == null || modelData.Length == 0)
+            throw new InvalidOperationException("模板 ModelData 为空，无法创建模型句柄");
+
+        // SHA256(ModelData) → 内容指纹
+        using var sha = SHA256.Create();
+        var hash = sha.ComputeHash(modelData);
+        return Convert.ToHexString(hash);
+    }
+
+    private static HTuple ReadModelHandle(TemplateModel template)
+    {
+        // 临时文件是 halcon read_shape_model 的官方输入方式；模型数据来自序列化的 ModelData
+        string tempFile = System.IO.Path.GetTempFileName();
+        try
+        {
+            System.IO.File.WriteAllBytes(tempFile, template.ModelData!);
+            HOperatorSet.ReadShapeModel(tempFile, out var handle);
+            return handle;
+        }
+        finally
+        {
+            if (System.IO.File.Exists(tempFile))
+                System.IO.File.Delete(tempFile);
+        }
+    }
 
     public ShapeMatchTool()
     {
@@ -182,11 +243,10 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
 
                         if (enabledTemplates.Count == 0)
                         {
-                            parameters.LogWarning("没有可用的模板（没有已提取成功的启用模板）");
-                            result.SetSuccess(stopwatch.ElapsedMilliseconds);
-                            result.JudgmentPassed = false;
-                            result.JudgmentMessages.Add("无可用模板");
-                            return result;
+                            // ★ M9：无可用模板不再静默早退 —— 清空匹配结果后走下方统一判定，
+                            //   判定消息口径与"模板存在但零匹配"一致（空结果统一强制 NG，见结果判断后）。
+                            parameters.LogWarning("没有可用的模板（没有已提取成功的启用模板），按零匹配结果处理");
+                            result.MatchedItems = new List<ShapeMatchResultItem>();
                         }
 
                         parameters.LogInfo($"可用模板数量: {enabledTemplates.Count}");
@@ -200,7 +260,7 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
                         foreach (var template in enabledTemplates)
                         {
                             var templateMatches = RunSingleTemplateMatch(
-                                processingImage, template, parameters, width, height);
+                                processingImage, template, parameters);
                             allMatches.AddRange(templateMatches);
                         }
                         stepSw.Stop();
@@ -212,8 +272,17 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
                         stepSw.Stop();
                         stepTimings.Add(("结果排序", stepSw.ElapsedMilliseconds));
 
+                        // ===== 跨模板空间去重 NMS（M8/M10） =====
+                        // Halcon MaxOverlap 只在单模板内生效；多模板匹配同一目标时会输出重叠重复框，
+                        // 需按空间重叠做一次跨模板抑制，再截取 MaxMatchCount。
+                        stepSw.Restart();
+                        var nonOverlapMatches = SuppressCrossTemplateOverlap(
+                            sortedMatches, parameters.MaxOverlap.Value);
+                        stepSw.Stop();
+                        stepTimings.Add(("跨模板去重", stepSw.ElapsedMilliseconds));
+
                         // ===== 截取最大匹配数量 =====
-                        var finalMatches = sortedMatches.Take(parameters.MaxMatchCount.Value).ToList();
+                        var finalMatches = nonOverlapMatches.Take(parameters.MaxMatchCount.Value).ToList();
 
                         // ===== 设置结果 =====
                         result.MatchedItems = finalMatches;
@@ -244,6 +313,14 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
                         // ===== 结果判断 =====
                         stepSw.Restart();
                         EvaluateJudgments(parameters.ResultConfig, result);
+                        // ★ M9：空结果强制 NG（无模板 / 模板存在但零匹配 共用此兜底），
+                        //   避免"匹配数量/分数判断均未启用"时空结果被误判为通过。
+                        if (result.MatchCount == 0)
+                        {
+                            result.JudgmentPassed = false;
+                            if (!result.JudgmentMessages.Any(m => m.Contains("无模板")))
+                                result.JudgmentMessages.Add("未找到任何匹配（数量=0）");
+                        }
                         stepSw.Stop();
                         stepTimings.Add(("结果判断", stepSw.ElapsedMilliseconds));
 
@@ -304,165 +381,175 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
     /// 对单个模板执行匹配 — 直接调用 Halcon find_scaled_shape_model
     /// </summary>
     private static List<ShapeMatchResultItem> RunSingleTemplateMatch(
-        HImage image, TemplateModel template, ShapeMatchParameters parameters,
-        int imgWidth, int imgHeight)
+        HImage image, TemplateModel template, ShapeMatchParameters parameters)
     {
-        // 从 byte[] 反序列化模型（使用临时文件 + read_shape_model）
-        string tempFile = System.IO.Path.GetTempFileName();
-        HTuple modelHandle = new HTuple();
+        // 从缓存取得模型句柄（首次按 ModelData 重建，之后复用；句柄生命周期由缓存管理，此处不 Dispose）
+        HTuple modelHandle;
         try
         {
-            System.IO.File.WriteAllBytes(tempFile, template.ModelData!);
-            HOperatorSet.ReadShapeModel(tempFile, out modelHandle);
+            modelHandle = GetOrLoadModelHandle(template);
         }
         catch (Exception ex)
         {
-            if (System.IO.File.Exists(tempFile))
-                System.IO.File.Delete(tempFile);
-            parameters.LogWarning($"模板 {template.Name} 反序列化失败: {ex.Message}");
+            parameters.LogError($"模板 {template.Name} 模型加载失败: {ex.Message}");
+            throw;
+        }
+
+        // 解析搜索参数（支持每模型覆盖）
+        double angleStart = parameters.AngleStart.Value;
+        double angleEnd = parameters.AngleEnd.Value;
+        double scaleMin = parameters.ScaleMin.Value;
+        double scaleMax = parameters.ScaleMax.Value;
+        double minScore = parameters.MinMatchScore.Value;
+        int numMatches = parameters.NumMatches.Value;
+        double maxOverlap = parameters.MaxOverlap.Value;
+        double greediness = parameters.Greediness.Value;
+        int timeoutMs = parameters.MatchTimeoutMs.Value;
+
+        // ★ M12/M13：删除 angleStep/scaleStep/minContrast 死代码 —— find_scaled_shape_model
+        //   （本机官方文档签名）不含这些参数，它们是 create_scaled_shape_model 的创建期参数，
+        //   此前在搜索路径计算了却从未传入 find 调用，属无效代码。
+
+        // 搜索层级：使用 Parameters 中的搜索层级区间 [起始层(粗), 结束层(细)]
+        // Halcon 官方语义：NumLevels=[4,2] = 从第 4 层开始、跟踪匹配到第 2 层（起始层≥结束层）。
+        // 0 或未成对时使用 0 = 全层级（用 create 时的层数）。
+        int searchLevelStart = parameters.SearchLevelStart.Value;
+        int searchLevelEnd = parameters.SearchLevelEnd.Value;
+        HTuple numLevelsTuple;
+        if (searchLevelStart > 0 && searchLevelEnd > 0 && searchLevelStart >= searchLevelEnd)
+        {
+            int clampedStart = Math.Min(searchLevelStart, template.NumLevels);
+            int clampedEnd = Math.Min(searchLevelEnd, template.NumLevels);
+            numLevelsTuple = new HTuple(new int[] { clampedStart, clampedEnd });
+        }
+        else
+        {
+            numLevelsTuple = 0; // 全层级
+        }
+
+        // 设置超时
+        HOperatorSet.SetShapeModelParam(modelHandle, "timeout", timeoutMs);
+
+        // 计算 AngleExtent
+        double angleExtent = angleEnd - angleStart;
+
+        // 执行匹配
+        HOperatorSet.FindScaledShapeModel(
+            image, modelHandle,
+            angleStart * DEG2RAD, angleExtent * DEG2RAD,
+            scaleMin, scaleMax, minScore, numMatches, maxOverlap,
+            MapSubPixel(parameters.SubPixelMode.Value),
+            numLevelsTuple, greediness,
+            out HTuple row, out HTuple col,
+            out HTuple angle, out HTuple scale, out HTuple score);
+
+        int matchCount = row.Length;
+        if (matchCount == 0)
             return new List<ShapeMatchResultItem>();
-        }
 
-        if (System.IO.File.Exists(tempFile))
-            System.IO.File.Delete(tempFile);
+        // 获取模型轮廓（模型坐标，Level 1）
+        var modelContours = TemplateModel.GetShapeModelContours(modelHandle, 1);
 
-        try
+        var results = new List<ShapeMatchResultItem>(matchCount);
+        for (int i = 0; i < matchCount; i++)
         {
-            // 解析搜索参数（支持每模型覆盖）
-            double angleStart = parameters.AngleStart.Value;
-            double angleEnd = parameters.AngleEnd.Value;
-            double scaleMin = parameters.ScaleMin.Value;
-            double scaleMax = parameters.ScaleMax.Value;
-            double minScore = parameters.MinMatchScore.Value;
-            int numMatches = parameters.NumMatches.Value;
-            double maxOverlap = parameters.MaxOverlap.Value;
-            double greediness = parameters.Greediness.Value;
-            int timeoutMs = parameters.MatchTimeoutMs.Value;
+            double matchRow = row[i].D;
+            double matchCol = col[i].D;
+            double matchAngle = angle[i].D;
+            double matchScale = scale[i].D;
+            double matchScore = score[i].D;
 
-            // 角度步长/缩放步长：0=auto
-            HTuple angleStep = parameters.AngleStep.Value > 0
-                ? parameters.AngleStep.Value * DEG2RAD
-                : new HTuple("auto");
-            HTuple scaleStep = parameters.ScaleStep.Value > 0
-                ? parameters.ScaleStep.Value
-                : new HTuple("auto");
+            // ★ 唯一构造出口：由独立工厂从 Halcon 匹配姿态构造 AffineMatrix（仿 HalconArcAdapter 范式）
+            var transformMatrix = ShapeMatchTransformFactory.FromMatchPose(
+                matchRow, matchCol, matchAngle, matchScale);
 
-            // 最小对比度：auto / float
-            HTuple minContrast = parameters.IsMinContrastAuto
-                ? new HTuple("auto")
-                : new HTuple(parameters.MinContrast.Value);
-
-            // 搜索层级：使用 Parameters 中的搜索层级区间
-            int searchLevelStart = parameters.SearchLevelStart.Value;
-            int searchLevelEnd = parameters.SearchLevelEnd.Value;
-            HTuple numLevelsTuple;
-            if (searchLevelStart > 0 && searchLevelEnd > 0 && searchLevelStart >= searchLevelEnd)
+            // 轮廓变换到图像坐标（M5：渲染不再依赖矩阵变换，Display 直接画像素点）
+            var imageChains = new List<WpfPoint[]>(modelContours.Count);
+            foreach (var chain in modelContours)
             {
-                int clampedStart = Math.Min(searchLevelStart, template.NumLevels);
-                int clampedEnd = Math.Min(searchLevelEnd, template.NumLevels);
-                numLevelsTuple = new HTuple(new int[] { clampedStart, clampedEnd });
-            }
-            else
-            {
-                numLevelsTuple = 0; // 全层级
-            }
-
-            // 设置超时
-            HOperatorSet.SetShapeModelParam(modelHandle, "timeout", timeoutMs);
-
-            // 计算 AngleExtent
-            double angleExtent = angleEnd - angleStart;
-
-            // 执行匹配
-            HOperatorSet.FindScaledShapeModel(
-                image, modelHandle,
-                angleStart * DEG2RAD, angleExtent * DEG2RAD,
-                scaleMin, scaleMax, minScore, numMatches, maxOverlap,
-                MapSubPixel(parameters.SubPixelMode.Value),
-                numLevelsTuple, greediness,
-                out HTuple row, out HTuple col,
-                out HTuple angle, out HTuple scale, out HTuple score);
-
-            int matchCount = row.Length;
-            if (matchCount == 0)
-                return new List<ShapeMatchResultItem>();
-
-            // 获取模型轮廓
-            var modelContours = TemplateModel.GetShapeModelContours(modelHandle, 1);
-
-            // 将轮廓打平为单层点列表（用于显示）
-            var flatModelPoints = modelContours
-                .SelectMany(chain => chain.Select(p => new WpfPoint(p.X, p.Y)))
-                .ToList();
-
-            var results = new List<ShapeMatchResultItem>(matchCount);
-            for (int i = 0; i < matchCount; i++)
-            {
-                double matchRow = row[i].D;
-                double matchCol = col[i].D;
-                double matchAngle = angle[i].D;
-                double matchScale = scale[i].D;
-                double matchScore = score[i].D;
-
-                // 构建仿射变换矩阵：M = scale * R(θ) + translation
-                double cosA = Math.Cos(matchAngle);
-                double sinA = Math.Sin(matchAngle);
-                var transformMatrix = new Matrix(
-                    matchScale * cosA,  matchScale * sinA,
-                   -matchScale * sinA,  matchScale * cosA,
-                    matchCol,           matchRow);
-
-                // 计算包围矩形（应用变换矩阵到原始轮廓点）
-                var bbox = ComputeBoundingBox(flatModelPoints, transformMatrix);
-
-                results.Add(new ShapeMatchResultItem
+                var mapped = new WpfPoint[chain.Length];
+                for (int j = 0; j < chain.Length; j++)
                 {
-                    Score = matchScore,
-                    CenterX = matchCol,
-                    CenterY = matchRow,
-                    Angle = -matchAngle / DEG2RAD,   // Halcon ccw+ → 屏幕角度系 cw+
-                    Scale = matchScale,
-                    TemplateName = template.Name,
-                    TemplateId = template.Id,
-                    TemplateOrderIndex = template.OrderIndex,
-                    BoundingBox = bbox,
-                    ContourPoints = flatModelPoints,
-                    ContourChains = modelContours,  // 保持链结构，渲染时逐链独立添加
-                    TransformMatrix = AffineMatrix.FromWpfMatrix(transformMatrix),
-                    ReferencePointX = template.ReferencePointX,
-                    ReferencePointY = template.ReferencePointY,
-                });
+                    var (mx, my) = transformMatrix.TransformPoint(chain[j].X, chain[j].Y);
+                    mapped[j] = new WpfPoint(mx, my);
+                }
+                imageChains.Add(mapped);
             }
+            var flatImagePoints = imageChains.SelectMany(c => c).ToList();
 
-            // 日志
-            parameters.LogInfo(
-                $"Halcon 匹配 [{template.Name}]: {matchCount}个 结果, " +
-                $"角度=[{angleStart:F1}~{angleEnd:F1}]°, 缩放=[{scaleMin:F3}~{scaleMax:F3}]");
+            // 包围矩形：由已变换图像坐标直接求取（模型坐标无需再次经矩阵计算）
+            var bbox = ComputeBoundingBoxFromPoints(flatImagePoints);
 
-            return results;
+            results.Add(new ShapeMatchResultItem
+            {
+                Score = matchScore,
+                CenterX = matchCol,
+                CenterY = matchRow,
+                Angle = -matchAngle / DEG2RAD,   // Halcon ccw+ → 屏幕角度系 cw+（方向契约测试 AC-2 定案）
+                Scale = matchScale,
+                TemplateName = template.Name,
+                TemplateId = template.Id,
+                TemplateOrderIndex = template.OrderIndex,
+                BoundingBox = bbox,
+                ContourPoints = flatImagePoints,   // 已变换图像坐标（供下游消费/展示）
+                ContourChains = imageChains,       // 已变换图像坐标，渲染时逐链独立添加（不再经矩阵）
+                TransformMatrix = transformMatrix, // 保留：仅作下游数值输出/位置修正（AC-3）
+                ReferencePointX = template.ReferencePointX,
+                ReferencePointY = template.ReferencePointY,
+            });
         }
-        finally
-        {
-            modelHandle.Dispose();
-        }
+
+        // ★ 方向一致性诊断日志：矩阵旋转角 vs Angle 字段（AC-2 方向契约测试的人工观测口）
+        LogDirectionConsistency(parameters, template, results);
+
+        // 日志
+        parameters.LogInfo(
+            $"Halcon 匹配 [{template.Name}]: {matchCount}个 结果, " +
+            $"角度=[{angleStart:F1}~{angleEnd:F1}]°, 缩放=[{scaleMin:F3}~{scaleMax:F3}]");
+
+        return results;
     }
 
     /// <summary>
-    /// 根据匹配轮廓点和变换矩阵计算包围矩形
+    /// 根据（已变换到图像坐标的）匹配轮廓点直接求包围矩形
     /// </summary>
-    private static WpfRect ComputeBoundingBox(List<WpfPoint> points, Matrix transform)
+    private static WpfRect ComputeBoundingBoxFromPoints(List<WpfPoint> points)
     {
+        if (points.Count == 0) return WpfRect.Empty;
         double minX = double.MaxValue, minY = double.MaxValue;
         double maxX = double.MinValue, maxY = double.MinValue;
         foreach (var p in points)
         {
-            var tp = transform.Transform(p);
-            if (tp.X < minX) minX = tp.X;
-            if (tp.X > maxX) maxX = tp.X;
-            if (tp.Y < minY) minY = tp.Y;
-            if (tp.Y > maxY) maxY = tp.Y;
+            if (p.X < minX) minX = p.X;
+            if (p.X > maxX) maxX = p.X;
+            if (p.Y < minY) minY = p.Y;
+            if (p.Y > maxY) maxY = p.Y;
         }
         return new WpfRect(minX, minY, maxX - minX, maxY - minY);
+    }
+
+    /// <summary>
+    /// 方向一致性诊断日志：输出每个匹配的矩阵旋转角（atan2(M21,M11)）与 Angle 字段，
+    /// 供"轮廓渲染方向 == 角度线方向 == Angle 文本"实测核对（方案 AC-2 方向契约）。
+    /// </summary>
+    private static void LogDirectionConsistency(
+        ShapeMatchParameters parameters, TemplateModel template, List<ShapeMatchResultItem> results)
+    {
+        try
+        {
+            foreach (var m in results)
+            {
+                double matrixAngleDeg = Math.Atan2(m.TransformMatrix.M21, m.TransformMatrix.M11) / DEG2RAD;
+                parameters.LogInfo(
+                    $"[Diag] 方向一致性 [{template.Name}] Center=({m.CenterX:F2},{m.CenterY:F2}) " +
+                    $"矩阵角(atan2(M21,M11))={matrixAngleDeg:F2}° | Angle字段={m.Angle:F2}° | " +
+                    $"Halcon原角={m.Angle * -1.0:F2}° | Scale={m.Scale:F4}");
+            }
+        }
+        catch (Exception ex)
+        {
+            parameters.LogInfo($"[Diag] 方向一致性日志异常: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -481,6 +568,50 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
             SortMode.YThenXAscending => matches.OrderBy(m => m.CenterY).ThenBy(m => m.CenterX).ToList(),
             _ => matches
         };
+    }
+
+    /// <summary>
+    /// 跨模板空间去重 NMS（M10）：抑制与已保留框重叠超过 MaxOverlap 的后续匹配。
+    /// 输入应为已排序列表（建议按分数降序），第一个匹配总是保留。
+    /// </summary>
+    private static List<ShapeMatchResultItem> SuppressCrossTemplateOverlap(
+        List<ShapeMatchResultItem> sortedMatches, double maxOverlap)
+    {
+        if (sortedMatches.Count <= 1) return sortedMatches;
+
+        var kept = new List<ShapeMatchResultItem>();
+        foreach (var candidate in sortedMatches)
+        {
+            if (!candidate.BoundingBox.HasValue)
+            {
+                kept.Add(candidate); // 无包围盒无法判重叠，保留
+                continue;
+            }
+
+            bool overlapped = kept.Any(k =>
+                k.BoundingBox.HasValue && BoundingBoxOverlapRatio(
+                    candidate.BoundingBox.Value, k.BoundingBox.Value) > maxOverlap);
+            if (!overlapped)
+                kept.Add(candidate);
+        }
+        return kept;
+    }
+
+    /// <summary>
+    /// 两个矩形交并比（IoU）：交集面积 / 并集面积；不相交返回 0。
+    /// </summary>
+    private static double BoundingBoxOverlapRatio(WpfRect a, WpfRect b)
+    {
+        var ia = WpfRect.Empty;
+        ia.X = Math.Max(a.X, b.X);
+        ia.Y = Math.Max(a.Y, b.Y);
+        ia.Width = Math.Min(a.X + a.Width, b.X + b.Width) - ia.X;
+        ia.Height = Math.Min(a.Y + a.Height, b.Y + b.Height) - ia.Y;
+        if (ia.Width <= 0 || ia.Height <= 0) return 0;
+
+        double intersection = ia.Width * ia.Height;
+        double union = a.Width * a.Height + b.Width * b.Height - intersection;
+        return union > 0 ? intersection / union : 0;
     }
 
     /// <summary>
@@ -515,6 +646,17 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
         }
 
         result.JudgmentPassed = wholePassed;
+
+        // ★ M7：逐项赋值 JudgmentPassed —— 此前 item.JudgmentPassed 从未赋值（恒 true），
+        //   整体 NG（数量不足/分数越界）时显示层仍把框/中心画成 OK 色，视觉误导。
+        //   整体判定 NG 则所有匹配项置 false（显示 NG 色）；整体 OK 保持各项默认 true。
+        if (result.MatchedItems != null)
+        {
+            foreach (var item in result.MatchedItems)
+            {
+                item.JudgmentPassed = wholePassed;
+            }
+        }
 
         if (messages.Count > 0)
         {
@@ -565,7 +707,7 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
         }
 
         // 匹配轮廓 → AddContour 折线（匹配到的轮廓，不封闭显示）
-        // 每条轮廓链独立添加，避免链间多余连接线
+        // ★ M5：ContourChains 已由工具层变换为图像坐标，Display 直接画点，不再做矩阵变换（WPF 不参与几何计算）
         foreach (var match in result.MatchedItems)
         {
             if (match.ContourChains == null) continue;
@@ -573,7 +715,7 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
             {
                 if (chain.Length < 2) continue;
                 display.AddContour(config.TemplateContourStyle,
-                    chain, match.TransformMatrix.ToWpfMatrix(), match.JudgmentPassed, false);
+                    chain, match.JudgmentPassed, false);
             }
         }
 

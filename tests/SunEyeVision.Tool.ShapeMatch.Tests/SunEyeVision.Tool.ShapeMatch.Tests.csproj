@@ -23,4 +23,16 @@
   <ItemGroup>
     <ProjectReference Include="../../tools/SunEyeVision.Tool.ShapeMatch/SunEyeVision.Tool.ShapeMatch.csproj" />
   </ItemGroup>
+  <!-- 工具插件(IsToolPlugin)主输出重定向到 dev/Debug/plugins/<Tool>/，
+       测试运行目录(dev/Debug 根)需显式复制工具 dll 才能加载其类型（rule-017）。 -->
+  <Target Name="CopyToolPluginForTests" AfterTargets="Build">
+    <ItemGroup>
+      <_ToolPluginDll Include="$(MSBuildProjectDirectory)\..\..\dev\Debug\plugins\SunEyeVision.Tool.ShapeMatch\SunEyeVision.Tool.ShapeMatch.dll" />
+      <_ToolPluginPdb Include="$(MSBuildProjectDirectory)\..\..\dev\Debug\plugins\SunEyeVision.Tool.ShapeMatch\SunEyeVision.Tool.ShapeMatch.pdb" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_ToolPluginDll);@(_ToolPluginPdb)"
+          DestinationFolder="$(MSBuildProjectDirectory)\..\..\dev\Debug\"
+          SkipUnchangedFiles="true"
+          Condition="Exists('%(FullPath)')" />
+  </Target>
 </Project>

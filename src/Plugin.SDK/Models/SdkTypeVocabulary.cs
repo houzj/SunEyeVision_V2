@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
-using SunEyeVision.Plugin.SDK.VisionAdapters;
+using SunEyeVision.Plugin.SDK.Vision.Contracts;
 
 namespace SunEyeVision.Plugin.SDK.Models
 {

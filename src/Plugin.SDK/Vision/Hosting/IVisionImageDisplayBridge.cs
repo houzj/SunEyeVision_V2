@@ -1,6 +1,7 @@
 using System.Windows.Media.Imaging;
+using SunEyeVision.Plugin.SDK.Vision.Contracts;
 
-namespace SunEyeVision.Plugin.SDK.VisionAdapters
+namespace SunEyeVision.Plugin.SDK.Vision.Hosting
 {
     /// <summary>
     /// 图像显示桥接：将 IVisionImage 转换为 WPF BitmapSource。

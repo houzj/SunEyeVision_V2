@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using SunEyeVision.Plugin.SDK.VisionAdapters;
+using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Core;
 using Events = SunEyeVision.Core.Events;

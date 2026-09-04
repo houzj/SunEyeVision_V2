@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
-using SunEyeVision.Plugin.SDK.VisionAdapters;
+using SunEyeVision.Plugin.SDK.Vision.Contracts;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models
 {

@@ -7,12 +7,12 @@ using System.Windows;
 using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution;
-using SunEyeVision.Plugin.SDK.Execution.Helpers;
+using SunEyeVision.HalAdapter;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using SunEyeVision.Plugin.SDK.Validation;
-using SunEyeVision.Plugin.SDK.VisionAdapters;
+using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using SunEyeVision.Tool.ImageThreshold.Views;
 
 namespace SunEyeVision.Tool.ImageThreshold

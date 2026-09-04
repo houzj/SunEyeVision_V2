@@ -1,4 +1,6 @@
-namespace SunEyeVision.Plugin.SDK.VisionAdapters
+using SunEyeVision.Plugin.SDK.Vision.Contracts;
+
+namespace SunEyeVision.Plugin.SDK.Vision.Hosting
 {
     /// <summary>
     /// 跨后端提取委托：从任意 <see cref="IVisionImage"/> 提取其底层引擎对象。

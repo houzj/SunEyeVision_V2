@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SunEyeVision.Plugin.SDK.VisionAdapters
+namespace SunEyeVision.Plugin.SDK.Vision.Contracts
 {
     /// <summary>
     /// 统一图像数据接口 - 对齐 Halcon HImage / OpenCV Mat / CvImage

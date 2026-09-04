@@ -1,17 +1,17 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json.Serialization;
 using System.Windows;
 using HalconDotNet;
-using SunEyeVision.Plugin.SDK.Execution.Helpers;
+using SunEyeVision.HalAdapter;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
-using SunEyeVision.Plugin.SDK.VisionAdapters;
+using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using SunEyeVision.Tool.LineDetect.Models;
 using SunEyeVision.Tool.LineDetect.Views;
 

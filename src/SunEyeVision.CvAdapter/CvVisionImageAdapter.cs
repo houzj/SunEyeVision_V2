@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using SunEyeVision.CvEngine;
-using SunEyeVision.Plugin.SDK.VisionAdapters;
-// SDK 旧 CvImage（S3c 删除前）与 CvEngine 纯 CvImage 同名，显式别名指向算法层纯类型。
+using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using CvImage = SunEyeVision.CvEngine.CvImage;
 
 namespace SunEyeVision.CvAdapter
@@ -66,6 +67,24 @@ namespace SunEyeVision.CvAdapter
             var bytes = new byte[src.Total() * src.ElemSize()];
             System.Runtime.InteropServices.Marshal.Copy(src.Data, bytes, 0, bytes.Length);
             return bytes;
+        }
+
+        /// <summary>转换为 WPF BitmapSource（显示桥 UI 适配层使用）。</summary>
+        public BitmapSource ToBitmapSource()
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            var src = _image.Image;
+            var pixelFormat = src.Channels() switch
+            {
+                1 => PixelFormats.Gray8,
+                3 => PixelFormats.Bgr24,
+                4 => PixelFormats.Bgra32,
+                _ => PixelFormats.Gray8
+            };
+            int stride = src.Width * src.Channels();
+            var bytes = new byte[stride * src.Height];
+            System.Runtime.InteropServices.Marshal.Copy(src.Data, bytes, 0, bytes.Length);
+            return BitmapSource.Create(src.Width, src.Height, 96, 96, pixelFormat, null, bytes, stride);
         }
 
         public IVisionImage Clone()

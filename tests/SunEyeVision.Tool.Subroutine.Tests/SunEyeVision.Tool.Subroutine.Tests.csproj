@@ -22,5 +22,8 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../../tools/SunEyeVision.Tool.Subroutine/SunEyeVision.Tool.Subroutine.csproj" />
+    <!-- MakeImage 需构造 IVisionImage：CvEngine 纯 CvImage + CvAdapter 适配包装 -->
+    <ProjectReference Include="../../src/SunEyeVision.CvEngine/SunEyeVision.CvEngine.csproj" />
+    <ProjectReference Include="../../src/SunEyeVision.CvAdapter/SunEyeVision.CvAdapter.csproj" />
   </ItemGroup>
 </Project>

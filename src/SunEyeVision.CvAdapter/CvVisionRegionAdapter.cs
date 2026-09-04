@@ -3,8 +3,7 @@ using System.Linq;
 using System.Windows;
 using OpenCvSharp;
 using SunEyeVision.CvEngine;
-using SunEyeVision.Plugin.SDK.VisionAdapters;
-// SDK 旧 CvRegion（S3c 删除前）与 CvEngine 纯 CvRegion 同名，显式别名指向算法层纯类型。
+using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using CvRegion = SunEyeVision.CvEngine.CvRegion;
 using WpfRect = System.Windows.Rect;
 using WpfPoint = System.Windows.Point;

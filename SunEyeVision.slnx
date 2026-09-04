@@ -15,7 +15,12 @@
   <Folder Name="/Src/SunEyeVision.CvEngine/">
     <Project Path="Src/SunEyeVision.CvEngine/SunEyeVision.CvEngine.csproj" />
   </Folder>
-  <!-- HalAdapter project removed, types moved to Plugin.SDK/Imaging/ -->
+  <Folder Name="/Src/SunEyeVision.CvAdapter/">
+    <Project Path="Src/SunEyeVision.CvAdapter/SunEyeVision.CvAdapter.csproj" />
+  </Folder>
+  <Folder Name="/Src/SunEyeVision.HalAdapter/">
+    <Project Path="Src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj" />
+  </Folder>
   <Folder Name="/Src/SunEyeVision.DeviceDriver/">
     <Project Path="Src/DeviceDriver/SunEyeVision.DeviceDriver.csproj" />
   </Folder>

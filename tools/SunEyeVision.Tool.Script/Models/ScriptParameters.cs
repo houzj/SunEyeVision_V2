@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -10,7 +10,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.VisionAdapters;
+using SunEyeVision.Plugin.SDK.Vision.Contracts;
 
 namespace SunEyeVision.Tool.Script.Models
 {
@@ -252,7 +252,7 @@ namespace SunEyeVision.Tool.Script.Models
             sb.AppendLine("using System.Text;");
             sb.AppendLine("using System.IO;");
             sb.AppendLine("using SunEyeVision.Plugin.SDK.Scripting;");
-            sb.AppendLine("using SunEyeVision.Plugin.SDK.VisionAdapters;");
+            sb.AppendLine("using SunEyeVision.Plugin.SDK.Vision.Contracts;");
             sb.AppendLine("using SunEyeVision.Plugin.SDK.Execution;");
             sb.AppendLine();
             sb.AppendLine("public partial class UserScript : Script");

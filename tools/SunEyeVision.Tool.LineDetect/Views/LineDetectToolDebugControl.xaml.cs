@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Windows;
 using SunEyeVision.Plugin.SDK.Core;
@@ -11,7 +11,7 @@ using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.SDK.UI.Controls.Measure;
 using SunEyeVision.Plugin.SDK.UI.Controls.Measure.Models;
 using SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views;
-using SunEyeVision.Plugin.SDK.VisionAdapters;
+using SunEyeVision.Plugin.SDK.Vision.Contracts;
 
 namespace SunEyeVision.Tool.LineDetect.Views
 {

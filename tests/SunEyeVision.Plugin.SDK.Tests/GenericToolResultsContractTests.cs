@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
-using OpenCvSharp;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.VisionAdapters;
+using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using Xunit;
 
 namespace SunEyeVision.Plugin.SDK.Tests;
@@ -18,7 +17,19 @@ public class GenericToolResultsContractTests
         => new Dictionary<string, ToolResults> { ["N"] = sample };
 
     private static IVisionImage MakeImage()
-        => new CvImage(new Mat(64, 64, MatType.CV_8UC1, Scalar.All(128)));
+        => new FakeImage();
+
+    /// <summary>契约测试用的最小非空图像实现（不依赖任何引擎 dll，保持 D1 纯净）。</summary>
+    private sealed class FakeImage : IVisionImage
+    {
+        public int Width => 64;
+        public int Height => 64;
+        public int Channels => 1;
+        public bool IsEmpty => false;
+        public byte[] GetPixelData() => new byte[64 * 64];
+        public IVisionImage Clone() => new FakeImage();
+        public void Dispose() { }
+    }
 
     /// <summary>
     /// UT-GTR-01 复现本次 bug：子程序输入端口 in_1 注入图像后，解析器必须能按 in_1 取回图像。

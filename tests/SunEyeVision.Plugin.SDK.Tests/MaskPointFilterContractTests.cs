@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using System.Windows;
-using SunEyeVision.Plugin.SDK.Execution.Helpers;
+using SunEyeVision.HalAdapter;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Plugin.SDK.Models.Geometry;

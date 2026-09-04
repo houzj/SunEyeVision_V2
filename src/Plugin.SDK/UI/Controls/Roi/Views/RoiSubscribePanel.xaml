@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views"
              xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls"
              xmlns:converters="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Roi.Converters"
-             xmlns:va="clr-namespace:SunEyeVision.Plugin.SDK.VisionAdapters"
+             xmlns:va="clr-namespace:SunEyeVision.Plugin.SDK.Vision.Contracts"
              xmlns:themes="clr-namespace:SunEyeVision.Plugin.SDK.UI.Themes"
              mc:Ignorable="d" d:DesignHeight="500" d:DesignWidth="300">
     <UserControl.Resources>

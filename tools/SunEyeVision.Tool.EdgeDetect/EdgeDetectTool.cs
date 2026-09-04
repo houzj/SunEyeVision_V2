@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Windows;
 using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
-using SunEyeVision.Plugin.SDK.VisionAdapters;
+using SunEyeVision.Plugin.SDK.Vision.Contracts;
+using SunEyeVision.HalAdapter;
 using SunEyeVision.Tool.EdgeDetect.Views;
 
 namespace SunEyeVision.Tool.EdgeDetect

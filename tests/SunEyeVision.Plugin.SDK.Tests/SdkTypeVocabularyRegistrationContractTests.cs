@@ -1,5 +1,5 @@
-﻿using SunEyeVision.Plugin.SDK.Models;
-using SunEyeVision.Plugin.SDK.VisionAdapters;
+using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using Xunit;
 
 namespace SunEyeVision.Plugin.SDK.Tests;

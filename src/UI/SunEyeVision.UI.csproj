@@ -53,7 +53,9 @@
          宿主统一加载（对齐 AvalonEdit/Roslyn 重型依赖模式），插件 Assembly.LoadFrom 时
          CLR 在 dev/Debug/ 根目录 probing 解析，运行时才能加载 CommonControl.dll。 -->
     <ProjectReference Include="..\CommonControl\CommonControl.csproj" />
-    <!-- HalAdapter removed, types moved to Plugin.SDK -->
+    <!-- S4 对称架构：UI 装配消费 HalAdapter/CvAdapter 的具体图像类型（显示桥分派、图像加载等） -->
+    <ProjectReference Include="..\SunEyeVision.HalAdapter\SunEyeVision.HalAdapter.csproj" />
+    <ProjectReference Include="..\SunEyeVision.CvAdapter\SunEyeVision.CvAdapter.csproj" />
   </ItemGroup>
 
   <!-- 测试项目可访问 internal（对齐 Plugin.SDK.csproj:52 既有做法，仅测试基础设施，不改业务代码） -->

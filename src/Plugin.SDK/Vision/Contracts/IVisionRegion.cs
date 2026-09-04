@@ -1,7 +1,7 @@
 using System;
 using System.Windows;
 
-namespace SunEyeVision.Plugin.SDK.VisionAdapters
+namespace SunEyeVision.Plugin.SDK.Vision.Contracts
 {
     /// <summary>
     /// 统一区域数据接口 - 对齐 Halcon HRegion / CvRegion

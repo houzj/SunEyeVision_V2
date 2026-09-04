@@ -1,10 +1,10 @@
 using System;
 using System.Linq;
 using System.Windows;
-using SunEyeVision.Plugin.SDK.Execution;
+using SunEyeVision.HalAdapter;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
-using SunEyeVision.Plugin.SDK.VisionAdapters;
+using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using Xunit;
 
 namespace SunEyeVision.Plugin.SDK.Tests;

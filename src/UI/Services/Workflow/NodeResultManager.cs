@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,9 +7,10 @@ using OpenCvSharp;
 using OpenCvSharp.Extensions;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.VisionAdapters;
+using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
+using SunEyeVision.HalAdapter;
 using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering;
 using SunEyeVision.UI.Shared;
@@ -251,7 +252,7 @@ namespace SunEyeVision.UI.Services.Workflow
                     var stride = bmp.PixelWidth * (bmp.Format.BitsPerPixel / 8);
                     var pixelData = new byte[stride * bmp.PixelHeight];
                     bmp.CopyPixels(pixelData, stride, 0);
-                    var image = VisionImage.FromBitmapSource(bmp);
+                    var image = HalImage.FromBitmapSource(bmp);
                     var genericResults = new GenericToolResults
                     {
                         Status = ExecutionStatus.Success

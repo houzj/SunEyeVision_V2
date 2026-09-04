@@ -1,9 +1,12 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using OpenCvSharp;
+using SunEyeVision.CvAdapter;
+using SunEyeVision.CvEngine;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.VisionAdapters;
+using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using Xunit;
+using CvImage = SunEyeVision.CvEngine.CvImage;
 
 namespace SunEyeVision.Tool.Subroutine.Tests;
 
@@ -15,7 +18,7 @@ namespace SunEyeVision.Tool.Subroutine.Tests;
 public class SubroutineResultsDisplayImagesContractTests
 {
     private static IVisionImage MakeImage()
-        => new CvImage(new Mat(64, 64, MatType.CV_8UC1, Scalar.All(128)));
+        => new CvVisionImageAdapter(new CvImage(new Mat(64, 64, MatType.CV_8UC1, Scalar.All(128))));
 
     [Fact]
     public void GetDisplayImages_FromResolvedOutputValues_ReturnsDeclaredImageOutput()

@@ -1,4 +1,6 @@
-namespace SunEyeVision.Plugin.SDK.VisionAdapters
+using SunEyeVision.Plugin.SDK.Vision.Contracts;
+
+namespace SunEyeVision.Plugin.SDK.Vision.Hosting
 {
     /// <summary>
     /// 图像创建工厂契约：算法库/适配层实现具体图像加载（HalImage/CvImage 等），

@@ -35,22 +35,14 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
   </PropertyGroup>
 
+  <!-- S4 对称架构：SDK 为纯契约层，零引擎引用（AC-1/D3）。System.Drawing.Common 仅用于
+       SDK UI 旋转光标渲染（RotatedCursor），非算法引擎，保留。 -->
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
-    <PackageReference Include="OpenCvSharp4" Version="4.13.0.20260222" />
-    <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.13.0.20260222" />
     <PackageReference Include="System.Drawing.Common" Version="9.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="halcondotnetxl">
-      <HintPath>..\..\libs\halcon\net\halcondotnetxl.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <InternalsVisibleTo Include="SunEyeVision.CvEngine" />
     <InternalsVisibleTo Include="SunEyeVision.Tool.Script" />
   </ItemGroup>
 

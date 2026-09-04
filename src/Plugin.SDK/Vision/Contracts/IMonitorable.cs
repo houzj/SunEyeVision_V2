@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace SunEyeVision.Plugin.SDK.VisionAdapters
+namespace SunEyeVision.Plugin.SDK.Vision.Contracts
 {
     /// <summary>
     /// 监视协议 — 业务对象向监视面板暴露具名字段的自描述接口。

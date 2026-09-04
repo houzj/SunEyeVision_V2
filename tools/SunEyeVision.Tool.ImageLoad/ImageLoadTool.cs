@@ -1,11 +1,12 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.VisionAdapters;
+using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using SunEyeVision.Plugin.SDK.Validation;
+using SunEyeVision.HalAdapter;
 
 namespace SunEyeVision.Tool.ImageLoad
 {
@@ -55,8 +56,8 @@ namespace SunEyeVision.Tool.ImageLoad
                 result.FileSize = fileInfo.Length;
                 result.FileFormat = fileInfo.Extension.ToUpperInvariant();
 
-                // 通过 VisionImage 统一加载图像
-                result.OutputImage = VisionImage.FromFile(parameters.FilePath);
+                // 经 HalAdapter 统一加载图像（SDK 门面不携带引擎实现，对称架构）
+                result.OutputImage = HalImage.CreateFromFile(parameters.FilePath);
                 if (result.OutputImage == null || result.OutputImage.IsEmpty)
                 {
                     result.SetError($"无法加载图像: {parameters.FilePath}");

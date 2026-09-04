@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -9,10 +9,10 @@ using System.Windows.Media.Imaging;
 using System.Runtime.InteropServices;
 using HalconDotNet;
 using Microsoft.Win32;
-using SunEyeVision.Plugin.SDK.VisionAdapters;
+using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.UI.Controls;
-using SunEyeVision.Plugin.SDK.Execution.Helpers;
+using SunEyeVision.HalAdapter;
 using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Tool.ShapeMatch.Models;
@@ -652,7 +652,7 @@ public partial class ShapeMatchTemplateEditorDialog : WpfWindow
         if (_ownsHImage) _currentHImage?.Dispose();
         _ownsHImage = true;
 
-        using var visionImage = VisionImage.FromBitmapSource(bmp);
+        using var visionImage = HalImage.FromBitmapSource(bmp);
         if (visionImage is HalImage halImage)
         {
             // Clone 获取 HImage 所有权，HalImage 的 Dispose 不影响克隆
@@ -676,7 +676,7 @@ public partial class ShapeMatchTemplateEditorDialog : WpfWindow
         {
             if (_ownsHImage) _currentHImage?.Dispose();
 
-            using var visionImage = VisionImage.FromBitmapSource(bmp);
+            using var visionImage = HalImage.FromBitmapSource(bmp);
 
             if (visionImage is HalImage halImage)
             {

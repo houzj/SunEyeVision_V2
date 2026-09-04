@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
@@ -20,7 +20,8 @@ using SunEyeVision.UI.Services;
 using SunEyeVision.UI.Services.Monitoring;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.UI.Controls;
-using SunEyeVision.Plugin.SDK.VisionAdapters;
+using SunEyeVision.Plugin.SDK.Vision.Contracts;
+using SunEyeVision.Plugin.SDK.Vision.Hosting;
 using SunEyeVision.UI.Converters;
 using System.Windows.Media;
 using SunEyeVision.UI.Core;

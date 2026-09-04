@@ -1,7 +1,8 @@
 ﻿using System;
 using HalconDotNet;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.VisionAdapters;
+using SunEyeVision.Plugin.SDK.Vision.Contracts;
+using SunEyeVision.Plugin.SDK.Vision.Hosting;
 
 namespace SunEyeVision.HalAdapter
 {

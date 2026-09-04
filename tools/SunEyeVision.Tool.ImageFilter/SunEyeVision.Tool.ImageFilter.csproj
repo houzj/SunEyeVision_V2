@@ -22,4 +22,10 @@
       <Private>false</Private>
     </Reference>
   </ItemGroup>
+  <ItemGroup>
+    <!-- S4 瀵圭О鏋舵瀯锛欻al 瀹炵幇锛圚alImage/HalRegion/ToolRegionHelper 绛夛級杩佽嚦 HalAdapter锛屽伐鍏锋敼寮曢€傞厤鍣?-->
+    <ProjectReference Include="..\..\src\SunEyeVision.HalAdapter\SunEyeVision.HalAdapter.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+  </ItemGroup>
 </Project>

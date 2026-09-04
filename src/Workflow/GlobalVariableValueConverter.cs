@@ -7,7 +7,7 @@ using OpenCvSharp;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
-using SunEyeVision.Plugin.SDK.VisionAdapters;
+using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using VisionLogger = SunEyeVision.Plugin.SDK.Logging.VisionLogger;
 using VisionLogLevel = SunEyeVision.Plugin.SDK.Logging.LogLevel;
 

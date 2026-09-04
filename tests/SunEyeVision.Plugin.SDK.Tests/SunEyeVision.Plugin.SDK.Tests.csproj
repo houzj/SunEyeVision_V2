@@ -23,5 +23,7 @@
   <ItemGroup>
     <ProjectReference Include="../../src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj" />
     <ProjectReference Include="../../src/Workflow/SunEyeVision.Workflow.csproj" />
+    <!-- RegionConverter / ToolRegionHelper 契约测试（RegionToRoi / FilterPointsOutOfMaskRegions 纯逻辑，经 HalAdapter 引用） -->
+    <ProjectReference Include="../../src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj" />
   </ItemGroup>
 </Project>

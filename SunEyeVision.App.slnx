@@ -4,6 +4,8 @@
   <Project Path="Src/Plugin.Infrastructure/SunEyeVision.Plugin.Infrastructure.csproj" />
   <Project Path="Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj" />
   <Project Path="Src/SunEyeVision.CvEngine/SunEyeVision.CvEngine.csproj" />
+  <Project Path="Src/SunEyeVision.CvAdapter/SunEyeVision.CvAdapter.csproj" />
+  <Project Path="Src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj" />
   <Project Path="Src/DeviceDriver/SunEyeVision.DeviceDriver.csproj" />
   <Project Path="Src/UI/SunEyeVision.UI.csproj" />
   <Project Path="Src/Workflow/SunEyeVision.Workflow.csproj" />

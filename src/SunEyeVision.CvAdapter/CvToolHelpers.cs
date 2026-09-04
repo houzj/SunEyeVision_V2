@@ -2,8 +2,8 @@
 using OpenCvSharp;
 using SunEyeVision.CvEngine;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.VisionAdapters;
-// SDK 旧 CvImage（S3c 删除前）与 CvEngine 纯 CvImage 同名，显式别名指向算法层纯类型。
+using SunEyeVision.Plugin.SDK.Vision.Contracts;
+using SunEyeVision.Plugin.SDK.Vision.Hosting;
 using CvImage = SunEyeVision.CvEngine.CvImage;
 
 namespace SunEyeVision.CvAdapter

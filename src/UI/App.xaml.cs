@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
@@ -22,6 +22,8 @@ using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using SunEyeVision.Plugin.SDK.Vision.Hosting;
+using SunEyeVision.CvAdapter;
+using SunEyeVision.HalAdapter;
 using SunEyeVision.UI.Converters;
 using System.Windows.Media;
 using SunEyeVision.UI.Core;
@@ -121,6 +123,9 @@ public partial class App : Application
 
         // 3.1 注册 IVisionImage → BitmapSource 显示桥（SDK 层通过 VisionImageConverterLocator 调用）
         VisionImageConverterLocator.Current = new UiVisionImageToBitmapSourceConverter();
+
+        // 3.1.5 S5 对称架构装配：注册图像加载工厂（默认 Halcon 引擎）与 Cv 词汇（Mat→Image）
+        ComposeVisionAdapters();
 
         // 3.5 Phase 2: 注册工作流节点类型转换器
         // 确保反序列化时 WorkflowNodeBase 自动转换为 WorkflowNode 实例
@@ -406,6 +411,21 @@ public partial class App : Application
                 // 不记录日志，避免性能问题
             }
         }
+    }
+
+    /// <summary>
+    /// S5 对称架构装配：注册视觉适配层到 SDK 注册点。
+    /// ① 图像加载工厂：默认注册 Halcon 引擎（HalAdapter.HalImageFactory）到 VisionImageFactoryLocator，
+    ///    使 SDK 门面 VisionImage.FromFile 与工具经统一入口加载；
+    /// ② Cv 词汇：CvAdapter 把 OpenCvSharp.Mat 注册为契约词目 "Image"（GlobalVariableValueConverter
+    ///    序列化裸 Mat 图像时依赖，恢复 S1 删除静态 Mat 映射后的运行期供给，D2）。
+    /// 跨引擎 Cv↔Hal 提取（VisionBackendExtractorLocator）仅在使用双引擎的工作流装配时按需注册，
+    /// 当前工具层统一 Halcon，不预注册以保持装配最小（D4）。
+    /// </summary>
+    private void ComposeVisionAdapters()
+    {
+        VisionImageFactoryLocator.Current = new HalImageFactory();
+        CvAdapterStartup.RegisterSdkVocabulary();
     }
 
     /// <summary>

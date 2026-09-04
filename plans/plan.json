@@ -2157,7 +2157,7 @@
                                           "name":  "测试分层设计：集成测试层（工具组合/工作流执行链路）",
                                           "phase":  "测试验证",
                                           "hours":  16,
-                                          "status":  "todo"
+                                          "status":  "in_progress"
                                       },
                                       {
                                           "id":  "TEST-7",
@@ -2218,6 +2218,10 @@
                                     {
                                         "date":  "2026-09-02",
                                         "note":  "[9aa4e39c0f71d320f84285e29a6d3d408202b183] refactor(measure): 清理定标诊断并固化 HALCON 实测契约（A7）"
+                                    },
+                                    {
+                                        "date":  "2026-09-04",
+                                        "note":  "[bc63c6cd66e06868c71d428691d46f853ba0755b] feat(measure): 圆/直线查找拟合统一为自研鲁棒拟合 + 删除 MinScore 分数门槛"
                                     }
                                 ]
                     },
@@ -4065,21 +4069,6 @@
                        }
                    ],
     "tempTasks":  [
-                      {
-                          "id":  "TMP-bbc6f26",
-                          "message":  "测量引导几何策略化：几何交互从编辑器解耦",
-                          "date":  "2026-08-28",
-                          "commit":  "bbc6f263c7c879890b4c2baad261f9c05918d902",
-                          "files":  [
-                                        "src/Plugin.SDK/UI/Controls/Measure/Interactions/ArcGuideInteraction.cs",
-                                        "src/Plugin.SDK/UI/Controls/Measure/Interactions/CircleGuideInteraction.cs",
-                                        "src/Plugin.SDK/UI/Controls/Measure/Interactions/GuideInteractionFactory.cs",
-                                        "src/Plugin.SDK/UI/Controls/Measure/Interactions/IGuideGeometryInteraction.cs",
-                                        "src/Plugin.SDK/UI/Controls/Measure/Interactions/LineGuideInteraction.cs",
-                                        "src/Plugin.SDK/UI/Controls/Measure/Views/MeasureEditorControl.xaml.cs"
-                                    ],
-                          "status":  "in_progress"
-                      },
                       {
                           "id":  "TMP-70bf83b",
                           "message":  "技能中文化统一 + 圆弧交互治本修复",

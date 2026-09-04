@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Linq;
 using SunEyeVision.Plugin.SDK.Scripting;
-using SunEyeVision.Plugin.SDK.VisionAdapters;
+using SunEyeVision.Plugin.SDK.Vision.Contracts;
 
 public partial class UserScript : Script
 {

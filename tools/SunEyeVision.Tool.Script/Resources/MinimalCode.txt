@@ -1,6 +1,5 @@
 using System;
 using SunEyeVision.Plugin.SDK.Scripting;
-using SunEyeVision.Plugin.SDK.VisionAdapters;
 
 public partial class UserScript : Script
 {

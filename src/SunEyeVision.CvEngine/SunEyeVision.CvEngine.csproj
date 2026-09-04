@@ -18,4 +18,9 @@
     <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.13.0.20260222" />
   </ItemGroup>
 
+  <!-- CvAdapter 需经 internal 成员（CvRegion.Mask/GetCombinedMask 等）完成 SDK 接口适配 -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="SunEyeVision.CvAdapter" />
+  </ItemGroup>
+
 </Project>

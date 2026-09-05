@@ -4658,10 +4658,11 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
             var firstFields = monitorableItems[0].GetMonitorFields();
             foreach (var (fieldName, _) in firstFields)
             {
-                var fieldValues = monitorableItems.Select(item =>
+                // 多元素聚合值带序号（第1个/第2个…），避免"分号串联"无法区分各屏蔽区/图形
+                var fieldValues = monitorableItems.Select((item, index) =>
                 {
                     var field = item.GetMonitorFields().FirstOrDefault(f => f.FieldName == fieldName);
-                    return FormatTypedValue(field.FieldValue, field.FieldValue?.GetType() ?? typeof(object));
+                    return $"{index + 1}:{FormatTypedValue(field.FieldValue, field.FieldValue?.GetType() ?? typeof(object))}";
                 });
                 parent.Children.Add(new ModuleResultNode
                 {

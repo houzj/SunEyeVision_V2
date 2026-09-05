@@ -9,7 +9,7 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
     /// <summary>
     /// 二维点结构（双精度）
     /// </summary>
-    public readonly struct Point2d : IEquatable<Point2d>
+    public readonly struct Point2d : IEquatable<Point2d>, IMonitorable
     {
         /// <summary>
         /// X 坐标

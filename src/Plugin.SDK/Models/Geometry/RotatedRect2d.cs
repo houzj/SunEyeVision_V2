@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using System.Windows;
+using SunEyeVision.Plugin.SDK.Vision.Contracts;
 
 namespace SunEyeVision.Plugin.SDK.Models.Geometry
 {
     /// <summary>
     /// 旋转矩形结构（双精度）
     /// </summary>
-    public readonly struct RotatedRect2d : IEquatable<RotatedRect2d>
+    public readonly struct RotatedRect2d : IEquatable<RotatedRect2d>, IMonitorable
     {
         /// <summary>
         /// 中心点

@@ -182,6 +182,10 @@ namespace SunEyeVision.Tool.CircleDetect
                 result.IsPass = isOk;
                 result.FillDisplay(isOk, parameters);
 
+                // 提取检测区/屏蔽区几何输出（RoI 契约：结果树"输入区域"填充 + 下游绑定，对齐图像工具）
+                ToolRegionHelper.ExtractInspectionGeometries(result, parameters.InspectionRegions?.Regions);
+                ToolRegionHelper.ExtractMaskGeometries(result, parameters.MaskRegions?.Regions);
+
                 result.SetSuccess();
                 parameters.LogInfo(
                     $"圆查找完成: 边缘点数={result.EdgePointCount}, RMSE={result.RMSE:F3}px, 判定={isOk}");

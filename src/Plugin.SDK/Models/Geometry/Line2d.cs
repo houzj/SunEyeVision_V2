@@ -9,7 +9,7 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
     /// <summary>
     /// 直线结构（双精度）
     /// </summary>
-    public readonly struct Line2d : IEquatable<Line2d>
+    public readonly struct Line2d : IEquatable<Line2d>, IMonitorable
     {
         /// <summary>
         /// 直线上的一点

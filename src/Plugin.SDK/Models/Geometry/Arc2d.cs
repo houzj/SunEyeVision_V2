@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using System.Windows;
+using SunEyeVision.Plugin.SDK.Vision.Contracts;
 
 namespace SunEyeVision.Plugin.SDK.Models.Geometry
 {
     /// <summary>
     /// 弧形结构（双精度）
     /// </summary>
-    public readonly struct Arc2d : IEquatable<Arc2d>
+    public readonly struct Arc2d : IEquatable<Arc2d>, IMonitorable
     {
         /// <summary>
         /// 圆心

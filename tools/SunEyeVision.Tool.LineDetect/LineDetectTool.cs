@@ -161,6 +161,11 @@ namespace SunEyeVision.Tool.LineDetect
                 var isOk = EvaluateResult(result, parameters);
                 result.IsPass = isOk;
                 result.FillDisplay(isOk, parameters);
+
+                // 提取检测区/屏蔽区几何输出（RoI 契约：结果树"输入区域"填充 + 下游绑定，对齐图像工具）
+                ToolRegionHelper.ExtractInspectionGeometries(result, parameters.InspectionRegions?.Regions);
+                ToolRegionHelper.ExtractMaskGeometries(result, parameters.MaskRegions?.Regions);
+
                 if (!isOk)
                 {
                     var cfg = parameters.ResultConfig;

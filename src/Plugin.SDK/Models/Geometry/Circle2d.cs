@@ -9,7 +9,7 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
     /// <summary>
     /// 圆形结构（双精度）
     /// </summary>
-    public readonly struct Circle2d : IEquatable<Circle2d>
+    public readonly struct Circle2d : IEquatable<Circle2d>, IMonitorable
     {
         /// <summary>
         /// 圆心

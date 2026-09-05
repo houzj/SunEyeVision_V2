@@ -9,7 +9,7 @@ namespace SunEyeVision.Plugin.SDK.Models.Geometry
     /// <summary>
     /// 圆环结构ROI
     /// </summary>
-    public readonly struct Annulus2d : IEquatable<Annulus2d>
+    public readonly struct Annulus2d : IEquatable<Annulus2d>, IMonitorable
     {
         /// <summary>
         /// 圆心

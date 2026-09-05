@@ -3802,6 +3802,10 @@
                                     {
                                         "date":  "2026-09-05",
                                         "note":  "[a735578df5cdc7c6c1985b5d9aa1141493eb3593] refactor(measure): 图像滤波/图像二值化/形态学处理接入 HalconImageOpPipeline"
+                                    },
+                                    {
+                                        "date":  "2026-09-05",
+                                        "note":  "[0f1587d9624242573e63ab8d58a78fcf90a27052] fix(ui): 图像滤波/二值化/形态学控件补齐位置修正矩阵同步（对齐 Blob）"
                                     }
                                 ]
                     },

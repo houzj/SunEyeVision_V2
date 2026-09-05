@@ -36,7 +36,7 @@ namespace SunEyeVision.Plugin.SDK.Core
         /// <summary>
         /// 执行时间（毫秒）
         /// </summary>
-        public long ExecutionTimeMs { get; set; }
+        public double ExecutionTimeMs { get; set; }
 
         /// <summary>
         /// 错误信息
@@ -66,7 +66,7 @@ namespace SunEyeVision.Plugin.SDK.Core
         /// <summary>
         /// 创建成功结果
         /// </summary>
-        public static RunResult Success(ToolResults toolResult, long executionTimeMs)
+        public static RunResult Success(ToolResults toolResult, double executionTimeMs)
         {
             return new RunResult
             {
@@ -145,7 +145,7 @@ namespace SunEyeVision.Plugin.SDK.Core
         /// <summary>
         /// 执行时间（毫秒）
         /// </summary>
-        public long ExecutionTimeMs { get; set; }
+        public double ExecutionTimeMs { get; set; }
 
         /// <summary>
         /// 错误信息
@@ -175,7 +175,7 @@ namespace SunEyeVision.Plugin.SDK.Core
         /// <summary>
         /// 创建成功结果
         /// </summary>
-        public static RunResult<TResult> Success(TResult result, long executionTimeMs)
+        public static RunResult<TResult> Success(TResult result, double executionTimeMs)
         {
             return new RunResult<TResult>
             {

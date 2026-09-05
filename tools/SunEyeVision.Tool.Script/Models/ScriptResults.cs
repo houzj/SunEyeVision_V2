@@ -66,7 +66,7 @@ namespace SunEyeVision.Tool.Script.Models
             variables.Add(new OutputVariable
             {
                 Name = "ExecutionTimeMs",
-                VariableType = "Integer",
+                VariableType = "Double",
                 DisplayName = "执行耗时",
                 Group = "执行信息",
                 Kind = OutputVariableKind.Data,

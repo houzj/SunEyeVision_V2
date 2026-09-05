@@ -37,7 +37,7 @@ namespace SunEyeVision.Tool.Condition
                 parameters.LogInfo("条件分支未配置任何规则，流程终止（不执行任何分支）");
                 result.IsMatched = false;
                 sw.Stop();
-                result.SetSuccess(sw.ElapsedMilliseconds);
+                result.SetSuccess(sw.Elapsed.TotalMilliseconds);
                 return result;
             }
 

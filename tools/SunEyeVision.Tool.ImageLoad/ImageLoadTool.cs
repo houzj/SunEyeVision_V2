@@ -80,13 +80,13 @@ namespace SunEyeVision.Tool.ImageLoad
                 }
 
                 stopwatch.Stop();
-                result.SetSuccess(stopwatch.ElapsedMilliseconds);
+                result.SetSuccess(stopwatch.Elapsed.TotalMilliseconds);
             }
             catch (Exception ex)
             {
                 stopwatch.Stop();
                 result.SetError($"加载图像失败: {ex.Message}", ex);
-                result.ExecutionTimeMs = stopwatch.ElapsedMilliseconds;
+                result.ExecutionTimeMs = stopwatch.Elapsed.TotalMilliseconds;
             }
 
             return result;

@@ -157,7 +157,7 @@ namespace SunEyeVision.Tool.Subroutine
                 else
                 {
                     sw.Stop();
-                    result.SetSuccess(sw.ElapsedMilliseconds);
+                    result.SetSuccess(sw.Elapsed.TotalMilliseconds);
                     parameters.LogSuccess($"子程序执行完成: {result.ExecutedNodeCount} 个节点, 耗时 {result.SubWorkflowExecutionTimeMs}ms");
                 }
             }

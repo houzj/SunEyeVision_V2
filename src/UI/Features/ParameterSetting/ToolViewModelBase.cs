@@ -54,7 +54,7 @@ namespace SunEyeVision.UI.Features.ParameterSetting
         private string _nodeName = string.Empty;
         private ExecutionStatus _executionStatus = ExecutionStatus.NotExecuted;
         private string? _errorMessage;
-        private long _executionTimeMs;
+        private double _executionTimeMs;
         private bool _isEnabled = true;
 
         #endregion
@@ -165,7 +165,7 @@ namespace SunEyeVision.UI.Features.ParameterSetting
         /// <summary>
         /// 执行时间（毫秒）
         /// </summary>
-        public long ExecutionTimeMs
+        public double ExecutionTimeMs
         {
             get => _executionTimeMs;
             set => SetProperty(ref _executionTimeMs, value);

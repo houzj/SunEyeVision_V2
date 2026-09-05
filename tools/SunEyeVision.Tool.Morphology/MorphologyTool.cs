@@ -242,7 +242,7 @@ namespace SunEyeVision.Tool.Morphology
                                     ToolRegionHelper.ExtractMaskGeometries(result, parameters.MaskRegions?.Regions);
 
                                     stopwatch.Stop();
-                                    result.SetSuccess(stopwatch.ElapsedMilliseconds);
+                                    result.SetSuccess(stopwatch.Elapsed.TotalMilliseconds);
 
                                     // ===== 性能报告 =====
                                     var totalMs = stopwatch.ElapsedMilliseconds;
@@ -278,7 +278,7 @@ namespace SunEyeVision.Tool.Morphology
                 stopwatch.Stop();
                 parameters.LogError($"形态学处理异常: {ex.Message}", ex);
                 result.SetError($"处理失败: {ex.Message}", ex);
-                result.ExecutionTimeMs = stopwatch.ElapsedMilliseconds;
+                result.ExecutionTimeMs = stopwatch.Elapsed.TotalMilliseconds;
             }
 
             return result;

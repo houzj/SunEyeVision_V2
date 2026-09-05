@@ -79,7 +79,7 @@ namespace SunEyeVision.Plugin.SDK.Core
                 stopwatch.Stop();
 
                 var result = RunResult.FromToolResults(toolResult);
-                result.ExecutionTimeMs = stopwatch.ElapsedMilliseconds;
+                result.ExecutionTimeMs = stopwatch.Elapsed.TotalMilliseconds;
 
                 RunCompleted?.Invoke(this, result);
                 return result;
@@ -123,7 +123,7 @@ namespace SunEyeVision.Plugin.SDK.Core
                 stopwatch.Stop();
 
                 var runResult = RunResult.FromToolResults(result);
-                runResult.ExecutionTimeMs = stopwatch.ElapsedMilliseconds;
+                runResult.ExecutionTimeMs = stopwatch.Elapsed.TotalMilliseconds;
 
                 RunCompleted?.Invoke(this, runResult);
                 return runResult;

@@ -285,9 +285,9 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
         public string? ErrorStackTrace { get; set; }
 
         /// <summary>
-        /// 执行时间（毫秒）
+        /// 执行时间（毫秒）。double：保留亚毫秒精度（计时源为 Stopwatch.Elapsed.TotalMilliseconds）。
         /// </summary>
-        public long ExecutionTimeMs { get; set; }
+        public double ExecutionTimeMs { get; set; }
 
         /// <summary>
         /// 时间戳
@@ -370,7 +370,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
         /// <summary>
         /// 设置成功
         /// </summary>
-        public void SetSuccess(long executionTimeMs = 0)
+        public void SetSuccess(double executionTimeMs = 0)
         {
             Status = ExecutionStatus.Success;
             ExecutionTimeMs = executionTimeMs;

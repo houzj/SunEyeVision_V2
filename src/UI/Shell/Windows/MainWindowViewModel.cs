@@ -4427,10 +4427,16 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
 
                 foreach (var e in group)
                 {
+                    // 执行耗时固定保留 3 位小数（ExecutionTimeMs 底层为 double，保留亚毫秒精度）。
+                    // 注意：RuntimeValue 可能被 Promote 提升为 Double[1]，先解包单元素数组再转换。
+                    var displayValue = e.Name == nameof(ToolResults.ExecutionTimeMs)
+                        ? $"{Convert.ToDouble(e.RuntimeValue is Array timeArr && timeArr.Length == 1 ? timeArr.GetValue(0) : e.RuntimeValue ?? 0L):F3}"
+                        : FormatTypedValue(e.RuntimeValue, e.ClrType);
+
                     var node = new ModuleResultNode
                     {
                         DisplayName = e.DisplayName,
-                        DisplayValue = FormatTypedValue(e.RuntimeValue, e.ClrType),
+                        DisplayValue = displayValue,
                         PropertyName = e.Name,
                         SourceNodeId = nodeId,
                         SourcePropertyName = e.Name,

@@ -115,7 +115,7 @@ namespace SunEyeVision.Plugin.SDK.Core
                 var result = tool.Run(parameters);
 
                 stopwatch.Stop();
-                result.ExecutionTimeMs = stopwatch.ElapsedMilliseconds;
+                result.ExecutionTimeMs = stopwatch.Elapsed.TotalMilliseconds;
 
                 if (result.IsSuccess)
                 {
@@ -199,7 +199,7 @@ namespace SunEyeVision.Plugin.SDK.Core
                 var result = tool.Run(parameters);
 
                 stopwatch.Stop();
-                result.ExecutionTimeMs = stopwatch.ElapsedMilliseconds;
+                result.ExecutionTimeMs = stopwatch.Elapsed.TotalMilliseconds;
 
                 if (result.IsSuccess)
                 {
@@ -287,7 +287,7 @@ namespace SunEyeVision.Plugin.SDK.Core
                 var result = tool.Run(parameters);
 
                 stopwatch.Stop();
-                result.ExecutionTimeMs = stopwatch.ElapsedMilliseconds;
+                result.ExecutionTimeMs = stopwatch.Elapsed.TotalMilliseconds;
 
                 if (result.IsSuccess)
                 {

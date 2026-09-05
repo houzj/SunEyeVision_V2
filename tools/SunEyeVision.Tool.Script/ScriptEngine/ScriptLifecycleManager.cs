@@ -21,7 +21,7 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
         private readonly Dictionary<string, object?> _outputValues = new();
         private readonly List<string> _logMessages = new();
         private long _compileTimeMs;
-        private long _executionTimeMs;
+        private double _executionTimeMs;
         private readonly object _lock = new();
         private int _runCounter;
         private bool _disposed;
@@ -42,9 +42,9 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
         public long CompileTimeMs => _compileTimeMs;
 
         /// <summary>
-        /// 执行耗时
+        /// 执行耗时（毫秒，保留亚毫秒精度）
         /// </summary>
-        public long ExecutionTimeMs => _executionTimeMs;
+        public double ExecutionTimeMs => _executionTimeMs;
 
         /// <summary>
         /// 执行指定脚本代码（使用 GeneratedCode + ScriptCode 双段 partial class 编译）
@@ -214,7 +214,7 @@ namespace SunEyeVision.Tool.Script.ScriptEngine
                 errors.Add($"脚本执行异常: {detail}");
             }
             runSw.Stop();
-            _executionTimeMs = runSw.ElapsedMilliseconds;
+            _executionTimeMs = runSw.Elapsed.TotalMilliseconds;
 
             // 7. 反射读取输出字段值
             var outputType = scriptInstance.GetType();

@@ -116,7 +116,7 @@ namespace SunEyeVision.Plugin.SDK.Core
         /// <typeparam name="T">结果类型</typeparam>
         /// <param name="executionTimeMs">执行时间（毫秒）</param>
         /// <returns>成功结果</returns>
-        public static T Success<T>(long executionTimeMs = 0)
+        public static T Success<T>(double executionTimeMs = 0)
             where T : ToolResults, new()
         {
             var result = new T();
@@ -129,7 +129,7 @@ namespace SunEyeVision.Plugin.SDK.Core
         /// </summary>
         /// <param name="result">结果对象</param>
         /// <param name="executionTimeMs">执行时间（毫秒）</param>
-        public static void Success(ToolResults result, long executionTimeMs = 0)
+        public static void Success(ToolResults result, double executionTimeMs = 0)
         {
             result.SetSuccess(executionTimeMs);
         }
@@ -168,7 +168,7 @@ namespace SunEyeVision.Plugin.SDK.Core
         public static void StopTimer(Stopwatch stopwatch, ToolResults result)
         {
             stopwatch.Stop();
-            result.ExecutionTimeMs = stopwatch.ElapsedMilliseconds;
+            result.ExecutionTimeMs = stopwatch.Elapsed.TotalMilliseconds;
         }
 
         #endregion

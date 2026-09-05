@@ -333,6 +333,10 @@
                                     {
                                         "date":  "2026-09-05",
                                         "note":  "[7cd175f382c6ce12b6553fcd390595c4323e1aaa] fix(measure): 弧位置修正角度三层统一，卡尺带尺寸撤销随矩阵缩放"
+                                    },
+                                    {
+                                        "date":  "2026-09-05",
+                                        "note":  "[d5d140298f28596214f50abd0a7389824e97ee0b] fix(render): 节点选中/悬停辉光迁移至独立 NodeGlowBorder 装饰层"
                                     }
                                 ]
                     },
@@ -2762,6 +2766,10 @@
                                     {
                                         "date":  "2026-09-05",
                                         "note":  "[89197d4d84baa0ed48ced8d984ed3293efc6882f] fix(roi): 位置修正形状语义三态一致 + 大角度参考点旋转修正"
+                                    },
+                                    {
+                                        "date":  "2026-09-05",
+                                        "note":  "[c554248a8cbdc7716bd9d458f10ea9520cdc758f] feat(sdk): 执行耗时 ExecutionTimeMs 升级 double 保留亚毫秒精度"
                                     }
                                 ]
                     },

@@ -89,7 +89,6 @@ namespace SunEyeVision.Tool.ImageThreshold
         #region 基本参数（继承自 RoiParameters）
 
         // ImageSource - 输入图像源（继承）
-        // IsRegionEnabled - 启用区域限制（继承）
         // InspectionRegions / MaskRegions - 区域编辑（继承）
 
         #endregion

@@ -20,8 +20,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     /// 设计理念：
     /// 1. 所有需要区域管理的工具可以继承此基类
     /// 2. 避免重复定义 InspectionRegions 和 MaskRegions
-    /// 3. 提供是否启用区域限制的通用参数
-    /// 4. 统一区域参数的序列化和反序列化
+    /// 3. 统一区域参数的序列化和反序列化
     /// 
     /// 使用示例：
     /// <code>
@@ -42,7 +41,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     {
         private RoiCollectionParameter _inspectionRegions;
         private RoiCollectionParameter _maskRegions;
-        private bool _isRegionEnabled;
         private ImageSourceReference? _imageSourceRef;
         private AvailableDataSource? _imageSource;
 
@@ -53,7 +51,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         {
             _inspectionRegions = new RoiCollectionParameter(RoiParameterMode.InspectionRegion);
             _maskRegions = new RoiCollectionParameter(RoiParameterMode.MaskRegion);
-            _isRegionEnabled = false;
         }
 
         /// <summary>
@@ -100,21 +97,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         {
             get => _maskRegions;
             set => _maskRegions = value;
-        }
-
-        /// <summary>
-        /// 是否启用区域限制
-        /// </summary>
-        /// <remarks>
-        /// false = 对整个图像进行处理
-        /// true = 仅对有效区域（检测区域 - 屏蔽区域）进行处理
-        /// </remarks>
-        [JsonPropertyOrder(12)]
-        [DisplayName("启用区域限制")]
-        public bool IsRegionEnabled
-        {
-            get => _isRegionEnabled;
-            set => SetProperty(ref _isRegionEnabled, value, "启用区域限制");
         }
 
         #region 显示样式

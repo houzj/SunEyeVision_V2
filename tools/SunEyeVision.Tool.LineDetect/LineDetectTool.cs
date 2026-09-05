@@ -162,9 +162,31 @@ namespace SunEyeVision.Tool.LineDetect
                 result.IsPass = isOk;
                 result.FillDisplay(isOk, parameters);
 
-                // 提取检测区/屏蔽区几何输出（RoI 契约：结果树"输入区域"填充 + 下游绑定，对齐图像工具）
-                ToolRegionHelper.ExtractInspectionGeometries(result, parameters.InspectionRegions?.Regions);
+                // 屏蔽区几何输出（RoI 契约：结果树"输入区域/屏蔽区图形"填充，对齐图像工具）
                 ToolRegionHelper.ExtractMaskGeometries(result, parameters.MaskRegions?.Regions);
+
+                // 卡尺输入回显（模块结果"输入区域/卡尺"）：引导线 + 测量带参数
+                var guideStart = parameters.LineStartPoint;
+                var guideEnd = parameters.LineEndPoint;
+                var dx = guideEnd.X - guideStart.X;
+                var dy = guideEnd.Y - guideStart.Y;
+                var length = Math.Sqrt(dx * dx + dy * dy);
+                if (length >= 1e-6)
+                {
+                    result.GuideGeometry = new[]
+                    {
+                        new ShapeParameters
+                        {
+                            Geometry = new Line2d(
+                                new Point(guideStart.X, guideStart.Y),
+                                new Vector(dx / length, dy / length)),
+                        },
+                    };
+                }
+                result.CaliberCount = parameters.NumMeasures;
+                result.CaliberWidth = parameters.MeasureLength1 * 2;
+                result.CaliberLength = parameters.MeasureLength2 * 2;
+                result.CaliberTransition = parameters.Transition.ToString();
 
                 if (!isOk)
                 {

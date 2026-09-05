@@ -79,6 +79,26 @@ namespace SunEyeVision.Tool.LineDetect
         /// </summary>
         public double Angle { get; set; }
 
+        #region 测量带(卡尺)输入回显（模块结果"输入区域/卡尺"展示，Run 从参数回填）
+
+        /// <summary>引导几何（引导直线 → ShapeParameters 包装，树中按"卡尺/引导线"下钻展示）</summary>
+        [JsonIgnore]
+        public SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models.ShapeParameters[]? GuideGeometry { get; set; }
+
+        /// <summary>测量带数量（卡尺数，参数回显）</summary>
+        public int CaliberCount { get; set; }
+
+        /// <summary>测量带宽度（法线全长，参数回显）</summary>
+        public double CaliberWidth { get; set; }
+
+        /// <summary>测量带长度（切线全长，参数回显）</summary>
+        public double CaliberLength { get; set; }
+
+        /// <summary>边缘极性（参数回显文本）</summary>
+        public string? CaliberTransition { get; set; }
+
+        #endregion
+
         /// <summary>
         /// 几何描述（拟合结果文本，供结果显示）
         /// </summary>
@@ -154,6 +174,13 @@ namespace SunEyeVision.Tool.LineDetect
             return
             [
                 .. base.GetPropertyMap(),   // 合并基类：ExecutionTimeMs → 执行耗时/执行信息
+                // 测量带(卡尺)输入回显：引导线/测量带 归"输入区域/卡尺"分组
+                new("GuideGeometry",     "引导线",   "输入区域/卡尺/引导线"),
+                new("CaliberCount",      "测量带数量", "输入区域/卡尺/测量带"),
+                new("CaliberWidth",      "测量带宽度", "输入区域/卡尺/测量带"),
+                new("CaliberLength",     "测量带长度", "输入区域/卡尺/测量带"),
+                new("CaliberTransition", "边缘极性",   "输入区域/卡尺/测量带"),
+                new("MeasurementPoints", "卡尺检测点", "输入区域/卡尺/测量带"),
                 new("Line",             "拟合直线",   "拟合结果"),
                 new("RMSE",             "拟合残差",   "拟合结果"),
                 new("EdgePointCount",   "边缘点数",   "拟合结果"),

@@ -120,8 +120,8 @@ namespace SunEyeVision.Tool.BlobAnalysis
 
                 using (grayImage)
                 {
-                    // ===== Step 2+3: 公共区域前置（HalconImageOpPipeline：区域/掩码构建 + ReduceDomain）=====
-                    // helper 边界：只做图像源 + 区域管理 + 位置修正；图像预处理属算法首段，由本工具在取得处理图后执行
+                    // ===== Step 2: 区域前置（HalconRegionPipeline：订阅解析 + 位置修正 + 差集）=====
+                    // 纯几何：区域 + 位置修正；图像预处理属算法首段（本工具在取得处理图后执行），全图/按域由算法自决
                     AffineMatrix? correctionMatrix = null;
                     if (parameters.IsPositionCorrectionEnabled)
                     {
@@ -145,17 +145,17 @@ namespace SunEyeVision.Tool.BlobAnalysis
                         }
                     }
 
-                    var masked = HalconImageOpPipeline.Prepare(
-                        grayImage, imgWidth, imgHeight,
+                    var scope = HalconRegionPipeline.Resolve(
+                        imgWidth, imgHeight,
                         parameters.GetRoisByType(RoiType.Inspection),
                         parameters.GetRoisByType(RoiType.Mask),
                         parameters.NodeResults, correctionMatrix);
-                    stepTimings.AddRange(masked.Timings);
+                    stepTimings.AddRange(scope.Timings);
 
                     try
                     {
-                        // 接管核心处理图：预处理需就地替换 → Detach 取得所有权（由原 using(processingImage) 统一释放）
-                        var processingImage = masked.DetachWorkingImage();
+                        // 算法决策：按域执行；图像预处理需就地替换 → 处理图由本工具自管（原 using(processingImage) 统一释放）
+                        var processingImage = HalImageDomain.Restrict(grayImage, scope.RoiRegion);
 
                         // ===== Step 3.5: 图像预处理（可选） =====
                         if (parameters.IsPreprocessingEnabled && parameters.PreprocessMethodValue.Value != PreprocessMethod.None)
@@ -439,7 +439,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
                     }
                     finally
                     {
-                        masked.Dispose();
+                        scope.Dispose();
                     }
                 }
             }

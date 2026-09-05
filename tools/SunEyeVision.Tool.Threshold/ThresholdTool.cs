@@ -116,18 +116,18 @@ namespace SunEyeVision.Tool.Threshold
                     // 保存灰度图像中间结果
                     result.GrayImage = new HalImage(grayImage.Clone());
 
-                    // ===== Step 2+3: 公共区域前置（HalconImageOpPipeline：ROI/掩码构建 + ReduceDomain）=====
-                    // 区域语义统一：有检测/屏蔽区域即限制，无区域全图；中间图像与区域所有权随 masked 统一释放
-                    var masked = HalconImageOpPipeline.Prepare(
-                        grayImage, imgWidth, imgHeight,
+                    // ===== Step 2: 区域前置（HalconRegionPipeline：订阅解析 + 差集）=====
+                    // 纯几何：检测/屏蔽区域订阅解析 + 差集；全图/按域执行由算法层自决（见下 HalImageDomain.Restrict）
+                    var scope = HalconRegionPipeline.Resolve(
+                        imgWidth, imgHeight,
                         parameters.GetRoisByType(RoiType.Inspection),
                         parameters.GetRoisByType(RoiType.Mask),
                         parameters.NodeResults);
-                    stepTimings.AddRange(masked.Timings);
+                    stepTimings.AddRange(scope.Timings);
 
-                    if (masked.RoiRegion != null)
+                    if (scope.RoiRegion != null)
                     {
-                        HOperatorSet.AreaCenter(masked.RoiRegion, out var whitePixels, out _, out _);
+                        HOperatorSet.AreaCenter(scope.RoiRegion, out var whitePixels, out _, out _);
                         parameters.LogInfo($"ROI区域创建成功，白色像素数: {whitePixels.L}");
                     }
                     else
@@ -135,9 +135,9 @@ namespace SunEyeVision.Tool.Threshold
                         parameters.LogInfo("未配置检测区域，执行全图分析");
                     }
 
-                    // 核心算子输入（已 ReduceDomain 或全图，只读使用；生命周期随 masked）
-                    var reducedImage = masked.WorkingImage;
-                    result.ReducedImage = new HalImage(masked.WorkingImage.Clone());
+                    // 算法决策：按域执行（区域限制落地到图像 Domain；所有权随 reducedImage，用后 finally 释放）
+                    var reducedImage = HalImageDomain.Restrict(grayImage, scope.RoiRegion);
+                    result.ReducedImage = new HalImage(reducedImage.Clone());
 
                     try
                     {
@@ -236,7 +236,8 @@ namespace SunEyeVision.Tool.Threshold
                     }
                     finally
                     {
-                        masked.Dispose();
+                        reducedImage.Dispose();
+                        scope.Dispose();
                     }
                 }
             }

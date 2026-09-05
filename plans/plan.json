@@ -2234,6 +2234,10 @@
                                     {
                                         "date":  "2026-09-04",
                                         "note":  "[05ea4cf5d6461889d75e874503b441becdb8d401] build(tests): 测试输出独立化到共享 tests/bin，构建配置与共享加载器改造"
+                                    },
+                                    {
+                                        "date":  "2026-09-05",
+                                        "note":  "[ecb4f01fe70381a24b33a3c68c4fac091d5ed505] feat(test): HalconRegionPipeline 契约测试（v1.4 纯 ROI 管线）"
                                     }
                                 ]
                     },

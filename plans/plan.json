@@ -3731,6 +3731,14 @@
                                     {
                                         "date":  "2026-08-17",
                                         "note":  "最近提交 7605075 SDK层UI主题化改造与视觉图标修复 —— 工具持续维护中（同步登记）"
+                                    },
+                                    {
+                                        "date":  "2026-09-05",
+                                        "note":  "[ae7b6075a9f2dce8257c777d4b435ce5e58268b5] refactor(measure): 图像处理四工具区域语义统一（去除启用区域限制开关）"
+                                    },
+                                    {
+                                        "date":  "2026-09-05",
+                                        "note":  "[92ba19fdd339e94bb7b7eee7079c4235ed25e0fd] feat(hal): 新增 HalconImageOpPipeline 公共区域前置管线并接入图像阈值化"
                                     }
                                 ]
                     },

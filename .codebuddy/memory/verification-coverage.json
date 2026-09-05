@@ -1,8 +1,20 @@
 ﻿{
   "version": 1,
   "lastUpdated": "2026-09-05",
-  "schemeSummary": "HalconImageOpPipeline 公共前置统一接入 5 图像工具（区域语义=有区域即限制/无区域全图；Blob 走 DetachWorkingImage 所有权转移）",
+  "schemeSummary": "区域管线 v1.4：HalconRegionPipeline 纯 ROI（区域+位置修正+差集，不接触图像）；HalImageDomain.Restrict 按域执行归还算法；Detach 机制删除；5 图像工具接入+手动回归等价",
   "tools": {
+    "SunEyeVision.HalAdapter": {
+      "lastVerificationDate": "2026-09-05",
+      "lastVerificationType": "full",
+      "lastModificationDate": "2026-09-05",
+      "result": "pass",
+      "passedChecks": [
+        "构建✅ slnx 0错误",
+        "契约测试✅ HalconRegionPipelineContractTests 5（Resolve纯几何/Restrict域/Dispose幂等）",
+        "v1.4纯ROI管线✅ 旧HalconImageOpPipeline/Detach零残留",
+        "图像工具手动回归✅ 行为等价"
+      ]
+    },
     "SunEyeVision.Plugin.SDK": {
       "lastVerificationDate": "2026-08-07",
       "lastVerificationType": "full",
@@ -27,33 +39,31 @@
     },
     "SunEyeVision.BlobAnalysis": {
       "lastVerificationDate": "2026-09-05",
-      "lastVerificationType": "partial",
+      "lastVerificationType": "full",
       "lastModificationDate": "2026-09-05",
       "result": "pass",
       "passedChecks": [
         "构建✅ slnx 0错误",
         "dotnet test✅ 2",
-        "helper前置接入✅ DetachWorkingImage所有权转移",
-        "rule-002/003/014审查✅"
+        "v1.4纯ROI管线✅ Detach删除，Restrict按域执行（37015cf1）",
+        "rule-002/003/014审查✅",
+        "手动复测✅ v1.4行为等价（含预处理+形态学连跑）"
       ],
       "skippedChecks": [
-        "手动跑图：全图/区域/屏蔽/预处理+形态学场景（需重启宿主）",
         "存量CS0728 BlobAnalysisTool.cs:200 非本方案引入"
       ]
     },
     "SunEyeVision.Tool.Threshold": {
       "lastVerificationDate": "2026-09-05",
-      "lastVerificationType": "partial",
+      "lastVerificationType": "full",
       "lastModificationDate": "2026-09-05",
       "result": "pass",
       "passedChecks": [
         "构建✅ slnx 0错误",
         "dotnet test✅ 1",
-        "helper前置接入✅ 首接入范本",
-        "rule-002/003/014审查✅"
-      ],
-      "skippedChecks": [
-        "手动跑图：全图/区域/屏蔽/性能报告含ROI构建+ReduceDomain步骤（需重启宿主）"
+        "v1.4纯ROI管线✅（37015cf1）",
+        "rule-002/003/014审查✅",
+        "手动复测✅ v1.4行为等价"
       ]
     },
     "SunEyeVision.Tool.Morphology": {

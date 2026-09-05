@@ -2797,6 +2797,10 @@
                                     {
                                         "date":  "2026-08-29",
                                         "note":  "[e27dd22047ebe79ecd9fc5906cae7ff2ae15e57f] 直线查找与圆查找工具拆分 + 位置修正全链路"
+                                    },
+                                    {
+                                        "date":  "2026-09-05",
+                                        "note":  "[a605869e6c0075e7705e6062aaa0bc450bb825dc] refactor(measure): Blob 接入 HalconImageOpPipeline（helper 增加所有权转移）"
                                     }
                                 ]
                     },

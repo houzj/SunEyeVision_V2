@@ -123,15 +123,8 @@ namespace SunEyeVision.Tool.ImageThreshold
                 {
                     result.GrayImage = new HalImage(grayImage.Clone());
 
-                    HRegion? roiRegion = null;
-                    HRegion? inspHRegion = null;
-                    HRegion? maskHRegion = null;
-
-                    // ===== Step 2: 构建ROI区域 =====
-                    // 区域语义统一：有检测/屏蔽区域即限制，无区域全图（对齐 Blob 基准；不再有"启用区域限制"开关）
-                    stepSw.Restart();
-                    var inspectionRegions = parameters.GetRoisByType(RoiType.Inspection);
-                    var maskRegions = parameters.GetRoisByType(RoiType.Mask);
+                    // ===== Step 2+3: 公共区域前置（HalconImageOpPipeline：ROI/掩码构建 + ReduceDomain）=====
+                    // 区域语义统一：有检测/屏蔽区域即限制，无区域全图；中间图像与区域所有权随 masked 统一释放
                     AffineMatrix? correctionMatrix = null;
                     if (parameters.IsPositionCorrectionEnabled)
                     {
@@ -153,41 +146,28 @@ namespace SunEyeVision.Tool.ImageThreshold
                         }
                     }
 
-                    // 位置修正按形状有向性并入 ROI 构建（无向剥转 / 有向完整，对齐 UI 语义）
-                    (roiRegion, inspHRegion, maskHRegion) = ToolRegionHelper.BuildHalconROI(
-                        imgWidth, imgHeight, inspectionRegions, maskRegions,
+                    var masked = HalconImageOpPipeline.Prepare(
+                        grayImage, imgWidth, imgHeight,
+                        parameters.GetRoisByType(RoiType.Inspection),
+                        parameters.GetRoisByType(RoiType.Mask),
                         parameters.NodeResults, correctionMatrix);
-                    if (roiRegion != null)
+                    stepTimings.AddRange(masked.Timings);
+
+                    if (masked.RoiRegion != null)
                     {
-                        HOperatorSet.AreaCenter(roiRegion, out var whitePixels, out _, out _);
+                        HOperatorSet.AreaCenter(masked.RoiRegion, out var whitePixels, out _, out _);
                         parameters.LogInfo($"ROI区域创建成功，白色像素数: {whitePixels.L}");
                     }
                     else
                     {
                         parameters.LogInfo("未配置检测区域，执行全图分析");
                     }
-                    stepSw.Stop();
-                    stepTimings.Add(("ROI构建", stepSw.ElapsedMilliseconds));
+
+                    // 核心算子输入（已 ReduceDomain 或全图，只读使用；生命周期随 masked）
+                    var reducedImage = masked.WorkingImage;
 
                     try
                     {
-                        // ===== Step 3: ReduceDomain =====
-                        stepSw.Restart();
-                        HImage reducedImage;
-                        if (roiRegion != null)
-                        {
-                            HOperatorSet.ReduceDomain(grayImage, roiRegion, out var reducedObj);
-                            reducedImage = new HImage(reducedObj);
-                        }
-                        else
-                        {
-                            reducedImage = grayImage.Clone();
-                        }
-                        stepSw.Stop();
-                        stepTimings.Add(("ReduceDomain", stepSw.ElapsedMilliseconds));
-
-                        using (reducedImage)
-                        {
                             // ===== Step 4: 阈值分割 =====
                             stepSw.Restart();
                             HRegion binaryRegion;
@@ -332,13 +312,10 @@ namespace SunEyeVision.Tool.ImageThreshold
                                 reportLines.Add($"结果: 方法 {method}, 阈值 {actualThreshold:F0}, 判断 {(result.IsPass ? "OK" : "NG")}, 瓶颈 [{maxStep.Step}]={maxStep.Ms}ms");
                                 parameters.LogInfo(string.Join("\n", reportLines));
                             }
-                        }
                     }
                     finally
                     {
-                        roiRegion?.Dispose();
-                        inspHRegion?.Dispose();
-                        maskHRegion?.Dispose();
+                        masked.Dispose();
                     }
                 }
             }

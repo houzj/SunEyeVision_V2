@@ -4463,7 +4463,19 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                         BuildMonitorableFields(node, singleMonitorable);
                     }
 
-                    currentParent.Children.Add(node);
+                    // 引导几何单层折叠：PropertyMap entry "引导几何" 不渲染为中间节点，
+                    // 直接把数组展开的子节点（圆/线 → 中心/端点）挂到 "引导线" group 下。
+                    // 原因：PropertyMap entry 已是"几何数组"的语义占位，再作为节点显示与下钻的几何元素重复；
+                    // 检测区/屏蔽区图形走 "输入区域" group，不在此分支内不受影响。
+                    if (e.Group == "输入区域/卡尺/引导线" && node.Children.Count > 0)
+                    {
+                        foreach (var child in node.Children)
+                            currentParent.Children.Add(child);
+                    }
+                    else
+                    {
+                        currentParent.Children.Add(node);
+                    }
                 }
             }
 

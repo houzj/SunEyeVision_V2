@@ -112,30 +112,6 @@
     <!-- 节点样式 -->
     <!-- ======================================== -->
     
-    <!-- 节点边框样式 -->
-    <Style x:Key="NodeBorderStyle" TargetType="Border">
-        <Setter Property="Effect" Value="{x:Null}"/>
-        <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="BorderBrush" Value="Transparent"/>
-        <Setter Property="Background" Value="{DynamicResource NodeDefaultBackgroundBrush}"/>
-        <Style.Triggers>
-            <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                <Setter Property="Effect">
-                    <Setter.Value>
-                        <DropShadowEffect Color="#FF6600" BlurRadius="6" ShadowDepth="0" Opacity="0.4"/>
-                    </Setter.Value>
-                </Setter>
-            </DataTrigger>
-            <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Effect">
-                    <Setter.Value>
-                        <DropShadowEffect Color="#000000" BlurRadius="6" ShadowDepth="2" Opacity="0.1"/>
-                    </Setter.Value>
-                </Setter>
-            </Trigger>
-        </Style.Triggers>
-    </Style>
-    
     <!-- 选中装饰虚线样式 -->
     <Style x:Key="NodeSelectedDecorationStyle" TargetType="Rectangle">
         <Setter Property="Stroke" Value="{DynamicResource NodeSelectedDashBrush}"/>

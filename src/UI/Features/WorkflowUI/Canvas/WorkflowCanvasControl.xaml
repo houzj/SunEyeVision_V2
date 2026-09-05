@@ -222,6 +222,38 @@
                             </ContextMenu>
                         </Border.ContextMenu>
                         <Grid>
+                            <!-- NodeGlowBorder: 状态辉光装饰层。Effect 只挂在无内容层上，
+                                 避免 NodeBorder 挂 DropShadowEffect 时把图标/文字子树位图化重绘导致模糊 -->
+                            <Border x:Name="NodeGlowBorder"
+                                    Width="{DynamicResource NodeWidth}" Height="{DynamicResource NodeHeight}"
+                                    CornerRadius="{DynamicResource NodeCornerRadius}"
+                                    Background="Transparent"
+                                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                                    IsHitTestVisible="False">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Effect" Value="{x:Null}"/>
+                                        <Style.Triggers>
+                                            <!-- 选中：橙色发光（原挂在 NodeBorder 上，效果层含文字/图标 → 模糊；移至独立装饰层） -->
+                                            <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                <Setter Property="Effect">
+                                                    <Setter.Value>
+                                                        <DropShadowEffect Color="#FF6600" BlurRadius="6" ShadowDepth="0" Opacity="0.4"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <!-- 悬停：轻柔阴影提升（NodeGlow 不拦截命中，跟随 NodeBorder 的真实 IsMouseOver） -->
+                                            <DataTrigger Binding="{Binding IsMouseOver, ElementName=NodeBorder}" Value="True">
+                                                <Setter Property="Effect">
+                                                    <Setter.Value>
+                                                        <DropShadowEffect Color="#000000" BlurRadius="6" ShadowDepth="2" Opacity="0.1"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                            </Border>
                             <!-- NodeBorder: 视觉显示元素，居中于HitArea -->
                             <Border Width="{DynamicResource NodeWidth}" Height="{DynamicResource NodeHeight}"
                                     CornerRadius="{DynamicResource NodeCornerRadius}"
@@ -461,25 +493,8 @@
 
                         <Border.Style>
                             <Style TargetType="Border">
+                                <!-- Effect 已移至 NodeGlowBorder 装饰层（选中/悬停辉光），避免内容子树位图化导致文字/图标模糊 -->
                                 <Setter Property="Effect" Value="{x:Null}"/>
-                                <Style.Triggers>
-                                    <!-- 选中状态：橙色发光，虚线描边由内部 Rectangle 负责 -->
-                                    <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                                        <Setter Property="Effect">
-                                            <Setter.Value>
-                                                <DropShadowEffect Color="#FF6600" BlurRadius="6" ShadowDepth="0" Opacity="0.4"/>
-                                            </Setter.Value>
-                                        </Setter>
-                                    </DataTrigger>
-                                    <!-- 悬停状态：轻柔阴影提升，不改变边框 -->
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Effect">
-                                            <Setter.Value>
-                                                <DropShadowEffect Color="#000000" BlurRadius="6" ShadowDepth="2" Opacity="0.1"/>
-                                            </Setter.Value>
-                                        </Setter>
-                                    </Trigger>
-                                </Style.Triggers>
                             </Style>
                         </Border.Style>
                     </Border>

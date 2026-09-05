@@ -175,7 +175,7 @@ namespace SunEyeVision.Tool.LineDetect
             [
                 .. base.GetPropertyMap(),   // 合并基类：ExecutionTimeMs → 执行耗时/执行信息
                 // 测量带(卡尺)输入回显：引导线/测量带 归"输入区域/卡尺"分组
-                new("GuideGeometry",     "引导线",   "输入区域/卡尺/引导线"),
+                new("GuideGeometry",     "引导几何", "输入区域/卡尺/引导线"),
                 new("CaliberCount",      "测量带数量", "输入区域/卡尺/测量带"),
                 new("CaliberWidth",      "测量带宽度", "输入区域/卡尺/测量带"),
                 new("CaliberLength",     "测量带长度", "输入区域/卡尺/测量带"),

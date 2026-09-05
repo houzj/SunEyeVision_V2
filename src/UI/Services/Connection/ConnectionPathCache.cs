@@ -26,6 +26,12 @@ namespace SunEyeVision.UI.Services.Connection
         private readonly Dictionary<string, Point> _lastNodePositions = new Dictionary<string, Point>();
         private readonly Dictionary<string, int> _connectionUsageCount = new Dictionary<string, int>();
 
+        // 拖动组平移会话：组内线在拖动中"整体平移"由 GetPath 返回缓存几何的平移克隆实现
+        // （新实例 → Path.Data 更新即重绘），避免每帧真实重算贝塞尔/避障
+        private HashSet<string>? _groupTranslatedIds;
+        private Vector _groupOffset;
+        private Dictionary<string, Point>? _groupInitialArrows;
+
         /// <summary>
         /// 缓存命中次数
         /// </summary>
@@ -86,6 +92,25 @@ namespace SunEyeVision.UI.Services.Connection
                         return path;
                     }
 
+                    // 组平移会话：返回缓存几何的"坐标平移克隆"（新实例 → Path.Data 更新触发重绘），不污染缓存。
+                    // 注意必须平移坐标而非 Geometry.Transform：连线渲染链 GetPathData 走 ToString→SVG 字符串，
+                    // Transform 不体现在字符串中，仅改坐标才会让绑定层感知变化
+                    if ((_groupOffset.X != 0 || _groupOffset.Y != 0)
+                        && _groupTranslatedIds != null
+                        && _groupTranslatedIds.Contains(connection.Id))
+                    {
+                        // 同步箭头锚点：箭头贴线随刚体平移（初始位置 + 位移，角度不变）
+                        if (_groupInitialArrows != null
+                            && _groupInitialArrows.TryGetValue(connection.Id, out Point initialArrow))
+                        {
+                            connection.ArrowPosition = new Point(
+                                initialArrow.X + _groupOffset.X,
+                                initialArrow.Y + _groupOffset.Y);
+                        }
+
+                        return TranslateGeometry(cachedPath.Geometry, _groupOffset);
+                    }
+
                     CacheHits++;
                     return cachedPath.Geometry;
                 }
@@ -144,6 +169,45 @@ namespace SunEyeVision.UI.Services.Connection
                         _dirtyFlags[kvp.Key] = true;
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// 拖动组平移会话：登记组内线集合（拖动中 GetPath 对它们返回缓存几何的平移克隆）。
+        /// 刚体平移下组内线形状不变，平移即精确解——不重算贝塞尔/避障，且以新实例触发 Path.Data 重绘。
+        /// </summary>
+        public void BeginGroupTranslation(IEnumerable<WorkflowConnection> inner)
+        {
+            lock (_lockObj)
+            {
+                var list = inner?.Where(c => c != null).ToList();
+                _groupTranslatedIds = list?.Select(c => c.Id).ToHashSet();
+                _groupInitialArrows = list?.ToDictionary(c => c.Id, c => c.ArrowPosition);
+                _groupOffset = default;
+            }
+        }
+
+        /// <summary>
+        /// 更新拖动组平移偏移（组内线 GetPath 平移克隆的位移量）
+        /// </summary>
+        public void UpdateGroupTranslation(Vector offset)
+        {
+            lock (_lockObj)
+            {
+                _groupOffset = offset;
+            }
+        }
+
+        /// <summary>
+        /// 结束拖动组平移会话（落账后由调用方一次性真实重算刷新缓存，再清除会话状态）
+        /// </summary>
+        public void EndGroupTranslation()
+        {
+            lock (_lockObj)
+            {
+                _groupTranslatedIds = null;
+                _groupInitialArrows = null;
+                _groupOffset = default;
             }
         }
 
@@ -253,6 +317,46 @@ namespace SunEyeVision.UI.Services.Connection
                     HitRate = HitRate
                 };
             }
+        }
+
+        /// <summary>
+        /// 坐标平移克隆：把路径几何整体平移 offset（逐 Figure/Segment 坐标加位移）。
+        /// 供组内线拖动"刚体平移"使用——不重算贝塞尔/避障，仅平移坐标。
+        /// </summary>
+        private static PathGeometry TranslateGeometry(PathGeometry source, Vector offset)
+        {
+            var clone = source.Clone();
+            foreach (var figure in clone.Figures)
+            {
+                figure.StartPoint += offset;
+                foreach (var segment in figure.Segments)
+                {
+                    switch (segment)
+                    {
+                        case LineSegment line:
+                            line.Point += offset;
+                            break;
+                        case QuadraticBezierSegment quad:
+                            quad.Point1 += offset;
+                            quad.Point2 += offset;
+                            break;
+                        case BezierSegment bezier:
+                            bezier.Point1 += offset;
+                            bezier.Point2 += offset;
+                            bezier.Point3 += offset;
+                            break;
+                        case PolyLineSegment polyLine:
+                            for (int i = 0; i < polyLine.Points.Count; i++)
+                                polyLine.Points[i] = polyLine.Points[i] + offset;
+                            break;
+                        case PolyBezierSegment polyBezier:
+                            for (int i = 0; i < polyBezier.Points.Count; i++)
+                                polyBezier.Points[i] = polyBezier.Points[i] + offset;
+                            break;
+                    }
+                }
+            }
+            return clone;
         }
 
         private PathGeometry CalculatePath(WorkflowConnection connection)

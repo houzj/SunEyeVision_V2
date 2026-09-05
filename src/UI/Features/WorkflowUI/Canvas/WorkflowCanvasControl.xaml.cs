@@ -90,6 +90,10 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
         private System.Windows.Point[]? _selectedNodesInitialPositions;
 
+        // 刚体平移优化：拖动组快照（Down 锁定一次）+ 连接刷新服务（连线逻辑内聚，Move 不再碰 Cache/Batch）
+        private ConnectivityRefreshService? _connectivityRefresh;
+        private List<WorkflowNode>? _dragGroup;                       // 拖动组快照（仅用于实时写 Position）
+
         private System.Windows.Point _mouseDownPosition; // 记录鼠标按下时的初始位置（用于拖动阈值判断）
 
 
@@ -1599,6 +1603,9 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
             _viewModel.SelectedNode = node;
 
+            // 刚体平移优化：一次锁定拖动组快照 + 组内/跨组线分类（Move 不再每帧全量扫描/重算组内线）
+            PrepareDragGroup();
+
 
 
             // 记录所有选中节点的初始位置
@@ -1652,83 +1659,9 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
                 // ?? 减少日志输出以提高性能
                 // 拖拽结束
 
-                if (_viewModel?.WorkflowTabViewModel.SelectedTab != null)
-
-                {
-
-                    var selectedNodes = _viewModel.WorkflowTabViewModel.SelectedTab.WorkflowNodes
-
-                        .Where(n => n.IsSelected)
-
-                        .ToList();
-
-
-
-                    if (selectedNodes.Count > 0 && _selectedNodesInitialPositions != null)
-
-                    {
-
-                        // 计算统一的移动偏移量（从初始位置到当前位置）
-
-                        var delta = new Vector(
-
-                            selectedNodes[0].Position.X - _selectedNodesInitialPositions[0].X,
-
-                            selectedNodes[0].Position.Y - _selectedNodesInitialPositions[0].Y
-
-                        );
-
-
-
-                        /*
-
-                        */
-
-
-
-                        // ?? 关键修复：不要再次执行 BatchMoveNodesCommand
-
-                        // 因为节点位置已经在 Node_MouseMove 中被更新了
-
-                        // 如果这里再执行一次，会导致节点被移动两次
-
-
-
-                        // 拖拽结束后，强制更新所有相关连接的缓存
-
-                        if (_connectionPathCache != null)
-
-                        {
-
-                            foreach (var node in selectedNodes)
-
-                            {
-
-                                _connectionPathCache.MarkNodeDirty(node.Id);
-                            }
-
-                        }
-
-
-
-                        // ?? 使用批量延迟更新管理器：立即执行所有待处理的更新
-
-                        if (_batchUpdateManager != null)
-
-                        {
-
-                            _batchUpdateManager.ForceUpdateAll();
-                        }
-
-
-
-                        // ?? TODO: 如果需要支持撤销/重做，需要在这里创建并执行命令
-
-                        // 但是要确保命令不会重复移动节点
-
-                    }
-
-                }
+                // 拖拽结束落账（Position 已在 Move 实时写对）：组内线真实重算刷新缓存 + 跨组线对齐，
+                // 由 ConnectivityRefreshService.EndDrag 统一完成（逻辑内聚）
+                _connectivityRefresh?.EndDrag();
 
 
 
@@ -1740,6 +1673,9 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
                 // 清除位置节流记录，准备下次拖拽
 
                 ClearPositionThrottling();
+
+                // 清理拖动组临时状态（组内线 translate 保留在几何上，与最终 Position 一致）
+                ResetDragGroup();
 
             }
 
@@ -1779,15 +1715,10 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
 
 
-                // 5A: 获取所有选中节点
-
-                var selectedNodes = _viewModel?.WorkflowTabViewModel.SelectedTab?.WorkflowNodes
-                    // 拖动需 WorkflowNode 特有成员，运行时元素均为 WorkflowNode，安全转型
-                    .OfType<WorkflowNode>()
-
-                    .Where(n => n.IsSelected)
-
-                    .ToList();
+                // 5A: 拖动组快照（PrepareDragGroup 已在 Down 锁定一次；仅极端缺失时兜底当前拖拽节点）
+                var selectedNodes = _dragGroup ?? (_draggedNode != null
+                    ? new List<WorkflowNode> { _draggedNode }
+                    : null);
 
 
 
@@ -1836,45 +1767,8 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
 
 
-                    // 5C: 路径更新使用位置节流 + 批量延迟机制（双层优化）
-
-                    // 路径计算成本高，先通过距离节流减少更新次数，再通过批量延迟合并快速更新
-
-                    if (_batchUpdateManager != null)
-
-                    {
-
-                        // 收集需要更新的节点ID（通过位置节流过滤）
-
-                        var nodesToUpdate = new List<string>();
-
-                        foreach (var node in selectedNodes)
-
-                        {
-
-                            if (ShouldScheduleConnectionUpdate(node.Id, node.Position))
-
-                            {
-
-                                nodesToUpdate.Add(node.Id);
-
-                            }
-
-                        }
-
-
-
-                        // 只有当有节点需要更新时才调用批量更新管理器
-
-                        if (nodesToUpdate.Count > 0)
-
-                        {
-
-                            _batchUpdateManager.ScheduleUpdateForNodes(nodesToUpdate);
-
-                        }
-
-                    }
+                    // 5C: 连线刷新移交服务（组内线平移 / 跨组线节流批量，逻辑内聚于 ConnectivityRefreshService）
+                    _connectivityRefresh?.UpdateDrag(new Point(globalAllowedOffset.X, globalAllowedOffset.Y));
 
                 }
 
@@ -1997,6 +1891,44 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
             _lastReportedNodePositions.Clear();
 
+        }
+
+        /// <summary>
+        /// 刚体平移：锁定拖动组快照（Down 一次）并移交连接刷新服务。
+        /// 连线逻辑（组内平移 / 跨组重算）由 ConnectivityRefreshService 统一处理，Move 不再触碰 Cache/Batch。
+        /// </summary>
+        private void PrepareDragGroup()
+        {
+            ResetDragGroup();
+
+            if (_viewModel?.WorkflowTabViewModel.SelectedTab == null) return;
+
+            var tab = _viewModel.WorkflowTabViewModel.SelectedTab;
+
+            _dragGroup = tab.WorkflowNodes
+                .OfType<WorkflowNode>()
+                .Where(n => n.IsSelected)
+                .ToList();
+
+            if (_dragGroup.Count == 0)
+            {
+                ResetDragGroup();
+                return;
+            }
+
+            // 连接刷新服务（Down 每次新建：随 Tab/缓存生命周期，状态干净）
+            _connectivityRefresh = new ConnectivityRefreshService(_connectionPathCache, _batchUpdateManager);
+            _connectivityRefresh.BeginDrag(_dragGroup, tab.WorkflowConnections.ToList());
+        }
+
+        /// <summary>
+        /// 复位拖动组临时状态（Down/Up 均调用）
+        /// </summary>
+        private void ResetDragGroup()
+        {
+            _dragGroup = null;
+            _connectivityRefresh?.Reset();
+            _connectivityRefresh = null;
         }
 
 

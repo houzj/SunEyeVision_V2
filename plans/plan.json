@@ -4273,6 +4273,20 @@
                                         "src/Plugin.SDK/UI/Controls/Measure/Views/MeasureEditorControl.xaml.cs"
                                     ],
                           "status":  "in_progress"
+                      },
+                      {
+                          "id":  "TMP-ddd0d27",
+                          "message":  "feat(ui): 查找工具卡尺输入回显（引导线/测量带）到模块结果树",
+                          "date":  "2026-09-05",
+                          "commit":  "ddd0d2745320e4cb6262282fd1d09bfc041aa8db",
+                          "files":  [
+                                        "src/Plugin.SDK/Execution/Results/ToolResults.cs",
+                                        "tools/SunEyeVision.Tool.CircleDetect/CircleDetectResults.cs",
+                                        "tools/SunEyeVision.Tool.CircleDetect/CircleDetectTool.cs",
+                                        "tools/SunEyeVision.Tool.LineDetect/LineDetectResults.cs",
+                                        "tools/SunEyeVision.Tool.LineDetect/LineDetectTool.cs"
+                                    ],
+                          "status":  "in_progress"
                       }
                   ]
 }

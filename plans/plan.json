@@ -2801,6 +2801,10 @@
                                     {
                                         "date":  "2026-09-05",
                                         "note":  "[a605869e6c0075e7705e6062aaa0bc450bb825dc] refactor(measure): Blob 接入 HalconImageOpPipeline（helper 增加所有权转移）"
+                                    },
+                                    {
+                                        "date":  "2026-09-05",
+                                        "note":  "[37015cf1571e1e54aefe27e8f0d75465cd78f162] refactor(measure): 区域管线收缩为纯 ROI（HalconRegionPipeline），reduce/所有权归还算法层"
                                     }
                                 ]
                     },

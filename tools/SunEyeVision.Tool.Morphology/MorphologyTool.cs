@@ -95,7 +95,6 @@ namespace SunEyeVision.Tool.Morphology
                 var kernelWidth = parameters.KernelWidth.Value;
                 var kernelHeight = parameters.KernelHeight.Value;
                 var iterations = parameters.Iterations.Value;
-                var isRegionEnabled = parameters.IsRegionEnabled;
 
                 // ===== Step 1: 灰度转换 =====
                 stepSw.Restart();
@@ -122,41 +121,43 @@ namespace SunEyeVision.Tool.Morphology
                     HRegion? maskHRegion = null;
 
                     // ===== Step 2: 构建ROI区域 =====
+                    // 区域语义统一：有检测/屏蔽区域即限制，无区域全图（对齐 Blob 基准；不再有"启用区域限制"开关）
                     stepSw.Restart();
-                    if (isRegionEnabled)
+                    var inspectionRegions = parameters.GetRoisByType(RoiType.Inspection);
+                    var maskRegions = parameters.GetRoisByType(RoiType.Mask);
+                    AffineMatrix? correctionMatrix = null;
+                    if (parameters.IsPositionCorrectionEnabled)
                     {
-                        var inspectionRegions = parameters.GetRoisByType(RoiType.Inspection);
-                        var maskRegions = parameters.GetRoisByType(RoiType.Mask);
-                        AffineMatrix? correctionMatrix = null;
-                        if (parameters.IsPositionCorrectionEnabled)
+                        var bindingSource = parameters.PositionCorrectionBindingSource;
+                        if (PositionCorrectionResolver.ResolveFirstMatrix(bindingSource) is { } matrix)
                         {
-                            var bindingSource = parameters.PositionCorrectionBindingSource;
-                            if (PositionCorrectionResolver.ResolveFirstMatrix(bindingSource) is { } matrix)
-                            {
-                                correctionMatrix = matrix;
-                                parameters.LogInfo($"位置修正已启用, 矩阵: {matrix}");
-                            }
-                            else if (bindingSource != null &&
-                                     !string.IsNullOrEmpty(bindingSource.SourceNodeId) &&
-                                     !string.IsNullOrEmpty(bindingSource.PropertyName))
-                            {
-                                parameters.LogInfo("位置修正已启用，但绑定源当前无有效矩阵，跳过位置修正");
-                            }
-                            else
-                            {
-                                parameters.LogWarning("位置修正已启用但未配置绑定源，跳过位置修正");
-                            }
+                            correctionMatrix = matrix;
+                            parameters.LogInfo($"位置修正已启用, 矩阵: {matrix}");
                         }
+                        else if (bindingSource != null &&
+                                 !string.IsNullOrEmpty(bindingSource.SourceNodeId) &&
+                                 !string.IsNullOrEmpty(bindingSource.PropertyName))
+                        {
+                            parameters.LogInfo("位置修正已启用，但绑定源当前无有效矩阵，跳过位置修正");
+                        }
+                        else
+                        {
+                            parameters.LogWarning("位置修正已启用但未配置绑定源，跳过位置修正");
+                        }
+                    }
 
-                        // 位置修正按形状有向性并入 ROI 构建（无向剥转 / 有向完整，对齐 UI 语义）
-                        (roiRegion, inspHRegion, maskHRegion) = ToolRegionHelper.BuildHalconROI(
-                            imgWidth, imgHeight, inspectionRegions, maskRegions,
-                            parameters.NodeResults, correctionMatrix);
-                        if (roiRegion != null)
-                        {
-                            HOperatorSet.AreaCenter(roiRegion, out var whitePixels, out _, out _);
-                            parameters.LogInfo($"ROI区域创建成功，白色像素数: {whitePixels.L}");
-                        }
+                    // 位置修正按形状有向性并入 ROI 构建（无向剥转 / 有向完整，对齐 UI 语义）
+                    (roiRegion, inspHRegion, maskHRegion) = ToolRegionHelper.BuildHalconROI(
+                        imgWidth, imgHeight, inspectionRegions, maskRegions,
+                        parameters.NodeResults, correctionMatrix);
+                    if (roiRegion != null)
+                    {
+                        HOperatorSet.AreaCenter(roiRegion, out var whitePixels, out _, out _);
+                        parameters.LogInfo($"ROI区域创建成功，白色像素数: {whitePixels.L}");
+                    }
+                    else
+                    {
+                        parameters.LogInfo("未配置检测区域，执行全图分析");
                     }
                     stepSw.Stop();
                     stepTimings.Add(("ROI构建", stepSw.ElapsedMilliseconds));

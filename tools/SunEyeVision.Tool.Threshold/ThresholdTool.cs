@@ -94,7 +94,6 @@ namespace SunEyeVision.Tool.Threshold
                 AdaptiveMethod adaptiveMethod = parameters.AdaptiveMethod.Value;
                 int blockSize = parameters.BlockSize.Value;
                 bool invert = parameters.Invert;
-                bool isRegionEnabled = parameters.IsRegionEnabled;
 
                 // ===== Step 1: 灰度转换 (rgb1_to_gray) =====
                 stepSw.Restart();
@@ -122,23 +121,21 @@ namespace SunEyeVision.Tool.Threshold
                     HRegion? maskHRegion = null;
 
                     // ===== Step 2: 构建ROI区域 + 差集处理 =====
+                    // 区域语义统一：有检测/屏蔽区域即限制，无区域全图（对齐 Blob 基准；不再有"启用区域限制"开关）
                     stepSw.Restart();
-                    if (isRegionEnabled)
-                    {
-                        var inspectionRegions = parameters.GetRoisByType(RoiType.Inspection);
-                        var maskRegions = parameters.GetRoisByType(RoiType.Mask);
-                        (roiRegion, inspHRegion, maskHRegion) = ToolRegionHelper.BuildHalconROI(
-                            imgWidth, imgHeight, inspectionRegions, maskRegions, parameters.NodeResults);
+                    var inspectionRegions = parameters.GetRoisByType(RoiType.Inspection);
+                    var maskRegions = parameters.GetRoisByType(RoiType.Mask);
+                    (roiRegion, inspHRegion, maskHRegion) = ToolRegionHelper.BuildHalconROI(
+                        imgWidth, imgHeight, inspectionRegions, maskRegions, parameters.NodeResults);
 
-                        if (roiRegion != null)
-                        {
-                            HOperatorSet.AreaCenter(roiRegion, out var whitePixels, out _, out _);
-                            parameters.LogInfo($"ROI区域创建成功，白色像素数: {whitePixels.L}");
-                        }
-                        else
-                        {
-                            parameters.LogWarning("启用区域限制，但没有有效的检测区域");
-                        }
+                    if (roiRegion != null)
+                    {
+                        HOperatorSet.AreaCenter(roiRegion, out var whitePixels, out _, out _);
+                        parameters.LogInfo($"ROI区域创建成功，白色像素数: {whitePixels.L}");
+                    }
+                    else
+                    {
+                        parameters.LogInfo("未配置检测区域，执行全图分析");
                     }
                     stepSw.Stop();
                     stepTimings.Add(("ROI构建", stepSw.ElapsedMilliseconds));

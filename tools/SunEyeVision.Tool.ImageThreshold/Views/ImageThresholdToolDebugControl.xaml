@@ -35,13 +35,8 @@
                                 SelectedDataSource="{Binding ImageSource, Mode=TwoWay}"/>
             </controls:LabeledControl>
 
-            <controls:LabeledControl Label="启用区域限制">
-              <CheckBox IsChecked="{Binding IsRegionEnabled, Mode=TwoWay}"
-                        Content="仅对指定区域进行二值化处理"/>
-            </controls:LabeledControl>
-
-            <GroupBox Header="区域设置" Margin="0,8,0,0"
-                      Visibility="{Binding IsRegionEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
+            <!-- 区域管理器（检测区域 + 屏蔽区域；区域语义统一：有区域即限制，无区域全图） -->
+            <GroupBox Header="区域设置" Margin="0,8,0,0">
                 <region:RoiEditorManagerControl x:Name="regionManager"
                     InspectionRegionsSource="{Binding InspectionRegions.Regions}"
                     MaskRegionsSource="{Binding MaskRegions.Regions}"/>

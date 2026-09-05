@@ -3794,6 +3794,10 @@
                                     {
                                         "date":  "2026-08-17",
                                         "note":  "最近提交 7605075 SDK层UI主题化改造与视觉图标修复 —— 工具持续维护中（同步登记）"
+                                    },
+                                    {
+                                        "date":  "2026-09-05",
+                                        "note":  "[a735578df5cdc7c6c1985b5d9aa1141493eb3593] refactor(measure): 图像滤波/图像二值化/形态学处理接入 HalconImageOpPipeline"
                                     }
                                 ]
                     },

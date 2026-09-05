@@ -12,17 +12,28 @@ namespace SunEyeVision.HalAdapter
     /// 图像处理式算法工具公共前置管线（可选组件，供图像阈值化/图像滤波/图像二值化/形态学处理/Blob 等复用）。
     /// 只做"机械管线"，不承载区域启用策略：
     ///   区域是否应用由调用方决定——传入空区域列表 = 全图；传入已配置区域 = 有区域即限制（语义统一）。
+    /// 边界收敛为「图像源 + 区域管理 + 位置修正」三类公共职责：
+    ///   - 图像源：对已灰度图做 ReduceDomain（区域限制的实现手段），输出受限定义域图；
+    ///   - 区域管理：ROI/掩码构建（有向性/剥转、订阅区域解析）；
+    ///   - 位置修正：按形状有向性并入区域变换。
+    /// 图像预处理等"算法首段"不属于公共前置，由工具在取得 WorkingImage 后自行实现（如 Blob 需就地替换
+    /// 处理图时，先 DetachWorkingImage 接管所有权再处理）。
     /// 本类型仅对齐"图像处理式"形态（灰度 + ROI/掩码 + ReduceDomain）；Metrology/匹配类工具前置语义不同，不适用。
     /// </summary>
     public static class HalconImageOpPipeline
     {
         /// <summary>
-        /// 区域掩码预处理结果（所有权随实例释放）。
+        /// 区域掩码预处理结果（区域对象所有权随实例释放；WorkingImage 可经 DetachWorkingImage 移交）。
         /// </summary>
         public sealed class MaskedImage : IDisposable
         {
-            /// <summary>核心算子输入图像（有区域时已 ReduceDomain；无区域时为全图 Clone）。所有权归本实例。</summary>
-            public HImage WorkingImage { get; }
+            private HImage? _workingImage;
+            private bool _disposed;
+
+            /// <summary>核心算子输入图像（有区域时已 ReduceDomain；无区域时为全图 Clone）。所有权归本实例，除非已 DetachWorkingImage。</summary>
+            public HImage WorkingImage =>
+                _workingImage ?? throw new InvalidOperationException(
+                    "WorkingImage 已通过 DetachWorkingImage 移交所有权，不能再次访问");
 
             /// <summary>应用了区域限制时的处理域（无区域 = null）</summary>
             public HRegion? RoiRegion { get; }
@@ -43,16 +54,32 @@ namespace SunEyeVision.HalAdapter
                 HRegion? maskRegion,
                 IReadOnlyList<(string Step, long Ms)> timings)
             {
-                WorkingImage = workingImage;
+                _workingImage = workingImage;
                 RoiRegion = roiRegion;
                 InspectionRegion = inspectionRegion;
                 MaskRegion = maskRegion;
                 Timings = timings;
             }
 
+            /// <summary>
+            /// 移交 WorkingImage 所有权给调用方（供算法就地替换处理图等场景，如 Blob 图像预处理）。
+            /// 调用后本实例 Dispose 不再释放 WorkingImage（改由调用方负责）；WorkingImage 属性亦不可再访问。
+            /// </summary>
+            public HImage DetachWorkingImage()
+            {
+                var image = _workingImage;
+                _workingImage = null;
+                return image;
+            }
+
             public void Dispose()
             {
-                WorkingImage.Dispose();
+                if (_disposed)
+                {
+                    return;
+                }
+                _disposed = true;
+                _workingImage?.Dispose();
                 RoiRegion?.Dispose();
                 InspectionRegion?.Dispose();
                 MaskRegion?.Dispose();

@@ -120,14 +120,8 @@ namespace SunEyeVision.Tool.BlobAnalysis
 
                 using (grayImage)
                 {
-                    HRegion? roiRegion = null;
-                    HRegion? inspHRegion = null;
-                    HRegion? maskHRegion = null;
-
-                    // ===== Step 2: 构建ROI =====
-                    stepSw.Restart();
-                    var inspectionRegions = parameters.GetRoisByType(RoiType.Inspection);
-                    var maskRegions = parameters.GetRoisByType(RoiType.Mask);
+                    // ===== Step 2+3: 公共区域前置（HalconImageOpPipeline：区域/掩码构建 + ReduceDomain）=====
+                    // helper 边界：只做图像源 + 区域管理 + 位置修正；图像预处理属算法首段，由本工具在取得处理图后执行
                     AffineMatrix? correctionMatrix = null;
                     if (parameters.IsPositionCorrectionEnabled)
                     {
@@ -151,29 +145,17 @@ namespace SunEyeVision.Tool.BlobAnalysis
                         }
                     }
 
-                    // 位置修正按形状有向性并入 ROI 构建（无向剥转 / 有向完整，对齐 UI 语义）
-                    (roiRegion, inspHRegion, maskHRegion) = ToolRegionHelper.BuildHalconROI(
-                        imgWidth, imgHeight, inspectionRegions, maskRegions,
+                    var masked = HalconImageOpPipeline.Prepare(
+                        grayImage, imgWidth, imgHeight,
+                        parameters.GetRoisByType(RoiType.Inspection),
+                        parameters.GetRoisByType(RoiType.Mask),
                         parameters.NodeResults, correctionMatrix);
-                    stepSw.Stop();
-                    stepTimings.Add(("ROI构建", stepSw.ElapsedMilliseconds));
+                    stepTimings.AddRange(masked.Timings);
 
                     try
                     {
-                        // ===== Step 3: ReduceDomain =====
-                        stepSw.Restart();
-                        HImage processingImage;
-                        if (roiRegion != null)
-                        {
-                            HOperatorSet.ReduceDomain(grayImage, roiRegion, out var reducedObj);
-                            processingImage = new HImage(reducedObj);
-                        }
-                        else
-                        {
-                            processingImage = grayImage.Clone();
-                        }
-                        stepSw.Stop();
-                        stepTimings.Add(("ReduceDomain", stepSw.ElapsedMilliseconds));
+                        // 接管核心处理图：预处理需就地替换 → Detach 取得所有权（由原 using(processingImage) 统一释放）
+                        var processingImage = masked.DetachWorkingImage();
 
                         // ===== Step 3.5: 图像预处理（可选） =====
                         if (parameters.IsPreprocessingEnabled && parameters.PreprocessMethodValue.Value != PreprocessMethod.None)
@@ -457,9 +439,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
                     }
                     finally
                     {
-                        roiRegion?.Dispose();
-                        inspHRegion?.Dispose();
-                        maskHRegion?.Dispose();
+                        masked.Dispose();
                     }
                 }
             }

@@ -337,6 +337,10 @@
                                     {
                                         "date":  "2026-09-05",
                                         "note":  "[d5d140298f28596214f50abd0a7389824e97ee0b] fix(render): 节点选中/悬停辉光迁移至独立 NodeGlowBorder 装饰层"
+                                    },
+                                    {
+                                        "date":  "2026-09-06",
+                                        "note":  "[4366c5c0af51e783be51c12b0521fa89746cb674] fix(render): 多选拖动连线刚体平移 + 连线刷新收敛至 ConnectivityRefreshService"
                                     }
                                 ]
                     },

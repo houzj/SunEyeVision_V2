@@ -1622,6 +1622,10 @@
                                     {
                                         "date":  "2026-08-29",
                                         "note":  "[78db9c9c00c722cb7d525968d28f0ec917c63794] theme dialog buttons and converge MessageBox to ThemeMessageDialog（校准：hook 误归 M-SRC-COMM，实为 UI 主题化收敛）"
+                                    },
+                                    {
+                                        "date":  "2026-09-05",
+                                        "note":  "[b35d9d3e7ce583a5ceec506adba6c98e45e1596d] feat(ui): 模块结果树几何下钻 + 查找工具输入区域契约填充"
                                     }
                                 ]
                     },

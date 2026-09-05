@@ -572,9 +572,10 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
             if (prop == null) return;
 
             var runtimeValue = prop.GetValue(this);
-            // 运行期该区域无值（如引导式工具无 RoI 检测区）→ 不输出空行（"--"），避免"输入区域空白"观感；
+            // 运行期该区域无值（null 或空数组，如引导式工具无 RoI 检测区，基类默认 Array.Empty）→ 不输出空行（"--"），避免"输入区域空白"观感；
             // 设计态结构另由 ToolRegistry + ResolveRoiDesignValue 提供
             if (runtimeValue == null) return;
+            if (runtimeValue is Array arr && arr.Length == 0) return;
             var variableType = SunEyeVision.Plugin.SDK.Models.SdkTypeVocabulary.ToTypeVocabulary(prop.PropertyType)
                 ?? throw new InvalidOperationException(
                     $"工具 '{ToolName ?? GetType().Name}' 的 {propertyName} 类型 '{prop.PropertyType.Name}' 不是全局变量支持的通用类型，请检查 SdkTypeVocabulary 词汇表。");

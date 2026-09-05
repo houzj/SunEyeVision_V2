@@ -1,6 +1,6 @@
 ---
 name: 视觉工具构建
-description: 视觉工具构建技能。用于批量生成视觉算法工具插件，以 Blob 分析为基准参考源提炼开发范式，输出 UI 方案 + 算法方案 + 差异点清单。触发场景：创建新算法工具、添加视觉算法工具插件、工具 UI/算法方案设计。
+description: 视觉工具构建技能。用于批量生成视觉算法工具插件，以已验收算法工具（Blob 分析 / 直线查找 / 圆查找 / 轮廓匹配）为基准参考源提炼开发范式，输出 UI 方案 + 算法方案 + 差异点清单，并覆盖调试窗口从打开到关闭的完整生命周期验收。触发场景：创建新算法工具、添加视觉算法工具插件、工具 UI/算法方案设计。
 ---
 
 # 视觉工具构建技能
@@ -29,19 +29,29 @@ description: 视觉工具构建技能。用于批量生成视觉算法工具插�
 
 ---
 
-## 2. 引擎契约（三铁律，经代码验证）
+## 2. 引擎契约（三铁律，经架构分层 V2 验证）
 
 ```
 工具层公开 API 永不暴露具体引擎类型
-  ├─ 图像：parameters.ResolvedInputImage (IVisionImage? 通用契约)
-  ├─ Run 优先路径：Halcon（GetHalconImage() → HOperatorSet.*）
-  ├─ 可切换路径：OpenCvSharp（GetCvImage() → CvOp.*）
-  └─ 适配：IVisionImage ← HalImage / CvImage
+  ├─ 图像：parameters.ResolvedInputImage（IVisionImage?，框架注入）
+  ├─ Run Halcon 路径：parameters.GetHalconImage() → HOperatorSet.*
+  │    扩展方法位于 SunEyeVision.HalAdapter（工具 csproj 须引 HalAdapter）
+  ├─ Run OpenCV 路径：parameters.GetCvImage() → CvImage.Image(Mat) → CvOp.*
+  │    扩展方法位于 SunEyeVision.CvAdapter（工具按需引 CvAdapter/CvEngine）
+  └─ 适配载体：IVisionImage ← HalImage(HalAdapter) / Cv 适配(CvAdapter)
+      跨后端提取：VisionBackendExtractorLocator.ToHalcon / .ToOpenCv（SDK Hosting，宿主装配注册）
 ```
 
-1. **Run 默认走 Halcon**（现状即如此）
+1. **Run 默认走 Halcon**：`parameters.GetHalconImage()`（需 `using SunEyeVision.HalAdapter;` + csproj `ProjectReference` 引 `SunEyeVision.HalAdapter`）
 2. **公开 API 不出现 `HImage`/`Mat`**，图像统一 `IVisionImage`
 3. OpenCV 实现走 `CvToolHelpers.GetCvImage()` + `CvOp.*`，不直接 `Cv2.*`
+4. **契约/适配分层**：SDK 只定义契约（`IVisionImage`/`VisionBackendExtractorLocator`）；引擎类型与适配载体一律不在 SDK（Hal→`SunEyeVision.HalAdapter`，Cv 算法→`SunEyeVision.CvEngine`，Cv 适配→`SunEyeVision.CvAdapter`）
+5. **图像处理式工具区域前置（两段式，v1.4 统一）**：区域/修正解析与"按域执行"分离
+   - 纯几何：`HalconRegionPipeline.Resolve(imgWidth, imgHeight, 检测区, 屏蔽区, nodeResults, correctionMatrix)` → `RoiScope`
+     只做订阅解析 + 位置修正（按形状有向性）+ 检测−屏蔽差集；**签名不接收任何图像对象**；scope 用后 `Dispose()`（只释放 region，防重入）
+   - 执行方式由算法自决：按域 → `HalImageDomain.Restrict(grayImage, scope.RoiRegion)`（返回新图，谁调用谁释放）；全图 → 直接用原图
+   - 所有权铁律：**谁 Restrict 谁释放**（标准 `using`/`finally`，无所有权转移/Detach 概念）；位置修正矩阵 Run（Resolve）与交互层（控件实时查询）同源
+   - 适用边界：图像处理式工具（Blob/阈值化/滤波/二值化/形态学）；Metrology/匹配类工具区域语义不同，不适用
 
 ---
 
@@ -349,10 +359,11 @@ public class {ToolName}Tool : IToolPlugin<{ToolName}Parameters, {ToolName}Result
             parameters.LogInfo("开始{ToolName}处理");
 
             // —— 算法步骤（本工具差异点核心）——
-            // Step1: ROI 提取 → HOperatorSet.ReduceDomain
-            // Step2: 位置修正（IsPositionCorrectionEnabled 时）→
-            //        ToolRegionHelper.ApplyPositionCorrectionHalcon(roi, insp, mask, matrix, w, h)
-            // Step3: Halcon 算子序列（HOperatorSet.*）
+            // Step1: 区域前置（图像处理式工具）→ HalconRegionPipeline.Resolve(w,h,检测区,屏蔽区,nodeResults,修正矩阵)
+            //        = 纯几何：订阅解析 + 位置修正 + 检测−屏蔽差集；scope 用后 finally Dispose（只释放 region）
+            // Step2: 执行方式由算法自决 → 按域 HalImageDomain.Restrict(grayImage, scope.RoiRegion)（新图自管用后释放）
+            //        或全图直接用原图；Metrology/匹配类工具不走 Resolve（区域语义不同）
+            // Step3: Halcon 算子序列（HOperatorSet.*，喂 Step2 处理图）
             // Step4: 结果计算 + 判定
 
             result.DurationMs = sw.Elapsed.TotalMilliseconds;
@@ -457,48 +468,98 @@ flowchart TD
     D --> E[Step3 输出算法方案<br>Halcon步骤序列 + 引擎契约 + 差异点]
     E --> F[Step4 生成基座代码<br>三件套 + RoI + 调试控件]
     F --> G[Step5 输出差异点清单<br>标注独立修改位置]
+    G --> H[Step6 调试窗口生命周期验收<br>按 §7 打开→运行→关闭→重开全流程逐项验证]
 ```
 
 ---
 
-## 7. 参考实现（真实路径）
+## 7. 调试窗口全生命周期覆盖（打开→关闭→重开，新建工具必检）
 
-**基准参考源**：
+> 生命周期 = 宿主驱动的回调链 + 工具侧清理闭环。新建算法工具必须完整覆盖以下环节并逐项验收。
+
+### 7.1 打开 / 初始化阶段
+| # | 宿主回调 | 工具侧职责 | 验收点 |
+|---|---|---|---|
+| 1 | 构造 | `new {Tool}DebugControl(...)`：`InitializeComponent` + `Parameters = new {Tool}Parameters()` | 窗口能打开、无绑定错误 |
+| 2 | `SetParameters(Parameters)` | `base.SetParameters` + 类型不符 `throw`（rule-015）→ 强类型 Parameters | 传错类型必抛 |
+| 3 | `SetDataProvider(queryService)` | 保存 `_dataProvider`；`RestoreImageSource` / `RestorePositionCorrectionSource` / `UpdatePositionCorrectionMatrix()` | 图像源/矩阵回填 |
+| 4 | `SetMainImageControl(ImageControl)` | `base.SetMainImageControl` + 托管子编辑器（`regionManager` / `MeasurementManager.SetMainImageControl`）+ zoom 传递 + overlay 共享 | 画布可用、叠加层正常 |
+| 5 | `InitializeAsync()` | 语义预热 / workspace 重建（可选；有则必须 await） | 打开即就绪无白屏 |
+| 6 | `OnExternalResultArrived()` | 工作流执行完成 → 刷新位置修正矩阵/结果 | 外部执行后显示同步 |
+
+### 7.2 运行 / 交互阶段
+| # | 环节 | 工具侧职责 | 验收点 |
+|---|---|---|---|
+| 7 | 图像/位置修正选择 | `UpdatePositionCorrectionMatrix()`：交互/结果/算法同一矩阵源 | 选源后几何即时修正 |
+| 8 | 执行 `ExecuteTool` | `new {Tool}Tool().Run(Parameters)` → `UpdateResultDisplay(result)` | 图像+叠加+文本均刷新 |
+| 9 | 区域/引导编辑 | Roi/Measure 命中、绘制、手柄、屏蔽 | 编辑与结果层一致 |
+| 10 | Confirm / Reset / Continuous | 写回方案 / 重置参数 / 连续执行 | 无残留叠加 |
+| 11 | 缩放平移 | `ViewTransformed` → zoom 同步子编辑器/渲染器 | 线宽不随放大变粗 |
+
+### 7.3 关闭 / 清理阶段（必须闭环，防泄漏/残留叠加）
+1. **Loaded 时挂接**：`Loaded += (_, _) => { if (Window.GetWindow(this) is { } w) w.Closing += (_, _) => Cleanup(); }`
+2. `Cleanup()` 职责：卸载事件订阅 + `regionManager.ClearMainOverlay()`（Blob/Threshold 路径）或 `MeasurementManager?.ClearMainOverlay()`（测量工具路径）；释放 `WpfShapeRenderer` 等资源
+3. **重开回归**：关闭后再次打开同一节点 → 叠加层无残留、事件无重复订阅、可正常执行
+
+> 参考实现（Loaded→Closing→Cleanup 链路）：
+> `LineDetectToolDebugControl.xaml.cs:110` / `CircleDetectToolDebugControl.xaml.cs:110` / `BlobAnalysisToolDebugControl.xaml.cs:158`
+
+---
+
+## 8. 参考实现（真实路径）
+
+**基准参考源（已验收）**：
 
 ```
-tools/SunEyeVision.BlobAnalysis/          ← 主参考（标准算法工具完整范例）
-  ├─ BlobAnalysisTool.cs                  （Halcon 全流程 + 分步计时 + 延迟计算）
+tools/SunEyeVision.BlobAnalysis/          ← 无引导+区域算法工具完整范例（区域/屏蔽/判定/数据分析）
+  ├─ BlobAnalysisTool.cs                  （Halcon 全流程 + 分步计时 + 延迟计算 + 屏蔽区）
   ├─ BlobAnalysisParameters.cs            （RoiParameters 完整参数模型 24KB）
   ├─ BlobAnalysisResults.cs               （结果 + 可视化 + 输出变量）
   ├─ Models/BlobAnalysisResultConfig.cs   （结果判定配置）
-  ├─ Views/BlobAnalysisToolDebugControl.xaml(+.cs)  （3-Tab UI 范式 A）
+  ├─ Views/BlobAnalysisToolDebugControl.xaml(+.cs)  （3-Tab UI + Cleanup 链路）
   └─ Views/BlobDataAnalysisControl.xaml(+.cs)       （数据分析范式 F）
+
+tools/SunEyeVision.Tool.LineDetect/      ← 有引导 Metrology + 屏蔽点过滤 + 全点鲁棒拟合
+  ├─ LineDetectTool.cs                    （AddMetrologyObjectLineMeasure + 全点鲁棒拟合）
+  ├─ LineDetectParameters.cs              （BuildMeasureGuideItems 结果层回显）
+  └─ Views/LineDetectToolDebugControl.xaml(+.cs)  （Measurement 编辑 + 矩阵同步 + Cleanup）
+
+tools/SunEyeVision.Tool.CircleDetect/    ← 有引导整圆/圆弧 Metrology + 屏蔽 + 位置修正旋转语义
+  ├─ CircleDetectTool.cs                  （圆心/半径/弧角 + start_phi 相位旋转 + 屏蔽点过滤）
+  ├─ CircleDetectParameters.cs            （BuildMeasureGuideItems 结果层回显）
+  └─ Views/CircleDetectToolDebugControl.xaml(+.cs)  （Measurement 编辑 + 矩阵同步 + Cleanup）
+
+tools/SunEyeVision.Tool.ShapeMatch/      ← 模板匹配 + 位置修正矩阵输出 + 数据分析控件
+  ├─ ShapeMatchTool.cs                    （形状匹配定位，输出 AffineMatrix）
+  └─ Views/ShapeMatchToolDebugControl.xaml(+.cs)
 ```
 
 **辅助参考**：
 
 ```
-tools/SunEyeVision.Tool.Threshold/      （标准无引导，UI 精简范例）
+tools/SunEyeVision.Tool.Threshold/      （标准无引导，UI 精简范例 + Loaded→Closing→Cleanup）
 tools/SunEyeVision.Tool.EdgeDetect/     （引导式 Metrology，引导几何 UI 范例）
 tools/SunEyeVision.Tool.ImageFilter/    （图像滤波）
 tools/SunEyeVision.Tool.Morphology/     （形态学）
-tools/SunEyeVision.Tool.ShapeMatch/     （复杂匹配，含数据分析控件）
 ```
 
 > ⚠️ **路径注意**：Blob 分析目录为 `tools/SunEyeVision.BlobAnalysis/`（**无 `Tool.` 前缀**），csproj 名为 `SunEyeVision.Tool.BlobAnalysis.csproj`。**禁止**参考 `ImageLoad`（`HasDebugWindow=false`，无调试窗口，非本技能对象）。
 
 ---
 
-## 8. 代码锚点（真实符号名）
+## 9. 代码锚点（真实符号名）
 
 ### 图像/引擎契约
 
 | 符号 | 位置 | 用途 |
 |---|---|---|
-| `parameters.ResolvedInputImage` | `src/Plugin.SDK/Execution/Parameters/ToolParameters.cs` | 通用图像契约（`IVisionImage?`） |
-| `GetHalconImage()` | `src/Plugin.SDK/VisionAdapters/HalconHelpers.cs` | Run 优先取图（Halcon） |
-| `GetCvImage()` | `src/Plugin.SDK/VisionAdapters/CvToolHelpers.cs` | 可切换取图（OpenCV） |
-| `IVisionImage` | `src/Plugin.SDK/VisionAdapters/IVisionImage.cs` | 图像通用接口 |
+| `parameters.ResolvedInputImage` | `src/Plugin.SDK/Execution/Parameters/ToolParameters.cs` | 通用图像契约（`IVisionImage?`，框架注入） |
+| `GetHalconImage()`（扩展） | `src/SunEyeVision.HalAdapter/HalconHelpers.cs`（`HalconToolHelpers`，namespace `SunEyeVision.HalAdapter`） | Run 取 HImage（工具需引 HalAdapter） |
+| `GetCvImage()`（扩展） | `src/SunEyeVision.CvAdapter/CvToolHelpers.cs`（namespace `SunEyeVision.CvAdapter`） | 取 CvEngine `CvImage`（工具需引 CvAdapter） |
+| `IVisionImage` | `src/Plugin.SDK/Vision/Contracts/IVisionImage.cs`（namespace `SunEyeVision.Plugin.SDK.Vision.Contracts`） | 图像通用接口（SDK 契约层） |
+| `VisionBackendExtractorLocator` | `src/Plugin.SDK/Vision/Hosting/VisionBackendExtractorLocator.cs` | 跨后端提取（ToHalcon→HImage / ToOpenCv→Mat），宿主装配注册 |
+| `HalImage` | `src/SunEyeVision.HalAdapter/HalImage.cs` | Hal 适配载体（实现 `IVisionImage`，`Unwrap()→HImage`） |
+| `CvImage` | `src/SunEyeVision.CvEngine/VisionAdapters/CvImage.cs` | Cv 算法层载体（包装 Mat，纯算法类型） |
 
 ### 工具三件套核心
 
@@ -522,7 +583,7 @@ tools/SunEyeVision.Tool.ShapeMatch/     （复杂匹配，含数据分析控件�
 
 ---
 
-## 9. 约束
+## 10. 约束
 
 - 序列化必须 `System.Text.Json`，禁止 Newtonsoft.Json
 - 必须 `[JsonPolymorphic]` + `[JsonDerivedType]` 多态

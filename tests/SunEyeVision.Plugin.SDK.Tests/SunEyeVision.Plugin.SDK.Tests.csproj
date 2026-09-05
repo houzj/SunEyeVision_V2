@@ -23,7 +23,14 @@
   <ItemGroup>
     <ProjectReference Include="../../src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj" />
     <ProjectReference Include="../../src/Workflow/SunEyeVision.Workflow.csproj" />
-    <!-- RegionConverter / ToolRegionHelper 契约测试（RegionToRoi / FilterPointsOutOfMaskRegions 纯逻辑，经 HalAdapter 引用） -->
+    <!-- RegionConverter / ToolRegionHelper / HalconRegionPipeline 契约测试（纯逻辑，经 HalAdapter 引用） -->
     <ProjectReference Include="../../src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- 契约测试需直接使用 HalconDotNet 类型（HRegion/HImage/HOperatorSet），框架库非传递引用 -->
+    <Reference Include="halcondotnetxl">
+      <HintPath>..\..\libs\halcon\net\halcondotnetxl.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
   </ItemGroup>
 </Project>

@@ -409,8 +409,45 @@ public partial class ShapeMatchTemplateEditorDialog : SdkDialogWindow
                         string optimization = GetSelectedOptimization();
                         string metric = GetSelectedMetric();
 
+                        // ★ 对比度 auto：先用 determine_shape_model_params 求官方推荐阈值并真正用于创建，
+                        //   使 UI 显示值 = 模型实际使用的提取阈值（create 内部 'auto' 实际值不可回读）。
+                        double contrastDisplayValue = contrastValue;
+                        HTuple? estimatedContrast = null;
+                        if (contrastAuto)
+                        {
+                            try
+                            {
+                                HOperatorSet.DetermineShapeModelParams(reducedImage,
+                                    new HTuple(pyramidAuto ? "auto" : numLevels),
+                                    new HTuple(angleStart * DEG2RAD),
+                                    new HTuple(angleExtent * DEG2RAD),
+                                    new HTuple(scaleMin), new HTuple(scaleMax),
+                                    new HTuple(optimization), new HTuple(metric),
+                                    new HTuple("auto"), new HTuple("auto"),
+                                    new HTuple("all"),
+                                    out var estNames, out var estValues);
+                                if (TryExtractContrastRecommendation(estNames, estValues,
+                                        out double estLow, out double estHigh))
+                                {
+                                    estimatedContrast = estLow > 0
+                                        ? new HTuple(new double[] { estLow, estHigh })
+                                        : new HTuple(estHigh);
+                                    contrastDisplayValue = estHigh;
+                                    PluginLogger.Info(
+                                        $"[ShapeMatchTemplateEditor] determine_shape_model_params 推荐对比度阈值: [{estLow}, {estHigh}]",
+                                        "ShapeMatchTool");
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                PluginLogger.Warning(
+                                    $"[ShapeMatchTemplateEditor] determine_shape_model_params 估算对比度失败，回退 auto: {ex.Message}",
+                                    "ShapeMatchTool");
+                            }
+                        }
+
                         HTuple contrast = contrastAuto
-                            ? new HTuple("auto")
+                            ? (estimatedContrast ?? new HTuple("auto"))
                             : new HTuple(contrastValue);
 
                         HTuple minContrast = minContrastManual
@@ -513,7 +550,7 @@ public partial class ShapeMatchTemplateEditorDialog : SdkDialogWindow
                             _resultTemplate.ContourChains = rawContours;
                             _resultTemplate.ReferencePointX = refCol;
                             _resultTemplate.ReferencePointY = refRow;
-                            _resultTemplate.ActualContrast = contrastAuto ? contrastValue : contrastValue;
+                            _resultTemplate.ActualContrast = contrastAuto ? (float)contrastDisplayValue : contrastValue;
                             _resultTemplate.ExtractionStatus = TemplateExtractionStatus.Success;
 
                             // 保存源图像
@@ -547,7 +584,7 @@ public partial class ShapeMatchTemplateEditorDialog : SdkDialogWindow
                             if (pyramidAuto)
                                 numPyramidLevel.IntValue = actualLevels;
                             if (contrastAuto)
-                                numContrast.IntValue = contrastValue;
+                                numContrast.IntValue = (int)Math.Round(contrastDisplayValue);
 
                             DrawContourOverlay(rawContours, refCol, refRow);
 
@@ -581,6 +618,32 @@ public partial class ShapeMatchTemplateEditorDialog : SdkDialogWindow
     {
         var (roi, _, _) = ToolRegionHelper.BuildHalconROI(0, 0, inspections, masks);
         return roi;
+    }
+
+    /// <summary>
+    /// 从 determine_shape_model_params 返回的名称/值对中提取对比度推荐（滞后阈值 [low, high]）。
+    /// </summary>
+    private static bool TryExtractContrastRecommendation(HTuple names, HTuple values,
+        out double low, out double high)
+    {
+        low = -1;
+        high = -1;
+        if (names == null || values == null) return false;
+
+        for (int i = 0; i < names.Length && i < values.Length; i++)
+        {
+            try
+            {
+                if (names[i].Type == HTupleType.STRING)
+                {
+                    string name = names[i].S;
+                    if (name == "contrast_low") low = values[i].D;
+                    else if (name == "contrast_high") high = values[i].D;
+                }
+            }
+            catch { }
+        }
+        return high >= 0;
     }
 
     /// <inheritdoc cref="TemplateModel.GetShapeModelContours"/>

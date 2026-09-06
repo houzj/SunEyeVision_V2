@@ -2790,6 +2790,14 @@
                                     {
                                         "date":  "2026-09-06",
                                         "note":  "[02f23c8b202053ddf702c954b74beb4630da5c36] feat(shape-match): 模板编辑对话框主题化适配与创建编辑预览修复"
+                                    },
+                                    {
+                                        "date":  "2026-09-06",
+                                        "note":  "[eea89dc0c72295206960e549aef164cdd236c0f1] feat(shape-match): 对比度 auto 时用 determine_shape_model_params 推荐阈值创建模板"
+                                    },
+                                    {
+                                        "date":  "2026-09-06",
+                                        "note":  "[3faa6b4482c15fc5fb6fc0ad99f3c3eec77b563f] fix(shape-match): 运行参数 Tab3 布局舒展，控件铺满防右缘截断"
                                     }
                                 ]
                     },

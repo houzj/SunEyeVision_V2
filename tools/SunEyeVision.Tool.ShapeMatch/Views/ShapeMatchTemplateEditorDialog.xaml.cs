@@ -12,20 +12,20 @@ using Microsoft.Win32;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.UI.Controls;
+using SunEyeVision.Plugin.SDK.UI.Windows;
 using SunEyeVision.HalAdapter;
 using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Tool.ShapeMatch.Models;
 using WpfPoint = System.Windows.Point;
 using WpfRect = System.Windows.Rect;
-using WpfWindow = System.Windows.Window;
 
 namespace SunEyeVision.Tool.ShapeMatch.Views;
 
 /// <summary>
 /// 模板创建/编辑对话框 — 使用 Halcon 创建形状模板
 /// </summary>
-public partial class ShapeMatchTemplateEditorDialog : WpfWindow
+public partial class ShapeMatchTemplateEditorDialog : SdkDialogWindow
 {
     #region 字段
 
@@ -270,6 +270,12 @@ public partial class ShapeMatchTemplateEditorDialog : WpfWindow
 
         int edgePointCount = _resultTemplate.EdgePointCount;
         UpdateResultDisplay(_resultTemplate.ExtractionStatus, edgePointCount, 0, 0, 0, 0);
+
+        // 已有模板自带各层轮廓：直接填充金字塔等级下拉，无需重新提取
+        if (_resultTemplate.LevelContours != null && _resultTemplate.LevelContours.Count > 0)
+        {
+            PopulatePyramidLevelComboBox();
+        }
 
         PluginLogger.Info($"[ShapeMatchTemplateEditor] 已加载模板: {template.Name}, 点数={edgePointCount}", "ShapeMatchTool");
     }

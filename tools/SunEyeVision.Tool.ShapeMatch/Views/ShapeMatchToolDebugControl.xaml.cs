@@ -267,7 +267,24 @@ public partial class ShapeMatchToolDebugControl
         var result = OpenTemplateEditor(selected);
         if (result != null && templateListView != null)
         {
+            // 编辑可能改了轮廓/源图：先失效该模板的预览缓存，强制按最新数据重建
+            InvalidateTemplatePreview(result.Id);
             UpdateRightPreviewArea(result);
+        }
+    }
+
+    /// <summary>
+    /// 失效某模板的预览缓存（按 Id 前缀清理，避免编辑后命中旧图）
+    /// </summary>
+    private void InvalidateTemplatePreview(string templateId)
+    {
+        if (string.IsNullOrEmpty(templateId)) return;
+        var keys = _previewCache.Keys
+            .Where(k => k.StartsWith(templateId + "_", StringComparison.Ordinal))
+            .ToList();
+        foreach (var key in keys)
+        {
+            _previewCache.Remove(key);
         }
     }
 
@@ -494,7 +511,13 @@ public partial class ShapeMatchToolDebugControl
                 }
             }
 
-            if (sourceImg == null) return;
+            if (sourceImg == null)
+            {
+                // 该模板没有可用的注册图像：清空预览，避免残留上一模板/当前图像造成误导
+                previewImage.Source = null;
+                if (previewPlaceholder != null) previewPlaceholder.Visibility = Visibility.Visible;
+                return;
+            }
 
             // 计算检测区域联合 AABB
             double cropCenterX = 0, cropCenterY = 0, cropW = 0, cropH = 0;
@@ -508,32 +531,11 @@ public partial class ShapeMatchToolDebugControl
                 {
                     if (!insp.IsEnabled || insp.Parameters is not ShapeParameters s) continue;
 
-                    if (s.Geometry is RotatedRect2d rrRect && Math.Abs(rrRect.Angle) < 0.01)
+                    bool gotAabb = TryGetGeometryAabb(s.Geometry, out var lx, out var ly, out var rx, out var ry);
+                    if (gotAabb)
                     {
-                        double l = rrRect.CenterX - rrRect.Width / 2, t = rrRect.CenterY - rrRect.Height / 2;
-                        double r = l + rrRect.Width, b = t + rrRect.Height;
-                        if (l < minX) minX = l; if (t < minY) minY = t;
-                        if (r > maxX) maxX = r; if (b > maxY) maxY = b;
-                    }
-                    else if (s.Geometry is RotatedRect2d rr)
-                    {
-                        double angleRad = rr.Angle * Math.PI / 180;
-                        double cosA = Math.Cos(angleRad), sinA = Math.Sin(angleRad);
-                        double hw = rr.Width / 2, hh = rr.Height / 2;
-                        for (int i = 0; i < 4; i++)
-                        {
-                            double cx = rr.CenterX + cosA * ((i & 2) == 0 ? -hw : hw) - sinA * ((i & 1) == 0 ? -hh : hh);
-                            double cy = rr.CenterY + sinA * ((i & 2) == 0 ? -hw : hw) + cosA * ((i & 1) == 0 ? -hh : hh);
-                            if (cx < minX) minX = cx; if (cy < minY) minY = cy;
-                            if (cx > maxX) maxX = cx; if (cy > maxY) maxY = cy;
-                        }
-                    }
-                    else if (s.Geometry is Circle2d circleVal)
-                    {
-                        double l = circleVal.Center.X - circleVal.Radius, t = circleVal.Center.Y - circleVal.Radius;
-                        double r = circleVal.Center.X + circleVal.Radius, b = circleVal.Center.Y + circleVal.Radius;
-                        if (l < minX) minX = l; if (t < minY) minY = t;
-                        if (r > maxX) maxX = r; if (b > maxY) maxY = b;
+                        if (lx < minX) minX = lx; if (ly < minY) minY = ly;
+                        if (rx > maxX) maxX = rx; if (ry > maxY) maxY = ry;
                     }
                 }
                 if (maxX > minX && maxY > minY)
@@ -582,6 +584,68 @@ public partial class ShapeMatchToolDebugControl
             PluginLogger.Warning($"[预览区] 更新失败: {ex.Message}", "ShapeMatchTool");
             previewImage.Source = null;
             if (previewPlaceholder != null) previewPlaceholder.Visibility = Visibility.Visible;
+        }
+    }
+
+    /// <summary>
+    /// 提取几何在源图坐标系中的 AABB。支持 RotatedRect2d / Circle2d / System.Windows.Rect
+    /// / Polygon2d / Annulus2d / Line2d，其他类型视为不支持（返回 false）。
+    /// </summary>
+    private static bool TryGetGeometryAabb(object? geometry,
+        out double minX, out double minY, out double maxX, out double maxY)
+    {
+        minX = minY = double.MaxValue;
+        maxX = maxY = double.MinValue;
+
+        switch (geometry)
+        {
+            case RotatedRect2d rr when Math.Abs(rr.Angle) < 0.01:
+                minX = rr.CenterX - rr.Width / 2;
+                maxX = rr.CenterX + rr.Width / 2;
+                minY = rr.CenterY - rr.Height / 2;
+                maxY = rr.CenterY + rr.Height / 2;
+                return true;
+
+            case RotatedRect2d rr:
+            {
+                double a = rr.Angle * Math.PI / 180;
+                double cos = Math.Cos(a), sin = Math.Sin(a);
+                double hw = rr.Width / 2, hh = rr.Height / 2;
+                for (int i = 0; i < 4; i++)
+                {
+                    double cx = rr.CenterX + cos * ((i & 2) == 0 ? -hw : hw) - sin * ((i & 1) == 0 ? -hh : hh);
+                    double cy = rr.CenterY + sin * ((i & 2) == 0 ? -hw : hw) + cos * ((i & 1) == 0 ? -hh : hh);
+                    if (cx < minX) minX = cx; if (cx > maxX) maxX = cx;
+                    if (cy < minY) minY = cy; if (cy > maxY) maxY = cy;
+                }
+                return true;
+            }
+
+            case Circle2d c:
+                minX = c.Center.X - c.Radius; maxX = c.Center.X + c.Radius;
+                minY = c.Center.Y - c.Radius; maxY = c.Center.Y + c.Radius;
+                return true;
+
+            case Rect r:
+                minX = r.X; maxX = r.X + r.Width;
+                minY = r.Y; maxY = r.Y + r.Height;
+                return true;
+
+            case Polygon2d poly when poly.Vertices is { Length: > 0 } verts:
+                foreach (var v in verts)
+                {
+                    if (v.X < minX) minX = v.X; if (v.X > maxX) maxX = v.X;
+                    if (v.Y < minY) minY = v.Y; if (v.Y > maxY) maxY = v.Y;
+                }
+                return true;
+
+            case Annulus2d an when an.OuterRadius > 0:
+                minX = an.Center.X - an.OuterRadius; maxX = an.Center.X + an.OuterRadius;
+                minY = an.Center.Y - an.OuterRadius; maxY = an.Center.Y + an.OuterRadius;
+                return true;
+
+            default:
+                return false;
         }
     }
 

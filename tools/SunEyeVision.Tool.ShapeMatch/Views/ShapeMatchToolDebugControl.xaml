@@ -91,7 +91,35 @@
                      SelectionMode="Single"
                      BorderThickness="0"
                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                     Background="Transparent">
+                     Background="Transparent"
+                     Foreground="{DynamicResource ThemeTextPrimaryBrush}">
+              <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                  <Setter Property="Background" Value="{DynamicResource ThemeTableRowBackgroundBrush}"/>
+                  <Setter Property="Foreground" Value="{DynamicResource ThemeTextPrimaryBrush}"/>
+                  <Setter Property="Padding" Value="2,3"/>
+                  <Setter Property="BorderThickness" Value="0"/>
+                  <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                  <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                      <Setter Property="Background" Value="{DynamicResource ThemeTableRowHoverBackgroundBrush}"/>
+                    </Trigger>
+                    <Trigger Property="IsSelected" Value="True">
+                      <Setter Property="Background" Value="{DynamicResource ThemeTableRowSelectedBackgroundBrush}"/>
+                    </Trigger>
+                  </Style.Triggers>
+                </Style>
+              </ListView.ItemContainerStyle>
+              <ListView.Resources>
+                <Style TargetType="GridViewColumnHeader">
+                  <Setter Property="Background" Value="{DynamicResource ThemeTableHeaderBackgroundBrush}"/>
+                  <Setter Property="Foreground" Value="{DynamicResource ThemeTableHeaderTextBrush}"/>
+                  <Setter Property="FontSize" Value="12"/>
+                  <Setter Property="Padding" Value="6,4"/>
+                  <Setter Property="BorderBrush" Value="{DynamicResource ThemeTableGridLineBrush}"/>
+                  <Setter Property="BorderThickness" Value="0,0,1,1"/>
+                </Style>
+              </ListView.Resources>
               <ListView.View>
                 <GridView AllowsColumnReorder="False">
                   <GridViewColumn Header="序号" DisplayMemberBinding="{Binding OrderIndex}" Width="32"/>

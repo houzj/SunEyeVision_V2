@@ -1,6 +1,7 @@
-<Window x:Class="SunEyeVision.Tool.ShapeMatch.Views.ShapeMatchTemplateEditorDialog"
+<sdk:SdkDialogWindow x:Class="SunEyeVision.Tool.ShapeMatch.Views.ShapeMatchTemplateEditorDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:sdk="clr-namespace:SunEyeVision.Plugin.SDK.UI.Windows;assembly=SunEyeVision.Plugin.SDK"
         xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
         xmlns:region="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views;assembly=SunEyeVision.Plugin.SDK"
         Title="模版创建 / 编辑"
@@ -255,4 +256,4 @@
       </StackPanel>
     </Border>
   </Grid>
-</Window>
+</sdk:SdkDialogWindow>

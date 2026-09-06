@@ -1650,6 +1650,10 @@
                                     {
                                         "date":  "2026-09-05",
                                         "note":  "[ca9783d8dd2f66abac0cdddbda2c600de6169f0b] fix(ui): 恢复未运行节点结果树\"输入区域\"结构"
+                                    },
+                                    {
+                                        "date":  "2026-09-06",
+                                        "note":  "[8eac91af7d40922850c657482b0035dfd422e8be] feat(sdk): 新增 SdkWindowTheme/SdkDialogWindow 全局标题栏主题跟随"
                                     }
                                 ]
                     },
@@ -2782,6 +2786,10 @@
                                     {
                                         "date":  "2026-09-05",
                                         "note":  "[c554248a8cbdc7716bd9d458f10ea9520cdc758f] feat(sdk): 执行耗时 ExecutionTimeMs 升级 double 保留亚毫秒精度"
+                                    },
+                                    {
+                                        "date":  "2026-09-06",
+                                        "note":  "[02f23c8b202053ddf702c954b74beb4630da5c36] feat(shape-match): 模板编辑对话框主题化适配与创建编辑预览修复"
                                     }
                                 ]
                     },

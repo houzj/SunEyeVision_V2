@@ -196,7 +196,7 @@
       <TabItem Header="运行参数">
         <TabItem.Resources>
           <Style TargetType="{x:Type controls:LabeledControl}" BasedOn="{StaticResource {x:Type controls:LabeledControl}}">
-            <Setter Property="LabelWidth" Value="130"/>
+            <Setter Property="LabelWidth" Value="110"/>
           </Style>
         </TabItem.Resources>
         <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12">
@@ -211,7 +211,7 @@
                                     Value="{Binding MinMatchScore.Value, Mode=TwoWay}"
                                     Minimum="0" Maximum="1"
                                     SmallChange="0.01" LargeChange="0.1"
-                                    ShowSlider="True" Width="200"
+                                    ShowSlider="True"
                                     DecimalPlaces="3"
                                     AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                 </controls:LabeledControl>
@@ -223,7 +223,6 @@
                                     Value="{Binding MaxMatchCount.Value, Mode=TwoWay}"
                                     Minimum="1" Maximum="100"
                                     SmallChange="1" LargeChange="5"
-                                    Width="200"
                                     AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                 </controls:LabeledControl>
 
@@ -235,37 +234,34 @@
                                     Value="{Binding NumMatches.Value, Mode=TwoWay}"
                                     Minimum="1" Maximum="1000"
                                     SmallChange="1" LargeChange="10"
-                                    Width="200"
                                     AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                 </controls:LabeledControl>
 
                 <controls:LabeledControl Label="角度范围" ToolTip="单位: °, 范围: -360~360" Margin="0,8,0,0">
                   <controls:RangeInputControl
-                                    Width="200"
                                     Minimum="-360" Maximum="360"
                                     MinValue="{Binding AngleStart.Value, Mode=TwoWay}"
                                     MaxValue="{Binding AngleEnd.Value, Mode=TwoWay}"
                                     DecimalPlaces="1"
                                     SmallChange="1" LargeChange="45"
-                                    NumericWidth="80"/>
+                                    NumericWidth="110"/>
                 </controls:LabeledControl>
 
                 <controls:LabeledControl Label="缩放范围" ToolTip="缩放范围, 0.1~10.0">
                   <controls:RangeInputControl
-                                    Width="200"
                                     Minimum="0.1" Maximum="10.0"
                                     MinValue="{Binding ScaleMin.Value, Mode=TwoWay}"
                                     MaxValue="{Binding ScaleMax.Value, Mode=TwoWay}"
                                     DecimalPlaces="3"
                                     SmallChange="0.01" LargeChange="0.1"
-                                    NumericWidth="80"/>
+                                    NumericWidth="110"/>
                 </controls:LabeledControl>
               </StackPanel>
             </GroupBox>
 
             <!-- 排序方式 -->
             <controls:LabeledControl Label="排序方式">
-              <ComboBox Height="32" VerticalContentAlignment="Center" Width="220"
+              <ComboBox Height="32" VerticalContentAlignment="Center"
                       SelectedItem="{Binding SortMode.Value, Mode=TwoWay}">
                 <ComboBox.ItemTemplate>
                   <DataTemplate>
@@ -297,7 +293,7 @@
                                         Value="{Binding MaxOverlap.Value, Mode=TwoWay}"
                                         Minimum="0" Maximum="1"
                                         SmallChange="0.01" LargeChange="0.1"
-                                        Width="200" DecimalPlaces="2"
+                                        DecimalPlaces="2"
                                         AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                     </controls:LabeledControl>
 
@@ -308,7 +304,7 @@
                                         Value="{Binding Greediness.Value, Mode=TwoWay}"
                                         Minimum="0" Maximum="1"
                                         SmallChange="0.01" LargeChange="0.1"
-                                        Width="200" DecimalPlaces="2"
+                                        DecimalPlaces="2"
                                         AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                     </controls:LabeledControl>
 
@@ -319,7 +315,6 @@
                                         Value="{Binding MatchTimeoutMs.Value, Mode=TwoWay}"
                                         Minimum="100" Maximum="60000"
                                         SmallChange="500" LargeChange="5000"
-                                        Width="200"
                                         AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                     </controls:LabeledControl>
                   </StackPanel>
@@ -330,7 +325,7 @@
                   <StackPanel>
                     <controls:LabeledControl Label="亚像素">
                       <ComboBox SelectedItem="{Binding SubPixelMode.Value, Mode=TwoWay}"
-                                Height="32" VerticalContentAlignment="Center" Width="220">
+                                Height="32" VerticalContentAlignment="Center">
                         <models:SubPixelMode>None</models:SubPixelMode>
                         <models:SubPixelMode>Interpolation</models:SubPixelMode>
                         <models:SubPixelMode>LeastSquares</models:SubPixelMode>
@@ -344,24 +339,26 @@
                 <!-- 搜索精度（AngleStep/ScaleStep 属模板创建期参数已移除；保留搜索层级区间） -->
                 <GroupBox Header="搜索精度" Margin="0,0,0,8">
                   <StackPanel>
-                    <controls:LabeledControl Label="搜索层级" ToolTip="[起始层(粗), 结束层(细)]，Halcon 语义 start≥end，0=全层">
-                      <StackPanel Orientation="Horizontal">
-                        <controls:ConfigSetting
+                    <controls:LabeledControl Label="搜索起始层(粗)"
+                        ToolTip="从该层开始粗定位；0=全层">
+                      <controls:ConfigSetting
                                         ParameterName="SearchLevelStart"
                                         DataType="{x:Type sys:Int32}"
                                         Value="{Binding SearchLevelStart.Value, Mode=TwoWay}"
                                         Minimum="0" Maximum="10"
-                                        SmallChange="1" Width="85"
+                                        SmallChange="1"
                                         AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                        <TextBlock Text="→" VerticalAlignment="Center" Margin="4,0"/>
-                        <controls:ConfigSetting
+                    </controls:LabeledControl>
+
+                    <controls:LabeledControl Label="搜索结束层(细)"
+                        ToolTip="匹配到该层结束细定位；0=全层">
+                      <controls:ConfigSetting
                                         ParameterName="SearchLevelEnd"
                                         DataType="{x:Type sys:Int32}"
                                         Value="{Binding SearchLevelEnd.Value, Mode=TwoWay}"
                                         Minimum="0" Maximum="10"
-                                        SmallChange="1" Width="85"
+                                        SmallChange="1"
                                         AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                      </StackPanel>
                     </controls:LabeledControl>
                   </StackPanel>
                 </GroupBox>

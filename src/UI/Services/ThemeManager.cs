@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Windows;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.UI.Themes;
+using SunEyeVision.Plugin.SDK.UI.Windows;
 using SunEyeVision.Workflow;
 
 namespace SunEyeVision.UI.Services
@@ -76,6 +77,8 @@ namespace SunEyeVision.UI.Services
 
             ApplyThemeDictionary(_currentTheme);
             WindowTitleBarThemer.UpdateTheme(_currentTheme == AppTheme.Dark);
+            // 同步 SDK 全局标题栏状态（tools 窗口标题栏跟随主体主题）
+            SdkWindowTheme.SetDark(_currentTheme == AppTheme.Dark);
             _logger.Log(LogLevel.Info, $"主题系统初始化完成，当前主题: {_currentTheme}", "ThemeManager");
         }
 
@@ -93,6 +96,8 @@ namespace SunEyeVision.UI.Services
             ApplyThemeDictionary(theme);
             // 刷新所有已打开弹窗的系统标题栏（切主题瞬间即时跟随）
             WindowTitleBarThemer.UpdateTheme(theme == AppTheme.Dark);
+            // 同步 SDK 全局标题栏状态（tools 窗口标题栏跟随主体主题）
+            SdkWindowTheme.SetDark(theme == AppTheme.Dark);
 
             // 持久化用户选择
             try

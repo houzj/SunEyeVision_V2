@@ -341,6 +341,10 @@
                                     {
                                         "date":  "2026-09-06",
                                         "note":  "[4366c5c0af51e783be51c12b0521fa89746cb674] fix(render): 多选拖动连线刚体平移 + 连线刷新收敛至 ConnectivityRefreshService"
+                                    },
+                                    {
+                                        "date":  "2026-09-07",
+                                        "note":  "[1cafebb0d69cac96d6ff8caa3c07463c688f4fe2] fix(workflow): 解决方案删除/载入即时刷新，列表不再依赖手动增删"
                                     }
                                 ]
                     },
@@ -4182,83 +4186,6 @@
                    ],
     "tempTasks":  [
                       {
-                          "id":  "TMP-e96eb4a",
-                          "message":  "测量工具链优化：rms自算+废弃间距模式+拟合点used_edges+卡尺相位对齐",
-                          "date":  "2026-08-31",
-                          "commit":  "e96eb4ae736cb0853fddcd46d2f023bb8205f2b6",
-                          "files":  [
-                                        ".codebuddy/tmp/commit_msg.txt",
-                                        "\"docs/00-\\347\\264\\242\\345\\274\\225/\\346\\226\\207\\346\\241\\243\\347\\264\\242\\345\\274\\225.md\"",
-                                        "\"docs/01-\\346\\226\\271\\346\\241\\210\\350\\256\\276\\350\\256\\241/2026/08/31/\\346\\265\\213\\351\\207\\217\\345\\267\\245\\345\\205\\267\\351\\223\\276\\344\\274\\230\\345\\214\\226\\346\\226\\271\\346\\241\\210-20260831-130428.md\"",
-                                        "plans/plan.json",
-                                        "src/Plugin.SDK/UI/Controls/Measure/Rendering/MeasureBandOverlay.cs",
-                                        "src/Plugin.SDK/UI/Controls/Measure/Views/MeasureEditorControl.xaml.cs",
-                                        "tools/SunEyeVision.Tool.CircleDetect/CircleDetectParameters.cs",
-                                        "tools/SunEyeVision.Tool.CircleDetect/CircleDetectResults.cs",
-                                        "tools/SunEyeVision.Tool.CircleDetect/CircleDetectTool.cs",
-                                        "tools/SunEyeVision.Tool.CircleDetect/Views/CircleDetectToolDebugControl.xaml",
-                                        "tools/SunEyeVision.Tool.CircleDetect/Views/CircleDetectToolDebugControl.xaml.cs",
-                                        "tools/SunEyeVision.Tool.EdgeDetect/EdgeDetectParameters.cs",
-                                        "tools/SunEyeVision.Tool.EdgeDetect/EdgeDetectTool.cs",
-                                        "tools/SunEyeVision.Tool.EdgeDetect/Views/EdgeDetectToolDebugControl.xaml",
-                                        "tools/SunEyeVision.Tool.LineDetect/LineDetectParameters.cs",
-                                        "tools/SunEyeVision.Tool.LineDetect/LineDetectResults.cs",
-                                        "tools/SunEyeVision.Tool.LineDetect/LineDetectTool.cs",
-                                        "tools/SunEyeVision.Tool.LineDetect/Views/LineDetectToolDebugControl.xaml",
-                                        "tools/SunEyeVision.Tool.LineDetect/Views/LineDetectToolDebugControl.xaml.cs"
-                                    ],
-                          "status":  "in_progress"
-                      },
-                      {
-                          "id":  "TMP-a68aca2",
-                          "message":  "测量工具调试交互收敛与修复",
-                          "date":  "2026-08-31",
-                          "commit":  "a68aca23b86e096dd55bb359f52d38d142724014",
-                          "files":  [
-                                        "plans/plan.json",
-                                        "src/Plugin.SDK/UI/Controls/Measure/Models/MeasureInteractionModel.cs",
-                                        "src/Plugin.SDK/UI/Controls/Measure/Views/MeasureEditorControl.xaml.cs",
-                                        "src/Plugin.SDK/UI/Controls/Measure/Views/MeasureGuideParameterPanel.xaml.cs",
-                                        "src/Plugin.SDK/UI/Controls/Measure/Views/MeasurementEditorManagerControl.xaml",
-                                        "src/Plugin.SDK/UI/Controls/Measure/Views/MeasurementEditorManagerControl.xaml.cs",
-                                        "tools/SunEyeVision.Tool.CircleDetect/CircleDetectParameters.cs",
-                                        "tools/SunEyeVision.Tool.CircleDetect/Views/CircleDetectToolDebugControl.xaml",
-                                        "tools/SunEyeVision.Tool.CircleDetect/Views/CircleDetectToolDebugControl.xaml.cs",
-                                        "tools/SunEyeVision.Tool.EdgeDetect/EdgeDetectParameters.cs",
-                                        "tools/SunEyeVision.Tool.EdgeDetect/Views/EdgeDetectToolDebugControl.xaml",
-                                        "tools/SunEyeVision.Tool.EdgeDetect/Views/EdgeDetectToolDebugControl.xaml.cs",
-                                        "tools/SunEyeVision.Tool.LineDetect/LineDetectParameters.cs",
-                                        "tools/SunEyeVision.Tool.LineDetect/Views/LineDetectToolDebugControl.xaml",
-                                        "tools/SunEyeVision.Tool.LineDetect/Views/LineDetectToolDebugControl.xaml.cs"
-                                    ],
-                          "status":  "in_progress"
-                      },
-                      {
-                          "id":  "TMP-f6ed4d3",
-                          "message":  "测量工具结果层显示增强与卡尺对齐修复",
-                          "date":  "2026-08-31",
-                          "commit":  "f6ed4d3d9295dfde9241ab35936d36730b90e8b0",
-                          "files":  [
-                                        "_commit_msg.txt",
-                                        "plans/plan.json",
-                                        "src/Plugin.SDK/Execution/Parameters/RoiParameters.cs",
-                                        "src/Plugin.SDK/UI/Controls/Measure/Rendering/MeasureBandOverlay.cs",
-                                        "src/Plugin.SDK/UI/Controls/Measure/Views/MeasureEditorControl.xaml.cs",
-                                        "src/UI/Services/Workflow/NodeResultManager.cs",
-                                        "tools/SunEyeVision.Tool.CircleDetect/CircleDetectParameters.cs",
-                                        "tools/SunEyeVision.Tool.CircleDetect/CircleDetectResults.cs",
-                                        "tools/SunEyeVision.Tool.CircleDetect/CircleDetectTool.cs",
-                                        "tools/SunEyeVision.Tool.CircleDetect/Views/CircleDetectToolDebugControl.xaml",
-                                        "tools/SunEyeVision.Tool.EdgeDetect/EdgeDetectParameters.cs",
-                                        "tools/SunEyeVision.Tool.EdgeDetect/Views/EdgeDetectToolDebugControl.xaml",
-                                        "tools/SunEyeVision.Tool.LineDetect/LineDetectParameters.cs",
-                                        "tools/SunEyeVision.Tool.LineDetect/LineDetectResults.cs",
-                                        "tools/SunEyeVision.Tool.LineDetect/LineDetectTool.cs",
-                                        "tools/SunEyeVision.Tool.LineDetect/Views/LineDetectToolDebugControl.xaml"
-                                    ],
-                          "status":  "in_progress"
-                      },
-                      {
                           "id":  "TMP-591c8c1",
                           "message":  "鍦嗘煡鎵? 缁撴灉灞傚姬/鍦嗙粺涓€鏄剧ず瀹屾暣鎷熷悎鍦嗗苟澧炲姞鍦嗗績鏍囪",
                           "date":  "2026-09-03",
@@ -4329,6 +4256,18 @@
                                         "tools/SunEyeVision.Tool.CircleDetect/CircleDetectTool.cs",
                                         "tools/SunEyeVision.Tool.LineDetect/LineDetectResults.cs",
                                         "tools/SunEyeVision.Tool.LineDetect/LineDetectTool.cs"
+                                    ],
+                          "status":  "in_progress"
+                      },
+                      {
+                          "id":  "TMP-8075050",
+                          "message":  "docs: 几何测量工具集设计方案落盘 v1.0 与 v2.0 收敛版",
+                          "date":  "2026-09-07",
+                          "commit":  "80750501165bb169341bce32654fe139ff20f7c1",
+                          "files":  [
+                                        "docs/00-索引/文档索引.md",
+                                        "docs/04-工具设计/测量工具/2026/09/07/几何测量工具集6独立工具设计方案-20260907-090216.md",
+                                        "docs/04-工具设计/测量工具/2026/09/07/几何测量工具集最终方案-v2.0-20260907-092207.md"
                                     ],
                           "status":  "in_progress"
                       }

@@ -457,13 +457,9 @@ namespace SunEyeVision.UI.Features.Dialogs
                 }
                 metadata.UpdateStatistics(solution);
 
-                // 检查是否已存在
-                if (!SolutionMetadatas.Any(s => s.Id == solution.Id))
-                {
-                    SolutionMetadatas.Add(metadata);
-                }
-
-                // ✅ 注册已知解决方案（持久化到Settings）
+                // ✅ 注册已知解决方案（持久化到Settings + 触发 SolutionAdded 事件
+                //   → OnSolutionAdded 统一刷新 卡片/最近打开/过滤集合）
+                // 不再手动 SolutionMetadatas.Add —— 事件链负责即时同步，避免列表不同步。
                 _solutionManager.RegisterKnownSolution(metadata);
 
                 // 设置选中状态
@@ -601,16 +597,14 @@ namespace SunEyeVision.UI.Features.Dialogs
                 var solutionToDelete = SelectedMetadata;
                 bool deleteFile = dialog.DeleteFile;
 
-                // 从列表中移除（在删除前先移除，避免事件触发时找不到）
-                SolutionMetadatas.Remove(solutionToDelete);
-
-                // 从SolutionManager中删除（会自动关闭当前解决方案，如果需要）
+                // 从SolutionManager中删除（会自动关闭当前解决方案，如果需要）。
+                // 不再手动 SolutionMetadatas.Remove —— 成功删除会触发 SolutionRemoved 事件，
+                // OnSolutionRemoved 统一移除列表项并刷新 最近打开/过滤集合，避免列表不同步。
                 bool deleted = _solutionManager.DeleteSolution(solutionToDelete.Id, deleteFile);
 
                 if (!deleted)
                 {
-                    // 删除失败（如删源文件被占用），回滚列表项
-                    SolutionMetadatas.Add(solutionToDelete);
+                    // 删除失败（如删源文件被占用）：未触发事件，列表未变更，无需回滚
                     LogError($"删除解决方案失败: {solutionToDelete.Name}");
                     ThemeMessageDialog.Show("删除解决方案失败，请重试。", "错误",
                         MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
@@ -1037,14 +1031,13 @@ namespace SunEyeVision.UI.Features.Dialogs
                 if (!SolutionMetadatas.Any(s => s.Id == e.Metadata.Id))
                 {
                     SolutionMetadatas.Add(e.Metadata);
-                    RefreshRecentSolutions();
-                    ApplyFilter();
-                    LogInfo($"添加解决方案到列表: {e.Metadata.Name}");
                 }
-                else
-                {
-                    LogWarning($"解决方案已存在，跳过添加: {e.Metadata.Name} (Id={e.Metadata.Id})");
-                }
+
+                // 无论新增还是已存在（如载入已注册方案、双击打开记录访问时间），
+                // 都刷新 最近打开（按 LastAccessTime 排序）+ 过滤集合，保证列表即时同步。
+                RefreshRecentSolutions();
+                ApplyFilter();
+                LogInfo($"解决方案已同步到列表: {e.Metadata.Name} (Id={e.Metadata.Id})");
             }
         }
 

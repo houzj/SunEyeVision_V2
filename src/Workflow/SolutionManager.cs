@@ -1238,6 +1238,16 @@ public class SolutionManager
         MarkSettingsDirty();
 
         _logger.Log(LogLevel.Success, $"注册已知解决方案: {metadata.Name} (Id={metadata.Id})", "SolutionManager");
+
+        // 触发 SolutionAdded 事件，让 UI 列表（卡片/最近打开/搜索过滤）即时刷新。
+        // 与 CreateNewSolution/CopyOrSaveAsSolution 统一：注册新已知方案即通知 ViewModel。
+        // ViewModel 端 OnSolutionAdded 已做 Any 去重，无需担心重复 Add。
+        var addedArgs = new SolutionMetadataEventArgs
+        {
+            Metadata = metadata,
+            SolutionId = metadata.Id
+        };
+        SolutionAdded?.Invoke(this, addedArgs);
     }
 
     /// <summary>

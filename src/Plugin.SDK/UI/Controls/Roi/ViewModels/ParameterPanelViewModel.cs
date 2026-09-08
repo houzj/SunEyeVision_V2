@@ -36,9 +36,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
         private ShapeType _currentShapeType = ShapeType.Rectangle;
         private ParamSetting? _wholeRegionSetting;
         private ParamSettingItem? _selectedParameter;
+        private Roi? _targetRoi;
 
         /// <summary>参数绑定行（几何参数拼装模式；键 = RoiShape 扁平参数名）</summary>
         public ObservableCollection<ParamSettingItem> Parameters { get; } = new();
+
+        /// <summary>当前订阅面板编辑的目标 Roi（用于 VM 把订阅配置写回正确的 Roi）</summary>
+        public Roi? TargetRoi
+        {
+            get => _targetRoi;
+            private set => _targetRoi = value;
+        }
 
         /// <summary>订阅子模式（整对象 / 几何参数）</summary>
         public RoiSubscribeSubMode SubscribeSubMode
@@ -54,11 +62,27 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
             }
         }
 
-        /// <summary>是否为整对象订阅模式</summary>
-        public bool IsWholeRegionMode => SubscribeSubMode == RoiSubscribeSubMode.WholeRegion;
+        /// <summary>是否为整对象订阅模式（可写：TwoWay 绑定 RadioButton.IsChecked；setter 切 SubscribeSubMode）</summary>
+        public bool IsWholeRegionMode
+        {
+            get => SubscribeSubMode == RoiSubscribeSubMode.WholeRegion;
+            set
+            {
+                if (value && SubscribeSubMode != RoiSubscribeSubMode.WholeRegion)
+                    SubscribeSubMode = RoiSubscribeSubMode.WholeRegion;
+            }
+        }
 
-        /// <summary>是否为几何参数拼装模式</summary>
-        public bool IsGeometricMode => SubscribeSubMode == RoiSubscribeSubMode.GeometricParameters;
+        /// <summary>是否为几何参数拼装模式（可写：TwoWay 绑定 RadioButton.IsChecked；setter 切 SubscribeSubMode）</summary>
+        public bool IsGeometricMode
+        {
+            get => SubscribeSubMode == RoiSubscribeSubMode.GeometricParameters;
+            set
+            {
+                if (value && SubscribeSubMode != RoiSubscribeSubMode.GeometricParameters)
+                    SubscribeSubMode = RoiSubscribeSubMode.GeometricParameters;
+            }
+        }
 
         /// <summary>形状下拉可选项（拼装目标形状；键集与 DeclaredShapeType 天然对齐）</summary>
         public IReadOnlyList<ShapeType> AvailableShapeTypes { get; } = new[]
@@ -99,7 +123,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
             }
         }
 
-        /// <summary>整对象绑定路径（ParamBinding.BindingSource 双向显示）</summary>
+        /// <summary>整对象绑定路径（只读计算属性，仅用于 ParamBinding.BindingSource 单向显示；回写走 BindingSourceSelectedEvent）</summary>
         public string? WholeRegionBindingPath
             => WholeRegionSetting is { BindingType: BindingType.Binding } b
                 ? (string.IsNullOrEmpty(b.SourceProperty) ? b.SourceNodeId : $"{b.SourceNodeId}.{b.SourceProperty}")
@@ -138,6 +162,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
         {
             if (input == null) return;
 
+            // 记录订阅面板编辑的目标 Roi，供 VM 把订阅配置写回正确位置
+            _targetRoi = input;
+
             if (input.Binding != null)
             {
                 // 整对象订阅
@@ -171,18 +198,18 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
                 return;
             }
 
-            // 本地绘制：进入几何参数模板（形状沿用本地几何），参数行全空待绑
-            SubscribeSubMode = RoiSubscribeSubMode.GeometricParameters;
+            // 本地绘制（未订阅）：默认停在整对象订阅（只显示区域源），用户手动切"订阅几何参数"才进拼装。
+            // 但预先按本地形状生成几何参数行，切到几何 group 时立即有可用参数项。
+            SubscribeSubMode = RoiSubscribeSubMode.WholeRegion;
+            WholeRegionSetting = null;
+
             var localShape = input.LocalGeometry?.ShapeType ?? ShapeType.None;
-            if (localShape is ShapeType.Point or ShapeType.Line or ShapeType.Circle
-                or ShapeType.Rectangle or ShapeType.RotatedRectangle)
-            {
-                _currentShapeType = localShape;
-            }
-            else
-            {
-                _currentShapeType = ShapeType.Rectangle;
-            }
+            // 多边形等不定点形状不支持几何参数拼装：下拉不含它，仅整 ROI 订阅；此处回退默认矩形模板。
+            _currentShapeType = localShape is ShapeType.Point or ShapeType.Line or ShapeType.Circle
+                or ShapeType.Rectangle or ShapeType.RotatedRectangle
+                ? localShape
+                : ShapeType.Rectangle;
+
             OnPropertyChanged(nameof(CurrentShapeType));
             UpdateParameterDefinitions();
         }

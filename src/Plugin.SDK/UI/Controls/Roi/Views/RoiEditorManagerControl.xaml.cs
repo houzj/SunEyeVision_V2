@@ -636,9 +636,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
 
             // ── Draw handles for selected regions ──
             // ★ 只隐藏绘制新形状时的手柄，拖动/编辑手柄时保持可见（恢复上版行为）
-            if (inspectionsEditor.GetSelectedRoi() != null && !inspectionsEditor.IsDrawingInteraction)
+            // ★ 订阅模式编辑器不画本地手柄（叠加层已被 GetRenderContexts 模式过滤清空）
+            if (inspectionsEditor.ViewModel.CurrentMode != RoiSourceMode.Subscribe
+                && inspectionsEditor.GetSelectedRoi() != null && !inspectionsEditor.IsDrawingInteraction)
                 inspectionsEditor.DrawEditHandles(inspectionsEditor.GetSelectedRoi()!);
-            if (masksEditor.GetSelectedRoi() != null && !masksEditor.IsDrawingInteraction)
+            if (masksEditor.ViewModel.CurrentMode != RoiSourceMode.Subscribe
+                && masksEditor.GetSelectedRoi() != null && !masksEditor.IsDrawingInteraction)
                 masksEditor.DrawEditHandles(masksEditor.GetSelectedRoi()!);
         }
 

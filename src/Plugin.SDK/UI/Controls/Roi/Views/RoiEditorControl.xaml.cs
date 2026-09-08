@@ -2005,6 +2005,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
         /// </summary>
         public List<RoiRenderContext> GetRenderContexts()
         {
+            // 订阅模式下不叠加显示本地绘制几何（区域来源由订阅数据源决定；切回绘制模式恢复）
+            if (_viewModel?.CurrentMode == RoiSourceMode.Subscribe)
+                return new List<RoiRenderContext>();
+
             var rois = _viewModel?.Rois;
             if (rois == null || rois.Count == 0)
                 return new List<RoiRenderContext>();
@@ -2433,13 +2437,26 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
             _viewModel.SelectedRoi = null;
 
             // 清理ROI编辑器风格的手柄状态
+            ClearHandleDragState();
+
+            RenderRequested?.Invoke();
+        }
+
+        /// <summary>
+        /// 清理 ROI 编辑器风格的手柄/拖拽状态（不改变选中区域）。
+        /// 用于模式切换等场景：切到订阅模式时丢弃本地手柄渲染状态。
+        /// </summary>
+        private void ClearHandleDragState()
+        {
             _currentHandles = null;
             _activeHandleType = Rendering.HandleType.None;
             _originalShapeDefinition = null;
+            _originalPosition = default;
+            _originalSize = default;
+            _originalRotation = 0;
             _rotateStartAngle = null;
             _rotateStartMouseAngle = null;
-
-            RenderRequested?.Invoke();
+            _isDraggingHandle = false;
         }
 
         #region 形状参数变更订阅（面板→画布自动同步）
@@ -2503,8 +2520,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
                     $"[OnViewModelPropertyChanged] CurrentMode 变化 | InstanceId={_controlInstanceId} | NewValue={_viewModel.CurrentMode}",
                     "RoiEditorControl");
 
-                // 切换到订阅模式时取消进行中的绘制
-                if (_viewModel.CurrentMode == RoiSourceMode.Subscribe && (_isDrawing || _isDrawingPolygon))
+                // 订阅模式：清空本地绘制的交互层（GetRenderContexts 已按模式过滤叠加层）。
+                // 切到订阅时若在绘制（含多边形），取消进行中的绘制并清理手柄/橡皮筋状态。
+                if (_viewModel.CurrentMode == RoiSourceMode.Subscribe)
                 {
                     if (_isDrawingPolygon)
                     {
@@ -2518,11 +2536,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
                     _currentDrawingRoi = null;
                     _viewModel.IsDrawing = false;
                     ShapeToolBarControl.ClearSelection();
-                    RenderRequested?.Invoke();
+                    ClearHandleDragState();
                     VisionLogger.Instance.Log(LogLevel.Info,
-                        $"[OnViewModelPropertyChanged] 切换到订阅模式，已取消绘制 | InstanceId={_controlInstanceId}",
+                        $"[OnViewModelPropertyChanged] 切换到订阅模式，已取消绘制/清空交互层 | InstanceId={_controlInstanceId}",
                         "RoiEditorControl");
                 }
+
+                // 任意方向的模式切换（绘制↔订阅）都触发叠加层重刷：
+                // 订阅 → 清除本地几何渲染；订阅 → 绘制 恢复叠加层显示。
+                RenderRequested?.Invoke();
             }
         }
 

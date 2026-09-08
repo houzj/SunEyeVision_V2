@@ -29,12 +29,12 @@
             <UniformGrid Columns="2" Margin="8">
                 <RadioButton Content="订阅整个区域"
                              GroupName="SubscribeSubMode"
-                             IsChecked="{Binding IsWholeRegionMode, Mode=OneWay}"
+                             IsChecked="{Binding IsWholeRegionMode, Mode=TwoWay}"
                              Checked="WholeRegionRadio_Checked"
                              Margin="0,0,0,8"/>
                 <RadioButton Content="订阅几何参数"
                              GroupName="SubscribeSubMode"
-                             IsChecked="{Binding IsGeometricMode, Mode=OneWay}"
+                             IsChecked="{Binding IsGeometricMode, Mode=TwoWay}"
                              Checked="GeometricRadio_Checked"
                              Margin="0,0,0,8"/>
             </UniformGrid>
@@ -47,7 +47,7 @@
                 <controls:ParamBinding x:Name="WholeRegionBinding"
                                        Width="200"
                                        ParameterName="WholeRegion"
-                                       BindingSource="{Binding WholeRegionBindingPath, Mode=TwoWay}"
+                                       BindingSource="{Binding WholeRegionBindingPath, Mode=OneWay}"
                                        AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:RoiSubscribePanel}}}"/>
             </controls:LabeledControl>
         </GroupBox>

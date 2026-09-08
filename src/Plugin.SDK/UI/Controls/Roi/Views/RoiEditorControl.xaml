@@ -74,9 +74,9 @@
                     </StackPanel>
                 </Border>
 
-                <!-- 参数面板 - 绘制模式 -->
+                <!-- 参数面板 - 绘制模式（仅绘制模式且选中区域带本地几何时显示） -->
                 <Expander Header="绘制参数"
-                          Visibility="{Binding HasParametersVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
+                          Visibility="{Binding HasDrawingParametersVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                           IsExpanded="False"
                           Margin="0,0,0,12">
                     <local:DrawingParameterPanel DataContext="{Binding}"/>

@@ -124,6 +124,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
                     OnPropertyChanged(nameof(IsSubscribeMode));
                     OnPropertyChanged(nameof(ShowShapeTypeSelector));
                     OnPropertyChanged(nameof(CurrentToolMode));
+                    OnPropertyChanged(nameof(HasDrawingParametersVisible));
                 }
             }
         }
@@ -204,6 +205,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
         /// 是否有选中区域的参数（用于控制绘制参数面板的可见性）
         /// </summary>
         public bool HasParametersVisible => Parameters != null;
+
+        /// <summary>
+        /// 绘制参数面板可见性：仅绘制模式且选中区域带本地几何时显示。
+        /// 订阅模式下即使选中带本地几何的区域也不显示绘制参数（交互层语义归订阅面板）。
+        /// </summary>
+        public bool HasDrawingParametersVisible => IsDrawingMode && HasParametersVisible;
 
         /// <summary>
         /// 是否选择了任何形状
@@ -380,16 +387,30 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
 
             // 订阅编辑历史变更事件
             _editHistory.HistoryChanged += OnEditHistoryChanged;
+
+            // ★ 立即创建订阅子模型并接线（此前依赖外部 Initialize→RoiEditorIntegration，实为死代码，
+            //   导致订阅面板 DataContext=null、绑定变更不写回 Roi，UI 空/无法持久化）。
+            EnsureSubscriptionInitialized();
         }
 
         /// <summary>
-        /// 初始化数据源提供者
+        /// 初始化数据源提供者（幂等；子模型创建与事件接线已提前到构造函数）。
         /// </summary>
         public void Initialize(DataSourceQueryService dataProvider)
         {
             _dataProvider = dataProvider;
-            _parameterPanel = new ParameterPanelViewModel(dataProvider);
-            _nodeSelector = new NodeSelectorViewModel(dataProvider);
+            EnsureSubscriptionInitialized();
+        }
+
+        /// <summary>
+        /// 幂等创建订阅面板/节点选择器子模型并接线事件。
+        /// </summary>
+        private void EnsureSubscriptionInitialized()
+        {
+            if (_parameterPanel != null) return;
+
+            _parameterPanel = new ParameterPanelViewModel(_dataProvider);
+            _nodeSelector = new NodeSelectorViewModel(_dataProvider);
 
             // 订阅事件（双子：整对象订阅 + 几何参数拼装 + 拼装形状切换）
             _nodeSelector.SelectionConfirmed += OnNodeSelectionConfirmed;
@@ -451,31 +472,39 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
         /// </summary>
         private void OnBindingChanged(object? sender, ParamSetting? binding)
         {
-            if (SelectedRoi == null) return;
+            // 优先用 _parameterPanel.TargetRoi（订阅面板编辑目标），其次 SelectedRoi，最后 Rois 兜底
+            var target = _parameterPanel?.TargetRoi ?? SelectedRoi;
+            if (target == null)
+            {
+                // 兜底：自动选第一个可写的 ROI 作为目标，确保订阅配置不丢失
+                target = Rois.FirstOrDefault(r => r.IsEnabled);
+                if (target != null) SelectedRoi = target;
+            }
+            if (target == null) return;
 
             if (binding != null)
             {
                 // 三态互斥：整对象订阅 → 清本地几何与拼装集
-                SelectedRoi.Binding = binding;
-                SelectedRoi.LocalGeometry = null;
-                SelectedRoi.ParameterBindings = null;
-                RoiChanged?.Invoke(this, new RoiChangedEventArgs(SelectedRoi, RoiChangeType.Modified));
+                target.Binding = binding;
+                target.LocalGeometry = null;
+                target.ParameterBindings = null;
+                RoiChanged?.Invoke(this, new RoiChangedEventArgs(target, RoiChangeType.Modified));
                 StatusMessage = $"已设置订阅源: {binding.SourceNodeId}.{binding.SourceProperty}";
                 return;
             }
 
             // 解除整对象订阅：若存在拼装集则保留拼装语义，否则回退本地绘制
-            SelectedRoi.Binding = null;
-            if (SelectedRoi.IsComposed)
+            target.Binding = null;
+            if (target.IsComposed)
             {
-                RoiChanged?.Invoke(this, new RoiChangedEventArgs(SelectedRoi, RoiChangeType.Modified));
+                RoiChanged?.Invoke(this, new RoiChangedEventArgs(target, RoiChangeType.Modified));
                 return;
             }
-            SelectedRoi.LocalGeometry ??= new RoiShape
+            target.LocalGeometry ??= new RoiShape
             {
                 Geometry = RoiShape.CreateDefaultGeometry(SelectedShapeType ?? ShapeType.Rectangle)
             };
-            RoiChanged?.Invoke(this, new RoiChangedEventArgs(SelectedRoi, RoiChangeType.Modified));
+            RoiChanged?.Invoke(this, new RoiChangedEventArgs(target, RoiChangeType.Modified));
         }
 
         /// <summary>
@@ -484,37 +513,46 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
         /// </summary>
         private void OnParameterSettingChanged(object? sender, ParameterSettingChangedEventArgs e)
         {
-            if (SelectedRoi == null || e == null || string.IsNullOrEmpty(e.ParameterName)) return;
+            if (e == null || string.IsNullOrEmpty(e.ParameterName)) return;
+
+            // 优先用 _parameterPanel.TargetRoi（订阅面板编辑目标），其次 SelectedRoi，最后 Rois 兜底
+            var target = _parameterPanel?.TargetRoi ?? SelectedRoi;
+            if (target == null)
+            {
+                target = Rois.FirstOrDefault(r => r.IsEnabled);
+                if (target != null) SelectedRoi = target;
+            }
+            if (target == null) return;
 
             if (e.Setting != null)
             {
                 // 三态互斥：进入参数拼装；拼装形状 = 订阅面板当前形状（ComposeShapeType 持久化）
-                SelectedRoi.Binding = null;
-                SelectedRoi.LocalGeometry = null;
+                target.Binding = null;
+                target.LocalGeometry = null;
                 var composeShape = _parameterPanel?.CurrentShapeType ?? ShapeType.Rectangle;
-                SelectedRoi.ComposeShapeType = composeShape;
-                SelectedRoi.ParameterBindings ??= new Dictionary<string, ParamSetting>();
-                SelectedRoi.ParameterBindings[e.ParameterName] = e.Setting;
-                RoiChanged?.Invoke(this, new RoiChangedEventArgs(SelectedRoi, RoiChangeType.Modified));
+                target.ComposeShapeType = composeShape;
+                target.ParameterBindings ??= new Dictionary<string, ParamSetting>();
+                target.ParameterBindings[e.ParameterName] = e.Setting;
+                RoiChanged?.Invoke(this, new RoiChangedEventArgs(target, RoiChangeType.Modified));
                 StatusMessage = $"已设置参数 {e.ParameterName} 订阅源: {e.Setting.SourceNodeId}.{e.Setting.SourceProperty}";
                 return;
             }
 
             // 移除该键：拼装集为空则回退本地绘制
-            if (SelectedRoi.ParameterBindings != null)
+            if (target.ParameterBindings != null)
             {
-                SelectedRoi.ParameterBindings.Remove(e.ParameterName);
-                if (SelectedRoi.ParameterBindings.Count == 0)
+                target.ParameterBindings.Remove(e.ParameterName);
+                if (target.ParameterBindings.Count == 0)
                 {
-                    SelectedRoi.ParameterBindings = null;
-                    SelectedRoi.ComposeShapeType = ShapeType.None;
-                    SelectedRoi.LocalGeometry ??= new RoiShape
+                    target.ParameterBindings = null;
+                    target.ComposeShapeType = ShapeType.None;
+                    target.LocalGeometry ??= new RoiShape
                     {
                         Geometry = RoiShape.CreateDefaultGeometry(SelectedShapeType ?? ShapeType.Rectangle)
                     };
                 }
             }
-            RoiChanged?.Invoke(this, new RoiChangedEventArgs(SelectedRoi, RoiChangeType.Modified));
+            RoiChanged?.Invoke(this, new RoiChangedEventArgs(target, RoiChangeType.Modified));
         }
 
         /// <summary>
@@ -522,8 +560,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
         /// </summary>
         private void OnShapeTypeChanged(object? sender, ShapeType shapeType)
         {
-            if (SelectedRoi == null) return;
-            SelectedRoi.ComposeShapeType = shapeType;
+            var target = _parameterPanel?.TargetRoi ?? SelectedRoi;
+            if (target == null)
+            {
+                target = Rois.FirstOrDefault(r => r.IsEnabled);
+                if (target != null) SelectedRoi = target;
+            }
+            if (target == null) return;
+            target.ComposeShapeType = shapeType;
         }
 
         /// <summary>
@@ -757,6 +801,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
             OnPropertyChanged(nameof(IsSubscribeMode));
             OnPropertyChanged(nameof(SubscriptionBindingPath));
             OnPropertyChanged(nameof(HasParametersVisible));
+            OnPropertyChanged(nameof(HasDrawingParametersVisible));
             OnPropertyChanged(nameof(Parameters));
             OnPropertyChanged(nameof(PreviewLength));
         }

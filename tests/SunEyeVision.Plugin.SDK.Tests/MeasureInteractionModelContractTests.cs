@@ -131,17 +131,27 @@ public class MeasureInteractionModelContractTests
     }
 
     [Fact]
-    public void UpdateArcEndpoint_KeepsRadius()
+    public void UpdateArcEndpoint_AnchorsMidpoint_RadiusRecomputes()
     {
         var model = new MeasureInteractionModel();
         Assert.True(model.SetArcFromEndpoints(new Point(0, 0), new Point(10, 0)));
-        var beforeRadius = model.ArcRadius;
+        Assert.True(model.EditingArc.HasValue);
 
-        // 拖 P2 到 (0,10)：半径/方向不变，弧重算（圆心/弧长派生变）
+        // 锚点 P3 = 当前弧中点（拖端点时保持不动，三点定圆保证弧始终过它）
+        var arcBefore = model.EditingArc.Value;
+        var anchor = arcBefore.GetPointOnArc(arcBefore.StartAngle + arcBefore.AngularSpan / 2);
+
+        // 拖 P2 到 (0,10)：P2 = 鼠标位置、P1 不动，半径/方向由三点几何自适应（不再锁死旧半径）
         Assert.True(model.UpdateArcEndpoint(false, new Point(0, 10)));
         Assert.True(model.EditingArc.HasValue);
-        Assert.Equal(new Point(0, 10), model.ArcPoint2);      // P2 = 鼠标位置
-        Assert.Equal(beforeRadius, model.ArcRadius, 3);       // 半径不变
+        Assert.Equal(new Point(0, 0), model.ArcPoint1);   // P1 不动
+        Assert.Equal(new Point(0, 10), model.ArcPoint2);  // P2 = 鼠标位置
+
+        var arcAfter = model.EditingArc.Value;
+        // 弧仍经过锚点 P3（连续，无跳变）
+        Assert.True(Math.Abs((anchor - arcAfter.Center).Length - arcAfter.Radius) < 1e-3);
+        // 模型派生参数与几何一致
+        Assert.Equal(arcAfter.Radius, model.ArcRadius, 3);
     }
 
     [Fact]
@@ -162,14 +172,17 @@ public class MeasureInteractionModelContractTests
     }
 
     [Fact]
-    public void UpdateArcRadiusFromPoint_RejectsCollinear()
+    public void UpdateArcRadiusFromPoint_Collinear_UsesTransitionArc()
     {
         var model = new MeasureInteractionModel();
         Assert.True(model.SetArcFromEndpoints(new Point(0, 0), new Point(10, 0)));
 
-        // 鼠标拖到与 P1/P2 共线（y=0）→ 更新失败（防退化）
-        Assert.False(model.UpdateArcRadiusFromPoint(new Point(5, 0)));
+        // 鼠标拖到与 P1/P2 共线（y=0）：三点定圆退化，不拒绝也不崩溃，
+        // 以"接近直线"的大半径过渡弧平滑衔接，弧状态保持连续
+        Assert.True(model.UpdateArcRadiusFromPoint(new Point(5, 0)));
         Assert.True(model.EditingArc.HasValue);
+        Assert.False(model.EditingArc.Value.IsEmpty);
+        Assert.True(model.EditingArc.Value.Radius > 1e5);   // 过渡弧为大半径（近直线），防卡顿跳变
     }
 
     [Fact]

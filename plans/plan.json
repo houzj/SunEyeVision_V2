@@ -2278,6 +2278,10 @@
                                     {
                                         "date":  "2026-09-05",
                                         "note":  "[ecb4f01fe70381a24b33a3c68c4fac091d5ed505] feat(test): HalconRegionPipeline 契约测试（v1.4 纯 ROI 管线）"
+                                    },
+                                    {
+                                        "date":  "2026-09-08",
+                                        "note":  "[94b8af04d912ff84febb4bbd0b7f3145e56e4fd6] test(measure): 弧交互契约测试对齐三点定弧治本语义"
                                     }
                                 ]
                     },

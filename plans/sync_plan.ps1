@@ -115,8 +115,8 @@ $planChanged = $false
 # ---------- 匹配规则表 ----------
 # 关键词 → 模块 ID（顺序优先，先匹配先命中）
 $keywordMap = @(
-    @{ kw = @("圆查找", "CircleFinder", "找圆");            id = "T-CIRCLEFINDER" },
-    @{ kw = @("直线查找", "LineFinder", "找线");            id = "T-LINEFINDER" },
+    @{ kw = @("圆查找", "CircleFinder", "CircleDetect", "找圆");  id = "T-CIRCLEFINDER" },
+    @{ kw = @("直线查找", "LineFinder", "LineDetect", "找线");    id = "T-LINEFINDER" },
     @{ kw = @("直线卡尺", "LineCaliper");                   id = "T-LINECALIPER" },
     @{ kw = @("圆卡尺", "CircleCaliper", "圆环卡尺");       id = "T-CIRCLECALIPER" },
     @{ kw = @("弧形卡尺", "ArcCaliper");                    id = "T-ARCCALIPER" },
@@ -167,8 +167,8 @@ $keywordMap = @(
 
 # 文件路径片段 → 模块 ID
 $pathMap = @(
-    @{ path = @("tools/SunEyeVision.Tool.CircleFinder"); id = "T-CIRCLEFINDER" },
-    @{ path = @("tools/SunEyeVision.Tool.LineFinder");   id = "T-LINEFINDER" },
+    @{ path = @("tools/SunEyeVision.Tool.CircleDetect", "tools/SunEyeVision.Tool.CircleFinder"); id = "T-CIRCLEFINDER" },
+    @{ path = @("tools/SunEyeVision.Tool.LineDetect", "tools/SunEyeVision.Tool.LineFinder");     id = "T-LINEFINDER" },
     @{ path = @("tools/SunEyeVision.Tool.LineCaliper");  id = "T-LINECALIPER" },
     @{ path = @("tools/SunEyeVision.Tool.CircleCaliper"); id = "T-CIRCLECALIPER" },
     @{ path = @("tools/SunEyeVision.Tool.ArcCaliper");   id = "T-ARCCALIPER" },

@@ -25,13 +25,13 @@ import subprocess
 import sys
 import datetime
 
-REPO = r"D:\MyWork\SunEyeVision_V2-script"
+REPO = r"D:\MyWork\SunEyeVision_V2"
 OUT = os.path.join(REPO, "plans", "weekly.json")
 
 # ---------- 与 sync_plan.ps1 一致的匹配规则 ----------
 keywordMap = [
-    (["圆查找", "CircleFinder", "找圆"], "T-CIRCLEFINDER"),
-    (["直线查找", "LineFinder", "找线"], "T-LINEFINDER"),
+    (["圆查找", "CircleFinder", "CircleDetect", "找圆"], "T-CIRCLEFINDER"),
+    (["直线查找", "LineFinder", "LineDetect", "找线"], "T-LINEFINDER"),
     (["直线卡尺", "LineCaliper"], "T-LINECALIPER"),
     (["圆卡尺", "CircleCaliper", "圆环卡尺"], "T-CIRCLECALIPER"),
     (["弧形卡尺", "ArcCaliper"], "T-ARCCALIPER"),
@@ -89,8 +89,8 @@ keywordMap = [
 
 pathMap = [
     (["tests/"], "M-SRC-TEST"),
-    (["tools/SunEyeVision.Tool.CircleFinder"], "T-CIRCLEFINDER"),
-    (["tools/SunEyeVision.Tool.LineFinder"], "T-LINEFINDER"),
+    (["tools/SunEyeVision.Tool.CircleDetect", "tools/SunEyeVision.Tool.CircleFinder"], "T-CIRCLEFINDER"),
+    (["tools/SunEyeVision.Tool.LineDetect", "tools/SunEyeVision.Tool.LineFinder"], "T-LINEFINDER"),
     (["tools/SunEyeVision.Tool.LineCaliper"], "T-LINECALIPER"),
     (["tools/SunEyeVision.Tool.CircleCaliper"], "T-CIRCLECALIPER"),
     (["tools/SunEyeVision.Tool.ArcCaliper"], "T-ARCCALIPER"),
@@ -277,10 +277,6 @@ def main():
     # 拆分模块提交日志到独立文件（供 PowerShell 简单读取，避免深层 JSON 问题）
     gitlog_dir = os.path.join(REPO, "plans", "gitlogs")
     os.makedirs(gitlog_dir, exist_ok=True)
-    # 先清空旧的 gitlogs 文件（.html/.json），避免模块归属调整后残留过时记录
-    for stale in os.listdir(gitlog_dir):
-        if stale.endswith(".html") or stale.endswith(".json"):
-            os.remove(os.path.join(gitlog_dir, stale))
     for mid, commits in module_commits_sorted.items():
         with io.open(os.path.join(gitlog_dir, f"{mid}.json"), "w", encoding="utf-8", newline="\n") as f:
             json.dump(commits, f, ensure_ascii=False, indent=2)

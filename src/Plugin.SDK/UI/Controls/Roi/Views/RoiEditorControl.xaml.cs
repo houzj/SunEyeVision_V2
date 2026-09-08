@@ -1052,6 +1052,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
                             {
                                 Circle2d c => new Size(c.Radius * 2, c.Radius * 2),
                                 RotatedRect2d rr => new Size(rr.Width, rr.Height),
+                                System.Windows.Rect r => new Size(r.Width, r.Height),
                                 _ => new Size(100, 100),
                             };
                             _originalRotation = shapeDef.Geometry switch
@@ -2070,19 +2071,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
                 // 检测/屏蔽角色由编辑器实例承载（DefaultRegionType DP），不落模型元素
                 RoiType = DefaultRegionType,
 
-                // 样式参数
-                FillColor = Color.FromArgb(
-                    (byte)((shape.FillColorArgb >> 24) & 0xFF),
-                    (byte)((shape.FillColorArgb >> 16) & 0xFF),
-                    (byte)((shape.FillColorArgb >> 8) & 0xFF),
-                    (byte)(shape.FillColorArgb & 0xFF)
-                ),
-                StrokeColor = Color.FromArgb(
-                    (byte)((shape.StrokeColorArgb >> 24) & 0xFF),
-                    (byte)((shape.StrokeColorArgb >> 16) & 0xFF),
-                    (byte)((shape.StrokeColorArgb >> 8) & 0xFF),
-                    (byte)(shape.StrokeColorArgb & 0xFF)
-                ),
+                // ★ 颜色语义回归修复：正式区域与预览分支对齐，按编辑器角色（DefaultRegionType）上色，
+                //   不再依赖 RoiShape.FillColorArgb/StrokeColorArgb 字段（旧默认值 0xFF0000FF 会把屏蔽区画成蓝色）。
+                FillColor = DefaultRegionType == RoiType.Mask
+                    ? ColorConstants.MaskFill
+                    : ColorConstants.InspectionFill,
+                StrokeColor = DefaultRegionType == RoiType.Mask
+                    ? ColorConstants.MaskOrange
+                    : ColorConstants.InspectionBlue,
                 StrokeThickness = shape.StrokeThickness,
                 Opacity = shape.Opacity,
 

@@ -447,10 +447,10 @@ namespace SunEyeVision.UI.Services.Workflow
                 var regionItem = CreateRegionDisplayItem(input, inspectionStyle, correctionMatrix);
                 if (regionItem != null) items.Add(regionItem);
 
-                // 旋转矩形附加方向箭头（完整矩阵跟随，方向随矩阵旋转）
+                // 旋转矩形附加方向箭头（完整矩阵跟随，方向随矩阵旋转；颜色跟随检测区样式）
                 if (input.LocalGeometry is RoiShape rShape && rShape.Geometry is RotatedRect2d)
                 {
-                    items.Add(BuildDirectionArrowItem(rShape, correctionMatrix));
+                    items.Add(BuildDirectionArrowItem(rShape, inspectionStyle, correctionMatrix));
                 }
             }
 
@@ -462,10 +462,10 @@ namespace SunEyeVision.UI.Services.Workflow
                 var regionItem = CreateRegionDisplayItem(input, maskStyle, correctionMatrix);
                 if (regionItem != null) items.Add(regionItem);
 
-                // 旋转矩形附加方向箭头（完整矩阵跟随，方向随矩阵旋转）
+                // 旋转矩形附加方向箭头（完整矩阵跟随，方向随矩阵旋转；颜色跟随屏蔽区样式）
                 if (input.LocalGeometry is RoiShape mShape && mShape.Geometry is RotatedRect2d)
                 {
-                    items.Add(BuildDirectionArrowItem(mShape, correctionMatrix));
+                    items.Add(BuildDirectionArrowItem(mShape, maskStyle, correctionMatrix));
                 }
             }
 
@@ -577,8 +577,9 @@ namespace SunEyeVision.UI.Services.Workflow
 
         /// <summary>
         /// 构建旋转矩形方向箭头显示项（线宽与轮廓一致，箭杆到矩形边界；端点随位置修正矩阵变换）。
+        /// 箭头颜色跟随区域样式（检测区蓝/屏蔽区橙），修复结果层屏蔽区箭头固定蓝色的问题。
         /// </summary>
-        private static GraphicsDisplayItem BuildDirectionArrowItem(RoiShape shape, AffineMatrix? matrix)
+        private static GraphicsDisplayItem BuildDirectionArrowItem(RoiShape shape, GraphicsStyle regionStyle, AffineMatrix? matrix)
         {
             double arrowLength = 50;
             double angleRad = 0;
@@ -595,9 +596,19 @@ namespace SunEyeVision.UI.Services.Workflow
             var center = matrix?.TransformWpfPoint(centerRef) ?? centerRef;
             var end = matrix?.TransformWpfPoint(endRef) ?? endRef;
 
+            // ★ 箭头样式在保持结果层箭头线宽/透明度特性的同时，颜色继承区域角色（检测/屏蔽）
+            var arrowStyle = new GraphicsStyle
+            {
+                Name = ResultArrowStyle.Name,
+                OkColor = regionStyle.OkColor,
+                NgColor = regionStyle.OkColor,
+                LineWidth = ResultArrowStyle.LineWidth,
+                Opacity = ResultArrowStyle.Opacity
+            };
+
             return new GraphicsDisplayItem
             {
-                Style = ResultArrowStyle,
+                Style = arrowStyle,
                 Type = GraphicsType.Arrow,
                 Geometries = new object[] { new LineSegment(center, end) }
             };

@@ -107,7 +107,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Rendering
             if (region.ShapeType != ShapeType.RotatedRectangle) return;
 
             var arrow = RotatedRectangleHelper.GetDirectionArrow(region.Center, region.Width, region.Angle);
-            var color = region.IsSelected ? Colors.Blue : region.StrokeColor;
+            // ★ 箭头颜色跟随区域角色语义（屏蔽区橙/检测区蓝），选中态不再硬编码纯蓝：
+            //   选中高亮由描边加粗表达（RegionDcPainter 选中增厚），箭头色固定使用 StrokeColor。
+            var color = region.StrokeColor;
 
             double lineThickness = ViewportScaling.InvScale(viewportScale, 3.0);
             double arrowSize = ViewportScaling.InvScale(viewportScale, 10.0);

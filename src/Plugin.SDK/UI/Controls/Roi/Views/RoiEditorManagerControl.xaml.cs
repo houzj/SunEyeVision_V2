@@ -327,10 +327,37 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
                 masksEditor.ProcessMouseMove(pos);
             }
 
-            // 无交互时不需要路由 MouseMove
+            // 无交互时不需要路由 MouseMove（悬停光标由 QueryEditorCursor 独立查询驱动）
 
             // ProcessMouseMove 内部已移除 RenderRequested，只在这里统一渲染一次
             RenderAll();
+
+            // ★ 悬停光标回归修复：对齐 MeasurementEditorManagerControl，MouseMove 直接驱动元素级 Cursor，
+            //   屏蔽区/检测区各自命中自己的手柄/主体光标，空白恢复默认。
+            _mainImageControl?.SetHoverCursor(QueryEditorCursor(pos));
+        }
+
+        /// <summary>
+        /// 统一悬停光标路由（检测 vs 屏蔽双编辑器）：
+        /// 绘制模式 → 交互中 → 屏蔽区域命中（视觉上层优先）→ 检测区域命中 → 空白 null。
+        /// </summary>
+        private Cursor? QueryEditorCursor(Point pos)
+        {
+            // 绘制模式优先（互斥）
+            if (inspectionsEditor.ViewModel.IsDrawing) return inspectionsEditor.QueryCursor(pos);
+            if (masksEditor.ViewModel.IsDrawing) return masksEditor.QueryCursor(pos);
+
+            // 交互中（拖动/编辑手柄）
+            if (inspectionsEditor.IsAnyInteractionInProgress) return inspectionsEditor.QueryCursor(pos);
+            if (masksEditor.IsAnyInteractionInProgress) return masksEditor.QueryCursor(pos);
+
+            // 选择模式：屏蔽区域视觉上层优先（更大容差），其次检测区域
+            if (masksEditor.HitTestRoi(pos, tolerance: 8.0) != null)
+                return masksEditor.QueryCursor(pos);
+            if (inspectionsEditor.HitTestRoi(pos, tolerance: 4.0) != null)
+                return inspectionsEditor.QueryCursor(pos);
+
+            return null;
         }
 
         private void OnCanvasMouseLeftButtonDown(object? sender, ImageMouseEventArgs e)

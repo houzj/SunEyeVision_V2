@@ -1052,6 +1052,10 @@
                                     {
                                         "date":  "2026-09-03",
                                         "note":  "[2d0d1eff8c6d92f6781694d6a3bcbe0865ad4980] feat(roi): lightweight region rendering via per-region DrawingVisual host + label placement fix + mask renderer zoom sync"
+                                    },
+                                    {
+                                        "date":  "2026-09-08",
+                                        "note":  "[2ae848e0d29f7f0202861e2b99fb86ec70dd0b43] fix(roi): 区域编辑器交互/结果显示层颜色与光标回归修复"
                                     }
                                 ]
                     },

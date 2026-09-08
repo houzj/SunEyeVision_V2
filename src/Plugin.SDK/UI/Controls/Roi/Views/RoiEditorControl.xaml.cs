@@ -13,17 +13,16 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.UI.Constants;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.ViewModels;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels;
 using SunEyeVision.Plugin.SDK.UI.Controls;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Logic;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Rendering;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Execution.Helpers;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 
-namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
+namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
 {
     /// <summary>
     /// 区域编辑控件 - 纯UI组件，不负责数据持久化
@@ -41,8 +40,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         private bool _isDragging;
         private bool _isDraggingHandle;
         private Point _startPoint;
-        private RoiData? _currentDrawingRegion;
-        private RoiData? _selectedRegion;
+        private Roi? _currentDrawingRoi;
+        private Roi? _selectedRoi;
         private Point _dragStartPoint;
         private Point _handleDragStartPoint;
 
@@ -70,17 +69,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         private const int CORRECTION_LOG_INTERVAL = 100;
 
         // 区域名称索引管理（空洞池策略）
-        private int _nextRegionIndex = 1;
+        private int _nextRoiIndex = 1;
         private readonly SortedSet<int> _availableIndices = new();
 
-        // 手柄管理
-        private HandleManager _handleManager;
         private RoiEditorSettings _settings;
 
         // ROI编辑器风格的手柄管理
         private Rendering.EditHandle[] _currentHandles = null;
         private Rendering.HandleType _activeHandleType = Rendering.HandleType.None;
-        private ShapeParameters? _originalShapeDefinition = null;
+        private RoiShape? _originalShapeDefinition = null;
         private Point _originalPosition;
         private Size _originalSize;
         private double _originalRotation;
@@ -92,7 +89,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         private AffineMatrix? _inverseMatrix;
 
         /// <summary>
-        /// Overlay Canvas引用（由RegionEditorManagerControl设置，用于手柄/橡皮筋绘制）
+        /// Overlay Canvas引用（由RoiEditorManagerControl设置，用于手柄/橡皮筋绘制）
         /// </summary>
         public Canvas? OverlayCanvas { get; set; }
 
@@ -148,9 +145,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         /// </summary>
         private object? CurrentInteractionGeometry()
         {
-            if (_selectedRegion?.Parameters is ShapeParameters sShape)
+            if (_selectedRoi?.LocalGeometry is RoiShape sShape)
                 return sShape.Geometry;
-            if (_currentDrawingRegion?.Parameters is ShapeParameters dShape)
+            if (_currentDrawingRoi?.LocalGeometry is RoiShape dShape)
                 return dShape.Geometry;
             return null;
         }
@@ -188,19 +185,19 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
                   $"OffsetX={_inverseMatrix.OffsetX:F2} OffsetY={_inverseMatrix.OffsetY:F2}"
                 : "(null)";
 
-            var regions = _viewModel.Regions;
-            var regionSummary = regions.Count == 0
+            var rois = _viewModel.Rois;
+            var roiSummary = rois.Count == 0
                 ? "(空)"
-                : string.Join(" | ", regions.Take(5).Select(r =>
-                    r.Parameters is ShapeParameters s
+                : string.Join(" | ", rois.Take(5).Select(r =>
+                    r.LocalGeometry is RoiShape s
                         ? $"{r.Name}:Type={s.ShapeType} Center={s.GetCenter()}"
-                        : $"{r.Name}:Params={r.Parameters?.GetType().Name ?? "null"}"));
+                        : $"{r.Name}:订阅={r.Binding?.ToString() ?? "null"}"));
 
             VisionLogger.Instance.Log(LogLevel.Info,
                 $"[LogCorrectionStatus] Trigger={trigger} InstanceId={_controlInstanceId}\n" +
                 $"  ForwardMatrix={matrixInfo}\n" +
                 $"  InverseMatrix={inverseInfo}\n" +
-                $"  RegionCount={regions.Count} Regions=[{regionSummary}]",
+                $"  RoiCount={rois.Count} Rois=[{roiSummary}]",
                 "RoiEditorControl");
         }
 
@@ -215,24 +212,24 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         #region 依赖属性
 
         /// <summary>
-        /// 区域数据集合（仅用于 XAML 声明式绑定初始化读取）
+        /// 几何输入集合（仅用于 XAML 声明式绑定初始化读取）
         /// </summary>
         /// <remarks>
         /// 此 DependencyProperty 仅作为 XAML 绑定的桥接层。
-        /// 真正的共享引用由 SetRegionsSource() 方法命令式建立。
+        /// 真正的共享引用由 SetRoisSource() 方法命令式建立。
         /// 不要依赖此属性的变更回调来建立共享引用。
         /// </remarks>
-        public static readonly DependencyProperty RegionsProperty =
-            DependencyProperty.Register(nameof(Regions), typeof(IEnumerable<RoiData>), typeof(RoiEditorControl),
-                new PropertyMetadata(null, OnRegionsChanged));
+        public static readonly DependencyProperty RoisProperty =
+            DependencyProperty.Register(nameof(Rois), typeof(IEnumerable<Roi>), typeof(RoiEditorControl),
+                new PropertyMetadata(null, OnRoisChanged));
 
-        public IEnumerable<RoiData>? Regions
+        public IEnumerable<Roi>? Rois
         {
-            get => (IEnumerable<RoiData>?)GetValue(RegionsProperty);
-            set => SetValue(RegionsProperty, value);
+            get => (IEnumerable<Roi>?)GetValue(RoisProperty);
+            set => SetValue(RoisProperty, value);
         }
 
-        private static void OnRegionsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnRoisChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is RoiEditorControl control)
             {
@@ -327,39 +324,39 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         #region 事件
 
         /// <summary>
-        /// 区域数据变更事件
+        /// 几何输入数据变更事件
         /// </summary>
-        public event EventHandler<RoiData>? RegionDataChanged;
+        public event EventHandler<Roi>? RoiDataChanged;
 
         #endregion
 
         #region 共享引用管理
 
         /// <summary>
-        /// 注入外部区域集合，与参数模型共享同一个 ObservableCollection 实例
+        /// 注入外部几何输入集合，与参数模型共享同一个 ObservableCollection 实例
         /// </summary>
         /// <remarks>
         /// 这是建立共享引用的唯一正确入口。
-        /// 调用后 ViewModel.Regions 和外部集合指向同一个对象，
-        /// 用户绘制区域直接进入参数集合，序列化时自然有数据。
+        /// 调用后 ViewModel.Rois 和外部集合指向同一个对象，
+        /// 用户绘制的几何输入直接进入参数集合，序列化时自然有数据。
         /// 
         /// 必须在 SetMainImageControl 之后调用。
         /// </remarks>
-        public void SetRegionsSource(ObservableCollection<RoiData> externalRegions)
+        public void SetRoisSource(ObservableCollection<Roi> externalRois)
         {
-            if (externalRegions == null)
-                throw new ArgumentNullException(nameof(externalRegions));
+            if (externalRois == null)
+                throw new ArgumentNullException(nameof(externalRois));
 
             VisionLogger.Instance.Log(LogLevel.Info,
-                $"[SetRegionsSource] 建立共享引用 | 外部集合HashCode={externalRegions.GetHashCode():X8} | 外部集合数量={externalRegions.Count}",
+                $"[SetRoisSource] 建立共享引用 | 外部集合HashCode={externalRois.GetHashCode():X8} | 外部集合数量={externalRois.Count}",
                 "RoiEditorControl");
 
-            _viewModel.SetRegionsSource(externalRegions);
-            InitializeRegionIndexFromExisting();
+            _viewModel.SetRoisSource(externalRois);
+            InitializeRoiIndexFromExisting();
             RenderRequested?.Invoke();
 
             VisionLogger.Instance.Log(LogLevel.Success,
-                $"[SetRegionsSource] 共享引用已建立 | ViewModel.Regions={_viewModel.Regions.GetHashCode():X8} | 引用相同={_viewModel.Regions == externalRegions}",
+                $"[SetRoisSource] 共享引用已建立 | ViewModel.Rois={_viewModel.Rois.GetHashCode():X8} | 引用相同={_viewModel.Rois == externalRois}",
                 "RoiEditorControl");
         }
 
@@ -375,7 +372,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
             // 因为 XAML 中 RadioButton IsChecked="True" 会立即触发 Checked 事件
             EnsureViewModel();
             InitializeComponent();
-            _handleManager = new HandleManager();
             _settings = RoiEditorSettings.Default;
 
             // 初始化形状工具栏（数据驱动，每个形状可见性可单独控制）
@@ -407,7 +403,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
             Keyboard.Focus(this);
 
             VisionLogger.Instance.Log(LogLevel.Success,
-                $"[RegionEditorControl_Loaded] 加载完成 | InstanceId={_controlInstanceId} | RegionCount={_viewModel.Regions.Count}",
+                $"[RegionEditorControl_Loaded] 加载完成 | InstanceId={_controlInstanceId} | RegionCount={_viewModel.Rois.Count}",
                 "RoiEditorControl");
         }
 
@@ -421,7 +417,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
             if (_isDrawing)
             {
                 _isDrawing = false;
-                _currentDrawingRegion = null;
+                _currentDrawingRoi = null;
                 VisionLogger.Instance.Log(LogLevel.Info,
                     $"[RegionEditorControl_Unloaded] Tab切换时取消绘制状态 | InstanceId={_controlInstanceId}",
                     "RoiEditorControl");
@@ -446,9 +442,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
                 // 事件订阅生命周期由 SetMainImageControl / ClearMainOverlay 管理
                 // Tab 切换不应该影响订阅状态
                 _viewModel.PropertyChanged += OnViewModelPropertyChanged;
-                _viewModel.RegionChanged += OnRegionChanged;
+                _viewModel.RoiChanged += OnRoiChanged;
 
-                // 不再订阅 Regions.CollectionChanged，共享引用后无需同步
+                // 不再订阅 Rois.CollectionChanged，共享引用后无需同步
 
                 VisionLogger.Instance.Log(LogLevel.Success,
                     "[EnsureViewModel] ViewModel 创建并初始化完成",
@@ -465,18 +461,18 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
 
 
         /// <summary>
-        /// 设置主界面ImageControl引用（已废弃 - 由RegionEditorManagerControl统一管理）
+        /// 设置主界面ImageControl引用（已废弃 - 由RoiEditorManagerControl统一管理）
         /// </summary>
-        [Obsolete("由RegionEditorManagerControl统一管理事件和渲染，不再需要直接调用")]
+        [Obsolete("由RoiEditorManagerControl统一管理事件和渲染，不再需要直接调用")]
         public void SetMainImageControl(ImageControl imageControl)
         {
             // 空实现，保持向后兼容
         }
 
         /// <summary>
-        /// 清理主界面覆盖层（已废弃 - 由RegionEditorManagerControl统一管理）
+        /// 清理主界面覆盖层（已废弃 - 由RoiEditorManagerControl统一管理）
         /// </summary>
-        [Obsolete("由RegionEditorManagerControl统一管理事件和渲染")]
+        [Obsolete("由RoiEditorManagerControl统一管理事件和渲染")]
         public void ClearMainOverlay()
         {
             // 空实现，保持向后兼容
@@ -491,47 +487,47 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         }
 
         /// <summary>
-        /// 获取所有区域数据
+        /// 获取全部几何输入集合
         /// </summary>
-        public IEnumerable<RoiData> GetRegions()
+        public IEnumerable<Roi> GetRois()
         {
-            return _viewModel.Regions;
+            return _viewModel.Rois;
         }
 
         /// <summary>
         /// 获取选中的区域
         /// </summary>
-        public RoiData? GetSelectedRegion()
+        public Roi? GetSelectedRoi()
         {
-            return _selectedRegion;
+            return _selectedRoi;
         }
 
         /// <summary>
         /// 设置选中的区域
         /// </summary>
-        public void SetSelectedRegion(RoiData? region)
+        public void SetSelectedRoi(Roi? roi)
         {
-            SelectRegion(region);
+            SelectRoi(roi);
         }
 
         /// <summary>
         /// 添加区域
         /// </summary>
-        public void AddRoi(RoiData region)
+        public void AddRoi(Roi roi)
         {
             VisionLogger.Instance.Log(LogLevel.Info,
-                $"[AddRoi] 添加区域: RegionId={region.Id}, RoiType={region.GetShapeType()?.ToString() ?? "Unknown"}",
+                $"[AddRoi] 添加几何输入: RoiId={roi.Id}, ShapeType={roi.LocalGeometry?.ShapeType.ToString() ?? "Unknown"}",
                 "RoiEditorControl");
 
             try
             {
-                _viewModel.Regions.Add(region);
+                _viewModel.Rois.Add(roi);
                 RenderRequested?.Invoke();
             }
             catch (Exception ex)
             {
                 VisionLogger.Instance.Log(LogLevel.Error,
-                    $"[AddRoi] 添加区域失败: RegionId={region.Id}, 错误={ex.Message}",
+                    $"[AddRoi] 添加几何输入失败: RoiId={roi.Id}, 错误={ex.Message}",
                     "RoiEditorControl",
                     ex);
             }
@@ -540,37 +536,29 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         /// <summary>
         /// 移除区域
         /// </summary>
-        public void RemoveRoi(RoiData region)
+        public void RemoveRoi(Roi roi)
         {
             VisionLogger.Instance.Log(LogLevel.Info,
-                $"[RemoveRoi] 移除区域: RegionId={region.Id}, RoiType={region.GetShapeType()?.ToString() ?? "Unknown"}",
+                $"[RemoveRoi] 移除几何输入: RoiId={roi.Id}, ShapeType={roi.LocalGeometry?.ShapeType.ToString() ?? "Unknown"}",
                 "RoiEditorControl");
 
             try
             {
-                _viewModel.Regions.Remove(region);
-                if (_selectedRegion == region)
+                _viewModel.Rois.Remove(roi);
+                if (_selectedRoi == roi)
                 {
-                    UnsubscribeShapeParameters(_selectedRegion);
-                    _selectedRegion = null;
+                    UnsubscribeRoiShape(_selectedRoi);
+                    _selectedRoi = null;
                 }
                 RenderRequested?.Invoke();
             }
             catch (Exception ex)
             {
                 VisionLogger.Instance.Log(LogLevel.Error,
-                    $"[RemoveRoi] 移除区域失败: RegionId={region.Id}, 错误={ex.Message}",
+                    $"[RemoveRoi] 移除几何输入失败: RoiId={roi.Id}, 错误={ex.Message}",
                     "RoiEditorControl",
                     ex);
             }
-        }
-
-        /// <summary>
-        /// 解析所有区域
-        /// </summary>
-        public List<Logic.ResolvedRegion> ResolveAllRegions()
-        {
-            return _viewModel.ResolveAllRegions();
         }
 
         #region 键盘快捷键
@@ -617,12 +605,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
                 if (_polygonPoints.Count == 0)
                 {
                     _isDrawingPolygon = false;
-                    if (_currentDrawingRegion != null)
-                        ReleaseRegionIndex(_currentDrawingRegion.Name);
-                    _currentDrawingRegion = null;
+                    if (_currentDrawingRoi != null)
+                        ReleaseRoiIndex(_currentDrawingRoi.Name);
+                    _currentDrawingRoi = null;
                 }
                 ClearRubberBand();
-                if (_polygonPoints.Count >= 1 && _currentDrawingRegion != null)
+                if (_polygonPoints.Count >= 1 && _currentDrawingRoi != null)
                 {
                     RenderRequested?.Invoke();
                 }
@@ -675,27 +663,27 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         /// </summary>
         public void HandleDelete()
         {
-            if (_selectedRegion == null) return;
+            if (_selectedRoi == null) return;
 
-            var regionToDelete = _selectedRegion;
+            var roiToDelete = _selectedRoi;
 
             // ★ 诊断日志：删除前状态
-            var beforeRegionNames = string.Join(", ", _viewModel.Regions.Select(r => $"{r.Name}(Id={r.Id:B})"));
+            var beforeRoiNames = string.Join(", ", _viewModel.Rois.Select(r => $"{r.Name}(Id={r.Id:B})"));
             VisionLogger.Instance.Log(LogLevel.Warning,
-                $"[Delete] 删除前状态 | InstanceId={_controlInstanceId} | 删除目标={regionToDelete.Name}(Id={regionToDelete.Id:B}) | Regions.Count={_viewModel.Regions.Count} | Regions=[{beforeRegionNames}] | _selectedRegion={regionToDelete.Name}",
+                $"[Delete] 删除前状态 | InstanceId={_controlInstanceId} | 删除目标={roiToDelete.Name}(Id={roiToDelete.Id:B}) | Rois.Count={_viewModel.Rois.Count} | Rois=[{beforeRoiNames}] | _selectedRoi={roiToDelete.Name}",
                 "RoiEditorControl");
 
-            // ★ Phase 1 修复：先取消订阅/清空状态，再触发删除（避免 OnRegionChanged 回调中看到旧状态）
-            UnsubscribeShapeParameters(regionToDelete);
-            _selectedRegion = null;
+            // ★ Phase 1 修复：先取消订阅/清空状态，再触发删除（避免 OnRoiChanged 回调中看到旧状态）
+            UnsubscribeRoiShape(roiToDelete);
+            _selectedRoi = null;
 
-            _viewModel.RemoveSelectedRegion();
+            _viewModel.RemoveSelectedRoi();
 
-            // RemoveSelectedRegion 内部会触发 RegionChanged → OnRegionChanged → RenderRequested
-            // 此时 _selectedRegion=null, GetSelectedRegion()=null, 渲染正确
-            var afterRegionNames = string.Join(", ", _viewModel.Regions.Select(r => $"{r.Name}(Id={r.Id:B})"));
+            // RemoveSelectedRoi 内部会触发 RoiChanged → OnRoiChanged → RenderRequested
+            // 此时 _selectedRoi=null, GetSelectedRoi()=null, 渲染正确
+            var afterRoiNames = string.Join(", ", _viewModel.Rois.Select(r => $"{r.Name}(Id={r.Id:B})"));
             VisionLogger.Instance.Log(LogLevel.Warning,
-                $"[Delete] 删除完成 | Regions.Count={_viewModel.Regions.Count} | Regions=[{afterRegionNames}] | SelectedRegion={_viewModel.SelectedRegion?.Name ?? "null"}",
+                $"[Delete] 删除完成 | Rois.Count={_viewModel.Rois.Count} | Rois=[{afterRoiNames}] | SelectedRoi={_viewModel.SelectedRoi?.Name ?? "null"}",
                 "RoiEditorControl");
         }
 
@@ -708,9 +696,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
             {
                 _isDrawingPolygon = false;
                 _polygonPoints.Clear();
-                if (_currentDrawingRegion != null)
-                    ReleaseRegionIndex(_currentDrawingRegion.Name);
-                _currentDrawingRegion = null;
+                if (_currentDrawingRoi != null)
+                    ReleaseRoiIndex(_currentDrawingRoi.Name);
+                _currentDrawingRoi = null;
                 ClearRubberBand();
                 RenderRequested?.Invoke();
                 _viewModel.StatusMessage = "已取消多边形绘制";
@@ -718,7 +706,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
             else if (_isDrawing)
             {
                 _isDrawing = false;
-                _currentDrawingRegion = null;
+                _currentDrawingRoi = null;
                 RenderRequested?.Invoke();
                 _viewModel.StatusMessage = "已取消绘制";
             }
@@ -815,9 +803,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
             // 1. 取消进行中的绘制（多边形顶点、橡皮筋等）
             if (_isDrawing)
             {
-                if (_currentDrawingRegion != null)
-                    ReleaseRegionIndex(_currentDrawingRegion.Name);
-                _currentDrawingRegion = null;
+                if (_currentDrawingRoi != null)
+                    ReleaseRoiIndex(_currentDrawingRoi.Name);
+                _currentDrawingRoi = null;
                 _isDrawing = false;
                 _isDrawingPolygon = false;
                 _polygonPoints.Clear();
@@ -854,18 +842,18 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
             if (OverlayCanvas == null) return null;
 
             var refPosition = ToReferencePoint(displayPos,
-                _selectedRegion?.Parameters is ShapeParameters selShape ? selShape.Geometry : null);
+                _selectedRoi?.LocalGeometry is RoiShape selShape ? selShape.Geometry : null);
 
             // ① 手柄命中（复用 HandleRenderer.HitTestHandleDetail，EditHandle 自带光标）
-            if (_selectedRegion != null && _currentHandles != null)
+            if (_selectedRoi != null && _currentHandles != null)
             {
                 var hit = Rendering.HandleRenderer.HitTestHandleDetail(refPosition, _currentHandles);
                 if (hit != null)
                     return hit.Cursor;
             }
 
-            // ② 区域主体命中 → 移动十字（HitTestRegion 内部自行反变换，需传原始显示坐标）
-            if (HitTestRegion(displayPos) != null)
+            // ② 区域主体命中 → 移动十字（HitTestRoi 内部自行反变换，需传原始显示坐标）
+            if (HitTestRoi(displayPos) != null)
                 return Cursors.SizeAll;
 
             return null;
@@ -893,21 +881,21 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
             // ★ 优化: 不再在此触发 RenderRequested，由 Manager 在 OnImageMouseMove 末尾统一调用 RenderAll()
             // 避免两次渲染 (ProcessMouseMove 内部 + Manager.RenderAll)
 
-            if (_isDraggingHandle && _activeHandleType != Rendering.HandleType.None && _selectedRegion?.Parameters is ShapeParameters shape)
+            if (_isDraggingHandle && _activeHandleType != Rendering.HandleType.None && _selectedRoi?.LocalGeometry is RoiShape shape)
             {
                 HandleShapeEdit(shape, refPosition);
                 return;
             }
 
-            if (_isDragging && _selectedRegion != null)
+            if (_isDragging && _selectedRoi != null)
             {
                 var offset = refPosition - _dragStartPoint;
-                MoveRegion(_selectedRegion, offset);
+                MoveRoi(_selectedRoi, offset);
                 _dragStartPoint = refPosition;
                 return;
             }
 
-            if (_isDrawing && _currentDrawingRegion != null)
+            if (_isDrawing && _currentDrawingRoi != null)
             {
                 if (_currentTool == ShapeType.Polygon && _isDrawingPolygon)
                 {
@@ -919,7 +907,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
                     if (_drawingLogCount == 0)
                     {
                         VisionLogger.Instance.Log(LogLevel.Info,
-                            $"[绘制预览] 开始更新预览 | CurrentDrawingRegion={_currentDrawingRegion.Name} | Position={refPosition:F1}",
+                            $"[绘制预览] 开始更新预览 | CurrentDrawingRoi={_currentDrawingRoi.Name} | Position={refPosition:F1}",
                             "RoiEditorControl");
                         _drawingLogCount++;
                     }
@@ -937,7 +925,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         {
             // 逆变换到参考坐标系（内部状态始终使用参考坐标；矩阵按当前形状有向性解析）
             Point refPosition = ToReferencePoint(position,
-                _selectedRegion?.Parameters is ShapeParameters selShape ? selShape.Geometry : null);
+                _selectedRoi?.LocalGeometry is RoiShape selShape ? selShape.Geometry : null);
 
             // 降频：每 20 次鼠标按下记录一次，避免交互路径刷日志
             if (_mouseDownLogCounter++ % 20 == 0)
@@ -970,10 +958,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
                     _isDrawingPolygon = true;
                     _isDrawing = true;
                     _polygonPoints.Clear();
-                    _currentDrawingRegion = RoiData.CreateDrawingRegion(
-                        GenerateRegionName(), _currentTool);
-                    _currentDrawingRegion.RoiType = DefaultRegionType;
-                    _currentDrawingRegion.IsPreview = true;
+                    _currentDrawingRoi = CreateDrawingRoi(_currentTool);
                 }
 
             _polygonPoints.Add(refPosition);
@@ -999,11 +984,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
                 refPosition = ToReferencePoint(position, TemplateGeometryForTool(_currentTool));
                 _startPoint = refPosition;
 
-                _currentDrawingRegion = RoiData.CreateDrawingRegion(
-                    GenerateRegionName(), _currentTool);
-                _currentDrawingRegion.RoiType = DefaultRegionType;
+                _currentDrawingRoi = CreateDrawingRoi(_currentTool);
 
-                if (_currentDrawingRegion.Parameters is ShapeParameters shapeDef)
+                if (_currentDrawingRoi.LocalGeometry is RoiShape shapeDef)
                 {
                     switch (_currentTool)
                     {
@@ -1026,7 +1009,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
                 return true;
             }
 
-            if (_selectedRegion != null)
+            if (_selectedRoi != null)
             {
                 if (_currentHandles != null)
                 {
@@ -1050,8 +1033,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
                             _activeHandleType = hitHandleType;
                             _handleDragStartPoint = refPosition;
                             _activeVertexIndex = hitHandle.VertexIndex;
-                            if (_selectedRegion?.Parameters is ShapeParameters polyShape)
-                                _originalShapeDefinition = polyShape.Clone() as ShapeParameters;
+                            if (_selectedRoi?.LocalGeometry is RoiShape polyShape)
+                                _originalShapeDefinition = polyShape.Clone() as RoiShape;
                             _viewModel.StatusMessage = "正在拖拽多边形顶点";
                             return true;
                         }
@@ -1060,9 +1043,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
                         _activeHandleType = hitHandleType;
                         _handleDragStartPoint = refPosition;
 
-                        if (_selectedRegion.Parameters is ShapeParameters shapeDef)
+                        if (_selectedRoi.LocalGeometry is RoiShape shapeDef)
                         {
-                            _originalShapeDefinition = shapeDef.Clone() as ShapeParameters;
+                            _originalShapeDefinition = shapeDef.Clone() as RoiShape;
                             var ctr = shapeDef.GetCenter();
                             _originalPosition = new System.Windows.Point(ctr.X, ctr.Y);
                             _originalSize = shapeDef.Geometry switch
@@ -1101,11 +1084,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
                 }
             }
 
-            // 传入原始画布坐标(position)，HitTestRegion 内部会自行做反向变换
-            var hitRegion = HitTestRegion(position);
-            if (hitRegion != null)
+            // 传入原始画布坐标(position)，HitTestRoi 内部会自行做反向变换
+            var hitRoi = HitTestRoi(position);
+            if (hitRoi != null)
             {
-                SelectRegion(hitRegion);
+                SelectRoi(hitRoi);
                 _isDragging = true;
                 _dragStartPoint = refPosition;
                 return true;  // ★ 命中区域，事件已消费
@@ -1154,14 +1137,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
             if (_polygonPoints.Count == 0)
             {
                 _isDrawingPolygon = false;
-                if (_currentDrawingRegion != null)
-                    ReleaseRegionIndex(_currentDrawingRegion.Name);
-                _currentDrawingRegion = null;
+                if (_currentDrawingRoi != null)
+                    ReleaseRoiIndex(_currentDrawingRoi.Name);
+                _currentDrawingRoi = null;
             }
             ClearRubberBand();
-            if (_polygonPoints.Count >= 1 && _currentDrawingRegion != null)
+            if (_polygonPoints.Count >= 1 && _currentDrawingRoi != null)
             {
-                if (_currentDrawingRegion.Parameters is ShapeParameters shapeDef)
+                if (_currentDrawingRoi.LocalGeometry is RoiShape shapeDef)
                 {
                     RenderRequested?.Invoke();
                 }
@@ -1184,7 +1167,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         public void FinishInteraction()
         {
             VisionLogger.Instance.Log(LogLevel.Info,
-                $"[FinishInteraction] 调用 FinishInteraction | InstanceId={_controlInstanceId} | _isDrawing={_isDrawing} | _currentDrawingRegion={_currentDrawingRegion?.Name ?? "null"} | _isDrawingPolygon={_isDrawingPolygon}",
+                $"[FinishInteraction] 调用 FinishInteraction | InstanceId={_controlInstanceId} | _isDrawing={_isDrawing} | _currentDrawingRoi={_currentDrawingRoi?.Name ?? "null"} | _isDrawingPolygon={_isDrawingPolygon}",
                 "RoiEditorControl");
 
             // ★ 多边形仍在绘制中（未完成），不清理状态
@@ -1194,25 +1177,21 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
                     $"[FinishInteraction] 多边形仍在绘制中，跳过清理 | InstanceId={_controlInstanceId} | 顶点数={_polygonPoints.Count}",
                     "RoiEditorControl");
 
-                // 多边形非最终完成时，清理橡皮筋线但不重置 _isDrawing/_currentDrawingRegion
+                // 多边形非最终完成时，清理橡皮筋线但不重置 _isDrawing/_currentDrawingRoi
                 ClearRubberBand();
                 RenderRequested?.Invoke();
                 return;
             }
 
-            if (_isDrawing && _currentDrawingRegion != null)
+            if (_isDrawing && _currentDrawingRoi != null)
             {
                 VisionLogger.Instance.Log(LogLevel.Info,
-                    $"[FinishInteraction] 完成绘制 | InstanceId={_controlInstanceId} | Region={_currentDrawingRegion.Name} | IsPreview={_currentDrawingRegion.IsPreview} | _nextRegionIndex={_nextRegionIndex}",
+                    $"[FinishInteraction] 完成绘制 | InstanceId={_controlInstanceId} | Roi={_currentDrawingRoi.Name} | _nextRoiIndex={_nextRoiIndex}",
                     "RoiEditorControl");
 
-                // 完成绘制，设置预览状态为 false
-                _currentDrawingRegion.IsPreview = false;
+                // 完成绘制：当前元素即正式元素（角色/预览由编辑器与渲染上下文表达，不写回模型）
 
-                // 应用默认区域类型（检测/屏蔽），颜色由 RoiData.ApplyTypeColors() 自动同步
-                _currentDrawingRegion.RoiType = DefaultRegionType;
-
-                var shapeDef = _currentDrawingRegion.Parameters as ShapeParameters;
+                var shapeDef = _currentDrawingRoi.LocalGeometry as RoiShape;
                 if (shapeDef != null)
                 {
                     bool isValid = _currentTool switch
@@ -1227,32 +1206,33 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
                         ShapeType.Circle =>
                             shapeDef.Geometry is Circle2d c && c.Radius >= 5.64 &&
                             Math.PI * c.Radius * c.Radius >= 100,
-                        ShapeType.Line => shapeDef.GetLineLength() >= 10,
+                        ShapeType.Line => shapeDef.Geometry is Line2d line
+                            && (line.GetPointAt(100) - line.Point).Length >= 10,
                         ShapeType.Polygon => shapeDef.Geometry is Polygon2d poly && poly.Vertices.Length >= 3,
                         _ => false
                     };
 
                     VisionLogger.Instance.Log(LogLevel.Info,
-                        $"[FinishInteraction] 验证区域尺寸 | InstanceId={_controlInstanceId} | Region={_currentDrawingRegion.Name} | IsValid={isValid}",
+                        $"[FinishInteraction] 验证几何输入尺寸 | InstanceId={_controlInstanceId} | Roi={_currentDrawingRoi.Name} | IsValid={isValid}",
                         "RoiEditorControl");
 
                     if (isValid)
                     {
-                        _viewModel.Regions.Add(_currentDrawingRegion);
-                        _viewModel.SelectedRegion = _currentDrawingRegion;
-                        _viewModel.StatusMessage = $"已创建 {_currentTool} 区域";
-                        RegionDataChanged?.Invoke(this, _currentDrawingRegion);
+                        _viewModel.Rois.Add(_currentDrawingRoi);
+                        _viewModel.SelectedRoi = _currentDrawingRoi;
+                        _viewModel.StatusMessage = $"已创建 {_currentTool} 几何输入";
+                        RoiDataChanged?.Invoke(this, _currentDrawingRoi);
 
                         VisionLogger.Instance.Log(LogLevel.Success,
-                            $"[FinishInteraction] 区域已添加到集合 | InstanceId={_controlInstanceId} | Region={_currentDrawingRegion.Name}(Id={_currentDrawingRegion.Id:B}) | TotalRegions={_viewModel.Regions.Count}",
+                            $"[FinishInteraction] 几何输入已添加到集合 | InstanceId={_controlInstanceId} | Roi={_currentDrawingRoi.Name}(Id={_currentDrawingRoi.Id:B}) | TotalRois={_viewModel.Rois.Count}",
                             "RoiEditorControl");
                     }
                     else
                     {
-                        _viewModel.StatusMessage = "区域太小，已忽略";
+                        _viewModel.StatusMessage = "几何输入太小，已忽略";
 
                         VisionLogger.Instance.Log(LogLevel.Warning,
-                            $"[FinishInteraction] 区域太小，已忽略 | InstanceId={_controlInstanceId} | Region={_currentDrawingRegion.Name}",
+                            $"[FinishInteraction] 几何输入太小，已忽略 | InstanceId={_controlInstanceId} | Roi={_currentDrawingRoi.Name}",
                             "RoiEditorControl");
                     }
                 }
@@ -1262,7 +1242,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
             _isDrawing = false;
             _isDragging = false;
             _isDraggingHandle = false;
-            _currentDrawingRegion = null;
+            _currentDrawingRoi = null;
 
             // 清理ROI编辑器风格的手柄状态
             _activeHandleType = Rendering.HandleType.None;
@@ -1276,7 +1256,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
             RenderRequested?.Invoke();
 
             VisionLogger.Instance.Log(LogLevel.Info,
-                $"[FinishInteraction] 清理完成 | InstanceId={_controlInstanceId} | _isDrawing={_isDrawing} | _currentDrawingRegion={_currentDrawingRegion?.Name ?? "null"}",
+                $"[FinishInteraction] 清理完成 | InstanceId={_controlInstanceId} | _isDrawing={_isDrawing} | _currentDrawingRoi={_currentDrawingRoi?.Name ?? "null"}",
                 "RoiEditorControl");
         }
 
@@ -1286,7 +1266,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
 
         private void UpdateDrawingPreview(Point currentPosition)
         {
-            if (_currentDrawingRegion?.Parameters is not ShapeParameters shapeDef || shapeDef.Geometry == null)
+            if (_currentDrawingRoi?.LocalGeometry is not RoiShape shapeDef || shapeDef.Geometry == null)
                 return;
 
             // Log preview update (every 10 times)
@@ -1328,9 +1308,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
             }
         }
 
-        private void MoveRegion(RoiData region, Vector offset)
+        private void MoveRoi(Roi roi, Vector offset)
         {
-            if (region.Parameters is ShapeParameters shapeDef && shapeDef.Geometry != null)
+            if (roi.LocalGeometry is RoiShape shapeDef && shapeDef.Geometry != null)
             {
                 shapeDef.Geometry = shapeDef.Geometry switch
                 {
@@ -1345,19 +1325,18 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
                     _ => shapeDef.Geometry,
                 };
 
-                region.MarkModified();
-                RegionDataChanged?.Invoke(this, region);
+                RoiDataChanged?.Invoke(this, roi);
             }
         }
 
         #region 多边形辅助方法
 
         /// <summary>
-        /// 将 _polygonPoints 同步到 ShapeParameters.Points
+        /// 将 _polygonPoints 同步到 RoiShape.Points
         /// </summary>
         private void SyncPolygonToShapeDef()
         {
-            if (_currentDrawingRegion?.Parameters is ShapeParameters shapeDef)
+            if (_currentDrawingRoi?.LocalGeometry is RoiShape shapeDef)
             {
                 shapeDef.Geometry = new Polygon2d(
                     _polygonPoints.Select(p => new System.Windows.Point(p.X, p.Y)).ToArray());
@@ -1427,9 +1406,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         /// <summary>
         /// 根据手柄类型更新形状
         /// </summary>
-        private void UpdateShapeByHandle(RoiData region, Rendering.HandleType handleType, double dx, double dy)
+        private void UpdateShapeByHandle(Roi roi, Rendering.HandleType handleType, double dx, double dy)
         {
-            if (region.Parameters is not ShapeParameters shapeDef)
+            if (roi.LocalGeometry is not RoiShape shapeDef)
                 return;
 
             if (shapeDef.Geometry == null) return;
@@ -1441,14 +1420,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
             // Rectangle/RotatedRectangle 通过 HandleShapeEdit 中的 ResizeRectangle* 方法处理
             // Polygon 通过顶点手柄直接更新
 
-            region.MarkModified();
-            RegionDataChanged?.Invoke(this, region);
+            RoiDataChanged?.Invoke(this, roi);
         }
 
         /// <summary>
         /// 更新矩形形状（通过手柄，使用原始状态避免累积误差）
         /// </summary>
-        private void UpdateRectangleByHandle(ShapeParameters shapeDef, Rendering.HandleType handleType, double dx, double dy)
+        private void UpdateRectangleByHandle(RoiShape shapeDef, Rendering.HandleType handleType, double dx, double dy)
         {
             // 此方法已弃用，现在使用ResizeRectangleFromCorner和ResizeRectangleFromEdge方法
             // 这些方法使用原始状态保存机制，避免累积误差
@@ -1468,7 +1446,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         /// <summary>
         /// 更新圆形形状（通过手柄）
         /// </summary>
-        private void UpdateCircleByHandle(ShapeParameters shapeDef, Rendering.HandleType handleType, double dx, double dy)
+        private void UpdateCircleByHandle(RoiShape shapeDef, Rendering.HandleType handleType, double dx, double dy)
         {
             if (shapeDef.Geometry is not Circle2d c) return;
 
@@ -1492,7 +1470,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
             }
         }
 
-        private void UpdateLineByHandle(ShapeParameters shapeDef, Rendering.HandleType handleType, double dx, double dy)
+        private void UpdateLineByHandle(RoiShape shapeDef, Rendering.HandleType handleType, double dx, double dy)
         {
             if (shapeDef.Geometry is not Line2d l) return;
 
@@ -1518,7 +1496,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         /// ROI编辑器风格的手柄编辑处理
         /// 参考ROI编辑器的编辑操作逻辑（ROIImageEditor.xaml.cs 1461-1816行）
         /// </summary>
-        private void HandleShapeEdit(ShapeParameters shape, Point currentPosition)
+        private void HandleShapeEdit(RoiShape shape, Point currentPosition)
         {
             var delta = currentPosition - _handleDragStartPoint;
 
@@ -1594,18 +1572,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
                 }
             }
 
-            // 触发变更事件
-            if (_selectedRegion != null)
+            // 触发变更事件（几何已就地修改，无需脏标记）
+            if (_selectedRoi != null)
             {
-                _selectedRegion.MarkModified();
-                RegionDataChanged?.Invoke(this, _selectedRegion);
+                RoiDataChanged?.Invoke(this, _selectedRoi);
             }
         }
 
         /// <summary>
         /// 处理旋转操作（参考ROI编辑器HandleRotate 1792-1816行）
         /// </summary>
-        private void HandleRotate(ShapeParameters shape, Point currentPosition)
+        private void HandleRotate(RoiShape shape, Point currentPosition)
         {
             if (shape.Geometry is not RotatedRect2d rr) return;
             var center = new Point(rr.CenterX, rr.CenterY);
@@ -1639,7 +1616,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         /// <summary>
         /// 处理旋转矩形大小调整（使用坐标变换，参考ROI编辑器）
         /// </summary>
-        private void HandleRotatedRectangleResize(ShapeParameters shape, Point currentPosition, Vector delta)
+        private void HandleRotatedRectangleResize(RoiShape shape, Point currentPosition, Vector delta)
         {
             if (_originalShapeDefinition == null) return;
 
@@ -1799,7 +1776,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         /// <summary>
         /// 处理圆形半径调整（参考ROI编辑器HandleCircleResize 1473-1477行）
         /// </summary>
-        private void HandleCircleResize(ShapeParameters shape, Point currentPosition)
+        private void HandleCircleResize(RoiShape shape, Point currentPosition)
         {
             if (shape.Geometry is not Circle2d c) return;
             var center = c.Center;
@@ -1812,7 +1789,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
             shape.Geometry = new Circle2d(center.X, center.Y, newRadius);
         }
 
-        private void HandleLineEndpoint(ShapeParameters shape, Point currentPosition)
+        private void HandleLineEndpoint(RoiShape shape, Point currentPosition)
         {
             if (shape.Geometry is not Line2d l) return;
             var startPt = l.Point;
@@ -1832,7 +1809,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         /// 从角落调整矩形（不对称编辑 - 固定对角点模式）
         /// 参考ROI编辑器旋转矩形的HandleRotatedRectangleResize逻辑
         /// </summary>
-        private void ResizeRectangleFromCorner(ShapeParameters shape, Vector delta, bool isLeft, bool isTop)
+        private void ResizeRectangleFromCorner(RoiShape shape, Vector delta, bool isLeft, bool isTop)
         {
             if (_originalShapeDefinition == null) return;
 
@@ -1933,7 +1910,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         /// 从边缘调整矩形（非对称编辑 - 固定对边模式）
         /// 使用与 ResizeRectangleFromCorner 相同的角点计算逻辑
         /// </summary>
-        private void ResizeRectangleFromEdge(ShapeParameters shape, Vector delta, bool isVertical, bool isTopOrLeft)
+        private void ResizeRectangleFromEdge(RoiShape shape, Vector delta, bool isVertical, bool isTopOrLeft)
         {
             if (_originalShapeDefinition == null) return;
 
@@ -2027,16 +2004,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         /// </summary>
         public List<RoiRenderContext> GetRenderContexts()
         {
-            var regions = _viewModel?.Regions;
-            if (regions == null || regions.Count == 0)
+            var rois = _viewModel?.Rois;
+            if (rois == null || rois.Count == 0)
                 return new List<RoiRenderContext>();
 
-            var contexts = new List<RoiRenderContext>(regions.Count);
-            foreach (var region in regions)
+            var contexts = new List<RoiRenderContext>(rois.Count);
+            foreach (var roi in rois)
             {
-                if (!region.IsVisible) continue;
-                if (region.Parameters is not ShapeParameters shapeDef) continue;
-                contexts.Add(CreateRenderContextInternal(region, shapeDef, region.IsPreview));
+                if (!roi.IsVisible) continue;
+                if (roi.LocalGeometry is not RoiShape shapeDef) continue;
+                // 集合元素均为正式几何输入，非预览；预览仅存在于绘制中的 _currentDrawingRoi（走 GetPreviewContext）
+                contexts.Add(CreateRenderContextInternal(roi, shapeDef, isPreview: false));
             }
             return contexts;
         }
@@ -2046,9 +2024,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         /// </summary>
         public RoiRenderContext? GetPreviewContext()
         {
-            if (_isDrawing && _currentDrawingRegion?.Parameters is ShapeParameters previewShape)
+            if (_isDrawing && _currentDrawingRoi?.LocalGeometry is RoiShape previewShape)
             {
-                var context = CreateRenderContextInternal(_currentDrawingRegion, previewShape, isPreview: true);
+                var context = CreateRenderContextInternal(_currentDrawingRoi, previewShape, isPreview: true);
 
                 // ★ 多边形预览：包含临时鼠标位置，让用户看到"点击后会是什么样的"
                 if (_currentTool == ShapeType.Polygon && _isDrawingPolygon && _polygonPoints.Count >= 1)
@@ -2079,17 +2057,18 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         /// <summary>
         /// 创建渲染上下文
         /// </summary>
-        private RoiRenderContext CreateRenderContextInternal(RoiData region, ShapeParameters shape, bool isPreview = false)
+        private RoiRenderContext CreateRenderContextInternal(Roi roi, RoiShape shape, bool isPreview = false)
         {
-            LogCorrectionStatus($"CreateRenderContext(Region={region.Name})");
+            LogCorrectionStatus($"CreateRenderContext(Roi={roi.Name})");
             var context = new RoiRenderContext
             {
-                Id = region.Id,
+                Id = roi.Id,
                 ShapeType = shape.ShapeType,
-                IsSelected = region == _selectedRegion,
+                IsSelected = roi == _selectedRoi,
                 IsPreview = isPreview,
                 IsVisible = true,
-                RoiType = region.RoiType,
+                // 检测/屏蔽角色由编辑器实例承载（DefaultRegionType DP），不落模型元素
+                RoiType = DefaultRegionType,
 
                 // 样式参数
                 FillColor = Color.FromArgb(
@@ -2107,9 +2086,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
                 StrokeThickness = shape.StrokeThickness,
                 Opacity = shape.Opacity,
 
-                Label = region.RoiType == Models.RoiType.Mask
-                    ? $"■ {region.Name}"
-                    : $"□ {region.Name}"
+                Label = DefaultRegionType == RoiType.Mask
+                    ? $"■ {roi.Name}"
+                    : $"□ {roi.Name}"
             };
 
             // 从 Geometry 提取几何参数（按形状有向性选择修正矩阵：无向剥转 / 有向完整）
@@ -2169,12 +2148,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         /// <summary>
         /// 绘制编辑手柄（ROI编辑器风格）
         /// </summary>
-        public void DrawEditHandles(RoiData region)
+        public void DrawEditHandles(Roi roi)
         {
-            if (region.Parameters is not ShapeParameters shapeDef || OverlayCanvas == null)
+            if (roi.LocalGeometry is not RoiShape shapeDef || OverlayCanvas == null)
             {
                 VisionLogger.Instance.Log(LogLevel.Warning,
-                    $"[DrawEditHandles] 跳过手柄绘制 | Region={region.Name} | IsShapeParams={region.Parameters is ShapeParameters} | OverlayCanvas={OverlayCanvas != null}",
+                    $"[DrawEditHandles] 跳过手柄绘制 | Roi={roi.Name} | IsShapeParams={roi.LocalGeometry is RoiShape} | OverlayCanvas={OverlayCanvas != null}",
                     "RoiEditorControl");
                 return;
             }
@@ -2184,12 +2163,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
 
             if (_currentHandles != null && _currentHandles.Length > 0)
             {
-                // ★ Phase 4: 根据区域类型传入差异色
+                // ★ Phase 4: 根据编辑器角色传入差异色
                 var zoom = CurrentZoom;
-                var handleColor = region.RoiType switch
+                var handleColor = DefaultRegionType switch
                 {
-                    Models.RoiType.Mask => ColorConstants.MaskOrangeBrush,
-                    Models.RoiType.Inspection => ColorConstants.InspectionBlueBrush,
+                    RoiType.Mask => ColorConstants.MaskOrangeBrush,
+                    RoiType.Inspection => ColorConstants.InspectionBlueBrush,
                     _ => ColorConstants.MaskOrangeBrush
                 };
 
@@ -2220,7 +2199,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         /// <summary>
         /// 为形状创建ROI编辑器风格的手柄（强自适应 + 差异化）
         /// </summary>
-        private void CreateHandlesForShape(ShapeParameters shape)
+        private void CreateHandlesForShape(RoiShape shape)
         {
             var zoom = CurrentZoom;
 
@@ -2286,127 +2265,36 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
             return null;
         }
 
-        private Shape? CreateRegionShape(RoiData region, bool isPreview = false)
-        {
-            if (region.Parameters is not ShapeParameters shapeDef)
-                return null;
-
-            // 使用ShapeRenderer创建形状（参考ROI编辑器）
-            var isSelected = region == _selectedRegion;
-            var shape = ShapeRenderer.CreateShape(shapeDef, isSelected, isPreview);
-
-            if (shape != null)
-            {
-                // 根据shape.Tag获取位置信息
-                var tag = shape.Tag;
-                if (tag != null && tag.GetType().GetProperty("X") != null && tag.GetType().GetProperty("Y") != null)
-                {
-                    var xProp = tag.GetType().GetProperty("X");
-                    var yProp = tag.GetType().GetProperty("Y");
-                    var x = (double?)xProp.GetValue(tag);
-                    var y = (double?)yProp.GetValue(tag);
-
-                    if (x.HasValue && y.HasValue)
-                    {
-                        Canvas.SetLeft(shape, x.Value);
-                        Canvas.SetTop(shape, y.Value);
-                    }
-                }
-                // 直线不需要Canvas定位
-            }
-
-            return shape;
-        }
-
-        private void DrawRegionLabel(RoiData region)
-        {
-            if (OverlayCanvas == null || string.IsNullOrEmpty(region.Name)) return;
-
-            var bounds = GetRegionBounds(region);
-            double labelTop = bounds.Top - 18;
-
-            if (labelTop < 0) labelTop = bounds.Bottom + 2;
-
-            var label = new TextBlock
-            {
-                Text = region.Name,
-                FontSize = 12,
-                Foreground = Brushes.White,
-                Background = new SolidColorBrush(ColorConstants.LabelBackground),
-                Padding = new Thickness(4, 2, 4, 2),
-                Tag = region.Id
-            };
-
-            label.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-            double labelWidth = label.DesiredSize.Width;
-
-            double labelLeft = bounds.Left + (bounds.Width - labelWidth) / 2;
-            if (labelLeft < 0) labelLeft = 0;
-
-            Canvas.SetLeft(label, labelLeft);
-            Canvas.SetTop(label, labelTop);
-            OverlayCanvas.Children.Add(label);
-        }
-
-        private Rect GetRegionBounds(RoiData region)
-        {
-            if (region.Parameters is not ShapeParameters shapeDef)
-                return Rect.Empty;
-
-            if (shapeDef.Geometry == null) return Rect.Empty;
-
-            if (shapeDef.Geometry is System.Windows.Rect r)
-                return new Rect(r.X, r.Y, r.Width, r.Height);
-            else if (shapeDef.Geometry is RotatedRect2d rr)
-                return rr.BoundingBox;
-            else if (shapeDef.Geometry is Circle2d c)
-                return new Rect(c.Center.X - c.Radius, c.Center.Y - c.Radius, c.Diameter, c.Diameter);
-            else if (shapeDef.Geometry is Line2d l)
-            {
-                var startPt = new Point(l.Point.X, l.Point.Y);
-                var endPt = l.GetPointAt(100);
-                return new Rect(
-                    Math.Min(startPt.X, endPt.X),
-                    Math.Min(startPt.Y, endPt.Y),
-                    Math.Abs(endPt.X - startPt.X),
-                    Math.Abs(endPt.Y - startPt.Y));
-            }
-            else if (shapeDef.Geometry is Polygon2d poly)
-                return poly.BoundingBox;
-
-            return Rect.Empty;
-        }
-
         #endregion
 
         #region 命中测试和选择
 
-        public RoiData? HitTestRegion(Point point, double tolerance = 0)
+        public Roi? HitTestRoi(Point point, double tolerance = 0)
         {
-            // 从后往前测试（后绘制的在上面）；逐区域按形状有向性反变换到参考坐标系
-            foreach (var region in _viewModel.Regions.Reverse())
+            // 从后往前测试（后绘制的在上面）；逐个几何输入按形状有向性反变换到参考坐标系
+            foreach (var roi in _viewModel.Rois.Reverse())
             {
-                if (!region.IsVisible) continue;
-                if (region.Parameters is not ShapeParameters regionShape || regionShape.Geometry == null)
+                if (!roi.IsVisible) continue;
+                if (roi.LocalGeometry is not RoiShape roiShape || roiShape.Geometry == null)
                     continue;
 
-                Point refPoint = ToReferencePoint(point, regionShape.Geometry);
+                Point refPoint = ToReferencePoint(point, roiShape.Geometry);
 
-                if (IsPointInRegion(refPoint, region, tolerance))
+                if (IsPointInRoi(refPoint, roi, tolerance))
                 {
                     VisionLogger.Instance.Log(LogLevel.Success,
-                        $"[HitTestRegion] 命中: Region={region.Name}(Id={region.Id:B}) | 区域类型={region.RoiType} | 参考坐标=({refPoint.X:F1},{refPoint.Y:F1})",
+                        $"[HitTestRoi] 命中: Roi={roi.Name}(Id={roi.Id:B}) | 编辑器角色={DefaultRegionType} | 参考坐标=({refPoint.X:F1},{refPoint.Y:F1})",
                         "RoiEditorControl");
-                    return region;
+                    return roi;
                 }
             }
 
             return null;
         }
 
-        private bool IsPointInRegion(Point point, RoiData region, double tolerance)
+        private bool IsPointInRoi(Point point, Roi roi, double tolerance)
         {
-            if (region.Parameters is not ShapeParameters shapeDef || shapeDef.Geometry == null)
+            if (roi.LocalGeometry is not RoiShape shapeDef || shapeDef.Geometry == null)
                 return false;
 
             var geo = shapeDef.Geometry;
@@ -2512,26 +2400,26 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
             return false;
         }
 
-        private void SelectRegion(RoiData? region)
+        private void SelectRoi(Roi? roi)
         {
             VisionLogger.Instance.Log(LogLevel.Info,
-                $"[SelectRegion] 选中区域 | Region={region?.Name ?? "null"}(Id={region?.Id:B}) | Regions.Count={_viewModel.Regions.Count}",
+                $"[SelectRoi] 选中几何输入 | Roi={roi?.Name ?? "null"}(Id={roi?.Id:B}) | Rois.Count={_viewModel.Rois.Count}",
                 "RoiEditorControl");
 
-            // 取消旧区域的参数变更订阅
-            UnsubscribeShapeParameters(_selectedRegion);
+            // 取消旧几何输入的参数变更订阅
+            UnsubscribeRoiShape(_selectedRoi);
 
-            _selectedRegion = region;
-            _viewModel.SelectedRegion = region;
+            _selectedRoi = roi;
+            _viewModel.SelectedRoi = roi;
             RenderRequested?.Invoke();
 
-            // 订阅新区域的参数变更（面板→画布自动同步）
-            SubscribeShapeParameters(region);
+            // 订阅新几何输入的参数变更（面板→画布自动同步）
+            SubscribeRoiShape(roi);
 
-            // 选中区域后，确保焦点回到区域编辑器，以接收键盘事件（如Delete删除区域）
-            // 因为选择区域是通过主窗口 ImageControl 的鼠标事件触发的，
+            // 选中几何输入后，确保焦点回到区域编辑器，以接收键盘事件（如Delete删除）
+            // 因为选择几何输入是通过主窗口 ImageControl 的鼠标事件触发的，
             // 点击主窗口会导致焦点离开调试窗口，需要在选中后拉回焦点
-            if (region != null)
+            if (roi != null)
             {
                 Keyboard.Focus(this);
             }
@@ -2540,13 +2428,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         public void DeselectAll()
         {
             VisionLogger.Instance.Log(LogLevel.Info,
-                $"[DeselectAll] 取消所有选中 | _selectedRegion={_selectedRegion?.Name ?? "null"} | Regions.Count={_viewModel.Regions.Count}",
+                $"[DeselectAll] 取消所有选中 | _selectedRoi={_selectedRoi?.Name ?? "null"} | Rois.Count={_viewModel.Rois.Count}",
                 "RoiEditorControl");
 
-            UnsubscribeShapeParameters(_selectedRegion);
+            UnsubscribeRoiShape(_selectedRoi);
 
-            _selectedRegion = null;
-            _viewModel.SelectedRegion = null;
+            _selectedRoi = null;
+            _viewModel.SelectedRoi = null;
 
             // 清理ROI编辑器风格的手柄状态
             _currentHandles = null;
@@ -2564,11 +2452,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         /// 取消形状参数变更订阅
         /// 多边形顶点订阅已移除（Polygon2d 使用固定数组，非 Observable）
         /// </summary>
-        private void UnsubscribeShapeParameters(RoiData? region)
+        private void UnsubscribeRoiShape(Roi? roi)
         {
-            if (region?.Parameters is ShapeParameters shape)
+            if (roi?.LocalGeometry is RoiShape shape)
             {
-                shape.PropertyChanged -= OnShapeParametersChanged;
+                shape.PropertyChanged -= OnRoiShapeChanged;
             }
         }
 
@@ -2576,18 +2464,18 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         /// 订阅形状参数变更（面板→画布自动同步）
         /// 多边形顶点订阅已移除（Polygon2d 使用固定数组，非 Observable）
         /// </summary>
-        private void SubscribeShapeParameters(RoiData? region)
+        private void SubscribeRoiShape(Roi? roi)
         {
-            if (region?.Parameters is ShapeParameters shape)
+            if (roi?.LocalGeometry is RoiShape shape)
             {
-                shape.PropertyChanged += OnShapeParametersChanged;
+                shape.PropertyChanged += OnRoiShapeChanged;
             }
         }
 
         /// <summary>
         /// 形状参数 PropertyChanged 回调（Geometry 变更 → 画布刷新）
         /// </summary>
-        private void OnShapeParametersChanged(object? sender, PropertyChangedEventArgs e)
+        private void OnRoiShapeChanged(object? sender, PropertyChangedEventArgs e)
         {
             RenderRequested?.Invoke();
         }
@@ -2604,7 +2492,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
             if (e.PropertyName == nameof(RoiEditorViewModel.IsDrawing))
             {
                 VisionLogger.Instance.Log(LogLevel.Info,
-                    $"[OnViewModelPropertyChanged] IsDrawing 变化 | InstanceId={_controlInstanceId} | NewValue={_viewModel.IsDrawing} | _isDrawing={_isDrawing} | IsLoaded={IsLoaded} | IsVisible={IsVisible} | _currentDrawingRegion={_currentDrawingRegion?.Name ?? "null"}",
+                    $"[OnViewModelPropertyChanged] IsDrawing 变化 | InstanceId={_controlInstanceId} | NewValue={_viewModel.IsDrawing} | _isDrawing={_isDrawing} | IsLoaded={IsLoaded} | IsVisible={IsVisible} | _currentDrawingRoi={_currentDrawingRoi?.Name ?? "null"}",
                     "RoiEditorControl");
             }
             else if (e.PropertyName == nameof(RoiEditorViewModel.SelectedShapeType))
@@ -2628,10 +2516,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
                         _polygonPoints.Clear();
                         ClearRubberBand();
                     }
-                    if (_currentDrawingRegion != null)
-                        ReleaseRegionIndex(_currentDrawingRegion.Name);
+                    if (_currentDrawingRoi != null)
+                        ReleaseRoiIndex(_currentDrawingRoi.Name);
                     _isDrawing = false;
-                    _currentDrawingRegion = null;
+                    _currentDrawingRoi = null;
                     _viewModel.IsDrawing = false;
                     ShapeToolBarControl.ClearSelection();
                     RenderRequested?.Invoke();
@@ -2642,37 +2530,37 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
             }
         }
 
-        private void OnRegionChanged(object? sender, RoiChangedEventArgs e)
+        private void OnRoiChanged(object? sender, RoiChangedEventArgs e)
         {
-            // 精简日志：仅记录数量，不再拼接全部区域 GUID 列表（避免超长字符串）
+            // 精简日志：仅记录数量，不再拼接全部几何输入 GUID 列表（避免超长字符串）
             VisionLogger.Instance.Log(LogLevel.Warning,
-                $"[OnRegionChanged] ViewModel 触发 RegionChanged | InstanceId={_controlInstanceId} | RegionId={e.Region?.Id:B} | RegionName={e.Region?.Name ?? "null"} | ChangeType={e.ChangeType} | Regions.Count={_viewModel?.Regions?.Count ?? -1}",
+                $"[OnRoiChanged] ViewModel 触发 RoiChanged | InstanceId={_controlInstanceId} | RoiId={e.Roi?.Id:B} | RoiName={e.Roi?.Name ?? "null"} | ChangeType={e.ChangeType} | Rois.Count={_viewModel?.Rois?.Count ?? -1}",
                 "RoiEditorControl");
 
             try
             {
-                // 区域删除时释放索引到空洞池
-                if (e.ChangeType == RoiChangeType.Removed && e.Region != null)
+                // 几何输入删除时释放索引到空洞池
+                if (e.ChangeType == RoiChangeType.Removed && e.Roi != null)
                 {
-                    ReleaseRegionIndex(e.Region.Name);
+                    ReleaseRoiIndex(e.Roi.Name);
                 }
-                // 清除所有区域时重置索引管理
+                // 清除所有几何输入时重置索引管理
                 else if (e.ChangeType == RoiChangeType.Cleared)
                 {
                     _availableIndices.Clear();
-                    _nextRegionIndex = 1;
+                    _nextRoiIndex = 1;
                 }
 
                 RenderRequested?.Invoke();
-                if (e.Region != null)
+                if (e.Roi != null)
                 {
-                    RegionDataChanged?.Invoke(this, e.Region);
+                    RoiDataChanged?.Invoke(this, e.Roi);
                 }
             }
             catch (Exception ex)
             {
                 VisionLogger.Instance.Log(LogLevel.Error,
-                    $"[OnRegionChanged] 区域变更处理失败 | InstanceId={_controlInstanceId} | Error={ex.Message}",
+                    $"[OnRoiChanged] 几何输入变更处理失败 | InstanceId={_controlInstanceId} | Error={ex.Message}",
                     "RoiEditorControl",
                     ex);
             }
@@ -2681,13 +2569,34 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         #endregion
 
         /// <summary>
-        /// 生成区域名称 - 空洞池优先，O(log n)
+        /// 创建绘制中的临时几何输入（本地绘制模式）
         /// </summary>
         /// <remarks>
-        /// 优先填充被删除区域释放的索引空洞，无空洞时递增。
-        /// 例如：已有 区域_1、区域_3，则新建 区域_2（填充空洞）
+        /// 绘制完成前不入集合（GetRenderContexts 不渲染它），
+        /// 预览态由 _isDrawing/_currentDrawingRoi 表达（GetPreviewContext 单独渲染），
+        /// 完成时 FinishInteraction 将其加入 Rois 集合成为正式元素。
+        /// 检测/屏蔽角色由编辑器实例 DefaultRegionType 承载，不写回模型。
         /// </remarks>
-        private string GenerateRegionName()
+        private Roi CreateDrawingRoi(ShapeType tool)
+        {
+            return new Roi
+            {
+                Name = GenerateRoiName(),
+                LocalGeometry = new RoiShape
+                {
+                    Geometry = RoiShape.CreateDefaultGeometry(tool),
+                }
+            };
+        }
+
+        /// <summary>
+        /// 生成几何输入默认名 - 空洞池优先，O(log n)
+        /// </summary>
+        /// <remarks>
+        /// 优先填充被删除输入释放的索引空洞，无空洞时递增。
+        /// 例如：已有 几何输入_1、几何输入_3，则新建 几何输入_2（填充空洞）
+        /// </remarks>
+        private string GenerateRoiName()
         {
             int nextIndex;
             if (_availableIndices.Count > 0)
@@ -2699,19 +2608,19 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
             else
             {
                 // 无空洞，递增
-                nextIndex = _nextRegionIndex++;
+                nextIndex = _nextRoiIndex++;
             }
-            return $"区域_{nextIndex}";
+            return $"几何输入_{nextIndex}";
         }
 
         /// <summary>
-        /// 释放区域索引到空洞池 - 删除时调用，O(log n)
+        /// 释放几何输入索引到空洞池 - 删除时调用，O(log n)
         /// </summary>
-        private void ReleaseRegionIndex(string regionName)
+        private void ReleaseRoiIndex(string inputName)
         {
-            if (regionName != null && regionName.StartsWith("区域_"))
+            if (inputName != null && inputName.StartsWith("几何输入_"))
             {
-                var indexPart = regionName.Substring(3);
+                var indexPart = inputName.Substring(5);
                 if (int.TryParse(indexPart, out var index) && index > 0)
                 {
                     _availableIndices.Add(index);
@@ -2720,19 +2629,19 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         }
 
         /// <summary>
-        /// 根据已有区域初始化空洞池 - SetRegionsSource 时调用
+        /// 根据已有几何输入初始化空洞池 - SetRoisSource 时调用
         /// </summary>
-        private void InitializeRegionIndexFromExisting()
+        private void InitializeRoiIndexFromExisting()
         {
             _availableIndices.Clear();
-            _nextRegionIndex = 1;
+            _nextRoiIndex = 1;
 
             var usedIndices = new HashSet<int>();
-            foreach (var region in _viewModel.Regions)
+            foreach (var input in _viewModel.Rois)
             {
-                if (region.Name != null && region.Name.StartsWith("区域_"))
+                if (input.Name != null && input.Name.StartsWith("几何输入_"))
                 {
-                    var indexPart = region.Name.Substring(3);
+                    var indexPart = input.Name.Substring(5);
                     if (int.TryParse(indexPart, out var index) && index > 0)
                     {
                         usedIndices.Add(index);
@@ -2744,7 +2653,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
                 return;
 
             var maxIndex = usedIndices.Max();
-            _nextRegionIndex = maxIndex + 1;
+            _nextRoiIndex = maxIndex + 1;
 
             // 扫描 1~max 之间的空洞
             for (int i = 1; i <= maxIndex; i++)
@@ -2766,13 +2675,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
             const string polygonToolTip = "多边形 (P)\n点击添加顶点\n右键撤销上一点\n双击/Enter完成";
             var shapeTools = new System.Collections.ObjectModel.ObservableCollection<Models.ShapeToolItem>
             {
-                new(Models.ShapeType.Rectangle, "矩形", "M2,2 L18,2 L18,18 L2,18 Z", Key.R),
-                new(Models.ShapeType.Circle, "圆形",
+                new(ShapeType.Rectangle, "矩形", "M2,2 L18,2 L18,18 L2,18 Z", Key.R),
+                new(ShapeType.Circle, "圆形",
                     "M9,1 A8,8 0 1,0 9,17 A8,8 0 1,0 9,1 Z M9,4 L9,14 M4,9 L14,9", Key.C),
-                new(Models.ShapeType.RotatedRectangle, "旋转矩形",
+                new(ShapeType.RotatedRectangle, "旋转矩形",
                     "M5,10 L10,3 L19,10 L14,17 Z M17,7 A3,3 0 0,1 20,11", Key.O),
-                new(Models.ShapeType.Line, "直线", "M3,17 L17,3", Key.L, isVisible: false),
-                new(Models.ShapeType.Polygon, "多边形",
+                new(ShapeType.Line, "直线", "M3,17 L17,3", Key.L, isVisible: false),
+                new(ShapeType.Polygon, "多边形",
                     "M11,1 L19,6 L18,15 L12,19 L4,16 L2,9 Z", Key.P, toolTip: polygonToolTip)
             };
 
@@ -2782,12 +2691,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         /// <summary>
         /// 形状工具栏选择变更处理
         /// </summary>
-        private void OnShapeToolBarSelectionChanged(object? sender, Models.ShapeType? shapeType)
+        private void OnShapeToolBarSelectionChanged(object? sender, ShapeType? shapeType)
         {
             if (shapeType.HasValue)
             {
                 // 多边形特殊情况
-                if (shapeType.Value == Models.ShapeType.Polygon)
+                if (shapeType.Value == ShapeType.Polygon)
                     _isDrawingPolygon = false;
                 SelectShapeTool(shapeType.Value);
             }
@@ -2802,7 +2711,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         /// 已激活的相同形状 → 退出绘制模式回到选择模式
         /// 不同形状 → 切换形状工具
         /// </summary>
-        private void SelectShapeTool(Models.ShapeType shapeType)
+        private void SelectShapeTool(ShapeType shapeType)
         {
             // 如果当前是绘制模式且点击的是同一个形状 → 退出绘制，回到选择模式
             if (_viewModel.IsDrawing && _currentTool == shapeType)
@@ -2810,12 +2719,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
                 // 取消进行中的绘制
                 if (_isDrawing || _isDrawingPolygon)
                 {
-                    if (_currentDrawingRegion != null)
-                        ReleaseRegionIndex(_currentDrawingRegion.Name);
+                    if (_currentDrawingRoi != null)
+                        ReleaseRoiIndex(_currentDrawingRoi.Name);
                     _isDrawing = false;
                     _isDrawingPolygon = false;
                     _polygonPoints.Clear();
-                    _currentDrawingRegion = null;
+                    _currentDrawingRoi = null;
                     ClearRubberBand();
                 }
                 EnterSelectMode();
@@ -2836,11 +2745,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
             // 更新状态消息
             var shapeName = shapeType switch
             {
-                Models.ShapeType.Rectangle => "矩形",
-                Models.ShapeType.Circle => "圆形",
-                Models.ShapeType.RotatedRectangle => "旋转矩形",
-                Models.ShapeType.Line => "直线",
-                Models.ShapeType.Polygon => "多边形",
+                ShapeType.Rectangle => "矩形",
+                ShapeType.Circle => "圆形",
+                ShapeType.RotatedRectangle => "旋转矩形",
+                ShapeType.Line => "直线",
+                ShapeType.Polygon => "多边形",
                 _ => shapeType.ToString()
             };
             _viewModel.StatusMessage = $"已选择 {shapeName} 工具，在图像上拖动绘制";
@@ -2856,7 +2765,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         {
             // 退出绘制状态，进入选择状态
             _viewModel.IsDrawing = false;
-            _currentTool = Models.ShapeType.None;
+            _currentTool = ShapeType.None;
 
             // 清除形状工具栏选中状态
             ShapeToolBarControl.ClearSelection();

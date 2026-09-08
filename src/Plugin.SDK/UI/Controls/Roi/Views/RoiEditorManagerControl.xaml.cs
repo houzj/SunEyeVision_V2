@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -10,10 +10,10 @@ using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.UI.Controls;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Rendering;
 
-namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
+namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
 {
     /// <summary>
     /// Unified region editor manager control.
@@ -53,28 +53,28 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
 
         #region Dependency Properties
 
-        public static readonly DependencyProperty InspectionRegionsSourceProperty =
-            DependencyProperty.Register(nameof(InspectionRegionsSource),
-                typeof(ObservableCollection<RoiData>),
+        public static readonly DependencyProperty InspectionRoisSourceProperty =
+            DependencyProperty.Register(nameof(InspectionRoisSource),
+                typeof(ObservableCollection<Roi>),
                 typeof(RoiEditorManagerControl),
                 new PropertyMetadata(null, OnInspectionSourceChanged));
 
-        public ObservableCollection<RoiData>? InspectionRegionsSource
+        public ObservableCollection<Roi>? InspectionRoisSource
         {
-            get => (ObservableCollection<RoiData>?)GetValue(InspectionRegionsSourceProperty);
-            set => SetValue(InspectionRegionsSourceProperty, value);
+            get => (ObservableCollection<Roi>?)GetValue(InspectionRoisSourceProperty);
+            set => SetValue(InspectionRoisSourceProperty, value);
         }
 
-        public static readonly DependencyProperty MaskRegionsSourceProperty =
-            DependencyProperty.Register(nameof(MaskRegionsSource),
-                typeof(ObservableCollection<RoiData>),
+        public static readonly DependencyProperty MaskRoisSourceProperty =
+            DependencyProperty.Register(nameof(MaskRoisSource),
+                typeof(ObservableCollection<Roi>),
                 typeof(RoiEditorManagerControl),
                 new PropertyMetadata(null, OnMaskSourceChanged));
 
-        public ObservableCollection<RoiData>? MaskRegionsSource
+        public ObservableCollection<Roi>? MaskRoisSource
         {
-            get => (ObservableCollection<RoiData>?)GetValue(MaskRegionsSourceProperty);
-            set => SetValue(MaskRegionsSourceProperty, value);
+            get => (ObservableCollection<Roi>?)GetValue(MaskRoisSourceProperty);
+            set => SetValue(MaskRoisSourceProperty, value);
         }
 
         public static readonly DependencyProperty AvailableDataSourcesProperty =
@@ -95,19 +95,19 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
 
         private static void OnInspectionSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (d is RoiEditorManagerControl control && e.NewValue is ObservableCollection<RoiData> source)
+            if (d is RoiEditorManagerControl control && e.NewValue is ObservableCollection<Roi> source)
             {
-                control.inspectionsEditor?.SetRegionsSource(source);
-                PluginLogger.Info("[RegionEditorManager] Inspection region collection injected | Count=" + source.Count, "RegionEditorManager");
+                control.inspectionsEditor?.SetRoisSource(source);
+                PluginLogger.Info("[RoiEditorManager] Inspection roi collection injected | Count=" + source.Count, "RoiEditorManager");
             }
         }
 
         private static void OnMaskSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (d is RoiEditorManagerControl control && e.NewValue is ObservableCollection<RoiData> source)
+            if (d is RoiEditorManagerControl control && e.NewValue is ObservableCollection<Roi> source)
             {
-                control.masksEditor?.SetRegionsSource(source);
-                PluginLogger.Info("[RegionEditorManager] Mask region collection injected | Count=" + source.Count, "RegionEditorManager");
+                control.masksEditor?.SetRoisSource(source);
+                PluginLogger.Info("[RoiEditorManager] Mask roi collection injected | Count=" + source.Count, "RoiEditorManager");
             }
         }
 
@@ -167,7 +167,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
                 // Initial render
                 RenderAll();
 
-                PluginLogger.Info("[RegionEditorManager] ImageControl set with centralized event routing", "RegionEditorManager");
+                PluginLogger.Info("[RoiEditorManager] ImageControl set with centralized event routing", "RoiEditorManager");
             }
         }
 
@@ -180,7 +180,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
             var matrixInfo = matrix != null
                 ? $"M11={matrix.M11:F4} M12={matrix.M12:F4} M21={matrix.M21:F4} M22={matrix.M22:F4} OffsetX={matrix.OffsetX:F2} OffsetY={matrix.OffsetY:F2}"
                 : "null";
-            PluginLogger.Info($"[RegionEditorManager] SetPositionCorrectionMatrix 传入 | Matrix={matrixInfo}", "RegionEditorManager");
+            PluginLogger.Info($"[RoiEditorManager] SetPositionCorrectionMatrix 传入 | Matrix={matrixInfo}", "RoiEditorManager");
 
             // ★ 诊断：记录传入矩阵的引用和哈希值，追踪是否每个调用都是同一实例
             var hash = matrix != null ? RuntimeHelpers.GetHashCode(matrix) : 0;
@@ -188,7 +188,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
             inspectionsEditor.SetPositionCorrectionMatrix(matrix);
             masksEditor.SetPositionCorrectionMatrix(matrix);
 
-            PluginLogger.Info($"[RegionEditorManager] SetPositionCorrectionMatrix 完成 | MatrixHash=0x{hash:X8} | inspectorEditor矩阵已设置 | maskEditor矩阵已设置", "RegionEditorManager");
+            PluginLogger.Info($"[RoiEditorManager] SetPositionCorrectionMatrix 完成 | MatrixHash=0x{hash:X8} | inspectorEditor矩阵已设置 | maskEditor矩阵已设置", "RoiEditorManager");
         }
 
         /// <summary>
@@ -219,11 +219,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
 
                 _mainImageControl = null;
 
-                PluginLogger.Info("[RegionEditorManager] Overlay cleared and events unsubscribed", "RegionEditorManager");
+                PluginLogger.Info("[RoiEditorManager] Overlay cleared and events unsubscribed", "RoiEditorManager");
             }
             catch (Exception ex)
             {
-                PluginLogger.Error("[RegionEditorManager] ClearMainOverlay failed: " + ex.Message, exception: ex);
+                PluginLogger.Error("[RoiEditorManager] ClearMainOverlay failed: " + ex.Message, exception: ex);
             }
         }
 
@@ -306,9 +306,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         /// </summary>
         private RoiEditorControl? GetEditorWithSelection()
         {
-            if (inspectionsEditor.GetSelectedRegion() != null)
+            if (inspectionsEditor.GetSelectedRoi() != null)
                 return inspectionsEditor;
-            if (masksEditor.GetSelectedRegion() != null)
+            if (masksEditor.GetSelectedRoi() != null)
                 return masksEditor;
             return null;
         }
@@ -377,8 +377,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
 
             // 场景3 - 两个编辑器都在选择模式，执行 HitTest
             // 屏蔽区域使用更大容差，使其在检测区域内部更容易被选中
-            var inspectionHit = inspectionsEditor.HitTestRegion(pos, tolerance: 4.0);
-            var maskHit = masksEditor.HitTestRegion(pos, tolerance: 8.0);
+            var inspectionHit = inspectionsEditor.HitTestRoi(pos, tolerance: 4.0);
+            var maskHit = masksEditor.HitTestRoi(pos, tolerance: 8.0);
 
             // 屏蔽区域视觉上层优先命中
             if (maskHit != null)
@@ -609,10 +609,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
 
             // ── Draw handles for selected regions ──
             // ★ 只隐藏绘制新形状时的手柄，拖动/编辑手柄时保持可见（恢复上版行为）
-            if (inspectionsEditor.GetSelectedRegion() != null && !inspectionsEditor.IsDrawingInteraction)
-                inspectionsEditor.DrawEditHandles(inspectionsEditor.GetSelectedRegion()!);
-            if (masksEditor.GetSelectedRegion() != null && !masksEditor.IsDrawingInteraction)
-                masksEditor.DrawEditHandles(masksEditor.GetSelectedRegion()!);
+            if (inspectionsEditor.GetSelectedRoi() != null && !inspectionsEditor.IsDrawingInteraction)
+                inspectionsEditor.DrawEditHandles(inspectionsEditor.GetSelectedRoi()!);
+            if (masksEditor.GetSelectedRoi() != null && !masksEditor.IsDrawingInteraction)
+                masksEditor.DrawEditHandles(masksEditor.GetSelectedRoi()!);
         }
 
         #endregion

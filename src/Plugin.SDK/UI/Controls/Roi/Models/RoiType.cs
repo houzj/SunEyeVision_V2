@@ -1,4 +1,4 @@
-namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models
+namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Models
 {
     /// <summary>
     /// 区域类型 - 决定区域在编辑器和算法中的角色

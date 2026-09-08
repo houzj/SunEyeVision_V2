@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
 
 namespace SunEyeVision.Plugin.SDK.Models
@@ -14,16 +14,18 @@ namespace SunEyeVision.Plugin.SDK.Models
         /// <summary>
         /// 所有类型只注册数组版本（单值 = 长度为 1 的数组，对齐 Halcon tuple 语义）。
         /// 数值类型归并为规范键：int/int[]/float/float[] → long/long[]、double/double[]。
-        /// 核心概念：整型/双精度/字符串/布尔/图像/RoI/变换矩阵 + 几何图形
-        /// （Circle/RotatedRect/Point/Polygon/Line/Annulus）。
-        /// Region（算法区域，iconic 运行时数据）禁止进入工作流契约，仅活在算法工具内部，
-        /// 由 RegionConverter 桥接为 RoI 外发（方案 D8）。
+        /// 核心概念：整型/双精度/字符串/布尔/图像/ROI/变换矩阵 + 几何图形
+        /// （Circle/RotatedRect/Point/Polygon/Line/Annulus/Arc）。
+        /// ROI（几何输入/图形定义，契约词目 ROI ↔ <see cref="RoiShape"/>[]）：
+        /// 承载工具外发的几何定义（检测区/屏蔽区/测量几何），下游可整体/按类型/逐项/字段绑定。
+        /// Region（算法像素区域，iconic 运行时数据）禁止进入工作流契约，仅活在算法工具内部，
+        /// 由 RegionConverter 桥接为 RoiShape 外发。
         /// 图像词目以接口 IVisionImage 为唯一入口；算法库具体实现类型
         /// （如 OpenCvSharp.Mat、HalconDotNet.HImage）由各自引擎启动时经
         /// RegisterType 注册到 "Image"（契约 JSON 不变，下游 ToSystemType("Image")
         /// 仍返回 IVisionImage，过滤/绑定用的抽象类型）。
-        /// 几何图形（Circle2d/RotatedRect2d/Point2d/Polygon2d/Line2d/Annulus2d）作为算法产物
-        /// 输出进契约，供下游绑定/下钻属性（方案：所有静态工具图形输出优化设计）。
+        /// 几何图形（Circle2d/RotatedRect2d/Point2d/Polygon2d/Line2d/Annulus2d/Arc2d）作为算法产物
+        /// 输出进契约，供下游绑定/下钻属性。
         /// </summary>
         private static readonly Dictionary<Type, string> TypeToString = new()
         {
@@ -33,7 +35,7 @@ namespace SunEyeVision.Plugin.SDK.Models
             [typeof(bool[])]            = "Boolean",
             [typeof(AffineMatrix[])]    = "Transform",
             [typeof(IVisionImage)]      = "Image",
-            [typeof(ShapeParameters[])] = "RoI",
+            [typeof(RoiShape[])]        = "ROI",
             [typeof(Circle2d[])]        = "Circle",
             [typeof(RotatedRect2d[])]   = "RotatedRect",
             [typeof(SunEyeVision.Plugin.SDK.Models.Geometry.Point2d[])] = "Point",
@@ -92,7 +94,7 @@ namespace SunEyeVision.Plugin.SDK.Models
             ["Double"]    = typeof(double),
             ["Transform"] = typeof(AffineMatrix),
             ["Image"]     = typeof(IVisionImage),
-            ["RoI"]       = typeof(ShapeParameters[]),
+            ["ROI"]       = typeof(RoiShape[]),
             ["Circle"]        = typeof(Circle2d[]),
             ["RotatedRect"]   = typeof(RotatedRect2d[]),
             ["Point"]         = typeof(SunEyeVision.Plugin.SDK.Models.Geometry.Point2d[]),
@@ -115,7 +117,7 @@ namespace SunEyeVision.Plugin.SDK.Models
             ["Boolean"]   = "布尔",
             ["Double"]    = "双精度",
             ["Image"]     = "图像",
-            ["RoI"]       = "图形定义",
+            ["ROI"]       = "图形",
             ["Transform"] = "变换矩阵",
             ["Circle"]        = "圆",
             ["RotatedRect"]   = "旋转矩形",
@@ -123,6 +125,7 @@ namespace SunEyeVision.Plugin.SDK.Models
             ["Polygon"]       = "多边形",
             ["Line"]          = "直线",
             ["Annulus"]       = "圆环",
+            ["Arc"]           = "圆弧",
         };
 
         /// <summary>

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.UI.Controls;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Models;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using Xunit;
 
@@ -108,7 +108,7 @@ public class FilterDataSourcesByTypeTests
     [Fact]
     public void ScalarInt_DoesNotSeeUpstreamRoiOutput()
     {
-        var sources = MakeSources(MakeDs("RoIs", typeof(ShapeParameters[])));
+        var sources = MakeSources(MakeDs("RoIs", typeof(RoiShape[])));
         var filtered = ParamBindingBase.FilterDataSourcesByType(sources, typeof(int));
         Assert.DoesNotContain(filtered, ds => ds.PropertyName == "RoIs");
     }
@@ -120,8 +120,8 @@ public class FilterDataSourcesByTypeTests
     [Fact]
     public void RoiParameter_SeesUpstreamRoiOutput()
     {
-        var sources = MakeSources(MakeDs("Regions", typeof(ShapeParameters[])));
-        var filtered = ParamBindingBase.FilterDataSourcesByType(sources, typeof(ShapeParameters));
+        var sources = MakeSources(MakeDs("Regions", typeof(RoiShape[])));
+        var filtered = ParamBindingBase.FilterDataSourcesByType(sources, typeof(RoiShape));
         Assert.Contains(filtered, ds => ds.PropertyName == "Regions");
     }
 
@@ -155,9 +155,9 @@ public class FilterDataSourcesByTypeTests
     public void GeometryTarget_SeesRoiContainerSource(System.Type geometryTarget)
     {
         // 子程序"圆形/旋转矩形"等显示项 ParamType 是具体几何类型（词汇 Circle/RotatedRect...）。
-        // Blob 检测区图形以 RoI（ShapeParameters[]）输出，内部按 [Type=X] 分组可下钻。
+        // Blob 检测区图形以 RoI（RoiShape[]）输出，内部按 [Type=X] 分组可下钻。
         // 目标词汇为几何图形时必须放行 RoI 容器数据源，否则绑定下拉里看不到 Blob 图形。
-        var sources = MakeSources(MakeDs("检测区图形", typeof(ShapeParameters[])));
+        var sources = MakeSources(MakeDs("检测区图形", typeof(RoiShape[])));
         var filtered = ParamBindingBase.FilterDataSourcesByType(sources, geometryTarget);
         Assert.Contains(filtered, ds => ds.PropertyName == "检测区图形");
     }
@@ -166,7 +166,7 @@ public class FilterDataSourcesByTypeTests
     public void ImageTarget_DoesNotSeeRoiContainerSource()
     {
         // 非几何图形目标（如 Image）不放行 RoI 容器数据源，避免错误绑定。
-        var sources = MakeSources(MakeDs("检测区图形", typeof(ShapeParameters[])));
+        var sources = MakeSources(MakeDs("检测区图形", typeof(RoiShape[])));
         var filtered = ParamBindingBase.FilterDataSourcesByType(sources, typeof(IVisionImage));
         Assert.DoesNotContain(filtered, ds => ds.PropertyName == "检测区图形");
     }

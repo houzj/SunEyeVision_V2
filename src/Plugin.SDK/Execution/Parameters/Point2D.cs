@@ -4,77 +4,12 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
 
-namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models
+namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 {
     /// <summary>
-    /// 形状类型枚举
-    /// </summary>
-    public enum ShapeType
-    {
-        /// <summary>
-        /// 无工具（空闲状态）
-        /// </summary>
-        None = 0,
-
-        /// <summary>
-        /// 点
-        /// </summary>
-        Point,
-
-        /// <summary>
-        /// 直线
-        /// </summary>
-        Line,
-
-        /// <summary>
-        /// 圆形
-        /// </summary>
-        Circle,
-
-        /// <summary>
-        /// 矩形
-        /// </summary>
-        Rectangle,
-
-        /// <summary>
-        /// 旋转矩形
-        /// </summary>
-        RotatedRectangle,
-
-        /// <summary>
-        /// 多边形
-        /// </summary>
-        Polygon,
-
-        /// <summary>
-        /// 圆环
-        /// </summary>
-        Annulus,
-
-        /// <summary>
-        /// 弧形
-        /// </summary>
-        Arc
-    }
-
-    /// <summary>
-    /// 区域来源模式
-    /// </summary>
-    public enum RoiSourceMode
-    {
-        /// <summary>
-        /// 绘制模式 - 区域来源于用户手动绘制
-        /// </summary>
-        Drawing,
-
-        /// <summary>
-        /// 订阅模式 - 区域来源于其他节点的输出
-        /// </summary>
-        Subscribe
-    }
-
-    /// <summary>
-    /// 点结构
+    /// 点结构（可观察，UI 交互/绘制用）。
+    /// 注：与 SDK 纯值点 <see cref="SunEyeVision.Plugin.SDK.Models.Geometry.Point2d"/>（readonly struct，算法/契约用）并存，
+    /// 本类用于可交互场景（多边形顶点、几何扁平编辑桥、命中坐标）。
     /// </summary>
     public class Point2D : INotifyPropertyChanged, IMonitorable
     {

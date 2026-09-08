@@ -8,7 +8,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Logging;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Models;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls
 {

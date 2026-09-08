@@ -316,18 +316,18 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// <summary>面积列表样式</summary>
         public TextStyle AreaDisplayStyle { get; set; } = new() { Name = "AreaDisplay", FontSize = 9.0, PositionX = 0, PositionY = 0 };
 
-        /// <summary>检测区域边框样式（默认蓝色 #0000FF，与 ROI 编辑器检测区域一致）</summary>
-        public override GraphicsStyle InspectionRegionStyle { get; set; } = new()
+        /// <summary>检测区边框样式（默认蓝色 #0000FF，与 ROI 编辑器检测区一致）</summary>
+        public override GraphicsStyle InspectionRoiStyle { get; set; } = new()
         {
-            Name = "InspectionRegion",
+            Name = "InspectionRoi",
             LineWidth = 1,
             OkColor = Color.FromRgb(0, 0, 255)
         };
 
-        /// <summary>屏蔽区域边框样式（默认橙色 #FFA500，与 ROI 编辑器屏蔽区域一致）</summary>
-        public override GraphicsStyle MaskRegionStyle { get; set; } = new()
+        /// <summary>屏蔽区边框样式（默认橙色 #FFA500，与 ROI 编辑器屏蔽区一致）</summary>
+        public override GraphicsStyle MaskRoiStyle { get; set; } = new()
         {
-            Name = "MaskRegion",
+            Name = "MaskRoi",
             LineWidth = 1,
             OkColor = Color.FromRgb(0xFF, 0xA5, 0x00)
         };

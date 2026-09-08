@@ -1,17 +1,17 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Windows;
 using SunEyeVision.HalAdapter;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using Xunit;
 
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
 namespace SunEyeVision.Plugin.SDK.Tests;
 
 /// <summary>
-/// 屏蔽点集过滤契约测试（ToolRegionHelper.FilterPointsOutOfMaskRegions）。
+/// 屏蔽点集过滤契约测试（ToolRegionHelper.FilterPointsOutOfMaskRois）。
 /// 契约（VisionMaster 屏蔽语义）:
 ///   ① 落在任意启用屏蔽区内的点被剔除，不参与后续拟合
 ///   ② 无屏蔽区 / 全部禁用 → 全量保留（快路径）
@@ -20,14 +20,11 @@ namespace SunEyeVision.Plugin.SDK.Tests;
 /// </summary>
 public class MaskPointFilterContractTests
 {
-    private static RoiData MakeMask(object geometry, bool enabled = true)
+    private static Roi MakeMask(object geometry, bool enabled = true)
     {
-        return new RoiData
-        {
-            Name = "test-mask",
-            Parameters = new ShapeParameters { Geometry = geometry },
-            IsEnabled = enabled,
-        };
+        var roi = Roi.CreateLocal("test-mask", geometry);
+        roi.IsEnabled = enabled;
+        return roi;
     }
 
     private static Point2d[] Points(params (double X, double Y)[] list)
@@ -41,7 +38,7 @@ public class MaskPointFilterContractTests
     {
         var pts = Points((0, 0), (100, 100), (50, 50));
 
-        var (kept, excluded) = ToolRegionHelper.FilterPointsOutOfMaskRegions(pts, null, null);
+        var (kept, excluded) = ToolRegionHelper.FilterPointsOutOfMaskRois(pts, null, null);
 
         Assert.Equal(3, kept.Length);
         Assert.Empty(excluded);
@@ -52,7 +49,7 @@ public class MaskPointFilterContractTests
     {
         var pts = Points((100, 100), (0, 0), (110, 100));
 
-        var (kept, excluded) = ToolRegionHelper.FilterPointsOutOfMaskRegions(
+        var (kept, excluded) = ToolRegionHelper.FilterPointsOutOfMaskRois(
             pts, new[] { MakeMask(new Circle2d(100, 100, 10)) }, null);
 
         Assert.Equal(new double[] { 0 }, Xs(kept));
@@ -65,7 +62,7 @@ public class MaskPointFilterContractTests
     {
         var pts = Points((90, 90), (50, 50), (119, 119));
 
-        var (kept, excluded) = ToolRegionHelper.FilterPointsOutOfMaskRegions(
+        var (kept, excluded) = ToolRegionHelper.FilterPointsOutOfMaskRois(
             pts, new[] { MakeMask(new Rect(80, 80, 40, 40)) }, null);
 
         Assert.Single(kept);
@@ -82,7 +79,7 @@ public class MaskPointFilterContractTests
         });
         var pts = Points((100, 100), (10, 10), (85, 115));
 
-        var (kept, excluded) = ToolRegionHelper.FilterPointsOutOfMaskRegions(
+        var (kept, excluded) = ToolRegionHelper.FilterPointsOutOfMaskRois(
             pts, new[] { MakeMask(polygon) }, null);
 
         Assert.Single(kept);
@@ -95,7 +92,7 @@ public class MaskPointFilterContractTests
     {
         var pts = Points((100, 100), (0, 0));
 
-        var (kept, excluded) = ToolRegionHelper.FilterPointsOutOfMaskRegions(
+        var (kept, excluded) = ToolRegionHelper.FilterPointsOutOfMaskRois(
             pts, new[] { MakeMask(new RotatedRect2d(100, 100, 40, 40, 45)) }, null);
 
         Assert.Single(kept);
@@ -109,7 +106,7 @@ public class MaskPointFilterContractTests
         // 中心(100,100) 内径10 外径20：距离 15 的点被剔，距离 5 与 30 的点保留
         var pts = Points((115, 100), (105, 100), (130, 100));
 
-        var (kept, excluded) = ToolRegionHelper.FilterPointsOutOfMaskRegions(
+        var (kept, excluded) = ToolRegionHelper.FilterPointsOutOfMaskRois(
             pts, new[] { MakeMask(new Annulus2d(new Point(100, 100), 10, 20)) }, null);
 
         Assert.Equal(2, kept.Length);
@@ -122,7 +119,7 @@ public class MaskPointFilterContractTests
     {
         var pts = Points((100, 100));
 
-        var (kept, excluded) = ToolRegionHelper.FilterPointsOutOfMaskRegions(
+        var (kept, excluded) = ToolRegionHelper.FilterPointsOutOfMaskRois(
             pts, new[] { MakeMask(new Circle2d(100, 100, 10), enabled: false) }, null);
 
         Assert.Single(kept);
@@ -134,7 +131,7 @@ public class MaskPointFilterContractTests
     {
         var pts = Points((0, 0), (100, 100), (-500, -500));
 
-        var (kept, excluded) = ToolRegionHelper.FilterPointsOutOfMaskRegions(
+        var (kept, excluded) = ToolRegionHelper.FilterPointsOutOfMaskRois(
             pts, new[] { MakeMask(new Circle2d(0, 0, 1000)) }, null);
 
         Assert.Empty(kept);
@@ -148,7 +145,7 @@ public class MaskPointFilterContractTests
         var matrix = new AffineMatrix(1, 0, 0, 1, 200, 0);
         var pts = Points((300, 100), (100, 100));
 
-        var (kept, excluded) = ToolRegionHelper.FilterPointsOutOfMaskRegions(
+        var (kept, excluded) = ToolRegionHelper.FilterPointsOutOfMaskRois(
             pts, new[] { MakeMask(new Circle2d(100, 100, 5)) }, matrix);
 
         Assert.Single(kept);
@@ -164,7 +161,7 @@ public class MaskPointFilterContractTests
         var matrix = new AffineMatrix(2, 0, 0, 2, 0, 0);
         var pts = Points((8, 0), (12, 0));
 
-        var (kept, excluded) = ToolRegionHelper.FilterPointsOutOfMaskRegions(
+        var (kept, excluded) = ToolRegionHelper.FilterPointsOutOfMaskRois(
             pts, new[] { MakeMask(new Circle2d(0, 0, 5)) }, matrix);
 
         Assert.Single(kept);
@@ -183,7 +180,7 @@ public class MaskPointFilterContractTests
             MakeMask(new Circle2d(150, 50, 5)),
         };
 
-        var (kept, excluded) = ToolRegionHelper.FilterPointsOutOfMaskRegions(pts, masks, null);
+        var (kept, excluded) = ToolRegionHelper.FilterPointsOutOfMaskRois(pts, masks, null);
 
         Assert.Single(kept);
         Assert.Equal(200, kept[0].X);
@@ -194,10 +191,10 @@ public class MaskPointFilterContractTests
     public void NonShapeParametersMask_ThrowsNotSupported()
     {
         var pts = Points((100, 100));
-        var computed = RoiData.CreateComputedRegion("computed", ShapeType.Rectangle);
+        var computed = Roi.CreateComposed("computed", ShapeType.Rectangle);
 
         Assert.Throws<NotSupportedException>(() =>
-            ToolRegionHelper.FilterPointsOutOfMaskRegions(pts, new[] { computed }, null));
+            ToolRegionHelper.FilterPointsOutOfMaskRois(pts, new[] { computed }, null));
     }
 
     [Fact]
@@ -208,6 +205,6 @@ public class MaskPointFilterContractTests
         var pts = Points((50, 50));
 
         Assert.Throws<NotSupportedException>(() =>
-            ToolRegionHelper.FilterPointsOutOfMaskRegions(pts, new[] { MakeMask(line) }, null));
+            ToolRegionHelper.FilterPointsOutOfMaskRois(pts, new[] { MakeMask(line) }, null));
     }
 }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,15 +12,14 @@ using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.HalAdapter;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Rendering;
 using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Features.WorkflowUI;
 using SunEyeVision.UI.Converters;
 using SunEyeVision.UI.Services.Performance;
 using WorkflowCore = SunEyeVision.Workflow;
 using SunEyeVision.Workflow;
-using ShapeType = SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models.ShapeType;
+using ShapeType = SunEyeVision.Plugin.SDK.Execution.Parameters.ShapeType;
 
 namespace SunEyeVision.UI.Services.Workflow
 {
@@ -325,21 +324,21 @@ namespace SunEyeVision.UI.Services.Workflow
         }
 
         /// <summary>
-        /// 默认检测区域样式（当参数中未定义对应样式时使用）
+        /// 默认检测区样式（当参数中未定义对应样式时使用）
         /// </summary>
-        private static readonly GraphicsStyle DefaultRegionStyle = new()
+        private static readonly GraphicsStyle DefaultInspectionRoiStyle = new()
         {
-            Name = "Region",
+            Name = "InspectionRoi",
             OkColor = System.Windows.Media.Color.FromRgb(0x44, 0x88, 0xFF),
             LineWidth = 1.5
         };
 
         /// <summary>
-        /// 默认屏蔽区域样式（当参数中未定义对应样式时使用）
+        /// 默认屏蔽区样式（当参数中未定义对应样式时使用）
         /// </summary>
-        private static readonly GraphicsStyle DefaultMaskRegionStyle = new()
+        private static readonly GraphicsStyle DefaultMaskRoiStyle = new()
         {
-            Name = "MaskRegion",
+            Name = "MaskRoi",
             OkColor = System.Windows.Media.Color.FromRgb(255, 165, 0),  // 橙色
             LineWidth = 1.5
         };
@@ -441,30 +440,30 @@ namespace SunEyeVision.UI.Services.Workflow
                 "NodeResultManager");
 
             // 检测区域（蓝色）— 使用参数中的样式实例，UI 的 DispItemColorControl 可绑定控制可见性
-            var enabledRegions = regionParams.InspectionRegions.GetEnabledRois();
-            var inspectionStyle = regionParams.InspectionRegionStyle ?? DefaultRegionStyle;
-            foreach (var region in enabledRegions)
+            var enabledRegions = regionParams.InspectionRois.GetEnabledInputs();
+            var inspectionStyle = regionParams.InspectionRoiStyle ?? DefaultInspectionRoiStyle;
+            foreach (var input in enabledRegions)
             {
-                var regionItem = CreateRegionDisplayItem(region, inspectionStyle, correctionMatrix);
+                var regionItem = CreateRegionDisplayItem(input, inspectionStyle, correctionMatrix);
                 if (regionItem != null) items.Add(regionItem);
 
                 // 旋转矩形附加方向箭头（完整矩阵跟随，方向随矩阵旋转）
-                if (region.Parameters is ShapeParameters rShape && rShape.Geometry is RotatedRect2d)
+                if (input.LocalGeometry is RoiShape rShape && rShape.Geometry is RotatedRect2d)
                 {
                     items.Add(BuildDirectionArrowItem(rShape, correctionMatrix));
                 }
             }
 
             // 屏蔽区域（橙色）
-            var enabledMasks = regionParams.MaskRegions.GetEnabledRois();
-            var maskStyle = regionParams.MaskRegionStyle ?? DefaultMaskRegionStyle;
-            foreach (var region in enabledMasks)
+            var enabledMasks = regionParams.MaskRois.GetEnabledInputs();
+            var maskStyle = regionParams.MaskRoiStyle ?? DefaultMaskRoiStyle;
+            foreach (var input in enabledMasks)
             {
-                var regionItem = CreateRegionDisplayItem(region, maskStyle, correctionMatrix);
+                var regionItem = CreateRegionDisplayItem(input, maskStyle, correctionMatrix);
                 if (regionItem != null) items.Add(regionItem);
 
                 // 旋转矩形附加方向箭头（完整矩阵跟随，方向随矩阵旋转）
-                if (region.Parameters is ShapeParameters mShape && mShape.Geometry is RotatedRect2d)
+                if (input.LocalGeometry is RoiShape mShape && mShape.Geometry is RotatedRect2d)
                 {
                     items.Add(BuildDirectionArrowItem(mShape, correctionMatrix));
                 }
@@ -496,9 +495,9 @@ namespace SunEyeVision.UI.Services.Workflow
         /// 结果层区域显示：按形状有向性应用位置修正（无向剥转 / 有向完整），
         /// 使结果层轮廓与交互层、与算法处理区域空间一致（所见即所得）。
         /// </summary>
-        private static DisplayItemBase? CreateRegionDisplayItem(RoiData region, GraphicsStyle style, AffineMatrix? correctionMatrix = null)
+        private static DisplayItemBase? CreateRegionDisplayItem(Roi input, GraphicsStyle style, AffineMatrix? correctionMatrix = null)
         {
-            if (region?.Parameters is not ShapeParameters shape || shape.Geometry == null) return null;
+            if (input?.LocalGeometry is not RoiShape shape || shape.Geometry == null) return null;
 
             // 位置修正按形状有向性解析（对齐 RoiEditorControl 交互层语义）
             var matrix = PositionCorrectionResolver.ResolveForShape(shape.Geometry, correctionMatrix);
@@ -579,7 +578,7 @@ namespace SunEyeVision.UI.Services.Workflow
         /// <summary>
         /// 构建旋转矩形方向箭头显示项（线宽与轮廓一致，箭杆到矩形边界；端点随位置修正矩阵变换）。
         /// </summary>
-        private static GraphicsDisplayItem BuildDirectionArrowItem(ShapeParameters shape, AffineMatrix? matrix)
+        private static GraphicsDisplayItem BuildDirectionArrowItem(RoiShape shape, AffineMatrix? matrix)
         {
             double arrowLength = 50;
             double angleRad = 0;

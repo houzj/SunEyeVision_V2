@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Specialized;
 using System.Globalization;
 using System.Linq;
@@ -7,9 +7,9 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using OpenCvSharp;
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using SunEyeVision.UI.Core;
 using SunEyeVision.UI.Features.Dialogs;
@@ -322,7 +322,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
             Mat => "[图像]",
             IVisionImage => "[图像]",
             AffineMatrix => "[变换矩阵]",
-            ShapeParameters[] => "[图形定义]",
+            RoiShape[] => "[图形定义]",
             Circle2d[] => "[圆]",
             RotatedRect2d[] => "[旋转矩形]",
             SunEyeVision.Plugin.SDK.Models.Geometry.Point2d[] => "[点]",

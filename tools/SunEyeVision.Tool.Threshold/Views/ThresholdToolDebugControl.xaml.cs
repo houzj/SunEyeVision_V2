@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Windows;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
@@ -121,15 +121,15 @@ namespace SunEyeVision.Tool.Threshold.Views
             {
                 Parameters = thresholdParams;
 
-                var regionsCount = Parameters.InspectionRegions?.Regions?.Count ?? 0;
+                var roisCount = Parameters.InspectionRois?.Rois?.Count ?? 0;
 
-                if (regionsCount == 0)
+                if (roisCount == 0)
                 {
-                    PluginLogger.Warning($"[SetParameters] InspectionRegions.Regions.Count=0", "ThresholdTool");
+                    PluginLogger.Warning($"[SetParameters] InspectionRois.Rois.Count=0", "ThresholdTool");
                 }
                 else
                 {
-                    PluginLogger.Info($"[SetParameters] 参数注入完成 | Regions.Count={regionsCount}", "ThresholdTool");
+                    PluginLogger.Info($"[SetParameters] 参数注入完成 | Rois.Count={roisCount}", "ThresholdTool");
                 }
 
                 PluginLogger.Success($"已加载节点参数: Threshold={Parameters.Threshold}", "ThresholdTool");

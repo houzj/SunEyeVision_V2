@@ -4,10 +4,10 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.ViewModels;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels;
 
-namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
+namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
 {
     /// <summary>
     /// 区域订阅面板
@@ -37,6 +37,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
         {
             InitializeComponent();
             AddHandler(ParamBinding.BindingSourceSelectedEvent, new RoutedEventHandler(OnBindingSourceSelected));
+
+            // 整对象订阅行绑定目标 = ROI 契约（RoiShape[]，词目 ROI）：
+            // 使 ParamBinding 数据源树能展开"检测区图形/屏蔽区图形 → 整体/按形状分组/单项/字段"四级结构。
+            // （RoiShape[] 为数组类型无法用 XAML x:Type 表达，故在 code-behind 设置。）
+            WholeRegionBinding.DataType = typeof(RoiShape[]);
         }
 
         private ParameterPanelViewModel? ViewModel => DataContext as ParameterPanelViewModel;

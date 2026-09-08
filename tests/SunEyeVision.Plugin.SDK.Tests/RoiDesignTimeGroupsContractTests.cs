@@ -1,8 +1,7 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.UI.Controls;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using Xunit;
 
@@ -24,8 +23,8 @@ public class RoiDesignTimeGroupsContractTests
             SourceNodeName = "Blob分析",
             PropertyName = "检测区图形",
             DisplayName = "检测区图形",
-            PropertyType = typeof(ShapeParameters[]),
-            VariableType = "RoI",
+            PropertyType = typeof(RoiShape[]),
+            VariableType = "ROI",
             CurrentValue = null,   // 设计期无运行值
         };
     }
@@ -75,7 +74,7 @@ public class RoiDesignTimeGroupsContractTests
         Assert.True(overall.IsSelectable, "整体入口应可绑定");
         Assert.NotNull(overall.DataSource);
         Assert.Null(overall.DataSource!.BindingSuffix);
-        Assert.Equal(typeof(ShapeParameters[]), overall.DataSource.PropertyType);
+        Assert.Equal(typeof(RoiShape[]), overall.DataSource.PropertyType);
         Assert.Equal("Node1.检测区图形[]", overall.DataSource.GetBindingPath());
         Assert.Equal("检测区图形[]", overall.BindingPath);
     }
@@ -96,11 +95,11 @@ public class RoiDesignTimeGroupsContractTests
     [Fact]
     public void CreateDefaultGeometry_EveryShapeType_ExposesMonitorFields()
     {
-        // 结果树设计期属性行依赖 ShapeParameters.GetMonitorFields（与运行期同源）：
+        // 结果树设计期属性行依赖 RoiShape.GetMonitorFields（与运行期同源）：
         // 圆 → 中心X/中心Y/半径；矩形(Rect) → X/Y/宽/高等字段兜底。
         foreach (var type in AllBindableShapeTypes())
         {
-            var shape = new ShapeParameters { Geometry = RoiData.CreateDefaultGeometry(type) };
+            var shape = new RoiShape { Geometry = RoiShape.CreateDefaultGeometry(type) };
             Assert.NotNull(shape.Geometry);
 
             var fields = shape.GetMonitorFields();
@@ -110,10 +109,10 @@ public class RoiDesignTimeGroupsContractTests
     }
 
     [Fact]
-    public void ShapeParameters_GetMonitorFields_RectangleYieldsXYWidthHeight()
+    public void RoiShape_GetMonitorFields_RectangleYieldsXYWidthHeight()
     {
-        // 矩形(Rect) 走 ShapeParameters.GetMonitorFields 的 Rect 兜底，结果树设计期属性行不缺字段
-        var shape = new ShapeParameters { Geometry = RoiData.CreateDefaultGeometry(ShapeType.Rectangle) };
+        // 矩形(Rect) 走 RoiShape.GetMonitorFields 的 Rect 兜底，结果树设计期属性行不缺字段
+        var shape = new RoiShape { Geometry = RoiShape.CreateDefaultGeometry(ShapeType.Rectangle) };
         var fields = shape.GetMonitorFields();
 
         Assert.Contains(fields, f => f.FieldName == "X");

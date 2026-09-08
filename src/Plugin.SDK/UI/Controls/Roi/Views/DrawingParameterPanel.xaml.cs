@@ -4,9 +4,9 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.ViewModels;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels;
 
-namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
+namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
 {
     /// <summary>
     /// 绘制参数面板

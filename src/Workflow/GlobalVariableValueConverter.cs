@@ -1,12 +1,12 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using OpenCvSharp;
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using VisionLogger = SunEyeVision.Plugin.SDK.Logging.VisionLogger;
 using VisionLogLevel = SunEyeVision.Plugin.SDK.Logging.LogLevel;
@@ -130,8 +130,8 @@ public class GlobalVariableValueConverter : JsonConverter<object?>
             return ParseImage(valueElement);
 
         // RoI（图形定义）：数组形态承载，几何多态由 GeometryJsonConverter 处理
-        if (clrType == typeof(ShapeParameters[]))
-            return ParseShapeParameters(valueElement, options);
+        if (clrType == typeof(RoiShape[]))
+            return ParseRoiShape(valueElement, options);
 
         throw new NotSupportedException($"不支持的类型: '{typeName}' (CLR: {clrType.FullName})");
     }
@@ -152,16 +152,16 @@ public class GlobalVariableValueConverter : JsonConverter<object?>
     }
 
     /// <summary>
-    /// 解析 RoI（图形定义）值：数组 → ShapeParameters[]，单值 → 长度 1 数组（tuple 语义）。
-    /// 几何多态由 <see cref="GeometryJsonConverter"/> 在 ShapeParameters.Geometry 属性上处理。
+    /// 解析 RoI（图形定义）值：数组 → RoiShape[]，单值 → 长度 1 数组（tuple 语义）。
+    /// 几何多态由 <see cref="GeometryJsonConverter"/> 在 RoiShape.Geometry 属性上处理。
     /// </summary>
-    private static ShapeParameters[]? ParseShapeParameters(JsonElement element, JsonSerializerOptions options)
+    private static RoiShape[]? ParseRoiShape(JsonElement element, JsonSerializerOptions options)
     {
         if (element.ValueKind == JsonValueKind.Null)
             return null;
         if (element.ValueKind == JsonValueKind.Array)
-            return JsonSerializer.Deserialize<ShapeParameters[]>(element.GetRawText(), options);
-        var single = JsonSerializer.Deserialize<ShapeParameters>(element.GetRawText(), options);
+            return JsonSerializer.Deserialize<RoiShape[]>(element.GetRawText(), options);
+        var single = JsonSerializer.Deserialize<RoiShape>(element.GetRawText(), options);
         return single == null ? null : new[] { single };
     }
 
@@ -190,8 +190,8 @@ public class GlobalVariableValueConverter : JsonConverter<object?>
             string[] strArr => (typeName, strArr),
             bool boolValue  => (typeName, new[] { boolValue }),
             bool[] boolArr  => (typeName, boolArr),
-            ShapeParameters sp  => (typeName, new[] { sp }),
-            ShapeParameters[] sp => (typeName, sp),
+            RoiShape sp  => (typeName, new[] { sp }),
+            RoiShape[] sp => (typeName, sp),
             Mat mat         => (typeName, SerializeImage(mat)),
             AffineMatrix m  => (typeName, SerializeAffineMatrix(m)),
             AffineMatrix[] ms => (typeName, ms.Select(SerializeAffineMatrix).ToArray()),

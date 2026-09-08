@@ -1,9 +1,10 @@
 using System.Windows.Input;
 using SunEyeVision.Plugin.SDK.UI.Controls.Common.Models;
 using SunEyeVision.Plugin.SDK.UI.Controls.Measure.Models;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Models;
 using Xunit;
 
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
 namespace SunEyeVision.Plugin.SDK.Tests;
 
 /// <summary>

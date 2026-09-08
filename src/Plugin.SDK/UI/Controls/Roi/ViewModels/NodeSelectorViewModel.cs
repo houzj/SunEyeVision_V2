@@ -4,10 +4,10 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
 using SunEyeVision.Plugin.SDK.Models;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Models;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 
-namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.ViewModels
+namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
 {
     /// <summary>
     /// 节点选择器视图模型
@@ -240,42 +240,38 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.ViewModels
         }
 
         /// <summary>
-        /// 设置选中项（从ParameterSource恢复）
+        /// 设置选中项（从 ParamSetting 绑定路径恢复；null=清除选择）
         /// </summary>
-        public void SetSelectionFromSource(ParameterSource? source)
+        public void SetSelectionFromBinding(ParamSetting? binding)
         {
-            if (source is NodeOutputSource nodeSource)
-            {
-                SelectedItem = FindNodeBySource(nodeSource);
-            }
-            else
+            if (binding == null)
             {
                 SelectedItem = null;
+                return;
             }
+
+            SelectedItem = FindNodeByBinding(binding);
         }
 
-        /// <summary>
-        /// 查找节点
-        /// </summary>
-        private NodeOutputInfo? FindNodeBySource(NodeOutputSource source)
+        /// <summary>按绑定路径查找对应节点</summary>
+        private NodeOutputInfo? FindNodeByBinding(ParamSetting binding)
         {
-            return FindNodeRecursive(AllNodes, source);
+            return FindNodeRecursive(AllNodes, binding);
         }
 
-        private NodeOutputInfo? FindNodeRecursive(ObservableCollection<NodeOutputInfo> nodes, NodeOutputSource source)
+        private NodeOutputInfo? FindNodeRecursive(ObservableCollection<NodeOutputInfo> nodes, ParamSetting binding)
         {
             foreach (var node in nodes)
             {
-                if (node.NodeId == source.NodeId &&
-                    node.OutputName == source.OutputName &&
-                    node.PropertyPath == source.PropertyPath)
+                if (node.NodeId == binding.SourceNodeId &&
+                    node.OutputName == binding.SourceProperty)
                 {
                     return node;
                 }
 
                 var found = FindNodeRecursive(
-                    new ObservableCollection<NodeOutputInfo>(node.Children), 
-                    source);
+                    new ObservableCollection<NodeOutputInfo>(node.Children),
+                    binding);
                 if (found != null) return found;
             }
             return null;

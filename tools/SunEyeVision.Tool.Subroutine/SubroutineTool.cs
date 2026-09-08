@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -13,7 +13,6 @@ using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using SunEyeVision.Plugin.SDK.UI.Windows;
 using SunEyeVision.Tool.Subroutine.Views;
 using ExecutionResult = SunEyeVision.Plugin.SDK.Execution.Results.ExecutionResult;
@@ -937,15 +936,15 @@ namespace SunEyeVision.Tool.Subroutine
                         result.Display.AddContour(style, p.Vertices, isPass, true);
                     break;
 
-                // RoI（ShapeParameters）：Blob 检测区/屏蔽区等图形定义容器。
-                // 绑定树按 [Type=X] 下钻后运行期解析出 ShapeParameters[]，需按其 Geometry 真实类型绘制。
-                case ShapeParameters sp:
-                    AppendShapeParameter(result, displayItem, sp, isPass);
+                // ROI（RoiShape）：Blob 检测区/屏蔽区等图形定义容器。
+                // 绑定树按 [Type=X] 下钻后运行期解析出 RoiShape[]，需按其 Geometry 真实类型绘制。
+                case RoiShape shape:
+                    AppendShapeParameter(result, displayItem, shape, isPass);
                     break;
 
-                case ShapeParameters[] sps:
-                    foreach (var sp in sps)
-                        AppendShapeParameter(result, displayItem, sp, isPass);
+                case RoiShape[] shapes:
+                    foreach (var shape in shapes)
+                        AppendShapeParameter(result, displayItem, shape, isPass);
                     break;
 
                 default:
@@ -955,14 +954,14 @@ namespace SunEyeVision.Tool.Subroutine
         }
 
         /// <summary>
-        /// 按 ShapeParameters.Geometry 的真实类型绘制（RoI 图形定义 → DisplayCollector）。
+        /// 按 RoiShape.Geometry 的真实类型绘制（ROI 图形定义 → DisplayCollector）。
         /// 对齐 Blob 检测区图形的几何类型：Circle2d 画真圆、RotatedRect2d 画四角轮廓、
         /// Rect 画矩形、Polygon2d 画轮廓、Line2d 画线段、Point2D 画点。
         /// </summary>
         private static void AppendShapeParameter(
             SubroutineResults result,
             SubroutineDisplayItem displayItem,
-            ShapeParameters sp,
+            RoiShape sp,
             bool isPass)
         {
             var style = displayItem.GraphicsStyle;

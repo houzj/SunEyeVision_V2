@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -8,7 +8,7 @@ using System.Windows.Controls;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Models;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Models;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls
@@ -175,11 +175,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
             var elementType = ds.PropertyType.GetElementType() ?? typeof(object);
 
-            // RoI(ShapeParameters[])：按图形类型分组。有实际值按真实类型分组 + 逐元素 [i]；
+            // ROI(RoiShape[])：按图形类型分组。有实际值按真实类型分组 + 逐元素 [i]；
             // 无值/空（未运行、未绘制）按 ShapeType 枚举生成全部分组（声明式，不依赖绘制数据）。
-            if (elementType == typeof(ShapeParameters))
+            if (elementType == typeof(RoiShape))
             {
-                var roi = ds.CurrentValue as ShapeParameters[];
+                var roi = ds.CurrentValue as RoiShape[];
                 var roiChildren = new System.Collections.ObjectModel.ObservableCollection<TreeNodeData>(
                     roi is { Length: > 0 }
                         ? ArrayTreeFormatter.BuildRoiBindingChildren(ds, roi)
@@ -232,9 +232,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         ///    标量 T 与数组 T[] 归并到同一词汇（单值 = 长度 1 数组，对齐 Halcon tuple 语义）。
         /// 2. 词汇相等 → 显示（如 int 参数 → Integer 词汇，能看到上游 long[]/int[] 的 Integer 输出）。
         /// 3. 数字互通 → 显示（Integer 与 Double 跨类型可见，执行层 Convert.ChangeType 负责转换）。
-        /// 3.5 目标词汇为几何图形（Circle/RotatedRect/Point/Polygon/Line/Annulus）时，
-        ///     RoI 容器数据源（ShapeParameters[]）放行——其内部按 [Type=X] 分组可下钻到具体图形。
-        /// 4. 其余词汇（Image/String/RoI/Transform/Boolean）→ 精确匹配，不互通，避免运行时类型错误。
+        /// 3.5 目标词汇为几何图形（Circle/RotatedRect/Point/Polygon/Line/Annulus/Arc）时，
+        ///     ROI 容器数据源（RoiShape[]）放行——其内部按 [Type=X] 分组可下钻到具体图形。
+        /// 4. 其余词汇（Image/String/ROI/Transform/Boolean）→ 精确匹配，不互通，避免运行时类型错误。
         /// 5. 参数类型无法映射到词汇（未注册类型）→ 不显示任何上游候选，避免错误绑定。
         ///
         /// 手动路径：客户仍可在 BindingSource 文本框中强行写非筛选项，
@@ -274,10 +274,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     return true;
 
                 // 规则 3.5：几何图形目标放行 RoI 容器数据源。
-                // Blob 检测区/屏蔽区图形以 RoI（ShapeParameters[]）输出，按 [Type=X] 分组可下钻
-                // 到具体图形（圆/旋转矩形/矩形等）。目标词汇为几何图形时放行 RoI 容器，
+                // Blob 检测区/屏蔽区图形以 ROI（RoiShape[]）输出，按 [Type=X] 分组可下钻
+                // 到具体图形（圆/旋转矩形/矩形等）。目标词汇为几何图形时放行 ROI 容器，
                 // 让绑定下拉能展开并精确选中对应图形分组（否则整条数据源被滤掉，用户看不到）。
-                if (dsVarType == "RoI" && GeometryVocabularies.Contains(targetVarType))
+                if (dsVarType == "ROI" && GeometryVocabularies.Contains(targetVarType))
                     return true;
 
                 // 规则 4：其余词汇精确匹配（上一步已判等），不互通 → 不显示
@@ -289,13 +289,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             => variableType == "Integer" || variableType == "Double";
 
         /// <summary>
-        /// 几何图形词汇集合（Circle/RotatedRect/Point/Polygon/Line/Annulus）。
-        /// 当显示项目标词汇是几何图形时，RoI 容器数据源（ShapeParameters[]，词汇 RoI）应放行，
+        /// 几何图形词汇集合（Circle/RotatedRect/Point/Polygon/Line/Annulus/Arc）。
+        /// 当显示项目标词汇是几何图形时，ROI 容器数据源（RoiShape[]，词汇 ROI）应放行，
         /// 因其内部按 [Type=X] 分组可精确下钻到对应图形（Blob 检测区图形 → 圆形/旋转矩形等）。
         /// </summary>
         private static readonly HashSet<string> GeometryVocabularies = new(StringComparer.Ordinal)
         {
-            "Circle", "RotatedRect", "Point", "Polygon", "Line", "Annulus",
+            "Circle", "RotatedRect", "Point", "Polygon", "Line", "Annulus", "Arc",
         };
 
         #endregion

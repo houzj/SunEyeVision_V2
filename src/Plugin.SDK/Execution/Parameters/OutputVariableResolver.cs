@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Models;
 
 namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 {
@@ -158,15 +158,15 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 
         private static object? FilterByShapeType(object? current, string name, string typeToken)
         {
-            if (current is not IEnumerable<ShapeParameters> roi)
+            if (current is not IEnumerable<RoiShape> roi)
                 throw new InvalidOperationException(
-                    $"属性 '{name}' 指定了 [Type={typeToken}] 类型过滤，但运行时值不是 ShapeParameters[]（实际类型: {current?.GetType().Name ?? "null"}）");
+                    $"属性 '{name}' 指定了 [Type={typeToken}] 类型过滤，但运行时值不是 RoiShape[]（实际类型: {current?.GetType().Name ?? "null"}）");
 
             if (!Enum.TryParse<ShapeType>(typeToken, out var targetType))
                 throw new InvalidOperationException(
                     $"属性 '{name}' 的 [Type={typeToken}] 不是有效的图形类型（可用: Circle/Rectangle/RotatedRectangle/Polygon/Annulus/Arc）");
 
-            var filtered = roi.Where(sp => sp.ShapeType == targetType).ToArray();
+            var filtered = roi.Where(shape => shape.ShapeType == targetType).ToArray();
             if (filtered.Length == 0)
                 throw new InvalidOperationException(
                     $"属性 '{name}' 按 [Type={typeToken}] 过滤后无匹配元素（数组共 {roi.Count()} 项）");

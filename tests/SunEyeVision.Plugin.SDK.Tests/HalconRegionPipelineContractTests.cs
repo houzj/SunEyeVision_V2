@@ -1,9 +1,9 @@
-using System.Linq;
+﻿using System.Linq;
 using System.Windows;
 using HalconDotNet;
 using SunEyeVision.HalAdapter;
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using Xunit;
 
 namespace SunEyeVision.Plugin.SDK.Tests;
@@ -18,12 +18,12 @@ namespace SunEyeVision.Plugin.SDK.Tests;
 /// </summary>
 public class HalconRegionPipelineContractTests
 {
-    private static RoiData MakeRegion(string name, object geometry, bool enabled = true) => new()
+    private static Roi MakeRegion(string name, object geometry, bool enabled = true)
     {
-        Name = name,
-        Parameters = new ShapeParameters { Geometry = geometry },
-        IsEnabled = enabled,
-    };
+        var roi = Roi.CreateLocal(name, geometry);
+        roi.IsEnabled = enabled;
+        return roi;
+    }
 
     private static HRegion RegionFromRect(Rect rect)
     {

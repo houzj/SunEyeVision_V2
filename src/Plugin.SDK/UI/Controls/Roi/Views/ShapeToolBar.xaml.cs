@@ -4,9 +4,10 @@ using System.Windows;
 using System.Windows.Controls;
 using SunEyeVision.Plugin.SDK.UI.Controls.Common.Models;
 using SunEyeVision.Plugin.SDK.UI.Controls.Common.Views;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Models;
 
-namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
+namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
 {
     /// <summary>
     /// 形状工具栏 - 通用 ToolBarControl 的薄封装

@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:sdk="clr-namespace:SunEyeVision.Plugin.SDK.UI.Windows;assembly=SunEyeVision.Plugin.SDK"
         xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
-        xmlns:region="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views;assembly=SunEyeVision.Plugin.SDK"
+        xmlns:region="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views;assembly=SunEyeVision.Plugin.SDK"
         Title="模版创建 / 编辑"
         Width="1200" Height="800"
         WindowStartupLocation="CenterOwner"
@@ -58,8 +58,8 @@
           <!-- 区域编辑管理器 -->
           <Border Background="{DynamicResource ThemePanelBackgroundBrush}" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1" CornerRadius="2">
             <region:RoiEditorManagerControl x:Name="dialogRegionManager"
-                                                InspectionRegionsSource="{Binding DialogInspectionRegions}"
-                                                MaskRegionsSource="{Binding DialogMaskRegions}"/>
+                                                InspectionRoisSource="{Binding DialogInspectionRois}"
+                                                MaskRoisSource="{Binding DialogMaskRois}"/>
           </Border>
 
           <!-- 模板创建参数 -->

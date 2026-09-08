@@ -2,10 +2,10 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.ViewModels;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels;
 
-namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views
+namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
 {
     /// <summary>
     /// NodeSelectorPopup.xaml 的交互逻辑

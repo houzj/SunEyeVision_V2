@@ -1,7 +1,7 @@
 using System.Windows.Media;
 using SunEyeVision.Plugin.SDK.Models;
 
-namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models
+namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Models
 {
     /// <summary>
     /// 区域编辑器显示设置

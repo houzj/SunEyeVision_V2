@@ -1,7 +1,7 @@
 using System.Windows;
 using System.Windows.Media;
 
-namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering
+namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Rendering
 {
     /// <summary>
     /// 区域视觉宿主：以单个 UIElement 承载任意数量的 DrawingVisual（每个区域一个），

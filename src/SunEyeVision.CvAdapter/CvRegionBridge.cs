@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using OpenCvSharp;
 using SunEyeVision.CvEngine;
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 
 namespace SunEyeVision.CvAdapter
 {
     /// <summary>
-    /// CvEngine 区域桥接（适配层）：把框架 RoI 契约（RoiData/ShapeParameters 几何）与
+    /// CvEngine 区域桥接（适配层）：把框架 RoI 契约（Roi/RoiShape 几何）与
     /// 位置修正矩阵（AffineMatrix）转换为 CvEngine 的纯算法区域 CvRegion。
     /// 这两类转换依赖 SDK 契约类型 + CvEngine 算法类型，按对称架构归适配层；
     /// CvEngine 作为纯算法库不依赖 SDK，HalAdapter 与本项目互不引用。
@@ -22,22 +22,22 @@ namespace SunEyeVision.CvAdapter
         /// </summary>
         public static CvRegion? BuildROI(
             Size imageSize,
-            IEnumerable<RoiData> inspectionRegions,
-            IEnumerable<RoiData> maskRegions)
+            IEnumerable<Roi> inspectionRois,
+            IEnumerable<Roi> maskRois)
         {
-            bool hasInspection = inspectionRegions.Any();
-            bool hasMask = maskRegions.Any();
+            bool hasInspection = inspectionRois.Any();
+            bool hasMask = maskRois.Any();
 
             if (hasInspection && hasMask)
             {
-                using var inspRegion = CreateFromRegions(imageSize, inspectionRegions);
-                using var maskRegion = CreateFromRegions(imageSize, maskRegions);
+                using var inspRegion = CreateFromRegions(imageSize, inspectionRois);
+                using var maskRegion = CreateFromRegions(imageSize, maskRois);
                 CvOp.Difference(inspRegion, maskRegion, out var roiRegion);
                 return roiRegion;
             }
             else if (hasInspection)
             {
-                return CreateFromRegions(imageSize, inspectionRegions);
+                return CreateFromRegions(imageSize, inspectionRois);
             }
 
             return null;
@@ -73,20 +73,22 @@ namespace SunEyeVision.CvAdapter
         }
 
         /// <summary>
-        /// 由框架 RoI 集合（RoiData）栅格化为 CvEngine 区域掩码；仅处理 IsEnabled 且几何有效的项。
+        /// 由框架 RoI 集合（Roi）栅格化为 CvEngine 区域掩码；仅处理 IsEnabled 且本地几何有效的项。
+        /// 订阅/拼装模式区域需运行期解析（Cv 引擎链路本期不接入，仅本地绘制），
         /// 支持的几何：Circle2d / RotatedRect2d / Polygon2d / System.Windows.Rect。
         /// </summary>
-        public static CvRegion CreateFromRegions(Size imageSize, IEnumerable<RoiData> regions)
+        public static CvRegion CreateFromRegions(Size imageSize, IEnumerable<Roi> rois)
         {
-            var enabled = regions.Where(r => r.IsEnabled).ToList();
+            var enabled = rois.Where(r => r.IsEnabled).ToList();
             if (enabled.Count == 0)
                 return CvRegion.GenEmptyObj();
 
             var combinedMask = new Mat(imageSize, MatType.CV_8UC1, Scalar.Black);
 
-            foreach (var region in enabled)
+            foreach (var roi in enabled)
             {
-                if (region.Parameters is not ShapeParameters shape || shape.Geometry == null) continue;
+                var shape = roi.LocalGeometry;
+                if (shape?.Geometry == null) continue;
 
                 if (shape.Geometry is Circle2d c)
                 {

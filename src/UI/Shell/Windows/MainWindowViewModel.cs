@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -41,8 +41,6 @@ using SunEyeVision.UI.Shell.Windows;
 using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Features.WorkflowUI;
 using SunEyeVision.Plugin.SDK.UI.Controls;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Logic;
 using SunEyeVision.UI.Converters.Path;
 using SunEyeVision.UI.Services.Performance;
 using SunEyeVision.UI.Services.Logging;
@@ -1646,45 +1644,6 @@ SplitterPosition = position;
                     if (!workflow.Nodes.Contains(node))
                     {
                         workflow.Nodes.Add(node);
-                    }
-
-                    // 关键日志：追踪区域数据序列化问题
-                    if (node.Parameters != null)
-                    {
-                        // 尝试获取 InspectionRegions 信息
-                        var paramsType = node.Parameters.GetType();
-                        var inspectionRegionsProp = paramsType.GetProperty("InspectionRegions");
-                        if (inspectionRegionsProp != null)
-                        {
-                            var inspectionRegions = inspectionRegionsProp.GetValue(node.Parameters);
-                            if (inspectionRegions != null)
-                            {
-                                var regionsProp = inspectionRegions.GetType().GetProperty("Regions");
-                                if (regionsProp != null)
-                                {
-                                    var regions = regionsProp.GetValue(inspectionRegions) as System.Collections.ICollection;
-                                    var regionsCount = regions?.Count ?? 0;
-                                    var regionsHashCode = regions?.GetHashCode() ?? 0;
-
-                                    LogInfo($"[SaveSolutionData] 节点={node.Name} | ToolType={node.ToolType} | " +
-                                        $"Parameters.HashCode={node.Parameters.GetHashCode():X8} | " +
-                                        $"InspectionRegions.Regions.Count={regionsCount} | " +
-                                        $"InspectionRegions.Regions.HashCode={regionsHashCode:X8}",
-                                        "MainWindowViewModel");
-
-                                    // 记录区域详细信息
-                                    if (regionsCount > 0 && regions != null)
-                                    {
-                                        foreach (var region in regions)
-                                        {
-                                            var regionName = region?.GetType().GetProperty("Name")?.GetValue(region) ?? "Unknown";
-                                            LogInfo($"[SaveSolutionData] 序列化区域 | Node={node.Name} | Region={regionName} | Type={region?.GetType().Name}",
-                                                "MainWindowViewModel");
-                                        }
-                                    }
-                                }
-                            }
-                        }
                     }
                 }
 
@@ -4555,16 +4514,16 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
 
         /// <summary>
         /// 构建可监视数组的字段聚合节点。
-        /// 按形状分组（ShapeParameters 按 ShapeType），每字段一行，多元素值用分号串联，不按 [i] 索引展开树。
+        /// 按形状分组（RoiShape 按 ShapeType），每字段一行，多元素值用分号串联，不按 [i] 索引展开树。
         /// </summary>
         private static void BuildMonitorableArrayNodes(ModuleResultNode parent, System.Collections.IEnumerable items)
         {
             var list = items.Cast<object>().Where(x => x is IMonitorable).ToList();
             if (list.Count == 0)
             {
-                // 设计期（未运行/未绘制）：RoI(ShapeParameters[]) 空数组也按 ShapeType 枚举出结构，
+                // 设计期（未运行/未绘制）：ROI(RoiShape[]) 空数组也按 ShapeType 枚举出结构，
                 // 分组下用默认几何实例反射属性名生成属性行（值 --）。声明式，不依赖绘制数据（rule-016）。
-                if (items is ShapeParameters[])
+                if (items is RoiShape[])
                 {
                     BuildDesignTimeShapeGroups(parent);
                 }
@@ -4574,25 +4533,10 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
             parent.IsGroup = true;
             parent.DisplayValue = null;
 
-            // RoI 元素（ShapeParameters）：按形状分组后再字段聚合
-            if (list[0] is ShapeParameters)
+            // ROI 元素（RoiShape，契约值）：按形状分组后再字段聚合
+            if (list[0] is RoiShape)
             {
-                var shapeGroups = list
-                    .Cast<ShapeParameters>()
-                    .GroupBy(sp => sp.ShapeType)
-                    .OrderBy(g => g.Key);
-
-                foreach (var shapeGroup in shapeGroups)
-                {
-                    var shapeNode = new ModuleResultNode
-                    {
-                        DisplayName = $"{ShapeTypeDisplayName(shapeGroup.Key)} ({shapeGroup.Count()}项)",
-                        IsGroup = true,
-                        IsExpanded = false
-                    };
-                    AppendFieldAggregation(shapeNode, shapeGroup);
-                    parent.Children.Add(shapeNode);
-                }
+                AppendShapeGroupedNodes(parent, list.Cast<RoiShape>().GroupBy(sp => sp.ShapeType).OrderBy(g => g.Key));
                 return;
             }
 
@@ -4625,12 +4569,12 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         }
 
         /// <summary>
-        /// 为设计期形状分组生成属性字段行（默认几何实例经 ShapeParameters.GetMonitorFields，值 --）。
-        /// 与运行期同源：ShapeParameters.GetMonitorFields 对 Rectangle(Rect) 等有字段兜底（RoiDefinition）。
+        /// 为设计期形状分组生成属性字段行（默认几何实例经 RoiShape.GetMonitorFields，值 --）。
+        /// 与运行期同源：RoiShape.GetMonitorFields 对 Rectangle(Rect) 等有字段兜底。
         /// </summary>
         private static void AppendDesignTimeShapeFields(ModuleResultNode shapeNode, ShapeType type)
         {
-            var shape = new ShapeParameters { Geometry = RoiData.CreateDefaultGeometry(type) };
+            var shape = new RoiShape { Geometry = RoiShape.CreateDefaultGeometry(type) };
             if (shape.Geometry == null) return;
 
             var fields = shape.GetMonitorFields();
@@ -4669,6 +4613,25 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         }
 
         /// <summary>
+        /// 把按形状类型分组的几何元素聚合为子节点（每形状组一行，组内按字段聚合）。
+        /// RoiShape 与历史 ShapeParameters 共用（两者均有 ShapeType + IMonitorable）。
+        /// </summary>
+        private static void AppendShapeGroupedNodes(ModuleResultNode parent, System.Collections.Generic.IEnumerable<System.Linq.IGrouping<SunEyeVision.Plugin.SDK.Execution.Parameters.ShapeType, object>> shapeGroups)
+        {
+            foreach (var shapeGroup in shapeGroups)
+            {
+                var shapeNode = new ModuleResultNode
+                {
+                    DisplayName = $"{ShapeTypeDisplayName(shapeGroup.Key)} ({shapeGroup.Count()}项)",
+                    IsGroup = true,
+                    IsExpanded = false
+                };
+                AppendFieldAggregation(shapeNode, shapeGroup);
+                parent.Children.Add(shapeNode);
+            }
+        }
+
+        /// <summary>
         /// 把元素集合按字段聚合追加为子节点（每字段一行，值用分号串联）。
         /// 以第一个元素的字段列表为准，跨所有元素按字段名取值。
         /// </summary>
@@ -4702,20 +4665,20 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         /// </summary>
         private static object? ResolveRoiDesignValue(string propertyName, ToolParameters? parameters)
         {
-            if (parameters is not SunEyeVision.Plugin.SDK.Execution.Parameters.RoiParameters regionParams)
+            if (parameters is not SunEyeVision.Plugin.SDK.Execution.Parameters.RoiParameters roiParams)
                 return null;
 
-            IEnumerable<RoiData>? regions = propertyName switch
+            IEnumerable<Roi>? rois = propertyName switch
             {
-                nameof(ToolResults.InspectionGeometries) => regionParams.InspectionRegions?.Regions,
-                nameof(ToolResults.MaskGeometries) => regionParams.MaskRegions?.Regions,
+                nameof(ToolResults.InspectionGeometries) => roiParams.InspectionRois?.Rois,
+                nameof(ToolResults.MaskGeometries) => roiParams.MaskRois?.Rois,
                 _ => null
             };
 
-            return regions?
+            return rois?
                 .Where(r => r.IsEnabled)
-                .Select(r => r.Parameters)
-                .OfType<ShapeParameters>()
+                .Select(r => r.LocalGeometry)
+                .OfType<RoiShape>()
                 .Where(sp => sp.Geometry != null)
                 .ToArray();
         }
@@ -4723,18 +4686,18 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
         /// <summary>
         /// ShapeType → 中文显示名（结果树形状分组节点用）
         /// </summary>
-        private static string ShapeTypeDisplayName(SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models.ShapeType shapeType)
+        private static string ShapeTypeDisplayName(SunEyeVision.Plugin.SDK.Execution.Parameters.ShapeType shapeType)
         {
             return shapeType switch
             {
-                SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models.ShapeType.Circle => "圆",
-                SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models.ShapeType.Rectangle => "矩形",
-                SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models.ShapeType.RotatedRectangle => "旋转矩形",
-                SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models.ShapeType.Polygon => "多边形",
-                SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models.ShapeType.Annulus => "圆环",
-                SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models.ShapeType.Line => "直线",
-                SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models.ShapeType.Arc => "弧形",
-                SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models.ShapeType.Point => "点",
+                SunEyeVision.Plugin.SDK.Execution.Parameters.ShapeType.Circle => "圆",
+                SunEyeVision.Plugin.SDK.Execution.Parameters.ShapeType.Rectangle => "矩形",
+                SunEyeVision.Plugin.SDK.Execution.Parameters.ShapeType.RotatedRectangle => "旋转矩形",
+                SunEyeVision.Plugin.SDK.Execution.Parameters.ShapeType.Polygon => "多边形",
+                SunEyeVision.Plugin.SDK.Execution.Parameters.ShapeType.Annulus => "圆环",
+                SunEyeVision.Plugin.SDK.Execution.Parameters.ShapeType.Line => "直线",
+                SunEyeVision.Plugin.SDK.Execution.Parameters.ShapeType.Arc => "弧形",
+                SunEyeVision.Plugin.SDK.Execution.Parameters.ShapeType.Point => "点",
                 _ => shapeType.ToString()
             };
         }

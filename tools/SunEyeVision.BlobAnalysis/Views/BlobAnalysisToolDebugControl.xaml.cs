@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using SunEyeVision.Plugin.SDK.Core;
@@ -8,7 +8,6 @@ using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Metadata;
 using SunEyeVision.Plugin.SDK.UI.Controls;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 
 namespace SunEyeVision.Tool.BlobAnalysis.Views
 {
@@ -128,15 +127,15 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
             {
                 Parameters = blobParams;
 
-                var regionsCount = Parameters.InspectionRegions?.Regions?.Count ?? 0;
+                var roisCount = Parameters.InspectionRois?.Rois?.Count ?? 0;
 
-                if (regionsCount == 0)
+                if (roisCount == 0)
                 {
-                    PluginLogger.Warning($"[SetParameters] InspectionRegions.Regions.Count=0", "BlobAnalysisTool");
+                    PluginLogger.Warning($"[SetParameters] InspectionRois.Rois.Count=0", "BlobAnalysisTool");
                 }
                 else
                 {
-                    PluginLogger.Info($"[SetParameters] 参数注入完成 | Regions.Count={regionsCount}", "BlobAnalysisTool");
+                    PluginLogger.Info($"[SetParameters] 参数注入完成 | Rois.Count={roisCount}", "BlobAnalysisTool");
                 }
 
                 PluginLogger.Success($"已加载节点参数: Threshold={Parameters.Threshold}", "BlobAnalysisTool");

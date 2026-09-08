@@ -2,14 +2,14 @@
 using System.Linq;
 using System.Windows;
 using HalconDotNet;
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
 
 namespace SunEyeVision.HalAdapter;
 
 /// <summary>
-/// 算法区域(IVisionRegion, iconic 运行时数据) 与 用户几何(RoI, ShapeParameters) 的双向桥接。
+/// 算法区域(IVisionRegion, iconic 运行时数据) 与 用户几何(RoI, RoiShape) 的双向桥接。
 ///
 /// 设计原则（方案 D8）：工作流契约只认 RoI；Region 仅活在算法工具内部。
 /// 工具在输出映射处调用 <see cref="RegionToRoi"/> 把 Region 转 RoI 外发，下游统一消费 RoI。
@@ -29,7 +29,7 @@ public static class RegionConverter
     /// <param name="region">算法区域（iconic）</param>
     /// <param name="fitMode">exact(默认, 精确多边形零失真) / fit-circle / fit-rect / fit-bbox</param>
     /// <returns>用户几何 RoI</returns>
-    public static ShapeParameters RegionToRoi(IVisionRegion region, string fitMode = "exact")
+    public static RoiShape RegionToRoi(IVisionRegion region, string fitMode = "exact")
     {
         if (region == null) throw new ArgumentNullException(nameof(region));
         if (region.IsEmpty)
@@ -41,10 +41,10 @@ public static class RegionConverter
 
         return fitMode switch
         {
-            "exact" => new ShapeParameters { Geometry = new Polygon2d(contour, isClosed: true) },
-            "fit-circle" => new ShapeParameters { Geometry = FitCircle(contour) },
-            "fit-rect" => new ShapeParameters { Geometry = FitRotatedRect(contour) },
-            "fit-bbox" => new ShapeParameters { Geometry = region.BoundingBox },
+            "exact" => new RoiShape { Geometry = new Polygon2d(contour, isClosed: true) },
+            "fit-circle" => new RoiShape { Geometry = FitCircle(contour) },
+            "fit-rect" => new RoiShape { Geometry = FitRotatedRect(contour) },
+            "fit-bbox" => new RoiShape { Geometry = region.BoundingBox },
             _ => throw new NotSupportedException(
                 $"不支持的 fitMode: '{fitMode}'（支持: exact / fit-circle / fit-rect / fit-bbox）")
         };
@@ -54,7 +54,7 @@ public static class RegionConverter
     /// 将 RoI 栅格化为算法区域（零失真，用户认可的易方向）。
     /// 非面状几何（Line2d/Arc2d）无法构成封闭区域，直接报错（rule-015 不静默）。
     /// </summary>
-    public static IVisionRegion RoiToRegion(ShapeParameters roi)
+    public static IVisionRegion RoiToRegion(RoiShape roi)
     {
         if (roi == null) throw new ArgumentNullException(nameof(roi));
         if (roi.Geometry == null)

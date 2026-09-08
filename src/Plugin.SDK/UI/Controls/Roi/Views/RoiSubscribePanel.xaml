@@ -1,11 +1,11 @@
-<UserControl x:Class="SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views.RoiSubscribePanel"
+<UserControl x:Class="SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views.RoiSubscribePanel"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:local="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views"
+             xmlns:local="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views"
              xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls"
-             xmlns:converters="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Roi.Converters"
+             xmlns:converters="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Converters"
              xmlns:va="clr-namespace:SunEyeVision.Plugin.SDK.Vision.Contracts"
              xmlns:themes="clr-namespace:SunEyeVision.Plugin.SDK.UI.Themes"
              mc:Ignorable="d" d:DesignHeight="500" d:DesignWidth="300">
@@ -29,12 +29,12 @@
             <UniformGrid Columns="2" Margin="8">
                 <RadioButton Content="订阅整个区域"
                              GroupName="SubscribeSubMode"
-                             IsChecked="{Binding IsWholeRegionMode}"
+                             IsChecked="{Binding IsWholeRegionMode, Mode=OneWay}"
                              Checked="WholeRegionRadio_Checked"
                              Margin="0,0,0,8"/>
                 <RadioButton Content="订阅几何参数"
                              GroupName="SubscribeSubMode"
-                             IsChecked="{Binding IsGeometricMode}"
+                             IsChecked="{Binding IsGeometricMode, Mode=OneWay}"
                              Checked="GeometricRadio_Checked"
                              Margin="0,0,0,8"/>
             </UniformGrid>
@@ -44,9 +44,9 @@
         <GroupBox Header="区域源" Margin="0,0,0,12"
                   Visibility="{Binding IsWholeRegionMode, Converter={StaticResource BoolToVisibilityConverter}}">
             <controls:LabeledControl Label="区域源" LabelWidth="70" Margin="0,0,0,8">
-                <controls:ParamBinding Width="200"
+                <controls:ParamBinding x:Name="WholeRegionBinding"
+                                       Width="200"
                                        ParameterName="WholeRegion"
-                                       DataType="{x:Type va:IVisionRegion}"
                                        BindingSource="{Binding WholeRegionBindingPath, Mode=TwoWay}"
                                        AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:RoiSubscribePanel}}}"/>
             </controls:LabeledControl>

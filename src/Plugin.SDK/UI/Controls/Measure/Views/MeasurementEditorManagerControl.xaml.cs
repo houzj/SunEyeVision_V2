@@ -5,10 +5,10 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.SDK.UI.Controls.Measure.Models;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Rendering;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
 {
@@ -65,28 +65,28 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         #region Dependency Properties
 
         /// <summary>
-        /// 屏蔽区域集合（多 ROI）
+        /// 屏蔽几何输入集合（多 ROI，元素为 <see cref="Roi"/> 参数模型）
         /// </summary>
-        public static readonly DependencyProperty MaskRegionsSourceProperty =
-            DependencyProperty.Register(nameof(MaskRegionsSource),
-                typeof(ObservableCollection<RoiData>),
+        public static readonly DependencyProperty MaskRoisSourceProperty =
+            DependencyProperty.Register(nameof(MaskRoisSource),
+                typeof(ObservableCollection<Roi>),
                 typeof(MeasurementEditorManagerControl),
                 new PropertyMetadata(null, OnMaskSourceChanged));
 
         /// <summary>
-        /// 屏蔽区域集合（多 ROI）
+        /// 屏蔽几何输入集合（多 ROI）
         /// </summary>
-        public ObservableCollection<RoiData>? MaskRegionsSource
+        public ObservableCollection<Roi>? MaskRoisSource
         {
-            get => (ObservableCollection<RoiData>?)GetValue(MaskRegionsSourceProperty);
-            set => SetValue(MaskRegionsSourceProperty, value);
+            get => (ObservableCollection<Roi>?)GetValue(MaskRoisSourceProperty);
+            set => SetValue(MaskRoisSourceProperty, value);
         }
 
         private static void OnMaskSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (d is MeasurementEditorManagerControl control && e.NewValue is ObservableCollection<RoiData> source)
+            if (d is MeasurementEditorManagerControl control && e.NewValue is ObservableCollection<Roi> source)
             {
-                control.maskEditor?.SetRegionsSource(source);
+                control.maskEditor?.SetRoisSource(source);
             }
         }
 
@@ -258,7 +258,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
             if (maskEditor.IsAnyInteractionInProgress) return maskEditor.QueryCursor(pos);
 
             // 选择模式：屏蔽区域视觉上层优先；其余交给引导编辑器（主体/卡尺/手柄）
-            if (maskEditor.HitTestRegion(pos, tolerance: 8.0) != null)
+            if (maskEditor.HitTestRoi(pos, tolerance: 8.0) != null)
                 return maskEditor.QueryCursor(pos);
             return guideEditor.QueryCursor(pos);
         }
@@ -342,7 +342,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
             }
 
             // 场景3 - 选择模式 HitTest：屏蔽区域优先命中（视觉上层，更大容差）
-            var maskHit = maskEditor.HitTestRegion(pos, tolerance: 8.0);
+            var maskHit = maskEditor.HitTestRoi(pos, tolerance: 8.0);
             if (maskHit != null)
             {
                 var consumed = maskEditor.ProcessMouseDown(pos);
@@ -445,7 +445,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                     e.Handled = true;
                     RenderAll();
                 }
-                else if (maskEditor.GetSelectedRegion() != null)
+                else if (maskEditor.GetSelectedRoi() != null)
                 {
                     maskEditor.HandleDelete();
                     e.Handled = true;
@@ -496,9 +496,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
             _maskRenderer?.Render(maskContexts, new RoiRenderOptions { ShowLabels = true, ShowHandles = false });
 
             // 清除陈旧屏蔽手柄 + 绘制选中区域手柄
-            Roi.Rendering.HandleRenderer.ClearHandles(overlayCanvas);
-            if (maskEditor.GetSelectedRegion() != null && !maskEditor.IsDrawingInteraction)
-                maskEditor.DrawEditHandles(maskEditor.GetSelectedRegion()!);
+            RoiEditor.Rendering.HandleRenderer.ClearHandles(overlayCanvas);
+            if (maskEditor.GetSelectedRoi() != null && !maskEditor.IsDrawingInteraction)
+                maskEditor.DrawEditHandles(maskEditor.GetSelectedRoi()!);
 
             // 引导：由 MeasureEditorControl 内部渲染（测量带 + 引导手柄）
             guideEditor.RenderForManager();

@@ -1,10 +1,10 @@
 using System.Windows;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.ViewModels;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 
-namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Logic
+namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Logic
 {
     /// <summary>
     /// Region Editor集成帮助类 - 简化RegionEditorControl的使用

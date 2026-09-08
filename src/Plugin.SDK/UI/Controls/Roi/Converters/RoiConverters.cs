@@ -4,11 +4,12 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Models;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Execution;
 
-namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Converters
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
+namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Converters
 {
     /// <summary>
     /// 形状类型到图标转换器

@@ -5,8 +5,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
         xmlns:commands="clr-namespace:SunEyeVision.Plugin.SDK.Commands;assembly=SunEyeVision.Plugin.SDK"
-        xmlns:region="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views;assembly=SunEyeVision.Plugin.SDK"
-        xmlns:converters="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Roi.Converters;assembly=SunEyeVision.Plugin.SDK"
+        xmlns:region="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views;assembly=SunEyeVision.Plugin.SDK"
+        xmlns:converters="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Converters;assembly=SunEyeVision.Plugin.SDK"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:local="clr-namespace:SunEyeVision.Tool.Threshold"
         xmlns:localConverters="clr-namespace:SunEyeVision.Tool.Threshold.Converters"
@@ -39,8 +39,8 @@
             <!-- 区域管理器（检测区域 + 屏蔽区域；区域语义统一：有区域即限制，无区域全图） -->
             <GroupBox Header="区域设置" Margin="0,8,0,0">
                 <region:RoiEditorManagerControl x:Name="regionManager"
-                    InspectionRegionsSource="{Binding InspectionRegions.Regions}"
-                    MaskRegionsSource="{Binding MaskRegions.Regions}"/>
+                    InspectionRoisSource="{Binding InspectionRois.Rois}"
+                    MaskRoisSource="{Binding MaskRois.Rois}"/>
             </GroupBox>
           </StackPanel>
         </ScrollViewer>

@@ -3,7 +3,7 @@ using System.Linq;
 using System.Windows;
 using SunEyeVision.HalAdapter;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Models;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using Xunit;
 

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -9,7 +9,6 @@ using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution;
 using SunEyeVision.HalAdapter;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using SunEyeVision.Plugin.SDK.Validation;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using SunEyeVision.Tool.Threshold.Views;
@@ -120,8 +119,8 @@ namespace SunEyeVision.Tool.Threshold
                     // 纯几何：检测/屏蔽区域订阅解析 + 差集；全图/按域执行由算法层自决（见下 HalImageDomain.Restrict）
                     var scope = HalconRegionPipeline.Resolve(
                         imgWidth, imgHeight,
-                        parameters.GetRoisByType(RoiType.Inspection),
-                        parameters.GetRoisByType(RoiType.Mask),
+                        parameters.GetRoisByType(RoiParameterMode.InspectionRoi),
+                        parameters.GetRoisByType(RoiParameterMode.MaskRoi),
                         parameters.NodeResults);
                     stepTimings.AddRange(scope.Timings);
 
@@ -206,9 +205,9 @@ namespace SunEyeVision.Tool.Threshold
 
                                 // 提取检测区/屏蔽区几何输出（RoI 契约：结果树字段聚合 + 下游绑定）
                                 ToolRegionHelper.ExtractInspectionGeometries(result,
-                                    parameters.InspectionRegions?.Regions);
+                                    parameters.InspectionRois?.Rois);
                                 ToolRegionHelper.ExtractMaskGeometries(result,
-                                    parameters.MaskRegions?.Regions);
+                                    parameters.MaskRois?.Rois);
 
                                 stopwatch.Stop();
                                 result.SetSuccess(stopwatch.Elapsed.TotalMilliseconds);

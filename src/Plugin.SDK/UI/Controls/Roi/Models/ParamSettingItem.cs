@@ -2,20 +2,22 @@ using System;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models;
 
-namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models
+namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Models
 {
     /// <summary>
-    /// 参数绑定项 - 用于参数面板显示
+    /// 参数绑定项 - 用于参数面板显示。
+    /// 承载几何参数拼装中"一个扁平参数"的订阅设置（值源统一为 <see cref="ParamSetting"/>）。
+    /// 键 = <see cref="RoiShape"/> 扁平参数名（CenterX/CenterY/Width/Height/Radius/Angle/StartX/...）。
     /// </summary>
     public class ParamSettingItem : ObservableObject
     {
-        private ParameterSource? _source;
+        private ParamSetting? _setting;
         private string _displayPath = string.Empty;
         private string _bindingPath = string.Empty;
         private object? _currentValue;
 
         /// <summary>
-        /// 参数名称
+        /// 参数名称（RoiShape 扁平参数名）
         /// </summary>
         public string ParameterName { get; set; } = string.Empty;
 
@@ -30,14 +32,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models
         public Type DataType { get; set; } = typeof(double);
 
         /// <summary>
-        /// 参数源（可能为null表示未绑定）
+        /// 参数订阅设置（null=未绑定）
         /// </summary>
-        public ParameterSource? Source
+        public ParamSetting? Setting
         {
-            get => _source;
+            get => _setting;
             set
             {
-                if (SetProperty(ref _source, value))
+                if (SetProperty(ref _setting, value))
                 {
                     OnPropertyChanged(nameof(IsBound));
                     OnPropertyChanged(nameof(BindingType));
@@ -75,11 +77,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models
         /// <summary>
         /// 是否已绑定
         /// </summary>
-        public bool IsBound => Source != null;
+        public bool IsBound => Setting != null;
 
         /// <summary>
         /// 绑定类型
         /// </summary>
-        public BindingType BindingType => Source?.BindingType ?? BindingType.Constant;
+        public BindingType BindingType => Setting?.BindingType ?? BindingType.Constant;
     }
 }

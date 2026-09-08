@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.ViewModels;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels;
 
-namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Logic
+namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Logic
 {
     /// <summary>
     /// 编辑动作接口
@@ -172,86 +172,86 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Logic
     #region 具体编辑动作
 
     /// <summary>
-    /// 创建区域动作
+    /// 创建几何输入动作
     /// </summary>
-    public class CreateRegionAction : IEditAction
+    public class CreateRoiAction : IEditAction
     {
-        private readonly RoiData _region;
+        private readonly Roi _roi;
         private readonly RoiEditorViewModel _editor;
 
-        public string Description => $"创建 {_region.GetShapeType()}";
+        public string Description => $"创建 {_roi.DeclaredShapeType}";
 
-        public CreateRegionAction(RoiData region, RoiEditorViewModel editor)
+        public CreateRoiAction(Roi roi, RoiEditorViewModel editor)
         {
-            _region = region;
+            _roi = roi;
             _editor = editor;
         }
 
         public void Undo()
         {
-            _editor.RemoveRegionInternal(_region);
+            _editor.RemoveRoiInternal(_roi);
         }
 
         public void Redo()
         {
-            _editor.AddRegionInternal(_region);
+            _editor.AddRoiInternal(_roi);
         }
     }
 
     /// <summary>
-    /// 删除区域动作
+    /// 删除几何输入动作
     /// </summary>
-    public class DeleteRegionAction : IEditAction
+    public class DeleteRoiAction : IEditAction
     {
-        private readonly RoiData _region;
+        private readonly Roi _roi;
         private readonly int _index;
         private readonly RoiEditorViewModel _editor;
 
-        public string Description => $"删除 {_region.GetShapeType()}";
+        public string Description => $"删除 {_roi.DeclaredShapeType}";
 
-        public DeleteRegionAction(RoiData region, RoiEditorViewModel editor)
+        public DeleteRoiAction(Roi roi, RoiEditorViewModel editor)
         {
-            _region = (RoiData)region.Clone();
-            _index = editor.Regions.IndexOf(region);
+            _roi = (Roi)roi.Clone();
+            _index = editor.Rois.IndexOf(roi);
             _editor = editor;
         }
 
         public void Undo()
         {
-            if (_index >= 0 && _index <= _editor.Regions.Count)
+            if (_index >= 0 && _index <= _editor.Rois.Count)
             {
-                _editor.Regions.Insert(_index, _region);
-                _editor.SelectedRegion = _region;
+                _editor.Rois.Insert(_index, _roi);
+                _editor.SelectedRoi = _roi;
             }
         }
 
         public void Redo()
         {
-            _editor.RemoveRegionInternal(_region);
+            _editor.RemoveRoiInternal(_roi);
         }
     }
 
     /// <summary>
-    /// 移动区域动作
+    /// 移动几何输入动作
     /// </summary>
-    public class MoveRegionAction : IEditAction
+    public class MoveRoiAction : IEditAction
     {
-        private readonly Guid _regionId;
+        private readonly Guid _roiId;
         private readonly double _deltaX;
         private readonly double _deltaY;
         private readonly RoiEditorViewModel _editor;
 
-        public string Description => "移动区域";
+        public string Description => "移动几何输入";
 
-        public MoveRegionAction(Guid regionId, double deltaX, double deltaY, RoiEditorViewModel editor)
+        public MoveRoiAction(Guid roiId, double deltaX, double deltaY, RoiEditorViewModel editor)
         {
-            _regionId = regionId;
+            _roiId = roiId;
             _deltaX = deltaX;
             _deltaY = deltaY;
             _editor = editor;
         }
 
-        private void OffsetGeometry(ShapeParameters shapeDef, double dx, double dy)
+        private void OffsetGeometry(RoiShape shapeDef, double dx, double dy)
         {
             if (shapeDef.Geometry == null) return;
             shapeDef.Geometry = shapeDef.Geometry switch
@@ -269,75 +269,71 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Logic
 
         public void Undo()
         {
-            var region = FindRegion(_regionId);
-            if (region?.Parameters is ShapeParameters shapeDef)
+            var roi = FindRoi(_roiId);
+            if (roi?.LocalGeometry is RoiShape shapeDef)
             {
                 OffsetGeometry(shapeDef, -_deltaX, -_deltaY);
-                region.MarkModified();
             }
         }
 
         public void Redo()
         {
-            var region = FindRegion(_regionId);
-            if (region?.Parameters is ShapeParameters shapeDef)
+            var roi = FindRoi(_roiId);
+            if (roi?.LocalGeometry is RoiShape shapeDef)
             {
                 OffsetGeometry(shapeDef, _deltaX, _deltaY);
-                region.MarkModified();
             }
         }
 
-        private RoiData? FindRegion(Guid id)
+        private Roi? FindRoi(Guid id)
         {
-            foreach (var region in _editor.Regions)
+            foreach (var roi in _editor.Rois)
             {
-                if (region.Id == id) return region;
+                if (roi.Id == id) return roi;
             }
             return null;
         }
     }
 
     /// <summary>
-    /// 调整区域大小动作
+    /// 调整几何输入大小动作
     /// </summary>
-    public class ResizeRegionAction : IEditAction
+    public class ResizeRoiAction : IEditAction
     {
-        private readonly Guid _regionId;
-        private readonly ShapeParameters _originalState;
-        private readonly ShapeParameters _newState;
+        private readonly Guid _roiId;
+        private readonly RoiShape _originalState;
+        private readonly RoiShape _newState;
         private readonly RoiEditorViewModel _editor;
 
         public string Description => "调整大小";
 
-        public ResizeRegionAction(Guid regionId, ShapeParameters originalState, ShapeParameters newState, RoiEditorViewModel editor)
+        public ResizeRoiAction(Guid roiId, RoiShape originalState, RoiShape newState, RoiEditorViewModel editor)
         {
-            _regionId = regionId;
-            _originalState = (ShapeParameters)originalState.Clone();
-            _newState = (ShapeParameters)newState.Clone();
+            _roiId = roiId;
+            _originalState = originalState.Clone();
+            _newState = newState.Clone();
             _editor = editor;
         }
 
         public void Undo()
         {
-            var region = FindRegion(_regionId);
-            if (region?.Parameters is ShapeParameters shapeDef)
+            var roi = FindRoi(_roiId);
+            if (roi?.LocalGeometry is RoiShape shapeDef)
             {
                 CopyState(_originalState, shapeDef);
-                region.MarkModified();
             }
         }
 
         public void Redo()
         {
-            var region = FindRegion(_regionId);
-            if (region?.Parameters is ShapeParameters shapeDef)
+            var roi = FindRoi(_roiId);
+            if (roi?.LocalGeometry is RoiShape shapeDef)
             {
                 CopyState(_newState, shapeDef);
-                region.MarkModified();
             }
         }
 
-        private static void CopyState(ShapeParameters source, ShapeParameters target)
+        private static void CopyState(RoiShape source, RoiShape target)
         {
             target.Geometry = source.Geometry switch
             {
@@ -350,61 +346,59 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Logic
             };
         }
 
-        private RoiData? FindRegion(Guid id)
+        private Roi? FindRoi(Guid id)
         {
-            foreach (var region in _editor.Regions)
+            foreach (var roi in _editor.Rois)
             {
-                if (region.Id == id) return region;
+                if (roi.Id == id) return roi;
             }
             return null;
         }
     }
 
     /// <summary>
-    /// 修改区域动作（调整大小/旋转）
+    /// 修改几何输入动作（调整大小/旋转）
     /// </summary>
-    public class ModifyRegionAction : IEditAction
+    public class ModifyRoiAction : IEditAction
     {
-        private readonly Guid _regionId;
-        private readonly ShapeParameters _originalState;
-        private ShapeParameters? _newState;
+        private readonly Guid _roiId;
+        private readonly RoiShape _originalState;
+        private RoiShape? _newState;
         private readonly RoiEditorViewModel _editor;
 
-        public string Description => "修改区域";
+        public string Description => "修改几何输入";
 
-        public ModifyRegionAction(Guid regionId, ShapeParameters originalState, RoiEditorViewModel editor)
+        public ModifyRoiAction(Guid roiId, RoiShape originalState, RoiEditorViewModel editor)
         {
-            _regionId = regionId;
-            _originalState = (ShapeParameters)originalState.Clone();
+            _roiId = roiId;
+            _originalState = originalState.Clone();
             _editor = editor;
         }
 
-        public void CaptureNewState(ShapeParameters newState)
+        public void CaptureNewState(RoiShape newState)
         {
-            _newState = (ShapeParameters)newState.Clone();
+            _newState = newState.Clone();
         }
 
         public void Undo()
         {
-            var region = FindRegion(_regionId);
-            if (region?.Parameters is ShapeParameters shapeDef && _originalState != null)
+            var roi = FindRoi(_roiId);
+            if (roi?.LocalGeometry is RoiShape shapeDef && _originalState != null)
             {
                 CopyState(_originalState, shapeDef);
-                region.MarkModified();
             }
         }
 
         public void Redo()
         {
-            var region = FindRegion(_regionId);
-            if (region?.Parameters is ShapeParameters shapeDef && _newState != null)
+            var roi = FindRoi(_roiId);
+            if (roi?.LocalGeometry is RoiShape shapeDef && _newState != null)
             {
                 CopyState(_newState, shapeDef);
-                region.MarkModified();
             }
         }
 
-        private static void CopyState(ShapeParameters source, ShapeParameters target)
+        private static void CopyState(RoiShape source, RoiShape target)
         {
             target.Geometry = source.Geometry switch
             {
@@ -417,54 +411,54 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Logic
             };
         }
 
-        private RoiData? FindRegion(Guid id)
+        private Roi? FindRoi(Guid id)
         {
-            foreach (var region in _editor.Regions)
+            foreach (var roi in _editor.Rois)
             {
-                if (region.Id == id) return region;
+                if (roi.Id == id) return roi;
             }
             return null;
         }
     }
 
     /// <summary>
-    /// 批量删除动作
+    /// 批量删除几何输入动作
     /// </summary>
-    public class BatchDeleteAction : IEditAction
+    public class BatchDeleteRoiAction : IEditAction
     {
-        private readonly List<(RoiData Region, int Index)> _deletedRegions;
+        private readonly List<(Roi Roi, int Index)> _deletedRois;
         private readonly RoiEditorViewModel _editor;
 
-        public string Description => $"批量删除 {_deletedRegions.Count} 个区域";
+        public string Description => $"批量删除 {_deletedRois.Count} 个几何输入";
 
-        public BatchDeleteAction(IEnumerable<(RoiData Region, int Index)> regions, RoiEditorViewModel editor)
+        public BatchDeleteRoiAction(IEnumerable<(Roi Roi, int Index)> rois, RoiEditorViewModel editor)
         {
             _editor = editor;
-            _deletedRegions = new List<(RoiData, int)>();
-            foreach (var (region, index) in regions)
+            _deletedRois = new List<(Roi, int)>();
+            foreach (var (roi, index) in rois)
             {
-                _deletedRegions.Add(((RoiData)region.Clone(), index));
+                _deletedRois.Add(((Roi)roi.Clone(), index));
             }
             // 按索引降序排列，以便撤销时按正确顺序恢复
-            _deletedRegions.Sort((a, b) => b.Index.CompareTo(a.Index));
+            _deletedRois.Sort((a, b) => b.Index.CompareTo(a.Index));
         }
 
         public void Undo()
         {
-            foreach (var (region, index) in _deletedRegions)
+            foreach (var (roi, index) in _deletedRois)
             {
-                if (index >= 0 && index <= _editor.Regions.Count)
+                if (index >= 0 && index <= _editor.Rois.Count)
                 {
-                    _editor.Regions.Insert(index, region);
+                    _editor.Rois.Insert(index, roi);
                 }
             }
         }
 
         public void Redo()
         {
-            foreach (var (region, _) in _deletedRegions)
+            foreach (var (roi, _) in _deletedRois)
             {
-                _editor.RemoveRegionInternal(region);
+                _editor.RemoveRoiInternal(roi);
             }
         }
     }
@@ -472,34 +466,34 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Logic
     /// <summary>
     /// 清除所有动作
     /// </summary>
-    public class ClearAllAction : IEditAction
+    public class ClearAllRoisAction : IEditAction
     {
-        private readonly List<RoiData> _regions;
+        private readonly List<Roi> _rois;
         private readonly RoiEditorViewModel _editor;
 
-        public string Description => "清除所有区域";
+        public string Description => "清除所有几何输入";
 
-        public ClearAllAction(IEnumerable<RoiData> regions, RoiEditorViewModel editor)
+        public ClearAllRoisAction(IEnumerable<Roi> rois, RoiEditorViewModel editor)
         {
             _editor = editor;
-            _regions = new List<RoiData>();
-            foreach (var region in regions)
+            _rois = new List<Roi>();
+            foreach (var roi in rois)
             {
-                _regions.Add((RoiData)region.Clone());
+                _rois.Add((Roi)roi.Clone());
             }
         }
 
         public void Undo()
         {
-            foreach (var region in _regions)
+            foreach (var roi in _rois)
             {
-                _editor.AddRegionInternal(region);
+                _editor.AddRoiInternal(roi);
             }
         }
 
         public void Redo()
         {
-            _editor.SetRegionsInternal(new List<RoiData>());
+            _editor.SetRoisInternal(new List<Roi>());
         }
     }
 

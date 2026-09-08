@@ -1,7 +1,7 @@
 using System.Linq;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Models;
 using Xunit;
 
 namespace SunEyeVision.Plugin.SDK.Tests;
@@ -30,12 +30,12 @@ public class ArrayTreeFormatterTests
     public void BuildExpansionChildren_RoIAggregatesByField()
     {
         // RoI[] 按字段聚合：每个几何字段一个节点，值 = 跨所有 RoI 元素 `;` 串联
-        var roi = new ShapeParameters[]
+        var roi = new RoiShape[]
         {
-            new ShapeParameters { Geometry = new Circle2d(100, 80, 50) },
-            new ShapeParameters { Geometry = new Circle2d(200, 90, 60) },
+            new RoiShape { Geometry = new Circle2d(100, 80, 50) },
+            new RoiShape { Geometry = new Circle2d(200, 90, 60) },
         };
-        var children = ArrayTreeFormatter.BuildExpansionChildren(roi, typeof(ShapeParameters));
+        var children = ArrayTreeFormatter.BuildExpansionChildren(roi, typeof(RoiShape));
 
         // 字段节点数 ≥ 几何字段数（圆心X/圆心Y/半径…）
         Assert.True(children.Count >= 2);

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -9,10 +9,10 @@ using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Logic;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Logic;
 
-namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.ViewModels
+namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
 {
     /// <summary>
     /// 区域编辑器视图模型
@@ -20,10 +20,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.ViewModels
     public class RoiEditorViewModel : ObservableObject, IDisposable
     {
 
-        private readonly Logic.RoiResolver _resolver;
         private readonly EditHistory _editHistory;
-        private RoiData? _selectedRegion;
-        private ShapeParameters? _editingShape;
+        private Roi? _selectedRoi;
+        private RoiShape? _editingShape;
         private bool _isEditing;
         private bool _isDrawing;
         private RoiSourceMode _currentMode = RoiSourceMode.Drawing;
@@ -40,19 +39,19 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.ViewModels
         private readonly Dispatcher _dispatcher;
 
         /// <summary>
-        /// 区域列表
+        /// 几何输入列表（元素为 <see cref="Roi"/>；注意：非像素区域概念）
         /// </summary>
-        public ObservableCollection<RoiData> Regions { get; private set; } = new();
+        public ObservableCollection<Roi> Rois { get; private set; } = new();
 
         /// <summary>
-        /// 选中的区域
+        /// 选中的几何输入
         /// </summary>
-        public RoiData? SelectedRegion
+        public Roi? SelectedRoi
         {
-            get => _selectedRegion;
+            get => _selectedRoi;
             set
             {
-                if (SetProperty(ref _selectedRegion, value))
+                if (SetProperty(ref _selectedRoi, value))
                 {
                     // 使用 Dispatcher.BeginInvoke 异步更新，避免阻塞属性设置
                     _dispatcher.BeginInvoke(new Action(() =>
@@ -75,7 +74,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.ViewModels
         /// <summary>
         /// 当前编辑的形状定义
         /// </summary>
-        public ShapeParameters? EditingShape
+        public RoiShape? EditingShape
         {
             get => _editingShape;
             private set => SetProperty(ref _editingShape, value);
@@ -197,9 +196,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.ViewModels
         /// 形状参数（用于绘制参数面板）
         /// </summary>
         /// <remarks>
-        /// 计算属性：直接引用选中区域的参数，避免创建不必要的副本
+        /// 计算属性：直接引用选中区域的本地几何（RoiShape），避免创建不必要的副本
         /// </remarks>
-        public ShapeParameters? Parameters => SelectedRegion?.Parameters as ShapeParameters;
+        public RoiShape? Parameters => SelectedRoi?.LocalGeometry;
 
         /// <summary>
         /// 是否有选中区域的参数（用于控制绘制参数面板的可见性）
@@ -249,30 +248,33 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.ViewModels
 
 
         /// <summary>
-        /// 选中区域的定义模式
+        /// 选中区域的定义模式（整对象订阅或参数拼装均视为订阅模式）
         /// </summary>
-        public RoiSourceMode SelectedRegionMode => SelectedRegion?.GetMode() ?? RoiSourceMode.Drawing;
+        public RoiSourceMode SelectedRoiMode =>
+            SelectedRoi is { } roi && (roi.IsSubscribed || roi.IsComposed)
+                ? RoiSourceMode.Subscribe
+                : RoiSourceMode.Drawing;
 
         /// <summary>
         /// 选中区域的形状类型
         /// </summary>
-        public ShapeType? SelectedRegionShapeType => SelectedRegion?.GetShapeType();
+        public ShapeType? SelectedRoiShapeType =>
+            SelectedRoi?.LocalGeometry?.ShapeType;
 
         /// <summary>
         /// 是否有选中项
         /// </summary>
-        public bool HasSelection => SelectedRegion != null;
+        public bool HasSelection => SelectedRoi != null;
 
         /// <summary>
-        /// 选中区域的参数绑定（用于参数订阅模式）
+        /// 选中区域的订阅绑定路径（用于参数订阅模式展示；null=本地绘制）
         /// </summary>
-        public Dictionary<string, ParameterSource>? ParamSettings =>
-            (SelectedRegion?.Parameters as ComputedRoi)?.ParameterBindings;
+        public string? SubscriptionBindingPath => SelectedRoi?.Binding?.ToString();
 
         /// <summary>
         /// 是否可编辑
         /// </summary>
-        public bool CanEdit => SelectedRegion != null && SelectedRegion.IsEditable;
+        public bool CanEdit => SelectedRoi != null && SelectedRoi.IsEditable;
 
         /// <summary>
         /// 状态消息
@@ -321,15 +323,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.ViewModels
         };
 
         /// <summary>
-        /// 可用的区域类型列表（检测/屏蔽）
-        /// </summary>
-        public IReadOnlyList<RoiType> RegionTypeList { get; } = new[]
-        {
-            RoiType.Inspection,
-            RoiType.Mask
-        };
-
-        /// <summary>
         /// 参数面板视图模型
         /// </summary>
         public ParameterPanelViewModel? ParameterPanel
@@ -349,8 +342,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.ViewModels
 
         #region 命令
 
-        public ICommand AddRegionCommand { get; }
-        public ICommand RemoveRegionCommand { get; }
+        public ICommand AddRoiCommand { get; }
+        public ICommand RemoveRoiCommand { get; }
         public ICommand ClearAllCommand { get; }
         public ICommand ToggleInfoPanelCommand { get; }
         public ICommand UndoCommand { get; }
@@ -364,24 +357,23 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.ViewModels
         protected override string? GetLogSource() => "RegionEditor";
 
         /// <summary>
-        /// 区域变更事件
+        /// 几何输入变更事件
         /// </summary>
-        public event EventHandler<RoiChangedEventArgs>? RegionChanged;
+        public event EventHandler<RoiChangedEventArgs>? RoiChanged;
 
         /// <summary>
-        /// 区域选择变更事件
+        /// 几何输入选择变更事件
         /// </summary>
         public event EventHandler? SelectionChanged;
 
         public RoiEditorViewModel()
         {
             _dispatcher = Dispatcher.CurrentDispatcher;
-            _resolver = new Logic.RoiResolver();
             _editHistory = new EditHistory();
 
-            AddRegionCommand = new RelayCommand<ShapeType>(AddRoi);
-            RemoveRegionCommand = new RelayCommand(RemoveSelectedRegion, () => HasSelection);
-            ClearAllCommand = new RelayCommand(ClearAllRegions, () => Regions.Count > 0);
+            AddRoiCommand = new RelayCommand<ShapeType>(AddRoi);
+            RemoveRoiCommand = new RelayCommand(RemoveSelectedRoi, () => HasSelection);
+            ClearAllCommand = new RelayCommand(ClearAllRois, () => Rois.Count > 0);
             ToggleInfoPanelCommand = new RelayCommand(() => IsInfoPanelVisible = !IsInfoPanelVisible);
             UndoCommand = new RelayCommand(Undo, () => CanUndo);
             RedoCommand = new RelayCommand(Redo, () => CanRedo);
@@ -399,10 +391,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.ViewModels
             _parameterPanel = new ParameterPanelViewModel(dataProvider);
             _nodeSelector = new NodeSelectorViewModel(dataProvider);
 
-            // 订阅事件
+            // 订阅事件（双子：整对象订阅 + 几何参数拼装 + 拼装形状切换）
             _nodeSelector.SelectionConfirmed += OnNodeSelectionConfirmed;
-            _parameterPanel.ParamSettingChanged += OnParamSettingChanged;
-            _parameterPanel.WholeRegionChanged += OnWholeRegionChanged;
+            _parameterPanel.BindingChanged += OnBindingChanged;
+            _parameterPanel.ParameterSettingChanged += OnParameterSettingChanged;
+            _parameterPanel.ShapeTypeChanged += OnShapeTypeChanged;
 
             OnPropertyChanged(nameof(ParameterPanel));
             OnPropertyChanged(nameof(NodeSelector));
@@ -413,122 +406,166 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.ViewModels
         /// </summary>
         /// <remarks>
         /// 设计原则：单一数据源（Single Source of Truth）
-        /// ViewModel 的 Regions 和参数模型的 Regions 指向同一个集合对象，
+        /// ViewModel 的 Rois 和参数模型的 Rois 指向同一个集合对象，
         /// 无需双向同步机制，从根本上消除数据不一致问题。
         /// </remarks>
-        public void SetRegionsSource(ObservableCollection<RoiData> externalRegions)
+        public void SetRoisSource(ObservableCollection<Roi> externalRois)
         {
-            if (externalRegions == null)
-                throw new ArgumentNullException(nameof(externalRegions));
+            if (externalRois == null)
+                throw new ArgumentNullException(nameof(externalRois));
 
             VisionLogger.Instance.Log(LogLevel.Info,
-                $"[SetRegionsSource] 替换区域集合 | 外部集合数量={externalRegions.Count} | 引用相同={Regions == externalRegions}",
+                $"[SetRoisSource] 替换区域集合 | 外部集合数量={externalRois.Count} | 引用相同={Rois == externalRois}",
                 "RegionEditor");
 
-            Regions = externalRegions;
-            OnPropertyChanged(nameof(Regions));
+            Rois = externalRois;
+            OnPropertyChanged(nameof(Rois));
 
             VisionLogger.Instance.Log(LogLevel.Success,
-                $"[SetRegionsSource] 区域集合已替换 | 区域数: {Regions.Count}",
+                $"[SetRoisSource] 区域集合已替换 | 区域数: {Rois.Count}",
                 "RegionEditor");
         }
 
         /// <summary>
-        /// 节点选择确认事件处理
+        /// 节点选择确认事件处理（转给订阅面板产出 ParamSetting）。
+        /// 双子路由：整对象模式 → ApplyWholeRegionSelection；几何参数模式 → ApplyBindingSelection（作用于选中参数行）。
         /// </summary>
         private void OnNodeSelectionConfirmed(object? sender, NodeOutputInfo? selectedNode)
         {
-            if (selectedNode != null && _parameterPanel != null)
+            if (selectedNode == null || _parameterPanel == null) return;
+
+            if (_parameterPanel.SubscribeSubMode == RoiSubscribeSubMode.WholeRegion)
+            {
+                _parameterPanel.ApplyWholeRegionSelection(selectedNode);
+            }
+            else
             {
                 _parameterPanel.ApplyBindingSelection(selectedNode);
-                StatusMessage = $"已绑定: {selectedNode.DisplayPath}";
             }
+            StatusMessage = $"已绑定: {selectedNode.DisplayPath}";
         }
 
         /// <summary>
-        /// 参数绑定变更事件处理
+        /// 整对象订阅变更事件处理（写入 Roi.Binding 契约路径；null=解除整对象订阅回退本地绘制）。
+        /// 与参数拼装互斥：写入整对象订阅时清空拼装集。
         /// </summary>
-        private void OnParamSettingChanged(object? sender, ParamSettingChangedEventArgs e)
+        private void OnBindingChanged(object? sender, ParamSetting? binding)
         {
-            if (SelectedRegion?.Parameters is ComputedRoi computed)
+            if (SelectedRoi == null) return;
+
+            if (binding != null)
             {
-                if (e.NewSource != null)
-                {
-                    computed.SetParameterBinding(e.ParameterName, e.NewSource);
-                }
-                else
-                {
-                    computed.RemoveParameterBinding(e.ParameterName);
-                }
-
-                SelectedRegion.MarkModified();
-                RegionChanged?.Invoke(this, new RoiChangedEventArgs(SelectedRegion, RoiChangeType.Modified));
-            }
-        }
-
-        /// <summary>
-        /// 整区域选择变更事件处理（写 FixedRoi）
-        /// </summary>
-        private void OnWholeRegionChanged(object? sender, WholeRegionSelectedEventArgs e)
-        {
-            if (SelectedRegion == null) return;
-
-            if (e.Source is NodeOutputSource nos)
-            {
-                SelectedRegion.Parameters = new FixedRoi(nos.NodeId, nos.OutputName, nos.Index);
-                SelectedRegion.MarkModified();
-                RegionChanged?.Invoke(this, new RoiChangedEventArgs(SelectedRegion, RoiChangeType.Modified));
-                StatusMessage = $"已设置订阅源: {nos.OutputName}";
+                // 三态互斥：整对象订阅 → 清本地几何与拼装集
+                SelectedRoi.Binding = binding;
+                SelectedRoi.LocalGeometry = null;
+                SelectedRoi.ParameterBindings = null;
+                RoiChanged?.Invoke(this, new RoiChangedEventArgs(SelectedRoi, RoiChangeType.Modified));
+                StatusMessage = $"已设置订阅源: {binding.SourceNodeId}.{binding.SourceProperty}";
                 return;
             }
 
-            // 解绑整区域：由固定区域回退为默认几何区域
-            if (SelectedRegion.Parameters is FixedRoi)
+            // 解除整对象订阅：若存在拼装集则保留拼装语义，否则回退本地绘制
+            SelectedRoi.Binding = null;
+            if (SelectedRoi.IsComposed)
             {
-                SelectedRegion.Parameters = new ComputedRoi
-                {
-                    TargetShapeType = SelectedShapeType ?? ShapeType.Rectangle
-                };
-                SelectedRegion.MarkModified();
-                RegionChanged?.Invoke(this, new RoiChangedEventArgs(SelectedRegion, RoiChangeType.Modified));
+                RoiChanged?.Invoke(this, new RoiChangedEventArgs(SelectedRoi, RoiChangeType.Modified));
+                return;
             }
+            SelectedRoi.LocalGeometry ??= new RoiShape
+            {
+                Geometry = RoiShape.CreateDefaultGeometry(SelectedShapeType ?? ShapeType.Rectangle)
+            };
+            RoiChanged?.Invoke(this, new RoiChangedEventArgs(SelectedRoi, RoiChangeType.Modified));
         }
 
         /// <summary>
-        /// 添加区域
+        /// 几何参数拼装变更事件处理（写入 Roi.ParameterBindings[扁平参数名]；setting=null=移除该键）。
+        /// 与整对象订阅互斥：写入拼装集时清空 Binding。
+        /// </summary>
+        private void OnParameterSettingChanged(object? sender, ParameterSettingChangedEventArgs e)
+        {
+            if (SelectedRoi == null || e == null || string.IsNullOrEmpty(e.ParameterName)) return;
+
+            if (e.Setting != null)
+            {
+                // 三态互斥：进入参数拼装；拼装形状 = 订阅面板当前形状（ComposeShapeType 持久化）
+                SelectedRoi.Binding = null;
+                SelectedRoi.LocalGeometry = null;
+                var composeShape = _parameterPanel?.CurrentShapeType ?? ShapeType.Rectangle;
+                SelectedRoi.ComposeShapeType = composeShape;
+                SelectedRoi.ParameterBindings ??= new Dictionary<string, ParamSetting>();
+                SelectedRoi.ParameterBindings[e.ParameterName] = e.Setting;
+                RoiChanged?.Invoke(this, new RoiChangedEventArgs(SelectedRoi, RoiChangeType.Modified));
+                StatusMessage = $"已设置参数 {e.ParameterName} 订阅源: {e.Setting.SourceNodeId}.{e.Setting.SourceProperty}";
+                return;
+            }
+
+            // 移除该键：拼装集为空则回退本地绘制
+            if (SelectedRoi.ParameterBindings != null)
+            {
+                SelectedRoi.ParameterBindings.Remove(e.ParameterName);
+                if (SelectedRoi.ParameterBindings.Count == 0)
+                {
+                    SelectedRoi.ParameterBindings = null;
+                    SelectedRoi.ComposeShapeType = ShapeType.None;
+                    SelectedRoi.LocalGeometry ??= new RoiShape
+                    {
+                        Geometry = RoiShape.CreateDefaultGeometry(SelectedShapeType ?? ShapeType.Rectangle)
+                    };
+                }
+            }
+            RoiChanged?.Invoke(this, new RoiChangedEventArgs(SelectedRoi, RoiChangeType.Modified));
+        }
+
+        /// <summary>
+        /// 拼装目标形状切换事件处理（同步 Roi.ComposeShapeType；整对象订阅模式忽略）
+        /// </summary>
+        private void OnShapeTypeChanged(object? sender, ShapeType shapeType)
+        {
+            if (SelectedRoi == null) return;
+            SelectedRoi.ComposeShapeType = shapeType;
+        }
+
+        /// <summary>
+        /// 添加几何输入
         /// </summary>
         public void AddRoi(ShapeType shapeType)
         {
-            var region = RoiData.CreateDrawingRegion(GetNextRegionName(), shapeType);
-
-            // 设置默认参数（由 CreateDrawingRegion 的 CreateDefaultGeometry 负责）
+            var roi = new Roi
+            {
+                Name = GetNextRoiName(),
+                LocalGeometry = new RoiShape
+                {
+                    Geometry = RoiShape.CreateDefaultGeometry(shapeType)
+                }
+            };
 
             // 记录编辑历史
-            _editHistory.ExecuteAction(new CreateRegionAction(region, this));
+            _editHistory.ExecuteAction(new CreateRoiAction(roi, this));
 
-            Regions.Add(region);
-            SelectedRegion = region;
-            StatusMessage = $"已添加 {shapeType} 区域";
+            Rois.Add(roi);
+            SelectedRoi = roi;
+            StatusMessage = $"已添加 {shapeType} 几何输入";
 
-            RegionChanged?.Invoke(this, new RoiChangedEventArgs(region, RoiChangeType.Added));
+            RoiChanged?.Invoke(this, new RoiChangedEventArgs(roi, RoiChangeType.Added));
         }
 
 
         /// <summary>
-        /// 获取下一个区域名称，优先填充索引空洞
+        /// 获取下一个几何输入默认名，优先填充索引空洞
         /// </summary>
         /// <remarks>
-        /// 从1开始查找第一个未被使用的索引，优先填充被删除区域留下的空洞。
-        /// 例如：已有 区域_1、区域_3，则返回 区域_2
+        /// 从1开始查找第一个未被使用的索引，优先填充被删除输入留下的空洞。
+        /// 例如：已有 几何输入_1、几何输入_3，则返回 几何输入_2
         /// </remarks>
-        private string GetNextRegionName()
+        private string GetNextRoiName()
         {
             var usedIndices = new HashSet<int>();
-            foreach (var region in Regions)
+            foreach (var roi in Rois)
             {
-                if (region.Name != null && region.Name.StartsWith("区域_"))
+                if (roi.Name != null && roi.Name.StartsWith("几何输入_"))
                 {
-                    var indexPart = region.Name.Substring(3);
+                    var indexPart = roi.Name.Substring(5);
                     if (int.TryParse(indexPart, out var index) && index > 0)
                     {
                         usedIndices.Add(index);
@@ -541,58 +578,58 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.ViewModels
             {
                 nextIndex++;
             }
-            return $"区域_{nextIndex}";
+            return $"几何输入_{nextIndex}";
         }
 
         /// <summary>
         /// 移除选中区域
         /// </summary>
-        public void RemoveSelectedRegion()
+        public void RemoveSelectedRoi()
         {
-            if (SelectedRegion == null) return;
+            if (SelectedRoi == null) return;
 
-            var region = SelectedRegion;
+            var roi = SelectedRoi;
 
             // ★ 诊断日志：删除操作开始
-            var beforeRegionNames = string.Join(", ", Regions.Select(r => $"{r.Name}(Id={r.Id:B})"));
+            var beforeRoiNames = string.Join(", ", Rois.Select(x => $"{x.Name}(Id={x.Id:B})"));
             VisionLogger.Instance.Log(LogLevel.Warning,
-                $"[RemoveSelectedRegion] 删除开始 | 目标={region.Name}(Id={region.Id:B}) | Regions.Count={Regions.Count} | Regions=[{beforeRegionNames}] | SelectedRegion={SelectedRegion.Name}",
+                $"[RemoveSelectedRoi] 删除开始 | 目标={roi.Name}(Id={roi.Id:B}) | Rois.Count={Rois.Count} | Rois=[{beforeRoiNames}] | SelectedRoi={SelectedRoi.Name}",
                 "RoiEditorViewModel");
 
             // 记录编辑历史
-            _editHistory.ExecuteAction(new DeleteRegionAction(region, this));
+            _editHistory.ExecuteAction(new DeleteRoiAction(roi, this));
 
-            Regions.Remove(region);
-            SelectedRegion = Regions.FirstOrDefault();
-            StatusMessage = $"已移除区域 {region.Name}";
+            Rois.Remove(roi);
+            SelectedRoi = Rois.FirstOrDefault();
+            StatusMessage = $"已移除几何输入 {roi.Name}";
 
             // ★ 诊断日志：删除操作完成
-            var afterRegionNames = string.Join(", ", Regions.Select(r => $"{r.Name}(Id={r.Id:B})"));
+            var afterRoiNames = string.Join(", ", Rois.Select(x => $"{x.Name}(Id={x.Id:B})"));
             VisionLogger.Instance.Log(LogLevel.Warning,
-                $"[RemoveSelectedRegion] 删除完成 | Regions.Count={Regions.Count} | Regions=[{afterRegionNames}] | SelectedRegion={SelectedRegion?.Name ?? "null"}",
+                $"[RemoveSelectedRoi] 删除完成 | Rois.Count={Rois.Count} | Rois=[{afterRoiNames}] | SelectedRoi={SelectedRoi?.Name ?? "null"}",
                 "RoiEditorViewModel");
 
-            RegionChanged?.Invoke(this, new RoiChangedEventArgs(region, RoiChangeType.Removed));
+            RoiChanged?.Invoke(this, new RoiChangedEventArgs(roi, RoiChangeType.Removed));
         }
 
         /// <summary>
         /// 清除所有区域
         /// </summary>
-        public void ClearAllRegions()
+        public void ClearAllRois()
         {
-            if (Regions.Count == 0) return;
+            if (Rois.Count == 0) return;
 
-            var count = Regions.Count;
-            var deletedRegions = Regions.ToList();
+            var count = Rois.Count;
+            var deletedRois = Rois.ToList();
 
             // 记录编辑历史
-            _editHistory.ExecuteAction(new ClearAllAction(deletedRegions, this));
+            _editHistory.ExecuteAction(new ClearAllRoisAction(deletedRois, this));
 
-            Regions.Clear();
-            SelectedRegion = null;
+            Rois.Clear();
+            SelectedRoi = null;
             StatusMessage = $"已清除 {count} 个区域";
 
-            RegionChanged?.Invoke(this, new RoiChangedEventArgs(null, RoiChangeType.Cleared));
+            RoiChanged?.Invoke(this, new RoiChangedEventArgs(null, RoiChangeType.Cleared));
         }
 
         /// <summary>
@@ -630,75 +667,49 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.ViewModels
         }
 
         /// <summary>
-        /// 内部添加区域（用于撤销/重做）
+        /// 内部添加几何输入（用于撤销/重做）
         /// </summary>
-        internal void AddRegionInternal(RoiData region)
+        internal void AddRoiInternal(Roi roi)
         {
-            Regions.Add(region);
-            RegionChanged?.Invoke(this, new RoiChangedEventArgs(region, RoiChangeType.Added));
+            Rois.Add(roi);
+            RoiChanged?.Invoke(this, new RoiChangedEventArgs(roi, RoiChangeType.Added));
         }
 
         /// <summary>
-        /// 内部移除区域（用于撤销/重做）
+        /// 内部移除几何输入（用于撤销/重做）
         /// </summary>
-        internal void RemoveRegionInternal(RoiData region)
+        internal void RemoveRoiInternal(Roi roi)
         {
-            Regions.Remove(region);
-            if (SelectedRegion == region)
-                SelectedRegion = null;
-            RegionChanged?.Invoke(this, new RoiChangedEventArgs(region, RoiChangeType.Removed));
+            Rois.Remove(roi);
+            if (SelectedRoi == roi)
+                SelectedRoi = null;
+            RoiChanged?.Invoke(this, new RoiChangedEventArgs(roi, RoiChangeType.Removed));
         }
 
         /// <summary>
-        /// 内部设置区域列表（用于撤销/重做）
+        /// 内部设置几何输入列表（用于撤销/重做）
         /// </summary>
-        internal void SetRegionsInternal(IEnumerable<RoiData> regions)
+        internal void SetRoisInternal(IEnumerable<Roi> rois)
         {
-            Regions.Clear();
-            foreach (var region in regions)
+            Rois.Clear();
+            foreach (var roi in rois)
             {
-                Regions.Add(region);
+                Rois.Add(roi);
             }
-            SelectedRegion = null;
-            RegionChanged?.Invoke(this, new RoiChangedEventArgs(null, RoiChangeType.Cleared));
+            SelectedRoi = null;
+            RoiChanged?.Invoke(this, new RoiChangedEventArgs(null, RoiChangeType.Cleared));
         }
 
         /// <summary>
         /// 更新形状参数
         /// </summary>
         /// <remarks>
-        /// 已废弃：Parameters 改为计算属性后，不再需要手动更新
-        /// 保留此方法仅为兼容性，可以移除
+        /// Parameters 现在是计算属性，直接引用 SelectedRoi.LocalGeometry，
+        /// 不需要手动创建和同步对象。
         /// </remarks>
         private void UpdateParameters()
         {
-            // Parameters 现在是计算属性，直接引用 SelectedRegion.Parameters
-            // 不需要手动创建和同步对象
             OnPropertyChanged(nameof(Parameters));
-        }
-
-        /// <summary>
-        /// 根据形状类型创建参数对象
-        /// </summary>
-        /// <remarks>
-        /// 已废弃：不再需要此方法，直接修改 SelectedRegion.Parameters 即可
-        /// 保留此方法仅为兼容性，可以移除
-        /// </remarks>
-        private ShapeParameters CreateParametersByType(ShapeType shapeType, double centerX, double centerY, double width, double height, double angle)
-        {
-            var parameters = new ShapeParameters();
-            parameters.Geometry = shapeType switch
-            {
-                ShapeType.Circle => new Circle2d(centerX, centerY, Math.Max(width, height) / 2),
-                ShapeType.Line => Line2d.FromTwoPoints(
-                    new System.Windows.Point(centerX - width / 2, centerY),
-                    new System.Windows.Point(centerX + width / 2, centerY)),
-                ShapeType.RotatedRectangle => new RotatedRect2d(centerX, centerY,
-                    width > 0 ? width : 100, height > 0 ? height : 100, angle),
-                _ => new RotatedRect2d(centerX, centerY,
-                    width > 0 ? width : 100, height > 0 ? height : 100, 0),
-            };
-            return parameters;
         }
 
         /// <summary>
@@ -721,7 +732,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.ViewModels
         /// </summary>
         private void UpdateEditingShape()
         {
-            if (SelectedRegion?.Parameters is ShapeParameters shapeDef)
+            if (SelectedRoi?.LocalGeometry is RoiShape shapeDef)
             {
                 EditingShape = shapeDef;
                 SelectedShapeType = shapeDef.ShapeType;
@@ -732,19 +743,19 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.ViewModels
                 SelectedShapeType = null;
             }
 
-            // 更新参数面板（LoadFromRegionDefinition 覆盖 Fixed/Computed/Shape 三种）
-            if (_parameterPanel != null && SelectedRegion?.Parameters != null)
+            // 更新参数面板（覆盖本地/订阅双态）
+            if (_parameterPanel != null && SelectedRoi != null)
             {
-                _parameterPanel.LoadFromRegionDefinition(SelectedRegion.Parameters);
+                _parameterPanel.LoadFromRoi(SelectedRoi);
             }
 
             // 通知计算属性变更
             OnPropertyChanged(nameof(HasSelection));
             OnPropertyChanged(nameof(CanEdit));
-            OnPropertyChanged(nameof(SelectedRegionMode));
-            OnPropertyChanged(nameof(SelectedRegionShapeType));
+            OnPropertyChanged(nameof(SelectedRoiMode));
+            OnPropertyChanged(nameof(SelectedRoiShapeType));
             OnPropertyChanged(nameof(IsSubscribeMode));
-            OnPropertyChanged(nameof(ParamSettings));
+            OnPropertyChanged(nameof(SubscriptionBindingPath));
             OnPropertyChanged(nameof(HasParametersVisible));
             OnPropertyChanged(nameof(Parameters));
             OnPropertyChanged(nameof(PreviewLength));
@@ -769,67 +780,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.ViewModels
             StatusMessage = "绘制完成";
         }
 
-        /// <summary>
-        /// 更新形状参数
-        /// </summary>
-        public void UpdateShapeParameter(string parameterName, object value)
-        {
-            if (EditingShape == null) return;
-
-            var prop = typeof(ShapeParameters).GetProperty(parameterName);
-            if (prop != null && prop.CanWrite)
-            {
-                prop.SetValue(EditingShape, Convert.ChangeType(value, prop.PropertyType));
-                SelectedRegion?.MarkModified();
-                RegionChanged?.Invoke(this, new RoiChangedEventArgs(SelectedRegion, RoiChangeType.Modified));
-            }
-        }
-
-        /// <summary>
-        /// 设置区域订阅源
-        /// </summary>
-        public void SetRegionSubscription(string nodeId, string outputName, int? index = null)
-        {
-            if (SelectedRegion == null) return;
-
-            SelectedRegion.Parameters = new FixedRoi(nodeId, outputName, index);
-            SelectedRegion.MarkModified();
-
-            RegionChanged?.Invoke(this, new RoiChangedEventArgs(SelectedRegion, RoiChangeType.Modified));
-            StatusMessage = $"已设置订阅源: {outputName}";
-        }
-
-        /// <summary>
-        /// 设置参数绑定
-        /// </summary>
-        public void SetParamSetting(string parameterName, ParameterSource source)
-        {
-            if (SelectedRegion?.Parameters is ComputedRoi computedDef)
-            {
-                computedDef.SetParameterBinding(parameterName, source);
-                SelectedRegion.MarkModified();
-
-                RegionChanged?.Invoke(this, new RoiChangedEventArgs(SelectedRegion, RoiChangeType.Modified));
-                StatusMessage = $"已设置参数绑定: {parameterName}";
-            }
-        }
-
-        /// <summary>
-        /// 解析选中区域
-        /// </summary>
-        public Logic.ResolvedRegion? ResolveSelectedRegion()
-        {
-            return _resolver.Resolve(SelectedRegion);
-        }
-
-        /// <summary>
-        /// 解析所有区域
-        /// </summary>
-        public List<Logic.ResolvedRegion> ResolveAllRegions()
-        {
-            return _resolver.ResolveAll(Regions);
-        }
-
         public void Dispose()
         {
             // 清理资源
@@ -837,8 +787,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.ViewModels
 
             if (_parameterPanel != null)
             {
-                _parameterPanel.ParamSettingChanged -= OnParamSettingChanged;
-                _parameterPanel.WholeRegionChanged -= OnWholeRegionChanged;
+                _parameterPanel.BindingChanged -= OnBindingChanged;
+                _parameterPanel.ParameterSettingChanged -= OnParameterSettingChanged;
+                _parameterPanel.ShapeTypeChanged -= OnShapeTypeChanged;
             }
 
             if (_nodeSelector != null)
@@ -850,22 +801,22 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.ViewModels
     }
 
     /// <summary>
-    /// 区域变更事件参数
+    /// 几何输入变更事件参数
     /// </summary>
     public class RoiChangedEventArgs : EventArgs
     {
-        public RoiData? Region { get; }
+        public Roi? Roi { get; }
         public RoiChangeType ChangeType { get; }
 
-        public RoiChangedEventArgs(RoiData? region, RoiChangeType changeType)
+        public RoiChangedEventArgs(Roi? roi, RoiChangeType changeType)
         {
-            Region = region;
+            Roi = roi;
             ChangeType = changeType;
         }
     }
 
     /// <summary>
-    /// 区域变更类型
+    /// 几何输入变更类型
     /// </summary>
     public enum RoiChangeType
     {

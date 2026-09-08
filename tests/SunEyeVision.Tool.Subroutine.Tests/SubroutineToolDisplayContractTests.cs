@@ -9,7 +9,7 @@ using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Models;
 using Xunit;
 
 namespace SunEyeVision.Tool.Subroutine.Tests;
@@ -107,12 +107,12 @@ public class SubroutineToolDisplayContractTests
     [Fact]
     public void RoiContainer_TypeFiltered_IsRenderedAsTrueCircle()
     {
-        // Blob 检测区图形：以 RoI（ShapeParameters[]）输出，子程序"圆形"显示项绑定 [Type=Circle] 下钻。
-        // 运行期解析出 ShapeParameters[]，必须按 Geometry 真实类型画真圆（AC-02）。
+        // Blob 检测区图形：以 RoI（RoiShape[]）输出，子程序"圆形"显示项绑定 [Type=Circle] 下钻。
+        // 运行期解析出 RoiShape[]，必须按 Geometry 真实类型画真圆（AC-02）。
         var internalResult = new GenericToolResults();
-        internalResult.AddResultItem("检测区图形", new ShapeParameters[]
+        internalResult.AddResultItem("检测区图形", new RoiShape[]
         {
-            new ShapeParameters { Geometry = new Circle2d(new Point(50, 60), 25) },
+            new RoiShape { Geometry = new Circle2d(new Point(50, 60), 25) },
         });
 
         var style = new GraphicsStyle { Name = "圆样式" };
@@ -144,12 +144,12 @@ public class SubroutineToolDisplayContractTests
         // Blob 检测区域含 2 圆 + 1 矩形 + 1 旋转矩形：不同显示项按 [Type=X] 各自下钻绘制。
         // 圆→真圆、矩形→Rect、旋转矩形→四角轮廓。
         var internalResult = new GenericToolResults();
-        internalResult.AddResultItem("检测区图形", new ShapeParameters[]
+        internalResult.AddResultItem("检测区图形", new RoiShape[]
         {
-            new ShapeParameters { Geometry = new Circle2d(new Point(10, 20), 5) },
-            new ShapeParameters { Geometry = new Circle2d(new Point(30, 40), 7) },
-            new ShapeParameters { Geometry = new System.Windows.Rect(50, 60, 10, 12) },
-            new ShapeParameters { Geometry = new RotatedRect2d(100, 110, 20, 30, 15) },
+            new RoiShape { Geometry = new Circle2d(new Point(10, 20), 5) },
+            new RoiShape { Geometry = new Circle2d(new Point(30, 40), 7) },
+            new RoiShape { Geometry = new System.Windows.Rect(50, 60, 10, 12) },
+            new RoiShape { Geometry = new RotatedRect2d(100, 110, 20, 30, 15) },
         });
 
         var circleItem = new SubroutineDisplayItem

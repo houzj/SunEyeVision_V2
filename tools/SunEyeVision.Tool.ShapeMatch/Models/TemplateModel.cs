@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 using HalconDotNet;
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using WpfPoint = System.Windows.Point;
 
 namespace SunEyeVision.Tool.ShapeMatch.Models;
@@ -48,8 +48,8 @@ public class TemplateModel : ObservableObject
     private float _actualMinContrast;       // 实际最小对比度（get_shape_model_params 回读）
 
     private TemplateExtractionStatus _extractionStatus = TemplateExtractionStatus.NotExtracted;
-    private List<RoiData> _inspectionRegions = new();
-    private List<RoiData> _maskRegions = new();
+    private List<Roi> _inspectionRois = new();
+    private List<Roi> _maskRois = new();
     private byte[]? _sourceImageBytes;        // raw pixel data (灰度值, 非 PNG)
     private int _sourceImageWidth;
     private int _sourceImageHeight;
@@ -135,16 +135,16 @@ public class TemplateModel : ObservableObject
 
     // ============ 区域数据 ============
 
-    public List<RoiData> InspectionRegions
+    public List<Roi> InspectionRois
     {
-        get => _inspectionRegions;
-        set => SetProperty(ref _inspectionRegions, value);
+        get => _inspectionRois;
+        set => SetProperty(ref _inspectionRois, value);
     }
 
-    public List<RoiData> MaskRegions
+    public List<Roi> MaskRois
     {
-        get => _maskRegions;
-        set => SetProperty(ref _maskRegions, value);
+        get => _maskRois;
+        set => SetProperty(ref _maskRois, value);
     }
 
     public TemplateExtractionStatus ExtractionStatus

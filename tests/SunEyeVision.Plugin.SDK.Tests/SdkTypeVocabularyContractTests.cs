@@ -1,13 +1,14 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Models;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Workflow;
 using Xunit;
 
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
 namespace SunEyeVision.Plugin.SDK.Tests;
 
 /// <summary>
@@ -36,8 +37,8 @@ public class SdkTypeVocabularyContractTests
     [InlineData(typeof(AffineMatrix), "Transform")]
     [InlineData(typeof(AffineMatrix[]), "Transform")]
     [InlineData(typeof(IVisionImage), "Image")]
-    [InlineData(typeof(ShapeParameters), "RoI")]
-    [InlineData(typeof(ShapeParameters[]), "RoI")]
+    [InlineData(typeof(RoiShape), "ROI")]
+    [InlineData(typeof(RoiShape[]), "ROI")]
     public void ToTypeVocabulary_SingleAndArray_ReturnSameName(Type type, string expected)
     {
         var actual = SdkTypeVocabulary.ToTypeVocabulary(type);
@@ -68,16 +69,16 @@ public class SdkTypeVocabularyContractTests
     [Fact]
     public void GetAllTypeOptions_AllRegisteredConcepts()
     {
-        // 词汇表含 7 个基础概念 + 6 个几何图形（几何已恢复进契约，供下游绑定/下钻属性）
+        // 词汇表含 7 个基础概念 + 7 个几何图形（Arc 已补中文名进契约，供下游绑定/下钻属性）
         var options = SdkTypeVocabulary.GetAllTypeOptions();
-        Assert.Equal(13, options.Count);
+        Assert.Equal(14, options.Count);
         var values = options.Select(o => o.Value).ToList();
         Assert.Contains("Integer", values);
         Assert.Contains("Double", values);
         Assert.Contains("String", values);
         Assert.Contains("Boolean", values);
         Assert.Contains("Image", values);
-        Assert.Contains("RoI", values);
+        Assert.Contains("ROI", values);
         Assert.Contains("Transform", values);
         Assert.Contains("Circle", values);
         Assert.Contains("RotatedRect", values);
@@ -85,6 +86,7 @@ public class SdkTypeVocabularyContractTests
         Assert.Contains("Polygon", values);
         Assert.Contains("Line", values);
         Assert.Contains("Annulus", values);
+        Assert.Contains("Arc", values);
         Assert.DoesNotContain("Region", values);
     }
 
@@ -222,7 +224,7 @@ public class SdkTypeVocabularyContractTests
     public void GlobalVariable_RoIType_Valid()
     {
         // RoI（图形定义）可作为全局变量类型（步骤2 放开）。
-        var gv = new GlobalVariable("roi", null, "RoI");
+        var gv = new GlobalVariable("roi", null, "ROI");
         var (isValid, _) = gv.Validate();
         Assert.True(isValid);
     }
@@ -239,9 +241,9 @@ public class SdkTypeVocabularyContractTests
     }
 
     [Fact]
-    public void ToSystemType_RoI_ReturnsShapeParametersArray()
+    public void ToSystemType_RoI_ReturnsRoiShapeArray()
     {
-        Assert.Equal(typeof(ShapeParameters[]), SdkTypeVocabulary.ToSystemType("RoI"));
+        Assert.Equal(typeof(RoiShape[]), SdkTypeVocabulary.ToSystemType("ROI"));
     }
 
     [Fact]
@@ -254,7 +256,7 @@ public class SdkTypeVocabularyContractTests
     [Fact]
     public void ToTypeVocabulary_RoIArray_ReturnsRoI()
     {
-        Assert.Equal("RoI", SdkTypeVocabulary.ToTypeVocabulary(typeof(ShapeParameters[])));
+        Assert.Equal("ROI", SdkTypeVocabulary.ToTypeVocabulary(typeof(RoiShape[])));
     }
 
     [Fact]
@@ -302,10 +304,10 @@ public class SdkTypeVocabularyContractTests
     public void RoundTrip_RoIGlobal_CircleGeometry_Preserved()
     {
         // 手画圆保存重开：几何参数（中心/半径）精确还原，而非退化为 JsonElement
-        var input = new ShapeParameters[] { new ShapeParameters { Geometry = new Circle2d(100, 80, 50) } };
+        var input = new RoiShape[] { new RoiShape { Geometry = new Circle2d(100, 80, 50) } };
         var result = RoundTrip(input);
-        Assert.IsType<ShapeParameters[]>(result);
-        var arr = (ShapeParameters[])result!;
+        Assert.IsType<RoiShape[]>(result);
+        var arr = (RoiShape[])result!;
         Assert.Single(arr);
         Assert.IsType<Circle2d>(arr[0].Geometry);
         var c = (Circle2d)arr[0].Geometry!;
@@ -318,18 +320,18 @@ public class SdkTypeVocabularyContractTests
     public void RoundTrip_RoIGlobal_AllGeometryTypes_Preserved()
     {
         // 治本验证 bug ①：所有几何类型经 RoI 全局变量 round-trip 后参数精确还原
-        var inputs = new ShapeParameters[]
+        var inputs = new RoiShape[]
         {
-            new ShapeParameters { Geometry = new Circle2d(100, 80, 50) },
-            new ShapeParameters { Geometry = new RotatedRect2d(10, 20, 30, 40, 15) },
-            new ShapeParameters { Geometry = new Annulus2d(5, 6, 7, 8, 0.5, 2.0) },
-            new ShapeParameters { Geometry = Line2d.FromTwoPoints(new System.Windows.Point(0, 0), new System.Windows.Point(10, 10)) },
-            new ShapeParameters { Geometry = new Arc2d(1, 2, 3, 0.1, 1.2) },
-            new ShapeParameters { Geometry = new Polygon2d(new[] { new System.Windows.Point(0, 0), new System.Windows.Point(10, 0), new System.Windows.Point(5, 10) }) },
-            new ShapeParameters { Geometry = new System.Windows.Rect(1, 2, 3, 4) },
+            new RoiShape { Geometry = new Circle2d(100, 80, 50) },
+            new RoiShape { Geometry = new RotatedRect2d(10, 20, 30, 40, 15) },
+            new RoiShape { Geometry = new Annulus2d(5, 6, 7, 8, 0.5, 2.0) },
+            new RoiShape { Geometry = Line2d.FromTwoPoints(new System.Windows.Point(0, 0), new System.Windows.Point(10, 10)) },
+            new RoiShape { Geometry = new Arc2d(1, 2, 3, 0.1, 1.2) },
+            new RoiShape { Geometry = new Polygon2d(new[] { new System.Windows.Point(0, 0), new System.Windows.Point(10, 0), new System.Windows.Point(5, 10) }) },
+            new RoiShape { Geometry = new System.Windows.Rect(1, 2, 3, 4) },
         };
         var result = RoundTrip(inputs);
-        var arr = (ShapeParameters[])result!;
+        var arr = (RoiShape[])result!;
         Assert.Equal(7, arr.Length);
 
         var circle = (Circle2d)arr[0].Geometry!;
@@ -364,12 +366,12 @@ public class SdkTypeVocabularyContractTests
     [Fact]
     public void RoundTrip_RoIGlobal_RectangleGeometry_Preserved()
     {
-        var input = new ShapeParameters[]
+        var input = new RoiShape[]
         {
-            new ShapeParameters { Geometry = new System.Windows.Rect(10, 20, 30, 40) },
+            new RoiShape { Geometry = new System.Windows.Rect(10, 20, 30, 40) },
         };
         var result = RoundTrip(input);
-        var arr = (ShapeParameters[])result!;
+        var arr = (RoiShape[])result!;
         Assert.IsType<System.Windows.Rect>(arr[0].Geometry);
         var r = (System.Windows.Rect)arr[0].Geometry!;
         Assert.Equal(10, r.X);

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using SunEyeVision.Plugin.SDK.Models;
 
-namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models
+namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Models
 {
     /// <summary>
     /// 节点输出信息 - 用于树状选择器显示

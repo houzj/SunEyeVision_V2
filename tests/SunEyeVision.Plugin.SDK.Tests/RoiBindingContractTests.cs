@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Models;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using Xunit;
 
@@ -13,19 +13,19 @@ namespace SunEyeVision.Plugin.SDK.Tests;
 /// </summary>
 public class RoiBindingContractTests
 {
-    private static ShapeParameters[] MakeHeterogeneousRoi()
+    private static RoiShape[] MakeHeterogeneousRoi()
     {
-        return new ShapeParameters[]
+        return new RoiShape[]
         {
-            new ShapeParameters { Geometry = new Circle2d(100, 80, 50) },
-            new ShapeParameters { Geometry = new Circle2d(200, 80, 30) },
-            new ShapeParameters { Geometry = new RotatedRect2d(10, 20, 30, 40, 15) },
-            new ShapeParameters { Geometry = new RotatedRect2d(50, 60, 30, 40, 15) },
-            new ShapeParameters { Geometry = new Polygon2d(new[] { new System.Windows.Point(0, 0), new System.Windows.Point(10, 0), new System.Windows.Point(5, 10) }) },
+            new RoiShape { Geometry = new Circle2d(100, 80, 50) },
+            new RoiShape { Geometry = new Circle2d(200, 80, 30) },
+            new RoiShape { Geometry = new RotatedRect2d(10, 20, 30, 40, 15) },
+            new RoiShape { Geometry = new RotatedRect2d(50, 60, 30, 40, 15) },
+            new RoiShape { Geometry = new Polygon2d(new[] { new System.Windows.Point(0, 0), new System.Windows.Point(10, 0), new System.Windows.Point(5, 10) }) },
         };
     }
 
-    private static AvailableDataSource MakeRoiDataSource(ShapeParameters[] roi)
+    private static AvailableDataSource MakeRoiDataSource(RoiShape[] roi)
     {
         return new AvailableDataSource
         {
@@ -33,8 +33,8 @@ public class RoiBindingContractTests
             SourceNodeName = "找圆工具",
             PropertyName = "检测区域",
             DisplayName = "检测区域",
-            PropertyType = typeof(ShapeParameters[]),
-            VariableType = "RoI",
+            PropertyType = typeof(RoiShape[]),
+            VariableType = "ROI",
             CurrentValue = roi,
         };
     }
@@ -104,14 +104,14 @@ public class RoiBindingContractTests
         public override IReadOnlyList<OutputVariable> GetOutputVariables() => _vars;
     }
 
-    private static IDictionary<string, ToolResults> MakeResults(ShapeParameters[] roi)
+    private static IDictionary<string, ToolResults> MakeResults(RoiShape[] roi)
     {
         var variables = new List<OutputVariable>
         {
             new OutputVariable
             {
                 Name = "检测区域",
-                VariableType = "RoI",
+                VariableType = "ROI",
                 DisplayName = "检测区域",
                 RuntimeValue = roi,
             }
@@ -125,7 +125,7 @@ public class RoiBindingContractTests
         var results = MakeResults(MakeHeterogeneousRoi());
 
         var resolved = OutputVariableResolver.Resolve(results, "Node1", "检测区域[Type=Circle]");
-        var arr = Assert.IsType<ShapeParameters[]>(resolved);
+        var arr = Assert.IsType<RoiShape[]>(resolved);
         Assert.Equal(2, arr.Length);
         Assert.All(arr, sp => Assert.Equal(ShapeType.Circle, sp.ShapeType));
     }
@@ -136,7 +136,7 @@ public class RoiBindingContractTests
         var results = MakeResults(MakeHeterogeneousRoi());
 
         var resolved = OutputVariableResolver.Resolve(results, "Node1", "检测区域");
-        var arr = Assert.IsType<ShapeParameters[]>(resolved);
+        var arr = Assert.IsType<RoiShape[]>(resolved);
         Assert.Equal(5, arr.Length);
     }
 
@@ -148,7 +148,7 @@ public class RoiBindingContractTests
         var results = MakeResults(MakeHeterogeneousRoi());
 
         var resolved = OutputVariableResolver.Resolve(results, "Node1", "检测区域[]");
-        var arr = Assert.IsType<ShapeParameters[]>(resolved);
+        var arr = Assert.IsType<RoiShape[]>(resolved);
         Assert.Equal(5, arr.Length);
     }
 
@@ -184,7 +184,7 @@ public class RoiBindingContractTests
         // 2 个圆，[Type=Circle][1] 取第 1 个圆（索引 1 越界判断在过滤后数组上进行）
         var results = MakeResults(MakeHeterogeneousRoi());
         var resolved = OutputVariableResolver.Resolve(results, "Node1", "检测区域[Type=Circle][1]");
-        var circle = Assert.IsType<ShapeParameters>(resolved);
+        var circle = Assert.IsType<RoiShape>(resolved);
         Assert.Equal(ShapeType.Circle, circle.ShapeType);
     }
 

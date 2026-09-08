@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using HalconDotNet;
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 
 namespace SunEyeVision.HalAdapter
 {
@@ -69,24 +69,24 @@ namespace SunEyeVision.HalAdapter
         /// </summary>
         /// <param name="imgWidth">图像宽（像素）</param>
         /// <param name="imgHeight">图像高（像素）</param>
-        /// <param name="inspectionRegions">检测区域（参考坐标系；空 = 不限制）</param>
-        /// <param name="maskRegions">屏蔽区域（参考坐标系；空 = 不屏蔽）</param>
+        /// <param name="inspectionRois">检测几何输入（参考坐标系；空 = 不限制）</param>
+        /// <param name="maskRois">屏蔽几何输入（参考坐标系；空 = 不屏蔽）</param>
         /// <param name="nodeResults">下游节点结果（区域订阅解析用）</param>
         /// <param name="correctionMatrix">位置修正矩阵（参考坐标 → 当前图像坐标；可为 null）</param>
         /// <returns>区域解析结果（region 所有权随返回对象，调用方用后 Dispose）</returns>
         public static RoiScope Resolve(
             int imgWidth,
             int imgHeight,
-            IEnumerable<RoiData> inspectionRegions,
-            IEnumerable<RoiData> maskRegions,
+            IEnumerable<Roi> inspectionRois,
+            IEnumerable<Roi> maskRois,
             IDictionary<string, ToolResults>? nodeResults = null,
             AffineMatrix? correctionMatrix = null)
         {
             var stepSw = Stopwatch.StartNew();
             var (roi, insp, mask) = ToolRegionHelper.BuildHalconROI(
                 imgWidth, imgHeight,
-                inspectionRegions ?? Enumerable.Empty<RoiData>(),
-                maskRegions ?? Enumerable.Empty<RoiData>(),
+                inspectionRois ?? Enumerable.Empty<Roi>(),
+                maskRois ?? Enumerable.Empty<Roi>(),
                 nodeResults, correctionMatrix);
             stepSw.Stop();
 

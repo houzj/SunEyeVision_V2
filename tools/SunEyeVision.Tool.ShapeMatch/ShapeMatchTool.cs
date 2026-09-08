@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -12,7 +12,6 @@ using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using SunEyeVision.HalAdapter;
 using SunEyeVision.Plugin.SDK.Execution.Helpers;
 using SunEyeVision.Plugin.SDK.Execution.Results;
@@ -166,8 +165,8 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
             {
                 // ===== ROI 构建 & ReduceDomain =====
                 stepSw.Restart();
-                var inspectionRegions = parameters.GetRoisByType(RoiType.Inspection);
-                var maskRegions = parameters.GetRoisByType(RoiType.Mask);
+                var inspectionRois = parameters.GetRoisByType(RoiParameterMode.InspectionRoi);
+                var maskRois = parameters.GetRoisByType(RoiParameterMode.MaskRoi);
 
                 HRegion? roiRegion = null;
                 HRegion? inspHRegion = null;
@@ -196,7 +195,7 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
 
                 // 位置修正按形状有向性并入 ROI 构建（无向剥转 / 有向完整，对齐 UI 语义）
                 (roiRegion, inspHRegion, maskHRegion) = ToolRegionHelper.BuildHalconROI(
-                    width, height, inspectionRegions, maskRegions,
+                    width, height, inspectionRois, maskRois,
                     parameters.NodeResults, correctionMatrix);
 
                 // 保存搜索区域掩码（已含位置修正结果）
@@ -322,8 +321,8 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
                         stepTimings.Add(("显示构建", stepSw.ElapsedMilliseconds));
 
                         // 提取检测区/屏蔽区几何输出（RoI 契约：结果树字段聚合 + 下游绑定）
-                        ToolRegionHelper.ExtractInspectionGeometries(result, parameters.InspectionRegions?.Regions);
-                        ToolRegionHelper.ExtractMaskGeometries(result, parameters.MaskRegions?.Regions);
+                        ToolRegionHelper.ExtractInspectionGeometries(result, parameters.InspectionRois?.Rois);
+                        ToolRegionHelper.ExtractMaskGeometries(result, parameters.MaskRois?.Rois);
 
                         stopwatch.Stop();
                         result.SetSuccess(stopwatch.Elapsed.TotalMilliseconds);

@@ -7,7 +7,7 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using Microsoft.Win32.SafeHandles;
 
-namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering
+namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Rendering
 {
     /// <summary>
     /// 旋转缩放光标工厂：自绘双向箭头并按屏幕方向角旋转，生成 WPF Cursor。

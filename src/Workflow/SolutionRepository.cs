@@ -238,27 +238,7 @@ public class SolutionRepository
 
             var json = JsonSerializer.Serialize(solution, WorkflowSerializationOptions.Default);
 
-            // 关键日志：检查序列化后的 JSON 中是否包含 InspectionRegions
             _logger.Log(LogLevel.Info, $"[Save #{callId}] 序列化完成，开始写入文件", "SolutionRepository");
-
-            // 检查 JSON 中是否包含 InspectionRegions 和 Regions
-            if (json.Contains("\"InspectionRegions\""))
-            {
-                _logger.Log(LogLevel.Info, $"[Save #{callId}] JSON 中包含 InspectionRegions 字段", "SolutionRepository");
-
-                // 提取 InspectionRegions 部分用于调试
-                var inspectionRegionsIndex = json.IndexOf("\"InspectionRegions\"");
-                var endIndex = json.IndexOf("\"ParamSettings\"", inspectionRegionsIndex);
-                if (endIndex > inspectionRegionsIndex)
-                {
-                    var inspectionRegionsJson = json.Substring(inspectionRegionsIndex, endIndex - inspectionRegionsIndex);
-                    _logger.Log(LogLevel.Info, $"[Save #{callId}] InspectionRegions JSON: {inspectionRegionsJson}", "SolutionRepository");
-                }
-            }
-            else
-            {
-                _logger.Log(LogLevel.Warning, $"[Save #{callId}] JSON 中不包含 InspectionRegions 字段!", "SolutionRepository");
-            }
 
             File.WriteAllText(filePath, json);
 

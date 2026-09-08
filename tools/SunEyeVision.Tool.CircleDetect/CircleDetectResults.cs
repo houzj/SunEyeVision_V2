@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using System.Windows;
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
@@ -71,9 +72,9 @@ namespace SunEyeVision.Tool.CircleDetect
 
         #region 测量带(卡尺)输入回显（模块结果"输入区域/卡尺"展示，Run 从参数回填）
 
-        /// <summary>引导几何（引导圆/圆弧 → ShapeParameters 包装，树中按"卡尺/引导线"下钻展示）</summary>
+        /// <summary>引导几何（引导圆/圆弧 → RoiShape 包装，树中按"卡尺/引导线"下钻展示）</summary>
         [JsonIgnore]
-        public SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models.ShapeParameters[]? GuideGeometry { get; set; }
+        public RoiShape[]? GuideGeometry { get; set; }
 
         /// <summary>测量带数量（卡尺数，参数回显）</summary>
         public int CaliberCount { get; set; }

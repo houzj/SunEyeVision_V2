@@ -1,83 +1,46 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Windows.Input;
-using SunEyeVision.Plugin.SDK.Models;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
-using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Models;
 
-namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.ViewModels
+namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
 {
     /// <summary>
-    /// 区域订阅子模式
+    /// 订阅方式子模式：整对象订阅 / 几何参数拼装（双子互斥，与 Roi 三态之二对应）。
     /// </summary>
     public enum RoiSubscribeSubMode
     {
-        /// <summary>
-        /// 订阅整个区域（固定区域，引用其他节点的区域输出）
-        /// </summary>
+        /// <summary>订阅整个区域（写 Roi.Binding，绑定上游 ROI 容器/分组/单项）</summary>
         WholeRegion,
 
-        /// <summary>
-        /// 订阅几何参数（计算区域，每个参数可单独绑定）
-        /// </summary>
-        GeometricParameters
+        /// <summary>订阅几何参数（写 Roi.ParameterBindings，键=RoiShape 扁平参数名，按 ComposeShapeType 拼装）</summary>
+        GeometricParameters,
     }
 
     /// <summary>
-    /// 参数面板视图模型（区域订阅统一驱动：整区域 + 几何参数双模式）
+    /// 订阅面板视图模型（双子契约）。
+    /// 值源统一为 <see cref="ParamSetting"/>（对齐 Roi 单模型），取代历史 ParameterSource 值源。
+    /// <list type="bullet">
+    /// <item>整对象订阅：一个 ParamSetting（WholeRegion 行）→ Roi.Binding；</item>
+    /// <item>几何参数拼装：形状下拉决定扁平参数行，每行一个 ParamSetting（键=RoiShape 扁平参数名）→ Roi.ParameterBindings + ComposeShapeType。</item>
+    /// </list>
     /// </summary>
     public class ParameterPanelViewModel : ObservableObject
     {
         private readonly DataSourceQueryService? _dataProvider;
-        private ShapeType _currentShapeType;
-        private bool _isEditable = true;
+        private RoiSubscribeSubMode _subscribeSubMode = RoiSubscribeSubMode.WholeRegion;
+        private ShapeType _currentShapeType = ShapeType.Rectangle;
+        private ParamSetting? _wholeRegionSetting;
         private ParamSettingItem? _selectedParameter;
-        private RoiSubscribeSubMode _subscribeSubMode = RoiSubscribeSubMode.GeometricParameters;
-        private ParameterSource? _wholeRegionSource;
 
-        /// <summary>
-        /// 参数绑定项列表
-        /// </summary>
+        /// <summary>参数绑定行（几何参数拼装模式；键 = RoiShape 扁平参数名）</summary>
         public ObservableCollection<ParamSettingItem> Parameters { get; } = new();
 
-        /// <summary>
-        /// 当前形状类型
-        /// </summary>
-        public ShapeType CurrentShapeType
-        {
-            get => _currentShapeType;
-            set
-            {
-                if (SetProperty(ref _currentShapeType, value))
-                {
-                    UpdateParameterDefinitions();
-                }
-            }
-        }
-
-        /// <summary>
-        /// 是否可编辑
-        /// </summary>
-        public bool IsEditable
-        {
-            get => _isEditable;
-            set => SetProperty(ref _isEditable, value);
-        }
-
-        /// <summary>
-        /// 选中的参数（用于打开绑定选择器）
-        /// </summary>
-        public ParamSettingItem? SelectedParameter
-        {
-            get => _selectedParameter;
-            set => SetProperty(ref _selectedParameter, value);
-        }
-
-        /// <summary>
-        /// 订阅子模式（整区域 / 几何参数）
-        /// </summary>
+        /// <summary>订阅子模式（整对象 / 几何参数）</summary>
         public RoiSubscribeSubMode SubscribeSubMode
         {
             get => _subscribeSubMode;
@@ -91,19 +54,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.ViewModels
             }
         }
 
-        /// <summary>
-        /// 是否为整区域订阅模式
-        /// </summary>
+        /// <summary>是否为整对象订阅模式</summary>
         public bool IsWholeRegionMode => SubscribeSubMode == RoiSubscribeSubMode.WholeRegion;
 
-        /// <summary>
-        /// 是否为几何参数订阅模式
-        /// </summary>
+        /// <summary>是否为几何参数拼装模式</summary>
         public bool IsGeometricMode => SubscribeSubMode == RoiSubscribeSubMode.GeometricParameters;
 
-        /// <summary>
-        /// 形状下拉可选项（锁定 6 种：点/线/圆/矩形/旋转矩形/多边形）
-        /// </summary>
+        /// <summary>形状下拉可选项（拼装目标形状；键集与 DeclaredShapeType 天然对齐）</summary>
         public IReadOnlyList<ShapeType> AvailableShapeTypes { get; } = new[]
         {
             ShapeType.Point,
@@ -111,114 +68,240 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.ViewModels
             ShapeType.Circle,
             ShapeType.Rectangle,
             ShapeType.RotatedRectangle,
-            ShapeType.Polygon
         };
 
         /// <summary>
-        /// 整区域绑定源（可能为 null 表示未订阅）
+        /// 当前拼装目标形状。切换时重建参数行（防参数张冠李戴）。
         /// </summary>
-        public ParameterSource? WholeRegionSource
+        public ShapeType CurrentShapeType
         {
-            get => _wholeRegionSource;
+            get => _currentShapeType;
             set
             {
-                if (SetProperty(ref _wholeRegionSource, value))
+                if (SetProperty(ref _currentShapeType, value))
+                {
+                    UpdateParameterDefinitions();
+                    ShapeTypeChanged?.Invoke(this, value);
+                }
+            }
+        }
+
+        /// <summary>整对象订阅设置（null=未订阅）</summary>
+        public ParamSetting? WholeRegionSetting
+        {
+            get => _wholeRegionSetting;
+            set
+            {
+                if (SetProperty(ref _wholeRegionSetting, value))
                 {
                     OnPropertyChanged(nameof(WholeRegionBindingPath));
                 }
             }
         }
 
-        /// <summary>
-        /// 整区域绑定路径（供 ParamBinding.BindingSource 双向显示）
-        /// </summary>
+        /// <summary>整对象绑定路径（ParamBinding.BindingSource 双向显示）</summary>
         public string? WholeRegionBindingPath
+            => WholeRegionSetting is { BindingType: BindingType.Binding } b
+                ? (string.IsNullOrEmpty(b.SourceProperty) ? b.SourceNodeId : $"{b.SourceNodeId}.{b.SourceProperty}")
+                : null;
+
+        /// <summary>选中的参数行（用于几何参数绑定）</summary>
+        public ParamSettingItem? SelectedParameter
         {
-            get
-            {
-                if (WholeRegionSource is NodeOutputSource nos && !string.IsNullOrEmpty(nos.NodeId))
-                {
-                    return string.IsNullOrEmpty(nos.PropertyPath) ? nos.NodeId : $"{nos.NodeId}.{nos.PropertyPath}";
-                }
-                return null;
-            }
+            get => _selectedParameter;
+            set => SetProperty(ref _selectedParameter, value);
         }
 
-        /// <summary>
-        /// 命令
-        /// </summary>
-        public ICommand BindParameterCommand { get; }
+        /// <summary>清除某参数行绑定命令</summary>
         public ICommand ClearBindingCommand { get; }
 
-        /// <summary>
-        /// 参数绑定变更事件
-        /// </summary>
-        public event EventHandler<ParamSettingChangedEventArgs>? ParamSettingChanged;
+        /// <summary>整对象订阅变更事件（null=解除）</summary>
+        public event EventHandler<ParamSetting?>? BindingChanged;
 
-        /// <summary>
-        /// 整区域选择变更事件（由宿主写 FixedRoi）
-        /// </summary>
-        public event EventHandler<WholeRegionSelectedEventArgs>? WholeRegionChanged;
+        /// <summary>几何参数绑定变更事件（parameterName=扁平参数名；setting=null=解除该键）</summary>
+        public event EventHandler<ParameterSettingChangedEventArgs>? ParameterSettingChanged;
+
+        /// <summary>拼装目标形状变更事件（宿主同步写 Roi.ComposeShapeType）</summary>
+        public event EventHandler<ShapeType>? ShapeTypeChanged;
 
         public ParameterPanelViewModel(DataSourceQueryService? dataProvider = null)
         {
             _dataProvider = dataProvider;
-
-            BindParameterCommand = new RelayCommand<ParamSettingItem>(BindParameter);
             ClearBindingCommand = new RelayCommand<ParamSettingItem>(ClearBinding);
+            UpdateParameterDefinitions();
         }
 
         /// <summary>
-        /// 更新参数定义（根据形状类型）
+        /// 从选中的几何输入回显订阅状态（三态：Binding→整对象；ParameterBindings→几何参数并回填；本地→按本地形状进几何参数模板）。
         /// </summary>
+        public void LoadFromRoi(Roi input)
+        {
+            if (input == null) return;
+
+            if (input.Binding != null)
+            {
+                // 整对象订阅
+                SubscribeSubMode = RoiSubscribeSubMode.WholeRegion;
+                WholeRegionSetting = input.Binding;
+                return;
+            }
+
+            if (input.ParameterBindings is { Count: > 0 })
+            {
+                // 参数拼装：按持久化形状出参数行，并回填已绑定的键
+                SubscribeSubMode = RoiSubscribeSubMode.GeometricParameters;
+                var shapeType = input.ComposeShapeType != ShapeType.None
+                    ? input.ComposeShapeType
+                    : input.DeclaredShapeType;
+                if (shapeType == ShapeType.None)
+                    shapeType = ShapeType.Rectangle;
+                _currentShapeType = shapeType;
+                OnPropertyChanged(nameof(CurrentShapeType));
+                UpdateParameterDefinitions();
+                foreach (var item in Parameters)
+                {
+                    if (input.ParameterBindings.TryGetValue(item.ParameterName, out var setting))
+                    {
+                        item.Setting = setting;
+                        item.BindingPath = setting.BindingType == BindingType.Binding
+                            ? (string.IsNullOrEmpty(setting.SourceProperty) ? setting.SourceNodeId! : $"{setting.SourceNodeId}.{setting.SourceProperty}")
+                            : string.Empty;
+                    }
+                }
+                return;
+            }
+
+            // 本地绘制：进入几何参数模板（形状沿用本地几何），参数行全空待绑
+            SubscribeSubMode = RoiSubscribeSubMode.GeometricParameters;
+            var localShape = input.LocalGeometry?.ShapeType ?? ShapeType.None;
+            if (localShape is ShapeType.Point or ShapeType.Line or ShapeType.Circle
+                or ShapeType.Rectangle or ShapeType.RotatedRectangle)
+            {
+                _currentShapeType = localShape;
+            }
+            else
+            {
+                _currentShapeType = ShapeType.Rectangle;
+            }
+            OnPropertyChanged(nameof(CurrentShapeType));
+            UpdateParameterDefinitions();
+        }
+
+        #region 整对象订阅
+
+        /// <summary>应用整对象订阅选择结果（NodeOutputInfo → ParamSetting）</summary>
+        public void ApplyWholeRegionSelection(NodeOutputInfo selectedNode)
+        {
+            if (selectedNode == null) return;
+
+            var setting = new ParamSetting
+            {
+                ParameterName = "WholeRegion",
+                BindingType = BindingType.Binding,
+                SourceNodeId = selectedNode.NodeId,
+                SourceProperty = string.IsNullOrEmpty(selectedNode.PropertyPath)
+                    ? selectedNode.OutputName
+                    : selectedNode.PropertyPath,
+            };
+            WholeRegionSetting = setting;
+            BindingChanged?.Invoke(this, setting);
+        }
+
+        /// <summary>清除整对象订阅</summary>
+        public void ClearWholeRegion()
+        {
+            WholeRegionSetting = null;
+            BindingChanged?.Invoke(this, null);
+        }
+
+        #endregion
+
+        #region 几何参数拼装
+
+        /// <summary>应用几何参数绑定选择结果（对 SelectedParameter 行）</summary>
+        public void ApplyBindingSelection(NodeOutputInfo selectedNode)
+        {
+            var item = SelectedParameter;
+            if (item == null || selectedNode == null) return;
+
+            var setting = new ParamSetting
+            {
+                ParameterName = item.ParameterName,
+                BindingType = BindingType.Binding,
+                SourceNodeId = selectedNode.NodeId,
+                SourceProperty = string.IsNullOrEmpty(selectedNode.PropertyPath)
+                    ? selectedNode.OutputName
+                    : selectedNode.PropertyPath,
+            };
+            item.Setting = setting;
+            item.BindingPath = string.IsNullOrEmpty(setting.SourceProperty)
+                ? setting.SourceNodeId!
+                : $"{setting.SourceNodeId}.{setting.SourceProperty}";
+            item.DisplayPath = selectedNode.DisplayPath;
+
+            ParameterSettingChanged?.Invoke(this, new ParameterSettingChangedEventArgs(item.ParameterName, setting));
+        }
+
+        /// <summary>清除某参数行绑定</summary>
+        private void ClearBinding(ParamSettingItem? item)
+        {
+            if (item == null) return;
+
+            item.Setting = null;
+            item.BindingPath = string.Empty;
+            item.DisplayPath = string.Empty;
+            item.CurrentValue = null;
+
+            ParameterSettingChanged?.Invoke(this, new ParameterSettingChangedEventArgs(item.ParameterName, null));
+        }
+
+        #endregion
+
+        /// <summary>按当前形状重建扁平参数行</summary>
         private void UpdateParameterDefinitions()
         {
             Parameters.Clear();
 
-            var parameterDefs = GetParameterDefinitions(_currentShapeType);
-
-            foreach (var def in parameterDefs)
+            foreach (var def in GetParameterDefinitions(_currentShapeType))
             {
                 Parameters.Add(new ParamSettingItem
                 {
                     ParameterName = def.Name,
                     DisplayName = def.DisplayName,
-                    DataType = def.DataType
+                    DataType = def.DataType,
                 });
             }
         }
 
-        /// <summary>
-        /// 获取参数定义（DataType 为 CLR 类型，与 ParamBinding.DataType 一致）
-        /// </summary>
-        private List<(string Name, string DisplayName, Type DataType)> GetParameterDefinitions(ShapeType shapeType)
+        /// <summary>形状 → 扁平参数定义（键 = RoiShape 扁平参数名，与拼装集/ComposeShapeType 对齐）</summary>
+        private static List<(string Name, string DisplayName, Type DataType)> GetParameterDefinitions(ShapeType shapeType)
         {
             return shapeType switch
             {
                 ShapeType.Point => new List<(string, string, Type)>
                 {
                     ("CenterX", "中心X", typeof(double)),
-                    ("CenterY", "中心Y", typeof(double))
+                    ("CenterY", "中心Y", typeof(double)),
                 },
                 ShapeType.Line => new List<(string, string, Type)>
                 {
                     ("StartX", "起点X", typeof(double)),
                     ("StartY", "起点Y", typeof(double)),
                     ("EndX", "终点X", typeof(double)),
-                    ("EndY", "终点Y", typeof(double))
+                    ("EndY", "终点Y", typeof(double)),
                 },
                 ShapeType.Circle => new List<(string, string, Type)>
                 {
                     ("CenterX", "中心X", typeof(double)),
                     ("CenterY", "中心Y", typeof(double)),
-                    ("Radius", "半径", typeof(double))
+                    ("Radius", "半径", typeof(double)),
                 },
                 ShapeType.Rectangle => new List<(string, string, Type)>
                 {
                     ("CenterX", "中心X", typeof(double)),
                     ("CenterY", "中心Y", typeof(double)),
                     ("Width", "宽度", typeof(double)),
-                    ("Height", "高度", typeof(double))
+                    ("Height", "高度", typeof(double)),
                 },
                 ShapeType.RotatedRectangle => new List<(string, string, Type)>
                 {
@@ -226,187 +309,25 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.ViewModels
                     ("CenterY", "中心Y", typeof(double)),
                     ("Width", "宽度", typeof(double)),
                     ("Height", "高度", typeof(double)),
-                    ("Angle", "角度", typeof(double))
+                    ("Angle", "角度", typeof(double)),
                 },
-                ShapeType.Polygon => new List<(string, string, Type)>
-                {
-                    ("Points", "顶点", typeof(Point2D[]))
-                },
-                _ => new List<(string, string, Type)>()
+                _ => new List<(string, string, Type)>(),
             };
         }
-
-        /// <summary>
-        /// 绑定参数（打开选择器）
-        /// </summary>
-        private void BindParameter(ParamSettingItem? item)
-        {
-            if (item == null) return;
-            SelectedParameter = item;
-            // 实际绑定在View层通过 ParamBinding 树弹窗 / NodeSelector 完成
-        }
-
-        /// <summary>
-        /// 清除绑定
-        /// </summary>
-        private void ClearBinding(ParamSettingItem? item)
-        {
-            if (item == null) return;
-
-            item.Source = null;
-            item.DisplayPath = string.Empty;
-            item.BindingPath = string.Empty;
-            item.CurrentValue = null;
-
-            ParamSettingChanged?.Invoke(this, new ParamSettingChangedEventArgs(item.ParameterName, null));
-        }
-
-        /// <summary>
-        /// 应用几何参数绑定选择结果
-        /// </summary>
-        public void ApplyBindingSelection(NodeOutputInfo selectedNode)
-        {
-            if (SelectedParameter == null) return;
-
-            var source = new NodeOutputSource(
-                selectedNode.NodeId,
-                selectedNode.OutputName,
-                null,
-                selectedNode.PropertyPath)
-            {
-                // 边界：CLR Type → 字符串词表走 SdkTypeVocabulary 适配层（已知类型归一为规范键）；
-                // 词表未收录的合法几何类型（如 Point2D[]，系统本就使用）回退到 CLR 全名用于持久化，
-                // 非未支持类型的静默兜底（运行期过滤仍按 ParamBinding.DataType 的 Type 执行）
-                DataType = SdkTypeVocabulary.ToTypeVocabulary(SelectedParameter.DataType)
-                           ?? SelectedParameter.DataType.FullName
-                           ?? "double"
-            };
-
-            SelectedParameter.Source = source;
-            SelectedParameter.DisplayPath = selectedNode.DisplayPath;
-            SelectedParameter.BindingPath = string.IsNullOrEmpty(selectedNode.PropertyPath)
-                ? selectedNode.NodeId
-                : $"{selectedNode.NodeId}.{selectedNode.PropertyPath}";
-
-            // 订阅值变更
-            SubscribeToValue(SelectedParameter, source);
-
-            ParamSettingChanged?.Invoke(this, new ParamSettingChangedEventArgs(SelectedParameter.ParameterName, source));
-        }
-
-        /// <summary>
-        /// 应用整区域绑定选择结果
-        /// </summary>
-        public void ApplyWholeRegionSelection(NodeOutputInfo selectedNode)
-        {
-            if (selectedNode == null) return;
-
-            var source = new NodeOutputSource(
-                selectedNode.NodeId,
-                selectedNode.OutputName,
-                null,
-                selectedNode.PropertyPath)
-            {
-                DataType = "Region"
-            };
-
-            WholeRegionSource = source;
-            WholeRegionChanged?.Invoke(this, new WholeRegionSelectedEventArgs(source));
-        }
-
-        /// <summary>
-        /// 清除整区域绑定
-        /// </summary>
-        public void ClearWholeRegion()
-        {
-            WholeRegionSource = null;
-            WholeRegionChanged?.Invoke(this, new WholeRegionSelectedEventArgs(null));
-        }
-
-        /// <summary>
-        /// 订阅值变更（通过 GetPropertyValue 实时查询，DSQS 已无本地缓存/订阅机制）
-        /// </summary>
-        private void SubscribeToValue(ParamSettingItem item, NodeOutputSource source)
-        {
-            if (_dataProvider == null) return;
-
-            // 实时查询 SSOT（DSQS 通过 _ssotReader 委托读取 WorkflowContext）
-            item.CurrentValue = _dataProvider.GetPropertyValue(source.NodeId, source.PropertyPath);
-        }
-
-        /// <summary>
-        /// 从区域定义加载绑定（覆盖 FixedRoi / ComputedRoi / ShapeParameters 三种）
-        /// </summary>
-        public void LoadFromRegionDefinition(RoiDefinition def)
-        {
-            switch (def)
-            {
-                case FixedRoi fixedRegion:
-                    SubscribeSubMode = RoiSubscribeSubMode.WholeRegion;
-                    WholeRegionSource = string.IsNullOrEmpty(fixedRegion.SourceNodeId)
-                        ? null
-                        : new NodeOutputSource(fixedRegion.SourceNodeId, fixedRegion.OutputName, fixedRegion.RegionIndex);
-                    break;
-
-                case ComputedRoi computedRegion:
-                    SubscribeSubMode = RoiSubscribeSubMode.GeometricParameters;
-                    CurrentShapeType = computedRegion.TargetShapeType;
-                    foreach (var param in Parameters)
-                    {
-                        if (computedRegion.ParameterBindings.TryGetValue(param.ParameterName, out var source))
-                        {
-                            param.Source = source;
-                            if (source is NodeOutputSource nodeSource && _dataProvider != null)
-                            {
-                                param.DisplayPath = $"{nodeSource.NodeId}.{nodeSource.PropertyPath}";
-                                param.BindingPath = string.IsNullOrEmpty(nodeSource.PropertyPath)
-                                    ? nodeSource.NodeId
-                                    : $"{nodeSource.NodeId}.{nodeSource.PropertyPath}";
-                                SubscribeToValue(param, nodeSource);
-                            }
-                        }
-                    }
-                    break;
-
-                case ShapeParameters shapeDef:
-                    SubscribeSubMode = RoiSubscribeSubMode.GeometricParameters;
-                    CurrentShapeType = shapeDef.ShapeType;
-                    break;
-
-                default:
-                    SubscribeSubMode = RoiSubscribeSubMode.GeometricParameters;
-                    break;
-            }
-        }
-
     }
 
-
     /// <summary>
-    /// 参数绑定变更事件参数
+    /// 几何参数绑定变更事件参数（parameterName = RoiShape 扁平参数名）
     /// </summary>
-    public class ParamSettingChangedEventArgs : EventArgs
+    public class ParameterSettingChangedEventArgs : EventArgs
     {
         public string ParameterName { get; }
-        public ParameterSource? NewSource { get; }
+        public ParamSetting? Setting { get; }
 
-        public ParamSettingChangedEventArgs(string parameterName, ParameterSource? newSource)
+        public ParameterSettingChangedEventArgs(string parameterName, ParamSetting? setting)
         {
             ParameterName = parameterName;
-            NewSource = newSource;
-        }
-    }
-
-    /// <summary>
-    /// 整区域选择变更事件参数
-    /// </summary>
-    public class WholeRegionSelectedEventArgs : EventArgs
-    {
-        public ParameterSource? Source { get; }
-
-        public WholeRegionSelectedEventArgs(ParameterSource? source)
-        {
-            Source = source;
+            Setting = setting;
         }
     }
 }

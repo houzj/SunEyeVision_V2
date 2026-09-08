@@ -15,7 +15,6 @@ using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Metadata;
 using SunEyeVision.Plugin.SDK.UI.Controls;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using SunEyeVision.HalAdapter;
 using SunEyeVision.Tool.ShapeMatch.Models;
 using WpfPoint = System.Windows.Point;
@@ -523,15 +522,15 @@ public partial class ShapeMatchToolDebugControl
             double cropCenterX = 0, cropCenterY = 0, cropW = 0, cropH = 0;
             bool hasValidCrop = false;
 
-            if (template.InspectionRegions.Count > 0)
+            if (template.InspectionRois.Count > 0)
             {
                 double minX = double.MaxValue, minY = double.MaxValue;
                 double maxX = double.MinValue, maxY = double.MinValue;
-                foreach (var insp in template.InspectionRegions)
+                foreach (var insp in template.InspectionRois)
                 {
-                    if (!insp.IsEnabled || insp.Parameters is not ShapeParameters s) continue;
+                    if (!insp.IsEnabled || insp.LocalGeometry?.Geometry is not { } geometry) continue;
 
-                    bool gotAabb = TryGetGeometryAabb(s.Geometry, out var lx, out var ly, out var rx, out var ry);
+                    bool gotAabb = TryGetGeometryAabb(geometry, out var lx, out var ly, out var rx, out var ry);
                     if (gotAabb)
                     {
                         if (lx < minX) minX = lx; if (ly < minY) minY = ly;

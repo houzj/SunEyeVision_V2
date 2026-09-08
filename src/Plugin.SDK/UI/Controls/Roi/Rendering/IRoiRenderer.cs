@@ -2,9 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Media;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Models;
 
-namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
+namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Rendering
 {
     /// <summary>
     /// 区域渲染器接口

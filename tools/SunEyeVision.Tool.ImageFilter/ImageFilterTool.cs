@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -10,7 +10,6 @@ using SunEyeVision.HalAdapter;
 using SunEyeVision.Plugin.SDK.Execution.Helpers;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using SunEyeVision.Plugin.SDK.Validation;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using SunEyeVision.Tool.ImageFilter.Views;
@@ -145,8 +144,8 @@ namespace SunEyeVision.Tool.ImageFilter
 
                     var scope = HalconRegionPipeline.Resolve(
                         imgWidth, imgHeight,
-                        parameters.GetRoisByType(RoiType.Inspection),
-                        parameters.GetRoisByType(RoiType.Mask),
+                        parameters.GetRoisByType(RoiParameterMode.InspectionRoi),
+                        parameters.GetRoisByType(RoiParameterMode.MaskRoi),
                         parameters.NodeResults, correctionMatrix);
                     stepTimings.AddRange(scope.Timings);
 
@@ -227,8 +226,8 @@ namespace SunEyeVision.Tool.ImageFilter
                                 stepTimings.Add(("结果判断", stepSw.ElapsedMilliseconds));
 
                                 // 提取检测区/屏蔽区几何输出（RoI 契约：结果树字段聚合 + 下游绑定）
-                                ToolRegionHelper.ExtractInspectionGeometries(result, parameters.InspectionRegions?.Regions);
-                                ToolRegionHelper.ExtractMaskGeometries(result, parameters.MaskRegions?.Regions);
+                                ToolRegionHelper.ExtractInspectionGeometries(result, parameters.InspectionRois?.Rois);
+                                ToolRegionHelper.ExtractMaskGeometries(result, parameters.MaskRois?.Rois);
 
                                 stopwatch.Stop();
                                 result.SetSuccess(stopwatch.Elapsed.TotalMilliseconds);

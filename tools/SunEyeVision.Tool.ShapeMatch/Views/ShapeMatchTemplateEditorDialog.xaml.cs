@@ -14,7 +14,7 @@ using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.SDK.UI.Windows;
 using SunEyeVision.HalAdapter;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Tool.ShapeMatch.Models;
 using WpfPoint = System.Windows.Point;
@@ -46,9 +46,9 @@ public partial class ShapeMatchTemplateEditorDialog : SdkDialogWindow
     public double TemplateScaleMin { get; set; } = 0.9;
     public double TemplateScaleMax { get; set; } = 1.1;
 
-    // 对话框内部区域数据源
-    public ObservableCollection<RoiData> DialogInspectionRegions { get; } = new();
-    public ObservableCollection<RoiData> DialogMaskRegions { get; } = new();
+    // 对话框内部区域数据源（Execution 域 Roi；本地几何承载于 LocalGeometry）
+    public ObservableCollection<Roi> DialogInspectionRois { get; } = new();
+    public ObservableCollection<Roi> DialogMaskRois { get; } = new();
 
     private const double DEG2RAD = Math.PI / 180.0;
 
@@ -263,10 +263,10 @@ public partial class ShapeMatchTemplateEditorDialog : SdkDialogWindow
         numPyramidLevel.IntValue = _resultTemplate.NumLevels;
         numContrast.IntValue = (int)_resultTemplate.ActualContrast;
 
-        foreach (var insp in _resultTemplate.InspectionRegions)
-            DialogInspectionRegions.Add(insp);
-        foreach (var mask in _resultTemplate.MaskRegions)
-            DialogMaskRegions.Add(mask);
+        foreach (var insp in _resultTemplate.InspectionRois)
+            DialogInspectionRois.Add((Roi)insp.Clone());
+        foreach (var mask in _resultTemplate.MaskRois)
+            DialogMaskRois.Add((Roi)mask.Clone());
 
         int edgePointCount = _resultTemplate.EdgePointCount;
         UpdateResultDisplay(_resultTemplate.ExtractionStatus, edgePointCount, 0, 0, 0, 0);
@@ -328,7 +328,7 @@ public partial class ShapeMatchTemplateEditorDialog : SdkDialogWindow
             return;
         }
 
-        if (DialogInspectionRegions.Count == 0)
+        if (DialogInspectionRois.Count == 0)
         {
             MessageBox.Show("请先在图像上绘制检测区域（有效区）。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
@@ -364,8 +364,8 @@ public partial class ShapeMatchTemplateEditorDialog : SdkDialogWindow
             using (grayImage)
             {
                 // ===== 构建 ROI =====
-                var enabledInspections = DialogInspectionRegions.Where(r => r.IsEnabled).ToList();
-                var enabledMasks = DialogMaskRegions.Where(r => r.IsEnabled).ToList();
+                var enabledInspections = DialogInspectionRois.Where(r => r.IsEnabled).ToList();
+                var enabledMasks = DialogMaskRois.Where(r => r.IsEnabled).ToList();
                 if (enabledInspections.Count == 0)
                 {
                     MessageBox.Show("没有启用的检测区域。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -614,7 +614,7 @@ public partial class ShapeMatchTemplateEditorDialog : SdkDialogWindow
     /// 构建 ROI 区域（检测区域并集 - 屏蔽区域）
     /// 委托给 ToolRegionHelper 统一处理
     /// </summary>
-    private static HRegion? BuildRoiRegion(List<RoiData> inspections, List<RoiData> masks)
+    private static HRegion? BuildRoiRegion(List<Roi> inspections, List<Roi> masks)
     {
         var (roi, _, _) = ToolRegionHelper.BuildHalconROI(0, 0, inspections, masks);
         return roi;
@@ -997,19 +997,19 @@ public partial class ShapeMatchTemplateEditorDialog : SdkDialogWindow
         _resultTemplate ??= new TemplateModel();
         _resultTemplate.Name = name;
 
-        // 同步区域数据
-        _resultTemplate.InspectionRegions.Clear();
-        foreach (var insp in DialogInspectionRegions)
-            _resultTemplate.InspectionRegions.Add(insp);
+        // 同步区域数据（Dialog 集合 → 模板持久化集合；新 Roi 直接承载）
+        _resultTemplate.InspectionRois.Clear();
+        foreach (var insp in DialogInspectionRois)
+            _resultTemplate.InspectionRois.Add((Roi)insp.Clone());
 
-        _resultTemplate.MaskRegions.Clear();
-        foreach (var mask in DialogMaskRegions)
-            _resultTemplate.MaskRegions.Add(mask);
+        _resultTemplate.MaskRois.Clear();
+        foreach (var mask in DialogMaskRois)
+            _resultTemplate.MaskRois.Add((Roi)mask.Clone());
 
         // 校验轮廓数据
         if (_resultTemplate.ModelData == null || _resultTemplate.ModelData.Length == 0)
         {
-            if (DialogInspectionRegions.Count > 0)
+            if (DialogInspectionRois.Count > 0)
             {
                 MessageBox.Show("模型数据为空，请先点击「提取轮廓」按钮生成。", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
@@ -1024,7 +1024,7 @@ public partial class ShapeMatchTemplateEditorDialog : SdkDialogWindow
 
         // 统一验证
         var errors = new List<string>();
-        if (DialogInspectionRegions.Count == 0)
+        if (DialogInspectionRois.Count == 0)
             errors.Add("- 请至少绘制一个检测区域。");
 
         if (_resultTemplate.ModelData == null || _resultTemplate.ModelData.Length == 0)

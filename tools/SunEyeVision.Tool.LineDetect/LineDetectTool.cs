@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -11,7 +11,6 @@ using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using SunEyeVision.Tool.LineDetect.Models;
 using SunEyeVision.Tool.LineDetect.Views;
@@ -147,7 +146,7 @@ namespace SunEyeVision.Tool.LineDetect
                 // ★ 架构统一：有/无屏蔽区走同一条拟合路径。屏蔽只影响输入点集（剔除屏蔽区内点），
                 //   不改变核心拟合算法。Halcon 2D Metrology 原生拟合不支持屏蔽区概念，
                 //   屏蔽过滤必须在拟合前完成，故统一走自研鲁棒拟合（fit_line_contour_xld）。
-                bool hasEnabledMask = parameters.GetRoisByType(RoiType.Mask).Any();
+                bool hasEnabledMask = parameters.GetRoisByType(RoiParameterMode.MaskRoi).Any();
                 FillResultWithMask(result, parameters, objectIndex, metrologyModel,
                     TransitionToHalcon(parameters.Transition), hasEnabledMask);
 
@@ -163,7 +162,7 @@ namespace SunEyeVision.Tool.LineDetect
                 result.FillDisplay(isOk, parameters);
 
                 // 屏蔽区几何输出（RoI 契约：结果树"输入区域/屏蔽区图形"填充，对齐图像工具）
-                ToolRegionHelper.ExtractMaskGeometries(result, parameters.MaskRegions?.Regions);
+                ToolRegionHelper.ExtractMaskGeometries(result, parameters.MaskRois?.Rois);
 
                 // 卡尺输入回显（模块结果"输入区域/卡尺"）：引导线 + 测量带参数
                 var guideStart = parameters.LineStartPoint;
@@ -175,7 +174,7 @@ namespace SunEyeVision.Tool.LineDetect
                 {
                     result.GuideGeometry = new[]
                     {
-                        new ShapeParameters
+                        new RoiShape
                         {
                             Geometry = new Line2d(
                                 new Point(guideStart.X, guideStart.Y),
@@ -301,8 +300,8 @@ namespace SunEyeVision.Tool.LineDetect
             if (hasEnabledMask)
             {
                 var correction = PositionCorrectionResolver.ResolveFirstMatrix(parameters.PositionCorrectionBindingSource);
-                (kept, excluded) = ToolRegionHelper.FilterPointsOutOfMaskRegions(
-                    measures, parameters.GetRoisByType(RoiType.Mask), correction);
+                (kept, excluded) = ToolRegionHelper.FilterPointsOutOfMaskRois(
+                    measures, parameters.GetRoisByType(RoiParameterMode.MaskRoi), correction);
                 parameters.LogInfo(
                     $"[Diag] 屏蔽过滤: 采样点={measures.Length}, 保留={kept.Length}, 屏蔽剔除={excluded.Length}");
             }

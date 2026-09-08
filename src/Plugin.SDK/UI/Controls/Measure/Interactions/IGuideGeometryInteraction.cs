@@ -1,6 +1,6 @@
 using System.Windows;
 using SunEyeVision.Plugin.SDK.UI.Controls.Measure.Models;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Rendering;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Interactions
 {

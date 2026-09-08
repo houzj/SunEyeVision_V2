@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Reflection;
 using System.Windows.Controls;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.UI.Controls;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Models;
 using Xunit;
 
 namespace SunEyeVision.Plugin.SDK.Tests;
@@ -39,8 +39,8 @@ public class ParamBindingDisplayContractTests
             SourceNodeName = "Blob分析2",
             PropertyName = "检测区域",
             DisplayName = "检测区域",
-            PropertyType = typeof(ShapeParameters[]),
-            VariableType = "RoI",
+            PropertyType = typeof(RoiShape[]),
+            VariableType = "ROI",
             BindingSuffix = suffix,
         };
     }

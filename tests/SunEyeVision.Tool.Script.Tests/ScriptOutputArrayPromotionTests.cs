@@ -1,6 +1,6 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using SunEyeVision.Tool.Script.Models;
 using Xunit;
 
@@ -63,11 +63,11 @@ public class ScriptOutputArrayPromotionTests
     public void GetOutputVariables_ArrayValueTargetArrayType_NotDoubleWrapped()
     {
         // 已传数组值 + RoI 数组词目：值形态优先，保持数组，不重复包装
-        var rois = new ShapeParameters[0];
-        var results = MakeResults("rois", "RoI", rois);
+        var rois = new RoiShape[0];
+        var results = MakeResults("rois", "ROI", rois);
         var var = results.GetOutputVariables().First(v => v.Name == "rois");
 
-        Assert.IsType<ShapeParameters[]>(var.RuntimeValue);
+        Assert.IsType<RoiShape[]>(var.RuntimeValue);
     }
 
     [Fact]
@@ -83,11 +83,11 @@ public class ScriptOutputArrayPromotionTests
     public void GetOutputVariables_SingleRoiValue_RepackedToArray()
     {
         // 动态生产者（脚本/子程序）中间被解包成单对象后，包装器应重新包回 T[1]
-        var single = new ShapeParameters();
-        var results = MakeResults("rois", "RoI", single);
+        var single = new RoiShape();
+        var results = MakeResults("rois", "ROI", single);
         var var = results.GetOutputVariables().First(v => v.Name == "rois");
 
-        var arr = Assert.IsType<ShapeParameters[]>(var.RuntimeValue);
+        var arr = Assert.IsType<RoiShape[]>(var.RuntimeValue);
         Assert.Single(arr);
     }
 }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -8,7 +8,6 @@ using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Metadata;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using SunEyeVision.Plugin.SDK.Validation;
 
 namespace SunEyeVision.Plugin.SDK.Execution.Results
@@ -315,18 +314,18 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
         public object? Tag { get; set; }
 
         /// <summary>
-        /// 检测区几何输出（RoI 契约，ShapeParameters[]）。
-        /// 工具 Run() 中由 ExtractInspectionGeometries() 填充用户绘制的检测区 ShapeParameters，
+        /// 检测区几何输出（ROI 契约，RoiShape[]，词目 "ROI"）。
+        /// 工具 Run() 中由 ExtractInspectionGeometries() 填充用户绘制的检测区 RoiShape（几何值+样式），
         /// 进输出契约后，下游可四级绑定：整体 / [Type=X] 按形状 / [i] 单项 / [i].Geometry.属性。
         /// </summary>
-        public ShapeParameters[] InspectionGeometries { get; set; } = Array.Empty<ShapeParameters>();
+        public RoiShape[] InspectionGeometries { get; set; } = Array.Empty<RoiShape>();
 
         /// <summary>
-        /// 屏蔽区几何输出（RoI 契约，ShapeParameters[]）。
-        /// 工具 Run() 中由 ExtractMaskGeometries() 填充用户绘制的屏蔽区 ShapeParameters，
+        /// 屏蔽区几何输出（ROI 契约，RoiShape[]，词目 "ROI"）。
+        /// 工具 Run() 中由 ExtractMaskGeometries() 填充用户绘制的屏蔽区 RoiShape，
         /// 进输出契约后，下游可四级绑定（与 InspectionGeometries 一致）。
         /// </summary>
-        public ShapeParameters[] MaskGeometries { get; set; } = Array.Empty<ShapeParameters>();
+        public RoiShape[] MaskGeometries { get; set; } = Array.Empty<RoiShape>();
 
         /// <summary>
         /// 显示收集器（Push 模型）
@@ -554,10 +553,10 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
                 });
             }
 
-            // 框架级统一输出：检测区/屏蔽区几何（RoI 契约，所有工具自动获得，方案：所有静态工具图形输出优化设计）。
-            // 变量值即 ShapeParameters[]，绑定树按 [Type=X]/[i] 下钻，解析器经 [i].Geometry.属性 穿透。
-            AddRegionContractVariable(variables, nameof(InspectionGeometries), "检测区图形", "输入区域");
-            AddRegionContractVariable(variables, nameof(MaskGeometries), "屏蔽区图形", "输入区域");
+            // 框架级统一输出：检测区/屏蔽区几何（ROI 契约 RoiShape[]，词目 "ROI"，所有工具自动获得）。
+            // 变量值即 RoiShape[]，绑定树按 [Type=X]/[i] 下钻，解析器经 [i].Geometry.属性 穿透。
+            AddRoiContractVariable(variables, nameof(InspectionGeometries), "检测区图形", "输入区域");
+            AddRoiContractVariable(variables, nameof(MaskGeometries), "屏蔽区图形", "输入区域");
 
             return variables;
         }
@@ -566,7 +565,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
         /// 把检测区/屏蔽区几何（RoI 契约）追加为输出变量。
         /// 仅当结果类型实际存在该属性时追加（框架属性在所有 ToolResults 派生类均存在）。
         /// </summary>
-        private void AddRegionContractVariable(List<OutputVariable> variables, string propertyName, string displayName, string group)
+        private void AddRoiContractVariable(List<OutputVariable> variables, string propertyName, string displayName, string group)
         {
             var prop = GetType().GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
             if (prop == null) return;

@@ -4,17 +4,15 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 
-namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
+namespace SunEyeVision.Plugin.SDK.Execution.Parameters;
 
 /// <summary>
-/// <see cref="ShapeParameters.Geometry"/> 是多态 <see cref="object"/> 字段，
-/// System.Text.Json 序列化后无法还原具体几何类型（反序列化为 JsonElement，bug ① 根因）。
+/// 几何定义（RoiShape.Geometry）为多态 <see cref="object"/> 字段，
+/// System.Text.Json 序列化后无法还原具体几何类型（反序列化为 JsonElement）。
 /// 本转换器在序列化时写入 <c>$geom</c> 判别符（几何类型短名），反序列化据此还原具体类型。
-/// 治本修复「手画圆/矩形 保存方案重开后失效」。
 /// </summary>
 /// <remarks>
-/// 仅通过 <c>[JsonConverter]</c> 挂在 <see cref="ShapeParameters.Geometry"/> 属性上，
-/// 作用域限于该属性，不与 <see cref="RoiDefinition"/> 的 <c>[JsonPolymorphic]</c> 冲突。
+/// 通过 <c>[JsonConverter]</c> 挂到几何字段上，作用域限于该字段。
 /// 未知 <c>$geom</c> 直接抛 <see cref="NotSupportedException"/>（rule-015 不静默）。
 /// </remarks>
 public class GeometryJsonConverter : JsonConverter<object?>

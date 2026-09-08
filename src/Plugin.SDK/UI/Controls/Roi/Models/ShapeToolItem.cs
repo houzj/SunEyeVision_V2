@@ -1,7 +1,8 @@
 using System.Windows.Input;
 using SunEyeVision.Plugin.SDK.UI.Controls.Common.Models;
 
-namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
+namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Models
 {
     /// <summary>
     /// 形状工具项 - 承载形状按钮的全部 UI 元数据

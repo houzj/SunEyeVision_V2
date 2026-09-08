@@ -7,9 +7,10 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using SunEyeVision.Plugin.SDK.Logging;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Models;
 
-namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
+namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Rendering
 {
     /// <summary>
     /// 编辑手柄类型（参考ROI编辑器的HandleType枚举）

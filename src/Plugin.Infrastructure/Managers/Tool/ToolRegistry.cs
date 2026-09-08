@@ -9,7 +9,7 @@ using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Metadata;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Core.Services.Serialization;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Models;
 
 namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
 {
@@ -508,7 +508,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
 
         /// <summary>
         /// 类型级注册框架 RoI 契约元数据（检测区/屏蔽区图形）。
-        /// 与运行时 GetOutputVariables 的 AddRegionContractVariable 对齐（Group="输入区域"、ShapeParameters[]），
+        /// 与运行时 GetOutputVariables 的 AddRoiContractVariable 对齐（Group="输入区域"、RoiShape[]），
         /// 但不受"空值跳过"影响——结构恒注册。未运行节点结果树靠 ResolveRoiDesignValue 从参数回退取值，
         /// 无已绘区域时渲染 "--" 占位；运行态空区过滤仍由契约层负责，二者互不干扰。
         /// </summary>
@@ -517,10 +517,10 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
         /// <param name="displayName">结果树显示名（检测区图形/屏蔽区图形）</param>
         private static void RegisterRoiContractMetadata(string toolId, string propertyName, string displayName)
         {
-            var arrayType = typeof(ShapeParameters[]);
+            var arrayType = typeof(RoiShape[]);
             var vocabulary = SunEyeVision.Plugin.SDK.Models.SdkTypeVocabulary.ToTypeVocabulary(arrayType);
             if (string.IsNullOrEmpty(vocabulary))
-                return; // ShapeParameters[] 未映射到词汇表（契约演进导致），不阻塞工具启动
+                return; // RoiShape[] 未映射到词汇表（契约演进导致），不阻塞工具启动
 
             var varType = SunEyeVision.Plugin.SDK.Models.SdkTypeVocabulary.ToSystemType(vocabulary);
             if (varType == null)

@@ -260,10 +260,10 @@ namespace SunEyeVision.Tool.EdgeDetect.Views
             }
             Parameters = edgeParams;
 
-            // 屏蔽区域：绑定到 MeasurementEditorManager（MaskRegionsSource → maskEditor）
+            // 屏蔽区域：绑定到 MeasurementEditorManager（MaskRoisSource → maskEditor）
             if (MeasurementManager != null)
             {
-                MeasurementManager.MaskRegionsSource = Parameters.MaskRegions.Regions;
+                MeasurementManager.MaskRoisSource = Parameters.MaskRois.Rois;
             }
 
             // ★ 修复持久化：打开调试窗口即回填引导几何 + 卡尺参数到编辑器

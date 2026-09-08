@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel;
 
-namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Logic
+namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Logic
 {
     /// <summary>
     /// 数据类型转换器 - 处理不同数据类型之间的转换

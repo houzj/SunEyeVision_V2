@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -6,21 +6,19 @@ using System.Text.Json.Serialization;
 using System.Windows.Media;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Metadata;
-using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
 
 namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 {
     /// <summary>
-    /// 区域参数基类 - 提供检测区域和屏蔽区域的通用实现
+    /// 几何输入参数基类 - 提供检测区与屏蔽区几何输入（Roi）的通用实现
     /// </summary>
     /// <remarks>
     /// 设计理念：
     /// 1. 所有需要区域管理的工具可以继承此基类
-    /// 2. 避免重复定义 InspectionRegions 和 MaskRegions
-    /// 3. 统一区域参数的序列化和反序列化
+    /// 2. 避免重复定义 InspectionRois 和 MaskRois
+    /// 3. 统一几何输入参数的序列化和反序列化
     /// 
     /// 使用示例：
     /// <code>
@@ -36,11 +34,11 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     /// }
     /// </code>
     /// </remarks>
-    [JsonDerivedType(typeof(RoiParameters), "RegionParameters")]
+    [JsonDerivedType(typeof(RoiParameters), "RoiParameters")]
     public class RoiParameters : ToolParameters
     {
-        private RoiCollectionParameter _inspectionRegions;
-        private RoiCollectionParameter _maskRegions;
+        private RoiCollection _inspectionRois;
+        private RoiCollection _maskRois;
         private ImageSourceReference? _imageSourceRef;
         private AvailableDataSource? _imageSource;
 
@@ -49,25 +47,25 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// </summary>
         public RoiParameters()
         {
-            _inspectionRegions = new RoiCollectionParameter(RoiParameterMode.InspectionRegion);
-            _maskRegions = new RoiCollectionParameter(RoiParameterMode.MaskRegion);
+            _inspectionRois = new RoiCollection(RoiParameterMode.InspectionRoi);
+            _maskRois = new RoiCollection(RoiParameterMode.MaskRoi);
         }
 
         /// <summary>
-        /// 检测区域 - 指定需要进行检测/处理的区域
+        /// 检测几何输入集合 - 指定需要进行检测/处理的区域（元素为 Roi 几何输入）
         /// </summary>
         /// <remarks>
         /// 支持常量模式（用户直接绘制）和绑定模式（订阅其他节点输出）
         /// </remarks>
         [JsonPropertyOrder(10)]
-        public RoiCollectionParameter InspectionRegions
+        public RoiCollection InspectionRois
         {
-            get => _inspectionRegions;
-            set => _inspectionRegions = value;
+            get => _inspectionRois;
+            set => _inspectionRois = value;
         }
 
         /// <summary>
-        /// 屏蔽区域 - 指定需要排除的区域
+        /// 屏蔽几何输入集合 - 指定需要排除的区域（元素为 Roi 几何输入）
         /// </summary>
         /// <remarks>
         /// 支持常量模式（用户直接绘制）和绑定模式（订阅其他节点输出）
@@ -93,29 +91,29 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             AffineMatrix? correctionMatrix)
             => System.Array.Empty<DisplayItemBase>();
         [JsonPropertyOrder(11)]
-        public RoiCollectionParameter MaskRegions
+        public RoiCollection MaskRois
         {
-            get => _maskRegions;
-            set => _maskRegions = value;
+            get => _maskRois;
+            set => _maskRois = value;
         }
 
         #region 显示样式
 
-        /// <summary>检测区域显示样式（UI 可通过 DispItemColorControl 绑定控制可见性）</summary>
+        /// <summary>检测区显示样式（UI 可通过 DispItemColorControl 绑定控制可见性）</summary>
         [JsonIgnore]
-        public virtual GraphicsStyle InspectionRegionStyle { get; set; } = new()
+        public virtual GraphicsStyle InspectionRoiStyle { get; set; } = new()
         {
-            Name = "InspectionRegion",
+            Name = "InspectionRoi",
             IsVisible = true,
             OkColor = System.Windows.Media.Color.FromRgb(0, 0, 255),
             LineWidth = 1.5
         };
 
-        /// <summary>屏蔽区域显示样式（UI 可通过 DispItemColorControl 绑定控制可见性）</summary>
+        /// <summary>屏蔽区显示样式（UI 可通过 DispItemColorControl 绑定控制可见性）</summary>
         [JsonIgnore]
-        public virtual GraphicsStyle MaskRegionStyle { get; set; } = new()
+        public virtual GraphicsStyle MaskRoiStyle { get; set; } = new()
         {
-            Name = "MaskRegion",
+            Name = "MaskRoi",
             IsVisible = true,
             OkColor = System.Windows.Media.Color.FromRgb(255, 165, 0),  // 橙色
             LineWidth = 1.5
@@ -276,15 +274,15 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         #endregion
 
         /// <summary>
-        /// 按区域类型获取启用的区域列表
+        /// 按角色获取启用的几何输入列表
         /// </summary>
-        /// <param name="type">区域类型（Inspection/Mask）</param>
-        /// <returns>指定类型的启用区域集合</returns>
-        public System.Collections.Generic.IEnumerable<RoiData> GetRoisByType(RoiType type)
+        /// <param name="mode">几何输入角色（检测/屏蔽）</param>
+        /// <returns>指定角色的启用几何输入集合</returns>
+        public System.Collections.Generic.IEnumerable<Roi> GetRoisByType(RoiParameterMode mode)
         {
-            return type == RoiType.Inspection
-                ? _inspectionRegions.Regions.Where(r => r.IsEnabled)
-                : _maskRegions.Regions.Where(r => r.IsEnabled);
+            return mode == RoiParameterMode.InspectionRoi
+                ? _inspectionRois.GetEnabledInputs()
+                : _maskRois.GetEnabledInputs();
         }
 
     }

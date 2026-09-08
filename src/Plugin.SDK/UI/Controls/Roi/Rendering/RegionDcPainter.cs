@@ -2,9 +2,10 @@
 using System.Windows;
 using System.Windows.Media;
 using SunEyeVision.Plugin.SDK.UI.Constants;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Models;
 
-namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
+namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Rendering
 {
     /// <summary>
     /// 区域 DC 绘制单一实现：把一个 RoiRenderContext（区域）的全部视觉

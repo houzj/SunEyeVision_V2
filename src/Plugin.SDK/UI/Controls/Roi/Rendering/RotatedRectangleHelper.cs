@@ -2,7 +2,7 @@
 using System.Windows;
 using System.Windows.Media;
 
-namespace SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering
+namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Rendering
 {
     /// <summary>
     /// 旋转矩形辅助类 - 参考ROI.cs中的旋转矩形计算方法

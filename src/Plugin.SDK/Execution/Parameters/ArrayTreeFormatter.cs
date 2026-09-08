@@ -1,11 +1,10 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
 
 namespace SunEyeVision.Plugin.SDK.Execution.Parameters
@@ -15,7 +14,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     /// </summary>
     /// <remarks>
     /// 默认折叠态：数组节点单行显示，元素值用 `;` 串联，树高与数组长度无关，根除大数据炸树。
-    /// 展开态（用户主动点 `+`）：才物化子节点。RoI(ShapeParameters[]) 按**字段聚合**下钻
+    /// 展开态（用户主动点 `+`）：才物化子节点。RoI(RoiShape[]) 按**字段聚合**下钻
     /// （左上X/左上Y/宽/高 各为跨所有 RoI 元素的数组，用 `;` 串联）；其余数组类型逐元素 `[i]` 封顶。
     /// 所有展开子节点均封顶（默认 100），超出部分用溢出节点引导索引查看（防炸，rule-008 KISS）。
     /// </remarks>
@@ -71,7 +70,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 
         /// <summary>
         /// 构建展开子节点（封顶 ExpansionCap）。
-        /// - ShapeParameters[]（RoI）：按字段聚合，每个字段节点值 = 跨所有元素该字段 `;` 串联。
+        /// - RoiShape[]（RoI）：按字段聚合，每个字段节点值 = 跨所有元素该字段 `;` 串联。
         /// - 其余数组：逐元素 `[i]` 节点，封顶后加溢出节点。
         /// </summary>
         public static List<TreeNodeData> BuildExpansionChildren(object? value, System.Type elementType)
@@ -80,14 +79,14 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             if (value is not IEnumerable enumerable || value is string)
                 return children;
 
-            // RoI 字段聚合：元素为 ShapeParameters，且元素本身或其 Geometry 实现 IMonitorable
-            if (elementType == typeof(ShapeParameters) && enumerable is IEnumerable<ShapeParameters> shapeParams)
+            // RoI 字段聚合：元素为 RoiShape，且元素本身或其 Geometry 实现 IMonitorable
+            if (elementType == typeof(RoiShape) && enumerable is IEnumerable<RoiShape> shapeParams)
             {
                 var list = shapeParams.ToList();
                 if (list.Count == 0)
                     return children;
 
-                static IMonitorable? AsMonitor(object? o) => o as IMonitorable ?? (o as ShapeParameters)?.Geometry as IMonitorable;
+                static IMonitorable? AsMonitor(object? o) => o as IMonitorable ?? (o as RoiShape)?.Geometry as IMonitorable;
 
                 var firstMon = AsMonitor(list[0]);
                 if (firstMon != null)
@@ -153,12 +152,12 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         }
 
         /// <summary>
-        /// 构建 RoI(ShapeParameters[]) 在绑定树中的可绑定子节点：按图形类型分组 + 逐元素 [i]。
+        /// 构建 RoI(RoiShape[]) 在绑定树中的可绑定子节点：按图形类型分组 + 逐元素 [i]。
         /// 取代 BuildExpansionChildren 对 RoI 的"字段聚合"（异质数组会错位且不可绑定）。
         /// 每个分组/元素节点挂合成 AvailableDataSource，携带 [Type=]/[i] BindingSuffix，运行期由
         /// OutputVariableResolver 按图形类型过滤或取单元素（方案步骤4）。
         /// </summary>
-        public static List<TreeNodeData> BuildRoiBindingChildren(AvailableDataSource parentDs, ShapeParameters[] roi)
+        public static List<TreeNodeData> BuildRoiBindingChildren(AvailableDataSource parentDs, RoiShape[] roi)
         {
             var children = new List<TreeNodeData>();
             if (roi.Length == 0)
@@ -180,7 +179,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                     SourceNodeName = parentDs.SourceNodeName,
                     PropertyName = parentDs.PropertyName,
                     DisplayName = parentDs.DisplayName,
-                    PropertyType = typeof(ShapeParameters[]),
+                    PropertyType = typeof(RoiShape[]),
                     VariableType = parentDs.VariableType,
                     BindingSuffix = $"[Type={enumName}]",
                     CurrentValue = items.ToArray(),
@@ -206,7 +205,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                     SourceNodeName = parentDs.SourceNodeName,
                     PropertyName = parentDs.PropertyName,
                     DisplayName = parentDs.DisplayName,
-                    PropertyType = typeof(ShapeParameters),
+                    PropertyType = typeof(RoiShape),
                     VariableType = parentDs.VariableType,
                     BindingSuffix = $"[{idx}]",
                     CurrentValue = sp,
@@ -228,7 +227,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         }
 
         /// <summary>
-        /// 构建 RoI(ShapeParameters[]) 在设计期（未运行/未绘制）的可绑定子节点。
+        /// 构建 RoI(RoiShape[]) 在设计期（未运行/未绘制）的可绑定子节点。
         /// 第一个节点为"整体"（绑定整个检测区域数组，BindingSuffix=null → 路径 "[]"），
         /// 其后按 ShapeType 枚举（跳过 None）生成全部分组，每个分组携带 [Type=X] BindingSuffix，
         /// 不依赖任何实际数据（rule-016 数据驱动优先：结构由类型声明驱动）。
@@ -251,10 +250,10 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                     SourceNodeName = parentDs.SourceNodeName,
                     PropertyName = parentDs.PropertyName,
                     DisplayName = parentDs.DisplayName,
-                    PropertyType = typeof(ShapeParameters[]),
+                    PropertyType = typeof(RoiShape[]),
                     VariableType = parentDs.VariableType,
                     BindingSuffix = $"[Type={enumName}]",
-                    CurrentValue = Array.Empty<ShapeParameters>(),
+                    CurrentValue = Array.Empty<RoiShape>(),
                 };
                 children.Add(new TreeNodeData
                 {
@@ -269,11 +268,11 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 
         /// <summary>
         /// 为 RoI 单项 [i] 生成几何属性叶子（Geometry 穿透）。
-        /// 遍历 ShapeParameters.Geometry 的具体类型（Circle2d/RotatedRect2d/Point2d/Line2d/Polygon2d/Annulus2d），
+        /// 遍历 RoiShape.Geometry 的具体类型（Circle2d/RotatedRect2d/Point2d/Line2d/Polygon2d/Annulus2d），
         /// 对标量字段（double/int/bool/string）与 Point/Vector 字段生成可绑定叶子，
         /// 绑定路径形如 "InspectionGeometries[i].Geometry.Center.X"（方案层级 3b）。
         /// </summary>
-        private static List<TreeNodeData> BuildGeometryAttributeLeaves(AvailableDataSource elemDs, ShapeParameters sp, int idx)
+        private static List<TreeNodeData> BuildGeometryAttributeLeaves(AvailableDataSource elemDs, RoiShape sp, int idx)
         {
             var leaves = new List<TreeNodeData>();
             var geometry = sp.Geometry;
@@ -345,10 +344,10 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 
         /// <summary>
         /// 创建 RoI"整体"绑定节点：绑定整个检测区域数组。
-        /// BindingSuffix=null + PropertyType=ShapeParameters[] → GetBindingPath() 输出 "NodeId.属性名[]"，
+        /// BindingSuffix=null + PropertyType=RoiShape[] → GetBindingPath() 输出 "NodeId.属性名[]"，
         /// 运行期 OutputVariableResolver 对显式 "[]"（firstIndex=-1）保留整个数组（方案 B + 整体入口）。
         /// </summary>
-        private static TreeNodeData CreateRoiOverallNode(AvailableDataSource parentDs, ShapeParameters[]? roi = null)
+        private static TreeNodeData CreateRoiOverallNode(AvailableDataSource parentDs, RoiShape[]? roi = null)
         {
             var overallDs = new AvailableDataSource
             {
@@ -356,7 +355,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 SourceNodeName = parentDs.SourceNodeName,
                 PropertyName = parentDs.PropertyName,
                 DisplayName = parentDs.DisplayName,
-                PropertyType = typeof(ShapeParameters[]),
+                PropertyType = typeof(RoiShape[]),
                 VariableType = parentDs.VariableType,
                 BindingSuffix = null,
                 CurrentValue = roi,

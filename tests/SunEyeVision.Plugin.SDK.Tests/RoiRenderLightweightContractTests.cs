@@ -6,10 +6,11 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Models;
-using SunEyeVision.Plugin.SDK.UI.Controls.Roi.Rendering;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Models;
+using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Rendering;
 using Xunit;
 
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
 namespace SunEyeVision.Plugin.SDK.Tests;
 
 /// <summary>

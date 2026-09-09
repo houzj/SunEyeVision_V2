@@ -143,6 +143,8 @@ namespace SunEyeVision.Tool.LineLineMeasure.Views
 
             PushCaliberToEditor(1);
             PushCaliberToEditor(2);
+            // 数据恢复完成后立即刷新画布（测量带 + ①②角标首屏可见，无需等鼠标进入图像区）
+            ElementsEditor.RefreshOverlay();
         }
 
         private void PushCaliberToEditor(int index)

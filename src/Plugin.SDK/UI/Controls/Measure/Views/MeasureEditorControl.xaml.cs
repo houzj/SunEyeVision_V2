@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -108,6 +108,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
             var matrix = ResolvedMatrix();
             return matrix != null ? matrix.TransformWpfPoint(reference) : reference;
         }
+
+        /// <summary>
+        /// 参考系坐标 → 当前图像（显示）坐标（按当前几何有向性，含位置修正；矩阵为空原样返回）。
+        /// 供容器叠加层（如卡尺 ①② 角标）按显示坐标锚定，避免用参考系起点直接落到 overlay。
+        /// </summary>
+        internal Point ReferenceToDisplay(Point reference) => ToDisplay(reference);
 
         /// <summary>
         /// 逆变换当前图像坐标到参考系坐标（按当前几何有向性；矩阵为空时原样返回）

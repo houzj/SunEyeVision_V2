@@ -146,6 +146,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         {
             Element1Editor.SetPositionCorrectionMatrix(matrix);
             Element2Editor.SetPositionCorrectionMatrix(matrix);
+            // 矩阵变化立即刷新角标（UpdateBadge 需按修正后的显示坐标重锚）
+            RenderAll();
         }
 
         #endregion
@@ -180,9 +182,16 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
 
                 SubscribeEvents();
 
+                // 首次绑定即渲染一次：若两个子编辑器已有引导（宿主参数恢复），
+                // 角标/测量带应立即可见，无需等待鼠标进入图像区才刷新。
+                RenderAll();
+
                 PluginLogger.Info("[MeasureElementsEditor] ImageControl set with centralized routing", "MeasureElementsEditor");
             }
         }
+
+        /// <summary>宿主在恢复/变更引导或卡尺数据后调用：立即重画测量带与 ①② 角标（含首次展示）。</summary>
+        public void RefreshOverlay() => RenderAll();
 
         public void ClearMainOverlay()
         {
@@ -498,8 +507,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
                 badge.Visibility = Visibility.Collapsed;
                 return;
             }
-            var start = editor.InteractionModel.LineStartPoint;
-            var end = editor.InteractionModel.LineEndPoint;
+            // 位置修正：InteractionModel 存参考系坐标，而 overlay 是当前图像（显示）坐标，
+            // 角标需先把直线端点经修正矩阵变换为显示坐标，再求方向与偏移，否则修正后角标脱离起点。
+            var start = editor.ReferenceToDisplay(editor.InteractionModel.LineStartPoint);
+            var end = editor.ReferenceToDisplay(editor.InteractionModel.LineEndPoint);
             var len = (end - start).Length;
             if (len < 1e-6)
             {

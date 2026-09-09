@@ -31,7 +31,8 @@ namespace SunEyeVision.Tool.LineLineMeasure
         // ============================================================
         // 判定规格列表（v4 C1 基座，SDK MeasureThreshold 复用，六工具同构）
         // ============================================================
-        private readonly ObservableCollection<MeasureThreshold> _judgments = new()
+        /// <summary>测量输出项判定规格（角度/距离/交点X/交点Y 各一行公差；UI 数据驱动 Toggle+Range）。可写以便 JSON 反序列化回填</summary>
+        public ObservableCollection<MeasureThreshold> Judgments { get; set; } = new()
         {
             new() { Name = "角度", Enabled = true, Min = 0, Max = 90, Unit = "°" },
             new() { Name = "距离", Enabled = false, Min = 0, Max = 10, Unit = "px" },
@@ -39,72 +40,43 @@ namespace SunEyeVision.Tool.LineLineMeasure
             new() { Name = "交点Y", Enabled = false, Min = -10000, Max = 10000, Unit = "px" },
         };
 
-        /// <summary>测量输出项判定规格（角度/距离/交点X/交点Y 各一行公差；UI 数据驱动 Toggle+Range）</summary>
-        public ObservableCollection<MeasureThreshold> Judgments => _judgments;
-
         // ============================================================
         // 元素1（卡尺1）：引导直线（起点/终点）—— 全部 ParamValue 支持字段订阅
         // ============================================================
         // 默认无引导（对齐直线查找：绘制了才有）；坐标归 0，校验长度即报"未绘制"。
-        private readonly ParamValue<double> _e1StartX = ParamValue<double>.CreateConstant(0, "E1StartX");
-        private readonly ParamValue<double> _e1StartY = ParamValue<double>.CreateConstant(0, "E1StartY");
-        private readonly ParamValue<double> _e1EndX = ParamValue<double>.CreateConstant(0, "E1EndX");
-        private readonly ParamValue<double> _e1EndY = ParamValue<double>.CreateConstant(0, "E1EndY");
-
-        public ParamValue<double> E1StartX => _e1StartX;
-        public ParamValue<double> E1StartY => _e1StartY;
-        public ParamValue<double> E1EndX => _e1EndX;
-        public ParamValue<double> E1EndY => _e1EndY;
+        // ★ 必须是可写属性：JSON 反序列化只回填带 setter 的属性，get-only 会导致方案保存后再打开引导/卡尺参数回默认。
+        public ParamValue<double> E1StartX { get; set; } = ParamValue<double>.CreateConstant(0, "E1StartX");
+        public ParamValue<double> E1StartY { get; set; } = ParamValue<double>.CreateConstant(0, "E1StartY");
+        public ParamValue<double> E1EndX { get; set; } = ParamValue<double>.CreateConstant(0, "E1EndX");
+        public ParamValue<double> E1EndY { get; set; } = ParamValue<double>.CreateConstant(0, "E1EndY");
 
         // ---- 元素1 卡尺参数（半长口径，同 LineDetect）----
-        private readonly ParamValue<double> _e1MeasureLength1 = ParamValue<double>.CreateConstant(20.0, "E1MeasureLength1");
-        private readonly ParamValue<double> _e1MeasureLength2 = ParamValue<double>.CreateConstant(5.0, "E1MeasureLength2");
-        private readonly ParamValue<int> _e1NumMeasures = ParamValue<int>.CreateConstant(10, "E1NumMeasures");
-        private readonly ParamValue<double> _e1Sigma = ParamValue<double>.CreateConstant(1.0, "E1Sigma");
-        private readonly ParamValue<double> _e1Threshold = ParamValue<double>.CreateConstant(30.0, "E1Threshold");
-        private readonly ParamValue<EdgeTransition> _e1Transition = ParamValue<EdgeTransition>.CreateConstant(EdgeTransition.All, "E1Transition");
-        private readonly ParamValue<EdgeSelect> _e1Select = ParamValue<EdgeSelect>.CreateConstant(EdgeSelect.All, "E1Select");
-        private readonly ParamValue<double> _e1DistanceThreshold = ParamValue<double>.CreateConstant(5.0, "E1DistanceThreshold");
-
-        public ParamValue<double> E1MeasureLength1 => _e1MeasureLength1;
-        public ParamValue<double> E1MeasureLength2 => _e1MeasureLength2;
-        public ParamValue<int> E1NumMeasures => _e1NumMeasures;
-        public ParamValue<double> E1Sigma => _e1Sigma;
-        public ParamValue<double> E1Threshold => _e1Threshold;
-        public ParamValue<EdgeTransition> E1Transition => _e1Transition;
-        public ParamValue<EdgeSelect> E1Select => _e1Select;
-        public ParamValue<double> E1DistanceThreshold => _e1DistanceThreshold;
+        public ParamValue<double> E1MeasureLength1 { get; set; } = ParamValue<double>.CreateConstant(20.0, "E1MeasureLength1");
+        public ParamValue<double> E1MeasureLength2 { get; set; } = ParamValue<double>.CreateConstant(5.0, "E1MeasureLength2");
+        public ParamValue<int> E1NumMeasures { get; set; } = ParamValue<int>.CreateConstant(10, "E1NumMeasures");
+        public ParamValue<double> E1Sigma { get; set; } = ParamValue<double>.CreateConstant(1.0, "E1Sigma");
+        public ParamValue<double> E1Threshold { get; set; } = ParamValue<double>.CreateConstant(30.0, "E1Threshold");
+        public ParamValue<EdgeTransition> E1Transition { get; set; } = ParamValue<EdgeTransition>.CreateConstant(EdgeTransition.All, "E1Transition");
+        public ParamValue<EdgeSelect> E1Select { get; set; } = ParamValue<EdgeSelect>.CreateConstant(EdgeSelect.All, "E1Select");
+        public ParamValue<double> E1DistanceThreshold { get; set; } = ParamValue<double>.CreateConstant(5.0, "E1DistanceThreshold");
 
         // ============================================================
         // 元素2（卡尺2）：引导直线 + 卡尺参数（默认与 E1 呈约 26.6° 夹角示例）
         // ============================================================
-        private readonly ParamValue<double> _e2StartX = ParamValue<double>.CreateConstant(0, "E2StartX");
-        private readonly ParamValue<double> _e2StartY = ParamValue<double>.CreateConstant(0, "E2StartY");
-        private readonly ParamValue<double> _e2EndX = ParamValue<double>.CreateConstant(0, "E2EndX");
-        private readonly ParamValue<double> _e2EndY = ParamValue<double>.CreateConstant(0, "E2EndY");
+        // ★ 可写属性（JSON 反序列化回填，参见 E1）
+        public ParamValue<double> E2StartX { get; set; } = ParamValue<double>.CreateConstant(0, "E2StartX");
+        public ParamValue<double> E2StartY { get; set; } = ParamValue<double>.CreateConstant(0, "E2StartY");
+        public ParamValue<double> E2EndX { get; set; } = ParamValue<double>.CreateConstant(0, "E2EndX");
+        public ParamValue<double> E2EndY { get; set; } = ParamValue<double>.CreateConstant(0, "E2EndY");
 
-        public ParamValue<double> E2StartX => _e2StartX;
-        public ParamValue<double> E2StartY => _e2StartY;
-        public ParamValue<double> E2EndX => _e2EndX;
-        public ParamValue<double> E2EndY => _e2EndY;
-
-        private readonly ParamValue<double> _e2MeasureLength1 = ParamValue<double>.CreateConstant(20.0, "E2MeasureLength1");
-        private readonly ParamValue<double> _e2MeasureLength2 = ParamValue<double>.CreateConstant(5.0, "E2MeasureLength2");
-        private readonly ParamValue<int> _e2NumMeasures = ParamValue<int>.CreateConstant(10, "E2NumMeasures");
-        private readonly ParamValue<double> _e2Sigma = ParamValue<double>.CreateConstant(1.0, "E2Sigma");
-        private readonly ParamValue<double> _e2Threshold = ParamValue<double>.CreateConstant(30.0, "E2Threshold");
-        private readonly ParamValue<EdgeTransition> _e2Transition = ParamValue<EdgeTransition>.CreateConstant(EdgeTransition.All, "E2Transition");
-        private readonly ParamValue<EdgeSelect> _e2Select = ParamValue<EdgeSelect>.CreateConstant(EdgeSelect.All, "E2Select");
-        private readonly ParamValue<double> _e2DistanceThreshold = ParamValue<double>.CreateConstant(5.0, "E2DistanceThreshold");
-
-        public ParamValue<double> E2MeasureLength1 => _e2MeasureLength1;
-        public ParamValue<double> E2MeasureLength2 => _e2MeasureLength2;
-        public ParamValue<int> E2NumMeasures => _e2NumMeasures;
-        public ParamValue<double> E2Sigma => _e2Sigma;
-        public ParamValue<double> E2Threshold => _e2Threshold;
-        public ParamValue<EdgeTransition> E2Transition => _e2Transition;
-        public ParamValue<EdgeSelect> E2Select => _e2Select;
-        public ParamValue<double> E2DistanceThreshold => _e2DistanceThreshold;
+        public ParamValue<double> E2MeasureLength1 { get; set; } = ParamValue<double>.CreateConstant(20.0, "E2MeasureLength1");
+        public ParamValue<double> E2MeasureLength2 { get; set; } = ParamValue<double>.CreateConstant(5.0, "E2MeasureLength2");
+        public ParamValue<int> E2NumMeasures { get; set; } = ParamValue<int>.CreateConstant(10, "E2NumMeasures");
+        public ParamValue<double> E2Sigma { get; set; } = ParamValue<double>.CreateConstant(1.0, "E2Sigma");
+        public ParamValue<double> E2Threshold { get; set; } = ParamValue<double>.CreateConstant(30.0, "E2Threshold");
+        public ParamValue<EdgeTransition> E2Transition { get; set; } = ParamValue<EdgeTransition>.CreateConstant(EdgeTransition.All, "E2Transition");
+        public ParamValue<EdgeSelect> E2Select { get; set; } = ParamValue<EdgeSelect>.CreateConstant(EdgeSelect.All, "E2Select");
+        public ParamValue<double> E2DistanceThreshold { get; set; } = ParamValue<double>.CreateConstant(5.0, "E2DistanceThreshold");
 
         // ============================================================
         // 结果显示样式（Tab3 绑定：图形显示 + 文本显示，对齐直线查找 Tab3 范式）

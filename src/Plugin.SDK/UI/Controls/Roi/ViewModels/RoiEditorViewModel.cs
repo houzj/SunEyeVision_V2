@@ -542,36 +542,45 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
         }
 
         /// <summary>
+        /// 确保存在可写的数据源目标 Roi（统一"区域槽"兜底，A 方案核心）。
+        /// 绘制/订阅/拼装/形状切换等所有"往当前区域写入数据源"的入口共用本方法：
+        /// 优先 <see cref="ParameterPanelViewModel.TargetRoi"/>（订阅面板编辑目标），其次 SelectedRoi，
+        /// 再其次集合内第一个启用 Roi；三者皆无（纯订阅、从未绘制）→ 自动创建空槽 Roi 作为载体加入集合并选中。
+        /// </summary>
+        /// <returns>可写目标 Roi；仍为 null 仅发生在空集合且无有效写入内容时。</returns>
+        private Roi? EnsureTargetRoiSlot()
+        {
+            var target = _parameterPanel?.TargetRoi ?? SelectedRoi;
+            if (target == null)
+            {
+                target = Rois.FirstOrDefault(r => r.IsEnabled);
+                if (target != null) SelectedRoi = target;
+            }
+
+            if (target == null)
+            {
+                // ★ 纯订阅支持：集合为空（未先绘制本地区域）时自动创建空槽 Roi 作为载体，
+                //   使"只订阅上游、不画区域"也能生效（检测区/屏蔽区一致）。槽由调用方随即填充 Binding/拼装集。
+                target = new Roi
+                {
+                    Name = GetNextRoiName(),
+                };
+                Rois.Add(target);
+                SelectedRoi = target;
+                RoiChanged?.Invoke(this, new RoiChangedEventArgs(target, RoiChangeType.Added));
+            }
+
+            return target;
+        }
+
+        /// <summary>
         /// 整对象订阅变更事件处理（写入 Roi.Binding 契约路径；null=解除整对象订阅回退本地绘制）。
         /// 与参数拼装互斥：写入整对象订阅时清空拼装集。
         /// </summary>
         private void OnBindingChanged(object? sender, ParamSetting? binding)
         {
-            // 优先用 _parameterPanel.TargetRoi（订阅面板编辑目标），其次 SelectedRoi，最后 Rois 兜底
-            var target = _parameterPanel?.TargetRoi ?? SelectedRoi;
-            if (target == null)
-            {
-                // 兜底：自动选第一个可写的 ROI 作为目标，确保订阅配置不丢失
-                target = Rois.FirstOrDefault(r => r.IsEnabled);
-                if (target != null) SelectedRoi = target;
-            }
-
-            // ★ 纯订阅支持：集合为空（未先绘制本地区域）时自动创建"仅订阅、无本地几何"的 Roi 载体，
-            //   使"只订阅上游、不画区域"也能生效（检测区/屏蔽区一致）。
-            if (target == null && binding != null)
-            {
-                target = new Roi
-                {
-                    Name = GetNextRoiName(),
-                    Binding = binding,
-                };
-                Rois.Add(target);
-                SelectedRoi = target;
-                RoiChanged?.Invoke(this, new RoiChangedEventArgs(target, RoiChangeType.Added));
-                StatusMessage = $"已创建订阅区域: {binding.SourceNodeId}.{binding.SourceProperty}";
-                return;
-            }
-
+            // 解除订阅（binding==null）：只在有目标时回退本地，空集合不做任何事（不创建空槽）。
+            var target = binding != null ? EnsureTargetRoiSlot() : (_parameterPanel?.TargetRoi ?? SelectedRoi);
             if (target == null) return;
 
             if (binding != null)
@@ -609,34 +618,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
         {
             if (e == null || string.IsNullOrEmpty(e.ParameterName)) return;
 
-            // 优先用 _parameterPanel.TargetRoi（订阅面板编辑目标），其次 SelectedRoi，最后 Rois 兜底
-            var target = _parameterPanel?.TargetRoi ?? SelectedRoi;
-            if (target == null)
-            {
-                target = Rois.FirstOrDefault(r => r.IsEnabled);
-                if (target != null) SelectedRoi = target;
-            }
-
-            // ★ 纯订阅支持：集合为空（未先绘制本地区域）时自动创建"仅订阅拼装、无本地几何"的 Roi 载体。
-            if (target == null && e.Setting != null)
-            {
-                var composeShape = _parameterPanel?.CurrentShapeType ?? ShapeType.Rectangle;
-                target = new Roi
-                {
-                    Name = GetNextRoiName(),
-                    ComposeShapeType = composeShape,
-                    ParameterBindings = new Dictionary<string, ParamSetting>
-                    {
-                        [e.ParameterName] = e.Setting,
-                    },
-                };
-                Rois.Add(target);
-                SelectedRoi = target;
-                RoiChanged?.Invoke(this, new RoiChangedEventArgs(target, RoiChangeType.Added));
-                StatusMessage = $"已创建拼装区域: 参数 {e.ParameterName}";
-                return;
-            }
-
+            // 移除参数键（setting=null）只在有目标时执行；空集合不创建空槽。
+            var target = e.Setting != null ? EnsureTargetRoiSlot() : (_parameterPanel?.TargetRoi ?? SelectedRoi);
             if (target == null) return;
 
             if (e.Setting != null)
@@ -676,12 +659,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
         /// </summary>
         private void OnShapeTypeChanged(object? sender, ShapeType shapeType)
         {
-            var target = _parameterPanel?.TargetRoi ?? SelectedRoi;
-            if (target == null)
-            {
-                target = Rois.FirstOrDefault(r => r.IsEnabled);
-                if (target != null) SelectedRoi = target;
-            }
+            var target = EnsureTargetRoiSlot();
             if (target == null) return;
             target.ComposeShapeType = shapeType;
         }

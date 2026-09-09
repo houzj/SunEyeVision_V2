@@ -357,6 +357,51 @@ foreach ($m in $modulesSorted) {
 
 $moduleCards = ""
 $prevLayer = ""
+
+# ---- 双饼图（源码层/工具层各自的状态构成，汇报快速预览模块归属） ----
+function Get-LayerPieStat([string]$lyr) {
+    $d = 0; $p = 0; $h = 0; $t = 0
+    foreach ($m in $modulesSorted) {
+        if ($m.layer -ne $lyr) { continue }
+        $inf = Get-InferredStatus $m
+        if ($inf -eq "done") { $d++ }
+        elseif ($inf -eq "in_progress") {
+            if ($m.stage -eq "HIST") { $h++ } else { $p++ }
+        }
+        else { $t++ }
+    }
+    return [pscustomobject]@{ done=$d; prog=$p; histfix=$h; todo=$t }
+}
+$srcStat = Get-LayerPieStat "source"
+$toolStat = Get-LayerPieStat "tool"
+$modPieHtml = @"
+    <div class="modpie-grid">
+      <div class="modpie-item">
+        <div class="modpie-head">源码层 · 功能模块（$($layerCounts['source']) 个）<span class="modpie-sub">$($srcStat.done + $srcStat.prog + $srcStat.histfix) 已启动 / $($srcStat.done + $srcStat.prog + $srcStat.histfix + $srcStat.todo) 个</span></div>
+        <div class="modpie-body">
+          <div class="modpie-canvas"><canvas id="srcPie" role="img" aria-label="源码层模块状态分布">源码层模块状态</canvas></div>
+          <div class="modpie-legend">
+            <span><i style="background:#1D9E75"></i>已完成 $($srcStat.done)</span>
+            <span><i style="background:#185FA5"></i>进行中 $($srcStat.prog)</span>
+            <span><i style="background:#BA7517"></i>补测试中 $($srcStat.histfix)</span>
+            <span><i style="background:#B4B2A9"></i>计划中 $($srcStat.todo)</span>
+          </div>
+        </div>
+      </div>
+      <div class="modpie-item">
+        <div class="modpie-head">工具层 · 工具（$($layerCounts['tool']) 个）<span class="modpie-sub">$($toolStat.done + $toolStat.prog + $toolStat.histfix) 已启动 / $($toolStat.done + $toolStat.prog + $toolStat.histfix + $toolStat.todo) 个</span></div>
+        <div class="modpie-body">
+          <div class="modpie-canvas"><canvas id="toolPie" role="img" aria-label="工具层模块状态分布">工具层模块状态</canvas></div>
+          <div class="modpie-legend">
+            <span><i style="background:#1D9E75"></i>已完成 $($toolStat.done)</span>
+            <span><i style="background:#185FA5"></i>进行中 $($toolStat.prog)</span>
+            <span><i style="background:#BA7517"></i>补测试中 $($toolStat.histfix)</span>
+            <span><i style="background:#B4B2A9"></i>计划中 $($toolStat.todo)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+"@
 foreach ($m in $modulesSorted) {
     # 层级分组标题（卡片网格内跨整行）
     if ($m.layer -ne $prevLayer) {
@@ -449,10 +494,48 @@ if ($weekly -and $weekly.moduleCommits) {
             }
         }
     }
-    $weekCommits = @($allCommits | Where-Object { $_.date -ge $recentStart } | Sort-Object date -Descending)
+    # 最近一周所有关联记录（同一提交可归属多个模块，如实反映工作量）
+    $allWeek = @($allCommits | Where-Object { $_.date -ge $recentStart })
+    # 提交追溯列表：按 hash 去重（双归属提交只显示一次，主归属优先）
+    $seenH = @{}
+    $weekCommits = @($allWeek | Where-Object { if ($seenH.ContainsKey($_.hash)) { $false } else { $seenH[$_.hash] = $true; $true } } | Sort-Object date -Descending)
     if ($weekCommits.Count -gt 0) {
+        # ---- 饼图数据：模块关联提交数（多归属提交在各模块都计，可能使合计 > 去重提交数） ----
+        $modStat = @{}
+        foreach ($c in $allWeek) {
+            if ($modStat.ContainsKey($c.modId)) { $modStat[$c.modId]++ }
+            else { $modStat[$c.modId] = 1 }
+        }
+        $pieLabels = @()
+        $pieData   = @()
+        $pieColors = @()
+        $pieColorPalette = @("#185FA5","#1D9E75","#854F0B","#534AB7","#993C1D","#378ADD","#0F6E56","#BA7517","#7F77DD","#D4537E","#3B6D11","#E24B4A","#5F5E5A")
+        $ci = 0
+        foreach ($kv in ($modStat.GetEnumerator() | Sort-Object Value -Descending)) {
+            $shortName = $weekModuleName[$kv.Key]
+            if (-not $shortName) { $shortName = $kv.Key }
+            if ($kv.Key -eq "UNKNOWN") { $shortName = "未归类" }
+            # 名称截断（饼图标注重，保留主名 + 工具名）
+            if ($shortName.Length -gt 10) {
+                $shortName = ($shortName -replace "（已完成[^）]*）","") -replace "（.*）",""
+            }
+            if ($shortName.Length -gt 8) { $shortName = $shortName.Substring(0,8) + "…" }
+            $pieLabels += $shortName
+            $pieData += $kv.Value
+            $pieColors += $pieColorPalette[$ci % $pieColorPalette.Count]
+            $ci++
+        }
+        # 分页：每页 10 条（纯前端切换显示）
+        $pageSize = 10
+        $pageCount = [math]::Ceiling($weekCommits.Count / $pageSize)
         $recentRows = ""
+        $pageIdx = 0
+        $itemInPage = 0
         foreach ($c in $weekCommits) {
+            if ($itemInPage -eq 0 -and $pageIdx -lt $pageCount) {
+                $activeCls = if ($pageIdx -eq 0) { " page-active" } else { "" }
+                $recentRows += "<div class='recent-page$activeCls' data-page='$pageIdx'>"
+            }
             $modName = $weekModuleName[$c.modId]
             if (-not $modName) { $modName = $c.modId }
             if ($c.modId -eq "UNKNOWN") {
@@ -470,12 +553,43 @@ if ($weekly -and $weekly.moduleCommits) {
               <a class="recent-link" href="$href">跳转 → $target</a>
             </div>
 "@
+            $itemInPage++
+            if ($itemInPage -eq $pageSize) {
+                $recentRows += "</div>"
+                $pageIdx++
+                $itemInPage = 0
+            }
+        }
+        if ($itemInPage -gt 0) { $recentRows += "</div>" }
+        # 分页导航（上一页/页码/下一页）
+        $pagerBtns = ""
+        for ($pi = 0; $pi -lt $pageCount; $pi++) {
+            $pAct = if ($pi -eq 0) { " class='pg-on'" } else { "" }
+            $pagerBtns += "<button$pAct onclick='recentGo($pi)'>$($pi + 1)</button>"
         }
         $recentHtml = @"
   <div class="card recent-card">
-    <h2>最近提交追溯（$recentStart ~ $recentEnd · 最近 7 天 · 共 $($weekCommits.Count) 次 · 点击快速跳转）</h2>
-    $recentRows
+    <h2>最近提交追溯（$recentStart ~ $recentEnd · 最近 7 天 · 共 $($weekCommits.Count) 次 · 每页 $pageSize 条 · 点击快速跳转）</h2>
+    <div class="recent-dist">
+      <div class="pie-wrap"><canvas id="weekPie" role="img" aria-label="最近一周提交模块分布饼图">最近一周提交分布</canvas></div>
+      <div class="pie-legend" id="weekPieLegend"></div>
+    </div>
+    <div class="pie-tip">按模块统计关联提交数（一次提交可能同时计入多个工具模块，如圆/直线查找公共开发），扇区合计可大于提交总数</div>
+    <div class="recent-list">
+      $recentRows
+    </div>
+    <div class="recent-pager">
+      <button onclick='recentGo(0)' disabled id='rp-prev'>‹ 上一页</button>
+      <span class="pager-nums">$pagerBtns</span>
+      <button onclick='recentGo(-1)' id='rp-next'>下一页 ›</button>
+      <span class="pager-info">1 / $pageCount 页</span>
+    </div>
   </div>
+  <script>
+    var pieLabels = $(ConvertTo-Json $pieLabels -Compress);
+    var pieData = $(ConvertTo-Json $pieData -Compress);
+    var pieColors = $(ConvertTo-Json $pieColors -Compress);
+  </script>
 "@
     }
 }
@@ -752,9 +866,27 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
 .recent-item:last-child { border-bottom:none; }
 .recent-hash { font-family:Consolas,monospace; font-size:11px; color:#2563eb; background:#e8effd; padding:2px 8px; border-radius:4px; }
 .recent-date { font-size:11px; color:#999; }
+.recent-page { display:none; }
+.recent-page.page-active { display:block; }
+.recent-pager { display:flex; align-items:center; gap:8px; margin-top:12px; padding-top:10px; border-top:1px solid #f0f1f3; flex-wrap:wrap; }
+.recent-pager button { border:1px solid #d4d8dd; background:#fff; border-radius:6px; padding:4px 10px; font-size:12px; cursor:pointer; color:#333; }
+.recent-pager button:hover:not(:disabled) { background:#e8effd; border-color:#2563eb; }
+.recent-pager button:disabled { opacity:.4; cursor:not-allowed; }
+.recent-pager .pager-nums { display:flex; gap:4px; flex-wrap:wrap; }
+.recent-pager .pager-nums button { min-width:26px; padding:3px 0; text-align:center; }
+.recent-pager .pager-nums button.pg-on { background:#2563eb; color:#fff; border-color:#2563eb; }
+.recent-pager .pager-info { font-size:12px; color:#888; margin-left:auto; }
 .recent-msg { font-weight:500; flex:1; min-width:200px; }
 .recent-link { font-size:12px; color:#2563eb; text-decoration:none; font-weight:500; }
 .recent-link:hover { text-decoration:underline; }
+.recent-dist { display:flex; align-items:center; gap:24px; padding:16px 0 12px; border-bottom:1px solid #f0f1f3; margin-bottom:6px; flex-wrap:wrap; }
+.pie-tip { font-size:11px; color:#999; padding:0 2px 8px; border-bottom:1px solid #f0f1f3; margin-bottom:6px; }
+.pie-wrap { position:relative; width:300px; height:300px; flex-shrink:0; }
+.pie-legend { flex:1; min-width:220px; display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:8px 14px; font-size:12px; }
+.pie-legend .lg-item { display:flex; align-items:center; gap:6px; }
+.pie-legend .lg-dot { width:10px; height:10px; border-radius:2px; flex-shrink:0; }
+.pie-legend .lg-name { color:#333; }
+.pie-legend .lg-val { margin-left:auto; color:#888; }
 .temp-card { border-left:3px solid #993556; }
 .temp-item { padding:10px 0; border-bottom:1px solid #f0f1f3; }
 .temp-item:last-child { border-bottom:none; }
@@ -764,6 +896,16 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
 .temp-date { font-size:11px; color:#999; margin-left:auto; }
 .temp-files { font-size:11px; color:#aaa; margin-top:4px; font-family:Consolas,monospace; }
 .view-toggle { display:flex; gap:6px; margin-bottom:14px; }
+.modpie-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; padding:6px 0 18px; }
+.modpie-item { border:1px solid #eef0f3; border-radius:10px; padding:12px 16px; }
+.modpie-head { font-weight:600; font-size:14px; color:#333; margin-bottom:4px; display:flex; align-items:baseline; gap:10px; }
+.modpie-sub { font-size:11px; color:#999; font-weight:400; }
+.modpie-body { display:flex; align-items:center; gap:16px; }
+.modpie-canvas { position:relative; width:130px; height:130px; flex-shrink:0; }
+.modpie-legend { display:flex; flex-direction:column; gap:8px; font-size:12px; }
+.modpie-legend span { display:flex; align-items:center; gap:7px; color:#444; }
+.modpie-legend i { width:11px; height:11px; border-radius:3px; display:inline-block; }
+@media (max-width:760px){ .modpie-grid{ grid-template-columns:1fr; } }
 .view-btn { font-size:12px; padding:4px 14px; border:1px solid #d5d8dd; border-radius:6px; background:#fff; color:#666; cursor:pointer; }
 .view-btn.active { background:#185FA5; color:#fff; border-color:#185FA5; }
 .cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:14px; }
@@ -869,6 +1011,7 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
 
   <div class="card">
     <h2>功能模块与工具（$($modules.Count) 个：$($layerCounts['source']) 功能模块 · $($layerCounts['tool']) 工具）</h2>
+    $modPieHtml
     <div class="view-toggle">
       <button class="view-btn active" id="btnCard" onclick="switchView('card')">卡片视图</button>
       <button class="view-btn" id="btnList" onclick="switchView('list')">列表视图（汇报）</button>
@@ -906,6 +1049,116 @@ body { font-family:var(--font); background:#f5f6f8; color:#2C2C2A; padding:24px;
         bList.classList.add('active');
       }
     }
+    // 最近提交追溯：分页切换
+    var recentCur = 0;
+    var recentPages = document.querySelectorAll('.recent-page');
+    var recentTotal = recentPages.length;
+    function recentGo(p) {
+      var total = recentPages.length;
+      if (total === 0) return;
+      if (p === -1) p = recentCur + 1;
+      if (p < 0 || p >= total) return;
+      recentCur = p;
+      for (var i = 0; i < total; i++) recentPages[i].classList.remove('page-active');
+      recentPages[p].classList.add('page-active');
+      var nums = document.querySelectorAll('.recent-pager .pager-nums button');
+      for (var j = 0; j < nums.length; j++) {
+        if (j === p) nums[j].classList.add('pg-on'); else nums[j].classList.remove('pg-on');
+      }
+      var prev = document.getElementById('rp-prev');
+      var next = document.getElementById('rp-next');
+      if (prev) prev.disabled = (p === 0);
+      if (next) next.disabled = (p === total - 1);
+      var info = document.querySelector('.recent-pager .pager-info');
+      if (info) info.textContent = (p + 1) + ' / ' + total + ' 页';
+    }
+    // 最近提交饼图（模块分布 + 扇区标注）
+    function renderWeekPie() {
+      if (!document.getElementById('weekPie') || typeof pieData === 'undefined') return;
+      var leg = document.getElementById('weekPieLegend');
+      if (leg) {
+        var total = pieData.reduce(function(a,b){return a+b;}, 0);
+        var legHtml = '';
+        for (var i = 0; i < pieLabels.length; i++) {
+          var pct = Math.round(pieData[i] / total * 100);
+          legHtml += '<div class="lg-item"><span class="lg-dot" style="background:' + pieColors[i] + '"></span><span class="lg-name">' + pieLabels[i] + '</span><span class="lg-val">' + pieData[i] + ' (' + pct + '%)</span></div>';
+        }
+        leg.innerHTML = legHtml;
+      }
+      new Chart(document.getElementById('weekPie'), {
+        type: 'doughnut',
+        data: { labels: pieLabels, datasets: [{ data: pieData, backgroundColor: pieColors, borderWidth: 2, borderColor: '#fff' }] },
+        options: {
+          responsive: true, maintainAspectRatio: false, cutout: '52%',
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: function(ctx){ return ' ' + ctx.label + ': ' + ctx.parsed + ' 次 (' + Math.round(ctx.parsed / pieData.reduce(function(a,b){return a+b;},0) * 100) + '%)'; } } },
+            datalabels: {
+              color: '#fff', font: { size: 10, weight: 'bold' },
+              formatter: function(value, ctx) {
+                var total = ctx.dataset.data.reduce(function(a,b){return a+b;}, 0);
+                return Math.round(value / total * 100) + '%';
+              },
+              textAlign: 'center', anchor: 'center', align: 'center',
+              display: function(ctx) {
+                var total = ctx.dataset.data.reduce(function(a,b){return a+b;}, 0);
+                return ctx.dataset.data[ctx.dataIndex] / total >= 0.05;
+              }
+            }
+          }
+        }
+      });
+    }
+    if (window.Chart) { renderWeekPie(); }
+    // 层状态饼图（源码层 / 工具层 各自的模块状态构成，汇报快速预览）
+    function buildLayerPie(id, data) {
+      var cv = document.getElementById(id);
+      if (!cv) return;
+      var colors = ['#1D9E75', '#185FA5', '#BA7517', '#B4B2A9'];
+      var dataArr = [];
+      for (var i = 0; i < data.length; i++) { if (data[i] > 0) dataArr.push({ v: data[i], c: colors[i] }); }
+      new Chart(cv, {
+        type: 'doughnut',
+        data: { datasets: [{ data: dataArr.map(function(x){return x.v;}), backgroundColor: dataArr.map(function(x){return x.c;}), borderWidth: 2, borderColor: '#fff' }] },
+        options: {
+          responsive: true, maintainAspectRatio: false, cutout: '52%',
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                title: function(ctx){ return ['已完成','进行中','补测试中','计划中'][ctx[0].dataIndex]; },
+                label: function(ctx){
+                  var total = ctx.dataset.data.reduce(function(a,b){return a+b;}, 0);
+                  return ' ' + ctx.parsed + ' 个 (' + Math.round(ctx.parsed / total * 100) + '%)';
+                }
+              }
+            },
+            datalabels: {
+              color: '#fff', font: { size: 11, weight: 'bold' },
+              formatter: function(value, ctx) {
+                var total = ctx.dataset.data.reduce(function(a,b){return a+b;}, 0);
+                return Math.round(value / total * 100) + '%';
+              },
+              textAlign: 'center', anchor: 'center', align: 'center'
+            }
+          }
+        }
+      });
+    }
+    function renderLayerPies() {
+      buildLayerPie('srcPie', [$($srcStat.done), $($srcStat.prog), $($srcStat.histfix), $($srcStat.todo)]);
+      buildLayerPie('toolPie', [$($toolStat.done), $($toolStat.prog), $($toolStat.histfix), $($toolStat.todo)]);
+    }
+    if (window.Chart) { renderLayerPies(); }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', function(){
+      if (window.Chart && window.ChartDataLabels) { Chart.register(ChartDataLabels); }
+      if (window.Chart && !window.__pieRendered) { window.__pieRendered = true; renderWeekPie(); }
+      if (window.Chart && !window.__layerpieRendered) { window.__layerpieRendered = true; renderLayerPies(); }
+    });
   </script>
 
   <div class="card">

@@ -131,18 +131,33 @@ pathMap = [
 ]
 
 def match_module(msg, files):
+    """返回 (主模块, 关联工具列表)。工具提交可能同时命中多个工具目录
+    （如「圆/直线查找拟合统一」同时改 CircleDetect + LineDetect），
+    主归属给第一个命中者，关联列表让该提交也计入其他工具模块的周统计/日志。"""
+    related = []
     # ★ 优先：工具专属路径精确匹配（tools/SunEyeVision.Tool.X → T-X）。
-    #   工具提交核心改动通常在 tools/ 下，即使顺带改若干 src/UI 附带文件，
-    #   也应归到对应工具模块，而非按「文件数统计」误归到宽泛的 M-SRC-UI。
-    #   例：e8ab1af 改 ScriptVariableTab(tools/Script)+DarkTheme(src/UI/Themes)，
-    #       原逻辑按文件数归到 M-SRC-UI；修正后 tools/Script 优先归 T-SCRIPT。
     for paths, mid in pathMap:
         if not mid.startswith("T-"):
             continue
+        hit = False
         for p in paths:
             for f in files:
                 if p.lower() in f.lower():
-                    return mid
+                    hit = True
+                    break
+            if hit:
+                break
+        if hit:
+            related.append(mid)
+    if related:
+        # 去重保序
+        seen = set()
+        uniq = []
+        for m in related:
+            if m not in seen:
+                seen.add(m)
+                uniq.append(m)
+        return uniq[0], uniq[1:]
     # 路径匹配：按「命中文件数」选归属，而非「先到先得」。
     # 修复 bug：7605075 主要改 UI（src/ 32 + tools/ 13）但顺带改 tests/(3)，
     # 原逻辑 tests/ 规则排在前面，抢先归到 M-SRC-TEST，导致 UI 提交被错记。
@@ -150,6 +165,8 @@ def match_module(msg, files):
     best_mid = None
     best_count = 0
     for paths, mid in pathMap:
+        if mid.startswith("T-"):
+            continue  # 工具已在上面精确处理
         cnt = 0
         for p in paths:
             for f in files:
@@ -159,13 +176,13 @@ def match_module(msg, files):
             best_count = cnt
             best_mid = mid
     if best_mid and best_count > 0:
-        return best_mid
+        return best_mid, []
     # 关键词匹配（仅当无路径命中时兜底）
     for kws, mid in keywordMap:
         for k in kws:
             if k.lower() in msg.lower():
-                return mid
-    return "UNKNOWN"
+                return mid, []
+    return "UNKNOWN", []
 
 def _finalize_commit(cur, weeks, module_weeks, module_commits):
     """处理一个完整提交：按周聚合 + 模块匹配 + 记录提交日志"""
@@ -185,29 +202,32 @@ def _finalize_commit(cur, weeks, module_weeks, module_commits):
     if not _has_biz:
         return
 
-    mid = match_module(subject, files)
-
+    mid, related = match_module(subject, files)
+    # 主归属计入周模块统计（不重复计 commit 总数）
     w = weeks.setdefault(week, {"commits": 0, "modules": {}})
     w["commits"] += 1
     w["modules"][mid] = w["modules"].get(mid, 0) + 1
 
-    mw = module_weeks.setdefault(mid, [])
-    found = False
-    for item in mw:
-        if item["week"] == week:
-            item["commits"] += 1
-            found = True
-            break
-    if not found:
-        mw.append({"week": week, "commits": 1})
+    # 记录主归属 + 关联工具（如 圆/直线查找同时改动的提交两边都记）
+    _targets = [mid] + related if mid != "UNKNOWN" else [mid]
+    for _mid in _targets:
+        mw = module_weeks.setdefault(_mid, [])
+        found = False
+        for item in mw:
+            if item["week"] == week:
+                item["commits"] += 1
+                found = True
+                break
+        if not found:
+            mw.append({"week": week, "commits": 1})
 
-    # 记录真实提交日志（按模块）
-    mc = module_commits.setdefault(mid, [])
-    mc.append({
-        "hash": hash_[:7],
-        "date": ci[:10],
-        "message": subject.strip()
-    })
+        # 记录真实提交日志（按模块）
+        mc = module_commits.setdefault(_mid, [])
+        mc.append({
+            "hash": hash_[:7],
+            "date": ci[:10],
+            "message": subject.strip()
+        })
 
 def main():
     os.chdir(REPO)

@@ -345,7 +345,7 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
 
         public static readonly DependencyProperty AutoSwitchEnabledProperty =
             DependencyProperty.Register("AutoSwitchEnabled", typeof(bool), typeof(ImagePreviewControl),
-                new PropertyMetadata(true));
+                new PropertyMetadata(false));
 
         public static readonly DependencyProperty CurrentImageIndexProperty =
             DependencyProperty.Register("CurrentImageIndex", typeof(int), typeof(ImagePreviewControl),
@@ -593,6 +593,12 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
             Dispatcher.BeginInvoke(new Action(() =>
             {
                 _thumbnailListBox = FindName("ThumbnailListBox") as ListBox;
+                if (_thumbnailListBox != null)
+                {
+                    // 运行选择模式下方向键只在已勾选（应运行）图之间导航
+                    _thumbnailListBox.PreviewKeyDown -= OnThumbnailPreviewKeyDown;
+                    _thumbnailListBox.PreviewKeyDown += OnThumbnailPreviewKeyDown;
+                }
                 // 控件加载后立即触发一次主动刷新，保证初始可见项都被解码（主动驱动兜底 Loaded 事件）
                 RefreshVisibleThumbnails();
             }), DispatcherPriority.Loaded);
@@ -863,9 +869,105 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
             }
         }
 
+        #region 自动切换（流程驱动：宿主在工作流执行完成后调用推进，非固定间隔）
+
+        /// <summary>计算"应运行"图片子集：运行全部=所有图；运行选择=仅勾选 IsForRun</summary>
+        private List<ImageInfo> GetRunnableImages()
+        {
+            if (ImageCollection == null || ImageCollection.Count == 0)
+                return new List<ImageInfo>();
+            if (ImageRunMode == ImageRunMode.运行选择)
+                return ImageCollection.Where(i => i.IsForRun).ToList();
+            return ImageCollection.ToList();
+        }
+
+        /// <summary>
+        /// 推进到"当前图之后"的第一张应运行图并同步索引（不触发执行），**末尾循环回第一张**。
+        /// 由宿主在每轮工作流执行开始前调用（单次执行点执行 / 连续执行每轮），
+        /// 输出下一张应运行图供宿主注入运行时参数。仅当应运行图不足 2 张时返回 false（无实质切换）。
+        /// </summary>
+        public bool TryStepNextImageForAuto(out ImageInfo? nextImage)
+        {
+            nextImage = null;
+            if (!AutoSwitchEnabled) return false;
+
+            var runnables = GetRunnableImages();
+            if (runnables.Count == 0) return false;
+
+            int curIndex = CurrentImageIndex;
+            int pos = -1;
+            for (int i = 0; i < runnables.Count; i++)
+            {
+                if (ImageCollection.IndexOf(runnables[i]) == curIndex)
+                {
+                    pos = i;
+                    break;
+                }
+            }
+
+            // 循环推进：当前之后一张，到末尾则回绕到第一张（所有图片执行完从头再开始）
+            int next = pos < 0 ? 0 : (pos + 1) % runnables.Count;
+            if (next == pos)
+                return false;   // 只有一张应运行图：无实质切换，沿用当前
+
+            var target = runnables[next];
+            int targetIndex = ImageCollection.IndexOf(target);
+            if (targetIndex < 0) return false;
+
+            CurrentImageIndex = targetIndex;
+            nextImage = target;
+            return true;
+        }
+
+        #endregion
+
         #endregion
 
         #region 交互事件
+
+        /// <summary>
+        /// 运行选择模式：方向键只在"勾选（IsForRun）应运行图"之间导航，跳过未勾选图。
+        /// 非运行选择模式不拦截，交 ListBox 默认导航。
+        /// </summary>
+        private void OnThumbnailPreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (ImageRunMode != ImageRunMode.运行选择) return;
+            if (_thumbnailListBox == null) return;
+
+            bool goNext = e.Key == Key.Right || e.Key == Key.Down;
+            bool goPrev = e.Key == Key.Left || e.Key == Key.Up;
+            if (!goNext && !goPrev) return;
+
+            var runnables = GetRunnableImages();
+            if (runnables.Count == 0) return;
+
+            int curIndex = CurrentImageIndex;
+            int pos = -1;
+            for (int i = 0; i < runnables.Count; i++)
+            {
+                if (ImageCollection.IndexOf(runnables[i]) == curIndex)
+                {
+                    pos = i;
+                    break;
+                }
+            }
+
+            int target;
+            if (pos < 0) target = goNext ? 0 : -1;
+            else target = goNext ? pos + 1 : pos - 1;
+
+            if (target < 0 || target >= runnables.Count)
+            {
+                // 已在边界：吃掉按键，避免高亮/选中移到未勾选图
+                e.Handled = true;
+                return;
+            }
+
+            var targetImage = runnables[target];
+            e.Handled = true;
+            _thumbnailListBox.SelectedItem = targetImage;   // 触发 SelectionChanged → Released 分支执行该图
+            _thumbnailListBox.ScrollIntoView(targetImage);
+        }
 
         private void OnThumbnailClick(object sender, MouseButtonEventArgs e)
         {
@@ -906,14 +1008,27 @@ namespace SunEyeVision.UI.Shell.Controls.Panels
         {
             if (_isSyncingListBox) return;
 
-            if (e.AddedItems.Count > 0 && e.AddedItems[0] is ImageInfo selectedImage)
+            if (e.AddedItems.Count == 0 || e.AddedItems[0] is not ImageInfo selectedImage)
+                return;
+
+            int index = ImageCollection?.IndexOf(selectedImage) ?? -1;
+            if (index < 0) return;
+
+            // 键盘方向键/空格导航产生的选中变化（鼠标按下期间触发的是点击路径，
+            // 由 OnThumbnailClick 请求执行，此处跳过避免双触发）：与鼠标点击对齐，
+            // 直接请求工作流执行当前选中的图片。
+            if (Mouse.LeftButton == MouseButtonState.Released)
             {
-                int index = ImageCollection?.IndexOf(selectedImage) ?? -1;
-                if (index >= 0)
+                if (ImageRunMode == ImageRunMode.运行选择 && !selectedImage.IsForRun)
                 {
-                    CurrentImageIndex = index;
+                    CurrentImageIndex = index;   // 仅同步高亮，不执行
+                    return;
                 }
+                RequestWorkflowExecution(selectedImage, index);
+                return;
             }
+
+            CurrentImageIndex = index;
         }
 
         private void OnRunModeButtonClick(object sender, RoutedEventArgs e)

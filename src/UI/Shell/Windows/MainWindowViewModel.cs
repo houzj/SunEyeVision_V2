@@ -863,6 +863,8 @@ SplitterPosition = position;
             _executionManager.WorkflowExecutionError += OnWorkflowExecutionError;
             _executionManager.WorkflowExecutionProgress += OnWorkflowExecutionProgress;
             _executionManager.NodeExecutionCompleted += OnNodeExecutionCompleted;
+            // 连续执行每轮开始：自动切换开启时推进输入图并刷新运行时参数
+            _executionManager.BeforeEachIteration += OnBeforeEachContinuousIteration;
 
             // 初始化当前画布类型
             UpdateCurrentCanvasType();
@@ -1971,6 +1973,16 @@ SplitterPosition = position;
 
         private async System.Threading.Tasks.Task ExecuteRunWorkflow()
         {
+            // 防抖：上一次工作流仍在执行时忽略重复执行请求（执行按钮/预览连点过快）
+            if (_isRunning)
+            {
+                AddLog("⏳ 工作流正在运行，忽略本次执行请求");
+                return;
+            }
+
+            // 自动切换（开启时）：单次执行的每一次 run 开始前推进输入图到下一张
+            TryAdvancePreviewImageForAuto();
+
             AddLog("=== 开始执行工作流 ===");
 
             if (WorkflowTabViewModel == null)
@@ -2103,6 +2115,33 @@ SplitterPosition = position;
         public void ClearRuntimeParameters()
         {
             _runtimeParameterService.Clear();
+        }
+
+        /// <summary>
+        /// 自动切换推进钩子：由图像预览宿主（ImageResultControl）注入。
+        /// 在"新一轮工作流执行开始前"调用：开启自动切换时把运行时图像参数推进到下一张应运行图；
+        /// 返回 true 表示已推进成功（本次 run 将使用新图）。
+        /// </summary>
+        private Func<bool>? _advancePreviewImageHook;
+
+        public Func<bool>? AdvancePreviewImageHook
+        {
+            get => _advancePreviewImageHook;
+            set => _advancePreviewImageHook = value;
+        }
+
+        /// <summary>在单次/连续每轮 run 开始前推进输入图（自动切换开启时）。返回是否推进成功。</summary>
+        public bool TryAdvancePreviewImageForAuto()
+        {
+            try
+            {
+                return _advancePreviewImageHook?.Invoke() ?? false;
+            }
+            catch (Exception ex)
+            {
+                AddLog($"❌ 自动切换推进输入图失败: {ex.Message}");
+                return false;
+            }
         }
 
         #endregion
@@ -3981,6 +4020,22 @@ SplitterPosition = position;
         private void OnWorkflowExecutionStarted(object? sender, WorkflowExecutionEventArgs e)
         {
             AddLog($"▶️ 开始执行: {e.WorkflowId}");
+        }
+
+        /// <summary>连续执行每轮开始前：自动切换开启时推进输入图并刷新运行时参数，使本轮使用最新图源</summary>
+        private void OnBeforeEachContinuousIteration(WorkflowTabViewModel workflow)
+        {
+            try
+            {
+                if (TryAdvancePreviewImageForAuto())
+                {
+                    _executionManager.SetRuntimeParameters(GetAllRuntimeParameters());
+                }
+            }
+            catch (Exception ex)
+            {
+                AddLog($"❌ 连续执行轮前推进失败: {ex.Message}");
+            }
         }
 
         /// <summary>

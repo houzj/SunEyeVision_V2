@@ -55,6 +55,12 @@ namespace SunEyeVision.UI.Services.Workflow
         public event EventHandler<WorkflowExecutionProgressEventArgs>? WorkflowExecutionProgress;
 
         /// <summary>
+        /// 连续执行的每一轮迭代开始前触发（在 ExecuteWorkflowInternal 之前）。
+        /// 供宿主在自动切换开启时把输入图推进到下一张并刷新运行时参数。
+        /// </summary>
+        public event Action<WorkflowTabViewModel>? BeforeEachIteration;
+
+        /// <summary>
         /// 节点执行完成事件
         /// </summary>
         public event EventHandler<NodeExecutionResultEventArgs>? NodeExecutionCompleted;
@@ -149,6 +155,10 @@ namespace SunEyeVision.UI.Services.Workflow
                     {
                         while (!cts.Token.IsCancellationRequested)
                         {
+                            // 每轮迭代开始前：允许自动切换把输入图推进到下一张并刷新运行时参数
+                            try { BeforeEachIteration?.Invoke(workflow); }
+                            catch { /* 钩子异常不应中断连续执行 */ }
+
                             await ExecuteWorkflowInternal(workflow, cts.Token);
                             OnWorkflowExecutionCompleted(workflowId);
 

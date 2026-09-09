@@ -508,13 +508,13 @@
                                                     <ControlTemplate TargetType="CheckBox">
                                                         <Border x:Name="CheckBorder" Background="{DynamicResource {x:Static base:ThemeKeys.ThumbnailBackgroundBrush}}" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.TextDisabledBrush}}"
                                                                 BorderThickness="2" CornerRadius="3" Width="16" Height="16">
-                                                            <TextBlock x:Name="CheckMark" Text="V" FontSize="12" FontWeight="Bold"
+                                                            <TextBlock x:Name="CheckMark" Text="✓" FontSize="11" FontWeight="Bold"
                                                                        Foreground="{DynamicResource {x:Static base:ThemeKeys.SuccessBrush}}" HorizontalAlignment="Center"
                                                                        VerticalAlignment="Center" Visibility="Collapsed"/>
                                                         </Border>
                                                         <ControlTemplate.Triggers>
                                                             <Trigger Property="IsChecked" Value="True">
-                                                                <Setter TargetName="CheckBorder" Property="Background" Value="{DynamicResource {x:Static base:ThemeKeys.SuccessBrush}}"/>
+                                                                <!-- 选中：浅底 + 绿色边框 + 绿色 ✓（不再整框刷绿底，保证勾清晰可见） -->
                                                                 <Setter TargetName="CheckBorder" Property="BorderBrush" Value="{DynamicResource {x:Static base:ThemeKeys.SuccessBrush}}"/>
                                                                 <Setter TargetName="CheckMark" Property="Visibility" Value="Visible"/>
                                                             </Trigger>

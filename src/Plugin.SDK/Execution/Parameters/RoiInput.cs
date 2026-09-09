@@ -207,5 +207,110 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 ? $"{Name} (订阅: {Binding!.ToString()})"
                 : $"{Name} (绘制: {LocalGeometry?.ToString() ?? "空"})";
         }
+
+        /// <summary>
+        /// 统一运行时解析出口：把 Roi 声明（本地绘制 / 整对象订阅 / 参数拼装）解析为实际几何列表（RoiShape[]）。
+        /// 算法适配层、结果契约输出、结果层绘制等所有消费方必须经此出口取值，禁止直读 <see cref="LocalGeometry"/>。
+        /// <list type="bullet">
+        /// <item>本地：返回 [LocalGeometry]（无本地几何返回空）；</item>
+        /// <item>整对象订阅：经 <see cref="IParameterContext"/> 取上游 RoiShape[]/RoiShape/Rect，未提供上下文直接抛异常（rule-015 报错优先）；</item>
+        /// <item>参数拼装：按 <see cref="DeclaredShapeType"/> 模板 + 逐扁平参数经上下文解析合成一个 RoiShape。</item>
+        /// </list>
+        /// </summary>
+        public IReadOnlyList<RoiShape> ResolveRuntime(IParameterContext? context)
+        {
+            if (IsLocal)
+                return LocalGeometry is { Geometry: not null } local
+                    ? new[] { local }
+                    : Array.Empty<RoiShape>();
+
+            if (IsSubscribed)
+            {
+                if (context == null)
+                    throw new InvalidOperationException(
+                        $"无法解析整对象订阅区域 '{Name}': 未提供节点结果上下文（IParameterContext）");
+                return ResolveSubscription(context);
+            }
+
+            if (IsComposed)
+            {
+                if (context == null)
+                    throw new InvalidOperationException(
+                        $"无法解析参数拼装区域 '{Name}': 未提供节点结果上下文（IParameterContext）");
+                var composed = RoiComposeResolver.ComposeByTemplate(
+                    DeclaredShapeType, name => ResolveFlatParameter(context, name));
+                return composed != null
+                    ? new[] { new RoiShape { Geometry = composed } }
+                    : Array.Empty<RoiShape>();
+            }
+
+            return Array.Empty<RoiShape>();
+        }
+
+        /// <summary>整对象订阅：经上下文按契约路径取上游几何（RoiShape[]/RoiShape/Rect）并规范化。</summary>
+        private IReadOnlyList<RoiShape> ResolveSubscription(IParameterContext context)
+        {
+            object? value;
+            try
+            {
+                value = context.GetNodeOutputValue(Binding!.SourceNodeId!, Binding.SourceProperty!);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(
+                    $"解析整对象订阅区域失败: 节点 {Binding.SourceNodeId}.{Binding.SourceProperty}: {ex.Message}", ex);
+            }
+
+            return value switch
+            {
+                RoiShape[] shapes => shapes.Where(s => s?.Geometry != null).ToArray(),
+                RoiShape shape when shape?.Geometry != null => new[] { shape },
+                System.Windows.Rect rect => new[] { new RoiShape { Geometry = rect } },
+                null => Array.Empty<RoiShape>(),
+                _ => throw new NotSupportedException(
+                    $"整对象订阅 '{Name}' 的解析值类型 {value.GetType().Name} 不支持（仅支持 RoiShape[]/RoiShape/Rect）"),
+            };
+        }
+
+        /// <summary>参数拼装单键取值：常量 → ConstantValue；绑定 → 经上下文按契约路径解析；未知/失败 → null（走模板默认）。</summary>
+        private double? ResolveFlatParameter(IParameterContext context, string parameterName)
+        {
+            if (ParameterBindings == null || !ParameterBindings.TryGetValue(parameterName, out var setting) || setting == null)
+                return null;
+
+            object? value;
+            switch (setting.BindingType)
+            {
+                case BindingType.Constant:
+                    value = setting.ConstantValue;
+                    break;
+
+                case BindingType.Binding:
+                    if (string.IsNullOrEmpty(setting.SourceNodeId) || string.IsNullOrEmpty(setting.SourceProperty))
+                        return null;
+                    try
+                    {
+                        value = context.GetNodeOutputValue(setting.SourceNodeId!, setting.SourceProperty!);
+                    }
+                    catch
+                    {
+                        return null;
+                    }
+                    break;
+
+                default:
+                    return null;
+            }
+
+            return value switch
+            {
+                double d => d,
+                int i => i,
+                long l => l,
+                float f => f,
+                string s when double.TryParse(s, out var parsed) => parsed,
+                _ => null,
+            };
+        }
     }
 }

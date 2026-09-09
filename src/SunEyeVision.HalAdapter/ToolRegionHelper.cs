@@ -7,7 +7,6 @@ using SunEyeVision.Plugin.SDK.Execution.Helpers;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
-using SunEyeVision.Plugin.SDK.Vision.Contracts;
 
 namespace SunEyeVision.HalAdapter
 {
@@ -43,20 +42,6 @@ namespace SunEyeVision.HalAdapter
         }
 
         /// <summary>
-        /// 从 IVisionRegion 解包为 HRegion（直接使用底层 HRegion）
-        /// 非 HalRegion 类型时取其外接矩形
-        /// </summary>
-        private static HRegion BuildHalconRegionFromVisionRegion(IVisionRegion visionRegion)
-        {
-            if (visionRegion is HalRegion halRegion)
-                return halRegion.Unwrap().Clone();
-
-            // 非 HalRegion 回退到外接矩形
-            var bbox = visionRegion.BoundingBox;
-            return BuildHalconRegionFromRect(bbox);
-        }
-
-        /// <summary>
         /// 从 Roi 集合构建 HRegion（保持 tuple 结构，支持本地绘制/整对象订阅/参数拼装三态）。
         /// </summary>
         public static HRegion BuildHalconRegion(
@@ -79,17 +64,20 @@ namespace SunEyeVision.HalAdapter
             AffineMatrix? correctionMatrix)
         {
             HRegion? result = null;
-            foreach (var roi in rois.Where(r => r.IsEnabled))
+            // ★ 组级运行时出口：订阅/拼装组内本地 Roi 不参与构建处理域（按模式过滤，根治双区处理）
+            foreach (var roi in RoiCollection.GetRuntimeActiveInputs(rois))
             {
                 HRegion? single = ResolveSingleRoiRegion(roi, context);
 
                 if (single != null)
                 {
-                    if (correctionMatrix != null)
+                    // ★ 位置修正只作用于本地绘制 Roi（参考系几何 → 当前系）；
+                    //   订阅/拼装 Roi 的几何来自上游输出契约，已含上游坐标/修正，再套本节点矩阵=二次修正。
+                    if (correctionMatrix != null && roi.IsLocal)
                     {
-                        var resolved = roi.IsLocal && roi.LocalGeometry?.Geometry != null
+                        var resolved = roi.LocalGeometry?.Geometry != null
                             ? PositionCorrectionResolver.ResolveForShape(roi.LocalGeometry.Geometry, correctionMatrix)
-                            : correctionMatrix; // 订阅/拼装模式无显式几何 → 完整矩阵（跟随旋转）
+                            : correctionMatrix;
                         if (resolved != null)
                         {
                             HOperatorSet.AffineTransRegion(single, out var trans,
@@ -115,30 +103,20 @@ namespace SunEyeVision.HalAdapter
         }
 
         /// <summary>
-        /// 解析单个 Roi 为 HRegion（三态：本地 LocalGeometry / 整对象订阅 Binding / 参数拼装 ParameterBindings）。
+        /// 解析单个 Roi 为 HRegion：先经 SDK 统一出口 <see cref="Roi.ResolveRuntime"/> 归一三态
+        /// （本地/整对象订阅/参数拼装）得到 RoiShape[]，再逐个转 HRegion（本类只做"几何→区域"）。
         /// </summary>
         private static HRegion? ResolveSingleRoiRegion(Roi roi, IParameterContext? context)
         {
-            if (roi.IsLocal)
-                return BuildFromRoiShape(roi.LocalGeometry);
-
-            if (roi.IsSubscribed)
+            var shapes = roi.ResolveRuntime(context);
+            HRegion? result = null;
+            foreach (var shape in shapes)
             {
-                if (context == null)
-                    throw new InvalidOperationException(
-                        $"无法解析整对象订阅区域: 节点 {roi.Binding!.SourceNodeId}.{roi.Binding.SourceProperty}: 未提供 NodeResults");
-                return BuildFromSubscription(roi.Binding!, context);
+                var single = BuildFromRoiShape(shape);
+                if (single == null) continue;
+                result = result == null ? single : Concat(result, single);
             }
-
-            if (roi.IsComposed)
-            {
-                if (context == null)
-                    throw new InvalidOperationException(
-                        $"无法解析参数拼装区域 '{roi.Name}': 未提供 NodeResults");
-                return BuildFromComposed(roi, context);
-            }
-
-            return null;
+            return result;
         }
 
         /// <summary>
@@ -168,127 +146,12 @@ namespace SunEyeVision.HalAdapter
             return null;
         }
 
-        /// <summary>
-        /// 整对象订阅解析并构建 HRegion：契约路径解析出 ROI 几何（RoiShape[]/RoiShape/几何对象），逐个转区域。
-        /// </summary>
-        private static HRegion? BuildFromSubscription(ParamSetting binding, IParameterContext context)
-        {
-            object? value;
-            try
-            {
-                value = context.GetNodeOutputValue(binding.SourceNodeId!, binding.SourceProperty!);
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException(
-                    $"解析整对象订阅区域失败: 节点 {binding.SourceNodeId}.{binding.SourceProperty}: {ex.Message}");
-            }
-
-            return BuildFromResolvedValue(value);
-        }
-
-        /// <summary>
-        /// 把订阅解析值转区域（兼容 RoiShape[] / RoiShape / IVisionRegion / Rect / 几何对象）。
-        /// </summary>
-        private static HRegion? BuildFromResolvedValue(object? value)
-        {
-            if (value == null) return null;
-
-            switch (value)
-            {
-                case RoiShape[] shapes when shapes.Length > 0:
-                {
-                    HRegion? result = null;
-                    foreach (var shape in shapes)
-                    {
-                        var single = BuildFromRoiShape(shape);
-                        if (single == null) continue;
-                        result = result == null
-                            ? single
-                            : Concat(result, single);
-                    }
-                    return result;
-                }
-                case RoiShape shape:
-                    return BuildFromRoiShape(shape);
-                case Rect rect:
-                    return BuildHalconRegionFromRect(rect);
-                case IVisionRegion region:
-                    return BuildHalconRegionFromVisionRegion(region);
-                default:
-                    return null;
-            }
-        }
-
         private static HRegion Concat(HRegion a, HRegion b)
         {
             HOperatorSet.ConcatObj(a, b, out var concatObj);
             a.Dispose();
             b.Dispose();
             return new HRegion(concatObj);
-        }
-
-        /// <summary>
-        /// 参数拼装解析并构建 HRegion：按 ComposeShapeType 模板 + ParameterBindings 合成几何，再转区域。
-        /// </summary>
-        private static HRegion? BuildFromComposed(Roi roi, IParameterContext context)
-        {
-            // 把 IParameterContext 包装为 nodeResults 字典供 RoiComposeResolver 使用（逐参数走输出契约）
-            var geometry = ResolveComposedGeometry(roi, context);
-            return geometry switch
-            {
-                RoiShape shape => BuildFromRoiShape(shape),
-                _ => null,
-            };
-        }
-
-        /// <summary>
-        /// 通过 OutputVariableResolver 契约解析拼装几何（每次绑定逐键解析）。
-        /// 复用 SDK RoiComposeResolver 的纯模板合成 + 绑定解析委托。
-        /// </summary>
-        private static RoiShape? ResolveComposedGeometry(Roi roi, IParameterContext context)
-        {
-            // RoiComposeResolver.ResolveComposedGeometry 需要 nodeResults 字典；
-            // 此处由 IParameterContext 兜底逐键解析（适配 Execution 契约寻址）。
-            var bindings = roi.ParameterBindings;
-            if (bindings == null || bindings.Count == 0)
-                return null;
-
-            double? Resolve(string key)
-            {
-                if (!bindings.TryGetValue(key, out var setting) || setting == null)
-                    return null;
-                object? raw;
-                switch (setting.BindingType)
-                {
-                    case BindingType.Constant:
-                        raw = setting.ConstantValue;
-                        break;
-                    case BindingType.Binding:
-                        if (string.IsNullOrEmpty(setting.SourceNodeId) || string.IsNullOrEmpty(setting.SourceProperty))
-                            return null;
-                        try { raw = context.GetNodeOutputValue(setting.SourceNodeId!, setting.SourceProperty!); }
-                        catch { return null; }
-                        break;
-                    default:
-                        return null;
-                }
-                return raw switch
-                {
-                    double d => d,
-                    int i => i,
-                    long l => l,
-                    float f => f,
-                    string s when double.TryParse(s, out var parsed) => parsed,
-                    _ => null,
-                };
-            }
-
-            var geometry = RoiComposeResolver.ComposeByTemplate(roi.ComposeShapeType, Resolve);
-            if (geometry == null)
-                return null;
-
-            return new RoiShape { Geometry = geometry };
         }
 
         /// <summary>
@@ -570,32 +433,58 @@ namespace SunEyeVision.HalAdapter
         #region 几何提取
 
         /// <summary>
-        /// 从检测区域集合中提取本地几何定义（RoiShape），填充到 result.InspectionGeometries（ROI 契约）。
-        /// 仅提取本地绘制模式的 Roi.LocalGeometry（订阅/拼装区域需运行期解析，不在此输出）。
+        /// 从检测区域集合提取实际几何（RoiShape[]），填充 result.InspectionGeometries（ROI 契约）。
+        /// 统一经 SDK 出口 <see cref="Roi.ResolveRuntime"/>：本地/整对象订阅/参数拼装三态归一；
         /// 输出进契约后，下游可四级绑定（整体 / [Type=X] / [i] / [i].Geometry.属性）。
         /// </summary>
+        /// <param name="result">工具结果</param>
+        /// <param name="rois">检测几何输入集合</param>
+        /// <param name="nodeResults">上游节点执行结果（订阅/拼装区域解析用；null=仅本地绘制可解析，订阅区域将报错，rule-015）</param>
+        /// <param name="correctionMatrix">位置修正矩阵（参考系 → 当前图像系）。非 null 时输出契约几何为修正后坐标，
+        /// 使下游订阅到的区域与上游运行/显示位置一致；null 输出参考系原始几何。</param>
         public static void ExtractInspectionGeometries(ToolResults result,
-            IEnumerable<Roi>? rois)
+            IEnumerable<Roi>? rois,
+            IDictionary<string, ToolResults>? nodeResults = null,
+            AffineMatrix? correctionMatrix = null)
         {
-            result.InspectionGeometries = rois?
-                .Where(r => r.IsEnabled)
-                .Select(r => r.LocalGeometry)
-                .Where(g => g?.Geometry != null)
-                .ToArray() ?? Array.Empty<RoiShape>();
+            result.InspectionGeometries = ExtractRuntimeShapes(rois, nodeResults, correctionMatrix);
         }
 
         /// <summary>
-        /// 从屏蔽几何输入集合中提取本地几何定义（RoiShape），填充到 result.MaskGeometries（ROI 契约）。
-        /// 仅提取本地绘制模式的 Roi.LocalGeometry（订阅/拼装区域需运行期解析，不在此输出）。
+        /// 从屏蔽几何输入集合提取实际几何（RoiShape[]），填充 result.MaskGeometries（ROI 契约）。
+        /// 统一经 SDK 出口 <see cref="Roi.ResolveRuntime"/>（语义同检测区）。
         /// </summary>
         public static void ExtractMaskGeometries(ToolResults result,
-            IEnumerable<Roi>? rois)
+            IEnumerable<Roi>? rois,
+            IDictionary<string, ToolResults>? nodeResults = null,
+            AffineMatrix? correctionMatrix = null)
         {
-            result.MaskGeometries = rois?
-                .Where(r => r.IsEnabled)
-                .Select(r => r.LocalGeometry)
-                .Where(g => g?.Geometry != null)
-                .ToArray() ?? Array.Empty<RoiShape>();
+            result.MaskGeometries = ExtractRuntimeShapes(rois, nodeResults, correctionMatrix);
+        }
+
+        /// <summary>对启用几何输入统一调用 SDK 出口，收集运行时 RoiShape[]；带位置修正矩阵时输出修正后坐标。</summary>
+        private static RoiShape[] ExtractRuntimeShapes(
+            IEnumerable<Roi>? rois,
+            IDictionary<string, ToolResults>? nodeResults,
+            AffineMatrix? correctionMatrix = null)
+        {
+            if (rois == null) return Array.Empty<RoiShape>();
+
+            var context = nodeResults != null ? new NodeResultsParameterContext(nodeResults) : null;
+            var shapes = new List<RoiShape>();
+            // ★ 组级运行时出口：订阅/拼装组内本地 Roi 不参与契约输出（按模式过滤，与执行/结果显示一致）
+            foreach (var roi in RoiCollection.GetRuntimeActiveInputs(rois))
+            {
+                foreach (var shape in roi.ResolveRuntime(context))
+                {
+                    // 契约几何：本地绘制 = 修正后坐标（参考系 → 当前图像系），使下游订阅区与源显示一致；
+                    // ★ 订阅/拼装 Roi 解析出的几何已含上游坐标，不再套本节点矩阵（防二次修正）。
+                    shapes.Add(roi.IsLocal
+                        ? RoiGeometryTransformer.Transform(shape, correctionMatrix) ?? shape
+                        : shape);
+                }
+            }
+            return shapes.ToArray();
         }
 
         #endregion

@@ -204,10 +204,13 @@ namespace SunEyeVision.Tool.Threshold
                                 stepTimings.Add(("结果判断", stepSw.ElapsedMilliseconds));
 
                                 // 提取检测区/屏蔽区几何输出（RoI 契约：结果树字段聚合 + 下游绑定）
+                                // 统一经 SDK ResolveRuntime 出口，传入上游结果上下文支持订阅/拼装区域
                                 ToolRegionHelper.ExtractInspectionGeometries(result,
-                                    parameters.InspectionRois?.Rois);
+                                    parameters.InspectionRois?.Rois,
+                                    parameters.NodeResults);
                                 ToolRegionHelper.ExtractMaskGeometries(result,
-                                    parameters.MaskRois?.Rois);
+                                    parameters.MaskRois?.Rois,
+                                    parameters.NodeResults);
 
                                 stopwatch.Stop();
                                 result.SetSuccess(stopwatch.Elapsed.TotalMilliseconds);

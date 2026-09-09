@@ -429,6 +429,9 @@ namespace SunEyeVision.UI.Services.Workflow
             // 获取位置修正矩阵（使结果层与交互层坐标一致）
             var correctionMatrix = GetPositionCorrectionMatrix(node.Parameters);
 
+            // 订阅解析上下文（统一出口：本地/整对象订阅/参数拼装三态归一；无上游结果时返回 null）
+            var context = BuildNodeResultsContext();
+
             // ★ 诊断：结果层矩阵详细信息，与交互层对比
             var matrixHash = correctionMatrix != null ? System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(correctionMatrix) : 0;
             var matrixVals = correctionMatrix != null
@@ -440,34 +443,15 @@ namespace SunEyeVision.UI.Services.Workflow
                 "NodeResultManager");
 
             // 检测区域（蓝色）— 使用参数中的样式实例，UI 的 DispItemColorControl 可绑定控制可见性
-            var enabledRegions = regionParams.InspectionRois.GetEnabledInputs();
+            // ★ 组级运行时出口：订阅/拼装组内本地绘制 Roi 不参与显示（按模式过滤），根治"订阅模式双画"。
+            var activeRegions = regionParams.InspectionRois.GetRuntimeActiveInputs();
             var inspectionStyle = regionParams.InspectionRoiStyle ?? DefaultInspectionRoiStyle;
-            foreach (var input in enabledRegions)
-            {
-                var regionItem = CreateRegionDisplayItem(input, inspectionStyle, correctionMatrix);
-                if (regionItem != null) items.Add(regionItem);
-
-                // 旋转矩形附加方向箭头（完整矩阵跟随，方向随矩阵旋转；颜色跟随检测区样式）
-                if (input.LocalGeometry is RoiShape rShape && rShape.Geometry is RotatedRect2d)
-                {
-                    items.Add(BuildDirectionArrowItem(rShape, inspectionStyle, correctionMatrix));
-                }
-            }
+            AddRoiDisplayItems(items, activeRegions, inspectionStyle, correctionMatrix, context);
 
             // 屏蔽区域（橙色）
-            var enabledMasks = regionParams.MaskRois.GetEnabledInputs();
+            var activeMasks = regionParams.MaskRois.GetRuntimeActiveInputs();
             var maskStyle = regionParams.MaskRoiStyle ?? DefaultMaskRoiStyle;
-            foreach (var input in enabledMasks)
-            {
-                var regionItem = CreateRegionDisplayItem(input, maskStyle, correctionMatrix);
-                if (regionItem != null) items.Add(regionItem);
-
-                // 旋转矩形附加方向箭头（完整矩阵跟随，方向随矩阵旋转；颜色跟随屏蔽区样式）
-                if (input.LocalGeometry is RoiShape mShape && mShape.Geometry is RotatedRect2d)
-                {
-                    items.Add(BuildDirectionArrowItem(mShape, maskStyle, correctionMatrix));
-                }
-            }
+            AddRoiDisplayItems(items, activeMasks, maskStyle, correctionMatrix, context);
 
             // 测量引导显示（引导线 + 卡尺，与检测/屏蔽区域同通道；测量工具重写 BuildMeasureGuideItems）
             if (regionParams.HasMeasureGuide)
@@ -492,12 +476,77 @@ namespace SunEyeVision.UI.Services.Workflow
         }
 
         /// <summary>
+        /// 构建订阅解析上下文：从 WorkflowContext 汇总全部节点执行结果（仅含已成功结果），
+        /// 供区域显示统一出口 <see cref="Roi.ResolveRuntime"/> 解析订阅/拼装区域；无上下文返回 null。
+        /// </summary>
+        private NodeResultsParameterContext? BuildNodeResultsContext()
+        {
+            var wf = _getContext();
+            if (wf == null) return null;
+
+            var all = wf.GetAllNodeResults();
+            if (all == null || all.Count == 0) return null;
+
+            var dict = new Dictionary<string, ToolResults>();
+            foreach (var kv in all)
+            {
+                if (kv.Value?.Result != null)
+                    dict[kv.Key] = kv.Value.Result;
+            }
+            return dict.Count > 0 ? new NodeResultsParameterContext(dict) : null;
+        }
+
+        /// <summary>
+        /// 区域显示统一循环：每个 ROI 经 SDK 出口 <see cref="Roi.ResolveRuntime"/> 解析出实际几何
+        /// （本地/整对象订阅/参数拼装三态归一），逐个生成显示项 + 旋转矩形方向箭头。
+        /// 订阅/拼装区域若上游未执行而解析失败：记录日志并跳过该区域（结果层 Fail-Forward，不崩整体显示）。
+        /// </summary>
+        private static void AddRoiDisplayItems(
+            List<DisplayItemBase> items,
+            IEnumerable<Roi> rois,
+            GraphicsStyle style,
+            AffineMatrix? correctionMatrix,
+            IParameterContext? context)
+        {
+            foreach (var roi in rois)
+            {
+                IReadOnlyList<RoiShape> shapes;
+                try
+                {
+                    shapes = roi.ResolveRuntime(context);
+                }
+                catch (Exception ex) when (roi.IsSubscribed || roi.IsComposed)
+                {
+                    Plugin.SDK.Logging.VisionLogger.Instance?.Log(
+                        Plugin.SDK.Logging.LogLevel.Warning,
+                        $"[结果层] 区域 '{roi.Name}' 解析失败（订阅/拼装需上游节点已执行）: {ex.Message}",
+                        "NodeResultManager");
+                    continue;
+                }
+
+                foreach (var shape in shapes)
+                {
+                    // ★ 位置修正只作用于本地绘制 Roi（参考系几何 → 当前系）；
+                    //   订阅/拼装 Roi 几何来自上游契约输出（已含上游坐标/修正），不再套本节点矩阵（防二次修正）。
+                    var matrixForShape = roi.IsLocal ? correctionMatrix : null;
+                    var item = CreateRegionDisplayItem(shape, style, matrixForShape);
+                    if (item != null) items.Add(item);
+
+                    // 旋转矩形附加方向箭头（完整矩阵跟随，方向随矩阵旋转；颜色跟随区域样式）
+                    if (shape.Geometry is RotatedRect2d)
+                        items.Add(BuildDirectionArrowItem(shape, style, matrixForShape));
+                }
+            }
+        }
+
+        /// <summary>
         /// 结果层区域显示：按形状有向性应用位置修正（无向剥转 / 有向完整），
         /// 使结果层轮廓与交互层、与算法处理区域空间一致（所见即所得）。
+        /// 入参为经统一出口解析出的 RoiShape（不再直读 Roi.LocalGeometry）。
         /// </summary>
-        private static DisplayItemBase? CreateRegionDisplayItem(Roi input, GraphicsStyle style, AffineMatrix? correctionMatrix = null)
+        private static DisplayItemBase? CreateRegionDisplayItem(RoiShape shape, GraphicsStyle style, AffineMatrix? correctionMatrix = null)
         {
-            if (input?.LocalGeometry is not RoiShape shape || shape.Geometry == null) return null;
+            if (shape?.Geometry == null) return null;
 
             // 位置修正按形状有向性解析（对齐 RoiEditorControl 交互层语义）
             var matrix = PositionCorrectionResolver.ResolveForShape(shape.Geometry, correctionMatrix);

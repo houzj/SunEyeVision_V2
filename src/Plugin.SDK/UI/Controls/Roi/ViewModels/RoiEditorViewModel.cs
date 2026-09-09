@@ -113,6 +113,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
         /// <summary>
         /// 当前编辑模式（绘制/订阅）
         /// </summary>
+        /// <remarks>
+        /// 本 setter 只切换 UI 模式，**不做数据副作用**。
+        /// 「切到绘制 = 解除订阅回退本地」只在用户显式点「绘制」radio 时（IsDrawingMode setter）执行，
+        /// 避免打开窗口/恢复模式等非用户路径误把订阅绑定清掉（区分「持久化丢失」与「切换清空」）。
+        /// </remarks>
         public RoiSourceMode CurrentMode
         {
             get => _currentMode;
@@ -130,7 +135,42 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
         }
 
         /// <summary>
-        /// 是否为绘制模式
+        /// 切回绘制模式：把集合中所有订阅/拼装 Roi 解除订阅，回退到本地本体几何。
+        /// 本地几何优先复用已保留的绘制几何；若原本无本地几何（如由订阅直接建立的 Roi），
+        /// 回退到当前形状的默认几何，保证切回绘制后有可见可编辑的本体。
+        /// 仅由用户显式切换 radio 调用（见 <see cref="IsDrawingMode"/>）。
+        /// </summary>
+        private void RevertSubscribedRoisToLocal()
+        {
+            var subscribed = Rois.Where(r => r.IsSubscribed || r.IsComposed).ToList();
+            foreach (var roi in subscribed)
+            {
+                bool wasComposed = roi.IsComposed;
+                roi.Binding = null;
+                roi.ParameterBindings = null;
+                roi.ComposeShapeType = ShapeType.None;
+
+                if (roi.LocalGeometry is not { Geometry: not null })
+                {
+                    roi.LocalGeometry = new RoiShape
+                    {
+                        Geometry = RoiShape.CreateDefaultGeometry(SelectedShapeType ?? ShapeType.Rectangle)
+                    };
+                }
+
+                RoiChanged?.Invoke(this, new RoiChangedEventArgs(roi, RoiChangeType.Modified));
+                StatusMessage = wasComposed
+                    ? $"已切回绘制模式：清除参数拼装，回退本地几何 ({roi.Name})"
+                    : $"已切回绘制模式：解除订阅，回退本地几何 ({roi.Name})";
+            }
+        }
+
+        /// <summary>
+        /// 是否为绘制模式。
+        /// setter 仅由用户显式点击「绘制」radio 触发（RadioButton TwoWay 绑定）。
+        /// 切到绘制 = 数据来源改为本地本体几何：解除集合内订阅/拼装 Roi 的订阅，
+        /// 回退到保留的本地绘制几何（订阅配置随解除丢失，再切订阅需重新绑定——符合用户语义）。
+        /// ★ 不在 CurrentMode setter 里做此副作用，防止打开窗口/恢复模式等非用户路径误清订阅。
         /// </summary>
         public bool IsDrawingMode
         {
@@ -138,7 +178,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
             set
             {
                 if (value && CurrentMode != RoiSourceMode.Drawing)
+                {
+                    RevertSubscribedRoisToLocal();
                     CurrentMode = RoiSourceMode.Drawing;
+                }
             }
         }
 
@@ -442,9 +485,41 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
             Rois = externalRois;
             OnPropertyChanged(nameof(Rois));
 
+            // 打开调试窗（SetRoisSource 注入集合）后恢复编辑模式：
+            // 检测/屏蔽区各自独立——集合内存在订阅/拼装 ROI → 进订阅模式并选中首个订阅 ROI 回显绑定；
+            // 全为本地绘制 → 保持绘制模式（无订阅可回显）。订阅子模式由 LoadFromRoi 按 Roi 三态推导。
+            RestoreEditorModeFromRois();
+
             VisionLogger.Instance.Log(LogLevel.Success,
-                $"[SetRoisSource] 区域集合已替换 | 区域数: {Rois.Count}",
+                $"[SetRoisSource] 区域集合已替换 | 区域数: {Rois.Count} | CurrentMode={_currentMode}",
                 "RegionEditor");
+        }
+
+        /// <summary>
+        /// 依据集合内订阅/拼装 ROI 恢复编辑器模式（打开调试窗时调用一次）。
+        /// 存在启用订阅（整对象/拼装）ROI → 订阅模式并选中首个，触发订阅面板回显其绑定；
+        /// 否则回落绘制模式。不改变手动切换语义（用户可随后自行切换 radio）。
+        /// </summary>
+        private void RestoreEditorModeFromRois()
+        {
+            if (Rois.Count == 0)
+            {
+                if (CurrentMode != RoiSourceMode.Drawing)
+                    CurrentMode = RoiSourceMode.Drawing;
+                return;
+            }
+
+            var subscribed = Rois.FirstOrDefault(r => r.IsEnabled && (r.IsSubscribed || r.IsComposed));
+            if (subscribed != null)
+            {
+                if (CurrentMode != RoiSourceMode.Subscribe)
+                    CurrentMode = RoiSourceMode.Subscribe;
+                SelectedRoi = subscribed;
+            }
+            else if (CurrentMode != RoiSourceMode.Drawing)
+            {
+                CurrentMode = RoiSourceMode.Drawing;
+            }
         }
 
         /// <summary>
@@ -480,13 +555,32 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
                 target = Rois.FirstOrDefault(r => r.IsEnabled);
                 if (target != null) SelectedRoi = target;
             }
+
+            // ★ 纯订阅支持：集合为空（未先绘制本地区域）时自动创建"仅订阅、无本地几何"的 Roi 载体，
+            //   使"只订阅上游、不画区域"也能生效（检测区/屏蔽区一致）。
+            if (target == null && binding != null)
+            {
+                target = new Roi
+                {
+                    Name = GetNextRoiName(),
+                    Binding = binding,
+                };
+                Rois.Add(target);
+                SelectedRoi = target;
+                RoiChanged?.Invoke(this, new RoiChangedEventArgs(target, RoiChangeType.Added));
+                StatusMessage = $"已创建订阅区域: {binding.SourceNodeId}.{binding.SourceProperty}";
+                return;
+            }
+
             if (target == null) return;
 
             if (binding != null)
             {
-                // 三态互斥：整对象订阅 → 清本地几何与拼装集
+                // 整对象订阅 → 写 Binding，清对侧拼装集；
+                // ★ 不清空 LocalGeometry：保留原绘制几何作为"绘制模式可还原的底稿"（切回绘制可见可编辑，
+                //   且解除订阅/绑定源失效时回退本地不丢失用户画的区域）。
+                //   运行时解析按 IsSubscribed 优先走订阅源，LocalGeometry 仅用于绘制模式 UI 呈现。
                 target.Binding = binding;
-                target.LocalGeometry = null;
                 target.ParameterBindings = null;
                 RoiChanged?.Invoke(this, new RoiChangedEventArgs(target, RoiChangeType.Modified));
                 StatusMessage = $"已设置订阅源: {binding.SourceNodeId}.{binding.SourceProperty}";
@@ -522,13 +616,35 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
                 target = Rois.FirstOrDefault(r => r.IsEnabled);
                 if (target != null) SelectedRoi = target;
             }
+
+            // ★ 纯订阅支持：集合为空（未先绘制本地区域）时自动创建"仅订阅拼装、无本地几何"的 Roi 载体。
+            if (target == null && e.Setting != null)
+            {
+                var composeShape = _parameterPanel?.CurrentShapeType ?? ShapeType.Rectangle;
+                target = new Roi
+                {
+                    Name = GetNextRoiName(),
+                    ComposeShapeType = composeShape,
+                    ParameterBindings = new Dictionary<string, ParamSetting>
+                    {
+                        [e.ParameterName] = e.Setting,
+                    },
+                };
+                Rois.Add(target);
+                SelectedRoi = target;
+                RoiChanged?.Invoke(this, new RoiChangedEventArgs(target, RoiChangeType.Added));
+                StatusMessage = $"已创建拼装区域: 参数 {e.ParameterName}";
+                return;
+            }
+
             if (target == null) return;
 
             if (e.Setting != null)
             {
-                // 三态互斥：进入参数拼装；拼装形状 = 订阅面板当前形状（ComposeShapeType 持久化）
+                // 进入参数拼装；拼装形状 = 订阅面板当前形状（ComposeShapeType 持久化）
+                // ★ 与整对象订阅一致：不清空 LocalGeometry，保留原绘制几何作为绘制模式可还原底稿；
+                //   运行时按 IsComposed 优先拼装订阅源，本地几何仅绘制模式 UI 呈现。
                 target.Binding = null;
-                target.LocalGeometry = null;
                 var composeShape = _parameterPanel?.CurrentShapeType ?? ShapeType.Rectangle;
                 target.ComposeShapeType = composeShape;
                 target.ParameterBindings ??= new Dictionary<string, ParamSetting>();

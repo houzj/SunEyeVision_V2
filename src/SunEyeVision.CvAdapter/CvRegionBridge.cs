@@ -19,25 +19,27 @@ namespace SunEyeVision.CvAdapter
     {
         /// <summary>
         /// 构建 CvEngine ROI = 检测区域 - 屏蔽区域（两者均无有效区域时返回 null）。
+        /// 订阅/拼装区域经统一出口 <see cref="Roi.ResolveRuntime"/> 解析（context 为上游节点结果）。
         /// </summary>
         public static CvRegion? BuildROI(
             Size imageSize,
             IEnumerable<Roi> inspectionRois,
-            IEnumerable<Roi> maskRois)
+            IEnumerable<Roi> maskRois,
+            IParameterContext? context = null)
         {
             bool hasInspection = inspectionRois.Any();
             bool hasMask = maskRois.Any();
 
             if (hasInspection && hasMask)
             {
-                using var inspRegion = CreateFromRegions(imageSize, inspectionRois);
-                using var maskRegion = CreateFromRegions(imageSize, maskRois);
+                using var inspRegion = CreateFromRegions(imageSize, inspectionRois, context);
+                using var maskRegion = CreateFromRegions(imageSize, maskRois, context);
                 CvOp.Difference(inspRegion, maskRegion, out var roiRegion);
                 return roiRegion;
             }
             else if (hasInspection)
             {
-                return CreateFromRegions(imageSize, inspectionRois);
+                return CreateFromRegions(imageSize, inspectionRois, context);
             }
 
             return null;
@@ -73,11 +75,14 @@ namespace SunEyeVision.CvAdapter
         }
 
         /// <summary>
-        /// 由框架 RoI 集合（Roi）栅格化为 CvEngine 区域掩码；仅处理 IsEnabled 且本地几何有效的项。
-        /// 订阅/拼装模式区域需运行期解析（Cv 引擎链路本期不接入，仅本地绘制），
-        /// 支持的几何：Circle2d / RotatedRect2d / Polygon2d / System.Windows.Rect。
+        /// 由框架 RoI 集合（Roi）栅格化为 CvEngine 区域掩码。
+        /// 每个启用 ROI 先经统一出口 <see cref="Roi.ResolveRuntime"/> 解析实际几何
+        /// （本地/整对象订阅/参数拼装三态归一），再栅格化；支持的几何：Circle2d / RotatedRect2d / Polygon2d / System.Windows.Rect。
         /// </summary>
-        public static CvRegion CreateFromRegions(Size imageSize, IEnumerable<Roi> rois)
+        public static CvRegion CreateFromRegions(
+            Size imageSize,
+            IEnumerable<Roi> rois,
+            IParameterContext? context = null)
         {
             var enabled = rois.Where(r => r.IsEnabled).ToList();
             if (enabled.Count == 0)
@@ -87,32 +92,32 @@ namespace SunEyeVision.CvAdapter
 
             foreach (var roi in enabled)
             {
-                var shape = roi.LocalGeometry;
-                if (shape?.Geometry == null) continue;
-
-                if (shape.Geometry is Circle2d c)
+                foreach (var shape in roi.ResolveRuntime(context))
                 {
-                    Cv2.Circle(combinedMask,
-                        (int)Math.Round(c.Center.X), (int)Math.Round(c.Center.Y),
-                        (int)Math.Round(c.Radius), Scalar.White, -1);
-                }
-                else if (shape.Geometry is RotatedRect2d rr)
-                {
-                    int x = (int)Math.Round(rr.CenterX - rr.Width / 2);
-                    int y = (int)Math.Round(rr.CenterY - rr.Height / 2);
-                    Cv2.Rectangle(combinedMask, new Rect(x, y,
-                        (int)Math.Round(rr.Width), (int)Math.Round(rr.Height)), Scalar.White, -1);
-                }
-                else if (shape.Geometry is Polygon2d poly && poly.Vertices.Length >= 3)
-                {
-                    var pts = poly.Vertices.Select(v => new Point((int)v.X, (int)v.Y)).ToArray();
-                    Cv2.FillPoly(combinedMask, new Point[][] { pts }, Scalar.White);
-                }
-                else if (shape.Geometry is System.Windows.Rect rect)
-                {
-                    Cv2.Rectangle(combinedMask, new Rect(
-                        (int)Math.Round(rect.X), (int)Math.Round(rect.Y),
-                        (int)Math.Round(rect.Width), (int)Math.Round(rect.Height)), Scalar.White, -1);
+                    if (shape.Geometry is Circle2d c)
+                    {
+                        Cv2.Circle(combinedMask,
+                            (int)Math.Round(c.Center.X), (int)Math.Round(c.Center.Y),
+                            (int)Math.Round(c.Radius), Scalar.White, -1);
+                    }
+                    else if (shape.Geometry is RotatedRect2d rr)
+                    {
+                        int x = (int)Math.Round(rr.CenterX - rr.Width / 2);
+                        int y = (int)Math.Round(rr.CenterY - rr.Height / 2);
+                        Cv2.Rectangle(combinedMask, new Rect(x, y,
+                            (int)Math.Round(rr.Width), (int)Math.Round(rr.Height)), Scalar.White, -1);
+                    }
+                    else if (shape.Geometry is Polygon2d poly && poly.Vertices.Length >= 3)
+                    {
+                        var pts = poly.Vertices.Select(v => new Point((int)v.X, (int)v.Y)).ToArray();
+                        Cv2.FillPoly(combinedMask, new Point[][] { pts }, Scalar.White);
+                    }
+                    else if (shape.Geometry is System.Windows.Rect rect)
+                    {
+                        Cv2.Rectangle(combinedMask, new Rect(
+                            (int)Math.Round(rect.X), (int)Math.Round(rect.Y),
+                            (int)Math.Round(rect.Width), (int)Math.Round(rect.Height)), Scalar.White, -1);
+                    }
                 }
             }
 

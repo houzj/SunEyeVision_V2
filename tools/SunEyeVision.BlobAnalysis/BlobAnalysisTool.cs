@@ -406,8 +406,12 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                         stepTimings.Add(("显示构建", stepSw.ElapsedMilliseconds));
 
                                         // 提取检测区/屏蔽区几何输出（RoI 契约：结果树字段聚合 + 下游绑定）
-                                        ToolRegionHelper.ExtractInspectionGeometries(result, parameters.InspectionRois?.Rois);
-                                        ToolRegionHelper.ExtractMaskGeometries(result, parameters.MaskRois?.Rois);
+                                        // 统一经 SDK ResolveRuntime 出口，传入上游结果上下文以支持订阅/拼装区域；
+                                        // ★ 传入位置修正矩阵使契约几何为修正后坐标（下游订阅区与源显示一致）
+                                        ToolRegionHelper.ExtractInspectionGeometries(result, parameters.InspectionRois?.Rois,
+                                            parameters.NodeResults, correctionMatrix);
+                                        ToolRegionHelper.ExtractMaskGeometries(result, parameters.MaskRois?.Rois,
+                                            parameters.NodeResults, correctionMatrix);
 
                                         stopwatch.Stop();
                                         result.SetSuccess(stopwatch.Elapsed.TotalMilliseconds);

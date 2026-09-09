@@ -318,25 +318,61 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         }
 
         /// <summary>
-        /// BindingSource 变更回调（契约 C2，单轨模式）：用绑定路径反查中文显示名回填显示位。
+        /// BindingSource 变更回调：
+        /// 1) 契约 C2 单轨模式（SyncEditingToSource=true）：用绑定路径反查中文显示名回填显示位。
+        /// 2) 默认模式：程序回显 BindingSource（如重开调试窗 LoadFromRoi 恢复订阅）时，若尚未有显示名，
+        ///    同样反查翻译回填——修复"订阅面板区域源关闭重开显示空白、运行仍按绑定解析"的显示缺失。
         /// 程序回填显示名时抑制编辑回写，避免误覆盖绑定源（A2/A3 治本）。
         /// </summary>
         private static void OnBindingSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (d is not ParamBinding control || !control.SyncEditingToSource)
+            if (d is not ParamBinding control)
                 return;
 
             var bindingPath = e.NewValue as string;
-            control._isProgrammaticDisplayUpdate = true;
+            if (control.SyncEditingToSource)
+            {
+                control._isProgrammaticDisplayUpdate = true;
+                try
+                {
+                    control.BindingDisplayText = string.IsNullOrEmpty(bindingPath)
+                        ? string.Empty
+                        : control.GenerateBindingDisplayText(bindingPath);
+                }
+                finally
+                {
+                    control._isProgrammaticDisplayUpdate = false;
+                }
+                return;
+            }
+
+            // 默认模式：仅当还没有显示名时补翻译（程序回显场景），已有显示名（用户刚选择生成/容器已赋值）不覆盖。
+            control.BackfillDisplayTextFromSource();
+        }
+
+        /// <summary>
+        /// 程序回显补翻译：BindingSource 非空且当前无显示名（或显示名仍是原文占位=上次树未就绪翻译失败）时，
+        /// 反查数据源树生成中文显示名回填。用抑制标志包住，避免触发编辑回写误覆盖 BindingSource。
+        /// 树尚未就绪时翻译会回退原文占位，树重建后（OnAvailableDataSourcesChanged → RebuildTreeNodes）会再次调用本方法。
+        /// </summary>
+        private void BackfillDisplayTextFromSource()
+        {
+            var bindingPath = BindingSource;
+            if (string.IsNullOrEmpty(bindingPath))
+                return;
+
+            // BindingDisplayText == BindingSource 表示上次翻译失败留下的原文占位（树未就绪），需要重试。
+            if (!string.IsNullOrEmpty(BindingDisplayText) && BindingDisplayText != bindingPath)
+                return;
+
+            _isProgrammaticDisplayUpdate = true;
             try
             {
-                control.BindingDisplayText = string.IsNullOrEmpty(bindingPath)
-                    ? string.Empty
-                    : control.GenerateBindingDisplayText(bindingPath);
+                BindingDisplayText = GenerateBindingDisplayText(bindingPath);
             }
             finally
             {
-                control._isProgrammaticDisplayUpdate = false;
+                _isProgrammaticDisplayUpdate = false;
             }
         }
 
@@ -392,6 +428,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             });
 
             TreeNodes = nodes;
+
+            // 数据源树就绪/重建后，重试翻译回填绑定显示名：
+            // 解决程序回显早于数据源注入时首次翻译失败（显示名停留原文占位）的问题。
+            BackfillDisplayTextFromSource();
         }
 
         #endregion

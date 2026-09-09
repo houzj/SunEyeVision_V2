@@ -100,6 +100,25 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         public System.Collections.Generic.IEnumerable<Roi> GetEnabledInputs()
             => _items.Where(r => r.IsEnabled);
 
+        /// <summary>
+        /// 组级运行时有效输入（执行层/结果层统一出口，语义=按模式过滤）：
+        /// 组内存在启用订阅/拼装 Roi 时，仅返回这些订阅/拼装 Roi——本地绘制 Roi 视为切回绘制后的底稿，
+        /// 订阅模式下不参与运行与显示；组内全为本地时返回全部启用输入（行为同 <see cref="GetEnabledInputs"/>）。
+        /// </summary>
+        public System.Collections.Generic.IEnumerable<Roi> GetRuntimeActiveInputs()
+            => GetRuntimeActiveInputs(_items);
+
+        /// <summary>
+        /// 组级运行时有效输入（纯函数，供 SDK/HalAdapter/UI 对任意一组 Roi 统一裁决）。
+        /// </summary>
+        public static System.Collections.Generic.IEnumerable<Roi> GetRuntimeActiveInputs(
+            System.Collections.Generic.IEnumerable<Roi> rois)
+        {
+            var enabled = (rois ?? Array.Empty<Roi>()).Where(r => r.IsEnabled).ToList();
+            var subscribed = enabled.Where(r => r.IsSubscribed || r.IsComposed).ToList();
+            return subscribed.Count > 0 ? subscribed : enabled;
+        }
+
         /// <summary>获取所有可见的几何输入</summary>
         public System.Collections.Generic.IEnumerable<Roi> GetVisibleInputs()
             => _items.Where(r => r.IsVisible);

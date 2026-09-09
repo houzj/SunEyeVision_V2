@@ -274,15 +274,16 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         #endregion
 
         /// <summary>
-        /// 按角色获取启用的几何输入列表
+        /// 按角色获取运行时有效几何输入列表（执行层/结果层统一出口，语义=按模式过滤）：
+        /// 组内存在订阅/拼装 Roi 时仅返回订阅/拼装 Roi（本地绘制底稿不参与）；全本地时返回全部启用输入。
         /// </summary>
         /// <param name="mode">几何输入角色（检测/屏蔽）</param>
-        /// <returns>指定角色的启用几何输入集合</returns>
+        /// <returns>指定角色的运行时有效几何输入集合</returns>
         public System.Collections.Generic.IEnumerable<Roi> GetRoisByType(RoiParameterMode mode)
         {
             return mode == RoiParameterMode.InspectionRoi
-                ? _inspectionRois.GetEnabledInputs()
-                : _maskRois.GetEnabledInputs();
+                ? _inspectionRois.GetRuntimeActiveInputs()
+                : _maskRois.GetRuntimeActiveInputs();
         }
 
     }

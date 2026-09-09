@@ -1,4 +1,9 @@
 <Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/Plugin.SDK/" />
+  <Folder Name="/tools/">
+    <Project Path="tools/SunEyeVision.Tool.LineLineMeasure/SunEyeVision.Tool.LineLineMeasure.csproj" />
+  </Folder>
   <Project Path="Src/CommonControl/CommonControl.csproj" />
   <Project Path="Src/Core/SunEyeVision.Core.csproj" />
   <Project Path="Src/Plugin.Infrastructure/SunEyeVision.Plugin.Infrastructure.csproj" />

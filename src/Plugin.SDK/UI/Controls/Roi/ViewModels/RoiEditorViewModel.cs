@@ -114,9 +114,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
         /// 当前编辑模式（绘制/订阅）
         /// </summary>
         /// <remarks>
-        /// 本 setter 只切换 UI 模式，**不做数据副作用**。
+        /// 本 setter 只切换 UI 模式，**不做数据副作用**（不改任何 Roi 绑定）。
         /// 「切到绘制 = 解除订阅回退本地」只在用户显式点「绘制」radio 时（IsDrawingMode setter）执行，
         /// 避免打开窗口/恢复模式等非用户路径误把订阅绑定清掉（区分「持久化丢失」与「切换清空」）。
+        /// 模式切换本身虽不清数据，但订阅面板的 WholeRegionSetting/Parameters 是独立缓存，
+        /// 可能因"SelectedRoi 未变"而残留旧回显（切绘制清空绑定后再切回订阅 → 看有绑、实际没绑），
+        /// 故这里做**UI 回显同步**（把面板重新对准 SelectedRoi 的真实绑定状态），不改任何模型数据。
         /// </remarks>
         public RoiSourceMode CurrentMode
         {
@@ -130,8 +133,24 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
                     OnPropertyChanged(nameof(ShowShapeTypeSelector));
                     OnPropertyChanged(nameof(CurrentToolMode));
                     OnPropertyChanged(nameof(HasDrawingParametersVisible));
+                    RefreshParameterPanelForSelectedRoi();
                 }
             }
+        }
+
+        /// <summary>
+        /// 把订阅参数面板回显同步到当前选中 Roi 的真实状态（模式切换后 UI 缓存可能滞后于模型）。
+        /// SelectedRoi 可为 null：LoadFromRoi(null) 会清空面板缓存（整对象/几何参数回显），
+        /// 确保"切到订阅但无选中项/绑定已被清空"时 UI 不残留旧绑定。
+        /// </summary>
+        private void RefreshParameterPanelForSelectedRoi()
+        {
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[RefreshPanel] CurrentMode={_currentMode} | SelectedRoi={SelectedRoi?.Name ?? "null"}",
+                "RoiSubscribePanel");
+            if (_parameterPanel == null) return;
+            // 主模式切换：按 SelectedRoi.Source 同步 radio + 回灌视图缓存
+            _parameterPanel.LoadFromRoi(SelectedRoi, syncSubMode: true);
         }
 
         /// <summary>
@@ -142,13 +161,23 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
         /// </summary>
         private void RevertSubscribedRoisToLocal()
         {
-            var subscribed = Rois.Where(r => r.IsSubscribed || r.IsComposed).ToList();
+            // ★ 判定依据 = 【是否存在订阅配置】（Binding/ParameterBindings 任一非空即视为需清空），
+            // 不依赖激活 Source：订阅配置与激活来源可能错位（并存/历史数据），若按 Is* 过滤只清激活那侧，
+            // 会造成"切绘制只清了一个子模式、另一个子模式订阅残留"。主模式"订阅→绘制"的语义是
+            // 【清空该几何输入上的全部订阅配置】，故只要任一侧有配置都进入清理。
+            var subscribed = Rois.Where(r => r.Binding != null || r.ParameterBindings is { Count: > 0 }).ToList();
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[RevertSubscribed] 待清订阅/拼装 roi 数={subscribed.Count} | 全部={string.Join(",", subscribed.Select(x => x.Name))}",
+                "RoiSubscribePanel");
             foreach (var roi in subscribed)
             {
                 bool wasComposed = roi.IsComposed;
+                // ★ 主模式"订阅→绘制"= 用户确认的"清空全部订阅配置"语义：清区域订阅与参数订阅配置，
+                //   并回到本地绘制激活（Source=Drawing）。本地绘制几何保留（绘制底稿不丢）。
                 roi.Binding = null;
                 roi.ParameterBindings = null;
                 roi.ComposeShapeType = ShapeType.None;
+                roi.Source = RoiGeometrySource.Drawing;
 
                 if (roi.LocalGeometry is not { Geometry: not null })
                 {
@@ -179,6 +208,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
             {
                 if (value && CurrentMode != RoiSourceMode.Drawing)
                 {
+                    VisionLogger.Instance.Log(LogLevel.Info,
+                        $"[ModeSwitch] 用户切到绘制 | Rois.Count={Rois.Count} | SelectedRoi={SelectedRoi?.Name ?? "null"}",
+                        "RoiSubscribePanel");
                     RevertSubscribedRoisToLocal();
                     CurrentMode = RoiSourceMode.Drawing;
                 }
@@ -574,8 +606,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
         }
 
         /// <summary>
-        /// 整对象订阅变更事件处理（写入 Roi.Binding 契约路径；null=解除整对象订阅回退本地绘制）。
-        /// 与参数拼装互斥：写入整对象订阅时清空拼装集。
+        /// 区域订阅（整对象）变更事件处理（写入 Roi.Binding 契约路径；null=解除区域订阅）。
+        /// 配置并存架构：写入 Binding 只更新【区域订阅配置】并把 <see cref="Roi.Source"/> 激活为
+        /// <see cref="RoiGeometrySource.WholeRegionSub"/>，【不清空参数订阅配置】（ParameterBindings 保留，
+        /// 切回参数订阅可恢复激活）。解除时若仍保留参数订阅配置则激活之，否则回退本地绘制。
         /// </summary>
         private void OnBindingChanged(object? sender, ParamSetting? binding)
         {
@@ -585,24 +619,26 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
 
             if (binding != null)
             {
-                // 整对象订阅 → 写 Binding，清对侧拼装集；
-                // ★ 不清空 LocalGeometry：保留原绘制几何作为"绘制模式可还原的底稿"（切回绘制可见可编辑，
-                //   且解除订阅/绑定源失效时回退本地不丢失用户画的区域）。
-                //   运行时解析按 IsSubscribed 优先走订阅源，LocalGeometry 仅用于绘制模式 UI 呈现。
+                // 区域订阅 → 写 Binding 并激活 WholeRegionSub；
+                // ★ 不清空 LocalGeometry：保留原绘制几何作为"绘制模式可还原的底稿"（切回绘制可见可编辑）；
+                // ★ 不清空 ParameterBindings：参数订阅配置并存保留，切到参数订阅子模式时可恢复激活。
                 target.Binding = binding;
-                target.ParameterBindings = null;
+                target.Source = RoiGeometrySource.WholeRegionSub;
                 RoiChanged?.Invoke(this, new RoiChangedEventArgs(target, RoiChangeType.Modified));
-                StatusMessage = $"已设置订阅源: {binding.SourceNodeId}.{binding.SourceProperty}";
+                StatusMessage = $"已设置区域订阅源: {binding.SourceNodeId}.{binding.SourceProperty}";
                 return;
             }
 
-            // 解除整对象订阅：若存在拼装集则保留拼装语义，否则回退本地绘制
+            // 解除区域订阅：若仍保留参数订阅配置则激活 GeometricSub，否则回退本地绘制
             target.Binding = null;
-            if (target.IsComposed)
+            if (target.ParameterBindings is { Count: > 0 })
             {
+                target.Source = RoiGeometrySource.GeometricSub;
                 RoiChanged?.Invoke(this, new RoiChangedEventArgs(target, RoiChangeType.Modified));
+                StatusMessage = $"已解除区域订阅，切换到参数订阅 ({(target.ParameterBindings?.Count ?? 0)} 个字段保留)";
                 return;
             }
+            target.Source = RoiGeometrySource.Drawing;
             target.LocalGeometry ??= new RoiShape
             {
                 Geometry = RoiShape.CreateDefaultGeometry(SelectedShapeType ?? ShapeType.Rectangle)
@@ -611,8 +647,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
         }
 
         /// <summary>
-        /// 几何参数拼装变更事件处理（写入 Roi.ParameterBindings[扁平参数名]；setting=null=移除该键）。
-        /// 与整对象订阅互斥：写入拼装集时清空 Binding。
+        /// 参数订阅（几何参数拼装）变更事件处理（写入 Roi.ParameterBindings[扁平参数名]；setting=null=移除该键）。
+        /// 配置并存架构：写入某个字段只更新【参数订阅配置】并把 <see cref="Roi.Source"/> 激活为
+        /// <see cref="RoiGeometrySource.GeometricSub"/>，【不清空区域订阅配置】（Binding 保留）。
+        /// 移除键到空集时：若仍保留区域订阅配置则激活之，否则回退本地绘制。
         /// </summary>
         private void OnParameterSettingChanged(object? sender, ParameterSettingChangedEventArgs e)
         {
@@ -624,33 +662,42 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
 
             if (e.Setting != null)
             {
-                // 进入参数拼装；拼装形状 = 订阅面板当前形状（ComposeShapeType 持久化）
-                // ★ 与整对象订阅一致：不清空 LocalGeometry，保留原绘制几何作为绘制模式可还原底稿；
-                //   运行时按 IsComposed 优先拼装订阅源，本地几何仅绘制模式 UI 呈现。
-                target.Binding = null;
+                // 进入参数订阅；拼装形状 = 订阅面板当前形状（ComposeShapeType 持久化）
+                // ★ 不清空 LocalGeometry / Binding：与区域订阅/绘制配置并存保留（按 Source 激活，切回可恢复）。
                 var composeShape = _parameterPanel?.CurrentShapeType ?? ShapeType.Rectangle;
                 target.ComposeShapeType = composeShape;
                 target.ParameterBindings ??= new Dictionary<string, ParamSetting>();
                 target.ParameterBindings[e.ParameterName] = e.Setting;
+                target.Source = RoiGeometrySource.GeometricSub;
                 RoiChanged?.Invoke(this, new RoiChangedEventArgs(target, RoiChangeType.Modified));
                 StatusMessage = $"已设置参数 {e.ParameterName} 订阅源: {e.Setting.SourceNodeId}.{e.Setting.SourceProperty}";
                 return;
             }
 
-            // 移除该键：拼装集为空则回退本地绘制
-            if (target.ParameterBindings != null)
+            // 移除该键
+            target.ParameterBindings?.Remove(e.ParameterName);
+            if (target.ParameterBindings is { Count: > 0 })
             {
-                target.ParameterBindings.Remove(e.ParameterName);
-                if (target.ParameterBindings.Count == 0)
-                {
-                    target.ParameterBindings = null;
-                    target.ComposeShapeType = ShapeType.None;
-                    target.LocalGeometry ??= new RoiShape
-                    {
-                        Geometry = RoiShape.CreateDefaultGeometry(SelectedShapeType ?? ShapeType.Rectangle)
-                    };
-                }
+                // 仍有字段：保持参数订阅激活
+                RoiChanged?.Invoke(this, new RoiChangedEventArgs(target, RoiChangeType.Modified));
+                return;
             }
+
+            // 参数订阅配置已清空：仍保留区域订阅配置则激活之，否则回退本地绘制
+            target.ParameterBindings = null;
+            target.ComposeShapeType = ShapeType.None;
+            if (target.Binding != null)
+            {
+                target.Source = RoiGeometrySource.WholeRegionSub;
+                RoiChanged?.Invoke(this, new RoiChangedEventArgs(target, RoiChangeType.Modified));
+                StatusMessage = $"已清空参数订阅，切换到区域订阅 (Binding 保留)";
+                return;
+            }
+            target.Source = RoiGeometrySource.Drawing;
+            target.LocalGeometry ??= new RoiShape
+            {
+                Geometry = RoiShape.CreateDefaultGeometry(SelectedShapeType ?? ShapeType.Rectangle)
+            };
             RoiChanged?.Invoke(this, new RoiChangedEventArgs(target, RoiChangeType.Modified));
         }
 
@@ -881,10 +928,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
                 SelectedShapeType = null;
             }
 
-            // 更新参数面板（覆盖本地/订阅双态）
+            // 更新参数面板（覆盖本地/订阅双态）：选中变化 → 按 SelectedRoi.Source 同步 radio + 回灌
             if (_parameterPanel != null && SelectedRoi != null)
             {
-                _parameterPanel.LoadFromRoi(SelectedRoi);
+                _parameterPanel.LoadFromRoi(SelectedRoi, syncSubMode: true);
             }
 
             // 通知计算属性变更

@@ -468,8 +468,8 @@ namespace SunEyeVision.UI.Features.ParameterSetting
                 // 批量添加数据源，避免逐个触发 CollectionChanged 导致重复构建树形结构
                 AvailableDataSources = new ObservableCollection<AvailableDataSource>(dataSources);
 
-                // 构建树形结构
-                var treeNodes = ConfigSetting.BuildTreeStructure(dataSources);
+                // 构建树形结构（传 ParameterType：RoiShape[] 子树按目标词目定型）
+                var treeNodes = ConfigSetting.BuildTreeStructure(dataSources, ParameterType);
                 foreach (var node in treeNodes)
                 {
                     TreeNodes.Add(node);

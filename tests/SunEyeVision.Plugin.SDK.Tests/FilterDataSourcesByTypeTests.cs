@@ -106,11 +106,14 @@ public class FilterDataSourcesByTypeTests
     }
 
     [Fact]
-    public void ScalarInt_DoesNotSeeUpstreamRoiOutput()
+    public void ScalarInt_SeesUpstreamRoiContainer_ForFieldDrilldown()
     {
+        // 规则 3.6：数值目标（Integer/Double）放行 RoI 容器（RoiShape[]，词目 ROI）——
+        // 容器本身供展开下钻到数值字段（[Type=X][0].Geometry.字段）；真正选中字段时按叶子类型校验。
+        // int（词目 Integer）与 double 互通，同样需要看到 ROI 容器以完成字段下钻。
         var sources = MakeSources(MakeDs("RoIs", typeof(RoiShape[])));
         var filtered = ParamBindingBase.FilterDataSourcesByType(sources, typeof(int));
-        Assert.DoesNotContain(filtered, ds => ds.PropertyName == "RoIs");
+        Assert.Contains(filtered, ds => ds.PropertyName == "RoIs");
     }
 
     #endregion

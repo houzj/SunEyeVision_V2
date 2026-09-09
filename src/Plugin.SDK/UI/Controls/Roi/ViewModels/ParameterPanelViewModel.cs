@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Models;
 
@@ -48,7 +49,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
             private set => _targetRoi = value;
         }
 
-        /// <summary>订阅子模式（整对象 / 几何参数）</summary>
+        /// <summary>
+        /// 订阅子模式（区域订阅 / 参数订阅）。
+        /// 架构语义：子模式是订阅主模式下的【纯视图切换】——仅控制"区域源"或"几何参数"两组显示，
+        /// 【绝不因此清空/重载绑定数据】，也不反向影响 Roi 模型（LoadFromRoi 只由
+        /// SelectedRoi 变化 / 主模式切换（订阅↔绘制）触发；主模式切走订阅时才清数据）。
+        /// </summary>
         public RoiSubscribeSubMode SubscribeSubMode
         {
             get => _subscribeSubMode;
@@ -58,6 +64,30 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
                 {
                     OnPropertyChanged(nameof(IsWholeRegionMode));
                     OnPropertyChanged(nameof(IsGeometricMode));
+                    VisionLogger.Instance.Log(LogLevel.Info,
+                        $"[SubscribeSubMode] 切换子模式 {_subscribeSubMode} | targetRoi={_targetRoi?.Name ?? "null"}(Source={_targetRoi?.Source.ToString() ?? "-"}|Binding={( _targetRoi?.Binding != null ? "Y" : "N")}|ParamBindings={_targetRoi?.ParameterBindings?.Count ?? -1})",
+                        "RoiSubscribePanel");
+                    // 子模式切换只做两件事，绝不改动任何订阅配置：
+                    // 1) 激活：切到某订阅方式且该 Roi 已有对应配置时，把 Source 激活为该方式（运行时按它解析）；
+                    //    无对应配置则不写 Source（等用户在对应子模式配好绑定后由 On*Changed 激活）。
+                    // 2) 回灌视图缓存：LoadFromRoi(syncSubMode:false) 把区域行/参数行缓存与模型对齐，
+                    //    但不改 radio（不回弹）。
+                    if (_targetRoi is { } roi)
+                    {
+                        if (_subscribeSubMode == RoiSubscribeSubMode.WholeRegion
+                            && roi.Binding != null
+                            && roi.Source != RoiGeometrySource.WholeRegionSub)
+                        {
+                            roi.Source = RoiGeometrySource.WholeRegionSub;
+                        }
+                        else if (_subscribeSubMode == RoiSubscribeSubMode.GeometricParameters
+                                 && roi.ParameterBindings is { Count: > 0 }
+                                 && roi.Source != RoiGeometrySource.GeometricSub)
+                        {
+                            roi.Source = RoiGeometrySource.GeometricSub;
+                        }
+                        LoadFromRoi(roi, syncSubMode: false);
+                    }
                 }
             }
         }
@@ -156,35 +186,70 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
         }
 
         /// <summary>
-        /// 从选中的几何输入回显订阅状态（三态：Binding→整对象；ParameterBindings→几何参数并回填；本地→按本地形状进几何参数模板）。
+        /// 从选中的几何输入回显订阅状态，按 <see cref="Roi.Source"/> 激活的来源分支
+        /// （WholeRegionSub→区域订阅；GeometricSub→参数订阅并回填；Drawing→本地，仅出空参数行）。
+        /// 调用时机仅限【选中 Roi 变化】与【主模式切换（订阅↔绘制，CurrentMode setter 触发）】；
+        /// 订阅子模式 radio 切换只切视图/激活 Source，不清数据。
         /// </summary>
-        public void LoadFromRoi(Roi input)
+        /// <remarks>
+        /// input==null 视为"无选中 Roi"：仍须清空 WholeRegionSetting 与重建空参数行，
+        /// 避免从绘制切回订阅时（SelectedRoi 可能为 null）缓存残留造成"看有绑、实际没绑"。
+        /// <param name="syncSubMode">true = 选中 Roi 变化/主模式切换（按 <see cref="Roi.Source"/> 同步 radio）；
+        /// false = 用户刚切子模式 radio（此时 radio 已是用户意图，只回灌视图缓存、绝不反向改 radio）。</param>
+        /// 本地绘制（Source=Drawing）分支不覆盖 SubscribeSubMode（保留用户当前子模式选择）。
+        /// </remarks>
+        public void LoadFromRoi(Roi? input, bool syncSubMode = false)
         {
-            if (input == null) return;
-
             // 记录订阅面板编辑的目标 Roi，供 VM 把订阅配置写回正确位置
             _targetRoi = input;
 
-            if (input.Binding != null)
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[LoadFromRoi] 回显输入 roi={input?.Name ?? "null"} | Source={input?.Source.ToString() ?? "null"} | syncSubMode={syncSubMode} | SubscribeSubMode={_subscribeSubMode}",
+                "RoiSubscribePanel");
+
+            if (input == null)
             {
-                // 整对象订阅
-                SubscribeSubMode = RoiSubscribeSubMode.WholeRegion;
-                WholeRegionSetting = input.Binding;
+                WholeRegionSetting = null;
+                UpdateParameterDefinitions();
                 return;
             }
 
-            if (input.ParameterBindings is { Count: > 0 })
+            // radio 同步（仅选中变化/主模式切换）：按激活来源设置子模式；用户切 radio 时不走这里
+            //（radio 已是用户意图，syncSubMode=false 只回灌视图、绝不反向改 radio）。
+            // Drawing（无订阅/刚切绘制清空）= "新节点刚打开订阅模式"的等价态：子模式重置为默认"按区域订阅"，
+            // 两个子模式绑定均已清空（区域行 null、参数行空），与用户语义一致。
+            if (syncSubMode)
             {
-                // 参数拼装：按持久化形状出参数行，并回填已绑定的键
-                SubscribeSubMode = RoiSubscribeSubMode.GeometricParameters;
-                var shapeType = input.ComposeShapeType != ShapeType.None
-                    ? input.ComposeShapeType
-                    : input.DeclaredShapeType;
-                if (shapeType == ShapeType.None)
-                    shapeType = ShapeType.Rectangle;
-                _currentShapeType = shapeType;
-                OnPropertyChanged(nameof(CurrentShapeType));
-                UpdateParameterDefinitions();
+                SubscribeSubMode = input.Source switch
+                {
+                    RoiGeometrySource.WholeRegionSub => RoiSubscribeSubMode.WholeRegion,
+                    RoiGeometrySource.GeometricSub => RoiSubscribeSubMode.GeometricParameters,
+                    _ => RoiSubscribeSubMode.WholeRegion, // Drawing：重置为默认"区域订阅"
+                };
+            }
+
+            // 视图缓存按【激活来源】显示对应数据；非激活来源的并存/错位数据一律不显示：
+            // - 区域源行仅在 Source=WholeRegionSub 时显示模型 Binding；Drawing/参数订阅时必空
+            //   （杜绝"Source 已是本地/参数但旧区域绑定仍显示"，以及绘制切回订阅后残留订阅行）；
+            // - 参数行仅在 Source=GeometricSub 时按 ParameterBindings 回填；其它来源为空行（供新配）。
+            // 并存配置（另一侧）在切到对应子模式 radio 时由 SubscribeSubMode setter 激活 Source 后重新回灌。
+            WholeRegionSetting = input.Source == RoiGeometrySource.WholeRegionSub
+                ? input.Binding
+                : null;
+
+            // 参数行形状模板：激活参数订阅用持久化 Compose/Declared 形状；其余（区域/绘制）按本地形状提供占位行。
+            var shapeType = input.Source == RoiGeometrySource.GeometricSub
+                ? (input.ComposeShapeType != ShapeType.None ? input.ComposeShapeType : input.DeclaredShapeType)
+                : (input.LocalGeometry?.ShapeType ?? ShapeType.None);
+            if (shapeType is not (ShapeType.Point or ShapeType.Line or ShapeType.Circle
+                    or ShapeType.Rectangle or ShapeType.RotatedRectangle))
+                shapeType = ShapeType.Rectangle;
+            _currentShapeType = shapeType;
+            OnPropertyChanged(nameof(CurrentShapeType));
+            UpdateParameterDefinitions();
+
+            if (input.Source == RoiGeometrySource.GeometricSub && input.ParameterBindings != null)
+            {
                 foreach (var item in Parameters)
                 {
                     if (input.ParameterBindings.TryGetValue(item.ParameterName, out var setting))
@@ -195,23 +260,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
                             : string.Empty;
                     }
                 }
-                return;
             }
-
-            // 本地绘制（未订阅）：默认停在整对象订阅（只显示区域源），用户手动切"订阅几何参数"才进拼装。
-            // 但预先按本地形状生成几何参数行，切到几何 group 时立即有可用参数项。
-            SubscribeSubMode = RoiSubscribeSubMode.WholeRegion;
-            WholeRegionSetting = null;
-
-            var localShape = input.LocalGeometry?.ShapeType ?? ShapeType.None;
-            // 多边形等不定点形状不支持几何参数拼装：下拉不含它，仅整 ROI 订阅；此处回退默认矩形模板。
-            _currentShapeType = localShape is ShapeType.Point or ShapeType.Line or ShapeType.Circle
-                or ShapeType.Rectangle or ShapeType.RotatedRectangle
-                ? localShape
-                : ShapeType.Rectangle;
-
-            OnPropertyChanged(nameof(CurrentShapeType));
-            UpdateParameterDefinitions();
         }
 
         #region 整对象订阅

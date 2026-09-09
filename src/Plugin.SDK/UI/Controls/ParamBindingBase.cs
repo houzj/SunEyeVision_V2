@@ -103,8 +103,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         ///     - 处理时间戳
         /// </remarks>
         /// <param name="dataSources">数据源列表</param>
+        /// <param name="targetType">目标参数类型（可选）。RoiShape[] 子树的形态按它定型：
+        /// 数值目标只出类型容器+字段叶；ROI/几何/未指定只出整体+类型集合叶。</param>
         /// <returns>树形结构的根节点列表</returns>
-        public static List<TreeNodeData> BuildTreeStructure(List<AvailableDataSource> dataSources)
+        public static List<TreeNodeData> BuildTreeStructure(List<AvailableDataSource> dataSources, Type? targetType = null)
         {
             var rootNodes = new List<TreeNodeData>();
             var nodeGroups = dataSources.GroupBy(ds => ds.SourceNodeName);
@@ -122,7 +124,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                         var leafNode = TreeNodeData.CreateDataSourceNode(dataSource);
                         leafNode.Parent = rootNode;
                         leafNode.BindingPath = dataSource.PropertyName;
-                        ApplyArrayDisplay(leafNode, dataSource);
+                        ApplyArrayDisplay(leafNode, dataSource, targetType);
                         rootNode.Children.Add(leafNode);
                     }
                     else
@@ -150,7 +152,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                         var leafNode = TreeNodeData.CreateDataSourceNode(dataSource);
                         leafNode.Parent = currentParent;
                         leafNode.BindingPath = dataSource.PropertyName;
-                        ApplyArrayDisplay(leafNode, dataSource);
+                        ApplyArrayDisplay(leafNode, dataSource, targetType);
                         currentParent.Children.Add(leafNode);
                     }
                 }
@@ -164,8 +166,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// <summary>
         /// 数组叶子节点显示增强（方案步骤6 / 〇 原则3）：折叠态文本统一为 "名称[]"，展开态物化子节点。
         /// 不改动绑定路径，仅影响树中文本与可展开的子节点。
+        /// RoiShape[] 子树形态由 targetType 词目定型（ArrayTreeFormatter.BuildRoiTypedChildren）。
         /// </summary>
-        private static void ApplyArrayDisplay(TreeNodeData leafNode, AvailableDataSource ds)
+        private static void ApplyArrayDisplay(TreeNodeData leafNode, AvailableDataSource ds, Type? targetType)
         {
             if (ds.PropertyType == null || !ds.PropertyType.IsArray)
                 return;
@@ -175,26 +178,24 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
             var elementType = ds.PropertyType.GetElementType() ?? typeof(object);
 
-            // ROI(RoiShape[])：按图形类型分组。有实际值按真实类型分组 + 逐元素 [i]；
-            // 无值/空（未运行、未绘制）按 ShapeType 枚举生成全部分组（声明式，不依赖绘制数据）。
+            // ROI(RoiShape[])：树形由目标参数词目定型（声明式 ShapeType 枚举 + RoiFieldSchema，
+            // 不依赖运行值，设计期/运行期结构一致；绑定终点必为叶子，类型节点只导航）。
             if (elementType == typeof(RoiShape))
             {
-                var roi = ds.CurrentValue as RoiShape[];
+                var targetVarType = targetType == null
+                    ? null
+                    : SunEyeVision.Plugin.SDK.Models.SdkTypeVocabulary.ToTypeVocabulary(targetType);
                 var roiChildren = new System.Collections.ObjectModel.ObservableCollection<TreeNodeData>(
-                    roi is { Length: > 0 }
-                        ? ArrayTreeFormatter.BuildRoiBindingChildren(ds, roi)
-                        : ArrayTreeFormatter.BuildRoiDesignTimeGroups(ds));
+                    ArrayTreeFormatter.BuildRoiTypedChildren(ds, targetVarType));
 
                 // P1：给 RoI 子节点统一补 Parent 链，否则 GetRootNode 向上遍历到 null 时把分组
-                // 自身当根（显示名根节点取成"圆"）。递归设置，覆盖整体/分组/单元素及其几何属性叶子。
+                // 自身当根（显示名根节点取成"圆"）。递归设置，覆盖整体/类型集合叶/字段叶。
                 foreach (var child in roiChildren)
                     AttachParentChain(child, leafNode);
 
                 leafNode.Children = roiChildren;
 
-                // 方案B：RoI 数组节点是"纯分组容器"，本身不可整体绑定（避免"可绑定 + 可展开"点击冲突）。
-                // 整体绑定改由子节点"整体"承担（BindingSuffix=null → 路径 "[]"，等价于绑整个数组）。
-                // IsSelectable=false 时点击不触发绑定，展开箭头默认行为正常执行，分组子节点仍可绑定。
+                // RoI 数组节点是"纯分组容器"：自身不绑定，绑定终点由子节点（整体/类型集合叶/字段叶）承担。
                 leafNode.IsSelectable = false;
                 return;
             }
@@ -278,6 +279,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 // 到具体图形（圆/旋转矩形/矩形等）。目标词汇为几何图形时放行 ROI 容器，
                 // 让绑定下拉能展开并精确选中对应图形分组（否则整条数据源被滤掉，用户看不到）。
                 if (dsVarType == "ROI" && GeometryVocabularies.Contains(targetVarType))
+                    return true;
+
+                // 规则 3.6：数值目标（Integer/Double）放行 RoI 容器数据源。
+                // ROI 容器可下钻到其内几何的数值字段（如 [0].Geometry.Width/Center.X，经 RoiFieldSchema 声明）。
+                // 仅放行容器本身，真正选中时仍校验叶子类型与目标匹配（数值互通，rule-015 报错优先）。
+                if (dsVarType == "ROI" && IsNumericVocabulary(targetVarType))
                     return true;
 
                 // 规则 4：其余词汇精确匹配（上一步已判等），不互通 → 不显示

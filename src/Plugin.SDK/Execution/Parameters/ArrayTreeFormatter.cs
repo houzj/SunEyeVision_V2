@@ -2,21 +2,18 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Windows;
-using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
 
 namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 {
     /// <summary>
-    /// 数组在绑定树/结果树中的显示助手（方案步骤6 / 〇 原则3）。
+    /// 数组在绑定树/结果树中的显示助手（绑定树 DataType 定型方案）。
     /// </summary>
     /// <remarks>
-    /// 默认折叠态：数组节点单行显示，元素值用 `;` 串联，树高与数组长度无关，根除大数据炸树。
-    /// 展开态（用户主动点 `+`）：才物化子节点。RoI(RoiShape[]) 按**字段聚合**下钻
-    /// （左上X/左上Y/宽/高 各为跨所有 RoI 元素的数组，用 `;` 串联）；其余数组类型逐元素 `[i]` 封顶。
-    /// 所有展开子节点均封顶（默认 100），超出部分用溢出节点引导索引查看（防炸，rule-008 KISS）。
+    /// - RoI(RoiShape[])：绑定树由 <see cref="BuildRoiTypedChildren"/> 按目标词目定型
+    ///   （ROI/几何→整体+类型集合叶；数值→类型容器+字段叶），不逐元素展开。
+    /// - 其余数组默认折叠态单行显示，展开态逐元素 `[i]` 封顶；所有展开子节点均封顶（默认 100），
+    ///   超出部分用溢出节点引导索引查看（防炸，rule-008 KISS）。
     /// </remarks>
     public static class ArrayTreeFormatter
     {
@@ -69,51 +66,14 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         }
 
         /// <summary>
-        /// 构建展开子节点（封顶 ExpansionCap）。
-        /// - RoiShape[]（RoI）：按字段聚合，每个字段节点值 = 跨所有元素该字段 `;` 串联。
-        /// - 其余数组：逐元素 `[i]` 节点，封顶后加溢出节点。
+        /// 构建普通数组展开子节点（封顶 ExpansionCap）。逐元素 `[i]` 节点，封顶后加溢出节点。
+        /// （RoI(RoiShape[]) 不在此展开：绑定树由 <see cref="BuildRoiTypedChildren"/> 按目标词目定型。）
         /// </summary>
         public static List<TreeNodeData> BuildExpansionChildren(object? value, System.Type elementType)
         {
             var children = new List<TreeNodeData>();
             if (value is not IEnumerable enumerable || value is string)
                 return children;
-
-            // RoI 字段聚合：元素为 RoiShape，且元素本身或其 Geometry 实现 IMonitorable
-            if (elementType == typeof(RoiShape) && enumerable is IEnumerable<RoiShape> shapeParams)
-            {
-                var list = shapeParams.ToList();
-                if (list.Count == 0)
-                    return children;
-
-                static IMonitorable? AsMonitor(object? o) => o as IMonitorable ?? (o as RoiShape)?.Geometry as IMonitorable;
-
-                var firstMon = AsMonitor(list[0]);
-                if (firstMon != null)
-                {
-                    var fields = firstMon.GetMonitorFields();
-                    foreach (var (fieldName, _) in fields)
-                    {
-                        var fieldValues = list.Select(sp =>
-                        {
-                            var m = AsMonitor(sp);
-                            if (m != null)
-                            {
-                                var f = m.GetMonitorFields().FirstOrDefault(x => x.FieldName == fieldName);
-                                return f.FieldValue?.ToString() ?? "--";
-                            }
-                            return "--";
-                        });
-                        children.Add(new TreeNodeData
-                        {
-                            Text = $"{fieldName} ({list.Count}项): {string.Join("; ", fieldValues)}",
-                            IsSelectable = false,
-                            IsExpanded = false,
-                        });
-                    }
-                    return children;
-                }
-            }
 
             // 逐元素 [i]（区域/数值/字符串等），封顶防炸
             int index = 0;
@@ -152,93 +112,54 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         }
 
         /// <summary>
-        /// 构建 RoI(RoiShape[]) 在绑定树中的可绑定子节点：按图形类型分组 + 逐元素 [i]。
-        /// 取代 BuildExpansionChildren 对 RoI 的"字段聚合"（异质数组会错位且不可绑定）。
-        /// 每个分组/元素节点挂合成 AvailableDataSource，携带 [Type=]/[i] BindingSuffix，运行期由
-        /// OutputVariableResolver 按图形类型过滤或取单元素（方案步骤4）。
+        /// 构建 RoI(RoiShape[]) 在绑定树中的可绑定子节点——**树形由目标参数词目（DataType）定型**。
+        /// 铁律：绑定终点必是叶子；有可绑子节点的类型节点一律为纯容器（IsSelectable=false，只导航）。
+        /// - 数值目标（Double/Integer，订阅几何参数）：整体/类型集合绑不上 double，不出现；
+        ///   每个声明类型 = 容器，children = <see cref="RoiFieldSchema"/> 字段叶（可绑，路径
+        ///   <c>[Type=X][].Geometry.字段</c>：数组集合语义，绑定该类型全部图形的该字段；
+        ///   仅 1 个时自动解包单值，N 个返回数组；需第 N 个由用户手写 [Type=X][N]）。
+        /// - ROI/几何/未限定目标（整对象订阅等）：整体叶（绑全部 []）+ 各类型集合叶（绑 [Type=X]），
+        ///   均为叶子、无下钻（避免"可展开+可绑定"角色冲突）。
+        /// 设计期/运行期结构一致：声明式由 ShapeType 枚举 + RoiFieldSchema 驱动，不依赖运行值
+        /// （rule-016 数据驱动优先）。已删除旧逐元素 [i] 层级与 Geometry 反射枚举（schema 唯一字段源）。
         /// </summary>
-        public static List<TreeNodeData> BuildRoiBindingChildren(AvailableDataSource parentDs, RoiShape[] roi)
+        public static List<TreeNodeData> BuildRoiTypedChildren(AvailableDataSource parentDs, string? targetVarType)
         {
             var children = new List<TreeNodeData>();
-            if (roi.Length == 0)
+            bool numericTarget = targetVarType is "Double" or "Integer";
+
+            if (numericTarget)
+            {
+                // 数值目标：类型集合/整体是 RoiShape[]（ROI 词目），绑到 double 必类型错 → 不出现；
+                // 仅提供"类型容器 → 字段叶"，容器自身不可绑（只导航）。
+                foreach (var type in Enum.GetValues<ShapeType>())
+                {
+                    if (type == ShapeType.None) continue;
+
+                    var fields = RoiFieldSchema.GetFields(type);
+                    if (fields.Count == 0)
+                        continue; // 无可下钻字段的类型（如多边形）在数值目标下无处可绑 → 不出现
+
+                    var enumName = type.ToString();
+                    var typeNode = new TreeNodeData
+                    {
+                        Text = GetShapeTypeShortName(type),
+                        IsSelectable = false, // 容器：单击只展开字段，绝不绑定
+                        IsExpanded = false,
+                    };
+                    var leaves = new System.Collections.ObjectModel.ObservableCollection<TreeNodeData>();
+                    foreach (var f in fields)
+                    {
+                        leaves.Add(CreateRoiFieldLeaf(parentDs, type, f));
+                    }
+                    typeNode.Children = leaves;
+                    children.Add(typeNode);
+                }
                 return children;
-
-            // 第一个节点为"整体"：绑定整个检测区域数组（BindingSuffix=null → 路径 "[]"）
-            children.Add(CreateRoiOverallNode(parentDs, roi));
-
-            // 按图形类型分组
-            foreach (var group in roi.GroupBy(sp => sp.ShapeType).OrderBy(g => g.Key.ToString()))
-            {
-                var type = group.Key;
-                var items = group.ToList();
-                var enumName = type.ToString();
-                var displayName = GetShapeTypeShortName(type);
-                var groupDs = new AvailableDataSource
-                {
-                    SourceNodeId = parentDs.SourceNodeId,
-                    SourceNodeName = parentDs.SourceNodeName,
-                    PropertyName = parentDs.PropertyName,
-                    DisplayName = parentDs.DisplayName,
-                    PropertyType = typeof(RoiShape[]),
-                    VariableType = parentDs.VariableType,
-                    BindingSuffix = $"[Type={enumName}]",
-                    CurrentValue = items.ToArray(),
-                };
-                children.Add(new TreeNodeData
-                {
-                    // P3：分组节点不显示数量（用户要求简洁，树内外显示名一致：圆）
-                    Text = displayName,
-                    IsSelectable = true,
-                    DataSource = groupDs,
-                    BindingPath = $"{parentDs.PropertyName}[Type={enumName}]",
-                });
             }
 
-            // 逐元素 [i]：每个单项节点下挂可绑定的几何属性叶子（[i].Geometry.属性 穿透）
-            for (int i = 0; i < roi.Length; i++)
-            {
-                var idx = i;
-                var sp = roi[idx];
-                var elemDs = new AvailableDataSource
-                {
-                    SourceNodeId = parentDs.SourceNodeId,
-                    SourceNodeName = parentDs.SourceNodeName,
-                    PropertyName = parentDs.PropertyName,
-                    DisplayName = parentDs.DisplayName,
-                    PropertyType = typeof(RoiShape),
-                    VariableType = parentDs.VariableType,
-                    BindingSuffix = $"[{idx}]",
-                    CurrentValue = sp,
-                };
-                var elemNode = new TreeNodeData
-                {
-                    Text = $"[{idx}] {FormatElementSummary(sp)}",
-                    IsSelectable = true,
-                    DataSource = elemDs,
-                    BindingPath = $"{parentDs.PropertyName}[{idx}]",
-                };
-                // 属性叶子：遍历 sp.Geometry 的具体类型，生成可绑定属性路径
-                elemNode.Children = new System.Collections.ObjectModel.ObservableCollection<TreeNodeData>(
-                    BuildGeometryAttributeLeaves(elemDs, sp, idx));
-                children.Add(elemNode);
-            }
-
-            return children;
-        }
-
-        /// <summary>
-        /// 构建 RoI(RoiShape[]) 在设计期（未运行/未绘制）的可绑定子节点。
-        /// 第一个节点为"整体"（绑定整个检测区域数组，BindingSuffix=null → 路径 "[]"），
-        /// 其后按 ShapeType 枚举（跳过 None）生成全部分组，每个分组携带 [Type=X] BindingSuffix，
-        /// 不依赖任何实际数据（rule-016 数据驱动优先：结构由类型声明驱动）。
-        /// 运行期由 OutputVariableResolver 按 [Type=X] 过滤真实图形；若检测区无该类型直接报错。
-        /// </summary>
-        public static List<TreeNodeData> BuildRoiDesignTimeGroups(AvailableDataSource parentDs)
-        {
-            var children = new List<TreeNodeData>
-            {
-                CreateRoiOverallNode(parentDs),
-            };
+            // ROI / 几何图形 / 未限定目标：整体 + 各类型集合叶（均为绑定终点，无 children）。
+            children.Add(CreateRoiOverallNode(parentDs));
             foreach (var type in Enum.GetValues<ShapeType>())
             {
                 if (type == ShapeType.None) continue;
@@ -258,7 +179,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 children.Add(new TreeNodeData
                 {
                     Text = GetShapeTypeShortName(type),
-                    IsSelectable = true,
+                    IsSelectable = true, // 类型集合叶 = 绑定终点（无 children，无展开歧义）
                     DataSource = groupDs,
                     BindingPath = $"{parentDs.PropertyName}[Type={enumName}]",
                 });
@@ -267,79 +188,34 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         }
 
         /// <summary>
-        /// 为 RoI 单项 [i] 生成几何属性叶子（Geometry 穿透）。
-        /// 遍历 RoiShape.Geometry 的具体类型（Circle2d/RotatedRect2d/Point2d/Line2d/Polygon2d/Annulus2d），
-        /// 对标量字段（double/int/bool/string）与 Point/Vector 字段生成可绑定叶子，
-        /// 绑定路径形如 "InspectionGeometries[i].Geometry.Center.X"（方案层级 3b）。
+        /// 创建 RoI 字段叶（schema 唯一字段源）。绑定路径 <c>[Type=X][].Geometry.{f.Path}</c>——
+        /// 集合语义：绑定"该类型全部图形的该字段"（[] 空括号 = 数组，不自动填索引）；
+        /// 运行期对该类型逐图形投影字段：仅 1 个时自动解包为单值，N 个返回数组；
+        /// 需要第 N 个时由用户手动在 [] 中写索引（[Type=X][N]）。检测区无该类型直接报错（rule-015）。
         /// </summary>
-        private static List<TreeNodeData> BuildGeometryAttributeLeaves(AvailableDataSource elemDs, RoiShape sp, int idx)
+        private static TreeNodeData CreateRoiFieldLeaf(AvailableDataSource parentDs, ShapeType type, RoiFieldDef f)
         {
-            var leaves = new List<TreeNodeData>();
-            var geometry = sp.Geometry;
-            if (geometry == null) return leaves;
-
-            // 遍历 Geometry 具体类型的公共数据字段（Center/Radius/Width/Height/Angle/Point/Direction/X/Y 等）。
-            // 标量字段直接成叶子；Point/Vector 字段下钻 .X/.Y。
-            var geometryType = geometry.GetType();
-            var fields = geometryType
-                .GetFields(BindingFlags.Public | BindingFlags.Instance)
-                .ToList();
-
-            foreach (var field in fields)
+            var enumName = type.ToString();
+            var suffix = $"[Type={enumName}][].Geometry.{f.Path}";
+            var fieldDs = new AvailableDataSource
             {
-                object? fieldValue;
-                try { fieldValue = field.GetValue(geometry); }
-                catch { continue; }
-
-                if (IsScalarType(field.FieldType))
-                {
-                    AddLeaf(leaves, elemDs, idx, field.Name, field.Name, field.FieldType, fieldValue);
-                }
-                else if (field.FieldType == typeof(Point))
-                {
-                    var pt = (Point)(fieldValue ?? default(Point));
-                    AddLeaf(leaves, elemDs, idx, $"{field.Name}.X", $"{field.Name} X", typeof(double), pt.X);
-                    AddLeaf(leaves, elemDs, idx, $"{field.Name}.Y", $"{field.Name} Y", typeof(double), pt.Y);
-                }
-                else if (field.FieldType == typeof(Vector))
-                {
-                    var v = (Vector)(fieldValue ?? default(Vector));
-                    AddLeaf(leaves, elemDs, idx, $"{field.Name}.X", $"{field.Name} X", typeof(double), v.X);
-                    AddLeaf(leaves, elemDs, idx, $"{field.Name}.Y", $"{field.Name} Y", typeof(double), v.Y);
-                }
-                // Point[] / 其他复合类型（如 Polygon2d.Vertices）暂不生成叶子（YAGNI，需时经轮廓工具）
-            }
-
-            return leaves;
-        }
-
-        private static void AddLeaf(List<TreeNodeData> leaves, AvailableDataSource elemDs, int idx,
-            string bindingSuffix, string displayName, Type propertyType, object? value)
-        {
-            leaves.Add(new TreeNodeData
+                SourceNodeId = parentDs.SourceNodeId,
+                SourceNodeName = parentDs.SourceNodeName,
+                PropertyName = parentDs.PropertyName,
+                DisplayName = f.DisplayName,
+                PropertyType = f.ValueType,
+                VariableType = SunEyeVision.Plugin.SDK.Models.SdkTypeVocabulary.ToTypeVocabulary(f.ValueType),
+                BindingSuffix = suffix,
+                CurrentValue = null,
+            };
+            return new TreeNodeData
             {
-                Text = displayName,
-                IsSelectable = true,
-                BindingPath = $"{elemDs.PropertyName}[{idx}].Geometry.{bindingSuffix}",
-                DataSource = new AvailableDataSource
-                {
-                    SourceNodeId = elemDs.SourceNodeId,
-                    SourceNodeName = elemDs.SourceNodeName,
-                    PropertyName = elemDs.PropertyName,
-                    DisplayName = displayName,
-                    PropertyType = propertyType,
-                    VariableType = SunEyeVision.Plugin.SDK.Models.SdkTypeVocabulary.ToTypeVocabulary(propertyType),
-                    BindingSuffix = $"[{idx}].Geometry.{bindingSuffix}",
-                    CurrentValue = value,
-                },
-            });
-        }
-
-        private static bool IsScalarType(Type type)
-        {
-            return type == typeof(double) || type == typeof(int) || type == typeof(long)
-                || type == typeof(float) || type == typeof(bool) || type == typeof(string)
-                || type == typeof(uint) || type == typeof(short) || type == typeof(byte);
+                Text = f.DisplayName,
+                IsSelectable = true, // 字段叶 = 绑定终点
+                IsExpanded = false,
+                BindingPath = $"{parentDs.PropertyName}{suffix}",
+                DataSource = fieldDs,
+            };
         }
 
         /// <summary>

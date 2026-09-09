@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -66,6 +66,11 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 
             object? current = variable.RuntimeValue;
 
+            // 本路径是否含 ROI 类型过滤（[Type=X]）。ROI 字段投影路径（如 [Type=X][].Geometry.X）
+            // 语义 = "该类型全部图形的该字段集合"，恒以数组返回（N=1 时也返回 double[1]，
+            // 供几何参数订阅向量化拼装"有几个解析几个"）；因此后续段不做长度 1 解包。
+            var isRoiTypedPath = firstTypeFilter != null;
+
             // 第一段类型过滤（RoI 按图形类型绑定，方案步骤3）
             if (firstTypeFilter != null)
             {
@@ -85,7 +90,10 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 current = UnwrapLengthOne(current);
             }
 
-            // 后续段：在当前运行时值上用反射逐段解析
+            // 后续段：在当前运行时值上用反射逐段解析。
+            // 支持"数组元素逐项投影"：当前值为过滤后的数组（如 [Type=X][] 保留的 RoiShape[]）
+            // 且本段为纯成员访问（无索引/无类型过滤）时，对每个元素取该成员，返回投影数组。
+            // 例：[Type=Circle][].Geometry.Radius → 所有圆的半径集合（double[N]，N=图形数）。
             for (int i = 1; i < parsedPath.Count; i++)
             {
                 if (current == null)
@@ -94,30 +102,25 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 
                 var (propName, idx, typeFilter) = parsedPath[i];
 
-                // 属性优先，字段回退（几何类型 Circle2d.Center/Radius 等为 readonly 字段，需支持字段寻址）
-                var prop = current.GetType().GetProperty(propName, BindingFlags.Public | BindingFlags.Instance);
-                if (prop != null && prop.CanRead)
+                // 数组逐元素投影：当前是数组、本段不取索引且不做类型过滤 → 对每个元素取成员并收拢为同构新数组。
+                // 仅当元素自身可承载成员（非 double/string 等纯标量值数组——标量数组无成员访问）时投影；
+                // 投影数组类型按首个成员结果类型创建（几何字段投影 double[]，避免泄漏 object[]）。
+                if (current is not string && current is Array arr && !idx.HasValue && typeFilter == null
+                    && arr.Rank == 1 && arr.Length > 0
+                    && !IsScalarValueArray(arr))
                 {
-                    try
+                    var firstMember = ResolveMember(arr.GetValue(0), propName, propertyPath);
+                    var projected = Array.CreateInstance(firstMember?.GetType() ?? typeof(object), arr.Length);
+                    projected.SetValue(firstMember, 0);
+                    for (int e = 1; e < arr.Length; e++)
                     {
-                        current = prop.GetValue(current);
+                        projected.SetValue(ResolveMember(arr.GetValue(e), propName, propertyPath), e);
                     }
-                    catch (Exception ex)
-                    {
-                        throw new InvalidOperationException(
-                            $"属性路径 '{propertyPath}' 获取 '{propName}' 失败: {ex.Message}", ex);
-                    }
+                    current = projected;
                 }
                 else
                 {
-                    var field = current.GetType().GetField(propName, BindingFlags.Public | BindingFlags.Instance);
-                    if (field == null)
-                    {
-                        var actualType = current.GetType().Name;
-                        throw new InvalidOperationException(
-                            $"属性路径 '{propertyPath}' 中找不到属性或字段 '{propName}'（运行时值类型 '{actualType}' 无此公共实例属性/字段）");
-                    }
-                    current = field.GetValue(current);
+                    current = ResolveMember(current, propName, propertyPath);
                 }
 
                 if (typeFilter != null)
@@ -131,13 +134,57 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                     if (idx.Value >= 0)
                         current = GetArrayElement(current, propName, idx.Value);
                 }
-                else if (typeFilter == null)
+                else if (typeFilter == null && !isRoiTypedPath)
                 {
+                    // 非 ROI 类型过滤路径保留"长度 1 数组解包为标量"（存量标量绑定兼容，决策3）。
+                    // ROI 字段投影路径恒返回数组（长度 = 该类型图形数，含 1），供"有几个解析几个"向量化拼装。
                     current = UnwrapLengthOne(current);
                 }
             }
 
             return current;
+        }
+
+        /// <summary>值数组（数值/字符串/布尔等）不存在可投影的实例成员，不做逐元素投影。</summary>
+        private static bool IsScalarValueArray(Array arr)
+        {
+            var elemType = arr.GetType().GetElementType();
+            if (elemType == null || !elemType.IsValueType)
+                return false; // RoiShape/几何等引用元素数组 → 可投影（走成员反射，找不到时报错）
+            return elemType == typeof(double) || elemType == typeof(int) || elemType == typeof(long)
+                || elemType == typeof(float) || elemType == typeof(bool) || elemType == typeof(string)
+                || elemType == typeof(byte) || elemType == typeof(short) || elemType == typeof(uint);
+        }
+
+        /// <summary>在当前值上取单个公共属性/字段（属性优先、字段回退），找不到即报错（rule-015）。</summary>
+        private static object? ResolveMember(object? current, string propName, string propertyPath)
+        {
+            if (current == null)
+                throw new InvalidOperationException(
+                    $"属性路径 '{propertyPath}' 中途遇到 null 值（取到 '{propName}' 时）");
+
+            var prop = current.GetType().GetProperty(propName, BindingFlags.Public | BindingFlags.Instance);
+            if (prop != null && prop.CanRead)
+            {
+                try
+                {
+                    return prop.GetValue(current);
+                }
+                catch (Exception ex)
+                {
+                    throw new InvalidOperationException(
+                        $"属性路径 '{propertyPath}' 获取 '{propName}' 失败: {ex.Message}", ex);
+                }
+            }
+
+            var field = current.GetType().GetField(propName, BindingFlags.Public | BindingFlags.Instance);
+            if (field == null)
+            {
+                var actualType = current.GetType().Name;
+                throw new InvalidOperationException(
+                    $"属性路径 '{propertyPath}' 中找不到属性或字段 '{propName}'（运行时值类型 '{actualType}' 无此公共实例属性/字段）");
+            }
+            return field.GetValue(current);
         }
 
         private static object? UnwrapLengthOne(object? current)

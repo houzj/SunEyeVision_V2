@@ -346,6 +346,22 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 return;
             }
 
+            // 绑定源被程序清空（如模式切换解除订阅 / 清除区域源）：必须同步清空显示文本，
+            // 否则控件残留旧显示名——造成"UI 看着仍绑定、运行时绑定已失效"的假象。
+            if (string.IsNullOrEmpty(bindingPath))
+            {
+                control._isProgrammaticDisplayUpdate = true;
+                try
+                {
+                    control.BindingDisplayText = string.Empty;
+                }
+                finally
+                {
+                    control._isProgrammaticDisplayUpdate = false;
+                }
+                return;
+            }
+
             // 默认模式：仅当还没有显示名时补翻译（程序回显场景），已有显示名（用户刚选择生成/容器已赋值）不覆盖。
             control.BackfillDisplayTextFromSource();
         }
@@ -402,8 +418,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 // 使用基类的静态方法进行类型过滤
                 var filteredDataSources = ParamBindingBase.FilterDataSourcesByType(dataSourceList, DataType);
 
-                // 使用基类的静态方法构建树形结构
-                var treeNodes = ParamBindingBase.BuildTreeStructure(filteredDataSources);
+                // 使用基类的静态方法构建树形结构（传 DataType：RoiShape[] 子树按目标词目定型
+                // —— 数值目标出类型容器+字段叶，ROI/几何目标出整体+类型集合叶）
+                var treeNodes = ParamBindingBase.BuildTreeStructure(filteredDataSources, DataType);
                 foreach (var node in treeNodes)
                 {
                     nodes.Add(node);
@@ -505,6 +522,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     return;
                 }
 
+                // 容器节点（可展开的类型分组/数组容器）：单击整行 = 展开/收起导航，绝不绑定。
+                // 唯一例外：无子叶的"无"节点（解绑）与可绑叶子在后续分支处理。
+                if (IsNavigationContainer(selectedNode))
+                {
+                    selectedNode.IsExpanded = !selectedNode.IsExpanded;
+                    e.Handled = true;
+                    return;
+                }
+
                 // "无"节点：解绑
                 if (selectedNode.IsSelectable && selectedNode.DataSource == null)
                 {
@@ -550,6 +576,19 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         }
 
         /// <summary>
+        /// 判定节点是否为"导航容器"（只展开、不可绑定）。
+        /// 规则：绑定终点必为叶子——凡含可绑子叶（IsSelectable）的节点一律视为容器；
+        /// 或自身不可选（IsSelectable=false）但挂有 children 的数组/类型分组节点。
+        /// 防御意义：即便树构建误标，含可绑子叶的节点也绝不会被当作绑定终点（防"展开节点误绑"）。
+        /// </summary>
+        private static bool IsNavigationContainer(TreeNodeData node)
+        {
+            if (node.Children is { Count: > 0 } && node.Children.Any(c => c.IsSelectable))
+                return true;
+            return !node.IsSelectable && node.Children is { Count: > 0 };
+        }
+
+        /// <summary>
         /// 查找指定类型的父元素
         /// </summary>
         private static T? FindParent<T>(DependencyObject? child) where T : DependencyObject
@@ -577,6 +616,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 {
                     e.Handled = true;
                     RaiseEvent(new RoutedEventArgs(GlobalVariableSelectionRequestedEvent));
+                    return;
+                }
+
+                // 容器节点：仅展开/收起，绝不绑定（与 PreviewMouseLeftButtonDown 同规则）
+                if (IsNavigationContainer(selectedNode))
+                {
+                    selectedNode.IsExpanded = !selectedNode.IsExpanded;
                     return;
                 }
 
@@ -728,6 +774,29 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         }
 
         /// <summary>
+        /// 由宿主（订阅面板等）按模型当前状态显式同步"绑定源 + 显示文本"。
+        /// 当绑定源经 OneWay 绑定/局部值覆盖等路径不可靠时，宿主调用本方法强制控件与模型一致：
+        /// bindingPath 为空 → 源与显示文本都清空（对应"解除绑定/模式切换清空"）；
+        /// 非空 → 写源并翻译显示名。始终用抑制标志包裹，避免触发编辑回写。
+        /// </summary>
+        public void SyncDisplay(string? bindingPath)
+        {
+            BindingSource = bindingPath ?? string.Empty;
+            _isProgrammaticDisplayUpdate = true;
+            try
+            {
+                BindingDisplayText = string.IsNullOrEmpty(bindingPath)
+                    ? string.Empty
+                    : GenerateBindingDisplayText(bindingPath);
+            }
+            finally
+            {
+                _isProgrammaticDisplayUpdate = false;
+            }
+            IsBound = !string.IsNullOrEmpty(bindingPath);
+        }
+
+        /// <summary>
         /// 根据绑定源路径生成绑定显示文本
         /// </summary>
         /// <param name="bindingPath">绑定源路径（格式：节点ID.属性名，属性名可含 [N] 索引）</param>
@@ -737,8 +806,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             var node = FindNodeByBindingPath(bindingPath);
             if (node == null)
             {
-                VisionLogger.Instance.Log(LogLevel.Warning,
-                    $"[ParamBinding] 未找到绑定路径对应的节点: {bindingPath}",
+                // Debug 级：这是"可重试"的预期时序事件（数据源树注入晚于程序回显，
+                // BackfillDisplayTextFromSource 在树重建后会再次调用本方法重试成功），
+                // 降噪避免每次切子模式/回显刷 Warning 误导为"绑定失效"。真正的路径错配
+                // 由运行期 OutputVariableResolver 按 rule-015 显式报错兜底。
+                VisionLogger.Instance.Log(LogLevel.Debug,
+                    $"[ParamBinding] 未找到绑定路径对应的节点（等待树重建重试）: {bindingPath}",
                     "ParamBinding");
                 return bindingPath;
             }
@@ -754,7 +827,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             var propertyFullName = dotIndex >= 0 ? bindingPath[(dotIndex + 1)..] : bindingPath;
             var (_, arrayIndex, _) = PropertyPathParser.ParsePropertyPart(propertyFullName);
 
-            // 如果有具体索引（>=0），替换掉默认的 []；-1 表示显式 "[]" 保留整个数组
+            // 仅有用户手写的具体索引（>=0）才替换默认的 []；-1 表示显式 "[]"/无索引 = 数组整体，保持 "名[]" 不自动带数字
             if (arrayIndex.HasValue && arrayIndex.Value >= 0 && leafName.EndsWith("[]"))
             {
                 leafName = leafName.Substring(0, leafName.Length - 2) + $"[{arrayIndex.Value}]";
@@ -878,18 +951,36 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             // 用户改显示名 []→[n] 时若丢掉 [Type=Circle]，会静默取错元素（违反 rule-015）。
             var (propertyName, _, typeFilter) = PropertyPathParser.ParsePropertyPart(propertyFullName);
 
-            // 构建新的 BindingSource（保留类型过滤，仅替换索引位）
+            // 构建新的 BindingSource（保留类型过滤 + 字段子路径，仅替换索引位）
             string indexPart;
             if (string.IsNullOrEmpty(indexStr))
-                indexPart = "[]";  // [] 空括号 → 整个数组
+                indexPart = "[]";  // [] 空括号 → 整个数组（不指定索引）
             else if (int.TryParse(indexStr, out _))
                 indexPart = $"[{indexStr}]";  // [0] [1] 等有效索引
             else
                 return false;  // 无效内容 → 同步失败
 
+            // 类型过滤 token（可能不存在，如普通数组绑定）
             var typePart = typeFilter != null ? $"[Type={typeFilter}]" : "";
-            BindingSource = $"{nodeId}.{propertyName}{typePart}{indexPart}";
+
+            // 重建属性部分：属性名 + [Type=X] + 新索引。字段下钻子路径（.Geometry.Center.X 等）
+            // 位于属性括号之后，需原样保留，否则手动改索引会把字段叶路径退化为数组整体（rule-015 报错优先）。
+            var fieldSubPath = ExtractFieldSubPath(propertyFullName);
+            BindingSource = $"{nodeId}.{propertyName}{typePart}{indexPart}{fieldSubPath}";
             return true;
+        }
+
+        /// <summary>
+        /// 提取属性路径中"数组括号之后"的字段下钻子路径（如 [Type=X][].Geometry.Center.X → ".Geometry.Center.X"）。
+        /// 若绑定的是普通数组/类型集合（无字段子路径）返回空串。
+        /// </summary>
+        private static string ExtractFieldSubPath(string propertyFullName)
+        {
+            var lastBracket = propertyFullName.LastIndexOf(']');
+            if (lastBracket < 0 || lastBracket >= propertyFullName.Length - 1)
+                return string.Empty;
+            var sub = propertyFullName[(lastBracket + 1)..];
+            return sub.StartsWith(".", StringComparison.Ordinal) ? sub : string.Empty;
         }
 
         #endregion

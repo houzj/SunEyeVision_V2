@@ -138,6 +138,21 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         public event EventHandler<bool>? SelectionChanged;
 
         /// <summary>
+        /// 标题文本（元素在双卡尺容器中的名字，如"卡尺1/卡尺2"；单编辑器默认"检测区域"）。
+        /// 供 <see cref="MeasureElementsEditorControl"/> 等组合控件区分两个元素。
+        /// </summary>
+        public static readonly DependencyProperty EditorHeaderProperty =
+            DependencyProperty.Register(nameof(EditorHeader), typeof(string),
+                typeof(MeasureEditorControl), new PropertyMetadata("检测区域"));
+
+        /// <summary>标题文本（顶部类型标签显示内容）</summary>
+        public string EditorHeader
+        {
+            get => (string)GetValue(EditorHeaderProperty);
+            set => SetValue(EditorHeaderProperty, value);
+        }
+
+        /// <summary>
         /// 创建测量引导几何交互宿主
         /// </summary>
         public MeasureEditorControl()

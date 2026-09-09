@@ -1,0 +1,49 @@
+<UserControl x:Class="SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views.MeasureElementsEditorControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:themes="clr-namespace:SunEyeVision.Plugin.SDK.UI.Themes"
+             xmlns:measure="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.SDK;component/UI/Themes/Generic.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <!-- 双测量元素（无屏蔽区）：
+         - 类型行 = 表格单行三列： 卡尺 | 测量工具栏 | 测量工具栏
+           每个测量工具栏即 MeasureToolBar（图标按钮），本工具限定只显示"直线"；
+         - 编辑器本体（MeasureEditorControl）作为隐形宿主承载画布交互/几何/事件；
+         - 下方唯一"当前卡尺 · 引导参数"区（MeasureGuideParameterPanel），跟随激活元素。
+         不改 MeasureEditorControl / MeasureToolBar 本体，既有查找工具零影响。 -->
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- 行0：卡尺 | [测量工具栏] | [测量工具栏] -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,6">
+            <TextBlock Text="卡尺" FontWeight="Bold" FontSize="13"
+                       Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"
+                       VerticalAlignment="Center"/>
+            <measure:MeasureToolBar x:Name="Element1ToolBarControl" Margin="8,0,20,0" VerticalAlignment="Center"/>
+            <measure:MeasureToolBar x:Name="Element2ToolBarControl" VerticalAlignment="Center"/>
+        </StackPanel>
+
+        <!-- 行1：引导几何参数（对齐直线查找：选中且已有引导才显示，默认折叠可手动展开） -->
+        <Expander x:Name="GuideParamsExpander" Grid.Row="1" Header="引导几何参数" IsExpanded="False"
+                  Margin="0,6,0,0" Visibility="Collapsed"
+                  BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}" BorderThickness="1">
+            <measure:MeasureGuideParameterPanel x:Name="GuideParamsPanel"/>
+        </Expander>
+
+        <!-- 行2：隐形编辑器宿主（承载画布交互/事件，不显示其内嵌 UI） -->
+        <Grid Grid.Row="2" Visibility="Collapsed">
+            <measure:MeasureEditorControl x:Name="Element1Editor"/>
+            <measure:MeasureEditorControl x:Name="Element2Editor"/>
+        </Grid>
+    </Grid>
+</UserControl>

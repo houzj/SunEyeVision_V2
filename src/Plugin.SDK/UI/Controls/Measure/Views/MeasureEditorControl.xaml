@@ -22,7 +22,8 @@
                         BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.AccentBrush}}"
                         BorderThickness="1"
                         HorizontalAlignment="Left">
-                    <TextBlock Text="检测区域" FontWeight="Bold" FontSize="12"
+                    <TextBlock Text="{Binding EditorHeader, RelativeSource={RelativeSource AncestorType=measure:MeasureEditorControl}}"
+                               FontWeight="Bold" FontSize="12"
                                Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.AccentBrush}}"/>
                 </Border>
             </StackPanel>

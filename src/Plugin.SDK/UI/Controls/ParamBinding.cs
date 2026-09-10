@@ -274,6 +274,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         private System.Collections.ObjectModel.ObservableCollection<AvailableDataSource>? _currentDataSources;
 
         /// <summary>
+        /// 数据源集合变更后的重建请求已排队（Dispatcher 防抖合并标志）
+        /// </summary>
+        private bool _rebuildPending;
+
+        /// <summary>
         /// 程序回填显示文本抑制标志：true 时 OnBindingDisplayTextChanged 直接返回，不触发编辑回写。
         /// 用于区分"程序赋值显示名"（绑定选择/解绑/全局变量/数据源刷新/BindingSource 回调）与"用户编辑"，
         /// 防止程序回填误覆盖 BindingSource（A2 治本）。
@@ -302,19 +307,46 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         private static void OnAvailableDataSourcesChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (d is ParamBinding control)
+            if (d is not ParamBinding control)
+                return;
+
+            // ★ 根治 A：宿主（ToolDebugControlBase）填充数据源用的是**同一集合实例**的 Clear/Add，
+            //   DP 回调因此只在"实例被替换"时触发一次；若那一刻集合尚空，会建成空树且**永不重建**
+            //   → 绑定显示名反查永远失败（表现为"关闭重开调试窗口，绑定显示成节点 GUID"）。
+            //   订阅集合内容变更，保证填充完成后重建树并重译显示名。
+            if (control._currentDataSources != null)
             {
-                if (e.NewValue is System.Collections.ObjectModel.ObservableCollection<AvailableDataSource> newDataSources)
-                {
-                    control._currentDataSources = newDataSources;
-                    control.RebuildTreeNodes();
-                }
-                else
-                {
-                    control._currentDataSources = null;
-                    control.TreeNodes = new System.Collections.ObjectModel.ObservableCollection<TreeNodeData>();
-                }
+                control._currentDataSources.CollectionChanged -= control.OnDataSourcesCollectionChanged;
             }
+
+            if (e.NewValue is System.Collections.ObjectModel.ObservableCollection<AvailableDataSource> newDataSources)
+            {
+                control._currentDataSources = newDataSources;
+                newDataSources.CollectionChanged += control.OnDataSourcesCollectionChanged;
+                control.RebuildTreeNodes();
+            }
+            else
+            {
+                control._currentDataSources = null;
+                control.TreeNodes = new System.Collections.ObjectModel.ObservableCollection<TreeNodeData>();
+            }
+        }
+
+        /// <summary>
+        /// 数据源集合内容变化（Clear + 逐项 Add 填充）→ 防抖重建树并重译显示名。
+        /// 用 Dispatcher 合并连续变更，避免逐项触发多次重建。
+        /// </summary>
+        private void OnDataSourcesCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            if (_rebuildPending)
+                return;
+
+            _rebuildPending = true;
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                _rebuildPending = false;
+                RebuildTreeNodes();
+            }), System.Windows.Threading.DispatcherPriority.Background);
         }
 
         /// <summary>
@@ -707,6 +739,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// 标量参数（DataType 非数组）若绑定默认的 "[]" 路径会保留整个数组，导致执行层类型不匹配。
         /// 改为无索引路径，让 OutputVariableResolver 自动解包长度 1 数组为单值（决策3 存量兼容）。
         /// RoI 带 BindingSuffix（[Type=Circle]/[i]）的合成节点不受影响，仍走 GetBindingPath。
+        ///
+        /// ★ 契约：本方法是 BindingSource 的**唯一**路径生成入口。
+        ///   写入（ApplyDataSourceBinding）与反查（FindNodeRecursive）必须共用它；
+        ///   一旦"写读规则分叉"，绑定显示名反查就会失败（曾表现为重开窗口显示节点 GUID）。
         /// </remarks>
         private string BuildScalarSafeBindingPath(AvailableDataSource ds)
         {
@@ -744,7 +780,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             if (TreeNodes == null || string.IsNullOrEmpty(bindingPath))
                 return null;
 
-            // 用完整绑定路径（含 [Type=]/[i] 后缀）在树中精确匹配合成 DataSource
+            // 用与写入侧相同的路径规则（BuildScalarSafeBindingPath）在树中精确匹配
             foreach (var rootNode in TreeNodes)
             {
                 var node = FindNodeRecursive(rootNode, bindingPath);
@@ -756,11 +792,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         }
 
         /// <summary>
-        /// 递归查找节点（按 DataSource 完整 GetBindingPath 匹配，含 [Type=]/[i] 后缀）
+        /// 递归查找节点（按与写入侧**完全相同**的路径规则匹配）。
+        /// ★ 根治 B：必须调用 BuildScalarSafeBindingPath —— 它是 BindingSource 的唯一路径生成入口
+        ///   （写入侧 ApplyDataSourceBinding 同用）。历史上此处误用 DataSource.GetBindingPath()：
+        ///   对"标量参数绑定数组属性"（DataType 非数组 + 属性是数组）会多出 "[]" 后缀，
+        ///   与写入值不相等 → 反查失败 → 显示名回退成节点 GUID。
         /// </summary>
         private TreeNodeData? FindNodeRecursive(TreeNodeData node, string fullBindingPath)
         {
-            if (node.DataSource != null && node.DataSource.GetBindingPath() == fullBindingPath)
+            if (node.DataSource != null && BuildScalarSafeBindingPath(node.DataSource) == fullBindingPath)
                 return node;
 
             foreach (var child in node.Children)
@@ -806,13 +846,23 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             var node = FindNodeByBindingPath(bindingPath);
             if (node == null)
             {
-                // Debug 级：这是"可重试"的预期时序事件（数据源树注入晚于程序回显，
-                // BackfillDisplayTextFromSource 在树重建后会再次调用本方法重试成功），
-                // 降噪避免每次切子模式/回显刷 Warning 误导为"绑定失效"。真正的路径错配
-                // 由运行期 OutputVariableResolver 按 rule-015 显式报错兜底。
-                VisionLogger.Instance.Log(LogLevel.Debug,
-                    $"[ParamBinding] 未找到绑定路径对应的节点（等待树重建重试）: {bindingPath}",
-                    "ParamBinding");
+                // 分级可观测（禁止静默降级）：
+                // - 树里还没有任何真实数据源 = 注入尚未到达（可重试）→ Debug 降噪；
+                // - 树已就绪却找不到 = 真实路径错配（写读规则分叉 / 源不在候选）→ Warning，
+                //   避免再次出现"显示成节点 GUID 却无人察觉"的静默降级。
+                bool treeReady = TreeNodes != null && TreeNodes.Any(n => n.DataSource != null);
+                if (treeReady)
+                {
+                    VisionLogger.Instance.Log(LogLevel.Warning,
+                        $"[ParamBinding] 绑定路径在数据源树中不存在（疑似路径错配或源不在候选）: {bindingPath}",
+                        "ParamBinding");
+                }
+                else
+                {
+                    VisionLogger.Instance.Log(LogLevel.Debug,
+                        $"[ParamBinding] 未找到绑定路径对应的节点（等待树重建重试）: {bindingPath}",
+                        "ParamBinding");
+                }
                 return bindingPath;
             }
 

@@ -1,31 +1,47 @@
 ---
 name: 视觉工具构建
-description: 视觉工具构建技能。用于批量生成视觉算法工具插件，以已验收算法工具（Blob 分析 / 直线查找 / 圆查找 / 轮廓匹配）为基准参考源提炼开发范式，输出 UI 方案 + 算法方案 + 差异点清单，并覆盖调试窗口从打开到关闭的完整生命周期验收。触发场景：创建新算法工具、添加视觉算法工具插件、工具 UI/算法方案设计。
+description: 视觉工具构建技能。用于批量生成视觉算法工具插件——图像处理式（Blob/阈值/滤波/形态学）、引导检测式（直线查找/圆查找）、几何测量式（线-线/线-圆/圆-圆/点-线/点-圆/点-点）。以已验收工具为基准参考源提炼开发范式，输出 UI 方案 + 算法方案 + 差异点清单，并覆盖调试窗口从打开到关闭的完整生命周期验收。触发场景：创建新算法工具、添加视觉算法工具插件、工具 UI/算法方案设计、测量工具构建、工具参数订阅装配。
 ---
 
 # 视觉工具构建技能
 
-> **定位**：算法工具的"批量生成器"。基于现有算法工具提炼**开发范式** → 输出 **UI 方案 + 算法方案 + 差异点清单** → 生成**基座代码** → 标注**独立修改点**。
+> **定位**：算法工具的"批量生成器"。基于已验收工具提炼**开发范式** → 输出 **UI 方案 + 算法方案 + 差异点清单** → 生成**基座代码** → 标注**独立修改点**。
+>
+> **渐进式披露**：主文件只保留判定、铁律、工作流、验收；范式细节在 `references/` 下按需读取。
 
-## 0. 适用范围边界（Step0 必须先判定）
+## 0. 适用范围边界（Step0 必须两步判定）
+
+### Step0-1 是否本技能对象
 
 | 适用性 | 工具类型 | 判别标准 | 处理方式 |
 |---|---|---|---|
-| ✅ **适用** | 算法工具 | 有输入图像 → Halcon 算法 → 结果+可视化+**调试窗口**（`HasDebugWindow=true`） | 本技能批量生成 |
+| ✅ **适用** | 算法工具 | 有输入图像 → 算法 → 结果+可视化+**调试窗口**（`HasDebugWindow=true`） | 本技能批量生成 |
 | ❌ 不适用 | 流程控制（Condition） | 无图像、有控制信号（`IControlFlowResult`） | 独立设计、多轮迭代 |
 | ❌ 不适用 | 子程序（Subroutine） | 嵌套工作流、动态输出映射 | 独立设计 |
 | ❌ 不适用 | 脚本（Script） | 动态编译（`IPrecompilableTool`） | 独立设计 |
 | ❌ 不适用 | 图像源（ImageLoad） | `HasDebugWindow=false`，无调试窗口 | 非本技能对象 |
 
-**硬性前提**：`HasDebugWindow=true` 是算法工具的本技能适用前提。无调试窗口的工具一律不适用本技能。
+**硬性前提**：`HasDebugWindow=true`。无调试窗口的工具一律不适用本技能。
+
+### Step0-2 选哪条范式线（决定参数/判定/UI 装配写法）
+
+| 范式线 | 判别 | 代表工具 | 关键基座 | 范式详情 |
+|---|---|---|---|---|
+| **A 图像处理式** | 输入图像 → 区域/全图 → 算子链 → 统计/判定 | Blob、Threshold、ImageFilter、Morphology、ImageThreshold | `HalconRegionPipeline` + `RoiEditorManagerControl` + `ResultConfig` | [02](references/02-paradigm-run.md) / [03](references/03-paradigm-ui.md) / [04](references/04-paradigm-results.md) |
+| **B 引导检测式** | 单条引导几何（线/圆/弧）→ metrology 卡尺 → 拟合**单个**被测几何 | 直线查找、圆查找 | `MeasurementEditorManagerControl` + 逐项判定开关 | 同上 |
+| **C 几何测量式** | **两个**测量元素 → 各自 measure 拟合 → 元素间几何量 → 公差判定 | 线-线、线-圆、圆-圆、点-线、点-圆、点-点 | `MeasureElementsEditorControl` + `ParamValue<T>` + `MeasureThreshold`/`MeasureJudge` | [01](references/01-paradigm-params.md) / [02](references/02-paradigm-run.md) / [03](references/03-paradigm-ui.md) |
+
+> ⚠️ **范式线 C 是 v4 定稿最新范式**（2026-09 线-线测量落地）。新建测量工具**必须**走 C：
+> 参数一律 `ParamValue<T>`、判定一律 `MeasureThreshold` 列表 + `MeasureJudge`、Tab1 一律装配 `MeasureElementsEditorControl`。
+> **禁止**照搬 B 的旧写法（普通 `double` 参数 + 手写 `IsXxxCheckEnabled/XxxMin/Max`）——那是无效绑定缺陷的来源。
 
 ---
 
 ## 1. 技能产出物（三大件）
 
-1. **UI 方案**（范式 A + 差异点 + 3-Tab ASCII 图）
-2. **算法方案**（范式 C + 差异点 + 引擎契约）
-3. **基座代码**（三件套 + RoI + 调试控件）
+1. **UI 方案**（所选范式线 + 差异点 + 3-Tab ASCII 图）
+2. **算法方案**（Run 范式 + 差异点 + 引擎契约）
+3. **基座代码**（三件套 + 参数/判定装配 + 调试控件 + csproj/slnx 登记）
 
 ---
 
@@ -51,7 +67,8 @@ description: 视觉工具构建技能。用于批量生成视觉算法工具插�
      只做订阅解析 + 位置修正（按形状有向性）+ 检测−屏蔽差集；**签名不接收任何图像对象**；scope 用后 `Dispose()`（只释放 region，防重入）
    - 执行方式由算法自决：按域 → `HalImageDomain.Restrict(grayImage, scope.RoiRegion)`（返回新图，谁调用谁释放）；全图 → 直接用原图
    - 所有权铁律：**谁 Restrict 谁释放**（标准 `using`/`finally`，无所有权转移/Detach 概念）；位置修正矩阵 Run（Resolve）与交互层（控件实时查询）同源
-   - 适用边界：图像处理式工具（Blob/阈值化/滤波/二值化/形态学）；Metrology/匹配类工具区域语义不同，不适用
+   - 适用边界：图像处理式工具（Blob/阈值化/滤波/二值化/形态学）
+6. **几何测量式（范式线 C）不走 Resolve**：区域语义不同（无检测区/屏蔽区），每个测量元素**独立**做 metrology measure（`AddMetrologyObjectLineMeasure` / `...CircleMeasure`），引导几何与卡尺参数取自 `ParamValue<T>`；位置修正矩阵 Run 与交互层同源（`PositionCorrectionResolver.ResolveFirstMatrix`）
 
 ---
 
@@ -59,587 +76,116 @@ description: 视觉工具构建技能。用于批量生成视觉算法工具插�
 
 1. 调试控件**必须**继承 `ToolDebugControlBase`（自动获得 Execute/Confirm/ContinuousExecute/ResetParameters 命令、ToolExecutionCompleted 事件、AvailableDataSources、SetParameters/SetDataProvider/SetMainImageControl）
 2. 参数输入**一律** SDK 控件：`LabeledControl`/`ConfigSetting`/`RangeInputControl`/`RangeSlider`/`NumericUpDown`/`ToggleSwitch`/`ParamComboBox`/`ParamTextBox`/`ImageSourceSelector`
-3. 区域编辑用 `RoiEditorManagerControl` / `MeasurementEditorManagerControl` / `MeasureToolBar` / `ShapeToolBar`
+3. 区域编辑用 `RoiEditorManagerControl`（图像处理式）/ `MeasurementEditorManagerControl`（引导检测式）/ `MeasureElementsEditorControl`（几何测量式双元素）
 4. 图像显示用 `ImageControl`
 5. 工具层只做「装配 + 参数绑定」，**禁止自建参数/区域/图像控件**
 
 ---
 
-## 4. 开发范式（含出处，可溯源）
+## 4. 参数与判定铁律（范式线 C 必读，v4 定稿）
 
-### 范式 A：UI 三件套
-
-#### A1. 3-Tab XAML 布局（基本参数/运行参数/结果显示）
-
-**整体结构 ASCII 图**：
-
-```
-┌──────────────────────────────────────────────────────────────┐
-│ ToolDebugControlBase (PreferredDebugWindowSize 900×620)        │
-│  ┌────────────────────────────────────────────────────────┐  │
-│  │ [基本参数] [运行参数] [结果显示]        ← TabControl     │  │
-│  └────────────────────────────────────────────────────────┘  │
-│                                                              │
-│ Tab1 基本参数（无引导，Blob 范式 - 基准参考源）：              │
-│  ┌────────────────────────────────────────────────────────┐  │
-│  │ [输入图像] ImageSourceSelector (SDK)                    │  │
-│  │ ┌─ 区域设置 ─────────────────────────────────────────┐ │  │
-│  │ │ RoiEditorManagerControl (SDK)                      │ │  │
-│  │ │   ├─ 检测区域 InspectionRegions                    │ │  │
-│  │ │   └─ 屏蔽区域 MaskRegions                          │ │  │
-│  │ └─────────────────────────────────────────────────────┘ │  │
-│  │ [位置修正] ToggleSwitch + ParamBinding(矩阵绑定源)       │  │
-│  └────────────────────────────────────────────────────────┘  │
-│                                                              │
-│ Tab1 基本参数（有引导，EdgeDetect 范式）：                     │
-│  ┌────────────────────────────────────────────────────────┐  │
-│  │ MeasurementEditorManagerControl (SDK)                  │  │
-│  │   = MeasureToolBar + GuideEditor + MaskRegions         │  │
-│  └────────────────────────────────────────────────────────┘  │
-│                                                              │
-│ Tab2 运行参数（SDK 参数控件）：                                │
-│  ┌────────────────────────────────────────────────────────┐  │
-│  │ LabeledControl + ConfigSetting(数值+Slider)            │  │
-│  │               + ParamComboBox(枚举+Converter)          │  │
-│  │               + ToggleSwitch(开关) + RangeInputControl │  │
-│  └────────────────────────────────────────────────────────┘  │
-│                                                              │
-│ Tab3 结果显示（Blob 范式）：                                   │
-│  ┌────────────────────────────────────────────────────────┐  │
-│  │ ▾ Expander 结果判断 (IsExpanded=True)                   │  │
-│  │   [ToggleSwitch + RangeInputControl]×N 绑定 ResultConfig│  │
-│  │   (输出为空/面积/数量/圆度/矩形度/独立Blob判定...)       │  │
-│  │ ▾ Expander 图形显示 (IsExpanded=True)                   │  │
-│  │   DispItemColorControl×N (检测区域/屏蔽区域/轮廓/质心...)│  │
-│  │ ▾ Expander 文本显示 (IsExpanded=True)                   │  │
-│  │   DispTextColorControl×N (面积列表...)                  │  │
-│  └────────────────────────────────────────────────────────┘  │
-└──────────────────────────────────────────────────────────────┘
-```
-
-**XAML 骨架**（出处 `BlobAnalysisToolDebugControl.xaml` / `ThresholdToolDebugControl.xaml`）：
-
-```xaml
-<controls:ToolDebugControlBase x:Class="SunEyeVision.Tool.{ToolName}.Views.{ToolName}ToolDebugControl"
-        xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
-        xmlns:region="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Roi.Views;assembly=SunEyeVision.Plugin.SDK"
-        xmlns:results="clr-namespace:SunEyeVision.Plugin.SDK.Execution.Results;assembly=SunEyeVision.Plugin.SDK"
-        DataContext="{Binding Parameters, RelativeSource={RelativeSource Self}}">
-  <TabControl Margin="5,0,5,0">
-    <!-- Tab1 基本参数（Blob 范式：区域管理器常显 + 位置修正） -->
-    <TabItem Header="基本参数" IsSelected="True">
-      <StackPanel>
-        <controls:LabeledControl Label="输入图像">
-          <controls:ImageSourceSelector
-              PlaceholderText="请选择输入图像源" Width="250"
-              AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"
-              SelectedDataSource="{Binding ImageSource, Mode=TwoWay}"/>
-        </controls:LabeledControl>
-
-        <!-- 区域设置（检测区域数量=0 时全图分析，否则自动启用区域限制） -->
-        <GroupBox Header="区域设置" Margin="0,8,0,0">
-          <region:RoiEditorManagerControl x:Name="regionManager"
-              InspectionRegionsSource="{Binding InspectionRegions.Regions}"
-              MaskRegionsSource="{Binding MaskRegions.Regions}"/>
-        </GroupBox>
-
-        <!-- 位置修正（算法工具标配：ROI 随定位矩阵变换） -->
-        <controls:LabeledControl Label="位置修正" Margin="0,8,0,0" HorizontalAlignment="Left">
-          <controls:ToggleSwitch
-              IsChecked="{Binding IsPositionCorrectionEnabled, Mode=TwoWay}"
-              SwitchWidth="48" SwitchHeight="24"/>
-        </controls:LabeledControl>
-        <controls:LabeledControl Label="修正信息" Margin="0,4,0,0" HorizontalAlignment="Left"
-            Visibility="{Binding IsPositionCorrectionEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
-          <controls:ParamBinding
-              x:Name="positionCorrectionBinding"
-              DataType="{x:Type results:AffineMatrix}"
-              ParameterName="位置修正" Width="200"
-              BindingSource="{Binding PositionCorrectionBindingSource, Mode=TwoWay}"
-              BindingDisplayText="{Binding PositionCorrectionBindingDisplayText, Mode=TwoWay}"
-              AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-        </controls:LabeledControl>
-      </StackPanel>
-    </TabItem>
-
-    <!-- Tab2 运行参数 -->
-    <TabItem Header="运行参数">
-      <StackPanel>
-        <controls:LabeledControl Label="阈值">
-          <controls:ConfigSetting ParameterName="Threshold"
-              DataType="{x:Type sys:Int32}"
-              Value="{Binding Threshold.Value, Mode=TwoWay}"
-              Minimum="0" Maximum="255" ShowSlider="True" Width="250"
-              AvailableDataSources="{Binding AvailableDataSources, ...}"/>
-        </controls:LabeledControl>
-      </StackPanel>
-    </TabItem>
-
-    <!-- Tab3 结果显示（Blob 范式：结果判断 + 图形显示 + 文本显示） -->
-    <TabItem Header="结果显示">
-      <Grid Background="{DynamicResource ThemePanelBackgroundBrush}">
-        <Grid.RowDefinitions>
-          <RowDefinition Height="*"/>
-          <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-        <ScrollViewer Grid.Row="0" Padding="3">
-          <StackPanel>
-            <!-- 结果判断（每个判定 = ToggleSwitch + RangeInputControl，绑定 ResultConfig） -->
-            <Expander Header="结果判断" IsExpanded="True">
-              <StackPanel Margin="16,8">
-                <controls:LabeledControl Label="输出为空判断">
-                  <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsEmptyCheckEnabled, Mode=TwoWay}"/>
-                </controls:LabeledControl>
-                <controls:LabeledControl Label="面积判断">
-                  <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsTotalAreaCheckEnabled, Mode=TwoWay}"/>
-                </controls:LabeledControl>
-                <controls:LabeledControl Label="面积范围 (px²)"
-                    Visibility="{Binding ResultConfig.IsTotalAreaCheckEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
-                  <controls:RangeInputControl Unit="px²" Minimum="0" Maximum="10000000"
-                      MinValue="{Binding ResultConfig.TotalAreaMin, Mode=TwoWay}"
-                      MaxValue="{Binding ResultConfig.TotalAreaMax, Mode=TwoWay}"
-                      DecimalPlaces="0" NumericWidth="120"/>
-                </controls:LabeledControl>
-                <!-- 更多判定项按工具差异扩展：数量/圆度/矩形度/独立Blob... -->
-              </StackPanel>
-            </Expander>
-
-            <!-- 图形显示（DispItemColorControl 控制各类叠加元素颜色/可见性） -->
-            <Expander Header="图形显示" IsExpanded="True">
-              <StackPanel Margin="16,8">
-                <controls:LabeledControl Label="检测区域">
-                  <controls:DispItemColorControl Item="{Binding InspectionRegionStyle, Mode=TwoWay}"/>
-                </controls:LabeledControl>
-                <controls:LabeledControl Label="屏蔽区域">
-                  <controls:DispItemColorControl Item="{Binding MaskRegionStyle, Mode=TwoWay}"/>
-                </controls:LabeledControl>
-              </StackPanel>
-            </Expander>
-
-            <!-- 文本显示（DispTextColorControl 控制文本标注） -->
-            <Expander Header="文本显示" IsExpanded="True">
-              <StackPanel Margin="16,8">
-                <controls:LabeledControl Label="面积列表">
-                  <controls:DispTextColorControl Item="{Binding AreaDisplayStyle, Mode=TwoWay}"
-                      AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                </controls:LabeledControl>
-              </StackPanel>
-            </Expander>
-          </StackPanel>
-        </ScrollViewer>
-      </Grid>
-    </TabItem>
-  </TabControl>
-</controls:ToolDebugControlBase>
-```
-
-**A1.1 UI 绑定铁律（三则，缺一则绑定失效）**：
-
-1. **XAML 根必须有 `DataContext`**：
-   ```xaml
-   <controls:ToolDebugControlBase x:Class="..."
-       DataContext="{Binding Parameters, RelativeSource={RelativeSource Self}}">
-   ```
-   缺此 → 所有 `X` 绑定（无 `Parameters.` 前缀）静默失败（DataContext 为 null/父级）。绑定路径 = `ResultConfig.IsXxx`（DataContext 已是 Parameters），**禁用** `Parameters.ResultConfig.IsXxx`。
-
-2. **converter 必须在 Resources 声明**：
-   ```xaml
-   <controls:ToolDebugControlBase.Resources>
-     <ResourceDictionary>
-       <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-     </ResourceDictionary>
-   </controls:ToolDebugControlBase.Resources>
-   ```
-   需 `xmlns:converters="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Roi.Converters;assembly=SunEyeVision.Plugin.SDK"`。
-
-3. **开关必须控制下方参数可见性**（每个判定 = ToggleSwitch + 范围输入联动）：
-   ```xaml
-   <!-- 开关 -->
-   <controls:LabeledControl Label="面积判断">
-     <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsTotalAreaCheckEnabled, Mode=TwoWay}"/>
-   </controls:LabeledControl>
-   <!-- 范围输入（可见性绑定开关，关闭则隐藏） -->
-   <controls:LabeledControl Label="面积范围 (px²)"
-       Visibility="{Binding ResultConfig.IsTotalAreaCheckEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
-     <controls:RangeInputControl Unit="px²" Minimum="0" Maximum="10000000"
-         MinValue="{Binding ResultConfig.TotalAreaMin, Mode=TwoWay}"
-         MaxValue="{Binding ResultConfig.TotalAreaMax, Mode=TwoWay}"
-         NumericWidth="120"/>
-   </controls:LabeledControl>
-   ```
-   > **范式要求**：范围输入必须带 `Visibility` 绑定到对应开关，开关关闭 → 范围隐藏。
-
-#### A2. Code-Behind 骨架（出处 `EdgeDetectToolDebugControl.xaml.cs`）
-
-```
-[DependencyProperty Parameters]
-[INPC ResultText / ResultRMSE / ResultEdgePointCount]   ← 结果展示字段
-PreferredDebugWindowSize => 900×620
-
-构造：InitializeComponent + Parameters = new {ToolName}Parameters()
-
-Overrides（五件套）：
-  SetParameters: base.SetParameters + 类型不符 throw(rule-015) + Parameters = typed
-  ExecuteTool:  new {ToolName}Tool().Run(Parameters) → UpdateResultDisplay
-  CanExecuteTool: Parameters != null
-  SetMainImageControl: base + 托管子编辑器 + Restore{Guide/Roi}FromParameters
-  InitializeAsync: 依赖多项数据的初始化（可选）
-```
-
-#### A3. SDK 控件复用清单
-
-| 类别 | SDK 控件 |
-|---|---|
-| 容器/基类 | `ToolDebugControlBase` |
-| 参数输入 | `LabeledControl` / `ConfigSetting` / `RangeInputControl` / `RangeSlider` / `NumericUpDown` / `ToggleSwitch` / `ParamComboBox` / `ParamTextBox` / `ImageSourceSelector` |
-| 区域编辑 | `RoiEditorManagerControl` / `MeasurementEditorManagerControl` / `MeasureToolBar` / `ShapeToolBar` / `ToolBarControl` |
-| 图像显示 | `ImageControl` |
-| RoI 辅助 | `DrawingParameterPanel` / `RoiInfoPanel` / `RoiSubscribePanel` / `NodeSelectorPopup` |
-
----
-
-### 范式 B：参数类（出处 `BlobAnalysisParameters.cs` / `EdgeDetectParameters.cs`）
-
-**枚举**（工具特有枚举放参数文件顶部，对齐 Halcon 算子参数语义）：
-
-```csharp
-public enum {Enum}Type { All, {Option1}, {Option2} }
-```
-
-**参数类骨架**：
-
-```csharp
-[JsonDerivedType(typeof({ToolName}Parameters), "{ToolName}")]   // 反序列化必需
-public class {ToolName}Parameters : RoiParameters               // 算法工具基类（含区域）
-{
-    private double _param = 20.0;
-    public double Param
-    {
-        get => _param;
-        set => SetProperty(ref _param, value, "参数中文名");      // 中文名用于 UI/日志
-    }
-    // 枚举：set 内不 clamp；数值：set 内 clamp（如 Math.Max(1, value)）
-}
-```
-
-**差异点**：
-- 无区域需求 → 继承 `ToolParameters`（非 `RoiParameters`）
-- 有引导几何 → 加 `GeometryType` + 几何字段（`GuideCircle`/`LineStartPoint`/`LineEndPoint`）
-- 判定配置 → `ResultConfig` 模型（面积/均值/质心判定）
-
----
-
-### 范式 C：算法 Run 范式（Halcon 优先，出处 `BlobAnalysisTool.cs` / `ThresholdTool.cs`）
-
-```csharp
-[Tool(
-    id: "{ToolId}", displayName: "{中文显示名}",
-    Description = "{工具描述}", Icon = "{emoji}",
-    Category = "{分类名}", Version = "1.0.0", HasDebugWindow = true)]
-[JsonDerivedType(typeof({ToolName}Parameters), "{ToolName}")]
-public class {ToolName}Tool : IToolPlugin<{ToolName}Parameters, {ToolName}Results>
-{
-    private readonly ToolAttribute? _attribute;
-    public {ToolName}Tool() => _attribute = GetType().GetCustomAttribute<ToolAttribute>();
-
-    public {ToolName}Results Run({ToolName}Parameters parameters)
-    {
-        var result = new {ToolName}Results
-        {
-            ToolName = _attribute?.DisplayName ?? "{ToolName}",
-            ToolId = _attribute?.Id ?? "{ToolName}",
-            Timestamp = DateTime.Now
-        };
-        var sw = Stopwatch.StartNew();
-        try
-        {
-            // ✅ 图像获取：Halcon 优先（GetHalconImage 内部兼容 Cv→Hal 转换）
-            var hImage = parameters.GetHalconImage()
-                ?? throw new InvalidOperationException("无输入图像");
-            parameters.LogInfo("开始{ToolName}处理");
-
-            // —— 算法步骤（本工具差异点核心）——
-            // Step1: 区域前置（图像处理式工具）→ HalconRegionPipeline.Resolve(w,h,检测区,屏蔽区,nodeResults,修正矩阵)
-            //        = 纯几何：订阅解析 + 位置修正 + 检测−屏蔽差集；scope 用后 finally Dispose（只释放 region）
-            // Step2: 执行方式由算法自决 → 按域 HalImageDomain.Restrict(grayImage, scope.RoiRegion)（新图自管用后释放）
-            //        或全图直接用原图；Metrology/匹配类工具不走 Resolve（区域语义不同）
-            // Step3: Halcon 算子序列（HOperatorSet.*，喂 Step2 处理图）
-            // Step3.5【几何量铁律】结果几何量必须优先用 HALCON 算子，非必要不自研：
-            //   - 距离：DistanceSs（线段-线段 min/max）/ DistanceSl（线段-直线）/ DistancePl（点-直线）/ DistancePp（点-点）
-            //     ⚠️ 无 distance_ll（HALCON 距离族不含"直线-直线"，无限直线距离用 DistancePl 构造）
-            //   - 角度：AngleLl（线-线，有向 -π~π，依赖点序；取锐角需 abs + 补角化）/ AngleLx（线-水平轴）
-            //   - 交点/平行：IntersectionLl（输出 row/column/isParallel；禁止自研阈值判平行）
-            //   - 允许自研的例外（须在差异点清单注明理由）：
-            //     a) HALCON 无对应算子；b) 纯显示层几何（虚线裁剪/角标弧采样/屏幕恒定装饰）；c) 热点性能路径（须有 profiling 依据）
-            // Step4: 结果计算 + 判定
-
-            result.DurationMs = sw.Elapsed.TotalMilliseconds;
-            result.SetSuccess(result.DurationMs);
-            parameters.LogSuccess("...完成");
-        }
-        catch (Exception ex)
-        {
-            result.SetError(ex.Message, ex);        // rule-015 禁止静默
-            parameters.LogError($"失败: {ex.Message}");
-        }
-        return result;
-    }
-
-    public FrameworkElement? CreateDebugControl(IToolPlugin tool)
-        => new {ToolName}ToolDebugControl("{ToolName}", tool, null);
-
-    public FrameworkElement? CreateDataAnalysisControl()
-        => new {ToolName}DataAnalysisControl();
-}
-```
-
-**差异点**：算法步骤序列（Step1-3）、`GetHalconImage` 后的处理、参数如何驱动算子。
-
----
-
-### 范式 D：结果类（出处 `BlobAnalysisResults.cs`）
-
-```csharp
-[JsonDerivedType(typeof({ToolName}Results), "{ToolName}Results")]
-public class {ToolName}Results : ToolResults
-{
-    /// <summary>输出图像（框架自动识别）</summary>
-    public IVisionImage? OutputImage { get; set; }
-
-    /// <summary>属性映射（UI 显示用）</summary>
-    public override List<PropertyMapEntry> GetPropertyMap()
-    {
-        return
-        [
-            // ⚠️ 必须合并基类，获得"执行耗时/执行信息"分组
-            .. base.GetPropertyMap(),
-            new("ExampleValue", "示例值", "结果"),
-        ];
-    }
-
-    /// <summary>可视化元素（图像叠加）</summary>
-    public override IEnumerable<VisualElement> GetVisualElements()
-    {
-        // yield return VisualElement.Circle(...);  // 几何/ROI 叠加
-        yield break;
-    }
-
-    /// <summary>输出变量（数据变量面板 SSOT）</summary>
-    public override IReadOnlyList<OutputVariableDefinition> GetOutputVariables() { ... }
-}
-```
-
-> ⚠️ 注：基类已实现 `GetOutputVariables()` 从 `GetPropertyMap()` 派生（类型名 `OutputVariable`），工具层通常**不需要重写**；仅在特殊场景（见范式 D.1"豁免"）才重写。
-
----
-
-### 范式 D.1：模块结果输出规范（内容与顺序，所有工具必须遵守）
-
-**数据链路**：`GetPropertyMap()` → `GetOutputVariables()`（SSOT）→ 主界面「模块结果」面板。
-面板渲染规则：**顶层分组**按固定优先级表 `ModuleResultGroupOrder` 排序（`src\UI\Shell\Windows\MainWindowViewModel.cs`），**组内条目**严格按 `GetPropertyMap()` 声明顺序。故"顺序"= 分组名 + 声明顺序共同决定。
-
-**一、标准分组与固定顺序**（`ModuleResultGroupOrder`；原则：**执行信息 → 结果 → 输入 → 参数回写**）
-
-| 序 | 分组名 | 用途 |
+| # | 铁律 | 违反后果 |
 |---|---|---|
-| 1 | `执行信息` | 执行耗时（基类）+ **节点状态**（`IsPass`，工具追加） |
-| 2 | `拟合结果`（多元素：`拟合结果/元素N`） | **结果往前方**：算法产出 拟合几何 → 残差 → 点数 → 派生量 |
-| 3 | `测量结果` | 多元素之间的派生量（夹角/距离/交点等） |
-| 4 | `基本信息` | 工具标识类（可选） |
-| 5 | `输入信息` | 图像源/上游绑定（可选） |
-| 6 | `输入区域/卡尺/引导线` | 引导几何回显（引导式工具） |
-| 7 | `输入区域/卡尺/测量带` | 卡尺参数 + 检测点回显 |
-| 8 | `输入区域` | 检测区/屏蔽区图形（框架自动追加） |
-| 9 | `参数回写` | **输入与参数回写向后排**：执行后回写的参数（可选） |
-| — | 其它 | 未知分组排最后并按名排序；**新工具特有分组必须先登记到本表**，否则顺序不可控 |
+| 1 | 参数一律 `ParamValue<T>`：`public ParamValue<double> Sigma { get; set; } = ParamValue<double>.CreateConstant(1.0, "Sigma");`，XAML 绑 `.Value` | 普通 `double` + `ConfigSetting` = **无效绑定**（上游值注入不进来） |
+| 2 | 参数属性**必须可写**（`{ get; set; }`） | get-only 属性 JSON 反序列化不回填 → 方案保存后重开参数回默认 |
+| 3 | 判定一律 `ObservableCollection<MeasureThreshold> Judgments` + `MeasureJudge.EvaluateAll(...)` / `IsAllPass(...)` | 逐工具手写判定 = 6 份重复样板，且启用项无值时静默判 OK（违反 rule-015） |
+| 4 | 卡尺口径：**参数存半长**（Halcon `MeasureLength1/2` 语义），**UI/结果显示用全宽/全长**（×2） | 参数与显示差 2 倍，改一个参数两处语义打架 |
+| 5 | **参数单一入口**：卡尺几何（宽/长/数量）只在 Tab1 元素面板编辑，Tab2 禁止重复编辑 | 两处可改同一参数 → 改完不生效/互相覆盖 |
+| 6 | 枚举参数走 `ComboBox` + **索引翻译**（`(int)参数.Value` ↔ `SelectedIndex`），不用 `ParamComboBox` 的 enum 绑定 | 枚举直绑易静默失配 |
 
-**二、必备输出项**（所有工具）
-
-| 项 | 属性名 | 显示名（固定） | 分组 | 说明 |
-|---|---|---|---|---|
-| 执行耗时 | `ExecutionTimeMs` | 执行耗时 | **执行信息** | 基类提供，`.. base.GetPropertyMap()`（该组第一项） |
-| 节点状态 | `IsPass` | **节点状态** | **执行信息** | 判定 OK/NG，紧随执行耗时；禁止"判定结果/判断通过/是否通过"等其它写法 |
-
-> 判定明细（如 `MeasureJudgeResult.Message`）**不入属性表**，仅供日志/调试窗使用；避免模块结果被明细行刷屏。
-
-**三、输入回显（引导式/带卡尺工具必备）**
-
-| 项 | 显示名（固定；多元素加"卡尺N"前缀） | 分组 |
-|---|---|---|
-| 引导几何 | 引导几何 / 引导几何N | 输入区域/卡尺/引导线 |
-| 卡尺参数 | 测量带数量 / 测量带宽度 / 测量带长度 / 边缘极性 | 输入区域/卡尺/测量带 |
-| 卡尺检测点 | 卡尺检测点（`Point2d[]`） | 输入区域/卡尺/测量带 |
-
-**四、算法产出（组内顺序固定）**
-
-`拟合几何（Line2d[]/Circle2d[]/Arc2d[]）` → `拟合残差 RMSE` → `边缘点数` → `派生量（中心X/Y、角度…）`。
-
-**五、硬约束**
-
-- `System.Windows.Point` **不可入表**（`SdkTypeVocabulary` 仅有 `Point2d[]`）→ 中心点必须拆 `X/Y` double 输出，或属性改用 `Point2d[]`；
-- 类型必须命中 `SdkTypeVocabulary`（数组版本），未命中会抛异常（rule-015）；
-- 禁止在 `GetPropertyMap` 声明结果类中不存在的属性（契约漏洞会抛错）；
-- 新工具特有分组名**必须**同步登记到 `ModuleResultGroupOrder`（UI 层），否则落 `int.MaxValue` 按名排序导致顺序错乱。
+> 完整代码骨架（参数类 / 判定列表 / 双态绑定 / 口径换算）见 [references/01-paradigm-params.md](references/01-paradigm-params.md)。
 
 ---
 
-### 范式 E：RoI 契约（算法工具标配）
-
-```
-InspectionRegions（检测区）→ 限定算法作用范围
-MaskRegions（屏蔽区）→ 排除区域
-GetRoisByType(RoiType.Inspection/Mask) + ToolRegionHelper.BuildHalconROI
-GetVisualElements 输出区域可视化
-```
-
----
-
-### 范式 F：数据分析控件（可选，复杂工具，出处 `BlobDataAnalysisControl.cs`）
-
-实现 `IToolControlDataAnalysis`，订阅 `OnResultUpdated` 刷新统计图表/列表。用于主界面右下角数据分析 Tab。
-
----
-
-## 5. 差异点清单模板（每个工具必填）
-
-| 差异维度 | 范式默认 | 本工具差异 | 处理方式 |
-|---|---|---|---|
-| 输入几何 | 无引导 | 需引导(Line/Circle/Arc) | 组装 `MeasurementEditorManagerControl` |
-| 参数基类 | `RoiParameters` | 无区域需求 | 改继承 `ToolParameters` |
-| 算法步骤 | 固定管线 | 自定义 Halcon 序列 | 独立实现 Run 核心 |
-| 结果项 | 统计+判定 | 工具特有结果 | 扩展 Results |
-| 可视化 | `GetVisualElements` | 几何/ROI 叠加 | 自定义绘制 |
-| 判定配置 | `ResultConfig` | 工具特有判定 | 扩展 Model 子类 |
-| 区域启用开关 | 无开关（Blob，区域常显） | 需"启用区域限制"开关 | 加 `IsRegionEnabled` + CheckBox（参考 Threshold） |
-| 位置修正 | 标配（Blob：ToggleSwitch + ParamBinding 矩阵） | 无需位置修正 | 移除 Tab1 位置修正段（参考 Threshold） |
-| 结果展示 | 三 Expander（结果判断/图形显示/文本显示） | 展示项按工具扩展 | 结果判断加判定项、图形显示加 `DispItemColorControl`、文本显示加 `DispTextColorControl` |
-| 几何量（距离/角度/交点/平行） | HALCON 算子优先（`DistanceSs`/`DistanceSl`/`DistancePl`/`AngleLl`/`IntersectionLl`） | 本工具实际所用算子或自研理由 | 命中自研例外条款（a 无对应算子 / b 纯显示层 / c 性能热点）必须在此列注明 |
-
----
-
-## 6. 工作流
+## 5. 工作流（Step0 → Step7）
 
 ```mermaid
 flowchart TD
-    A[新算法工具需求] --> B[Step0 边界判定 HasDebugWindow?]
-    B -->|算法工具| C[Step1 参考范式选择<br>无引导→Blob/Threshold / 有引导→EdgeDetect]
-    B -->|非算法工具| X[拒绝使用技能→独立设计]
-    C --> D[Step2 输出UI方案<br>3Tab ASCII + Tab1区域组件 + SDK控件 + 参数项]
-    D --> E[Step3 输出算法方案<br>Halcon步骤序列 + 引擎契约 + 差异点]
-    E --> F[Step4 生成基座代码<br>三件套 + RoI + 调试控件]
-    F --> G[Step5 输出差异点清单<br>标注独立修改位置]
-    G --> H[Step6 调试窗口生命周期验收<br>按 §7 打开→运行→关闭→重开全流程逐项验证]
+    A[新工具需求] --> B[Step0 边界判定<br>HasDebugWindow? → 选范式线 A/B/C]
+    B -->|非算法工具| X[拒绝使用技能 → 独立设计]
+    B --> C[Step1 选参考实现<br>见 references/06]
+    C --> D[Step2 输出 UI 方案<br>3Tab ASCII + Tab1 元素装配 + SDK 控件 + 参数项]
+    D --> E[Step3 输出算法方案<br>算子步骤序列 + 引擎契约 + 差异点]
+    E --> F[Step3.5 工程骨架<br>csproj 模板 + slnx 登记<br>见 references/05]
+    F --> G[Step4 生成基座代码<br>三件套 + 参数/判定 + 调试控件]
+    G --> H[Step5 输出差异点清单<br>标注独立修改位置]
+    H --> I[Step6 构建验证<br>skill:构建验证]
+    I --> J[Step7 生命周期验收<br>打开→运行→关闭→重开 逐项验证]
+    J --> K[移交 skill:方案测试<br>全链路验收 + 测试报告]
 ```
+
+| Step | 动作 | 产出/门禁 |
+|---|---|---|
+| 0 | 边界判定 + 选范式线 | 判定表 + 范式线（A/B/C） |
+| 1 | 选参考实现 | 基准参考源路径（[references/06](references/06-reference-impl.md)） |
+| 2 | UI 方案 | 3-Tab ASCII 图 + 控件清单 + 参数项清单 |
+| 3 | 算法方案 | 算子步骤序列 + 引擎契约 + 差异点 |
+| **3.5** | **工程骨架** | **csproj（模板见 [references/05](references/05-project-skeleton.md)）+ slnx 登记**（漏登记 = IDE 不编译、构建产物缺失） |
+| 4 | 基座代码 | 三件套（Tool/Parameters/Results）+ Views |
+| 5 | 差异点清单 | 逐维度差异 + 独立修改点位置 |
+| 6 | 构建验证 | 使用 `[skill:构建验证]`：先单 csproj 后 slnx，区分 MSBuild 配置错误与业务代码错误，0 error |
+| 7 | 生命周期验收 | §7 全环节逐项通过 |
+| — | 全链路测试 | 移交 `[skill:方案测试]`（防御机制逐项验证 + 测试报告归档） |
+
+---
+
+## 6. 差异点清单模板（每个工具必填）
+
+| 差异维度 | 范式默认 | 本工具差异 | 处理方式 |
+|---|---|---|---|
+| 范式线 | 图像处理式 | 几何测量式 | Tab1 装配 `MeasureElementsEditorControl`，判定走 `MeasureJudge` |
+| 输入几何 | 无引导 | 需引导(Line/Circle/Arc) | 装配元素编辑器 + `ConfigureElement` 限定类型 |
+| 元素来源 | — | 绘制 / 参数订阅 | Tab1 双来源；点元素**仅订阅**（X/Y `ParamValue<double>`，无绘制入口） |
+| 参数基类 | `RoiParameters` | 无区域需求 | 改继承 `ToolParameters` |
+| 算法步骤 | 固定管线 | 自定义算子序列 | 独立实现 Run 核心 |
+| 结果项 | 统计+判定 | 工具特有结果 | 扩展 Results + 分组（[references/04](references/04-paradigm-results.md)） |
+| 可视化 | `GetVisualElements` | 几何/ROI 叠加 | 自定义绘制（样式默认色不得自定义） |
+| 判定配置 | `ResultConfig` | 公差判定 | `ObservableCollection<MeasureThreshold>` |
+| 区域启用开关 | 无开关（Blob，区域常显） | 需"启用区域限制"开关 | 加 `IsRegionEnabled` + CheckBox（参考 Threshold） |
+| 位置修正 | 标配（ToggleSwitch + ParamBinding 矩阵） | 无需位置修正 | 移除 Tab1 位置修正段（参考 Threshold） |
+| 几何量（距离/角度/交点/平行） | HALCON 算子优先（`DistanceSs`/`DistanceSl`/`DistancePl`/`DistancePp`/`AngleLl`/`IntersectionLl`） | 本工具实际所用算子或自研理由 | 命中自研例外条款（a 无对应算子 / b 纯显示层 / c 性能热点）必须在此列注明 |
 
 ---
 
 ## 7. 调试窗口全生命周期覆盖（打开→关闭→重开，新建工具必检）
 
-> 生命周期 = 宿主驱动的回调链 + 工具侧清理闭环。新建算法工具必须完整覆盖以下环节并逐项验收。
+> 生命周期 = 宿主驱动的回调链 + 工具侧清理闭环。完整表格与双卡尺特有链路见 [references/03-paradigm-ui.md](references/03-paradigm-ui.md)。
 
-### 7.1 打开 / 初始化阶段
-| # | 宿主回调 | 工具侧职责 | 验收点 |
-|---|---|---|---|
-| 1 | 构造 | `new {Tool}DebugControl(...)`：`InitializeComponent` + `Parameters = new {Tool}Parameters()` | 窗口能打开、无绑定错误 |
-| 2 | `SetParameters(Parameters)` | `base.SetParameters` + 类型不符 `throw`（rule-015）→ 强类型 Parameters | 传错类型必抛 |
-| 3 | `SetDataProvider(queryService)` | 保存 `_dataProvider`；`RestoreImageSource` / `RestorePositionCorrectionSource` / `UpdatePositionCorrectionMatrix()` | 图像源/矩阵回填 |
-| 4 | `SetMainImageControl(ImageControl)` | `base.SetMainImageControl` + 托管子编辑器（`regionManager` / `MeasurementManager.SetMainImageControl`）+ zoom 传递 + overlay 共享 | 画布可用、叠加层正常 |
-| 5 | `InitializeAsync()` | 语义预热 / workspace 重建（可选；有则必须 await） | 打开即就绪无白屏 |
-| 6 | `OnExternalResultArrived()` | 工作流执行完成 → 刷新位置修正矩阵/结果 | 外部执行后显示同步 |
+### 7.1 打开 / 初始化
+`构造` → `SetParameters`（类型不符 **throw**，rule-015）→ `SetDataProvider`（`RestoreImageSource`/`RestorePositionCorrectionSource`）→ `SetMainImageControl`（托管子编辑器 + zoom/overlay 共享）→ `InitializeAsync`（可选）→ `OnExternalResultArrived`。
 
-### 7.2 运行 / 交互阶段
-| # | 环节 | 工具侧职责 | 验收点 |
-|---|---|---|---|
-| 7 | 图像/位置修正选择 | `UpdatePositionCorrectionMatrix()`：交互/结果/算法同一矩阵源 | 选源后几何即时修正 |
-| 8 | 执行 `ExecuteTool` | `new {Tool}Tool().Run(Parameters)` → `UpdateResultDisplay(result)` | 图像+叠加+文本均刷新 |
-| 9 | 区域/引导编辑 | Roi/Measure 命中、绘制、手柄、屏蔽 | 编辑与结果层一致 |
-| 10 | Confirm / Reset / Continuous | 写回方案 / 重置参数 / 连续执行 | 无残留叠加 |
-| 11 | 缩放平移 | `ViewTransformed` → zoom 同步子编辑器/渲染器 | 线宽不随放大变粗 |
+### 7.2 运行 / 交互
+`UpdatePositionCorrectionMatrix`（交互/结果/算法同源）→ `ExecuteTool` → `UpdateResultDisplay` → 元素编辑（绘制/订阅）→ Confirm/Reset/Continuous → 缩放平移同步。
 
-### 7.3 关闭 / 清理阶段（必须闭环，防泄漏/残留叠加）
+### 7.3 关闭 / 清理（必须闭环）
 1. **Loaded 时挂接**：`Loaded += (_, _) => { if (Window.GetWindow(this) is { } w) w.Closing += (_, _) => Cleanup(); }`
-2. `Cleanup()` 职责：卸载事件订阅 + `regionManager.ClearMainOverlay()`（Blob/Threshold 路径）或 `MeasurementManager?.ClearMainOverlay()`（测量工具路径）；释放 `WpfShapeRenderer` 等资源
-3. **重开回归**：关闭后再次打开同一节点 → 叠加层无残留、事件无重复订阅、可正常执行
-
-> 参考实现（Loaded→Closing→Cleanup 链路）：
-> `LineDetectToolDebugControl.xaml.cs:110` / `CircleDetectToolDebugControl.xaml.cs:110` / `BlobAnalysisToolDebugControl.xaml.cs:158`
+2. `Cleanup()` 职责：卸载事件订阅 + 清 overlay
+   - 图像处理式：`regionManager.ClearMainOverlay()`
+   - 引导检测式：`MeasurementManager?.ClearMainOverlay()`
+   - **几何测量式（双卡尺）**：`ElementsEditor?.ClearMainOverlay()`（解订阅 + 清共享 overlay + 解除两个子编辑器的 overlay canvas）
+3. **重开回归**：关闭后再开同一节点 → 叠加层无残留、事件无重复订阅、可正常执行
 
 ---
 
-## 8. 参考实现（真实路径）
+## 8. 参考实现与代码锚点
 
-**基准参考源（已验收）**：
-
-```
-tools/SunEyeVision.BlobAnalysis/          ← 无引导+区域算法工具完整范例（区域/屏蔽/判定/数据分析）
-  ├─ BlobAnalysisTool.cs                  （Halcon 全流程 + 分步计时 + 延迟计算 + 屏蔽区）
-  ├─ BlobAnalysisParameters.cs            （RoiParameters 完整参数模型 24KB）
-  ├─ BlobAnalysisResults.cs               （结果 + 可视化 + 输出变量）
-  ├─ Models/BlobAnalysisResultConfig.cs   （结果判定配置）
-  ├─ Views/BlobAnalysisToolDebugControl.xaml(+.cs)  （3-Tab UI + Cleanup 链路）
-  └─ Views/BlobDataAnalysisControl.xaml(+.cs)       （数据分析范式 F）
-
-tools/SunEyeVision.Tool.LineDetect/      ← 有引导 Metrology + 屏蔽点过滤 + 全点鲁棒拟合
-  ├─ LineDetectTool.cs                    （AddMetrologyObjectLineMeasure + 全点鲁棒拟合）
-  ├─ LineDetectParameters.cs              （BuildMeasureGuideItems 结果层回显）
-  └─ Views/LineDetectToolDebugControl.xaml(+.cs)  （Measurement 编辑 + 矩阵同步 + Cleanup）
-
-tools/SunEyeVision.Tool.CircleDetect/    ← 有引导整圆/圆弧 Metrology + 屏蔽 + 位置修正旋转语义
-  ├─ CircleDetectTool.cs                  （圆心/半径/弧角 + start_phi 相位旋转 + 屏蔽点过滤）
-  ├─ CircleDetectParameters.cs            （BuildMeasureGuideItems 结果层回显）
-  └─ Views/CircleDetectToolDebugControl.xaml(+.cs)  （Measurement 编辑 + 矩阵同步 + Cleanup）
-
-tools/SunEyeVision.Tool.ShapeMatch/      ← 模板匹配 + 位置修正矩阵输出 + 数据分析控件
-  ├─ ShapeMatchTool.cs                    （形状匹配定位，输出 AffineMatrix）
-  └─ Views/ShapeMatchToolDebugControl.xaml(+.cs)
-```
-
-**辅助参考**：
-
-```
-tools/SunEyeVision.Tool.Threshold/      （标准无引导，UI 精简范例 + Loaded→Closing→Cleanup）
-tools/SunEyeVision.Tool.EdgeDetect/     （引导式 Metrology，引导几何 UI 范例）
-tools/SunEyeVision.Tool.ImageFilter/    （图像滤波）
-tools/SunEyeVision.Tool.Morphology/     （形态学）
-```
+- 参考实现清单（基准源 + 辅助源 + 最新测量范式）：[references/06-reference-impl.md](references/06-reference-impl.md)
+- 真实符号名/文件路径索引：同上
 
 > ⚠️ **路径注意**：Blob 分析目录为 `tools/SunEyeVision.BlobAnalysis/`（**无 `Tool.` 前缀**），csproj 名为 `SunEyeVision.Tool.BlobAnalysis.csproj`。**禁止**参考 `ImageLoad`（`HasDebugWindow=false`，无调试窗口，非本技能对象）。
 
 ---
 
-## 9. 代码锚点（真实符号名）
+## 9. references 索引
 
-### 图像/引擎契约
-
-| 符号 | 位置 | 用途 |
+| 文件 | 内容 | 何时读 |
 |---|---|---|
-| `parameters.ResolvedInputImage` | `src/Plugin.SDK/Execution/Parameters/ToolParameters.cs` | 通用图像契约（`IVisionImage?`，框架注入） |
-| `GetHalconImage()`（扩展） | `src/SunEyeVision.HalAdapter/HalconHelpers.cs`（`HalconToolHelpers`，namespace `SunEyeVision.HalAdapter`） | Run 取 HImage（工具需引 HalAdapter） |
-| `GetCvImage()`（扩展） | `src/SunEyeVision.CvAdapter/CvToolHelpers.cs`（namespace `SunEyeVision.CvAdapter`） | 取 CvEngine `CvImage`（工具需引 CvAdapter） |
-| `IVisionImage` | `src/Plugin.SDK/Vision/Contracts/IVisionImage.cs`（namespace `SunEyeVision.Plugin.SDK.Vision.Contracts`） | 图像通用接口（SDK 契约层） |
-| `VisionBackendExtractorLocator` | `src/Plugin.SDK/Vision/Hosting/VisionBackendExtractorLocator.cs` | 跨后端提取（ToHalcon→HImage / ToOpenCv→Mat），宿主装配注册 |
-| `HalImage` | `src/SunEyeVision.HalAdapter/HalImage.cs` | Hal 适配载体（实现 `IVisionImage`，`Unwrap()→HImage`） |
-| `CvImage` | `src/SunEyeVision.CvEngine/VisionAdapters/CvImage.cs` | Cv 算法层载体（包装 Mat，纯算法类型） |
-
-### 工具三件套核心
-
-| 符号 | 位置 | 用途 |
-|---|---|---|
-| `IToolPlugin<TParams, TResult>` | `src/Plugin.SDK/Core/IToolPlugin.cs` | 工具开发者入口 |
-| `ToolAttribute` | `src/Plugin.SDK/Core/ToolAttribute.cs` | 工具元数据特性 |
-| `ToolParameters` | `src/Plugin.SDK/Execution/Parameters/ToolParameters.cs` | 参数基类 |
-| `RoiParameters` | `src/Plugin.SDK/Execution/Parameters/RoiParameters.cs` | 算法工具参数基类（含区域） |
-| `ToolResults` | `src/Plugin.SDK/Execution/Results/ToolResults.cs` | 结果基类 |
-
-### UI 控件（工具开发者用）
-
-| 符号 | 位置 | 用途 |
-|---|---|---|
-| `ToolDebugControlBase` | `src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs` | 调试控件基类 |
-| `ImageControl` | `src/Plugin.SDK/UI/Controls/ImageControl/ImageControl.xaml.cs` | 图像显示 |
-| `RoiEditorManagerControl` | `src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorManagerControl.xaml.cs` | 检测区+屏蔽区管理 |
-| `MeasurementEditorManagerControl` | `src/Plugin.SDK/UI/Controls/Measure/Views/MeasurementEditorManagerControl.xaml.cs` | 测量引导+屏蔽区管理 |
-| `ConfigSetting` | `src/Plugin.SDK/UI/Controls/ConfigSetting.cs` | 数值参数配置 |
+| [01-paradigm-params.md](references/01-paradigm-params.md) | 参数范式（`ParamValue<T>` 全量装配、枚举翻译、判定 `MeasureThreshold`/`MeasureJudge`、卡尺口径换算） | 写 Parameters 类 / Tab2 / Tab3 判定 |
+| [02-paradigm-run.md](references/02-paradigm-run.md) | Run 范式（图像处理式算子链、几何测量式 metrology、几何量铁律、异常与结果落位） | 写 Tool.Run |
+| [03-paradigm-ui.md](references/03-paradigm-ui.md) | UI 范式（3-Tab 布局、绑定铁律、双卡尺装配 API、生命周期完整表） | 写 XAML / Code-Behind |
+| [04-paradigm-results.md](references/04-paradigm-results.md) | 结果范式（模块结果分组顺序、`GetPropertyMap`、词目表硬约束、可视化） | 写 Results 类 / Tab3 样式 |
+| [05-project-skeleton.md](references/05-project-skeleton.md) | 工程骨架（csproj 模板、slnx 登记、构建验证与方案测试衔接） | Step3.5 建工程 / 登记 |
+| [06-reference-impl.md](references/06-reference-impl.md) | 参考实现清单 + 代码锚点（真实符号名与路径） | Step1 选参考源 / 查符号 |
 
 ---
 
@@ -653,6 +199,8 @@ tools/SunEyeVision.Tool.Morphology/     （形态学）
 - 工具层公开 API **永不暴露** `HImage`/`Mat`，图像统一 `IVisionImage`
 - Run 默认走 Halcon（`GetHalconImage()`），公开 API 不出现引擎类型
 - UI 必须复用 SDK 控件，禁止自建参数/区域/图像控件
+- 参数必须 `ParamValue<T>`（范式线 C 强制；A/B 新增参数同样推荐），禁止新增裸 `double` + `ConfigSetting` 组合
+- 判定必须 `MeasureThreshold` + `MeasureJudge`（范式线 C 强制），禁止逐工具复制判定样板
 - 结果几何量（距离/角度/交点/平行判定）**必须优先 HALCON 算子**（`DistanceSs`/`DistanceSl`/`DistancePl`/`DistancePp`/`AngleLl`/`AngleLx`/`IntersectionLl`）；自研几何必须命中例外条款（HALCON 无对应算子 / 纯显示层 / 性能热点）并在差异点清单注明理由（rule-004 复用优先，非必要不自研）
 - 样式默认颜色**不得自定义**：`GraphicsStyle`/`TextStyle` 的 `OkColor`/`NgColor` 必须保留 SDK 默认值（OK=绿 0,255,0 / NG=红 255,0,0），工具层不写自定义颜色。**特例**（如确实需要区分多元素/语义上必须用特定色）须在差异点清单注明理由，并与评审讨论；禁止私自选色
 - 文本显示**同锚点自动排版**：同一几何点的多条文本必须传**同一锚点**（图像坐标），由渲染层按锚点分组自动换行（行高 = 字号×1.4，屏幕恒定；字号变更时间距自动适配）。需要避开几何的微偏移一律用 `AddText(style, anchorX, anchorY, content, screenOffsetX, screenOffsetY)` 的**屏幕像素偏移**，**禁止**用图像坐标手写 `±N` 微偏移（缩放时会与屏幕恒定字号失配，出现"字变小、间距变大"或重叠）

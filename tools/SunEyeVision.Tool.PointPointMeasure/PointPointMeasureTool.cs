@@ -71,12 +71,8 @@ namespace SunEyeVision.Tool.PointPointMeasure
                 var p1 = ResolvePoint(parameters.P1InputMode, parameters.P1Point, parameters.P1X, parameters.P1Y, "点1");
                 var p2 = ResolvePoint(parameters.P2InputMode, parameters.P2Point, parameters.P2X, parameters.P2Y, "点2");
 
-                // ===== 位置修正（可选；与其他测量工具同构，仅影响点坐标）=====
-                AffineMatrix? matrix = null;
-                if (parameters.IsPositionCorrectionEnabled)
-                    matrix = PositionCorrectionResolver.ResolveFirstMatrix(parameters.PositionCorrectionBindingSource);
-                p1 = Transform(p1, matrix);
-                p2 = Transform(p2, matrix);
+                // ★ 不做位置修正：两个点元素均为上游订阅结果（上游已完成其自身修正），
+                //   坐标已是最终位置，此处再叠加修正矩阵即为重复修正。
 
                 // ===== 主测量：两点距离（纯几何计算）=====
                 double dx = p2.X - p1.X;
@@ -116,7 +112,11 @@ namespace SunEyeVision.Tool.PointPointMeasure
             return result;
         }
 
-        private static Point Transform(Point p, AffineMatrix? matrix)
-            => matrix == null ? p : matrix.TransformWpfPoint(p);
+        // ============ 控件创建 ============
+
+        public FrameworkElement? CreateDebugControl(IToolPlugin tool)
+            => new Views.PointPointMeasureToolDebugControl();
+
+        public FrameworkElement? CreateDataAnalysisControl() => null;
     }
 }

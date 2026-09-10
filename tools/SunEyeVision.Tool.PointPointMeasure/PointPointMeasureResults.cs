@@ -18,10 +18,10 @@ namespace SunEyeVision.Tool.PointPointMeasure
     public class PointPointMeasureResults : ToolResults
     {
         // ===== 元素结果 =====
-        /// <summary>元素1：点（订阅解析所得，已应用位置修正）。契约输出（词目 Point）</summary>
+        /// <summary>元素1：点（订阅解析所得，坐标为最终位置）。契约输出（词目 Point）</summary>
         public Point2d[] Point1 { get; set; } = Array.Empty<Point2d>();
 
-        /// <summary>元素2：点（订阅解析所得，已应用位置修正）。契约输出（词目 Point）</summary>
+        /// <summary>元素2：点（订阅解析所得，坐标为最终位置）。契约输出（词目 Point）</summary>
         public Point2d[] Point2 { get; set; } = Array.Empty<Point2d>();
 
         // ===== 几何量 =====

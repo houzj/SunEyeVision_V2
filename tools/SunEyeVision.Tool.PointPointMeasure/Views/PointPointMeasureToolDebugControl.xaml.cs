@@ -9,11 +9,12 @@ namespace SunEyeVision.Tool.PointPointMeasure.Views
 {
     /// <summary>
     /// 点-点测量调试控件（两 Tab）：
-    /// Tab1 = 基本参数（输入图像 + 点1/点2 各自的「按图形 / 按参数」输入 + 位置修正），
+    /// Tab1 = 基本参数（输入图像 + 点1/点2 各自的「按图形 / 按参数」输入），
     /// Tab2 = 判定结果 + 图形/文本样式。
     ///
-    /// 与其他点类工具的关键差异：两个元素均为点、均无引导绘制入口，
-    /// 故不装配 MeasureElementsEditorControl（无引导几何、无卡尺带需要承载）。
+    /// 与其他点类工具的关键差异：
+    /// - 两个元素均为点、均无引导绘制入口，故不装配 MeasureElementsEditorControl（无引导几何、无卡尺带承载）；
+    /// - 两个元素均为纯订阅，坐标已是最终位置，故不提供位置修正（再修正即重复修正）。
     /// </summary>
     public partial class PointPointMeasureToolDebugControl : ToolDebugControlBase
     {
@@ -53,7 +54,6 @@ namespace SunEyeVision.Tool.PointPointMeasure.Views
             base.SetDataProvider(dataProvider);
             _dataProvider = dataProvider;
             Parameters?.RestoreImageSource(AvailableDataSources);
-            Parameters?.RestorePositionCorrectionSource(AvailableDataSources);
         }
 
         public override void SetMainImageControl(ImageControl? imageControl)

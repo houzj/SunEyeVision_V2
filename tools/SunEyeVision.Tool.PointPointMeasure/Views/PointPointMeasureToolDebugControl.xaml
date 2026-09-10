@@ -6,7 +6,6 @@
         xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
         xmlns:converters="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Converters;assembly=SunEyeVision.Plugin.SDK"
         xmlns:themes="clr-namespace:SunEyeVision.Plugin.SDK.UI.Themes;assembly=SunEyeVision.Plugin.SDK"
-        xmlns:results="clr-namespace:SunEyeVision.Plugin.SDK.Execution.Results;assembly=SunEyeVision.Plugin.SDK"
         xmlns:geometry="clr-namespace:SunEyeVision.Plugin.SDK.Models.Geometry;assembly=SunEyeVision.Plugin.SDK"
         xmlns:sdkConverters="clr-namespace:SunEyeVision.Plugin.SDK.UI.Converters;assembly=SunEyeVision.Plugin.SDK"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
@@ -112,20 +111,6 @@
                         </StackPanel>
                     </Border>
 
-                    <controls:LabeledControl Label="位置修正" Margin="0,8,0,0" HorizontalAlignment="Left">
-                        <controls:ToggleSwitch
-                            IsChecked="{Binding IsPositionCorrectionEnabled, Mode=TwoWay}"
-                            SwitchWidth="48" SwitchHeight="24"/>
-                    </controls:LabeledControl>
-                    <controls:LabeledControl Label="修正信息" Margin="0,4,0,0" HorizontalAlignment="Left"
-                        Visibility="{Binding IsPositionCorrectionEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <controls:ParamBinding
-                            DataType="{x:Type results:AffineMatrix}"
-                            ParameterName="位置修正" Width="200"
-                            BindingSource="{Binding PositionCorrectionBindingSource, Mode=TwoWay}"
-                            BindingDisplayText="{Binding PositionCorrectionBindingDisplayText, Mode=TwoWay}"
-                            AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                    </controls:LabeledControl>
                 </StackPanel>
             </ScrollViewer>
         </TabItem>

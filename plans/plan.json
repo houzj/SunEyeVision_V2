@@ -345,6 +345,10 @@
                                     {
                                         "date":  "2026-09-07",
                                         "note":  "[1cafebb0d69cac96d6ff8caa3c07463c688f4fe2] fix(workflow): 解决方案删除/载入即时刷新，列表不再依赖手动增删"
+                                    },
+                                    {
+                                        "date":  "2026-09-10",
+                                        "note":  "[45a8834a709864067e465d67c9d8d177ac4f0f9a] feat(workflow): 执行中断隔离，失败节点下游跳过、无关分支继续"
                                     }
                                 ]
                     },
@@ -1512,7 +1516,7 @@
                         "type":  "module",
                         "layer":  "source",
                         "stage":  "U0",
-                        "status":  "in_progress",
+                        "status":  "done",
                         "start":  "2026-08-11",
                         "end":  "2026-08-22",
                         "goal":  "UI 层结构重构 + 全控件主题化 + View/VM 就近共生，双主题（亮/暗）切换正确",
@@ -1585,7 +1589,7 @@
                                           "name":  "构建验证 + 双主题回归测试",
                                           "phase":  "测试验证",
                                           "hours":  12,
-                                          "status":  "in_progress"
+                                          "status":  "done"
                                       }
                                   ],
                         "docs":  [
@@ -1678,6 +1682,10 @@
                                     {
                                         "date":  "2026-09-09",
                                         "note":  "[8eb3d974acf77a50671c44454b1f04e74c6e34f7] feat(ui): 图像预览执行交互增强与流程驱动自动切换"
+                                    },
+                                    {
+                                        "date":  "2026-09-10",
+                                        "note":  "[51efe83317a4d74bb2b47b74ba3b8d1e592c1f8b] fix(ui): 选中节点图像显示按可用性回退，消除取图双份实现"
                                     }
                                 ]
                     },
@@ -4236,55 +4244,6 @@
                        }
                    ],
     "tempTasks":  [
-                      {
-                          "id":  "TMP-591c8c1",
-                          "message":  "鍦嗘煡鎵? 缁撴灉灞傚姬/鍦嗙粺涓€鏄剧ず瀹屾暣鎷熷悎鍦嗗苟澧炲姞鍦嗗績鏍囪",
-                          "date":  "2026-09-03",
-                          "commit":  "591c8c152455cf09c15e3293c4f4a5edcc9adc44",
-                          "files":  [
-                                        "tools/SunEyeVision.Tool.CircleDetect/CircleDetectParameters.cs",
-                                        "tools/SunEyeVision.Tool.CircleDetect/CircleDetectResults.cs",
-                                        "tools/SunEyeVision.Tool.CircleDetect/Views/CircleDetectToolDebugControl.xaml"
-                                    ],
-                          "status":  "in_progress"
-                      },
-                      {
-                          "id":  "TMP-5c3619b",
-                          "message":  "feat(measure): 涓诲崱灏烘瀬鎬ф柟鍚戞爣璁扮粨鏋滃眰涓庝氦浜掑眰鍚屾 + 缂╂斁鎵嬫焺鏂瑰悜淇",
-                          "date":  "2026-09-03",
-                          "commit":  "5c3619ba3362c8c9f0747054fedeb1b6357f4ee8",
-                          "files":  [
-                                        "src/Plugin.SDK/UI/Controls/Measure/Rendering/MeasureBandOverlay.cs",
-                                        "src/Plugin.SDK/UI/Controls/Measure/Views/MeasureEditorControl.xaml.cs",
-                                        "tools/SunEyeVision.Tool.LineDetect/LineDetectParameters.cs"
-                                    ],
-                          "status":  "in_progress"
-                      },
-                      {
-                          "id":  "TMP-22dfd28",
-                          "message":  "feat(measure): screen-constant polarity triangles on both layers + fix band stroke power-law",
-                          "date":  "2026-09-03",
-                          "commit":  "22dfd28a7ed363a822c5c9b66366c328ad8800ed",
-                          "files":  [
-                                        "src/Plugin.SDK/Models/Visualization/GraphicsDisplayItem.cs",
-                                        "src/Plugin.SDK/UI/Controls/ImageControl/ResultRenderLayer.cs",
-                                        "src/Plugin.SDK/UI/Controls/Measure/Rendering/MeasureBandOverlay.cs",
-                                        "tools/SunEyeVision.Tool.LineDetect/LineDetectParameters.cs"
-                                    ],
-                          "status":  "in_progress"
-                      },
-                      {
-                          "id":  "TMP-30606bb",
-                          "message":  "feat(measure): 圆/弧卡尺主卡尺绘制扫描方向箭头（径向外，两层显示同步）",
-                          "date":  "2026-09-03",
-                          "commit":  "30606bb08e47687807fdd4d3242b32f2d066e721",
-                          "files":  [
-                                        "src/Plugin.SDK/UI/Controls/Measure/Rendering/MeasureBandOverlay.cs",
-                                        "tools/SunEyeVision.Tool.CircleDetect/CircleDetectParameters.cs",
-                                        "tools/SunEyeVision.Tool.EdgeDetect/EdgeDetectParameters.cs"
-                                    ],
-                          "status":  "in_progress"
-                      },
                       {
                           "id":  "TMP-b3f20b7",
                           "message":  "fix(measure): 位置修正交互层按几何有向性对齐，修复直线测量带二次变换",

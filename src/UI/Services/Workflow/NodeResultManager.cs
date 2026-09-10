@@ -39,6 +39,9 @@ namespace SunEyeVision.UI.Services.Workflow
         private readonly Func<WorkflowCore.WorkflowContext?> _getContext;
         private readonly INodeResultSink _viewModel;
 
+        // 节点第一个图像输出属性名解析（缓存回填时与显示源 key 对齐；null = 不写缓存图像）
+        private readonly Func<string, string?>? _getFirstImagePropertyName;
+
         // 结果渲染层引用
         private Plugin.SDK.UI.Controls.ResultRenderLayer? _resultRenderLayer;
 
@@ -48,10 +51,14 @@ namespace SunEyeVision.UI.Services.Workflow
         // 位置修正矩阵诊断收集（字典 → 单行摘要日志，减少假阳性日志干扰）
         private readonly ConcurrentDictionary<string, string> _correctionDiagnostics = new();
 
-        public NodeResultManager(Func<WorkflowCore.WorkflowContext?> getContext, INodeResultSink viewModel)
+        public NodeResultManager(
+            Func<WorkflowCore.WorkflowContext?> getContext,
+            INodeResultSink viewModel,
+            Func<string, string?>? getFirstImagePropertyName = null)
         {
             _getContext = getContext ?? throw new ArgumentNullException(nameof(getContext));
             _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
+            _getFirstImagePropertyName = getFirstImagePropertyName;
             _imageConverterPool = new ImageConverterPool(maxCacheSize: 10);
         }
 
@@ -75,7 +82,8 @@ namespace SunEyeVision.UI.Services.Workflow
             var executionResult = new NodeExecutionResult
             {
                 NodeId = node.Id,
-                Success = true,
+                // ★ 状态取自结果本身，不得硬编码成功（否则失败态被覆盖为成功，状态显示失真）
+                Success = result.IsSuccess,
                 StartTime = DateTime.Now,
                 EndTime = DateTime.Now,
                 Result = result
@@ -83,10 +91,7 @@ namespace SunEyeVision.UI.Services.Workflow
 
             _getContext()?.SetNodeResult(node.Id, executionResult);
 
-            // 2. 更新图像数据
-            UpdateNodeImage(node, result);
-
-            // 3. 如果当前节点被选中，立即刷新UI
+            // 2. 如果当前节点被选中，立即刷新UI（图像显示由 ViewModel 统一解析）
             if (node.IsSelected)
             {
                 RefreshResultDisplay(node, result);
@@ -113,41 +118,9 @@ namespace SunEyeVision.UI.Services.Workflow
             // ★ Step 1-2: 更新模块结果树（分组显示）
             _viewModel.UpdateModuleResults(result, node.Name, node.ToolType, node.Id);
 
-            // ★ Step 3: 更新图像 - 基于当前 ComboBox 选中项（跨节点支持）
-            var selectedSource = _viewModel.GetSelectedImageSource();
-            if (selectedSource != null)
-            {
-                // 根据 SourceNodeId 获取源节点的结果对象，支持显示父节点的图像
-                ToolResults sourceResult;
-                if (selectedSource.SourceNodeId == node.Id)
-                {
-                    sourceResult = result; // 本节点：直接用参数
-                }
-                else
-                {
-                    // 父节点/其他节点：从 WorkflowContext 缓存获取
-                    var sourceExecResult = _getContext()?.GetNodeResult(selectedSource.SourceNodeId);
-                    sourceResult = sourceExecResult?.Result;
-                    if (sourceResult == null)
-                        return; // 尚未执行的节点跳过，不清空当前图像
-                }
-
-                var bitmapSource = GetDisplayImageFromSource(sourceResult, selectedSource.PropertyName);
-                if (bitmapSource != null)
-                {
-                    _viewModel.SetDisplayImageFromBitmap(bitmapSource);
-                }
-                else
-                {
-                    // 节点无可用显示图像 → 清除残留图像
-                    _viewModel.DisplayImage = null;
-                }
-            }
-            else
-            {
-                // 无可选图像源 → 清除残留图像
-                _viewModel.DisplayImage = null;
-            }
+            // ★ Step 3: 更新图像 —— 统一委托 ViewModel 的显示源解析入口
+            //   （可用性回退 + 下拉跟随 + 无可用图像时清空，全部收敛在 ViewModel，避免双份实现不一致）
+            _viewModel.RefreshDisplayImageFromCurrentSource();
 
             // ★ Step 4: 工具输出 → 直接传 DisplayCollector
             _resultRenderLayer?.SetDisplayCollector(result.Display);
@@ -193,42 +166,6 @@ namespace SunEyeVision.UI.Services.Workflow
         }
 
         /// <summary>
-        /// 更新节点图像数据
-        /// </summary>
-        public bool UpdateNodeImage(WorkflowNodeBase node, ToolResults result)
-        {
-            var images = result.GetDisplayImages();
-            var primaryImage = images.Values.FirstOrDefault(m => m != null && !m.IsEmpty);
-            if (primaryImage == null)
-            {
-                return false;
-            }
-
-            try
-            {
-                // 直接缓存 IVisionImage 到 WorkflowContext
-                var nodeResult = _getContext()?.GetNodeResult(node.Id);
-                if (nodeResult == null)
-                {
-                    nodeResult = new NodeExecutionResult
-                    {
-                        NodeId = node.Id,
-                        Success = true,
-                        StartTime = DateTime.Now,
-                        EndTime = DateTime.Now
-                    };
-                    _getContext()?.SetNodeResult(node.Id, nodeResult);
-                }
-
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
         /// 从缓存更新节点图像
         /// </summary>
         public void UpdateNodeImageFromCache(WorkflowNodeBase node, CachedExecutionResult cachedResult)
@@ -248,6 +185,17 @@ namespace SunEyeVision.UI.Services.Workflow
 
                 if (cachedResult.ProcessedImage != null)
                 {
+                    // ★ key 必须与元数据中的图像属性名一致，否则显示取图按 PropertyName 取不到该图
+                    var imagePropertyName = _getFirstImagePropertyName?.Invoke(node.Id);
+                    if (string.IsNullOrEmpty(imagePropertyName))
+                    {
+                        Plugin.SDK.Logging.VisionLogger.Instance?.Log(
+                            Plugin.SDK.Logging.LogLevel.Warning,
+                            $"缓存图像回填跳过：节点 {node.Name}({node.Id}) 无可解析的图像输出属性名",
+                            "NodeResultManager");
+                        return;
+                    }
+
                     var bmp = cachedResult.ProcessedImage;
                     var stride = bmp.PixelWidth * (bmp.Format.BitsPerPixel / 8);
                     var pixelData = new byte[stride * bmp.PixelHeight];
@@ -257,7 +205,7 @@ namespace SunEyeVision.UI.Services.Workflow
                     {
                         Status = ExecutionStatus.Success
                     };
-                    genericResults.AddResultItem("Output", image);
+                    genericResults.AddResultItem(imagePropertyName, image);
                     executionResult.Result = genericResults;
                 }
 

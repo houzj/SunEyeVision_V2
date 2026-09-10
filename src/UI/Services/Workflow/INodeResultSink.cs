@@ -19,19 +19,15 @@ namespace SunEyeVision.UI.Services.Workflow
         void UpdateModuleResults(ToolResults? result, string? nodeName, string? toolId = null, string? nodeId = null, ToolParameters? parameters = null);
 
         /// <summary>
-        /// 获取当前选中的图像数据源
-        /// </summary>
-        AvailableDataSource? GetSelectedImageSource();
-
-        /// <summary>
-        /// 从位图设置显示图像
-        /// </summary>
-        void SetDisplayImageFromBitmap(BitmapSource bitmapSource);
-
-        /// <summary>
         /// 当前显示图像（null 表示无图像）
         /// </summary>
         BitmapSource? DisplayImage { get; set; }
+
+        /// <summary>
+        /// 按当前选中的图像源刷新显示（可用性回退 + 下拉跟随）。
+        /// 供 NodeResultManager 统一调用，避免显示取图逻辑双份实现。
+        /// </summary>
+        void RefreshDisplayImageFromCurrentSource();
 
         /// <summary>
         /// 清空全部结果展示（计算结果 + 模块结果树 + 结果标记）

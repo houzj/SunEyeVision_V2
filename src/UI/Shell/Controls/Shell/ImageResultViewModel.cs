@@ -142,18 +142,12 @@ namespace SunEyeVision.UI.Shell.Controls
             _coordinator.UpdateModuleResults(result, nodeName, toolId, nodeId, parameters);
         }
 
-        public AvailableDataSource? GetSelectedImageSource()
+        /// <summary>
+        /// 按当前选中的图像源刷新显示（实现 INodeResultSink，转发给根 VM 统一处理）
+        /// </summary>
+        public void RefreshDisplayImageFromCurrentSource()
         {
-            if (_selectedDisplayImageSourceIndex < 0 ||
-                _selectedDisplayImageSourceIndex >= DisplayImageSources.Count)
-                return null;
-
-            return DisplayImageSources[_selectedDisplayImageSourceIndex];
-        }
-
-        public void SetDisplayImageFromBitmap(BitmapSource bitmapSource)
-        {
-            DisplayImage = bitmapSource;
+            _coordinator.RefreshDisplayImageFromCurrentSource();
         }
 
         public void ClearResultDisplay()

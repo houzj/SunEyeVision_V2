@@ -851,7 +851,10 @@ SplitterPosition = position;
             _executionManager = new Services.Workflow.WorkflowExecutionManager(new SunEyeVision.UI.Services.Interaction.DefaultInputProvider(), _workflowEngine);
 
             // 初始化节点结果管理器
-            _nodeResultManager = new Services.Workflow.NodeResultManager(() => CurrentWorkflowContext, this);
+            _nodeResultManager = new Services.Workflow.NodeResultManager(
+                () => CurrentWorkflowContext,
+                this,
+                ResolveFirstImagePropertyName);
 
             // 初始化工作流执行协调器（图像切换优化）
             _executionOrchestrator = new WorkflowExecutionOrchestrator(_nodeResultManager, maxCacheSize: 50, maxMemoryMB: 100);
@@ -3306,48 +3309,78 @@ SplitterPosition = position;
         }
 
         /// <summary>
-        /// 根据选中的数据源从执行结果获取图像并显示
+        /// 根据选中的数据源从执行结果获取图像并显示。
+        /// 若选中源不可用（源节点未执行 / 该属性无图），按数据源列表顺延到第一个可用源显示，
+        /// 并同步下拉选中项（下拉即真相）；全部不可用才清空（如实反映无可用图像）。
         /// </summary>
         private void SetDisplayImageFromSource(AvailableDataSource source)
         {
-            var executionResult = CurrentWorkflowContext?.GetNodeResult(source.SourceNodeId);
-            if (executionResult?.Result == null)
+            int preferredIndex = DisplayImageSources.IndexOf(source);
+
+            if (TryResolveDisplaySource(preferredIndex, out var resolved, out int resolvedIndex, out var bitmap))
             {
-                // 节点未执行过，无可显示图像 → 清除残留
-                DisplayImage = null;
+                // 下拉跟随实际显示源，避免"下拉选中 A、实际显示 B"的不一致。
+                // 注意：设置选中项为延迟执行（Dispatcher），会再次进入本方法；
+                //      届时 preferredIndex 已可用，TryResolve 直接命中且不再变更选中项 → 天然收敛。
+                if (resolvedIndex != preferredIndex)
+                {
+                    LogInfo($"图像源|选中源不可用, 回退显示: {resolved!.SourceNodeName}.{resolved.DisplayName}", "ImageSourceSelector");
+                    SetSelectedDisplayImageSourceIndexDeferred(resolvedIndex);
+                }
+
+                DisplayImage = bitmap;
                 return;
             }
 
-            // 通过 NodeResultManager 获取对应的 Mat 并转换为 BitmapSource
-            var bitmapSource = _nodeResultManager.GetDisplayImageFromSource(
-                executionResult.Result, source.PropertyName);
-            if (bitmapSource != null)
-            {
-                DisplayImage = bitmapSource;
-            }
-            else
-            {
-                DisplayImage = null;
-            }
+            // 整链均无可用图像 → 如实清空（输入图像有问题时的正确表现）
+            LogInfo("图像源|当前工作流无任何可用图像, 清空显示", "ImageSourceSelector");
+            DisplayImage = null;
         }
 
         /// <summary>
-        /// 获取当前 ComboBox 选中的数据源（供 NodeResultManager 使用）
+        /// 按数据源列表顺序解析"实际可显示的图像源"。
+        /// 候选顺序：preferredIndex 优先，其余按列表顺序（本节点 → 上游 近→远）。
+        /// 命中条件：源节点有执行结果，且该属性对应的图像非空。
         /// </summary>
-        public AvailableDataSource? GetSelectedImageSource()
+        private bool TryResolveDisplaySource(int preferredIndex, out AvailableDataSource? source,
+            out int resolvedIndex, out BitmapSource? bitmap)
         {
-            var index = SelectedDisplayImageSourceIndex;
-            if (index < 0 || index >= DisplayImageSources.Count)
-                return null;
-            return DisplayImageSources[index];
+            source = null;
+            resolvedIndex = -1;
+            bitmap = null;
+
+            int count = DisplayImageSources.Count;
+            if (count == 0) return false;
+
+            var order = preferredIndex >= 0 && preferredIndex < count
+                ? new[] { preferredIndex }.Concat(Enumerable.Range(0, count).Where(i => i != preferredIndex))
+                : Enumerable.Range(0, count);
+
+            var context = CurrentWorkflowContext;
+            foreach (var idx in order)
+            {
+                var candidate = DisplayImageSources[idx];
+                var executionResult = context?.GetNodeResult(candidate.SourceNodeId);
+                if (executionResult?.Result == null) continue;
+
+                var candidateBitmap = _nodeResultManager.GetDisplayImageFromSource(
+                    executionResult.Result, candidate.PropertyName);
+                if (candidateBitmap == null) continue;
+
+                source = candidate;
+                resolvedIndex = idx;
+                bitmap = candidateBitmap;
+                return true;
+            }
+            return false;
         }
 
         /// <summary>
-        /// 从 BitmapSource 设置显示图像（供 NodeResultManager 使用）
+        /// 按当前选中的图像源刷新显示（实现 INodeResultSink，供 NodeResultManager 统一调用）
         /// </summary>
-        public void SetDisplayImageFromBitmap(BitmapSource bitmapSource)
+        public void RefreshDisplayImageFromCurrentSource()
         {
-            DisplayImage = bitmapSource;
+            UpdateDisplayImageFromCurrentSource();
         }
 
         /// <summary>
@@ -3496,6 +3529,20 @@ SplitterPosition = position;
                 AddLog($"❌ 创建数据查询服务失败: {ex.Message}");
                 return null;
             }
+        }
+
+        /// <summary>
+        /// 解析节点第一个图像输出属性名（用于缓存回填时与显示源的 key 对齐）
+        /// </summary>
+        private string? ResolveFirstImagePropertyName(string nodeId)
+        {
+            var node = _workflowEngine.CurrentWorkflow?.Nodes
+                .FirstOrDefault(n => n.Id == nodeId) as SunEyeVision.UI.Shared.WorkflowNode;
+            if (node == null) return null;
+
+            var provider = GetDataProviderForNode(node);
+            return (provider as DataSourceQueryService)?.GetImageDisplaySources(nodeId)
+                .FirstOrDefault(ds => ds.SourceNodeId == nodeId)?.PropertyName;
         }
 
         /// <summary>

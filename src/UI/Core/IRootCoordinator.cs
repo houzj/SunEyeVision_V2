@@ -65,6 +65,11 @@ namespace SunEyeVision.UI.Core
         void OnSelectedImageSourceIndexChanged(int index);
 
         /// <summary>
+        /// 按当前选中的图像源刷新显示（可用性回退 + 下拉跟随）
+        /// </summary>
+        void RefreshDisplayImageFromCurrentSource();
+
+        /// <summary>
         /// 保存当前解决方案命令
         /// </summary>
         ICommand SaveCurrentSolutionCommand { get; }

@@ -3,6 +3,11 @@
   <Folder Name="/src/Plugin.SDK/" />
   <Folder Name="/tools/">
     <Project Path="tools/SunEyeVision.Tool.LineLineMeasure/SunEyeVision.Tool.LineLineMeasure.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.LineCircleMeasure/SunEyeVision.Tool.LineCircleMeasure.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.CircleCircleMeasure/SunEyeVision.Tool.CircleCircleMeasure.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.PointLineMeasure/SunEyeVision.Tool.PointLineMeasure.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.PointCircleMeasure/SunEyeVision.Tool.PointCircleMeasure.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.PointPointMeasure/SunEyeVision.Tool.PointPointMeasure.csproj" />
   </Folder>
   <Project Path="Src/CommonControl/CommonControl.csproj" />
   <Project Path="Src/Core/SunEyeVision.Core.csproj" />

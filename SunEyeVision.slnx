@@ -1,4 +1,4 @@
-<Solution>
+﻿<Solution>
   <Folder Name="/Src/" />
   <Folder Name="/Src/CommonControl/">
     <Project Path="Src/CommonControl/CommonControl.csproj" />
@@ -43,6 +43,12 @@
     <Project Path="tools/SunEyeVision.Tool.Script/SunEyeVision.Tool.Script.csproj" />
     <Project Path="tools/SunEyeVision.Tool.LineDetect/SunEyeVision.Tool.LineDetect.csproj" />
     <Project Path="tools/SunEyeVision.Tool.CircleDetect/SunEyeVision.Tool.CircleDetect.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.LineLineMeasure/SunEyeVision.Tool.LineLineMeasure.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.LineCircleMeasure/SunEyeVision.Tool.LineCircleMeasure.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.CircleCircleMeasure/SunEyeVision.Tool.CircleCircleMeasure.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.PointLineMeasure/SunEyeVision.Tool.PointLineMeasure.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.PointCircleMeasure/SunEyeVision.Tool.PointCircleMeasure.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.PointPointMeasure/SunEyeVision.Tool.PointPointMeasure.csproj" />
   </Folder>
   <Folder Name="/Tests/" />
   <Folder Name="/Tests/SunEyeVision.Core.Tests/">
@@ -83,5 +89,23 @@
   </Folder>
   <Folder Name="/Tests/SunEyeVision.Tool.Threshold.Tests/">
     <Project Path="tests/SunEyeVision.Tool.Threshold.Tests/SunEyeVision.Tool.Threshold.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SunEyeVision.Tool.LineLineMeasure.Tests/">
+    <Project Path="tests/SunEyeVision.Tool.LineLineMeasure.Tests/SunEyeVision.Tool.LineLineMeasure.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SunEyeVision.Tool.LineCircleMeasure.Tests/">
+    <Project Path="tests/SunEyeVision.Tool.LineCircleMeasure.Tests/SunEyeVision.Tool.LineCircleMeasure.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SunEyeVision.Tool.CircleCircleMeasure.Tests/">
+    <Project Path="tests/SunEyeVision.Tool.CircleCircleMeasure.Tests/SunEyeVision.Tool.CircleCircleMeasure.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SunEyeVision.Tool.PointLineMeasure.Tests/">
+    <Project Path="tests/SunEyeVision.Tool.PointLineMeasure.Tests/SunEyeVision.Tool.PointLineMeasure.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SunEyeVision.Tool.PointCircleMeasure.Tests/">
+    <Project Path="tests/SunEyeVision.Tool.PointCircleMeasure.Tests/SunEyeVision.Tool.PointCircleMeasure.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SunEyeVision.Tool.PointPointMeasure.Tests/">
+    <Project Path="tests/SunEyeVision.Tool.PointPointMeasure.Tests/SunEyeVision.Tool.PointPointMeasure.Tests.csproj" />
   </Folder>
 </Solution>

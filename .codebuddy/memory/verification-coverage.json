@@ -1,7 +1,7 @@
 ﻿{
   "version": 1,
-  "lastUpdated": "2026-09-05",
-  "schemeSummary": "区域管线 v1.4：HalconRegionPipeline 纯 ROI（区域+位置修正+差集，不接触图像）；HalImageDomain.Restrict 按域执行归还算法；Detach 机制删除；5 图像工具接入+手动回归等价",
+  "lastUpdated": "2026-09-10",
+  "schemeSummary": "几何测量工具集 P2（6 独立工具 v4 定稿）：SDK 判定基座 MeasureThreshold/MeasureJudge + 双卡尺容器 MeasureElementsEditorControl + 线-线定范式 + 线圆/圆圆/点线/点圆/点点套模板；L2 自动验证（构建 0 error + 6 新测试项目 37 例全绿 + 全量回归 421/429，8 失败均为存量非本次引入）",
   "tools": {
     "SunEyeVision.HalAdapter": {
       "lastVerificationDate": "2026-09-05",
@@ -16,14 +16,16 @@
       ]
     },
     "SunEyeVision.Plugin.SDK": {
-      "lastVerificationDate": "2026-08-07",
+      "lastVerificationDate": "2026-09-10",
       "lastVerificationType": "full",
+      "lastModificationDate": "2026-09-10",
       "result": "pass",
       "passedChecks": [
-        "构建✅",
-        "rule-014/015审查✅",
-        "dotnet test✅ 136",
-        "契约测试✅ ParamBindingDisplay/RoiBinding/RoiDesignTimeGroups"
+        "构建✅ slnx 0错误",
+        "dotnet test✅ 311/311（含 MeasureJudgeContractTests 判定基座契约）",
+        "rule-002/003/008/010/014/015审查✅ 零违规",
+        "ParamSetting 复合常量还原✅ JsonElementConverter 对非 IConvertible 目标类型按目标类型反序列化（Point2d 常量保存→重开不丢失，消除静默 null 回退）",
+        "双卡尺容器✅ MeasureElementsEditorControl 互斥激活/单点事件路由/RenderAll 渲染合并/槽位隐藏/矩阵与 Zoom 同步"
       ]
     },
     "SunEyeVision.Tool.Subroutine": {
@@ -121,7 +123,8 @@
         "插件输出纯净✅"
       ],
       "skippedChecks": [
-        "手动目视：类型青色/波浪线/ToolTip/暗色主题（UI视觉需重启主程序目视）"
+        "手动目视：类型青色/波浪线/ToolTip/暗色主题（UI视觉需重启主程序目视）",
+        "存量测试失败 7（AvalonEditTextContainer 命名空间迁移 4 + SemanticHighlighter 源码路径 3），非本次改动引入"
       ]
     },
     "SunEyeVision.Plugin.SDK.UI": {
@@ -169,6 +172,121 @@
       ],
       "skippedChecks": [
         "manual image run: masked circle no longer throws #1301 (requires restarting host app)"
+      ]
+    },
+    "SunEyeVision.Tool.LineLineMeasure": {
+      "lastVerificationDate": "2026-09-10",
+      "lastVerificationType": "full",
+      "lastModificationDate": "2026-09-10",
+      "result": "pass",
+      "passedChecks": [
+        "构建✅ 工具 csproj + slnx 0 error",
+        "dotnet test✅ 6/6（新建 tests/SunEyeVision.Tool.LineLineMeasure.Tests）",
+        "序列化往返✅ ParamValue 值/枚举/绑定配置/判定规格 保存→重开不丢失（含 $type 多态还原）",
+        "工具泛型契约✅ IToolPlugin<LineLineMeasureParameters, LineLineMeasureResults>",
+        "Fail-Fast✅ 卡尺1/卡尺2 引导直线未设置或长度无效，报错可见且 IsPass=NG",
+        "双卡尺装配✅ ConfigureElement(0/1, Line) + ClearMainOverlay 生命周期闭环",
+        "rule-016 部署✅ plugins/SunEyeVision.Tool.LineLineMeasure/ 仅 dll+pdb，引擎托管 dll 零混入",
+        "rule-002/003/008/010/014/015审查✅ 零违规"
+      ],
+      "skippedChecks": [
+        "手动目视：双卡尺互斥激活/绘制优先/订阅取值的真实装配验收（需重启主程序跑图）"
+      ]
+    },
+    "SunEyeVision.Tool.LineCircleMeasure": {
+      "lastVerificationDate": "2026-09-10",
+      "lastVerificationType": "full",
+      "lastModificationDate": "2026-09-10",
+      "result": "pass",
+      "passedChecks": [
+        "构建✅ 工具 csproj + slnx 0 error",
+        "dotnet test✅ 5/5（新建 tests/SunEyeVision.Tool.LineCircleMeasure.Tests）",
+        "序列化往返✅ 参数值/枚举/判定规格不丢失（含 $type 多态还原）",
+        "工具泛型契约✅ IToolPlugin<LineCircleMeasureParameters, LineCircleMeasureResults>",
+        "Fail-Fast✅ 卡尺1 引导直线 / 卡尺2 引导圆半径 未设置即报错可见",
+        "双卡尺装配✅ ConfigureElement(0, Line) + ConfigureElement(1, Circle)",
+        "rule-016 部署✅ 插件目录仅 dll+pdb",
+        "rule-002/003/008/010/014/015审查✅ 零违规"
+      ],
+      "skippedChecks": [
+        "手动目视：线+圆混合引导的 measure 拟合真实跑图（需重启主程序）"
+      ]
+    },
+    "SunEyeVision.Tool.CircleCircleMeasure": {
+      "lastVerificationDate": "2026-09-10",
+      "lastVerificationType": "full",
+      "lastModificationDate": "2026-09-10",
+      "result": "pass",
+      "passedChecks": [
+        "构建✅ 工具 csproj + slnx 0 error",
+        "dotnet test✅ 5/5（新建 tests/SunEyeVision.Tool.CircleCircleMeasure.Tests）",
+        "序列化往返✅ 参数值/枚举/判定规格不丢失（含 $type 多态还原）",
+        "工具泛型契约✅ IToolPlugin<CircleCircleMeasureParameters, CircleCircleMeasureResults>",
+        "Fail-Fast✅ 卡尺1/卡尺2 引导圆半径无效即报错可见",
+        "双卡尺装配✅ ConfigureElement(0/1, Circle)",
+        "rule-016 部署✅ 插件目录仅 dll+pdb",
+        "rule-002/003/008/010/014/015审查✅ 零违规"
+      ],
+      "skippedChecks": [
+        "手动目视：双圆 measure 拟合与圆心距/夹角真实跑图（需重启主程序）"
+      ]
+    },
+    "SunEyeVision.Tool.PointLineMeasure": {
+      "lastVerificationDate": "2026-09-10",
+      "lastVerificationType": "full",
+      "lastModificationDate": "2026-09-10",
+      "result": "pass",
+      "passedChecks": [
+        "构建✅ 工具 csproj + slnx 0 error",
+        "dotnet test✅ 5/5（新建 tests/SunEyeVision.Tool.PointLineMeasure.Tests）",
+        "序列化往返✅ 参数值/枚举/判定规格不丢失（含 $type 多态还原）",
+        "工具泛型契约✅ IToolPlugin<PointLineMeasureParameters, PointLineMeasureResults>",
+        "点元素仅参数订阅✅ SetElementSlotVisible(0,false) 隐藏点槽位工具栏，无绘制入口；ConfigureElement(1, Line) 保留线卡尺",
+        "Fail-Fast✅ 点「按图形」未绑定上游点图形输出→可读中文报错；坐标解析后图像缺失→先于 measure 报错",
+        "rule-016 部署✅ 插件目录仅 dll+pdb",
+        "rule-002/003/008/010/014/015审查✅ 零违规"
+      ],
+      "skippedChecks": [
+        "手动目视：点坐标订阅 + 线 measure 真实跑图（需重启主程序）"
+      ]
+    },
+    "SunEyeVision.Tool.PointCircleMeasure": {
+      "lastVerificationDate": "2026-09-10",
+      "lastVerificationType": "full",
+      "lastModificationDate": "2026-09-10",
+      "result": "pass",
+      "passedChecks": [
+        "构建✅ 工具 csproj + slnx 0 error",
+        "dotnet test✅ 6/6（新建 tests/SunEyeVision.Tool.PointCircleMeasure.Tests）",
+        "序列化往返✅ 参数值/枚举/判定规格不丢失 + ParamValue<Point2d> 常量还原（验证 ParamSetting 治本）",
+        "工具泛型契约✅ IToolPlugin<PointCircleMeasureParameters, PointCircleMeasureResults>",
+        "点元素仅参数订阅✅ SetElementSlotVisible(0,false)；ConfigureElement(1, Circle)",
+        "Fail-Fast✅ 点「按图形」未绑定→可读中文报错；图像缺失→先于 measure 报错",
+        "rule-016 部署✅ 插件目录仅 dll+pdb",
+        "rule-002/003/008/010/014/015审查✅ 零违规"
+      ],
+      "skippedChecks": [
+        "手动目视：点坐标订阅 + 圆 measure 真实跑图（需重启主程序）"
+      ]
+    },
+    "SunEyeVision.Tool.PointPointMeasure": {
+      "lastVerificationDate": "2026-09-10",
+      "lastVerificationType": "full",
+      "lastModificationDate": "2026-09-10",
+      "result": "pass",
+      "passedChecks": [
+        "构建✅ 工具 csproj + slnx 0 error",
+        "dotnet test✅ 10/10（新建 tests/SunEyeVision.Tool.PointPointMeasure.Tests）",
+        "几何直算✅ 两点(0,0)-(3,4)：距离 5 / ΔX 3 / ΔY 4 / 连线角度 53.130102°",
+        "判定 OK/NG✅ 容差 4.9~5.1 通过；5.5~6.5 执行成功但 IsPass=NG",
+        "rule-015 无值即 NG✅ 启用判定项无对应实测值→NG，不静默跳过",
+        "Fail-Fast✅ 点1/点2「按图形」未绑定→可读中文报错；图像缺失→先报错",
+        "引擎引用仅引所需✅ 纯几何工具不引 halcondotnetxl / HalAdapter（csproj 注释说明）",
+        "rule-016 部署✅ 插件目录仅 dll+pdb",
+        "rule-002/003/008/010/014/015审查✅ 零违规"
+      ],
+      "skippedChecks": [
+        "手动目视：双点订阅 + 结果树 OK/NG 标红真实跑图（需重启主程序）"
       ]
     }
   }

@@ -109,7 +109,6 @@ public class ShapeMatchResults : ToolResults
 
     #region 判断结果
 
-    public bool JudgmentPassed { get; set; } = true;
     public List<string> JudgmentMessages { get; set; } = new();
 
     #endregion
@@ -137,7 +136,6 @@ public class ShapeMatchResults : ToolResults
             new("OutputImage",      "输出图像",        null),
             new("GrayImage",        "灰度图像",        null),
             new("SearchRegionMask", "搜索区域掩码",    null),
-            new("JudgmentPassed",        "节点状态",           "执行信息"),
             new("MatchCount",            "匹配数量",           "结果"),
             new("BestScore",             "最佳得分",           "结果"),
             // ★ 位置修正矩阵本体输出（AffineMatrix[] → Transform 词汇）——此前只注册了 M11..OffsetY

@@ -307,7 +307,7 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
                         //   避免"匹配数量/分数判断均未启用"时空结果被误判为通过。
                         if (result.MatchCount == 0)
                         {
-                            result.JudgmentPassed = false;
+                            result.IsPass = false;
                             if (!result.JudgmentMessages.Any(m => m.Contains("无模板")))
                                 result.JudgmentMessages.Add("未找到任何匹配（数量=0）");
                         }
@@ -639,7 +639,7 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
             if (!pass) wholePassed = false;
         }
 
-        result.JudgmentPassed = wholePassed;
+        result.IsPass = wholePassed;
 
         // ★ M7：逐项赋值 JudgmentPassed —— 此前 item.JudgmentPassed 从未赋值（恒 true），
         //   整体 NG（数量不足/分数越界）时显示层仍把框/中心画成 OK 色，视觉误导。
@@ -672,7 +672,7 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
         display.Clear();
 
         int matchCount = result.MatchCount;
-        bool wholePassed = result.JudgmentPassed;
+        bool wholePassed = result.IsPass;
 
         // 匹配框
         foreach (var match in result.MatchedItems)

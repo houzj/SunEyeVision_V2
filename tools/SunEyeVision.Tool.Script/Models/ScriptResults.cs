@@ -73,6 +73,17 @@ namespace SunEyeVision.Tool.Script.Models
                 RuntimeValue = ExecutionTimeMs
             });
 
+            // 统一附加节点状态（基类统一下沉；本类 GetOutputVariables 完全 override 不合并基类，须显式附加）
+            variables.Add(new OutputVariable
+            {
+                Name = nameof(IsPass),
+                VariableType = "Boolean",
+                DisplayName = "节点状态",
+                Group = "执行信息",
+                Kind = OutputVariableKind.Data,
+                RuntimeValue = IsPass
+            });
+
             return variables;
         }
 

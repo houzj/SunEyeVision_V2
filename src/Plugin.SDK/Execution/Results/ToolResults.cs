@@ -274,6 +274,13 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
         public bool IsSuccess => Status == ExecutionStatus.Success || Status == ExecutionStatus.PartialSuccess;
 
         /// <summary>
+        /// 节点状态（本次执行的最终结论：执行成功且判定通过 = true）。
+        /// 由基类统一下沉，所有工具在结果树"执行信息"分组恒定可见，杜绝各工具漏声明/命名不一；
+        /// 判定类工具在 Run 中写入判定结果，执行失败时由 SetError/CreateError 自动置 false。
+        /// </summary>
+        public bool IsPass { get; set; } = true;
+
+        /// <summary>
         /// 错误信息
         /// </summary>
         public string? ErrorMessage { get; set; }
@@ -359,6 +366,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
         public void SetError(string message, Exception? exception = null)
         {
             Status = ExecutionStatus.Failed;
+            IsPass = false;
             ErrorMessage = message;
             if (exception != null)
             {
@@ -383,6 +391,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
             var result = new T
             {
                 Status = ExecutionStatus.Failed,
+                IsPass = false,
                 ErrorMessage = errorMessage,
                 Timestamp = DateTime.Now
             };
@@ -515,7 +524,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
         {
             return new List<PropertyMapEntry>
             {
-                new("ExecutionTimeMs", "执行耗时", "执行信息")
+                new("ExecutionTimeMs", "执行耗时", "执行信息"),
+                new("IsPass", "节点状态", "执行信息")
             };
         }
 

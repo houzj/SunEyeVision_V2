@@ -18,15 +18,14 @@ public class OutputVariableResolverScalarArrayTests
     private class ScalarResults : ToolResults
     {
         public double ThresholdUsed { get; set; }
-        public bool IsPass { get; set; }
 
         public override List<PropertyMapEntry> GetPropertyMap()
         {
-            return new List<PropertyMapEntry>
-            {
+            return
+            [
+                .. base.GetPropertyMap(),   // 基类：执行耗时 + 节点状态
                 new("ThresholdUsed", "实际阈值"),
-                new("IsPass", "是否通过"),
-            };
+            ];
         }
     }
 

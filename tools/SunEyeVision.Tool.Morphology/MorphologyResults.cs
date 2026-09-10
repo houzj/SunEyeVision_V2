@@ -129,11 +129,6 @@ namespace SunEyeVision.Tool.Morphology
         #region 判断结果
 
         /// <summary>
-        /// 是否通过所有判断条件
-        /// </summary>
-        public bool IsPass { get; set; } = true;
-
-        /// <summary>
         /// 判断失败原因列表
         /// </summary>
         public List<string> FailReasons { get; set; } = new();
@@ -190,7 +185,6 @@ namespace SunEyeVision.Tool.Morphology
                 new("TotalArea",            "总面积",                 "统计"),
                 new("MaxBlobArea",          "最大Blob面积",           "统计"),
                 new("ChannelMeans",         "通道均值",               "分析"),
-                new("IsPass",               "是否通过",               "判断"),
                 new("FailReasons",          "失败原因",               "判断"),
             ];
         }

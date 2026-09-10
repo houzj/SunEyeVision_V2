@@ -65,11 +65,6 @@ namespace SunEyeVision.Tool.CircleDetect
         /// </summary>
         public Point CenterPoint { get; set; }
 
-        /// <summary>
-        /// 判定结果（半径/中心X/中心Y/拟合误差/匹配点数均满足 = true；不用于执行状态）
-        /// </summary>
-        public bool IsPass { get; set; }
-
         #region 测量带(卡尺)输入回显（模块结果"输入区域/卡尺"展示，Run 从参数回填）
 
         /// <summary>引导几何（引导圆/圆弧 → RoiShape 包装，树中按"卡尺/引导线"下钻展示）</summary>
@@ -176,9 +171,7 @@ namespace SunEyeVision.Tool.CircleDetect
         {
             return
             [
-                .. base.GetPropertyMap(),   // 合并基类：ExecutionTimeMs → 执行耗时/执行信息
-                // ===== 节点状态（判定 OK/NG，归"执行信息"，紧随执行耗时；视觉工具构建技能范式 D.1 规范）=====
-                new("IsPass",            "节点状态", "执行信息"),
+                .. base.GetPropertyMap(),   // 合并基类：执行耗时 + 节点状态 → 执行信息
                 // 测量带(卡尺)输入回显：引导线/测量带 归"输入区域/卡尺"分组
                 new("GuideGeometry",     "引导几何", "输入区域/卡尺/引导线"),
                 new("CaliberCount",      "测量带数量", "输入区域/卡尺/测量带"),

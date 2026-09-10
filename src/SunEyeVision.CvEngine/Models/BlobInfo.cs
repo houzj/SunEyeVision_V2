@@ -74,7 +74,7 @@ namespace SunEyeVision.CvEngine.Models
         /// <remarks>
         /// 由结果判断中的 per-blob 条件驱动（面积/圆度/矩形度），
         /// 用于控制该 blob 各显示元素的 OK/NG 颜色。
-        /// 与整体判断 <see cref="BlobAnalysisResults.JudgmentPassed"/> 独立。
+        /// 与工具整体判断（节点状态 IsPass）独立。
         /// </remarks>
         public bool JudgmentPassed { get; set; } = true;
 

@@ -119,11 +119,6 @@ namespace SunEyeVision.Tool.ImageThreshold
         #region 判断结果
 
         /// <summary>
-        /// 是否通过所有判断条件
-        /// </summary>
-        public bool IsPass { get; set; } = true;
-
-        /// <summary>
         /// 判断失败原因列表
         /// </summary>
         public List<string> FailReasons { get; set; } = new();
@@ -176,7 +171,6 @@ namespace SunEyeVision.Tool.ImageThreshold
                 new("OutputMean",      "输出图像均值",      "统计"),
                 new("OutputArea",      "输出面积",          "统计"),
                 new("HistogramData",   "直方图数据",        "分析"),
-                new("IsPass",          "是否通过",          "判断"),
                 new("FailReasons",     "失败原因",          "判断"),
             ];
         }

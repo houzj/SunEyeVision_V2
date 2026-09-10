@@ -151,11 +151,6 @@ namespace SunEyeVision.Tool.Threshold
         #region 判断结果
 
         /// <summary>
-        /// 是否通过所有判断条件
-        /// </summary>
-        public bool IsPass { get; set; } = true;
-
-        /// <summary>
         /// 判断失败原因列表
         /// </summary>
         public List<string> FailReasons { get; set; } = new();
@@ -216,7 +211,6 @@ namespace SunEyeVision.Tool.Threshold
                 new("CentroidY",            "质心Y坐标",             "统计"),
                 new("HistogramData",        "直方图数据",             "分析"),
                 new("ChannelMeans",         "通道均值",               "分析"),
-                new("IsPass",               "是否通过",               "判断"),
                 new("FailReasons",          "失败原因",               "判断"),
             ];
         }

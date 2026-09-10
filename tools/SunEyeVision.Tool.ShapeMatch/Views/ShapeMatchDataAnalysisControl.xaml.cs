@@ -138,8 +138,8 @@ public partial class ShapeMatchDataAnalysisControl : UserControl, IToolControlDa
             }
 
             // 更新统计摘要
-            JudgmentStatus = matchResult.JudgmentPassed ? "OK ✓" : "NG ✗";
-            JudgmentColor = matchResult.JudgmentPassed ? "#4CAF50" : "#E91E63";
+            JudgmentStatus = matchResult.IsPass ? "OK ✓" : "NG ✗";
+            JudgmentColor = matchResult.IsPass ? "#4CAF50" : "#E91E63";
             ExecutionTime = (long)matchResult.ExecutionTimeMs;
 
             // Step 2: 通知所有计算属性重新计算

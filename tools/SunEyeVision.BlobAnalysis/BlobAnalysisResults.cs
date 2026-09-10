@@ -109,11 +109,6 @@ namespace SunEyeVision.Tool.BlobAnalysis
         #region 判断结果
 
         /// <summary>
-        /// 所有判断是否通过
-        /// </summary>
-        public bool JudgmentPassed { get; set; } = true;
-
-        /// <summary>
         /// 判断消息列表（每条判断的结果描述）
         /// </summary>
         public List<string> JudgmentMessages { get; set; } = new();
@@ -190,7 +185,6 @@ namespace SunEyeVision.Tool.BlobAnalysis
                 new("ThresholdUsed",            "实际使用的阈值",         "预处理"),
                 new("MaxValueUsed",             "最大值",                 "预处理"),
                 new("TypeUsed",                 "阈值类型",               "预处理"),
-                new("JudgmentPassed",           "节点状态",               "执行信息"),
                 new("FilteredBlobCount",        "Blob数量",               "统计"),
                 new("FilteredTotalArea",        "总面积",                 "统计"),
                 new("AverageArea",              "平均面积",               "统计"),

@@ -585,7 +585,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
                 if (!pass) wholePassed = false;
             }
 
-            result.JudgmentPassed = wholePassed;
+            result.IsPass = wholePassed;
 
             if (messages.Count > 0)
             {

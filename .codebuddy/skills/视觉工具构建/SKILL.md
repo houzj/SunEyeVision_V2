@@ -364,6 +364,13 @@ public class {ToolName}Tool : IToolPlugin<{ToolName}Parameters, {ToolName}Result
             // Step2: 执行方式由算法自决 → 按域 HalImageDomain.Restrict(grayImage, scope.RoiRegion)（新图自管用后释放）
             //        或全图直接用原图；Metrology/匹配类工具不走 Resolve（区域语义不同）
             // Step3: Halcon 算子序列（HOperatorSet.*，喂 Step2 处理图）
+            // Step3.5【几何量铁律】结果几何量必须优先用 HALCON 算子，非必要不自研：
+            //   - 距离：DistanceSs（线段-线段 min/max）/ DistanceSl（线段-直线）/ DistancePl（点-直线）/ DistancePp（点-点）
+            //     ⚠️ 无 distance_ll（HALCON 距离族不含"直线-直线"，无限直线距离用 DistancePl 构造）
+            //   - 角度：AngleLl（线-线，有向 -π~π，依赖点序；取锐角需 abs + 补角化）/ AngleLx（线-水平轴）
+            //   - 交点/平行：IntersectionLl（输出 row/column/isParallel；禁止自研阈值判平行）
+            //   - 允许自研的例外（须在差异点清单注明理由）：
+            //     a) HALCON 无对应算子；b) 纯显示层几何（虚线裁剪/角标弧采样/屏幕恒定装饰）；c) 热点性能路径（须有 profiling 依据）
             // Step4: 结果计算 + 判定
 
             result.DurationMs = sw.Elapsed.TotalMilliseconds;
@@ -422,6 +429,58 @@ public class {ToolName}Results : ToolResults
 }
 ```
 
+> ⚠️ 注：基类已实现 `GetOutputVariables()` 从 `GetPropertyMap()` 派生（类型名 `OutputVariable`），工具层通常**不需要重写**；仅在特殊场景（见范式 D.1"豁免"）才重写。
+
+---
+
+### 范式 D.1：模块结果输出规范（内容与顺序，所有工具必须遵守）
+
+**数据链路**：`GetPropertyMap()` → `GetOutputVariables()`（SSOT）→ 主界面「模块结果」面板。
+面板渲染规则：**顶层分组**按固定优先级表 `ModuleResultGroupOrder` 排序（`src\UI\Shell\Windows\MainWindowViewModel.cs`），**组内条目**严格按 `GetPropertyMap()` 声明顺序。故"顺序"= 分组名 + 声明顺序共同决定。
+
+**一、标准分组与固定顺序**（`ModuleResultGroupOrder`；原则：**执行信息 → 结果 → 输入 → 参数回写**）
+
+| 序 | 分组名 | 用途 |
+|---|---|---|
+| 1 | `执行信息` | 执行耗时（基类）+ **节点状态**（`IsPass`，工具追加） |
+| 2 | `拟合结果`（多元素：`拟合结果/元素N`） | **结果往前方**：算法产出 拟合几何 → 残差 → 点数 → 派生量 |
+| 3 | `测量结果` | 多元素之间的派生量（夹角/距离/交点等） |
+| 4 | `基本信息` | 工具标识类（可选） |
+| 5 | `输入信息` | 图像源/上游绑定（可选） |
+| 6 | `输入区域/卡尺/引导线` | 引导几何回显（引导式工具） |
+| 7 | `输入区域/卡尺/测量带` | 卡尺参数 + 检测点回显 |
+| 8 | `输入区域` | 检测区/屏蔽区图形（框架自动追加） |
+| 9 | `参数回写` | **输入与参数回写向后排**：执行后回写的参数（可选） |
+| — | 其它 | 未知分组排最后并按名排序；**新工具特有分组必须先登记到本表**，否则顺序不可控 |
+
+**二、必备输出项**（所有工具）
+
+| 项 | 属性名 | 显示名（固定） | 分组 | 说明 |
+|---|---|---|---|---|
+| 执行耗时 | `ExecutionTimeMs` | 执行耗时 | **执行信息** | 基类提供，`.. base.GetPropertyMap()`（该组第一项） |
+| 节点状态 | `IsPass` | **节点状态** | **执行信息** | 判定 OK/NG，紧随执行耗时；禁止"判定结果/判断通过/是否通过"等其它写法 |
+
+> 判定明细（如 `MeasureJudgeResult.Message`）**不入属性表**，仅供日志/调试窗使用；避免模块结果被明细行刷屏。
+
+**三、输入回显（引导式/带卡尺工具必备）**
+
+| 项 | 显示名（固定；多元素加"卡尺N"前缀） | 分组 |
+|---|---|---|
+| 引导几何 | 引导几何 / 引导几何N | 输入区域/卡尺/引导线 |
+| 卡尺参数 | 测量带数量 / 测量带宽度 / 测量带长度 / 边缘极性 | 输入区域/卡尺/测量带 |
+| 卡尺检测点 | 卡尺检测点（`Point2d[]`） | 输入区域/卡尺/测量带 |
+
+**四、算法产出（组内顺序固定）**
+
+`拟合几何（Line2d[]/Circle2d[]/Arc2d[]）` → `拟合残差 RMSE` → `边缘点数` → `派生量（中心X/Y、角度…）`。
+
+**五、硬约束**
+
+- `System.Windows.Point` **不可入表**（`SdkTypeVocabulary` 仅有 `Point2d[]`）→ 中心点必须拆 `X/Y` double 输出，或属性改用 `Point2d[]`；
+- 类型必须命中 `SdkTypeVocabulary`（数组版本），未命中会抛异常（rule-015）；
+- 禁止在 `GetPropertyMap` 声明结果类中不存在的属性（契约漏洞会抛错）；
+- 新工具特有分组名**必须**同步登记到 `ModuleResultGroupOrder`（UI 层），否则落 `int.MaxValue` 按名排序导致顺序错乱。
+
 ---
 
 ### 范式 E：RoI 契约（算法工具标配）
@@ -454,6 +513,7 @@ GetVisualElements 输出区域可视化
 | 区域启用开关 | 无开关（Blob，区域常显） | 需"启用区域限制"开关 | 加 `IsRegionEnabled` + CheckBox（参考 Threshold） |
 | 位置修正 | 标配（Blob：ToggleSwitch + ParamBinding 矩阵） | 无需位置修正 | 移除 Tab1 位置修正段（参考 Threshold） |
 | 结果展示 | 三 Expander（结果判断/图形显示/文本显示） | 展示项按工具扩展 | 结果判断加判定项、图形显示加 `DispItemColorControl`、文本显示加 `DispTextColorControl` |
+| 几何量（距离/角度/交点/平行） | HALCON 算子优先（`DistanceSs`/`DistanceSl`/`DistancePl`/`AngleLl`/`IntersectionLl`） | 本工具实际所用算子或自研理由 | 命中自研例外条款（a 无对应算子 / b 纯显示层 / c 性能热点）必须在此列注明 |
 
 ---
 
@@ -593,3 +653,5 @@ tools/SunEyeVision.Tool.Morphology/     （形态学）
 - 工具层公开 API **永不暴露** `HImage`/`Mat`，图像统一 `IVisionImage`
 - Run 默认走 Halcon（`GetHalconImage()`），公开 API 不出现引擎类型
 - UI 必须复用 SDK 控件，禁止自建参数/区域/图像控件
+- 结果几何量（距离/角度/交点/平行判定）**必须优先 HALCON 算子**（`DistanceSs`/`DistanceSl`/`DistancePl`/`DistancePp`/`AngleLl`/`AngleLx`/`IntersectionLl`）；自研几何必须命中例外条款（HALCON 无对应算子 / 纯显示层 / 性能热点）并在差异点清单注明理由（rule-004 复用优先，非必要不自研）
+- 样式默认颜色**不得自定义**：`GraphicsStyle`/`TextStyle` 的 `OkColor`/`NgColor` 必须保留 SDK 默认值（OK=绿 0,255,0 / NG=红 255,0,0），工具层不写自定义颜色。**特例**（如确实需要区分多元素/语义上必须用特定色）须在差异点清单注明理由，并与评审讨论；禁止私自选色

@@ -160,40 +160,41 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             // Pen 键已包含厚度信息，不同线宽自动对应不同缓存项
 
             // 渲染顺序：区域(底层) → 工具输出(中层) → 高亮(顶层)
-            if (_regionItems != null)
+            // 每层内：图形项立即绘制，文本项收集后统一分组排版（同锚点协同换行）
+            RenderLayer(dc, _regionItems);
+            RenderLayer(dc, _collector?.Items);
+            RenderLayer(dc, _highlightItems);
+        }
+
+        /// <summary>
+        /// 渲染一层：图形项按原顺序立即绘制；文本项收集后统一分组排版，
+        /// 保证"同一锚点的多条文本（可跨 TextStyle）"协同换行而非相互重叠。
+        /// </summary>
+        private void RenderLayer(DrawingContext dc, IReadOnlyList<DisplayItemBase>? items)
+        {
+            if (items == null) return;
+
+            List<TextDisplayItem>? texts = null;
+            foreach (var item in items)
             {
-                foreach (var item in _regionItems)
+                if (!item.IsVisible) continue;
+
+                if (item is TextDisplayItem t)
                 {
-                    if (!item.IsVisible) continue;
-                    RenderItem(dc, item);
+                    (texts ??= new List<TextDisplayItem>()).Add(t);
+                    continue;
                 }
+                RenderItem(dc, item);
             }
 
-            if (_collector?.Items != null)
-            {
-                foreach (var item in _collector.Items)
-                {
-                    if (!item.IsVisible) continue;
-                    RenderItem(dc, item);
-                }
-            }
-
-            if (_highlightItems != null)
-            {
-                foreach (var item in _highlightItems)
-                {
-                    if (!item.IsVisible) continue;
-                    RenderItem(dc, item);
-                }
-            }
+            if (texts != null)
+                RenderTextsGrouped(dc, texts);
         }
 
         private void RenderItem(DrawingContext dc, DisplayItemBase item)
         {
             if (item is GraphicsDisplayItem g)
                 RenderGraphics(dc, g);
-            else if (item is TextDisplayItem t)
-                RenderText(dc, t);
         }
 
         #endregion
@@ -673,81 +674,106 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         #endregion
 
-        #region 文本渲染（双模式：统一锚点自动换行 / 独立锚点逐位渲染）
+        #region 文本渲染（同锚点分组自动排版：屏幕恒定行高，字号变更自动适配间距）
 
-        private void RenderText(DrawingContext dc, TextDisplayItem item)
+        /// <summary>同锚点判定容差（屏幕像素；缩放时容差自适应，避免放大后误分组）</summary>
+        private const double TextAnchorToleranceScreen = 2.0;
+
+        /// <summary>行高系数（行高 = 该行字号 × 系数；字号变更时间距自动跟随）</summary>
+        private const double TextLineHeightFactor = 1.4;
+
+        /// <summary>展开后的单行文本（每个 DisplayTextData = 一行）</summary>
+        private sealed class TextLine
         {
-            if (item.Texts.Length == 0) return;
+            public TextDisplayItem Item = null!;
+            public DisplayTextData Data = null!;
+            public bool IsPass;
+            public double AnchorX;
+            public double AnchorY;
+        }
 
-            var style = item.Style;
-            if (style == null) return;
-
-            dc.PushOpacity(style.Opacity);
-            try
+        /// <summary>
+        /// 文本渲染：按锚点分组 → 组内按添加顺序换行（可跨 TextStyle，解决"同锚点多文本重叠"）。
+        /// 锚点 = 图像坐标（跟随几何，随缩放移动）；行高与屏幕偏移均与字号同一缩放模型（屏幕恒定），
+        /// 因此缩放时不会"字变小、间距变大"，改字号时行距自动适配。
+        /// </summary>
+        private void RenderTextsGrouped(DrawingContext dc, List<TextDisplayItem> items)
+        {
+            var lines = new List<TextLine>();
+            foreach (var item in items)
             {
+                if (item.Style == null) continue;
+
                 var texts = item.Texts;
-                var isPassArray = item.IsPassArray;
-
-                bool useIndividualPositions = texts.Any(t =>
-                    Math.Abs(t.X - texts[0].X) > 0.001 ||
-                    Math.Abs(t.Y - texts[0].Y) > 0.001);
-
-                var scaledFontSize = ViewportScaling.InvScale(_viewportScale, style.FontSize);
-                var lineHeight = scaledFontSize * 1.4;
-
-                if (useIndividualPositions)
+                var passArray = item.IsPassArray;
+                for (int i = 0; i < texts.Length; i++)
                 {
-                    // 混合模式：连续同锚点文字自动分组，组内 Y 偏移实现换行
-                    int idx = 0;
-                    while (idx < texts.Length)
+                    var td = texts[i];
+                    lines.Add(new TextLine
                     {
-                        var anchorText = texts[idx];
-                        double anchorX = anchorText.X;
-                        double anchorY = anchorText.Y;
-
-                        int groupStart = idx;
-                        while (idx < texts.Length &&
-                               Math.Abs(texts[idx].X - anchorX) < 0.001 &&
-                               Math.Abs(texts[idx].Y - anchorY) < 0.001)
-                        {
-                            idx++;
-                        }
-                        int groupCount = idx - groupStart;
-
-                        for (int j = 0; j < groupCount; j++)
-                        {
-                            var td = texts[groupStart + j];
-                            bool isPass = isPassArray.Length > groupStart + j
-                                ? isPassArray[groupStart + j] : true;
-                            var color = ArgbToColor(style.GetEffectiveColorArgb(isPass));
-                            var formattedText = CreateFormattedText(td.Content, color,
-                                scaledFontSize, style.IsBold);
-                            dc.DrawText(formattedText,
-                                new Point(anchorX, anchorY + j * lineHeight));
-                        }
-                    }
-                }
-                else
-                {
-                    double baseX = texts[0].X;
-                    double baseY = texts[0].Y;
-
-                    for (int i = 0; i < texts.Length; i++)
-                    {
-                        var td = texts[i];
-                        double x = baseX;
-                        double y = baseY + i * lineHeight;
-
-                        bool isPass = isPassArray.Length > i ? isPassArray[i] : true;
-                        var color = ArgbToColor(style.GetEffectiveColorArgb(isPass));
-                        var formattedText = CreateFormattedText(td.Content, color, scaledFontSize, style.IsBold);
-                        dc.DrawText(formattedText, new Point(x, y));
-                    }
+                        Item = item,
+                        Data = td,
+                        IsPass = passArray.Length > i ? passArray[i] : true,
+                        AnchorX = td.X,
+                        AnchorY = td.Y,
+                    });
                 }
             }
-            finally
+            if (lines.Count == 0) return;
+
+            // 同锚点分组（锚点屏幕距离 ≤ 容差）
+            double anchorTolerance = ViewportScaling.InvScale(_viewportScale, TextAnchorToleranceScreen);
+            var groups = new List<List<TextLine>>();
+            foreach (var line in lines)
             {
-                dc.Pop();
+                List<TextLine>? target = null;
+                foreach (var group in groups)
+                {
+                    if (Math.Abs(group[0].AnchorX - line.AnchorX) <= anchorTolerance &&
+                        Math.Abs(group[0].AnchorY - line.AnchorY) <= anchorTolerance)
+                    {
+                        target = group;
+                        break;
+                    }
+                }
+                if (target == null)
+                {
+                    target = new List<TextLine>();
+                    groups.Add(target);
+                }
+                target.Add(line);
+            }
+
+            // 逐组排版：组内按添加顺序换行；行高 = 该行字号 × 系数（屏幕恒定 → 逻辑尺寸）
+            foreach (var group in groups)
+            {
+                double lineOffsetY = 0.0;   // 组内累计行偏移（逻辑尺寸）
+                foreach (var line in group)
+                {
+                    var style = line.Item.Style!;
+                    double scaledFontSize = ViewportScaling.InvScale(_viewportScale, style.FontSize);
+
+                    double drawX = line.AnchorX
+                        + ViewportScaling.InvScale(_viewportScale, line.Data.ScreenOffsetX);
+                    double drawY = line.AnchorY
+                        + ViewportScaling.InvScale(_viewportScale, line.Data.ScreenOffsetY)
+                        + lineOffsetY;
+
+                    var color = ArgbToColor(style.GetEffectiveColorArgb(line.IsPass));
+                    var formattedText = CreateFormattedText(line.Data.Content, color, scaledFontSize, style.IsBold);
+
+                    dc.PushOpacity(style.Opacity);
+                    try
+                    {
+                        dc.DrawText(formattedText, new Point(drawX, drawY));
+                    }
+                    finally
+                    {
+                        dc.Pop();
+                    }
+
+                    lineOffsetY += scaledFontSize * TextLineHeightFactor;
+                }
             }
         }
 

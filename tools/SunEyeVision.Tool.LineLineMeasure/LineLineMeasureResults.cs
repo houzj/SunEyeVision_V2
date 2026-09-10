@@ -137,9 +137,6 @@ namespace SunEyeVision.Tool.LineLineMeasure
         /// <summary>判定明细（逐项"名称: 实测值 ∈ [min,max] 通过/越界"；无判定逻辑时为空）</summary>
         public string[] JudgmentDetails { get; set; } = Array.Empty<string>();
 
-        /// <summary>整体判定 OK/NG（Judge 聚合，任一启用项越界/无值则 NG）</summary>
-        public bool IsPass { get; set; }
-
         public string GeometryDescription =>
             (Element1Line is { Length: > 0 } && Element2Line is { Length: > 0 })
                 ? (IsParallel
@@ -208,25 +205,26 @@ namespace SunEyeVision.Tool.LineLineMeasure
             // ---- 文本：卡尺1中心/角度、卡尺2中心/角度、交点 ----
             if (Element1Line is { Length: > 0 })
             {
+                // 同锚点（元素1中心）：中心/角度两行由渲染层自动换行（行高随字号自适应，缩放不错位）
                 if (parameters.Element1CenterTextStyle.IsVisible)
-                    _display.AddText(parameters.Element1CenterTextStyle, Element1Center.X, Element1Center.Y - 8,
+                    _display.AddText(parameters.Element1CenterTextStyle, Element1Center.X, Element1Center.Y,
                         $"卡尺1中心 ({Element1Center.X:F1}, {Element1Center.Y:F1})", isOk);
                 if (parameters.Element1AngleTextStyle.IsVisible)
-                    _display.AddText(parameters.Element1AngleTextStyle, Element1Center.X, Element1Center.Y + 6,
+                    _display.AddText(parameters.Element1AngleTextStyle, Element1Center.X, Element1Center.Y,
                         $"卡尺1角度 {Element1Angle:G3}°", isOk);
             }
             if (Element2Line is { Length: > 0 })
             {
                 if (parameters.Element2CenterTextStyle.IsVisible)
-                    _display.AddText(parameters.Element2CenterTextStyle, Element2Center.X, Element2Center.Y - 8,
+                    _display.AddText(parameters.Element2CenterTextStyle, Element2Center.X, Element2Center.Y,
                         $"卡尺2中心 ({Element2Center.X:F1}, {Element2Center.Y:F1})", isOk);
                 if (parameters.Element2AngleTextStyle.IsVisible)
-                    _display.AddText(parameters.Element2AngleTextStyle, Element2Center.X, Element2Center.Y + 6,
+                    _display.AddText(parameters.Element2AngleTextStyle, Element2Center.X, Element2Center.Y,
                         $"卡尺2角度 {Element2Angle:G3}°", isOk);
             }
             if (!IsParallel && !double.IsNaN(IntersectionX) && parameters.IntersectionTextStyle.IsVisible)
-                _display.AddText(parameters.IntersectionTextStyle, IntersectionX, IntersectionY + 16,
-                    $"交点 ({IntersectionX:F1}, {IntersectionY:F1})", isOk);
+                _display.AddText(parameters.IntersectionTextStyle, IntersectionX, IntersectionY,
+                    $"交点 ({IntersectionX:F1}, {IntersectionY:F1})", 0, 16, isOk);
 
             // ---- 无限直线延长（虚线，裁到图像范围）：拟合输出是线段，而交点取自无限直线，延长段让语义可见 ----
             if (ImageWidth > 0 && ImageHeight > 0)
@@ -279,10 +277,11 @@ namespace SunEyeVision.Tool.LineLineMeasure
                 if (parameters.DistanceTextStyle.IsVisible)
                 {
                     var mid = new Point((Element1Center.X + foot.X) / 2, (Element1Center.Y + foot.Y) / 2);
-                    _display.AddText(parameters.DistanceTextStyle, mid.X + 6, mid.Y - 6,
-                        $"法向距离 {Distance:F2}px", isOk);
-                    _display.AddText(parameters.DistanceTextStyle, mid.X + 6, mid.Y + 8,
-                        $"范围 {DistanceMin:F2}~{DistanceMax:F2}px", isOk);
+                    // 同锚点（连线中点）+ 屏幕恒定右移 6px：两行自动换行，缩放不错位
+                    _display.AddText(parameters.DistanceTextStyle, mid.X, mid.Y,
+                        $"法向距离 {Distance:F2}px", 6, 0, isOk);
+                    _display.AddText(parameters.DistanceTextStyle, mid.X, mid.Y,
+                        $"范围 {DistanceMin:F2}~{DistanceMax:F2}px", 6, 0, isOk);
                 }
             }
 
@@ -377,7 +376,7 @@ namespace SunEyeVision.Tool.LineLineMeasure
         {
             return
             [
-                .. base.GetPropertyMap(),   // 执行耗时 → 执行信息
+                .. base.GetPropertyMap(),   // 执行耗时 + 节点状态 → 执行信息
                 // ===== 输入回显（对齐 LineDetect 规范：输入区域/卡尺）=====
                 new("GuideGeometry1", "引导几何1", "输入区域/卡尺/引导线"),
                 new("GuideGeometry2", "引导几何2", "输入区域/卡尺/引导线"),
@@ -413,8 +412,6 @@ namespace SunEyeVision.Tool.LineLineMeasure
                 new("IsParallel", "是否平行", "测量结果"),
                 new("IntersectionX", "交点X(px)", "测量结果"),
                 new("IntersectionY", "交点Y(px)", "测量结果"),
-                // ===== 节点状态（判定 OK/NG，归"执行信息"，紧跟执行耗时）=====
-                new("IsPass", "节点状态", "执行信息"),
             ];
         }
     }

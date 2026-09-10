@@ -164,6 +164,17 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
             AppendText(item, x, y, content, isPass);
         }
 
+        /// <summary>
+        /// 在指定**锚点**显示单条文本，附加**屏幕像素**偏移（锚点=图像坐标跟随几何；偏移与字号同缩放模型）。
+        /// 同一锚点的多条文本由渲染层自动换行排版（行高随字号自适应）。
+        /// </summary>
+        public void AddText(TextStyle style, double anchorX, double anchorY, string content,
+            double screenOffsetX, double screenOffsetY, bool isPass = true)
+        {
+            var item = GetOrCreateTextItem(style);
+            AppendText(item, anchorX, anchorY, content, isPass, screenOffsetX, screenOffsetY);
+        }
+
         // ===== 生命周期 =====
 
         /// <summary>清空收集器（算法开始前调用）</summary>
@@ -282,9 +293,14 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
             return item;
         }
 
-        private void AppendText(TextDisplayItem item, double x, double y, string content, bool isPass = true)
+        private void AppendText(TextDisplayItem item, double x, double y, string content, bool isPass = true,
+            double screenOffsetX = 0.0, double screenOffsetY = 0.0)
         {
-            item.TextList.Add(new DisplayTextData { Content = content, X = x, Y = y });
+            item.TextList.Add(new DisplayTextData
+            {
+                Content = content, X = x, Y = y,
+                ScreenOffsetX = screenOffsetX, ScreenOffsetY = screenOffsetY,
+            });
             item.PassList.Add(isPass);
 
             if (item.TextList.Count == 1)

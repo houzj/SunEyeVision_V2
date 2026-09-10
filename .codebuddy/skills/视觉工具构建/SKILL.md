@@ -655,3 +655,4 @@ tools/SunEyeVision.Tool.Morphology/     （形态学）
 - UI 必须复用 SDK 控件，禁止自建参数/区域/图像控件
 - 结果几何量（距离/角度/交点/平行判定）**必须优先 HALCON 算子**（`DistanceSs`/`DistanceSl`/`DistancePl`/`DistancePp`/`AngleLl`/`AngleLx`/`IntersectionLl`）；自研几何必须命中例外条款（HALCON 无对应算子 / 纯显示层 / 性能热点）并在差异点清单注明理由（rule-004 复用优先，非必要不自研）
 - 样式默认颜色**不得自定义**：`GraphicsStyle`/`TextStyle` 的 `OkColor`/`NgColor` 必须保留 SDK 默认值（OK=绿 0,255,0 / NG=红 255,0,0），工具层不写自定义颜色。**特例**（如确实需要区分多元素/语义上必须用特定色）须在差异点清单注明理由，并与评审讨论；禁止私自选色
+- 文本显示**同锚点自动排版**：同一几何点的多条文本必须传**同一锚点**（图像坐标），由渲染层按锚点分组自动换行（行高 = 字号×1.4，屏幕恒定；字号变更时间距自动适配）。需要避开几何的微偏移一律用 `AddText(style, anchorX, anchorY, content, screenOffsetX, screenOffsetY)` 的**屏幕像素偏移**，**禁止**用图像坐标手写 `±N` 微偏移（缩放时会与屏幕恒定字号失配，出现"字变小、间距变大"或重叠）

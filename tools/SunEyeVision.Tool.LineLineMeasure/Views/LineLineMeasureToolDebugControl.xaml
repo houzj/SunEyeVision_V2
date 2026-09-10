@@ -53,7 +53,7 @@
             </ScrollViewer>
         </TabItem>
 
-        <!-- ============ Tab2 运行参数：两元素 引导/卡尺 全 ParamValue（常量↔绑定两态） ============ -->
+        <!-- ============ Tab2 运行参数：两元素 边缘检测参数 + 拟合筛选（卡尺几何参数见 Tab1 选中卡尺面板） ============ -->
         <TabItem Header="运行参数">
             <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12">
                 <StackPanel>
@@ -67,25 +67,10 @@
                         </ComboBox>
                     </StackPanel>
 
-                    <!-- ===== 卡尺1 运行参数（measure 执行参数，参考直线查找 Tab2） ===== -->
+                    <!-- ===== 卡尺1 运行参数（边缘检测参数，参考直线查找 Tab2） ===== -->
                     <StackPanel x:Name="RunElement1Panel">
                         <Separator Margin="0,0,0,4" Background="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}" Height="1"/>
-                        <TextBlock Text="卡尺参数" FontWeight="SemiBold" Margin="0,4,0,8"/>
-                        <controls:LabeledControl Label="测量带宽度(半长)" Margin="0,0,0,4">
-                            <controls:ConfigSetting ParameterName="E1MeasureLength1" DataType="{x:Type sys:Double}"
-                                Value="{Binding E1MeasureLength1.Value, Mode=TwoWay}" Minimum="1" Maximum="200" Width="250"
-                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                        </controls:LabeledControl>
-                        <controls:LabeledControl Label="测量带长度(半长)" Margin="0,0,0,4">
-                            <controls:ConfigSetting ParameterName="E1MeasureLength2" DataType="{x:Type sys:Double}"
-                                Value="{Binding E1MeasureLength2.Value, Mode=TwoWay}" Minimum="1" Maximum="200" Width="250"
-                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                        </controls:LabeledControl>
-                        <controls:LabeledControl Label="测量带数量" Margin="0,0,0,4">
-                            <controls:ConfigSetting ParameterName="E1NumMeasures" DataType="{x:Type sys:Int32}"
-                                Value="{Binding E1NumMeasures.Value, Mode=TwoWay}" Minimum="1" Maximum="100" Width="250"
-                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                        </controls:LabeledControl>
+                        <TextBlock Text="边缘检测参数" FontWeight="SemiBold" Margin="0,4,0,8"/>
                         <controls:LabeledControl Label="平滑 Sigma" Margin="0,0,0,4">
                             <controls:ConfigSetting ParameterName="E1Sigma" DataType="{x:Type sys:Double}"
                                 Value="{Binding E1Sigma.Value, Mode=TwoWay}" Minimum="0.5" Maximum="10" ShowSlider="True" Width="250"
@@ -119,22 +104,7 @@
                     <!-- ===== 卡尺2 运行参数（同构） ===== -->
                     <StackPanel x:Name="RunElement2Panel" Visibility="Collapsed">
                         <Separator Margin="0,0,0,4" Background="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}" Height="1"/>
-                        <TextBlock Text="卡尺参数" FontWeight="SemiBold" Margin="0,4,0,8"/>
-                        <controls:LabeledControl Label="测量带宽度(半长)" Margin="0,0,0,4">
-                            <controls:ConfigSetting ParameterName="E2MeasureLength1" DataType="{x:Type sys:Double}"
-                                Value="{Binding E2MeasureLength1.Value, Mode=TwoWay}" Minimum="1" Maximum="200" Width="250"
-                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                        </controls:LabeledControl>
-                        <controls:LabeledControl Label="测量带长度(半长)" Margin="0,0,0,4">
-                            <controls:ConfigSetting ParameterName="E2MeasureLength2" DataType="{x:Type sys:Double}"
-                                Value="{Binding E2MeasureLength2.Value, Mode=TwoWay}" Minimum="1" Maximum="200" Width="250"
-                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                        </controls:LabeledControl>
-                        <controls:LabeledControl Label="测量带数量" Margin="0,0,0,4">
-                            <controls:ConfigSetting ParameterName="E2NumMeasures" DataType="{x:Type sys:Int32}"
-                                Value="{Binding E2NumMeasures.Value, Mode=TwoWay}" Minimum="1" Maximum="100" Width="250"
-                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                        </controls:LabeledControl>
+                        <TextBlock Text="边缘检测参数" FontWeight="SemiBold" Margin="0,4,0,8"/>
                         <controls:LabeledControl Label="平滑 Sigma" Margin="0,0,0,4">
                             <controls:ConfigSetting ParameterName="E2Sigma" DataType="{x:Type sys:Double}"
                                 Value="{Binding E2Sigma.Value, Mode=TwoWay}" Minimum="0.5" Maximum="10" ShowSlider="True" Width="250"

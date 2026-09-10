@@ -228,7 +228,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         /// <summary>
         /// 限制可选的卡尺引导类型（隐藏不支持的工具栏项）
         /// 对齐 Roi 编辑器"锁定形状类型"模式，工具层调用，SDK 控件只提供能力。
-        /// 默认全部可见（EdgeDetect 多几何工具），单几何工具（直线/圆查找）传入自身类型即可。
+        /// 默认全部可见（多几何工具），单几何工具（直线/圆查找）传入自身类型即可。
         /// </summary>
         public void SetAllowedGeometryTypes(params MeasureGeometryType[] allowedTypes)
         {

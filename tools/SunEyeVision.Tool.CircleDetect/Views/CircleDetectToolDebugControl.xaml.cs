@@ -19,9 +19,9 @@ namespace SunEyeVision.Tool.CircleDetect.Views
     /// 圆查找工具调试控件
     /// </summary>
     /// <remarks>
-    /// 3 Tab 布局（对齐 EdgeDetect）：
-    /// - Tab1 基本参数：引导圆（GuideEditor，锁定 Circle 类型）
-    /// - Tab2 运行参数：卡尺参数 + 圆弧参数 + 拟合筛选
+    /// 3 Tab 布局（测量工具范式）：
+    /// - Tab1 基本参数：引导圆/圆弧 + 卡尺几何参数（GuideEditor，锁定 Circle 类型）
+    /// - Tab2 运行参数：边缘检测参数 + 拟合筛选
     /// - Tab3 结果显示：拟合结果 + RMSE + 边缘点数
     ///
     /// 引导几何绘制/编辑交互由 SDK 通用控件 MeasurementEditorManagerControl 承载，

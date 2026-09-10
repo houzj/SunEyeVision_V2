@@ -55,35 +55,13 @@
                 </ScrollViewer>
             </TabItem>
 
-            <!-- ===== Tab2 运行参数（卡尺参数 + 拟合筛选，Blob 范式） ===== -->
+            <!-- ===== Tab2 运行参数（边缘检测参数 + 拟合筛选，Blob 范式） ===== -->
             <TabItem Header="运行参数">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12">
                     <StackPanel>
-                        <!-- ===== 卡尺参数 ===== -->
+                        <!-- ===== 边缘检测参数（卡尺几何参数见 Tab1「区域设置」选中卡尺后的面板，此处不重复） ===== -->
                         <Separator Margin="0,0,0,4" Background="{DynamicResource ThemeDividerBrushBrush}" Height="1"/>
-                        <TextBlock Text="卡尺参数" FontWeight="SemiBold" Margin="0,4,0,8"/>
-
-                        <controls:LabeledControl Label="测量带宽度" Margin="0,0,0,4">
-                            <controls:ConfigSetting
-                                ParameterName="MeasureLength1"
-                                DataType="{x:Type sys:Double}"
-                                Value="{Binding MeasureLength1, Mode=TwoWay}"
-                                Minimum="1" Maximum="200"
-                                SmallChange="1" LargeChange="5"
-                                Width="250"
-                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                        </controls:LabeledControl>
-
-                        <controls:LabeledControl Label="测量带长度" Margin="0,0,0,4">
-                            <controls:ConfigSetting
-                                ParameterName="MeasureLength2"
-                                DataType="{x:Type sys:Double}"
-                                Value="{Binding MeasureLength2, Mode=TwoWay}"
-                                Minimum="1" Maximum="100"
-                                SmallChange="1" LargeChange="5"
-                                Width="250"
-                                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                        </controls:LabeledControl>
+                        <TextBlock Text="边缘检测参数" FontWeight="SemiBold" Margin="0,4,0,8"/>
 
                         <controls:LabeledControl Label="平滑 Sigma" Margin="0,0,0,4">
                             <controls:ConfigSetting

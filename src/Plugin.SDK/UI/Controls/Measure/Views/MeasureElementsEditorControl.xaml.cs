@@ -482,7 +482,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
             var tb = new TextBlock
             {
                 Text = text,
-                FontSize = 16,
+                FontSize = 24,
                 FontWeight = FontWeights.Bold,
                 Foreground = foreground,
                 Visibility = Visibility.Collapsed,
@@ -520,9 +520,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
             // 锚在 P1 沿引导线【反向延长线】外：测量带/主卡尺从 P1 沿引导线正向生长，
             // 永不越过 P1 反向延伸 → 角标放起点之前必然不与卡尺/手柄重叠。
             var dir = (end - start) / len;
-            const double off = 16;   // 反向延长距离（起点稍前，避免压到卡尺）
-            Canvas.SetLeft(badge, start.X - dir.X * off - 6);
-            Canvas.SetTop(badge, start.Y - dir.Y * off - 14);
+            const double off = 24;   // 反向延长距离（起点稍前，避免压到卡尺/字体）
+            Canvas.SetLeft(badge, start.X - dir.X * off - 8);
+            Canvas.SetTop(badge, start.Y - dir.Y * off - 22);
             badge.Visibility = Visibility.Visible;
         }
 

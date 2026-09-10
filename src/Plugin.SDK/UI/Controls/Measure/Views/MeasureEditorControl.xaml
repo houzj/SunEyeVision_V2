@@ -17,13 +17,13 @@
                 BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"
                 BorderThickness="1" Padding="3" Margin="0,0,0,8">
             <StackPanel>
-                <Border CornerRadius="4" Padding="6,2" Margin="4,0,4,4"
+                <Border CornerRadius="4" Padding="8,3" Margin="4,0,4,4"
                         Background="{DynamicResource {x:Static themes:SdkThemeKeys.PanelBackgroundBrush}}"
                         BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.AccentBrush}}"
                         BorderThickness="1"
                         HorizontalAlignment="Left">
                     <TextBlock Text="{Binding EditorHeader, RelativeSource={RelativeSource AncestorType=measure:MeasureEditorControl}}"
-                               FontWeight="Bold" FontSize="12"
+                               FontWeight="Bold" FontSize="14"
                                Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.AccentBrush}}"/>
                 </Border>
             </StackPanel>

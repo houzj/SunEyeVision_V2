@@ -31,10 +31,14 @@
 
   <!-- 工具插件: OutDir 统一覆盖到 plugins/<ToolName>/ 子目录
        不区分特例,所有 IsToolPlugin=true 的 csproj 一律输出到独立子目录,
-       避免 AvalonEdit/Roslyn 等重型 NuGet 依赖污染 plugins/ 根。 -->
+       避免 AvalonEdit/Roslyn 等重型 NuGet 依赖污染 plugins/ 根。
+       路径基准用 $(MSBuildThisFileDirectory)(= worktree 根) 而非
+       $(MSBuildProjectDirectory)\..\..\ —— 后者是"相对项目目录上溯两级",
+       仅对恰好两层深的项目成立, 项目若建在其它层级会错位
+       (同 Directory.Build.props 的 WorktreeBasePath 治本, 2026-09-10)。 -->
   <PropertyGroup Condition="'$(IsToolPlugin)'=='true'">
-    <OutDir Condition="'$(Configuration)'=='Debug'">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\..\..\dev\Debug\plugins\$(MSBuildProjectName)\'))</OutDir>
-    <OutDir Condition="'$(Configuration)'=='Release'">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\..\..\Release\SunEyeVision_v1.0.0\SunEyeVision\plugins\$(MSBuildProjectName)\'))</OutDir>
+    <OutDir Condition="'$(Configuration)'=='Debug'">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)dev\Debug\plugins\$(MSBuildProjectName)\'))</OutDir>
+    <OutDir Condition="'$(Configuration)'=='Release'">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)Release\SunEyeVision_v1.0.0\SunEyeVision\plugins\$(MSBuildProjectName)\'))</OutDir>
   </PropertyGroup>
 
   <!-- Step 1: 从 ReferenceCopyLocalPaths 移除非工具主程序集

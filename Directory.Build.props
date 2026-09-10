@@ -17,16 +17,14 @@
          导致主程序等所有项目 OutputPath 回落 SDK 默认 bin/ 。 -->
     <Configuration Condition="'$(Configuration)'==''">Debug</Configuration>
 
-    <!-- 自动检测当前工作区: main, camera, tool -->
-    <WorktreeName Condition="$(MSBuildProjectDirectory.Contains('SunEyeVision_Dev-camera'))">camera</WorktreeName>
-    <WorktreeName Condition="$(MSBuildProjectDirectory.Contains('SunEyeVision_Dev-tool'))">tool</WorktreeName>
-    <WorktreeName Condition="'$(WorktreeName)' == ''">main</WorktreeName>
-    
-    <!-- 根据工作区设置基础路径 (各 worktree 输出到各自的 dev/ 目录)
-         末尾带 \ 避免下游拼接时反斜杠被吞 -->
-    <WorktreeBasePath Condition="'$(WorktreeName)'=='main'">$(MSBuildProjectDirectory)\..\..\</WorktreeBasePath>
-    <WorktreeBasePath Condition="'$(WorktreeName)'=='camera'">$(MSBuildProjectDirectory)\..\..\</WorktreeBasePath>
-    <WorktreeBasePath Condition="'$(WorktreeName)'=='tool'">$(MSBuildProjectDirectory)\..\..\</WorktreeBasePath>
+    <!-- 工作区基础路径 = 本 props 文件所在目录(即当前 worktree 根, 末尾自带 \)。
+         治本(2026-09-10): 原写法 $(MSBuildProjectDirectory)\..\..\ 是"相对项目目录上溯两级",
+         仅对 src/xxx、tools/xxx、tests/xxx 这类恰好两层深的项目成立;
+         项目若建在其它层级(如 .codebuddy/tmp/xxx 临时工具), 上溯即错位,
+         把输出偏到 .codebuddy\dev\Debug\ 与 .codebuddy\build_temp\ 等意外目录。
+         $(MSBuildThisFileDirectory) 恒等于 worktree 根, 与项目层级无关,
+         天然满足"各 worktree 输出到各自 dev/"的设计意图, 故原 WorktreeName 分支冗余已删。 -->
+    <WorktreeBasePath>$(MSBuildThisFileDirectory)</WorktreeBasePath>
     
     <!-- Debug 输出到各 worktree 独立的 dev/Debug/ 目录
          同时设置 OutputPath 与 OutDir：

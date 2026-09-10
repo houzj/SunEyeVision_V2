@@ -41,7 +41,6 @@
     <Project Path="tools/SunEyeVision.Tool.Subroutine/SunEyeVision.Tool.Subroutine.csproj" />
     <Project Path="tools/SunEyeVision.Tool.Condition/SunEyeVision.Tool.Condition.csproj" />
     <Project Path="tools/SunEyeVision.Tool.Script/SunEyeVision.Tool.Script.csproj" />
-    <Project Path="tools/SunEyeVision.Tool.EdgeDetect/SunEyeVision.Tool.EdgeDetect.csproj" />
     <Project Path="tools/SunEyeVision.Tool.LineDetect/SunEyeVision.Tool.LineDetect.csproj" />
     <Project Path="tools/SunEyeVision.Tool.CircleDetect/SunEyeVision.Tool.CircleDetect.csproj" />
   </Folder>

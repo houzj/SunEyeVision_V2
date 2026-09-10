@@ -177,6 +177,8 @@ namespace SunEyeVision.Tool.CircleDetect
             return
             [
                 .. base.GetPropertyMap(),   // 合并基类：ExecutionTimeMs → 执行耗时/执行信息
+                // ===== 节点状态（判定 OK/NG，归"执行信息"，紧随执行耗时；视觉工具构建技能范式 D.1 规范）=====
+                new("IsPass",            "节点状态", "执行信息"),
                 // 测量带(卡尺)输入回显：引导线/测量带 归"输入区域/卡尺"分组
                 new("GuideGeometry",     "引导几何", "输入区域/卡尺/引导线"),
                 new("CaliberCount",      "测量带数量", "输入区域/卡尺/测量带"),

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -229,7 +229,6 @@ namespace SunEyeVision.Tool.CircleDetect
         {
             Name = "轮廓点",
             IsVisible = true,
-            OkColor = System.Windows.Media.Colors.Yellow,
             CrossSize = 5.0,
         };
 
@@ -265,7 +264,6 @@ namespace SunEyeVision.Tool.CircleDetect
         {
             Name = "拟合圆",
             IsVisible = true,
-            OkColor = System.Windows.Media.Colors.LimeGreen,
         };
 
         /// <summary>圆心坐标文本样式</summary>
@@ -273,7 +271,6 @@ namespace SunEyeVision.Tool.CircleDetect
         {
             Name = "圆心坐标",
             IsVisible = true,
-            OkColor = System.Windows.Media.Colors.Cyan,
         };
 
         /// <summary>圆心标记显示样式（十字）</summary>
@@ -281,7 +278,6 @@ namespace SunEyeVision.Tool.CircleDetect
         {
             Name = "圆心标记",
             IsVisible = true,
-            OkColor = System.Windows.Media.Colors.LimeGreen,
             CrossSize = 8.0,
         };
 
@@ -293,7 +289,6 @@ namespace SunEyeVision.Tool.CircleDetect
         {
             Name = "引导线",
             IsVisible = true,
-            OkColor = ColorConstants.InspectionBlue,
             LineWidth = 2.0,
         };
 
@@ -301,7 +296,6 @@ namespace SunEyeVision.Tool.CircleDetect
         {
             Name = "卡尺",
             IsVisible = true,
-            OkColor = ColorConstants.InspectionBlue,
             LineWidth = 1.0,
         };
 

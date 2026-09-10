@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -236,7 +236,6 @@ namespace SunEyeVision.Tool.EdgeDetect
         {
             Name = "引导线",
             IsVisible = true,
-            OkColor = ColorConstants.InspectionBlue,
             LineWidth = 2.0,
         };
 
@@ -244,7 +243,6 @@ namespace SunEyeVision.Tool.EdgeDetect
         {
             Name = "卡尺",
             IsVisible = true,
-            OkColor = ColorConstants.InspectionBlue,
             LineWidth = 1.0,
         };
 

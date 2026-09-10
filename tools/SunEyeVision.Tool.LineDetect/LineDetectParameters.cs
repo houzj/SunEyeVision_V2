@@ -186,7 +186,6 @@ namespace SunEyeVision.Tool.LineDetect
         {
             Name = "轮廓点",
             IsVisible = true,
-            OkColor = System.Windows.Media.Colors.Yellow,
             CrossSize = 5.0,
         };
 
@@ -222,7 +221,6 @@ namespace SunEyeVision.Tool.LineDetect
         {
             Name = "拟合直线",
             IsVisible = true,
-            OkColor = System.Windows.Media.Colors.LimeGreen,
         };
 
         /// <summary>中点坐标文本样式</summary>
@@ -230,7 +228,6 @@ namespace SunEyeVision.Tool.LineDetect
         {
             Name = "中点坐标",
             IsVisible = true,
-            OkColor = System.Windows.Media.Colors.Cyan,
         };
 
         /// <summary>直线角度文本样式</summary>
@@ -238,7 +235,6 @@ namespace SunEyeVision.Tool.LineDetect
         {
             Name = "直线角度",
             IsVisible = true,
-            OkColor = System.Windows.Media.Colors.Cyan,
         };
 
         #endregion
@@ -249,7 +245,6 @@ namespace SunEyeVision.Tool.LineDetect
         {
             Name = "引导线",
             IsVisible = true,
-            OkColor = ColorConstants.InspectionBlue,
             LineWidth = 2.0,
         };
 
@@ -257,7 +252,6 @@ namespace SunEyeVision.Tool.LineDetect
         {
             Name = "卡尺",
             IsVisible = true,
-            OkColor = ColorConstants.InspectionBlue,
             LineWidth = 1.0,
         };
 

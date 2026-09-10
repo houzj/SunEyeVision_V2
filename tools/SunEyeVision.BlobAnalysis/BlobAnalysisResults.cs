@@ -190,7 +190,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
                 new("ThresholdUsed",            "实际使用的阈值",         "预处理"),
                 new("MaxValueUsed",             "最大值",                 "预处理"),
                 new("TypeUsed",                 "阈值类型",               "预处理"),
-                new("JudgmentPassed",           "判断通过",               "判断"),
+                new("JudgmentPassed",           "节点状态",               "执行信息"),
                 new("FilteredBlobCount",        "Blob数量",               "统计"),
                 new("FilteredTotalArea",        "总面积",                 "统计"),
                 new("AverageArea",              "平均面积",               "统计"),

@@ -64,7 +64,6 @@ namespace SunEyeVision.Tool.ShapeMatch.Models
         {
             Name = "MatchBox",
             LineWidth = 2,
-            OkColor = System.Windows.Media.Color.FromRgb(0, 255, 0)       // 亮绿
         };
         public GraphicsStyle MatchBoxStyle
         {
@@ -77,7 +76,6 @@ namespace SunEyeVision.Tool.ShapeMatch.Models
             Name = "MatchCenter",
             LineWidth = 2,
             CrossSize = 4,
-            OkColor = System.Windows.Media.Color.FromRgb(0, 255, 255)     // 青色
         };
         public GraphicsStyle MatchCenterStyle
         {
@@ -89,7 +87,6 @@ namespace SunEyeVision.Tool.ShapeMatch.Models
         {
             Name = "AngleLine",
             LineWidth = 1,
-            OkColor = System.Windows.Media.Color.FromRgb(255, 255, 0)     // 黄色
         };
         public GraphicsStyle AngleLineStyle
         {
@@ -101,7 +98,6 @@ namespace SunEyeVision.Tool.ShapeMatch.Models
         {
             Name = "TemplateContour",
             LineWidth = 1,
-            OkColor = System.Windows.Media.Color.FromRgb(0, 255, 128)     // 亮青绿
         };
         public GraphicsStyle TemplateContourStyle
         {

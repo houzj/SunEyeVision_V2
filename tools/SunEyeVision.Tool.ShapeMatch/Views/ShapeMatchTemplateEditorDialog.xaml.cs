@@ -778,7 +778,6 @@ public partial class ShapeMatchTemplateEditorDialog : SdkDialogWindow
         var style = new GraphicsStyle
         {
             Name = "TemplateContour",
-            OkColor = Colors.LimeGreen,
             LineWidth = 1.5
         };
 

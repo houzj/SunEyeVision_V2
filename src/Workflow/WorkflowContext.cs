@@ -408,6 +408,14 @@ namespace SunEyeVision.Workflow
         }
 
         /// <summary>
+        /// 获取节点执行状态（未记录时返回 Pending）
+        /// </summary>
+        public NodeStatus GetNodeStatus(string nodeId)
+        {
+            return NodeStates.TryGetValue(nodeId, out var state) ? state.Status : NodeStatus.Pending;
+        }
+
+        /// <summary>
         /// 添加执行日志
         /// </summary>
         public void AddLog(string message, LogLevel level = LogLevel.Info)
@@ -489,37 +497,6 @@ namespace SunEyeVision.Workflow
         public bool IsCancellationRequested()
         {
             return CancellationToken.IsCancellationRequested;
-        }
-
-        /// <summary>
-        /// 创建子上下文（用于子程序）
-        /// </summary>
-        public WorkflowContext CreateSubContext(string subroutineId)
-        {
-            var subContext = new WorkflowContext
-            {
-                WorkflowId = subroutineId,
-                ExecutionEngine = ExecutionEngine,
-                CancellationToken = CancellationToken,
-                ProgressReporter = ProgressReporter,
-                IsDebugMode = IsDebugMode,
-                EnableProfiling = EnableProfiling,
-                VisitedWorkflowIds = VisitedWorkflowIds  // ★ Phase 2: 复制循环检测集合
-            };
-
-            // 复制全局变量
-            foreach (var variable in Variables)
-            {
-                subContext.Variables[variable.Key] = variable.Value;
-            }
-
-            // 复制元数据
-            foreach (var meta in Metadata)
-            {
-                subContext.Metadata[meta.Key] = meta.Value;
-            }
-
-            return subContext;
         }
 
         /// <summary>

@@ -176,21 +176,23 @@ namespace SunEyeVision.Workflow
                     executable,
                     context);
 
-                totalExecutedNodes += groupResult.Success ? executable.Count : 0;
+                // ★ 统计按实际成功节点数（失败/跳过的节点不计入）
+                totalExecutedNodes += executable.Count(id => context.GetNodeResult(id)?.Success == true);
 
                 var groupDuration = (DateTime.Now - groupStartTime).TotalMilliseconds;
                 _logger.LogInfo($"组 {groupIndex + 1} 执行完成, 耗时: {groupDuration:F2}ms, 成功节点: {groupResult.Success}");
 
                 if (!groupResult.Success)
                 {
-                    // ★ 失败也要保留已执行节点的结果（如脚本节点失败前，上游节点结果已写入 context）。
-                    //   否则 UI 收不到任何节点结果，调试窗口输入数据源丢失（表现为"脚本报错影响输入"假象）。
+                    // ★ 失败隔离：本组存在失败节点，但不再终止整条流程。
+                    //   失败节点结果已由 SetNodeResult 写入 SSOT，此处合并本组结果供 UI 使用，
+                    //   随后继续执行后续组 —— 不相关分支照常跑完；
+                    //   失败节点的下游由前驱可用性判定（AreParentsAvailable）标 Skipped，避免级联假错误。
                     foreach (var kvp in context.GetAllNodeResults())
                     {
                         groupResult.NodeResults[kvp.Key] = kvp.Value;
                     }
-                    _currentState = WorkflowExecutionState.Error;
-                    return groupResult;
+                    _logger.LogInfo($"组 {groupIndex + 1} 存在失败节点，按隔离策略继续执行后续组");
                 }
 
                 // ★ 收集本组所有条件分支的控制信号（可能有多个同组并行）。
@@ -285,6 +287,16 @@ namespace SunEyeVision.Workflow
                 var node = workflow.Nodes.FirstOrDefault(n => n.Id == nodeIds[0]);
                 if (node != null && node.IsEnabled)
                 {
+                    // ★ 失败隔离：前驱不可用（Failed/Skipped）→ 本节点跳过，不执行
+                    if (!AreParentsAvailable(workflow, node.Id, context))
+                    {
+                        context.UpdateNodeStatus(node.Id, NodeStatus.Skipped);
+                        NodeStatusChanged?.Invoke(this, new NodeExecutionStatus { NodeId = node.Id, Status = NodeStatus.Skipped });
+                        _logger.LogInfo($"前驱不可用，跳过执行", node.Name);
+                        result.Success = true;
+                        return result;
+                    }
+
                     _logger.Info($"开始执行", node.Name);
 
                     // 准备数据源
@@ -330,6 +342,15 @@ namespace SunEyeVision.Workflow
                 var node = workflow.Nodes.FirstOrDefault(n => n.Id == nodeId);
                 if (node != null && node.IsEnabled)
                 {
+                    // ★ 失败隔离：前驱不可用（Failed/Skipped）→ 本节点跳过，不执行
+                    if (!AreParentsAvailable(workflow, nodeId, context))
+                    {
+                        context.UpdateNodeStatus(nodeId, NodeStatus.Skipped);
+                        NodeStatusChanged?.Invoke(this, new NodeExecutionStatus { NodeId = nodeId, Status = NodeStatus.Skipped });
+                        _logger.LogInfo($"前驱不可用，跳过执行", node.Name);
+                        continue;
+                    }
+
                     // 准备数据源
                     var parentIds = workflow.Connections
                         .Where(conn => conn.TargetNodeId == node.Id)
@@ -358,14 +379,32 @@ namespace SunEyeVision.Workflow
                     {
                         var errorMessage = nodeResult.ErrorMessages?.FirstOrDefault() ?? "执行失败";
                         result.AddError(errorMessage, nodeId);
-                        // 一个节点失败时停止当前组的执行
-                        break;
+                        // ★ 失败隔离：不再终止本组，同组其余无依赖节点继续执行；
+                        //   本节点下游由前驱可用性判定标 Skipped
                     }
                 }
             }
 
             result.Success = result.Errors.Count == 0;
             return result;
+        }
+
+        /// <summary>
+        /// 判断节点的所有前驱是否可用（均可执行）。
+        /// 任一前驱为 Failed 或 Skipped → 返回 false，本节点应跳过执行，
+        /// 避免下游带着缺失的上游数据继续执行而产生级联假错误。
+        /// </summary>
+        private static bool AreParentsAvailable(Workflow workflow, string nodeId, WorkflowContext context)
+        {
+            foreach (var conn in workflow.Connections.Where(c => c.TargetNodeId == nodeId))
+            {
+                var status = context.GetNodeStatus(conn.SourceNodeId);
+                if (status == NodeStatus.Failed || status == NodeStatus.Skipped)
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
         /// <summary>

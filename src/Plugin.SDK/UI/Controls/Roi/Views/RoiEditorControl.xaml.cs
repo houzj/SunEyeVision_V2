@@ -157,7 +157,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
         /// </summary>
         private static object? TemplateGeometryForTool(ShapeType tool) => tool switch
         {
-            ShapeType.Rectangle => new Rect(0, 0, 0, 0),
             ShapeType.Circle => new Circle2d(0, 0, 0),
             ShapeType.RotatedRectangle => new RotatedRect2d(0, 0, 0, 0, 0),
             ShapeType.Line => new Line2d(new Point(0, 0), new Vector(1, 0)),
@@ -631,7 +630,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
                     e.Handled = true;
                     break;
                 case Key.R:
-                    SelectShapeTool(ShapeType.Rectangle);
+                    SelectShapeTool(ShapeType.RotatedRectangle);
                     e.Handled = true;
                     break;
                 case Key.C:
@@ -756,7 +755,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
                     e.Handled = true;
                     break;
                 case Key.R:
-                    SelectShapeTool(ShapeType.Rectangle);
+                    SelectShapeTool(ShapeType.RotatedRectangle);
                     e.Handled = true;
                     break;
                 case Key.C:
@@ -990,9 +989,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
                 {
                     switch (_currentTool)
                     {
-                        case ShapeType.Rectangle:
-                            shapeDef.Geometry = new System.Windows.Rect(refPosition.X, refPosition.Y, 0, 0);
-                            break;
                         case ShapeType.RotatedRectangle:
                             shapeDef.Geometry = new RotatedRect2d(refPosition.X, refPosition.Y, 0, 0, 0);
                             break;
@@ -1052,7 +1048,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
                             {
                                 Circle2d c => new Size(c.Radius * 2, c.Radius * 2),
                                 RotatedRect2d rr => new Size(rr.Width, rr.Height),
-                                System.Windows.Rect r => new Size(r.Width, r.Height),
                                 _ => new Size(100, 100),
                             };
                             _originalRotation = shapeDef.Geometry switch
@@ -1197,11 +1192,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
                 {
                     bool isValid = _currentTool switch
                     {
-                        ShapeType.Rectangle or ShapeType.RotatedRectangle =>
+                        ShapeType.RotatedRectangle or ShapeType.RotatedRectangle =>
                             shapeDef.Geometry switch
                             {
                                 RotatedRect2d rr => rr.Width >= 10 && rr.Height >= 10 && rr.Width * rr.Height >= 100,
-                                System.Windows.Rect r => r.Width >= 10 && r.Height >= 10 && r.Width * r.Height >= 100,
                                 _ => false,
                             },
                         ShapeType.Circle =>
@@ -1283,16 +1277,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
 
             switch (_currentTool)
             {
-                case ShapeType.Rectangle:
-                    shapeDef.Geometry = new System.Windows.Rect(
-                        Math.Min(_startPoint.X, currentPosition.X),
-                        Math.Min(_startPoint.Y, currentPosition.Y),
-                        Math.Abs(dx), Math.Abs(dy));
-                    break;
-
                 case ShapeType.RotatedRectangle:
+                    // 矩形即 Angle=0 的旋转矩形：拖拽起止点 → 中心 + 宽高
                     shapeDef.Geometry = new RotatedRect2d(
-                        _startPoint.X + dx / 2, _startPoint.Y + dy / 2,
+                        (_startPoint.X + currentPosition.X) / 2,
+                        (_startPoint.Y + currentPosition.Y) / 2,
                         Math.Abs(dx), Math.Abs(dy), 0);
                     break;
 
@@ -1319,7 +1308,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
                     RotatedRect2d rr => new RotatedRect2d(rr.CenterX + offset.X, rr.CenterY + offset.Y, rr.Width, rr.Height, rr.Angle),
                     Line2d l => new Line2d(
                         new System.Windows.Point(l.Point.X + offset.X, l.Point.Y + offset.Y), l.Direction),
-                    System.Windows.Rect r => new System.Windows.Rect(r.X + offset.X, r.Y + offset.Y, r.Width, r.Height),
                     Polygon2d poly when poly.Vertices.Length > 0 => new Polygon2d(
                         poly.Vertices.Select(v => new System.Windows.Point(v.X + offset.X, v.Y + offset.Y)).ToArray(),
                         poly.IsClosed),
@@ -1422,15 +1410,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
             // Polygon 通过顶点手柄直接更新
 
             RoiDataChanged?.Invoke(this, roi);
-        }
-
-        /// <summary>
-        /// 更新矩形形状（通过手柄，使用原始状态避免累积误差）
-        /// </summary>
-        private void UpdateRectangleByHandle(RoiShape shapeDef, Rendering.HandleType handleType, double dx, double dy)
-        {
-            // 此方法已弃用，现在使用ResizeRectangleFromCorner和ResizeRectangleFromEdge方法
-            // 这些方法使用原始状态保存机制，避免累积误差
         }
 
         /// <summary>
@@ -1539,38 +1518,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
                     HandleRotatedRectangleResize(shape, currentPosition, delta);
                 }
                 return;
-            }
-
-            // 普通矩形（System.Windows.Rect）调整
-            if (shape.Geometry is System.Windows.Rect)
-            {
-                switch (_activeHandleType)
-                {
-                    case Rendering.HandleType.TopLeft:
-                        ResizeRectangleFromCorner(shape, delta, true, true);
-                        break;
-                    case Rendering.HandleType.TopRight:
-                        ResizeRectangleFromCorner(shape, delta, false, true);
-                        break;
-                    case Rendering.HandleType.BottomLeft:
-                        ResizeRectangleFromCorner(shape, delta, true, false);
-                        break;
-                    case Rendering.HandleType.BottomRight:
-                        ResizeRectangleFromCorner(shape, delta, false, false);
-                        break;
-                    case Rendering.HandleType.Top:
-                        ResizeRectangleFromEdge(shape, delta, true, true);
-                        break;
-                    case Rendering.HandleType.Bottom:
-                        ResizeRectangleFromEdge(shape, delta, true, false);
-                        break;
-                    case Rendering.HandleType.Left:
-                        ResizeRectangleFromEdge(shape, delta, false, true);
-                        break;
-                    case Rendering.HandleType.Right:
-                        ResizeRectangleFromEdge(shape, delta, false, false);
-                        break;
-                }
             }
 
             // 触发变更事件（几何已就地修改，无需脏标记）
@@ -1807,192 +1754,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
         }
 
         /// <summary>
-        /// 从角落调整矩形（不对称编辑 - 固定对角点模式）
-        /// 参考ROI编辑器旋转矩形的HandleRotatedRectangleResize逻辑
-        /// </summary>
-        private void ResizeRectangleFromCorner(RoiShape shape, Vector delta, bool isLeft, bool isTop)
-        {
-            if (_originalShapeDefinition == null) return;
-
-            var original = _originalShapeDefinition;
-
-            // 从原始 Geometry 获取尺寸
-            var origW = original.Geometry switch
-            {
-                RotatedRect2d rr => rr.Width,
-                System.Windows.Rect r => r.Width,
-                _ => 100,
-            };
-            var origH = original.Geometry switch
-            {
-                RotatedRect2d rr => rr.Height,
-                System.Windows.Rect r => r.Height,
-                _ => 100,
-            };
-
-            var hw = origW / 2;
-            var hh = origH / 2;
-            var corners = new Point[]
-            {
-                new Point(-hw, -hh), // TopLeft
-                new Point( hw, -hh), // TopRight
-                new Point( hw,  hh), // BottomRight
-                new Point(-hw,  hh)  // BottomLeft
-            };
-
-            // 根据拖动的角点计算新的角点位置（固定对角锚点模式）
-            Point[] newCorners;
-
-            // 确定拖动的手柄类型
-            if (isLeft && isTop) // TopLeft
-            {
-                // TopLeft 移动，BottomRight 固定
-                newCorners = new Point[]
-                {
-                    new Point(corners[0].X + delta.X, corners[0].Y + delta.Y),
-                    new Point(corners[1].X, corners[0].Y + delta.Y),
-                    new Point(corners[2].X, corners[2].Y),
-                    new Point(corners[0].X + delta.X, corners[3].Y)
-                };
-            }
-            else if (!isLeft && isTop) // TopRight
-            {
-                // TopRight 移动，BottomLeft 固定
-                newCorners = new Point[]
-                {
-                    new Point(corners[0].X, corners[0].Y + delta.Y),
-                    new Point(corners[1].X + delta.X, corners[1].Y + delta.Y),
-                    new Point(corners[1].X + delta.X, corners[2].Y),
-                    new Point(corners[3].X, corners[3].Y)
-                };
-            }
-            else if (isLeft && !isTop) // BottomLeft
-            {
-                // BottomLeft 移动，TopRight 固定
-                // TopLeft.X 跟随 BottomLeft.X，BottomRight.Y 跟随 BottomLeft.Y
-                newCorners = new Point[]
-                {
-                    new Point(corners[0].X + delta.X, corners[0].Y),
-                    new Point(corners[1].X, corners[1].Y),
-                    new Point(corners[2].X, corners[2].Y + delta.Y),
-                    new Point(corners[3].X + delta.X, corners[3].Y + delta.Y)
-                };
-            }
-            else // BottomRight
-            {
-                // BottomRight 移动，TopLeft 固定
-                newCorners = new Point[]
-                {
-                    new Point(corners[0].X, corners[0].Y),
-                    new Point(corners[1].X + delta.X, corners[1].Y),
-                    new Point(corners[2].X + delta.X, corners[2].Y + delta.Y),
-                    new Point(corners[3].X, corners[3].Y + delta.Y)
-                };
-            }
-
-            // 从新角点计算新的尺寸和中心
-            var newWidth = Math.Max(10, newCorners[1].X - newCorners[0].X);
-            var newHeight = Math.Max(10, newCorners[2].Y - newCorners[0].Y);
-            var centerLocal = new Point(
-                (newCorners[0].X + newCorners[2].X) / 2,
-                (newCorners[0].Y + newCorners[2].Y) / 2);
-
-            // 将局部坐标转换为世界坐标（左上角 = 中心 - 半宽/半高）
-            shape.Geometry = new System.Windows.Rect(
-                _originalPosition.X + centerLocal.X - newWidth / 2,
-                _originalPosition.Y + centerLocal.Y - newHeight / 2,
-                newWidth, newHeight);
-        }
-
-        /// <summary>
-        /// 从边缘调整矩形（参考ROI编辑器ResizeFromEdge 1760-1790行）
-        /// </summary>
-        /// <summary>
-        /// 从边缘调整矩形（非对称编辑 - 固定对边模式）
-        /// 使用与 ResizeRectangleFromCorner 相同的角点计算逻辑
-        /// </summary>
-        private void ResizeRectangleFromEdge(RoiShape shape, Vector delta, bool isVertical, bool isTopOrLeft)
-        {
-            if (_originalShapeDefinition == null) return;
-
-            var origW = _originalSize.Width;
-            var origH = _originalSize.Height;
-
-            var hw = origW / 2;
-            var hh = origH / 2;
-            var corners = new Point[]
-            {
-                new Point(-hw, -hh), // TopLeft
-                new Point( hw, -hh), // TopRight
-                new Point( hw,  hh), // BottomRight
-                new Point(-hw,  hh)  // BottomLeft
-            };
-
-            // 根据拖动的边缘计算新的角点位置（固定对边模式）
-            Point[] newCorners;
-
-            if (isVertical)
-            {
-                if (isTopOrLeft) // Top 边：移动 TopLeft 和 TopRight，Bottom 边固定
-                {
-                    newCorners = new Point[]
-                    {
-                        new Point(corners[0].X, corners[0].Y + delta.Y), // TopLeft 移动
-                        new Point(corners[1].X, corners[1].Y + delta.Y), // TopRight 移动
-                        new Point(corners[2].X, corners[2].Y),           // BottomRight 固定
-                        new Point(corners[3].X, corners[3].Y)            // BottomLeft 固定
-                    };
-                }
-                else // Bottom 边：移动 BottomLeft 和 BottomRight，Top 边固定
-                {
-                    newCorners = new Point[]
-                    {
-                        new Point(corners[0].X, corners[0].Y),           // TopLeft 固定
-                        new Point(corners[1].X, corners[1].Y),           // TopRight 固定
-                        new Point(corners[2].X, corners[2].Y + delta.Y), // BottomRight 移动
-                        new Point(corners[3].X, corners[3].Y + delta.Y)  // BottomLeft 移动
-                    };
-                }
-            }
-            else
-            {
-                if (isTopOrLeft) // Left 边：移动 TopLeft 和 BottomLeft，Right 边固定
-                {
-                    newCorners = new Point[]
-                    {
-                        new Point(corners[0].X + delta.X, corners[0].Y), // TopLeft 移动
-                        new Point(corners[1].X, corners[1].Y),           // TopRight 固定
-                        new Point(corners[2].X, corners[2].Y),           // BottomRight 固定
-                        new Point(corners[3].X + delta.X, corners[3].Y)  // BottomLeft 移动
-                    };
-                }
-                else // Right 边：移动 TopRight 和 BottomRight，Left 边固定
-                {
-                    newCorners = new Point[]
-                    {
-                        new Point(corners[0].X, corners[0].Y),           // TopLeft 固定
-                        new Point(corners[1].X + delta.X, corners[1].Y), // TopRight 移动
-                        new Point(corners[2].X + delta.X, corners[2].Y), // BottomRight 移动
-                        new Point(corners[3].X, corners[3].Y)            // BottomLeft 固定
-                    };
-                }
-            }
-
-            // 从新角点计算新的尺寸和中心
-            var newWidth = Math.Max(10, newCorners[1].X - newCorners[0].X);
-            var newHeight = Math.Max(10, newCorners[2].Y - newCorners[0].Y);
-            var centerLocal = new Point(
-                (newCorners[0].X + newCorners[2].X) / 2,
-                (newCorners[0].Y + newCorners[2].Y) / 2);
-
-            // 将局部坐标转换为世界坐标（左上角 = 中心 - 半宽/半高）
-            shape.Geometry = new System.Windows.Rect(
-                _originalPosition.X + centerLocal.X - newWidth / 2,
-                _originalPosition.Y + centerLocal.Y - newHeight / 2,
-                newWidth, newHeight);
-        }
-
-        /// <summary>
         /// 旧渲染入口（已弃用，由Manager统一管理）
         /// </summary>
         private void UpdateRegionOverlay()
@@ -2131,13 +1892,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
                 {
                     context.PolygonPoints = poly.Vertices.Select(v => TransformPoint(v.X, v.Y)).ToList();
                 }
-                else if (shape.Geometry is System.Windows.Rect r)
-                {
-                    context.Width = r.Width * scale;
-                    context.Height = r.Height * scale;
-                    var centerPt = TransformPoint(r.X + r.Width / 2, r.Y + r.Height / 2);
-                    context.Center = centerPt;
-                }
             }
 
             context.CalculateBounds();
@@ -2205,11 +1959,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
 
             if (shape.Geometry == null) return;
 
-            if (shape.Geometry is System.Windows.Rect r)
-            {
-                _currentHandles = Rendering.HandleRenderer.CreateRectangleHandles(r, zoom);
-            }
-            else if (shape.Geometry is RotatedRect2d rr)
+            if (shape.Geometry is RotatedRect2d rr)
             {
                 var rotatedCenter = new Point(rr.CenterX, rr.CenterY);
                 var corners = RotatedRectangleHelper.GetCorners(rotatedCenter, rr.Width, rr.Height, rr.Angle);
@@ -2306,19 +2056,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
                 return IsPointNearLine(point, l, tolerance);
             else if (geo is Polygon2d poly)
                 return IsPointInPolygon(point, poly, tolerance);
-            else if (geo is System.Windows.Rect r)
-                return IsPointInRectangle(point, r, tolerance);
-
             return false;
-        }
-
-        private bool IsPointInRectangle(Point point, System.Windows.Rect r, double tolerance)
-        {
-            var bounds = new Rect(
-                r.X - tolerance, r.Y - tolerance,
-                r.Width + tolerance * 2, r.Height + tolerance * 2
-            );
-            return bounds.Contains(point);
         }
 
         private bool IsPointInCircle(Point point, Circle2d c, double tolerance)
@@ -2693,7 +2431,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
             const string polygonToolTip = "多边形 (P)\n点击添加顶点\n右键撤销上一点\n双击/Enter完成";
             var shapeTools = new System.Collections.ObjectModel.ObservableCollection<Models.ShapeToolItem>
             {
-                new(ShapeType.Rectangle, "矩形", "M2,2 L18,2 L18,18 L2,18 Z", Key.R),
                 new(ShapeType.Circle, "圆形",
                     "M9,1 A8,8 0 1,0 9,17 A8,8 0 1,0 9,1 Z M9,4 L9,14 M4,9 L14,9", Key.C),
                 new(ShapeType.RotatedRectangle, "旋转矩形",
@@ -2763,7 +2500,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
             // 更新状态消息
             var shapeName = shapeType switch
             {
-                ShapeType.Rectangle => "矩形",
                 ShapeType.Circle => "圆形",
                 ShapeType.RotatedRectangle => "旋转矩形",
                 ShapeType.Line => "直线",

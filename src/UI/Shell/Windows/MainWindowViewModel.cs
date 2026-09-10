@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -4762,7 +4762,6 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
             return shapeType switch
             {
                 SunEyeVision.Plugin.SDK.Execution.Parameters.ShapeType.Circle => "圆",
-                SunEyeVision.Plugin.SDK.Execution.Parameters.ShapeType.Rectangle => "矩形",
                 SunEyeVision.Plugin.SDK.Execution.Parameters.ShapeType.RotatedRectangle => "旋转矩形",
                 SunEyeVision.Plugin.SDK.Execution.Parameters.ShapeType.Polygon => "多边形",
                 SunEyeVision.Plugin.SDK.Execution.Parameters.ShapeType.Annulus => "圆环",

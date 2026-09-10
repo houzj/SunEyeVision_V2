@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -183,7 +183,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
                 {
                     roi.LocalGeometry = new RoiShape
                     {
-                        Geometry = RoiShape.CreateDefaultGeometry(SelectedShapeType ?? ShapeType.Rectangle)
+                        Geometry = RoiShape.CreateDefaultGeometry(SelectedShapeType ?? ShapeType.RotatedRectangle)
                     };
                 }
 
@@ -239,7 +239,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
         {
             return shapeType switch
             {
-                ShapeType.Rectangle => "矩形",
                 ShapeType.Circle => "圆形",
                 ShapeType.RotatedRectangle => "旋转矩形",
                 ShapeType.Line => "直线",
@@ -399,7 +398,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
             ShapeType.Point,
             ShapeType.Line,
             ShapeType.Circle,
-            ShapeType.Rectangle,
+            ShapeType.RotatedRectangle,
             ShapeType.RotatedRectangle,
             ShapeType.Polygon
         };
@@ -641,7 +640,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
             target.Source = RoiGeometrySource.Drawing;
             target.LocalGeometry ??= new RoiShape
             {
-                Geometry = RoiShape.CreateDefaultGeometry(SelectedShapeType ?? ShapeType.Rectangle)
+                Geometry = RoiShape.CreateDefaultGeometry(SelectedShapeType ?? ShapeType.RotatedRectangle)
             };
             RoiChanged?.Invoke(this, new RoiChangedEventArgs(target, RoiChangeType.Modified));
         }
@@ -664,7 +663,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
             {
                 // 进入参数订阅；拼装形状 = 订阅面板当前形状（ComposeShapeType 持久化）
                 // ★ 不清空 LocalGeometry / Binding：与区域订阅/绘制配置并存保留（按 Source 激活，切回可恢复）。
-                var composeShape = _parameterPanel?.CurrentShapeType ?? ShapeType.Rectangle;
+                var composeShape = _parameterPanel?.CurrentShapeType ?? ShapeType.RotatedRectangle;
                 target.ComposeShapeType = composeShape;
                 target.ParameterBindings ??= new Dictionary<string, ParamSetting>();
                 target.ParameterBindings[e.ParameterName] = e.Setting;
@@ -696,7 +695,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
             target.Source = RoiGeometrySource.Drawing;
             target.LocalGeometry ??= new RoiShape
             {
-                Geometry = RoiShape.CreateDefaultGeometry(SelectedShapeType ?? ShapeType.Rectangle)
+                Geometry = RoiShape.CreateDefaultGeometry(SelectedShapeType ?? ShapeType.RotatedRectangle)
             };
             RoiChanged?.Invoke(this, new RoiChangedEventArgs(target, RoiChangeType.Modified));
         }

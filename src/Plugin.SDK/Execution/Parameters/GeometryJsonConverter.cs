@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -14,6 +14,9 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters;
 /// <remarks>
 /// 通过 <c>[JsonConverter]</c> 挂到几何字段上，作用域限于该字段。
 /// 未知 <c>$geom</c> 直接抛 <see cref="NotSupportedException"/>（rule-015 不静默）。
+///
+/// 几何值一律为 <c>Models.Geometry</c> 契约类型；历史工程中的 UI/WPF 类型
+/// （<c>Point2D</c>、<c>System.Windows.Rect</c>）在读入时迁移为契约类型（见 <see cref="Read"/>）。
 /// </remarks>
 public class GeometryJsonConverter : JsonConverter<object?>
 {
@@ -25,8 +28,10 @@ public class GeometryJsonConverter : JsonConverter<object?>
         ["Polygon2d"]     = typeof(Polygon2d),
         ["Line2d"]        = typeof(Line2d),
         ["Arc2d"]         = typeof(Arc2d),
-        ["Point2D"]       = typeof(Point2D),
-        ["Rect"]          = typeof(System.Windows.Rect),
+        ["Point2d"]       = typeof(Point2d),
+        // 存量数据迁移：历史工程以 UI 交互类型 Point2D 承载点图形（X/Y 结构与 Point2d 一致），
+        // 读入时统一还原为契约类型 Point2d。WPF Rect 结构不同，在 Read 中单独转换。
+        ["Point2D"]       = typeof(Point2d),
     };
 
     public override object? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
@@ -43,6 +48,11 @@ public class GeometryJsonConverter : JsonConverter<object?>
             throw new NotSupportedException("几何数据缺少 $geom 判别符，无法反序列化（旧数据或格式错误）");
 
         var geomTypeName = geomEl.GetString();
+
+        // 存量数据迁移：历史工程以 WPF Rect 承载轴对齐矩形，读入时转换为契约类型 RotatedRect2d
+        if (string.Equals(geomTypeName, "Rect", StringComparison.OrdinalIgnoreCase))
+            return ReadLegacyRect(root);
+
         if (geomTypeName == null || !GeometryTypes.TryGetValue(geomTypeName, out var geomType))
             throw new NotSupportedException($"未知几何类型: {geomTypeName}");
 
@@ -69,6 +79,18 @@ public class GeometryJsonConverter : JsonConverter<object?>
             prop.WriteTo(writer);
         }
         writer.WriteEndObject();
+    }
+
+    /// <summary>
+    /// 存量迁移：旧 WPF Rect 几何（左上角 X/Y + 宽高）→ <see cref="RotatedRect2d"/>（中心 + 宽高 + 角度 0）。
+    /// </summary>
+    private static RotatedRect2d ReadLegacyRect(JsonElement root)
+    {
+        var x = root.GetProperty("X").GetDouble();
+        var y = root.GetProperty("Y").GetDouble();
+        var width = root.GetProperty("Width").GetDouble();
+        var height = root.GetProperty("Height").GetDouble();
+        return new RotatedRect2d(x + width / 2, y + height / 2, width, height, 0);
     }
 
     /// <summary>

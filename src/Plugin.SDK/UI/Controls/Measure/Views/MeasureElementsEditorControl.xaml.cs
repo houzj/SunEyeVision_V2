@@ -126,6 +126,22 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
             RebindToolBar(toolbar, editor, types);
         }
 
+        /// <summary>
+        /// 显示/隐藏指定元素槽位的工具栏。
+        /// 用于"点元素仅参数订阅"的工具（如点-线/点-圆/点-点）：
+        /// 槽位1 = 点（参数订阅，无引导入口，工具栏隐藏），
+        /// 槽位2 = 线/圆（保留引导）。
+        /// 隐藏后该元素无可触发绘制的按钮，事件路由也不会消费（编辑器 LockGeometryType
+        /// 仍生效，但工具栏全部不可见 → 用户无法切换交互状态）。
+        /// index 0 = 元素1，1 = 元素2。
+        /// </summary>
+        public void SetElementSlotVisible(int index, bool visible)
+        {
+            var toolbar = index == 0 ? Element1ToolBarControl : Element2ToolBarControl;
+            if (toolbar == null) return;
+            toolbar.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+        }
+
         /// <summary>测量工具栏只展示 allowed 类型项（从编辑器卡尺工具项过滤，同一项对象复用）</summary>
         private static void RebindToolBar(MeasureToolBar toolbar, MeasureEditorControl editor, MeasureGeometryType[] allowed)
         {

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -34,7 +34,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
     {
         private readonly DataSourceQueryService? _dataProvider;
         private RoiSubscribeSubMode _subscribeSubMode = RoiSubscribeSubMode.WholeRegion;
-        private ShapeType _currentShapeType = ShapeType.Rectangle;
+        private ShapeType _currentShapeType = ShapeType.RotatedRectangle;
         private ParamSetting? _wholeRegionSetting;
         private ParamSettingItem? _selectedParameter;
         private Roi? _targetRoi;
@@ -120,7 +120,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
             ShapeType.Point,
             ShapeType.Line,
             ShapeType.Circle,
-            ShapeType.Rectangle,
+            ShapeType.RotatedRectangle,
             ShapeType.RotatedRectangle,
         };
 
@@ -242,8 +242,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
                 ? (input.ComposeShapeType != ShapeType.None ? input.ComposeShapeType : input.DeclaredShapeType)
                 : (input.LocalGeometry?.ShapeType ?? ShapeType.None);
             if (shapeType is not (ShapeType.Point or ShapeType.Line or ShapeType.Circle
-                    or ShapeType.Rectangle or ShapeType.RotatedRectangle))
-                shapeType = ShapeType.Rectangle;
+                    or ShapeType.RotatedRectangle or ShapeType.RotatedRectangle))
+                shapeType = ShapeType.RotatedRectangle;
             _currentShapeType = shapeType;
             OnPropertyChanged(nameof(CurrentShapeType));
             UpdateParameterDefinitions();
@@ -371,13 +371,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
                     ("CenterX", "中心X", typeof(double)),
                     ("CenterY", "中心Y", typeof(double)),
                     ("Radius", "半径", typeof(double)),
-                },
-                ShapeType.Rectangle => new List<(string, string, Type)>
-                {
-                    ("CenterX", "中心X", typeof(double)),
-                    ("CenterY", "中心Y", typeof(double)),
-                    ("Width", "宽度", typeof(double)),
-                    ("Height", "高度", typeof(double)),
                 },
                 ShapeType.RotatedRectangle => new List<(string, string, Type)>
                 {

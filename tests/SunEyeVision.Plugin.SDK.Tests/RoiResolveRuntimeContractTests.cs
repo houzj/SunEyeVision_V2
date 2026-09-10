@@ -90,7 +90,7 @@ public class RoiResolveRuntimeContractTests
     [Fact]
     public void ComposedRoi_ResolvesParameterTemplate()
     {
-        var roi = Roi.CreateComposed("拼装矩形", ShapeType.Rectangle,
+        var roi = Roi.CreateComposed("拼装矩形", ShapeType.RotatedRectangle,
             new Dictionary<string, ParamSetting>
             {
                 ["CenterX"] = ParamSetting.CreateBinding("CenterX", "Node1", "X"),
@@ -117,7 +117,7 @@ public class RoiResolveRuntimeContractTests
     [Fact]
     public void ComposedRoi_NoContext_Throws()
     {
-        var roi = Roi.CreateComposed("拼装矩形", ShapeType.Rectangle,
+        var roi = Roi.CreateComposed("拼装矩形", ShapeType.RotatedRectangle,
             new Dictionary<string, ParamSetting>
             {
                 ["CenterX"] = ParamSetting.CreateBinding("CenterX", "Node1", "X"),

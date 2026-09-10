@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.ExceptionServices;
@@ -98,7 +98,7 @@ public class RoiRenderLightweightContractTests
     {
         Id = Guid.NewGuid(),
         Label = label,
-        ShapeType = ShapeType.Rectangle,
+        ShapeType = ShapeType.RotatedRectangle,
         Center = new Point(x, y),
         Width = 100,
         Height = 60,

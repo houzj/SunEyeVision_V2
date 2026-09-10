@@ -192,11 +192,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Rendering
         {
             Bounds = ShapeType switch
             {
-                ShapeType.Rectangle => new Rect(
-                    Center.X - Width / 2,
-                    Center.Y - Height / 2,
-                    Width,
-                    Height),
                 ShapeType.Circle => new Rect(
                     Center.X - Radius,
                     Center.Y - Radius,

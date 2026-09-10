@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -197,7 +197,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Rendering
 
             switch (a.ShapeType)
             {
-                case ShapeType.Rectangle:
                 case ShapeType.RotatedRectangle:
                     return PointsEqual(a.Center, b.Center) && a.Width == b.Width && a.Height == b.Height
                         && (a.ShapeType != ShapeType.RotatedRectangle || a.Angle == b.Angle);

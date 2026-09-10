@@ -123,7 +123,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 ShapeType.Point => new Point2D(Get("CenterX", 0), Get("CenterY", 0)),
                 ShapeType.Line => BuildLine(Get("StartX", 0), Get("StartY", 0), Get("EndX", 100), Get("EndY", 100)),
                 ShapeType.Circle => new Circle2d(Get("CenterX", 0), Get("CenterY", 0), Get("Radius", 50)),
-                ShapeType.Rectangle => BuildRect(Get("CenterX", 0), Get("CenterY", 0), Get("Width", 100), Get("Height", 100)),
                 ShapeType.RotatedRectangle => new RotatedRect2d(
                     Get("CenterX", 0), Get("CenterY", 0),
                     Get("Width", 100), Get("Height", 100), Get("Angle", 0)),
@@ -141,12 +140,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 end = new Point(sx + 100, sy);
             }
             return Line2d.FromTwoPoints(start, end);
-        }
-
-        private static Rect BuildRect(double cx, double cy, double w, double h)
-        {
-            // 轴对齐矩形：中心 + 宽高 → Rect(左上 + 尺寸)
-            return new Rect(cx - w / 2, cy - h / 2, Math.Max(w, 0), Math.Max(h, 0));
         }
 
         /// <summary>

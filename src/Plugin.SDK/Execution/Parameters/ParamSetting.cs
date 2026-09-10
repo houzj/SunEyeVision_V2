@@ -413,6 +413,14 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             if (targetType.IsEnum)
                 return Enum.ToObject(targetType, element.GetInt32());
 
+            // 复合类型（Point2d 等几何结构，非 IConvertible）：按目标类型直接 JSON 反序列化。
+            // 原实现仅走 Convert.ChangeType，对非 IConvertible 类型必然失败并静默返回 null，
+            // 导致 ParamValue<Point2d> 一类结构常量"保存 → 重开"后丢失（rule-015 禁止静默回退）。
+            if (targetType != typeof(object) && !typeof(IConvertible).IsAssignableFrom(targetType))
+            {
+                return JsonSerializer.Deserialize(element.GetRawText(), targetType);
+            }
+
             // 尝试通用转换
             try
             {

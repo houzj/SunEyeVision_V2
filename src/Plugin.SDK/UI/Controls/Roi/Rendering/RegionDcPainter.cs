@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows;
 using System.Windows.Media;
 using SunEyeVision.Plugin.SDK.UI.Constants;
@@ -60,11 +60,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Rendering
 
             switch (region.ShapeType)
             {
-                case ShapeType.Rectangle:
-                    var rect = new Rect(region.Center.X - region.Width / 2, region.Center.Y - region.Height / 2, region.Width, region.Height);
-                    dc.DrawRectangle(fill, pen, rect);
-                    break;
-
                 case ShapeType.Circle:
                     dc.DrawEllipse(fill, pen, region.Center, region.Radius, region.Radius);
                     break;

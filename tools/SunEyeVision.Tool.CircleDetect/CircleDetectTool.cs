@@ -410,6 +410,7 @@ namespace SunEyeVision.Tool.CircleDetect
             // 4. 全点鲁棒拟合（geotukey 预拟合 → 按距离阈值划内点 → 内点精化）
             var (center, radius, inliers) = FitCircleRobust(kept, parameters);
             result.CenterPoint = center;
+            result.Center = new[] { new Point2d(center.X, center.Y) };
             result.RMSE = ComputeCircleRmse(inliers, center, radius);
             result.EdgePointCount = inliers.Length;
             result.MeasurementPoints = inliers;

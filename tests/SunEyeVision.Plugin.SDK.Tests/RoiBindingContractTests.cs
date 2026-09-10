@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
@@ -84,7 +84,7 @@ public class RoiBindingContractTests
     public void GetShapeTypeShortName_MapsToDisplayName()
     {
         Assert.Equal("圆", ArrayTreeFormatter.GetShapeTypeShortName(ShapeType.Circle));
-        Assert.Equal("矩形", ArrayTreeFormatter.GetShapeTypeShortName(ShapeType.Rectangle));
+        Assert.Equal("矩形", ArrayTreeFormatter.GetShapeTypeShortName(ShapeType.RotatedRectangle));
         Assert.Equal("旋转矩形", ArrayTreeFormatter.GetShapeTypeShortName(ShapeType.RotatedRectangle));
         Assert.Equal("多边形", ArrayTreeFormatter.GetShapeTypeShortName(ShapeType.Polygon));
         Assert.Equal("圆环", ArrayTreeFormatter.GetShapeTypeShortName(ShapeType.Annulus));

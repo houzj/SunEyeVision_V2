@@ -17,8 +17,8 @@ public class ToolItemContractTests
     [Fact]
     public void ToolItem_Value_CarriesBusinessEnum()
     {
-        var item = new ToolItem("矩形", "M2,2...", ShapeType.Rectangle, Key.R);
-        Assert.Equal(ShapeType.Rectangle, item.Value);
+        var item = new ToolItem("矩形", "M2,2...", ShapeType.RotatedRectangle, Key.R);
+        Assert.Equal(ShapeType.RotatedRectangle, item.Value);
         Assert.Equal("矩形", item.Name);
         Assert.Equal("矩形 (R)", item.ToolTip);
         Assert.Equal(Key.R, item.ShortcutKey);

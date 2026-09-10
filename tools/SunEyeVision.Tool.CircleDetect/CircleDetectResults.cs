@@ -61,9 +61,14 @@ namespace SunEyeVision.Tool.CircleDetect
         public int EdgePointCount { get; set; }
 
         /// <summary>
-        /// 圆心（文本显示）
+        /// 圆心（文本显示，内部用；不作为输出变量）
         /// </summary>
         public Point CenterPoint { get; set; }
+
+        /// <summary>
+        /// 拟合圆心（契约输出，词目 Point，供下游"按图形"整体绑定）
+        /// </summary>
+        public Point2d[] Center { get; set; } = Array.Empty<Point2d>();
 
         #region 测量带(卡尺)输入回显（模块结果"输入区域/卡尺"展示，Run 从参数回填）
 
@@ -183,7 +188,8 @@ namespace SunEyeVision.Tool.CircleDetect
                 new("Arc",              "拟合圆弧", "拟合结果"),
                 new("RMSE",             "拟合残差", "拟合结果"),
                 new("EdgePointCount",   "边缘点数", "拟合结果"),
-                // 注：CenterPoint（WPF Point）仅供显示文本，不作为输出变量（圆心已在 Circle/Arc 几何内）
+                new("Center",           "圆心",     "拟合结果"),
+                // 注：CenterPoint（WPF Point）仅供显示文本；圆心以 Center（Point2d[]）契约点输出
             ];
         }
     }

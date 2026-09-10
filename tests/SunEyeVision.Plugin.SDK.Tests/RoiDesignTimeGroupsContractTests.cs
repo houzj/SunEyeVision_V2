@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.UI.Controls;
@@ -142,7 +142,7 @@ public class RoiDesignTimeGroupsContractTests
     public void RoiShape_GetMonitorFields_RectangleYieldsXYWidthHeight()
     {
         // 矩形(Rect) 走 RoiShape.GetMonitorFields 的 Rect 兜底，结果树设计期属性行不缺字段
-        var shape = new RoiShape { Geometry = RoiShape.CreateDefaultGeometry(ShapeType.Rectangle) };
+        var shape = new RoiShape { Geometry = RoiShape.CreateDefaultGeometry(ShapeType.RotatedRectangle) };
         var fields = shape.GetMonitorFields();
 
         Assert.Contains(fields, f => f.FieldName == "X");

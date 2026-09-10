@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+    <OutputType>Library</OutputType>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>SunEyeVision.Tool.PointPointMeasure</RootNamespace>
+    <AssemblyName>SunEyeVision.Tool.PointPointMeasure</AssemblyName>
+    <IsToolPlugin>true</IsToolPlugin>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Plugin.SDK\SunEyeVision.Plugin.SDK.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+  </ItemGroup>
+
+  <!-- 点-点测量为纯几何计算（两点距离/ΔX/ΔY/连线角度），不调用任何 measure 引擎算子，
+       故不引 halcondotnetxl / SunEyeVision.HalAdapter（对齐 plan「引擎引用仅引所需」）。 -->
+
+</Project>

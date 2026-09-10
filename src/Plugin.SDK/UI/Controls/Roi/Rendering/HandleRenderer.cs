@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -102,95 +102,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Rendering
         /// <returns>WPF坐标系中的虚线间隔（经ScaleTransform放大后达到屏幕目标尺寸）</returns>
         public static double GetScaledDashInterval(double scale, double baseInterval = 4.0)
             => ViewportScaling.DashInterval(scale, baseInterval);
-
-        /// <summary>
-        /// 创建矩形手柄（参考ROI编辑器CreateRectangleHandles 1071-1097行）
-        /// 每个手柄根据类型使用不同尺寸
-        /// </summary>
-        public static EditHandle[] CreateRectangleHandles(Rect bounds, double scale = 1.0)
-        {
-            var handles = new List<EditHandle>
-            {
-                // 4个角点手柄
-                new EditHandle
-                {
-                    Type = HandleType.TopLeft,
-                    Position = new Point(bounds.Left, bounds.Top),
-                    HandleSize = GetScaledHandleSize(scale),
-                    Cursor = Cursors.SizeNWSE
-                },
-                new EditHandle
-                {
-                    Type = HandleType.TopRight,
-                    Position = new Point(bounds.Right, bounds.Top),
-                    HandleSize = GetScaledHandleSize(scale),
-                    Cursor = Cursors.SizeNESW
-                },
-                new EditHandle
-                {
-                    Type = HandleType.BottomLeft,
-                    Position = new Point(bounds.Left, bounds.Bottom),
-                    HandleSize = GetScaledHandleSize(scale),
-                    Cursor = Cursors.SizeNESW
-                },
-                new EditHandle
-                {
-                    Type = HandleType.BottomRight,
-                    Position = new Point(bounds.Right, bounds.Bottom),
-                    HandleSize = GetScaledHandleSize(scale),
-                    Cursor = Cursors.SizeNWSE
-                },
-                // 4个边中点手柄
-                new EditHandle
-                {
-                    Type = HandleType.Top,
-                    Position = new Point(bounds.Left + bounds.Width / 2, bounds.Top),
-                    HandleSize = GetScaledHandleSize(scale),
-                    Cursor = Cursors.SizeNS
-                },
-                new EditHandle
-                {
-                    Type = HandleType.Bottom,
-                    Position = new Point(bounds.Left + bounds.Width / 2, bounds.Bottom),
-                    HandleSize = GetScaledHandleSize(scale),
-                    Cursor = Cursors.SizeNS
-                },
-                new EditHandle
-                {
-                    Type = HandleType.Left,
-                    Position = new Point(bounds.Left, bounds.Top + bounds.Height / 2),
-                    HandleSize = GetScaledHandleSize(scale),
-                    Cursor = Cursors.SizeWE
-                },
-                new EditHandle
-                {
-                    Type = HandleType.Right,
-                    Position = new Point(bounds.Right, bounds.Top + bounds.Height / 2),
-                    HandleSize = GetScaledHandleSize(scale),
-                    Cursor = Cursors.SizeWE
-                },
-                // 中心手柄（用于拖动整个矩形）
-                new EditHandle
-                {
-                    Type = HandleType.Center,
-                    Position = new Point(bounds.X + bounds.Width / 2, bounds.Y + bounds.Height / 2),
-                    HandleSize = GetScaledHandleSize(scale),
-                    Cursor = Cursors.SizeAll
-                }
-            };
-
-            // 统一计算 Bounds
-            foreach (var handle in handles)
-            {
-                var size = handle.HandleSize;
-                handle.Bounds = new Rect(
-                    handle.Position.X - size / 2,
-                    handle.Position.Y - size / 2,
-                    size, size);
-            }
-
-            return handles.ToArray();
-        }
 
         /// <summary>
         /// 创建圆形手柄（参考ROI编辑器CreateCircleHandles 1102-1126行）

@@ -47,13 +47,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                     new RoiFieldDef("高", "Height", typeof(double)),
                     new RoiFieldDef("角度", "Angle", typeof(double)),
                 },
-                ShapeType.Rectangle => new[]
-                {
-                    new RoiFieldDef("X", "X", typeof(double)),
-                    new RoiFieldDef("Y", "Y", typeof(double)),
-                    new RoiFieldDef("宽", "Width", typeof(double)),
-                    new RoiFieldDef("高", "Height", typeof(double)),
-                },
                 ShapeType.Line => new[]
                 {
                     new RoiFieldDef("起点X", "Point.X", typeof(double)),

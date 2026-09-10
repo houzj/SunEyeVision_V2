@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Windows;
 using SunEyeVision.HalAdapter;
@@ -191,7 +191,7 @@ public class MaskPointFilterContractTests
     public void NonShapeParametersMask_ThrowsNotSupported()
     {
         var pts = Points((100, 100));
-        var computed = Roi.CreateComposed("computed", ShapeType.Rectangle);
+        var computed = Roi.CreateComposed("computed", ShapeType.RotatedRectangle);
 
         Assert.Throws<NotSupportedException>(() =>
             ToolRegionHelper.FilterPointsOutOfMaskRois(pts, new[] { computed }, null));

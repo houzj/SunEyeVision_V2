@@ -31,9 +31,13 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         #endregion
 
         /// <summary>
-        /// SDK 几何值（多边形/圆形/直线/矩形/旋转矩形/圆环/弧/点之一）。
+        /// SDK 几何值（点/直线/圆/矩形/旋转矩形/多边形/圆环/弧之一）。
         /// 序列化经 <see cref="GeometryJsonConverter"/> 写入 <c>$geom</c> 判别符还原具体类型。
         /// </summary>
+        /// <remarks>
+        /// 几何值一律使用 <c>Models.Geometry</c> 契约类型（点为 <see cref="Point2d"/>，矩形为 <see cref="RotatedRect2d"/>）。
+        /// UI 交互类型（<see cref="Point2D"/>）与 WPF 图形类型（<c>System.Windows.Rect</c>/<c>Point</c>）不得作为几何值承载。
+        /// </remarks>
         [JsonConverter(typeof(GeometryJsonConverter))]
         public object? Geometry
         {
@@ -77,8 +81,10 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         #endregion
 
         /// <summary>
-        /// 从 Geometry 推导形状类型（UI 下拉/绑定 [Type=X] 用）
+        /// 从 Geometry 推导形状类型（UI 下拉/绑定 [Type=X] 用）。
+        /// 派生视图：几何值 <see cref="Geometry"/> 是唯一数据源，故不参与序列化。
         /// </summary>
+        [JsonIgnore]
         public ShapeType ShapeType => GeometryToShapeType(_geometry);
 
         #region 扁平参数属性（绘制参数面板绑定源）
@@ -94,7 +100,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             {
                 var pt = GetCenter();
                 if (Math.Abs(pt.X - value) < 1e-9) return;
-                SetCenter(new Point2D(value, pt.Y));
+                SetCenter(new Point2d(value, pt.Y));
             }
         }
 
@@ -106,31 +112,21 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             {
                 var pt = GetCenter();
                 if (Math.Abs(pt.Y - value) < 1e-9) return;
-                SetCenter(new Point2D(pt.X, value));
+                SetCenter(new Point2d(pt.X, value));
             }
         }
 
         [JsonIgnore]
         public double Width
         {
-            get => _geometry switch
-            {
-                RotatedRect2d rr => rr.Width,
-                System.Windows.Rect r => r.Width,
-                _ => 0,
-            };
+            get => _geometry is RotatedRect2d rr ? rr.Width : 0;
             set => SetSize(value, Height);
         }
 
         [JsonIgnore]
         public double Height
         {
-            get => _geometry switch
-            {
-                RotatedRect2d rr => rr.Height,
-                System.Windows.Rect r => r.Height,
-                _ => 0,
-            };
+            get => _geometry is RotatedRect2d rr ? rr.Height : 0;
             set => SetSize(Width, value);
         }
 
@@ -166,7 +162,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             {
                 var pt = GetStartPoint();
                 if (Math.Abs(pt.X - value) < 1e-9) return;
-                SetStartPoint(new Point2D(value, pt.Y));
+                SetStartPoint(new Point2d(value, pt.Y));
             }
         }
 
@@ -178,7 +174,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             {
                 var pt = GetStartPoint();
                 if (Math.Abs(pt.Y - value) < 1e-9) return;
-                SetStartPoint(new Point2D(pt.X, value));
+                SetStartPoint(new Point2d(pt.X, value));
             }
         }
 
@@ -190,7 +186,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             {
                 var pt = GetEndPoint();
                 if (Math.Abs(pt.X - value) < 1e-9) return;
-                SetEndPoint(new Point2D(value, pt.Y));
+                SetEndPoint(new Point2d(value, pt.Y));
             }
         }
 
@@ -202,7 +198,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             {
                 var pt = GetEndPoint();
                 if (Math.Abs(pt.Y - value) < 1e-9) return;
-                SetEndPoint(new Point2D(pt.X, value));
+                SetEndPoint(new Point2d(pt.X, value));
             }
         }
 
@@ -211,6 +207,10 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <summary>
         /// 多边形顶点（可编辑集合，顶点变更时重建 Polygon2d）
         /// </summary>
+        /// <remarks>
+        /// 顶点采用可观察的 <see cref="Point2D"/>（UI 交互类型）：顶点需在参数面板中逐点编辑并驱动重绘，
+        /// 属于 UI 交互场景，不参与几何值的序列化（几何值始终为 <see cref="Polygon2d"/>）。
+        /// </remarks>
         [JsonIgnore]
         public ObservableCollection<Point2D>? Points
         {
@@ -234,48 +234,48 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         #region 编辑辅助方法
 
         /// <summary>
-        /// 获取中心点（UI 坐标）
+        /// 获取中心点（契约坐标 <see cref="Point2d"/>）
         /// </summary>
-        public Point2D GetCenter()
+        public Point2d GetCenter()
         {
-            var wpfPt = _geometry switch
+            return _geometry switch
             {
-                Circle2d c => new System.Windows.Point(c.Center.X, c.Center.Y),
-                RotatedRect2d rr => new System.Windows.Point(rr.CenterX, rr.CenterY),
-                Polygon2d poly => new System.Windows.Point(poly.Center.X, poly.Center.Y),
-                Annulus2d a => new System.Windows.Point(a.Center.X, a.Center.Y),
-                Line2d l => new System.Windows.Point(l.Point.X, l.Point.Y),
-                System.Windows.Rect r => new System.Windows.Point(r.X + r.Width / 2, r.Y + r.Height / 2),
-                _ => new System.Windows.Point(0, 0),
+                Circle2d c => new Point2d(c.Center.X, c.Center.Y),
+                RotatedRect2d rr => new Point2d(rr.CenterX, rr.CenterY),
+                Polygon2d poly => new Point2d(poly.Center.X, poly.Center.Y),
+                Annulus2d a => new Point2d(a.Center.X, a.Center.Y),
+                Arc2d a => new Point2d(a.Center.X, a.Center.Y),
+                Line2d l => new Point2d(l.Point.X, l.Point.Y),
+                Point2d p => p,
+                _ => new Point2d(0, 0),
             };
-            return new Point2D(wpfPt.X, wpfPt.Y);
         }
 
         /// <summary>
         /// 设置中心点（创建新 Geometry，仅对中心点可变的类型生效）
         /// </summary>
-        public void SetCenter(Point2D center)
+        public void SetCenter(Point2d center)
         {
             _geometry = _geometry switch
             {
                 Circle2d c => new Circle2d(center.X, center.Y, c.Radius),
                 RotatedRect2d rr => new RotatedRect2d(center.X, center.Y, rr.Width, rr.Height, rr.Angle),
                 Annulus2d a => new Annulus2d(center.X, center.Y, a.InnerRadius, a.OuterRadius, a.StartAngle, a.EndAngle),
-                System.Windows.Rect r => new System.Windows.Rect(center.X - r.Width / 2, center.Y - r.Height / 2, r.Width, r.Height),
+                Point2d _ => center,
                 _ => _geometry,
             };
             OnPropertyChanged(nameof(Geometry));
             NotifyGeometryDerivedProperties();
         }
 
-        private Point2D GetStartPoint()
+        private Point2d GetStartPoint()
         {
             if (_geometry is Line2d l)
-                return new Point2D(l.Point.X, l.Point.Y);
-            return new Point2D(0, 0);
+                return new Point2d(l.Point.X, l.Point.Y);
+            return new Point2d(0, 0);
         }
 
-        private void SetStartPoint(Point2D point)
+        private void SetStartPoint(Point2d point)
         {
             if (_geometry is Line2d l)
             {
@@ -285,17 +285,17 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             }
         }
 
-        private Point2D GetEndPoint()
+        private Point2d GetEndPoint()
         {
             if (_geometry is Line2d l)
             {
                 var endPt = l.GetPointAt(100);
-                return new Point2D(endPt.X, endPt.Y);
+                return new Point2d(endPt.X, endPt.Y);
             }
-            return new Point2D(0, 0);
+            return new Point2d(0, 0);
         }
 
-        private void SetEndPoint(Point2D point)
+        private void SetEndPoint(Point2d point)
         {
             if (_geometry is Line2d l)
             {
@@ -311,17 +311,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 
         private void SetSize(double width, double height)
         {
-            switch (_geometry)
-            {
-                case RotatedRect2d rr:
-                    _geometry = new RotatedRect2d(rr.Center, width, height, rr.Angle);
-                    break;
-                case System.Windows.Rect r:
-                    _geometry = new System.Windows.Rect(r.X, r.Y, width, height);
-                    break;
-                default:
-                    return;
-            }
+            if (_geometry is not RotatedRect2d rr) return;
+            _geometry = new RotatedRect2d(rr.Center, width, height, rr.Angle);
             NotifyGeometryDerivedProperties();
         }
 
@@ -360,15 +351,13 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             {
                 Circle2d c => $"圆(({c.Center.X:F1},{c.Center.Y:F1}), R={c.Radius:F1})",
                 RotatedRect2d rr => $"旋转矩形(({rr.Center.X:F1},{rr.Center.Y:F1}), {rr.Width:F1}x{rr.Height:F1}, {rr.Angle:F1}°)",
-                System.Windows.Rect r => $"矩形(({r.X:F1},{r.Y:F1}), {r.Width:F1}x{r.Height:F1})",
                 Polygon2d p => $"多边形({p.Vertices.Length}顶点)",
                 Line2d l => $"直线(({l.Point.X:F1},{l.Point.Y:F1}), 方向({l.Direction.X:F1},{l.Direction.Y:F1}))",
                 Annulus2d a => a.IsFullCircle
                     ? $"圆环(({a.Center.X:F1},{a.Center.Y:F1}), R=[{a.InnerRadius:F1},{a.OuterRadius:F1}])"
                     : $"圆环(({a.Center.X:F1},{a.Center.Y:F1}), R=[{a.InnerRadius:F1},{a.OuterRadius:F1}], [{a.StartAngle * 180 / Math.PI:F1}°,{a.EndAngle * 180 / Math.PI:F1}°])",
                 Arc2d a => $"弧形(({a.Center.X:F1},{a.Center.Y:F1}), R={a.Radius:F1}, [{a.StartAngle * 180 / Math.PI:F1}°,{a.EndAngle * 180 / Math.PI:F1}°])",
-                Point2D pt => $"点(({pt.X:F1},{pt.Y:F1}))",
-                System.Windows.Point pt => $"点(({pt.X:F1},{pt.Y:F1}))",
+                Point2d pt => $"点(({pt.X:F1},{pt.Y:F1}))",
                 null => "空图形",
                 _ => $"未知图形({_geometry?.GetType().Name ?? "Null"})",
             };
@@ -378,6 +367,10 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// 按 ShapeType 创建默认 SDK 几何值（供编辑器新建区域/结果树绑定树设计期枚举属性字段）。
         /// 吸收原 <c>RoiData.CreateDefaultGeometry</c> 职责（值无意义，仅类型模板）。
         /// </summary>
+        /// <remarks>
+        /// 矩形几何值统一为 <see cref="RotatedRect2d"/>，形状类型仅 <see cref="ShapeType.RotatedRectangle"/>
+        /// （轴对齐即 Angle=0）。
+        /// </remarks>
         public static object CreateDefaultGeometry(ShapeType shapeType)
         {
             return shapeType switch
@@ -393,8 +386,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                     new System.Windows.Point(50, 100),
                 }),
                 ShapeType.Arc              => new Arc2d(0, 0, 50, 0, Math.PI),
-                ShapeType.Point            => new Point2D(0, 0),
-                _                          => new System.Windows.Rect(-50, -50, 100, 100),
+                ShapeType.Point            => new Point2d(0, 0),
+                _ => throw new NotSupportedException($"不支持创建默认几何的图形类型: {shapeType}"),
             };
         }
 
@@ -405,14 +398,13 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         {
             return geometry switch
             {
-                Point2D pt => ShapeType.Point,
+                Point2d => ShapeType.Point,
                 Circle2d => ShapeType.Circle,
                 Line2d => ShapeType.Line,
                 Annulus2d => ShapeType.Annulus,
                 RotatedRect2d => ShapeType.RotatedRectangle,
                 Polygon2d => ShapeType.Polygon,
                 Arc2d => ShapeType.Arc,
-                System.Windows.Rect => ShapeType.Rectangle,
                 _ => ShapeType.None,
             };
         }
@@ -438,7 +430,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
             {
                 Polygon2d poly => new Polygon2d(
                     poly.Vertices.Select(v => new System.Windows.Point(v.X, v.Y)).ToArray(), poly.IsClosed),
-                Point2D pt => new Point2D(pt.X, pt.Y),
+                // Point2d / RotatedRect2d 等为 readonly struct，值复制到 _ 分支即可
                 ICloneable cloneable => cloneable.Clone(),
                 _ => geometry,  // struct 值类型直接复制
             };
@@ -458,15 +450,14 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 
             return _geometry switch
             {
-                System.Windows.Rect r => new (string, object?)[]
-                {
-                    ("X", r.X), ("Y", r.Y), ("宽", r.Width), ("高", r.Height),
-                },
-                Point2D pt => new (string, object?)[]
+                Point2d pt => new (string, object?)[]
                 {
                     ("X", pt.X), ("Y", pt.Y),
                 },
-                _ => new (string, object?)[] { ("类型", _geometry?.GetType().Name ?? "Null") },
+                _ => new (string, object?)[]
+                {
+                    ("类型", _geometry?.GetType().Name ?? "Null"),
+                },
             };
         }
     }

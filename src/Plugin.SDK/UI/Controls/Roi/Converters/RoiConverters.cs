@@ -25,7 +25,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Converters
                     ShapeType.Point => Geometry.Parse("M 12,2 L 12,2"),
                     ShapeType.Line => Geometry.Parse("M 2,22 L 22,2"),
                     ShapeType.Circle => Geometry.Parse("M 12,2 A 10,10 0 1 1 12,22 A 10,10 0 1 1 12,2"),
-                    ShapeType.Rectangle => Geometry.Parse("M 2,2 L 22,2 L 22,22 L 2,22 Z"),
                     ShapeType.RotatedRectangle => Geometry.Parse("M 12,2 L 22,12 L 12,22 L 2,12 Z"),
                     ShapeType.Polygon => Geometry.Parse("M 12,2 L 20,8 L 18,18 L 6,18 L 4,8 Z"),
                     _ => Geometry.Empty

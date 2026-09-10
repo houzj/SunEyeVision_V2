@@ -1,0 +1,207 @@
+<controls:ToolDebugControlBase x:Class="SunEyeVision.Tool.PointPointMeasure.Views.PointPointMeasureToolDebugControl"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
+        xmlns:converters="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Converters;assembly=SunEyeVision.Plugin.SDK"
+        xmlns:themes="clr-namespace:SunEyeVision.Plugin.SDK.UI.Themes;assembly=SunEyeVision.Plugin.SDK"
+        xmlns:results="clr-namespace:SunEyeVision.Plugin.SDK.Execution.Results;assembly=SunEyeVision.Plugin.SDK"
+        xmlns:geometry="clr-namespace:SunEyeVision.Plugin.SDK.Models.Geometry;assembly=SunEyeVision.Plugin.SDK"
+        xmlns:sdkConverters="clr-namespace:SunEyeVision.Plugin.SDK.UI.Converters;assembly=SunEyeVision.Plugin.SDK"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        mc:Ignorable="d"
+        HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+        DataContext="{Binding Parameters, RelativeSource={RelativeSource Self}}">
+
+    <controls:ToolDebugControlBase.Resources>
+        <ResourceDictionary>
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+            <sdkConverters:EnumToBoolConverter x:Key="EnumToBoolConverter"/>
+            <sdkConverters:EnumToVisibilityConverter x:Key="EnumToVisibilityConverter"/>
+        </ResourceDictionary>
+    </controls:ToolDebugControlBase.Resources>
+
+    <TabControl Margin="5,0,5,0">
+        <!-- ============ Tab1 基本参数：输入图像 + 点1/点2（均为「按图形 / 按参数」输入） ============ -->
+        <TabItem Header="基本参数" IsSelected="True">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12">
+                <StackPanel>
+                    <controls:LabeledControl Label="输入图像" HorizontalAlignment="Left">
+                        <controls:ImageSourceSelector
+                            PlaceholderText="请选择输入图像源" Width="250"
+                            AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"
+                            SelectedDataSource="{Binding ImageSource, Mode=TwoWay}"/>
+                    </controls:LabeledControl>
+
+                    <!-- 点1：输入方式二分「按图形 / 按参数」（三工具统一范式，无绘制入口）
+                         按图形 = 整体绑定上游点图形输出（词目 Point，含 ROI 容器下钻），一次绑定即得 X/Y
+                         按参数 = 逐参数 X/Y，可手输常量或绑上游标量 -->
+                    <Border Margin="0,10,0,0" Padding="10,8"
+                            BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}" BorderThickness="1"
+                            CornerRadius="3">
+                        <StackPanel>
+                            <TextBlock Text="点 1" FontWeight="Bold" FontSize="13" Margin="0,0,0,6"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                <TextBlock Text="输入方式" VerticalAlignment="Center"
+                                           Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}"/>
+                                <RadioButton Content="按图形" GroupName="P1InputMode" Margin="12,0,0,0" VerticalAlignment="Center"
+                                             IsChecked="{Binding P1InputMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=ByShape}"/>
+                                <RadioButton Content="按参数" GroupName="P1InputMode" Margin="12,0,0,0" VerticalAlignment="Center"
+                                             IsChecked="{Binding P1InputMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=ByCoordinate}"/>
+                            </StackPanel>
+
+                            <controls:LabeledControl Label="点图形" Margin="0,0,0,4"
+                                Visibility="{Binding P1InputMode, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=ByShape}">
+                                <controls:ParamBinding ParameterName="P1Point" DataType="{x:Type geometry:Point2d}"
+                                    BindingSource="{Binding P1PointBindingSource, Mode=TwoWay}" Width="250"
+                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                            </controls:LabeledControl>
+
+                            <StackPanel
+                                Visibility="{Binding P1InputMode, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=ByCoordinate}">
+                                <controls:LabeledControl Label="X 坐标" Margin="0,0,0,4">
+                                    <controls:ConfigSetting ParameterName="P1X" DataType="{x:Type sys:Double}"
+                                        Value="{Binding P1X.Value, Mode=TwoWay}" Width="250"
+                                        AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                                </controls:LabeledControl>
+                                <controls:LabeledControl Label="Y 坐标" Margin="0,0,0,4">
+                                    <controls:ConfigSetting ParameterName="P1Y" DataType="{x:Type sys:Double}"
+                                        Value="{Binding P1Y.Value, Mode=TwoWay}" Width="250"
+                                        AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                                </controls:LabeledControl>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 点2：与点1 同构（两个点元素均为纯订阅） -->
+                    <Border Margin="0,8,0,0" Padding="10,8"
+                            BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}" BorderThickness="1"
+                            CornerRadius="3">
+                        <StackPanel>
+                            <TextBlock Text="点 2" FontWeight="Bold" FontSize="13" Margin="0,0,0,6"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                <TextBlock Text="输入方式" VerticalAlignment="Center"
+                                           Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}"/>
+                                <RadioButton Content="按图形" GroupName="P2InputMode" Margin="12,0,0,0" VerticalAlignment="Center"
+                                             IsChecked="{Binding P2InputMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=ByShape}"/>
+                                <RadioButton Content="按参数" GroupName="P2InputMode" Margin="12,0,0,0" VerticalAlignment="Center"
+                                             IsChecked="{Binding P2InputMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=ByCoordinate}"/>
+                            </StackPanel>
+
+                            <controls:LabeledControl Label="点图形" Margin="0,0,0,4"
+                                Visibility="{Binding P2InputMode, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=ByShape}">
+                                <controls:ParamBinding ParameterName="P2Point" DataType="{x:Type geometry:Point2d}"
+                                    BindingSource="{Binding P2PointBindingSource, Mode=TwoWay}" Width="250"
+                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                            </controls:LabeledControl>
+
+                            <StackPanel
+                                Visibility="{Binding P2InputMode, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=ByCoordinate}">
+                                <controls:LabeledControl Label="X 坐标" Margin="0,0,0,4">
+                                    <controls:ConfigSetting ParameterName="P2X" DataType="{x:Type sys:Double}"
+                                        Value="{Binding P2X.Value, Mode=TwoWay}" Width="250"
+                                        AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                                </controls:LabeledControl>
+                                <controls:LabeledControl Label="Y 坐标" Margin="0,0,0,4">
+                                    <controls:ConfigSetting ParameterName="P2Y" DataType="{x:Type sys:Double}"
+                                        Value="{Binding P2Y.Value, Mode=TwoWay}" Width="250"
+                                        AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                                </controls:LabeledControl>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <controls:LabeledControl Label="位置修正" Margin="0,8,0,0" HorizontalAlignment="Left">
+                        <controls:ToggleSwitch
+                            IsChecked="{Binding IsPositionCorrectionEnabled, Mode=TwoWay}"
+                            SwitchWidth="48" SwitchHeight="24"/>
+                    </controls:LabeledControl>
+                    <controls:LabeledControl Label="修正信息" Margin="0,4,0,0" HorizontalAlignment="Left"
+                        Visibility="{Binding IsPositionCorrectionEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <controls:ParamBinding
+                            DataType="{x:Type results:AffineMatrix}"
+                            ParameterName="位置修正" Width="200"
+                            BindingSource="{Binding PositionCorrectionBindingSource, Mode=TwoWay}"
+                            BindingDisplayText="{Binding PositionCorrectionBindingDisplayText, Mode=TwoWay}"
+                            AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                    </controls:LabeledControl>
+                </StackPanel>
+            </ScrollViewer>
+        </TabItem>
+
+        <!-- ============ Tab2 结果显示：判定 + 图形 + 文本 ============ -->
+        <TabItem Header="结果显示">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12">
+                <StackPanel>
+                    <Expander Header="结果判断" IsExpanded="True" Margin="0,8,0,0">
+                        <StackPanel Margin="16,8">
+                            <ItemsControl ItemsSource="{Binding Judgments}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Margin="0,4">
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <controls:ToggleSwitch
+                                                    IsChecked="{Binding Enabled, Mode=TwoWay}"
+                                                    SwitchWidth="44" SwitchHeight="22" VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding Name}" Margin="8,0,2,0" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                                                <TextBlock Text="（单位:）" Margin="0,0,2,0" VerticalAlignment="Center"
+                                                           Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}"/>
+                                                <TextBlock Text="{Binding Unit}" Margin="0,0,0,0" VerticalAlignment="Center"
+                                                           Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}"/>
+                                            </StackPanel>
+                                            <controls:LabeledControl Label="范围" Margin="0,4,0,0"
+                                                Visibility="{Binding Enabled, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                <controls:RangeInputControl
+                                                    MinValue="{Binding Min, Mode=TwoWay}" MaxValue="{Binding Max, Mode=TwoWay}"
+                                                    Unit="{Binding Unit}" DecimalPlaces="2" NumericWidth="120"
+                                                    HorizontalAlignment="Left"/>
+                                            </controls:LabeledControl>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Expander>
+
+                    <Expander Header="图形显示" IsExpanded="True" Margin="0,8,0,0">
+                        <StackPanel Margin="16,8">
+                            <controls:LabeledControl Label="点1">
+                                <controls:DispItemColorControl Item="{Binding Point1Style, Mode=TwoWay}"/>
+                            </controls:LabeledControl>
+                            <controls:LabeledControl Label="点2">
+                                <controls:DispItemColorControl Item="{Binding Point2Style, Mode=TwoWay}"/>
+                            </controls:LabeledControl>
+                            <controls:LabeledControl Label="点距连线">
+                                <controls:DispItemColorControl Item="{Binding DistanceLineStyle, Mode=TwoWay}"/>
+                            </controls:LabeledControl>
+                            <controls:LabeledControl Label="ΔX辅助线">
+                                <controls:DispItemColorControl Item="{Binding DeltaXLineStyle, Mode=TwoWay}"/>
+                            </controls:LabeledControl>
+                            <controls:LabeledControl Label="ΔY辅助线">
+                                <controls:DispItemColorControl Item="{Binding DeltaYLineStyle, Mode=TwoWay}"/>
+                            </controls:LabeledControl>
+                        </StackPanel>
+                    </Expander>
+
+                    <Expander Header="文本显示" IsExpanded="True" Margin="0,8,0,0">
+                        <StackPanel Margin="16,8">
+                            <controls:LabeledControl Label="点1坐标">
+                                <controls:DispTextColorControl Item="{Binding Point1TextStyle, Mode=TwoWay}"
+                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                            </controls:LabeledControl>
+                            <controls:LabeledControl Label="点2坐标">
+                                <controls:DispTextColorControl Item="{Binding Point2TextStyle, Mode=TwoWay}"
+                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                            </controls:LabeledControl>
+                            <controls:LabeledControl Label="点距">
+                                <controls:DispTextColorControl Item="{Binding DistanceTextStyle, Mode=TwoWay}"
+                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                            </controls:LabeledControl>
+                        </StackPanel>
+                    </Expander>
+                </StackPanel>
+            </ScrollViewer>
+        </TabItem>
+    </TabControl>
+</controls:ToolDebugControlBase>

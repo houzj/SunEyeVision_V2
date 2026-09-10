@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -255,7 +255,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 ShapeType.Point => "点",
                 ShapeType.Line => "直线",
                 ShapeType.Circle => "圆",
-                ShapeType.Rectangle => "矩形",
                 ShapeType.RotatedRectangle => "旋转矩形",
                 ShapeType.Polygon => "多边形",
                 ShapeType.Annulus => "圆环",

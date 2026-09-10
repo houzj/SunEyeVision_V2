@@ -1,4 +1,4 @@
-using System.Windows.Media;
+﻿using System.Windows.Media;
 using SunEyeVision.Plugin.SDK.Models;
 
 namespace SunEyeVision.Plugin.SDK.Models.Visualization
@@ -15,6 +15,7 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
         private double _opacity = 1.0;
         private double _lineWidth = 2.0;
         private double _crossSize = 8.0;
+        private LineDashStyle _lineDashStyle = LineDashStyle.Solid;
 
         /// <summary>样式名称</summary>
         public string Name { get => _name; set => SetProperty(ref _name, value, "名称"); }
@@ -36,6 +37,17 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
 
         /// <summary>十字标记尺寸（仅 Cross 类型使用）</summary>
         public double CrossSize { get => _crossSize; set => SetProperty(ref _crossSize, value, "十字尺寸"); }
+
+        /// <summary>
+        /// 线型（虚线样式；默认 <see cref="LineDashStyle.Solid"/> 实线）。
+        /// 仅对线类图元生效：Line / Contour / Arc / Circle / Polygon / Rectangle / Arrow。
+        /// 用于"拟合线段实线 + 无限直线延长虚线"等表达。
+        /// </summary>
+        public LineDashStyle LineDashStyle
+        {
+            get => _lineDashStyle;
+            set => SetProperty(ref _lineDashStyle, value, "线型");
+        }
 
         /// <summary>获取指定状态的有效颜色</summary>
         public Color GetEffectiveColor(bool isOk) => isOk ? OkColor : NgColor;

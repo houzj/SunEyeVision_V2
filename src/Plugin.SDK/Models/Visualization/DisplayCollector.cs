@@ -118,6 +118,16 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
             AppendGeometry(item, new LineSegment(start, end), isPass);
         }
 
+        /// <summary>
+        /// 添加圆弧（由 Arc2d 定义圆心/半径/起止角/大小弧，渲染层按 GraphicsType.Arc 绘制）。
+        /// 用于角度角标、倒角弧等。
+        /// </summary>
+        public void AddArc(GraphicsStyle style, Arc2d arc, bool isPass = true)
+        {
+            var item = GetOrCreateGraphicsItem(style, GraphicsType.Arc);
+            AppendGeometry(item, arc, isPass);
+        }
+
         // ===== 文本按需收集 =====
 
         /// <summary>添加文本数组（每个元素独立定位）</summary>

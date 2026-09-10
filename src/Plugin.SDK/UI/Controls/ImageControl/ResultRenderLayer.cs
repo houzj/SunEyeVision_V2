@@ -210,7 +210,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             {
                 var defaultColorArgb = style.GetEffectiveColorArgb(true);
                 var brush = GetBrush(defaultColorArgb);
-                var pen = GetPen(defaultColorArgb, GetScaledLineWidth(style.LineWidth));
+                var pen = GetPen(defaultColorArgb, GetScaledLineWidth(style.LineWidth), style.LineDashStyle);
 
                 switch (item.Type)
                 {
@@ -330,7 +330,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             else
             {
                 var ngColorArgb = item.Style!.GetEffectiveColorArgb(false);
-                var ngPen = GetPen(ngColorArgb, scale);
+                var ngPen = GetPen(ngColorArgb, scale, item.Style.LineDashStyle);
                 var okPoints = new List<Point[]>();
                 var ngPoints = new List<Point[]>();
 
@@ -356,7 +356,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             bool isUnified = item.RenderMode == DisplayRenderMode.Unified;
             var scale = GetScaledLineWidth(style.LineWidth);
             var ngColorArgb = style.GetEffectiveColorArgb(false);
-            var ngPen = GetPen(ngColorArgb, scale);
+            var ngPen = GetPen(ngColorArgb, scale, style.LineDashStyle);
 
             for (int i = 0; i < item.Geometries.Length; i++)
             {
@@ -384,7 +384,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 {
                     bool isPass = item.IsPassArray.Length > i ? item.IsPassArray[i] : true;
                     var effectiveColorArgb = style.GetEffectiveColorArgb(isPass);
-                    var effectivePen = isPass ? defaultPen : GetPen(effectiveColorArgb, GetScaledLineWidth(style.LineWidth));
+                    var effectivePen = isPass ? defaultPen : GetPen(effectiveColorArgb, GetScaledLineWidth(style.LineWidth), style.LineDashStyle);
                     var effectiveBrush = item.IsFilled ? (isPass ? brush : GetBrush(effectiveColorArgb)) : null;
                     dc.DrawEllipse(effectiveBrush, effectivePen,
                         circle.Center, circle.Radius, circle.Radius);
@@ -397,7 +397,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             for (int i = 0; i < item.Geometries.Length; i++)
             {
                 bool isPass = item.IsPassArray.Length > i ? item.IsPassArray[i] : true;
-                var effectivePen = isPass ? defaultPen : GetPen(item.Style!.GetEffectiveColorArgb(false), GetScaledLineWidth(item.Style.LineWidth));
+                var effectivePen = isPass ? defaultPen : GetPen(item.Style!.GetEffectiveColorArgb(false), GetScaledLineWidth(item.Style.LineWidth), item.Style.LineDashStyle);
                 if (item.Geometries[i] is Arc2d arc2d)
                 {
                     // ★ Arc2d（弧度 + IsMajorArc/IsClockwise 连续模型）：按 AngularSpan 连续采样折线，
@@ -437,7 +437,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             bool isUnified = item.RenderMode == DisplayRenderMode.Unified;
             var scale = GetScaledLineWidth(style.LineWidth);
             var ngColorArgb = style.GetEffectiveColorArgb(false);
-            var ngPen = GetPen(ngColorArgb, scale);
+            var ngPen = GetPen(ngColorArgb, scale, style.LineDashStyle);
             var ngBrush = item.IsFilled ? GetBrush(ngColorArgb) : null;
 
             if (isUnified)
@@ -492,7 +492,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             bool isUnified = item.RenderMode == DisplayRenderMode.Unified;
             var scale = GetScaledLineWidth(style.LineWidth);
             var ngColorArgb = style.GetEffectiveColorArgb(false);
-            var ngPen = GetPen(ngColorArgb, scale);
+            var ngPen = GetPen(ngColorArgb, scale, style.LineDashStyle);
             var ngBrush = item.IsFilled ? GetBrush(ngColorArgb) : null;
 
             // 分离有/无变换的轮廓：有变换的逐个绘制，无变换的批量合并以保持性能
@@ -572,7 +572,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     var style = item.Style;
                     var lineWidth = style != null ? style.LineWidth : 1.0;
                     bool isPass = item.IsPassArray.Length > i ? item.IsPassArray[i] : true;
-                    var effectivePen = isPass ? defaultPen : GetPen(style!.GetEffectiveColorArgb(false), GetScaledLineWidth(lineWidth));
+                    var effectivePen = isPass ? defaultPen : GetPen(style!.GetEffectiveColorArgb(false), GetScaledLineWidth(lineWidth), style.LineDashStyle);
                     var geometry = CreateArrowGeometry(line.Start, line.End, GetScaledLineWidth(lineWidth));
                     dc.DrawGeometry(null, effectivePen, geometry);
                 }
@@ -812,17 +812,29 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             return brush;
         }
 
-        private Pen GetPen(uint argb, double thickness)
+        private Pen GetPen(uint argb, double thickness, LineDashStyle dash = LineDashStyle.Solid)
         {
             var thicknessInt = (uint)(thickness * 100);
-            var key = ((long)argb) | ((long)thicknessInt << 32);
+            var key = ((long)argb) | ((long)thicknessInt << 32) | ((long)(int)dash << 48);
             if (_penCache.TryGetValue(key, out var cached)) return cached;
             var brush = GetBrush(argb);
             var pen = new Pen(brush, thickness);
+            var dashes = GetDashArray(dash);
+            if (dashes != null)
+                pen.DashStyle = new DashStyle(dashes, 0);
             pen.Freeze();
             _penCache[key] = pen;
             return pen;
         }
+
+        /// <summary>线型 → WPF 虚线节距（null=实线；节距单位为线宽倍数，缩放时观感稳定）</summary>
+        private static DoubleCollection? GetDashArray(LineDashStyle dash) => dash switch
+        {
+            LineDashStyle.Dash => new DoubleCollection(new double[] { 4, 2 }),
+            LineDashStyle.Dot => new DoubleCollection(new double[] { 1, 2 }),
+            LineDashStyle.DashDot => new DoubleCollection(new double[] { 4, 2, 1, 2 }),
+            _ => null,
+        };
 
         private static Color ArgbToColor(uint argb) => Color.FromArgb(
             (byte)((argb >> 24) & 0xFF), (byte)((argb >> 16) & 0xFF),

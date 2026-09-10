@@ -4292,6 +4292,19 @@
                                         "docs/01-方案设计/2026/09/07/订阅链路单模型重构方案-20260907-102336.md"
                                     ],
                           "status":  "in_progress"
+                      },
+                      {
+                          "id":  "TMP-e258a3d",
+                          "message":  "fix(measure): 点-点测量补调试窗口入口并移除重复的位置修正",
+                          "date":  "2026-09-10",
+                          "commit":  "e258a3dae2e3bbee3873a70ca27f1c59b0c9558f",
+                          "files":  [
+                                        "tools/SunEyeVision.Tool.PointPointMeasure/PointPointMeasureResults.cs",
+                                        "tools/SunEyeVision.Tool.PointPointMeasure/PointPointMeasureTool.cs",
+                                        "tools/SunEyeVision.Tool.PointPointMeasure/Views/PointPointMeasureToolDebugControl.xaml",
+                                        "tools/SunEyeVision.Tool.PointPointMeasure/Views/PointPointMeasureToolDebugControl.xaml.cs"
+                                    ],
+                          "status":  "in_progress"
                       }
                   ]
 }

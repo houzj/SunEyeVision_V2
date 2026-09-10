@@ -237,6 +237,24 @@
                             <controls:LabeledControl Label="角点">
                                 <controls:DispItemColorControl Item="{Binding IntersectionPointStyle, Mode=TwoWay}"/>
                             </controls:LabeledControl>
+                            <controls:LabeledControl Label="延长线1">
+                                <controls:DispItemColorControl Item="{Binding ExtensionLine1Style, Mode=TwoWay}"/>
+                            </controls:LabeledControl>
+                            <controls:LabeledControl Label="延长线2">
+                                <controls:DispItemColorControl Item="{Binding ExtensionLine2Style, Mode=TwoWay}"/>
+                            </controls:LabeledControl>
+                            <controls:LabeledControl Label="夹角弧">
+                                <controls:DispItemColorControl Item="{Binding AngleArcStyle, Mode=TwoWay}"/>
+                            </controls:LabeledControl>
+                            <controls:LabeledControl Label="距离连线">
+                                <controls:DispItemColorControl Item="{Binding DistanceLineStyle, Mode=TwoWay}"/>
+                            </controls:LabeledControl>
+                            <controls:LabeledControl Label="最小距离线">
+                                <controls:DispItemColorControl Item="{Binding DistanceMinLineStyle, Mode=TwoWay}"/>
+                            </controls:LabeledControl>
+                            <controls:LabeledControl Label="最大距离线">
+                                <controls:DispItemColorControl Item="{Binding DistanceMaxLineStyle, Mode=TwoWay}"/>
+                            </controls:LabeledControl>
                         </StackPanel>
                     </Expander>
 
@@ -260,6 +278,14 @@
                             </controls:LabeledControl>
                             <controls:LabeledControl Label="交点">
                                 <controls:DispTextColorControl Item="{Binding IntersectionTextStyle, Mode=TwoWay}"
+                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                            </controls:LabeledControl>
+                            <controls:LabeledControl Label="夹角">
+                                <controls:DispTextColorControl Item="{Binding AngleTextStyle, Mode=TwoWay}"
+                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+                            </controls:LabeledControl>
+                            <controls:LabeledControl Label="距离">
+                                <controls:DispTextColorControl Item="{Binding DistanceTextStyle, Mode=TwoWay}"
                                     AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
                             </controls:LabeledControl>
                         </StackPanel>

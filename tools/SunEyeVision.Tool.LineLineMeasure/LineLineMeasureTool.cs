@@ -70,6 +70,8 @@ namespace SunEyeVision.Tool.LineLineMeasure
                 metrologyModel.CreateMetrologyModel();
                 HOperatorSet.GetImageSize(hImage, out var width, out var height);
                 metrologyModel.SetMetrologyModelImageSize((int)width.L, (int)height.L);
+                result.ImageWidth = (int)width.L;      // 供结果显示把"无限直线延长段"裁剪到图像范围
+                result.ImageHeight = (int)height.L;
 
                 // 元素1 引导 → measure 对象
                 var e1StartT = Transform(e1Start, matrix);
@@ -102,14 +104,18 @@ namespace SunEyeVision.Tool.LineLineMeasure
 
                 // 逐引导提取测点 + 全点鲁棒拟合
                 var e1Points = ExtractDiagnosticPoints(metrologyModel, e1Index, TransitionToHalcon(parameters.E1Transition.Value));
-                var (e1FitStart, e1FitEnd, e1Inliers) = FitLineRobust(e1Points, parameters.E1DistanceThreshold.Value);
+                var (e1FitStart, e1FitEnd, e1Inliers, e1Rmse) = FitLineRobust(e1Points, parameters.E1DistanceThreshold.Value);
 
                 var e2Points = ExtractDiagnosticPoints(metrologyModel, e2Index, TransitionToHalcon(parameters.E2Transition.Value));
-                var (e2FitStart, e2FitEnd, e2Inliers) = FitLineRobust(e2Points, parameters.E2DistanceThreshold.Value);
+                var (e2FitStart, e2FitEnd, e2Inliers, e2Rmse) = FitLineRobust(e2Points, parameters.E2DistanceThreshold.Value);
 
-                // 拟合内点收集（卡尺拟合点显示）
-                result.Element1FitPoints = e1Inliers.Select(p => new Point(p.X, p.Y)).ToArray();
-                result.Element2FitPoints = e2Inliers.Select(p => new Point(p.X, p.Y)).ToArray();
+                // 拟合内点/残差/点数（模块结果："输入区域/卡尺"检测点 + "拟合结果"）
+                result.Element1FitPoints = e1Inliers;          // Point2d[]（契约可入表，显示层再转 WPF Point）
+                result.Element2FitPoints = e2Inliers;
+                result.Element1RMSE = e1Rmse;
+                result.Element2RMSE = e2Rmse;
+                result.Element1EdgePointCount = e1Inliers.Length;
+                result.Element2EdgePointCount = e2Inliers.Length;
 
                 // ===== 结果落位 =====
                 result.Element1Line = new[] { Line2d.FromTwoPoints(e1FitStart, e1FitEnd) };
@@ -119,20 +125,59 @@ namespace SunEyeVision.Tool.LineLineMeasure
                 result.Element2StartPoint = e2FitStart;
                 result.Element2EndPoint = e2FitEnd;
 
-                // 主测量：锐角夹角 0~90°
+                // 主测量：锐角夹角 0~90°（HALCON angle_ll：有向角 -π~π → 锐角化）
                 result.Angle = ComputeAcuteAngle(e1FitStart, e1FitEnd, e2FitStart, e2FitEnd);
 
-                // 平行 → 间距；非平行 → 交点（无限线延长）
-                result.IsParallel = result.Angle < 0.5;
-                if (result.IsParallel)
+                // 距离（HALCON distance_pl，正交/法向投影）：
+                //   主值 Distance      = 线1 中点 → 线2 无限直线的法向距离
+                //   极值 Min/Max       = 线1 **所有拟合点** → 线2 无限直线的法向距离的 min/max
+                //                        （平行时 min≈max=间距；有夹角时反映间距一致性/平行度）
+                var e1Mid = MidPoint(e1FitStart, e1FitEnd);
+                HOperatorSet.DistancePl(
+                    e1Mid.Y, e1Mid.X,
+                    e2FitStart.Y, e2FitStart.X, e2FitEnd.Y, e2FitEnd.X,
+                    out var normalDistance);
+                result.Distance = normalDistance.D;
+
+                if (e1Inliers.Length > 0)
                 {
-                    result.Distance = ParallelDistance(e1FitStart, e1FitEnd, e2FitStart, e2FitEnd);
+                    // distance_pl 支持参数广播：N 个点 + 1 条直线 → N 个正交距离
+                    var inlierRows = new HTuple(e1Inliers.Select(p => p.Y).ToArray());
+                    var inlierCols = new HTuple(e1Inliers.Select(p => p.X).ToArray());
+                    HOperatorSet.DistancePl(
+                        inlierRows, inlierCols,
+                        e2FitStart.Y, e2FitStart.X, e2FitEnd.Y, e2FitEnd.X,
+                        out var inlierDistances);
+                    HOperatorSet.TupleMin(inlierDistances, out var distanceMin);
+                    HOperatorSet.TupleMax(inlierDistances, out var distanceMax);
+                    result.DistanceMin = distanceMin.D;
+                    result.DistanceMax = distanceMax.D;
+
+                    // 记录取到极值的拟合点（供图形显示：该点 → 线2 的法向投影段）
+                    var inlierDistanceArray = inlierDistances.DArr;
+                    int minIndex = Array.IndexOf(inlierDistanceArray, result.DistanceMin);
+                    int maxIndex = Array.IndexOf(inlierDistanceArray, result.DistanceMax);
+                    if (minIndex >= 0)
+                        result.DistanceMinPoint = new Point(e1Inliers[minIndex].X, e1Inliers[minIndex].Y);
+                    if (maxIndex >= 0)
+                        result.DistanceMaxPoint = new Point(e1Inliers[maxIndex].X, e1Inliers[maxIndex].Y);
                 }
                 else
                 {
-                    var intersection = LineIntersection(e1FitStart, e1FitEnd, e2FitStart, e2FitEnd);
-                    result.IntersectionX = intersection.X;
-                    result.IntersectionY = intersection.Y;
+                    result.DistanceMin = result.Distance;
+                    result.DistanceMax = result.Distance;
+                }
+
+                // 交点 + 平行判定：HALCON intersection_ll（自带 isParallel，替代自研 0.5° 硬阈值）
+                HOperatorSet.IntersectionLl(
+                    e1FitStart.Y, e1FitStart.X, e1FitEnd.Y, e1FitEnd.X,
+                    e2FitStart.Y, e2FitStart.X, e2FitEnd.Y, e2FitEnd.X,
+                    out var intersectionRow, out var intersectionColumn, out var isParallel);
+                result.IsParallel = isParallel.I != 0;
+                if (!result.IsParallel)
+                {
+                    result.IntersectionX = intersectionColumn.D;
+                    result.IntersectionY = intersectionRow.D;
                 }
 
                 // 单线属性：中心/方向角
@@ -140,6 +185,18 @@ namespace SunEyeVision.Tool.LineLineMeasure
                 result.Element1Angle = NormalizeAngle360(ComputeLineAngleDeg(e1FitStart, e1FitEnd));
                 result.Element2Center = MidPoint(e2FitStart, e2FitEnd);
                 result.Element2Angle = NormalizeAngle360(ComputeLineAngleDeg(e2FitStart, e2FitEnd));
+
+                // ===== 输入回显（模块结果"输入区域/卡尺"，对齐 LineDetect 规范）=====
+                result.GuideGeometry1 = BuildGuideGeometry(e1Start, e1End);
+                result.GuideGeometry2 = BuildGuideGeometry(e2Start, e2End);
+                result.E1CaliberCount = parameters.E1NumMeasures.Value;
+                result.E1CaliberWidth = parameters.E1MeasureLength1.Value * 2;   // 半长 → 全长
+                result.E1CaliberLength = parameters.E1MeasureLength2.Value * 2;
+                result.E1CaliberTransition = parameters.E1Transition.Value.ToString();
+                result.E2CaliberCount = parameters.E2NumMeasures.Value;
+                result.E2CaliberWidth = parameters.E2MeasureLength1.Value * 2;
+                result.E2CaliberLength = parameters.E2MeasureLength2.Value * 2;
+                result.E2CaliberTransition = parameters.E2Transition.Value.ToString();
 
                 // ===== 判定（v4 C1 基座；启用项无有效值 → NG，rule-015）=====
                 var judged = MeasureJudge.EvaluateAll(
@@ -153,6 +210,7 @@ namespace SunEyeVision.Tool.LineLineMeasure
                         _ => null,
                     });
                 result.IsPass = MeasureJudge.IsAllPass(judged);
+                result.JudgmentDetails = judged.Select(j => j.Message).ToArray();
 
                 result.FillDisplay(result.IsPass, parameters);
                 result.SetSuccess();
@@ -188,25 +246,25 @@ namespace SunEyeVision.Tool.LineLineMeasure
             }
         }
 
-        private static (Point Start, Point End, Point2d[] Inliers) FitLineRobust(IReadOnlyList<Point2d> points, double distanceThreshold)
+        private static (Point Start, Point End, Point2d[] Inliers, double Rmse) FitLineRobust(IReadOnlyList<Point2d> points, double distanceThreshold)
         {
             if (points.Count < 2)
                 throw new InvalidOperationException($"有效测量点不足({points.Count} < 2)，无法拟合直线");
 
-            var (s0, e0) = FitLineCore(points, "tukey");
+            var (s0, e0, rmse0) = FitLineCore(points, "tukey");
             var inliers = points
                 .Where(p => DistancePointToLine(p, s0, e0) <= distanceThreshold)
                 .ToArray();
             if (inliers.Length < 2)
                 throw new InvalidOperationException(
                     $"拟合内点不足({inliers.Length} < 2)：distance_threshold={distanceThreshold:F1} 过小或引导偏差过大");
-            var (start, end) = inliers.Length == points.Count
-                ? (s0, e0)
+            var (start, end, rmse) = inliers.Length == points.Count
+                ? (s0, e0, rmse0)
                 : FitLineCore(inliers, "regression");
-            return (start, end, inliers);
+            return (start, end, inliers, rmse);
         }
 
-        private static (Point Start, Point End) FitLineCore(IReadOnlyList<Point2d> points, string algorithm)
+        private static (Point Start, Point End, double Rmse) FitLineCore(IReadOnlyList<Point2d> points, string algorithm)
         {
             var rows = new HTuple(points.Select(p => (double)p.Y).ToArray());
             var cols = new HTuple(points.Select(p => (double)p.X).ToArray());
@@ -214,15 +272,43 @@ namespace SunEyeVision.Tool.LineLineMeasure
             try
             {
                 HOperatorSet.FitLineContourXld(contour, algorithm, -1, 0, 3, 2.0,
-                    out var rowBegin, out var colBegin, out var rowEnd, out var colEnd, out _, out _, out _);
+                    out var rowBegin, out var colBegin, out var rowEnd, out var colEnd, out _, out _, out var dist);
                 if (rowBegin.Length < 1 || colBegin.Length < 1 || rowEnd.Length < 1 || colEnd.Length < 1)
                     throw new InvalidOperationException($"直线拟合失败(algorithm={algorithm})：未返回有效结果");
-                return (new Point(colBegin[0].D, rowBegin[0].D), new Point(colEnd[0].D, rowEnd[0].D));
+
+                // 拟合残差 RMSE：HALCON FitLineContourXld 输出的 Dist（各点到拟合线的距离）均方根
+                double rmse = 0.0;
+                if (dist.Length > 0)
+                {
+                    var distances = dist.DArr;
+                    double sum = 0.0;
+                    for (int i = 0; i < distances.Length; i++)
+                        sum += distances[i] * distances[i];
+                    rmse = Math.Sqrt(sum / distances.Length);
+                }
+                return (new Point(colBegin[0].D, rowBegin[0].D), new Point(colEnd[0].D, rowEnd[0].D), rmse);
             }
             finally
             {
                 contour.Dispose();
             }
+        }
+
+        /// <summary>引导线段 → RoiShape[]（模块结果"引导几何"回显，对齐 LineDetect 规范）</summary>
+        private static RoiShape[]? BuildGuideGeometry(Point start, Point end)
+        {
+            var dx = end.X - start.X;
+            var dy = end.Y - start.Y;
+            var length = Math.Sqrt(dx * dx + dy * dy);
+            if (length < 1e-6) return null;
+
+            return new[]
+            {
+                new RoiShape
+                {
+                    Geometry = new Line2d(new Point(start.X, start.Y), new Vector(dx / length, dy / length)),
+                },
+            };
         }
 
         private static double DistancePointToLine(Point2d p, Point a, Point b)
@@ -237,36 +323,19 @@ namespace SunEyeVision.Tool.LineLineMeasure
 
         // ============ 几何量 ============
 
+        /// <summary>
+        /// 两线锐角夹角（0~90°）。HALCON angle_ll 返回有向角（-π~π，逆时针 A→B，依赖点序），
+        /// 取绝对值后补角化得到锐角，保持判定表"角度 0~90"语义。
+        /// </summary>
         private static double ComputeAcuteAngle(Point a1, Point a2, Point b1, Point b2)
         {
-            var d1 = new Vector(a2.X - a1.X, a2.Y - a1.Y);
-            var d2 = new Vector(b2.X - b1.X, b2.Y - b1.Y);
-            var l1 = d1.Length;
-            var l2 = d2.Length;
-            if (l1 < 1e-9 || l2 < 1e-9) return 0.0;
-            var cos = Math.Abs(Vector.Multiply(d1, d2)) / (l1 * l2);
-            cos = Math.Clamp(cos, -1.0, 1.0);
-            return Math.Acos(cos) * 180.0 / Math.PI;   // 锐角 0~90°
-        }
-
-        private static double ParallelDistance(Point a1, Point a2, Point b1, Point b2)
-        {
-            var d = new Vector(a2.X - a1.X, a2.Y - a1.Y);
-            var len = d.Length;
-            if (len < 1e-9) return 0.0;
-            var n = new Vector(-d.Y / len, d.X / len);          // 单位法线
-            var midA = new Point((a1.X + a2.X) / 2, (a1.Y + a2.Y) / 2);
-            var midB = new Point((b1.X + b2.X) / 2, (b1.Y + b2.Y) / 2);
-            var delta = new Vector(midB.X - midA.X, midB.Y - midA.Y);
-            return Math.Abs(Vector.Multiply(delta, n));          // 两平行线间距
-        }
-
-        /// <summary>两无限直线交点（非平行场景）</summary>
-        private static Point LineIntersection(Point a1, Point a2, Point b1, Point b2)
-        {
-            double denom = (a1.X - a2.X) * (b1.Y - b2.Y) - (a1.Y - a2.Y) * (b1.X - b2.X);
-            double t = ((a1.X - b1.X) * (b1.Y - b2.Y) - (a1.Y - b1.Y) * (b1.X - b2.X)) / denom;
-            return new Point(a1.X + t * (a2.X - a1.X), a1.Y + t * (a2.Y - a1.Y));
+            HOperatorSet.AngleLl(
+                a1.Y, a1.X, a2.Y, a2.X,
+                b1.Y, b1.X, b2.Y, b2.X,
+                out var angle);
+            double abs = Math.Abs(angle.D);                             // [0, π]
+            double acute = abs > Math.PI / 2 ? Math.PI - abs : abs;     // 锐角化
+            return acute * 180.0 / Math.PI;
         }
 
         private static Point MidPoint(Point a, Point b)

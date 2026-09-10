@@ -83,59 +83,113 @@ namespace SunEyeVision.Tool.LineLineMeasure
         // ============================================================
         public GraphicsStyle GuideLine1Style { get; set; } = new()
         {
-            Name = "引导线1", IsVisible = true, OkColor = System.Windows.Media.Colors.DodgerBlue,
+            Name = "引导线1", IsVisible = true,
         };
         public GraphicsStyle GuideLine2Style { get; set; } = new()
         {
-            Name = "引导线2", IsVisible = true, OkColor = System.Windows.Media.Colors.Orange,
+            Name = "引导线2", IsVisible = true,
         };
         public GraphicsStyle CaliberBand1Style { get; set; } = new()
         {
-            Name = "卡尺1", IsVisible = true, OkColor = System.Windows.Media.Colors.LightSteelBlue,
+            Name = "卡尺1", IsVisible = true,
         };
         public GraphicsStyle CaliberBand2Style { get; set; } = new()
         {
-            Name = "卡尺2", IsVisible = true, OkColor = System.Windows.Media.Colors.NavajoWhite,
+            Name = "卡尺2", IsVisible = true,
         };
         public GraphicsStyle FitLine1Style { get; set; } = new()
         {
-            Name = "拟合结果1", IsVisible = true, OkColor = System.Windows.Media.Colors.LimeGreen,
+            Name = "拟合结果1", IsVisible = true,
         };
         public GraphicsStyle FitLine2Style { get; set; } = new()
         {
-            Name = "拟合结果2", IsVisible = true, OkColor = System.Windows.Media.Colors.DeepSkyBlue,
+            Name = "拟合结果2", IsVisible = true,
         };
         public GraphicsStyle CaliberPoint1Style { get; set; } = new()
         {
-            Name = "卡尺1拟合点", IsVisible = true, OkColor = System.Windows.Media.Colors.White, CrossSize = 4.0,
+            Name = "卡尺1拟合点", IsVisible = true, CrossSize = 4.0,
         };
         public GraphicsStyle CaliberPoint2Style { get; set; } = new()
         {
-            Name = "卡尺2拟合点", IsVisible = true, OkColor = System.Windows.Media.Colors.White, CrossSize = 4.0,
+            Name = "卡尺2拟合点", IsVisible = true, CrossSize = 4.0,
         };
         public GraphicsStyle IntersectionPointStyle { get; set; } = new()
         {
-            Name = "角点", IsVisible = true, OkColor = System.Windows.Media.Colors.Red, CrossSize = 6.0,
+            Name = "角点", IsVisible = true, CrossSize = 6.0,
+        };
+
+        /// <summary>元素1 无限直线延长线（虚线；拟合线段为实线，延长段表达"交点取自无限直线"）</summary>
+        public GraphicsStyle ExtensionLine1Style { get; set; } = new()
+        {
+            Name = "延长线1", IsVisible = true,
+            LineDashStyle = LineDashStyle.Dash, LineWidth = 1.0,
+        };
+        /// <summary>元素2 无限直线延长线（虚线）</summary>
+        public GraphicsStyle ExtensionLine2Style { get; set; } = new()
+        {
+            Name = "延长线2", IsVisible = true,
+            LineDashStyle = LineDashStyle.Dash, LineWidth = 1.0,
+        };
+        /// <summary>两线夹角角标弧（交点处，半径见 <see cref="AngleArcRadius"/>）</summary>
+        public GraphicsStyle AngleArcStyle { get; set; } = new()
+        {
+            Name = "夹角弧", IsVisible = true, LineWidth = 1.5,
+        };
+
+        /// <summary>夹角角标半径（px，图像坐标；仅显示层使用，不参与测量与绑定）</summary>
+        public double AngleArcRadius { get; set; } = 50.0;
+
+        /// <summary>夹角数值文字（交点附近角平分方向）</summary>
+        public TextStyle AngleTextStyle { get; set; } = new()
+        {
+            Name = "夹角", IsVisible = true,
+        };
+
+        /// <summary>距离连线（平行场景画公垂段：线1中点 → 线2垂足）</summary>
+        public GraphicsStyle DistanceLineStyle { get; set; } = new()
+        {
+            Name = "距离连线", IsVisible = true,
+            LineDashStyle = LineDashStyle.DashDot, LineWidth = 1.0,
+        };
+
+        /// <summary>距离数值文字（间距/最短距离）</summary>
+        public TextStyle DistanceTextStyle { get; set; } = new()
+        {
+            Name = "距离", IsVisible = true,
+        };
+
+        /// <summary>最小法向距离投影段（默认隐藏，按需开启；极值点 → 线2 垂足）</summary>
+        public GraphicsStyle DistanceMinLineStyle { get; set; } = new()
+        {
+            Name = "最小距离线", IsVisible = false,
+            LineDashStyle = LineDashStyle.Dot, LineWidth = 1.0,
+        };
+
+        /// <summary>最大法向距离投影段（默认隐藏，按需开启）</summary>
+        public GraphicsStyle DistanceMaxLineStyle { get; set; } = new()
+        {
+            Name = "最大距离线", IsVisible = false,
+            LineDashStyle = LineDashStyle.Dot, LineWidth = 1.0,
         };
         public TextStyle Element1CenterTextStyle { get; set; } = new()
         {
-            Name = "卡尺1中心", IsVisible = true, OkColor = System.Windows.Media.Colors.Cyan,
+            Name = "卡尺1中心", IsVisible = true,
         };
         public TextStyle Element1AngleTextStyle { get; set; } = new()
         {
-            Name = "卡尺1角度", IsVisible = true, OkColor = System.Windows.Media.Colors.Cyan,
+            Name = "卡尺1角度", IsVisible = true,
         };
         public TextStyle Element2CenterTextStyle { get; set; } = new()
         {
-            Name = "卡尺2中心", IsVisible = true, OkColor = System.Windows.Media.Colors.Orange,
+            Name = "卡尺2中心", IsVisible = true,
         };
         public TextStyle Element2AngleTextStyle { get; set; } = new()
         {
-            Name = "卡尺2角度", IsVisible = true, OkColor = System.Windows.Media.Colors.Orange,
+            Name = "卡尺2角度", IsVisible = true,
         };
         public TextStyle IntersectionTextStyle { get; set; } = new()
         {
-            Name = "交点", IsVisible = true, OkColor = System.Windows.Media.Colors.Yellow,
+            Name = "交点", IsVisible = true,
         };
     }
 }

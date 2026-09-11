@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -4536,8 +4536,8 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                     // 引导几何单层折叠：PropertyMap entry "引导几何" 不渲染为中间节点，
                     // 直接把数组展开的子节点（圆/线 → 中心/端点）挂到 "引导线" group 下。
                     // 原因：PropertyMap entry 已是"几何数组"的语义占位，再作为节点显示与下钻的几何元素重复；
-                    // 检测区/屏蔽区图形走 "输入区域" group，不在此分支内不受影响。
-                    if (e.Group == "输入区域/卡尺/引导线" && node.Children.Count > 0)
+                    // 检测区/屏蔽区图形走 "输入" group（基类），不在此分支内不受影响。
+                    if (e.Group == "输入/卡尺/引导线" && node.Children.Count > 0)
                     {
                         foreach (var child in node.Children)
                             currentParent.Children.Add(child);
@@ -4566,35 +4566,52 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
 
         /// <summary>
         /// 模块结果分组固定顺序（索引越小越靠前）。
-        /// 执行信息/基本信息/输入信息等通用信息置顶，保证各工具节点一致。
+        /// 以 '/' 结尾的键为**前缀键**：匹配其**自身**与全部**子分组**（如 "拟合结果/" 覆盖
+        /// "拟合结果" 与 "拟合结果/圆2"），使工具新增元素（点3/圆4…）时无需再改本表（rule-016 声明式）。
+        /// 执行信息置顶；算法产出（拟合结果 / 结果）往前；输入回显在后。
+        /// 命名规范见《按图形绑定优化方案》改动 11：顶层组名只允许 输入 / 拟合结果 / 结果（+ 执行信息）。
         /// </summary>
         private static readonly string[] ModuleResultGroupOrder =
         [
             // 执行信息：执行耗时（基类）+ 节点状态（判定 OK/NG，工具追加）
             "执行信息",
             // 结果往前方：算法产出（拟合几何/残差/点数/派生量）紧跟执行信息
-            "拟合结果",
-            "拟合结果/元素1",
-            "拟合结果/元素2",
-            "测量结果",
+            "拟合结果/",
+            "结果",
             // 基本信息/输入信息居中
             "基本信息",
             "输入信息",
-            // 输入回显向后排：卡尺（引导线 → 测量带）在 RoI 图形（检测区/屏蔽区）之上
-            "输入区域/卡尺/引导线",
-            "输入区域/卡尺/测量带",
-            "输入区域",
+            // 输入回显：元素输入（点1/点2）→ 卡尺（引导线 → 测量带）→ 其余输入（检测区/屏蔽区图形）
+            "输入/点1",
+            "输入/点2",
+            "输入/卡尺/引导线",
+            "输入/卡尺/测量带",
+            "输入/",
             // 参数回写最后
             "参数回写",
         ];
 
         /// <summary>
-        /// 分组排序索引：已知分组返回其固定索引，未知分组返回 int.MaxValue（排最后，再按名排序）
+        /// 分组排序索引：先精确匹配，键以 '/' 结尾时再做前缀匹配；未知分组返回 int.MaxValue（排最后，再按名排序）。
         /// </summary>
         private static int GroupOrderIndex(string groupName)
         {
-            var idx = Array.IndexOf(ModuleResultGroupOrder, groupName);
-            return idx < 0 ? int.MaxValue : idx;
+            for (var i = 0; i < ModuleResultGroupOrder.Length; i++)
+            {
+                var key = ModuleResultGroupOrder[i];
+                if (key.Length > 0 && key[^1] == '/')
+                {
+                    // 前缀键：既匹配父组本身（"拟合结果"），也匹配其子分组（"拟合结果/圆2"）
+                    if (groupName == key[..^1] || groupName.StartsWith(key, StringComparison.Ordinal))
+                        return i;
+                    continue;
+                }
+
+                if (groupName == key)
+                    return i;
+            }
+
+            return int.MaxValue;
         }
 
         /// <summary>

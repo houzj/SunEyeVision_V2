@@ -32,5 +32,6 @@
   <!-- 工具插件测试共享加载器：ModuleInitializer 从 plugins/<Tool>/ 加载最新工具 dll -->
   <ItemGroup>
     <Compile Include="..\_shared\ToolPluginTestLoader.cs" Link="_shared\ToolPluginTestLoader.cs" />
+    <Compile Include="..\_shared\MeasureResultNamingContractTests.cs" Link="_shared\MeasureResultNamingContractTests.cs" />
   </ItemGroup>
 </Project>

@@ -179,26 +179,27 @@ namespace SunEyeVision.Tool.PointLineMeasure
             return
             [
                 .. base.GetPropertyMap(),
-                // ===== 输入回显（对齐 6 工具规范：输入区域/卡尺）=====
-                new("GuideGeometry2", "引导几何2", "输入区域/卡尺/引导线"),
-                new("E2CaliberCount", "卡尺2测量带数量", "输入区域/卡尺/测量带"),
-                new("E2CaliberWidth", "卡尺2测量带宽度", "输入区域/卡尺/测量带"),
-                new("E2CaliberLength", "卡尺2测量带长度", "输入区域/卡尺/测量带"),
-                new("E2CaliberTransition", "卡尺2边缘极性", "输入区域/卡尺/测量带"),
-                new("Element2FitPoints", "卡尺2检测点", "输入区域/卡尺/测量带"),
-                // ===== 拟合结果 =====
-                new("Element2Line", "拟合线2", "拟合结果/元素2"),
-                new("Element2RMSE", "拟合残差2", "拟合结果/元素2"),
-                new("Element2EdgePointCount", "边缘点数2", "拟合结果/元素2"),
-                new("Point1", "点1", "拟合结果/元素1"),
-                new("Point1X", "点1X(px)", "拟合结果/元素1"),
-                new("Point1Y", "点1Y(px)", "拟合结果/元素1"),
-                // ===== 测量结果（点1 与元素2 之间的派生量）=====
-                new("Distance", "距离(px)", "测量结果"),
-                new("PerpendicularT", "垂足参数t", "测量结果"),
+                // ===== 输入（对齐 6 工具规范：输入/卡尺）=====
+                // 点1：订阅/手输的点（不是拟合产物）→ 归「输入」
+                new("Point1", "点1", "输入/点1"),
+                new("Point1X", "点1X(px)", "输入/点1"),
+                new("Point1Y", "点1Y(px)", "输入/点1"),
+                new("GuideGeometry2", "直线2引导几何", "输入/卡尺/引导线"),
+                new("E2CaliberCount", "卡尺2测量带数量", "输入/卡尺/测量带"),
+                new("E2CaliberWidth", "卡尺2测量带宽度", "输入/卡尺/测量带"),
+                new("E2CaliberLength", "卡尺2测量带长度", "输入/卡尺/测量带"),
+                new("E2CaliberTransition", "卡尺2边缘极性", "输入/卡尺/测量带"),
+                new("Element2FitPoints", "卡尺2检测点", "输入/卡尺/测量带"),
+                // ===== 拟合结果（过程）=====
+                new("Element2Line", "直线2拟合结果", "拟合结果/直线2"),
+                new("Element2RMSE", "直线2拟合残差", "拟合结果/直线2"),
+                new("Element2EdgePointCount", "直线2边缘点数", "拟合结果/直线2"),
+                // ===== 结果（点1 与 直线2 之间的派生量）=====
+                new("Distance", "距离(px)", "结果"),
+                new("PerpendicularT", "垂足参数t", "结果"),
                 // 垂足 WPF Point 同样拆 X/Y
-                new("PerpendicularFootX", "垂足X(px)", "测量结果"),
-                new("PerpendicularFootY", "垂足Y(px)", "测量结果"),
+                new("PerpendicularFootX", "垂足X(px)", "结果"),
+                new("PerpendicularFootY", "垂足Y(px)", "结果"),
             ];
         }
     }

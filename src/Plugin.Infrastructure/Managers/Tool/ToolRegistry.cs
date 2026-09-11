@@ -534,7 +534,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
             {
                 PropertyName = propertyName,
                 DisplayName = displayName,
-                GroupName = "输入区域",
+                GroupName = "输入",
                 PropertyType = varType.IsArray ? varType : varType.MakeArrayType(),
             };
 

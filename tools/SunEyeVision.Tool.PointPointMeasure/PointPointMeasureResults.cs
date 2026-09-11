@@ -100,20 +100,20 @@ namespace SunEyeVision.Tool.PointPointMeasure
             return
             [
                 .. base.GetPropertyMap(),
-                // ===== 元素1（点：整体 Point2d[] + X/Y 拆解）=====
-                new("Point1", "点1", "元素1"),
-                new("Point1X", "点1X(px)", "元素1"),
-                new("Point1Y", "点1Y(px)", "元素1"),
-                // ===== 元素2（点：整体 Point2d[] + X/Y 拆解）=====
-                new("Point2", "点2", "元素2"),
-                new("Point2X", "点2X(px)", "元素2"),
-                new("Point2Y", "点2Y(px)", "元素2"),
-                // ===== 测量结果（两点之间的派生量）=====
-                new("Distance", "点距(px)", "测量结果"),
-                new("DeltaX", "ΔX(px)", "测量结果"),
-                new("DeltaY", "ΔY(px)", "测量结果"),
-                new("AngleDeg", "连线角度(°)", "测量结果"),
-                new("GeometryDescription", "几何量摘要", "测量结果"),
+                // ===== 输入：元素1（点：订阅/手输，整体 Point2d[] + X/Y 拆解）=====
+                new("Point1", "点1", "输入/点1"),
+                new("Point1X", "点1X(px)", "输入/点1"),
+                new("Point1Y", "点1Y(px)", "输入/点1"),
+                // ===== 输入：元素2（点：订阅/手输，整体 Point2d[] + X/Y 拆解）=====
+                new("Point2", "点2", "输入/点2"),
+                new("Point2X", "点2X(px)", "输入/点2"),
+                new("Point2Y", "点2Y(px)", "输入/点2"),
+                // ===== 结果（两点之间的派生量）=====
+                new("Distance", "点距(px)", "结果"),
+                new("DeltaX", "ΔX(px)", "结果"),
+                new("DeltaY", "ΔY(px)", "结果"),
+                new("AngleDeg", "连线角度(°)", "结果"),
+                new("GeometryDescription", "几何量摘要", "结果"),
             ];
         }
     }

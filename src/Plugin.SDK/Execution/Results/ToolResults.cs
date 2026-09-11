@@ -565,8 +565,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
 
             // 框架级统一输出：检测区/屏蔽区几何（ROI 契约 RoiShape[]，词目 "ROI"，所有工具自动获得）。
             // 变量值即 RoiShape[]，绑定树按 [Type=X]/[i] 下钻，解析器经 [i].Geometry.属性 穿透。
-            AddRoiContractVariable(variables, nameof(InspectionGeometries), "检测区图形", "输入区域");
-            AddRoiContractVariable(variables, nameof(MaskGeometries), "屏蔽区图形", "输入区域");
+            AddRoiContractVariable(variables, nameof(InspectionGeometries), "检测区图形", "输入");
+            AddRoiContractVariable(variables, nameof(MaskGeometries), "屏蔽区图形", "输入");
 
             return variables;
         }

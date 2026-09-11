@@ -194,31 +194,32 @@ namespace SunEyeVision.Tool.PointCircleMeasure
             return
             [
                 .. base.GetPropertyMap(),
-                // ===== 输入回显（对齐 6 工具规范：输入区域/卡尺）=====
-                new("GuideGeometry2", "引导几何2", "输入区域/卡尺/引导圆"),
-                new("E2CaliberCount", "卡尺2测量带数量", "输入区域/卡尺/测量带"),
-                new("E2CaliberWidth", "卡尺2测量带宽度", "输入区域/卡尺/测量带"),
-                new("E2CaliberLength", "卡尺2测量带长度", "输入区域/卡尺/测量带"),
-                new("E2CaliberTransition", "卡尺2边缘极性", "输入区域/卡尺/测量带"),
-                new("Element2FitPoints", "卡尺2检测点", "输入区域/卡尺/测量带"),
-                // ===== 拟合结果 =====
-                new("Element2Circle", "拟合圆2", "拟合结果/元素2"),
-                new("Element2RMSE", "拟合残差2", "拟合结果/元素2"),
-                new("Element2EdgePointCount", "边缘点数2", "拟合结果/元素2"),
-                new("Element2Center", "元素2圆心", "拟合结果/元素2"),
-                new("Element2CenterX", "元素2中心X(px)", "拟合结果/元素2"),
-                new("Element2CenterY", "元素2中心Y(px)", "拟合结果/元素2"),
-                new("Element2Radius", "元素2半径(px)", "拟合结果/元素2"),
-                // 元素1：点整体（词目 Point，供下游"按图形"绑定）+ X/Y 拆解（供"按参数"绑定）
-                new("Point1", "点1", "拟合结果/元素1"),
-                new("Point1X", "点1X(px)", "拟合结果/元素1"),
-                new("Point1Y", "点1Y(px)", "拟合结果/元素1"),
-                // ===== 测量结果（点1 与元素2 之间的派生量）=====
-                new("DistanceToCenter", "圆心距(px)", "测量结果"),
-                new("DistanceToCircle", "圆周距(px)", "测量结果"),
-                new("ClosestPoint", "圆周最近点", "测量结果"),
-                new("ClosestPointX", "最近点X(px)", "测量结果"),
-                new("ClosestPointY", "最近点Y(px)", "测量结果"),
+                // ===== 输入（对齐 6 工具规范：输入/卡尺）=====
+                // 点1：订阅/手输的点（不是拟合产物）→ 归「输入」；
+                // 整体（词目 Point，供下游"按图形"绑定）+ X/Y 拆解（供"按参数"绑定）
+                new("Point1", "点1", "输入/点1"),
+                new("Point1X", "点1X(px)", "输入/点1"),
+                new("Point1Y", "点1Y(px)", "输入/点1"),
+                new("GuideGeometry2", "圆2引导几何", "输入/卡尺/引导圆"),
+                new("E2CaliberCount", "卡尺2测量带数量", "输入/卡尺/测量带"),
+                new("E2CaliberWidth", "卡尺2测量带宽度", "输入/卡尺/测量带"),
+                new("E2CaliberLength", "卡尺2测量带长度", "输入/卡尺/测量带"),
+                new("E2CaliberTransition", "卡尺2边缘极性", "输入/卡尺/测量带"),
+                new("Element2FitPoints", "卡尺2检测点", "输入/卡尺/测量带"),
+                // ===== 拟合结果（过程）=====
+                new("Element2Circle", "圆2拟合结果", "拟合结果/圆2"),
+                new("Element2RMSE", "圆2拟合残差", "拟合结果/圆2"),
+                new("Element2EdgePointCount", "圆2边缘点数", "拟合结果/圆2"),
+                new("Element2Center", "圆2圆心", "拟合结果/圆2"),
+                new("Element2CenterX", "圆2中心X(px)", "拟合结果/圆2"),
+                new("Element2CenterY", "圆2中心Y(px)", "拟合结果/圆2"),
+                new("Element2Radius", "圆2半径(px)", "拟合结果/圆2"),
+                // ===== 结果（点1 与 圆2 之间的派生量）=====
+                new("DistanceToCenter", "圆心距(px)", "结果"),
+                new("DistanceToCircle", "圆周距(px)", "结果"),
+                new("ClosestPoint", "圆周最近点", "结果"),
+                new("ClosestPointX", "最近点X(px)", "结果"),
+                new("ClosestPointY", "最近点Y(px)", "结果"),
             ];
         }
     }

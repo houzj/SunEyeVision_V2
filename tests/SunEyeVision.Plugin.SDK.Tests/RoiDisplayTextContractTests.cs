@@ -32,15 +32,6 @@ public class RoiDisplayTextContractTests
     }
 
     [Fact]
-    public void RoiShape_ToString_SystemRect_RendersChineseShortName()
-    {
-        var sp = new RoiShape { Geometry = new Rect(10, 20, 30, 40) };
-        var text = sp.ToString();
-        Assert.Contains("矩形", text);
-        Assert.DoesNotContain("RoiShape", text);
-    }
-
-    [Fact]
     public void RoiShape_ToString_Polygon_RendersVertexCount()
     {
         var sp = new RoiShape

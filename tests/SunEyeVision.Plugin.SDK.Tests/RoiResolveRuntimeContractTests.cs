@@ -107,11 +107,15 @@ public class RoiResolveRuntimeContractTests
 
         var resolved = roi.ResolveRuntime(context);
 
-        // 拼装模板默认宽高 100×100 于 (200,150) 中心 → Rect(150,100,100,100)
+        // 拼装模板默认宽高 100×100 于 (200,150) 中心 → RotatedRect2d（中心 200,150｜尺寸 100×100｜Angle=0）
+        // P0-2 后矩形几何统一为 RotatedRect2d，WPF Rect 已从契约层退场，故断言中心 + 尺寸 + 角度。
         Assert.Single(resolved);
-        var rect = Assert.IsType<System.Windows.Rect>(resolved[0].Geometry);
-        Assert.Equal(150, rect.X);
-        Assert.Equal(100, rect.Y);
+        var rect = Assert.IsType<SunEyeVision.Plugin.SDK.Models.Geometry.RotatedRect2d>(resolved[0].Geometry);
+        Assert.Equal(200, rect.Center.X, 6);
+        Assert.Equal(150, rect.Center.Y, 6);
+        Assert.Equal(100, rect.Width, 6);
+        Assert.Equal(100, rect.Height, 6);
+        Assert.Equal(0, rect.Angle, 6);
     }
 
     [Fact]

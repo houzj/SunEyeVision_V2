@@ -98,13 +98,25 @@ public class SubroutineDisplayItemTypeContractTests
     }
 
     [Fact]
-    public void TextDisplayItem_Filter_OnlyNumericSources()
+    public void TextDisplayItem_Filter_NumericSourcesAndDrillableGeometry()
     {
-        // 文本显示项默认绑数字（Double），Integer↔Double 互通，字符串结果被过滤
+        // 文本显示项目标为数字（Double）。候选 = 纯数值源 + **可下钻到数值字段**的几何数组：
+        //   - 规则 2/3：同词目与 Integer↔Double 互通（Value）
+        //   - 规则 3.6：几何数组有声明字段 → 放行（选区数组后下钻 半径/中心X；Polygon 顶点数组无标量字段，不放行）
+        //   - 其余（Image / String）精确匹配不互通 → 过滤
         var item = new SubroutineDisplayItem { DisplayType = SubroutineDisplayType.Text };
         var filtered = ParamBindingBase.FilterDataSourcesByType(MakeAllSources(), item.ParamType!);
-        Assert.Single(filtered);
-        Assert.Equal("Value", filtered[0].PropertyName);
+
+        var names = filtered.Select(d => d.PropertyName).ToList();
+
+        Assert.Contains("Value", names);      // 纯数值源
+        Assert.Contains("Circle", names);     // 可下钻 半径 / 中心X
+        Assert.Contains("Point", names);      // 可下钻 X / Y
+        Assert.Contains("Line", names);       // 可下钻 点X / 方向X
+        Assert.Contains("Rect", names);       // 可下钻 中心X / 宽 / 高 / 角度
+        Assert.DoesNotContain("Polygon", names); // 顶点数组无标量字段，放行会导致展开后无可绑叶
+        Assert.DoesNotContain("Image", names);
+        Assert.DoesNotContain("Text", names);
     }
 
     [Fact]

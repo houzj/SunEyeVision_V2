@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
@@ -50,8 +50,9 @@ public class RoiBindingContractTests
 
         var children = ArrayTreeFormatter.BuildRoiTypedChildren(ds, "ROI");
 
-        // 整体 + 8 类型叶（声明式全枚举，与 roi 实际包含哪几类无关）
-        Assert.Equal(9, children.Count);
+        // 整体 + 全部形状叶（声明式全枚举，与 roi 实际包含哪几类无关；
+        // 形状数按枚举推导——ShapeType.Rectangle 已并入 RotatedRectangle，硬编码会随枚举演进失效）
+        Assert.Equal(System.Enum.GetValues<ShapeType>().Count(t => t != ShapeType.None) + 1, children.Count);
 
         // "整体"入口：绑定整个检测区域数组（BindingSuffix=null → 路径 "[]"）
         var overall = children[0];
@@ -84,7 +85,7 @@ public class RoiBindingContractTests
     public void GetShapeTypeShortName_MapsToDisplayName()
     {
         Assert.Equal("圆", ArrayTreeFormatter.GetShapeTypeShortName(ShapeType.Circle));
-        Assert.Equal("矩形", ArrayTreeFormatter.GetShapeTypeShortName(ShapeType.RotatedRectangle));
+        // 注：ShapeType.Rectangle 已删除（P0-2 统一为 RotatedRectangle），此处只断言旋转矩形
         Assert.Equal("旋转矩形", ArrayTreeFormatter.GetShapeTypeShortName(ShapeType.RotatedRectangle));
         Assert.Equal("多边形", ArrayTreeFormatter.GetShapeTypeShortName(ShapeType.Polygon));
         Assert.Equal("圆环", ArrayTreeFormatter.GetShapeTypeShortName(ShapeType.Annulus));

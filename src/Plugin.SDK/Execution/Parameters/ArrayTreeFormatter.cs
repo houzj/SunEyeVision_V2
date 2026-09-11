@@ -118,7 +118,10 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         ///   每个声明类型 = 容器，children = <see cref="RoiFieldSchema"/> 字段叶（可绑，路径
         ///   <c>[Type=X][].Geometry.字段</c>：数组集合语义，绑定该类型全部图形的该字段；
         ///   仅 1 个时自动解包单值，N 个返回数组；需第 N 个由用户手写 [Type=X][N]）。
-        /// - ROI/几何/未限定目标（整对象订阅等）：整体叶（绑全部 []）+ 各类型集合叶（绑 [Type=X]），
+        /// - 几何值目标（Point/Circle/Line/RotatedRect/Polygon/Annulus/Arc）：只出
+        ///   <see cref="ShapeTypeVocabulary"/> 允许的形状叶（如 Point → 仅"点"），且**不出整体**
+        ///   （整体是 RoiShape[]，绑不到几何值参数）——消除"能选不能用"。
+        /// - ROI / 未限定目标（区域订阅等）：整体叶（绑全部 []）+ 全部类型集合叶（绑 [Type=X]），
         ///   均为叶子、无下钻（避免"可展开+可绑定"角色冲突）。
         /// 设计期/运行期结构一致：声明式由 ShapeType 枚举 + RoiFieldSchema 驱动，不依赖运行值
         /// （rule-016 数据驱动优先）。已删除旧逐元素 [i] 层级与 Geometry 反射枚举（schema 唯一字段源）。
@@ -158,9 +161,17 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 return children;
             }
 
-            // ROI / 几何图形 / 未限定目标：整体 + 各类型集合叶（均为绑定终点，无 children）。
-            children.Add(CreateRoiOverallNode(parentDs));
-            foreach (var type in Enum.GetValues<ShapeType>())
+            // 形状受限的几何目标（如点参数的 Point 词目）：只出**语义等价**的形状叶，且不出"整体"。
+            // 依据：ShapeTypeVocabulary（词目 → 允许形状的唯一真相源）。
+            // 历史缺陷：此处对几何目标一律全列出 7 类形状，与目标类型无关 → 能选不能用。
+            var allowedTypes = ShapeTypeVocabulary.AllowedShapeTypes(targetVarType);
+            if (allowedTypes == null)
+            {
+                // ROI / 未限定目标（区域订阅等）：整体 + 全部形状叶（要的就是一筐图形本身）
+                children.Add(CreateRoiOverallNode(parentDs));
+            }
+
+            foreach (var type in allowedTypes ?? (IReadOnlyList<ShapeType>)Enum.GetValues<ShapeType>())
             {
                 if (type == ShapeType.None) continue;
 

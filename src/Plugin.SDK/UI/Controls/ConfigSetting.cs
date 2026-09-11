@@ -131,7 +131,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// </summary>
         public static readonly DependencyProperty AvailableDataSourcesProperty =
             DependencyProperty.Register(nameof(AvailableDataSources), typeof(System.Collections.ObjectModel.ObservableCollection<AvailableDataSource>), typeof(ConfigSetting),
-                new PropertyMetadata(null));
+                new PropertyMetadata(null, OnAvailableDataSourcesChanged));
 
         public static readonly DependencyProperty AvailableBindingsProperty =
             DependencyProperty.Register(nameof(AvailableBindings), typeof(System.Collections.Generic.List<string>), typeof(ConfigSetting),
@@ -636,6 +636,29 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             if (d is ConfigSetting control)
             {
                 // ShowSlider 属性变化处理（目前无需特殊操作）
+            }
+        }
+
+        /// <summary>
+        /// 可用数据源变更 → 立即转发给内部 ParamBinding（其自身订阅集合内容变更并重建候选树）。
+        /// </summary>
+        /// <remarks>
+        /// 历史缺陷：此前只在 UpdateVisualState（模板套用 / 模式切换 / BindingSource 变更）里转发，
+        /// 而宿主（工具调试窗）在"绑定状态已恢复"之后才注入 AvailableDataSources（同一集合实例 Clear/Add），
+        /// 导致重开调试窗时内部 ParamBinding 从未收到数据源 → 候选树为空（只剩"无/全局变量"），
+        /// 必须切一次模式（再次走 UpdateVisualState）才恢复。
+        /// 本回调补齐"注入 → 转发"这条链；模板尚未套用时 _paramBinding 为 null，
+        /// 由 OnApplyTemplate 里的 UpdateVisualState() 兜底转发。
+        /// </remarks>
+        private static void OnAvailableDataSourcesChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is not ConfigSetting control)
+                return;
+
+            if (control._paramBinding != null)
+            {
+                control._paramBinding.AvailableDataSources =
+                    e.NewValue as System.Collections.ObjectModel.ObservableCollection<AvailableDataSource>;
             }
         }
 

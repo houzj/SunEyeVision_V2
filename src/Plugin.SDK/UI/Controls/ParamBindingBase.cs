@@ -164,10 +164,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         }
 
         /// <summary>
-        /// 数组叶子节点显示增强（方案步骤6 / 〇 原则3）：折叠态文本统一为 "名称[]"，展开态物化子节点。
+        /// 数组叶子节点显示增强（方案步骤6 / 〇 原则3）：折叠态文本统一为 "名称[]"，展开策略由目标语义定型。
         /// 不改动绑定路径，仅影响树中文本与可展开的子节点。
         /// RoiShape[] 子树形态由 targetType 词目定型（ArrayTreeFormatter.BuildRoiTypedChildren）。
         /// </summary>
+        /// <remarks>
+        /// 展开策略（按目标场景分流，rule-016）：
+        /// - <b>图形订阅</b>（几何值 / ROI 目标）：数组节点即**绑定终点**，无子节点
+        ///   ——"挑的是图形/几何值本身"，数组与元素都是值，索引由用户编辑显示名指定；
+        /// - <b>参数订阅</b>（数值目标）：保留逐元素 <c>[i]</c> **只读预览**（需要看值才能挑对源），
+        ///   <c>[i]</c> 不参与绑定。
+        /// </remarks>
         private static void ApplyArrayDisplay(TreeNodeData leafNode, AvailableDataSource ds, Type? targetType)
         {
             if (ds.PropertyType == null || !ds.PropertyType.IsArray)
@@ -217,10 +224,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 return;
             }
 
+            // 逐元素 [i] 预览只服务"参数订阅"（数值目标：需要看值才能挑对源）。
+            // 几何值 / ROI 目标（图形订阅）挑的是图形本身，数组节点即**绑定终点**、不再展开——
+            // 否则会出现"展开里全是不可选的白点行"（绑定终点必是叶子，见 BuildRoiTypedChildren 铁律）。
+            // 取第 N 个元素由用户编辑显示名（"宽度[]" → "宽度[2]"），不提供 [i] 绑定项。
+            if (!IsNumericVocabulary(targetVar))
+                return;
+
             if (ds.CurrentValue is not Array arr)
                 return;
 
-            // 其他数组：逐元素 [i]
+            // 数值数组：逐元素 [i] **只读预览**（值来自运行结果，不参与绑定）
             leafNode.Children = new System.Collections.ObjectModel.ObservableCollection<TreeNodeData>(
                 ArrayTreeFormatter.BuildExpansionChildren(arr, elementType));
         }
@@ -293,9 +307,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
                 // 规则 3.5：几何图形目标放行 RoI 容器数据源。
                 // Blob 检测区/屏蔽区图形以 ROI（RoiShape[]）输出，按 [Type=X] 分组可下钻
-                // 到具体图形（圆/旋转矩形/矩形等）。目标词汇为几何图形时放行 ROI 容器，
+                // 到具体图形（圆/旋转矩形/点等）。目标词汇为几何图形时放行 ROI 容器，
                 // 让绑定下拉能展开并精确选中对应图形分组（否则整条数据源被滤掉，用户看不到）。
-                if (dsVarType == "ROI" && GeometryVocabularies.Contains(targetVarType))
+                // 注：放行后**形状收敛**由 ArrayTreeFormatter.BuildRoiTypedChildren 按
+                // ShapeTypeVocabulary 完成 —— 只出目标词目允许的形状叶，避免"能选不能用"。
+                if (dsVarType == "ROI" && ShapeTypeVocabulary.IsShapeVocabulary(targetVarType))
                     return true;
 
                 // 规则 3.6：数值目标（Integer/Double）放行"可下钻到数值字段"的容器数据源：
@@ -310,7 +326,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
                     var elementType = ds.PropertyType.GetElementType();
                     if (elementType != null
-                        && GeometryVocabularies.Contains(dsVarType)
+                        && ShapeTypeVocabulary.IsShapeVocabulary(dsVarType)
                         && GeometryFieldSchema.HasFields(elementType))
                         return true;
                 }
@@ -322,16 +338,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         private static bool IsNumericVocabulary(string variableType)
             => variableType == "Integer" || variableType == "Double";
-
-        /// <summary>
-        /// 几何图形词汇集合（Circle/RotatedRect/Point/Polygon/Line/Annulus/Arc）。
-        /// 当显示项目标词汇是几何图形时，ROI 容器数据源（RoiShape[]，词汇 ROI）应放行，
-        /// 因其内部按 [Type=X] 分组可精确下钻到对应图形（Blob 检测区图形 → 圆形/旋转矩形等）。
-        /// </summary>
-        private static readonly HashSet<string> GeometryVocabularies = new(StringComparer.Ordinal)
-        {
-            "Circle", "RotatedRect", "Point", "Polygon", "Line", "Annulus", "Arc",
-        };
 
         #endregion
 

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.UI.Controls;
@@ -42,8 +42,7 @@ public class RoiDesignTimeGroupsContractTests
         var ds = MakeEmptyRoiDataSource();
         var children = ArrayTreeFormatter.BuildRoiTypedChildren(ds, "ROI");
 
-        // 整体 + 8 类类型集合叶（Point/Line/Circle/Rectangle/RotatedRectangle/Polygon/Annulus/Arc）
-        Assert.Equal(9, children.Count);
+        // 整体 + 全部形状叶（Point/Line/Circle/RotatedRectangle/Polygon/Annulus/Arc；Rectangle 已并入 RotatedRectangle）
         Assert.Equal(AllBindableShapeTypes().Count() + 1, children.Count);
     }
 
@@ -112,11 +111,11 @@ public class RoiDesignTimeGroupsContractTests
     [Fact]
     public void BuildRoiTypedChildren_DoesNotDependOnCurrentValue()
     {
-        // 设计期 CurrentValue 为 null，仍产出整体 + 全部 8 类类型叶（声明式，与绘制数据零耦合）
+        // 设计期 CurrentValue 为 null，仍产出整体 + 全部形状叶（声明式，与绘制数据零耦合）
         var ds = MakeEmptyRoiDataSource();
         var roiChildren = ArrayTreeFormatter.BuildRoiTypedChildren(ds, "ROI");
 
-        Assert.Equal(9, roiChildren.Count);
+        Assert.Equal(AllBindableShapeTypes().Count() + 1, roiChildren.Count);
         Assert.Contains(roiChildren, c => c.Text == "整体");
         Assert.Contains(roiChildren, c => c.Text == "圆");
         Assert.Contains(roiChildren, c => c.Text == "旋转矩形");
@@ -139,16 +138,61 @@ public class RoiDesignTimeGroupsContractTests
     }
 
     [Fact]
-    public void RoiShape_GetMonitorFields_RectangleYieldsXYWidthHeight()
+    public void RoiShape_GetMonitorFields_RotatedRectYieldsCenterWidthHeightAngle()
     {
-        // 矩形(Rect) 走 RoiShape.GetMonitorFields 的 Rect 兜底，结果树设计期属性行不缺字段
+        // P0-2 后矩形几何统一为 RotatedRect2d（WPF Rect 已退场），监控字段随契约类型走：
+        // 中心X/中心Y/宽/高/角度（RotatedRect2d.GetMonitorFields），结果树设计期属性行不缺字段。
         var shape = new RoiShape { Geometry = RoiShape.CreateDefaultGeometry(ShapeType.RotatedRectangle) };
         var fields = shape.GetMonitorFields();
 
-        Assert.Contains(fields, f => f.FieldName == "X");
-        Assert.Contains(fields, f => f.FieldName == "Y");
+        Assert.Contains(fields, f => f.FieldName == "中心X");
+        Assert.Contains(fields, f => f.FieldName == "中心Y");
         Assert.Contains(fields, f => f.FieldName == "宽");
         Assert.Contains(fields, f => f.FieldName == "高");
+        Assert.Contains(fields, f => f.FieldName == "角度");
+    }
+
+    [Fact]
+    public void BuildRoiTypedChildren_GeometryTarget_YieldsOnlyMatchingShapeLeaf_AndNoOverall()
+    {
+        // 设计收敛（改动 4）：几何值目标（Point）时 ROI 容器下钻**只出"点"**，且不出"整体"。
+        // 依据 ShapeTypeVocabulary；"整体"是 RoiShape[]，绑不到 Point2d[]，属"能选不能用"。
+        var ds = MakeEmptyRoiDataSource();
+        var children = ArrayTreeFormatter.BuildRoiTypedChildren(ds, "Point");
+
+        Assert.Single(children);
+        Assert.DoesNotContain(children, c => c.Text == "整体");
+
+        var pointLeaf = children[0];
+        Assert.Equal("点", pointLeaf.Text);
+        Assert.True(pointLeaf.IsSelectable);
+        Assert.Equal("[Type=Point]", pointLeaf.DataSource!.BindingSuffix);
+        Assert.Equal("Node1.检测区图形[Type=Point]", pointLeaf.DataSource.GetBindingPath());
+    }
+
+    [Fact]
+    public void BuildRoiTypedChildren_EachGeometryVocabulary_YieldsItsOwnShapeOnly()
+    {
+        // 逐词目收敛：每个几何值词目只放行语义等价的形状叶（ShapeTypeVocabulary 唯一真相源）
+        var ds = MakeEmptyRoiDataSource();
+
+        foreach (var (vocabulary, shapeType) in new (string, ShapeType)[]
+        {
+            ("Point", ShapeType.Point),
+            ("Line", ShapeType.Line),
+            ("Circle", ShapeType.Circle),
+            ("RotatedRect", ShapeType.RotatedRectangle),
+            ("Polygon", ShapeType.Polygon),
+            ("Annulus", ShapeType.Annulus),
+            ("Arc", ShapeType.Arc),
+        })
+        {
+            var children = ArrayTreeFormatter.BuildRoiTypedChildren(ds, vocabulary);
+
+            Assert.Single(children);
+            Assert.Equal(ArrayTreeFormatter.GetShapeTypeShortName(shapeType), children[0].Text);
+            Assert.Equal($"[Type={shapeType}]", children[0].DataSource!.BindingSuffix);
+        }
     }
 
     [Fact]
@@ -165,8 +209,8 @@ public class RoiDesignTimeGroupsContractTests
         Assert.True(container.HasChildren, "容器应可展开");
         Assert.NotNull(container.Children);
 
-        // 子节点：整体 + 8 类型集合叶，全部为叶子（可绑定，无 children）
-        Assert.Equal(9, container.Children!.Count);
+        // 子节点：整体 + 全部形状叶，全部为叶子（可绑定，无 children）
+        Assert.Equal(AllBindableShapeTypes().Count() + 1, container.Children!.Count);
         var overall = container.Children[0];
         Assert.Equal("整体", overall.Text);
         Assert.True(overall.IsSelectable, "整体入口应可绑定");

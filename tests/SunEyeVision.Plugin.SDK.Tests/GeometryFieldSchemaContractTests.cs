@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
@@ -14,6 +14,8 @@ namespace SunEyeVision.Plugin.SDK.Tests;
 /// - <see cref="GeometryFieldSchema"/> 逐几何类型的字段声明（Polygon 顶点数组无标量字段）；
 /// - <see cref="ParamBindingBase.FilterDataSourcesByType"/> 数值目标放行"有声明字段"的几何数组；
 /// - <see cref="ArrayTreeFormatter.BuildGeometryFieldChildren"/> 生成字段叶，路径为 "属性.字段"（集合语义）；
+/// - 数组节点展开策略（<see cref="ParamBindingBase"/> 的 ApplyArrayDisplay）：图形订阅（几何/ROI 目标）
+///   不展开、数组节点即绑定终点；参数订阅（数值目标）保留 [i] 只读预览；
 /// - <see cref="OutputVariableResolver"/> 对 "属性.字段" 的解析：N=1 解包为标量，N&gt;1 逐元素投影为数组。
 /// </summary>
 public class GeometryFieldSchemaContractTests
@@ -116,6 +118,39 @@ public class GeometryFieldSchemaContractTests
         var value = OutputVariableResolver.Resolve(result, "Circle[1].Radius");
 
         Assert.Equal(7.0, Assert.IsType<double>(value), 6);
+    }
+
+    [Fact]
+    public void BuildTreeStructure_GeometryTarget_ArrayNodeIsBindingEndpointWithNoChildren()
+    {
+        // 图形订阅场景（几何值目标）：数组节点即**绑定终点**，不展开逐元素 [i]。
+        // 历史缺陷：几何数组节点挂上不可绑的 [i] 预览 → "点了先展开、展开里全是白点行"。
+        var ds = MakeDataSource("Center", typeof(Point2d[]));
+        ds.CurrentValue = new[] { new Point2d(1, 2) };
+
+        var root = ParamBindingBase.BuildTreeStructure(
+            new List<AvailableDataSource> { ds }, typeof(Point2d[])).Single();
+        var node = root.Children.Single(c => c.Text == "Center[]");
+
+        Assert.True(node.IsSelectable, "图形订阅下数组节点应可绑定（整组）");
+        Assert.True(node.Children == null || node.Children.Count == 0,
+            "图形订阅下数组节点不应展开（绑定终点必是叶子）");
+    }
+
+    [Fact]
+    public void BuildTreeStructure_NumericTarget_PlainNumericArrayKeepsElementPreview()
+    {
+        // 参数订阅场景（数值目标）：保留逐元素 [i] **只读预览**（需要看值才能挑对源）。
+        // [i] 不参与绑定；取第 N 个由用户编辑显示名（"Width[]" → "Width[2]"）。
+        var ds = MakeDataSource("Width", typeof(double[]));
+        ds.CurrentValue = new[] { 10.0, 20.0 };
+
+        var root = ParamBindingBase.BuildTreeStructure(
+            new List<AvailableDataSource> { ds }, typeof(double)).Single();
+        var node = root.Children.Single(c => c.Text == "Width[]");
+
+        Assert.NotEmpty(node.Children!);
+        Assert.All(node.Children!, c => Assert.False(c.IsSelectable, "[i] 仅只读预览，不参与绑定"));
     }
 
     private static AvailableDataSource MakeDataSource(string propertyName, Type propertyType) => new()

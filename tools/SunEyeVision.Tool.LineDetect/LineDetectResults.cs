@@ -16,6 +16,9 @@ namespace SunEyeVision.Tool.LineDetect
     /// 基于 Halcon 2D Metrology：引导直线 + 测量带阵列 → 拟合直线
     /// 结果渲染通过 Display 收集器（轮廓点/拟合直线/文本）叠加到图像。
     /// </remarks>
+    // P0.6-1 能力声明：图像输入 + 位置修正 + 区域输入（屏蔽区）+ 测量引导（引导直线 + 卡尺）
+    [ToolCapability(ToolCapabilities.ImageSource | ToolCapabilities.PositionCorrection
+        | ToolCapabilities.RoiInput | ToolCapabilities.MeasureGuide)]
     public class LineDetectResults : ToolResults
     {
         /// <summary>

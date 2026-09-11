@@ -15,6 +15,9 @@ namespace SunEyeVision.Tool.PointPointMeasure
     /// 元素点以契约类型 <see cref="Point2d"/> 数组输出（词目 Point），供下游"按图形"整体绑定；
     /// X/Y 拆解属性保留，供"按参数"逐值绑定。
     /// </remarks>
+    // P0.6-1 能力声明：图像输入 + 位置修正 + 测量引导（**不含区域输入**——测量工具不使用检测区/屏蔽区）
+    [ToolCapability(ToolCapabilities.ImageSource | ToolCapabilities.PositionCorrection
+        | ToolCapabilities.MeasureGuide)]
     public class PointPointMeasureResults : ToolResults
     {
         // ===== 元素结果 =====

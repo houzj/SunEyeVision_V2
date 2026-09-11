@@ -563,38 +563,41 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
                 });
             }
 
-            // 框架级统一输出：检测区/屏蔽区几何（ROI 契约 RoiShape[]，词目 "ROI"，所有工具自动获得）。
-            // 变量值即 RoiShape[]，绑定树按 [Type=X]/[i] 下钻，解析器经 [i].Geometry.属性 穿透。
-            AddRoiContractVariable(variables, nameof(InspectionGeometries), "检测区图形", "输入");
-            AddRoiContractVariable(variables, nameof(MaskGeometries), "屏蔽区图形", "输入");
+            // 框架级统一输出：**结构由能力声明决定**（P0.6-1/2/3 根治）。
+            //   ① 判定源 = [ToolCapability] 声明（不再用"继承 RoiParameters"推断 —— 那对 14/14 工具恒真）；
+            //   ② 四要素（属性名/显示名/组名/类型）= FrameworkContractSchema 单源（不再与 ToolRegistry 各写一遍）；
+            //   ③ 结构与值分离：条目只由能力决定，空值渲染占位 "--"，**不删条目**（消除"有时有行有时没行"抖动）。
+            var capabilities = ToolCapability.Resolve(this);
+            foreach (var entry in FrameworkContractSchema.Resolve(capabilities))
+                AddFrameworkContractVariable(variables, entry);
 
             return variables;
         }
 
         /// <summary>
-        /// 把检测区/屏蔽区几何（RoI 契约）追加为输出变量。
-        /// 仅当结果类型实际存在该属性时追加（框架属性在所有 ToolResults 派生类均存在）。
+        /// 把一条框架级契约条目（检测区/屏蔽区等）追加为输出变量。
         /// </summary>
-        private void AddRoiContractVariable(List<OutputVariable> variables, string propertyName, string displayName, string group)
+        /// <remarks>
+        /// ★ 值允许为空（null / 空数组）——此时条目<b>仍然产出</b>，由渲染层出占位 <c>--</c>。
+        ///   这是「结构与值分离」的要害：结构稳定，才不会出现"有时有行、有时没行"的抖动。
+        /// </remarks>
+        private void AddFrameworkContractVariable(List<OutputVariable> variables, FrameworkContractEntry entry)
         {
-            var prop = GetType().GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
-            if (prop == null) return;
+            var prop = GetType().GetProperty(entry.PropertyName, BindingFlags.Public | BindingFlags.Instance)
+                ?? throw new InvalidOperationException(
+                    $"工具 '{ToolName ?? GetType().Name}' 声明了能力 '{entry.RequiredCapability}'（需框架契约条目 '{entry.PropertyName}'），但结果类型中不存在该属性（契约漏洞）。");
 
             var runtimeValue = prop.GetValue(this);
-            // 运行期该区域无值（null 或空数组，如引导式工具无 RoI 检测区，基类默认 Array.Empty）→ 不输出空行（"--"），避免"输入区域空白"观感；
-            // 设计态结构另由 ToolRegistry + ResolveRoiDesignValue 提供
-            if (runtimeValue == null) return;
-            if (runtimeValue is Array arr && arr.Length == 0) return;
             var variableType = SunEyeVision.Plugin.SDK.Models.SdkTypeVocabulary.ToTypeVocabulary(prop.PropertyType)
                 ?? throw new InvalidOperationException(
-                    $"工具 '{ToolName ?? GetType().Name}' 的 {propertyName} 类型 '{prop.PropertyType.Name}' 不是全局变量支持的通用类型，请检查 SdkTypeVocabulary 词汇表。");
+                    $"工具 '{ToolName ?? GetType().Name}' 的 {entry.PropertyName} 类型 '{prop.PropertyType.Name}' 不是全局变量支持的通用类型，请检查 SdkTypeVocabulary 词汇表。");
 
             variables.Add(new OutputVariable
             {
-                Name = propertyName,
+                Name = entry.PropertyName,
                 VariableType = variableType,
-                DisplayName = displayName,
-                Group = group,
+                DisplayName = entry.DisplayName,
+                Group = entry.GroupName,
                 Kind = OutputVariableKind.Data,
                 RuntimeValue = OutputVariableArrayPromoter.Promote(runtimeValue, variableType, prop.PropertyType)
             });

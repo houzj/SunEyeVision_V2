@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using SunEyeVision.Plugin.SDK.Execution.Results;
@@ -9,6 +9,9 @@ namespace SunEyeVision.Tool.BlobAnalysis
     /// <summary>
     /// Blob分析工具执行结果
     /// </summary>
+    // P0.6-1 能力声明：图像输入 + 位置修正 + 区域输入（产出"检测区/屏蔽区图形"框架契约条目）
+    [ToolCapability(ToolCapabilities.ImageSource | ToolCapabilities.PositionCorrection
+        | ToolCapabilities.RoiInput)]
     public class BlobAnalysisResults : ToolResults
     {
         /// <summary>

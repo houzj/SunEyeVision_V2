@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -483,15 +483,15 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
                         "ToolRegistry");
                 }
 
-                // 框架级 RoI 契约元数据（类型级恒注册，与运行时值无关）：
-                // 检测区/屏蔽区是 RoiParameters 工具的区域输入结构。运行期由 Extract*Geometries 填充、
-                // 空值在契约层被过滤（避免运行态空行）；此处注册保证设计态（未运行）结果树回退
-                // （ResolveRoiDesignValue 从参数读取已绘区域）有条目可寻址，未画区域时 UI 渲染 "--" 占位。
-                // 修复 b593533c 把"空区跳过"放入契约层导致注册派生丢失 RoI 结构、未运行节点输入区域整体消失的回归。
-                if (plugin.ParamsType != null && typeof(RoiParameters).IsAssignableFrom(plugin.ParamsType))
+                // 框架级契约元数据：**唯一判定源 = 能力声明**（P0.6-1），四要素取自单源表（P0.6-2）。
+                // 旧实现用 typeof(RoiParameters).IsAssignableFrom(ParamsType) 判定 —— 对 14/14 工具恒真，
+                // 门槛形同虚设（不使用区域的测量工具也凭空多出「检测区/屏蔽区图形」）。
+                // 现与运行期 ToolResults.GetOutputVariables() 走**同一个** FrameworkContractSchema.Resolve：
+                // 结构由能力决定 → 设计期与运行期结构恒一致（P0.6-3 结构与值分离，不再"看值删条目"）。
+                var capabilities = ToolCapability.Resolve(plugin.ResultType);
+                foreach (var contractEntry in FrameworkContractSchema.Resolve(capabilities))
                 {
-                    RegisterRoiContractMetadata(toolId, nameof(ToolResults.InspectionGeometries), "检测区图形");
-                    RegisterRoiContractMetadata(toolId, nameof(ToolResults.MaskGeometries), "屏蔽区图形");
+                    RegisterFrameworkContractMetadata(toolId, contractEntry);
                 }
 
                 VisionLogger.Instance.Log(LogLevel.Success,
@@ -507,20 +507,20 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
         }
 
         /// <summary>
-        /// 类型级注册框架 RoI 契约元数据（检测区/屏蔽区图形）。
-        /// 与运行时 GetOutputVariables 的 AddRoiContractVariable 对齐（Group="输入区域"、RoiShape[]），
-        /// 但不受"空值跳过"影响——结构恒注册。未运行节点结果树靠 ResolveRoiDesignValue 从参数回退取值，
-        /// 无已绘区域时渲染 "--" 占位；运行态空区过滤仍由契约层负责，二者互不干扰。
+        /// 类型级注册框架契约元数据（检测区/屏蔽区等）。
         /// </summary>
+        /// <remarks>
+        /// 属性名 / 显示名 / 组名 / 类型四要素<b>全部</b>取自 <see cref="FrameworkContractSchema"/> 单源声明，
+        /// 不再与运行期 <c>ToolResults.GetOutputVariables()</c> 各写一遍。
+        /// 未运行节点结果树靠 <c>ResolveRoiDesignValue</c> 从参数回退取值，无已绘区域时渲染 "--" 占位。
+        /// </remarks>
         /// <param name="toolId">工具ID</param>
-        /// <param name="propertyName">RoI 属性名（InspectionGeometries/MaskGeometries）</param>
-        /// <param name="displayName">结果树显示名（检测区图形/屏蔽区图形）</param>
-        private static void RegisterRoiContractMetadata(string toolId, string propertyName, string displayName)
+        /// <param name="entry">框架契约条目声明（单源）</param>
+        private static void RegisterFrameworkContractMetadata(string toolId, FrameworkContractEntry entry)
         {
-            var arrayType = typeof(RoiShape[]);
-            var vocabulary = SunEyeVision.Plugin.SDK.Models.SdkTypeVocabulary.ToTypeVocabulary(arrayType);
+            var vocabulary = SunEyeVision.Plugin.SDK.Models.SdkTypeVocabulary.ToTypeVocabulary(entry.ValueType);
             if (string.IsNullOrEmpty(vocabulary))
-                return; // RoiShape[] 未映射到词汇表（契约演进导致），不阻塞工具启动
+                return; // 契约类型未映射到词汇表（契约演进导致），不阻塞工具启动
 
             var varType = SunEyeVision.Plugin.SDK.Models.SdkTypeVocabulary.ToSystemType(vocabulary);
             if (varType == null)
@@ -532,9 +532,9 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
 
             var metadata = new ToolPropertyMetadata
             {
-                PropertyName = propertyName,
-                DisplayName = displayName,
-                GroupName = "输入",
+                PropertyName = entry.PropertyName,
+                DisplayName = entry.DisplayName,
+                GroupName = entry.GroupName,
                 PropertyType = varType.IsArray ? varType : varType.MakeArrayType(),
             };
 

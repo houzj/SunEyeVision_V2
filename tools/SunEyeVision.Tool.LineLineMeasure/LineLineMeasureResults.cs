@@ -15,6 +15,9 @@ namespace SunEyeVision.Tool.LineLineMeasure
     /// 契约：两元素拟合几何 + 几何量（锐角夹角 / 平行间距 / 交点坐标）+ 单线属性（中心/方向角）+ OK/NG。
     /// GetOutputVariables 由 GetPropertyMap 派生（数值按 Double 词目暴露，单位仅显示层）。
     /// </summary>
+    // P0.6-1 能力声明：图像输入 + 位置修正 + 测量引导（**不含区域输入**——测量工具不使用检测区/屏蔽区）
+    [ToolCapability(ToolCapabilities.ImageSource | ToolCapabilities.PositionCorrection
+        | ToolCapabilities.MeasureGuide)]
     public class LineLineMeasureResults : ToolResults
     {
         /// <summary>元素1 拟合被测直线（线段几何）</summary>

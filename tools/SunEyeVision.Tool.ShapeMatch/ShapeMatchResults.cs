@@ -14,6 +14,9 @@ namespace SunEyeVision.Tool.ShapeMatch;
 /// <summary>
 /// 轮廓匹配工具执行结果
 /// </summary>
+// P0.6-1 能力声明：图像输入 + 位置修正 + 区域输入
+[ToolCapability(ToolCapabilities.ImageSource | ToolCapabilities.PositionCorrection
+    | ToolCapabilities.RoiInput)]
 public class ShapeMatchResults : ToolResults
 {
     // ===== 输出图像 =====

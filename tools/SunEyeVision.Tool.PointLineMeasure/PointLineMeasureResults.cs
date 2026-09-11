@@ -13,6 +13,9 @@ namespace SunEyeVision.Tool.PointLineMeasure
     /// <summary>
     /// 点-线测量结果：主测量 = 点到拟合线距离；辅助 = 垂足位置。
     /// </summary>
+    // P0.6-1 能力声明：图像输入 + 位置修正 + 测量引导（**不含区域输入**——测量工具不使用检测区/屏蔽区）
+    [ToolCapability(ToolCapabilities.ImageSource | ToolCapabilities.PositionCorrection
+        | ToolCapabilities.MeasureGuide)]
     public class PointLineMeasureResults : ToolResults
     {
         /// <summary>元素1：点（仅订阅，无引导）。契约输出（词目 Point）</summary>

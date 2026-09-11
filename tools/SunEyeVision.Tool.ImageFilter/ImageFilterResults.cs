@@ -9,6 +9,9 @@ namespace SunEyeVision.Tool.ImageFilter
     /// <summary>
     /// 图像滤波工具执行结果
     /// </summary>
+    // P0.6-1 能力声明：图像输入 + 位置修正 + 区域输入
+    [ToolCapability(ToolCapabilities.ImageSource | ToolCapabilities.PositionCorrection
+        | ToolCapabilities.RoiInput)]
     public class ImageFilterResults : ToolResults
     {
         #region 输出图像

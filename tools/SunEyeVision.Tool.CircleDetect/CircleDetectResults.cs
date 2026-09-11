@@ -16,6 +16,9 @@ namespace SunEyeVision.Tool.CircleDetect
     /// 基于 Halcon 2D Metrology：引导圆 + 测量带阵列 → 拟合圆/圆弧
     /// 结果渲染通过 Display 收集器（轮廓点/拟合圆/圆心文本）叠加到图像。
     /// </remarks>
+    // P0.6-1 能力声明：图像输入 + 位置修正 + 区域输入（屏蔽区）+ 测量引导（引导圆 + 卡尺）
+    [ToolCapability(ToolCapabilities.ImageSource | ToolCapabilities.PositionCorrection
+        | ToolCapabilities.RoiInput | ToolCapabilities.MeasureGuide)]
     public class CircleDetectResults : ToolResults
     {
         /// <summary>

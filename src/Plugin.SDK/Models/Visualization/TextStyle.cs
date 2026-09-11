@@ -108,14 +108,17 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
                 if (!_isPositionXBinding || string.IsNullOrEmpty(_positionXBindingSource))
                     return null;
 
-                var parts = _positionXBindingSource.Split('.');
-                var nodeId = parts.Length > 0 ? parts[0] : string.Empty;
-                var property = parts.Length > 1 ? parts[1] : _positionXBindingSource;
+                // nodeId 不含 '.'，其后整段是属性路径（可含几何字段下钻的嵌套点）。
+                // 按 P6 约定用 IndexOf 只切首个点，避免多段路径被截断。
+                var dotIndex = _positionXBindingSource.IndexOf('.');
+                var nodeId = dotIndex > 0 ? _positionXBindingSource[..dotIndex] : string.Empty;
+                var property = dotIndex > 0 ? _positionXBindingSource[(dotIndex + 1)..] : _positionXBindingSource;
 
                 var setting = ParamSetting.CreateBinding(parameterName, nodeId, property);
                 if (!string.IsNullOrEmpty(_positionXBindingDisplayText))
                 {
-                    var displayParts = _positionXBindingDisplayText.Split('.');
+                    // 显示名只切首点：属性路径自身可含点（拟合圆.半径），需完整保留
+                    var displayParts = _positionXBindingDisplayText.Split(new[] { '.' }, 2);
                     if (displayParts.Length == 2)
                     {
                         setting.SourceNodeName = displayParts[0];
@@ -130,14 +133,17 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
                 if (!_isPositionYBinding || string.IsNullOrEmpty(_positionYBindingSource))
                     return null;
 
-                var parts = _positionYBindingSource.Split('.');
-                var nodeId = parts.Length > 0 ? parts[0] : string.Empty;
-                var property = parts.Length > 1 ? parts[1] : _positionYBindingSource;
+                // nodeId 不含 '.'，其后整段是属性路径（可含几何字段下钻的嵌套点）。
+                // 按 P6 约定用 IndexOf 只切首个点，避免多段路径被截断。
+                var dotIndex = _positionYBindingSource.IndexOf('.');
+                var nodeId = dotIndex > 0 ? _positionYBindingSource[..dotIndex] : string.Empty;
+                var property = dotIndex > 0 ? _positionYBindingSource[(dotIndex + 1)..] : _positionYBindingSource;
 
                 var setting = ParamSetting.CreateBinding(parameterName, nodeId, property);
                 if (!string.IsNullOrEmpty(_positionYBindingDisplayText))
                 {
-                    var displayParts = _positionYBindingDisplayText.Split('.');
+                    // 显示名只切首点：属性路径自身可含点（拟合圆.半径），需完整保留
+                    var displayParts = _positionYBindingDisplayText.Split(new[] { '.' }, 2);
                     if (displayParts.Length == 2)
                     {
                         setting.SourceNodeName = displayParts[0];

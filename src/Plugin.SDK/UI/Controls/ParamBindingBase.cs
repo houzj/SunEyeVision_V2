@@ -173,8 +173,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             if (ds.PropertyType == null || !ds.PropertyType.IsArray)
                 return;
 
-            // 所有数组节点折叠文本统一为 "名称[]"，不带类型/数量/摘要（用户要求全部无摘要）
-            leafNode.Text = $"{ds.DisplayName}[]";
+            // 所有数组节点折叠文本统一为 "名称[]"（显示名 SSOT 唯一入口），不带类型/数量/摘要
+            leafNode.Text = ds.GetBindingDisplayName(null);
 
             var elementType = ds.PropertyType.GetElementType() ?? typeof(object);
 
@@ -196,6 +196,23 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 leafNode.Children = roiChildren;
 
                 // RoI 数组节点是"纯分组容器"：自身不绑定，绑定终点由子节点（整体/类型集合叶/字段叶）承担。
+                leafNode.IsSelectable = false;
+                return;
+            }
+
+            // 几何数组（同质，如 Circle2d[]）+ 数值目标 → 字段叶（集合语义）：
+            // 整体（Circle2d[]）绑不到数值参数，故本节点仅导航不可选；
+            // 字段叶路径 = 属性名.字段（运行期由 OutputVariableResolver 逐元素投影）。
+            var targetVar = targetType == null
+                ? null
+                : SunEyeVision.Plugin.SDK.Models.SdkTypeVocabulary.ToTypeVocabulary(targetType);
+            if (GeometryFieldSchema.HasFields(elementType) && IsNumericVocabulary(targetVar))
+            {
+                var fieldChildren = new System.Collections.ObjectModel.ObservableCollection<TreeNodeData>(
+                    ArrayTreeFormatter.BuildGeometryFieldChildren(ds, elementType));
+                foreach (var child in fieldChildren)
+                    AttachParentChain(child, leafNode);
+                leafNode.Children = fieldChildren;
                 leafNode.IsSelectable = false;
                 return;
             }
@@ -281,11 +298,22 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 if (dsVarType == "ROI" && GeometryVocabularies.Contains(targetVarType))
                     return true;
 
-                // 规则 3.6：数值目标（Integer/Double）放行 RoI 容器数据源。
-                // ROI 容器可下钻到其内几何的数值字段（如 [0].Geometry.Width/Center.X，经 RoiFieldSchema 声明）。
+                // 规则 3.6：数值目标（Integer/Double）放行"可下钻到数值字段"的容器数据源：
+                //   - ROI 容器（RoiShape[]）→ [Type=X][].Geometry.字段（RoiFieldSchema 声明）
+                //   - 几何数组（Circle2d[]/Line2d[]/Point2d[]…）→ 属性.字段（GeometryFieldSchema 声明，集合语义）
                 // 仅放行容器本身，真正选中时仍校验叶子类型与目标匹配（数值互通，rule-015 报错优先）。
-                if (dsVarType == "ROI" && IsNumericVocabulary(targetVarType))
-                    return true;
+                // 无声明字段的几何（如 Polygon2d 顶点数组）不放行，避免展开后无可绑叶。
+                if (IsNumericVocabulary(targetVarType))
+                {
+                    if (dsVarType == "ROI")
+                        return true;
+
+                    var elementType = ds.PropertyType.GetElementType();
+                    if (elementType != null
+                        && GeometryVocabularies.Contains(dsVarType)
+                        && GeometryFieldSchema.HasFields(elementType))
+                        return true;
+                }
 
                 // 规则 4：其余词汇精确匹配（上一步已判等），不互通 → 不显示
                 return false;

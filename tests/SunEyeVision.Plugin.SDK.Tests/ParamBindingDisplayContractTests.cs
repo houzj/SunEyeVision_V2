@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Reflection;
 using System.Windows.Controls;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
@@ -11,7 +11,9 @@ namespace SunEyeVision.Plugin.SDK.Tests;
 
 /// <summary>
 /// 绑定树"显示名 ↔ 路径"双轨模型契约测试。
-/// - P2：GetDisplayLeafName 对 RoI 类型分组返回 "短名[]"（圆[]），与普通数组 "宽度[]" 同风格。
+/// - 显示名 SSOT（P0.5）：叶子显示名一律由 <see cref="AvailableDataSource"/> 声明
+///   （LeafDisplayName + IsArraySemantics），显示层不再按 BindingSuffix 形态推断；
+///   同一语义在任意后缀形态下显示必须一致（历史缺陷：几何字段叶显示英文 "Center.X" 且丢 []）。
 /// - P4：编辑显示名 []→[n] 时，OnBindingDisplayTextChanged 重建 BindingSource 保留类型过滤（[Type=Circle][2]）。
 /// </summary>
 public class ParamBindingDisplayContractTests
@@ -31,7 +33,8 @@ public class ParamBindingDisplayContractTests
             BindingFlags.NonPublic | BindingFlags.Instance)
         ?? throw new MissingMethodException("OnBindingDisplayTextChanged");
 
-    private static AvailableDataSource MakeRoiGroupDataSource(string suffix)
+    private static AvailableDataSource MakeRoiGroupDataSource(
+        string suffix, string? leafDisplayName = null, bool? isArraySemantics = null)
     {
         return new AvailableDataSource
         {
@@ -39,6 +42,8 @@ public class ParamBindingDisplayContractTests
             SourceNodeName = "Blob分析2",
             PropertyName = "检测区域",
             DisplayName = "检测区域",
+            LeafDisplayName = leafDisplayName,
+            IsArraySemantics = isArraySemantics,
             PropertyType = typeof(RoiShape[]),
             VariableType = "ROI",
             BindingSuffix = suffix,
@@ -46,13 +51,14 @@ public class ParamBindingDisplayContractTests
     }
 
     [Fact]
-    public void GetDisplayLeafName_RoiTypeGroup_ReturnsShortNameWithBrackets()
+    public void GetDisplayLeafName_RoiTypeGroup_ReturnsDeclaredShortNameWithBrackets()
     {
-        // P2：RoI 类型分组（[Type=Circle]）显示名应为 "圆[]"，而非旧 "检测区域[圆]"。
+        // RoI 类型分组（[Type=Circle]）：叶子名由构造方声明（ArrayTreeFormatter 声明为图形短名"圆"），
+        // 数组语义显式声明 → "圆[]"（而非旧 "检测区域[圆]"）。
         var groupNode = new TreeNodeData
         {
             Text = "圆",
-            DataSource = MakeRoiGroupDataSource("[Type=Circle]"),
+            DataSource = MakeRoiGroupDataSource("[Type=Circle]", leafDisplayName: "圆", isArraySemantics: true),
         };
 
         var leafName = (string)GetDisplayLeafName.Invoke(null, new object[] { groupNode })!;
@@ -60,17 +66,63 @@ public class ParamBindingDisplayContractTests
     }
 
     [Fact]
-    public void GetDisplayLeafName_RoiElement_ReturnsPropertyNameWithIndex()
+    public void GetDisplayLeafName_GeometryFieldLeaf_UsesDeclaredChineseNameNotClrPath()
     {
-        // RoI 单元素（[0]）显示名保持 "检测区域[0]"（用户确认可接受）。
-        var elemNode = new TreeNodeData
+        // 回归（用户实测缺陷）：几何字段叶曾显示英文 CLR 路径 "Center.X" 且丢 []。
+        // 现由构造方声明 LeafDisplayName（父名.字段名，如 "圆心.X"）+ IsArraySemantics=true。
+        var fieldNode = new TreeNodeData
         {
-            Text = "[0] Circle2d(...)",
-            DataSource = MakeRoiGroupDataSource("[0]"),
+            Text = "X",
+            DataSource = new AvailableDataSource
+            {
+                SourceNodeId = "Node1",
+                SourceNodeName = "圆查找1",
+                PropertyName = "Center",
+                DisplayName = "X",
+                LeafDisplayName = "圆心.X",
+                IsArraySemantics = true,
+                PropertyType = typeof(double),
+                VariableType = "Double",
+                BindingSuffix = ".X",
+            },
         };
 
-        var leafName = (string)GetDisplayLeafName.Invoke(null, new object[] { elemNode })!;
-        Assert.Equal("检测区域[0]", leafName);
+        var leafName = (string)GetDisplayLeafName.Invoke(null, new object[] { fieldNode })!;
+
+        Assert.Equal("圆心.X[]", leafName);
+        Assert.DoesNotContain("Center", leafName);
+    }
+
+    [Fact]
+    public void GetDisplayLeafName_SameSemantics_DifferentSuffixForms_RenderIdentically()
+    {
+        // 显示名 SSOT 核心验收：显示名只由声明字段决定，与 BindingSuffix 的形态无关。
+        // 历史缺陷：ROI 字段叶（[Type=X][].Geometry.Center.X → "中心X[]"）与几何字段叶
+        // （.Center.X → "Center.X"）因后缀形态不同而显示不同。现两者必须一致。
+        static TreeNodeData MakeNode(string suffix) => new()
+        {
+            Text = "中心X",
+            DataSource = new AvailableDataSource
+            {
+                SourceNodeId = "Node1",
+                SourceNodeName = "Blob分析1",
+                PropertyName = "检测区域",
+                DisplayName = "中心X",
+                LeafDisplayName = "中心X",
+                IsArraySemantics = true,
+                PropertyType = typeof(double),
+                VariableType = "Double",
+                BindingSuffix = suffix,
+            },
+        };
+
+        var roiForm = (string)GetDisplayLeafName.Invoke(
+            null, new object[] { MakeNode("[Type=RotatedRectangle][].Geometry.Center.X") })!;
+        var geometryForm = (string)GetDisplayLeafName.Invoke(
+            null, new object[] { MakeNode(".Center.X") })!;
+
+        Assert.Equal("中心X[]", roiForm);
+        Assert.Equal(roiForm, geometryForm);
     }
 
     [Fact]

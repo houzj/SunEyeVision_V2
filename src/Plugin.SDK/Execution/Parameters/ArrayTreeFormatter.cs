@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -171,6 +171,9 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                     SourceNodeName = parentDs.SourceNodeName,
                     PropertyName = parentDs.PropertyName,
                     DisplayName = parentDs.DisplayName,
+                    // 显示名 SSOT：类型集合叶的叶子名 = 图形类型短名（"圆"），语义为集合（带 []）
+                    LeafDisplayName = GetShapeTypeShortName(type),
+                    IsArraySemantics = true,
                     PropertyType = typeof(RoiShape[]),
                     VariableType = parentDs.VariableType,
                     BindingSuffix = $"[Type={enumName}]",
@@ -182,6 +185,44 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                     IsSelectable = true, // 类型集合叶 = 绑定终点（无 children，无展开歧义）
                     DataSource = groupDs,
                     BindingPath = $"{parentDs.PropertyName}[Type={enumName}]",
+                });
+            }
+            return children;
+        }
+
+        /// <summary>
+        /// 构建几何数组（同质，如 Circle2d[]）在数值目标下的字段叶：
+        /// 绑定路径 = 属性名.字段（集合语义，运行期由 OutputVariableResolver 逐元素投影，
+        /// 返回该几何数组全部元素的该字段；取单个元素由用户手写 [i]，如 Circle[2].Radius）。
+        /// 字段叶即绑定终点（不含容器节点）。
+        /// </summary>
+        public static List<TreeNodeData> BuildGeometryFieldChildren(AvailableDataSource parentDs, System.Type geometryType)
+        {
+            var children = new List<TreeNodeData>();
+            foreach (var f in GeometryFieldSchema.GetFields(geometryType))
+            {
+                var fieldDs = new AvailableDataSource
+                {
+                    SourceNodeId = parentDs.SourceNodeId,
+                    SourceNodeName = parentDs.SourceNodeName,
+                    PropertyName = parentDs.PropertyName,
+                    DisplayName = f.DisplayName,
+                    // 显示名 SSOT：几何字段叶 = "{父显示名}.{字段显示名}"（如 "圆心.X"），避免 "圆查找1.X" 歧义；
+                    // 字段值类型是标量，但语义是"数组全部元素的该字段"，属集合语义 → 显式声明 true。
+                    LeafDisplayName = $"{parentDs.EffectiveLeafDisplayName}.{f.DisplayName}",
+                    IsArraySemantics = true,
+                    PropertyType = f.ValueType,
+                    VariableType = SunEyeVision.Plugin.SDK.Models.SdkTypeVocabulary.ToTypeVocabulary(f.ValueType),
+                    BindingSuffix = $".{f.Path}",
+                    CurrentValue = null,
+                };
+                children.Add(new TreeNodeData
+                {
+                    Text = f.DisplayName,
+                    IsSelectable = true,
+                    IsExpanded = false,
+                    BindingPath = $"{parentDs.PropertyName}.{f.Path}",
+                    DataSource = fieldDs,
                 });
             }
             return children;
@@ -203,6 +244,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 SourceNodeName = parentDs.SourceNodeName,
                 PropertyName = parentDs.PropertyName,
                 DisplayName = f.DisplayName,
+                // 显示名 SSOT：ROI 字段叶叶子名 = 字段显示名（"中心X"）；语义为集合（带 []）。
+                IsArraySemantics = true,
                 PropertyType = f.ValueType,
                 VariableType = SunEyeVision.Plugin.SDK.Models.SdkTypeVocabulary.ToTypeVocabulary(f.ValueType),
                 BindingSuffix = suffix,

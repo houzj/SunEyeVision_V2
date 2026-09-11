@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
@@ -30,8 +30,14 @@ namespace SunEyeVision.Tool.PointPointMeasure
         // 元素1（点）：输入方式二分「按图形 / 按参数」（无引导绘制入口）
         // 三工具统一范式：点-线 / 点-圆 / 点-点 的点元素共用同一套输入语义。
         // ============================================================
+        private PointInputMode _p1InputMode = PointInputMode.ByShape;
+
         /// <summary>点1 输入方式：按图形（整体绑上游点图形输出）/ 按参数（X/Y 逐参数）</summary>
-        public PointInputMode P1InputMode { get; set; } = PointInputMode.ByShape;
+        public PointInputMode P1InputMode
+        {
+            get => _p1InputMode;
+            set => SetProperty(ref _p1InputMode, value);
+        }
 
         /// <summary>按图形：整体绑定上游点图形输出（词目 Point），一次绑定即得 X/Y</summary>
         public ParamValue<Point2d> P1Point { get; set; } = ParamValue<Point2d>.CreateConstant(default, "P1Point");
@@ -65,19 +71,27 @@ namespace SunEyeVision.Tool.PointPointMeasure
                     return;
                 }
 
-                var parts = value.Split('.');
+                // nodeId 不含 '.'，其后整段是属性路径（可含几何字段下钻的嵌套点）。
+                // 按 P6 约定用 IndexOf 只切首个点，避免多段路径被截断（Split 只取第二段会丢字段）。
+                var dotIndex = value.IndexOf('.');
                 P1Point.BindingConfig = ParamSetting.CreateBinding(
                     "P1Point",
-                    parts[0],
-                    parts.Length > 1 ? parts[1] : string.Empty);
+                    dotIndex > 0 ? value[..dotIndex] : string.Empty,
+                    dotIndex > 0 ? value[(dotIndex + 1)..] : string.Empty);
             }
         }
 
         // ============================================================
         // 元素2（点）：与元素1 同构（两个点元素均为纯订阅）
         // ============================================================
+        private PointInputMode _p2InputMode = PointInputMode.ByShape;
+
         /// <summary>点2 输入方式：按图形（整体绑上游点图形输出）/ 按参数（X/Y 逐参数）</summary>
-        public PointInputMode P2InputMode { get; set; } = PointInputMode.ByShape;
+        public PointInputMode P2InputMode
+        {
+            get => _p2InputMode;
+            set => SetProperty(ref _p2InputMode, value);
+        }
 
         /// <summary>按图形：整体绑定上游点图形输出（词目 Point），一次绑定即得 X/Y</summary>
         public ParamValue<Point2d> P2Point { get; set; } = ParamValue<Point2d>.CreateConstant(default, "P2Point");
@@ -108,11 +122,13 @@ namespace SunEyeVision.Tool.PointPointMeasure
                     return;
                 }
 
-                var parts = value.Split('.');
+                // nodeId 不含 '.'，其后整段是属性路径（可含几何字段下钻的嵌套点）。
+                // 按 P6 约定用 IndexOf 只切首个点，避免多段路径被截断（Split 只取第二段会丢字段）。
+                var dotIndex = value.IndexOf('.');
                 P2Point.BindingConfig = ParamSetting.CreateBinding(
                     "P2Point",
-                    parts[0],
-                    parts.Length > 1 ? parts[1] : string.Empty);
+                    dotIndex > 0 ? value[..dotIndex] : string.Empty,
+                    dotIndex > 0 ? value[(dotIndex + 1)..] : string.Empty);
             }
         }
 

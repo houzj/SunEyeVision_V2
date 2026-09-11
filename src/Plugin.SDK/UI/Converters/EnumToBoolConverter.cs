@@ -36,7 +36,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Converters
                     return parsed;
             }
 
-            return DependencyProperty.UnsetValue;
+            // 取消选中 / 非本成员：不更新绑定源。
+            // 必须用 Binding.DoNothing：UnsetValue 会被绑定引擎当作"值不可用"，
+            // 在值类型目标（枚举）下触发绑定错误。
+            return Binding.DoNothing;
         }
     }
 }

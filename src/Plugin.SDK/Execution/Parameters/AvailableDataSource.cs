@@ -83,6 +83,27 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         public string DisplayName { get; set; } = string.Empty;
 
         /// <summary>
+        /// 叶子显示名（中文，由构造方**声明**，显示名 SSOT 的载体）。
+        /// </summary>
+        /// <remarks>
+        /// 合成叶子（几何字段叶 / ROI 字段叶 / 类型集合叶）常需要比 <see cref="DisplayName"/>
+        /// 更完整的名字（如父名 + 字段名 "圆心.X"）。为空时回退 <see cref="DisplayName"/>。
+        /// ★ 显示名只允许由构造方声明；格式化层（ParamBinding）不得再按 BindingSuffix 形态推断。
+        /// </remarks>
+        public string? LeafDisplayName { get; set; }
+
+        /// <summary>
+        /// 绑定结果的数组语义（显示时追加 "[]"）。
+        /// </summary>
+        /// <remarks>
+        /// - <c>null</c>（未声明）→ 按 <see cref="PropertyType"/>.IsArray 推断；
+        /// - 显式 <c>true</c>/<c>false</c> → 以声明为准。
+        /// 合成字段叶（如几何数组的 "圆心X"）值类型是标量，但语义是"该数组全部元素的该字段"，
+        /// 属集合语义，必须显式声明为 true。
+        /// </remarks>
+        public bool? IsArraySemantics { get; set; }
+
+        /// <summary>
         /// 属性类型
         /// </summary>
         public Type PropertyType { get; set; } = typeof(object);
@@ -160,15 +181,35 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// 格式: "节点名.属性名"
         /// 示例: "图像阈值化4.输出图像", "图像载入1.宽度"
         /// </remarks>
-        public string DropdownDisplayText
+        public string DropdownDisplayText => GetBindingDisplayName(SourceNodeName);
+
+        /// <summary>
+        /// 叶子显示名的有效值：构造方声明优先，未声明时回退 <see cref="DisplayName"/>。
+        /// </summary>
+        public string EffectiveLeafDisplayName
+            => string.IsNullOrEmpty(LeafDisplayName) ? DisplayName : LeafDisplayName!;
+
+        /// <summary>
+        /// 有效的数组语义：构造方声明优先，未声明时按 <see cref="PropertyType"/> 推断。
+        /// </summary>
+        public bool EffectiveArraySemantics
+            => IsArraySemantics ?? (PropertyType?.IsArray == true);
+
+        /// <summary>
+        /// 绑定显示名 —— **全项目唯一显示文本入口**（显示名 SSOT）。
+        /// </summary>
+        /// <param name="rootName">根节点显示名（节点名）；为空时只返回叶子名。</param>
+        /// <remarks>
+        /// 格式：<c>{根节点名}.{叶子显示名}{"[]"?}</c>，例："圆查找1.圆心.X[]"。
+        /// ★ 显示规则（中文名 + 数组语义标记）在此**唯一**定义；控件层（ParamBinding /
+        ///   ConfigSetting / 图像源选择器等）一律走本方法，不得各自拼接、不得按路径形态推断。
+        /// </remarks>
+        public string GetBindingDisplayName(string? rootName)
         {
-            get
-            {
-                string displayName = DisplayName;
-                if (PropertyType?.IsArray == true)
-                    displayName += "[]";
-                return $"{SourceNodeName}.{displayName}";
-            }
+            var leaf = EffectiveLeafDisplayName;
+            if (EffectiveArraySemantics)
+                leaf += "[]";
+            return string.IsNullOrEmpty(rootName) ? leaf : $"{rootName}.{leaf}";
         }
 
         /// <summary>
@@ -232,7 +273,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <returns>格式化的显示文本</returns>
         public string GetDisplayText()
         {
-            var text = $"{SourceNodeName}.{DisplayName}";
+            var text = GetBindingDisplayName(SourceNodeName);
             if (!string.IsNullOrEmpty(Unit))
                 text += $" ({Unit})";
             return text;

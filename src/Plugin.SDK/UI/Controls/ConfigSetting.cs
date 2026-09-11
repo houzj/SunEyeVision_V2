@@ -1268,17 +1268,23 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 }
                 else if (!string.IsNullOrEmpty(BindingSource))
                 {
-                    var parts = BindingSource.Split('.');
-                    var nodeId = parts.Length > 0 ? parts[0] : string.Empty;
-                    var property = parts.Length > 1 ? parts[1] : BindingSource;
+                    // nodeId（GUID/节点标识）不含 '.'，其后整段都是属性路径
+                    //（可含 [Type=X][].Geometry.字段 / 几何属性.字段 等嵌套点）。
+                    // 不能用 Split('.') 只取第二段，否则字段下钻路径会被切丢
+                    //（与 ParamBinding/RoiSubscribePanel/SubroutineTool 的 P6 处理一致）。
+                    var dotIndex = BindingSource.IndexOf('.');
+                    var nodeId = dotIndex > 0 ? BindingSource[..dotIndex] : string.Empty;
+                    var property = dotIndex > 0 ? BindingSource[(dotIndex + 1)..] : BindingSource;
 
                     var setting = ParamSetting.CreateBinding(
                         ParameterName ?? string.Empty,
                         nodeId,
                         property);
 
+                    // 用完整绑定路径匹配数据源：字段叶的 PropertyName 仅是父属性名，
+                    // 字段后缀存放在 BindingSuffix 中，故必须比较 GetBindingPath() 全路径。
                     var matchedSource = AvailableDataSources?.FirstOrDefault(ds =>
-                        ds.SourceNodeId == nodeId && ds.PropertyName == property);
+                        ds.SourceNodeId == nodeId && ds.GetBindingPath() == BindingSource);
                     if (matchedSource != null)
                     {
                         setting.SourceNodeName = matchedSource.SourceNodeName;

@@ -895,42 +895,24 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         #region 辅助方法
 
         /// <summary>
-        /// 获取叶子节点的显示名称（区分数组类型）
+        /// 获取叶子节点的显示名称 —— **显示名 SSOT 的消费端**。
         /// </summary>
         /// <param name="node">叶子节点</param>
-        /// <returns>显示名称，数组类型追加 [] 后缀</returns>
+        /// <returns>由数据源模型声明的叶子显示名（含数组语义 <c>[]</c>）</returns>
+        /// <remarks>
+        /// ★ 历史缺陷：本方法曾按 <c>BindingSuffix</c> 的字符串形态三分支**推断**显示名，
+        ///   导致几何字段叶显示英文 CLR 路径（<c>Center.X</c>）且丢失 <c>[]</c>，
+        ///   与 ROI 字段叶（<c>中心X[]</c>）不一致。
+        ///   现改为**只读投影**：叶子名与数组语义均由 <see cref="AvailableDataSource"/>
+        ///   在构造时**声明**（<c>LeafDisplayName</c> / <c>IsArraySemantics</c>），本层不再推断。
+        ///   <c>BindingSuffix</c> 只服务运行期路径解析，不参与显示。
+        /// </remarks>
         private static string GetDisplayLeafName(TreeNodeData node)
         {
             var ds = node.DataSource;
             if (ds == null)
                 return node.Text;
-            if (ds.BindingSuffix != null)
-            {
-                // P2：RoI 类型分组（[Type=Circle]）显示名统一为"短名[]"（圆[]），与普通数组"宽度[]"同风格。
-                // 单元素（[i]）保持 "属性名[i]"（检测区域[0]），整体（BindingSuffix=null）走下方数组分支。
-                if (ds.BindingSuffix.StartsWith("[Type=", StringComparison.OrdinalIgnoreCase))
-                    return $"{node.Text}[]";
-                return $"{ds.PropertyName}{TranslateBindingSuffix(ds.BindingSuffix)}";
-            }
-            if (ds.PropertyType?.IsArray == true)
-                return $"{ds.DisplayName}[]";
-            return node.Text;
-        }
-
-        /// <summary>
-        /// 把绑定后缀翻译为中文短名：<c>[Type=Circle]</c> → <c>[圆]</c>，<c>[0]</c> → <c>[0]</c>。
-        /// </summary>
-        private static string TranslateBindingSuffix(string suffix)
-        {
-            const string marker = "[Type=";
-            if (suffix.StartsWith(marker, StringComparison.OrdinalIgnoreCase) && suffix.EndsWith("]"))
-            {
-                var enumName = suffix.Substring(marker.Length, suffix.Length - marker.Length - 1);
-                if (Enum.TryParse<ShapeType>(enumName, out var st))
-                    return $"[{ArrayTreeFormatter.GetShapeTypeShortName(st)}]";
-                return suffix;
-            }
-            return suffix;
+            return ds.GetBindingDisplayName(null);
         }
 
         /// <summary>

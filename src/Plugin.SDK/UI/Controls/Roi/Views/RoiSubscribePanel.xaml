@@ -11,6 +11,7 @@
              mc:Ignorable="d" d:DesignHeight="500" d:DesignWidth="300">
     <UserControl.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <converters:ShapeTypeDisplayNameConverter x:Key="ShapeTypeDisplayNameConverter"/>
         <Style TargetType="GroupBox">
             <Setter Property="Foreground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"/>
@@ -44,11 +45,24 @@
         <GroupBox Header="区域源" Margin="0,0,0,12"
                   Visibility="{Binding IsWholeRegionMode, Converter={StaticResource BoolToVisibilityConverter}}">
             <StackPanel Margin="2">
+                <!-- 图形类型（必选）：区域订阅只绑"一种图形"，选中后「区域源」候选收敛为该形状的单一叶（方案 §11） -->
+                <controls:LabeledControl Label="图形类型" LabelWidth="70" Margin="0,0,0,8">
+                    <ComboBox Width="200"
+                              ItemsSource="{Binding AvailableRegionShapeTypes}"
+                              SelectedItem="{Binding CurrentShapeType, Mode=TwoWay}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Converter={StaticResource ShapeTypeDisplayNameConverter}}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </controls:LabeledControl>
                 <controls:LabeledControl Label="区域源" LabelWidth="70" Margin="0,0,0,4">
                     <controls:ParamBinding x:Name="WholeRegionBinding"
                                            Width="200"
                                            ParameterName="WholeRegion"
                                            BindingSource="{Binding WholeRegionBindingPath, Mode=OneWay}"
+                                           ShapeTypeFilter="{Binding CurrentShapeType}"
                                            AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:RoiSubscribePanel}}}"/>
                 </controls:LabeledControl>
                 <!-- 引导：字段级绑定需切换到「订阅几何参数」模式 -->
@@ -63,7 +77,13 @@
             <StackPanel Margin="2">
                 <ComboBox ItemsSource="{Binding AvailableShapeTypes}"
                           SelectedItem="{Binding CurrentShapeType}"
-                          Margin="0,0,0,8"/>
+                          Margin="0,0,0,8">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Converter={StaticResource ShapeTypeDisplayNameConverter}}"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
                 <ItemsControl ItemsSource="{Binding Parameters}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>

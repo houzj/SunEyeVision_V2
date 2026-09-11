@@ -114,19 +114,21 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <summary>
         /// 构建 RoI(RoiShape[]) 在绑定树中的可绑定子节点——**树形由目标参数词目（DataType）定型**。
         /// 铁律：绑定终点必是叶子；有可绑子节点的类型节点一律为纯容器（IsSelectable=false，只导航）。
-        /// - 数值目标（Double/Integer，订阅几何参数）：整体/类型集合绑不上 double，不出现；
+        /// - 数值目标（Double/Integer，订阅几何参数）：类型集合绑不上 double，不出现；
         ///   每个声明类型 = 容器，children = <see cref="RoiFieldSchema"/> 字段叶（可绑，路径
         ///   <c>[Type=X][].Geometry.字段</c>：数组集合语义，绑定该类型全部图形的该字段；
         ///   仅 1 个时自动解包单值，N 个返回数组；需第 N 个由用户手写 [Type=X][N]）。
         /// - 几何值目标（Point/Circle/Line/RotatedRect/Polygon/Annulus/Arc）：只出
-        ///   <see cref="ShapeTypeVocabulary"/> 允许的形状叶（如 Point → 仅"点"），且**不出整体**
-        ///   （整体是 RoiShape[]，绑不到几何值参数）——消除"能选不能用"。
-        /// - ROI / 未限定目标（区域订阅等）：整体叶（绑全部 []）+ 全部类型集合叶（绑 [Type=X]），
-        ///   均为叶子、无下钻（避免"可展开+可绑定"角色冲突）。
+        ///   <see cref="ShapeTypeVocabulary"/> 允许的形状叶（如 Point → 仅"点"）——消除"能选不能用"。
+        /// - ROI / 未限定目标（区域订阅等）：全部类型集合叶（绑 [Type=X]），均为叶子、无下钻。
+        /// **「整体」叶已取消**（决策 2 + §11）：它原为"上游一个节点绘制多种图形 → 一把全绑"的
+        /// 异构场景出口；决策 1（一个节点绑一种图形）与"订阅方只绑固定形状"确立后语义已废。
+        /// 取消只影响"选择器里能否选"——老工程已绑的整体路径仍可解析，值不丢。
         /// 设计期/运行期结构一致：声明式由 ShapeType 枚举 + RoiFieldSchema 驱动，不依赖运行值
         /// （rule-016 数据驱动优先）。已删除旧逐元素 [i] 层级与 Geometry 反射枚举（schema 唯一字段源）。
         /// </summary>
-        public static List<TreeNodeData> BuildRoiTypedChildren(AvailableDataSource parentDs, string? targetVarType)
+        public static List<TreeNodeData> BuildRoiTypedChildren(
+            AvailableDataSource parentDs, string? targetVarType, ShapeType? shapeFilter = null)
         {
             var children = new List<TreeNodeData>();
             bool numericTarget = targetVarType is "Double" or "Integer";
@@ -161,14 +163,25 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 return children;
             }
 
-            // 形状受限的几何目标（如点参数的 Point 词目）：只出**语义等价**的形状叶，且不出"整体"。
+            // 形状受限的几何目标（如点参数的 Point 词目）：只出**语义等价**的形状叶。
             // 依据：ShapeTypeVocabulary（词目 → 允许形状的唯一真相源）。
-            // 历史缺陷：此处对几何目标一律全列出 7 类形状，与目标类型无关 → 能选不能用。
+            // 历史缺陷一：此处对几何目标一律全列出 7 类形状，与目标类型无关 → 能选不能用。
+            // 历史缺陷二：「整体」叶（绑整个 RoiShape[]）曾是异构场景出口，现已取消（见方法 remarks）：
+            //   ROI / 未限定目标只出类型集合叶，不再产出整体。
             var allowedTypes = ShapeTypeVocabulary.AllowedShapeTypes(targetVarType);
-            if (allowedTypes == null)
+
+            // 形状筛选（区域订阅）：目标词目**未限定形状**时，由调用方声明的形状把候选收敛为单一类型叶。
+            // 呈现诉求与值语义分离（决策 15）：筛选走独立入参，**不复用 DataType** —— 后者是值语义
+            //（区域源的 [Type=X] 过滤结果恒为 RoiShape[]），复用会把值类型误声明成 Circle2d[]。
+            if (shapeFilter is { } filter)
             {
-                // ROI / 未限定目标（区域订阅等）：整体 + 全部形状叶（要的就是一筐图形本身）
-                children.Add(CreateRoiOverallNode(parentDs));
+                if (allowedTypes != null && !System.Linq.Enumerable.Contains(allowedTypes, filter))
+                {
+                    throw new InvalidOperationException(
+                        $"形状筛选 '{filter}' 与目标词目 '{targetVarType}' 允许的形状（{string.Join("/", allowedTypes)}）冲突："
+                        + "几何值目标的形状由词目决定，不允许再叠加筛选（rule-015 报错优先，不静默）。");
+                }
+                allowedTypes = new[] { filter };
             }
 
             foreach (var type in allowedTypes ?? (IReadOnlyList<ShapeType>)Enum.GetValues<ShapeType>())
@@ -269,33 +282,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 IsExpanded = false,
                 BindingPath = $"{parentDs.PropertyName}{suffix}",
                 DataSource = fieldDs,
-            };
-        }
-
-        /// <summary>
-        /// 创建 RoI"整体"绑定节点：绑定整个检测区域数组。
-        /// BindingSuffix=null + PropertyType=RoiShape[] → GetBindingPath() 输出 "NodeId.属性名[]"，
-        /// 运行期 OutputVariableResolver 对显式 "[]"（firstIndex=-1）保留整个数组（方案 B + 整体入口）。
-        /// </summary>
-        private static TreeNodeData CreateRoiOverallNode(AvailableDataSource parentDs, RoiShape[]? roi = null)
-        {
-            var overallDs = new AvailableDataSource
-            {
-                SourceNodeId = parentDs.SourceNodeId,
-                SourceNodeName = parentDs.SourceNodeName,
-                PropertyName = parentDs.PropertyName,
-                DisplayName = parentDs.DisplayName,
-                PropertyType = typeof(RoiShape[]),
-                VariableType = parentDs.VariableType,
-                BindingSuffix = null,
-                CurrentValue = roi,
-            };
-            return new TreeNodeData
-            {
-                Text = "整体",
-                IsSelectable = true,
-                DataSource = overallDs,
-                BindingPath = $"{parentDs.PropertyName}[]",
             };
         }
 

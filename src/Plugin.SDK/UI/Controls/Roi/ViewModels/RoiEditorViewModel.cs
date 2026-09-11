@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -701,12 +701,21 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
         }
 
         /// <summary>
-        /// 拼装目标形状切换事件处理（同步 Roi.ComposeShapeType；整对象订阅模式忽略）
+        /// 形状切换事件处理（**仅参数拼装模式**同步 Roi.ComposeShapeType）。
         /// </summary>
+        /// <remarks>
+        /// 形状状态被两个子模式**共用**（区域订阅按它收敛候选），但**持久化方式不同**：
+        /// 参数拼装写 <c>ComposeShapeType</c>；区域订阅由绑定路径 <c>[Type=X]</c> 表达（见 Roi 模型注释）。
+        /// 故区域订阅模式下必须忽略本事件，否则会把区域订阅的形状污染进"拼装形状"。
+        /// </remarks>
         private void OnShapeTypeChanged(object? sender, ShapeType shapeType)
         {
             var target = EnsureTargetRoiSlot();
             if (target == null) return;
+
+            if (_parameterPanel?.SubscribeSubMode != RoiSubscribeSubMode.GeometricParameters)
+                return;
+
             target.ComposeShapeType = shapeType;
         }
 

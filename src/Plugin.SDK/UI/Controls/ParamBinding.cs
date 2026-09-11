@@ -108,6 +108,21 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 typeof(ParamBinding),
                 new PropertyMetadata(false));
 
+        /// <summary>
+        /// 形状筛选（可选）：目标为 ROI 容器（词目未限定形状）时，把绑定候选树收敛为**单一形状叶**。
+        /// </summary>
+        /// <remarks>
+        /// 呈现诉求与值语义分离（方案 §11 决策 15）：本属性只影响"候选树形态"，**不影响绑定值类型** ——
+        /// 区域源的 <c>[Type=X]</c> 过滤结果恒为 <c>RoiShape[]</c>，故 <c>DataType</c> 保持 RoiShape[]。
+        /// <c>null</c> = 不筛选（全部形状叶）；区域订阅面板用它实现"图形类型必选"。
+        /// </remarks>
+        public static readonly DependencyProperty ShapeTypeFilterProperty =
+            DependencyProperty.Register(
+                nameof(ShapeTypeFilter),
+                typeof(ShapeType?),
+                typeof(ParamBinding),
+                new PropertyMetadata(null, OnShapeTypeFilterChanged));
+
         #endregion
 
         #region 属性封装
@@ -200,6 +215,15 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         {
             get => (bool)GetValue(SyncEditingToSourceProperty);
             set => SetValue(SyncEditingToSourceProperty, value);
+        }
+
+        /// <summary>
+        /// 形状筛选（可选）：ROI 目标下把候选收敛为单一形状叶；<c>null</c> = 不筛选。详见依赖属性注释。
+        /// </summary>
+        public ShapeType? ShapeTypeFilter
+        {
+            get => (ShapeType?)GetValue(ShapeTypeFilterProperty);
+            set => SetValue(ShapeTypeFilterProperty, value);
         }
 
         #endregion
@@ -432,6 +456,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             RebuildTreeNodes();
         }
 
+        /// <summary>
+        /// 形状筛选变更 → 重建候选树（区域订阅面板切换"图形类型"时收敛候选）。
+        /// </summary>
+        private static void OnShapeTypeFilterChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is ParamBinding control)
+            {
+                control.RebuildTreeNodes();
+            }
+        }
+
         #endregion
 
         #region 树形结构构建
@@ -451,8 +486,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 var filteredDataSources = ParamBindingBase.FilterDataSourcesByType(dataSourceList, DataType);
 
                 // 使用基类的静态方法构建树形结构（传 DataType：RoiShape[] 子树按目标词目定型
-                // —— 数值目标出类型容器+字段叶，ROI/几何目标出整体+类型集合叶）
-                var treeNodes = ParamBindingBase.BuildTreeStructure(filteredDataSources, DataType);
+                // —— 数值目标出类型容器+字段叶，ROI/几何目标出类型集合叶；「整体」已取消，见方案 §11）
+                // 形状筛选（区域订阅）走独立入参，不影响 DataType 的值语义（决策 15）
+                var treeNodes = ParamBindingBase.BuildTreeStructure(filteredDataSources, DataType, ShapeTypeFilter);
                 foreach (var node in treeNodes)
                 {
                     nodes.Add(node);

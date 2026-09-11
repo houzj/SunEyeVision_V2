@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -114,13 +114,33 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
             }
         }
 
-        /// <summary>形状下拉可选项（拼装目标形状；键集与 DeclaredShapeType 天然对齐）</summary>
+        /// <summary>
+        /// 全部可绑定形状（真相源：<see cref="ShapeType"/> 枚举，跳过 None）。
+        /// </summary>
+        /// <remarks>
+        /// ★ 形状清单**不再手工维护**：历史缺陷是此处写死 4 类且 RotatedRectangle 重复两次，
+        /// 与枚举实际 7 类不一致（rule-008 反对重复概念）。
+        /// </remarks>
+        public static IReadOnlyList<ShapeType> AllShapeTypes { get; } =
+            Enum.GetValues<ShapeType>().Where(t => t != ShapeType.None).ToArray();
+
+        /// <summary>
+        /// 区域订阅模式「图形类型」可选项（全部形状）：选中后绑定候选收敛为**单一形状叶**。
+        /// </summary>
+        public IReadOnlyList<ShapeType> AvailableRegionShapeTypes => AllShapeTypes;
+
+        /// <summary>
+        /// 几何参数拼装模式的形状可选项（**当前阶段**只列已有扁平参数定义的形状，避免"能选却出空参数行"）。
+        /// </summary>
+        /// <remarks>
+        /// 与 <see cref="AvailableRegionShapeTypes"/> 的差异是**阶段性**的：补全 Polygon/Annulus/Arc
+        /// 的拼装参数定义后即统一。差异在此显式暴露，而不是让用户"选了才发现没参数行"。
+        /// </remarks>
         public IReadOnlyList<ShapeType> AvailableShapeTypes { get; } = new[]
         {
             ShapeType.Point,
             ShapeType.Line,
             ShapeType.Circle,
-            ShapeType.RotatedRectangle,
             ShapeType.RotatedRectangle,
         };
 
@@ -237,12 +257,20 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
                 ? input.Binding
                 : null;
 
-            // 参数行形状模板：激活参数订阅用持久化 Compose/Declared 形状；其余（区域/绘制）按本地形状提供占位行。
-            var shapeType = input.Source == RoiGeometrySource.GeometricSub
-                ? (input.ComposeShapeType != ShapeType.None ? input.ComposeShapeType : input.DeclaredShapeType)
-                : (input.LocalGeometry?.ShapeType ?? ShapeType.None);
-            if (shapeType is not (ShapeType.Point or ShapeType.Line or ShapeType.Circle
-                    or ShapeType.RotatedRectangle or ShapeType.RotatedRectangle))
+            // 形状回显（两个子模式**共用一个形状状态**，但持久化方式不同）：
+            // - 参数订阅：持久化 Compose（缺省回退 Declared）；
+            // - 区域订阅：形状由**绑定路径** `[Type=X]` 表达（见 Roi 模型注释）→ 从路径解析回显；
+            // - 绘制/本地：按本地几何形状。
+            var shapeType = input.Source switch
+            {
+                RoiGeometrySource.GeometricSub =>
+                    input.ComposeShapeType != ShapeType.None ? input.ComposeShapeType : input.DeclaredShapeType,
+                RoiGeometrySource.WholeRegionSub =>
+                    ParseShapeTypeFromBinding(input.Binding) ?? input.LocalGeometry?.ShapeType ?? ShapeType.None,
+                _ => input.LocalGeometry?.ShapeType ?? ShapeType.None,
+            };
+            // 合法性按枚举判定（不再手写白名单——那正是重复概念的来源）
+            if (shapeType == ShapeType.None || !Enum.IsDefined(shapeType))
                 shapeType = ShapeType.RotatedRectangle;
             _currentShapeType = shapeType;
             OnPropertyChanged(nameof(CurrentShapeType));
@@ -347,6 +375,29 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
                     DataType = def.DataType,
                 });
             }
+        }
+
+        /// <summary>
+        /// 从绑定路径解析形状 —— 区域订阅的形状由路径 <c>[Type=X]</c> 表达，不额外持久化字段。
+        /// </summary>
+        /// <returns>解析到的形状；路径不含 <c>[Type=]</c> 时返回 <c>null</c>（视为"未指定"）。</returns>
+        private static ShapeType? ParseShapeTypeFromBinding(ParamSetting? binding)
+        {
+            var property = binding is { BindingType: BindingType.Binding } ? binding.SourceProperty : null;
+            if (string.IsNullOrEmpty(property))
+                return null;
+
+            const string marker = "[Type=";
+            var start = property.IndexOf(marker, StringComparison.Ordinal);
+            if (start < 0)
+                return null;
+
+            var end = property.IndexOf(']', start);
+            if (end < 0)
+                return null;
+
+            var name = property.Substring(start + marker.Length, end - start - marker.Length);
+            return Enum.TryParse<ShapeType>(name, out var shapeType) ? shapeType : null;
         }
 
         /// <summary>形状 → 扁平参数定义（键 = RoiShape 扁平参数名，与拼装集/ComposeShapeType 对齐）</summary>

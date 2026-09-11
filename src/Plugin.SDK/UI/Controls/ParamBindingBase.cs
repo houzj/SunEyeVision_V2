@@ -104,9 +104,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// </remarks>
         /// <param name="dataSources">数据源列表</param>
         /// <param name="targetType">目标参数类型（可选）。RoiShape[] 子树的形态按它定型：
-        /// 数值目标只出类型容器+字段叶；ROI/几何/未指定只出整体+类型集合叶。</param>
+        /// 数值目标只出类型容器+字段叶；ROI/几何/未指定只出类型集合叶（「整体」已取消，见 §11）。</param>
         /// <returns>树形结构的根节点列表</returns>
-        public static List<TreeNodeData> BuildTreeStructure(List<AvailableDataSource> dataSources, Type? targetType = null)
+        public static List<TreeNodeData> BuildTreeStructure(
+            List<AvailableDataSource> dataSources, Type? targetType = null, ShapeType? shapeFilter = null)
         {
             var rootNodes = new List<TreeNodeData>();
             var nodeGroups = dataSources.GroupBy(ds => ds.SourceNodeName);
@@ -124,7 +125,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                         var leafNode = TreeNodeData.CreateDataSourceNode(dataSource);
                         leafNode.Parent = rootNode;
                         leafNode.BindingPath = dataSource.PropertyName;
-                        ApplyArrayDisplay(leafNode, dataSource, targetType);
+                        ApplyArrayDisplay(leafNode, dataSource, targetType, shapeFilter);
                         rootNode.Children.Add(leafNode);
                     }
                     else
@@ -152,7 +153,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                         var leafNode = TreeNodeData.CreateDataSourceNode(dataSource);
                         leafNode.Parent = currentParent;
                         leafNode.BindingPath = dataSource.PropertyName;
-                        ApplyArrayDisplay(leafNode, dataSource, targetType);
+                        ApplyArrayDisplay(leafNode, dataSource, targetType, shapeFilter);
                         currentParent.Children.Add(leafNode);
                     }
                 }
@@ -175,7 +176,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// - <b>参数订阅</b>（数值目标）：保留逐元素 <c>[i]</c> **只读预览**（需要看值才能挑对源），
         ///   <c>[i]</c> 不参与绑定。
         /// </remarks>
-        private static void ApplyArrayDisplay(TreeNodeData leafNode, AvailableDataSource ds, Type? targetType)
+        private static void ApplyArrayDisplay(
+            TreeNodeData leafNode, AvailableDataSource ds, Type? targetType, ShapeType? shapeFilter = null)
         {
             if (ds.PropertyType == null || !ds.PropertyType.IsArray)
                 return;
@@ -193,16 +195,16 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     ? null
                     : SunEyeVision.Plugin.SDK.Models.SdkTypeVocabulary.ToTypeVocabulary(targetType);
                 var roiChildren = new System.Collections.ObjectModel.ObservableCollection<TreeNodeData>(
-                    ArrayTreeFormatter.BuildRoiTypedChildren(ds, targetVarType));
+                    ArrayTreeFormatter.BuildRoiTypedChildren(ds, targetVarType, shapeFilter));
 
                 // P1：给 RoI 子节点统一补 Parent 链，否则 GetRootNode 向上遍历到 null 时把分组
-                // 自身当根（显示名根节点取成"圆"）。递归设置，覆盖整体/类型集合叶/字段叶。
+                // 自身当根（显示名根节点取成"圆"）。递归设置，覆盖类型集合叶/字段叶。
                 foreach (var child in roiChildren)
                     AttachParentChain(child, leafNode);
 
                 leafNode.Children = roiChildren;
 
-                // RoI 数组节点是"纯分组容器"：自身不绑定，绑定终点由子节点（整体/类型集合叶/字段叶）承担。
+                // RoI 数组节点是"纯分组容器"：自身不绑定，绑定终点由子节点（类型集合叶/字段叶）承担。
                 leafNode.IsSelectable = false;
                 return;
             }

@@ -9,7 +9,8 @@ namespace SunEyeVision.Plugin.SDK.Tests;
 
 /// <summary>
 /// 绑定树 RoI 子树"按 DataType 词目定型"契约测试（绑定树 DataType 定型方案）：
-/// - ROI/未限定目标 → 整体叶 + 各类型集合叶（绑定终点全为叶子，无字段下钻、无 [i] 层级）；
+/// - ROI/未限定目标 → 各类型集合叶（绑定终点全为叶子，无字段下钻、无 [i] 层级；
+///   **「整体」已取消**，见方案 §11）；
 /// - 数值目标（Double/Integer）→ 类型容器(不可绑,只导航) + RoiFieldSchema 字段叶。
 /// 声明式由 ShapeType 枚举驱动，不依赖运行值/绘制数据（rule-016 数据驱动优先）。
 /// 对应方案验收标准 AC-01/AC-02 与防御机制"契约测试"。
@@ -37,13 +38,15 @@ public class RoiDesignTimeGroupsContractTests
     }
 
     [Fact]
-    public void BuildRoiTypedChildren_RoiTarget_YieldsOverallPlusAllTypeLeaves()
+    public void BuildRoiTypedChildren_RoiTarget_YieldsAllTypeLeaves()
     {
         var ds = MakeEmptyRoiDataSource();
         var children = ArrayTreeFormatter.BuildRoiTypedChildren(ds, "ROI");
 
-        // 整体 + 全部形状叶（Point/Line/Circle/RotatedRectangle/Polygon/Annulus/Arc；Rectangle 已并入 RotatedRectangle）
-        Assert.Equal(AllBindableShapeTypes().Count() + 1, children.Count);
+        // 全部形状叶（Point/Line/Circle/RotatedRectangle/Polygon/Annulus/Arc；Rectangle 已并入 RotatedRectangle）
+        // 「整体」已取消（方案 §11），故不再 +1
+        Assert.Equal(AllBindableShapeTypes().Count(), children.Count);
+        Assert.DoesNotContain(children, c => c.Text == "整体");
     }
 
     [Fact]
@@ -65,21 +68,65 @@ public class RoiDesignTimeGroupsContractTests
     }
 
     [Fact]
-    public void BuildRoiTypedChildren_RoiTarget_Overall_Selectable_WithWholeArrayPath()
+    public void BuildRoiTypedChildren_RoiTarget_NoOverallEntry()
     {
-        // "整体"入口：绑定整个检测区域数组（BindingSuffix=null → 路径 "[]"）
+        // §11 守卫：ROI 目标下**不得**再产出「整体」叶——它原为"上游一节点绘多种图形 → 一把全绑"
+        // 的异构场景出口；订阅方只绑固定形状后语义已废（决策 1/2）。
+        // 取消只影响"选择器里能否选"：老工程已绑的整体路径仍可解析、值不丢。
         var ds = MakeEmptyRoiDataSource();
         var children = ArrayTreeFormatter.BuildRoiTypedChildren(ds, "ROI");
 
-        var overall = children[0];
-        Assert.Equal("整体", overall.Text);
-        Assert.True(overall.IsSelectable, "整体入口应可绑定");
-        Assert.NotNull(overall.DataSource);
-        Assert.Null(overall.DataSource!.BindingSuffix);
-        Assert.Equal(typeof(RoiShape[]), overall.DataSource.PropertyType);
-        Assert.Equal("Node1.检测区图形[]", overall.DataSource.GetBindingPath());
-        Assert.Equal("检测区图形[]", overall.BindingPath);
-        Assert.Empty(overall.Children);
+        Assert.DoesNotContain(children, c => c.Text == "整体");
+        // 所有叶都必须是类型集合叶（带 [Type=X] 后缀），不存在"无后缀的整体叶"
+        Assert.All(children, c => Assert.False(string.IsNullOrEmpty(c.DataSource!.BindingSuffix),
+            $"'{c.Text}' 缺 [Type=X] 后缀，疑似整体叶残留"));
+    }
+
+    [Theory]
+    [InlineData(ShapeType.Point)]
+    [InlineData(ShapeType.Line)]
+    [InlineData(ShapeType.Circle)]
+    [InlineData(ShapeType.RotatedRectangle)]
+    [InlineData(ShapeType.Polygon)]
+    [InlineData(ShapeType.Annulus)]
+    [InlineData(ShapeType.Arc)]
+    public void BuildRoiTypedChildren_RoiTarget_WithShapeFilter_YieldsSingleShapeLeaf(ShapeType filter)
+    {
+        // §11 守卫①：区域订阅选择「图形类型」后，候选必须收敛为**唯一一片**该形状的叶。
+        // 防退化：改收敛逻辑时漏传 / 写反筛选条件 → 下拉又会回到"一串形状"，即用户最初报的问题复发。
+        var ds = MakeEmptyRoiDataSource();
+        var children = ArrayTreeFormatter.BuildRoiTypedChildren(ds, "ROI", filter);
+
+        var leaf = Assert.Single(children);
+        Assert.Equal(ArrayTreeFormatter.GetShapeTypeShortName(filter), leaf.Text);
+        Assert.True(leaf.IsSelectable, "筛选后的类型叶应是绑定终点");
+        Assert.Equal($"[Type={filter}]", leaf.DataSource!.BindingSuffix);
+        Assert.Equal($"Node1.检测区图形[Type={filter}]", leaf.DataSource.GetBindingPath());
+        Assert.Empty(leaf.Children);
+    }
+
+    [Fact]
+    public void BuildRoiTypedChildren_GeometryTarget_WithConflictingShapeFilter_Throws()
+    {
+        // §11 守卫②：目标词目**已定形状**（Point → 只允许"点"）时再叠加"圆"筛选必须**报错**。
+        // 防退化：把冲突改成静默忽略 → 用户选了圆却绑不上，只在日志里留 Warning（回到"能选不能用"）。
+        var ds = MakeEmptyRoiDataSource();
+
+        var ex = Assert.Throws<InvalidOperationException>(
+            () => ArrayTreeFormatter.BuildRoiTypedChildren(ds, "Point", ShapeType.Circle));
+        Assert.Contains("冲突", ex.Message);
+    }
+
+    [Fact]
+    public void BuildRoiTypedChildren_GeometryTarget_MatchingShapeFilter_IsAllowed()
+    {
+        // 守卫②的边界：筛选与词目允许形状**一致**时不算冲突（幂等），仍只出一片叶。
+        var ds = MakeEmptyRoiDataSource();
+        var children = ArrayTreeFormatter.BuildRoiTypedChildren(ds, "Point", ShapeType.Point);
+
+        var leaf = Assert.Single(children);
+        Assert.Equal("点", leaf.Text);
+        Assert.Equal("[Type=Point]", leaf.DataSource!.BindingSuffix);
     }
 
     [Fact]
@@ -111,12 +158,12 @@ public class RoiDesignTimeGroupsContractTests
     [Fact]
     public void BuildRoiTypedChildren_DoesNotDependOnCurrentValue()
     {
-        // 设计期 CurrentValue 为 null，仍产出整体 + 全部形状叶（声明式，与绘制数据零耦合）
+        // 设计期 CurrentValue 为 null，仍产出全部形状叶（声明式，与绘制数据零耦合；「整体」已取消）
         var ds = MakeEmptyRoiDataSource();
         var roiChildren = ArrayTreeFormatter.BuildRoiTypedChildren(ds, "ROI");
 
-        Assert.Equal(AllBindableShapeTypes().Count() + 1, roiChildren.Count);
-        Assert.Contains(roiChildren, c => c.Text == "整体");
+        Assert.Equal(AllBindableShapeTypes().Count(), roiChildren.Count);
+        Assert.DoesNotContain(roiChildren, c => c.Text == "整体");
         Assert.Contains(roiChildren, c => c.Text == "圆");
         Assert.Contains(roiChildren, c => c.Text == "旋转矩形");
     }
@@ -198,8 +245,8 @@ public class RoiDesignTimeGroupsContractTests
     [Fact]
     public void BuildTreeStructure_RoiArrayContainer_IsPureFolderNotSelectable_RoiTarget()
     {
-        // 方案B：RoI 数组容器节点是"纯分组容器"，本身不可整体绑定（IsSelectable=false），
-        // 只能展开下钻；整体与各类型集合叶子节点仍可绑定（ROI 目标）。
+        // 方案B + §11：「整体」入口已取消——RoI 数组容器只作纯分组容器（IsSelectable=false），
+        // 子节点全为类型集合叶（可绑定、无 children）。
         var ds = MakeEmptyRoiDataSource();
         var root = ParamBindingBase.BuildTreeStructure(new List<AvailableDataSource> { ds }, typeof(RoiShape[])).Single();
 
@@ -209,15 +256,11 @@ public class RoiDesignTimeGroupsContractTests
         Assert.True(container.HasChildren, "容器应可展开");
         Assert.NotNull(container.Children);
 
-        // 子节点：整体 + 全部形状叶，全部为叶子（可绑定，无 children）
-        Assert.Equal(AllBindableShapeTypes().Count() + 1, container.Children!.Count);
-        var overall = container.Children[0];
-        Assert.Equal("整体", overall.Text);
-        Assert.True(overall.IsSelectable, "整体入口应可绑定");
-        Assert.Equal("检测区图形[]", overall.BindingPath);
-        Assert.Equal("Node1.检测区图形[]", overall.DataSource!.GetBindingPath());
+        // 子节点：全部形状叶（**无「整体」**——异构时代入口已废，见方案 §11）
+        Assert.Equal(AllBindableShapeTypes().Count(), container.Children!.Count);
+        Assert.DoesNotContain(container.Children!, c => c.Text == "整体");
 
-        Assert.All(container.Children.Skip(1), g =>
+        Assert.All(container.Children, g =>
         {
             Assert.True(g.IsSelectable, $"类型集合叶 '{g.Text}' 应可绑定");
             Assert.NotNull(g.DataSource);
@@ -228,7 +271,7 @@ public class RoiDesignTimeGroupsContractTests
     [Fact]
     public void BuildTreeStructure_RoiChildNodes_HaveParentChain()
     {
-        // P1：RoI 子节点（整体/类型集合叶）必须挂上 Parent 链，否则 GetRootNode 向上遍历到 null 时
+        // P1：RoI 子节点（类型集合叶）必须挂上 Parent 链，否则 GetRootNode 向上遍历到 null 时
         // 把类型叶自身当根，显示名根节点取错（圆.xxx 而非 Blob分析.xxx）。
         var ds = MakeEmptyRoiDataSource();
         var root = ParamBindingBase.BuildTreeStructure(new List<AvailableDataSource> { ds }, typeof(RoiShape[])).Single();
@@ -236,8 +279,6 @@ public class RoiDesignTimeGroupsContractTests
 
         // 容器 → 根
         Assert.Same(root, container.Parent);
-        // 整体节点 → 容器
-        Assert.Same(container, container.Children[0].Parent);
         // 类型集合叶 → 容器（P3：类型不显示数量，文本即短名）
         Assert.Same(container, container.Children.First(c => c.Text == "圆").Parent);
         Assert.Same(container, container.Children.First(c => c.Text == "旋转矩形").Parent);

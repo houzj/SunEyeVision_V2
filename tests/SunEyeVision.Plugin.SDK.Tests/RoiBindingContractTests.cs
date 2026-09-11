@@ -43,25 +43,17 @@ public class RoiBindingContractTests
     [Fact]
     public void BuildRoiTypedChildren_RoiTarget_NoPerElementNodes_NoFieldAggregation()
     {
-        // 有运行值时，ROI 目标的绑定树仍为声明式类型树（整体 + 各类型集合叶）：
+        // 有运行值时，ROI 目标的绑定树仍为声明式类型树（**全部类型集合叶，无「整体」**）：
         // 不含 [0]~[4] 逐元素节点、不含 "--" 字段聚合错位（运行/设计期结构一致）。
         var roi = MakeHeterogeneousRoi();
         var ds = MakeRoiDataSource(roi);
 
         var children = ArrayTreeFormatter.BuildRoiTypedChildren(ds, "ROI");
 
-        // 整体 + 全部形状叶（声明式全枚举，与 roi 实际包含哪几类无关；
-        // 形状数按枚举推导——ShapeType.Rectangle 已并入 RotatedRectangle，硬编码会随枚举演进失效）
-        Assert.Equal(System.Enum.GetValues<ShapeType>().Count(t => t != ShapeType.None) + 1, children.Count);
-
-        // "整体"入口：绑定整个检测区域数组（BindingSuffix=null → 路径 "[]"）
-        var overall = children[0];
-        Assert.Equal("整体", overall.Text);
-        Assert.True(overall.IsSelectable);
-        Assert.NotNull(overall.DataSource);
-        Assert.Null(overall.DataSource!.BindingSuffix);
-        Assert.Equal("Node1.检测区域[]", overall.DataSource.GetBindingPath());
-        Assert.Empty(overall.Children);
+        // 全部形状叶（声明式全枚举，与 roi 实际包含哪几类无关；「整体」已取消，见方案 §11）
+        // 形状数按枚举推导——ShapeType.Rectangle 已并入 RotatedRectangle，硬编码会随枚举演进失效
+        Assert.Equal(System.Enum.GetValues<ShapeType>().Count(t => t != ShapeType.None), children.Count);
+        Assert.DoesNotContain(children, c => c.Text == "整体");
 
         // 类型集合叶：圆/多边形/旋转矩形均可绑 [Type=X]，无 children（绑定终点=叶子）
         var circle = children.First(c => c.Text == "圆");

@@ -25,7 +25,8 @@ namespace SunEyeVision.Tool.PointLineMeasure
     /// 元素2 = 线（引导 + 卡尺 measure）。
     /// </summary>
     [JsonDerivedType(typeof(PointLineMeasureParameters), "PointLineMeasure")]
-    public class PointLineMeasureParameters : RoiParameters
+    // P0.6-4 承载层拆分：测量工具不使用区域 → 继承"图像源 + 位置修正 + 测量引导"基类
+    public class PointLineMeasureParameters : MeasureGuideParameters
     {
         // ============================================================
         // 判定规格列表（v4 C1 基座，六工具同构）

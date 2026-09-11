@@ -26,7 +26,8 @@ namespace SunEyeVision.Tool.LineLineMeasure
     /// 每个元素独立一套引导 + 卡尺参数（E1/E2），运行沿两条引导各自做 measure 拟合。
     /// </summary>
     [JsonDerivedType(typeof(LineLineMeasureParameters), "LineLineMeasure")]
-    public class LineLineMeasureParameters : RoiParameters
+    // P0.6-4 承载层拆分：测量工具不使用区域 → 继承"图像源 + 位置修正 + 测量引导"基类
+    public class LineLineMeasureParameters : MeasureGuideParameters
     {
         // ============================================================
         // 判定规格列表（v4 C1 基座，SDK MeasureThreshold 复用，六工具同构）

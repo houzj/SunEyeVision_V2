@@ -13,7 +13,9 @@ namespace SunEyeVision.Tool.PointPointMeasure
     /// 全部由参数订阅承载（不产生 measure 调用，纯几何计算）。
     /// </summary>
     [JsonDerivedType(typeof(PointPointMeasureParameters), "PointPointMeasure")]
-    public class PointPointMeasureParameters : RoiParameters
+    // P0.6-4 承载层拆分：测量工具**不使用区域**（Probe 实测：无 InspectionGeometries/MaskGeometries 赋值），
+    // 故继承"只含 图像源 + 位置修正 + 测量引导"的基类，参数类上不再物理存在 InspectionRois/MaskRois。
+    public class PointPointMeasureParameters : MeasureGuideParameters
     {
         // ============================================================
         // 判定规格列表（v4 C1 基座，六工具同构）

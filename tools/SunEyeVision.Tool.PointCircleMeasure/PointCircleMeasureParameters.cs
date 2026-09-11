@@ -25,7 +25,8 @@ namespace SunEyeVision.Tool.PointCircleMeasure
     /// 元素2 = 圆（引导圆心/半径 + 径向卡尺 measure）。
     /// </summary>
     [JsonDerivedType(typeof(PointCircleMeasureParameters), "PointCircleMeasure")]
-    public class PointCircleMeasureParameters : RoiParameters
+    // P0.6-4 承载层拆分：测量工具不使用区域 → 继承"图像源 + 位置修正 + 测量引导"基类
+    public class PointCircleMeasureParameters : MeasureGuideParameters
     {
         // ============================================================
         // 判定规格列表（v4 C1 基座，六工具同构）

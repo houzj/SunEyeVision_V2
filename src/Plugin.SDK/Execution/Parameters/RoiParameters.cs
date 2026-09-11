@@ -1,46 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
 using System.Text.Json.Serialization;
-using System.Windows.Media;
-using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.Metadata;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
-using SunEyeVision.Plugin.SDK.Vision.Contracts;
 
 namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 {
     /// <summary>
-    /// 几何输入参数基类 - 提供检测区与屏蔽区几何输入（Roi）的通用实现
+    /// 区域输入参数基类 - 在 <see cref="MeasureGuideParameters"/> 之上增加「检测区 / 屏蔽区」区域能力。
     /// </summary>
     /// <remarks>
     /// 设计理念：
-    /// 1. 所有需要区域管理的工具可以继承此基类
+    /// 1. 需要区域管理的工具继承此基类
     /// 2. 避免重复定义 InspectionRois 和 MaskRois
     /// 3. 统一几何输入参数的序列化和反序列化
-    /// 
+    ///
+    /// ★ 承载层拆分（方案 P0.6-4）：图像源 / 位置修正 / 测量引导 已上移到基类
+    ///   <see cref="MeasureGuideParameters"/>，本类**只留区域**。
+    ///   类名与 JSON 判别符 <c>"RoiParameters"</c>、字段名 <c>inspectionRois</c>/<c>maskRois</c>
+    ///   <b>均保持不变</b> —— 老工程零迁移；不过区域的测量工具改继承基类后，其参数类上不再物理存在区域属性。
+    ///
     /// 使用示例：
     /// <code>
     /// [JsonDerivedType(typeof(ThresholdParameters), "Threshold")]
     /// public class ThresholdParameters : RoiParameters
     /// {
     ///     public ParamValue<int> Threshold { get; set; }
-    ///     
+    ///
     ///     public ThresholdParameters()
     ///     {
-    ///         Threshold = new ParamValue<int>(128);
+    ///         Threshold = new ParamValue&lt;int&gt;(128);
     ///     }
     /// }
     /// </code>
     /// </remarks>
     [JsonDerivedType(typeof(RoiParameters), "RoiParameters")]
-    public class RoiParameters : ToolParameters
+    public class RoiParameters : MeasureGuideParameters
     {
         private RoiCollection _inspectionRois;
         private RoiCollection _maskRois;
-        private ImageSourceReference? _imageSourceRef;
-        private AvailableDataSource? _imageSource;
 
         /// <summary>
         /// 构造函数
@@ -70,26 +67,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <remarks>
         /// 支持常量模式（用户直接绘制）和绑定模式（订阅其他节点输出）
         /// </remarks>
-        /// <summary>
-        /// 是否包含测量引导几何（引导线 + 卡尺测量带）需要显示到结果层。
-        /// 测量查找工具（圆/直线/边缘检测）重写为 true；普通区域工具默认 false，零影响。
-        /// </summary>
-        public virtual bool HasMeasureGuide => false;
-
-        /// <summary>引导线显示样式（Tab3 可控制；测量工具重写提供，默认 null）</summary>
-        public virtual GraphicsStyle? GuideStyle { get; set; }
-
-        /// <summary>卡尺测量带显示样式（Tab3 可控制；测量工具重写提供，默认 null）</summary>
-        public virtual GraphicsStyle? CaliberStyle { get; set; }
-
-        /// <summary>
-        /// 构建引导线 + 卡尺测量带的显示项（与检测/屏蔽区域同通道走结果层）。
-        /// 测量工具重写返回引导几何与测量带；默认返回空。
-        /// </summary>
-        /// <param name="correctionMatrix">位置修正矩阵（参考坐标→当前图像坐标；null=不修正）</param>
-        public virtual System.Collections.Generic.IEnumerable<DisplayItemBase> BuildMeasureGuideItems(
-            AffineMatrix? correctionMatrix)
-            => System.Array.Empty<DisplayItemBase>();
         [JsonPropertyOrder(11)]
         public RoiCollection MaskRois
         {
@@ -121,158 +98,6 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 
         #endregion
 
-        #region 图像源绑定
-
-        /// <summary>
-        /// 可序列化的图像源引用
-        /// </summary>
-        /// <remarks>
-        /// 存储 ImageSource 的身份+展示信息（4个字符串），用于 JSON 序列化/反序列化。
-        /// 运行时 ImageSource 从此引用通过 RestoreImageSource() 恢复。
-        /// </remarks>
-        [JsonPropertyOrder(5)]
-        [JsonPropertyName("imageSourceRef")]
-        public ImageSourceReference? ImageSourceRef
-        {
-            get => _imageSourceRef;
-            set => _imageSourceRef = value;
-        }
-
-        /// <summary>
-        /// 输入图像源（运行时，不序列化，从 ImageSourceRef 恢复）
-        /// </summary>
-        /// <remarks>
-        /// AvailableDataSource 包含运行时数据（Mat 图像、TreeNode 等）无法序列化，
-        /// 因此标记 [JsonIgnore] 不参与序列化。
-        /// setter 中自动同步更新 ImageSourceRef。
-        /// </remarks>
-        [JsonIgnore]
-        public AvailableDataSource? ImageSource
-        {
-            get => _imageSource;
-            set
-            {
-                if (SetProperty(ref _imageSource, value, "输入图像"))
-                {
-                    // 自动同步到可序列化的引用
-                    _imageSourceRef = ImageSourceReference.FromDataSource(value);
-                }
-            }
-        }
-
-        /// <summary>
-        /// 从 AvailableDataSources 列表恢复 ImageSource
-        /// </summary>
-        /// <param name="dataSources">当前可用的数据源列表</param>
-        /// <returns>是否成功恢复</returns>
-        public bool RestoreImageSource(System.Collections.Generic.IEnumerable<AvailableDataSource>? dataSources)
-        {
-            if (dataSources == null)
-                return false;
-
-            // 分支1：有序列化引用 → 精确匹配恢复
-            if (_imageSourceRef != null)
-            {
-                var matched = _imageSourceRef.MatchDataSource(dataSources);
-                if (matched != null)
-                {
-                    // 直接设置字段，避免触发 setter 中的重复同步
-                    _imageSource = matched;
-                    OnPropertyChanged(nameof(ImageSource));
-                    return true;
-                }
-                return false;
-            }
-
-            // 分支2：无序列化引用且无运行时图像源 → 数据驱动自动匹配
-            // 通过 AvailableDataSource.VariableType == "Image" 匹配（统一 Mapper 词汇体系）
-            if (_imageSource == null)
-            {
-                var firstImageSource = dataSources
-                    .FirstOrDefault(ds => ds.VariableType == "Image");
-                if (firstImageSource != null)
-                {
-                    _imageSource = firstImageSource;
-                    _imageSourceRef = ImageSourceReference.FromDataSource(firstImageSource);
-                    OnPropertyChanged(nameof(ImageSource));
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        #endregion
-
-        #region 位置修正（算法工具标配）
-
-        private bool _isPositionCorrectionEnabled;
-        private AvailableDataSource? _positionCorrectionBindingSource;
-        private ImageSourceReference? _positionCorrectionSource;
-
-        /// <summary>
-        /// 是否启用位置修正
-        /// </summary>
-        [DisplayName("启用位置修正")]
-        public bool IsPositionCorrectionEnabled
-        {
-            get => _isPositionCorrectionEnabled;
-            set => SetProperty(ref _isPositionCorrectionEnabled, value, "启用位置修正");
-        }
-
-        /// <summary>
-        /// 位置修正绑定源（运行时，不序列化）
-        /// </summary>
-        [JsonIgnore]
-        public AvailableDataSource? PositionCorrectionBindingSource
-        {
-            get => _positionCorrectionBindingSource;
-            set
-            {
-                if (SetProperty(ref _positionCorrectionBindingSource, value, "位置修正绑定源"))
-                {
-                    _positionCorrectionSource = ImageSourceReference.FromDataSource(value);
-                }
-            }
-        }
-
-        /// <summary>
-        /// 位置修正绑定源（序列化引用）
-        /// </summary>
-        [JsonPropertyOrder(16)]
-        [JsonPropertyName("positionCorrectionSource")]
-        public ImageSourceReference? PositionCorrectionSource
-        {
-            get => _positionCorrectionSource;
-            set => _positionCorrectionSource = value;
-        }
-
-        /// <summary>
-        /// 位置修正绑定源显示文本
-        /// </summary>
-        [JsonPropertyOrder(17)]
-        public string? PositionCorrectionBindingDisplayText { get; set; }
-
-        /// <summary>
-        /// 从 AvailableDataSources 列表恢复 PositionCorrectionBindingSource
-        /// </summary>
-        public bool RestorePositionCorrectionSource(IEnumerable<AvailableDataSource>? dataSources)
-        {
-            if (_positionCorrectionSource == null || dataSources == null)
-                return false;
-
-            var matched = _positionCorrectionSource.MatchDataSource(dataSources);
-            if (matched != null)
-            {
-                _positionCorrectionBindingSource = matched;
-                OnPropertyChanged(nameof(PositionCorrectionBindingSource));
-                return true;
-            }
-            return false;
-        }
-
-        #endregion
-
         /// <summary>
         /// 按角色获取运行时有效几何输入列表（执行层/结果层统一出口，语义=按模式过滤）：
         /// 组内存在订阅/拼装 Roi 时仅返回订阅/拼装 Roi（本地绘制底稿不参与）；全本地时返回全部启用输入。
@@ -285,6 +110,5 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 ? _inspectionRois.GetRuntimeActiveInputs()
                 : _maskRois.GetRuntimeActiveInputs();
         }
-
     }
 }

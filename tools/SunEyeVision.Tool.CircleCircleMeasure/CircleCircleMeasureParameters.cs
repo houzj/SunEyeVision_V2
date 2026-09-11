@@ -26,7 +26,8 @@ namespace SunEyeVision.Tool.CircleCircleMeasure
     /// 元素1 = 圆（引导圆心/半径 + 径向卡尺），元素2 = 圆（同构）。
     /// </summary>
     [JsonDerivedType(typeof(CircleCircleMeasureParameters), "CircleCircleMeasure")]
-    public class CircleCircleMeasureParameters : RoiParameters
+    // P0.6-4 承载层拆分：测量工具不使用区域 → 继承"图像源 + 位置修正 + 测量引导"基类
+    public class CircleCircleMeasureParameters : MeasureGuideParameters
     {
         // ============================================================
         // 判定规格列表（v4 C1 基座，SDK MeasureThreshold 复用，六工具同构）

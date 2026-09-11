@@ -78,7 +78,7 @@ namespace SunEyeVision.Tool.LineDetect
         /// </summary>
         public double Angle { get; set; }
 
-        #region 测量带(卡尺)输入回显（模块结果"输入区域/卡尺"展示，Run 从参数回填）
+        #region 测量带(卡尺)输入回显（模块结果"输入/卡尺"展示，Run 从参数回填）
 
         /// <summary>引导几何（引导直线 → RoiShape 包装，树中按"卡尺/引导线"下钻展示）</summary>
         [JsonIgnore]
@@ -173,8 +173,9 @@ namespace SunEyeVision.Tool.LineDetect
             return
             [
                 .. base.GetPropertyMap(),   // 合并基类：执行耗时 + 节点状态 → 执行信息
-                // 测量带(卡尺)输入回显：引导线/测量带 归"输入区域/卡尺"分组
-                new("GuideGeometry",     "引导几何", "输入/卡尺/引导线"),
+                // 测量带(卡尺)输入回显：引导线/测量带 归"输入/卡尺"分组；
+                // GuideGeometry 为**分组占位**（单层折叠：不渲染中间节点，几何元素直接挂到"引导线"组下）
+                new("GuideGeometry",     "引导几何", "输入/卡尺/引导线", IsGroupPlaceholder: true),
                 new("CaliberCount",      "测量带数量", "输入/卡尺/测量带"),
                 new("CaliberWidth",      "测量带宽度", "输入/卡尺/测量带"),
                 new("CaliberLength",     "测量带长度", "输入/卡尺/测量带"),

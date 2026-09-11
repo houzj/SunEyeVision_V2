@@ -161,11 +161,11 @@ namespace SunEyeVision.Tool.LineDetect
                 result.IsPass = isOk;
                 result.FillDisplay(isOk, parameters);
 
-                // 屏蔽区几何输出（RoI 契约：结果树"输入区域/屏蔽区图形"填充，对齐图像工具）
+                // 屏蔽区几何输出（RoI 契约：结果树"输入/屏蔽区图形"填充，对齐图像工具）
                 ToolRegionHelper.ExtractMaskGeometries(result, parameters.MaskRois?.Rois,
                     parameters.NodeResults);
 
-                // 卡尺输入回显（模块结果"输入区域/卡尺"）：引导线 + 测量带参数
+                // 卡尺输入回显（模块结果"输入/卡尺"）：引导线 + 测量带参数
                 var guideStart = parameters.LineStartPoint;
                 var guideEnd = parameters.LineEndPoint;
                 var dx = guideEnd.X - guideStart.X;

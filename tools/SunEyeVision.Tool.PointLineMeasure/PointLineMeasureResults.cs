@@ -48,7 +48,7 @@ namespace SunEyeVision.Tool.PointLineMeasure
         public double PerpendicularFootX => PerpendicularFoot.X;
         public double PerpendicularFootY => PerpendicularFoot.Y;
 
-        #region 输入回显（模块结果"输入区域/卡尺"）
+        #region 输入回显（模块结果"输入/卡尺"）
 
         [JsonIgnore]
         public RoiShape[]? GuideGeometry2 { get; set; }
@@ -187,7 +187,7 @@ namespace SunEyeVision.Tool.PointLineMeasure
                 new("Point1", "点1", "输入/点1"),
                 new("Point1X", "点1X(px)", "输入/点1"),
                 new("Point1Y", "点1Y(px)", "输入/点1"),
-                new("GuideGeometry2", "直线2引导几何", "输入/卡尺/引导线"),
+                new("GuideGeometry2", "直线2引导几何", "输入/卡尺/引导线", IsGroupPlaceholder: true),
                 new("E2CaliberCount", "卡尺2测量带数量", "输入/卡尺/测量带"),
                 new("E2CaliberWidth", "卡尺2测量带宽度", "输入/卡尺/测量带"),
                 new("E2CaliberLength", "卡尺2测量带长度", "输入/卡尺/测量带"),

@@ -149,7 +149,7 @@ namespace SunEyeVision.Tool.CircleCircleMeasure
                 result.Relation = DescribeRelation(
                     result.Distance, e1FitRadius, e2FitRadius, result.IntersectionCount, result.IsOverlapping);
 
-                // ===== 输入回显（模块结果"输入区域/卡尺"）=====
+                // ===== 输入回显（模块结果"输入/卡尺"）=====
                 result.GuideGeometry1 = BuildCircleGuideGeometry(e1Center, e1Radius);
                 result.GuideGeometry2 = BuildCircleGuideGeometry(e2Center, e2Radius);
                 result.E1CaliberCount = parameters.E1NumMeasures.Value;

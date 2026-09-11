@@ -461,6 +461,8 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
                         PropertyType = (v.VariableType == "Image")
                             ? varType
                             : (varType.IsArray ? varType : varType.MakeArrayType()),
+                        // P0.6-5：分组占位（单层折叠）声明随契约缓存，设计期结果树同样按声明折叠
+                        IsGroupPlaceholder = v.IsGroupPlaceholder,
                         Description = null
                     };
 

@@ -19,6 +19,12 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
         /// <summary>分组（用于树形分组，null 表示无分组）</summary>
         public string? Group { get; set; }
 
+        /// <summary>
+        /// 分组占位条目（单层折叠）：该条目不渲染为中间节点，其展开子节点直接挂到 <see cref="Group"/> 下。
+        /// 由 <c>PropertyMapEntry.IsGroupPlaceholder</c> 随契约传递（方案 P0.6-5 声明式折叠）。
+        /// </summary>
+        public bool IsGroupPlaceholder { get; set; }
+
         /// <summary>变量种类：数据变量 / 流程控制信号</summary>
         public OutputVariableKind Kind { get; set; } = OutputVariableKind.Data;
 

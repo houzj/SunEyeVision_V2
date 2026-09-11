@@ -115,7 +115,7 @@ namespace SunEyeVision.Tool.LineCircleMeasure
                 var e2Points = ExtractDiagnosticPoints(metrologyModel, e2Index, TransitionToHalcon(parameters.E2Transition.Value));
                 var (e2FitCenter, e2FitRadius, e2Inliers, e2Rmse) = FitCircleRobust(e2Points, parameters.E2DistanceThreshold.Value);
 
-                // 拟合内点/残差/点数（模块结果："输入区域/卡尺"检测点 + "拟合结果"）
+                // 拟合内点/残差/点数（模块结果："输入/卡尺"检测点 + "拟合结果"）
                 result.Element1FitPoints = e1Inliers;          // Point2d[]（契约可入表，显示层再转 WPF Point）
                 result.Element2FitPoints = e2Inliers;
                 result.Element1RMSE = e1Rmse;
@@ -150,7 +150,7 @@ namespace SunEyeVision.Tool.LineCircleMeasure
                     out var intersectionRows, out var intersectionCols);
                 FillIntersections(result, e1FitStart, e1FitEnd, intersectionRows, intersectionCols);
 
-                // ===== 输入回显（模块结果"输入区域/卡尺"，对齐 LineDetect 规范）=====
+                // ===== 输入回显（模块结果"输入/卡尺"，对齐 LineDetect 规范）=====
                 result.GuideGeometry1 = BuildLineGuideGeometry(e1Start, e1End);
                 result.GuideGeometry2 = BuildCircleGuideGeometry(e2Center, e2Radius);
                 result.E1CaliberCount = parameters.E1NumMeasures.Value;

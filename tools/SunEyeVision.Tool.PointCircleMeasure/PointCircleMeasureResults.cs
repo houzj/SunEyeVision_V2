@@ -59,7 +59,7 @@ namespace SunEyeVision.Tool.PointCircleMeasure
         public double ClosestPointX => ClosestPoint.Length > 0 ? ClosestPoint[0].X : 0;
         public double ClosestPointY => ClosestPoint.Length > 0 ? ClosestPoint[0].Y : 0;
 
-        #region 输入回显（模块结果"输入区域/卡尺"）
+        #region 输入回显（模块结果"输入/卡尺"）
 
         [JsonIgnore]
         public RoiShape[]? GuideGeometry2 { get; set; }

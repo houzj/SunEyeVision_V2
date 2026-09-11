@@ -76,7 +76,7 @@ namespace SunEyeVision.Tool.LineCircleMeasure
         public int ImageWidth { get; set; }
         public int ImageHeight { get; set; }
 
-        #region 输入回显（模块结果"输入区域/卡尺"；Run 从参数回填，对齐 LineDetect 规范）
+        #region 输入回显（模块结果"输入/卡尺"；Run 从参数回填，对齐 LineDetect 规范）
 
         /// <summary>元素1 引导几何（引导直线 → RoiShape 包装）</summary>
         [JsonIgnore]
@@ -329,7 +329,7 @@ namespace SunEyeVision.Tool.LineCircleMeasure
             [
                 .. base.GetPropertyMap(),   // 执行耗时 + 节点状态 → 执行信息
                 // ===== 输入（对齐 LineDetect 规范：输入/卡尺）=====
-                new("GuideGeometry1", "直线1引导几何", "输入/卡尺/引导线"),
+                new("GuideGeometry1", "直线1引导几何", "输入/卡尺/引导线", IsGroupPlaceholder: true),
                 new("GuideGeometry2", "圆2引导几何", "输入/卡尺/引导圆"),
                 new("E1CaliberCount", "卡尺1测量带数量", "输入/卡尺/测量带"),
                 new("E1CaliberWidth", "卡尺1测量带宽度", "输入/卡尺/测量带"),

@@ -18,7 +18,18 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
     /// <param name="PropertyName">属性英文名（对应代码中的属性名）</param>
     /// <param name="DisplayName">属性中文显示名（用于UI显示）</param>
     /// <param name="GroupName">分组名称（用于树形分组，null 表示无分组）</param>
-    public record PropertyMapEntry(string PropertyName, string DisplayName, string? GroupName = null);
+    /// <param name="IsGroupPlaceholder">
+    /// 是否为"分组占位"条目：该条目只是所在分组的语义占位（如"引导几何"），**不渲染为中间节点**，
+    /// 其展开的子节点（几何元素字段）直接挂到分组下（单层折叠）。
+    /// </param>
+    /// <remarks>
+    /// ★ 声明式替代（方案 P0.6-5）：此前由 Shell（<c>MainWindowViewModel</c>）硬编码
+    /// <c>e.Group == "输入/卡尺/引导线"</c> 判断 —— 那是"UI 认具体工具的中文分组名"，
+    /// 任何工具改分组名、或新工具想复用折叠都会**静默失效**（结果树多一层重复节点且不报错）。
+    /// 现由**声明方**（工具的 <c>GetPropertyMap</c>）决定，Shell 只读标志（rule-008 / rule-016）。
+    /// </remarks>
+    public record PropertyMapEntry(
+        string PropertyName, string DisplayName, string? GroupName = null, bool IsGroupPlaceholder = false);
 
     /// <summary>
     /// 执行状态枚举
@@ -558,6 +569,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
                     VariableType = variableType,
                     DisplayName = entry.DisplayName,
                     Group = entry.GroupName,
+                    // P0.6-5：分组占位（单层折叠）随契约传递，Shell 不再按分组名硬编码判断
+                    IsGroupPlaceholder = entry.IsGroupPlaceholder,
                     Kind = OutputVariableKind.Data,
                     RuntimeValue = OutputVariableArrayPromoter.Promote(runtimeValue, variableType, prop.PropertyType)
                 });

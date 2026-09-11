@@ -4400,7 +4400,7 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
             // 统一以「输出变量契约 SSOT」为数据来源：
             //  - 运行期：直读 result.GetOutputVariables()（含 RuntimeValue），取代 ReflectGetValue + GetResultItems 兜底
             //  - 设计期（未运行）：回退到 ToolRegistry 缓存的契约元数据展示属性结构（占位符 --）
-            var entries = new List<(string Name, string DisplayName, string? Group, Type? ClrType, object? RuntimeValue)>();
+            var entries = new List<(string Name, string DisplayName, string? Group, Type? ClrType, object? RuntimeValue, bool IsGroupPlaceholder)>();
 
             if (result != null)
             {
@@ -4413,7 +4413,8 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                         string.IsNullOrEmpty(v.DisplayName) ? v.Name : v.DisplayName,
                         v.VariableType == "Image" ? "图像" : v.Group, // 图像输出统一归入「图像」分组
                         SunEyeVision.Plugin.SDK.Models.SdkTypeVocabulary.ToSystemType(v.VariableType),
-                        v.RuntimeValue));
+                        v.RuntimeValue,
+                        v.IsGroupPlaceholder));
                 }
             }
             else if (!string.IsNullOrEmpty(toolId))
@@ -4427,7 +4428,8 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                         m.DisplayName,
                         m.PropertyType != null && typeof(IVisionImage).IsAssignableFrom(m.PropertyType) ? "图像" : m.GroupName, // 图像归「图像」组
                         m.PropertyType,
-                        designValue));
+                        designValue,
+                        m.IsGroupPlaceholder));
                 }
             }
             else
@@ -4533,11 +4535,12 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                         BuildMonitorableFields(node, singleMonitorable);
                     }
 
-                    // 引导几何单层折叠：PropertyMap entry "引导几何" 不渲染为中间节点，
-                    // 直接把数组展开的子节点（圆/线 → 中心/端点）挂到 "引导线" group 下。
-                    // 原因：PropertyMap entry 已是"几何数组"的语义占位，再作为节点显示与下钻的几何元素重复；
-                    // 检测区/屏蔽区图形走 "输入" group（基类），不在此分支内不受影响。
-                    if (e.Group == "输入/卡尺/引导线" && node.Children.Count > 0)
+                    // 分组占位单层折叠：声明了 IsGroupPlaceholder 的条目（如"引导几何"）不渲染为中间节点，
+                    // 直接把数组展开的子节点（圆/线 → 中心/端点）挂到其分组下。
+                    // 原因：该条目已是"几何数组"的语义占位，再作为节点显示会与下钻的几何元素重复。
+                    // ★ 声明式（P0.6-5）：由工具在 PropertyMap 上声明，Shell **不再认具体工具的中文分组名**
+                    //   （旧写法 e.Group == "输入/卡尺/引导线" 会因改名或新工具复用而静默失效、且不报错）。
+                    if (e.IsGroupPlaceholder && node.Children.Count > 0)
                     {
                         foreach (var child in node.Children)
                             currentParent.Children.Add(child);

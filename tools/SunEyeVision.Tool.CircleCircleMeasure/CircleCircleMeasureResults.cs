@@ -74,7 +74,7 @@ namespace SunEyeVision.Tool.CircleCircleMeasure
         /// <summary>元素2 拟合内点</summary>
         public Point2d[] Element2FitPoints { get; set; } = Array.Empty<Point2d>();
 
-        #region 输入回显（模块结果"输入区域/卡尺"）
+        #region 输入回显（模块结果"输入/卡尺"）
 
         /// <summary>元素1 引导几何（引导圆 → RoiShape 包装）</summary>
         [JsonIgnore]

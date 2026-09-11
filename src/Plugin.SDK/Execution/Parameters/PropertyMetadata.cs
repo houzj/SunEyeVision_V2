@@ -36,6 +36,12 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         public string? GroupName { get; set; }
 
         /// <summary>
+        /// 分组占位条目（单层折叠）：该条目不渲染为中间节点，展开子节点直接挂到 <see cref="GroupName"/> 下。
+        /// 由工具的 <c>PropertyMapEntry.IsGroupPlaceholder</c> 声明并随契约传递（方案 P0.6-5 声明式折叠）。
+        /// </summary>
+        public bool IsGroupPlaceholder { get; set; }
+
+        /// <summary>
         /// 属性类型
         /// </summary>
         public Type? PropertyType { get; set; }

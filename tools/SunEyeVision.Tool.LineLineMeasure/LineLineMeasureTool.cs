@@ -109,7 +109,7 @@ namespace SunEyeVision.Tool.LineLineMeasure
                 var e2Points = ExtractDiagnosticPoints(metrologyModel, e2Index, TransitionToHalcon(parameters.E2Transition.Value));
                 var (e2FitStart, e2FitEnd, e2Inliers, e2Rmse) = FitLineRobust(e2Points, parameters.E2DistanceThreshold.Value);
 
-                // 拟合内点/残差/点数（模块结果："输入区域/卡尺"检测点 + "拟合结果"）
+                // 拟合内点/残差/点数（模块结果："输入/卡尺"检测点 + "拟合结果"）
                 result.Element1FitPoints = e1Inliers;          // Point2d[]（契约可入表，显示层再转 WPF Point）
                 result.Element2FitPoints = e2Inliers;
                 result.Element1RMSE = e1Rmse;
@@ -186,7 +186,7 @@ namespace SunEyeVision.Tool.LineLineMeasure
                 result.Element2Center = MidPoint(e2FitStart, e2FitEnd);
                 result.Element2Angle = NormalizeAngle360(ComputeLineAngleDeg(e2FitStart, e2FitEnd));
 
-                // ===== 输入回显（模块结果"输入区域/卡尺"，对齐 LineDetect 规范）=====
+                // ===== 输入回显（模块结果"输入/卡尺"，对齐 LineDetect 规范）=====
                 result.GuideGeometry1 = BuildGuideGeometry(e1Start, e1End);
                 result.GuideGeometry2 = BuildGuideGeometry(e2Start, e2End);
                 result.E1CaliberCount = parameters.E1NumMeasures.Value;

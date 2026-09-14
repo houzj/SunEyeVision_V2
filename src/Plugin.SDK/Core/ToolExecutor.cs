@@ -104,9 +104,9 @@ namespace SunEyeVision.Plugin.SDK.Core
                     var applyResult = ApplyBindings(parameters, context);
                     if (!applyResult.IsSuccess)
                     {
-                        parameters.LogError($"参数绑定失败: {string.Join("; ", applyResult.Errors)}");
+                        parameters.LogError($"参数绑定失败: {applyResult.FailureDetail}");
                         return ToolResults.CreateError<TResult>(
-                            $"参数绑定失败: {string.Join("; ", applyResult.Errors)}");
+                            $"参数绑定失败: {applyResult.FailureDetail}");
                     }
                 }
 
@@ -188,9 +188,9 @@ namespace SunEyeVision.Plugin.SDK.Core
                     var applyResult = ApplyBindings(parameters, context);
                     if (!applyResult.IsSuccess)
                     {
-                        parameters.LogError($"参数绑定失败: {string.Join("; ", applyResult.Errors)}");
+                        parameters.LogError($"参数绑定失败: {applyResult.FailureDetail}");
                         return ToolResults.CreateError<GenericToolResults>(
-                            $"参数绑定失败: {string.Join("; ", applyResult.Errors)}");
+                            $"参数绑定失败: {applyResult.FailureDetail}");
                     }
                 }
 
@@ -276,9 +276,9 @@ namespace SunEyeVision.Plugin.SDK.Core
                     var applyResult = ApplyBindings(parameters, context);
                     if (!applyResult.IsSuccess)
                     {
-                        parameters.LogError($"参数绑定失败: {string.Join("; ", applyResult.Errors)}");
+                        parameters.LogError($"参数绑定失败: {applyResult.FailureDetail}");
                         return ToolResults.CreateError<TResult>(
-                            $"参数绑定失败: {string.Join("; ", applyResult.Errors)}");
+                            $"参数绑定失败: {applyResult.FailureDetail}");
                     }
                 }
 

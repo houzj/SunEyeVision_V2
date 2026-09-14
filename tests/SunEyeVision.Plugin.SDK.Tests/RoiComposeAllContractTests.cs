@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
@@ -16,6 +16,20 @@ namespace SunEyeVision.Plugin.SDK.Tests;
 /// </summary>
 public class RoiComposeAllContractTests
 {
+    [Fact]
+    public void ComposeResolver_CoversEveryComposableShape()
+    {
+        // 守卫（"能选不能用"防线）：几何参数模式列出的每个形状，拼装器都必须能产出几何。
+        // 历史缺陷：UI 列出 7 类形状而拼装器只认 4 类 → 用户选多边形/圆环/弧形，参数行能填、运行期拼不出几何。
+        // 今后新增形状时本测试立即红灯，逼"参数行 + 拼装器"同步补齐。
+        var availableShapes = new SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels.ParameterPanelViewModel().AvailableShapeTypes;
+        foreach (var shape in availableShapes)
+        {
+            var geometry = RoiComposeResolver.ComposeByTemplate(shape, _ => null);
+            Assert.True(geometry != null, $"形状 {shape} 已列入几何参数模式，但拼装器产不出几何（能选不能用）");
+        }
+    }
+
     private static Dictionary<string, object?> RotatedRectRaw(
         double[] cx, double[] cy, double[] w, double[] h, double[] angle)
         => new()

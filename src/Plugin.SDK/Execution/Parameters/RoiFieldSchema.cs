@@ -27,7 +27,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
     {
         /// <summary>
         /// 获取指定形状类型在 ROI 单元素上的可绑定字段表。
-        /// 空表 = 该类型无可下钻标量字段（如多边形，仅整体可绑）。
+        /// 空表 = 该类型无可下钻标量字段（如多边形：顶点数组无标量字段，只能整片绑 <c>[Type=Polygon]</c>）。
         /// </summary>
         public static IReadOnlyList<RoiFieldDef> GetFields(ShapeType shapeType)
         {

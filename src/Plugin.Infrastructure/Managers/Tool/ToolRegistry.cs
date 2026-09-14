@@ -485,16 +485,13 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
                         "ToolRegistry");
                 }
 
-                // 框架级契约元数据：**唯一判定源 = 能力声明**（P0.6-1），四要素取自单源表（P0.6-2）。
-                // 旧实现用 typeof(RoiParameters).IsAssignableFrom(ParamsType) 判定 —— 对 14/14 工具恒真，
-                // 门槛形同虚设（不使用区域的测量工具也凭空多出「检测区/屏蔽区图形」）。
-                // 现与运行期 ToolResults.GetOutputVariables() 走**同一个** FrameworkContractSchema.Resolve：
-                // 结构由能力决定 → 设计期与运行期结构恒一致（P0.6-3 结构与值分离，不再"看值删条目"）。
-                var capabilities = ToolCapability.Resolve(plugin.ResultType);
-                foreach (var contractEntry in FrameworkContractSchema.Resolve(capabilities))
-                {
-                    RegisterFrameworkContractMetadata(toolId, contractEntry);
-                }
+                // ★ 单源铁律（决策 17）：框架契约条目**不在此处另行注册**。
+                // 上面的 OutputVariables 遍历已把它们产出 —— ToolResults.GetOutputVariables() 是框架契约的
+                // **唯一产出点**，设计期与运行期共用同一个方法，能力门槛（[ToolCapability]）也随之自动生效。
+                //
+                // 历史教训：此处曾有一份**等价注册**，用途是补偿"空值跳过"（b593533c 回归）造成的设计期结构缺失。
+                // 该病根已由 P0.6-3（结构与值分离，契约层不再跳空值）根治；病根既除，补丁必须同生共死地下线 ——
+                // 否则结构**产出两遍**，表现为「选择绑定源 → 输入」下出现**两套**「检测区图形/屏蔽区图形」。
 
                 VisionLogger.Instance.Log(LogLevel.Success,
                     $"属性元数据提取完成(契约): {toolId}, 共 {dataVariableCount} 个数据变量",
@@ -506,47 +503,6 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
                     $"提取属性元数据失败(契约): {toolId}, 错误: {ex.Message}",
                     "ToolRegistry", ex);
             }
-        }
-
-        /// <summary>
-        /// 类型级注册框架契约元数据（检测区/屏蔽区等）。
-        /// </summary>
-        /// <remarks>
-        /// 属性名 / 显示名 / 组名 / 类型四要素<b>全部</b>取自 <see cref="FrameworkContractSchema"/> 单源声明，
-        /// 不再与运行期 <c>ToolResults.GetOutputVariables()</c> 各写一遍。
-        /// 未运行节点结果树靠 <c>ResolveRoiDesignValue</c> 从参数回退取值，无已绘区域时渲染 "--" 占位。
-        /// </remarks>
-        /// <param name="toolId">工具ID</param>
-        /// <param name="entry">框架契约条目声明（单源）</param>
-        private static void RegisterFrameworkContractMetadata(string toolId, FrameworkContractEntry entry)
-        {
-            var vocabulary = SunEyeVision.Plugin.SDK.Models.SdkTypeVocabulary.ToTypeVocabulary(entry.ValueType);
-            if (string.IsNullOrEmpty(vocabulary))
-                return; // 契约类型未映射到词汇表（契约演进导致），不阻塞工具启动
-
-            var varType = SunEyeVision.Plugin.SDK.Models.SdkTypeVocabulary.ToSystemType(vocabulary);
-            if (varType == null)
-                return;
-
-            var typeFullName = varType.FullName;
-            if (string.IsNullOrEmpty(typeFullName))
-                return;
-
-            var metadata = new ToolPropertyMetadata
-            {
-                PropertyName = entry.PropertyName,
-                DisplayName = entry.DisplayName,
-                GroupName = entry.GroupName,
-                PropertyType = varType.IsArray ? varType : varType.MakeArrayType(),
-            };
-
-            if (!_typeCache.TryGetValue(typeFullName, out var toolCache))
-                _typeCache[typeFullName] = toolCache = new Dictionary<string, List<ToolPropertyMetadata>>();
-
-            if (!toolCache.TryGetValue(toolId, out var properties))
-                toolCache[toolId] = properties = new List<ToolPropertyMetadata>();
-
-            properties.Add(metadata);
         }
 
         /// <summary>

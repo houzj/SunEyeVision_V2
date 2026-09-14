@@ -32,7 +32,10 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// <remarks>
         /// 无论常量模式还是绑定模式，Value 都存储具体值。
         /// 算法层只需要读取 Value，不需要关心来源。
+        /// ★ 序列化经 <see cref="LenientScalarOrArrayConverterFactory"/>：数组参数读取时兼容老工程的**标量**写法
+        ///（自动包成长度 1 数组）；写出始终为数组；非数组参数行为零变化。
         /// </remarks>
+        [JsonConverter(typeof(LenientScalarOrArrayConverterFactory))]
         public new T Value
         {
             get => _value;

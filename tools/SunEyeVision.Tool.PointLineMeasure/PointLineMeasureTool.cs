@@ -50,7 +50,19 @@ namespace SunEyeVision.Tool.PointLineMeasure
                 throw new InvalidOperationException(
                     "点1 输入方式为「按图形」，但未绑定上游点图形输出（词目 Point）：请在基本参数中选择数据源，或切换为「按参数」输入 X/Y。");
 
-            return new Point(parameters.P1Point.Value.X, parameters.P1Point.Value.Y);
+            // 数组口子（决策 4）：单元素即"一次绑定即得 X/Y"；
+            // 多元素配对属向量化（6d），当前**显式报错**（不静默取首元素、不静默用默认值，rule-015）。
+            var pts = parameters.P1Point.Value;
+            if (pts == null || pts.Length == 0)
+                throw new InvalidOperationException(
+                    "点1 绑定的上游点图形为空（0 个点）：请在基本参数中重新选择数据源。");
+
+            if (pts.Length > 1)
+                throw new InvalidOperationException(
+                    $"点1 绑定的上游点图形含 {pts.Length} 个点：多元素配对（向量化）尚未启用，"
+                    + "请改绑单个点，或切换为「按参数」逐值输入。");
+
+            return new Point(pts[0].X, pts[0].Y);
         }
 
         public PointLineMeasureResults Run(PointLineMeasureParameters parameters)

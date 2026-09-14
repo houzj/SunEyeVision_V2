@@ -51,6 +51,9 @@
     <Project Path="tools/SunEyeVision.Tool.PointPointMeasure/SunEyeVision.Tool.PointPointMeasure.csproj" />
   </Folder>
   <Folder Name="/Tests/" />
+  <Folder Name="/Tests/SunEyeVision.Plugin.Infrastructure.Tests/">
+    <Project Path="tests/SunEyeVision.Plugin.Infrastructure.Tests/SunEyeVision.Plugin.Infrastructure.Tests.csproj" />
+  </Folder>
   <Folder Name="/Tests/SunEyeVision.Core.Tests/">
     <Project Path="tests/SunEyeVision.Core.Tests/SunEyeVision.Core.Tests.csproj" />
   </Folder>

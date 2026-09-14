@@ -391,19 +391,6 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
         public bool CanRedo => _editHistory.CanRedo;
 
         /// <summary>
-        /// 可用的形状类型列表
-        /// </summary>
-        public IReadOnlyList<ShapeType> AvailableShapeTypes { get; } = new[]
-        {
-            ShapeType.Point,
-            ShapeType.Line,
-            ShapeType.Circle,
-            ShapeType.RotatedRectangle,
-            ShapeType.RotatedRectangle,
-            ShapeType.Polygon
-        };
-
-        /// <summary>
         /// 参数面板视图模型
         /// </summary>
         public ParameterPanelViewModel? ParameterPanel

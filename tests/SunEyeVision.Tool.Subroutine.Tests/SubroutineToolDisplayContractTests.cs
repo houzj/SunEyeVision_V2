@@ -139,16 +139,16 @@ public class SubroutineToolDisplayContractTests
     }
 
     [Fact]
-    public void RoiContainer_AllShapeTypes_AreRenderedByGeometry()
+    public void RoiContainer_CircleAndRotatedRect_AreRenderedByGeometry()
     {
-        // Blob 检测区域含 2 圆 + 1 矩形 + 1 旋转矩形：不同显示项按 [Type=X] 各自下钻绘制。
-        // 圆→真圆、矩形→Rect、旋转矩形→四角轮廓。
+        // Blob 检测区域含 2 圆 + 1 旋转矩形：不同显示项按 [Type=X] 各自下钻绘制
+        //（圆→真圆、旋转矩形→四角轮廓）。
+        // 注：轴对齐矩形（WPF Rect / [Type=Rectangle]）已随 P0-2 并入旋转矩形，此处不再覆盖。
         var internalResult = new GenericToolResults();
         internalResult.AddResultItem("检测区图形", new RoiShape[]
         {
             new RoiShape { Geometry = new Circle2d(new Point(10, 20), 5) },
             new RoiShape { Geometry = new Circle2d(new Point(30, 40), 7) },
-            new RoiShape { Geometry = new System.Windows.Rect(50, 60, 10, 12) },
             new RoiShape { Geometry = new RotatedRect2d(100, 110, 20, 30, 15) },
         });
 
@@ -158,13 +158,6 @@ public class SubroutineToolDisplayContractTests
             DisplayType = SubroutineDisplayType.Circle,
             BindingSource = "internalNode.检测区图形[Type=Circle]",
             GraphicsStyle = new GraphicsStyle { Name = "圆" }
-        };
-        var rectItem = new SubroutineDisplayItem
-        {
-            DisplayName = "矩形",
-            DisplayType = SubroutineDisplayType.Rectangle,
-            BindingSource = "internalNode.检测区图形[Type=Rectangle]",
-            GraphicsStyle = new GraphicsStyle { Name = "矩形" }
         };
         var rrItem = new SubroutineDisplayItem
         {
@@ -177,7 +170,6 @@ public class SubroutineToolDisplayContractTests
         var parameters = MakeParams(p =>
         {
             p.DisplayConfigs.Add(circleItem);
-            p.DisplayConfigs.Add(rectItem);
             p.DisplayConfigs.Add(rrItem);
         }, internalResult);
         var result = Run(parameters);
@@ -188,11 +180,6 @@ public class SubroutineToolDisplayContractTests
         var circleGraphics = result.Display.Items.OfType<GraphicsDisplayItem>()
             .Where(i => i.Type == GraphicsType.Circle);
         Assert.Equal(2, circleGraphics.SelectMany(i => i.Geometries).OfType<Circle2d>().Count());
-
-        // 1 个矩形 → Rect
-        var rectGraphics = result.Display.Items.OfType<GraphicsDisplayItem>()
-            .Where(i => i.Type == GraphicsType.Rectangle);
-        Assert.Single(rectGraphics.SelectMany(i => i.Geometries).OfType<Rect>());
 
         // 1 个旋转矩形 → 四角轮廓（Contour 闭合）
         var rrContours = result.Display.Items.OfType<GraphicsDisplayItem>()

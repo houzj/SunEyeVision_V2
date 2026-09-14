@@ -132,6 +132,35 @@ public class ToolCapabilityContractTests
         Assert.Equal("ROI", inspection.VariableType);
     }
 
+    [Fact]
+    public void GetOutputVariables_FrameworkEntries_AppearExactlyOnce()
+    {
+        // 守卫（决策 17：框架契约**唯一产出点**）：声明了区域能力的契约里，检测区/屏蔽区**各只能出现一次**。
+        // 历史缺陷：设计期又"旁路注册"了一份等价元数据（补丁），病根（空值跳过）治好后补丁未撤
+        // ⇒ 结构产出两遍，表现为「选择绑定源 → 输入」下出现**两套**「检测区图形/屏蔽区图形」。
+        var variables = new RoiResults().GetOutputVariables();
+
+        Assert.Equal(1, variables.Count(v => v.Name == nameof(ToolResults.InspectionGeometries)));
+        Assert.Equal(1, variables.Count(v => v.Name == nameof(ToolResults.MaskGeometries)));
+
+        // 更强不变式：契约里**任何**变量名都不得重复（重名会让绑定树出现"幽灵条目"）
+        var duplicates = variables.GroupBy(v => v.Name).Where(g => g.Count() > 1).Select(g => g.Key).ToList();
+        Assert.Empty(duplicates);
+    }
+
+    [Fact]
+    public void FrameworkContractSchema_ResolvedEntries_HaveUniquePropertyNames()
+    {
+        // 守卫（单源表自身）：任一能力组合解析出的条目属性名不得重复，
+        // 否则契约层会按"两条同名字段"产出（绑定树同样出现两套）。
+        var allCapabilities = Enum.GetValues<ToolCapabilities>()
+            .Aggregate(ToolCapabilities.None, (acc, c) => acc | c);
+        var names = FrameworkContractSchema.Resolve(allCapabilities).Select(e => e.PropertyName).ToList();
+
+        Assert.NotEmpty(names);
+        Assert.Equal(names.Count, names.Distinct().Count());
+    }
+
     #endregion
 
     #region 分组占位声明（P0.6-5 声明式折叠）

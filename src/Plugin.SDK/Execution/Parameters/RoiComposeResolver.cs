@@ -126,6 +126,17 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 ShapeType.RotatedRectangle => new RotatedRect2d(
                     Get("CenterX", 0), Get("CenterY", 0),
                     Get("Width", 100), Get("Height", 100), Get("Angle", 0)),
+                // 圆环/弧形（本版补全）：扁平参数名与 RoiFieldSchema / 参数行**同源**，
+                // 默认值与脚本默认几何（ScriptTypeMapper）保持一致。
+                // ★ 多边形**不在此列**：其几何是顶点数组，扁平参数无法表达顶点 → 拼装器无从实现
+                //   （若列入即"能选不能用"）。多边形的绑定出口是区域订阅的 [Type=Polygon] 整片绑定。
+                ShapeType.Annulus => new Annulus2d(
+                    Get("CenterX", 0), Get("CenterY", 0),
+                    Get("InnerRadius", 30), Get("OuterRadius", 80),
+                    Get("StartAngle", 0), Get("EndAngle", 2 * Math.PI)),
+                ShapeType.Arc => new Arc2d(
+                    Get("CenterX", 0), Get("CenterY", 0), Get("Radius", 50),
+                    Get("StartAngle", 0), Get("EndAngle", Math.PI)),
                 _ => null,
             };
         }

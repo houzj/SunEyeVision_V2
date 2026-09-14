@@ -186,6 +186,25 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         public Dictionary<string, ParameterResolveResult> Results { get; set; } = new Dictionary<string, ParameterResolveResult>();
 
         /// <summary>
+        /// 失败详情：<c>Errors</c> + <c>Warnings</c> 合并。
+        /// </summary>
+        /// <remarks>
+        /// 修正"失败原因不可见"：<c>FailedCount</c> 有三条来源，其中「解析值为 null」「类型转换失败」
+        /// 只写 <c>Warnings</c>；若调用方只打印 <c>Errors</c>，就会出现 <c>"参数绑定失败: "</c> 这种**空原因**。
+        /// 报错必须能自解释（rule-015 报错优先 + 可诊断）。
+        /// </remarks>
+        public string FailureDetail
+        {
+            get
+            {
+                var parts = new List<string>();
+                parts.AddRange(Errors);
+                parts.AddRange(Warnings);
+                return string.Join("; ", parts);
+            }
+        }
+
+        /// <summary>
         /// 错误信息列表
         /// </summary>
         public List<string> Errors { get; set; } = new List<string>();

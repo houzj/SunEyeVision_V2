@@ -130,11 +130,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
         public IReadOnlyList<ShapeType> AvailableRegionShapeTypes => AllShapeTypes;
 
         /// <summary>
-        /// 几何参数拼装模式的形状可选项（**当前阶段**只列已有扁平参数定义的形状，避免"能选却出空参数行"）。
+        /// 几何参数拼装模式的形状可选项：**既要有扁平参数定义，又要拼装器可实现**（缺一即"能选不能用"）。
         /// </summary>
         /// <remarks>
-        /// 与 <see cref="AvailableRegionShapeTypes"/> 的差异是**阶段性**的：补全 Polygon/Annulus/Arc
-        /// 的拼装参数定义后即统一。差异在此显式暴露，而不是让用户"选了才发现没参数行"。
+        /// ★ **多边形不列入**：其几何是顶点数组，无标量字段（见 <see cref="RoiFieldSchema"/> 的多边形空表），
+        /// 扁平参数无法表达顶点 → 拼装器无从实现。多边形的绑定出口是区域订阅的 <c>[Type=Polygon]</c> 整片绑定。
+        /// 与 <see cref="AvailableRegionShapeTypes"/> 的差异即"多一个多边形"，且该差异由**几何本质**决定（永久）。
         /// </remarks>
         public IReadOnlyList<ShapeType> AvailableShapeTypes { get; } = new[]
         {
@@ -142,6 +143,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
             ShapeType.Line,
             ShapeType.Circle,
             ShapeType.RotatedRectangle,
+            ShapeType.Annulus,
+            ShapeType.Arc,
         };
 
         /// <summary>
@@ -430,6 +433,24 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels
                     ("Width", "宽度", typeof(double)),
                     ("Height", "高度", typeof(double)),
                     ("Angle", "角度", typeof(double)),
+                },
+                // 圆环/弧形（本版补全）：参数名与 RoiComposeResolver 的拼装键、RoiFieldSchema 的字段名三者同源。
+                ShapeType.Annulus => new List<(string, string, Type)>
+                {
+                    ("CenterX", "中心X", typeof(double)),
+                    ("CenterY", "中心Y", typeof(double)),
+                    ("InnerRadius", "内半径", typeof(double)),
+                    ("OuterRadius", "外半径", typeof(double)),
+                    ("StartAngle", "起始角", typeof(double)),
+                    ("EndAngle", "终止角", typeof(double)),
+                },
+                ShapeType.Arc => new List<(string, string, Type)>
+                {
+                    ("CenterX", "中心X", typeof(double)),
+                    ("CenterY", "中心Y", typeof(double)),
+                    ("Radius", "半径", typeof(double)),
+                    ("StartAngle", "起始角", typeof(double)),
+                    ("EndAngle", "终止角", typeof(double)),
                 },
                 _ => new List<(string, string, Type)>(),
             };

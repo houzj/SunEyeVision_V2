@@ -41,7 +41,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
 
             // 整对象订阅行绑定目标 = ROI 契约（RoiShape[]，词目 ROI）：
             // 传 DataType 后，ParamBinding 绑定树按词目定型（ArrayTreeFormatter.BuildRoiTypedChildren）：
-            // ROI 目标 → 检测区图形[] → 整体 / 各类型集合叶（点谁绑谁）；
+            // ROI 目标 → 检测区图形[] → 各类型集合叶（点谁绑谁）；「整体」已取消（方案 §11）
             // 字段级绑定（圆心X/半径…）自动出现在「订阅几何参数」行的 double 参数树中（类型容器→字段叶）。
             // （RoiShape[] 为数组类型无法用 XAML x:Type 表达，故在 code-behind 设置。）
             WholeRegionBinding.DataType = typeof(RoiShape[]);

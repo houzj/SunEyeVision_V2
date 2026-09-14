@@ -190,6 +190,10 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                     $"参数 {property.Name} 目标类型: {targetType.Name}, 解析结果类型: {value?.GetType().Name ?? "null"}", 
                     nameof(ParameterResolver));
 
+                // 数组口子读取侧兼容：目标 T[] 而值是单个 T → 先包成长度 1 数组（决策 5），
+                // 否则会被下面的类型转换判为"转换失败"（且该失败只进 Warnings，报错原因会是空的）。
+                value = CoerceScalarToArrayIfNeeded(value, targetType);
+
                 // 类型转换
                 if (value != null && value.GetType() != targetType)
                 {
@@ -218,6 +222,31 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
                 result.IsSuccess = false;
 
             return result;
+        }
+
+        /// <summary>
+        /// 数组口子**读取侧**兼容（决策 5：单值 = 长度 1 的数组）。
+        /// </summary>
+        /// <remarks>
+        /// 目标参数是 <c>T[]</c> 而解析值是**单个 T**（老工程把标量点参数绑到单值输出上）时，
+        /// 先包成长度 1 的数组，避免被判成"类型转换失败"。
+        /// 非该情形原样返回，完全交给既有类型转换逻辑（零行为变更）。
+        /// </remarks>
+        private static object? CoerceScalarToArrayIfNeeded(object? value, Type targetType)
+        {
+            if (value == null || !targetType.IsArray)
+                return value;
+
+            if (value is Array)
+                return value;   // 已是数组（含空数组）
+
+            var elementType = targetType.GetElementType();
+            if (elementType == null || !elementType.IsInstanceOfType(value))
+                return value;   // 元素类型不匹配 → 交给既有转换/报错
+
+            var wrapped = Array.CreateInstance(elementType, 1);
+            wrapped.SetValue(value, 0);
+            return wrapped;
         }
 
         /// <summary>

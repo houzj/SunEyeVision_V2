@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Windows;
 using SunEyeVision.Plugin.SDK.UI.Themes;
 using Xunit;
@@ -22,7 +22,7 @@ public class SdkThemeContractTests
         "pack://application:,,,/SunEyeVision.Plugin.SDK;component/UI/Themes/DefaultTheme.xaml";
 
     private static readonly string SdkGenericUri =
-        "pack://application:,,,/SunEyeVision.Plugin.SDK;component/UI/Themes/Generic.xaml";
+        "pack://application:,,,/SunEyeVision.Plugin.SDK;component/Themes/Generic.xaml";
 
     /// <summary>
     /// 契约校验：遍历 SdkThemeKeys 全部常量，每个 key 都必须在 DefaultTheme.xaml 中有定义。

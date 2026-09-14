@@ -61,41 +61,104 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
                 return;
             }
 
-            // 只扫描 plugins 目录根层，不递归子目录（防止 ScriptRefs 等数据目录被误扫）
-            var dllFiles = Directory.GetFiles(pluginDirectory, "*.dll", SearchOption.TopDirectoryOnly)
-                .Concat(
-                    Directory.GetDirectories(pluginDirectory)
-                        .SelectMany(subDir => Directory.GetFiles(subDir, "*.dll", SearchOption.TopDirectoryOnly))
-                )
-                .ToArray();
-            _logger.LogInfo($"找到 {dllFiles.Length} 个DLL文件");
-
-            foreach (var dllFile in dllFiles)
+            // 插件发现走**唯一策略源**（PluginAssemblyPolicy）：只认「与目录同名的主程序集」。
+            // 自包含改造后插件目录里还有契约 / 框架模块 / 第三方副本，逐个载入会把它们也带进宿主
+            // ⇒ 契约副本一旦被独立载入，即埋下「两套同名类型」的隐患。
+            var pluginAssemblies = PluginAssemblyPolicy.DiscoverPluginAssemblies(pluginDirectory);
+            if (pluginAssemblies.Count == 0)
             {
-                LoadPlugin(dllFile);
+                _logger.LogWarning($"未发现插件程序集（约定：plugins/<工具名>/<工具名>.dll）: {pluginDirectory}");
+                return;
             }
 
-            _logger.LogInfo($"插件加载完成，共加载 {ToolRegistry.GetToolCount()} 个工具");
+            _logger.LogInfo($"发现 {pluginAssemblies.Count} 个插件程序集");
+
+            var loadedCount = 0;
+            var rejectedCount = 0;
+            foreach (var assemblyPath in pluginAssemblies)
+            {
+                if (LoadPlugin(assemblyPath) == PluginLoadOutcome.Loaded)
+                    loadedCount++;
+                else
+                    rejectedCount++;
+            }
+
+            // 加载结果**必须可见**（方案 §十一 防御机制 #3/#4）：
+            // 多人协作下「插件没生效却不知为何」是最难排查的一类问题。
+            _logger.LogInfo($"插件加载完成：成功 {loadedCount} 个，未加载 {rejectedCount} 个，"
+                + $"共注册工具 {ToolRegistry.GetToolCount()} 个");
+        }
+
+        /// <summary>单个插件的加载结果（用于汇总"成功 / 未加载"计数）。</summary>
+        private enum PluginLoadOutcome
+        {
+            /// <summary>已加载并至少注册了一个工具。</summary>
+            Loaded,
+
+            /// <summary>被拒绝（契约不兼容 / 依赖缺失 / 无工具类型）—— 只跳过它自己。</summary>
+            Rejected,
         }
 
         /// <summary>
-        /// 加载单个插件DLL
+        /// 在**独立隔间**中加载单个插件DLL。
         /// </summary>
-        private void LoadPlugin(string dllPath)
+        /// <remarks>
+        /// 关键顺序与理由：
+        /// <list type="number">
+        /// <item><b>先隔间、后加载</b>：契约 / 框架模块走宿主回落，保证 <c>IToolPlugin</c> 类型身份唯一；</item>
+        /// <item><b>先核对证件、后扫描类型</b>：契约版本不符时给出**可自助修复**的原因；
+        ///   若反过来先 <c>GetTypes()</c>，会因新版本依赖缺失而抛出"找不到程序集"的误导性异常；</item>
+        /// <item><b>失败只跳过该插件</b>（Fail-Forward）：坏插件不影响其它插件与宿主启动。</item>
+        /// </list>
+        /// </remarks>
+        private PluginLoadOutcome LoadPlugin(string dllPath)
         {
+            var pluginFileName = Path.GetFileName(dllPath);
+
             try
             {
-                var assembly = Assembly.LoadFrom(dllPath);
-                
-                // 扫描带有 [Tool] 特性的类
-                var toolTypes = assembly.GetTypes()
-                    .Where(t => t.GetCustomAttribute<ToolAttribute>() != null && !t.IsAbstract);
+                var context = new PluginLoadContext(dllPath);
+                var assembly = context.LoadFromAssemblyPath(dllPath);
 
+                // 证件核对（ToolContract）：判定依据是程序集元数据，不要求插件自报版本
+                var pluginContractVersion = ToolContract.GetPluginContractVersion(assembly);
+                if (!ToolContract.IsCompatible(pluginContractVersion))
+                {
+                    _logger.LogError($"[插件契约] 拒绝加载 {pluginFileName}：{ToolContract.Describe(pluginContractVersion)}");
+                    return PluginLoadOutcome.Rejected;
+                }
+
+                Type[] types;
+                try
+                {
+                    types = assembly.GetTypes();
+                }
+                catch (ReflectionTypeLoadException ex)
+                {
+                    // 依赖不全时把**每个**加载异常都列出来，否则只有一句"类型加载失败"，无从下手
+                    var details = string.Join("; ",
+                        ex.LoaderExceptions.Where(e => e != null).Select(e => e!.Message).Distinct());
+                    _logger.LogError($"[插件] {pluginFileName} 类型扫描失败（依赖缺失？）: {details}");
+                    return PluginLoadOutcome.Rejected;
+                }
+
+                var toolTypes = types
+                    .Where(t => t.GetCustomAttribute<ToolAttribute>() != null && !t.IsAbstract)
+                    .ToArray();
+
+                if (toolTypes.Length == 0)
+                {
+                    _logger.LogWarning($"[插件] {pluginFileName} 未发现带 [Tool] 的工具类型"
+                        + "（约定：主程序集须与所在目录同名，请确认拷入的是工具主程序集）");
+                    return PluginLoadOutcome.Rejected;
+                }
+
+                var registeredCount = 0;
                 foreach (var toolType in toolTypes)
                 {
                     try
                     {
-                        // 确保实现了 IToolPlugin 接口
+                        // 类型身份依赖"契约只留一份"：契约被回落宿主，故此判定才为真
                         if (!typeof(IToolPlugin).IsAssignableFrom(toolType))
                         {
                             _logger.LogWarning($"类型 {toolType.Name} 有 [Tool] 特性但未实现 IToolPlugin 接口");
@@ -103,6 +166,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
                         }
 
                         ToolRegistry.RegisterTool(toolType);
+                        registeredCount++;
                         _logger.LogInfo($"已加载工具: {toolType.Name}");
                     }
                     catch (Exception ex)
@@ -110,10 +174,20 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
                         _logger.LogError($"加载工具失败: {toolType.Name} - {ex.Message}");
                     }
                 }
+
+                // 可诊断输出（本次事故的盲区）：把"目录里带了什么"与"实际在隔间里解析了什么"分开记。
+                // 否则"工具自带了某库、却被宿主共享"这类情况完全不可见 —— 而这正是
+                // 「[JsonDerivedType] 特性读不到 ⇒ 判别符未注册」那类问题的第一现场。
+                _logger.LogInfo($"[插件] {pluginFileName}：隔间内解析依赖 {context.LocallyResolvedDependencies.Count} 个"
+                    + "（其余同名副本由宿主提供/未被使用）");
+
+                return registeredCount > 0 ? PluginLoadOutcome.Loaded : PluginLoadOutcome.Rejected;
             }
             catch (Exception ex)
             {
-                _logger.LogError($"加载插件DLL失败: {dllPath} - {ex.Message}");
+                // 报错优先（rule-008）：绝不静默吞掉加载失败
+                _logger.LogError($"[插件] 加载失败: {pluginFileName} - {ex.GetType().Name}: {ex.Message}");
+                return PluginLoadOutcome.Rejected;
             }
         }
 

@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Media;
 using SunEyeVision.Plugin.SDK.UI.Themes;
 using Xunit;
@@ -20,7 +20,7 @@ namespace SunEyeVision.Plugin.SDK.Tests;
 public class ThemeResourceResolutionTests
 {
     private static readonly string SdkGenericUri =
-        "pack://application:,,,/SunEyeVision.Plugin.SDK;component/UI/Themes/Generic.xaml";
+        "pack://application:,,,/SunEyeVision.Plugin.SDK;component/Themes/Generic.xaml";
 
     private static readonly string DefaultThemeUri =
         "pack://application:,,,/SunEyeVision.Plugin.SDK;component/UI/Themes/DefaultTheme.xaml";

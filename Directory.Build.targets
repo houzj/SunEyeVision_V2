@@ -39,31 +39,37 @@
   <PropertyGroup Condition="'$(IsToolPlugin)'=='true'">
     <OutDir Condition="'$(Configuration)'=='Debug'">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)dev\Debug\plugins\$(MSBuildProjectName)\'))</OutDir>
     <OutDir Condition="'$(Configuration)'=='Release'">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)Release\SunEyeVision_v1.0.0\SunEyeVision\plugins\$(MSBuildProjectName)\'))</OutDir>
+
+    <!-- ★ 必须同步 OutputPath / TargetDir / TargetPath（XAML 设计器可解析性的真正开关）
+         只覆盖 OutDir 会让 SDK 早期依据 OutputPath 算出的 TargetPath 指向 dev\Debug\<Tool>.dll，
+         而实际产物在 plugins\<Tool>\ ⇒ 两者分叉。VS 的设计器按 **TargetPath** 找项目输出程序集，
+         找不到就报："由于程序集缺失，元素[ToolDebugControlBase]无法显示。生成应用程序可允许查看此控件。"
+         （实测证据：dotnet msbuild -p:Configuration=Debug -p:DesignTimeBuild=true
+                    -getProperty:TargetPath → dev\Debug\SunEyeVision.Tool.PointLineMeasure.dll
+                    同时 OutDir 已是 plugins\SunEyeVision.Tool.PointLineMeasure\）
+         （同款坑在 Directory.Build.props:30-32 已有记录："仅设 OutDir 时 TargetPath 仍回落"。） -->
+    <OutputPath>$(OutDir)</OutputPath>
+    <TargetDir>$(OutDir)</TargetDir>
+    <TargetPath>$(OutDir)$(TargetName)$(TargetExt)</TargetPath>
   </PropertyGroup>
 
-  <!-- Step 1: 从 ReferenceCopyLocalPaths 移除非工具主程序集
-       <ProjectReference Private=false</ProjectReference> 只控制 ProjectReference,
-       PackageReference 走 ReferenceCopyLocalPaths 通道,源头 <Private>false</Private> 也无效。
-       必须在 ResolveAssemblyReferences 之后从 ReferenceCopyLocalPaths 中显式 Remove。
-       保留白名单: SunEyeVision.Tool.* (工具主程序集) + SunEyeVision.* 内部跨工具共享程序集。
-       其余 framework / NuGet 运行时 / 工具运行时依赖 一律 Remove, 由主程序统一提供。
-       设计模型: "宿主统一加载" - 主程序 csproj 集中声明 Script 工具所需的 AvalonEdit/Roslyn 等重型 NuGet,
-       主程序 AppDomain 在 dev/Debug/ 根目录 BCL probing 找到这些依赖,
-       Assembly.LoadFrom(工具 dll) 时 CLR 自动在 probing 路径解析。-->
-  <Target Name="RemoveNonToolAssembliesFromCopyLocal" AfterTargets="ResolveAssemblyReferences" Condition="'$(IsToolPlugin)'=='true'">
+  <!-- Step 1: 从 ReferenceCopyLocalPaths 中剔除【大件平台】依赖（由宿主统一提供）
+       依赖三分类（方案 §六「工具插件自包含与独立开发方案」）:
+         ① 契约程序集(Plugin.SDK) + 工具自身业务依赖(NuGet/私有库/框架模块) → **保留**:
+            "自带行李"(R1) —— 独立开发、XAML 设计器可解析、交付即用的前提;
+         ② 大件平台(halcon 托管与原生、OpenCV 等) → 不复制, 宿主统一提供:
+            否则每个工具目录数 GB, 开发包无法分发;
+         ③ 宿主自身程序集(UI/Workflow/DeviceDriver) → **不在本清单内**: 工具若引用它们属分层违规,
+            应由编译期暴露, 而不是被构建悄悄藏起来(rule-008 报错优先)。
+       安全性: 复制的是"该工具**真实引用到的闭包**"(由 RAR 决定), 不是全量, 故放开剔除无膨胀风险。
+       历史: 本 Step 原名 RemoveNonToolAssembliesFromCopyLocal, 曾剔除全部 SunEyeVision.* 与非
+       SunEyeVision dll("宿主统一加载"模型) —— 该模型使工具无法独立开发/设计器无法解析, 已按方案反转。 -->
+  <Target Name="RemoveHostProvidedAssembliesFromCopyLocal" AfterTargets="ResolveAssemblyReferences" Condition="'$(IsToolPlugin)'=='true'">
     <ItemGroup>
-      <!-- 1.1 移除所有不以 SunEyeVision.Tool. 开头的 SunEyeVision.* 主程序集(框架模块) -->
+      <!-- 大件平台清单(唯一真相源): 新增平台级大件时只改这里 -->
       <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)"
-          Condition="$([System.String]::new('%(Filename)').StartsWith('SunEyeVision.'))
-                    And !$([System.String]::new('%(Filename)').StartsWith('SunEyeVision.Tool.'))" />
-      <!-- 1.2 移除所有 NuGet framework dll(AvalonEdit / Roslyn / OpenCvSharp / Humanizer / System.Composition.* 等)
-              特征: 不以 SunEyeVision. 开头的所有 dll
-              Microsoft.NETCore.App 共享运行时引用,本来就不该出现在 ReferenceCopyLocalPaths -->
-      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)"
-          Condition="!$([System.String]::new('%(Filename)').StartsWith('SunEyeVision.'))" />
-      <!-- 1.3 移除 halcondotnetxl(主程序统一加载) -->
-      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)"
-          Condition="$([System.String]::new('%(Filename)').Equals('halcondotnetxl'))" />
+          Condition="$([System.String]::new('%(Filename)').Equals('halcondotnetxl'))
+                    Or $([System.String]::new('%(Filename)').StartsWith('OpenCvSharp'))" />
     </ItemGroup>
   </Target>
 
@@ -80,20 +86,16 @@
     </ItemGroup>
   </Target>
 
-  <!-- Step 4: 删除工具自身的 .deps.json
-       走 SDK 内部独立的 AddDepsFileToOutput 通道,
-       不在 ReferenceCopyLocalPaths / AllItemsFullPathWithTargetPath 中,
-       源头 <Private>false</Private> 和 OutDir 覆盖都无法拦截。
-       必须 Build 之后 Delete,Delete 的 Files 属性不支持通配符,
-       必须先放入 ItemGroup 才能用 @(_ToolDepsJson) 展开。
-       工具的外部 NuGet 依赖由主程序 AppDomain 在 dev/Debug/ 根目录统一提供,
-       工具 dll 不应独立解析 deps.json,保留会导致 AssemblyLoadContext 版本冲突。 -->
-  <Target Name="RemoveToolDepsJson" AfterTargets="Build" Condition="'$(IsToolPlugin)'=='true'">
-    <ItemGroup>
-      <_ToolDepsJson Include="$(OutDir)SunEyeVision.Tool.*.deps.json" />
-    </ItemGroup>
-    <Delete Files="@(_ToolDepsJson)" />
-  </Target>
+  <!-- Step 4: 【已反转】保留工具自身的 .deps.json
+       旧实现删除它,理由是"工具的外部 NuGet 依赖由主程序 AppDomain 在 dev/Debug 根统一提供,
+       工具 dll 不应独立解析 deps.json,保留会导致 AssemblyLoadContext 版本冲突"。
+       该结论只成立于"宿主统一加载"模型;方案《工具插件自包含与独立开发方案》§六 已改为
+       "每插件隔间 + 自带行李",结论随之反转:
+         · PluginLoadContext 用 AssemblyDependencyResolver 解析**工具自带依赖**,
+           其解析依据正是 .deps.json ⇒ 删掉它,"自带行李"即失效(工具自己的第三方库找不到);
+         · 依赖清单本身是行李的一部分(R1 自包含),缺它则工具无法独立交付;
+         · 版本冲突已由"隔间 + 契约/大件回落宿主"在**加载期**解决,不再需要在构建期删清单。
+       体积: 每个 deps.json 仅几 KB,可忽略。 -->
 
   <!-- Step 5: 删除 NuGet 多语言资源子目录
        AvalonEdit / Roslyn / OpenCvSharp4 / ICSharpCode.Decompiler 等 NuGet 包内嵌 13 种语言的 .NET 资源卫星程序集,

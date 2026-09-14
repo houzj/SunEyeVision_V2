@@ -6,11 +6,16 @@
                     xmlns:metadata="clr-namespace:SunEyeVision.Plugin.SDK.Metadata"
                     xmlns:themes="clr-namespace:SunEyeVision.Plugin.SDK.UI.Themes">
 
-    <!-- 颜色/主题资源说明：
-         SDK 兜底语义 token（DefaultTheme.xaml）不再由本样式库合并，改由宿主 Application 级（AppResources.xaml）显式合入。
-         原因：本样式库被 SDK 控件局部合入（如 Roi 编辑器），若在此合并 DefaultTheme 会把固定亮色值带到控件级，
-         遮蔽 Application 级主题字典。拆出后控件合入本库只拿样式（内部全用 DynamicResource 向上查找），
-         主题字典能正常覆盖；脱离 UI 宿主时由宿主 Application 级 DefaultTheme 提供兜底。 -->
+    <!-- 兜底语义 token（DefaultTheme.xaml）在本文件（= SDK 程序集默认主题 themes/generic.xaml）内合并：
+         本文件由 WPF 在"控件找不到样式/token"时自动回退（无需任何注入），故设计器与独立开发环境也能拿到兜底。
+         · 设计器 / 无宿主环境：命中本文件的兜底值（亮色基准）⇒ SDK 控件可见、可调布局；
+         · 主程序内：Application 级主题字典（亮/暗）优先级更高，照常覆盖 ⇒ 主题切换不受影响。
+         ★ 约束：**不可**再让 SDK 控件 XAML 元素级合入本文件 —— 元素作用域优先级最高，
+           会把固定亮色带进控件作用域、遮蔽 Application 级主题（历史缺陷，勿重蹈）。 -->
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.SDK;component/UI/Themes/DefaultTheme.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+
 
     <!-- 转换器 -->
     <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>

@@ -46,8 +46,9 @@
     <InternalsVisibleTo Include="SunEyeVision.Tool.Script" />
   </ItemGroup>
 
-  <!-- WPF 主题配置 -->
-  <ItemGroup>
-    <ThemeInfo Include="Themes\Generic.xaml" />
-  </ItemGroup>
+  <!-- WPF 主题配置说明：
+       SDK 控件默认样式库位于 Themes\Generic.xaml（约定路径 = 程序集默认主题），
+       由 AssemblyInfo.cs 的 [assembly: ThemeInfo(...)] 声明其位置。
+       （原先此处的 <ThemeInfo Include="Themes\Generic.xaml" /> 是无效项：既不生成特性、也不起任何作用，
+         实测根因即"SDK 缺 ThemeInfo 特性 ⇒ WPF 不查 generic.xaml ⇒ 设计器里控件空白"，故删除。） -->
 </Project>

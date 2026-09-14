@@ -13,12 +13,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Plugin.SDK\SunEyeVision.Plugin.SDK.csproj">
-      <Private>false</Private>
-    </ProjectReference>
+    <!-- 契约与业务依赖**随工具复制**（自带行李，方案 §六 ①）: 独立开发 / XAML 设计器可解析 / 交付即用。
+         大件平台(halcondotnetxl / OpenCV) 由 Directory.Build.targets 的 Step 1 剔除，宿主统一提供。 -->
+    <ProjectReference Include="..\..\src\Plugin.SDK\SunEyeVision.Plugin.SDK.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <!-- 大件平台：仅用于编译，不复制（宿主提供） -->
     <Reference Include="halcondotnetxl">
       <HintPath>..\..\dev\Debug\halcondotnetxl.dll</HintPath>
       <Private>false</Private>
@@ -26,9 +27,7 @@
   </ItemGroup>
   <ItemGroup>
     <!-- Hal 实现（HalImage/GetHalconImage/HOperatorSet 扩展），首期统一引 HalAdapter 做 metrology measure -->
-    <ProjectReference Include="..\..\src\SunEyeVision.HalAdapter\SunEyeVision.HalAdapter.csproj">
-      <Private>false</Private>
-    </ProjectReference>
+    <ProjectReference Include="..\..\src\SunEyeVision.HalAdapter\SunEyeVision.HalAdapter.csproj" />
   </ItemGroup>
 
 </Project>

@@ -13,7 +13,7 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="../Themes/Generic.xaml"/>
+                <ResourceDictionary Source="../../Themes/Generic.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
             <!-- 设计时数据源 -->

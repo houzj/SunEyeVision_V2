@@ -41,8 +41,12 @@ namespace SunEyeVision.Tool.PointPointMeasure
             set => SetProperty(ref _p1InputMode, value);
         }
 
-        /// <summary>按图形：整体绑定上游点图形输出（词目 Point），一次绑定即得 X/Y</summary>
-        public ParamValue<Point2d> P1Point { get; set; } = ParamValue<Point2d>.CreateConstant(default, "P1Point");
+        /// <summary>
+        /// 按图形：绑定上游点图形输出（词目 Point）。**数组口子**（决策 4）：来多少算多少 ——
+        /// 单元素即原"一次绑定即得 X/Y"语义；多元素配对（向量化）由 6d 承接。
+        /// </summary>
+        public ParamValue<Point2d[]> P1Point { get; set; } =
+            ParamValue<Point2d[]>.CreateConstant(System.Array.Empty<Point2d>(), "P1Point");
 
         /// <summary>按参数：X 坐标（常量输入或上游标量绑定）</summary>
         public ParamValue<double> P1X { get; set; } = ParamValue<double>.CreateConstant(100, "P1X");
@@ -95,8 +99,11 @@ namespace SunEyeVision.Tool.PointPointMeasure
             set => SetProperty(ref _p2InputMode, value);
         }
 
-        /// <summary>按图形：整体绑定上游点图形输出（词目 Point），一次绑定即得 X/Y</summary>
-        public ParamValue<Point2d> P2Point { get; set; } = ParamValue<Point2d>.CreateConstant(default, "P2Point");
+        /// <summary>
+        /// 按图形：绑定上游点图形输出（词目 Point）。**数组口子**（决策 4）：同 P1Point。
+        /// </summary>
+        public ParamValue<Point2d[]> P2Point { get; set; } =
+            ParamValue<Point2d[]>.CreateConstant(System.Array.Empty<Point2d>(), "P2Point");
 
         /// <summary>按参数：X 坐标（常量输入或上游标量绑定）</summary>
         public ParamValue<double> P2X { get; set; } = ParamValue<double>.CreateConstant(300, "P2X");

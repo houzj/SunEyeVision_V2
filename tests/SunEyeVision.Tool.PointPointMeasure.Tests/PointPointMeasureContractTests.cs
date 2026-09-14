@@ -98,13 +98,14 @@ public class PointPointMeasureContractTests
     }
 
     [Fact]
-    public void Parameters_JsonRoundTrip_PreservesPoint2dConstant()
+    public void Parameters_JsonRoundTrip_PreservesPoint2dArrayConstant()
     {
+        // 6b：点参数为**数组口子**（决策 4）——常量往返须保真（长度与元素不丢）
         var options = Options();
         var source = new PointPointMeasureParameters
         {
             P1InputMode = PointInputMode.ByShape,
-            P1Point = ParamValue<Point2d>.CreateConstant(new Point2d(7.5, 8.5), "P1Point"),
+            P1Point = ParamValue<Point2d[]>.CreateConstant(new[] { new Point2d(7.5, 8.5) }, "P1Point"),
         };
 
         var json = JsonSerializer.Serialize(source, options);
@@ -112,8 +113,10 @@ public class PointPointMeasureContractTests
 
         Assert.NotNull(back);
         Assert.Equal(PointInputMode.ByShape, back!.P1InputMode);
-        Assert.Equal(7.5, back.P1Point.Value.X, 6);
-        Assert.Equal(8.5, back.P1Point.Value.Y, 6);
+        var pts = Assert.IsType<Point2d[]>(back.P1Point.Value);
+        Assert.Single(pts);
+        Assert.Equal(7.5, pts[0].X, 6);
+        Assert.Equal(8.5, pts[0].Y, 6);
         Assert.False(back.P1Point.IsBinding);
     }
 

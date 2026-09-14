@@ -214,21 +214,18 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             }
             else
             {
-                var parts = cs.BindingSource.Split('.');
-                var nodeId = parts.Length > 0 ? parts[0] : string.Empty;
-                var property = parts.Length > 1 ? parts[1] : cs.BindingSource;
+                // P0.5-F：路径按**首点**切分（旧 Split('.') 会切丢嵌套路径）；
+                // 展示名从**模型**取，不再从显示文本反解（显示名是命名规则的投影，反解＝把显示名当数据存盘）。
+                var dotIndex = cs.BindingSource.IndexOf('.');
+                var nodeId = dotIndex > 0 ? cs.BindingSource[..dotIndex] : cs.BindingSource;
+                var property = dotIndex > 0 ? cs.BindingSource[(dotIndex + 1)..] : cs.BindingSource;
 
                 var setting = ParamSetting.CreateBinding(cs.ParameterName, nodeId, property);
 
-                // 从绑定显示文本中提取展示名称
-                if (!string.IsNullOrEmpty(cs.BindingDisplayText))
+                if (cs.ResolveSelectedDataSource() is { } selected)
                 {
-                    var displayParts = cs.BindingDisplayText.Split('.');
-                    if (displayParts.Length == 2)
-                    {
-                        setting.SourceNodeName = displayParts[0];
-                        setting.SourceDisplayName = displayParts[1];
-                    }
+                    setting.SourceNodeName = selected.SourceNodeName;
+                    setting.SourceDisplayName = selected.EffectiveLeafDisplayName;
                 }
 
                 // 保存绑定配置时一并保存当前的常量值，用于切回常量模式时恢复

@@ -183,9 +183,16 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         }
 
         /// <summary>
-        /// 位置修正绑定源显示文本
+        /// 位置修正绑定源显示文本（**展示缓存，不持久化**）。
         /// </summary>
-        [JsonPropertyOrder(17)]
+        /// <remarks>
+        /// P0.5-F/D：显示名是"结构化路径 + 数据源模型"的**投影**，不再参与持久化 ——
+        /// 持久化只认结构化路径（<see cref="PositionCorrectionSource"/> 与绑定源的 <c>BindingSource</c>），
+        /// 重开工程时由控件按路径**重算**显示名（<c>ParamBinding.BackfillDisplayTextFromSource</c>）。
+        /// 旧工程若已写入该字段，读入时按 <see cref="JsonIgnoreAttribute"/> 忽略，显示不受影响
+        /// （避免"改一次命名规则，老工程就显示错名"）。
+        /// </remarks>
+        [JsonIgnore]
         public string? PositionCorrectionBindingDisplayText { get; set; }
 
         /// <summary>

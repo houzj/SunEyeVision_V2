@@ -132,7 +132,7 @@
                                                 AvailableDataSources="{Binding DataContext.AvailableSources, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                 DataType="{Binding ParamType}"
                                                 BindingSource="{Binding BindingSource, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                BindingDisplayText="{Binding BindingDisplayText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                BindingDisplayText="{Binding BindingDisplayText, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                                                 Height="26"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
@@ -221,7 +221,7 @@
                                                 AvailableDataSources="{Binding DataContext.SubroutineInternalSources, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                 DataType="{Binding ParamType}"
                                                 BindingSource="{Binding BindingSource, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                BindingDisplayText="{Binding BindingDisplayText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                BindingDisplayText="{Binding BindingDisplayText, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                                                 Height="26"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
@@ -331,7 +331,7 @@
                                                 AvailableDataSources="{Binding DataContext.SubroutineInternalSources, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                 DataType="{Binding ParamType}"
                                                 BindingSource="{Binding BindingSource, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                BindingDisplayText="{Binding BindingDisplayText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                BindingDisplayText="{Binding BindingDisplayText, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                                                 Height="26"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
@@ -431,7 +431,7 @@
                                     <controls:ParamBinding Grid.Column="1"
                                         AvailableDataSources="{Binding DataContext.AvailableSources, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                         BindingSource="{Binding LoopConfig.StartValueBinding, Mode=TwoWay}"
-                                        BindingDisplayText="{Binding LoopConfig.StartValueBindingDisplayText, Mode=TwoWay}"
+                                        BindingDisplayText="{Binding LoopConfig.StartValueBindingDisplayText, Mode=OneWay}"
                                         Height="26"/>
                                 </Grid>
 
@@ -445,7 +445,7 @@
                                     <controls:ParamBinding Grid.Column="1"
                                         AvailableDataSources="{Binding DataContext.AvailableSources, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                         BindingSource="{Binding LoopConfig.EndValueBinding, Mode=TwoWay}"
-                                        BindingDisplayText="{Binding LoopConfig.EndValueBindingDisplayText, Mode=TwoWay}"
+                                        BindingDisplayText="{Binding LoopConfig.EndValueBindingDisplayText, Mode=OneWay}"
                                         Height="26"/>
                                 </Grid>
 
@@ -503,7 +503,7 @@
                                         <controls:ParamBinding Grid.Column="1"
                                             AvailableDataSources="{Binding DataContext.AvailableSources, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                             BindingSource="{Binding LoopConfig.SourceCompareBinding, Mode=TwoWay}"
-                                            BindingDisplayText="{Binding LoopConfig.SourceCompareBindingDisplayText, Mode=TwoWay}"
+                                            BindingDisplayText="{Binding LoopConfig.SourceCompareBindingDisplayText, Mode=OneWay}"
                                             Height="26"/>
                                     </Grid>
 
@@ -521,7 +521,7 @@
                                         <controls:ParamBinding Grid.Column="2"
                                             AvailableDataSources="{Binding DataContext.AvailableSources, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                             BindingSource="{Binding LoopConfig.TargetCompareBinding, Mode=TwoWay}"
-                                            BindingDisplayText="{Binding LoopConfig.TargetCompareBindingDisplayText, Mode=TwoWay}"
+                                            BindingDisplayText="{Binding LoopConfig.TargetCompareBindingDisplayText, Mode=OneWay}"
                                             Height="26"/>
                                     </Grid>
                                 </StackPanel>

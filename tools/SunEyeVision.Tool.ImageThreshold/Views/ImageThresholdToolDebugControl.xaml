@@ -56,7 +56,7 @@
                   DataType="{x:Type results:AffineMatrix}"
                   ParameterName="位置修正" Width="200"
                   BindingSource="{Binding PositionCorrectionBindingSource, Mode=TwoWay}"
-                  BindingDisplayText="{Binding PositionCorrectionBindingDisplayText, Mode=TwoWay}"
+                  BindingDisplayText="{Binding PositionCorrectionBindingDisplayText, Mode=OneWay}"
                   AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
             </controls:LabeledControl>
           </StackPanel>

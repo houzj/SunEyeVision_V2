@@ -279,8 +279,9 @@ namespace SunEyeVision.Tool.Subroutine
                 }
                 else
                 {
-                    sourceNodeName = input.BindingDisplayText?.Split('.') is { Length: >= 2 } displayParts
-                        ? displayParts[0] : sourceNodeId;
+                    // P0.5-F：不再拿显示名当数据（显示名是命名规则的投影，无可解析性保证）；
+                    // 无模型（input.Source == null）时用结构化路径的首段节点 ID 作节点名。
+                    sourceNodeName = sourceNodeId;
                     displayName = sourceProperty;
                 }
 
@@ -956,7 +957,8 @@ namespace SunEyeVision.Tool.Subroutine
         /// <summary>
         /// 按 RoiShape.Geometry 的真实类型绘制（ROI 图形定义 → DisplayCollector）。
         /// 对齐 Blob 检测区图形的几何类型：Circle2d 画真圆、RotatedRect2d 画四角轮廓、
-        /// Rect 画矩形、Polygon2d 画轮廓、Line2d 画线段、Point2D 画点。
+        /// Polygon2d 画轮廓、Line2d 画线段、Point2d 画点。
+        /// （WPF Rect 已从契约层完全退场，故无该分支。）
         /// </summary>
         private static void AppendShapeParameter(
             SubroutineResults result,
@@ -971,9 +973,7 @@ namespace SunEyeVision.Tool.Subroutine
                     result.Display.AddCircle(style, circle, isPass);
                     break;
 
-                case System.Windows.Rect rect:
-                    result.Display.AddRect(style, rect, isPass);
-                    break;
+                // P0-2 封口：删除 WPF Rect 分支（几何值恒为契约类型，轴对齐矩形走下面的 RotatedRect2d 分支）。
 
                 case RotatedRect2d rr:
                     result.Display.AddContour(style, rr.GetCorners(), isPass, true);

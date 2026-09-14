@@ -228,6 +228,54 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         #endregion
 
+        #region 数据源反查（P0.5-F0）
+
+        /// <summary>
+        /// 按当前绑定路径反查**选中的数据源**（沿候选树匹配 <c>GetBindingPath()</c>）。
+        /// </summary>
+        /// <returns>命中的数据源；树未就绪、路径为空、或为手写非候选路径时返回 <c>null</c>。</returns>
+        /// <remarks>
+        /// ★ 用途（方案 P0.5-F0）：写入持久化时**从模型取展示名**（<c>SourceNodeName</c> /
+        /// <c>EffectiveLeafDisplayName</c>），取代"从 <c>BindingDisplayText</c> 反解" ——
+        /// 显示文本是命名规则的**投影**，反解等于把显示名当数据存盘（改一次命名规则老工程就读错）。
+        /// </remarks>
+        public AvailableDataSource? ResolveSelectedDataSource()
+        {
+            var path = BindingSource;
+            if (string.IsNullOrEmpty(path) || TreeNodes == null)
+                return null;
+
+            foreach (var node in TreeNodes)
+            {
+                var hit = FindNodeByBindingPath(node, path);
+                if (hit != null)
+                    return hit;
+            }
+
+            return null;
+        }
+
+        private static AvailableDataSource? FindNodeByBindingPath(TreeNodeData node, string path)
+        {
+            var ds = node.DataSource;
+            if (ds != null && string.Equals(ds.GetBindingPath(), path, StringComparison.Ordinal))
+                return ds;
+
+            if (node.Children == null)
+                return null;
+
+            foreach (var child in node.Children)
+            {
+                var hit = FindNodeByBindingPath(child, path);
+                if (hit != null)
+                    return hit;
+            }
+
+            return null;
+        }
+
+        #endregion
+
         #region 事件
 
         public static readonly RoutedEvent BindingStateChangedEvent =

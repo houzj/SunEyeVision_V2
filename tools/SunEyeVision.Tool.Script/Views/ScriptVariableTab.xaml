@@ -233,7 +233,7 @@
                                         AvailableDataSources="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=AvailableSources}"
                                         DataType="{Binding ParamType}"
                                         BindingSource="{Binding BindingSource, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                        BindingDisplayText="{Binding BindingDisplayText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                        BindingDisplayText="{Binding BindingDisplayText, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                                         ParameterName="{Binding Name}"
                                         Height="28"/>
                                 </DataTemplate>

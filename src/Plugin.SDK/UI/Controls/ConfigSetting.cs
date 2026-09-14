@@ -1178,6 +1178,16 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         }
 
         /// <summary>
+        /// 按当前绑定路径反查选中的数据源（转发内部 <c>ParamBinding</c>；方案 P0.5-F0）。
+        /// </summary>
+        /// <returns>命中的数据源；未套模板/树未就绪/手写路径时返回 <c>null</c>。</returns>
+        /// <remarks>
+        /// ★ 用途：写入持久化时**从模型取展示名**，取代"从显示文本反解" —— 显示名是命名规则的投影，
+        /// 反解会把显示名当数据存盘（改一次命名规则老工程就读错，rule-008 单一真相源）。
+        /// </remarks>
+        public AvailableDataSource? ResolveSelectedDataSource() => _paramBinding?.ResolveSelectedDataSource();
+
+        /// <summary>
         /// 转换为 ParamSetting 对象
         /// </summary>
         public ParamSetting ToParamSetting()
@@ -1188,19 +1198,21 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             }
             else
             {
-                var parts = BindingSource.Split('.');
-                var nodeId = parts.Length > 0 ? parts[0] : string.Empty;
-                var property = parts.Length > 1 ? parts[1] : BindingSource;
+                // P0.5-F 持久化与显示解耦：
+                //  ① 路径按**首点**切分（nodeId 不含 '.'，其后整段是属性路径，可含
+                //     [Type=X][].Geometry.Center.X 等嵌套点）——旧写法 Split('.') 只取第二段会把嵌套路径切丢；
+                //  ② 展示名从**模型**取（不再从 BindingDisplayText 反解）：显示文本是命名规则的投影，
+                //     反解等于把显示名当数据存盘（改一次命名规则老工程就读错）。取不到即留空，重开按路径重算。
+                var dotIndex = BindingSource.IndexOf('.');
+                var nodeId = dotIndex > 0 ? BindingSource[..dotIndex] : BindingSource;
+                var property = dotIndex > 0 ? BindingSource[(dotIndex + 1)..] : BindingSource;
 
                 var setting = ParamSetting.CreateBinding(ParameterName, nodeId, property);
 
-                // 从 BindingDisplayText 提取显示名称（用于跨会话重建显示文本）
-                // 例如："全局变量.变量2" → SourceNodeName="全局变量", SourceDisplayName="变量2"
-                var displayParts = BindingDisplayText?.Split(new[] { '.' }, 2);
-                if (displayParts != null && displayParts.Length == 2)
+                if (ResolveSelectedDataSource() is { } selected)
                 {
-                    setting.SourceNodeName = displayParts[0];
-                    setting.SourceDisplayName = displayParts[1];
+                    setting.SourceNodeName = selected.SourceNodeName;
+                    setting.SourceDisplayName = selected.EffectiveLeafDisplayName;
                 }
 
                 return setting;

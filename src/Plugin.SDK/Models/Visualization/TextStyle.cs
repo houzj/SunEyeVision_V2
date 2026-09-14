@@ -114,18 +114,9 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
                 var nodeId = dotIndex > 0 ? _positionXBindingSource[..dotIndex] : string.Empty;
                 var property = dotIndex > 0 ? _positionXBindingSource[(dotIndex + 1)..] : _positionXBindingSource;
 
-                var setting = ParamSetting.CreateBinding(parameterName, nodeId, property);
-                if (!string.IsNullOrEmpty(_positionXBindingDisplayText))
-                {
-                    // 显示名只切首点：属性路径自身可含点（拟合圆.半径），需完整保留
-                    var displayParts = _positionXBindingDisplayText.Split(new[] { '.' }, 2);
-                    if (displayParts.Length == 2)
-                    {
-                        setting.SourceNodeName = displayParts[0];
-                        setting.SourceDisplayName = displayParts[1];
-                    }
-                }
-                return setting;
+                // P0.5-F：**不再从显示文本反解**展示名称 —— 显示名是命名规则的投影，反解＝把显示名当数据存盘；
+                // 解析与取值只依赖结构化路径（nodeId + property），展示名由控件层按路径重算。
+                return ParamSetting.CreateBinding(parameterName, nodeId, property);
             }
 
             if (parameterName == "PositionY")
@@ -139,18 +130,8 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
                 var nodeId = dotIndex > 0 ? _positionYBindingSource[..dotIndex] : string.Empty;
                 var property = dotIndex > 0 ? _positionYBindingSource[(dotIndex + 1)..] : _positionYBindingSource;
 
-                var setting = ParamSetting.CreateBinding(parameterName, nodeId, property);
-                if (!string.IsNullOrEmpty(_positionYBindingDisplayText))
-                {
-                    // 显示名只切首点：属性路径自身可含点（拟合圆.半径），需完整保留
-                    var displayParts = _positionYBindingDisplayText.Split(new[] { '.' }, 2);
-                    if (displayParts.Length == 2)
-                    {
-                        setting.SourceNodeName = displayParts[0];
-                        setting.SourceDisplayName = displayParts[1];
-                    }
-                }
-                return setting;
+                // P0.5-F：同上（位置Y）——解析只依赖结构化路径，展示名由控件层按路径重算。
+                return ParamSetting.CreateBinding(parameterName, nodeId, property);
             }
 
             return null;

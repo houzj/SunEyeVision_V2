@@ -52,13 +52,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Helpers
                         poly.Vertices.Select(v => T(v)).ToArray(),
                         poly.IsClosed);
 
-                case System.Windows.Rect r:
-                {
-                    var center = T(new Point(r.X + r.Width / 2, r.Y + r.Height / 2));
-                    double w = r.Width * s;
-                    double h = r.Height * s;
-                    return new System.Windows.Rect(center.X - w / 2, center.Y - h / 2, w, h);
-                }
+                // P0-2 封口（完全删除 WPF Rect）：几何值恒为 RotatedRect2d（轴对齐即 Angle=0），
+                // 老工程数据在读入时已由 GeometryJsonConverter 迁移，此处不再需要 Rect 分支。
 
                 case Line2d l:
                 {

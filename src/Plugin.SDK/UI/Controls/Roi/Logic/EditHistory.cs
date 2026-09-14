@@ -260,7 +260,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Logic
                 RotatedRect2d rr => new RotatedRect2d(rr.CenterX + dx, rr.CenterY + dy, rr.Width, rr.Height, rr.Angle),
                 Line2d l => new Line2d(
                     new System.Windows.Point(l.Point.X + dx, l.Point.Y + dy), l.Direction),
-                System.Windows.Rect r => new System.Windows.Rect(r.X + dx, r.Y + dy, r.Width, r.Height),
+                // P0-2 封口：几何值恒为契约类型（矩形即 RotatedRect2d），不再有 WPF Rect 分支。
                 Polygon2d poly => new Polygon2d(
                     poly.Vertices.Select(v => new System.Windows.Point(v.X + dx, v.Y + dy)).ToArray(), poly.IsClosed),
                 _ => shapeDef.Geometry,

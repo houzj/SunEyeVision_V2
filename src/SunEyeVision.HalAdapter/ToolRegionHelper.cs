@@ -138,10 +138,8 @@ namespace SunEyeVision.HalAdapter
             {
                 return BuildHalconPolygonFromPoints(poly.Vertices);
             }
-            else if (shape.Geometry is System.Windows.Rect rect)
-            {
-                return BuildHalconRegionFromRect(rect);
-            }
+            // P0-2 封口（完全删除 WPF Rect）：几何值恒为 Models.Geometry 契约类型，
+            // 轴对齐矩形即 RotatedRect2d(Angle=0)，故此处不再有 Rect 分支。
 
             return null;
         }

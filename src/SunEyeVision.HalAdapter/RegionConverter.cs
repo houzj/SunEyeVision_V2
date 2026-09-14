@@ -64,7 +64,7 @@ public static class RegionConverter
         {
             Circle2d c => GenCircle(c.Center.Y, c.Center.X, c.Radius),
             RotatedRect2d rr => GenRectangle2(rr.Center.Y, rr.Center.X, rr.AngleRadians, rr.Width / 2, rr.Height / 2),
-            System.Windows.Rect r => GenRectangle1(r.Top, r.Left, r.Bottom, r.Right),
+            // P0-2 封口：删除 WPF Rect 分支（矩形几何恒为 RotatedRect2d，由上一分支的 GenRectangle2 覆盖）。
             Polygon2d poly => GenPolygon(poly.Vertices),
             Annulus2d a => GenAnnulus(a),
             Line2d => throw new NotSupportedException("直线(Line2d)无法栅格化为封闭区域"),

@@ -47,7 +47,7 @@ public class HalconRegionPipelineContractTests
     public void EnabledRegion_YieldsNonEmptyRoi()
     {
         using var scope = HalconRegionPipeline.Resolve(1000, 800,
-            new[] { MakeRegion("insp", new Rect(100, 100, 200, 150)) },
+            new[] { MakeRegion("insp", new SunEyeVision.Plugin.SDK.Models.Geometry.RotatedRect2d(200, 175, 200, 150, 0)) },
             [], null, null);
 
         Assert.NotNull(scope.RoiRegion);
@@ -58,7 +58,7 @@ public class HalconRegionPipelineContractTests
     public void RoiScope_DisposeIsIdempotent()
     {
         var scope = HalconRegionPipeline.Resolve(200, 200,
-            new[] { MakeRegion("insp", new Rect(10, 10, 50, 50)) },
+            new[] { MakeRegion("insp", new SunEyeVision.Plugin.SDK.Models.Geometry.RotatedRect2d(35, 35, 50, 50, 0)) },
             [], null, null);
 
         scope.Dispose();

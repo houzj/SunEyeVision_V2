@@ -77,6 +77,22 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
 
             if (result.IsSuccess && result.Value != null)
             {
+                // P1「抠几何」：ROI 容器 → 目标几何数组（Circle2d[]/Point2d[]/…）；
+                // 区域订阅（目标词目 ROI）与数值目标不接管，保持原值走下方类型转换。
+                if (GeometryExtractor.TryExtract(result.Value, targetType, out var geometryValue, out var geometryError))
+                {
+                    if (geometryError != null)
+                    {
+                        result.IsSuccess = false;
+                        result.ErrorMessage = geometryError;
+                        return result;
+                    }
+
+                    result.Value = geometryValue;
+                    result.ValueType = targetType;
+                    return result;
+                }
+
                 // 尝试类型转换
                 var convertedValue = ConvertValue(result.Value, targetType);
                 if (convertedValue.IsSuccess)

@@ -99,22 +99,21 @@ public class PositionCorrectionShapeContractTests
     }
 
     [Fact]
-    public void ResolveForShape_AxisRect_CenterFullyCorrected_NoRotation()
+    public void ResolveForShape_AxisAlignedRotatedRect_UsesFullMatrix_Directed()
     {
+        // P0-2 封口后的新契约：轴对齐矩形不再以 WPF Rect 表达（该类型已从几何值完全退场），
+        // 而是 RotatedRect2d(Angle=0)。RotatedRect2d 具备方向语义 → 位置修正取**完整矩阵**
+        // （不再走旧 Rect 的"仅平移"无向分支）。
         var full = Rotated(90, 1.5);
-        var rect = new Rect(100, 100, 50, 40);
-        var centerRef = new Point(rect.X + rect.Width / 2, rect.Y + rect.Height / 2);
+        var rect = new RotatedRect2d(100 + 50 / 2.0, 100 + 40 / 2.0, 50, 40, 0);
         var resolved = PositionCorrectionResolver.ResolveForShape(rect, full);
 
         Assert.NotNull(resolved);
-        Assert.Equal(0.0, resolved!.M12, 6);
-        Assert.Equal(0.0, resolved.M21, 6);
-        Assert.Equal(1.5, resolved.M11, 6);
-
-        var fullCenter = full.TransformWpfPoint(centerRef);
-        var resolvedCenter = resolved.TransformWpfPoint(centerRef);
-        Assert.Equal(fullCenter.X, resolvedCenter.X, 6);
-        Assert.Equal(fullCenter.Y, resolvedCenter.Y, 6);
+        // 完整矩阵：保留旋转分量（与"无向形状仅平移"分支形成区分）
+        Assert.Equal(full.M11, resolved!.M11, 6);
+        Assert.Equal(full.M12, resolved.M12, 6);
+        Assert.Equal(full.M21, resolved.M21, 6);
+        Assert.Equal(full.M22, resolved.M22, 6);
     }
 
     [Fact]

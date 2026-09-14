@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
@@ -36,7 +36,8 @@ public static class PositionCorrectionResolver
     /// </summary>
     public static bool IsDirectionless(object? geometry) => geometry switch
     {
-        Circle2d or Annulus2d or System.Windows.Rect => true,
+        // P0-2 封口（完全删除 WPF Rect）：矩形几何恒为 RotatedRect2d —— 具备方向语义（轴对齐即 Angle=0）。
+        Circle2d or Annulus2d => true,
         _ => false,
     };
 
@@ -56,8 +57,7 @@ public static class PositionCorrectionResolver
         {
             Circle2d c => CenterPreservingStrip(fullMatrix, new System.Windows.Point(c.Center.X, c.Center.Y)),
             Annulus2d a => CenterPreservingStrip(fullMatrix, new System.Windows.Point(a.Center.X, a.Center.Y)),
-            System.Windows.Rect r => CenterPreservingStrip(fullMatrix,
-                new System.Windows.Point(r.X + r.Width / 2, r.Y + r.Height / 2)),
+            // P0-2 封口：不再有 WPF Rect 分支（矩形几何恒为 RotatedRect2d）。
             _ => fullMatrix,
         };
     }

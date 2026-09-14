@@ -112,12 +112,8 @@ namespace SunEyeVision.CvAdapter
                         var pts = poly.Vertices.Select(v => new Point((int)v.X, (int)v.Y)).ToArray();
                         Cv2.FillPoly(combinedMask, new Point[][] { pts }, Scalar.White);
                     }
-                    else if (shape.Geometry is System.Windows.Rect rect)
-                    {
-                        Cv2.Rectangle(combinedMask, new Rect(
-                            (int)Math.Round(rect.X), (int)Math.Round(rect.Y),
-                            (int)Math.Round(rect.Width), (int)Math.Round(rect.Height)), Scalar.White, -1);
-                    }
+                    // P0-2 封口（完全删除 WPF Rect）：几何值恒为 Models.Geometry 契约类型，
+                    // 轴对齐矩形即 RotatedRect2d(Angle=0)，由上面的 rr 分支覆盖。
                 }
             }
 

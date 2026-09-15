@@ -1,4 +1,3 @@
-﻿using System.Collections.ObjectModel;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
@@ -20,13 +19,7 @@ namespace SunEyeVision.Tool.PointPointMeasure
         // ============================================================
         // 判定规格列表（v4 C1 基座，六工具同构）
         // ============================================================
-        public ObservableCollection<MeasureThreshold> Judgments { get; set; } = new()
-        {
-            new() { Name = "点距", Enabled = true, Min = 0, Max = 1000, Unit = "px" },
-            new() { Name = "ΔX", Enabled = false, Min = -1e5, Max = 1e5, Unit = "px" },
-            new() { Name = "ΔY", Enabled = false, Min = -1e5, Max = 1e5, Unit = "px" },
-            new() { Name = "连线角度", Enabled = false, Min = -180, Max = 180, Unit = "°" },
-        };
+        public ResultPresentationConfig ResultPresentation { get; set; } = CreateResultPresentation();
 
         // ============================================================
         // 元素1（点）：输入方式二分「按图形 / 按参数」（无引导绘制入口）
@@ -144,41 +137,35 @@ namespace SunEyeVision.Tool.PointPointMeasure
         // ============================================================
         // 结果显示样式（Tab3 绑定：图形显示 + 文本显示）
         // ============================================================
-        public GraphicsStyle Point1Style { get; set; } = new()
-        {
-            Name = "点1", IsVisible = true, CrossSize = 6.0,
-        };
-        public GraphicsStyle Point2Style { get; set; } = new()
-        {
-            Name = "点2", IsVisible = true, CrossSize = 6.0,
-        };
-        /// <summary>两点连线（主测量"点距"的几何表达）</summary>
-        public GraphicsStyle DistanceLineStyle { get; set; } = new()
-        {
-            Name = "点距连线", IsVisible = true, LineWidth = 1.5,
-        };
-        /// <summary>X 分量辅助线（点1 → 投影点，虚线）</summary>
-        public GraphicsStyle DeltaXLineStyle { get; set; } = new()
-        {
-            Name = "ΔX辅助线", IsVisible = false, LineDashStyle = LineDashStyle.Dash, LineWidth = 1.0,
-        };
-        /// <summary>Y 分量辅助线（投影点 → 点2，虚线）</summary>
-        public GraphicsStyle DeltaYLineStyle { get; set; } = new()
-        {
-            Name = "ΔY辅助线", IsVisible = false, LineDashStyle = LineDashStyle.Dash, LineWidth = 1.0,
-        };
 
-        public TextStyle Point1TextStyle { get; set; } = new()
+
+        /// <summary>两点连线（主测量"点距"的几何表达）</summary>
+
+        /// <summary>X 分量辅助线（点1 → 投影点，虚线）</summary>
+
+        /// <summary>Y 分量辅助线（投影点 → 点2，虚线）</summary>
+
+
+
+
+
+
+        private static ResultPresentationConfig CreateResultPresentation()
         {
-            Name = "点1坐标", IsVisible = true,
-        };
-        public TextStyle Point2TextStyle { get; set; } = new()
-        {
-            Name = "点2坐标", IsVisible = true,
-        };
-        public TextStyle DistanceTextStyle { get; set; } = new()
-        {
-            Name = "点距", IsVisible = true,
-        };
+            var config = new ResultPresentationConfig();
+            config.Judgments.Add(new() { Key = "point-distance", Name = "点距", Enabled = true, Min = 0, Max = 1000, Unit = "px", Order = 10 });
+            config.Judgments.Add(new() { Key = "delta-x", Name = "ΔX", Enabled = false, Min = -1e5, Max = 1e5, Unit = "px", Order = 20 });
+            config.Judgments.Add(new() { Key = "delta-y", Name = "ΔY", Enabled = false, Min = -1e5, Max = 1e5, Unit = "px", Order = 30 });
+            config.Judgments.Add(new() { Key = "line-angle", Name = "连线角度", Enabled = false, Min = -180, Max = 180, Unit = "°", Order = 40 });
+            config.Graphics.Add(new() { Key = "point1", Name = "点1", Order = 10, Style = new() { Name = "点1", IsVisible = true, CrossSize = 6.0, } });
+            config.Graphics.Add(new() { Key = "point2", Name = "点2", Order = 20, Style = new() { Name = "点2", IsVisible = true, CrossSize = 6.0, } });
+            config.Graphics.Add(new() { Key = "distance-line", Name = "点距连线", Order = 30, Style = new() { Name = "点距连线", IsVisible = true, LineWidth = 1.5, } });
+            config.Graphics.Add(new() { Key = "delta-xline", Name = "ΔX辅助线", Order = 40, Style = new() { Name = "ΔX辅助线", IsVisible = false, LineDashStyle = LineDashStyle.Dash, LineWidth = 1.0, } });
+            config.Graphics.Add(new() { Key = "delta-yline", Name = "ΔY辅助线", Order = 50, Style = new() { Name = "ΔY辅助线", IsVisible = false, LineDashStyle = LineDashStyle.Dash, LineWidth = 1.0, } });
+            config.Texts.Add(new() { Key = "point1-text", Name = "点1坐标", Order = 10, Style = new() { Name = "点1坐标", IsVisible = true, } });
+            config.Texts.Add(new() { Key = "point2-text", Name = "点2坐标", Order = 20, Style = new() { Name = "点2坐标", IsVisible = true, } });
+            config.Texts.Add(new() { Key = "distance-text", Name = "点距", Order = 30, Style = new() { Name = "点距", IsVisible = true, } });
+            return config;
+        }
     }
 }

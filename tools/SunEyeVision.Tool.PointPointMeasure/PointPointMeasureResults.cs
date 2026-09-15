@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Windows;
 using SunEyeVision.Plugin.SDK.Execution.Results;
@@ -61,34 +61,34 @@ namespace SunEyeVision.Tool.PointPointMeasure
             var p2 = ToWpfPoint(Point2);
 
             // ---- 两点标记（十字，与其他点类工具同构）----
-            if (parameters.Point1Style.IsVisible)
-                _display.AddCrosses(parameters.Point1Style, new[] { p1 });
-            if (parameters.Point2Style.IsVisible)
-                _display.AddCrosses(parameters.Point2Style, new[] { p2 });
+            if (parameters.ResultPresentation.GetGraphicsStyle("point1").IsVisible)
+                _display.AddCrosses(parameters.ResultPresentation.GetGraphicsStyle("point1"), new[] { p1 });
+            if (parameters.ResultPresentation.GetGraphicsStyle("point2").IsVisible)
+                _display.AddCrosses(parameters.ResultPresentation.GetGraphicsStyle("point2"), new[] { p2 });
 
             // ---- 主测量：两点连线 ----
-            if (parameters.DistanceLineStyle.IsVisible)
-                _display.AddLine(parameters.DistanceLineStyle, p1, p2, isOk);
+            if (parameters.ResultPresentation.GetGraphicsStyle("distance-line").IsVisible)
+                _display.AddLine(parameters.ResultPresentation.GetGraphicsStyle("distance-line"), p1, p2, isOk);
 
             // ---- 分量辅助线：直角顶点 = (点2.X, 点1.Y) ----
             var corner = new Point(p2.X, p1.Y);
-            if (parameters.DeltaXLineStyle.IsVisible)
-                _display.AddLine(parameters.DeltaXLineStyle, p1, corner, isOk);
-            if (parameters.DeltaYLineStyle.IsVisible)
-                _display.AddLine(parameters.DeltaYLineStyle, corner, p2, isOk);
+            if (parameters.ResultPresentation.GetGraphicsStyle("delta-xline").IsVisible)
+                _display.AddLine(parameters.ResultPresentation.GetGraphicsStyle("delta-xline"), p1, corner, isOk);
+            if (parameters.ResultPresentation.GetGraphicsStyle("delta-yline").IsVisible)
+                _display.AddLine(parameters.ResultPresentation.GetGraphicsStyle("delta-yline"), corner, p2, isOk);
 
             // ---- 文本 ----
-            if (parameters.Point1TextStyle.IsVisible)
-                _display.AddText(parameters.Point1TextStyle, p1.X, p1.Y,
+            if (parameters.ResultPresentation.GetTextStyle("point1-text").IsVisible)
+                _display.AddText(parameters.ResultPresentation.GetTextStyle("point1-text"), p1.X, p1.Y,
                     $"P1 ({p1.X:F1},{p1.Y:F1})", 6, 0, isOk);
-            if (parameters.Point2TextStyle.IsVisible)
-                _display.AddText(parameters.Point2TextStyle, p2.X, p2.Y,
+            if (parameters.ResultPresentation.GetTextStyle("point2-text").IsVisible)
+                _display.AddText(parameters.ResultPresentation.GetTextStyle("point2-text"), p2.X, p2.Y,
                     $"P2 ({p2.X:F1},{p2.Y:F1})", 6, 0, isOk);
-            if (parameters.DistanceTextStyle.IsVisible)
+            if (parameters.ResultPresentation.GetTextStyle("distance-text").IsVisible)
             {
                 var midX = (p1.X + p2.X) / 2;
                 var midY = (p1.Y + p2.Y) / 2;
-                _display.AddText(parameters.DistanceTextStyle, midX, midY,
+                _display.AddText(parameters.ResultPresentation.GetTextStyle("distance-text"), midX, midY,
                     $"点距={Distance:F3}px (ΔX={DeltaX:F3}, ΔY={DeltaY:F3})", 6, 0, isOk);
             }
         }

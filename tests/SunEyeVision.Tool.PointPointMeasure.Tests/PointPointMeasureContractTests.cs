@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Text.Json;
 using NSubstitute;
@@ -56,7 +56,7 @@ public class PointPointMeasureContractTests
     /// <summary>改写默认「点距」判定项的上下限（默认已启用，避免重复追加同名项）。</summary>
     private static void SetPointDistanceTolerance(PointPointMeasureParameters parameters, double min, double max)
     {
-        var pointDistance = parameters.Judgments.Single(j => j.Name == "点距");
+        var pointDistance = parameters.ResultPresentation.Judgments.Single(j => j.Name == "点距");
         pointDistance.Enabled = true;
         pointDistance.Min = min;
         pointDistance.Max = max;
@@ -69,8 +69,9 @@ public class PointPointMeasureContractTests
     {
         var options = Options();
         var source = CreateByCoordinateParameters(3, 4);
-        source.Judgments.Add(new MeasureThreshold
+        source.ResultPresentation.Judgments.Add(new JudgmentConfigItem
         {
+            Key = "test-custom",
             Name = "点距校验",
             Enabled = true,
             Min = 4.9,
@@ -89,8 +90,8 @@ public class PointPointMeasureContractTests
         Assert.Equal(4.0, back.P2Y.Value, 6);
 
         // 默认判定项（点距/ΔX/ΔY/连线角度）保留 + 新增项完整还原
-        Assert.Equal(source.Judgments.Count, back.Judgments.Count);
-        var custom = back.Judgments.Single(j => j.Name == "点距校验");
+        Assert.Equal(source.ResultPresentation.Judgments.Count, back.ResultPresentation.Judgments.Count);
+        var custom = back.ResultPresentation.Judgments.Single(j => j.Name == "点距校验");
         Assert.True(custom.Enabled);
         Assert.Equal(4.9, custom.Min, 6);
         Assert.Equal(5.1, custom.Max, 6);
@@ -169,7 +170,7 @@ public class PointPointMeasureContractTests
         Assert.Equal(4.0, result.DeltaY, 6);
         Assert.Equal(53.130102, result.AngleDeg, 4);
         Assert.True(result.IsPass);
-        Assert.Equal(parameters.Judgments.Count, result.JudgmentDetails.Length);
+        Assert.Equal(parameters.ResultPresentation.Judgments.Count, result.JudgmentDetails.Length);
     }
 
     [Fact]
@@ -183,7 +184,7 @@ public class PointPointMeasureContractTests
         Assert.True(result.IsSuccess);
         Assert.Equal(5.0, result.Distance, 6);
         Assert.False(result.IsPass);
-        Assert.Equal(parameters.Judgments.Count, result.JudgmentDetails.Length);
+        Assert.Equal(parameters.ResultPresentation.Judgments.Count, result.JudgmentDetails.Length);
     }
 
     [Fact]
@@ -191,8 +192,9 @@ public class PointPointMeasureContractTests
     {
         // rule-015：判定项启用但无对应实测值 → NG（禁止静默跳过）
         var parameters = CreateByCoordinateParameters(3, 4);
-        parameters.Judgments.Add(new MeasureThreshold
+        parameters.ResultPresentation.Judgments.Add(new JudgmentConfigItem
         {
+            Key = "test-custom",
             Name = "未知几何量",
             Enabled = true,
             Min = 0.0,
@@ -203,7 +205,7 @@ public class PointPointMeasureContractTests
 
         Assert.True(result.IsSuccess);
         Assert.False(result.IsPass);
-        Assert.Equal(parameters.Judgments.Count, result.JudgmentDetails.Length);
+        Assert.Equal(parameters.ResultPresentation.Judgments.Count, result.JudgmentDetails.Length);
     }
 
     #endregion
@@ -256,6 +258,23 @@ public class PointPointMeasureContractTests
         // 缺陷记录 P2-1：HalconToolHelpers.GetHalconImage 在图像为 null 时先抛英文
         // "Input is not Halcon HImage, type: null"，使工具内「输入图像为空或无效」守卫成为不可达死代码。
         Assert.Contains("测量失败:", result.ErrorMessage);
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task ExecuteAsync_ReadsImageFromRequest_WithoutMutatingParameters()
+    {
+        var parameters = CreateByCoordinateParameters(3, 4);
+        parameters.ResolvedInputImage = null;
+        var request = new ToolExecutionRequest(parameters)
+        {
+            ResolvedInputImage = CreateNonEmptyImage(),
+        };
+
+        var result = await new PointPointMeasureTool().ExecuteAsync(request);
+
+        Assert.True(result.IsSuccess);
+        Assert.Null(parameters.ResolvedInputImage);
+        Assert.Equal(5.0, Assert.IsType<PointPointMeasureResults>(result).Distance, 6);
     }
 
     #endregion

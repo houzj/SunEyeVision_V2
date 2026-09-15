@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Text.Json;
 using SunEyeVision.Core.Services.Serialization;
@@ -47,8 +48,9 @@ public class PointLineMeasureContractTests
         source.E2NumMeasures.Value = 20;
         source.E2Transition.Value = EdgeTransition.Negative;
         source.E2Select.Value = EdgeSelect.Last;
-        source.Judgments.Add(new MeasureThreshold
+        source.ResultPresentation.Judgments.Add(new JudgmentConfigItem
         {
+            Key = "custom-distance",
             Name = "点线距",
             Enabled = true,
             Min = 0.0,
@@ -69,8 +71,8 @@ public class PointLineMeasureContractTests
         Assert.Equal(EdgeSelect.Last, back.E2Select.Value);
 
         // 默认判定项（距离/垂足X/垂足Y）保留 + 新增项完整还原
-        Assert.Equal(source.Judgments.Count, back.Judgments.Count);
-        var custom = back.Judgments.Single(j => j.Name == "点线距");
+        Assert.Equal(source.ResultPresentation.Judgments.Count, back.ResultPresentation.Judgments.Count);
+        var custom = back.ResultPresentation.Judgments.Single(j => j.Key == "custom-distance");
         Assert.True(custom.Enabled);
         Assert.Equal(0.0, custom.Min, 6);
         Assert.Equal(200.0, custom.Max, 6);
@@ -101,6 +103,62 @@ public class PointLineMeasureContractTests
 
         Assert.Equal(typeof(PointLineMeasureParameters), contract.GetGenericArguments()[0]);
         Assert.Equal(typeof(PointLineMeasureResults), contract.GetGenericArguments()[1]);
+    }
+
+    #endregion
+
+    #region 设计时契约
+
+    [Fact]
+    public void Designer_UsesCreatableParameterDataContext()
+    {
+        var repositoryRoot = FindRepositoryRoot();
+        var xamlPath = Path.Combine(repositoryRoot, "tools", "SunEyeVision.Tool.PointLineMeasure",
+            "Views", "PointLineMeasureToolDebugControl.xaml");
+        var codeBehindPath = xamlPath + ".cs";
+        var xaml = File.ReadAllText(xamlPath);
+        var codeBehind = File.ReadAllText(codeBehindPath);
+
+        Assert.Contains("xmlns:local=\"clr-namespace:SunEyeVision.Tool.PointLineMeasure\"", xaml);
+        Assert.Contains(
+            "d:DataContext=\"{d:DesignInstance Type=local:PointLineMeasureParameters, IsDesignTimeCreatable=True}\"",
+            xaml);
+
+        var parametersIndex = codeBehind.IndexOf("Parameters = new PointLineMeasureParameters();", StringComparison.Ordinal);
+        var initializeIndex = codeBehind.IndexOf("InitializeComponent();", StringComparison.Ordinal);
+        Assert.True(parametersIndex >= 0 && parametersIndex < initializeIndex,
+            "PointLine 参数实例必须先于 InitializeComponent 创建，确保设计器首次解析绑定时 DataContext 非空。");
+        Assert.Contains("<presentation:JudgmentEditorControl", xaml);
+        Assert.Contains("<presentation:GraphicsDisplayEditorControl", xaml);
+        Assert.Contains("<presentation:TextDisplayEditorControl", xaml);
+        Assert.DoesNotContain("ResultPresentationControl", xaml);
+        Assert.DoesNotContain("<Expander Header=\"结果判断\"", xaml);
+    }
+
+    [Fact]
+    public void ResultPresentation_IsCompleteAndUsesStableKeys()
+    {
+        var config = new PointLineMeasureParameters().ResultPresentation;
+
+        Assert.Empty(config.ValidateContract());
+        Assert.Contains(config.Judgments, item => item.Key == "distance");
+        Assert.Contains(config.Graphics, item => item.Key == "foot-line");
+        Assert.Contains(config.Texts, item => item.Key == "line-angle");
+    }
+
+    private static string FindRepositoryRoot()
+    {
+        foreach (var start in new[] { Directory.GetCurrentDirectory(), AppContext.BaseDirectory })
+        {
+            for (var directory = new DirectoryInfo(start); directory != null; directory = directory.Parent)
+            {
+                if (File.Exists(Path.Combine(directory.FullName, "Directory.Build.props"))
+                    && Directory.Exists(Path.Combine(directory.FullName, "tools", "SunEyeVision.Tool.PointLineMeasure")))
+                    return directory.FullName;
+            }
+        }
+
+        throw new DirectoryNotFoundException("无法定位 SunEyeVision 仓库根目录。");
     }
 
     #endregion

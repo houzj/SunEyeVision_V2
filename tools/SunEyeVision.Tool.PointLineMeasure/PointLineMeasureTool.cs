@@ -31,7 +31,7 @@ namespace SunEyeVision.Tool.PointLineMeasure
         Version = "1.0.0",
         HasDebugWindow = true
     )]
-    public class PointLineMeasureTool : IToolPlugin<PointLineMeasureParameters, PointLineMeasureResults>
+    public class PointLineMeasureTool : IToolPlugin<PointLineMeasureParameters, PointLineMeasureResults>, IToolEditorFactory
     {
         private readonly ToolAttribute? _attribute;
         public PointLineMeasureTool() => _attribute = GetType().GetCustomAttribute<ToolAttribute>();
@@ -155,16 +155,16 @@ namespace SunEyeVision.Tool.PointLineMeasure
                 result.E2CaliberTransition = parameters.E2Transition.Value.ToString();
 
                 // ===== 判定 =====
-                var judged = MeasureJudge.EvaluateAll(
-                    parameters.Judgments,
-                    key => key.Name switch
+                var judged = ResultJudgmentEvaluator.EvaluateRanges(
+                    parameters.ResultPresentation.Judgments,
+                    key => key switch
                     {
-                        "距离" => double.IsNaN(result.Distance) ? null : result.Distance,
-                        "垂足X" => double.IsNaN(result.PerpendicularFoot.X) ? null : result.PerpendicularFoot.X,
-                        "垂足Y" => double.IsNaN(result.PerpendicularFoot.Y) ? null : result.PerpendicularFoot.Y,
+                        "distance" => double.IsNaN(result.Distance) ? null : result.Distance,
+                        "foot-x" => double.IsNaN(result.PerpendicularFoot.X) ? null : result.PerpendicularFoot.X,
+                        "foot-y" => double.IsNaN(result.PerpendicularFoot.Y) ? null : result.PerpendicularFoot.Y,
                         _ => null,
                     });
-                result.IsPass = MeasureJudge.IsAllPass(judged);
+                result.IsPass = ResultJudgmentEvaluator.IsAllPass(judged);
                 result.JudgmentDetails = judged.Select(j => j.Message).ToArray();
 
                 result.FillDisplay(result.IsPass, parameters);

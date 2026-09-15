@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Windows;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Helpers;
@@ -8,6 +9,8 @@ using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.UI.Controls.Measure.Models;
+using SunEyeVision.Plugin.SDK.Vision.Contracts;
+using ToolExecutionContext = SunEyeVision.Plugin.SDK.Execution.Parameters.ExecutionContext;
 
 namespace SunEyeVision.Tool.PointPointMeasure
 {
@@ -26,7 +29,7 @@ namespace SunEyeVision.Tool.PointPointMeasure
         Version = "1.0.0",
         HasDebugWindow = true
     )]
-    public class PointPointMeasureTool : IToolPlugin<PointPointMeasureParameters, PointPointMeasureResults>
+    public class PointPointMeasureTool : IToolPlugin<PointPointMeasureParameters, PointPointMeasureResults>, IAsyncToolPlugin, IToolEditorFactory
     {
         private readonly ToolAttribute? _attribute;
         public PointPointMeasureTool() => _attribute = GetType().GetCustomAttribute<ToolAttribute>();
@@ -66,6 +69,21 @@ namespace SunEyeVision.Tool.PointPointMeasure
         }
 
         public PointPointMeasureResults Run(PointPointMeasureParameters parameters)
+            => ExecuteCore(parameters, parameters.ResolvedInputImage, parameters.Context);
+
+        public ValueTask<ToolResults> ExecuteAsync(ToolExecutionRequest request)
+        {
+            var result = ExecuteCore(
+                (PointPointMeasureParameters)request.Parameters,
+                request.Inputs.Image,
+                request.Context);
+            return ValueTask.FromResult<ToolResults>(result);
+        }
+
+        private PointPointMeasureResults ExecuteCore(
+            PointPointMeasureParameters parameters,
+            IVisionImage? inputImage,
+            ToolExecutionContext? context)
         {
             var result = new PointPointMeasureResults
             {
@@ -77,7 +95,7 @@ namespace SunEyeVision.Tool.PointPointMeasure
             try
             {
                 // ===== 校验（Fail-Fast）=====
-                if (parameters.ResolvedInputImage == null || parameters.ResolvedInputImage.IsEmpty)
+                if (inputImage == null || inputImage.IsEmpty)
                     throw new InvalidOperationException("输入图像为空或无效");
 
                 var p1 = ResolvePoint(parameters.P1InputMode, parameters.P1Point, parameters.P1X, parameters.P1Y, "点1");
@@ -100,9 +118,9 @@ namespace SunEyeVision.Tool.PointPointMeasure
                 result.AngleDeg = angleDeg;
 
                 // ===== 判定 =====
-                var judged = MeasureJudge.EvaluateAll(
-                    parameters.Judgments,
-                    key => key.Name switch
+                var judged = ResultJudgmentEvaluator.EvaluateRanges(
+                    parameters.ResultPresentation.Judgments,
+                    key => parameters.ResultPresentation.GetJudgment(key).Name switch
                     {
                         "点距" => distance,
                         "ΔX" => dx,
@@ -110,7 +128,7 @@ namespace SunEyeVision.Tool.PointPointMeasure
                         "连线角度" => angleDeg,
                         _ => null,
                     });
-                result.IsPass = MeasureJudge.IsAllPass(judged);
+                result.IsPass = ResultJudgmentEvaluator.IsAllPass(judged);
                 result.JudgmentDetails = judged.Select(j => j.Message).ToArray();
 
                 result.FillDisplay(result.IsPass, parameters);
@@ -118,7 +136,10 @@ namespace SunEyeVision.Tool.PointPointMeasure
             }
             catch (Exception ex)
             {
-                parameters.LogError($"点-点测量失败: {ex.Message}", ex);
+                context?.Logger?.Error(
+                    $"点-点测量失败: {ex.Message}",
+                    context.GetSourceName(),
+                    ex);
                 result.SetError($"测量失败: {ex.Message}", ex);
             }
             return result;

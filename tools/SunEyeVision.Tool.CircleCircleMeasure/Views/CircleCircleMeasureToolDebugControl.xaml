@@ -3,18 +3,26 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:designParameters="clr-namespace:SunEyeVision.Tool.CircleCircleMeasure"
         xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
         xmlns:converters="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Converters;assembly=SunEyeVision.Plugin.SDK"
         xmlns:themes="clr-namespace:SunEyeVision.Plugin.SDK.UI.Themes;assembly=SunEyeVision.Plugin.SDK"
         xmlns:measure="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views;assembly=SunEyeVision.Plugin.SDK"
+        xmlns:presentation="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.ResultPresentation;assembly=SunEyeVision.Plugin.SDK"
         xmlns:results="clr-namespace:SunEyeVision.Plugin.SDK.Execution.Results;assembly=SunEyeVision.Plugin.SDK"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
         HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-        DataContext="{Binding Parameters, RelativeSource={RelativeSource Self}}">
+        d:DataContext="{d:DesignInstance Type=designParameters:CircleCircleMeasureParameters, IsDesignTimeCreatable=True}"
+        DataContext="{Binding Parameters, RelativeSource={RelativeSource Self}}"
+        Background="{DynamicResource {x:Static themes:SdkThemeKeys.PanelBackgroundBrush}}"
+        Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}">
 
     <controls:ToolDebugControlBase.Resources>
         <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <themes:DesignTimeThemeResourceDictionary/>
+            </ResourceDictionary.MergedDictionaries>
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         </ResourceDictionary>
     </controls:ToolDebugControlBase.Resources>
@@ -32,7 +40,9 @@
                     </controls:LabeledControl>
 
                     <!-- 双测量元素（卡尺1 圆 / 卡尺2 圆，无屏蔽区，互斥并排）—— 去掉外层 GroupBox 边框，避免双层卡片 -->
-                    <measure:MeasureElementsEditorControl x:Name="ElementsEditor" Margin="0,8,0,0"/>
+                    <measure:MeasureElementsEditorControl x:Name="ElementsEditor" Margin="0,8,0,0"
+                                                          Element1GeometryType="Circle"
+                                                          Element2GeometryType="Circle"/>
 
                     <controls:LabeledControl Label="位置修正" Margin="0,8,0,0" HorizontalAlignment="Left">
                         <controls:ToggleSwitch
@@ -142,105 +152,11 @@
         <TabItem Header="结果显示">
             <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12">
                 <StackPanel>
-                    <!-- 测量结果展示归"模块结果"面板，Tab3 不再单独显示一行文字（对齐线-线测量范式） -->
-
-                    <Expander Header="结果判断" IsExpanded="True" Margin="0,8,0,0">
-                        <StackPanel Margin="16,8">
-                            <ItemsControl ItemsSource="{Binding Judgments}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Margin="0,4">
-                                            <!-- 上行：开关 + 名称 + 单位（Toggle 与 标签 同行，参考其他工具的"判定"行） -->
-                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                                <controls:ToggleSwitch
-                                                    IsChecked="{Binding Enabled, Mode=TwoWay}"
-                                                    SwitchWidth="44" SwitchHeight="22" VerticalAlignment="Center"/>
-                                                <TextBlock Text="{Binding Name}" Margin="8,0,2,0" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                                                <TextBlock Text="（单位:）" Margin="0,0,2,0" VerticalAlignment="Center"
-                                                           Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}"/>
-                                                <TextBlock Text="{Binding Unit}" Margin="0,0,0,0" VerticalAlignment="Center"
-                                                           Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}"/>
-                                            </StackPanel>
-                                            <!-- 下行：范围（独立 LabeledControl 垂直显示，仅启用时可见） -->
-                                            <controls:LabeledControl Label="范围" Margin="0,4,0,0"
-                                                Visibility="{Binding Enabled, Converter={StaticResource BoolToVisibilityConverter}}">
-                                                <controls:RangeInputControl
-                                                    MinValue="{Binding Min, Mode=TwoWay}" MaxValue="{Binding Max, Mode=TwoWay}"
-                                                    Unit="{Binding Unit}" DecimalPlaces="2" NumericWidth="120"
-                                                    HorizontalAlignment="Left"/>
-                                            </controls:LabeledControl>
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </StackPanel>
-                    </Expander>
-
-                    <Expander Header="图形显示" IsExpanded="True" Margin="0,8,0,0">
-                        <StackPanel Margin="16,8">
-                            <controls:LabeledControl Label="引导圆1">
-                                <controls:DispItemColorControl Item="{Binding GuideCircle1Style, Mode=TwoWay}"/>
-                            </controls:LabeledControl>
-                            <controls:LabeledControl Label="卡尺1">
-                                <controls:DispItemColorControl Item="{Binding CaliberBand1Style, Mode=TwoWay}"/>
-                            </controls:LabeledControl>
-                            <controls:LabeledControl Label="拟合结果1">
-                                <controls:DispItemColorControl Item="{Binding FitCircle1Style, Mode=TwoWay}"/>
-                            </controls:LabeledControl>
-                            <controls:LabeledControl Label="引导圆2">
-                                <controls:DispItemColorControl Item="{Binding GuideCircle2Style, Mode=TwoWay}"/>
-                            </controls:LabeledControl>
-                            <controls:LabeledControl Label="卡尺2">
-                                <controls:DispItemColorControl Item="{Binding CaliberBand2Style, Mode=TwoWay}"/>
-                            </controls:LabeledControl>
-                            <controls:LabeledControl Label="拟合结果2">
-                                <controls:DispItemColorControl Item="{Binding FitCircle2Style, Mode=TwoWay}"/>
-                            </controls:LabeledControl>
-                            <controls:LabeledControl Label="卡尺1拟合点">
-                                <controls:DispItemColorControl Item="{Binding CaliberPoint1Style, Mode=TwoWay}"/>
-                            </controls:LabeledControl>
-                            <controls:LabeledControl Label="卡尺2拟合点">
-                                <controls:DispItemColorControl Item="{Binding CaliberPoint2Style, Mode=TwoWay}"/>
-                            </controls:LabeledControl>
-                            <controls:LabeledControl Label="交点">
-                                <controls:DispItemColorControl Item="{Binding IntersectionPointStyle, Mode=TwoWay}"/>
-                            </controls:LabeledControl>
-                            <controls:LabeledControl Label="圆心连线">
-                                <controls:DispItemColorControl Item="{Binding CenterLineStyle, Mode=TwoWay}"/>
-                            </controls:LabeledControl>
-                        </StackPanel>
-                    </Expander>
-
-                    <Expander Header="文本显示" IsExpanded="True" Margin="0,8,0,0">
-                        <StackPanel Margin="16,8">
-                            <controls:LabeledControl Label="卡尺1中心">
-                                <controls:DispTextColorControl Item="{Binding Element1CenterTextStyle, Mode=TwoWay}"
-                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                            </controls:LabeledControl>
-                            <controls:LabeledControl Label="卡尺1半径">
-                                <controls:DispTextColorControl Item="{Binding Element1RadiusTextStyle, Mode=TwoWay}"
-                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                            </controls:LabeledControl>
-                            <controls:LabeledControl Label="卡尺2中心">
-                                <controls:DispTextColorControl Item="{Binding Element2CenterTextStyle, Mode=TwoWay}"
-                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                            </controls:LabeledControl>
-                            <controls:LabeledControl Label="卡尺2半径">
-                                <controls:DispTextColorControl Item="{Binding Element2RadiusTextStyle, Mode=TwoWay}"
-                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                            </controls:LabeledControl>
-                            <controls:LabeledControl Label="交点">
-                                <controls:DispTextColorControl Item="{Binding IntersectionTextStyle, Mode=TwoWay}"
-                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                            </controls:LabeledControl>
-                            <controls:LabeledControl Label="圆心距">
-                                <controls:DispTextColorControl Item="{Binding DistanceTextStyle, Mode=TwoWay}"
-                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                            </controls:LabeledControl>
-                        </StackPanel>
-                    </Expander>
-                </StackPanel>
-            </ScrollViewer>
-        </TabItem>
+            <presentation:JudgmentEditorControl ItemsSource="{Binding ResultPresentation.Judgments}"/>
+            <presentation:GraphicsDisplayEditorControl ItemsSource="{Binding ResultPresentation.Graphics}"/>
+            <presentation:TextDisplayEditorControl ItemsSource="{Binding ResultPresentation.Texts}"
+                                                   AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+          </StackPanel>
+            </ScrollViewer></TabItem>
     </TabControl>
 </controls:ToolDebugControlBase>

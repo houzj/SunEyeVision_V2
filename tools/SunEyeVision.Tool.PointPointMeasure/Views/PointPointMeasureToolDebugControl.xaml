@@ -3,18 +3,26 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:designParameters="clr-namespace:SunEyeVision.Tool.PointPointMeasure"
         xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
         xmlns:converters="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Converters;assembly=SunEyeVision.Plugin.SDK"
         xmlns:themes="clr-namespace:SunEyeVision.Plugin.SDK.UI.Themes;assembly=SunEyeVision.Plugin.SDK"
         xmlns:geometry="clr-namespace:SunEyeVision.Plugin.SDK.Models.Geometry;assembly=SunEyeVision.Plugin.SDK"
         xmlns:sdkConverters="clr-namespace:SunEyeVision.Plugin.SDK.UI.Converters;assembly=SunEyeVision.Plugin.SDK"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:presentation="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.ResultPresentation;assembly=SunEyeVision.Plugin.SDK"
         mc:Ignorable="d"
         HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-        DataContext="{Binding Parameters, RelativeSource={RelativeSource Self}}">
+        d:DataContext="{d:DesignInstance Type=designParameters:PointPointMeasureParameters, IsDesignTimeCreatable=True}"
+        DataContext="{Binding Parameters, RelativeSource={RelativeSource Self}}"
+        Background="{DynamicResource {x:Static themes:SdkThemeKeys.PanelBackgroundBrush}}"
+        Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}">
 
     <controls:ToolDebugControlBase.Resources>
         <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <themes:DesignTimeThemeResourceDictionary/>
+            </ResourceDictionary.MergedDictionaries>
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
             <sdkConverters:EnumToBoolConverter x:Key="EnumToBoolConverter"/>
             <sdkConverters:EnumToVisibilityConverter x:Key="EnumToVisibilityConverter"/>
@@ -119,74 +127,11 @@
         <TabItem Header="结果显示">
             <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12">
                 <StackPanel>
-                    <Expander Header="结果判断" IsExpanded="True" Margin="0,8,0,0">
-                        <StackPanel Margin="16,8">
-                            <ItemsControl ItemsSource="{Binding Judgments}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Margin="0,4">
-                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                                <controls:ToggleSwitch
-                                                    IsChecked="{Binding Enabled, Mode=TwoWay}"
-                                                    SwitchWidth="44" SwitchHeight="22" VerticalAlignment="Center"/>
-                                                <TextBlock Text="{Binding Name}" Margin="8,0,2,0" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                                                <TextBlock Text="（单位:）" Margin="0,0,2,0" VerticalAlignment="Center"
-                                                           Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}"/>
-                                                <TextBlock Text="{Binding Unit}" Margin="0,0,0,0" VerticalAlignment="Center"
-                                                           Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}"/>
-                                            </StackPanel>
-                                            <controls:LabeledControl Label="范围" Margin="0,4,0,0"
-                                                Visibility="{Binding Enabled, Converter={StaticResource BoolToVisibilityConverter}}">
-                                                <controls:RangeInputControl
-                                                    MinValue="{Binding Min, Mode=TwoWay}" MaxValue="{Binding Max, Mode=TwoWay}"
-                                                    Unit="{Binding Unit}" DecimalPlaces="2" NumericWidth="120"
-                                                    HorizontalAlignment="Left"/>
-                                            </controls:LabeledControl>
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </StackPanel>
-                    </Expander>
-
-                    <Expander Header="图形显示" IsExpanded="True" Margin="0,8,0,0">
-                        <StackPanel Margin="16,8">
-                            <controls:LabeledControl Label="点1">
-                                <controls:DispItemColorControl Item="{Binding Point1Style, Mode=TwoWay}"/>
-                            </controls:LabeledControl>
-                            <controls:LabeledControl Label="点2">
-                                <controls:DispItemColorControl Item="{Binding Point2Style, Mode=TwoWay}"/>
-                            </controls:LabeledControl>
-                            <controls:LabeledControl Label="点距连线">
-                                <controls:DispItemColorControl Item="{Binding DistanceLineStyle, Mode=TwoWay}"/>
-                            </controls:LabeledControl>
-                            <controls:LabeledControl Label="ΔX辅助线">
-                                <controls:DispItemColorControl Item="{Binding DeltaXLineStyle, Mode=TwoWay}"/>
-                            </controls:LabeledControl>
-                            <controls:LabeledControl Label="ΔY辅助线">
-                                <controls:DispItemColorControl Item="{Binding DeltaYLineStyle, Mode=TwoWay}"/>
-                            </controls:LabeledControl>
-                        </StackPanel>
-                    </Expander>
-
-                    <Expander Header="文本显示" IsExpanded="True" Margin="0,8,0,0">
-                        <StackPanel Margin="16,8">
-                            <controls:LabeledControl Label="点1坐标">
-                                <controls:DispTextColorControl Item="{Binding Point1TextStyle, Mode=TwoWay}"
-                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                            </controls:LabeledControl>
-                            <controls:LabeledControl Label="点2坐标">
-                                <controls:DispTextColorControl Item="{Binding Point2TextStyle, Mode=TwoWay}"
-                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                            </controls:LabeledControl>
-                            <controls:LabeledControl Label="点距">
-                                <controls:DispTextColorControl Item="{Binding DistanceTextStyle, Mode=TwoWay}"
-                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                            </controls:LabeledControl>
-                        </StackPanel>
-                    </Expander>
-                </StackPanel>
-            </ScrollViewer>
-        </TabItem>
+            <presentation:JudgmentEditorControl ItemsSource="{Binding ResultPresentation.Judgments}"/>
+            <presentation:GraphicsDisplayEditorControl ItemsSource="{Binding ResultPresentation.Graphics}"/>
+            <presentation:TextDisplayEditorControl ItemsSource="{Binding ResultPresentation.Texts}"
+                                                   AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+          </StackPanel>
+            </ScrollViewer></TabItem>
     </TabControl>
 </controls:ToolDebugControlBase>

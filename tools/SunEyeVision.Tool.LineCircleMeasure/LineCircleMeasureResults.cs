@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -143,10 +143,10 @@ namespace SunEyeVision.Tool.LineCircleMeasure
         {
             _display.Clear();
 
-            if (parameters.CaliberPoint1Style.IsVisible && Element1FitPoints.Length > 0)
-                _display.AddCrosses(parameters.CaliberPoint1Style, ToWpfPoints(Element1FitPoints));
-            if (parameters.CaliberPoint2Style.IsVisible && Element2FitPoints.Length > 0)
-                _display.AddCrosses(parameters.CaliberPoint2Style, ToWpfPoints(Element2FitPoints));
+            if (parameters.ResultPresentation.GetGraphicsStyle("caliber-point1").IsVisible && Element1FitPoints.Length > 0)
+                _display.AddCrosses(parameters.ResultPresentation.GetGraphicsStyle("caliber-point1"), ToWpfPoints(Element1FitPoints));
+            if (parameters.ResultPresentation.GetGraphicsStyle("caliber-point2").IsVisible && Element2FitPoints.Length > 0)
+                _display.AddCrosses(parameters.ResultPresentation.GetGraphicsStyle("caliber-point2"), ToWpfPoints(Element2FitPoints));
 
             // 位置修正：引导几何/卡尺带显示与交互层同源变换
             var matrix = parameters.IsPositionCorrectionEnabled
@@ -156,23 +156,23 @@ namespace SunEyeVision.Tool.LineCircleMeasure
             double scale = matrix?.ScaleFactor() ?? 1.0;
 
             // ---- 元素1：引导线 + 卡尺带 + 拟合线 ----
-            if (parameters.GuideLine1Style.IsVisible)
+            if (parameters.ResultPresentation.GetGraphicsStyle("guide-line1").IsVisible)
             {
                 var g1s = T(new Point(parameters.E1StartX.Value, parameters.E1StartY.Value));
                 var g1e = T(new Point(parameters.E1EndX.Value, parameters.E1EndY.Value));
                 if ((g1e - g1s).Length > 1e-6)
-                    _display.AddLine(parameters.GuideLine1Style, g1s, g1e, isOk);
+                    _display.AddLine(parameters.ResultPresentation.GetGraphicsStyle("guide-line1"), g1s, g1e, isOk);
             }
-            if (parameters.CaliberBand1Style.IsVisible)
+            if (parameters.ResultPresentation.GetGraphicsStyle("caliber-band1").IsVisible)
             {
                 var g1s = T(new Point(parameters.E1StartX.Value, parameters.E1StartY.Value));
                 var g1e = T(new Point(parameters.E1EndX.Value, parameters.E1EndY.Value));
                 var bands = MeasureLineBands(g1s, g1e, parameters.E1MeasureLength1.Value, parameters.E1MeasureLength2.Value, parameters.E1NumMeasures.Value);
                 if (bands.Count > 0)
-                    _display.AddContours(parameters.CaliberBand1Style, bands, isClosed: true);
+                    _display.AddContours(parameters.ResultPresentation.GetGraphicsStyle("caliber-band1"), bands, isClosed: true);
             }
             if (Element1Line is { Length: > 0 })
-                _display.AddLine(parameters.FitLine1Style, Element1StartPoint, Element1EndPoint, isOk);
+                _display.AddLine(parameters.ResultPresentation.GetGraphicsStyle("fit-line1"), Element1StartPoint, Element1EndPoint, isOk);
 
             // ---- 元素2：引导圆 + 环形卡尺带 + 拟合圆 ----
             // 位置修正：圆心随矩阵变换 + 半径随缩放因子缩放 + 卡尺阵列起始相位随旋转（与 CircleDetect / BuildCircleBands 同口径）
@@ -182,72 +182,72 @@ namespace SunEyeVision.Tool.LineCircleMeasure
                 ? PositionCorrectionResolver.DisplayAngleDeg(matrix, 0.0) * Math.PI / 180.0
                 : 0.0;
 
-            if (parameters.GuideCircle2Style.IsVisible && g2r > 1e-6)
-                _display.AddCircle(parameters.GuideCircle2Style, new Circle2d(g2c, g2r), isOk);
+            if (parameters.ResultPresentation.GetGraphicsStyle("guide-circle2").IsVisible && g2r > 1e-6)
+                _display.AddCircle(parameters.ResultPresentation.GetGraphicsStyle("guide-circle2"), new Circle2d(g2c, g2r), isOk);
 
-            if (parameters.CaliberBand2Style.IsVisible && g2r > 1e-6)
+            if (parameters.ResultPresentation.GetGraphicsStyle("caliber-band2").IsVisible && g2r > 1e-6)
             {
                 var bands = MeasureCircleBands(
                     new Circle2d(g2c, g2r),
                     parameters.E2MeasureLength1.Value, parameters.E2MeasureLength2.Value,
                     parameters.E2NumMeasures.Value, startPhase);
                 if (bands.Count > 0)
-                    _display.AddContours(parameters.CaliberBand2Style, bands, isClosed: true);
+                    _display.AddContours(parameters.ResultPresentation.GetGraphicsStyle("caliber-band2"), bands, isClosed: true);
             }
             if (Element2Circle is { Length: > 0 })
-                _display.AddCircle(parameters.FitCircle2Style, Element2Circle[0], isOk);
+                _display.AddCircle(parameters.ResultPresentation.GetGraphicsStyle("fit-circle2"), Element2Circle[0], isOk);
 
             // ---- 交点标记（1 或 2 个）----
-            if (IsIntersecting && parameters.IntersectionPointStyle.IsVisible)
+            if (IsIntersecting && parameters.ResultPresentation.GetGraphicsStyle("intersection-point").IsVisible)
             {
                 var points = new List<Point> { new(IntersectionX, IntersectionY) };
                 if (IntersectionCount > 1 && !double.IsNaN(Intersection2X))
                     points.Add(new Point(Intersection2X, Intersection2Y));
-                _display.AddCrosses(parameters.IntersectionPointStyle, points);
+                _display.AddCrosses(parameters.ResultPresentation.GetGraphicsStyle("intersection-point"), points);
             }
 
             // ---- 文本：卡尺1中心/角度、卡尺2中心/半径、交点 ----
             if (Element1Line is { Length: > 0 })
             {
                 // 同锚点（元素1中心）：中心/角度两行由渲染层自动换行（行高随字号自适应，缩放不错位）
-                if (parameters.Element1CenterTextStyle.IsVisible)
-                    _display.AddText(parameters.Element1CenterTextStyle, Element1Center.X, Element1Center.Y,
+                if (parameters.ResultPresentation.GetTextStyle("element1-center-text").IsVisible)
+                    _display.AddText(parameters.ResultPresentation.GetTextStyle("element1-center-text"), Element1Center.X, Element1Center.Y,
                         $"卡尺1中心 ({Element1Center.X:F1}, {Element1Center.Y:F1})", isOk);
-                if (parameters.Element1AngleTextStyle.IsVisible)
-                    _display.AddText(parameters.Element1AngleTextStyle, Element1Center.X, Element1Center.Y,
+                if (parameters.ResultPresentation.GetTextStyle("element1-angle-text").IsVisible)
+                    _display.AddText(parameters.ResultPresentation.GetTextStyle("element1-angle-text"), Element1Center.X, Element1Center.Y,
                         $"卡尺1角度 {Element1Angle:G3}°", isOk);
             }
             if (Element2Circle is { Length: > 0 })
             {
                 // 圆无方向角：第二行以"半径"替代线-线的"卡尺2角度"
-                if (parameters.Element2CenterTextStyle.IsVisible)
-                    _display.AddText(parameters.Element2CenterTextStyle, Element2Center.X, Element2Center.Y,
+                if (parameters.ResultPresentation.GetTextStyle("element2-center-text").IsVisible)
+                    _display.AddText(parameters.ResultPresentation.GetTextStyle("element2-center-text"), Element2Center.X, Element2Center.Y,
                         $"卡尺2中心 ({Element2Center.X:F1}, {Element2Center.Y:F1})", isOk);
-                if (parameters.Element2RadiusTextStyle.IsVisible)
-                    _display.AddText(parameters.Element2RadiusTextStyle, Element2Center.X, Element2Center.Y,
+                if (parameters.ResultPresentation.GetTextStyle("element2-radius-text").IsVisible)
+                    _display.AddText(parameters.ResultPresentation.GetTextStyle("element2-radius-text"), Element2Center.X, Element2Center.Y,
                         $"卡尺2半径 {Element2Radius:F2}px", isOk);
             }
-            if (IsIntersecting && parameters.IntersectionTextStyle.IsVisible)
-                _display.AddText(parameters.IntersectionTextStyle, IntersectionX, IntersectionY,
+            if (IsIntersecting && parameters.ResultPresentation.GetTextStyle("intersection-text").IsVisible)
+                _display.AddText(parameters.ResultPresentation.GetTextStyle("intersection-text"), IntersectionX, IntersectionY,
                     $"交点 ({IntersectionX:F1}, {IntersectionY:F1})", 0, 16, isOk);
 
             // ---- 无限直线延长（虚线，裁到图像范围）：拟合输出是线段，而距离/交点取自无限直线，延长段让语义可见 ----
             if (ImageWidth > 0 && ImageHeight > 0
-                && parameters.ExtensionLine1Style.IsVisible && Element1Line is { Length: > 0 }
+                && parameters.ResultPresentation.GetGraphicsStyle("extension-line1").IsVisible && Element1Line is { Length: > 0 }
                 && TryClipInfiniteLine(Element1StartPoint, Element1EndPoint, ImageWidth, ImageHeight, out var e1a, out var e1b))
-                _display.AddLine(parameters.ExtensionLine1Style, e1a, e1b, isOk);
+                _display.AddLine(parameters.ResultPresentation.GetGraphicsStyle("extension-line1"), e1a, e1b, isOk);
 
             // ---- 距离可视化：圆心 → 元素1 无限直线的垂足（长度 = HALCON distance_pl 的正交距离）+ 数值文字 ----
             if (Element1Line is { Length: > 0 } && Element2Circle is { Length: > 0 }
                 && TryNormalFoot(Element2Center, Element1StartPoint, Element1EndPoint, out var foot))
             {
-                if (parameters.DistanceLineStyle.IsVisible)
-                    _display.AddLine(parameters.DistanceLineStyle, Element2Center, foot, isOk);
+                if (parameters.ResultPresentation.GetGraphicsStyle("distance-line").IsVisible)
+                    _display.AddLine(parameters.ResultPresentation.GetGraphicsStyle("distance-line"), Element2Center, foot, isOk);
 
-                if (parameters.DistanceTextStyle.IsVisible)
+                if (parameters.ResultPresentation.GetTextStyle("distance-text").IsVisible)
                 {
                     var mid = new Point((Element2Center.X + foot.X) / 2, (Element2Center.Y + foot.Y) / 2);
-                    _display.AddText(parameters.DistanceTextStyle, mid.X, mid.Y,
+                    _display.AddText(parameters.ResultPresentation.GetTextStyle("distance-text"), mid.X, mid.Y,
                         $"圆心到直线 {Distance:F2}px", 6, 0, isOk);
                 }
             }

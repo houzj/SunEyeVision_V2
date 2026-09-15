@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Text.Json;
 using SunEyeVision.Core.Services.Serialization;
@@ -50,8 +50,9 @@ public class LineLineMeasureContractTests
         source.E1NumMeasures.Value = 12;
         source.E1Transition.Value = EdgeTransition.Positive;
         source.E1Select.Value = EdgeSelect.First;
-        source.Judgments.Add(new MeasureThreshold
+        source.ResultPresentation.Judgments.Add(new JudgmentConfigItem
         {
+            Key = "test-custom",
             Name = "夹角",
             Enabled = true,
             Min = -1.0,
@@ -72,8 +73,8 @@ public class LineLineMeasureContractTests
         Assert.Equal(EdgeSelect.First, back.E1Select.Value);
 
         // 默认判定项（角度/距离/交点X/交点Y）保留 + 新增项完整还原
-        Assert.Equal(source.Judgments.Count, back.Judgments.Count);
-        var custom = back.Judgments.Single(j => j.Name == "夹角");
+        Assert.Equal(source.ResultPresentation.Judgments.Count, back.ResultPresentation.Judgments.Count);
+        var custom = back.ResultPresentation.Judgments.Single(j => j.Name == "夹角");
         Assert.True(custom.Enabled);
         Assert.Equal(-1.0, custom.Min, 6);
         Assert.Equal(1.0, custom.Max, 6);

@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
@@ -33,13 +32,7 @@ namespace SunEyeVision.Tool.LineLineMeasure
         // 判定规格列表（v4 C1 基座，SDK MeasureThreshold 复用，六工具同构）
         // ============================================================
         /// <summary>测量输出项判定规格（角度/距离/交点X/交点Y 各一行公差；UI 数据驱动 Toggle+Range）。可写以便 JSON 反序列化回填</summary>
-        public ObservableCollection<MeasureThreshold> Judgments { get; set; } = new()
-        {
-            new() { Name = "角度", Enabled = true, Min = 0, Max = 90, Unit = "°" },
-            new() { Name = "距离", Enabled = false, Min = 0, Max = 10, Unit = "px" },
-            new() { Name = "交点X", Enabled = false, Min = -10000, Max = 10000, Unit = "px" },
-            new() { Name = "交点Y", Enabled = false, Min = -10000, Max = 10000, Unit = "px" },
-        };
+        public ResultPresentationConfig ResultPresentation { get; set; } = CreateResultPresentation();
 
         // ============================================================
         // 元素1（卡尺1）：引导直线（起点/终点）—— 全部 ParamValue 支持字段订阅
@@ -82,115 +75,81 @@ namespace SunEyeVision.Tool.LineLineMeasure
         // ============================================================
         // 结果显示样式（Tab3 绑定：图形显示 + 文本显示，对齐直线查找 Tab3 范式）
         // ============================================================
-        public GraphicsStyle GuideLine1Style { get; set; } = new()
-        {
-            Name = "引导线1", IsVisible = true,
-        };
-        public GraphicsStyle GuideLine2Style { get; set; } = new()
-        {
-            Name = "引导线2", IsVisible = true,
-        };
-        public GraphicsStyle CaliberBand1Style { get; set; } = new()
-        {
-            Name = "卡尺1", IsVisible = true,
-        };
-        public GraphicsStyle CaliberBand2Style { get; set; } = new()
-        {
-            Name = "卡尺2", IsVisible = true,
-        };
-        public GraphicsStyle FitLine1Style { get; set; } = new()
-        {
-            Name = "拟合结果1", IsVisible = true,
-        };
-        public GraphicsStyle FitLine2Style { get; set; } = new()
-        {
-            Name = "拟合结果2", IsVisible = true,
-        };
-        public GraphicsStyle CaliberPoint1Style { get; set; } = new()
-        {
-            Name = "卡尺1拟合点", IsVisible = true, CrossSize = 4.0,
-        };
-        public GraphicsStyle CaliberPoint2Style { get; set; } = new()
-        {
-            Name = "卡尺2拟合点", IsVisible = true, CrossSize = 4.0,
-        };
-        public GraphicsStyle IntersectionPointStyle { get; set; } = new()
-        {
-            Name = "角点", IsVisible = true, CrossSize = 6.0,
-        };
+
+
+
+
+
+
+
+
+
 
         /// <summary>元素1 无限直线延长线（虚线；拟合线段为实线，延长段表达"交点取自无限直线"）</summary>
-        public GraphicsStyle ExtensionLine1Style { get; set; } = new()
-        {
-            Name = "延长线1", IsVisible = true,
-            LineDashStyle = LineDashStyle.Dash, LineWidth = 1.0,
-        };
+
         /// <summary>元素2 无限直线延长线（虚线）</summary>
-        public GraphicsStyle ExtensionLine2Style { get; set; } = new()
-        {
-            Name = "延长线2", IsVisible = true,
-            LineDashStyle = LineDashStyle.Dash, LineWidth = 1.0,
-        };
+
         /// <summary>两线夹角角标弧（交点处，半径见 <see cref="AngleArcRadius"/>）</summary>
-        public GraphicsStyle AngleArcStyle { get; set; } = new()
-        {
-            Name = "夹角弧", IsVisible = true, LineWidth = 1.5,
-        };
+
 
         /// <summary>夹角角标半径（px，图像坐标；仅显示层使用，不参与测量与绑定）</summary>
         public double AngleArcRadius { get; set; } = 50.0;
 
         /// <summary>夹角数值文字（交点附近角平分方向）</summary>
-        public TextStyle AngleTextStyle { get; set; } = new()
-        {
-            Name = "夹角", IsVisible = true,
-        };
+
 
         /// <summary>距离连线（平行场景画公垂段：线1中点 → 线2垂足）</summary>
-        public GraphicsStyle DistanceLineStyle { get; set; } = new()
-        {
-            Name = "距离连线", IsVisible = true,
-            LineDashStyle = LineDashStyle.DashDot, LineWidth = 1.0,
-        };
+
 
         /// <summary>距离数值文字（间距/最短距离）</summary>
-        public TextStyle DistanceTextStyle { get; set; } = new()
-        {
-            Name = "距离", IsVisible = true,
-        };
+
 
         /// <summary>最小法向距离投影段（默认隐藏，按需开启；极值点 → 线2 垂足）</summary>
-        public GraphicsStyle DistanceMinLineStyle { get; set; } = new()
-        {
-            Name = "最小距离线", IsVisible = false,
-            LineDashStyle = LineDashStyle.Dot, LineWidth = 1.0,
-        };
+
 
         /// <summary>最大法向距离投影段（默认隐藏，按需开启）</summary>
-        public GraphicsStyle DistanceMaxLineStyle { get; set; } = new()
+
+
+
+
+
+
+
+        private static ResultPresentationConfig CreateResultPresentation()
         {
-            Name = "最大距离线", IsVisible = false,
-            LineDashStyle = LineDashStyle.Dot, LineWidth = 1.0,
-        };
-        public TextStyle Element1CenterTextStyle { get; set; } = new()
-        {
-            Name = "卡尺1中心", IsVisible = true,
-        };
-        public TextStyle Element1AngleTextStyle { get; set; } = new()
-        {
-            Name = "卡尺1角度", IsVisible = true,
-        };
-        public TextStyle Element2CenterTextStyle { get; set; } = new()
-        {
-            Name = "卡尺2中心", IsVisible = true,
-        };
-        public TextStyle Element2AngleTextStyle { get; set; } = new()
-        {
-            Name = "卡尺2角度", IsVisible = true,
-        };
-        public TextStyle IntersectionTextStyle { get; set; } = new()
-        {
-            Name = "交点", IsVisible = true,
-        };
+            var config = new ResultPresentationConfig();
+            config.Judgments.Add(new() { Key = "angle", Name = "角度", Enabled = true, Min = 0, Max = 90, Unit = "°", Order = 10 });
+            config.Judgments.Add(new() { Key = "distance", Name = "距离", Enabled = false, Min = 0, Max = 10, Unit = "px", Order = 20 });
+            config.Judgments.Add(new() { Key = "intersection-x", Name = "交点X", Enabled = false, Min = -10000, Max = 10000, Unit = "px", Order = 30 });
+            config.Judgments.Add(new() { Key = "intersection-y", Name = "交点Y", Enabled = false, Min = -10000, Max = 10000, Unit = "px", Order = 40 });
+            config.Graphics.Add(new() { Key = "guide-line1", Name = "引导线1", Order = 10, Style = new() { Name = "引导线1", IsVisible = true, } });
+            config.Graphics.Add(new() { Key = "guide-line2", Name = "引导线2", Order = 20, Style = new() { Name = "引导线2", IsVisible = true, } });
+            config.Graphics.Add(new() { Key = "caliber-band1", Name = "卡尺1", Order = 30, Style = new() { Name = "卡尺1", IsVisible = true, } });
+            config.Graphics.Add(new() { Key = "caliber-band2", Name = "卡尺2", Order = 40, Style = new() { Name = "卡尺2", IsVisible = true, } });
+            config.Graphics.Add(new() { Key = "fit-line1", Name = "拟合结果1", Order = 50, Style = new() { Name = "拟合结果1", IsVisible = true, } });
+            config.Graphics.Add(new() { Key = "fit-line2", Name = "拟合结果2", Order = 60, Style = new() { Name = "拟合结果2", IsVisible = true, } });
+            config.Graphics.Add(new() { Key = "caliber-point1", Name = "卡尺1拟合点", Order = 70, Style = new() { Name = "卡尺1拟合点", IsVisible = true, CrossSize = 4.0, } });
+            config.Graphics.Add(new() { Key = "caliber-point2", Name = "卡尺2拟合点", Order = 80, Style = new() { Name = "卡尺2拟合点", IsVisible = true, CrossSize = 4.0, } });
+            config.Graphics.Add(new() { Key = "intersection-point", Name = "角点", Order = 90, Style = new() { Name = "角点", IsVisible = true, CrossSize = 6.0, } });
+            config.Graphics.Add(new() { Key = "extension-line1", Name = "延长线1", Order = 100, Style = new() { Name = "延长线1", IsVisible = true,
+            LineDashStyle = LineDashStyle.Dash, LineWidth = 1.0, } });
+            config.Graphics.Add(new() { Key = "extension-line2", Name = "延长线2", Order = 110, Style = new() { Name = "延长线2", IsVisible = true,
+            LineDashStyle = LineDashStyle.Dash, LineWidth = 1.0, } });
+            config.Graphics.Add(new() { Key = "angle-arc", Name = "夹角弧", Order = 120, Style = new() { Name = "夹角弧", IsVisible = true, LineWidth = 1.5, } });
+            config.Texts.Add(new() { Key = "angle-text", Name = "夹角", Order = 10, Style = new() { Name = "夹角", IsVisible = true, } });
+            config.Graphics.Add(new() { Key = "distance-line", Name = "距离连线", Order = 130, Style = new() { Name = "距离连线", IsVisible = true,
+            LineDashStyle = LineDashStyle.DashDot, LineWidth = 1.0, } });
+            config.Texts.Add(new() { Key = "distance-text", Name = "距离", Order = 20, Style = new() { Name = "距离", IsVisible = true, } });
+            config.Graphics.Add(new() { Key = "distance-min-line", Name = "最小距离线", Order = 140, Style = new() { Name = "最小距离线", IsVisible = false,
+            LineDashStyle = LineDashStyle.Dot, LineWidth = 1.0, } });
+            config.Graphics.Add(new() { Key = "distance-max-line", Name = "最大距离线", Order = 150, Style = new() { Name = "最大距离线", IsVisible = false,
+            LineDashStyle = LineDashStyle.Dot, LineWidth = 1.0, } });
+            config.Texts.Add(new() { Key = "element1-center-text", Name = "卡尺1中心", Order = 30, Style = new() { Name = "卡尺1中心", IsVisible = true, } });
+            config.Texts.Add(new() { Key = "element1-angle-text", Name = "卡尺1角度", Order = 40, Style = new() { Name = "卡尺1角度", IsVisible = true, } });
+            config.Texts.Add(new() { Key = "element2-center-text", Name = "卡尺2中心", Order = 50, Style = new() { Name = "卡尺2中心", IsVisible = true, } });
+            config.Texts.Add(new() { Key = "element2-angle-text", Name = "卡尺2角度", Order = 60, Style = new() { Name = "卡尺2角度", IsVisible = true, } });
+            config.Texts.Add(new() { Key = "intersection-text", Name = "交点", Order = 70, Style = new() { Name = "交点", IsVisible = true, } });
+            return config;
+        }
     }
 }

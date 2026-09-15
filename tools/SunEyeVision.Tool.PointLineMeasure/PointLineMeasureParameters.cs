@@ -1,4 +1,3 @@
-﻿using System.Collections.ObjectModel;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
@@ -28,15 +27,8 @@ namespace SunEyeVision.Tool.PointLineMeasure
     // P0.6-4 承载层拆分：测量工具不使用区域 → 继承"图像源 + 位置修正 + 测量引导"基类
     public class PointLineMeasureParameters : MeasureGuideParameters
     {
-        // ============================================================
-        // 判定规格列表（v4 C1 基座，六工具同构）
-        // ============================================================
-        public ObservableCollection<MeasureThreshold> Judgments { get; set; } = new()
-        {
-            new() { Name = "距离", Enabled = true, Min = 0, Max = 1000, Unit = "px" },
-            new() { Name = "垂足X", Enabled = false, Min = -1e5, Max = 1e5, Unit = "px" },
-            new() { Name = "垂足Y", Enabled = false, Min = -1e5, Max = 1e5, Unit = "px" },
-        };
+        /// <summary>结果页唯一配置源：模块、项目、顺序和样式均由工具在构造时声明。</summary>
+        public ResultPresentationConfig ResultPresentation { get; set; } = CreateResultPresentation();
 
         // ============================================================
         // 元素1（点）：输入方式二分「按图形 / 按参数」（无引导绘制入口 —— v4 与线/圆等引导元素的核心区别）
@@ -115,59 +107,28 @@ namespace SunEyeVision.Tool.PointLineMeasure
         public ParamValue<EdgeSelect> E2Select { get; set; } = ParamValue<EdgeSelect>.CreateConstant(EdgeSelect.All, "E2Select");
         public ParamValue<double> E2DistanceThreshold { get; set; } = ParamValue<double>.CreateConstant(3.5, "E2DistanceThreshold");
 
-        // ============================================================
-        // 结果显示样式（Tab3 绑定：图形显示 + 文本显示，对齐线-圆/圆-圆范式）
-        // ============================================================
-        public GraphicsStyle Point1Style { get; set; } = new()
+        private static ResultPresentationConfig CreateResultPresentation()
         {
-            Name = "点1", IsVisible = true, CrossSize = 4.0,
-        };
-        public GraphicsStyle GuideLine2Style { get; set; } = new()
-        {
-            Name = "引导线2", IsVisible = true,
-        };
-        public GraphicsStyle CaliberBand2Style { get; set; } = new()
-        {
-            Name = "卡尺2", IsVisible = true,
-        };
-        public GraphicsStyle FitLine2Style { get; set; } = new()
-        {
-            Name = "拟合线2", IsVisible = true, LineWidth = 2.0,
-        };
-        public GraphicsStyle CaliberPoint2Style { get; set; } = new()
-        {
-            Name = "卡尺2检测点", IsVisible = true, CrossSize = 4.0,
-        };
-        /// <summary>垂足标记（点1 在拟合线上的正交投影）</summary>
-        public GraphicsStyle FootPointStyle { get; set; } = new()
-        {
-            Name = "垂足", IsVisible = true, CrossSize = 6.0,
-        };
-        /// <summary>垂线（点1 → 垂足；虚线表示"距离"几何量）</summary>
-        public GraphicsStyle FootLineStyle { get; set; } = new()
-        {
-            Name = "垂线", IsVisible = true, LineDashStyle = LineDashStyle.Dash, LineWidth = 1.0,
-        };
+            var config = new ResultPresentationConfig();
 
-        public TextStyle Point1TextStyle { get; set; } = new()
-        {
-            Name = "点1坐标", IsVisible = false,
-        };
-        public TextStyle LineCenterTextStyle { get; set; } = new()
-        {
-            Name = "线2中心", IsVisible = true,
-        };
-        public TextStyle LineAngleTextStyle { get; set; } = new()
-        {
-            Name = "线2角度", IsVisible = true,
-        };
-        public TextStyle FootTextStyle { get; set; } = new()
-        {
-            Name = "垂足", IsVisible = true,
-        };
-        public TextStyle DistanceTextStyle { get; set; } = new()
-        {
-            Name = "距离", IsVisible = true,
-        };
+            config.Judgments.Add(new() { Key = "distance", Name = "距离", Enabled = true, Min = 0, Max = 1000, Unit = "px", Order = 10 });
+            config.Judgments.Add(new() { Key = "foot-x", Name = "垂足X", Enabled = false, Min = -1e5, Max = 1e5, Unit = "px", Order = 20 });
+            config.Judgments.Add(new() { Key = "foot-y", Name = "垂足Y", Enabled = false, Min = -1e5, Max = 1e5, Unit = "px", Order = 30 });
+
+            config.Graphics.Add(new() { Key = "point-1", Name = "点1", Group = "输入", Order = 10, Style = new() { Name = "点1", IsVisible = true, CrossSize = 4.0 } });
+            config.Graphics.Add(new() { Key = "guide-line-2", Name = "引导线2", Group = "测量过程", Order = 20, Style = new() { Name = "引导线2", IsVisible = true } });
+            config.Graphics.Add(new() { Key = "caliper-band-2", Name = "卡尺2", Group = "测量过程", Order = 30, Style = new() { Name = "卡尺2", IsVisible = true } });
+            config.Graphics.Add(new() { Key = "fit-line-2", Name = "拟合结果2", Group = "测量结果", Order = 40, Style = new() { Name = "拟合线2", IsVisible = true, LineWidth = 2.0 } });
+            config.Graphics.Add(new() { Key = "caliper-point-2", Name = "卡尺2拟合点", Group = "测量过程", Order = 50, Style = new() { Name = "卡尺2检测点", IsVisible = true, CrossSize = 4.0 } });
+            config.Graphics.Add(new() { Key = "foot-point", Name = "垂足", Group = "测量结果", Order = 60, Style = new() { Name = "垂足", IsVisible = true, CrossSize = 6.0 } });
+            config.Graphics.Add(new() { Key = "foot-line", Name = "垂线", Group = "测量结果", Order = 70, Style = new() { Name = "垂线", IsVisible = true, LineDashStyle = LineDashStyle.Dash, LineWidth = 1.0 } });
+
+            config.Texts.Add(new() { Key = "point-1", Name = "点1", Group = "输入", Order = 10, Style = new() { Name = "点1坐标", IsVisible = false } });
+            config.Texts.Add(new() { Key = "line-center", Name = "线2中心", Group = "测量结果", Order = 20, Style = new() { Name = "线2中心", IsVisible = true } });
+            config.Texts.Add(new() { Key = "line-angle", Name = "线2角度", Group = "测量结果", Order = 30, Style = new() { Name = "线2角度", IsVisible = true } });
+            config.Texts.Add(new() { Key = "foot", Name = "垂足", Group = "测量结果", Order = 40, Style = new() { Name = "垂足", IsVisible = true } });
+            config.Texts.Add(new() { Key = "distance", Name = "距离", Group = "测量结果", Order = 50, Style = new() { Name = "距离", IsVisible = true } });
+            return config;
+        }
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Text.Json;
 using SunEyeVision.Core.Services.Serialization;
@@ -48,8 +48,9 @@ public class PointCircleMeasureContractTests
         source.E2NumMeasures.Value = 28;
         source.E2Transition.Value = EdgeTransition.Positive;
         source.E2Select.Value = EdgeSelect.First;
-        source.Judgments.Add(new MeasureThreshold
+        source.ResultPresentation.Judgments.Add(new JudgmentConfigItem
         {
+            Key = "test-custom",
             Name = "点圆距",
             Enabled = true,
             Min = 0.0,
@@ -70,8 +71,8 @@ public class PointCircleMeasureContractTests
         Assert.Equal(EdgeSelect.First, back.E2Select.Value);
 
         // 默认判定项（圆心距/圆周距/半径/最近点X/最近点Y）保留 + 新增项完整还原
-        Assert.Equal(source.Judgments.Count, back.Judgments.Count);
-        var custom = back.Judgments.Single(j => j.Name == "点圆距");
+        Assert.Equal(source.ResultPresentation.Judgments.Count, back.ResultPresentation.Judgments.Count);
+        var custom = back.ResultPresentation.Judgments.Single(j => j.Name == "点圆距");
         Assert.True(custom.Enabled);
         Assert.Equal(0.0, custom.Min, 6);
         Assert.Equal(300.0, custom.Max, 6);

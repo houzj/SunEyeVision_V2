@@ -18,9 +18,9 @@ namespace SunEyeVision.Tool.PointLineMeasure.Views
     /// Tab3 = 判定结果 + 图形/文本样式。
     ///
     /// 点元素承载方案（与 SDK 加 SetElementSlotVisible 对齐）：
-    /// 元素1（点）= MeasureElementsEditorControl 槽位1 → 工具栏隐藏 + 不配置类型（SetElementSlotVisible(0, false)），
+    /// 元素1（点）= MeasureElementsEditorControl 槽位1 → 由 XAML Profile 隐藏工具栏，
     /// 点 X/Y 通过独立的 ParamBinding 控件订阅（支持常量/上游绑定）。
-    /// 元素2（线）= 槽位2 → ConfigureElement(1, Line) + 工具栏可见。
+    /// 元素2（线）= 槽位2 → 由 XAML Profile 声明为 Line。
     /// </summary>
     public partial class PointLineMeasureToolDebugControl : ToolDebugControlBase
     {
@@ -45,8 +45,8 @@ namespace SunEyeVision.Tool.PointLineMeasure.Views
 
         public PointLineMeasureToolDebugControl()
         {
-            InitializeComponent();
             Parameters = new PointLineMeasureParameters();
+            InitializeComponent();
 
             InitializeEnumCombos();
             HookElementsEditor();
@@ -173,10 +173,6 @@ namespace SunEyeVision.Tool.PointLineMeasure.Views
         {
             base.SetMainImageControl(imageControl);
             ElementsEditor?.SetMainImageControl(imageControl);
-            // 元素1 = 点（仅参数订阅，无绘制入口）→ 工具栏隐藏 + 不配置类型
-            ElementsEditor?.SetElementSlotVisible(0, false);
-            // 元素2 = 线（引导绘制 + 卡尺）
-            ElementsEditor?.ConfigureElement(1, MeasureGeometryType.Line);
             RestoreEditorsFromParameters();
             UpdatePositionCorrectionMatrix();
         }

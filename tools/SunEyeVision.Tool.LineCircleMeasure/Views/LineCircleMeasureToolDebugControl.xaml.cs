@@ -240,8 +240,6 @@ namespace SunEyeVision.Tool.LineCircleMeasure.Views
         {
             base.SetMainImageControl(imageControl);
             ElementsEditor?.SetMainImageControl(imageControl);
-            ElementsEditor?.ConfigureElement(0, MeasureGeometryType.Line);      // 元素1 = 直线
-            ElementsEditor?.ConfigureElement(1, MeasureGeometryType.Circle);    // 元素2 = 圆
             RestoreEditorsFromParameters();
             UpdatePositionCorrectionMatrix();
         }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -92,8 +92,8 @@ namespace SunEyeVision.Tool.PointCircleMeasure
             _display.Clear();
 
             // ---- 检测点（卡尺2）----
-            if (parameters.CaliberPoint2Style.IsVisible && Element2FitPoints.Length > 0)
-                _display.AddCrosses(parameters.CaliberPoint2Style, ToWpfPoints(Element2FitPoints));
+            if (parameters.ResultPresentation.GetGraphicsStyle("caliber-point2").IsVisible && Element2FitPoints.Length > 0)
+                _display.AddCrosses(parameters.ResultPresentation.GetGraphicsStyle("caliber-point2"), ToWpfPoints(Element2FitPoints));
 
             // ---- 位置修正：引导几何/卡尺带显示与交互层同源变换 ----
             var matrix = parameters.IsPositionCorrectionEnabled
@@ -109,26 +109,26 @@ namespace SunEyeVision.Tool.PointCircleMeasure
             var g2c = T(new Point(parameters.E2CenterX.Value, parameters.E2CenterY.Value));
             double g2r = parameters.E2Radius.Value * scale;
 
-            if (parameters.GuideCircle2Style.IsVisible && g2r > 1e-6)
-                _display.AddCircle(parameters.GuideCircle2Style, new Circle2d(g2c, g2r), isOk);
+            if (parameters.ResultPresentation.GetGraphicsStyle("guide-circle2").IsVisible && g2r > 1e-6)
+                _display.AddCircle(parameters.ResultPresentation.GetGraphicsStyle("guide-circle2"), new Circle2d(g2c, g2r), isOk);
 
-            if (parameters.CaliberBand2Style.IsVisible && g2r > 1e-6)
+            if (parameters.ResultPresentation.GetGraphicsStyle("caliber-band2").IsVisible && g2r > 1e-6)
             {
                 var bands = MeasureCircleBands(
                     new Circle2d(g2c, g2r),
                     parameters.E2MeasureLength1.Value, parameters.E2MeasureLength2.Value,
                     parameters.E2NumMeasures.Value, startPhase);
                 if (bands.Count > 0)
-                    _display.AddContours(parameters.CaliberBand2Style, bands, isClosed: true);
+                    _display.AddContours(parameters.ResultPresentation.GetGraphicsStyle("caliber-band2"), bands, isClosed: true);
             }
 
             if (Element2Circle is { Length: > 0 })
-                _display.AddCircle(parameters.FitCircle2Style, Element2Circle[0], isOk);
+                _display.AddCircle(parameters.ResultPresentation.GetGraphicsStyle("fit-circle2"), Element2Circle[0], isOk);
 
             // ---- 点1（十字标记）----
             var p1T = ToWpfPoint(Point1);
-            if (parameters.Point1Style.IsVisible)
-                _display.AddCrosses(parameters.Point1Style, new[] { p1T });
+            if (parameters.ResultPresentation.GetGraphicsStyle("point1").IsVisible)
+                _display.AddCrosses(parameters.ResultPresentation.GetGraphicsStyle("point1"), new[] { p1T });
 
             // ---- 圆周最近点 + 圆心连线 + 圆周距连线 ----
             if (Element2Circle is { Length: > 0 })
@@ -136,38 +136,38 @@ namespace SunEyeVision.Tool.PointCircleMeasure
                 var centerT = ToWpfPoint(Element2Center);
                 var closestT = ToWpfPoint(ClosestPoint);
 
-                if (parameters.ClosestPointStyle.IsVisible)
-                    _display.AddCrosses(parameters.ClosestPointStyle, new[] { closestT });
-                if (parameters.CenterLineStyle.IsVisible)
-                    _display.AddLine(parameters.CenterLineStyle, p1T, centerT, isOk);
-                if (parameters.DistanceLineStyle.IsVisible)
-                    _display.AddLine(parameters.DistanceLineStyle, p1T, closestT, isOk);
+                if (parameters.ResultPresentation.GetGraphicsStyle("closest-point").IsVisible)
+                    _display.AddCrosses(parameters.ResultPresentation.GetGraphicsStyle("closest-point"), new[] { closestT });
+                if (parameters.ResultPresentation.GetGraphicsStyle("center-line").IsVisible)
+                    _display.AddLine(parameters.ResultPresentation.GetGraphicsStyle("center-line"), p1T, centerT, isOk);
+                if (parameters.ResultPresentation.GetGraphicsStyle("distance-line").IsVisible)
+                    _display.AddLine(parameters.ResultPresentation.GetGraphicsStyle("distance-line"), p1T, closestT, isOk);
             }
 
             // ---- 文本 ----
-            if (parameters.Point1TextStyle.IsVisible)
-                _display.AddText(parameters.Point1TextStyle, p1T.X, p1T.Y,
+            if (parameters.ResultPresentation.GetTextStyle("point1-text").IsVisible)
+                _display.AddText(parameters.ResultPresentation.GetTextStyle("point1-text"), p1T.X, p1T.Y,
                     $"P1 ({p1T.X:F1},{p1T.Y:F1})", 6, 0, isOk);
-            if (parameters.CircleCenterTextStyle.IsVisible && Element2Circle is { Length: > 0 })
+            if (parameters.ResultPresentation.GetTextStyle("circle-center-text").IsVisible && Element2Circle is { Length: > 0 })
             {
                 var centerT = ToWpfPoint(Element2Center);
-                _display.AddText(parameters.CircleCenterTextStyle, centerT.X, centerT.Y,
+                _display.AddText(parameters.ResultPresentation.GetTextStyle("circle-center-text"), centerT.X, centerT.Y,
                     $"圆2中心 ({centerT.X:F1},{centerT.Y:F1})", isOk);
-                _display.AddText(parameters.CircleRadiusTextStyle, centerT.X, centerT.Y + 18,
+                _display.AddText(parameters.ResultPresentation.GetTextStyle("circle-radius-text"), centerT.X, centerT.Y + 18,
                     $"半径 {Element2Radius:F2}px", isOk);
             }
-            if (parameters.ClosestPointTextStyle.IsVisible && Element2Circle is { Length: > 0 })
+            if (parameters.ResultPresentation.GetTextStyle("closest-point-text").IsVisible && Element2Circle is { Length: > 0 })
             {
                 var closestT = ToWpfPoint(ClosestPoint);
-                _display.AddText(parameters.ClosestPointTextStyle, closestT.X, closestT.Y,
+                _display.AddText(parameters.ResultPresentation.GetTextStyle("closest-point-text"), closestT.X, closestT.Y,
                     $"最近点 ({closestT.X:F2},{closestT.Y:F2})", 6, -16, isOk);
             }
-            if (parameters.DistanceTextStyle.IsVisible && Element2Circle is { Length: > 0 })
+            if (parameters.ResultPresentation.GetTextStyle("distance-text").IsVisible && Element2Circle is { Length: > 0 })
             {
                 var centerT = ToWpfPoint(Element2Center);
                 var midX = (p1T.X + centerT.X) / 2;
                 var midY = (p1T.Y + centerT.Y) / 2;
-                _display.AddText(parameters.DistanceTextStyle, midX, midY,
+                _display.AddText(parameters.ResultPresentation.GetTextStyle("distance-text"), midX, midY,
                     $"圆心距={DistanceToCenter:F3} / 圆周距={DistanceToCircle:F3}", 6, 0, isOk);
             }
         }

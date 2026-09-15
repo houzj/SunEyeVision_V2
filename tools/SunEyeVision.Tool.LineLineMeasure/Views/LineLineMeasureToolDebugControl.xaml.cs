@@ -239,8 +239,6 @@ namespace SunEyeVision.Tool.LineLineMeasure.Views
         {
             base.SetMainImageControl(imageControl);
             ElementsEditor?.SetMainImageControl(imageControl);
-            ElementsEditor?.ConfigureElement(0, MeasureGeometryType.Line);
-            ElementsEditor?.ConfigureElement(1, MeasureGeometryType.Line);
             RestoreEditorsFromParameters();
             UpdatePositionCorrectionMatrix();
         }

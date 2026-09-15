@@ -1,4 +1,3 @@
-﻿using System.Collections.ObjectModel;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
@@ -31,14 +30,7 @@ namespace SunEyeVision.Tool.PointCircleMeasure
         // ============================================================
         // 判定规格列表（v4 C1 基座，六工具同构）
         // ============================================================
-        public ObservableCollection<MeasureThreshold> Judgments { get; set; } = new()
-        {
-            new() { Name = "圆心距", Enabled = true, Min = 0, Max = 1000, Unit = "px" },
-            new() { Name = "圆周距", Enabled = false, Min = 0, Max = 1000, Unit = "px" },
-            new() { Name = "半径", Enabled = false, Min = 0, Max = 1000, Unit = "px" },
-            new() { Name = "最近点X", Enabled = false, Min = -1e5, Max = 1e5, Unit = "px" },
-            new() { Name = "最近点Y", Enabled = false, Min = -1e5, Max = 1e5, Unit = "px" },
-        };
+        public ResultPresentationConfig ResultPresentation { get; set; } = CreateResultPresentation();
 
         // ============================================================
         // 元素1（点）：输入方式二分「按图形 / 按参数」（无引导绘制入口 —— v4 与线/圆等引导元素的核心区别）
@@ -117,61 +109,46 @@ namespace SunEyeVision.Tool.PointCircleMeasure
         // ============================================================
         // 结果显示样式（Tab3 绑定：图形显示 + 文本显示，对齐线-圆/圆-圆范式）
         // ============================================================
-        public GraphicsStyle Point1Style { get; set; } = new()
-        {
-            Name = "点1", IsVisible = true, CrossSize = 4.0,
-        };
-        public GraphicsStyle GuideCircle2Style { get; set; } = new()
-        {
-            Name = "引导圆2", IsVisible = true,
-        };
-        public GraphicsStyle CaliberBand2Style { get; set; } = new()
-        {
-            Name = "卡尺2", IsVisible = true,
-        };
-        public GraphicsStyle FitCircle2Style { get; set; } = new()
-        {
-            Name = "拟合圆2", IsVisible = true, LineWidth = 2.0,
-        };
-        public GraphicsStyle CaliberPoint2Style { get; set; } = new()
-        {
-            Name = "卡尺2检测点", IsVisible = true, CrossSize = 4.0,
-        };
-        /// <summary>圆周最近点标记（点1 到拟合圆的最短距离落点）</summary>
-        public GraphicsStyle ClosestPointStyle { get; set; } = new()
-        {
-            Name = "圆周最近点", IsVisible = true, CrossSize = 6.0,
-        };
-        /// <summary>点1 → 圆心 连线（主测量"圆心距"的几何表达）</summary>
-        public GraphicsStyle CenterLineStyle { get; set; } = new()
-        {
-            Name = "圆心连线", IsVisible = true, LineWidth = 1.0,
-        };
-        /// <summary>点1 → 圆周最近点 连线（辅助测量"圆周距"的几何表达）</summary>
-        public GraphicsStyle DistanceLineStyle { get; set; } = new()
-        {
-            Name = "圆周距连线", IsVisible = true, LineDashStyle = LineDashStyle.Dash, LineWidth = 1.0,
-        };
 
-        public TextStyle Point1TextStyle { get; set; } = new()
+
+
+
+
+        /// <summary>圆周最近点标记（点1 到拟合圆的最短距离落点）</summary>
+
+        /// <summary>点1 → 圆心 连线（主测量"圆心距"的几何表达）</summary>
+
+        /// <summary>点1 → 圆周最近点 连线（辅助测量"圆周距"的几何表达）</summary>
+
+
+
+
+
+
+
+
+        private static ResultPresentationConfig CreateResultPresentation()
         {
-            Name = "点1坐标", IsVisible = false,
-        };
-        public TextStyle CircleCenterTextStyle { get; set; } = new()
-        {
-            Name = "圆2中心", IsVisible = true,
-        };
-        public TextStyle CircleRadiusTextStyle { get; set; } = new()
-        {
-            Name = "圆2半径", IsVisible = true,
-        };
-        public TextStyle ClosestPointTextStyle { get; set; } = new()
-        {
-            Name = "最近点", IsVisible = true,
-        };
-        public TextStyle DistanceTextStyle { get; set; } = new()
-        {
-            Name = "圆心距", IsVisible = true,
-        };
+            var config = new ResultPresentationConfig();
+            config.Judgments.Add(new() { Key = "center-distance", Name = "圆心距", Enabled = true, Min = 0, Max = 1000, Unit = "px", Order = 10 });
+            config.Judgments.Add(new() { Key = "circumference-distance", Name = "圆周距", Enabled = false, Min = 0, Max = 1000, Unit = "px", Order = 20 });
+            config.Judgments.Add(new() { Key = "radius", Name = "半径", Enabled = false, Min = 0, Max = 1000, Unit = "px", Order = 30 });
+            config.Judgments.Add(new() { Key = "closest-x", Name = "最近点X", Enabled = false, Min = -1e5, Max = 1e5, Unit = "px", Order = 40 });
+            config.Judgments.Add(new() { Key = "closest-y", Name = "最近点Y", Enabled = false, Min = -1e5, Max = 1e5, Unit = "px", Order = 50 });
+            config.Graphics.Add(new() { Key = "point1", Name = "点1", Order = 10, Style = new() { Name = "点1", IsVisible = true, CrossSize = 4.0, } });
+            config.Graphics.Add(new() { Key = "guide-circle2", Name = "引导圆2", Order = 20, Style = new() { Name = "引导圆2", IsVisible = true, } });
+            config.Graphics.Add(new() { Key = "caliber-band2", Name = "卡尺2", Order = 30, Style = new() { Name = "卡尺2", IsVisible = true, } });
+            config.Graphics.Add(new() { Key = "fit-circle2", Name = "拟合圆2", Order = 40, Style = new() { Name = "拟合圆2", IsVisible = true, LineWidth = 2.0, } });
+            config.Graphics.Add(new() { Key = "caliber-point2", Name = "卡尺2检测点", Order = 50, Style = new() { Name = "卡尺2检测点", IsVisible = true, CrossSize = 4.0, } });
+            config.Graphics.Add(new() { Key = "closest-point", Name = "圆周最近点", Order = 60, Style = new() { Name = "圆周最近点", IsVisible = true, CrossSize = 6.0, } });
+            config.Graphics.Add(new() { Key = "center-line", Name = "圆心连线", Order = 70, Style = new() { Name = "圆心连线", IsVisible = true, LineWidth = 1.0, } });
+            config.Graphics.Add(new() { Key = "distance-line", Name = "圆周距连线", Order = 80, Style = new() { Name = "圆周距连线", IsVisible = true, LineDashStyle = LineDashStyle.Dash, LineWidth = 1.0, } });
+            config.Texts.Add(new() { Key = "point1-text", Name = "点1坐标", Order = 10, Style = new() { Name = "点1坐标", IsVisible = false, } });
+            config.Texts.Add(new() { Key = "circle-center-text", Name = "圆2中心", Order = 20, Style = new() { Name = "圆2中心", IsVisible = true, } });
+            config.Texts.Add(new() { Key = "circle-radius-text", Name = "圆2半径", Order = 30, Style = new() { Name = "圆2半径", IsVisible = true, } });
+            config.Texts.Add(new() { Key = "closest-point-text", Name = "最近点", Order = 40, Style = new() { Name = "最近点", IsVisible = true, } });
+            config.Texts.Add(new() { Key = "distance-text", Name = "圆心距", Order = 50, Style = new() { Name = "圆心距", IsVisible = true, } });
+            return config;
+        }
     }
 }

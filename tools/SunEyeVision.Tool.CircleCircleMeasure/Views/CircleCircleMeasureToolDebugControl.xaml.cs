@@ -241,8 +241,6 @@ namespace SunEyeVision.Tool.CircleCircleMeasure.Views
         {
             base.SetMainImageControl(imageControl);
             ElementsEditor?.SetMainImageControl(imageControl);
-            ElementsEditor?.ConfigureElement(0, MeasureGeometryType.Circle);    // 元素1 = 圆
-            ElementsEditor?.ConfigureElement(1, MeasureGeometryType.Circle);    // 元素2 = 圆
             RestoreEditorsFromParameters();
             UpdatePositionCorrectionMatrix();
         }

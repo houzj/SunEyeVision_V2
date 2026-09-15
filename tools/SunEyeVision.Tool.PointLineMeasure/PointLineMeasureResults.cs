@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -81,8 +81,8 @@ namespace SunEyeVision.Tool.PointLineMeasure
             _display.Clear();
 
             // ---- 检测点（卡尺2）----
-            if (parameters.CaliberPoint2Style.IsVisible && Element2FitPoints.Length > 0)
-                _display.AddCrosses(parameters.CaliberPoint2Style, ToWpfPoints(Element2FitPoints));
+            if (parameters.ResultPresentation.GetGraphicsStyle("caliper-point-2").IsVisible && Element2FitPoints.Length > 0)
+                _display.AddCrosses(parameters.ResultPresentation.GetGraphicsStyle("caliper-point-2"), ToWpfPoints(Element2FitPoints));
 
             // ---- 位置修正：引导几何/卡尺带显示与交互层同源变换 ----
             var matrix = parameters.IsPositionCorrectionEnabled
@@ -95,68 +95,68 @@ namespace SunEyeVision.Tool.PointLineMeasure
             var g2Start = T(new Point(parameters.E2StartX.Value, parameters.E2StartY.Value));
             var g2End = T(new Point(parameters.E2EndX.Value, parameters.E2EndY.Value));
             double len2g = (g2End - g2Start).Length;
-            if (parameters.GuideLine2Style.IsVisible && len2g > 1e-6)
-                _display.AddLine(parameters.GuideLine2Style, g2Start, g2End, isOk);
+            if (parameters.ResultPresentation.GetGraphicsStyle("guide-line-2").IsVisible && len2g > 1e-6)
+                _display.AddLine(parameters.ResultPresentation.GetGraphicsStyle("guide-line-2"), g2Start, g2End, isOk);
 
-            if (parameters.CaliberBand2Style.IsVisible && len2g > 1e-6)
+            if (parameters.ResultPresentation.GetGraphicsStyle("caliper-band-2").IsVisible && len2g > 1e-6)
             {
                 var bands = MeasureLineBands(g2Start, g2End,
                     parameters.E2MeasureLength1.Value * scale,
                     parameters.E2MeasureLength2.Value,
                     parameters.E2NumMeasures.Value);
                 if (bands.Count > 0)
-                    _display.AddContours(parameters.CaliberBand2Style, bands, isClosed: false);
+                    _display.AddContours(parameters.ResultPresentation.GetGraphicsStyle("caliper-band-2"), bands, isClosed: false);
             }
 
             if (Element2Line is { Length: > 0 })
-                _display.AddLine(parameters.FitLine2Style, Element2StartPoint, Element2EndPoint, isOk);
+                _display.AddLine(parameters.ResultPresentation.GetGraphicsStyle("fit-line-2"), Element2StartPoint, Element2EndPoint, isOk);
 
             // ---- 点1（十字标记）----
             var p1Wpf = Point1.Length > 0 ? new Point(Point1[0].X, Point1[0].Y) : new Point(0, 0);
             // 点1 为订阅/常量所得，坐标即当前图像真实位置；仅引导几何随位置修正变换（避免二次修正）
             var p1T = p1Wpf;
-            if (parameters.Point1Style.IsVisible)
-                _display.AddCrosses(parameters.Point1Style, new[] { p1T });
+            if (parameters.ResultPresentation.GetGraphicsStyle("point-1").IsVisible)
+                _display.AddCrosses(parameters.ResultPresentation.GetGraphicsStyle("point-1"), new[] { p1T });
 
             // ---- 垂足 + 垂线（点1 → 拟合线投影）----
             if (Element2Line is { Length: > 0 })
             {
                 var footT = T(PerpendicularFoot);
-                if (parameters.FootPointStyle.IsVisible)
-                    _display.AddCrosses(parameters.FootPointStyle, new[] { footT });
-                if (parameters.FootLineStyle.IsVisible)
-                    _display.AddLine(parameters.FootLineStyle, p1T, footT, isOk);
+                if (parameters.ResultPresentation.GetGraphicsStyle("foot-point").IsVisible)
+                    _display.AddCrosses(parameters.ResultPresentation.GetGraphicsStyle("foot-point"), new[] { footT });
+                if (parameters.ResultPresentation.GetGraphicsStyle("foot-line").IsVisible)
+                    _display.AddLine(parameters.ResultPresentation.GetGraphicsStyle("foot-line"), p1T, footT, isOk);
             }
 
             // ---- 文本 ----
-            if (parameters.Point1TextStyle.IsVisible)
-                _display.AddText(parameters.Point1TextStyle, p1T.X, p1T.Y,
+            if (parameters.ResultPresentation.GetTextStyle("point-1").IsVisible)
+                _display.AddText(parameters.ResultPresentation.GetTextStyle("point-1"), p1T.X, p1T.Y,
                     $"P1 ({p1T.X:F1},{p1T.Y:F1})", 6, 0, isOk);
-            if (parameters.LineCenterTextStyle.IsVisible && Element2Line is { Length: > 0 })
+            if (parameters.ResultPresentation.GetTextStyle("line-center").IsVisible && Element2Line is { Length: > 0 })
             {
                 var center = new Point(
                     (Element2StartPoint.X + Element2EndPoint.X) / 2,
                     (Element2StartPoint.Y + Element2EndPoint.Y) / 2);
-                _display.AddText(parameters.LineCenterTextStyle, center.X, center.Y,
+                _display.AddText(parameters.ResultPresentation.GetTextStyle("line-center"), center.X, center.Y,
                     $"({Element2StartPoint.X:F1},{Element2StartPoint.Y:F1})-({Element2EndPoint.X:F1},{Element2EndPoint.Y:F1})", 6, 0, isOk);
             }
-            if (parameters.LineAngleTextStyle.IsVisible && Element2Line is { Length: > 0 })
+            if (parameters.ResultPresentation.GetTextStyle("line-angle").IsVisible && Element2Line is { Length: > 0 })
             {
                 var center = new Point(
                     (Element2StartPoint.X + Element2EndPoint.X) / 2,
                     (Element2StartPoint.Y + Element2EndPoint.Y) / 2);
                 double angle = Math.Atan2(Element2EndPoint.Y - Element2StartPoint.Y, Element2EndPoint.X - Element2StartPoint.X) * 180 / Math.PI;
-                _display.AddText(parameters.LineAngleTextStyle, center.X, center.Y + 18,
+                _display.AddText(parameters.ResultPresentation.GetTextStyle("line-angle"), center.X, center.Y + 18,
                     $"∠{angle:F2}°", 6, 0, isOk);
             }
-            if (parameters.FootTextStyle.IsVisible && Element2Line is { Length: > 0 })
-                _display.AddText(parameters.FootTextStyle, PerpendicularFoot.X, PerpendicularFoot.Y,
+            if (parameters.ResultPresentation.GetTextStyle("foot").IsVisible && Element2Line is { Length: > 0 })
+                _display.AddText(parameters.ResultPresentation.GetTextStyle("foot"), PerpendicularFoot.X, PerpendicularFoot.Y,
                     $"垂足 ({PerpendicularFoot.X:F2},{PerpendicularFoot.Y:F2})", 6, -16, isOk);
-            if (parameters.DistanceTextStyle.IsVisible && Element2Line is { Length: > 0 })
+            if (parameters.ResultPresentation.GetTextStyle("distance").IsVisible && Element2Line is { Length: > 0 })
             {
                 var midX = (p1T.X + PerpendicularFoot.X) / 2;
                 var midY = (p1T.Y + PerpendicularFoot.Y) / 2;
-                _display.AddText(parameters.DistanceTextStyle, midX, midY,
+                _display.AddText(parameters.ResultPresentation.GetTextStyle("distance"), midX, midY,
                     $"距离={Distance:F3}", 6, 0, isOk);
             }
         }

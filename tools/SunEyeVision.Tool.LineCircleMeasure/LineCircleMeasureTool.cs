@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -28,7 +28,7 @@ namespace SunEyeVision.Tool.LineCircleMeasure
         Version = "1.0.0",
         HasDebugWindow = true
     )]
-    public class LineCircleMeasureTool : IToolPlugin<LineCircleMeasureParameters, LineCircleMeasureResults>
+    public class LineCircleMeasureTool : IToolPlugin<LineCircleMeasureParameters, LineCircleMeasureResults>, IToolEditorFactory
     {
         private readonly ToolAttribute? _attribute;
         public LineCircleMeasureTool() => _attribute = GetType().GetCustomAttribute<ToolAttribute>();
@@ -163,9 +163,9 @@ namespace SunEyeVision.Tool.LineCircleMeasure
                 result.E2CaliberTransition = parameters.E2Transition.Value.ToString();
 
                 // ===== 判定（v4 C1 基座；启用项无有效值 → NG，rule-015）=====
-                var judged = MeasureJudge.EvaluateAll(
-                    parameters.Judgments,
-                    t => t.Name switch
+                var judged = ResultJudgmentEvaluator.EvaluateRanges(
+                    parameters.ResultPresentation.Judgments,
+                    key => parameters.ResultPresentation.GetJudgment(key).Name switch
                     {
                         "距离" => double.IsNaN(result.Distance) ? null : result.Distance,
                         "交点X" => double.IsNaN(result.IntersectionX) ? null : result.IntersectionX,
@@ -173,7 +173,7 @@ namespace SunEyeVision.Tool.LineCircleMeasure
                         "半径" => result.Element2Radius,
                         _ => null,
                     });
-                result.IsPass = MeasureJudge.IsAllPass(judged);
+                result.IsPass = ResultJudgmentEvaluator.IsAllPass(judged);
                 result.JudgmentDetails = judged.Select(j => j.Message).ToArray();
 
                 result.FillDisplay(result.IsPass, parameters);

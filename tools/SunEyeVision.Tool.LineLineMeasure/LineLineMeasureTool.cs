@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -28,7 +28,7 @@ namespace SunEyeVision.Tool.LineLineMeasure
         Version = "1.0.0",
         HasDebugWindow = true
     )]
-    public class LineLineMeasureTool : IToolPlugin<LineLineMeasureParameters, LineLineMeasureResults>
+    public class LineLineMeasureTool : IToolPlugin<LineLineMeasureParameters, LineLineMeasureResults>, IToolEditorFactory
     {
         private readonly ToolAttribute? _attribute;
         public LineLineMeasureTool() => _attribute = GetType().GetCustomAttribute<ToolAttribute>();
@@ -199,9 +199,9 @@ namespace SunEyeVision.Tool.LineLineMeasure
                 result.E2CaliberTransition = parameters.E2Transition.Value.ToString();
 
                 // ===== 判定（v4 C1 基座；启用项无有效值 → NG，rule-015）=====
-                var judged = MeasureJudge.EvaluateAll(
-                    parameters.Judgments,
-                    t => t.Name switch
+                var judged = ResultJudgmentEvaluator.EvaluateRanges(
+                    parameters.ResultPresentation.Judgments,
+                    key => parameters.ResultPresentation.GetJudgment(key).Name switch
                     {
                         "角度" => result.Angle,
                         "距离" => double.IsNaN(result.Distance) ? null : result.Distance,
@@ -209,7 +209,7 @@ namespace SunEyeVision.Tool.LineLineMeasure
                         "交点Y" => double.IsNaN(result.IntersectionY) ? null : result.IntersectionY,
                         _ => null,
                     });
-                result.IsPass = MeasureJudge.IsAllPass(judged);
+                result.IsPass = ResultJudgmentEvaluator.IsAllPass(judged);
                 result.JudgmentDetails = judged.Select(j => j.Message).ToArray();
 
                 result.FillDisplay(result.IsPass, parameters);

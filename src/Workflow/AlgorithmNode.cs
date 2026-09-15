@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
@@ -42,7 +44,21 @@ namespace SunEyeVision.Workflow
         /// 执行节点算法（带绑定解析）
         /// </summary>
         /// <param name="nodeResults">其他节点的执行结果缓存（用于动态绑定解析）</param>
-        public AlgorithmResult Execute(IDictionary<string, ToolResults>? nodeResults)
+        /// <param name="globalVariables">本次工作流运行的全局变量</param>
+        /// <param name="cancellationToken">本次工作流运行的取消令牌</param>
+        public AlgorithmResult Execute(
+            IDictionary<string, ToolResults>? nodeResults,
+            IDictionary<string, object?>? globalVariables = null,
+            CancellationToken cancellationToken = default)
+            => ExecuteAsync(nodeResults, globalVariables, cancellationToken).GetAwaiter().GetResult();
+
+        /// <summary>
+        /// 异步执行节点。工作流主链使用此入口，使异步工具不会被同步阻塞。
+        /// </summary>
+        public async Task<AlgorithmResult> ExecuteAsync(
+            IDictionary<string, ToolResults>? nodeResults,
+            IDictionary<string, object?>? globalVariables = null,
+            CancellationToken cancellationToken = default)
         {
             if (!IsEnabled)
             {
@@ -98,12 +114,18 @@ namespace SunEyeVision.Workflow
                     // ToolExecutor 负责：注入 ExecutionContext（含 WorkflowName/GlobalVariables）、
                     // 强制 NodeResults 非空、捕获异常、设置 ExecutionTimeMs
                     var executor = new ToolExecutor(resolver ?? new ParameterResolver(VisionLogger.Instance), VisionLogger.Instance);
-                    var toolResult = executor.Run(
+                    var toolResult = await executor.ExecuteAsync(
                         Tool,
-                        typedParams,
-                        context: nodeResults,
-                        nodeName: Name,
-                        nodeId: Id);
+                        new ToolExecutionRequest(typedParams)
+                        {
+                            NodeResults = nodeResults,
+                            ResolvedInputImage = inputImage,
+                            NodeName = Name,
+                            NodeId = Id,
+                            CancellationToken = cancellationToken,
+                            GlobalVariables = globalVariables,
+                            ApplyBindings = false
+                        }).ConfigureAwait(false);
 
                     LastToolResult = toolResult;
                     LastResult = ConvertToAlgorithmResult(toolResult);
@@ -115,6 +137,12 @@ namespace SunEyeVision.Workflow
 
                 OnAfterExecute(LastResult);
                 return LastResult;
+            }
+            catch (OperationCanceledException)
+            {
+                var result = AlgorithmResult.CreateCancelled();
+                OnAfterExecute(result);
+                return result;
             }
             catch (Exception ex)
             {
@@ -236,6 +264,13 @@ namespace SunEyeVision.Workflow
         /// </summary>
         private AlgorithmResult ConvertToAlgorithmResult(ToolResults result)
         {
+            if (result.Status == ExecutionStatus.Cancelled)
+            {
+                var cancelled = AlgorithmResult.CreateCancelled(result.ErrorMessage ?? "执行被取消");
+                cancelled.ToolResults = result;
+                return cancelled;
+            }
+
             if (!result.IsSuccess)
             {
                 return AlgorithmResult.CreateError(result.ErrorMessage ?? "处理失败");

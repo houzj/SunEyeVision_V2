@@ -48,25 +48,22 @@ namespace SunEyeVision.Workflow
         private readonly ILogger _logger;
         private readonly ToolExecutor _toolExecutor;
 
-        // 执行状态管理
-        private WorkflowExecutionState _currentState;
-        private CancellationTokenSource _cancellationTokenSource;
-        private WorkflowContext? _currentContext;
-
-        // 执行统计
-        private DateTime _executionStartTime;
+        // 根运行会话。当前执行器明确只承载一个根运行；并发请求会被拒绝，避免过去
+        // `_currentContext` 与 `_cancellationTokenSource` 被后一次运行静默覆盖。
+        private readonly object _sessionGate = new();
+        private WorkflowRunSession? _activeSession;
 
         // ★ SSOT 已转移到 WorkflowContext，引擎不再维护重复缓存
 
         /// <summary>
         /// 当前执行状态
         /// </summary>
-        public WorkflowExecutionState CurrentState => _currentState;
+        public WorkflowExecutionState CurrentState => _activeSession?.State ?? WorkflowExecutionState.Idle;
 
         /// <summary>
         /// 当前执行上下文
         /// </summary>
-        public WorkflowContext CurrentContext => _currentContext;
+        public WorkflowContext? CurrentContext => _activeSession?.RootContext;
 
         /// <summary>
         /// 节点执行状态变化事件
@@ -95,8 +92,6 @@ namespace SunEyeVision.Workflow
             _pluginManager = pluginManager ?? throw new ArgumentNullException(nameof(pluginManager));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _toolExecutor = toolExecutor ?? new ToolExecutor(new ParameterResolver());
-            _currentState = WorkflowExecutionState.Idle;
-
             // ★ SSOT 统一由 WorkflowContext 管理，引擎不再维护独立 DSQS
         }
 
@@ -106,6 +101,7 @@ namespace SunEyeVision.Workflow
         /// 使用基于拓扑排序的并行组执行工作流（简化方案）
         /// </summary>
         private async Task<ExecutionResult> ExecuteWorkflowWithParallelGroups(
+            WorkflowRunSession session,
             Workflow workflow,
             WorkflowContext context)
         {
@@ -143,6 +139,7 @@ namespace SunEyeVision.Workflow
 
             for (int groupIndex = 0; groupIndex < parallelGroups.Count; groupIndex++)
             {
+                await session.WaitIfPausedAsync();
                 var group = parallelGroups[groupIndex];
 
                 // ★ 本组内已被剪枝的节点：标记 Skipped，不执行。
@@ -164,7 +161,7 @@ namespace SunEyeVision.Workflow
                 _logger.LogInfo($"");
                 _logger.LogInfo($"========== 执行组 {groupIndex + 1}/{parallelGroups.Count} ({executable.Count}个节点) ==========");
 
-                if (_cancellationTokenSource?.IsCancellationRequested == true)
+                if (context.CancellationToken.IsCancellationRequested)
                 {
                     throw new OperationCanceledException();
                 }
@@ -220,7 +217,8 @@ namespace SunEyeVision.Workflow
 
             // 合并所有节点结果
             result.Success = allResults.Values.All(r => r.Success);
-            result.ExecutionTime = DateTime.Now - _executionStartTime;
+            result.Status = result.Success ? ExecutionStatus.Success : ExecutionStatus.Failed;
+            result.ExecutionTime = DateTime.Now - context.ExecutionStartTime;
             result.NodeResults = allResults;
 
             // 收集错误
@@ -260,7 +258,7 @@ namespace SunEyeVision.Workflow
             _logger.LogInfo($"  执行组数: {parallelGroups.Count}");
             _logger.LogInfo($"  成功节点: {allResults.Values.Count(r => r.Success)}");
             _logger.LogInfo($"  失败节点: {allResults.Values.Count(r => !r.Success)}");
-            _logger.LogInfo($"  总耗时: {(DateTime.Now - _executionStartTime).TotalMilliseconds:F2} ms");
+            _logger.LogInfo($"  总耗时: {(DateTime.Now - context.ExecutionStartTime).TotalMilliseconds:F2} ms");
             _logger.LogInfo($"======================================");
 
             ExecutionCompleted?.Invoke(this, result);
@@ -294,6 +292,7 @@ namespace SunEyeVision.Workflow
                         NodeStatusChanged?.Invoke(this, new NodeExecutionStatus { NodeId = node.Id, Status = NodeStatus.Skipped });
                         _logger.LogInfo($"前驱不可用，跳过执行", node.Name);
                         result.Success = true;
+                        result.Status = ExecutionStatus.Success;
                         return result;
                     }
 
@@ -330,6 +329,7 @@ namespace SunEyeVision.Workflow
                     }
                 }
                 result.Success = result.Errors.Count == 0;
+                result.Status = result.Success ? ExecutionStatus.Success : ExecutionStatus.Failed;
                 return result;
             }
 
@@ -386,6 +386,7 @@ namespace SunEyeVision.Workflow
             }
 
             result.Success = result.Errors.Count == 0;
+            result.Status = result.Success ? ExecutionStatus.Success : ExecutionStatus.Failed;
             return result;
         }
 
@@ -476,6 +477,16 @@ namespace SunEyeVision.Workflow
         public async Task<ExecutionResult> ExecuteWorkflow(string workflowId, IVisionImage? inputImage,
             IDictionary<string, object?>? globalVariables = null,
             Dictionary<string, object>? contextVariables = null)
+            => await ExecuteWorkflowAsync(workflowId, inputImage, globalVariables, contextVariables);
+
+        private async Task<ExecutionResult> ExecuteWorkflowCore(
+            WorkflowRunSession session,
+            WorkflowRunScope scope,
+            string workflowId,
+            IVisionImage? inputImage,
+            IDictionary<string, object?>? globalVariables,
+            Dictionary<string, object>? contextVariables,
+            bool isSubworkflow)
         {
             var sourceWorkflow = _workflowEngine.GetWorkflow(workflowId);
             if (sourceWorkflow == null)
@@ -485,7 +496,7 @@ namespace SunEyeVision.Workflow
             }
 
             // 首次进入时检测循环依赖（递归路径跳过此检查，由外层保证无循环）
-            if (_currentState != WorkflowExecutionState.Running)
+            if (!isSubworkflow)
             {
                 var cycles = sourceWorkflow.DetectCycles();
                 if (cycles.Count > 0)
@@ -496,14 +507,13 @@ namespace SunEyeVision.Workflow
                 }
             }
 
-            // 统一创建临时执行工作流，将 UI 原始节点转换为类型化执行节点
-            // 主工作流和子程序递归走同一段代码，消除两套转换逻辑
-            var execWorkflow = new Workflow(Guid.NewGuid().ToString(), sourceWorkflow.Name);
-            ConvertNodesForExecution(sourceWorkflow, execWorkflow);
+            // 先构建本次运行的冻结计划。后续执行只读取计划，不再直接消费 UI 编辑对象。
+            var executionPlan = BuildExecutionPlan(session, scope, sourceWorkflow);
+            var execWorkflow = executionPlan.ExecutableWorkflow;
             _logger.LogInfo($"[DEBUG ExecuteWorkflow] execWorkflow 创建完成: Id={execWorkflow.Id}, Name={execWorkflow.Name}, Nodes.Count={execWorkflow.Nodes.Count}, Connections.Count={execWorkflow.Connections.Count}");
 
             // 递归路径：跳过状态管理，直接执行
-            if (_currentState == WorkflowExecutionState.Running)
+            if (isSubworkflow)
             {
                 // [DIAG] 记录子程序上下文
                 var ctxVarKeys = contextVariables != null ? string.Join(", ", contextVariables.Keys) : "null";
@@ -518,7 +528,12 @@ namespace SunEyeVision.Workflow
                 _logger.LogInfo($"[DIAG] 子程序递归: workflowId={workflowId}, sourceName={sourceWorkflow.Name}, inputImage={(inputImage == null ? "null" : $"HImage(IsEmpty={inputImage.IsEmpty})")}, contextVariables keys=[{ctxVarKeys}], values=[{ctxVarValues}]",
                     "诊断.执行引擎");
 
-                var subContext = new WorkflowContext();
+                var subContext = new WorkflowContext
+                {
+                    CancellationToken = session.CancellationToken
+                };
+                scope.Context = subContext;
+                scope.State = WorkflowExecutionState.Running;
                 subContext.SetVariable("InputImage", inputImage);
                 subContext.GlobalVariables = globalVariables;
 
@@ -545,6 +560,7 @@ namespace SunEyeVision.Workflow
                     {
                         NodeId = "__SubroutineInputs__",
                         Success = true,
+                        Status = ExecutionStatus.Success,
                         Result = syntheticResults
                     });
 
@@ -556,6 +572,7 @@ namespace SunEyeVision.Workflow
                         {
                             NodeId = parentNodeId,
                             Success = true,
+                            Status = ExecutionStatus.Success,
                             Result = syntheticResults
                         });
                         _logger.LogInfo($"注入子程序输入合成结果到父节点ID: {parentNodeId}");
@@ -563,59 +580,95 @@ namespace SunEyeVision.Workflow
                 }
 
                 _logger.LogInfo($"递归执行子程序工作流: {sourceWorkflow.Name}");
-                var subResult = await ExecuteWorkflowWithParallelGroups(execWorkflow, subContext);
-
-                // 将子程序内部节点的执行结果回传到主上下文
-                // 确保子程序下钻模式下，选中内部节点也能正确显示该节点的结果
-                if (_currentContext != null)
+                try
                 {
-                    foreach (var kvp in subResult.NodeResults)
-                    {
-                        _currentContext.SetNodeResult(kvp.Key, kvp.Value);
-                    }
-                }
+                    var subResult = await ExecuteWorkflowWithParallelGroups(session, execWorkflow, subContext);
+                    scope.State = subResult.Status == ExecutionStatus.Cancelled
+                        ? WorkflowExecutionState.Stopped
+                        : subResult.Success ? WorkflowExecutionState.Completed : WorkflowExecutionState.Error;
 
-                return subResult;
+                    // 将子程序内部节点的执行结果回传到主上下文
+                    // 确保子程序下钻模式下，选中内部节点也能正确显示该节点的结果
+                    if (session.RootContext != null)
+                    {
+                        foreach (var kvp in subResult.NodeResults)
+                        {
+                            session.RootContext.SetNodeResult(kvp.Key, kvp.Value);
+                        }
+                    }
+
+                    return subResult;
+                }
+                catch (OperationCanceledException)
+                {
+                    scope.State = WorkflowExecutionState.Stopped;
+                    throw;
+                }
+                catch
+                {
+                    scope.State = WorkflowExecutionState.Error;
+                    throw;
+                }
+                finally
+                {
+                    scope.Context = null;
+                }
             }
 
             // 首次进入：全生命周期管理
-            _currentContext = new WorkflowContext();
-            _currentContext.SetVariable("InputImage", inputImage);
-            _currentContext.GlobalVariables = globalVariables;
+            session.RootContext = new WorkflowContext
+            {
+                CancellationToken = session.CancellationToken
+            };
+            scope.Context = session.RootContext;
+            session.RootContext.SetVariable("InputImage", inputImage);
+            session.RootContext.GlobalVariables = globalVariables;
 
-            _currentState = WorkflowExecutionState.Running;
-            _executionStartTime = DateTime.Now;
+            session.State = WorkflowExecutionState.Running;
 
             try
             {
                 _logger.LogInfo($"开始执行工作流: {sourceWorkflow.Name}");
-                var result = await ExecuteWorkflowWithParallelGroups(execWorkflow, _currentContext);
-                _currentState = result.Success ? WorkflowExecutionState.Completed : WorkflowExecutionState.Error;
-                _logger.LogInfo($"工作流执行完成: {sourceWorkflow.Name}, 耗时: {(DateTime.Now - _executionStartTime).TotalMilliseconds:F2}ms");
+                var result = await ExecuteWorkflowWithParallelGroups(session, execWorkflow, session.RootContext);
+                session.State = result.Success ? WorkflowExecutionState.Completed : WorkflowExecutionState.Error;
+                scope.State = session.State;
+                _logger.LogInfo($"工作流执行完成: {sourceWorkflow.Name}, 耗时: {(DateTimeOffset.UtcNow - session.StartedAt).TotalMilliseconds:F2}ms");
                 return result;
             }
             catch (OperationCanceledException)
             {
-                _currentState = WorkflowExecutionState.Stopped;
+                session.State = WorkflowExecutionState.Stopped;
+                scope.State = WorkflowExecutionState.Stopped;
                 _logger.LogWarning("工作流执行被取消");
-                var result = ExecutionResult.CreateFailure("工作流执行被取消");
-                result.IsStopped = true;
-                return result;
+                return ExecutionResult.CreateCancelled();
             }
             catch (Exception ex)
             {
-                _currentState = WorkflowExecutionState.Error;
+                session.State = WorkflowExecutionState.Error;
+                scope.State = WorkflowExecutionState.Error;
                 _logger.LogError($"工作流执行失败: {ex.Message}", ex);
                 return ExecutionResult.CreateFailure($"{ex.Message}\n{ex.StackTrace}");
             }
             finally
             {
-                _currentContext = null;
-                if (_currentState != WorkflowExecutionState.Paused)
-                {
-                    _currentState = WorkflowExecutionState.Idle;
-                }
+                session.RootContext = null;
+                scope.Context = null;
+                if (session.State != WorkflowExecutionState.Paused)
+                    session.State = WorkflowExecutionState.Idle;
             }
+        }
+
+        /// <summary>
+        /// 从 UI 编辑模型生成一次运行专属的可执行计划。
+        /// </summary>
+        private WorkflowExecutionPlan BuildExecutionPlan(
+            WorkflowRunSession session,
+            WorkflowRunScope scope,
+            Workflow sourceWorkflow)
+        {
+            var executableWorkflow = new Workflow(Guid.NewGuid().ToString(), sourceWorkflow.Name);
+            ConvertNodesForExecution(session, scope, sourceWorkflow, executableWorkflow);
+            return new WorkflowExecutionPlan(scope, executableWorkflow);
         }
 
         /// <summary>
@@ -628,7 +681,11 @@ namespace SunEyeVision.Workflow
         /// - 节点 ID 保持不变，连接关系直接复制
         /// - 转换失败的节点直接报错（遵循 fail-fast 原则）
         /// </remarks>
-        private void ConvertNodesForExecution(Workflow source, Workflow target)
+        private void ConvertNodesForExecution(
+            WorkflowRunSession session,
+            WorkflowRunScope scope,
+            Workflow source,
+            Workflow target)
         {
             _logger.LogInfo($"[DEBUG ConvertNodesForExecution] 开始转换: source.Name={source.Name}, source.Id={source.Id}");
             _logger.LogInfo($"[DEBUG ConvertNodesForExecution] source.Nodes.Count={source.Nodes.Count}");
@@ -656,13 +713,16 @@ namespace SunEyeVision.Workflow
 
             foreach (var node in source.Nodes)
             {
+                // 运行开始时冻结参数。UI 后续编辑原对象只影响下一次运行。
+                var executionParameters = ToolParameterSnapshot.Create(node.Parameters);
+
                 // 所有节点（含 Condition、Subroutine）统一作为 AlgorithmNode + IToolPlugin 执行
                 var executionNode = WorkflowNodeFactory.CreateAlgorithmNode(
                     node.ToolType,
                     node.Id,
                     node.Name,
                     node.DispName ?? node.Name,
-                    node.Parameters,
+                    executionParameters,
                     enableCaching: true,
                     enableRetry: false)
                     ?? throw new InvalidOperationException(
@@ -672,7 +732,7 @@ namespace SunEyeVision.Workflow
                 executionNode.ParamSettings = node.ParamSettings;
 
                 // ★ 委托注入：Subroutine 节点通过委托调用 ExecuteWorkflowAsync 执行子工作流
-                if (node.Parameters is ISubWorkflowExecutor executor)
+                if (executionParameters is ISubWorkflowExecutor executor)
                 {
                     // 运行时同步 SubroutineId（以 node.SubroutineId 为 SSOT）
                     executor.SubroutineId = node.SubroutineId ?? string.Empty;
@@ -683,7 +743,15 @@ namespace SunEyeVision.Workflow
                             ? new Dictionary<string, object>(ctx)
                             : new Dictionary<string, object>();
                         extendedCtx[SubroutineContextKeys.ParentNodeId] = node.Id;
-                        return ExecuteWorkflowAsync(subId, img, null, extendedCtx);
+                        var childScope = session.CreateChildScope(subId, scope.RunId);
+                        return ExecuteWorkflowCore(
+                            session,
+                            childScope,
+                            subId,
+                            img,
+                            null,
+                            extendedCtx,
+                            isSubworkflow: true);
                     };
                 }
 
@@ -826,14 +894,20 @@ namespace SunEyeVision.Workflow
                 var algorithmNode = node as AlgorithmNode
                     ?? throw new InvalidOperationException($"节点 {node.Name} 不是 AlgorithmNode 类型，实际类型: {node.GetType().Name}");
 
-                nodeResult = ExecuteAlgorithmNode(algorithmNode, context);
+                nodeResult = await ExecuteAlgorithmNode(algorithmNode, context);
                 nodeResult.EndTime = DateTime.Now;
                 return nodeResult;
+            }
+            catch (OperationCanceledException)
+            {
+                // 取消继续传播到工作流根入口，由根入口统一生成 Cancelled 结果。
+                throw;
             }
             catch (Exception ex)
             {
                 nodeResult.EndTime = DateTime.Now;
                 nodeResult.Success = false;
+                nodeResult.Status = ExecutionStatus.Failed;
                 nodeResult.ErrorMessages = new List<string> { ex.Message };
 
                 _logger.LogError($"节点 {node.Name} 执行失败: {ex.Message}", ex);
@@ -850,7 +924,7 @@ namespace SunEyeVision.Workflow
         /// </remarks>
         /// <param name="node">算法节点</param>
         /// <param name="context">工作流上下文（SSOT，用于参数绑定解析）</param>
-        private NodeExecutionResult ExecuteAlgorithmNode(AlgorithmNode node, WorkflowContext context)
+        private async Task<NodeExecutionResult> ExecuteAlgorithmNode(AlgorithmNode node, WorkflowContext context)
         {
             var result = new NodeExecutionResult { NodeId = node.Id, StartTime = DateTime.Now, EndTime = DateTime.Now };
 
@@ -882,18 +956,30 @@ namespace SunEyeVision.Workflow
                 toolResultsDict["__GlobalVars__"] = globalVarResults;
             }
 
-            // 调用 AlgorithmNode.Execute，图像通过 ImageSource 绑定解析
-            var algorithmResult = node.Execute(toolResultsDict);
+            // 调用异步节点入口；旧同步工具由 ToolExecutor 兼容，新工具可真正异步执行。
+            var algorithmResult = await node.ExecuteAsync(
+                toolResultsDict,
+                context.GlobalVariables,
+                context.CancellationToken);
+
+            if (algorithmResult.Status == ExecutionStatus.Cancelled)
+            {
+                throw new OperationCanceledException(
+                    algorithmResult.ErrorMessage ?? "执行被取消",
+                    context.CancellationToken);
+            }
 
             if (algorithmResult.Success && algorithmResult.ToolResults != null)
             {
                 result.Success = true;
+                result.Status = ExecutionStatus.Success;
                 result.Result = algorithmResult.ToolResults;
             }
             else if (!algorithmResult.Success)
             {
                 result.ErrorMessages = new List<string> { algorithmResult.ErrorMessage };
                 result.Success = false;
+                result.Status = ExecutionStatus.Failed;
             }
 
             return result;
@@ -913,9 +999,43 @@ namespace SunEyeVision.Workflow
             IDictionary<string, object?>? globalVariables = null,
             Dictionary<string, object>? contextVariables = null)
         {
-            _cancellationTokenSource = new CancellationTokenSource();
+            WorkflowRunSession session;
+            lock (_sessionGate)
+            {
+                if (_activeSession?.IsActive == true)
+                    return ExecutionResult.CreateFailure("已有工作流正在执行；请先停止或等待当前运行完成。");
 
-            return await Task.Run(async () => await ExecuteWorkflow(workflowId, inputImage, globalVariables, contextVariables), _cancellationTokenSource.Token);
+                session = new WorkflowRunSession(workflowId);
+                // 先占用执行槽位，再排入线程池。否则两次紧邻的异步调用都可能在首个任务
+                // 尚未开始、State 仍为 Idle 时通过检查，重新出现会话相互覆盖。
+                session.TryStart();
+                _activeSession = session;
+            }
+
+            try
+            {
+                // 不把取消令牌传给 Task.Run：若任务尚未排队即被取消，Task.Run 会在进入统一
+                // 错误转换逻辑前直接抛 TaskCanceledException。执行链内部通过 WorkflowContext 的
+                // 令牌检测取消并返回标准 ExecutionResult。
+                return await Task.Run(
+                    () => ExecuteWorkflowCore(
+                        session,
+                        session.RootScope,
+                        workflowId,
+                        inputImage,
+                        globalVariables,
+                        contextVariables,
+                        isSubworkflow: false));
+            }
+            finally
+            {
+                lock (_sessionGate)
+                {
+                    if (ReferenceEquals(_activeSession, session))
+                        _activeSession = null;
+                }
+                session.Dispose();
+            }
         }
 
         /// <summary>
@@ -923,9 +1043,8 @@ namespace SunEyeVision.Workflow
         /// </summary>
         public void PauseExecution()
         {
-            if (_currentState == WorkflowExecutionState.Running)
+            if (_activeSession?.RequestPause() == true)
             {
-                _currentState = WorkflowExecutionState.Paused;
                 _logger.LogWarning("工作流执行已暂停");
             }
         }
@@ -935,9 +1054,8 @@ namespace SunEyeVision.Workflow
         /// </summary>
         public void ResumeExecution()
         {
-            if (_currentState == WorkflowExecutionState.Paused)
+            if (_activeSession?.RequestResume() == true)
             {
-                _currentState = WorkflowExecutionState.Running;
                 _logger.LogWarning("工作流执行已恢复");
             }
         }
@@ -947,7 +1065,7 @@ namespace SunEyeVision.Workflow
         /// </summary>
         public void StopExecution()
         {
-            _cancellationTokenSource?.Cancel();
+            _activeSession?.RequestStop();
             _logger.LogWarning("工作流执行停止请求已发送");
         }
 
@@ -960,12 +1078,12 @@ namespace SunEyeVision.Workflow
         /// </summary>
         public ExecutionStatistics GetExecutionStatistics()
         {
-            if (_currentContext == null)
+            if (_activeSession?.RootContext == null)
             {
                 return new ExecutionStatistics();
             }
 
-            return _currentContext.GetStatistics();
+            return _activeSession.RootContext.GetStatistics();
         }
 
         #endregion

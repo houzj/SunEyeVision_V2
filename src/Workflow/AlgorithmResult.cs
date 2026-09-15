@@ -20,6 +20,11 @@ namespace SunEyeVision.Workflow
         public bool Success { get; set; }
 
         /// <summary>
+        /// 执行终态，用于区分失败与取消
+        /// </summary>
+        public ExecutionStatus Status { get; set; } = ExecutionStatus.NotExecuted;
+
+        /// <summary>
         /// 结果图像
         /// </summary>
         public IVisionImage? ResultImage { get; set; }
@@ -53,6 +58,7 @@ namespace SunEyeVision.Workflow
             {
                 AlgorithmName = algorithmName,
                 Success = true,
+                Status = ExecutionStatus.Success,
                 ResultImage = resultImage,
                 ExecutionTime = DateTime.Now,
                 ExecutionDurationMs = durationMs
@@ -68,6 +74,7 @@ namespace SunEyeVision.Workflow
             {
                 AlgorithmName = algorithmName,
                 Success = false,
+                Status = ExecutionStatus.Failed,
                 ErrorMessage = errorMessage,
                 ExecutionTime = DateTime.Now
             };
@@ -79,6 +86,21 @@ namespace SunEyeVision.Workflow
         public static AlgorithmResult CreateError(string errorMessage, string algorithmName = "")
         {
             return CreateFailure(errorMessage, algorithmName);
+        }
+
+        /// <summary>
+        /// 创建取消结果
+        /// </summary>
+        public static AlgorithmResult CreateCancelled(string message = "执行被取消", string algorithmName = "")
+        {
+            return new AlgorithmResult
+            {
+                AlgorithmName = algorithmName,
+                Success = false,
+                Status = ExecutionStatus.Cancelled,
+                ErrorMessage = message,
+                ExecutionTime = DateTime.Now
+            };
         }
     }
 }

@@ -51,7 +51,7 @@ namespace SunEyeVision.Workflow.Nodes
         /// 调试控件（从工具创建）
         /// </summary>
         /// <remarks>
-        /// 由 IToolPlugin.CreateDebugControl() 创建。
+        /// 由 IToolEditorFactory.CreateDebugControl() 创建。
         /// 如果为 null，表示该工具无调试界面。
         /// </remarks>
         public FrameworkElement? DebugControl { get; set; }

@@ -348,7 +348,13 @@ namespace SunEyeVision.UI.Services.Workflow
 
                 // 输出结果
                 logger.LogInfo($"工作流执行完成: {rootEngineWorkflow.Name}");
-                logger.LogInfo($"执行结果: {(result.Success ? "成功" : "失败")}");
+                var outcomeText = result.Status switch
+                {
+                    ExecutionStatus.Cancelled => "已取消",
+                    ExecutionStatus.Success => "成功",
+                    _ => "失败"
+                };
+                logger.LogInfo($"执行结果: {outcomeText}");
                 logger.LogInfo($"执行时间: {result.ExecutionTime.TotalMilliseconds:F2} ms");
 
                 // 触发节点执行结果事件
@@ -373,7 +379,14 @@ namespace SunEyeVision.UI.Services.Workflow
                     }
                 }
 
-                if (!result.Success && result.Errors.Any())
+                if (result.Status == ExecutionStatus.Cancelled)
+                {
+                    var message = result.CompletionMessage ?? "工作流执行已取消";
+                    logger.LogWarning(message);
+                    InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this,
+                        new WorkflowExecutionProgressEventArgs(workflow.RootWorkflowId, $"[CANCELLED] {message}")));
+                }
+                else if (!result.Success && result.Errors.Any())
                 {
                     InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.RootWorkflowId, $"[ERROR] 工作流执行失败，错误数量: {result.Errors.Count}")));
                     foreach (var error in result.Errors)

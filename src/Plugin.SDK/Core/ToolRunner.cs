@@ -110,15 +110,16 @@ namespace SunEyeVision.Plugin.SDK.Core
 
             _isRunning = true;
             _cancellationTokenSource = new CancellationTokenSource();
+            var cancellationToken = _cancellationTokenSource.Token;
             var stopwatch = Stopwatch.StartNew();
 
             try
             {
                 var result = await Task.Run(() =>
                 {
-                    _cancellationTokenSource.Token.ThrowIfCancellationRequested();
-                    return _executor.Run(tool, parameters);
-                }, _cancellationTokenSource.Token);
+                    cancellationToken.ThrowIfCancellationRequested();
+                    return _executor.Run(tool, parameters, cancellationToken: cancellationToken);
+                }, cancellationToken);
 
                 stopwatch.Stop();
 
@@ -131,7 +132,7 @@ namespace SunEyeVision.Plugin.SDK.Core
             catch (OperationCanceledException)
             {
                 stopwatch.Stop();
-                return RunResult.Failure("操作已取消");
+                return RunResult.Cancelled();
             }
             catch (Exception ex)
             {
@@ -208,15 +209,16 @@ namespace SunEyeVision.Plugin.SDK.Core
 
             _isRunning = true;
             _cancellationTokenSource = new CancellationTokenSource();
+            var cancellationToken = _cancellationTokenSource.Token;
             var stopwatch = Stopwatch.StartNew();
 
             try
             {
                 var result = await Task.Run(() =>
                 {
-                    _cancellationTokenSource.Token.ThrowIfCancellationRequested();
-                    return _executor.Run(tool, parameters);
-                }, _cancellationTokenSource.Token);
+                    cancellationToken.ThrowIfCancellationRequested();
+                    return _executor.Run(tool, parameters, cancellationToken: cancellationToken);
+                }, cancellationToken);
 
                 stopwatch.Stop();
                 return RunResult<TResult>.FromToolResults(result);
@@ -224,7 +226,7 @@ namespace SunEyeVision.Plugin.SDK.Core
             catch (OperationCanceledException)
             {
                 stopwatch.Stop();
-                return RunResult<TResult>.Failure("操作已取消");
+                return RunResult<TResult>.Cancelled();
             }
             catch (Exception ex)
             {

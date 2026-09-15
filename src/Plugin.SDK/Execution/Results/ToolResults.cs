@@ -285,6 +285,11 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
         public bool IsSuccess => Status == ExecutionStatus.Success || Status == ExecutionStatus.PartialSuccess;
 
         /// <summary>
+        /// 是否由取消请求结束
+        /// </summary>
+        public bool IsCancelled => Status == ExecutionStatus.Cancelled;
+
+        /// <summary>
         /// 节点状态（本次执行的最终结论：执行成功且判定通过 = true）。
         /// 由基类统一下沉，所有工具在结果树"执行信息"分组恒定可见，杜绝各工具漏声明/命名不一；
         /// 判定类工具在 Run 中写入判定结果，执行失败时由 SetError/CreateError 自动置 false。
@@ -411,6 +416,20 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
                 result.ErrorStackTrace = exception.StackTrace;
             }
             return result;
+        }
+
+        /// <summary>
+        /// 创建取消结果。取消是独立终态，不应伪装成执行失败。
+        /// </summary>
+        public static T CreateCancelled<T>(string message = "执行被取消") where T : ToolResults, new()
+        {
+            return new T
+            {
+                Status = ExecutionStatus.Cancelled,
+                IsPass = false,
+                ErrorMessage = message,
+                Timestamp = DateTime.Now
+            };
         }
 
         /// <summary>

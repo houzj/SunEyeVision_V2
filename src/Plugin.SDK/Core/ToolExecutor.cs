@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Logging;
@@ -57,6 +55,120 @@ namespace SunEyeVision.Plugin.SDK.Core
         }
 
         /// <summary>
+        /// 按一次运行请求执行工具。
+        /// </summary>
+        /// <remarks>
+        /// 这是新运行边界。为兼容现有 <see cref="IToolPlugin"/> 契约，执行前仍会把运行数据映射到
+        /// <see cref="ToolParameters"/> 的 JsonIgnore 运行时属性；后续工具迁移可直接消费此请求。
+        /// </remarks>
+        public ToolResults Run(IToolPlugin tool, ToolExecutionRequest request)
+        {
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
+
+            request.Parameters.ResolvedInputImage = request.ResolvedInputImage;
+            return Run(
+                tool,
+                request.Parameters,
+                request.NodeResults,
+                request.NodeName,
+                request.NodeId,
+                request.CancellationToken,
+                request.GlobalVariables,
+                request.ApplyBindings);
+        }
+
+        /// <summary>
+        /// 异步工具统一入口。新工具实现 <see cref="IAsyncToolPlugin"/> 时执行真正的异步逻辑，
+        /// 旧工具通过同步入口兼容运行。
+        /// </summary>
+        public async ValueTask<ToolResults> ExecuteAsync(IToolPlugin tool, ToolExecutionRequest request)
+        {
+            if (tool == null)
+                throw new ArgumentNullException(nameof(tool));
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
+
+            if (tool is not IAsyncToolPlugin asyncTool)
+                return Run(tool, request);
+
+            var parameters = request.Parameters;
+            var stopwatch = Stopwatch.StartNew();
+
+            // 异步契约的运行数据只存在于请求中，不再污染持久化参数对象。
+            request.Context = CreateExecutionContext(tool, request);
+
+            try
+            {
+                if (request.NodeResults != null && request.ApplyBindings)
+                {
+                    var applyResult = ApplyBindings(parameters, request.NodeResults);
+                    if (!applyResult.IsSuccess)
+                    {
+                        request.Context.Logger?.Error(
+                            $"参数绑定失败: {applyResult.FailureDetail}",
+                            request.Context.GetSourceName());
+                        return CreateTerminalResult(
+                            tool.ResultType,
+                            ExecutionStatus.Failed,
+                            $"参数绑定失败: {applyResult.FailureDetail}");
+                    }
+                }
+
+                request.CancellationToken.ThrowIfCancellationRequested();
+                request.Context.Logger?.Info("开始异步执行工具", request.Context.GetSourceName());
+                var result = await asyncTool.ExecuteAsync(request).ConfigureAwait(false);
+                stopwatch.Stop();
+                result.ExecutionTimeMs = stopwatch.Elapsed.TotalMilliseconds;
+                return result;
+            }
+            catch (OperationCanceledException)
+            {
+                stopwatch.Stop();
+                request.Context.Logger?.Warning("工具执行被取消", request.Context.GetSourceName());
+                return CreateTerminalResult(tool.ResultType, ExecutionStatus.Cancelled, "执行被取消");
+            }
+            catch (Exception ex)
+            {
+                stopwatch.Stop();
+                request.Context.Logger?.Error(
+                    $"工具执行异常: {ex.Message}",
+                    request.Context.GetSourceName(),
+                    ex);
+                return CreateTerminalResult(tool.ResultType, ExecutionStatus.Failed, ex.Message, ex);
+            }
+        }
+
+        private ToolExecutionContext CreateExecutionContext(IToolPlugin tool, ToolExecutionRequest request)
+        {
+            var toolName = tool.ParamsType.Name.Replace("Parameters", "");
+            return new ToolExecutionContext(
+                logger: _logger,
+                toolName: toolName,
+                nodeName: request.NodeName ?? toolName,
+                nodeId: request.NodeId,
+                cancellationToken: request.CancellationToken,
+                globalVariables: request.GlobalVariables);
+        }
+
+        private static ToolResults CreateTerminalResult(
+            Type resultType,
+            ExecutionStatus status,
+            string message,
+            Exception? exception = null)
+        {
+            if (Activator.CreateInstance(resultType) is not ToolResults result)
+                result = new GenericToolResults();
+
+            result.Status = status;
+            result.IsPass = false;
+            result.ErrorMessage = message;
+            result.ErrorStackTrace = exception?.StackTrace;
+            result.Timestamp = DateTime.Now;
+            return result;
+        }
+
+        /// <summary>
         /// 执行工具（泛型版本）
         /// </summary>
         /// <typeparam name="TResult">结果类型</typeparam>
@@ -66,6 +178,8 @@ namespace SunEyeVision.Plugin.SDK.Core
         /// <param name="nodeName">节点名称（可选，用于日志来源）</param>
         /// <param name="nodeId">节点ID（可选）</param>
         /// <param name="cancellationToken">取消令牌（可选）</param>
+        /// <param name="globalVariables">本次运行的全局变量（可选）</param>
+        /// <param name="applyBindings">是否由执行器应用参数绑定；调用方已完成绑定时传入 false</param>
         /// <returns>执行结果</returns>
         public TResult Run<TResult>(
             IToolPlugin tool,
@@ -73,7 +187,9 @@ namespace SunEyeVision.Plugin.SDK.Core
             IDictionary<string, ToolResults>? context = null,
             string? nodeName = null,
             string? nodeId = null,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default,
+            IDictionary<string, object?>? globalVariables = null,
+            bool applyBindings = true)
             where TResult : ToolResults, new()
         {
             if (tool == null)
@@ -94,12 +210,12 @@ namespace SunEyeVision.Plugin.SDK.Core
                 nodeName: nodeName ?? tool.ParamsType.Name.Replace("Parameters", ""),
                 nodeId: nodeId,
                 cancellationToken: cancellationToken,
-                globalVariables: TryGetGlobalVariables());
+                globalVariables: globalVariables);
 
             try
             {
                 // 1. 应用参数绑定（从参数内部 BindingConfig 读取）
-                if (context != null)
+                if (context != null && applyBindings)
                 {
                     var applyResult = ApplyBindings(parameters, context);
                     if (!applyResult.IsSuccess)
@@ -132,7 +248,7 @@ namespace SunEyeVision.Plugin.SDK.Core
             {
                 stopwatch.Stop();
                 parameters.LogWarning("工具执行被取消");
-                return ToolResults.CreateError<TResult>("执行被取消");
+                return ToolResults.CreateCancelled<TResult>();
             }
             catch (Exception ex)
             {
@@ -151,6 +267,8 @@ namespace SunEyeVision.Plugin.SDK.Core
         /// <param name="nodeName">节点名称（可选，用于日志来源）</param>
         /// <param name="nodeId">节点ID（可选）</param>
         /// <param name="cancellationToken">取消令牌（可选）</param>
+        /// <param name="globalVariables">本次运行的全局变量（可选）</param>
+        /// <param name="applyBindings">是否由执行器应用参数绑定；调用方已完成绑定时传入 false</param>
         /// <returns>执行结果</returns>
         public ToolResults Run(
             IToolPlugin tool,
@@ -158,7 +276,9 @@ namespace SunEyeVision.Plugin.SDK.Core
             IDictionary<string, ToolResults>? context = null,
             string? nodeName = null,
             string? nodeId = null,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default,
+            IDictionary<string, object?>? globalVariables = null,
+            bool applyBindings = true)
         {
             if (tool == null)
                 throw new ArgumentNullException(nameof(tool));
@@ -178,12 +298,12 @@ namespace SunEyeVision.Plugin.SDK.Core
                 nodeName: nodeName ?? tool.ParamsType.Name.Replace("Parameters", ""),
                 nodeId: nodeId,
                 cancellationToken: cancellationToken,
-                globalVariables: TryGetGlobalVariables());
+                globalVariables: globalVariables);
 
             try
             {
                 // 1. 应用参数绑定（从参数内部 BindingConfig 读取）
-                if (context != null)
+                if (context != null && applyBindings)
                 {
                     var applyResult = ApplyBindings(parameters, context);
                     if (!applyResult.IsSuccess)
@@ -216,7 +336,7 @@ namespace SunEyeVision.Plugin.SDK.Core
             {
                 stopwatch.Stop();
                 parameters.LogWarning("工具执行被取消");
-                return ToolResults.CreateError<GenericToolResults>("执行被取消");
+                return ToolResults.CreateCancelled<GenericToolResults>();
             }
             catch (Exception ex)
             {
@@ -237,6 +357,8 @@ namespace SunEyeVision.Plugin.SDK.Core
         /// <param name="nodeName">节点名称（可选，用于日志来源）</param>
         /// <param name="nodeId">节点ID（可选）</param>
         /// <param name="cancellationToken">取消令牌（可选）</param>
+        /// <param name="globalVariables">本次运行的全局变量（可选）</param>
+        /// <param name="applyBindings">是否由执行器应用参数绑定；调用方已完成绑定时传入 false</param>
         /// <returns>执行结果</returns>
         public TResult Run<TParams, TResult>(
             IToolPlugin<TParams, TResult> tool,
@@ -244,7 +366,9 @@ namespace SunEyeVision.Plugin.SDK.Core
             IDictionary<string, ToolResults>? context = null,
             string? nodeName = null,
             string? nodeId = null,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default,
+            IDictionary<string, object?>? globalVariables = null,
+            bool applyBindings = true)
             where TParams : ToolParameters, new()
             where TResult : ToolResults, new()
         {
@@ -266,12 +390,12 @@ namespace SunEyeVision.Plugin.SDK.Core
                 nodeName: nodeName ?? typeof(TParams).Name.Replace("Parameters", ""),
                 nodeId: nodeId,
                 cancellationToken: cancellationToken,
-                globalVariables: TryGetGlobalVariables());
+                globalVariables: globalVariables);
 
             try
             {
                 // 1. 应用参数绑定（从参数内部 BindingConfig 读取）
-                if (context != null)
+                if (context != null && applyBindings)
                 {
                     var applyResult = ApplyBindings(parameters, context);
                     if (!applyResult.IsSuccess)
@@ -304,7 +428,7 @@ namespace SunEyeVision.Plugin.SDK.Core
             {
                 stopwatch.Stop();
                 parameters.LogWarning("工具执行被取消");
-                return ToolResults.CreateError<TResult>("执行被取消");
+                return ToolResults.CreateCancelled<TResult>();
             }
             catch (Exception ex)
             {
@@ -324,73 +448,5 @@ namespace SunEyeVision.Plugin.SDK.Core
             return _parameterResolver.ApplyBindings(parameters, context);
         }
 
-        /// <summary>
-        /// 尝试从解决方案管理器获取全局变量字典（反射访问避免跨层耦合）
-        /// </summary>
-        /// <remarks>
-        /// 工具层不能直接引用 SunEyeVision.UI 程序集（分层架构约束），
-        /// 通过反射访问 SunEyeVision.UI.Adapters.ServiceInitializer.SolutionManager.CurrentSolution.GlobalVariables。
-        /// 反射失败（UI 未加载、解决方案未初始化等）→ 静默返回 null。
-        /// </remarks>
-        /// <returns>全局变量字典，若无法获取返回 null</returns>
-        private static IDictionary<string, object?>? TryGetGlobalVariables()
-        {
-            try
-            {
-                // 查找 SunEyeVision.UI.Adapters.ServiceInitializer 类型
-                var serviceInitializerType = AppDomain.CurrentDomain.GetAssemblies()
-                    .Select(a => a.GetType("SunEyeVision.UI.Adapters.ServiceInitializer"))
-                    .FirstOrDefault(t => t != null);
-                if (serviceInitializerType == null) return null;
-
-                // 读取静态属性 SolutionManager
-                var solutionManagerProp = serviceInitializerType.GetProperty(
-                    "SolutionManager",
-                    BindingFlags.Public | BindingFlags.Static);
-                if (solutionManagerProp == null) return null;
-
-                var solutionManager = solutionManagerProp.GetValue(null);
-                if (solutionManager == null) return null;
-
-                // 读取实例属性 CurrentSolution
-                var currentSolutionProp = solutionManager.GetType().GetProperty(
-                    "CurrentSolution",
-                    BindingFlags.Public | BindingFlags.Instance);
-                if (currentSolutionProp == null) return null;
-
-                var currentSolution = currentSolutionProp.GetValue(solutionManager);
-                if (currentSolution == null) return null;
-
-                // 读取 GlobalVariables 列表（List<GlobalVariable>）
-                var globalVariablesProp = currentSolution.GetType().GetProperty(
-                    "GlobalVariables",
-                    BindingFlags.Public | BindingFlags.Instance);
-                if (globalVariablesProp == null) return null;
-
-                var globalVariablesList = globalVariablesProp.GetValue(currentSolution) as IEnumerable;
-                if (globalVariablesList == null) return null;
-
-                // 反射遍历每个 GlobalVariable：取 Name 和 Value
-                var dict = new Dictionary<string, object?>();
-                foreach (var v in globalVariablesList)
-                {
-                    if (v == null) continue;
-                    var vType = v.GetType();
-                    var nameProp = vType.GetProperty("Name", BindingFlags.Public | BindingFlags.Instance);
-                    var valueProp = vType.GetProperty("Value", BindingFlags.Public | BindingFlags.Instance);
-                    if (nameProp == null || valueProp == null) continue;
-                    var name = nameProp.GetValue(v) as string;
-                    if (string.IsNullOrEmpty(name)) continue;
-                    dict[name] = valueProp.GetValue(v);
-                }
-                return dict;
-            }
-            catch
-            {
-                // 反射失败（UI 层未加载、初始化异常等）→ 返回 null
-                // Script 工具解析时若发现 BindingSource = "__GlobalVars__.xxx" 而 GlobalVariables 为 null → 会直接报错
-                return null;
-            }
-        }
     }
 }

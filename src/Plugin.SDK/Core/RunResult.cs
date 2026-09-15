@@ -94,6 +94,20 @@ namespace SunEyeVision.Plugin.SDK.Core
         }
 
         /// <summary>
+        /// 创建取消结果
+        /// </summary>
+        public static RunResult Cancelled(string message = "操作已取消")
+        {
+            return new RunResult
+            {
+                IsSuccess = false,
+                Status = ExecutionStatus.Cancelled,
+                ErrorMessage = message,
+                Timestamp = DateTime.Now
+            };
+        }
+
+        /// <summary>
         /// 从 ToolResults 创建 RunResult
         /// </summary>
         public static RunResult FromToolResults(ToolResults toolResult)
@@ -198,6 +212,20 @@ namespace SunEyeVision.Plugin.SDK.Core
                 Status = ExecutionStatus.Failed,
                 ErrorMessage = errorMessage,
                 ErrorStackTrace = exception?.StackTrace,
+                Timestamp = DateTime.Now
+            };
+        }
+
+        /// <summary>
+        /// 创建取消结果
+        /// </summary>
+        public static RunResult<TResult> Cancelled(string message = "操作已取消")
+        {
+            return new RunResult<TResult>
+            {
+                IsSuccess = false,
+                Status = ExecutionStatus.Cancelled,
+                ErrorMessage = message,
                 Timestamp = DateTime.Now
             };
         }

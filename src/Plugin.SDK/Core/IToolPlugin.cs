@@ -94,57 +94,6 @@ namespace SunEyeVision.Plugin.SDK.Core
         /// </remarks>
         ToolResults Run(ToolParameters parameters);
 
-        /// <summary>是否支持调试窗口（默认 true）</summary>
-        bool HasDebugWindow => true;
-
-        /// <summary>创建调试窗口（可选实现）</summary>
-        System.Windows.Window? CreateDebugWindow() => null;
-
-        /// <summary>
-        /// 创建调试控件（可选实现）
-        /// </summary>
-        /// <param name="tool">调用此方法的工具实例（框架传入 == this）</param>
-        /// <returns>调试控件实例，如果返回 null 则表示该工具无调试界面</returns>
-        /// <remarks>
-        /// 工具只负责创建内容，框架负责创建窗口。
-        /// 框架根据 DebugWindowStyle 决定窗口类型，并将此控件放入窗口中。
-        /// tool 参数显式传入避免在实现端写 this（保证参数化、可单测）。
-        ///
-        /// 示例：
-        /// <code>
-        /// public FrameworkElement? CreateDebugControl(IToolPlugin tool)
-        /// {
-        ///     return new ThresholdToolDebugControl("Id", tool, null);
-        /// }
-        /// </code>
-        /// </remarks>
-        System.Windows.FrameworkElement? CreateDebugControl(IToolPlugin tool) => null;
-
-        /// <summary>
-        /// 创建数据分析控件（可选实现）
-        /// </summary>
-        /// <returns>数据分析控件实例，返回 null 表示该工具无数据分析界面</returns>
-        /// <remarks>
-        /// 用于主界面右下角"数据分析"Tab中展示工具执行结果的数据分析。
-        /// 
-        /// 与 CreateDebugControl() 的区别：
-        /// - CreateDebugControl(tool)   → 双击节点弹出的调试窗口内容（用于调参）
-        /// - CreateDataAnalysisControl() → 右下角数据分析Tab内容（用于数据展示）
-        /// 
-        /// 框架行为：
-        /// - 返回非null → 右下角显示"数据分析"Tab，Content 为此控件
-        /// - 返回null  → 右下角隐藏"数据分析"Tab
-        /// 
-        /// 示例：
-        /// <code>
-        /// public FrameworkElement? CreateDataAnalysisControl()
-        /// {
-        ///     return new BlobDataAnalysisControl();
-        /// }
-        /// </code>
-        /// </remarks>
-        System.Windows.FrameworkElement? CreateDataAnalysisControl() => null;
-
         /// <summary>获取默认参数（可选实现）</summary>
         ToolParameters GetDefaultParameters() => (ToolParameters)Activator.CreateInstance(ParamsType)!;
     }
@@ -160,7 +109,7 @@ namespace SunEyeVision.Plugin.SDK.Core
     /// 开发者只需：
     /// 1. 在类上标记 [Tool] 特性（定义元数据）
     /// 2. 实现 Run 方法（执行逻辑）
-    /// 3. 可选重写 CreateDebugWindow 方法（调试窗口）
+    /// 3. 需要 WPF 编辑器时另行实现 IToolEditorFactory
     /// </remarks>
     public interface IToolPlugin<TParams, TResult> : IToolPlugin
         where TParams : ToolParameters, new()

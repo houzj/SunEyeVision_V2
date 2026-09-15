@@ -8,6 +8,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
     public class ExecutionResult
     {
         public bool Success { get; set; }
+        public ExecutionStatus Status { get; set; } = ExecutionStatus.NotExecuted;
         public Dictionary<string, object> Outputs { get; set; }
         public List<string> Errors { get; set; }
         public TimeSpan ExecutionTime { get; set; }
@@ -21,17 +22,44 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
             NodeResults = new Dictionary<string, NodeExecutionResult>();
         }
 
-        public static ExecutionResult CreateSuccess() => new ExecutionResult { Success = true };
+        public static ExecutionResult CreateSuccess()
+            => new ExecutionResult { Success = true, Status = ExecutionStatus.Success };
         public static ExecutionResult CreateFailure(string errorMessage)
-            => new ExecutionResult { Success = false, Errors = new List<string> { errorMessage } };
+            => new ExecutionResult
+            {
+                Success = false,
+                Status = ExecutionStatus.Failed,
+                Errors = new List<string> { errorMessage }
+            };
 
-        public void AddError(string message, string nodeId = null) { Success = false; Errors.Add(message); }
+        public static ExecutionResult CreateCancelled(string message = "工作流执行被取消")
+            => new ExecutionResult
+            {
+                Success = false,
+                Status = ExecutionStatus.Cancelled,
+                IsStopped = true,
+                CompletionMessage = message
+            };
+
+        public string? CompletionMessage { get; set; }
+
+        public void AddError(string message, string nodeId = null)
+        {
+            Success = false;
+            if (Status != ExecutionStatus.Cancelled)
+                Status = ExecutionStatus.Failed;
+            Errors.Add(message);
+        }
 
         public void Merge(ExecutionResult other)
         {
             if (other == null) return;
             Success = Success && other.Success;
+            Status = Status == ExecutionStatus.Cancelled || other.Status == ExecutionStatus.Cancelled
+                ? ExecutionStatus.Cancelled
+                : Success ? ExecutionStatus.Success : ExecutionStatus.Failed;
             IsStopped = IsStopped || other.IsStopped;
+            CompletionMessage ??= other.CompletionMessage;
             ExecutionTime = ExecutionTime.Add(other.ExecutionTime);
             foreach (var kvp in other.Outputs) Outputs[kvp.Key] = kvp.Value;
             foreach (var e in other.Errors) Errors.Add(e);
@@ -43,6 +71,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
     {
         public string NodeId { get; set; }
         public bool Success { get; set; }
+        public ExecutionStatus Status { get; set; } = ExecutionStatus.NotExecuted;
         public DateTime StartTime { get; set; }
         public DateTime? EndTime { get; set; }
         public TimeSpan? Duration => EndTime.HasValue ? EndTime.Value - StartTime : null;

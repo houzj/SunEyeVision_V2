@@ -3,7 +3,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:designParameters="clr-namespace:SunEyeVision.Tool.Morphology"
         xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
+             xmlns:themes="clr-namespace:SunEyeVision.Plugin.SDK.UI.Themes;assembly=SunEyeVision.Plugin.SDK"
         xmlns:commands="clr-namespace:SunEyeVision.Plugin.SDK.Commands;assembly=SunEyeVision.Plugin.SDK"
         xmlns:region="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views;assembly=SunEyeVision.Plugin.SDK"
         xmlns:converters="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Converters;assembly=SunEyeVision.Plugin.SDK"
@@ -11,12 +13,19 @@
         xmlns:local="clr-namespace:SunEyeVision.Tool.Morphology"
         xmlns:localConverters="clr-namespace:SunEyeVision.Tool.Morphology.Converters"
         xmlns:results="clr-namespace:SunEyeVision.Plugin.SDK.Execution.Results;assembly=SunEyeVision.Plugin.SDK"
+        xmlns:presentation="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.ResultPresentation;assembly=SunEyeVision.Plugin.SDK"
         mc:Ignorable="d"
         d:DesignHeight="550" d:DesignWidth="400"
-        DataContext="{Binding Parameters, RelativeSource={RelativeSource Self}}">
+        d:DataContext="{d:DesignInstance Type=designParameters:MorphologyParameters, IsDesignTimeCreatable=True}"
+        DataContext="{Binding Parameters, RelativeSource={RelativeSource Self}}"
+        Background="{DynamicResource {x:Static themes:SdkThemeKeys.PanelBackgroundBrush}}"
+        Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}">
 
     <controls:ToolDebugControlBase.Resources>
         <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <themes:DesignTimeThemeResourceDictionary/>
+            </ResourceDictionary.MergedDictionaries>
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
             <localConverters:MorphOperationConverter x:Key="MorphOperationConverter"/>
             <localConverters:MorphShapeConverter x:Key="MorphShapeConverter"/>
@@ -189,67 +198,7 @@
           <ScrollViewer Grid.Row="0" Padding="3">
             <StackPanel>
               <!-- 结果判断分组 -->
-              <Expander Header="结果判断"
-                                      IsExpanded="True"
-                                      BorderBrush="{DynamicResource ThemeBorderBrush}"
-                                      BorderThickness="1"
-                                      Margin="0,0,0,8"
-                                      Background="{DynamicResource ThemePanelBackgroundBrush}">
-                <StackPanel Margin="16,8">
-                  <!-- 输出为空判断 -->
-                  <controls:LabeledControl Label="输出为空判断" ContentHorizontalAlignment="Left">
-                    <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsEmptyCheckEnabled, Mode=TwoWay}"/>
-                  </controls:LabeledControl>
-
-                  <!-- 总面积判断 -->
-                  <controls:LabeledControl Label="总面积判断" ContentHorizontalAlignment="Left" Margin="0,2,0,0">
-                    <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsAreaCheckEnabled, Mode=TwoWay}"/>
-                  </controls:LabeledControl>
-                  <controls:LabeledControl Label="总面积范围 (px²):" Margin="0,2,0,0" ContentHorizontalAlignment="Left"
-                                           Visibility="{Binding ResultConfig.IsAreaCheckEnabled,
-                    Converter={StaticResource BoolToVisibilityConverter}}">
-                    <controls:RangeInputControl
-                                            Unit="px²"
-                                            Minimum="0"
-                                            Maximum="1000000"
-                                            MinValue="{Binding ResultConfig.AreaMin, Mode=TwoWay}"
-                                            MaxValue="{Binding ResultConfig.AreaMax, Mode=TwoWay}"
-                                            DecimalPlaces="0"
-                      SmallChange="1"
-                      NumericWidth="120"/>
-                  </controls:LabeledControl>
-
-                  <!-- Blob数量判断 -->
-                  <controls:LabeledControl Label="Blob数量判断" ContentHorizontalAlignment="Left" Margin="0,2,0,0">
-                    <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsBlobCountCheckEnabled, Mode=TwoWay}"/>
-                  </controls:LabeledControl>
-                  <controls:LabeledControl Label="Blob数量范围:" Margin="0,2,0,0"
-                                                            Visibility="{Binding ResultConfig.IsBlobCountCheckEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <controls:RangeInputControl
-                                            Unit=""
-                                            Minimum="0"
-                                            Maximum="10000"
-                                            MinValue="{Binding ResultConfig.BlobCountMin, Mode=TwoWay}"
-                                            MaxValue="{Binding ResultConfig.BlobCountMax, Mode=TwoWay}"
-                                            DecimalPlaces="0" NumericWidth="120"/>
-                  </controls:LabeledControl>
-
-                  <!-- 最大Blob面积判断 -->
-                  <controls:LabeledControl Label="最大Blob面积判断" ContentHorizontalAlignment="Left" Margin="0,2,0,0">
-                    <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsMaxBlobAreaCheckEnabled, Mode=TwoWay}"/>
-                  </controls:LabeledControl>
-                  <controls:LabeledControl Label="最大Blob面积范围 (px²):" Margin="0,2,0,0"
-                                                            Visibility="{Binding ResultConfig.IsMaxBlobAreaCheckEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <controls:RangeInputControl
-                                            Unit="px²"
-                                            Minimum="0"
-                                            Maximum="1000000"
-                                            MinValue="{Binding ResultConfig.MaxBlobAreaMin, Mode=TwoWay}"
-                                            MaxValue="{Binding ResultConfig.MaxBlobAreaMax, Mode=TwoWay}"
-                                            DecimalPlaces="1" NumericWidth="120"/>
-                  </controls:LabeledControl>
-                </StackPanel>
-              </Expander>
+              <presentation:JudgmentEditorControl ItemsSource="{Binding ResultPresentation.Judgments}"/>
             </StackPanel>
           </ScrollViewer>
         </Grid>

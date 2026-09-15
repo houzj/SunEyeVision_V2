@@ -12,7 +12,6 @@ using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
-using SunEyeVision.Tool.CircleDetect.Models;
 using SunEyeVision.Tool.CircleDetect.Views;
 
 namespace SunEyeVision.Tool.CircleDetect
@@ -38,7 +37,7 @@ namespace SunEyeVision.Tool.CircleDetect
         HasDebugWindow = true
     )]
     [JsonDerivedType(typeof(CircleDetectParameters), "CircleDetect")]
-    public class CircleDetectTool : IToolPlugin<CircleDetectParameters, CircleDetectResults>
+    public class CircleDetectTool : IToolPlugin<CircleDetectParameters, CircleDetectResults>, IToolEditorFactory
     {
         private readonly ToolAttribute? _attribute;
         public CircleDetectTool() => _attribute = GetType().GetCustomAttribute<ToolAttribute>();
@@ -216,29 +215,16 @@ namespace SunEyeVision.Tool.CircleDetect
         /// </summary>
         private static bool EvaluateResult(CircleDetectResults result, CircleDetectParameters parameters)
         {
-            var cfg = parameters.ResultConfig;
-
-            if (cfg.IsRadiusEnabled && CircleRadius(result) is double r &&
-                (r < cfg.RadiusMin || r > cfg.RadiusMax))
-                return false;
-
-            if (cfg.IsCenterXEnabled &&
-                (result.CenterPoint.X < cfg.CenterXMin || result.CenterPoint.X > cfg.CenterXMax))
-                return false;
-
-            if (cfg.IsCenterYEnabled &&
-                (result.CenterPoint.Y < cfg.CenterYMin || result.CenterPoint.Y > cfg.CenterYMax))
-                return false;
-
-            if (cfg.IsRMSEEnabled &&
-                (result.RMSE < cfg.RMSEMin || result.RMSE > cfg.RMSEMax))
-                return false;
-
-            if (cfg.IsEdgePointCountEnabled &&
-                (result.EdgePointCount < cfg.EdgePointCountMin || result.EdgePointCount > cfg.EdgePointCountMax))
-                return false;
-
-            return true;
+            var outcomes = ResultJudgmentEvaluator.EvaluateRanges(parameters.ResultPresentation.Judgments, key => key switch
+            {
+                "radius" => CircleRadius(result),
+                "center-x" => result.CenterPoint.X,
+                "center-y" => result.CenterPoint.Y,
+                "rmse" => result.RMSE,
+                "edge-point-count" => result.EdgePointCount,
+                _ => null,
+            });
+            return ResultJudgmentEvaluator.IsAllPass(outcomes);
         }
 
         /// <summary>

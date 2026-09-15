@@ -5,7 +5,6 @@ using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Metadata;
 using SunEyeVision.Plugin.SDK.Validation;
-using SunEyeVision.Tool.Morphology.Models;
 
 namespace SunEyeVision.Tool.Morphology
 {
@@ -178,7 +177,7 @@ namespace SunEyeVision.Tool.Morphology
         /// <summary>
         /// 结果判断配置
         /// </summary>
-        public MorphologyResultConfig ResultConfig { get; set; } = new();
+        public ResultPresentationConfig ResultPresentation { get; set; } = CreateResultPresentation();
 
         #endregion
 
@@ -228,37 +227,26 @@ namespace SunEyeVision.Tool.Morphology
         /// </summary>
         private void ValidateResultConfig(ValidationResult result)
         {
-            if (ResultConfig == null)
+            if (ResultPresentation == null)
             {
                 result.AddError("结果判断配置不能为空");
                 return;
             }
 
-            if (ResultConfig.IsAreaCheckEnabled)
-            {
-                if (ResultConfig.AreaMin >= ResultConfig.AreaMax)
-                {
-                    result.AddError($"总面积最小值({ResultConfig.AreaMin})必须小于最大值({ResultConfig.AreaMax})");
-                }
-            }
-
-            if (ResultConfig.IsBlobCountCheckEnabled)
-            {
-                if (ResultConfig.BlobCountMin >= ResultConfig.BlobCountMax)
-                {
-                    result.AddError($"Blob数量最小值({ResultConfig.BlobCountMin})必须小于最大值({ResultConfig.BlobCountMax})");
-                }
-            }
-
-            if (ResultConfig.IsMaxBlobAreaCheckEnabled)
-            {
-                if (ResultConfig.MaxBlobAreaMin >= ResultConfig.MaxBlobAreaMax)
-                {
-                    result.AddError($"最大Blob面积最小值({ResultConfig.MaxBlobAreaMin})必须小于最大值({ResultConfig.MaxBlobAreaMax})");
-                }
-            }
+            foreach (var item in ResultPresentation.Judgments)
+                if (item.Enabled && item.RuleKind == JudgmentRuleKind.Range && item.Min >= item.Max)
+                    result.AddError($"{item.Name}最小值({item.Min})必须小于最大值({item.Max})");
         }
 
+        private static ResultPresentationConfig CreateResultPresentation()
+        {
+            var config = new ResultPresentationConfig();
+            config.Judgments.Add(new() { Key = "output-not-empty", Name = "输出不为空", RuleKind = JudgmentRuleKind.Boolean, Enabled = false, Order = 10 });
+            config.Judgments.Add(new() { Key = "area", Name = "总面积", Enabled = false, Min = 0, Max = 1000000, Unit = "px²", AllowedMinimum = 0, AllowedMaximum = 1000000, DecimalPlaces = 0, Order = 20 });
+            config.Judgments.Add(new() { Key = "blob-count", Name = "Blob数量", Enabled = false, Min = 0, Max = 1000, AllowedMinimum = 0, AllowedMaximum = 1000, DecimalPlaces = 0, Order = 30 });
+            config.Judgments.Add(new() { Key = "max-blob-area", Name = "最大Blob面积", Enabled = false, Min = 0, Max = 1000000, Unit = "px²", AllowedMinimum = 0, AllowedMaximum = 1000000, DecimalPlaces = 0, Order = 40 });
+            return config;
+        }
         /// <summary>
         /// 获取形态学操作选项（中文）
         /// </summary>

@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:designParameters="clr-namespace:SunEyeVision.Tool.BlobAnalysis"
         xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
         xmlns:commands="clr-namespace:SunEyeVision.Plugin.SDK.Commands;assembly=SunEyeVision.Plugin.SDK"
         xmlns:region="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views;assembly=SunEyeVision.Plugin.SDK"
@@ -11,12 +12,20 @@
         xmlns:local="clr-namespace:SunEyeVision.Tool.BlobAnalysis"
         xmlns:localConverters="clr-namespace:SunEyeVision.Tool.BlobAnalysis.Converters"
         xmlns:results="clr-namespace:SunEyeVision.Plugin.SDK.Execution.Results;assembly=SunEyeVision.Plugin.SDK"
+        xmlns:presentation="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.ResultPresentation;assembly=SunEyeVision.Plugin.SDK"
+        xmlns:themes="clr-namespace:SunEyeVision.Plugin.SDK.UI.Themes;assembly=SunEyeVision.Plugin.SDK"
         mc:Ignorable="d"
         d:DesignHeight="550" d:DesignWidth="400"
-        DataContext="{Binding Parameters, RelativeSource={RelativeSource Self}}">
+        d:DataContext="{d:DesignInstance Type=designParameters:BlobAnalysisParameters, IsDesignTimeCreatable=True}"
+        DataContext="{Binding Parameters, RelativeSource={RelativeSource Self}}"
+        Background="{DynamicResource {x:Static themes:SdkThemeKeys.PanelBackgroundBrush}}"
+        Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}">
 
     <controls:ToolDebugControlBase.Resources>
         <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <themes:DesignTimeThemeResourceDictionary/>
+            </ResourceDictionary.MergedDictionaries>
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
             <localConverters:ThresholdTypeConverter x:Key="ThresholdTypeConverter"/>
             <localConverters:BlobSortModeConverter x:Key="BlobSortModeConverter"/>
@@ -75,7 +84,7 @@
         <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12">
           <StackPanel>
             <!-- ===== 图像预处理 ===== -->
-            <Separator Margin="0,0,0,4" Background="{DynamicResource ThemeDividerBrushBrush}" Height="1"/>
+            <Separator Margin="0,0,0,4" Background="{DynamicResource {x:Static themes:SdkThemeKeys.DividerBrush}}" Height="1"/>
             <TextBlock Text="图像预处理" FontWeight="SemiBold" Margin="0,4,0,8"/>
 
             <controls:LabeledControl Label="启用预处理" ContentHorizontalAlignment="Left" Margin="0,0,0,4">
@@ -109,7 +118,7 @@
             </controls:LabeledControl>
 
             <!-- ===== 阈值分割 ===== -->
-            <Separator Margin="0,8,0,4" Background="{DynamicResource ThemeDividerBrushBrush}" Height="1"/>
+            <Separator Margin="0,8,0,4" Background="{DynamicResource {x:Static themes:SdkThemeKeys.DividerBrush}}" Height="1"/>
             <TextBlock Text="阈值分割" FontWeight="SemiBold" Margin="0,4,0,8"/>
 
             <controls:LabeledControl Label="阈值">
@@ -146,7 +155,7 @@
             </controls:LabeledControl>
 
             <!-- ===== 形态学处理 ===== -->
-            <Separator Margin="0,8,0,4" Background="{DynamicResource ThemeDividerBrushBrush}" Height="1"/>
+            <Separator Margin="0,8,0,4" Background="{DynamicResource {x:Static themes:SdkThemeKeys.DividerBrush}}" Height="1"/>
             <TextBlock Text="形态学处理" FontWeight="SemiBold" Margin="0,4,0,8"/>
 
             <controls:LabeledControl Label="启用形态学" ContentHorizontalAlignment="Left" Margin="0,0,0,4">
@@ -241,7 +250,7 @@
             </controls:LabeledControl>
 
             <!-- ====== 面积筛选 ====== -->
-            <Separator Margin="0,8,0,4" Background="{DynamicResource ThemeDividerBrushBrush}" Height="1"/>
+            <Separator Margin="0,8,0,4" Background="{DynamicResource {x:Static themes:SdkThemeKeys.DividerBrush}}" Height="1"/>
             <TextBlock Text="面积筛选" FontWeight="SemiBold" Margin="0,4,0,8"/>
 
             <controls:LabeledControl Label="启用面积筛选" ContentHorizontalAlignment="Left" Margin="0,0,0,4">
@@ -264,7 +273,7 @@
             </controls:LabeledControl>
 
             <!-- ====== 圆度筛选 ====== -->
-            <Separator Margin="0,8,0,4" Background="{DynamicResource ThemeDividerBrushBrush}" Height="1"/>
+            <Separator Margin="0,8,0,4" Background="{DynamicResource {x:Static themes:SdkThemeKeys.DividerBrush}}" Height="1"/>
             <TextBlock Text="圆度筛选" FontWeight="SemiBold" Margin="0,4,0,8"/>
 
             <controls:LabeledControl Label="启用圆度筛选" ContentHorizontalAlignment="Left" Margin="0,0,0,4">
@@ -287,7 +296,7 @@
             </controls:LabeledControl>
 
             <!-- ====== 矩形度筛选 ====== -->
-            <Separator Margin="0,8,0,4" Background="{DynamicResource ThemeDividerBrushBrush}" Height="1"/>
+            <Separator Margin="0,8,0,4" Background="{DynamicResource {x:Static themes:SdkThemeKeys.DividerBrush}}" Height="1"/>
             <TextBlock Text="矩形度筛选" FontWeight="SemiBold" Margin="0,4,0,8"/>
 
             <controls:LabeledControl Label="启用矩形度筛选" ContentHorizontalAlignment="Left" Margin="0,0,0,4">
@@ -315,265 +324,14 @@
 
       <!-- Tab4: 结果显示 -->
       <TabItem Header="结果显示">
-        <Grid Background="{DynamicResource ThemePanelBackgroundBrush}">
-          <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-          </Grid.RowDefinitions>
-
-          <ScrollViewer Grid.Row="0" Padding="3">
-            <StackPanel>
-              <!-- 结果判断分组 -->
-              <Expander Header="结果判断"
-                                      IsExpanded="True"
-                                      BorderBrush="{DynamicResource ThemeBorderBrush}"
-                                      BorderThickness="1"
-                                      Margin="0,0,0,8"
-                                      Background="{DynamicResource ThemePanelBackgroundBrush}">
-                <StackPanel Margin="16,8">
-                  <!-- 输出为空判断 -->
-                  <controls:LabeledControl Label="输出为空判断" ContentHorizontalAlignment="Left">
-                    <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsEmptyCheckEnabled, Mode=TwoWay}"/>
-                  </controls:LabeledControl>
-
-                  <!-- 白色像素比例判断 -->
-                  <controls:LabeledControl Label="白色像素比例" ContentHorizontalAlignment="Left" Margin="0,2,0,0">
-                    <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsWhitePixelRatioCheckEnabled, Mode=TwoWay}"/>
-                  </controls:LabeledControl>
-                  <controls:LabeledControl Label="白色像素比例 (%):"  Margin="0,2,0,0" ContentHorizontalAlignment="Left"
-                                           Visibility="{Binding ResultConfig.IsWhitePixelRatioCheckEnabled,
-                    Converter={StaticResource BoolToVisibilityConverter}}">
-                    <controls:RangeInputControl
-                                            Unit="%"
-                                            Minimum="0"
-                                            Maximum="100"
-                                            MinValue="{Binding ResultConfig.WhitePixelRatioMin, Mode=TwoWay}"
-                                            MaxValue="{Binding ResultConfig.WhitePixelRatioMax, Mode=TwoWay}"
-                                            DecimalPlaces="1"
-                      SmallChange="1"
-                      NumericWidth="120"/>
-                  </controls:LabeledControl>
-
-                  <!-- Blob数量判断 -->
-                  <controls:LabeledControl Label="Blob数量判断" ContentHorizontalAlignment="Left" Margin="0,2,0,0">
-                    <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsBlobCountCheckEnabled, Mode=TwoWay}"/>
-                  </controls:LabeledControl>
-                  <controls:LabeledControl Label="Blob数量范围:" Margin="0,2,0,0"
-                                                            Visibility="{Binding ResultConfig.IsBlobCountCheckEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <controls:RangeInputControl
-                                            Unit="个"
-                                            Minimum="0"
-                                            Maximum="9999"
-                                            MinValue="{Binding ResultConfig.BlobCountMin, Mode=TwoWay}"
-                                            MaxValue="{Binding ResultConfig.BlobCountMax, Mode=TwoWay}"
-                                            DecimalPlaces="0"  NumericWidth="120"/>
-                  </controls:LabeledControl>
-
-                  <!-- 总面积判断 -->
-                  <controls:LabeledControl Label="总面积判断" ContentHorizontalAlignment="Left" Margin="0,2,0,0">
-                    <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsTotalAreaCheckEnabled, Mode=TwoWay}"/>
-                  </controls:LabeledControl>
-                  <controls:LabeledControl Label="总面积范围 (px²):" Margin="0,2,0,0"
-                                                            Visibility="{Binding ResultConfig.IsTotalAreaCheckEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <controls:RangeInputControl
-                                            Unit="px²"
-                                            Minimum="0"
-                                            Maximum="10000000"
-                                            MinValue="{Binding ResultConfig.TotalAreaMin, Mode=TwoWay}"
-                                            MaxValue="{Binding ResultConfig.TotalAreaMax, Mode=TwoWay}"
-                                            DecimalPlaces="0"  NumericWidth="120"/>
-                  </controls:LabeledControl>
-
-                  <!-- 平均面积判断 -->
-                  <controls:LabeledControl Label="平均面积判断" ContentHorizontalAlignment="Left" Margin="0,2,0,0">
-                    <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsAverageAreaCheckEnabled, Mode=TwoWay}"/>
-                  </controls:LabeledControl>
-                  <controls:LabeledControl Label="平均面积范围 (px²):" Margin="0,2,0,0"
-                                                            Visibility="{Binding ResultConfig.IsAverageAreaCheckEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <controls:RangeInputControl
-                                            Unit="px²"
-                                            Minimum="0"
-                                            Maximum="10000000"
-                                            MinValue="{Binding ResultConfig.AverageAreaMin, Mode=TwoWay}"
-                                            MaxValue="{Binding ResultConfig.AverageAreaMax, Mode=TwoWay}"
-                                            DecimalPlaces="0"  NumericWidth="120"/>
-                  </controls:LabeledControl>
-
-                  <!-- 最大面积判断 -->
-                  <controls:LabeledControl Label="最大面积判断" ContentHorizontalAlignment="Left" Margin="0,2,0,0">
-                    <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsMaxAreaCheckEnabled, Mode=TwoWay}"/>
-                  </controls:LabeledControl>
-                  <controls:LabeledControl Label="最大面积范围 (px²):" Margin="0,2,0,0"
-                                                            Visibility="{Binding ResultConfig.IsMaxAreaCheckEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <controls:RangeInputControl
-                                            Unit="px²"
-                                            Minimum="0"
-                                            Maximum="10000000"
-                                            MinValue="{Binding ResultConfig.MaxAreaMin, Mode=TwoWay}"
-                                            MaxValue="{Binding ResultConfig.MaxAreaMax, Mode=TwoWay}"
-                                            DecimalPlaces="0"  NumericWidth="120"/>
-                  </controls:LabeledControl>
-
-                  <!-- 最小面积判断 -->
-                  <controls:LabeledControl Label="最小面积判断" ContentHorizontalAlignment="Left" Margin="0,2,0,0">
-                    <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsMinAreaCheckEnabled, Mode=TwoWay}"/>
-                  </controls:LabeledControl>
-                  <controls:LabeledControl Label="最小面积范围 (px²):" Margin="0,2,0,0"
-                                                            Visibility="{Binding ResultConfig.IsMinAreaCheckEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <controls:RangeInputControl
-                                            Unit="px²"
-                                            Minimum="0"
-                                            Maximum="10000000"
-                                            MinValue="{Binding ResultConfig.MinAreaMin, Mode=TwoWay}"
-                                            MaxValue="{Binding ResultConfig.MinAreaMax, Mode=TwoWay}"
-                                            DecimalPlaces="0"  NumericWidth="120"/>
-                  </controls:LabeledControl>
-
-                  <!-- 平均圆度判断 -->
-                  <controls:LabeledControl Label="平均圆度判断" ContentHorizontalAlignment="Left" Margin="0,2,0,0">
-                    <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsAverageCircularityCheckEnabled, Mode=TwoWay}"/>
-                  </controls:LabeledControl>
-                  <controls:LabeledControl Label="平均圆度范围:" Margin="0,2,0,0"
-                                                            Visibility="{Binding ResultConfig.IsAverageCircularityCheckEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <controls:RangeInputControl
-                                            Unit=""
-                                            Minimum="0"
-                                            Maximum="1"
-                                            MinValue="{Binding ResultConfig.AverageCircularityMin, Mode=TwoWay}"
-                                            MaxValue="{Binding ResultConfig.AverageCircularityMax, Mode=TwoWay}"
-                                            DecimalPlaces="3"
-                      SmallChange="0.01"
-                      NumericWidth="120"/>
-                  </controls:LabeledControl>
-
-                  <!-- 平均矩形度判断 -->
-                  <controls:LabeledControl Label="平均矩形度判断" ContentHorizontalAlignment="Left" Margin="0,2,0,0">
-                    <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsAverageRectangularityCheckEnabled, Mode=TwoWay}"/>
-                  </controls:LabeledControl>
-                  <controls:LabeledControl Label="平均矩形度范围:" Margin="0,2,0,0"
-                                                            Visibility="{Binding ResultConfig.IsAverageRectangularityCheckEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <controls:RangeInputControl
-                                            Unit=""
-                                            Minimum="0"
-                                            Maximum="1"
-                                            MinValue="{Binding ResultConfig.AverageRectangularityMin, Mode=TwoWay}"
-                                            MaxValue="{Binding ResultConfig.AverageRectangularityMax, Mode=TwoWay}"
-                                            DecimalPlaces="3"
-                      SmallChange="0.01"
-                      NumericWidth="120"/>
-                  </controls:LabeledControl>
-
-                  <!-- ===== 独立Blob判断（控制每个Blob显示颜色） ===== -->
-                  <Separator Margin="0,8,0,4" Background="{DynamicResource ThemeDividerBrushBrush}" Height="1"/>
-                  <TextBlock Text="独立Blob判断（控制每个Blob显示颜色）" FontWeight="SemiBold" Margin="0,4,0,0"/>
-
-                  <!-- 每个Blob面积 -->
-                  <controls:LabeledControl Label="每个Blob面积" ContentHorizontalAlignment="Left" Margin="0,2,0,0">
-                    <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsPerBlobAreaCheckEnabled, Mode=TwoWay}"/>
-                  </controls:LabeledControl>
-                  <controls:LabeledControl Label="每个Blob面积范围 (px²):" Margin="0,2,0,0"
-                    Visibility="{Binding ResultConfig.IsPerBlobAreaCheckEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <controls:RangeInputControl
-                      Unit="px²"
-                      Minimum="0"
-                      Maximum="10000000"
-                      MinValue="{Binding ResultConfig.PerBlobAreaMin, Mode=TwoWay}"
-                      MaxValue="{Binding ResultConfig.PerBlobAreaMax, Mode=TwoWay}"
-                      DecimalPlaces="0"
-                      SmallChange="10"
-                      NumericWidth="120"/>
-                  </controls:LabeledControl>
-
-                  <!-- 每个Blob圆度 -->
-                  <controls:LabeledControl Label="每个Blob圆度" ContentHorizontalAlignment="Left" Margin="0,2,0,0">
-                    <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsPerBlobCircularityCheckEnabled, Mode=TwoWay}"/>
-                  </controls:LabeledControl>
-                  <controls:LabeledControl Label="每个Blob圆度范围:" Margin="0,2,0,0"
-                    Visibility="{Binding ResultConfig.IsPerBlobCircularityCheckEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <controls:RangeInputControl
-                      Unit=""
-                      Minimum="0"
-                      Maximum="1"
-                      MinValue="{Binding ResultConfig.PerBlobCircularityMin, Mode=TwoWay}"
-                      MaxValue="{Binding ResultConfig.PerBlobCircularityMax, Mode=TwoWay}"
-                      DecimalPlaces="3"
-                      SmallChange="0.01"
-                      NumericWidth="120"/>
-                  </controls:LabeledControl>
-
-                  <!-- 每个Blob矩形度 -->
-                  <controls:LabeledControl Label="每个Blob矩形度" ContentHorizontalAlignment="Left" Margin="0,2,0,0">
-                    <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsPerBlobRectangularityCheckEnabled, Mode=TwoWay}"/>
-                  </controls:LabeledControl>
-                  <controls:LabeledControl Label="每个Blob矩形度范围:" Margin="0,2,0,0"
-                    Visibility="{Binding ResultConfig.IsPerBlobRectangularityCheckEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <controls:RangeInputControl
-                      Unit=""
-                      Minimum="0"
-                      Maximum="1"
-                      MinValue="{Binding ResultConfig.PerBlobRectangularityMin, Mode=TwoWay}"
-                      MaxValue="{Binding ResultConfig.PerBlobRectangularityMax, Mode=TwoWay}"
-                      DecimalPlaces="3"
-                      SmallChange="0.01"
-                      NumericWidth="120"/>
-                  </controls:LabeledControl>
-                </StackPanel>
-              </Expander>
-
-              <!-- 图形显示分组 -->
-              <Expander Header="图形显示"
-                                      IsExpanded="True"
-                                      BorderBrush="{DynamicResource ThemeBorderBrush}"
-                                      BorderThickness="1"
-                                      Margin="0,0,0,8"
-                                      Background="{DynamicResource ThemePanelBackgroundBrush}">
-                <StackPanel Margin="16,8">
-                  <controls:LabeledControl Label="检测区域" ContentHorizontalAlignment="Left">
-                    <controls:DispItemColorControl
-                        Item="{Binding InspectionRoiStyle, Mode=TwoWay}"
-                        ContentHorizontalAlignment="Left"/>
-                  </controls:LabeledControl>
-                  <controls:LabeledControl Label="屏蔽区域" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
-                    <controls:DispItemColorControl
-                        Item="{Binding MaskRoiStyle, Mode=TwoWay}"
-                        ContentHorizontalAlignment="Left"/>
-                  </controls:LabeledControl>
-                  <controls:LabeledControl Label="轮廓" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
-                    <controls:DispItemColorControl
-                        Item="{Binding ContoursStyle, Mode=TwoWay}"
-                        ContentHorizontalAlignment="Left"/>
-                  </controls:LabeledControl>
-                  <controls:LabeledControl Label="外接矩形" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
-                    <controls:DispItemColorControl
-                        Item="{Binding BlobsStyle, Mode=TwoWay}"
-                        ContentHorizontalAlignment="Left"/>
-                  </controls:LabeledControl>
-                  <controls:LabeledControl Label="质心标记" ContentHorizontalAlignment="Left" Margin="0,8,0,0">
-                    <controls:DispItemColorControl
-                        Item="{Binding CentroidsStyle, Mode=TwoWay}"
-                        ContentHorizontalAlignment="Left"/>
-                  </controls:LabeledControl>
-                </StackPanel>
-              </Expander>
-
-              <!-- 文本显示分组 -->
-              <Expander Header="文本显示"
-                                      IsExpanded="True"
-                                      BorderBrush="{DynamicResource ThemeBorderBrush}"
-                                      BorderThickness="1"
-                                      Margin="0,0,0,8"
-                                      Background="{DynamicResource ThemePanelBackgroundBrush}">
-                <StackPanel Margin="16,8">
-                  <controls:LabeledControl Label="面积列表" ContentHorizontalAlignment="Left">
-                    <controls:DispTextColorControl
-                        Item="{Binding AreaDisplayStyle, Mode=TwoWay}"
-                        AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
-                  </controls:LabeledControl>
-                </StackPanel>
-              </Expander>
-            </StackPanel>
-          </ScrollViewer>
-        </Grid>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12">
+          <StackPanel>
+            <presentation:JudgmentEditorControl ItemsSource="{Binding ResultPresentation.Judgments}"/>
+            <presentation:GraphicsDisplayEditorControl ItemsSource="{Binding ResultPresentation.Graphics}"/>
+            <presentation:TextDisplayEditorControl ItemsSource="{Binding ResultPresentation.Texts}"
+                                                   AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+          </StackPanel>
+        </ScrollViewer>
       </TabItem>
     </TabControl>
   </Grid>

@@ -13,6 +13,7 @@ using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.SDK.UI.Windows;
+using SunEyeVision.Plugin.SDK.UI.Themes;
 using SunEyeVision.HalAdapter;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
@@ -841,13 +842,14 @@ public partial class ShapeMatchTemplateEditorDialog : SdkDialogWindow
                 TemplateExtractionStatus.NotExtracted => "--",
                 _ => status.ToString()
             };
-            txtResultStatus.Foreground = status switch
+            var statusBrushKey = status switch
             {
-                TemplateExtractionStatus.Success => new SolidColorBrush(Color.FromRgb(0x22, 0x8B, 0x22)),
-                TemplateExtractionStatus.Warning => new SolidColorBrush(Color.FromRgb(0xF5, 0xA6, 0x23)),
-                TemplateExtractionStatus.Failed => new SolidColorBrush(Color.FromRgb(0xD3, 0x2F, 0x2F)),
-                _ => new SolidColorBrush(Color.FromRgb(0x99, 0x99, 0x99))
+                TemplateExtractionStatus.Success => SdkThemeKeys.SuccessBrush,
+                TemplateExtractionStatus.Warning => SdkThemeKeys.WarningBrush,
+                TemplateExtractionStatus.Failed => SdkThemeKeys.ErrorBrush,
+                _ => SdkThemeKeys.TextDisabledBrush
             };
+            txtResultStatus.SetResourceReference(TextBlock.ForegroundProperty, statusBrushKey);
         }
 
         if (txtPointCount != null)

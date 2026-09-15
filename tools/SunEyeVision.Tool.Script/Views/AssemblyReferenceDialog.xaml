@@ -9,9 +9,9 @@
         Width="500" Height="400"
         ResizeMode="NoResize">
 
-    <Border Background="#FF2D2D30"
+    <Border Background="{DynamicResource ThemePanelBackgroundBrush}"
             CornerRadius="0"
-            BorderBrush="#FF3C3C3C"
+            BorderBrush="{DynamicResource ThemeBorderBrush}"
             BorderThickness="1">
 
         <Border.Effect>
@@ -26,16 +26,16 @@
             </Grid.RowDefinitions>
 
             <!-- 标题栏 -->
-            <Border Grid.Row="0" Background="#FF1E1E1E" Padding="12,0">
+            <Border Grid.Row="0" Background="{DynamicResource ThemeTitleBarBackgroundBrush}" Padding="12,0">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Column="0" Text="程序集引用管理"
-                               Foreground="White" VerticalAlignment="Center" FontSize="13"/>
+                               Foreground="{DynamicResource ThemeTitleBarTextBrush}" VerticalAlignment="Center" FontSize="13"/>
                     <Button Grid.Column="1" Content="✕" Width="32" Height="32"
-                            Background="Transparent" Foreground="White"
+                            Background="Transparent" Foreground="{DynamicResource ThemeTitleBarTextBrush}"
                             BorderThickness="0" FontSize="14" Cursor="Hand"
                             Click="OnCloseButtonClick">
                         <Button.Style>
@@ -43,7 +43,7 @@
                                 <Setter Property="Background" Value="Transparent"/>
                                 <Style.Triggers>
                                     <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="#E81123"/>
+                                        <Setter Property="Background" Value="{DynamicResource ThemeErrorBrush}"/>
                                     </Trigger>
                                 </Style.Triggers>
                             </Style>
@@ -62,19 +62,19 @@
 
                 <!-- 说明 -->
                 <TextBlock Grid.Row="0" Text="勾选要引用的程序集（系统必需项锁定不可取消）："
-                           Foreground="#FF999999" FontSize="12" Margin="2,0,0,6"/>
+                           Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="12" Margin="2,0,0,6"/>
 
                 <!-- 勾选列表 -->
                 <ListBox Grid.Row="1" x:Name="RefCheckListBox"
-                         Background="#FF1E1E1E" Foreground="#FFDCDCDC"
-                         BorderBrush="#FF3C3C3C" BorderThickness="1"
+                         Background="{DynamicResource ThemeInputBackgroundBrush}" Foreground="{DynamicResource ThemeTextPrimaryBrush}"
+                         BorderBrush="{DynamicResource ThemeInputBorderBrush}" BorderThickness="1"
                          FontSize="12">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <CheckBox IsChecked="{Binding IsChecked}"
                                       IsEnabled="{Binding IsEditable}"
                                       Content="{Binding DisplayName}"
-                                      Foreground="#FFDCDCDC"
+                                      Foreground="{DynamicResource ThemeTextPrimaryBrush}"
                                       Margin="6,3"
                                       Checked="OnRefCheckChanged"
                                       Unchecked="OnRefCheckChanged"/>
@@ -84,21 +84,21 @@
 
                 <!-- 添加用户 DLL -->
                 <Button Grid.Row="2" Content="+ 添加用户 DLL..." Click="OnAddButtonClick"
-                        Background="#FF007ACC" Foreground="White"
+                        Background="{DynamicResource ThemeAccentBrush}" Foreground="{DynamicResource ThemeTextOnDarkBrush}"
                         BorderThickness="0" Padding="10,4" FontSize="12"
                         Margin="0,8,0,0" HorizontalAlignment="Left" Cursor="Hand"/>
             </Grid>
 
             <!-- 底部按钮 -->
-            <Border Grid.Row="2" Background="#FF252526" BorderBrush="#FF3C3C3C"
+            <Border Grid.Row="2" Background="{DynamicResource ThemeStatusBarBackgroundBrush}" BorderBrush="{DynamicResource ThemeStatusBarBorderBrush}"
                     BorderThickness="0,1,0,0" Padding="12,6">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <Button Content="确定" Width="80" Height="28" Margin="0,0,8,0"
-                            Background="#FF007ACC" Foreground="White"
+                            Background="{DynamicResource ThemeAccentBrush}" Foreground="{DynamicResource ThemeTextOnDarkBrush}"
                             BorderThickness="0" FontSize="12" Cursor="Hand"
                             Click="OnOkButtonClick"/>
                     <Button Content="取消" Width="80" Height="28"
-                            Background="#FF3C3C3C" Foreground="#FFDCDCDC"
+                            Background="{DynamicResource ThemeButtonBackgroundBrush}" Foreground="{DynamicResource ThemeButtonTextBrush}"
                             BorderThickness="0" FontSize="12" Cursor="Hand"
                             Click="OnCancelButtonClick"/>
                 </StackPanel>

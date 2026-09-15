@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
 
 namespace SunEyeVision.Tool.ImageThreshold
@@ -129,30 +128,6 @@ namespace SunEyeVision.Tool.ImageThreshold
         #endregion
 
         #region 可视化与属性映射
-
-        private static readonly TextStyle DefaultTextStyle = new()
-        {
-            Name = "ImageThresholdInfo",
-            FontSize = 11.0,
-            PositionX = 10,
-            PositionY = 22
-        };
-
-        /// <summary>
-        /// 构建显示项
-        /// </summary>
-        public void BuildDisplayItems()
-        {
-            _display.Clear();
-            if (InputWidth <= 0 || InputHeight <= 0) return;
-
-            var resultText = IsPass ? "OK" : "NG";
-            _display.AddText(DefaultTextStyle, DefaultTextStyle.PositionX, DefaultTextStyle.PositionY, new[]
-            {
-                $"方法: {MethodUsed}  阈值: {ThresholdUsed:F0}",
-                $"白色比例: {WhitePixelRatio:F1}%  {resultText}"
-            });
-        }
 
         /// <summary>
         /// 获取属性映射表

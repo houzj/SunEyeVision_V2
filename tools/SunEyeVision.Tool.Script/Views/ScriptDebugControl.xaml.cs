@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
@@ -33,11 +34,11 @@ using Microsoft.CodeAnalysis.Text;
 using CommonControl;
 using SunEyeVision.Tool.Script.Completion;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.UI.Themes;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Logging;
 using LogEntry = SunEyeVision.Tool.Script.Models.LogEntry;
 using SunEyeVision.Plugin.SDK.UI.Controls;
-using SunEyeVision.Plugin.SDK.UI.Themes;
 using SunEyeVision.Tool.Script.Models;
 using SunEyeVision.Tool.Script.ScriptEngine;
 using SunEyeVision.Workflow;
@@ -491,11 +492,12 @@ namespace SunEyeVision.Tool.Script.Views
         private void UpdateStatus(string status)
         {
             StatusLabel.Content = status;
-            StatusLabel.Foreground = status == "成功"
-                ? System.Windows.Media.Brushes.LimeGreen
+            var brushKey = status == "成功"
+                ? SdkThemeKeys.SuccessBrush
                 : status == "失败"
-                    ? System.Windows.Media.Brushes.Red
-                    : System.Windows.Media.Brushes.Gray;
+                    ? SdkThemeKeys.ErrorBrush
+                    : SdkThemeKeys.TextDisabledBrush;
+            StatusLabel.SetResourceReference(Control.ForegroundProperty, brushKey);
         }
 
         /// <summary>

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -11,7 +11,6 @@ using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Plugin.SDK.UI.Constants;
 using SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering;
-using SunEyeVision.Tool.CircleDetect.Models;
 
 namespace SunEyeVision.Tool.CircleDetect
 {
@@ -208,112 +207,39 @@ namespace SunEyeVision.Tool.CircleDetect
 
         #endregion
 
-        #region 结果判断配置
+        public ResultPresentationConfig ResultPresentation { get; set; } = CreateResultPresentation();
 
-        private CircleDetectResultConfig _resultConfig = new();
-        /// <summary>
-        /// 结果判断配置（半径/中心X/中心Y/拟合误差/匹配点数）
-        /// </summary>
-        public CircleDetectResultConfig ResultConfig
+        private static ResultPresentationConfig CreateResultPresentation()
         {
-            get => _resultConfig;
-            set => SetProperty(ref _resultConfig, value, "结果判断配置");
+            var config = new ResultPresentationConfig();
+            config.Judgments.Add(new() { Key = "radius", Name = "半径", Enabled = false, Min = 0, Max = 1000, Unit = "px", AllowedMinimum = 0, AllowedMaximum = 10000, Order = 10 });
+            config.Judgments.Add(new() { Key = "center-x", Name = "中心X", Enabled = false, Min = -10000, Max = 10000, Unit = "px", Order = 20 });
+            config.Judgments.Add(new() { Key = "center-y", Name = "中心Y", Enabled = false, Min = -10000, Max = 10000, Unit = "px", Order = 30 });
+            config.Judgments.Add(new() { Key = "rmse", Name = "拟合误差", Enabled = false, Min = 0, Max = 1, Unit = "px", AllowedMinimum = 0, AllowedMaximum = 1000, Order = 40 });
+            config.Judgments.Add(new() { Key = "edge-point-count", Name = "匹配点数", Enabled = false, Min = 5, Max = 1000, AllowedMinimum = 0, AllowedMaximum = 10000, DecimalPlaces = 0, Order = 50 });
+            config.Graphics.Add(new() { Key = "contour-point", Name = "轮廓点", Group = "检测", Order = 10, Style = new() { Name = "轮廓点", IsVisible = true, CrossSize = 5.0 } });
+            config.Graphics.Add(new() { Key = "diagnostic-point", Name = "诊断检测点", Group = "检测", Order = 20, Style = new() { Name = "诊断检测点", IsVisible = false, OkColor = System.Windows.Media.Colors.Cyan, CrossSize = 4.0 } });
+            config.Graphics.Add(new() { Key = "excluded-point", Name = "被屏蔽剔除点", Group = "检测", Order = 30, Style = new() { Name = "被屏蔽剔除点", IsVisible = false, OkColor = System.Windows.Media.Colors.Gray, CrossSize = 4.0 } });
+            config.Graphics.Add(new() { Key = "halcon-band", Name = "HALCON测量带", Group = "测量过程", Order = 40, Style = new() { Name = "HALCON测量带", IsVisible = false, OkColor = ColorConstants.MaskOrange, LineWidth = 1.5 } });
+            config.Graphics.Add(new() { Key = "fit-result", Name = "拟合圆", Group = "结果", Order = 50, Style = new() { Name = "拟合圆", IsVisible = true } });
+            config.Graphics.Add(new() { Key = "center-point", Name = "圆心标记", Group = "结果", Order = 60, Style = new() { Name = "圆心标记", IsVisible = true, CrossSize = 8.0 } });
+            config.Graphics.Add(new() { Key = "guide", Name = "引导线", Group = "测量过程", Order = 70, Style = new() { Name = "引导线", IsVisible = true, LineWidth = 2.0 } });
+            config.Graphics.Add(new() { Key = "caliper", Name = "卡尺", Group = "测量过程", Order = 80, Style = new() { Name = "卡尺", IsVisible = true, LineWidth = 1.0 } });
+            config.Texts.Add(new() { Key = "center", Name = "圆心坐标", Order = 10, Style = new() { Name = "圆心坐标", IsVisible = true } });
+            return config;
         }
-
-        #endregion
-
-        #region 显示样式（Tab3 图形/文本显示，用户可配置）
-
-        /// <summary>轮廓点显示样式（黄）</summary>
-        public GraphicsStyle ContourPointStyle { get; set; } = new()
-        {
-            Name = "轮廓点",
-            IsVisible = true,
-            CrossSize = 5.0,
-        };
-
-        /// <summary>诊断检测点显示样式（青，默认不显示，用于定位拟合失败原因）</summary>
-        public GraphicsStyle DiagnosticPointStyle { get; set; } = new()
-        {
-            Name = "诊断检测点",
-            IsVisible = false,
-            OkColor = System.Windows.Media.Colors.Cyan,
-            CrossSize = 4.0,
-        };
-
-        /// <summary>被屏蔽剔除点显示样式（灰，默认不显示，调试"屏蔽区是否挡对了点"）</summary>
-        public GraphicsStyle ExcludedPointStyle { get; set; } = new()
-        {
-            Name = "被屏蔽剔除点",
-            IsVisible = false,
-            OkColor = System.Windows.Media.Colors.Gray,
-            CrossSize = 4.0,
-        };
-
-        /// <summary>HALCON 实际测量带诊断样式（橙红，默认不显示，与本地卡尺叠加对比对齐）</summary>
-        public GraphicsStyle HalconBandStyle { get; set; } = new()
-        {
-            Name = "HALCON测量带",
-            IsVisible = false,
-            OkColor = ColorConstants.MaskOrange,
-            LineWidth = 1.5,
-        };
-
-        /// <summary>拟合结果显示样式（绿）</summary>
-        public GraphicsStyle FitResultStyle { get; set; } = new()
-        {
-            Name = "拟合圆",
-            IsVisible = true,
-        };
-
-        /// <summary>圆心坐标文本样式</summary>
-        public TextStyle CenterTextStyle { get; set; } = new()
-        {
-            Name = "圆心坐标",
-            IsVisible = true,
-        };
-
-        /// <summary>圆心标记显示样式（十字）</summary>
-        public GraphicsStyle CenterPointStyle { get; set; } = new()
-        {
-            Name = "圆心标记",
-            IsVisible = true,
-            CrossSize = 8.0,
-        };
-
-        #endregion
-
         #region 测量引导显示（与检测/屏蔽区域同通道走结果层，对齐 RoiParameters 虚成员）
 
-        private GraphicsStyle _guideStyle = new()
-        {
-            Name = "引导线",
-            IsVisible = true,
-            LineWidth = 2.0,
-        };
-
-        private GraphicsStyle _caliberStyle = new()
-        {
-            Name = "卡尺",
-            IsVisible = true,
-            LineWidth = 1.0,
-        };
-
-        /// <summary>是否包含测量引导几何（引导圆 + 卡尺）显示到结果层</summary>
-        public override bool HasMeasureGuide => true;
-
-        /// <summary>引导线显示样式（基类虚属性，供 BuildRegionItems 统一读取与 Tab3 双向绑定）</summary>
         public override GraphicsStyle? GuideStyle
         {
-            get => _guideStyle;
-            set { if (value != null) _guideStyle = value; }
+            get => ResultPresentation.GetGraphicsStyle("guide");
+            set { if (value != null) ResultPresentation.Graphics.Single(item => item.Key == "guide").Style = value; }
         }
 
-        /// <summary>卡尺显示样式（基类虚属性，供 BuildRegionItems 统一读取与 Tab3 双向绑定）</summary>
         public override GraphicsStyle? CaliberStyle
         {
-            get => _caliberStyle;
-            set { if (value != null) _caliberStyle = value; }
+            get => ResultPresentation.GetGraphicsStyle("caliper");
+            set { if (value != null) ResultPresentation.Graphics.Single(item => item.Key == "caliper").Style = value; }
         }
 
         /// <summary>

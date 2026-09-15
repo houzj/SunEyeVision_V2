@@ -35,7 +35,7 @@ namespace SunEyeVision.Tool.ShapeMatch;
     Version = "2.0.0",
     HasDebugWindow = true
 )]
-public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResults>
+public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResults>, IToolEditorFactory
 {
     private readonly ToolAttribute? _attribute;
 
@@ -302,7 +302,7 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
 
                         // ===== 结果判断 =====
                         stepSw.Restart();
-                        EvaluateJudgments(parameters.ResultConfig, result);
+                        EvaluateJudgments(parameters.ResultPresentation, result);
                         // ★ M9：空结果强制 NG（无模板 / 模板存在但零匹配 共用此兜底），
                         //   避免"匹配数量/分数判断均未启用"时空结果被误判为通过。
                         if (result.MatchCount == 0)
@@ -316,7 +316,7 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
 
                         // ===== 构建显示项 =====
                         stepSw.Restart();
-                        BuildDisplayItems(result, parameters, parameters.ResultConfig);
+                        BuildDisplayItems(result, parameters, parameters.ResultPresentation);
                         stepSw.Stop();
                         stepTimings.Add(("显示构建", stepSw.ElapsedMilliseconds));
 
@@ -612,32 +612,22 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
     /// 结果判断（OK/NG）
     /// </summary>
     private static void EvaluateJudgments(
-        Models.ShapeMatchResultConfig config, ShapeMatchResults result)
+        ResultPresentationConfig config, ShapeMatchResults result)
     {
         if (config == null) return;
 
         var messages = result.JudgmentMessages;
         messages.Clear();
 
-        bool wholePassed = true;
-
-        if (config.IsMatchCountCheckEnabled)
+        var outcomes = ResultJudgmentEvaluator.EvaluateRanges(config.Judgments, key => key switch
         {
-            bool pass = result.MatchCount >= config.MatchCountMin &&
-                        result.MatchCount <= config.MatchCountMax;
-            string status = pass ? "OK" : "NG";
-            messages.Add($"[{status}] 匹配数量: {result.MatchCount} (范围 {config.MatchCountMin}~{config.MatchCountMax})");
-            if (!pass) wholePassed = false;
-        }
-
-        if (config.IsMatchScoreCheckEnabled)
-        {
-            bool pass = result.BestScore >= config.MatchScoreMin &&
-                        result.BestScore <= config.MatchScoreMax;
-            string status = pass ? "OK" : "NG";
-            messages.Add($"[{status}] 最佳匹配得分: {result.BestScore:F3} (范围 {config.MatchScoreMin:F2}~{config.MatchScoreMax:F2})");
-            if (!pass) wholePassed = false;
-        }
+            "match-count" => result.MatchCount,
+            "best-score" => result.BestScore,
+            _ => null,
+        });
+        foreach (var outcome in outcomes.Where(item => config.GetJudgment(item.Key).Enabled))
+            messages.Add($"[{(outcome.IsPass ? "OK" : "NG")}] {outcome.Message}");
+        bool wholePassed = ResultJudgmentEvaluator.IsAllPass(outcomes);
 
         result.IsPass = wholePassed;
 
@@ -664,7 +654,7 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
     /// </summary>
     private static void BuildDisplayItems(
         ShapeMatchResults result, ShapeMatchParameters parameters,
-        Models.ShapeMatchResultConfig config)
+        ResultPresentationConfig config)
     {
         if (config == null) return;
 
@@ -680,7 +670,7 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
             var bbox = match.BoundingBox;
             if (bbox.HasValue && bbox.Value.Width > 0 && bbox.Value.Height > 0)
             {
-                display.AddRect(config.MatchBoxStyle,
+                display.AddRect(config.GetGraphicsStyle("match-box"),
                     bbox.Value, match.JudgmentPassed);
             }
         }
@@ -689,14 +679,14 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
         foreach (var match in result.MatchedItems)
         {
             var center = new WpfPoint(match.CenterX, match.CenterY);
-            display.AddCross(config.MatchCenterStyle, center, match.JudgmentPassed);
+            display.AddCross(config.GetGraphicsStyle("match-center"), center, match.JudgmentPassed);
 
             double angleRad = match.Angle * DEG2RAD;
             double lineLen = 20.0;
             var lineEnd = new WpfPoint(
                 match.CenterX + lineLen * Math.Cos(angleRad),
                 match.CenterY + lineLen * Math.Sin(angleRad));
-            display.AddContour(config.AngleLineStyle,
+            display.AddContour(config.GetGraphicsStyle("angle-line"),
                 new[] { center, lineEnd }, match.JudgmentPassed);
         }
 
@@ -708,7 +698,7 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
             foreach (var chain in match.ContourChains)
             {
                 if (chain.Length < 2) continue;
-                display.AddContour(config.TemplateContourStyle,
+                display.AddContour(config.GetGraphicsStyle("template-contour"),
                     chain, match.JudgmentPassed, false);
             }
         }
@@ -719,7 +709,7 @@ public class ShapeMatchTool : IToolPlugin<ShapeMatchParameters, ShapeMatchResult
             float baseY = (float)match.CenterY;
             float baseX = (float)(match.CenterX + 10);
 
-            display.AddText(config.ScoreStyle, baseX, baseY, new[]
+            display.AddText(config.GetTextStyle("score"), baseX, baseY, new[]
             {
                 $"{match.TemplateName}",
                 $"S={match.Score:F3}",

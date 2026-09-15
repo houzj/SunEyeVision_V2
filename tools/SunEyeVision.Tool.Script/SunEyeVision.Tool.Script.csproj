@@ -19,10 +19,11 @@
     <EmbeddedResource Include="Resources\MinimalCode.txt" />
     <EmbeddedResource Include="Resources\DemoCode.txt" />
   </ItemGroup>
-  <!-- XAML 编译期 + C# 代码 (ICSharpCode.AvalonEdit.*) 都需要类型解析,
-       运行时由主程序 SunEyeVision.UI 统一加载,Directory.Build.targets Step 1.2 拦截
-       不让 AvalonEdit / Roslyn dll 复制到 plugins/<ToolName>/,工具目录保持干净。
-       (主程序已声明同名 PackageReference,Assembly.LoadFrom 时 CLR 在 probing 根找到) -->
+  <!-- AvalonEdit / Roslyn 属**平台能力**（宿主的脚本编辑器也在用同一份），故只作**编译期引用**、不随插件交付：
+         · 工具侧声明仅用于编译（XAML 编译期 + C# 类型解析）；
+         · 运行期由宿主提供同一份 —— 加载规则「宿主已加载 ⇒ 回宿主」保证类型身份唯一
+           （见《工具插件两目录模型架构-20260914-174613》§4.6）；
+         · 部署规则「宿主有的不带」保证它们不进入 plugins\<工具>\。 -->
   <ItemGroup>
     <PackageReference Include="AvalonEdit" Version="6.3.1.120" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0" />
@@ -30,34 +31,36 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" Version="4.12.0" />
     <PackageReference Include="OpenCvSharp4" Version="4.13.0.20260222" PrivateAssets="All" />
     <!-- 编译期访问 Roslyn internal SignatureHelp 类型（对齐 RoslynPad 同款包）。
-         PrivateAssets=All：仅在编译期生成 IgnoresAccessChecksTo 属性，不复制任何 DLL 到输出，
-         插件目录依旧只含工具主程序集 + pdb（rule-016 §5.2 纯净）。 -->
+         PrivateAssets=All：仅在编译期生成 IgnoresAccessChecksTo 属性，不复制任何 DLL 到输出。 -->
     <PackageReference Include="IgnoresAccessChecksToGenerator" Version="0.4.0" PrivateAssets="All" />
   </ItemGroup>
   <ItemGroup>
     <!-- 宿主 API 编译期引用：脚本编译/补全需解析 HOperatorSet / Mat 类型元数据（类型锚定）。
          halcon 用 libs\halcon\net\ 源路径（对齐 Plugin.SDK，比 dev/Debug 稳定，不依赖构建顺序）；
          OpenCvSharp 用 NuGet（对齐主程序 UI 版本）。
-         Private=false：宿主统一加载，不复制到 plugins/（rule-016 纯净）。 -->
+         Private=false：仅编译期引用，不复制；运行期由宿主提供。 -->
     <Reference Include="halcondotnetxl">
       <HintPath>..\..\libs\halcon\net\halcondotnetxl.dll</HintPath>
       <Private>false</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <!-- CommonControl：**实际在使用** —— ScriptDebugControl.xaml:179 使用其 ScriptEditorCore 控件
+         （命名空间为 CommonControl，无 SunEyeVision. 前缀）。属"通用能力/公共控件" ⇒
+         按 §4.6 应提升为契约或下沉 SDK，见工作项 #10。 -->
     <ProjectReference Include="..\..\src\CommonControl\CommonControl.csproj">
       <Private>false</Private>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Plugin.SDK\SunEyeVision.Plugin.SDK.csproj">
       <Private>false</Private>
     </ProjectReference>
+    <!-- ⚠️ 待契约化（工作项 #10）：Script 目前直连宿主**源码层**类型 SunEyeVision.Workflow.Solution，
+         使工具无法在"无宿主源码"环境构建。应改为 SDK 契约接口（只读解决方案上下文），
+         见《工具插件两目录模型架构-20260914-174613》§4.6「通用能力应提升为契约」。 -->
     <ProjectReference Include="..\..\src\Workflow\SunEyeVision.Workflow.csproj">
       <Private>false</Private>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\SunEyeVision.CvEngine\SunEyeVision.CvEngine.csproj">
-      <Private>false</Private>
-    </ProjectReference>
-    <!-- 閫傞厤灞傜紪璇戞湡閿氬畾锛堣剼鏈紩鐢ㄥ€欓€?绫诲瀷瑙ｆ瀽鐢紱Private=false 涓嶅鍒讹紝瀹夸富缁熶竴鍔犺浇锛?-->
+    <!-- 平台适配层编译期锚定（脚本引用候选类型解析用）：Private=false 不复制，运行期由宿主提供。 -->
     <ProjectReference Include="..\..\src\SunEyeVision.HalAdapter\SunEyeVision.HalAdapter.csproj">
       <Private>false</Private>
     </ProjectReference>

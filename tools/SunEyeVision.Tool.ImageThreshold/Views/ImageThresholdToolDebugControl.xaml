@@ -3,18 +3,27 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:designParameters="clr-namespace:SunEyeVision.Tool.ImageThreshold"
         xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
+             xmlns:themes="clr-namespace:SunEyeVision.Plugin.SDK.UI.Themes;assembly=SunEyeVision.Plugin.SDK"
         xmlns:region="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views;assembly=SunEyeVision.Plugin.SDK"
         xmlns:converters="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Converters;assembly=SunEyeVision.Plugin.SDK"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:localConverters="clr-namespace:SunEyeVision.Tool.ImageThreshold.Converters"
         xmlns:results="clr-namespace:SunEyeVision.Plugin.SDK.Execution.Results;assembly=SunEyeVision.Plugin.SDK"
+        xmlns:presentation="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.ResultPresentation;assembly=SunEyeVision.Plugin.SDK"
         mc:Ignorable="d"
         d:DesignHeight="550" d:DesignWidth="400"
-        DataContext="{Binding Parameters, RelativeSource={RelativeSource Self}}">
+        d:DataContext="{d:DesignInstance Type=designParameters:ImageThresholdParameters, IsDesignTimeCreatable=True}"
+        DataContext="{Binding Parameters, RelativeSource={RelativeSource Self}}"
+        Background="{DynamicResource {x:Static themes:SdkThemeKeys.PanelBackgroundBrush}}"
+        Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}">
 
     <controls:ToolDebugControlBase.Resources>
         <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <themes:DesignTimeThemeResourceDictionary/>
+            </ResourceDictionary.MergedDictionaries>
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
             <localConverters:ThresholdMethodConverter x:Key="ThresholdMethodConverter"/>
         </ResourceDictionary>
@@ -449,62 +458,7 @@
 
           <ScrollViewer Grid.Row="0" Padding="3">
             <StackPanel>
-              <Expander Header="结果判断"
-                                      IsExpanded="True"
-                                      BorderBrush="{DynamicResource ThemeBorderBrush}"
-                                      BorderThickness="1"
-                                      Margin="0,0,0,8"
-                                      Background="{DynamicResource ThemePanelBackgroundBrush}">
-                <StackPanel Margin="16,8">
-                  <controls:LabeledControl Label="输出为空判断" ContentHorizontalAlignment="Left">
-                    <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsEmptyCheckEnabled, Mode=TwoWay}"/>
-                  </controls:LabeledControl>
-
-                  <controls:LabeledControl Label="白色像素比例" ContentHorizontalAlignment="Left" Margin="0,2,0,0">
-                    <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsWhitePixelRatioCheckEnabled, Mode=TwoWay}"/>
-                  </controls:LabeledControl>
-                  <controls:LabeledControl Label="白色像素比例 (%):"  Margin="0,2,0,0" ContentHorizontalAlignment="Left"
-                                           Visibility="{Binding ResultConfig.IsWhitePixelRatioCheckEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <controls:RangeInputControl
-                                            Unit="%"
-                                            Minimum="0"
-                                            Maximum="100"
-                                            MinValue="{Binding ResultConfig.WhitePixelRatioMin, Mode=TwoWay}"
-                                            MaxValue="{Binding ResultConfig.WhitePixelRatioMax, Mode=TwoWay}"
-                                            DecimalPlaces="1"
-                      SmallChange="1"
-                      NumericWidth="120"/>
-                  </controls:LabeledControl>
-
-                  <controls:LabeledControl Label="输出均值判断" ContentHorizontalAlignment="Left" Margin="0,2,0,0">
-                    <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsMeanCheckEnabled, Mode=TwoWay}"/>
-                  </controls:LabeledControl>
-                  <controls:LabeledControl Label="输出均值范围:" Margin="0,2,0,0"
-                                                            Visibility="{Binding ResultConfig.IsMeanCheckEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <controls:RangeInputControl
-                                            Unit=""
-                                            Minimum="0"
-                                            Maximum="255"
-                                            MinValue="{Binding ResultConfig.MeanMin, Mode=TwoWay}"
-                                            MaxValue="{Binding ResultConfig.MeanMax, Mode=TwoWay}"
-                                            DecimalPlaces="1" NumericWidth="120"/>
-                  </controls:LabeledControl>
-
-                  <controls:LabeledControl Label="输出面积判断" ContentHorizontalAlignment="Left" Margin="0,2,0,0">
-                    <controls:ToggleSwitch IsChecked="{Binding ResultConfig.IsAreaCheckEnabled, Mode=TwoWay}"/>
-                  </controls:LabeledControl>
-                  <controls:LabeledControl Label="输出面积范围 (px²):" Margin="0,2,0,0"
-                                                            Visibility="{Binding ResultConfig.IsAreaCheckEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <controls:RangeInputControl
-                                            Unit="px²"
-                                            Minimum="0"
-                                            Maximum="1000000"
-                                            MinValue="{Binding ResultConfig.AreaMin, Mode=TwoWay}"
-                                            MaxValue="{Binding ResultConfig.AreaMax, Mode=TwoWay}"
-                                            DecimalPlaces="0" NumericWidth="120"/>
-                  </controls:LabeledControl>
-                </StackPanel>
-              </Expander>
+              <presentation:JudgmentEditorControl ItemsSource="{Binding ResultPresentation.Judgments}"/>
             </StackPanel>
           </ScrollViewer>
         </Grid>

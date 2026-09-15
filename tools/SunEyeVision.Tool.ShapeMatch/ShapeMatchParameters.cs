@@ -1,9 +1,8 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Plugin.SDK.Validation;
 using SunEyeVision.Tool.ShapeMatch.Models;
 
@@ -110,7 +109,20 @@ public class ShapeMatchParameters : RoiParameters
     #region 结果判断配置
 
     /// <summary>结果判断配置与显示样式</summary>
-    public Models.ShapeMatchResultConfig ResultConfig { get; set; } = new();
+    public ResultPresentationConfig ResultPresentation { get; set; } = CreateResultPresentation();
+
+    private static ResultPresentationConfig CreateResultPresentation()
+    {
+        var config = new ResultPresentationConfig();
+        config.Judgments.Add(new() { Key = "match-count", Name = "匹配数量", Enabled = false, Min = 1, Max = 10, AllowedMinimum = 0, AllowedMaximum = 10000, DecimalPlaces = 0, Order = 10 });
+        config.Judgments.Add(new() { Key = "best-score", Name = "最佳匹配得分", Enabled = true, Min = 0, Max = 1, AllowedMinimum = 0, AllowedMaximum = 1, DecimalPlaces = 3, AffectsItemDisplayState = true, Order = 20 });
+        config.Graphics.Add(new() { Key = "match-box", Name = "匹配框", Order = 10, Style = new() { Name = "MatchBox", LineWidth = 2 } });
+        config.Graphics.Add(new() { Key = "match-center", Name = "匹配中心", Order = 20, Style = new() { Name = "MatchCenter", LineWidth = 2, CrossSize = 4 } });
+        config.Graphics.Add(new() { Key = "angle-line", Name = "角度指示线", Order = 30, Style = new() { Name = "AngleLine", LineWidth = 1 } });
+        config.Graphics.Add(new() { Key = "template-contour", Name = "模板轮廓", Order = 40, Style = new() { Name = "TemplateContour", LineWidth = 1 } });
+        config.Texts.Add(new() { Key = "score", Name = "匹配信息", Order = 10, Style = new() { Name = "Score", FontSize = 12.0, PositionX = 0, PositionY = 0 } });
+        return config;
+    }
 
     #endregion
 

@@ -4,14 +4,20 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
+             xmlns:themes="clr-namespace:SunEyeVision.Plugin.SDK.UI.Themes;assembly=SunEyeVision.Plugin.SDK"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:local="clr-namespace:SunEyeVision.Tool.Condition.Views"
         mc:Ignorable="d"
         d:DesignHeight="560" d:DesignWidth="960"
-        HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+        Background="{DynamicResource {x:Static themes:SdkThemeKeys.PanelBackgroundBrush}}"
+        Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}">
 
     <controls:ToolDebugControlBase.Resources>
         <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <themes:DesignTimeThemeResourceDictionary/>
+            </ResourceDictionary.MergedDictionaries>
             <local:ConditionTypeConverter x:Key="ConditionTypeConverter"/>
             <Style TargetType="Button">
                 <Setter Property="Padding" Value="6,2"/>

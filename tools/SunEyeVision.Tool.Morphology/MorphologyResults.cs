@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
 
 namespace SunEyeVision.Tool.Morphology
@@ -139,32 +138,6 @@ namespace SunEyeVision.Tool.Morphology
         #endregion
 
         #region 可视化与属性映射
-
-        /// <summary>内部默认文本样式</summary>
-        private static readonly TextStyle DefaultTextStyle = new()
-        {
-            Name = "MorphologyInfo",
-            FontSize = 11.0,
-            PositionX = 10,
-            PositionY = 22
-        };
-
-        /// <summary>
-        /// 构建显示项
-        /// </summary>
-        public void BuildDisplayItems()
-        {
-            _display.Clear();
-            if (InputWidth <= 0 || InputHeight <= 0) return;
-
-            var resultText = IsPass ? "OK" : "NG";
-
-            _display.AddText(DefaultTextStyle, DefaultTextStyle.PositionX, DefaultTextStyle.PositionY, new[]
-            {
-                $"操作: {OperationUsed}  核: {KernelWidthUsed}x{KernelHeightUsed}",
-                $"Blob数: {BlobCount}  总面积: {TotalArea}  {resultText}"
-            });
-        }
 
         /// <summary>
         /// 获取属性映射表

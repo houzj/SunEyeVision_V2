@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -36,7 +36,7 @@ namespace SunEyeVision.Tool.ImageThreshold
         Version = "1.0.0",
         HasDebugWindow = true
     )]
-    public class ImageThresholdTool : IToolPlugin<ImageThresholdParameters, ImageThresholdResults>
+    public class ImageThresholdTool : IToolPlugin<ImageThresholdParameters, ImageThresholdResults>, IToolEditorFactory
     {
         private readonly ToolAttribute? _attribute;
 
@@ -280,7 +280,7 @@ namespace SunEyeVision.Tool.ImageThreshold
 
                                 // ===== Step 6: 结果判断 =====
                                 stepSw.Restart();
-                                EvaluateResult(result, parameters.ResultConfig);
+                                EvaluateResult(result, parameters.ResultPresentation);
                                 stepSw.Stop();
                                 stepTimings.Add(("结果判断", stepSw.ElapsedMilliseconds));
 
@@ -435,53 +435,19 @@ namespace SunEyeVision.Tool.ImageThreshold
         /// <summary>
         /// 执行结果判断
         /// </summary>
-        private void EvaluateResult(ImageThresholdResults result, Models.ImageThresholdResultConfig config)
+        private static void EvaluateResult(ImageThresholdResults result, ResultPresentationConfig config)
         {
-            if (config == null) return;
-
-            var failReasons = new List<string>();
-            var allPassed = true;
-
-            if (config.IsEmptyCheckEnabled)
+            var outcomes = ResultJudgmentEvaluator.EvaluateRanges(config.Judgments, key => key switch
             {
-                if (result.OutputImage == null || result.OutputImage.IsEmpty)
-                {
-                    allPassed = false;
-                    failReasons.Add("输出图像为空");
-                }
-            }
-
-            if (config.IsWhitePixelRatioCheckEnabled)
-            {
-                if (result.WhitePixelRatio < config.WhitePixelRatioMin || result.WhitePixelRatio > config.WhitePixelRatioMax)
-                {
-                    allPassed = false;
-                    failReasons.Add($"白色像素比例 {result.WhitePixelRatio:F1}% 不在范围 [{config.WhitePixelRatioMin}-{config.WhitePixelRatioMax}]");
-                }
-            }
-
-            if (config.IsMeanCheckEnabled)
-            {
-                if (result.OutputMean < config.MeanMin || result.OutputMean > config.MeanMax)
-                {
-                    allPassed = false;
-                    failReasons.Add($"输出均值 {result.OutputMean:F1} 不在范围 [{config.MeanMin}-{config.MeanMax}]");
-                }
-            }
-
-            if (config.IsAreaCheckEnabled)
-            {
-                if (result.OutputArea < config.AreaMin || result.OutputArea > config.AreaMax)
-                {
-                    allPassed = false;
-                    failReasons.Add($"输出面积 {result.OutputArea} 不在范围 [{config.AreaMin}-{config.AreaMax}]");
-                }
-            }
-
-            result.IsPass = allPassed;
-            result.FailReasons = failReasons;
+                "output-not-empty" => result.OutputImage is { IsEmpty: false } ? 1 : 0,
+                "white-ratio" => result.WhitePixelRatio,
+                "mean" => result.OutputMean,
+                "area" => result.OutputArea,
+                _ => null,
+            });
+            result.IsPass = ResultJudgmentEvaluator.IsAllPass(outcomes);
+            result.FailReasons = outcomes.Where(item => !item.IsPass).Select(item => item.Message).ToList();
         }
-
         #endregion
     }
 }

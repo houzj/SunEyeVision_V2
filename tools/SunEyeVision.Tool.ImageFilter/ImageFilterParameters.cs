@@ -3,7 +3,6 @@ using System.ComponentModel;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Validation;
-using SunEyeVision.Tool.ImageFilter.Models;
 
 namespace SunEyeVision.Tool.ImageFilter
 {
@@ -258,7 +257,7 @@ namespace SunEyeVision.Tool.ImageFilter
         /// <summary>
         /// 结果判断配置
         /// </summary>
-        public ImageFilterResultConfig ResultConfig { get; set; } = new();
+        public ResultPresentationConfig ResultPresentation { get; set; } = CreateResultPresentation();
 
         #endregion
 
@@ -294,19 +293,24 @@ namespace SunEyeVision.Tool.ImageFilter
         /// </summary>
         private void ValidateResultConfig(ValidationResult result)
         {
-            if (ResultConfig == null)
+            if (ResultPresentation == null)
             {
                 result.AddError("结果判断配置不能为空");
                 return;
             }
 
-            if (ResultConfig.IsMeanCheckEnabled)
-            {
-                if (ResultConfig.MeanMin >= ResultConfig.MeanMax)
-                    result.AddError($"输出均值最小值({ResultConfig.MeanMin})必须小于最大值({ResultConfig.MeanMax})");
-            }
+            foreach (var item in ResultPresentation.Judgments)
+                if (item.Enabled && item.RuleKind == JudgmentRuleKind.Range && item.Min >= item.Max)
+                    result.AddError($"{item.Name}最小值({item.Min})必须小于最大值({item.Max})");
         }
 
+        private static ResultPresentationConfig CreateResultPresentation()
+        {
+            var config = new ResultPresentationConfig();
+            config.Judgments.Add(new() { Key = "output-not-empty", Name = "输出不为空", RuleKind = JudgmentRuleKind.Boolean, Enabled = false, Order = 10 });
+            config.Judgments.Add(new() { Key = "mean", Name = "输出均值", Enabled = false, Min = 0, Max = 255, AllowedMinimum = 0, AllowedMaximum = 255, DecimalPlaces = 1, Order = 20 });
+            return config;
+        }
         /// <summary>
         /// 获取滤波类型选项
         /// </summary>

@@ -1,3 +1,4 @@
+﻿using System.Linq;
 using System.Windows.Media;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -5,7 +6,6 @@ using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Plugin.SDK.Validation;
-using SunEyeVision.Tool.BlobAnalysis.Models;
 
 namespace SunEyeVision.Tool.BlobAnalysis
 {
@@ -87,7 +87,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
     /// <remarks>
     /// 参数类继承 RoiParameters，自带区域管理功能。
     /// 使用 ParamValue 包装器，统一管理参数值和绑定配置。
-    /// 
+    ///
     /// 多态序列化（rule-010: 方案系统实现规范）：
     /// 使用 [JsonDerivedType] 特性标识参数类型，类型标识符为 "BlobAnalysis"。
     /// </remarks>
@@ -291,7 +291,31 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// <summary>
         /// 结果判断配置
         /// </summary>
-        public BlobAnalysisResultConfig ResultConfig { get; set; } = new();
+        public ResultPresentationConfig ResultPresentation { get; set; } = CreateResultPresentation();
+
+        private static ResultPresentationConfig CreateResultPresentation()
+        {
+            var config = new ResultPresentationConfig();
+            config.Judgments.Add(new() { Key = "output-not-empty", Name = "输出不为空", RuleKind = JudgmentRuleKind.Boolean, Enabled = false, Order = 10 });
+            config.Judgments.Add(new() { Key = "white-ratio", Name = "白色像素比例", Enabled = false, Min = 0, Max = 100, Unit = "%", AllowedMinimum = 0, AllowedMaximum = 100, Order = 20 });
+            config.Judgments.Add(new() { Key = "blob-count", Name = "Blob数量", Enabled = false, Min = 0, Max = 9999, AllowedMinimum = 0, AllowedMaximum = 999999, DecimalPlaces = 0, Order = 30 });
+            config.Judgments.Add(new() { Key = "total-area", Name = "总面积", Enabled = false, Min = 0, Max = 10000000, Unit = "px²", AllowedMinimum = 0, Order = 40 });
+            config.Judgments.Add(new() { Key = "average-area", Name = "平均面积", Enabled = false, Min = 0, Max = 10000000, Unit = "px²", AllowedMinimum = 0, Order = 50 });
+            config.Judgments.Add(new() { Key = "max-area", Name = "最大面积", Enabled = false, Min = 0, Max = 10000000, Unit = "px²", AllowedMinimum = 0, Order = 60 });
+            config.Judgments.Add(new() { Key = "min-area", Name = "最小面积", Enabled = false, Min = 0, Max = 10000000, Unit = "px²", AllowedMinimum = 0, Order = 70 });
+            config.Judgments.Add(new() { Key = "average-circularity", Name = "平均圆度", Enabled = false, Min = 0, Max = 1, AllowedMinimum = 0, AllowedMaximum = 1, DecimalPlaces = 3, Order = 80 });
+            config.Judgments.Add(new() { Key = "average-rectangularity", Name = "平均矩形度", Enabled = false, Min = 0, Max = 1, AllowedMinimum = 0, AllowedMaximum = 1, DecimalPlaces = 3, Order = 90 });
+            config.Judgments.Add(new() { Key = "per-blob-area", Name = "每个Blob面积", Scope = JudgmentScope.PerItem, AffectsItemDisplayState = true, Enabled = false, Min = 0, Max = 10000000, Unit = "px²", AllowedMinimum = 0, Order = 100 });
+            config.Judgments.Add(new() { Key = "per-blob-circularity", Name = "每个Blob圆度", Scope = JudgmentScope.PerItem, AffectsItemDisplayState = true, Enabled = false, Min = 0, Max = 1, AllowedMinimum = 0, AllowedMaximum = 1, DecimalPlaces = 3, Order = 110 });
+            config.Judgments.Add(new() { Key = "per-blob-rectangularity", Name = "每个Blob矩形度", Scope = JudgmentScope.PerItem, AffectsItemDisplayState = true, Enabled = false, Min = 0, Max = 1, AllowedMinimum = 0, AllowedMaximum = 1, DecimalPlaces = 3, Order = 120 });
+            config.Graphics.Add(new() { Key = "blobs", Name = "外接矩形", Order = 10, Style = new() { Name = "Blobs", LineWidth = 2 } });
+            config.Graphics.Add(new() { Key = "centroids", Name = "质心", Order = 20, Style = new() { Name = "Centroids", LineWidth = 2, CrossSize = 8 } });
+            config.Graphics.Add(new() { Key = "contours", Name = "轮廓", Order = 30, Style = new() { Name = "Contours", LineWidth = 1 } });
+            config.Graphics.Add(new() { Key = "inspection-roi", Name = "检测区", Order = 40, Style = new() { Name = "InspectionRoi", LineWidth = 1, OkColor = Color.FromRgb(0, 0, 255) } });
+            config.Graphics.Add(new() { Key = "mask-roi", Name = "屏蔽区", Order = 50, Style = new() { Name = "MaskRoi", LineWidth = 1, OkColor = Color.FromRgb(0xFF, 0xA5, 0x00) } });
+            config.Texts.Add(new() { Key = "area", Name = "面积列表", Order = 10, Style = new() { Name = "AreaDisplay", FontSize = 9.0, PositionX = 0, PositionY = 0 } });
+            return config;
+        }
 
         #region 排序方式
 
@@ -305,32 +329,21 @@ namespace SunEyeVision.Tool.BlobAnalysis
         #endregion
 
         /// <summary>外接矩形样式</summary>
-        public GraphicsStyle BlobsStyle { get; set; } = new() { Name = "Blobs", LineWidth = 2 };
 
-        /// <summary>质心标记样式</summary>
-        public GraphicsStyle CentroidsStyle { get; set; } = new() { Name = "Centroids", LineWidth = 2, CrossSize = 8 };
-
-        /// <summary>轮廓样式</summary>
-        public GraphicsStyle ContoursStyle { get; set; } = new() { Name = "Contours", LineWidth = 1 };
-
-        /// <summary>面积列表样式</summary>
-        public TextStyle AreaDisplayStyle { get; set; } = new() { Name = "AreaDisplay", FontSize = 9.0, PositionX = 0, PositionY = 0 };
 
         /// <summary>检测区边框样式（默认蓝色 #0000FF，与 ROI 编辑器检测区一致）</summary>
-        public override GraphicsStyle InspectionRoiStyle { get; set; } = new()
+        public override GraphicsStyle InspectionRoiStyle
         {
-            Name = "InspectionRoi",
-            LineWidth = 1,
-            OkColor = Color.FromRgb(0, 0, 255)
-        };
+            get => ResultPresentation.GetGraphicsStyle("inspection-roi");
+            set => ResultPresentation.Graphics.Single(item => item.Key == "inspection-roi").Style = value;
+        }
 
         /// <summary>屏蔽区边框样式（默认橙色 #FFA500，与 ROI 编辑器屏蔽区一致）</summary>
-        public override GraphicsStyle MaskRoiStyle { get; set; } = new()
+        public override GraphicsStyle MaskRoiStyle
         {
-            Name = "MaskRoi",
-            LineWidth = 1,
-            OkColor = Color.FromRgb(0xFF, 0xA5, 0x00)
-        };
+            get => ResultPresentation.GetGraphicsStyle("mask-roi");
+            set => ResultPresentation.Graphics.Single(item => item.Key == "mask-roi").Style = value;
+        }
 
         #endregion
 
@@ -407,146 +420,21 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// </summary>
         private void ValidateResultConfig(ValidationResult result)
         {
-            if (ResultConfig == null)
+            if (ResultPresentation == null)
             {
                 result.AddError("结果判断配置不能为空");
                 return;
             }
 
-            // 白色像素比例范围验证
-            if (ResultConfig.IsWhitePixelRatioCheckEnabled)
+            foreach (var item in ResultPresentation.Judgments)
             {
-                if (ResultConfig.WhitePixelRatioMin >= ResultConfig.WhitePixelRatioMax)
-                {
-                    result.AddError($"白色像素比例最小值({ResultConfig.WhitePixelRatioMin})必须小于最大值({ResultConfig.WhitePixelRatioMax})");
-                }
-            }
-
-            // Blob数量范围验证
-            if (ResultConfig.IsBlobCountCheckEnabled)
-            {
-                if (ResultConfig.BlobCountMin >= ResultConfig.BlobCountMax)
-                {
-                    result.AddError($"Blob数量最小值({ResultConfig.BlobCountMin})必须小于最大值({ResultConfig.BlobCountMax})");
-                }
-            }
-
-            // 总面积范围验证
-            if (ResultConfig.IsTotalAreaCheckEnabled)
-            {
-                if (ResultConfig.TotalAreaMin >= ResultConfig.TotalAreaMax)
-                {
-                    result.AddError($"总面积最小值({ResultConfig.TotalAreaMin})必须小于最大值({ResultConfig.TotalAreaMax})");
-                }
-            }
-
-            // 平均面积范围验证
-            if (ResultConfig.IsAverageAreaCheckEnabled)
-            {
-                if (ResultConfig.AverageAreaMin >= ResultConfig.AverageAreaMax)
-                {
-                    result.AddError($"平均面积最小值({ResultConfig.AverageAreaMin})必须小于最大值({ResultConfig.AverageAreaMax})");
-                }
-            }
-
-            // 最大面积范围验证
-            if (ResultConfig.IsMaxAreaCheckEnabled)
-            {
-                if (ResultConfig.MaxAreaMin >= ResultConfig.MaxAreaMax)
-                {
-                    result.AddError($"最大面积最小值({ResultConfig.MaxAreaMin})必须小于最大值({ResultConfig.MaxAreaMax})");
-                }
-            }
-
-            // 最小面积范围验证
-            if (ResultConfig.IsMinAreaCheckEnabled)
-            {
-                if (ResultConfig.MinAreaMin >= ResultConfig.MinAreaMax)
-                {
-                    result.AddError($"最小面积最小值({ResultConfig.MinAreaMin})必须小于最大值({ResultConfig.MinAreaMax})");
-                }
-            }
-
-            // 平均圆度范围验证
-            if (ResultConfig.IsAverageCircularityCheckEnabled)
-            {
-                if (ResultConfig.AverageCircularityMin < 0 || ResultConfig.AverageCircularityMin > 1.0)
-                {
-                    result.AddError($"平均圆度最小值({ResultConfig.AverageCircularityMin})必须在 0-1 范围内");
-                }
-                if (ResultConfig.AverageCircularityMax < 0 || ResultConfig.AverageCircularityMax > 1.0)
-                {
-                    result.AddError($"平均圆度最大值({ResultConfig.AverageCircularityMax})必须在 0-1 范围内");
-                }
-                if (ResultConfig.AverageCircularityMin >= ResultConfig.AverageCircularityMax)
-                {
-                    result.AddError($"平均圆度最小值({ResultConfig.AverageCircularityMin})必须小于最大值({ResultConfig.AverageCircularityMax})");
-                }
-            }
-
-            // 平均矩形度范围验证
-            if (ResultConfig.IsAverageRectangularityCheckEnabled)
-            {
-                if (ResultConfig.AverageRectangularityMin < 0 || ResultConfig.AverageRectangularityMin > 1.0)
-                {
-                    result.AddError($"平均矩形度最小值({ResultConfig.AverageRectangularityMin})必须在 0-1 范围内");
-                }
-                if (ResultConfig.AverageRectangularityMax < 0 || ResultConfig.AverageRectangularityMax > 1.0)
-                {
-                    result.AddError($"平均矩形度最大值({ResultConfig.AverageRectangularityMax})必须在 0-1 范围内");
-                }
-                if (ResultConfig.AverageRectangularityMin >= ResultConfig.AverageRectangularityMax)
-                {
-                    result.AddError($"平均矩形度最小值({ResultConfig.AverageRectangularityMin})必须小于最大值({ResultConfig.AverageRectangularityMax})");
-                }
-            }
-
-            // ===== Per-Blob判断验证 =====
-
-            // 每个Blob面积范围验证
-            if (ResultConfig.IsPerBlobAreaCheckEnabled)
-            {
-                if (ResultConfig.PerBlobAreaMin >= ResultConfig.PerBlobAreaMax)
-                {
-                    result.AddError($"每个Blob面积最小值({ResultConfig.PerBlobAreaMin})必须小于最大值({ResultConfig.PerBlobAreaMax})");
-                }
-            }
-
-            // 每个Blob圆度范围验证
-            if (ResultConfig.IsPerBlobCircularityCheckEnabled)
-            {
-                if (ResultConfig.PerBlobCircularityMin < 0 || ResultConfig.PerBlobCircularityMin > 1.0)
-                {
-                    result.AddError($"每个Blob圆度最小值({ResultConfig.PerBlobCircularityMin})必须在 0-1 范围内");
-                }
-                if (ResultConfig.PerBlobCircularityMax < 0 || ResultConfig.PerBlobCircularityMax > 1.0)
-                {
-                    result.AddError($"每个Blob圆度最大值({ResultConfig.PerBlobCircularityMax})必须在 0-1 范围内");
-                }
-                if (ResultConfig.PerBlobCircularityMin >= ResultConfig.PerBlobCircularityMax)
-                {
-                    result.AddError($"每个Blob圆度最小值({ResultConfig.PerBlobCircularityMin})必须小于最大值({ResultConfig.PerBlobCircularityMax})");
-                }
-            }
-
-            // 每个Blob矩形度范围验证
-            if (ResultConfig.IsPerBlobRectangularityCheckEnabled)
-            {
-                if (ResultConfig.PerBlobRectangularityMin < 0 || ResultConfig.PerBlobRectangularityMin > 1.0)
-                {
-                    result.AddError($"每个Blob矩形度最小值({ResultConfig.PerBlobRectangularityMin})必须在 0-1 范围内");
-                }
-                if (ResultConfig.PerBlobRectangularityMax < 0 || ResultConfig.PerBlobRectangularityMax > 1.0)
-                {
-                    result.AddError($"每个Blob矩形度最大值({ResultConfig.PerBlobRectangularityMax})必须在 0-1 范围内");
-                }
-                if (ResultConfig.PerBlobRectangularityMin >= ResultConfig.PerBlobRectangularityMax)
-                {
-                    result.AddError($"每个Blob矩形度最小值({ResultConfig.PerBlobRectangularityMin})必须小于最大值({ResultConfig.PerBlobRectangularityMax})");
-                }
+                if (!item.Enabled || item.RuleKind != JudgmentRuleKind.Range) continue;
+                if (item.Min < item.AllowedMinimum || item.Max > item.AllowedMaximum)
+                    result.AddError($"{item.Name}范围必须在 {item.AllowedMinimum}~{item.AllowedMaximum} 内");
+                if (item.Min >= item.Max)
+                    result.AddError($"{item.Name}最小值({item.Min})必须小于最大值({item.Max})");
             }
         }
-
         /// <summary>
         /// 获取阈值类型选项
         /// </summary>

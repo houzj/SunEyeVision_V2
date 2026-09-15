@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:themes="clr-namespace:SunEyeVision.Plugin.SDK.UI.Themes;assembly=SunEyeVision.Plugin.SDK"
         xmlns:converters="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Converters;assembly=SunEyeVision.Plugin.SDK"
         mc:Ignorable="d"
         d:DesignHeight="350" d:DesignWidth="700">
@@ -29,30 +30,30 @@
 
                 <StackPanel Grid.Column="0" Margin="0,0,12,0" VerticalAlignment="Center" Orientation="Horizontal">
                     <TextBlock Text="阈值: " Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
-                    <TextBlock Text="{Binding ThresholdValue, StringFormat='{}{0:F0}', Mode=OneWay}" FontWeight="Bold" Foreground="#2196F3"/>
+                    <TextBlock Text="{Binding ThresholdValue, StringFormat='{}{0:F0}', Mode=OneWay}" FontWeight="Bold" Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.DataSeries1Brush}}"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" Margin="0,0,12,0" VerticalAlignment="Center" Orientation="Horizontal">
                     <TextBlock Text="最大值: " Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
-                    <TextBlock Text="{Binding MaxValue, StringFormat='{}{0:F0}', Mode=OneWay}" FontWeight="Bold" Foreground="#4CAF50"/>
+                    <TextBlock Text="{Binding MaxValue, StringFormat='{}{0:F0}', Mode=OneWay}" FontWeight="Bold" Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.DataSeries2Brush}}"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="2" Margin="0,0,12,0" VerticalAlignment="Center" Orientation="Horizontal">
                     <TextBlock Text="类型: " Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
-                    <TextBlock Text="{Binding ThresholdTypeName, Mode=OneWay}" Foreground="#FF9800"/>
+                    <TextBlock Text="{Binding ThresholdTypeName, Mode=OneWay}" Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.DataSeries3Brush}}"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="3" Margin="0,0,12,0" VerticalAlignment="Center" Orientation="Horizontal">
                     <TextBlock Text="白色比例: " Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
-                    <TextBlock Text="{Binding WhiteRatio, StringFormat='{}{0:F1}%', Mode=OneWay}" Foreground="#E91E63"/>
+                    <TextBlock Text="{Binding WhiteRatio, StringFormat='{}{0:F1}%', Mode=OneWay}" Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.DataSeries4Brush}}"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="4" Margin="0,0,12,0" VerticalAlignment="Center" Orientation="Horizontal">
                     <TextBlock Text="面积: " Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
-                    <TextBlock Text="{Binding OutputArea, StringFormat='{}{0}', Mode=OneWay}" Foreground="#9C27B0"/>
+                    <TextBlock Text="{Binding OutputArea, StringFormat='{}{0}', Mode=OneWay}" Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.DataSeries5Brush}}"/>
                 </StackPanel>
 
-                <TextBlock Grid.Column="5" VerticalAlignment="Center" Text="{Binding AdaptiveText, Mode=OneWay}" Foreground="#607D8B" FontSize="11"/>
+                <TextBlock Grid.Column="5" VerticalAlignment="Center" Text="{Binding AdaptiveText, Mode=OneWay}" Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.DataSeriesMutedBrush}}" FontSize="11"/>
             </Grid>
         </Border>
 

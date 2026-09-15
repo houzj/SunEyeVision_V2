@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -33,7 +33,7 @@ namespace SunEyeVision.Tool.ImageFilter
         Version = "1.0.0",
         HasDebugWindow = true
     )]
-    public class ImageFilterTool : IToolPlugin<ImageFilterParameters, ImageFilterResults>
+    public class ImageFilterTool : IToolPlugin<ImageFilterParameters, ImageFilterResults>, IToolEditorFactory
     {
         private readonly ToolAttribute? _attribute;
 
@@ -221,7 +221,7 @@ namespace SunEyeVision.Tool.ImageFilter
 
                                 // ===== Step 6: 结果判断 =====
                                 stepSw.Restart();
-                                EvaluateResult(result, parameters.ResultConfig);
+                                EvaluateResult(result, parameters.ResultPresentation);
                                 stepSw.Stop();
                                 stepTimings.Add(("结果判断", stepSw.ElapsedMilliseconds));
 
@@ -327,35 +327,17 @@ namespace SunEyeVision.Tool.ImageFilter
         /// <summary>
         /// 执行结果判断
         /// </summary>
-        private void EvaluateResult(ImageFilterResults result, Models.ImageFilterResultConfig config)
+        private static void EvaluateResult(ImageFilterResults result, ResultPresentationConfig config)
         {
-            if (config == null) return;
-
-            var failReasons = new List<string>();
-            var allPassed = true;
-
-            if (config.IsEmptyCheckEnabled)
+            var outcomes = ResultJudgmentEvaluator.EvaluateRanges(config.Judgments, key => key switch
             {
-                if (result.OutputImage == null || result.OutputImage.IsEmpty)
-                {
-                    allPassed = false;
-                    failReasons.Add("输出图像为空");
-                }
-            }
-
-            if (config.IsMeanCheckEnabled)
-            {
-                if (result.OutputMean < config.MeanMin || result.OutputMean > config.MeanMax)
-                {
-                    allPassed = false;
-                    failReasons.Add($"输出均值 {result.OutputMean:F1} 不在范围 [{config.MeanMin}-{config.MeanMax}]");
-                }
-            }
-
-            result.IsPass = allPassed;
-            result.FailReasons = failReasons;
+                "output-not-empty" => result.OutputImage is { IsEmpty: false } ? 1 : 0,
+                "mean" => result.OutputMean,
+                _ => null,
+            });
+            result.IsPass = ResultJudgmentEvaluator.IsAllPass(outcomes);
+            result.FailReasons = outcomes.Where(item => !item.IsPass).Select(item => item.Message).ToList();
         }
-
         #endregion
     }
 }

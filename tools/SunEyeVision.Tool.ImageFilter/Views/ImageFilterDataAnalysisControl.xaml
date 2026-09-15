@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:themes="clr-namespace:SunEyeVision.Plugin.SDK.UI.Themes;assembly=SunEyeVision.Plugin.SDK"
         xmlns:converters="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Converters;assembly=SunEyeVision.Plugin.SDK"
         mc:Ignorable="d"
         d:DesignHeight="350" d:DesignWidth="700">
@@ -29,32 +30,32 @@
 
                 <StackPanel Grid.Column="0" Margin="0,0,12,0" VerticalAlignment="Center" Orientation="Horizontal">
                     <TextBlock Text="滤波类型: " Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
-                    <TextBlock Text="{Binding FilterTypeName, Mode=OneWay}" FontWeight="Bold" Foreground="#2196F3"/>
+                    <TextBlock Text="{Binding FilterTypeName, Mode=OneWay}" FontWeight="Bold" Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.DataSeries1Brush}}"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" Margin="0,0,12,0" VerticalAlignment="Center" Orientation="Horizontal">
                     <TextBlock Text="内核: " Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
-                    <TextBlock Text="{Binding KernelText, Mode=OneWay}" FontWeight="Bold" Foreground="#4CAF50"/>
+                    <TextBlock Text="{Binding KernelText, Mode=OneWay}" FontWeight="Bold" Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.DataSeries2Brush}}"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="2" Margin="0,0,12,0" VerticalAlignment="Center" Orientation="Horizontal">
                     <TextBlock Text="均值: " Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
-                    <TextBlock Text="{Binding MeanValue, StringFormat='{}{0:F1}', Mode=OneWay}" Foreground="#FF9800"/>
+                    <TextBlock Text="{Binding MeanValue, StringFormat='{}{0:F1}', Mode=OneWay}" Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.DataSeries3Brush}}"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="3" Margin="0,0,12,0" VerticalAlignment="Center" Orientation="Horizontal">
                     <TextBlock Text="标准差: " Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
-                    <TextBlock Text="{Binding StdValue, StringFormat='{}{0:F1}', Mode=OneWay}" Foreground="#E91E63"/>
+                    <TextBlock Text="{Binding StdValue, StringFormat='{}{0:F1}', Mode=OneWay}" Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.DataSeries4Brush}}"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="4" Margin="0,0,12,0" VerticalAlignment="Center" Orientation="Horizontal">
                     <TextBlock Text="最小值: " Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
-                    <TextBlock Text="{Binding MinValue, StringFormat='{}{0:F1}', Mode=OneWay}" Foreground="#9C27B0"/>
+                    <TextBlock Text="{Binding MinValue, StringFormat='{}{0:F1}', Mode=OneWay}" Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.DataSeries5Brush}}"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="5" VerticalAlignment="Center" Orientation="Horizontal">
                     <TextBlock Text="最大值: " Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11"/>
-                    <TextBlock Text="{Binding MaxValue, StringFormat='{}{0:F1}', Mode=OneWay}" FontSize="11" Foreground="#607D8B"/>
+                    <TextBlock Text="{Binding MaxValue, StringFormat='{}{0:F1}', Mode=OneWay}" FontSize="11" Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.DataSeriesMutedBrush}}"/>
                 </StackPanel>
             </Grid>
         </Border>

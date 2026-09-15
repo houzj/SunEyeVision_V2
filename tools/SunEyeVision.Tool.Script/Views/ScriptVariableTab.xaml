@@ -124,14 +124,17 @@
                                            Foreground="{DynamicResource ThemeAccentBrush}" FontSize="12"/>
                                 <!-- 叶子节点：Name 同行追加 " DisplayValue" -->
                                 <TextBlock Margin="4,0,0,0" FontSize="11" FontStyle="Italic"
-                                           Foreground="{Binding ValueBrush}"
                                            Text="{Binding DisplayValue}">
                                     <TextBlock.Style>
                                         <Style TargetType="TextBlock">
                                             <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Setter Property="Foreground" Value="{DynamicResource ThemeTextPrimaryBrush}"/>
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding HasChildren}" Value="False">
                                                     <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding HasValue}" Value="False">
+                                                    <Setter Property="Foreground" Value="{DynamicResource ThemeTextDisabledBrush}"/>
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>

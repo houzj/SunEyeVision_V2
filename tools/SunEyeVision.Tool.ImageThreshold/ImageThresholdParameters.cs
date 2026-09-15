@@ -3,7 +3,6 @@ using System.ComponentModel;
 using System.Text.Json.Serialization;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Validation;
-using SunEyeVision.Tool.ImageThreshold.Models;
 
 namespace SunEyeVision.Tool.ImageThreshold
 {
@@ -278,7 +277,7 @@ namespace SunEyeVision.Tool.ImageThreshold
         /// <summary>
         /// 结果判断配置
         /// </summary>
-        public ImageThresholdResultConfig ResultConfig { get; set; } = new();
+        public ResultPresentationConfig ResultPresentation { get; set; } = CreateResultPresentation();
 
         #endregion
 
@@ -355,35 +354,25 @@ namespace SunEyeVision.Tool.ImageThreshold
         /// </summary>
         private void ValidateResultConfig(ValidationResult result)
         {
-            if (ResultConfig == null)
+            if (ResultPresentation == null)
             {
                 result.AddError("结果判断配置不能为空");
                 return;
             }
 
-            if (ResultConfig.IsWhitePixelRatioCheckEnabled)
-            {
-                if (ResultConfig.WhitePixelRatioMin >= ResultConfig.WhitePixelRatioMax)
-                {
-                    result.AddError($"白色像素比例最小值({ResultConfig.WhitePixelRatioMin})必须小于最大值({ResultConfig.WhitePixelRatioMax})");
-                }
-            }
+            foreach (var item in ResultPresentation.Judgments)
+                if (item.Enabled && item.RuleKind == JudgmentRuleKind.Range && item.Min >= item.Max)
+                    result.AddError($"{item.Name}最小值({item.Min})必须小于最大值({item.Max})");
+        }
 
-            if (ResultConfig.IsMeanCheckEnabled)
-            {
-                if (ResultConfig.MeanMin >= ResultConfig.MeanMax)
-                {
-                    result.AddError($"输出均值最小值({ResultConfig.MeanMin})必须小于最大值({ResultConfig.MeanMax})");
-                }
-            }
-
-            if (ResultConfig.IsAreaCheckEnabled)
-            {
-                if (ResultConfig.AreaMin >= ResultConfig.AreaMax)
-                {
-                    result.AddError($"输出面积最小值({ResultConfig.AreaMin})必须小于最大值({ResultConfig.AreaMax})");
-                }
-            }
+        private static ResultPresentationConfig CreateResultPresentation()
+        {
+            var config = new ResultPresentationConfig();
+            config.Judgments.Add(new() { Key = "output-not-empty", Name = "输出不为空", RuleKind = JudgmentRuleKind.Boolean, Enabled = false, Order = 10 });
+            config.Judgments.Add(new() { Key = "white-ratio", Name = "白色像素比例", Enabled = false, Min = 0, Max = 100, Unit = "%", AllowedMinimum = 0, AllowedMaximum = 100, DecimalPlaces = 1, Order = 20 });
+            config.Judgments.Add(new() { Key = "mean", Name = "输出均值", Enabled = false, Min = 0, Max = 255, AllowedMinimum = 0, AllowedMaximum = 255, DecimalPlaces = 1, Order = 30 });
+            config.Judgments.Add(new() { Key = "area", Name = "输出面积", Enabled = false, Min = 0, Max = 1000000, Unit = "px²", AllowedMinimum = 0, AllowedMaximum = 1000000, DecimalPlaces = 0, Order = 40 });
+            return config;
         }
     }
 }

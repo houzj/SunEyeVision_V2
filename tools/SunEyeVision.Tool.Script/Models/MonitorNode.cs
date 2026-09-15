@@ -1,5 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using System.Windows.Media;
 using SunEyeVision.Plugin.SDK.Models;
 
 namespace SunEyeVision.Tool.Script.Models
@@ -13,7 +12,7 @@ namespace SunEyeVision.Tool.Script.Models
         private string _name = string.Empty;
         private string _typeDisplay = string.Empty;
         private string _displayValue = "无结果";
-        private Brush _valueBrush = Brushes.Gray;
+        private bool _hasValue;
         private bool _hasBinding;
         private string _bindingDisplayText = string.Empty;
         private ObservableCollection<MonitorNode>? _children;
@@ -37,10 +36,10 @@ namespace SunEyeVision.Tool.Script.Models
             set => SetProperty(ref _displayValue, value);
         }
 
-        public Brush ValueBrush
+        public bool HasValue
         {
-            get => _valueBrush;
-            set => SetProperty(ref _valueBrush, value);
+            get => _hasValue;
+            set => SetProperty(ref _hasValue, value);
         }
 
         /// <summary>是否有绑定源（仅输入变量）</summary>
@@ -104,8 +103,8 @@ namespace SunEyeVision.Tool.Script.Models
         {
             _displayValue = "无结果";
             OnPropertyChanged(nameof(DisplayValue));
-            _valueBrush = Brushes.Gray;
-            OnPropertyChanged(nameof(ValueBrush));
+            _hasValue = false;
+            OnPropertyChanged(nameof(HasValue));
             ClearChildren();
         }
     }

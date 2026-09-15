@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.Models.Visualization;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
 
 namespace SunEyeVision.Tool.Threshold
@@ -161,32 +160,6 @@ namespace SunEyeVision.Tool.Threshold
         #endregion
 
         #region 可视化与属性映射
-
-        /// <summary>内部默认文本样式（Threshold 工具不通过 Parameters 注入 Style）</summary>
-        private static readonly TextStyle DefaultTextStyle = new()
-        {
-            Name = "ThresholdInfo",
-            FontSize = 11.0,
-            PositionX = 10,
-            PositionY = 22
-        };
-
-        /// <summary>
-        /// 构建显示项（通过 DisplayCollector Push 输出）
-        /// </summary>
-        public void BuildDisplayItems()
-        {
-            _display.Clear();
-            if (InputWidth <= 0 || InputHeight <= 0) return;
-
-            var resultText = IsPass ? "OK" : "NG";
-
-            _display.AddText(DefaultTextStyle, DefaultTextStyle.PositionX, DefaultTextStyle.PositionY, new[]
-            {
-                $"阈值: {ThresholdUsed:F0}  最大值: {MaxValueUsed:F0}",
-                $"类型: {TypeUsed}  {resultText}"
-            });
-        }
 
         /// <summary>
         /// 获取属性映射表

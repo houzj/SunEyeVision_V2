@@ -12,7 +12,6 @@ using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
-using SunEyeVision.Tool.LineDetect.Models;
 using SunEyeVision.Tool.LineDetect.Views;
 
 namespace SunEyeVision.Tool.LineDetect
@@ -37,7 +36,7 @@ namespace SunEyeVision.Tool.LineDetect
         HasDebugWindow = true
     )]
     [JsonDerivedType(typeof(LineDetectParameters), "LineDetect")]
-    public class LineDetectTool : IToolPlugin<LineDetectParameters, LineDetectResults>
+    public class LineDetectTool : IToolPlugin<LineDetectParameters, LineDetectResults>, IToolEditorFactory
     {
         private readonly ToolAttribute? _attribute;
         public LineDetectTool() => _attribute = GetType().GetCustomAttribute<ToolAttribute>();
@@ -190,11 +189,7 @@ namespace SunEyeVision.Tool.LineDetect
 
                 if (!isOk)
                 {
-                    var cfg = parameters.ResultConfig;
-                    parameters.LogWarning(
-                        $"[Diag] 判定 NG 明细: 匹配点数判断={(cfg.IsEdgePointCountEnabled ? $"{result.EdgePointCount} 不在 [{cfg.EdgePointCountMin},{cfg.EdgePointCountMax}]" : "未启用")} | " +
-                        $"角度判断={(cfg.IsAngleEnabled ? $"{result.Angle:G3}° 不在 [{cfg.AngleMin:G3},{cfg.AngleMax:G3}]" : "未启用")} | " +
-                        $"拟合误差判断={(cfg.IsRMSEEnabled ? $"{result.RMSE:F3}px 不在 [{cfg.RMSEMin:F3},{cfg.RMSEMax:F3}]" : "未启用")}");
+                    parameters.LogWarning("[Diag] 结果判断为 NG，请检查已启用的匹配点数、角度和拟合误差范围。");
                 }
 
                 result.SetSuccess();
@@ -215,17 +210,14 @@ namespace SunEyeVision.Tool.LineDetect
         /// </summary>
         private static bool EvaluateResult(LineDetectResults result, LineDetectParameters parameters)
         {
-            var cfg = parameters.ResultConfig;
-            if (cfg.IsEdgePointCountEnabled &&
-                (result.EdgePointCount < cfg.EdgePointCountMin || result.EdgePointCount > cfg.EdgePointCountMax))
-                return false;
-            if (cfg.IsAngleEnabled &&
-                (result.Angle < cfg.AngleMin || result.Angle > cfg.AngleMax))
-                return false;
-            if (cfg.IsRMSEEnabled &&
-                (result.RMSE < cfg.RMSEMin || result.RMSE > cfg.RMSEMax))
-                return false;
-            return true;
+            var outcomes = ResultJudgmentEvaluator.EvaluateRanges(parameters.ResultPresentation.Judgments, key => key switch
+            {
+                "edge-point-count" => result.EdgePointCount,
+                "angle" => result.Angle,
+                "rmse" => result.RMSE,
+                _ => null,
+            });
+            return ResultJudgmentEvaluator.IsAllPass(outcomes);
         }
 
         /// <summary>

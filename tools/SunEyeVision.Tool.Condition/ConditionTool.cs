@@ -1,8 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Tool.Condition.Models;
+using ToolExecutionContext = SunEyeVision.Plugin.SDK.Execution.Parameters.ExecutionContext;
 
 namespace SunEyeVision.Tool.Condition
 {
@@ -15,7 +19,7 @@ namespace SunEyeVision.Tool.Condition
         Version = "1.0.0",
         HasDebugWindow = true
     )]
-    public class ConditionTool : IToolPlugin<ConditionParameters, ConditionResults>
+    public class ConditionTool : IToolPlugin<ConditionParameters, ConditionResults>, IAsyncToolPlugin, IToolEditorFactory
     {
         public System.Windows.FrameworkElement? CreateDebugControl(IToolPlugin tool)
         {
@@ -23,6 +27,21 @@ namespace SunEyeVision.Tool.Condition
         }
 
         public ConditionResults Run(ConditionParameters parameters)
+            => ExecuteCore(parameters, parameters.NodeResults, parameters.Context);
+
+        public ValueTask<ToolResults> ExecuteAsync(ToolExecutionRequest request)
+        {
+            var result = ExecuteCore(
+                (ConditionParameters)request.Parameters,
+                request.NodeResults,
+                request.Context);
+            return ValueTask.FromResult<ToolResults>(result);
+        }
+
+        private static ConditionResults ExecuteCore(
+            ConditionParameters parameters,
+            IDictionary<string, ToolResults>? nodeResults,
+            ToolExecutionContext? context)
         {
             var sw = Stopwatch.StartNew();
             var result = new ConditionResults
@@ -34,14 +53,14 @@ namespace SunEyeVision.Tool.Condition
 
             if (parameters.Rules == null || parameters.Rules.Count == 0)
             {
-                parameters.LogInfo("条件分支未配置任何规则，流程终止（不执行任何分支）");
+                LogInfo(context, "条件分支未配置任何规则，流程终止（不执行任何分支）");
                 result.IsMatched = false;
                 sw.Stop();
                 result.SetSuccess(sw.Elapsed.TotalMilliseconds);
                 return result;
             }
 
-            parameters.LogInfo($"开始评估条件分支，共 {parameters.Rules.Count} 条规则");
+            LogInfo(context, $"开始评估条件分支，共 {parameters.Rules.Count} 条规则");
 
             // ★ 多选并行：遍历所有规则，收集所有命中的目标节点（不遇命中即 return）。
             //   未命中的规则不产生目标；全部未命中则 NextNodeIds 为空 → 引擎剪枝终止该分支。
@@ -49,31 +68,31 @@ namespace SunEyeVision.Tool.Condition
             {
                 if (string.IsNullOrEmpty(rule.ExecutionModuleId))
                 {
-                    parameters.LogWarning($"规则 '{rule.Name}' 未配置目标节点（ExecutionModuleId），跳过");
+                    LogWarning(context, $"规则 '{rule.Name}' 未配置目标节点（ExecutionModuleId），跳过");
                     continue;
                 }
 
                 // 解析输入值：绑定模式委托 OutputVariableResolver，常量模式按 RuleType 转换
                 var inputValue = ConditionInputResolver.Resolve(
-                    rule.InputText, rule.RuleType, rule.Name, parameters.NodeResults);
+                    rule.InputText, rule.RuleType, rule.Name, nodeResults);
 
-                var matched = TryMatchRule(rule, inputValue, parameters);
+                var matched = TryMatchRule(rule, inputValue, context);
 
-                parameters.LogInfo($"规则 '{rule.Name}': 类型={rule.RuleType}, 输入={inputValue}, 匹配={matched}");
+                LogInfo(context, $"规则 '{rule.Name}': 类型={rule.RuleType}, 输入={inputValue}, 匹配={matched}");
 
                 if (matched)
                 {
                     result.NextNodeIds.Add(rule.ExecutionModuleId);
                     result.MatchedRuleNames.Add(rule.Name);
                     result.IsMatched = true;
-                    parameters.LogSuccess($"条件匹配: 规则='{rule.Name}', 目标节点ID='{rule.ExecutionModuleId}'");
+                    LogSuccess(context, $"条件匹配: 规则='{rule.Name}', 目标节点ID='{rule.ExecutionModuleId}'");
                 }
             }
 
             // 全部未命中 → NextNodeIds 为空 → 引擎剪枝终止该分支（对齐 VisionMaster，无默认分支）
             if (!result.IsMatched)
             {
-                parameters.LogInfo("无规则匹配，该分支流程终止（后续节点不执行）");
+                LogInfo(context, "无规则匹配，该分支流程终止（后续节点不执行）");
             }
 
             sw.Stop();
@@ -88,7 +107,7 @@ namespace SunEyeVision.Tool.Condition
         ///         未配置期望值时，输入值有效（非 null）即命中（旧行为向后兼容）。
         /// 类型不匹配 / 无法转换 → 抛异常（rule-015，不静默）。
         /// </summary>
-        private static bool TryMatchRule(ConditionRule rule, object? inputValue, ConditionParameters parameters)
+        private static bool TryMatchRule(ConditionRule rule, object? inputValue, ToolExecutionContext? context)
         {
             switch (rule.RuleType)
             {
@@ -96,7 +115,7 @@ namespace SunEyeVision.Tool.Condition
                 case "Double":
                     if (inputValue == null)
                     {
-                        parameters.LogInfo($"规则 '{rule.Name}': 输入值为空，不匹配");
+                        LogInfo(context, $"规则 '{rule.Name}': 输入值为空，不匹配");
                         return false;
                     }
                     // 数值转换：数字类型直接转换，字符串用 InvariantCulture 解析
@@ -123,26 +142,26 @@ namespace SunEyeVision.Tool.Condition
                     bool inRange = numValue >= rule.MinValue && numValue <= rule.MaxValue;
                     bool matched = (rule.Judgment == "OK" && inRange) ||
                                    (rule.Judgment == "NG" && !inRange);
-                    parameters.LogInfo($"规则 '{rule.Name}': 数值匹配, 输入={numValue}, 范围=[{rule.MinValue},{rule.MaxValue}], 判断={rule.Judgment}, 匹配={matched}");
+                    LogInfo(context, $"规则 '{rule.Name}': 数值匹配, 输入={numValue}, 范围=[{rule.MinValue},{rule.MaxValue}], 判断={rule.Judgment}, 匹配={matched}");
                     return matched;
 
                 case "String":
                     if (inputValue == null)
                     {
-                        parameters.LogInfo($"规则 '{rule.Name}': 字符串输入值为空，不匹配");
+                        LogInfo(context, $"规则 '{rule.Name}': 字符串输入值为空，不匹配");
                         return false;
                     }
                     // 未配置期望值：保持旧"非空即命中"行为（向后兼容旧数据）
                     if (string.IsNullOrEmpty(rule.ExpectedText))
                     {
-                        parameters.LogInfo($"规则 '{rule.Name}': 字符串规则, 输入值有效='{inputValue}', 命中");
+                        LogInfo(context, $"规则 '{rule.Name}': 字符串规则, 输入值有效='{inputValue}', 命中");
                         return true;
                     }
                     // 配置了期望值：OK=相等（区分大小写），NG=不相等
                     bool eqStr = string.Equals(
                         inputValue.ToString(), rule.ExpectedText, StringComparison.Ordinal);
                     bool strMatched = (rule.Judgment == "OK" && eqStr) || (rule.Judgment == "NG" && !eqStr);
-                    parameters.LogInfo($"规则 '{rule.Name}': 字符串比较, 输入='{inputValue}', 期望='{rule.ExpectedText}', 判断={rule.Judgment}, 匹配={strMatched}");
+                    LogInfo(context, $"规则 '{rule.Name}': 字符串比较, 输入='{inputValue}', 期望='{rule.ExpectedText}', 判断={rule.Judgment}, 匹配={strMatched}");
                     return strMatched;
 
                 default:
@@ -150,5 +169,14 @@ namespace SunEyeVision.Tool.Condition
                         $"规则 '{rule.Name}' 的类型 '{rule.RuleType}' 不支持。可用类型: Int / Double / String。");
             }
         }
+
+        private static void LogInfo(ToolExecutionContext? context, string message)
+            => context?.Logger?.Info(message, context.GetSourceName());
+
+        private static void LogSuccess(ToolExecutionContext? context, string message)
+            => context?.Logger?.Success(message, context.GetSourceName());
+
+        private static void LogWarning(ToolExecutionContext? context, string message)
+            => context?.Logger?.Warning(message, context.GetSourceName());
     }
 }

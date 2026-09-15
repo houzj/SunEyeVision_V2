@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using CommonControl;
 using SunEyeVision.Plugin.SDK.Core;
@@ -10,6 +11,7 @@ using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Tool.Script.Models;
 using SunEyeVision.Tool.Script.ScriptEngine;
 using SunEyeVision.Tool.Script.Views;
+using ToolExecutionContext = SunEyeVision.Plugin.SDK.Execution.Parameters.ExecutionContext;
 
 namespace SunEyeVision.Tool.Script
 {
@@ -22,7 +24,7 @@ namespace SunEyeVision.Tool.Script
         Version = "2.0.0",
         HasDebugWindow = true
     )]
-    public class ScriptTool : IToolPlugin<ScriptParameters, ScriptResults>, IPrecompilableTool
+    public class ScriptTool : IToolPlugin<ScriptParameters, ScriptResults>, IAsyncToolPlugin, IToolEditorFactory, IPrecompilableTool
     {
         // ★ 应用启动阶段后台预热补全引擎（MEF + Workspace），对齐新版 RoslynPad 启动初始化。
         //   静态构造在 LoadPlugins 实例化工具时触发，fire-and-forget 不阻塞启动；
@@ -39,6 +41,27 @@ namespace SunEyeVision.Tool.Script
         }
 
         public ScriptResults Run(ScriptParameters parameters)
+            => ExecuteCore(
+                parameters,
+                parameters.Context?.GlobalVariables,
+                parameters.NodeResults,
+                parameters.Context);
+
+        public ValueTask<ToolResults> ExecuteAsync(ToolExecutionRequest request)
+        {
+            var result = ExecuteCore(
+                (ScriptParameters)request.Parameters,
+                request.GlobalVariables,
+                request.NodeResults,
+                request.Context);
+            return ValueTask.FromResult<ToolResults>(result);
+        }
+
+        private static ScriptResults ExecuteCore(
+            ScriptParameters parameters,
+            IDictionary<string, object?>? globalVariables,
+            IDictionary<string, ToolResults>? nodeResults,
+            ToolExecutionContext? context)
         {
             var result = new ScriptResults
             {
@@ -55,19 +78,19 @@ namespace SunEyeVision.Tool.Script
                     if (parameters.IsDebugMode)
                         result.LogMessages.Add("Script code is empty");   // 调试模式：写调试窗口
                     else
-                        parameters.LogWarning("Script code is empty");     // 工作流执行：写主界面
+                        LogWarning(context, "Script code is empty");     // 工作流执行：写主界面
                     result.SetError("Script code is empty");
                     return result;
                 }
 
                 // 调试模式下不写主界面（摘要进 result.LogMessages 由调试窗口展示），工作流执行保持写主界面。
                 if (!parameters.IsDebugMode)
-                    parameters.LogInfo($"Executing script (lines: {parameters.ScriptCode.Split('\n').Length})");
+                    LogInfo(context, $"Executing script (lines: {parameters.ScriptCode.Split('\n').Length})");
 
                 using var lifecycleManager = new ScriptLifecycleManager();
 
                 // Global variable delegates - bridge from ExecutionContext.GlobalVariables
-                var globalVars = parameters.Context?.GlobalVariables;
+                var globalVars = globalVariables;
                 Func<string, object?>? getGlobal = name =>
                     globalVars?.TryGetValue(name, out var v) == true ? v : null;
                 Action<string, object?>? setGlobal = (name, value) =>
@@ -82,17 +105,17 @@ namespace SunEyeVision.Tool.Script
                 // NodeResults 支持节点属性绑定（NodeId.PropertyName 格式）
                 var inputValues = ScriptBindingResolver.Resolve(
                     parameters.Inputs,
-                    parameters.Context?.GlobalVariables,
-                    parameters.NodeResults);
+                    globalVariables,
+                    nodeResults);
 
                 // ★ 捕获解析后的输入值（供调试监视面板显示）
                 parameters.ResolvedInputValues = inputValues;
 
                 if (parameters.Inputs.Count > 0 && !parameters.IsDebugMode)
                 {
-                    parameters.LogInfo($"  解析了 {inputValues.Count} 个输入绑定: " +
-                        $"全局变量可用={parameters.Context?.GlobalVariables?.Count ?? 0}, " +
-                        $"上游节点结果={parameters.NodeResults?.Count ?? 0}");
+                    LogInfo(context, $"  解析了 {inputValues.Count} 个输入绑定: " +
+                        $"全局变量可用={globalVariables?.Count ?? 0}, " +
+                        $"上游节点结果={nodeResults?.Count ?? 0}");
                 }
 
                 var errors = lifecycleManager.Execute(
@@ -126,7 +149,7 @@ namespace SunEyeVision.Tool.Script
                     if (parameters.IsDebugMode)
                         result.LogMessages.Add(summary);   // 调试模式：写调试窗口日志区，不写主界面
                     else
-                        parameters.LogSuccess(summary);     // 工作流执行：写主界面
+                        LogSuccess(context, summary);     // 工作流执行：写主界面
                 }
                 else
                 {
@@ -135,7 +158,7 @@ namespace SunEyeVision.Tool.Script
                     if (parameters.IsDebugMode)
                         result.LogMessages.Add($"Script failed: {errorMsg}");   // 调试模式：写调试窗口
                     else
-                        parameters.LogError($"Script failed: {errorMsg}");       // 工作流执行：写主界面
+                        LogError(context, $"Script failed: {errorMsg}");       // 工作流执行：写主界面
                     result.SetError(errorMsg);
                 }
             }
@@ -145,12 +168,24 @@ namespace SunEyeVision.Tool.Script
                 if (parameters.IsDebugMode)
                     result.LogMessages.Add($"Script exception: {ex.Message}");
                 else
-                    parameters.LogError($"Script exception: {ex.Message}", ex);
+                    LogError(context, $"Script exception: {ex.Message}", ex);
                 result.SetError($"Script exception: {ex.Message}", ex);
             }
 
             return result;
         }
+
+        private static void LogInfo(ToolExecutionContext? context, string message)
+            => context?.Logger?.Info(message, context.GetSourceName());
+
+        private static void LogSuccess(ToolExecutionContext? context, string message)
+            => context?.Logger?.Success(message, context.GetSourceName());
+
+        private static void LogWarning(ToolExecutionContext? context, string message)
+            => context?.Logger?.Warning(message, context.GetSourceName());
+
+        private static void LogError(ToolExecutionContext? context, string message, Exception? exception = null)
+            => context?.Logger?.Error(message, context.GetSourceName(), exception);
 
         /// <summary>
         /// 预编译并预热执行环境：编译结果写入 <see cref="ScriptCompiler"/> 进程级静态缓存

@@ -33,7 +33,7 @@ namespace SunEyeVision.Tool.Threshold
         Version = "3.0.0",
         HasDebugWindow = true
     )]
-    public class ThresholdTool : IToolPlugin<ThresholdParameters, ThresholdResults>
+    public class ThresholdTool : IToolPlugin<ThresholdParameters, ThresholdResults>, IToolEditorFactory
     {
         private readonly ToolAttribute? _attribute;
 
@@ -199,7 +199,7 @@ namespace SunEyeVision.Tool.Threshold
 
                                 // ===== Step 6: 结果判断 =====
                                 stepSw.Restart();
-                                EvaluateResult(result, parameters.ResultConfig);
+                                EvaluateResult(result, parameters.ResultPresentation);
                                 stepSw.Stop();
                                 stepTimings.Add(("结果判断", stepSw.ElapsedMilliseconds));
 
@@ -320,69 +320,20 @@ namespace SunEyeVision.Tool.Threshold
         /// <summary>
         /// 执行结果判断
         /// </summary>
-        private void EvaluateResult(ThresholdResults result, Models.ThresholdResultConfig config)
+        private static void EvaluateResult(ThresholdResults result, ResultPresentationConfig config)
         {
-            if (config == null) return;
-
-            var failReasons = new List<string>();
-            var allPassed = true;
-
-            if (config.IsEmptyCheckEnabled)
+            var outcomes = ResultJudgmentEvaluator.EvaluateRanges(config.Judgments, key => key switch
             {
-                if (result.OutputImage == null || result.OutputImage.IsEmpty)
-                {
-                    allPassed = false;
-                    failReasons.Add("输出图像为空");
-                }
-            }
-
-            if (config.IsWhitePixelRatioCheckEnabled)
-            {
-                if (result.WhitePixelRatio < config.WhitePixelRatioMin || result.WhitePixelRatio > config.WhitePixelRatioMax)
-                {
-                    allPassed = false;
-                    failReasons.Add($"白色像素比例 {result.WhitePixelRatio:F1}% 不在范围 [{config.WhitePixelRatioMin}-{config.WhitePixelRatioMax}]");
-                }
-            }
-
-            if (config.IsMeanCheckEnabled)
-            {
-                if (result.OutputMean < config.MeanMin || result.OutputMean > config.MeanMax)
-                {
-                    allPassed = false;
-                    failReasons.Add($"输出均值 {result.OutputMean:F1} 不在范围 [{config.MeanMin}-{config.MeanMax}]");
-                }
-            }
-
-            if (config.IsAreaCheckEnabled)
-            {
-                if (result.OutputArea < config.AreaMin || result.OutputArea > config.AreaMax)
-                {
-                    allPassed = false;
-                    failReasons.Add($"输出面积 {result.OutputArea} 不在范围 [{config.AreaMin}-{config.AreaMax}]");
-                }
-            }
-
-            if (config.IsCentroidXCheckEnabled)
-            {
-                if (result.CentroidX < config.CentroidXMin || result.CentroidX > config.CentroidXMax)
-                {
-                    allPassed = false;
-                    failReasons.Add($"质心X {result.CentroidX:F1} 不在范围 [{config.CentroidXMin}-{config.CentroidXMax}]");
-                }
-            }
-
-            if (config.IsCentroidYCheckEnabled)
-            {
-                if (result.CentroidY < config.CentroidYMin || result.CentroidY > config.CentroidYMax)
-                {
-                    allPassed = false;
-                    failReasons.Add($"质心Y {result.CentroidY:F1} 不在范围 [{config.CentroidYMin}-{config.CentroidYMax}]");
-                }
-            }
-
-            result.IsPass = allPassed;
-            result.FailReasons = failReasons;
+                "output-not-empty" => result.OutputImage is { IsEmpty: false } ? 1 : 0,
+                "white-ratio" => result.WhitePixelRatio,
+                "mean" => result.OutputMean,
+                "area" => result.OutputArea,
+                "centroid-x" => result.CentroidX,
+                "centroid-y" => result.CentroidY,
+                _ => null,
+            });
+            result.IsPass = ResultJudgmentEvaluator.IsAllPass(outcomes);
+            result.FailReasons = outcomes.Where(item => !item.IsPass).Select(item => item.Message).ToList();
         }
 
         #endregion

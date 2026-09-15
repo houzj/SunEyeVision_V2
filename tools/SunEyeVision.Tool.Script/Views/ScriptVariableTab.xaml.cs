@@ -11,6 +11,7 @@ using System.Windows.Media;
 using SunEyeVision.Tool.Script.Models;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Plugin.SDK.UI.Themes;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
 
 namespace SunEyeVision.Tool.Script.Views
@@ -52,41 +53,6 @@ namespace SunEyeVision.Tool.Script.Views
                 if (_isInput && EditGrid?.Columns.Count > 2)
                     EditGrid.Columns[2].Visibility = value != null ? Visibility.Visible : Visibility.Collapsed;
             }
-        }
-
-        /// <summary>
-        /// 变量监视值的显示颜色（主题感知）：有值且暗色主题 → 浅灰（黑字在暗底不可见），
-        /// 有值且浅色主题 → 黑；无值 → 灰（两主题对比度均可）。
-        /// 避免固定 Brushes.Black 在暗色主题下值不可见。
-        /// </summary>
-        /// <param name="hasValue">该节点是否有实际值</param>
-        /// <returns>适配当前主题的显示刷</returns>
-        private static Brush GetValueBrush(bool hasValue)
-        {
-            if (!hasValue)
-                return Brushes.Gray;
-            return IsDarkTheme() ? Brushes.LightGray : Brushes.Black;
-        }
-
-        /// <summary>
-        /// 判断当前是否暗色主题：扫描应用 MergedDictionaries 是否含 DarkTheme 字典（按 URI 识别）。
-        /// 与 CommonControl.ThemeResource.IsDarkTheme 同逻辑（该 internal 类工具层不可访问），
-        /// 本地实现避免跨程序集引用。纯资源扫描，不依赖具体程序集。
-        /// </summary>
-        /// <returns>true = 当前暗色主题</returns>
-        private static bool IsDarkTheme()
-        {
-            var res = System.Windows.Application.Current?.Resources;
-            if (res == null)
-                return false;
-            foreach (var dict in res.MergedDictionaries)
-            {
-                if (dict.Source != null &&
-                    dict.Source.OriginalString.Contains(
-                        "Themes/Dark/DarkTheme.xaml", StringComparison.OrdinalIgnoreCase))
-                    return true;
-            }
-            return false;
         }
 
         /// <summary>
@@ -150,7 +116,7 @@ namespace SunEyeVision.Tool.Script.Views
                     continue;
                 }
 
-                node.ValueBrush = GetValueBrush(value != null);
+                node.HasValue = value != null;
                 node.ClearChildren();
 
                 if (value != null)
@@ -164,7 +130,7 @@ namespace SunEyeVision.Tool.Script.Views
                     {
                         Name = "",
                         DisplayValue = "无结果",
-                        ValueBrush = Brushes.Gray,
+                        HasValue = false,
                     });
                 }
 
@@ -174,7 +140,7 @@ namespace SunEyeVision.Tool.Script.Views
                     {
                         Name = "",
                         DisplayValue = value?.ToString() ?? "(null)",
-                        ValueBrush = node.ValueBrush
+                        HasValue = node.HasValue
                     });
                 }
                 node.DisplayValue = "";
@@ -278,12 +244,12 @@ namespace SunEyeVision.Tool.Script.Views
             if (_isEditMode)
             {
                 ToggleEditButton.Content = "完成";
-                ToggleEditButton.Background = new SolidColorBrush(Color.FromRgb(0x10, 0x7C, 0x10));
+                ToggleEditButton.SetResourceReference(BackgroundProperty, SdkThemeKeys.SuccessBrush);
             }
             else
             {
                 ToggleEditButton.Content = "✏ 编辑";
-                ToggleEditButton.Background = new SolidColorBrush(Color.FromRgb(0x00, 0x7A, 0xCC));
+                ToggleEditButton.SetResourceReference(BackgroundProperty, SdkThemeKeys.AccentBrush);
             }
         }
 
@@ -297,7 +263,7 @@ namespace SunEyeVision.Tool.Script.Views
             {
                 if (node.Name == name)
                 {
-                    node.ValueBrush = GetValueBrush(hasResult);
+                    node.HasValue = hasResult;
                     node.ClearChildren();
 
                     if (rawValue != null)
@@ -311,7 +277,7 @@ namespace SunEyeVision.Tool.Script.Views
                         {
                             Name = "",
                             DisplayValue = "无结果",
-                            ValueBrush = Brushes.Gray,
+                            HasValue = false,
                         });
                     }
 
@@ -322,7 +288,7 @@ namespace SunEyeVision.Tool.Script.Views
                         {
                             Name = "",                                              // 子节点不显示 Name（值就是值，没有"名字"）
                             DisplayValue = rawValue?.ToString() ?? "(null)",         // 值显示在 DisplayValue（XAML 模板的叶子节点位置）
-                            ValueBrush = GetValueBrush(hasResult)
+                            HasValue = hasResult
                         };
                         node.AddChild(vc);
                     }
@@ -356,7 +322,7 @@ namespace SunEyeVision.Tool.Script.Views
                     var child = new MonitorNode
                     {
                         Name = fieldName,
-                        ValueBrush = GetValueBrush(fieldValue != null),
+                        HasValue = fieldValue != null,
                     };
                     SetChildValue(child, fieldValue);
                     parent.AddChild(child);
@@ -442,7 +408,7 @@ namespace SunEyeVision.Tool.Script.Views
             {
                 Name = name,
                 DisplayValue = FormatScalar(value),
-                ValueBrush = GetValueBrush(true),
+                HasValue = true,
             };
             parent.AddChild(child);
         }
@@ -468,7 +434,7 @@ namespace SunEyeVision.Tool.Script.Views
             if (value == null)
             {
                 node.DisplayValue = "无结果";
-                node.ValueBrush = Brushes.Gray;
+                node.HasValue = false;
                 return;
             }
 
@@ -487,7 +453,7 @@ namespace SunEyeVision.Tool.Script.Views
                     var child = new MonitorNode
                     {
                         Name = fieldName,
-                        ValueBrush = GetValueBrush(fieldValue != null),
+                        HasValue = fieldValue != null,
                     };
                     SetChildValue(child, fieldValue);
                     node.AddChild(child);
@@ -555,7 +521,7 @@ namespace SunEyeVision.Tool.Script.Views
                         Name = name,
                         TypeDisplay = $"({typeName})",
                         DisplayValue = "无结果",
-                        ValueBrush = Brushes.Gray,
+                        HasValue = false,
                         BindingDisplayText = bindingDisplayText,
                         HasBinding = !string.IsNullOrEmpty(bindingDisplayText)
                     });

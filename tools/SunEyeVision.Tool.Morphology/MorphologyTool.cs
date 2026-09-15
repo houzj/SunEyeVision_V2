@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -35,7 +35,7 @@ namespace SunEyeVision.Tool.Morphology
         Version = "1.0.0",
         HasDebugWindow = true
     )]
-    public class MorphologyTool : IToolPlugin<MorphologyParameters, MorphologyResults>
+    public class MorphologyTool : IToolPlugin<MorphologyParameters, MorphologyResults>, IToolEditorFactory
     {
         private readonly ToolAttribute? _attribute;
 
@@ -232,7 +232,7 @@ namespace SunEyeVision.Tool.Morphology
 
                                     // ===== Step 7: 结果判断 =====
                                     stepSw.Restart();
-                                    EvaluateResult(result, parameters.ResultConfig);
+                                    EvaluateResult(result, parameters.ResultPresentation);
                                     stepSw.Stop();
                                     stepTimings.Add(("结果判断", stepSw.ElapsedMilliseconds));
 
@@ -384,53 +384,19 @@ namespace SunEyeVision.Tool.Morphology
         /// <summary>
         /// 执行结果判断
         /// </summary>
-        private void EvaluateResult(MorphologyResults result, Models.MorphologyResultConfig config)
+        private static void EvaluateResult(MorphologyResults result, ResultPresentationConfig config)
         {
-            if (config == null) return;
-
-            var failReasons = new List<string>();
-            var allPassed = true;
-
-            if (config.IsEmptyCheckEnabled)
+            var outcomes = ResultJudgmentEvaluator.EvaluateRanges(config.Judgments, key => key switch
             {
-                if (result.OutputImage == null || result.OutputImage.IsEmpty)
-                {
-                    allPassed = false;
-                    failReasons.Add("输出图像为空");
-                }
-            }
-
-            if (config.IsAreaCheckEnabled)
-            {
-                if (result.TotalArea < config.AreaMin || result.TotalArea > config.AreaMax)
-                {
-                    allPassed = false;
-                    failReasons.Add($"总面积 {result.TotalArea} 不在范围 [{config.AreaMin}-{config.AreaMax}]");
-                }
-            }
-
-            if (config.IsBlobCountCheckEnabled)
-            {
-                if (result.BlobCount < config.BlobCountMin || result.BlobCount > config.BlobCountMax)
-                {
-                    allPassed = false;
-                    failReasons.Add($"Blob数量 {result.BlobCount} 不在范围 [{config.BlobCountMin}-{config.BlobCountMax}]");
-                }
-            }
-
-            if (config.IsMaxBlobAreaCheckEnabled)
-            {
-                if (result.MaxBlobArea < config.MaxBlobAreaMin || result.MaxBlobArea > config.MaxBlobAreaMax)
-                {
-                    allPassed = false;
-                    failReasons.Add($"最大Blob面积 {result.MaxBlobArea:F1} 不在范围 [{config.MaxBlobAreaMin}-{config.MaxBlobAreaMax}]");
-                }
-            }
-
-            result.IsPass = allPassed;
-            result.FailReasons = failReasons;
+                "output-not-empty" => result.OutputImage is { IsEmpty: false } ? 1 : 0,
+                "area" => result.TotalArea,
+                "blob-count" => result.BlobCount,
+                "max-blob-area" => result.MaxBlobArea,
+                _ => null,
+            });
+            result.IsPass = ResultJudgmentEvaluator.IsAllPass(outcomes);
+            result.FailReasons = outcomes.Where(item => !item.IsPass).Select(item => item.Message).ToList();
         }
-
         #endregion
     }
 }

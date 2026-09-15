@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
              xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
+             xmlns:themes="clr-namespace:SunEyeVision.Plugin.SDK.UI.Themes;assembly=SunEyeVision.Plugin.SDK"
              xmlns:models="clr-namespace:SunEyeVision.Tool.Script.Models"
              xmlns:views="clr-namespace:SunEyeVision.Tool.Script.Views"
              xmlns:cc="clr-namespace:CommonControl;assembly=CommonControl"
@@ -12,6 +13,14 @@
              d:DesignHeight="700" d:DesignWidth="1200"
              Background="{DynamicResource ThemePanelBackgroundBrush}"
              Foreground="{DynamicResource ThemeTextPrimaryBrush}">
+
+    <controls:ToolDebugControlBase.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <themes:DesignTimeThemeResourceDictionary/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </controls:ToolDebugControlBase.Resources>
 
     <Grid Margin="4">
         <Grid.RowDefinitions>

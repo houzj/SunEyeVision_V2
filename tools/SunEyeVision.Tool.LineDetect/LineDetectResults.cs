@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using System.Windows;
@@ -123,45 +123,45 @@ namespace SunEyeVision.Tool.LineDetect
                 // ★ 修复：AddPoints → AddCrosses。拟合点是十字标记，须走 GraphicsType.Cross 渲染
                 //   （RenderCrosses 尊重 style.CrossSize）；AddPoints 走 RenderPoints 十字尺寸硬编码 2.5，
                 //   导致拟合点十字远小于 Blob 质心（Blob 用 AddCross + CrossSize=8）。
-                _display.AddCrosses(parameters.ContourPointStyle, pts);
+                _display.AddCrosses(parameters.ResultPresentation.GetGraphicsStyle("contour-point"), pts);
             }
 
             // 诊断检测点（GetMetrologyObjectMeasures 全部检测点，默认不显示，Tab3 可控）
-            if (parameters.DiagnosticPointStyle.IsVisible && DiagnosticPoints.Length > 0)
+            if (parameters.ResultPresentation.GetGraphicsStyle("diagnostic-point").IsVisible && DiagnosticPoints.Length > 0)
             {
                 var diagPts = new System.Windows.Point[DiagnosticPoints.Length];
                 for (int i = 0; i < DiagnosticPoints.Length; i++)
                     diagPts[i] = new System.Windows.Point(DiagnosticPoints[i].X, DiagnosticPoints[i].Y);
-                _display.AddCrosses(parameters.DiagnosticPointStyle, diagPts);
+                _display.AddCrosses(parameters.ResultPresentation.GetGraphicsStyle("diagnostic-point"), diagPts);
             }
 
             // 被屏蔽剔除点（屏蔽区内的采样点，默认不显示，Tab3 可控）
-            if (parameters.ExcludedPointStyle.IsVisible && ExcludedPoints.Length > 0)
+            if (parameters.ResultPresentation.GetGraphicsStyle("excluded-point").IsVisible && ExcludedPoints.Length > 0)
             {
                 var exclPts = new System.Windows.Point[ExcludedPoints.Length];
                 for (int i = 0; i < ExcludedPoints.Length; i++)
                     exclPts[i] = new System.Windows.Point(ExcludedPoints[i].X, ExcludedPoints[i].Y);
-                _display.AddCrosses(parameters.ExcludedPointStyle, exclPts);
+                _display.AddCrosses(parameters.ResultPresentation.GetGraphicsStyle("excluded-point"), exclPts);
             }
 
             // HALCON 实际测量带（诊断卡尺对齐，默认不显示，Tab3 可控）
-            if (parameters.HalconBandStyle.IsVisible && HalconMeasureBands.Length > 0)
+            if (parameters.ResultPresentation.GetGraphicsStyle("halcon-band").IsVisible && HalconMeasureBands.Length > 0)
             {
-                _display.AddContours(parameters.HalconBandStyle, HalconMeasureBands, isClosed: true);
+                _display.AddContours(parameters.ResultPresentation.GetGraphicsStyle("halcon-band"), HalconMeasureBands, isClosed: true);
             }
 
             // 拟合直线（线段起点/终点）
             if (Line is { Length: > 0 })
             {
-                _display.AddLine(parameters.FitResultStyle, LineStartPoint, LineEndPoint, isOk);
+                _display.AddLine(parameters.ResultPresentation.GetGraphicsStyle("fit-result"), LineStartPoint, LineEndPoint, isOk);
             }
 
             // 中点坐标文本
-            if (parameters.CenterTextStyle.IsVisible)
-                _display.AddText(parameters.CenterTextStyle, CenterPoint.X, CenterPoint.Y,
+            if (parameters.ResultPresentation.GetTextStyle("center").IsVisible)
+                _display.AddText(parameters.ResultPresentation.GetTextStyle("center"), CenterPoint.X, CenterPoint.Y,
                     $"中点 ({CenterPoint.X:F1}, {CenterPoint.Y:F1})", isOk);
-            if (parameters.AngleTextStyle.IsVisible)
-                _display.AddText(parameters.AngleTextStyle, CenterPoint.X, CenterPoint.Y - 20,
+            if (parameters.ResultPresentation.GetTextStyle("angle").IsVisible)
+                _display.AddText(parameters.ResultPresentation.GetTextStyle("angle"), CenterPoint.X, CenterPoint.Y - 20,
                     $"角度 {Angle:G3}°", isOk);
         }
 

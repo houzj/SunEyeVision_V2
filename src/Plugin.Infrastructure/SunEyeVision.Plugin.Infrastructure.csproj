@@ -28,10 +28,13 @@
   <ItemGroup>
     <Compile Include="Infrastructure\IPluginManager.cs" />
     <Compile Include="Managers\Plugin\PluginAssemblyPolicy.cs" />
+    <Compile Include="Managers\Plugin\PluginDeploymentInspector.cs" />
     <Compile Include="Managers\Plugin\PluginLoadContext.cs" />
     <Compile Include="Managers\Plugin\PluginLoader.cs" />
     <Compile Include="Managers\Plugin\PluginManager.cs" />
     <Compile Include="Managers\Tool\ToolRegistry.cs" />
+    <Compile Include="Managers\Tool\IToolCatalog.cs" />
+    <Compile Include="Managers\Tool\ToolRegistryCatalog.cs" />
     <Compile Include="Managers\Tool\PropertyMetadataProviderAdapter.cs" />
   </ItemGroup>
 

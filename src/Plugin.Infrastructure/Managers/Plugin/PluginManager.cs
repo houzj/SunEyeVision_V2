@@ -22,19 +22,26 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
     public class PluginManager : IPluginManager
     {
         private readonly ILogger _logger;
+        private readonly IToolCatalog _toolCatalog;
         private readonly Dictionary<Type, List<object>> _plugins = new();
 
         public PluginManager(ILogger logger)
+            : this(logger, new ToolRegistryCatalog())
+        {
+        }
+
+        public PluginManager(ILogger logger, IToolCatalog toolCatalog)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _toolCatalog = toolCatalog ?? throw new ArgumentNullException(nameof(toolCatalog));
         }
 
         /// <summary>
         /// 无参构造函数 - 使用空日志器
         /// </summary>
         public PluginManager()
+            : this(new NullLogger(), new ToolRegistryCatalog())
         {
-            _logger = new NullLogger();
         }
 
         /// <summary>
@@ -77,6 +84,19 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
             var rejectedCount = 0;
             foreach (var assemblyPath in pluginAssemblies)
             {
+                var deployment = PluginDeploymentInspector.Inspect(assemblyPath);
+                if (!deployment.IsDeployable)
+                {
+                    _logger.LogWarning($"[插件交付] {Path.GetFileName(assemblyPath)} 缺少必需文件: "
+                        + string.Join(", ", deployment.MissingRequiredFiles));
+                }
+                if (deployment.RedundantHostAssemblies.Count > 0)
+                {
+                    _logger.LogWarning($"[插件交付] {Path.GetFileName(assemblyPath)} 包含 "
+                        + $"{deployment.RedundantHostAssemblies.Count} 个不会被加载的宿主程序集副本: "
+                        + string.Join(", ", deployment.RedundantHostAssemblies));
+                }
+
                 if (LoadPlugin(assemblyPath) == PluginLoadOutcome.Loaded)
                     loadedCount++;
                 else
@@ -86,7 +106,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
             // 加载结果**必须可见**（方案 §十一 防御机制 #3/#4）：
             // 多人协作下「插件没生效却不知为何」是最难排查的一类问题。
             _logger.LogInfo($"插件加载完成：成功 {loadedCount} 个，未加载 {rejectedCount} 个，"
-                + $"共注册工具 {ToolRegistry.GetToolCount()} 个");
+                + $"共注册工具 {_toolCatalog.Count} 个");
         }
 
         /// <summary>单个插件的加载结果（用于汇总"成功 / 未加载"计数）。</summary>
@@ -165,7 +185,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
                             continue;
                         }
 
-                        ToolRegistry.RegisterTool(toolType);
+                        _toolCatalog.Register(toolType);
                         registeredCount++;
                         _logger.LogInfo($"已加载工具: {toolType.Name}");
                     }
@@ -198,7 +218,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
         {
             _logger.LogInfo("开始卸载插件...");
             _plugins.Clear();
-            ToolRegistry.ClearAll();
+            _toolCatalog.Clear();
             _logger.LogInfo("插件卸载完成");
         }
 

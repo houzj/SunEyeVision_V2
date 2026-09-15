@@ -122,6 +122,45 @@ public class PluginLoadingSmokeTests
         }
     }
 
+    /// <summary>测试产物的文件名特征（守卫用）。</summary>
+    private static readonly System.Text.RegularExpressions.Regex TestArtifactPattern =
+        new System.Text.RegularExpressions.Regex(
+            "^(xunit|testhost|Microsoft\\.TestPlatform|Microsoft\\.VisualStudio\\.TestPlatform|Microsoft\\.Testing)"
+            + "|\\.msCoverageSourceRootsMapping_|\\.TestAdapter\\.dll$",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+    /// <summary>
+    /// 守卫：**宿主运行目录不得混入测试产物**（工作项 #13 / #16）。
+    /// </summary>
+    /// <remarks>
+    /// <b>为什么需要</b>：曾实测到两类孤儿落在主程序运行目录（`dev\Debug`）：
+    /// ① 测试框架（`xunit.*` / `Microsoft.TestPlatform.*` / `testhost.*`，2025 年遗留 **95 个文件 / 4.39 MB**，含 13 种语言资源）；
+    /// ② 测试覆盖率映射（`.msCoverageSourceRootsMapping_*.Tests`，**16 个**）。
+    /// 二者均由测试过程产生，却违反"测试项目独立完整环境、不污染主程序"的约定 ——
+    /// 测试输出应一律落在 `tests\bin\&lt;配置&gt;\`。
+    /// <para>未构建 / 仓外环境（找不到宿主目录）时自动跳过，不产生误报。</para>
+    /// </remarks>
+    [Fact]
+    public void HostRunDirectory_ContainsNoTestArtifacts()
+    {
+        var pluginDirectory = FindPluginDirectory();
+        if (pluginDirectory == null)
+            return; // 未构建 / 仓外环境：跳过
+
+        var hostDirectory = Directory.GetParent(pluginDirectory)?.FullName;
+        if (hostDirectory == null)
+            return;
+
+        var leftovers = Directory.EnumerateFiles(hostDirectory, "*", SearchOption.AllDirectories)
+            .Where(path => TestArtifactPattern.IsMatch(Path.GetFileName(path)))
+            .ToList();
+
+        Assert.True(leftovers.Count == 0,
+            $"宿主运行目录混入 {leftovers.Count} 个测试产物：{hostDirectory}\n"
+            + string.Join("\n", leftovers.Take(10))
+            + "\n（测试输出应落在 tests\\bin\\<配置>\\，不得写入主程序运行目录）");
+    }
+
     /// <summary>自测试程序集目录向上找到仓库根下的 <c>dev/Debug/plugins</c>。</summary>
     private static string? FindPluginDirectory()
     {

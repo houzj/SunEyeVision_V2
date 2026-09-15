@@ -252,7 +252,9 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Tool
         public static System.Windows.Window? CreateDebugWindow(string toolId)
         {
             var tool = CreateToolInstance(toolId);
-            return tool?.HasDebugWindow == true ? tool.CreateDebugWindow() : null;
+            return tool is IToolEditorFactory { HasDebugWindow: true } editorFactory
+                ? editorFactory.CreateDebugWindow()
+                : null;
         }
 
         /// <summary>

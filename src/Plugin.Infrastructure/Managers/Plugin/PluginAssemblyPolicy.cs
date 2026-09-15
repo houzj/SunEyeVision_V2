@@ -22,7 +22,6 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
     /// </remarks>
     internal static class PluginAssemblyPolicy
     {
-        /// <summary>
         /// <summary>框架程序集前缀：一律回落宿主（含 Plugin.SDK / Core / HalAdapter / CvAdapter 等）。</summary>
         private const string FrameworkAssemblyPrefix = "SunEyeVision.";
 

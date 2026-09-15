@@ -24,7 +24,8 @@
        其他测试工程都只引用 SDK / 工具程序集，无法覆盖本层。 -->
   <ItemGroup>
     <ProjectReference Include="../../src/Plugin.Infrastructure/SunEyeVision.Plugin.Infrastructure.csproj">
-      <Private>false</Private>
+      <!-- 测试输出必须携带刚构建的基础设施程序集，避免共享 tests/bin 中的陈旧副本。 -->
+      <Private>true</Private>
     </ProjectReference>
   </ItemGroup>
 </Project>

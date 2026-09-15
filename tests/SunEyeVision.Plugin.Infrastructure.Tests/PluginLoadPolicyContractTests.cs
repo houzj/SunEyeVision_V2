@@ -96,4 +96,53 @@ public class PluginLoadPolicyContractTests
 
         Assert.Empty(PluginAssemblyPolicy.DiscoverPluginAssemblies(missing));
     }
+
+    [Fact]
+    public void DeploymentInspector_ReportsRequiredFilesAndRedundantHostCopies()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "SunEyeVisionPluginDeploy_" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            Directory.CreateDirectory(root);
+            var mainAssembly = Path.Combine(root, "SunEyeVision.Tool.Demo.dll");
+            File.WriteAllText(mainAssembly, "x");
+            File.WriteAllText(Path.Combine(root, "SunEyeVision.Tool.Demo.deps.json"), "{}");
+            File.WriteAllText(Path.Combine(root, "SunEyeVision.Plugin.SDK.dll"), "x");
+            File.WriteAllText(Path.Combine(root, "ThirdParty.Private.dll"), "x");
+
+            var inspection = PluginDeploymentInspector.Inspect(mainAssembly);
+
+            Assert.True(inspection.IsDeployable);
+            Assert.Empty(inspection.MissingRequiredFiles);
+            Assert.Equal(new[] { "SunEyeVision.Plugin.SDK" }, inspection.RedundantHostAssemblies);
+            Assert.False(inspection.HasSymbols);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void DeploymentInspector_MissingDeps_IsNotDeployable()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "SunEyeVisionPluginDeploy_" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            Directory.CreateDirectory(root);
+            var mainAssembly = Path.Combine(root, "SunEyeVision.Tool.Demo.dll");
+            File.WriteAllText(mainAssembly, "x");
+
+            var inspection = PluginDeploymentInspector.Inspect(mainAssembly);
+
+            Assert.False(inspection.IsDeployable);
+            Assert.Equal(new[] { "SunEyeVision.Tool.Demo.deps.json" }, inspection.MissingRequiredFiles);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
 }

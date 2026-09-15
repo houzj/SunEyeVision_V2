@@ -3,13 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:themes="clr-namespace:SunEyeVision.Plugin.SDK.UI.Themes"
              xmlns:measure="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views">
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.SDK;component/Themes/Generic.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </UserControl.Resources>
     <!-- 检测区域 - 上下两行（类型标签一行 + 卡尺类型工具栏一行），对齐 RoiEditorControl 的"模式切换 + 形状工具栏"布局 -->
     <StackPanel>
         <!-- 类型标签（检测区域 - 检测蓝，对齐 RoiEditorControl 的 RegionTypeTitle） -->

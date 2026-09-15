@@ -32,11 +32,13 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
 
         public MeasureElementsEditorControl()
         {
-            // 设计时完全跳过初始化，避免 XAML 解析触发 NullReferenceException
+            InitializeComponent();
+
+            // 设计器同样必须加载控件的 XAML。此前在这里直接 return，导致工具栏、
+            // 引导参数区和两个编辑器宿主均未创建，所有使用本控件的测量工具在设计期
+            // 只显示一块空白区域。设计期只跳过运行时交互（事件、主图像和叠加层）。
             if (System.ComponentModel.DesignerProperties.GetIsInDesignMode(this))
                 return;
-
-            InitializeComponent();
 
             // 编辑器选中状态 → 激活（驱动参数区跟随）
             Element1Editor.SelectionChanged += (_, selected) =>
@@ -97,6 +99,69 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         {
             get => (int)GetValue(ActiveElementIndexProperty);
             private set => SetValue(ActiveElementIndexProperty, value);
+        }
+
+        /// <summary>元素 1 工具栏是否可见。工具在 XAML 中声明，设计期与运行期共用。</summary>
+        public static readonly DependencyProperty Element1VisibleProperty =
+            DependencyProperty.Register(nameof(Element1Visible), typeof(bool),
+                typeof(MeasureElementsEditorControl), new PropertyMetadata(true, OnElementProfileChanged));
+
+        public bool Element1Visible
+        {
+            get => (bool)GetValue(Element1VisibleProperty);
+            set => SetValue(Element1VisibleProperty, value);
+        }
+
+        /// <summary>元素 2 工具栏是否可见。工具在 XAML 中声明，设计期与运行期共用。</summary>
+        public static readonly DependencyProperty Element2VisibleProperty =
+            DependencyProperty.Register(nameof(Element2Visible), typeof(bool),
+                typeof(MeasureElementsEditorControl), new PropertyMetadata(true, OnElementProfileChanged));
+
+        public bool Element2Visible
+        {
+            get => (bool)GetValue(Element2VisibleProperty);
+            set => SetValue(Element2VisibleProperty, value);
+        }
+
+        /// <summary>元素 1 的唯一允许几何类型；null 表示显示全部默认类型。</summary>
+        public static readonly DependencyProperty Element1GeometryTypeProperty =
+            DependencyProperty.Register(nameof(Element1GeometryType), typeof(MeasureGeometryType?),
+                typeof(MeasureElementsEditorControl), new PropertyMetadata(null, OnElementProfileChanged));
+
+        public MeasureGeometryType? Element1GeometryType
+        {
+            get => (MeasureGeometryType?)GetValue(Element1GeometryTypeProperty);
+            set => SetValue(Element1GeometryTypeProperty, value);
+        }
+
+        /// <summary>元素 2 的唯一允许几何类型；null 表示显示全部默认类型。</summary>
+        public static readonly DependencyProperty Element2GeometryTypeProperty =
+            DependencyProperty.Register(nameof(Element2GeometryType), typeof(MeasureGeometryType?),
+                typeof(MeasureElementsEditorControl), new PropertyMetadata(null, OnElementProfileChanged));
+
+        public MeasureGeometryType? Element2GeometryType
+        {
+            get => (MeasureGeometryType?)GetValue(Element2GeometryTypeProperty);
+            set => SetValue(Element2GeometryTypeProperty, value);
+        }
+
+        private static void OnElementProfileChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+            => ((MeasureElementsEditorControl)d).ApplyElementProfile();
+
+        private void ApplyElementProfile()
+        {
+            SetElementSlotVisible(0, Element1Visible);
+            SetElementSlotVisible(1, Element2Visible);
+
+            if (Element1GeometryType is { } element1Type)
+                ConfigureElement(0, element1Type);
+            else
+                RebindToolBar(Element1ToolBarControl, Element1Editor, DefaultTypes);
+
+            if (Element2GeometryType is { } element2Type)
+                ConfigureElement(1, element2Type);
+            else
+                RebindToolBar(Element2ToolBarControl, Element2Editor, DefaultTypes);
         }
 
         #endregion

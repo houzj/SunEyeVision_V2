@@ -50,6 +50,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 new FrameworkPropertyMetadata(typeof(RangeInputControl)));
         }
 
+        public RangeInputControl()
+        {
+            SetResourceReference(StyleProperty, typeof(RangeInputControl));
+        }
+
         #region 依赖属性
 
         public static readonly DependencyProperty UnitProperty =

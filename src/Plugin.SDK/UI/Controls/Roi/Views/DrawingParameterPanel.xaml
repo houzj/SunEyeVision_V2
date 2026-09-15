@@ -44,14 +44,14 @@
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="中心X:" Style="{StaticResource LabelStyle}"/>
+                        <TextBlock Grid.Column="0" Text="中心X:" Style="{DynamicResource LabelStyle}"/>
                         <ctrl:NumericUpDown Grid.Column="1"
                                             Value="{Binding Parameters.CenterX, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
                                             Minimum="0" Maximum="9999"
                                             SmallChange="1" LargeChange="10"
                                             DecimalPlaces="3"
                                             Width="100" Margin="4,2" HorizontalAlignment="Left"/>
-                        <TextBlock Grid.Column="2" Text="Y:" Style="{StaticResource LabelStyle}" Margin="8,2,4,2"/>
+                        <TextBlock Grid.Column="2" Text="Y:" Style="{DynamicResource LabelStyle}" Margin="8,2,4,2"/>
                         <ctrl:NumericUpDown Grid.Column="3"
                                             Value="{Binding Parameters.CenterY, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
                                             Minimum="0" Maximum="9999"
@@ -76,14 +76,14 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="宽度:" Style="{StaticResource LabelStyle}"/>
+                            <TextBlock Grid.Column="0" Text="宽度:" Style="{DynamicResource LabelStyle}"/>
                             <ctrl:NumericUpDown Grid.Column="1"
                                                 Value="{Binding Parameters.Width, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
                                                 Minimum="1" Maximum="9999"
                                                 SmallChange="1" LargeChange="10"
                                                 DecimalPlaces="3"
                                                 Width="100" Margin="4,2" HorizontalAlignment="Left"/>
-                            <TextBlock Grid.Column="2" Text="高度:" Style="{StaticResource LabelStyle}" Margin="8,2,4,2"/>
+                            <TextBlock Grid.Column="2" Text="高度:" Style="{DynamicResource LabelStyle}" Margin="8,2,4,2"/>
                             <ctrl:NumericUpDown Grid.Column="3"
                                                 Value="{Binding Parameters.Height, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
                                                 Minimum="1" Maximum="9999"
@@ -107,7 +107,7 @@
                                 <ColumnDefinition Width="60"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="半径:" Style="{StaticResource LabelStyle}"/>
+                            <TextBlock Grid.Column="0" Text="半径:" Style="{DynamicResource LabelStyle}"/>
                             <ctrl:NumericUpDown Grid.Column="1"
                                                 Value="{Binding Parameters.Radius, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
                                                 Minimum="1" Maximum="9999"
@@ -135,14 +135,14 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="宽度:" Style="{StaticResource LabelStyle}"/>
+                            <TextBlock Grid.Column="0" Text="宽度:" Style="{DynamicResource LabelStyle}"/>
                             <ctrl:NumericUpDown Grid.Column="1"
                                                 Value="{Binding Parameters.Width, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
                                                 Minimum="1" Maximum="9999"
                                                 SmallChange="1" LargeChange="10"
                                                 DecimalPlaces="3"
                                                 Width="100" Margin="4,2" HorizontalAlignment="Left"/>
-                            <TextBlock Grid.Column="2" Text="高度:" Style="{StaticResource LabelStyle}" Margin="8,2,4,2"/>
+                            <TextBlock Grid.Column="2" Text="高度:" Style="{DynamicResource LabelStyle}" Margin="8,2,4,2"/>
                             <ctrl:NumericUpDown Grid.Column="3"
                                                 Value="{Binding Parameters.Height, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
                                                 Minimum="1" Maximum="9999"
@@ -157,7 +157,7 @@
                                 <ColumnDefinition Width="60"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="角度:" Style="{StaticResource LabelStyle}"/>
+                            <TextBlock Grid.Column="0" Text="角度:" Style="{DynamicResource LabelStyle}"/>
                             <ctrl:NumericUpDown Grid.Column="1"
                                                 Value="{Binding Parameters.Angle, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
                                                 Minimum="-180" Maximum="180"
@@ -185,14 +185,14 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="起点:" Style="{StaticResource LabelStyle}"/>
+                            <TextBlock Grid.Column="0" Text="起点:" Style="{DynamicResource LabelStyle}"/>
                             <ctrl:NumericUpDown Grid.Column="1"
                                                 Value="{Binding Parameters.StartX, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
                                                 Minimum="0" Maximum="9999"
                                                 SmallChange="1" LargeChange="10"
                                                 DecimalPlaces="3"
                                                 Width="100" Margin="4,2" HorizontalAlignment="Left"/>
-                            <TextBlock Grid.Column="2" Text="Y:" Style="{StaticResource LabelStyle}" Margin="8,2,4,2"/>
+                            <TextBlock Grid.Column="2" Text="Y:" Style="{DynamicResource LabelStyle}" Margin="8,2,4,2"/>
                             <ctrl:NumericUpDown Grid.Column="3"
                                                 Value="{Binding Parameters.StartY, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
                                                 Minimum="0" Maximum="9999"
@@ -209,14 +209,14 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="终点:" Style="{StaticResource LabelStyle}"/>
+                            <TextBlock Grid.Column="0" Text="终点:" Style="{DynamicResource LabelStyle}"/>
                             <ctrl:NumericUpDown Grid.Column="1"
                                                 Value="{Binding Parameters.EndX, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
                                                 Minimum="0" Maximum="9999"
                                                 SmallChange="1" LargeChange="10"
                                                 DecimalPlaces="3"
                                                 Width="100" Margin="4,2" HorizontalAlignment="Left"/>
-                            <TextBlock Grid.Column="2" Text="Y:" Style="{StaticResource LabelStyle}" Margin="8,2,4,2"/>
+                            <TextBlock Grid.Column="2" Text="Y:" Style="{DynamicResource LabelStyle}" Margin="8,2,4,2"/>
                             <ctrl:NumericUpDown Grid.Column="3"
                                                 Value="{Binding Parameters.EndY, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
                                                 Minimum="0" Maximum="9999"
@@ -231,7 +231,7 @@
                                 <ColumnDefinition Width="60"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="长度:" Style="{StaticResource LabelStyle}"/>
+                            <TextBlock Grid.Column="0" Text="长度:" Style="{DynamicResource LabelStyle}"/>
                             <TextBlock Grid.Column="1"
                                        Text="{Binding PreviewLength, StringFormat=F1}"
                                        VerticalAlignment="Center"
@@ -263,7 +263,7 @@
                                                                 SmallChange="1" LargeChange="10"
                                                                 DecimalPlaces="3"
                                                                 Width="100" Margin="4,2" HorizontalAlignment="Left"/>
-                                            <TextBlock Grid.Column="2" Text="Y:" Style="{StaticResource LabelStyle}" Margin="8,2,4,2"/>
+                                            <TextBlock Grid.Column="2" Text="Y:" Style="{DynamicResource LabelStyle}" Margin="8,2,4,2"/>
                                             <ctrl:NumericUpDown Grid.Column="3"
                                                                 Value="{Binding Y, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
                                                                 Minimum="0" Maximum="9999"

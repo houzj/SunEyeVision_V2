@@ -7,6 +7,7 @@ using System.Windows.Media;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
+using SunEyeVision.Plugin.SDK.UI.Constants;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls
 {
@@ -43,6 +44,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         {
             DefaultStyleKeyProperty.OverrideMetadata(typeof(DispTextColorControl),
                 new FrameworkPropertyMetadata(typeof(DispTextColorControl)));
+            ForegroundProperty.OverrideMetadata(typeof(DispTextColorControl),
+                new FrameworkPropertyMetadata(ColorConstants.TextPrimaryBrush));
         }
 
         #endregion
@@ -77,7 +80,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         #region 构造函数
 
-        public DispTextColorControl() { }
+        public DispTextColorControl()
+        {
+            SetResourceReference(StyleProperty, typeof(DispTextColorControl));
+        }
 
         #endregion
 

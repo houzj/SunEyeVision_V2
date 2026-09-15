@@ -11,6 +11,7 @@ using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Metadata;
 using System.Collections.Specialized;
+using SunEyeVision.Plugin.SDK.UI.Constants;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls
 {
@@ -502,10 +503,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         {
             DefaultStyleKeyProperty.OverrideMetadata(typeof(ConfigSetting),
                 new FrameworkPropertyMetadata(typeof(ConfigSetting)));
+            BackgroundProperty.OverrideMetadata(typeof(ConfigSetting),
+                new FrameworkPropertyMetadata(ColorConstants.BackgroundBrush));
+            BorderBrushProperty.OverrideMetadata(typeof(ConfigSetting),
+                new FrameworkPropertyMetadata(ColorConstants.BorderBrush));
+            ForegroundProperty.OverrideMetadata(typeof(ConfigSetting),
+                new FrameworkPropertyMetadata(ColorConstants.TextPrimaryBrush));
         }
 
         public ConfigSetting()
         {
+            SetResourceReference(StyleProperty, typeof(ConfigSetting));
             AvailableBindings = new System.Collections.Generic.List<string>();
 
             // 全局变量重命名时自动更新绑定显示（自注册到静态列表，避免 VisualTreeHelper 遍历不可达）

@@ -56,8 +56,8 @@
         // ============ 边框 / 分隔 ============
         /// <summary>常规边框，对应 UI ThemeKeys.BorderBrush</summary>
         public const string BorderBrush = "ThemeBorderBrush";
-        /// <summary>浅色分隔线（Brush 层），对应 UI ThemeKeys.DividerBrushBrush（值类型为 Brush，用于 BorderBrush 等）</summary>
-        public const string DividerBrush = "ThemeDividerBrushBrush";
+        /// <summary>分隔线（Brush 层），对应 UI ThemeKeys.DividerBrush</summary>
+        public const string DividerBrush = "ThemeDividerBrush";
 
         // ============ 面板 / 背景 ============
         /// <summary>右侧属性面板 / 常规面板背景，对应 UI ThemeKeys.PanelBackgroundBrush</summary>
@@ -82,12 +82,18 @@
         public const string ContextMenuBackgroundBrush = "ThemeContextMenuBackgroundBrush";
         /// <summary>深底上的文字（选中/强调，常为白），对应 UI ThemeKeys.TextOnDarkBrush</summary>
         public const string TextOnDarkBrush = "ThemeTextOnDarkBrush";
+        /// <summary>图像区透明背景，对应 UI ThemeKeys.CheckerboardBackgroundBrush</summary>
+        public const string CheckerboardBackgroundBrush = "ThemeCheckerboardBackgroundBrush";
+        /// <summary>图像/模板预览区域背景，对应 UI ThemeKeys.ImageAreaBackgroundBrush</summary>
+        public const string ImageAreaBackgroundBrush = "ThemeImageAreaBackgroundBrush";
 
         // ============ 表格（工具结果面板） ============
         /// <summary>表格行底，对应 UI ThemeKeys.TableRowBackgroundBrush</summary>
         public const string TableRowBackgroundBrush = "ThemeTableRowBackgroundBrush";
         /// <summary>表格行悬停底 / 交替行底，对应 UI ThemeKeys.TableRowHoverBackgroundBrush</summary>
         public const string TableRowHoverBackgroundBrush = "ThemeTableRowHoverBackgroundBrush";
+        /// <summary>表格选中行背景，对应 UI ThemeKeys.TableRowSelectedBackgroundBrush</summary>
+        public const string TableRowSelectedBackgroundBrush = "ThemeTableRowSelectedBackgroundBrush";
         /// <summary>表格表头底，对应 UI ThemeKeys.TableHeaderBackgroundBrush</summary>
         public const string TableHeaderBackgroundBrush = "ThemeTableHeaderBackgroundBrush";
         /// <summary>表格表头文字，对应 UI ThemeKeys.TableHeaderTextBrush</summary>
@@ -102,6 +108,20 @@
         public const string WarningBrush = "ThemeWarningBrush";
         /// <summary>错误 / 运行中状态，对应 UI ThemeKeys.ErrorBrush</summary>
         public const string ErrorBrush = "ThemeErrorBrush";
+
+        // ============ 数据分析序列色 ============
+        /// <summary>数据分析序列 1（主指标）</summary>
+        public const string DataSeries1Brush = "ThemeDataSeries1Brush";
+        /// <summary>数据分析序列 2</summary>
+        public const string DataSeries2Brush = "ThemeDataSeries2Brush";
+        /// <summary>数据分析序列 3</summary>
+        public const string DataSeries3Brush = "ThemeDataSeries3Brush";
+        /// <summary>数据分析序列 4</summary>
+        public const string DataSeries4Brush = "ThemeDataSeries4Brush";
+        /// <summary>数据分析序列 5</summary>
+        public const string DataSeries5Brush = "ThemeDataSeries5Brush";
+        /// <summary>数据分析辅助说明</summary>
+        public const string DataSeriesMutedBrush = "ThemeDataSeriesMutedBrush";
 
         // ============ SDK 控件补充（批次3，SDK 样式库 Token 化） ============
         /// <summary>滑块/范围滑块轨道背景，对应 UI ThemeKeys.SliderTrackBackgroundBrush</summary>

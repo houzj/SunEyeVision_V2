@@ -60,6 +60,7 @@ public class SdkThemeContractTests
 
         // 显式解析几个新增关键资源，确认隐式样式与图标资源真实存在
         Assert.True(dict.Contains("LinkIconPath"), "Generic.xaml 应定义 LinkIconPath（绑定图标矢量）");
+        Assert.True(dict.Contains("SelectableShapeButtonStyle"), "Generic.xaml 应定义可选中形状按钮样式");
         Assert.NotNull(dict["TreeExpanderPath"]);
     }
 

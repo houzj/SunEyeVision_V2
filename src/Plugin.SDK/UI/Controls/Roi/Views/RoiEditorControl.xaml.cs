@@ -15,6 +15,7 @@ using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.UI.Constants;
 using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Models;
 using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.ViewModels;
+using SunEyeVision.Plugin.SDK.UI.Themes;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Rendering;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
@@ -363,18 +364,23 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
 
         public RoiEditorControl()
         {
-            // 设计时完全跳过初始化，避免 XAML 解析触发 NullReferenceException
-            if (DesignerProperties.GetIsInDesignMode(this))
-                return;
+            DesignTimeThemeLoader.EnsureApplicationResources(this);
 
             // ★ 必须在 InitializeComponent 之前创建 ViewModel
             // 因为 XAML 中 RadioButton IsChecked="True" 会立即触发 Checked 事件
             EnsureViewModel();
             InitializeComponent();
+
+            // 形状工具是纯展示数据，设计器也必须初始化，否则只显示空工具栏容器。
+            InitializeShapeTools();
+
+            // 设计器也必须创建可视树；仅跳过运行时服务、事件及渲染初始化。
+            if (DesignerProperties.GetIsInDesignMode(this))
+                return;
+
             _settings = RoiEditorSettings.Default;
 
-            // 初始化形状工具栏（数据驱动，每个形状可见性可单独控制）
-            InitializeShapeTools();
+            // 工具栏数据已在设计模式判断前初始化；此处只关联运行时交互事件。
             ShapeToolBarControl.ShapeSelectionChanged += OnShapeToolBarSelectionChanged;
 
             // 启用键盘焦点

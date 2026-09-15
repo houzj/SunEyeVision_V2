@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Plugin.SDK.UI.Themes;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls
 {
@@ -900,11 +901,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             {
                 WindowStyle = WindowStyle.None,
                 WindowState = WindowState.Maximized,
-                Background = new SolidColorBrush(Color.FromRgb(0x1E, 0x1E, 0x1E)),
                 Content = this,
                 Title = "全屏预览",
                 DataContext = _savedDataContext
             };
+            _fullscreenWindow.SetResourceReference(Window.BackgroundProperty,
+                SdkThemeKeys.ImageAreaBackgroundBrush);
 
             _fullscreenWindow.KeyDown += (s, e) =>
             {

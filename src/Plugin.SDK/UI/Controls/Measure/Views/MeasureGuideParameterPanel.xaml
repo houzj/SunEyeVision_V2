@@ -4,14 +4,6 @@
              xmlns:themes="clr-namespace:SunEyeVision.Plugin.SDK.UI.Themes"
              xmlns:ctrl="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls"
              xmlns:measure="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views">
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.SDK;component/Themes/Generic.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </UserControl.Resources>
-
     <Grid>
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
             <StackPanel Margin="8,4">

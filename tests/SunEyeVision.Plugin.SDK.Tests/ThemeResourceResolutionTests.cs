@@ -61,8 +61,7 @@ public class ThemeResourceResolutionTests
     /// 对照组：兜底字典若被放到了最后（DefaultTheme 在末尾），是否会被它遮蔽主题字典深色。
     /// 用于证明"主题字典必须放到末尾（最高优先级）"这一修复方向。
     ///
-    /// 说明：DefaultTheme 已从 Generic.xaml 拆出，由宿主 Application 级（AppResources）显式合入，
-    /// 故此处显式加载 DefaultTheme.xaml 作为兜底字典，而非依赖 Generic.xaml 内含。
+    /// 说明：此对照组显式把 DefaultTheme 放在最后，直接证明局部/末尾兜底会遮蔽宿主主题。
     /// </summary>
     [Fact]
     public void ThemeDictionary_AtFront_IsShadowedBySdkDefaultTheme()

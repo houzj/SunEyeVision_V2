@@ -36,11 +36,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views
 
         public RoiEditorManagerControl()
         {
-            // 设计时完全跳过初始化，避免 XAML 解析触发 NullReferenceException
+            InitializeComponent();
+
+            // 设计器也必须创建可视树；仅跳过依赖运行时交互对象的事件关联。
             if (DesignerProperties.GetIsInDesignMode(this))
                 return;
-
-            InitializeComponent();
 
             // Subscribe to child editors' events
             inspectionsEditor.RenderRequested += OnEditorRenderRequested;

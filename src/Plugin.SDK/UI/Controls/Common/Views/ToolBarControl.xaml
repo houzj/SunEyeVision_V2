@@ -5,9 +5,6 @@
              xmlns:themes="clr-namespace:SunEyeVision.Plugin.SDK.UI.Themes">
     <UserControl.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.SDK;component/Themes/Generic.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         </ResourceDictionary>
     </UserControl.Resources>
@@ -23,20 +20,10 @@
                     <Button ToolTip="{Binding ToolTip}"
                             Visibility="{Binding IsVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                             IsEnabled="{Binding IsEnabled}"
+                            Style="{DynamicResource SelectableShapeButtonStyle}"
                             Command="{Binding SelectToolCommand,
                                 RelativeSource={RelativeSource AncestorType=UserControl}}"
                             CommandParameter="{Binding}">
-                        <Button.Style>
-                            <Style TargetType="Button" BasedOn="{StaticResource ShapeButtonStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                                        <Setter Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ControlHoverBackgroundBrush}}"/>
-                                        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static themes:SdkThemeKeys.AccentBrush}}"/>
-                                        <Setter Property="BorderThickness" Value="1.5"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
                         <Path Width="20" Height="20"
                               Stroke="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}"
                               StrokeThickness="1.5"

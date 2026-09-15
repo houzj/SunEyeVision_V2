@@ -69,9 +69,10 @@
     </Style>
 
     <!-- ================================================================ -->
-    <!-- 颜色定义说明：SDK 控件统一使用 Theme 前缀语义 key（定义见 DefaultTheme.xaml）。 -->
-    <!-- DefaultTheme 由宿主 Application 级（AppResources.xaml）合入，本库不再合并，
-         避免控件局部合入本库时把固定亮色值带到控件级遮蔽主题。 -->
+    <!-- 颜色定义说明：SDK 控件统一使用 Theme 前缀语义 key（定义见 DefaultTheme.xaml）。
+         Generic 自带 DefaultTheme，作为程序集默认主题和独立设计器兜底；宿主只需在
+         Application 级合入 Generic，再把 Light/Dark 字典追加到末尾覆盖这些兜底值。
+         SDK UserControl 禁止在元素级合入 Generic，避免局部资源遮蔽 Application 主题。 -->
     <!-- 以下仅保留 SDK 内部派生的带透明度笔刷（非 UI 语义 key，不构成同名冲突）。 -->
     <!-- ================================================================ -->
 
@@ -251,6 +252,9 @@
 
         <!-- ConfigSetting 样式 - 组合模式：嵌入ParamBinding -->
     <Style TargetType="{x:Type controls:ConfigSetting}">
+        <Setter Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.InputBackgroundBrush}}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"/>
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"/>
         <Setter Property="MinHeight" Value="32"/>
         <Setter Property="Template">
             <Setter.Value>
@@ -305,9 +309,9 @@
                                 Content="⚡"
                                 Width="28" Height="28"
                                 FontSize="14"
-                                Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"
-                                Background="{DynamicResource {x:Static themes:SdkThemeKeys.PanelBackgroundBrush}}"
-                                BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"
+                                Foreground="{TemplateBinding Foreground}"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="1"
                                 Cursor="Hand"
                                 ToolTip="点击切换到绑定模式">
@@ -1234,6 +1238,7 @@
 
     <!-- DispItemColorControl 样式 - 图形显示（OK/NG颜色 + 线宽） -->
     <Style TargetType="{x:Type controls:DispItemColorControl}">
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type controls:DispItemColorControl}">
@@ -1250,7 +1255,7 @@
                                 Tag="{Binding Item.IsVisible, RelativeSource={RelativeSource TemplatedParent}, FallbackValue=True}">
                             <Viewbox Width="18" Height="18" Stretch="Uniform">
                                 <Path x:Name="PART_VisibilityIcon"
-                                      Stroke="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}" StrokeThickness="1.2" Fill="Transparent"
+                                      Stroke="{TemplateBinding Foreground}" StrokeThickness="1.2" Fill="Transparent"
                                       Data="M2 10C4 6 7 4 10 4C13 4 16 6 18 10C16 14 13 16 10 16C7 16 4 14 2 10ZM10 13C11.7 13 13 11.7 13 10C13 8.3 11.7 7 10 7C8.3 7 7 8.3 7 10C7 11.7 8.3 13 10 13Z"/>
                             </Viewbox>
                         </Button>
@@ -1261,7 +1266,7 @@
                                 Background="Transparent" BorderThickness="0"
                                 Cursor="Hand" ToolTip="样式设置" Margin="0">
                             <Viewbox Width="16" Height="16" Stretch="Uniform">
-                                <Path Fill="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"
+                                <Path Fill="{TemplateBinding Foreground}"
                                       Data="M3,17.25V21H6.75L17.81,9.94L14.06,6.19L3,17.25M20.71,7.04C21.1,6.65 21.1,6.02 20.71,5.63L18.37,3.29C17.98,2.9 17.35,2.9 16.96,3.29L15.13,5.12L18.87,8.87L20.71,7.04Z"/>
                             </Viewbox>
                         </Button>
@@ -1335,6 +1340,7 @@
 
     <!-- DispTextColorControl 样式 - 文本显示（OK/NG颜色 + 字号 + 加粗 + ParamBinding位置） -->
     <Style TargetType="{x:Type controls:DispTextColorControl}">
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type controls:DispTextColorControl}">
@@ -1349,7 +1355,7 @@
                                 Tag="{Binding Item.IsVisible, RelativeSource={RelativeSource TemplatedParent}, FallbackValue=True}">
                             <Viewbox Width="18" Height="18" Stretch="Uniform">
                                 <Path x:Name="PART_VisibilityIcon"
-                                      Stroke="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}" StrokeThickness="1.2" Fill="Transparent"
+                                      Stroke="{TemplateBinding Foreground}" StrokeThickness="1.2" Fill="Transparent"
                                       Data="M2 10C4 6 7 4 10 4C13 4 16 6 18 10C16 14 13 16 10 16C7 16 4 14 2 10ZM10 13C11.7 13 13 11.7 13 10C13 8.3 11.7 7 10 7C8.3 7 7 8.3 7 10C7 11.7 8.3 13 10 13Z"/>
                             </Viewbox>
                         </Button>
@@ -1360,7 +1366,7 @@
                                 Background="Transparent" BorderThickness="0"
                                 Cursor="Hand" ToolTip="样式设置" Margin="0">
                             <Viewbox Width="16" Height="16" Stretch="Uniform">
-                                <Path Fill="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"
+                                <Path Fill="{TemplateBinding Foreground}"
                                       Data="M3,17.25V21H6.75L17.81,9.94L14.06,6.19L3,17.25M20.71,7.04C21.1,6.65 21.1,6.02 20.71,5.63L18.37,3.29C17.98,2.9 17.35,2.9 16.96,3.29L15.13,5.12L18.87,8.87L20.71,7.04Z"/>
                             </Viewbox>
                         </Button>
@@ -1465,6 +1471,7 @@
     <Style TargetType="{x:Type controls:ParamBinding}">
         <Setter Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.InputBackgroundBrush}}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"/>
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="CornerRadius" Value="4"/>
         <Setter Property="Height" Value="28"/>
@@ -1491,10 +1498,10 @@
                                          VerticalAlignment="Center"
                                          VerticalContentAlignment="Center"
                                          Text="{Binding BindingDisplayText, RelativeSource={RelativeSource TemplatedParent}, UpdateSourceTrigger=PropertyChanged}"
-                                         Foreground="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}"
+                                         Foreground="{TemplateBinding Foreground}"
                                          Background="Transparent"
                                          BorderThickness="0"
-                                         CaretBrush="{DynamicResource {x:Static themes:SdkThemeKeys.TextSecondaryBrush}}"
+                                         CaretBrush="{TemplateBinding Foreground}"
                                          IsReadOnly="False"
                                          Visibility="Visible"/>
                             </Grid>
@@ -1539,7 +1546,7 @@
                                     <Viewbox.RenderTransform>
                                         <RotateTransform Angle="-45"/>
                                     </Viewbox.RenderTransform>
-                                    <Path Fill="{DynamicResource {x:Static themes:SdkThemeKeys.TextPrimaryBrush}}"
+                                    <Path Fill="{TemplateBinding Foreground}"
                                           Data="{StaticResource LinkIconPath}"/>
                                 </Viewbox>
                             </Button>
@@ -1801,6 +1808,17 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <!-- 数据驱动工具栏的可选中形状按钮；组合样式在同一字典内完成，使用方只做 DynamicResource 引用。 -->
+    <Style x:Key="SelectableShapeButtonStyle" TargetType="Button" BasedOn="{StaticResource ShapeButtonStyle}">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                <Setter Property="Background" Value="{DynamicResource {x:Static themes:SdkThemeKeys.ControlHoverBackgroundBrush}}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource {x:Static themes:SdkThemeKeys.AccentBrush}}"/>
+                <Setter Property="BorderThickness" Value="1.5"/>
+            </DataTrigger>
+        </Style.Triggers>
     </Style>
 
     <!-- 分段按钮样式（模式切换使用） -->

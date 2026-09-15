@@ -6,9 +6,6 @@
              xmlns:measure="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views">
     <UserControl.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.SDK;component/Themes/Generic.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
             <!-- ★ 修复 StaticResource 异常：L24 Visibility 绑定需要 BooleanToVisibilityConverter（对齐 RoiEditorControl.xaml） -->
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         </ResourceDictionary>

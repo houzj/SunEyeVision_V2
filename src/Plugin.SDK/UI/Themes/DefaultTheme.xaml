@@ -85,12 +85,18 @@
                      Color="{x:Static constants:ColorConstants.Background}"/>
     <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.TextOnDarkBrush}"
                      Color="{x:Static constants:ColorConstants.Background}"/>
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.CheckerboardBackgroundBrush}"
+                     Color="{x:Static constants:ColorConstants.BackgroundGray}"/>
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.ImageAreaBackgroundBrush}"
+                     Color="{x:Static constants:ColorConstants.Background}"/>
 
     <!-- ============ 表格 ============ -->
     <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.TableRowBackgroundBrush}"
                      Color="{x:Static constants:ColorConstants.Background}"/>
     <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.TableRowHoverBackgroundBrush}"
                      Color="{x:Static constants:ColorConstants.BackgroundHover}"/>
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.TableRowSelectedBackgroundBrush}"
+                     Color="{x:Static constants:ColorConstants.BackgroundHoverSelected}"/>
     <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.TableHeaderBackgroundBrush}"
                      Color="{x:Static constants:ColorConstants.BackgroundGray}"/>
     <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.TableHeaderTextBrush}"
@@ -105,6 +111,14 @@
                      Color="{x:Static constants:ColorConstants.Warning}"/>
     <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.ErrorBrush}"
                      Color="{x:Static constants:ColorConstants.Error}"/>
+
+    <!-- ============ 数据分析序列色（设计器/无宿主兜底） ============ -->
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.DataSeries1Brush}" Color="#FF2196F3"/>
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.DataSeries2Brush}" Color="#FF4CAF50"/>
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.DataSeries3Brush}" Color="#FFFF9800"/>
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.DataSeries4Brush}" Color="#FFE91E63"/>
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.DataSeries5Brush}" Color="#FF9C27B0"/>
+    <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.DataSeriesMutedBrush}" Color="#FF607D8B"/>
 
     <!-- ============ SDK 控件补充（批次3） ============ -->
     <SolidColorBrush x:Key="{x:Static themes:SdkThemeKeys.SliderTrackBackgroundBrush}"

@@ -9,6 +9,7 @@ using System.Windows.Media;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Models;
+using SunEyeVision.Plugin.SDK.UI.Constants;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls
 {
@@ -366,11 +367,21 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             DefaultStyleKeyProperty.OverrideMetadata(
                 typeof(ParamBinding),
                 new FrameworkPropertyMetadata(typeof(ParamBinding)));
+            BackgroundProperty.OverrideMetadata(typeof(ParamBinding),
+                new FrameworkPropertyMetadata(ColorConstants.BackgroundBrush));
+            BorderBrushProperty.OverrideMetadata(typeof(ParamBinding),
+                new FrameworkPropertyMetadata(ColorConstants.BorderBrush));
+            ForegroundProperty.OverrideMetadata(typeof(ParamBinding),
+                new FrameworkPropertyMetadata(ColorConstants.TextPrimaryBrush));
         }
 
         public ParamBinding()
         {
             TreeNodes = new System.Collections.ObjectModel.ObservableCollection<TreeNodeData>();
+
+            // 插件 XAML 设计器可能在工具根控件补入 SDK 主题前完成默认样式查找。
+            // 始终保留动态样式引用：资源随后可用或运行时主题切换时都会重新解析模板。
+            SetResourceReference(StyleProperty, typeof(ParamBinding));
         }
 
         #endregion

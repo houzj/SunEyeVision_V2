@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Plugin.SDK.UI.Constants;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls
 {
@@ -51,6 +52,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         {
             DefaultStyleKeyProperty.OverrideMetadata(typeof(NumericUpDown),
                 new FrameworkPropertyMetadata(typeof(NumericUpDown)));
+            BackgroundProperty.OverrideMetadata(typeof(NumericUpDown),
+                new FrameworkPropertyMetadata(ColorConstants.BackgroundBrush));
+            BorderBrushProperty.OverrideMetadata(typeof(NumericUpDown),
+                new FrameworkPropertyMetadata(ColorConstants.BorderBrush));
+            ForegroundProperty.OverrideMetadata(typeof(NumericUpDown),
+                new FrameworkPropertyMetadata(ColorConstants.TextPrimaryBrush));
+        }
+
+        public NumericUpDown()
+        {
+            SetResourceReference(StyleProperty, typeof(NumericUpDown));
         }
 
         #region 依赖属性

@@ -7,10 +7,6 @@
 >
     <UserControl.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.SDK;component/Themes/Generic.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
         <!-- 卡片区域样式 -->
@@ -54,10 +50,10 @@
                         <!-- 模式切换 -->
                         <UniformGrid Grid.Column="1" Columns="2" HorizontalAlignment="Center">
                             <RadioButton Content="绘制"
-                                         Style="{StaticResource SegmentedToggleStyle}"
+                                         Style="{DynamicResource SegmentedToggleStyle}"
                                          IsChecked="{Binding IsDrawingMode, Mode=TwoWay}"/>
                             <RadioButton Content="订阅"
-                                         Style="{StaticResource SegmentedToggleStyle}"
+                                         Style="{DynamicResource SegmentedToggleStyle}"
                                          IsChecked="{Binding IsSubscribeMode, Mode=TwoWay}"/>
                         </UniformGrid>
                     </Grid>

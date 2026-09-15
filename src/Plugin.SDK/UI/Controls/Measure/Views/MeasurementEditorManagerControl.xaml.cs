@@ -42,11 +42,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
 
         public MeasurementEditorManagerControl()
         {
-            // 设计时完全跳过初始化，避免 XAML 解析触发 NullReferenceException
+            InitializeComponent();
+
+            // 设计器也必须创建可视树；仅跳过依赖运行时交互对象的事件关联。
             if (DesignerProperties.GetIsInDesignMode(this))
                 return;
-
-            InitializeComponent();
 
             // 订阅子编辑器渲染请求（屏蔽区域经 RenderRequested 触发统一渲染）
             maskEditor.RenderRequested += OnMaskRenderRequested;

@@ -3,13 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:constants="clr-namespace:SunEyeVision.Plugin.SDK.UI.Constants"
              xmlns:region="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views">
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.SDK;component/Themes/Generic.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </UserControl.Resources>
     <StackPanel>
         <!-- 检测区域 - 蓝色主题（ROI 语义内容色，固定不随主题切换） -->
         <Border CornerRadius="8" BorderThickness="1" BorderBrush="{x:Static constants:ColorConstants.InspectionBlueBrush}" Padding="8" Margin="0,0,0,8">

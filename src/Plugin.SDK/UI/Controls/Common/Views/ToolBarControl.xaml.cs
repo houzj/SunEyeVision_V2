@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using SunEyeVision.Plugin.SDK.Commands;
 using SunEyeVision.Plugin.SDK.UI.Controls.Common.Models;
+using SunEyeVision.Plugin.SDK.UI.Themes;
 
 namespace SunEyeVision.Plugin.SDK.UI.Controls.Common.Views
 {
@@ -82,6 +83,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Common.Views
 
         public ToolBarControl()
         {
+            DesignTimeThemeLoader.EnsureApplicationResources(this);
             InitializeComponent();
             SelectToolCommand = new RelayCommand<ToolItem>(OnToolButtonClick);
         }

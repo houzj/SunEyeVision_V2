@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using SunEyeVision.Plugin.SDK.UI.Themes;
 using SunEyeVision.Plugin.SDK.Commands;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Logging;
@@ -230,6 +231,16 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// </summary>
         protected ToolDebugControlBase()
         {
+            // 基类构造发生在具体工具 InitializeComponent 之前；提前为 VS 设计器装配
+            // Generic，避免根 XAML 在解析 DynamicResource/共享 Style 时只得到空壳。
+            DesignTimeThemeLoader.EnsureApplicationResources(this);
+
+            // 工具根面板也必须消费语义资源。否则设计器画布的深色背景会从透明的
+            // UserControl 透出，而内部 SDK 控件已命中 DefaultTheme，形成“外暗内亮”。
+            // DynamicResource 在运行时继续由宿主 Light/Dark 字典实时覆盖。
+            SetResourceReference(BackgroundProperty, SdkThemeKeys.PanelBackgroundBrush);
+            SetResourceReference(ForegroundProperty, SdkThemeKeys.TextPrimaryBrush);
+
             // 初始化所有类型的数据源缓存
             _availableDataSources = new System.Collections.ObjectModel.ObservableCollection<AvailableDataSource>();
 

@@ -56,6 +56,13 @@
     <!-- 中间目录也独立到各 worktree -->
     <IntermediateOutputPath>$(WorktreeBasePath)\build_temp\obj\$(MSBuildProjectName)\$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
 
+    <!-- 语言资源裁剪（体积治理，2026-09-14）：
+         只保留中文（zh-Hans）与英文（en）的卫星资源程序集，丢弃其余 11 种语言。
+         背景实测：Roslyn / AvalonEdit 等包自带 13 种语言的 *.resources.dll，
+         落到 dev\Debug 下为「13 个语言目录 × 7 个文件 = 91 个 / 10.48 MB」，而本软件 UI 仅需中/英。
+         设为 zh-Hans;en 后只保留 2 种（14 个文件），省 ≈9 MB；缺项自动回落中性资源，不影响功能。 -->
+    <SatelliteResourceLanguages>zh-Hans;en</SatelliteResourceLanguages>
+
     <CreateProgramDatabase>true</CreateProgramDatabase>
     <DebugType Condition="'$(Configuration)'=='Release'">embedded</DebugType>
     <DebugSymbols Condition="'$(Configuration)'=='Release'">true</DebugSymbols>

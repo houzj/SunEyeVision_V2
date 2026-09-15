@@ -87,9 +87,10 @@
         /// <summary>常规边框</summary>
         public const string BorderBrushKey = "ThemeBorder";
         public const string BorderBrush = "ThemeBorderBrush";
-        /// <summary>浅色分隔线（Color 层 Key）</summary>
+        /// <summary>分隔线颜色（Color 层 Key）</summary>
+        public const string DividerColor = "ThemeDividerColor";
+        /// <summary>分隔线画刷（Brush 层 Key）</summary>
         public const string DividerBrush = "ThemeDividerBrush";
-        public const string DividerBrushBrush = "ThemeDividerBrushBrush";
 
         // ============ 品牌 / 状态 ============
         /// <summary>品牌主色（沿用 #0066CC，Color 层 Key）</summary>
@@ -104,6 +105,20 @@
         /// <summary>错误 / 运行中状态（Color 层 Key）</summary>
         public const string ErrorColor = "ThemeErrorColor";
         public const string ErrorBrush = "ThemeErrorBrush";
+
+        // ============ 数据分析序列色 ============
+        public const string DataSeries1 = "ThemeDataSeries1";
+        public const string DataSeries1Brush = "ThemeDataSeries1Brush";
+        public const string DataSeries2 = "ThemeDataSeries2";
+        public const string DataSeries2Brush = "ThemeDataSeries2Brush";
+        public const string DataSeries3 = "ThemeDataSeries3";
+        public const string DataSeries3Brush = "ThemeDataSeries3Brush";
+        public const string DataSeries4 = "ThemeDataSeries4";
+        public const string DataSeries4Brush = "ThemeDataSeries4Brush";
+        public const string DataSeries5 = "ThemeDataSeries5";
+        public const string DataSeries5Brush = "ThemeDataSeries5Brush";
+        public const string DataSeriesMuted = "ThemeDataSeriesMuted";
+        public const string DataSeriesMutedBrush = "ThemeDataSeriesMutedBrush";
 
         // ============ SDK 控件补充（批次3，SDK 样式库 Token 化） ============
         /// <summary>滑块/范围滑块轨道背景</summary>

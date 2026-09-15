@@ -58,7 +58,7 @@
             </Grid.RowDefinitions>
 
             <!-- ========== 左侧工具箱 - 使用双模ToolboxControl ========== -->
-            <Border Grid.Column="0" Background="{DynamicResource ThemeWorkspaceBackgroundBrush}" BorderBrush="{DynamicResource ThemeDividerBrushBrush}" BorderThickness="0,0,1,0">
+            <Border Grid.Column="0" Background="{DynamicResource ThemeWorkspaceBackgroundBrush}" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.DividerBrush}}" BorderThickness="0,0,1,0">
                 <toolbox:ToolboxControl DataContext="{Binding Toolbox}" x:Name="ToolboxContent"/>
             </Border>
 

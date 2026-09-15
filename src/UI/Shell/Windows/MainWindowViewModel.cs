@@ -3430,7 +3430,7 @@ SplitterPosition = position;
                 }
 
                 // ★ 创建数据分析控件（独立于调试窗口）
-                var dataAnalysisControl = tool.CreateDataAnalysisControl();
+                var dataAnalysisControl = (tool as IToolEditorFactory)?.CreateDataAnalysisControl();
                 if (dataAnalysisControl == null)
                 {
                     // 工具未实现数据分析控件，隐藏Tab

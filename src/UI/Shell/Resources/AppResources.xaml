@@ -6,12 +6,8 @@
                     xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base">
 
     <ResourceDictionary.MergedDictionaries>
-        <!-- SDK DefaultTheme.xaml - SDK 兜底语义 token（无 UI 宿主时的亮色基准）。
-             由 ThemeManager 运行时注入的 Light/Dark 主题字典追加到 Application 级末尾覆盖。
-             不能由 Generic.xaml 合并（会被控件局部合入导致遮蔽），故在此 Application 级显式合入。 -->
-        <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.SDK;component/UI/Themes/DefaultTheme.xaml"/>
-        
-        <!-- SDK Generic.xaml - 包含所有SDK控件样式 -->
+        <!-- SDK Generic.xaml 同时提供控件样式与 DefaultTheme 兜底。
+             ThemeManager 将 Light/Dark 字典追加到 Application 资源末尾覆盖兜底值。 -->
         <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.SDK;component/Themes/Generic.xaml"/>
         
         <!-- 相机参数模板 -->

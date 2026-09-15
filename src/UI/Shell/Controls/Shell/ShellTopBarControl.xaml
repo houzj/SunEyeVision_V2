@@ -215,7 +215,7 @@
 
     <!-- ========== 一体化标题栏（VisionMaster 风格：菜单行 + 工具栏行，两行紧凑布局） ========== -->
     <Border Background="{DynamicResource ThemeTitleBarBackgroundBrush}"
-            BorderBrush="{DynamicResource ThemeDividerBrushBrush}"
+            BorderBrush="{DynamicResource {x:Static base:ThemeKeys.DividerBrush}}"
             BorderThickness="0,0,0,1">
         <Grid Height="64">
             <Grid.RowDefinitions>

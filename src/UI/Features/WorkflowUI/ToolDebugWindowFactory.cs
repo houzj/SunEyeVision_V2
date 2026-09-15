@@ -23,13 +23,13 @@ namespace SunEyeVision.UI.Features.WorkflowUI
     /// <remarks>
     /// 创建调试窗口的优先级：
     /// 1. toolMetadata.DebugWindowType - 工具元数据指定（推荐）
-    /// 2. IToolPlugin.CreateDebugWindow() - 工具自己创建
+    /// 2. IToolEditorFactory.CreateDebugWindow() - 工具自己创建
     /// 3. 返回 null - 不再提供通用调试窗口
     /// </remarks>
     public static class ToolDebugWindowFactory
     {
         /// <summary>
-        /// 创建工具调试窗口 - 优先使用IToolPlugin.CreateDebugWindow()
+        /// 创建工具调试窗口 - 优先使用 IToolEditorFactory.CreateDebugWindow()
         /// </summary>
         /// <param name="toolId">工具ID</param>
         /// <param name="toolPlugin">工具插件（可选，用于兼容旧版本）</param>
@@ -58,17 +58,17 @@ return window;
 
             // ★ 优先级2：通过 ToolRegistry 创建工具实例
             var tool = ToolRegistry.CreateToolInstance(toolId);
-            if (tool != null)
+            if (tool is IToolEditorFactory editorFactory)
             {
                 // 检查工具是否支持调试窗口
-                if (!tool.HasDebugWindow)
+                if (!editorFactory.HasDebugWindow)
                 {
 return null;
                 }
 
                 try
                 {
-                    var window = tool.CreateDebugWindow();
+                    var window = editorFactory.CreateDebugWindow();
                     if (window != null)
                     {
                         // ★ 初始化调试窗口（传递 toolId, toolPlugin, toolMetadata）
@@ -95,9 +95,9 @@ return null;
         {
             // 运行时检查：使用 ToolRegistry 创建工具实例检查
             var tool = ToolRegistry.CreateToolInstance(toolId);
-            if (tool != null)
+            if (tool is IToolEditorFactory editorFactory)
             {
-                return tool.HasDebugWindow;
+                return editorFactory.HasDebugWindow;
             }
 
             return false;

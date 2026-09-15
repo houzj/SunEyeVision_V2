@@ -41,13 +41,21 @@
     <!-- ============ 边框 / 分隔 ============ -->
     <!-- 边框提亮：#4E4E4E 比控件底 #2D2D2D 亮 33 级，保证 1px 边线在深色背景上可辨识（之前 #3C3C3C 差 15 级几乎不可见） -->
     <Color x:Key="{x:Static base:ThemeKeys.BorderBrushKey}">#FF4E4E4E</Color>
-    <Color x:Key="{x:Static base:ThemeKeys.DividerBrush}">#FF333333</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.DividerColor}">#FF333333</Color>
 
     <!-- ============ 品牌 / 状态 ============ -->
     <Color x:Key="{x:Static base:ThemeKeys.AccentColor}">#FF3794FF</Color>
     <Color x:Key="{x:Static base:ThemeKeys.SuccessColor}">#FF00CC99</Color>
     <Color x:Key="{x:Static base:ThemeKeys.WarningColor}">#FFFF9900</Color>
     <Color x:Key="{x:Static base:ThemeKeys.ErrorColor}">#FFFF5555</Color>
+
+    <!-- ============ 数据分析序列色（深色背景高对比） ============ -->
+    <Color x:Key="{x:Static base:ThemeKeys.DataSeries1}">#FF64B5F6</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.DataSeries2}">#FF81C784</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.DataSeries3}">#FFFFB74D</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.DataSeries4}">#FFF06292</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.DataSeries5}">#FFBA68C8</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.DataSeriesMuted}">#FFB0BEC5</Color>
 
     <!-- ============ 画布专属 ============ -->
     <Color x:Key="{x:Static base:ThemeKeys.CanvasBackground}">#FF1E1E1E</Color>
@@ -160,12 +168,18 @@
     <SolidColorBrush x:Key="{x:Static base:ThemeKeys.TextDisabledBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.TextDisabled}}"/>
 
     <SolidColorBrush x:Key="{x:Static base:ThemeKeys.BorderBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.BorderBrushKey}}"/>
-    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.DividerBrushBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.DividerBrush}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.DividerBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.DividerColor}}"/>
 
     <SolidColorBrush x:Key="{x:Static base:ThemeKeys.AccentBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.AccentColor}}"/>
     <SolidColorBrush x:Key="{x:Static base:ThemeKeys.SuccessBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.SuccessColor}}"/>
     <SolidColorBrush x:Key="{x:Static base:ThemeKeys.WarningBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.WarningColor}}"/>
     <SolidColorBrush x:Key="{x:Static base:ThemeKeys.ErrorBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.ErrorColor}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.DataSeries1Brush}" Color="{DynamicResource {x:Static base:ThemeKeys.DataSeries1}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.DataSeries2Brush}" Color="{DynamicResource {x:Static base:ThemeKeys.DataSeries2}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.DataSeries3Brush}" Color="{DynamicResource {x:Static base:ThemeKeys.DataSeries3}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.DataSeries4Brush}" Color="{DynamicResource {x:Static base:ThemeKeys.DataSeries4}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.DataSeries5Brush}" Color="{DynamicResource {x:Static base:ThemeKeys.DataSeries5}}"/>
+    <SolidColorBrush x:Key="{x:Static base:ThemeKeys.DataSeriesMutedBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.DataSeriesMuted}}"/>
 
     <SolidColorBrush x:Key="{x:Static base:ThemeKeys.CanvasBackgroundBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.CanvasBackground}}"/>
     <SolidColorBrush x:Key="{x:Static base:ThemeKeys.CanvasGridMajorBrush}" Color="{DynamicResource {x:Static base:ThemeKeys.CanvasGridMajor}}"/>

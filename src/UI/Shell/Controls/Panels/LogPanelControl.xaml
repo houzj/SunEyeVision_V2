@@ -208,7 +208,7 @@
             </Grid.RowDefinitions>
 
             <!-- 顶部工具栏 -->
-            <Border Grid.Row="0" Background="{DynamicResource {x:Static base:ThemeKeys.ToolBarBackgroundBrush}}" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.DividerBrushBrush}}" BorderThickness="0,0,0,1" Padding="6,4">
+            <Border Grid.Row="0" Background="{DynamicResource {x:Static base:ThemeKeys.ToolBarBackgroundBrush}}" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.DividerBrush}}" BorderThickness="0,0,0,1" Padding="6,4">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -430,7 +430,7 @@
             <!-- 底部状态栏 -->
             <Border Grid.Row="2"
                     Background="{DynamicResource {x:Static base:ThemeKeys.ToolBarBackgroundBrush}}"
-                    BorderBrush="{DynamicResource {x:Static base:ThemeKeys.DividerBrushBrush}}"
+                    BorderBrush="{DynamicResource {x:Static base:ThemeKeys.DividerBrush}}"
                     BorderThickness="0,1,0,0"
                     Padding="8,4">
                 <Grid>

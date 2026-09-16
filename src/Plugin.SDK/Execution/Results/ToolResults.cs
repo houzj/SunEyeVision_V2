@@ -29,7 +29,8 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
     /// 现由**声明方**（工具的 <c>GetPropertyMap</c>）决定，Shell 只读标志（rule-008 / rule-016）。
     /// </remarks>
     public record PropertyMapEntry(
-        string PropertyName, string DisplayName, string? GroupName = null, bool IsGroupPlaceholder = false);
+        string PropertyName, string DisplayName, string? GroupName = null, bool IsGroupPlaceholder = false,
+        bool DisplayInResultPanel = true);
 
     /// <summary>
     /// 执行状态枚举
@@ -297,6 +298,26 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
         public bool IsPass { get; set; } = true;
 
         /// <summary>
+        /// 面向界面的执行状态文本。执行状态与业务判定分开，避免“算法执行成功但尺寸越界”被显示为执行失败。
+        /// </summary>
+        public string ExecutionStatusText => Status switch
+        {
+            ExecutionStatus.NotExecuted => "未执行",
+            ExecutionStatus.Running => "执行中",
+            ExecutionStatus.Success => "成功",
+            ExecutionStatus.PartialSuccess => "部分成功",
+            ExecutionStatus.Failed => "失败",
+            ExecutionStatus.Timeout => "超时",
+            ExecutionStatus.Cancelled => "已取消",
+            _ => Status.ToString()
+        };
+
+        /// <summary>
+        /// 面向界面的业务判定结果：OK、NG 或未判定。由统一执行器根据本次参数中启用的判断项填充。
+        /// </summary>
+        public string JudgmentStatus { get; set; } = "未判定";
+
+        /// <summary>
         /// 错误信息
         /// </summary>
         public string? ErrorMessage { get; set; }
@@ -555,7 +576,10 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
             return new List<PropertyMapEntry>
             {
                 new("ExecutionTimeMs", "执行耗时", "执行信息"),
-                new("IsPass", "节点状态", "执行信息")
+                new("ExecutionStatusText", "执行状态", "执行信息"),
+                new("JudgmentStatus", "判定结果", "执行信息"),
+                // 仍作为下游绑定的布尔量保留，但不与面向用户的判定结果重复展示。
+                new("IsPass", "是否通过", "执行信息", DisplayInResultPanel: false)
             };
         }
 
@@ -590,6 +614,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
                     Group = entry.GroupName,
                     // P0.6-5：分组占位（单层折叠）随契约传递，Shell 不再按分组名硬编码判断
                     IsGroupPlaceholder = entry.IsGroupPlaceholder,
+                    DisplayInResultPanel = entry.DisplayInResultPanel,
                     Kind = OutputVariableKind.Data,
                     RuntimeValue = OutputVariableArrayPromoter.Promote(runtimeValue, variableType, prop.PropertyType)
                 });

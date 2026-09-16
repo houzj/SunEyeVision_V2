@@ -374,6 +374,15 @@ namespace SunEyeVision.UI.Services.Workflow
                             {
                                 uiNode.Status = flowResult.NextNodeIds != null && flowResult.NextNodeIds.Count > 0 ? "OK" : "NG";
                             }
+                            else if (toolResults.IsSuccess)
+                            {
+                                uiNode.Status = toolResults.JudgmentStatus switch
+                                {
+                                    "OK" => "OK",
+                                    "NG" => "NG",
+                                    _ => "成功"
+                                };
+                            }
                             OnNodeExecutionCompleted(uiNode, toolResults);
                         }
                     }

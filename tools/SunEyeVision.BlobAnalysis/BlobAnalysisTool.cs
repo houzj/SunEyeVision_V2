@@ -477,10 +477,11 @@ namespace SunEyeVision.Tool.BlobAnalysis
         }
 
         /// <summary>
-        /// 评估整体结果判断（OK/NG判定）- 仅保留整体统计判断
+        /// 评估整体结果判断（OK/NG判定）。
         /// </summary>
         /// <remarks>
-        /// Per-Blob 判断（Tab4）已分离到 EvaluateBlobJudgment，不在此处处理。
+        /// Per-Blob 判断的单项计算由 EvaluateBlobJudgment 完成；本方法负责把单项结果
+        /// 合并到工具总体判定。否则会出现单项均显示 NG、模块判定结果却显示 OK 的矛盾。
         /// Tab3 筛选在特征提取循环中处理。
         /// 此处只处理基于 FilteredBlobs 聚合统计的整体判断条件。
         /// </remarks>
@@ -522,9 +523,25 @@ namespace SunEyeVision.Tool.BlobAnalysis
                     _ => null,
                 });
 
-            result.IsPass = ResultJudgmentEvaluator.IsAllPass(outcomes);
+            var overallPassed = ResultJudgmentEvaluator.IsAllPass(outcomes);
+            var enabledPerBlobJudgments = config.Judgments
+                .Where(item => item.Scope == JudgmentScope.PerItem && item.Enabled)
+                .ToList();
+            var failedBlobCount = enabledPerBlobJudgments.Count == 0
+                ? 0
+                : filteredBlobs.Count(blob => !blob.JudgmentPassed);
+            var perBlobPassed = failedBlobCount == 0;
+
+            // 启用“每个 Blob …”判断时，任何一个保留 Blob 未通过都应使总体结果为 NG。
+            result.IsPass = overallPassed && perBlobPassed;
             foreach (var outcome in outcomes.Where(item => config.GetJudgment(item.Key).Enabled))
                 messages.Add($"[{(outcome.IsPass ? "OK" : "NG")}] {outcome.Message}");
+            if (enabledPerBlobJudgments.Count > 0)
+            {
+                messages.Add(failedBlobCount == 0
+                    ? $"[OK] 每个 Blob 判断全部通过（{filteredBlobs.Count} 个）"
+                    : $"[NG] 每个 Blob 判断未通过：{failedBlobCount}/{filteredBlobs.Count} 个");
+            }
             if (messages.Count > 0)
                 messages.Insert(0, $"===== 结果判断: {(result.IsPass ? "全部通过 ✓" : "存在未通过项 ✗")} =====");
         }

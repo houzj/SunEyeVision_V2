@@ -25,6 +25,9 @@ namespace SunEyeVision.Plugin.SDK.Execution.Results
         /// </summary>
         public bool IsGroupPlaceholder { get; set; }
 
+        /// <summary>是否在模块结果面板展示。false 时仍是可绑定的输出变量。</summary>
+        public bool DisplayInResultPanel { get; set; } = true;
+
         /// <summary>变量种类：数据变量 / 流程控制信号</summary>
         public OutputVariableKind Kind { get; set; } = OutputVariableKind.Data;
 

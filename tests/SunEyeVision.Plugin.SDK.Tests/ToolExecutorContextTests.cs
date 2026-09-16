@@ -25,6 +25,20 @@ public class ToolExecutorContextTests
         Assert.True(result.IsSuccess);
         Assert.Same(globalVariables, tool.CapturedGlobalVariables);
         Assert.Equal(12.5, tool.CapturedGlobalVariables!["Exposure"]);
+        Assert.Equal("未判定", result.JudgmentStatus);
+    }
+
+    [Fact]
+    public void Run_ProjectsEnabledJudgmentToNg()
+    {
+        var parameters = new JudgedParameters();
+        parameters.ResultPresentation.Judgments.Add(new JudgmentConfigItem { Key = "value", Enabled = true });
+        var result = new ToolExecutor(new ParameterResolver()).Run<JudgedParameters, TestResults>(
+            new FailingJudgmentTool(), parameters);
+
+        Assert.True(result.IsSuccess);
+        Assert.False(result.IsPass);
+        Assert.Equal("NG", result.JudgmentStatus);
     }
 
     [Fact]
@@ -41,6 +55,28 @@ public class ToolExecutorContextTests
 
         Assert.True(result.IsSuccess);
         Assert.Equal(cancellationSource.Token, tool.CapturedCancellationToken);
+    }
+
+    [Fact]
+    public void Run_GenericRequest_PreservesConcreteResultTypeAndInjectsUpstreamResults()
+    {
+        var upstream = new Dictionary<string, ToolResults>
+        {
+            ["upstream-node"] = new TestResults { Status = ExecutionStatus.Success }
+        };
+        var tool = new ContextCapturingTool();
+        var executor = new ToolExecutor(new ParameterResolver());
+
+        var result = executor.Run(tool, new ToolExecutionRequest(new TestParameters())
+        {
+            NodeResults = upstream,
+            NodeId = "debug-node",
+            NodeName = "调试节点"
+        });
+
+        Assert.IsType<TestResults>(result);
+        Assert.Same(upstream, tool.CapturedNodeResults);
+        Assert.Equal("debug-node", tool.CapturedNodeId);
     }
 
     [Fact]
@@ -96,6 +132,11 @@ public class ToolExecutorContextTests
     {
     }
 
+    private sealed class JudgedParameters : ToolParameters
+    {
+        public ResultPresentationConfig ResultPresentation { get; } = new();
+    }
+
     private sealed class TestResults : ToolResults
     {
     }
@@ -104,11 +145,15 @@ public class ToolExecutorContextTests
     {
         public IDictionary<string, object?>? CapturedGlobalVariables { get; private set; }
         public CancellationToken CapturedCancellationToken { get; private set; }
+        public IDictionary<string, ToolResults>? CapturedNodeResults { get; private set; }
+        public string? CapturedNodeId { get; private set; }
 
         public TestResults Run(TestParameters parameters)
         {
             CapturedGlobalVariables = parameters.Context?.GlobalVariables;
             CapturedCancellationToken = parameters.Context?.CancellationToken ?? default;
+            CapturedNodeResults = parameters.NodeResults;
+            CapturedNodeId = parameters.Context?.NodeId;
             return new TestResults { Status = ExecutionStatus.Success };
         }
     }
@@ -119,6 +164,15 @@ public class ToolExecutorContextTests
         {
             throw new OperationCanceledException();
         }
+    }
+
+    private sealed class FailingJudgmentTool : IToolPlugin<JudgedParameters, TestResults>
+    {
+        public TestResults Run(JudgedParameters parameters) => new()
+        {
+            Status = ExecutionStatus.Success,
+            IsPass = false
+        };
     }
 
     private sealed class AsyncCapturingTool : IToolPlugin<TestParameters, TestResults>, IAsyncToolPlugin

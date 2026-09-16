@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
@@ -79,6 +80,34 @@ namespace SunEyeVision.Plugin.SDK.Core
         }
 
         /// <summary>
+        /// 按一次运行请求执行强类型工具，并保留工具声明的具体结果类型。
+        /// </summary>
+        public TResult Run<TParameters, TResult>(
+            IToolPlugin<TParameters, TResult> tool,
+            ToolExecutionRequest request)
+            where TParameters : ToolParameters, new()
+            where TResult : ToolResults, new()
+        {
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
+            if (request.Parameters is not TParameters parameters)
+                throw new ArgumentException(
+                    $"执行请求参数类型应为 {typeof(TParameters).Name}，实际为 {request.Parameters.GetType().Name}",
+                    nameof(request));
+
+            parameters.ResolvedInputImage = request.ResolvedInputImage;
+            return Run(
+                tool,
+                parameters,
+                request.NodeResults,
+                request.NodeName,
+                request.NodeId,
+                request.CancellationToken,
+                request.GlobalVariables,
+                request.ApplyBindings);
+        }
+
+        /// <summary>
         /// 异步工具统一入口。新工具实现 <see cref="IAsyncToolPlugin"/> 时执行真正的异步逻辑，
         /// 旧工具通过同步入口兼容运行。
         /// </summary>
@@ -120,6 +149,7 @@ namespace SunEyeVision.Plugin.SDK.Core
                 var result = await asyncTool.ExecuteAsync(request).ConfigureAwait(false);
                 stopwatch.Stop();
                 result.ExecutionTimeMs = stopwatch.Elapsed.TotalMilliseconds;
+                ApplyJudgmentStatus(parameters, result);
                 return result;
             }
             catch (OperationCanceledException)
@@ -232,6 +262,7 @@ namespace SunEyeVision.Plugin.SDK.Core
 
                 stopwatch.Stop();
                 result.ExecutionTimeMs = stopwatch.Elapsed.TotalMilliseconds;
+                ApplyJudgmentStatus(parameters, result);
 
                 if (result.IsSuccess)
                 {
@@ -320,6 +351,7 @@ namespace SunEyeVision.Plugin.SDK.Core
 
                 stopwatch.Stop();
                 result.ExecutionTimeMs = stopwatch.Elapsed.TotalMilliseconds;
+                ApplyJudgmentStatus(parameters, result);
 
                 if (result.IsSuccess)
                 {
@@ -412,6 +444,7 @@ namespace SunEyeVision.Plugin.SDK.Core
 
                 stopwatch.Stop();
                 result.ExecutionTimeMs = stopwatch.Elapsed.TotalMilliseconds;
+                ApplyJudgmentStatus(parameters, result);
 
                 if (result.IsSuccess)
                 {
@@ -446,6 +479,25 @@ namespace SunEyeVision.Plugin.SDK.Core
             IDictionary<string, ToolResults> context)
         {
             return _parameterResolver.ApplyBindings(parameters, context);
+        }
+
+        /// <summary>
+        /// 统一把执行结果投影为业务判定结果。参数未启用任何判断项时明确为“未判定”，
+        /// 不把 ToolResults.IsPass 的默认 true 误显示为 OK。
+        /// </summary>
+        private static void ApplyJudgmentStatus(ToolParameters parameters, ToolResults result)
+        {
+            if (!result.IsSuccess)
+            {
+                result.JudgmentStatus = "未判定";
+                return;
+            }
+
+            var presentation = parameters.GetType().GetProperty("ResultPresentation")
+                ?.GetValue(parameters) as ResultPresentationConfig;
+            result.JudgmentStatus = presentation?.Judgments.Any(item => item.Enabled) == true
+                ? (result.IsPass ? "OK" : "NG")
+                : "未判定";
         }
 
     }

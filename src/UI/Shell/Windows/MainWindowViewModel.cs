@@ -4408,6 +4408,8 @@ AddLog($"⚠️ 节点结果更新异常: {ex.Message}");
                 {
                     if (v.Kind != OutputVariableKind.Data)
                         continue;
+                    if (!v.DisplayInResultPanel)
+                        continue;
                     entries.Add((
                         v.Name,
                         string.IsNullOrEmpty(v.DisplayName) ? v.Name : v.DisplayName,

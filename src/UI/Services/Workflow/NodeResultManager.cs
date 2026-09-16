@@ -306,8 +306,8 @@ namespace SunEyeVision.UI.Services.Workflow
 
         /// <summary>
         /// 从 WorkflowContext 中查询位置修正矩阵。
-        /// 直接通过 AvailableDataSource 的 SourceNodeId+PropertyName 查询父节点执行结果，
-        /// 避免依赖 CurrentValue（设计时为 null，仅执行时临时填充）。
+        /// 通过持久化绑定引用的 SourceNodeId+PropertyName 查询父节点执行结果。
+        /// 显示不能依赖调试窗口恢复 AvailableDataSource，也不能依赖其 CurrentValue。
         /// </summary>
         private AffineMatrix? GetPositionCorrectionMatrix(ToolParameters parameters)
         {
@@ -332,16 +332,23 @@ namespace SunEyeVision.UI.Services.Workflow
                     return null;
                 }
 
-                // 获取 AvailableDataSource 信息（SourceNodeId + PropertyName）
-                var bindingSourceProp = parameters.GetType().GetProperty("PositionCorrectionBindingSource");
-                var dataSource = bindingSourceProp?.GetValue(parameters) as AvailableDataSource;
-                if (dataSource == null || string.IsNullOrEmpty(dataSource.SourceNodeId) || string.IsNullOrEmpty(dataSource.PropertyName))
+                // 工作流只在执行副本中恢复运行时绑定，原节点加载后仍只有持久化引用。
+                // 直接读取该引用，使结果绘制与“是否打开过调试窗口”无关。
+                var sourceRef = parameters.GetType().GetProperty("PositionCorrectionSource")
+                    ?.GetValue(parameters) as ImageSourceReference;
+                if (sourceRef == null)
+                {
+                    var bindingSource = parameters.GetType().GetProperty("PositionCorrectionBindingSource")
+                        ?.GetValue(parameters) as AvailableDataSource;
+                    sourceRef = ImageSourceReference.FromDataSource(bindingSource);
+                }
+                if (sourceRef == null || string.IsNullOrEmpty(sourceRef.SourceNodeId) || string.IsNullOrEmpty(sourceRef.PropertyName))
                 {
                     _correctionDiagnostics["状态"] = "无有效绑定源";
                     return null;
                 }
 
-                _correctionDiagnostics["绑定源"] = $"{dataSource.SourceNodeId}.{dataSource.PropertyName}";
+                _correctionDiagnostics["绑定源"] = $"{sourceRef.SourceNodeId}.{sourceRef.PropertyName}";
 
                 // 直接通过 WorkflowContext 查询父节点执行结果
                 var context = _getContext();
@@ -351,16 +358,16 @@ namespace SunEyeVision.UI.Services.Workflow
                     return null;
                 }
 
-                var parentResult = context.GetNodeResult(dataSource.SourceNodeId);
+                var parentResult = context.GetNodeResult(sourceRef.SourceNodeId);
                 if (parentResult?.Result == null)
                 {
-                    _correctionDiagnostics["状态"] = $"父节点{dataSource.SourceNodeId}无执行结果";
+                    _correctionDiagnostics["状态"] = $"父节点{sourceRef.SourceNodeId}无执行结果";
                     return null;
                 }
 
                 // 兼容上游输出数组（如 ShapeMatch 的 MatchedPositionCorrections）：数组输入取第一个（[0]=最佳）
-                var matrix = parentResult.Result.GetOutputValue<AffineMatrix>(dataSource.PropertyName)
-                    ?? (parentResult.Result.GetOutputValue<AffineMatrix[]>(dataSource.PropertyName) is { Length: > 0 } arr
+                var matrix = parentResult.Result.GetOutputValue<AffineMatrix>(sourceRef.PropertyName)
+                    ?? (parentResult.Result.GetOutputValue<AffineMatrix[]>(sourceRef.PropertyName) is { Length: > 0 } arr
                         ? arr[0]
                         : null);
                 _correctionDiagnostics["矩阵"] = matrix?.ToString() ?? "null";

@@ -247,7 +247,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
             var start = new Point(LineStartX.Value, LineStartY.Value);
             var end = new Point(LineEndX.Value, LineEndY.Value);
             if ((end - start).Length < 1e-6) return;
-            editor.SetGuide(Line2d.FromTwoPoints(start, end));
+            // 面板输入的是精确端点，不能调用仅接收 Line2d 的兜底重载：
+            // 该重载会把线段扩展为默认 200px，再由事件把错误终点写回工具参数。
+            // 此处同时通知宿主，使 LineDetect 等工具参数与画布使用同一组端点。
+            editor.SetGuide(Line2d.FromTwoPoints(start, end), start, end, notifyGeometryChanged: true);
         }
 
         private void ApplyCircle()

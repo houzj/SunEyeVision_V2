@@ -199,6 +199,19 @@ public class MeasureInteractionModelContractTests
     }
 
     [Fact]
+    public void SetLine_WithExplicitEndpoints_PreservesPanelEndpoints()
+    {
+        var model = new MeasureInteractionModel();
+        var start = new Point(450.98, 312.87);
+        var end = new Point(865.81, 288.76);
+
+        model.SetLine(Line2d.FromTwoPoints(start, end), start, end);
+
+        Assert.Equal(start, model.LineStartPoint);
+        Assert.Equal(end, model.LineEndPoint);
+    }
+
+    [Fact]
     public void SetArcFromEndpoints_RejectsCoincident()
     {
         var model = new MeasureInteractionModel();

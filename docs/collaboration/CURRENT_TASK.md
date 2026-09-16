@@ -2,7 +2,7 @@
 
 - 基线提交：当前 `main` 的最新已提交版本。
 - 当前执行者：人工。
-- 当前任务：安装包已生成（与当前构建配置一致），等待人工安装验证。
+- 当前任务：安装包图标改用应用程序图标（脚本已改，待重新编译）。
 - 修改权限：`installer/`（`dist/` 为产物目录，不入库）。
 - 已完成：
   - **Release 包已全量重建**（2026-09-16 15:40，`BUILD_EXIT=0`；308 文件 / 608.3MB；`plugins/` 下 18 个工具目录）；
@@ -14,12 +14,16 @@
   - **Release 程序运行验证**：PID 44184，`Responding=True`，日志 `logs/2026/09/16/SunEyeVision_154537.txt`
     （1489 行，`[ERROR]`/`[WARN]` 均为 0）；解决方案加载成功（`Workflows=5`），16 个工具类型空洞池初始化正常。
   - `dist/` 已加入 `.gitignore`，避免 158MB 产物入库。
+  - **安装包图标改用应用图标**（脚本已改、已提交）：`.iss` 新增 `#define AppIcon` →
+    `SetupIconFile`（Setup.exe 图标）与 `UninstallDisplayIcon`（卸载项图标），替代 Inno Setup 默认图标；
+    并补写 **UTF-8 BOM**（原脚本无 BOM，Inno Setup 按 ANSI 解析会致向导弹窗中文乱码）。
+    **尚未重新编译** ⇒ `dist\SunEyeVision-Setup-1.0.0-x64.exe`（SHA256 `00766C8F…`）**仍是默认图标版本**。
 - 已知偏差（未处理，涉及发布规则禁区）：产品版本 `1.0.0` 硬编码于 6 处
   （`installer/SunEyeVision.iss:5,8`、`Directory.Build.props:45,47`、`Directory.Build.targets:41,168`、
   `run_rule_checker.bat:12,23`、`src/UI/Shell/Windows/AboutWindow.xaml:37`），无单一真源，
   且界面"关于"显示写死 `v1.0.0.0` 与程序集版本脱钩。
-- 下一步：人工运行安装包完成安装验证（管理员权限 → 安装到 `{autopf}\SunEyeVision` → 程序菜单与可选桌面快捷方式
-  → 安装后启动、加载工具、跑通执行流程）。
+- 下一步：重新编译安装包（`ISCC installer\SunEyeVision.iss`）→ 人工安装验证
+  （管理员权限 → 安装到 `{autopf}\SunEyeVision` → 程序菜单与可选桌面快捷方式 → 安装后启动、加载工具、跑通执行流程）。
 
 ## 工作流运行引擎架构优化（设计完成，待实施）
 

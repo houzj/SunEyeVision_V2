@@ -1,10 +1,12 @@
-; 依赖：Inno Setup 6.7.3（编译器本体）。官方下载：https://jrsoftware.org/isdl.php
+﻿; 依赖：Inno Setup 6.7.3（编译器本体）。官方下载：https://jrsoftware.org/isdl.php
 ; 说明：第三方安装器体积 10.3MB，**不入库**（见 .gitignore 的 installer/third-party/），
 ;       本机自行安装 Inno Setup 6.7.3 后即可用本脚本编译生成安装包。
 #define AppName "SunEyeVision"
 #define AppVersion "1.0.0"
 #define AppPublisher "SunEyeVision"
 #define AppExeName "SunEyeVision.UI.exe"
+; 安装包图标来源 = 应用程序自身的图标（与 src/UI/SunEyeVision.UI.csproj 的 ApplicationIcon 内容一致）
+#define AppIcon "..\src\UI\Icons\app_logo.ico"
 #define ReleaseDir "..\Release\SunEyeVision_v1.0.0\SunEyeVision"
 
 [Setup]
@@ -23,6 +25,8 @@ ArchitecturesInstallIn64BitMode=x64compatible
 PrivilegesRequired=admin
 WizardStyle=modern
 UninstallDisplayName={#AppName}
+UninstallDisplayIcon={app}\{#AppExeName}
+SetupIconFile={#AppIcon}
 
 [Files]
 Source: "{#ReleaseDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs

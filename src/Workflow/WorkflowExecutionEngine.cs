@@ -103,7 +103,9 @@ namespace SunEyeVision.Workflow
         private async Task<ExecutionResult> ExecuteWorkflowWithParallelGroups(
             WorkflowRunSession session,
             Workflow workflow,
-            WorkflowContext context)
+            WorkflowContext context,
+            WorkflowExecutionDependencyGraph dependencyGraph,
+            IReadOnlyDictionary<string, ToolExecutionProfile> nodeExecutionProfiles)
         {
             _logger.LogInfo($"[DEBUG ExecuteWorkflowWithParallelGroups] workflow.Id={workflow.Id}, workflow.Name={workflow.Name}, Nodes.Count={workflow.Nodes.Count}, Connections.Count={workflow.Connections.Count}");
 
@@ -112,8 +114,12 @@ namespace SunEyeVision.Workflow
 
             _logger.LogInfo($"========== 使用基于执行链的并行组执行模式 ==========");
 
-            // 获取并行执行组（基于执行链识别）
-            var parallelGroups = workflow.GetParallelExecutionGroupsByChains();
+            // 当前仍按组串行执行，但组必须来自完整依赖图：参数绑定也会形成前驱关系。
+            // 不能只用画布连线，否则“未画线的结果参数绑定”会被错误放入同一候选组。
+            var parallelGroups = dependencyGraph
+                .GetTopologicalLayers(workflow.Nodes.Select(node => node.Id))
+                .Select(layer => layer.ToList())
+                .ToList();
             _logger.LogInfo($"获取到 {parallelGroups.Count} 个并行执行组");
 
             // 显示执行组信息
@@ -171,7 +177,9 @@ namespace SunEyeVision.Workflow
                 var groupResult = await ExecuteNodesInParallel(
                     workflow,
                     executable,
-                    context);
+                    context,
+                    dependencyGraph,
+                    nodeExecutionProfiles);
 
                 // ★ 统计按实际成功节点数（失败/跳过的节点不计入）
                 totalExecutedNodes += executable.Count(id => context.GetNodeResult(id)?.Success == true);
@@ -275,113 +283,73 @@ namespace SunEyeVision.Workflow
         private async Task<ExecutionResult> ExecuteNodesInParallel(
             Workflow workflow,
             List<string> nodeIds,
-            WorkflowContext context)
+            WorkflowContext context,
+            WorkflowExecutionDependencyGraph dependencyGraph,
+            IReadOnlyDictionary<string, ToolExecutionProfile> nodeExecutionProfiles)
         {
             var result = new ExecutionResult();
+            var pending = nodeIds
+                .Select(id => workflow.Nodes.FirstOrDefault(node => node.Id == id))
+                .Where(node => node != null)
+                .Cast<WorkflowNodeBase>()
+                .ToList();
+            var running = new List<(WorkflowNodeBase Node, IDisposable Lease, Task<NodeExecutionResult> Task)>();
+            var leases = new WorkflowResourceLeaseManager();
+            var maxConcurrency = Math.Max(1, Math.Min(4, Environment.ProcessorCount - 1));
 
-            // 如果组内只有一个节点，直接顺序执行
-            if (nodeIds.Count == 1)
+            while (pending.Count > 0 || running.Count > 0)
             {
-                var node = workflow.Nodes.FirstOrDefault(n => n.Id == nodeIds[0]);
-                if (node != null && node.IsEnabled)
+                for (var index = 0; index < pending.Count && running.Count < maxConcurrency;)
                 {
-                    // ★ 失败隔离：前驱不可用（Failed/Skipped）→ 本节点跳过，不执行
-                    if (!AreParentsAvailable(workflow, node.Id, context))
+                    var node = pending[index];
+                    if (!node.IsEnabled)
                     {
-                        context.UpdateNodeStatus(node.Id, NodeStatus.Skipped);
-                        NodeStatusChanged?.Invoke(this, new NodeExecutionStatus { NodeId = node.Id, Status = NodeStatus.Skipped });
-                        _logger.LogInfo($"前驱不可用，跳过执行", node.Name);
-                        result.Success = true;
-                        result.Status = ExecutionStatus.Success;
-                        return result;
-                    }
-
-                    _logger.Info($"开始执行", node.Name);
-
-                    // 准备数据源
-                    var parentIds = workflow.Connections
-                        .Where(conn => conn.TargetNodeId == node.Id)
-                        .Select(conn => conn.SourceNodeId)
-                        .ToList();
-                    PrepareNodeExecution(node.Id, parentIds);
-
-                    context.UpdateNodeStatus(node.Id, NodeStatus.Running);
-                    NodeStatusChanged?.Invoke(this, new NodeExecutionStatus { NodeId = node.Id, Status = NodeStatus.Running });
-
-                    var nodeResult = await ExecuteNode(node, context, workflow);
-
-                    var duration = nodeResult.Duration?.TotalMilliseconds ?? 0;
-                    _logger.Info($"执行完成, 状态: {(nodeResult.Success ? "? 成功" : "? 失败")}, 耗时: {duration:F2}ms", node.Name);
-
-                    if (nodeResult.Success && nodeResult.Result != null)
-                    {
-                        // ★ 结果已通过 context.SetNodeResult 存入 SSOT
-                    }
-
-                    context.SetNodeResult(node.Id, nodeResult);
-                    context.UpdateNodeStatus(node.Id, nodeResult.Success ? NodeStatus.Completed : NodeStatus.Failed);
-                    NodeStatusChanged?.Invoke(this, new NodeExecutionStatus { NodeId = node.Id, Status = nodeResult.Success ? NodeStatus.Completed : NodeStatus.Failed });
-
-                    if (!nodeResult.Success)
-                    {
-                        var errorMessage = nodeResult.ErrorMessages?.FirstOrDefault() ?? "执行失败";
-                        result.AddError(errorMessage, node.Id);
-                    }
-                }
-                result.Success = result.Errors.Count == 0;
-                result.Status = result.Success ? ExecutionStatus.Success : ExecutionStatus.Failed;
-                return result;
-            }
-
-            // 按依赖顺序执行组内节点（确保参数绑定能正确解析上游节点结果）
-            // 识别组内节点间的依赖关系，按拓扑顺序执行
-            var sortedNodeIds = SortNodesByDependencies(workflow, nodeIds);
-            
-            foreach (var nodeId in sortedNodeIds)
-            {
-                var node = workflow.Nodes.FirstOrDefault(n => n.Id == nodeId);
-                if (node != null && node.IsEnabled)
-                {
-                    // ★ 失败隔离：前驱不可用（Failed/Skipped）→ 本节点跳过，不执行
-                    if (!AreParentsAvailable(workflow, nodeId, context))
-                    {
-                        context.UpdateNodeStatus(nodeId, NodeStatus.Skipped);
-                        NodeStatusChanged?.Invoke(this, new NodeExecutionStatus { NodeId = nodeId, Status = NodeStatus.Skipped });
-                        _logger.LogInfo($"前驱不可用，跳过执行", node.Name);
+                        pending.RemoveAt(index);
                         continue;
                     }
 
-                    // 准备数据源
-                    var parentIds = workflow.Connections
-                        .Where(conn => conn.TargetNodeId == node.Id)
-                        .Select(conn => conn.SourceNodeId)
-                        .ToList();
-                    PrepareNodeExecution(node.Id, parentIds);
+                    if (!AreParentsAvailable(node.Id, context, dependencyGraph))
+                    {
+                        pending.RemoveAt(index);
+                        context.UpdateNodeStatus(node.Id, NodeStatus.Skipped);
+                        NodeStatusChanged?.Invoke(this, new NodeExecutionStatus { NodeId = node.Id, Status = NodeStatus.Skipped });
+                        continue;
+                    }
 
+                    var profile = nodeExecutionProfiles.TryGetValue(node.Id, out var declared)
+                        ? declared
+                        : ToolExecutionProfile.LegacyExclusive;
+                    var exclusiveRunning = running.Any(item => nodeExecutionProfiles.TryGetValue(item.Node.Id, out var active) && active.ConcurrencyKind == ToolConcurrencyKind.WorkflowExclusive);
+                    if ((profile.ConcurrencyKind == ToolConcurrencyKind.WorkflowExclusive && running.Count > 0) || exclusiveRunning ||
+                        !leases.TryAcquire(workflow.Id, node.Id, profile, out var lease))
+                    {
+                        index++;
+                        continue;
+                    }
+
+                    pending.RemoveAt(index);
+                    PrepareNodeExecution(node.Id, dependencyGraph.GetPredecessors(node.Id));
                     context.UpdateNodeStatus(node.Id, NodeStatus.Running);
                     NodeStatusChanged?.Invoke(this, new NodeExecutionStatus { NodeId = node.Id, Status = NodeStatus.Running });
+                    running.Add((node, lease, Task.Run(() => ExecuteNode(node, context, workflow))));
+                }
 
-                    var nodeResult = await ExecuteNode(node, context, workflow);
+                if (running.Count == 0)
+                    throw new InvalidOperationException("调度器无法为就绪节点取得资源租约。");
 
-                    var duration = nodeResult.Duration?.TotalMilliseconds ?? 0;
-                    _logger.Info($"执行完成, 状态: {(nodeResult.Success ? "? 成功" : "? 失败")}, 耗时: {duration:F2}ms", node.Name);
+                await Task.WhenAny(running.Select(item => item.Task));
 
-                    if (nodeResult.Success && nodeResult.Result != null)
-                    {
-                        // ★ 结果已通过 context.SetNodeResult 存入 SSOT
-                    }
-
-                    context.SetNodeResult(nodeId, nodeResult);
-                    context.UpdateNodeStatus(nodeId, nodeResult.Success ? NodeStatus.Completed : NodeStatus.Failed);
-                    NodeStatusChanged?.Invoke(this, new NodeExecutionStatus { NodeId = nodeId, Status = nodeResult.Success ? NodeStatus.Completed : NodeStatus.Failed });
-
+                foreach (var completed in running.Where(item => item.Task.IsCompleted).ToList())
+                {
+                    running.Remove(completed);
+                    completed.Lease.Dispose();
+                    var nodeResult = await completed.Task;
+                    context.SetNodeResult(completed.Node.Id, nodeResult);
+                    var status = nodeResult.Success ? NodeStatus.Completed : NodeStatus.Failed;
+                    context.UpdateNodeStatus(completed.Node.Id, status);
+                    NodeStatusChanged?.Invoke(this, new NodeExecutionStatus { NodeId = completed.Node.Id, Status = status });
                     if (!nodeResult.Success)
-                    {
-                        var errorMessage = nodeResult.ErrorMessages?.FirstOrDefault() ?? "执行失败";
-                        result.AddError(errorMessage, nodeId);
-                        // ★ 失败隔离：不再终止本组，同组其余无依赖节点继续执行；
-                        //   本节点下游由前驱可用性判定标 Skipped
-                    }
+                        result.AddError(nodeResult.ErrorMessages?.FirstOrDefault() ?? "执行失败", completed.Node.Id);
                 }
             }
 
@@ -395,11 +363,14 @@ namespace SunEyeVision.Workflow
         /// 任一前驱为 Failed 或 Skipped → 返回 false，本节点应跳过执行，
         /// 避免下游带着缺失的上游数据继续执行而产生级联假错误。
         /// </summary>
-        private static bool AreParentsAvailable(Workflow workflow, string nodeId, WorkflowContext context)
+        private static bool AreParentsAvailable(
+            string nodeId,
+            WorkflowContext context,
+            WorkflowExecutionDependencyGraph dependencyGraph)
         {
-            foreach (var conn in workflow.Connections.Where(c => c.TargetNodeId == nodeId))
+            foreach (var predecessorNodeId in dependencyGraph.GetPredecessors(nodeId))
             {
-                var status = context.GetNodeStatus(conn.SourceNodeId);
+                var status = context.GetNodeStatus(predecessorNodeId);
                 if (status == NodeStatus.Failed || status == NodeStatus.Skipped)
                 {
                     return false;
@@ -486,6 +457,7 @@ namespace SunEyeVision.Workflow
             IVisionImage? inputImage,
             IDictionary<string, object?>? globalVariables,
             Dictionary<string, object>? contextVariables,
+            WorkflowRunRequest? request,
             bool isSubworkflow)
         {
             var sourceWorkflow = _workflowEngine.GetWorkflow(workflowId);
@@ -508,7 +480,7 @@ namespace SunEyeVision.Workflow
             }
 
             // 先构建本次运行的冻结计划。后续执行只读取计划，不再直接消费 UI 编辑对象。
-            var executionPlan = BuildExecutionPlan(session, scope, sourceWorkflow);
+            var executionPlan = BuildExecutionPlan(session, scope, sourceWorkflow, request);
             var execWorkflow = executionPlan.ExecutableWorkflow;
             _logger.LogInfo($"[DEBUG ExecuteWorkflow] execWorkflow 创建完成: Id={execWorkflow.Id}, Name={execWorkflow.Name}, Nodes.Count={execWorkflow.Nodes.Count}, Connections.Count={execWorkflow.Connections.Count}");
 
@@ -535,7 +507,10 @@ namespace SunEyeVision.Workflow
                 scope.Context = subContext;
                 scope.State = WorkflowExecutionState.Running;
                 subContext.SetVariable("InputImage", inputImage);
-                subContext.GlobalVariables = globalVariables;
+                subContext.GlobalVariables = globalVariables == null
+                    ? null
+                    : new Dictionary<string, object?>(globalVariables);
+                ApplyRuntimeParameters(subContext, request?.RuntimeParameters);
 
                 // 合并子程序输入端口值到子上下文（同时注入为合成节点结果供绑定解析）
                 if (contextVariables != null && contextVariables.Count > 0)
@@ -582,7 +557,12 @@ namespace SunEyeVision.Workflow
                 _logger.LogInfo($"递归执行子程序工作流: {sourceWorkflow.Name}");
                 try
                 {
-                    var subResult = await ExecuteWorkflowWithParallelGroups(session, execWorkflow, subContext);
+                var subResult = await ExecuteWorkflowWithParallelGroups(
+                    session,
+                    execWorkflow,
+                    subContext,
+                    executionPlan.DependencyGraph,
+                    executionPlan.NodeExecutionProfiles);
                     scope.State = subResult.Status == ExecutionStatus.Cancelled
                         ? WorkflowExecutionState.Stopped
                         : subResult.Success ? WorkflowExecutionState.Completed : WorkflowExecutionState.Error;
@@ -622,14 +602,22 @@ namespace SunEyeVision.Workflow
             };
             scope.Context = session.RootContext;
             session.RootContext.SetVariable("InputImage", inputImage);
-            session.RootContext.GlobalVariables = globalVariables;
+            session.RootContext.GlobalVariables = globalVariables == null
+                ? null
+                : new Dictionary<string, object?>(globalVariables);
+            ApplyRuntimeParameters(session.RootContext, request?.RuntimeParameters);
 
             session.State = WorkflowExecutionState.Running;
 
             try
             {
                 _logger.LogInfo($"开始执行工作流: {sourceWorkflow.Name}");
-                var result = await ExecuteWorkflowWithParallelGroups(session, execWorkflow, session.RootContext);
+                var result = await ExecuteWorkflowWithParallelGroups(
+                    session,
+                    execWorkflow,
+                    session.RootContext,
+                    executionPlan.DependencyGraph,
+                    executionPlan.NodeExecutionProfiles);
                 session.State = result.Success ? WorkflowExecutionState.Completed : WorkflowExecutionState.Error;
                 scope.State = session.State;
                 _logger.LogInfo($"工作流执行完成: {sourceWorkflow.Name}, 耗时: {(DateTimeOffset.UtcNow - session.StartedAt).TotalMilliseconds:F2}ms");
@@ -664,11 +652,28 @@ namespace SunEyeVision.Workflow
         private WorkflowExecutionPlan BuildExecutionPlan(
             WorkflowRunSession session,
             WorkflowRunScope scope,
-            Workflow sourceWorkflow)
+            Workflow sourceWorkflow,
+            WorkflowRunRequest? request)
         {
             var executableWorkflow = new Workflow(Guid.NewGuid().ToString(), sourceWorkflow.Name);
-            ConvertNodesForExecution(session, scope, sourceWorkflow, executableWorkflow);
-            return new WorkflowExecutionPlan(scope, executableWorkflow);
+            ConvertNodesForExecution(session, scope, sourceWorkflow, executableWorkflow, request);
+            var dependencyGraph = WorkflowExecutionDependencyGraph.Compile(executableWorkflow);
+            var nodeExecutionProfiles = executableWorkflow.Nodes.ToDictionary(
+                node => node.Id,
+                ResolveExecutionProfile,
+                StringComparer.Ordinal);
+            _logger.LogInfo(
+                $"执行计划已编译: 节点={executableWorkflow.Nodes.Count}, 依赖={dependencyGraph.Dependencies.Count}, " +
+                $"可并行声明={nodeExecutionProfiles.Values.Count(profile => profile.ConcurrencyKind == ToolConcurrencyKind.ParallelSafe)}");
+            return new WorkflowExecutionPlan(scope, executableWorkflow, dependencyGraph, nodeExecutionProfiles);
+        }
+
+        private static ToolExecutionProfile ResolveExecutionProfile(WorkflowNodeBase node)
+        {
+            if (node is AlgorithmNode { Tool: IToolExecutionProfileProvider provider })
+                return provider.DescribeExecution(node.Parameters) ?? ToolExecutionProfile.LegacyExclusive;
+
+            return ToolExecutionProfile.LegacyExclusive;
         }
 
         /// <summary>
@@ -685,7 +690,8 @@ namespace SunEyeVision.Workflow
             WorkflowRunSession session,
             WorkflowRunScope scope,
             Workflow source,
-            Workflow target)
+            Workflow target,
+            WorkflowRunRequest? request)
         {
             _logger.LogInfo($"[DEBUG ConvertNodesForExecution] 开始转换: source.Name={source.Name}, source.Id={source.Id}");
             _logger.LogInfo($"[DEBUG ConvertNodesForExecution] source.Nodes.Count={source.Nodes.Count}");
@@ -715,6 +721,7 @@ namespace SunEyeVision.Workflow
             {
                 // 运行开始时冻结参数。UI 后续编辑原对象只影响下一次运行。
                 var executionParameters = ToolParameterSnapshot.Create(node.Parameters);
+                ApplyNodeParameterOverrides(executionParameters, node.Id, request);
 
                 // 所有节点（含 Condition、Subroutine）统一作为 AlgorithmNode + IToolPlugin 执行
                 var executionNode = WorkflowNodeFactory.CreateAlgorithmNode(
@@ -729,7 +736,7 @@ namespace SunEyeVision.Workflow
                         $"无法创建算法节点: ToolType={node.ToolType}, Name={node.Name}");
 
                 // 复制参数绑定配置
-                executionNode.ParamSettings = node.ParamSettings;
+                executionNode.ParamSettings = node.ParamSettings?.Clone() ?? new ParamSettingContainer();
 
                 // ★ 委托注入：Subroutine 节点通过委托调用 ExecuteWorkflowAsync 执行子工作流
                 if (executionParameters is ISubWorkflowExecutor executor)
@@ -751,6 +758,7 @@ namespace SunEyeVision.Workflow
                             img,
                             null,
                             extendedCtx,
+                            request,
                             isSubworkflow: true);
                     };
                 }
@@ -998,14 +1006,27 @@ namespace SunEyeVision.Workflow
         public async Task<ExecutionResult> ExecuteWorkflowAsync(string workflowId, IVisionImage? inputImage,
             IDictionary<string, object?>? globalVariables = null,
             Dictionary<string, object>? contextVariables = null)
+            => await ExecuteWorkflowAsync(
+                new WorkflowRunRequest(workflowId, inputImage, globalVariables, contextVariables: contextVariables));
+
+        /// <summary>
+        /// 使用宿主已冻结的运行请求执行工作流。宿主取消令牌与本次根会话链接，
+        /// 因此停止连续运行能传递到真正执行节点。
+        /// </summary>
+        public async Task<ExecutionResult> ExecuteWorkflowAsync(
+            WorkflowRunRequest request,
+            CancellationToken cancellationToken = default)
         {
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
+
             WorkflowRunSession session;
             lock (_sessionGate)
             {
                 if (_activeSession?.IsActive == true)
                     return ExecutionResult.CreateFailure("已有工作流正在执行；请先停止或等待当前运行完成。");
 
-                session = new WorkflowRunSession(workflowId);
+                session = new WorkflowRunSession(request.WorkflowId, cancellationToken);
                 // 先占用执行槽位，再排入线程池。否则两次紧邻的异步调用都可能在首个任务
                 // 尚未开始、State 仍为 Idle 时通过检查，重新出现会话相互覆盖。
                 session.TryStart();
@@ -1021,10 +1042,11 @@ namespace SunEyeVision.Workflow
                     () => ExecuteWorkflowCore(
                         session,
                         session.RootScope,
-                        workflowId,
-                        inputImage,
-                        globalVariables,
-                        contextVariables,
+                        request.WorkflowId,
+                        request.InputImage,
+                        new Dictionary<string, object?>(request.GlobalVariables),
+                        new Dictionary<string, object>(request.ContextVariables),
+                        request,
                         isSubworkflow: false));
             }
             finally
@@ -1035,6 +1057,37 @@ namespace SunEyeVision.Workflow
                         _activeSession = null;
                 }
                 session.Dispose();
+            }
+        }
+
+        private static void ApplyRuntimeParameters(
+            WorkflowContext context,
+            IReadOnlyDictionary<string, object>? runtimeParameters)
+        {
+            if (runtimeParameters == null)
+                return;
+
+            foreach (var parameter in runtimeParameters)
+                context.SetRuntimeParameter(parameter.Key, parameter.Value);
+        }
+
+        private static void ApplyNodeParameterOverrides(
+            ToolParameters parameters,
+            string nodeId,
+            WorkflowRunRequest? request)
+        {
+            if (request == null || !request.NodeParameterOverrides.TryGetValue(nodeId, out var overrides))
+                return;
+
+            var parameterType = parameters.GetType();
+            foreach (var pair in overrides)
+            {
+                var property = parameterType.GetProperty(pair.Key);
+                if (property == null || !property.CanWrite)
+                    throw new InvalidOperationException(
+                        $"节点 {nodeId} 的运行时参数覆盖无效：{parameterType.Name}.{pair.Key} 不可写。");
+
+                property.SetValue(parameters, pair.Value);
             }
         }
 

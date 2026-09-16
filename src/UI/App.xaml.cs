@@ -742,6 +742,7 @@ public partial class App : Application
 
             // ★ 查找节点所属工作流名称和参数显示名称
             string? workflowName = null;
+            string? workflowId = null;
             string? parameterDisplayName = null;
 
             var solution = solutionManager.CurrentSolution;
@@ -753,6 +754,7 @@ public partial class App : Application
                     if (workflowNode != null)
                     {
                         workflowName = wf.Name ?? wf.Id;
+                        workflowId = wf.Id;
 
                         // 从参数的 [DisplayName] 属性获取中文显示名
                         if (workflowNode.Parameters != null)
@@ -787,6 +789,7 @@ public partial class App : Application
             {
                 // 已存在则更新节点名称、工作流名称、参数显示名称
                 existing.NodeName = nodeName;
+                if (workflowId != null) existing.WorkflowId = workflowId;
                 if (workflowName != null) existing.WorkflowName = workflowName;
                 if (parameterDisplayName != null) existing.ParameterDisplayName = parameterDisplayName;
             }
@@ -795,6 +798,7 @@ public partial class App : Application
                 // 追加新的消费者绑定（含 WorkflowName + ParameterDisplayName）
                 variable.ConsumerBindings.Add(new ConsumerBinding
                 {
+                    WorkflowId = workflowId ?? "",
                     NodeId = nodeId,
                     NodeName = nodeName,
                     WorkflowName = workflowName ?? "",

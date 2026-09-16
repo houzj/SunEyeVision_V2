@@ -31,6 +31,17 @@ public class WorkflowRunSessionTests
     }
 
     [Fact]
+    public void ExternalCancellation_CancelsTheLinkedRunSession()
+    {
+        using var external = new CancellationTokenSource();
+        using var session = new WorkflowRunSession("root-a", external.Token);
+
+        external.Cancel();
+
+        Assert.True(session.CancellationToken.IsCancellationRequested);
+    }
+
+    [Fact]
     public async Task Pause_BlocksAtExecutionBoundary_UntilResume()
     {
         using var session = new WorkflowRunSession("root-a");

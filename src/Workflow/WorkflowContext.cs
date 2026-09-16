@@ -202,6 +202,10 @@ namespace SunEyeVision.Workflow
         /// 节点执行结果存储（新增）
         /// </summary>
         private readonly Dictionary<string, NodeExecutionResult> _executionResults = new();
+        private readonly object _runtimeParametersGate = new();
+        private readonly object _nodeResultsGate = new();
+        private readonly object _nodeStatesGate = new();
+        private readonly object _logsGate = new();
 
         /// <summary>
         /// 工作流ID
@@ -384,26 +388,27 @@ namespace SunEyeVision.Workflow
         /// </summary>
         public void UpdateNodeStatus(string nodeId, NodeStatus status, ExecutionResult result = null)
         {
-            if (!NodeStates.ContainsKey(nodeId))
+            lock (_nodeStatesGate)
             {
-                NodeStates[nodeId] = new NodeExecutionStatusInternal
+                if (!NodeStates.ContainsKey(nodeId))
                 {
-                    StartTime = DateTime.Now,
-                    Status = status
-                };
-            }
+                    NodeStates[nodeId] = new NodeExecutionStatusInternal
+                    {
+                        StartTime = DateTime.Now,
+                        Status = status
+                    };
+                }
 
-            var nodeStatus = NodeStates[nodeId];
-            nodeStatus.Status = status;
+                var nodeStatus = NodeStates[nodeId];
+                nodeStatus.Status = status;
 
-            if (status == NodeStatus.Completed || status == NodeStatus.Failed)
-            {
-                nodeStatus.EndTime = DateTime.Now;
-            }
+                if (status == NodeStatus.Completed || status == NodeStatus.Failed)
+                    nodeStatus.EndTime = DateTime.Now;
 
-            if (status == NodeStatus.Failed && result != null && result.Errors.Any())
-            {
-                // 节点执行失败，错误信息已记录在result.Errors中
+                if (status == NodeStatus.Failed && result != null && result.Errors.Any())
+                {
+                    // 节点执行失败，错误信息已记录在result.Errors中
+                }
             }
         }
 
@@ -412,7 +417,8 @@ namespace SunEyeVision.Workflow
         /// </summary>
         public NodeStatus GetNodeStatus(string nodeId)
         {
-            return NodeStates.TryGetValue(nodeId, out var state) ? state.Status : NodeStatus.Pending;
+            lock (_nodeStatesGate)
+                return NodeStates.TryGetValue(nodeId, out var state) ? state.Status : NodeStatus.Pending;
         }
 
         /// <summary>
@@ -427,7 +433,7 @@ namespace SunEyeVision.Workflow
             VisionLogger.Instance.Log(level, message, source);
 
             // 同时保留执行日志（用于工作流执行追踪）
-            Logs.Add(new ExecutionLog
+            lock (_logsGate) Logs.Add(new ExecutionLog
             {
                 Timestamp = DateTime.Now,
                 Message = message,
@@ -448,7 +454,7 @@ namespace SunEyeVision.Workflow
             VisionLogger.Instance.Log(level, message, actualSource);
 
             // 保留执行日志
-            Logs.Add(new ExecutionLog
+            lock (_logsGate) Logs.Add(new ExecutionLog
             {
                 Timestamp = DateTime.Now,
                 Message = message,
@@ -504,16 +510,20 @@ namespace SunEyeVision.Workflow
         /// </summary>
         public ExecutionStatistics GetStatistics()
         {
+            NodeExecutionStatusInternal[] nodeStates;
+            int logCount;
+            lock (_nodeStatesGate) nodeStates = NodeStates.Values.ToArray();
+            lock (_logsGate) logCount = Logs.Count;
             var stats = new ExecutionStatistics
             {
                 ExecutionId = ExecutionId,
                 StartTime = ExecutionStartTime,
                 EndTime = DateTime.Now,
-                TotalNodes = NodeStates.Count,
-                CompletedNodes = NodeStates.Values.Count(n => n.Status == NodeStatus.Completed),
-                FailedNodes = NodeStates.Values.Count(n => n.Status == NodeStatus.Failed),
-                SkippedNodes = NodeStates.Values.Count(n => n.Status == NodeStatus.Skipped),
-                TotalLogs = Logs.Count
+                TotalNodes = nodeStates.Length,
+                CompletedNodes = nodeStates.Count(n => n.Status == NodeStatus.Completed),
+                FailedNodes = nodeStates.Count(n => n.Status == NodeStatus.Failed),
+                SkippedNodes = nodeStates.Count(n => n.Status == NodeStatus.Skipped),
+                TotalLogs = logCount
             };
 
             stats.Duration = stats.EndTime - stats.StartTime;
@@ -529,9 +539,8 @@ namespace SunEyeVision.Workflow
         /// </summary>
         public T? GetRuntimeParameter<T>(string key)
         {
-            if (_runtimeParameters.TryGetValue(key, out var value) && value is T typed)
-                return typed;
-            return default;
+            lock (_runtimeParametersGate)
+                return _runtimeParameters.TryGetValue(key, out var value) && value is T typed ? typed : default;
         }
 
         /// <summary>
@@ -539,7 +548,7 @@ namespace SunEyeVision.Workflow
         /// </summary>
         public void SetRuntimeParameter<T>(string key, T value)
         {
-            _runtimeParameters[key] = value!;
+            lock (_runtimeParametersGate) _runtimeParameters[key] = value!;
         }
 
         /// <summary>
@@ -547,7 +556,7 @@ namespace SunEyeVision.Workflow
         /// </summary>
         public bool HasRuntimeParameter(string key)
         {
-            return _runtimeParameters.ContainsKey(key);
+            lock (_runtimeParametersGate) return _runtimeParameters.ContainsKey(key);
         }
 
         /// <summary>
@@ -555,7 +564,7 @@ namespace SunEyeVision.Workflow
         /// </summary>
         public bool RemoveRuntimeParameter(string key)
         {
-            return _runtimeParameters.Remove(key);
+            lock (_runtimeParametersGate) return _runtimeParameters.Remove(key);
         }
 
         /// <summary>
@@ -563,7 +572,7 @@ namespace SunEyeVision.Workflow
         /// </summary>
         public void ClearRuntimeParameters()
         {
-            _runtimeParameters.Clear();
+            lock (_runtimeParametersGate) _runtimeParameters.Clear();
         }
 
         #endregion
@@ -575,7 +584,7 @@ namespace SunEyeVision.Workflow
         /// </summary>
         public void SetNodeResult(string nodeId, NodeExecutionResult result)
         {
-            _executionResults[nodeId] = result;
+            lock (_nodeResultsGate) _executionResults[nodeId] = result;
         }
 
         /// <summary>
@@ -583,7 +592,8 @@ namespace SunEyeVision.Workflow
         /// </summary>
         public NodeExecutionResult? GetNodeResult(string nodeId)
         {
-            return _executionResults.TryGetValue(nodeId, out var result) ? result : null;
+            lock (_nodeResultsGate)
+                return _executionResults.TryGetValue(nodeId, out var result) ? result : null;
         }
 
         /// <summary>
@@ -604,7 +614,7 @@ namespace SunEyeVision.Workflow
         /// </summary>
         public bool HasNodeResult(string nodeId)
         {
-            return _executionResults.ContainsKey(nodeId);
+            lock (_nodeResultsGate) return _executionResults.ContainsKey(nodeId);
         }
 
         /// <summary>
@@ -612,7 +622,7 @@ namespace SunEyeVision.Workflow
         /// </summary>
         public bool RemoveNodeResult(string nodeId)
         {
-            return _executionResults.Remove(nodeId);
+            lock (_nodeResultsGate) return _executionResults.Remove(nodeId);
         }
 
         /// <summary>
@@ -620,7 +630,7 @@ namespace SunEyeVision.Workflow
         /// </summary>
         public void ClearNodeResults()
         {
-            _executionResults.Clear();
+            lock (_nodeResultsGate) _executionResults.Clear();
         }
 
         /// <summary>
@@ -628,7 +638,8 @@ namespace SunEyeVision.Workflow
         /// </summary>
         public IReadOnlyDictionary<string, NodeExecutionResult> GetAllNodeResults()
         {
-            return _executionResults;
+            lock (_nodeResultsGate)
+                return new Dictionary<string, NodeExecutionResult>(_executionResults);
         }
 
         #endregion

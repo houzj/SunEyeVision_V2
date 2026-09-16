@@ -255,6 +255,81 @@ namespace SunEyeVision.UI.Services.Workflow
         }
 
         /// <summary>
+        /// 运行解决方案的所有根流程。顺序由全局变量的输入来源和目标参数自动推导，
+        /// 不需要额外维护 RunAll 编排配置。
+        /// </summary>
+        public async Task RunSolutionAsync(
+            IEnumerable<WorkflowTabViewModel> workflows,
+            Solution solution,
+            CancellationToken cancellationToken = default)
+        {
+            if (workflows == null)
+                throw new ArgumentNullException(nameof(workflows));
+            if (solution == null)
+                throw new ArgumentNullException(nameof(solution));
+
+            var tabs = workflows.Where(tab => tab != null).ToList();
+            var tabsById = tabs.ToDictionary(tab => tab.RootWorkflowId, StringComparer.Ordinal);
+            var plan = SolutionExecutionDependencyGraph.Compile(solution);
+            var runtimeGlobals = solution.GlobalVariables
+                .ToDictionary(variable => variable.Name, variable => variable.Value, StringComparer.Ordinal);
+            var workflowPredecessors = BuildWorkflowPredecessors(plan, tabsById.Keys);
+            var completed = new HashSet<string>(StringComparer.Ordinal);
+            var failed = new HashSet<string>(StringComparer.Ordinal);
+            var pending = new HashSet<string>(tabsById.Keys, StringComparer.Ordinal);
+
+            while (pending.Count > 0)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var ready = pending
+                    .Where(id => workflowPredecessors[id].All(completed.Contains))
+                    .OrderBy(id => tabs.FindIndex(tab => tab.RootWorkflowId == id))
+                    .ToList();
+                if (ready.Count == 0)
+                    throw new InvalidOperationException("存在未完成的跨流程依赖，无法继续解决方案运行。");
+
+                // WorkflowExecutionEngine 当前根会话互斥；此处按已推导的顺序提交。
+                var workflowId = ready[0];
+                var tab = tabsById[workflowId];
+                if (workflowPredecessors[workflowId].Any(failed.Contains))
+                {
+                    pending.Remove(workflowId);
+                    failed.Add(workflowId);
+                    InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this,
+                        new WorkflowExecutionProgressEventArgs(workflowId, "[SKIPPED] 跨流程上游失败。")));
+                    continue;
+                }
+
+                if (!TryAcquireExecution(workflowId))
+                    throw new InvalidOperationException($"流程 {tab.Name} 已在运行，不能加入本次解决方案运行。");
+
+                try
+                {
+                    tab.IsRunning = true;
+                    OnWorkflowExecutionStarted(workflowId);
+                    var executionResult = await ExecuteWorkflowInternal(tab, cancellationToken, runtimeGlobals);
+                    if (executionResult.Success)
+                    {
+                        ApplyProducedGlobalValues(solution, workflowId, executionResult, runtimeGlobals);
+                        completed.Add(workflowId);
+                        OnWorkflowExecutionCompleted(workflowId);
+                    }
+                    else
+                    {
+                        failed.Add(workflowId);
+                        OnWorkflowExecutionError(workflowId, string.Join("; ", executionResult.Errors));
+                    }
+                }
+                finally
+                {
+                    tab.IsRunning = false;
+                    pending.Remove(workflowId);
+                    ReleaseExecution(workflowId);
+                }
+            }
+        }
+
+        /// <summary>
         /// 开始所有工作流的连续执行
         /// </summary>
         public void StartAllContinuousRun(IEnumerable<WorkflowTabViewModel> workflows)
@@ -401,14 +476,24 @@ namespace SunEyeVision.UI.Services.Workflow
                     logger.LogInfo($"运行时参数: {param.Key} = {param.Value}");
                 }
 
-                // ★ 从各节点的 InputSource 递归注入路径（每个 ImageLoad 节点独立控制）
-                InjectFilePathFromInputSource(rootEngineWorkflow, logger, new HashSet<string>());
+                // 从各节点 InputSource 提取本轮路径快照。路径只覆盖深拷贝后的执行参数，
+                // 不再写回方案节点的 Parameters.FilePath，避免切图或执行污染设计数据。
+                var nodeParameterOverrides = CreateImageLoadParameterOverrides(
+                    rootEngineWorkflow,
+                    logger,
+                    new HashSet<string>());
 
                 // ★ 引擎内部统一完成节点类型转换，主/子工作流共享同一逻辑
                 logger.LogInfo($"开始执行工作流: {rootEngineWorkflow.Name}");
                 InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(this, new WorkflowExecutionProgressEventArgs(workflow.RootWorkflowId, "[EXEC] 开始执行工作流...")));
 
-                var result = await executionEngine.ExecuteWorkflowAsync(workflow.RootWorkflowId, null, _globalVariables);
+                var runRequest = new WorkflowRunRequest(
+                    workflow.RootWorkflowId,
+                    inputImage as IVisionImage,
+                    _globalVariables,
+                    runtimeParameters,
+                    nodeParameterOverrides: nodeParameterOverrides);
+                var result = await executionEngine.ExecuteWorkflowAsync(runRequest, cancellationToken);
 
                 // 输出结果
                 logger.LogInfo($"工作流执行完成: {rootEngineWorkflow.Name}");
@@ -486,7 +571,7 @@ namespace SunEyeVision.UI.Services.Workflow
 
         /// <summary>
         /// 递归遍历工作流（含子工作流），从每个 ImageLoad 节点的 InputSource
-        /// 读取当前选中的图像路径，注入到 Parameters.FilePath
+        /// 读取当前选中的图像路径，生成本轮参数覆盖快照。
         /// </summary>
         /// <remarks>
         /// 使用 WorkflowNodeBase 基类而非 SunEyeVision.UI.Shared.WorkflowNode，确保子程序工作流中的节点
@@ -494,8 +579,19 @@ namespace SunEyeVision.UI.Services.Workflow
         /// IsImageLoadNode 通过 ToolType 字符串判断（在基类上可访问）。
         /// InputSource 在 WorkflowNodeBase 上为 object?，通过 as 转换访问。
         /// </remarks>
-        private void InjectFilePathFromInputSource(
+        private Dictionary<string, IReadOnlyDictionary<string, object?>> CreateImageLoadParameterOverrides(
             SunEyeVision.Workflow.Workflow workflow, ILogger logger, HashSet<string> visitedIds)
+        {
+            var overrides = new Dictionary<string, IReadOnlyDictionary<string, object?>>();
+            CollectImageLoadParameterOverrides(workflow, logger, visitedIds, overrides);
+            return overrides;
+        }
+
+        private void CollectImageLoadParameterOverrides(
+            SunEyeVision.Workflow.Workflow workflow,
+            ILogger logger,
+            HashSet<string> visitedIds,
+            Dictionary<string, IReadOnlyDictionary<string, object?>> overrides)
         {
             if (workflow == null || !visitedIds.Add(workflow.Id)) return;
 
@@ -509,34 +605,33 @@ namespace SunEyeVision.UI.Services.Workflow
                 {
                     var subWorkflow = _workflowEngine.GetWorkflow(wn.SubroutineId);
                     if (subWorkflow != null)
-                        InjectFilePathFromInputSource(subWorkflow, logger, visitedIds);
+                        CollectImageLoadParameterOverrides(subWorkflow, logger, visitedIds, overrides);
                 }
 
                 // 通过 ToolType 判断是否为图像载入节点（基类属性，无需强制转换为 SunEyeVision.UI.Shared.WorkflowNode）
                 if (!IsImageLoadToolType(wn.ToolType))
                     continue;
 
-                // 解析节点参数中的 FilePath 属性（ImageLoadParameters.FilePath）
-                var prop = wn.Parameters?.GetType().GetProperty("FilePath");
-                if (prop == null || !prop.CanWrite)
-                    continue;
-
                 var inputSource = wn.InputSource as ImageInputSource;
                 var currentImage = inputSource?.CurrentImage;
 
-                // InputSource 有当前图 → 注入其路径到 Parameters.FilePath
+                // InputSource 有当前图 → 在执行参数快照中覆盖路径。
                 if (currentImage != null && !string.IsNullOrEmpty(currentImage.FilePath))
                 {
-                    prop.SetValue(wn.Parameters, currentImage.FilePath);
-                    logger.LogInfo($"从 InputSource 注入路径: '{wn.Name}' -> '{currentImage.FilePath}'");
+                    overrides[wn.Id] = new Dictionary<string, object?>
+                    {
+                        ["FilePath"] = currentImage.FilePath
+                    };
+                    logger.LogInfo($"从 InputSource 创建路径快照: '{wn.Name}' -> '{currentImage.FilePath}'");
                 }
                 else
                 {
-                    // ★ 治本（rule-015 报错优先）：InputSource 为空/被清空时，显式清空节点参数 FilePath，
-                    // 防止运行时读到上次残留的旧路径，导致"清空图像源后运行仍读到旧图"。
-                    // ImageLoadTool.Run 检测到 FilePath 为空会返回"文件路径为空"错误，用户明确感知图像源为空。
-                    prop.SetValue(wn.Parameters, string.Empty);
-                    logger.LogWarning($"InputSource 无有效图像，已清空 '{wn.Name}' 的 FilePath，运行时将报文件路径为空");
+                    // 显式覆盖为空，防止执行快照使用设计期残留路径。
+                    overrides[wn.Id] = new Dictionary<string, object?>
+                    {
+                        ["FilePath"] = string.Empty
+                    };
+                    logger.LogWarning($"InputSource 无有效图像，已在运行快照清空 '{wn.Name}' 的 FilePath");
                 }
             }
         }

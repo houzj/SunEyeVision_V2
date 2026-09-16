@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using SunEyeVision.Plugin.SDK.Core;
 
 namespace SunEyeVision.Workflow;
 
@@ -7,10 +9,16 @@ namespace SunEyeVision.Workflow;
 /// </summary>
 public sealed class WorkflowExecutionPlan
 {
-    internal WorkflowExecutionPlan(WorkflowRunScope scope, Workflow executableWorkflow)
+    internal WorkflowExecutionPlan(
+        WorkflowRunScope scope,
+        Workflow executableWorkflow,
+        WorkflowExecutionDependencyGraph dependencyGraph,
+        IReadOnlyDictionary<string, ToolExecutionProfile> nodeExecutionProfiles)
     {
         Scope = scope ?? throw new ArgumentNullException(nameof(scope));
         ExecutableWorkflow = executableWorkflow ?? throw new ArgumentNullException(nameof(executableWorkflow));
+        DependencyGraph = dependencyGraph ?? throw new ArgumentNullException(nameof(dependencyGraph));
+        NodeExecutionProfiles = nodeExecutionProfiles ?? throw new ArgumentNullException(nameof(nodeExecutionProfiles));
         CreatedAt = DateTimeOffset.UtcNow;
     }
 
@@ -25,6 +33,11 @@ public sealed class WorkflowExecutionPlan
     public int NodeCount => ExecutableWorkflow.Nodes.Count;
 
     public int ConnectionCount => ExecutableWorkflow.Connections.Count;
+
+    public WorkflowExecutionDependencyGraph DependencyGraph { get; }
+
+    /// <summary>节点在本次运行开始时冻结的并发与资源声明。</summary>
+    public IReadOnlyDictionary<string, ToolExecutionProfile> NodeExecutionProfiles { get; }
 
     internal WorkflowRunScope Scope { get; }
 

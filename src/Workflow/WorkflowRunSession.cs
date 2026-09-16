@@ -15,17 +15,18 @@ namespace SunEyeVision.Workflow;
 /// </remarks>
 public sealed class WorkflowRunSession : IDisposable
 {
-    private readonly CancellationTokenSource _cancellationSource = new();
+    private readonly CancellationTokenSource _cancellationSource;
     private readonly object _pauseGate = new();
     private readonly object _scopeGate = new();
     private readonly Dictionary<Guid, WorkflowRunScope> _scopes = new();
     private TaskCompletionSource _resumeSignal = CreateCompletedSignal();
 
-    public WorkflowRunSession(string rootWorkflowId)
+    public WorkflowRunSession(string rootWorkflowId, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(rootWorkflowId))
             throw new ArgumentException("根工作流 ID 不能为空。", nameof(rootWorkflowId));
 
+        _cancellationSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         RootWorkflowId = rootWorkflowId;
         RunId = Guid.NewGuid();
         StartedAt = DateTimeOffset.UtcNow;

@@ -23,6 +23,7 @@ namespace SunEyeVision.UI.Features.ParameterSetting
         public string Name { get; set; } = string.Empty;
         public string DisplayPath { get; set; } = string.Empty;
         public string NodeType { get; set; } = "";
+        public string? WorkflowId { get; set; }
         public string? NodeId { get; set; }
         public string? ParameterName { get; set; }
         public ObservableCollection<TargetParamTreeNode> Children { get; set; } = new();
@@ -112,6 +113,7 @@ namespace SunEyeVision.UI.Features.ParameterSetting
 
     public class ConsumerItemViewModel : ObservableObject
     {
+        public string WorkflowId { get; set; } = string.Empty;
         public string WorkflowName { get; set; } = string.Empty;
         public string NodeId { get; set; } = string.Empty;
         public string NodeName { get; set; } = string.Empty;
@@ -123,6 +125,7 @@ namespace SunEyeVision.UI.Features.ParameterSetting
 
         public ConsumerBinding ToConsumerBinding() => new()
         {
+            WorkflowId = WorkflowId,
             NodeId = NodeId,
             NodeName = NodeName,
             WorkflowName = WorkflowName,
@@ -268,7 +271,7 @@ namespace SunEyeVision.UI.Features.ParameterSetting
                 // 添加参数（ParamValue + 集合型输入）
                 var paramInfos = GetParameterNames(node, _targetTypeName);
                 foreach (var (paramName, displayName) in paramInfos)
-                    AddParameterLeaf(node, nodeTreeNode, paramName, displayName, selectedSet);
+                    AddParameterLeaf(node, nodeTreeNode, paramName, displayName, selectedSet, workflow.Id);
 
                 // 递归展开子程序
                 var subCallKey = $"{parentWfId}|{node.Id}";
@@ -291,7 +294,8 @@ namespace SunEyeVision.UI.Features.ParameterSetting
         private void AddParameterLeaf(
             WorkflowNodeBase node, TargetParamTreeNode parentNode,
             string paramName, string displayName,
-            HashSet<(string nodeId, string paramName)> selectedSet)
+            HashSet<(string nodeId, string paramName)> selectedSet,
+            string workflowId)
         {
             var isSelected = selectedSet.Contains((node.Id, paramName));
             var leaf = new TargetParamTreeNode
@@ -299,6 +303,7 @@ namespace SunEyeVision.UI.Features.ParameterSetting
                 Name = displayName,
                 DisplayPath = parentNode.DisplayPath + " > " + displayName,
                 NodeType = "parameter",
+                WorkflowId = workflowId,
                 NodeId = node.Id,
                 ParameterName = paramName,
                 Parent = parentNode
@@ -310,6 +315,7 @@ namespace SunEyeVision.UI.Features.ParameterSetting
             {
                 _selectedConsumers.Add(new ConsumerItemViewModel
                 {
+                    WorkflowId = workflowId,
                     NodeId = node.Id,
                     NodeName = parentNode.Name,
                     WorkflowName = GetWorkflowName(leaf),
@@ -342,6 +348,7 @@ namespace SunEyeVision.UI.Features.ParameterSetting
                 {
                     _selectedConsumers.Add(new ConsumerItemViewModel
                     {
+                        WorkflowId = leaf.WorkflowId ?? string.Empty,
                         NodeId = leaf.NodeId!,
                         NodeName = GetNodeName(leaf),
                         WorkflowName = GetWorkflowName(leaf),

@@ -125,6 +125,7 @@ namespace SunEyeVision.UI.Shell.Windows
 
         // 运行时参数服务（编辑态 UI 层运行时参数）
         private readonly SunEyeVision.UI.Services.IRuntimeParameterService _runtimeParameterService;
+        private readonly SunEyeVision.UI.Services.IRuntimeInputSnapshotService _runtimeInputSnapshots;
 
         // 工作流上下文服务（按工作流ID缓存独立执行上下文）
         private readonly SunEyeVision.UI.Services.IWorkflowContextService _workflowContextService;
@@ -828,6 +829,7 @@ SplitterPosition = position;
 
             // 初始化共享基础设施服务
             _runtimeParameterService = new SunEyeVision.UI.Services.RuntimeParameterService();
+            _runtimeInputSnapshots = new SunEyeVision.UI.Services.RuntimeInputSnapshotService();
             _workflowContextService = new SunEyeVision.UI.Services.WorkflowContextService();
 
             // 初始化图像结果子 VM（就近绑定右侧图像结果区，共享数据源/结果行集合）
@@ -848,7 +850,9 @@ SplitterPosition = position;
             _workflowEngine = new WorkflowEngine(_logger);
 
             // 初始化执行管理器（传入共享的 WorkflowEngine，子程序工作流已注册在其中）
-            _executionManager = new Services.Workflow.WorkflowExecutionManager(new SunEyeVision.UI.Services.Interaction.DefaultInputProvider(), _workflowEngine);
+            _executionManager = new Services.Workflow.WorkflowExecutionManager(new SunEyeVision.UI.Services.Interaction.DefaultInputProvider(), _workflowEngine, _runtimeInputSnapshots);
+            WorkflowTabViewModel.StartContinuousExecution = StartContinuousWorkflow;
+            WorkflowTabViewModel.StopContinuousExecution = StopContinuousWorkflow;
 
             // 初始化节点结果管理器
             _nodeResultManager = new Services.Workflow.NodeResultManager(
@@ -867,7 +871,6 @@ SplitterPosition = position;
             _executionManager.WorkflowExecutionProgress += OnWorkflowExecutionProgress;
             _executionManager.NodeExecutionCompleted += OnNodeExecutionCompleted;
             // 连续执行每轮开始：自动切换开启时推进输入图并刷新运行时参数
-            _executionManager.BeforeEachIteration += OnBeforeEachContinuousIteration;
 
             // 初始化当前画布类型
             UpdateCurrentCanvasType();
@@ -1979,12 +1982,12 @@ SplitterPosition = position;
             // 防抖：上一次工作流仍在执行时忽略重复执行请求（执行按钮/预览连点过快）
             if (_isRunning)
             {
-                AddLog("⏳ 工作流正在运行，忽略本次执行请求");
+                AddLog("[REJECTED] 工作流正在运行，已拒绝重复执行请求");
                 return;
             }
 
-            // 自动切换（开启时）：单次执行的每一次 run 开始前推进输入图到下一张
-            TryAdvancePreviewImageForAuto();
+            // 单次与连续执行共用运行时输入服务；等待输入推进并发布本轮快照。
+            await _runtimeInputSnapshots.AdvanceAsync(System.Threading.CancellationToken.None);
 
             AddLog("=== 开始执行工作流 ===");
 
@@ -4061,6 +4064,62 @@ SplitterPosition = position;
             }
         }
 
+        /// <summary>由预览 UI 发布当前输入；执行器只读取服务中的不可变选择快照。</summary>
+        public void PublishRuntimeInput(string imagePath, int imageIndex)
+        {
+            var workflowId = WorkflowTabViewModel.SelectedTab?.RootWorkflowId;
+            if (string.IsNullOrWhiteSpace(workflowId))
+                return;
+
+            _runtimeParameterService.Set("CurrentImagePath", imagePath);
+            _runtimeParameterService.Set("CurrentImageIndex", imageIndex);
+            _runtimeInputSnapshots.Publish(workflowId, imagePath, imageIndex);
+        }
+
+        public void ConfigureRuntimeInputAdvancer(Func<System.Threading.CancellationToken, System.Threading.Tasks.Task<bool>>? advancer)
+            => _runtimeInputSnapshots.ConfigureAdvancer(advancer);
+
+        private bool StartContinuousWorkflow(WorkflowTabViewModel workflow)
+        {
+            // 连续运行也必须使用与单次运行相同的运行时输入和全局变量。
+            _executionManager.SetRuntimeParameters(GetAllRuntimeParameters());
+
+            var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
+            var globalVars = solutionManager.CurrentSolution?.GlobalVariables?
+                .ToDictionary(gv => gv.Name, gv => gv.Value);
+            _executionManager.SetGlobalVariables(globalVars);
+
+            var accepted = _executionManager.StartContinuousRun(workflow);
+            if (accepted)
+            {
+                AddLog($"▶️ 开始连续执行: {workflow.Name}");
+            }
+
+            return accepted;
+        }
+
+        private bool StopContinuousWorkflow(WorkflowTabViewModel workflow)
+        {
+            var requested = _executionManager.StopContinuousRun(workflow);
+            if (requested)
+            {
+                AddLog($"⏹️ 请求停止连续执行: {workflow.Name}");
+            }
+
+            return requested;
+        }
+
+        private void SetWorkflowContinuousState(string workflowId, bool isRunning)
+        {
+            var workflow = WorkflowTabViewModel.Tabs
+                .FirstOrDefault(tab => tab.RootWorkflowId == workflowId);
+            if (workflow == null || workflow.IsRunning == isRunning)
+                return;
+
+            workflow.IsRunning = isRunning;
+            OnWorkflowStatusChanged(WorkflowTabViewModel, EventArgs.Empty);
+        }
+
         /// <summary>
         /// 执行开始事件
         /// </summary>
@@ -4098,6 +4157,7 @@ SplitterPosition = position;
         /// </summary>
         private void OnWorkflowExecutionStopped(object? sender, WorkflowExecutionEventArgs e)
         {
+            SetWorkflowContinuousState(e.WorkflowId, false);
             AddLog($"⏹️ 执行已停止: {e.WorkflowId}");
         }
 
@@ -4106,6 +4166,7 @@ SplitterPosition = position;
         /// </summary>
         private void OnWorkflowExecutionError(object? sender, WorkflowExecutionEventArgs e)
         {
+            SetWorkflowContinuousState(e.WorkflowId, false);
             AddLog($"❌ 执行错误: {e.WorkflowId} - {e.ErrorMessage}");
         }
 

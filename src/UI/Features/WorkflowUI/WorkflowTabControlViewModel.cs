@@ -45,6 +45,12 @@ namespace SunEyeVision.UI.Features.WorkflowUI
         /// </summary>
         public event System.EventHandler<WorkflowTabViewModel>? WorkflowDeleted;
 
+        /// <summary>
+        /// 连续执行由宿主提供。标签页只负责状态和交互，不能自行模拟执行。
+        /// </summary>
+        public Func<WorkflowTabViewModel, bool>? StartContinuousExecution { get; set; }
+        public Func<WorkflowTabViewModel, bool>? StopContinuousExecution { get; set; }
+
         public WorkflowTabControlViewModel()
         {
             // 创建默认工作流。
@@ -263,8 +269,11 @@ namespace SunEyeVision.UI.Features.WorkflowUI
             if (workflow == null || workflow.IsRunning)
                 return;
 
-            workflow.IsRunning = true;
-            WorkflowStatusChanged?.Invoke(this, EventArgs.Empty);
+            if (StartContinuousExecution?.Invoke(workflow) == true)
+            {
+                workflow.IsRunning = true;
+                WorkflowStatusChanged?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         /// <summary>
@@ -275,8 +284,8 @@ namespace SunEyeVision.UI.Features.WorkflowUI
             if (workflow == null)
                 return;
 
-            workflow.IsRunning = false;
-            WorkflowStatusChanged?.Invoke(this, EventArgs.Empty);
+            // 取消请求发出后，仍保持“运行中”直到执行管理器确认当前轮已退出。
+            StopContinuousExecution?.Invoke(workflow);
         }
 
         /// <summary>
@@ -333,12 +342,8 @@ namespace SunEyeVision.UI.Features.WorkflowUI
         {
             foreach (var workflow in Tabs)
             {
-                if (!workflow.IsRunning)
-                {
-                    workflow.IsRunning = true;
-                }
+                StartContinuous(workflow);
             }
-            WorkflowStatusChanged?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -348,9 +353,8 @@ namespace SunEyeVision.UI.Features.WorkflowUI
         {
             foreach (var workflow in Tabs)
             {
-                workflow.IsRunning = false;
+                StopWorkflow(workflow);
             }
-            WorkflowStatusChanged?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>

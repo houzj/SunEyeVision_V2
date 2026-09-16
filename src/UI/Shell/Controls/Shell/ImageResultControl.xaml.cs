@@ -45,7 +45,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             // 自动切换推进钩子：每次 run 开始前（单次点执行 / 连续每轮）把输入图切到下一张应运行图
             if (_viewModel != null)
             {
-                _viewModel.AdvancePreviewImageHook = TryAdvancePreviewImageFromPreview;
+                _viewModel.ConfigureRuntimeInputAdvancer(AdvanceRuntimeInputAsync);
             }
         }
 
@@ -60,7 +60,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             }
             if (_viewModel != null)
             {
-                _viewModel.AdvancePreviewImageHook = null;
+                _viewModel.ConfigureRuntimeInputAdvancer(null);
             }
         }
 
@@ -68,6 +68,12 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// 获取主图像显示控件（供 ViewModel GetMainImageControl 委托注入）
         /// </summary>
         public ImageControl? GetImageDisplayControl() => ImageDisplayContent;
+
+        private async System.Threading.Tasks.Task<bool> AdvanceRuntimeInputAsync(System.Threading.CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return await Dispatcher.InvokeAsync(TryAdvancePreviewImageFromPreview);
+        }
 
         /// <summary>
         /// 切换图像显示全屏
@@ -91,7 +97,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             {
                 // 上一次工作流仍在执行（点图 / 方向键切换过快）：仅同步当前图，不并发执行；
                 // 当前 run 结束后的下一次执行会从最新索引开始推进。
-                _viewModel.AddLog(LogLevel.Info, $"工作流执行中，忽略本次图像请求: {e.ImageInfo.Name}", LogSource.UIOperation);
+                _viewModel.AddLog(LogLevel.Info, $"[REJECTED] 工作流正在运行，已拒绝重复执行请求: {e.ImageInfo.Name}", LogSource.UIOperation);
                 return;
             }
             var workflow = _viewModel.WorkflowTabViewModel.SelectedTab;
@@ -104,8 +110,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         private void RunWorkflowWithImage(WorkflowTabViewModel workflow, ImageInfo image, int index)
         {
             // 注入当前图像路径到运行时参数（不设置 ViewModel.CurrentImageIndex）
-            _viewModel.SetRuntimeParameter("CurrentImagePath", image.FilePath);
-            _viewModel.SetRuntimeParameter("CurrentImageIndex", index);
+            _viewModel.PublishRuntimeInput(image.FilePath, index);
             var workflowName = workflow.Name ?? "未知工作流";
             _viewModel.AddLog(LogLevel.Info, $"执行工作流 - 图像: {image.Name}", LogSource.Runtime(workflowName));
             _viewModel.AddLog(LogLevel.Info, $"路径: {image.FilePath}", LogSource.Runtime(workflowName));
@@ -143,8 +148,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             }
 
             int index = ImagePreviewContent.ImageCollection.IndexOf(next);
-            _viewModel.SetRuntimeParameter("CurrentImagePath", next.FilePath);
-            _viewModel.SetRuntimeParameter("CurrentImageIndex", index);
+            _viewModel.PublishRuntimeInput(next.FilePath, index);
             return true;
         }
 

@@ -33,8 +33,12 @@ namespace SunEyeVision.UI.Services.Workflow
     {
         private readonly IInputProvider _inputProvider;
         private readonly WorkflowEngine _workflowEngine;
+        private readonly IRuntimeInputSnapshotService _runtimeInputSnapshots;
         private readonly Dictionary<string, CancellationTokenSource> _cancellationTokens;
         private readonly Dictionary<string, Task> _runningTasks;
+        // 所有执行入口共用的工作流运行租约。不能只依赖某个视图的按钮禁用状态，
+        // 否则快捷键、预览图点击或其他直接调用方仍可能并发启动同一个工作流。
+        private readonly HashSet<string> _activeWorkflowIds = new();
         private readonly object _lock = new object();
         private SynchronizationContext? _synchronizationContext;
 
@@ -58,17 +62,20 @@ namespace SunEyeVision.UI.Services.Workflow
         /// 连续执行的每一轮迭代开始前触发（在 ExecuteWorkflowInternal 之前）。
         /// 供宿主在自动切换开启时把输入图推进到下一张并刷新运行时参数。
         /// </summary>
-        public event Action<WorkflowTabViewModel>? BeforeEachIteration;
 
         /// <summary>
         /// 节点执行完成事件
         /// </summary>
         public event EventHandler<NodeExecutionResultEventArgs>? NodeExecutionCompleted;
 
-        public WorkflowExecutionManager(IInputProvider inputProvider, WorkflowEngine workflowEngine)
+        public WorkflowExecutionManager(
+            IInputProvider inputProvider,
+            WorkflowEngine workflowEngine,
+            IRuntimeInputSnapshotService runtimeInputSnapshots)
         {
             _inputProvider = inputProvider ?? throw new ArgumentNullException(nameof(inputProvider));
             _workflowEngine = workflowEngine ?? throw new ArgumentNullException(nameof(workflowEngine));
+            _runtimeInputSnapshots = runtimeInputSnapshots ?? throw new ArgumentNullException(nameof(runtimeInputSnapshots));
             _cancellationTokens = new Dictionary<string, CancellationTokenSource>();
             _runningTasks = new Dictionary<string, Task>();
             _synchronizationContext = SynchronizationContext.Current;
@@ -109,10 +116,15 @@ namespace SunEyeVision.UI.Services.Workflow
                 throw new ArgumentNullException(nameof(workflow));
 
             var workflowId = workflow.RootWorkflowId;
-            OnWorkflowExecutionStarted(workflowId);
+            if (!TryAcquireExecution(workflowId))
+            {
+                NotifyExecutionRejected(workflowId);
+                return;
+            }
 
             try
             {
+                OnWorkflowExecutionStarted(workflowId);
                 await ExecuteWorkflowInternal(workflow, cancellationToken);
                 OnWorkflowExecutionCompleted(workflowId);
             }
@@ -124,74 +136,94 @@ namespace SunEyeVision.UI.Services.Workflow
             {
                 OnWorkflowExecutionError(workflowId, ex.Message);
             }
+            finally
+            {
+                ReleaseExecution(workflowId);
+            }
         }
 
         /// <summary>
         /// 开始指定工作流的连续执行
         /// </summary>
-        public void StartContinuousRun(WorkflowTabViewModel workflow)
+        public bool StartContinuousRun(WorkflowTabViewModel workflow)
         {
             if (workflow == null)
                 throw new ArgumentNullException(nameof(workflow));
 
             var workflowId = workflow.RootWorkflowId;
 
-            lock (_lock)
+            if (!TryAcquireExecution(workflowId))
             {
-                // 如果已经在运行，先停止
-                if (_runningTasks.ContainsKey(workflowId))
+                NotifyExecutionRejected(workflowId);
+                return false;
+            }
+
+            try
+            {
+                lock (_lock)
                 {
-                    StopContinuousRun(workflow);
+                    var cts = new CancellationTokenSource();
+                    _cancellationTokens[workflowId] = cts;
+
+                    var task = Task.Run(async () =>
+                    {
+                        OnWorkflowExecutionStarted(workflowId);
+
+                        try
+                        {
+                            // Task 本身不传入 cts.Token，保证即使 Stop 紧随 Start，
+                            // 清理 finally 仍会执行并归还执行租约。
+                            cts.Token.ThrowIfCancellationRequested();
+                            while (!cts.Token.IsCancellationRequested)
+                            {
+                                // 每轮迭代开始前：图像预览是 WPF 对象，必须在 UI 线程推进，
+                                // 并等待参数更新完成后才允许本轮读取输入。
+                                try { await _runtimeInputSnapshots.AdvanceAsync(cts.Token); }
+                                catch { /* 钩子异常不应中断连续执行 */ }
+
+                                await ExecuteWorkflowInternal(workflow, cts.Token);
+                                OnWorkflowExecutionCompleted(workflowId);
+
+                                // 短暂休息避免CPU占用过高
+                                await Task.Delay(10, cts.Token);
+                            }
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            OnWorkflowExecutionStopped(workflowId);
+                        }
+                        catch (Exception ex)
+                        {
+                            OnWorkflowExecutionError(workflowId, ex.Message);
+                        }
+                        finally
+                        {
+                            lock (_lock)
+                            {
+                                _cancellationTokens.Remove(workflowId);
+                                _runningTasks.Remove(workflowId);
+                            }
+
+                            ReleaseExecution(workflowId);
+                        }
+                    });
+
+                    _runningTasks[workflowId] = task;
                 }
 
-                var cts = new CancellationTokenSource();
-                _cancellationTokens[workflowId] = cts;
-
-                var task = Task.Run(async () =>
-                {
-                    OnWorkflowExecutionStarted(workflowId);
-
-                    try
-                    {
-                        while (!cts.Token.IsCancellationRequested)
-                        {
-                            // 每轮迭代开始前：允许自动切换把输入图推进到下一张并刷新运行时参数
-                            try { BeforeEachIteration?.Invoke(workflow); }
-                            catch { /* 钩子异常不应中断连续执行 */ }
-
-                            await ExecuteWorkflowInternal(workflow, cts.Token);
-                            OnWorkflowExecutionCompleted(workflowId);
-
-                            // 短暂休息避免CPU占用过高
-                            await Task.Delay(10, cts.Token);
-                        }
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        OnWorkflowExecutionStopped(workflowId);
-                    }
-                    catch (Exception ex)
-                    {
-                        OnWorkflowExecutionError(workflowId, ex.Message);
-                    }
-                    finally
-                    {
-                        lock (_lock)
-                        {
-                            _cancellationTokens.Remove(workflowId);
-                            _runningTasks.Remove(workflowId);
-                        }
-                    }
-                }, cts.Token);
-
-                _runningTasks[workflowId] = task;
+                return true;
+            }
+            catch
+            {
+                ReleaseExecution(workflowId);
+                throw;
             }
         }
 
         /// <summary>
         /// 停止指定工作流的连续执行
         /// </summary>
-        public void StopContinuousRun(WorkflowTabViewModel workflow)
+        public bool StopContinuousRun(WorkflowTabViewModel workflow)
         {
             if (workflow == null)
                 throw new ArgumentNullException(nameof(workflow));
@@ -203,11 +235,11 @@ namespace SunEyeVision.UI.Services.Workflow
                 if (_cancellationTokens.TryGetValue(workflowId, out var cts))
                 {
                     cts.Cancel();
-                    _cancellationTokens.Remove(workflowId);
+                    return true;
                 }
-
-                _runningTasks.Remove(workflowId);
             }
+
+            return false;
         }
 
         /// <summary>
@@ -247,8 +279,6 @@ namespace SunEyeVision.UI.Services.Workflow
                 {
                     cts.Cancel();
                 }
-                _cancellationTokens.Clear();
-                _runningTasks.Clear();
             }
         }
 
@@ -259,7 +289,7 @@ namespace SunEyeVision.UI.Services.Workflow
         {
             lock (_lock)
             {
-                return _runningTasks.ContainsKey(workflowId);
+                return _activeWorkflowIds.Contains(workflowId);
             }
         }
 
@@ -270,8 +300,33 @@ namespace SunEyeVision.UI.Services.Workflow
         {
             lock (_lock)
             {
-                return _runningTasks.Count > 0;
+                return _activeWorkflowIds.Count > 0;
             }
+        }
+
+        private bool TryAcquireExecution(string workflowId)
+        {
+            lock (_lock)
+            {
+                return _activeWorkflowIds.Add(workflowId);
+            }
+        }
+
+        private void ReleaseExecution(string workflowId)
+        {
+            lock (_lock)
+            {
+                _activeWorkflowIds.Remove(workflowId);
+            }
+        }
+
+        private void NotifyExecutionRejected(string workflowId)
+        {
+            InvokeOnUI(() => WorkflowExecutionProgress?.Invoke(
+                this,
+                new WorkflowExecutionProgressEventArgs(
+                    workflowId,
+                    "[REJECTED] 工作流正在运行，已拒绝重复执行请求")));
         }
 
         /// <summary>
@@ -331,8 +386,17 @@ namespace SunEyeVision.UI.Services.Workflow
                     }
                 };
 
-                // 记录运行时参数
-                foreach (var param in _runtimeParameters)
+                // 每轮先复制参数，再覆盖本轮已发布的输入快照，避免 UI 后续切图影响本轮。
+                var runtimeParameters = new Dictionary<string, object>(_runtimeParameters);
+                var inputSnapshot = _runtimeInputSnapshots.GetSnapshot(workflow.RootWorkflowId);
+                if (inputSnapshot != null)
+                {
+                    runtimeParameters["CurrentImagePath"] = inputSnapshot.ImagePath;
+                    runtimeParameters["CurrentImageIndex"] = inputSnapshot.ImageIndex;
+                    runtimeParameters["CurrentImageVersion"] = inputSnapshot.Version;
+                }
+
+                foreach (var param in runtimeParameters)
                 {
                     logger.LogInfo($"运行时参数: {param.Key} = {param.Value}");
                 }
@@ -590,6 +654,37 @@ namespace SunEyeVision.UI.Services.Workflow
             {
                 action();
             }
+        }
+
+        private Task InvokeOnUIAsync(Action action)
+        {
+            if (_synchronizationContext == null || SynchronizationContext.Current == _synchronizationContext)
+            {
+                try
+                {
+                    action();
+                    return Task.CompletedTask;
+                }
+                catch (Exception ex)
+                {
+                    return Task.FromException(ex);
+                }
+            }
+
+            var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            _synchronizationContext.Post(_ =>
+            {
+                try
+                {
+                    action();
+                    completion.SetResult();
+                }
+                catch (Exception ex)
+                {
+                    completion.SetException(ex);
+                }
+            }, null);
+            return completion.Task;
         }
 
         /// <summary>

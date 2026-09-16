@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Windows;
 using SunEyeVision.Plugin.SDK.Execution.Helpers;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
@@ -193,7 +193,7 @@ namespace SunEyeVision.Tool.PointCircleMeasure.Views
             if (image == null || image.IsEmpty) throw new InvalidOperationException("无法获取图像数据或图像为空");
 
             Parameters.ResolvedInputImage = image;
-            var result = new PointCircleMeasureTool().Run(Parameters);
+            var result = ExecuteWithLiveContext(new PointCircleMeasureTool(), Parameters);
 
             UpdatePositionCorrectionMatrix();
             return result;

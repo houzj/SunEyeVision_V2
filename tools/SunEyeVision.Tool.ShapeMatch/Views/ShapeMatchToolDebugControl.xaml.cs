@@ -202,7 +202,7 @@ public partial class ShapeMatchToolDebugControl
             throw new InvalidOperationException("输入图像不是 Halcon HImage 类型");
         }
 
-        var result = shapeTool.Run(runParams);
+        var result = ExecuteWithLiveContext(shapeTool, runParams);
 
         if (result is ShapeMatchResults shapeResult)
         {

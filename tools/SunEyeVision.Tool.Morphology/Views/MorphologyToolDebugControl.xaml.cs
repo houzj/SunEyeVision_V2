@@ -229,7 +229,7 @@ namespace SunEyeVision.Tool.Morphology.Views
 
             var runParams = (MorphologyParameters)Parameters!;
             runParams.ResolvedInputImage = imageVision;
-            var result = morphologyTool.Run(runParams);
+            var result = ExecuteWithLiveContext(morphologyTool, runParams);
 
             // 执行完成后，设置位置修正矩阵到 ROI 编辑器
             UpdatePositionCorrectionMatrix();

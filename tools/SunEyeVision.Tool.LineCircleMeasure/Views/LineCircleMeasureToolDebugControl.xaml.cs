@@ -259,7 +259,7 @@ namespace SunEyeVision.Tool.LineCircleMeasure.Views
             if (image == null || image.IsEmpty) throw new InvalidOperationException("无法获取图像数据或图像为空");
 
             Parameters.ResolvedInputImage = image;
-            var result = new LineCircleMeasureTool().Run(Parameters);
+            var result = ExecuteWithLiveContext(new LineCircleMeasureTool(), Parameters);
 
             UpdatePositionCorrectionMatrix();
             return result;

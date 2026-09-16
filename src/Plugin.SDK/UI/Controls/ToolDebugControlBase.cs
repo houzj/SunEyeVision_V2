@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,9 +8,12 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using SunEyeVision.Plugin.SDK.UI.Themes;
 using SunEyeVision.Plugin.SDK.Commands;
+using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.UI.Events;
+using SunEyeVision.Plugin.SDK.Vision.Contracts;
 
 
 
@@ -474,6 +478,81 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
             // 子类重写以更新图像源选择器等
         }
+
+        /// <summary>
+        /// 经统一执行器运行调试工具。
+        /// 调试执行与工作流执行使用相同的上游结果上下文，确保订阅 ROI、参数绑定和
+        /// 文本样式绑定在两种入口中的解析结果一致。
+        /// </summary>
+        protected ToolResults ExecuteWithLiveContext(
+            IToolPlugin tool,
+            ToolParameters parameters,
+            IVisionImage? resolvedInputImage = null)
+        {
+            if (tool == null) throw new ArgumentNullException(nameof(tool));
+            if (parameters == null) throw new ArgumentNullException(nameof(parameters));
+
+            var request = CreateLiveExecutionRequest(parameters, resolvedInputImage);
+            var logger = VisionLogger.Instance;
+            return new ToolExecutor(new ParameterResolver(DataProvider as IDataSourceQueryService, logger), logger)
+                .Run(tool, request);
+        }
+
+        /// <summary>
+        /// 经统一执行器运行强类型调试工具，并保留工具声明的具体结果类型。
+        /// </summary>
+        protected TResult ExecuteWithLiveContext<TParameters, TResult>(
+            IToolPlugin<TParameters, TResult> tool,
+            TParameters parameters,
+            IVisionImage? resolvedInputImage = null)
+            where TParameters : ToolParameters, new()
+            where TResult : ToolResults, new()
+        {
+            if (tool == null) throw new ArgumentNullException(nameof(tool));
+            if (parameters == null) throw new ArgumentNullException(nameof(parameters));
+
+            var request = CreateLiveExecutionRequest(parameters, resolvedInputImage);
+            var logger = VisionLogger.Instance;
+            return new ToolExecutor(new ParameterResolver(DataProvider as IDataSourceQueryService, logger), logger)
+                .Run(tool, request);
+        }
+
+        private ToolExecutionRequest CreateLiveExecutionRequest(
+            ToolParameters parameters,
+            IVisionImage? resolvedInputImage)
+        {
+
+            var nodeResults = parameters.NodeResults != null
+                ? new Dictionary<string, ToolResults>(parameters.NodeResults)
+                : new Dictionary<string, ToolResults>();
+
+            var provider = DataProvider as IDataSourceQueryService;
+            if (provider != null)
+            {
+                var currentNodeId = GetCurrentNodeStringProperty("Id");
+                foreach (var source in provider.GetAvailableDataSources(currentNodeId ?? string.Empty))
+                {
+                    if (string.IsNullOrWhiteSpace(source.SourceNodeId)) continue;
+
+                    if (provider.GetNodeContext(source.SourceNodeId)?.Result is { } result)
+                        nodeResults[source.SourceNodeId] = result;
+                }
+            }
+
+            var request = new ToolExecutionRequest(parameters)
+            {
+                NodeResults = nodeResults,
+                ResolvedInputImage = resolvedInputImage ?? parameters.ResolvedInputImage,
+                NodeId = GetCurrentNodeStringProperty("Id"),
+                NodeName = GetCurrentNodeStringProperty("DisplayName")
+                    ?? GetCurrentNodeStringProperty("Name"),
+            };
+
+            return request;
+        }
+
+        private string? GetCurrentNodeStringProperty(string propertyName)
+            => CurrentNode?.GetType().GetProperty(propertyName)?.GetValue(CurrentNode) as string;
 
         /// <summary>
         /// 设置主窗口图像控件（基类默认空实现）

@@ -220,7 +220,7 @@ namespace SunEyeVision.Tool.Threshold.Views
 
             var runParams = (ThresholdParameters)Parameters!;
             runParams.ResolvedInputImage = imageVision;
-            return thresholdTool.Run(runParams);
+            return ExecuteWithLiveContext(thresholdTool, runParams);
         }
 
         protected override bool CanExecuteTool()

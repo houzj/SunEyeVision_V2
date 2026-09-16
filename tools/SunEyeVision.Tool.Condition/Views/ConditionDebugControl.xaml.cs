@@ -92,7 +92,7 @@ namespace SunEyeVision.Tool.Condition.Views
                 throw new InvalidOperationException("Parameters not initialized.");
 
             var tool = new ConditionTool();
-            return tool.Run(Parameters);
+            return ExecuteWithLiveContext(tool, Parameters);
         }
 
         protected override bool CanExecuteTool()

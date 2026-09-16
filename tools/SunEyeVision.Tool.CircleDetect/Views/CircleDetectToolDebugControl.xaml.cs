@@ -328,7 +328,7 @@ namespace SunEyeVision.Tool.CircleDetect.Views
 
             Parameters!.ResolvedInputImage = image;
             var tool = new CircleDetectTool();
-            var result = tool.Run(Parameters);
+            var result = ExecuteWithLiveContext(tool, Parameters);
 
             // 执行完成后刷新位置修正矩阵到编辑器
             UpdatePositionCorrectionMatrix();

@@ -229,7 +229,7 @@ namespace SunEyeVision.Tool.ImageThreshold.Views
 
             var runParams = (ImageThresholdParameters)Parameters!;
             runParams.ResolvedInputImage = imageVision;
-            var result = thresholdTool.Run(runParams);
+            var result = ExecuteWithLiveContext(thresholdTool, runParams);
 
             // 执行完成后，设置位置修正矩阵到 ROI 编辑器
             UpdatePositionCorrectionMatrix();

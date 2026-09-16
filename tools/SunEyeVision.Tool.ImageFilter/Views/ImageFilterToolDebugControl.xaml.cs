@@ -229,7 +229,7 @@ namespace SunEyeVision.Tool.ImageFilter.Views
 
             var runParams = (ImageFilterParameters)Parameters!;
             runParams.ResolvedInputImage = imageVision;
-            var result = filterTool.Run(runParams);
+            var result = ExecuteWithLiveContext(filterTool, runParams);
 
             // 执行完成后，设置位置修正矩阵到 ROI 编辑器
             UpdatePositionCorrectionMatrix();

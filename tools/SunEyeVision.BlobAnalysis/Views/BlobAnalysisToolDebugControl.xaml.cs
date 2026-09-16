@@ -235,7 +235,7 @@ namespace SunEyeVision.Tool.BlobAnalysis.Views
 
             var runParams = (BlobAnalysisParameters)Parameters!;
             runParams.ResolvedInputImage = image;
-            var result = blobTool.Run(runParams);
+            var result = ExecuteWithLiveContext(blobTool, runParams);
 
             // 执行完成后，设置位置修正矩阵到 ROI 编辑器
             UpdatePositionCorrectionMatrix();

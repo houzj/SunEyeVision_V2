@@ -148,6 +148,19 @@ namespace SunEyeVision.Tool.LineDetect.Views
         private void OnParameterChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (Parameters == null || GuideEditor == null) return;
+
+            // 参数面板编辑起终点时，回填同一个公共测量编辑器。
+            // SetGuide 不触发 GuideGeometryChanged，因此不会反向覆盖刚编辑的参数。
+            if (e.PropertyName is nameof(LineDetectParameters.LineStartPoint)
+                or nameof(LineDetectParameters.LineEndPoint))
+            {
+                var start = Parameters.LineStartPoint;
+                var end = Parameters.LineEndPoint;
+                if ((end - start).Length > 1e-6)
+                    GuideEditor.SetGuide(Line2d.FromTwoPoints(start, end), start, end);
+                return;
+            }
+
             if (e.PropertyName == nameof(LineDetectParameters.MeasureLength1) ||
                 e.PropertyName == nameof(LineDetectParameters.MeasureLength2) ||
                 e.PropertyName == nameof(LineDetectParameters.NumMeasures))
@@ -304,7 +317,7 @@ namespace SunEyeVision.Tool.LineDetect.Views
 
             Parameters!.ResolvedInputImage = image;
             var tool = new LineDetectTool();
-            var result = tool.Run(Parameters);
+            var result = ExecuteWithLiveContext(tool, Parameters);
 
             // 执行完成后刷新位置修正矩阵到编辑器
             UpdatePositionCorrectionMatrix();

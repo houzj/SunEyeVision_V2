@@ -13,35 +13,12 @@
             <CollectionViewSource.SortDescriptions>
                 <component:SortDescription PropertyName="Order" Direction="Ascending"/>
             </CollectionViewSource.SortDescriptions>
-            <CollectionViewSource.GroupDescriptions>
-                <PropertyGroupDescription PropertyName="Group"/>
-            </CollectionViewSource.GroupDescriptions>
         </CollectionViewSource>
     </UserControl.Resources>
     <Expander Header="图形显示" IsExpanded="True" Margin="0,8,0,0"
               BorderBrush="{DynamicResource {x:Static themes:SdkThemeKeys.BorderBrush}}"
               BorderThickness="1">
     <ItemsControl Margin="16,8" ItemsSource="{Binding Source={StaticResource OrderedItems}}">
-        <ItemsControl.GroupStyle>
-            <GroupStyle>
-                <GroupStyle.HeaderTemplate>
-                    <DataTemplate>
-                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Margin="0,8,0,4">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Visibility" Value="Visible"/>
-                                    <Style.Triggers>
-                                        <Trigger Property="Text" Value="">
-                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                        </Trigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-                    </DataTemplate>
-                </GroupStyle.HeaderTemplate>
-            </GroupStyle>
-        </ItemsControl.GroupStyle>
         <ItemsControl.ItemTemplate>
             <DataTemplate>
                 <controls:LabeledControl Label="{Binding Name}" ContentHorizontalAlignment="Left" Margin="0,2">

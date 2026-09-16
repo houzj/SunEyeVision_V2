@@ -197,4 +197,15 @@
     <Touch Files="$(_HalconLockFile)" AlwaysCreate="true" />
     <Message Text="[Halcon] 已部署 25 个 native dll -> $(OutDir)" Importance="high" />
   </Target>
+
+  <!-- HALCON 托管包装层必须与宿主位于同一目录。工具插件被明确剔除该依赖，
+       因此 Release 包缺少它会在首次使用 HALCON 工具时发生 FileNotFoundException。 -->
+  <Target Name="CopyHalconManagedAssembly" AfterTargets="Build" Condition="'$(IsToolPlugin)'!='true'">
+    <PropertyGroup>
+      <_HalconManagedAssembly>$(MSBuildThisFileDirectory)libs\halcon\net\halcondotnetxl.dll</_HalconManagedAssembly>
+    </PropertyGroup>
+    <Error Text="HALCON 托管程序集不存在: $(_HalconManagedAssembly)" Condition="!Exists('$(_HalconManagedAssembly)')" />
+    <Copy SourceFiles="$(_HalconManagedAssembly)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
+    <Message Text="[Halcon] 已部署托管程序集 -> $(OutDir)" Importance="high" />
+  </Target>
 </Project>

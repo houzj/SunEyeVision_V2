@@ -185,6 +185,9 @@ libs/halcon/runtime/
 build_output/
 runtime/
 
+# 安装包第三方工具（Inno Setup 安装器 10.3MB，按需从官网下载）
+installer/third-party/
+
 # IDE 临时文件 (find-skills 等技能自动生成的 plan 草案,不应入库)
 .codebuddy/plans/
 

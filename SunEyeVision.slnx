@@ -111,4 +111,13 @@
   <Folder Name="/Tests/SunEyeVision.Tool.PointPointMeasure.Tests/">
     <Project Path="tests/SunEyeVision.Tool.PointPointMeasure.Tests/SunEyeVision.Tool.PointPointMeasure.Tests.csproj" />
   </Folder>
+  <Folder Name="/Tests/SunEyeVision.Tool.CircleDetect.Tests/">
+    <Project Path="tests/SunEyeVision.Tool.CircleDetect.Tests/SunEyeVision.Tool.CircleDetect.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SunEyeVision.Tool.LineDetect.Tests/">
+    <Project Path="tests/SunEyeVision.Tool.LineDetect.Tests/SunEyeVision.Tool.LineDetect.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SunEyeVision.UI.Tests/">
+    <Project Path="tests/SunEyeVision.UI.Tests/SunEyeVision.UI.Tests.csproj" />
+  </Folder>
 </Solution>

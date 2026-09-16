@@ -835,9 +835,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// 改为无索引路径，让 OutputVariableResolver 自动解包长度 1 数组为单值（决策3 存量兼容）。
         /// RoI 带 BindingSuffix（[Type=Circle]/[i]）的合成节点不受影响，仍走 GetBindingPath。
         ///
-        /// ★ 契约：本方法是 BindingSource 的**唯一**路径生成入口。
-        ///   写入（ApplyDataSourceBinding）与反查（FindNodeRecursive）必须共用它；
-        ///   一旦"写读规则分叉"，绑定显示名反查就会失败（曾表现为重开窗口显示节点 GUID）。
+        /// 控件选择数据源时通过此方法生成路径；对象绑定还会由
+        /// AvailableDataSourceConverter 使用 GetBindingPath 生成完整路径。
+        /// 显示名反查必须识别这两个入口，不能为显示名称而改写源路径的数组语义。
         /// </remarks>
         private string BuildScalarSafeBindingPath(AvailableDataSource ds)
         {
@@ -887,15 +887,16 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         }
 
         /// <summary>
-        /// 递归查找节点（按与写入侧**完全相同**的路径规则匹配）。
-        /// ★ 根治 B：必须调用 BuildScalarSafeBindingPath —— 它是 BindingSource 的唯一路径生成入口
-        ///   （写入侧 ApplyDataSourceBinding 同用）。历史上此处误用 DataSource.GetBindingPath()：
-        ///   对"标量参数绑定数组属性"（DataType 非数组 + 属性是数组）会多出 "[]" 后缀，
-        ///   与写入值不相等 → 反查失败 → 显示名回退成节点 GUID。
+        /// 递归查找节点，同时识别控件选择产生的标量路径和对象绑定产生的完整路径。
+        /// 例如位置修正参数是 AvailableDataSource，对象转字符串保留 []；
+        /// 同一个源从控件直接选择时可以生成不带 [] 的标量路径。两者的显示元数据相同，
+        /// 此处仅查找显示名称，执行层仍使用原有 BindingSource。
         /// </summary>
         private TreeNodeData? FindNodeRecursive(TreeNodeData node, string fullBindingPath)
         {
-            if (node.DataSource != null && BuildScalarSafeBindingPath(node.DataSource) == fullBindingPath)
+            if (node.DataSource != null
+                && (BuildScalarSafeBindingPath(node.DataSource) == fullBindingPath
+                    || node.DataSource.GetBindingPath() == fullBindingPath))
                 return node;
 
             foreach (var child in node.Children)

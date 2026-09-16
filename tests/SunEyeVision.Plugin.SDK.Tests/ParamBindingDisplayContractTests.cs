@@ -18,6 +18,58 @@ namespace SunEyeVision.Plugin.SDK.Tests;
 /// </summary>
 public class ParamBindingDisplayContractTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void PositionCorrection_ObjectBinding_RestoresReadableName(bool sourcesArriveLater)
+    {
+        RunOnSta(() =>
+        {
+            var source = new AvailableDataSource
+            {
+                SourceNodeId = "ba5c0c82-c8b9-48df-9000-000000000001",
+                SourceNodeName = "形状匹配1",
+                PropertyName = "PositionCorrection",
+                DisplayName = "位置修正",
+                PropertyType = typeof(SunEyeVision.Plugin.SDK.Execution.Results.AffineMatrix[]),
+                VariableType = "AffineMatrix"
+            };
+            var parameters = new MeasureGuideParameters { PositionCorrectionBindingSource = source };
+            var sources = new System.Collections.ObjectModel.ObservableCollection<AvailableDataSource>();
+            if (!sourcesArriveLater) sources.Add(source);
+            var control = new ParamBinding
+            {
+                DataType = typeof(SunEyeVision.Plugin.SDK.Execution.Results.AffineMatrix),
+                AvailableDataSources = sources
+            };
+            control.SetBinding(ParamBinding.BindingSourceProperty, new System.Windows.Data.Binding(
+                nameof(MeasureGuideParameters.PositionCorrectionBindingSource))
+            {
+                Source = parameters,
+                Mode = System.Windows.Data.BindingMode.TwoWay
+            });
+            if (sourcesArriveLater)
+            {
+                sources.Add(source);
+                var frame = new System.Windows.Threading.DispatcherFrame();
+                control.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.ApplicationIdle,
+                    new Action(() => frame.Continue = false));
+                System.Windows.Threading.Dispatcher.PushFrame(frame);
+            }
+
+            Assert.Equal("形状匹配1.位置修正[]", control.BindingDisplayText);
+            Assert.Equal("形状匹配1.位置修正[]", control.GenerateBindingDisplayText(
+                source.SourceNodeId + "." + source.PropertyName));
+            Assert.Equal("missing.PositionCorrection[]",
+                control.GenerateBindingDisplayText("missing.PositionCorrection[]"));
+            Assert.Equal(source.GetBindingPath(), control.BindingSource);
+            Assert.Same(source, parameters.PositionCorrectionBindingSource);
+            Assert.NotNull(control.GetBindingExpression(ParamBinding.BindingSourceProperty));
+            Assert.Equal(source.SourceNodeId, parameters.PositionCorrectionSource!.SourceNodeId);
+            return true;
+        });
+    }
+
     private static readonly MethodInfo GetDisplayLeafName =
         typeof(ParamBinding).GetMethod("GetDisplayLeafName",
             BindingFlags.NonPublic | BindingFlags.Static)

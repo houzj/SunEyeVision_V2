@@ -92,7 +92,7 @@ namespace SunEyeVision.Tool.PointCircleMeasure
             _display.Clear();
 
             // ---- 检测点（卡尺2）----
-            if (parameters.ResultPresentation.GetGraphicsStyle("caliber-point2").IsVisible && Element2FitPoints.Length > 0)
+            if (Element2FitPoints.Length > 0)
                 _display.AddCrosses(parameters.ResultPresentation.GetGraphicsStyle("caliber-point2"), ToWpfPoints(Element2FitPoints));
 
             // ---- 位置修正：引导几何/卡尺带显示与交互层同源变换 ----
@@ -109,10 +109,10 @@ namespace SunEyeVision.Tool.PointCircleMeasure
             var g2c = T(new Point(parameters.E2CenterX.Value, parameters.E2CenterY.Value));
             double g2r = parameters.E2Radius.Value * scale;
 
-            if (parameters.ResultPresentation.GetGraphicsStyle("guide-circle2").IsVisible && g2r > 1e-6)
+            if (g2r > 1e-6)
                 _display.AddCircle(parameters.ResultPresentation.GetGraphicsStyle("guide-circle2"), new Circle2d(g2c, g2r), isOk);
 
-            if (parameters.ResultPresentation.GetGraphicsStyle("caliber-band2").IsVisible && g2r > 1e-6)
+            if (g2r > 1e-6)
             {
                 var bands = MeasureCircleBands(
                     new Circle2d(g2c, g2r),
@@ -127,7 +127,6 @@ namespace SunEyeVision.Tool.PointCircleMeasure
 
             // ---- 点1（十字标记）----
             var p1T = ToWpfPoint(Point1);
-            if (parameters.ResultPresentation.GetGraphicsStyle("point1").IsVisible)
                 _display.AddCrosses(parameters.ResultPresentation.GetGraphicsStyle("point1"), new[] { p1T });
 
             // ---- 圆周最近点 + 圆心连线 + 圆周距连线 ----
@@ -135,20 +134,15 @@ namespace SunEyeVision.Tool.PointCircleMeasure
             {
                 var centerT = ToWpfPoint(Element2Center);
                 var closestT = ToWpfPoint(ClosestPoint);
-
-                if (parameters.ResultPresentation.GetGraphicsStyle("closest-point").IsVisible)
                     _display.AddCrosses(parameters.ResultPresentation.GetGraphicsStyle("closest-point"), new[] { closestT });
-                if (parameters.ResultPresentation.GetGraphicsStyle("center-line").IsVisible)
                     _display.AddLine(parameters.ResultPresentation.GetGraphicsStyle("center-line"), p1T, centerT, isOk);
-                if (parameters.ResultPresentation.GetGraphicsStyle("distance-line").IsVisible)
                     _display.AddLine(parameters.ResultPresentation.GetGraphicsStyle("distance-line"), p1T, closestT, isOk);
             }
 
             // ---- 文本 ----
-            if (parameters.ResultPresentation.GetTextStyle("point1-text").IsVisible)
                 _display.AddText(parameters.ResultPresentation.GetTextStyle("point1-text"), p1T.X, p1T.Y,
                     $"P1 ({p1T.X:F1},{p1T.Y:F1})", 6, 0, isOk);
-            if (parameters.ResultPresentation.GetTextStyle("circle-center-text").IsVisible && Element2Circle is { Length: > 0 })
+            if (Element2Circle is { Length: > 0 })
             {
                 var centerT = ToWpfPoint(Element2Center);
                 _display.AddText(parameters.ResultPresentation.GetTextStyle("circle-center-text"), centerT.X, centerT.Y,
@@ -156,13 +150,13 @@ namespace SunEyeVision.Tool.PointCircleMeasure
                 _display.AddText(parameters.ResultPresentation.GetTextStyle("circle-radius-text"), centerT.X, centerT.Y + 18,
                     $"半径 {Element2Radius:F2}px", isOk);
             }
-            if (parameters.ResultPresentation.GetTextStyle("closest-point-text").IsVisible && Element2Circle is { Length: > 0 })
+            if (Element2Circle is { Length: > 0 })
             {
                 var closestT = ToWpfPoint(ClosestPoint);
                 _display.AddText(parameters.ResultPresentation.GetTextStyle("closest-point-text"), closestT.X, closestT.Y,
                     $"最近点 ({closestT.X:F2},{closestT.Y:F2})", 6, -16, isOk);
             }
-            if (parameters.ResultPresentation.GetTextStyle("distance-text").IsVisible && Element2Circle is { Length: > 0 })
+            if (Element2Circle is { Length: > 0 })
             {
                 var centerT = ToWpfPoint(Element2Center);
                 var midX = (p1T.X + centerT.X) / 2;

@@ -122,12 +122,25 @@ namespace SunEyeVision.UI.Services.Workflow
             //   （可用性回退 + 下拉跟随 + 无可用图像时清空，全部收敛在 ViewModel，避免双份实现不一致）
             _viewModel.RefreshDisplayImageFromCurrentSource();
 
-            // ★ Step 4: 工具输出 → 直接传 DisplayCollector
+            // ★ Step 4: 结果几何由执行参数快照生成；在调试页应改用当前参数中的显示样式，
+            // 以便切换可见性、颜色和线宽时只重绘而不重复执行算法。
+            ApplyLiveResultPresentationStyles(node, result);
+
+            // ★ Step 5: 工具输出 → 直接传 DisplayCollector
             _resultRenderLayer?.SetDisplayCollector(result.Display);
 
-            // ★ Step 5: 区域显示
+            // ★ Step 6: 区域显示
             var regionItems = BuildRegionItems(node);
             _resultRenderLayer?.SetRegionItems(regionItems);
+        }
+
+        private static void ApplyLiveResultPresentationStyles(WorkflowNodeBase node, ToolResults result)
+        {
+            if (node.Parameters == null || result.Display == null) return;
+
+            var presentationProperty = node.Parameters.GetType().GetProperty("ResultPresentation");
+            if (presentationProperty?.GetValue(node.Parameters) is ResultPresentationConfig presentation)
+                presentation.ApplyLiveStyles(result.Display);
         }
 
         /// <summary>

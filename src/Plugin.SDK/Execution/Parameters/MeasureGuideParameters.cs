@@ -41,7 +41,7 @@ namespace SunEyeVision.Plugin.SDK.Execution.Parameters
         /// 是否包含测量引导几何（引导线 + 卡尺测量带）需要显示到结果层。
         /// 测量查找工具（圆/直线/边缘检测）重写为 true；普通工具默认 false，零影响。
         /// </summary>
-        public virtual bool HasMeasureGuide => false;
+        public virtual bool HasMeasureGuide => GuideStyle != null || CaliberStyle != null;
 
         /// <summary>引导线显示样式（Tab3 可控制；测量工具重写提供，默认 null）</summary>
         public virtual GraphicsStyle? GuideStyle { get; set; }

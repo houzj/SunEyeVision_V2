@@ -152,9 +152,9 @@ namespace SunEyeVision.Tool.LineLineMeasure
         {
             _display.Clear();
 
-            if (parameters.ResultPresentation.GetGraphicsStyle("caliber-point1").IsVisible && Element1FitPoints.Length > 0)
+            if (Element1FitPoints.Length > 0)
                 _display.AddCrosses(parameters.ResultPresentation.GetGraphicsStyle("caliber-point1"), ToWpfPoints(Element1FitPoints));
-            if (parameters.ResultPresentation.GetGraphicsStyle("caliber-point2").IsVisible && Element2FitPoints.Length > 0)
+            if (Element2FitPoints.Length > 0)
                 _display.AddCrosses(parameters.ResultPresentation.GetGraphicsStyle("caliber-point2"), ToWpfPoints(Element2FitPoints));
 
             // 位置修正：引导线/带显示与交互层同源变换
@@ -164,14 +164,12 @@ namespace SunEyeVision.Tool.LineLineMeasure
             Point T(Point p) => matrix == null ? p : matrix.TransformWpfPoint(p);
 
             // ---- 元素1：引导线 + 卡尺带 + 拟合线 ----
-            if (parameters.ResultPresentation.GetGraphicsStyle("guide-line1").IsVisible)
             {
                 var g1s = T(new Point(parameters.E1StartX.Value, parameters.E1StartY.Value));
                 var g1e = T(new Point(parameters.E1EndX.Value, parameters.E1EndY.Value));
                 if ((g1e - g1s).Length > 1e-6)
                     _display.AddLine(parameters.ResultPresentation.GetGraphicsStyle("guide-line1"), g1s, g1e, isOk);
             }
-            if (parameters.ResultPresentation.GetGraphicsStyle("caliber-band1").IsVisible)
             {
                 var g1s = T(new Point(parameters.E1StartX.Value, parameters.E1StartY.Value));
                 var g1e = T(new Point(parameters.E1EndX.Value, parameters.E1EndY.Value));
@@ -183,14 +181,12 @@ namespace SunEyeVision.Tool.LineLineMeasure
                 _display.AddLine(parameters.ResultPresentation.GetGraphicsStyle("fit-line1"), Element1StartPoint, Element1EndPoint, isOk);
 
             // ---- 元素2：引导线 + 卡尺带 + 拟合线 ----
-            if (parameters.ResultPresentation.GetGraphicsStyle("guide-line2").IsVisible)
             {
                 var g2s = T(new Point(parameters.E2StartX.Value, parameters.E2StartY.Value));
                 var g2e = T(new Point(parameters.E2EndX.Value, parameters.E2EndY.Value));
                 if ((g2e - g2s).Length > 1e-6)
                     _display.AddLine(parameters.ResultPresentation.GetGraphicsStyle("guide-line2"), g2s, g2e, isOk);
             }
-            if (parameters.ResultPresentation.GetGraphicsStyle("caliber-band2").IsVisible)
             {
                 var g2s = T(new Point(parameters.E2StartX.Value, parameters.E2StartY.Value));
                 var g2e = T(new Point(parameters.E2EndX.Value, parameters.E2EndY.Value));
@@ -202,41 +198,37 @@ namespace SunEyeVision.Tool.LineLineMeasure
                 _display.AddLine(parameters.ResultPresentation.GetGraphicsStyle("fit-line2"), Element2StartPoint, Element2EndPoint, isOk);
 
             // ---- 角点（交点标记）----
-            if (!IsParallel && !double.IsNaN(IntersectionX) && parameters.ResultPresentation.GetGraphicsStyle("intersection-point").IsVisible)
+            if (!IsParallel && !double.IsNaN(IntersectionX))
                 _display.AddCrosses(parameters.ResultPresentation.GetGraphicsStyle("intersection-point"), new[] { new Point(IntersectionX, IntersectionY) });
 
             // ---- 文本：卡尺1中心/角度、卡尺2中心/角度、交点 ----
             if (Element1Line is { Length: > 0 })
             {
                 // 同锚点（元素1中心）：中心/角度两行由渲染层自动换行（行高随字号自适应，缩放不错位）
-                if (parameters.ResultPresentation.GetTextStyle("element1-center-text").IsVisible)
                     _display.AddText(parameters.ResultPresentation.GetTextStyle("element1-center-text"), Element1Center.X, Element1Center.Y,
                         $"卡尺1中心 ({Element1Center.X:F1}, {Element1Center.Y:F1})", isOk);
-                if (parameters.ResultPresentation.GetTextStyle("element1-angle-text").IsVisible)
                     _display.AddText(parameters.ResultPresentation.GetTextStyle("element1-angle-text"), Element1Center.X, Element1Center.Y,
                         $"卡尺1角度 {Element1Angle:G3}°", isOk);
             }
             if (Element2Line is { Length: > 0 })
             {
-                if (parameters.ResultPresentation.GetTextStyle("element2-center-text").IsVisible)
                     _display.AddText(parameters.ResultPresentation.GetTextStyle("element2-center-text"), Element2Center.X, Element2Center.Y,
                         $"卡尺2中心 ({Element2Center.X:F1}, {Element2Center.Y:F1})", isOk);
-                if (parameters.ResultPresentation.GetTextStyle("element2-angle-text").IsVisible)
                     _display.AddText(parameters.ResultPresentation.GetTextStyle("element2-angle-text"), Element2Center.X, Element2Center.Y,
                         $"卡尺2角度 {Element2Angle:G3}°", isOk);
             }
-            if (!IsParallel && !double.IsNaN(IntersectionX) && parameters.ResultPresentation.GetTextStyle("intersection-text").IsVisible)
+            if (!IsParallel && !double.IsNaN(IntersectionX))
                 _display.AddText(parameters.ResultPresentation.GetTextStyle("intersection-text"), IntersectionX, IntersectionY,
                     $"交点 ({IntersectionX:F1}, {IntersectionY:F1})", 0, 16, isOk);
 
             // ---- 无限直线延长（虚线，裁到图像范围）：拟合输出是线段，而交点取自无限直线，延长段让语义可见 ----
             if (ImageWidth > 0 && ImageHeight > 0)
             {
-                if (parameters.ResultPresentation.GetGraphicsStyle("extension-line1").IsVisible && Element1Line is { Length: > 0 }
+                if (Element1Line is { Length: > 0 }
                     && TryClipInfiniteLine(Element1StartPoint, Element1EndPoint, ImageWidth, ImageHeight, out var e1a, out var e1b))
                     _display.AddLine(parameters.ResultPresentation.GetGraphicsStyle("extension-line1"), e1a, e1b, isOk);
 
-                if (parameters.ResultPresentation.GetGraphicsStyle("extension-line2").IsVisible && Element2Line is { Length: > 0 }
+                if (Element2Line is { Length: > 0 }
                     && TryClipInfiniteLine(Element2StartPoint, Element2EndPoint, ImageWidth, ImageHeight, out var e2a, out var e2b))
                     _display.AddLine(parameters.ResultPresentation.GetGraphicsStyle("extension-line2"), e2a, e2b, isOk);
             }
@@ -256,11 +248,7 @@ namespace SunEyeVision.Tool.LineLineMeasure
                     a2 = NormalizeToPi(a2 + Math.PI);
                     delta = NormalizeToPi(a2 - a1);
                 }
-
-                if (parameters.ResultPresentation.GetGraphicsStyle("angle-arc").IsVisible)
                     _display.AddArc(parameters.ResultPresentation.GetGraphicsStyle("angle-arc"), new Arc2d(center, r, a1, a2, isMajorArc: false), isOk);
-
-                if (parameters.ResultPresentation.GetTextStyle("angle-text").IsVisible)
                 {
                     double mid = a1 + delta / 2.0;                       // 角平分方向（文字落在弧外侧）
                     _display.AddText(parameters.ResultPresentation.GetTextStyle("angle-text"),
@@ -274,10 +262,7 @@ namespace SunEyeVision.Tool.LineLineMeasure
             if (Element1Line is { Length: > 0 } && Element2Line is { Length: > 0 }
                 && TryNormalFoot(Element1Center, Element2StartPoint, Element2EndPoint, out var foot))
             {
-                if (parameters.ResultPresentation.GetGraphicsStyle("distance-line").IsVisible)
                     _display.AddLine(parameters.ResultPresentation.GetGraphicsStyle("distance-line"), Element1Center, foot, isOk);
-
-                if (parameters.ResultPresentation.GetTextStyle("distance-text").IsVisible)
                 {
                     var mid = new Point((Element1Center.X + foot.X) / 2, (Element1Center.Y + foot.Y) / 2);
                     // 同锚点（连线中点）+ 屏幕恒定右移 6px：两行自动换行，缩放不错位
@@ -291,13 +276,11 @@ namespace SunEyeVision.Tool.LineLineMeasure
             // ---- 最小/最大法向距离投影段（默认隐藏，按需开启）：极值拟合点 → 线2 垂足 ----
             if (Element1Line is { Length: > 0 } && Element2Line is { Length: > 0 })
             {
-                if (parameters.ResultPresentation.GetGraphicsStyle("distance-min-line").IsVisible
-                    && DistanceMinPoint != default
+                if (DistanceMinPoint != default
                     && TryNormalFoot(DistanceMinPoint, Element2StartPoint, Element2EndPoint, out var footMin))
                     _display.AddLine(parameters.ResultPresentation.GetGraphicsStyle("distance-min-line"), DistanceMinPoint, footMin, isOk);
 
-                if (parameters.ResultPresentation.GetGraphicsStyle("distance-max-line").IsVisible
-                    && DistanceMaxPoint != default
+                if (DistanceMaxPoint != default
                     && TryNormalFoot(DistanceMaxPoint, Element2StartPoint, Element2EndPoint, out var footMax))
                     _display.AddLine(parameters.ResultPresentation.GetGraphicsStyle("distance-max-line"), DistanceMaxPoint, footMax, isOk);
             }

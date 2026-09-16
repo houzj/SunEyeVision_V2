@@ -23,6 +23,10 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
         private double _positionX = 10;
         private double _positionY = 10;
 
+        /// <summary>所属结果显示项的稳定标识，仅用于运行时图元与编辑样式关联。</summary>
+        [JsonIgnore]
+        public string PresentationKey { get; internal set; } = string.Empty;
+
         // PositionX 绑定状态持久化字段（ConfigSetting 关闭再打开后恢复用）
         private bool _isPositionXBinding;
         private string _positionXBindingSource = "";

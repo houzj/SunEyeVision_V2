@@ -117,9 +117,9 @@ namespace SunEyeVision.Tool.CircleCircleMeasure
         {
             _display.Clear();
 
-            if (parameters.ResultPresentation.GetGraphicsStyle("caliber-point1").IsVisible && Element1FitPoints.Length > 0)
+            if (Element1FitPoints.Length > 0)
                 _display.AddCrosses(parameters.ResultPresentation.GetGraphicsStyle("caliber-point1"), ToWpfPoints(Element1FitPoints));
-            if (parameters.ResultPresentation.GetGraphicsStyle("caliber-point2").IsVisible && Element2FitPoints.Length > 0)
+            if (Element2FitPoints.Length > 0)
                 _display.AddCrosses(parameters.ResultPresentation.GetGraphicsStyle("caliber-point2"), ToWpfPoints(Element2FitPoints));
 
             // 位置修正：引导几何/卡尺带显示与交互层同源变换
@@ -136,10 +136,10 @@ namespace SunEyeVision.Tool.CircleCircleMeasure
             var g1c = T(new Point(parameters.E1CenterX.Value, parameters.E1CenterY.Value));
             double g1r = parameters.E1Radius.Value * scale;
 
-            if (parameters.ResultPresentation.GetGraphicsStyle("guide-circle1").IsVisible && g1r > 1e-6)
+            if (g1r > 1e-6)
                 _display.AddCircle(parameters.ResultPresentation.GetGraphicsStyle("guide-circle1"), new Circle2d(g1c, g1r), isOk);
 
-            if (parameters.ResultPresentation.GetGraphicsStyle("caliber-band1").IsVisible && g1r > 1e-6)
+            if (g1r > 1e-6)
             {
                 var bands = MeasureCircleBands(
                     new Circle2d(g1c, g1r),
@@ -155,10 +155,10 @@ namespace SunEyeVision.Tool.CircleCircleMeasure
             var g2c = T(new Point(parameters.E2CenterX.Value, parameters.E2CenterY.Value));
             double g2r = parameters.E2Radius.Value * scale;
 
-            if (parameters.ResultPresentation.GetGraphicsStyle("guide-circle2").IsVisible && g2r > 1e-6)
+            if (g2r > 1e-6)
                 _display.AddCircle(parameters.ResultPresentation.GetGraphicsStyle("guide-circle2"), new Circle2d(g2c, g2r), isOk);
 
-            if (parameters.ResultPresentation.GetGraphicsStyle("caliber-band2").IsVisible && g2r > 1e-6)
+            if (g2r > 1e-6)
             {
                 var bands = MeasureCircleBands(
                     new Circle2d(g2c, g2r),
@@ -171,7 +171,7 @@ namespace SunEyeVision.Tool.CircleCircleMeasure
                 _display.AddCircle(parameters.ResultPresentation.GetGraphicsStyle("fit-circle2"), Element2Circle[0], isOk);
 
             // ---- 交点标记（1 或 2 个）----
-            if (IsIntersecting && parameters.ResultPresentation.GetGraphicsStyle("intersection-point").IsVisible)
+            if (IsIntersecting)
             {
                 var points = new List<Point> { new(IntersectionX, IntersectionY) };
                 if (IntersectionCount > 1 && !double.IsNaN(Intersection2X))
@@ -182,10 +182,7 @@ namespace SunEyeVision.Tool.CircleCircleMeasure
             // ---- 圆心连线（测量基准：距离取自两圆心连线；长度 = distance_pp 的圆心距）----
             if (Element1Circle is { Length: > 0 } && Element2Circle is { Length: > 0 })
             {
-                if (parameters.ResultPresentation.GetGraphicsStyle("center-line").IsVisible)
                     _display.AddLine(parameters.ResultPresentation.GetGraphicsStyle("center-line"), Element1Center, Element2Center, isOk);
-
-                if (parameters.ResultPresentation.GetTextStyle("distance-text").IsVisible)
                 {
                     var mid = new Point((Element1Center.X + Element2Center.X) / 2, (Element1Center.Y + Element2Center.Y) / 2);
                     _display.AddText(parameters.ResultPresentation.GetTextStyle("distance-text"), mid.X, mid.Y,
@@ -196,23 +193,19 @@ namespace SunEyeVision.Tool.CircleCircleMeasure
             // ---- 文本：卡尺1中心/半径、卡尺2中心/半径、交点 ----
             if (Element1Circle is { Length: > 0 })
             {
-                if (parameters.ResultPresentation.GetTextStyle("element1-center-text").IsVisible)
                     _display.AddText(parameters.ResultPresentation.GetTextStyle("element1-center-text"), Element1Center.X, Element1Center.Y,
                         $"卡尺1中心 ({Element1Center.X:F1}, {Element1Center.Y:F1})", isOk);
-                if (parameters.ResultPresentation.GetTextStyle("element1-radius-text").IsVisible)
                     _display.AddText(parameters.ResultPresentation.GetTextStyle("element1-radius-text"), Element1Center.X, Element1Center.Y,
                         $"卡尺1半径 {Element1Radius:F2}px", isOk);
             }
             if (Element2Circle is { Length: > 0 })
             {
-                if (parameters.ResultPresentation.GetTextStyle("element2-center-text").IsVisible)
                     _display.AddText(parameters.ResultPresentation.GetTextStyle("element2-center-text"), Element2Center.X, Element2Center.Y,
                         $"卡尺2中心 ({Element2Center.X:F1}, {Element2Center.Y:F1})", isOk);
-                if (parameters.ResultPresentation.GetTextStyle("element2-radius-text").IsVisible)
                     _display.AddText(parameters.ResultPresentation.GetTextStyle("element2-radius-text"), Element2Center.X, Element2Center.Y,
                         $"卡尺2半径 {Element2Radius:F2}px", isOk);
             }
-            if (IsIntersecting && parameters.ResultPresentation.GetTextStyle("intersection-text").IsVisible)
+            if (IsIntersecting)
                 _display.AddText(parameters.ResultPresentation.GetTextStyle("intersection-text"), IntersectionX, IntersectionY,
                     $"交点 ({IntersectionX:F1}, {IntersectionY:F1})", 0, 16, isOk);
         }

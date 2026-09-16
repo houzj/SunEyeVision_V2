@@ -214,7 +214,7 @@ namespace SunEyeVision.Tool.LineDetect
             }
 
             // 引导线
-            if (GuideStyle.IsVisible)
+            if (GuideStyle != null)
             {
                 yield return new GraphicsDisplayItem
                 {
@@ -226,7 +226,7 @@ namespace SunEyeVision.Tool.LineDetect
             }
 
             // 测量带（卡尺）
-            if (CaliberStyle.IsVisible)
+            if (CaliberStyle != null)
             {
                 var bands = new List<System.Windows.Point[]>();
                 foreach (var quad in MeasureBandOverlay.BuildLineBands(

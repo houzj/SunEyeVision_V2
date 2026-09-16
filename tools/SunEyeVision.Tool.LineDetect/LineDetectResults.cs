@@ -127,7 +127,7 @@ namespace SunEyeVision.Tool.LineDetect
             }
 
             // 诊断检测点（GetMetrologyObjectMeasures 全部检测点，默认不显示，Tab3 可控）
-            if (parameters.ResultPresentation.GetGraphicsStyle("diagnostic-point").IsVisible && DiagnosticPoints.Length > 0)
+            if (DiagnosticPoints.Length > 0)
             {
                 var diagPts = new System.Windows.Point[DiagnosticPoints.Length];
                 for (int i = 0; i < DiagnosticPoints.Length; i++)
@@ -136,7 +136,7 @@ namespace SunEyeVision.Tool.LineDetect
             }
 
             // 被屏蔽剔除点（屏蔽区内的采样点，默认不显示，Tab3 可控）
-            if (parameters.ResultPresentation.GetGraphicsStyle("excluded-point").IsVisible && ExcludedPoints.Length > 0)
+            if (ExcludedPoints.Length > 0)
             {
                 var exclPts = new System.Windows.Point[ExcludedPoints.Length];
                 for (int i = 0; i < ExcludedPoints.Length; i++)
@@ -145,7 +145,7 @@ namespace SunEyeVision.Tool.LineDetect
             }
 
             // HALCON 实际测量带（诊断卡尺对齐，默认不显示，Tab3 可控）
-            if (parameters.ResultPresentation.GetGraphicsStyle("halcon-band").IsVisible && HalconMeasureBands.Length > 0)
+            if (HalconMeasureBands.Length > 0)
             {
                 _display.AddContours(parameters.ResultPresentation.GetGraphicsStyle("halcon-band"), HalconMeasureBands, isClosed: true);
             }
@@ -157,10 +157,8 @@ namespace SunEyeVision.Tool.LineDetect
             }
 
             // 中点坐标文本
-            if (parameters.ResultPresentation.GetTextStyle("center").IsVisible)
                 _display.AddText(parameters.ResultPresentation.GetTextStyle("center"), CenterPoint.X, CenterPoint.Y,
                     $"中点 ({CenterPoint.X:F1}, {CenterPoint.Y:F1})", isOk);
-            if (parameters.ResultPresentation.GetTextStyle("angle").IsVisible)
                 _display.AddText(parameters.ResultPresentation.GetTextStyle("angle"), CenterPoint.X, CenterPoint.Y - 20,
                     $"角度 {Angle:G3}°", isOk);
         }

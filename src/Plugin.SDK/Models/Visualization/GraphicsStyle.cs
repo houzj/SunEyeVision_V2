@@ -17,6 +17,10 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
         private double _crossSize = 8.0;
         private LineDashStyle _lineDashStyle = LineDashStyle.Solid;
 
+        /// <summary>所属结果显示项的稳定标识，仅用于运行时图元与编辑样式关联。</summary>
+        [System.Text.Json.Serialization.JsonIgnore]
+        public string PresentationKey { get; internal set; } = string.Empty;
+
         /// <summary>样式名称</summary>
         public string Name { get => _name; set => SetProperty(ref _name, value, "名称"); }
 

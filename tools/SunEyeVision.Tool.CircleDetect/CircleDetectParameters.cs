@@ -268,7 +268,7 @@ namespace SunEyeVision.Tool.CircleDetect
                     : rad;
                 var arc = new Arc2d(circle.Center, circle.Radius, ArcDeg(StartAngle), ArcDeg(EndAngle), IsMajorArc);
 
-                if (GuideStyle.IsVisible)
+                if (GuideStyle != null)
                 {
                     // ★ 用 GraphicsType.Arc + Arc2d 真弧渲染，避免 Polygon 采样首尾闭合成"直径+弧"
                     yield return new GraphicsDisplayItem
@@ -280,7 +280,7 @@ namespace SunEyeVision.Tool.CircleDetect
                     };
                 }
 
-                if (CaliberStyle.IsVisible)
+                if (CaliberStyle != null)
                 {
                     var bands = new List<System.Windows.Point[]>();
                     foreach (var quad in MeasureBandOverlay.BuildArcBands(
@@ -321,7 +321,7 @@ namespace SunEyeVision.Tool.CircleDetect
             else
             {
                 // 整圆：引导圆 + 环形测量带
-                if (GuideStyle.IsVisible)
+                if (GuideStyle != null)
                 {
                     yield return new GraphicsDisplayItem
                     {
@@ -332,7 +332,7 @@ namespace SunEyeVision.Tool.CircleDetect
                     };
                 }
 
-                if (CaliberStyle.IsVisible)
+                if (CaliberStyle != null)
                 {
                     // 整圆卡尺阵列起始相位随位置修正旋转（与屏蔽区/内容同口径；无修正=0）
                     double startPhase = correctionMatrix != null

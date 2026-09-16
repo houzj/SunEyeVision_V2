@@ -124,7 +124,7 @@ namespace SunEyeVision.Tool.CircleDetect
             }
 
             // 诊断检测点（GetMetrologyObjectMeasures 全部检测点，默认不显示，Tab3 可控）
-            if (parameters.ResultPresentation.GetGraphicsStyle("diagnostic-point").IsVisible && DiagnosticPoints.Length > 0)
+            if (DiagnosticPoints.Length > 0)
             {
                 var diagPts = new System.Windows.Point[DiagnosticPoints.Length];
                 for (int i = 0; i < DiagnosticPoints.Length; i++)
@@ -133,7 +133,7 @@ namespace SunEyeVision.Tool.CircleDetect
             }
 
             // 被屏蔽剔除点（屏蔽区内的采样点，默认不显示，Tab3 可控）
-            if (parameters.ResultPresentation.GetGraphicsStyle("excluded-point").IsVisible && ExcludedPoints.Length > 0)
+            if (ExcludedPoints.Length > 0)
             {
                 var exclPts = new System.Windows.Point[ExcludedPoints.Length];
                 for (int i = 0; i < ExcludedPoints.Length; i++)
@@ -141,8 +141,9 @@ namespace SunEyeVision.Tool.CircleDetect
                 _display.AddCrosses(parameters.ResultPresentation.GetGraphicsStyle("excluded-point"), exclPts);
             }
 
-            // HALCON 实际测量带（诊断卡尺对齐，默认不显示，Tab3 可控）
-            if (parameters.ResultPresentation.GetGraphicsStyle("halcon-band").IsVisible && HalconMeasureBands.Length > 0)
+            // HALCON 实际测量带（诊断卡尺对齐）。
+            // 无论当前是否显示都保留图元，使结果页在执行后切换开关能立即显示已有结果。
+            if (HalconMeasureBands.Length > 0)
             {
                 _display.AddContours(parameters.ResultPresentation.GetGraphicsStyle("halcon-band"), HalconMeasureBands, isClosed: true);
             }
@@ -160,14 +161,12 @@ namespace SunEyeVision.Tool.CircleDetect
             }
 
             // 圆心标记（十字）
-            if (parameters.ResultPresentation.GetGraphicsStyle("center-point").IsVisible &&
-                (Circle is { Length: > 0 } || Arc is { Length: > 0 }))
+            if ((Circle is { Length: > 0 } || Arc is { Length: > 0 }))
             {
                 _display.AddCross(parameters.ResultPresentation.GetGraphicsStyle("center-point"), CenterPoint, isOk);
             }
 
             // 圆心坐标文本
-            if (parameters.ResultPresentation.GetTextStyle("center").IsVisible)
                 _display.AddText(parameters.ResultPresentation.GetTextStyle("center"), CenterPoint.X, CenterPoint.Y,
                     $"圆心 ({CenterPoint.X:F1}, {CenterPoint.Y:F1})", isOk);
         }

@@ -265,6 +265,7 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
                 item = new GraphicsDisplayItem
                 {
                     Style = style,
+                    PresentationKey = style.PresentationKey,
                     Type = type
                 };
                 _graphicsAccum[style] = item;
@@ -285,7 +286,8 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
             {
                 item = new TextDisplayItem
                 {
-                    Style = style
+                    Style = style,
+                    PresentationKey = style.PresentationKey,
                 };
                 _textAccum[style] = item;
                 _items.Add(item);

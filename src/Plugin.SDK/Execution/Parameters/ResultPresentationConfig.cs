@@ -40,10 +40,71 @@ public sealed class ResultPresentationConfig : ObservableObject
         => Judgments.Single(item => string.Equals(item.Key, key, StringComparison.Ordinal));
 
     public GraphicsStyle GetGraphicsStyle(string key)
-        => Graphics.Single(item => string.Equals(item.Key, key, StringComparison.Ordinal)).Style;
+    {
+        var item = Graphics.Single(item => string.Equals(item.Key, key, StringComparison.Ordinal));
+        item.Style.PresentationKey = item.Key;
+        return item.Style;
+    }
 
     public TextStyle GetTextStyle(string key)
-        => Texts.Single(item => string.Equals(item.Key, key, StringComparison.Ordinal)).Style;
+    {
+        var item = Texts.Single(item => string.Equals(item.Key, key, StringComparison.Ordinal));
+        item.Style.PresentationKey = item.Key;
+        return item.Style;
+    }
+
+    /// <summary>
+    /// 将当前编辑中的显示样式重新关联到已生成的结果几何。
+    /// 执行器为保证本次计算稳定，会使用参数快照生成结果；调试 UI 则编辑原始参数。
+    /// 此方法只替换结果项的样式引用，不改动已计算的几何数据，因此可在不重新执行算法的
+    /// 情况下即时预览可见性、颜色、线宽及文本样式。
+    /// </summary>
+    public void ApplyLiveStyles(DisplayCollector? collector)
+    {
+        if (collector == null) return;
+
+        foreach (var item in Graphics) item.Style.PresentationKey = item.Key;
+        foreach (var item in Texts) item.Style.PresentationKey = item.Key;
+
+        var graphicsStyles = Graphics.ToDictionary(item => item.Key, item => item.Style, StringComparer.Ordinal);
+        var textStyles = Texts.ToDictionary(item => item.Key, item => item.Style, StringComparer.Ordinal);
+
+        foreach (var item in collector.Items)
+        {
+            switch (item)
+            {
+                case GraphicsDisplayItem graphics when graphics.Style != null
+                    && TryGetLiveStyle(graphics.PresentationKey, graphics.Style.PresentationKey,
+                        graphics.Style.Name, graphicsStyles, out var graphicsStyle):
+                    graphics.Style = graphicsStyle;
+                    break;
+
+                case TextDisplayItem text when text.Style != null
+                    && TryGetLiveStyle(text.PresentationKey, text.Style.PresentationKey,
+                        text.Style.Name, textStyles, out var textStyle):
+                    text.Style = textStyle;
+                    break;
+            }
+        }
+    }
+
+    private static bool TryGetLiveStyle<TStyle>(string itemKey, string styleKey, string legacyName,
+        IReadOnlyDictionary<string, TStyle> styles, out TStyle style)
+        where TStyle : class
+    {
+        if (styles.TryGetValue(itemKey, out style!) || styles.TryGetValue(styleKey, out style!))
+            return true;
+
+        // 兼容旧执行结果：历史图元不带 PresentationKey 时按唯一显示名称回退。
+        var matches = styles.Values.Where(candidate => candidate switch
+        {
+            GraphicsStyle graphics => graphics.Name == legacyName,
+            TextStyle text => text.Name == legacyName,
+            _ => false,
+        }).Take(2).ToArray();
+        style = matches.Length == 1 ? matches[0] : null!;
+        return matches.Length == 1;
+    }
 
     private static void ValidateKeys<T>(System.Collections.Generic.IEnumerable<T> items,
         Func<T, string> selector, string moduleName, System.Collections.Generic.List<string> errors)

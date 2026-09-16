@@ -1,0 +1,79 @@
+---
+id: rule-021
+title: 双 AI 协作写入边界（Codex × CodeBuddy）
+description: 同一工作目录单写者、禁区文件转交 Codex、任务卡读写与代执行授权
+category: development-process
+priority: critical
+alwaysApply: true
+enabled: true
+version: "1.0"
+updatedAt: 2026-09-16
+---
+
+# rule-021: 双 AI 协作写入边界（Codex × CodeBuddy）
+
+## 目的
+
+本项目与 Codex **共用同一工作目录**（依据 `docs/collaboration/Codex-CodeBuddy-协作方案.md`
+与根目录 `AGENTS.md`）。CodeBuddy 只承担**常规、边界明确的增量实现**；
+架构、跨模块执行链与发布问题归 Codex。
+
+## 触发条件
+
+- 任何**修改代码 / 配置 / 文档**的任务开始前
+- 任务来自 Codex 交接单，或涉及下方"禁区文件"路径
+- 需要执行 Git 提交或推送时
+
+## 硬性约束
+
+### 1. 任务开始：必读 + 认领
+
+- 先读 `AGENTS.md` 与 `docs/collaboration/CURRENT_TASK.md`（确认**当前执行者**与**授权目录**）
+- `CURRENT_TASK.md` 的授权目录**之外一律不动**；不确认就不改
+
+### 2. 同一时间只有一个写者
+
+- 同一工作目录**同一时间只允许一个 AI 改代码**，另一方只能分析或评审
+- 判断另一方正在改（或任务卡执行者不是自己）时：**停止**，不并发写入
+
+### 3. 禁区文件：停止并转交 Codex（不自行修改）
+
+| 领域 | 路径 |
+|---|---|
+| 工作流执行 / 连续运行 / 取消 / 并发 / 快照 / 子程序 | `src/UI/Services/Workflow/WorkflowExecutionManager.cs` |
+| Plugin.SDK（契约 / Runtime / Wpf） | `src/Plugin.SDK/**` |
+| 共享主题 | `src/Plugin.SDK/Themes/**`、`src/Plugin.SDK/UI/Themes/**`、`src/UI/Themes/**` |
+| 插件加载 | `src/Plugin.Infrastructure/Managers/Plugin/**` |
+| 发布规则 | `Directory.Build.targets`、`Directory.Build.props`、`SunEyeVision.slnx`、`installer/**` |
+
+需要改动上述任一文件时：**停止 → 按 `docs/collaboration/HANDOFF_TEMPLATE.md` 出交接单 →
+写入 `CURRENT_TASK.md`** → 交 Codex。
+
+### 4. 构建与验收
+
+- 完成后**必须编译受影响项目**
+- 涉及工具插件或发布规则时，必须**全量 Release 构建**并运行 Release 程序验证
+- 涉及 UI 时分别验证**设计时**与**运行时**，并记录人工验收结果
+
+### 5. 交接前更新 `CURRENT_TASK.md`
+
+必须写清：已改文件、构建结果、人工验收项、风险、下一步。
+
+### 6. 提交纪律
+
+- **不为每个小改动提交**；按主题拆分，message 用中文 Conventional Commits，
+  且必须经 UTF-8 文件 `git commit -F`（禁止命令行直传中文）
+- 跨 AI 交接前才创建说明明确的临时提交
+
+### 7. 代执行例外（仅在任务卡明确写明时）
+
+当 `CURRENT_TASK.md` 写明"**代执行（不改码）**"时，允许按人工/Codex 已改好的文件执行
+构建、启动、提交与推送，**但不得改动其内容**；提交后须在 `CURRENT_TASK.md`
+记录改动来源（人工 / Codex）。
+
+## 参考
+
+- `docs/collaboration/Codex-CodeBuddy-协作方案.md`（分工表、Git 流程、CodeBuddy 项目规则）
+- `docs/collaboration/HANDOFF_TEMPLATE.md`（交接单模板）
+- `AGENTS.md`（架构边界、构建与验收）
+- rule-018：Skill 优先级（project > user > plugin）；本规则为 project 级，冲突时优先

@@ -14,6 +14,7 @@
 - rule-010: 用 System.Text.Json+[JsonPolymorphic]，禁止 Newtonsoft.Json
 - rule-012: UI 层保持 Dictionary+ParametersTypeName
 - rule-013: 优先 replace_in_file，中文用 PowerShell+UTF8
+- rule-021: 双 AI 协作边界（与 Codex 共用目录）—— 单写者、禁区转交、任务卡必读必更
 
 ### 手动应用规则
 

@@ -24,7 +24,10 @@ provider:
 │   ├── solution-design.mdc           # rule-004 方案设计
 │   ├── prototype-design-clean-principle.mdc  # rule-008 开发与代码纯净
 │   ├── solution-system-implementation.mdc    # rule-010 方案系统实现
-│   └── parameter-system-constraints.mdc      # rule-012 参数系统
+│   ├── parameter-system-constraints.mdc      # rule-012 参数系统
+│   ├── solution-plain-language.mdc           # rule-019 方案与回复说人话
+│   ├── plan-task-classify.mdc                # rule-020 计划任务归类
+│   └── ai-collaboration-boundaries.mdc       # rule-021 双 AI 协作写入边界
 ├── 04-workflow-guidance/
 │   ├── implementation-approval.mdc   # rule-005 实施审批
 │   └── documentation-policy.mdc      # rule-006 文档管理
@@ -52,3 +55,6 @@ provider:
 | 016 | 数据驱动优先 | 数据 > 事件 > 程序式；判断链三选一；例外场景需注释 |
 | 017 | gitignore 屏蔽目录 | dev/libs/halcon/runtime 等被屏蔽目录必须用 PowerShell 读取 |
 | 018 | Skill 优先级 | project > user > plugin；use_skill 前必须扫描 project 级 |
+| 019 | 说人话 | 方案与回复用通俗表达，禁止术语堆砌 |
+| 020 | 计划任务归类 | 按语义归类提交，不依赖 hook 机械匹配 |
+| 021 | 双 AI 协作边界 | 同一目录单写者；禁区（执行链/SDK/主题/插件加载/发布）停止并转交 Codex；任务卡必读必更；代执行需明示 |

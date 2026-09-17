@@ -1,9 +1,9 @@
 # 当前协作任务
 
 - 基线提交：当前 `main` 的最新已提交版本。
-- 当前执行者：人工。
-- 当前任务：安装包图标改用应用程序图标（脚本已改，待重新编译）。
-- 修改权限：`installer/`（`dist/` 为产物目录，不入库）。
+- 当前执行者：Codex。
+- 当前任务：工作流运行引擎架构优化（M3 全局就绪队列、M5 全局变量数据总线与绑定 UI）。
+- 修改权限：`src/Workflow/`、`src/Plugin.SDK/`、`src/UI/Services/Workflow/`、`src/UI/Shell/Windows/`、`src/UI/Features/GlobalVariableManager/`、`src/UI/Features/ParameterSetting/`、`tests/`、`docs/`。
 - 已完成：
   - **Release 包已全量重建**（2026-09-16 15:40，`BUILD_EXIT=0`；308 文件 / 608.3MB；`plugins/` 下 18 个工具目录）；
     程序集版本串同步为 `1.0.0+fb49f6b2…`（.NET SDK 默认 InformationalVersion，可反查源码修订）；
@@ -14,24 +14,35 @@
   - **Release 程序运行验证**：PID 44184，`Responding=True`，日志 `logs/2026/09/16/SunEyeVision_154537.txt`
     （1489 行，`[ERROR]`/`[WARN]` 均为 0）；解决方案加载成功（`Workflows=5`），16 个工具类型空洞池初始化正常。
   - `dist/` 已加入 `.gitignore`，避免 158MB 产物入库。
-  - **安装包图标改用应用图标**（脚本已改、已提交）：`.iss` 新增 `#define AppIcon` →
-    `SetupIconFile`（Setup.exe 图标）与 `UninstallDisplayIcon`（卸载项图标），替代 Inno Setup 默认图标；
-    并补写 **UTF-8 BOM**（原脚本无 BOM，Inno Setup 按 ANSI 解析会致向导弹窗中文乱码）。
-    **尚未重新编译** ⇒ `dist\SunEyeVision-Setup-1.0.0-x64.exe`（SHA256 `00766C8F…`）**仍是默认图标版本**。
+  - **安装包图标改用应用图标（已完成）**：`.iss` 新增 `#define AppIcon` → `SetupIconFile`（Setup.exe 图标）
+    与 `UninstallDisplayIcon`（卸载项图标）；已于 **2026-09-17 08:13 重新编译**，
+    产物 `dist\SunEyeVision-Setup-1.0.0-x64.exe`（158.1MB；
+    SHA256 `C347A0B03541D1A66C06372EA17D1A4599CCFBDCA30B5472DD96C121EAAF8F89`；编译 187.8s）
+    ⇒ **取代**上面的 `00766C8F…`。
+    **图标已验证**：安装包图标与应用 exe 图标同源（提取后 PNG-SHA256 均为 `19e6cb67…`），旧包为 Inno 默认图标（`db090be5…`）。
+    **更正**：先前"脚本无 UTF-8 BOM 会导致向导中文乱码"的判断**有误** —— 实测 ISCC 6.7.3 对有/无 BOM 的
+    UTF-8 脚本均正确解析（产物中文名码点一致），BOM 已保留但非必需条件。
 - 已知偏差（未处理，涉及发布规则禁区）：产品版本 `1.0.0` 硬编码于 6 处
   （`installer/SunEyeVision.iss:5,8`、`Directory.Build.props:45,47`、`Directory.Build.targets:41,168`、
   `run_rule_checker.bat:12,23`、`src/UI/Shell/Windows/AboutWindow.xaml:37`），无单一真源，
   且界面"关于"显示写死 `v1.0.0.0` 与程序集版本脱钩。
-- 下一步：重新编译安装包（`ISCC installer\SunEyeVision.iss`）→ 人工安装验证
-  （管理员权限 → 安装到 `{autopf}\SunEyeVision` → 程序菜单与可选桌面快捷方式 → 安装后启动、加载工具、跑通执行流程）。
+- 下一步：**人工安装验证**（管理员权限 → 安装到 `{autopf}\SunEyeVision` → 程序菜单与可选桌面快捷方式
+  → 安装后启动、加载工具、跑通执行流程）。
+- 载荷说明：安装包内容为 **2026-09-17 08:10 重建** 的 Release 包（程序集版本串 `1.0.0+ba2b3ab9…`），
+  **含**工作流运行引擎改造（`ba2b3ab9`）；载荷写入 08:10:18 早于打包 08:13:18，且 Release 目录内
+  **无**比安装包更新的文件（308 文件 / 608.4MB），时间线自洽。
+  ⚠ 该次重建在提交之上还带入了 **3 个当时未提交的 src 改动**
+  （`src/UI/Services/Workflow/WorkflowExecutionManager.cs`、`src/UI/Shell/Windows/MainWindowViewModel.cs`、
+  `src/Workflow/WorkflowExecutionEngine.cs`，08:06–08:09 修改）⇒ 载荷 ≈ **当前工作区代码状态**，而非纯 `ba2b3ab9`。
 
 ## 工作流运行引擎架构优化（实施中）
 
 - 审计与实施设计：`docs/05-框架架构/2026/09/16/工作流执行架构审计-20260916.md`、
   `docs/01-方案设计/2026/09/16/工作流运行引擎全量重构设计-20260916.md`。
-- 当前状态：**已进入实施**。第一批运行契约（`WorkflowRunRequest`、执行/解决方案依赖图、
-  资源租约、`ToolExecutionProfile`）与配套测试已由 **CodeBuddy 代提交**（内容来源为另一写者的在飞工作包，
-  未改码、未构建验证）；设计与审计文档已入库。
+- 当前状态：M1 已实施；M2 流程内依赖图与解决方案级全局变量边已实施；M3 已有执行画像、资源租约与层内受控并发，待去除拓扑层屏障；M5 已有生产者/消费者模型、跨流程依赖图和 RunAll 的批次变量快照，待补输入来源与模块结果 UI。
+- 最新实现：主界面“全部流程运行”已接入 `WorkflowExecutionManager.RunSolutionAsync`，不再使用标签页中的模拟延时；生产节点结果只更新当前批次快照，不回写设计期全局变量值。
+- 已执行验证：`dotnet build src/UI/SunEyeVision.UI.csproj -c Release --no-restore` 成功（0 error，已有 742 warnings）；`SolutionExecutionDependencyGraph` 测试 2/2 通过。
+- 当前基线提交：`ba2b3ab9 feat(workflow): 运行请求、依赖图、资源租约与工具执行画像`。
 - 首批工作包：Codex C0（运行契约冻结）与 CodeBuddy B0（测试/验收矩阵）；必须使用独立 Worktree，
   且 CodeBuddy 不得修改执行核心。
 

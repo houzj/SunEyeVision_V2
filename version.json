@@ -7,9 +7,9 @@
                     "releasedCommit":  "上次发版时的提交 SHA，作为下次自动推导的基线（推导区间 = releasedCommit..HEAD）",
                     "schemaVersion":  "解决方案文件格式版本（整数，单调递增；与产品版本解耦，格式变更必须配迁移器）"
                 },
-    "version":  "1.0.0.1",
+    "version":  "1.0.1.0",
     "channel":  "alpha",
     "releaseDate":  "2026-09-18",
-    "releasedCommit":  "1eb5aadce8cf28a0e327cf22bfc954e08744be8f",
+    "releasedCommit":  "49a59e47c371ef8e2f4817500b90cf7a48b911e2",
     "schemaVersion":  2
 }

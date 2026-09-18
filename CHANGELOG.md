@@ -50,9 +50,36 @@
 - 载荷：308 个文件 / 608.7 MB
 
 
+## [1.0.1.0] - 2026-09-18
+
+> 渠道：alpha　|　提交：49a59e4　|　本条目由 `installer/Pack-Release.ps1 -AutoVersion` 依据提交历史自动生成
+
+### 新增（feat）
+
+-（无）
+
+### 修复与优化（fix / perf）
+
+- fix(installer): 补齐安装包版本资源与 .solution 文件关联，图标改用应用图标
+
+### 其他（docs / chore / refactor / test / build）
+
+- docs(release): 新增内测版发布与版本管理最终方案
+- chore(rules): 新增 rule-022 版本单一真源并落地版本发布技能
+- chore(release): 引入版本单一真源与自动推导发布流水线
+
+### 交付物
+
+- 安装包：`SunEyeVision-Setup-1.0.1.0-alpha-x64.exe`
+- 发布清单：`release-manifest-1.0.1.0.json`
+- SHA256：`50E8FF171A752F4E5C75F8A2285E7225BB3F691ADBC29F5BB9B184B4509ED3EE`
+- 载荷：308 个文件 / 608.7 MB
+
+
 ## 版本索引
 
 | 版本 | 渠道 | 日期 | 说明 |
 |---|---|---|---|
 | （待发布）1.0.0-alpha.1 | alpha | 2026-09-18 | 首个内测版：发布链路与版本真源落地 |
+
 

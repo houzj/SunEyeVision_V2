@@ -1,0 +1,15 @@
+﻿{
+    "_comment":  "版本号单一真源（rule-022）。版本由 installer/Pack-Release.ps1 -AutoVersion 依据提交历史自动推导并写回；禁止人工手填，禁止在 UI/脚本/文档中硬编码。",
+    "_fields":  {
+                    "version":  "四段 MAJOR.MINOR.PATCH.BUILD（BUILD=交付序号）。采用四段的原因：Windows 习惯，且 Inno 的 VersionInfoVersion 只接受四段纯数字",
+                    "channel":  "alpha(内测) | beta(公测) | rc(候选) | stable(正式)。渠道不进版本号，仅用于安装显示名/产物名/发布清单",
+                    "releaseDate":  "发布日期 yyyy-MM-dd，用于“关于”窗口",
+                    "releasedCommit":  "上次发版时的提交 SHA，作为下次自动推导的基线（推导区间 = releasedCommit..HEAD）",
+                    "schemaVersion":  "解决方案文件格式版本（整数，单调递增；与产品版本解耦，格式变更必须配迁移器）"
+                },
+    "version":  "1.0.0.1",
+    "channel":  "alpha",
+    "releaseDate":  "2026-09-18",
+    "releasedCommit":  "1eb5aadce8cf28a0e327cf22bfc954e08744be8f",
+    "schemaVersion":  2
+}

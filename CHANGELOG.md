@@ -76,10 +76,62 @@
 - 载荷：308 个文件 / 608.7 MB
 
 
+## [2.0.0.1] - 2026-09-19
+
+> 渠道：alpha　|　提交：7c49b36　|　本条目由 `installer/Pack-Release.ps1 -AutoVersion` 依据提交历史自动生成
+
+### 新增（feat）
+
+- feat(ui): 全局变量绑定与执行快照适配
+- feat(workflow): 执行链路接入参数绑定与运行快照
+- feat(sdk): 参数契约与运行快照落地
+- feat(workflow): 运行请求、依赖图、资源租约与工具执行画像
+- feat(ui): 运行态输入快照与执行租约，连续执行统一由宿主驱动
+
+### 修复与优化（fix / perf）
+
+- fix(installer): 补齐安装包版本资源与 .solution 文件关联，图标改用应用图标
+- fix(installer): 安装包图标改用应用程序图标并补 UTF-8 BOM
+
+### 其他（docs / chore / refactor / test / build）
+
+- refactor(release): 打包改为只读真源、构建号递增与单产物保证
+- docs(release): 版本管理再设计与单产物方案
+- docs: 新增参数契约与运行快照方案及架构审查文档
+- refactor(tools): 工具参数纯值化与契约清单迁移
+- test(e2e): 新增确定性灰度测试图用于阈值与面积判据
+- docs(test): 新增全局变量运行快照端到端验证执行记录
+- chore(release): 记录 1.0.1.0 内测版发布产物
+- docs(release): 新增内测版发布与版本管理最终方案
+- chore(rules): 新增 rule-022 版本单一真源并落地版本发布技能
+- chore(release): 引入版本单一真源与自动推导发布流水线
+- docs(方案设计): 新增参数契约与工具插件分层最终方案（总纲）
+- docs(方案设计): A/B 子方案标注主从关系并上收待确认事项
+- docs(方案设计): 更新方案文档，补充实测证据与判据落地依据
+- docs(方案设计): 目标参数与全局变量绑定UI优化方案定稿（含可绑目标判据v3）
+- docs(方案设计): 目标参数与全局变量绑定UI优化方案更新为最终版
+- docs(方案设计): 新增目标参数与全局变量绑定UI优化方案
+- docs(collab): 记录安装包重编译结果、图标验证并更正两处判断
+- docs(workflow): 工作流运行引擎重构设计与审计文档
+- docs(collab): 记录 Release 重建与安装包重打包结果
+- chore(release): 生成 1.0.0 安装包并记录产物
+- chore(collab): 落地 CodeBuddy 协作规则 rule-021 与协作文档
+- docs: 更新验收总计划运行时项进展
+- build(installer): 打包脚本与 HALCON 托管程序集部署
+
+### 交付物
+
+- 安装包：`SunEyeVision-Setup-2.0.0.1-alpha-x64.exe`
+- 发布清单：`release-manifest-2.0.0.1.json`
+- SHA256：`1ECCC8FCC22D75AC510B655897B332AA9B16750EE7BF0B487C1D3DA399F17C0B`
+- 载荷：308 个文件 / 608.7 MB
+
+
 ## 版本索引
 
 | 版本 | 渠道 | 日期 | 说明 |
 |---|---|---|---|
 | （待发布）1.0.0-alpha.1 | alpha | 2026-09-18 | 首个内测版：发布链路与版本真源落地 |
+
 
 

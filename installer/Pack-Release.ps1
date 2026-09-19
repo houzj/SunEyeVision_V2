@@ -1,19 +1,10 @@
 ﻿[CmdletBinding()]
 param(
-    # 手工指定版本（四段 MAJOR.MINOR.PATCH.BUILD）。省略则**自动推导**（推荐）
-    [string]$Version = '',
-
     # 渠道：alpha / beta / rc / stable / local。省略时取真源 channel
     [ValidateSet('alpha', 'beta', 'rc', 'stable', 'local', '')]
     [string]$Channel = '',
 
-    # 用真源现值打包，不做推导（与 -AutoVersion 互斥；默认行为是推导）
-    [switch]$FromSource,
-
-    # 显式要求自动推导（默认即为自动；此开关便于脚本自文档化）
-    [switch]$AutoVersion,
-
-    # 版本真源文件（默认 <repo>/version.json）
+    # 版本真源文件（默认 <repo>/version.json）。打包只读前三段，只写回构建号
     [string]$SourceFile = '',
 
     # 内测版与正式版并存：独立 AppId + 独立安装目录（不覆盖已装正式版）
@@ -28,8 +19,11 @@ param(
     # 不自动追加 CHANGELOG 条目
     [switch]$NoChangelog,
 
-    # 打包成功后打 git tag（v<产品版本>）
-    [switch]$Tag,
+    # 不打 git tag（默认打 v<四段版本>[-<渠道>]）
+    [switch]$NoTag,
+
+    # 允许工作区存在未提交改动（默认要求干净，保证"版本 ↔ 代码"唯一）
+    [switch]$AllowDirty,
 
     # 允许源码中存在硬编码版本号字面量（默认禁止；临时放行需显式声明）
     [switch]$AllowHardcodedVersion,
@@ -55,88 +49,51 @@ $headFull = [string]((& git -C $root rev-parse HEAD) 2>$null | Select-Object -Fi
 if ([string]::IsNullOrEmpty($headFull)) { $headFull = '' }
 $commitShort = if ($headFull.Length -ge 7) { $headFull.Substring(0, 7) } else { 'unknown' }
 
-# ---------------------------------------------------------------- version source
+# ---------------------------------------------------------------- version source（唯一真源，只读前三段）
 Write-Step 'version source'
 if (-not (Test-Path $SourceFile)) { Fail ('version source not found: ' + $SourceFile) }
 $src = Get-Content $SourceFile -Raw -Encoding UTF8 | ConvertFrom-Json
 $curVersion    = [string]$src.version
 $channelSrc    = [string]$src.channel
-$releasedCommit = [string]$src.releasedCommit
 $releaseDate   = if ($src.releaseDate) { [string]$src.releaseDate } else { (Get-Date).ToString('yyyy-MM-dd') }
 $schemaVersion = [string]$src.schemaVersion
+$srcBuild      = if ($null -ne $src.build) { [int]$src.build } else { 0 }
 Write-Output ('source        : ' + $SourceFile)
-Write-Output ('current       : ' + $curVersion + '  channel=' + $channelSrc)
-$baselineText = if ($releasedCommit) { $releasedCommit } else { '(empty)' }
-Write-Output ('baseline      : ' + $baselineText)
+Write-Output ('version       : ' + $curVersion + '   build=' + $srcBuild)
+Write-Output ('channel       : ' + $channelSrc)
 Write-Output ('schemaVersion : ' + $schemaVersion)
 
-if ($curVersion -notmatch '^\d+\.\d+\.\d+\.\d+$') {
-    Fail ('version.json.version must be four-segment MAJOR.MINOR.PATCH.BUILD, got: ' + $curVersion)
+if ($curVersion -notmatch '^\d+\.\d+\.\d+$') {
+    Fail ('version.json.version must be three-segment MAJOR.MINOR.PATCH (e.g. 2.0.0), got: ' + $curVersion)
 }
+if ($srcBuild -lt 0) { Fail ('version.json.build must be >= 0, got: ' + $srcBuild) }
 if ([string]::IsNullOrEmpty($Channel)) { $Channel = $channelSrc }
 if ([string]::IsNullOrEmpty($Channel)) { $Channel = 'local' }
+if ($Channel -notin @('alpha', 'beta', 'rc', 'stable', 'local')) {
+    Fail ('version.json.channel must be alpha|beta|rc|stable|local, got: ' + $Channel)
+}
 
-# ---------------------------------------------------------------- resolve target version
+# ---------------------------------------------------------------- resolve target version（构建号 = 打包次数）
 Write-Step 'resolve target version'
 $parts = $curVersion.Split('.')
-$maj = [int]$parts[0]; $min = [int]$parts[1]; $pat = [int]$parts[2]; $bld = [int]$parts[3]
+$maj = [int]$parts[0]; $min = [int]$parts[1]; $pat = [int]$parts[2]
 
-$range = ''
-if ($releasedCommit -and ($releasedCommit -ne $headFull)) { $range = $releasedCommit + '..HEAD' }
+# 第 4 位 = 构建号（打包次数）：本次 = 真源 build + 1；打包成功后写回
+$buildNo = $srcBuild + 1
+$productVersion = ($maj.ToString() + '.' + $min.ToString() + '.' + $pat.ToString() + '.' + $buildNo.ToString())
+Write-Output ('mode          : source-driven（前三段取自真源；构建号 = 真源 build + 1）')
+Write-Output ('build         : ' + $srcBuild + ' -> ' + $buildNo)
 
-function Get-CommitSubjects([string]$r) {
-    if ([string]::IsNullOrEmpty($r)) { return @() }
-    return @(& git -C $root log $r --pretty=format:%s 2>$null)
-}
-
-$subjects = Get-CommitSubjects $range
-$typeRe = '^(?<type>[a-z]+)(?:\((?<scope>[^)]*)\))?(?<bang>!)?:'
-
-$isBreaking = $false
+# CHANGELOG 分组用的提交来源：上次 tag 之后（无 tag 时取最近 30 条）
+$lastTag = [string]((& git -C $root describe --tags --abbrev=0 2>$null) | Select-Object -First 1)
+$range = if ($lastTag) { $lastTag + '..HEAD' } else { '' }
 if ($range) {
-    foreach ($s in $subjects) {
-        $m = [regex]::Match($s, $typeRe)
-        if ($m.Success -and $m.Groups['bang'].Value -eq '!') { $isBreaking = $true }
-    }
-    if (-not $isBreaking) {
-        $allMsg = (& git -C $root log $range --pretty=format:%B 2>$null) -join "`n"
-        if ($allMsg -match 'BREAKING[ -]CHANGE') { $isBreaking = $true }
-    }
-}
-$hasFeat = @($subjects | Where-Object { $_ -match '^feat(\(|!|:| )' }).Count -gt 0
-$hasFix  = @($subjects | Where-Object { $_ -match '^(fix|perf)(\(|!|:| )' }).Count -gt 0
-
-if (-not [string]::IsNullOrEmpty($Version)) {
-    # 手工模式：校验四段 + 与推导结果一致性（防手填错号）
-    if ($Version -notmatch '^\d+\.\d+\.\d+\.\d+$') { Fail ('-Version must be four-segment (a.b.c.d), got: ' + $Version) }
-    $productVersion = $Version
-    Write-Output ('mode          : manual (-Version)')
-    if ($range) {
-        $p = $Version.Split('.')
-        $dm = [int]$p[0]; $dn = [int]$p[1]; $dp = [int]$p[2]; $db = [int]$p[3]
-        $bumped = ($dm -gt $maj) -or (($dm -eq $maj) -and (($dn -gt $min) -or (($dn -eq $min) -and (($dp -gt $pat) -or (($dp -eq $pat) -and ($db -gt $bld))))))
-        if (-not $bumped) {
-            Warn ('manual version ' + $Version + ' is not greater than current ' + $curVersion)
-        }
-    }
-} elseif ($FromSource -and -not $AutoVersion) {
-    $productVersion = $curVersion
-    Write-Output ('mode          : source as-is (-FromSource)')
+    $subjects = @(& git -C $root log $range --pretty=format:%s 2>$null)
 } else {
-    Write-Output ('mode          : auto-derive')
-    $rangeText = if ($range) { $range } else { '(no new commits since baseline)' }
-    Write-Output ('range         : ' + $rangeText)
-    Write-Output ('commits       : ' + $subjects.Count)
-    Write-Output ('breaking      : ' + $isBreaking + '  feat=' + $hasFeat + '  fix/perf=' + $hasFix)
-    if ($isBreaking) { $maj++; $min = 0; $pat = 0; $bld = 0 }
-    elseif ($hasFeat) { $min++; $pat = 0; $bld = 0 }
-    elseif ($hasFix)  { $pat++; $bld = 0 }
-    else { $bld++ }
-    $productVersion = ($maj.ToString() + '.' + $min.ToString() + '.' + $pat.ToString() + '.' + $bld.ToString())
-    if ([string]::IsNullOrEmpty($range)) {
-        Warn 'baseline unset or equal to HEAD -> only BUILD incremented (first-run baseline is being established)'
-    }
+    $subjects = @(& git -C $root log -30 --pretty=format:%s 2>$null)
 }
+$rangeText = if ($range) { $range } else { 'last 30 commits' }
+Write-Output ('changelog src : ' + $rangeText + '   commits=' + $subjects.Count)
 
 Write-Output ('productVersion: ' + $productVersion + '  channel=' + $Channel)
 
@@ -193,6 +150,10 @@ Get-Process -Name 'SunEyeVision.UI' -ErrorAction SilentlyContinue | Stop-Process
 Start-Sleep -Seconds 2
 $dirty = @((& git -C $root status --porcelain) 2>$null)
 Write-Output ('ok; HEAD=' + $commitShort + ' rough dirty files=' + $dirty.Count)
+if ($dirty.Count -gt 0 -and -not $AllowDirty) {
+    $dirty | Select-Object -First 20 | ForEach-Object { Write-Output ('   ' + $_) }
+    Fail ('working tree is dirty (' + $dirty.Count + ' file(s)); commit first, or pass -AllowDirty to override')
+}
 
 # ---------------------------------------------------------------- build
 if (-not $SkipBuild) {
@@ -362,14 +323,12 @@ if ([string]::IsNullOrEmpty($issIconRef)) { Warn 'iss has no AppIcon define; set
 if (-not $NoManifest) {
     Write-Step 'release manifest'
     $manifestPath = Join-Path $outDirAbs ('release-manifest-' + $productVersion + '.json')
-    $bumpKind = if ($isBreaking) { 'major' } elseif ($hasFeat) { 'minor' } elseif ($hasFix) { 'patch' } else { 'build' }
     $manifest = [ordered]@{
         product = 'SunEyeVision'; productVersion = $productVersion; channel = $Channel
         displayName = $appDisplayName; releaseDate = $releaseDate; schemaVersion = $schemaVersion
         coexist = [bool]$Coexist; appId = $appId; installDir = $defaultDir
         commit = $headFull; commitShort = $commitShort
-        baseline = $releasedCommit; commitCount = $subjects.Count
-        bump = $bumpKind
+        version = $curVersion; build = $buildNo; prevTag = $lastTag; commitCount = $subjects.Count
         buildTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
         payloadDir = $relDirAbs; payloadFileCount = $payloadCount; payloadSizeMB = $payloadMB
         assemblyProductVersion = $productVer
@@ -384,18 +343,25 @@ if (-not $NoManifest) {
     Write-Output ('manifest : ' + $manifestPath)
 }
 
-# ---------------------------------------------------------------- write back version source
-Write-Step 'update version source'
-if ([string]::IsNullOrEmpty($Version) -and -not $FromSource) {
-    $src.version = $productVersion
-    $src.channel = $Channel
-    $src.releaseDate = (Get-Date).ToString('yyyy-MM-dd')
-    $src.releasedCommit = $headFull
-    ($src | ConvertTo-Json -Depth 6) | Set-Content -Path $SourceFile -Encoding UTF8
-    Write-Output ('version.json updated: ' + $productVersion + '  baseline=' + $commitShort)
-} else {
-    Write-Output 'skipped (manual version or -FromSource)'
+# ---------------------------------------------------------------- single-artifact guard（dist 恒为 1 个安装包 + 1 个清单）
+Write-Step 'dist single-artifact cleanup'
+$keepFiles = @($setup, (Join-Path $outDirAbs ('release-manifest-' + $productVersion + '.json')))
+$removedCount = 0
+Get-ChildItem $outDirAbs -File -ErrorAction SilentlyContinue | ForEach-Object {
+    if ($keepFiles -notcontains $_.FullName) {
+        Remove-Item -LiteralPath $_.FullName -Force
+        Write-Output ('   removed: ' + $_.Name)
+        $removedCount++
+    }
 }
+Write-Output ('dist holds 1 setup + 1 manifest (removed ' + $removedCount + ' stale file(s))')
+
+# ---------------------------------------------------------------- write back build counter
+Write-Step 'update version source (build counter only)'
+$src.build = $buildNo
+$src.releaseDate = (Get-Date).ToString('yyyy-MM-dd')
+($src | ConvertTo-Json -Depth 6) | Set-Content -Path $SourceFile -Encoding UTF8
+Write-Output ('version.json: build -> ' + $buildNo + '  (version ' + $curVersion + ' / channel ' + $Channel + ' unchanged)')
 
 # ---------------------------------------------------------------- changelog
 if (-not $NoChangelog) {
@@ -442,9 +408,9 @@ if (-not $NoChangelog) {
 }
 
 # ---------------------------------------------------------------- tag
-if ($Tag) {
+if (-not $NoTag) {
     Write-Step 'git tag'
-    $tagName = 'v' + $productVersion
+    $tagName = 'v' + $productVersion + $channelTag
     $existing = (& git -C $root tag -l $tagName) 2>$null
     if ($existing) { Warn ('tag already exists: ' + $tagName) }
     else {
@@ -455,4 +421,4 @@ if ($Tag) {
 
 Write-Step 'DONE'
 Write-Output ('version=' + $productVersion + ' channel=' + $Channel + ' setup=' + $setupBaseName + '.exe')
-Write-Output 'note: version.json / CHANGELOG.md were updated -> commit them (rule-022)'
+Write-Output ('note: version.json build -> ' + $buildNo + ' ; CHANGELOG.md updated -> commit them (rule-022)')

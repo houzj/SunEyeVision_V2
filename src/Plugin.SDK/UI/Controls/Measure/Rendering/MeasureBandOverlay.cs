@@ -446,39 +446,51 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
         private void AddMainCaliberEdgeDirectionArrows(Point start, Point end, double bandWidth, double bandLength,
             int measureCount, Color color, double thickness, double zoom = 1.0)
         {
+            foreach (var triangle in BuildLineDirectionArrowTriangles(
+                         start, end, bandWidth, bandLength, measureCount, zoom))
+            {
+                AddPolygon(triangle, color, color, thickness, 1.0);
+            }
+        }
+
+        /// <summary>
+        /// 计算直线主卡尺方向三角形。卡尺尺寸使用图像坐标，三角形使用固定屏幕像素，
+        /// 通过 zoom 反变换后放入图像叠加层，避免不同分辨率和缩放下尺寸漂移。
+        /// </summary>
+        public static IEnumerable<Point[]> BuildLineDirectionArrowTriangles(
+            Point start, Point end, double bandWidth, double bandLength, int measureCount, double zoom = 1.0)
+        {
             var seg = end - start;
             var totalLen = seg.Length;
-            if (totalLen < 1e-6 || measureCount <= 0) return;
+            if (totalLen < 1e-6 || measureCount <= 0 || bandWidth <= 0 || bandLength <= 0)
+                yield break;
 
-            var dir = seg / totalLen;                        // 引导线方向（Halcon RowBegin→RowEnd）
-            var normal = new Vector(-dir.Y, dir.X);          // ★ 极性/测量扫描方向（法向）
+            var dir = seg / totalLen;
+            var normal = new Vector(-dir.Y, dir.X);
             int mainIndex = measureCount / 2;
-            double halfBand = bandLength / 2;                // 切向半长（主卡尺沿线半宽）
+            double halfBand = bandLength / 2;
             double usable = totalLen - 2 * halfBand;
             if (usable < 1e-6) usable = totalLen;
             double step = measureCount > 1 ? usable / (measureCount - 1) : usable;
             double t = measureCount > 1 ? halfBand + mainIndex * step : totalLen / 2;
             var center = start + dir * t;
+            var midL = center - dir * halfBand;
+            var midR = center + dir * halfBand;
 
-            // ★ 锚点贴图（与结果层同几何，位置不漂移）+ 尺寸屏幕恒定（反除 zoom，像手柄）：
-            //   锚点 = 竖边中点沿 normal 走 法向全长×1/4（贴图）；三角高/半宽 = 带宽比例 + 下限，反除 zoom
-            var midL = center - dir * (bandLength / 2);    // 左竖直边中点
-            var midR = center + dir * (bandLength / 2);    // 右竖直边中点
-            double posOffset = bandWidth * 0.25;           // 锚点沿 normal 走 1/4（贴图）
-            double triHeight = ViewportScaling.Power(zoom, Math.Max(bandWidth * 0.15, 4.0), 1.0);    // 三角高（屏幕恒定）
-            double triHalfWidth = ViewportScaling.Power(zoom, Math.Max(bandWidth * 0.07, 2.0), 1.0); // 三角底半宽（屏幕恒定）
+            // 三角形是装饰元素，固定为 10×10 屏幕像素量级，不随 bandWidth 放大。
+            double triHeight = ViewportScaling.InvScale(zoom, 10.0);
+            double triHalfWidth = ViewportScaling.InvScale(zoom, 5.0);
+            double posOffset = bandWidth / 2.0;
 
-            // 左三角：尖端锚在竖边中点 +normal×1/4 处，尖端朝 +normal
             var tipL = midL + normal * posOffset;
-            var bL1 = tipL - normal * triHeight - dir * triHalfWidth;
-            var bL2 = tipL - normal * triHeight + dir * triHalfWidth;
-            AddPolygon(new[] { tipL, bL1, bL2 }, color, color, thickness, 1.0);
+            yield return new[] { tipL,
+                tipL - normal * triHeight - dir * triHalfWidth,
+                tipL - normal * triHeight + dir * triHalfWidth };
 
-            // 右三角
             var tipR = midR + normal * posOffset;
-            var bR1 = tipR - normal * triHeight - dir * triHalfWidth;
-            var bR2 = tipR - normal * triHeight + dir * triHalfWidth;
-            AddPolygon(new[] { tipR, bR1, bR2 }, color, color, thickness, 1.0);
+            yield return new[] { tipR,
+                tipR - normal * triHeight - dir * triHalfWidth,
+                tipR - normal * triHeight + dir * triHalfWidth };
         }
 
         /// <summary>
@@ -518,9 +530,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Rendering
             var mid1 = calCenter - tangent * (bandLength / 2);                   // 切向一端中点
             var mid2 = calCenter + tangent * (bandLength / 2);                   // 切向另一端中点
 
-            double posOffset = bandWidth * 0.25;                                  // 锚点沿径向走 1/4（贴图）
-            double triHeight = ViewportScaling.Power(zoom, Math.Max(bandWidth * 0.15, 4.0), 1.0);
-            double triHalfWidth = ViewportScaling.Power(zoom, Math.Max(bandWidth * 0.07, 2.0), 1.0);
+            double posOffset = bandWidth / 2.0;                                    // 尖端落在主卡尺外边缘
+            double triHeight = ViewportScaling.InvScale(zoom, 10.0);
+            double triHalfWidth = ViewportScaling.InvScale(zoom, 5.0);
 
             // 左三角：尖端朝 +radial
             var tip1 = mid1 + radial * posOffset;

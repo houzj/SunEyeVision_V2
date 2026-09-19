@@ -114,6 +114,20 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         public MeasureEditorControl GuideEditor => guideEditor;
 
         /// <summary>
+        /// 新建卡尺时按主图像分辨率初始化尺寸。调用后尺寸由参数模型接管，
+        /// 后续参数编辑不会因图像刷新而被覆盖。
+        /// </summary>
+        public bool InitializeGuideCaliberParamsForImage()
+        {
+            var image = _mainImageControl?.SourceImage;
+            if (image == null || image.PixelWidth <= 0 || image.PixelHeight <= 0)
+                return false;
+
+            guideEditor.InitializeCaliberParamsForImage(image.PixelWidth, image.PixelHeight);
+            return true;
+        }
+
+        /// <summary>
         /// 设置位置修正矩阵（作用于引导几何 + 屏蔽区域，显示/交互/算法全修正）
         /// </summary>
         public void SetPositionCorrectionMatrix(Execution.Results.AffineMatrix? matrix)
@@ -143,6 +157,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
 
             if (_mainImageControl != null)
             {
+                guideEditor.DrawingAvailabilityCheck = EnsureImageAvailable;
+                maskEditor.DrawingAvailabilityCheck = EnsureImageAvailable;
                 _mainImageControl.OverlayHitTestVisible = false;
 
                 // 两个子编辑器共用同一叠加画布
@@ -164,6 +180,27 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
 
                 PluginLogger.Info("[MeasurementEditorManager] ImageControl set with centralized routing", "MeasurementEditorManager");
             }
+            else
+            {
+                guideEditor.DrawingAvailabilityCheck = null;
+                maskEditor.DrawingAvailabilityCheck = null;
+            }
+        }
+
+        /// <summary>
+        /// 绘制卡尺或屏蔽区域前统一确认图像显示控件已有图像。
+        /// </summary>
+        private bool EnsureImageAvailable()
+        {
+            if (_mainImageControl?.SourceImage != null)
+                return true;
+
+            MessageBox.Show(Window.GetWindow(this),
+                "当前图像显示控件中没有图像，请先加载或选择一张图像。",
+                "无法绘制卡尺或区域",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+            return false;
         }
 
         /// <summary>

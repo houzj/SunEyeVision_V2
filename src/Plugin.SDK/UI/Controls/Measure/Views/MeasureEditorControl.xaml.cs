@@ -144,6 +144,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         public event EventHandler<bool>? SelectionChanged;
 
         /// <summary>
+        /// 绘制前置检查。由管理器注入，用于确认主图像控件当前确实有可显示图像。
+        /// 返回 false 时不会进入卡尺绘制状态。
+        /// </summary>
+        public Func<bool>? DrawingAvailabilityCheck { get; set; }
+
+        /// <summary>
         /// 标题文本（元素在双卡尺容器中的名字，如"卡尺1/卡尺2"；单编辑器默认"检测区域"）。
         /// 供 <see cref="MeasureElementsEditorControl"/> 等组合控件区分两个元素。
         /// </summary>
@@ -226,6 +232,23 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         }
 
         /// <summary>
+        /// 按当前图像分辨率初始化卡尺尺寸。该方法只应在“新建卡尺”时调用；
+        /// 用户后续通过参数面板或手柄调整后的尺寸不会被视图刷新覆盖。
+        /// </summary>
+        public void InitializeCaliberParamsForImage(int imageWidth, int imageHeight)
+        {
+            if (imageWidth <= 0 || imageHeight <= 0)
+                return;
+
+            // 以 640px 短边为基准保持现有默认体验，再按当前图像短边等比例初始化。
+            // 宽度为法线全宽，长度为切线全长；限制上下限避免极小/超大图像产生不可用卡尺。
+            var scale = Math.Min(imageWidth, imageHeight) / 640.0;
+            var width = Math.Clamp(40.0 * scale, 10.0, 512.0);
+            var length = Math.Clamp(10.0 * scale, 4.0, 256.0);
+            SetCaliberParams(width, length, _measureCount);
+        }
+
+        /// <summary>
         /// 限制可选的卡尺引导类型（隐藏不支持的工具栏项）
         /// 对齐 Roi 编辑器"锁定形状类型"模式，工具层调用，SDK 控件只提供能力。
         /// 默认全部可见（多几何工具），单几何工具（直线/圆查找）传入自身类型即可。
@@ -244,6 +267,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views
         /// </summary>
         public void StartDraw(MeasureGeometryType geometryType)
         {
+            if (DrawingAvailabilityCheck != null && !DrawingAvailabilityCheck())
+            {
+                ClearCaliberSelection();
+                return;
+            }
+
             _model.Mode = MeasureInteractionMode.Draw;
             _model.IsDrawing = false;
             _model.IsSelected = false;

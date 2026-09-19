@@ -217,7 +217,7 @@
                   <controls:ConfigSetting
                                     ParameterName="MinMatchScore"
                                     DataType="{x:Type sys:Double}"
-                                    Value="{Binding MinMatchScore.Value, Mode=TwoWay}"
+                                    Value="{Binding MinMatchScore, Mode=TwoWay}"
                                     Minimum="0" Maximum="1"
                                     SmallChange="0.01" LargeChange="0.1"
                                     ShowSlider="True"
@@ -229,7 +229,7 @@
                   <controls:ConfigSetting
                                     ParameterName="MaxMatchCount"
                                     DataType="{x:Type sys:Int32}"
-                                    Value="{Binding MaxMatchCount.Value, Mode=TwoWay}"
+                                    Value="{Binding MaxMatchCount, Mode=TwoWay}"
                                     Minimum="1" Maximum="100"
                                     SmallChange="1" LargeChange="5"
                                     AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
@@ -240,7 +240,7 @@
                   <controls:ConfigSetting
                                     ParameterName="NumMatches"
                                     DataType="{x:Type sys:Int32}"
-                                    Value="{Binding NumMatches.Value, Mode=TwoWay}"
+                                    Value="{Binding NumMatches, Mode=TwoWay}"
                                     Minimum="1" Maximum="1000"
                                     SmallChange="1" LargeChange="10"
                                     AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
@@ -249,8 +249,8 @@
                 <controls:LabeledControl Label="角度范围" ToolTip="单位: °, 范围: -360~360" Margin="0,8,0,0">
                   <controls:RangeInputControl
                                     Minimum="-360" Maximum="360"
-                                    MinValue="{Binding AngleStart.Value, Mode=TwoWay}"
-                                    MaxValue="{Binding AngleEnd.Value, Mode=TwoWay}"
+                                    MinValue="{Binding AngleStart, Mode=TwoWay}"
+                                    MaxValue="{Binding AngleEnd, Mode=TwoWay}"
                                     DecimalPlaces="1"
                                     SmallChange="1" LargeChange="45"
                                     NumericWidth="110"/>
@@ -259,8 +259,8 @@
                 <controls:LabeledControl Label="缩放范围" ToolTip="缩放范围, 0.1~10.0">
                   <controls:RangeInputControl
                                     Minimum="0.1" Maximum="10.0"
-                                    MinValue="{Binding ScaleMin.Value, Mode=TwoWay}"
-                                    MaxValue="{Binding ScaleMax.Value, Mode=TwoWay}"
+                                    MinValue="{Binding ScaleMin, Mode=TwoWay}"
+                                    MaxValue="{Binding ScaleMax, Mode=TwoWay}"
                                     DecimalPlaces="3"
                                     SmallChange="0.01" LargeChange="0.1"
                                     NumericWidth="110"/>
@@ -271,7 +271,7 @@
             <!-- 排序方式 -->
             <controls:LabeledControl Label="排序方式">
               <ComboBox Height="32" VerticalContentAlignment="Center"
-                      SelectedItem="{Binding SortMode.Value, Mode=TwoWay}">
+                      SelectedItem="{Binding SortMode, Mode=TwoWay}">
                 <ComboBox.ItemTemplate>
                   <DataTemplate>
                     <TextBlock Text="{Binding Converter={StaticResource SortModeConverter}}"/>
@@ -299,7 +299,7 @@
                       <controls:ConfigSetting
                                         ParameterName="MaxOverlap"
                                         DataType="{x:Type sys:Double}"
-                                        Value="{Binding MaxOverlap.Value, Mode=TwoWay}"
+                                        Value="{Binding MaxOverlap, Mode=TwoWay}"
                                         Minimum="0" Maximum="1"
                                         SmallChange="0.01" LargeChange="0.1"
                                         DecimalPlaces="2"
@@ -310,7 +310,7 @@
                       <controls:ConfigSetting
                                         ParameterName="Greediness"
                                         DataType="{x:Type sys:Double}"
-                                        Value="{Binding Greediness.Value, Mode=TwoWay}"
+                                        Value="{Binding Greediness, Mode=TwoWay}"
                                         Minimum="0" Maximum="1"
                                         SmallChange="0.01" LargeChange="0.1"
                                         DecimalPlaces="2"
@@ -321,7 +321,7 @@
                       <controls:ConfigSetting
                                         ParameterName="MatchTimeoutMs"
                                         DataType="{x:Type sys:Int32}"
-                                        Value="{Binding MatchTimeoutMs.Value, Mode=TwoWay}"
+                                        Value="{Binding MatchTimeoutMs, Mode=TwoWay}"
                                         Minimum="100" Maximum="60000"
                                         SmallChange="500" LargeChange="5000"
                                         AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
@@ -333,7 +333,7 @@
                 <GroupBox Header="引擎调优" Margin="0,0,0,8">
                   <StackPanel>
                     <controls:LabeledControl Label="亚像素">
-                      <ComboBox SelectedItem="{Binding SubPixelMode.Value, Mode=TwoWay}"
+                      <ComboBox SelectedItem="{Binding SubPixelMode, Mode=TwoWay}"
                                 Height="32" VerticalContentAlignment="Center">
                         <models:SubPixelMode>None</models:SubPixelMode>
                         <models:SubPixelMode>Interpolation</models:SubPixelMode>
@@ -353,7 +353,7 @@
                       <controls:ConfigSetting
                                         ParameterName="SearchLevelStart"
                                         DataType="{x:Type sys:Int32}"
-                                        Value="{Binding SearchLevelStart.Value, Mode=TwoWay}"
+                                        Value="{Binding SearchLevelStart, Mode=TwoWay}"
                                         Minimum="0" Maximum="10"
                                         SmallChange="1"
                                         AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
@@ -364,7 +364,7 @@
                       <controls:ConfigSetting
                                         ParameterName="SearchLevelEnd"
                                         DataType="{x:Type sys:Int32}"
-                                        Value="{Binding SearchLevelEnd.Value, Mode=TwoWay}"
+                                        Value="{Binding SearchLevelEnd, Mode=TwoWay}"
                                         Minimum="0" Maximum="10"
                                         SmallChange="1"
                                         AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>

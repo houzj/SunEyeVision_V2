@@ -165,15 +165,15 @@ namespace SunEyeVision.Tool.LineLineMeasure
 
             // ---- 元素1：引导线 + 卡尺带 + 拟合线 ----
             {
-                var g1s = T(new Point(parameters.E1StartX.Value, parameters.E1StartY.Value));
-                var g1e = T(new Point(parameters.E1EndX.Value, parameters.E1EndY.Value));
+                var g1s = T(new Point(parameters.E1StartX, parameters.E1StartY));
+                var g1e = T(new Point(parameters.E1EndX, parameters.E1EndY));
                 if ((g1e - g1s).Length > 1e-6)
                     _display.AddLine(parameters.ResultPresentation.GetGraphicsStyle("guide-line1"), g1s, g1e, isOk);
             }
             {
-                var g1s = T(new Point(parameters.E1StartX.Value, parameters.E1StartY.Value));
-                var g1e = T(new Point(parameters.E1EndX.Value, parameters.E1EndY.Value));
-                var bands = MeasureBands(g1s, g1e, parameters.E1MeasureLength1.Value, parameters.E1MeasureLength2.Value, parameters.E1NumMeasures.Value);
+                var g1s = T(new Point(parameters.E1StartX, parameters.E1StartY));
+                var g1e = T(new Point(parameters.E1EndX, parameters.E1EndY));
+                var bands = MeasureBands(g1s, g1e, parameters.E1MeasureLength1, parameters.E1MeasureLength2, parameters.E1NumMeasures);
                 if (bands.Count > 0)
                     _display.AddContours(parameters.ResultPresentation.GetGraphicsStyle("caliber-band1"), bands, isClosed: true);
             }
@@ -182,15 +182,15 @@ namespace SunEyeVision.Tool.LineLineMeasure
 
             // ---- 元素2：引导线 + 卡尺带 + 拟合线 ----
             {
-                var g2s = T(new Point(parameters.E2StartX.Value, parameters.E2StartY.Value));
-                var g2e = T(new Point(parameters.E2EndX.Value, parameters.E2EndY.Value));
+                var g2s = T(new Point(parameters.E2StartX, parameters.E2StartY));
+                var g2e = T(new Point(parameters.E2EndX, parameters.E2EndY));
                 if ((g2e - g2s).Length > 1e-6)
                     _display.AddLine(parameters.ResultPresentation.GetGraphicsStyle("guide-line2"), g2s, g2e, isOk);
             }
             {
-                var g2s = T(new Point(parameters.E2StartX.Value, parameters.E2StartY.Value));
-                var g2e = T(new Point(parameters.E2EndX.Value, parameters.E2EndY.Value));
-                var bands = MeasureBands(g2s, g2e, parameters.E2MeasureLength1.Value, parameters.E2MeasureLength2.Value, parameters.E2NumMeasures.Value);
+                var g2s = T(new Point(parameters.E2StartX, parameters.E2StartY));
+                var g2e = T(new Point(parameters.E2EndX, parameters.E2EndY));
+                var bands = MeasureBands(g2s, g2e, parameters.E2MeasureLength1, parameters.E2MeasureLength2, parameters.E2NumMeasures);
                 if (bands.Count > 0)
                     _display.AddContours(parameters.ResultPresentation.GetGraphicsStyle("caliber-band2"), bands, isClosed: true);
             }

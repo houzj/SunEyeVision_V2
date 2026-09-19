@@ -89,11 +89,11 @@ namespace SunEyeVision.Tool.Morphology
                 int imgHeight = (int)imgH.L;
                 parameters.LogInfo($"开始形态学处理: 图像尺寸 {imgWidth}x{imgHeight}");
 
-                var operation = parameters.Operation.Value;
-                var kernelShape = parameters.KernelShape.Value;
-                var kernelWidth = parameters.KernelWidth.Value;
-                var kernelHeight = parameters.KernelHeight.Value;
-                var iterations = parameters.Iterations.Value;
+                var operation = parameters.Operation;
+                var kernelShape = parameters.KernelShape;
+                var kernelWidth = parameters.KernelWidth;
+                var kernelHeight = parameters.KernelHeight;
+                var iterations = parameters.Iterations;
 
                 // ===== Step 1: 灰度转换 =====
                 stepSw.Restart();

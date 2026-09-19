@@ -19,7 +19,7 @@ namespace SunEyeVision.Tool.LineCircleMeasure
 
     /// <summary>
     /// 线-圆测量参数（v4 C3 范式落点，套线-线模板）。
-    /// 关键差异（对比 LineDetect）：引导/卡尺数值全部为 <see cref="ParamValue{T}"/>，
+    /// 关键差异（对比 LineDetect）：引导/卡尺数值全部为 纯 CLR 参数，
     /// 常量↔绑定两态由 ConfigSetting 数据驱动，绑定模式上游值由执行器 ApplyBindings 注入，
     /// 避免"普通 double + ConfigSetting = 无效绑定"的旧缺陷。
     /// 元素1 = 直线（引导起终点 + 直线卡尺），元素2 = 圆（引导圆心/半径 + 径向卡尺）。
@@ -35,43 +35,43 @@ namespace SunEyeVision.Tool.LineCircleMeasure
         public ResultPresentationConfig ResultPresentation { get; set; } = CreateResultPresentation();
 
         // ============================================================
-        // 元素1（卡尺1）：引导直线（起点/终点）—— 全部 ParamValue 支持字段订阅
+        // 元素1（卡尺1）：引导直线（起点/终点）—— 全部纯 CLR 支持字段订阅
         // ============================================================
         // 默认无引导（对齐直线查找：绘制了才有）；坐标归 0，校验长度即报"未绘制"。
         // ★ 必须是可写属性：JSON 反序列化只回填带 setter 的属性，get-only 会导致方案保存后再打开引导/卡尺参数回默认。
-        public ParamValue<double> E1StartX { get; set; } = ParamValue<double>.CreateConstant(0, "E1StartX");
-        public ParamValue<double> E1StartY { get; set; } = ParamValue<double>.CreateConstant(0, "E1StartY");
-        public ParamValue<double> E1EndX { get; set; } = ParamValue<double>.CreateConstant(0, "E1EndX");
-        public ParamValue<double> E1EndY { get; set; } = ParamValue<double>.CreateConstant(0, "E1EndY");
+        public double E1StartX { get; set; } = 0;
+        public double E1StartY { get; set; } = 0;
+        public double E1EndX { get; set; } = 0;
+        public double E1EndY { get; set; } = 0;
 
         // ---- 元素1 卡尺参数（半长口径，同 LineDetect）----
-        public ParamValue<double> E1MeasureLength1 { get; set; } = ParamValue<double>.CreateConstant(20.0, "E1MeasureLength1");
-        public ParamValue<double> E1MeasureLength2 { get; set; } = ParamValue<double>.CreateConstant(5.0, "E1MeasureLength2");
-        public ParamValue<int> E1NumMeasures { get; set; } = ParamValue<int>.CreateConstant(10, "E1NumMeasures");
-        public ParamValue<double> E1Sigma { get; set; } = ParamValue<double>.CreateConstant(1.0, "E1Sigma");
-        public ParamValue<double> E1Threshold { get; set; } = ParamValue<double>.CreateConstant(30.0, "E1Threshold");
-        public ParamValue<EdgeTransition> E1Transition { get; set; } = ParamValue<EdgeTransition>.CreateConstant(EdgeTransition.All, "E1Transition");
-        public ParamValue<EdgeSelect> E1Select { get; set; } = ParamValue<EdgeSelect>.CreateConstant(EdgeSelect.All, "E1Select");
-        public ParamValue<double> E1DistanceThreshold { get; set; } = ParamValue<double>.CreateConstant(5.0, "E1DistanceThreshold");
+        public double E1MeasureLength1 { get; set; } = 20.0;
+        public double E1MeasureLength2 { get; set; } = 5.0;
+        public int E1NumMeasures { get; set; } = 10;
+        public double E1Sigma { get; set; } = 1.0;
+        public double E1Threshold { get; set; } = 30.0;
+        public EdgeTransition E1Transition { get; set; } = EdgeTransition.All;
+        public EdgeSelect E1Select { get; set; } = EdgeSelect.All;
+        public double E1DistanceThreshold { get; set; } = 5.0;
 
         // ============================================================
-        // 元素2（卡尺2）：引导圆（圆心 + 半径）—— 全部 ParamValue 支持字段订阅
+        // 元素2（卡尺2）：引导圆（圆心 + 半径）—— 全部纯 CLR 支持字段订阅
         // ============================================================
         // ★ 圆引导只有"圆心 + 半径"三个自由度（无起止角）：圆弧引导属 CircleDetect 范畴，
         //   本工具元素2 恒为整圆，故交点在圆上取 0~2π 全域（见 Tool 中 intersection_line_circle 调用）。
-        public ParamValue<double> E2CenterX { get; set; } = ParamValue<double>.CreateConstant(0, "E2CenterX");
-        public ParamValue<double> E2CenterY { get; set; } = ParamValue<double>.CreateConstant(0, "E2CenterY");
-        public ParamValue<double> E2Radius { get; set; } = ParamValue<double>.CreateConstant(0, "E2Radius");
+        public double E2CenterX { get; set; } = 0;
+        public double E2CenterY { get; set; } = 0;
+        public double E2Radius { get; set; } = 0;
 
         // ---- 元素2 卡尺参数（MeasureLength1 = 径向半宽；MeasureLength2 = 切向半长）----
-        public ParamValue<double> E2MeasureLength1 { get; set; } = ParamValue<double>.CreateConstant(20.0, "E2MeasureLength1");
-        public ParamValue<double> E2MeasureLength2 { get; set; } = ParamValue<double>.CreateConstant(5.0, "E2MeasureLength2");
-        public ParamValue<int> E2NumMeasures { get; set; } = ParamValue<int>.CreateConstant(16, "E2NumMeasures");
-        public ParamValue<double> E2Sigma { get; set; } = ParamValue<double>.CreateConstant(1.0, "E2Sigma");
-        public ParamValue<double> E2Threshold { get; set; } = ParamValue<double>.CreateConstant(30.0, "E2Threshold");
-        public ParamValue<EdgeTransition> E2Transition { get; set; } = ParamValue<EdgeTransition>.CreateConstant(EdgeTransition.All, "E2Transition");
-        public ParamValue<EdgeSelect> E2Select { get; set; } = ParamValue<EdgeSelect>.CreateConstant(EdgeSelect.All, "E2Select");
-        public ParamValue<double> E2DistanceThreshold { get; set; } = ParamValue<double>.CreateConstant(5.0, "E2DistanceThreshold");
+        public double E2MeasureLength1 { get; set; } = 20.0;
+        public double E2MeasureLength2 { get; set; } = 5.0;
+        public int E2NumMeasures { get; set; } = 16;
+        public double E2Sigma { get; set; } = 1.0;
+        public double E2Threshold { get; set; } = 30.0;
+        public EdgeTransition E2Transition { get; set; } = EdgeTransition.All;
+        public EdgeSelect E2Select { get; set; } = EdgeSelect.All;
+        public double E2DistanceThreshold { get; set; } = 5.0;
 
         // ============================================================
         // 结果显示样式（Tab3 绑定：图形显示 + 文本显示，对齐线-线 Tab3 范式）

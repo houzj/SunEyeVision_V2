@@ -64,7 +64,7 @@
                                 x:Name="thresholdParam"
                                 ParameterName="Threshold"
                                 DataType="{x:Type sys:Int32}"
-                                Value="{Binding Threshold.Value, Mode=TwoWay}"
+                                Value="{Binding Threshold, Mode=TwoWay}"
                                 Minimum="0"
                                 Maximum="255"
                                 SmallChange="1"
@@ -78,7 +78,7 @@
                                 x:Name="maxValueParam"
                                 ParameterName="MaxValue"
                                 DataType="{x:Type sys:Int32}"
-                                Value="{Binding MaxValue.Value, Mode=TwoWay}"
+                                Value="{Binding MaxValue, Mode=TwoWay}"
                                 Minimum="0"
                                 Maximum="255"
                                 SmallChange="1"
@@ -91,7 +91,7 @@
               <ComboBox x:Name="thresholdTypeComboBox"
                       Height="32"
                       VerticalContentAlignment="Center" Width="250"
-                      SelectedItem="{Binding Type.Value, Mode=TwoWay, Converter={StaticResource ThresholdTypeConverter}}">
+                      SelectedItem="{Binding Type, Mode=TwoWay, Converter={StaticResource ThresholdTypeConverter}}">
                 <sys:String>Binary</sys:String>
                 <sys:String>BinaryInv</sys:String>
               </ComboBox>
@@ -108,7 +108,7 @@
             <controls:LabeledControl Label="自适应方法">
               <ComboBox Height="32"
                       VerticalContentAlignment="Center" Width="250"
-                      SelectedIndex="{Binding AdaptiveMethod.Value, Mode=TwoWay}">
+                      SelectedIndex="{Binding AdaptiveMethod, Mode=TwoWay}">
                 <sys:String>Mean</sys:String>
                 <sys:String>Gaussian</sys:String>
               </ComboBox>
@@ -119,7 +119,7 @@
                                 x:Name="blockSizeParam"
                                 ParameterName="BlockSize"
                                 DataType="{x:Type sys:Int32}"
-                                Value="{Binding BlockSize.Value, Mode=TwoWay}"
+                                Value="{Binding BlockSize, Mode=TwoWay}"
                                 Minimum="3"
                                 Maximum="31"
                                 SmallChange="2"

@@ -25,13 +25,13 @@ public class LineCircleMeasureContractTests
     private static LineCircleMeasureParameters CreateValidGuideParameters()
     {
         var parameters = new LineCircleMeasureParameters();
-        parameters.E1StartX.Value = 10;
-        parameters.E1StartY.Value = 20;
-        parameters.E1EndX.Value = 110;
-        parameters.E1EndY.Value = 20;
-        parameters.E2CenterX.Value = 200;
-        parameters.E2CenterY.Value = 200;
-        parameters.E2Radius.Value = 50;
+        parameters.E1StartX = 10;
+        parameters.E1StartY = 20;
+        parameters.E1EndX = 110;
+        parameters.E1EndY = 20;
+        parameters.E2CenterX = 200;
+        parameters.E2CenterY = 200;
+        parameters.E2Radius = 50;
         return parameters;
     }
 
@@ -42,10 +42,10 @@ public class LineCircleMeasureContractTests
     {
         var options = Options();
         var source = CreateValidGuideParameters();
-        source.E1Threshold.Value = 45.5;
-        source.E2NumMeasures.Value = 24;
-        source.E2Transition.Value = EdgeTransition.Negative;
-        source.E2Select.Value = EdgeSelect.Last;
+        source.E1Threshold = 45.5;
+        source.E2NumMeasures = 24;
+        source.E2Transition = EdgeTransition.Negative;
+        source.E2Select = EdgeSelect.Last;
         source.ResultPresentation.Judgments.Add(new JudgmentConfigItem
         {
             Key = "test-custom",
@@ -60,13 +60,13 @@ public class LineCircleMeasureContractTests
         var back = JsonSerializer.Deserialize<LineCircleMeasureParameters>(json, options);
 
         Assert.NotNull(back);
-        Assert.Equal(110.0, back!.E1EndX.Value, 6);
-        Assert.Equal(45.5, back.E1Threshold.Value, 6);
-        Assert.Equal(200.0, back.E2CenterX.Value, 6);
-        Assert.Equal(50.0, back.E2Radius.Value, 6);
-        Assert.Equal(24, back.E2NumMeasures.Value);
-        Assert.Equal(EdgeTransition.Negative, back.E2Transition.Value);
-        Assert.Equal(EdgeSelect.Last, back.E2Select.Value);
+        Assert.Equal(110.0, back!.E1EndX, 6);
+        Assert.Equal(45.5, back.E1Threshold, 6);
+        Assert.Equal(200.0, back.E2CenterX, 6);
+        Assert.Equal(50.0, back.E2Radius, 6);
+        Assert.Equal(24, back.E2NumMeasures);
+        Assert.Equal(EdgeTransition.Negative, back.E2Transition);
+        Assert.Equal(EdgeSelect.Last, back.E2Select);
 
         // 默认判定项（距离/交点X/交点Y/半径/圆心距）保留 + 新增项完整还原
         Assert.Equal(source.ResultPresentation.Judgments.Count, back.ResultPresentation.Judgments.Count);
@@ -123,10 +123,10 @@ public class LineCircleMeasureContractTests
     public void Run_GuideCircleRadiusInvalid_FailsFast_WithVisibleError()
     {
         var parameters = new LineCircleMeasureParameters();
-        parameters.E1StartX.Value = 10;
-        parameters.E1StartY.Value = 20;
-        parameters.E1EndX.Value = 110;
-        parameters.E1EndY.Value = 20;
+        parameters.E1StartX = 10;
+        parameters.E1StartY = 20;
+        parameters.E1EndX = 110;
+        parameters.E1EndY = 20;
 
         var result = new LineCircleMeasureTool().Run(parameters);
 

@@ -157,15 +157,15 @@ namespace SunEyeVision.Tool.LineCircleMeasure
 
             // ---- 元素1：引导线 + 卡尺带 + 拟合线 ----
             {
-                var g1s = T(new Point(parameters.E1StartX.Value, parameters.E1StartY.Value));
-                var g1e = T(new Point(parameters.E1EndX.Value, parameters.E1EndY.Value));
+                var g1s = T(new Point(parameters.E1StartX, parameters.E1StartY));
+                var g1e = T(new Point(parameters.E1EndX, parameters.E1EndY));
                 if ((g1e - g1s).Length > 1e-6)
                     _display.AddLine(parameters.ResultPresentation.GetGraphicsStyle("guide-line1"), g1s, g1e, isOk);
             }
             {
-                var g1s = T(new Point(parameters.E1StartX.Value, parameters.E1StartY.Value));
-                var g1e = T(new Point(parameters.E1EndX.Value, parameters.E1EndY.Value));
-                var bands = MeasureLineBands(g1s, g1e, parameters.E1MeasureLength1.Value, parameters.E1MeasureLength2.Value, parameters.E1NumMeasures.Value);
+                var g1s = T(new Point(parameters.E1StartX, parameters.E1StartY));
+                var g1e = T(new Point(parameters.E1EndX, parameters.E1EndY));
+                var bands = MeasureLineBands(g1s, g1e, parameters.E1MeasureLength1, parameters.E1MeasureLength2, parameters.E1NumMeasures);
                 if (bands.Count > 0)
                     _display.AddContours(parameters.ResultPresentation.GetGraphicsStyle("caliber-band1"), bands, isClosed: true);
             }
@@ -174,8 +174,8 @@ namespace SunEyeVision.Tool.LineCircleMeasure
 
             // ---- 元素2：引导圆 + 环形卡尺带 + 拟合圆 ----
             // 位置修正：圆心随矩阵变换 + 半径随缩放因子缩放 + 卡尺阵列起始相位随旋转（与 CircleDetect / BuildCircleBands 同口径）
-            var g2c = T(new Point(parameters.E2CenterX.Value, parameters.E2CenterY.Value));
-            double g2r = parameters.E2Radius.Value * scale;
+            var g2c = T(new Point(parameters.E2CenterX, parameters.E2CenterY));
+            double g2r = parameters.E2Radius * scale;
             double startPhase = matrix != null
                 ? PositionCorrectionResolver.DisplayAngleDeg(matrix, 0.0) * Math.PI / 180.0
                 : 0.0;
@@ -187,8 +187,8 @@ namespace SunEyeVision.Tool.LineCircleMeasure
             {
                 var bands = MeasureCircleBands(
                     new Circle2d(g2c, g2r),
-                    parameters.E2MeasureLength1.Value, parameters.E2MeasureLength2.Value,
-                    parameters.E2NumMeasures.Value, startPhase);
+                    parameters.E2MeasureLength1, parameters.E2MeasureLength2,
+                    parameters.E2NumMeasures, startPhase);
                 if (bands.Count > 0)
                     _display.AddContours(parameters.ResultPresentation.GetGraphicsStyle("caliber-band2"), bands, isClosed: true);
             }

@@ -93,13 +93,13 @@ namespace SunEyeVision.Tool.ImageThreshold
                 result.InputHeight = imgHeight;
                 result.InputChannels = hImage.CountChannels();
 
-                var method = parameters.Method.Value;
-                int threshold = parameters.Threshold.Value;
-                int maxValue = parameters.MaxValue.Value;
-                int blockSize = parameters.BlockSize.Value;
-                double c = parameters.C.Value;
-                int minThreshold = parameters.MinThreshold.Value;
-                int maxThreshold = parameters.MaxThreshold.Value;
+                var method = parameters.Method;
+                int threshold = parameters.Threshold;
+                int maxValue = parameters.MaxValue;
+                int blockSize = parameters.BlockSize;
+                double c = parameters.C;
+                int minThreshold = parameters.MinThreshold;
+                int maxThreshold = parameters.MaxThreshold;
                 bool invert = parameters.Invert;
 
                 // ===== Step 1: 灰度转换 =====

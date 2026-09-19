@@ -156,7 +156,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
                         var processingImage = HalImageDomain.Restrict(grayImage, scope.RoiRegion);
 
                         // ===== Step 3.5: 图像预处理（可选） =====
-                        if (parameters.IsPreprocessingEnabled && parameters.PreprocessMethodValue.Value != PreprocessMethod.None)
+                        if (parameters.IsPreprocessingEnabled && parameters.PreprocessMethodValue != PreprocessMethod.None)
                         {
                             stepSw.Restart();
                             var preprocessed = ApplyPreprocessing(processingImage, parameters);
@@ -170,46 +170,55 @@ namespace SunEyeVision.Tool.BlobAnalysis
                         {
                             // ===== Step 4: 阈值分割 =====
                             stepSw.Restart();
-                            int thresholdMin = parameters.Threshold.Value;
-                            int thresholdMax = parameters.MaxValue.Value;
+                            int thresholdMin = parameters.Threshold;
+                            int thresholdMax = parameters.MaxValue;
 
-                            HOperatorSet.Threshold(processingImage, out var binaryRegion,
+                            HObject thresholdObject;
+                            HOperatorSet.Threshold(processingImage, out thresholdObject,
                                 thresholdMin, thresholdMax);
 
-                            if (parameters.Type.Value == ThresholdType.BinaryInv)
-                            {
-                                HOperatorSet.Complement(binaryRegion, out var complRegion);
-                                binaryRegion.Dispose();
-                                binaryRegion = complRegion;
-                            }
-
-                            double actualThreshold = (thresholdMin + thresholdMax) / 2.0;
                             stepSw.Stop();
                             stepTimings.Add(("阈值分割", stepSw.ElapsedMilliseconds));
 
-                            using (binaryRegion)
+                            // 不要在 using 变量上重新赋值。原实现把 BinaryInv/形态学结果
+                            // 写回 using 变量，编译器已明确警告其 Dispose 目标不再是当前对象，
+                            // 这会造成区域泄漏或错误释放。现在明确区分阈值原始对象和当前分析区域。
+                            using (thresholdObject)
                             {
-                                // ===== Step 4.5: 形态学处理（可选） =====
-                                if (parameters.IsMorphologyEnabled)
+                                HRegion binaryRegion;
+                                if (parameters.Type == ThresholdType.BinaryInv)
                                 {
-                                    stepSw.Restart();
-                                    var morphed = ApplyMorphology(new HRegion(binaryRegion), parameters);
-                                    binaryRegion.Dispose();
-                                    binaryRegion = morphed;
-                                    stepSw.Stop();
-                                    stepTimings.Add(("形态学处理", stepSw.ElapsedMilliseconds));
+                                    HOperatorSet.Complement(thresholdObject, out var complementObject);
+                                    binaryRegion = new HRegion(complementObject);
+                                }
+                                else
+                                {
+                                    binaryRegion = new HRegion(thresholdObject.Clone());
                                 }
 
-                                // ===== Step 5: 连通域分析 =====
-                                stepSw.Restart();
-                                HOperatorSet.Connection(binaryRegion, out var connectedRegions);
-                                stepSw.Stop();
-                                stepTimings.Add(("连通域分析", stepSw.ElapsedMilliseconds));
-
-                                using (connectedRegions)
+                                try
                                 {
-                                    HOperatorSet.CountObj(connectedRegions, out var numReg);
-                                    int rawBlobCount = (int)numReg.L;
+                                    // ===== Step 4.5: 形态学处理（可选） =====
+                                    if (parameters.IsMorphologyEnabled)
+                                    {
+                                        stepSw.Restart();
+                                        var morphed = ApplyMorphology(binaryRegion.Clone(), parameters);
+                                        binaryRegion.Dispose();
+                                        binaryRegion = morphed;
+                                        stepSw.Stop();
+                                        stepTimings.Add(("形态学处理", stepSw.ElapsedMilliseconds));
+                                    }
+
+                                    // ===== Step 5: 连通域分析 =====
+                                    stepSw.Restart();
+                                    HOperatorSet.Connection(binaryRegion, out var connectedRegions);
+                                    stepSw.Stop();
+                                    stepTimings.Add(("连通域分析", stepSw.ElapsedMilliseconds));
+
+                                    using (connectedRegions)
+                                    {
+                                        HOperatorSet.CountObj(connectedRegions, out var numReg);
+                                        int rawBlobCount = (int)numReg.L;
 
                                     // ===== Step 6~8: 按需特征提取 + Tab3筛选 + Tab4判断 =====
                                     stepSw.Restart();
@@ -236,6 +245,7 @@ namespace SunEyeVision.Tool.BlobAnalysis
 
                                         // Step 7: 对剩余 blob 按需计算特征 + Tab3 C#筛选 + Tab4判断
                                         var filteredBlobs = new List<BlobResult>(candidateCount);
+                                        HRegion? finalBlobRegions = null;
                                         var config = parameters.ResultPresentation;
 
                                         bool tab3FilterCircularity = parameters.IsCircularityFilterEnabled;
@@ -293,6 +303,22 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                             if (!passesTab3Filter)
                                                 continue; // Tab3 丢弃
 
+                                            // BlobRegions 必须与 FilteredBlobs 使用同一套 Tab3 筛选结果。
+                                            // 旧实现直接复制 shapeFilteredRegions，导致区域输出仍包含被圆度/矩形度
+                                            // 淘汰的候选，图形结果与数值结果不一致。
+                                            var acceptedRegion = new HRegion(singleRegion.Clone());
+                                            if (finalBlobRegions == null)
+                                            {
+                                                finalBlobRegions = acceptedRegion;
+                                            }
+                                            else
+                                            {
+                                                HOperatorSet.ConcatObj(finalBlobRegions, acceptedRegion, out var concatenated);
+                                                finalBlobRegions.Dispose();
+                                                acceptedRegion.Dispose();
+                                                finalBlobRegions = new HRegion(concatenated);
+                                            }
+
                                             // ★ Phase B: Tab4 独立判断（标记 JudgmentPassed 但不丢弃）
                                             blob.JudgmentPassed = EvaluateBlobJudgment(blob, config);
 
@@ -309,21 +335,26 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                         stepTimings.Add(("特征提取+判断", stepSw.ElapsedMilliseconds));
 
                                         // ===== Step 8.5: 排序 =====
-                                        if (parameters.SortMode.Value != BlobSortMode.None)
+                                        if (parameters.SortMode != BlobSortMode.None)
                                         {
-                                            SortBlobs(filteredBlobs, parameters.SortMode.Value);
+                                            SortBlobs(filteredBlobs, parameters.SortMode);
                                         }
 
                                         // ===== Step 9: 设置结果数据 =====
                                         stepSw.Restart();
                                         result.GrayImage = new HalImage(grayImage.Clone());
                                         result.FilteredBlobs = filteredBlobs;
-                                        result.ThresholdUsed = (int)actualThreshold;
-                                        result.MaxValueUsed = parameters.MaxValue.Value;
-                                        result.TypeUsed = parameters.Type.Value.ToString();
+                                        result.ThresholdMinUsed = thresholdMin;
+                                        result.ThresholdMaxUsed = thresholdMax;
+                                        result.TypeUsed = parameters.Type.ToString();
 
                                         // 区域本体保留（供下游区域运算/图像叠加消费；不进 GetPropertyMap 契约）
-                                        result.BlobRegions = new HalRegion(shapeFilteredRegions.Clone());
+                                        // 区域本体与最终 FilteredBlobs 一一对应；Tab4 判断为 NG 的
+                                        // Blob 仍保留，颜色由 JudgmentPassed 决定。
+                                        result.BlobRegions = finalBlobRegions == null
+                                            ? new HalRegion(new HRegion())
+                                            : new HalRegion(finalBlobRegions);
+                                        finalBlobRegions = null; // 所有权已转移给结果
 
                                         // 二值掩码
                                         HOperatorSet.RegionToBin(binaryRegion, out var binObj,
@@ -435,6 +466,11 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                         reportLines.Add($"结果: 原始连通域 {rawBlobCount}, 筛选后 {filteredBlobs.Count}, 瓶颈 [{maxStep.Step}]={maxStep.Ms}ms");
                                         parameters.LogInfo(string.Join("\n", reportLines));
                                     }
+                                    }
+                                }
+                                finally
+                                {
+                                    binaryRegion.Dispose();
                                 }
                             }
                         }
@@ -599,8 +635,8 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// </summary>
         private static HImage ApplyPreprocessing(HImage image, BlobAnalysisParameters parameters)
         {
-            var method = parameters.PreprocessMethodValue.Value;
-            int kernelSize = parameters.PreprocessKernelSize.Value;
+            var method = parameters.PreprocessMethodValue;
+            int kernelSize = parameters.PreprocessKernelSize;
 
             switch (method)
             {
@@ -634,11 +670,11 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// </summary>
         private static HRegion ApplyMorphology(HRegion inputRegion, BlobAnalysisParameters parameters)
         {
-            var operation = parameters.MorphOperationValue.Value;
-            var elementShape = parameters.MorphElementShapeValue.Value;
-            int width = parameters.MorphElementWidth.Value;
-            int height = parameters.MorphElementHeight.Value;
-            int iterations = parameters.MorphIterations.Value;
+            var operation = parameters.MorphOperationValue;
+            var elementShape = parameters.MorphElementShapeValue;
+            int width = parameters.MorphElementWidth;
+            int height = parameters.MorphElementHeight;
+            int iterations = parameters.MorphIterations;
 
             // 顶帽/黑帽固定迭代1次
             if (operation is MorphOperationType.TopHat or MorphOperationType.BottomHat)

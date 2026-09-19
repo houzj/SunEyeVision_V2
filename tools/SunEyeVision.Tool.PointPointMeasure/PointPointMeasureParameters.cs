@@ -38,47 +38,17 @@ namespace SunEyeVision.Tool.PointPointMeasure
         /// 按图形：绑定上游点图形输出（词目 Point）。**数组口子**（决策 4）：来多少算多少 ——
         /// 单元素即原"一次绑定即得 X/Y"语义；多元素配对（向量化）由 6d 承接。
         /// </summary>
-        public ParamValue<Point2d[]> P1Point { get; set; } =
-            ParamValue<Point2d[]>.CreateConstant(System.Array.Empty<Point2d>(), "P1Point");
+        public Point2d[] P1Point { get; set; } = System.Array.Empty<Point2d>();
 
         /// <summary>按参数：X 坐标（常量输入或上游标量绑定）</summary>
-        public ParamValue<double> P1X { get; set; } = ParamValue<double>.CreateConstant(100, "P1X");
+        public double P1X { get; set; } = 100;
 
         /// <summary>按参数：Y 坐标（常量输入或上游标量绑定）</summary>
-        public ParamValue<double> P1Y { get; set; } = ParamValue<double>.CreateConstant(100, "P1Y");
+        public double P1Y { get; set; } = 100;
 
-        /// <summary>
-        /// P1Point 绑定源的字符串投影（ParamBinding.BindingSource 契约："节点ID.属性名"）。
-        /// 仅作控件桥接：真值存于 P1Point.BindingConfig（随参数一起序列化），故此处不序列化。
-        /// </summary>
+        /// <summary>绑定源路径（由参数绑定 UI 写入节点参数设置）。</summary>
         [JsonIgnore]
-        public string P1PointBindingSource
-        {
-            get
-            {
-                var config = P1Point.BindingConfig;
-                return config != null && config.BindingType == BindingType.Binding
-                       && !string.IsNullOrEmpty(config.SourceNodeId)
-                    ? $"{config.SourceNodeId}.{config.SourceProperty}"
-                    : string.Empty;
-            }
-            set
-            {
-                if (string.IsNullOrWhiteSpace(value))
-                {
-                    P1Point.BindingConfig = null;
-                    return;
-                }
-
-                // nodeId 不含 '.'，其后整段是属性路径（可含几何字段下钻的嵌套点）。
-                // 按 P6 约定用 IndexOf 只切首个点，避免多段路径被截断（Split 只取第二段会丢字段）。
-                var dotIndex = value.IndexOf('.');
-                P1Point.BindingConfig = ParamSetting.CreateBinding(
-                    "P1Point",
-                    dotIndex > 0 ? value[..dotIndex] : string.Empty,
-                    dotIndex > 0 ? value[(dotIndex + 1)..] : string.Empty);
-            }
-        }
+        public string P1PointBindingSource { get; set; } = string.Empty;
 
         // ============================================================
         // 元素2（点）：与元素1 同构（两个点元素均为纯订阅）
@@ -95,44 +65,17 @@ namespace SunEyeVision.Tool.PointPointMeasure
         /// <summary>
         /// 按图形：绑定上游点图形输出（词目 Point）。**数组口子**（决策 4）：同 P1Point。
         /// </summary>
-        public ParamValue<Point2d[]> P2Point { get; set; } =
-            ParamValue<Point2d[]>.CreateConstant(System.Array.Empty<Point2d>(), "P2Point");
+        public Point2d[] P2Point { get; set; } = System.Array.Empty<Point2d>();
 
         /// <summary>按参数：X 坐标（常量输入或上游标量绑定）</summary>
-        public ParamValue<double> P2X { get; set; } = ParamValue<double>.CreateConstant(300, "P2X");
+        public double P2X { get; set; } = 300;
 
         /// <summary>按参数：Y 坐标（常量输入或上游标量绑定）</summary>
-        public ParamValue<double> P2Y { get; set; } = ParamValue<double>.CreateConstant(200, "P2Y");
+        public double P2Y { get; set; } = 200;
 
-        /// <summary>P2Point 绑定源的字符串投影（语义同 P1PointBindingSource）</summary>
+        /// <summary>绑定源路径（由参数绑定 UI 写入节点参数设置）。</summary>
         [JsonIgnore]
-        public string P2PointBindingSource
-        {
-            get
-            {
-                var config = P2Point.BindingConfig;
-                return config != null && config.BindingType == BindingType.Binding
-                       && !string.IsNullOrEmpty(config.SourceNodeId)
-                    ? $"{config.SourceNodeId}.{config.SourceProperty}"
-                    : string.Empty;
-            }
-            set
-            {
-                if (string.IsNullOrWhiteSpace(value))
-                {
-                    P2Point.BindingConfig = null;
-                    return;
-                }
-
-                // nodeId 不含 '.'，其后整段是属性路径（可含几何字段下钻的嵌套点）。
-                // 按 P6 约定用 IndexOf 只切首个点，避免多段路径被截断（Split 只取第二段会丢字段）。
-                var dotIndex = value.IndexOf('.');
-                P2Point.BindingConfig = ParamSetting.CreateBinding(
-                    "P2Point",
-                    dotIndex > 0 ? value[..dotIndex] : string.Empty,
-                    dotIndex > 0 ? value[(dotIndex + 1)..] : string.Empty);
-            }
-        }
+        public string P2PointBindingSource { get; set; } = string.Empty;
 
         // ============================================================
         // 结果显示样式（Tab3 绑定：图形显示 + 文本显示）

@@ -28,14 +28,14 @@ public class LineLineMeasureContractTests
     private static LineLineMeasureParameters CreateValidGuideParameters()
     {
         var parameters = new LineLineMeasureParameters();
-        parameters.E1StartX.Value = 10;
-        parameters.E1StartY.Value = 20;
-        parameters.E1EndX.Value = 110;
-        parameters.E1EndY.Value = 20;
-        parameters.E2StartX.Value = 10;
-        parameters.E2StartY.Value = 60;
-        parameters.E2EndX.Value = 110;
-        parameters.E2EndY.Value = 60;
+        parameters.E1StartX = 10;
+        parameters.E1StartY = 20;
+        parameters.E1EndX = 110;
+        parameters.E1EndY = 20;
+        parameters.E2StartX = 10;
+        parameters.E2StartY = 60;
+        parameters.E2EndX = 110;
+        parameters.E2EndY = 60;
         return parameters;
     }
 
@@ -46,10 +46,10 @@ public class LineLineMeasureContractTests
     {
         var options = Options();
         var source = CreateValidGuideParameters();
-        source.E1Threshold.Value = 45.5;
-        source.E1NumMeasures.Value = 12;
-        source.E1Transition.Value = EdgeTransition.Positive;
-        source.E1Select.Value = EdgeSelect.First;
+        source.E1Threshold = 45.5;
+        source.E1NumMeasures = 12;
+        source.E1Transition = EdgeTransition.Positive;
+        source.E1Select = EdgeSelect.First;
         source.ResultPresentation.Judgments.Add(new JudgmentConfigItem
         {
             Key = "test-custom",
@@ -64,13 +64,13 @@ public class LineLineMeasureContractTests
         var back = JsonSerializer.Deserialize<LineLineMeasureParameters>(json, options);
 
         Assert.NotNull(back);
-        Assert.Equal(10.0, back!.E1StartX.Value, 6);
-        Assert.Equal(20.0, back.E1StartY.Value, 6);
-        Assert.Equal(110.0, back.E1EndX.Value, 6);
-        Assert.Equal(45.5, back.E1Threshold.Value, 6);
-        Assert.Equal(12, back.E1NumMeasures.Value);
-        Assert.Equal(EdgeTransition.Positive, back.E1Transition.Value);
-        Assert.Equal(EdgeSelect.First, back.E1Select.Value);
+        Assert.Equal(10.0, back!.E1StartX, 6);
+        Assert.Equal(20.0, back.E1StartY, 6);
+        Assert.Equal(110.0, back.E1EndX, 6);
+        Assert.Equal(45.5, back.E1Threshold, 6);
+        Assert.Equal(12, back.E1NumMeasures);
+        Assert.Equal(EdgeTransition.Positive, back.E1Transition);
+        Assert.Equal(EdgeSelect.First, back.E1Select);
 
         // 默认判定项（角度/距离/交点X/交点Y）保留 + 新增项完整还原
         Assert.Equal(source.ResultPresentation.Judgments.Count, back.ResultPresentation.Judgments.Count);
@@ -95,23 +95,19 @@ public class LineLineMeasureContractTests
     }
 
     [Fact]
-    public void Parameters_RoundTrip_PreservesBindingConfig()
+    public void Parameters_RoundTrip_PreservesPureClrValues()
     {
         var options = Options();
         var source = new LineLineMeasureParameters();
-        source.E1StartX = ParamValue<double>.CreateBinding(
-            "E1StartX", "11111111-2222-4333-8444-555555555555", "StartX", 0);
+        source.E1StartX = 12.5;
+        source.E1EndY = 48.25;
 
         var json = JsonSerializer.Serialize(source, options);
         var back = JsonSerializer.Deserialize<LineLineMeasureParameters>(json, options);
 
         Assert.NotNull(back);
-        Assert.True(back!.E1StartX.IsBinding);
-        var binding = back.E1StartX.BindingConfig;
-        Assert.NotNull(binding);
-        Assert.Equal(BindingType.Binding, binding!.BindingType);
-        Assert.Equal("11111111-2222-4333-8444-555555555555", binding.SourceNodeId);
-        Assert.Equal("StartX", binding.SourceProperty);
+        Assert.Equal(12.5, back!.E1StartX);
+        Assert.Equal(48.25, back.E1EndY);
     }
 
     #endregion
@@ -148,10 +144,10 @@ public class LineLineMeasureContractTests
     public void Run_SecondGuideLineNotSet_FailsFast_WithVisibleError()
     {
         var parameters = new LineLineMeasureParameters();
-        parameters.E1StartX.Value = 10;
-        parameters.E1StartY.Value = 20;
-        parameters.E1EndX.Value = 110;
-        parameters.E1EndY.Value = 20;
+        parameters.E1StartX = 10;
+        parameters.E1StartY = 20;
+        parameters.E1EndX = 110;
+        parameters.E1EndY = 20;
 
         var result = new LineLineMeasureTool().Run(parameters);
 

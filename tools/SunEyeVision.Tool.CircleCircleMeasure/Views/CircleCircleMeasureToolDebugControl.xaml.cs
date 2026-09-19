@@ -16,9 +16,9 @@ namespace SunEyeVision.Tool.CircleCircleMeasure.Views
 {
     /// <summary>
     /// 圆-圆测量调试控件（三 Tab）：双元素编辑（卡尺1 圆 / 卡尺2 圆，MeasureElementsEditorControl）
-    /// + 全 ParamValue 运行参数 + 判定结果。
+    /// + 全 纯 CLR 运行参数 + 判定结果。
     /// 生命周期：Loaded→Closing 链 Cleanup → ElementsEditor.ClearMainOverlay()。
-    /// 绑定范式（C3）：引导/卡尺数值全 ParamValue；XAML 一律绑 ".Value"；枚举走 ComboBox 索引翻译。
+    /// 绑定范式（C3）：引导/卡尺数值纯 CLR；XAML 一律绑 ".Value"；枚举走 ComboBox 索引翻译。
     /// </summary>
     public partial class CircleCircleMeasureToolDebugControl : ToolDebugControlBase
     {
@@ -79,7 +79,7 @@ namespace SunEyeVision.Tool.CircleCircleMeasure.Views
             // no-op
         }
 
-        #region 双元素编辑器事件 ↔ 参数（ParamValue.Value 回写）
+        #region 双元素编辑器事件 ↔ 参数（参数值 回写）
 
         private void HookElementsEditor()
         {
@@ -93,18 +93,18 @@ namespace SunEyeVision.Tool.CircleCircleMeasure.Views
                 if (e.GeometryType == MeasureGeometryType.Circle && e.Model.EditingCircle.HasValue)
                 {
                     var circle = e.Model.EditingCircle.Value;
-                    Parameters.E1CenterX.Value = circle.Center.X;
-                    Parameters.E1CenterY.Value = circle.Center.Y;
-                    Parameters.E1Radius.Value = circle.Radius;
+                    Parameters.E1CenterX = circle.Center.X;
+                    Parameters.E1CenterY = circle.Center.Y;
+                    Parameters.E1Radius = circle.Radius;
                 }
                 if (e.IsDrawing) ElementsEditor?.ClearElementToolSelection(0);
             };
             Element1Editor.CaliberParamsChanged += (_, e) =>
             {
                 if (Parameters == null || _syncingElement1Caliber) return;
-                Parameters.E1MeasureLength1.Value = e.Width / 2;
-                Parameters.E1MeasureLength2.Value = e.Length / 2;
-                Parameters.E1NumMeasures.Value = e.Count;
+                Parameters.E1MeasureLength1 = e.Width / 2;
+                Parameters.E1MeasureLength2 = e.Length / 2;
+                Parameters.E1NumMeasures = e.Count;
             };
 
             // 元素2 = 圆（同构）
@@ -114,18 +114,18 @@ namespace SunEyeVision.Tool.CircleCircleMeasure.Views
                 if (e.GeometryType == MeasureGeometryType.Circle && e.Model.EditingCircle.HasValue)
                 {
                     var circle = e.Model.EditingCircle.Value;
-                    Parameters.E2CenterX.Value = circle.Center.X;
-                    Parameters.E2CenterY.Value = circle.Center.Y;
-                    Parameters.E2Radius.Value = circle.Radius;
+                    Parameters.E2CenterX = circle.Center.X;
+                    Parameters.E2CenterY = circle.Center.Y;
+                    Parameters.E2Radius = circle.Radius;
                 }
                 if (e.IsDrawing) ElementsEditor?.ClearElementToolSelection(1);
             };
             Element2Editor.CaliberParamsChanged += (_, e) =>
             {
                 if (Parameters == null || _syncingElement2Caliber) return;
-                Parameters.E2MeasureLength1.Value = e.Width / 2;
-                Parameters.E2MeasureLength2.Value = e.Length / 2;
-                Parameters.E2NumMeasures.Value = e.Count;
+                Parameters.E2MeasureLength1 = e.Width / 2;
+                Parameters.E2MeasureLength2 = e.Length / 2;
+                Parameters.E2NumMeasures = e.Count;
             };
         }
 
@@ -133,15 +133,15 @@ namespace SunEyeVision.Tool.CircleCircleMeasure.Views
         {
             if (ElementsEditor == null || Parameters == null) return;
 
-            if (Parameters.E1Radius.Value > 1e-6)
+            if (Parameters.E1Radius > 1e-6)
                 Element1Editor.SetGuide(new Circle2d(
-                    new Point(Parameters.E1CenterX.Value, Parameters.E1CenterY.Value),
-                    Parameters.E1Radius.Value));
+                    new Point(Parameters.E1CenterX, Parameters.E1CenterY),
+                    Parameters.E1Radius));
 
-            if (Parameters.E2Radius.Value > 1e-6)
+            if (Parameters.E2Radius > 1e-6)
                 Element2Editor.SetGuide(new Circle2d(
-                    new Point(Parameters.E2CenterX.Value, Parameters.E2CenterY.Value),
-                    Parameters.E2Radius.Value));
+                    new Point(Parameters.E2CenterX, Parameters.E2CenterY),
+                    Parameters.E2Radius));
 
             PushCaliberToEditor(1);
             PushCaliberToEditor(2);
@@ -158,7 +158,7 @@ namespace SunEyeVision.Tool.CircleCircleMeasure.Views
             var n = index == 1 ? Parameters.E1NumMeasures : Parameters.E2NumMeasures;
 
             if (index == 1) _syncingElement1Caliber = true; else _syncingElement2Caliber = true;
-            try { e.SetCaliberParams(l1.Value * 2, l2.Value * 2, n.Value); }
+            try { e.SetCaliberParams(l1 * 2, l2 * 2, n); }
             finally { if (index == 1) _syncingElement1Caliber = false; else _syncingElement2Caliber = false; }
         }
 
@@ -178,31 +178,31 @@ namespace SunEyeVision.Tool.CircleCircleMeasure.Views
         private void SyncEnumsFromParameters()
         {
             if (Parameters == null) return;
-            E1TransitionCombo.SelectedIndex = (int)Parameters.E1Transition.Value;
-            E1SelectCombo.SelectedIndex = (int)Parameters.E1Select.Value;
-            E2TransitionCombo.SelectedIndex = (int)Parameters.E2Transition.Value;
-            E2SelectCombo.SelectedIndex = (int)Parameters.E2Select.Value;
+            E1TransitionCombo.SelectedIndex = (int)Parameters.E1Transition;
+            E1SelectCombo.SelectedIndex = (int)Parameters.E1Select;
+            E2TransitionCombo.SelectedIndex = (int)Parameters.E2Transition;
+            E2SelectCombo.SelectedIndex = (int)Parameters.E2Select;
         }
 
         private void OnE1TransitionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             if (Parameters != null && E1TransitionCombo.SelectedIndex >= 0)
-                Parameters.E1Transition.Value = (EdgeTransition)E1TransitionCombo.SelectedIndex;
+                Parameters.E1Transition = (EdgeTransition)E1TransitionCombo.SelectedIndex;
         }
         private void OnE1SelectChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             if (Parameters != null && E1SelectCombo.SelectedIndex >= 0)
-                Parameters.E1Select.Value = (EdgeSelect)E1SelectCombo.SelectedIndex;
+                Parameters.E1Select = (EdgeSelect)E1SelectCombo.SelectedIndex;
         }
         private void OnE2TransitionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             if (Parameters != null && E2TransitionCombo.SelectedIndex >= 0)
-                Parameters.E2Transition.Value = (EdgeTransition)E2TransitionCombo.SelectedIndex;
+                Parameters.E2Transition = (EdgeTransition)E2TransitionCombo.SelectedIndex;
         }
         private void OnE2SelectChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             if (Parameters != null && E2SelectCombo.SelectedIndex >= 0)
-                Parameters.E2Select.Value = (EdgeSelect)E2SelectCombo.SelectedIndex;
+                Parameters.E2Select = (EdgeSelect)E2SelectCombo.SelectedIndex;
         }
 
         /// <summary>Tab2 卡尺切换：显示对应卡尺的一份运行参数区</summary>

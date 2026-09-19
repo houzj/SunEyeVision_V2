@@ -45,10 +45,10 @@ namespace SunEyeVision.Tool.LineCircleMeasure
             try
             {
                 // ===== 参数校验（Fail-Fast）=====
-                var e1Start = new Point(parameters.E1StartX.Value, parameters.E1StartY.Value);
-                var e1End = new Point(parameters.E1EndX.Value, parameters.E1EndY.Value);
-                var e2Center = new Point(parameters.E2CenterX.Value, parameters.E2CenterY.Value);
-                double e2Radius = parameters.E2Radius.Value;
+                var e1Start = new Point(parameters.E1StartX, parameters.E1StartY);
+                var e1End = new Point(parameters.E1EndX, parameters.E1EndY);
+                var e2Center = new Point(parameters.E2CenterX, parameters.E2CenterY);
+                double e2Radius = parameters.E2Radius;
 
                 if ((e1End - e1Start).Length < 1e-6)
                     throw new InvalidOperationException("卡尺1 引导直线未设置或长度无效");
@@ -78,13 +78,13 @@ namespace SunEyeVision.Tool.LineCircleMeasure
                 var e1EndT = Transform(e1End, matrix);
                 var e1Index = metrologyModel.AddMetrologyObjectLineMeasure(
                     e1StartT.Y, e1StartT.X, e1EndT.Y, e1EndT.X,
-                    parameters.E1MeasureLength1.Value, parameters.E1MeasureLength2.Value,
-                    parameters.E1Sigma.Value, parameters.E1Threshold.Value,
+                    parameters.E1MeasureLength1, parameters.E1MeasureLength2,
+                    parameters.E1Sigma, parameters.E1Threshold,
                     BuildLineGenParamName(), BuildLineGenParamValue(
-                        parameters.E1NumMeasures.Value,
-                        TransitionToHalcon(parameters.E1Transition.Value),
-                        SelectToHalcon(parameters.E1Select.Value),
-                        parameters.E1DistanceThreshold.Value));
+                        parameters.E1NumMeasures,
+                        TransitionToHalcon(parameters.E1Transition),
+                        SelectToHalcon(parameters.E1Select),
+                        parameters.E1DistanceThreshold));
 
                 // 元素2 引导圆 → measure 对象
                 // 位置修正：圆心随矩阵变换 + 半径随缩放因子缩放 + 环形卡尺阵列起始相位随旋转
@@ -96,24 +96,24 @@ namespace SunEyeVision.Tool.LineCircleMeasure
                     : 0.0;
                 var e2Index = metrologyModel.AddMetrologyObjectCircleMeasure(
                     e2CenterT.Y, e2CenterT.X, e2RadiusT,
-                    parameters.E2MeasureLength1.Value, parameters.E2MeasureLength2.Value,
-                    parameters.E2Sigma.Value, parameters.E2Threshold.Value,
+                    parameters.E2MeasureLength1, parameters.E2MeasureLength2,
+                    parameters.E2Sigma, parameters.E2Threshold,
                     BuildCircleGenParamName(), BuildCircleGenParamValue(
-                        parameters.E2NumMeasures.Value,
-                        TransitionToHalcon(parameters.E2Transition.Value),
-                        SelectToHalcon(parameters.E2Select.Value),
-                        parameters.E2DistanceThreshold.Value,
+                        parameters.E2NumMeasures,
+                        TransitionToHalcon(parameters.E2Transition),
+                        SelectToHalcon(parameters.E2Select),
+                        parameters.E2DistanceThreshold,
                         startPhase));
 
                 // 执行测量（两引导一次 apply）
                 metrologyModel.ApplyMetrologyModel(hImage);
 
                 // 逐引导提取测点 + 全点鲁棒拟合
-                var e1Points = ExtractDiagnosticPoints(metrologyModel, e1Index, TransitionToHalcon(parameters.E1Transition.Value));
-                var (e1FitStart, e1FitEnd, e1Inliers, e1Rmse) = FitLineRobust(e1Points, parameters.E1DistanceThreshold.Value);
+                var e1Points = ExtractDiagnosticPoints(metrologyModel, e1Index, TransitionToHalcon(parameters.E1Transition));
+                var (e1FitStart, e1FitEnd, e1Inliers, e1Rmse) = FitLineRobust(e1Points, parameters.E1DistanceThreshold);
 
-                var e2Points = ExtractDiagnosticPoints(metrologyModel, e2Index, TransitionToHalcon(parameters.E2Transition.Value));
-                var (e2FitCenter, e2FitRadius, e2Inliers, e2Rmse) = FitCircleRobust(e2Points, parameters.E2DistanceThreshold.Value);
+                var e2Points = ExtractDiagnosticPoints(metrologyModel, e2Index, TransitionToHalcon(parameters.E2Transition));
+                var (e2FitCenter, e2FitRadius, e2Inliers, e2Rmse) = FitCircleRobust(e2Points, parameters.E2DistanceThreshold);
 
                 // 拟合内点/残差/点数（模块结果："输入/卡尺"检测点 + "拟合结果"）
                 result.Element1FitPoints = e1Inliers;          // Point2d[]（契约可入表，显示层再转 WPF Point）
@@ -153,14 +153,14 @@ namespace SunEyeVision.Tool.LineCircleMeasure
                 // ===== 输入回显（模块结果"输入/卡尺"，对齐 LineDetect 规范）=====
                 result.GuideGeometry1 = BuildLineGuideGeometry(e1Start, e1End);
                 result.GuideGeometry2 = BuildCircleGuideGeometry(e2Center, e2Radius);
-                result.E1CaliberCount = parameters.E1NumMeasures.Value;
-                result.E1CaliberWidth = parameters.E1MeasureLength1.Value * 2;   // 半长 → 全长
-                result.E1CaliberLength = parameters.E1MeasureLength2.Value * 2;
-                result.E1CaliberTransition = parameters.E1Transition.Value.ToString();
-                result.E2CaliberCount = parameters.E2NumMeasures.Value;
-                result.E2CaliberWidth = parameters.E2MeasureLength1.Value * 2;   // 径向半宽 → 全宽
-                result.E2CaliberLength = parameters.E2MeasureLength2.Value * 2;  // 切向半长 → 全长
-                result.E2CaliberTransition = parameters.E2Transition.Value.ToString();
+                result.E1CaliberCount = parameters.E1NumMeasures;
+                result.E1CaliberWidth = parameters.E1MeasureLength1 * 2;   // 半长 → 全长
+                result.E1CaliberLength = parameters.E1MeasureLength2 * 2;
+                result.E1CaliberTransition = parameters.E1Transition.ToString();
+                result.E2CaliberCount = parameters.E2NumMeasures;
+                result.E2CaliberWidth = parameters.E2MeasureLength1 * 2;   // 径向半宽 → 全宽
+                result.E2CaliberLength = parameters.E2MeasureLength2 * 2;  // 切向半长 → 全长
+                result.E2CaliberTransition = parameters.E2Transition.ToString();
 
                 // ===== 判定（v4 C1 基座；启用项无有效值 → NG，rule-015）=====
                 var judged = ResultJudgmentEvaluator.EvaluateRanges(

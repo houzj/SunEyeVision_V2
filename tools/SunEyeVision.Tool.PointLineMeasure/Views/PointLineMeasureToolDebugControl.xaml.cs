@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows;
 using SunEyeVision.Plugin.SDK.Execution.Helpers;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
@@ -73,20 +73,20 @@ namespace SunEyeVision.Tool.PointLineMeasure.Views
         private void SyncEnumsFromParameters()
         {
             if (Parameters == null) return;
-            E2TransitionCombo.SelectedIndex = (int)Parameters.E2Transition.Value;
-            E2SelectCombo.SelectedIndex = (int)Parameters.E2Select.Value;
+            E2TransitionCombo.SelectedIndex = (int)Parameters.E2Transition;
+            E2SelectCombo.SelectedIndex = (int)Parameters.E2Select;
         }
 
         private void OnE2TransitionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             if (Parameters != null && E2TransitionCombo.SelectedIndex >= 0)
-                Parameters.E2Transition.Value = (EdgeTransition)E2TransitionCombo.SelectedIndex;
+                Parameters.E2Transition = (EdgeTransition)E2TransitionCombo.SelectedIndex;
         }
 
         private void OnE2SelectChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             if (Parameters != null && E2SelectCombo.SelectedIndex >= 0)
-                Parameters.E2Select.Value = (EdgeSelect)E2SelectCombo.SelectedIndex;
+                Parameters.E2Select = (EdgeSelect)E2SelectCombo.SelectedIndex;
         }
 
         private void HookElementsEditor()
@@ -103,19 +103,19 @@ namespace SunEyeVision.Tool.PointLineMeasure.Views
                 {
                     var start = e.Model.LineStartPoint;
                     var end = e.Model.LineEndPoint;
-                    Parameters.E2StartX.Value = start.X;
-                    Parameters.E2StartY.Value = start.Y;
-                    Parameters.E2EndX.Value = end.X;
-                    Parameters.E2EndY.Value = end.Y;
+                    Parameters.E2StartX = start.X;
+                    Parameters.E2StartY = start.Y;
+                    Parameters.E2EndX = end.X;
+                    Parameters.E2EndY = end.Y;
                 }
                 if (e.IsDrawing) ElementsEditor?.ClearElementToolSelection(1);
             };
             Element2Editor.CaliberParamsChanged += (_, e) =>
             {
                 if (Parameters == null || _syncingElement2Caliber) return;
-                Parameters.E2MeasureLength1.Value = e.Width / 2;
-                Parameters.E2MeasureLength2.Value = e.Length / 2;
-                Parameters.E2NumMeasures.Value = e.Count;
+                Parameters.E2MeasureLength1 = e.Width / 2;
+                Parameters.E2MeasureLength2 = e.Length / 2;
+                Parameters.E2NumMeasures = e.Count;
             };
         }
 
@@ -123,8 +123,8 @@ namespace SunEyeVision.Tool.PointLineMeasure.Views
         {
             if (ElementsEditor == null || Parameters == null) return;
 
-            var g2Start = new Point(Parameters.E2StartX.Value, Parameters.E2StartY.Value);
-            var g2End = new Point(Parameters.E2EndX.Value, Parameters.E2EndY.Value);
+            var g2Start = new Point(Parameters.E2StartX, Parameters.E2StartY);
+            var g2End = new Point(Parameters.E2EndX, Parameters.E2EndY);
             if ((g2End - g2Start).Length > 1e-6)
                 Element2Editor.SetGuide(
                         Line2d.FromTwoPoints(g2Start, g2End),
@@ -141,9 +141,9 @@ namespace SunEyeVision.Tool.PointLineMeasure.Views
             try
             {
                 Element2Editor.SetCaliberParams(
-                    Parameters.E2MeasureLength1.Value * 2,
-                    Parameters.E2MeasureLength2.Value * 2,
-                    Parameters.E2NumMeasures.Value);
+                    Parameters.E2MeasureLength1 * 2,
+                    Parameters.E2MeasureLength2 * 2,
+                    Parameters.E2NumMeasures);
             }
             finally { _syncingElement2Caliber = false; }
         }

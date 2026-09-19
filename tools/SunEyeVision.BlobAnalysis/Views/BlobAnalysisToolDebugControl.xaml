@@ -96,7 +96,7 @@
             <controls:LabeledControl Label="预处理方法"
               Visibility="{Binding IsPreprocessingEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
               <ComboBox Height="32" VerticalContentAlignment="Center" Width="250"
-                SelectedItem="{Binding PreprocessMethodValue.Value, Mode=TwoWay, Converter={StaticResource PreprocessMethodConverter}}">
+                SelectedItem="{Binding PreprocessMethodValue, Mode=TwoWay, Converter={StaticResource PreprocessMethodConverter}}">
                 <sys:String>无</sys:String>
                 <sys:String>均值滤波</sys:String>
                 <sys:String>高斯滤波</sys:String>
@@ -110,7 +110,7 @@
               <controls:ConfigSetting
                 ParameterName="PreprocessKernelSize"
                 DataType="{x:Type sys:Int32}"
-                Value="{Binding PreprocessKernelSize.Value, Mode=TwoWay}"
+                Value="{Binding PreprocessKernelSize, Mode=TwoWay}"
                 Minimum="3" Maximum="31"
                 SmallChange="2" LargeChange="4"
                 Width="250"
@@ -126,7 +126,7 @@
                 x:Name="thresholdParam"
                 ParameterName="Threshold"
                 DataType="{x:Type sys:Int32}"
-                Value="{Binding Threshold.Value, Mode=TwoWay}"
+                Value="{Binding Threshold, Mode=TwoWay}"
                 Minimum="0" Maximum="255"
                 SmallChange="1" LargeChange="10"
                 ShowSlider="True" Width="250"
@@ -138,7 +138,7 @@
                 x:Name="maxValueParam"
                 ParameterName="MaxValue"
                 DataType="{x:Type sys:Int32}"
-                Value="{Binding MaxValue.Value, Mode=TwoWay}"
+                Value="{Binding MaxValue, Mode=TwoWay}"
                 Minimum="0" Maximum="255"
                 SmallChange="1" LargeChange="10"
                 ShowSlider="True" Width="250"
@@ -148,7 +148,7 @@
             <controls:LabeledControl Label="阈值类型">
               <ComboBox x:Name="thresholdTypeComboBox"
                 Height="32" VerticalContentAlignment="Center" Width="250"
-                SelectedItem="{Binding Type.Value, Mode=TwoWay, Converter={StaticResource ThresholdTypeConverter}}">
+                SelectedItem="{Binding Type, Mode=TwoWay, Converter={StaticResource ThresholdTypeConverter}}">
                 <sys:String>Binary</sys:String>
                 <sys:String>BinaryInv</sys:String>
               </ComboBox>
@@ -167,7 +167,7 @@
             <controls:LabeledControl Label="操作类型"
               Visibility="{Binding IsMorphologyEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
               <ComboBox Height="32" VerticalContentAlignment="Center" Width="250"
-                SelectedItem="{Binding MorphOperationValue.Value, Mode=TwoWay, Converter={StaticResource MorphOperationConverter}}">
+                SelectedItem="{Binding MorphOperationValue, Mode=TwoWay, Converter={StaticResource MorphOperationConverter}}">
                 <sys:String>腐蚀</sys:String>
                 <sys:String>膨胀</sys:String>
                 <sys:String>开运算</sys:String>
@@ -180,7 +180,7 @@
             <controls:LabeledControl Label="结构元素"
               Visibility="{Binding IsMorphologyEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
               <ComboBox Height="32" VerticalContentAlignment="Center" Width="250"
-                SelectedItem="{Binding MorphElementShapeValue.Value, Mode=TwoWay, Converter={StaticResource MorphElementShapeConverter}}">
+                SelectedItem="{Binding MorphElementShapeValue, Mode=TwoWay, Converter={StaticResource MorphElementShapeConverter}}">
                 <sys:String>矩形</sys:String>
                 <sys:String>圆形</sys:String>
               </ComboBox>
@@ -191,7 +191,7 @@
               <controls:ConfigSetting
                 ParameterName="MorphElementWidth"
                 DataType="{x:Type sys:Int32}"
-                Value="{Binding MorphElementWidth.Value, Mode=TwoWay}"
+                Value="{Binding MorphElementWidth, Mode=TwoWay}"
                 Minimum="1" Maximum="101"
                 SmallChange="1" LargeChange="10"
                 Width="250"
@@ -203,7 +203,7 @@
               <controls:ConfigSetting
                 ParameterName="MorphElementHeight"
                 DataType="{x:Type sys:Int32}"
-                Value="{Binding MorphElementHeight.Value, Mode=TwoWay}"
+                Value="{Binding MorphElementHeight, Mode=TwoWay}"
                 Minimum="1" Maximum="101"
                 SmallChange="1" LargeChange="10"
                 Width="250"
@@ -215,7 +215,7 @@
               <controls:ConfigSetting
                 ParameterName="MorphIterations"
                 DataType="{x:Type sys:Int32}"
-                Value="{Binding MorphIterations.Value, Mode=TwoWay}"
+                Value="{Binding MorphIterations, Mode=TwoWay}"
                 Minimum="1" Maximum="10"
                 SmallChange="1" LargeChange="2"
                 Width="250"
@@ -234,7 +234,7 @@
             <controls:LabeledControl Label="排序方式" >
               <ComboBox Height="32"
                       VerticalContentAlignment="Center" Width="250"
-                      SelectedItem="{Binding SortMode.Value, Mode=TwoWay, Converter={StaticResource BlobSortModeConverter}}">
+                      SelectedItem="{Binding SortMode, Mode=TwoWay, Converter={StaticResource BlobSortModeConverter}}">
                 <sys:String>不排序</sys:String>
                 <sys:String>面积 ↑</sys:String>
                 <sys:String>面积 ↓</sys:String>

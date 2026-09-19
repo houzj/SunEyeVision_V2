@@ -106,8 +106,8 @@ namespace SunEyeVision.Tool.PointCircleMeasure
                 : 0.0;
 
             // ---- 元素2：引导圆 + 环形卡尺带 + 拟合圆 ----
-            var g2c = T(new Point(parameters.E2CenterX.Value, parameters.E2CenterY.Value));
-            double g2r = parameters.E2Radius.Value * scale;
+            var g2c = T(new Point(parameters.E2CenterX, parameters.E2CenterY));
+            double g2r = parameters.E2Radius * scale;
 
             if (g2r > 1e-6)
                 _display.AddCircle(parameters.ResultPresentation.GetGraphicsStyle("guide-circle2"), new Circle2d(g2c, g2r), isOk);
@@ -116,8 +116,8 @@ namespace SunEyeVision.Tool.PointCircleMeasure
             {
                 var bands = MeasureCircleBands(
                     new Circle2d(g2c, g2r),
-                    parameters.E2MeasureLength1.Value, parameters.E2MeasureLength2.Value,
-                    parameters.E2NumMeasures.Value, startPhase);
+                    parameters.E2MeasureLength1, parameters.E2MeasureLength2,
+                    parameters.E2NumMeasures, startPhase);
                 if (bands.Count > 0)
                     _display.AddContours(parameters.ResultPresentation.GetGraphicsStyle("caliber-band2"), bands, isClosed: true);
             }

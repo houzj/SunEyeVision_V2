@@ -28,27 +28,45 @@ namespace SunEyeVision.Tool.ImageThreshold
     /// </summary>
     /// <remarks>
     /// 继承 RoiParameters，自带区域管理功能。
-    /// 使用 ParamValue 包装器，统一管理参数值和绑定配置。
+    /// 参数使用纯 CLR 值；运行时绑定由执行请求中的参数快照承载。
     /// 
     /// 多态序列化（rule-010）：使用 [JsonDerivedType] 标识参数类型。
     /// </remarks>
     [JsonDerivedType(typeof(ImageThresholdParameters), "ImageThreshold")]
-    public class ImageThresholdParameters : RoiParameters
+    public class ImageThresholdParameters : RoiParameters, IInputSlotContract, IRuntimeParameterContract
     {
+        public IReadOnlyList<InputSlotDescriptor> GetInputSlots() => new[]
+        {
+            new InputSlotDescriptor(nameof(InspectionRois), "检测区域", InputSlotKind.Collection,
+                ValueType: typeof(RoiCollection), Required: false),
+            new InputSlotDescriptor(nameof(MaskRois), "屏蔽区域", InputSlotKind.Collection,
+                ValueType: typeof(RoiCollection), Required: false)
+        };
+
+        public IReadOnlyList<RuntimeParameterDescriptor> GetRuntimeParameters() => new[]
+        {
+            new RuntimeParameterDescriptor(nameof(Threshold), "阈值", "Integer", typeof(int)),
+            new RuntimeParameterDescriptor(nameof(MaxValue), "最大值", "Integer", typeof(int)),
+            new RuntimeParameterDescriptor(nameof(Invert), "反转结果", "Boolean", typeof(bool)),
+            new RuntimeParameterDescriptor(nameof(BlockSize), "块大小", "Integer", typeof(int)),
+            new RuntimeParameterDescriptor(nameof(C), "C常数", "Double", typeof(double)),
+            new RuntimeParameterDescriptor(nameof(MinThreshold), "最小阈值", "Integer", typeof(int)),
+            new RuntimeParameterDescriptor(nameof(MaxThreshold), "最大阈值", "Integer", typeof(int))
+        };
+
         /// <summary>
         /// 构造函数 - 注册 Method 变更通知
         /// </summary>
         public ImageThresholdParameters()
         {
-            _method.PropertyChanged += OnMethodValueChanged;
         }
 
         /// <summary>
-        /// Method.Value 变化时更新所有方法分组的可见性
+        /// Method 变化时更新所有方法分组的可见性
         /// </summary>
         private void OnMethodValueChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(ParamValue<int>.Value))
+            if (e.PropertyName == nameof(Method))
             {
                 OnPropertyChanged(nameof(IsBinary));
                 OnPropertyChanged(nameof(IsBinaryInv));
@@ -163,24 +181,23 @@ namespace SunEyeVision.Tool.ImageThreshold
 
         #region 方法可见性属性（运行时计算，每种方法独立一个Group）
 
-        [JsonIgnore] public bool IsBinary => Method.Value == ThresholdMethod.Binary;
-        [JsonIgnore] public bool IsBinaryInv => Method.Value == ThresholdMethod.BinaryInv;
-        [JsonIgnore] public bool IsTrunc => Method.Value == ThresholdMethod.Trunc;
-        [JsonIgnore] public bool IsToZero => Method.Value == ThresholdMethod.ToZero;
-        [JsonIgnore] public bool IsToZeroInv => Method.Value == ThresholdMethod.ToZeroInv;
-        [JsonIgnore] public bool IsOtsu => Method.Value == ThresholdMethod.Otsu;
-        [JsonIgnore] public bool IsTriangle => Method.Value == ThresholdMethod.Triangle;
-        [JsonIgnore] public bool IsAdaptiveMean => Method.Value == ThresholdMethod.AdaptiveMean;
-        [JsonIgnore] public bool IsAdaptiveGaussian => Method.Value == ThresholdMethod.AdaptiveGaussian;
-        [JsonIgnore] public bool IsInRange => Method.Value == ThresholdMethod.InRange;
+        [JsonIgnore] public bool IsBinary => Method == ThresholdMethod.Binary;
+        [JsonIgnore] public bool IsBinaryInv => Method == ThresholdMethod.BinaryInv;
+        [JsonIgnore] public bool IsTrunc => Method == ThresholdMethod.Trunc;
+        [JsonIgnore] public bool IsToZero => Method == ThresholdMethod.ToZero;
+        [JsonIgnore] public bool IsToZeroInv => Method == ThresholdMethod.ToZeroInv;
+        [JsonIgnore] public bool IsOtsu => Method == ThresholdMethod.Otsu;
+        [JsonIgnore] public bool IsTriangle => Method == ThresholdMethod.Triangle;
+        [JsonIgnore] public bool IsAdaptiveMean => Method == ThresholdMethod.AdaptiveMean;
+        [JsonIgnore] public bool IsAdaptiveGaussian => Method == ThresholdMethod.AdaptiveGaussian;
+        [JsonIgnore] public bool IsInRange => Method == ThresholdMethod.InRange;
 
         #endregion
 
         /// <summary>
         /// 阈值方法后端字段
         /// </summary>
-        private ParamValue<ThresholdMethod> _method =
-            ParamValue<ThresholdMethod>.CreateConstant(ThresholdMethod.Binary, "Method");
+        private ThresholdMethod _method = ThresholdMethod.Binary;
 
         #region 运行参数
 
@@ -188,18 +205,14 @@ namespace SunEyeVision.Tool.ImageThreshold
         /// 阈值方法
         /// </summary>
         [DisplayName("阈值方法")]
-        public ParamValue<ThresholdMethod> Method
+        public ThresholdMethod Method
         {
             get => _method;
             set
             {
                 if (!ReferenceEquals(_method, value))
                 {
-                    if (_method != null)
-                        _method.PropertyChanged -= OnMethodValueChanged;
                     _method = value;
-                    if (_method != null)
-                        _method.PropertyChanged += OnMethodValueChanged;
                     OnPropertyChanged();
                     // 方法实例被替换时也刷新所有可见性
                     OnPropertyChanged(nameof(IsBinary));
@@ -220,15 +233,13 @@ namespace SunEyeVision.Tool.ImageThreshold
         /// 二值化阈值(0-255)
         /// </summary>
         [DisplayName("阈值")]
-        public ParamValue<int> Threshold { get; set; } =
-            ParamValue<int>.CreateConstant(128, "Threshold");
+        public int Threshold { get; set; } = 128;
 
         /// <summary>
         /// 超过阈值时使用的最大值(0-255)
         /// </summary>
         [DisplayName("最大值")]
-        public ParamValue<int> MaxValue { get; set; } =
-            ParamValue<int>.CreateConstant(255, "MaxValue");
+        public int MaxValue { get; set; } = 255;
 
         /// <summary>
         /// 是否反转二值化结果
@@ -246,29 +257,25 @@ namespace SunEyeVision.Tool.ImageThreshold
         /// 自适应阈值块大小(奇数, 3-31)
         /// </summary>
         [DisplayName("块大小")]
-        public ParamValue<int> BlockSize { get; set; } =
-            ParamValue<int>.CreateConstant(11, "BlockSize");
+        public int BlockSize { get; set; } = 11;
 
         /// <summary>
         /// 自适应阈值C常数(0-100)
         /// </summary>
         [DisplayName("C常数")]
-        public ParamValue<double> C { get; set; } =
-            ParamValue<double>.CreateConstant(2.0, "C");
+        public double C { get; set; } = 2.0;
 
         /// <summary>
         /// InRange最小阈值(0-255)
         /// </summary>
         [DisplayName("最小阈值")]
-        public ParamValue<int> MinThreshold { get; set; } =
-            ParamValue<int>.CreateConstant(0, "MinThreshold");
+        public int MinThreshold { get; set; }
 
         /// <summary>
         /// InRange最大阈值(0-255)
         /// </summary>
         [DisplayName("最大阈值")]
-        public ParamValue<int> MaxThreshold { get; set; } =
-            ParamValue<int>.CreateConstant(255, "MaxThreshold");
+        public int MaxThreshold { get; set; } = 255;
 
         #endregion
 
@@ -288,24 +295,24 @@ namespace SunEyeVision.Tool.ImageThreshold
         {
             var result = base.Validate();
 
-            var method = Method.Value;
+            var method = Method;
 
             // 块大小验证（自适应模式）
             if (method == ThresholdMethod.AdaptiveMean || method == ThresholdMethod.AdaptiveGaussian)
             {
-                if (BlockSize.Value % 2 == 0)
+                if (BlockSize % 2 == 0)
                 {
-                    result.AddError($"块大小必须为奇数，当前值: {BlockSize.Value}");
+                    result.AddError($"块大小必须为奇数，当前值: {BlockSize}");
                 }
 
-                if (BlockSize.Value < BlockSizeMin || BlockSize.Value > BlockSizeMax)
+                if (BlockSize < BlockSizeMin || BlockSize > BlockSizeMax)
                 {
-                    result.AddError($"块大小必须在 {BlockSizeMin}-{BlockSizeMax} 范围内，当前值: {BlockSize.Value}");
+                    result.AddError($"块大小必须在 {BlockSizeMin}-{BlockSizeMax} 范围内，当前值: {BlockSize}");
                 }
 
-                if (C.Value < CMin || C.Value > CMax)
+                if (C < CMin || C > CMax)
                 {
-                    result.AddError($"C常数必须在 {CMin}-{CMax} 范围内，当前值: {C.Value}");
+                    result.AddError($"C常数必须在 {CMin}-{CMax} 范围内，当前值: {C}");
                 }
             }
 
@@ -314,30 +321,30 @@ namespace SunEyeVision.Tool.ImageThreshold
                 method == ThresholdMethod.Trunc || method == ThresholdMethod.ToZero ||
                 method == ThresholdMethod.ToZeroInv)
             {
-                if (Threshold.Value < ThresholdMin || Threshold.Value > ThresholdMax)
+                if (Threshold < ThresholdMin || Threshold > ThresholdMax)
                 {
-                    result.AddError($"阈值必须在 {ThresholdMin}-{ThresholdMax} 范围内，当前值: {Threshold.Value}");
+                    result.AddError($"阈值必须在 {ThresholdMin}-{ThresholdMax} 范围内，当前值: {Threshold}");
                 }
             }
 
             // 最大值范围检查
             if (method != ThresholdMethod.InRange)
             {
-                if (MaxValue.Value < ThresholdMin || MaxValue.Value > ThresholdMax)
+                if (MaxValue < ThresholdMin || MaxValue > ThresholdMax)
                 {
-                    result.AddError($"最大值必须在 {ThresholdMin}-{ThresholdMax} 范围内，当前值: {MaxValue.Value}");
+                    result.AddError($"最大值必须在 {ThresholdMin}-{ThresholdMax} 范围内，当前值: {MaxValue}");
                 }
             }
 
             // InRange 范围检查
             if (method == ThresholdMethod.InRange)
             {
-                if (MinThreshold.Value >= MaxThreshold.Value)
+                if (MinThreshold >= MaxThreshold)
                 {
-                    result.AddError($"最小阈值({MinThreshold.Value})必须小于最大阈值({MaxThreshold.Value})");
+                    result.AddError($"最小阈值({MinThreshold})必须小于最大阈值({MaxThreshold})");
                 }
-                if (MinThreshold.Value < ThresholdMin || MinThreshold.Value > ThresholdMax ||
-                    MaxThreshold.Value < ThresholdMin || MaxThreshold.Value > ThresholdMax)
+                if (MinThreshold < ThresholdMin || MinThreshold > ThresholdMax ||
+                    MaxThreshold < ThresholdMin || MaxThreshold > ThresholdMax)
                 {
                     result.AddError($"InRange阈值范围必须在 {ThresholdMin}-{ThresholdMax} 之间");
                 }

@@ -43,27 +43,16 @@ namespace SunEyeVision.Tool.PointCircleMeasure
         private static Point ResolvePoint1(PointCircleMeasureParameters parameters)
         {
             if (parameters.P1InputMode == PointInputMode.ByCoordinate)
-                return new Point(parameters.P1X.Value, parameters.P1Y.Value);
+                return new Point(parameters.P1X, parameters.P1Y);
 
-            var config = parameters.P1Point.BindingConfig;
-            if (config == null || config.BindingType != BindingType.Binding || string.IsNullOrEmpty(config.SourceNodeId))
+            var pts = parameters.P1Point;
+            if (pts == null || pts.Length == 0)
                 throw new InvalidOperationException(
-                    "点1 输入方式为「按图形」，但未绑定上游点图形输出（词目 Point）：请在基本参数中选择数据源，或切换为「按参数」输入 X/Y。");
-
-            var points = parameters.P1Point.Value;
-            if (points == null || points.Length == 0)
-                throw new InvalidOperationException(
-                    "点1「按图形」绑定的上游点输出为空：请确认上游节点已产生点结果（词目 Point）。");
-
-            // 点1 语义为单点（批量向量化见后续阶段）：多于 1 个时取哪个有歧义，
-            // 按 rule-015 明确报错，不静默取首个
-            if (points.Length > 1)
-                throw new InvalidOperationException(
-                    $"点1 需要 1 个点，上游绑定给出 {points.Length} 个（有歧义）：请指定索引 [0]…[{points.Length - 1}]，或改用「按参数」输入 X/Y。");
-
-            return new Point(points[0].X, points[0].Y);
+                    "点1 输入方式为「按图形」，但未绑定上游点图形输出或图形为空：请在基本参数中选择数据源，或切换为「按参数」输入 X/Y。");
+            if (pts.Length > 1)
+                throw new InvalidOperationException($"点1 绑定的上游点图形含 {pts.Length} 个点：多元素配对（向量化）尚未启用，请改绑单个点，或切换为「按参数」逐值输入。");
+            return new Point(pts[0].X, pts[0].Y);
         }
-
         public PointCircleMeasureResults Run(PointCircleMeasureParameters parameters)
         {
             var result = new PointCircleMeasureResults
@@ -77,8 +66,8 @@ namespace SunEyeVision.Tool.PointCircleMeasure
             {
                 // ===== 校验（Fail-Fast）=====
                 var p1 = ResolvePoint1(parameters);
-                var e2Center = new Point(parameters.E2CenterX.Value, parameters.E2CenterY.Value);
-                double e2Radius = parameters.E2Radius.Value;
+                var e2Center = new Point(parameters.E2CenterX, parameters.E2CenterY);
+                double e2Radius = parameters.E2Radius;
                 if (e2Radius <= 1e-6)
                     throw new InvalidOperationException("卡尺2 引导圆未设置或半径无效");
 
@@ -108,20 +97,20 @@ namespace SunEyeVision.Tool.PointCircleMeasure
 
                 var e2Index = metrologyModel.AddMetrologyObjectCircleMeasure(
                     e2CenterT.Y, e2CenterT.X, e2RadiusT,
-                    parameters.E2MeasureLength1.Value, parameters.E2MeasureLength2.Value,
-                    parameters.E2Sigma.Value, parameters.E2Threshold.Value,
+                    parameters.E2MeasureLength1, parameters.E2MeasureLength2,
+                    parameters.E2Sigma, parameters.E2Threshold,
                     BuildCircleGenParamName(), BuildCircleGenParamValue(
-                        parameters.E2NumMeasures.Value,
-                        TransitionToHalcon(parameters.E2Transition.Value),
-                        SelectToHalcon(parameters.E2Select.Value),
-                        parameters.E2DistanceThreshold.Value,
+                        parameters.E2NumMeasures,
+                        TransitionToHalcon(parameters.E2Transition),
+                        SelectToHalcon(parameters.E2Select),
+                        parameters.E2DistanceThreshold,
                         startPhase));
 
                 metrologyModel.ApplyMetrologyModel(hImage);
 
                 // 拟合
-                var e2Points = ExtractDiagnosticPoints(metrologyModel, e2Index, TransitionToHalcon(parameters.E2Transition.Value));
-                var (e2FitCenter, e2FitRadius, e2Inliers, e2Rmse) = FitCircleRobust(e2Points, parameters.E2DistanceThreshold.Value);
+                var e2Points = ExtractDiagnosticPoints(metrologyModel, e2Index, TransitionToHalcon(parameters.E2Transition));
+                var (e2FitCenter, e2FitRadius, e2Inliers, e2Rmse) = FitCircleRobust(e2Points, parameters.E2DistanceThreshold);
 
                 result.Element2FitPoints = e2Inliers;
                 result.Element2RMSE = e2Rmse;
@@ -156,10 +145,10 @@ namespace SunEyeVision.Tool.PointCircleMeasure
 
                 // ===== 输入回显 =====
                 result.GuideGeometry2 = BuildCircleGuideGeometry(e2Center, e2Radius);
-                result.E2CaliberCount = parameters.E2NumMeasures.Value;
-                result.E2CaliberWidth = parameters.E2MeasureLength1.Value * 2;   // 径向半宽 → 全宽
-                result.E2CaliberLength = parameters.E2MeasureLength2.Value * 2;  // 切向半长 → 全长
-                result.E2CaliberTransition = parameters.E2Transition.Value.ToString();
+                result.E2CaliberCount = parameters.E2NumMeasures;
+                result.E2CaliberWidth = parameters.E2MeasureLength1 * 2;   // 径向半宽 → 全宽
+                result.E2CaliberLength = parameters.E2MeasureLength2 * 2;  // 切向半长 → 全长
+                result.E2CaliberTransition = parameters.E2Transition.ToString();
 
                 // ===== 判定 =====
                 var judged = ResultJudgmentEvaluator.EvaluateRanges(

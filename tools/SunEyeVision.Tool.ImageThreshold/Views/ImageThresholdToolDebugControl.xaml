@@ -79,7 +79,7 @@
             <controls:LabeledControl Label="阈值方法">
               <ComboBox Height="32"
                       VerticalContentAlignment="Center" Width="250"
-                      SelectedItem="{Binding Method.Value, Mode=TwoWay, Converter={StaticResource ThresholdMethodConverter}}">
+                      SelectedItem="{Binding Method, Mode=TwoWay, Converter={StaticResource ThresholdMethodConverter}}">
                 <sys:String>固定阈值</sys:String>
                 <sys:String>反二值化</sys:String>
                 <sys:String>截断</sys:String>
@@ -101,7 +101,7 @@
                   <controls:ConfigSetting
                       x:Name="thresholdParamBinary"
                       ParameterName="Threshold" DataType="{x:Type sys:Int32}"
-                      Value="{Binding Threshold.Value, Mode=TwoWay}"
+                      Value="{Binding Threshold, Mode=TwoWay}"
                       Minimum="0" Maximum="255" SmallChange="1" LargeChange="10"
                       ShowSlider="True" Width="250"
                       AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
@@ -110,7 +110,7 @@
                   <controls:ConfigSetting
                       x:Name="maxValueParamBinary"
                       ParameterName="MaxValue" DataType="{x:Type sys:Int32}"
-                      Value="{Binding MaxValue.Value, Mode=TwoWay}"
+                      Value="{Binding MaxValue, Mode=TwoWay}"
                       Minimum="0" Maximum="255" SmallChange="1" LargeChange="10"
                       ShowSlider="True" Width="250"
                       AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
@@ -138,7 +138,7 @@
                   <controls:ConfigSetting
                       x:Name="thresholdParamBinaryInv"
                       ParameterName="Threshold" DataType="{x:Type sys:Int32}"
-                      Value="{Binding Threshold.Value, Mode=TwoWay}"
+                      Value="{Binding Threshold, Mode=TwoWay}"
                       Minimum="0" Maximum="255" SmallChange="1" LargeChange="10"
                       ShowSlider="True" Width="250"
                       AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
@@ -147,7 +147,7 @@
                   <controls:ConfigSetting
                       x:Name="maxValueParamBinaryInv"
                       ParameterName="MaxValue" DataType="{x:Type sys:Int32}"
-                      Value="{Binding MaxValue.Value, Mode=TwoWay}"
+                      Value="{Binding MaxValue, Mode=TwoWay}"
                       Minimum="0" Maximum="255" SmallChange="1" LargeChange="10"
                       ShowSlider="True" Width="250"
                       AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
@@ -175,7 +175,7 @@
                   <controls:ConfigSetting
                       x:Name="thresholdParamTrunc"
                       ParameterName="Threshold" DataType="{x:Type sys:Int32}"
-                      Value="{Binding Threshold.Value, Mode=TwoWay}"
+                      Value="{Binding Threshold, Mode=TwoWay}"
                       Minimum="0" Maximum="255" SmallChange="1" LargeChange="10"
                       ShowSlider="True" Width="250"
                       AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
@@ -184,7 +184,7 @@
                   <controls:ConfigSetting
                       x:Name="maxValueParamTrunc"
                       ParameterName="MaxValue" DataType="{x:Type sys:Int32}"
-                      Value="{Binding MaxValue.Value, Mode=TwoWay}"
+                      Value="{Binding MaxValue, Mode=TwoWay}"
                       Minimum="0" Maximum="255" SmallChange="1" LargeChange="10"
                       ShowSlider="True" Width="250"
                       AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
@@ -209,7 +209,7 @@
                   <controls:ConfigSetting
                       x:Name="thresholdParamToZero"
                       ParameterName="Threshold" DataType="{x:Type sys:Int32}"
-                      Value="{Binding Threshold.Value, Mode=TwoWay}"
+                      Value="{Binding Threshold, Mode=TwoWay}"
                       Minimum="0" Maximum="255" SmallChange="1" LargeChange="10"
                       ShowSlider="True" Width="250"
                       AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
@@ -218,7 +218,7 @@
                   <controls:ConfigSetting
                       x:Name="maxValueParamToZero"
                       ParameterName="MaxValue" DataType="{x:Type sys:Int32}"
-                      Value="{Binding MaxValue.Value, Mode=TwoWay}"
+                      Value="{Binding MaxValue, Mode=TwoWay}"
                       Minimum="0" Maximum="255" SmallChange="1" LargeChange="10"
                       ShowSlider="True" Width="250"
                       AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
@@ -243,7 +243,7 @@
                   <controls:ConfigSetting
                       x:Name="thresholdParamToZeroInv"
                       ParameterName="Threshold" DataType="{x:Type sys:Int32}"
-                      Value="{Binding Threshold.Value, Mode=TwoWay}"
+                      Value="{Binding Threshold, Mode=TwoWay}"
                       Minimum="0" Maximum="255" SmallChange="1" LargeChange="10"
                       ShowSlider="True" Width="250"
                       AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
@@ -252,7 +252,7 @@
                   <controls:ConfigSetting
                       x:Name="maxValueParamToZeroInv"
                       ParameterName="MaxValue" DataType="{x:Type sys:Int32}"
-                      Value="{Binding MaxValue.Value, Mode=TwoWay}"
+                      Value="{Binding MaxValue, Mode=TwoWay}"
                       Minimum="0" Maximum="255" SmallChange="1" LargeChange="10"
                       ShowSlider="True" Width="250"
                       AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
@@ -277,7 +277,7 @@
                   <controls:ConfigSetting
                       x:Name="maxValueParamOtsu"
                       ParameterName="MaxValue" DataType="{x:Type sys:Int32}"
-                      Value="{Binding MaxValue.Value, Mode=TwoWay}"
+                      Value="{Binding MaxValue, Mode=TwoWay}"
                       Minimum="0" Maximum="255" SmallChange="1" LargeChange="10"
                       ShowSlider="True" Width="250"
                       AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
@@ -305,7 +305,7 @@
                   <controls:ConfigSetting
                       x:Name="maxValueParamTriangle"
                       ParameterName="MaxValue" DataType="{x:Type sys:Int32}"
-                      Value="{Binding MaxValue.Value, Mode=TwoWay}"
+                      Value="{Binding MaxValue, Mode=TwoWay}"
                       Minimum="0" Maximum="255" SmallChange="1" LargeChange="10"
                       ShowSlider="True" Width="250"
                       AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
@@ -333,7 +333,7 @@
                   <controls:ConfigSetting
                       x:Name="maxValueParamAdaptMean"
                       ParameterName="MaxValue" DataType="{x:Type sys:Int32}"
-                      Value="{Binding MaxValue.Value, Mode=TwoWay}"
+                      Value="{Binding MaxValue, Mode=TwoWay}"
                       Minimum="0" Maximum="255" SmallChange="1" LargeChange="10"
                       ShowSlider="True" Width="250"
                       AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
@@ -342,7 +342,7 @@
                   <controls:ConfigSetting
                       x:Name="blockSizeParamMean"
                       ParameterName="BlockSize" DataType="{x:Type sys:Int32}"
-                      Value="{Binding BlockSize.Value, Mode=TwoWay}"
+                      Value="{Binding BlockSize, Mode=TwoWay}"
                       Minimum="3" Maximum="31" SmallChange="2" LargeChange="4"
                       Width="250"
                       AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
@@ -351,7 +351,7 @@
                   <controls:ConfigSetting
                       x:Name="cParamMean"
                       ParameterName="C" DataType="{x:Type sys:Double}"
-                      Value="{Binding C.Value, Mode=TwoWay}"
+                      Value="{Binding C, Mode=TwoWay}"
                       Minimum="0" Maximum="100" SmallChange="0.5" LargeChange="5"
                       Width="250"
                       AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
@@ -376,7 +376,7 @@
                   <controls:ConfigSetting
                       x:Name="maxValueParamAdaptGauss"
                       ParameterName="MaxValue" DataType="{x:Type sys:Int32}"
-                      Value="{Binding MaxValue.Value, Mode=TwoWay}"
+                      Value="{Binding MaxValue, Mode=TwoWay}"
                       Minimum="0" Maximum="255" SmallChange="1" LargeChange="10"
                       ShowSlider="True" Width="250"
                       AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
@@ -385,7 +385,7 @@
                   <controls:ConfigSetting
                       x:Name="blockSizeParamGauss"
                       ParameterName="BlockSize" DataType="{x:Type sys:Int32}"
-                      Value="{Binding BlockSize.Value, Mode=TwoWay}"
+                      Value="{Binding BlockSize, Mode=TwoWay}"
                       Minimum="3" Maximum="31" SmallChange="2" LargeChange="4"
                       Width="250"
                       AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
@@ -394,7 +394,7 @@
                   <controls:ConfigSetting
                       x:Name="cParamGauss"
                       ParameterName="C" DataType="{x:Type sys:Double}"
-                      Value="{Binding C.Value, Mode=TwoWay}"
+                      Value="{Binding C, Mode=TwoWay}"
                       Minimum="0" Maximum="100" SmallChange="0.5" LargeChange="5"
                       Width="250"
                       AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
@@ -419,7 +419,7 @@
                   <controls:ConfigSetting
                       x:Name="minThresholdParam"
                       ParameterName="MinThreshold" DataType="{x:Type sys:Int32}"
-                      Value="{Binding MinThreshold.Value, Mode=TwoWay}"
+                      Value="{Binding MinThreshold, Mode=TwoWay}"
                       Minimum="0" Maximum="255" SmallChange="1" LargeChange="10"
                       ShowSlider="True" Width="250"
                       AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
@@ -428,7 +428,7 @@
                   <controls:ConfigSetting
                       x:Name="maxThresholdParam"
                       ParameterName="MaxThreshold" DataType="{x:Type sys:Int32}"
-                      Value="{Binding MaxThreshold.Value, Mode=TwoWay}"
+                      Value="{Binding MaxThreshold, Mode=TwoWay}"
                       Minimum="0" Maximum="255" SmallChange="1" LargeChange="10"
                       ShowSlider="True" Width="250"
                       AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>

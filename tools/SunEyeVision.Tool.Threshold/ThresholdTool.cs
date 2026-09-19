@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -87,11 +87,11 @@ namespace SunEyeVision.Tool.Threshold
                 int imgHeight = (int)imgH.L;
                 parameters.LogInfo($"开始阈值化处理: 图像尺寸 {imgWidth}x{imgHeight}");
 
-                double threshold = parameters.Threshold.Value;
-                double maxValue = parameters.MaxValue.Value;
-                ThresholdType type = parameters.Type.Value;
-                AdaptiveMethod adaptiveMethod = parameters.AdaptiveMethod.Value;
-                int blockSize = parameters.BlockSize.Value;
+                double threshold = parameters.Threshold;
+                double maxValue = parameters.MaxValue;
+                ThresholdType type = parameters.Type;
+                AdaptiveMethod adaptiveMethod = parameters.AdaptiveMethod;
+                int blockSize = parameters.BlockSize;
                 bool invert = parameters.Invert;
 
                 // ===== Step 1: 灰度转换 (rgb1_to_gray) =====

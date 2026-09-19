@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Media;
+using System.Collections.Generic;
 
 namespace SunEyeVision.Plugin.SDK.Models.Visualization
 {
@@ -69,6 +70,22 @@ namespace SunEyeVision.Plugin.SDK.Models.Visualization
             Points = points;
             IsClosed = isClosed;
             Transform = transform;
+        }
+    }
+
+    /// <summary>
+    /// 批量轮廓几何。一个显示对象承载多条轮廓，避免为每个区域创建独立的
+    /// ContourGeometry 和 WPF 绘制对象；区域状态由所属批次携带。
+    /// </summary>
+    public sealed class BatchedContourGeometry
+    {
+        public IReadOnlyList<Point[]> Contours { get; }
+        public bool IsClosed { get; }
+
+        public BatchedContourGeometry(IReadOnlyList<Point[]> contours, bool isClosed = true)
+        {
+            Contours = contours;
+            IsClosed = isClosed;
         }
     }
 }

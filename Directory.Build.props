@@ -89,21 +89,15 @@
     <_VersionChannel>$([System.Text.RegularExpressions.Regex]::Match('$(_VersionJsonText)', '"channel"\s*:\s*"(alpha|beta|rc|stable)"').Groups[1].Value)</_VersionChannel>
     <_VersionReleaseDate>$([System.Text.RegularExpressions.Regex]::Match('$(_VersionJsonText)', '"releaseDate"\s*:\s*"(\d{4}-\d{2}-\d{2})"').Groups[1].Value)</_VersionReleaseDate>
 
-    <!-- 产品版本只注入 FileVersion 与（SDK 自动生成的）InformationalVersion；
-         切勿据此推导 AssemblyVersion —— 那是绑定身份，见下方说明。 -->
+    <!-- 产品版本注入所有交付程序集的 Version/FileVersion；SDK 包也默认使用同一产品版本。
+         契约语义由 ToolContractVersionAttribute 承载，AssemblyVersion 只保留 CLR 绑定身份。 -->
     <Version Condition="'$(Version)'=='' And '$(_VersionTriple)'!=''">$(_VersionTriple).$(_VersionBuild)</Version>
     <FileVersion Condition="'$(FileVersion)'=='' And '$(Version)'!=''">$(Version)</FileVersion>
-    <!-- AssemblyVersion = 程序集【绑定身份】，恒定不变，【不】随产品版本走。
-         这是"绑定身份"与"产品版本"的经典区分，本项目里它不是可选项：
-         · 插件契约按 SDK 程序集【主版本】判兼容（ToolContract.Major = 1，
-           见 src/Plugin.SDK/Core/ToolContract.cs:22 与 IsCompatible(:37)）；
-         · 一旦让它跟随产品版本，每次发版都会改变绑定身份 —— 已编译插件会被判
-           "契约不兼容"而整体拒载。2026-09-19 实测事故：注入 2.0.0.0 后
-           SunEyeVision.Plugin.SDK.dll 主版本变 2，18 个工具全部未加载、工具箱为空。
-         · 用户可见版本走 FileVersion / InformationalVersion（资源管理器"详细信息"
-           与 AppVersionInfo 读的就是这两个），与绑定身份无关。
-         故此处恒为 1.0.0.0（= 契约主版本）；仅当契约主版本升级时才同步修改。 -->
-    <AssemblyVersion Condition="'$(AssemblyVersion)'==''">1.0.0.0</AssemblyVersion>
+    <!-- SDK 包版本默认跟随产品版本；只有真正独立发布 SDK 时才允许项目显式覆盖。 -->
+    <PackageVersion Condition="'$(PackageVersion)'=='' And '$(Version)'!=''">$(Version)</PackageVersion>
+    <!-- AssemblyVersion = CLR 程序集绑定身份。2.0 是本次契约迁移基线，进入 2.x 后保持 2.0.0.0；
+         契约主/次版本由 ToolContractVersionAttribute 表示，不能再从 AssemblyVersion 推断。 -->
+    <AssemblyVersion Condition="'$(AssemblyVersion)'==''">2.0.0.0</AssemblyVersion>
   </PropertyGroup>
 
   <!-- 渠道与发布日期经程序集元数据注入，供 AppVersionInfo 运行期读取（运行时不依赖 version.json） -->

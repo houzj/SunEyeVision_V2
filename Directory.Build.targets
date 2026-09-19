@@ -1,4 +1,13 @@
 <Project>
+  <!-- 所有工具插件显式写入契约元数据。宿主在加载前读取该元数据，
+       不再把 SDK 的 AssemblyVersion 当成契约版本。 -->
+  <ItemGroup Condition="'$(IsToolPlugin)'=='true'">
+    <AssemblyAttribute Include="SunEyeVision.Plugin.SDK.Core.ToolContractVersionAttribute">
+      <_Parameter1>2</_Parameter1>
+      <_Parameter2>0</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
   <!-- 工具插件拦截: 6 步清理 plugins/ 输出目录污染
        适用条件: csproj 设置 <IsToolPlugin>true</IsToolPlugin>。
 

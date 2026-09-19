@@ -14,7 +14,7 @@
 
     <!-- NuGet包配置 -->
     <PackageId>SunEyeVision.Plugin.SDK</PackageId>
-    <Version>1.0.3</Version>
+    <!-- SDK 随产品交付时使用产品版本；开发包版本由 Directory.Build.props 从 version.json 注入。 -->
     <Authors>SunEyeVision Team</Authors>
     <Company>SunEyeVision</Company>
     <Product>SunEyeVision Plugin SDK</Product>

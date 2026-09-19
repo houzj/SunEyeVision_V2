@@ -80,9 +80,9 @@
                            VerticalAlignment="Center"/>
             </Grid>
 
-            <!-- 底部版本 -->
-            <TextBlock Grid.Row="3"
-                       Text="版本 2.0.0"
+            <!-- 底部版本：由程序集注入的版本自报（rule-022），禁止硬编码 -->
+            <TextBlock x:Name="VersionText"
+                       Grid.Row="3"
                        FontSize="11"
                        Foreground="#FF6E6E6E"
                        HorizontalAlignment="Center"

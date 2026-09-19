@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
+using SunEyeVision.Core.Versioning;
 
 namespace SunEyeVision.UI.Shell.Windows
 {
@@ -34,6 +35,9 @@ namespace SunEyeVision.UI.Shell.Windows
 
             // 不抢主窗口焦点
             ShowActivated = false;
+
+            // 版本自报（rule-022）：读程序集注入的产品版本，禁止硬编码
+            VersionText.Text = "版本 " + AppVersionInfo.Product;
         }
 
         /// <summary>

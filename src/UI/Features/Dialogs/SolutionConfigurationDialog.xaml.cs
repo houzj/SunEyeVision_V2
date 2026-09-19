@@ -1,5 +1,5 @@
-using System.Reflection;
-using System.Windows;
+﻿using System.Windows;
+using SunEyeVision.Core.Versioning;
 using SunEyeVision.UI.Core;
 using SunEyeVision.Workflow;
 
@@ -49,8 +49,8 @@ public partial class SolutionConfigurationDialog : Window
         // 设置所有者窗口，使双击时能正确关闭
         _viewModel.SetOwnerWindow(this);
 
-        // 标题栏版本号
-        VersionTextBlock.Text = "v" + (Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.0.0");
+        // 标题栏版本号：读程序集注入的产品版本（rule-022），禁止硬编码
+        VersionTextBlock.Text = "v" + AppVersionInfo.Product;
     }
 
     /// <summary>

@@ -221,6 +221,8 @@ namespace SunEyeVision.Tool.CircleDetect.Views
             // 绘制流程完成 → 清除工具栏选中，回到选择模式
             if (e.IsDrawing)
             {
+                // 新建卡尺时按当前图像短边初始化尺寸；之后由参数模型接管，用户调整值优先。
+                MeasurementManager.InitializeGuideCaliberParamsForImage();
                 GuideEditor.ClearCaliberSelection();
             }
         }

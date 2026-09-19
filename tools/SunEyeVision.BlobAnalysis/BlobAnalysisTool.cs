@@ -245,32 +245,36 @@ namespace SunEyeVision.Tool.BlobAnalysis
 
                                         // Step 7: 对剩余 blob 按需计算特征 + Tab3 C#筛选 + Tab4判断
                                         var filteredBlobs = new List<BlobResult>(candidateCount);
-                                        HRegion? finalBlobRegions = null;
+                                        var finalRegionIndices = new List<int>();
+                                        var okRegionIndices = new List<int>();
+                                        var ngRegionIndices = new List<int>();
+                                        var regionIndexByBlob = new Dictionary<BlobResult, int>();
                                         var config = parameters.ResultPresentation;
 
                                         bool tab3FilterCircularity = parameters.IsCircularityFilterEnabled;
                                         bool tab3FilterRectangularity = parameters.IsRectangularityFilterEnabled;
 
+                                        HOperatorSet.AreaCenter(shapeFilteredRegions, out var areas, out var rows, out var cols);
+                                        HOperatorSet.SmallestRectangle1(shapeFilteredRegions, out var r1s, out var c1s, out var r2s, out var c2s);
+                                        HOperatorSet.Rectangularity(shapeFilteredRegions, out var rectangularities);
+                                        HOperatorSet.Circularity(shapeFilteredRegions, out var circularities);
+                                        HOperatorSet.Contlength(shapeFilteredRegions, out var contLengths);
+                                        HOperatorSet.SmallestRectangle2(shapeFilteredRegions, out var rectRows, out var rectCols,
+                                            out var rectPhis, out var rectLengths1, out var rectLengths2);
+
                                         for (int i = 1; i <= candidateCount; i++)
                                         {
-                                            HOperatorSet.SelectObj(shapeFilteredRegions, out var singleObj, i);
-                                            using var singleRegion = new HRegion(singleObj);
-
-                                            // 基础特征（面积、质心、BBox、矩形度、圆度、周长）
-                                            HOperatorSet.AreaCenter(singleRegion,
-                                                out var area, out var row, out var col);
-
-                                            HOperatorSet.SmallestRectangle1(singleRegion,
-                                                out var r1, out var c1, out var r2, out var c2);
-
-                                            HOperatorSet.Rectangularity(singleRegion,
-                                                out var rectangularity);
-
-                                            HOperatorSet.Circularity(singleRegion,
-                                                out var circularity);
-
-                                            HOperatorSet.Contlength(singleRegion,
-                                                out var contLength);
+                                            var tupleIndex = i - 1;
+                                            var area = areas[tupleIndex];
+                                            var row = rows[tupleIndex];
+                                            var col = cols[tupleIndex];
+                                            var r1 = r1s[tupleIndex];
+                                            var c1 = c1s[tupleIndex];
+                                            var r2 = r2s[tupleIndex];
+                                            var c2 = c2s[tupleIndex];
+                                            var rectangularity = rectangularities[tupleIndex];
+                                            var circularity = circularities[tupleIndex];
+                                            var contLength = contLengths[tupleIndex];
 
                                             var bbox = new System.Windows.Rect(
                                                 c1.L, r1.L,
@@ -284,11 +288,18 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                                 CentroidY = row.D,
                                                 Circularity = Math.Min(circularity.D, 1.0),
                                                 Rectangularity = Math.Min(rectangularity.D, 1.0),
-                                                BoundingBox = bbox
+                                                BoundingBox = bbox,
+                                                RotatedBoundingBox = BuildRotatedRectangle(rectRows[tupleIndex].D, rectCols[tupleIndex].D,
+                                                    rectPhis[tupleIndex].D, rectLengths1[tupleIndex].D, rectLengths2[tupleIndex].D)
                                             };
 
                                             // ★ Phase A: Tab3 筛选（不通过则丢弃；面积已由 Halcon SelectShape 筛过，此处仅补圆度/矩形度）
                                             bool passesTab3Filter = true;
+                                            if (passesTab3Filter && parameters.IsAreaFilterEnabled)
+                                            {
+                                                if (blob.Area < parameters.FilterAreaMin || blob.Area > parameters.FilterAreaMax)
+                                                    passesTab3Filter = false;
+                                            }
                                             if (passesTab3Filter && tab3FilterCircularity)
                                             {
                                                 if (blob.Circularity < parameters.FilterCircularityMin || blob.Circularity > parameters.FilterCircularityMax)
@@ -306,29 +317,22 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                             // BlobRegions 必须与 FilteredBlobs 使用同一套 Tab3 筛选结果。
                                             // 旧实现直接复制 shapeFilteredRegions，导致区域输出仍包含被圆度/矩形度
                                             // 淘汰的候选，图形结果与数值结果不一致。
-                                            var acceptedRegion = new HRegion(singleRegion.Clone());
-                                            if (finalBlobRegions == null)
-                                            {
-                                                finalBlobRegions = acceptedRegion;
-                                            }
-                                            else
-                                            {
-                                                HOperatorSet.ConcatObj(finalBlobRegions, acceptedRegion, out var concatenated);
-                                                finalBlobRegions.Dispose();
-                                                acceptedRegion.Dispose();
-                                                finalBlobRegions = new HRegion(concatenated);
-                                            }
-
                                             // ★ Phase B: Tab4 独立判断（标记 JudgmentPassed 但不丢弃）
                                             blob.JudgmentPassed = EvaluateBlobJudgment(blob, config);
 
-                                            // 提取轮廓（所有 blob 都有轮廓，颜色由 JudgmentPassed 通过 contourPassList 控制）
-                                            var geom = ContourGeometryFactory.FromRegionSmooth(singleRegion);
-                                            if (geom.Points.Length > 0)
-                                                blob.Contour = geom.Points;
+                                            // 只记录通过筛选的对象索引，循环结束后一次性 SelectObj。
+                                            // 逐 Blob Clone + ConcatObj 会在数万区域时产生 O(n²) 的句柄和复制开销。
+                                            finalRegionIndices.Add(i);
+                                            if (blob.JudgmentPassed)
+                                                okRegionIndices.Add(i);
+                                            else
+                                                ngRegionIndices.Add(i);
 
+                                            // 轮廓属于显示数据，不是算法结果必需字段。大结果集先保留数值和
+                                            // HRegion，避免逐 Blob 调用 GenContourRegionXld 把执行/UI线程拖死。
                                             blob.Label = filteredBlobs.Count + 1;
                                             filteredBlobs.Add(blob);
+                                            regionIndexByBlob[blob] = i;
                                         }
 
                                         stepSw.Stop();
@@ -340,33 +344,56 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                             SortBlobs(filteredBlobs, parameters.SortMode);
                                         }
 
+                                        if (parameters.IsBlobCountFilterEnabled && filteredBlobs.Count > parameters.BlobCountLimit)
+                                            filteredBlobs.RemoveRange(parameters.BlobCountLimit, filteredBlobs.Count - parameters.BlobCountLimit);
+
+                                        finalRegionIndices = filteredBlobs.Select(blob => regionIndexByBlob[blob]).ToList();
+                                        okRegionIndices = filteredBlobs.Where(blob => blob.JudgmentPassed).Select(blob => regionIndexByBlob[blob]).ToList();
+                                        ngRegionIndices = filteredBlobs.Where(blob => !blob.JudgmentPassed).Select(blob => regionIndexByBlob[blob]).ToList();
+                                        var contourSw = Stopwatch.StartNew();
+                                        for (var index = 0; index < filteredBlobs.Count && parameters.OutputContours; index++)
+                                        {
+                                            var blob = filteredBlobs[index];
+                                            blob.Label = index + 1;
+                                            HOperatorSet.SelectObj(shapeFilteredRegions, out var singleObj, regionIndexByBlob[blob]);
+                                            using var singleRegion = new HRegion(singleObj);
+                                            var geom = ContourGeometryFactory.FromRegionSmooth(singleRegion);
+                                            if (geom.Points.Length > 0)
+                                                blob.Contour = geom.Points;
+                                        }
+                                        contourSw.Stop();
+                                        stepTimings.Add(("轮廓提取", contourSw.ElapsedMilliseconds));
+
                                         // ===== Step 9: 设置结果数据 =====
                                         stepSw.Restart();
-                                        result.GrayImage = new HalImage(grayImage.Clone());
+                                        result.GrayImage = parameters.OutputBlobImage
+                                            ? new HalImage(grayImage.Clone())
+                                            : null;
                                         result.FilteredBlobs = filteredBlobs;
                                         result.ThresholdMinUsed = thresholdMin;
                                         result.ThresholdMaxUsed = thresholdMax;
                                         result.TypeUsed = parameters.Type.ToString();
 
-                                        // 区域本体保留（供下游区域运算/图像叠加消费；不进 GetPropertyMap 契约）
+                                        // 区域本体保留（供下游区域运算/图像叠加消费；不进 GetPropertyMap 契约）。
+                                        // 使用 Halcon 一次性 SelectObj，避免逐区域聚合导致执行时间随区域数平方增长。
                                         // 区域本体与最终 FilteredBlobs 一一对应；Tab4 判断为 NG 的
                                         // Blob 仍保留，颜色由 JudgmentPassed 决定。
-                                        result.BlobRegions = finalBlobRegions == null
-                                            ? new HalRegion(new HRegion())
-                                            : new HalRegion(finalBlobRegions);
-                                        finalBlobRegions = null; // 所有权已转移给结果
+                                        result.BlobRegions = new HalRegion(SelectRegions(shapeFilteredRegions, finalRegionIndices));
+                                        result.OkBlobRegions = new HalRegion(SelectRegions(shapeFilteredRegions, okRegionIndices));
+                                        result.NgBlobRegions = new HalRegion(SelectRegions(shapeFilteredRegions, ngRegionIndices));
 
-                                        // 二值掩码
-                                        HOperatorSet.RegionToBin(binaryRegion, out var binObj,
-                                            255, 0, imgWidth, imgHeight);
-                                        result.BinaryMask = new HalImage(new HImage(binObj));
-
-                                        // 合成显示：PaintRegion 在灰度图上绘制二值区域
-                                        var overlayClone = processingImage.Clone();
-                                        HOperatorSet.PaintRegion(binaryRegion, overlayClone,
-                                            out var paintedObj, 255.0, "fill");
-                                        result.OverlayImage = new HalImage(new HImage(paintedObj));
-                                        overlayClone.Dispose();
+                                        // 二值图按输出开关生成；OverlayImage 不再作为无条件中间图输出。
+                                        if (parameters.OutputBinaryImage)
+                                        {
+                                            HOperatorSet.RegionToBin(binaryRegion, out var binObj,
+                                                255, 0, imgWidth, imgHeight);
+                                            result.BinaryMask = new HalImage(new HImage(binObj));
+                                        }
+                                        else
+                                        {
+                                            result.BinaryMask = null;
+                                        }
+                                        result.OverlayImage = null;
                                         stepSw.Stop();
                                         stepTimings.Add(("结果赋值", stepSw.ElapsedMilliseconds));
 
@@ -397,35 +424,49 @@ namespace SunEyeVision.Tool.BlobAnalysis
                                         display.Clear();
 
                                         // 轮廓：仅对有轮廓数据的 blob（通过 Tab4 判断的 blob 有轮廓）
-                                        var contourBlobs = filteredBlobs
+                                        var displayBlobs = filteredBlobs;
+                                        var contourBlobs = displayBlobs
                                             .Where(b => b.HasContour)
                                             .ToList();
-                                        if (contourBlobs.Count > 0)
+                                        var contourStyle = parameters.ResultPresentation.GetGraphicsStyle("contours");
+                                        if (parameters.OutputContours && contourStyle.IsVisible && contourBlobs.Count > 0)
                                         {
-                                            var allContourPoints = contourBlobs.Select(b => b.Contour!).ToList();
-                                            var contourPassList = contourBlobs.Select(b => b.JudgmentPassed).ToList();
-                                            display.AddContours(parameters.ResultPresentation.GetGraphicsStyle("contours"), allContourPoints, contourPassList);
+                                            var okContours = contourBlobs
+                                                .Where(b => b.JudgmentPassed)
+                                                .Select(b => b.Contour!)
+                                                .ToList();
+                                            var ngContours = contourBlobs
+                                                .Where(b => !b.JudgmentPassed)
+                                                .Select(b => b.Contour!)
+                                                .ToList();
+                                            display.AddContourBatch(contourStyle, okContours, true);
+                                            display.AddContourBatch(contourStyle, ngContours, false);
                                         }
 
                                         // 外接矩形（根据 JudgmentPassed 显示 OK/NG 颜色）
-                                        foreach (var blob in filteredBlobs)
+                                        var blobStyle = parameters.ResultPresentation.GetGraphicsStyle("blobs");
+                                        if (blobStyle.IsVisible)
                                         {
-                                            var bbox = blob.BoundingBox;
-                                            if (bbox.Width > 0 && bbox.Height > 0)
-                                                display.AddRect(parameters.ResultPresentation.GetGraphicsStyle("blobs"), bbox, blob.JudgmentPassed);
+                                            var okBoxes = displayBlobs.Where(b => b.JudgmentPassed && b.RotatedBoundingBox is { Length: >= 4 })
+                                                .Select(b => b.RotatedBoundingBox!).ToList();
+                                            var ngBoxes = displayBlobs.Where(b => !b.JudgmentPassed && b.RotatedBoundingBox is { Length: >= 4 })
+                                                .Select(b => b.RotatedBoundingBox!).ToList();
+                                            display.AddContourBatch(blobStyle, okBoxes, true);
+                                            display.AddContourBatch(blobStyle, ngBoxes, false);
                                         }
 
                                         // 质心十字（根据 JudgmentPassed 显示 OK/NG 颜色）
-                                        foreach (var blob in filteredBlobs)
+                                        var centroidStyle = parameters.ResultPresentation.GetGraphicsStyle("centroids");
+                                        foreach (var blob in displayBlobs)
                                         {
-                                            if (blob.CentroidX > 0 || blob.CentroidY > 0)
-                                                display.AddCross(parameters.ResultPresentation.GetGraphicsStyle("centroids"),
+                                            if (centroidStyle.IsVisible && (blob.CentroidX > 0 || blob.CentroidY > 0))
+                                                display.AddCross(centroidStyle,
                                                     new WpfPoint(blob.CentroidX, blob.CentroidY), blob.JudgmentPassed);
                                         }
 
                                         // 面积文本（根据 JudgmentPassed 显示 OK/NG 颜色）
                                         var areaStyle = parameters.ResultPresentation.GetTextStyle("area");
-                                        foreach (var blob in filteredBlobs)
+                                        foreach (var blob in displayBlobs)
                                         {
                                             if (blob.CentroidX > 0 || blob.CentroidY > 0)
                                                 display.AddText(areaStyle, areaStyle.PositionX, areaStyle.PositionY,
@@ -747,6 +788,31 @@ namespace SunEyeVision.Tool.BlobAnalysis
         {
             HOperatorSet.BottomHat(region, se, out var result);
             return new HRegion(result);
+        }
+
+        private static HRegion SelectRegions(HRegion source, IReadOnlyList<int> indices)
+        {
+            if (indices.Count == 0)
+                return new HRegion();
+            var tuple = new HTuple(indices.ToArray());
+            HOperatorSet.SelectObj(source, out var selected, tuple);
+            tuple.Dispose();
+            return new HRegion(selected);
+        }
+
+        private static WpfPoint[] BuildRotatedRectangle(double row, double col, double phi, double length1, double length2)
+        {
+            var cos = Math.Cos(phi);
+            var sin = Math.Sin(phi);
+            var axis = new WpfPoint(cos, sin);
+            var normal = new WpfPoint(-sin, cos);
+            return new[]
+            {
+                new WpfPoint(col - axis.X * length1 - normal.X * length2, row - axis.Y * length1 - normal.Y * length2),
+                new WpfPoint(col + axis.X * length1 - normal.X * length2, row + axis.Y * length1 - normal.Y * length2),
+                new WpfPoint(col + axis.X * length1 + normal.X * length2, row + axis.Y * length1 + normal.Y * length2),
+                new WpfPoint(col - axis.X * length1 + normal.X * length2, row - axis.Y * length1 + normal.Y * length2)
+            };
         }
 
         #endregion

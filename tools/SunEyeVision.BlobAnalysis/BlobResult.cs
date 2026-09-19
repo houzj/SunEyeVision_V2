@@ -33,6 +33,9 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// <summary>外接矩形（WPF坐标系）</summary>
         public Rect BoundingBox { get; set; }
 
+        /// <summary>最小外接旋转矩形四角点（WPF坐标系）</summary>
+        public WpfPoint[]? RotatedBoundingBox { get; set; }
+
         /// <summary>外接矩形文本</summary>
         public string BoundingRectText => $"{(int)BoundingBox.Width}×{(int)BoundingBox.Height}";
 

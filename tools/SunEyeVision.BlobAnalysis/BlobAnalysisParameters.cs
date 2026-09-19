@@ -131,7 +131,12 @@ namespace SunEyeVision.Tool.BlobAnalysis
             new RuntimeParameterDescriptor(nameof(IsRectangularityFilterEnabled), "启用矩形度筛选", "Boolean", typeof(bool)),
             new RuntimeParameterDescriptor(nameof(FilterRectangularityMin), "矩形度最小值", "Double", typeof(double)),
             new RuntimeParameterDescriptor(nameof(FilterRectangularityMax), "矩形度最大值", "Double", typeof(double)),
-            new RuntimeParameterDescriptor(nameof(SortMode), "排序方式", ValueType: typeof(BlobSortMode))
+            new RuntimeParameterDescriptor(nameof(SortMode), "排序方式", ValueType: typeof(BlobSortMode)),
+            new RuntimeParameterDescriptor(nameof(IsBlobCountFilterEnabled), "启用查找数量筛选", "Boolean", typeof(bool)),
+            new RuntimeParameterDescriptor(nameof(BlobCountLimit), "查找数量", "Integer", typeof(int)),
+            new RuntimeParameterDescriptor(nameof(OutputBlobImage), "Blob图像输出", "Boolean", typeof(bool)),
+            new RuntimeParameterDescriptor(nameof(OutputBinaryImage), "二值化图像输出", "Boolean", typeof(bool)),
+            new RuntimeParameterDescriptor(nameof(OutputContours), "轮廓输出", "Boolean", typeof(bool))
         };
 
         #region 常量定义
@@ -323,6 +328,27 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// </summary>
         public ResultPresentationConfig ResultPresentation { get; set; } = CreateResultPresentation();
 
+        /// <summary>
+        /// 是否限制后续结果、区域和显示统一使用的 Blob 数量。
+        /// </summary>
+        [DisplayName("启用查找数量筛选")]
+        public bool IsBlobCountFilterEnabled { get; set; } = true;
+
+        [DisplayName("查找数量")]
+        public int BlobCountLimit { get; set; } = 3000;
+
+        [DisplayName("Blob图像输出")]
+        public bool OutputBlobImage { get; set; } = true;
+
+        [DisplayName("二值化图像输出")]
+        public bool OutputBinaryImage { get; set; }
+
+        [DisplayName("轮廓输出")]
+        public bool OutputContours { get; set; }
+
+        public const int BlobCountLimitMin = 1;
+        public const int BlobCountLimitMax = 1000000;
+
         private static ResultPresentationConfig CreateResultPresentation()
         {
             var config = new ResultPresentationConfig();
@@ -339,8 +365,8 @@ namespace SunEyeVision.Tool.BlobAnalysis
             config.Judgments.Add(new() { Key = "per-blob-circularity", Name = "每个Blob圆度", Scope = JudgmentScope.PerItem, AffectsItemDisplayState = true, Enabled = false, Min = 0, Max = 1, AllowedMinimum = 0, AllowedMaximum = 1, DecimalPlaces = 3, Order = 110 });
             config.Judgments.Add(new() { Key = "per-blob-rectangularity", Name = "每个Blob矩形度", Scope = JudgmentScope.PerItem, AffectsItemDisplayState = true, Enabled = false, Min = 0, Max = 1, AllowedMinimum = 0, AllowedMaximum = 1, DecimalPlaces = 3, Order = 120 });
             config.Graphics.Add(new() { Key = "blobs", Name = "外接矩形", Order = 10, Style = new() { Name = "Blobs", LineWidth = 2 } });
-            config.Graphics.Add(new() { Key = "centroids", Name = "质心", Order = 20, Style = new() { Name = "Centroids", LineWidth = 2, CrossSize = 8 } });
-            config.Graphics.Add(new() { Key = "contours", Name = "轮廓", Order = 30, Style = new() { Name = "Contours", LineWidth = 1 } });
+            config.Graphics.Add(new() { Key = "centroids", Name = "质心", Order = 20, Style = new() { Name = "Centroids", LineWidth = 2, CrossSize = 8, IsVisible = false } });
+            config.Graphics.Add(new() { Key = "contours", Name = "轮廓", Order = 30, Style = new() { Name = "Contours", LineWidth = 1, IsVisible = false } });
             config.Graphics.Add(new() { Key = "inspection-roi", Name = "检测区", Order = 40, Style = new() { Name = "InspectionRoi", LineWidth = 1, OkColor = Color.FromRgb(0, 0, 255) } });
             config.Graphics.Add(new() { Key = "mask-roi", Name = "屏蔽区", Order = 50, Style = new() { Name = "MaskRoi", LineWidth = 1, OkColor = Color.FromRgb(0xFF, 0xA5, 0x00) } });
             config.Texts.Add(new() { Key = "area", Name = "面积列表", Order = 10, Style = new() { Name = "AreaDisplay", FontSize = 9.0, PositionX = 0, PositionY = 0 } });
@@ -416,6 +442,11 @@ namespace SunEyeVision.Tool.BlobAnalysis
             if (Threshold > MaxValue)
             {
                 result.AddError($"阈值下限({Threshold})不能大于阈值上限({MaxValue})");
+            }
+
+            if (BlobCountLimit < BlobCountLimitMin || BlobCountLimit > BlobCountLimitMax)
+            {
+                result.AddError($"查找数量必须在 {BlobCountLimitMin}~{BlobCountLimitMax} 范围内，当前值: {BlobCountLimit}");
             }
 
             // 预处理参数验证

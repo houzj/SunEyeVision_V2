@@ -50,7 +50,7 @@
                                 AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"
                                 SelectedDataSource="{Binding ImageSource, Mode=TwoWay}"/>
             </controls:LabeledControl>
-            
+
             <!-- 区域设置（检测区域数量=0时全图分析，否则自动启用区域限制） -->
             <GroupBox Header="区域设置" Margin="0,8,0,0">
                 <region:RoiEditorManagerControl x:Name="regionManager"
@@ -247,6 +247,36 @@
                 <sys:String>Y坐标 ↑</sys:String>
                 <sys:String>Y坐标 ↓</sys:String>
               </ComboBox>
+            </controls:LabeledControl>
+
+            <!-- ====== 查找数量筛选 ====== -->
+            <Separator Margin="0,8,0,4" Background="{DynamicResource {x:Static themes:SdkThemeKeys.DividerBrush}}" Height="1"/>
+            <TextBlock Text="查找数量筛选" FontWeight="SemiBold" Margin="0,4,0,8"/>
+            <controls:LabeledControl Label="启用数量筛选" ContentHorizontalAlignment="Left" Margin="0,0,0,4">
+              <controls:ToggleSwitch IsChecked="{Binding IsBlobCountFilterEnabled, Mode=TwoWay}" SwitchWidth="48" SwitchHeight="24"/>
+            </controls:LabeledControl>
+            <controls:LabeledControl Label="查找数量">
+              <controls:ConfigSetting
+                ParameterName="BlobCountLimit"
+                DataType="{x:Type sys:Int32}"
+                Value="{Binding BlobCountLimit, Mode=TwoWay}"
+                Minimum="1" Maximum="1000000"
+                SmallChange="100" LargeChange="1000"
+                Width="250"
+                IsEnabled="{Binding IsBlobCountFilterEnabled}"
+                AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
+            </controls:LabeledControl>
+
+            <Separator Margin="0,8,0,4" Background="{DynamicResource {x:Static themes:SdkThemeKeys.DividerBrush}}" Height="1"/>
+            <TextBlock Text="输出" FontWeight="SemiBold" Margin="0,4,0,8"/>
+            <controls:LabeledControl Label="Blob图像输出" ContentHorizontalAlignment="Left">
+              <controls:ToggleSwitch IsChecked="{Binding OutputBlobImage, Mode=TwoWay}" SwitchWidth="48" SwitchHeight="24"/>
+            </controls:LabeledControl>
+            <controls:LabeledControl Label="二值化图像输出" ContentHorizontalAlignment="Left">
+              <controls:ToggleSwitch IsChecked="{Binding OutputBinaryImage, Mode=TwoWay}" SwitchWidth="48" SwitchHeight="24"/>
+            </controls:LabeledControl>
+            <controls:LabeledControl Label="轮廓输出" ContentHorizontalAlignment="Left">
+              <controls:ToggleSwitch IsChecked="{Binding OutputContours, Mode=TwoWay}" SwitchWidth="48" SwitchHeight="24"/>
             </controls:LabeledControl>
 
             <!-- ====== 面积筛选 ====== -->

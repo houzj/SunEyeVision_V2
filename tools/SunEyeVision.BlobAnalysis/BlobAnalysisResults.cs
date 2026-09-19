@@ -174,6 +174,12 @@ namespace SunEyeVision.Tool.BlobAnalysis
         /// </summary>
         public IVisionRegion? BlobRegions { get; set; }
 
+        /// <summary>通过判断的区域集合，供结果层批量渲染。</summary>
+        public IVisionRegion? OkBlobRegions { get; set; }
+
+        /// <summary>未通过判断的区域集合，供结果层批量渲染。</summary>
+        public IVisionRegion? NgBlobRegions { get; set; }
+
         /// <summary>
         /// 获取属性映射表
         /// </summary>

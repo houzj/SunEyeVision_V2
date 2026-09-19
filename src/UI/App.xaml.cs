@@ -617,9 +617,21 @@ public partial class App : Application
             if (string.IsNullOrEmpty(nodeId) || string.IsNullOrEmpty(paramName))
                 return;
 
+            // 节点 ID 只在所属工作流作用域内有意义；旧方案缺少 WorkflowId 时，
+            // 只有在全方案中能唯一定位节点才允许兼容清理，避免误删其他工作流的同名绑定。
+            var matchingWorkflows = solutionManager.CurrentSolution.Workflows
+                .Where(w => (w.Nodes ?? Enumerable.Empty<WorkflowNodeBase>()).Any(n => n.Id == nodeId))
+                .ToList();
+            if (matchingWorkflows.Count != 1)
+                return;
+
+            var workflowId = matchingWorkflows[0].Id;
+
             // 查找并移除匹配的 ConsumerBinding
             var removed = variable.ConsumerBindings.RemoveAll(c =>
-                c.NodeId == nodeId && c.ParameterName == paramName);
+                c.NodeId == nodeId
+                && c.ParameterName == paramName
+                && (c.WorkflowId == workflowId || string.IsNullOrEmpty(c.WorkflowId)));
 
             if (removed > 0)
             {
@@ -783,7 +795,9 @@ public partial class App : Application
 
             // 检查是否已存在相同的消费者绑定
             var existing = variable.ConsumerBindings
-                .FirstOrDefault(c => c.NodeId == nodeId && c.ParameterName == paramName);
+                .FirstOrDefault(c => c.WorkflowId == (workflowId ?? string.Empty)
+                    && c.NodeId == nodeId
+                    && c.ParameterName == paramName);
 
             if (existing != null)
             {

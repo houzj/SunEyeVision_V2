@@ -8,6 +8,10 @@ using SunEyeVision.UI.Core;
 using SunEyeVision.UI.Shell.Controls.Panels;
 
 using SunEyeVision.UI.Features.WorkflowUI;
+using SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters;
+using SunEyeVision.UI.Features.GlobalVariableManager;
+using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Workflow;
 
 using SunEyeVision.UI.Shell.Windows;
 
@@ -104,6 +108,46 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             // 手动在预览器选中图片（点击/方向键）：以该图为下一轮 run 起点（首轮不自动推进）
             _skipNextAdvance = true;
             RunWorkflowWithImage(workflow, e.ImageInfo, e.Index);
+        }
+
+        /// <summary>
+        /// 从真实模块结果直接绑定全局变量。该入口与“全局变量管理器 → 输入来源”写入同一 ProducerBinding，
+        /// 因而不会产生两套依赖配置。
+        /// </summary>
+        private void BindResultToGlobalVariable_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button { DataContext: FlatResultRow row } ||
+                row.BindingInfo == null)
+            {
+                return;
+            }
+
+            var variableType = row.BindingInfo.ValueVocabulary;
+
+            var solutionManager = ServiceInitializer.SolutionManager;
+            var solution = solutionManager?.CurrentSolution;
+            var tab = _viewModel.WorkflowTabViewModel?.SelectedTab;
+            if (solution == null || tab == null)
+                return;
+
+            var variable = GlobalVariableSelectDialog.ShowSelect(solutionManager, variableType);
+            if (variable == null)
+                return;
+
+            var sourceNode = tab.WorkflowNodes.FirstOrDefault(node => node.Id == row.BindingInfo.SourceNodeId);
+            variable.ProducerBinding = new ProducerBinding
+            {
+                WorkflowId = tab.RootWorkflowId,
+                WorkflowName = tab.Name,
+                NodeId = row.BindingInfo.SourceNodeId,
+                NodeName = sourceNode?.DispName ?? row.SourceNodeName ?? row.BindingInfo.SourceNodeId,
+                ResultName = row.BindingInfo.ResultPath,
+                ResultDisplayName = row.DisplayName
+            };
+            variable.NotifyInputSourceDisplayChanged();
+            _viewModel.AddLog(LogLevel.Info,
+                $"全局变量“{variable.Name}”的输入来源已绑定为 {variable.ProducerBinding.DisplayPath}",
+                LogSource.UIOperation);
         }
 
         /// <summary>以指定图片作为当前输入执行一次工作流（注入运行时参数后触发执行）</summary>

@@ -9,6 +9,7 @@ using System.Text.Json.Serialization;
 using System.Windows.Input;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 using SunEyeVision.Workflow;
 
 using SunEyeVision.UI.Core;
@@ -17,7 +18,7 @@ namespace SunEyeVision.UI.Features.ParameterSetting
 {
     public class TargetParamTreeNode : ObservableObject
     {
-        private bool? _isSelected;
+        private bool _isSelected;
         private bool _isExpanded = true;
 
         public string Name { get; set; } = string.Empty;
@@ -28,26 +29,21 @@ namespace SunEyeVision.UI.Features.ParameterSetting
         public string? ParameterName { get; set; }
         public ObservableCollection<TargetParamTreeNode> Children { get; set; } = new();
         public TargetParamTreeNode? Parent { get; set; }
+        public bool IsParameter => string.Equals(NodeType, "parameter", StringComparison.Ordinal);
 
         /// <summary>
-        /// 非叶子节点支持三态（☐ / ▣ / ☑），叶子仅两态（☐ / ☑）
+        /// 二态选中：叶子表示绑定/解绑；父节点表示整组操作。
+        /// 父节点显示“选中”表示其子树存在至少一个已绑定叶子。
         /// </summary>
-        public bool SupportsTriState => Children.Count > 0;
-
-        /// <summary>
-        /// 三态选中：true=全选, false=未选, null=半选
-        /// 用户点击非叶子 → 向下全选/全取消；叶子变化 → 同步右侧 + 向上聚合
-        /// </summary>
-        public bool? IsSelected
+        public bool IsSelected
         {
             get => _isSelected;
             set
             {
                 if (SetProperty(ref _isSelected, value))
                 {
-                    // 用户主动点击（有明确 true/false）时向下传播
-                    if (value.HasValue && Children.Count > 0)
-                        SetChildrenSelected(value.Value);
+                    if (Children.Count > 0)
+                        SetChildrenSelected(value);
 
                     // 叶子节点状态变化 → 通知右侧列表实时同步
                     if (Children.Count == 0)
@@ -77,10 +73,7 @@ namespace SunEyeVision.UI.Features.ParameterSetting
         {
             if (Parent == null) return;
 
-            bool allSelected = Parent.Children.All(c => c._isSelected == true);
-            bool noneSelected = Parent.Children.All(c => c._isSelected == false || c._isSelected == null);
-
-            bool? newState = allSelected ? true : (noneSelected ? false : (bool?)null);
+            bool newState = Parent.Children.Any(c => c._isSelected);
 
             if (Parent._isSelected != newState)
             {
@@ -119,6 +112,7 @@ namespace SunEyeVision.UI.Features.ParameterSetting
         public string NodeName { get; set; } = string.Empty;
         public string ParameterName { get; set; } = string.Empty;
         public string ParameterDisplayName { get; set; } = string.Empty;
+        public string BindingKey => $"{WorkflowId}|{NodeId}|{ParameterName}";
 
         /// <summary>显示路径："工作流名.节点名.参数显示名"</summary>
         public string DisplayPath => $"{WorkflowName}.{NodeName}.{ParameterDisplayName}";
@@ -217,13 +211,12 @@ namespace SunEyeVision.UI.Features.ParameterSetting
         /// <summary>
         /// 提取已有绑定的快速查找集合
         /// </summary>
-        private static HashSet<(string nodeId, string paramName)> BuildSelectedSet(
+        private static HashSet<string> BuildSelectedSet(
             List<ConsumerBinding>? existingBindings)
         {
             return existingBindings != null
-                ? new HashSet<(string, string)>(
-                    existingBindings.Select(b => (b.NodeId, b.ParameterName)))
-                : new HashSet<(string, string)>();
+                ? existingBindings.Select(b => b.BindingKey).ToHashSet(StringComparer.Ordinal)
+                : new HashSet<string>(StringComparer.Ordinal);
         }
 
         /// <summary>
@@ -250,7 +243,7 @@ namespace SunEyeVision.UI.Features.ParameterSetting
             Dictionary<string, string> subCalls,
             Dictionary<string, Workflow.Workflow> subWorkflowMap,
             TargetParamTreeNode parentNode,
-            HashSet<(string nodeId, string paramName)> selectedSet,
+            HashSet<string> selectedSet,
             HashSet<string> visited,
             string parentWfId)
         {
@@ -268,7 +261,7 @@ namespace SunEyeVision.UI.Features.ParameterSetting
                     Parent = parentNode
                 };
 
-                // 添加参数（ParamValue + 集合型输入）
+                // 添加参数（纯 CLR 参数 + 集合型输入）
                 var paramInfos = GetParameterNames(node, _targetTypeName);
                 foreach (var (paramName, displayName) in paramInfos)
                     AddParameterLeaf(node, nodeTreeNode, paramName, displayName, selectedSet, workflow.Id);
@@ -294,10 +287,10 @@ namespace SunEyeVision.UI.Features.ParameterSetting
         private void AddParameterLeaf(
             WorkflowNodeBase node, TargetParamTreeNode parentNode,
             string paramName, string displayName,
-            HashSet<(string nodeId, string paramName)> selectedSet,
+            HashSet<string> selectedSet,
             string workflowId)
         {
-            var isSelected = selectedSet.Contains((node.Id, paramName));
+            var isSelected = selectedSet.Contains($"{workflowId}|{node.Id}|{paramName}");
             var leaf = new TargetParamTreeNode
             {
                 Name = displayName,
@@ -344,7 +337,7 @@ namespace SunEyeVision.UI.Features.ParameterSetting
         {
             if (leaf.IsSelected == true)
             {
-                if (!_selectedConsumers.Any(c => c.NodeId == leaf.NodeId && c.ParameterName == leaf.ParameterName))
+                if (!_selectedConsumers.Any(c => c.BindingKey == $"{leaf.WorkflowId}|{leaf.NodeId}|{leaf.ParameterName}"))
                 {
                     _selectedConsumers.Add(new ConsumerItemViewModel
                     {
@@ -360,7 +353,7 @@ namespace SunEyeVision.UI.Features.ParameterSetting
             else
             {
                 var existing = _selectedConsumers.FirstOrDefault(
-                    c => c.NodeId == leaf.NodeId && c.ParameterName == leaf.ParameterName);
+                    c => c.BindingKey == $"{leaf.WorkflowId}|{leaf.NodeId}|{leaf.ParameterName}");
                 if (existing != null)
                     _selectedConsumers.Remove(existing);
             }
@@ -386,19 +379,9 @@ namespace SunEyeVision.UI.Features.ParameterSetting
         {
             var result = new List<(string name, string displayName)>();
 
-            // ═══ 途径1: 从 ParamSettings 获取（用户已配置的参数）═══
-            if (node.ParamSettings?.Settings != null && node.ParamSettings.Settings.Any(s => !string.IsNullOrEmpty(s.ParameterName)))
-            {
-                foreach (var setting in node.ParamSettings.Settings)
-                {
-                    if (string.IsNullOrEmpty(setting.ParameterName)) continue;
-                    var displayName = GetDisplayName(node.Parameters, setting.ParameterName);
-                    result.Add((setting.ParameterName, displayName));
-                }
-                return result.OrderBy(p => p.name).ToList();
-            }
-
-            // ═══ 途径2: 首次打开，从 ToolParameters 元数据获取 ═══
+            // 目标树的全集必须由工具参数契约决定。
+            // ParamSettings 只用于 BuildSelectedSet 标记已选状态，不能决定树中显示哪些参数；
+            // 否则节点只要配置过一个参数，其余可绑定参数就会被提前 return 隐藏。
             if (node.Parameters != null)
             {
                 var bindableProps = node.Parameters.GetBindableInputProperties()
@@ -406,7 +389,7 @@ namespace SunEyeVision.UI.Features.ParameterSetting
 
                 foreach (var prop in bindableProps)
                 {
-                    result.Add((prop.Name, GetDisplayName(prop)));
+                    result.Add((prop.Name, GetDisplayName(node, prop.Name)));
                 }
 
                 // ═══ 途径3: 集合型输入（脚本工具 Inputs / 子程序 Inputs）═══
@@ -428,7 +411,10 @@ namespace SunEyeVision.UI.Features.ParameterSetting
                                     continue;
                             }
 
-                            result.Add((name, name));
+                            var displayNameProp = input.GetType().GetProperty("DisplayName")
+                                ?? input.GetType().GetProperty("Label");
+                            var displayName = displayNameProp?.GetValue(input) as string;
+                            result.Add((name, string.IsNullOrWhiteSpace(displayName) ? name : displayName));
                         }
                     }
                 }
@@ -448,21 +434,7 @@ namespace SunEyeVision.UI.Features.ParameterSetting
 
             var type = prop.PropertyType;
 
-            // ParamValue<T>
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(ParamValue<>))
-            {
-                var genericArg = type.GetGenericArguments()[0];
-                if (string.IsNullOrEmpty(targetTypeName))
-                    return IsBasicType(genericArg); // 无筛选时只显示基本类型（原行为）
-                else
-                {
-                    var paramTypeName = SdkTypeVocabulary.ToTypeVocabulary(genericArg);
-                    return paramTypeName != null
-                        && string.Equals(paramTypeName, targetTypeName, StringComparison.OrdinalIgnoreCase);
-                }
-            }
-
-            // 直接属性（非 ParamValue 包装）
+            // 参数属性直接使用 CLR 类型；绑定定义存放在节点 ParamSettings。
             if (string.IsNullOrEmpty(targetTypeName))
                 return IsBasicType(type);
             else
@@ -508,6 +480,20 @@ namespace SunEyeVision.UI.Features.ParameterSetting
             var prop = parameters.GetType().GetProperty(propertyName);
             if (prop == null) return propertyName;
             return GetDisplayName(prop);
+        }
+
+        /// <summary>
+        /// 参数面板优先使用工具契约中的显示名；契约缺失时才退回参数特性或 CLR 属性名。
+        /// 这样每个工具在结果面板和目标参数面板使用相同的中文命名。
+        /// </summary>
+        private static string GetDisplayName(WorkflowNodeBase node, string propertyName)
+        {
+            var metadata = ToolRegistry.GetAllPropertyMetadata(node.ToolType)
+                .FirstOrDefault(item => string.Equals(item.PropertyName, propertyName, StringComparison.Ordinal));
+            if (metadata != null && !string.IsNullOrWhiteSpace(metadata.DisplayName))
+                return metadata.DisplayName;
+
+            return GetDisplayName(node.Parameters, propertyName);
         }
 
         private void Save()

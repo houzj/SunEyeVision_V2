@@ -504,6 +504,20 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
+                <!-- 输入来源只读：唯一绑定入口位于“模块结果”中的链接按钮。 -->
+                <DataGridTemplateColumn Header="输入来源" Width="170" IsReadOnly="True">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding InputSourceDisplayText}" FontSize="12" Padding="8,0"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Stretch"
+                                       Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}"
+                                       TextTrimming="CharacterEllipsis"
+                                       ToolTip="在模块结果中点击链接图标，绑定模块输出结果到此变量"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
                 <!-- 目标输出（只读显示，点击打开目标参数管理，Tooltip 显示全部消费者路径） -->
                 <DataGridTemplateColumn Header="目标输出" Width="140" IsReadOnly="True">
                     <DataGridTemplateColumn.CellTemplate>

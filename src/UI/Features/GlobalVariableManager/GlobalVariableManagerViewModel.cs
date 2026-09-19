@@ -552,7 +552,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
             {
                 variable.Name = newName;
 
-                // ★ 传播到所有引用处（节点参数 BindingConfig + 模块结果行）
+                // ★ 传播到所有引用处（节点 ParamSettings + 模块结果行）
                 UpdateGlobalVariableNameReferences(variable, oldName, newName);
             }
 
@@ -569,24 +569,21 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
 
             LogInfo($"全局变量重命名传播: '{oldName}' → '{newName}'");
 
-            // 1. 更新所有节点参数的 BindingConfig
+            // 1. 更新所有节点 ParamSettings 中的绑定定义
             foreach (var workflow in solution.Workflows)
             {
                 foreach (var node in workflow.Nodes ?? Enumerable.Empty<WorkflowNodeBase>())
                 {
                     if (node?.Parameters == null) continue;
 
-                    var parametersType = node.Parameters.GetType();
-                    foreach (var prop in parametersType.GetProperties())
+                    foreach (var setting in node.ParamSettings?.Settings ?? Enumerable.Empty<ParamSetting>())
                     {
-                        if (prop.GetValue(node.Parameters) is ParamValueBase paramValue)
+                        if (setting.BindingType == BindingType.Binding
+                            && setting.SourceNodeId == "__GlobalVars__"
+                            && setting.SourceProperty == oldName)
                         {
-                            var bc = paramValue.BindingConfig;
-                            if (bc?.SourceNodeId == "__GlobalVars__" && bc.SourceProperty == oldName)
-                            {
-                                bc.SourceProperty = newName;
-                                bc.SourceDisplayName = newName;
-                            }
+                            setting.SourceProperty = newName;
+                            setting.SourceDisplayName = newName;
                         }
                     }
                 }
@@ -787,23 +784,25 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
                 if (result != null)
                 {
                     // 1. 计算变化：哪些新增，哪些移除
-                    var oldSet = new HashSet<(string, string)>(
-                        variable.ConsumerBindings.Select(b => (b.NodeId, b.ParameterName)));
-                    var newSet = new HashSet<(string, string)>(
-                        result.Select(b => (b.NodeId, b.ParameterName)));
+                    var oldSet = variable.ConsumerBindings
+                        .Select(b => b.BindingKey)
+                        .ToHashSet(StringComparer.Ordinal);
+                    var newSet = result
+                        .Select(b => b.BindingKey)
+                        .ToHashSet(StringComparer.Ordinal);
 
-                    var added = result.Where(b => !oldSet.Contains((b.NodeId, b.ParameterName))).ToList();
+                    var added = result.Where(b => !oldSet.Contains(b.BindingKey)).ToList();
                     var removed = variable.ConsumerBindings
-                        .Where(b => !newSet.Contains((b.NodeId, b.ParameterName))).ToList();
+                        .Where(b => !newSet.Contains(b.BindingKey)).ToList();
 
                     // 2. 更新 ConsumerBindings
                     variable.ConsumerBindings = result;
 
-                    // 3. 新增绑定 → 设置节点参数的 BindingConfig（全局变量绑定）
+                    // 3. 新增绑定 → 设置节点 ParamSettings（全局变量绑定）
                     foreach (var binding in added)
                         SetNodeParamBinding(currentSolution, binding, variable.Name);
 
-                    // 4. 移除绑定 → 清除节点参数的 BindingConfig（切回常量模式）
+                    // 4. 移除绑定 → 清除节点 ParamSettings（切回常量模式）
                     foreach (var binding in removed)
                         ClearNodeParamBinding(currentSolution, binding);
 
@@ -818,35 +817,39 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
         }
 
         /// <summary>
-        /// 为节点参数设置全局变量绑定（支持 ParamValue 和集合型输入）
+        /// 为节点参数设置全局变量绑定（支持纯 CLR 参数和集合型输入）
         /// </summary>
         private static void SetNodeParamBinding(Solution solution, ConsumerBinding binding, string variableName)
         {
-            var node = solution.Workflows
-                .SelectMany(w => w.Nodes ?? Enumerable.Empty<WorkflowNodeBase>())
-                .FirstOrDefault(n => n.Id == binding.NodeId);
+            var workflow = solution.Workflows.FirstOrDefault(w => w.Id == binding.WorkflowId);
+            var node = workflow?.Nodes?.FirstOrDefault(n => n.Id == binding.NodeId)
+                ?? (string.IsNullOrEmpty(binding.WorkflowId)
+                    ? solution.Workflows.SelectMany(w => w.Nodes ?? Enumerable.Empty<WorkflowNodeBase>())
+                        .SingleOrDefault(n => n.Id == binding.NodeId)
+                    : null);
             if (node?.Parameters == null) return;
 
             // ★ 集合型输入（脚本工具 Inputs / 子程序 Inputs）
             if (TrySetInputBinding(node.Parameters, binding.ParameterName, variableName))
                 return;
 
-            // ParamValue<T> 包装类型
             var prop = node.Parameters.GetType().GetProperty(binding.ParameterName);
             if (prop == null) return;
 
-            if (prop.GetValue(node.Parameters) is ParamValueBase paramValue)
+            // 新参数模型：绑定定义存放在节点 ParamSettings，算法参数保持纯 CLR 值。
+            // 该定义是设计期数据，运行时由 ToolExecutionRequest 解析为快照。
+            node.ParamSettings ??= new ParamSettingContainer();
+            node.ParamSettings.SetSetting(new ParamSetting
             {
-                paramValue.BindingConfig = new ParamSetting
-                {
-                    ParameterName = binding.ParameterName,
-                    BindingType = BindingType.Binding,
-                    SourceNodeId = "__GlobalVars__",
-                    SourceProperty = variableName,
-                    SourceNodeName = "全局变量",
-                    SourceDisplayName = variableName
-                };
-            }
+                ParameterName = binding.ParameterName,
+                BindingType = BindingType.Binding,
+                SourceNodeId = "__GlobalVars__",
+                SourceProperty = variableName,
+                SourceNodeName = "全局变量",
+                SourceDisplayName = variableName,
+                TargetType = prop.PropertyType
+            });
+
         }
 
         /// <summary>
@@ -876,28 +879,28 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
         }
 
         /// <summary>
-        /// 清除节点参数的绑定（支持 ParamValue 和集合型输入）
+        /// 清除节点参数的绑定（支持纯 CLR 参数和集合型输入）
         /// </summary>
         private static void ClearNodeParamBinding(Solution solution, ConsumerBinding binding)
         {
-            var node = solution.Workflows
-                .SelectMany(w => w.Nodes ?? Enumerable.Empty<WorkflowNodeBase>())
-                .FirstOrDefault(n => n.Id == binding.NodeId);
+            var workflow = solution.Workflows.FirstOrDefault(w => w.Id == binding.WorkflowId);
+            var node = workflow?.Nodes?.FirstOrDefault(n => n.Id == binding.NodeId)
+                ?? (string.IsNullOrEmpty(binding.WorkflowId)
+                    ? solution.Workflows.SelectMany(w => w.Nodes ?? Enumerable.Empty<WorkflowNodeBase>())
+                        .SingleOrDefault(n => n.Id == binding.NodeId)
+                    : null);
             if (node?.Parameters == null) return;
 
             // ★ 集合型输入
             if (TryClearInputBinding(node.Parameters, binding.ParameterName))
                 return;
 
-            // ParamValue<T>
             var prop = node.Parameters.GetType().GetProperty(binding.ParameterName);
             if (prop == null) return;
 
-            if (prop.GetValue(node.Parameters) is ParamValueBase paramValue)
-            {
-                // BindingConfig = null → 切回常量模式
-                paramValue.BindingConfig = null;
-            }
+            // 新参数模型：先移除节点级外部绑定定义。
+            node.ParamSettings?.RemoveSetting(binding.ParameterName);
+
         }
 
         /// <summary>

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using System.Windows.Input;
 using SunEyeVision.Plugin.SDK.UI.Themes;
 using SunEyeVision.Plugin.SDK.Commands;
@@ -215,6 +216,9 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         /// 当前节点ID
         /// </summary>
         private string? _currentNodeId;
+        private readonly List<ConfigSetting> _parameterBindingControls = new();
+        private readonly List<ParamBinding> _shapeBindingControls = new();
+        private bool _restoringParameterBindings;
 
         /// <summary>
         /// 调试窗口是否显示最大化按钮（默认 false，脚本工具重写为 true）
@@ -250,6 +254,10 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
             // 添加标准命令绑定
             SetupCommandBindings();
+
+            Loaded += OnToolDebugControlLoaded;
+            Unloaded += OnToolDebugControlUnloaded;
+            ConfigSetting.InstanceLoaded += OnConfigSettingInstanceLoaded;
         }
 
         #endregion
@@ -445,6 +453,8 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 PopulateParameterSources(queryService);
             }
 
+            RestoreExternalParameterBindings();
+
             // 子类重写以更新 UI
         }
 
@@ -460,6 +470,249 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             PluginLogger.Info(
                 $"参数已设置: {parameters?.GetType().Name}",
                 GetType().Name);
+
+            // SetCurrentNode 通常先于 SetParameters 调用，而派生控件会在
+            // base.SetParameters 返回后才把 Parameters 绑定到 DataContext。
+            // 延迟到当前 Dispatcher 队列，确保恢复发生在派生控件完成参数注入之后。
+            Dispatcher.BeginInvoke(
+                System.Windows.Threading.DispatcherPriority.ContextIdle,
+                new Action(RestoreExternalParameterBindings));
+        }
+
+        private void OnToolDebugControlLoaded(object sender, RoutedEventArgs e)
+        {
+            ConfigSetting.InstanceLoaded -= OnConfigSettingInstanceLoaded;
+            ConfigSetting.InstanceLoaded += OnConfigSettingInstanceLoaded;
+            SubscribeParameterBindingControls();
+            RestoreExternalParameterBindings();
+        }
+
+        private void OnToolDebugControlUnloaded(object sender, RoutedEventArgs e)
+        {
+            ConfigSetting.InstanceLoaded -= OnConfigSettingInstanceLoaded;
+            // 关闭/切换调试窗口时做一次最终落盘，避免绑定选择事件在控件
+            // 尚未完成 Loaded 或窗口关闭竞态中丢失。
+            PersistParameterBindings();
+
+            foreach (var control in _parameterBindingControls)
+                control.BindingConfigChanged -= OnParameterBindingChanged;
+            foreach (var control in _shapeBindingControls)
+                control.RemoveHandler(ParamBinding.BindingSourceSelectedEvent, new RoutedEventHandler(OnShapeBindingChanged));
+            _parameterBindingControls.Clear();
+            _shapeBindingControls.Clear();
+        }
+
+        private void OnConfigSettingInstanceLoaded(ConfigSetting control)
+        {
+            // ConfigSetting 通过静态事件报告自身已经进入视觉树。只有属于当前
+            // 调试控件的实例才触发恢复，避免依赖 TabControl 的轮询时序。
+            if (!ReferenceEquals(control, this)
+                && !control.IsDescendantOf(this))
+                return;
+
+            SubscribeParameterBindingControls();
+            RestoreExternalParameterBindings();
+        }
+
+        /// <summary>
+        /// 将当前调试控件中的绑定状态立即同步到当前节点。
+        /// 窗口壳在 Closed 时也会调用此方法，避免依赖 WPF 的 Unloaded 时序。
+        /// </summary>
+        public void PersistParameterBindings()
+        {
+            SubscribeParameterBindingControls();
+            LogBindingDiagnostics("关闭前提交", includeControls: true);
+            foreach (var control in _parameterBindingControls)
+                OnParameterBindingChanged(control, EventArgs.Empty);
+            foreach (var control in _shapeBindingControls)
+                OnShapeBindingChanged(control, new RoutedEventArgs());
+            LogBindingDiagnostics("关闭后提交", includeControls: true);
+        }
+
+        private void SubscribeParameterBindingControls()
+        {
+            foreach (var control in FindParameterBindingControls(this))
+            {
+                if (_parameterBindingControls.Contains(control))
+                    continue;
+                _parameterBindingControls.Add(control);
+                control.BindingConfigChanged += OnParameterBindingChanged;
+            }
+            foreach (var control in FindShapeBindingControls(this))
+            {
+                if (_shapeBindingControls.Contains(control))
+                    continue;
+                _shapeBindingControls.Add(control);
+                control.AddHandler(ParamBinding.BindingSourceSelectedEvent, new RoutedEventHandler(OnShapeBindingChanged));
+                control.AddHandler(ParamBinding.BindingStateChangedEvent, new RoutedEventHandler(OnShapeBindingChanged));
+            }
+        }
+
+        private void OnParameterBindingChanged(object? sender, EventArgs e)
+        {
+            if (_restoringParameterBindings || sender is not ConfigSetting control)
+                return;
+
+            if (CurrentNode?.GetType().GetProperty("ParamSettings")?.GetValue(CurrentNode)
+                is not ParamSettingContainer settings)
+            {
+                PluginLogger.Warning(
+                    $"[绑定诊断] 写入失败：当前节点没有 ParamSettings | 参数={control.ParameterName} | 控件={GetType().Name}",
+                    "BindingDiag");
+                return;
+            }
+
+            if (control.BindingType == BindingType.Binding && !string.IsNullOrWhiteSpace(control.BindingSource))
+            {
+                settings.SetSetting(control.ToParamSetting());
+                PluginLogger.Info($"[绑定持久化] 参数={control.ParameterName} | 源={control.BindingSource} | 设置数={settings.Count}", "ToolDebugControlBase");
+            }
+            else
+            {
+                settings.RemoveSetting(control.ParameterName);
+                PluginLogger.Info($"[绑定清除] 参数={control.ParameterName} | 设置数={settings.Count}", "ToolDebugControlBase");
+            }
+        }
+
+        private void OnShapeBindingChanged(object sender, RoutedEventArgs e)
+        {
+            if (_restoringParameterBindings)
+                return;
+
+            var control = e.OriginalSource as ParamBinding ?? sender as ParamBinding;
+            if (control == null)
+                return;
+
+            if (CurrentNode?.GetType().GetProperty("ParamSettings")?.GetValue(CurrentNode)
+                is not ParamSettingContainer settings)
+                return;
+
+            var source = control.BindingSource;
+            if (string.IsNullOrWhiteSpace(source))
+            {
+                settings.RemoveSetting(control.ParameterName);
+                return;
+            }
+
+            var dotIndex = source.IndexOf('.');
+            var sourceNodeId = dotIndex > 0 ? source[..dotIndex] : source;
+            var sourceProperty = dotIndex > 0 ? source[(dotIndex + 1)..] : string.Empty;
+            if (string.IsNullOrWhiteSpace(sourceNodeId) || string.IsNullOrWhiteSpace(sourceProperty))
+            {
+                settings.RemoveSetting(control.ParameterName);
+                return;
+            }
+
+            settings.SetSetting(ParamSetting.CreateBinding(control.ParameterName, sourceNodeId, sourceProperty));
+        }
+
+        private void RestoreExternalParameterBindings()
+        {
+            if (CurrentNode?.GetType().GetProperty("ParamSettings")?.GetValue(CurrentNode)
+                is not ParamSettingContainer settings)
+                return;
+
+            var byName = settings.Settings.ToDictionary(item => item.ParameterName, StringComparer.Ordinal);
+            PluginLogger.Info(
+                $"[绑定诊断] 开始恢复 | 节点={GetCurrentNodeStringProperty("Id") ?? "null"} | " +
+                $"设置数={byName.Count} | 标量控件={_parameterBindingControls.Count} | 图形控件={_shapeBindingControls.Count}",
+                "BindingDiag");
+            if (byName.Count == 0)
+                return;
+
+            SubscribeParameterBindingControls();
+            if (_parameterBindingControls.Count == 0 && _shapeBindingControls.Count == 0)
+            {
+                // 参数控件尚未生成。ConfigSetting.Loaded 会通过 InstanceLoaded
+                // 事件再次触发恢复，不在这里使用定时轮询。
+                return;
+            }
+            _restoringParameterBindings = true;
+            try
+            {
+                foreach (var control in _parameterBindingControls)
+                {
+                    if (byName.TryGetValue(control.ParameterName, out var setting))
+                    {
+                        PluginLogger.Info(
+                            $"[绑定诊断] 恢复参数={control.ParameterName} | 类型={setting.BindingType} | " +
+                            $"源={setting.SourceNodeId}.{setting.SourceProperty}",
+                            "BindingDiag");
+                        control.FromParamSetting(setting);
+                    }
+                }
+                foreach (var control in _shapeBindingControls)
+                {
+                    if (!byName.TryGetValue(control.ParameterName, out var setting)
+                        || setting.BindingType != BindingType.Binding)
+                        continue;
+
+                    var source = string.IsNullOrWhiteSpace(setting.SourceNodeId)
+                        ? string.Empty
+                        : $"{setting.SourceNodeId}.{setting.SourceProperty}";
+                    control.BindingSource = source;
+                }
+            }
+            finally
+            {
+                _restoringParameterBindings = false;
+            }
+        }
+
+
+        private void LogBindingDiagnostics(string stage, bool includeControls)
+        {
+            var nodeId = GetCurrentNodeStringProperty("Id") ?? "null";
+            var settings = CurrentNode?.GetType().GetProperty("ParamSettings")?.GetValue(CurrentNode)
+                as ParamSettingContainer;
+            var definitions = settings?.Settings.ToList() ?? new List<ParamSetting>();
+            PluginLogger.Info(
+                $"[绑定诊断] {stage} | 节点={nodeId} | 设置数={definitions.Count} | " +
+                $"标量控件={_parameterBindingControls.Count} | 图形控件={_shapeBindingControls.Count}",
+                "BindingDiag");
+
+            foreach (var setting in definitions)
+            {
+                PluginLogger.Info(
+                    $"[绑定诊断] 定义 | 参数={setting.ParameterName} | 类型={setting.BindingType} | " +
+                    $"源={setting.SourceNodeId}.{setting.SourceProperty} | 显示={setting.SourceNodeName}.{setting.SourceDisplayName}",
+                    "BindingDiag");
+            }
+
+            if (!includeControls)
+                return;
+
+            foreach (var control in _parameterBindingControls)
+            {
+                PluginLogger.Info(
+                    $"[绑定诊断] 控件 | 参数={control.ParameterName} | 类型={control.BindingType} | " +
+                    $"源={control.BindingSource} | 显示={control.BindingDisplayText}",
+                    "BindingDiag");
+            }
+        }
+
+        private static IEnumerable<ConfigSetting> FindParameterBindingControls(DependencyObject root)
+        {
+            if (root is ConfigSetting configSetting)
+                yield return configSetting;
+
+            for (var index = 0; index < VisualTreeHelper.GetChildrenCount(root); index++)
+            {
+                foreach (var child in FindParameterBindingControls(VisualTreeHelper.GetChild(root, index)))
+                    yield return child;
+            }
+        }
+
+        private static IEnumerable<ParamBinding> FindShapeBindingControls(DependencyObject root)
+        {
+            if (root is ParamBinding paramBinding)
+                yield return paramBinding;
+
+            for (var index = 0; index < VisualTreeHelper.GetChildrenCount(root); index++)
+            {
+                foreach (var child in FindShapeBindingControls(VisualTreeHelper.GetChild(root, index)))
+                    yield return child;
+            }
         }
 
         /// <summary>
@@ -546,7 +799,20 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 NodeId = GetCurrentNodeStringProperty("Id"),
                 NodeName = GetCurrentNodeStringProperty("DisplayName")
                     ?? GetCurrentNodeStringProperty("Name"),
+                ParameterBindings = ParameterBindingSet.FromSettings(
+                    CurrentNode?.GetType().GetProperty("ParamSettings")?.GetValue(CurrentNode)
+                        as ParamSettingContainer),
+                GlobalVariables = (DataProvider as DataSourceQueryService)?.GlobalVariables,
             };
+
+            if (DataProvider is DataSourceQueryService sourceService
+                && sourceService.GlobalVariables.Count > 0)
+            {
+                var globalResults = new GenericToolResults { Status = ExecutionStatus.Success };
+                foreach (var variable in sourceService.GlobalVariables)
+                    globalResults.AddResultItem(variable.Key, variable.Value);
+                nodeResults["__GlobalVars__"] = globalResults;
+            }
 
             return request;
         }

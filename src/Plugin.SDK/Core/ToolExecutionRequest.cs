@@ -47,11 +47,15 @@ namespace SunEyeVision.Plugin.SDK.Core
         /// </summary>
         public ToolExecutionContext Context { get; internal set; } = ToolExecutionContext.Empty;
 
+        /// <summary>本次运行使用的绑定定义。</summary>
+        public ParameterBindingSet ParameterBindings { get; init; } = ParameterBindingSet.Empty;
+
+        /// <summary>本次运行解析后的只读参数快照。</summary>
+        public RuntimeParameterSnapshot? RuntimeParameters { get; internal set; }
+
         /// <summary>本次运行的全局变量。</summary>
         public IDictionary<string, object?>? GlobalVariables { get; init; }
 
-        /// <summary>是否由执行器完成参数绑定。</summary>
-        public bool ApplyBindings { get; init; } = true;
 
         /// <summary>
         /// 只读输入视图。新工具应优先使用此入口，避免依赖参数对象中的旧运行时字段。

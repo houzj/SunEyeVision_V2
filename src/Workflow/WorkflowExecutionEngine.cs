@@ -593,16 +593,16 @@ namespace SunEyeVision.Workflow
                 return ExecutionResult.CreateFailure($"工作流不存在: {workflowId}");
             }
 
-            // 首次进入时检测循环依赖（递归路径跳过此检查，由外层保证无循环）
-            if (!isSubworkflow)
+            // 在生成运行快照前一次性校验定义。执行器不接收不完整或分裂的工作流对象。
+            var definitionErrors = WorkflowDefinitionValidator.Validate(
+                sourceWorkflow,
+                _workflowEngine.GetWorkflowById);
+            if (definitionErrors.Count > 0)
             {
-                var cycles = sourceWorkflow.DetectCycles();
-                if (cycles.Count > 0)
-                {
-                    var cycleMsg = $"检测到循环依赖: {string.Join("; ", cycles)}";
-                    _logger.LogError(cycleMsg);
-                    return ExecutionResult.CreateFailure(cycleMsg);
-                }
+                var definitionError =
+                    $"工作流定义校验失败: {string.Join("; ", definitionErrors)}";
+                _logger.LogError(definitionError);
+                return ExecutionResult.CreateFailure(definitionError);
             }
 
             // 先构建本次运行的冻结计划。后续执行只读取计划，不再直接消费 UI 编辑对象。

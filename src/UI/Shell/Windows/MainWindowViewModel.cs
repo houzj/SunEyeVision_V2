@@ -98,9 +98,12 @@ namespace SunEyeVision.UI.Shell.Windows
 
         // 工作流引擎
         private readonly WorkflowEngine _workflowEngine;
+        private readonly WorkflowDefinitionService _workflowDefinitions;
 
         /// <summary>公开工作流引擎访问（供 MainWindow code-behind 等使用）</summary>
         public WorkflowEngine WorkflowEngine => _workflowEngine;
+        /// <summary>工作流定义的统一注册、创建和方案挂接入口。</summary>
+        public WorkflowDefinitionService WorkflowDefinitionService => _workflowDefinitions;
         private readonly ILogger _logger;
 
         // 执行管理
@@ -850,6 +853,7 @@ SplitterPosition = position;
             // 初始化工作流引擎
             _logger = VisionLogger.Instance;
             _workflowEngine = new WorkflowEngine(_logger);
+            _workflowDefinitions = new WorkflowDefinitionService(_workflowEngine);
 
             // 初始化执行管理器（传入共享的 WorkflowEngine，子程序工作流已注册在其中）
             _executionManager = new Services.Workflow.WorkflowExecutionManager(new SunEyeVision.UI.Services.Interaction.DefaultInputProvider(), _workflowEngine, _runtimeInputSnapshots);
@@ -1007,8 +1011,16 @@ SplitterPosition = position;
                 // 如果引擎中尚未注册该工作流，自动创建（例如新建 Tab 时）
                 if (_workflowEngine.GetWorkflowById(selectedId) == null)
                 {
-                    _workflowEngine.CreateWorkflow(selectedId, selectedName);
+                    var createdWorkflow = _workflowDefinitions.GetOrCreate(selectedId, selectedName);
+                    AttachTabToWorkflowDefinition(WorkflowTabViewModel.SelectedTab, createdWorkflow);
                     _logger?.LogInfo($"OnSelectedTabChanged: Auto-created workflow in engine: {selectedName} (ID: {selectedId})");
+                }
+                else
+                {
+                    // 标签页切换只允许绑定到已有定义，不能让 UI 保留另一份节点/连接集合。
+                    AttachTabToWorkflowDefinition(
+                        WorkflowTabViewModel.SelectedTab,
+                        _workflowEngine.GetWorkflowById(selectedId)!);
                 }
 
                 // 设置当前工作流（引擎是SSOT，无需额外同步）
@@ -1062,7 +1074,7 @@ SplitterPosition = position;
             var engineWorkflow = _workflowEngine.GetWorkflowById(addedTab.Id);
             if (engineWorkflow == null)
             {
-                engineWorkflow = _workflowEngine.CreateWorkflow(addedTab.Id, addedTab.Name);
+                engineWorkflow = _workflowDefinitions.GetOrCreate(addedTab.Id, addedTab.Name);
             }
             else if (engineWorkflow.Name != addedTab.Name)
             {
@@ -1070,8 +1082,59 @@ SplitterPosition = position;
                 engineWorkflow.Name = addedTab.Name;
             }
 
-            // 2. 共享同一实例到 solution.Workflows（不再 new 一个新 Workflow）
+            // 2. 先把 Tab 接到引擎定义的同一份节点/连接集合。
+            //    新建 Tab 可能已经在 UI 集合中添加了节点，此时迁移一次后立即切换为共享集合。
+            AttachTabToWorkflowDefinition(addedTab, engineWorkflow);
+
+            // 3. 共享同一实例到 solution.Workflows（不再 new 一个新 Workflow）
             SyncWorkflowToSolution(engineWorkflow, addedTab.Name);
+        }
+
+        /// <summary>
+        /// 将 Tab 绑定到唯一的工作流定义集合。
+        /// 新建 Tab 的节点可能先进入了 UI 临时集合，因此在首次绑定时迁移到引擎定义；
+        /// 绑定完成后，后续节点和连接只能通过同一集合修改，避免 UI/Engine 分裂。
+        /// </summary>
+        private void AttachTabToWorkflowDefinition(
+            WorkflowTabViewModel? tab,
+            SunEyeVision.Workflow.Workflow workflow)
+        {
+            if (tab == null || workflow == null)
+                return;
+
+            if (!ReferenceEquals(tab.WorkflowNodes, workflow.Nodes))
+            {
+                if (workflow.Nodes.Count == 0 && tab.WorkflowNodes.Count > 0)
+                {
+                    foreach (var node in tab.WorkflowNodes.ToList())
+                        workflow.AddNode(node);
+                }
+
+                tab.SetNodes(workflow.Nodes);
+            }
+
+            if (!ReferenceEquals(tab.WorkflowConnections, workflow.Connections))
+            {
+                if (workflow.Connections.Count == 0 && tab.WorkflowConnections.Count > 0)
+                {
+                    foreach (var connection in tab.WorkflowConnections.ToList())
+                    {
+                        if (workflow.Nodes.Any(node => node.Id == connection.SourceNodeId) &&
+                            workflow.Nodes.Any(node => node.Id == connection.TargetNodeId))
+                        {
+                            workflow.AddConnection(connection);
+                        }
+                    }
+                }
+
+                tab.SetConnections(workflow.Connections);
+            }
+
+            _logger?.LogInfo(
+                $"工作流定义绑定完成: workflow={workflow.Name}({workflow.Id}), " +
+                $"nodes={workflow.Nodes.Count}, connections={workflow.Connections.Count}, " +
+                $"sharedNodes={ReferenceEquals(tab.WorkflowNodes, workflow.Nodes)}, " +
+                $"sharedConnections={ReferenceEquals(tab.WorkflowConnections, workflow.Connections)}");
         }
 
         /// <summary>
@@ -1086,7 +1149,7 @@ SplitterPosition = position;
             var solution = solutionManager?.CurrentSolution;
             if (solution != null && !solution.Workflows.Any(w => w.Id == workflow.Id))
             {
-                solution.Workflows.Add(workflow);
+                _workflowDefinitions.AttachToSolution(solution, workflow);
                 var name = displayName ?? workflow.Name;
                 _logger?.LogInfo(
                     $"SyncWorkflowToSolution: {name} (ID: {workflow.Id}, IsSubroutine: {workflow.IsSubroutine})");
@@ -1105,7 +1168,7 @@ SplitterPosition = position;
             var solutionManager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
             if (solutionManager?.CurrentSolution != null)
             {
-                solutionManager.CurrentSolution.RemoveWorkflow(deletedTab.Id);
+                _workflowDefinitions.DetachFromSolution(solutionManager.CurrentSolution, deletedTab.Id);
                 LogSuccess($"工作流删除事件处理：已从引擎和解决方案中移除工作流: {deletedTab.Name}");
             }
 
@@ -1632,11 +1695,10 @@ SplitterPosition = position;
                     workflow = _workflowEngine.GetWorkflowById(tab.Id);
                     if (workflow == null)
                     {
-                        workflow = new SunEyeVision.Workflow.Workflow(tab.Id, tab.Name);
-                        _logger?.LogWarning(
-                            $"[SaveSolutionData] 回退创建新 Workflow 实例（引擎中未找到）: {tab.Name} (ID: {tab.Id})");
+                        throw new InvalidOperationException(
+                            $"SaveSolutionData: 工作流定义未注册到 WorkflowEngine: {tab.Name} ({tab.Id})");
                     }
-                    solution.Workflows.Add(workflow);
+                    _workflowDefinitions.AttachToSolution(solution, workflow);
                 }
                 else
                 {
@@ -1644,6 +1706,21 @@ SplitterPosition = position;
                     if (workflow.Name != tab.Name)
                     {
                         workflow.Name = tab.Name;
+                    }
+
+                    // 方案中若残留了同 ID 的旧实例，立即替换为引擎定义实例。
+                    // 继续在旧实例上同步会重新引入 UI/Engine/Solution 三份事实源。
+                    var engineDefinition = _workflowEngine.GetWorkflowById(tab.Id);
+                    if (engineDefinition == null)
+                        throw new InvalidOperationException(
+                            $"SaveSolutionData: 工作流定义未注册到 WorkflowEngine: {tab.Name} ({tab.Id})");
+                    if (!ReferenceEquals(workflow, engineDefinition))
+                    {
+                        var workflowIndex = solution.Workflows.IndexOf(workflow);
+                        if (workflowIndex >= 0)
+                            _workflowDefinitions.AttachToSolution(solution, engineDefinition);
+                            solution.Workflows.Remove(workflow);
+                        workflow = engineDefinition;
                     }
                 }
 
@@ -1713,7 +1790,7 @@ SplitterPosition = position;
                 .ToList();
             foreach (var subWf in subWorkflows)
             {
-                solution.Workflows.Add(subWf);
+                _workflowDefinitions.AttachToSolution(solution, subWf);
                 LogInfo($"添加子程序工作流到 Solution: {subWf.Name} (ID: {subWf.Id})");
             }
 
@@ -1801,7 +1878,7 @@ SplitterPosition = position;
 
             // 将工作流注册到 WorkflowEngine.Workflows 字典
             // 确保节点可以获取父节点数据
-            _workflowEngine.RegisterWorkflow(workflow);
+            _workflowDefinitions.Register(workflow);
             LogInfo($"工作流已注册到 WorkflowEngine: {workflow.Name} (ID: {workflow.Id})");
 
             // 添加到标签页视图模型
@@ -1876,7 +1953,7 @@ SplitterPosition = position;
                     if (workflow.IsSubroutine)
                     {
                         // 子程序工作流：只注册到引擎，不创建 Tab
-                        _workflowEngine.RegisterWorkflow(workflow);
+                        _workflowDefinitions.Register(workflow);
                         LogInfo($"注册子程序工作流到引擎: {workflow.Name} (ID: {workflow.Id})");
                     }
                     else
@@ -2207,6 +2284,17 @@ SplitterPosition = position;
 
             AddLog($"➕ 添加节点: {node.Name} (ID={node.Id}, 类型={node.ToolType})");
 
+            var definition = _workflowDefinitions.GetRequired(
+                WorkflowTabViewModel.SelectedTab.CurrentWorkflowId);
+            if (!ReferenceEquals(WorkflowTabViewModel.SelectedTab.WorkflowNodes, definition.Nodes) ||
+                !ReferenceEquals(WorkflowTabViewModel.SelectedTab.WorkflowConnections, definition.Connections))
+            {
+                throw new InvalidOperationException(
+                    $"工作流定义集合未绑定: {definition.Name} ({definition.Id})。请先完成 Tab 绑定。");
+            }
+            if (definition.Nodes.Any(existing => existing.Id == node.Id))
+                throw new InvalidOperationException($"工作流中已存在节点: {node.Id}");
+
             // ★ 子程序节点：自动创建子工作流并关联（用户无需手动配置）
             if (string.Equals(node.ToolType, "Subroutine", StringComparison.OrdinalIgnoreCase) &&
                 string.IsNullOrEmpty(uiNode.SubroutineId))
@@ -2215,8 +2303,7 @@ SplitterPosition = position;
                 AddLog($"🆕 自动创建子程序工作流: {uiNode.DispName} (ID: {uiNode.SubroutineId})");
             }
 
-            // 添加到节点集合。WorkflowNodes 与引擎 Workflow.Nodes 为同一集合实例（单一数据源），
-            // 节点经 AddNodeCommand 加入后引擎立即可见，无需再手动同步。
+            // 节点集合就是工作流定义集合；命令负责集合修改和撤销记录。
             var command = new AppCommands.AddNodeCommand(WorkflowTabViewModel.SelectedTab.WorkflowNodes, uiNode);
             WorkflowTabViewModel.SelectedTab.CommandManager.Execute(command);
 
@@ -2287,8 +2374,14 @@ SplitterPosition = position;
                 c.SourcePort == connection.SourcePort &&
                 c.TargetPort == connection.TargetPort);
 
-            // 获取引擎工作流（同步用）
-            var engineWf = _workflowEngine.GetWorkflow(WorkflowTabViewModel.SelectedTab.CurrentWorkflowId);
+            // 通过定义服务取得唯一工作流定义，并确认 Tab 没有脱离定义集合。
+            var engineWf = _workflowDefinitions.GetRequired(WorkflowTabViewModel.SelectedTab.CurrentWorkflowId);
+            if (!ReferenceEquals(connections, engineWf.Connections) ||
+                !ReferenceEquals(WorkflowTabViewModel.SelectedTab.WorkflowNodes, engineWf.Nodes))
+            {
+                throw new InvalidOperationException(
+                    $"工作流定义集合未绑定: {engineWf.Name} ({engineWf.Id})。请先完成 Tab 绑定。");
+            }
 
             if (existingConnection != null)
             {
@@ -2300,13 +2393,7 @@ SplitterPosition = position;
                 var command = new AppCommands.ReplaceConnectionCommand(connections, existingConnection, connection);
                 WorkflowTabViewModel.SelectedTab.CommandManager.Execute(command);
 
-                // 同步到引擎工作流
-                if (engineWf != null)
-                {
-                    engineWf.Connections.Remove(existingConnection);
-                    if (!engineWf.Connections.Contains(connection))
-                        engineWf.Connections.Add(connection);
-                }
+                // Tab 与引擎共享同一连接集合，命令已同时更新定义。
             }
             else
             {
@@ -2318,11 +2405,7 @@ SplitterPosition = position;
                 var command = new AppCommands.AddConnectionCommand(connections, connection);
                 WorkflowTabViewModel.SelectedTab.CommandManager.Execute(command);
 
-                // 同步到引擎工作流
-                if (engineWf != null && !engineWf.Connections.Contains(connection))
-                {
-                    engineWf.Connections.Add(connection);
-                }
+                // Tab 与引擎共享同一连接集合，命令已同时更新定义。
             }
 
             // 连线建立后自动绑定 ImageSource（所见即所得）
@@ -2556,19 +2639,7 @@ SplitterPosition = position;
                 selectedConnections);
             WorkflowTabViewModel.SelectedTab.CommandManager.Execute(command);
 
-            // 同步删除到引擎工作流
-            var engineWf = _workflowEngine.GetWorkflow(WorkflowTabViewModel.SelectedTab.CurrentWorkflowId);
-            if (engineWf != null)
-            {
-                foreach (var conn in allAffectedConnections)
-                {
-                    engineWf.Connections.Remove(conn);
-                }
-                foreach (var node in selectedNodes)
-                {
-                    engineWf.Nodes.Remove(node);
-                }
-            }
+            // Tab 与引擎共享同一份定义集合，命令执行后引擎已同步，不再重复删除。
 
             // 级联清理：清理被删节点关联的全局变量绑定
             foreach (var node in selectedNodes)
@@ -2825,7 +2896,7 @@ SplitterPosition = position;
             var subroutineId = Guid.NewGuid().ToString();
 
             // 注册到工作流引擎
-            var workflow = _workflowEngine.CreateWorkflow(subroutineId, node.Name);
+            var workflow = _workflowDefinitions.GetOrCreate(subroutineId, node.Name);
             workflow.IsSubroutine = true;
 
             // ★ 使用 SubroutineId 属性（不再是 ExtraData 弱类型字典）

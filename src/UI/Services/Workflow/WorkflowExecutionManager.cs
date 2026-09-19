@@ -473,6 +473,21 @@ namespace SunEyeVision.UI.Services.Workflow
                     return missingResult;
                 }
 
+                var definitionConsistencyError = ValidateDefinitionConsistency(
+                    workflow,
+                    rootEngineWorkflow);
+                if (definitionConsistencyError != null)
+                {
+                    logger.LogError(definitionConsistencyError);
+                    var consistencyResult = ExecutionResult.CreateFailure(definitionConsistencyError);
+                    await InvokeOnUIAsync(() =>
+                    {
+                        snapshot.Complete(consistencyResult, _ => "工作流");
+                        ExecutionSnapshotUpdated?.Invoke(this, snapshot);
+                    });
+                    return consistencyResult;
+                }
+
                 // ★ 订阅节点状态事件：引擎状态 → 画布节点（解决状态断点）
                 //   引擎在 Running/Completed/Failed/Skipped 时发事件，此处映射到 UI 节点 Status。
                 //   找不到节点记日志跳过（Fail-Forward），不中断流程。
@@ -645,6 +660,38 @@ namespace SunEyeVision.UI.Services.Workflow
                 }
                 return snapshot;
             }
+        }
+
+        /// <summary>
+        /// 执行入口的定义一致性校验。
+        /// 根 Tab 未下钻时，UI、Engine、Solution 必须引用同一份工作流定义；
+        /// 下钻子程序时 Tab 正在展示子工作流集合，因此只校验根定义已注册。
+        /// </summary>
+        private string? ValidateDefinitionConsistency(
+            WorkflowTabViewModel tab,
+            SunEyeVision.Workflow.Workflow engineWorkflow)
+        {
+            if (!tab.IsInSubroutine)
+            {
+                if (!ReferenceEquals(tab.WorkflowNodes, engineWorkflow.Nodes) ||
+                    !ReferenceEquals(tab.WorkflowConnections, engineWorkflow.Connections))
+                {
+                    return $"工作流定义引用不一致：Tab、Engine 的节点或连接集合不是同一实例。" +
+                           $" workflow={engineWorkflow.Name}({engineWorkflow.Id})";
+                }
+            }
+
+            var solution = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
+                .ServiceInitializer.SolutionManager?.CurrentSolution;
+            var solutionWorkflow = solution?.Workflows
+                .FirstOrDefault(item => string.Equals(item.Id, engineWorkflow.Id, StringComparison.Ordinal));
+            if (solutionWorkflow != null && !ReferenceEquals(solutionWorkflow, engineWorkflow))
+            {
+                return $"工作流定义引用不一致：Solution 与 Engine 不是同一实例。" +
+                       $" workflow={engineWorkflow.Name}({engineWorkflow.Id})";
+            }
+
+            return null;
         }
 
         private string GetSnapshotNodeName(SunEyeVision.Workflow.Workflow rootWorkflow, string nodeId)

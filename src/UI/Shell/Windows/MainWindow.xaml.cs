@@ -359,18 +359,12 @@ namespace SunEyeVision.UI.Shell.Windows
                 _viewModel?.AddLog(LogLevel.Info, $"开始同步工作流到解决方案: {metadata.Name}", LogSource.UIOperation);
                 foreach (var tab in _viewModel.WorkflowTabViewModel.Tabs)
                 {
-                    var workflow = new SunEyeVision.Workflow.Workflow(tab.Id, tab.Name);
-                    solution.Workflows.Add(workflow);
-                    // 同步节点数据（同一对象引用）
-                    foreach (var node in tab.WorkflowNodes)
-                    {
-                        workflow.Nodes.Add(node);
-                    }
-                    // 同步连接数据（共享引用，直接加载）
-                    foreach (var conn in tab.WorkflowConnections)
-                    {
-                        workflow.Connections.Add(conn);
-                    }
+                    // 方案必须复用引擎中的工作流定义，不能重新创建第二份节点集合。
+                    // 新建方案时也必须保持 UI、Engine、Solution 的稳定 ID 和对象引用一致。
+                    var workflow = _viewModel.WorkflowEngine.GetWorkflowById(tab.Id)
+                        ?? throw new InvalidOperationException(
+                            $"创建方案时未找到工作流定义: {tab.Name} ({tab.Id})");
+                    _viewModel.WorkflowDefinitionService.AttachToSolution(solution, workflow);
                     _viewModel?.AddLog(LogLevel.Info, $"已同步工作流: {tab.Name}, 节点数={tab.WorkflowNodes.Count}, 连接数={tab.WorkflowConnections.Count}", LogSource.UIOperation);
                 }
                 // 直接保存Solution对象（不依赖CurrentSolution）

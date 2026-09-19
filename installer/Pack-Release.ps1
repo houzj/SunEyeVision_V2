@@ -84,8 +84,11 @@ $productVersion = ($maj.ToString() + '.' + $min.ToString() + '.' + $pat.ToString
 Write-Output ('mode          : source-driven（前三段取自真源；构建号 = 真源 build + 1）')
 Write-Output ('build         : ' + $srcBuild + ' -> ' + $buildNo)
 
-# CHANGELOG 分组用的提交来源：上次 tag 之后（无 tag 时取最近 30 条）
-$lastTag = [string]((& git -C $root describe --tags --abbrev=0 2>$null) | Select-Object -First 1)
+# CHANGELOG 分组用的提交来源：上次版本 tag 之后（尚无 tag 时取最近 30 条）
+# 用 `git tag -l` 而非 `git describe`：后者在无 tag 时会返回非零并写 stderr，
+# 在 $ErrorActionPreference='Stop' 下会被当成终止错误。
+$tagList = @(& git -C $root tag -l 'v*' --sort=-v:refname)
+$lastTag = if ($tagList.Count -gt 0) { [string]$tagList[0] } else { '' }
 $range = if ($lastTag) { $lastTag + '..HEAD' } else { '' }
 if ($range) {
     $subjects = @(& git -C $root log $range --pretty=format:%s 2>$null)

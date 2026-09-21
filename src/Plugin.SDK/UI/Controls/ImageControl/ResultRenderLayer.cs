@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
 // 解决 System.Windows.Media.LineSegment 与 SDK LineSegment 的命名冲突
@@ -32,11 +34,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         private double _viewLeft, _viewTop, _viewRight, _viewBottom;
         private bool _hasViewport;
 
-        // LOD 阈值：当缩放倍率低于此值且 Cross 数量超过阈值时启用密度采样
-        private const double LOD_ZOOM_THRESHOLD = 0.15;
-        private const int LOD_MAX_CROSSES = 2000;
-        private const int LOD_MAX_CONTOURS = 5000;
-        private const int LOD_MAX_TEXTS = 2000;
+        // 渲染诊断：图元数量只由工具参数（如查找数量）决定，渲染层不做任何数量截断。
+        private const long RenderSlowThresholdMs = 100;
+        private readonly Stopwatch _renderStopwatch = new();
+        private int _diagItems, _diagContours, _diagCrosses, _diagTexts;
+        private int _diagLastItems = -1, _diagLastContours = -1, _diagLastCrosses = -1, _diagLastTexts = -1;
+        private long _diagLastSlowLogTimestamp;
 
         #endregion
 
@@ -294,11 +297,47 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             // ★ 不再清空 _brushCache / _penCache，缓存可跨渲染复用
             // Pen 键已包含厚度信息，不同线宽自动对应不同缓存项
 
+            _diagItems = _diagContours = _diagCrosses = _diagTexts = 0;
+            _renderStopwatch.Restart();
+
             // 渲染顺序：区域(底层) → 工具输出(中层) → 高亮(顶层)
             // 每层内：图形项立即绘制，文本项收集后统一分组排版（同锚点协同换行）
             RenderLayer(dc, _regionItems);
             RenderLayer(dc, _collector?.Items);
             RenderLayer(dc, _highlightItems);
+
+            _renderStopwatch.Stop();
+            WriteRenderDiagnostics();
+        }
+
+        /// <summary>
+        /// 渲染诊断：输出本帧实际提交的图元量与耗时。
+        /// 内容变化时记录一条 Info；单帧耗时超阈值时按 1 秒节流升为 Warning。
+        /// </summary>
+        private void WriteRenderDiagnostics()
+        {
+            var elapsedMs = _renderStopwatch.ElapsedMilliseconds;
+            var isSlow = elapsedMs >= RenderSlowThresholdMs;
+            var contentChanged = _diagItems != _diagLastItems || _diagContours != _diagLastContours
+                || _diagCrosses != _diagLastCrosses || _diagTexts != _diagLastTexts;
+            if (!isSlow && !contentChanged) return;
+
+            var now = Stopwatch.GetTimestamp();
+            if (isSlow)
+            {
+                if (now - _diagLastSlowLogTimestamp < Stopwatch.Frequency) return;
+                _diagLastSlowLogTimestamp = now;
+            }
+
+            _diagLastItems = _diagItems;
+            _diagLastContours = _diagContours;
+            _diagLastCrosses = _diagCrosses;
+            _diagLastTexts = _diagTexts;
+
+            VisionLogger.Instance.Log(
+                isSlow ? LogLevel.Warning : LogLevel.Info,
+                $"[RenderDiag] items={_diagItems} contours={_diagContours} crosses={_diagCrosses} texts={_diagTexts} renderMs={elapsedMs}",
+                "ResultRenderLayer");
         }
 
         /// <summary>
@@ -313,6 +352,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             foreach (var item in items)
             {
                 if (!item.IsVisible) continue;
+                _diagItems++;
 
                 if (item is TextDisplayItem t)
                 {
@@ -388,15 +428,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
             int totalCount = item.Geometries.Length;
 
-            bool useLod = _viewportScale < LOD_ZOOM_THRESHOLD && totalCount > LOD_MAX_CROSSES;
-            int lodStep = useLod ? Math.Max(1, totalCount / LOD_MAX_CROSSES) : 1;
-
             if (isUnified)
             {
                 var geometry = new StreamGeometry();
                 using (var ctx = geometry.Open())
                 {
-                    for (int i = 0; i < totalCount; i += lodStep)
+                    for (int i = 0; i < totalCount; i++)
                     {
                         if (item.Geometries[i] is Point pt)
                         {
@@ -424,7 +461,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 using (var okCtx = okGeo.Open())
                 using (var ngCtx = ngGeo.Open())
                 {
-                    for (int i = 0; i < totalCount; i += lodStep)
+                    for (int i = 0; i < totalCount; i++)
                     {
                         if (item.Geometries[i] is Point pt)
                         {
@@ -640,14 +677,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             var batchNgPolylines = new List<Point[]>();
 
             var contourCount = item.Geometries.Length;
-            var contourStep = contourCount > LOD_MAX_CONTOURS
-                ? (int)Math.Ceiling((double)contourCount / LOD_MAX_CONTOURS)
-                : 1;
 
-            for (int i = 0; i < contourCount; i += contourStep)
+            for (int i = 0; i < contourCount; i++)
             {
                 if (item.Geometries[i] is BatchedContourGeometry batch)
                 {
+                    _diagContours += batch.Contours.Count;
                     var isPass = isUnified || (item.IsPassArray.Length > i && item.IsPassArray[i]);
                     if (_batchGeometryCache.TryGetValue(batch, out var cachedGeometries))
                     {
@@ -783,21 +818,19 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
             int totalCount = item.Geometries.Length;
 
-            bool useLod = _viewportScale < LOD_ZOOM_THRESHOLD && totalCount > LOD_MAX_CROSSES;
-            int lodStep = useLod ? Math.Max(1, totalCount / LOD_MAX_CROSSES) : 1;
-
             if (isUnified)
             {
                 var geometry = new StreamGeometry();
                 using (var ctx = geometry.Open())
                 {
-                    for (int i = 0; i < totalCount; i += lodStep)
+                    for (int i = 0; i < totalCount; i++)
                     {
                         if (item.Geometries[i] is Point center)
                         {
                             if (_hasViewport && !IsInViewport(center))
                                 continue;
 
+                            _diagCrosses++;
                             double cx = center.X, cy = center.Y;
                             ctx.BeginFigure(new Point(cx - s, cy), false, false);
                             ctx.LineTo(new Point(cx + s, cy), true, false);
@@ -816,13 +849,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 using (var okCtx = okGeo.Open())
                 using (var ngCtx = ngGeo.Open())
                 {
-                    for (int i = 0; i < totalCount; i += lodStep)
+                    for (int i = 0; i < totalCount; i++)
                     {
                         if (item.Geometries[i] is Point center)
                         {
                             if (_hasViewport && !IsInViewport(center))
                                 continue;
 
+                            _diagCrosses++;
                             double cx = center.X, cy = center.Y;
                             bool isPass = item.IsPassArray.Length > i ? item.IsPassArray[i] : true;
                             var ctx = isPass ? okCtx : ngCtx;
@@ -899,7 +933,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
                 var texts = item.Texts;
                 var passArray = item.IsPassArray;
-                for (int i = 0; i < texts.Length && lines.Count < LOD_MAX_TEXTS; i++)
+                for (int i = 0; i < texts.Length; i++)
                 {
                     var td = texts[i];
                     lines.Add(new TextLine
@@ -912,6 +946,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                     });
                 }
             }
+            _diagTexts = lines.Count;
             if (lines.Count == 0) return;
 
             // 同锚点分组（锚点屏幕距离 ≤ 容差）

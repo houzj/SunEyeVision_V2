@@ -1,12 +1,15 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+using System.Windows.Threading;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
 using SunEyeVision.Plugin.SDK.Models.Visualization;
+using SunEyeVision.Plugin.SDK.Logging;
 // 解决 System.Windows.Media.LineSegment 与 SDK LineSegment 的命名冲突
 using SdkLineSegment = SunEyeVision.Plugin.SDK.Models.Visualization.LineSegment;
 
@@ -15,7 +18,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
     /// <summary>
     /// 结果渲染层 - 基于 DrawingContext 的高性能渲染
     /// </summary>
-    public sealed class ResultRenderLayer : FrameworkElement
+    public sealed class ResultRenderLayer : ResultTileHost
     {
         #region 私有字段
 
@@ -24,21 +27,55 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         private IReadOnlyList<DisplayItemBase>? _highlightItems;
         private readonly Dictionary<uint, SolidColorBrush> _brushCache = new();
         private readonly Dictionary<long, Pen> _penCache = new();
-        private readonly Dictionary<BatchedContourGeometry, IReadOnlyDictionary<(int X, int Y), IReadOnlyList<StreamGeometry>>> _batchGeometryCache = new();
+        private readonly Dictionary<(string Text, uint Color, int FontSize, bool Bold), FormattedText> _formattedTextCache = new();
+        private readonly Dictionary<BatchedContourGeometry, BatchGeometryCacheEntry> _batchGeometryCache = new();
+        private readonly HashSet<BatchedContourGeometry> _batchCacheMissLogged = new();
         private CancellationTokenSource? _batchBuildCancellation;
         private int _batchBuildVersion;
+        private bool _batchBuildPending;
+        private IReadOnlyList<DisplayItemBase>? _lastBatchBuildItems;
+
+        /// <summary>
+        /// 同一轮廓批次的双形态缓存：大视口使用一个完整冻结几何，局部视口使用 Tile 几何。
+        /// Tile 仅承担空间索引，不再强迫全视口逐 Tile 提交 DrawGeometry。
+        /// </summary>
+        private sealed class BatchGeometryCacheEntry
+        {
+            public required StreamGeometry FullGeometry { get; init; }
+            public required IReadOnlyDictionary<(int X, int Y), IReadOnlyList<StreamGeometry>> TileGeometries { get; init; }
+            public required int ContourCount { get; init; }
+            public required int PointCount { get; init; }
+        }
 
         // 视口裁剪（图像坐标系）
         private double _viewLeft, _viewTop, _viewRight, _viewBottom;
         private bool _hasViewport;
+        private bool _renderInvalidationPending;
+        private DispatcherTimer? _viewportRefreshTimer;
+        private readonly RenderSceneCompiler _sceneCompiler = new();
+        private readonly RenderBatchCompiler _batchCompiler = new();
+        private RenderBatchScene? _batchScene;
+        private readonly Dictionary<RenderBatch, StreamGeometry> _compiledBatchGeometries = new();
+        private CancellationTokenSource? _batchSceneBuildCancellation;
+        private int _batchSceneBuildVersion;
+        private IReadOnlyList<DisplayItemBase>? _lastBatchSceneBuildItems;
+        private long _imageIdentity;
+        private CancellationTokenSource? _sceneBuildCancellation;
+        private int _sceneBuildVersion;
+        private RenderScene? _scene;
+        private RenderTileKey? _activeTileKey;
 
         // LOD 阈值：当缩放倍率低于此值且 Cross 数量超过阈值时启用密度采样
         private const double LOD_ZOOM_THRESHOLD = 0.15;
         private const int LOD_MAX_CROSSES = 2000;
         private const int LOD_MAX_CONTOURS = 5000;
-        private const int LOD_MAX_TEXTS = 2000;
 
         #endregion
+
+        public ResultRenderLayer()
+        {
+            SetRenderBackend(RenderTile);
+        }
 
         #region 公共接口
 
@@ -48,11 +85,17 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             UnsubscribeItems(_collector?.Items);
             _collector = collector;
             var buildVersion = ++_batchBuildVersion;
+            SetDiagnosticTraceId(buildVersion);
             CancelBatchBuild();
             _batchGeometryCache.Clear();
+            _batchCacheMissLogged.Clear();
             SubscribeItems(_collector?.Items);
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[RenderDiag] SetDisplayCollector: items={_collector?.Items.Count ?? 0}, allItems={GetAllItems().Count}, buildVersion={buildVersion}",
+                "ResultRenderLayer");
             ScheduleBatchGeometryBuild(GetAllItems(), buildVersion);
-            InvalidateVisual();
+            ScheduleRenderBatchBuild(GetAllItems(), buildVersion);
+            RebuildScene();
         }
 
         /// <summary>设置区域显示项（检测区域覆盖）</summary>
@@ -61,11 +104,14 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             UnsubscribeItems(_regionItems);
             _regionItems = items?.ToList();
             var buildVersion = ++_batchBuildVersion;
+            SetDiagnosticTraceId(buildVersion);
             CancelBatchBuild();
             _batchGeometryCache.Clear();
+            _batchCacheMissLogged.Clear();
             ScheduleBatchGeometryBuild(GetAllItems(), buildVersion);
+            ScheduleRenderBatchBuild(GetAllItems(), buildVersion);
             SubscribeItems(_regionItems);
-            InvalidateVisual();
+            RebuildScene();
         }
 
         /// <summary>设置显示项（兼容旧接口，内部转为 collector 模式）</summary>
@@ -74,13 +120,16 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             UnsubscribeItems(_collector?.Items);
             _collector = null; // 直接设置 items 时清除 collector 引用
             var buildVersion = ++_batchBuildVersion;
+            SetDiagnosticTraceId(buildVersion);
             CancelBatchBuild();
             _batchGeometryCache.Clear();
+            _batchCacheMissLogged.Clear();
             UnsubscribeItems(_regionItems);
             _regionItems = items;
             ScheduleBatchGeometryBuild(GetAllItems(), buildVersion);
+            ScheduleRenderBatchBuild(GetAllItems(), buildVersion);
             SubscribeItems(_regionItems);
-            InvalidateVisual();
+            RebuildScene();
         }
 
         /// <summary>设置高亮显示项</summary>
@@ -89,11 +138,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             UnsubscribeItems(_highlightItems);
             _highlightItems = items?.ToList();
             SubscribeItems(_highlightItems);
-            InvalidateVisual();
+            RebuildScene();
         }
 
         /// <summary>清空所有内容</summary>
-        public void Clear()
+        public new void Clear()
         {
             UnsubscribeItems(_collector?.Items);
             UnsubscribeItems(_regionItems);
@@ -104,7 +153,113 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             ++_batchBuildVersion;
             CancelBatchBuild();
             _batchGeometryCache.Clear();
-            InvalidateVisual();
+            _batchCacheMissLogged.Clear();
+            _batchBuildPending = false;
+            _lastBatchBuildItems = null;
+            _lastBatchSceneBuildItems = null;
+            CancelSceneBuild();
+            CancelRenderBatchBuild();
+            _lastBatchBuildItems = null;
+            _lastBatchSceneBuildItems = null;
+            _batchScene = null;
+            _compiledBatchGeometries.Clear();
+            _scene = null;
+            base.Clear();
+        }
+
+        /// <summary>Starts a new image generation; old compiled batches can never be reused.</summary>
+        public void SetImageIdentity(long imageIdentity)
+        {
+            if (_imageIdentity == imageIdentity) return;
+            _imageIdentity = imageIdentity;
+            ++_batchSceneBuildVersion;
+            CancelRenderBatchBuild();
+            _lastBatchBuildItems = null;
+            _lastBatchSceneBuildItems = null;
+            _batchScene = null;
+            _compiledBatchGeometries.Clear();
+            RequestRender("image-identity-change");
+        }
+
+        private void ScheduleRenderBatchBuild(IReadOnlyList<DisplayItemBase> items, int generation)
+        {
+            if (SameItemReferences(_lastBatchSceneBuildItems, items)) return;
+            _lastBatchSceneBuildItems = items;
+            var version = ++_batchSceneBuildVersion;
+            var imageIdentity = _imageIdentity;
+            CancelRenderBatchBuild();
+            var cancellation = new CancellationTokenSource();
+            _batchSceneBuildCancellation = cancellation;
+            _ = Task.Run(() =>
+            {
+                if (cancellation.IsCancellationRequested) return;
+                var scene = _batchCompiler.Compile(items, imageIdentity, generation);
+                var geometries = new Dictionary<RenderBatch, StreamGeometry>();
+                foreach (var batch in scene.Batches)
+                {
+                    if (cancellation.IsCancellationRequested) return;
+                    geometries[batch] = BuildBatchGeometry(batch, null);
+                }
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    if (cancellation.IsCancellationRequested || version != _batchSceneBuildVersion ||
+                        scene.ImageIdentity != _imageIdentity)
+                    {
+                        cancellation.Dispose();
+                        return;
+                    }
+                    _batchScene = scene;
+                    _compiledBatchGeometries.Clear();
+                    foreach (var pair in geometries) _compiledBatchGeometries[pair.Key] = pair.Value;
+                    cancellation.Dispose();
+                    VisionLogger.Instance.Log(LogLevel.Info,
+                        $"[RenderDiag] GPU batch scene ready: imageIdentity={scene.ImageIdentity}, renderGeneration={scene.RenderGeneration}, backend=wpf-batch, batchCount={scene.Batches.Count}, vertexCount={scene.VertexCount}, drawRanges={scene.DrawRangeCount}",
+                        "ResultRenderLayer");
+                    RequestRender("batch-scene-ready");
+                }));
+            }, cancellation.Token);
+        }
+
+        private void CancelRenderBatchBuild()
+        {
+            var cancellation = _batchSceneBuildCancellation;
+            _batchSceneBuildCancellation = null;
+            if (cancellation == null) return;
+            try
+            {
+                // Completion callbacks dispose the source on the Dispatcher. A source
+                // may therefore already be disposed when an image switch races with
+                // that callback; cancellation is best-effort and must be idempotent.
+                cancellation.Cancel();
+            }
+            catch (ObjectDisposedException)
+            {
+                // The requested generation is already complete and discarded.
+            }
+        }
+
+        private static StreamGeometry BuildBatchGeometry(RenderBatch batch, Rect? clip)
+        {
+            var geometry = new StreamGeometry();
+            using var context = geometry.Open();
+            foreach (var range in batch.Ranges)
+            {
+                if (clip.HasValue && !range.Bounds.IntersectsWith(clip.Value)) continue;
+                if (range.VertexCount < 2) continue;
+                context.BeginFigure(batch.Vertices[range.StartVertex], batch.Closed, false);
+                for (var i = 1; i < range.VertexCount; i++)
+                    context.LineTo(batch.Vertices[range.StartVertex + i], true, true);
+            }
+            geometry.Freeze();
+            return geometry;
+        }
+
+        private static bool SameItemReferences(IReadOnlyList<DisplayItemBase>? left, IReadOnlyList<DisplayItemBase> right)
+        {
+            if (left == null || left.Count != right.Count) return false;
+            for (var i = 0; i < right.Count; i++)
+                if (!ReferenceEquals(left[i], right[i])) return false;
+            return true;
         }
 
         private void ScheduleBatchGeometryBuild(IReadOnlyList<DisplayItemBase>? items, int buildVersion)
@@ -114,19 +269,30 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 .SelectMany(i => i.Geometries.OfType<BatchedContourGeometry>())
                 .Distinct()
                 .ToList();
-            if (batches == null || batches.Count == 0) return;
+            if (batches == null || batches.Count == 0)
+            {
+                _batchBuildPending = false;
+                return;
+            }
+            if (SameItemReferences(_lastBatchBuildItems, items!)) return;
+            _lastBatchBuildItems = items;
 
             var cancellation = new CancellationTokenSource();
             _batchBuildCancellation = cancellation;
+            _batchBuildPending = true;
+            var buildTimer = Stopwatch.StartNew();
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[RenderDiag] Batch geometry build begin: version={buildVersion}, batches={batches.Count}, contours={batches.Sum(b => b.Contours.Count)}",
+                "ResultRenderLayer");
             _ = Task.Run(() =>
             {
-                var built = new List<(BatchedContourGeometry Batch, IReadOnlyDictionary<(int X, int Y), IReadOnlyList<StreamGeometry>> Geometries)>();
+                var built = new List<(BatchedContourGeometry Batch, BatchGeometryCacheEntry Cache)>();
                 foreach (var batch in batches)
                 {
                     if (cancellation.IsCancellationRequested) return;
-                    var geometries = BuildBatchGeometries(batch);
-                    if (geometries.Count > 0)
-                        built.Add((batch, geometries));
+                    var cache = BuildBatchGeometries(batch);
+                    if (cache != null)
+                        built.Add((batch, cache));
                 }
 
                 Dispatcher.BeginInvoke(new Action(() =>
@@ -145,12 +311,27 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                         cancellation.Dispose();
                         return;
                     }
-                    foreach (var (batch, geometries) in built)
-                        _batchGeometryCache[batch] = geometries;
+                    foreach (var (batch, cache) in built)
+                        _batchGeometryCache[batch] = cache;
+                    _batchBuildPending = false;
                     if (ReferenceEquals(_batchBuildCancellation, cancellation))
                         _batchBuildCancellation = null;
+                    VisionLogger.Instance.Log(LogLevel.Info,
+                        $"[RenderDiag] Batch geometry build done: version={buildVersion}, batches={built.Count}, tiles={built.Sum(p => p.Cache.TileGeometries.Count)}, fullGeometries={built.Count}, contours={built.Sum(p => p.Cache.ContourCount)}, points={built.Sum(p => p.Cache.PointCount)}, ms={buildTimer.Elapsed.TotalMilliseconds:F1}",
+                        "ResultRenderLayer");
+                    if (buildTimer.Elapsed.TotalMilliseconds >= 500)
+                    {
+                        VisionLogger.Instance.Log(LogLevel.Warning,
+                            $"[RenderAnalysis] trace={buildVersion}, stage=batch-cache, diagnosis=batch-cache-build-heavy, batches={built.Count}, tiles={built.Sum(p => p.Cache.TileGeometries.Count)}, fullGeometries={built.Count}, contours={built.Sum(p => p.Cache.ContourCount)}, points={built.Sum(p => p.Cache.PointCount)}, ms={buildTimer.Elapsed.TotalMilliseconds:F1}",
+                            "ResultRenderLayer");
+                    }
                     cancellation.Dispose();
-                    InvalidateVisual();
+                    // 场景编译可能先完成。缓存未就绪时不提交场景，避免先绘制一次
+                    // 未命中缓存的结果、缓存完成后又把全部可见 tile 重绘一次。
+                    if (_scene != null)
+                        SetScene(_scene);
+                    else
+                        RequestRender("batch-cache-ready");
                 }));
             }, cancellation.Token);
         }
@@ -178,46 +359,77 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 .ToList();
         }
 
-        private const int BatchGeometryChunkSize = 1000;
         private const double GeometryTileSize = 512.0;
 
-        private static IReadOnlyDictionary<(int X, int Y), IReadOnlyList<StreamGeometry>> BuildBatchGeometries(BatchedContourGeometry batch)
+        private static BatchGeometryCacheEntry? BuildBatchGeometries(BatchedContourGeometry batch)
         {
             if (batch.Contours.Count == 0)
-                return new Dictionary<(int X, int Y), IReadOnlyList<StreamGeometry>>();
-            var tiles = new Dictionary<(int X, int Y), List<StreamGeometry>>();
-            for (var start = 0; start < batch.Contours.Count; start += BatchGeometryChunkSize)
+                return null;
+
+            // 先按轮廓所属 Tile 分组，再为每个 Tile 构建自己的几何。
+            // 旧实现先把 1000 条轮廓合并成大几何，再按大几何 Bounds 复制到多个 Tile；
+            // 这样单个 Tile 仍可能解析整块大几何，裁剪只发生在解析之后。
+            var tileContours = new Dictionary<(int X, int Y), List<Point[]>>();
+            for (var contourIndex = 0; contourIndex < batch.Contours.Count; contourIndex++)
             {
-                var geometry = new StreamGeometry();
-                using (var ctx = geometry.Open())
+                var points = batch.Contours[contourIndex];
+                if (points == null || points.Length < 2) continue;
+
+                var minPoint = points[0];
+                var maxPoint = points[0];
+                for (var pointIndex = 1; pointIndex < points.Length; pointIndex++)
                 {
-                    var end = Math.Min(start + BatchGeometryChunkSize, batch.Contours.Count);
-                    for (var i = start; i < end; i++)
-                    {
-                        var points = batch.Contours[i];
-                        if (points == null || points.Length < 2) continue;
-                        var closed = batch.IsClosed && points.Length >= 3;
-                        ctx.BeginFigure(points[0], false, closed);
-                        for (var pointIndex = 1; pointIndex < points.Length; pointIndex++)
-                            ctx.LineTo(points[pointIndex], true, true);
-                    }
+                    minPoint.X = Math.Min(minPoint.X, points[pointIndex].X);
+                    minPoint.Y = Math.Min(minPoint.Y, points[pointIndex].Y);
+                    maxPoint.X = Math.Max(maxPoint.X, points[pointIndex].X);
+                    maxPoint.Y = Math.Max(maxPoint.Y, points[pointIndex].Y);
                 }
-                geometry.Freeze();
-                var bounds = geometry.Bounds;
-                var minX = (int)Math.Floor(bounds.Left / GeometryTileSize);
-                var maxX = (int)Math.Floor(bounds.Right / GeometryTileSize);
-                var minY = (int)Math.Floor(bounds.Top / GeometryTileSize);
-                var maxY = (int)Math.Floor(bounds.Bottom / GeometryTileSize);
+
+                var minX = (int)Math.Floor(minPoint.X / GeometryTileSize);
+                var maxX = (int)Math.Floor(maxPoint.X / GeometryTileSize);
+                var minY = (int)Math.Floor(minPoint.Y / GeometryTileSize);
+                var maxY = (int)Math.Floor(maxPoint.Y / GeometryTileSize);
                 for (var tileX = minX; tileX <= maxX; tileX++)
                 for (var tileY = minY; tileY <= maxY; tileY++)
                 {
                     var key = (tileX, tileY);
-                    if (!tiles.TryGetValue(key, out var tileGeometries))
-                        tiles[key] = tileGeometries = new List<StreamGeometry>();
-                    tileGeometries.Add(geometry);
+                    if (!tileContours.TryGetValue(key, out var contours))
+                        tileContours[key] = contours = new List<Point[]>();
+                    contours.Add(points);
                 }
             }
-            return tiles.ToDictionary(p => p.Key, p => (IReadOnlyList<StreamGeometry>)p.Value);
+
+            var validContours = batch.Contours
+                .Where(points => points != null && points.Length >= 2)
+                .ToList();
+            if (validContours.Count == 0)
+                return null;
+
+            var tileGeometries = tileContours.ToDictionary(
+                pair => pair.Key,
+                pair => (IReadOnlyList<StreamGeometry>)new[] { BuildTileGeometry(pair.Value, batch.IsClosed) });
+            return new BatchGeometryCacheEntry
+            {
+                FullGeometry = BuildTileGeometry(validContours, batch.IsClosed),
+                TileGeometries = tileGeometries,
+                ContourCount = validContours.Count,
+                PointCount = validContours.Sum(points => points.Length)
+            };
+        }
+
+        private static StreamGeometry BuildTileGeometry(IReadOnlyList<Point[]> contours, bool isClosed)
+        {
+            var geometry = new StreamGeometry();
+            using (var ctx = geometry.Open())
+            foreach (var points in contours)
+            {
+                var closed = isClosed && points.Length >= 3;
+                ctx.BeginFigure(points[0], false, closed);
+                for (var pointIndex = 1; pointIndex < points.Length; pointIndex++)
+                    ctx.LineTo(points[pointIndex], true, true);
+            }
+            geometry.Freeze();
+            return geometry;
         }
 
         /// <summary>清空高亮元素</summary>
@@ -225,7 +437,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         {
             UnsubscribeItems(_highlightItems);
             _highlightItems = null;
-            InvalidateVisual();
+            RequestRender("highlight-clear");
         }
 
         #endregion
@@ -246,7 +458,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 item.PropertyChanged -= OnItemPropertyChanged;
         }
 
-        private void OnItemPropertyChanged(object? sender, EventArgs e) => InvalidateVisual();
+        private void OnItemPropertyChanged(object? sender, EventArgs e) => RebuildScene();
 
         #endregion
 
@@ -262,12 +474,36 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 if (Math.Abs(_viewportScale - value) > 0.001)
                 {
                     _viewportScale = value;
-                    InvalidateVisual();
+                    RequestRender("scale-change");
                 }
             }
         }
 
         public void SetViewportScale(double scale) => ViewportScale = scale;
+
+        /// <summary>
+        /// 获取指定图像坐标附近的结果命中候选。返回值来自 Tile 空间索引，
+        /// 调用方应继续执行几何级精确命中测试。
+        /// </summary>
+        public IReadOnlyList<DisplayItemBase> QueryHitCandidates(Point imagePoint, double tolerance = 4.0)
+        {
+            return _scene?.QueryCandidates(imagePoint, tolerance)
+                ?? Array.Empty<DisplayItemBase>();
+        }
+
+        /// <summary>通过 Tile 候选索引执行精确几何命中，返回最上层命中的结果项。</summary>
+        public DisplayItemBase? HitTest(Point imagePoint, double tolerance = 4.0)
+        {
+            var candidates = QueryHitCandidates(imagePoint, tolerance);
+            for (var i = candidates.Count - 1; i >= 0; i--)
+            {
+                var item = candidates[i];
+                if (!item.IsVisible) continue;
+                if (item is GraphicsDisplayItem graphics && RenderHitTester.IsHit(graphics, imagePoint, tolerance))
+                    return item;
+            }
+            return null;
+        }
 
         /// <summary>设置视口范围（图像坐标系），用于视口裁剪</summary>
         public void SetViewport(double left, double top, double right, double bottom)
@@ -277,28 +513,178 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             _viewRight = right;
             _viewBottom = bottom;
             _hasViewport = true;
-            InvalidateVisual();
+            base.SetViewport(new Rect(left, top, Math.Max(0, right - left), Math.Max(0, bottom - top)));
+            ScheduleViewportRefresh();
+        }
+
+        private void ScheduleViewportRefresh()
+        {
+            _viewportRefreshTimer ??= new DispatcherTimer(DispatcherPriority.Render, Dispatcher)
+            {
+                Interval = TimeSpan.FromMilliseconds(50)
+            };
+            _viewportRefreshTimer.Stop();
+            _viewportRefreshTimer.Tick -= ViewportRefreshTimerOnTick;
+            _viewportRefreshTimer.Tick += ViewportRefreshTimerOnTick;
+            _viewportRefreshTimer.Start();
+        }
+
+        private void ViewportRefreshTimerOnTick(object? sender, EventArgs e)
+        {
+            _viewportRefreshTimer?.Stop();
+            RequestRender("viewport-debounce");
+        }
+
+        private string _pendingRenderReason = "layer-invalidation";
+
+        private void RequestRender(string reason = "layer-invalidation")
+        {
+            if (_renderInvalidationPending) return;
+            _renderInvalidationPending = true;
+            _pendingRenderReason = reason;
+            if (Dispatcher.HasShutdownStarted || Dispatcher.HasShutdownFinished)
+            {
+                _renderInvalidationPending = false;
+                return;
+            }
+            Dispatcher.BeginInvoke(DispatcherPriority.Render, new Action(() =>
+            {
+                _renderInvalidationPending = false;
+                if (!Dispatcher.HasShutdownStarted && !Dispatcher.HasShutdownFinished)
+                {
+                    var renderReason = _pendingRenderReason;
+                    _pendingRenderReason = "layer-invalidation";
+                    Refresh(renderReason);
+                }
+            }));
         }
 
         private double GetScaledLineWidth(double rawWidth, double power = 1.0) =>
             ViewportScaling.Power(_viewportScale, rawWidth, power);
 
+        private void RebuildScene()
+        {
+            var items = GetAllItems();
+            var version = ++_sceneBuildVersion;
+            var compileTimer = Stopwatch.StartNew();
+            VisionLogger.Instance.Log(LogLevel.Info,
+                $"[RenderDiag] Scene compile begin: version={version}, items={items.Count}",
+                "ResultRenderLayer");
+            CancelSceneBuild();
+            if (items.Count == 0)
+            {
+                _scene = null;
+                SetScene(null);
+                return;
+            }
+
+            var cancellation = new CancellationTokenSource();
+            _sceneBuildCancellation = cancellation;
+            _ = Task.Run(() => _sceneCompiler.Compile(items), cancellation.Token)
+                .ContinueWith(t =>
+                {
+                    if (t.IsCanceled || t.IsFaulted || cancellation.IsCancellationRequested)
+                    {
+                        VisionLogger.Instance.Log(LogLevel.Warning,
+                            $"[RenderDiag] Scene compile ended without scene: version={version}, canceled={t.IsCanceled}, faulted={t.IsFaulted}, canceledToken={cancellation.IsCancellationRequested}, ms={compileTimer.Elapsed.TotalMilliseconds:F1}",
+                            "ResultRenderLayer");
+                        cancellation.Dispose();
+                        return;
+                    }
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        try
+                        {
+                            if (version != _sceneBuildVersion || cancellation.IsCancellationRequested)
+                                return;
+                            _scene = t.Result;
+                            VisionLogger.Instance.Log(LogLevel.Info,
+                                $"[RenderDiag] Scene compile done: version={version}, tiles={_scene.Tiles.Count}, ms={compileTimer.Elapsed.TotalMilliseconds:F1}",
+                                "ResultRenderLayer");
+                            if (compileTimer.Elapsed.TotalMilliseconds >= 200)
+                            {
+                                VisionLogger.Instance.Log(LogLevel.Warning,
+                                    $"[RenderAnalysis] trace={_batchBuildVersion}, stage=scene-compile, diagnosis=scene-compile-heavy, version={version}, items={items.Count}, tiles={_scene.Tiles.Count}, ms={compileTimer.Elapsed.TotalMilliseconds:F1}",
+                                    "ResultRenderLayer");
+                            }
+                            if (_batchBuildPending)
+                            {
+                                VisionLogger.Instance.Log(LogLevel.Info,
+                                    $"[RenderDiag] Scene commit deferred: version={version}, batchCachePending=true",
+                                    "ResultRenderLayer");
+                            }
+                            else
+                            {
+                                SetScene(_scene);
+                            }
+                        }
+                        finally
+                        {
+                            if (ReferenceEquals(_sceneBuildCancellation, cancellation))
+                                _sceneBuildCancellation = null;
+                            cancellation.Dispose();
+                        }
+                    }), DispatcherPriority.Render);
+                }, TaskScheduler.Default);
+        }
+
+        private void CancelSceneBuild()
+        {
+            var cancellation = _sceneBuildCancellation;
+            _sceneBuildCancellation = null;
+            if (cancellation == null) return;
+            cancellation.Cancel();
+        }
+
         #endregion
 
         #region 渲染
 
-        protected override void OnRender(DrawingContext dc)
+        private void RenderTile(DrawingContext dc, RenderTileScene tile)
         {
-            base.OnRender(dc);
+            dc.PushClip(new RectangleGeometry(tile.Bounds));
+            _activeTileKey = tile.Key == new RenderTileKey(int.MinValue, int.MinValue)
+                ? null
+                : tile.Key;
 
             // ★ 不再清空 _brushCache / _penCache，缓存可跨渲染复用
             // Pen 键已包含厚度信息，不同线宽自动对应不同缓存项
 
             // 渲染顺序：区域(底层) → 工具输出(中层) → 高亮(顶层)
             // 每层内：图形项立即绘制，文本项收集后统一分组排版（同锚点协同换行）
-            RenderLayer(dc, _regionItems);
-            RenderLayer(dc, _collector?.Items);
-            RenderLayer(dc, _highlightItems);
+            try
+            {
+                RenderCompiledBatchScene(dc, tile);
+                RenderLayer(dc, tile.Items);
+            }
+            finally
+            {
+                _activeTileKey = null;
+                dc.Pop();
+            }
+        }
+
+        private void RenderCompiledBatchScene(DrawingContext dc, RenderTileScene tile)
+        {
+            var scene = _batchScene;
+            if (scene == null || scene.Batches.Count == 0) return;
+            var clip = _activeTileKey.HasValue ? tile.Bounds : (Rect?)null;
+            foreach (var batch in scene.Batches)
+            {
+                if (clip.HasValue && !batch.Bounds.IntersectsWith(clip.Value)) continue;
+                StreamGeometry geometry;
+                if (!clip.HasValue)
+                {
+                    if (!_compiledBatchGeometries.TryGetValue(batch, out geometry!)) continue;
+                }
+                else
+                {
+                    // Local views use the same contiguous batch data, restricted by range bounds.
+                    geometry = BuildBatchGeometry(batch, clip);
+                }
+                var pen = GetPen(batch.Color, GetScaledLineWidth(batch.LineWidth), LineDashStyle.Solid);
+                dc.DrawGeometry(null, pen, geometry);
+            }
         }
 
         /// <summary>
@@ -339,7 +725,7 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
         private void RenderGraphics(DrawingContext dc, GraphicsDisplayItem item)
         {
             var style = item.Style;
-            if (style == null) return;
+            if (style == null || !style.IsVisible) return;
 
             dc.PushOpacity(style.Opacity);
             try
@@ -648,17 +1034,30 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
             {
                 if (item.Geometries[i] is BatchedContourGeometry batch)
                 {
+                    // Batch scene owns all visible, non-transformed batched contours.
+                    // Keep the legacy geometry cache only while the batch scene is compiling.
+                    if (_batchScene != null)
+                        continue;
                     var isPass = isUnified || (item.IsPassArray.Length > i && item.IsPassArray[i]);
-                    if (_batchGeometryCache.TryGetValue(batch, out var cachedGeometries))
+                    if (_batchGeometryCache.TryGetValue(batch, out var cachedGeometry))
                     {
                         var cachedFill = item.IsFilled
                             ? (isUnified || isPass ? defaultBrush : ngBrush)
                             : null;
                         var cachedPen = isUnified || isPass ? defaultPen : ngPen;
                         IEnumerable<StreamGeometry> visibleGeometries;
-                        if (!_hasViewport)
+                        var renderPath = "tile";
+                        if (_activeTileKey is RenderTileKey activeTileKey)
                         {
-                            visibleGeometries = new HashSet<StreamGeometry>(cachedGeometries.Values.SelectMany(g => g));
+                            visibleGeometries = cachedGeometry.TileGeometries.TryGetValue(
+                                (activeTileKey.X, activeTileKey.Y), out var tileGeometries)
+                                ? tileGeometries
+                                : Array.Empty<StreamGeometry>();
+                        }
+                        else if (!_hasViewport)
+                        {
+                            visibleGeometries = new[] { cachedGeometry.FullGeometry };
+                            renderPath = "full-batch";
                         }
                         else
                         {
@@ -667,35 +1066,53 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                             var minTileY = (int)Math.Floor(_viewTop / GeometryTileSize);
                             var maxTileY = (int)Math.Floor(_viewBottom / GeometryTileSize);
                             var selected = new HashSet<StreamGeometry>();
+                            var selectedTileCount = 0;
                             for (var tileX = minTileX; tileX <= maxTileX; tileX++)
                             for (var tileY = minTileY; tileY <= maxTileY; tileY++)
-                                if (cachedGeometries.TryGetValue((tileX, tileY), out var tileGeometries))
+                                if (cachedGeometry.TileGeometries.TryGetValue((tileX, tileY), out var tileGeometries))
+                                {
+                                    selectedTileCount++;
                                     foreach (var geometry in tileGeometries)
                                         selected.Add(geometry);
-                            visibleGeometries = selected;
+                                }
+
+                            // 大视口下逐 Tile DrawGeometry 的调用和 WPF 命令提交成本高于一次完整
+                            // 批次绘制。覆盖批次 60% 以上 Tile 时直接提交一个完整冻结几何；
+                            // 局部视口继续按 Tile 裁剪，避免把不可见几何送入绘制管线。
+                            if (cachedGeometry.TileGeometries.Count > 0 &&
+                                selectedTileCount * 5 >= cachedGeometry.TileGeometries.Count * 3)
+                            {
+                                visibleGeometries = new[] { cachedGeometry.FullGeometry };
+                                renderPath = "full-batch";
+                            }
+                            else
+                            {
+                                visibleGeometries = selected;
+                                renderPath = "tile-range";
+                            }
                         }
-                        foreach (var cachedGeometry in visibleGeometries)
+                        var drawCalls = 0;
+                        foreach (var geometry in visibleGeometries)
                         {
-                            dc.DrawGeometry(cachedFill, cachedPen, cachedGeometry);
+                            dc.DrawGeometry(cachedFill, cachedPen, geometry);
+                            drawCalls++;
+                        }
+                        if (renderPath == "full-batch")
+                        {
+                            VisionLogger.Instance.Log(LogLevel.Debug,
+                                $"[RenderDiag] Contour batch draw: path={renderPath}, contours={cachedGeometry.ContourCount}, points={cachedGeometry.PointCount}, drawCalls={drawCalls}, totalTiles={cachedGeometry.TileGeometries.Count}",
+                                "ResultRenderLayer");
                         }
                         continue;
                     }
-                    foreach (var pts in batch.Contours)
+                    if (_batchCacheMissLogged.Add(batch))
                     {
-                        if (pts == null || pts.Length < 2) continue;
-                        if (batch.IsClosed && pts.Length >= 3)
-                        {
-                            if (isUnified) batchPolygons.Add(pts);
-                            else if (isPass) batchOkPolygons.Add(pts);
-                            else batchNgPolygons.Add(pts);
-                        }
-                        else
-                        {
-                            if (isUnified) batchPolylines.Add(pts);
-                            else if (isPass) batchOkPolylines.Add(pts);
-                            else batchNgPolylines.Add(pts);
-                        }
+                        VisionLogger.Instance.Log(LogLevel.Warning,
+                            $"[RenderDiag] Batch geometry cache not ready; skip fallback expansion: contours={batch.Contours.Count}, viewport={_hasViewport}",
+                            "ResultRenderLayer");
                     }
+                    // 缓存未完成时禁止逐轮廓回退。该回退会在每个可见 Tile 重复展开整批轮廓，
+                    // 造成 UI 线程长时间占用和大对象内存峰值；缓存完成后由后台回调 RequestRender。
                     continue;
                 }
 
@@ -703,6 +1120,12 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
                 {
                     var pts = contour.Points;
                     if (pts.Length < 2) continue;
+
+                    // Non-transformed contours are already emitted by the immutable batch scene.
+                    // Transformed contours remain on the compatibility path because their matrix
+                    // is part of the per-item interaction semantics.
+                    if (_batchScene != null && !contour.Transform.HasValue)
+                        continue;
 
                     bool isPass = isUnified || (item.IsPassArray.Length > i ? item.IsPassArray[i] : true);
                     bool isClosed = contour.IsClosed && pts.Length >= 3;
@@ -899,9 +1322,11 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
                 var texts = item.Texts;
                 var passArray = item.IsPassArray;
-                for (int i = 0; i < texts.Length && lines.Count < LOD_MAX_TEXTS; i++)
+                for (int i = 0; i < texts.Length; i++)
                 {
                     var td = texts[i];
+                    if (_hasViewport && !IsInViewport(new Point(td.X, td.Y)))
+                        continue;
                     lines.Add(new TextLine
                     {
                         Item = item,
@@ -1061,14 +1486,22 @@ namespace SunEyeVision.Plugin.SDK.UI.Controls
 
         private FormattedText CreateFormattedText(string text, Color color, double fontSize, bool isBold)
         {
+            var colorKey = (uint)((color.A << 24) | (color.R << 16) | (color.G << 8) | color.B);
+            var key = (text, colorKey, (int)Math.Round(fontSize * 100), isBold);
+            if (_formattedTextCache.TryGetValue(key, out var cached))
+                return cached;
+            if (_formattedTextCache.Count >= 4096)
+                _formattedTextCache.Clear();
             var typeface = new Typeface(new FontFamily("Segoe UI"),
                 FontStyles.Normal, isBold ? FontWeights.Bold : FontWeights.Normal, FontStretches.Normal);
             // 使用自身实例的 DPI，而非依赖 Application.Current.MainWindow。
             // 依赖 MainWindow 在脚本工具/独立上下文渲染时可能为 null，导致 VisualTreeHelper.GetDpi(null) 抛 NullReferenceException。
             // GetDpi(this) 即使本元素尚未连接可视树也不会抛异常，返回默认 96 DPI。
             var pixelsPerDip = VisualTreeHelper.GetDpi(this).PixelsPerDip;
-            return new FormattedText(text, System.Globalization.CultureInfo.CurrentCulture,
+            var formatted = new FormattedText(text, System.Globalization.CultureInfo.CurrentCulture,
                 FlowDirection.LeftToRight, typeface, fontSize, new SolidColorBrush(color), pixelsPerDip);
+            _formattedTextCache[key] = formatted;
+            return formatted;
         }
 
         private static StreamGeometry CreateArcGeometry(ArcGeometry arc)

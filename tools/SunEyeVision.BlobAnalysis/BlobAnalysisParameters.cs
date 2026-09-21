@@ -337,12 +337,33 @@ namespace SunEyeVision.Tool.BlobAnalysis
         [DisplayName("查找数量")]
         public int BlobCountLimit { get; set; } = 3000;
 
+        /// <summary>轮廓样式在图形显示列表中的 Key。</summary>
+        public const string ContourGraphicsKey = "contours";
+
+        /// <summary>
+        /// 可在“图形显示”列表中编辑的样式项。
+        /// 轮廓的计算与显示由「轮廓输出」开关统一管理，轮廓样式容器不参与编辑，故从列表中排除。
+        /// </summary>
+        [JsonIgnore]
+        public IReadOnlyList<GraphicsPresentationItem> EditableGraphics =>
+            ResultPresentation.Graphics.Where(item => item.Key != ContourGraphicsKey).ToList();
+
+        /// <summary>
+        /// Blob图像输出（中间结果）：调试时开启便于查看，运行时关闭可节省运算。
+        /// </summary>
         [DisplayName("Blob图像输出")]
         public bool OutputBlobImage { get; set; } = true;
 
+        /// <summary>
+        /// 二值化图像输出（中间结果）：调试时开启便于查看，运行时关闭可节省运算。
+        /// </summary>
         [DisplayName("二值化图像输出")]
         public bool OutputBinaryImage { get; set; }
 
+        /// <summary>
+        /// 轮廓输出：轮廓的计算与显示统一由本开关管理。
+        /// 关闭时既不提取轮廓也不绘制；开启时两者同时生效。
+        /// </summary>
         [DisplayName("轮廓输出")]
         public bool OutputContours { get; set; }
 
@@ -366,7 +387,9 @@ namespace SunEyeVision.Tool.BlobAnalysis
             config.Judgments.Add(new() { Key = "per-blob-rectangularity", Name = "每个Blob矩形度", Scope = JudgmentScope.PerItem, AffectsItemDisplayState = true, Enabled = false, Min = 0, Max = 1, AllowedMinimum = 0, AllowedMaximum = 1, DecimalPlaces = 3, Order = 120 });
             config.Graphics.Add(new() { Key = "blobs", Name = "外接矩形", Order = 10, Style = new() { Name = "Blobs", LineWidth = 2 } });
             config.Graphics.Add(new() { Key = "centroids", Name = "质心", Order = 20, Style = new() { Name = "Centroids", LineWidth = 2, CrossSize = 8, IsVisible = false } });
-            config.Graphics.Add(new() { Key = "contours", Name = "轮廓", Order = 30, Style = new() { Name = "Contours", LineWidth = 1, IsVisible = false } });
+            // 轮廓样式容器：轮廓的显示与计算由「轮廓输出」开关统一管理，本条目只提供绘制样式，
+            // 既不作可见性判据，也不出现在“图形显示”编辑列表中（见 EditableGraphics）。
+            config.Graphics.Add(new() { Key = ContourGraphicsKey, Name = "轮廓", Order = 30, Style = new() { Name = "Contours", LineWidth = 1 } });
             config.Graphics.Add(new() { Key = "inspection-roi", Name = "检测区", Order = 40, Style = new() { Name = "InspectionRoi", LineWidth = 1, OkColor = Color.FromRgb(0, 0, 255) } });
             config.Graphics.Add(new() { Key = "mask-roi", Name = "屏蔽区", Order = 50, Style = new() { Name = "MaskRoi", LineWidth = 1, OkColor = Color.FromRgb(0xFF, 0xA5, 0x00) } });
             config.Texts.Add(new() { Key = "area", Name = "面积列表", Order = 10, Style = new() { Name = "AreaDisplay", FontSize = 9.0, PositionX = 0, PositionY = 0 } });

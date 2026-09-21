@@ -357,7 +357,7 @@
         <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12">
           <StackPanel>
             <presentation:JudgmentEditorControl ItemsSource="{Binding ResultPresentation.Judgments}"/>
-            <presentation:GraphicsDisplayEditorControl ItemsSource="{Binding ResultPresentation.Graphics}"/>
+            <presentation:GraphicsDisplayEditorControl ItemsSource="{Binding EditableGraphics}"/>
             <presentation:TextDisplayEditorControl ItemsSource="{Binding ResultPresentation.Texts}"
                                                    AvailableDataSources="{Binding AvailableDataSources, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:ToolDebugControlBase}}}"/>
           </StackPanel>

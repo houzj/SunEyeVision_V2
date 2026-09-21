@@ -160,3 +160,10 @@
 - 验证：Plugin.SDK Release 构建 0 error；渲染相关测试 22/22 通过；此前 UI Release 构建 0 error。等待重新构建后由用户手动验证大批量 Blob 全视口、缩放/平移、图像切换、OK/NG 可见性、命中高亮及快速刷新。
 - 2026-09-21 日志 `logs/2026/09/21/SunEyeVision_102232.txt` 诊断：选中 Blob 节点时同一组 6000 条轮廓连续启动两次批量/场景编译，第一次约 144 ms 后取消，第二次批量几何编译约 476 ms，首帧 WPF 几何绘制约 218 ms。结果层增加同一显示项引用集合去重，避免 `SetDisplayCollector`/`SetRegionItems` 连续调用重复编译；图像身份变化仍会强制清空并重建。Plugin.SDK Debug 构建、渲染测试 22/22、UI Release 构建均通过。
 - 2026-09-21 取消竞态修复：日志报告图像切换时 `CancelRenderBatchBuild()` 对已由 Dispatcher 回调释放的 `CancellationTokenSource` 再次 `Cancel()`，抛出 `ObjectDisposedException`。取消操作现为幂等，捕获已释放源并安全忽略；Plugin.SDK Debug 构建 0 error，渲染测试 22/22 通过。
+
+## 相机架构同步与整改基线（2026-09-21）
+
+- 当前 worktree 已从游离提交 `1eb5aadc` 建立保护分支 `codex/sync-main-20260921`，并保存相机架构改动基线提交 `2f868568`。
+- 已合并主分支最新提交及主 worktree 原有未提交改动的保护提交，当前同步分支包含主分支的参数契约、工作流定义服务、执行快照和批量渲染改动。
+- 相机整改计划：`docs/01-方案设计/2026/09/相机采集架构整改实施计划-20260919.md`。
+- 旧 `ICameraService` / `CameraPoolManager` 不恢复兼容 Facade；相机整改按 Runtime 会话与真实连接 → 管理器状态与持久化 → MVS 真机能力 → 主题完善 → 工作流采集接入 → 全量验收执行。
